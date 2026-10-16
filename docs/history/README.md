@@ -1,5 +1,15 @@
 # Historical records
 
+- [Files enumeration analysis](files-enumeration-analysis.md): warm root/C
+  scans take 193/533 ms without disk traffic or presenter CPU; repeated DOS
+  transactions dominate the next opportunity, with bounded batch enumeration
+  recommended before further popup micro-optimization.
+
+- [Popup visibility rebuild analysis](popup-visibility-analysis.md): per-layer
+  costs show a bounds-only filter has little benefit; an occlusion-aware
+  selector could skip about 3.5 ms of existing geometry work before overhead,
+  retaining the current damage-summary and transaction semantics.
+
 - [Damage retirement](damage-retirement.md): skip scratch reconstruction for
   disjoint damage lists; saved-popup commit CPU 16.5 → 13.8 ms, complete
   keyboard CPU 60.3 → 57.6 ms, unchanged sampled feedback, focused checks and

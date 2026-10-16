@@ -1,5 +1,24 @@
 # GEM as a client of an Exec-like kernel
 
+The [Files enumeration analysis](../../history/files-enumeration-analysis.md)
+sets the next performance priority: warm root/C scans take 193/533 ms without
+physical disk traffic or presenter CPU. It recommends bounded public batch
+enumeration, followed by smaller admission/empty-queue and backend cleanups.
+The [batch enumeration design](../directory-batching-design.md) specifies a
+public ExNextBatch operation, compact caller-owned records, reuse of the current
+cookie and prefix results on error/cancellation. Files and the file selector
+start with eight entries and compare sixteen. The
+[EB1–EB3 implementation plan](../directory-batching-implementation-plan.md)
+orders the complete DOS operation/bindings, shared scanner adoption and matched
+measurements/OF816 demo delivery. Production code is unchanged.
+
+The [popup visibility analysis](../../history/popup-visibility-analysis.md)
+identifies only three changed visibility lists in the warm File/View scene.
+A conservative occlusion-aware selector offers about 3.5 ms of existing work
+to avoid, before overhead; simple old/new-bounds filtering offers just 0.36 ms
+when damage summaries are retained. Production code is unchanged. Keep this
+as a deferred option while directory enumeration offers a larger target.
+
 The [damage retirement plan](damage-retirement-plan.md) follows WI2 with a
 bounded change to `SubtractDamage`: leave disjoint damage lists untouched and
 start scratch construction only at the first overlap. DR1 covers the shared

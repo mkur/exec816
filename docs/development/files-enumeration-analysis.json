@@ -1,0 +1,3244 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "production_changes": false,
+  "scope": "ScanBegin through final ScanNext/UnLock. Inclusive routines overlap; CPU includes gateway/scheduling charges but excludes native interrupts and peer Tasks.",
+  "summary": {
+    "root refresh": {
+      "samples": 3,
+      "median_ms": 193.28969422551273,
+      "minimum_ms": 192.47680013081865,
+      "maximum_ms": 193.28969422551273
+    },
+    "C refresh": {
+      "samples": 3,
+      "median_ms": 533.1477249819912,
+      "minimum_ms": 531.953018062277,
+      "maximum_ms": 535.7998333753889
+    },
+    "RAM refresh": {
+      "samples": 3,
+      "median_ms": 67.54055307529543,
+      "minimum_ms": 67.54055307529543,
+      "maximum_ms": 67.54344292684165
+    }
+  },
+  "artifact_directory": "build/files-enumeration-trace",
+  "archive_sha256": "ade55940e2468bd000ece5a22266f2b23deac34f47ad1827f708c305ff6d33d3",
+  "guest_code_revision": "cbc0a16b",
+  "source_head": "853bf014",
+  "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "compiler_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+  "rom": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/files-enumeration-trace/extracted/exec816-demo/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "override": false
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$fbef2e457413035d",
+    "actual_kernel_id": "$fbef2e457413035d",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+  "system_media_sha256": "c1fbd200d90ac77dbdc89f896002f10abb82717929b5354a921fcac6685e2130",
+  "observer_sha256": "b30df36e6c96e974e6da25db27e40688a128f694d954bd44a4f909fe529d9433",
+  "definition_sha256": "efd78a1f593f338e584e3ba25798892599cca370d719ce0ad247db575f77fadc",
+  "trace_sha256": "2e0d008dfe49070dcb7b255391e311eaee822a9e6ed06bf8ea7381bb9eda460a",
+  "task_dps": {
+    "app_dp": 4096,
+    "filesystem_dp": 3584,
+    "presenter_dp": 4864
+  },
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "live_tasks": 0,
+    "current": 8,
+    "switching": 0,
+    "irq_depth": 0,
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 571,
+        "untouched_above_floor": 709
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 318,
+        "untouched_above_floor": 738
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 148,
+        "untouched_above_floor": 908
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 916,
+        "untouched_above_floor": 140
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 825,
+        "untouched_above_floor": 1479
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 59,
+        "untouched_above_floor": 197
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 287,
+      "untouched_from_base": 1249,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "unprofiled_control": {
+    "status": "pass",
+    "guards": "intact",
+    "live_tasks": 0,
+    "matching_listings_and_paint_counts": true
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "idle": 0
+  },
+  "samples": [
+    {
+      "start": 4361173676.75,
+      "end": 4361516465.875,
+      "elapsed_ms": 193.28969422551273,
+      "task_charges": {
+        "3328": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "3584": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 111.71538768415755,
+          "off_cpu_ms": 57.80245820640306,
+          "interrupt_ms": 23.77184833495212
+        },
+        "3840": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "4096": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 47.60198709011685,
+          "off_cpu_ms": 135.48723601910967,
+          "interrupt_ms": 10.200471116286216
+        },
+        "4352": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "4608": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "4864": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "5120": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "5376": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        }
+      },
+      "global_interrupt_ms": 33.972319451238334,
+      "inclusive": {
+        "3584:FSOPERATION_PUMP": {
+          "calls": 65,
+          "elapsed_ms": 0.5201027941340242,
+          "charged_cpu_ms": 0.47682550512490496
+        },
+        "3584:FSABORT_CHECKPOINT": {
+          "calls": 74,
+          "elapsed_ms": 2.9963531483170485,
+          "charged_cpu_ms": 2.472726144980327
+        },
+        "3584:FSPACKET_IDENTITY": {
+          "calls": 13,
+          "elapsed_ms": 1.9330992318633622,
+          "charged_cpu_ms": 1.6307925664560128
+        },
+        "3584:FSHANDLER_TAKESTEP": {
+          "calls": 22,
+          "elapsed_ms": 40.28481249092516,
+          "charged_cpu_ms": 26.460185598953448
+        },
+        "3584:FSPACKET_REPLY": {
+          "calls": 12,
+          "elapsed_ms": 45.55519686937447,
+          "charged_cpu_ms": 18.482362742624183
+        },
+        "4096:DOSCLIENT_CHECKREPLY": {
+          "calls": 13,
+          "elapsed_ms": 0.6586746999840707,
+          "charged_cpu_ms": 0.5283494436683354
+        },
+        "4096:DOSCLIENT_CALL": {
+          "calls": 13,
+          "elapsed_ms": 162.098821645411,
+          "charged_cpu_ms": 30.286771951241867
+        },
+        "3584:FSREGISTRY_FINDOBJECT": {
+          "calls": 12,
+          "elapsed_ms": 1.1514296307051661,
+          "charged_cpu_ms": 0.933703986162545
+        },
+        "3584:FSNAMES_MAPPED": {
+          "calls": 11,
+          "elapsed_ms": 1.656096388531377,
+          "charged_cpu_ms": 1.3523095552588953
+        },
+        "3584:FSINFO_CLEAR": {
+          "calls": 10,
+          "elapsed_ms": 2.840301164821626,
+          "charged_cpu_ms": 2.3650967959299614
+        },
+        "3584:FSINFO_NAME": {
+          "calls": 10,
+          "elapsed_ms": 1.3702125380085965,
+          "charged_cpu_ms": 1.1543899664354316
+        },
+        "3584:FSINFO_FILL": {
+          "calls": 10,
+          "elapsed_ms": 0.7741277934644244,
+          "charged_cpu_ms": 0.6868683736056466
+        },
+        "3584:FSINFO_SAVE": {
+          "calls": 11,
+          "elapsed_ms": 0.6149040216865738,
+          "charged_cpu_ms": 0.5270102441713104
+        },
+        "4096:DOSCALLS_INFORMATION": {
+          "calls": 11,
+          "elapsed_ms": 157.44806372897986,
+          "charged_cpu_ms": 37.292617909467296
+        },
+        "3584:SDFSFILE_DRIVE": {
+          "calls": 9,
+          "elapsed_ms": 5.358630576884853,
+          "charged_cpu_ms": 4.340768474961903
+        },
+        "3584:FSBACKEND_BUFFEREDENTRY": {
+          "calls": 18,
+          "elapsed_ms": 22.571502680513518,
+          "charged_cpu_ms": 18.5596134083473
+        },
+        "3584:FSIO_BEGIN": {
+          "calls": 9,
+          "elapsed_ms": 2.2436525468050226,
+          "charged_cpu_ms": 1.853311135514302
+        },
+        "3584:SDFSDATE_DECODE": {
+          "calls": 9,
+          "elapsed_ms": 7.267201312697444,
+          "charged_cpu_ms": 5.973464114387372
+        },
+        "4096:app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 27.41256789389029,
+          "charged_cpu_ms": 8.066280507316963
+        },
+        "4096:app.FileScanNext": {
+          "calls": 10,
+          "elapsed_ms": 165.7221316108878,
+          "charged_cpu_ms": 39.380711862065276
+        },
+        "4096:app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.774846732141775,
+          "charged_cpu_ms": 2.9451816306938885
+        }
+      },
+      "exclusive": {
+        "4096": {
+          "DOSCLIENT_CALL": 27.999701147059618,
+          "DOSCALLS_INFORMATION": 5.539845414087535,
+          "FSREGISTRY_RELEASE": 1.6486250650216594,
+          "FSREGISTRY_RETAIN": 1.5493833338737124,
+          "app.FileScanNext": 1.2070416519237248,
+          "ExNext": 1.1979491921807666,
+          "DOSCALLS_FILE": 1.153614640410838,
+          "FSOPERATION_PREPARE": 0.7644714602490346,
+          "FSOPERATION_CANCELLABLE": 0.6313268365711416,
+          "DOSCLIENT_CHECKREPLY": 0.5283494436683354,
+          "FSNAMES_PATH": 0.5131953440967381,
+          "DOSCALLS_UNLOCK": 0.5021293272002695,
+          "DOSCALLS_LOCK": 0.49726591850054774,
+          "DOSCLIENT_IOERR": 0.4393984033922628,
+          "FSREGISTRY_FROMHEADER": 0.41599765428635466,
+          "DOSCLIENT_ENSURESLOT": 0.3804031413391149,
+          "DOSOBJECTS_FIND": 0.2922979112716897,
+          "DOSCALLS_ARGUMENTS": 0.277919137724686,
+          "DOSCALLS_ACQUIRE": 0.24267704569771592,
+          "FSOPERATION_COLLECT": 0.2421836564093383,
+          "DOSCALLS_OBJECT": 0.21441288789208596,
+          "FSREGISTRY_LOOKUP": 0.1965099051423851,
+          "unattributed": 0.15499472073461434,
+          "DOSCALLS_EXPAND": 0.14484499823084698,
+          "DOSCLIENT_SERVICEWAIT": 0.12073940728439944,
+          "DOSCALLS_ASSIGNINDEX": 0.11326808377468178,
+          "DOSCALLS_CONFIGURED": 0.07457226672906866,
+          "FSNAMES_SYSTEM": 0.07224628865528865,
+          "Lock": 0.06470448096151704,
+          "app.FileScanBegin": 0.06456351259340917,
+          "Examine": 0.06301286054422248,
+          "FS83_FOLD": 0.06188511359935943,
+          "FS83_LEGAL": 0.05244023293613145,
+          "UnLock": 0.04341825737722712,
+          "IoErr": 0.033339019057513686,
+          "FSNAMES_STREAM": 0.03066062006346396,
+          "DOSCALLS_DESTINATION": 0.02607914809995785,
+          "FSREGISTRY_ENABLED": 0.022202517976991142,
+          "DOSCALLS_NAMEARGUMENTS": 0.01494264701943531,
+          "app.FileScanEnd": 0.009374396479174037
+        },
+        "3584": {
+          "FSHANDLER_TAKESTEP": 23.0460726917487,
+          "unattributed": 21.187898147534675,
+          "FSPACKET_REPLY": 16.739077418418084,
+          "SDFSDATE_DECODE": 5.182772537670273,
+          "SDFSFILE_DRIVE": 2.8010414743035805,
+          "FSHANDLER_OPENRESULTSTEP": 2.7497994724963664,
+          "FSOPERATION_AUTHORITY": 2.586699070595549,
+          "FSDIRECTORY_SELECT": 2.5843026083377154,
+          "FSINFO_CLEAR": 2.3650967959299614,
+          "SDFSDIR_DECODE": 2.125943959434942,
+          "SDFSDIR_BEGINENTRY": 1.927601465507155,
+          "FSABORT_CHECKPOINT": 1.8368178364456798,
+          "SDFSFILE_CONSUME": 1.6115503842092875,
+          "FS83_STORED": 1.5985108101593086,
+          "FSPACKET_IDENTITY": 1.469101848236274,
+          "FSHANDLER_DISPATCHSTEP": 1.2744950160633455,
+          "BLOCKIO_MAPPED": 1.1583370807424522,
+          "FSINFO_NAME": 1.1543899664354316,
+          "FSDIRECTORY_PUBLISHSTEP": 0.9122767942101471,
+          "FSCORE_COPYENTRY": 0.8613167291391484,
+          "SDFSDATE_MONTHDAYS": 0.7450178254501468,
+          "FSINFO_FILL": 0.6868683736056466,
+          "FSOPERATION_CANCELED": 0.6359083085346474,
+          "SDFS_ALLOWED": 0.5768425622974461,
+          "SDFSDIR_BUFFEREDENTRY": 0.5543581075842392,
+          "SDFS_GETSTATE": 0.5313802635826544,
+          "FSDIRECTORY_ENTRYRESULTSTEP": 0.522781193128074,
+          "SDFSFILE_BEGINREAD": 0.5144640594097091,
+          "FSINFO_SAVE": 0.5029751374089169,
+          "FSIO_BEGIN": 0.4928958990892033,
+          "FSOPERATION_REPLYREADY": 0.4916271837762323,
+          "DOSWIRE_ISPOINTER": 0.47760083114949814,
+          "FSOPERATION_PUMP": 0.47682550512490496,
+          "FS83_LEGAL": 0.4489842524235984,
+          "FSDIRECTORY_SELECTENTRY": 0.4397508243125325,
+          "FSREGISTRY_FROMHEADER": 0.4293896492566033,
+          "SDFS_CACHED": 0.4131078027401432,
+          "FSDIRECTORY_ENTRYSTEP": 0.3782886158174967,
+          "SDFS_SECTORALLOWED": 0.37673796376831004,
+          "SDFS_WORD": 0.37124019741210257,
+          "BLOCKIO_FETCH": 0.3154167236413821,
+          "FSBACKEND_BUFFEREDENTRY": 0.3109762200459839,
+          "DOSOBJECTS_FIND": 0.2985710036524904,
+          "FSCORE_FINISHOPERATION": 0.2846856193938642,
+          "FSBACKEND_DESCEND": 0.2771438117000926,
+          "FSOPERATION_CLAIM": 0.27270330810469434,
+          "SDFSFILE_CONTINUEOPERATION": 0.26953151982226703,
+          "FSBACKEND_METADATA": 0.2643861743863295,
+          "FSCORE_BEGINOPERATION": 0.25902937639823,
+          "BLOCKIO_CHECK": 0.25769017690120516,
+          "BLOCKIO_CACHED": 0.25430693606661603,
+          "SDFSDIR_VALIDATEPARENT": 0.25141708452040445,
+          "FSBACKEND_BEGINENTRY": 0.21913532822369985,
+          "BLOCKIO_BEGINFETCH": 0.21532918228478706,
+          "SDFS_LENGTH": 0.20785785877506952,
+          "FSPACKET_PUBLISHOPENSTEP": 0.20757592203885372,
+          "FSREGISTRY_FINDOBJECT": 0.20574333325345118,
+          "FSNAMES_MAPPED": 0.1939724745164432,
+          "BLOCKIO_SECTORBYTES": 0.18840422397618198,
+          "FSOPERATION_UNLINK": 0.18438662548510737,
+          "FSREGISTRY_STAMP": 0.1529506793970501,
+          "SDFS_BOOTSECTORS": 0.14110933647598817,
+          "FSREGISTRY_RELEASE": 0.13441333899086383,
+          "FSBACKEND_STARTRESOLVE": 0.13053670886789714,
+          "BLOCKIO_BEGINFETCHRANGE": 0.1292679935549262,
+          "SDFSFILE_PAYLOADCOUNT": 0.10664257047361142,
+          "FSDIRECTORY_SIZERESULT": 0.10107431993335016,
+          "FSBACKEND_ENUMLIMIT": 0.09846640512335438,
+          "FSRELATIVE_ROOT": 0.08211407442284026,
+          "FSDIRECTORY_INITLOCKSTATE": 0.05399088498531814,
+          "DOSOBJECTS_UNLINK": 0.050466675782621144,
+          "FSINFO_ENUMERATIONSTATE": 0.04609665637127686,
+          "SDFSDATE_LEAP": 0.04567375126695321,
+          "FS83_STARTRESOLVE": 0.04200857369614832,
+          "FSHANDLER_LOCK": 0.041092279303447096,
+          "FSRELATIVE_BEGIN": 0.03904823796588284,
+          "FSDIRECTORY_END": 0.03418482926616096,
+          "FSPACKET_ERROR": 0.028898515462115453,
+          "DOSOBJECTS_LINK": 0.028052705253468174,
+          "FSHANDLER_RESOLVEREADYSTEP": 0.02093380266402022,
+          "SDFS_MAP": 0.01987653990321112,
+          "FSHANDLER_BEGINRESOLVE": 0.010079238319713439
+        }
+      },
+      "gateway_entries": {
+        "4096:dos_current": 14,
+        "4096:tasks_forbid": 40,
+        "4096:tasks_permit": 40,
+        "4096:ports_put_msg": 13,
+        "3584:tasks_forbid": 115,
+        "3584:ports_get_msg": 97,
+        "3584:tasks_permit": 115,
+        "3584:ports_reply_msg": 13,
+        "4096:ports_get_msg": 24
+      },
+      "serial_events": {},
+      "physical_commands": 0,
+      "queue_probe": {
+        "calls": 97,
+        "empty": 84,
+        "nonempty": 13,
+        "empty_get_through_branch_cpu_ms": 8.42455161486314,
+        "context_through_ensure_calls": 13,
+        "context_through_ensure_cpu_ms": 6.781071895277417
+      },
+      "name": "root refresh 1",
+      "path": "SYS:",
+      "entries": 9,
+      "dos_calls": 13,
+      "public_calls": {
+        "ExNext": {
+          "calls": 10,
+          "elapsed_ms": 152.7682663287185,
+          "charged_cpu_ms": 34.75575115699788,
+          "median_ms": 14.177329748977627,
+          "minimum_ms": 12.098398740306664,
+          "maximum_ms": 20.80657871180286
+        },
+        "Examine": {
+          "calls": 1,
+          "elapsed_ms": 11.366420488906494,
+          "charged_cpu_ms": 3.7978288051944027,
+          "median_ms": 11.366420488906494,
+          "minimum_ms": 11.366420488906494,
+          "maximum_ms": 11.366420488906494
+        },
+        "Lock": {
+          "calls": 1,
+          "elapsed_ms": 15.938588540117482,
+          "charged_cpu_ms": 4.2038881895291516,
+          "median_ms": 15.938588540117482,
+          "minimum_ms": 15.938588540117482,
+          "maximum_ms": 15.938588540117482
+        },
+        "UnLock": {
+          "calls": 1,
+          "elapsed_ms": 10.7654723356626,
+          "charged_cpu_ms": 2.9358072342147143,
+          "median_ms": 10.7654723356626,
+          "minimum_ms": 10.7654723356626,
+          "maximum_ms": 10.7654723356626
+        },
+        "app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 27.41256789389029,
+          "charged_cpu_ms": 8.066280507316963,
+          "median_ms": 27.41256789389029,
+          "minimum_ms": 27.41256789389029,
+          "maximum_ms": 27.41256789389029
+        },
+        "app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.774846732141775,
+          "charged_cpu_ms": 2.9451816306938885,
+          "median_ms": 10.774846732141775,
+          "minimum_ms": 10.774846732141775,
+          "maximum_ms": 10.774846732141775
+        }
+      }
+    },
+    {
+      "start": 4367149064.25,
+      "end": 4367490411.75,
+      "elapsed_ms": 192.47680013081865,
+      "task_charges": {
+        "3328": {
+          "elapsed_ms": 192.47680013081865,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 192.47680013081865,
+          "interrupt_ms": 0.0
+        },
+        "3584": {
+          "elapsed_ms": 192.47680013081865,
+          "charged_cpu_ms": 110.99623755425519,
+          "off_cpu_ms": 57.966897807800905,
+          "interrupt_ms": 23.513664768762535
+        },
+        "3840": {
+          "elapsed_ms": 192.47680013081865,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 192.47680013081865,
+          "interrupt_ms": 0.0
+        },
+        "4096": {
+          "elapsed_ms": 192.47680013081865,
+          "charged_cpu_ms": 47.630533184658695,
+          "off_cpu_ms": 134.50990232301774,
+          "interrupt_ms": 10.336364623142213
+        },
+        "4352": {
+          "elapsed_ms": 192.47680013081865,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 192.47680013081865,
+          "interrupt_ms": 0.0
+        },
+        "4608": {
+          "elapsed_ms": 192.47680013081865,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 192.47680013081865,
+          "interrupt_ms": 0.0
+        },
+        "4864": {
+          "elapsed_ms": 192.47680013081865,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 192.47680013081865,
+          "interrupt_ms": 0.0
+        },
+        "5120": {
+          "elapsed_ms": 192.47680013081865,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 192.47680013081865,
+          "interrupt_ms": 0.0
+        },
+        "5376": {
+          "elapsed_ms": 192.47680013081865,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 192.47680013081865,
+          "interrupt_ms": 0.0
+        }
+      },
+      "global_interrupt_ms": 33.85002939190475,
+      "inclusive": {
+        "3584:FSOPERATION_PUMP": {
+          "calls": 65,
+          "elapsed_ms": 0.4726669382657224,
+          "charged_cpu_ms": 0.4726669382657224
+        },
+        "3584:FSABORT_CHECKPOINT": {
+          "calls": 74,
+          "elapsed_ms": 3.188986423336468,
+          "charged_cpu_ms": 2.4982414196078535
+        },
+        "3584:FSPACKET_IDENTITY": {
+          "calls": 13,
+          "elapsed_ms": 1.9839888127503074,
+          "charged_cpu_ms": 1.6347396807630337
+        },
+        "3584:FSHANDLER_TAKESTEP": {
+          "calls": 22,
+          "elapsed_ms": 36.79239165523648,
+          "charged_cpu_ms": 25.131558729536675
+        },
+        "3584:FSPACKET_REPLY": {
+          "calls": 12,
+          "elapsed_ms": 46.00932646723401,
+          "charged_cpu_ms": 18.468618326733665
+        },
+        "4096:DOSCLIENT_CHECKREPLY": {
+          "calls": 13,
+          "elapsed_ms": 0.6086309293057731,
+          "charged_cpu_ms": 0.521582961999157
+        },
+        "4096:DOSCLIENT_CALL": {
+          "calls": 13,
+          "elapsed_ms": 167.0417365047457,
+          "charged_cpu_ms": 30.938539201188647
+        },
+        "3584:FSREGISTRY_FINDOBJECT": {
+          "calls": 12,
+          "elapsed_ms": 1.2981777019054694,
+          "charged_cpu_ms": 0.9516069689122458
+        },
+        "3584:FSNAMES_MAPPED": {
+          "calls": 11,
+          "elapsed_ms": 1.6577175247646179,
+          "charged_cpu_ms": 1.353860207308082
+        },
+        "3584:FSINFO_CLEAR": {
+          "calls": 10,
+          "elapsed_ms": 2.8937281763345126,
+          "charged_cpu_ms": 2.370312625549953
+        },
+        "3584:FSINFO_NAME": {
+          "calls": 10,
+          "elapsed_ms": 1.421102118895541,
+          "charged_cpu_ms": 1.1616498373929873
+        },
+        "3584:FSINFO_FILL": {
+          "calls": 10,
+          "elapsed_ms": 0.7743392460165861,
+          "charged_cpu_ms": 0.687432247078078
+        },
+        "3584:FSINFO_SAVE": {
+          "calls": 11,
+          "elapsed_ms": 0.7641190393287651,
+          "charged_cpu_ms": 0.5463933947861439
+        },
+        "4096:DOSCALLS_INFORMATION": {
+          "calls": 11,
+          "elapsed_ms": 156.60063238409933,
+          "charged_cpu_ms": 37.33328728366642
+        },
+        "3584:SDFSFILE_DRIVE": {
+          "calls": 9,
+          "elapsed_ms": 5.311406173568713,
+          "charged_cpu_ms": 4.334495382581103
+        },
+        "3584:FSBACKEND_BUFFEREDENTRY": {
+          "calls": 18,
+          "elapsed_ms": 22.674127652496054,
+          "charged_cpu_ms": 18.569974583403233
+        },
+        "3584:FSIO_BEGIN": {
+          "calls": 9,
+          "elapsed_ms": 2.1932563552064552,
+          "charged_cpu_ms": 1.8468970747653934
+        },
+        "3584:SDFSDATE_DECODE": {
+          "calls": 9,
+          "elapsed_ms": 7.268188091274199,
+          "charged_cpu_ms": 5.9752262189887215
+        },
+        "4096:app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 27.446259333868074,
+          "charged_cpu_ms": 8.065434697108316
+        },
+        "4096:app.FileScanNext": {
+          "calls": 10,
+          "elapsed_ms": 164.8766033389768,
+          "charged_cpu_ms": 39.411161029576576
+        },
+        "4096:app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.822987429850617,
+          "charged_cpu_ms": 2.9570229736149507
+        }
+      },
+      "gateway_entries": {
+        "4096:dos_current": 14,
+        "4096:tasks_forbid": 40,
+        "4096:tasks_permit": 40,
+        "4096:ports_put_msg": 13,
+        "3584:tasks_forbid": 115,
+        "3584:ports_get_msg": 97,
+        "3584:tasks_permit": 115,
+        "3584:ports_reply_msg": 13,
+        "4096:ports_get_msg": 24
+      },
+      "serial_events": {},
+      "physical_commands": 0,
+      "queue_probe": {
+        "calls": 97,
+        "empty": 84,
+        "nonempty": 13,
+        "empty_get_through_branch_cpu_ms": 8.436463441968256,
+        "context_through_ensure_calls": 13,
+        "context_through_ensure_cpu_ms": 6.8398557047784045
+      },
+      "name": "root refresh 2",
+      "path": "SYS:",
+      "entries": 9,
+      "dos_calls": 13,
+      "public_calls": {
+        "ExNext": {
+          "calls": 10,
+          "elapsed_ms": 146.1071585147009,
+          "charged_cpu_ms": 34.19124332690988,
+          "median_ms": 14.196994836328678,
+          "minimum_ms": 11.625238412752562,
+          "maximum_ms": 20.683019937156303
+        },
+        "Examine": {
+          "calls": 1,
+          "elapsed_ms": 11.366279520538386,
+          "charged_cpu_ms": 3.797546868458187,
+          "median_ms": 11.366279520538386,
+          "minimum_ms": 11.366279520538386,
+          "maximum_ms": 11.366279520538386
+        },
+        "Lock": {
+          "calls": 1,
+          "elapsed_ms": 15.970870296414187,
+          "charged_cpu_ms": 4.20261947421618,
+          "median_ms": 15.970870296414187,
+          "minimum_ms": 15.970870296414187,
+          "maximum_ms": 15.970870296414187
+        },
+        "UnLock": {
+          "calls": 1,
+          "elapsed_ms": 10.81340158081928,
+          "charged_cpu_ms": 2.9474371245836144,
+          "median_ms": 10.81340158081928,
+          "minimum_ms": 10.81340158081928,
+          "maximum_ms": 10.81340158081928
+        },
+        "app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 27.446259333868074,
+          "charged_cpu_ms": 8.065434697108316,
+          "median_ms": 27.446259333868074,
+          "minimum_ms": 27.446259333868074,
+          "maximum_ms": 27.446259333868074
+        },
+        "app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.822987429850617,
+          "charged_cpu_ms": 2.9570229736149507,
+          "median_ms": 10.822987429850617,
+          "minimum_ms": 10.822987429850617,
+          "maximum_ms": 10.822987429850617
+        }
+      }
+    },
+    {
+      "start": 4373124524.75,
+      "end": 4373467313.875,
+      "elapsed_ms": 193.28969422551273,
+      "task_charges": {
+        "3328": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "3584": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 111.71538768415755,
+          "off_cpu_ms": 57.80245820640306,
+          "interrupt_ms": 23.77184833495212
+        },
+        "3840": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "4096": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 47.60198709011685,
+          "off_cpu_ms": 135.48723601910967,
+          "interrupt_ms": 10.200471116286216
+        },
+        "4352": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "4608": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "4864": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "5120": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        },
+        "5376": {
+          "elapsed_ms": 193.28969422551273,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 193.28969422551273,
+          "interrupt_ms": 0.0
+        }
+      },
+      "global_interrupt_ms": 33.972319451238334,
+      "inclusive": {
+        "3584:FSOPERATION_PUMP": {
+          "calls": 65,
+          "elapsed_ms": 0.5201027941340242,
+          "charged_cpu_ms": 0.47682550512490496
+        },
+        "3584:FSABORT_CHECKPOINT": {
+          "calls": 74,
+          "elapsed_ms": 2.9963531483170485,
+          "charged_cpu_ms": 2.472726144980327
+        },
+        "3584:FSPACKET_IDENTITY": {
+          "calls": 13,
+          "elapsed_ms": 1.9330992318633622,
+          "charged_cpu_ms": 1.6307925664560128
+        },
+        "3584:FSHANDLER_TAKESTEP": {
+          "calls": 22,
+          "elapsed_ms": 40.28481249092516,
+          "charged_cpu_ms": 26.460185598953448
+        },
+        "3584:FSPACKET_REPLY": {
+          "calls": 12,
+          "elapsed_ms": 45.55519686937447,
+          "charged_cpu_ms": 18.482362742624183
+        },
+        "4096:DOSCLIENT_CHECKREPLY": {
+          "calls": 13,
+          "elapsed_ms": 0.6586746999840707,
+          "charged_cpu_ms": 0.5283494436683354
+        },
+        "4096:DOSCLIENT_CALL": {
+          "calls": 13,
+          "elapsed_ms": 162.098821645411,
+          "charged_cpu_ms": 30.286771951241867
+        },
+        "3584:FSREGISTRY_FINDOBJECT": {
+          "calls": 12,
+          "elapsed_ms": 1.1514296307051661,
+          "charged_cpu_ms": 0.933703986162545
+        },
+        "3584:FSNAMES_MAPPED": {
+          "calls": 11,
+          "elapsed_ms": 1.656096388531377,
+          "charged_cpu_ms": 1.3523095552588953
+        },
+        "3584:FSINFO_CLEAR": {
+          "calls": 10,
+          "elapsed_ms": 2.840301164821626,
+          "charged_cpu_ms": 2.3650967959299614
+        },
+        "3584:FSINFO_NAME": {
+          "calls": 10,
+          "elapsed_ms": 1.3702125380085965,
+          "charged_cpu_ms": 1.1543899664354316
+        },
+        "3584:FSINFO_FILL": {
+          "calls": 10,
+          "elapsed_ms": 0.7741277934644244,
+          "charged_cpu_ms": 0.6868683736056466
+        },
+        "3584:FSINFO_SAVE": {
+          "calls": 11,
+          "elapsed_ms": 0.6149040216865738,
+          "charged_cpu_ms": 0.5270102441713104
+        },
+        "4096:DOSCALLS_INFORMATION": {
+          "calls": 11,
+          "elapsed_ms": 157.44806372897986,
+          "charged_cpu_ms": 37.292617909467296
+        },
+        "3584:SDFSFILE_DRIVE": {
+          "calls": 9,
+          "elapsed_ms": 5.358630576884853,
+          "charged_cpu_ms": 4.340768474961903
+        },
+        "3584:FSBACKEND_BUFFEREDENTRY": {
+          "calls": 18,
+          "elapsed_ms": 22.571502680513518,
+          "charged_cpu_ms": 18.5596134083473
+        },
+        "3584:FSIO_BEGIN": {
+          "calls": 9,
+          "elapsed_ms": 2.2436525468050226,
+          "charged_cpu_ms": 1.853311135514302
+        },
+        "3584:SDFSDATE_DECODE": {
+          "calls": 9,
+          "elapsed_ms": 7.267201312697444,
+          "charged_cpu_ms": 5.973464114387372
+        },
+        "4096:app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 27.41256789389029,
+          "charged_cpu_ms": 8.066280507316963
+        },
+        "4096:app.FileScanNext": {
+          "calls": 10,
+          "elapsed_ms": 165.7221316108878,
+          "charged_cpu_ms": 39.380711862065276
+        },
+        "4096:app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.774846732141775,
+          "charged_cpu_ms": 2.9451816306938885
+        }
+      },
+      "gateway_entries": {
+        "4096:dos_current": 14,
+        "4096:tasks_forbid": 40,
+        "4096:tasks_permit": 40,
+        "4096:ports_put_msg": 13,
+        "3584:tasks_forbid": 115,
+        "3584:ports_get_msg": 97,
+        "3584:tasks_permit": 115,
+        "3584:ports_reply_msg": 13,
+        "4096:ports_get_msg": 24
+      },
+      "serial_events": {},
+      "physical_commands": 0,
+      "queue_probe": {
+        "calls": 97,
+        "empty": 84,
+        "nonempty": 13,
+        "empty_get_through_branch_cpu_ms": 8.42455161486314,
+        "context_through_ensure_calls": 13,
+        "context_through_ensure_cpu_ms": 6.781071895277417
+      },
+      "name": "root refresh 3",
+      "path": "SYS:",
+      "entries": 9,
+      "dos_calls": 13,
+      "public_calls": {
+        "ExNext": {
+          "calls": 10,
+          "elapsed_ms": 152.7682663287185,
+          "charged_cpu_ms": 34.75575115699788,
+          "median_ms": 14.177329748977627,
+          "minimum_ms": 12.098398740306664,
+          "maximum_ms": 20.80657871180286
+        },
+        "Examine": {
+          "calls": 1,
+          "elapsed_ms": 11.366420488906494,
+          "charged_cpu_ms": 3.7978288051944027,
+          "median_ms": 11.366420488906494,
+          "minimum_ms": 11.366420488906494,
+          "maximum_ms": 11.366420488906494
+        },
+        "Lock": {
+          "calls": 1,
+          "elapsed_ms": 15.938588540117482,
+          "charged_cpu_ms": 4.2038881895291516,
+          "median_ms": 15.938588540117482,
+          "minimum_ms": 15.938588540117482,
+          "maximum_ms": 15.938588540117482
+        },
+        "UnLock": {
+          "calls": 1,
+          "elapsed_ms": 10.7654723356626,
+          "charged_cpu_ms": 2.9358072342147143,
+          "median_ms": 10.7654723356626,
+          "minimum_ms": 10.7654723356626,
+          "maximum_ms": 10.7654723356626
+        },
+        "app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 27.41256789389029,
+          "charged_cpu_ms": 8.066280507316963,
+          "median_ms": 27.41256789389029,
+          "minimum_ms": 27.41256789389029,
+          "maximum_ms": 27.41256789389029
+        },
+        "app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.774846732141775,
+          "charged_cpu_ms": 2.9451816306938885,
+          "median_ms": 10.774846732141775,
+          "minimum_ms": 10.774846732141775,
+          "maximum_ms": 10.774846732141775
+        }
+      }
+    },
+    {
+      "start": 4386039715.75,
+      "end": 4389017070.375,
+      "elapsed_ms": 1678.8512910587992,
+      "task_charges": {
+        "3328": {
+          "elapsed_ms": 1678.8512910587995,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 1678.8512910587995,
+          "interrupt_ms": 0.0
+        },
+        "3584": {
+          "elapsed_ms": 1678.8512910587995,
+          "charged_cpu_ms": 339.1105459845865,
+          "off_cpu_ms": 1266.3266039733346,
+          "interrupt_ms": 73.41414110087838
+        },
+        "3840": {
+          "elapsed_ms": 1678.8512910587995,
+          "charged_cpu_ms": 9.654782563340612,
+          "off_cpu_ms": 1666.6327872688646,
+          "interrupt_ms": 2.5637212265939646
+        },
+        "4096": {
+          "elapsed_ms": 1678.8512910587995,
+          "charged_cpu_ms": 117.5963060648821,
+          "off_cpu_ms": 1535.8362032143607,
+          "interrupt_ms": 25.418781779556486
+        },
+        "4352": {
+          "elapsed_ms": 1678.8512910587995,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 1678.8512910587995,
+          "interrupt_ms": 0.0
+        },
+        "4608": {
+          "elapsed_ms": 1678.8512910587995,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 1678.8512910587995,
+          "interrupt_ms": 0.0
+        },
+        "4864": {
+          "elapsed_ms": 1678.8512910587995,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 1678.8512910587995,
+          "interrupt_ms": 0.0
+        },
+        "5120": {
+          "elapsed_ms": 1678.8512910587995,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 1678.8512910587995,
+          "interrupt_ms": 0.0
+        },
+        "5376": {
+          "elapsed_ms": 1678.8512910587995,
+          "charged_cpu_ms": 874.1284983062651,
+          "off_cpu_ms": 567.7582787198381,
+          "interrupt_ms": 236.9645140326962
+        }
+      },
+      "global_interrupt_ms": 338.36115813972503,
+      "inclusive": {
+        "3584:FSOPERATION_PUMP": {
+          "calls": 201,
+          "elapsed_ms": 1.8516195150970103,
+          "charged_cpu_ms": 1.5055421713921642
+        },
+        "3584:FSABORT_CHECKPOINT": {
+          "calls": 241,
+          "elapsed_ms": 10.79916377564038,
+          "charged_cpu_ms": 8.885800115312122
+        },
+        "3584:FSPACKET_IDENTITY": {
+          "calls": 33,
+          "elapsed_ms": 5.640849249836831,
+          "charged_cpu_ms": 4.584925688524753
+        },
+        "3584:FSHANDLER_TAKESTEP": {
+          "calls": 49,
+          "elapsed_ms": 73.34739257857929,
+          "charged_cpu_ms": 56.25857263888557
+        },
+        "3584:SDFSFILE_DRIVE": {
+          "calls": 42,
+          "elapsed_ms": 24.049626504308698,
+          "charged_cpu_ms": 19.834954234619296
+        },
+        "3584:FSIO_BEGIN": {
+          "calls": 42,
+          "elapsed_ms": 13.116754231517985,
+          "charged_cpu_ms": 10.757789559600724
+        },
+        "3584:SDFSDATE_DECODE": {
+          "calls": 39,
+          "elapsed_ms": 30.906398413260042,
+          "charged_cpu_ms": 25.29649172022289
+        },
+        "4096:DOSCLIENT_CHECKREPLY": {
+          "calls": 33,
+          "elapsed_ms": 1.395163939163691,
+          "charged_cpu_ms": 1.3094551713540996
+        },
+        "4096:DOSCLIENT_CALL": {
+          "calls": 33,
+          "elapsed_ms": 1625.5214772357233,
+          "charged_cpu_ms": 77.89186034545708
+        },
+        "3584:FSPACKET_REPLY": {
+          "calls": 32,
+          "elapsed_ms": 158.74743966201422,
+          "charged_cpu_ms": 53.31790199597113
+        },
+        "3584:FSREGISTRY_FINDOBJECT": {
+          "calls": 32,
+          "elapsed_ms": 2.95201859654712,
+          "charged_cpu_ms": 2.475193091422215
+        },
+        "3584:FSNAMES_MAPPED": {
+          "calls": 31,
+          "elapsed_ms": 4.530441414251057,
+          "charged_cpu_ms": 3.7928949123106284
+        },
+        "3584:FSINFO_CLEAR": {
+          "calls": 30,
+          "elapsed_ms": 8.527247071029732,
+          "charged_cpu_ms": 7.091484241850971
+        },
+        "3584:FSINFO_NAME": {
+          "calls": 30,
+          "elapsed_ms": 4.228416685579922,
+          "charged_cpu_ms": 3.489319531590306
+        },
+        "3584:FSINFO_FILL": {
+          "calls": 30,
+          "elapsed_ms": 2.314912056883556,
+          "charged_cpu_ms": 1.9665087351049308
+        },
+        "3584:FSINFO_SAVE": {
+          "calls": 31,
+          "elapsed_ms": 1.9966054816959622,
+          "charged_cpu_ms": 1.5201323974913268
+        },
+        "4096:DOSCALLS_INFORMATION": {
+          "calls": 31,
+          "elapsed_ms": 1594.5383215460279,
+          "charged_cpu_ms": 103.09073147076526
+        },
+        "3584:FSBACKEND_BUFFEREDENTRY": {
+          "calls": 62,
+          "elapsed_ms": 74.40120161436975,
+          "charged_cpu_ms": 61.05241344894618
+        },
+        "3584:FSIO_COMPLETE": {
+          "calls": 2,
+          "elapsed_ms": 3.2617965854641877,
+          "charged_cpu_ms": 2.734574888740715
+        },
+        "4096:app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 75.34096724036094,
+          "charged_cpu_ms": 8.172077267581926
+        },
+        "4096:app.FileScanNext": {
+          "calls": 30,
+          "elapsed_ms": 1602.8309972525267,
+          "charged_cpu_ms": 108.78803855202928
+        },
+        "4096:app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 11.241733967315074,
+          "charged_cpu_ms": 2.9041598355744953
+        }
+      },
+      "gateway_entries": {
+        "4096:dos_current": 34,
+        "4096:tasks_forbid": 100,
+        "4096:tasks_permit": 100,
+        "4096:ports_put_msg": 33,
+        "3584:tasks_forbid": 252,
+        "3584:ports_get_msg": 212,
+        "3584:tasks_permit": 252,
+        "4096:ports_get_msg": 62,
+        "3584:ports_reply_msg": 33,
+        "3584:ports_put_msg": 2,
+        "3840:tasks_forbid": 8,
+        "3840:ports_get_msg": 4,
+        "3840:tasks_permit": 8,
+        "3840:ports_reply_msg": 2
+      },
+      "serial_events": {
+        "command": 4,
+        "rxstart": 518,
+        "receive": 518,
+        "read": 520
+      },
+      "physical_commands": 2,
+      "queue_probe": {
+        "calls": 212,
+        "empty": 179,
+        "nonempty": 33,
+        "empty_get_through_branch_cpu_ms": 18.44705016641317,
+        "context_through_ensure_calls": 33,
+        "context_through_ensure_cpu_ms": 16.20382052471246
+      },
+      "name": "C first visit",
+      "path": "SYS:C",
+      "entries": 29,
+      "dos_calls": 33,
+      "public_calls": {
+        "ExNext": {
+          "calls": 30,
+          "elapsed_ms": 1586.6197758884884,
+          "charged_cpu_ms": 101.82554036699705,
+          "median_ms": 13.950300192139885,
+          "minimum_ms": 10.905101504273457,
+          "maximum_ms": 900.9398361101753
+        },
+        "Examine": {
+          "calls": 1,
+          "elapsed_ms": 10.12935257457579,
+          "charged_cpu_ms": 3.0840354732801503,
+          "median_ms": 10.12935257457579,
+          "minimum_ms": 10.12935257457579,
+          "maximum_ms": 10.12935257457579
+        },
+        "Lock": {
+          "calls": 1,
+          "elapsed_ms": 65.15268988791604,
+          "charged_cpu_ms": 5.029117016432683,
+          "median_ms": 65.15268988791604,
+          "minimum_ms": 65.15268988791604,
+          "maximum_ms": 65.15268988791604
+        },
+        "UnLock": {
+          "calls": 1,
+          "elapsed_ms": 11.2323595708359,
+          "charged_cpu_ms": 2.894785439095321,
+          "median_ms": 11.2323595708359,
+          "minimum_ms": 11.2323595708359,
+          "maximum_ms": 11.2323595708359
+        },
+        "app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 75.34096724036094,
+          "charged_cpu_ms": 8.172077267581926,
+          "median_ms": 75.34096724036094,
+          "minimum_ms": 75.34096724036094,
+          "maximum_ms": 75.34096724036094
+        },
+        "app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 11.241733967315074,
+          "charged_cpu_ms": 2.9041598355744953,
+          "median_ms": 11.241733967315074,
+          "minimum_ms": 11.241733967315074,
+          "maximum_ms": 11.241733967315074
+        }
+      }
+    },
+    {
+      "start": 4392014757.5,
+      "end": 4392958148.25,
+      "elapsed_ms": 531.953018062277,
+      "task_charges": {
+        "3328": {
+          "elapsed_ms": 531.953018062277,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 531.953018062277,
+          "interrupt_ms": 0.0
+        },
+        "3584": {
+          "elapsed_ms": 531.953018062277,
+          "charged_cpu_ms": 324.94118094840695,
+          "off_cpu_ms": 137.92789186034545,
+          "interrupt_ms": 69.08394525352456
+        },
+        "3840": {
+          "elapsed_ms": 531.953018062277,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 531.953018062277,
+          "interrupt_ms": 0.0
+        },
+        "4096": {
+          "elapsed_ms": 531.953018062277,
+          "charged_cpu_ms": 113.38501703602728,
+          "off_cpu_ms": 394.0251262019315,
+          "interrupt_ms": 24.542874824318172
+        },
+        "4352": {
+          "elapsed_ms": 531.953018062277,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 531.953018062277,
+          "interrupt_ms": 0.0
+        },
+        "4608": {
+          "elapsed_ms": 531.953018062277,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 531.953018062277,
+          "interrupt_ms": 0.0
+        },
+        "4864": {
+          "elapsed_ms": 531.953018062277,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 531.953018062277,
+          "interrupt_ms": 0.0
+        },
+        "5120": {
+          "elapsed_ms": 531.953018062277,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 531.953018062277,
+          "interrupt_ms": 0.0
+        },
+        "5376": {
+          "elapsed_ms": 531.953018062277,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 531.953018062277,
+          "interrupt_ms": 0.0
+        }
+      },
+      "global_interrupt_ms": 93.62682007784274,
+      "inclusive": {
+        "3584:FSOPERATION_PUMP": {
+          "calls": 195,
+          "elapsed_ms": 1.8557075977721391,
+          "charged_cpu_ms": 1.4867228942497612
+        },
+        "3584:FSABORT_CHECKPOINT": {
+          "calls": 239,
+          "elapsed_ms": 10.982070233260353,
+          "charged_cpu_ms": 9.099155740443402
+        },
+        "3584:FSPACKET_IDENTITY": {
+          "calls": 33,
+          "elapsed_ms": 5.112358837800386,
+          "charged_cpu_ms": 4.1609633214403035
+        },
+        "3584:FSHANDLER_TAKESTEP": {
+          "calls": 41,
+          "elapsed_ms": 60.03807555622594,
+          "charged_cpu_ms": 48.22189548887126
+        },
+        "3584:SDFSFILE_DRIVE": {
+          "calls": 44,
+          "elapsed_ms": 24.785128964911564,
+          "charged_cpu_ms": 20.659830640602554
+        },
+        "3584:FSIO_BEGIN": {
+          "calls": 44,
+          "elapsed_ms": 16.251679285685082,
+          "charged_cpu_ms": 13.459166397652034
+        },
+        "3584:SDFSDATE_DECODE": {
+          "calls": 40,
+          "elapsed_ms": 31.01254759444529,
+          "charged_cpu_ms": 25.351539867969013
+        },
+        "4096:DOSCLIENT_CHECKREPLY": {
+          "calls": 33,
+          "elapsed_ms": 1.6969067310986086,
+          "charged_cpu_ms": 1.3487148618721443
+        },
+        "4096:DOSCLIENT_CALL": {
+          "calls": 33,
+          "elapsed_ms": 472.5379522089038,
+          "charged_cpu_ms": 72.72995112626676
+        },
+        "3584:FSPACKET_REPLY": {
+          "calls": 33,
+          "elapsed_ms": 185.18288531236482,
+          "charged_cpu_ms": 58.74828547222288
+        },
+        "3584:FSREGISTRY_FINDOBJECT": {
+          "calls": 32,
+          "elapsed_ms": 2.7060992783829225,
+          "charged_cpu_ms": 2.4449553764630743
+        },
+        "3584:FSNAMES_MAPPED": {
+          "calls": 31,
+          "elapsed_ms": 4.533401749981324,
+          "charged_cpu_ms": 3.796982994985756
+        },
+        "3584:FSINFO_CLEAR": {
+          "calls": 30,
+          "elapsed_ms": 8.768796369782585,
+          "charged_cpu_ms": 7.123906966515784
+        },
+        "3584:FSINFO_NAME": {
+          "calls": 30,
+          "elapsed_ms": 4.126637523806032,
+          "charged_cpu_ms": 3.4782535146938374
+        },
+        "3584:FSINFO_FILL": {
+          "calls": 30,
+          "elapsed_ms": 2.559139754630458,
+          "charged_cpu_ms": 1.994984345462722
+        },
+        "3584:FSINFO_SAVE": {
+          "calls": 31,
+          "elapsed_ms": 1.945011058968478,
+          "charged_cpu_ms": 1.512802042349717
+        },
+        "4096:DOSCALLS_INFORMATION": {
+          "calls": 31,
+          "elapsed_ms": 426.0382672732066,
+          "charged_cpu_ms": 97.56265691541475
+        },
+        "3584:FSBACKEND_BUFFEREDENTRY": {
+          "calls": 62,
+          "elapsed_ms": 74.15929989469664,
+          "charged_cpu_ms": 60.9316740416618
+        },
+        "4096:app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 89.24383157663252,
+          "charged_cpu_ms": 8.87959750711538
+        },
+        "4096:app.FileScanNext": {
+          "calls": 30,
+          "elapsed_ms": 441.878812313305,
+          "charged_cpu_ms": 103.85048049068268
+        },
+        "4096:app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 12.415013695076961,
+          "charged_cpu_ms": 2.8971114171691013
+        }
+      },
+      "exclusive": {
+        "4096": {
+          "DOSCLIENT_CALL": 66.78630182173424,
+          "DOSCALLS_INFORMATION": 15.623524237396362,
+          "FSREGISTRY_RELEASE": 5.455898750879291,
+          "FSREGISTRY_RETAIN": 4.132417226898457,
+          "app.FileScanNext": 3.5657948712888325,
+          "FSOPERATION_PREPARE": 2.034878393637251,
+          "ExNext": 1.7549152145750013,
+          "FSOPERATION_CANCELLABLE": 1.5696122946971924,
+          "DOSCALLS_FILE": 1.3719041584258915,
+          "DOSCLIENT_CHECKREPLY": 1.3487148618721443,
+          "FSREGISTRY_FROMHEADER": 1.1434649179070706,
+          "DOSCLIENT_IOERR": 1.0636063373739566,
+          "DOSCLIENT_ENSURESLOT": 0.9375806162855118,
+          "DOSOBJECTS_FIND": 0.8173345982894897,
+          "DOSCALLS_ARGUMENTS": 0.6776349454945805,
+          "unattributed": 0.6549390382292117,
+          "FSOPERATION_COLLECT": 0.6132828854533332,
+          "DOSCALLS_OBJECT": 0.5726135112542097,
+          "FSNAMES_PATH": 0.5588690953636913,
+          "DOSCALLS_LOCK": 0.5028341690408089,
+          "DOSCALLS_UNLOCK": 0.49656107666000826,
+          "DOSCLIENT_SERVICEWAIT": 0.37716086887263367,
+          "DOSCALLS_ACQUIRE": 0.24274752988176984,
+          "FSREGISTRY_LOOKUP": 0.20292396589129366,
+          "DOSCALLS_EXPAND": 0.14526790333517065,
+          "DOSCALLS_ASSIGNINDEX": 0.11305663122251998,
+          "DOSCALLS_CONFIGURED": 0.0742903299928529,
+          "FSNAMES_SYSTEM": 0.06625513301070372,
+          "FS83_LEGAL": 0.06435206004124734,
+          "FS83_FOLD": 0.061321240126927905,
+          "app.FileScanBegin": 0.05892477786909396,
+          "Lock": 0.05871332531693213,
+          "Examine": 0.05737412581990727,
+          "UnLock": 0.042995352272903485,
+          "IoErr": 0.03305708232129793,
+          "FSNAMES_STREAM": 0.030731104247517897,
+          "DOSCALLS_DESTINATION": 0.026008663915903913,
+          "FSREGISTRY_ENABLED": 0.022554938897260842,
+          "DOSCALLS_NAMEARGUMENTS": 0.01522458375565107,
+          "app.FileScanEnd": 0.009374396479174037
+        },
+        "3584": {
+          "FSPACKET_REPLY": 54.090761074122575,
+          "FSHANDLER_TAKESTEP": 40.543207509666935,
+          "unattributed": 29.66862565708884,
+          "SDFSDATE_DECODE": 22.045902120023342,
+          "SDFSFILE_DRIVE": 13.43590661691423,
+          "SDFSDIR_DECODE": 8.924354963989632,
+          "SDFS_VALIDATEMAP": 8.83039954664574,
+          "FSDIRECTORY_SELECT": 8.206896454504587,
+          "SDFSDIR_BEGINENTRY": 7.74663473263235,
+          "SDFSFILE_CONSUME": 7.343535684027859,
+          "FSINFO_CLEAR": 7.123906966515784,
+          "FS83_STORED": 6.810886705132243,
+          "FSABORT_CHECKPOINT": 6.551504907813727,
+          "SDFS_WORD": 5.873235604662682,
+          "FSOPERATION_AUTHORITY": 5.671932775004616,
+          "FSPACKET_IDENTITY": 3.7663928591063445,
+          "FSHANDLER_DISPATCHSTEP": 3.5119449546716233,
+          "FSINFO_NAME": 3.4782535146938374,
+          "BLOCKIO_MAPPED": 3.249884758359072,
+          "SDFSDATE_MONTHDAYS": 3.1139207673190157,
+          "SDFS_ALLOWED": 2.8854110426161452,
+          "SDFSDIR_BUFFEREDENTRY": 2.8615169042218613,
+          "FSHANDLER_OPENRESULTSTEP": 2.7539580393555485,
+          "SDFS_GETSTATE": 2.726680660126685,
+          "FSDIRECTORY_PUBLISHSTEP": 2.621588741702249,
+          "FSOPERATION_CANCELED": 2.547650832629664,
+          "FSCORE_COPYENTRY": 2.4379774422417357,
+          "FSIO_BEGIN": 2.4281096564741844,
+          "FSPACKET_CLOSE": 2.379968958765342,
+          "SDFSFILE_BEGINREAD": 2.252745006547981,
+          "SDFS_CACHED": 2.0126053914762077,
+          "BLOCKCACHE_COPY": 2.007741982776485,
+          "FSINFO_FILL": 1.994984345462722,
+          "FS83_LEGAL": 1.8991963393334135,
+          "FSDIRECTORY_ENTRYRESULTSTEP": 1.8098928781370744,
+          "BLOCKIO_FETCH": 1.761117822771748,
+          "SDFS_SECTORALLOWED": 1.7262281516650484,
+          "SDFSDIR_VALIDATEPARENT": 1.5242204801664552,
+          "FSOPERATION_PUMP": 1.4867228942497612,
+          "FSINFO_SAVE": 1.438370743988756,
+          "FSBACKEND_RESOLVESTEP": 1.3294726796254193,
+          "SDFSFILE_CONTINUEOPERATION": 1.3224947454040772,
+          "FSOPERATION_REPLYREADY": 1.3163626213913868,
+          "BLOCKIO_CHECK": 1.2759046997444234,
+          "FSCORE_FINISHOPERATION": 1.205490999874538,
+          "BLOCKIO_CACHED": 1.2029535692485962,
+          "DOSWIRE_ISPOINTER": 1.1830770293453863,
+          "FSCORE_BEGINOPERATION": 1.1792003992224183,
+          "FSDIRECTORY_ENTRYSTEP": 1.127817429047096,
+          "FSREGISTRY_FROMHEADER": 1.113720592236308,
+          "FSDIRECTORY_SELECTENTRY": 1.11322720294793,
+          "FSBACKEND_BUFFEREDENTRY": 1.1023021544195701,
+          "BLOCKIO_BEGINFETCH": 1.0883462859768893,
+          "BLOCKCACHE_READ": 1.0173687126345718,
+          "SDFS_LENGTH": 0.9368052902609183,
+          "BLOCKIO_SECTORBYTES": 0.8691404735691359,
+          "FSBACKEND_METADATA": 0.8191671870748923,
+          "DOSOBJECTS_FIND": 0.7921717445822329,
+          "SDFS_CACHE": 0.7398019958301557,
+          "FSHANDLER_RESOLVESTEP": 0.7266919375961226,
+          "SDFS_BOOTSECTORS": 0.7235201493136947,
+          "FSOPERATION_CLAIM": 0.697370517029684,
+          "BLOCKIO_BEGINFETCHRANGE": 0.6395734861054533,
+          "FS83_MATCH": 0.6374589605838348,
+          "FSBACKEND_BEGINENTRY": 0.6065868879682088,
+          "FSNAMES_MAPPED": 0.5470982366266833,
+          "FSREGISTRY_FINDOBJECT": 0.5390630396445344,
+          "SDFSFILE_PAYLOADCOUNT": 0.5142526068575473,
+          "SDFSDIR_HEADER": 0.5099530716302569,
+          "BLOCKCACHE_FIND": 0.4990280231018961,
+          "FSOPERATION_UNLINK": 0.48958314243866813,
+          "BLOCKCACHE_PAYLOAD": 0.33162808597378834,
+          "FSDIRECTORY_SIZERESULT": 0.287364018387914,
+          "FSBACKEND_ENUMLIMIT": 0.283839809185217,
+          "BLOCKCACHE_SETINDEX": 0.22068598027288655,
+          "FS83_FOLD": 0.21039528940101138,
+          "FSPACKET_PUBLISHOPENSTEP": 0.20743495367074583,
+          "SDFSDATE_LEAP": 0.19171698062671713,
+          "FS83_SELECTMATCH": 0.18093290046646435,
+          "FSREGISTRY_STAMP": 0.15372600542164344,
+          "FSINFO_ENUMERATIONSTATE": 0.1406864313716646,
+          "FS83_COMPONENT": 0.13617544359221234,
+          "FSREGISTRY_RELEASE": 0.13441333899086383,
+          "SDFSDIR_SEED": 0.12510942669574376,
+          "SDFS_MAP": 0.11206985264576486,
+          "BLOCKIO_PUBLISH": 0.09205234437444582,
+          "FSRELATIVE_ROOT": 0.0818321376866245,
+          "FSDIRECTORY_INITLOCKSTATE": 0.07436081417690685,
+          "SDFSDIR_BEGINHEADER": 0.05504814774612725,
+          "FSBACKEND_RESOLVECOMPONENT": 0.05236974875207752,
+          "FS83_STARTRESOLVE": 0.04736537168424777,
+          "SDFS_RESTART": 0.044405035953982284,
+          "DOSOBJECTS_UNLINK": 0.04419358340182047,
+          "FSHANDLER_LOCK": 0.04137421603966286,
+          "FSRELATIVE_BEGIN": 0.038836785413721014,
+          "FSBACKEND_STARTRESOLVE": 0.038484364493451315,
+          "FSDIRECTORY_END": 0.03411434508210703,
+          "DOSOBJECTS_LINK": 0.03376192416183733,
+          "FS83_CHOOSE": 0.029462388934546977,
+          "FSHANDLER_RESOLVEREADYSTEP": 0.027206895044820892,
+          "BLOCKIO_DISCARDBUFFER": 0.025515274627526327,
+          "FSPACKET_ERROR": 0.023400749105908128,
+          "FSHANDLER_COMPONENTSTEP": 0.021356707768343863,
+          "FSHANDLER_BEGINRESOLVE": 0.010079238319713439
+        }
+      },
+      "gateway_entries": {
+        "4096:dos_current": 34,
+        "4096:tasks_forbid": 100,
+        "4096:tasks_permit": 100,
+        "4096:ports_put_msg": 33,
+        "3584:tasks_forbid": 210,
+        "3584:ports_get_msg": 172,
+        "3584:tasks_permit": 210,
+        "4096:ports_get_msg": 66,
+        "3584:ports_reply_msg": 33
+      },
+      "serial_events": {},
+      "physical_commands": 0,
+      "queue_probe": {
+        "calls": 172,
+        "empty": 139,
+        "nonempty": 33,
+        "empty_get_through_branch_cpu_ms": 15.28914726824449,
+        "context_through_ensure_calls": 33,
+        "context_through_ensure_cpu_ms": 15.554379252839453
+      },
+      "name": "C refresh 1",
+      "path": "SYS:C",
+      "entries": 29,
+      "dos_calls": 33,
+      "public_calls": {
+        "ExNext": {
+          "calls": 30,
+          "elapsed_ms": 418.71319844540085,
+          "charged_cpu_ms": 96.29091078252951,
+          "median_ms": 13.353722058307337,
+          "minimum_ms": 9.115508071143918,
+          "maximum_ms": 19.627519280948547
+        },
+        "Examine": {
+          "calls": 1,
+          "elapsed_ms": 9.487664562948721,
+          "charged_cpu_ms": 3.0840354732801503,
+          "median_ms": 9.487664562948721,
+          "minimum_ms": 9.487664562948721,
+          "maximum_ms": 9.487664562948721
+        },
+        "Lock": {
+          "calls": 1,
+          "elapsed_ms": 79.6972422358147,
+          "charged_cpu_ms": 5.736637255966134,
+          "median_ms": 79.6972422358147,
+          "minimum_ms": 79.6972422358147,
+          "maximum_ms": 79.6972422358147
+        },
+        "UnLock": {
+          "calls": 1,
+          "elapsed_ms": 12.405639298597789,
+          "charged_cpu_ms": 2.887737020689927,
+          "median_ms": 12.405639298597789,
+          "minimum_ms": 12.405639298597789,
+          "maximum_ms": 12.405639298597789
+        },
+        "app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 89.24383157663252,
+          "charged_cpu_ms": 8.87959750711538,
+          "median_ms": 89.24383157663252,
+          "minimum_ms": 89.24383157663252,
+          "maximum_ms": 89.24383157663252
+        },
+        "app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 12.415013695076961,
+          "charged_cpu_ms": 2.8971114171691013,
+          "median_ms": 12.415013695076961,
+          "minimum_ms": 12.415013695076961,
+          "maximum_ms": 12.415013695076961
+        }
+      }
+    },
+    {
+      "start": 4397990186.375,
+      "end": 4398935695.875,
+      "elapsed_ms": 533.1477249819912,
+      "task_charges": {
+        "3328": {
+          "elapsed_ms": 533.1477249819912,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 533.1477249819912,
+          "interrupt_ms": 0.0
+        },
+        "3584": {
+          "elapsed_ms": 533.1477249819912,
+          "charged_cpu_ms": 324.58269838830864,
+          "off_cpu_ms": 139.00996505394156,
+          "interrupt_ms": 69.5550615397411
+        },
+        "3840": {
+          "elapsed_ms": 533.1477249819912,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 533.1477249819912,
+          "interrupt_ms": 0.0
+        },
+        "4096": {
+          "elapsed_ms": 533.1477249819912,
+          "charged_cpu_ms": 114.61362684827152,
+          "off_cpu_ms": 394.1377599280497,
+          "interrupt_ms": 24.39633820567003
+        },
+        "4352": {
+          "elapsed_ms": 533.1477249819912,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 533.1477249819912,
+          "interrupt_ms": 0.0
+        },
+        "4608": {
+          "elapsed_ms": 533.1477249819912,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 533.1477249819912,
+          "interrupt_ms": 0.0
+        },
+        "4864": {
+          "elapsed_ms": 533.1477249819912,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 533.1477249819912,
+          "interrupt_ms": 0.0
+        },
+        "5120": {
+          "elapsed_ms": 533.1477249819912,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 533.1477249819912,
+          "interrupt_ms": 0.0
+        },
+        "5376": {
+          "elapsed_ms": 533.1477249819912,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 533.1477249819912,
+          "interrupt_ms": 0.0
+        }
+      },
+      "global_interrupt_ms": 93.95139974541112,
+      "inclusive": {
+        "3584:FSOPERATION_PUMP": {
+          "calls": 195,
+          "elapsed_ms": 1.7131180934310173,
+          "charged_cpu_ms": 1.4526085491676537
+        },
+        "3584:FSABORT_CHECKPOINT": {
+          "calls": 239,
+          "elapsed_ms": 10.9452774891842,
+          "charged_cpu_ms": 9.0758959597056
+        },
+        "3584:FSPACKET_IDENTITY": {
+          "calls": 33,
+          "elapsed_ms": 5.014667758701624,
+          "charged_cpu_ms": 4.149051494335186
+        },
+        "3584:FSHANDLER_TAKESTEP": {
+          "calls": 41,
+          "elapsed_ms": 65.33038051591605,
+          "charged_cpu_ms": 49.45367708939791
+        },
+        "3584:SDFSFILE_DRIVE": {
+          "calls": 44,
+          "elapsed_ms": 24.835948061614463,
+          "charged_cpu_ms": 20.661804197756062
+        },
+        "3584:FSIO_BEGIN": {
+          "calls": 44,
+          "elapsed_ms": 16.197758884883818,
+          "charged_cpu_ms": 13.453809599663929
+        },
+        "3584:SDFSDATE_DECODE": {
+          "calls": 40,
+          "elapsed_ms": 30.96955224217238,
+          "charged_cpu_ms": 25.32701137191825
+        },
+        "4096:DOSCLIENT_CHECKREPLY": {
+          "calls": 33,
+          "elapsed_ms": 1.6482726441013902,
+          "charged_cpu_ms": 1.3412435383624266
+        },
+        "4096:DOSCLIENT_CALL": {
+          "calls": 33,
+          "elapsed_ms": 480.2945956956718,
+          "charged_cpu_ms": 75.01420256308685
+        },
+        "3584:FSPACKET_REPLY": {
+          "calls": 32,
+          "elapsed_ms": 176.8883770170811,
+          "charged_cpu_ms": 56.33420216837544
+        },
+        "3584:FSREGISTRY_FINDOBJECT": {
+          "calls": 32,
+          "elapsed_ms": 2.8043542309541154,
+          "charged_cpu_ms": 2.4572196244884603
+        },
+        "3584:FSNAMES_MAPPED": {
+          "calls": 31,
+          "elapsed_ms": 4.636661079620345,
+          "charged_cpu_ms": 3.8091767588270873
+        },
+        "3584:FSINFO_CLEAR": {
+          "calls": 30,
+          "elapsed_ms": 8.76104310953665,
+          "charged_cpu_ms": 7.140400265584405
+        },
+        "3584:FSINFO_NAME": {
+          "calls": 30,
+          "elapsed_ms": 4.218760352364533,
+          "charged_cpu_ms": 3.506799609235684
+        },
+        "3584:FSINFO_FILL": {
+          "calls": 30,
+          "elapsed_ms": 2.6074919048914613,
+          "charged_cpu_ms": 2.0014688903956848
+        },
+        "3584:FSINFO_SAVE": {
+          "calls": 31,
+          "elapsed_ms": 1.7974876617435813,
+          "charged_cpu_ms": 1.4959563223608252
+        },
+        "4096:DOSCALLS_INFORMATION": {
+          "calls": 31,
+          "elapsed_ms": 434.6123158424481,
+          "charged_cpu_ms": 99.34597725616348
+        },
+        "3584:FSBACKEND_BUFFEREDENTRY": {
+          "calls": 62,
+          "elapsed_ms": 74.05082473543759,
+          "charged_cpu_ms": 60.91341863799185
+        },
+        "4096:app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 89.24143511437468,
+          "charged_cpu_ms": 8.879667991299431
+        },
+        "4096:app.FileScanNext": {
+          "calls": 30,
+          "elapsed_ms": 443.12377445624975,
+          "charged_cpu_ms": 105.08289644886582
+        },
+        "4096:app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.819040315543594,
+          "charged_cpu_ms": 2.95110230215442
+        }
+      },
+      "gateway_entries": {
+        "4096:dos_current": 34,
+        "4096:tasks_forbid": 100,
+        "4096:tasks_permit": 100,
+        "4096:ports_put_msg": 33,
+        "3584:tasks_forbid": 210,
+        "3584:ports_get_msg": 172,
+        "3584:tasks_permit": 210,
+        "4096:ports_get_msg": 66,
+        "3584:ports_reply_msg": 33
+      },
+      "serial_events": {},
+      "physical_commands": 0,
+      "queue_probe": {
+        "calls": 172,
+        "empty": 139,
+        "nonempty": 33,
+        "empty_get_through_branch_cpu_ms": 14.535107467235433,
+        "context_through_ensure_calls": 33,
+        "context_through_ensure_cpu_ms": 16.164913255114683
+      },
+      "name": "C refresh 2",
+      "path": "SYS:C",
+      "entries": 29,
+      "dos_calls": 33,
+      "public_calls": {
+        "ExNext": {
+          "calls": 30,
+          "elapsed_ms": 427.48333401468045,
+          "charged_cpu_ms": 98.09551734686254,
+          "median_ms": 13.37088495712447,
+          "minimum_ms": 12.145059270150371,
+          "maximum_ms": 20.904551727637834
+        },
+        "Examine": {
+          "calls": 1,
+          "elapsed_ms": 9.485550037427101,
+          "charged_cpu_ms": 3.0840354732801503,
+          "median_ms": 9.485550037427101,
+          "minimum_ms": 9.485550037427101,
+          "maximum_ms": 9.485550037427101
+        },
+        "Lock": {
+          "calls": 1,
+          "elapsed_ms": 79.6969602990785,
+          "charged_cpu_ms": 5.736707740150187,
+          "median_ms": 79.6969602990785,
+          "minimum_ms": 79.6969602990785,
+          "maximum_ms": 79.6969602990785
+        },
+        "UnLock": {
+          "calls": 1,
+          "elapsed_ms": 10.809454466512259,
+          "charged_cpu_ms": 2.9415164531230835,
+          "median_ms": 10.809454466512259,
+          "minimum_ms": 10.809454466512259,
+          "maximum_ms": 10.809454466512259
+        },
+        "app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 89.24143511437468,
+          "charged_cpu_ms": 8.879667991299431,
+          "median_ms": 89.24143511437468,
+          "minimum_ms": 89.24143511437468,
+          "maximum_ms": 89.24143511437468
+        },
+        "app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.819040315543594,
+          "charged_cpu_ms": 2.95110230215442,
+          "median_ms": 10.819040315543594,
+          "minimum_ms": 10.819040315543594,
+          "maximum_ms": 10.819040315543594
+        }
+      }
+    },
+    {
+      "start": 4403965605.5,
+      "end": 4404915818.375,
+      "elapsed_ms": 535.7998333753889,
+      "task_charges": {
+        "3328": {
+          "elapsed_ms": 535.799833375389,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 535.799833375389,
+          "interrupt_ms": 0.0
+        },
+        "3584": {
+          "elapsed_ms": 535.799833375389,
+          "charged_cpu_ms": 328.6684550853634,
+          "off_cpu_ms": 136.55260446108497,
+          "interrupt_ms": 70.57877382894053
+        },
+        "3840": {
+          "elapsed_ms": 535.799833375389,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 535.799833375389,
+          "interrupt_ms": 0.0
+        },
+        "4096": {
+          "elapsed_ms": 535.799833375389,
+          "charged_cpu_ms": 112.61117117929908,
+          "off_cpu_ms": 399.24722891430395,
+          "interrupt_ms": 23.9414332817859
+        },
+        "4352": {
+          "elapsed_ms": 535.799833375389,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 535.799833375389,
+          "interrupt_ms": 0.0
+        },
+        "4608": {
+          "elapsed_ms": 535.799833375389,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 535.799833375389,
+          "interrupt_ms": 0.0
+        },
+        "4864": {
+          "elapsed_ms": 535.799833375389,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 535.799833375389,
+          "interrupt_ms": 0.0
+        },
+        "5120": {
+          "elapsed_ms": 535.799833375389,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 535.799833375389,
+          "interrupt_ms": 0.0
+        },
+        "5376": {
+          "elapsed_ms": 535.799833375389,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 535.799833375389,
+          "interrupt_ms": 0.0
+        }
+      },
+      "global_interrupt_ms": 94.52020711072642,
+      "inclusive": {
+        "3584:FSOPERATION_PUMP": {
+          "calls": 197,
+          "elapsed_ms": 1.678369390692425,
+          "charged_cpu_ms": 1.4600798726773716
+        },
+        "3584:FSABORT_CHECKPOINT": {
+          "calls": 241,
+          "elapsed_ms": 10.949717992779599,
+          "charged_cpu_ms": 9.088160207730983
+        },
+        "3584:FSPACKET_IDENTITY": {
+          "calls": 33,
+          "elapsed_ms": 4.868976950262131,
+          "charged_cpu_ms": 4.133967878947643
+        },
+        "3584:FSHANDLER_TAKESTEP": {
+          "calls": 43,
+          "elapsed_ms": 61.443600670445534,
+          "charged_cpu_ms": 49.254770721997694
+        },
+        "3584:SDFSFILE_DRIVE": {
+          "calls": 44,
+          "elapsed_ms": 25.097162447718357,
+          "charged_cpu_ms": 20.71664089295003
+        },
+        "3584:FSIO_BEGIN": {
+          "calls": 44,
+          "elapsed_ms": 16.39462121094647,
+          "charged_cpu_ms": 13.479536326843615
+        },
+        "3584:SDFSDATE_DECODE": {
+          "calls": 40,
+          "elapsed_ms": 30.466788557315628,
+          "charged_cpu_ms": 25.21275650956682
+        },
+        "4096:DOSCLIENT_CHECKREPLY": {
+          "calls": 33,
+          "elapsed_ms": 1.594352243300126,
+          "charged_cpu_ms": 1.3353228669018957
+        },
+        "4096:DOSCLIENT_CALL": {
+          "calls": 33,
+          "elapsed_ms": 476.79160223237517,
+          "charged_cpu_ms": 72.32614723582174
+        },
+        "3584:FSPACKET_REPLY": {
+          "calls": 32,
+          "elapsed_ms": 169.73874332338565,
+          "charged_cpu_ms": 56.07432698176856
+        },
+        "3584:FSREGISTRY_FINDOBJECT": {
+          "calls": 32,
+          "elapsed_ms": 3.000511715176231,
+          "charged_cpu_ms": 2.47885826899302
+        },
+        "3584:FSNAMES_MAPPED": {
+          "calls": 31,
+          "elapsed_ms": 4.831267911793273,
+          "charged_cpu_ms": 3.8326479921170495
+        },
+        "3584:FSINFO_CLEAR": {
+          "calls": 30,
+          "elapsed_ms": 8.619369899588229,
+          "charged_cpu_ms": 7.126726333877939
+        },
+        "3584:FSINFO_NAME": {
+          "calls": 30,
+          "elapsed_ms": 4.556943467455338,
+          "charged_cpu_ms": 3.5446496160726495
+        },
+        "3584:FSINFO_FILL": {
+          "calls": 30,
+          "elapsed_ms": 2.2665599066225526,
+          "charged_cpu_ms": 1.9603766110922378
+        },
+        "3584:FSINFO_SAVE": {
+          "calls": 31,
+          "elapsed_ms": 1.8954606775785583,
+          "charged_cpu_ms": 1.5061060448645929
+        },
+        "4096:DOSCALLS_INFORMATION": {
+          "calls": 31,
+          "elapsed_ms": 431.8410891779994,
+          "charged_cpu_ms": 97.47208473890545
+        },
+        "3584:FSBACKEND_BUFFEREDENTRY": {
+          "calls": 62,
+          "elapsed_ms": 73.81519610814532,
+          "charged_cpu_ms": 60.85449386012271
+        },
+        "4096:app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 88.405563175679,
+          "charged_cpu_ms": 8.171795330845711
+        },
+        "4096:app.FileScanNext": {
+          "calls": 30,
+          "elapsed_ms": 446.6630672743343,
+          "charged_cpu_ms": 103.79641912151332
+        },
+        "4096:app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 11.194861984919203,
+          "charged_cpu_ms": 2.8982391641139644
+        }
+      },
+      "gateway_entries": {
+        "4096:dos_current": 34,
+        "4096:tasks_forbid": 100,
+        "4096:tasks_permit": 100,
+        "4096:ports_put_msg": 33,
+        "3584:tasks_forbid": 220,
+        "3584:ports_get_msg": 182,
+        "3584:tasks_permit": 220,
+        "4096:ports_get_msg": 62,
+        "3584:ports_reply_msg": 33
+      },
+      "serial_events": {},
+      "physical_commands": 0,
+      "queue_probe": {
+        "calls": 182,
+        "empty": 149,
+        "nonempty": 33,
+        "empty_get_through_branch_cpu_ms": 15.439490032831547,
+        "context_through_ensure_calls": 33,
+        "context_through_ensure_cpu_ms": 15.588564082105613
+      },
+      "name": "C refresh 3",
+      "path": "SYS:C",
+      "entries": 29,
+      "dos_calls": 33,
+      "public_calls": {
+        "ExNext": {
+          "calls": 30,
+          "elapsed_ms": 424.71401042320116,
+          "charged_cpu_ms": 96.21972175663502,
+          "median_ms": 13.385651393683771,
+          "minimum_ms": 10.916590426274249,
+          "maximum_ms": 20.52196357659305
+        },
+        "Examine": {
+          "calls": 1,
+          "elapsed_ms": 9.530448462669462,
+          "charged_cpu_ms": 3.090872439133383,
+          "median_ms": 9.530448462669462,
+          "minimum_ms": 9.530448462669462,
+          "maximum_ms": 9.530448462669462
+        },
+        "Lock": {
+          "calls": 1,
+          "elapsed_ms": 78.81604896677234,
+          "charged_cpu_ms": 5.021857145475127,
+          "median_ms": 78.81604896677234,
+          "minimum_ms": 78.81604896677234,
+          "maximum_ms": 78.81604896677234
+        },
+        "UnLock": {
+          "calls": 1,
+          "elapsed_ms": 11.185487588440031,
+          "charged_cpu_ms": 2.8888647676347903,
+          "median_ms": 11.185487588440031,
+          "minimum_ms": 11.185487588440031,
+          "maximum_ms": 11.185487588440031
+        },
+        "app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 88.405563175679,
+          "charged_cpu_ms": 8.171795330845711,
+          "median_ms": 88.405563175679,
+          "minimum_ms": 88.405563175679,
+          "maximum_ms": 88.405563175679
+        },
+        "app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 11.194861984919203,
+          "charged_cpu_ms": 2.8982391641139644,
+          "median_ms": 11.194861984919203,
+          "minimum_ms": 11.194861984919203,
+          "maximum_ms": 11.194861984919203
+        }
+      }
+    },
+    {
+      "start": 4441480067.75,
+      "end": 4441701144.75,
+      "elapsed_ms": 124.65945566474339,
+      "task_charges": {
+        "3328": {
+          "elapsed_ms": 124.65945566474339,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 124.65945566474339,
+          "interrupt_ms": 0.0
+        },
+        "3584": {
+          "elapsed_ms": 124.65945566474339,
+          "charged_cpu_ms": 40.97985702988107,
+          "off_cpu_ms": 75.12063368100833,
+          "interrupt_ms": 8.558964953854005
+        },
+        "3840": {
+          "elapsed_ms": 124.65945566474339,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 124.65945566474339,
+          "interrupt_ms": 0.0
+        },
+        "4096": {
+          "elapsed_ms": 124.65945566474339,
+          "charged_cpu_ms": 21.99050155135689,
+          "off_cpu_ms": 98.11038950969791,
+          "interrupt_ms": 4.558564603688579
+        },
+        "4352": {
+          "elapsed_ms": 124.65945566474339,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 124.65945566474339,
+          "interrupt_ms": 0.0
+        },
+        "4608": {
+          "elapsed_ms": 124.65945566474339,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 124.65945566474339,
+          "interrupt_ms": 0.0
+        },
+        "4864": {
+          "elapsed_ms": 124.65945566474339,
+          "charged_cpu_ms": 39.781907837700295,
+          "off_cpu_ms": 76.08788813878053,
+          "interrupt_ms": 8.789659688262551
+        },
+        "5120": {
+          "elapsed_ms": 124.65945566474339,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 124.65945566474339,
+          "interrupt_ms": 0.0
+        },
+        "5376": {
+          "elapsed_ms": 124.65945566474339,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 124.65945566474339,
+          "interrupt_ms": 0.0
+        }
+      },
+      "global_interrupt_ms": 21.907189245805135,
+      "inclusive": {
+        "3584:FSOPERATION_PUMP": {
+          "calls": 25,
+          "elapsed_ms": 0.23041279767233028,
+          "charged_cpu_ms": 0.18741744539942679
+        },
+        "3584:FSABORT_CHECKPOINT": {
+          "calls": 25,
+          "elapsed_ms": 0.9314484922728188,
+          "charged_cpu_ms": 0.7143572053866831
+        },
+        "3584:FSPACKET_IDENTITY": {
+          "calls": 6,
+          "elapsed_ms": 0.8827439210915462,
+          "charged_cpu_ms": 0.7505860759904084
+        },
+        "3584:FSHANDLER_TAKESTEP": {
+          "calls": 11,
+          "elapsed_ms": 13.998370405664673,
+          "charged_cpu_ms": 11.568005255300761
+        },
+        "3584:FSPACKET_REPLY": {
+          "calls": 5,
+          "elapsed_ms": 6.823221437341675,
+          "charged_cpu_ms": 5.65410027643897
+        },
+        "4096:DOSCLIENT_CHECKREPLY": {
+          "calls": 6,
+          "elapsed_ms": 0.28658869236332063,
+          "charged_cpu_ms": 0.24218365640933834
+        },
+        "4096:DOSCLIENT_CALL": {
+          "calls": 6,
+          "elapsed_ms": 114.03093409869759,
+          "charged_cpu_ms": 13.146005167900377
+        },
+        "3584:FSREGISTRY_FINDOBJECT": {
+          "calls": 5,
+          "elapsed_ms": 0.5242613609932067,
+          "charged_cpu_ms": 0.3940770730455793
+        },
+        "3584:FSNAMES_MAPPED": {
+          "calls": 4,
+          "elapsed_ms": 0.5753623944323134,
+          "charged_cpu_ms": 0.4884553954938051
+        },
+        "3584:FSINFO_CLEAR": {
+          "calls": 3,
+          "elapsed_ms": 0.8384798535056719,
+          "charged_cpu_ms": 0.7082250813739905
+        },
+        "3584:FSINFO_NAME": {
+          "calls": 3,
+          "elapsed_ms": 0.5585871586274757,
+          "charged_cpu_ms": 0.4718211280570753
+        },
+        "3584:FSINFO_FILL": {
+          "calls": 3,
+          "elapsed_ms": 0.25529371464337114,
+          "charged_cpu_ms": 0.2122983623704677
+        },
+        "3584:FSINFO_SAVE": {
+          "calls": 4,
+          "elapsed_ms": 0.1880518030559123,
+          "charged_cpu_ms": 0.1880518030559123
+        },
+        "4096:DOSCALLS_INFORMATION": {
+          "calls": 4,
+          "elapsed_ms": 76.24704142637435,
+          "charged_cpu_ms": 11.635670071992546
+        },
+        "3584:FSBACKEND_BUFFEREDENTRY": {
+          "calls": 3,
+          "elapsed_ms": 0.5600673264926084,
+          "charged_cpu_ms": 0.47231451734545293
+        },
+        "4096:app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 46.63586037928949,
+          "charged_cpu_ms": 7.89288941454427
+        },
+        "4096:app.FileScanNext": {
+          "calls": 3,
+          "elapsed_ms": 77.91554303129921,
+          "charged_cpu_ms": 14.032837171667051
+        },
+        "4096:app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 17.70753010731922,
+          "charged_cpu_ms": 4.3001695849468335
+        }
+      },
+      "gateway_entries": {
+        "4096:dos_current": 7,
+        "4096:tasks_forbid": 19,
+        "4096:tasks_permit": 19,
+        "4096:ports_put_msg": 6,
+        "4864:tasks_forbid": 10,
+        "4864:tasks_permit": 10,
+        "3584:tasks_forbid": 60,
+        "3584:ports_get_msg": 49,
+        "3584:tasks_permit": 60,
+        "3584:ports_reply_msg": 6,
+        "4096:ports_get_msg": 8
+      },
+      "serial_events": {},
+      "physical_commands": 0,
+      "queue_probe": {
+        "calls": 49,
+        "empty": 43,
+        "nonempty": 6,
+        "empty_get_through_branch_cpu_ms": 4.312997706444651,
+        "context_through_ensure_calls": 6,
+        "context_through_ensure_cpu_ms": 4.107677278295523
+      },
+      "name": "RAM first visit",
+      "path": "RAM:",
+      "entries": 2,
+      "dos_calls": 6,
+      "public_calls": {
+        "ExNext": {
+          "calls": 3,
+          "elapsed_ms": 59.2486526948218,
+          "charged_cpu_ms": 8.902504866932908,
+          "median_ms": 19.88337686906435,
+          "minimum_ms": 18.806449020904196,
+          "maximum_ms": 20.558826804853258
+        },
+        "Examine": {
+          "calls": 1,
+          "elapsed_ms": 17.276448837645322,
+          "charged_cpu_ms": 2.966820275198448,
+          "median_ms": 17.276448837645322,
+          "minimum_ms": 17.276448837645322,
+          "maximum_ms": 17.276448837645322
+        },
+        "Lock": {
+          "calls": 1,
+          "elapsed_ms": 29.300486763775076,
+          "charged_cpu_ms": 4.867144361476728,
+          "median_ms": 29.300486763775076,
+          "minimum_ms": 29.300486763775076,
+          "maximum_ms": 29.300486763775076
+        },
+        "UnLock": {
+          "calls": 1,
+          "elapsed_ms": 17.698155710840044,
+          "charged_cpu_ms": 4.29079518846766,
+          "median_ms": 17.698155710840044,
+          "minimum_ms": 17.698155710840044,
+          "maximum_ms": 17.698155710840044
+        },
+        "app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 46.63586037928949,
+          "charged_cpu_ms": 7.89288941454427,
+          "median_ms": 46.63586037928949,
+          "minimum_ms": 46.63586037928949,
+          "maximum_ms": 46.63586037928949
+        },
+        "app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 17.70753010731922,
+          "charged_cpu_ms": 4.3001695849468335,
+          "median_ms": 17.70753010731922,
+          "minimum_ms": 17.70753010731922,
+          "maximum_ms": 17.70753010731922
+        }
+      }
+    },
+    {
+      "start": 4447214734.75,
+      "end": 4447334514.375,
+      "elapsed_ms": 67.54055307529543,
+      "task_charges": {
+        "3328": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "3584": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 33.76382723480678,
+          "off_cpu_ms": 26.4656128811256,
+          "interrupt_ms": 7.311112959363049
+        },
+        "3840": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "4096": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 21.912475559609177,
+          "off_cpu_ms": 41.074940194169834,
+          "interrupt_ms": 4.5531373215164255
+        },
+        "4352": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "4608": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "4864": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "5120": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "5376": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        }
+      },
+      "global_interrupt_ms": 11.864250280879473,
+      "inclusive": {
+        "3584:FSOPERATION_PUMP": {
+          "calls": 20,
+          "elapsed_ms": 0.14484499823084696,
+          "charged_cpu_ms": 0.14484499823084696
+        },
+        "3584:FSABORT_CHECKPOINT": {
+          "calls": 20,
+          "elapsed_ms": 0.8420040627083688,
+          "charged_cpu_ms": 0.6682605490154064
+        },
+        "3584:FSPACKET_IDENTITY": {
+          "calls": 6,
+          "elapsed_ms": 0.9789548323251744,
+          "charged_cpu_ms": 0.7626388714636323
+        },
+        "3584:FSHANDLER_TAKESTEP": {
+          "calls": 6,
+          "elapsed_ms": 8.559176406406168,
+          "charged_cpu_ms": 7.038268682890247
+        },
+        "4096:DOSCLIENT_CHECKREPLY": {
+          "calls": 6,
+          "elapsed_ms": 0.28616578725899694,
+          "charged_cpu_ms": 0.24161978293690678
+        },
+        "4096:DOSCLIENT_CALL": {
+          "calls": 6,
+          "elapsed_ms": 56.86734453655944,
+          "charged_cpu_ms": 13.061988020508082
+        },
+        "3584:FSPACKET_REPLY": {
+          "calls": 5,
+          "elapsed_ms": 31.888313581315494,
+          "charged_cpu_ms": 9.49196409817601
+        },
+        "3584:FSREGISTRY_FINDOBJECT": {
+          "calls": 5,
+          "elapsed_ms": 0.37652651121614816,
+          "charged_cpu_ms": 0.37652651121614816
+        },
+        "3584:FSNAMES_MAPPED": {
+          "calls": 4,
+          "elapsed_ms": 0.5261644339626631,
+          "charged_cpu_ms": 0.48345101842597543
+        },
+        "3584:FSINFO_CLEAR": {
+          "calls": 3,
+          "elapsed_ms": 0.8875368456072142,
+          "charged_cpu_ms": 0.7125246166012809
+        },
+        "3584:FSINFO_NAME": {
+          "calls": 3,
+          "elapsed_ms": 0.6926480766980698,
+          "charged_cpu_ms": 0.5020588430162156
+        },
+        "3584:FSINFO_FILL": {
+          "calls": 3,
+          "elapsed_ms": 0.2553641988274251,
+          "charged_cpu_ms": 0.21236884655452162
+        },
+        "3584:FSINFO_SAVE": {
+          "calls": 4,
+          "elapsed_ms": 0.23612201658069948,
+          "charged_cpu_ms": 0.19319714849184993
+        },
+        "4096:DOSCALLS_INFORMATION": {
+          "calls": 4,
+          "elapsed_ms": 39.94465581868084,
+          "charged_cpu_ms": 12.831222801915478
+        },
+        "3584:FSBACKEND_BUFFEREDENTRY": {
+          "calls": 3,
+          "elapsed_ms": 0.6960313175326589,
+          "charged_cpu_ms": 0.5339881783926504
+        },
+        "4096:app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 25.84070010530337,
+          "charged_cpu_ms": 8.799950379134426
+        },
+        "4096:app.FileScanNext": {
+          "calls": 3,
+          "elapsed_ms": 41.64156254977945,
+          "charged_cpu_ms": 13.054234760262144
+        },
+        "4096:app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.822916945666563,
+          "charged_cpu_ms": 2.95110230215442
+        }
+      },
+      "exclusive": {
+        "4096": {
+          "DOSCLIENT_CALL": 12.037711857836221,
+          "DOSCALLS_INFORMATION": 2.004711162862165,
+          "FSREGISTRY_RELEASE": 0.6901106460721279,
+          "FSREGISTRY_RETAIN": 0.6403488121300462,
+          "FSNAMES_PATH": 0.5065698307956679,
+          "DOSCALLS_LOCK": 0.5018473904640538,
+          "DOSCALLS_UNLOCK": 0.4962086557397386,
+          "FSREGISTRY_LOOKUP": 0.4657594882284365,
+          "DOSCLIENT_IOERR": 0.440385181969018,
+          "app.FileScanNext": 0.3566499713129371,
+          "DOSCALLS_CONFIGURED": 0.3395223145878296,
+          "FSOPERATION_PREPARE": 0.320280132341104,
+          "FSOPERATION_CANCELLABLE": 0.289689996461694,
+          "DOSCLIENT_CHECKREPLY": 0.24161978293690678,
+          "DOSCALLS_ACQUIRE": 0.23767266862988612,
+          "DOSCALLS_FILE": 0.22322341089882838,
+          "FS83_FOLD": 0.17881837494484618,
+          "FSREGISTRY_FROMHEADER": 0.17740869126376735,
+          "ExNext": 0.17705627034349763,
+          "DOSCLIENT_ENSURESLOT": 0.1735320611408006,
+          "DOSCALLS_EXPAND": 0.15062470132327008,
+          "FSNAMES_SYSTEM": 0.13448382317491778,
+          "DOSOBJECTS_FIND": 0.12778782568979347,
+          "DOSCALLS_ARGUMENTS": 0.11982311289169824,
+          "FSOPERATION_COLLECT": 0.10777031741847447,
+          "DOSCALLS_OBJECT": 0.09501268010471131,
+          "DOSCALLS_ASSIGNINDEX": 0.08789377751526335,
+          "app.FileScanBegin": 0.07034321568583225,
+          "DOSCLIENT_SERVICEWAIT": 0.06491593351367886,
+          "Lock": 0.05906574623720183,
+          "unattributed": 0.058290420212608496,
+          "Examine": 0.056810252347475755,
+          "FS83_LEGAL": 0.05236974875207751,
+          "FSNAMES_STREAM": 0.047717792604517466,
+          "FSREGISTRY_ENABLED": 0.04687198239587019,
+          "UnLock": 0.043418257377227126,
+          "IoErr": 0.0393301747020986,
+          "DOSCALLS_DESTINATION": 0.02629060065211967,
+          "DOSCALLS_NAMEARGUMENTS": 0.01494264701943531,
+          "app.FileScanEnd": 0.009585849031335858
+        },
+        "3584": {
+          "FSPACKET_REPLY": 8.761677467193136,
+          "unattributed": 6.808278790322239,
+          "FSHANDLER_TAKESTEP": 5.713941348700764,
+          "FSHANDLER_OPENRESULTSTEP": 2.6102407880695653,
+          "FSDIRECTORY_SELECT": 0.9143913197317652,
+          "FSOPERATION_AUTHORITY": 0.8910610548099112,
+          "FSINFO_CLEAR": 0.7125246166012809,
+          "FSPACKET_IDENTITY": 0.6909564562807751,
+          "FSCORE_COPYENTRY": 0.5963666812803875,
+          "FSINFO_NAME": 0.5020588430162156,
+          "FSABORT_CHECKPOINT": 0.4970544659483858,
+          "BLOCKIO_MAPPED": 0.41479942315743773,
+          "FSHANDLER_DISPATCHSTEP": 0.3918920633399071,
+          "RAMFS_BUFFEREDENTRY": 0.3211964267338052,
+          "FSDIRECTORY_PUBLISHSTEP": 0.2767209065957689,
+          "FSOPERATION_REPLYREADY": 0.213073688395061,
+          "FSINFO_FILL": 0.21236884655452162,
+          "FSPACKET_PUBLISHOPENSTEP": 0.2077873745910155,
+          "DOSWIRE_ISPOINTER": 0.20292396589129372,
+          "FSINFO_SAVE": 0.1843866254851074,
+          "FSREGISTRY_FROMHEADER": 0.17148801980323636,
+          "FSOPERATION_CANCELED": 0.17120608306702056,
+          "FSREGISTRY_STAMP": 0.15309164776515796,
+          "FSOPERATION_PUMP": 0.14484499823084696,
+          "RAMFS_FIND": 0.1443516089424694,
+          "FSREGISTRY_RELEASE": 0.14019304208328692,
+          "DOSOBJECTS_FIND": 0.12179667004520855,
+          "FSOPERATION_CLAIM": 0.11615793532089333,
+          "FSDIRECTORY_SELECTENTRY": 0.11460728327170668,
+          "FSDIRECTORY_ENTRYSTEP": 0.10988484294009268,
+          "FSDIRECTORY_ENTRYRESULTSTEP": 0.10248400361442894,
+          "FSRELATIVE_ROOT": 0.09994657298848711,
+          "FSREGISTRY_FINDOBJECT": 0.08324182136770329,
+          "RAMFS_BEGINENTRY": 0.08119778003013903,
+          "FSOPERATION_UNLINK": 0.08035196982149176,
+          "RAMFS_STATE": 0.0790127703244669,
+          "FSNAMES_MAPPED": 0.06865159526853769,
+          "RAMFS_MEASURE": 0.06858111108448375,
+          "FSDIRECTORY_INITLOCKSTATE": 0.05399088498531814,
+          "FSBACKEND_BEGINENTRY": 0.052369748752077526,
+          "FSRELATIVE_BEGIN": 0.044898425242359874,
+          "DOSOBJECTS_UNLINK": 0.04419358340182047,
+          "FSBACKEND_METADATA": 0.04370019411344288,
+          "FSHANDLER_LOCK": 0.041374216039662855,
+          "RAMFS_STARTRESOLVE": 0.03756807010075009,
+          "FSBACKEND_BUFFEREDENTRY": 0.03728613336453433,
+          "FS83_STARTRESOLVE": 0.03573548131534765,
+          "FSDIRECTORY_END": 0.033973376713999144,
+          "FSDIRECTORY_SIZERESULT": 0.028828031278061515,
+          "DOSOBJECTS_LINK": 0.027770768517252412,
+          "FSBACKEND_ENUMLIMIT": 0.023612201658069945,
+          "FSPACKET_ERROR": 0.022977844001584483,
+          "FSHANDLER_RESOLVEREADYSTEP": 0.020722350111858398,
+          "FSINFO_ENUMERATIONSTATE": 0.01543603630781289,
+          "FSBACKEND_STARTRESOLVE": 0.014378773547003787,
+          "FSHANDLER_BEGINRESOLVE": 0.01022020668782132
+        }
+      },
+      "gateway_entries": {
+        "4096:dos_current": 7,
+        "4096:tasks_forbid": 19,
+        "4096:tasks_permit": 19,
+        "4096:ports_put_msg": 6,
+        "3584:tasks_forbid": 35,
+        "3584:ports_get_msg": 24,
+        "3584:tasks_permit": 35,
+        "3584:ports_reply_msg": 6,
+        "4096:ports_get_msg": 12
+      },
+      "serial_events": {},
+      "physical_commands": 0,
+      "queue_probe": {
+        "calls": 24,
+        "empty": 18,
+        "nonempty": 6,
+        "empty_get_through_branch_cpu_ms": 1.8227209996348919,
+        "context_through_ensure_calls": 6,
+        "context_through_ensure_cpu_ms": 4.106972436454984
+      },
+      "name": "RAM refresh 1",
+      "path": "RAM:",
+      "entries": 2,
+      "dos_calls": 6,
+      "public_calls": {
+        "ExNext": {
+          "calls": 3,
+          "elapsed_ms": 29.80994644611696,
+          "charged_cpu_ms": 9.266767130123672,
+          "median_ms": 10.25347522269478,
+          "minimum_ms": 9.218485464046724,
+          "maximum_ms": 10.337985759375455
+        },
+        "Examine": {
+          "calls": 1,
+          "elapsed_ms": 10.412558026104522,
+          "charged_cpu_ms": 3.79832219448278,
+          "median_ms": 10.412558026104522,
+          "minimum_ms": 10.412558026104522,
+          "maximum_ms": 10.412558026104522
+        },
+        "Lock": {
+          "calls": 1,
+          "elapsed_ms": 15.270680412022347,
+          "charged_cpu_ms": 4.931284968965814,
+          "median_ms": 15.270680412022347,
+          "minimum_ms": 15.270680412022347,
+          "maximum_ms": 15.270680412022347
+        },
+        "UnLock": {
+          "calls": 1,
+          "elapsed_ms": 10.813331096635226,
+          "charged_cpu_ms": 2.9415164531230835,
+          "median_ms": 10.813331096635226,
+          "minimum_ms": 10.813331096635226,
+          "maximum_ms": 10.813331096635226
+        },
+        "app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 25.84070010530337,
+          "charged_cpu_ms": 8.799950379134426,
+          "median_ms": 25.84070010530337,
+          "minimum_ms": 25.84070010530337,
+          "maximum_ms": 25.84070010530337
+        },
+        "app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.822916945666563,
+          "charged_cpu_ms": 2.95110230215442,
+          "median_ms": 10.822916945666563,
+          "minimum_ms": 10.822916945666563,
+          "maximum_ms": 10.822916945666563
+        }
+      }
+    },
+    {
+      "start": 4453190153.625,
+      "end": 4453309938.375,
+      "elapsed_ms": 67.54344292684165,
+      "task_charges": {
+        "3328": {
+          "elapsed_ms": 67.54344292684164,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54344292684164,
+          "interrupt_ms": 0.0
+        },
+        "3584": {
+          "elapsed_ms": 67.54344292684164,
+          "charged_cpu_ms": 33.76276997204597,
+          "off_cpu_ms": 26.467938859199386,
+          "interrupt_ms": 7.312734095596289
+        },
+        "3840": {
+          "elapsed_ms": 67.54344292684164,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54344292684164,
+          "interrupt_ms": 0.0
+        },
+        "4096": {
+          "elapsed_ms": 67.54344292684164,
+          "charged_cpu_ms": 21.912052654504855,
+          "off_cpu_ms": 41.07550406764226,
+          "interrupt_ms": 4.555886204694529
+        },
+        "4352": {
+          "elapsed_ms": 67.54344292684164,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54344292684164,
+          "interrupt_ms": 0.0
+        },
+        "4608": {
+          "elapsed_ms": 67.54344292684164,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54344292684164,
+          "interrupt_ms": 0.0
+        },
+        "4864": {
+          "elapsed_ms": 67.54344292684164,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54344292684164,
+          "interrupt_ms": 0.0
+        },
+        "5120": {
+          "elapsed_ms": 67.54344292684164,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54344292684164,
+          "interrupt_ms": 0.0
+        },
+        "5376": {
+          "elapsed_ms": 67.54344292684164,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54344292684164,
+          "interrupt_ms": 0.0
+        }
+      },
+      "global_interrupt_ms": 11.868620300290818,
+      "inclusive": {
+        "3584:FSOPERATION_PUMP": {
+          "calls": 20,
+          "elapsed_ms": 0.19397247451644326,
+          "charged_cpu_ms": 0.15055421713921613
+        },
+        "3584:FSABORT_CHECKPOINT": {
+          "calls": 20,
+          "elapsed_ms": 0.7936519124473659,
+          "charged_cpu_ms": 0.662833266843253
+        },
+        "3584:FSPACKET_IDENTITY": {
+          "calls": 6,
+          "elapsed_ms": 0.9793072532454441,
+          "charged_cpu_ms": 0.7627798398317402
+        },
+        "3584:FSHANDLER_TAKESTEP": {
+          "calls": 6,
+          "elapsed_ms": 8.559105922222113,
+          "charged_cpu_ms": 7.037775293601869
+        },
+        "4096:DOSCLIENT_CHECKREPLY": {
+          "calls": 6,
+          "elapsed_ms": 0.335575200280809,
+          "charged_cpu_ms": 0.24718803347716806
+        },
+        "4096:DOSCLIENT_CALL": {
+          "calls": 6,
+          "elapsed_ms": 56.86790841003187,
+          "charged_cpu_ms": 13.061776567955917
+        },
+        "3584:FSPACKET_REPLY": {
+          "calls": 5,
+          "elapsed_ms": 31.8912034328617,
+          "charged_cpu_ms": 9.491188772151416
+        },
+        "3584:FSREGISTRY_FINDOBJECT": {
+          "calls": 5,
+          "elapsed_ms": 0.37652651121614816,
+          "charged_cpu_ms": 0.37652651121614816
+        },
+        "3584:FSNAMES_MAPPED": {
+          "calls": 4,
+          "elapsed_ms": 0.5764901413771764,
+          "charged_cpu_ms": 0.4891602373343446
+        },
+        "3584:FSINFO_CLEAR": {
+          "calls": 3,
+          "elapsed_ms": 0.8876073297912681,
+          "charged_cpu_ms": 0.7125951007853348
+        },
+        "3584:FSINFO_NAME": {
+          "calls": 3,
+          "elapsed_ms": 0.6928595292502315,
+          "charged_cpu_ms": 0.5020588430162156
+        },
+        "3584:FSINFO_FILL": {
+          "calls": 3,
+          "elapsed_ms": 0.25529371464337114,
+          "charged_cpu_ms": 0.21236884655452162
+        },
+        "3584:FSINFO_SAVE": {
+          "calls": 4,
+          "elapsed_ms": 0.2851790086822418,
+          "charged_cpu_ms": 0.19918830413643485
+        },
+        "4096:DOSCALLS_INFORMATION": {
+          "calls": 4,
+          "elapsed_ms": 39.95057649014138,
+          "charged_cpu_ms": 12.830940865179262
+        },
+        "3584:FSBACKEND_BUFFEREDENTRY": {
+          "calls": 3,
+          "elapsed_ms": 0.6963132542688746,
+          "charged_cpu_ms": 0.5339881783926504
+        },
+        "4096:app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 25.841334462959853,
+          "charged_cpu_ms": 8.799668442398211
+        },
+        "4096:app.FileScanNext": {
+          "calls": 3,
+          "elapsed_ms": 41.64374755948512,
+          "charged_cpu_ms": 13.054023307709983
+        },
+        "4096:app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.822916945666563,
+          "charged_cpu_ms": 2.95110230215442
+        }
+      },
+      "gateway_entries": {
+        "4096:dos_current": 7,
+        "4096:tasks_forbid": 19,
+        "4096:tasks_permit": 19,
+        "4096:ports_put_msg": 6,
+        "3584:tasks_forbid": 35,
+        "3584:ports_get_msg": 24,
+        "3584:tasks_permit": 35,
+        "3584:ports_reply_msg": 6,
+        "4096:ports_get_msg": 12
+      },
+      "serial_events": {},
+      "physical_commands": 0,
+      "queue_probe": {
+        "calls": 24,
+        "empty": 18,
+        "nonempty": 6,
+        "empty_get_through_branch_cpu_ms": 1.8225800312667841,
+        "context_through_ensure_calls": 6,
+        "context_through_ensure_cpu_ms": 4.107183889007146
+      },
+      "name": "RAM refresh 2",
+      "path": "RAM:",
+      "entries": 2,
+      "dos_calls": 6,
+      "public_calls": {
+        "ExNext": {
+          "calls": 3,
+          "elapsed_ms": 29.812272424190738,
+          "charged_cpu_ms": 9.266626161755564,
+          "median_ms": 10.25418006453532,
+          "minimum_ms": 9.219119821703208,
+          "maximum_ms": 10.338972537952209
+        },
+        "Examine": {
+          "calls": 1,
+          "elapsed_ms": 10.416011751123165,
+          "charged_cpu_ms": 3.798040257746564,
+          "median_ms": 10.416011751123165,
+          "minimum_ms": 10.416011751123165,
+          "maximum_ms": 10.416011751123165
+        },
+        "Lock": {
+          "calls": 1,
+          "elapsed_ms": 15.267649592108027,
+          "charged_cpu_ms": 4.931214484781759,
+          "median_ms": 15.267649592108027,
+          "minimum_ms": 15.267649592108027,
+          "maximum_ms": 15.267649592108027
+        },
+        "UnLock": {
+          "calls": 1,
+          "elapsed_ms": 10.813331096635226,
+          "charged_cpu_ms": 2.9415164531230835,
+          "median_ms": 10.813331096635226,
+          "minimum_ms": 10.813331096635226,
+          "maximum_ms": 10.813331096635226
+        },
+        "app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 25.841334462959853,
+          "charged_cpu_ms": 8.799668442398211,
+          "median_ms": 25.841334462959853,
+          "minimum_ms": 25.841334462959853,
+          "maximum_ms": 25.841334462959853
+        },
+        "app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.822916945666563,
+          "charged_cpu_ms": 2.95110230215442,
+          "median_ms": 10.822916945666563,
+          "minimum_ms": 10.822916945666563,
+          "maximum_ms": 10.822916945666563
+        }
+      }
+    },
+    {
+      "start": 4459165582.75,
+      "end": 4459285362.375,
+      "elapsed_ms": 67.54055307529543,
+      "task_charges": {
+        "3328": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "3584": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 33.76382723480678,
+          "off_cpu_ms": 26.4656128811256,
+          "interrupt_ms": 7.311112959363049
+        },
+        "3840": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "4096": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 21.912475559609177,
+          "off_cpu_ms": 41.074940194169834,
+          "interrupt_ms": 4.5531373215164255
+        },
+        "4352": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "4608": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "4864": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "5120": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        },
+        "5376": {
+          "elapsed_ms": 67.54055307529543,
+          "charged_cpu_ms": 0.0,
+          "off_cpu_ms": 67.54055307529543,
+          "interrupt_ms": 0.0
+        }
+      },
+      "global_interrupt_ms": 11.864250280879473,
+      "inclusive": {
+        "3584:FSOPERATION_PUMP": {
+          "calls": 20,
+          "elapsed_ms": 0.14484499823084696,
+          "charged_cpu_ms": 0.14484499823084696
+        },
+        "3584:FSABORT_CHECKPOINT": {
+          "calls": 20,
+          "elapsed_ms": 0.8420040627083688,
+          "charged_cpu_ms": 0.6682605490154064
+        },
+        "3584:FSPACKET_IDENTITY": {
+          "calls": 6,
+          "elapsed_ms": 0.9789548323251744,
+          "charged_cpu_ms": 0.7626388714636323
+        },
+        "3584:FSHANDLER_TAKESTEP": {
+          "calls": 6,
+          "elapsed_ms": 8.559176406406168,
+          "charged_cpu_ms": 7.038268682890247
+        },
+        "4096:DOSCLIENT_CHECKREPLY": {
+          "calls": 6,
+          "elapsed_ms": 0.28616578725899694,
+          "charged_cpu_ms": 0.24161978293690678
+        },
+        "4096:DOSCLIENT_CALL": {
+          "calls": 6,
+          "elapsed_ms": 56.86734453655944,
+          "charged_cpu_ms": 13.061988020508082
+        },
+        "3584:FSPACKET_REPLY": {
+          "calls": 5,
+          "elapsed_ms": 31.888313581315494,
+          "charged_cpu_ms": 9.49196409817601
+        },
+        "3584:FSREGISTRY_FINDOBJECT": {
+          "calls": 5,
+          "elapsed_ms": 0.37652651121614816,
+          "charged_cpu_ms": 0.37652651121614816
+        },
+        "3584:FSNAMES_MAPPED": {
+          "calls": 4,
+          "elapsed_ms": 0.5261644339626631,
+          "charged_cpu_ms": 0.48345101842597543
+        },
+        "3584:FSINFO_CLEAR": {
+          "calls": 3,
+          "elapsed_ms": 0.8875368456072142,
+          "charged_cpu_ms": 0.7125246166012809
+        },
+        "3584:FSINFO_NAME": {
+          "calls": 3,
+          "elapsed_ms": 0.6926480766980698,
+          "charged_cpu_ms": 0.5020588430162156
+        },
+        "3584:FSINFO_FILL": {
+          "calls": 3,
+          "elapsed_ms": 0.2553641988274251,
+          "charged_cpu_ms": 0.21236884655452162
+        },
+        "3584:FSINFO_SAVE": {
+          "calls": 4,
+          "elapsed_ms": 0.23612201658069948,
+          "charged_cpu_ms": 0.19319714849184993
+        },
+        "4096:DOSCALLS_INFORMATION": {
+          "calls": 4,
+          "elapsed_ms": 39.94465581868084,
+          "charged_cpu_ms": 12.831222801915478
+        },
+        "3584:FSBACKEND_BUFFEREDENTRY": {
+          "calls": 3,
+          "elapsed_ms": 0.6960313175326589,
+          "charged_cpu_ms": 0.5339881783926504
+        },
+        "4096:app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 25.84070010530337,
+          "charged_cpu_ms": 8.799950379134426
+        },
+        "4096:app.FileScanNext": {
+          "calls": 3,
+          "elapsed_ms": 41.64156254977945,
+          "charged_cpu_ms": 13.054234760262144
+        },
+        "4096:app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.822916945666563,
+          "charged_cpu_ms": 2.95110230215442
+        }
+      },
+      "gateway_entries": {
+        "4096:dos_current": 7,
+        "4096:tasks_forbid": 19,
+        "4096:tasks_permit": 19,
+        "4096:ports_put_msg": 6,
+        "3584:tasks_forbid": 35,
+        "3584:ports_get_msg": 24,
+        "3584:tasks_permit": 35,
+        "3584:ports_reply_msg": 6,
+        "4096:ports_get_msg": 12
+      },
+      "serial_events": {},
+      "physical_commands": 0,
+      "queue_probe": {
+        "calls": 24,
+        "empty": 18,
+        "nonempty": 6,
+        "empty_get_through_branch_cpu_ms": 1.8227209996348919,
+        "context_through_ensure_calls": 6,
+        "context_through_ensure_cpu_ms": 4.106972436454984
+      },
+      "name": "RAM refresh 3",
+      "path": "RAM:",
+      "entries": 2,
+      "dos_calls": 6,
+      "public_calls": {
+        "ExNext": {
+          "calls": 3,
+          "elapsed_ms": 29.80994644611696,
+          "charged_cpu_ms": 9.266767130123672,
+          "median_ms": 10.25347522269478,
+          "minimum_ms": 9.218485464046724,
+          "maximum_ms": 10.337985759375455
+        },
+        "Examine": {
+          "calls": 1,
+          "elapsed_ms": 10.412558026104522,
+          "charged_cpu_ms": 3.79832219448278,
+          "median_ms": 10.412558026104522,
+          "minimum_ms": 10.412558026104522,
+          "maximum_ms": 10.412558026104522
+        },
+        "Lock": {
+          "calls": 1,
+          "elapsed_ms": 15.270680412022347,
+          "charged_cpu_ms": 4.931284968965814,
+          "median_ms": 15.270680412022347,
+          "minimum_ms": 15.270680412022347,
+          "maximum_ms": 15.270680412022347
+        },
+        "UnLock": {
+          "calls": 1,
+          "elapsed_ms": 10.813331096635226,
+          "charged_cpu_ms": 2.9415164531230835,
+          "median_ms": 10.813331096635226,
+          "minimum_ms": 10.813331096635226,
+          "maximum_ms": 10.813331096635226
+        },
+        "app.FileScanBegin": {
+          "calls": 1,
+          "elapsed_ms": 25.84070010530337,
+          "charged_cpu_ms": 8.799950379134426,
+          "median_ms": 25.84070010530337,
+          "minimum_ms": 25.84070010530337,
+          "maximum_ms": 25.84070010530337
+        },
+        "app.FileScanEnd": {
+          "calls": 1,
+          "elapsed_ms": 10.822916945666563,
+          "charged_cpu_ms": 2.95110230215442,
+          "median_ms": 10.822916945666563,
+          "minimum_ms": 10.822916945666563,
+          "maximum_ms": 10.822916945666563
+        }
+      }
+    }
+  ],
+  "caveats": [
+    "Only the first C visit issues disk commands: command records count asserted/deasserted edges, not sectors. Four edges correspond to two transfers.",
+    "Warm refresh scans exclude directory preparation, sorting, geometry and painting after FileScanNext returns; no end-to-end UI timing claim.",
+    "Inclusive function costs overlap. Exclusive costs charge innermost observed routines; kernel/bridge work remains charged to its caller.",
+    "Empty GetMsg probe bounds run through the caller branch to Permit entry and exclude surrounding Forbid/Permit. DOS-current bounds end at EnsureSlot entry; neither is an isolated gateway benchmark.",
+    "First RAM navigation overlaps presenter work; warmed RAM refresh is the cleaner different-backend control.",
+    "Three warm repetitions establish a local range, not a tail-latency distribution. No implementation speedup or release qualification is claimed."
+  ],
+  "listings": {
+    "SYS:": [
+      "C",
+      "S",
+      "SELECT",
+      "WORK",
+      "CALC.RSC",
+      "LONG.TXT",
+      "README.TXT",
+      "STORY.TXT",
+      "VIEW.TXT"
+    ],
+    "SYS:C": [
+      "ASSIGN",
+      "CALC.APP",
+      "CAT",
+      "CKSUM",
+      "CMP",
+      "COPY",
+      "COUNTER.APP",
+      "DELETE",
+      "DIALOG.APP",
+      "FILES.APP",
+      "FIND",
+      "FUJI",
+      "G4BENCH.APP",
+      "GREP",
+      "HEAD",
+      "HELLO",
+      "HEXDUMP",
+      "INFO",
+      "LIST",
+      "MAKEDIR",
+      "MORE",
+      "PANEL.APP",
+      "PRIMES",
+      "RENAME",
+      "TAIL",
+      "TEE",
+      "TEXT.APP",
+      "TICK",
+      "WC"
+    ],
+    "RAM:": [
+      "DESKTOP.APP",
+      "DESKTOP.RSC"
+    ]
+  }
+}

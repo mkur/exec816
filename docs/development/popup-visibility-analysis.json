@@ -1,0 +1,2026 @@
+{
+  "tier": "development-analysis",
+  "qualification": false,
+  "production_changes": false,
+  "method": "Existing DR2 Task/IRQ trace, partitioned at successive UpdateDamage returns within Rebuild; nine slot intervals plus global tail. Read-only File/View scene snapshots from the same immutable demo. Selector is a host-only feasibility model; savings are current skipped-slot CPU less retained summary CPU, before selector and shared-loop costs, not measured speedup.",
+  "archive_sha256": "ade55940e2468bd000ece5a22266f2b23deac34f47ad1827f708c305ff6d33d3",
+  "trace": "build/damage-retirement/menus",
+  "snapshot": "build/popup-visibility-analysis/scene-checked",
+  "geometry": {
+    "before": {
+      "name": "file",
+      "scene_address": 205434,
+      "order": [
+        1,
+        0,
+        4,
+        2,
+        3
+      ],
+      "visibleDamage": 0,
+      "rebuilds": 9,
+      "layers": [
+        {
+          "slot": 0,
+          "id": 1,
+          "role": "barLayer",
+          "shown": 1,
+          "bounds": [
+            0,
+            0,
+            640,
+            11
+          ],
+          "rank": 1,
+          "dirty": 0,
+          "visible": [
+            [
+              0,
+              0,
+              640,
+              11
+            ]
+          ],
+          "damage": [],
+          "pending": []
+        },
+        {
+          "slot": 1,
+          "id": 2,
+          "role": "popupLayer",
+          "shown": 1,
+          "bounds": [
+            136,
+            11,
+            296,
+            123
+          ],
+          "rank": 0,
+          "dirty": 0,
+          "visible": [
+            [
+              136,
+              11,
+              296,
+              123
+            ]
+          ],
+          "damage": [],
+          "pending": []
+        },
+        {
+          "slot": 2,
+          "id": 3,
+          "role": "Shell",
+          "shown": 1,
+          "bounds": [
+            32,
+            29,
+            560,
+            202
+          ],
+          "rank": 3,
+          "dirty": 1,
+          "visible": [
+            [
+              32,
+              29,
+              120,
+              202
+            ]
+          ],
+          "damage": [
+            [
+              120,
+              66,
+              560,
+              202
+            ],
+            [
+              120,
+              29,
+              432,
+              66
+            ],
+            [
+              136,
+              29,
+              296,
+              123
+            ]
+          ],
+          "pending": []
+        },
+        {
+          "slot": 3,
+          "id": 4,
+          "role": "desktopLayer",
+          "shown": 1,
+          "bounds": [
+            0,
+            11,
+            640,
+            240
+          ],
+          "rank": 4,
+          "dirty": 1,
+          "visible": [
+            [
+              0,
+              11,
+              136,
+              24
+            ],
+            [
+              296,
+              11,
+              640,
+              24
+            ],
+            [
+              0,
+              24,
+              120,
+              29
+            ],
+            [
+              582,
+              24,
+              640,
+              29
+            ],
+            [
+              0,
+              220,
+              640,
+              240
+            ],
+            [
+              0,
+              202,
+              120,
+              220
+            ],
+            [
+              582,
+              202,
+              640,
+              220
+            ],
+            [
+              0,
+              29,
+              32,
+              202
+            ],
+            [
+              582,
+              29,
+              640,
+              202
+            ]
+          ],
+          "damage": [
+            [
+              120,
+              66,
+              582,
+              220
+            ],
+            [
+              120,
+              24,
+              432,
+              66
+            ],
+            [
+              136,
+              11,
+              296,
+              123
+            ]
+          ],
+          "pending": [
+            [
+              32,
+              29,
+              582,
+              202
+            ],
+            [
+              120,
+              202,
+              582,
+              220
+            ],
+            [
+              120,
+              24,
+              582,
+              29
+            ]
+          ]
+        },
+        {
+          "slot": 4,
+          "id": 5,
+          "role": "SYS:",
+          "shown": 1,
+          "bounds": [
+            120,
+            24,
+            582,
+            220
+          ],
+          "rank": 2,
+          "dirty": 1,
+          "visible": [
+            [
+              120,
+              123,
+              582,
+              220
+            ],
+            [
+              120,
+              24,
+              136,
+              123
+            ],
+            [
+              296,
+              24,
+              582,
+              123
+            ]
+          ],
+          "damage": [
+            [
+              136,
+              24,
+              296,
+              123
+            ]
+          ],
+          "pending": []
+        },
+        {
+          "slot": 5,
+          "id": 0,
+          "role": "unused",
+          "shown": 0,
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "rank": 5,
+          "dirty": 0,
+          "visible": [],
+          "damage": [],
+          "pending": []
+        },
+        {
+          "slot": 6,
+          "id": 0,
+          "role": "unused",
+          "shown": 0,
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "rank": 5,
+          "dirty": 0,
+          "visible": [],
+          "damage": [],
+          "pending": []
+        },
+        {
+          "slot": 7,
+          "id": 0,
+          "role": "unused",
+          "shown": 0,
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "rank": 5,
+          "dirty": 0,
+          "visible": [],
+          "damage": [],
+          "pending": []
+        },
+        {
+          "slot": 8,
+          "id": 0,
+          "role": "background",
+          "shown": 1,
+          "bounds": [
+            0,
+            0,
+            640,
+            240
+          ],
+          "rank": 5,
+          "dirty": 1,
+          "visible": [],
+          "damage": [
+            [
+              0,
+              66,
+              640,
+              240
+            ],
+            [
+              0,
+              11,
+              432,
+              66
+            ],
+            [
+              136,
+              11,
+              296,
+              123
+            ]
+          ],
+          "pending": []
+        }
+      ],
+      "windows": [
+        {
+          "id": 1,
+          "layer": 3,
+          "title": "Shell"
+        },
+        {
+          "id": 2,
+          "layer": 4,
+          "title": ""
+        },
+        {
+          "id": 3,
+          "layer": 5,
+          "title": "SYS:"
+        }
+      ]
+    },
+    "after": {
+      "name": "view",
+      "scene_address": 205434,
+      "order": [
+        1,
+        0,
+        4,
+        2,
+        3
+      ],
+      "visibleDamage": 0,
+      "rebuilds": 10,
+      "layers": [
+        {
+          "slot": 0,
+          "id": 1,
+          "role": "barLayer",
+          "shown": 1,
+          "bounds": [
+            0,
+            0,
+            640,
+            11
+          ],
+          "rank": 1,
+          "dirty": 0,
+          "visible": [
+            [
+              0,
+              0,
+              640,
+              11
+            ]
+          ],
+          "damage": [],
+          "pending": []
+        },
+        {
+          "slot": 1,
+          "id": 2,
+          "role": "popupLayer",
+          "shown": 1,
+          "bounds": [
+            200,
+            11,
+            344,
+            68
+          ],
+          "rank": 0,
+          "dirty": 0,
+          "visible": [
+            [
+              200,
+              11,
+              344,
+              68
+            ]
+          ],
+          "damage": [],
+          "pending": []
+        },
+        {
+          "slot": 2,
+          "id": 3,
+          "role": "Shell",
+          "shown": 1,
+          "bounds": [
+            32,
+            29,
+            560,
+            202
+          ],
+          "rank": 3,
+          "dirty": 1,
+          "visible": [
+            [
+              32,
+              29,
+              120,
+              202
+            ]
+          ],
+          "damage": [
+            [
+              120,
+              123,
+              560,
+              202
+            ],
+            [
+              120,
+              66,
+              136,
+              123
+            ],
+            [
+              296,
+              66,
+              560,
+              123
+            ],
+            [
+              120,
+              29,
+              136,
+              66
+            ],
+            [
+              296,
+              29,
+              432,
+              66
+            ]
+          ],
+          "pending": []
+        },
+        {
+          "slot": 3,
+          "id": 4,
+          "role": "desktopLayer",
+          "shown": 1,
+          "bounds": [
+            0,
+            11,
+            640,
+            240
+          ],
+          "rank": 4,
+          "dirty": 1,
+          "visible": [
+            [
+              0,
+              11,
+              200,
+              24
+            ],
+            [
+              344,
+              11,
+              640,
+              24
+            ],
+            [
+              0,
+              24,
+              120,
+              29
+            ],
+            [
+              582,
+              24,
+              640,
+              29
+            ],
+            [
+              0,
+              220,
+              640,
+              240
+            ],
+            [
+              0,
+              202,
+              120,
+              220
+            ],
+            [
+              582,
+              202,
+              640,
+              220
+            ],
+            [
+              0,
+              29,
+              32,
+              202
+            ],
+            [
+              582,
+              29,
+              640,
+              202
+            ]
+          ],
+          "damage": [
+            [
+              120,
+              123,
+              582,
+              220
+            ],
+            [
+              120,
+              66,
+              136,
+              123
+            ],
+            [
+              296,
+              66,
+              582,
+              123
+            ],
+            [
+              120,
+              24,
+              136,
+              66
+            ],
+            [
+              296,
+              24,
+              432,
+              66
+            ]
+          ],
+          "pending": [
+            [
+              32,
+              29,
+              582,
+              202
+            ],
+            [
+              120,
+              202,
+              582,
+              220
+            ],
+            [
+              120,
+              24,
+              582,
+              29
+            ]
+          ]
+        },
+        {
+          "slot": 4,
+          "id": 5,
+          "role": "SYS:",
+          "shown": 1,
+          "bounds": [
+            120,
+            24,
+            582,
+            220
+          ],
+          "rank": 2,
+          "dirty": 0,
+          "visible": [
+            [
+              120,
+              68,
+              582,
+              220
+            ],
+            [
+              120,
+              24,
+              200,
+              68
+            ],
+            [
+              344,
+              24,
+              582,
+              68
+            ]
+          ],
+          "damage": [],
+          "pending": []
+        },
+        {
+          "slot": 5,
+          "id": 0,
+          "role": "unused",
+          "shown": 0,
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "rank": 5,
+          "dirty": 0,
+          "visible": [],
+          "damage": [],
+          "pending": []
+        },
+        {
+          "slot": 6,
+          "id": 0,
+          "role": "unused",
+          "shown": 0,
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "rank": 5,
+          "dirty": 0,
+          "visible": [],
+          "damage": [],
+          "pending": []
+        },
+        {
+          "slot": 7,
+          "id": 0,
+          "role": "unused",
+          "shown": 0,
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "rank": 5,
+          "dirty": 0,
+          "visible": [],
+          "damage": [],
+          "pending": []
+        },
+        {
+          "slot": 8,
+          "id": 0,
+          "role": "background",
+          "shown": 1,
+          "bounds": [
+            0,
+            0,
+            640,
+            240
+          ],
+          "rank": 5,
+          "dirty": 1,
+          "visible": [],
+          "damage": [
+            [
+              0,
+              123,
+              640,
+              240
+            ],
+            [
+              0,
+              66,
+              136,
+              123
+            ],
+            [
+              296,
+              66,
+              640,
+              123
+            ],
+            [
+              0,
+              11,
+              136,
+              66
+            ],
+            [
+              296,
+              11,
+              432,
+              66
+            ]
+          ],
+          "pending": []
+        }
+      ],
+      "windows": [
+        {
+          "id": 1,
+          "layer": 3,
+          "title": "Shell"
+        },
+        {
+          "id": 2,
+          "layer": 4,
+          "title": ""
+        },
+        {
+          "id": 3,
+          "layer": 5,
+          "title": "SYS:"
+        }
+      ]
+    },
+    "actual_changed_slots": [
+      1,
+      3,
+      4
+    ],
+    "bounds_only_slots": [
+      1,
+      2,
+      3,
+      4,
+      8
+    ],
+    "occlusion_slots": [
+      1,
+      3,
+      4
+    ],
+    "envelope_steps": [
+      {
+        "slot": 0,
+        "before": [
+          136,
+          11,
+          344,
+          123
+        ],
+        "after": [
+          136,
+          11,
+          344,
+          123
+        ],
+        "selected": false
+      },
+      {
+        "slot": 4,
+        "before": [
+          136,
+          11,
+          344,
+          123
+        ],
+        "after": [
+          136,
+          11,
+          344,
+          24
+        ],
+        "selected": true
+      },
+      {
+        "slot": 2,
+        "before": [
+          136,
+          11,
+          344,
+          24
+        ],
+        "after": [
+          136,
+          11,
+          344,
+          24
+        ],
+        "selected": false
+      },
+      {
+        "slot": 3,
+        "before": [
+          136,
+          11,
+          344,
+          24
+        ],
+        "after": null,
+        "selected": true
+      },
+      {
+        "slot": 8,
+        "before": null,
+        "after": null,
+        "selected": false
+      }
+    ]
+  },
+  "timings": [
+    {
+      "action": "complete/keyboard/0",
+      "heading": 1,
+      "commit_cpu_ms": 13.834917582843586,
+      "rebuild_cpu_ms": 11.350138642390034,
+      "layers": [
+        {
+          "slot": 0,
+          "interval_start": 4457579232.625,
+          "interval_end": 4457579893.625,
+          "elapsed_ms": 0.37272036527723545,
+          "charged_cpu_ms": 0.2869411132835903,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08577925199364514,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06118027175882004,
+          "damaged_cpu_ms": 0.005779703092423091,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.22576084152477024,
+          "role": "barLayer",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 1,
+          "interval_start": 4457579893.625,
+          "interval_end": 4457580352.625,
+          "elapsed_ms": 0.25881792384606817,
+          "charged_cpu_ms": 0.21603402412532652,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04278389972074166,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06294237636016854,
+          "damaged_cpu_ms": 0.011559406184846181,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.153091647765158,
+          "role": "popupLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 2,
+          "interval_start": 4457580352.625,
+          "interval_end": 4457583556.25,
+          "elapsed_ms": 1.8064391531184318,
+          "charged_cpu_ms": 1.5038505509748668,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.302588602143565,
+          "subtractions": 2,
+          "subtraction_cpu_ms": 0.6620579408186598,
+          "update_damage_cpu_ms": 0.34621831207295395,
+          "damaged_cpu_ms": 0.29370759495276855,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.49557429808325304,
+          "role": "Shell",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 3,
+          "interval_start": 4457583556.25,
+          "interval_end": 4457596584.125,
+          "elapsed_ms": 7.3460731146538025,
+          "charged_cpu_ms": 5.983543352707086,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.3625297619467167,
+          "subtractions": 3,
+          "subtraction_cpu_ms": 3.253127030825553,
+          "update_damage_cpu_ms": 1.8880598382528946,
+          "damaged_cpu_ms": 1.8347033109240618,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.8423564836286384,
+          "role": "desktopLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 4,
+          "interval_start": 4457596584.125,
+          "interval_end": 4457598439.125,
+          "elapsed_ms": 1.0459852913604717,
+          "charged_cpu_ms": 0.8738629139007498,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.1721223774597218,
+          "subtractions": 1,
+          "subtraction_cpu_ms": 0.42917819670444146,
+          "update_damage_cpu_ms": 0.06019349318206487,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.38449122401424346,
+          "role": "SYS:",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 5,
+          "interval_start": 4457598439.125,
+          "interval_end": 4457598712.5,
+          "elapsed_ms": 0.15414891052596708,
+          "charged_cpu_ms": 0.11129452662117147,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0428543839047956,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06738287995556677,
+          "damaged_cpu_ms": 0.005779703092423091,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.043911646665604695,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 6,
+          "interval_start": 4457598712.5,
+          "interval_end": 4457598900.125,
+          "elapsed_ms": 0.10579676026496414,
+          "charged_cpu_ms": 0.10579676026496414,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06230801870368308,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04348874156128106,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 7,
+          "interval_start": 4457598900.125,
+          "interval_end": 4457599177.25,
+          "elapsed_ms": 0.1562634360475853,
+          "charged_cpu_ms": 0.1136205046949515,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.042642931352633785,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.0697088580293468,
+          "damaged_cpu_ms": 0.005709218908369151,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.043911646665604695,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 8,
+          "interval_start": 4457599177.25,
+          "interval_end": 4457603750.75,
+          "elapsed_ms": 2.5788753261655617,
+          "charged_cpu_ms": 2.1411685431905934,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.43770678297496823,
+          "subtractions": 4,
+          "subtraction_cpu_ms": 1.288239431953864,
+          "update_damage_cpu_ms": 0.16021055035460594,
+          "damaged_cpu_ms": 0.10170867758983562,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.6927185608821235,
+          "role": "background",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        }
+      ],
+      "tail": {
+        "elapsed_ms": 0.014026352626734087,
+        "charged_cpu_ms": 0.014026352626734087,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.0
+      },
+      "gross_skipped_geometry_cpu_ms": {
+        "bounds_only": 0.3570728764172607,
+        "occlusion": 3.4956631081551612
+      },
+      "summary_cpu_ms": 2.7782045986701047,
+      "subtraction_cpu_ms": 5.632602600302518,
+      "remaining_subtractions": 4
+    },
+    {
+      "action": "complete/keyboard/1",
+      "heading": 1,
+      "commit_cpu_ms": 13.822864787370362,
+      "rebuild_cpu_ms": 11.343724581641125,
+      "layers": [
+        {
+          "slot": 0,
+          "interval_start": 4465232889.5,
+          "interval_end": 4465233550.875,
+          "elapsed_ms": 0.37293181782939727,
+          "charged_cpu_ms": 0.28687062909953637,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0860611887298609,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.061321240126927926,
+          "damaged_cpu_ms": 0.005709218908369151,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.22554938897260846,
+          "role": "barLayer",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 1,
+          "interval_start": 4465233550.875,
+          "interval_end": 4465234009.875,
+          "elapsed_ms": 0.25881792384606817,
+          "charged_cpu_ms": 0.21610450830938047,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04271341553668773,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06336528146449218,
+          "damaged_cpu_ms": 0.0056387347243152105,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.15273922684488828,
+          "role": "popupLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 2,
+          "interval_start": 4465234009.875,
+          "interval_end": 4465237460.125,
+          "elapsed_ms": 1.9455044482568558,
+          "charged_cpu_ms": 1.5344406868542768,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.4110637614025789,
+          "subtractions": 2,
+          "subtraction_cpu_ms": 0.6926480766980696,
+          "update_damage_cpu_ms": 0.34057957734863875,
+          "damaged_cpu_ms": 0.28806886022845335,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.5012130328075685,
+          "role": "Shell",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 3,
+          "interval_start": 4465237460.125,
+          "interval_end": 4465250237.75,
+          "elapsed_ms": 7.204963778177815,
+          "charged_cpu_ms": 5.946891576999037,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.2580722011787775,
+          "subtractions": 3,
+          "subtraction_cpu_ms": 3.2523517048009594,
+          "update_damage_cpu_ms": 1.888764680093434,
+          "damaged_cpu_ms": 1.835760573684871,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.8057751921046437,
+          "role": "desktopLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 4,
+          "interval_start": 4465250237.75,
+          "interval_end": 4465252096.375,
+          "elapsed_ms": 1.0480293326980359,
+          "charged_cpu_ms": 0.8734400087964262,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17458932390160972,
+          "subtractions": 1,
+          "subtraction_cpu_ms": 0.4288257757841718,
+          "update_damage_cpu_ms": 0.060052524813956995,
+          "damaged_cpu_ms": 0.0056387347243152105,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.38456170819829744,
+          "role": "SYS:",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 5,
+          "interval_start": 4465252096.375,
+          "interval_end": 4465252369.625,
+          "elapsed_ms": 0.15407842634191316,
+          "charged_cpu_ms": 0.11094210570090178,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04313632064101136,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06731239577151284,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04362970992938894,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 6,
+          "interval_start": 4465252369.625,
+          "interval_end": 4465252557.625,
+          "elapsed_ms": 0.10600821281712595,
+          "charged_cpu_ms": 0.10600821281712595,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06223753451962914,
+          "damaged_cpu_ms": 0.005709218908369151,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04377067829749681,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 7,
+          "interval_start": 4465252557.625,
+          "interval_end": 4465252834.5,
+          "elapsed_ms": 0.1561224676794774,
+          "charged_cpu_ms": 0.11305663122251998,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043065836456957426,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06956788966123892,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04348874156128106,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 8,
+          "interval_start": 4465252834.5,
+          "interval_end": 4465257399.25,
+          "elapsed_ms": 2.573941433281786,
+          "charged_cpu_ms": 2.141943869215187,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.43199756406659906,
+          "subtractions": 4,
+          "subtraction_cpu_ms": 1.2885918528741336,
+          "update_damage_cpu_ms": 0.15999909780244412,
+          "damaged_cpu_ms": 0.10114480411740409,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.6933529185386091,
+          "role": "background",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        }
+      ],
+      "tail": {
+        "elapsed_ms": 0.014026352626734087,
+        "charged_cpu_ms": 0.014026352626734087,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.0
+      },
+      "gross_skipped_geometry_cpu_ms": {
+        "bounds_only": 0.35643851876077526,
+        "occlusion": 3.532244399679156
+      },
+      "summary_cpu_ms": 2.773200221602275,
+      "subtraction_cpu_ms": 5.662417410157334,
+      "remaining_subtractions": 4
+    },
+    {
+      "action": "complete/keyboard/2",
+      "heading": 1,
+      "commit_cpu_ms": 13.835692908868179,
+      "rebuild_cpu_ms": 11.349856705653819,
+      "layers": [
+        {
+          "slot": 0,
+          "interval_start": 4472878879.0,
+          "interval_end": 4472879539.125,
+          "elapsed_ms": 0.37222697598885784,
+          "charged_cpu_ms": 0.28616578725899694,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0860611887298609,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06089833502260428,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.22526745223639266,
+          "role": "barLayer",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 1,
+          "interval_start": 4472879539.125,
+          "interval_end": 4472879997.625,
+          "elapsed_ms": 0.2585359871098524,
+          "charged_cpu_ms": 0.21554063483694894,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.042995352272903485,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06280140799206066,
+          "damaged_cpu_ms": 0.011347953632684362,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.15273922684488828,
+          "role": "popupLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 2,
+          "interval_start": 4472879997.625,
+          "interval_end": 4472883451.5,
+          "elapsed_ms": 1.9475484895944197,
+          "charged_cpu_ms": 1.541348136891563,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.406200352702857,
+          "subtractions": 2,
+          "subtraction_cpu_ms": 0.693564371090771,
+          "update_damage_cpu_ms": 0.3410024824529624,
+          "damaged_cpu_ms": 0.288491765332777,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.5067812833478296,
+          "role": "Shell",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 3,
+          "interval_start": 4472883451.5,
+          "interval_end": 4472896227.0,
+          "elapsed_ms": 7.2037655470488975,
+          "charged_cpu_ms": 5.947032545367145,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.2567330016817526,
+          "subtractions": 3,
+          "subtraction_cpu_ms": 3.2519287996966364,
+          "update_damage_cpu_ms": 1.8891171010137036,
+          "damaged_cpu_ms": 1.835690089500817,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.8059866446568054,
+          "role": "desktopLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 4,
+          "interval_start": 4472896227.0,
+          "interval_end": 4472898090.875,
+          "elapsed_ms": 1.0509896684283013,
+          "charged_cpu_ms": 0.8738629139007498,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17712675452755158,
+          "subtractions": 1,
+          "subtraction_cpu_ms": 0.4288257757841718,
+          "update_damage_cpu_ms": 0.060123008998010936,
+          "damaged_cpu_ms": 0.005709218908369151,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.38491412911856704,
+          "role": "SYS:",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 5,
+          "interval_start": 4472898090.875,
+          "interval_end": 4472898364.625,
+          "elapsed_ms": 0.1543603630781289,
+          "charged_cpu_ms": 0.11037823222847025,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04398213084965864,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06703045903529707,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04334777319317318,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 6,
+          "interval_start": 4472898364.625,
+          "interval_end": 4472898553.0,
+          "elapsed_ms": 0.10621966536928779,
+          "charged_cpu_ms": 0.10621966536928779,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06230801870368308,
+          "damaged_cpu_ms": 0.005779703092423091,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04391164666560471,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 7,
+          "interval_start": 4472898553.0,
+          "interval_end": 4472898830.375,
+          "elapsed_ms": 0.15640440441569317,
+          "charged_cpu_ms": 0.11242227356603451,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04398213084965864,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06914498455691527,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.043277289009119244,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 8,
+          "interval_start": 4472898830.375,
+          "interval_end": 4472903396.0,
+          "elapsed_ms": 2.5744348225701637,
+          "charged_cpu_ms": 2.142789679423834,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.4316451431463294,
+          "subtractions": 4,
+          "subtraction_cpu_ms": 1.2897900840030505,
+          "update_damage_cpu_ms": 0.16006958198649804,
+          "damaged_cpu_ms": 0.10121528830145804,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.6929300134342856,
+          "role": "background",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        }
+      ],
+      "tail": {
+        "elapsed_ms": 0.014096836810788027,
+        "charged_cpu_ms": 0.014096836810788027,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.0
+      },
+      "gross_skipped_geometry_cpu_ms": {
+        "bounds_only": 0.3558041611042898,
+        "occlusion": 3.5388699129802266
+      },
+      "summary_cpu_ms": 2.772495379761735,
+      "subtraction_cpu_ms": 5.66410903057463,
+      "remaining_subtractions": 4
+    },
+    {
+      "action": "complete/pointer/0",
+      "heading": 1,
+      "commit_cpu_ms": 13.836115813972503,
+      "rebuild_cpu_ms": 11.349856705653819,
+      "layers": [
+        {
+          "slot": 0,
+          "interval_start": 4491221877.375,
+          "interval_end": 4491222553.375,
+          "elapsed_ms": 0.38117846736370825,
+          "charged_cpu_ms": 0.28616578725899694,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.09501268010471131,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.054836695193965425,
+          "damaged_cpu_ms": 0.0056387347243152105,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.23132909206503152,
+          "role": "barLayer",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 1,
+          "interval_start": 4491222553.375,
+          "interval_end": 4491223020.875,
+          "elapsed_ms": 0.2636108483617361,
+          "charged_cpu_ms": 0.21603402412532652,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04757682423640959,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.05695122071558363,
+          "damaged_cpu_ms": 0.005709218908369151,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.1590828034097429,
+          "role": "popupLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 2,
+          "interval_start": 4491223020.875,
+          "interval_end": 4491226276.25,
+          "elapsed_ms": 1.835619605316763,
+          "charged_cpu_ms": 1.50497829791973,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3306413073970332,
+          "subtractions": 2,
+          "subtraction_cpu_ms": 0.6574764688551535,
+          "update_damage_cpu_ms": 0.34635928044106185,
+          "damaged_cpu_ms": 0.28806886022845335,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.5011425486235146,
+          "role": "Shell",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 3,
+          "interval_start": 4491226276.25,
+          "interval_end": 4491239499.625,
+          "elapsed_ms": 7.456310378514165,
+          "charged_cpu_ms": 5.982979479234655,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.4733308992795107,
+          "subtractions": 3,
+          "subtraction_cpu_ms": 3.2628538482249967,
+          "update_damage_cpu_ms": 1.9252050032493209,
+          "damaged_cpu_ms": 1.8716370233683264,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.7949206277603373,
+          "role": "desktopLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 4,
+          "interval_start": 4491239499.625,
+          "interval_end": 4491241382.875,
+          "elapsed_ms": 1.0619147169566623,
+          "charged_cpu_ms": 0.8737219455326419,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.18819277142402016,
+          "subtractions": 1,
+          "subtraction_cpu_ms": 0.4288257757841718,
+          "update_damage_cpu_ms": 0.06019349318206487,
+          "damaged_cpu_ms": 0.005709218908369151,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.3847026765664053,
+          "role": "SYS:",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 5,
+          "interval_start": 4491241382.875,
+          "interval_end": 4491241568.25,
+          "elapsed_ms": 0.10452804495199322,
+          "charged_cpu_ms": 0.10452804495199322,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06118027175882004,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04334777319317318,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 6,
+          "interval_start": 4491241568.25,
+          "interval_end": 4491241851.25,
+          "elapsed_ms": 0.15957619269812046,
+          "charged_cpu_ms": 0.1122108210138727,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04736537168424777,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06230801870368308,
+          "damaged_cpu_ms": 0.005709218908369151,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04990280231018962,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 7,
+          "interval_start": 4491241851.25,
+          "interval_end": 4491242040.75,
+          "elapsed_ms": 0.10685402302577324,
+          "charged_cpu_ms": 0.10685402302577324,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06329479728043824,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.043559225745334995,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 8,
+          "interval_start": 4491242040.75,
+          "interval_end": 4491246782.5,
+          "elapsed_ms": 2.673747037902165,
+          "charged_cpu_ms": 2.1483579299640954,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5253891079380697,
+          "subtractions": 4,
+          "subtraction_cpu_ms": 1.283376023254142,
+          "update_damage_cpu_ms": 0.15999909780244412,
+          "damaged_cpu_ms": 0.10121528830145804,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.7049828089075092,
+          "role": "background",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        }
+      ],
+      "tail": {
+        "elapsed_ms": 0.014026352626734087,
+        "charged_cpu_ms": 0.014026352626734087,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.0
+      },
+      "gross_skipped_geometry_cpu_ms": {
+        "bounds_only": 0.3681388933137293,
+        "occlusion": 3.515116742954049
+      },
+      "summary_cpu_ms": 2.790327878327382,
+      "subtraction_cpu_ms": 5.632532116118464,
+      "remaining_subtractions": 4
+    },
+    {
+      "action": "complete/pointer/1",
+      "heading": 0,
+      "commit_cpu_ms": 12.460616962159861,
+      "rebuild_cpu_ms": 11.349574768917602,
+      "layers": [
+        {
+          "slot": 0,
+          "interval_start": 4491729761.625,
+          "interval_end": 4491730345.0,
+          "elapsed_ms": 0.3289496869797386,
+          "charged_cpu_ms": 0.28038608416657385,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04856360281316475,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.05511863193018119,
+          "damaged_cpu_ms": 0.0056387347243152105,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.22526745223639266,
+          "role": "barLayer",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 1,
+          "interval_start": 4491730345.0,
+          "interval_end": 4491730813.375,
+          "elapsed_ms": 0.2641042376501137,
+          "charged_cpu_ms": 0.21554063483694894,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04856360281316475,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.05702170489963757,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.15851892993731137,
+          "role": "popupLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 2,
+          "interval_start": 4491730813.375,
+          "interval_end": 4491734408.0,
+          "elapsed_ms": 2.026913680839156,
+          "charged_cpu_ms": 1.540431842498862,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.48648183834029485,
+          "subtractions": 2,
+          "subtraction_cpu_ms": 0.6567011428305602,
+          "update_damage_cpu_ms": 0.3411434508210703,
+          "damaged_cpu_ms": 0.28856224951683096,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.5425872488472314,
+          "role": "Shell",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 3,
+          "interval_start": 4491734408.0,
+          "interval_end": 4491747612.125,
+          "elapsed_ms": 7.445455814169859,
+          "charged_cpu_ms": 5.9530237010117295,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.4924321131581284,
+          "subtractions": 3,
+          "subtraction_cpu_ms": 3.2586952813658145,
+          "update_damage_cpu_ms": 1.888623711725326,
+          "damaged_cpu_ms": 1.8350557318443315,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.805704707920589,
+          "role": "desktopLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 4,
+          "interval_start": 4491747612.125,
+          "interval_end": 4491749498.0,
+          "elapsed_ms": 1.063394884821795,
+          "charged_cpu_ms": 0.8742858190050734,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.1891090658167214,
+          "subtractions": 1,
+          "subtraction_cpu_ms": 0.4290372283363336,
+          "update_damage_cpu_ms": 0.06019349318206487,
+          "damaged_cpu_ms": 0.0056387347243152105,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.38505509748667494,
+          "role": "SYS:",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 5,
+          "interval_start": 4491749498.0,
+          "interval_end": 4491749777.5,
+          "elapsed_ms": 0.15760263554461015,
+          "charged_cpu_ms": 0.11030774804441631,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04729488750019383,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06667803811502737,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04362970992938894,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 6,
+          "interval_start": 4491749777.5,
+          "interval_end": 4491749965.875,
+          "elapsed_ms": 0.10621966536928779,
+          "charged_cpu_ms": 0.10621966536928779,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06230801870368308,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04391164666560471,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 7,
+          "interval_start": 4491749965.875,
+          "interval_end": 4491750249.75,
+          "elapsed_ms": 0.16006958198649804,
+          "charged_cpu_ms": 0.11263372611819633,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04743585586830171,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06879256363664557,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04384116248155076,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 8,
+          "interval_start": 4491750249.75,
+          "interval_end": 4491754886.875,
+          "elapsed_ms": 2.614751775849017,
+          "charged_cpu_ms": 2.14271919523978,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.47203258060923714,
+          "subtractions": 4,
+          "subtraction_cpu_ms": 1.2901425049233204,
+          "update_damage_cpu_ms": 0.16028103453865988,
+          "damaged_cpu_ms": 0.09571752194525071,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.6922956557777997,
+          "role": "background",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        }
+      ],
+      "tail": {
+        "elapsed_ms": 0.014026352626734087,
+        "charged_cpu_ms": 0.014026352626734087,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.0
+      },
+      "gross_skipped_geometry_cpu_ms": {
+        "bounds_only": 0.3566499713129371,
+        "occlusion": 3.538376523691849
+      },
+      "summary_cpu_ms": 2.7601606475522957,
+      "subtraction_cpu_ms": 5.634576157456029,
+      "remaining_subtractions": 4
+    },
+    {
+      "action": "complete/pointer/2",
+      "heading": 1,
+      "commit_cpu_ms": 12.432000383433962,
+      "rebuild_cpu_ms": 11.349433800549496,
+      "layers": [
+        {
+          "slot": 0,
+          "interval_start": 4492287526.75,
+          "interval_end": 4492288108.625,
+          "elapsed_ms": 0.3281038767710913,
+          "charged_cpu_ms": 0.2805975367187357,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.047506340052355656,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.054766211009911483,
+          "damaged_cpu_ms": 0.0056387347243152105,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.22583132570882425,
+          "role": "barLayer",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 1,
+          "interval_start": 4492288108.625,
+          "interval_end": 4492288575.75,
+          "elapsed_ms": 0.2633993958095743,
+          "charged_cpu_ms": 0.2158225715731647,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04757682423640959,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.05688073653152969,
+          "damaged_cpu_ms": 0.005709218908369151,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.158941835041635,
+          "role": "popupLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 2,
+          "interval_start": 4492288575.75,
+          "interval_end": 4492291928.125,
+          "elapsed_ms": 1.8903153321426205,
+          "charged_cpu_ms": 1.5113923586686382,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3789229734739822,
+          "subtractions": 2,
+          "subtraction_cpu_ms": 0.6574059846710997,
+          "update_damage_cpu_ms": 0.3465002488091697,
+          "damaged_cpu_ms": 0.29398953168898434,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.5074861251883689,
+          "role": "Shell",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 3,
+          "interval_start": 4492291928.125,
+          "interval_end": 4492305156.625,
+          "elapsed_ms": 7.459200230060377,
+          "charged_cpu_ms": 5.97628348174953,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.4829167483108465,
+          "subtractions": 3,
+          "subtraction_cpu_ms": 3.2570036609485196,
+          "update_damage_cpu_ms": 1.9187204583163584,
+          "damaged_cpu_ms": 1.8652934468034716,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.8005593624846516,
+          "role": "desktopLayer",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 4,
+          "interval_start": 4492305156.625,
+          "interval_end": 4492307140.625,
+          "elapsed_ms": 1.118724969304138,
+          "charged_cpu_ms": 0.8790082593366875,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2397167099674504,
+          "subtractions": 1,
+          "subtraction_cpu_ms": 0.4290372283363336,
+          "update_damage_cpu_ms": 0.06555029117016432,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.38442073983018954,
+          "role": "SYS:",
+          "bounds_only_selected": true,
+          "occlusion_selected": true
+        },
+        {
+          "slot": 5,
+          "interval_start": 4492307140.625,
+          "interval_end": 4492307326.75,
+          "elapsed_ms": 0.10495095005631687,
+          "charged_cpu_ms": 0.10495095005631687,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.061250755942873984,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.043700194113442885,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 6,
+          "interval_start": 4492307326.75,
+          "interval_end": 4492307609.625,
+          "elapsed_ms": 0.15950570851406654,
+          "charged_cpu_ms": 0.111858400093603,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04764730842046353,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.0679467534279983,
+          "damaged_cpu_ms": 0.005709218908369151,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.043911646665604695,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 7,
+          "interval_start": 4492307609.625,
+          "interval_end": 4492307799.125,
+          "elapsed_ms": 0.10685402302577324,
+          "charged_cpu_ms": 0.10685402302577324,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0,
+          "subtractions": 0,
+          "subtraction_cpu_ms": 0,
+          "update_damage_cpu_ms": 0.06336528146449218,
+          "damaged_cpu_ms": 0.005568250540261271,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.04348874156128106,
+          "role": "unused",
+          "bounds_only_selected": false,
+          "occlusion_selected": false
+        },
+        {
+          "slot": 8,
+          "interval_start": 4492307799.125,
+          "interval_end": 4492312529.0,
+          "elapsed_ms": 2.667051040417041,
+          "charged_cpu_ms": 2.1486398667003113,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5184111737167296,
+          "subtractions": 4,
+          "subtraction_cpu_ms": 1.2770324466892875,
+          "update_damage_cpu_ms": 0.1603515187227138,
+          "damaged_cpu_ms": 0.10163819340578167,
+          "damaged_return": 0,
+          "other_cpu_ms": 0.71125590128831,
+          "role": "background",
+          "bounds_only_selected": true,
+          "occlusion_selected": false
+        }
+      ],
+      "tail": {
+        "elapsed_ms": 0.014026352626734087,
+        "charged_cpu_ms": 0.014026352626734087,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.0
+      },
+      "gross_skipped_geometry_cpu_ms": {
+        "bounds_only": 0.35693190804915287,
+        "occlusion": 3.510112365886219
+      },
+      "summary_cpu_ms": 2.795332255395212,
+      "subtraction_cpu_ms": 5.620479320645241,
+      "remaining_subtractions": 4
+    }
+  ],
+  "host_model": {
+    "cases": 128,
+    "width": 16,
+    "height": 12,
+    "seed": 816,
+    "no_missed_changed_layer": true,
+    "conservative_extra_layers": 44,
+    "captured_scene_pixels_checked": 307200,
+    "edge_and_interior_checks": 5
+  },
+  "source_sha256": {
+    "build/damage-retirement/menus/menu-analysis.json": "cd7d16465d5893f438b79d513c107273f1240e8b1ace575a71871a609190347b",
+    "build/damage-retirement/menus/menu-definition.json": "99fc3cd5b718827a416df1cec8036c56224ed2874d59422e6444224cc9473da1",
+    "build/popup-visibility-analysis/scene-checked/scenes.json": "08d5a15e851f7164ea47db2507ad36f7e26fc9a77b88ccd9ec3f170123a600fa",
+    "build/popup-visibility-analysis/scene-checked/runtime.json": "93065a82c95d576a9daa24439461fc7b09880cb8bc08c394b279bec91a083224",
+    "build/popup-visibility-analysis/analyze.py": "e74cfb3e65ffc556137bb7fe732802320499502af607f012ec0b0cf70c7870e9",
+    "build/popup-visibility-analysis/snapshot.py": "19d5d1e0d2c3ed4c240166eda28f40e96303d9e530c29c7555649b96a82596b4",
+    "build/popup-visibility-analysis/model.py": "ecf1a8009da2019a0b9ffce07d2cfcda79ebc14c13bf9e6b8b961fa968cbf5ba"
+  },
+  "provenance": {
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "compiler_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "compiler_override": false,
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "observers": {
+      "observer_sha256": "0ecad1779c0bca057857fb6196b64eaa167e609d5845d48808c1cc9289f5cdec",
+      "feedback_sha256": "130d0b0a3d31f335691236570e0844c83d7a4a973c837c5740eac6b758d75769",
+      "crossing_observer_sha256": "218db998d0de8f3319ad0d9507a2f8fb78b50dee5799da1628488e3ee71632d3"
+    },
+    "baseline_revision": "426f3f8a43762247a8ed72f466579b8e1c073bbb",
+    "demo_revision": "cbc0a16b15cee85523d3dd52bd47b5e1d35a26d6",
+    "demo_dirty": false,
+    "cpu": "65816 x8",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "snapshot_runtime": {
+    "status": "pass",
+    "guards": "intact",
+    "normal_exit": true,
+    "live_tasks": 0,
+    "autoboot_frames": 249
+  }
+}

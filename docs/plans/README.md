@@ -1,5 +1,12 @@
 # Implementation plans
 
+- [Batched directory enumeration design](directory-batching-design.md) and
+  [EB1–EB3 plan](directory-batching-implementation-plan.md): proposed
+  public ExNextBatch operation with compact caller-owned results, existing
+  enumeration cookies and partial-result/cancellation semantics. Start the
+  shared Files/file-selector scanner at eight entries; compare sixteen. Slices
+  cover the complete DOS API/bindings, scanner adoption and measurements/demo.
+
 - [Popup replacement](gem4xe/popup-transition-plan.md): proposed PT1–PT4 slices
   based on the [design](gem4xe/popup-transition-design.md), combining saved
   background and popup copies into one scene transaction and final visibility
