@@ -41,6 +41,7 @@ struct Browser {
     CICONBLK icons[BROWSER_ROWS];
     WORD iconView,sortNames,columns,armedClicks,full,restore[4];
     ULONG totalBytes;
+    UWORD totalFlags;
     char information[65];
     OBJECT *applicationMenu;
     struct Desktop *desktop;

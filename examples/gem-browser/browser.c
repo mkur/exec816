@@ -311,7 +311,13 @@ static void describe(struct Browser *b)
         *--write=*--read;
         if (++i==3 && read>b->information) { *--write=',';i=0; }
     }
-    strcpy(p," bytes in ");p=decimal(p+10,b->count);strcpy(p," items");
+    if (!(b->totalFlags&(FIB_SIZE_EXACT|FIB_SIZE_BOUND))) {
+        strcpy(b->information,"Size unknown; ");p=b->information+14;
+    } else {
+        strcpy(p,b->totalFlags&FIB_SIZE_BOUND ? " bytes or less in ":" bytes in ");
+        p+=strlen(p);
+    }
+    p=decimal(p,b->count);strcpy(p," items");
 }
 static void sort_entries(struct Browser *b)
 {
@@ -354,7 +360,14 @@ static WORD refresh_path(struct Browser *b,const char *path,const char *reveal)
     }
     b->refreshPending=0;
     b->totalBytes=0;
-    while (FileScanNext(&b->scan)) if (b->info.fib_DirEntryType<0) b->totalBytes+=b->info.fib_Size;
+    b->totalFlags=FIB_SIZE_EXACT;
+    while (FileScanNext(&b->scan)) if (b->entries[b->scan.count-1].kind<0) {
+        if (!(b->scan.currentFlags&(FIB_SIZE_EXACT|FIB_SIZE_BOUND))) b->totalFlags=0;
+        else {
+            b->totalBytes+=b->scan.currentSize;
+            if (b->totalFlags && (b->scan.currentFlags&FIB_SIZE_BOUND)) b->totalFlags=FIB_SIZE_BOUND;
+        }
+    }
     b->count=b->scan.count;b->truncated=b->scan.truncated;b->selected=-1;
     if (changed && !b->scan.error) { strcpy(b->path,path);b->first=0; }
     b->parent=has_parent(b);

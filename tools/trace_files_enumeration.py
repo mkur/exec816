@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Profile real Files directory scans in an unchanged packaged desktop demo."""
+"""Profile Files scans; use trace_directory_batch_ui.py for UI completion."""
 import argparse
 from collections import Counter, defaultdict
 import json
@@ -21,47 +21,73 @@ from sio_transaction_trace import BASE_HZ, read_events
 from test_demo import run
 import window_response_trace as response
 
-MODULES = set('DOSCALLS DOSCLIENT DOSOBJECTS DOSWIRE FSNAMES FSREGISTRY '
-              'FSHANDLER FSDIRECTORY FSINFO FSOPERATION FSABORT FSACTIVE '
-              'FSPACKET FSIO FSBACKEND FSCORE BLOCKIO BLOCKCACHE SDFS SDFSDIR '
-              'SDFSFILE SDFSDATE FS83 FSRELATIVE MYDOSDIR MYDOSFILE RAMFS'.split())
 APPLICATION = 'refresh_path FileScanBegin FileScanNext FileScanEnd redraw layout sort_entries'.split()
-RESIDENT = 'Lock UnLock Examine ExNext IoErr AllocMem FreeMem'.split()
+RESIDENT = 'Lock UnLock Examine ExNext ExNextBatch IoErr AllocMem FreeMem'.split()
 
 
-def setup(out):
+def setup(out,app_bank=None):
     p = read_build(out)
     d = response.setup(out)
     names = [r['name'].rsplit('_', 1)[0][2:] for r in p['image']['routines']
-             if r['name'].split('_')[1] in MODULES]
+             if r['name'].rsplit('_',1)[0][2:] in (
+                 'DOSCLIENT_CALL','DOSCLIENT_ENSURESLOT','DOSCALLS_LOCK',
+                 'FSDIRECTORY_SELECT','FSDIRECTORY_BATCH','FSPACKET_REPLY','FSPACKET_IDENTITY')]
     extra = native_markers(p, [(n, n) for n in names])
     d['timeline']['spans'].update(extra)
     for name, mark in extra.items():
         d['points'][mark['entry']] = name
         d['points'].update({pc: name+'_return' for pc in mark['returns']})
     foreign = json.loads((out/'bitmap-console/c-image.json').read_text())
-    d['entries'].update({foreign['symbols'][n]: n for n in RESIDENT})
+    d['entries']={foreign['symbols'][n]: n for n in RESIDENT if n in foreign['symbols']}
+    # DOS wrappers return to the application; observing every JSL successor in
+    # the shared renderer adds unrelated glyph/painting traffic to scan traces.
+    d['returns']=[]
+    checked=foreign['provenance']['checked_layout']
+    d['browser_fields']={key.removeprefix('Browser '):value for key,value in checked.items()
+                         if key.startswith('Browser ') and key!='Browser size'}
+    d['scan_error']=checked.get('FileScan error',16) # Archived single-entry layout.
+    d['batch']= 'ExNextBatch' in foreign['symbols']
     d['points'].update(d['entries'])
     app = json.loads((out/'bitmap-console/apps/desktop/app.json').read_text())
     d['app_entries'] = {app['image']['symbols'][n]: 'app.'+n for n in APPLICATION
                         if n in app['image']['symbols']}
     d['app_exits'] = listing_returns(app['image'], out/'bitmap-console/apps/desktop', exits=True)
+    d['app_returns'] = listing_returns(app['image'], out/'bitmap-console/apps/desktop')
     d['link_base'] = app['abi']['link_bank'] << 16
     d['gateway_entries'] = {p['labels'][n]: n for n in
         ('dos_current', 'tasks_find_task', 'tasks_forbid', 'tasks_permit',
          'ports_put_msg', 'ports_get_msg', 'ports_reply_msg')}
     d['points'].update(d['gateway_entries'])
     points = set(response.pcs(d))
-    for bank in app['verified_banks']:
+    d['app_bank']=app_bank
+    for bank in ([app_bank] if app_bank else app['verified_banks']):
         delta = (bank << 16)-d['link_base']
-        points.update(pc+delta for pc in set(d['app_entries']) | set(d['app_exits']))
+        points.update(pc+delta for pc in set(d['app_entries']) | set(d['app_exits']) | set(d['app_returns']))
     return d, sorted(points)
 
 
 class Enumeration:
+    def __init__(self,capacity=8,bundle=None):
+        self.capacity,self.bundle=capacity,bundle
+
+    def prepare_work(self,target,item):
+        if not self.bundle:return
+        from make_data_disk import make
+        source=target.parent/'comparison-work';source.mkdir(exist_ok=True)
+        for name,path in [('LIST',self.bundle/'media/C/LIST'),
+                          ('FILES.APP',self.bundle/'bitmap-console/apps/files/program.app'),
+                          ('TEXT.APP',self.bundle/'bitmap-console/apps/text/program.app')]:
+            (source/name).write_bytes(path.read_bytes())
+        make(target,source,filesystem='sdfs',sector_bytes=256,sectors=2880,
+             binary_names={'LIST','FILES.APP','TEXT.APP'})
+
     def exercise(self, s):
         b, out = s.b, s.p['output']
+        definition=json.loads((out/'enumeration-definition.json').read_text())
+        F.update(definition['browser_fields'])
         live = next(a for a in instances(b, s.p, out/'bitmap-console') if a['name']=='desktop')
+        require(not definition.get('app_bank') or live['base']==definition['app_bank']<<16,
+                'Desktop placement differs from requested passive markers')
         (out/'enumeration-app.json').write_text(json.dumps(live, indent=2)+'\n')
         desk = live['symbols']['GEMDesk']
         def at(name):
@@ -86,7 +112,7 @@ class Enumeration:
             start = b.eval_expr('@clk') & 0xffffffff
             action(); wait_listing(s, base, limit=200)
             require(text('path')==path, 'Wrong measured directory: '+text('path'))
-            require(not s.number(base+F['scan']+16, 4), 'Directory scan failed')
+            require(not s.number(base+F['scan']+definition['scan_error'], 4), 'Directory scan failed')
             row = dict(name=name, path=path, start=start, end=b.eval_expr('@clk') & 0xffffffff,
                        names=listing(s, base), paints=s.number(base+F['paints'], 4))
             samples.append(row)
@@ -175,7 +201,7 @@ def queue_probes(events, definition, timelines, app_dp, fs_dp, start, end):
     return result
 
 
-def analyze(out):
+def analyze(out,partial=False):
     d = json.loads((out/'enumeration-definition.json').read_text())
     live = json.loads((out/'enumeration-app.json').read_text())
     events = read_events(out/'emulator.log', kinds={'cpu'})
@@ -183,18 +209,24 @@ def analyze(out):
     entries = {int(pc): n for pc, n in d['entries'].items()}
     entries.update({int(pc)+delta: n for pc, n in d['app_entries'].items()})
     exits = set(d['exits']) | {pc+delta for pc in d['app_exits']}
+    returns=set(d['returns']) | {pc+delta for pc in d.get('app_returns',())}
     # The launch observer admits every legal relocation. Discard hits at other
     # placements before constructing CPU timelines; those PCs are not markers
     # in this execution and retaining them only inflates host memory use.
-    relevant = {int(pc) for pc in d['points']} | set(entries) | exits | set(d['returns'])
+    relevant = {int(pc) for pc in d['points']} | set(entries) | exits | returns
     events = [(tick, e) for tick, e in events if int(e[4], 16) in relevant]
+    if partial:
+        # A live capture may end inside an IRQ. Analyze only a prefix ending
+        # at a verified context restore, after every recorded completed sample.
+        last=max(i for i,(_,e) in enumerate(events) if int(e[4],16)==d['timeline']['points']['selected'])
+        events=events[:last+1]
     profile = analyze_events(events, {**d['timeline'], 'spans': {}}, include_segments=True)
     native = native_calls(events, d['timeline']['spans'])
     scan_pc = next(pc for pc, n in entries.items() if n=='app.FileScanBegin')
     app_dps = {int(e[9], 16) for _, e in events if int(e[4], 16)==scan_pc}
     require(len(app_dps)==1, 'Missing unique Files caller')
     app_dp = app_dps.pop()
-    c, unfinished = calls(events, entries, set(d['returns']), app_dp, exits)
+    c, unfinished = calls(events, entries, returns, app_dp, exits)
     c = [dict(s, dp=app_dp) for s in c]
     fs_dps = {s['dp'] for s in native if s['kind']=='FSDIRECTORY_SELECT'}
     require(len(fs_dps)==1, 'Missing unique filesystem Task')
@@ -212,10 +244,12 @@ def analyze(out):
         end = max(s['end'] for s in c if s['kind']=='app.FileScanNext' and start<=s['start']<s['end']<=right)
         spans = [s for s in native+c if start<=s['start']<s['end']<=end]
         count = len(sample['names'])
-        nexts = [s for s in spans if s['kind']=='ExNext']
-        require(len(nexts)==count+1 and sum(s['return_a']!=0 for s in nexts)==count,
+        nexts = [s for s in spans if s['kind']==('ExNextBatch' if d.get('batch') else 'ExNext')]
+        expected=count//d.get('batch_capacity',8)+1 if d.get('batch') else count+1
+        returned=sum(s['return_a'] if d.get('batch') else s['return_a']!=0 for s in nexts)
+        require(len(nexts)==expected and returned==count,
                 'Enumeration results disagree with published listing')
-        require(sum(s['kind']=='DOSCLIENT_CALL' for s in spans)==count+4,
+        require(sum(s['kind']=='DOSCLIENT_CALL' and s['dp']==app_dp for s in spans)==expected+3,
                 'Unexpected DOS traffic inside directory scan')
         for s in spans: s.update(timelines[s['dp']].measure(s['start'], s['end']))
         totals = {}
@@ -230,6 +264,13 @@ def analyze(out):
                 'Task and interrupt accounting does not reconcile')
         gateways = {int(pc): n for pc,n in d['gateway_entries'].items()}
         row = dict(sample=sample, start=start, end=end, elapsed_ms=(end-start)*1000/BASE_HZ,
+                   batch_calls=len(nexts) if d.get('batch') else 0,
+                   dos_calls=expected+3,
+                   complete_refresh=[dict(start=s['start'],end=s['end'],elapsed_ms=(s['end']-s['start'])*1000/BASE_HZ)
+                       for s in c if s['kind']=='app.refresh_path' and left<=s['start']<s['end']<=right],
+                   competing_calls=[dict(dp=s['dp'],elapsed_ms=(s['end']-s['start'])*1000/BASE_HZ)
+                       for s in native if s['kind']=='DOSCLIENT_CALL' and s['dp']!=app_dp
+                       and s['start']<end and s['end']>start],
                    task_charges=charges, global_interrupt_ms=irq, inclusive=totals,
                    exclusive={str(dp): exclusive(timelines[dp], [s for s in spans if s['dp']==dp], start, end)
                               for dp in (app_dp, fs_dp)},
@@ -245,7 +286,8 @@ def analyze(out):
                   archive_sha256=sha256(out/'exec816-demo.zip'), observer_sha256=sha256(Path(__file__)),
                   app_dp=app_dp, filesystem_dp=fs_dp, presenter_dp=profile['worker_dp'], samples=rows,
                   scope='ScanBegin through final ScanNext/UnLock. Inclusive routines overlap; CPU includes gateway/scheduling charges but excludes native interrupts and peer Tasks.')
-    (out/'enumeration-analysis.json').write_text(json.dumps(result, indent=2)+'\n')
+    result['partial_capture']=partial
+    (out/('enumeration-partial.json' if partial else 'enumeration-analysis.json')).write_text(json.dumps(result, indent=2)+'\n')
     return result
 
 
@@ -254,18 +296,26 @@ def main():
     parser.add_argument('--bundle', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--analyze', action='store_true')
+    parser.add_argument('--partial',action='store_true',help='Analyze completed samples from a still-running capture')
+    parser.add_argument('--capacity',type=int,choices=(8,16),default=8)
+    parser.add_argument('--media',type=Path,help='Common comparison media mounted from boot')
+    parser.add_argument('--app-bank',type=int,help='Previously observed desktop bank; verified before tracing')
     args = parser.parse_args(); out = args.output.resolve()
-    if args.analyze: return analyze(out)
+    if args.analyze: return analyze(out,args.partial)
     require(args.bundle is not None and not out.exists(), 'Supply a bundle and fresh output directory')
     shutil.copytree(args.bundle.resolve(), out, ignore=shutil.ignore_patterns('extracted', '*.log', '*.bgra', '*.png'))
     with zipfile.ZipFile(out/'exec816-demo.zip') as z: z.extractall(out/'extracted')
-    d, points = setup(out)
+    d, points = setup(out,args.app_bank)
+    d['batch_capacity']=args.capacity
     (out/'enumeration-definition.json').write_text(json.dumps(d, indent=2)+'\n')
     saved = {k: os.environ.get(k) for k in ('EXEC816_LATENCY_TRACE', 'EXEC816_LATENCY_PCS')}
     os.environ.update(EXEC816_LATENCY_TRACE='1', EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in points))
     try:
         result = run(out, boot_smoke=True, distribution_root=out/'extracted/exec816-demo',
-                     integration=Enumeration(), profile_commands=False)
+                     integration=Enumeration(args.capacity,bundle=out),
+                     profile_commands=False,media_path=args.media.resolve() if args.media else None,
+                     measurement_commands=[] if args.media else None,
+                     measurement_media_sha256=sha256(args.media) if args.media else None)
         (out/'enumeration-runtime.json').write_text(json.dumps(result, indent=2)+'\n')
     finally:
         for k,v in saved.items():

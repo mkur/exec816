@@ -1,0 +1,22 @@
+MODULE DIRBATCHCONTENTION
+USE EXEC
+USE FSTYPES
+USE DIRBATCHPEER
+
+PUBLIC PROC Checkpoint(FSTYPES.Service POINTER service)
+
+  IF DIRBATCHPEER.armed=0 OR service.packet=NULL THEN
+    RETURN
+  FI
+  IF service.packet.sp_Pkt.dp_Type<>28 THEN
+    RETURN
+  FI
+
+  DIRBATCHPEER.armed=0
+  EXEC.Signal(@DIRBATCHPEER.task,LONGCARD($20000000))
+  ; Arrange a reproducible queued peer before the first publication. The
+  ; measured queue interval begins later, at that peer's ordinary PutMsg.
+  EXEC.Yield()
+
+RETURN
+ENDMODULE

@@ -1,5 +1,5 @@
 {
-  "status": "EB1 complete; EB2/EB3 pending",
+  "status": "EB1\u2013EB3 complete; production scanner capacity 8",
   "tier": "development",
   "compiler": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
   "eb1": {
@@ -807,5 +807,1113 @@
         "idle": 0
       }
     }
+  },
+  "eb2": {
+    "scanner": {
+      "status": "pass",
+      "scope": "Scanner 0/8/9/255/256/257, errors, allocation failure, early/repeated cleanup and path helpers",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 165,
+            "untouched_above_floor": 1115
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 144,
+          "untouched_from_base": 1392,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    "layouts": "Emitted Browser 4059, FileScan 38, selector 3260 checked",
+    "application_artifacts": "Rebuilt for current DOS/C/COMMAND ABI",
+    "ui": "Desktop root/C/RAM navigation and Refresh; standalone Files refresh/retirement; selector open/path/cancel and normal EXIT. See EB3 phase records.",
+    "resources": {
+      "file_scan_bytes": [
+        20,
+        38
+      ],
+      "browser_bytes": [
+        4039,
+        4059
+      ],
+      "browser_allocated_bytes": [
+        4040,
+        4064
+      ],
+      "selector_bytes": [
+        3242,
+        3260
+      ],
+      "selector_allocated_bytes": [
+        3248,
+        3264
+      ],
+      "batch8_payload_bytes": 946,
+      "batch8_allocated_bytes": 952,
+      "batch16_payload_bytes": 1890,
+      "batch16_allocated_bytes": 1896,
+      "file_entry_bytes": 112
+    },
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_task": 0,
+      "idle": 0
+    }
+  },
+  "eb3": {
+    "status": "complete",
+    "selected_capacity": 8,
+    "reason": "Sixteen saves another 18 ms on warm SYS:C, but raises the controlled peer queue median from 34.375 to 64.963 ms and doubles temporary result storage.",
+    "comparison_media_sha256": "3bbfe9319b0cb67fbb118bf7e0cae52b7bd92efe59f48a046427e9c69c69725a",
+    "parent_code": "cbc0a16b",
+    "production_code": [
+      "c13a7830",
+      "628ec52c"
+    ],
+    "build_version": "c13a783-dirty (includes the committed EB2 source)",
+    "pins": {
+      "compiler": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "compiler_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+      "calypsi": "5.18",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      }
+    },
+    "variants": {
+      "parent-control": {
+        "archive_sha256": "ade55940e2468bd000ece5a22266f2b23deac34f47ad1827f708c305ff6d33d3",
+        "artifact_directory": "build/directory-batching/parent-control",
+        "capture": "Completed scan intervals from intentionally stopped broader observer; --partial trims only the unfinished trace tail. Packaged EXIT/guards are checked separately by the narrow UI observer.",
+        "samples": [
+          {
+            "name": "root refresh 1",
+            "entries": 9,
+            "scan_ms": 189.9577658769149,
+            "complete_refresh_ms": 412.5014273047271,
+            "dos_calls": 13,
+            "batch_calls": 0,
+            "physical_commands": 0,
+            "caller_cpu_ms": 47.566040156249336,
+            "filesystem_cpu_ms": 108.939227126825,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 33.45249859384053,
+            "paints": 2
+          },
+          {
+            "name": "root refresh 2",
+            "entries": 9,
+            "scan_ms": 189.95487602536866,
+            "complete_refresh_ms": 412.4981850322606,
+            "dos_calls": 13,
+            "batch_calls": 0,
+            "physical_commands": 0,
+            "caller_cpu_ms": 47.56568773532907,
+            "filesystem_cpu_ms": 108.939227126825,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 33.44996116321459,
+            "paints": 3
+          },
+          {
+            "name": "root refresh 3",
+            "entries": 9,
+            "scan_ms": 189.9577658769149,
+            "complete_refresh_ms": 412.5014273047271,
+            "dos_calls": 13,
+            "batch_calls": 0,
+            "physical_commands": 0,
+            "caller_cpu_ms": 47.566040156249336,
+            "filesystem_cpu_ms": 108.939227126825,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 33.45249859384053,
+            "paints": 4
+          },
+          {
+            "name": "C first visit",
+            "entries": 29,
+            "scan_ms": 1634.3198769628084,
+            "complete_refresh_ms": 2312.5377971436988,
+            "dos_calls": 33,
+            "batch_calls": 0,
+            "physical_commands": 2,
+            "caller_cpu_ms": 116.76198477823561,
+            "filesystem_cpu_ms": 330.1204997610586,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 330.0620683724779,
+            "paints": 6
+          },
+          {
+            "name": "C refresh 1",
+            "entries": 29,
+            "scan_ms": 532.0291409810552,
+            "complete_refresh_ms": 835.7433755439617,
+            "dos_calls": 33,
+            "batch_calls": 0,
+            "physical_commands": 0,
+            "caller_cpu_ms": 113.91576294195345,
+            "filesystem_cpu_ms": 324.4570250881404,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 93.65635295096133,
+            "paints": 7
+          },
+          {
+            "name": "C refresh 2",
+            "entries": 29,
+            "scan_ms": 532.0291409810552,
+            "complete_refresh_ms": 835.7433755439617,
+            "dos_calls": 33,
+            "batch_calls": 0,
+            "physical_commands": 0,
+            "caller_cpu_ms": 113.91576294195345,
+            "filesystem_cpu_ms": 324.4570250881404,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 93.65635295096133,
+            "paints": 8
+          },
+          {
+            "name": "C refresh 3",
+            "entries": 29,
+            "scan_ms": 532.0291409810552,
+            "complete_refresh_ms": 835.7433755439617,
+            "dos_calls": 33,
+            "batch_calls": 0,
+            "physical_commands": 0,
+            "caller_cpu_ms": 113.91576294195345,
+            "filesystem_cpu_ms": 324.4570250881404,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 93.65635295096133,
+            "paints": 9
+          },
+          {
+            "name": "RAM first visit",
+            "entries": 2,
+            "scan_ms": 120.79205896988775,
+            "complete_refresh_ms": 412.4118419067945,
+            "dos_calls": 6,
+            "batch_calls": 0,
+            "physical_commands": 0,
+            "caller_cpu_ms": 20.52576972253196,
+            "filesystem_cpu_ms": 41.70034635928044,
+            "presenter_cpu_ms": 37.2730233063003,
+            "interrupt_ms": 21.292919581775045,
+            "paints": 12
+          },
+          {
+            "name": "RAM refresh 1",
+            "entries": 2,
+            "scan_ms": 75.1543251209861,
+            "complete_refresh_ms": 201.88418320812994,
+            "dos_calls": 6,
+            "batch_calls": 0,
+            "physical_commands": 0,
+            "caller_cpu_ms": 22.536190104302495,
+            "filesystem_cpu_ms": 35.734494536770896,
+            "presenter_cpu_ms": 3.7084548598140064,
+            "interrupt_ms": 13.175185620098706,
+            "paints": 13
+          },
+          {
+            "name": "RAM refresh 2",
+            "entries": 2,
+            "scan_ms": 75.15122381688772,
+            "complete_refresh_ms": 201.88108190403156,
+            "dos_calls": 6,
+            "batch_calls": 0,
+            "physical_commands": 0,
+            "caller_cpu_ms": 22.536049135934388,
+            "filesystem_cpu_ms": 35.73435356840279,
+            "presenter_cpu_ms": 3.7083843756299526,
+            "interrupt_ms": 13.172436736920602,
+            "paints": 14
+          },
+          {
+            "name": "RAM refresh 3",
+            "entries": 2,
+            "scan_ms": 75.1543251209861,
+            "complete_refresh_ms": 201.88418320812994,
+            "dos_calls": 6,
+            "batch_calls": 0,
+            "physical_commands": 0,
+            "caller_cpu_ms": 22.536190104302495,
+            "filesystem_cpu_ms": 35.734494536770896,
+            "presenter_cpu_ms": 3.7084548598140064,
+            "interrupt_ms": 13.175185620098706,
+            "paints": 15
+          }
+        ]
+      },
+      "trace8": {
+        "archive_sha256": "382d649e1ef638f63a79bc10e8b511147943d79fb73b088f466005653e474aec",
+        "artifact_directory": "build/directory-batching/trace8",
+        "capture": "Completed scan intervals from intentionally stopped broader observer; --partial trims only the unfinished trace tail. Packaged EXIT/guards are checked separately by the narrow UI observer.",
+        "samples": [
+          {
+            "name": "root refresh 1",
+            "entries": 9,
+            "scan_ms": 117.15627330383336,
+            "complete_refresh_ms": 334.56946145854334,
+            "dos_calls": 5,
+            "batch_calls": 2,
+            "physical_commands": 0,
+            "caller_cpu_ms": 26.16556170960798,
+            "filesystem_cpu_ms": 66.5881707803586,
+            "presenter_cpu_ms": 3.702675156721583,
+            "interrupt_ms": 20.699865657145192,
+            "paints": 2
+          },
+          {
+            "name": "root refresh 2",
+            "entries": 9,
+            "scan_ms": 117.15627330383336,
+            "complete_refresh_ms": 334.5680517748622,
+            "dos_calls": 5,
+            "batch_calls": 2,
+            "physical_commands": 0,
+            "caller_cpu_ms": 26.16556170960798,
+            "filesystem_cpu_ms": 66.5881707803586,
+            "presenter_cpu_ms": 3.702675156721583,
+            "interrupt_ms": 20.699865657145192,
+            "paints": 3
+          },
+          {
+            "name": "root refresh 3",
+            "entries": 9,
+            "scan_ms": 117.15627330383336,
+            "complete_refresh_ms": 334.56946145854334,
+            "dos_calls": 5,
+            "batch_calls": 2,
+            "physical_commands": 0,
+            "caller_cpu_ms": 26.16556170960798,
+            "filesystem_cpu_ms": 66.5881707803586,
+            "presenter_cpu_ms": 3.702675156721583,
+            "interrupt_ms": 20.699865657145192,
+            "paints": 4
+          },
+          {
+            "name": "C first visit",
+            "entries": 29,
+            "scan_ms": 1488.1254590282485,
+            "complete_refresh_ms": 2161.6236172765193,
+            "dos_calls": 7,
+            "batch_calls": 4,
+            "physical_commands": 2,
+            "caller_cpu_ms": 38.0941640505287,
+            "filesystem_cpu_ms": 201.67865132742864,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 306.4834171860176,
+            "paints": 6
+          },
+          {
+            "name": "C refresh 1",
+            "entries": 29,
+            "scan_ms": 297.6181279682652,
+            "complete_refresh_ms": 594.1814601221632,
+            "dos_calls": 7,
+            "batch_calls": 4,
+            "physical_commands": 0,
+            "caller_cpu_ms": 38.719499731455265,
+            "filesystem_cpu_ms": 206.4744656946428,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 52.42416254216716,
+            "paints": 7
+          },
+          {
+            "name": "C refresh 2",
+            "entries": 29,
+            "scan_ms": 297.619185231026,
+            "complete_refresh_ms": 594.1835746476848,
+            "dos_calls": 7,
+            "batch_calls": 4,
+            "physical_commands": 0,
+            "caller_cpu_ms": 38.719499731455265,
+            "filesystem_cpu_ms": 206.4744656946428,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 52.42521980492797,
+            "paints": 8
+          },
+          {
+            "name": "C refresh 3",
+            "entries": 29,
+            "scan_ms": 297.6181279682652,
+            "complete_refresh_ms": 594.1814601221632,
+            "dos_calls": 7,
+            "batch_calls": 4,
+            "physical_commands": 0,
+            "caller_cpu_ms": 38.71935876308715,
+            "filesystem_cpu_ms": 206.47460666301086,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 52.42416254216716,
+            "paints": 9
+          },
+          {
+            "name": "RAM first visit",
+            "entries": 2,
+            "scan_ms": 90.73443110100524,
+            "complete_refresh_ms": 379.6091370057473,
+            "dos_calls": 4,
+            "batch_calls": 1,
+            "physical_commands": 0,
+            "caller_cpu_ms": 19.413176877240517,
+            "filesystem_cpu_ms": 30.387916755359267,
+            "presenter_cpu_ms": 24.998061684938516,
+            "interrupt_ms": 15.935275783466947,
+            "paints": 12
+          },
+          {
+            "name": "RAM refresh 1",
+            "entries": 2,
+            "scan_ms": 62.58537396793533,
+            "complete_refresh_ms": 191.85886528921776,
+            "dos_calls": 4,
+            "batch_calls": 1,
+            "physical_commands": 0,
+            "caller_cpu_ms": 21.344302551950367,
+            "filesystem_cpu_ms": 30.26167958171866,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 10.979391834266309,
+            "paints": 13
+          },
+          {
+            "name": "RAM refresh 2",
+            "entries": 2,
+            "scan_ms": 62.654941857596576,
+            "complete_refresh_ms": 193.0098720148186,
+            "dos_calls": 4,
+            "batch_calls": 1,
+            "physical_commands": 0,
+            "caller_cpu_ms": 20.606121692353454,
+            "filesystem_cpu_ms": 31.09783345715055,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 10.950986708092572,
+            "paints": 14
+          },
+          {
+            "name": "RAM refresh 3",
+            "entries": 2,
+            "scan_ms": 62.65310926881117,
+            "complete_refresh_ms": 193.00641828979994,
+            "dos_calls": 4,
+            "batch_calls": 1,
+            "physical_commands": 0,
+            "caller_cpu_ms": 20.606051208169397,
+            "filesystem_cpu_ms": 31.097762972966496,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 10.949295087675276,
+            "paints": 15
+          }
+        ]
+      },
+      "trace16": {
+        "archive_sha256": "087c0c5728e889310a0ed7b77e86589235ceceb180fea676175d331223e005e4",
+        "artifact_directory": "build/directory-batching/trace16",
+        "capture": "Completed scan intervals from intentionally stopped broader observer; --partial trims only the unfinished trace tail. Packaged EXIT/guards are checked separately by the narrow UI observer.",
+        "samples": [
+          {
+            "name": "root refresh 1",
+            "entries": 9,
+            "scan_ms": 94.31791750249161,
+            "complete_refresh_ms": 316.5262151825752,
+            "dos_calls": 4,
+            "batch_calls": 1,
+            "physical_commands": 0,
+            "caller_cpu_ms": 21.445940745356147,
+            "filesystem_cpu_ms": 56.35358531899027,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 16.518391438145194,
+            "paints": 2
+          },
+          {
+            "name": "root refresh 2",
+            "entries": 9,
+            "scan_ms": 94.28683397732382,
+            "complete_refresh_ms": 316.53150149637924,
+            "dos_calls": 4,
+            "batch_calls": 1,
+            "physical_commands": 0,
+            "caller_cpu_ms": 21.44706849230101,
+            "filesystem_cpu_ms": 56.38932080030562,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 16.450444684717198,
+            "paints": 3
+          },
+          {
+            "name": "root refresh 3",
+            "entries": 9,
+            "scan_ms": 94.31791750249161,
+            "complete_refresh_ms": 316.5262151825752,
+            "dos_calls": 4,
+            "batch_calls": 1,
+            "physical_commands": 0,
+            "caller_cpu_ms": 21.445940745356147,
+            "filesystem_cpu_ms": 56.35358531899027,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 16.518391438145194,
+            "paints": 4
+          },
+          {
+            "name": "C first visit",
+            "entries": 29,
+            "scan_ms": 1461.5379085087097,
+            "complete_refresh_ms": 2138.8933137293325,
+            "dos_calls": 5,
+            "batch_calls": 2,
+            "physical_commands": 2,
+            "caller_cpu_ms": 31.43397253090379,
+            "filesystem_cpu_ms": 194.3755030808637,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 301.5920967494104,
+            "paints": 6
+          },
+          {
+            "name": "C refresh 1",
+            "entries": 29,
+            "scan_ms": 279.63747164773696,
+            "complete_refresh_ms": 575.9644703325021,
+            "dos_calls": 5,
+            "batch_calls": 2,
+            "physical_commands": 0,
+            "caller_cpu_ms": 32.05486770823495,
+            "filesystem_cpu_ms": 198.21653869088314,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 49.36606524861886,
+            "paints": 7
+          },
+          {
+            "name": "C refresh 2",
+            "entries": 29,
+            "scan_ms": 279.63747164773696,
+            "complete_refresh_ms": 575.9644703325021,
+            "dos_calls": 5,
+            "batch_calls": 2,
+            "physical_commands": 0,
+            "caller_cpu_ms": 32.05486770823495,
+            "filesystem_cpu_ms": 198.21653869088314,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 49.36606524861886,
+            "paints": 8
+          },
+          {
+            "name": "C refresh 3",
+            "entries": 29,
+            "scan_ms": 279.63747164773696,
+            "complete_refresh_ms": 575.9644703325021,
+            "dos_calls": 5,
+            "batch_calls": 2,
+            "physical_commands": 0,
+            "caller_cpu_ms": 32.05486770823495,
+            "filesystem_cpu_ms": 198.21653869088314,
+            "presenter_cpu_ms": 0.0,
+            "interrupt_ms": 49.36606524861886,
+            "paints": 9
+          },
+          {
+            "name": "RAM first visit",
+            "entries": 2,
+            "scan_ms": 83.41394374516302,
+            "complete_refresh_ms": 392.4178753529496,
+            "dos_calls": 4,
+            "batch_calls": 1,
+            "physical_commands": 0,
+            "caller_cpu_ms": 19.410850899166736,
+            "filesystem_cpu_ms": 30.387987239543317,
+            "presenter_cpu_ms": 18.93310909964913,
+            "interrupt_ms": 14.681996506803838,
+            "paints": 12
+          },
+          {
+            "name": "RAM refresh 1",
+            "entries": 2,
+            "scan_ms": 68.6668903364774,
+            "complete_refresh_ms": 197.82260258620568,
+            "dos_calls": 4,
+            "batch_calls": 1,
+            "physical_commands": 0,
+            "caller_cpu_ms": 22.757158021311596,
+            "filesystem_cpu_ms": 30.028165479947955,
+            "presenter_cpu_ms": 3.709723575126977,
+            "interrupt_ms": 12.171843260090869,
+            "paints": 13
+          },
+          {
+            "name": "RAM refresh 2",
+            "entries": 2,
+            "scan_ms": 67.21294258781272,
+            "complete_refresh_ms": 196.4518966589087,
+            "dos_calls": 4,
+            "batch_calls": 1,
+            "physical_commands": 0,
+            "caller_cpu_ms": 21.962025940999098,
+            "filesystem_cpu_ms": 29.63437034363859,
+            "presenter_cpu_ms": 3.709723575126977,
+            "interrupt_ms": 11.906822728048054,
+            "paints": 14
+          },
+          {
+            "name": "RAM refresh 3",
+            "entries": 2,
+            "scan_ms": 67.21294258781272,
+            "complete_refresh_ms": 196.45379973187818,
+            "dos_calls": 4,
+            "batch_calls": 1,
+            "physical_commands": 0,
+            "caller_cpu_ms": 21.962025940999098,
+            "filesystem_cpu_ms": 29.63437034363859,
+            "presenter_cpu_ms": 3.709723575126977,
+            "interrupt_ms": 11.906822728048054,
+            "paints": 15
+          }
+        ]
+      }
+    },
+    "contention": {
+      "status": "pass",
+      "samples": [
+        {
+          "capacity": 8,
+          "lock_ms": 72.39183849536002,
+          "queue_ms": 34.37457268963417,
+          "batch_ms": 63.16383766646602
+        },
+        {
+          "capacity": 8,
+          "lock_ms": 71.68988650636683,
+          "queue_ms": 34.04174637253147,
+          "batch_ms": 41.73382634670606
+        },
+        {
+          "capacity": 8,
+          "lock_ms": 71.65654748730933,
+          "queue_ms": 34.475717493751574,
+          "batch_ms": 41.932450777370065
+        },
+        {
+          "capacity": 16,
+          "lock_ms": 103.31973458475653,
+          "queue_ms": 64.965765831805,
+          "batch_ms": 72.42186475776701
+        },
+        {
+          "capacity": 16,
+          "lock_ms": 102.16492171321677,
+          "queue_ms": 64.90514943351862,
+          "batch_ms": 72.03201673576466
+        },
+        {
+          "capacity": 16,
+          "lock_ms": 103.30944389388465,
+          "queue_ms": 64.963157916995,
+          "batch_ms": 72.72015382468328
+        }
+      ],
+      "stimulus": "Test-only one-time Signal/Yield at active batch admission, before enumeration; peer already owns its DOS context. Queue timing starts at its ordinary PutMsg. No per-entry hooks; production worker unchanged.",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 261,
+            "untouched_above_floor": 1019
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 276,
+            "untouched_above_floor": 780
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 123,
+            "untouched_above_floor": 933
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 255,
+            "untouched_above_floor": 801
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 50,
+            "untouched_above_floor": 206
+          }
+        ]
+      },
+      "artifact_directory": "build/directory-batching/contention-final",
+      "pin_file": "toolchain/altirra-shell-paced.json",
+      "pin_sha256": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087",
+      "admission_override_sha256": "2ea71be213271f9763f3a05195c0833b7d4d44bde7db0baa8dc010eb9276bb35"
+    },
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_task": 0,
+      "idle": 0
+    },
+    "limitations": [
+      "Three warm repetitions are throughput evidence, not p95 qualification.",
+      "First SYS:C visit misses two directory sectors after prior boot/root use; not a fully cold cache.",
+      "Parent and capacity-16 use the capacity-8 SYS disk from boot. Version-matched standalone apps are on a separate WORK disk.",
+      "RAM contains the same two names but build-specific embedded Desktop payloads.",
+      "GUI-launched background LIST finished before scan; its sample is excluded from competing-client claims. Controlled active-batch peer test compares capacities 8/16 instead.",
+      "Root eight-entry scan includes 3.70 ms of presenter work; some RAM samples also include a presenter turn. CPU charges are retained, not subtracted.",
+      "Selector Escape is injected with a live scan lock; this does not prove an active ExNextBatch packet or bound cancellation at every phase. One sample per build; no physical traffic during these cancellation intervals."
+    ],
+    "completed_ui_phases": {
+      "ui8-final": {
+        "standalone_files_refresh": true,
+        "standalone_files_retired": true,
+        "selector_open": true,
+        "host_stop": "Unsupported dd debugger expression in cancellation observer; rerun selector phase with dw checks.",
+        "archive_sha256": "382d649e1ef638f63a79bc10e8b511147943d79fb73b088f466005653e474aec",
+        "log_sha256": "c8189c198683aa7432efdbdedc6265d33383e99ac1e7cd643c866f34e661d380"
+      },
+      "ui-parent-final": {
+        "standalone_files_refresh": true,
+        "standalone_files_retired": true,
+        "selector_open": true,
+        "host_stop": "Unsupported dd debugger expression in cancellation observer; rerun selector phase with dw checks.",
+        "archive_sha256": "ade55940e2468bd000ece5a22266f2b23deac34f47ad1827f708c305ff6d33d3",
+        "log_sha256": "c8189c198683aa7432efdbdedc6265d33383e99ac1e7cd643c866f34e661d380"
+      },
+      "ui16-final": {
+        "standalone_files_refresh": true,
+        "standalone_files_retired": true,
+        "selector_open": true,
+        "host_stop": "Unsupported dd debugger expression in cancellation observer; rerun selector phase with dw checks.",
+        "archive_sha256": "087c0c5728e889310a0ed7b77e86589235ceceb180fea676175d331223e005e4",
+        "log_sha256": "c8189c198683aa7432efdbdedc6265d33383e99ac1e7cd643c866f34e661d380"
+      }
+    },
+    "ui": {
+      "selector-parent-checked": {
+        "artifact_directory": "build/directory-batching/selector-parent-checked",
+        "measurements": {
+          "new_window": {
+            "start": 66914945,
+            "end": 74704321,
+            "input_to_settled_upper_ms": 4392.222493194752,
+            "count": 9,
+            "service_to_initial_paint_ms": 772.5636084518994
+          },
+          "standalone_files_refresh": null,
+          "text_task": 136034,
+          "selector_open": {
+            "start": 130830573,
+            "end": 133960749,
+            "input_to_ready_upper_ms": 1765.023210441809,
+            "count": 8,
+            "entry_to_usable_list_ms": 952.9967055692373
+          },
+          "selector_cancel": {
+            "start": 146407532,
+            "end": 146651246,
+            "input_to_retired_ms": 137.42385946017572,
+            "observed_mid_scan": true,
+            "serial_events": {},
+            "physical_commands": 0
+          },
+          "scope": "Physical input and IRQ-sampled UI completion; upper bounds include helper settling waits.",
+          "tier": "development",
+          "qualification": false,
+          "partial_capture": false,
+          "archive_sha256": "ade55940e2468bd000ece5a22266f2b23deac34f47ad1827f708c305ff6d33d3",
+          "completion": "New Window service entry through first fenced redraw return; selector entry through first blocking AES event call after directory unlock."
+        },
+        "status": "pass",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 575,
+              "untouched_above_floor": 705
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 318,
+              "untouched_above_floor": 738
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 149,
+              "untouched_above_floor": 907
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 784,
+              "untouched_above_floor": 272
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 994,
+              "untouched_above_floor": 62
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 837,
+              "untouched_above_floor": 1467
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 64,
+              "untouched_above_floor": 192
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 293,
+            "untouched_from_base": 1243,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        "autoboot_frames": 249,
+        "os_restored": true,
+        "ownership_restored": true,
+        "measurement_media_override": true
+      },
+      "selector8-checked": {
+        "artifact_directory": "build/directory-batching/selector8-checked",
+        "measurements": {
+          "new_window": {
+            "start": 66665689,
+            "end": 74455065,
+            "input_to_settled_upper_ms": 4392.222493194752,
+            "count": 9,
+            "service_to_initial_paint_ms": 692.6494863817508
+          },
+          "standalone_files_refresh": null,
+          "text_task": 136034,
+          "selector_open": {
+            "start": 130510253,
+            "end": 133640878,
+            "input_to_ready_upper_ms": 1765.2763896309307,
+            "count": 8,
+            "entry_to_usable_list_ms": 913.4274485148278
+          },
+          "selector_cancel": {
+            "start": 146089005,
+            "end": 146334956,
+            "input_to_retired_ms": 138.68524441800506,
+            "observed_mid_scan": true,
+            "serial_events": {},
+            "physical_commands": 0
+          },
+          "scope": "Physical input and IRQ-sampled UI completion; upper bounds include helper settling waits.",
+          "tier": "development",
+          "qualification": false,
+          "partial_capture": false,
+          "archive_sha256": "382d649e1ef638f63a79bc10e8b511147943d79fb73b088f466005653e474aec",
+          "completion": "New Window service entry through first fenced redraw return; selector entry through first blocking AES event call after directory unlock."
+        },
+        "status": "pass",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 579,
+              "untouched_above_floor": 701
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 309,
+              "untouched_above_floor": 747
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 149,
+              "untouched_above_floor": 907
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 782,
+              "untouched_above_floor": 274
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 990,
+              "untouched_above_floor": 66
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 829,
+              "untouched_above_floor": 1475
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 64,
+              "untouched_above_floor": 192
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 301,
+            "untouched_from_base": 1235,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        "autoboot_frames": 249,
+        "os_restored": true,
+        "ownership_restored": true,
+        "measurement_media_override": false
+      },
+      "selector16-checked": {
+        "artifact_directory": "build/directory-batching/selector16-checked",
+        "measurements": {
+          "new_window": {
+            "start": 67021401,
+            "end": 74810777,
+            "input_to_settled_upper_ms": 4392.222493194752,
+            "count": 9,
+            "service_to_initial_paint_ms": 672.6858985112331
+          },
+          "standalone_files_refresh": null,
+          "text_task": 136034,
+          "selector_open": {
+            "start": 130759229,
+            "end": 133889854,
+            "input_to_ready_upper_ms": 1765.2763896309307,
+            "count": 8,
+            "entry_to_usable_list_ms": 912.724791683994
+          },
+          "selector_cancel": {
+            "start": 146338430,
+            "end": 146585276,
+            "input_to_retired_ms": 139.18991117583124,
+            "observed_mid_scan": true,
+            "serial_events": {},
+            "physical_commands": 0
+          },
+          "scope": "Physical input and IRQ-sampled UI completion; upper bounds include helper settling waits.",
+          "tier": "development",
+          "qualification": false,
+          "partial_capture": false,
+          "archive_sha256": "087c0c5728e889310a0ed7b77e86589235ceceb180fea676175d331223e005e4",
+          "completion": "New Window service entry through first fenced redraw return; selector entry through first blocking AES event call after directory unlock."
+        },
+        "status": "pass",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 561,
+              "untouched_above_floor": 719
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 305,
+              "untouched_above_floor": 751
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 148,
+              "untouched_above_floor": 908
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 782,
+              "untouched_above_floor": 274
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 990,
+              "untouched_above_floor": 66
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 829,
+              "untouched_above_floor": 1475
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 59,
+              "untouched_above_floor": 197
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 287,
+            "untouched_from_base": 1249,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        "autoboot_frames": 249,
+        "os_restored": true,
+        "ownership_restored": true,
+        "measurement_media_override": true
+      }
+    }
+  },
+  "qualification": false,
+  "delivery": {
+    "zip": "build/directory-batching/demo/exec816-demo.zip",
+    "bytes": 662596,
+    "sha256": "382d649e1ef638f63a79bc10e8b511147943d79fb73b088f466005653e474aec",
+    "launch": "build/directory-batching/demo/launch-altirra.command",
+    "of816": true,
+    "autoboot_seconds": 5,
+    "source_input_hashes_match_current_tree": true,
+    "zip_crc": "pass",
+    "validation": "Development tier only; no release matrix or real-hardware qualification."
   }
 }

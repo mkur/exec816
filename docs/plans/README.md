@@ -1,11 +1,13 @@
 # Implementation plans
 
 - [Batched directory enumeration design](directory-batching-design.md) and
-  [EB1–EB3 plan](directory-batching-implementation-plan.md): EB1 implements the
+  [EB1–EB3 plan](directory-batching-implementation-plan.md): EB1–EB2 implement the
   public ExNextBatch operation with compact caller-owned results, existing
-  enumeration cookies and partial-result/cancellation semantics. Start the
-  shared Files/file-selector scanner at eight entries; compare sixteen. Slices
-  cover the complete DOS API/bindings, scanner adoption and measurements/demo.
+  enumeration cookies and partial-result/cancellation semantics. The shared
+  Files/file-selector scanner uses eight entries. EB3 retains that size after
+  comparing sixteen and completes the packaged walkthrough/demo delivery.
+  [Results](../history/directory-batching.md): warm SYS:C scan 532→298 ms,
+  complete Refresh 836→594 ms; no added bank-zero reservation.
 
 - [Popup replacement](gem4xe/popup-transition-plan.md): proposed PT1–PT4 slices
   based on the [design](gem4xe/popup-transition-design.md), combining saved

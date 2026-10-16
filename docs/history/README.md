@@ -6,7 +6,9 @@
   reservations.
 
 - [Directory batching](directory-batching.md): public ExNextBatch, compact results
-  and prefix-preserving cancellation; shared scanner and measurements follow.
+  and prefix-preserving cancellation, shared Files/selector scanner, resource
+  accounting and focused checks. Eight-entry batches reduce warm SYS:C scan
+  532→298 ms and complete Refresh 836→594 ms; includes the OF816 demo.
 
 - [Files enumeration analysis](files-enumeration-analysis.md): warm root/C
   scans take 193/533 ms without disk traffic or presenter CPU; repeated DOS
