@@ -1,11 +1,11 @@
 # Exec816 documentation
 
-Start with the [demo guide](guides/demo.md) to run Exec816, or the
+Start with the [GEM desktop guide](gem-desktop-distribution.txt) to run Exec816, or the
 [architecture overview](architecture/overview.md) to understand it.
 
 | I want to… | Start here |
 | --- | --- |
-| Install the ZIP and use its shell | [Installation](../README.md#installation), [demo](guides/demo.md), [shell](guides/shell.md) |
+| Install the ZIP and use its desktop | [Installation](../README.md#installation), [GEM desktop](gem-desktop-distribution.txt), [shell](guides/shell.md) |
 | Choose the system drive or cache size | [OF816 boot monitor](guides/boot-monitor.md) |
 | Write a disk command | [Command guide](guides/commands.md) |
 | Try Tasks and message passing | [Task examples](guides/tasks.md), [message example](guides/messages.md) |

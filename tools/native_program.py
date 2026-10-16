@@ -1012,7 +1012,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'lib/fs/fsalloc.act','lib/fs/fswrite.act','lib/fs/fsnamespace.act',
                 'lib/mydos/mydoswrite.act','lib/spartados/sdfswrite.act',
                 'lib/dos/process-types.inc','lib/dos/task-process.inc',
-                'tools/generate_build_info.py','lib/exec/taskinspect.act','lib/io/deviceinspect.act','lib/fs/fsinspect.act',
+                'VERSION','tools/generate_build_info.py','lib/exec/taskinspect.act','lib/io/deviceinspect.act','lib/fs/fsinspect.act',
                 'lib/fs/fsactive.act','lib/fs/fsabort.act','lib/fs/fsoperation.act','lib/io/blockio.act','lib/io/blockcache.act','lib/io/blockwire.act','lib/io/blocktypes.act',
                 'abi/block-io.json','tools/generate_block_io.py','lib/io/block-backends.inc','lib/io/blocktransport.act',
                 'lib/mydos/mydosfile.act','lib/mydos/mydos.act','lib/mydos/mydostypes.act',

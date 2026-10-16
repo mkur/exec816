@@ -43,15 +43,21 @@ machine boundary and the pin's provenance for platform inputs.
 
 ## Build the demo
 
+The 0.2 release package contains the GEM desktop, including the windowed Shell:
+
 ```sh
-CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 python3 tools/build_demo.py
+python3 tools/build_demo.py --gem-desktop --release-compiler --output build/demo
 ```
 
 The build always includes OF816 and produces `build/demo/exec816-demo.zip` with
 the boot XEX, system disk and matching ROM. It fetches the pinned OF816 checkout
 if absent. Build reports and intermediate files remain outside the ZIP.
-See the [demo guide](../guides/demo.md) for machine setup, media alternatives and
-the walkthrough, and the [boot monitor guide](../guides/boot-monitor.md) for
+The release version comes from [VERSION](../../VERSION); the Shell banner and
+`VER` retain the exact source commit as well. `--release-compiler` selects the
+optimized host compiler; target code is optimized in every demo build.
+See the [GEM desktop guide](../gem-desktop-distribution.txt) for machine setup and
+desktop controls, the [console demo guide](../guides/demo.md) for other source-build profiles,
+and the [boot monitor guide](../guides/boot-monitor.md) for
 repackaging an existing image.
 
 For a full-screen standard text shell without starting the prime task, use:

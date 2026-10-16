@@ -651,7 +651,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
             if showcase:
                 command('TASKS',b'process')
-                screenshot('boot-tasks.png',[b'Exec816 (',b'exec: 8 task slots',
+                screenshot('boot-tasks.png',[p['build']['exec_build']['strings']['banner'].strip().encode(),b'exec: 8 task slots',
                     b'SYS: -> D1: ready, read-only',b'SLOT STATE',b'dos.filesystem',b'process'])
                 command('MOUNT',b'SDFS' if manifest.get('filesystem')=='sdfs' else b'MyDOS')
                 command('CD SYS:')

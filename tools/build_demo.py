@@ -97,7 +97,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if aes_input:
         (media/'README.TXT').write_text('Exec816 GEM input apps\n\nTwo independent GEM windows beside the shell.\nClick a window to focus it, then press Activate.\nRelease inside to count; outside to cancel.\nKeys display GEM scan/ASCII in hexadecimal.\nEscape/BREAK cancels a held button; X closes the app.\nTick blinks after one second without another event.\nClick the shell to type; EXIT closes the desktop.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
     if gem_desktop:
-        (media/'README.TXT').write_text((ROOT/'docs/gem-desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@','system.atr').replace('@POINTER_DESCRIPTION@',pointer_description(__import__('generate_mouse_acceleration').metadata(mouse_profile)['profile'])),encoding='ascii')
+        (media/'README.TXT').write_text((ROOT/'docs/gem-desktop-distribution.txt').read_text().replace('@VERSION@',(ROOT/'VERSION').read_text().strip()).replace('@SYSTEM_DISK@','system.atr').replace('@POINTER_DESCRIPTION@',pointer_description(__import__('generate_mouse_acceleration').metadata(mouse_profile)['profile'])),encoding='ascii')
         # Remove generated copies left by a pre-RAM desktop build in this output.
         (media/'DESKTOP.RSC').unlink(missing_ok=True)
         (command_dir/'DESKTOP.APP').unlink(missing_ok=True)
@@ -261,6 +261,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     if ide_only:
         guide=ide_only_guide(bitmap_shell_only)
+    guide=guide.replace('@VERSION@',program['build']['exec_build']['version'])
     (output/'README.md').write_text(guide)
     if ideplus:
         with (output/'README.md').open('a') as note:
@@ -283,7 +284,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                         **({} if name in binary_names else dict(lines=payload.count(b'\n'),words=len(payload.split()))))
                for name,payload in files.items()},
         source_inputs={str(path.relative_to(ROOT)):sha256(path) for path in
-                       [ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'examples/shell/shell-session.inc',
+                       [ROOT/'VERSION',ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'examples/shell/shell-session.inc',
                         ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-mount-diagnostics.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-jobs.inc',ROOT/'examples/shell/shell-execute.inc',ROOT/'examples/shell/shell-boot.inc',
                         *(ROOT/'examples/commands'/name for name in ('command-common.inc','command-files.inc','command-write.inc','command-transfer.inc','command-pattern.inc','fuji-arguments.inc','fuji-images.inc')),
                         ROOT/'docs/guides/demo.md',ROOT/'docs/demo.png',ROOT/'docs/images/demo-boot.png',ROOT/'docs/demo-distribution.txt',

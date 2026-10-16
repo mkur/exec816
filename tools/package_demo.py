@@ -108,6 +108,8 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
                        'docs/bitmap-shell-distribution.txt')).read_text()
         if demo.get('desktop'):
             guide = guide.replace('@POINTER_DESCRIPTION@', pointer_description(demo['kernel']['desktop_mouse']['profile']))
+    if '@VERSION@' in guide:
+        guide = guide.replace('@VERSION@', demo['kernel']['exec_build']['version'])
     guide = guide.replace('@SYSTEM_DISK@', media['name'])
     guide = guide.replace('@SYSTEM_DRIVE@', str(record['boot_config']['system_drive']))
     if graphics is not None:

@@ -54,7 +54,7 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
             cooked=b.eval_expr(f'dw(${handle+16:x})')|(b.eval_expr(f'db(${handle+18:x})')<<16)
             error=218 if no_mount else 225 if invalid_disk else 0
             identity=p['build']['exec_build']
-            banner=f"Exec816 ({identity['display']})\n\nexec: 8 task slots\nconsole.device: ready\n"
+            banner=f"Exec816 {identity['version']} ({identity['display']})\n\nexec: 8 task slots\nconsole.device: ready\n"
             banner=banner.replace('console.device: ready',f'exec: stack checks {"enabled" if p["build"]["stack_checks"] else "disabled"}\nconsole.device: ready')
             if no_mount:banner+='SYS: no system volume configured\n'
             else:banner+='sio.device: D1 ready, 57.6k profile\n'+identity['strings']['mountStart']
@@ -71,7 +71,7 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
             state['banner']=banner;state['command_times']=[]
             line=bytearray()
             pin_revision=json.loads((ROOT/'toolchain/actionc.json').read_text())['revision']
-            version=f"Exec816 ({identity['display']})\nactionc pin: {pin_revision[:7]}\n".encode()
+            version=f"Exec816 {identity['version']} ({identity['display']})\nactionc pin: {pin_revision[:7]}\n".encode()
             mounts_output=b'MOUNT FILESYSTEM ACCESS    STATE\n'+(b'No mounted filesystems\n'if error else b'D1:   MyDOS      read-only mounted\n')
             devices_output=b'DEVICE          STATE\nconsole.device  ready\nsio.device      '+(b'inactive'if no_mount else b'ready')+b'\ntimer.device    ready\n'
             state.update(mounts_output=mounts_output.decode(),devices_output=devices_output.decode())
