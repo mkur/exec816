@@ -16,6 +16,7 @@ from native_program import read_build, require, sha256
 from presenter_control_trace import bookkeeping_costs
 from sio_transaction_trace import BASE_HZ, read_events
 from test_demo import run
+from menu_response_observer import crossing_markers, endpoint, pointer_response
 import window_response_trace as response
 
 NATIVE = '''DESKMENU_MOUSE DESKMENU_KEY DESKMENU_HEADING DESKMENU_OPEN
@@ -30,7 +31,7 @@ DESKMENUCACHE_NOTIFY DESKMENUCACHE_SELECTPOPUP
 DESKMENUCACHE_REPLACE DESKMENUCACHE_REPLACEPUMP DESKMENUCACHE_FINISHREPLACEMENT
 DESKAPPMENU_ADOPTREPLACEMENT LAYERS_BEGINSAVEDREPLACE LAYERS_FINISHSAVEDREPLACE
 DESKHOST_CONTROLS DESKHOST_MENUCONTINUATION DESKHOST_INPUTBOUNDARY
-DESKHOST_EVENTS DESKHOST_AFTERPAINT DESKPAINT_PAINTSTRIP DESKPAINT_SELECTSTRIP
+DESKHOST_EVENTS DESKHOST_AFTERPAINT DESKPAINT_PAINTSTRIP DESKPAINT_SELECTSTRIP AESMOUSE_LOST
 DESKPAINT_SYNC CONSOLEINPUT_SERVICE CONSOLEWINDOWS_TAKE
 AESHOST_PUMP AESHOST_SETTLE AESMOUSE_REFRESH AESINBOX_SNAPSHOT
 AESWINDOWSTATE_SYNC AESWINDOWSTATE_PUBLISH AESWINDOWSTATE_HANDOFF
@@ -56,6 +57,7 @@ def setup(out):
     foreign=json.loads((out/'bitmap-console/c-image.json').read_text())
     d['entries'].update({foreign['symbols'][n]:n for n in C if n in foreign['symbols']})
     d['points'].update(d['entries'])
+    d['points'].update(crossing_markers(p))
     return d
 
 
@@ -122,11 +124,31 @@ def analyze(out):
                     if background['poll_return_ms'] is not None else None,
                     retirement_to_submit_ms=(popup['start_ms']-background['retirement_ms'])
                     if background['retirement_ms'] is not None else None))
+        complete={}
+        if 'complete_frame' in sample:
+            full=endpoint(start,sample['complete_frame']['first_match'])
+            full_costs=bookkeeping_costs(events,window,timelines[worker],start,full)
+            commits=[r['end'] for r in rows if r['kind']=='LAYERS_FINISHSAVEDREPLACE']
+            paints=[r['end'] for r in rows if r['kind']=='DESKAPPMENU_PAINT']
+            retirement=next((r['end'] for r in rows if r['kind']=='LAYERS_FINISH'
+                             and paints and r['start']>=max(paints)),None)
+            complete=dict(complete_pixels_ms=(full-start)*1000/BASE_HZ,
+                complete_bookkeeping=full_costs,
+                popup_commit_ms=(commits[-1]-start)*1000/BASE_HZ if commits else None,
+                title_retirement_ms=(retirement-start)*1000/BASE_HZ if retirement else None)
+            if sample['action'].startswith('complete/pointer/'):
+                feedback=pointer_response(events,d['points'],sample,start,end,worker)
+                if feedback['available']:
+                    crossing=start+feedback['crossing_ms']*BASE_HZ/1000
+                    feedback['presenter_to_visible']=timelines[worker].measure(crossing,full)
+                    feedback['routing_to_retirement_ms']=(complete['title_retirement_ms']-
+                        feedback['routing_ms']) if retirement else None
+                complete['pointer_response']=feedback
         samples.append(dict(sample,start=start,pixels_end=pixels,end=end,spans=rows,
             boundaries=boundaries,bookkeeping=costs,
             copies=copies,copy_gaps=gaps,damage_queries=dict(calls=len(queries),
                 cpu_ms=sum(s['charged_cpu_ms'] for s in queries)),
-            task_charges={str(dp):t.measure(start,pixels) for dp,t in timelines.items()}))
+            task_charges={str(dp):t.measure(start,pixels) for dp,t in timelines.items()},**complete))
     serial=Counter();serial_all=Counter()
     with (out/'emulator.log').open() as source:
         for line in source:
@@ -138,6 +160,7 @@ def analyze(out):
     result=dict(tier='development',qualification=False,guest_changes=False,
         archive_sha256=sha256(out/'exec816-demo.zip'),observer_sha256=sha256(Path(__file__)),
         feedback_sha256=sha256(Path(__file__).with_name('measure_menu_feedback.py')),
+        crossing_observer_sha256=sha256(Path(__file__).with_name('menu_response_observer.py')),
         presenter_dp=worker,samples=samples,serial_events=dict(capture=dict(serial_all),timed=dict(serial)),
         scope='Passive original menu interactions; per-action cache counters include a settled tail. CPU costs stop at the PAL-frame pixel sample. Inclusive spans overlap; off-presenter time is not DMA time.')
     (out/'menu-analysis.json').write_text(json.dumps(result,indent=2)+'\n')
@@ -152,6 +175,9 @@ def main():
     p.add_argument('--bundle',type=Path)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--analyze',action='store_true')
+    p.add_argument('--load-check',action='store_true',help='Check Counter progress after timed actions')
+    p.add_argument('--native-check',action='store_true',help='Include native-menu controls')
+    p.add_argument('--complete-only',action='store_true',help='Only the new complete-feedback cohort')
     a=p.parse_args();out=a.output.resolve()
     if a.analyze:return analyze(out)
     require(a.bundle is not None and not out.exists(),'Supply a bundle and fresh output directory')
@@ -161,7 +187,8 @@ def main():
     (out/'menu-definition.json').write_text(json.dumps(d,indent=2)+'\n')
     keys=('EXEC816_LATENCY_TRACE','EXEC816_LATENCY_PCS');saved={k:os.environ.get(k) for k in keys}
     os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in response.pcs(d)))
-    probe=Feedback(3,trace=True,application_only=True)
+    probe=Feedback(3,trace=True,application_only=not a.native_check,
+                   load_check=a.load_check,complete_only=a.complete_only)
     try:
         result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=probe,profile_commands=False)
         result.update(menus=probe.results,qualification=False)

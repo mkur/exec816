@@ -1,6 +1,6 @@
 # Menu title repaint and pointer response implementation plan
 
-Status: proposed; implementation has not started.
+Status: MT1 complete; MT2–MT3 pending. [Execution record](../../history/menu-title-response.md).
 
 [LR2 results](../../history/layers-rebuild.md) ·
 [Recorded measurements](../../development/layers-rebuild.json) ·
@@ -30,6 +30,10 @@ menu renderer and painter state; no new cache, request protocol or public ABI
 is needed. Commit each implementation slice separately.
 
 ## MT1 Observe heading crossings and complete visible feedback
+
+Implemented; six observer tests and the unchanged-package baseline pass.
+The historical positioning helper also advances frames; the new cohort uses
+one physical burst so sampling begins immediately. [Results](../../history/menu-title-response.md).
 
 Extend `tools/trace_menu_response.py` and `tools/measure_menu_feedback.py`.
 Retain the original action sequence and metrics for historical comparisons;

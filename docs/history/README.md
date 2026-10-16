@@ -1,5 +1,9 @@
 # Historical records
 
+- [Menu title and pointer response](menu-title-response.md): complete-feedback
+  measurements and actual heading crossings; distinguish popup completion,
+  title retirement and physical travel before optimizing title repaint steps.
+
 - [Layers visibility rebuild](layers-rebuild.md): nearer occluders first,
   disjoint skips and early completion for covered layers; rebuild CPU
   18.6 → 11.0 ms, unchanged sampled visible response and refreshed OF816 demo.

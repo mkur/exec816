@@ -17,6 +17,7 @@ from measure_desktop import distribution
 from native_program import require, sha256
 from sio_transaction_trace import BASE_HZ
 from test_demo import run
+from menu_response_observer import pixels_match
 
 
 def panel_with_counter(s, menus, move, click, count):
@@ -63,9 +64,10 @@ def panel_with_counter(s, menus, move, click, count):
 
 
 class Feedback:
-    def __init__(self, count, load_check=False, cold=False, headings_only=False, conventional=False, selection_only=False, panel_check=False, trace=False, application_only=False):
+    def __init__(self, count, load_check=False, cold=False, headings_only=False, conventional=False, selection_only=False, panel_check=False, trace=False, application_only=False, complete_only=False):
         self.trace = trace
         self.application_only = application_only
+        self.complete_only = complete_only
         self.observations = []
         self.conventional = conventional
         self.selection_only = selection_only
@@ -129,7 +131,7 @@ class Feedback:
         def trace_start():
             if self.trace: b.profile_start()
 
-        def trace_end(action, start, pixels_end, before_cache, before_paint):
+        def trace_end(action, start, pixels_end, before_cache, before_paint, **extra):
             if not self.trace: return
             end=b.eval_expr('@clk') & 0xffffffff
             b.profile_stop()
@@ -137,7 +139,7 @@ class Feedback:
             self.observations.append(dict(action=action,start=start,end=end,pixels_end=pixels_end,
                 pixels_ms=((pixels_end-start)&0xffffffff)*1000/BASE_HZ,
                 transfers={k:after[k]-v for k,v in before_cache.items()},
-                files_repaints=s.number(folder+F['paints'],4)-before_paint))
+                files_repaints=s.number(folder+F['paints'],4)-before_paint, **extra))
             (s.p['output']/'menu-action-samples.json').write_text(json.dumps(self.observations,indent=2)+'\n')
 
         popup_cache = next((d['address'] for d in s.p['image']['data']
@@ -174,7 +176,7 @@ class Feedback:
         # caret and parked pointer are outside it. Reference state is warmed
         # before timing, with no writes to guest state or executable observers.
         area = (128, 0, 640, 208)
-        for kind in (() if self.headings_only else ('application',) if self.selection_only or self.application_only else ('application', 'native')):
+        for kind in (() if self.headings_only or self.complete_only else ('application',) if self.selection_only or self.application_only else ('application', 'native')):
             sequence = [('open', ('ESC', True, kind == 'application')),
                         ('highlight', ('TAB',)),
                         ('switch' if kind == 'application' else 'next_row',
@@ -260,7 +262,7 @@ class Feedback:
         if self.trace: b.profile_stop()
         require(references[0] != references[1], 'Identical heading references')
         repeated = {}
-        for source in ('keyboard','pointer'):
+        for source in (() if self.complete_only else ('keyboard','pointer')):
             move(160,8) if source == 'pointer' else move(632,232)
             press('ESC',True,True); s.frames(100)
             before_paint = s.number(folder+F['paints'],4)
@@ -314,6 +316,86 @@ class Feedback:
         self.results['repeated_headings']=repeated
         print('Repeated headings:', {name: (round(row['median_ms'],1),round(row['p95_ms'],1))
                                     for name,row in repeated.items()},flush=True)
+        if self.trace:
+            # New cohort leaves the historical 18-action sequence untouched.
+            # Read the installed caller tree, not hard-coded File/View extents.
+            from application_menu_oracle import source
+            objects, labels, positions = source(b, s.number(folder+F['applicationMenu'],4))
+            bar = objects[0][1]; active = objects[bar][1]
+            title = objects[active][1]; box = objects[objects[0][2]][1]
+            headings=[]; popups=[]
+            for index in range(2):
+                obj=objects[title]; left=128+positions[title][0]
+                headings.append(dict(index=index, enabled=not bool(obj[5]&8),
+                    bounds=[left,0,left+obj[9],11],label=labels[obj[6]]))
+                w,h=objects[box][9:11]
+                x=max(0,min(128+positions[box][0],640-w))
+                y=max(11,min(positions[box][1],240-h))
+                popups.append([x,y,x+w,y+h])
+                title=objects[title][0];box=objects[box][0]
+            bounds=popups+[h['bounds'] for h in headings]
+            complete_area=(min(r[0] for r in bounds),0,max(r[2] for r in bounds),
+                           max(r[3] for r in bounds))
+            popup_area=(complete_area[0],11,complete_area[2],complete_area[3])
+            def cursor():
+                return (s.number(resident['cursorX'],2),s.number(resident['cursorY'],2))
+            move(632,232)
+            press('ESC',True,True);s.frames(100)
+            full_refs=[capture(complete_area)];popup_refs=[capture(popup_area)]
+            press('ASTERISK',True);s.frames(100)
+            full_refs.append(capture(complete_area));popup_refs.append(capture(popup_area))
+            press('ESC');s.frames(100)
+            for source_name in ('keyboard','pointer'):
+                move(160,8) if source_name=='pointer' else move(632,232)
+                press('ESC',True,True);s.frames(100)
+                for index in range(self.count):
+                    heading=1 if source_name=='keyboard' or index%2==0 else 0
+                    old=[s.number(at('DESKINPUT',n),2) for n in ('cursorX','cursorY')]
+                    before_cache=cache_counts();before_paint=s.number(folder+F['paints'],4)
+                    prior_cursor=cursor()
+                    trace_start()
+                    if source_name=='pointer':
+                        start=b.eval_expr('@clk') & 0xffffffff
+                        # One real quadrature burst, no positioning helper that
+                        # advances seven frames before we can sample scanout.
+                        b._cmd_ok(f'MOUSE AT 2000 {256 if heading else -256} 0 -1')
+                    else:
+                        start=press('ASTERISK',True)
+                    endpoints={};last={'popup':start,'complete':start}
+                    for _ in range(100):
+                        current_cursor=cursor()
+                        masks=(prior_cursor,current_cursor) if source_name=='pointer' else ()
+                        for name, area, want in (
+                                ('popup',popup_area,popup_refs[heading]),
+                                ('complete',complete_area,full_refs[heading])):
+                            got=capture(area);tick=b.eval_expr('@clk') & 0xffffffff
+                            if name not in endpoints:
+                                if pixels_match(got,want,area,masks):
+                                    endpoints[name]=dict(last_nonmatch=last[name],first_match=tick)
+                                else:last[name]=tick
+                        prior_cursor=current_cursor
+                        if len(endpoints)==2:break
+                        s.frames(1)
+                    require(len(endpoints)==2,'Incomplete heading feedback: '+source_name)
+                    s.frames(8)
+                    if source_name=='pointer':
+                        from menu_response_observer import heading_at
+                        s.saved['pointer']=[s.number(at('DESKINPUT',n),2)
+                                            for n in ('cursorX','cursorY')]
+                        require(heading_at(*s.saved['pointer'],headings)==heading,
+                                'Physical burst missed the destination heading')
+                    require(s.number(folder+F['paints'],4)==before_paint,
+                            'Complete menu feedback repainted Files')
+                    trace_end('complete/'+source_name+'/'+str(index),start,
+                        endpoints['popup']['first_match'],before_cache,before_paint,
+                        heading=heading,initial_pointer=old,headings=headings,
+                        stimulus='single_physical_burst' if source_name=='pointer' else 'key',
+                        complete_area=complete_area,popup_frame=endpoints['popup'],
+                        complete_frame=endpoints['complete'])
+                    if source_name=='keyboard':
+                        press('ESC');s.frames(100)
+                        press('ESC',True,True);s.frames(100)
+                press('ESC');s.frames(100)
         move(632,232)
         if self.load_check:
             # Put Counter left of Files, so its digits stay visible under both
@@ -335,11 +417,15 @@ class Feedback:
             s.rendezvous('dw($%x)=1' % (counter+12))
             move(216, 40); b._cmd_ok('MOUSE AT 2000 0 0 1'); s.frames(20)
             move(24, 168); b._cmd_ok('MOUSE AT 2000 0 0 0'); s.frames(100)
-            s.rendezvous('(dw($%x)=8)&(dw($%x)=176)' % (counter+38, counter+40))
+            from generate_desktop import ABI as desktop_abi
+            work_left=desktop_abi['constants']['WORK_LEFT']
+            work_top=160+desktop_abi['constants']['WORK_TOP']
+            s.rendezvous('(dw($%x)=%d)&(dw($%x)=%d)' %
+                         (counter+38,work_left,counter+40,work_top))
             menus.select('SYS:'); move(632, 232); s.frames(75)
             # WF_WXYWH clears its caller scratch while querying. Use the
             # verified placement, and keep all six digits left of Files x=120.
-            digits = (72, 184, 120, 192)
+            digits = (work_left+64, work_top+8, work_left+112, work_top+16)
             checks = {}
             for kind in ('application', 'native'):
                 press('ESC', True, kind == 'application'); s.frames(80)
