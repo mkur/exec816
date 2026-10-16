@@ -1,7 +1,9 @@
 # Historical records
 
 - [Warm menu input](warm-menu-input.md): same-turn keyboard menu advancement
-  and empty-paint selection guard, with focused input, fairness and pixel checks.
+  and empty-paint selection guard; complete keyboard CPU 66 → 60 ms, cached
+  opening 140 → 120 ms, focused checks and a refreshed OF816 demo. Complete
+  keyboard frame feedback remains at 100 ms.
 
 - [Warm menu bookkeeping analysis](warm-menu-bookkeeping-analysis.md): keyboard
   advancement waits for another presenter pass; empty-paint scans and the

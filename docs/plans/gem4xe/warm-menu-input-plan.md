@@ -1,8 +1,8 @@
 # Warm menu input implementation plan
 
-Status: WI1 implemented and checked; WI2 measurement/demo delivery remains.
-[Execution record](../../history/warm-menu-input.md). Commit each slice after
-its focused checks.
+Status: WI1–WI2 complete, with focused checks and a refreshed OF816 demo.
+[Execution record](../../history/warm-menu-input.md) ·
+[Measurements](../../development/warm-menu-input.json).
 
 [Analysis](../../history/warm-menu-bookkeeping-analysis.md) ·
 [Previous results](../../history/clipped-menu-text.md) ·
@@ -27,6 +27,9 @@ and scheduler/interrupt policy are outside this slice. A frame-sampled latency
 improvement is a measurement outcome, not an assumed consequence of less CPU.
 
 ## WI1 Advance keyboard feedback and skip empty paint selection
+
+Implemented and committed as `426f3f8a`; 321 AES checks, four native checks
+and nine focused host checks pass.
 
 In the worker-only `CONSOLEINPUT.Service`, call the existing `DESKMENU.Advance`
 once after a bounded keyboard drain that consumed at least one event. Do not
@@ -56,6 +59,11 @@ including guards, alignment and unused capacity. No cache, Scene, DP or stack
 reservation changes. Record actual code and observed stack costs in WI2.
 
 ## WI2 Compare matched feedback and refresh the demo
+
+Complete. Keyboard advancement delay falls 7.008 → 0.084 ms median and
+presenter CPU through complete feedback falls 66.378 → 60.274 ms. The sampled
+complete keyboard endpoint remains 100.288 ms; cached opening improves
+140.454 → 120.244 ms. Copy counters and memory reservations are unchanged.
 
 Build a clean production package through `tools/build_demo.py --gem-desktop
 --release-compiler`, retaining OF816, its five-second autoboot, the matching

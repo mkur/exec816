@@ -2,7 +2,11 @@
 
 The [warm menu input plan](warm-menu-input-plan.md) takes the two small follow-ups
 from the analysis: same-turn keyboard advancement and an empty-paint guard,
-then matched feedback measurements and an OF816 demo refresh.
+then matched feedback measurements and an OF816 demo refresh. WI1–WI2 are
+complete. [Results](../../history/warm-menu-input.md) show keyboard advancement
+delay 7.008 → 0.084 ms and complete-feedback presenter CPU 66.378 → 60.274 ms.
+The sampled complete endpoint stays at 100 ms; cached opening improves 140 →
+120 ms, with unchanged copy counters and memory reservations.
 
 The [warm-menu analysis](../../history/warm-menu-bookkeeping-analysis.md)
 reuses CG3's complete-feedback trace. Keyboard heading changes wait 7–8 ms for
