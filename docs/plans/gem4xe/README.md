@@ -1,5 +1,11 @@
 # GEM as a client of an Exec-like kernel
 
+The [damage retirement plan](damage-retirement-plan.md) follows WI2 with a
+bounded change to `SubtractDamage`: leave disjoint damage lists untouched and
+start scratch construction only at the first overlap. DR1 covers the shared
+helper and focused Layers regressions; DR2 measures saved-popup commit costs
+and refreshes the OF816 demo. Visibility rebuilding remains a separate step.
+
 The [warm menu input plan](warm-menu-input-plan.md) takes the two small follow-ups
 from the analysis: same-turn keyboard advancement and an empty-paint guard,
 then matched feedback measurements and an OF816 demo refresh. WI1–WI2 are
