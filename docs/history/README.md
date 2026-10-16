@@ -1,5 +1,9 @@
 # Historical records
 
+- [Warm menu bookkeeping analysis](warm-menu-bookkeeping-analysis.md): keyboard
+  advancement waits for another presenter pass; empty-paint scans and the
+  remaining saved-popup scene commit provide focused follow-up targets.
+
 - [Clipped menu text](clipped-menu-text.md): vertical glyph-run clipping,
   focused pixel/list checks and refreshed demo; Desk popup CPU 114 → 64 ms,
   sampled response 241 → 180 ms, unchanged warm complete feedback.

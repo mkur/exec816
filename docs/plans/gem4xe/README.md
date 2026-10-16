@@ -1,5 +1,16 @@
 # GEM as a client of an Exec-like kernel
 
+The [warm menu input plan](warm-menu-input-plan.md) takes the two small follow-ups
+from the analysis: same-turn keyboard advancement and an empty-paint guard,
+then matched feedback measurements and an OF816 demo refresh.
+
+The [warm-menu analysis](../../history/warm-menu-bookkeeping-analysis.md)
+reuses CG3's complete-feedback trace. Keyboard heading changes wait 7–8 ms for
+another presenter pass; an empty paint scan costs 1.6 ms within that interval.
+It recommends a small input-order/empty-paint slice first, then a focused
+saved-replacement damage/visibility plan. Warm scene commit remains 16.5 ms
+CPU, including one 11.3 ms rebuild; that work cannot simply be omitted.
+
 The [clipped menu text plan](clipped-menu-text-plan.md) follows MT3
 with vertical clipping in the existing glyph-run encoder. CG1–CG3 cover the
 private encoder, widget/menu routing and matched dropdown measurements/demo.
