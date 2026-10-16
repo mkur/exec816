@@ -14,6 +14,8 @@ extern void BuilderRunTests(void);
 extern void BuilderFaultProbe(void);
 extern void BuilderSolidProbe(UWORD);
 extern void BuilderSolidFault(void);
+extern void BuilderPartialTests(void);
+extern void BuilderPartialFault(void);
 static void paint(uint16_t left,uint16_t top,uint16_t right,uint16_t bottom,uint16_t focus)
 {
     uint16_t y;
@@ -163,6 +165,10 @@ void WidgetPixelProbe(void)
         WidgetPixelStage=stage;
         while (WidgetPixelGate<stage) ExecYield();
     }
+    BuilderPartialTests();
+    WidgetPixelStage=37;
+    while (WidgetPixelGate<37) ExecYield();
+    BuilderPartialFault();
     BuilderSolidFault();
     BuilderFaultProbe();
     packet.bottom=packet.top;packet.index=0;

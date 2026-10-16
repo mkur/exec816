@@ -1,6 +1,7 @@
 /* Included only in the emitted widget fixture's private adapter copy. */
 extern volatile uint16_t WidgetPixelFailures;
 static UWORD builderActive,builderFull,builderWork,builderLists,builderFailAt,builderCase;
+static UWORD builderFirst,builderRows,builderParity;
 static UBYTE builderReadback[512];
 static void builder_check(UWORD good) { if (!good) ++WidgetPixelFailures; }
 static void BuilderListProbe(const UBYTE *p,UWORD count)
@@ -19,9 +20,14 @@ static void BuilderListProbe(const UBYTE *p,UWORD count)
         bytes=((UWORD)p[12]|((UWORD)p[13]<<8))+1;
         rows=(UWORD)p[14]+1;
         builder_check(bytes<=512 && rows<=256);
+        if (builderCase>=200 && builderCase<272) {
+            builder_check(count==3 && p[20]==6 && rows==builderRows);
+            builder_check(bytes==(builderParity ? 5 : 4));
+        }
         work+=(ULONG)bytes*rows*(p[20] ? 3 : 2);
     }
     builder_check(work<=8192);
+    builder_check(work==commandWork);
     if (work==8192) builderWork=1;
 }
 static UWORD BuilderSubmit(const UBYTE *p,UWORD count)
@@ -95,6 +101,56 @@ void BuilderProbe(void)
 
 extern void GemWidgetText(WORD,WORD,const WORD *,UWORD,UWORD,UWORD,UWORD,UWORD,UWORD);
 static WORD builderGlyphs[65];
+extern void vbxe_widget_text_run(WORD,WORD,const WORD *,UWORD,WORD,UWORD,UWORD);
+static void builder_partial(void)
+{
+    UWORD i,index=builderCase>=200 ? builderCase-200 : 0;
+    WORD x=16+(index%8)*72+builderParity,y=8+(index/8)*24;
+    builderGlyphs[0]='A';builderGlyphs[1]=' ';builderGlyphs[2]='g';builderGlyphs[3]='W';
+    if (builderCase==100 || builderCase==102)
+        for (i=0;i<63;i++) blit_fill(0x60000UL+i,128,1,1,(UBYTE)i);
+    if (builderCase==101) blit_fill(0x60000UL,500,500,8,51);
+    if (builderCase==103) {
+        for (i=0;i<64;i++) blit_fill(0x60000UL+i,128,1,1,(UBYTE)i);
+        for (i=0;i<4;i++) builderGlyphs[i]=' ';
+    }
+    vbxe_widget_text_run(x,y+builderFirst,builderGlyphs,4,2,builderFirst,builderRows);
+    if (builderCase==103) builder_check(!builderLists && commandCount==64);
+}
+void BuilderPartialTests(void)
+{
+    UWORD first,rows,parity,index=0,y;
+    builderRows=1;builderFirst=7;builderParity=1;
+    for (builderCase=100;builderCase<=103;builderCase++) {
+        if (builderCase==102) continue; /* Failure is checked after the pixel gate. */
+        builderLists=0;builderActive=1;
+        builder_check(GemDrawingBatch(0,8,640,16,builder_partial)==DISPLAY_OK);
+        builder_check(builderLists==(builderCase==100 ? 2 : 1));
+        builderActive=0;
+    }
+    builder_check(GemDrawingFill(0,0,640,240,3)==DISPLAY_OK);
+    for (first=0;first<8;first++) for (rows=1;rows<=8-first;rows++) for (parity=0;parity<2;parity++) {
+        builderFirst=first;builderRows=rows;builderParity=parity;
+        builderCase=200+index;builderLists=0;builderActive=1;y=8+(index/8)*24;
+        builder_check(GemDrawingBatch(0,y,640,y+8,builder_partial)==DISPLAY_OK);
+        builder_check(builderLists==1);
+        builderActive=0;++index;
+    }
+}
+void BuilderPartialFault(void)
+{
+    WORD workout[57];
+    builderFirst=3;builderRows=4;builderParity=1;
+    builderCase=102;builderLists=0;builderActive=1;builderFailAt=2;
+    builder_check(GemDrawingBatch(0,8,640,16,builder_partial)==DISPLAY_DEVICE_FAULT);
+    builder_check(builderLists==2 && fault==DISPLAY_DEVICE_FAULT && !commandCount);
+    builder_partial();
+    builder_check(builderLists==2 && !commandCount);
+    builderActive=builderFailAt=0;
+    builder_check(GemDrawingClose()==DISPLAY_DEVICE_FAULT);
+    builder_check(GemDrawingOpen(workout)==DISPLAY_OK);
+    builder_check(!fault && !commandCount && commandNext==commands);
+}
 static void builder_glyphs(void)
 {
     UWORD i,count=builderCase==0 ? 63 : builderCase==1 ? 64 : 65;

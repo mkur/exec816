@@ -183,7 +183,7 @@ void GemWidgetText(int16_t x,int16_t y,const int16_t *glyphs,uint16_t count,
     uint16_t colour,uint16_t left,uint16_t top,uint16_t right,uint16_t bottom)
 {
     extern const uint8_t map_col[16];
-    extern void vbxe_widget_text_run(WORD,WORD,const WORD *,UWORD,WORD);
+    extern void vbxe_widget_text_run(WORD,WORD,const WORD *,UWORD,WORD,UWORD,UWORD);
     WORD color=vwk.text_color,mode=vwk.wrt_mode,clip=vwk.clip;
     WORD x0=vwk.xmn_clip,y0=vwk.ymn_clip,x1=vwk.xmx_clip,y1=vwk.ymx_clip;
     UWORD n;
@@ -199,7 +199,7 @@ void GemWidgetText(int16_t x,int16_t y,const int16_t *glyphs,uint16_t count,
             n=x<(WORD)right ? ((UWORD)((WORD)right-x)>>3) : 0;
             if (count<n) n=count;
             if (n) {
-                vbxe_widget_text_run(x,y,glyphs,n,colour);
+                vbxe_widget_text_run(x,y,glyphs,n,colour,0,8);
                 glyphs+=n;count-=n;x+=(WORD)(n<<3);
             }
         }

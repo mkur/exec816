@@ -1,7 +1,7 @@
 # Clipped menu text implementation plan
 
-Status: proposed. Implement in three executable slices, committing each slice
-after its focused checks.
+Status: CG1 complete; CG2–CG3 pending. Commit each executable slice after its
+focused checks. [Execution record](../../history/clipped-menu-text.md).
 
 [Menu response results](../../history/menu-title-response.md) ·
 [Existing text plan](text-run-fast-path-plan.md) ·
@@ -58,6 +58,10 @@ per visible nonblank glyph portion projects 283 → 159 popup records, about
 traversal, strip publication and presenter work remain.
 
 ## CG1 Extend the private glyph-run encoder
+
+Implemented. All 37 optimized pixel stages pass, including 72 partial-run
+combinations, mixed-list limits and failure recovery. Aggregate visible-row
+work uses the existing work table once per prefix, avoiding a per-glyph tally.
 
 Change `ports/gem4xe/adapter/gem-vbxe.c` and the maintained donor integration
 patch `ports/gem4xe/patches/0007-widget-glyph-runs.patch`. Edit extraction inputs,

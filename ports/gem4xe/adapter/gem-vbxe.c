@@ -159,13 +159,13 @@ void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
 }
 
 /* Encode one already reserved atlas record; no queue or hardware policy. */
-static UBYTE *glyph_record(UBYTE *r,ULONG source,UWORD stride,ULONG dest,UWORD bytes,UBYTE ink)
+static UBYTE *glyph_record(UBYTE *r,ULONG source,UWORD stride,ULONG dest,UWORD bytes,UBYTE ink,UBYTE lastRow)
 {
     r[0]=(UBYTE)source; r[1]=(UBYTE)(source>>8); r[2]=(UBYTE)(source>>16);
     r[3]=0; r[4]=(UBYTE)(stride>>8);
     r[6]=(UBYTE)dest; r[7]=(UBYTE)(dest>>8); r[8]=(UBYTE)(dest>>16);
     r[9]=64; r[10]=1; r[12]=(UBYTE)(bytes-1); r[13]=0;
-    r[14]=7; r[15]=ink; r[16]=0; r[20]=6;
+    r[14]=lastRow; r[15]=ink; r[16]=0; r[20]=6;
     return r+21;
 }
 
@@ -182,17 +182,17 @@ void blit_glyph(uint32_t source,uint16_t stride,uint32_t dest,uint16_t bytes,uin
     if (commandCount==VBXE_LIST_RECORDS || commandWork+work>(UWORD)VBXE_LIST_WORK) drain();
     if (fault) return;
     r=commandNext;
-    r=glyph_record(r,source,stride,dest,bytes,ink);
+    r=glyph_record(r,source,stride,dest,bytes,ink,7);
     commandCount++; commandNext=r; commandWork+=work;
 }
-/* Complete visible cells, nonzero stencil ink and constant X parity. The
- * caller supplies immutable atlas geometry; only this boundary reserves list
- * capacity. Blank cells consume neither records nor work. */
+/* Horizontally complete cells, one to eight admitted atlas rows, nonzero
+ * stencil ink and constant X parity. Full-height capacity bounds every run;
+ * publish actual visible-row work. Blank cells consume neither records nor work. */
 void blit_glyph_run(uint32_t atlas,uint16_t stride,uint32_t dest,uint16_t bytes,
-    const uint16_t *glyphs,uint16_t count,uint8_t ink,const uint8_t *inkmap)
+    const uint16_t *glyphs,uint16_t count,uint8_t ink,const uint8_t *inkmap,uint16_t rows)
 {
     const UBYTE *capacity=bytes==4 ? GemGlyphCapacity96 : GemGlyphCapacity120;
-    UWORD n,room,written,ch,offset;
+    UWORD n,room,written,ch,offset,workRow=(rows-1)<<9;
     ULONG source;
     UBYTE *r;
     if (fault) return;
@@ -217,14 +217,20 @@ void blit_glyph_run(uint32_t atlas,uint16_t stride,uint32_t dest,uint16_t bytes,
                 offset=ch<<2;
                 if (bytes==5) offset+=ch;
                 source=atlas+offset;
-                r=glyph_record(r,source,stride,dest,bytes,ink);
+                r=glyph_record(r,source,stride,dest,bytes,ink,(UBYTE)(rows-1));
                 ++written;
             }
             dest+=4;
         } while (--n);
         commandNext=r;
         commandCount+=written;
-        commandWork+=bytes==4 ? (written<<6)+(written<<5) : (written<<7)-(written<<3);
+        /* At most 64 four/five-byte cells: the aggregate width fits the
+         * existing work table. One lookup charges only the written rows. */
+        if (written) {
+            offset=written<<2;
+            if (bytes==5) offset+=written;
+            commandWork+=GemWork3[workRow|(offset-1)];
+        }
     }
 }
 

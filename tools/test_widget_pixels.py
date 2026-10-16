@@ -23,6 +23,17 @@ def expected(stage):
     import vdiref as v
     device=v.VDI();device.call(v.V_OPNWK,(),v.WORK_IN)
     device.dev.fill_rect(0,0,639,239,3)
+    if stage==37:
+        index=0
+        for first in range(8):
+            for rows in range(1,9-first):
+                for parity in range(2):
+                    x=16+(index%8)*72+parity;y=8+(index//8)*24
+                    device.wrt_mode=1;device.text_color=2;device.clip=1
+                    device.xmn=0;device.xmx=639;device.ymn=y+first;device.ymx=y+first+rows-1
+                    for i,ch in enumerate('A gW'):device._glyph(ord(ch),x+i*8,y)
+                    index+=1
+        return bytes(device.dev.s.mem[:76800])
     if stage>=23:
         cases=((20,20,120,70,4),(21,20,121,70,4),
             (20,20,21,52,0),(21,20,22,52,2),(20,20,22,53,1),
@@ -113,7 +124,7 @@ def run(out,mode,replay=False):
         f=drawing(out,mode=='opt',widget_probe=True)
         source=out/'probe.act';source.write_text('MODULE AESPIXELS\nPROC Main()\nRETURN\nENDMODULE\n')
         launcher=prepare(source,out,f)
-        p=build(compiler(ROOT/'build/actionc'),launcher,out/'program',optimize=mode=='opt',
+        p=build(compiler(ROOT/'build/actionc',release=True),launcher,out/'program',optimize=mode=='opt',
             tasks=True,task_capacity=8,console=False,console_deferred=True,foreign_image=f)
     # Calypsi shares epilogues with nested drawing callbacks. Pair the RTL
     # with the entry stack, so a primitive return cannot truncate the sample.
@@ -148,7 +159,7 @@ def run(out,mode,replay=False):
             def before(b):
                 b.profile_start()
                 previous=b.eval_expr('@clk') & 0xffffffff
-                for stage in range(1,37):
+                for stage in range(1,38):
                     marker=p['labels']['native_nmi'];condition='dw($%x)=%d'%(f['symbols']['WidgetPixelStage'],stage)
                     b.bp_clear_all();b.bp_set(marker,condition=condition)
                     run_to(b,marker,condition=condition,frame_limit=6000,timeout=120)

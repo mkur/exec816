@@ -1,5 +1,8 @@
 # Historical records
 
+- [Clipped menu text](clipped-menu-text.md): vertical glyph-run clipping,
+  focused pixel/list checks and uncached dropdown measurements.
+
 - [Menu title and pointer response](menu-title-response.md): one-step small
   title repaints and actual heading-crossing measurements; complete keyboard
   feedback 120 → 100 ms, focused checks and a refreshed OF816 demo.

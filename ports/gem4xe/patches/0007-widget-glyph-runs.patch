@@ -1,22 +1,24 @@
 --- a/src/vdi/dev_vbxe.c
 +++ b/src/vdi/dev_vbxe.c
-@@ -239,6 +239,21 @@
+@@ -239,6 +239,23 @@
          fillX,fillY,width,height,(uint8_t)(HW(pen)*17));
  }
  
-+/* GemWidgetText admits complete cells and nonzero ink once per run. */
++/* GemWidgetText admits horizontal cells, visible rows and nonzero ink. */
 +extern void blit_glyph_run(uint32_t,uint16_t,uint32_t,uint16_t,
-+    const uint16_t *,uint16_t,uint8_t,const uint8_t *);
-+void vbxe_widget_text_run(WORD x,WORD y,const WORD *glyphs,UWORD count,WORD pen)
++    const uint16_t *,uint16_t,uint8_t,const uint8_t *,uint16_t);
++void vbxe_widget_text_run(WORD x,WORD y,const WORD *glyphs,UWORD count,WORD pen,
++                          UWORD first,UWORD rows)
 +{
 +    uint8_t ink=(uint8_t)(HW(pen)*17);
 +    uint32_t destination=VR_SCREEN0+scr_row(y)+(uint16_t)x/2;
++    uint16_t offset=first<<10;
 +    if (x&1)
-+        blit_glyph_run(VR_FONT_ODD,FONT_OSTRIDE,destination,FONT_OBYTES,
-+                       (const uint16_t *)glyphs,count,ink,glyph_ink);
++        blit_glyph_run(VR_FONT_ODD+offset+(first<<8),FONT_OSTRIDE,destination,FONT_OBYTES,
++                       (const uint16_t *)glyphs,count,ink,glyph_ink,rows);
 +    else
-+        blit_glyph_run(VR_FONT,FONT_VSTRIDE,destination,FONT_BYTES,
-+                       (const uint16_t *)glyphs,count,ink,glyph_ink);
++        blit_glyph_run(VR_FONT+offset,FONT_VSTRIDE,destination,FONT_BYTES,
++                       (const uint16_t *)glyphs,count,ink,glyph_ink,rows);
 +}
 +
  static void draw_glyph(WORD ch, WORD cx, WORD cy, WORD hwink, WORD cleared)
