@@ -1925,5 +1925,2453 @@
       "per_public_task": 0,
       "idle": 0
     }
+  },
+  "after": {
+    "artifact": "build/menu-title-response/menus",
+    "archive_sha256": "115ff551b9e663299e9a9760d70301f587f9795d3614dd163e839930df01909b",
+    "actions": [
+      {
+        "action": "application/open/0",
+        "pixels_ms": 140.20262793231828,
+        "transfers": {
+          "captures": 1,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 15680,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 8960,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 84.09841565651084,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 5,
+            "cpu_ms": 21.35219678056441
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 2,
+            "cpu_ms": 9.678958638471114
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 8.06980471651966
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 3,
+            "cpu_ms": 1.397560401421525
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 15,
+            "cpu_ms": 3.0135512892262106
+          }
+        }
+      },
+      {
+        "action": "application/highlight/0",
+        "pixels_ms": 60.12244512453851,
+        "transfers": {
+          "captures": 0,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 25.557635622142747,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 2,
+            "cpu_ms": 3.223946578627222
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 6,
+            "cpu_ms": 1.3408206332581032
+          }
+        }
+      },
+      {
+        "action": "application/switch/0",
+        "pixels_ms": 100.28771643930818,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 8960,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 4104,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 65.02292850507274,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 14.772216262392883
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 9.468704317438212
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 8.073187957354248
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 0.9169287503577072
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 12,
+            "cpu_ms": 1.9972398393524478
+          }
+        }
+      },
+      {
+        "action": "application/close/0",
+        "pixels_ms": 120.24489024907702,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 4104,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 1
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 64.20651020117596,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 3,
+            "cpu_ms": 12.840526714210599
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 6.995907688273829
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 5.558241786125611
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 0.886620551214513
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 9,
+            "cpu_ms": 1.9364824726979513
+          }
+        }
+      },
+      {
+        "action": "application/open/1",
+        "pixels_ms": 140.45298775407787,
+        "transfers": {
+          "captures": 1,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 15680,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 8960,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 84.10349051776272,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 5,
+            "cpu_ms": 21.38835516698408
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 2,
+            "cpu_ms": 9.713989277945922
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 8.104976324362577
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 3,
+            "cpu_ms": 1.397419433053417
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 15,
+            "cpu_ms": 3.0170050142448535
+          }
+        }
+      },
+      {
+        "action": "application/highlight/1",
+        "pixels_ms": 60.12244512453851,
+        "transfers": {
+          "captures": 0,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 25.603802762698077,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 2,
+            "cpu_ms": 3.2255677148604622
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 6,
+            "cpu_ms": 1.3337017306686552
+          }
+        }
+      },
+      {
+        "action": "application/switch/1",
+        "pixels_ms": 100.28884418625304,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 8960,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 4104,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 65.01799461218897,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 14.810559658518224
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 9.50535609314626
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 8.071143916016686
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 0.8788672909685796
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 12,
+            "cpu_ms": 1.966085830000606
+          }
+        }
+      },
+      {
+        "action": "application/close/1",
+        "pixels_ms": 100.28828031278061,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 4104,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 1
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 64.2924304215377,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 3,
+            "cpu_ms": 12.816491607448205
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 6.958833007461456
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 5.557889365205342
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 0.8808408481220898
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 9,
+            "cpu_ms": 1.91928433178879
+          }
+        }
+      },
+      {
+        "action": "application/open/2",
+        "pixels_ms": 120.4969416912539,
+        "transfers": {
+          "captures": 1,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 15680,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 8960,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 83.96484812772862,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 5,
+            "cpu_ms": 21.258029910668345
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 2,
+            "cpu_ms": 9.58429837928667
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 7.970351532819551
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 3,
+            "cpu_ms": 1.4032696203298942
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 15,
+            "cpu_ms": 3.0110843427843226
+          }
+        }
+      },
+      {
+        "action": "application/highlight/2",
+        "pixels_ms": 60.12300899801094,
+        "transfers": {
+          "captures": 0,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 25.598304996341874,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 2,
+            "cpu_ms": 3.2302196710080224
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 6,
+            "cpu_ms": 1.3231291030605643
+          }
+        }
+      },
+      {
+        "action": "application/switch/2",
+        "pixels_ms": 100.28828031278061,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 8960,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 4104,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 65.03413549033732,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 14.81887679223659
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 9.470959811327937
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 8.03350536173188
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 0.879501648625065
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 12,
+            "cpu_ms": 1.9584030539387267
+          }
+        }
+      },
+      {
+        "action": "application/close/2",
+        "pixels_ms": 100.28828031278061,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 4104,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 1
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 64.1758495811125,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 3,
+            "cpu_ms": 12.847081743327614
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 6.9947094571449115
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 5.591651289367179
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 0.8796426169931729
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 9,
+            "cpu_ms": 1.9170993220831178
+          }
+        }
+      },
+      {
+        "action": "native/open/0",
+        "pixels_ms": 120.24489024907702,
+        "transfers": {
+          "captures": 1,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 5720,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 5720,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 82.9536820232908,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 6,
+            "cpu_ms": 17.13075802920583
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 3,
+            "cpu_ms": 4.790669021778203
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 0.26473859530659916
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 4,
+            "cpu_ms": 2.27706205004659
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 16,
+            "cpu_ms": 3.700701599568073
+          }
+        }
+      },
+      {
+        "action": "native/highlight/0",
+        "pixels_ms": 80.0790550608349,
+        "transfers": {
+          "captures": 0,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 43.138576134901086,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 24.87739276183817
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 3,
+            "cpu_ms": 17.97318499701852
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 3,
+            "cpu_ms": 2.6442141647835644
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 8,
+            "cpu_ms": 2.7166719059910145
+          }
+        }
+      },
+      {
+        "action": "native/next_row/0",
+        "pixels_ms": 80.3311065030118,
+        "transfers": {
+          "captures": 0,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 49.71475050713371,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 31.457796185114024
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 3,
+            "cpu_ms": 24.57001123517894
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 3,
+            "cpu_ms": 2.6473154688819376
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 8,
+            "cpu_ms": 2.719702725905334
+          }
+        }
+      },
+      {
+        "action": "native/close/0",
+        "pixels_ms": 100.28771643930818,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 5720,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 1
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 65.3511028660279,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 11.084695205242896
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 2,
+            "cpu_ms": 4.575833228781794
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 0.26424520601822155
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 2,
+            "cpu_ms": 1.7604129809312088
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 10,
+            "cpu_ms": 2.618135016683606
+          }
+        }
+      },
+      {
+        "action": "native/open/1",
+        "pixels_ms": 120.24601799602188,
+        "transfers": {
+          "captures": 1,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 5720,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 5720,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 82.94043099668866,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 6,
+            "cpu_ms": 17.122299927119354
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 3,
+            "cpu_ms": 4.7865104549190205
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 0.26424520601822155
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 4,
+            "cpu_ms": 2.277766891887129
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 16,
+            "cpu_ms": 3.706269850108334
+          }
+        }
+      },
+      {
+        "action": "native/highlight/1",
+        "pixels_ms": 80.07961893430733,
+        "transfers": {
+          "captures": 0,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 43.10157193827277,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 24.823401876852852
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 3,
+            "cpu_ms": 17.926101562070485
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 3,
+            "cpu_ms": 2.6544343714713854
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 8,
+            "cpu_ms": 2.7214648305066826
+          }
+        }
+      },
+      {
+        "action": "native/next_row/1",
+        "pixels_ms": 80.33223424995666,
+        "transfers": {
+          "captures": 0,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 49.7413935287061,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 31.515099826749875
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 3,
+            "cpu_ms": 24.576777716848117
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 3,
+            "cpu_ms": 2.63984414537222
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 8,
+            "cpu_ms": 2.7122314023956164
+          }
+        }
+      },
+      {
+        "action": "native/close/1",
+        "pixels_ms": 100.28828031278061,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 5720,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 1
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 64.59530096041749,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 11.042193242258369
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 2,
+            "cpu_ms": 4.537348864288342
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 0.2583950187417446
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 2,
+            "cpu_ms": 1.7661926840236317
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 10,
+            "cpu_ms": 2.625676824377378
+          }
+        }
+      },
+      {
+        "action": "native/open/2",
+        "pixels_ms": 120.24489024907702,
+        "transfers": {
+          "captures": 1,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 5720,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 5720,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 82.97362904737805,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 6,
+            "cpu_ms": 17.16212349110983
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 3,
+            "cpu_ms": 4.826263534725443
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 0.25895889221417606
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 4,
+            "cpu_ms": 2.2766391449422665
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 16,
+            "cpu_ms": 3.714305047090483
+          }
+        }
+      },
+      {
+        "action": "native/highlight/2",
+        "pixels_ms": 80.33167037648423,
+        "transfers": {
+          "captures": 0,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 43.06569548858931,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 24.78956946850696
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 3,
+            "cpu_ms": 17.86661291072896
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 3,
+            "cpu_ms": 2.68439014969431
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 8,
+            "cpu_ms": 2.7566364383495987
+          }
+        }
+      },
+      {
+        "action": "native/next_row/2",
+        "pixels_ms": 80.33167037648423,
+        "transfers": {
+          "captures": 0,
+          "restores": 0,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 0,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 49.668089977289995,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 31.427417501786774
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 3,
+            "cpu_ms": 24.53018767118846
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 3,
+            "cpu_ms": 2.6421701234459998
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 8,
+            "cpu_ms": 2.7256233973658652
+          }
+        }
+      },
+      {
+        "action": "native/close/2",
+        "pixels_ms": 100.28828031278061,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 5720,
+          "popupCaptures": 0,
+          "popupRestores": 0,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 1
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 65.30472427292041,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 11.060448645928341
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 2,
+            "cpu_ms": 4.536150633159425
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 0.25895889221417606
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 2,
+            "cpu_ms": 1.760342496747155
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 10,
+            "cpu_ms": 2.6130601554317225
+          }
+        }
+      },
+      {
+        "action": "keyboard/heading/0",
+        "pixels_ms": 180.61995068926484,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 8960,
+          "popupCaptures": 1,
+          "popupRestores": 0,
+          "popupMisses": 1,
+          "popupCapturedBytes": 4104,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 141.98475004193807,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 8,
+            "cpu_ms": 88.55618787700227
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 5,
+            "cpu_ms": 75.15594625721934
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 5,
+            "cpu_ms": 73.2876924746856
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 6,
+            "cpu_ms": 5.285397509652809
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 19,
+            "cpu_ms": 6.026679673348097
+          }
+        }
+      },
+      {
+        "action": "keyboard/heading/1",
+        "pixels_ms": 240.74295968727577,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 4104,
+          "popupCaptures": 1,
+          "popupRestores": 0,
+          "popupMisses": 1,
+          "popupCapturedBytes": 6840,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 191.30669219133918,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 10,
+            "cpu_ms": 139.54324839049366
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 7,
+            "cpu_ms": 124.48599408778664
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 7,
+            "cpu_ms": 122.37280776566547
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 8,
+            "cpu_ms": 7.050110025811308
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 23,
+            "cpu_ms": 7.661278385743023
+          }
+        }
+      },
+      {
+        "action": "keyboard/heading/2",
+        "pixels_ms": 300.86427706486944,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 6840,
+          "popupCaptures": 1,
+          "popupRestores": 0,
+          "popupMisses": 1,
+          "popupCapturedBytes": 8960,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 242.29741788240136,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 12,
+            "cpu_ms": 194.07594529863445
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 9,
+            "cpu_ms": 176.95463215009184
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 9,
+            "cpu_ms": 173.30474964722666
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 10,
+            "cpu_ms": 9.655769341917367
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 25,
+            "cpu_ms": 9.878922268632142
+          }
+        }
+      },
+      {
+        "action": "pointer/heading/0",
+        "pixels_ms": 280.6556156863961,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 8960,
+          "popupCaptures": 1,
+          "popupRestores": 0,
+          "popupMisses": 1,
+          "popupCapturedBytes": 4104,
+          "popupRestoredBytes": 0,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 216.35620733063706,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 19,
+            "cpu_ms": 107.22660242268238
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 5,
+            "cpu_ms": 76.02677835120578
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 5,
+            "cpu_ms": 74.16028667327339
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 6,
+            "cpu_ms": 26.646334329039906
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 66,
+            "cpu_ms": 37.82611269857157
+          }
+        }
+      },
+      {
+        "action": "pointer/heading/1",
+        "pixels_ms": 280.6556156863961,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 4104,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 8960,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 133.84340387860368,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 18,
+            "cpu_ms": 37.835064189946415
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 9.912684192793979
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 8.5194938107838
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 2.5405319300402183
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 72,
+            "cpu_ms": 37.08645167110952
+          }
+        }
+      },
+      {
+        "action": "pointer/heading/2",
+        "pixels_ms": 280.6556156863961,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 8960,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 4104,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "presenter_cpu_ms": 145.5953023701012,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 18,
+            "cpu_ms": 37.9536890717092
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 9.95976762774201
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 8.560445121719138
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 1.7403249884758358
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 71,
+            "cpu_ms": 36.59968789603301
+          }
+        }
+      },
+      {
+        "action": "complete/keyboard/0",
+        "pixels_ms": 60.37449656671539,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 8960,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 4104,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "complete_pixels_ms": 100.28828031278061,
+        "popup_commit_ms": 57.20996815524565,
+        "title_retirement_ms": 79.02961604445578,
+        "popup_frame": {
+          "last_nonmatch": 162770509,
+          "first_match": 162806348
+        },
+        "complete_frame": {
+          "last_nonmatch": 162841741,
+          "first_match": 162877133
+        },
+        "presenter_cpu_ms": 43.26890139121683,
+        "complete_presenter_cpu_ms": 65.81228088229282,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 14.669379837858182
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 9.365797408719457
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 7.964148924622805
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 0.8871844246869445
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 12,
+            "cpu_ms": 1.9719360172770832
+          }
+        }
+      },
+      {
+        "action": "complete/keyboard/1",
+        "pixels_ms": 60.12188125106607,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 8960,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 4104,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "complete_pixels_ms": 100.28828031278061,
+        "popup_commit_ms": 57.54836272288861,
+        "title_retirement_ms": 79.46929638458427,
+        "popup_frame": {
+          "last_nonmatch": 170417868,
+          "first_match": 170453260
+        },
+        "complete_frame": {
+          "last_nonmatch": 170488658,
+          "first_match": 170524493
+        },
+        "presenter_cpu_ms": 43.5904502388709,
+        "complete_presenter_cpu_ms": 66.64047004492663,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 14.681644085883569
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 9.364881114326757
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 7.969576206794957
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 0.8810523006742517
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 12,
+            "cpu_ms": 1.9553722340244073
+          }
+        }
+      },
+      {
+        "action": "complete/keyboard/2",
+        "pixels_ms": 60.12244512453851,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 8960,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 4104,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "complete_pixels_ms": 100.28828031278061,
+        "popup_commit_ms": 57.19016209952649,
+        "title_retirement_ms": 79.00621529534988,
+        "popup_frame": {
+          "last_nonmatch": 178064781,
+          "first_match": 178100173
+        },
+        "complete_frame": {
+          "last_nonmatch": 178136012,
+          "first_match": 178171405
+        },
+        "presenter_cpu_ms": 43.87915345675584,
+        "complete_presenter_cpu_ms": 66.60113987022451,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 4,
+            "cpu_ms": 14.66916838530602
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 9.364105788302162
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 7.9616114939968625
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 0.8852813517174881
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 12,
+            "cpu_ms": 1.9670021243933073
+          }
+        }
+      },
+      {
+        "action": "complete/pointer/0",
+        "pixels_ms": 80.07849118736247,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 8960,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 4104,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "complete_pixels_ms": 140.4535516275503,
+        "popup_commit_ms": 85.63461844796646,
+        "title_retirement_ms": 113.39594208455564,
+        "pointer_response": {
+          "available": true,
+          "crossings": [
+            {
+              "tick": 4491442501.625,
+              "heading": 1,
+              "x": 203,
+              "y": 8
+            }
+          ],
+          "routed": [
+            4491445753.5
+          ],
+          "input_loss": [],
+          "crossing_ms": 32.258426031782726,
+          "routing_ms": 34.09207207994598,
+          "travel_ms": 32.258426031782726,
+          "crossing_to_routing_ms": 1.8336460481632526,
+          "crossing_to_visible_ms": [
+            87.98590034382185,
+            108.19512559576756
+          ],
+          "presenter_to_visible": {
+            "elapsed_ms": 108.19512559576756,
+            "charged_cpu_ms": 73.67768146505605,
+            "off_cpu_ms": 17.224290541445406,
+            "interrupt_ms": 17.293153589266105
+          },
+          "routing_to_retirement_ms": 79.30387000460966
+        },
+        "popup_frame": {
+          "last_nonmatch": 196524621,
+          "first_match": 196560012
+        },
+        "complete_frame": {
+          "last_nonmatch": 196631244,
+          "first_match": 196667084
+        },
+        "presenter_cpu_ms": 60.96635226021633,
+        "complete_presenter_cpu_ms": 96.3353158184835,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 3,
+            "cpu_ms": 13.822159945529823
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 10.120189630648778
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 8.72756312211103
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 1.7397611150034045
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 12,
+            "cpu_ms": 5.108200270941204
+          }
+        }
+      },
+      {
+        "action": "complete/pointer/1",
+        "pixels_ms": 80.08187442819705,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 4104,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 8960,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "complete_pixels_ms": 140.20262793231828,
+        "popup_commit_ms": 72.16086182421526,
+        "title_retirement_ms": 106.82082497508384,
+        "pointer_response": {
+          "available": true,
+          "crossings": [
+            {
+              "tick": 4491944947.875,
+              "heading": 0,
+              "x": 198,
+              "y": 8
+            }
+          ],
+          "routed": [
+            4491948297.25
+          ],
+          "input_loss": [],
+          "crossing_ms": 14.710260664609468,
+          "routing_ms": 16.598884376334794,
+          "travel_ms": 14.710260664609468,
+          "crossing_to_routing_ms": 1.888623711725326,
+          "crossing_to_visible_ms": [
+            105.53462958446754,
+            125.4923672677088
+          ],
+          "presenter_to_visible": {
+            "elapsed_ms": 125.49236726770879,
+            "charged_cpu_ms": 82.7911454948624,
+            "off_cpu_ms": 22.617599336884798,
+            "interrupt_ms": 20.083622435961594
+          },
+          "routing_to_retirement_ms": 90.22194059874904
+        },
+        "popup_frame": {
+          "last_nonmatch": 197058188,
+          "first_match": 197093585
+        },
+        "complete_frame": {
+          "last_nonmatch": 197164812,
+          "first_match": 197200206
+        },
+        "presenter_cpu_ms": 60.77935771992123,
+        "complete_presenter_cpu_ms": 91.4572464084784,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 3,
+            "cpu_ms": 13.852679597225178
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 10.156841406356827
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 8.758999068199087
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 2.5787343577974537
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 12,
+            "cpu_ms": 5.073099147282341
+          }
+        }
+      },
+      {
+        "action": "complete/pointer/2",
+        "pixels_ms": 80.07849118736247,
+        "transfers": {
+          "captures": 0,
+          "restores": 1,
+          "misses": 0,
+          "capturedBytes": 0,
+          "restoredBytes": 8960,
+          "popupCaptures": 0,
+          "popupRestores": 1,
+          "popupMisses": 0,
+          "popupCapturedBytes": 0,
+          "popupRestoredBytes": 4104,
+          "client_captures": 0,
+          "client_restores": 0,
+          "client_capturedBytes": 0,
+          "client_restoredBytes": 0,
+          "client_patches": 0,
+          "client_patchedBytes": 0,
+          "explicit_discards": 0
+        },
+        "files_repaints": 0,
+        "complete_pixels_ms": 140.2015001853734,
+        "popup_commit_ms": 84.9886309011121,
+        "title_retirement_ms": 112.62865125694445,
+        "pointer_response": {
+          "available": true,
+          "crossings": [
+            {
+              "tick": 4492509649.125,
+              "heading": 1,
+              "x": 201,
+              "y": 8
+            }
+          ],
+          "routed": [
+            4492512898.5
+          ],
+          "input_loss": [],
+          "crossing_ms": 32.26491057671569,
+          "routing_ms": 34.09714694119786,
+          "travel_ms": 32.26491057671569,
+          "crossing_to_routing_ms": 1.8322363644821738,
+          "crossing_to_visible_ms": [
+            87.98054354583375,
+            107.93658960865771
+          ],
+          "presenter_to_visible": {
+            "elapsed_ms": 107.93658960865771,
+            "charged_cpu_ms": 72.96402910150991,
+            "off_cpu_ms": 17.794719042993943,
+            "interrupt_ms": 17.177841464153857
+          },
+          "routing_to_retirement_ms": 78.53150431574659
+        },
+        "popup_frame": {
+          "last_nonmatch": 197591756,
+          "first_match": 197627148
+        },
+        "complete_frame": {
+          "last_nonmatch": 197698382,
+          "first_match": 197733773
+        },
+        "presenter_cpu_ms": 60.86894311785378,
+        "complete_presenter_cpu_ms": 95.60136400992981,
+        "calls": {
+          "DESKPAINT_PUMP": {
+            "count": 3,
+            "cpu_ms": 13.853384439065719
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "count": 1,
+            "cpu_ms": 10.121176409225534
+          },
+          "DESKAPPMENU_PAINT": {
+            "count": 1,
+            "cpu_ms": 8.729818616000756
+          },
+          "DESKHOST_INPUTBOUNDARY": {
+            "count": 1,
+            "cpu_ms": 1.7407478935801595
+          },
+          "DESKINPUT_PRESENT": {
+            "count": 12,
+            "cpu_ms": 5.032993646555649
+          }
+        }
+      }
+    ],
+    "status": "pass",
+    "observer_sha256": "0ecad1779c0bca057857fb6196b64eaa167e609d5845d48808c1cc9289f5cdec",
+    "feedback_sha256": "130d0b0a3d31f335691236570e0844c83d7a4a973c837c5740eac6b758d75769",
+    "crossing_observer_sha256": "218db998d0de8f3319ad0d9507a2f8fb78b50dee5799da1628488e3ee71632d3",
+    "counter_progress": {
+      "application": {
+        "ticks": 2,
+        "paints": 2,
+        "visible_digits_changed": true,
+        "highlights": 30
+      },
+      "native": {
+        "ticks": 2,
+        "paints": 2,
+        "visible_digits_changed": true,
+        "highlights": 30
+      }
+    },
+    "serial_events": {
+      "capture": {
+        "command": 3132,
+        "rxstart": 9068,
+        "receive": 9068,
+        "read": 9104
+      },
+      "timed": {}
+    },
+    "guards": "intact",
+    "live_tasks": 0,
+    "autoboot_frames": 249,
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 564,
+        "untouched_above_floor": 716
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 305,
+        "untouched_above_floor": 751
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 148,
+        "untouched_above_floor": 908
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 760,
+        "untouched_above_floor": 296
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 687,
+        "untouched_above_floor": 369
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 833,
+        "untouched_above_floor": 1471
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 129,
+        "untouched_above_floor": 127
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 295,
+      "untouched_from_base": 1241,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "package": {
+    "directory": "build/menu-title-response/demo",
+    "archive_sha256": "115ff551b9e663299e9a9760d70301f587f9795d3614dd163e839930df01909b",
+    "checksums_verified": 22,
+    "manifest_sha256": "4fc73753317c5f094fc915a6f179722f74eb3891a33fbbdadd30ac16dc1763ca",
+    "exec_build": {
+      "revision": "bbc3e7630b3d7e3a6969d718d14a084325723c9d",
+      "dirty": false,
+      "display": "bbc3e76",
+      "actionc_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "task_capacity": 8,
+      "stack_checks": true,
+      "mount": {
+        "profile": 4,
+        "boot": 1,
+        "format": 2,
+        "access": "readonly",
+        "alias": "D1",
+        "unit": 49,
+        "sectors": 2880,
+        "sector_bytes": 256,
+        "device": "sio.device"
+      },
+      "strings": {
+        "banner": "Exec816 (bbc3e76)\n\n",
+        "slots": "exec: 8 task slots\n",
+        "stackChecks": "exec: stack checks enabled\n",
+        "version": "Exec816 (bbc3e76)\nactionc pin: 05c01f3\n",
+        "sioReady": " ready, 57.6k profile\n",
+        "mountStart": "Filesystems: mounting...\n",
+        "otherMountsReady": "\nRAM: ready, read-write (volatile)\nWORK: -> D8: ready, read-write",
+        "systemReady": "SYS: -> D",
+        "mountFailure": "Filesystem startup failed; check configured disks\nRequired: WORK: on D8:\nUse CD SYS: to retry; cold-boot after SIO failure"
+      }
+    },
+    "compiler_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "compiler_override": false,
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "rom": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/menu-title-response/menus/extracted/exec816-demo/altirraos-816.rom",
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "override": false
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$a04c96862b3d5933",
+      "actual_kernel_id": "$a04c96862b3d5933",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "resources": {
+    "native_code_before": 1095330,
+    "native_code_after": 1095444,
+    "native_data_before": 13544,
+    "native_data_after": 13544,
+    "paint_code_before": 2918,
+    "paint_code_after": 3032,
+    "paint_frame_before": 44,
+    "paint_frame_after": 44,
+    "paint_local_stack_before": 64,
+    "paint_local_stack_after": 64,
+    "memory_manifest_identical": true,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "other_reservation_growth": false
+  },
+  "source_sha256": {
+    "lib/desktop/deskmenupaint.act": "5891956ec46fb39071dbe7709238d392bffadb9d7bdf112dafebc4cf3eb80e6a",
+    "tools/trace_menu_response.py": "0ecad1779c0bca057857fb6196b64eaa167e609d5845d48808c1cc9289f5cdec",
+    "tools/measure_menu_feedback.py": "130d0b0a3d31f335691236570e0844c83d7a4a973c837c5740eac6b758d75769",
+    "tools/menu_response_observer.py": "218db998d0de8f3319ad0d9507a2f8fb78b50dee5799da1628488e3ee71632d3"
+  },
+  "cohorts": {
+    "application/close": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 120.24545412254945,
+          "median": 120.4969416912539,
+          "max": 120.4969416912539
+        },
+        "presenter_cpu_ms": {
+          "min": 70.67237682536417,
+          "median": 71.42317435390673,
+          "max": 71.44474251422723
+        }
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 100.28828031278061,
+          "median": 100.28828031278061,
+          "max": 120.24489024907702
+        },
+        "presenter_cpu_ms": {
+          "min": 64.1758495811125,
+          "median": 64.20651020117596,
+          "max": 64.2924304215377
+        }
+      }
+    },
+    "application/highlight": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 60.12244512453851,
+          "median": 60.12244512453851,
+          "max": 60.12244512453851
+        },
+        "presenter_cpu_ms": {
+          "min": 25.558129011431127,
+          "median": 25.56856067067111,
+          "max": 25.582305086561625
+        }
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 60.12244512453851,
+          "median": 60.12244512453851,
+          "max": 60.12300899801094
+        },
+        "presenter_cpu_ms": {
+          "min": 25.557635622142747,
+          "median": 25.598304996341874,
+          "max": 25.603802762698077
+        }
+      }
+    },
+    "application/open": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 140.20262793231828,
+          "median": 140.45411550102273,
+          "max": 140.45411550102273
+        },
+        "presenter_cpu_ms": {
+          "min": 90.35896185254991,
+          "median": 90.40230962574309,
+          "max": 90.42387778606358
+        }
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 120.4969416912539,
+          "median": 140.20262793231828,
+          "max": 140.45298775407787
+        },
+        "presenter_cpu_ms": {
+          "min": 83.96484812772862,
+          "median": 84.09841565651084,
+          "max": 84.10349051776272
+        }
+      }
+    },
+    "application/switch": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 120.24545412254945,
+          "median": 120.49750556472632,
+          "max": 120.49750556472632
+        },
+        "presenter_cpu_ms": {
+          "min": 71.33358895597416,
+          "median": 71.33358895597416,
+          "max": 71.36854911126491
+        }
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 100.28771643930818,
+          "median": 100.28828031278061,
+          "max": 100.28884418625304
+        },
+        "presenter_cpu_ms": {
+          "min": 65.01799461218897,
+          "median": 65.02292850507274,
+          "max": 65.03413549033732
+        }
+      }
+    },
+    "complete/keyboard": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 60.12188125106607,
+          "median": 60.12244512453851,
+          "max": 60.37449656671539
+        },
+        "presenter_cpu_ms": {
+          "min": 44.13007715198786,
+          "median": 44.20154811461856,
+          "max": 44.21317800498746
+        },
+        "complete_pixels_ms": {
+          "min": 120.24489024907702,
+          "median": 120.24545412254945,
+          "max": 120.4969416912539
+        },
+        "complete_presenter_cpu_ms": {
+          "min": 72.7883825148475,
+          "median": 73.03268069677844,
+          "max": 73.72109972243328
+        },
+        "title_retirement_ms": {
+          "min": 86.13280066085971,
+          "median": 86.3429140135245,
+          "max": 87.58604356768384
+        }
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 60.12188125106607,
+          "median": 60.12244512453851,
+          "max": 60.37449656671539
+        },
+        "presenter_cpu_ms": {
+          "min": 43.26890139121683,
+          "median": 43.5904502388709,
+          "max": 43.87915345675584
+        },
+        "complete_pixels_ms": {
+          "min": 100.28828031278061,
+          "median": 100.28828031278061,
+          "max": 100.28828031278061
+        },
+        "complete_presenter_cpu_ms": {
+          "min": 65.81228088229282,
+          "median": 66.60113987022451,
+          "max": 66.64047004492663
+        },
+        "title_retirement_ms": {
+          "min": 79.00621529534988,
+          "median": 79.02961604445578,
+          "max": 79.46929638458427
+        }
+      }
+    },
+    "complete/pointer": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 60.12244512453851,
+          "median": 80.33167037648423,
+          "max": 80.33223424995666
+        },
+        "presenter_cpu_ms": {
+          "min": 44.76690175491521,
+          "median": 61.01773523039165,
+          "max": 61.112536457944195
+        },
+        "complete_pixels_ms": {
+          "min": 140.20206405884585,
+          "median": 160.41072543731912,
+          "max": 160.66277687949602
+        },
+        "complete_presenter_cpu_ms": {
+          "min": 96.0566213547342,
+          "median": 103.84575805035108,
+          "max": 104.10788873084768
+        },
+        "title_retirement_ms": {
+          "min": 113.30544039223038,
+          "median": 122.71240056443735,
+          "max": 123.13178145955828
+        },
+        "travel_ms": {
+          "min": 14.59579434970587,
+          "median": 32.302690099368604,
+          "max": 32.432240029659745
+        },
+        "crossing_to_routing_ms": {
+          "min": 1.8106682041616682,
+          "median": 1.8322363644821738,
+          "max": 1.883971755577766
+        },
+        "routing_to_retirement_ms": {
+          "min": 88.44792417029544,
+          "median": 88.94511960461192,
+          "max": 96.89897783836284
+        },
+        "crossing_to_visible_interval_medians_ms": [
+          108.02187547136297,
+          127.97848540765938
+        ]
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 80.07849118736247,
+          "median": 80.07849118736247,
+          "max": 80.08187442819705
+        },
+        "presenter_cpu_ms": {
+          "min": 60.77935771992123,
+          "median": 60.86894311785378,
+          "max": 60.96635226021633
+        },
+        "complete_pixels_ms": {
+          "min": 140.2015001853734,
+          "median": 140.20262793231828,
+          "max": 140.4535516275503
+        },
+        "complete_presenter_cpu_ms": {
+          "min": 91.4572464084784,
+          "median": 95.60136400992981,
+          "max": 96.3353158184835
+        },
+        "title_retirement_ms": {
+          "min": 106.82082497508384,
+          "median": 112.62865125694445,
+          "max": 113.39594208455564
+        },
+        "travel_ms": {
+          "min": 14.710260664609468,
+          "median": 32.258426031782726,
+          "max": 32.26491057671569
+        },
+        "crossing_to_routing_ms": {
+          "min": 1.8322363644821738,
+          "median": 1.8336460481632526,
+          "max": 1.888623711725326
+        },
+        "routing_to_retirement_ms": {
+          "min": 78.53150431574659,
+          "median": 79.30387000460966,
+          "max": 90.22194059874904
+        },
+        "crossing_to_visible_interval_medians_ms": [
+          87.98590034382185,
+          108.19512559576756
+        ]
+      }
+    },
+    "keyboard/heading": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 180.6193868157924,
+          "median": 240.7418319403309,
+          "max": 300.86427706486944
+        },
+        "presenter_cpu_ms": {
+          "min": 141.11039373874894,
+          "median": 193.63443236972054,
+          "max": 241.5144795659302
+        }
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 180.61995068926484,
+          "median": 240.74295968727577,
+          "max": 300.86427706486944
+        },
+        "presenter_cpu_ms": {
+          "min": 141.98475004193807,
+          "median": 191.30669219133918,
+          "max": 242.29741788240136
+        }
+      }
+    },
+    "native/close": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 120.24432637560457,
+          "median": 120.24489024907702,
+          "max": 120.24489024907702
+        },
+        "presenter_cpu_ms": {
+          "min": 67.78915079245368,
+          "median": 67.7892917608218,
+          "max": 67.95394281477179
+        }
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 100.28771643930818,
+          "median": 100.28828031278061,
+          "max": 100.28828031278061
+        },
+        "presenter_cpu_ms": {
+          "min": 64.59530096041749,
+          "median": 65.30472427292041,
+          "max": 65.3511028660279
+        }
+      }
+    },
+    "native/highlight": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 80.0790550608349,
+          "median": 80.33167037648423,
+          "max": 80.33223424995666
+        },
+        "presenter_cpu_ms": {
+          "min": 43.037783751703955,
+          "median": 43.09875257091061,
+          "max": 43.129483675158134
+        }
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 80.0790550608349,
+          "median": 80.07961893430733,
+          "max": 80.33167037648423
+        },
+        "presenter_cpu_ms": {
+          "min": 43.06569548858931,
+          "median": 43.10157193827277,
+          "max": 43.138576134901086
+        }
+      }
+    },
+    "native/next_row": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 80.07961893430733,
+          "median": 80.33054262953935,
+          "max": 80.3311065030118
+        },
+        "presenter_cpu_ms": {
+          "min": 49.66745561963351,
+          "median": 49.7199663367537,
+          "max": 49.7782567569663
+        }
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 80.3311065030118,
+          "median": 80.33167037648423,
+          "max": 80.33223424995666
+        },
+        "presenter_cpu_ms": {
+          "min": 49.668089977289995,
+          "median": 49.71475050713371,
+          "max": 49.7413935287061
+        }
+      }
+    },
+    "native/open": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 120.24489024907702,
+          "median": 120.24545412254945,
+          "max": 140.4535516275503
+        },
+        "presenter_cpu_ms": {
+          "min": 86.04927690275579,
+          "median": 86.09431629636626,
+          "max": 86.09445726473437
+        }
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 120.24489024907702,
+          "median": 120.24489024907702,
+          "max": 120.24601799602188
+        },
+        "presenter_cpu_ms": {
+          "min": 82.94043099668866,
+          "median": 82.9536820232908,
+          "max": 82.97362904737805
+        }
+      }
+    },
+    "pointer/heading": {
+      "baseline": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 280.6556156863961,
+          "median": 280.6556156863961,
+          "max": 280.6561795598686
+        },
+        "presenter_cpu_ms": {
+          "min": 141.092138335079,
+          "median": 153.17799089062407,
+          "max": 217.74347704118674
+        }
+      },
+      "after": {
+        "count": 3,
+        "pixels_ms": {
+          "min": 280.6556156863961,
+          "median": 280.6556156863961,
+          "max": 280.6556156863961
+        },
+        "presenter_cpu_ms": {
+          "min": 133.84340387860368,
+          "median": 145.5953023701012,
+          "max": 216.35620733063706
+        }
+      }
+    }
+  },
+  "validation": {
+    "tier": "development",
+    "host_tests": 497,
+    "host_skips": 4,
+    "aes_checks": 321,
+    "native_checks": 4,
+    "title_cases": 7,
+    "timed_actions": 36,
+    "all_transfer_counters_match": true,
+    "no_incidental_files_paints": true,
+    "no_timed_disk_events": true,
+    "raw_matrix": false,
+    "release_qualification": false
   }
 }

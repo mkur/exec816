@@ -5,11 +5,12 @@ follows LR2: measure pointer response from the actual heading crossing, remove
 empty caption phases from small title repaints, then compare complete menu
 feedback on matched OF816 packages. It reuses the current painter, renderer
 budgets and saved-popup transaction, with no planned reservation growth.
-MT1 is complete: the [baseline](../../history/menu-title-response.md) separates
-popup-only completion from title feedback and removes the positioning helper's
-blind interval from the new pointer cohort. MT2 also passes: small title clips
-finish in one painter call, with bounded continuations and retained failure
-damage. MT3 measurements and the demo refresh remain pending.
+MT1–MT3 are complete. The [results](../../history/menu-title-response.md)
+separate popup completion from title feedback, and remove the positioning
+helper's blind interval from the new pointer cohort. Small title clips finish
+in one painter call; warm switch and complete keyboard feedback improve
+120 → 100 ms. The OF816 demo is refreshed with focused pixel/input checks and
+no memory-reservation growth.
 
 The [Layers visibility rebuild plan](layers-rebuild-plan.md) follows PT4 with
 nearer-occluder-first subtraction, disjoint skips and early completion for

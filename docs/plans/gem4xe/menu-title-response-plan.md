@@ -1,6 +1,6 @@
 # Menu title repaint and pointer response implementation plan
 
-Status: MT1–MT2 complete; MT3 pending. [Execution record](../../history/menu-title-response.md).
+Status: MT1–MT3 complete. [Execution record and demo](../../history/menu-title-response.md).
 
 [LR2 results](../../history/layers-rebuild.md) ·
 [Recorded measurements](../../development/layers-rebuild.json) ·
@@ -121,6 +121,11 @@ Measure actual call and CPU reductions rather than assuming all 18 ms vanish.
 Commit: `Finish small menu title repaints without empty phases`.
 
 ## MT3 Compare response and refresh the demo
+
+Completed. Warm switch and complete keyboard feedback improve 120 → 100 ms;
+median pointer-crossing interval bounds improve 108–128 → 88–108 ms.
+All 36 timed actions preserve cache counters and avoid Files repaint/disk work.
+Counter progress, guards, normal EXIT and OF816 packaging pass.
 
 Build one final OF816 desktop package with `tools/build_demo.py --gem-desktop
 --release-compiler`, using the same compiler, ROM and emulator configuration
