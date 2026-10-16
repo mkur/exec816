@@ -1,5 +1,11 @@
 # GEM as a client of an Exec-like kernel
 
+The proposed [menu title and pointer response plan](menu-title-response-plan.md)
+follows LR2: measure pointer response from the actual heading crossing, remove
+empty caption phases from small title repaints, then compare complete menu
+feedback on matched OF816 packages. It reuses the current painter, renderer
+budgets and saved-popup transaction, with no planned reservation growth.
+
 The [Layers visibility rebuild plan](layers-rebuild-plan.md) follows PT4 with
 nearer-occluder-first subtraction, disjoint skips and early completion for
 fully covered layers. Both slices are complete. [Results](../../history/layers-rebuild.md)
