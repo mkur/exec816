@@ -8,6 +8,7 @@ USE CONSOLEFOREGROUND
 USE CONSOLEWINDOWS
 USE HEAPCORE
 USE DESKINPUT
+USE DESKMENU
 INCLUDE "console-storage-action.inc"
 CONST ATARI_LEFT=$86, ATARI_RIGHT=$87, ATARI_UP=$8e, ATARI_DOWN=$8f
 CONST INPUT_LEFT=2, INPUT_RIGHT=6, INPUT_PREVIOUS=16, INPUT_NEXT=14
@@ -224,7 +225,12 @@ PUBLIC BYTE FUNC Service(CONSOLETYPES.Instance POINTER instance LONGCARD bits
 
   IF pending<>0 THEN
     pumped=Pump(instance)
+    ; Keep a deferred-key hint before advancement can clear the menu block.
     pending=(pumped=CONSOLETYPES.RAW_SLOTS OR DESKINPUT.KeyReady()=0)
+    IF pumped<>0 THEN
+      ; Start captured menu feedback in this turn, after the bounded drain.
+      DESKMENU.Advance()
+    FI
   FI
 
 RETURN(pending)

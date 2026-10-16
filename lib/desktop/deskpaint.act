@@ -622,7 +622,9 @@ PUBLIC BYTE FUNC Pump()
   FI
 
   IF paintToken=0 THEN
-    IF CONSOLEBITMAP.Failed()<>0 OR AESLOCKS.PaintBlocked()<>0 THEN
+    ; An active token still needs continuation/retirement with no new damage.
+    IF service.scene.visibleDamage=0 OR CONSOLEBITMAP.Failed()<>0
+        OR AESLOCKS.PaintBlocked()<>0 THEN
       RETURN(0)
     FI
 

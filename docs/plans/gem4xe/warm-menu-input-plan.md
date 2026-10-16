@@ -1,7 +1,8 @@
 # Warm menu input implementation plan
 
-Status: planned. Two small executable/delivery slices; commit each after its
-focused checks.
+Status: WI1 implemented and checked; WI2 measurement/demo delivery remains.
+[Execution record](../../history/warm-menu-input.md). Commit each slice after
+its focused checks.
 
 [Analysis](../../history/warm-menu-bookkeeping-analysis.md) ·
 [Previous results](../../history/clipped-menu-text.md) ·

@@ -1,5 +1,8 @@
 # Historical records
 
+- [Warm menu input](warm-menu-input.md): same-turn keyboard menu advancement
+  and empty-paint selection guard, with focused input, fairness and pixel checks.
+
 - [Warm menu bookkeeping analysis](warm-menu-bookkeeping-analysis.md): keyboard
   advancement waits for another presenter pass; empty-paint scans and the
   remaining saved-popup scene commit provide focused follow-up targets.
