@@ -1,6 +1,6 @@
 # Batched directory enumeration implementation plan
 
-Status: EB1 implemented and checked; EB2–EB3 pending.
+Status: EB1–EB2 implemented; EB3 measurement and packaged walkthrough in progress.
 
 [Execution record](../history/directory-batching.md).
 
@@ -194,6 +194,8 @@ names/types, current size flags, count/truncation/error and heap/lock cleanup.
 Run one optimized desktop/standalone Files and file-selector walkthrough for
 navigation, Refresh, path change and cancellation; target existing helpers rather
 than rerunning the entire GUI suite. Rebuild all affected application artifacts.
+The packaged walkthrough is shared with EB3's comparison/delivery run; scanner
+boundaries and emitted layouts are checked before the EB2 commit.
 
 Acceptance: identical successful listings and ordinary interaction, eight-entry
 DOS refills with no per-entry ExNext traffic, correct summary/error handling and

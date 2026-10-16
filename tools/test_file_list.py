@@ -34,7 +34,7 @@ ENDMODULE
         observed=data(b,p['image'],'result',True)
         require(observed==[0,0],'Directory helper assertion failed: '+str(observed))
         ownership(b,p,p['output'])
-    r=dict(status='pass',tier='development',optimized=optimize,cases=53,machine=machine,
+    r=dict(status='pass',tier='development',optimized=optimize,scope="Scanner 0/8/9/255/256/257, errors, allocation failure, early/repeated cleanup and path helpers",machine=machine,
         runtime=runtime,c_elf_sha256=f['provenance']['elf_sha256'])
     (out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
 

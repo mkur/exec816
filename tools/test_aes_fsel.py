@@ -35,7 +35,7 @@ def physical(b,p,foreign,report):
             a=get(session+FORM_SELECTOR,4) if session else 0
             if a:
                 report['failure_selector']={name:get(a+F[name]) for name in ('count','first','visible','selected','valid','loading','result')}
-                report['failure_scan']=b.memdump(a+F['scan'],20).hex()
+                report['failure_scan']=b.memdump(a+F['scan'],__import__('file_scan_model').SIZE).hex()
                 report['failure_status']=b.memdump(a+F['status'],80).split(b'\0')[0].decode('ascii')
             raise
         require(get(sy['AESFailures'])==0,'Selector target assertion '+str(get(sy['AESFirstFailure'])))

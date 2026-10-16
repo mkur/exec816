@@ -1,6 +1,6 @@
 # Batched directory enumeration
 
-Status: public operation implemented in EB1; scanner adoption and measurements
+Status: public operation and shared scanner implemented in EB1–EB2; measurements
 follow the [implementation plan](directory-batching-implementation-plan.md).
 
 [Plans](README.md) · [Files enumeration analysis](../history/files-enumeration-analysis.md) ·

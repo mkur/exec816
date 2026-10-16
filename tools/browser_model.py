@@ -29,10 +29,17 @@ removed=FIELDS.pop('menuEnabled')
 for name in FIELDS:
     if FIELDS[name]>removed:FIELDS[name]-=2
 SIZE-=2
+for name in FIELDS:
+    if FIELDS[name]>FIELDS['scan']: FIELDS[name]+=18
+for name in FIELDS:
+    if FIELDS[name]>FIELDS['totalBytes']: FIELDS[name]+=2
+FIELDS['totalFlags']=FIELDS['totalBytes']+4
+SIZE+=20
 CONTENT_TOP=16
 ICON_PITCH=36
 ROW_FIRST=2
-LAYOUT=[('Browser size',SIZE)]+[('Browser '+n,v) for n,v in FIELDS.items()]
+from file_scan_model import LAYOUT as SCAN_LAYOUT
+LAYOUT=[('Browser size',SIZE)]+[('Browser '+n,v) for n,v in FIELDS.items()]+SCAN_LAYOUT
 ROWS=16
 OBJECTS=23
 ENTRY_BYTES=112
@@ -48,7 +55,7 @@ def listing(session,base):
 def wait_listing(session,base,limit=50):
     """Wait for navigation to release its directory lock before heap baselines.
 
-    FileScan is the 20-byte public helper immediately before stock. The status
+    FileScan is the 38-byte private helper immediately before stock. The status
     can still describe the previous directory while the new scan owns its lock.
     """
     from native_program import require

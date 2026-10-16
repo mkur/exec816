@@ -1,7 +1,8 @@
 # Historical records
 
 - [Directory batching](directory-batching.md): public ExNextBatch, compact results
-  and prefix-preserving cancellation; shared scanner and measurements follow.
+  and prefix-preserving cancellation, shared Files/selector scanner, resource
+  accounting and focused checks; measurements/demo follow.
 
 - [Files enumeration analysis](files-enumeration-analysis.md): warm root/C
   scans take 193/533 ms without disk traffic or presenter CPU; repeated DOS

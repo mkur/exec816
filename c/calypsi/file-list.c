@@ -1,18 +1,28 @@
-/* Bounded caller-owned directory snapshots; no GUI or allocation policy. */
+/* Bounded caller-owned snapshots with one temporary upper-memory batch. */
 #include "file-list.h"
+#include <proto/exec.h>
+#include <exec/memory.h>
 #include <string.h>
+#define BATCH_BYTES (DIR_BATCH_HEADER_SIZE+FILE_SCAN_BATCH*DIR_ENTRY_SIZE)
 
 void FileScanEnd(struct FileScan *s)
 {
     if (s->lock) { UnLock(s->lock); s->lock=0; }
+    if (s->batch) { FreeMem(s->batch,BATCH_BYTES); s->batch=NULL; }
+    s->info=NULL; s->entries=NULL;
+    s->buffered=s->next=s->currentFlags=0;
+    s->terminal=s->currentSize=0;
 }
 
 WORD FileScanBegin(struct FileScan *s,const char *path,struct FileInfoBlock *info,
                    struct FileEntry *entries)
 {
-    s->error=0; s->info=info; s->entries=entries;
+    s->error=0; s->lock=0; s->info=info; s->entries=entries;
+    s->buffered=s->next=s->currentFlags=0; s->terminal=s->currentSize=0;
+    s->batch=AllocMem(BATCH_BYTES,MEMF_UPPER);
+    if (!s->batch) { s->error=ERROR_NO_FREE_STORE; FileScanEnd(s); return 0; }
     s->lock=Lock(path,SHARED_LOCK);
-    if (!s->lock) { s->error=IoErr(); return 0; }
+    if (!s->lock) { s->error=IoErr(); FileScanEnd(s); return 0; }
     if (!Examine(s->lock,info)) s->error=IoErr();
     else if (info->fib_DirEntryType<=0) s->error=ERROR_OBJECT_WRONG_TYPE;
     if (s->error) { FileScanEnd(s); return 0; }
@@ -20,23 +30,33 @@ WORD FileScanBegin(struct FileScan *s,const char *path,struct FileInfoBlock *inf
     return 1;
 }
 
-/* One entry per call; a final extra read detects capacity overflow. */
+/* Consume locally; only refills cross DOS. A final one-record probe detects
+ * overflow without ever publishing entry 257 into the retained array. */
 WORD FileScanNext(struct FileScan *s)
 {
     struct FileEntry *e;
-    if (ExNext(s->lock,s->info)) {
+    struct DirEntry *record;
+    if (!s->batch) return 0;
+    if (s->next==s->buffered && !s->terminal) {
+        UWORD remaining=FILE_LIST_LIMIT-s->count;
+        s->batch->capacity=remaining>FILE_SCAN_BATCH ? FILE_SCAN_BATCH:remaining ? remaining:1;
+        s->buffered=ExNextBatch(s->lock,s->info,s->batch);
+        s->terminal=IoErr(); s->next=0;
+        if (!s->buffered && !s->terminal) s->terminal=ERROR_BAD_NUMBER;
+    }
+    if (s->next<s->buffered) {
         if (s->count<FILE_LIST_LIMIT) {
+            record=&s->batch->entries[s->next++];
             e=&s->entries[s->count++];
-            strcpy(e->name,(const char *)s->info->fib_FileName);
-            e->kind=s->info->fib_DirEntryType;
+            strcpy(e->name,(const char *)record->name);
+            e->kind=record->kind;
+            s->currentSize=record->size; s->currentFlags=record->infoFlags;
             return 1;
         }
-        s->truncated=1;
-    } else {
-        s->error=IoErr();
-        if (s->error==ERROR_NO_MORE_ENTRIES) s->error=0;
-        else s->count=0;
+        if (!s->terminal || s->terminal==ERROR_NO_MORE_ENTRIES) s->truncated=1;
     }
+    s->error=s->terminal==ERROR_NO_MORE_ENTRIES ? 0:s->terminal;
+    if (s->error) s->count=0;
     FileScanEnd(s);
     return 0;
 }
