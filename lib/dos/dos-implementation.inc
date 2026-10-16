@@ -90,6 +90,12 @@ PUBLIC LONGINT FUNC ExNext(FileLock POINTER lock FileInfoBlock POINTER info)
 
 RETURN(DOSCALLS.Information(BYTE POINTER(lock),BYTE POINTER(info),24))
 
+PUBLIC LONGINT FUNC ExNextBatch(FileLock POINTER lock FileInfoBlock POINTER info
+    DirBatch POINTER batch)
+
+RETURN(DOSCALLS.ExNextBatch(BYTE POINTER(lock),BYTE POINTER(info),
+    DOSCALLS.DirBatch POINTER(batch)))
+
 PUBLIC FileHandle POINTER FUNC Input()
 
 RETURN(FileHandle POINTER(DOSCALLS.Selected(0)))

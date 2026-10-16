@@ -1,6 +1,8 @@
 # Batched directory enumeration implementation plan
 
-Status: proposed; EB1–EB3 not started.
+Status: EB1 implemented and checked; EB2–EB3 pending.
+
+[Execution record](../history/directory-batching.md).
 
 [Design](directory-batching-design.md) ·
 [Enumeration analysis](../history/files-enumeration-analysis.md) ·
@@ -11,7 +13,7 @@ Implement the public ExNextBatch operation, adopt it in the shared Files/file
 selector scanner, then measure eight versus sixteen entries per request. Work
 in three executable slices, with a separate commit after each completed slice.
 The existing analysis supplies the baseline; there is no separate baseline
-slice and no production change in this plan.
+slice.
 
 ## Scope and invariants
 
@@ -186,7 +188,8 @@ Primary files: `c/calypsi/file-list.h`, `file-list.c`, `aes-fsel.c`,
 
 Checks: extend the focused runner with an emitted C scanner group covering
 0/8/9 entries, 255/256/257 entries, final-prefix error, allocation failure,
-early stop and repeated cleanup. Use RAM for large-count boundaries. Check
+early stop and repeated cleanup. Use the emitted scanner fixture with controlled DOS replies for large-count
+boundaries: RAM has only 256 nodes including its root and cannot hold 257 entries. Check
 names/types, current size flags, count/truncation/error and heap/lock cleanup.
 Run one optimized desktop/standalone Files and file-selector walkthrough for
 navigation, Refresh, path change and cancellation; target existing helpers rather

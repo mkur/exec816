@@ -858,6 +858,38 @@ PUBLIC LONGINT FUNC Information(BYTE POINTER identity,info LONGINT action)
 
 RETURN(result)
 
+; Admit one bounded directory batch; the worker borrows the resolved lock.
+PUBLIC LONGINT FUNC ExNextBatch(BYTE POINTER identity,info DirBatch POINTER batch)
+
+  LET slot=DOSCORE.Current()
+  IF batch.capacity=0 OR batch.capacity>DIR_BATCH_MAX THEN
+    slot.error=ERROR_BAD_ARGUMENTS
+    RETURN(0)
+  FI
+
+  LET client=DOSCLIENT.EnsureSlot(slot)
+  IF client=NULL THEN
+    RETURN(0)
+  FI
+
+  LET header=Object(slot,identity,DOSOBJECTS.KIND_LOCK)
+  IF header=NULL THEN
+    RETURN(0)
+  FI
+
+  LET item=File(client,header)
+  IF item=NULL THEN
+    RETURN(0)
+  FI
+
+  LET mount=item.mount
+  client.packet.sp_Pkt.dp_Arg2=LONGINT(ADDRESS(info))
+  client.packet.sp_Pkt.dp_Arg3=LONGINT(ADDRESS(batch))
+  LET result=DOSCLIENT.Call(slot,client,mount.port,28)
+  FSREGISTRY.Release(mount)
+
+RETURN(result)
+
 ; These getters deliberately avoid Ensure: reading an unset default must not
 ; allocate a context or change the caller's secondary result.
 PUBLIC BYTE POINTER FUNC Selected(BYTE output)

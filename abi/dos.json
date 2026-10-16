@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 10,
+  "revision": 11,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -45,7 +45,10 @@
     "MOUNT_READWRITE": 1,
     "MOUNT_PROFILE_FASTEST125": 1,
     "MOUNT_PROFILE_STOCK810": 2,
-    "MOUNT_PROFILE_GENERIC57600": 4
+    "MOUNT_PROFILE_GENERIC57600": 4,
+    "DIR_ENTRY_SIZE": 118,
+    "DIR_BATCH_HEADER_SIZE": 2,
+    "DIR_BATCH_MAX": 16
   },
   "dos_errors": {
     "ERROR_NO_FREE_STORE": 103,
@@ -101,7 +104,8 @@
     "ACTION_DELETE_OBJECT": 16,
     "ACTION_RENAME_OBJECT": 17,
     "ACTION_INFO": 26,
-    "ACTION_EXAMINE_EXACT": 25
+    "ACTION_EXAMINE_EXACT": 25,
+    "ACTION_EXAMINE_BATCH": 28
   },
   "records": {
     "DateStamp": {
@@ -399,6 +403,48 @@
           "access",
           "CARD",
           6
+        ]
+      ]
+    },
+    "DirEntry": {
+      "size": 118,
+      "alignment": 2,
+      "fields": [
+        [
+          "name",
+          "BYTE[108]",
+          0
+        ],
+        [
+          "kind",
+          "LONGINT",
+          108
+        ],
+        [
+          "size",
+          "LONGINT",
+          112
+        ],
+        [
+          "infoFlags",
+          "CARD",
+          116
+        ]
+      ]
+    },
+    "DirBatch": {
+      "size": 120,
+      "alignment": 2,
+      "fields": [
+        [
+          "capacity",
+          "CARD",
+          0
+        ],
+        [
+          "entries",
+          "DirEntry[1]",
+          2
         ]
       ]
     }
@@ -934,6 +980,27 @@
         }
       ],
       "outgoing_bytes": 3,
+      "result_bytes": 4
+    },
+    "ExNextBatch": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 6,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 9,
       "result_bytes": 4
     }
   },

@@ -1,0 +1,90 @@
+MODULE BATCHCANCELTEST
+USE EXEC
+USE DOS
+USE DOSCLIENT
+USE DOSCORE
+USE DOSBREAK
+USE FSBOOT
+USE FSOPERATION
+USE HEAPCORE
+USE DIRBATCHSTATE
+CARD checks,scenario
+LONGINT count,error
+DOS.FileInfoBlock info,ordinary
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($eb00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  CARD index
+
+  LET baseline=EXEC.AvailMem(0)
+  LET batch=DOS.DirBatch POINTER(EXEC.AllocMem(1890,EXEC.MEMF_UPPER))
+  LET con=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Require(batch<>NULL AND con<>NULL)
+  LET lock=DOS.Lock(BYTE POINTER(c"D1:DATA"),DOS.SHARED_LOCK)
+  Require(lock<>NULL AND DOS.Examine(lock,@info)<>0)
+  Require(DOS.Examine(lock,@ordinary)<>0)
+  Require(DOS.BeginForeground(con)<>0)
+  LET scope=DOSBREAK.Current()
+  LET client=DOSCLIENT.Ensure()
+  LET registry=DOSCORE.GetRegistry()
+  DIRBATCHSTATE.target=scope
+  DIRBATCHSTATE.mode=BYTE(scenario)
+  IF scenario=1 THEN
+    DIRBATCHSTATE.Deliver()
+  FI
+
+  batch.capacity=16
+  count=DOS.ExNextBatch(lock,@info,batch)
+  error=DOS.IoErr()
+  Require(DIRBATCHSTATE.fired=1 AND DOS.BreakPending()<>0)
+  Require(client.busy=0 AND scope.enqueued=0)
+  Require(scope.packet=NULL AND registry.cancelHead=NULL)
+  Require(EXEC.GetMsg(client.port)=NULL)
+  IF scenario<>1 THEN
+    Require(scope.opState=FSOPERATION.COLLECTED)
+  FI
+
+  IF scenario=6 THEN
+    Require(count=16 AND error=0)
+  ELSEIF scenario=7 THEN
+    Require(count=3 AND error=205)
+  ELSEIF scenario=4 THEN
+    Require(count=3 AND error=DOS.ERROR_BREAK)
+  ELSEIF scenario=5 THEN
+    Require(count>=0 AND count<16 AND error=DOS.ERROR_BREAK)
+  ELSE
+    Require(count=0 AND error=DOS.ERROR_BREAK)
+  FI
+  IF scenario=5 THEN
+    Require(DIRBATCHSTATE.wirePhase>=1 AND DIRBATCHSTATE.wirePhase<13)
+  FI
+
+  DIRBATCHSTATE.mode=0
+  DOS.ClearBreak()
+  ; Resume from precisely the committed prefix, including zero publications.
+  index=0
+  WHILE LONGINT(index)<count DO
+    Require(DOS.ExNext(lock,@ordinary)<>0)
+    index==+1
+  OD
+  Require(DOS.ExNext(lock,@ordinary)<>0 AND DOS.ExNext(lock,@info)<>0)
+  FOR index=0 TO 107 DO
+    Require(ordinary.fib_FileName(index)=info.fib_FileName(index))
+  OD
+
+  DOS.UnLock(lock)
+  Require(DOS.EndForeground()<>0 AND DOS.Close(con)<>0)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  EXEC.FreeMem(BYTE POINTER(batch),1890)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+ENDMODULE

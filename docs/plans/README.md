@@ -1,7 +1,7 @@
 # Implementation plans
 
 - [Batched directory enumeration design](directory-batching-design.md) and
-  [EB1–EB3 plan](directory-batching-implementation-plan.md): proposed
+  [EB1–EB3 plan](directory-batching-implementation-plan.md): EB1 implements the
   public ExNextBatch operation with compact caller-owned results, existing
   enumeration cookies and partial-result/cancellation semantics. Start the
   shared Files/file-selector scanner at eight entries; compare sixteen. Slices

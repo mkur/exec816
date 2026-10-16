@@ -73,6 +73,36 @@ PUBLIC BYTE FUNC Select(FSTYPES.Service POINTER service)
     RETURN(SelectEntry(service))
   FI
 
+RETURN(Continue(service))
+
+; Batch buffers and locks have already been admitted by the public caller.
+PUBLIC BYTE FUNC Batch(FSTYPES.Service POINTER service)
+
+  service.object=FSTYPES.Object POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg1))
+  service.info=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg2))
+  LET batch=DirBatch POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg3))
+  service.batchRemaining=batch.capacity
+  service.batchOutput=BYTE POINTER(@batch.entries(0))
+  RestoreParent(service)
+
+RETURN(Continue(service))
+
+; Child admission can descend; every next entry still belongs to the parent.
+PROC RestoreParent(FSTYPES.Service POINTER service)
+  BYTE index
+
+  LET lock=FSTYPES.LockObject POINTER(service.object)
+  service.work.depth=lock.state.depth
+  FOR index=0 TO service.work.depth DO
+    service.work.ancestors(index)=lock.state.ancestors(index)
+  OD
+
+RETURN
+
+; Check one enumeration cookie per public operation, not per returned entry.
+BYTE FUNC Continue(FSTYPES.Service POINTER service)
+
+  LET lock=FSTYPES.LockObject POINTER(service.object)
   IF (lock.state.entry.flags & FSBTYPES.DIR)=0 THEN
     RETURN(FSPACKET.Error(service,ERROR_OBJECT_WRONG_TYPE))
   FI
@@ -157,7 +187,8 @@ RETURN(SelectEntry(service))
 BYTE FUNC SelectEntry(FSTYPES.Service POINTER service)
 
   IF (service.work.entry.flags & FSBTYPES.DIR)<>0 AND
-      service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_NEXT THEN
+      (service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_NEXT OR
+      service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_BATCH) THEN
     IF FSBACKEND.Descend(service.work)=0 THEN
       RETURN(FSPACKET.Error(service,service.work.error))
     FI
@@ -206,6 +237,26 @@ RETURN(SizeResult(service,status))
 BYTE FUNC PublishStep(BYTE POINTER raw)
 
   LET service=FSTYPES.Service POINTER(raw)
+  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_BATCH THEN
+    FSINFO.BatchEntry(FSINFO.DirEntry POINTER(service.batchOutput),
+        @service.measured.entry,service.selected)
+    FSINFO.Save(FSINFO.FileInfoBlock POINTER(service.info),
+        FSTYPES.LockObject POINTER(service.object),service.enumIndex)
+    service.packet.sp_Pkt.dp_Res1==+1
+    service.batchRemaining==-1
+    IF service.batchRemaining<>0 THEN
+      service.batchOutput=BYTE POINTER(ADDRESS(service.batchOutput)
+          +SIZE(DIR_ENTRY_SIZE))
+      RestoreParent(service)
+      service.nextStep=@EntryStep
+      RETURN(FSSTATUS.MORE)
+    FI
+
+    service.stage=70
+    FSPACKET.Reply(service)
+    RETURN(FSSTATUS.MORE)
+  FI
+
   service.stage=70
   FSINFO.Clear(FSINFO.FileInfoBlock POINTER(service.info))
   FSINFO.Name(FSINFO.FileInfoBlock POINTER(service.info),

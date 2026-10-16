@@ -29,13 +29,13 @@ PUBLIC PROC Clear(FileInfoBlock POINTER info)
 RETURN
 
 ; Expose a terminated display name, including the physical alias for a root.
-PUBLIC PROC Name(FileInfoBlock POINTER info FSBTYPES.Entry POINTER entry
+PROC NameBytes(BYTE POINTER output FSBTYPES.Entry POINTER entry
     FSTYPES.Mount POINTER mount)
   BYTE index,length
 
   IF entry.parent=0 THEN
     FOR index=0 TO 31 DO
-      info.fib_FileName(index)=mount.spec.alias(index)
+      output(index)=mount.spec.alias(index)
       IF mount.spec.alias(index)=0 THEN
         EXIT
       FI
@@ -50,24 +50,49 @@ PUBLIC PROC Name(FileInfoBlock POINTER info FSBTYPES.Entry POINTER entry
       EXIT
     FI
 
-    info.fib_FileName(length)=entry.name(index)
+    output(length)=entry.name(index)
     length==+1
   OD
 
   IF entry.name(8)<>32 THEN
-    info.fib_FileName(length)=46
+    output(length)=46
     length==+1
     FOR index=8 TO 10 DO
       IF entry.name(index)=32 THEN
         EXIT
       FI
 
-      info.fib_FileName(length)=entry.name(index)
+      output(length)=entry.name(index)
       length==+1
     OD
   FI
 
-  info.fib_FileName(length)=0
+  output(length)=0
+
+RETURN
+
+PUBLIC PROC Name(FileInfoBlock POINTER info FSBTYPES.Entry POINTER entry
+    FSTYPES.Mount POINTER mount)
+
+  NameBytes(info.fib_FileName,entry,mount)
+
+RETURN
+
+; Publish only the cheap metadata supported by directory batches.
+PUBLIC PROC BatchEntry(DirEntry POINTER output FSBTYPES.Entry POINTER entry
+    FSTYPES.Mount POINTER mount)
+
+  NameBytes(output.name,entry,mount)
+  output.kind=ST_FILE
+  output.size=entry.length
+  output.infoFlags=FIB_SIZE_EXACT
+  IF (entry.flags & FSBTYPES.DIR)<>0 THEN
+    output.kind=ST_USERDIR
+    output.size=0
+  ELSEIF mount.volume.format=FSFORMATS.MYDOS AND entry.known=0 THEN
+    output.size=entry.count*LONGINT(mount.volume.block.dataBytes-3)
+    output.infoFlags=FIB_SIZE_BOUND
+  FI
 
 RETURN
 

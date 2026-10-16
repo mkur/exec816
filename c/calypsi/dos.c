@@ -3,7 +3,7 @@
 #include <exec816/program.h>
 
 /* The launcher installs these native entry addresses before entering C. */
-void EXEC_PTR *ExecDosEntries[24];
+void EXEC_PTR *ExecDosEntries[25];
 
 ULONG EXEC_CALL _DosCall(UWORD entry, const struct ExecDosWriteArgs *args);
 
@@ -46,3 +46,5 @@ LONG EXEC_CALL DeleteFile(CONST_STRPTR name) { return call(20,(ULONG)name,0,0); 
 LONG EXEC_CALL ExamineExact(BPTR lock,struct FileInfoBlock *info) { return call(21,lock,(ULONG)info,0); }
 LONG EXEC_CALL MountVolume(CONST_STRPTR name,const struct SioMountSpec *spec) { return call(22,(ULONG)name,(ULONG)spec,0); }
 LONG EXEC_CALL UnmountVolume(CONST_STRPTR name) { return call(23,(ULONG)name,0,0); }
+LONG EXEC_CALL ExNextBatch(BPTR lock,struct FileInfoBlock *info,struct DirBatch *batch)
+{ return call(24,lock,(ULONG)info,(LONG)(ULONG)batch); }

@@ -34,7 +34,7 @@ def expected_layout():
     checks += [(f'offsetof(struct TaskLease, {name})', offset) for name,_,offset in lease['fields']]
     checks += [('sizeof(struct ExecRetainTaskPacket)', 6),
                ('offsetof(struct ExecRetainTaskPacket, lease)', 3)]
-    for name in ('DateStamp','FileInfoBlock','VolumeInfo','SioMountSpec'):
+    for name in ('DateStamp','FileInfoBlock','VolumeInfo','SioMountSpec','DirEntry','DirBatch'):
         record=load('dos.json')['records'][name]
         checks.append((f'sizeof(struct {name})',record['size']))
         checks += [(f'offsetof(struct {name}, {field})',offset) for field,_,offset in record['fields']]
@@ -122,10 +122,11 @@ UBYTE EXEC_CALL ReleaseTask(struct TaskLease *lease)
          '#ifndef EXEC_DOS_H','#define EXEC_DOS_H','#include <exec/types.h>']
     dos += [f'#define {name} ({value}L)' for name,value in
             {**load('dos.json')['constants'],**load('dos.json')['dos_errors']}.items()]
-    for name in ('DateStamp','FileInfoBlock','VolumeInfo','SioMountSpec'):
+    for name in ('DateStamp','FileInfoBlock','VolumeInfo','SioMountSpec','DirEntry','DirBatch'):
         dos.append('struct '+name+' {')
         for field,kind,offset in load('dos.json')['records'][name]['fields']:
             if kind.startswith('BYTE['):decl='UBYTE '+field+kind[4:]
+            elif kind.startswith('DirEntry['):decl='struct DirEntry '+field+kind[8:]
             else:decl={'BYTE':'UBYTE','LONGCARD':'ULONG','LONGINT':'LONG','CARD':'UWORD','DateStamp':'struct DateStamp'}[kind]+' '+field
             dos.append('    '+decl+';')
         dos.append('};')

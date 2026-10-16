@@ -13,6 +13,7 @@ USE FSWRITEIO
 USE FSINIT
 USE FSMOUNT
 INCLUDE "../dos/dos-types.inc"
+INCLUDE "../dos/dos-packets.inc"
 
 ; Observe cancellation at a worker boundary before publishing further results.
 PUBLIC BYTE FUNC Checkpoint(FSTYPES.Service POINTER service)
@@ -56,7 +57,10 @@ PUBLIC BYTE FUNC Checkpoint(FSTYPES.Service POINTER service)
     END
   FI
 
-  service.packet.sp_Pkt.dp_Res1=0
+  IF action<>DOS_ACTION_EXAMINE_BATCH THEN
+    service.packet.sp_Pkt.dp_Res1=0
+  FI
+
   IF action=82 OR action=1008 THEN
     service.packet.sp_Pkt.dp_Res1=-1
     IF service.operation.stage<>0

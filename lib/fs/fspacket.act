@@ -51,6 +51,8 @@ PUBLIC PROC Reply(FSTYPES.Service POINTER service)
   service.client=DOSCLIENT.ClientContext POINTER(0)
   service.owner=DOSCORE.DosSlot POINTER(0)
   service.info=BYTE POINTER(0)
+  service.batchOutput=NULL
+  service.batchRemaining=0
   service.work.path=BYTE POINTER(0)
   service.operation.stage=0
   service.operation.output=BYTE POINTER(0)

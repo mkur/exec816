@@ -18,7 +18,8 @@ PUBLIC CONST PREPARED=1,QUEUED=2,ACTIVE=3,REPLIED=4,COLLECTED=5
 
 PUBLIC BYTE FUNC Cancellable(LONGINT action)
 
-RETURN(action=8 OR action=23 OR action=24 OR action=25 OR action=82 OR action=1005
+RETURN(action=DOS_ACTION_EXAMINE_BATCH OR action=8 OR action=23 OR action=24
+    OR action=25 OR action=82 OR action=1005
     OR action=1008 OR action=1004 OR action=1006 OR action=87
     OR action=27 OR action=22 OR action=16 OR action=17
     OR action=DOS_MANAGEMENT_MOUNT_VOLUME OR action=DOS_MANAGEMENT_UNMOUNT_VOLUME)

@@ -6,7 +6,8 @@
 These are native pointers, not Amiga BPTRs. Names are NUL-terminated byte strings;
 I/O remains counted binary data. Exact signatures and constants come from
 [dos.act](../../lib/dos/dos.act) and [dos.json](../../abi/dos.json).
-The current native DOS ABI is revision 10; the loaded COMMAND ABI is version 17.
+The current native DOS ABI is revision 11; the loaded COMMAND ABI is version 19.
+The loaded C program ABI is version 20; rebuild applications with these bindings.
 
 ## Transfer ownership
 
@@ -19,6 +20,42 @@ or RAM-map walks. Negative counts, read-only/offline volumes, file-size bounds,
 short transfers and physical errors remain operational errors. Mount references,
 writer leases, cancellation, exact reply collection and stack/domain guards
 still protect state transitions.
+
+## Batched directory enumeration
+
+`ExNextBatch` is a synchronous Exec816 extension available through native DOS,
+COMMAND and C. Initialize a directory cursor with `Examine`, then supply the
+same lock and FIB and a caller-owned `DirBatch`. Set capacity to 1–16 and allocate
+`DIR_BATCH_HEADER_SIZE + capacity * DIR_ENTRY_SIZE` bytes (2 + capacity * 118).
+The declaration contains one record; `sizeof(DirBatch)` is not the allocation
+size for a larger batch. Invalid capacities return zero/ERROR_BAD_ARGUMENTS
+before packet submission.
+
+Each `DirEntry` contains a terminated name[108], LONG kind, LONG size and UWORD
+infoFlags, at offsets 0, 108, 112 and 116. Size uses ordinary ExNext semantics:
+FIB_SIZE_EXACT or FIB_SIZE_BOUND; unknown size is -1 with neither flag. Directory
+size is zero/exact. Other flag bits are zero. Bytes after the name terminator
+and records beyond the returned count are unspecified.
+
+| Returned count | IoErr | Meaning |
+| --- | --- | --- |
+| capacity | 0 | Full batch; EOF has not been probed. |
+| 0–capacity-1 | ERROR_NO_MORE_ENTRIES | Valid final prefix, possibly empty. |
+| 0–capacity-1 | Other error, including ERROR_BREAK | Valid committed prefix followed by failure. |
+
+Only DiskKey and the private enumeration cookie change in the FIB. Its other
+fields do not describe the last returned entry. ExNext and ExNextBatch may
+alternate on the same cursor. Independent cursors remain independent. The usual
+lock/FIB identity and mutation-epoch rules apply; restart with Examine after
+ERROR_OBJECT_IN_USE. A full batch does not look ahead, so exact multiples require
+one final empty call. Failure advances the cursor only over published entries;
+retry may resume if the epoch is still valid.
+
+Keep lock, cursor and complete output storage live and unchanged until return,
+including during cancellation and transport retirement. The worker owns one
+packet for the batch and checks cancellation between bounded backend/publication
+steps. No batch-wide scheduler lock is held. Other filesystem requests wait for
+this packet to finish; the public maximum bounds that extra service delay.
 
 ## Volume information
 
@@ -68,6 +105,7 @@ record and constants; C query-call wrappers are not yet provided.
 | `Lock(name, mode)` / `UnLock(lock)` | Acquire/release a shared file or directory reference. UnLock(NULL) is harmless. |
 | `Examine(lock, info)` | Return directory metadata for the object and initialize enumeration. |
 | `ExNext(lock, info)` | Return the next entry; false with ERROR_NO_MORE_ENTRIES ends enumeration. |
+| `ExNextBatch(lock, cursor, batch)` | Return 0–capacity compact directory records; inspect IoErr even when the count is positive. |
 | `ExamineExact(lock, info)` | Measure the selected object's exact byte length and allocated sectors; initialize enumeration. |
 | `CurrentDir(lock)` | Select an owned directory lock and return the previous selection; the returned lock is not automatically unlocked. |
 | `NameFromLock(lock, buffer, length)` | Copy the canonical absolute path into caller-owned storage. |

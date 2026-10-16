@@ -54,7 +54,7 @@ packet.data=status
 
 SIO-enabled builds publish the current native program imports. SIO-disabled builds
 retain the library interface and return Open failure without touching serial
-hardware. The native program ABI is version 18; rebuild commands and providers
+hardware. The native program ABI is version 19; rebuild commands and providers
 together. The C program ABI remains version 17 because its existing interfaces
 are unchanged; a C SIO convenience library is not part of this interface.
 

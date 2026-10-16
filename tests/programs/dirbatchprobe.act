@@ -1,0 +1,57 @@
+; Test-only injection at real packet, worker and transport boundaries.
+MODULE DIRBATCHPROBE
+USE EXEC
+USE FSTYPES
+USE FSOPERATION
+USE FSREGISTRY
+USE DIRBATCHSTATE
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+INCLUDE "sio-storage-action.inc"
+PUBLIC PROC Checkpoint(FSTYPES.Service POINTER service)
+
+  IF DIRBATCHSTATE.fired<>0 OR DIRBATCHSTATE.mode=0 OR DIRBATCHSTATE.target=NULL OR service.packet=NULL THEN
+    RETURN
+  FI
+
+  IF DIRBATCHSTATE.target.opState<>FSOPERATION.ACTIVE OR
+      DIRBATCHSTATE.target.packet<>BYTE POINTER(service.packet) OR
+      service.packet.sp_Pkt.dp_Type<>28 THEN
+    RETURN
+  FI
+
+  IF DIRBATCHSTATE.mode=3 OR (DIRBATCHSTATE.mode=4 AND service.packet.sp_Pkt.dp_Res1=3) THEN
+    DIRBATCHSTATE.Deliver()
+  ELSEIF DIRBATCHSTATE.mode=7 AND service.packet.sp_Pkt.dp_Res1=3 THEN
+    ; A causal error after a committed prefix wins over the following break.
+    service.work.error=205
+    DIRBATCHSTATE.Deliver()
+  FI
+
+RETURN
+
+PUBLIC PROC OnWire(EXEC.IORequest POINTER request)
+
+  IF DIRBATCHSTATE.mode<>5 OR DIRBATCHSTATE.fired<>0 THEN
+    RETURN
+  FI
+
+  LET service=FSREGISTRY.Service()
+  IF service.packet=NULL OR service.packet.sp_Pkt.dp_Type<>28 THEN
+    RETURN
+  FI
+
+  LET phase=BYTE POINTER(SD_PHASE)
+  LET started=BYTE POINTER(SD_STARTED)
+  WHILE EXEC.CheckIO(request)=NULL DO
+    IF started^<>0 AND phase^>=1 AND phase^<13 THEN
+      DIRBATCHSTATE.wirePhase=phase^
+      DIRBATCHSTATE.Deliver()
+      RETURN
+    FI
+    EXEC.Yield()
+  OD
+
+RETURN
+
+ENDMODULE

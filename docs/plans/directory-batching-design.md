@@ -1,6 +1,7 @@
 # Batched directory enumeration
 
-Status: proposed design; no API or production implementation change yet.
+Status: public operation implemented in EB1; scanner adoption and measurements
+follow the [implementation plan](directory-batching-implementation-plan.md).
 
 [Plans](README.md) · [Files enumeration analysis](../history/files-enumeration-analysis.md) ·
 [Implementation plan](directory-batching-implementation-plan.md) ·
@@ -36,7 +37,7 @@ latency remain, and drawing occurs after the measured scan.
 
 ## Public operation and storage
 
-Proposed C surface, with equivalent generated native Action! declarations:
+Public C surface, with equivalent generated native Action! declarations:
 
 ```c
 struct DirEntry {

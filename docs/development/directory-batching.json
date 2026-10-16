@@ -1,0 +1,811 @@
+{
+  "status": "EB1 complete; EB2/EB3 pending",
+  "tier": "development",
+  "compiler": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "eb1": {
+    "cases": [
+      {
+        "name": "sdfs",
+        "status": "pass",
+        "optimized": true,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 385,
+              "untouched_above_floor": 895
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 276,
+              "untouched_above_floor": 780
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 123,
+              "untouched_above_floor": 933
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 297,
+              "untouched_above_floor": 759
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 51,
+              "untouched_above_floor": 205
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 275,
+            "untouched_from_base": 1261,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      {
+        "name": "mydos",
+        "status": "pass",
+        "optimized": true,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 385,
+              "untouched_above_floor": 895
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 288,
+              "untouched_above_floor": 768
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 123,
+              "untouched_above_floor": 933
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 297,
+              "untouched_above_floor": 759
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 50,
+              "untouched_above_floor": 206
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 271,
+            "untouched_from_base": 1265,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      {
+        "name": "ram",
+        "status": "pass",
+        "optimized": true,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 391,
+              "untouched_above_floor": 889
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 276,
+              "untouched_above_floor": 780
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 123,
+              "untouched_above_floor": 933
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 297,
+              "untouched_above_floor": 759
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 49,
+              "untouched_above_floor": 207
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 258,
+            "untouched_from_base": 1278,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      {
+        "name": "abi-raw",
+        "status": "pass",
+        "optimized": false,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 387,
+              "untouched_above_floor": 893
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 292,
+              "untouched_above_floor": 764
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 136,
+              "untouched_above_floor": 920
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 303,
+              "untouched_above_floor": 753
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 50,
+              "untouched_above_floor": 206
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 264,
+            "untouched_from_base": 1272,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      {
+        "name": "cancel/before",
+        "status": "pass",
+        "optimized": true,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 372,
+              "untouched_above_floor": 908
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 236,
+              "untouched_above_floor": 820
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 276,
+              "untouched_above_floor": 780
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 123,
+              "untouched_above_floor": 933
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 45,
+              "untouched_above_floor": 211
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 275,
+            "untouched_from_base": 1261,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      {
+        "name": "cancel/queued",
+        "status": "pass",
+        "optimized": true,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 372,
+              "untouched_above_floor": 908
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 236,
+              "untouched_above_floor": 820
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 276,
+              "untouched_above_floor": 780
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 123,
+              "untouched_above_floor": 933
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 45,
+              "untouched_above_floor": 211
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 258,
+            "untouched_from_base": 1278,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      {
+        "name": "cancel/first",
+        "status": "pass",
+        "optimized": true,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 372,
+              "untouched_above_floor": 908
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 236,
+              "untouched_above_floor": 820
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 276,
+              "untouched_above_floor": 780
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 123,
+              "untouched_above_floor": 933
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 45,
+              "untouched_above_floor": 211
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 258,
+            "untouched_from_base": 1278,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      {
+        "name": "cancel/prefix",
+        "status": "pass",
+        "optimized": true,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 372,
+              "untouched_above_floor": 908
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 236,
+              "untouched_above_floor": 820
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 276,
+              "untouched_above_floor": 780
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 123,
+              "untouched_above_floor": 933
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 45,
+              "untouched_above_floor": 211
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 258,
+            "untouched_from_base": 1278,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      {
+        "name": "cancel/wire",
+        "status": "pass",
+        "optimized": true,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 372,
+              "untouched_above_floor": 908
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 236,
+              "untouched_above_floor": 820
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 276,
+              "untouched_above_floor": 780
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 123,
+              "untouched_above_floor": 933
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 45,
+              "untouched_above_floor": 211
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 258,
+            "untouched_from_base": 1278,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      {
+        "name": "cancel/final",
+        "status": "pass",
+        "optimized": true,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 372,
+              "untouched_above_floor": 908
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 236,
+              "untouched_above_floor": 820
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 276,
+              "untouched_above_floor": 780
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 123,
+              "untouched_above_floor": 933
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 45,
+              "untouched_above_floor": 211
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 258,
+            "untouched_from_base": 1278,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      {
+        "name": "cancel/error",
+        "status": "pass",
+        "optimized": true,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 372,
+              "untouched_above_floor": 908
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 236,
+              "untouched_above_floor": 820
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 276,
+              "untouched_above_floor": 780
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 123,
+              "untouched_above_floor": 933
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 45,
+              "untouched_above_floor": 211
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 258,
+            "untouched_from_base": 1278,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      }
+    ],
+    "abi": {
+      "dos": 11,
+      "command": 19,
+      "c_program": 20,
+      "record_bytes": 118,
+      "header_bytes": 2
+    },
+    "memory": {
+      "service_before": 516,
+      "service_after": 520,
+      "c_dos_table_before": 72,
+      "c_dos_table_after": 75,
+      "provider_used": 1844,
+      "provider_capacity": 1856,
+      "changed_native_modules_code_growth": 2844,
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0,
+        "idle": 0
+      }
+    }
+  }
+}

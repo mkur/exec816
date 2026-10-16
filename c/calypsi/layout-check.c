@@ -113,4 +113,12 @@ const UWORD ExecCLayout[] = {
     offsetof(struct SioMountSpec, format),
     offsetof(struct SioMountSpec, profile),
     offsetof(struct SioMountSpec, access),
+    sizeof(struct DirEntry),
+    offsetof(struct DirEntry, name),
+    offsetof(struct DirEntry, kind),
+    offsetof(struct DirEntry, size),
+    offsetof(struct DirEntry, infoFlags),
+    sizeof(struct DirBatch),
+    offsetof(struct DirBatch, capacity),
+    offsetof(struct DirBatch, entries),
 };

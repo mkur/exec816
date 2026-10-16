@@ -148,6 +148,17 @@ LONGINT FUNC CUnmountVolume(LONGCARD name,unused,unused2)
 
 RETURN(DOS.UnmountVolume(BYTE POINTER(ADDRESS(name))))
 
+; Preserve full-width address checks at the C/native boundary only.
+LONGINT FUNC CExNextBatch(LONGCARD lock,info,batch)
+
+  IF lock>$ffffff OR info>$ffffff OR batch>$ffffff THEN
+    DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(DOS.ExNextBatch(DOS.FileLock POINTER(ADDRESS(lock)),
+    DOS.FileInfoBlock POINTER(ADDRESS(info)),DOS.DirBatch POINTER(ADDRESS(batch))))
+
 ; Bind once; each operation still uses the current Task's DOS context.
 PROC BindDos(BYTE unused)
 
@@ -176,5 +187,6 @@ PROC BindDos(BYTE unused)
   entries(21)=ADDRESS(@CExamineExact)
   entries(22)=ADDRESS(@CMountVolume)
   entries(23)=ADDRESS(@CUnmountVolume)
+  entries(24)=ADDRESS(@CExNextBatch)
 
 RETURN

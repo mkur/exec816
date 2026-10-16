@@ -83,7 +83,7 @@ If completion wins, its result is retained. Otherwise AbortIO requests
 cancellation, and the caller still collects that exact terminal reply before
 releasing any buffer, request, endpoint lease or busy flag.
 
-Queued filesystem Read, Seek, Open, Lock, Examine and ExNext use a private
+Queued filesystem Read, Seek, Open, Lock, Examine, ExNext and ExNextBatch use a private
 identity, command generation and explicit ownership state. Cancellation
 notification is separate from the packet currently owned by the worker. The
 worker can retire another client's queued operation while its own serial request
@@ -98,6 +98,11 @@ Canceled Read/Write with committed bytes returns that positive count and
 ERROR_BREAK in IoErr; zero committed bytes returns failure with ERROR_BREAK.
 A canceled file Read advances its cursor by exactly that committed prefix.
 A canceled Seek preserves its starting position.
+ExNextBatch returns its committed record count with ERROR_BREAK, including zero.
+The enumeration cursor advances only through complete returned records. A break
+after final publication retains the successful full batch; an earlier backend
+error retains its cause. Borrowed output storage is released only after reply
+collection.
 Displayed output is not undone. Console cancellation returns ERROR_BREAK only
 after the terminal reply is collected; a stale notification cannot complete a
 request. Pending break before submission leaves the request unsent.

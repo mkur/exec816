@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 19,
+  "version": 20,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -106,6 +106,7 @@
     "ExecAESPaintedChanges",
     "ExamineExact",
     "MountVolume",
-    "UnmountVolume"
+    "UnmountVolume",
+    "ExNextBatch"
   ]
 }

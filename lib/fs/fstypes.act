@@ -96,6 +96,8 @@ PUBLIC TYPE Service=[
   BYTE mountStage,newResources,mountOwned
   Spec pending
   BYTE mountNew
+  BYTE POINTER batchOutput
+  CARD batchRemaining
 ]
 
 PUBLIC CONST STATE_STARTING=1, STATE_READY=2, STATE_STOPPING=3, STATE_STOPPED=4,

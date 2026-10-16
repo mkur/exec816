@@ -1,0 +1,31 @@
+MODULE DIRBATCHSTATE
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+PUBLIC BYTE mode,fired,wirePhase
+PUBLIC DOSBREAKTYPES.Scope POINTER target
+
+PUBLIC PROC Deliver()
+  BYTE ignored
+
+  fired=1
+  ignored=CONSOLEFOREGROUND.Deliver(target.generation)
+
+RETURN
+
+PUBLIC PROC Queued()
+
+  IF mode=2 AND fired=0 AND target<>NULL THEN
+    Deliver()
+  FI
+
+RETURN
+
+PUBLIC PROC Final()
+
+  IF mode=6 AND fired=0 THEN
+    Deliver()
+  FI
+
+RETURN
+
+ENDMODULE

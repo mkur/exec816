@@ -10,7 +10,7 @@ cookie and prefix results on error/cancellation. Files and the file selector
 start with eight entries and compare sixteen. The
 [EB1–EB3 implementation plan](../directory-batching-implementation-plan.md)
 orders the complete DOS operation/bindings, shared scanner adoption and matched
-measurements/OF816 demo delivery. Production code is unchanged.
+measurements/OF816 demo delivery. EB1 is implemented; scanner adoption follows.
 
 The [popup visibility analysis](../../history/popup-visibility-analysis.md)
 identifies only three changed visibility lists in the warm File/View scene.

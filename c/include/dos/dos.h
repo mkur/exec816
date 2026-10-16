@@ -39,6 +39,9 @@
 #define MOUNT_PROFILE_FASTEST125 (1L)
 #define MOUNT_PROFILE_STOCK810 (2L)
 #define MOUNT_PROFILE_GENERIC57600 (4L)
+#define DIR_ENTRY_SIZE (118L)
+#define DIR_BATCH_HEADER_SIZE (2L)
+#define DIR_BATCH_MAX (16L)
 #define ERROR_NO_FREE_STORE (103L)
 #define ERROR_BAD_TEMPLATE (114L)
 #define ERROR_BAD_NUMBER (115L)
@@ -113,5 +116,15 @@ struct SioMountSpec {
     UWORD format;
     UWORD profile;
     UWORD access;
+};
+struct DirEntry {
+    UBYTE name[108];
+    LONG kind;
+    LONG size;
+    UWORD infoFlags;
+};
+struct DirBatch {
+    UWORD capacity;
+    struct DirEntry entries[1];
 };
 #endif
