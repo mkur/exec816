@@ -1,0 +1,2361 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "plan": "docs/plans/gem4xe/damage-retirement-plan.md",
+  "methodology": "Unchanged passive observer and 36-action workload. CPU/IRQ ownership accounting stops at sampled complete feedback. Scene commit residual excludes its nested rebuild but includes other bookkeeping, not just SubtractDamage. Three complete samples do not establish p95. Historical cropped endpoints omit headings and top popup rows.",
+  "provenance": {
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "compiler_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "compiler_override": false,
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "observers": {
+      "observer_sha256": "0ecad1779c0bca057857fb6196b64eaa167e609d5845d48808c1cc9289f5cdec",
+      "feedback_sha256": "130d0b0a3d31f335691236570e0844c83d7a4a973c837c5740eac6b758d75769",
+      "crossing_observer_sha256": "218db998d0de8f3319ad0d9507a2f8fb78b50dee5799da1628488e3ee71632d3"
+    },
+    "baseline_revision": "426f3f8a43762247a8ed72f466579b8e1c073bbb",
+    "demo_revision": "cbc0a16b15cee85523d3dd52bd47b5e1d35a26d6",
+    "demo_dirty": false,
+    "cpu": "65816 x8",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "complete_keyboard": {
+    "before": [
+      {
+        "action": "complete/keyboard/0",
+        "total": {
+          "elapsed_ms": 100.28828031278061,
+          "charged_cpu_ms": 61.063197529106446,
+          "off_cpu_ms": 25.89976585154057,
+          "interrupt_ms": 13.325316932133598
+        },
+        "popup_commit_ms": 50.11305663122252,
+        "title_retirement_ms": 73.17379003325443,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 73.17379003325443,
+          "elapsed_ms": 73.17379003325445,
+          "charged_cpu_ms": 53.883326120451834,
+          "off_cpu_ms": 7.583745783283689,
+          "interrupt_ms": 11.706718129518919
+        },
+        "after_title": {
+          "start_ms": 73.17379003325443,
+          "end_ms": 100.28828031278061,
+          "elapsed_ms": 27.114490279526176,
+          "charged_cpu_ms": 7.179871408654612,
+          "off_cpu_ms": 18.316020068256886,
+          "interrupt_ms": 1.6185988026146814
+        },
+        "after_offer": {
+          "start_ms": 81.24775331663328,
+          "end_ms": 100.28828031278061,
+          "elapsed_ms": 19.040526996147335,
+          "charged_cpu_ms": 0.5956618394398481,
+          "off_cpu_ms": 18.316020068256886,
+          "interrupt_ms": 0.12884508845060258
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 15.213376770386493,
+            "return_ms": 17.783371089361257,
+            "cpu_ms": 2.023953345108891,
+            "irq_ms": 18.684793319227097,
+            "poll_return_ms": 21.185783622013055,
+            "retirement_ms": null,
+            "commit_ms": 50.11305663122252
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 22.14577820882772,
+            "return_ms": 24.56937687752245,
+            "cpu_ms": 1.9801826668113944,
+            "irq_ms": 25.10223730897024,
+            "poll_return_ms": 29.383658100958726,
+            "retirement_ms": null,
+            "commit_ms": 50.11305663122252
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 21.427121468213745
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 8,
+            "cpu_ms": 7.321051229314654
+          },
+          "DESKMENU_KEY": {
+            "calls": 1,
+            "cpu_ms": 0.9593602291581792
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 4.004136011920285
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.217264677978909
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.2430590699752884
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.308623457982263
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 16.47166042411743
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.11773396167634
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 9.513955163600839
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.04947989720586598,
+          "individual_cpu_ms": [
+            0.02473994860293299,
+            0.02473994860293299
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 162525340,
+          "first_match": 162560733
+        },
+        "keyboard_to_advance": {
+          "start_ms": 11.687757884008407,
+          "end_ms": 11.771563578848543,
+          "elapsed_ms": 0.08380569484013482,
+          "charged_cpu_ms": 0.08380569484013482,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "key_ms": [
+          10.507077316920856,
+          11.687757884008407
+        ],
+        "intervening_offers": 0,
+        "intervening_empty_paint": [],
+        "complete_feedback_bracket_ms": [
+          80.3311065030118,
+          100.28828031278061
+        ]
+      },
+      {
+        "action": "complete/keyboard/1",
+        "total": {
+          "elapsed_ms": 100.28828031278061,
+          "charged_cpu_ms": 60.27363369933421,
+          "off_cpu_ms": 26.94441194340402,
+          "interrupt_ms": 13.070234670042389
+        },
+        "popup_commit_ms": 49.37713126551533,
+        "title_retirement_ms": 71.43092761415267,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 71.43092761415267,
+          "elapsed_ms": 71.43092761415267,
+          "charged_cpu_ms": 53.08861694524366,
+          "off_cpu_ms": 6.89469239997237,
+          "interrupt_ms": 11.447618268936633
+        },
+        "after_title": {
+          "start_ms": 71.43092761415267,
+          "end_ms": 100.28828031278061,
+          "elapsed_ms": 28.857352698627952,
+          "charged_cpu_ms": 7.185016754090549,
+          "off_cpu_ms": 20.04971954343165,
+          "interrupt_ms": 1.622616401105756
+        },
+        "after_offer": {
+          "start_ms": 79.51419480982662,
+          "end_ms": 100.28828031278061,
+          "elapsed_ms": 20.77408550295399,
+          "charged_cpu_ms": 0.5940407032066074,
+          "off_cpu_ms": 20.04971954343165,
+          "interrupt_ms": 0.1303252563157353
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 14.477239952127142,
+            "return_ms": 17.052027195617576,
+            "cpu_ms": 2.0259269022624014,
+            "irq_ms": 17.948938437703962,
+            "poll_return_ms": 20.456060864502614,
+            "retirement_ms": null,
+            "commit_ms": 49.37713126551533
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 21.416337388053496,
+            "return_ms": 23.83894927817147,
+            "cpu_ms": 1.977151846897075,
+            "irq_ms": 24.34890234980173,
+            "poll_return_ms": 28.654851637840984,
+            "retirement_ms": null,
+            "commit_ms": 49.37713126551533
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 21.419579660519975
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 8,
+            "cpu_ms": 7.324152533413026
+          },
+          "DESKMENU_KEY": {
+            "calls": 1,
+            "cpu_ms": 0.9618976597841211
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 4.003078749159476
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.252506770005878
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.2453145638650143
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.34273780306437
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 16.463836679687443
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.122808822928222
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 9.51719743606732
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.0500437706782975,
+          "individual_cpu_ms": [
+            0.02530382207536451,
+            0.02473994860293299
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 170172252,
+          "first_match": 170208092
+        },
+        "keyboard_to_advance": {
+          "start_ms": 10.947321530521766,
+          "end_ms": 11.03077480444163,
+          "elapsed_ms": 0.08345327391986512,
+          "charged_cpu_ms": 0.08345327391986512,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "key_ms": [
+          9.769671783348535,
+          10.947321530521766
+        ],
+        "intervening_offers": 0,
+        "intervening_empty_paint": [],
+        "complete_feedback_bracket_ms": [
+          80.07905506083489,
+          100.28828031278061
+        ]
+      },
+      {
+        "action": "complete/keyboard/2",
+        "total": {
+          "elapsed_ms": 100.28828031278061,
+          "charged_cpu_ms": 60.23881451241156,
+          "off_cpu_ms": 26.94116967093754,
+          "interrupt_ms": 13.108296129431515
+        },
+        "popup_commit_ms": 48.72550498393665,
+        "title_retirement_ms": 70.85253439980603,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 70.85253439980603,
+          "elapsed_ms": 70.85253439980603,
+          "charged_cpu_ms": 53.058943103756945,
+          "off_cpu_ms": 6.30614946312197,
+          "interrupt_ms": 11.48744183292711
+        },
+        "after_title": {
+          "start_ms": 70.85253439980603,
+          "end_ms": 100.28828031278061,
+          "elapsed_ms": 29.43574591297459,
+          "charged_cpu_ms": 7.179871408654612,
+          "off_cpu_ms": 20.63502020781557,
+          "interrupt_ms": 1.6208542965044073
+        },
+        "after_offer": {
+          "start_ms": 78.92868269289055,
+          "end_ms": 100.28828031278061,
+          "elapsed_ms": 21.359597619890074,
+          "charged_cpu_ms": 0.5954503868876863,
+          "off_cpu_ms": 20.63502020781557,
+          "interrupt_ms": 0.12912702518681832
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 13.886723458123232,
+            "return_ms": 16.504647022254677,
+            "cpu_ms": 2.0281823961521277,
+            "irq_ms": 17.407056030697273,
+            "poll_return_ms": 19.905226966121074,
+            "retirement_ms": null,
+            "commit_ms": 48.72550498393665
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 20.865926394776277,
+            "return_ms": 23.236309504510285,
+            "cpu_ms": 1.9737686060624857,
+            "irq_ms": 23.822808400023117,
+            "poll_return_ms": 28.107048559373762,
+            "retirement_ms": null,
+            "commit_ms": 48.72550498393665
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 21.42881308863104
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 8,
+            "cpu_ms": 7.322108492075462
+          },
+          "DESKMENU_KEY": {
+            "calls": 1,
+            "cpu_ms": 0.9543558520903495
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 4.001951002214613
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.232700714286722
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.2431295541593421
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.338156331100864
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 16.465387331736633
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.086298015588282
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 9.486889236924126
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.05610541050693635,
+          "individual_cpu_ms": [
+            0.024951401155094807,
+            0.03115400935184154
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 177819613,
+          "first_match": 177855005
+        },
+        "keyboard_to_advance": {
+          "start_ms": 10.355395352836776,
+          "end_ms": 10.488117071410347,
+          "elapsed_ms": 0.1327217185735693,
+          "charged_cpu_ms": 0.08965588211661187,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043065836456957426
+        },
+        "key_ms": [
+          9.229269544206975,
+          10.355395352836776
+        ],
+        "intervening_offers": 0,
+        "intervening_empty_paint": [],
+        "complete_feedback_bracket_ms": [
+          80.33167037648423,
+          100.28828031278061
+        ]
+      }
+    ],
+    "after": [
+      {
+        "action": "complete/keyboard/0",
+        "total": {
+          "elapsed_ms": 100.28884418625304,
+          "charged_cpu_ms": 57.61405398242688,
+          "off_cpu_ms": 30.20465787681902,
+          "interrupt_ms": 12.470132327007144
+        },
+        "popup_commit_ms": 44.86790559066451,
+        "title_retirement_ms": 67.02890838324788,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 67.02890838324788,
+          "elapsed_ms": 67.0289083832479,
+          "charged_cpu_ms": 50.46956563416735,
+          "off_cpu_ms": 5.561765995328308,
+          "interrupt_ms": 10.997576753752226
+        },
+        "after_title": {
+          "start_ms": 67.02890838324788,
+          "end_ms": 100.28884418625304,
+          "elapsed_ms": 33.25993580300516,
+          "charged_cpu_ms": 7.144488348259534,
+          "off_cpu_ms": 24.642891881490712,
+          "interrupt_ms": 1.4725555732549171
+        },
+        "after_offer": {
+          "start_ms": 74.9217273136081,
+          "end_ms": 100.28884418625304,
+          "elapsed_ms": 25.36711687264495,
+          "charged_cpu_ms": 0.5941816715747154,
+          "off_cpu_ms": 24.642891881490712,
+          "interrupt_ms": 0.13004331957951953
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 13.193088602848407,
+            "return_ms": 15.579753559098874,
+            "cpu_ms": 1.9866672117443565,
+            "irq_ms": 16.762548651708045,
+            "poll_return_ms": 19.14399777833852,
+            "retirement_ms": null,
+            "commit_ms": 44.86790559066451
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 20.10321703912859,
+            "return_ms": 22.475926126936375,
+            "cpu_ms": 1.9734161851422158,
+            "irq_ms": 23.06327083265786,
+            "poll_return_ms": 27.34067402615527,
+            "retirement_ms": null,
+            "commit_ms": 44.86790559066451
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 18.792281699909356
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 8,
+            "cpu_ms": 7.291518356196051
+          },
+          "DESKMENU_KEY": {
+            "calls": 1,
+            "cpu_ms": 0.9609813653914198
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 3.9600833968865725
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.266603606816666
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.2429885857912342
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.350138642390034
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 13.834917582843586
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.155654452697359
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 9.56117956691698
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.056739768163421814,
+          "individual_cpu_ms": [
+            0.02530382207536451,
+            0.031435946088057304
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 162699417,
+          "first_match": 162734810
+        },
+        "keyboard_to_advance": {
+          "start_ms": 9.668949884335454,
+          "end_ms": 9.75240315825532,
+          "elapsed_ms": 0.08345327391986512,
+          "charged_cpu_ms": 0.08345327391986512,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "key_ms": [
+          8.491370621346276,
+          9.668949884335454
+        ],
+        "intervening_offers": 0,
+        "intervening_empty_paint": [],
+        "complete_feedback_bracket_ms": [
+          80.33167037648423,
+          100.28884418625304
+        ]
+      },
+      {
+        "action": "complete/keyboard/1",
+        "total": {
+          "elapsed_ms": 100.28771643930818,
+          "charged_cpu_ms": 57.61271478292986,
+          "off_cpu_ms": 30.054949469888452,
+          "interrupt_ms": 12.620052186489874
+        },
+        "popup_commit_ms": 48.41382392205013,
+        "title_retirement_ms": 70.54191060068031,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 70.54191060068031,
+          "elapsed_ms": 70.54191060068031,
+          "charged_cpu_ms": 50.43784775134308,
+          "off_cpu_ms": 9.061446701974544,
+          "interrupt_ms": 11.042616147362693
+        },
+        "after_title": {
+          "start_ms": 70.54191060068031,
+          "end_ms": 100.28771643930818,
+          "elapsed_ms": 29.74580583862787,
+          "charged_cpu_ms": 7.174867031586782,
+          "off_cpu_ms": 20.993502767913906,
+          "interrupt_ms": 1.5774360391271802
+        },
+        "after_offer": {
+          "start_ms": 78.61869325142132,
+          "end_ms": 100.28771643930818,
+          "elapsed_ms": 21.66902318788687,
+          "charged_cpu_ms": 0.5888953577706698,
+          "off_cpu_ms": 20.993502767913906,
+          "interrupt_ms": 0.08662506220229242
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 16.830988794424417,
+            "return_ms": 19.27030543616318,
+            "cpu_ms": 1.9939270827019124,
+            "irq_ms": 20.170036045611724,
+            "poll_return_ms": 22.697387433233857,
+            "retirement_ms": null,
+            "commit_ms": 48.41382392205013
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 23.658157346073114,
+            "return_ms": 26.084363929577844,
+            "cpu_ms": 1.9811694453881492,
+            "irq_ms": 26.59255489660675,
+            "poll_return_ms": 30.897940311173574,
+            "retirement_ms": null,
+            "commit_ms": 48.41382392205013
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 18.789250879995038
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 8,
+            "cpu_ms": 7.330143689057614
+          },
+          "DESKMENU_KEY": {
+            "calls": 1,
+            "cpu_ms": 0.953721494433864
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 3.9750965280900616
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.23213684081429
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.2425656806869108
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.343724581641125
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 13.822864787370362
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.080941217600182
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 9.48082759709549
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.055612021218558766,
+          "individual_cpu_ms": [
+            0.02473994860293299,
+            0.030872072615625776
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 170346328,
+          "first_match": 170382169
+        },
+        "keyboard_to_advance": {
+          "start_ms": 13.110199202400974,
+          "end_ms": 13.242991405158596,
+          "elapsed_ms": 0.13279220275762324,
+          "charged_cpu_ms": 0.0897263663006658,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043065836456957426
+        },
+        "key_ms": [
+          11.98513065653198,
+          13.110199202400974
+        ],
+        "intervening_offers": 0,
+        "intervening_empty_paint": [],
+        "complete_feedback_bracket_ms": [
+          80.07792731389003,
+          100.28771643930818
+        ]
+      },
+      {
+        "action": "complete/keyboard/2",
+        "total": {
+          "elapsed_ms": 100.28771643930818,
+          "charged_cpu_ms": 57.642670561152784,
+          "off_cpu_ms": 30.233908813201406,
+          "interrupt_ms": 12.411137064953994
+        },
+        "popup_commit_ms": 47.897809210591234,
+        "title_retirement_ms": 69.9702133838188,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 69.9702133838188,
+          "elapsed_ms": 69.9702133838188,
+          "charged_cpu_ms": 50.43932791920821,
+          "off_cpu_ms": 8.666312366168155,
+          "interrupt_ms": 10.86457309844244
+        },
+        "after_title": {
+          "start_ms": 69.9702133838188,
+          "end_ms": 100.28771643930818,
+          "elapsed_ms": 30.31750305548938,
+          "charged_cpu_ms": 7.203342641944574,
+          "off_cpu_ms": 21.56759644703325,
+          "interrupt_ms": 1.5465639665115545
+        },
+        "after_offer": {
+          "start_ms": 77.99695226388151,
+          "end_ms": 100.28771643930818,
+          "elapsed_ms": 22.290764175426673,
+          "charged_cpu_ms": 0.5941816715747154,
+          "off_cpu_ms": 21.56759644703325,
+          "interrupt_ms": 0.12898605681871045
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 16.335555464709273,
+            "return_ms": 18.775788400840735,
+            "cpu_ms": 1.9936451459656965,
+            "irq_ms": 19.677210630706576,
+            "poll_return_ms": 22.17707318654767,
+            "retirement_ms": null,
+            "commit_ms": 47.897809210591234
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 23.13946423562017,
+            "return_ms": 25.508931050961476,
+            "cpu_ms": 1.9722884381973529,
+            "irq_ms": 26.086196518363245,
+            "poll_return_ms": 30.37530008641361,
+            "retirement_ms": null,
+            "commit_ms": 47.897809210591234
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 18.79178831062098
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 8,
+            "cpu_ms": 7.348258124359473
+          },
+          "DESKMENU_KEY": {
+            "calls": 1,
+            "cpu_ms": 0.959571681710341
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 3.965933584163049
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.229387957636186
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.2436934276317737
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.349856705653819
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 13.835692908868179
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.079883954839374
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 9.483083090985215
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.05582347377072058,
+          "individual_cpu_ms": [
+            0.02530382207536451,
+            0.030519651695356077
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 177993689,
+          "first_match": 178029081
+        },
+        "keyboard_to_advance": {
+          "start_ms": 12.720069243662415,
+          "end_ms": 12.803804454318495,
+          "elapsed_ms": 0.08373521065608089,
+          "charged_cpu_ms": 0.08373521065608089,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "key_ms": [
+          11.54432256945864,
+          12.720069243662415
+        ],
+        "intervening_offers": 0,
+        "intervening_empty_paint": [],
+        "complete_feedback_bracket_ms": [
+          80.3311065030118,
+          100.28771643930818
+        ]
+      }
+    ]
+  },
+  "complete_pointer": {
+    "before": [
+      {
+        "action": "complete/pointer/0",
+        "total": {
+          "elapsed_ms": 140.20262793231828,
+          "charged_cpu_ms": 96.42229330160605,
+          "off_cpu_ms": 20.191110816643857,
+          "interrupt_ms": 23.58922381406836
+        },
+        "popup_commit_ms": 85.81202713923022,
+        "title_retirement_ms": 113.61803774850961,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 113.61803774850961,
+          "elapsed_ms": 113.61803774850961,
+          "charged_cpu_ms": 88.37842676481824,
+          "off_cpu_ms": 3.4470290211579426,
+          "interrupt_ms": 21.792581962533426
+        },
+        "after_title": {
+          "start_ms": 113.61803774850961,
+          "end_ms": 140.20262793231828,
+          "elapsed_ms": 26.584590183808654,
+          "charged_cpu_ms": 8.04386653678781,
+          "off_cpu_ms": 16.74408179548591,
+          "interrupt_ms": 1.796641851534934
+        },
+        "after_offer": {
+          "start_ms": 122.73425066149407,
+          "end_ms": 140.20262793231828,
+          "elapsed_ms": 17.4683772708242,
+          "charged_cpu_ms": 0.5941816715747154,
+          "off_cpu_ms": 16.74408179548591,
+          "interrupt_ms": 0.1301138037635735
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 46.373729698792886,
+            "return_ms": 49.38453210484099,
+            "cpu_ms": 2.427475298817698,
+            "irq_ms": 50.955836019955484,
+            "poll_return_ms": 52.95046794449794,
+            "retirement_ms": null,
+            "commit_ms": 85.81202713923022
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 53.92709679874933,
+            "return_ms": 56.471646327280624,
+            "cpu_ms": 2.0046406786781112,
+            "irq_ms": 56.734975238906145,
+            "poll_return_ms": 64.6418205218931,
+            "retirement_ms": null,
+            "commit_ms": 85.81202713923022
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 21.464760022498552
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 4.432115977495809
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 7,
+            "cpu_ms": 7.614124466610937
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.872344684576227
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.244327785288259
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.35507253527381
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 16.481034820596605
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.775210430531493
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 10.16727306559681
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.050678128334782954,
+          "individual_cpu_ms": [
+            0.025374306259418448,
+            0.02530382207536451
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 196314844,
+          "first_match": 196350238
+        },
+        "pointer_response": {
+          "available": true,
+          "crossings": [
+            {
+              "tick": 4491126223.875,
+              "heading": 1,
+              "x": 201,
+              "y": 8
+            }
+          ],
+          "routed": [
+            4491129573.625
+          ],
+          "input_loss": [],
+          "crossing_ms": 32.32792343725991,
+          "routing_ms": 34.2167586015374,
+          "travel_ms": 32.32792343725991,
+          "crossing_to_routing_ms": 1.8888351642774879,
+          "crossing_to_visible_ms": [
+            87.91696681181709,
+            107.87470449505835
+          ],
+          "presenter_to_visible": {
+            "elapsed_ms": 107.87470449505835,
+            "charged_cpu_ms": 73.77854433243725,
+            "off_cpu_ms": 16.74408179548591,
+            "interrupt_ms": 17.352078367135196
+          },
+          "routing_to_retirement_ms": 79.4012791469722
+        },
+        "complete_feedback_bracket_ms": [
+          120.24489024907702,
+          140.20262793231828
+        ]
+      },
+      {
+        "action": "complete/pointer/1",
+        "total": {
+          "elapsed_ms": 140.20206405884582,
+          "charged_cpu_ms": 89.40002452849605,
+          "off_cpu_ms": 28.809423453471275,
+          "interrupt_ms": 21.99261607687851
+        },
+        "popup_commit_ms": 69.57944906742377,
+        "title_retirement_ms": 104.29579956553549,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 104.29579956553549,
+          "elapsed_ms": 104.29579956553549,
+          "charged_cpu_ms": 80.67887546713392,
+          "off_cpu_ms": 3.4466766002376725,
+          "interrupt_ms": 20.17024749816389
+        },
+        "after_title": {
+          "start_ms": 104.29579956553549,
+          "end_ms": 140.20206405884585,
+          "elapsed_ms": 35.906264493310346,
+          "charged_cpu_ms": 8.721149061362121,
+          "off_cpu_ms": 25.362746853233602,
+          "interrupt_ms": 1.8223685787146222
+        },
+        "after_offer": {
+          "start_ms": 114.11184994199152,
+          "end_ms": 140.20206405884585,
+          "elapsed_ms": 26.09021411685432,
+          "charged_cpu_ms": 0.5939702190225535,
+          "off_cpu_ms": 25.362746853233602,
+          "interrupt_ms": 0.1334970445981626
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 28.514940532493913,
+            "return_ms": 30.987173288185865,
+            "cpu_ms": 1.9918125571802945,
+            "irq_ms": 31.57099378470465,
+            "poll_return_ms": 34.55691527378172,
+            "retirement_ms": null,
+            "commit_ms": 69.57944906742377
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 35.53657494794743,
+            "return_ms": 39.65870148397401,
+            "cpu_ms": 3.2527041257212295,
+            "irq_ms": 40.747470675055226,
+            "poll_return_ms": 49.125150307522496,
+            "retirement_ms": null,
+            "commit_ms": 69.57944906742377
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 22.060703798674616
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 5.244516682901524
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 7,
+            "cpu_ms": 7.124329871620107
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.865507718722997
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.2438343959998814
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.354861082721648
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 15.838360030392781
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.76851443304637
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 10.16600435028384
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.050396191598567196,
+          "individual_cpu_ms": [
+            0.025021885339148748,
+            0.025374306259418448
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 196848414,
+          "first_match": 196883805
+        },
+        "pointer_response": {
+          "available": true,
+          "crossings": [
+            {
+              "tick": 4491628339.5,
+              "heading": 0,
+              "x": 182,
+              "y": 8
+            }
+          ],
+          "routed": [
+            4491631446.5
+          ],
+          "input_loss": [],
+          "crossing_ms": 14.59276352979155,
+          "routing_ms": 16.344718408636286,
+          "travel_ms": 14.59276352979155,
+          "crossing_to_routing_ms": 1.751954878844736,
+          "crossing_to_visible_ms": [
+            105.65325446623032,
+            125.60930052905428
+          ],
+          "presenter_to_visible": {
+            "elapsed_ms": 125.60930052905428,
+            "charged_cpu_ms": 80.74111300165356,
+            "off_cpu_ms": 25.362746853233602,
+            "interrupt_ms": 19.505440674167122
+          },
+          "routing_to_retirement_ms": 87.9510811568992
+        },
+        "complete_feedback_bracket_ms": [
+          120.24601799602186,
+          140.20206405884582
+        ]
+      },
+      {
+        "action": "complete/pointer/2",
+        "total": {
+          "elapsed_ms": 140.4535516275503,
+          "charged_cpu_ms": 103.35504716096754,
+          "off_cpu_ms": 12.072390076390759,
+          "interrupt_ms": 25.026114390191985
+        },
+        "popup_commit_ms": 95.38067802965692,
+        "title_retirement_ms": 122.22831518835488,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 122.22831518835488,
+          "elapsed_ms": 122.2283151883549,
+          "charged_cpu_ms": 95.35784115402345,
+          "off_cpu_ms": 3.4963679499957006,
+          "interrupt_ms": 23.374106084335736
+        },
+        "after_title": {
+          "start_ms": 122.22831518835488,
+          "end_ms": 140.4535516275503,
+          "elapsed_ms": 18.22523643919541,
+          "charged_cpu_ms": 7.9972060069441016,
+          "off_cpu_ms": 8.576022126395058,
+          "interrupt_ms": 1.652008305856249
+        },
+        "after_offer": {
+          "start_ms": 131.20172714444607,
+          "end_ms": 140.4535516275503,
+          "elapsed_ms": 9.251824483104237,
+          "charged_cpu_ms": 0.5879085791939147,
+          "off_cpu_ms": 8.576022126395058,
+          "interrupt_ms": 0.08789377751526335
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 58.212041799940515,
+            "return_ms": 61.22108210138727,
+            "cpu_ms": 2.4247968998236487,
+            "irq_ms": 62.791610690477164,
+            "poll_return_ms": 64.79385490689744,
+            "retirement_ms": null,
+            "commit_ms": 95.38067802965692
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 65.77210489738208,
+            "return_ms": 68.17441734249252,
+            "cpu_ms": 1.9670726085773615,
+            "irq_ms": 68.78213197740558,
+            "poll_return_ms": 75.1964041788663,
+            "retirement_ms": null,
+            "commit_ms": 95.38067802965692
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 20.81595310828203
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 4.39186950840101
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 7,
+            "cpu_ms": 7.630265344759291
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.663922952328727
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.2452440796809605
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.313698319234147
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 15.851047183522489
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.56587240389129
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 9.963996678785248
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.05060764415072902,
+          "individual_cpu_ms": [
+            0.025233337891310572,
+            0.025374306259418448
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 197381980,
+          "first_match": 197417373
+        },
+        "pointer_response": {
+          "available": true,
+          "crossings": [
+            {
+              "tick": 4492211984.375,
+              "heading": 1,
+              "x": 203,
+              "y": 8
+            }
+          ],
+          "routed": [
+            4492215238.0
+          ],
+          "input_loss": [],
+          "crossing_ms": 43.08127249326524,
+          "routing_ms": 44.915905320005244,
+          "travel_ms": 43.08127249326524,
+          "crossing_to_routing_ms": 1.8346328267400078,
+          "crossing_to_visible_ms": [
+            77.41510532451623,
+            97.37227913428505
+          ],
+          "presenter_to_visible": {
+            "elapsed_ms": 97.37227913428507,
+            "charged_cpu_ms": 72.2345882807357,
+            "off_cpu_ms": 8.576022126395058,
+            "interrupt_ms": 16.561668727154313
+          },
+          "routing_to_retirement_ms": 77.31240986834965
+        },
+        "complete_feedback_bracket_ms": [
+          120.49637781778148,
+          140.4535516275503
+        ]
+      }
+    ],
+    "after": [
+      {
+        "action": "complete/pointer/0",
+        "total": {
+          "elapsed_ms": 140.45411550102273,
+          "charged_cpu_ms": 93.72408825183717,
+          "off_cpu_ms": 23.770297682902935,
+          "interrupt_ms": 22.959729566282622
+        },
+        "popup_commit_ms": 82.52161397504014,
+        "title_retirement_ms": 110.38577403616402,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 110.38577403616402,
+          "elapsed_ms": 110.38577403616402,
+          "charged_cpu_ms": 85.72265319384984,
+          "off_cpu_ms": 3.501795232167854,
+          "interrupt_ms": 21.16132561014634
+        },
+        "after_title": {
+          "start_ms": 110.38577403616402,
+          "end_ms": 140.45411550102273,
+          "elapsed_ms": 30.0683414648587,
+          "charged_cpu_ms": 8.001435057987338,
+          "off_cpu_ms": 20.268502450735078,
+          "interrupt_ms": 1.7984039561362826
+        },
+        "after_offer": {
+          "start_ms": 119.46152902750151,
+          "end_ms": 140.45411550102273,
+          "elapsed_ms": 20.992586473521204,
+          "charged_cpu_ms": 0.5956618394398481,
+          "off_cpu_ms": 20.268502450735078,
+          "interrupt_ms": 0.12842218334627895
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 46.395509311665556,
+            "return_ms": 49.404056223823936,
+            "cpu_ms": 2.4267704569771587,
+            "irq_ms": 50.97275222412843,
+            "poll_return_ms": 52.97471450381249,
+            "retirement_ms": null,
+            "commit_ms": 82.52161397504014
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 53.9534578835855,
+            "return_ms": 56.49434223454599,
+            "cpu_ms": 2.0231075349002436,
+            "irq_ms": 56.737230732795865,
+            "poll_return_ms": 64.66719482815252,
+            "retirement_ms": null,
+            "commit_ms": 82.52161397504014
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 18.83633431494307
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 4.449877991877402
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 7,
+            "cpu_ms": 7.568239262791821
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.917877467475073
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.2427771332390725
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.349856705653819
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 13.836115813972503
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.741589474737763
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 10.166709192124378
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.05540056866639695,
+          "individual_cpu_ms": [
+            0.030519651695356077,
+            0.02488091697104087
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 196346905,
+          "first_match": 196382297
+        },
+        "pointer_response": {
+          "available": true,
+          "crossings": [
+            {
+              "tick": 4491158011.375,
+              "heading": 1,
+              "x": 201,
+              "y": 8
+            }
+          ],
+          "routed": [
+            4491161260.125
+          ],
+          "input_loss": [],
+          "crossing_ms": 32.426319358199216,
+          "routing_ms": 34.25820330176112,
+          "travel_ms": 32.426319358199216,
+          "crossing_to_routing_ms": 1.831883943561904,
+          "crossing_to_visible_ms": [
+            88.07118620652712,
+            108.02779614282352
+          ],
+          "presenter_to_visible": {
+            "elapsed_ms": 108.02779614282352,
+            "charged_cpu_ms": 71.0819604189016,
+            "off_cpu_ms": 20.268502450735078,
+            "interrupt_ms": 16.67733327318683
+          },
+          "routing_to_retirement_ms": 76.1275707344029
+        },
+        "complete_feedback_bracket_ms": [
+          120.49750556472634,
+          140.45411550102273
+        ]
+      },
+      {
+        "action": "complete/pointer/1",
+        "total": {
+          "elapsed_ms": 140.45411550102273,
+          "charged_cpu_ms": 87.9715920544589,
+          "off_cpu_ms": 30.65653198078883,
+          "interrupt_ms": 21.825991465774994
+        },
+        "popup_commit_ms": 68.16335132559605,
+        "title_retirement_ms": 102.71631948507074,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 102.71631948507074,
+          "elapsed_ms": 102.71631948507074,
+          "charged_cpu_ms": 79.21576477454225,
+          "off_cpu_ms": 3.497989086228941,
+          "interrupt_ms": 20.002565624299564
+        },
+        "after_title": {
+          "start_ms": 102.71631948507074,
+          "end_ms": 140.45411550102273,
+          "elapsed_ms": 37.73779601595198,
+          "charged_cpu_ms": 8.75582727991666,
+          "off_cpu_ms": 27.15854289455989,
+          "interrupt_ms": 1.8234258414754312
+        },
+        "after_offer": {
+          "start_ms": 112.5704313209159,
+          "end_ms": 140.45411550102273,
+          "elapsed_ms": 27.883684180106822,
+          "charged_cpu_ms": 0.5938997348384996,
+          "off_cpu_ms": 27.15854289455989,
+          "interrupt_ms": 0.13124155070843652
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 32.27491933085135,
+            "return_ms": 34.7543414733168,
+            "cpu_ms": 1.9895570632905684,
+            "irq_ms": 35.2801534863592,
+            "poll_return_ms": 38.489368870519144,
+            "retirement_ms": null,
+            "commit_ms": 68.16335132559605
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 39.46543385129811,
+            "return_ms": 42.55059707152312,
+            "cpu_ms": 2.4226823743020307,
+            "irq_ms": 44.09864120589981,
+            "poll_return_ms": 51.89602455105099,
+            "retirement_ms": null,
+            "commit_ms": 68.16335132559605
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 17.85759093517006
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 4.412239437592599
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 7,
+            "cpu_ms": 7.117633874134982
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.708468956650815
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.24327052252745
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.349574768917602
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 12.460616962159861
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.60879727198014
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 9.997758602947085
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.055964442138828466,
+          "individual_cpu_ms": [
+            0.03122449353589548,
+            0.02473994860293299
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 196880473,
+          "first_match": 196915865
+        },
+        "pointer_response": {
+          "available": true,
+          "crossings": [
+            {
+              "tick": 4491660244.25,
+              "heading": 0,
+              "x": 198,
+              "y": 8
+            }
+          ],
+          "routed": [
+            4491663579.625
+          ],
+          "input_loss": [],
+          "crossing_ms": 14.757273615373446,
+          "routing_ms": 16.63800309848473,
+          "travel_ms": 14.757273615373446,
+          "crossing_to_routing_ms": 1.8807294831112846,
+          "crossing_to_visible_ms": [
+            105.74023194935289,
+            125.69684188564928
+          ],
+          "presenter_to_visible": {
+            "elapsed_ms": 125.69684188564928,
+            "charged_cpu_ms": 79.30549114084292,
+            "off_cpu_ms": 27.15854289455989,
+            "interrupt_ms": 19.23280785024648
+          },
+          "routing_to_retirement_ms": 86.07831638658601
+        },
+        "complete_feedback_bracket_ms": [
+          120.49750556472634,
+          140.45411550102273
+        ]
+      },
+      {
+        "action": "complete/pointer/2",
+        "total": {
+          "elapsed_ms": 140.4535516275503,
+          "charged_cpu_ms": 93.09734288722954,
+          "off_cpu_ms": 24.543720634526817,
+          "interrupt_ms": 22.812488105793943
+        },
+        "popup_commit_ms": 81.73747742744006,
+        "title_retirement_ms": 109.57436010933506,
+        "through_title": {
+          "start_ms": 0.0,
+          "end_ms": 109.57436010933506,
+          "elapsed_ms": 109.57436010933506,
+          "charged_cpu_ms": 85.0602428321109,
+          "off_cpu_ms": 3.4948172979465135,
+          "interrupt_ms": 21.01929997927765
+        },
+        "after_title": {
+          "start_ms": 109.57436010933506,
+          "end_ms": 140.4535516275503,
+          "elapsed_ms": 30.87919151821523,
+          "charged_cpu_ms": 8.037100055118632,
+          "off_cpu_ms": 21.048903336580306,
+          "interrupt_ms": 1.793188126516291
+        },
+        "after_offer": {
+          "start_ms": 118.68084620492007,
+          "end_ms": 140.4535516275503,
+          "elapsed_ms": 21.772705422630214,
+          "charged_cpu_ms": 0.5951684501514706,
+          "off_cpu_ms": 21.048903336580306,
+          "interrupt_ms": 0.12863363589844073
+        },
+        "copies": [
+          {
+            "role": "background_restore",
+            "combined": true,
+            "start_ms": 46.325729969452155,
+            "return_ms": 49.33547511273945,
+            "cpu_ms": 2.426981909529321,
+            "irq_ms": 50.928206219806334,
+            "poll_return_ms": 52.90070611055585,
+            "retirement_ms": null,
+            "commit_ms": 81.73747742744006
+          },
+          {
+            "role": "popup_restore",
+            "combined": true,
+            "start_ms": 53.87627770204644,
+            "return_ms": 57.53130555034756,
+            "cpu_ms": 2.8202131723662527,
+            "irq_ms": 56.550024739948604,
+            "poll_return_ms": 65.5685465738343,
+            "retirement_ms": null,
+            "commit_ms": 81.73747742744006
+          }
+        ],
+        "routines": {
+          "DESKHOST_MENUCONTINUATION": {
+            "calls": 3,
+            "cpu_ms": 18.21861092589434
+          },
+          "CONSOLEBITMAP_COPYSTART": {
+            "calls": 2,
+            "cpu_ms": 5.2471950818955735
+          },
+          "DESKMENU_ADVANCE": {
+            "calls": 7,
+            "cpu_ms": 7.568662167896146
+          },
+          "DESKPAINT_PUMP": {
+            "calls": 3,
+            "cpu_ms": 13.877278577460006
+          },
+          "CONSOLEBITMAP_POLL": {
+            "calls": 2,
+            "cpu_ms": 1.244468753656367
+          },
+          "LAYERS_REBUILD": {
+            "calls": 1,
+            "cpu_ms": 11.349433800549496
+          },
+          "LAYERS_FINISHSAVEDREPLACE": {
+            "calls": 1,
+            "cpu_ms": 12.432000383433962
+          },
+          "DESKAPPMENU_PAINT": {
+            "calls": 1,
+            "cpu_ms": 8.743915452811542
+          },
+          "DESKPAINT_PAINTSTRIP": {
+            "calls": 1,
+            "cpu_ms": 10.13738777155794
+          }
+        },
+        "empty_paints": {
+          "calls": 2,
+          "cpu_ms": 0.04947989720586598,
+          "individual_cpu_ms": [
+            0.02473994860293299,
+            0.02473994860293299
+          ]
+        },
+        "complete_frame": {
+          "last_nonmatch": 197413592,
+          "first_match": 197449432
+        },
+        "pointer_response": {
+          "available": true,
+          "crossings": [
+            {
+              "tick": 4492225137.125,
+              "heading": 1,
+              "x": 201,
+              "y": 8
+            }
+          ],
+          "routed": [
+            4492228389.5
+          ],
+          "input_loss": [],
+          "crossing_ms": 32.42053965510679,
+          "routing_ms": 34.25446764000626,
+          "travel_ms": 32.42053965510679,
+          "crossing_to_routing_ms": 1.8339279848994685,
+          "crossing_to_visible_ms": [
+            87.8237867204978,
+            108.0330119724435
+          ],
+          "presenter_to_visible": {
+            "elapsed_ms": 108.0330119724435,
+            "charged_cpu_ms": 70.45303004458829,
+            "off_cpu_ms": 21.048903336580306,
+            "interrupt_ms": 16.531078591274905
+          },
+          "routing_to_retirement_ms": 75.3198924693288
+        },
+        "complete_feedback_bracket_ms": [
+          120.24432637560457,
+          140.4535516275503
+        ]
+      }
+    ]
+  },
+  "saved_replacement_commits": [
+    {
+      "action": "complete/keyboard/0",
+      "before": {
+        "inclusive_cpu_ms": 16.47166042411743,
+        "rebuild_cpu_ms": 11.308623457982263,
+        "exclusive_residual_cpu_ms": 5.163036966135168
+      },
+      "after": {
+        "inclusive_cpu_ms": 13.834917582843586,
+        "rebuild_cpu_ms": 11.350138642390034,
+        "exclusive_residual_cpu_ms": 2.484778940453552
+      }
+    },
+    {
+      "action": "complete/keyboard/1",
+      "before": {
+        "inclusive_cpu_ms": 16.463836679687443,
+        "rebuild_cpu_ms": 11.34273780306437,
+        "exclusive_residual_cpu_ms": 5.121098876623073
+      },
+      "after": {
+        "inclusive_cpu_ms": 13.822864787370362,
+        "rebuild_cpu_ms": 11.343724581641125,
+        "exclusive_residual_cpu_ms": 2.4791402057292373
+      }
+    },
+    {
+      "action": "complete/keyboard/2",
+      "before": {
+        "inclusive_cpu_ms": 16.465387331736633,
+        "rebuild_cpu_ms": 11.338156331100864,
+        "exclusive_residual_cpu_ms": 5.127231000635769
+      },
+      "after": {
+        "inclusive_cpu_ms": 13.835692908868179,
+        "rebuild_cpu_ms": 11.349856705653819,
+        "exclusive_residual_cpu_ms": 2.48583620321436
+      }
+    },
+    {
+      "action": "complete/pointer/0",
+      "before": {
+        "inclusive_cpu_ms": 16.481034820596605,
+        "rebuild_cpu_ms": 11.35507253527381,
+        "exclusive_residual_cpu_ms": 5.125962285322794
+      },
+      "after": {
+        "inclusive_cpu_ms": 13.836115813972503,
+        "rebuild_cpu_ms": 11.349856705653819,
+        "exclusive_residual_cpu_ms": 2.4862591083186842
+      }
+    },
+    {
+      "action": "complete/pointer/1",
+      "before": {
+        "inclusive_cpu_ms": 15.838360030392781,
+        "rebuild_cpu_ms": 11.354861082721648,
+        "exclusive_residual_cpu_ms": 4.4834989476711335
+      },
+      "after": {
+        "inclusive_cpu_ms": 12.460616962159861,
+        "rebuild_cpu_ms": 11.349574768917602,
+        "exclusive_residual_cpu_ms": 1.111042193242259
+      }
+    },
+    {
+      "action": "complete/pointer/2",
+      "before": {
+        "inclusive_cpu_ms": 15.851047183522489,
+        "rebuild_cpu_ms": 11.313698319234147,
+        "exclusive_residual_cpu_ms": 4.537348864288342
+      },
+      "after": {
+        "inclusive_cpu_ms": 12.432000383433962,
+        "rebuild_cpu_ms": 11.349433800549496,
+        "exclusive_residual_cpu_ms": 1.082566582884466
+      }
+    }
+  ],
+  "representative_exclusive_cpu_ms": {
+    "before": {
+      "menu_transition_control": 7.870263991462954,
+      "other_controls": 1.6177529924060339,
+      "input_pointer": 3.001780430489203,
+      "readiness": 3.3262191296894894,
+      "copy_submit_and_poll": 5.2471950818955735,
+      "paint_selection_retirement": 3.703309514378069,
+      "aes_publication": 1.7386333680585413,
+      "idle_cache_inspection": 1.990966746971647,
+      "scene_commit": 16.47166042411743,
+      "title_paint": 9.513955163600839,
+      "unselected_worker_glue": 6.581460686036664
+    },
+    "after": {
+      "menu_transition_control": 7.88111855580726,
+      "other_controls": 1.611973289313611,
+      "input_pointer": 2.1819788857578244,
+      "readiness": 3.331998832781912,
+      "copy_submit_and_poll": 5.203071982677807,
+      "paint_selection_retirement": 3.7054240398996865,
+      "aes_publication": 1.740324988475836,
+      "idle_cache_inspection": 1.9914601362600246,
+      "scene_commit": 13.834917582843586,
+      "title_paint": 9.56117956691698,
+      "unselected_worker_glue": 6.570606121692357
+    }
+  },
+  "controls": [
+    {
+      "prefix": "application/open/",
+      "actions": [
+        "application/open/0",
+        "application/open/1",
+        "application/open/2"
+      ],
+      "before_ms": [
+        120.4969416912539,
+        120.24432637560457,
+        120.24432637560457
+      ],
+      "after_ms": [
+        120.24432637560457,
+        120.24489024907702,
+        120.24545412254945
+      ],
+      "before_cpu_ms": [
+        78.47786585168154,
+        78.90648017491355,
+        78.89907933558788
+      ],
+      "after_cpu_ms": [
+        78.92494703113569,
+        78.51078196563472,
+        78.47793633586559
+      ]
+    },
+    {
+      "prefix": "application/highlight/",
+      "actions": [
+        "application/highlight/0",
+        "application/highlight/1",
+        "application/highlight/2"
+      ],
+      "before_ms": [
+        60.12300899801094,
+        60.37449656671539,
+        40.165271314769676
+      ],
+      "after_ms": [
+        60.12300899801094,
+        60.12300899801094,
+        40.16583518824211
+      ],
+      "before_cpu_ms": [
+        17.94329970297965,
+        17.942665345323164,
+        17.915317481910233
+      ],
+      "after_cpu_ms": [
+        17.919757985505633,
+        17.917925396720232,
+        17.93759048407128
+      ]
+    },
+    {
+      "prefix": "application/switch/",
+      "actions": [
+        "application/switch/0",
+        "application/switch/1",
+        "application/switch/2"
+      ],
+      "before_ms": [
+        100.28828031278061,
+        100.28771643930818,
+        100.28828031278061
+      ],
+      "after_ms": [
+        100.28828031278061,
+        100.28828031278061,
+        100.28828031278061
+      ],
+      "before_cpu_ms": [
+        59.39032590477023,
+        59.340916491748416,
+        60.089529010585316
+      ],
+      "after_cpu_ms": [
+        57.53891784222538,
+        57.113616275643906,
+        57.08126403516315
+      ]
+    },
+    {
+      "prefix": "application/close/",
+      "actions": [
+        "application/close/0",
+        "application/close/1",
+        "application/close/2"
+      ],
+      "before_ms": [
+        100.28828031278061,
+        100.28828031278061,
+        100.28828031278061
+      ],
+      "after_ms": [
+        100.28771643930818,
+        100.28771643930818,
+        100.28828031278061
+      ],
+      "before_cpu_ms": [
+        58.5652380462348,
+        59.56886234297886,
+        58.60703516737879
+      ],
+      "after_cpu_ms": [
+        56.461426120592805,
+        56.94910619006201,
+        56.35365580317433
+      ]
+    },
+    {
+      "prefix": "keyboard/heading/",
+      "actions": [
+        "keyboard/heading/0",
+        "keyboard/heading/1",
+        "keyboard/heading/2"
+      ],
+      "before_ms": [
+        140.2015001853734,
+        180.61882294231998,
+        200.5799438663958
+      ],
+      "after_ms": [
+        140.2015001853734,
+        160.41072543731912,
+        200.57543287861637
+      ],
+      "before_cpu_ms": [
+        109.72738127291618,
+        143.27179124276304,
+        159.49640460177142
+      ],
+      "after_cpu_ms": [
+        109.2699389184061,
+        126.36503195048063,
+        159.35360364487812
+      ]
+    },
+    {
+      "prefix": "pointer/heading/",
+      "actions": [
+        "pointer/heading/0",
+        "pointer/heading/1",
+        "pointer/heading/2"
+      ],
+      "before_ms": [
+        280.90823100204545,
+        280.90823100204545,
+        280.6561795598686
+      ],
+      "after_ms": [
+        280.907667128573,
+        280.6556156863961,
+        280.6556156863961
+      ],
+      "before_cpu_ms": [
+        192.18760352364532,
+        129.28434588562672,
+        133.19917843635068
+      ],
+      "after_cpu_ms": [
+        185.96702185996483,
+        132.6884500386958,
+        130.4691145353894
+      ]
+    },
+    {
+      "prefix": "native/open/",
+      "actions": [
+        "native/open/0",
+        "native/open/1",
+        "native/open/2"
+      ],
+      "before_ms": [
+        120.24489024907702,
+        120.4969416912539,
+        120.49750556472632
+      ],
+      "after_ms": [
+        120.24545412254945,
+        120.24545412254945,
+        120.24489024907702
+      ],
+      "before_cpu_ms": [
+        77.3339075444861,
+        77.3310176929399,
+        77.32918510415449
+      ],
+      "after_cpu_ms": [
+        77.26659514871457,
+        77.32615428424015,
+        77.3286917148661
+      ]
+    },
+    {
+      "prefix": "native/highlight/",
+      "actions": [
+        "native/highlight/0",
+        "native/highlight/1",
+        "native/highlight/2"
+      ],
+      "before_ms": [
+        80.3311065030118,
+        80.07961893430733,
+        80.33167037648423
+      ],
+      "after_ms": [
+        80.33167037648423,
+        80.3311065030118,
+        80.33167037648423
+      ],
+      "before_cpu_ms": [
+        37.009623910490724,
+        37.00891906865019,
+        37.04719198059148
+      ],
+      "after_cpu_ms": [
+        37.123808288658104,
+        36.99869886196237,
+        36.87951010672715
+      ]
+    },
+    {
+      "prefix": "native/next_row/",
+      "actions": [
+        "native/next_row/0",
+        "native/next_row/1",
+        "native/next_row/2"
+      ],
+      "before_ms": [
+        80.33167037648423,
+        80.07961893430733,
+        80.33223424995666
+      ],
+      "after_ms": [
+        80.33167037648423,
+        80.0790550608349,
+        80.0790550608349
+      ],
+      "before_cpu_ms": [
+        43.61166597827114,
+        44.002500778850234,
+        43.611172588982754
+      ],
+      "after_cpu_ms": [
+        44.001725452825646,
+        43.53758710083044,
+        43.63661737942623
+      ]
+    },
+    {
+      "prefix": "native/close/",
+      "actions": [
+        "native/close/0",
+        "native/close/1",
+        "native/close/2"
+      ],
+      "before_ms": [
+        100.28884418625304,
+        100.28828031278061,
+        100.28828031278061
+      ],
+      "after_ms": [
+        100.28828031278061,
+        100.28884418625304,
+        100.28828031278061
+      ],
+      "before_cpu_ms": [
+        59.37601761540728,
+        58.95839882488768,
+        59.72301125350483
+      ],
+      "after_cpu_ms": [
+        57.32401156504492,
+        57.35840784686324,
+        57.42261893853638
+      ]
+    }
+  ],
+  "resources": {
+    "native_code": [
+      1095517,
+      1096018
+    ],
+    "native_data": [
+      13544,
+      13544
+    ],
+    "memory_manifest_identical": true,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "subtract_damage": [
+      {
+        "size": 1254,
+        "fixed_frame": 26,
+        "spill_bytes": 16,
+        "local_stack_peak": 42
+      },
+      {
+        "size": 1755,
+        "fixed_frame": 26,
+        "spill_bytes": 16,
+        "local_stack_peak": 42
+      }
+    ],
+    "observed_presenter": [
+      {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 838,
+        "remaining_above_floor": 1466
+      },
+      {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 836,
+        "remaining_above_floor": 1468
+      }
+    ],
+    "observed_kernel": [
+      {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 295,
+        "remaining_above_floor": 985
+      },
+      {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 287,
+        "remaining_above_floor": 993
+      }
+    ],
+    "observed_idle": [
+      {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 129,
+        "remaining_above_floor": 127
+      },
+      {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 141,
+        "remaining_above_floor": 115
+      }
+    ],
+    "c_sizes": [
+      {
+        "text": 222330,
+        "data": 20773,
+        "bss": 23
+      },
+      {
+        "text": 222330,
+        "data": 20773,
+        "bss": 23
+      }
+    ]
+  },
+  "validation": {
+    "host_tests": 6,
+    "layers_checks": 8919,
+    "damage_retirement": {
+      "cases": [
+        {
+          "name": "empty",
+          "count": 0,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-0",
+          "count": 1,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-1",
+          "count": 1,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-2",
+          "count": 1,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-3",
+          "count": 1,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-4",
+          "count": 1,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-5",
+          "count": 1,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-6",
+          "count": 1,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-7",
+          "count": 1,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-8",
+          "count": 1,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-9",
+          "count": 1,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-10",
+          "count": 1,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-three",
+          "count": 3,
+          "accepted": 1
+        },
+        {
+          "name": "disjoint-eight",
+          "count": 8,
+          "accepted": 1
+        },
+        {
+          "name": "contained-single",
+          "count": 0,
+          "accepted": 1
+        },
+        {
+          "name": "contained-multiple",
+          "count": 0,
+          "accepted": 1
+        },
+        {
+          "name": "first-hit-0",
+          "count": 6,
+          "accepted": 1
+        },
+        {
+          "name": "first-hit-1",
+          "count": 6,
+          "accepted": 1
+        },
+        {
+          "name": "first-hit-2",
+          "count": 6,
+          "accepted": 1
+        },
+        {
+          "name": "mixed-eight",
+          "count": 8,
+          "accepted": 1
+        },
+        {
+          "name": "prefix-eight",
+          "count": 8,
+          "accepted": 1
+        },
+        {
+          "name": "prefix-overflow",
+          "count": 6,
+          "accepted": 0
+        },
+        {
+          "name": "sixteen-pieces",
+          "count": 8,
+          "accepted": 0
+        },
+        {
+          "name": "overlapping-damage",
+          "count": 8,
+          "accepted": 1
+        }
+      ],
+      "independent_union_coverage": true,
+      "unchanged_overflow": true
+    },
+    "geometry_cases": 128,
+    "scene_cases": 40,
+    "timed_actions": 36,
+    "transfer_differences": [],
+    "no_timed_disk": true,
+    "no_files_repaints": true,
+    "counter_progress": {
+      "application": {
+        "ticks": 3,
+        "paints": 3,
+        "visible_digits_changed": true,
+        "highlights": 30
+      },
+      "native": {
+        "ticks": 2,
+        "paints": 2,
+        "visible_digits_changed": true,
+        "highlights": 30
+      }
+    },
+    "guards": "intact",
+    "normal_exit": true,
+    "live_tasks": 0,
+    "autoboot_frames": 249,
+    "archive_checksums_verified": 22,
+    "raw_matrix": false,
+    "release_qualification": false
+  },
+  "package": {
+    "path": "build/damage-retirement/demo/exec816-demo.zip",
+    "sha256": "ade55940e2468bd000ece5a22266f2b23deac34f47ad1827f708c305ff6d33d3",
+    "baseline_sha256": "141353a19a6b88a3506932294c7ee2cf145e073ad01770e65435f1d9cbfe117e"
+  },
+  "source_sha256": {
+    "build/warm-menu-input/menus/menu-analysis.json": "de1a9eb39bfb535b98c7fa2b35165076ebfcc1770012555973b1d37023d9c393",
+    "build/warm-menu-input/menus/menu-runtime.json": "d0bc123c3888594ad9b36c9e9ad22349e97d42042ba70b8fb563abc54ddd267b",
+    "build/warm-menu-input/demo/build.json": "93260851a2b0eaeb3c353c625dfd269a00d33f438b42103b6e4c7011566bb161",
+    "build/warm-menu-input/demo/exec-build.json": "4279e3ce40a481bdbbb7d926209f005e1de93aab49dd8c5d66166b8208c3e55e",
+    "build/warm-menu-input/demo/memory.json": "1b017bc9e7c9bcd6cb73e39c9b56ce32c34eec8531e9409581c4c92b4bfc107d",
+    "build/damage-retirement/menus/menu-analysis.json": "cd7d16465d5893f438b79d513c107273f1240e8b1ace575a71871a609190347b",
+    "build/damage-retirement/menus/menu-runtime.json": "b660f7c35ac3d645476108866c67a5f0373c6e38895fb93b5dd198aed9ee9cd1",
+    "build/damage-retirement/demo/build.json": "d2860b63d0233d007aeb6a467e2c36a7eff11ce4e292771b6e0cd28246521f13",
+    "build/damage-retirement/demo/exec-build.json": "96d2efc52bddba16bc17411efe4eabd719b37e36bfe964a6f916c35322dee6b4",
+    "build/damage-retirement/demo/memory.json": "1b017bc9e7c9bcd6cb73e39c9b56ce32c34eec8531e9409581c4c92b4bfc107d",
+    "build/damage-retirement/dr1-layers/results.json": "535f4a5735b16745ea0577a9dbfa5319060917a08ed1b81c35cb47835c51251f"
+  }
+}

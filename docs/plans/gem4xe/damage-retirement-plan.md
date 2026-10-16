@@ -1,7 +1,8 @@
 # Damage retirement implementation plan
 
-Status: DR1 complete with focused development checks; DR2 measurement and demo
-delivery pending. [Execution record](../../history/damage-retirement.md).
+Status: DR1–DR2 complete with focused development checks, matched production
+measurements and an OF816 demo. [Execution record](../../history/damage-retirement.md) ·
+[Measurements](../../development/damage-retirement.json).
 
 [Latest measurements](../../history/warm-menu-input.md) ·
 [Bookkeeping analysis](../../history/warm-menu-bookkeeping-analysis.md) ·

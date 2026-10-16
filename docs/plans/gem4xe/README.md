@@ -4,7 +4,11 @@ The [damage retirement plan](damage-retirement-plan.md) follows WI2 with a
 bounded change to `SubtractDamage`: leave disjoint damage lists untouched and
 start scratch construction only at the first overlap. DR1 covers the shared
 helper and focused Layers regressions; DR2 measures saved-popup commit costs
-and refreshes the OF816 demo. Visibility rebuilding remains a separate step.
+and refreshes the OF816 demo. DR1–DR2 are complete.
+[Results](../../history/damage-retirement.md) show saved-popup commit CPU
+16.472 → 13.835 ms and complete keyboard median CPU 60.274 → 57.614 ms;
+sampled complete feedback stays at 100 ms. Visibility rebuilding remains a
+separate step; all memory reservations are unchanged.
 
 The [warm menu input plan](warm-menu-input-plan.md) takes the two small follow-ups
 from the analysis: same-turn keyboard advancement and an empty-paint guard,
