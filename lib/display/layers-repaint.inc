@@ -52,15 +52,35 @@ BYTE FUNC SubtractDamage(LAYERTYPES.Scene POINTER scene
   LAYERTYPES.Rect overlap
   BYTE index
 
-  IF damage.count=0 THEN
+  IF damage.count=0 OR area.left=area.right OR area.top=area.bottom THEN
     RETURN(1)
   FI
   IF damage.count=1 AND REGIONS.Contains(area,@damage.rects(0))<>0 THEN
     damage.count=0
     RETURN(1)
   FI
-  scene.work.count=0
+  ; Most restored footprints miss other dirty lists. Leave them in place.
   index=0
+  WHILE index<damage.count DO
+    BEGIN
+      LET dirty=@damage.rects(index)
+      IF dirty.left<area.right AND area.left<dirty.right
+          AND dirty.top<area.bottom AND area.top<dirty.bottom THEN
+        EXIT
+      FI
+    END
+    index==+1
+  OD
+  IF index=damage.count THEN
+    RETURN(1)
+  FI
+
+  ; Keep the original list until the complete result fits its capacity.
+  scene.work.count=index
+  IF index<>0 THEN
+    A816MEMORY.Move(BYTE POINTER(@scene.work.rects(0)),
+        BYTE POINTER(@damage.rects(0)),SIZE(CARD(index)*8))
+  FI
   WHILE index<damage.count DO
     BEGIN
       LET dirty=@damage.rects(index)

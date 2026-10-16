@@ -40,6 +40,17 @@ class LayersTests(unittest.TestCase):
         with self.assertRaises(Exception):
             check_regions(struct.pack('<H12h', 3, *source[0], *source[1], *source[1]), source, cut)
 
+    def test_damage_oracle_accepts_union_but_rejects_holes_and_completed_pixels(self):
+        source = [(0, 0, 8, 8), (4, 4, 12, 12)]
+        cut = (0, 0, 2, 8)
+        remaining = [(2, 0, 8, 8), source[1]]
+        check_regions(struct.pack('<H8h', 2, *remaining[0], *remaining[1]),
+                      source, cut, union=True)
+        for rects in ([remaining[0]], source):
+            raw = struct.pack('<H', len(rects))+b''.join(struct.pack('<4h', *r) for r in rects)
+            with self.assertRaises(Exception):
+                check_regions(raw, source, cut, union=True)
+
     def test_scene_oracle_exposure_and_cache(self):
         commands = [cmd for cmd in scene_commands() if cmd[0] not in (6, 7)]
         scenes = scene_oracle(commands)

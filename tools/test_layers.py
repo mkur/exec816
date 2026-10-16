@@ -71,6 +71,43 @@ def region_bytes(rects):
     return bytes(raw)
 
 
+def damage_cases():
+    one = [(8, 8, 16, 16)]
+    rows = [dict(name='empty', source=[], cut=(8, 8, 16, 16), unchanged=True)]
+    cuts = [(0, 8, 4, 16), (20, 8, 24, 16), (8, 0, 16, 4), (8, 20, 16, 24),
+            (4, 8, 8, 16), (16, 8, 20, 16), (8, 4, 16, 8), (8, 16, 16, 20),
+            (12, 10, 12, 14), (10, 12, 14, 12),
+            (-32768, -32768, -1, 32767)]
+    rows += [dict(name=f'disjoint-{i}', source=one, cut=cut, unchanged=True)
+             for i, cut in enumerate(cuts)]
+    three = [(i*8, 0, i*8+4, 8) for i in range(3)]
+    rows += [dict(name='disjoint-three', source=three, cut=(24, 0, 28, 8), unchanged=True),
+             dict(name='disjoint-eight', source=[(i*4, 0, i*4+2, 4) for i in range(8)],
+                  cut=(0, 8, 32, 12), unchanged=True),
+             dict(name='contained-single', source=one, cut=(0, 0, 32, 24), count=0),
+             dict(name='contained-multiple', source=three, cut=(0, 0, 32, 24), count=0)]
+    rows += [dict(name=f'first-hit-{i}', source=three, cut=(i*8+1, 2, i*8+3, 6),
+                  count=6, prefix=i, suffix=2-i) for i in range(3)]
+    rows += [dict(name='mixed-eight', source=three, cut=(2, 2, 18, 6), count=8),
+             dict(name='prefix-eight', source=[(i*6, 0, i*6+4, 8) for i in range(5)],
+                  cut=(25, 2, 27, 6), count=8, prefix=4),
+             dict(name='prefix-overflow', source=[(i*5, 0, i*5+4, 8) for i in range(6)],
+                  cut=(26, 2, 28, 6), status=0, unchanged=True),
+             dict(name='sixteen-pieces', source=[(i*4, 0, i*4+2, 24) for i in range(8)],
+                  cut=(0, 8, 32, 16), status=0, unchanged=True),
+             dict(name='overlapping-damage', source=[(0, 0, 8, 8), (4, 4, 12, 12)],
+                  cut=(5, 5, 7, 7), count=8)]
+    return rows
+
+
+def damage_bytes(rects):
+    raw = bytearray([0xa5])*layout()['Damage']['size']
+    raw[0] = len(rects)
+    for i, rect in enumerate(rects):
+        struct.pack_into('<4h', raw, layout()['Damage']['fields']['rects']+i*8, *rect)
+    return bytes(raw)
+
+
 def contains(rect, x, y):
     return rect[0] <= x < rect[2] and rect[1] <= y < rect[3]
 
@@ -188,7 +225,7 @@ def check_region(raw, base, cut, clip=None):
     check_regions(raw, [base], cut, clip, max_count=4)
 
 
-def check_regions(raw, source, cut, clip=None, max_count=96):
+def check_regions(raw, source, cut, clip=None, max_count=96, union=False):
     count, = struct.unpack_from('<H', raw)
     require(count <= max_count, 'Unbounded subtraction')
     rects = [struct.unpack_from('<4h', raw, 2 + i * 8) for i in range(count)]
@@ -204,7 +241,33 @@ def check_regions(raw, source, cut, clip=None, max_count=96):
             if clip is not None:
                 expected &= contains(clip, x, y)
             actual = sum(contains(r, x, y) for r in rects)
+            if union:
+                actual = int(actual != 0)
             require(actual == int(expected), f'Coverage/overlap at {(x, y)}: {rects}')
+
+
+def check_damage_retirement(raw, cases):
+    require(raw[:16] == raw[-16:] == bytes([0xa5])*16, 'Damage retirement guards')
+    size = layout()['Damage']['size']
+    offset = layout()['Damage']['fields']['rects']
+    counts = []
+    for index, case in enumerate(cases):
+        result = raw[16+index*size:16+(index+1)*size]
+        count = result[0]
+        if case.get('unchanged'):
+            require(result == damage_bytes(case['source']), case['name']+': changed damage')
+        if case.get('status', 1):
+            check_regions(struct.pack('<H', count)+result[offset:], case['source'], case['cut'],
+                          max_count=8, union=True)
+        if 'count' in case:
+            require(count == case['count'], case['name']+': wrong fragment count')
+        rects = [struct.unpack_from('<4h', result, offset+i*8) for i in range(count)]
+        prefix, suffix = case.get('prefix', 0), case.get('suffix', 0)
+        require(rects[:prefix] == case['source'][:prefix], case['name']+': prefix changed')
+        if suffix:
+            require(rects[-suffix:] == case['source'][-suffix:], case['name']+': suffix changed')
+        counts.append(dict(name=case['name'], count=count, accepted=case.get('status', 1)))
+    return dict(cases=counts, independent_union_coverage=True, unchanged_overflow=True)
 
 
 def check_subtraction_batches(raw, cases):
@@ -293,6 +356,11 @@ def run(out, mode):
         region_bytes(c['source']) + struct.pack('<4hBB', *c['cut'], c['alias'], c['status'])
         for c in batches)
     batch_size = len(batches)*layout()['Region']['size']*2
+    retire = damage_cases()
+    retire_input = struct.pack('<H', len(retire)) + b''.join(
+        damage_bytes(c['source']) + struct.pack('<4hB', *c['cut'], c.get('status', 1))
+        for c in retire)
+    retire_size = len(retire)*layout()['Damage']['size']
     commands = scene_commands()
     scene_input = struct.pack('<H', len(commands)) + b''.join(
         struct.pack('<BB4hH', *cmd) for cmd in commands)
@@ -309,6 +377,8 @@ def run(out, mode):
                         console=False, image_data=[(0xd0000, inputs),
                             (0xd2000, scene_input),
                             (0xd4000, batch_input),
+                            (0xd8000, retire_input),
+                            (0xd9000, bytes([0xa5])*(retire_size+32)),
                             (0xe8000, bytes([0xa5])*(batch_size+32)),
                             (0xe0000, bytes([0xa5]) * (output_size + 32)),
                             (0xf0000, bytes([0xa5]) * (scene_size + 32)),
@@ -344,6 +414,9 @@ def run(out, mode):
             batch_output = bridge.memdump(0xe8000, batch_size+32)
             report['subtraction_batches'] = check_subtraction_batches(batch_output, batches)
             (out/'subtraction-batches.bin').write_bytes(batch_output)
+            retired = bridge.memdump(0xd9000, retire_size+32)
+            report['damage_retirement'] = check_damage_retirement(retired, retire)
+            (out/'damage-retirement.bin').write_bytes(retired)
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
             report['geometry_cases'] = data(bridge, program['image'], 'geometryCases', True)[0]
             require(report['geometry_cases'] == len(rows), 'Missing emitted geometry cases')

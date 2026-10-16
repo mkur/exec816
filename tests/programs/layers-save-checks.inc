@@ -23,6 +23,67 @@ PROC SavePaint()
 
 RETURN
 
+; An unrelated dirty window and external paint survive both replacement
+; outcomes and dismissal. Only the saved footprint certifies restored pixels.
+PROC DisjointSavedDamage(INT width)
+  LAYERTYPES.Rect whole,saved,old,next,outside
+  LONGCARD base,side,popup,token,rebuilds
+  BYTE pass,outcome
+
+  Require(LAYERS.Init(scene,width,24)=LAYERTYPES.OK)
+  REGIONS.Assign(@whole,0,0,width,24)
+  Require(LAYERS.Create(scene,@whole,@base)=LAYERTYPES.OK)
+  Require(LAYERS.SetExternal(scene,base)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,base,1)=LAYERTYPES.OK)
+  REGIONS.Assign(@outside,24,16,width,24)
+  Require(LAYERS.Create(scene,@outside,@side)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,side,1)=LAYERTYPES.OK)
+  SavePaint()
+  LET under=LAYERS.Find(scene,base)
+  LET other=LAYERS.Find(scene,side)
+  Require(LAYERS.Painted(scene,base,under.paintEpoch,@whole)=1)
+  REGIONS.Assign(@old,4,4,12,12)
+  REGIONS.Assign(@saved,0,0,24,16)
+  Require(LAYERS.Create(scene,@old,@popup)=LAYERTYPES.OK)
+  Require(LAYERS.BeginSave(scene,popup,@saved,@token)=LAYERTYPES.OK)
+  Require(LAYERS.FinishSave(scene,token,1,1)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,popup,1)=LAYERTYPES.OK)
+  REGIONS.Assign(@outside,26,18,30,22)
+  Require(LAYERS.Invalidate(scene,side,@outside)=LAYERTYPES.OK)
+  LAYERS.RequirePaint(scene,base,@old)
+
+  FOR pass=0 TO 1 DO
+    REGIONS.Assign(@next,12,4,20,12)
+    IF pass=1 THEN
+      REGIONS.Copy(@old,@next)
+    FI
+    outcome=IF pass=0 THEN LAYERTYPES.REPLACE_CLEAN
+        ELSE LAYERTYPES.REPLACE_DIRTY FI
+    rebuilds=scene.rebuilds
+    Require(LAYERS.BeginSavedReplace(scene,popup,@next,@token)=LAYERTYPES.OK)
+    Require(LAYERS.FinishSavedReplace(scene,token,outcome)=LAYERTYPES.OK)
+    Require(scene.rebuilds=rebuilds+1)
+    Require(scene.busy=0 AND scene.under.slot.pinned=0 AND scene.under.slot.valid=1)
+    Require(other.dirty=1 AND other.damage.count=1)
+    Require(REGIONS.Equal(@other.damage.rects(0),@outside)=1)
+    Require(LAYERS.FindDamaged(scene,side)=other)
+    Require(under.pending.count=1)
+    Require(REGIONS.Equal(@under.pending.rects(0),@old)=1)
+    CheckVisible(scene)
+  OD
+
+  Require(LAYERS.BeginRestore(scene,popup,@token)=LAYERTYPES.OK)
+  Require(LAYERS.FinishSave(scene,token,1,1)=LAYERTYPES.OK)
+  Require(scene.busy=0 AND scene.under.slot.pinned=0 AND scene.under.slot.valid=1)
+  Require(other.dirty=1 AND other.damage.count=1)
+  Require(REGIONS.Equal(@other.damage.rects(0),@outside)=1)
+  Require(LAYERS.FindDamaged(scene,side)=other)
+  Require(under.pending.count=1)
+  Require(REGIONS.Equal(@under.pending.rects(0),@old)=1)
+  CheckVisible(scene)
+
+RETURN
+
 PROC SavedScene()
   LAYERTYPES.Rect bounds,area,part
   LAYERTYPES.CachePair cache

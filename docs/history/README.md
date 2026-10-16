@@ -1,5 +1,9 @@
 # Historical records
 
+- [Damage retirement](damage-retirement.md): skip scratch reconstruction for
+  disjoint damage lists; focused union/overflow and saved-scene checks. Matched
+  production measurements follow in DR2.
+
 - [Warm menu input](warm-menu-input.md): same-turn keyboard menu advancement
   and empty-paint selection guard; complete keyboard CPU 66 → 60 ms, cached
   opening 140 → 120 ms, focused checks and a refreshed OF816 demo. Complete

@@ -1,7 +1,7 @@
 # Damage retirement implementation plan
 
-Status: planned; production code is unchanged. Implement and commit DR1, then
-measure and commit DR2.
+Status: DR1 complete with focused development checks; DR2 measurement and demo
+delivery pending. [Execution record](../../history/damage-retirement.md).
 
 [Latest measurements](../../history/warm-menu-input.md) ·
 [Bookkeeping analysis](../../history/warm-menu-bookkeeping-analysis.md) ·

@@ -139,3 +139,35 @@ PROC ExternalTransactions()
   CheckVisible(scene)
 
 RETURN
+
+; Exercise the shared subtraction through public completion. The host checks
+; the remaining union independently, including overlapping damage rectangles.
+PROC DamageRetirement(CARD count)
+  CARD index
+  BYTE POINTER input,output
+  LAYERTYPES.Rect bounds
+  LONGCARD id,epoch
+
+  scenePhase=60
+  Require(LAYERS.Init(scene,32,24)=LAYERTYPES.OK)
+  REGIONS.Assign(@bounds,0,0,32,24)
+  Require(LAYERS.Create(scene,@bounds,@id)=LAYERTYPES.OK)
+  Require(LAYERS.SetExternal(scene,id)=LAYERTYPES.OK)
+  LET layer=LAYERS.Find(scene,id)
+  epoch=layer.paintEpoch
+  Require(epoch<>0)
+  input=BYTE POINTER($d8002)
+  output=BYTE POINTER($d9010)
+  FOR index=0 TO count-1 DO
+    A816MEMORY.Move(BYTE POINTER(@layer.pending),input,LAYERTYPES.DAMAGE_SIZE)
+    Require(LAYERS.Painted(scene,id,epoch,
+        LAYERTYPES.Rect POINTER(input+LAYERTYPES.DAMAGE_SIZE))
+        =input(LAYERTYPES.DAMAGE_SIZE+LAYERTYPES.RECT_SIZE))
+    Require(layer.paintEpoch=epoch AND scene.busy=0)
+    A816MEMORY.Move(output,BYTE POINTER(@layer.pending),LAYERTYPES.DAMAGE_SIZE)
+    input==+LAYERTYPES.DAMAGE_SIZE+LAYERTYPES.RECT_SIZE+1
+    output==+LAYERTYPES.DAMAGE_SIZE
+  OD
+  Require(LAYERS.Delete(scene,id)=LAYERTYPES.OK)
+
+RETURN
