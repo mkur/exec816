@@ -1,5 +1,9 @@
 # GEM as a client of an Exec-like kernel
 
+The [Layers visibility rebuild plan](layers-rebuild-plan.md) follows PT4 with
+nearer-occluder-first subtraction, disjoint skips and early completion for
+fully covered layers. It retains the current transaction and storage model.
+
 The implemented [popup transition design](popup-transition-design.md) follows
 dropdown bookkeeping with one scene transaction for replacing a saved popup.
 It keeps old geometry committed through background/image copies, publishes

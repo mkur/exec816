@@ -1,5 +1,9 @@
 # Historical records
 
+- [Layers visibility rebuild](layers-rebuild.md): nearer occluders first,
+  disjoint skips and early completion for covered layers; focused checks pass,
+  matched menu measurements pending.
+
 - [Popup replacement](popup-transition.md): one committed Layers/cache
   transaction, input/fairness checks and refreshed OF816 demo. Warm switching
   180 → 120 ms, presenter CPU 122 → 79 ms, observed copy gap 57 → 1 ms.

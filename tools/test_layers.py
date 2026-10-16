@@ -15,6 +15,7 @@ from generate_layers import layout
 
 INPUT_FILES = ('abi/layers.json', 'lib/display/layertypes.act',
                'tests/programs/layers-readiness-checks.inc',
+               'tests/programs/layers-rebuild-checks.inc',
                'tests/programs/layers-region-checks.inc',
                'lib/display/layers-repaint.inc', 'lib/display/layers-save.inc',
                'lib/display/layercache.act',
@@ -162,6 +163,27 @@ def scene_oracle(commands, include_raster=False):
     return snapshots
 
 
+def check_occluders(raw):
+    require(raw[:16] == raw[-16:] == bytes([0xa5])*16, 'Occluder guards changed')
+    # Match public operations, then independently recompose every pixel.
+    def cmd(op, slot=0, a=0, b=0, c=0, d=0):
+        return op, slot, a, b, c, d, 0
+    commands = [cmd(0), cmd(1, 1, 0, 0, 16, 24), cmd(2, 1, 1),
+                cmd(1, 2, 0, 0, 16, 24), cmd(2, 2, 1),
+                cmd(1, 3, 16, 0, 32, 24), cmd(2, 3, 1),
+                cmd(1, 4, 4, 4, 12, 8), cmd(2, 4, 1),
+                cmd(2, 2, 0), cmd(5, 2, 8, 0), cmd(2, 2, 1), cmd(3, 2, 1),
+                cmd(2, 2, 0), cmd(2, 1, 0)]
+    expected = scene_oracle(commands, True)
+    for index, phase in enumerate((8, 9, 12, 14)):
+        rebuilds, pixels, raster = expected[phase]
+        at = 16+index*1540
+        require(raw[at:at+4] == struct.pack('<I', rebuilds), 'Occluder rebuild count')
+        require(raw[at+4:at+772] == pixels, f'Occluder visible partition {phase}')
+        require(raw[at+772:at+1540] == raster, f'Occluder incremental paint {phase}')
+    return dict(scenes=4, pixels_per_scene=768, visibility=True, recomposition=True)
+
+
 def check_region(raw, base, cut, clip=None):
     check_regions(raw, [base], cut, clip, max_count=4)
 
@@ -291,6 +313,7 @@ def run(out, mode):
                             (0xe0000, bytes([0xa5]) * (output_size + 32)),
                             (0xf0000, bytes([0xa5]) * (scene_size + 32)),
                             (0xe4000, bytes([0xa5]) * (8*layout()['Region']['size']+32)),
+                            (0xe6000, bytes([0xa5]) * (4*1540+32)),
                             (0x11ffe0, bytes([0xa5]) * (layout()['Scene']['size'] + 32))])
         routines = [r for r in program['image']['routines']
                     if r['name'].startswith(('M_LAYERS_', 'M_REGIONS_'))]
@@ -340,6 +363,9 @@ def run(out, mode):
                 report[name] = data(bridge, program['image'], name, True)[0]
                 require(report[name] > 0, 'Missing drawing path: '+name)
             (out/'scenes.bin').write_bytes(scenes)
+            occluders = bridge.memdump(0xe6000, 4*1540+32)
+            report['occluders'] = check_occluders(occluders)
+            (out/'occluders.bin').write_bytes(occluders)
             bank_scene = bridge.memdump(0x11ffe0, layout()['Scene']['size']+32)
             damage = bridge.memdump(0xe4000, 8*layout()['Region']['size']+32)
             report['damage_batches'] = check_damage_batches(damage)

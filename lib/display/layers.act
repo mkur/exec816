@@ -201,9 +201,9 @@ PROC DamageAll(LAYERTYPES.Scene POINTER scene LAYERTYPES.Rect POINTER rect)
 
 RETURN
 
-; Six occluders have at most 13 horizontal endpoint bands and seven free
-; intervals per band. At most 91 disjoint pieces fit below MAX_RECTS (96).
 ; Rebuild only for actual layout changes, never for drawing or hit testing.
+; Subtract nearer occluders first: a covering window can eliminate a layer
+; before frontmost overlays fragment it. Rectangle order is not a contract.
 BYTE FUNC Rebuild(LAYERTYPES.Scene POINTER scene)
   LAYERTYPES.Layer POINTER layer,above
   BYTE index,rank,status,clear
@@ -219,9 +219,16 @@ BYTE FUNC Rebuild(LAYERTYPES.Scene POINTER scene)
         IF scene.order(rank)=index THEN
           EXIT
         FI
+        rank==+1
+      OD
 
+      WHILE rank>0 AND layer.visible.count<>0 DO
+        rank==-1
         above=@scene.items(scene.order(rank))
-        IF above.shown<>0 THEN
+        IF above.shown<>0 AND above.bounds.left<layer.bounds.right
+            AND above.bounds.right>layer.bounds.left
+            AND above.bounds.top<layer.bounds.bottom
+            AND above.bounds.bottom>layer.bounds.top THEN
           status=REGIONS.Subtract(@layer.visible,@above.bounds,@scene.work)
           IF status<>LAYERTYPES.OK THEN
             ; Impossible for a valid scene. Fail closed if storage was damaged;
@@ -239,7 +246,6 @@ BYTE FUNC Rebuild(LAYERTYPES.Scene POINTER scene)
                   +scene.work.count*LAYERTYPES.RECT_SIZE))
         FI
 
-        rank==+1
       OD
     FI
     UpdateDamage(scene,index)

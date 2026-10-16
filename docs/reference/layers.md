@@ -67,7 +67,8 @@ without rebuilding. Hidden creation, movement, reordering and deletion leave
 other layers' visibility unchanged. `scene.rebuilds` is a diagnostic wrapping
 counter, not an identity or completion token.
 
-Visibility is exact and consists of disjoint rectangles. Changes recompute the
+Visibility is exact and consists of disjoint rectangles; their ordering and
+partition are not stable across scene changes. Changes recompute the
 cache and conservatively damage intersecting layers, including background.
 Painting always clips damage against visibility, so an oversized damage bound
 cannot authorize drawing through another layer. Geometry and content mutation
