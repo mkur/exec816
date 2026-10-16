@@ -1,6 +1,6 @@
 # One scene transition for popup replacement
 
-Status: implemented through PT3; matched measurement and demo delivery pending.
+Status: implemented through PT4; [results and demo](../../history/popup-transition.md).
 
 [Dropdown analysis](../../history/dropdown-analysis.md) ·
 [Bookkeeping results](../../history/dropdown-bookkeeping.md) ·

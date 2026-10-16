@@ -1,0 +1,1058 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "qualification": false,
+  "production_head": "95fee022b2aacdaedceac5497e67b93a33a5c62d",
+  "commits": [
+    "50e542d",
+    "772391b",
+    "95fee02"
+  ],
+  "baseline": "docs/development/dropdown-bookkeeping.json",
+  "scope": "PT1\u2013PT4: single saved-popup transition on the exact OF816 desktop archive; matched 18-action capture.",
+  "source_sha256": {
+    "abi/layers.json": "fd711adb3e703a02756cf7536d6ff8e17240f5788647bbc026ba90605cb3244a",
+    "lib/display/layers-save.inc": "1c5253e1d7ccf422fc2ba88361dd87a404fab6239458687fb755220da0be2a08",
+    "lib/desktop/deskmenucache.act": "264a197248fa272c57987710155e45c8ed9caddcbd36444b3e761ab6d32d17f6",
+    "lib/desktop/deskmenu.act": "138f0a9f6daa0e265c1bde4edce56a38d7163630b873d8c01e16da2997ebc026",
+    "lib/desktop/deskappmenu.act": "d898129deaf84fdc59b45dcf921e47020a7a097811d749189ed268b30787b3a0",
+    "lib/desktop/deskstate.act": "cd2ad9f166a404c0f70629ed8d3e28b96bd942c0461ff4ef2a4229765e5e6ef9",
+    "lib/desktop/deskpaint.act": "3576d860ae52dd507d451024fdfc58fb8cf98495d7f65a201c26e1624fefb731",
+    "lib/desktop/deskhost.act": "0bdb568b9d4fa3c9df08a45e675d020ccd680a0ff2f3dcc04d3f3d155b131e61",
+    "lib/desktop/deskinput.act": "7021f51e5dda0e1aaa2fd4776be444d4ab477b1f19be4108e47b1b9db7663e45",
+    "lib/console/consoleinput.act": "3cc4463765d35856592c29a664a0cbd9df4d3c7c40c5c46246011f7bcc992fda",
+    "lib/console/console-requests.inc": "7a989b26975c68cf6dca80cb96dd3f3f3f3ff475fe8b014a5f8c7f9658165654",
+    "lib/aes/aeslocks.act": "61ae411c484f46dccc891e0c303b6476a58aaf99657a0461a3b67de46254fa9d"
+  },
+  "observer_sha256": {
+    "tools/trace_menu_response.py": "a7f1d58b29ab98a03cfd6546f4b35dd4256efadae7c71e953674c26315256dfa",
+    "tools/measure_menu_feedback.py": "55cadcdce9ca33bf20df0a6d254164bc5dc3684315aff9c01466a37adfc84d36"
+  },
+  "package": {
+    "directory": "build/popup-transition/demo",
+    "archive_sha256": "c2aaf830af4eb30565995dfbb4dccd56bca6d5cd7c8cea69794ab0355b017b38",
+    "manifest_sha256": "50cd886e1f17e70a49669aed6a60334fa3ac641dc89c532fb29b4f6e3bb86070",
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "compiler_override": false,
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$84b34b347dbb7c61",
+      "actual_kernel_id": "$84b34b347dbb7c61",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "rom": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/popup-transition/menus/extracted/exec816-demo/altirraos-816.rom",
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "override": false
+    },
+    "checksums_verified": 22,
+    "autoboot_frames": 249,
+    "matched_pin": true,
+    "machine_comparison_ignored_fields": [
+      "kernel_id",
+      "actual_kernel_id",
+      "basic_id",
+      "actual_basic_id"
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "compiler_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16"
+  },
+  "capture": {
+    "directory": "build/popup-transition/menus",
+    "analysis_sha256": "c0bbba38f4cdaad8f5f8e581f2da4110a017a1bede8aecca4fd4ba9d85886b51",
+    "runtime_sha256": "f8c7c999bd8420b4c7f43683643614024913c5751c02579b614374e2098d54eb"
+  },
+  "comparison": {
+    "application/open": {
+      "before": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 140.20262793231828,
+          "median_ms": 140.4535516275503,
+          "max_ms": 140.4535516275503
+        },
+        "presenter_cpu": {
+          "min_ms": 96.8658502718575,
+          "median_ms": 96.8837532546072,
+          "max_ms": 96.89566508171231
+        }
+      },
+      "after": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 140.20206405884585,
+          "median_ms": 140.4535516275503,
+          "max_ms": 140.45411550102273
+        },
+        "presenter_cpu": {
+          "min_ms": 97.55130896178206,
+          "median_ms": 97.94214376236117,
+          "max_ms": 98.32790370168838
+        }
+      }
+    },
+    "application/highlight": {
+      "before": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 60.12188125106607,
+          "median_ms": 60.12188125106607,
+          "max_ms": 60.12244512453851
+        },
+        "presenter_cpu": {
+          "min_ms": 25.363804115994412,
+          "median_ms": 25.372685123185207,
+          "max_ms": 25.372685123185207
+        }
+      },
+      "after": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 60.12300899801094,
+          "median_ms": 60.37449656671539,
+          "max_ms": 60.37449656671539
+        },
+        "presenter_cpu": {
+          "min_ms": 25.56052547368896,
+          "median_ms": 25.563697261971384,
+          "max_ms": 25.57575005744461
+        }
+      }
+    },
+    "application/switch": {
+      "before": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 180.36789924708793,
+          "median_ms": 180.36789924708793,
+          "max_ms": 180.61882294231998
+        },
+        "presenter_cpu": {
+          "min_ms": 121.51938526514036,
+          "median_ms": 121.52192269576629,
+          "max_ms": 121.930519510727
+        }
+      },
+      "after": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 120.24489024907702,
+          "median_ms": 120.24489024907702,
+          "max_ms": 120.4969416912539
+        },
+        "presenter_cpu": {
+          "min_ms": 78.91529069792028,
+          "median_ms": 78.9200131382519,
+          "max_ms": 78.9200131382519
+        }
+      }
+    },
+    "application/close": {
+      "before": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 120.24489024907702,
+          "median_ms": 120.24489024907702,
+          "max_ms": 120.24489024907702
+        },
+        "presenter_cpu": {
+          "min_ms": 75.2346770908076,
+          "median_ms": 75.35957506495119,
+          "max_ms": 75.36161910628874
+        }
+      },
+      "after": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 120.24545412254945,
+          "median_ms": 120.4969416912539,
+          "max_ms": 120.49750556472632
+        },
+        "presenter_cpu": {
+          "min_ms": 73.02126225896171,
+          "median_ms": 73.05438982546707,
+          "max_ms": 73.69100297584225
+        }
+      }
+    },
+    "keyboard/heading": {
+      "before": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 220.5326066883852,
+          "median_ms": 300.86484093834184,
+          "max_ms": 360.9878499363528
+        },
+        "presenter_cpu": {
+          "min_ms": 177.10737137693673,
+          "median_ms": 242.02337537479966,
+          "max_ms": 291.9609968719119
+        }
+      },
+      "after": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 180.6193868157924,
+          "median_ms": 240.48978049815403,
+          "max_ms": 300.6122256226925
+        },
+        "presenter_cpu": {
+          "min_ms": 143.06040917478526,
+          "median_ms": 191.92603671662116,
+          "max_ms": 243.0199512531383
+        }
+      }
+    },
+    "pointer/heading": {
+      "before": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 280.6556156863961,
+          "median_ms": 280.6556156863961,
+          "max_ms": 300.86427706486944
+        },
+        "presenter_cpu": {
+          "min_ms": 181.62745161613185,
+          "median_ms": 187.145869838267,
+          "max_ms": 241.18926554070532
+        }
+      },
+      "after": {
+        "count": 3,
+        "elapsed": {
+          "min_ms": 280.6556156863961,
+          "median_ms": 280.6561795598686,
+          "max_ms": 280.907667128573
+        },
+        "presenter_cpu": {
+          "min_ms": 149.55404656749073,
+          "median_ms": 158.89834630007374,
+          "max_ms": 224.5791036949219
+        }
+      }
+    }
+  },
+  "representative": {
+    "before": {
+      "action": "application/switch/1",
+      "elapsed_ms": 180.61882294231998,
+      "presenter_cpu_ms": 121.51938526514036,
+      "inclusive_routines": {
+        "LAYERS_SHOW": {
+          "calls": 2,
+          "cpu_ms": 46.01158196112374
+        },
+        "LAYERS_BOUNDS": {
+          "calls": 1,
+          "cpu_ms": 0.6031331629495658
+        },
+        "DESKSTATE_TOPCHROME": {
+          "calls": 1,
+          "cpu_ms": 0.14653661864814155
+        },
+        "LAYERS_REBUILD": {
+          "calls": 2,
+          "cpu_ms": 29.578899290788137
+        },
+        "REGIONS_SUBTRACT": {
+          "calls": 25,
+          "cpu_ms": 18.6561767405012
+        },
+        "LAYERS_FINISHSAVE": {
+          "calls": 1,
+          "cpu_ms": 6.46410451958685
+        },
+        "LAYERS_BEGINSAVEDREPLACE": {
+          "calls": 0,
+          "cpu_ms": 0
+        },
+        "LAYERS_FINISHSAVEDREPLACE": {
+          "calls": 0,
+          "cpu_ms": 0
+        },
+        "DESKAPPMENU_ADOPTREPLACEMENT": {
+          "calls": 0,
+          "cpu_ms": 0
+        },
+        "CONSOLEBITMAP_COPYSTART": {
+          "calls": 2,
+          "cpu_ms": 4.00047083434948
+        }
+      },
+      "copies": [
+        {
+          "role": "background_restore",
+          "start_ms": 43.52652108393398,
+          "return_ms": 45.92883352904442,
+          "cpu_ms": 2.0030900266289247,
+          "irq_ms": 47.56244546286259,
+          "poll_return_ms": 49.39270827019125,
+          "retirement_ms": 58.16763676398653
+        },
+        {
+          "role": "popup_restore",
+          "start_ms": 106.33751492502597,
+          "return_ms": 108.77647914584446,
+          "cpu_ms": 1.9973808077205557,
+          "irq_ms": 109.3415508494049,
+          "poll_return_ms": 113.0140587753514,
+          "retirement_ms": 116.94735818229748
+        }
+      ],
+      "observed_to_submit_ms": 56.94480665483472,
+      "retirement_to_submit_ms": 48.16987816103944
+    },
+    "after": {
+      "action": "application/switch/1",
+      "elapsed_ms": 120.24489024907702,
+      "presenter_cpu_ms": 78.9200131382519,
+      "inclusive_routines": {
+        "LAYERS_SHOW": {
+          "calls": 0,
+          "cpu_ms": 0
+        },
+        "LAYERS_BOUNDS": {
+          "calls": 0,
+          "cpu_ms": 0
+        },
+        "DESKSTATE_TOPCHROME": {
+          "calls": 0,
+          "cpu_ms": 0
+        },
+        "LAYERS_REBUILD": {
+          "calls": 1,
+          "cpu_ms": 18.611983157099377
+        },
+        "REGIONS_SUBTRACT": {
+          "calls": 15,
+          "cpu_ms": 12.794430057839321
+        },
+        "LAYERS_FINISHSAVE": {
+          "calls": 0,
+          "cpu_ms": 0
+        },
+        "LAYERS_BEGINSAVEDREPLACE": {
+          "calls": 1,
+          "cpu_ms": 0.3751168275350694
+        },
+        "LAYERS_FINISHSAVEDREPLACE": {
+          "calls": 1,
+          "cpu_ms": 23.247234553038645
+        },
+        "DESKAPPMENU_ADOPTREPLACEMENT": {
+          "calls": 1,
+          "cpu_ms": 1.6924662275032105
+        },
+        "CONSOLEBITMAP_COPYSTART": {
+          "calls": 2,
+          "cpu_ms": 3.9949025838092194
+        }
+      },
+      "copies": [
+        {
+          "role": "background_restore",
+          "combined": true,
+          "start_ms": 20.32270478827256,
+          "return_ms": 22.72099963489193,
+          "cpu_ms": 2.0032309949970326,
+          "irq_ms": 24.354541084526044,
+          "poll_return_ms": 26.404432609366783,
+          "retirement_ms": null,
+          "commit_ms": 63.55932442319268
+        },
+        {
+          "role": "popup_restore",
+          "combined": true,
+          "start_ms": 27.363510901788747,
+          "return_ms": 29.75095118406381,
+          "cpu_ms": 1.9916715888121865,
+          "irq_ms": 30.38065688440171,
+          "poll_return_ms": 34.56988436364764,
+          "retirement_ms": null,
+          "commit_ms": 63.55932442319268
+        }
+      ],
+      "observed_to_submit_ms": 0.9590782924219639,
+      "retirement_to_submit_ms": null
+    }
+  },
+  "samples": [
+    {
+      "action": "application/open/0",
+      "elapsed_ms": 140.4535516275503,
+      "presenter_cpu_ms": 98.32790370168838,
+      "transfers": {
+        "captures": 1,
+        "restores": 0,
+        "misses": 0,
+        "capturedBytes": 15680,
+        "restoredBytes": 0,
+        "popupCaptures": 0,
+        "popupRestores": 1,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 8960,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "application/highlight/0",
+      "elapsed_ms": 60.37449656671539,
+      "presenter_cpu_ms": 25.57575005744461,
+      "transfers": {
+        "captures": 0,
+        "restores": 0,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 0,
+        "popupCaptures": 0,
+        "popupRestores": 0,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 0,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "application/switch/0",
+      "elapsed_ms": 120.4969416912539,
+      "presenter_cpu_ms": 78.91529069792028,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 8960,
+        "popupCaptures": 0,
+        "popupRestores": 1,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 4104,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": [
+        {
+          "observed_to_submit_ms": 0.958021029661154,
+          "retirement_to_submit_ms": null
+        }
+      ]
+    },
+    {
+      "action": "application/close/0",
+      "elapsed_ms": 120.4969416912539,
+      "presenter_cpu_ms": 73.69100297584225,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 4104,
+        "popupCaptures": 0,
+        "popupRestores": 0,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 0,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 1
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "application/open/1",
+      "elapsed_ms": 140.45411550102273,
+      "presenter_cpu_ms": 97.94214376236117,
+      "transfers": {
+        "captures": 1,
+        "restores": 0,
+        "misses": 0,
+        "capturedBytes": 15680,
+        "restoredBytes": 0,
+        "popupCaptures": 0,
+        "popupRestores": 1,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 8960,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "application/highlight/1",
+      "elapsed_ms": 60.37449656671539,
+      "presenter_cpu_ms": 25.563697261971384,
+      "transfers": {
+        "captures": 0,
+        "restores": 0,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 0,
+        "popupCaptures": 0,
+        "popupRestores": 0,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 0,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "application/switch/1",
+      "elapsed_ms": 120.24489024907702,
+      "presenter_cpu_ms": 78.9200131382519,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 8960,
+        "popupCaptures": 0,
+        "popupRestores": 1,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 4104,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": [
+        {
+          "observed_to_submit_ms": 0.9590782924219639,
+          "retirement_to_submit_ms": null
+        }
+      ]
+    },
+    {
+      "action": "application/close/1",
+      "elapsed_ms": 120.49750556472632,
+      "presenter_cpu_ms": 73.05438982546707,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 4104,
+        "popupCaptures": 0,
+        "popupRestores": 0,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 0,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 1
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "application/open/2",
+      "elapsed_ms": 140.20206405884585,
+      "presenter_cpu_ms": 97.55130896178206,
+      "transfers": {
+        "captures": 1,
+        "restores": 0,
+        "misses": 0,
+        "capturedBytes": 15680,
+        "restoredBytes": 0,
+        "popupCaptures": 0,
+        "popupRestores": 1,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 8960,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "application/highlight/2",
+      "elapsed_ms": 60.12300899801094,
+      "presenter_cpu_ms": 25.56052547368896,
+      "transfers": {
+        "captures": 0,
+        "restores": 0,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 0,
+        "popupCaptures": 0,
+        "popupRestores": 0,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 0,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "application/switch/2",
+      "elapsed_ms": 120.24489024907702,
+      "presenter_cpu_ms": 78.9200131382519,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 8960,
+        "popupCaptures": 0,
+        "popupRestores": 1,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 4104,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": [
+        {
+          "observed_to_submit_ms": 0.9590782924219639,
+          "retirement_to_submit_ms": null
+        }
+      ]
+    },
+    {
+      "action": "application/close/2",
+      "elapsed_ms": 120.24545412254945,
+      "presenter_cpu_ms": 73.02126225896171,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 4104,
+        "popupCaptures": 0,
+        "popupRestores": 0,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 0,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 1
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "keyboard/heading/0",
+      "elapsed_ms": 180.6193868157924,
+      "presenter_cpu_ms": 143.06040917478526,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 8960,
+        "popupCaptures": 1,
+        "popupRestores": 0,
+        "popupMisses": 1,
+        "popupCapturedBytes": 4104,
+        "popupRestoredBytes": 0,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "keyboard/heading/1",
+      "elapsed_ms": 240.48978049815403,
+      "presenter_cpu_ms": 191.92603671662116,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 4104,
+        "popupCaptures": 1,
+        "popupRestores": 0,
+        "popupMisses": 1,
+        "popupCapturedBytes": 6840,
+        "popupRestoredBytes": 0,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "keyboard/heading/2",
+      "elapsed_ms": 300.6122256226925,
+      "presenter_cpu_ms": 243.0199512531383,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 6840,
+        "popupCaptures": 1,
+        "popupRestores": 0,
+        "popupMisses": 1,
+        "popupCapturedBytes": 8960,
+        "popupRestoredBytes": 0,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "pointer/heading/0",
+      "elapsed_ms": 280.6561795598686,
+      "presenter_cpu_ms": 224.5791036949219,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 8960,
+        "popupCaptures": 1,
+        "popupRestores": 0,
+        "popupMisses": 1,
+        "popupCapturedBytes": 4104,
+        "popupRestoredBytes": 0,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": []
+    },
+    {
+      "action": "pointer/heading/1",
+      "elapsed_ms": 280.6556156863961,
+      "presenter_cpu_ms": 149.55404656749073,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 4104,
+        "popupCaptures": 0,
+        "popupRestores": 1,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 8960,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": [
+        {
+          "observed_to_submit_ms": 1.1186544851200821,
+          "retirement_to_submit_ms": null
+        }
+      ]
+    },
+    {
+      "action": "pointer/heading/2",
+      "elapsed_ms": 280.907667128573,
+      "presenter_cpu_ms": 158.89834630007374,
+      "transfers": {
+        "captures": 0,
+        "restores": 1,
+        "misses": 0,
+        "capturedBytes": 0,
+        "restoredBytes": 8960,
+        "popupCaptures": 0,
+        "popupRestores": 1,
+        "popupMisses": 0,
+        "popupCapturedBytes": 0,
+        "popupRestoredBytes": 4104,
+        "client_captures": 0,
+        "client_restores": 0,
+        "client_capturedBytes": 0,
+        "client_restoredBytes": 0,
+        "client_patches": 0,
+        "client_patchedBytes": 0,
+        "explicit_discards": 0
+      },
+      "files_repaints": 0,
+      "copy_gaps": [
+        {
+          "observed_to_submit_ms": 0.978884348141122,
+          "retirement_to_submit_ms": null
+        }
+      ]
+    }
+  ],
+  "checks": {
+    "actions": 18,
+    "warm_switch_rebuilds": 1,
+    "warm_switch_copies": 2,
+    "intermediate_show_bounds_topchrome_calls": 0,
+    "files_repaints": 0,
+    "serial_events": {
+      "capture": {
+        "command": 3088,
+        "rxstart": 3370,
+        "receive": 3370,
+        "read": 3384
+      },
+      "timed": {}
+    },
+    "guards": "intact",
+    "live_tasks": 0,
+    "exit_status": 0,
+    "cache_counter_records_identical": true
+  },
+  "memory": {
+    "native_code_before": 1086159,
+    "native_code_after": 1095128,
+    "native_data_before": 13523,
+    "native_data_after": 13544,
+    "reservation_manifests_identical": true,
+    "mutable_field_bytes": 21,
+    "mutable_arena_occupied_delta_with_alignment": 22,
+    "vram_reservation_delta": 0,
+    "scene_bytes": 9186,
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 565,
+        "untouched_above_floor": 715
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 310,
+        "untouched_above_floor": 746
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 148,
+        "untouched_above_floor": 908
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 760,
+        "untouched_above_floor": 296
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 829,
+        "untouched_above_floor": 1475
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 59,
+        "untouched_above_floor": 197
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 289,
+      "untouched_from_base": 1247,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes_guards_alignment_and_unused_capacity": true
+  },
+  "validation": {
+    "host": {
+      "tests": 491,
+      "historical_skips": 4
+    },
+    "pt1": {
+      "directory": "build/popup-transition/pt1-layers",
+      "checks": 2250,
+      "status": "pass"
+    },
+    "pt2": {
+      "directory": "build/popup-transition/pt2-cache",
+      "cases": 8,
+      "checks": 163,
+      "status": "pass"
+    },
+    "pt3": {
+      "directory": "build/popup-transition/pt3-final",
+      "checks": 315,
+      "native_checks": 4,
+      "pixel_phases": 7,
+      "injected_input_cases": 8,
+      "replacement_completion_waits": 58,
+      "fairness": "pass",
+      "status": "pass"
+    },
+    "packaged_menu": "pass",
+    "raw_runs": 0,
+    "full_qualification": false
+  },
+  "limitations": [
+    "Three samples per cohort do not establish p95 or worst-case latency.",
+    "Pixel endpoint includes scanout and one-PAL-frame sampling.",
+    "Inclusive routine costs overlap; they cannot be added as independent costs.",
+    "Copy entry/IRQ/observation includes software and interrupt latency, not pure DMA.",
+    "Pointer headings include physical travel and motion handling, not stationary hover latency.",
+    "The three-heading keyboard sequence exceeds the two popup slots and includes misses."
+  ]
+}

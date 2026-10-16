@@ -1,7 +1,8 @@
 # Historical records
 
-- [Popup replacement](popup-transition.md): PT1–PT3 Layers/cache transaction,
-  menu integration and input/fairness checks; matched measurements pending.
+- [Popup replacement](popup-transition.md): one committed Layers/cache
+  transaction, input/fairness checks and refreshed OF816 demo. Warm switching
+  180 → 120 ms, presenter CPU 122 → 79 ms, observed copy gap 57 → 1 ms.
 
 - [Dropdown bookkeeping](dropdown-bookkeeping.md): maintained-bit paint
   selection and bounded region subtraction; warm switch 201 → 180 ms,

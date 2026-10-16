@@ -1,6 +1,6 @@
 # Popup replacement implementation plan
 
-Status: PT1–PT3 implemented; PT4 measurement and delivery pending.
+Status: PT1–PT4 complete. [Results and demo](../../history/popup-transition.md).
 
 [Design](popup-transition-design.md) ·
 [DB3 results](../../history/dropdown-bookkeeping.md) ·
@@ -184,6 +184,11 @@ bank-zero deltas **0/0/0 bytes**.
 Commit: `Switch GEM headings with one committed scene transition`.
 
 ## PT4 Measure the result and deliver the demo
+
+Completed; [measurement record](../../development/popup-transition.json).
+Warm switching improves 180.4 → 120.2 ms, presenter CPU 121.5 → 78.9 ms,
+and observed background-completion-to-popup-submission gap 56.9 → 1.0 ms.
+Physical-pointer response is unchanged; its presenter CPU is lower.
 
 Reuse `build/dropdown-bookkeeping/demo` and the recorded DB3 18-action capture
 as the baseline; no separate baseline slice. Keep compiler, ROM, emulator,

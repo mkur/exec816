@@ -6,9 +6,11 @@ It keeps old geometry committed through background/image copies, publishes
 one final visibility rebuild and preserves input, damage and cache lifetimes.
 The [PT1–PT4 implementation plan](popup-transition-plan.md) orders the Layers
 transaction, asynchronous cache continuation, menu/input integration and
-matched measurements/demo delivery. PT1–PT3 are implemented with focused
-transaction, failure, input and pixel checks; PT4 measurement is pending.
-Ordinary open/dismiss and fallback paths retain focused regression coverage.
+matched measurements/demo delivery. PT1–PT4 are complete with focused
+transaction, failure, input and pixel checks. [Results](../../history/popup-transition.md)
+show warm switching 180 → 120 ms, presenter CPU 122 → 79 ms and the observed
+copy-to-copy gap 57 → 1 ms. Pointer response is unchanged, with lower CPU.
+The OF816 demo is refreshed; open/dismiss and fallback retain regression coverage.
 
 The completed [dropdown bookkeeping plan](dropdown-bookkeeping-plan.md) implements
 summary-based paint selection and bounded single-pass region subtraction,

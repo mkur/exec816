@@ -27,6 +27,8 @@ DESKMENUCACHE_RESTORE DESKMENUCACHE_CAPTURE DESKMENUCACHE_REUSABLE
 DESKMENUCACHE_TRANSFER DESKMENUCACHE_POPUPTRANSFER DESKMENUCACHE_RESTOREPOPUP
 DESKMENUCACHE_POPUPRESTORED DESKMENUCACHE_END DESKMENUCACHE_EXPOSED
 DESKMENUCACHE_NOTIFY DESKMENUCACHE_SELECTPOPUP
+DESKMENUCACHE_REPLACE DESKMENUCACHE_REPLACEPUMP DESKMENUCACHE_FINISHREPLACEMENT
+DESKAPPMENU_ADOPTREPLACEMENT LAYERS_BEGINSAVEDREPLACE LAYERS_FINISHSAVEDREPLACE
 DESKHOST_CONTROLS DESKHOST_MENUCONTINUATION DESKHOST_INPUTBOUNDARY
 DESKHOST_EVENTS DESKHOST_AFTERPAINT DESKPAINT_PAINTSTRIP DESKPAINT_SELECTSTRIP
 DESKPAINT_SYNC CONSOLEINPUT_SERVICE CONSOLEWINDOWS_TAKE
@@ -93,6 +95,8 @@ def analyze(out):
         for copy in (s for s in before_pixels if s['kind']=='CONSOLEBITMAP_COPYSTART'):
             parent_names={s['kind'] for s in rows if s['start']<=copy['start']<copy['end']<=s['end']}
             role=next((role for name,role in (
+                ('DESKMENUCACHE_REPLACEPUMP','popup_restore'),
+                ('DESKMENUCACHE_REPLACE','background_restore'),
                 ('DESKMENUCACHE_CAPTUREPOPUP','popup_capture'),
                 ('DESKMENUCACHE_RESTOREPOPUP','popup_restore'),
                 ('DESKMENUCACHE_CAPTURE','background_capture'),
@@ -101,16 +105,26 @@ def analyze(out):
                       and b['ms']>=copy['start_ms']),None)
             poll=next((s for s in rows if s['kind']=='VbxeOwnerPoll' and not s['return_a']
                        and irq is not None and s['start_ms']>=irq),None)
-            finish_kind='DESKMENUCACHE_POPUPRESTORED' if role=='popup_restore' else 'LAYERS_FINISHSAVE'
+            combined=bool(parent_names & {'DESKMENUCACHE_REPLACE','DESKMENUCACHE_REPLACEPUMP'})
+            finish_kind=('LAYERS_FINISHSAVEDREPLACE' if combined else
+                'DESKMENUCACHE_POPUPRESTORED' if role=='popup_restore' else 'LAYERS_FINISHSAVE')
             finish=next((s for s in rows if s['kind']==finish_kind
                          and irq is not None and s['start_ms']>=irq),None)
-            copies.append(dict(role=role,start_ms=copy['start_ms'],return_ms=copy['end_ms'],
+            copies.append(dict(role=role,combined=combined,start_ms=copy['start_ms'],return_ms=copy['end_ms'],
                 cpu_ms=copy['charged_cpu_ms'],irq_ms=irq,
                 poll_return_ms=poll['end_ms'] if poll else None,
-                retirement_ms=finish['end_ms'] if finish else None))
+                retirement_ms=finish['end_ms'] if finish and not combined else None,
+                commit_ms=finish['end_ms'] if finish and combined else None))
+        gaps=[]
+        for background,popup in zip(copies,copies[1:]):
+            if background['role']=='background_restore' and popup['role']=='popup_restore':
+                gaps.append(dict(observed_to_submit_ms=(popup['start_ms']-background['poll_return_ms'])
+                    if background['poll_return_ms'] is not None else None,
+                    retirement_to_submit_ms=(popup['start_ms']-background['retirement_ms'])
+                    if background['retirement_ms'] is not None else None))
         samples.append(dict(sample,start=start,pixels_end=pixels,end=end,spans=rows,
             boundaries=boundaries,bookkeeping=costs,
-            copies=copies,damage_queries=dict(calls=len(queries),
+            copies=copies,copy_gaps=gaps,damage_queries=dict(calls=len(queries),
                 cpu_ms=sum(s['charged_cpu_ms'] for s in queries)),
             task_charges={str(dp):t.measure(start,pixels) for dp,t in timelines.items()}))
     serial=Counter();serial_all=Counter()
