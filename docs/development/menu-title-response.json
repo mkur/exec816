@@ -1875,5 +1875,55 @@
     },
     "autoboot_frames": 249,
     "note": "Legacy timed actions completed before an obsolete Counter placement assertion failed; complete-feedback and corrected Counter checks rerun on the same archive, including normal EXIT. Earlier complete/pointer samples used the positioning helper and are excluded."
+  },
+  "mt2": {
+    "artifact": "build/menu-title-response/mt2-menus",
+    "status": "pass",
+    "aes_checks": 321,
+    "aes_failures": 0,
+    "title_paint": [
+      {
+        "command": 5,
+        "paint_calls": 1,
+        "pixels": "exact"
+      },
+      {
+        "command": 6,
+        "paint_calls": 1,
+        "pixels": "exact"
+      },
+      {
+        "command": 7,
+        "paint_calls": 1,
+        "pixels": "exact"
+      },
+      {
+        "command": 8,
+        "paint_calls": 3,
+        "pixels": "exact"
+      },
+      {
+        "command": 9,
+        "paint_calls": 2,
+        "pixels": "exact"
+      },
+      {
+        "command": 10,
+        "paint_calls": 1,
+        "pixels": "exact"
+      },
+      {
+        "command": 11,
+        "paint_calls": 4,
+        "pixels": "exact"
+      }
+    ],
+    "host_tests": 497,
+    "host_skips": 4,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    }
   }
 }

@@ -40,3 +40,25 @@ Artifacts: `build/menu-title-response/baseline` and
 attempt used the positioning helper and is excluded from the compact record.
 Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle bytes**, including
 guards, alignment and unused capacity. MT1 changes only host observers/tests.
+
+## MT2 Skip empty caption phases
+
+`DESKMENUPAINT.Paint` skips captions outside its clip and finishes the bottom
+rule in the same call as an ordinary application-title repaint. The existing
+object budget, index/phase continuation, Layers retirement and input boundaries
+between actual work units remain in place. The change adds no mutable storage.
+
+The optimized AES-menu fixture passes **321 AES checks**, all seven existing
+menu pixel phases and eight injected input cases. Seven new title cases check
+full/partial clips, both separated headings, full-bar and Windows-caption
+painting, failure with retained damage and successful retry, and a three-title
+tree that forces the real four-object renderer continuation. Small title clips
+take **one painter call**, full bars take three, and the three-title case takes
+four. The independent oracle compares every bar pixel after each case.
+
+The 497-test host suite passes with four historical skips. Guards, ownership
+cleanup and normal OS return pass in `build/menu-title-response/mt2-menus`.
+No raw or qualification matrix was run. Reserved bank-zero delta is **0 fixed,
+0 per public Task, 0 idle bytes**, including guards, alignment and unused
+capacity. DP, stack, Scene, VRAM and upper-memory reservations are unchanged;
+production code and local-stack accounting follows with the final demo.

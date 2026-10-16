@@ -1,0 +1,67 @@
+; Fixture-only clipped title drawing through the real scene paint protocol.
+MODULE MENUTITLEPROBE
+USE DESKSTATE
+USE DESKMENUPAINT
+USE MENUTITLEMARKS
+USE CONSOLEBITMAP
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+USE HEAPCORE
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fab1)
+  FI
+
+RETURN
+
+PUBLIC CARD FUNC Run(CARD command)
+  LAYERTYPES.Rect area
+  LONGCARD token
+  CARD calls
+  BYTE phase,result,status
+
+  LET service=DESKSTATE.Get()
+  LET layer=LAYERS.Find(@service.scene,DESKSTATE.barLayer)
+  Require(layer.dirty=0 AND service.scene.busy=0)
+  REGIONS.Assign(@area,136,0,200,11)
+  IF command=6 THEN
+    REGIONS.Assign(@area,137,2,177,8)
+  ELSEIF command=7 THEN
+    area.right=280
+  ELSEIF command=8 OR command=11 THEN
+    REGIONS.Assign(@area,0,0,640,11)
+  ELSEIF command=9 THEN
+    REGIONS.Assign(@area,560,0,640,11)
+  FI
+  status=LAYERS.Invalidate(@service.scene,layer.id,@area)
+  Require(status=LAYERTYPES.OK)
+  status=LAYERS.BeginPaint(@service.scene,layer.id,@token)
+  Require(status=LAYERTYPES.OK)
+  Require(CONSOLEBITMAP.RawFill(CARD(area.left),CARD(area.top),
+      CARD(area.right-area.left),CARD(area.bottom-area.top),1)<>0)
+  MENUTITLEMARKS.fail=(command=10)
+  phase=0
+  calls=0
+  result=2
+  WHILE result=2 DO
+    result=DESKMENUPAINT.Paint(layer,@area,@phase)
+    calls==+1
+    Require(calls<8)
+  OD
+  IF command=10 THEN
+    Require(result=0 AND MENUTITLEMARKS.fail=0)
+  ELSE
+    Require(result=1)
+    status=LAYERS.AdvancePaint(@service.scene,token)
+    Require(status=LAYERTYPES.EMPTY)
+  FI
+  status=LAYERS.Finish(@service.scene,token,result=1)
+  Require(status=LAYERTYPES.OK)
+  Require((layer.dirty<>0)=(command=10))
+
+RETURN(calls)
+
+ENDMODULE

@@ -18,6 +18,15 @@ def producer(out, symbols):
     probe=read_source(ROOT/'tests/programs/menutransitionprobe.act',
         {'input-storage.act.inc':out/'program/input-storage.act.inc'})
     (out/'menutransitionprobe.act').write_text(probe)
+    (out/'menutitleprobe.act').write_text(read_source(ROOT/'tests/programs/menutitleprobe.act'))
+    (out/'menutitlemarks.act').write_text('MODULE MENUTITLEMARKS\nPUBLIC BYTE fail\nENDMODULE\n')
+    paint=read_source(ROOT/'lib/desktop/deskmenupaint.act').replace(
+        'USE DESKMENU\n','USE DESKMENU\nUSE MENUTITLEMARKS\n',1)
+    rule='    REGIONS.Assign(@bounds,0,DESKMENU.BAR_HEIGHT-1,640,DESKMENU.BAR_HEIGHT)'
+    require(paint.count(rule)==1,'Title rule failure boundary changed')
+    paint=paint.replace(rule,'    IF MENUTITLEMARKS.fail<>0 THEN\n'
+        '      MENUTITLEMARKS.fail=0\n      RETURN(0)\n    FI\n'+rule)
+    (out/'deskmenupaint.act').write_text(paint)
     (out/'menutransitionmarks.act').write_text('MODULE MENUTRANSITIONMARKS\nPUBLIC BYTE watch,ordinary,passed\nPUBLIC CARD waits\nENDMODULE\n')
     state=read_source(ROOT/'lib/desktop/deskstate.act').replace('USE EXEC',
         'USE EXEC\nUSE MENUTRANSITIONMARKS',1)
@@ -47,6 +56,7 @@ USE REGIONS
 USE MENUTRANSITIONMARKS
 USE DESKMENU
 USE DESKAPPMENU
+USE MENUTITLEPROBE
 
 PUBLIC BYTE FUNC Pending()
 
@@ -65,6 +75,14 @@ PUBLIC PROC Pump()
   LET identity=LONGCARD POINTER($CLIENT)
   LET service=AESSTATE.Get()
   LET client=AESSTATE.Find(service,identity^)
+  IF command^>=5 THEN
+    BEGIN
+      LET result=CARD POINTER($RESULT)
+      result^=MENUTITLEPROBE.Run(command^)
+      command^=0
+      RETURN
+    END
+  FI
   accepted=0
   IF command^=1 THEN
     accepted=AESGUI.Select(service,client,3,6,5)
@@ -208,6 +226,29 @@ def physical(b,p,foreign,report):
                                 raw[pixel:pixel+3].hex(),hardware[model.pixels[y*640+x]].hex()))
         report['menu_pixels'].append(dict(phase=phase,pixels=sum((r-l)*(bt-t) for l,t,r,bt in areas)))
         if phase==1:
+            def title_pixels():
+                expected=Raster(font);rectangle(expected,(0,0,640,11),0)
+                draw(b,expected,tree)
+                text(expected,8,1,b'Exec816');text(expected,568,1,b'Windows')
+                rectangle(expected,(0,10,640,11),1)
+                path=out/'title-paint.bgra';f=b.rawscreen(str(path));raw=path.read_bytes()
+                for yy in range(11):
+                    for xx in range(640):
+                        pixel=yy*f.stride+(xx+16)*4
+                        require(raw[pixel:pixel+3]==hardware[expected.pixels[yy*640+xx]],
+                                f'Title damage pixel {xx},{yy}')
+            def title_case(command,want):
+                b.poke16(sy['AESMenuCommand'],command)
+                move(630 if position[0]==632 else 632,232)
+                reach('dw($%x)=0'%sy['AESMenuCommand']);frames()
+                require(get(sy['AESMenuResult'])==want,'Title paint steps: '+str(command))
+                title_pixels()
+                return dict(command=command,paint_calls=want,pixels='exact')
+            report['title_paint']=[title_case(c,n) for c,n in
+                ((5,1),(6,1),(7,1),(8,3),(9,2),(10,1))]
+            mutation(8)
+            report['title_paint'].append(title_case(11,4))
+            mutation(9);title_pixels()
             print('Public menu pointer/keyboard checks',flush=True)
             click(56,8)
             require(get(at('DESKMENU','menu'),1)==1,'Focused-window menu did not open')

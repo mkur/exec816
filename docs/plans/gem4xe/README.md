@@ -7,7 +7,9 @@ feedback on matched OF816 packages. It reuses the current painter, renderer
 budgets and saved-popup transaction, with no planned reservation growth.
 MT1 is complete: the [baseline](../../history/menu-title-response.md) separates
 popup-only completion from title feedback and removes the positioning helper's
-blind interval from the new pointer cohort. MT2–MT3 remain pending.
+blind interval from the new pointer cohort. MT2 also passes: small title clips
+finish in one painter call, with bounded continuations and retained failure
+damage. MT3 measurements and the demo refresh remain pending.
 
 The [Layers visibility rebuild plan](layers-rebuild-plan.md) follows PT4 with
 nearer-occluder-first subtraction, disjoint skips and early completion for

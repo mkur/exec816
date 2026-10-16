@@ -50,7 +50,7 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
       IF layer.id<>DESKSTATE.barLayer THEN
         RETURN(1)
       FI
-      ; Finish the left caption in this turn; later turns paint Windows.
+      ; Skip disjoint captions below without creating empty painter steps.
     FI
   FI
   IF layer.id<>DESKSTATE.barLayer THEN
@@ -95,32 +95,37 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
     background=0
     foreground=1
     IF phase^=1 THEN
-      REGIONS.Assign(@bounds,0,0,DESKAPPMENU.BAR_LEFT,DESKMENU.BAR_HEIGHT-1)
-      IF DESKMENU.paintMenu=DESKMENU.APP_MENU THEN
-        background=1
-        foreground=0
-      FI
-      okay=Fill(@bounds,clip,background)
-      IF okay<>0 THEN
-        okay=Text(8,DESKTYPES.MENU_TEXT_Y,@DESKMENU.title(0),foreground,background,clip,14)
-      FI
       phase^=2
-      RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
+      IF clip.left<DESKAPPMENU.BAR_LEFT AND clip.top<DESKMENU.BAR_HEIGHT-1 THEN
+        REGIONS.Assign(@bounds,0,0,DESKAPPMENU.BAR_LEFT,DESKMENU.BAR_HEIGHT-1)
+        IF DESKMENU.paintMenu=DESKMENU.APP_MENU THEN
+          background=1
+          foreground=0
+        FI
+        okay=Fill(@bounds,clip,background)
+        IF okay<>0 THEN
+          okay=Text(8,DESKTYPES.MENU_TEXT_Y,@DESKMENU.title(0),
+              foreground,background,clip,14)
+        FI
+        RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
+      FI
     FI
 
     IF phase^=2 THEN
-      REGIONS.Assign(@bounds,DESKMENU.WINDOWS_LEFT,0,640,DESKMENU.BAR_HEIGHT-1)
-      IF DESKMENU.paintMenu=DESKMENU.WINDOWS_MENU THEN
-        background=1
-        foreground=0
-      FI
-      okay=Fill(@bounds,clip,background)
-      IF okay<>0 THEN
-        okay=Text(DESKMENU.WINDOWS_LEFT+8,DESKTYPES.MENU_TEXT_Y,BYTE POINTER(c"Windows"),
-            foreground,background,clip,7)
-      FI
       phase^=3
-      RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
+      IF clip.right>DESKMENU.WINDOWS_LEFT AND clip.top<DESKMENU.BAR_HEIGHT-1 THEN
+        REGIONS.Assign(@bounds,DESKMENU.WINDOWS_LEFT,0,640,DESKMENU.BAR_HEIGHT-1)
+        IF DESKMENU.paintMenu=DESKMENU.WINDOWS_MENU THEN
+          background=1
+          foreground=0
+        FI
+        okay=Fill(@bounds,clip,background)
+        IF okay<>0 THEN
+          okay=Text(DESKMENU.WINDOWS_LEFT+8,DESKTYPES.MENU_TEXT_Y,
+              BYTE POINTER(c"Windows"),foreground,background,clip,7)
+        FI
+        RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
+      FI
     FI
 
     REGIONS.Assign(@bounds,0,DESKMENU.BAR_HEIGHT-1,640,DESKMENU.BAR_HEIGHT)

@@ -1,6 +1,6 @@
 # Menu title repaint and pointer response implementation plan
 
-Status: MT1 complete; MT2–MT3 pending. [Execution record](../../history/menu-title-response.md).
+Status: MT1–MT2 complete; MT3 pending. [Execution record](../../history/menu-title-response.md).
 
 [LR2 results](../../history/layers-rebuild.md) ·
 [Recorded measurements](../../development/layers-rebuild.json) ·
@@ -77,6 +77,9 @@ completed title repaint. No production behavior changes in this slice.
 Commit: `Measure menu response from pointer heading crossings`.
 
 ## MT2 Complete small title damage without empty painter steps
+
+Implemented. Small title clips finish in one painter call; seven focused
+title cases, 321 AES checks and the existing input/pixel fixture pass.
 
 Refactor `lib/desktop/deskmenupaint.act`, with a small caller adjustment in
 `deskpaint.act` only if needed. Keep application rendering in

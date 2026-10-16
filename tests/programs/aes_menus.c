@@ -29,7 +29,11 @@ static const OBJECT source[] = {
     {5,-1,-1,G_STRING,0,0,(ULONG)"Quit",1,12,110,11},
     {2,-1,-1,G_TITLE,0,0,(ULONG)"Extra",80,0,64,11},
     {4,10,10,G_BOX,0,0,0x1100,88,0,96,11},
-    {9,-1,-1,G_STRING,LASTOB,0,(ULONG)"About",0,0,96,11}
+    {9,-1,-1,G_STRING,LASTOB,0,(ULONG)"About",0,0,96,11},
+    /* Storage for the temporary third title used by the continuation check. */
+    {2,-1,-1,G_TITLE,0,0,(ULONG)"Third",160,0,64,11},
+    {4,13,13,G_BOX,0,0,0x1100,168,0,96,11},
+    {12,-1,-1,G_STRING,LASTOB,0,(ULONG)"About",0,0,96,11}
 };
 static WORD produce(WORD command)
 {
@@ -82,7 +86,16 @@ static void interact(OBJECT *tree,WORD who)
         else if (action==3) CHECK(menu_bar(tree,1));
         else if (action==4) { CHECK(menu_ienable(tree,6,0));CHECK(menu_ienable(tree,7,0)); }
         else if (action==5) { CHECK(menu_ienable(tree,6,1));CHECK(menu_ienable(tree,7,1)); }
-        else if (action==6 || action==7) {
+        else if (action==8 || action==9) {
+            CHECK(wind_update(BEG_UPDATE));
+            tree[2].ob_tail=action==8 ? 11:8;
+            tree[8].ob_next=action==8 ? 11:2;
+            tree[4].ob_tail=action==8 ? 12:9;
+            tree[9].ob_next=action==8 ? 12:4;
+            tree[10].ob_flags=action==8 ? 0:LASTOB;
+            CHECK(menu_bar(tree,1));
+            CHECK(wind_update(END_UPDATE));
+        } else if (action==6 || action==7) {
             WORD i;
             CHECK(wind_update(BEG_UPDATE));
             for (i=5;i<=7;++i) tree[i]=source[i];
