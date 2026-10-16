@@ -2,7 +2,10 @@
 
 The [Layers visibility rebuild plan](layers-rebuild-plan.md) follows PT4 with
 nearer-occluder-first subtraction, disjoint skips and early completion for
-fully covered layers. It retains the current transaction and storage model.
+fully covered layers. Both slices are complete. [Results](../../history/layers-rebuild.md)
+show rebuild CPU 18.6 → 11.0 ms and warm-switch presenter CPU 78.9 → 71.3 ms,
+with sampled visible response unchanged near 120 ms and a refreshed OF816 demo.
+It retains the current transaction and storage model.
 
 The implemented [popup transition design](popup-transition-design.md) follows
 dropdown bookkeeping with one scene transaction for replacing a saved popup.

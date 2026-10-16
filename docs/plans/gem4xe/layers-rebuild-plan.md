@@ -1,6 +1,6 @@
 # Layers visibility rebuild plan
 
-Status: LR1 implemented; LR2 measurement and delivery pending.
+Status: LR1–LR2 complete. [Results and demo](../../history/layers-rebuild.md).
 
 [Popup results](../../history/popup-transition.md) ·
 [Layers contract](../../reference/layers.md)
@@ -33,6 +33,9 @@ guard and OS-return coverage. Run the host suite and optimized Layers fixture;
 no compiler-facing change requires a raw matrix.
 
 ## LR2 Measure and deliver
+
+Completed: representative warm-switch rebuild CPU falls 18.612 → 10.998 ms,
+and presenter CPU 78.920 → 71.334 ms. Sampled visible response stays near 120 ms.
 
 Build the OF816 GEM desktop using the pinned compiler and compare the same
 18 menu actions against the preserved PT4 package. Require exact fixture
