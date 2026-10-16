@@ -1,5 +1,10 @@
 # Historical records
 
+- [Native drag and queued UPDATE](native-drag-update.md): keep captured native
+  outlines tracking across a periodic client's pending UPDATE; physical pixel,
+  release, Escape, presenter-sleep and cleanup checks, with unchanged bank-zero
+  reservations.
+
 - [Directory batching](directory-batching.md): public ExNextBatch, compact results
   and prefix-preserving cancellation; shared scanner and measurements follow.
 

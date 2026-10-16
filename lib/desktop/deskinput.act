@@ -270,6 +270,12 @@ PROC Consume()
 
 RETURN
 
+; Only an existing native capture can proceed ahead of queued acquisitions.
+; Fresh gestures, focus changes and widget actions keep their normal gates.
+BYTE FUNC MouseReady()
+
+RETURN(AESLOCKS.MouseBlocked()=0 OR DESKDRAG.Continuing()<>0)
+
 ; Classify fresh absolute capture once, before any deferred native replay.
 PROC Fresh()
 
@@ -282,7 +288,7 @@ PROC Fresh()
   FI
 
   IF AESMOUSE.Route(@sample)=0 THEN
-    IF AESLOCKS.MouseBlocked()<>0 OR DESKMENU.InputBlocked()<>0 THEN
+    IF MouseReady()=0 OR DESKMENU.InputBlocked()<>0 THEN
       AESMOUSE.Retained()
       AESINPUT.Push(@sample)
     ELSE
@@ -306,7 +312,7 @@ PUBLIC PROC Service(LONGCARD bits)
 
   count=0
   WHILE count<16 DO
-    IF AESLOCKS.MouseBlocked()=0 AND DESKMENU.InputBlocked()=0
+    IF MouseReady()<>0 AND DESKMENU.InputBlocked()=0
         AND AESINPUT.Pop(@sample)<>0 THEN
       Consume()
     ELSE
@@ -392,7 +398,7 @@ PUBLIC PROC Present()
   BYTE drawn
 
   IF acquired<>0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0 THEN
-    IF AESLOCKS.MouseBlocked()<>0 AND DESKDRAG.Application()=0 THEN
+    IF MouseReady()=0 AND DESKDRAG.Application()=0 THEN
       DESKDRAG.Suspend()
     ELSE
       DESKDRAG.Present()
@@ -420,8 +426,9 @@ PUBLIC BYTE FUNC Runnable()
   FI
 
   LET service=DESKSTATE.Get()
-  IF AESLOCKS.MouseBlocked()=0 AND DESKMENU.InputBlocked()=0 THEN
-    IF AESINPUT.Pending()<>0 OR (focusWanted<>0 AND service.scene.busy=0) THEN
+  IF MouseReady()<>0 AND DESKMENU.InputBlocked()=0 THEN
+    IF AESINPUT.Pending()<>0 OR (focusWanted<>0 AND service.scene.busy=0
+        AND AESLOCKS.MouseBlocked()=0) THEN
       RETURN(1)
     FI
   FI

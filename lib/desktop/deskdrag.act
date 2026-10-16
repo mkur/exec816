@@ -38,6 +38,16 @@ CONST ARROWING=9, ARROW_PENDING=10
 CONST APP_DRAG=11
 CONST ESC_SCAN=28
 
+; A waiter cannot take a held native capture. Finish its input and outline
+; before the queued handoff; actual mouse ownership still excludes this path.
+PUBLIC BYTE FUNC Continuing()
+
+  LET service=AESSTATE.Get()
+
+RETURN(appVisual=0 AND (phase=DRAGGING OR phase=CLOSING OR phase=SIZING
+    OR phase=SLIDING OR phase=ARROWING)
+    AND (service=NULL OR service.live=0 OR service.mouseOwner=0))
+
 PUBLIC PROC Reset()
 
   escapePending=0
@@ -83,7 +93,7 @@ PUBLIC BYTE FUNC Escape(INPUT.Event POINTER sample)
       AND ((sample.kind=INPUT.EVENT_KEY
       AND (sample.code & 63)=ESC_SCAN) OR (sample.kind=INPUT.EVENT_CANCEL
       AND sample.code=INPUT.CANCEL_BREAK)) THEN
-    IF AESLOCKS.MouseBlocked()<>0 THEN
+    IF AESLOCKS.MouseBlocked()<>0 AND Continuing()=0 THEN
       escapePending=1
     ELSE
       Cancel()
@@ -599,6 +609,10 @@ RETURN
 PUBLIC PROC Suspend()
   BYTE drawn
 
+  IF Continuing()<>0 THEN
+    RETURN
+  FI
+
   IF phase=APP_DRAG AND ApplicationReady()<>0 THEN
     RETURN
   FI
@@ -664,7 +678,7 @@ PUBLIC BYTE FUNC Runnable()
         AND CONSOLEBITMAP.Pending()=0)
   FI
 
-  IF AESLOCKS.MouseBlocked()<>0 THEN
+  IF AESLOCKS.MouseBlocked()<>0 AND Continuing()=0 THEN
     RETURN(0)
   FI
 

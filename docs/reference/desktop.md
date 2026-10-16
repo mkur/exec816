@@ -262,6 +262,11 @@ Layers then repairs old and new exposed pixels from retained content.
 Escape, source/event-queue loss, hiding, retirement or an external move cancels
 the gesture. A released-button observation is required before another gesture.
 
+An UPDATE queued by a periodic application does not hide or freeze a captured
+native drag. Motion and cancellation continue while acquisition waits for
+button release. Final geometry/action commits still respect the lock queue;
+active UPDATE/MCTRL ownership retains its existing exclusion.
+
 The outline is below the pointer and removed before intersecting drawing. Four
 blitter records toggle its disjoint edges; it adds no VRAM backing bitmap.
 Graphical close gadgets publish durable CLOSE events. They do not force a Task

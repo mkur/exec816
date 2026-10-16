@@ -1,5 +1,12 @@
 # GEM as a client of an Exec-like kernel
 
+The [native drag/UPDATE plan](native-drag-update-plan.md) fixes periodic clients
+hiding a held window outline: queued acquisitions must let an already captured
+native gesture continue while active lock ownership keeps its existing
+exclusion. It retains UPDATE eligibility and geometry-commit ordering.
+ND1–ND3 are complete: [physical checks](../../history/native-drag-update.md)
+cover Counter, Files, Escape and shutdown, with no bank-zero reservation growth.
+
 The [Files enumeration analysis](../../history/files-enumeration-analysis.md)
 sets the next performance priority: warm root/C scans take 193/533 ms without
 physical disk traffic or presenter CPU. It recommends bounded public batch

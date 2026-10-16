@@ -213,6 +213,13 @@ hardware/scene tokens to retire. Pending acquisitions stop new conflicting work,
 so continuous output cannot starve an application lock. The service holds no
 Layers token while an application owns a lock.
 
+A queued acquisition does not interrupt an already captured native title or
+gadget gesture. Its outline and input tracking continue until release,
+Escape or loss; the waiting UPDATE still cannot acquire while the physical
+button is held. New interactions, focus changes and completed geometry/action
+commits retain the normal queue gates. Active UPDATE/MCTRL ownership continues
+to exclude native gesture work.
+
 Input capture and the serialized cursor path continue. Sixteen copied pointer
 records retain deferred gestures, coalescing adjacent motion; overflow reports
 input loss and cancels the gesture after release. Keyboard widget events retain
