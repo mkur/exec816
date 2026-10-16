@@ -27,6 +27,10 @@ Extract this ZIP into one folder. In System > Configure System, select:
   SIO Patch and D: burst I/O disabled.
   "Unload disks when booting new image" disabled.
 
+For cartridge boot with the SIO disks below, remove IDE Plus 2.0 from the
+emulated devices and cold boot. An existing IDE Plus setup can cause a
+blue-screen BOOT ERROR before OF816 starts.
+
 1. Mount @SYSTEM_DISK@ in D1 with "Generic + 57600 baud" emulation.
    Mount a disposable copy of work.atr in D8, writable.
 2. Boot Exec-of816.xex; leave the keyboard alone for the five-second countdown.
