@@ -110,13 +110,18 @@ distribution ZIP. Rebuild the whole demo for kernel/runtime ABI changes.
 See the [boot-loading contract](../reference/boot-loading.md) for encoding,
 context and memory limits.
 
-To add Atarimax 8 Mbit cartridge images to an existing demo, preserving its
-exact XEX, disk and firmware, use a separate output directory:
+Release packages must include old/new Atarimax 8 Mbit CAR images and the raw
+1 MiB BIN alongside the XEX. Before publishing a demo that does not yet include
+them, use a separate output directory to add the images while preserving its
+exact XEX, disk and firmware:
 
 ```sh
 python3 tools/build_demo.py --cartridge-from path/to/exec816-demo.zip \
   --cartridge-source-sha256 <published-ZIP-SHA256> --output build/cartridge-demo
 ```
+
+Publish `build/cartridge-demo/exec816-demo.zip` and generate its external checksum
+after this step; the input ZIP's checksum no longer describes the release package.
 
 This requires Python and ca65/ld65, without recompiling Exec or OF816. The new
 `exec816-demo.zip` adds old/new Atarimax CAR headers over the same 1 MiB ROM,
