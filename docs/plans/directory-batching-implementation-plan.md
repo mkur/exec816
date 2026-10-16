@@ -1,6 +1,6 @@
 # Batched directory enumeration implementation plan
 
-Status: EB1–EB2 implemented; EB3 measurement and packaged walkthrough in progress.
+Status: EB1–EB3 complete. Keep eight-entry refills; public maximum remains sixteen.
 
 [Execution record](../history/directory-batching.md).
 

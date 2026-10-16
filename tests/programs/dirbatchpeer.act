@@ -1,0 +1,6 @@
+; Test-only peer handoff. Production worker policy is unchanged.
+MODULE DIRBATCHPEER
+USE EXEC
+PUBLIC EXEC.Task task
+PUBLIC BYTE armed,ready,done,stop
+ENDMODULE

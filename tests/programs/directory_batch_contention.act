@@ -1,0 +1,97 @@
+MODULE BATCHCONTENTIONTEST
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE FSBOOT
+USE HEAPCORE
+USE DIRBATCHPEER
+CARD checks
+DOS.FileInfoBlock info
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ed00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC PeerOperation()
+
+  LET lock=DOS.Lock(BYTE POINTER(c"D1:DATA"),DOS.SHARED_LOCK)
+  Require(lock<>NULL)
+  DOS.UnLock(lock)
+
+RETURN
+
+PROC Peer()
+
+  Require(EXEC.AllocSignal(29)=29)
+  PeerOperation()
+  DIRBATCHPEER.ready=1
+  DO
+    EXEC.Wait(LONGCARD($20000000))
+    IF DIRBATCHPEER.stop<>0 THEN
+      EXIT
+    FI
+    PeerOperation()
+    DIRBATCHPEER.done=1
+  OD
+  Require(DOS.ReleaseContext()<>0)
+  EXEC.FreeSignal(29)
+
+RETURN
+
+PROC Main()
+  CARD capacity,round
+
+  LET baseline=EXEC.AvailMem(0)
+  LET batch=DOS.DirBatch POINTER(EXEC.AllocMem(1890,EXEC.MEMF_UPPER))
+  LET lock=DOS.Lock(BYTE POINTER(c"D1:DATA"),DOS.SHARED_LOCK)
+  Require(batch<>NULL AND lock<>NULL)
+  Require(DOS.Examine(lock,@info)<>0)
+  batch.capacity=16
+  ; Warm all directory sectors before either comparison.
+  WHILE DOS.ExNextBatch(lock,@info,batch)<>0 DO
+  OD
+  Require(DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  DIRBATCHPEER.task.tc_Node.ln_Type=EXEC.NT_TASK
+  DIRBATCHPEER.task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
+  DIRBATCHPEER.task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))
+  DIRBATCHPEER.task.tc_SPReg=DIRBATCHPEER.task.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@DIRBATCHPEER.task.tc_MemEntry)
+  Require(EXEC.AddTask(@DIRBATCHPEER.task,@Peer,NULL)=@DIRBATCHPEER.task)
+  WHILE DIRBATCHPEER.ready=0 DO
+    EXEC.Yield()
+  OD
+
+  capacity=8
+  WHILE capacity<=16 DO
+    FOR round=0 TO 2 DO
+      Require(DOS.Examine(lock,@info)<>0)
+      batch.capacity=capacity
+      DIRBATCHPEER.done=0
+      DIRBATCHPEER.armed=1
+      Require(DOS.ExNextBatch(lock,@info,batch)=LONGINT(capacity) AND DOS.IoErr()=0)
+      WHILE DIRBATCHPEER.done=0 DO
+        EXEC.Yield()
+      OD
+      Require(DIRBATCHPEER.armed=0)
+    OD
+    capacity==+8
+  OD
+
+  DIRBATCHPEER.stop=1
+  EXEC.Signal(@DIRBATCHPEER.task,LONGCARD($20000000))
+  WHILE DIRBATCHPEER.task.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+  DOS.UnLock(lock)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  EXEC.FreeMem(BYTE POINTER(batch),1890)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+ENDMODULE
