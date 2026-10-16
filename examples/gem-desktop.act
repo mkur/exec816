@@ -20,7 +20,8 @@ PROC PlaceShell()
   DESKTOP.Prepare(@placement,DESKTYPES.MOVE)
   placement.window=DESKBOOT.WindowId()
   placement.bounds.left=112
-  placement.bounds.top=40
+  ; The console work origin must remain on its eight-pixel character grid.
+  placement.bounds.top=40-DESKTYPES.WORK_TOP
   IF DESKTOP.Submit(binding,@placement)<>DESKTYPES.OK THEN
     RETURN
   FI
