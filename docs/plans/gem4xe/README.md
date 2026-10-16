@@ -1,10 +1,12 @@
 # GEM as a client of an Exec-like kernel
 
-The proposed [clipped menu text plan](clipped-menu-text-plan.md) follows MT3
+The [clipped menu text plan](clipped-menu-text-plan.md) follows MT3
 with vertical clipping in the existing glyph-run encoder. CG1–CG3 cover the
 private encoder, widget/menu routing and matched dropdown measurements/demo.
 It targets the odd-X fallback's three records per partial glyph, retaining
-current strips, budgets and memory reservations.
+current strips, budgets and memory reservations. CG1–CG2 are implemented with
+focused pixel/list/menu checks; [CG3 measurements](../../history/clipped-menu-text.md)
+are pending.
 
 The [menu title and pointer response plan](menu-title-response-plan.md)
 follows LR2: measure pointer response from the actual heading crossing, remove

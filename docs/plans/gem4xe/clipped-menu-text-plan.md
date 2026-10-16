@@ -1,6 +1,6 @@
 # Clipped menu text implementation plan
 
-Status: CG1 complete; CG2–CG3 pending. Commit each executable slice after its
+Status: CG1–CG2 complete; CG3 pending. Commit each executable slice after its
 focused checks. [Execution record](../../history/clipped-menu-text.md).
 
 [Menu response results](../../history/menu-title-response.md) ·
@@ -99,6 +99,9 @@ record per nonblank glyph portion, and existing full-height callers still pass.
 Commit: `Support vertical clipping in the glyph run encoder`.
 
 ## CG2 Route clipped widget and menu text through runs
+
+Implemented. All 38 optimized pixel stages and the AES-menu fixture pass,
+including the long checked/disabled odd-X menu and partial-row oracle.
 
 Change `ports/gem4xe/hosted/hosted-dispatch.inc::GemWidgetText` and the private
 donor run wrapper. Reuse the renderer for menu, widget and frame callers.

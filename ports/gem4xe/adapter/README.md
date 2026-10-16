@@ -54,14 +54,18 @@ count and pointer; fixed cursor/outline lists do not advance the queue pointer.
 The tables use 37,132 bytes and reserve one 64 KiB upper bank, with no new
 bank-zero or VRAM reservation. The extraction records generator/input/output
 hashes; no table is calculated or validated at startup.
-Complete visible widget text with nonzero stencil ink reserves a fitting run
+Horizontally complete widget text with nonzero stencil ink reserves a fitting run
 prefix against both the current record and work availability. Two byte tables
-map remaining work (in units of eight) to capacity for 96/120-unit glyphs.
+map remaining work (in units of eight) to capacity for full-height 96/120-unit
+glyphs. Vertically clipped runs select one through eight atlas rows once per
+string and retain one stencil record per nonblank cell at either X parity.
+The full-height capacity bound is conservative; one existing work-table lookup
+per prefix charges its actual aggregate width and visible row count.
 The encoder advances records without per-glyph capacity/extent checks and
 publishes actual count/work once per prefix; blank cells consume neither.
 Mixed fill/text lists retain order and existing capacity, without a launch
-at the primitive boundary. Partial edges, vertical clipping and hardware-zero
-ink retain the general glyph path. Staging dependencies flush before a
+at the primitive boundary. Horizontal partial cells and hardware-zero ink
+retain the general glyph path. Staging dependencies flush before a
 reservation; a submission fault stops the next chunk. No reservation survives
 a public return, callback to arbitrary code, Yield or Wait.
 Public raw lists still receive full validation through `VbxeSubmit`. A failed

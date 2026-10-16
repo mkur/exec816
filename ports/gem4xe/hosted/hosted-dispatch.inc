@@ -186,7 +186,10 @@ void GemWidgetText(int16_t x,int16_t y,const int16_t *glyphs,uint16_t count,
     extern void vbxe_widget_text_run(WORD,WORD,const WORD *,UWORD,WORD,UWORD,UWORD);
     WORD color=vwk.text_color,mode=vwk.wrt_mode,clip=vwk.clip;
     WORD x0=vwk.xmn_clip,y0=vwk.ymn_clip,x1=vwk.xmx_clip,y1=vwk.ymx_clip;
+    WORD visibleTop=y>(WORD)top ? y:(WORD)top;
+    WORD visibleBottom=y+8<(WORD)bottom ? y+8:(WORD)bottom;
     UWORD n;
+    if (!count || left>=right || visibleTop>=visibleBottom) return;
     vwk.text_color=colour;vwk.wrt_mode=1;vwk.clip=1;
     vwk.xmn_clip=left;vwk.ymn_clip=top;vwk.xmx_clip=right-1;vwk.ymx_clip=bottom-1;
     /* Signed cell coordinates; the admitted clip is inside the screen. */
@@ -195,11 +198,12 @@ void GemWidgetText(int16_t x,int16_t y,const int16_t *glyphs,uint16_t count,
         if (count && x<(WORD)left) {
             dev_glyph(*glyphs++,x,y,1);--count;x+=8;
         }
-        if (count && y>=(WORD)top && y+8<=(WORD)bottom && map_col[colour&15]) {
+        if (count && map_col[colour&15]) {
             n=x<(WORD)right ? ((UWORD)((WORD)right-x)>>3) : 0;
             if (count<n) n=count;
             if (n) {
-                vbxe_widget_text_run(x,y,glyphs,n,colour,0,8);
+                vbxe_widget_text_run(x,visibleTop,glyphs,n,colour,
+                    (UWORD)(visibleTop-y),(UWORD)(visibleBottom-visibleTop));
                 glyphs+=n;count-=n;x+=(WORD)(n<<3);
             }
         }

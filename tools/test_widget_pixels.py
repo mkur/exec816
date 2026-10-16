@@ -23,7 +23,7 @@ def expected(stage):
     import vdiref as v
     device=v.VDI();device.call(v.V_OPNWK,(),v.WORK_IN)
     device.dev.fill_rect(0,0,639,239,3)
-    if stage==37:
+    if stage in (37,38):
         index=0
         for first in range(8):
             for rows in range(1,9-first):
@@ -33,6 +33,20 @@ def expected(stage):
                     device.xmn=0;device.xmx=639;device.ymn=y+first;device.ymx=y+first+rows-1
                     for i,ch in enumerate('A gW'):device._glyph(ord(ch),x+i*8,y)
                     index+=1
+        if stage==38:
+            for i in range(16):
+                x=16+(i%8)*72+(i&1);y=224+(i//8)*8
+                left,right,top,bottom=x,x+32,y+2,y+6
+                count=1 if i in (2,3) else 4
+                if i<4:left,right=x+2,x+(30 if i<2 else 6)
+                if i in (8,9):right=left
+                if i in (10,11):bottom=top
+                if i in (12,13):x=-3 if i==12 else 638;left,right=0,640
+                if i>=14:top,bottom=y+7,y+8
+                if left>=right or top>=bottom:continue
+                device.text_color=0 if i in (4,5) else 2
+                device.xmn,device.xmx,device.ymn,device.ymx=left,right-1,top,bottom-1
+                for k in range(count):device._glyph(ord(' ' if i in (6,7) else 'A'),x+k*8,y)
         return bytes(device.dev.s.mem[:76800])
     if stage>=23:
         cases=((20,20,120,70,4),(21,20,121,70,4),
@@ -159,7 +173,7 @@ def run(out,mode,replay=False):
             def before(b):
                 b.profile_start()
                 previous=b.eval_expr('@clk') & 0xffffffff
-                for stage in range(1,38):
+                for stage in range(1,39):
                     marker=p['labels']['native_nmi'];condition='dw($%x)=%d'%(f['symbols']['WidgetPixelStage'],stage)
                     b.bp_clear_all();b.bp_set(marker,condition=condition)
                     run_to(b,marker,condition=condition,frame_limit=6000,timeout=120)

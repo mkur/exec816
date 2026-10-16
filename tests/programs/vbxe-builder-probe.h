@@ -1,7 +1,7 @@
 /* Included only in the emitted widget fixture's private adapter copy. */
 extern volatile uint16_t WidgetPixelFailures;
 static UWORD builderActive,builderFull,builderWork,builderLists,builderFailAt,builderCase;
-static UWORD builderFirst,builderRows,builderParity;
+static UWORD builderFirst,builderRows,builderParity,builderRoute;
 static UBYTE builderReadback[512];
 static void builder_check(UWORD good) { if (!good) ++WidgetPixelFailures; }
 static void BuilderListProbe(const UBYTE *p,UWORD count)
@@ -20,7 +20,7 @@ static void BuilderListProbe(const UBYTE *p,UWORD count)
         bytes=((UWORD)p[12]|((UWORD)p[13]<<8))+1;
         rows=(UWORD)p[14]+1;
         builder_check(bytes<=512 && rows<=256);
-        if (builderCase>=200 && builderCase<272) {
+        if ((builderCase>=200 && builderCase<272) || (builderCase>=300 && builderCase<372)) {
             builder_check(count==3 && p[20]==6 && rows==builderRows);
             builder_check(bytes==(builderParity ? 5 : 4));
         }
@@ -104,7 +104,7 @@ static WORD builderGlyphs[65];
 extern void vbxe_widget_text_run(WORD,WORD,const WORD *,UWORD,WORD,UWORD,UWORD);
 static void builder_partial(void)
 {
-    UWORD i,index=builderCase>=200 ? builderCase-200 : 0;
+    UWORD i,index=builderCase>=300 ? builderCase-300 : builderCase>=200 ? builderCase-200 : 0;
     WORD x=16+(index%8)*72+builderParity,y=8+(index/8)*24;
     builderGlyphs[0]='A';builderGlyphs[1]=' ';builderGlyphs[2]='g';builderGlyphs[3]='W';
     if (builderCase==100 || builderCase==102)
@@ -114,13 +114,16 @@ static void builder_partial(void)
         for (i=0;i<64;i++) blit_fill(0x60000UL+i,128,1,1,(UBYTE)i);
         for (i=0;i<4;i++) builderGlyphs[i]=' ';
     }
-    vbxe_widget_text_run(x,y+builderFirst,builderGlyphs,4,2,builderFirst,builderRows);
+    if (builderRoute)
+        GemWidgetText(x,y,builderGlyphs,4,2,0,y+builderFirst,640,y+builderFirst+builderRows);
+    else
+        vbxe_widget_text_run(x,y+builderFirst,builderGlyphs,4,2,builderFirst,builderRows);
     if (builderCase==103) builder_check(!builderLists && commandCount==64);
 }
-void BuilderPartialTests(void)
+void BuilderPartialTests(UWORD routed)
 {
     UWORD first,rows,parity,index=0,y;
-    builderRows=1;builderFirst=7;builderParity=1;
+    builderRoute=routed;builderRows=1;builderFirst=7;builderParity=1;
     for (builderCase=100;builderCase<=103;builderCase++) {
         if (builderCase==102) continue; /* Failure is checked after the pixel gate. */
         builderLists=0;builderActive=1;
@@ -131,10 +134,34 @@ void BuilderPartialTests(void)
     builder_check(GemDrawingFill(0,0,640,240,3)==DISPLAY_OK);
     for (first=0;first<8;first++) for (rows=1;rows<=8-first;rows++) for (parity=0;parity<2;parity++) {
         builderFirst=first;builderRows=rows;builderParity=parity;
-        builderCase=200+index;builderLists=0;builderActive=1;y=8+(index/8)*24;
+        builderCase=(routed ? 300 : 200)+index;builderLists=0;builderActive=1;y=8+(index/8)*24;
         builder_check(GemDrawingBatch(0,y,640,y+8,builder_partial)==DISPLAY_OK);
         builder_check(builderLists==1);
         builderActive=0;++index;
+    }
+}
+static void builder_clip_edge(void)
+{
+    UWORD i=builderCase-400,k,count=4,pen=2;
+    WORD x=16+(i%8)*72+(i&1),y=224+(i/8)*8;
+    WORD left=x,right=x+32,top=y+2,bottom=y+6;
+    if (i<4) { left=x+2;right=x+(i<2 ? 30 : 6);if (i>=2) count=1; }
+    if (i==4 || i==5) pen=0;
+    if (i==8 || i==9) right=left;
+    if (i==10 || i==11) bottom=top;
+    if (i==12 || i==13) { x=i==12 ? -3 : 638;left=0;right=640; }
+    if (i>=14) { top=y+7;bottom=y+8; }
+    for (k=0;k<4;k++) builderGlyphs[k]=i==6 || i==7 ? ' ' : 'A';
+    GemWidgetText(x,y,builderGlyphs,count,pen,left,top,right,bottom);
+}
+void BuilderClipEdges(void)
+{
+    UWORD y;
+    for (builderCase=400;builderCase<416;builderCase++) {
+        y=224+((builderCase-400)/8)*8;builderLists=0;builderActive=1;
+        builder_check(GemDrawingBatch(0,y,640,y+8,builder_clip_edge)==DISPLAY_OK);
+        builder_check(builderLists==((builderCase>=406 && builderCase<=411) ? 0 : 1));
+        builderActive=0;
     }
 }
 void BuilderPartialFault(void)
