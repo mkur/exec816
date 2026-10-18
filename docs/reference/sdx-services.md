@@ -4,7 +4,7 @@
 
 [Reference index](README.md) · [Machine-readable ABI](../../abi/sdx.json) · [Development evidence](../development/sdx-services.md)
 
-Opt-in development personality for the exact pinned 6502 MD5.COM, with checked load-time patches. Named-file hashing and the documented verification/selection/cancellation subset are supported. ARC is not admitted.
+Opt-in development personality for the exact pinned 6502 MD5.COM and ARC.COM/ARCLST.OVL. MD5 hashing/verification and ARC L/V listing with N/W flags are admitted; extraction and mutation are not yet admitted.
 
 E=1, M=X=1, private aligned D, PBR=DBR=guest bank. Calls use JSR to the imported veneer. AX denotes low A and low X, little endian.
 
@@ -30,14 +30,38 @@ A service error is delivered only after native I/O settles. The newest trap is r
 | `U_SFAIL` | AX=handler address in $3000..$DFFF. | Pushes handler and post-call S; at most ten traps. Invalid handler or overflow raises 156. | A/X/Y/P preserved on success. |
 | `U_SLASH` | AX=ordinary-bank array of (count,letter) pairs; Y=nonzero even byte count. BUFOFF selects parameter. | For a slash token, clears counts, decrements each matching count per occurrence and advances BUFOFF. Parsed /H and unknown options raise 156. For a non-option token, leaves the table and BUFOFF unchanged. | A=last uppercase option, or 0; N/Z reflect A. X/Y, hidden B and other P bits preserved. |
 | `U_XFAIL` | No arguments. | Removes the newest trap. Empty stack raises 156. | A/X/Y/P preserved on success. |
+| `CURDEV` | Private byte at $0720. | Default guest device, 1 for A:. | Preserved except documented results. |
+| `FLAG` | Private byte at $0721. | ARC main passes L=0 or V=1 to ARCLST. | Preserved except documented results. |
+| `PUT_V` | Private word at $0722. | Only the audited ARC single-RTS callback is admitted. | Preserved except documented results. |
+| `DEVNAME` | Private scratch at $1200. | Reserved guest device-name storage. | Preserved except documented results. |
+| `FPUTC` | ARC audited subset; see development record. | Unsupported operations fail with SDX 156 until their milestone is admitted. | Preserved except documented results. |
+| `FSEEK` | file_id; little-endian 24-bit absolute position at $0782. | Seek within an owned file through DOS.Seek. | Preserved except documented results. |
+| `FTELL` | file_id. | Return current 24-bit position at $0782. | Preserved except documented results. |
+| `FWRITE` | ARC audited subset; see development record. | Unsupported operations fail with SDX 156 until their milestone is admitted. | Preserved except documented results. |
+| `REMOVE` | ARC audited subset; see development record. | Unsupported operations fail with SDX 156 until their milestone is admitted. | Preserved except documented results. |
+| `U_EXPAND` | AX destination, Y index; internal 8.3 name at $0762. | Expand to dotted name and EOL; return updated Y. | Preserved except documented results. |
+| `U_FSPEC` | FILE_P ordinary guest pointer. | Add *.* for an empty leaf; retain COMTAB/FILE_P. | Preserved except documented results. |
+| `U_GEFINA` | FILE_P; only the audited ARC member-name wrapper selects D+$90. | Decode A: or @: and bounded path/8.3 name into SDX variables. | Preserved except documented results. |
+| `U_GETPAR` | COMTAB command cursor. | Consume the next bounded token into COMFNAM; return parameter status. | Preserved except documented results. |
+| `U_LOAD` | FILE_P = CAR:ARCLST.OVL plus EOL; FLAG 0/1. | Verify exact pinned overlay, relocate with private _ARC export, run synchronously and retire owned handles/frame/overlay. | Preserved except documented results. |
+| `VPRINTF` | Inline PRINTF record; PUT_V must name ARC main single-RTS leaf. | Consume the record with the audited discard callback; general callbacks fail. | Preserved except documented results. |
+| `DIV_32` | Big-endian 32-bit operands at COMTAB+$FF and +$103. | Quotient at +$107; zero divisor yields zero and carry set. | Preserved except documented results. |
+| `MUL_32` | Big-endian 32-bit operands at COMTAB+$FF and +$103. | Low 32-bit product at +$107; carry marks overflow. | Preserved except documented results. |
+| `PUTC` | A character. | Write through the native Process output using the shared console translation. | Preserved except documented results. |
+| `__MISC` | A=1 only. | Pinned missing-DAYTIME policy: A=$9A, X=$FE, Y=$9B, NZ from X. ARC uses day/month and 24-hour time. | Preserved except documented results. |
+| `FFIRST` | ARC audited subset; see development record. | Unsupported operations fail with SDX 156 until their milestone is admitted. | Preserved except documented results. |
+| `FNEXT` | ARC audited subset; see development record. | Unsupported operations fail with SDX 156 until their milestone is admitted. | Preserved except documented results. |
+| `FILELENG` | ARC audited subset; see development record. | Unsupported operations fail with SDX 156 until their milestone is admitted. | Preserved except documented results. |
+| `U_GETKEY` | ARC audited subset; see development record. | Unsupported operations fail with SDX 156 until their milestone is admitted. | Preserved except documented results. |
+| `U_PATH` | ARC audited subset; see development record. | Unsupported operations fail with SDX 156 until their milestone is admitted. | Preserved except documented results. |
 
 ## Bounded operations
 
 LBUF holds at most 63 bytes including the command name and separating space, followed by ATASCII EOL. COMFNAM holds at most 29 filename bytes plus EOL. No quoted filenames or mixed signs within an attribute token.
 
-Guest A: and bare filenames map to an immutable build-configured native root (RAM: by default). Leading > or backslash denotes the mapped root; internal separators become /. The final 8.3 component supports * and padded ?. FOPEN selects the first matching regular file, preserving the input specification for output; it does not expand a mask into multiple commands. Scan bits require/exclude P/H/A through public DOS metadata. Other drives, parent notation, wildcard directories, raw directories (+S), writes and seeks are unsupported. No global assignment is changed.
+Guest A: and bare filenames map to an immutable build-configured native root (RAM: by default). Leading > or backslash denotes the mapped root; internal separators become /. The final 8.3 component supports * and padded ?. FOPEN selects the first matching regular file, preserving the input specification for output; it does not expand a mask into multiple commands. Scan bits require/exclude P/H/A through public DOS metadata. Other drives, parent notation, wildcard directories, raw directories (+S), writes are unsupported; ARC listing admits absolute seek/tell. CAR: is read-only overlay lookup beneath the immutable sdx_car_root (RAM: by default). No global assignment is changed.
 
-NUL-terminated inline format, at most 253 bytes, then one near pointer word per operand (and per * width). Supported: %% and %b/%d/%e/%l unsigned 8/16/24/32-bit decimal, %x 24-bit hexadecimal, %c byte, %s string, %p pointer to string. Width uses its low byte; decimals allow at most 10 digits; zero padding, truncation and space padding are supported. Default %x is six zero-padded digits. Strings end at NUL or ATASCII EOL. %s requires an ordinary-bank string; %p may fetch its pointer variable from audited DP storage but the target string is in the ordinary bank. %t is unsupported.
+NUL-terminated inline format, at most 1023 bytes, then one near pointer word per operand (and per * width). Supported: %% and %b/%d/%e/%l unsigned 8/16/24/32-bit decimal, %x 24-bit hexadecimal, %c byte, %s string, %p pointer to string. Width uses its low byte; decimals allow at most 10 digits; zero padding, truncation and space padding are supported. Default %x is six zero-padded digits. Strings end at NUL or ATASCII EOL. %s uses an ordinary-bank string except audited ARC DP sites (bounded by 256 bytes); %p may fetch its pointer variable from audited DP storage but the target string is in the ordinary bank. %t is unsupported.
 
 Escapes a,b,e,f,n,r,t,z,backslash and i are supported; i toggles inverse bytes for printable characters within one call. Redirected output retains exact SDX bytes. Interactive output maps $9B/$7E/$7F/$7D to LF/BS/TAB/FF. The buffer is 256 bytes; partial native writes are continued, and write errors use normal trap delivery. No general Atari terminal emulation is provided.
 

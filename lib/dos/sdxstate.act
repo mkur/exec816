@@ -5,6 +5,7 @@ USE HEAPCORE
 USE SDXABI
 USE SDXCONFIG
 USE A816MEMORY
+USE SDXFILE
 
 PUBLIC TYPE Trap=[CARD handler,stack]
 
@@ -20,6 +21,10 @@ PUBLIC TYPE Session=[
   BYTE ARRAY path(256),output(256),number(10)
   DOS.FileInfoBlock info
   BYTE ARRAY pattern(11)
+  SDXFILE.Binding parentExport
+  CARD overlayBase,overlayEnd,overlayStack
+  BYTE overlayActive,overlayTraps,discardOutput
+  BYTE ARRAY overlayFrame(13)
 ]
 
 BYTE occupied
@@ -106,6 +111,13 @@ PUBLIC PROC Prepare(Session POINTER state)
   A816MEMORY.Clear(state.dp,256)
   ; The guest's OS BREAK byte starts released; it never aliases host page zero.
   state.dp($11)=$ff
+  state.dp($53)=39
+  IF state.profile=32 THEN
+    ; Main BSS and the header-search latch are initialized by the original
+    ; loader. Repeat that initialization when a retained Image runs again.
+    A816MEMORY.Clear(state.bank+SDXABI.GUEST_START+$99b,4305)
+    state.bank(SDXABI.GUEST_START+$3d1)=$ff
+  FI
   A816MEMORY.Clear(state.context,SDXABI.CONTEXT_BYTES)
   A816MEMORY.Fill(state.context,$a5,256)
   Word(state.context,SDXABI.FIELDS_GUEST_S,SDXABI.INITIAL_S)

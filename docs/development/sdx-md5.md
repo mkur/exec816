@@ -5,7 +5,7 @@ as an ordinary Exec Process. [Manifest](../../compat/sdx/md5-450.json),
 [instruction audit](sdx-md5-audit.json), [M1 record](sdx-md5-m1.json),
 [M2 record](sdx-md5-m2.json),
 and [service contract](../reference/sdx-services.md) describe the admitted input
-and scope. ARC remains unadmitted. These checks are not full hosted-system
+and scope. [ARC listing](sdx-arc.md) is a separate development slice. These checks are not full hosted-system
 qualification.
 
 ## M1 named-file hashing

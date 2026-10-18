@@ -16,9 +16,10 @@ The opt-in [SDX Process development profile](../development/sdx-loader.md)
 adds **544 fixed reserved bank-zero bytes** after bootstrap retirement: two
 aligned guest direct pages and two 16-byte outer guards, with no extra padding.
 It adds **0 bytes per native Task, root, kernel or idle**. The loading map and
-existing bridge reservations stay unchanged. Only the source-audited synthetic
-catalog is admitted; these development checks do not qualify third-party SDX
-applications or a release profile.
+existing bridge reservations stay unchanged. The source-audited synthetic
+catalog, [MD5 subset](../development/sdx-md5.md) and
+[ARC listing subset](../development/sdx-arc.md) are admitted for development;
+these checks do not qualify a release profile.
 
 ## Compiler and memory contract
 

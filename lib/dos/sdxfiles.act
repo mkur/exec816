@@ -187,6 +187,13 @@ PUBLIC BYTE FUNC Read(SDXSTATE.Session POINTER state BYTE POINTER frame
       RETURN(156)
     FI
     target=state.bank+at
+    IF state.profile=32 AND
+        SDXSTATE.ReadWord(frame,SDXABI.FRAME_PC)=SDXABI.GUEST_START+$3b6 THEN
+      IF at<>$90 OR (count<>23 AND count<>27) THEN
+        RETURN(156)
+      FI
+      target=state.dp+at
+    FI
   FI
   total=0
   WHILE total<LONGINT(count) DO
@@ -212,6 +219,32 @@ PUBLIC BYTE FUNC Read(SDXSTATE.Session POINTER state BYTE POINTER frame
     ReadStatus(frame,0)
   ELSE
     ReadStatus(frame,$ff)
+  FI
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Position(SDXSTATE.Session POINTER state BYTE operation)
+  BYTE slot
+  LONGINT offset,result
+
+  slot=state.bank($760)
+  IF slot=0 OR slot>SDXABI.HANDLE_LIMIT THEN
+    RETURN(134)
+  FI
+  offset=0
+  IF operation=0 THEN
+    offset=LONGINT(SDXSTATE.ReadWord(state.bank,$782)) OR
+        (LONGINT(state.bank($784)) LSH 16)
+    result=DOS.Seek(state.handles(slot-1),offset,DOS.OFFSET_BEGINNING)
+  ELSE
+    result=DOS.Seek(state.handles(slot-1),0,DOS.OFFSET_CURRENT)
+  FI
+  IF result<0 THEN
+    RETURN(MapError(state))
+  FI
+  IF operation<>0 THEN
+    SDXSTATE.Word(state.bank,$782,CARD(result))
+    state.bank($784)=BYTE(result RSH 16)
   FI
 
 RETURN(0)

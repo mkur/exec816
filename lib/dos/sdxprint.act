@@ -9,6 +9,10 @@ PROC Flush(SDXSTATE.Session POINTER state)
   LONGINT sent,done
   CARD index
 
+  IF state.discardOutput<>0 THEN
+    state.outputUsed=0
+    RETURN
+  FI
   ; Redirected output retains the SDX byte stream. Native consoles consume
   ; ASCII controls; translate the four shared editing/line controls here.
   IF DOS.IsInteractive(DOS.Output())<>0 THEN
@@ -115,7 +119,7 @@ PROC EmitNumber(SDXSTATE.Session POINTER state LONGCARD value BYTE radix
 RETURN
 
 PUBLIC BYTE FUNC Print(SDXSTATE.Session POINTER state BYTE POINTER frame)
-  CARD start,stop,at,argument,width,needed,index,length,near
+  CARD start,stop,at,argument,width,needed,index,length,near,limit
   BYTE value,kind,pad,radix,escape
   BYTE POINTER source
   LONGCARD number
@@ -125,10 +129,10 @@ PUBLIC BYTE FUNC Print(SDXSTATE.Session POINTER state BYTE POINTER frame)
   state.inverse=0
   start=SDXSTATE.ReadWord(frame,SDXABI.FRAME_PC)
   stop=start
-  WHILE stop<SDXABI.GUEST_LIMIT AND stop-start<=253 AND state.bank(stop)<>0 DO
+  WHILE stop<SDXABI.GUEST_LIMIT AND stop-start<=1023 AND state.bank(stop)<>0 DO
     stop==+1
   OD
-  IF stop>=SDXABI.GUEST_LIMIT OR stop-start>253 THEN
+  IF stop>=SDXABI.GUEST_LIMIT OR stop-start>1023 THEN
     RETURN(156)
   FI
   argument=stop+1
@@ -249,15 +253,20 @@ PUBLIC BYTE FUNC Print(SDXSTATE.Session POINTER state BYTE POINTER frame)
           FI
           ; Strings live in the guest bank. An audited %p operand can itself
           ; live in D-relative storage, as MD5's current filename pointer does.
-          IF kind='s AND SDXADMISSION.DirectPage(state.profile,argument-2)<>0 THEN
+          IF kind='s AND state.profile<>32 AND
+              SDXADMISSION.DirectPage(state.profile,argument-2)<>0 THEN
             RETURN(156)
           FI
+          limit=SDXABI.GUEST_LIMIT
+          IF kind='s AND SDXADMISSION.DirectPage(state.profile,argument-2)<>0 THEN
+            limit=256
+          FI
           length=0
-          WHILE LONGCARD(near)+length<SDXABI.GUEST_LIMIT AND
+          WHILE LONGCARD(near)+length<limit AND
               source(length)<>0 AND source(length)<>$9b DO
             length==+1
           OD
-          IF LONGCARD(near)+length=SDXABI.GUEST_LIMIT THEN
+          IF LONGCARD(near)+length=limit THEN
             RETURN(156)
           FI
           IF width<>0 AND length>width THEN
@@ -291,6 +300,16 @@ PUBLIC BYTE FUNC Print(SDXSTATE.Session POINTER state BYTE POINTER frame)
   IF state.outputError=0 THEN
     SDXSTATE.Word(frame,SDXABI.FRAME_PC,argument)
   FI
+
+RETURN(state.outputError)
+
+PUBLIC BYTE FUNC Character(SDXSTATE.Session POINTER state BYTE value)
+
+  state.outputError=0
+  state.inverse=0
+  state.outputUsed=0
+  Emit(state,value)
+  Flush(state)
 
 RETURN(state.outputError)
 

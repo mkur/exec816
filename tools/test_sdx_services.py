@@ -54,7 +54,7 @@ def fixture(out, close_error):
   Require((bank($515) & $83)=$81)
   Require(bank($516)=$35 AND bank($517)=$5a AND bank($518)=$a6)
   Require(bank($519)=$ab AND bank($51a)=0)
-  Require(bank($524)=$21 AND bank($525)=6)
+  Require(bank($524)=$21 AND bank($525)=$10)
   Require(bank($527)=0 AND bank($528)=161)
   Require(bank($529)=0 AND bank($52a)=156)
   Require(bank($80)=7 AND state.dp($80)=5)''')

@@ -25,7 +25,7 @@ PROC Main()
 
   baseline=EXEC.AvailMem(0)
   sessionBytes=SIZEOF(SDXSTATE.Session)
-  Require(sessionBytes=864)
+  Require(sessionBytes=896)
   state=SDXSTATE.Session POINTER(EXEC.AllocMem(sessionBytes,EXEC.MEMF_CLEAR))
   Require(state<>NULL)
   state.context=EXEC.AllocMem(512,EXEC.MEMF_CLEAR)

@@ -39,7 +39,7 @@ def fixture(out, smoke):
             expected, layout = place(program, base, 0xe000, symbols)
             oracle = store(expected[base:layout['end']])
             code.append(f'''  A816MEMORY.Clear(bank,65536)
-  layout=SDXFILE.Load({ptr},{len(raw)},bank,${base:x},$e000,@Resolve)
+  layout=SDXFILE.Load({ptr},{len(raw)},bank,${base:x},$e000,@Resolve,NULL,0)
   Require(layout<>NULL)
   Require(layout.end=${layout['end']:x})
   Require(layout.blockCount={len(program.blocks)})
@@ -60,11 +60,27 @@ def fixture(out, smoke):
     expected, layout = place(parse(raw),0x4021,0xe000,{})
     ptr, oracle = store(raw), store(expected[0x4021:layout['end']])
     code.append(f'''  A816MEMORY.Clear(bank,65536)
-  layout=SDXFILE.Load({ptr},{len(raw)},bank,$4021,$e000,@Resolve)
+  layout=SDXFILE.Load({ptr},{len(raw)},bank,$4021,$e000,@Resolve,NULL,0)
   Require(layout<>NULL)
   Require(O65READ.Equal(bank+$4021,{oracle},{layout['end']-0x4021})<>0)
   SDXFILE.Release(layout)''')
     valid = block(1,0,0,b'\x00\x00\x00\x00')
+    # One import, two caller-owned parent namespaces. Each load must use its
+    # own binding, including a nonzero original operand addend.
+    bound = block(1,0,0,b'\x03\x00')+struct.pack('<H',0xfffb)+b'_ARC    '+b'\x04\x00\xfe\x01\x00\xfc'
+    ptr = store(bound)
+    nameptr = store(b'_ARC    ')
+    code.append(f'''  A816MEMORY.Move(@parent.name,{nameptr},8)
+  parent.value=$3959
+  layout=SDXFILE.Load({ptr},{len(bound)},bank,$3000,$e000,@Resolve,@parent,1)
+  Require(layout<>NULL)
+  Require(bank($3000)=$5c AND bank($3001)=$39)
+  SDXFILE.Release(layout)
+  parent.value=$4750
+  layout=SDXFILE.Load({ptr},{len(bound)},bank,$3000,$e000,@Resolve,@parent,1)
+  Require(layout<>NULL)
+  Require(bank($3000)=$53 AND bank($3001)=$47)
+  SDXFILE.Release(layout)''')
     invalid = [b'', b'\xfe\xff\x01', valid[:-1], valid+valid,
                valid+fix(2,b'\xfc'), valid+fix(1,b'\x01\xfc'),
                valid+fix(1,b'\xfe\x01\x03\xfc'),
@@ -76,7 +92,7 @@ def fixture(out, smoke):
                valid+struct.pack('<HBH',0xfffc,1,4)+b'MAIN    ']
     for raw in invalid:
         ptr = store(raw)
-        code.append(f'  Require(SDXFILE.Load({ptr},{len(raw)},bank,$2000,$e000,@Resolve)=NULL)')
+        code.append(f'  Require(SDXFILE.Load({ptr},{len(raw)},bank,$2000,$e000,@Resolve,NULL,0)=NULL)')
     source = out/'probe.act'
     source.write_text('''MODULE SDXLOADERPROBE
 USE EXEC
@@ -106,6 +122,7 @@ RETURN(0)
 
 PROC Main()
   SDXFILE.Layout POINTER layout
+  SDXFILE.Binding parent
   BYTE POINTER bank
 
   bank=BYTE POINTER(ADDRESS($300000))

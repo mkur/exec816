@@ -4,7 +4,7 @@ USE SDXSTATE
 USE SDXCOMMAND
 
 ; Expand one 8.3 component, including SDX's padded '?' and '*' semantics.
-BYTE FUNC Pattern(BYTE POINTER source,target BYTE wild)
+PUBLIC BYTE FUNC Pattern(BYTE POINTER source,target BYTE wild)
   CARD at,index,limit
   BYTE value
 

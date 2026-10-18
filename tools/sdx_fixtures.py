@@ -66,6 +66,7 @@ USE SDXFILE
 USE SDXPATCH
 USE SDXABI
 USE SDXMD5
+USE SDXARC
 
 PUBLIC BYTE FUNC Select(BYTE POINTER bytes LONGCARD length)
   LONGCARD crc
@@ -77,13 +78,15 @@ PUBLIC BYTE FUNC Select(BYTE POINTER bytes LONGCARD length)
 '''
     for index,item in enumerate(fixtures,1):
         text+=f'  IF length={len(item["bytes"])} AND crc=${item["crc32"]:08x} THEN\n    RETURN({index})\n  FI\n'
-    text+='\nRETURN(SDXMD5.Select(length,crc))\n\n'
+    text+='\n  IF SDXMD5.Select(length,crc)<>0 THEN\n    RETURN(SDXMD5.PROFILE)\n  FI\n\nRETURN(SDXARC.Select(length,crc))\n\n'
     text+='PUBLIC CARD FUNC Entry(SDXFILE.Layout POINTER plan BYTE profile)\n\n'
     text+='  IF profile=SDXMD5.PROFILE THEN\n    RETURN(SDXMD5.Entry(plan))\n  FI\n\n'
+    text+='  IF profile=SDXARC.PROFILE THEN\n    RETURN(SDXARC.Entry(plan))\n  FI\n\n'
     text+='RETURN(SDXFILE.Symbol(plan,BYTE POINTER("MAIN    ")+1))\n\n'
     text+='PUBLIC CARD FUNC Patch(SDXFILE.Layout POINTER plan BYTE profile)\n'
     text+='  SDXPATCH.Patch patch\n  SDXFILE.Block POINTER block\n  BYTE before,after\n\n'
     text+='  IF profile=SDXMD5.PROFILE THEN\n    RETURN(SDXMD5.Patch(plan))\n  FI\n'
+    text+='  IF profile=SDXARC.PROFILE THEN\n    RETURN(SDXARC.Patch(plan))\n  FI\n'
     text+='  block=SDXFILE.Find(plan,1)\n  IF block=NULL THEN\n    RETURN(1)\n  FI\n'
     for index,item in enumerate(fixtures,1):
         text+=f'  IF profile={index} THEN\n'
@@ -103,6 +106,6 @@ PUBLIC BYTE FUNC Select(BYTE POINTER bytes LONGCARD length)
     for index,item in enumerate(fixtures,1):
         for site in item['direct_page_sites']:
             text+=f'  IF profile={index} AND site=SDXABI.GUEST_START+${site:x} THEN\n    RETURN(1)\n  FI\n'
-    text+='  IF profile=SDXMD5.PROFILE THEN\n    RETURN(SDXMD5.DirectPage(site))\n  FI\n\nRETURN(0)\n\nENDMODULE\n'
+    text+='  IF profile=SDXMD5.PROFILE THEN\n    RETURN(SDXMD5.DirectPage(site))\n  FI\n  IF profile=SDXARC.PROFILE THEN\n    RETURN(SDXARC.DirectPage(site))\n  FI\n\nRETURN(0)\n\nENDMODULE\n'
     (Path(output)/'sdxadmission.act').write_text(text)
     return [{k:v for k,v in item.items() if k!='bytes'} for item in fixtures]

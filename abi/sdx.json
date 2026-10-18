@@ -82,16 +82,18 @@
     "exit_pc": 61440,
     "initial_s": 480,
     "minimum_s": 352,
-    "comtab": 1536,
+    "comtab": 4096,
     "file_p": 1792,
     "trap_limit": 10,
     "handle_limit": 2,
     "checkpoint_pc": 62080,
-    "checkpoint_event": 14
+    "checkpoint_event": 14,
+    "overlay_return_pc": 62144,
+    "overlay_return_event": 15
   },
   "guest_services": {
     "COMTAB": {
-      "address": 1536,
+      "address": 4096,
       "event": 0,
       "inputs": "Variable address; private command state.",
       "effects": "BUFOFF=+$0A; FILLEN=+$1A; COMFNAM=+$21 (30 bytes); LBUF=+$3F (64 bytes).",
@@ -187,6 +189,174 @@
       "inputs": "No arguments.",
       "effects": "Removes the newest trap. Empty stack raises 156.",
       "flags": "A/X/Y/P preserved on success."
+    },
+    "CURDEV": {
+      "address": 1824,
+      "event": 0,
+      "inputs": "Private byte at $0720.",
+      "effects": "Default guest device, 1 for A:.",
+      "flags": "Preserved except documented results."
+    },
+    "FLAG": {
+      "address": 1825,
+      "event": 0,
+      "inputs": "Private byte at $0721.",
+      "effects": "ARC main passes L=0 or V=1 to ARCLST.",
+      "flags": "Preserved except documented results."
+    },
+    "PUT_V": {
+      "address": 1826,
+      "event": 0,
+      "inputs": "Private word at $0722.",
+      "effects": "Only the audited ARC single-RTS callback is admitted.",
+      "flags": "Preserved except documented results."
+    },
+    "DEVNAME": {
+      "address": 4608,
+      "event": 0,
+      "inputs": "Private scratch at $1200.",
+      "effects": "Reserved guest device-name storage.",
+      "flags": "Preserved except documented results."
+    },
+    "FPUTC": {
+      "address": 62208,
+      "event": 16,
+      "inputs": "ARC audited subset; see development record.",
+      "effects": "Unsupported operations fail with SDX 156 until their milestone is admitted.",
+      "flags": "Preserved except documented results."
+    },
+    "FSEEK": {
+      "address": 62240,
+      "event": 17,
+      "inputs": "file_id; little-endian 24-bit absolute position at $0782.",
+      "effects": "Seek within an owned file through DOS.Seek.",
+      "flags": "Preserved except documented results."
+    },
+    "FTELL": {
+      "address": 62272,
+      "event": 18,
+      "inputs": "file_id.",
+      "effects": "Return current 24-bit position at $0782.",
+      "flags": "Preserved except documented results."
+    },
+    "FWRITE": {
+      "address": 62304,
+      "event": 19,
+      "inputs": "ARC audited subset; see development record.",
+      "effects": "Unsupported operations fail with SDX 156 until their milestone is admitted.",
+      "flags": "Preserved except documented results."
+    },
+    "REMOVE": {
+      "address": 62336,
+      "event": 20,
+      "inputs": "ARC audited subset; see development record.",
+      "effects": "Unsupported operations fail with SDX 156 until their milestone is admitted.",
+      "flags": "Preserved except documented results."
+    },
+    "U_EXPAND": {
+      "address": 62368,
+      "event": 21,
+      "inputs": "AX destination, Y index; internal 8.3 name at $0762.",
+      "effects": "Expand to dotted name and EOL; return updated Y.",
+      "flags": "Preserved except documented results."
+    },
+    "U_FSPEC": {
+      "address": 62400,
+      "event": 22,
+      "inputs": "FILE_P ordinary guest pointer.",
+      "effects": "Add *.* for an empty leaf; retain COMTAB/FILE_P.",
+      "flags": "Preserved except documented results."
+    },
+    "U_GEFINA": {
+      "address": 62432,
+      "event": 23,
+      "inputs": "FILE_P; only the audited ARC member-name wrapper selects D+$90.",
+      "effects": "Decode A: or @: and bounded path/8.3 name into SDX variables.",
+      "flags": "Preserved except documented results."
+    },
+    "U_GETPAR": {
+      "address": 62464,
+      "event": 24,
+      "inputs": "COMTAB command cursor.",
+      "effects": "Consume the next bounded token into COMFNAM; return parameter status.",
+      "flags": "Preserved except documented results."
+    },
+    "U_LOAD": {
+      "address": 62496,
+      "event": 25,
+      "inputs": "FILE_P = CAR:ARCLST.OVL plus EOL; FLAG 0/1.",
+      "effects": "Verify exact pinned overlay, relocate with private _ARC export, run synchronously and retire owned handles/frame/overlay.",
+      "flags": "Preserved except documented results."
+    },
+    "VPRINTF": {
+      "address": 62528,
+      "event": 26,
+      "inputs": "Inline PRINTF record; PUT_V must name ARC main single-RTS leaf.",
+      "effects": "Consume the record with the audited discard callback; general callbacks fail.",
+      "flags": "Preserved except documented results."
+    },
+    "DIV_32": {
+      "address": 62560,
+      "event": 27,
+      "inputs": "Big-endian 32-bit operands at COMTAB+$FF and +$103.",
+      "effects": "Quotient at +$107; zero divisor yields zero and carry set.",
+      "flags": "Preserved except documented results."
+    },
+    "MUL_32": {
+      "address": 62592,
+      "event": 28,
+      "inputs": "Big-endian 32-bit operands at COMTAB+$FF and +$103.",
+      "effects": "Low 32-bit product at +$107; carry marks overflow.",
+      "flags": "Preserved except documented results."
+    },
+    "PUTC": {
+      "address": 62624,
+      "event": 29,
+      "inputs": "A character.",
+      "effects": "Write through the native Process output using the shared console translation.",
+      "flags": "Preserved except documented results."
+    },
+    "__MISC": {
+      "address": 62656,
+      "event": 30,
+      "inputs": "A=1 only.",
+      "effects": "Pinned missing-DAYTIME policy: A=$9A, X=$FE, Y=$9B, NZ from X. ARC uses day/month and 24-hour time.",
+      "flags": "Preserved except documented results."
+    },
+    "FFIRST": {
+      "address": 62688,
+      "event": 31,
+      "inputs": "ARC audited subset; see development record.",
+      "effects": "Unsupported operations fail with SDX 156 until their milestone is admitted.",
+      "flags": "Preserved except documented results."
+    },
+    "FNEXT": {
+      "address": 62720,
+      "event": 32,
+      "inputs": "ARC audited subset; see development record.",
+      "effects": "Unsupported operations fail with SDX 156 until their milestone is admitted.",
+      "flags": "Preserved except documented results."
+    },
+    "FILELENG": {
+      "address": 62752,
+      "event": 33,
+      "inputs": "ARC audited subset; see development record.",
+      "effects": "Unsupported operations fail with SDX 156 until their milestone is admitted.",
+      "flags": "Preserved except documented results."
+    },
+    "U_GETKEY": {
+      "address": 62784,
+      "event": 34,
+      "inputs": "ARC audited subset; see development record.",
+      "effects": "Unsupported operations fail with SDX 156 until their milestone is admitted.",
+      "flags": "Preserved except documented results."
+    },
+    "U_PATH": {
+      "address": 62816,
+      "event": 35,
+      "inputs": "ARC audited subset; see development record.",
+      "effects": "Unsupported operations fail with SDX 156 until their milestone is admitted.",
+      "flags": "Preserved except documented results."
     }
   },
   "guest_contract": {
@@ -194,7 +364,7 @@
       "url": "https://sdx.atari8.info/sdx_files/4.50/SDX450_Programming_Guide.pdf",
       "sha256": "15982c51f2d0edc317b01121097d6da23e007910e2ad79f3ad02ac930fbc2b69"
     },
-    "scope": "Opt-in development personality for the exact pinned 6502 MD5.COM, with checked load-time patches. Named-file hashing and the documented verification/selection/cancellation subset are supported. ARC is not admitted.",
+    "scope": "Opt-in development personality for the exact pinned 6502 MD5.COM and ARC.COM/ARCLST.OVL. MD5 hashing/verification and ARC L/V listing with N/W flags are admitted; extraction and mutation are not yet admitted.",
     "entry": "E=1, M=X=1, private aligned D, PBR=DBR=guest bank. Calls use JSR to the imported veneer. AX denotes low A and low X, little endian.",
     "preservation": "Except for documented results, calls preserve A (including hidden B), X, Y, P, D and DBR. Ordinary calls resume after JSR; PRINTF skips its inline record. Error delivery selects the saved guest S and handler PC.",
     "pointers": "Ordinary near pointers select guest-bank storage below $E000. PRINTF argument-word sites classified by the admitted profile may instead select guest D+offset in bank zero. No numeric-address heuristic, stack pointers, extended-memory buffers or callbacks are supported.",
@@ -220,8 +390,8 @@
       "170": "File not found or explicit U_FAIL code"
     },
     "command_limit": "LBUF holds at most 63 bytes including the command name and separating space, followed by ATASCII EOL. COMFNAM holds at most 29 filename bytes plus EOL. No quoted filenames or mixed signs within an attribute token.",
-    "drive_policy": "Guest A: and bare filenames map to an immutable build-configured native root (RAM: by default). Leading > or backslash denotes the mapped root; internal separators become /. The final 8.3 component supports * and padded ?. FOPEN selects the first matching regular file, preserving the input specification for output; it does not expand a mask into multiple commands. Scan bits require/exclude P/H/A through public DOS metadata. Other drives, parent notation, wildcard directories, raw directories (+S), writes and seeks are unsupported. No global assignment is changed.",
-    "formatter": "NUL-terminated inline format, at most 253 bytes, then one near pointer word per operand (and per * width). Supported: %% and %b/%d/%e/%l unsigned 8/16/24/32-bit decimal, %x 24-bit hexadecimal, %c byte, %s string, %p pointer to string. Width uses its low byte; decimals allow at most 10 digits; zero padding, truncation and space padding are supported. Default %x is six zero-padded digits. Strings end at NUL or ATASCII EOL. %s requires an ordinary-bank string; %p may fetch its pointer variable from audited DP storage but the target string is in the ordinary bank. %t is unsupported.",
+    "drive_policy": "Guest A: and bare filenames map to an immutable build-configured native root (RAM: by default). Leading > or backslash denotes the mapped root; internal separators become /. The final 8.3 component supports * and padded ?. FOPEN selects the first matching regular file, preserving the input specification for output; it does not expand a mask into multiple commands. Scan bits require/exclude P/H/A through public DOS metadata. Other drives, parent notation, wildcard directories, raw directories (+S), writes are unsupported; ARC listing admits absolute seek/tell. CAR: is read-only overlay lookup beneath the immutable sdx_car_root (RAM: by default). No global assignment is changed.",
+    "formatter": "NUL-terminated inline format, at most 1023 bytes, then one near pointer word per operand (and per * width). Supported: %% and %b/%d/%e/%l unsigned 8/16/24/32-bit decimal, %x 24-bit hexadecimal, %c byte, %s string, %p pointer to string. Width uses its low byte; decimals allow at most 10 digits; zero padding, truncation and space padding are supported. Default %x is six zero-padded digits. Strings end at NUL or ATASCII EOL. %s uses an ordinary-bank string except audited ARC DP sites (bounded by 256 bytes); %p may fetch its pointer variable from audited DP storage but the target string is in the ordinary bank. %t is unsupported.",
     "output": "Escapes a,b,e,f,n,r,t,z,backslash and i are supported; i toggles inverse bytes for printable characters within one call. Redirected output retains exact SDX bytes. Interactive output maps $9B/$7E/$7F/$7D to LF/BS/TAB/FF. The buffer is 256 bytes; partial native writes are continued, and write errors use normal trap delivery. No general Atari terminal emulation is provided.",
     "cancellation": "BREAK belongs to the ordinary Process. It is checked before guest entry, at service boundaries and by a patched checkpoint after each 64-byte compression block ($F280, event 14, outside the SDX import namespace). Native I/O settles before SDX 128 trap delivery. A caught BREAK allows only bounded cleanup calls, then exits with primary 20/secondary 304. Cleanup cannot clear cancellation. See the MD5 development record for measured timing on the pinned machine; no universal device-latency bound is claimed."
   }

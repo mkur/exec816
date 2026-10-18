@@ -1,8 +1,8 @@
 # Patched SDX binaries on Exec816
 
-Status: MD5 M1/M2 pass development checks, 18 October 2026. The first applications
+Status: MD5 M1/M2 and ARC A1 pass development checks, 18 October 2026. The first applications
 are **6502 MD5, then 6502 ARC**. The pinned MD5 subset is admitted under Exec;
-ARC remains unadmitted. This replaces the
+ARC listing is admitted; extraction and mutation remain open. This replaces the
 earlier MD5-only plan and its native-mode guest proposal.
 
 The [first execution record](../development/sdx-patches.md) covers native CRC32
@@ -15,6 +15,7 @@ source-audited synthetic commands through ordinary Processes.
 [P4](../development/sdx-services.md) passes the fourteen-import guest-call,
 cleanup and focused ABI probes. [M1/M2](../development/sdx-md5.md) add real MD5
 hashing, verification, selection, cancellation and concurrent guest checks.
+[A1](../development/sdx-arc.md) adds private overlays and ARC listing.
 These development results do not complete the full P0/P1/P2 qualification gates.
 
 [Design](spartados-personality-design.md) ·

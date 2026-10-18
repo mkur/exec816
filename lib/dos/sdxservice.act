@@ -9,6 +9,8 @@ USE SDXFILES
 USE SDXCOMMAND
 USE SDXPRINT
 USE SDXTRAPS
+USE SDXARCCOMMAND
+USE SDXOVERLAY
 
 BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
   BYTE value
@@ -16,6 +18,49 @@ BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
   CASE event OF
   WHEN SDXABI.CHECKPOINT_EVENT THEN
     RETURN(0)
+  WHEN SDXABI.OVERLAY_RETURN_EVENT THEN
+    RETURN(SDXOVERLAY.Retire(state,frame))
+  WHEN SDXABI.CALL_U_LOAD THEN
+    RETURN(SDXOVERLAY.Load(state,frame))
+  WHEN SDXABI.CALL_U_GETPAR THEN
+    RETURN(SDXARCCOMMAND.Parameter(state,frame))
+  WHEN SDXABI.CALL_U_FSPEC THEN
+    RETURN(SDXARCCOMMAND.DefaultMask(state))
+  WHEN SDXABI.CALL_U_GEFINA THEN
+    RETURN(SDXARCCOMMAND.Decode(state,frame))
+  WHEN SDXABI.CALL_U_EXPAND THEN
+    RETURN(SDXARCCOMMAND.Expand(state,frame))
+  WHEN SDXABI.CALL_FSEEK THEN
+    RETURN(SDXFILES.Position(state,0))
+  WHEN SDXABI.CALL_FTELL THEN
+    RETURN(SDXFILES.Position(state,1))
+  WHEN SDXABI.CALL_DIV_32 THEN
+    RETURN(SDXARCCOMMAND.Arithmetic(state,frame,1))
+  WHEN SDXABI.CALL_MUL_32 THEN
+    RETURN(SDXARCCOMMAND.Arithmetic(state,frame,0))
+  WHEN SDXABI.CALL_PUTC THEN
+    RETURN(SDXPRINT.Character(state,frame(SDXABI.FRAME_A)))
+  WHEN SDXABI.CALL___MISC THEN
+    IF frame(SDXABI.FRAME_A)<>1 THEN
+      RETURN(156)
+    FI
+    ; Pinned __MISC function 1 selects DAYTIME. Native policy is day/month,
+    ; 24-hour output, the same nonzero-X branch as SDX's absent variable.
+    frame(SDXABI.FRAME_A)=$9a
+    frame(SDXABI.FRAME_X)=$fe
+    frame(SDXABI.FRAME_Y)=$9b
+    SDXCOMMAND.NZ(frame,$fe)
+    RETURN(0)
+  WHEN SDXABI.CALL_VPRINTF THEN
+    ; ARC installs this audited single-RTS leaf to suppress optional output.
+    IF state.profile<>32 OR SDXSTATE.ReadWord(state.bank,$722)<>
+        SDXABI.GUEST_START+$1cc THEN
+      RETURN(156)
+    FI
+    state.discardOutput=1
+    value=SDXPRINT.Print(state,frame)
+    state.discardOutput=0
+    RETURN(value)
   WHEN SDXABI.CALL_FOPEN THEN
     RETURN(SDXFILES.Open(state))
   WHEN SDXABI.CALL_FCLOSE THEN
@@ -60,6 +105,21 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   state.trapCount=0
   state.nativeError=0
   error=SDXCOMMAND.Initialize(state,arguments,@image.name)
+  IF error=0 AND state.profile=32 THEN
+    IF arguments=NULL THEN
+      error=156
+    ELSEIF arguments(0)<>'L AND arguments(0)<>'V THEN
+      error=156
+    ELSE
+      event=1
+      WHILE arguments(event)<>0 AND arguments(event)<>32 DO
+        IF arguments(event)<>'N AND arguments(event)<>'W THEN
+          error=156
+        FI
+        event==+1
+      OD
+    FI
+  FI
   result=20
   pendingCause=0
   pendingError=0
@@ -141,6 +201,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
     cause=state.nativeError
   FI
   state.trapCount=0
+  state.overlayActive=0
   DOSCLIENT.SetError(cause)
 
 RETURN(result)

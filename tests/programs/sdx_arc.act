@@ -1,0 +1,92 @@
+MODULE SDXARCEXEC
+USE EXEC
+USE DOS
+USE PROCESS
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE SDXSTATE
+USE HEAPCORE
+USE FSBOOT
+
+CARD checks,currentCase
+LONGINT primary,secondary,reason
+LONGCARD guestBank
+BYTE ARRAY actual(7168)
+LONGINT ARRAY counts(7)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    reason=DOS.IoErr()
+    HEAPCORE.Abort($fd00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Put(BYTE POINTER path,bytes CARD count)
+  DOS.FileHandle POINTER file
+
+  file=DOS.Open(path,DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,bytes,LONGINT(count))=LONGINT(count))
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Run(CARD number BYTE POINTER args CARD argBytes LONGINT wantPrimary,wantSecondary)
+  DOS.FileHandle POINTER file,output,previous
+  PROGRAMIMAGE.Image POINTER image
+  SDXSTATE.Session POINTER state
+  PROCESS.Result result
+  LONGCARD identity
+
+  currentCase=number
+  output=DOS.Open(BYTE POINTER(c"RAM:RESULT.TXT"),DOS.MODE_NEWFILE)
+  Require(output<>NULL)
+  previous=DOS.SelectOutput(output)
+  image=PROGRAMFILE.Load(BYTE POINTER(c"RAM:ARC.COM"))
+  Require(image<>NULL)
+  state=SDXSTATE.Session POINTER(image.extension)
+  guestBank=LONGCARD(ADDRESS(state.bank))
+  identity=PROCESS.StartLoaded(BYTE POINTER(image),args,argBytes,0)
+  Require(identity<>0)
+  Require(PROCESS.Wait(identity,@result)<>0)
+  primary=result.primary
+  secondary=result.secondary
+  Require(primary=wantPrimary AND secondary=wantSecondary)
+  Require(state.handles(0)=NULL AND state.handles(1)=NULL AND state.trapCount=0)
+  Require(state.overlayActive=0)
+  PROGRAM.Unload(image)
+  DOS.SelectOutput(previous)
+  Require(DOS.Close(output)<>0)
+  file=DOS.Open(BYTE POINTER(c"RAM:RESULT.TXT"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  counts(number)=DOS.Read(file,@actual+number*1024,1024)
+  Require(counts(number)>=0 AND counts(number)<1024)
+  Require(DOS.Close(file)<>0)
+  SDXSTATE.Guards()
+
+RETURN
+
+PROC Main()
+  LONGCARD baseline
+
+  baseline=EXEC.AvailMem(0)
+SETUP_FILES
+RUN_CASES
+  Require(DOS.Rename(BYTE POINTER(c"RAM:ARCLST.OVL"),BYTE POINTER(c"RAM:SAVED.OVL"))<>0)
+  Run(4,BYTE POINTER(c"L SAMPLE.ARC"),12,20,205)
+  Put(BYTE POINTER(c"RAM:ARCLST.OVL"),BYTE POINTER(c"invalid overlay"),15)
+  Run(5,BYTE POINTER(c"L SAMPLE.ARC"),12,20,156)
+  Require(DOS.DeleteFile(BYTE POINTER(c"RAM:ARCLST.OVL"))<>0)
+  Require(DOS.Rename(BYTE POINTER(c"RAM:SAVED.OVL"),BYTE POINTER(c"RAM:ARCLST.OVL"))<>0)
+  Run(6,BYTE POINTER(c"L SAMPLE.ARC"),12,0,0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+ENDMODULE

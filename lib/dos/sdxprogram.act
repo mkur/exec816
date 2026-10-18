@@ -36,6 +36,12 @@ PROC Gates(BYTE POINTER bank)
     Veneer(bank,$f100+index*32,index+2)
   OD
   Veneer(bank,SDXABI.CHECKPOINT_PC,SDXABI.CHECKPOINT_EVENT)
+  FOR index=0 TO 19 DO
+    Veneer(bank,$f300+index*32,index+16)
+  OD
+  Veneer(bank,$f2a0,SDXABI.OVERLAY_RETURN_EVENT)
+  bank(SDXABI.OVERLAY_RETURN_PC)=$20
+  SDXSTATE.Word(bank,SDXABI.OVERLAY_RETURN_PC+1,$f2a0)
   Veneer(bank,$f060,1)
   bank(SDXABI.EXIT_PC)=$20
   SDXSTATE.Word(bank,SDXABI.EXIT_PC+1,$f060)
@@ -82,7 +88,7 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
           image.textBytes=65536
           A816MEMORY.Clear(state.bank,65536)
           plan=SDXFILE.Load(bytes,length,state.bank,SDXABI.GUEST_START,
-              SDXABI.GUEST_LIMIT,@SDXABI.Resolve)
+              SDXABI.GUEST_LIMIT,@SDXABI.Resolve,NULL,0)
           error=DOSCLIENT.IoErr()
           IF plan<>NULL THEN
             error=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
@@ -90,6 +96,10 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
             IF state.entry<>0 AND SDXADMISSION.Patch(plan,profile)=0 THEN
               SDXSTATE.Word(state.bank,$2e7,CARD(plan.end))
               SDXSTATE.Word(state.bank,$2e5,SDXABI.GUEST_LIMIT)
+              state.overlayBase=CARD(plan.end)
+              state.parentExport.value=SDXFILE.Symbol(plan,BYTE POINTER("_ARC    ")+1)
+              A816MEMORY.Move(@state.parentExport.name,BYTE POINTER("_ARC    ")+1,8)
+              state.bank($720)=1
               SDXFILE.Release(plan)
               Gates(state.bank)
               SDXSTATE.Prepare(state)

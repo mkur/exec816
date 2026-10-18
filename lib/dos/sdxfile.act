@@ -21,6 +21,8 @@ PUBLIC TYPE Export=[
   BYTE ARRAY name(8)
 ]
 
+PUBLIC TYPE Binding=[CARD value BYTE ARRAY name(8)]
+
 PUBLIC TYPE Layout=[
   O65TYPES.Cursor wire
   BYTE POINTER bank,touched
@@ -173,7 +175,8 @@ PROC Fixups(Layout POINTER plan LONGINT base BYTE apply)
 RETURN
 
 PROC Records(Layout POINTER plan LONGCARD limit BYTE apply
-    CARD FUNC POINTER resolve(BYTE POINTER name))
+    CARD FUNC POINTER resolve(BYTE POINTER name)
+    Binding POINTER bindings CARD bindingCount)
   O65TYPES.Cursor POINTER wire
   Block POINTER block
   Export POINTER symbol
@@ -257,7 +260,17 @@ PROC Records(Layout POINTER plan LONGCARD limit BYTE apply
       name=ReadName(wire)
       base=0
       IF apply<>0 AND wire.error=0 THEN
-        base=LONGINT(resolve(name))
+        index=0
+        WHILE index<bindingCount DO
+          IF O65READ.Equal(@bindings(index).name,name,8)<>0 THEN
+            base=LONGINT(bindings(index).value)
+            EXIT
+          FI
+          index==+1
+        OD
+        IF base=0 THEN
+          base=LONGINT(resolve(name))
+        FI
         IF base=0 THEN
           O65READ.Fail(wire,O65TYPES.ERROR_BAD_PROVIDER)
         FI
@@ -275,7 +288,8 @@ RETURN
 ; releasing that input. No executable admission policy is implied by decoding.
 PUBLIC Layout POINTER FUNC Load(BYTE POINTER bytes LONGCARD length
     BYTE POINTER bank CARD start LONGCARD limit
-    CARD FUNC POINTER resolve(BYTE POINTER name))
+    CARD FUNC POINTER resolve(BYTE POINTER name)
+    Binding POINTER bindings CARD bindingCount)
   Layout POINTER plan
   Block POINTER block
   Export POINTER symbol
@@ -294,7 +308,7 @@ PUBLIC Layout POINTER FUNC Load(BYTE POINTER bytes LONGCARD length
   plan.wire.limit=length
   plan.bank=bank
   plan.end=start
-  Records(plan,limit,0,resolve)
+  Records(plan,limit,0,resolve,bindings,bindingCount)
   IF plan.blockCount=0 THEN
     O65READ.Fail(@plan.wire,O65TYPES.ERROR_BAD_FORMAT)
   FI
@@ -326,7 +340,7 @@ PUBLIC Layout POINTER FUNC Load(BYTE POINTER bytes LONGCARD length
         index==+1
       OD
       plan.wire.at=0
-      Records(plan,limit,1,resolve)
+      Records(plan,limit,1,resolve,bindings,bindingCount)
     FI
   FI
   error=plan.wire.error

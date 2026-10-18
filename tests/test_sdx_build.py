@@ -59,7 +59,9 @@ class SDXBuildTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as out:
             item=sdx_fixtures.assemble(out,'services')
         program=parse(item['bytes'])
-        self.assertEqual(set(program.imports),set(sdx_build.ABI['guest_services']))
+        md5_services={name for name,item in sdx_build.ABI['guest_services'].items()
+                      if name in ('COMTAB','FILE_P') or 2<=item['event']<=13}
+        self.assertEqual(set(program.imports),md5_services)
         symbols={k:v['address'] for k,v in sdx_build.ABI['guest_services'].items()}
         image,_=place(program,0x3000,0xe000,symbols)
         sites=item['direct_page_sites']

@@ -2,9 +2,9 @@
   "schema_version": 1,
   "personality_abi": 1,
   "id": "arc-450",
-  "revision": 1,
-  "execution_status": "patch-probe-only",
-  "audit": "../../docs/plans/spartados-personality-inputs.json",
+  "revision": 2,
+  "execution_status": "A1-listing-development",
+  "audit": "../../docs/development/sdx-arc.md",
   "modules": [
     {
       "file": "ARC.COM",
@@ -23,17 +23,43 @@
           "replacement": "8d000018a30385fe6d00008303a30485ff69008304ac0000bbb1fe95ef88d0f8baa00060eaea",
           "assembly": "arc-inline.s",
           "intersections": [
-            {"base": 2, "offset": 1518},
-            {"base": 2, "offset": 1528},
-            {"base": 2, "offset": 1544}
+            {
+              "base": 2,
+              "offset": 1518
+            },
+            {
+              "base": 2,
+              "offset": 1528
+            },
+            {
+              "base": 2,
+              "offset": 1544
+            }
           ],
           "fixups": [
-            {"offset": 1, "kind": "block16", "block": 2, "addend": 4294},
-            {"offset": 9, "kind": "block16", "block": 2, "addend": 4294},
-            {"offset": 22, "kind": "block16", "block": 2, "addend": 4294}
+            {
+              "offset": 1,
+              "kind": "block16",
+              "block": 2,
+              "addend": 4294
+            },
+            {
+              "offset": 9,
+              "kind": "block16",
+              "block": 2,
+              "addend": 4294
+            },
+            {
+              "offset": 22,
+              "kind": "block16",
+              "block": 2,
+              "addend": 4294
+            }
           ],
           "contract": "E=1, aligned D, DBR=PBR=guest bank, decimal clear, A=6, nested JSR frames wholly in page one. Same A/X/Y/P and stack outputs as original; FE/FF hold old outer return, F0-F5 receive six bytes, outer return advances by six.",
-          "regressions": ["arc-inline-six-emitted"]
+          "regressions": [
+            "arc-inline-six-emitted"
+          ]
         }
       ]
     },
@@ -65,5 +91,20 @@
       "patches": []
     }
   ],
-  "unsupported": ["Guest execution pending P2/A1", "Hardware option H", "Extraction and mutation pending their service audits"]
+  "unsupported": [
+    "Guest execution pending P2/A1",
+    "Hardware option H",
+    "Extraction and mutation pending their service audits"
+  ],
+  "direct_page_arguments": [
+    721,
+    7556,
+    7118,
+    7120,
+    7139,
+    7193,
+    7195,
+    7325,
+    7350
+  ]
 }
