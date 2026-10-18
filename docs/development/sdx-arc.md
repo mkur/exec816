@@ -69,3 +69,19 @@ The private 64 KiB guest bank still uses 131,072 backing bytes; resident upper
 capacity is unchanged. Listing load temporarily stages 1,999 bytes plus the
 ordinary loader layout and its 8,192-byte relocation bitmap. The test program's
 12,288-byte upper static arena is test-only.
+
+## File-date dependency
+
+`DOS.SetFileDate` is implemented as a public reusable path operation, following
+Amiga semantics. Its [write contract](../reference/filesystem-writes.md) covers
+ownership and representable dates. The [execution record](dos-file-date.json)
+contains 15 raw RAM checks and 26 optimized RAM/SDFS checks: public argument
+marshalling, exact dates, live-lock rejection, invalid values, missing paths,
+heap/guard retirement and independent persisted timestamp bytes. The 47 DOS
+host tests pass. Fixed and per-Task reserved bank-zero growth are both zero.
+The test-only upper static arena is 4,096 bytes.
+
+```sh
+python3 tools/test_dos_file_date.py --raw --output build/sdx-arc/file-date-raw
+python3 tools/test_dos_file_date.py --output build/sdx-arc/file-date-opt
+```

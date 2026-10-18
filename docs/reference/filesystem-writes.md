@@ -161,7 +161,17 @@ supported. Lengths remain limited to 24 bits and actual disk capacity.
 
 Formatting, repair, cross-request write-back caching, atomic replacement, cross-directory
 moves, recursive deletion, sparse creation, seek past EOF, SetFileSize,
-SetProtection and SetFileDate remain unsupported. MODE_NEWFILE truncates during
+SetProtection remains unsupported. `SetFileDate(name, date)` follows the Amiga
+path-based API and updates RAM or SDFS metadata through the ordinary filesystem
+worker. The caller retains its DateStamp until the synchronous call returns.
+The object must have no live file/lock leases, and mount/file write protection
+is enforced. A successful change advances the metadata epoch. Days must be
+nonnegative, minutes 0..1439 and ticks 0..2999. SDFS supports 1978..2049 and
+rounds fractional seconds downward; unrepresentable dates return BAD_NUMBER.
+MyDOS returns ACTION_NOT_KNOWN because its directory has no timestamp.
+No kernel selector or bank-zero reservation is added.
+
+MODE_NEWFILE truncates during
 Open, so a later command failure does not restore old redirected output.
 
 ## Metadata cache lifetime

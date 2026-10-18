@@ -38,7 +38,7 @@ BYTE FUNC OpenResultStep(BYTE POINTER raw)
 
   LET service=FSTYPES.Service POINTER(raw)
   LET action=service.packet.sp_Pkt.dp_Type
-  IF action=16 OR action=17 THEN
+  IF action=16 OR action=17 OR action=34 THEN
     RETURN(FSNAMESPACE.Resolved(service))
   FI
 
@@ -267,7 +267,7 @@ BYTE FUNC DispatchStep(BYTE POINTER raw)
     FI
 
     RETURN(Open(service))
-  WHEN DOS_ACTION_DELETE_OBJECT,DOS_ACTION_RENAME_OBJECT THEN
+  WHEN DOS_ACTION_DELETE_OBJECT,DOS_ACTION_RENAME_OBJECT,DOS_ACTION_SET_DATE THEN
     IF FSWRITE.Access(service)=0 THEN
       RETURN(FSPACKET.Error(service,service.work.error))
     FI

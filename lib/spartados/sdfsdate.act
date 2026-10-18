@@ -1,6 +1,7 @@
 ; DOS DateStamp conversion; invalid or pre-1978 dates remain all zero.
 MODULE SDFSDATE
 USE FSBTYPES
+INCLUDE "../dos/dos-types.inc"
 
 BYTE FUNC Leap(CARD year)
 ; Only 1978..2049 reaches this helper; 2000 is a leap year.
@@ -58,5 +59,43 @@ PUBLIC PROC Decode(FSBTYPES.Entry POINTER entry BYTE POINTER bytes)
   entry.ticks=LONGINT(bytes(22))*50
 
 RETURN
+
+; SpartaDOS stores seconds and a two-digit 1950..2049 year. Reject dates
+; outside the representable DOS epoch; round fractional seconds downward.
+PUBLIC BYTE FUNC Encode(LONGINT days,minutes,ticks BYTE POINTER bytes)
+  CARD year,length
+  BYTE month
+
+  IF days<0 OR minutes<0 OR minutes>=1440 OR
+      ticks<0 OR ticks>=3000 THEN
+    RETURN(0)
+  FI
+
+  year=1978
+  WHILE year<2050 DO
+    length=365+CARD(Leap(year))
+    IF days<LONGINT(length) THEN
+      EXIT
+    FI
+    days==-LONGINT(length)
+    year==+1
+  OD
+  IF year=2050 THEN
+    RETURN(0)
+  FI
+
+  month=1
+  WHILE days>=LONGINT(MonthDays(year,month)) DO
+    days==-LONGINT(MonthDays(year,month))
+    month==+1
+  OD
+  bytes(17)=BYTE(days+1)
+  bytes(18)=month
+  bytes(19)=BYTE(year MOD 100)
+  bytes(20)=BYTE(minutes/60)
+  bytes(21)=BYTE(minutes MOD 60)
+  bytes(22)=BYTE(ticks/50)
+
+RETURN(1)
 
 ENDMODULE

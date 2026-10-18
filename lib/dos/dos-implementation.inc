@@ -35,6 +35,10 @@ PUBLIC LONGINT FUNC Rename(BYTE POINTER oldName,newName)
 
 RETURN(DOSCALLS.Rename(oldName,newName))
 
+PUBLIC LONGINT FUNC SetFileDate(BYTE POINTER name DateStamp POINTER date)
+
+RETURN(DOSCALLS.SetFileDate(name,DOSCALLS.DateStamp POINTER(date)))
+
 PUBLIC FileHandle POINTER FUNC Open(BYTE POINTER name LONGINT mode)
 
 RETURN(FileHandle POINTER(DOSCALLS.Open(name,mode)))

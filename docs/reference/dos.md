@@ -102,6 +102,7 @@ record and constants; C query-call wrappers are not yet provided.
 | `CreateDir(path)` | Create one directory and return an owned shared lock. |
 | `DeleteFile(path)` | Delete a file or empty directory. |
 | `Rename(old, new)` | Rename within the same parent without replacement. |
+| `SetFileDate(name, date)` | Set a closed object’s DateStamp by path; supported by RAM and SDFS. |
 | `Lock(name, mode)` / `UnLock(lock)` | Acquire/release a shared file or directory reference. UnLock(NULL) is harmless. |
 | `Examine(lock, info)` | Return directory metadata for the object and initialize enumeration. |
 | `ExNext(lock, info)` | Return the next entry; false with ERROR_NO_MORE_ENTRIES ends enumeration. |

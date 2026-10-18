@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 11,
+  "revision": 12,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -107,7 +107,8 @@
     "ACTION_RENAME_OBJECT": 17,
     "ACTION_INFO": 26,
     "ACTION_EXAMINE_EXACT": 25,
-    "ACTION_EXAMINE_BATCH": 28
+    "ACTION_EXAMINE_BATCH": 28,
+    "ACTION_SET_DATE": 34
   },
   "records": {
     "DateStamp": {
@@ -1003,6 +1004,22 @@
         }
       ],
       "outgoing_bytes": 9,
+      "result_bytes": 4
+    },
+    "SetFileDate": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
       "result_bytes": 4
     }
   },
