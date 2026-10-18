@@ -23,10 +23,20 @@ PUBLIC BYTE FUNC DirectPage(CARD site)
 RETURN(site=SDXABI.GUEST_START+$1f8 OR site=SDXABI.GUEST_START+$2f2)
 
 PUBLIC CARD FUNC Patch(SDXFILE.Layout POINTER plan)
-  SDXPATCH.Patch ARRAY patches(1)
+  SDXPATCH.Patch ARRAY patches(6)
   SDXFILE.Block POINTER block,target
   BYTE ARRAY before0=[$78]
   BYTE ARRAY after0=[$ea]
+  BYTE ARRAY before1=[$a5 $11 $f0 $03 $4c $0a $04]
+  BYTE ARRAY after1=[$20 $80 $f2 $4c $00 $00 $ea]
+  BYTE ARRAY before2=[$4c $00 $00]
+  BYTE ARRAY after2=[$28 $80 $05]
+  BYTE ARRAY before3=[$30 $f3]
+  BYTE ARRAY after3=[$30 $f2]
+  BYTE ARRAY before4=[$d0 $3c]
+  BYTE ARRAY after4=[$d0 $91]
+  BYTE ARRAY before5=[$d0 $2b]
+  BYTE ARRAY after5=[$d0 $80]
 
   block=SDXFILE.Find(plan,1)
   IF block=NULL THEN
@@ -36,7 +46,58 @@ PUBLIC CARD FUNC Patch(SDXFILE.Layout POINTER plan)
   patches(0).length=1
   patches(0).expected=@before0
   patches(0).replacement=@after0
+  block=SDXFILE.Find(plan,1)
+  IF block=NULL THEN
+    RETURN(1)
+  FI
+  target=SDXFILE.Find(plan,1)
+  IF target=NULL THEN
+    RETURN(1)
+  FI
+  SDXSTATE.Word(@before1,5,SDXSTATE.ReadWord(@before1,5)+target.placed-target.origin)
+  target=SDXFILE.Find(plan,1)
+  IF target=NULL THEN
+    RETURN(1)
+  FI
+  SDXSTATE.Word(@after1,4,target.placed+1034)
+  patches(1).offset=block.placed+2454
+  patches(1).length=7
+  patches(1).expected=@before1
+  patches(1).replacement=@after1
+  block=SDXFILE.Find(plan,1)
+  IF block=NULL THEN
+    RETURN(1)
+  FI
+  SDXSTATE.Word(@before2,1,$f100)
+  patches(2).offset=block.placed+310
+  patches(2).length=3
+  patches(2).expected=@before2
+  patches(2).replacement=@after2
+  block=SDXFILE.Find(plan,1)
+  IF block=NULL THEN
+    RETURN(1)
+  FI
+  patches(3).offset=block.placed+321
+  patches(3).length=2
+  patches(3).expected=@before3
+  patches(3).replacement=@after3
+  block=SDXFILE.Find(plan,1)
+  IF block=NULL THEN
+    RETURN(1)
+  FI
+  patches(4).offset=block.placed+419
+  patches(4).length=2
+  patches(4).expected=@before4
+  patches(4).replacement=@after4
+  block=SDXFILE.Find(plan,1)
+  IF block=NULL THEN
+    RETURN(1)
+  FI
+  patches(5).offset=block.placed+436
+  patches(5).length=2
+  patches(5).expected=@before5
+  patches(5).replacement=@after5
 
-RETURN(SDXPATCH.Apply(plan.bank,@patches,1))
+RETURN(SDXPATCH.Apply(plan.bank,@patches,6))
 
 ENDMODULE

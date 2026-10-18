@@ -57,7 +57,7 @@ def assemble(output, name):
                 direct_page_sites=sorted(v for k,v in labels.items() if k.startswith('dp_arg_')))
 
 
-def generate(output, names=('process','services','fail','options','console')):
+def generate(output, names=('process','services','fail','options','console','rethrow')):
     fixtures=[assemble(output,n) for n in names]
     text='''; Generated exact-identity development and pinned MD5 admission.
 MODULE SDXADMISSION

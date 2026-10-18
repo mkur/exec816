@@ -1,7 +1,8 @@
 # Patched SDX binaries on Exec816
 
-Status: implementation started, 18 October 2026. The first applications are **6502 MD5,
-then 6502 ARC**. No application is yet accepted under Exec. This replaces the
+Status: MD5 M1/M2 pass development checks, 18 October 2026. The first applications
+are **6502 MD5, then 6502 ARC**. The pinned MD5 subset is admitted under Exec;
+ARC remains unadmitted. This replaces the
 earlier MD5-only plan and its native-mode guest proposal.
 
 The [first execution record](../development/sdx-patches.md) covers native CRC32
@@ -12,8 +13,9 @@ NMI checks and traced stock-810 reads alongside pointer IRQs.
 P0/P1/P2 are partial. [P3](../development/sdx-loader.md) now passes for
 source-audited synthetic commands through ordinary Processes.
 [P4](../development/sdx-services.md) passes the fourteen-import guest-call,
-cleanup and focused ABI probes; third-party application admission and acceptance
-remain pending.
+cleanup and focused ABI probes. [M1/M2](../development/sdx-md5.md) add real MD5
+hashing, verification, selection, cancellation and concurrent guest checks.
+These development results do not complete the full P0/P1/P2 qualification gates.
 
 [Design](spartados-personality-design.md) ·
 [Frozen inputs](spartados-personality-inputs.json) ·
@@ -324,9 +326,9 @@ guest retry. Fault cleanup runs on a retained native context after I/O settles.
 
 P0/P1 now have the component implementation recorded above; their full exit
 gates remain open. P3/P4 pass the synthetic development scope described below;
-M1 passes the named-file development scope in [its record](../development/sdx-md5.md). M2 and ARC remain pending. P1 helper probes and P2 synthetic context work
-can proceed after their P0 inputs are frozen; real guest admission requires
-both. Each slice records its exact supported operations and memory delta.
+M1/M2 pass the MD5 development scope in [their record](../development/sdx-md5.md).
+ARC and the remaining infrastructure qualification gates stay open. Each slice
+records its exact supported operations and memory delta.
 
 | Slice | Deliverable and exit gate |
 | --- | --- |
@@ -336,7 +338,7 @@ both. Each slice records its exact supported operations and memory delta.
 | P3 Loader and Process | **Passed for the audited synthetic catalog.** Commands load/patch/bind and execute through ordinary Process ownership; rollback and slot reuse pass. |
 | P4 MD5 services | **Passed for the audited synthetic catalog.** Fourteen-symbol guest-call probes cover inline output, two handles and nonlocal traps, plus terminal Close errors, capacity limits and raw/optimized frame layout. |
 | M1 Named-file MD5 | **Passed in development checks:** the adapted binary computes correct digests through native DOS and an ordinary shell launch. |
-| M2 Complete MD5 subset | Multiple files, masks/attributes, `/C`, errors, BREAK, redirection and two independent guests pass. |
+| M2 Complete MD5 subset | **Passed in development checks:** multiple files, masks/P/H/A attributes, `/C`, errors, BREAK, redirection and two independent guests. Hardware `/H` and raw-directory `+S` remain unsupported. |
 | A1 ARC loading and listing | Main plus listing overlay execute with the patched helper, private exports and read-only `CAR:` resolution. |
 | A2 ARC extraction | Required codecs, output files, overwrite decisions, CRC failures and cleanup pass through native DOS. |
 | A3 ARC creation and mutation | Creation/addition/deletion and the admitted update operations preserve data, error reporting and temporary/backup ownership. |
@@ -462,7 +464,9 @@ scope; its display API and child execution are not hidden acceptance requirement
 The patch/decoder components add **0 fixed and 0 per-Task reserved bank-zero bytes**.
 Enabled P3 builds add **544 fixed and 0 per-Task bytes** for guarded guest DPs.
 P4 adds **0 further fixed or per-Task bank-zero bytes**; its 592-byte Session
-records and buffers are upper-heap owned.
+records and buffers are upper-heap owned. M1 adds no reservation growth. M2 adds
+**0 fixed and 0 per-Task bank-zero bytes** and grows each loaded Image's upper
+Session by **272 bytes**, to **864 bytes**, including alignment and capacity.
 Implementation reservations, including unused capacity, are:
 
 | Resource | Budget and lifetime |

@@ -145,6 +145,15 @@ size is zero and exact; allocated sectors describe its storage separately.
 | SpartaDOS file/directory | Stored file length / directory zero, exact | -1, unavailable |
 | RAM file/directory | Known file length / directory zero, exact | 0, exact; RAM has no disk sectors |
 
+SDFS also exposes its stored hidden and archived attributes through
+`fib_Protection`: `FIBF_HIDDEN` (128) and `FIBF_ARCHIVE` (16) are positive metadata
+bits. The protected attribute continues to set the negative permission bits
+`FIBF_WRITE | FIBF_DELETE`. Hidden is an Exec extension for the supported Atari
+filesystem metadata; it does not change native Open visibility. These flags
+require no record-layout or gateway change, and ordinary Tasks can use them
+through Examine/ExNext. SetProtection remains unsupported. MyDOS and RAM leave
+hidden/archive clear. Mount read-only policy remains separate from file metadata.
+
 MyDOS's accepted legacy zero-count/zero-start empty entry has exact size and
 sector count zero. An ordinary one-sector file still has a bound. Bounds never
 replace the internal exact EOF used by Read, Seek or Write.

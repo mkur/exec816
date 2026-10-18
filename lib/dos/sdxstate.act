@@ -18,6 +18,8 @@ PUBLIC TYPE Session=[
   LONGINT nativeError
   CARD outputUsed
   BYTE ARRAY path(256),output(256),number(10)
+  DOS.FileInfoBlock info
+  BYTE ARRAY pattern(11)
 ]
 
 BYTE occupied

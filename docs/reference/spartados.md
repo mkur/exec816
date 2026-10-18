@@ -106,7 +106,8 @@ walk and existing extent cache; neither size nor block accounting reads
 ordinary-file payload. Later selected-map corruption can therefore be discovered
 by Exact, file I/O or mutation preflight after ordinary metadata succeeds.
 See the [DOS metadata contract](dos.md#metadata-availability). Protection maps to
-`FIBF_WRITE | FIBF_DELETE`; mount read-only status is reported separately.
+`FIBF_WRITE | FIBF_DELETE`; hidden and archived map to the positive metadata
+bits `FIBF_HIDDEN` and `FIBF_ARCHIVE`. Mount read-only status is separate.
 
 Dates use day/month/year and hour/minute/second from the record. Years 50–99
 mean 1950–1999; 00–49 mean 2000–2049. Convert valid dates on/after 1978-01-01 to

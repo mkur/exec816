@@ -3,6 +3,7 @@ USE DOS
 USE SDXABI
 USE SDXSTATE
 USE SDXCONFIG
+USE SDXNAMES
 
 ; Errors use SDX's byte namespace at the guest boundary. Keep native IoErr in
 ; the Session so an uncaught error reports its original native cause.
@@ -37,7 +38,7 @@ PUBLIC PROC ReadStatus(BYTE POINTER frame BYTE status)
 RETURN
 
 ; The configured A: root is immutable for this personality instance. No
-; Process mutates global assignments. Other drives and directory scans fail.
+; Process mutates global assignments. Only the last component may be a mask.
 BYTE FUNC Path(SDXSTATE.Session POINTER state)
   CARD at,index,source,rootLength
   BYTE value
@@ -69,14 +70,14 @@ BYTE FUNC Path(SDXSTATE.Session POINTER state)
   rootLength=index
   WHILE index<255 AND LONGCARD(at)+source<SDXABI.GUEST_LIMIT DO
     value=state.bank(at+source)
-    IF value=$9b THEN
+    IF value=$9b OR value=0 THEN
       state.path(index)=0
       IF index=rootLength THEN
         RETURN(156)
       FI
       RETURN(0)
     FI
-    IF value=0 OR value=': OR value='< OR value='* OR value='? THEN
+    IF value=': OR value='< THEN
       RETURN(156)
     FI
     IF value='> OR value=92 THEN
@@ -93,12 +94,19 @@ PUBLIC BYTE FUNC Open(SDXSTATE.Session POINTER state)
   BYTE error,slot
   DOS.FileHandle POINTER file
 
-  IF state.bank($778)<>4 OR
-      (state.bank($779)<>0 AND state.bank($779)<>$a0) THEN
+  IF state.bank($778)<>4 OR (state.bank($779) & 8)<>0 THEN
     RETURN(156)
   FI
   error=Path(state)
   IF error<>0 THEN
+    RETURN(error)
+  FI
+  error=SDXNAMES.Resolve(state)
+  IF error<>0 THEN
+    IF state.nativeError<>0 THEN
+      DOS.SetIoErr(state.nativeError)
+      RETURN(MapError(state))
+    FI
     RETURN(error)
   FI
   slot=0

@@ -34,9 +34,10 @@ The [first implementation slice](development/sdx-patches.md) provides native
 CRC32 identification, checked patch transactions and component probes.
 The [P2 runtime slice](development/sdx-runtime.md) runs two synthetic guests on
 ordinary Tasks with native service waits, forced return-boundary NMIs and
-traced stock-810 reads alongside pointer IRQs. P3/P4 add native loading and services. [M1](development/sdx-md5.md) admits the
-pinned MD5 for named-file hashing through ordinary Processes and the shell.
-M2, ARC and complete hosted-system qualification remain open.
+traced stock-810 reads alongside pointer IRQs. P3/P4 add native loading and
+services. [M1/M2](development/sdx-md5.md) admit the pinned MD5 subset for hashing,
+verification, masks/P/H/A attributes, shell redirection, cancellation and
+concurrent Processes. ARC and complete hosted-system qualification remain open.
 
 Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved

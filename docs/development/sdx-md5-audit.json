@@ -12,6 +12,15 @@
       "@MD5": 12288
     }
   },
+  "manifest_revision": 4,
+  "patches": [
+    "md5-compression-irq",
+    "md5-break-checkpoint",
+    "md5-invalid-hex-pop",
+    "md5-verification-eof",
+    "md5-invalid-high-hex",
+    "md5-invalid-low-hex"
+  ],
   "instructions": 1141,
   "opcode_bytes": 2353,
   "opcodes": [
@@ -395,7 +404,8 @@
     "Direct-page indexed accesses wrap in E=1; indirect buffer pointer is B8.",
     "The /H path reads private RTCLOK and is rejected by parsed U_SLASH before entry.",
     "The only SEI is compression offset 041A, patched to NOP.",
-    "Cleanup handler at 00C0 preserves error in X across FCLOSEAL and tail-calls U_FAIL."
+    "Cleanup handler at 00C0 preserves error in X across FCLOSEAL and tail-calls U_FAIL.",
+    "Manifest revision 4 adds the native BREAK checkpoint and four edits balancing invalid-hex retry; original-SDX repaired control checks the latter independently."
   ],
-  "scope": "Static reachable-code audit of the pinned original; no guest binary is distributed."
+  "scope": "Static reachable-code audit of the pinned original; patch preimages and relocation intersections validated. No guest binary is distributed."
 }

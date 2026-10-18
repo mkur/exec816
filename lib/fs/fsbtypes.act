@@ -15,7 +15,7 @@ PUBLIC TYPE Volume=[
   CARD allocationHint
 ]
 
-; key is opaque backend identity. flags contains only DIR/PROTECTED below.
+; key is opaque backend identity. flags contains the backend-neutral metadata bits below.
 ; length/known are the only byte-extent metadata, including inside a cursor.
 ; An unknown length is not an empty file; only validated metadata sets known.
 PUBLIC TYPE Entry=[
@@ -68,5 +68,5 @@ PUBLIC TYPE Operation=[
   BYTE kind,stage
 ]
 
-PUBLIC CONST DIR=$10, PROTECTED=$20
+PUBLIC CONST DIR=$10, PROTECTED=$20, HIDDEN=$40, ARCHIVED=$80
 ENDMODULE

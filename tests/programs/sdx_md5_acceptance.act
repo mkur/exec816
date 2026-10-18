@@ -1,0 +1,176 @@
+MODULE SDXMD5ACCEPTANCE
+USE EXEC
+USE DOS
+USE PROCESS
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE SDXSTATE
+USE HEAPCORE
+USE FSBOOT
+
+INCLUDE "SHELL_INCLUDE"
+
+CARD checks,currentCase
+LONGINT primary,secondary,reason
+LONGCARD peer
+BYTE stopPeer
+BYTE ARRAY actual(256)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    reason=DOS.IoErr()
+    HEAPCORE.Abort($fd00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Put(BYTE POINTER name,bytes LONGINT length)
+  DOS.FileHandle POINTER file
+
+  file=DOS.Open(name,DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,bytes,length)=length)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC CheckOutput(BYTE POINTER name,expected CARD length)
+  DOS.FileHandle POINTER file
+  CARD index
+
+  file=DOS.Open(name,DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,@actual,256)=LONGINT(length))
+  index=0
+  WHILE index<length DO
+    Require(actual(index)=expected(index))
+    index==+1
+  OD
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+; A normal shell command must remain usable after every success and error.
+PROC Recover()
+  BYTE POINTER line,command
+  CARD index
+
+  line=ShellLine()
+  command=BYTE POINTER(c"RAM:MD5 ABC.BIN >RAM:RECOVER")
+  index=0
+  WHILE command(index)<>0 DO
+    line(index)=command(index)
+    index==+1
+  OD
+  line(index)=0
+  shell.length=index
+  ShellCommand()
+  Require(shell.lastStatus=0 AND shell.lastError=0 AND shell.done=0)
+  CheckOutput(BYTE POINTER(c"RAM:RECOVER"),RECOVER_EXPECTED,RECOVER_BYTES)
+
+RETURN
+
+PROC Run(CARD number BYTE POINTER args CARD length BYTE POINTER expected
+    CARD expectedBytes LONGINT wantPrimary,wantSecondary)
+  PROGRAMIMAGE.Image POINTER image
+  SDXSTATE.Session POINTER state
+  DOS.FileHandle POINTER output,previous
+  PROCESS.Result result
+  LONGCARD identity
+
+  currentCase=number
+  output=DOS.Open(BYTE POINTER(c"RAM:RESULT"),DOS.MODE_NEWFILE)
+  Require(output<>NULL)
+  previous=DOS.SelectOutput(output)
+  image=PROGRAMFILE.Load(BYTE POINTER(c"RAM:MD5"))
+  Require(image<>NULL)
+  state=SDXSTATE.Session POINTER(image.extension)
+  identity=PROCESS.StartLoaded(BYTE POINTER(image),args,length,0)
+  Require(identity<>0)
+  Require(PROCESS.Wait(identity,@result)<>0)
+  primary=result.primary
+  secondary=result.secondary
+  Require(primary=wantPrimary AND secondary=wantSecondary)
+  Require(state.handles(0)=NULL AND state.handles(1)=NULL AND state.trapCount=0)
+  PROGRAM.Unload(image)
+  DOS.SelectOutput(previous)
+  Require(DOS.Close(output)<>0)
+  CheckOutput(BYTE POINTER(c"RAM:RESULT"),expected,expectedBytes)
+  SDXSTATE.Guards()
+  Recover()
+
+RETURN
+
+PUBLIC LONGINT FUNC PeerEntry()
+
+  WHILE stopPeer=0 DO
+    peer==+1
+    EXEC.Yield()
+  OD
+
+RETURN(0)
+
+PROC Concurrent()
+  PROGRAMIMAGE.Image POINTER first,second
+  SDXSTATE.Session POINTER one,two
+  DOS.FileHandle POINTER output1,output2,previous
+  LONGCARD firstId,secondId,peerId,before
+  PROCESS.Result result
+
+  currentCase=100
+  first=PROGRAMFILE.Load(BYTE POINTER(c"RAM:MD5"))
+  second=PROGRAMFILE.Load(BYTE POINTER(c"RAM:MD5"))
+  Require(first<>NULL AND second<>NULL)
+  one=SDXSTATE.Session POINTER(first.extension)
+  two=SDXSTATE.Session POINTER(second.extension)
+  Require(one.slot<>two.slot AND one.bank<>two.bank AND one.dp<>two.dp)
+  Require(PROGRAMFILE.Load(BYTE POINTER(c"RAM:MD5"))=NULL AND DOS.IoErr()=308)
+  output1=DOS.Open(BYTE POINTER(c"RAM:FIRST"),DOS.MODE_NEWFILE)
+  output2=DOS.Open(BYTE POINTER(c"RAM:SECOND"),DOS.MODE_NEWFILE)
+  Require(output1<>NULL AND output2<>NULL)
+  previous=DOS.SelectOutput(output1)
+  EXEC.Forbid()
+  peerId=PROCESS.StartBackground(@PeerEntry,NULL,0)
+  before=peer
+  firstId=PROCESS.StartLoaded(BYTE POINTER(first),BYTE POINTER(c"/C BIG.MD5"),10,0)
+  DOS.SelectOutput(output2)
+  secondId=PROCESS.StartLoaded(BYTE POINTER(second),BYTE POINTER(c"BIG.BIN"),7,0)
+  EXEC.Permit()
+  Require(peerId<>0 AND firstId<>0 AND secondId<>0)
+  DOS.SelectOutput(previous)
+  Require(PROCESS.Wait(firstId,@result)<>0 AND result.primary=0 AND result.secondary=0)
+  Require(PROCESS.Wait(secondId,@result)<>0 AND result.primary=0 AND result.secondary=0)
+  Require(peer>before)
+  stopPeer=1
+  Require(PROCESS.Wait(peerId,@result)<>0)
+  Require(one.handles(0)=NULL AND one.handles(1)=NULL AND one.trapCount=0)
+  Require(two.handles(0)=NULL AND two.handles(1)=NULL AND two.trapCount=0)
+  PROGRAM.Unload(first)
+  PROGRAM.Unload(second)
+  Require(DOS.Close(output1)<>0 AND DOS.Close(output2)<>0)
+  CheckOutput(BYTE POINTER(c"RAM:FIRST"),FIRST_EXPECTED,12)
+  CheckOutput(BYTE POINTER(c"RAM:SECOND"),SECOND_EXPECTED,SECOND_BYTES)
+  SDXSTATE.Guards()
+  Recover()
+
+RETURN
+
+PROC Main()
+  LONGCARD baseline
+
+  baseline=EXEC.AvailMem(0)
+SETUP_FILES
+  Require(ShellStart(BYTE POINTER(c"RAM:"))<>0)
+RUN_CASES
+  Concurrent()
+  Require(ShellFinish()=0 AND shell=NULL)
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+ENDMODULE

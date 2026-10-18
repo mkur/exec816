@@ -94,6 +94,7 @@ def audit(raw):
         lo=base+at+3
         hi=lo+len(bytes.fromhex(record['format_hex']))+1+2*len(record['arguments'])
         assert not occupied.intersection(range(lo,hi)),('inline data executed',hex(at))
+    assert sorted(pc-base for pc,(name,_,_) in code.items() if name=='SEI')==[0x41a]
     # All mutable executable bytes are operand bytes, never opcodes.
     mutations=sorted({a['operand']-base for a in accesses
         if a['instruction'] in ('STA','STX','STY','INC','DEC') and a['mode']=='abs'
@@ -107,6 +108,7 @@ def audit(raw):
     hardware=[a for a in accesses if a['mode'].startswith('abs') and a['operand']>=0xd000]
     assert len(hardware)==16 and all(a['instruction']=='LDA' and a['operand']==0xffff for a in hardware)
     return dict(status='pass',sha256=hashlib.sha256(raw).hexdigest(),layout=layout,
+        manifest_revision=manifest['revision'],patches=[p['id'] for p in module['patches']],
         instructions=len(code),opcode_bytes=len(occupied),opcodes=sorted({memory[pc] for pc in code}),
         calls=sorted(calls,key=lambda x:x['offset']),inline=inline,
         self_modifying_operands=mutations,dynamic_branches=branches,

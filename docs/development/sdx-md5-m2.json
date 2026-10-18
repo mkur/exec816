@@ -1,0 +1,1313 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "scope": "M2 admitted MD5 subset; no full hosted qualification or ARC admission",
+  "manifest_revision": 4,
+  "input": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+  "pins": {
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "upper_session": {
+    "before": 592,
+    "after": 864,
+    "delta_per_loaded_image": 272
+  },
+  "existing_reservations": {
+    "guest_dp_pool_fixed_bank_zero": 544,
+    "resident_upper_bank": 65536,
+    "private_bank_rounded_backing_per_image": 131072
+  },
+  "runs": {
+    "final-acceptance": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 2223,
+      "peer": 347,
+      "cases": [
+        {
+          "arguments": "ABC.BIN",
+          "expected": "4d443520284142432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "ABC.BIN EMPTY.BIN",
+          "expected": "4d443520284142432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b4d44352028454d5054592e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "A*.BIN",
+          "expected": "4d44352028412a2e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "A?C.BIN",
+          "expected": "4d44352028413f432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "A??.BIN",
+          "expected": "4d44352028413f3f2e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "-P ABC.BIN",
+          "expected": "4d443520284142432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "+P ABC.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 205
+        },
+        {
+          "arguments": "+H ABC.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 205
+        },
+        {
+          "arguments": "+A ABC.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 205
+        },
+        {
+          "arguments": "+S ABC.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 156
+        },
+        {
+          "arguments": "NONE.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 205
+        },
+        {
+          "arguments": "/H ABC.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 156
+        },
+        {
+          "arguments": "/Q ABC.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 156
+        },
+        {
+          "arguments": "/C GOOD.MD5",
+          "expected": "4142432e42494e3a204f4b9b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "/C ATARI.MD5",
+          "expected": "4142432e42494e3a204f4b9b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "/C CRLF.MD5",
+          "expected": "4142432e42494e3a204f4b9b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "/C FINAL.MD5",
+          "expected": "4142432e42494e3a204f4b9b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "/C BSD.MD5",
+          "expected": "4142432e42494e3a204f4b9b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "/C MALFORM.MD5",
+          "expected": "4142432e42494e3a204f4b9b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "/C MIXED.MD5",
+          "expected": "4142432e42494e3a204f4b9b4142432e42494e3a204f4b9b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "/C BAD.MD5",
+          "expected": "4142432e42494e3a20c2c1c49b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "/C EMPTY.MD5",
+          "expected": "",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "/C LONG.MD5",
+          "expected": "",
+          "primary": 20,
+          "secondary": 137
+        },
+        {
+          "arguments": "/C ABSENT.MD5",
+          "expected": "4e4f4e452e42494e3a20",
+          "primary": 20,
+          "secondary": 205
+        },
+        {
+          "arguments": "/C NONE.MD5",
+          "expected": "",
+          "primary": 20,
+          "secondary": 205
+        }
+      ],
+      "seconds": 183.269,
+      "runtime": {
+        "native_nmi_count": 3665,
+        "native_irq_count": 0,
+        "switches": 11121,
+        "gateway_calls": 60649,
+        "guards": "intact"
+      },
+      "build": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "optimize": true,
+        "stack_checks": true,
+        "image_sha256": "065c014e320c7e1b16f47dd7e92bf1241470247edd7098b6d3d1e23f120cef1a",
+        "xex_sha256": "34a05a72e342d47e0bb39cb905ad141402a256e5e4d617d14be13c02d185db80",
+        "memory_sha256": "f11c087d68ce641b97db1c459732d2398f110c8ee7ead662c426195c3fbeea95",
+        "source_sha256": "7ff8e23ebb80a11347cb76004e398f87d51c92899b1dc7dd2efec8218cf74a62",
+        "sdx_inputs": {
+          "lib/dos/sdxmd5.act": "902beac4092853e2674e096bbf71054085003085118b3796e4430cb15f4a2b34",
+          "lib/dos/sdxnames.act": "ea2aba5b6c9bf4d429dfb2b63522e1fca0de53bc78f178e90b7c925ebc806163",
+          "lib/dos/sdxservice.act": "c9fde4a31b41257fb9c5a1161da6751871e1420c5cc35200688b3a243891d202",
+          "lib/dos/sdxstate.act": "429684ebabbe115e361beaa2f3dd019c16498c280b218429fd6afb6debd7e893",
+          "compat/sdx/md5-450.json": "90e86b6cc0fa476e4b39de5ab6add0590c6faeda642088e152c1f937cf8e8669"
+        }
+      },
+      "machine": {
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "highbanks": 63,
+        "randdelay": false,
+        "diskemu": "generic",
+        "actual_kernel_id": "$c017f1e4033f056f"
+      },
+      "result_sha256": "e20efa3a01f2b3586b14cf49cd91ee34d01f08ef36625ea109e48666cdb14e06"
+    },
+    "final-vectors-shell": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 1052,
+      "cases": [
+        {
+          "name": "empty",
+          "bytes": 0,
+          "md5": "d41d8cd98f00b204e9800998ecf8427e",
+          "expected": "4d44352028413a3e444154412e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b"
+        },
+        {
+          "name": "abc",
+          "bytes": 3,
+          "md5": "900150983cd24fb0d6963f7d28e17f72",
+          "expected": "4d44352028413a3e444154412e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b"
+        },
+        {
+          "name": "all-bytes",
+          "bytes": 256,
+          "md5": "e2c865db4162bed963bfaa9ef6ac18f0",
+          "expected": "4d44352028413a3e444154412e42494e29203d2045324338363544423431363242454439363342464141394546364143313846309b"
+        },
+        {
+          "name": "55",
+          "bytes": 55,
+          "md5": "a7555f1cbcea377c660265d60f0b43e9",
+          "expected": "4d44352028413a3e444154412e42494e29203d2041373535354631434243454133373743363630323635443630463042343345399b"
+        },
+        {
+          "name": "56",
+          "bytes": 56,
+          "md5": "6cd86ae039432adef6f4ae4574191b79",
+          "expected": "4d44352028413a3e444154412e42494e29203d2036434438364145303339343332414445463646344145343537343139314237399b"
+        },
+        {
+          "name": "63",
+          "bytes": 63,
+          "md5": "2f261e323d8e3c22a7c32f8797559d0b",
+          "expected": "4d44352028413a3e444154412e42494e29203d2032463236314533323344384533433232413743333246383739373535394430429b"
+        },
+        {
+          "name": "64",
+          "bytes": 64,
+          "md5": "e9621717bb98894e3cf92ee5e5b66c19",
+          "expected": "4d44352028413a3e444154412e42494e29203d2045393632313731374242393838393445334346393245453545354236364331399b"
+        },
+        {
+          "name": "65",
+          "bytes": 65,
+          "md5": "199bc7fa1758e209ca0c0e280d7135b7",
+          "expected": "4d44352028413a3e444154412e42494e29203d2031393942433746413137353845323039434130433045323830443731333542379b"
+        },
+        {
+          "name": "256",
+          "bytes": 256,
+          "md5": "f1c533f4ef3fcd76b5a1fe0684238164",
+          "expected": "4d44352028413a3e444154412e42494e29203d2046314335333346344546334643443736423541314645303638343233383136349b"
+        },
+        {
+          "name": "39935",
+          "bytes": 39935,
+          "md5": "13b30b2a6bafcd7fb12e99d5ab6dab22",
+          "expected": "4d44352028413a3e444154412e42494e29203d2031334233304232413642414643443746423132453939443541423644414232329b"
+        },
+        {
+          "name": "39936",
+          "bytes": 39936,
+          "md5": "02fa652b2f1f12edac03db26f746c14b",
+          "expected": "4d44352028413a3e444154412e42494e29203d2030324641363532423246314631324544414330334442323646373436433134429b"
+        },
+        {
+          "name": "39937",
+          "bytes": 39937,
+          "md5": "e95754444aaff087764f963503737bcb",
+          "expected": "4d44352028413a3e444154412e42494e29203d2045393537353434343441414646303837373634463936333530333733374243429b"
+        },
+        {
+          "name": "65535",
+          "bytes": 65535,
+          "md5": "a1a1f44bfac7ba1a1a6dd2ce7e501cc7",
+          "expected": "4d44352028413a3e444154412e42494e29203d2041314131463434424641433742413141314136444432434537453530314343379b"
+        },
+        {
+          "name": "65536",
+          "bytes": 65536,
+          "md5": "231d3babc51db2e3fab39f5bcc184a7b",
+          "expected": "4d44352028413a3e444154412e42494e29203d2032333144334241424335314442324533464142333946354243433138344137429b"
+        },
+        {
+          "name": "65537",
+          "bytes": 65537,
+          "md5": "d244a2222e2b7ff07b5b85657ecf86d4",
+          "expected": "4d44352028413a3e444154412e42494e29203d2044323434413232323245324237464630374235423835363537454346383644349b"
+        },
+        {
+          "name": "131073",
+          "bytes": 131073,
+          "md5": "5ef4b3a828ff1e41e4b24e9538e6294e",
+          "expected": "4d44352028413a3e444154412e42494e29203d2035454634423341383238464631453431453442323445393533384536323934459b"
+        },
+        {
+          "name": "shell",
+          "expected": "4d44352028444154412e42494e29203d2035454634423341383238464631453431453442323445393533384536323934459b"
+        }
+      ],
+      "seconds": 169.102,
+      "runtime": {
+        "native_nmi_count": 2659,
+        "native_irq_count": 0,
+        "switches": 2019,
+        "gateway_calls": 33863,
+        "guards": "intact"
+      },
+      "build": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "optimize": true,
+        "stack_checks": true,
+        "image_sha256": "3678075e9acaf762b93a29e1f4088f3ea09d5c04d86692c988bce99ef2fb294d",
+        "xex_sha256": "eb4dee944fcc7eb750c27f761a85825aa34f22487fb4564203d3a0811974ea9b",
+        "memory_sha256": "7d3054a5e54b4cf12205950e0de686ff42f5d10071150188ccadf91931977340",
+        "source_sha256": "64729ec3c66b7cc7c2e3f396a1742023fe7d4b2f3a778a7cf33604f16287bde8",
+        "sdx_inputs": {
+          "lib/dos/sdxmd5.act": "902beac4092853e2674e096bbf71054085003085118b3796e4430cb15f4a2b34",
+          "lib/dos/sdxnames.act": "ea2aba5b6c9bf4d429dfb2b63522e1fca0de53bc78f178e90b7c925ebc806163",
+          "lib/dos/sdxservice.act": "c9fde4a31b41257fb9c5a1161da6751871e1420c5cc35200688b3a243891d202",
+          "lib/dos/sdxstate.act": "429684ebabbe115e361beaa2f3dd019c16498c280b218429fd6afb6debd7e893",
+          "compat/sdx/md5-450.json": "90e86b6cc0fa476e4b39de5ab6add0590c6faeda642088e152c1f937cf8e8669"
+        }
+      },
+      "machine": {
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "highbanks": 63,
+        "randdelay": false,
+        "diskemu": "generic",
+        "actual_kernel_id": "$c017f1e4033f056f"
+      },
+      "result_sha256": "a6b21397b0bfe1937038d025d5e8895b71facfe323a6a0105825a82d660f1c51"
+    },
+    "attributes": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 1347,
+      "peer": 0,
+      "media_sha256": "e0e62ff08e25653fd10556420592471478f500fcc658489eca32e53b6fae3be8",
+      "cases": [
+        {
+          "arguments": "PROT.BIN",
+          "expected": "4d4435202850524f542e42494e29203d2032443037464144373834373844383845424146444335383141393136393642469b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "+P PROT.BIN",
+          "expected": "4d4435202850524f542e42494e29203d2032443037464144373834373844383845424146444335383141393136393642469b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "-P PROT.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 205
+        },
+        {
+          "arguments": "HIDDEN.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 205
+        },
+        {
+          "arguments": "+H HIDDEN.BIN",
+          "expected": "4d4435202848494444454e2e42494e29203d2036363246373037443534393145394243453832333841364330424539323139309b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "-H HIDDEN.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 205
+        },
+        {
+          "arguments": "+A ARCH.BIN",
+          "expected": "4d44352028415243482e42494e29203d2030443131314635363936343938354635363241414141463944323938303738379b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "-A ARCH.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 205
+        },
+        {
+          "arguments": "+AP BOTH.BIN",
+          "expected": "4d44352028424f54482e42494e29203d2046364342334538313634393635323844343138374442353342433636353637469b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "+P +A BOTH.BIN",
+          "expected": "4d44352028424f54482e42494e29203d2046364342334538313634393635323844343138374442353342433636353637469b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "+A -P BOTH.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 205
+        },
+        {
+          "arguments": "+H -H HIDDEN.BIN",
+          "expected": "",
+          "primary": 20,
+          "secondary": 205
+        },
+        {
+          "arguments": "Q???.BIN",
+          "expected": "4d44352028513f3f3f2e42494e29203d2042373043444238373841323034464543463931433744443141463331323432319b",
+          "primary": 0,
+          "secondary": 0
+        },
+        {
+          "arguments": "+H H*.BIN",
+          "expected": "4d44352028482a2e42494e29203d2036363246373037443534393145394243453832333841364330424539323139309b",
+          "primary": 0,
+          "secondary": 0
+        }
+      ],
+      "seconds": 210.165,
+      "runtime": {
+        "native_nmi_count": 1633,
+        "native_irq_count": 5428,
+        "switches": 3509,
+        "gateway_calls": 50346,
+        "guards": "intact"
+      },
+      "build": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "optimize": true,
+        "stack_checks": true,
+        "image_sha256": "8886b2422939319c399a791cce91514fa49eb035ef7ed61462d8ca8e62bf021a",
+        "xex_sha256": "62e6b2fb5d3ff551e26745be8e4a0a8c30e14ba369b1fc850373b67db4a8b3e2",
+        "memory_sha256": "59a83074a9abd64c96a46416475eaeec15214c7cb60b1804d6e4ad32c1945440",
+        "source_sha256": "2b053506f0c4b00dc52a9dfdd3609a9f5e506597bd65bc2fee18a4abe7e96468",
+        "sdx_inputs": {
+          "lib/dos/sdxmd5.act": "211687b08bd592471dd8978c3bd38797dcc9ce376d6e8bfcfbb159299584b9bd",
+          "lib/dos/sdxnames.act": "ea2aba5b6c9bf4d429dfb2b63522e1fca0de53bc78f178e90b7c925ebc806163",
+          "lib/dos/sdxservice.act": "c9fde4a31b41257fb9c5a1161da6751871e1420c5cc35200688b3a243891d202",
+          "lib/dos/sdxstate.act": "429684ebabbe115e361beaa2f3dd019c16498c280b218429fd6afb6debd7e893",
+          "compat/sdx/md5-450.json": "73b9d6d643017cad736b2b7154d3d8acdfced34e3cf57d5ac0caabb439c9915a"
+        }
+      },
+      "machine": {
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "highbanks": 63,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "actual_kernel_id": "$c017f1e4033f056f"
+      },
+      "result_sha256": "2ea8ee242260e5b998bc4b62eccf0f0b191d4ca8d175874651e30294c1004d9a"
+    },
+    "rethrow-breaks": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 306,
+      "peer": 0,
+      "media_sha256": "810bed96abe28c8153b128cc1adf46dfa5a1339b972a751fdd738ea7240d730c",
+      "seconds": 180.929,
+      "phases": [
+        {
+          "phase": "before-entry",
+          "pal_frames": 3,
+          "guest_pc": 0,
+          "event": 0
+        },
+        {
+          "phase": "compression",
+          "pal_frames": 3,
+          "guest_pc": 14538,
+          "event": 0
+        },
+        {
+          "phase": "native-read",
+          "pal_frames": 3,
+          "guest_pc": 13160,
+          "event": 6
+        },
+        {
+          "phase": "blocked-output",
+          "pal_frames": 3,
+          "guest_pc": 13015,
+          "event": 7
+        }
+      ],
+      "runtime": {
+        "native_nmi_count": 3021,
+        "native_irq_count": 19277,
+        "switches": 3265,
+        "gateway_calls": 26517,
+        "guards": "intact"
+      },
+      "build": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "optimize": true,
+        "stack_checks": true,
+        "image_sha256": "b78e033617992861af9052896926a44d4094350741ce7c7717c8993a88116b5c",
+        "xex_sha256": "3fa6f67790a41e6e545bef310404aa26eb20d78fc0f803242c0b7b93a2f86f2f",
+        "memory_sha256": "7d539583535f96d1ca28540ede02a0af3375afbb272a9d3fb862d1ae08e365d8",
+        "source_sha256": "add346c6fde94250b39eb4f7f6c3399b88498c6c9aca7f7d8adc9d99a600ca27",
+        "sdx_inputs": {
+          "lib/dos/sdxmd5.act": "902beac4092853e2674e096bbf71054085003085118b3796e4430cb15f4a2b34",
+          "lib/dos/sdxnames.act": "ea2aba5b6c9bf4d429dfb2b63522e1fca0de53bc78f178e90b7c925ebc806163",
+          "lib/dos/sdxservice.act": "664dbfeed38c07860f73637b7bbf423069f69a66727f990ea412bfe22a1a63d0",
+          "lib/dos/sdxstate.act": "429684ebabbe115e361beaa2f3dd019c16498c280b218429fd6afb6debd7e893",
+          "compat/sdx/md5-450.json": "90e86b6cc0fa476e4b39de5ab6add0590c6faeda642088e152c1f937cf8e8669",
+          "compat/sdx/probes/rethrow.s": "4d588b6d34e054ec6fd8b5664a9edea4f55345f93dd911afb1dfa60977f134d2"
+        }
+      },
+      "machine": {
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "highbanks": 63,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "actual_kernel_id": "$c017f1e4033f056f"
+      },
+      "result_sha256": "00aa38dba97a7e137028ce0b18ac1988031008225fb365640cafa3b5499e2814"
+    },
+    "final-read-close": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 30,
+      "overrides": {
+        "sdxfiles.act": "bc666d891719730880cb77ce3c94980078cf1112388bd271297b7054e72f8f9b",
+        "sdxprint.act": "1f5c3dad4a0f46f66828155b083fefdaab92ac4498f5e4335c19ec31901d9c79"
+      },
+      "runtime": {
+        "native_nmi_count": 62,
+        "native_irq_count": 0,
+        "switches": 155,
+        "gateway_calls": 1772,
+        "guards": "intact"
+      },
+      "build": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "optimize": true,
+        "stack_checks": true,
+        "image_sha256": "b277bbe8231b47a39bae5afda9970b3e8a07ddcdce803be1c69adbbbca6b714c",
+        "xex_sha256": "902827ee4bc654aba4f4000b97717153903ea06afa93de07ea421559c2f29e40",
+        "memory_sha256": "73e27ec36e90a4cf6a66fc0816e1224152b78ef3eefe6047a7891586cfa47921",
+        "source_sha256": "2117a0b5dd605e20ebeb56ca7fd7da9c00bf6716ec3cab869b846ab1fa207426",
+        "sdx_inputs": {
+          "lib/dos/sdxmd5.act": "902beac4092853e2674e096bbf71054085003085118b3796e4430cb15f4a2b34",
+          "lib/dos/sdxnames.act": "ea2aba5b6c9bf4d429dfb2b63522e1fca0de53bc78f178e90b7c925ebc806163",
+          "lib/dos/sdxservice.act": "664dbfeed38c07860f73637b7bbf423069f69a66727f990ea412bfe22a1a63d0",
+          "lib/dos/sdxstate.act": "429684ebabbe115e361beaa2f3dd019c16498c280b218429fd6afb6debd7e893",
+          "compat/sdx/md5-450.json": "90e86b6cc0fa476e4b39de5ab6add0590c6faeda642088e152c1f937cf8e8669",
+          "compat/sdx/probes/rethrow.s": "4d588b6d34e054ec6fd8b5664a9edea4f55345f93dd911afb1dfa60977f134d2"
+        }
+      },
+      "machine": {
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "highbanks": 63,
+        "randdelay": false,
+        "diskemu": "generic",
+        "actual_kernel_id": "$c017f1e4033f056f"
+      },
+      "result_sha256": "d4c82860df9aeb84d0f22a7003e4e158529517faa53add501f7395486060aeb0"
+    },
+    "write": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 30,
+      "overrides": {
+        "sdxfiles.act": "bbb50122e406c1b05ad590d6904a96396951cb4f28a8d2a4c0a806120e67e009",
+        "sdxprint.act": "b83b0d249804d211faeee51e7f0f27188811413dcdca96a44f5d40ac408c7dae"
+      },
+      "runtime": {
+        "native_nmi_count": 64,
+        "native_irq_count": 0,
+        "switches": 139,
+        "gateway_calls": 1773,
+        "guards": "intact"
+      },
+      "build": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "optimize": true,
+        "stack_checks": true,
+        "image_sha256": "54d1fe97c9040f02912a865133ed19f2723c66dccd6eeac26e01ee84b40976d7",
+        "xex_sha256": "a1e001a6e6b4d9e5a98cd9484a1acdd8a68f60e96d3403f6261c5475edaad024",
+        "memory_sha256": "70eba3932b3f90ada7aa400895cbaac6c2e33b524ea6762c3f213240c87b5fa9",
+        "source_sha256": "679e9b570de8e33633c77d0027e00ca306a6080ff3f3422dc986ee51ca5217ea",
+        "sdx_inputs": {
+          "lib/dos/sdxmd5.act": "211687b08bd592471dd8978c3bd38797dcc9ce376d6e8bfcfbb159299584b9bd",
+          "lib/dos/sdxnames.act": "ea2aba5b6c9bf4d429dfb2b63522e1fca0de53bc78f178e90b7c925ebc806163",
+          "lib/dos/sdxservice.act": "c9fde4a31b41257fb9c5a1161da6751871e1420c5cc35200688b3a243891d202",
+          "lib/dos/sdxstate.act": "429684ebabbe115e361beaa2f3dd019c16498c280b218429fd6afb6debd7e893",
+          "compat/sdx/md5-450.json": "73b9d6d643017cad736b2b7154d3d8acdfced34e3cf57d5ac0caabb439c9915a"
+        }
+      },
+      "machine": {
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "highbanks": 63,
+        "randdelay": false,
+        "diskemu": "generic",
+        "actual_kernel_id": "$c017f1e4033f056f"
+      },
+      "result_sha256": "56132f2cf625c2eb49031fa64dfec77b2eaf44aa9d56f988b5245d21762c3fbd"
+    },
+    "close": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 30,
+      "overrides": {
+        "sdxfiles.act": "f354e1b9133734f0d8ef5ffa7c4ece0eedf62cec18744066a6dd09dd462992a6",
+        "sdxprint.act": "1f5c3dad4a0f46f66828155b083fefdaab92ac4498f5e4335c19ec31901d9c79"
+      },
+      "runtime": {
+        "native_nmi_count": 63,
+        "native_irq_count": 0,
+        "switches": 147,
+        "gateway_calls": 1751,
+        "guards": "intact"
+      },
+      "build": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "optimize": true,
+        "stack_checks": true,
+        "image_sha256": "950b6904c4df09f1890d2db9e3c9038f0dec15950825905c11ad9c19a72595af",
+        "xex_sha256": "65c1b89b7b8cdb10f7e88772cf6e44d1cf0d9315994ed95d7f3ebeb53ec2f10d",
+        "memory_sha256": "70eba3932b3f90ada7aa400895cbaac6c2e33b524ea6762c3f213240c87b5fa9",
+        "source_sha256": "d916061e05099ef5296c227fb48336a8d1f68b8ccb195cb004e89b2b06170825",
+        "sdx_inputs": {
+          "lib/dos/sdxmd5.act": "211687b08bd592471dd8978c3bd38797dcc9ce376d6e8bfcfbb159299584b9bd",
+          "lib/dos/sdxnames.act": "ea2aba5b6c9bf4d429dfb2b63522e1fca0de53bc78f178e90b7c925ebc806163",
+          "lib/dos/sdxservice.act": "c9fde4a31b41257fb9c5a1161da6751871e1420c5cc35200688b3a243891d202",
+          "lib/dos/sdxstate.act": "429684ebabbe115e361beaa2f3dd019c16498c280b218429fd6afb6debd7e893",
+          "compat/sdx/md5-450.json": "73b9d6d643017cad736b2b7154d3d8acdfced34e3cf57d5ac0caabb439c9915a"
+        }
+      },
+      "machine": {
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "highbanks": 63,
+        "randdelay": false,
+        "diskemu": "generic",
+        "actual_kernel_id": "$c017f1e4033f056f"
+      },
+      "result_sha256": "1a8476b6bcfcb1bb01befb9234aa67a35d17752f3b9bdb888ccc1ceb847b74b3"
+    },
+    "partial": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 136,
+      "overrides": {
+        "sdxfiles.act": "f40cc9b8a29444e4aacf7a0f6ba85e975971d89b74d681f66c6ef1c80145b9ba",
+        "sdxprint.act": "c4ca9658d9e029bd3413967b14d95cdbc57f7a3842066790b176378f294a1291"
+      },
+      "runtime": {
+        "native_nmi_count": 118,
+        "native_irq_count": 0,
+        "switches": 385,
+        "gateway_calls": 4669,
+        "guards": "intact"
+      },
+      "build": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "optimize": true,
+        "stack_checks": true,
+        "image_sha256": "1b1f161b4fe3b4eed19c9c7a5b6b040ea9175c51d74723c2791ce80745cc0e68",
+        "xex_sha256": "68b48643223b0ec570ff49dbba595087af92acced03f0769b647c269dcd96c5a",
+        "memory_sha256": "70eba3932b3f90ada7aa400895cbaac6c2e33b524ea6762c3f213240c87b5fa9",
+        "source_sha256": "7f504703002403619baedcd8bccbbd8eb4059ab9482c1a9fdd505d5a20c8743c",
+        "sdx_inputs": {
+          "lib/dos/sdxmd5.act": "211687b08bd592471dd8978c3bd38797dcc9ce376d6e8bfcfbb159299584b9bd",
+          "lib/dos/sdxnames.act": "ea2aba5b6c9bf4d429dfb2b63522e1fca0de53bc78f178e90b7c925ebc806163",
+          "lib/dos/sdxservice.act": "c9fde4a31b41257fb9c5a1161da6751871e1420c5cc35200688b3a243891d202",
+          "lib/dos/sdxstate.act": "429684ebabbe115e361beaa2f3dd019c16498c280b218429fd6afb6debd7e893",
+          "compat/sdx/md5-450.json": "73b9d6d643017cad736b2b7154d3d8acdfced34e3cf57d5ac0caabb439c9915a"
+        }
+      },
+      "machine": {
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "highbanks": 63,
+        "randdelay": false,
+        "diskemu": "generic",
+        "actual_kernel_id": "$c017f1e4033f056f"
+      },
+      "result_sha256": "b92ebe734ff73ce1f1924d15947faa9dcfea5f731008cb9fe37b5d4fa2e07f20"
+    },
+    "rethrow-services": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 121,
+      "seconds": 141.164,
+      "runtime": {
+        "native_nmi_count": 183,
+        "native_irq_count": 0,
+        "switches": 353,
+        "gateway_calls": 4683,
+        "guards": "intact"
+      },
+      "build": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "optimize": true,
+        "stack_checks": true,
+        "image_sha256": "7a4b290b6f39c228fe8e5b588cf1015cd243ce69292756b5ec114133ec447d40",
+        "xex_sha256": "b7dd857b8e8048d7ca81c6180a4fa586ba437ad17e86edd03759052b7a413080",
+        "memory_sha256": "73e27ec36e90a4cf6a66fc0816e1224152b78ef3eefe6047a7891586cfa47921",
+        "source_sha256": "740ebc9fdf6ad49fc364796b8b5b9a86334e625d63c47b3df0956315c4bc38f2",
+        "sdx_inputs": {
+          "lib/dos/sdxmd5.act": "902beac4092853e2674e096bbf71054085003085118b3796e4430cb15f4a2b34",
+          "lib/dos/sdxnames.act": "ea2aba5b6c9bf4d429dfb2b63522e1fca0de53bc78f178e90b7c925ebc806163",
+          "lib/dos/sdxservice.act": "664dbfeed38c07860f73637b7bbf423069f69a66727f990ea412bfe22a1a63d0",
+          "lib/dos/sdxstate.act": "429684ebabbe115e361beaa2f3dd019c16498c280b218429fd6afb6debd7e893",
+          "compat/sdx/md5-450.json": "90e86b6cc0fa476e4b39de5ab6add0590c6faeda642088e152c1f937cf8e8669",
+          "compat/sdx/probes/rethrow.s": "4d588b6d34e054ec6fd8b5664a9edea4f55345f93dd911afb1dfa60977f134d2"
+        }
+      },
+      "machine": {
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "highbanks": 63,
+        "randdelay": true,
+        "diskemu": "generic",
+        "actual_kernel_id": "$c017f1e4033f056f"
+      },
+      "result_sha256": "84040a76cb1b418dc8429e4f845d6ea83b80e7ae8da296c06fdf1dda5b11401a"
+    },
+    "shape-opt": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 44,
+      "runtime": {
+        "native_nmi_count": 0,
+        "native_irq_count": 0,
+        "switches": 1,
+        "gateway_calls": 8,
+        "guards": "intact"
+      },
+      "build": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "optimize": true,
+        "stack_checks": true,
+        "image_sha256": "ba013af8aa0b3d7408848c7f0cc71448ab6dfde2092d5153b49fc2dcd99142ca",
+        "xex_sha256": "7546773886c691b56793c4cbc2c2b712914ddb80d35245fb6126695265335f87",
+        "memory_sha256": "70eba3932b3f90ada7aa400895cbaac6c2e33b524ea6762c3f213240c87b5fa9",
+        "source_sha256": "dc7a19b3d38e5f405975d3f418d01393d95bfef29942e8987af540bb72f6fe22",
+        "sdx_inputs": {
+          "lib/dos/sdxmd5.act": "211687b08bd592471dd8978c3bd38797dcc9ce376d6e8bfcfbb159299584b9bd",
+          "lib/dos/sdxnames.act": "ea2aba5b6c9bf4d429dfb2b63522e1fca0de53bc78f178e90b7c925ebc806163",
+          "lib/dos/sdxservice.act": "c9fde4a31b41257fb9c5a1161da6751871e1420c5cc35200688b3a243891d202",
+          "lib/dos/sdxstate.act": "429684ebabbe115e361beaa2f3dd019c16498c280b218429fd6afb6debd7e893",
+          "compat/sdx/md5-450.json": "73b9d6d643017cad736b2b7154d3d8acdfced34e3cf57d5ac0caabb439c9915a"
+        }
+      },
+      "machine": {
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "highbanks": 63,
+        "randdelay": true,
+        "diskemu": "generic",
+        "actual_kernel_id": "$c017f1e4033f056f"
+      },
+      "result_sha256": "4c3ffd74b3e9476fbe3073fd7903758913887adc5f1489432ce5a12b44645440"
+    },
+    "shape-raw": {
+      "status": "pass",
+      "tier": "development",
+      "checks": 44,
+      "runtime": {
+        "native_nmi_count": 0,
+        "native_irq_count": 0,
+        "switches": 1,
+        "gateway_calls": 8,
+        "guards": "intact"
+      },
+      "build": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "optimize": false,
+        "stack_checks": true,
+        "image_sha256": "4ae8f652a1e5684c11b35d3b78589543a793db082f727120740003e85064a886",
+        "xex_sha256": "388e89a54a32303417936b90cf414a1372319823b8bf8bd7a92595e8d76f7cb1",
+        "memory_sha256": "70eba3932b3f90ada7aa400895cbaac6c2e33b524ea6762c3f213240c87b5fa9",
+        "source_sha256": "dc7a19b3d38e5f405975d3f418d01393d95bfef29942e8987af540bb72f6fe22",
+        "sdx_inputs": {
+          "lib/dos/sdxmd5.act": "211687b08bd592471dd8978c3bd38797dcc9ce376d6e8bfcfbb159299584b9bd",
+          "lib/dos/sdxnames.act": "ea2aba5b6c9bf4d429dfb2b63522e1fca0de53bc78f178e90b7c925ebc806163",
+          "lib/dos/sdxservice.act": "c9fde4a31b41257fb9c5a1161da6751871e1420c5cc35200688b3a243891d202",
+          "lib/dos/sdxstate.act": "429684ebabbe115e361beaa2f3dd019c16498c280b218429fd6afb6debd7e893",
+          "compat/sdx/md5-450.json": "73b9d6d643017cad736b2b7154d3d8acdfced34e3cf57d5ac0caabb439c9915a"
+        }
+      },
+      "machine": {
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "highbanks": 63,
+        "randdelay": true,
+        "diskemu": "generic",
+        "actual_kernel_id": "$c017f1e4033f056f"
+      },
+      "result_sha256": "7953a6a773ce751d8e39ab65cd99c8e0d5df8d27319323dcf11520b33d5655b4"
+    }
+  },
+  "controls": {
+    "reference-edges": {
+      "status": "pass",
+      "scope": "SDX control; no Exec guest execution or captured command exit codes",
+      "executable_sha256": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+      "inputs": {
+        "MD5.COM": {
+          "sha256": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+          "bytes": 3488
+        },
+        "SDX450_maxflash1.car": {
+          "sha256": "17fa6167b6de7997cceb67b8ab261c0c24eff5d9d8eeb4417a0644a87a9674c0",
+          "bytes": 131088
+        },
+        "MD5.ARC": {
+          "sha256": "3c215eae4662d438b14ea374e309980632d11363aeade33d738481505add1976",
+          "bytes": 7769
+        },
+        "MD5.MAN": {
+          "sha256": "6c44f8adaf9ddafc94738a7ec7b48eb0cbb05cb3fb1aa3dd5d13e2429abad51c",
+          "bytes": 1903
+        },
+        "toolkit.atr": {
+          "sha256": "25609a7ee5084b9a071bb4b1302ff775535b194a76a3acc9f05c9a0d9cec745e",
+          "bytes": 1474192
+        }
+      },
+      "commands": [
+        "MD5 EMPTY.BIN >>EMPTY.OUT",
+        "MD5 ABC.BIN >>ABC.OUT",
+        "MD5 ABC.BIN EMPTY.BIN >>MULTI.OUT",
+        "MD5 /C GOOD.MD5 >>GOOD.OUT",
+        "MD5 /C BAD.MD5 >>BAD.OUT",
+        "MD5 ABSENT.BIN >>MISSING.OUT",
+        "MD5 BIG.BIN >>BIG.OUT",
+        "MD5 /C ATARI.MD5 >>CATARI.OUT",
+        "MD5 /C CRLF.MD5 >>CCRLF.OUT",
+        "MD5 /C FINAL.MD5 >>CFINAL.OUT",
+        "MD5 /C BSD.MD5 >>CBSD.OUT",
+        "MD5 /C EMPTY.MD5 >>CEMPTY.OUT",
+        "MD5 /C LONG.MD5 >>CLONG.OUT",
+        "MD5 /C ABSENT.MD5 >>CABSENT.OUT",
+        "MD5 A*.BIN >>MASK.OUT",
+        "MD5 A?C.BIN >>QMARK.OUT",
+        "STOP.COM"
+      ],
+      "outputs": {
+        "EMPTY.OUT": {
+          "hex": "4d44352028454d5054592e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b",
+          "text": "MD5 (EMPTY.BIN) = D41D8CD98F00B204E9800998ECF8427E\n"
+        },
+        "CLONG.OUT": {
+          "hex": "",
+          "text": ""
+        },
+        "BIG.OUT": {
+          "hex": "4d443520284249472e42494e29203d2044323434413232323245324237464630374235423835363537454346383644349b",
+          "text": "MD5 (BIG.BIN) = D244A2222E2B7FF07B5B85657ECF86D4\n"
+        },
+        "CBSD.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "ABC.OUT": {
+          "hex": "4d443520284142432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "text": "MD5 (ABC.BIN) = 900150983CD24FB0D6963F7D28E17F72\n"
+        },
+        "CEMPTY.OUT": {
+          "hex": "",
+          "text": ""
+        },
+        "GOOD.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "CCRLF.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "MULTI.OUT": {
+          "hex": "4d443520284142432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b4d44352028454d5054592e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b",
+          "text": "MD5 (ABC.BIN) = 900150983CD24FB0D6963F7D28E17F72\nMD5 (EMPTY.BIN) = D41D8CD98F00B204E9800998ECF8427E\n"
+        },
+        "CFINAL.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "QMARK.OUT": {
+          "hex": "4d44352028413f432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "text": "MD5 (A?C.BIN) = 900150983CD24FB0D6963F7D28E17F72\n"
+        },
+        "BAD.OUT": {
+          "hex": "4142432e42494e3a20c2c1c49b",
+          "text": "ABC.BIN: \u00c2\u00c1\u00c4\n"
+        },
+        "MASK.OUT": {
+          "hex": "4d44352028412a2e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "text": "MD5 (A*.BIN) = 900150983CD24FB0D6963F7D28E17F72\n"
+        },
+        "MISSING.OUT": {
+          "hex": "",
+          "text": ""
+        },
+        "CABSENT.OUT": {
+          "hex": "4e4f4e452e42494e3a20",
+          "text": "NONE.BIN: "
+        },
+        "CATARI.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        }
+      },
+      "digests": {
+        "EMPTY": "d41d8cd98f00b204e9800998ecf8427e",
+        "ABC": "900150983cd24fb0d6963f7d28e17f72",
+        "BIG": "d244a2222e2b7ff07b5b85657ecf86d4"
+      },
+      "media_before_sha256": "1e102a84e8283ab9d94a789a2e950e3c52df867b1dcc317e0dbd30d1a5588e0e",
+      "media_after_sha256": "55660649db7f9587944b11e5d95a41f75ce88bf57bdfc4ecced317ffdf8f8f87",
+      "result_sha256": "de3687fc8c4e8a961d2e42c3e48b5cdd4839ab2dc93d29f571389c74809511be"
+    },
+    "reference-repaired": {
+      "status": "pass",
+      "scope": "SDX control; no Exec guest execution or captured command exit codes",
+      "executable_sha256": "20dff1214bc036d2eb0f9418032d41c5c68fe77f034a1000d760b2c2fa1292a3",
+      "inputs": {
+        "MD5.COM": {
+          "sha256": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+          "bytes": 3488
+        },
+        "SDX450_maxflash1.car": {
+          "sha256": "17fa6167b6de7997cceb67b8ab261c0c24eff5d9d8eeb4417a0644a87a9674c0",
+          "bytes": 131088
+        },
+        "MD5.ARC": {
+          "sha256": "3c215eae4662d438b14ea374e309980632d11363aeade33d738481505add1976",
+          "bytes": 7769
+        },
+        "MD5.MAN": {
+          "sha256": "6c44f8adaf9ddafc94738a7ec7b48eb0cbb05cb3fb1aa3dd5d13e2429abad51c",
+          "bytes": 1903
+        },
+        "toolkit.atr": {
+          "sha256": "25609a7ee5084b9a071bb4b1302ff775535b194a76a3acc9f05c9a0d9cec745e",
+          "bytes": 1474192
+        }
+      },
+      "commands": [
+        "MD5 EMPTY.BIN >>EMPTY.OUT",
+        "MD5 ABC.BIN >>ABC.OUT",
+        "MD5 ABC.BIN EMPTY.BIN >>MULTI.OUT",
+        "MD5 /C GOOD.MD5 >>GOOD.OUT",
+        "MD5 /C BAD.MD5 >>BAD.OUT",
+        "MD5 ABSENT.BIN >>MISSING.OUT",
+        "MD5 BIG.BIN >>BIG.OUT",
+        "MD5 /C ATARI.MD5 >>CATARI.OUT",
+        "MD5 /C CRLF.MD5 >>CCRLF.OUT",
+        "MD5 /C FINAL.MD5 >>CFINAL.OUT",
+        "MD5 /C BSD.MD5 >>CBSD.OUT",
+        "MD5 /C EMPTY.MD5 >>CEMPTY.OUT",
+        "MD5 /C MALFORM.MD5 >>CMALFORM.OUT",
+        "MD5 /C MIXED.MD5 >>CMIXED.OUT",
+        "MD5 /C LONG.MD5 >>CLONG.OUT",
+        "MD5 /C ABSENT.MD5 >>CABSENT.OUT",
+        "MD5 A*.BIN >>MASK.OUT",
+        "MD5 A?C.BIN >>QMARK.OUT",
+        "STOP.COM"
+      ],
+      "outputs": {
+        "EMPTY.OUT": {
+          "hex": "4d44352028454d5054592e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b",
+          "text": "MD5 (EMPTY.BIN) = D41D8CD98F00B204E9800998ECF8427E\n"
+        },
+        "CLONG.OUT": {
+          "hex": "",
+          "text": ""
+        },
+        "BIG.OUT": {
+          "hex": "4d443520284249472e42494e29203d2044323434413232323245324237464630374235423835363537454346383644349b",
+          "text": "MD5 (BIG.BIN) = D244A2222E2B7FF07B5B85657ECF86D4\n"
+        },
+        "CBSD.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "ABC.OUT": {
+          "hex": "4d443520284142432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "text": "MD5 (ABC.BIN) = 900150983CD24FB0D6963F7D28E17F72\n"
+        },
+        "CEMPTY.OUT": {
+          "hex": "",
+          "text": ""
+        },
+        "GOOD.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "CCRLF.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "MULTI.OUT": {
+          "hex": "4d443520284142432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b4d44352028454d5054592e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b",
+          "text": "MD5 (ABC.BIN) = 900150983CD24FB0D6963F7D28E17F72\nMD5 (EMPTY.BIN) = D41D8CD98F00B204E9800998ECF8427E\n"
+        },
+        "CFINAL.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "QMARK.OUT": {
+          "hex": "4d44352028413f432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "text": "MD5 (A?C.BIN) = 900150983CD24FB0D6963F7D28E17F72\n"
+        },
+        "CMALFORM.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "BAD.OUT": {
+          "hex": "4142432e42494e3a20c2c1c49b",
+          "text": "ABC.BIN: \u00c2\u00c1\u00c4\n"
+        },
+        "MASK.OUT": {
+          "hex": "4d44352028412a2e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "text": "MD5 (A*.BIN) = 900150983CD24FB0D6963F7D28E17F72\n"
+        },
+        "MISSING.OUT": {
+          "hex": "",
+          "text": ""
+        },
+        "CABSENT.OUT": {
+          "hex": "4e4f4e452e42494e3a20",
+          "text": "NONE.BIN: "
+        },
+        "CATARI.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "CMIXED.OUT": {
+          "hex": "4142432e42494e3a204f4b9b4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\nABC.BIN: OK\n"
+        }
+      },
+      "digests": {
+        "EMPTY": "d41d8cd98f00b204e9800998ecf8427e",
+        "ABC": "900150983cd24fb0d6963f7d28e17f72",
+        "BIG": "d244a2222e2b7ff07b5b85657ecf86d4"
+      },
+      "media_before_sha256": "e976c5d82533827e01bd2895a82d3d2836c9e6dcacaf7c8ec932309795aa6edb",
+      "media_after_sha256": "849aa95b8b1bce0c9f574665b94c886cf144a0a711f0ed1d4a1b3d721ae2a80b",
+      "result_sha256": "945a3fc3f0a36634c128cba565861d27e15f4ee9804af5332259871633bb36cd"
+    },
+    "original-extended": {
+      "status": "failed on malformed hex after completed digest vectors",
+      "result_sha256": "c5f6906b5d38617d80180127d58315aed5470028277668a73d9a9b6864cdd83a",
+      "screen_sha256": "1a410c84923b52a696c041764f0b187145575a8636265ef50f76f056fcd6f400",
+      "completed_vectors": [
+        {
+          "name": "ABC.BIN",
+          "bytes": 3,
+          "sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+          "md5": "900150983cd24fb0d6963f7d28e17f72",
+          "output_sha256": "99a285a96401c0269cac47a65959dac947b3b3feae8216ffc3cea5f5a813aa12"
+        },
+        {
+          "name": "BIG.BIN",
+          "bytes": 65537,
+          "sha256": "c67a59f0822f6e89651e08cd36a338d58e1771c1e0ceb543ae546b4516c4b81a",
+          "md5": "d244a2222e2b7ff07b5b85657ecf86d4",
+          "output_sha256": "a3c2d8779ec507ce03be1c61e682d1a655fc8c7fc00f3f7f01d45f75c3cb12ac"
+        },
+        {
+          "name": "EMPTY.BIN",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "md5": "d41d8cd98f00b204e9800998ecf8427e",
+          "output_sha256": "8e56bc826b9679a515ed2b8225ea14883ec5c66b5b729e29bbf6bf977a3cf8e2"
+        },
+        {
+          "name": "V131073.BIN",
+          "bytes": 131073,
+          "sha256": "68cb1dc7937b903dda6abfccb9f2a059278f5e8bab1e345fa7853e13d024c5d6",
+          "md5": "5ef4b3a828ff1e41e4b24e9538e6294e",
+          "output_sha256": "c3eca05c50f99934e6607d93a96703cbc58b79d63520a41c5058454ebaaa774b"
+        },
+        {
+          "name": "V256.BIN",
+          "bytes": 256,
+          "sha256": "756d1eeded2619514c0bdacc00ae0b975e6c488e6322febc8e952a42149bc0ef",
+          "md5": "f1c533f4ef3fcd76b5a1fe0684238164",
+          "output_sha256": "5b12465f26bb2090c492a5c5bface05b143591c6496ddb90a24d6d8f257f794a"
+        },
+        {
+          "name": "V39935.BIN",
+          "bytes": 39935,
+          "sha256": "154e98a765b847ce846bbd5b09a969503037dfd6ee4b87092586ea170ad4668b",
+          "md5": "13b30b2a6bafcd7fb12e99d5ab6dab22",
+          "output_sha256": "d7f0c0f232dc316b37ed171a3191d2703e772432262f4a76690769f48fade42a"
+        },
+        {
+          "name": "V39936.BIN",
+          "bytes": 39936,
+          "sha256": "01250b9a4b5f6cf54f80a7d84f299b5ef26bc79c913c8763bab7e28340ad581c",
+          "md5": "02fa652b2f1f12edac03db26f746c14b",
+          "output_sha256": "a3e6d5f53babf4fa346c76beb9f764696782db25479480fda3ee95fb4d6f9f3b"
+        },
+        {
+          "name": "V39937.BIN",
+          "bytes": 39937,
+          "sha256": "57780289bca425eab8486a3e258598a4a657acda46cb77e81fa9d252f56182f3",
+          "md5": "e95754444aaff087764f963503737bcb",
+          "output_sha256": "136950eca5334fbbdfc1319133893709afe7cbe18fb80c46ad47781176091e00"
+        },
+        {
+          "name": "V55.BIN",
+          "bytes": 55,
+          "sha256": "3b453d648ef01a1ddbc30ef4cee00724bb53fe40b38a08c04cfd6009235c09bf",
+          "md5": "a7555f1cbcea377c660265d60f0b43e9",
+          "output_sha256": "4010a419d782d8a75b3bcc2934854652ad38a32edf678a61f643d4a0a6128663"
+        },
+        {
+          "name": "V56.BIN",
+          "bytes": 56,
+          "sha256": "a5f1426b20451b15d1c92aef1b27b36b038d13a77874409d73889c02fa1ca778",
+          "md5": "6cd86ae039432adef6f4ae4574191b79",
+          "output_sha256": "c9b9110bb039a679b8f5f9c45a00f8cd94ed1ffee2bd5cdb6ee9bc2dbaa8dce1"
+        },
+        {
+          "name": "V63.BIN",
+          "bytes": 63,
+          "sha256": "b728e1a944ecf6d47629afefa1656cbe11fd7bf23145fcba144af99ea5ec14f5",
+          "md5": "2f261e323d8e3c22a7c32f8797559d0b",
+          "output_sha256": "db2fe01be4d73a7d9f5a35ad62cd1ef07df7ba2cb1a48d28464417653be0aeac"
+        },
+        {
+          "name": "V64.BIN",
+          "bytes": 64,
+          "sha256": "17ff3615c8f2285b470ee569e15b37503eae49e36882b63ccc1aceb055d7f082",
+          "md5": "e9621717bb98894e3cf92ee5e5b66c19",
+          "output_sha256": "cefc329200d48a6ce7c23a06e65826fcb425ba982fc8a8fbe85640ec1678a3ce"
+        },
+        {
+          "name": "V65.BIN",
+          "bytes": 65,
+          "sha256": "f747a3be9b4a85941804d77e333783b22f194e6252b37570fd51bc2bc7886a57",
+          "md5": "199bc7fa1758e209ca0c0e280d7135b7",
+          "output_sha256": "7d8b41affef8f7831e3c793b2443006317dd809e3f450bb79828e3a1a72acb7c"
+        },
+        {
+          "name": "V65535.BIN",
+          "bytes": 65535,
+          "sha256": "488b6c91f5e50ef0934aebfb812cfd899d33aec85b787ee49f2eb27c419238d3",
+          "md5": "a1a1f44bfac7ba1a1a6dd2ce7e501cc7",
+          "output_sha256": "d6517e47640f30b23c1cd4e2dc64918a51d14c84edaa4f6d359d746bcc260557"
+        },
+        {
+          "name": "V65536.BIN",
+          "bytes": 65536,
+          "sha256": "51fe7c95debcfefba857851144285f2450a5f2355c37dd6d99a5733b73e0ae6a",
+          "md5": "231d3babc51db2e3fab39f5bcc184a7b",
+          "output_sha256": "45bd0b221cc5336d83774984d8318f24364ccec84dd9e60d86e9a6652f6e3a32"
+        }
+      ],
+      "note": "Recovered output files checked against host MD5 after timeout; this is not a passing full original control. No original command exit codes captured."
+    }
+  },
+  "build_scope": "Attribute/write/close/partial/ABI runs predate the invalid-hex repair; final vectors and acceptance include all six patches. Final caught-error policy is covered by rethrow-services, final-read-close and rethrow-breaks.",
+  "host_checks": {
+    "sdx_pass": 15,
+    "generators": [
+      "sdx",
+      "dos",
+      "calypsi"
+    ],
+    "full_suite": {
+      "run": 513,
+      "pass_count": 507,
+      "skipped": 4,
+      "known_failures": [
+        "test_c_program_package: provider ABI 19 expected, 20 actual",
+        "test_program_contract: 1807 payload bytes expected, 1844 actual"
+      ]
+    }
+  },
+  "performance": {
+    "scope": "Matched whole RAM matrix before adding explicit all-byte vector; includes setup and selection, not isolated checkpoint cost",
+    "m1": {
+      "nmi": 1514,
+      "gateway_calls": 20453
+    },
+    "m2": {
+      "nmi": 2613,
+      "gateway_calls": 32371
+    }
+  }
+}

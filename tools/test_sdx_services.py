@@ -18,7 +18,7 @@ def fixture(out, close_error):
     origin=0x240000
     payload=bytearray()
     modules={}
-    for name in ('services','fail','options','console'):
+    for name in ('services','fail','options','console','rethrow'):
         item=assemble(out,name)
         modules[name]=(origin+len(payload),len(item['bytes']))
         payload+=item['bytes']
@@ -61,6 +61,9 @@ def fixture(out, close_error):
     launch('fail','A:>ONE.BIN A:>TWO.BIN',20,170,'  Require(state.bank($500)=0)')
     launch('fail','A:>MISSING.BIN',20,205)
     launch('fail','B:>ONE.BIN',20,160)
+    for tail,secondary in [('S',205),('DD',171),('RRR A:>ONE.BIN',170)]:
+        launch('rethrow','A:>MISSING.BIN '+tail,20,secondary,
+               '  Require(state.bank($500)=170)')
     launch('options','/H A:>ONE.BIN',20,156)
     launch('options','/Z A:>ONE.BIN',20,156)
     launch('options','A:>HASH.BIN',0,0,'  Require(state.bank($500)=0 AND state.bank($502)=$a0)')

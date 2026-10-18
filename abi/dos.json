@@ -48,7 +48,9 @@
     "MOUNT_PROFILE_GENERIC57600": 4,
     "DIR_ENTRY_SIZE": 118,
     "DIR_BATCH_HEADER_SIZE": 2,
-    "DIR_BATCH_MAX": 16
+    "DIR_BATCH_MAX": 16,
+    "FIBF_ARCHIVE": 16,
+    "FIBF_HIDDEN": 128
   },
   "dos_errors": {
     "ERROR_NO_FREE_STORE": 103,

@@ -35,6 +35,7 @@ PROC Gates(BYTE POINTER bank)
   FOR index=0 TO 11 DO
     Veneer(bank,$f100+index*32,index+2)
   OD
+  Veneer(bank,SDXABI.CHECKPOINT_PC,SDXABI.CHECKPOINT_EVENT)
   Veneer(bank,$f060,1)
   bank(SDXABI.EXIT_PC)=$20
   SDXSTATE.Word(bank,SDXABI.EXIT_PC+1,$f060)

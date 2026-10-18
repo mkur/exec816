@@ -132,8 +132,15 @@ PUBLIC PROC Fill(FileInfoBlock POINTER info FSBTYPES.Entry POINTER entry
       info.fib_InfoFlags=FIB_SIZE_BOUND OR FIB_BLOCKS_EXACT
     FI
   FI
-  IF (entry.flags & $20)<>0 THEN
+  info.fib_Protection=0
+  IF (entry.flags & FSBTYPES.PROTECTED)<>0 THEN
     info.fib_Protection=FIBF_WRITE OR FIBF_DELETE
+  FI
+  IF (entry.flags & FSBTYPES.HIDDEN)<>0 THEN
+    info.fib_Protection=info.fib_Protection OR FIBF_HIDDEN
+  FI
+  IF (entry.flags & FSBTYPES.ARCHIVED)<>0 THEN
+    info.fib_Protection=info.fib_Protection OR FIBF_ARCHIVE
   FI
 
 RETURN

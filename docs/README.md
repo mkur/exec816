@@ -38,11 +38,13 @@ The [patch infrastructure record](development/sdx-patches.md) covers the first
 native identification/patching components and their executable checks.
 The [guest runtime slice](development/sdx-runtime.md) adds synthetic guests on
 ordinary Tasks, reversible early interrupt routing and pointer IRQ checks.
-Production guest admission and the remaining P2 gates are still open.
+The remaining P2 qualification gates are still open.
 
 The [native SDX decoder](development/sdx-loader.md) validates and relocates
 the pinned module records. P3 adds synthetic command admission, ordinary Process
 ownership and guest-slot reuse. The [P4 service subset](development/sdx-services.md)
 adds fourteen MD5 imports, owned file handles, inline output and nonlocal traps.
-Both slices pass development checks. [M1 MD5](development/sdx-md5.md) adds
-real named-file hashing, shell launch and SDFS reads. M2 and ARC remain open.
+Both slices pass development checks. [M1/M2 MD5](development/sdx-md5.md) add
+real hashing, checksum verification, masks/P/H/A attributes, shell launch,
+SDFS reads, cancellation and concurrent guests. ARC remains open; these are
+development results, not full hosted-system qualification.

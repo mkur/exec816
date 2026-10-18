@@ -14,6 +14,8 @@ BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
   BYTE value
 
   CASE event OF
+  WHEN SDXABI.CHECKPOINT_EVENT THEN
+    RETURN(0)
   WHEN SDXABI.CALL_FOPEN THEN
     RETURN(SDXFILES.Open(state))
   WHEN SDXABI.CALL_FCLOSE THEN
@@ -50,8 +52,8 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   SDXSTATE.Session POINTER state
   BYTE POINTER frame
   CARD event
-  BYTE error,closeError
-  LONGINT result,cause
+  BYTE error,closeError,pendingError,cancelled,cleanupCalls,cleanup
+  LONGINT result,cause,pendingCause
 
   state=SDXSTATE.Session POINTER(image.extension)
   SDXSTATE.Prepare(state)
@@ -59,19 +61,74 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   state.nativeError=0
   error=SDXCOMMAND.Initialize(state,arguments,@image.name)
   result=20
+  pendingCause=0
+  pendingError=0
+  cancelled=0
+  cleanupCalls=0
+  IF DOS.BreakPending()<>0 THEN
+    error=128
+    state.nativeError=304
+  FI
   WHILE error=0 DO
     event=SDXRUNTIME.Run(state.slot)
     SDXSTATE.Guards()
     frame=SDXSTATE.GetFrame(state)
-    IF event=1 OR (event=SDXABI.CALL_U_FAIL AND frame(SDXABI.FRAME_A)=0) THEN
-      result=LONGINT(frame(SDXABI.FRAME_A))
-      EXIT
-    FI
+    cleanup=event=SDXABI.CALL_FCLOSE OR event=SDXABI.CALL_FCLOSEAL OR
+        event=SDXABI.CALL_U_XFAIL OR event=SDXABI.CALL_U_FAIL
     state.nativeError=0
-    error=Dispatch(state,frame,event)
-    IF error<>0 AND SDXTRAPS.Deliver(state,error)<>0 THEN
-      error=0
-      state.nativeError=0
+    IF cancelled<>0 THEN
+      cleanupCalls==+1
+      IF cleanup=0 OR cleanupCalls>SDXABI.HANDLE_LIMIT+SDXABI.TRAP_LIMIT+2 THEN
+        error=128
+        state.nativeError=304
+        EXIT
+      FI
+    ELSEIF DOS.BreakPending()<>0 THEN
+      error=128
+      state.nativeError=304
+    FI
+    IF error=0 THEN
+      IF event=1 OR (event=SDXABI.CALL_U_FAIL AND frame(SDXABI.FRAME_A)=0) THEN
+        IF cancelled<>0 THEN
+          error=128
+          state.nativeError=304
+        ELSE
+          result=LONGINT(frame(SDXABI.FRAME_A))
+        FI
+        EXIT
+      FI
+      IF event=SDXABI.CALL_U_FAIL AND frame(SDXABI.FRAME_A)=pendingError THEN
+        state.nativeError=pendingCause
+      FI
+      error=Dispatch(state,frame,event)
+      IF error<>0 AND cancelled<>0 THEN
+        error=128
+        state.nativeError=304
+      ELSEIF error<>0 AND pendingCause<>0 AND
+          (event=SDXABI.CALL_FCLOSE OR event=SDXABI.CALL_FCLOSEAL) THEN
+        error=pendingError
+        state.nativeError=pendingCause
+      FI
+      ; Preserve the first cause while the guest executes its cleanup handler.
+      ; Successful new input means a caught ordinary error was recovered.
+      IF error=0 AND (event=SDXABI.CALL_FOPEN OR event=SDXABI.CALL_FREAD OR
+          event=SDXABI.CALL_FGETC) THEN
+        pendingCause=0
+        pendingError=0
+      FI
+    FI
+    IF error<>0 THEN
+      IF state.nativeError=304 THEN
+        error=128
+        cancelled=1
+      FI
+      IF pendingCause=0 THEN
+        pendingCause=state.nativeError
+        pendingError=error
+      FI
+      IF SDXTRAPS.Deliver(state,error)<>0 THEN
+        error=0
+      FI
     FI
   OD
   cause=state.nativeError

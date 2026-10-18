@@ -31,8 +31,11 @@ def md5_admission():
     for i,patch in enumerate(module['patches']):
         text+=f'  block=SDXFILE.Find(plan,{patch["block"]})\n  IF block=NULL THEN\n    RETURN(1)\n  FI\n'
         for fix in patch['intersections']:
-            assert isinstance(fix['base'],int)
             offset=fix['offset']-patch['offset']
+            if isinstance(fix['base'],str):
+                address=json.loads((ROOT/'abi/sdx.json').read_text())['guest_services'][fix['base']]['address']
+                text+=f'  SDXSTATE.Word(@before{i},{offset},${address:x})\n'
+                continue
             text+=f'  target=SDXFILE.Find(plan,{fix["base"]})\n  IF target=NULL THEN\n    RETURN(1)\n  FI\n'
             text+=f'  SDXSTATE.Word(@before{i},{offset},SDXSTATE.ReadWord(@before{i},{offset})+target.placed-target.origin)\n'
         for fix in patch['fixups']:
@@ -58,7 +61,7 @@ def service_reference(abi):
     for name,item in abi['guest_services'].items():
         text+=f'| `{name}` | {item["inputs"]} | {item["effects"]} | {item["flags"]} |\n'
     text+='\n## Bounded operations\n\n'
-    for key in ('command_limit','drive_policy','formatter','output'):
+    for key in ('command_limit','drive_policy','formatter','output','cancellation'):
         text+=contract[key]+'\n\n'
     text+='## Error mapping\n\n| Native IoErr | Guest error |\n| --- | --- |\n'
     for native,guest in contract['native_error_map'].items():

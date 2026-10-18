@@ -25,6 +25,7 @@ def fixture(out, quick=False, disk=False, shell=False):
     if disk:
         corpus += [('65537',blob[:65537])]
     elif not quick:
+        corpus.append(('all-bytes',bytes(range(256))))
         corpus += [(str(n),blob[:n]) for n in (55,56,63,64,65,256,39935,39936,39937,65535,65536,65537,131073)]
     cases=[]; calls=[]
     files=out/'files';files.mkdir(exist_ok=True)

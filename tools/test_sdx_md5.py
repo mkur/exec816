@@ -47,15 +47,15 @@ def inputs(directory, nomarch):
 
 
 def fixtures():
-    return {'EMPTY.BIN': b'', 'ABC.BIN': b'abc',
+    return {'EMPTY.BIN': b'', 'ABC.BIN': b'abc', 'ALL.BIN':bytes(range(256)),
             'BIG.BIN': bytes((i*37+i//251) & 255 for i in range(65537))}
 
 
-def reference(out, input_dir, patched=False, extended=False):
+def reference(out, input_dir, patched=False, extended=False, edges_only=False, malformed_patch=False):
     source = out/'source'
     source.mkdir(parents=True, exist_ok=True)
     data = fixtures()
-    if extended:
+    if extended and not edges_only and not malformed_patch:
         data.update({'V'+str(n)+'.BIN':bytes((i*37+i//251)&255 for i in range(n))
                      for n in (55,56,63,64,65,256,39935,39936,39937,65535,65536,131073)})
     for name, raw in data.items():
@@ -70,9 +70,12 @@ def reference(out, input_dir, patched=False, extended=False):
         'BSD':b'MD5 (ABC.BIN) = 900150983cd24fb0d6963f7d28e17f72\x9b',
         'EMPTY':b'',
         'MALFORM':b'not a checksum\n1234 ABC.BIN\n'+good,
+        'MIXED':good+(b'12 invalid\n1Q invalid\n'*24)+good,
         'LONG':b'x'*256+b'\n',
         'ABSENT':good.replace(b'ABC.BIN',b'NONE.BIN'),
     }
+    if edges_only:
+        edge_lists.pop('MALFORM');edge_lists.pop('MIXED')
     if extended:
         for name,payload in edge_lists.items():(source/(name+'.MD5')).write_bytes(payload)
     binary = (input_dir/'MD5.COM').read_bytes()
@@ -86,16 +89,21 @@ def reference(out, input_dir, patched=False, extended=False):
                 'MD5 first-block file layout changed')
         changed = bytearray(binary)
         for patch, expected, replacement in changes:
+            if patch['id']!='md5-compression-irq':continue
             require(patch['block'] == 1 and not patch['intersections'] and not patch['fixups'],
                     'Reference mutation needs a non-relocatable block-one patch')
             at = 8+patch['offset']
             changed[at:at+len(expected)] = replacement
         binary = bytes(changed)
+    if malformed_patch:
+        from sdx_md5_control import patched_control
+        binary=patched_control(binary)
     (source/'MD5.COM').write_bytes(binary)
     # Loaded after MD5 returns, so the stop program never occupies its buffers.
     (source/'STOP.COM').write_bytes(struct.pack('<HHH', 65535, 0x6000, 0x6002)
                                    +b'\x4c\x00\x60'+struct.pack('<HHH', 0x2e0, 0x2e1, 0x6000))
     commands = ['MD5 EMPTY.BIN >>EMPTY.OUT', 'MD5 ABC.BIN >>ABC.OUT',
+                'MD5 ALL.BIN >>ALL.OUT',
                 'MD5 ABC.BIN EMPTY.BIN >>MULTI.OUT', 'MD5 /C GOOD.MD5 >>GOOD.OUT',
                 'MD5 /C BAD.MD5 >>BAD.OUT', 'MD5 ABSENT.BIN >>MISSING.OUT',
                 'MD5 BIG.BIN >>BIG.OUT']
@@ -150,14 +158,15 @@ def reference(out, input_dir, patched=False, extended=False):
             and outputs['BAD.OUT'] == b'ABC.BIN: \xc2\xc1\xc4\x9b',
             'Verification control failed')
     if extended:
-        for name in ('ATARI','CRLF','FINAL','BSD','MALFORM'):
+        for name in ('ATARI','CRLF','FINAL','BSD')+(() if edges_only else ('MALFORM',)):
             require(outputs['C'+name+'.OUT']==b'ABC.BIN: OK\x9b','List syntax control: '+name)
+        if 'MIXED' in edge_lists:require(outputs['CMIXED.OUT']==b'ABC.BIN: OK\x9b'*2,'Mixed malformed records')
         require(outputs['CEMPTY.OUT']==b'' and outputs['CLONG.OUT']==b'', 'Empty/long list control')
         require(outputs['CABSENT.OUT']==b'NONE.BIN: ', 'Missing verification target control')
         for name in ('MASK','QMARK'):
             require(b'900150983CD24FB0D6963F7D28E17F72' in outputs[name+'.OUT'], 'Option/mask control: '+name)
     return dict(status='pass', scope='SDX control; no Exec guest execution or captured command exit codes',
-                sei_patched=patched,extended=extended, executable_sha256=hashlib.sha256(binary).hexdigest(),
+                sei_patched=patched or malformed_patch,malformed_patch=malformed_patch,extended=extended, executable_sha256=hashlib.sha256(binary).hexdigest(),
                 machine=machine, pin=PIN, media_before_sha256=before, media_after_sha256=sha256(media),
                 commands=commands, outputs={n: dict(hex=v.hex(), text=v.replace(b'\x9b', b'\n').decode('latin1'))
                                            for n, v in outputs.items()}, digests=digests)
@@ -178,7 +187,7 @@ def inspect(out, input_dir):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--group', choices=('inputs', 'reference', 'reference-patched', 'acceptance-reference', 'inspect'), required=True)
+    parser.add_argument('--group', choices=('inputs', 'reference', 'reference-patched', 'acceptance-reference', 'edge-reference', 'malformed-reference-patched', 'inspect'), required=True)
     parser.add_argument('--inputs', type=Path, default=ROOT/'build/sdx-md5/inputs')
     parser.add_argument('--nomarch', type=Path, default=ROOT/'build/research/s2-vbxe/nomarch-1.4/nomarch')
     parser.add_argument('--output', type=Path, required=True)
@@ -192,6 +201,8 @@ if __name__ == '__main__':
                   'reference': lambda: reference(out, args.inputs.resolve()),
                   'reference-patched': lambda: reference(out, args.inputs.resolve(), patched=True),
                   'acceptance-reference': lambda: reference(out,args.inputs.resolve(),extended=True),
+                  'edge-reference': lambda: reference(out,args.inputs.resolve(),extended=True,edges_only=True),
+                  'malformed-reference-patched': lambda: reference(out,args.inputs.resolve(),extended=True,malformed_patch=True),
                   'inspect': lambda: inspect(out, args.inputs.resolve())}[args.group]()
         result.update(group=args.group, inputs=pinned, bank_zero_delta=dict(fixed=0, per_task=0))
     except Exception as error:

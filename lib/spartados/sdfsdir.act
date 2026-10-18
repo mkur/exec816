@@ -186,6 +186,13 @@ BYTE FUNC Decode(FSBTYPES.Workspace POINTER work)
     work.entry.flags=work.entry.flags OR FSBTYPES.PROTECTED
   FI
 
+  IF (flags & 2)<>0 THEN
+    work.entry.flags=work.entry.flags OR FSBTYPES.HIDDEN
+  FI
+  IF (flags & 4)<>0 THEN
+    work.entry.flags=work.entry.flags OR FSBTYPES.ARCHIVED
+  FI
+
   FOR index=0 TO 10 DO
     work.entry.name(index)=state.row(index+6)
   OD

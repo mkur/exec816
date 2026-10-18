@@ -4,7 +4,7 @@
 
 [Reference index](README.md) · [Machine-readable ABI](../../abi/sdx.json) · [Development evidence](../development/sdx-services.md)
 
-Opt-in development personality: the pinned 6502 MD5.COM is admitted for named-file hashing (M1). M2 verification/cancellation acceptance is pending. ARC is not admitted.
+Opt-in development personality for the exact pinned 6502 MD5.COM, with checked load-time patches. Named-file hashing and the documented verification/selection/cancellation subset are supported. ARC is not admitted.
 
 E=1, M=X=1, private aligned D, PBR=DBR=guest bank. Calls use JSR to the imported veneer. AX denotes low A and low X, little endian.
 
@@ -12,7 +12,7 @@ Except for documented results, calls preserve A (including hidden B), X, Y, P, D
 
 Ordinary near pointers select guest-bank storage below $E000. PRINTF argument-word sites classified by the admitted profile may instead select guest D+offset in bank zero. No numeric-address heuristic, stack pointers, extended-memory buffers or callbacks are supported.
 
-A service error is delivered only after native I/O settles. The newest trap is removed, S restored, A set to the SDX error byte and N set; other registers/flags remain as at the failing call. Files stay open. With no trap, the Process exits with primary 20; secondary is the original native IoErr, or the explicit SDX byte if no native error caused it. Final cleanup closes all owned handles and preserves the first cause.
+A service error is delivered only after native I/O settles. The newest trap is removed, S restored, A set to the SDX error byte and N set; other registers/flags remain as at the failing call. Files stay open. With no trap, the Process exits with primary 20; secondary is the original native IoErr, or the explicit SDX byte if no native error caused it. Final cleanup closes all owned handles and preserves the first cause. A caught native error retains its cause through cleanup and rethrow of the same SDX byte; successful new input clears that pending cause. MD5 digest mismatches print inverse BAD but return zero; malformed digest records are skipped with a balanced stack by an audited patch, and overlong records fail with SDX 137.
 
 | Symbol | Input | Effect | Registers and flags |
 | --- | --- | --- | --- |
@@ -21,7 +21,7 @@ A service error is delivered only after native I/O settles. The newest trap is r
 | `FCLOSE` | file_id=$0760, handle 1 or 2. | Consumes that owned handle, including terminal native Close failure. | A/X/Y/P preserved on success. |
 | `FCLOSEAL` | No arguments. | Closes both owned handles; completes all closes before returning the first error. | A/X/Y/P preserved on success. |
 | `FGETC` | file_id=$0760. | Reads one binary byte. EOF returns A=$9B; otherwise A=data. | X=0/N=0/Z=1 for data; X=$FF/N=1/Z=0 for EOF. Y, hidden B and other P bits preserved. |
-| `FOPEN` | FILE_P points to filename; $0778=mode 4; $0779=0 or $A0. | Read-only native open; sets file_id=$0760 to handle 1 or 2. A third open raises 161. Other modes/masks raise 156. | A/X/Y/P preserved on success. |
+| `FOPEN` | FILE_P points to a NUL/EOL-terminated filename; $0778=mode 4; $0779=attribute scan mask. | Read-only first-match native open using DOS enumeration. Sets file_id=$0760 to handle 1 or 2; a third open raises 161. Other modes and required directory (+S) scans raise 156. | A/X/Y/P preserved on success. |
 | `FREAD` | file_id=$0760; addpos=$0782 (word); bytbuf=$0785 (nonzero word); memreix=$0787 must be zero. | Reads up to the requested count into an ordinary guest-bank buffer, continuing native short transfers. Writes actual count to bytbuf; addpos unchanged. | X=0/N=0/Z=1 for full transfer; X=$FF/N=1/Z=0 at EOF. A, Y, hidden B and other P bits preserved. |
 | `PRINTF` | Inline NUL format followed by pointer words; address classes fixed per admitted argument site. | Writes the bounded formatter stream to DOS.Output and resumes after all consumed pointer words. | A/X/Y/P preserved on success, including hidden B. |
 | `TOUPPER` | A=byte. | Converts ASCII a..z to A..Z; other bytes unchanged. | A=result; N/Z reflect result. X/Y, hidden B and other P bits preserved. |
@@ -35,11 +35,13 @@ A service error is delivered only after native I/O settles. The newest trap is r
 
 LBUF holds at most 63 bytes including the command name and separating space, followed by ATASCII EOL. COMFNAM holds at most 29 filename bytes plus EOL. No quoted filenames or mixed signs within an attribute token.
 
-Guest A: and bare filenames map to the immutable build-configured native root (RAM: by default). Leading > or backslash denotes the mapped root; internal separators become /. Other drives, wildcards, parent notation, scans, writes and seeks are unsupported. No global assignment is changed.
+Guest A: and bare filenames map to an immutable build-configured native root (RAM: by default). Leading > or backslash denotes the mapped root; internal separators become /. The final 8.3 component supports * and padded ?. FOPEN selects the first matching regular file, preserving the input specification for output; it does not expand a mask into multiple commands. Scan bits require/exclude P/H/A through public DOS metadata. Other drives, parent notation, wildcard directories, raw directories (+S), writes and seeks are unsupported. No global assignment is changed.
 
 NUL-terminated inline format, at most 253 bytes, then one near pointer word per operand (and per * width). Supported: %% and %b/%d/%e/%l unsigned 8/16/24/32-bit decimal, %x 24-bit hexadecimal, %c byte, %s string, %p pointer to string. Width uses its low byte; decimals allow at most 10 digits; zero padding, truncation and space padding are supported. Default %x is six zero-padded digits. Strings end at NUL or ATASCII EOL. %s requires an ordinary-bank string; %p may fetch its pointer variable from audited DP storage but the target string is in the ordinary bank. %t is unsupported.
 
 Escapes a,b,e,f,n,r,t,z,backslash and i are supported; i toggles inverse bytes for printable characters within one call. Redirected output retains exact SDX bytes. Interactive output maps $9B/$7E/$7F/$7D to LF/BS/TAB/FF. The buffer is 256 bytes; partial native writes are continued, and write errors use normal trap delivery. No general Atari terminal emulation is provided.
+
+BREAK belongs to the ordinary Process. It is checked before guest entry, at service boundaries and by a patched checkpoint after each 64-byte compression block ($F280, event 14, outside the SDX import namespace). Native I/O settles before SDX 128 trap delivery. A caught BREAK allows only bounded cleanup calls, then exits with primary 20/secondary 304. Cleanup cannot clear cancellation. See the MD5 development record for measured timing on the pinned machine; no universal device-latency bound is claimed.
 
 ## Error mapping
 

@@ -2,8 +2,9 @@
 
 P4 implements the fourteen MD5 imports and exercises them through source-audited
 6502 commands loaded by P3's ordinary Process path. This is a **development**
-result for the P4 slice. [M1](sdx-md5.md) subsequently admits the audited MD5
-binary for named-file hashing; ARC remains unadmitted.
+result for the P4 slice. [M1/M2](sdx-md5.md) subsequently admit the audited MD5
+binary for hashing, verification, selection and cancellation; ARC remains
+unadmitted. Memory figures and test counts below describe the original P4 slice.
 
 [Plan](../plans/spartados-personality-implementation-plan.md) ·
 [Service contract](../reference/sdx-services.md) ·
@@ -96,9 +97,12 @@ bytes, also 592 after heap alignment, compared with P3's rounded 16 bytes:
 all ten traps and unused buffer capacity. Native DOS objects are separately owned
 by the normal DOS APIs.
 
-The current drive policy maps guest `A:` and bare filenames to `RAM:` without
+The P4 drive policy maps guest `A:` and bare filenames to `RAM:` without
 changing global assignments. Read-only opens, ordinary private-bank buffers,
 the documented bounded formatter and command parser are supported. Directory
 enumeration, writing/seeking, other drives, stack-pointer arguments, callbacks,
-overlays and general hardware access remain unsupported. BREAK latency,
-real MD5 digests and `/C`, and ARC operations belong to subsequent gates.
+overlays and general hardware access were outside that slice. The subsequent
+[M1/M2 record](sdx-md5.md) covers configured roots, first-match enumeration,
+real MD5 digests and `/C`, and measured BREAK latency. The
+[service contract](../reference/sdx-services.md) defines the current supported
+subset; ARC operations remain open.
