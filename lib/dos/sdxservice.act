@@ -61,6 +61,22 @@ BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
     value=SDXPRINT.Print(state,frame)
     state.discardOutput=0
     RETURN(value)
+  WHEN SDXABI.CALL_U_PATH THEN
+    RETURN(SDXARCCOMMAND.Path(state,frame))
+  WHEN SDXABI.CALL_FWRITE THEN
+    RETURN(SDXFILES.Write(state,frame,0))
+  WHEN SDXABI.CALL_FPUTC THEN
+    RETURN(SDXFILES.Write(state,frame,1))
+  WHEN SDXABI.CALL_FFIRST THEN
+    value=SDXARCCOMMAND.Decode(state,frame)
+    IF value<>0 THEN
+      RETURN(value)
+    FI
+    RETURN(SDXFILES.Enumerate(state,frame,1))
+  WHEN SDXABI.CALL_FNEXT THEN
+    RETURN(SDXFILES.Enumerate(state,frame,0))
+  WHEN SDXABI.CALL_U_GETKEY THEN
+    RETURN(SDXFILES.Key(state,frame))
   WHEN SDXABI.CALL_FOPEN THEN
     RETURN(SDXFILES.Open(state))
   WHEN SDXABI.CALL_FCLOSE THEN
@@ -108,7 +124,8 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   IF error=0 AND state.profile=32 THEN
     IF arguments=NULL THEN
       error=156
-    ELSEIF arguments(0)<>'L AND arguments(0)<>'V THEN
+    ELSEIF arguments(0)<>'L AND arguments(0)<>'V AND arguments(0)<>'X AND
+        arguments(0)<>'E THEN
       error=156
     ELSE
       event=1
@@ -202,6 +219,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   FI
   state.trapCount=0
   state.overlayActive=0
+  state.overlayModule=0
   DOSCLIENT.SetError(cause)
 
 RETURN(result)

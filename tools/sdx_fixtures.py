@@ -102,10 +102,10 @@ PUBLIC BYTE FUNC Select(BYTE POINTER bytes LONGCARD length)
         else:
             text+='    RETURN(0)\n'
         text+='  FI\n'
-    text+='\nRETURN(1)\n\nPUBLIC BYTE FUNC DirectPage(BYTE profile CARD site)\n\n'
+    text+='\nRETURN(1)\n\nPUBLIC BYTE FUNC DirectPage(BYTE profile CARD site BYTE overlay)\n\n'
     for index,item in enumerate(fixtures,1):
         for site in item['direct_page_sites']:
             text+=f'  IF profile={index} AND site=SDXABI.GUEST_START+${site:x} THEN\n    RETURN(1)\n  FI\n'
-    text+='  IF profile=SDXMD5.PROFILE THEN\n    RETURN(SDXMD5.DirectPage(site))\n  FI\n  IF profile=SDXARC.PROFILE THEN\n    RETURN(SDXARC.DirectPage(site))\n  FI\n\nRETURN(0)\n\nENDMODULE\n'
+    text+='  IF profile=SDXMD5.PROFILE THEN\n    RETURN(SDXMD5.DirectPage(site,overlay))\n  FI\n  IF profile=SDXARC.PROFILE THEN\n    RETURN(SDXARC.DirectPage(site,overlay))\n  FI\n\nRETURN(0)\n\nENDMODULE\n'
     (Path(output)/'sdxadmission.act').write_text(text)
     return [{k:v for k,v in item.items() if k!='bytes'} for item in fixtures]

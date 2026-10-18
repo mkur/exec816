@@ -1,0 +1,163 @@
+MODULE SDXARCEXEC
+USE EXEC
+USE DOS
+USE PROCESS
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE SDXSTATE
+USE HEAPCORE
+USE FSBOOT
+USE O65READ
+
+DOS.FileInfoBlock info
+CARD checks,currentCase
+LONGINT primary,secondary,reason
+LONGCARD guestBank
+BYTE ARRAY actual(4096),readback(512)
+LONGINT ARRAY counts(4)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    reason=DOS.IoErr()
+    HEAPCORE.Abort($fd00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Put(BYTE POINTER path,bytes LONGINT count)
+  DOS.FileHandle POINTER file
+
+  file=DOS.Open(path,DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,bytes,count)=count)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Run(CARD number BYTE POINTER args CARD argBytes LONGINT wantPrimary,wantSecondary)
+  DOS.FileHandle POINTER file,output,previous
+  PROGRAMIMAGE.Image POINTER image
+  SDXSTATE.Session POINTER state
+  PROCESS.Result result
+  LONGCARD identity
+
+  currentCase=number
+  output=DOS.Open(BYTE POINTER(c"RAM:RESULT.TXT"),DOS.MODE_NEWFILE)
+  Require(output<>NULL)
+  previous=DOS.SelectOutput(output)
+  image=PROGRAMFILE.Load(BYTE POINTER(c"RAM:ARC.COM"))
+  Require(image<>NULL)
+  state=SDXSTATE.Session POINTER(image.extension)
+  guestBank=LONGCARD(ADDRESS(state.bank))
+  identity=PROCESS.StartLoaded(BYTE POINTER(image),args,argBytes,0)
+  Require(identity<>0)
+  Require(PROCESS.Wait(identity,@result)<>0)
+  primary=result.primary
+  secondary=result.secondary
+  Require(primary=wantPrimary AND secondary=wantSecondary)
+  Require(state.handles(0)=NULL AND state.handles(1)=NULL AND state.trapCount=0)
+  Require(state.overlayActive=0 AND state.enumeration=NULL AND state.writeSlot=0)
+  PROGRAM.Unload(image)
+  DOS.SelectOutput(previous)
+  Require(DOS.Close(output)<>0)
+  file=DOS.Open(BYTE POINTER(c"RAM:RESULT.TXT"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  IF number<4 THEN
+    counts(number)=DOS.Read(file,@actual+number*1024,1024)
+    Require(counts(number)>=0 AND counts(number)<1024)
+  FI
+  Require(DOS.Close(file)<>0)
+  SDXSTATE.Guards()
+
+RETURN
+
+PROC Verify(BYTE POINTER path,expected LONGINT count BYTE date)
+  DOS.FileHandle POINTER file
+  DOS.FileLock POINTER lock
+  LONGINT at,chunk
+
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  at=0
+  WHILE at<count DO
+    chunk=count-at
+    IF chunk>512 THEN
+      chunk=512
+    FI
+    Require(DOS.Read(file,@readback,chunk)=chunk)
+    Require(O65READ.Equal(@readback,expected+SIZE(at),CARD(chunk))<>0)
+    at==+chunk
+  OD
+  Require(DOS.Read(file,@readback,1)=0)
+  Require(DOS.Close(file)<>0)
+  IF date<>0 THEN
+    lock=DOS.Lock(path,DOS.SHARED_LOCK)
+    Require(lock<>NULL)
+    Require(DOS.Examine(lock,@info)<>0)
+    Require(info.fib_Date.ds_Days=17822 AND info.fib_Date.ds_Minute=872 AND
+        info.fib_Date.ds_Tick=700)
+    DOS.UnLock(lock)
+  FI
+
+RETURN
+
+PROC Main()
+  LONGCARD baseline
+  DOS.FileHandle POINTER input,previous
+
+  baseline=EXEC.AvailMem(0)
+SETUP_FILES
+  Run(0,BYTE POINTER(c"XW CODECS.ARC"),13,0,0)
+VERIFY_FILES
+  Put(BYTE POINTER(c"RAM:OLD.BIN"),BYTE POINTER(c"sentinel"),8)
+  Put(BYTE POINTER(c"RAM:KEYS"),BYTE POINTER(c"N"),1)
+  input=DOS.Open(BYTE POINTER(c"RAM:KEYS"),DOS.MODE_OLDFILE)
+  Require(input<>NULL)
+  previous=DOS.SelectInput(input)
+  Run(1,BYTE POINTER(c"X CODECS.ARC OLD.BIN"),20,0,0)
+  DOS.SelectInput(previous)
+  Require(DOS.Close(input)<>0)
+  Verify(BYTE POINTER(c"RAM:OLD.BIN"),BYTE POINTER(c"sentinel"),8,0)
+  Put(BYTE POINTER(c"RAM:KEYS"),BYTE POINTER(c"Y"),1)
+  input=DOS.Open(BYTE POINTER(c"RAM:KEYS"),DOS.MODE_OLDFILE)
+  Require(input<>NULL)
+  previous=DOS.SelectInput(input)
+  Run(2,BYTE POINTER(c"E CODECS.ARC OLD.BIN"),20,0,0)
+  DOS.SelectInput(previous)
+  Require(DOS.Close(input)<>0)
+  Verify(BYTE POINTER(c"RAM:OLD.BIN"),BYTE POINTER(c"old"),3,1)
+  Run(3,BYTE POINTER(c"X CRC.ARC"),9,0,0)
+  Verify(BYTE POINTER(c"RAM:BAD.BIN"),BYTE POINTER(c"abc"),3,1)
+  Run(4,BYTE POINTER(c"XW TRUNC.ARC"),12,20,156)
+  Require(DOS.Open(BYTE POINTER(c"RAM:TRUNC.BIN"),DOS.MODE_OLDFILE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_NOT_FOUND)
+  Run(5,BYTE POINTER(c"XW METHOD.ARC"),13,20,156)
+  Require(DOS.Open(BYTE POINTER(c"RAM:UNSUP.BIN"),DOS.MODE_OLDFILE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_NOT_FOUND)
+  Run(6,BYTE POINTER(c"XW OVER.ARC"),11,20,156)
+  Require(DOS.Open(BYTE POINTER(c"RAM:OVER.BIN"),DOS.MODE_OLDFILE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_NOT_FOUND)
+  Require(DOS.Rename(BYTE POINTER(c"RAM:ARCEXT.OVL"),BYTE POINTER(c"RAM:SAVED.OVL"))<>0)
+  Run(7,BYTE POINTER(c"XW CODECS.ARC"),13,20,205)
+  Put(BYTE POINTER(c"RAM:ARCEXT.OVL"),BYTE POINTER(c"invalid overlay"),15)
+  Run(8,BYTE POINTER(c"XW CODECS.ARC"),13,20,156)
+  Require(DOS.DeleteFile(BYTE POINTER(c"RAM:ARCEXT.OVL"))<>0)
+  Require(DOS.Rename(BYTE POINTER(c"RAM:SAVED.OVL"),BYTE POINTER(c"RAM:ARCEXT.OVL"))<>0)
+  input=DOS.Open(BYTE POINTER(c"RAM:OLD.BIN"),DOS.MODE_OLDFILE)
+  Require(input<>NULL)
+  Run(9,BYTE POINTER(c"XW CODECS.ARC OLD.BIN"),21,20,202)
+  Require(DOS.Close(input)<>0)
+  Verify(BYTE POINTER(c"RAM:OLD.BIN"),BYTE POINTER(c"old"),3,1)
+  Run(10,BYTE POINTER(c"XW LARGE.ARC"),12,0,0)
+VERIFY_LARGE
+  Run(11,BYTE POINTER(c"L CODECS.ARC"),12,0,0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+ENDMODULE

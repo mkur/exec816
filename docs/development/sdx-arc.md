@@ -1,11 +1,10 @@
 # ARC on the SDX personality
 
-A1 admits the pinned 6502 SDX 4.50 `ARC.COM` and `ARCLST.OVL` for listing as
+A1/A2 admit the pinned 6502 SDX 4.50 `ARC.COM`, `ARCLST.OVL` and `ARCEXT.OVL` for listing/extraction as
 ordinary Exec Processes. [Manifest](../../compat/sdx/arc-450.json),
 [plan](../plans/spartados-personality-implementation-plan.md),
 [service contract](../reference/sdx-services.md) and
-[execution record](sdx-arc-a1.json) define the development scope. Extraction and
-mutation remain disabled until their own acceptance gates pass. This is not
+[execution record](sdx-arc-a1.json) define the development scope. Mutation remains disabled until its own acceptance gate passes. This is not
 full hosted-system qualification.
 
 ## A1 loading and listing
@@ -42,10 +41,9 @@ produces zero with carry, which preserves ARC's 100% display for empty entries.
 
 `tools/sdx_arc_audit.py` verifies the frozen inputs and walks reachable code,
 skipping inline records and following the main export table and trap entries.
-It inventories 704 main, 244 listing, 452 extraction and 1,471 addition
-instructions. None of those decoded instructions is SEI. The extraction/addition
-inventories are preparation, not admission: their mutable operands, extra
-services and failure behavior still need executable acceptance.
+It inventories 704 main, 244 listing, 488 extraction and 1,471 addition
+instructions. None of those decoded instructions is SEI. The extraction inventory includes both targets of each mutable LZW code/output
+vector. Addition remains preparation, not admission.
 
 The optimized A1 run covers L/V, masks, an empty member, missing/corrupt overlays
 and subsequent recovery. Four outputs match original SDX byte for byte. Every
@@ -84,4 +82,55 @@ The test-only upper static arena is 4,096 bytes.
 ```sh
 python3 tools/test_dos_file_date.py --raw --output build/sdx-arc/file-date-raw
 python3 tools/test_dos_file_date.py --output build/sdx-arc/file-date-opt
+```
+
+## A2 extraction
+
+`X archive [mask ...]` and its `E` synonym now run the original extraction
+overlay. Supported methods are old/new stored (1/2), RLE (3), Huffman plus RLE
+(4), 12-bit LZW plus RLE (8), and SDX LZW (15). Method 15 uses a 16-bit byte sum;
+the others use ARC CRC-16. The independent host fixture writer/reader and original
+SDX cartridge controls agree on all six methods. The original algorithms run
+inside the guest; the adapter does not implement a decompressor.
+
+Native output uses owned handles, bounded writes and public SetFileDate after
+successful Close. A captured timestamp must be representable before output is
+opened. Output cannot exceed the member's declared length. A short header,
+packed extent beyond the archive, inconsistent stored length or unsupported
+method fails before the member is opened. These checks are not a sandbox or a
+general malformed-compressor-stream validator. Member names are bounded 8.3
+leaves; directory/path members, hardware H, encryption G and P/T are excluded.
+
+Overwrite Y/N/A is read from ordinary Process input. W skips prompts and
+suppresses warnings, as the original binary does. A CRC mismatch prints a
+warning without changing the original zero exit status; a native I/O failure
+still returns primary 20 and its first native cause. Failed/BREAK extraction can
+leave a partial member; the input archive is unchanged. No successful completion
+or timestamp preservation is claimed for that partial output.
+
+The [A2 record](sdx-arc-a2.json) contains **525 optimized RAM checks**: all codecs,
+empty/binary/multiple members, 65,537-byte streaming, overwrite decline/accept,
+CRC output, truncation/length/method rejection, missing/corrupt overlays, locked
+targets and subsequent listing. It adds three **33-check native SDFS runs**:
+normal persistence, real full media and BREAK after the first output-write
+service. Independent directory/file read-back verifies bytes and timestamps.
+Full media reports IoErr 221 with a valid 37,120-byte prefix; BREAK reports 304
+with a zero-byte partial member. The BREAK run observed 15 PAL ticks (300 ms)
+between request and retirement using the test's byte RTC counter; this is an
+observation on the pinned configuration, not a universal latency guarantee.
+The normal run saw 45,739 native IRQs. Small raw/optimized ABI probes each pass
+44 checks. All 15 SDX host tests pass.
+
+A2 adds **0 fixed and 0 per-Task reserved bank-zero bytes**, including guards,
+alignment and spare capacity. Each upper Image Session grows **560 bytes**, to
+**1,456**, including the private directory FIB, captured output pathname/date,
+length ownership and handle-size table. The extraction overlay reaches $9438,
+inside the same private bank; staging needs 1,912 bytes, below A1's 1,999-byte
+maximum. Existing guest-bank backing and resident capacities are unchanged.
+The expanded test reserves a 16,384-byte upper static arena only.
+
+```sh
+python3 tools/test_sdx_arc.py --group reference-extract --output build/sdx-arc/reference-extract
+python3 tools/test_sdx_arc.py --group a2 --output build/sdx-arc/a2-final
+python3 tools/test_sdx_arc_disk.py --output build/sdx-arc/a2-sdfs
 ```

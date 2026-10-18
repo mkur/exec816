@@ -124,6 +124,38 @@ PUBLIC BYTE FUNC Expand(SDXSTATE.Session POINTER state BYTE POINTER frame)
 
 RETURN(0)
 
+PUBLIC BYTE FUNC Path(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  CARD near,index,used
+  BYTE device
+
+  near=CARD(frame(SDXABI.FRAME_A)) OR (CARD(frame(SDXABI.FRAME_X)) LSH 8)
+  used=frame(SDXABI.FRAME_Y)
+  IF LONGCARD(near)+used+68>=SDXABI.GUEST_LIMIT THEN
+    RETURN(156)
+  FI
+  device=state.bank($761)
+  IF device<>0 AND device<>1 AND device<>$ff THEN
+    RETURN(160)
+  FI
+  IF device<>$ff THEN
+    state.bank(near+used)='A
+    state.bank(near+used+1)=':
+    used==+2
+  FI
+  index=0
+  WHILE index<64 AND state.bank($7a0+index)<>0 DO
+    state.bank(near+used)=state.bank($7a0+index)
+    index==+1
+    used==+1
+  OD
+  IF index=64 THEN
+    RETURN(156)
+  FI
+  state.bank(near+used)=$9b
+  frame(SDXABI.FRAME_Y)=BYTE(used)
+
+RETURN(0)
+
 ; The listing overlay uses the low 32-bit result and carry overflow only.
 PUBLIC BYTE FUNC Arithmetic(SDXSTATE.Session POINTER state BYTE POINTER frame
     BYTE divide)

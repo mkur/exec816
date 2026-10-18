@@ -40,7 +40,7 @@ PUBLIC BYTE FUNC Pattern(BYTE POINTER source,target BYTE wild)
 
 RETURN(target(0)<>32)
 
-BYTE FUNC Matches(SDXSTATE.Session POINTER state BYTE attributes)
+PUBLIC BYTE FUNC Matches(SDXSTATE.Session POINTER state BYTE attributes)
   BYTE flags,index
   BYTE ARRAY name(11)
 

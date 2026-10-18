@@ -69,7 +69,7 @@ BYTE POINTER FUNC Data(SDXSTATE.Session POINTER state CARD argument,needed)
     RETURN(NULL)
   FI
   near=SDXSTATE.ReadWord(state.bank,argument)
-  IF SDXADMISSION.DirectPage(state.profile,argument)<>0 THEN
+  IF SDXADMISSION.DirectPage(state.profile,argument,state.overlayModule)<>0 THEN
     IF LONGCARD(near)+needed>256 THEN
       RETURN(NULL)
     FI
@@ -254,11 +254,11 @@ PUBLIC BYTE FUNC Print(SDXSTATE.Session POINTER state BYTE POINTER frame)
           ; Strings live in the guest bank. An audited %p operand can itself
           ; live in D-relative storage, as MD5's current filename pointer does.
           IF kind='s AND state.profile<>32 AND
-              SDXADMISSION.DirectPage(state.profile,argument-2)<>0 THEN
+              SDXADMISSION.DirectPage(state.profile,argument-2,state.overlayModule)<>0 THEN
             RETURN(156)
           FI
           limit=SDXABI.GUEST_LIMIT
-          IF kind='s AND SDXADMISSION.DirectPage(state.profile,argument-2)<>0 THEN
+          IF kind='s AND SDXADMISSION.DirectPage(state.profile,argument-2,state.overlayModule)<>0 THEN
             limit=256
           FI
           length=0

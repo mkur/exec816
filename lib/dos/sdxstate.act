@@ -25,6 +25,16 @@ PUBLIC TYPE Session=[
   CARD overlayBase,overlayEnd,overlayStack
   BYTE overlayActive,overlayTraps,discardOutput
   BYTE ARRAY overlayFrame(13)
+  BYTE overlayModule
+  DOS.FileLock POINTER enumeration
+  BYTE enumerationSlot,scan
+  DOS.FileInfoBlock directoryInfo
+  BYTE ARRAY directoryPattern(11)
+  DOS.DateStamp writeDate
+  BYTE ARRAY writePath(256)
+  BYTE writeSlot,writeDated
+  LONGCARD writeRemaining
+  LONGCARD ARRAY fileSizes(SDXABI.HANDLE_LIMIT)
 ]
 
 BYTE occupied

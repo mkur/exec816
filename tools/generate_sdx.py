@@ -18,8 +18,12 @@ def application_admission(application,profile):
     text+=f'  IF bytes={module["bytes"]} AND crc=${module["crc32"]} THEN\n    RETURN(PROFILE)\n  FI\n\nRETURN(0)\n\n'
     text+='PUBLIC CARD FUNC Entry(SDXFILE.Layout POINTER plan)\n\n'
     text+=f'RETURN(SDXFILE.Symbol(plan,BYTE POINTER("{module["entry_export"]:8}")+1))\n\n'
-    text+='PUBLIC BYTE FUNC DirectPage(CARD site)\n\nRETURN('
-    text+=(' OR '.join(f'site=SDXABI.GUEST_START+${at:x}' for at in manifest['direct_page_arguments']) or '0')+')\n\n'
+    text+='PUBLIC BYTE FUNC DirectPage(CARD site BYTE overlay)\n\n'
+    for index,child in enumerate(manifest['modules'][1:],3):
+        sites=child.get('direct_page_arguments',[])
+        if sites:
+            text+=f'  IF overlay={index} THEN\n    IF '+' OR '.join(f'site=SDXABI.GUEST_START+${at:x}' for at in sites)+' THEN\n      RETURN(1)\n    FI\n  FI\n'
+    text+='\nRETURN('+(' OR '.join(f'site=SDXABI.GUEST_START+${at:x}' for at in manifest['direct_page_arguments']) or '0')+')\n\n'
     text+='PUBLIC CARD FUNC Patch(SDXFILE.Layout POINTER plan)\n'
     text+=f'  SDXPATCH.Patch ARRAY patches({len(module["patches"])})\n'
     text+='  SDXFILE.Block POINTER block,target\n'

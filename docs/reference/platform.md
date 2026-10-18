@@ -18,7 +18,7 @@ aligned guest direct pages and two 16-byte outer guards, with no extra padding.
 It adds **0 bytes per native Task, root, kernel or idle**. The loading map and
 existing bridge reservations stay unchanged. The source-audited synthetic
 catalog, [MD5 subset](../development/sdx-md5.md) and
-[ARC listing subset](../development/sdx-arc.md) are admitted for development;
+[ARC listing/extraction subset](../development/sdx-arc.md) are admitted for development;
 these checks do not qualify a release profile.
 
 ## Compiler and memory contract

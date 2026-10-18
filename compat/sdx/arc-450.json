@@ -2,8 +2,8 @@
   "schema_version": 1,
   "personality_abi": 1,
   "id": "arc-450",
-  "revision": 2,
-  "execution_status": "A1-listing-development",
+  "revision": 3,
+  "execution_status": "A1-A2-development",
   "audit": "../../docs/development/sdx-arc.md",
   "modules": [
     {
@@ -70,7 +70,17 @@
       "bytes": 1998,
       "crc32": "25745761",
       "sha256": "ea0b1f04ffa1c93d8b3fc69baafbb86854651665093c9ab3a091401c2946b7cd",
-      "patches": []
+      "patches": [],
+      "direct_page_arguments": [
+        7556,
+        7118,
+        7120,
+        7139,
+        7193,
+        7195,
+        7325,
+        7350
+      ]
     },
     {
       "file": "ARCEXT.OVL",
@@ -79,7 +89,11 @@
       "bytes": 1911,
       "crc32": "a42ad9cb",
       "sha256": "b1dd56ac4bb133bfc55150c1c17e401f74903d79a8459c6997ec0105290ad5ba",
-      "patches": []
+      "patches": [],
+      "direct_page_arguments": [
+        6851,
+        7261
+      ]
     },
     {
       "file": "ARCADD.OVL",
@@ -92,19 +106,11 @@
     }
   ],
   "unsupported": [
-    "Guest execution pending P2/A1",
-    "Hardware option H",
-    "Extraction and mutation pending their service audits"
+    "Hardware option H; encryption G; print/test commands P/T; arbitrary modules",
+    "Creation, addition, deletion and date-based update/freshen pending A3",
+    "Dates beyond 2049 and directory entries as extracted members"
   ],
   "direct_page_arguments": [
-    721,
-    7556,
-    7118,
-    7120,
-    7139,
-    7193,
-    7195,
-    7325,
-    7350
+    721
   ]
 }

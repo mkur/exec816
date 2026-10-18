@@ -16,17 +16,30 @@ PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
   BYTE POINTER staged,root,next
   DOS.FileHandle POINTER file
   SDXFILE.Layout POINTER plan
-  CARD name,index,used,stack
+  CARD name,index,used,stack,length
+  BYTE identity
   LONGINT got,total,cause
   BYTE error
 
-  IF state.profile<>32 OR state.overlayActive<>0 OR state.bank($721)>1 THEN
+  IF state.profile<>32 OR state.overlayActive<>0 THEN
     RETURN(156)
   FI
   name=SDXSTATE.ReadWord(state.bank,SDXABI.FILE_P)
-  IF name>=SDXABI.GUEST_LIMIT-14 OR
-      O65READ.Equal(state.bank+name,BYTE POINTER("CAR:ARCLST.OVL")+1,14)=0 OR
-      state.bank(name+14)<>$9b THEN
+  IF name>=SDXABI.GUEST_LIMIT-14 OR state.bank(name+14)<>$9b THEN
+    RETURN(156)
+  FI
+  identity=0
+  length=0
+  IF O65READ.Equal(state.bank+name,BYTE POINTER("CAR:ARCLST.OVL")+1,14)<>0
+      AND state.bank($721)<=1 THEN
+    identity=3
+    length=1998
+  ELSEIF O65READ.Equal(state.bank+name,BYTE POINTER("CAR:ARCEXT.OVL")+1,14)<>0
+      AND state.bank($721)=0 THEN
+    identity=4
+    length=1911
+  FI
+  IF identity=0 THEN
     RETURN(156)
   FI
   root=SDXCONFIG.CarRoot()
@@ -35,19 +48,20 @@ PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
     state.path(used)=root(used)
     used==+1
   OD
-  A816MEMORY.Move(@state.path+used,BYTE POINTER(c"ARCLST.OVL"),11)
+  A816MEMORY.Move(@state.path+used,state.bank+name+4,10)
+  state.path(used+10)=0
   file=DOS.Open(@state.path,DOS.MODE_OLDFILE)
   IF file=NULL THEN
     RETURN(SDXFILES.MapError(state))
   FI
-  staged=EXEC.AllocMem(1999,0)
+  staged=EXEC.AllocMem(LONGCARD(length)+1,0)
   total=0
   cause=0
   IF staged=NULL THEN
     cause=103
   ELSE
-    WHILE total<1999 DO
-      got=DOS.Read(file,staged+SIZE(total),1999-total)
+    WHILE total<LONGINT(length)+1 DO
+      got=DOS.Read(file,staged+SIZE(total),LONGINT(length)+1-total)
       IF got<0 THEN
         cause=DOS.IoErr()
         EXIT
@@ -62,8 +76,8 @@ PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
     cause=DOS.IoErr()
   FI
   error=156
-  IF cause=0 AND total=1998 THEN
-    IF SDXIDENTIFY.Select(staged,LONGCARD(total))=3 THEN
+  IF cause=0 AND total=LONGINT(length) THEN
+    IF SDXIDENTIFY.Select(staged,LONGCARD(total))=identity THEN
       plan=SDXFILE.Load(staged,LONGCARD(total),state.bank,state.overlayBase,
           SDXABI.GUEST_LIMIT,@SDXABI.Resolve,@state.parentExport,1)
       IF plan<>NULL THEN
@@ -76,7 +90,7 @@ PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
     FI
   FI
   IF staged<>NULL THEN
-    EXEC.FreeMem(staged,1999)
+    EXEC.FreeMem(staged,LONGCARD(length)+1)
   FI
   IF cause<>0 THEN
     DOS.SetIoErr(cause)
@@ -102,6 +116,7 @@ PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
   frame=SDXSTATE.GetFrame(state)
   SDXSTATE.Word(frame,SDXABI.FRAME_PC,state.overlayBase)
   state.overlayActive=1
+  state.overlayModule=identity
 
 RETURN(0)
 
@@ -114,6 +129,7 @@ PUBLIC BYTE FUNC Retire(SDXSTATE.Session POINTER state BYTE POINTER frame)
   FI
   error=SDXFILES.CloseAll(state)
   state.overlayActive=0
+  state.overlayModule=0
   state.trapCount=state.overlayTraps
   A816MEMORY.Move(frame+1,@state.overlayFrame,13)
   A816MEMORY.Clear(state.bank+state.overlayBase,

@@ -27,6 +27,8 @@ def audit(directory):
         memory,layout=place(program,0x3000 if leaf=='ARC.COM' else 0x4a6c,0xe000,symbols)
         lo=layout['blocks'][1];hi=lo+program.blocks[0].size
         pending=[lo]+([0x321a,0x35c6]+list(range(0x3959,0x399b,3)) if leaf=='ARC.COM' else [])
+        if leaf=='ARCEXT.OVL':
+            pending += [int.from_bytes(memory[a:a+2],'little') for a in range(0x4fc7,0x4fcf,2)]
         code={};inline={};external=[]
         while pending:
             pc=pending.pop()
