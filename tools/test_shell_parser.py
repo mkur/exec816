@@ -87,7 +87,7 @@ def run(t,out,mode):
         calls.append(f'  Parse({text(source)},{int(command is not None)},{command or 0},{len(words or [])})');checks+=1
         if command is not None:
             checks+=1
-            calls.append(f'  Check(shell.outputAppend={int(source in APPENDS)})');checks+=1
+            calls.append(f'  Check(context.shell.outputAppend={int(source in APPENDS)})');checks+=1
             if source in CAT_ARGUMENTS:
                 calls.append(f'  CatArgument({text(CAT_ARGUMENTS[source])})');checks+=1
             if source in TAILS:
@@ -96,7 +96,7 @@ def run(t,out,mode):
                 boundary,left,right=PIPELINES[source]
                 calls.append(f'  CheckPipeline({boundary},{text(left)},{text(right)})');checks+=3
             else:
-                calls.append('  Check(shell.pipeline=0)');checks+=1
+                calls.append('  Check(context.shell.pipeline=0)');checks+=1
             targets=REDIRECTS.get(source,(None,None))
             for side,target in enumerate(targets):
                 calls.append(f'  Redirect({side},{text(target)if target is not None else 65535})');checks+=1

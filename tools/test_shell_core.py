@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Shared resident shell: real POKEY keys, exact writes, retained/physical screen."""
+from shell_inspect import address as shell_address
 import adapter_state as adapter
 from library_paths import read_source
 import argparse,json,shutil,time,re
@@ -18,20 +19,21 @@ from os_boundary import emulator,run_to
 from banked_test_memory import read as far_read
 PIN=json.loads((ROOT/'toolchain/altirra-shell-console.json').read_text())
 LIMITS=dict(checkpoint_host_seconds=240,checkpoint_guest_frames=12000,completion_host_seconds=1800,completion_guest_frames=60000)
-HOOK='''
+HOOK="""
 LONGCARD captureCount
 CARD consumed,commandCount
 BYTE suspend
-PROC ShellWrite(DOS.FileHandle POINTER handle BYTE POINTER bytes CARD count)
+PROC ShellWrite(ShellContext POINTER context
+    DOS.FileHandle POINTER handle BYTE POINTER bytes CARD count)
   SHELLEDITPROBE.Capture(bytes,count)
-  NativeShellWrite(handle,bytes,count)
+  NativeShellWrite(context,handle,bytes,count)
 RETURN
-LONGINT FUNC ShellFinish()
+LONGINT FUNC ShellFinish(ShellContext POINTER context)
   LONGINT result
-  result=NativeShellFinish()
-  IF shell=ShellState POINTER(0) THEN SHELLEDITPROBE.Release(0) FI
+  result=NativeShellFinish(context)
+  IF context.shell=ShellState POINTER(0) THEN SHELLEDITPROBE.Release(0) FI
 RETURN(result)
-'''
+"""
 
 from generate_console import constants as console_layout
 CONSOLE_LAYOUT=console_layout()
@@ -81,11 +83,15 @@ ENDMODULE
 
 def instrument(out,source='shell_core.act'):
     cooked_observer(out)
-    s=read_source(ROOT/'examples/shell/shell-session.inc').replace('USE EXEC\n','USE EXEC\nUSE SHELLEDITPROBE\n',1).replace('PROC ShellWrite(','PROC NativeShellWrite(').replace('LONGINT FUNC ShellFinish()', 'LONGINT FUNC NativeShellFinish()')
-    s=s.replace('BYTE FUNC ShellOpen(BYTE POINTER consoleName)','BYTE FUNC ShellOpen(BYTE POINTER consoleName)\n  SHELLEDITPROBE.Bind(@captureCount,@consumed,@suspend,@stage,@gate)')
-    command_step='      ShellCommand()\n      ShellClear()'
+    s=read_source(ROOT/'examples/shell/shell-session.inc').replace('USE EXEC\n','USE EXEC\nUSE SHELLEDITPROBE\n',1).replace('PROC ShellWrite(','PROC NativeShellWrite(').replace('LONGINT FUNC ShellFinish(ShellContext POINTER context)', 'LONGINT FUNC NativeShellFinish(ShellContext POINTER context)')
+    s=s.replace('BYTE FUNC ShellOpen(ShellContext POINTER context BYTE POINTER consoleName)','''BYTE FUNC ShellOpen(ShellContext POINTER context BYTE POINTER consoleName)
+  SHELLEDITPROBE.Bind(@captureCount,@consumed,@suspend,@stage,@gate)''')
+    command_step='''      ShellCommand(context)
+      ShellClear(context)'''
     require(s.count(command_step)==1,'Missing shell command checkpoint')
-    s=s.replace(command_step,'      ShellCommand()\n      commandCount==+1\n      ShellClear()')
+    s=s.replace(command_step,'''      ShellCommand(context)
+      commandCount==+1
+      ShellClear(context)''')
     (out/'shell-observed.inc').write_text(s+HOOK)
     text=(ROOT/'tests/programs'/source).read_text().replace('../../examples/shell/shell-session.inc','shell-observed.inc')
     (out/source).write_text(text)
@@ -167,7 +173,7 @@ def run(t,out,mode,bank=2,size=128,no_mount=False,smoke=False,eof=None,external=
     else:shutil.copyfile(ROOT/f'tests/fixtures/mydos/mydos450-{size}.atr',media)
     digest=sha256(media)
     require(sha256(bridge_build/'AltirraBridgeServer')==pin['emulator']['sha256'],'Wrong shell key bridge')
-    def at(name):return next(d['address']for d in p['image']['data']if '_SHELLAPP_'+name.upper()+'_' in d['name'])
+    def at(name):return shell_address(p['image'],name,"SHELLAPP")
     schedule=[];observations=[];expected=bytearray();line=bytearray();counts={};state={}
     environment=(external.environment(out) if external and hasattr(external,'environment') else
                  emulator(bridge_build,ROOT/'build/firmware/altirraos-816.rom',out,pin=pin))

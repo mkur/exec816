@@ -80,14 +80,15 @@ def build_desktop(out,source=None,program_output=None,files=False,**options):
                  'Calculator','calc_start','calc_ws','calc_panel','TextRun','GEMText','TextStep'} & sy.keys(),
             'Application body or model retained in shared GUI image')
     service=''
-    if '      ShellReadStep()' in text:
-        service='''  ShellCollectJob()
-  IF job.state=JOB_RUNNING OR job.state=JOB_STOPPING THEN
-    mask=mask OR PROCESS.CompletionMask(job.identity)
+    if '      ShellReadStep(@context)' in text:
+        service='''  ShellCollectJob(@context)
+  IF context.job.state=JOB_RUNNING OR context.job.state=JOB_STOPPING THEN
+    mask=mask OR PROCESS.CompletionMask(context.job.identity)
   FI
 
 '''
-        text=text.replace('      ShellReadStep()', '      DesktopReap()\n      ShellReadStep()')
+        text=text.replace('      ShellReadStep(@context)', '''      DesktopReap()
+      ShellReadStep(@context)''')
     for module in ('AESBOOT','CALYPSICALL','DOSCLIENT','PROCESS'):
         if not re.search(r'(?m)^USE '+module+r'\s*$',text):
             text=re.sub(r'(?m)^(MODULE \w+\n)',r'\1USE '+module+'\n',text,count=1)

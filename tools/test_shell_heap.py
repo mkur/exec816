@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Observe shell heap use while old/new CD locks are simultaneously owned."""
+from library_paths import read_source
 import argparse,json,shutil
 from pathlib import Path
 from native_program import ROOT,compiler,build,read_build,require,sha256,verify_machine
@@ -10,7 +11,7 @@ PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 
 def run(t,out,mode,reuse=False):
     out.mkdir(parents=True,exist_ok=True)
-    s=(ROOT/'examples/shell/shell-session.inc').read_text().replace('PROC ShellWrite(','PROC NativeShellWrite(')
+    s=read_source(ROOT/'examples/shell/shell-session.inc').replace('PROC ShellWrite(','PROC NativeShellWrite(')
     old='  LET candidate=DOS.Lock(path,DOS.SHARED_LOCK)\n  LET lockError=DOS.IoErr()';require(s.count(old)==1,'Missing CD allocation sample')
     s=s.replace('"shell-execute.inc"','"'+str(ROOT/'examples/shell/shell-execute.inc')+'"')
     s=s.replace('INCLUDE "shell-jobs.inc"','INCLUDE "'+str(ROOT/'examples/shell/shell-jobs.inc')+'"')

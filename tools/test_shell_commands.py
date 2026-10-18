@@ -5,6 +5,7 @@ from pathlib import Path
 from native_program import ROOT,compiler,build,require,sha256,verify_machine
 from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
+from shell_inspect import data as shell_data
 from test_cooperative import data
 from banked_test_memory import read as far_read
 from test_shell_core import instrument,draw,collect_capture,diagnostic_text
@@ -78,8 +79,9 @@ def prepare(size,scenario):
 def run(t,out,mode,bank=2,size=128,scenario='basic',profile=1):
     out.mkdir(parents=True,exist_ok=True);source=instrument(out,'shell_commands.act')
     observed=out/'shell-observed.inc'
-    observed.write_text(observed.read_text().replace('  NativeShellWrite(handle,bytes,count)',
-                                                   '  writes==+1\n  NativeShellWrite(handle,bytes,count)'))
+    observed.write_text(observed.read_text().replace('  NativeShellWrite(context,handle,bytes,count)',
+                                                   '''  writes==+1
+  NativeShellWrite(context,handle,bytes,count)'''))
     capture_address=None
     command_address=0x3e8000
     source.write_text(source.read_text().replace('$e0000','$3e8000'))
@@ -133,7 +135,7 @@ def run(t,out,mode,bank=2,size=128,scenario='basic',profile=1):
         b.regs=regs
         try:rt,_=execute(b,p,before_run=before,timeout=LIMITS['host_seconds'],frame_limit=LIMITS['guest_frames'])
         except Exception:
-            pointer=int.from_bytes(bytes(data(b,p['image'],'shell')),'little')
+            pointer=int.from_bytes(bytes(shell_data(b,p['image'],'shell')),'little')
             print('Shell command checks/executed',data(b,p['image'],'checks',True),data(b,p['image'],'executed',True),'shell result',[b.eval_expr(f'dw(${pointer+i:x})')for i in (24,28,32,36,54)],flush=True);raise
         finally:b.regs=original_regs
         counts={k:int.from_bytes(bytes(data(b,p['image'],k)),'little')for k in ('captureCount','checks','executed')}

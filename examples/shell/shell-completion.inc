@@ -7,12 +7,12 @@ RETURN(value=ASCII.NUL OR value=ASCII.SPACE OR value=ASCII.TAB
 
 ; Return 1 for the first command, 2 for a file argument, or 0 for an unsupported
 ; token. Quoted earlier arguments still establish subsequent token positions.
-BYTE FUNC ShellCompletionToken()
+BYTE FUNC ShellCompletionToken(ShellContext POINTER context)
   CARD at,start
-  BYTE command,redirect,quoted,unsupported,value,context
+  BYTE command,redirect,quoted,unsupported,value,kind
 
-  LET state=ShellEdit()
-  LET line=ShellLine()
+  LET state=ShellEdit(context)
+  LET line=ShellLine(context)
   LET cursor=state.edit.cursor
   IF cursor=0 OR ShellCompletionDelimiter(line(cursor))=0 THEN
     RETURN(0)
@@ -62,12 +62,12 @@ BYTE FUNC ShellCompletionToken()
           RETURN(0)
         FI
 
-        context=2
+        kind=2
         IF redirect=0 THEN
           IF command=2 THEN
             RETURN(0)
           ELSEIF command=1 THEN
-            context=1
+            kind=1
           FI
         FI
 
@@ -76,7 +76,7 @@ BYTE FUNC ShellCompletionToken()
         WHILE start<at DO
           IF line(start)=CHAR_COLON OR line(start)=CHAR_SLASH THEN
             state.component=start+1
-            context=2
+            kind=2
           FI
 
           start==+1
@@ -86,7 +86,7 @@ BYTE FUNC ShellCompletionToken()
           RETURN(0)
         FI
 
-        RETURN(context)
+        RETURN(kind)
       FI
 
       IF redirect<>0 THEN
@@ -106,12 +106,13 @@ BYTE FUNC ShellCompletionToken()
 RETURN(0)
 
 ; Accumulate a case-folded common prefix without retaining the candidate set.
-PROC ShellCompletionMatch(BYTE POINTER name BYTE directory)
+PROC ShellCompletionMatch(ShellContext POINTER context
+    BYTE POINTER name BYTE directory)
   CARD index,length,prefix
 
-  LET state=ShellEdit()
-  LET first=ShellDrawBuffer()
-  LET line=ShellLine()
+  LET state=ShellEdit(context)
+  LET first=ShellDrawBuffer(context)
+  LET line=ShellLine(context)
   prefix=state.edit.cursor-state.component
   length=ShellLength(name)
   IF length<prefix THEN
@@ -150,19 +151,19 @@ PROC ShellCompletionMatch(BYTE POINTER name BYTE directory)
 RETURN
 
 ; Resident names use exactly the classifier's definitions and current aliases.
-PROC ShellCompletionNames()
+PROC ShellCompletionNames(ShellContext POINTER context)
   BYTE command,index
 
   FOR command=CMD_HELP TO CMD_UNMOUNT DO
     IF command<>CMD_EXTERNAL THEN
-      ShellCompletionMatch(BYTE POINTER(ShellCommandName(command)),0)
+      ShellCompletionMatch(context,BYTE POINTER(ShellCommandName(command)),0)
     FI
   OD
 
-  IF aliases<>NULL THEN
+  IF context.aliases<>NULL THEN
     FOR index=0 TO ALIAS_CAPACITY-1 DO
-      IF aliases(index).name(0)<>ASCII.NUL THEN
-        ShellCompletionMatch(@aliases(index).name(0),0)
+      IF context.aliases(index).name(0)<>ASCII.NUL THEN
+        ShellCompletionMatch(context,@context.aliases(index).name(0),0)
       FI
     OD
   FI
@@ -171,14 +172,14 @@ RETURN
 
 ; Extend a snapshot only when the whole replacement fits. The suffix after the
 ; cursor moves with its terminator, preserving arguments and redirection text.
-PROC ShellCompletionApply()
+PROC ShellCompletionApply(ShellContext POINTER context)
   CARD prefix,extra,index,finish
   BYTE separator
 
-  LET state=ShellEdit()
+  LET state=ShellEdit(context)
   LET edit=@state.edit
-  LET line=ShellLine()
-  LET name=ShellDrawBuffer()
+  LET line=ShellLine(context)
+  LET name=ShellDrawBuffer(context)
   IF state.matches=0 THEN
     RETURN
   FI
@@ -223,7 +224,8 @@ RETURN
 
 ; Scan to EOF before accepting any result. The caller owns the paused editor,
 ; while ordinary DOS calls can reuse its collected request and client context.
-BYTE FUNC ShellCompletionDirectory(BYTE POINTER path BYTE filesOnly)
+BYTE FUNC ShellCompletionDirectory(ShellContext POINTER context
+    BYTE POINTER path BYTE filesOnly)
   LONGINT count,cause
   BYTE index,complete
 
@@ -231,18 +233,18 @@ BYTE FUNC ShellCompletionDirectory(BYTE POINTER path BYTE filesOnly)
     RETURN(0)
   FI
 
-  shell.retiredDirectory=DOS.Lock(path,DOS.SHARED_LOCK)
-  IF shell.retiredDirectory=NULL THEN
+  context.shell.retiredDirectory=DOS.Lock(path,DOS.SHARED_LOCK)
+  IF context.shell.retiredDirectory=NULL THEN
     BEGIN
       LET error=DOS.IoErr()
       RETURN(ShellPathMiss(error)<>0 OR error=DOS.ERROR_NO_DEFAULT_DIR)
     END
   FI
 
-  LET info=DOS.FileInfoBlock POINTER(ShellScratch())
-  LET batch=DOS.DirBatch POINTER(ShellTransfer())
+  LET info=DOS.FileInfoBlock POINTER(ShellScratch(context))
+  LET batch=DOS.DirBatch POINTER(ShellTransfer(context))
   complete=0
-  IF DOS.Examine(shell.retiredDirectory,info)<>0 THEN
+  IF DOS.Examine(context.shell.retiredDirectory,info)<>0 THEN
     IF info.fib_DirEntryType>0 THEN
       batch.capacity=4
       DO
@@ -250,7 +252,7 @@ BYTE FUNC ShellCompletionDirectory(BYTE POINTER path BYTE filesOnly)
           EXIT
         FI
 
-        count=DOS.ExNextBatch(shell.retiredDirectory,info,batch)
+        count=DOS.ExNextBatch(context.shell.retiredDirectory,info,batch)
         cause=DOS.IoErr()
         IF count<0 OR (cause<>0 AND cause<>DOS.ERROR_NO_MORE_ENTRIES)
             OR (count<4 AND cause<>DOS.ERROR_NO_MORE_ENTRIES) THEN
@@ -260,7 +262,7 @@ BYTE FUNC ShellCompletionDirectory(BYTE POINTER path BYTE filesOnly)
         IF count<>0 THEN
           FOR index=0 TO BYTE(count)-1 DO
             IF filesOnly=0 OR batch.entries(index).kind<0 THEN
-              ShellCompletionMatch(@batch.entries(index).name(0),
+              ShellCompletionMatch(context,@batch.entries(index).name(0),
                   batch.entries(index).kind>0)
             FI
           OD
@@ -276,26 +278,26 @@ BYTE FUNC ShellCompletionDirectory(BYTE POINTER path BYTE filesOnly)
 
   ; A failed release remains reachable for the shell's fatal cleanup path.
   DOS.SetIoErr(0)
-  DOS.UnLock(shell.retiredDirectory)
+  DOS.UnLock(context.shell.retiredDirectory)
   IF DOS.IoErr()<>0 THEN
-    ShellFail(PROCESS.RETURN_FAIL,DOS.IoErr())
+    ShellFail(context,PROCESS.RETURN_FAIL,DOS.IoErr())
     RETURN(0)
   FI
 
-  shell.retiredDirectory=NULL
+  context.shell.retiredDirectory=NULL
 
 RETURN(complete)
 
 ; Resolve each logical PATH spelling afresh. Never change CurrentDir or load
 ; a candidate: regular filenames alone do not establish executable validity.
-BYTE FUNC ShellCompletionFiles(BYTE context)
+BYTE FUNC ShellCompletionFiles(ShellContext POINTER context BYTE kind)
   BYTE index
   CARD length
 
-  LET state=ShellEdit()
-  LET path=ShellCompletionPath()
+  LET state=ShellEdit(context)
+  LET path=ShellCompletionPath(context)
   length=state.component-state.first
-  A816MEMORY.Move(path,ShellLine()+SIZE(state.first),SIZE(length))
+  A816MEMORY.Move(path,ShellLine(context)+SIZE(state.first),SIZE(length))
   ; Lock rejects a trailing separator after a directory component. Preserve
   ; a bare root slash; the original logical prefix stays untouched in the edit.
   IF length>1 AND path(length-1)=CHAR_SLASH THEN
@@ -303,13 +305,13 @@ BYTE FUNC ShellCompletionFiles(BYTE context)
   FI
 
   path(length)=ASCII.NUL
-  IF ShellCompletionDirectory(path,context=1)=0 THEN
+  IF ShellCompletionDirectory(context,path,kind=1)=0 THEN
     RETURN(0)
   FI
 
-  IF context=1 AND shell.pathCount<>0 THEN
-    FOR index=0 TO shell.pathCount-1 DO
-      IF ShellCompletionDirectory(ShellPathEntry(index),1)=0 THEN
+  IF kind=1 AND context.shell.pathCount<>0 THEN
+    FOR index=0 TO context.shell.pathCount-1 DO
+      IF ShellCompletionDirectory(context,ShellPathEntry(context,index),1)=0 THEN
         RETURN(0)
       FI
     OD
@@ -319,23 +321,23 @@ RETURN(DOS.BreakPending()=0)
 
 ; A failed or canceled discovery never changes the edit or command result.
 ; The next RESUME observes sticky BREAK through normal cooked cancellation.
-PROC ShellComplete()
+PROC ShellComplete(ShellContext POINTER context)
 
-  LET state=ShellEdit()
+  LET state=ShellEdit(context)
   state.edit.replace=0
   state.matches=0
-  LET context=ShellCompletionToken()
-  IF context=0 THEN
+  LET kind=ShellCompletionToken(context)
+  IF kind=0 THEN
     RETURN
   FI
 
   LET saved=DOS.IoErr()
-  IF context=1 THEN
-    ShellCompletionNames()
+  IF kind=1 THEN
+    ShellCompletionNames(context)
   FI
 
-  IF ShellCompletionFiles(context)<>0 THEN
-    ShellCompletionApply()
+  IF ShellCompletionFiles(context,kind)<>0 THEN
+    ShellCompletionApply(context)
   FI
 
   DOS.SetIoErr(saved)

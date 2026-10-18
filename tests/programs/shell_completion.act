@@ -2,6 +2,8 @@ MODULE SHELLCOMPLETIONTEST
 USE HEAPCORE
 INCLUDE "../../examples/shell/shell-session.inc"
 
+ShellContext context
+
 CARD checks
 BYTE finished
 
@@ -18,15 +20,15 @@ RETURN
 ; Keep expected text independent of the production completion accumulator.
 PROC Same(CSTRING expected)
 
-  Check(STR.strcmp(CSTRING(ShellLine()),expected)=0)
+  Check(STR.strcmp(CSTRING(ShellLine(@context)),expected)=0)
 
 RETURN
 
 PROC Prepare(CSTRING text CARD cursor)
 
-  LET state=ShellEdit()
-  STR.strlcpy(ShellLine(),text,LINE_CAPACITY)
-  state.edit.buffer=ShellLine()
+  LET state=ShellEdit(@context)
+  STR.strlcpy(ShellLine(@context),text,LINE_CAPACITY)
+  state.edit.buffer=ShellLine(@context)
   state.edit.capacity=LINE_CAPACITY
   state.edit.length=CARD(STR.strlen(text))
   state.edit.cursor=cursor
@@ -38,9 +40,9 @@ RETURN
 PROC Complete(CSTRING text,expected CARD cursor)
 
   Prepare(text,cursor)
-  IF ShellCompletionToken()=1 THEN
-    ShellCompletionNames()
-    ShellCompletionApply()
+  IF ShellCompletionToken(@context)=1 THEN
+    ShellCompletionNames(@context)
+    ShellCompletionApply(@context)
   FI
   Same(expected)
 
@@ -48,72 +50,72 @@ RETURN
 
 PROC Contexts()
 
-  LET state=ShellEdit()
+  LET state=ShellEdit(@context)
   Prepare(c"  ECHO abc",10)
-  Check(ShellCompletionToken()=2)
+  Check(ShellCompletionToken(@context)=2)
   Prepare(c"TYPE SYS:WO",11)
-  Check(ShellCompletionToken()=2)
+  Check(ShellCompletionToken(@context)=2)
   Check(state.first=5 AND state.component=9)
   Prepare(c"TYPE SYS:",9)
-  Check(ShellCompletionToken()=0)
+  Check(ShellCompletionToken(@context)=0)
   Prepare(c"RUN PR",6)
-  Check(ShellCompletionToken()=0)
+  Check(ShellCompletionToken(@context)=0)
   Prepare(c"RUN TYPE REA",12)
-  Check(ShellCompletionToken()=2)
+  Check(ShellCompletionToken(@context)=2)
   Prepare(c"CAT X | HE",10)
-  Check(ShellCompletionToken()=0)
+  Check(ShellCompletionToken(@context)=0)
   Prepare(c"CAT X | CAT RE",14)
-  Check(ShellCompletionToken()=2)
+  Check(ShellCompletionToken(@context)=2)
   Prepare(c"ECHO x >>REA",12)
-  Check(ShellCompletionToken()=2)
+  Check(ShellCompletionToken(@context)=2)
   Prepare(c"ECHO x <REA",11)
-  Check(ShellCompletionToken()=2)
+  Check(ShellCompletionToken(@context)=2)
   Prepare(c"ECHO \"quoted text\" REA",22)
-  Check(ShellCompletionToken()=2)
+  Check(ShellCompletionToken(@context)=2)
   Prepare(c"TYPE \"REA",9)
-  Check(ShellCompletionToken()=0)
+  Check(ShellCompletionToken(@context)=0)
   Prepare(c"TYPE RE*",8)
-  Check(ShellCompletionToken()=0)
+  Check(ShellCompletionToken(@context)=0)
   Prepare(c"TYPE RE?",8)
-  Check(ShellCompletionToken()=0)
+  Check(ShellCompletionToken(@context)=0)
   Prepare(c"HELP",2)
-  Check(ShellCompletionToken()=0)
+  Check(ShellCompletionToken(@context)=0)
   Prepare(c"  ",2)
-  Check(ShellCompletionToken()=0)
+  Check(ShellCompletionToken(@context)=0)
 
 RETURN
 
 PROC Accumulator()
   CARD index
 
-  LET state=ShellEdit()
-  LET line=ShellLine()
+  LET state=ShellEdit(@context)
+  LET line=ShellLine(@context)
   Prepare(c"TYPE RE",7)
-  Check(ShellCompletionToken()=2)
-  ShellCompletionMatch(BYTE POINTER(c"README.TXT"),0)
-  ShellCompletionMatch(BYTE POINTER(c"readme.txt"),0)
+  Check(ShellCompletionToken(@context)=2)
+  ShellCompletionMatch(@context,BYTE POINTER(c"README.TXT"),0)
+  ShellCompletionMatch(@context,BYTE POINTER(c"readme.txt"),0)
   Check(state.matches=1)
-  ShellCompletionMatch(BYTE POINTER(c"READER.TXT"),0)
+  ShellCompletionMatch(@context,BYTE POINTER(c"READER.TXT"),0)
   Check(state.matches=2 AND state.common=4)
-  ShellCompletionApply()
+  ShellCompletionApply(@context)
   Same(c"TYPE READ")
   Check(state.edit.cursor=9 AND state.edit.replace=1)
 
   Prepare(c"TYPE RE more",7)
-  Check(ShellCompletionToken()=2)
-  ShellCompletionMatch(BYTE POINTER(c"README.TXT"),0)
-  ShellCompletionApply()
+  Check(ShellCompletionToken(@context)=2)
+  ShellCompletionMatch(@context,BYTE POINTER(c"README.TXT"),0)
+  ShellCompletionApply(@context)
   Same(c"TYPE README.TXT more")
   Prepare(c"TYPE SYS:WO",11)
-  Check(ShellCompletionToken()=2)
-  ShellCompletionMatch(BYTE POINTER(c"WORK"),1)
-  ShellCompletionApply()
+  Check(ShellCompletionToken(@context)=2)
+  ShellCompletionMatch(@context,BYTE POINTER(c"WORK"),1)
+  ShellCompletionApply(@context)
   Same(c"TYPE SYS:WORK/")
   Prepare(c"TYPE WORK",9)
-  Check(ShellCompletionToken()=2)
-  ShellCompletionMatch(BYTE POINTER(c"WORK"),0)
-  ShellCompletionMatch(BYTE POINTER(c"WORKING"),0)
-  ShellCompletionApply()
+  Check(ShellCompletionToken(@context)=2)
+  ShellCompletionMatch(@context,BYTE POINTER(c"WORK"),0)
+  ShellCompletionMatch(@context,BYTE POINTER(c"WORKING"),0)
+  ShellCompletionApply(@context)
   Same(c"TYPE WORK")
   Check(state.edit.replace=0)
 
@@ -127,9 +129,9 @@ PROC Accumulator()
   line(255)=ASCII.NUL
   state.edit.length=255
   state.edit.cursor=255
-  Check(ShellCompletionToken()=1)
-  ShellCompletionNames()
-  ShellCompletionApply()
+  Check(ShellCompletionToken(@context)=1)
+  ShellCompletionNames(@context)
+  ShellCompletionApply(@context)
   Check(state.edit.length=255 AND state.edit.replace=0)
   Check(line(253)='H AND line(254)='E)
 
@@ -140,9 +142,9 @@ PROC Accumulator()
   state.edit.length=253
   state.edit.cursor=253
   state.matches=0
-  Check(ShellCompletionToken()=1)
-  ShellCompletionNames()
-  ShellCompletionApply()
+  Check(ShellCompletionToken(@context)=1)
+  ShellCompletionNames(@context)
+  ShellCompletionApply(@context)
   Check(state.edit.length=255 AND state.edit.cursor=255
       AND state.edit.replace=1 AND line(255)=ASCII.NUL)
   Check(line(251)='H AND line(252)='E AND line(253)='L AND line(254)='P)
@@ -152,9 +154,9 @@ PROC Accumulator()
   state.edit.cursor=254
   state.edit.replace=0
   state.matches=0
-  Check(ShellCompletionToken()=1)
-  ShellCompletionNames()
-  ShellCompletionApply()
+  Check(ShellCompletionToken(@context)=1)
+  ShellCompletionNames(@context)
+  ShellCompletionApply(@context)
   Check(state.edit.length=255 AND line(254)=ASCII.SPACE
       AND line(255)=ASCII.NUL)
 
@@ -163,11 +165,11 @@ RETURN
 PROC Main()
 
   LET before=EXEC.AvailMem(0)
-  shell=ShellState POINTER(EXEC.AllocMem(SHELL_BYTES,
+  context.shell=ShellState POINTER(EXEC.AllocMem(SHELL_BYTES,
       EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
-  Check(shell<>NULL AND SIZEOF(ShellState)=HEADER_SIZE)
+  Check(context.shell<>NULL AND SIZEOF(ShellState)=HEADER_SIZE)
   Check(SIZEOF(ShellEditState)=EDIT_BYTES)
-  Check(ShellAliasDefaults()<>0)
+  Check(ShellAliasDefaults(@context)<>0)
   Complete(c"HE",c"HELP ",2)
   Complete(c"he",c"heLP ",2)
   Complete(c"E",c"E",1)
@@ -178,8 +180,8 @@ PROC Main()
   Complete(c"UNKNOWN",c"UNKNOWN",7)
   Contexts()
   Accumulator()
-  EXEC.FreeMem(BYTE POINTER(aliases),ALIAS_CAPACITY*SIZEOF(ShellAlias))
-  EXEC.FreeMem(BYTE POINTER(shell),SHELL_BYTES)
+  EXEC.FreeMem(BYTE POINTER(context.aliases),ALIAS_CAPACITY*SIZEOF(ShellAlias))
+  EXEC.FreeMem(BYTE POINTER(context.shell),SHELL_BYTES)
   Check(EXEC.AvailMem(0)=before)
   finished=1
 

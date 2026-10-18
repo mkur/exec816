@@ -4,24 +4,35 @@ from pathlib import Path
 import test_sio_recovery as recovery
 from native_program import ROOT,build,require,sha256
 from test_dos_stack import execute,ownership
+from shell_inspect import data as shell_data
 from test_cooperative import data
 
 def run(t,out,mode,size):
     out.mkdir(parents=True,exist_ok=True)
     source=(ROOT/'tests/programs/sio_recovery.act').read_text()
     source=source.replace('USE EXEC\n','USE EXEC\nUSE DOS\nUSE FSBOOT\nUSE DOSCORE\nUSE DOSCLIENT\n')
-    source=source.replace('EXEC.MsgPort POINTER port','INCLUDE "'+str(ROOT/'examples/shell/shell-session.inc')+'"\nINCLUDE "sio-storage-action.inc"\nEXEC.MsgPort POINTER port')
+    source=source.replace('EXEC.MsgPort POINTER port','INCLUDE "'+str(ROOT/'examples/shell/shell-session.inc')+'"\nShellContext context\nINCLUDE "sio-storage-action.inc"\nEXEC.MsgPort POINTER port')
     # Keep private recovery helpers out of the fixed application-entry table.
     import re
     for name in re.findall(r'(?m)^PROC (\w+)\(\)',source):
         if name in ('Main','BlockerEntry'):continue
         source=source.replace('PROC '+name+'()', 'PROC '+name+'(BYTE unused)').replace(name+'()',name+'(0)')
     source=source.replace('PROC Main()', 'BYTE shellCheckpoint\nCARD postsBaseline\nBYTE directoryChecked,directoryReleased\nBYTE ARRAY recoveryRoot=[68 50 58 0]\nPROC Main()')
-    source=source.replace('  Rollback(0) Setup(0)', '  Require(ShellStart(recoveryRoot)<>0 AND shell.directory<>DOS.FileLock POINTER(0))\n  postsBaseline=CARD POINTER(SD_POSTS)^\n  Rollback(0) Setup(0)')
-    source=source.replace('  Submit(0) Collect(0) Cleanup(0)', '  Submit(0) Collect(0)\n  Require(DOS.Input()=shell.console AND DOS.Output()=shell.console AND shell.directory<>DOS.FileLock POINTER(0))\n  directoryChecked=1 shellCheckpoint=1 Cleanup(0)')
+    source=source.replace('  Rollback(0) Setup(0)', '''  Require(ShellStart(@context,recoveryRoot)<>0 AND context.shell.directory<>DOS.FileLock POINTER(0))
+  postsBaseline=CARD POINTER(SD_POSTS)^
+  Rollback(0) Setup(0)''')
+    source=source.replace('  Submit(0) Collect(0) Cleanup(0)', '''  Submit(0) Collect(0)
+  Require(DOS.Input()=context.shell.console AND DOS.Output()=context.shell.console AND context.shell.directory<>DOS.FileLock POINTER(0))
+  directoryChecked=1 shellCheckpoint=1 Cleanup(0)''')
     source=source.replace('PROC Cleanup(BYTE unused)\n', 'PROC Cleanup(BYTE unused)\n  DOS.FileLock POINTER previous\n')
-    source=source.replace('  cleanupReached=1\n  SIODRIVER.Stop()', '  previous=DOS.CurrentDir(DOS.FileLock POINTER(0))\n  Require(previous=shell.directory AND DOS.IoErr()=0)\n  DOS.UnLock(previous) Require(DOS.IoErr()=0) shell.directory=DOS.FileLock POINTER(0)\n  Require(FSBOOT.Stop()<>0) directoryReleased=1 shellCheckpoint=2\n  cleanupReached=1\n  SIODRIVER.Stop()')
-    source=source.replace('  okay=SIODRIVER.Start()\n  Require(okay=1)\n  SIODRIVER.Stop()', '  shellCheckpoint=3 okay=SIODRIVER.Start() Require(okay=1) SIODRIVER.Stop()\n  shellCheckpoint=4 Require(ShellFinish()=0)')
+    source=source.replace('  cleanupReached=1\n  SIODRIVER.Stop()', '''  previous=DOS.CurrentDir(DOS.FileLock POINTER(0))
+  Require(previous=context.shell.directory AND DOS.IoErr()=0)
+  DOS.UnLock(previous) Require(DOS.IoErr()=0) context.shell.directory=DOS.FileLock POINTER(0)
+  Require(FSBOOT.Stop()<>0) directoryReleased=1 shellCheckpoint=2
+  cleanupReached=1
+  SIODRIVER.Stop()''')
+    source=source.replace('  okay=SIODRIVER.Start()\n  Require(okay=1)\n  SIODRIVER.Stop()', '''  shellCheckpoint=3 okay=SIODRIVER.Start() Require(okay=1) SIODRIVER.Stop()
+  shellCheckpoint=4 Require(ShellFinish(@context)=0)''')
     for inc in ('tasks_exec_helpers.inc','io-names.inc'):source=source.replace('"'+inc+'"','"'+str(ROOT/'tests/programs'/inc)+'"')
     shutil.copyfile(ROOT/'tests/programs/sioprobe.act',out/'sioprobe.act')
     path=out/'shell-recovery.act';path.write_text(source)
@@ -40,7 +51,7 @@ def run(t,out,mode,size):
         except Exception:
             print('Shell serial checkpoint',data(b,p['image'],'shellCheckpoint'), 'directory',data(b,p['image'],'directoryChecked'),data(b,p['image'],'directoryReleased'),flush=True);raise
         require(data(b,p['image'],'directoryChecked')==[1]and data(b,p['image'],'directoryReleased')==[1],'Fault did not preserve then retire selected directory')
-        pointer=int.from_bytes(bytes(data(b,p['image'],'shell')),'little')
+        pointer=int.from_bytes(bytes(shell_data(b,p['image'],'shell')),'little')
         ds=p['build']['memory']['dos_storage'];cs=p['build']['memory']['console_storage']
         far=lambda at,n:bytes(b.eval_expr(f'db(${at+i:x})')for i in range(n))
         registry=far(ds['STREAMS'],16);endpoint=int.from_bytes(registry[1:4],'little');instance=far(cs['INSTANCE'],62)

@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "records": {
+    "ShellJob": [
+      ["identity", "LONGCARD"],
+      ["outcome", "PROCESS.Result"],
+      ["state", "BYTE"],
+      ["announce", "BYTE"]
+    ],
+    "ShellContext": [
+      ["shell", "ShellState POINTER"],
+      ["aliases", "ShellAlias POINTER"],
+      ["script", "ShellScript POINTER"],
+      ["aliasCount", "BYTE"],
+      ["job", "ShellJob"]
+    ]
+  }
+}

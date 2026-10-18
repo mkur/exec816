@@ -42,7 +42,7 @@ PROC Run(CARD offset LONGINT status,error)
   DOSCLIENT.ClientContext POINTER client
 
   source=BYTE POINTER(ADDRESS($e0000)+SIZE(offset))
-  target=ShellLine()
+  target=ShellLine(@context)
   index=0
   DO
     target(index)=source(index)
@@ -57,13 +57,13 @@ PROC Run(CARD offset LONGINT status,error)
   OD
 
   rowStart=writes
-  shell.length=index
-  ShellCommand()
-  Check(shell.lastStatus=status AND shell.lastError=error AND shell.done=0)
+  context.shell.length=index
+  ShellCommand(@context)
+  Check(context.shell.lastStatus=status AND context.shell.lastError=error AND context.shell.done=0)
   owner=DOSCORE.Current()
   client=DOSCLIENT.ClientContext POINTER(owner.context)
-  Check(shell.retiredDirectory=DOS.FileLock POINTER(0)
-      AND shell.commandInput=DOS.FileHandle POINTER(0))
+  Check(context.shell.retiredDirectory=DOS.FileLock POINTER(0)
+      AND context.shell.commandInput=DOS.FileHandle POINTER(0))
   Check(client.busy=0 AND client.objects=3 AND EXEC.AvailMem(0)=steady)
   executed==+1
 
@@ -104,7 +104,7 @@ PROC DefaultInput(CARD offset)
   DOS.FileHandle POINTER ignored
 
   borrowedInput=DOS.SelectInput(sink)
-  Check(borrowedInput=shell.console AND DOS.IoErr()=0)
+  Check(borrowedInput=context.shell.console AND DOS.IoErr()=0)
   Run(offset,0,0)
   ignored=DOS.SelectInput(borrowedInput)
   Check(ignored=sink AND DOS.IoErr()=0)
@@ -114,26 +114,26 @@ RETURN
 PROC RawText(CARD offset)
   DOS.FileHandle POINTER ignored
 
-  ignored=DOS.SelectOutput(shell.console)
+  ignored=DOS.SelectOutput(context.shell.console)
   Check(ignored=sink AND DOS.IoErr()=0)
   Run(offset,0,0)
   Pause(2)
   ignored=DOS.SelectOutput(sink)
-  Check(ignored=shell.console AND DOS.IoErr()=0)
+  Check(ignored=context.shell.console AND DOS.IoErr()=0)
 
 RETURN
 
 PROC Numbers(CARD unused)
 
-  ShellNumber(DOS.Output(),SYS.MINLONGINT)
-  ShellByte(DOS.Output(),ASCII.SPACE)
-  ShellNumber(DOS.Output(),-1)
-  ShellByte(DOS.Output(),ASCII.SPACE)
-  ShellNumber(DOS.Output(),0)
-  ShellByte(DOS.Output(),ASCII.SPACE)
-  ShellNumber(DOS.Output(),SYS.MAXLONGINT)
-  ShellByte(DOS.Output(),ASCII.LF)
-  Check(shell.status=PROCESS.RETURN_OK AND EXEC.AvailMem(0)=steady)
+  ShellNumber(@context,DOS.Output(),SYS.MINLONGINT)
+  ShellByte(@context,DOS.Output(),ASCII.SPACE)
+  ShellNumber(@context,DOS.Output(),-1)
+  ShellByte(@context,DOS.Output(),ASCII.SPACE)
+  ShellNumber(@context,DOS.Output(),0)
+  ShellByte(@context,DOS.Output(),ASCII.SPACE)
+  ShellNumber(@context,DOS.Output(),SYS.MAXLONGINT)
+  ShellByte(@context,DOS.Output(),ASCII.LF)
+  Check(context.shell.status=PROCESS.RETURN_OK AND EXEC.AvailMem(0)=steady)
   executed==+1
 
 RETURN
@@ -143,7 +143,7 @@ PROC Rows(CARD unused)
   CARD index
 
   rowStart=writes
-  LET info=DOS.FileInfoBlock POINTER(ShellScratch())
+  LET info=DOS.FileInfoBlock POINTER(ShellScratch(@context))
   FOR index=0 TO 30 DO
     info.fib_FileName(index)='X
   OD
@@ -152,16 +152,16 @@ PROC Rows(CARD unused)
   info.fib_DirEntryType=-1
   info.fib_InfoFlags=DOS.FIB_SIZE_EXACT
   info.fib_Size=SYS.MINLONGINT
-  ShellDirRow(info)
+  ShellDirRow(@context,info)
   info.fib_Size=SYS.MAXLONGINT
-  ShellDirRow(info)
+  ShellDirRow(@context,info)
   info.fib_InfoFlags=DOS.FIB_SIZE_BOUND
-  ShellDirRow(info)
+  ShellDirRow(@context,info)
   info.fib_InfoFlags=0
-  ShellDirRow(info)
+  ShellDirRow(@context,info)
   info.fib_DirEntryType=1
-  ShellDirRow(info)
-  Check(shell.status=PROCESS.RETURN_OK AND EXEC.AvailMem(0)=steady
+  ShellDirRow(@context,info)
+  Check(context.shell.status=PROCESS.RETURN_OK AND EXEC.AvailMem(0)=steady
       AND writes-rowStart=5)
   executed==+1
 
@@ -179,19 +179,19 @@ PROC PipeOutput(CARD offset)
   ; Run's ownership assertions apply to the usual three handles. Execute directly
   ; here while this caller also owns the two pipe endpoints.
   LET source=BYTE POINTER(ADDRESS($e0000)+SIZE(offset))
-  LET target=ShellLine()
+  LET target=ShellLine(@context)
   FOR index=0 TO 9 DO
     target(index)=source(index)
   OD
 
   rowStart=writes
-  shell.length=9
-  ShellCommand()
-  Check(shell.lastStatus=0 AND shell.lastError=0 AND shell.retiredDirectory=NULL)
+  context.shell.length=9
+  ShellCommand(@context)
+  Check(context.shell.lastStatus=0 AND context.shell.lastError=0 AND context.shell.retiredDirectory=NULL)
   ignored=DOS.SelectOutput(sink)
   Check(ignored=pair.writer AND DOS.Close(pair.writer)<>0)
-  Check(DOS.Read(pair.reader,ShellTransfer(),10)=5)
-  LET buffer=ShellTransfer()
+  Check(DOS.Read(pair.reader,ShellTransfer(@context),10)=5)
+  LET buffer=ShellTransfer(@context)
   Check(buffer(0)='S AND buffer(1)='U AND buffer(2)='B
       AND buffer(3)=CHAR_SLASH AND buffer(4)=ASCII.LF)
   Check(DOS.Read(pair.reader,buffer,1)=0 AND DOS.Close(pair.reader)<>0)
@@ -202,23 +202,25 @@ RETURN
 
 INCLUDE "shell-command-cases.inc"
 
+ShellContext context
+
 ; Exercise resident shell commands, parsing and borrowed standard input.
 PROC Main()
   DOS.FileHandle POINTER ignored
 
   before=EXEC.AvailMem(0)
-  Check(ShellStart(shellRoot)<>0 AND SIZEOF(ShellState)=128)
+  Check(ShellStart(@context,shellRoot)<>0 AND SIZEOF(ShellState)=128)
   sink=DOS.Open(nil,DOS.MODE_READWRITE)
   Check(sink<>DOS.FileHandle POINTER(0))
   borrowedOutput=DOS.SelectOutput(sink)
-  Check(borrowedOutput=shell.console AND DOS.IoErr()=0)
+  Check(borrowedOutput=context.shell.console AND DOS.IoErr()=0)
   steady=EXEC.AvailMem(0)
   Cases()
   ignored=DOS.SelectOutput(borrowedOutput)
   Check(ignored=sink AND DOS.IoErr()=0 AND DOS.Close(sink)<>0)
-  shell.status=0
-  shell.error=0
-  Check(ShellFinish()=0 AND FSBOOT.Stop()<>0)
+  context.shell.status=0
+  context.shell.error=0
+  Check(ShellFinish(@context)=0 AND FSBOOT.Stop()<>0)
   Check(EXEC.AvailMem(0)=before)
   stage=3
 

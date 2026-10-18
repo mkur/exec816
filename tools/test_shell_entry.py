@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Build and execute the shipped resident entry without test hooks."""
+from shell_inspect import address as shell_address
 import adapter_state as adapter
 import argparse,json,re,time
 from pathlib import Path
@@ -33,7 +34,7 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
     media=out/'volume.atr';files=make_disk(media)
     if invalid_disk:
         raw=bytearray(media.read_bytes());raw[16+359*128]=0;media.write_bytes(raw)
-    def at(name):return next(d['address']for d in p['image']['data']if '_SHELLAPP_'+name.upper()+'_'in d['name'])
+    def at(name):return shell_address(p['image'],name,"SHELLAPP")
     state={};schedule=[];payload=bytearray()
     with emulator(bridge,ROOT/'build/firmware/altirraos-816.rom',out,pin=pin)as b:
         require(sha256(bridge/'AltirraBridgeServer')==pin['emulator']['sha256'],'Unpinned shell bridge')

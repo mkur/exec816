@@ -12,6 +12,8 @@ USE FSBOOT
 USE CONSOLETYPES
 USE CONSOLEDRIVER
 INCLUDE "shell-observed.inc"
+
+ShellContext context
 DOS.FileHandle POINTER readerOutput
 DOS.FileLock POINTER readerDirectory
 EXEC.Task readerTask
@@ -411,15 +413,15 @@ PROC CommandEnd(BYTE unused)
   DOSCORE.DosSlot POINTER owner
   DOSCLIENT.ClientContext POINTER client
 
-  Check(shell.lastStatus=0 AND shell.lastError=0 AND shell.done=0)
+  Check(context.shell.lastStatus=0 AND context.shell.lastError=0 AND context.shell.done=0)
   owner=DOSCORE.Current()
   client=DOSCLIENT.ClientContext POINTER(owner.context)
-  Check(client.input=BYTE POINTER(shell.console)
-      AND client.output=BYTE POINTER(shell.console)
-      AND client.directory=BYTE POINTER(shell.directory))
+  Check(client.input=BYTE POINTER(context.shell.console)
+      AND client.output=BYTE POINTER(context.shell.console)
+      AND client.directory=BYTE POINTER(context.shell.directory))
   Check(client.busy=0 AND client.objects=2
-      AND shell.tempInput=DOS.FileHandle POINTER(0)
-      AND shell.tempOutput=DOS.FileHandle POINTER(0))
+      AND context.shell.tempInput=DOS.FileHandle POINTER(0)
+      AND context.shell.tempOutput=DOS.FileHandle POINTER(0))
   Check(EXECLISTS.IsListEmpty(@client.port.mp_MsgList)<>0
       AND client.request.io_Device=BYTE POINTER(0)
       AND client.request.io_Unit=BYTE POINTER(0))
@@ -431,7 +433,7 @@ PROC Command(BYTE POINTER source)
   BYTE POINTER line
   CARD index
 
-  line=ShellLine()
+  line=ShellLine(@context)
   index=0
   DO
     line(index)=source(index)
@@ -442,9 +444,9 @@ PROC Command(BYTE POINTER source)
     index==+1
   OD
 
-  shell.length=index
+  context.shell.length=index
   CommandBegin(0)
-  ShellCommand()
+  ShellCommand(@context)
   CommandEnd(0)
 
 RETURN
@@ -464,7 +466,7 @@ PROC Interaction(BYTE unused)
   EXEC.Signal(@readerTask,$10000)
   probe.phase=2
   ; Eight physical characters plus Return execute ECHO through the real editor.
-  ShellReadStep()
+  ShellReadStep(@context)
   CommandEnd(0)
   Command(command0)
   Command(command1)
@@ -502,7 +504,7 @@ PROC Main()
   Check(fixtureStorage<>BYTE POINTER(0))
   consoleTask=EXEC.FindTask(BYTE POINTER(0))
   Check(EXEC.AllocSignal(16)=16)
-  Check(ShellStart(shellRoot)<>0)
+  Check(ShellStart(@context,shellRoot)<>0)
   AllocateReader(0)
   StartReader(0)
   StartWork(0)
@@ -524,7 +526,7 @@ PROC Main()
     EXEC.Yield()
   OD
 
-  Check(ShellFinish()=0 AND FSBOOT.Stop()<>0)
+  Check(ShellFinish(@context)=0 AND FSBOOT.Stop()<>0)
   EXEC.FreeMem(readBuffer,70003)
   EXEC.FreeSignal(16)
   EXEC.FreeMem(fixtureStorage,8192)

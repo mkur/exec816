@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Text-console keys, shared loaded PRIMES startup, tiles and clean exit."""
+from shell_inspect import address as shell_address
 import adapter_state as adapter
 import argparse
 import json
@@ -40,8 +41,7 @@ def run(out, mode, reuse=False, compiler_dir=ROOT/'build/actionc'):
     binary = ROOT/'build/shell-paced-bridge/AltirraBridgeServer'
     rom = ROOT/'build/firmware/altirraos-816.rom'
     require(sha256(binary) == PIN['emulator']['sha256'] and sha256(rom) == PIN['rom']['sha256'], 'Unpinned machine')
-    def at(name):
-        return next(d['address'] for d in p['image']['data'] if '_DEMOTEST_'+name.upper()+'_' in d['name'])
+    def at(name):return shell_address(p['image'],name,"DEMOTEST")
     observed = []
     saved = {}
     with emulator(binary.parent, rom, out, pin=PIN) as b:

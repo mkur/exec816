@@ -1,5 +1,9 @@
 # Historical records
 
+- [Multiple shell sessions](shell-sessions.md): incremental SS1–SS8 evidence,
+  explicit per-session state, native layout and concurrency checks, resource
+  costs and remaining controller/presentation work.
+
 - [Shell TAB completion](shell-completion.md): resumable native editing,
   builtin/alias and streamed file/PATH matching, ownership/failure checks,
   accurate disk timings and the tested standard OF816 demo.

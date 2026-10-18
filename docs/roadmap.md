@@ -24,6 +24,17 @@ Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved
 bank-zero costs for each slice before moving to the next.
 
+The [multiple shell sessions design](plans/shell-sessions-design.md)
+separates shell state and lifetime, starting with two switched sessions and then
+desktop tabs. Separate windows follow the same session model. The design
+accounts for a root controller, existing Task/console limits, prime-pane
+switching and independent cancellation.
+SS1 now isolates the shell state; [development evidence](history/shell-sessions.md)
+records its native concurrency and layout checks. The
+[SS1–SS8 plan](plans/shell-sessions-implementation-plan.md) orders reentrant
+state, console control, controller lifetime, two-session text behavior, desktop
+binding/tabs and measured OF816 delivery. SS2–SS8 remain pending.
+
 The [shell TAB completion plan](plans/shell-completion-implementation-plan.md)
 is implemented through SC3: resumable editing, builtin/alias and filesystem/PATH
 prefix completion, measured integration and the standard OF816 demo. Completion

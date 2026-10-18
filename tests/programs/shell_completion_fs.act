@@ -3,6 +3,8 @@ USE HEAPCORE
 USE FSBOOT
 INCLUDE "../../examples/shell/shell-session.inc"
 
+ShellContext context
+
 CARD checks,batches
 BYTE finished,fault,unlockFault
 
@@ -70,22 +72,22 @@ RETURN
 
 PROC Complete(CSTRING text,expected)
 
-  LET state=ShellEdit()
-  STR.strlcpy(ShellLine(),text,LINE_CAPACITY)
-  state.edit.buffer=ShellLine()
+  LET state=ShellEdit(@context)
+  STR.strlcpy(ShellLine(@context),text,LINE_CAPACITY)
+  state.edit.buffer=ShellLine(@context)
   state.edit.capacity=LINE_CAPACITY
   state.edit.length=CARD(STR.strlen(text))
   state.edit.cursor=state.edit.length
   state.edit.replace=0
   batches=0
   DOS.SetIoErr(219)
-  ShellComplete()
-  Check(STR.strcmp(CSTRING(ShellLine()),expected)=0)
+  ShellComplete(@context)
+  Check(STR.strcmp(CSTRING(ShellLine(@context)),expected)=0)
   Check(DOS.IoErr()=219)
-  IF shell.done=0 THEN
-    Check(shell.retiredDirectory=NULL)
-    Check(shell.status=5 AND shell.error=123
-        AND shell.lastStatus=10 AND shell.lastError=205)
+  IF context.shell.done=0 THEN
+    Check(context.shell.retiredDirectory=NULL)
+    Check(context.shell.status=5 AND context.shell.error=123
+        AND context.shell.lastStatus=10 AND context.shell.lastError=205)
   FI
 
 RETURN
@@ -128,10 +130,10 @@ PROC Ram()
   Complete(c"TYPE RAM:D",c"TYPE RAM:D")
   Complete(c"TYPE RAM:D1",c"TYPE RAM:D1/")
 
-  shell.pathCount=3
-  STR.strlcpy(ShellPathEntry(0),c"RAM:D1",256)
-  STR.strlcpy(ShellPathEntry(1),c"RAM:MISSING",256)
-  STR.strlcpy(ShellPathEntry(2),c"RAM:D4",256)
+  context.shell.pathCount=3
+  STR.strlcpy(ShellPathEntry(@context,0),c"RAM:D1",256)
+  STR.strlcpy(ShellPathEntry(@context,1),c"RAM:MISSING",256)
+  STR.strlcpy(ShellPathEntry(@context,2),c"RAM:D4",256)
   Complete(c"ALON",c"ALONE ")
   Complete(c"ON",c"ONE ")
   File(c"RAM:ALONE")
@@ -139,15 +141,15 @@ PROC Ram()
   File(c"RAM:D4/ALONG")
   Complete(c"ALO",c"ALON")
   Check(DOS.AssignPath(BYTE POINTER(c"C"),BYTE POINTER(c"RAM:D1"))<>0)
-  shell.pathCount=1
-  STR.strlcpy(ShellPathEntry(0),c"C:",256)
+  context.shell.pathCount=1
+  STR.strlcpy(ShellPathEntry(@context,0),c"C:",256)
   Complete(c"ALON",c"ALONE ")
   Check(DOS.AssignPath(BYTE POINTER(c"C"),BYTE POINTER(c"RAM:D4"))<>0)
   Complete(c"ON",c"ONE ")
   Complete(c"TYPE C:ON",c"TYPE C:ONE ")
-  STR.strlcpy(ShellPathEntry(0),c"MISSING:",256)
+  STR.strlcpy(ShellPathEntry(@context,0),c"MISSING:",256)
   Complete(c"HE",c"HE")
-  shell.pathCount=0
+  context.shell.pathCount=0
 
   fault=1
   Complete(c"HE",c"HE")
@@ -161,32 +163,32 @@ PROC Ram()
   Complete(c"TYPE RAM:D8/MA",c"TYPE RAM:D8/MATCH")
   unlockFault=1
   Complete(c"TYPE RAM:D1/AL",c"TYPE RAM:D1/AL")
-  Check(shell.done=1 AND shell.status=20 AND shell.retiredDirectory<>NULL)
+  Check(context.shell.done=1 AND context.shell.status=20 AND context.shell.retiredDirectory<>NULL)
   DOS.SetIoErr(0)
-  DOS.UnLock(shell.retiredDirectory)
+  DOS.UnLock(context.shell.retiredDirectory)
   Check(DOS.IoErr()=0)
-  shell.retiredDirectory=NULL
-  shell.done=0
-  shell.status=5
-  shell.error=123
+  context.shell.retiredDirectory=NULL
+  context.shell.done=0
+  context.shell.status=5
+  context.shell.error=123
 
 RETURN
 
 PROC Main()
 
   LET before=EXEC.AvailMem(0)
-  shell=ShellState POINTER(EXEC.AllocMem(SHELL_BYTES,
+  context.shell=ShellState POINTER(EXEC.AllocMem(SHELL_BYTES,
       EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
-  Check(shell<>NULL)
-  Check(ShellAliasDefaults()<>0)
-  shell.directory=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
-  Check(shell.directory<>NULL)
-  LET previous=DOS.CurrentDir(shell.directory)
+  Check(context.shell<>NULL)
+  Check(ShellAliasDefaults(@context)<>0)
+  context.shell.directory=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Check(context.shell.directory<>NULL)
+  LET previous=DOS.CurrentDir(context.shell.directory)
   Check(DOS.IoErr()=0)
-  shell.status=5
-  shell.error=123
-  shell.lastStatus=10
-  shell.lastError=205
+  context.shell.status=5
+  context.shell.error=123
+  context.shell.lastStatus=10
+  context.shell.lastError=205
   Ram()
   Complete(c"TYPE D1:READM",c"TYPE D1:README.TXT ")
   Complete(c"TYPE D1:REA",c"TYPE D1:READ")
@@ -198,11 +200,11 @@ PROC Main()
   Complete(c"TYPE D2:TOOLS/NO",c"TYPE D2:TOOLS/NOTE.TXT ")
   Check(DOS.AssignPath(BYTE POINTER(c"C"),NULL)<>0)
   LET old=DOS.CurrentDir(previous)
-  Check(old=shell.directory AND DOS.IoErr()=0)
+  Check(old=context.shell.directory AND DOS.IoErr()=0)
   DOS.UnLock(old)
   Check(DOS.IoErr()=0)
-  EXEC.FreeMem(BYTE POINTER(aliases),ALIAS_CAPACITY*SIZEOF(ShellAlias))
-  EXEC.FreeMem(BYTE POINTER(shell),SHELL_BYTES)
+  EXEC.FreeMem(BYTE POINTER(context.aliases),ALIAS_CAPACITY*SIZEOF(ShellAlias))
+  EXEC.FreeMem(BYTE POINTER(context.shell),SHELL_BYTES)
   Check(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
   Check(EXEC.AvailMem(0)=before)
   finished=1

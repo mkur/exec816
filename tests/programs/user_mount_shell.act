@@ -3,6 +3,8 @@ USE HEAPCORE
 USE FSBOOT
 INCLUDE "../../examples/shell/shell-session.inc"
 
+ShellContext context
+
 CARD checks
 BYTE finished
 BYTE ARRAY scriptText(51)=[77 79 85 78 84 32 83 67 82 73 80 84 58 32 68 82 73 86 69 32 50 32 70 79 82 77 65 84 32 77 89 68 79 83 10 85 78 77 79 85 78 84 32 83 67 82 73 80 84 58 10]
@@ -20,17 +22,17 @@ RETURN
 
 PROC RunLine(CSTRING text LONGINT status,error)
 
-  STR.strlcpy(ShellLine(),text,LINE_CAPACITY)
-  ShellCommand()
-  Require(shell.lastStatus=status AND shell.lastError=error)
-  Require(DOS.Input()=shell.console AND DOS.Output()=shell.console)
+  STR.strlcpy(ShellLine(@context),text,LINE_CAPACITY)
+  ShellCommand(@context)
+  Require(context.shell.lastStatus=status AND context.shell.lastError=error)
+  Require(DOS.Input()=context.shell.console AND DOS.Output()=context.shell.console)
 
 RETURN
 
 PROC Main()
 
   LET baseline=EXEC.AvailMem(0)
-  Require(ShellStart(BYTE POINTER(c"RAM:"))<>0)
+  Require(ShellStart(@context,BYTE POINTER(c"RAM:"))<>0)
   RunLine(c"MOUNT D2: FORMAT MYDOS >RAM:MOUNT.TXT",0,0)
   LET file=DOS.Open(BYTE POINTER(c"RAM:MOUNT.TXT"),DOS.MODE_OLDFILE)
   Require(file<>NULL AND DOS.Read(file,bytes,256)>0)
@@ -50,7 +52,7 @@ PROC Main()
       LONGINT(SIZEOF(scriptText)))
   Require(DOS.Close(scriptFile)<>0)
   RunLine(c"EXECUTE RAM:SETUP",0,0)
-  Require(ShellFinish()=0)
+  Require(ShellFinish(@context)=0)
   Require(FSBOOT.Stop()<>0)
   Require(EXEC.AvailMem(0)=baseline)
   finished=1

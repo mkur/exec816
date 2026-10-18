@@ -38,10 +38,10 @@ class Startup(Toolbox):
         text = source.read_text()
         text = text.replace('INCLUDE "shell-observed.inc"',
             'INCLUDE "shell-observed.inc"\nINCLUDE "'+str(ROOT/'examples/shell/shell-boot.inc')+'"')
-        text = text.replace('Check(ShellStart(shellRoot)<>0)', 'Check(ShellBootStart(shellCon)<>0)')
-        text = text.replace('  Pause(1)', '''  Check(script=NULL AND shell.redirectActive=0
-      AND shell.tempInput=NULL AND shell.tempOutput=NULL
-      AND DOS.Input()=shell.console AND DOS.Output()=shell.console)
+        text = text.replace('Check(ShellStart(@context,shellRoot)<>0)', 'Check(ShellBootStart(@context,shellCon)<>0)')
+        text = text.replace('  Pause(1)', '''  Check(context.script=NULL AND context.shell.redirectActive=0
+      AND context.shell.tempInput=NULL AND context.shell.tempOutput=NULL
+      AND DOS.Input()=context.shell.console AND DOS.Output()=context.shell.console)
   Pause(1)''', 1)
         # Assignments are system-wide and intentionally outlive ShellFinish.
         # Remove these two boot mappings explicitly before the heap oracle.
@@ -53,12 +53,13 @@ class Startup(Toolbox):
         source.write_text(text)
         observed = out/'shell-observed.inc'
         text = observed.read_text()
-        marker = '  SHELLEDITPROBE.Capture(bytes,count)\n  NativeShellWrite(handle,bytes,count)'
+        marker = '''  SHELLEDITPROBE.Capture(bytes,count)
+  NativeShellWrite(context,handle,bytes,count)'''
         require(text.count(marker) == 1, 'Missing startup Write observer')
-        text = text.replace(marker, '''  IF handle=shell.console THEN
+        text = text.replace(marker, '''  IF handle=context.shell.console THEN
     SHELLEDITPROBE.Capture(bytes,count)
   FI
-  NativeShellWrite(handle,bytes,count)''')
+  NativeShellWrite(context,handle,bytes,count)''')
         observed.write_text(text)
 
     def prepare(self, toolchain, out, mode, size):

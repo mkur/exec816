@@ -8,8 +8,8 @@ PROC Main()
 
   started=DemoStart()
   IF started<>0 THEN
-    WHILE shell.done=0 DO
-      ShellReadStep()
+    WHILE context.shell.done=0 DO
+      ShellReadStep(@context)
     OD
   FI
 

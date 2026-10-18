@@ -2,22 +2,24 @@
 INCLUDE "shell/shell-session.inc"
 INCLUDE "shell/shell-boot.inc"
 
+ShellContext context
+
 BYTE FUNC DemoStart()
 
-  IF ShellBootStart(shellCon)=0 THEN
+  IF ShellBootStart(@context,shellCon)=0 THEN
     RETURN(0)
   FI
 
-  ShellText(shell.console,c"RUN PRIMES\n")
-  STR.strlcpy(ShellLine(),c"RUN PRIMES",LINE_CAPACITY)
-  ShellCommand()
-  ShellClear()
-  IF shell.done=0 THEN
-    ShellPrompt()
+  ShellText(@context,context.shell.console,c"RUN PRIMES\n")
+  STR.strlcpy(ShellLine(@context),c"RUN PRIMES",LINE_CAPACITY)
+  ShellCommand(@context)
+  ShellClear(@context)
+  IF context.shell.done=0 THEN
+    ShellPrompt(@context)
   FI
 
-RETURN(shell.done=0)
+RETURN(context.shell.done=0)
 
 LONGINT FUNC DemoFinish()
 
-RETURN(ShellFinish())
+RETURN(ShellFinish(@context))

@@ -1,11 +1,12 @@
 ; Small resident parser; geometry is always discovered by the filesystem worker.
-LONGINT FUNC ShellMountParse(BYTE POINTER name DOS.SioMountSpec POINTER spec)
+LONGINT FUNC ShellMountParse(ShellContext POINTER context
+    BYTE POINTER name DOS.SioMountSpec POINTER spec)
   CARD index,length
   BYTE seen,option,inferred
 
-  length=ShellLength(shell.words(1).text)
+  length=ShellLength(context.shell.words(1).text)
   IF length<>0 THEN
-    IF shell.words(1).text(length-1)=CHAR_COLON THEN
+    IF context.shell.words(1).text(length-1)=CHAR_COLON THEN
       length==-1
     FI
   FI
@@ -15,7 +16,7 @@ LONGINT FUNC ShellMountParse(BYTE POINTER name DOS.SioMountSpec POINTER spec)
   FI
 
   FOR index=0 TO length-1 DO
-    name(index)=FS83.Fold(shell.words(1).text(index))
+    name(index)=FS83.Fold(context.shell.words(1).text(index))
   OD
 
   name(length)=0
@@ -33,9 +34,9 @@ LONGINT FUNC ShellMountParse(BYTE POINTER name DOS.SioMountSpec POINTER spec)
 
   seen=0
   index=2
-  WHILE index<shell.argc DO
+  WHILE index<context.shell.argc DO
     BEGIN
-      LET word=shell.words(index).text
+      LET word=context.shell.words(index).text
       option=0
       IF ShellEqual(word,c"READWRITE")<>0 THEN
         option=1
@@ -47,11 +48,11 @@ LONGINT FUNC ShellMountParse(BYTE POINTER name DOS.SioMountSpec POINTER spec)
             RETURN(DOS.ERROR_BAD_ARGUMENTS)
           FI
 
-          IF index+1>=shell.argc THEN
+          IF index+1>=context.shell.argc THEN
             RETURN(DOS.ERROR_REQUIRED_ARG_MISSING)
           FI
 
-          LET value=shell.words(index+1).text
+          LET value=context.shell.words(index+1).text
           IF ShellEqual(word,c"DRIVE")<>0 THEN
             option=2
             IF value(0)<'1 OR value(0)>'8 OR value(1)<>0 THEN
@@ -133,74 +134,75 @@ CSTRING FUNC ShellGeometrySource(BYTE source)
 RETURN(c"boot configuration")
 
 ; Rows fit the standard console; no probe or filesystem query occurs here.
-PROC ShellMountDetails(DOS.FileHandle POINTER output FSINSPECT.Info POINTER info)
+PROC ShellMountDetails(ShellContext POINTER context
+    DOS.FileHandle POINTER output FSINSPECT.Info POINTER info)
   CARD used
 
-  used=ShellRowText(output,0,CSTRING(@info.name(0)))
-  ShellRowEnd(output,ShellRowByte(output,used,CHAR_COLON))
-  used=ShellRowText(output,0,c"  ")
+  used=ShellRowText(context,output,0,CSTRING(@info.name(0)))
+  ShellRowEnd(context,output,ShellRowByte(context,output,used,CHAR_COLON))
+  used=ShellRowText(context,output,0,c"  ")
   IF info.format=FSFORMATS.RAM THEN
-    used=ShellRowText(output,used,c"RAM writable")
-    ShellRowEnd(output,used)
+    used=ShellRowText(context,output,used,c"RAM writable")
+    ShellRowEnd(context,output,used)
     RETURN
   FI
 
   IF info.backend=BLOCKTYPES.BACKEND_SIO THEN
-    used=ShellRowText(output,used,c"D")
-    used=ShellRowNumber(output,used,LONGINT(info.unit)-48)
+    used=ShellRowText(context,output,used,c"D")
+    used=ShellRowNumber(context,output,used,LONGINT(info.unit)-48)
   ELSE
-    used=ShellRowText(output,used,c"IDE unit ")
-    used=ShellRowNumber(output,used,LONGINT(info.unit))
+    used=ShellRowText(context,output,used,c"IDE unit ")
+    used=ShellRowNumber(context,output,used,LONGINT(info.unit))
   FI
 
   IF info.format=FSFORMATS.MYDOS THEN
-    used=ShellRowText(output,used,c" MyDOS ")
+    used=ShellRowText(context,output,used,c" MyDOS ")
   ELSE
-    used=ShellRowText(output,used,c" SpartaDOS ")
+    used=ShellRowText(context,output,used,c" SpartaDOS ")
   FI
 
   IF info.readOnly<>0 THEN
-    used=ShellRowText(output,used,c"read-only")
+    used=ShellRowText(context,output,used,c"read-only")
   ELSE
-    used=ShellRowText(output,used,c"read-write")
+    used=ShellRowText(context,output,used,c"read-write")
   FI
-  ShellRowEnd(output,used)
-  used=ShellRowText(output,0,c"  ")
-  used=ShellRowUnsigned(output,used,info.sectors)
-  used=ShellRowText(output,used,c" x ")
-  used=ShellRowNumber(output,used,LONGINT(info.bytes))
-  used=ShellRowText(output,used,c"B ")
+  ShellRowEnd(context,output,used)
+  used=ShellRowText(context,output,0,c"  ")
+  used=ShellRowUnsigned(context,output,used,info.sectors)
+  used=ShellRowText(context,output,used,c" x ")
+  used=ShellRowNumber(context,output,used,LONGINT(info.bytes))
+  used=ShellRowText(context,output,used,c"B ")
   IF info.backend=BLOCKTYPES.BACKEND_SIO THEN
-    used=ShellRowText(output,used,ShellMountProfile(info.profile))
+    used=ShellRowText(context,output,used,ShellMountProfile(info.profile))
   FI
 
-  ShellRowEnd(output,used)
-  used=ShellRowText(output,0,c"  geometry: ")
-  ShellRowEnd(output,ShellRowText(output,used,ShellGeometrySource(info.source)))
+  ShellRowEnd(context,output,used)
+  used=ShellRowText(context,output,0,c"  geometry: ")
+  ShellRowEnd(context,output,ShellRowText(context,output,used,ShellGeometrySource(info.source)))
 
 RETURN
 
-PROC ShellMountCommand()
+PROC ShellMountCommand(ShellContext POINTER context)
   BYTE ARRAY name(32)
   DOS.SioMountSpec spec
   CARD index,length
   LONGINT result
 
   LET output=DOS.Output()
-  IF shell.argc=1 THEN
-    ShellMounts(output)
+  IF context.shell.argc=1 THEN
+    ShellMounts(context,output)
     RETURN
   FI
 
-  IF shell.argc=2 AND ShellEqual(shell.words(1).text,c"DIAGNOSTICS")<>0 THEN
+  IF context.shell.argc=2 AND ShellEqual(context.shell.words(1).text,c"DIAGNOSTICS")<>0 THEN
     BEGIN
-      ShellMounts(output)
-      ShellIdeDiagnostics(output,1)
-      LET rows=FSINSPECT.Info POINTER(ShellTransfer())
+      ShellMounts(context,output)
+      ShellIdeDiagnostics(context,output,1)
+      LET rows=FSINSPECT.Info POINTER(ShellTransfer(context))
       LET count=FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)
       IF count<>0 THEN
         FOR index=0 TO count-1 DO
-          ShellMountDetails(output,@rows(index))
+          ShellMountDetails(context,output,@rows(index))
         OD
       FI
 
@@ -208,9 +210,9 @@ PROC ShellMountCommand()
     END
   FI
 
-  LET error=ShellMountParse(name,@spec)
+  LET error=ShellMountParse(context,name,@spec)
   IF error<>0 THEN
-    ShellFail(PROCESS.RETURN_ERROR,error)
+    ShellFail(context,PROCESS.RETURN_ERROR,error)
     RETURN
   FI
 
@@ -222,19 +224,19 @@ PROC ShellMountCommand()
 
   LET cause=DOS.IoErr()
   IF result=0 THEN
-    ShellFail(PROCESS.RETURN_ERROR,cause)
+    ShellFail(context,PROCESS.RETURN_ERROR,cause)
     RETURN
   FI
 
   length=ShellLength(name)
-  LET rows=FSINSPECT.Info POINTER(ShellTransfer())
+  LET rows=FSINSPECT.Info POINTER(ShellTransfer(context))
   LET count=FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)
   IF count<>0 THEN
     FOR index=0 TO count-1 DO
       IF FSNAMES.AliasMatches(rows(index).name,name,length)<>0 OR
           (FSNAMES.System(name,length)<>0 AND
           rows(index).slot=BOOTCONFIG.B_SYSTEM_SLOT) THEN
-        ShellMountDetails(output,@rows(index))
+        ShellMountDetails(context,output,@rows(index))
         EXIT
       FI
     OD
@@ -242,26 +244,26 @@ PROC ShellMountCommand()
 
 RETURN
 
-PROC ShellUnmountCommand()
+PROC ShellUnmountCommand(ShellContext POINTER context)
   BYTE ARRAY name(32)
   DOS.SioMountSpec spec
 
-  LET error=ShellMountParse(name,@spec)
+  LET error=ShellMountParse(context,name,@spec)
   IF error<>0 THEN
-    ShellFail(PROCESS.RETURN_ERROR,error)
+    ShellFail(context,PROCESS.RETURN_ERROR,error)
     RETURN
   FI
 
   LET result=DOS.UnmountVolume(name)
   LET cause=DOS.IoErr()
   IF result=0 THEN
-    ShellFail(PROCESS.RETURN_ERROR,cause)
+    ShellFail(context,PROCESS.RETURN_ERROR,cause)
   ELSE
     BEGIN
       LET output=DOS.Output()
-      ShellLineText(output,c"Unmounted")
-      LET used=ShellRowText(output,0,CSTRING(@name(0)))
-      ShellRowEnd(output,ShellRowByte(output,used,CHAR_COLON))
+      ShellLineText(context,output,c"Unmounted")
+      LET used=ShellRowText(context,output,0,CSTRING(@name(0)))
+      ShellRowEnd(context,output,ShellRowByte(context,output,used,CHAR_COLON))
     END
   FI
 

@@ -9,6 +9,7 @@ from build_command import compile_command
 from make_data_disk import make
 from native_program import ROOT, build, compiler, read_build, require, sha256, verify_machine
 from os_boundary import emulator
+from shell_inspect import data as shell_data
 from test_cooperative import data
 from test_dos_stack import execute, ownership
 
@@ -33,7 +34,9 @@ def run(out, compiler_dir, reuse=False):
     (work/'INPUT.TXT').write_text('inherited streams\n')
     make(out/'work.atr', work, filesystem='sdfs', sector_bytes=256, sectors=2880)
     profile = json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
-    profile['image_data_bytes'] = 4096
+    # Boot diagnostics plus this fixture's command strings and capacity Tasks
+    # need an 8 KiB upper-RAM arena; the old 4 KiB overlaps resident code.
+    profile['image_data_bytes'] = 8192
     (out/'memory.json').write_text(json.dumps(profile))
     source = ROOT/'tests/programs/shell_jobs.act'
     p = read_build(out) if reuse else build(t, source, out, optimize=True,
@@ -59,9 +62,9 @@ def run(out, compiler_dir, reuse=False):
             runtime, _ = execute(b, p, timeout=240, frame_limit=12000)
         except Exception:
             print('Job checks:', data(b, p['image'], 'checks', True), flush=True)
-            shell = int.from_bytes(bytes(data(b, p['image'], 'shell')), 'little')
+            shell = int.from_bytes(bytes(shell_data(b, p['image'], 'shell')), 'little')
             print('Shell:', b.memdump(shell, 128).hex(), flush=True)
-            print('Job:', data(b, p['image'], 'job'), flush=True)
+            print('Job:', shell_data(b, p['image'], 'job'), flush=True)
             print('Adapter:', b.memdump(adapter.STATE,64).hex(), flush=True)
             raise
         require(data(b, p['image'], 'finished') == [1], 'Job fixture incomplete')

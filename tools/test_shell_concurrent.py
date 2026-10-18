@@ -169,10 +169,11 @@ def run(out,mode,size,speed,bank,trace,toolchain=None):
     out.mkdir(parents=True,exist_ok=True)
     require(sha256(ROOT/'build/shell-paced-bridge/AltirraBridgeServer')==PIN['emulator']['sha256'],'Unpinned shell emulator')
     source=out/'shell_concurrent.act';source.write_bytes((ROOT/'tests/programs/shell_concurrent.act').read_bytes())
-    core=(ROOT/'examples/shell/shell-session.inc').read_text()
+    core=read_source(ROOT/'examples/shell/shell-session.inc')
     for name in ('shell-execute.inc','shell-jobs.inc','shell-commands.inc','shell-redirection.inc'):core=core.replace('"'+name+'"','"'+str(ROOT/'examples/shell'/name)+'"')
     core=core.replace('USE EXEC\n','USE EXEC\nUSE SHELLEDITPROBE\n',1)
-    core=core.replace('BYTE FUNC ShellOpen(BYTE POINTER consoleName)', 'BYTE FUNC ShellOpen(BYTE POINTER consoleName)\n  SHELLEDITPROBE.Bind(@captureCount,BYTE POINTER(@probe),@reader.active,fixtureStorage)')
+    core=core.replace('BYTE FUNC ShellOpen(ShellContext POINTER context BYTE POINTER consoleName)', '''BYTE FUNC ShellOpen(ShellContext POINTER context BYTE POINTER consoleName)
+  SHELLEDITPROBE.Bind(@captureCount,BYTE POINTER(@probe),@reader.active,fixtureStorage)''')
     require(core.count('  LET written=DOS.Write(')==1,'Missing shell write observer')
     core=core.replace('  LET written=DOS.Write(', '  SHELLEDITPROBE.Capture(bytes,count)\n  LET written=DOS.Write(')
     core+='\nLONGCARD captureCount\n'

@@ -34,25 +34,26 @@ class Scripts(WritableCommands):
             'USE EXEC\nUSE EXECUTEPROBE\nUSE HEAPCORE\n', 1)
         source = source.replace(str(ROOT/'examples/shell/shell-execute.inc'),
                                 str(out/'shell-execute.inc'))
-        marker = '      ShellCommand()\n      commandCount==+1'
+        marker = '''      ShellCommand(context)
+      commandCount==+1'''
         require(source.count(marker) == 1, 'Stale EXECUTE cleanup checkpoint')
-        source = source.replace(marker, '''      ShellCommand()
-      IF script<>NULL OR DOS.Input()<>shell.console
-          OR DOS.Output()<>shell.console OR shell.tempInput<>NULL
-          OR shell.tempOutput<>NULL OR shell.oldInput<>NULL
-          OR shell.oldOutput<>NULL OR shell.redirectActive<>0
-          OR shell.restoreFailure<>0 THEN
+        source = source.replace(marker, '''      ShellCommand(context)
+      IF context.script<>NULL OR DOS.Input()<>context.shell.console
+          OR DOS.Output()<>context.shell.console OR context.shell.tempInput<>NULL
+          OR context.shell.tempOutput<>NULL OR context.shell.oldInput<>NULL
+          OR context.shell.oldOutput<>NULL OR context.shell.redirectActive<>0
+          OR context.shell.restoreFailure<>0 THEN
         HEAPCORE.Abort($e5f2)
       FI
       commandCount==+1''')
         observed.write_text(source)
         script = (ROOT/'examples/shell/shell-execute.inc').read_text()
         script = script.replace('EXEC.AllocMem(SIZEOF(ShellScript),', 'EXECUTEPROBE.Allocate(SIZEOF(ShellScript),')
-        script = script.replace('DOS.Read(script.source,', 'EXECUTEPROBE.Read(script.source,')
+        script = script.replace('DOS.Read(context.script.source,', 'EXECUTEPROBE.Read(context.script.source,')
         # The proxy consumes the real wrapper before losing its completion;
         # production ShellCloseTemporary must discover it is terminal.
-        script = script.replace('    IF ShellCloseTemporary(script.source)=0 THEN', '''    EXECUTEPROBE.source=script.source
-    IF ShellCloseTemporary(script.source)=0 THEN''')
+        script = script.replace('    IF ShellCloseTemporary(context,context.script.source)=0 THEN', '''    EXECUTEPROBE.source=context.script.source
+    IF ShellCloseTemporary(context,context.script.source)=0 THEN''')
         (out/'shell-execute.inc').write_text(script)
         redirect = (ROOT/'examples/shell/shell-redirection.inc').read_text()
         redirect = redirect.replace('DOS.Close(handle)', 'EXECUTEPROBE.Close(handle)')

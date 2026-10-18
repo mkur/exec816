@@ -44,7 +44,7 @@ PROC Parse(CARD offset BYTE valid,command,argc)
   CARD index
 
   source=BYTE POINTER(ADDRESS($e0000)+SIZE(offset))
-  target=ShellLine()
+  target=ShellLine(@context)
   index=0
   DO
     target(index)=source(index)
@@ -58,12 +58,12 @@ PROC Parse(CARD offset BYTE valid,command,argc)
     FI
   OD
 
-  shell.length=index
-  shell.status=0
-  shell.error=0
-  Check(ShellParse()=valid)
+  context.shell.length=index
+  context.shell.status=0
+  context.shell.error=0
+  Check(ShellParse(@context)=valid)
   IF valid<>0 THEN
-    Check(shell.command=command AND shell.argc=argc)
+    Check(context.shell.command=command AND context.shell.argc=argc)
   FI
 
   caseCount==+1
@@ -73,30 +73,30 @@ RETURN
 PROC Redirect(BYTE output CARD expected)
   CARD offset
 
-  offset=shell.inputRedirect
+  offset=context.shell.inputRedirect
   IF output<>0 THEN
-    offset=shell.outputRedirect
+    offset=context.shell.outputRedirect
   FI
 
   IF expected=$ffff THEN
     Check(offset=$ffff)
   ELSE
     Check(offset<>$ffff)
-    Same(ShellLine()+SIZE(offset),BYTE POINTER(ADDRESS($e0000)+SIZE(expected)))
+    Same(ShellLine(@context)+SIZE(offset),BYTE POINTER(ADDRESS($e0000)+SIZE(expected)))
   FI
 
 RETURN
 
 PROC Word(BYTE argument CARD offset)
 
-  Same(shell.words(argument).text,BYTE POINTER(ADDRESS($e0000)+SIZE(offset)))
+  Same(context.shell.words(argument).text,BYTE POINTER(ADDRESS($e0000)+SIZE(offset)))
   checks==+1
 
 RETURN
 
 PROC Tail(CARD offset)
 
-  Same(ShellTransfer()+SIZE(256),BYTE POINTER(ADDRESS($e0000)+SIZE(offset)))
+  Same(ShellTransfer(@context)+SIZE(256),BYTE POINTER(ADDRESS($e0000)+SIZE(offset)))
   checks==+1
 
 RETURN
@@ -107,7 +107,7 @@ PROC CatArgument(CARD expected)
   BYTE ARRAY storage(16)
   BYTE POINTER tail
 
-  tail=ShellTransfer()+SIZE(256)
+  tail=ShellTransfer(@context)+SIZE(256)
   Check(DOSARGS.Parse(CSTRING(tail),c"FILE",values,1,storage,SIZEOF(storage))=0)
   Same(BYTE POINTER(values(0)),BYTE POINTER(ADDRESS($e0000)+SIZE(expected)))
 
@@ -115,28 +115,30 @@ RETURN
 
 PROC CheckPipeline(CARD boundary,left,right)
 
-  Check(shell.pipeline=1 AND shell.pipelineIndex=boundary)
+  Check(context.shell.pipeline=1 AND context.shell.pipelineIndex=boundary)
   Tail(left)
-  Same(ShellTransfer()+SIZE(256+shell.secondArgumentOffset),
+  Same(ShellTransfer(@context)+SIZE(256+context.shell.secondArgumentOffset),
       BYTE POINTER(ADDRESS($e0000)+SIZE(right)))
-  Check(shell.argumentLength=ShellLength(ShellTransfer()+SIZE(256)) AND
-        shell.secondArgumentLength=ShellLength(ShellTransfer()+SIZE(
-            256+shell.secondArgumentOffset)))
+  Check(context.shell.argumentLength=ShellLength(ShellTransfer(@context)+SIZE(256)) AND
+        context.shell.secondArgumentLength=ShellLength(ShellTransfer(@context)+SIZE(
+            256+context.shell.secondArgumentOffset)))
 
 RETURN
 
 INCLUDE "shell-parser-cases.inc"
+
+ShellContext context
 
 ; Exercise command words, raw tails, redirection and pipeline syntax.
 PROC Main()
   LONGCARD before
 
   before=EXEC.AvailMem(0)
-  shell=ShellState POINTER(EXEC.AllocMem(SHELL_BYTES,EXEC.MEMF_UPPER
+  context.shell=ShellState POINTER(EXEC.AllocMem(SHELL_BYTES,EXEC.MEMF_UPPER
       OR EXEC.MEMF_CLEAR))
-  Check(shell<>ShellState POINTER(0) AND SIZEOF(ShellState)=128)
+  Check(context.shell<>ShellState POINTER(0) AND SIZEOF(ShellState)=128)
   Cases()
-  EXEC.FreeMem(BYTE POINTER(shell),SHELL_BYTES)
+  EXEC.FreeMem(BYTE POINTER(context.shell),SHELL_BYTES)
   Check(EXEC.AvailMem(0)=before)
   finished=1
 

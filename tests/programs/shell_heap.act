@@ -4,6 +4,8 @@ USE FSBOOT
 USE DOSCORE
 USE DOSCLIENT
 INCLUDE "shell-heap-observed.inc"
+
+ShellContext context
 LONGCARD baseline,minimum,peakUsed
 CARD peakObjects,checks
 BYTE finished
@@ -42,9 +44,10 @@ PROC ShellSample()
 
 RETURN
 
-PROC ShellWrite(DOS.FileHandle POINTER handle BYTE POINTER bytes CARD count)
+PROC ShellWrite(ShellContext POINTER context
+    DOS.FileHandle POINTER handle BYTE POINTER bytes CARD count)
 
-  NativeShellWrite(handle,bytes,count)
+  NativeShellWrite(context,handle,bytes,count)
   ShellSample()
 
 RETURN
@@ -54,17 +57,17 @@ PROC Main()
 
   baseline=EXEC.AvailMem(0)
   minimum=baseline
-  Check(ShellStart(shellRoot)<>0 AND SIZEOF(ShellState)=128)
-  ShellChange(tools)
-  Check(shell.status=0)
-  ShellChange(sub)
-  Check(shell.status=0)
-  ShellChange(parent)
-  Check(shell.status=0)
-  Check(peakObjects=3 AND shell.retiredDirectory=DOS.FileLock POINTER(0))
+  Check(ShellStart(@context,shellRoot)<>0 AND SIZEOF(ShellState)=128)
+  ShellChange(@context,tools)
+  Check(context.shell.status=0)
+  ShellChange(@context,sub)
+  Check(context.shell.status=0)
+  ShellChange(@context,parent)
+  Check(context.shell.status=0)
+  Check(peakObjects=3 AND context.shell.retiredDirectory=DOS.FileLock POINTER(0))
   peakUsed=baseline-minimum
   Check(peakUsed>=SHELL_BYTES)
-  Check(ShellFinish()=0 AND FSBOOT.Stop()<>0)
+  Check(ShellFinish(@context)=0 AND FSBOOT.Stop()<>0)
   Check(EXEC.AvailMem(0)=baseline)
   finished=1
 

@@ -48,13 +48,13 @@ PROC Balanced()
   Check(client.busy=0 AND owner.active=0 AND client.objects=2)
   Check(client.input=BYTE POINTER(savedInput)
       AND client.output=BYTE POINTER(savedOutput))
-  Check(client.directory=BYTE POINTER(shell.directory)
+  Check(client.directory=BYTE POINTER(context.shell.directory)
       AND owner.objects<>BYTE POINTER(0))
-  Check(shell.retiredDirectory=DOS.FileLock POINTER(0)
-      AND shell.commandInput=DOS.FileHandle POINTER(0))
-  Check(shell.tempInput=DOS.FileHandle POINTER(0)
-      AND shell.tempOutput=DOS.FileHandle POINTER(0) AND shell.redirectActive=0
-      AND shell.restoreFailure=0)
+  Check(context.shell.retiredDirectory=DOS.FileLock POINTER(0)
+      AND context.shell.commandInput=DOS.FileHandle POINTER(0))
+  Check(context.shell.tempInput=DOS.FileHandle POINTER(0)
+      AND context.shell.tempOutput=DOS.FileHandle POINTER(0) AND context.shell.redirectActive=0
+      AND context.shell.restoreFailure=0)
   Check(endpoint.references=1 AND endpoint.active=0
       AND endpoint.reader=BYTE POINTER(0))
   Check(EXECLISTS.IsListEmpty(@client.port.mp_MsgList)<>0)
@@ -68,7 +68,7 @@ PROC Run(CARD offset LONGINT status,error BYTE done)
   CARD index
 
   source=BYTE POINTER(ADDRESS($e0000)+SIZE(offset))
-  target=ShellLine()
+  target=ShellLine(@context)
   index=0
   DO
     target(index)=source(index)
@@ -82,11 +82,11 @@ PROC Run(CARD offset LONGINT status,error BYTE done)
     FI
   OD
 
-  shell.length=index
+  context.shell.length=index
   savedInput=DOS.Input()
   savedOutput=DOS.Output()
-  ShellCommand()
-  Check(shell.lastStatus=status AND shell.lastError=error AND shell.done=done)
+  ShellCommand(@context)
+  Check(context.shell.lastStatus=status AND context.shell.lastError=error AND context.shell.done=done)
   Balanced()
   executed==+1
 
@@ -96,7 +96,7 @@ PROC MissingOutput(CARD offset)
   DOS.FileHandle POINTER previous,ignored
 
   previous=DOS.SelectOutput(DOS.FileHandle POINTER(0))
-  Check(previous=shell.console AND DOS.IoErr()=0)
+  Check(previous=context.shell.console AND DOS.IoErr()=0)
   Run(offset,10,DOS.ERROR_BAD_STREAM_NAME,0)
   ignored=DOS.SelectOutput(previous)
   Check(ignored=DOS.FileHandle POINTER(0) AND DOS.IoErr()=0)
@@ -105,17 +105,19 @@ RETURN
 
 INCLUDE "shell-redirection-cases.inc"
 
+ShellContext context
+
 ; Exercise stream restoration after redirected commands and open failures.
 PROC Main()
 
   before=EXEC.AvailMem(0)
-  Check(ShellStart(shellRoot)<>0 AND SIZEOF(ShellState)=128)
+  Check(ShellStart(@context,shellRoot)<>0 AND SIZEOF(ShellState)=128)
   steady=EXEC.AvailMem(0)
   Cases()
   Check(EXEC.AvailMem(0)=steady)
-  shell.status=0
-  shell.error=0
-  Check(ShellFinish()=0 AND FSBOOT.Stop()<>0)
+  context.shell.status=0
+  context.shell.error=0
+  Check(ShellFinish(@context)=0 AND FSBOOT.Stop()<>0)
   Check(EXEC.AvailMem(0)=before)
   stage=3
 

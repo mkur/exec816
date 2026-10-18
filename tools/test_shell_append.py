@@ -31,17 +31,18 @@ class AppendCommands(WritableCommands):
         observed = out/'shell-observed.inc'
         source = observed.read_text().replace('USE EXEC\n',
             'USE EXEC\nUSE DOSBREAK\nUSE FSWRITEPROBE\nUSE HEAPCORE\n', 1)
-        marker = '  NativeShellWrite(handle,bytes,count)'
+        marker = '  NativeShellWrite(context,handle,bytes,count)'
         require(source.count(marker) == 1, 'Stale append write observer')
         source = source.replace(marker,
             '  FSWRITEPROBE.target=DOSBREAK.Current()\n' + marker)
-        marker = '      ShellCommand()\n      commandCount==+1'
+        marker = '''      ShellCommand(context)
+      commandCount==+1'''
         require(source.count(marker) == 1, 'Stale append cleanup observer')
-        source = source.replace(marker, '''      ShellCommand()
-      IF DOS.Input()<>shell.console OR DOS.Output()<>shell.console
-          OR shell.tempInput<>NULL OR shell.tempOutput<>NULL
-          OR shell.oldInput<>NULL OR shell.oldOutput<>NULL
-          OR shell.redirectActive<>0 OR shell.restoreFailure<>0 THEN
+        source = source.replace(marker, '''      ShellCommand(context)
+      IF DOS.Input()<>context.shell.console OR DOS.Output()<>context.shell.console
+          OR context.shell.tempInput<>NULL OR context.shell.tempOutput<>NULL
+          OR context.shell.oldInput<>NULL OR context.shell.oldOutput<>NULL
+          OR context.shell.redirectActive<>0 OR context.shell.restoreFailure<>0 THEN
         HEAPCORE.Abort($e5f2)
       FI
       commandCount==+1''')

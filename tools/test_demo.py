@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Physical walkthrough of the exact packaged demo, without target-code observers."""
+from shell_inspect import address as shell_address
 import adapter_state as adapter
 from stack_budget import bank_zero_delta
 import argparse
@@ -115,7 +116,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     emulator_hash=pin['mouse_input']['tooling']['sha256'] if bitmap and not ide_only else pin['emulator']['sha256']
     require(sha256(binary)==emulator_hash,'Unpinned demo emulator')
     require(rom_override is not None or sha256(rom)==pin['rom']['sha256'],'Unpinned demo ROM')
-    def at(name):return next(d['address'] for d in p['image']['data'] if ('_SHELLAPP_' if shell_only else '_DEMO_')+name.upper()+'_' in d['name'])
+    def at(name):return shell_address(p['image'],name,"SHELLAPP" if shell_only else "DEMO")
     if ide_only:
         from test_ideplus import ide_emulator
         fixture=out/'ide-walkthrough.img'

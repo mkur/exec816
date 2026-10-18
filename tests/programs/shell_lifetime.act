@@ -12,6 +12,8 @@ USE FSTYPES
 USE SHELLFAULTCONTROL
 INCLUDE "shell-lifetime.inc"
 
+ShellContext context
+
 TYPE Chunk=[
   BYTE POINTER next
   LONGCARD size
@@ -60,17 +62,17 @@ PROC Event(BYTE tag)
   row(0)=tag
   owner=DOSCORE.Current()
   client=DOSCLIENT.ClientContext POINTER(owner.context)
-  IF shell<>ShellState POINTER(0) THEN
+  IF context.shell<>ShellState POINTER(0) THEN
     numbers=LONGINT POINTER(ADDRESS(row)+SIZE(1))
-    numbers(0)=shell.status
-    numbers(1)=shell.error
-    row(9)=shell.done
-    row(10)=shell.redirectActive
-    row(11)=shell.restoreFailure
-    row(12)=BYTE(shell.tempInput<>DOS.FileHandle POINTER(0))
-    row(13)=BYTE(shell.tempOutput<>DOS.FileHandle POINTER(0))
-    row(14)=BYTE(DOS.Input()=shell.console)
-    row(15)=BYTE(DOS.Output()=shell.console)
+    numbers(0)=context.shell.status
+    numbers(1)=context.shell.error
+    row(9)=context.shell.done
+    row(10)=context.shell.redirectActive
+    row(11)=context.shell.restoreFailure
+    row(12)=BYTE(context.shell.tempInput<>DOS.FileHandle POINTER(0))
+    row(13)=BYTE(context.shell.tempOutput<>DOS.FileHandle POINTER(0))
+    row(14)=BYTE(DOS.Input()=context.shell.console)
+    row(15)=BYTE(DOS.Output()=context.shell.console)
   FI
 
   IF client<>DOSCLIENT.ClientContext POINTER(0) THEN
@@ -90,7 +92,7 @@ RETURN
 
 DOS.FileLock POINTER FUNC TestDirectory(DOS.FileLock POINTER lock)
 
-  IF SHELLFAULTCONTROL.failCurrent<>0 AND lock<>shell.directory THEN
+  IF SHELLFAULTCONTROL.failCurrent<>0 AND lock<>context.shell.directory THEN
     SHELLFAULTCONTROL.failCurrent=0
     DOSCLIENT.SetError(DOS.ERROR_OBJECT_IN_USE)
     RETURN(DOS.FileLock POINTER(0))
@@ -100,8 +102,8 @@ RETURN(DOS.CurrentDir(lock))
 
 DOS.FileHandle POINTER FUNC TestOutput(DOS.FileHandle POINTER file)
 
-  IF SHELLFAULTCONTROL.failRestore<>0 AND shell.redirectActive=2
-      AND file=shell.oldOutput THEN
+  IF SHELLFAULTCONTROL.failRestore<>0 AND context.shell.redirectActive=2
+      AND file=context.shell.oldOutput THEN
     SHELLFAULTCONTROL.failRestore=0
     DOSCLIENT.SetError(DOS.ERROR_OBJECT_IN_USE)
     RETURN(DOS.FileHandle POINTER(0))
@@ -111,8 +113,8 @@ RETURN(DOS.SelectOutput(file))
 
 LONGINT FUNC TestClose(DOS.FileHandle POINTER file)
 
-  IF SHELLFAULTCONTROL.failClose<>0 AND (file=shell.tempInput
-      OR file=shell.tempOutput) THEN
+  IF SHELLFAULTCONTROL.failClose<>0 AND (file=context.shell.tempInput
+      OR file=context.shell.tempOutput) THEN
     SHELLFAULTCONTROL.failClose=0
     DOSCLIENT.SetError(DOS.ERROR_OBJECT_IN_USE)
     RETURN(0)
@@ -201,7 +203,7 @@ PROC TestDispatch(BYTE unused)
 
   scope=DOSBREAK.Current()
   commandGeneration=scope.generation
-  ShellDispatch()
+  ShellDispatch(@context)
 
 RETURN
 
@@ -240,11 +242,11 @@ PROC StartFailure(LONGCARD spare BYTE attempts,ports)
 
   SHELLFAULTCONTROL.contextAttempts=0
   SHELLFAULTCONTROL.portAttempts=0
-  Check(ShellStart(shellRoot)=0)
+  Check(ShellStart(@context,shellRoot)=0)
   Check(SHELLFAULTCONTROL.contextAttempts=attempts
       AND SHELLFAULTCONTROL.portAttempts=ports)
   Event(1)
-  Check(ShellFinish()=20)
+  Check(ShellFinish(@context)=20)
   owner=DOSCORE.Current()
   Check(owner.context=BYTE POINTER(0) AND owner.active=0)
   ReleaseHeld(0)
@@ -265,8 +267,8 @@ PROC SignalFailure(BYTE unused)
     FI
   OD
 
-  Check(ShellStart(shellRoot)=0 AND shell.error=DOS.ERROR_NO_FREE_STORE)
-  Check(ShellFinish()=20 AND EXEC.AvailMem(0)=baseline)
+  Check(ShellStart(@context,shellRoot)=0 AND context.shell.error=DOS.ERROR_NO_FREE_STORE)
+  Check(ShellFinish(@context)=20 AND EXEC.AvailMem(0)=baseline)
   FOR index=0 TO 31 DO
     IF (mask & (LONGCARD(1) LSH index))=0 THEN
       EXEC.FreeSignal(INT(index))
@@ -282,7 +284,7 @@ PROC Run(BYTE POINTER command LONGINT status,error)
   BYTE POINTER line
   CARD index
 
-  line=ShellLine()
+  line=ShellLine(@context)
   index=0
   DO
     line(index)=command(index)
@@ -293,10 +295,10 @@ PROC Run(BYTE POINTER command LONGINT status,error)
     index==+1
   OD
 
-  shell.length=index
-  ShellCommand()
+  context.shell.length=index
+  ShellCommand(@context)
   commands==+1
-  Check(shell.lastStatus=status AND shell.lastError=error)
+  Check(context.shell.lastStatus=status AND context.shell.lastError=error)
 
 RETURN
 
@@ -310,14 +312,14 @@ PROC Stable(BYTE unused)
   client=DOSCLIENT.ClientContext POINTER(owner.context)
   registry=DOSRAW.GetRegistry()
   endpoint=DOSRAW.RawEndpoint POINTER(registry.endpoint)
-  Check(shell.directory=originalDirectory
+  Check(context.shell.directory=originalDirectory
       AND client.directory=BYTE POINTER(originalDirectory))
   Check(client.objects=2 AND owner.active=0 AND client.busy=0
       AND endpoint.references=1 AND endpoint.active=0)
-  Check(shell.tempInput=DOS.FileHandle POINTER(0)
-      AND shell.tempOutput=DOS.FileHandle POINTER(0)
-      AND shell.retiredDirectory=DOS.FileLock POINTER(0))
-  Check(DOS.Input()=shell.console AND DOS.Output()=shell.console
+  Check(context.shell.tempInput=DOS.FileHandle POINTER(0)
+      AND context.shell.tempOutput=DOS.FileHandle POINTER(0)
+      AND context.shell.retiredDirectory=DOS.FileLock POINTER(0))
+  Check(DOS.Input()=context.shell.console AND DOS.Output()=context.shell.console
       AND EXEC.AvailMem(0)=steady)
 
 RETURN
@@ -366,7 +368,7 @@ PROC DirectoryFailures(BYTE unused)
       AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   Check(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   client.busy=0
-  DOS.UnLock(shell.directory)
+  DOS.UnLock(context.shell.directory)
   Check(DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   Check(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   Stable(0)
@@ -386,23 +388,23 @@ PROC FatalUnwind(BYTE unused)
   IF scenario=1 THEN
     SHELLFAULTCONTROL.failRestore=1
     Run(echoNil,20,DOS.ERROR_OBJECT_IN_USE)
-    Check(shell.restoreFailure=1 AND shell.redirectActive=2
-        AND shell.tempOutput<>DOS.FileHandle POINTER(0))
-    Check(DOS.Input()=shell.console AND DOS.Output()=shell.tempOutput)
+    Check(context.shell.restoreFailure=1 AND context.shell.redirectActive=2
+        AND context.shell.tempOutput<>DOS.FileHandle POINTER(0))
+    Check(DOS.Input()=context.shell.console AND DOS.Output()=context.shell.tempOutput)
   ELSE
     SHELLFAULTCONTROL.failClose=1
     Run(badOpen,20,DOS.ERROR_ACTION_NOT_KNOWN)
-    Check(shell.redirectActive=1 AND shell.tempInput<>DOS.FileHandle POINTER(0))
-    Check(DOS.Input()=shell.console AND DOS.Output()=shell.console)
+    Check(context.shell.redirectActive=1 AND context.shell.tempInput<>DOS.FileHandle POINTER(0))
+    Check(DOS.Input()=context.shell.console AND DOS.Output()=context.shell.console)
   FI
 
-  Check(shell.done=1)
+  Check(context.shell.done=1)
   Event(9)
   count=commands
-  Run(quit,20,shell.error)
-  Check(shell.done=1 AND commands=count+1)
+  Run(quit,20,context.shell.error)
+  Check(context.shell.done=1 AND commands=count+1)
   Event(10)
-  Check(ShellFinish()=20 AND shell=ShellState POINTER(0))
+  Check(ShellFinish(@context)=20 AND context.shell=ShellState POINTER(0))
 
 RETURN
 
@@ -411,10 +413,10 @@ PROC Main()
 
   baseline=EXEC.AvailMem(0)
   IF scenario=5 OR scenario=6 THEN
-    Check(ShellStart(shellRoot)=0 AND shell.error=DOS.ERROR_NO_FREE_STORE)
+    Check(ShellStart(@context,shellRoot)=0 AND context.shell.error=DOS.ERROR_NO_FREE_STORE)
     Event(11)
-    Check(shell.initialized=2 AND shell.console<>DOS.FileHandle POINTER(0))
-    Check(ShellFinish()=20 AND shell=ShellState POINTER(0))
+    Check(context.shell.initialized=2 AND context.shell.console<>DOS.FileHandle POINTER(0))
+    Check(ShellFinish(@context)=20 AND context.shell=ShellState POINTER(0))
     Check(EXEC.AvailMem(0)=baseline)
     finished=1
     RETURN
@@ -431,14 +433,14 @@ PROC Main()
     Check(FSBOOT.Ensure()<>0)
   FI
 
-  Check(ShellStart(shellRoot)<>0 AND shell.directory<>DOS.FileLock POINTER(0))
-  originalDirectory=shell.directory
+  Check(ShellStart(@context,shellRoot)<>0 AND context.shell.directory<>DOS.FileLock POINTER(0))
+  originalDirectory=context.shell.directory
   steady=EXEC.AvailMem(0)
   Event(0)
   IF scenario=7 THEN
     Run(echoNil,0,0)
     LateBreak(0)
-    Check(ShellFinish()=0 AND FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+    Check(ShellFinish(@context)=0 AND FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
     finished=1
     RETURN
   FI
@@ -451,9 +453,9 @@ PROC Main()
     FatalUnwind(0)
   ELSE
     DirectoryFailures(0)
-    shell.status=0
-    shell.error=0
-    Check(ShellFinish()=0)
+    context.shell.status=0
+    context.shell.error=0
+    Check(ShellFinish(@context)=0)
   FI
 
   Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)

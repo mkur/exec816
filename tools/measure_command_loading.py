@@ -6,6 +6,7 @@ BLOCKWIRE transfers. The observer never waits, allocates or yields. Build it
 once; replay its identical instructions with explicit mount/table overrides.
 Host pauses are outside the measured command.
 """
+from shell_inspect import address as shell_address
 import adapter_state as adapter
 import argparse
 import hashlib
@@ -135,7 +136,7 @@ def run(bundle, output, filesystem=None, prime_worker='active', cpu_trace=False)
     override=filesystem!=manifest['filesystem']
     require(all(sha256(bundle/name) == value for name, value in manifest['artifacts'].items()), 'Changed bundle')
     def probe(name): return next(d['address'] for d in p['image']['data'] if '_LOADPROBE_'+name.upper()+'_' in d['name'])
-    def at(name): return next(d['address'] for d in p['image']['data'] if '_DEMO_'+name.upper()+'_' in d['name'])
+    def at(name):return shell_address(p['image'],name,"DEMO")
     require(prime_worker in ('active', 'stopped'), 'Unknown prime-worker mode')
     samples = []; directory = {}; prime = dict(mode=prime_worker)
     names=('other','directory','map','data')

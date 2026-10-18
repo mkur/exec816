@@ -63,17 +63,17 @@ PROC Main()
   OD
 
   child=PROCESSSTATE.Entry POINTER(DOSCORE.Control(PROCESSSTATE.OP_FIND,
-      BYTE POINTER(@job.identity)))
+      BYTE POINTER(@context.job.identity)))
   Require(child<>NULL)
 
   FOR row=1 TO 20 DO
-    ShellText(shell.console,CSTRING(BYTE POINTER(@bootShellName)))
-    ShellByte(shell.console,10)
+    ShellText(@context,context.shell.console,CSTRING(BYTE POINTER(@bootShellName)))
+    ShellByte(@context,context.shell.console,10)
   OD
 
   Pause(1)
-  WHILE shell.done=0 DO
-    ShellReadStep()
+  WHILE context.shell.done=0 DO
+    ShellReadStep(@context)
     steps==+1
     IF steps=1 THEN
       Pause(2)
@@ -92,7 +92,7 @@ PROC Main()
   Pause(4)
   Require(DOS.AssignPath(BYTE POINTER(c"C"),NULL)<>0)
   exitStatus=DemoFinish()
-  Require(exitStatus=0 AND job.state=JOB_DONE AND shell=NULL)
+  Require(exitStatus=0 AND context.job.state=JOB_DONE AND context.shell=NULL)
   windows=CONSOLEWINDOWS.Registry()
   Require(windows.liveCount=1)
   Require(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)

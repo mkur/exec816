@@ -1,0 +1,59 @@
+MODULE SHELLCONTEXTLAYOUT
+USE EXEC
+USE PROCESS
+USE HEAPCORE
+
+; Only pointer targets are needed for this small native layout/access probe.
+TYPE ShellState=[BYTE value]
+TYPE ShellAlias=[BYTE value]
+TYPE ShellScript=[BYTE value]
+INCLUDE "../../examples/shell/shell-context-types.inc"
+
+ShellContext context
+CARD checks
+BYTE finished
+
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ed00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise nested access through a far context pointer across a call.
+PROC Populate(ShellContext POINTER target)
+
+  target.shell=ShellState POINTER($123456)
+  target.aliasCount=7
+  target.job.identity=$89abcdef
+  target.job.outcome.primary=-13
+  target.job.outcome.secondary=12345
+  target.job.state=3
+
+RETURN
+
+PROC Main()
+
+  Check(SIZEOF(ShellContext)=SHELLCONTEXT_SIZE)
+  Check(SIZEOF(ShellJob)=SHELLJOB_SIZE)
+  Check(ADDRESS(@context.shell)-ADDRESS(@context)=SHELLCONTEXT_SHELL)
+  Check(ADDRESS(@context.aliases)-ADDRESS(@context)=SHELLCONTEXT_ALIASES)
+  Check(ADDRESS(@context.script)-ADDRESS(@context)=SHELLCONTEXT_SCRIPT)
+  Check(ADDRESS(@context.aliasCount)-ADDRESS(@context)=SHELLCONTEXT_ALIASCOUNT)
+  Check(ADDRESS(@context.job)-ADDRESS(@context)=SHELLCONTEXT_JOB)
+  Check(ADDRESS(@context.job.outcome)-ADDRESS(@context.job)=SHELLJOB_OUTCOME)
+  Check(ADDRESS(@context.job.state)-ADDRESS(@context.job)=SHELLJOB_STATE)
+  Check(ADDRESS(@context.job.announce)-ADDRESS(@context.job)=SHELLJOB_ANNOUNCE)
+  Populate(@context)
+  Check(ADDRESS(context.shell)=$123456 AND context.aliasCount=7)
+  Check(context.job.identity=$89abcdef AND context.job.state=3)
+  Check(context.job.outcome.primary=-13
+      AND context.job.outcome.secondary=12345)
+  finished=1
+
+RETURN
+
+ENDMODULE
