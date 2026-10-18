@@ -4,6 +4,8 @@ Status: B1–B5 implemented and qualified on the pinned PAL 8× eight-Task platf
 The W1–W3 extension to per-instance routes/focus uses development checks; its release
 qualification remains pending. D4 adds bounded two-member foreground groups;
 their validation is recorded with the demo development checks.
+SS2 adds owner-requested cancellation with
+[focused development evidence](../history/shell-sessions.md#ss2--owner-requested-foreground-cancellation).
 See the [console plan](../plans/console-interaction-implementation-plan.md).
 
 Cancellation is cooperative. A foreground scope identifies one participating
@@ -36,6 +38,30 @@ ClearBreak acknowledges both durable state and the notification bit in one
 serialized operation. Repeated input coalesces while the state remains pending.
 A later break can create a new pending request after acknowledgement. End also
 retires stale notification bits. Cleanup proceeds despite pending break.
+
+## Owner-requested cancellation
+
+`CONSOLE.RequestBreak(unit)` lets the presentation owner cancel a specific
+console without changing focus or opening its input handle. Created units
+require their creator; unit zero retains the existing application-control
+rule. Results use the native [console control namespace](console-windows.md#owner-requested-foreground-cancellation),
+and do not change DOS IoErr. An unbound console returns CONTROL_UNBOUND;
+the API does not synthesize byte $03 or defer cancellation to its next scope.
+
+Unit resolution, ownership admission, bound-generation validation and the
+existing Notify fanout happen in one short Forbid region. At most the bound
+scope and two followers are signaled. No request or scope pointer is queued,
+and there is no wait inside the region. Task-side scope retirement and group
+publication use the same exclusion. IRQ capture follows only immutable tags;
+NMI may enter, but the native switching protocol respects the Task's Forbid.
+
+An accepted request before foreground handoff carries its pending state to
+the admitted child. A group member joining after cancellation inherits the
+group's pending state. End or prompt renewal retires that interaction; a later
+unrelated generation is not canceled by an earlier request. A durable session
+close flag belongs to the session controller and must be checked around new
+scope publication and command handoff. Process RequestStop keeps its existing
+child-ownership semantics.
 
 ## Captured routing
 

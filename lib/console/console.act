@@ -20,6 +20,11 @@ PUBLIC CARD FUNC ScreenHeight()
 
 RETURN(CONSOLEDRIVER.ScreenHeight())
 
+; Presentation ownership permits cancellation even while this view is hidden.
+PUBLIC CARD FUNC RequestBreak(LONGCARD unit)
+
+RETURN(CONSOLEFOREGROUND.RequestBreak(unit))
+
 ; Release the buffers owned by a dynamically allocated terminal.
 PROC FreeInstance(CONSOLETYPES.Window POINTER entry)
   CONSOLETYPES.Instance POINTER instance

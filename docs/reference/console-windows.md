@@ -60,6 +60,36 @@ bound generation, and End returns to the permanent unbound route without needing
 another route allocation. Retired bound generations cannot cancel a new scope.
 All live instance routes participate in route-retention accounting.
 
+## Owner-requested foreground cancellation
+
+`CARD CONSOLE.RequestBreak(LONGCARD unit)` requests cooperative cancellation
+of the console's currently bound foreground interaction. The creator controls
+a created unit; any application Task may control permanent unit zero. Focus,
+visibility and the caller's selected DOS handles are irrelevant. No input byte
+is enqueued and DOS IoErr is preserved.
+
+Native controls use the generated `CONSOLETYPES.CONTROL_*` result namespace,
+separate from DOS errors and the older boolean presentation operations:
+
+| Result | Value | Meaning |
+| --- | --- | --- |
+| `CONTROL_OK` | 0 | The operation was accepted. Repeated cancellation coalesces. |
+| `CONTROL_BUSY` | 1 | A presentation operation prevents admission. |
+| `CONTROL_BAD_UNIT` | 2 | No live instance has that complete identity. |
+| `CONTROL_NOT_OWNER` | 3 | The caller does not control this created instance. |
+| `CONTROL_UNSUPPORTED` | 4 | The operation is unavailable in this display mode. |
+| `CONTROL_BAD_LAYOUT` | 5 | The requested presentation is incompatible. |
+| `CONTROL_UNBOUND` | 6 | The console has no live bound foreground interaction. |
+| `CONTROL_FAILED` | 7 | The admitted control could not complete. |
+
+RequestBreak returns only OK, BAD_UNIT, NOT_OWNER or UNBOUND. It does not wait
+for the command or its I/O to finish. Cancellation reaches the bound owner and
+any admitted foreground-group followers through the existing
+[foreground contract](foreground-break.md#owner-requested-cancellation).
+A caller implementing session close must retain its own close intent across
+an UNBOUND result or a later prompt; this operation targets only the interaction
+bound when it is called.
+
 ## Tiled presentation and focus
 
 `CONSOLE.Show(unit,left,top)`, `Hide(unit)` and `Focus(unit)` return one on

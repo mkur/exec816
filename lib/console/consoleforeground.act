@@ -304,6 +304,55 @@ PUBLIC PROC Notify(DOSBREAKTYPES.Scope POINTER scope)
 
 RETURN
 
+; Caller holds Forbid. Both physical and owner-requested cancellation use
+; the same current bound generation; neither retains a scope for later use.
+DOSBREAKTYPES.Scope POINTER FUNC BoundScope(CONSOLETYPES.Window POINTER entry
+    LONGCARD tag)
+
+  LET routes=Registry()
+  LET route=@routes.items(BYTE(tag & 15))
+  IF route.tag<>tag OR route.retired<>0 OR route.bound=0 THEN
+    RETURN(NULL)
+  FI
+
+  LET scope=DOSBREAKTYPES.Scope POINTER(route.scope)
+  IF scope=NULL OR entry.scope<>BYTE POINTER(scope) THEN
+    RETURN(NULL)
+  FI
+
+  IF scope.active=0 OR scope.generation<>tag THEN
+    RETURN(NULL)
+  FI
+
+RETURN(scope)
+
+; Cancel an owned console's live interaction without consulting focus or
+; borrowing its input handle. Retirement and bounded fanout serialize here.
+PUBLIC CARD FUNC RequestBreak(LONGCARD unit)
+
+  EXEC.Forbid()
+  LET entry=CONSOLEWINDOWS.Find(unit)
+  IF entry=NULL THEN
+    EXEC.Permit()
+    RETURN(CONSOLETYPES.CONTROL_BAD_UNIT)
+  FI
+
+  IF unit<>0 AND entry.owner<>BYTE POINTER(EXEC.FindTask(NULL)) THEN
+    EXEC.Permit()
+    RETURN(CONSOLETYPES.CONTROL_NOT_OWNER)
+  FI
+
+  LET scope=BoundScope(entry,entry.route)
+  IF scope=NULL THEN
+    EXEC.Permit()
+    RETURN(CONSOLETYPES.CONTROL_UNBOUND)
+  FI
+
+  Notify(scope)
+  EXEC.Permit()
+
+RETURN(CONSOLETYPES.CONTROL_OK)
+
 ; True means a consumed bound/retired break; never also enqueue byte 03.
 PUBLIC BYTE FUNC Deliver(LONGCARD tag)
   CONSOLETYPES.Routes POINTER routes
@@ -327,18 +376,11 @@ PUBLIC BYTE FUNC Deliver(LONGCARD tag)
     RETURN(bound)
   FI
 
-  scope=DOSBREAKTYPES.Scope POINTER(route.scope)
-  IF scope=DOSBREAKTYPES.Scope POINTER(0) OR entry.scope<>BYTE POINTER(scope) THEN
-    EXEC.Permit()
-    RETURN(1)
+  scope=BoundScope(entry,tag)
+  IF scope<>NULL THEN
+    Notify(scope)
   FI
 
-  IF scope.active=0 OR scope.generation<>tag THEN
-    EXEC.Permit()
-    RETURN(1)
-  FI
-
-  Notify(scope)
   EXEC.Permit()
 
 RETURN(1)

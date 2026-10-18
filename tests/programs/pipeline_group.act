@@ -9,13 +9,15 @@ USE PROCESS
 USE PIPELINE
 USE PROGRAM
 USE PROGRAMIMAGE
+USE CONSOLE
+USE CONSOLETYPES
 USE CONSOLEFOREGROUND
 USE FSOPERATION
 USE GROUPPROBE
 USE HEAPCORE
 INCLUDE "pipeline-fixture.inc"
 
-DOS.FileHandle POINTER console,nil,file,ignored
+DOS.FileHandle POINTER baseConsole,nil,file,ignored
 DOS.PipePair sink
 PROGRAMIMAGE.Image POINTER firstImage,secondImage
 DOSBREAKTYPES.Scope POINTER parentScope
@@ -55,30 +57,36 @@ LONGINT FUNC Cancel()
   DOSBREAKTYPES.Scope POINTER left,right
   EXEC.Task POINTER target
   CARD slept
-  BYTE ready,accepted
+  BYTE ready
 
   DO
     ready=0
     EXEC.Forbid()
-    IF parentScope.groupActive<>0 AND parentScope.followerA<>BYTE POINTER(0)
-        AND parentScope.followerB<>BYTE POINTER(0) THEN
+    IF parentScope.groupActive<>0 AND parentScope.followerA<>BYTE POINTER(0) THEN
       left=DOSBREAKTYPES.Scope POINTER(parentScope.followerA)
       right=DOSBREAKTYPES.Scope POINTER(parentScope.followerB)
       ; Publication order can differ from command order. A pipe waiter on
       ; either side is sufficient for the full/empty scenarios.
-      IF cancelKind=3 THEN
-        ready=left.opState=FSOPERATION.ACTIVE OR right.opState=FSOPERATION.ACTIVE
-      ELSE
-        target=EXEC.Task POINTER(left.owner)
-        ready=target.tc_State=EXEC.TS_WAIT
-        target=EXEC.Task POINTER(right.owner)
-        ready=ready OR target.tc_State=EXEC.TS_WAIT
+      IF cancelKind=4 THEN
+        Require(right=NULL)
+        ready=1
+      ELSEIF right<>NULL THEN
+        IF cancelKind=3 THEN
+          ready=left.opState=FSOPERATION.ACTIVE
+              OR right.opState=FSOPERATION.ACTIVE
+        ELSE
+          target=EXEC.Task POINTER(left.owner)
+          ready=target.tc_State=EXEC.TS_WAIT
+          target=EXEC.Task POINTER(right.owner)
+          ready=ready OR target.tc_State=EXEC.TS_WAIT
+        FI
       FI
     FI
 
     IF ready<>0 THEN
       oldTag=parentScope.generation
-      accepted=CONSOLEFOREGROUND.Deliver(oldTag)
+      Require(CONSOLE.RequestBreak(0)=CONSOLETYPES.CONTROL_OK)
+      GROUPPROBE.holdLaunch=0
       cancellations==+1
       EXEC.Permit()
       RETURN(PROCESS.RETURN_OK)
@@ -99,11 +107,11 @@ RETURN(7)
 PROC Load(BYTE flow)
 
   IF flow=0 THEN
-    firstImage=PROGRAM.Load(BYTE POINTER($e0000),HELLO_BYTES)
-    secondImage=PROGRAM.Load(BYTE POINTER($e4000),WC_BYTES)
+    firstImage=PROGRAM.Load(BYTE POINTER(HELLO_BASE),HELLO_BYTES)
+    secondImage=PROGRAM.Load(BYTE POINTER(WC_BASE),WC_BYTES)
   ELSE
-    firstImage=PROGRAM.Load(BYTE POINTER($e8000),FLOW_BYTES)
-    secondImage=PROGRAM.Load(BYTE POINTER($e8000),FLOW_BYTES)
+    firstImage=PROGRAM.Load(BYTE POINTER(FLOW_BASE),FLOW_BYTES)
+    secondImage=PROGRAM.Load(BYTE POINTER(FLOW_BASE),FLOW_BYTES)
   FI
 
   Require(firstImage<>PROGRAMIMAGE.Image POINTER(0)
@@ -130,6 +138,12 @@ PROC Broken(BYTE number)
   progress=beats
   cancelId=PROCESS.Start(@Cancel,BYTE POINTER(0),0)
   Require(cancelId<>0)
+  IF number=4 THEN
+    ; The fixture's second-launch barrier forces cancellation while only
+    ; the first follower is published; the later join must inherit it.
+    GROUPPROBE.holdLaunch=2
+  FI
+
   Require(PIPELINE.Run(BYTE POINTER(firstImage),BYTE POINTER(secondImage),
       @firstMode,@secondMode,1,1,@outcome)<>0)
   Require(outcome.primary=10 AND outcome.first.secondary=DOS.ERROR_BREAK
@@ -159,10 +173,10 @@ PROC Main()
   warmError=DOS.IoErr()
   warmClose=DOS.Close(file)
   Require(warmRead=1 AND warmClose<>0)
-  console=DOS.Open(conName,DOS.MODE_READWRITE)
+  baseConsole=DOS.Open(conName,DOS.MODE_READWRITE)
   nil=DOS.Open(nilName,DOS.MODE_READWRITE)
-  Require(console<>DOS.FileHandle POINTER(0) AND nil<>DOS.FileHandle POINTER(0))
-  Require(DOS.BeginForeground(console)<>0)
+  Require(baseConsole<>DOS.FileHandle POINTER(0) AND nil<>DOS.FileHandle POINTER(0))
+  Require(DOS.BeginForeground(baseConsole)<>0)
   parentScope=DOSBREAK.Current()
   ignored=DOS.SelectInput(nil)
   ignored=DOS.SelectOutput(nil)
@@ -204,11 +218,23 @@ PROC Main()
   Require(EXEC.AvailMem(0)=withImages)
   Unload()
   Load(1)
+  firstMode=66
+  secondMode=67
+  Require(CONSOLE.RequestBreak(0)=CONSOLETYPES.CONTROL_OK)
+  Require(PIPELINE.Run(BYTE POINTER(firstImage),BYTE POINTER(secondImage),
+      @firstMode,@secondMode,1,1,@outcome)<>0)
+  Require(outcome.primary=10 AND outcome.first.secondary=DOS.ERROR_BREAK
+      AND outcome.second.secondary=DOS.ERROR_BREAK)
+  Require(parentScope.groupActive=0 AND DOS.BreakPending()=0
+      AND EXEC.AvailMem(0)=withImages)
   firstMode=80
   secondMode=81
   Require(PIPELINE.Run(BYTE POINTER(firstImage),BYTE POINTER(secondImage),
       @firstMode,@secondMode,1,1,@outcome)<>0)
-  Require(outcome.first.secondary=DOS.ERROR_BROKEN_PIPE AND outcome.primary=10
+  ; A successful early consumer suppresses only the producer's broken pipe.
+  Require(outcome.first.secondary=DOS.ERROR_BROKEN_PIPE
+      AND outcome.second.primary=0 AND outcome.second.secondary=0
+      AND outcome.primary=0 AND outcome.secondary=0
       AND EXEC.AvailMem(0)=withImages)
   firstMode=80
   secondMode=66
@@ -216,6 +242,9 @@ PROC Main()
   firstMode=66
   secondMode=67
   Broken(2)
+  firstMode=66
+  secondMode=67
+  Broken(4)
   file=DOS.Open(fileName,DOS.MODE_OLDFILE)
   Require(file<>DOS.FileHandle POINTER(0))
   ignored=DOS.SelectInput(file)
@@ -231,7 +260,7 @@ PROC Main()
   Require(DOS.Close(sink.reader)<>0 AND DOS.Close(sink.writer)<>0)
   ignored=DOS.SelectInput(DOS.FileHandle POINTER(0))
   ignored=DOS.SelectOutput(DOS.FileHandle POINTER(0))
-  Require(DOS.EndForeground()<>0 AND DOS.Close(console)<>0 AND DOS.Close(nil)<>0)
+  Require(DOS.EndForeground()<>0 AND DOS.Close(baseConsole)<>0 AND DOS.Close(nil)<>0)
   Require(DOS.ReleaseContext()<>0)
   EXEC.FreeMem(bytes,16)
   finished=1

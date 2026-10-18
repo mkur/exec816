@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "Private console records; public requests remain exec816.io IOStdReq",
+  "scope": "Console records and native control results; device requests remain exec816.io IOStdReq",
   "constants": {
     "CONERR_INPUTOVERFLOW": 1,
     "RAW_SLOTS": 64,
@@ -44,7 +44,15 @@
     "BATCH_FLUSH_SHORT": 7,
     "SCROLL_GATHER": 4,
     "CONCMD_WRITE_AT": 9,
-    "POSITION_ROW_SHIFT": 16
+    "POSITION_ROW_SHIFT": 16,
+    "CONTROL_OK": 0,
+    "CONTROL_BUSY": 1,
+    "CONTROL_BAD_UNIT": 2,
+    "CONTROL_NOT_OWNER": 3,
+    "CONTROL_UNSUPPORTED": 4,
+    "CONTROL_BAD_LAYOUT": 5,
+    "CONTROL_UNBOUND": 6,
+    "CONTROL_FAILED": 7
   },
   "storage": {
     "service_offset": 0,

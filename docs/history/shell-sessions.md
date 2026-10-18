@@ -62,3 +62,42 @@ SS1 preserves the existing single-shell product entry. User-facing creation,
 selection, cooperative close and desktop tabs arrive in subsequent slices.
 These development checks do not qualify the hosted system for release or
 physical hardware.
+
+## SS2 — owner-requested foreground cancellation
+
+`CONSOLE.RequestBreak(unit)` resolves a console's current foreground scope
+independently of focus and selected streams. Created consoles require their
+creator; unit zero keeps its existing application-control rule. The native
+CONTROL result constants are generated from the console schema, and the call
+preserves DOS IoErr. It sends no input byte, allocates no storage and queues no
+scope pointer. Bound-generation validation and the existing three-scope fanout
+remain in one short Forbid region. Physical BREAK uses the same validation.
+
+The optimized owner fixture passes 49 checks: hidden pending Read, rejection
+even when the caller owns the DOS reader but not the console, repeated requests,
+unaffected unit-zero output/scope, exact terminal request collection, renewal,
+unbound/retired units, same-slot reuse, inherited interactive input and pending
+cancellation carried into a foreground child. Cleanup recovers the original
+heap and restores the OS display. The physical Ctrl-C/BREAK fixture passes 121
+checks with the shared validation path.
+
+The loaded pipeline fixture passes 68 checks. It requests cancellation through
+the public API with full/empty pipes and active file I/O, and forces a barrier
+before the second launch to exercise late group joining. It also covers pending
+cancellation before group setup, both partial-launch failures, failed joining,
+stale captured routes and continued progress by an unrelated Task. Both child
+results and exact owned-memory recovery are checked.
+
+The old pipeline expectation treated an intentionally successful early consumer
+as an aggregate error; it now follows the existing documented success rule while
+still checking the producer's retained ERROR_BROKEN_PIPE result. The affected
+legacy fixture arenas were too small for the current shared runtime: these
+tests now reserve 8 KiB of upper static data and place embedded command fixtures
+in bank $3E, clear of resident code. These are test settings, not production
+memory changes.
+
+All 498 host checks and the console/context generator checks pass. SS2 adds
+**0 fixed, 0 per-public-Task and 0 idle reserved bank-zero bytes**, including
+guards, alignment and unused capacity. It adds no worker, console metadata or
+per-request allocation. The native compiler, ROM and paced emulator pins remain
+unchanged; this is development coverage, not a new release qualification.

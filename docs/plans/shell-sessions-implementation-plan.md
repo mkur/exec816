@@ -4,7 +4,7 @@
 [Roadmap](../roadmap.md#commands-and-cli) ·
 [Testing policy](../contributing/testing.md)
 
-Status: implementation in progress, 2026-10-19. SS1 is complete; SS2–SS8 remain.
+Status: implementation in progress, 2026-10-19. SS1–SS2 are complete; SS3–SS8 remain.
 See the [slice evidence](../history/shell-sessions.md) for actual development
 checks. Continue in order, keeping each slice executable and committing its
 implementation and validation record before the next slice.
