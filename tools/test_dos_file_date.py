@@ -10,9 +10,9 @@ from test_dos_stack import execute,ownership
 from sdfs_reference import make
 
 
-def run(out,raw):
+def run(out,raw,exclusive=False):
     source=out/'probe.act'
-    source.write_text((ROOT/'tests/programs/dos_file_date.act').read_text().replace('DISK_CASES','' if raw else '  Check(BYTE POINTER(c"D1:DATE.BIN"))'))
+    source.write_text((ROOT/'tests/programs'/('dos_exclusive_open.act' if exclusive else 'dos_file_date.act')).read_text().replace('DISK_CASES','' if raw else ('  Check(BYTE POINTER(c"D1:EXCL.BIN"))' if exclusive else '  Check(BYTE POINTER(c"D1:DATE.BIN"))')))
     mounts=[dict(alias='RAM',format=3)]
     if not raw:
         empty=out/'empty';empty.mkdir(exist_ok=True)
@@ -33,14 +33,20 @@ def run(out,raw):
         if not raw:
             time.sleep(3);b._cmd_ok('EJECT drive=0')
     if not raw:
-        disk=(out/'volume.atr').read_bytes();at=disk.index(b'DATE    BIN')
-        assert disk[at+11:at+17]==bytes([18,10,26,14,32,14]),disk[at+11:at+17].hex()
+        disk=(out/'volume.atr').read_bytes()
+        if not exclusive:
+            at=disk.index(b'DATE    BIN')
+            assert disk[at+11:at+17]==bytes([18,10,26,14,32,14]),disk[at+11:at+17].hex()
+        else:
+            from sdfs_reference import extract
+            extract(out/'volume.atr',out/'readback')
+            assert (out/'readback/EXCL.BIN').read_bytes()==b'abc'
     return dict(status='pass',tier='development',mode='raw' if raw else 'opt',checks=checks,machine=machine,runtime=runtime,build=program['build'],bank_zero_delta=dict(fixed=0,per_task=0))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--raw',action='store_true');p.add_argument('--output',type=Path,required=True);a=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--raw',action='store_true');p.add_argument('--exclusive',action='store_true');p.add_argument('--output',type=Path,required=True);a=p.parse_args()
     out=a.output.resolve();out.mkdir(parents=True,exist_ok=True);result=dict(status='running')
-    try:result=run(out,a.raw)
+    try:result=run(out,a.raw,a.exclusive)
     except Exception as e:result.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('SetFileDate',result['status'],result['checks'],flush=True)

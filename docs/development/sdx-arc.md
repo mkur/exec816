@@ -134,3 +134,9 @@ python3 tools/test_sdx_arc.py --group reference-extract --output build/sdx-arc/r
 python3 tools/test_sdx_arc.py --group a2 --output build/sdx-arc/a2-final
 python3 tools/test_sdx_arc_disk.py --output build/sdx-arc/a2-sdfs
 ```
+
+
+A3's reusable [exclusive-open dependency](dos-exclusive-open.json) passes 17 raw
+RAM and 31 optimized RAM/SDFS checks. `MODE_CREATE_EXCLUSIVE` reserves a new name
+atomically; `MODE_UPDATE_EXISTING` retains the existing archive as an exclusive
+writer without truncating or creating it. Both have zero bank-zero growth.

@@ -1,0 +1,61 @@
+MODULE DOSEXCLUSIVE
+USE EXEC
+USE DOS
+USE HEAPCORE
+USE FSBOOT
+
+CARD checks
+LONGINT reason
+BYTE ARRAY bytes(4)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    reason=DOS.IoErr()
+    HEAPCORE.Abort($fa00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Check(BYTE POINTER name)
+  DOS.FileHandle POINTER file,other
+
+  Require(DOS.Open(name,DOS.MODE_UPDATE_EXISTING)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_NOT_FOUND)
+  file=DOS.Open(name,DOS.MODE_CREATE_EXCLUSIVE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,BYTE POINTER(c"abc"),3)=3)
+  Require(DOS.Open(name,DOS.MODE_CREATE_EXCLUSIVE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_EXISTS)
+  Require(DOS.Open(name,DOS.MODE_OLDFILE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.Open(name,DOS.MODE_CREATE_EXCLUSIVE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_EXISTS)
+  file=DOS.Open(name,DOS.MODE_UPDATE_EXISTING)
+  Require(file<>NULL)
+  Require(DOS.Read(file,@bytes,4)=3 AND bytes(0)='a AND bytes(1)='b AND bytes(2)='c)
+  Require(DOS.Open(name,DOS.MODE_UPDATE_EXISTING)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Close(file)<>0)
+  file=DOS.Open(name,DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,@bytes,4)=3 AND bytes(0)='a AND bytes(1)='b AND bytes(2)='c)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Main()
+  LONGCARD baseline
+
+  baseline=EXEC.AvailMem(0)
+  Check(BYTE POINTER(c"RAM:EXCL.BIN"))
+DISK_CASES
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+ENDMODULE

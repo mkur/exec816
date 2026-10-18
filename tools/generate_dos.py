@@ -57,7 +57,7 @@ DECLARATIONS={
 }
 
 def constants(abi=ABI):
-    require(abi['abi']=='exec816.dos' and abi['revision']==12,'Unsupported DOS ABI')
+    require(abi['abi']=='exec816.dos' and abi['revision']==13,'Unsupported DOS ABI')
     for source, group in (('filesystems.json', 'formats'), ('block-io.json', 'backends')):
         identifiers=json.loads((ROOT/'abi'/source).read_text())[group]
         for name,value in identifiers.items():

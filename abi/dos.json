@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 12,
+  "revision": 13,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -50,7 +50,9 @@
     "DIR_BATCH_HEADER_SIZE": 2,
     "DIR_BATCH_MAX": 16,
     "FIBF_ARCHIVE": 16,
-    "FIBF_HIDDEN": 128
+    "FIBF_HIDDEN": 128,
+    "MODE_CREATE_EXCLUSIVE": 1010,
+    "MODE_UPDATE_EXISTING": 1011
   },
   "dos_errors": {
     "ERROR_NO_FREE_STORE": 103,
@@ -108,7 +110,9 @@
     "ACTION_INFO": 26,
     "ACTION_EXAMINE_EXACT": 25,
     "ACTION_EXAMINE_BATCH": 28,
-    "ACTION_SET_DATE": 34
+    "ACTION_SET_DATE": 34,
+    "ACTION_CREATE_EXCLUSIVE": 1010,
+    "ACTION_UPDATE_EXISTING": 1011
   },
   "records": {
     "DateStamp": {

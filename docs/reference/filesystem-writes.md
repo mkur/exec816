@@ -182,3 +182,20 @@ extent measurements for the affected volume incarnation. A different volume's
 measurements survive. The shared worker serializes these updates; ExNext still
 uses the mount-wide mutation epoch. Failed or uncertain mutation clears retained
 metadata broadly and takes the affected mount offline.
+
+
+## Exclusive creation and existing-file update
+
+`DOS.Open(name, MODE_CREATE_EXCLUSIVE)` checks absence and creates within the
+filesystem worker's single active namespace operation. A collision never
+truncates the existing file. `MODE_UPDATE_EXISTING` acquires the existing writer
+lease without creating a missing file or truncating its data. Both use the
+ordinary writer ownership, protection, cancellation and Close rules.
+
+These modes extend the Amiga reference model because transactional callers need
+to reserve a temporary file and retain an existing archive without a separate
+check/open race. They are reusable public DOS modes, not SDX-private services.
+They add no record fields, kernel selectors or bank-zero reservations.
+[Development checks](../development/dos-exclusive-open.json) cover raw RAM and
+optimized RAM/SDFS calls, unchanged bytes on collisions, missing-file rejection,
+writer exclusion, close/reopen and complete heap/guard retirement.

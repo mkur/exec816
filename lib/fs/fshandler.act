@@ -42,7 +42,7 @@ BYTE FUNC OpenResultStep(BYTE POINTER raw)
     RETURN(FSNAMESPACE.Resolved(service))
   FI
 
-  IF action=22 AND service.missing=0 THEN
+  IF (action=22 OR action=MODE_CREATE_EXCLUSIVE) AND service.missing=0 THEN
     RETURN(FSPACKET.Error(service,ERROR_OBJECT_EXISTS))
   FI
 
@@ -52,7 +52,8 @@ BYTE FUNC OpenResultStep(BYTE POINTER raw)
   FI
 
   IF service.missing=0 AND FSLEASES.Busy(service.selected,@service.work.entry,
-      BYTE(action=MODE_NEWFILE OR action=MODE_READWRITE),0)<>0 THEN
+      BYTE(action=MODE_NEWFILE OR action=MODE_READWRITE OR
+          action=MODE_CREATE_EXCLUSIVE OR action=MODE_UPDATE_EXISTING),0)<>0 THEN
     RETURN(FSPACKET.Error(service,ERROR_OBJECT_IN_USE))
   FI
 
@@ -92,7 +93,8 @@ BYTE FUNC OpenResultStep(BYTE POINTER raw)
       RETURN(FSPACKET.Error(service,ERROR_NO_FREE_STORE))
     FI
 
-    IF action=MODE_NEWFILE OR action=MODE_READWRITE THEN
+    IF action=MODE_NEWFILE OR action=MODE_READWRITE OR
+        action=MODE_CREATE_EXCLUSIVE OR action=MODE_UPDATE_EXISTING THEN
       IF FSWRITE.Open(service)=0 THEN
         FSOBJECTS.Free(service.object)
         RETURN(FSPACKET.Error(service,service.work.error))
@@ -261,7 +263,7 @@ BYTE FUNC DispatchStep(BYTE POINTER raw)
   CASE action OF
   WHEN DOS_ACTION_LOCATE_OBJECT THEN
     RETURN(Lock(service))
-  WHEN DOS_ACTION_CREATE_DIR,DOS_ACTION_FINDINPUT,DOS_ACTION_FINDUPDATE,DOS_ACTION_FINDOUTPUT THEN
+  WHEN DOS_ACTION_CREATE_DIR,DOS_ACTION_FINDINPUT,DOS_ACTION_FINDUPDATE,DOS_ACTION_FINDOUTPUT,DOS_ACTION_CREATE_EXCLUSIVE,DOS_ACTION_UPDATE_EXISTING THEN
     IF action<>DOS_ACTION_FINDINPUT AND FSWRITE.Access(service)=0 THEN
       RETURN(FSPACKET.Error(service,service.work.error))
     FI
@@ -347,7 +349,8 @@ BYTE FUNC ResolveFailure(FSTYPES.Service POINTER service)
   action=service.packet.sp_Pkt.dp_Type
   IF service.work.error=ERROR_OBJECT_NOT_FOUND AND
       service.work.pathOffset=service.work.pathLength AND
-      (action=MODE_NEWFILE OR action=MODE_READWRITE OR action=22 OR action=17) THEN
+      (action=MODE_NEWFILE OR action=MODE_READWRITE OR action=22 OR action=17 OR
+          action=MODE_CREATE_EXCLUSIVE) THEN
     service.missing=1
     service.work.error=0
     service.work.entry.flags=0

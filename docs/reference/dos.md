@@ -114,6 +114,10 @@ record and constants; C query-call wrappers are not yet provided.
 Sizes, positions, modes and primary results use `LONGINT`. Boolean results are
 `DOSFALSE=0` and `DOSTRUE=-1`. Use named constants rather than numeric arguments.
 `MODE_OLDFILE` opens an existing read-only handle. On writable mounts,
+`MODE_CREATE_EXCLUSIVE` (1010) creates a new writable file and fails with
+OBJECT_EXISTS if its name already exists. `MODE_UPDATE_EXISTING` (1011) opens
+an existing file for exclusive update without truncation; a missing name fails
+with OBJECT_NOT_FOUND. Both are filesystem-only modes.
 `MODE_READWRITE` preserves or creates a file and `MODE_NEWFILE` creates or
 immediately truncates it. See [filesystem writes](filesystem-writes.md) for
 writer leases, inherited ownership, cancellation and finalization.
