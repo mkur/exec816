@@ -1,0 +1,817 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "date": "2026-10-18",
+  "scope": "P4 fourteen-symbol MD5 service subset through audited synthetic Processes; no real MD5/ARC execution or full system qualification",
+  "source_base_commit": "3ff9be19ec94a2c440806319be0d871496e64feb",
+  "source_inputs": {
+    "abi/sdx.json": "f65344c9c3b5adf036c4c493ee21fcb4427d717263d30d3f666bb705add17d77",
+    "lib/dos/sdxstate.act": "cb6aaa737eb3686d7da25877fbf22bf7e8ad8d99148aff8c9177f46f7a08ef68",
+    "lib/dos/sdxservice.act": "7da0171019aeac493d29451a69a816d8f163981c7b3e6bceabb8a3c04028d7b6",
+    "lib/dos/sdxfiles.act": "0512d7c0190ba259ff6fb8ddae14313aa9d5161a512c89f311ae0ff13b4d1f00",
+    "lib/dos/sdxcommand.act": "b5b9448ab182d45fc91a5ae8d6cda5daa308afedb23b981f8dee368c9bdfb1ce",
+    "lib/dos/sdxprint.act": "1f5c3dad4a0f46f66828155b083fefdaab92ac4498f5e4335c19ec31901d9c79",
+    "lib/dos/sdxtraps.act": "e2fd9d4adfcc4eae5e16e317efd6322616317433b83f23d07ab1d8c5caaf36d0",
+    "tools/sdx_fixtures.py": "651f8f2ae51d49d522101ab2a9d598680b4c64deb39098a038f7a6de34262e23",
+    "tools/test_sdx_services.py": "fdb82ff4a314d7be3e47f7c97893cd71798b64e6a135431865ad1e6dc3624ac8",
+    "tools/test_sdx_service_shape.py": "8b5828126f80faad370e262f05f1e6a6c0010e2e49cd4ce0c27000d5049d2866",
+    "tests/programs/sdx_service_shape.act": "493d09befe30a926cbb93f2dcd4ca5e2e3a95bfa28aa736ad090f2e26a52b529",
+    "tools/test_sdx_process.py": "cbc7b1ab735b34d45aecd3fa3f9ad95461c429d8b0144ab9ea9579578b3c05ad",
+    "tools/native_program.py": "25f73e00c6844d2c4f7b414a8e0c02651d78a5bc6dec60aaea0b86f68c855d4b",
+    "tools/generate_sdx.py": "d9947a9c6bdfc7c2548c36cb870c3a234ff77723379ad4297f62b9f2964eac57",
+    "tests/test_sdx_build.py": "3018594b55456d6833a6aebf277fed672f9330069c144f67ad6193f5002b0081",
+    "compat/sdx/probes/calls.inc": "1b4bec1914002e6c7a0f1b8d3a1c0c242251760488ef0eda59c2e33e01cac3c9",
+    "compat/sdx/probes/console.s": "c24d2cedc42f5d34a83b7c1bdd072a00b062860d5584c2410ac94337a5e05d2a",
+    "compat/sdx/probes/fail.s": "34d5125f09fb8fd115e53ae2b79277ff1ef5c67b08c2fbdc0abdf59e66c33182",
+    "compat/sdx/probes/options.s": "0163db807f5691f9913ed304b3ffe0e81b0fc01c773b637f9f69ee421ae12f55",
+    "compat/sdx/probes/process.s": "5821b14d3ff921a8ee81ae67fcff6674ec5a5456f0167ad80ba7884d7f3eff9f",
+    "compat/sdx/probes/services.s": "009b577a968ef2123d23409e207f9b13dd2f789716a5a7b2aa9a241a72c21c76"
+  },
+  "platform_pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "changes": [],
+    "override": false,
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "build_profile": "release",
+    "compiler_contract": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    }
+  },
+  "guide": {
+    "url": "https://sdx.atari8.info/sdx_files/4.50/SDX450_Programming_Guide.pdf",
+    "sha256": "15982c51f2d0edc317b01121097d6da23e007910e2ad79f3ad02ac930fbc2b69"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_native_task": 0,
+    "root_kernel_idle": 0,
+    "enabled_total_fixed": 544,
+    "includes_guards_alignment_unused_capacity": true
+  },
+  "upper_memory": {
+    "session_requested_and_rounded": 592,
+    "session_delta_per_image": 576,
+    "resident_reserved": 65536,
+    "backing_rounded_per_image": 131072,
+    "static_data_reserved": 4096
+  },
+  "guest_fixtures": [
+    {
+      "name": "process",
+      "patch": 0,
+      "sha256": "655869f225647be12ce4efce1d933ed6e8115c30f4c13f6834ad22795530f046",
+      "crc32": 4105582442,
+      "source_sha256": "5821b14d3ff921a8ee81ae67fcff6674ec5a5456f0167ad80ba7884d7f3eff9f",
+      "direct_page_sites": []
+    },
+    {
+      "name": "services",
+      "patch": 0,
+      "sha256": "427bb3641fe60d8e27ebc6bb61e77ce63bd219e1899fee761fbdb7083ea8c9e1",
+      "crc32": 2469694684,
+      "source_sha256": "009b577a968ef2123d23409e207f9b13dd2f789716a5a7b2aa9a241a72c21c76",
+      "direct_page_sites": [
+        787,
+        791
+      ]
+    },
+    {
+      "name": "fail",
+      "patch": null,
+      "sha256": "51fd2ba66bc8b6fdc398b0cedf01cf2ecc9e60ac883fa3e2d2ab68ba8669e6e2",
+      "crc32": 1051927067,
+      "source_sha256": "34d5125f09fb8fd115e53ae2b79277ff1ef5c67b08c2fbdc0abdf59e66c33182",
+      "direct_page_sites": []
+    },
+    {
+      "name": "options",
+      "patch": null,
+      "sha256": "40b5e758218bc411b1234af3a882c9c9c6ad13c8716ec6cc02351c133eeab087",
+      "crc32": 2112914520,
+      "source_sha256": "0163db807f5691f9913ed304b3ffe0e81b0fc01c773b637f9f69ee421ae12f55",
+      "direct_page_sites": []
+    },
+    {
+      "name": "console",
+      "patch": null,
+      "sha256": "ec2881c2a1d5205f1eca8d9483c287813db24209d8c9ff69555abb1a69f9aa90",
+      "crc32": 2279281554,
+      "source_sha256": "c24d2cedc42f5d34a83b7c1bdd072a00b062860d5584c2410ac94337a5e05d2a",
+      "direct_page_sites": []
+    }
+  ],
+  "runs": {
+    "opt": {
+      "status": "pass",
+      "checks": 103,
+      "optimize": true,
+      "results_path": "build/sdx-services/opt/results.json",
+      "results_sha256": "b21acc9dbf3772b48636fee3ce9c3a3528d681e27704b7d3c2708d9e9636fa62",
+      "build_path": "build/sdx-services/opt/build.json",
+      "build_sha256": "3c61f10acbaaeea81afc81c95af97b1a6ecbba3f924a3a23d81a4493f1ead12e",
+      "source_sha256": "a8155afd57e1c542cb33ff9a43a110373278d57bca46cb939840ac17dd1e25f6",
+      "image_sha256": "e33fc0de2dcd7fe914dd997f3179e0516feb6c430637b58c96c3997cbf9240b5",
+      "xex_sha256": "7731b45d828e077c9fe321bc8a7367a6ef45eb521ed10f8aab615d5265ddc568",
+      "admission_sha256": "3ddd1b1d7af7839b14ac1ae94281410bc7cdbdc09f5cca60cbc69175a0ffbb6b",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 126,
+        "native_irq_count": 0,
+        "switches": 192,
+        "gateway_calls": 2513,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "return_e": 0,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 386,
+            "untouched_above_floor": 894
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 236,
+            "untouched_above_floor": 820
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 208,
+            "untouched_above_floor": 848
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 368,
+            "untouched_above_floor": 688
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 26,
+            "untouched_above_floor": 230
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 277,
+          "untouched_from_base": 1259,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "heap_recovered": true,
+      "memory_ownership_recovered": true,
+      "compiled_sdx_sources": {
+        "lib/dos/sdxabi.act": "3222cb0bdad01318b9fefd61ab8c46998e505bfad4f8c092c4f8380dc288573f",
+        "lib/dos/sdxbind.act": "cd925a09a66638e714f9848165864b58718e5c139ed23492e9716ac8d1d9e363",
+        "lib/dos/sdxcatalog.act": "20511b1b7d70e2058b762ce2ddfafa25ba53f7a47851de2194c85b2705ac32de",
+        "lib/dos/sdxcommand.act": "b5b9448ab182d45fc91a5ae8d6cda5daa308afedb23b981f8dee368c9bdfb1ce",
+        "lib/dos/sdxcrc32.act": "d8d689de369f5eaef653e301a1a12c7602702f1b4f1dc47dab18b6da42bfc760",
+        "lib/dos/sdxfile.act": "59dab056229acf310c903bf879ef7cd8f825b770db87fdcbcb55bce132c24888",
+        "lib/dos/sdxfiles.act": "0512d7c0190ba259ff6fb8ddae14313aa9d5161a512c89f311ae0ff13b4d1f00",
+        "lib/dos/sdxidentify.act": "e7e59bec0ae32dd14511b30239c9f76e31d9585e3b9ef4a7dff17e337705d923",
+        "lib/dos/sdxpatch.act": "cc5fea7c1ed0c258aa06388854b3c291249b4be608631e92feb35a801cd93e6d",
+        "lib/dos/sdxprint.act": "1f5c3dad4a0f46f66828155b083fefdaab92ac4498f5e4335c19ec31901d9c79",
+        "lib/dos/sdxprogram.act": "613ea8895e0334cdf48ffa49a55d17f7ee2f9ad6c3b976f1608e09687360b34f",
+        "lib/dos/sdxruntime.act": "1109728a586acc9f9ad02cb614de7f3816b60c8acc7fc2e24f0540b959652288",
+        "lib/dos/sdxservice.act": "7da0171019aeac493d29451a69a816d8f163981c7b3e6bceabb8a3c04028d7b6",
+        "lib/dos/sdxstate.act": "cb6aaa737eb3686d7da25877fbf22bf7e8ad8d99148aff8c9177f46f7a08ef68",
+        "lib/dos/sdxtraps.act": "e2fd9d4adfcc4eae5e16e317efd6322616317433b83f23d07ab1d8c5caaf36d0",
+        "tools/sdx_build.py": "934bb92ccc6981fbf1dab558625b2828f7c3756f42058d81be16fe69cdc66e36",
+        "tools/sdx_fixtures.py": "a5a56e02c62c2d44ccad0ef9a19e5c6e3a74361f0eeb96192f51ed472170ae6d",
+        "compat/sdx/probes/console.s": "c24d2cedc42f5d34a83b7c1bdd072a00b062860d5584c2410ac94337a5e05d2a",
+        "compat/sdx/probes/fail.s": "34d5125f09fb8fd115e53ae2b79277ff1ef5c67b08c2fbdc0abdf59e66c33182",
+        "compat/sdx/probes/options.s": "0163db807f5691f9913ed304b3ffe0e81b0fc01c773b637f9f69ee421ae12f55",
+        "compat/sdx/probes/process.s": "5821b14d3ff921a8ee81ae67fcff6674ec5a5456f0167ad80ba7884d7f3eff9f",
+        "compat/sdx/probes/services.s": "009b577a968ef2123d23409e207f9b13dd2f789716a5a7b2aa9a241a72c21c76",
+        "compat/sdx/probes/calls.inc": "1b4bec1914002e6c7a0f1b8d3a1c0c242251760488ef0eda59c2e33e01cac3c9"
+      },
+      "redirected_output_hex": "4d4435203035206f6b20444f4e452032353820259b"
+    },
+    "close-error": {
+      "status": "pass",
+      "checks": 84,
+      "optimize": true,
+      "results_path": "build/sdx-services/close-error/results.json",
+      "results_sha256": "bb7ab3b5ee76776e3d47f64fc4f02ba0088b960717ccaf6858c1b13516bbfb72",
+      "build_path": "build/sdx-services/close-error/build.json",
+      "build_sha256": "7687d8fbaf6155f2c587764b26176cd897c96b0243acdc496df84bf38ec57061",
+      "source_sha256": "8edfdc3f85c014398b37d1beddda9cb50a0c9649b59a20b46c5838ec30a3beb7",
+      "image_sha256": "479d8c3060b4c1cb0f9d8a2f7d6bdf70b11c14374e207ad709efcb02eaf0f134",
+      "xex_sha256": "21b76f15afde68ce82f8c72bdd48918501fd95fc92b0e802c976259c71850a5e",
+      "admission_sha256": "3ddd1b1d7af7839b14ac1ae94281410bc7cdbdc09f5cca60cbc69175a0ffbb6b",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 120,
+        "native_irq_count": 0,
+        "switches": 183,
+        "gateway_calls": 2465,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "return_e": 0,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 384,
+            "untouched_above_floor": 896
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 236,
+            "untouched_above_floor": 820
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 208,
+            "untouched_above_floor": 848
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 368,
+            "untouched_above_floor": 688
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 26,
+            "untouched_above_floor": 230
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "heap_recovered": true,
+      "memory_ownership_recovered": true,
+      "compiled_sdx_sources": {
+        "lib/dos/sdxabi.act": "3222cb0bdad01318b9fefd61ab8c46998e505bfad4f8c092c4f8380dc288573f",
+        "lib/dos/sdxbind.act": "cd925a09a66638e714f9848165864b58718e5c139ed23492e9716ac8d1d9e363",
+        "lib/dos/sdxcatalog.act": "20511b1b7d70e2058b762ce2ddfafa25ba53f7a47851de2194c85b2705ac32de",
+        "lib/dos/sdxcommand.act": "b5b9448ab182d45fc91a5ae8d6cda5daa308afedb23b981f8dee368c9bdfb1ce",
+        "lib/dos/sdxcrc32.act": "d8d689de369f5eaef653e301a1a12c7602702f1b4f1dc47dab18b6da42bfc760",
+        "lib/dos/sdxfile.act": "59dab056229acf310c903bf879ef7cd8f825b770db87fdcbcb55bce132c24888",
+        "lib/dos/sdxfiles.act": "0512d7c0190ba259ff6fb8ddae14313aa9d5161a512c89f311ae0ff13b4d1f00",
+        "lib/dos/sdxidentify.act": "e7e59bec0ae32dd14511b30239c9f76e31d9585e3b9ef4a7dff17e337705d923",
+        "lib/dos/sdxpatch.act": "cc5fea7c1ed0c258aa06388854b3c291249b4be608631e92feb35a801cd93e6d",
+        "lib/dos/sdxprint.act": "1f5c3dad4a0f46f66828155b083fefdaab92ac4498f5e4335c19ec31901d9c79",
+        "lib/dos/sdxprogram.act": "613ea8895e0334cdf48ffa49a55d17f7ee2f9ad6c3b976f1608e09687360b34f",
+        "lib/dos/sdxruntime.act": "1109728a586acc9f9ad02cb614de7f3816b60c8acc7fc2e24f0540b959652288",
+        "lib/dos/sdxservice.act": "7da0171019aeac493d29451a69a816d8f163981c7b3e6bceabb8a3c04028d7b6",
+        "lib/dos/sdxstate.act": "cb6aaa737eb3686d7da25877fbf22bf7e8ad8d99148aff8c9177f46f7a08ef68",
+        "lib/dos/sdxtraps.act": "e2fd9d4adfcc4eae5e16e317efd6322616317433b83f23d07ab1d8c5caaf36d0",
+        "tools/sdx_build.py": "934bb92ccc6981fbf1dab558625b2828f7c3756f42058d81be16fe69cdc66e36",
+        "tools/sdx_fixtures.py": "651f8f2ae51d49d522101ab2a9d598680b4c64deb39098a038f7a6de34262e23",
+        "compat/sdx/probes/console.s": "c24d2cedc42f5d34a83b7c1bdd072a00b062860d5584c2410ac94337a5e05d2a",
+        "compat/sdx/probes/fail.s": "34d5125f09fb8fd115e53ae2b79277ff1ef5c67b08c2fbdc0abdf59e66c33182",
+        "compat/sdx/probes/options.s": "0163db807f5691f9913ed304b3ffe0e81b0fc01c773b637f9f69ee421ae12f55",
+        "compat/sdx/probes/process.s": "5821b14d3ff921a8ee81ae67fcff6674ec5a5456f0167ad80ba7884d7f3eff9f",
+        "compat/sdx/probes/services.s": "009b577a968ef2123d23409e207f9b13dd2f789716a5a7b2aa9a241a72c21c76",
+        "compat/sdx/probes/calls.inc": "1b4bec1914002e6c7a0f1b8d3a1c0c242251760488ef0eda59c2e33e01cac3c9"
+      },
+      "redirected_output_hex": "",
+      "override": {
+        "path": "build/sdx-services/close-error/sdxfiles.act",
+        "sha256": "71254f6193903deb03c514bee817ee61c1f71b09d46f194338b97cee9e5b7502",
+        "effect": "Perform real DOS.Close, then report native IoErr 221; native handle is consumed."
+      }
+    },
+    "shape-raw": {
+      "status": "pass",
+      "checks": 44,
+      "optimize": false,
+      "results_path": "build/sdx-services/shape-raw/results.json",
+      "results_sha256": "ba76d6de6ce99bb63d2c0671f088b80786ccae66d480dbee0cef054dfff9aec9",
+      "build_path": "build/sdx-services/shape-raw/build.json",
+      "build_sha256": "5a8807f680085d40982b9861f2bfec1fb7e366785390be73b385589a4d9475ff",
+      "source_sha256": "493d09befe30a926cbb93f2dcd4ca5e2e3a95bfa28aa736ad090f2e26a52b529",
+      "image_sha256": "c9a0c9aa8da479dc4b9a05e518694b5f81123b010dc0f9f7898298794cf38b8f",
+      "xex_sha256": "1e61a1f3ef45d0ae338e4c1d2090fb20c47c48e44002e8ad419bcffbef2c2584",
+      "admission_sha256": "3ddd1b1d7af7839b14ac1ae94281410bc7cdbdc09f5cca60cbc69175a0ffbb6b",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 1,
+        "native_irq_count": 0,
+        "switches": 1,
+        "gateway_calls": 8,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "return_e": 0,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 105,
+            "untouched_above_floor": 1175
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 264,
+          "untouched_from_base": 1272,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "heap_recovered": true,
+      "memory_ownership_recovered": true,
+      "compiled_sdx_sources": {
+        "lib/dos/sdxabi.act": "3222cb0bdad01318b9fefd61ab8c46998e505bfad4f8c092c4f8380dc288573f",
+        "lib/dos/sdxbind.act": "cd925a09a66638e714f9848165864b58718e5c139ed23492e9716ac8d1d9e363",
+        "lib/dos/sdxcatalog.act": "20511b1b7d70e2058b762ce2ddfafa25ba53f7a47851de2194c85b2705ac32de",
+        "lib/dos/sdxcommand.act": "b5b9448ab182d45fc91a5ae8d6cda5daa308afedb23b981f8dee368c9bdfb1ce",
+        "lib/dos/sdxcrc32.act": "d8d689de369f5eaef653e301a1a12c7602702f1b4f1dc47dab18b6da42bfc760",
+        "lib/dos/sdxfile.act": "59dab056229acf310c903bf879ef7cd8f825b770db87fdcbcb55bce132c24888",
+        "lib/dos/sdxfiles.act": "0512d7c0190ba259ff6fb8ddae14313aa9d5161a512c89f311ae0ff13b4d1f00",
+        "lib/dos/sdxidentify.act": "e7e59bec0ae32dd14511b30239c9f76e31d9585e3b9ef4a7dff17e337705d923",
+        "lib/dos/sdxpatch.act": "cc5fea7c1ed0c258aa06388854b3c291249b4be608631e92feb35a801cd93e6d",
+        "lib/dos/sdxprint.act": "1f5c3dad4a0f46f66828155b083fefdaab92ac4498f5e4335c19ec31901d9c79",
+        "lib/dos/sdxprogram.act": "613ea8895e0334cdf48ffa49a55d17f7ee2f9ad6c3b976f1608e09687360b34f",
+        "lib/dos/sdxruntime.act": "1109728a586acc9f9ad02cb614de7f3816b60c8acc7fc2e24f0540b959652288",
+        "lib/dos/sdxservice.act": "7da0171019aeac493d29451a69a816d8f163981c7b3e6bceabb8a3c04028d7b6",
+        "lib/dos/sdxstate.act": "cb6aaa737eb3686d7da25877fbf22bf7e8ad8d99148aff8c9177f46f7a08ef68",
+        "lib/dos/sdxtraps.act": "e2fd9d4adfcc4eae5e16e317efd6322616317433b83f23d07ab1d8c5caaf36d0",
+        "tools/sdx_build.py": "934bb92ccc6981fbf1dab558625b2828f7c3756f42058d81be16fe69cdc66e36",
+        "tools/sdx_fixtures.py": "a5a56e02c62c2d44ccad0ef9a19e5c6e3a74361f0eeb96192f51ed472170ae6d",
+        "compat/sdx/probes/console.s": "c24d2cedc42f5d34a83b7c1bdd072a00b062860d5584c2410ac94337a5e05d2a",
+        "compat/sdx/probes/fail.s": "34d5125f09fb8fd115e53ae2b79277ff1ef5c67b08c2fbdc0abdf59e66c33182",
+        "compat/sdx/probes/options.s": "0163db807f5691f9913ed304b3ffe0e81b0fc01c773b637f9f69ee421ae12f55",
+        "compat/sdx/probes/process.s": "5821b14d3ff921a8ee81ae67fcff6674ec5a5456f0167ad80ba7884d7f3eff9f",
+        "compat/sdx/probes/services.s": "009b577a968ef2123d23409e207f9b13dd2f789716a5a7b2aa9a241a72c21c76",
+        "compat/sdx/probes/calls.inc": "1b4bec1914002e6c7a0f1b8d3a1c0c242251760488ef0eda59c2e33e01cac3c9"
+      },
+      "session_bytes": 592
+    },
+    "shape-opt": {
+      "status": "pass",
+      "checks": 44,
+      "optimize": true,
+      "results_path": "build/sdx-services/shape-opt/results.json",
+      "results_sha256": "1dbb3c555d75f6c2a077bd23fa40d6d65bc41e6518f36cbd3eccfc9c6a4133e1",
+      "build_path": "build/sdx-services/shape-opt/build.json",
+      "build_sha256": "7d5e2264792ba26e460e20a7b2b35413bbc0e0039dc7396da591952397c994f7",
+      "source_sha256": "493d09befe30a926cbb93f2dcd4ca5e2e3a95bfa28aa736ad090f2e26a52b529",
+      "image_sha256": "647cf93fa049156d411746db6e9a73bff18c4564e6ff41ffa37a4179433abe3c",
+      "xex_sha256": "611524aae2bec015bfacc9129b6bc812d74822b626a717334a8971d02b143a77",
+      "admission_sha256": "3ddd1b1d7af7839b14ac1ae94281410bc7cdbdc09f5cca60cbc69175a0ffbb6b",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 0,
+        "native_irq_count": 0,
+        "switches": 1,
+        "gateway_calls": 8,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "return_e": 0,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 93,
+            "untouched_above_floor": 1187
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "heap_recovered": true,
+      "memory_ownership_recovered": true,
+      "compiled_sdx_sources": {
+        "lib/dos/sdxabi.act": "3222cb0bdad01318b9fefd61ab8c46998e505bfad4f8c092c4f8380dc288573f",
+        "lib/dos/sdxbind.act": "cd925a09a66638e714f9848165864b58718e5c139ed23492e9716ac8d1d9e363",
+        "lib/dos/sdxcatalog.act": "20511b1b7d70e2058b762ce2ddfafa25ba53f7a47851de2194c85b2705ac32de",
+        "lib/dos/sdxcommand.act": "b5b9448ab182d45fc91a5ae8d6cda5daa308afedb23b981f8dee368c9bdfb1ce",
+        "lib/dos/sdxcrc32.act": "d8d689de369f5eaef653e301a1a12c7602702f1b4f1dc47dab18b6da42bfc760",
+        "lib/dos/sdxfile.act": "59dab056229acf310c903bf879ef7cd8f825b770db87fdcbcb55bce132c24888",
+        "lib/dos/sdxfiles.act": "0512d7c0190ba259ff6fb8ddae14313aa9d5161a512c89f311ae0ff13b4d1f00",
+        "lib/dos/sdxidentify.act": "e7e59bec0ae32dd14511b30239c9f76e31d9585e3b9ef4a7dff17e337705d923",
+        "lib/dos/sdxpatch.act": "cc5fea7c1ed0c258aa06388854b3c291249b4be608631e92feb35a801cd93e6d",
+        "lib/dos/sdxprint.act": "1f5c3dad4a0f46f66828155b083fefdaab92ac4498f5e4335c19ec31901d9c79",
+        "lib/dos/sdxprogram.act": "613ea8895e0334cdf48ffa49a55d17f7ee2f9ad6c3b976f1608e09687360b34f",
+        "lib/dos/sdxruntime.act": "1109728a586acc9f9ad02cb614de7f3816b60c8acc7fc2e24f0540b959652288",
+        "lib/dos/sdxservice.act": "7da0171019aeac493d29451a69a816d8f163981c7b3e6bceabb8a3c04028d7b6",
+        "lib/dos/sdxstate.act": "cb6aaa737eb3686d7da25877fbf22bf7e8ad8d99148aff8c9177f46f7a08ef68",
+        "lib/dos/sdxtraps.act": "e2fd9d4adfcc4eae5e16e317efd6322616317433b83f23d07ab1d8c5caaf36d0",
+        "tools/sdx_build.py": "934bb92ccc6981fbf1dab558625b2828f7c3756f42058d81be16fe69cdc66e36",
+        "tools/sdx_fixtures.py": "a5a56e02c62c2d44ccad0ef9a19e5c6e3a74361f0eeb96192f51ed472170ae6d",
+        "compat/sdx/probes/console.s": "c24d2cedc42f5d34a83b7c1bdd072a00b062860d5584c2410ac94337a5e05d2a",
+        "compat/sdx/probes/fail.s": "34d5125f09fb8fd115e53ae2b79277ff1ef5c67b08c2fbdc0abdf59e66c33182",
+        "compat/sdx/probes/options.s": "0163db807f5691f9913ed304b3ffe0e81b0fc01c773b637f9f69ee421ae12f55",
+        "compat/sdx/probes/process.s": "5821b14d3ff921a8ee81ae67fcff6674ec5a5456f0167ad80ba7884d7f3eff9f",
+        "compat/sdx/probes/services.s": "009b577a968ef2123d23409e207f9b13dd2f789716a5a7b2aa9a241a72c21c76",
+        "compat/sdx/probes/calls.inc": "1b4bec1914002e6c7a0f1b8d3a1c0c242251760488ef0eda59c2e33e01cac3c9"
+      },
+      "session_bytes": 592
+    },
+    "process-regression": {
+      "status": "pass",
+      "checks": 72,
+      "optimize": true,
+      "results_path": "build/sdx-services/process-regression/results.json",
+      "results_sha256": "f08c1302b9c99127c6cfc31d70f8d99e763df91bf404baaf13cf25b840bd5fed",
+      "build_path": "build/sdx-services/process-regression/build.json",
+      "build_sha256": "a23910587bd624b2531f6425b23ffd0c9f8883bffc5fd165810e81cbac7b553e",
+      "source_sha256": "4589d3a1c028e362ba28c1afac60dca8796706a8f60af6a3dbeea30b80fb3e0e",
+      "image_sha256": "8b5c6dcbe997e0cdec9e600bce5f830099407a5c97f2ba0f25b18d570d7e7a81",
+      "xex_sha256": "5de67f75087be9fb2e7902deef746f6285fb5615d2f84fe7f7a16b8f6d5f314f",
+      "admission_sha256": "3ddd1b1d7af7839b14ac1ae94281410bc7cdbdc09f5cca60cbc69175a0ffbb6b",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 123,
+        "native_irq_count": 0,
+        "switches": 186,
+        "gateway_calls": 2029,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "return_e": 0,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 392,
+            "untouched_above_floor": 888
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 207,
+            "untouched_above_floor": 849
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 353,
+            "untouched_above_floor": 703
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 353,
+            "untouched_above_floor": 703
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 26,
+            "untouched_above_floor": 230
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "heap_recovered": true,
+      "memory_ownership_recovered": true,
+      "compiled_sdx_sources": {
+        "lib/dos/sdxabi.act": "3222cb0bdad01318b9fefd61ab8c46998e505bfad4f8c092c4f8380dc288573f",
+        "lib/dos/sdxbind.act": "cd925a09a66638e714f9848165864b58718e5c139ed23492e9716ac8d1d9e363",
+        "lib/dos/sdxcatalog.act": "20511b1b7d70e2058b762ce2ddfafa25ba53f7a47851de2194c85b2705ac32de",
+        "lib/dos/sdxcommand.act": "b5b9448ab182d45fc91a5ae8d6cda5daa308afedb23b981f8dee368c9bdfb1ce",
+        "lib/dos/sdxcrc32.act": "d8d689de369f5eaef653e301a1a12c7602702f1b4f1dc47dab18b6da42bfc760",
+        "lib/dos/sdxfile.act": "59dab056229acf310c903bf879ef7cd8f825b770db87fdcbcb55bce132c24888",
+        "lib/dos/sdxfiles.act": "0512d7c0190ba259ff6fb8ddae14313aa9d5161a512c89f311ae0ff13b4d1f00",
+        "lib/dos/sdxidentify.act": "e7e59bec0ae32dd14511b30239c9f76e31d9585e3b9ef4a7dff17e337705d923",
+        "lib/dos/sdxpatch.act": "cc5fea7c1ed0c258aa06388854b3c291249b4be608631e92feb35a801cd93e6d",
+        "lib/dos/sdxprint.act": "1f5c3dad4a0f46f66828155b083fefdaab92ac4498f5e4335c19ec31901d9c79",
+        "lib/dos/sdxprogram.act": "613ea8895e0334cdf48ffa49a55d17f7ee2f9ad6c3b976f1608e09687360b34f",
+        "lib/dos/sdxruntime.act": "1109728a586acc9f9ad02cb614de7f3816b60c8acc7fc2e24f0540b959652288",
+        "lib/dos/sdxservice.act": "7da0171019aeac493d29451a69a816d8f163981c7b3e6bceabb8a3c04028d7b6",
+        "lib/dos/sdxstate.act": "cb6aaa737eb3686d7da25877fbf22bf7e8ad8d99148aff8c9177f46f7a08ef68",
+        "lib/dos/sdxtraps.act": "e2fd9d4adfcc4eae5e16e317efd6322616317433b83f23d07ab1d8c5caaf36d0",
+        "tools/sdx_build.py": "934bb92ccc6981fbf1dab558625b2828f7c3756f42058d81be16fe69cdc66e36",
+        "tools/sdx_fixtures.py": "651f8f2ae51d49d522101ab2a9d598680b4c64deb39098a038f7a6de34262e23",
+        "compat/sdx/probes/console.s": "c24d2cedc42f5d34a83b7c1bdd072a00b062860d5584c2410ac94337a5e05d2a",
+        "compat/sdx/probes/fail.s": "34d5125f09fb8fd115e53ae2b79277ff1ef5c67b08c2fbdc0abdf59e66c33182",
+        "compat/sdx/probes/options.s": "0163db807f5691f9913ed304b3ffe0e81b0fc01c773b637f9f69ee421ae12f55",
+        "compat/sdx/probes/process.s": "5821b14d3ff921a8ee81ae67fcff6674ec5a5456f0167ad80ba7884d7f3eff9f",
+        "compat/sdx/probes/services.s": "009b577a968ef2123d23409e207f9b13dd2f789716a5a7b2aa9a241a72c21c76",
+        "compat/sdx/probes/calls.inc": "1b4bec1914002e6c7a0f1b8d3a1c0c242251760488ef0eda59c2e33e01cac3c9"
+      }
+    }
+  },
+  "host_checks": {
+    "sdx": {
+      "run": 15,
+      "passed": 15
+    },
+    "full": {
+      "run": 513,
+      "passed": 507,
+      "skipped": 4,
+      "failed": 2
+    },
+    "preexisting_failures": [
+      {
+        "test": "test_c_program_package",
+        "reason": "Provider ABI assertion expects 19; current ABI is 20"
+      },
+      {
+        "test": "test_program_contract.test_cstring_groups_bind_exact_signatures_and_native_shapes",
+        "reason": "Provider payload assertion expects 1807 bytes; current payload has 1844"
+      }
+    ],
+    "generated_definitions": "pass",
+    "python_compile": "pass"
+  },
+  "limitations": [
+    "Only the audited synthetic catalog is admitted",
+    "A: and bare filenames map to RAM:; opens are read-only",
+    "No overlays, callbacks or hardware access",
+    "Real MD5 digests and /C, ARC, cancellation bounds and remaining P2 qualification are pending"
+  ]
+}

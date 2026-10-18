@@ -1,7 +1,8 @@
 # SDX loader and Process development
 
 The P3 native record decoder passes development checks on the pinned
-AltirraOS/65816 platform. P3 synthetic Process admission also passes; P4 services remain in progress.
+AltirraOS/65816 platform. P3 synthetic Process admission also passes;
+[P4 services](sdx-services.md) now pass their separate development probes.
 [Plan](../plans/spartados-personality-implementation-plan.md) ·
 [Execution record](sdx-loader.json)
 
@@ -65,8 +66,9 @@ Process output, a third load failing while both slots are occupied, invalid
 launch rollback, owner unload during execution, collection/reuse, retained-Image
 relaunch, input corruption/truncation and complete heap recovery. Platform and
 DP-pool guards survive. The native decoder separately rejects unknown imports
-and malformed records before publication. P3 output supports literal `PRINTF`;
-formatted output and the other service implementations belong to P4.
+and malformed records before publication. These P3 runs used literal `PRINTF`;
+the [P4 record](sdx-services.md) covers the completed service subset and a rerun
+of the concurrent Process scenario with that dispatcher.
 
 Enabled builds reserve **544 additional fixed bank-zero bytes**, including two
 aligned 256-byte guest pages and two 16-byte outer guards. The generated

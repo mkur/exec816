@@ -1,0 +1,204 @@
+MODULE SDXCOMMAND
+USE SDXABI
+USE SDXSTATE
+
+PUBLIC BYTE FUNC Upper(BYTE value)
+
+  IF value>='a AND value<='z THEN
+    RETURN(value-32)
+  FI
+
+RETURN(value)
+
+PUBLIC PROC NZ(BYTE POINTER frame BYTE value)
+
+  frame(SDXABI.FRAME_P)=(frame(SDXABI.FRAME_P) & $7d) OR (value & $80)
+  IF value=0 THEN
+    frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) OR 2
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC Initialize(SDXSTATE.Session POINTER state BYTE POINTER args,name)
+  CARD index,source
+
+  index=0
+  WHILE index<23 AND name(index)<>0 DO
+    state.bank(SDXABI.COMTAB+$3f+index)=name(index)
+    index==+1
+  OD
+  IF index=0 THEN
+    state.bank(SDXABI.COMTAB+$3f)='S
+    state.bank(SDXABI.COMTAB+$40)='D
+    state.bank(SDXABI.COMTAB+$41)='X
+    index=3
+  FI
+  state.bank(SDXABI.COMTAB+$3f+index)=32
+  index==+1
+  state.bank(SDXABI.COMTAB+$0a)=BYTE(index)
+  source=0
+  IF args<>NULL THEN
+    WHILE args(source)<>0 DO
+      IF index=63 OR args(source)=$9b THEN
+        RETURN(156)
+      FI
+      state.bank(SDXABI.COMTAB+$3f+index)=args(source)
+      index==+1
+      source==+1
+    OD
+  FI
+  state.bank(SDXABI.COMTAB+$3f+index)=$9b
+
+RETURN(0)
+
+BYTE FUNC Delimiter(BYTE value)
+
+RETURN(value=32 OR value=', OR value=$9b)
+
+CARD FUNC Next(SDXSTATE.Session POINTER state)
+  CARD at
+  BYTE value
+
+  at=state.bank(SDXABI.COMTAB+$0a)
+  WHILE at<63 DO
+    value=state.bank(SDXABI.COMTAB+$3f+at)
+    IF value<>32 AND value<>', THEN
+      EXIT
+    FI
+    at==+1
+  OD
+
+RETURN(at)
+
+PUBLIC BYTE FUNC Slash(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  CARD at,table,bytes,index,found
+  BYTE value,last
+
+  table=CARD(frame(SDXABI.FRAME_A)) OR (CARD(frame(SDXABI.FRAME_X)) LSH 8)
+  at=Next(state)
+  frame(SDXABI.FRAME_A)=0
+  IF state.bank(SDXABI.COMTAB+$3f+at)<>'/ THEN
+    NZ(frame,0)
+    RETURN(0)
+  FI
+  bytes=frame(SDXABI.FRAME_Y)
+  IF bytes=0 OR (bytes & 1)<>0 OR LONGCARD(table)+bytes>SDXABI.GUEST_LIMIT THEN
+    RETURN(156)
+  FI
+  index=0
+  WHILE index<bytes DO
+    state.bank(table+index)=0
+    index==+2
+  OD
+  at==+1
+  last=0
+  WHILE at<64 DO
+    value=Upper(state.bank(SDXABI.COMTAB+$3f+at))
+    IF Delimiter(value)<>0 THEN
+      EXIT
+    FI
+    ; Reject the parsed hardware option, never an H inside a pathname.
+    IF value='H THEN
+      RETURN(156)
+    FI
+    index=0
+    found=bytes
+    WHILE index<bytes DO
+      IF Upper(state.bank(table+index+1))=value THEN
+        found=index
+      FI
+      index==+2
+    OD
+    IF found=bytes THEN
+      RETURN(156)
+    FI
+    state.bank(table+found)==-1
+    last=value
+    at==+1
+  OD
+  IF last=0 OR at=64 THEN
+    RETURN(156)
+  FI
+  state.bank(SDXABI.COMTAB+$0a)=BYTE(at)
+  frame(SDXABI.FRAME_A)=last
+  NZ(frame,last)
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Attributes(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  CARD at,start,length
+  BYTE value,mask,bit,opposite,negative,explicit
+
+  at=Next(state)
+  mask=frame(SDXABI.FRAME_A)
+  explicit=0
+  WHILE at<64 DO
+    value=state.bank(SDXABI.COMTAB+$3f+at)
+    IF value<>'+ AND value<>'- THEN
+      EXIT
+    FI
+    IF explicit=0 THEN
+      mask=0
+      explicit=1
+    FI
+    negative=value='-
+    at==+1
+    start=at
+    WHILE at<64 DO
+      value=Upper(state.bank(SDXABI.COMTAB+$3f+at))
+      IF Delimiter(value)<>0 THEN
+        EXIT
+      FI
+      bit=0
+      CASE value OF
+      WHEN 'P THEN
+        bit=1
+      WHEN 'H THEN
+        bit=2
+      WHEN 'A THEN
+        bit=4
+      WHEN 'S THEN
+        bit=8
+      ESAC
+      IF bit=0 THEN
+        RETURN(156)
+      FI
+      opposite=bit LSH 4
+      IF negative<>0 THEN
+        opposite=bit
+        bit=bit LSH 4
+      FI
+      mask=(mask & ($ff XOR opposite)) OR bit
+      at==+1
+    OD
+    IF at=start OR at=64 THEN
+      RETURN(156)
+    FI
+    state.bank(SDXABI.COMTAB+$0a)=BYTE(at)
+    at=Next(state)
+  OD
+  state.bank($779)=mask
+  start=at
+  WHILE at<64 AND Delimiter(state.bank(SDXABI.COMTAB+$3f+at))=0 DO
+    at==+1
+  OD
+  length=at-start
+  ; Keep COMFNAM within its 30-byte reservation in the admitted P4 subset.
+  IF length>=30 OR at=64 THEN
+    RETURN(156)
+  FI
+  state.bank(SDXABI.COMTAB+$0a)=BYTE(at)
+  state.bank(SDXABI.COMTAB+$1a)=BYTE(length)
+  state.bank(SDXABI.COMTAB+$21+length)=$9b
+  WHILE length<>0 DO
+    length==-1
+    state.bank(SDXABI.COMTAB+$21+length)=state.bank(SDXABI.COMTAB+$3f+start+length)
+  OD
+  SDXSTATE.Word(state.bank,SDXABI.FILE_P,SDXABI.COMTAB+$21)
+  frame(SDXABI.FRAME_X)=state.bank(SDXABI.COMTAB+$1a)
+  frame(SDXABI.FRAME_A)=frame(SDXABI.FRAME_X)
+  NZ(frame,frame(SDXABI.FRAME_X))
+
+RETURN(0)
+
+ENDMODULE

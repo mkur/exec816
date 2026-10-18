@@ -5,59 +5,90 @@ USE PROGRAMIMAGE
 USE SDXABI
 USE SDXSTATE
 USE SDXRUNTIME
+USE SDXFILES
+USE SDXCOMMAND
+USE SDXPRINT
+USE SDXTRAPS
 
-; P3 literal output crosses the ordinary Process stream boundary while page
-; one is released. P4 extends this with the audited formatted-output subset.
-BYTE FUNC Print(SDXSTATE.Session POINTER state BYTE POINTER frame)
-  CARD start,limit
-  LONGINT sent,total
+BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
+  BYTE value
 
-  start=SDXSTATE.ReadWord(frame,SDXABI.FRAME_PC)
-  limit=start
-  WHILE limit<$ffff AND state.bank(limit)<>0 DO
-    limit==+1
-  OD
-  IF limit=$ffff THEN
+  CASE event OF
+  WHEN SDXABI.CALL_FOPEN THEN
+    RETURN(SDXFILES.Open(state))
+  WHEN SDXABI.CALL_FCLOSE THEN
+    RETURN(SDXFILES.Close(state,state.bank($760)))
+  WHEN SDXABI.CALL_FCLOSEAL THEN
+    RETURN(SDXFILES.CloseAll(state))
+  WHEN SDXABI.CALL_FGETC THEN
+    RETURN(SDXFILES.Read(state,frame,1))
+  WHEN SDXABI.CALL_FREAD THEN
+    RETURN(SDXFILES.Read(state,frame,0))
+  WHEN SDXABI.CALL_PRINTF THEN
+    RETURN(SDXPRINT.Print(state,frame))
+  WHEN SDXABI.CALL_TOUPPER THEN
+    value=SDXCOMMAND.Upper(frame(SDXABI.FRAME_A))
+    frame(SDXABI.FRAME_A)=value
+    SDXCOMMAND.NZ(frame,value)
     RETURN(0)
-  FI
-  total=0
-  WHILE total<LONGINT(limit-start) DO
-    sent=DOS.Write(DOS.Output(),state.bank+start+SIZE(total),
-        LONGINT(limit-start)-total)
-    IF sent<=0 THEN
-      RETURN(0)
+  WHEN SDXABI.CALL_U_GETATR THEN
+    RETURN(SDXCOMMAND.Attributes(state,frame))
+  WHEN SDXABI.CALL_U_SLASH THEN
+    RETURN(SDXCOMMAND.Slash(state,frame))
+  WHEN SDXABI.CALL_U_SFAIL THEN
+    RETURN(SDXTRAPS.Install(state,frame))
+  WHEN SDXABI.CALL_U_XFAIL THEN
+    RETURN(SDXTRAPS.Remove(state))
+  WHEN SDXABI.CALL_U_FAIL THEN
+    value=frame(SDXABI.FRAME_A)
+    IF value=0 THEN
+      value=156
     FI
-    total==+sent
-  OD
-  SDXSTATE.Word(frame,SDXABI.FRAME_PC,limit+1)
+    RETURN(value)
+  ESAC
 
-RETURN(1)
+RETURN(156)
 
 PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   SDXSTATE.Session POINTER state
   BYTE POINTER frame
   CARD event
+  BYTE error,closeError
+  LONGINT result,cause
 
   state=SDXSTATE.Session POINTER(image.extension)
   SDXSTATE.Prepare(state)
-  DO
+  state.trapCount=0
+  state.nativeError=0
+  error=SDXCOMMAND.Initialize(state,arguments,@image.name)
+  result=20
+  WHILE error=0 DO
     event=SDXRUNTIME.Run(state.slot)
     SDXSTATE.Guards()
     frame=SDXSTATE.GetFrame(state)
     IF event=1 THEN
-      DOSCLIENT.SetError(0)
-      RETURN(LONGINT(frame(SDXABI.FRAME_A)))
+      result=LONGINT(frame(SDXABI.FRAME_A))
+      EXIT
     FI
-    IF event=SDXABI.CALL_PRINTF THEN
-      IF Print(state,frame)=0 THEN
-        RETURN(20)
-      FI
-    ELSE
-      DOSCLIENT.SetError(307)
-      RETURN(20)
+    state.nativeError=0
+    error=Dispatch(state,frame,event)
+    IF error<>0 AND SDXTRAPS.Deliver(state,error)<>0 THEN
+      error=0
+      state.nativeError=0
     FI
   OD
+  cause=state.nativeError
+  IF cause=0 THEN
+    cause=LONGINT(error)
+  FI
+  closeError=SDXFILES.CloseAll(state)
+  IF error=0 AND closeError<>0 THEN
+    result=20
+    cause=state.nativeError
+  FI
+  state.trapCount=0
+  DOSCLIENT.SetError(cause)
 
-RETURN(20)
+RETURN(result)
 
 ENDMODULE

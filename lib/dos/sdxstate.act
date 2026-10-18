@@ -1,14 +1,23 @@
 MODULE SDXSTATE
 USE EXEC
+USE DOS
 USE HEAPCORE
 USE SDXABI
 USE SDXCONFIG
 USE A816MEMORY
 
+PUBLIC TYPE Trap=[CARD handler,stack]
+
 PUBLIC TYPE Session=[
   BYTE slot,profile
   CARD entry
   BYTE POINTER bank,dp,context
+  DOS.FileHandle POINTER ARRAY handles(SDXABI.HANDLE_LIMIT)
+  Trap ARRAY traps(SDXABI.TRAP_LIMIT)
+  BYTE trapCount,character,outputError,inverse
+  LONGINT nativeError
+  CARD outputUsed
+  BYTE ARRAY path(256),output(256),number(10)
 ]
 
 BYTE occupied

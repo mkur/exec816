@@ -10,8 +10,10 @@ and isolated ARC helper tests. The [P2 runtime slice](../development/sdx-runtime
 adds two synthetic guests on ordinary Tasks, native waits, forced final-return
 NMI checks and traced stock-810 reads alongside pointer IRQs.
 P0/P1/P2 are partial. [P3](../development/sdx-loader.md) now passes for
-source-audited synthetic commands through ordinary Processes; third-party
-application admission and acceptance remain pending.
+source-audited synthetic commands through ordinary Processes.
+[P4](../development/sdx-services.md) passes the fourteen-import guest-call,
+cleanup and focused ABI probes; third-party application admission and acceptance
+remain pending.
 
 [Design](spartados-personality-design.md) ·
 [Frozen inputs](spartados-personality-inputs.json) ·
@@ -321,7 +323,8 @@ guest retry. Fault cleanup runs on a retained native context after I/O settles.
 ## Executable slices
 
 P0/P1 now have the component implementation recorded above; their full exit
-gates remain open. The other slices below are pending. P1 helper probes and P2 synthetic context work
+gates remain open. P3/P4 pass the synthetic development scope described below;
+the application slices remain pending. P1 helper probes and P2 synthetic context work
 can proceed after their P0 inputs are frozen; real guest admission requires
 both. Each slice records its exact supported operations and memory delta.
 
@@ -331,7 +334,7 @@ both. Each slice records its exact supported operations and memory delta.
 | P1 Patch engine | Size/CRC32 selection, exact preimage checks, relocation-aware application and replacement assembly; focused emitted helper tests pass before real application launch. |
 | P2 Guest runtime | Upper-bank synthetic guests can be preempted, use native services, block/resume and exit with IRQ/NMI and host page-one coexistence. |
 | P3 Loader and Process | **Passed for the audited synthetic catalog.** Commands load/patch/bind and execute through ordinary Process ownership; rollback and slot reuse pass. |
-| P4 MD5 services | The fourteen-symbol subset passes guest-call probes, including inline output, two handles and nonlocal traps. |
+| P4 MD5 services | **Passed for the audited synthetic catalog.** Fourteen-symbol guest-call probes cover inline output, two handles and nonlocal traps, plus terminal Close errors, capacity limits and raw/optimized frame layout. |
 | M1 Named-file MD5 | The adapted binary computes correct digests through native DOS and an ordinary shell launch. |
 | M2 Complete MD5 subset | Multiple files, masks/attributes, `/C`, errors, BREAK, redirection and two independent guests pass. |
 | A1 ARC loading and listing | Main plus listing overlay execute with the patched helper, private exports and read-only `CAR:` resolution. |
@@ -458,6 +461,8 @@ scope; its display API and child execution are not hidden acceptance requirement
 
 The patch/decoder components add **0 fixed and 0 per-Task reserved bank-zero bytes**.
 Enabled P3 builds add **544 fixed and 0 per-Task bytes** for guarded guest DPs.
+P4 adds **0 further fixed or per-Task bank-zero bytes**; its 592-byte Session
+records and buffers are upper-heap owned.
 Implementation reservations, including unused capacity, are:
 
 | Resource | Budget and lifetime |

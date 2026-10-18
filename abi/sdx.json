@@ -1,7 +1,7 @@
 {
   "abi": "exec816.sdx.v1",
   "version": 1,
-  "status": "patch-development",
+  "status": "service-development",
   "patch_limit": 16,
   "errors": {
     "OK": 0,
@@ -90,59 +90,136 @@
   "guest_services": {
     "COMTAB": {
       "address": 1536,
-      "event": 0
+      "event": 0,
+      "inputs": "Variable address; private command state.",
+      "effects": "BUFOFF=+$0A; FILLEN=+$1A; COMFNAM=+$21 (30 bytes); LBUF=+$3F (64 bytes).",
+      "flags": "No call or register effect."
     },
     "FILE_P": {
       "address": 1792,
-      "event": 0
+      "event": 0,
+      "inputs": "Variable address containing a near pointer to an ATASCII-EOL filename.",
+      "effects": "Initialized to COMTAB+$21; FOPEN dereferences this word.",
+      "flags": "No call or register effect."
     },
     "FCLOSE": {
       "address": 61696,
-      "event": 2
+      "event": 2,
+      "inputs": "file_id=$0760, handle 1 or 2.",
+      "effects": "Consumes that owned handle, including terminal native Close failure.",
+      "flags": "A/X/Y/P preserved on success."
     },
     "FCLOSEAL": {
       "address": 61728,
-      "event": 3
+      "event": 3,
+      "inputs": "No arguments.",
+      "effects": "Closes both owned handles; completes all closes before returning the first error.",
+      "flags": "A/X/Y/P preserved on success."
     },
     "FGETC": {
       "address": 61760,
-      "event": 4
+      "event": 4,
+      "inputs": "file_id=$0760.",
+      "effects": "Reads one binary byte. EOF returns A=$9B; otherwise A=data.",
+      "flags": "X=0/N=0/Z=1 for data; X=$FF/N=1/Z=0 for EOF. Y, hidden B and other P bits preserved."
     },
     "FOPEN": {
       "address": 61792,
-      "event": 5
+      "event": 5,
+      "inputs": "FILE_P points to filename; $0778=mode 4; $0779=0 or $A0.",
+      "effects": "Read-only native open; sets file_id=$0760 to handle 1 or 2. A third open raises 161. Other modes/masks raise 156.",
+      "flags": "A/X/Y/P preserved on success."
     },
     "FREAD": {
       "address": 61824,
-      "event": 6
+      "event": 6,
+      "inputs": "file_id=$0760; addpos=$0782 (word); bytbuf=$0785 (nonzero word); memreix=$0787 must be zero.",
+      "effects": "Reads up to the requested count into an ordinary guest-bank buffer, continuing native short transfers. Writes actual count to bytbuf; addpos unchanged.",
+      "flags": "X=0/N=0/Z=1 for full transfer; X=$FF/N=1/Z=0 at EOF. A, Y, hidden B and other P bits preserved."
     },
     "PRINTF": {
       "address": 61856,
-      "event": 7
+      "event": 7,
+      "inputs": "Inline NUL format followed by pointer words; address classes fixed per admitted argument site.",
+      "effects": "Writes the bounded formatter stream to DOS.Output and resumes after all consumed pointer words.",
+      "flags": "A/X/Y/P preserved on success, including hidden B."
     },
     "TOUPPER": {
       "address": 61888,
-      "event": 8
+      "event": 8,
+      "inputs": "A=byte.",
+      "effects": "Converts ASCII a..z to A..Z; other bytes unchanged.",
+      "flags": "A=result; N/Z reflect result. X/Y, hidden B and other P bits preserved."
     },
     "U_FAIL": {
       "address": 61920,
-      "event": 9
+      "event": 9,
+      "inputs": "A=SDX error byte; zero is rejected as bad parameter 156.",
+      "effects": "Delivers to the newest trap or completes the Process; no ordinary return.",
+      "flags": "On caught error: A=error/N=1, S and PC select the trap; other registers/flags preserved."
     },
     "U_GETATR": {
       "address": 61952,
-      "event": 10
+      "event": 10,
+      "inputs": "A=default attribute mask; BUFOFF selects the next parameter.",
+      "effects": "Parses separate +/- P/H/A/S attribute tokens and one filename. Explicit attributes start from zero and clear the opposing bit. Updates $0779, BUFOFF, COMFNAM, FILLEN and FILE_P.",
+      "flags": "A=X=filename length; N=0, Z=1 if absent. Y, hidden B and other P bits preserved."
     },
     "U_SFAIL": {
       "address": 61984,
-      "event": 11
+      "event": 11,
+      "inputs": "AX=handler address in $3000..$DFFF.",
+      "effects": "Pushes handler and post-call S; at most ten traps. Invalid handler or overflow raises 156.",
+      "flags": "A/X/Y/P preserved on success."
     },
     "U_SLASH": {
       "address": 62016,
-      "event": 12
+      "event": 12,
+      "inputs": "AX=ordinary-bank array of (count,letter) pairs; Y=nonzero even byte count. BUFOFF selects parameter.",
+      "effects": "For a slash token, clears counts, decrements each matching count per occurrence and advances BUFOFF. Parsed /H and unknown options raise 156. For a non-option token, leaves the table and BUFOFF unchanged.",
+      "flags": "A=last uppercase option, or 0; N/Z reflect A. X/Y, hidden B and other P bits preserved."
     },
     "U_XFAIL": {
       "address": 62048,
-      "event": 13
+      "event": 13,
+      "inputs": "No arguments.",
+      "effects": "Removes the newest trap. Empty stack raises 156.",
+      "flags": "A/X/Y/P preserved on success."
     }
+  },
+  "guest_contract": {
+    "guide": {
+      "url": "https://sdx.atari8.info/sdx_files/4.50/SDX450_Programming_Guide.pdf",
+      "sha256": "15982c51f2d0edc317b01121097d6da23e007910e2ad79f3ad02ac930fbc2b69"
+    },
+    "scope": "Opt-in P4 development subset for source-audited synthetic commands. MD5 and ARC are not admitted for execution.",
+    "entry": "E=1, M=X=1, private aligned D, PBR=DBR=guest bank. Calls use JSR to the imported veneer. AX denotes low A and low X, little endian.",
+    "preservation": "Except for documented results, calls preserve A (including hidden B), X, Y, P, D and DBR. Ordinary calls resume after JSR; PRINTF skips its inline record. Error delivery selects the saved guest S and handler PC.",
+    "pointers": "Ordinary near pointers select guest-bank storage below $E000. PRINTF argument-word sites classified by the admitted profile may instead select guest D+offset in bank zero. No numeric-address heuristic, stack pointers, extended-memory buffers or callbacks are supported.",
+    "errors": "A service error is delivered only after native I/O settles. The newest trap is removed, S restored, A set to the SDX error byte and N set; other registers/flags remain as at the failing call. Files stay open. With no trap, the Process exits with primary 20; secondary is the original native IoErr, or the explicit SDX byte if no native error caused it. Final cleanup closes all owned handles and preserves the first cause.",
+    "native_error_map": {
+      "103": 158,
+      "205": 170,
+      "202": 129,
+      "214": 167,
+      "304": 128,
+      "other": 144
+    },
+    "adapter_errors": {
+      "128": "Break mapped from native cancellation",
+      "129": "File already open",
+      "134": "Unknown/closed guest handle",
+      "144": "Other native I/O error",
+      "156": "Unsupported or invalid operation/parameter; empty U_XFAIL; trap limit",
+      "158": "Native allocation failure",
+      "160": "Unmapped drive",
+      "161": "Two guest handles already open",
+      "167": "Write protection",
+      "170": "File not found or explicit U_FAIL code"
+    },
+    "command_limit": "LBUF holds at most 63 bytes including the command name and separating space, followed by ATASCII EOL. COMFNAM holds at most 29 filename bytes plus EOL. No quoted filenames or mixed signs within an attribute token.",
+    "drive_policy": "Guest A: and bare filenames map to RAM: within each Session. Leading > or backslash denotes the mapped root; internal separators become /. Other drives, wildcards, parent notation, scans, writes and seeks are unsupported. No global assignment is changed.",
+    "formatter": "NUL-terminated inline format, at most 253 bytes, then one near pointer word per operand (and per * width). Supported: %% and %b/%d/%e/%l unsigned 8/16/24/32-bit decimal, %x 24-bit hexadecimal, %c byte, %s string, %p pointer to string. Width uses its low byte; decimals allow at most 10 digits; zero padding, truncation and space padding are supported. Default %x is six zero-padded digits. Strings end at NUL or ATASCII EOL. %s requires an ordinary-bank string; %p may fetch its pointer variable from audited DP storage but the target string is in the ordinary bank. %t is unsupported.",
+    "output": "Escapes a,b,e,f,n,r,t,z,backslash and i are supported; i toggles inverse bytes for printable characters within one call. Redirected output retains exact SDX bytes. Interactive output maps $9B/$7E/$7F/$7D to LF/BS/TAB/FF. The buffer is 256 bytes; partial native writes are continued, and write errors use normal trap delivery. No general Atari terminal emulation is provided."
   }
 }

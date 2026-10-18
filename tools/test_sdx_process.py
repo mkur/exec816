@@ -53,7 +53,7 @@ PROC Main()
   CARD round
 
   baseline=EXEC.AvailMem(0)
-  bytes=BYTE POINTER(ADDRESS($180000))
+  bytes=BYTE POINTER(ADDRESS($240000))
   file=DOS.Open(BYTE POINTER(c"RAM:PROBE.COM"),DOS.MODE_NEWFILE)
   Require(file<>NULL)
   Require(DOS.Write(file,bytes,MODULE_BYTES)=MODULE_BYTES)
@@ -125,7 +125,7 @@ RETURN
 
 ENDMODULE
 '''.replace('MODULE_BYTES',str(len(module['bytes']))))
-    return source,[(0x180000,module['bytes'])]
+    return source,[(0x240000,module['bytes'])]
 
 
 def main():

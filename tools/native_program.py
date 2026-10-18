@@ -1100,7 +1100,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             provenance['sdx_inputs']={str(path.relative_to(ROOT)):sha256(path) for path in (
                 *sorted((ROOT/'lib/dos').glob('sdx*.act')),
                 ROOT/'tools/sdx_build.py',ROOT/'tools/sdx_fixtures.py',
-                ROOT/'compat/sdx/probes/process.s',ROOT/'compat/sdx/probes/calls.inc')}
+                *sorted((ROOT/'compat/sdx/probes').glob('*.s')),
+                ROOT/'compat/sdx/probes/calls.inc')}
         provenance['sdx_runtime_probe']=sdx_runtime_probe
         provenance['sdx_return_probe']=sdx_return_probe
         if sdx_runtime_probe or sdx:

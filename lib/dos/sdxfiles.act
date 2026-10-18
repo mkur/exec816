@@ -1,0 +1,207 @@
+MODULE SDXFILES
+USE DOS
+USE SDXABI
+USE SDXSTATE
+
+; Errors use SDX's byte namespace at the guest boundary. Keep native IoErr in
+; the Session so an uncaught error reports its original native cause.
+PUBLIC BYTE FUNC MapError(SDXSTATE.Session POINTER state)
+
+  state.nativeError=DOS.IoErr()
+  CASE state.nativeError OF
+  WHEN 103 THEN
+    RETURN(158)
+  WHEN 205 THEN
+    RETURN(170)
+  WHEN 202 THEN
+    RETURN(129)
+  WHEN 214 THEN
+    RETURN(167)
+  WHEN 304 THEN
+    RETURN(128)
+  ESAC
+
+RETURN(144)
+
+PUBLIC PROC ReadStatus(BYTE POINTER frame BYTE status)
+
+  frame(SDXABI.FRAME_X)=status
+  frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) & $7d
+  IF status=0 THEN
+    frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) OR 2
+  ELSE
+    frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) OR $80
+  FI
+
+RETURN
+
+; P4's explicit per-guest A: mapping is the development RAM volume. No
+; process mutates global assignments. Other drives and directory scans fail.
+BYTE FUNC Path(SDXSTATE.Session POINTER state)
+  CARD at,index,source
+  BYTE value
+
+  at=SDXSTATE.ReadWord(state.bank,SDXABI.FILE_P)
+  source=0
+  IF at<SDXABI.GUEST_LIMIT-2 THEN
+    IF state.bank(at+1)=': THEN
+      value=state.bank(at)
+      IF value<>'A AND value<>'a THEN
+        RETURN(160)
+      FI
+      source=2
+    FI
+  FI
+  IF LONGCARD(at)+source>=SDXABI.GUEST_LIMIT THEN
+    RETURN(156)
+  FI
+  IF state.bank(at+source)='> OR state.bank(at+source)=92 THEN
+    source==+1
+  FI
+  state.path(0)='R
+  state.path(1)='A
+  state.path(2)='M
+  state.path(3)=':
+  index=4
+  WHILE index<255 AND LONGCARD(at)+source<SDXABI.GUEST_LIMIT DO
+    value=state.bank(at+source)
+    IF value=$9b THEN
+      state.path(index)=0
+      IF index=4 THEN
+        RETURN(156)
+      FI
+      RETURN(0)
+    FI
+    IF value=0 OR value=': OR value='< OR value='* OR value='? THEN
+      RETURN(156)
+    FI
+    IF value='> OR value=92 THEN
+      value='/
+    FI
+    state.path(index)=value
+    index==+1
+    source==+1
+  OD
+
+RETURN(156)
+
+PUBLIC BYTE FUNC Open(SDXSTATE.Session POINTER state)
+  BYTE error,slot
+  DOS.FileHandle POINTER file
+
+  IF state.bank($778)<>4 OR
+      (state.bank($779)<>0 AND state.bank($779)<>$a0) THEN
+    RETURN(156)
+  FI
+  error=Path(state)
+  IF error<>0 THEN
+    RETURN(error)
+  FI
+  slot=0
+  WHILE slot<SDXABI.HANDLE_LIMIT AND state.handles(slot)<>NULL DO
+    slot==+1
+  OD
+  IF slot=SDXABI.HANDLE_LIMIT THEN
+    RETURN(161)
+  FI
+  file=DOS.Open(@state.path,DOS.MODE_OLDFILE)
+  IF file=NULL THEN
+    RETURN(MapError(state))
+  FI
+  state.handles(slot)=file
+  state.bank($760)=slot+1
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Close(SDXSTATE.Session POINTER state BYTE slot)
+  DOS.FileHandle POINTER file
+
+  IF slot=0 OR slot>SDXABI.HANDLE_LIMIT THEN
+    RETURN(134)
+  FI
+  file=state.handles(slot-1)
+  IF file=NULL THEN
+    RETURN(134)
+  FI
+  ; Close consumes the native handle even when its final operation fails.
+  state.handles(slot-1)=NULL
+  IF DOS.Close(file)=0 THEN
+    RETURN(MapError(state))
+  FI
+
+RETURN(0)
+
+PUBLIC BYTE FUNC CloseAll(SDXSTATE.Session POINTER state)
+  BYTE slot,error,next
+  LONGINT cause
+
+  error=0
+  cause=state.nativeError
+  FOR slot=0 TO SDXABI.HANDLE_LIMIT-1 DO
+    IF state.handles(slot)<>NULL THEN
+      next=Close(state,slot+1)
+      IF error=0 AND next<>0 THEN
+        error=next
+        cause=state.nativeError
+      FI
+    FI
+  OD
+  state.nativeError=cause
+
+RETURN(error)
+
+PUBLIC BYTE FUNC Read(SDXSTATE.Session POINTER state BYTE POINTER frame
+    BYTE single)
+  BYTE slot
+  CARD at,count
+  LONGINT got,total
+  BYTE POINTER target
+
+  slot=state.bank($760)
+  IF slot=0 OR slot>SDXABI.HANDLE_LIMIT THEN
+    RETURN(134)
+  FI
+  IF state.handles(slot-1)=NULL THEN
+    RETURN(134)
+  FI
+  IF single<>0 THEN
+    target=@state.character
+    count=1
+  ELSE
+    at=SDXSTATE.ReadWord(state.bank,$782)
+    count=SDXSTATE.ReadWord(state.bank,$785)
+    IF count=0 OR state.bank($787)<>0 OR
+        LONGCARD(at)+count>SDXABI.GUEST_LIMIT THEN
+      RETURN(156)
+    FI
+    target=state.bank+at
+  FI
+  total=0
+  WHILE total<LONGINT(count) DO
+    got=DOS.Read(state.handles(slot-1),target+SIZE(total),LONGINT(count)-total)
+    IF got<0 THEN
+      RETURN(MapError(state))
+    FI
+    IF got=0 THEN
+      EXIT
+    FI
+    total==+got
+  OD
+  IF single<>0 THEN
+    IF total=0 THEN
+      frame(SDXABI.FRAME_A)=$9b
+    ELSE
+      frame(SDXABI.FRAME_A)=state.character
+    FI
+  ELSE
+    SDXSTATE.Word(state.bank,$785,CARD(total))
+  FI
+  IF total=LONGINT(count) THEN
+    ReadStatus(frame,0)
+  ELSE
+    ReadStatus(frame,$ff)
+  FI
+
+RETURN(0)
+
+ENDMODULE

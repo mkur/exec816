@@ -30,7 +30,7 @@ def assemble(output, name):
     source=ROOT/'compat/sdx/probes'/f'{name}.s'
     config=output/f'{name}.cfg'
     config.write_text('MEMORY { RAM: start=0, size=$9000, file=%O; }\n'
-                      'SEGMENTS { CODE: load=RAM,type=ro; }\n')
+                      'SEGMENTS { CODE: load=RAM,type=ro,align=$100; }\n')
     subprocess.run(['ca65','-I',str(source.parent),'-o',str(output/f'{name}.o'),str(source)],check=True)
     subprocess.run(['ld65','-C',str(config),'-Ln',str(output/f'{name}.lbl'),
                     '-o',str(output/f'{name}.bin'),str(output/f'{name}.o')],check=True)
@@ -53,16 +53,18 @@ def assemble(output, name):
     (output/f'{name}.com').write_bytes(raw)
     return dict(name=name,bytes=bytes(raw),patch=labels.get('patch_irq'),
                 sha256=hashlib.sha256(raw).hexdigest(),crc32=zlib.crc32(raw),
-                source_sha256=hashlib.sha256(source.read_bytes()).hexdigest())
+                source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
+                direct_page_sites=sorted(v for k,v in labels.items() if k.startswith('dp_arg_')))
 
 
-def generate(output, names=('process',)):
+def generate(output, names=('process','services','fail','options','console')):
     fixtures=[assemble(output,n) for n in names]
     text='''; Generated exact-identity development admission; no MD5/ARC launch.
 MODULE SDXADMISSION
 USE SDXCRC32
 USE SDXFILE
 USE SDXPATCH
+USE SDXABI
 
 PUBLIC BYTE FUNC Select(BYTE POINTER bytes LONGCARD length)
   LONGCARD crc
@@ -91,6 +93,10 @@ PUBLIC BYTE FUNC Select(BYTE POINTER bytes LONGCARD length)
         else:
             text+='    RETURN(0)\n'
         text+='  FI\n'
-    text+='\nRETURN(1)\n\nENDMODULE\n'
+    text+='\nRETURN(1)\n\nPUBLIC BYTE FUNC DirectPage(BYTE profile CARD site)\n\n'
+    for index,item in enumerate(fixtures,1):
+        for site in item['direct_page_sites']:
+            text+=f'  IF profile={index} AND site=SDXABI.GUEST_START+${site:x} THEN\n    RETURN(1)\n  FI\n'
+    text+='\nRETURN(0)\n\nENDMODULE\n'
     (Path(output)/'sdxadmission.act').write_text(text)
     return [{k:v for k,v in item.items() if k!='bytes'} for item in fixtures]

@@ -55,6 +55,22 @@ class SDXBuildTests(unittest.TestCase):
             self.assertTrue(all(first['patch'] not in (site,site+1)
                                 for f in program.fixups for block,site in f.sites))
 
+    def test_service_probe_covers_imports_and_distinguishes_pointer_classes(self):
+        with tempfile.TemporaryDirectory() as out:
+            item=sdx_fixtures.assemble(out,'services')
+        program=parse(item['bytes'])
+        self.assertEqual(set(program.imports),set(sdx_build.ABI['guest_services']))
+        symbols={k:v['address'] for k,v in sdx_build.ABI['guest_services'].items()}
+        image,_=place(program,0x3000,0xe000,symbols)
+        sites=item['direct_page_sites']
+        self.assertEqual(len(sites),2)
+        self.assertEqual([int.from_bytes(image[0x3000+s:0x3002+s],'little')
+                          for s in sites],[0x80,0x90])
+        # These argument values remain DP offsets; nearby ordinary pointers
+        # are relocated into the private guest bank instead.
+        self.assertTrue(all(s not in (at,at+1) for s in sites
+                            for fix in program.fixups for block,at in fix.sites))
+
 
 if __name__=='__main__':
     unittest.main()
