@@ -235,10 +235,11 @@ def run(t,out,mode,bank=2,size=128,no_mount=False,smoke=False,eof=None,external=
                 observations.append(dict(stage=stage,frame=b.eval_expr('@frame'),output_bytes=count))
                 return
             cells,physical,cursor=terminal(expected)
-            rendezvous(f'(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
+            rendezvous(f'(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})=dw(${instance+54:x})+dw(${instance+10:x}))')
             pointer=int.from_bytes(far(instance,3),'little')
             actual=read_cells(far,instance);screen=b.memdump(state['screen'],960)
             (out/(stage+'.cells.bin')).write_bytes(actual);(out/(stage+'.screen.bin')).write_bytes(screen)
+            (out/(stage+'.expected.bin')).write_bytes(cells)
             require(actual==cells,'Retained shell text differs at '+stage)
             require(screen==physical,'Physical shell text differs at '+stage)
             require(int.from_bytes(far(at('captureCount'),4),'little')==len(expected),'Write count differs at '+stage)

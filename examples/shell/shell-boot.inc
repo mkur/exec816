@@ -1,5 +1,7 @@
 ; Resident entry startup. Shared command fixtures use ShellStart directly.
 BYTE ARRAY bootShellName=c"shell"
+BYTE ARRAY bootControllerName=c"shell controller"
+BYTE bootScriptsReady
 
 ; Optional cache allocation failure should be visible without losing the shell.
 PROC ShellCacheStatus(ShellContext POINTER context)
@@ -69,23 +71,8 @@ PROC ShellStartupFile(ShellContext POINTER context BYTE POINTER path)
 
 RETURN
 
-; S uses an existing ASSIGN slot. Keep older disks without SYS:S usable and
-; run the two optional files sequentially, without nested EXECUTE support.
+; Startup scripts belong only to the first admitted shell Process.
 PROC ShellBootScripts(ShellContext POINTER context)
-
-  IF DOS.AssignPath(BYTE POINTER(c"S"),BYTE POINTER(c"SYS:S"))=0 THEN
-    BEGIN
-      LET error=DOS.IoErr()
-      IF error<>DOS.ERROR_OBJECT_NOT_FOUND THEN
-        context.shell.diagnosticWord=$ff
-        ShellFail(context,PROCESS.RETURN_ERROR,error)
-        ShellDiagnostic(context)
-      FI
-    END
-
-    ShellRunScript(context)
-    RETURN
-  FI
 
   ShellStartupFile(context,BYTE POINTER(c"S:STARTUP"))
   IF context.shell.done=0 AND context.shell.status<PROCESS.RETURN_ERROR THEN
@@ -94,9 +81,9 @@ PROC ShellBootScripts(ShellContext POINTER context)
 
 RETURN
 
-; Present system startup and prepare an interactive shell on the system volume.
+; Present system startup and establish services/assignments before spawning.
 ; A disk startup failure still leaves the console usable when possible.
-BYTE FUNC ShellBootStart(ShellContext POINTER context BYTE POINTER consoleName)
+BYTE FUNC ShellSystemStart(ShellContext POINTER context BYTE POINTER consoleName)
 
   IF ShellOpen(context,consoleName)=0 THEN
   BEGIN
@@ -116,7 +103,7 @@ BYTE FUNC ShellBootStart(ShellContext POINTER context BYTE POINTER consoleName)
   BOOTDIAG.Complete()
   LET self=EXEC.FindTask(NULL)
   EXEC.Forbid()
-  self.tc_Node.ln_Name=bootShellName
+  self.tc_Node.ln_Name=bootControllerName
   EXEC.Permit()
 
   ShellByte(context,context.shell.console,ASCII.LF)
@@ -173,14 +160,23 @@ BYTE FUNC ShellBootStart(ShellContext POINTER context BYTE POINTER consoleName)
   ShellByte(context,context.shell.console,ASCII.LF)
   ShellDiagnostic(context)
   IF context.shell.status=PROCESS.RETURN_OK THEN
-    ShellBootScripts(context)
+    ; Publish the optional script directory once. Older disks may omit it.
+    IF DOS.AssignPath(BYTE POINTER(c"S"),BYTE POINTER(c"SYS:S"))<>0 THEN
+      bootScriptsReady=1
+    ELSE
+      BEGIN
+        LET error=DOS.IoErr()
+        IF error<>DOS.ERROR_OBJECT_NOT_FOUND THEN
+          context.shell.diagnosticWord=$ff
+          ShellFail(context,PROCESS.RETURN_ERROR,error)
+          ShellDiagnostic(context)
+        FI
+      END
+    FI
   FI
 
   context.shell.lastStatus=context.shell.status
   context.shell.lastError=context.shell.error
   ShellClear(context)
-  IF context.shell.done=0 THEN
-    ShellPrompt(context)
-  FI
 
 RETURN(context.shell.done=0)

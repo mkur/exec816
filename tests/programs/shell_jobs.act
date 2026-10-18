@@ -86,7 +86,7 @@ PROC Main()
 
   before=EXEC.AvailMem(0)
   Require(SIZEOF(ShellState)=128 AND SIZEOF(ShellJob)<=64)
-  Require(ShellBootStart(@context,shellCon)<>0)
+  Require(ShellSystemStart(@context,shellCon)<>0)
   FOR index=0 TO 1 DO
     BEGIN
       LET task=@capacityTasks(index)

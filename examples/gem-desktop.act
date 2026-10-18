@@ -6,8 +6,8 @@ USE DESKTYPES
 
 INCLUDE "shell/shell-session.inc"
 INCLUDE "shell/shell-boot.inc"
-
-ShellContext context
+INCLUDE "shell/shell-controller.inc"
+INCLUDE "shell/shell-desktop.inc"
 
 LONGINT exitStatus
 DESKTYPES.Request placement
@@ -36,16 +36,15 @@ RETURN
 ; DesktopStart/Stop are linked by the resident C application builder.
 PROC Main()
 
-  IF ShellBootStart(@context,shellCon)<>0 THEN
+  IF ShellControllerStart(0)<>0 THEN
     PlaceShell()
     IF DesktopStart()=0 THEN
-      ShellText(@context,context.shell.console,c"GEM desktop unavailable")
-      ShellByte(@context,context.shell.console,ASCII.LF)
+      ShellDesktopNotice(c"GEM desktop unavailable\n")
     FI
 
-    WHILE context.shell.done=0 DO
-      ShellReadStep(@context)
-    OD
+    exitStatus=ShellControllerRun()
+  ELSE
+    exitStatus=controllerStatus
   FI
 
   IF DesktopStop()=0 THEN
@@ -56,7 +55,7 @@ PROC Main()
     HEAPCORE.Abort($faea)
   FI
 
-  exitStatus=ShellFinish(@context)
+  ShellControllerStop()
 
 RETURN
 ENDMODULE

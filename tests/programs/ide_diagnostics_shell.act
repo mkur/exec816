@@ -27,7 +27,7 @@ PROC Main()
   LET before=EXEC.AvailMem(0)
   IF bootMode<>0 THEN
     SHELLDIAGPROBE.watchBoot=1
-    Require(ShellBootStart(@context,shellCon)<>0)
+    Require(ShellSystemStart(@context,shellCon)<>0)
     SHELLDIAGPROBE.watchBoot=0
     Require(SHELLDIAGPROBE.seenIde<>0 AND SHELLDIAGPROBE.seenMount<>0)
   ELSE

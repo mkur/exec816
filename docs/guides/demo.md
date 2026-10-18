@@ -158,10 +158,10 @@ CAT STORY.TXT | WC >NIL:
 ```
 
 Run `MEM`, repeat a few pipelines, and run `MEM` again to observe reclaimed
-command memory. `TASKS` at the prompt shows the shell, console, filesystem,
+command memory. `TASKS` at the prompt shows the controller, shell, console, filesystem,
 SIO and loaded command Tasks. The optional demo starts C:PRIMES through RUN;
 the bitmap shell starts full-screen until you enter RUN PRIMES >CON: yourself.
-A pipeline adds two temporary Tasks, using seven of the
+A pipeline adds two temporary Tasks, using all
 eight reserved slots. The prime search checks candidates up to 10,000 and then
 starts a new numbered pass; its latest prime eventually reaches 9,973.
 

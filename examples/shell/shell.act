@@ -2,22 +2,20 @@ MODULE SHELLAPP
 
 INCLUDE "shell-session.inc"
 INCLUDE "shell-boot.inc"
-
-ShellContext context
+INCLUDE "shell-controller.inc"
 
 LONGINT exitStatus
 
-; Keep the resident shell available until exit or an unrecoverable failure,
-; then release the session and leave its result for the host.
+; Root supervises independent shell Processes through owned messages/signals.
 PROC Main()
 
-  IF ShellBootStart(@context,shellCon)<>0 THEN
-    WHILE context.shell.done=0 DO
-      ShellReadStep(@context)
-    OD
+  IF ShellControllerStart(0)<>0 THEN
+    exitStatus=ShellControllerRun()
+  ELSE
+    exitStatus=controllerStatus
   FI
 
-  exitStatus=ShellFinish(@context)
+  ShellControllerStop()
 
 RETURN
 

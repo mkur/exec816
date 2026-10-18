@@ -95,6 +95,11 @@ PROC ShellRun(ShellContext POINTER context)
     RETURN
   FI
 
+  IF ShellClosing(context)<>0 THEN
+    PROGRAM.Unload(image)
+    RETURN
+  FI
+
   LET identity=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),
       ShellTransfer(context)+SIZE(LINE_CAPACITY),context.shell.argumentLength)
   LET cause=DOS.IoErr()

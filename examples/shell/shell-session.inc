@@ -1,5 +1,9 @@
 ; Resident application code, shared by the entry point and native fixtures.
 USE EXEC
+USE HEAPCORE
+USE CONSOLE
+USE CONSOLETYPES
+USE DOSCLIENT
 USE FSFORMATS
 USE DOS
 USE DOSCORE
@@ -146,7 +150,9 @@ TYPE ShellScript=[
   BYTE ARRAY bytes(READ_CHUNK_SIZE)
 ]
 
+INCLUDE "shell-session-types.inc"
 INCLUDE "shell-context-types.inc"
+INCLUDE "shell-session-client.inc"
 
 BYTE ARRAY shellCon=c"CON:"
 BYTE ARRAY shellRoot=c"SYS:"
@@ -226,9 +232,25 @@ BYTE FUNC ShellEqual(BYTE POINTER word SYS.CSTRING expected)
 
 RETURN(word(index)=ASCII.NUL)
 
+; Controller close intent survives scope renewal and a previously unbound route.
+BYTE FUNC ShellClosing(ShellContext POINTER context)
+
+  IF context.control<>NULL THEN
+    IF context.control.closeRequested<>0 THEN
+      context.shell.done=1
+      RETURN(1)
+    FI
+  FI
+
+RETURN(0)
+
 ; Let ongoing shell work respond to the user's BREAK request.
 ; A nonzero result tells the caller to stop its current operation.
 BYTE FUNC ShellPoll(ShellContext POINTER context)
+
+  IF ShellClosing(context)<>0 THEN
+    RETURN(1)
+  FI
 
   IF DOS.BreakPending()=0 THEN
     RETURN(0)
@@ -241,8 +263,12 @@ RETURN(1)
 ; Establish foreground BREAK handling for the current shell interaction.
 BYTE FUNC ShellScope(ShellContext POINTER context)
 
+  IF ShellClosing(context)<>0 THEN
+    RETURN(0)
+  FI
+
   IF DOS.BeginForeground(context.shell.console)<>0 THEN
-    RETURN(1)
+    RETURN(ShellClosing(context)=0)
   FI
 
   ShellFail(context,PROCESS.RETURN_FAIL,DOS.IoErr())
@@ -1297,6 +1323,11 @@ PROC ShellExternal(ShellContext POINTER context)
     RETURN
   FI
 
+  IF ShellClosing(context)<>0 THEN
+    PROGRAM.Unload(image)
+    RETURN
+  FI
+
   LET arguments=ShellTransfer(context)+SIZE(LINE_CAPACITY)
   LET identity=PROCESS.StartLoaded(
       BYTE POINTER(image),arguments,context.shell.argumentLength,1)
@@ -1335,6 +1366,12 @@ PROC ShellPipeline(ShellContext POINTER context)
   IF second=NULL THEN
     PROGRAM.Unload(first)
     ShellFail(context,PROCESS.RETURN_ERROR,secondError)
+    RETURN
+  FI
+
+  IF ShellClosing(context)<>0 THEN
+    PROGRAM.Unload(first)
+    PROGRAM.Unload(second)
     RETURN
   FI
 
@@ -1590,7 +1627,7 @@ RETURN
 ; Complete lines run as commands; cancellation returns to a fresh prompt.
 PROC ShellReadStep(ShellContext POINTER context)
 
-  IF context.shell.done<>0 THEN
+  IF context.shell.done<>0 OR ShellClosing(context)<>0 THEN
     RETURN
   FI
 
@@ -1600,11 +1637,17 @@ PROC ShellReadStep(ShellContext POINTER context)
   LET error=DOS.IoErr()
   IF result=DOS.CONEDIT_COMPLETE THEN
     edit.action=DOS.CONEDIT_RESUME
-    ShellComplete(context)
+    IF ShellClosing(context)=0 THEN
+      ShellComplete(context)
+    FI
     RETURN
   FI
 
   edit.action=DOS.CONEDIT_START
+  IF ShellClosing(context)<>0 THEN
+    RETURN
+  FI
+
   IF result=DOS.CONEDIT_LINE THEN
     context.shell.length=edit.length
     IF edit.newline<>0 THEN

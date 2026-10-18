@@ -26,7 +26,7 @@ class AssignShell(WriteToolbox):
 
     def exercise(self,c):
         # ShellStart is the already-running-session entry. Reproduce the boot
-        # assignment explicitly; packaged OF816 tests exercise ShellBootStart.
+        # assignment explicitly; packaged OF816 tests exercise ShellSystemStart.
         c.command('SYS:C/ASSIGN C: SYS:C')
         c.command('PATH',b'Current directory\nC:\n')
         c.command('ASSIGN',b'C: -> D1:C\n')

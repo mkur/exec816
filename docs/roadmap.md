@@ -30,12 +30,13 @@ desktop tabs. Separate windows follow the same session model. The design
 accounts for a root controller, existing Task/console limits, prime-pane
 switching and independent cancellation.
 SS1 isolates shell state, SS2 adds owner-requested cancellation, and SS3 adds
-grouped console switching and key notices;
+grouped console switching and key notices. SS4 runs the first shell as a
+Process under the root controller;
 [development evidence](history/shell-sessions.md) records the native concurrency,
 layout, route, pipeline and physical presentation checks. The
 [SS1–SS8 plan](plans/shell-sessions-implementation-plan.md) orders reentrant
 state, console control, controller lifetime, two-session text behavior, desktop
-binding/tabs and measured OF816 delivery. SS4–SS8 remain pending.
+binding/tabs and measured OF816 delivery. SS5–SS8 remain pending.
 
 The [shell TAB completion plan](plans/shell-completion-implementation-plan.md)
 is implemented through SC3: resumable editing, builtin/alias and filesystem/PATH

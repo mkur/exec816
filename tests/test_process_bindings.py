@@ -66,9 +66,11 @@ class ProcessBindingsTests(unittest.TestCase):
                              routine('M_PROCESS_EXECUTEIMAGE_C',0x10002),
                              routine('M_APP_UNSIGNED_D',0x10003,signature=123),
                              routine('M_PROGRAMAPI_IOERR_E',0x10004),
-                             routine('M_PROCESS_HELPER_F',0x10005)])
+                             routine('M_PROCESS_HELPER_F',0x10005),
+                             routine('M_APP_SHELLPROCESSENTRY_A',0x10006),
+                             routine('M_APP_SHELLCONTROLLERRUN_B',0x10007)])
         self.assertEqual(task_entries(image),[0x10000])
-        self.assertEqual(resident_entries(image),[0x10001,0x10002])
+        self.assertEqual(resident_entries(image),[0x10001,0x10002,0x10006])
         bad=copy.deepcopy(image);bad['routines'][1]['address']=0x20000
         with self.assertRaisesRegex(ValueError,'outside executable'):
             resident_entries(bad)

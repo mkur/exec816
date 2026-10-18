@@ -2,17 +2,174 @@
   "version": 1,
   "records": {
     "ShellJob": [
-      ["identity", "LONGCARD"],
-      ["outcome", "PROCESS.Result"],
-      ["state", "BYTE"],
-      ["announce", "BYTE"]
+      [
+        "identity",
+        "LONGCARD"
+      ],
+      [
+        "outcome",
+        "PROCESS.Result"
+      ],
+      [
+        "state",
+        "BYTE"
+      ],
+      [
+        "announce",
+        "BYTE"
+      ]
     ],
     "ShellContext": [
-      ["shell", "ShellState POINTER"],
-      ["aliases", "ShellAlias POINTER"],
-      ["script", "ShellScript POINTER"],
-      ["aliasCount", "BYTE"],
-      ["job", "ShellJob"]
+      [
+        "shell",
+        "ShellState POINTER"
+      ],
+      [
+        "aliases",
+        "ShellAlias POINTER"
+      ],
+      [
+        "script",
+        "ShellScript POINTER"
+      ],
+      [
+        "aliasCount",
+        "BYTE"
+      ],
+      [
+        "job",
+        "ShellJob"
+      ],
+      [
+        "control",
+        "ShellSessionControl POINTER"
+      ]
+    ]
+  },
+  "constants": {
+    "SESSION_CAPACITY": 2,
+    "SESSION_PATH_BYTES": 256,
+    "SESSION_CREATE": 1,
+    "SESSION_SELECT": 2,
+    "SESSION_QUERY": 3,
+    "SESSION_CLOSE": 4,
+    "SESSION_READY": 5,
+    "SESSION_STATE_FREE": 0,
+    "SESSION_STATE_CREATING": 1,
+    "SESSION_STATE_READY": 2,
+    "SESSION_STATE_CLOSING": 3,
+    "SESSION_STATE_RETIRING": 4,
+    "SESSION_FIRST_BOOT": 1,
+    "SESSION_PRIME": 2,
+    "SESSION_SCRIPTS": 4,
+    "SESSION_READY_EXIT": 1
+  },
+  "protocol": {
+    "ShellSessionMessage": [
+      [
+        "message",
+        "EXEC.Message"
+      ],
+      [
+        "operation",
+        "BYTE"
+      ],
+      [
+        "flags",
+        "BYTE"
+      ],
+      [
+        "session",
+        "LONGCARD"
+      ],
+      [
+        "value",
+        "LONGCARD"
+      ],
+      [
+        "payload",
+        "BYTE POINTER"
+      ],
+      [
+        "capacity",
+        "CARD"
+      ],
+      [
+        "primary",
+        "LONGINT"
+      ],
+      [
+        "secondary",
+        "LONGINT"
+      ]
+    ],
+    "ShellSessionInfo": [
+      [
+        "identity",
+        "LONGCARD"
+      ],
+      [
+        "unit",
+        "LONGCARD"
+      ],
+      [
+        "process",
+        "LONGCARD"
+      ],
+      [
+        "state",
+        "BYTE"
+      ],
+      [
+        "selected",
+        "BYTE"
+      ],
+      [
+        "primary",
+        "LONGINT"
+      ],
+      [
+        "secondary",
+        "LONGINT"
+      ]
+    ],
+    "ShellSessionQuery": [
+      [
+        "entries",
+        "ShellSessionInfo[2]"
+      ]
+    ],
+    "ShellSessionControl": [
+      [
+        "identity",
+        "LONGCARD"
+      ],
+      [
+        "port",
+        "EXEC.MsgPort POINTER"
+      ],
+      [
+        "closeRequested",
+        "BYTE"
+      ]
+    ],
+    "ShellStartup": [
+      [
+        "identity",
+        "LONGCARD"
+      ],
+      [
+        "unit",
+        "LONGCARD"
+      ],
+      [
+        "directory",
+        "BYTE[256]"
+      ],
+      [
+        "flags",
+        "BYTE"
+      ]
     ]
   }
 }

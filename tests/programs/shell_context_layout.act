@@ -7,8 +7,13 @@ USE HEAPCORE
 TYPE ShellState=[BYTE value]
 TYPE ShellAlias=[BYTE value]
 TYPE ShellScript=[BYTE value]
+INCLUDE "../../examples/shell/shell-session-types.inc"
 INCLUDE "../../examples/shell/shell-context-types.inc"
 
+ShellSessionMessage request
+ShellSessionInfo info
+ShellSessionControl control
+ShellStartup startup
 ShellContext context
 CARD checks
 BYTE finished
@@ -47,6 +52,26 @@ PROC Main()
   Check(ADDRESS(@context.job.outcome)-ADDRESS(@context.job)=SHELLJOB_OUTCOME)
   Check(ADDRESS(@context.job.state)-ADDRESS(@context.job)=SHELLJOB_STATE)
   Check(ADDRESS(@context.job.announce)-ADDRESS(@context.job)=SHELLJOB_ANNOUNCE)
+  Check(ADDRESS(@context.control)-ADDRESS(@context)=SHELLCONTEXT_CONTROL)
+  Check(SIZEOF(ShellSessionMessage)=SHELLSESSIONMESSAGE_SIZE)
+  Check(SIZEOF(ShellSessionInfo)=SHELLSESSIONINFO_SIZE)
+  Check(SIZEOF(ShellSessionQuery)=SHELLSESSIONQUERY_SIZE)
+  Check(SIZEOF(ShellSessionControl)=SHELLSESSIONCONTROL_SIZE)
+  Check(SIZEOF(ShellStartup)=SHELLSTARTUP_SIZE)
+  Check(ADDRESS(@request.operation)-ADDRESS(@request)=SHELLSESSIONMESSAGE_OPERATION)
+  Check(ADDRESS(@request.flags)-ADDRESS(@request)=SHELLSESSIONMESSAGE_FLAGS)
+  Check(ADDRESS(@request.session)-ADDRESS(@request)=SHELLSESSIONMESSAGE_SESSION)
+  Check(ADDRESS(@request.value)-ADDRESS(@request)=SHELLSESSIONMESSAGE_VALUE)
+  Check(ADDRESS(@request.payload)-ADDRESS(@request)=SHELLSESSIONMESSAGE_PAYLOAD)
+  Check(ADDRESS(@request.capacity)-ADDRESS(@request)=SHELLSESSIONMESSAGE_CAPACITY)
+  Check(ADDRESS(@request.primary)-ADDRESS(@request)=SHELLSESSIONMESSAGE_PRIMARY)
+  Check(ADDRESS(@request.secondary)-ADDRESS(@request)=SHELLSESSIONMESSAGE_SECONDARY)
+  Check(ADDRESS(@info.selected)-ADDRESS(@info)=SHELLSESSIONINFO_SELECTED)
+  Check(ADDRESS(@control.closeRequested)-ADDRESS(@control)=SHELLSESSIONCONTROL_CLOSEREQUESTED)
+  Check(ADDRESS(@startup.flags)-ADDRESS(@startup)=SHELLSTARTUP_FLAGS)
+  context.control=@control
+  context.control.closeRequested=1
+  Check(control.closeRequested=1)
   Populate(@context)
   Check(ADDRESS(context.shell)=$123456 AND context.aliasCount=7)
   Check(context.job.identity=$89abcdef AND context.job.state=3)
