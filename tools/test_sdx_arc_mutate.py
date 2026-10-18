@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Pinned ARC creation/mutation with independent archive decoding."""
-import argparse,json,time,hashlib
+import argparse,json,time,hashlib,struct
 from pathlib import Path
 from native_program import ROOT,build,compiler,verify_machine
 from os_boundary import emulator
@@ -15,12 +15,23 @@ def run(out):
     files={n:(ROOT/'build/sdx-inputs/arc'/n).read_bytes() for n in ['ARC.COM','ARCLST.OVL','ARCADD.OVL','ARCEXT.OVL']}
     unknown=bytearray(member('BINARY.BIN',b'old')+b'\x1a\0');unknown[19:23]=b'\0'*4
     files['UNKNOWN.ARC']=bytes(unknown)
+    invalid={'FUTURE.ARC':((70<<9)|33,0), 'MONTH.ARC':((46<<9)|(13<<5)|1,0),
+             'LEAP.ARC':((45<<9)|(2<<5)|29,0), 'TIME.ARC':((46<<9)|33,63<<5)}
+    for name,(date,clock) in invalid.items():
+        raw=bytearray(member('BINARY.BIN',b'old')+b'\x1a\0')
+        struct.pack_into('<HH',raw,19,date,clock);files[name]=bytes(raw)
     files.update(expected);payload=bytearray();setup=[];addresses={}
     for name,raw in files.items():
         at=0x300000+len(payload);payload+=raw;addresses[name]=at
         setup.append(f'  Put(BYTE POINTER(c"RAM:{name}"),BYTE POINTER(ADDRESS(${at:x})),{len(raw)})')
         if name in expected:setup.append(f'  Require(DOS.SetFileDate(BYTE POINTER(c"RAM:{name}"),@stamp)<>0)')
-    source=out/'probe.act';source.write_text((ROOT/'tests/programs/sdx_arc_mutate.act').read_text().replace('SETUP_FILES','\n'.join(setup)).replace('ADD_POINTER',f'BYTE POINTER(ADDRESS(${addresses["ARCADD.OVL"]:x}))').replace('UNKNOWN_POINTER',f'BYTE POINTER(ADDRESS(${addresses["UNKNOWN.ARC"]:x}))').replace('UNKNOWN_BYTES',str(len(unknown))))
+    dates=[]
+    for i,name in enumerate(invalid,18):
+        args='U '+name+' BINARY.BIN';temp=name.replace('.ARC','.XAR')
+        dates.extend([f'  Run({i},BYTE POINTER(c"{args}"),{len(args)},20,156)',
+                      f'  Verify(BYTE POINTER(c"RAM:{name}"),BYTE POINTER(ADDRESS(${addresses[name]:x})),{len(files[name])},0)',
+                      f'  Require(DOS.Open(BYTE POINTER(c"RAM:{temp}"),DOS.MODE_OLDFILE)=NULL AND DOS.IoErr()=DOS.ERROR_OBJECT_NOT_FOUND)'])
+    source=out/'probe.act';source.write_text((ROOT/'tests/programs/sdx_arc_mutate.act').read_text().replace('SETUP_FILES','\n'.join(setup)).replace('DATE_CASES','\n'.join(dates)).replace('ADD_POINTER',f'BYTE POINTER(ADDRESS(${addresses["ARCADD.OVL"]:x}))').replace('UNKNOWN_POINTER',f'BYTE POINTER(ADDRESS(${addresses["UNKNOWN.ARC"]:x}))').replace('UNKNOWN_BYTES',str(len(unknown))))
     profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=32768
     (out/'memory.json').write_text(json.dumps(profile,indent=2)+'\n')
     program=build(compiler(ROOT/'build/actionc',release=True),source,out,tasks=True,task_capacity=8,console=False,console_test=True,sdx=True,image_data=[(0x300000,bytes(payload))],memory_profile=out/'memory.json',dos_mounts=[dict(alias='RAM',format=3)])

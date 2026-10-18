@@ -3,7 +3,7 @@
   "personality_abi": 1,
   "id": "arc-450",
   "revision": 4,
-  "execution_status": "A1-A3-development",
+  "execution_status": "A1-A4-development",
   "audit": "../../docs/development/sdx-arc.md",
   "modules": [
     {
@@ -147,7 +147,7 @@
   ],
   "unsupported": [
     "Hardware H; encryption G; move M; print/test P/T; store-only S; arbitrary modules",
-    "Dates beyond 2049; unknown dates in U/F; directory entries as extracted members",
+    "Preserving/comparing dates outside 1980..2049; unknown or invalid U/F dates; directory entries as extracted members",
     "Atomic replacement, power-loss recovery and automatic removal of pre-existing .XAR/.BAK files"
   ],
   "direct_page_arguments": [

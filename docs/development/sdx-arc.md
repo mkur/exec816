@@ -1,10 +1,10 @@
 # ARC on the SDX personality
 
-A1–A3 admit the pinned 6502 SDX 4.50 `ARC.COM` and its three overlays for listing, extraction and archive mutation as
+A1–A4 admit the pinned 6502 SDX 4.50 `ARC.COM` and its three overlays for listing, extraction and archive mutation as
 ordinary Exec Processes. [Manifest](../../compat/sdx/arc-450.json),
 [plan](../plans/spartados-personality-implementation-plan.md),
 [service contract](../reference/sdx-services.md) and
-[execution records](sdx-arc-a3.json) define the development scope. Mixed-use A4 checks remain in progress. This is not
+[execution records](sdx-arc-a4.json) define the development scope. This is not
 full hosted-system qualification.
 
 ## A1 loading and listing
@@ -225,4 +225,106 @@ python3 tools/test_sdx_arc.py --group reference-store --output build/sdx-arc/ref
 python3 tools/test_sdx_arc_mutate.py --output build/sdx-arc/a3-final
 python3 tools/test_sdx_arc_faults.py --output build/sdx-arc/a3-faults
 python3 tools/test_sdx_arc_mutate_disk.py --output build/sdx-arc/a3-sdfs
+```
+
+
+## A4 coexistence and supported subset
+
+The [A4 record](sdx-arc-a4.json) contains **156 mixed-use checks** through emitted
+optimized code. MD5 hashes while ARC creates; two ARC Processes create separate
+archives; a cancelled ARC preserves its original while the other ARC completes;
+and a second mutator of a live archive receives native error 202. A native
+compute Process deliberately never yields. Its counter advances in every pair.
+Independent disk read-back decodes every resulting archive, verifies source files
+and MD5 output, and checks that no temporary or backup remains.
+
+The same fixture then launches ARC through the ordinary shell, redirects output,
+checks a rejected command, successfully retries the cancelled mutation, lists
+its contents and restores the prompt and console streams. Private banks, DPs,
+parent-export records, handles, traps and overlay retirement are checked. Heap,
+Task stack/domain guards and bank ownership return to their expected state.
+This tests ordinary command dispatch and explicit prompt advancement; it is not
+a physical-keyboard or complete desktop qualification.
+
+Coexistence exposed a directory-cookie race: deleting one command's temporary
+could invalidate another command's exact-name scan. Exact FOPEN/FFIRST now use
+native Lock/Examine, retaining a file lock for a live exact search. An empty
+exact search still owns a guest slot until FCLOSE. Wildcards retain native
+ExNext semantics: concurrent directory mutation can return 202 and require a
+retry. There is no hidden snapshot or suppressed filesystem error.
+
+The expanded mutation/name/date run passes **485 checks**, including empty exact
+search retirement, pre-1980 source rejection and unknown/future/invalid-month,
+non-leap-day and invalid-time header rejection before U/F comparison. The
+**1,350-check MD5 attribute regression** covers exact names, wildcard padding,
+P/H/A selection and shell recovery on unchanged SDFS media. **15 SDX host tests**
+and generated-definition/link checks pass. Date guards add no persistent state.
+
+### Measured configuration and limits
+
+The machine is the pinned **800XL, PAL, 65C816 ×8, 63 upper banks**, BASIC off,
+shadow ROM enabled, with dedicated **AltirraOS 3.44 for 65C816**. ROM SHA-256:
+`85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7`.
+The emulator is Altirra 4.40 bridge revision
+`52c18c89e354290199d6f1bbd98eb5048849b15c`, SHA-256
+`6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8`.
+The complete [pin](../../toolchain/altirra-shell-paced.json) and each record's
+actual configuration accompany the results. Native disk cases use writable
+1,024 × 256-byte SDFS, **profile 4 / generic56k**, accurate disk timing, SIO patch
+off, burst off and random delay off. Original SDX controls use `fastest`.
+
+| Mixed command pair | Observed PAL ticks | Seconds |
+| --- | ---: | ---: |
+| ARC plus MD5 | 674 | 13.48 |
+| Two ARC creations | 1,269 | 25.38 |
+| Cancelled ARC plus successful ARC | 905 | 18.10 |
+| Shared-archive rejection plus successful owner | 717 | 14.34 |
+
+Pair timing starts before launching the Processes and ends after collecting both;
+initial Image loading is outside that interval. BREAK-to-retirement observed
+**199 ticks / 3.98 seconds** under concurrent disk/compute load; the fixture's
+cutoff is **250 ticks / 5 seconds**. Its total completion cutoff is 24,000 PAL
+frames / 480 seconds. These are measured cases and test cutoffs, not universal
+latency promises. The run records **38,650 native IRQs** and **4,482 NMIs**.
+
+All eight guest snapshots leave at least **205 bytes** untouched at the bottom
+of page one. Native Task touched spans reach **614 bytes**; the minimum untouched
+space above the reserved 256-byte interrupt floor is **197 bytes** (idle slot).
+The kernel touched span is **277 of 1,536 bytes**, with its interrupt floor
+untouched. These watermarks are observed lower bounds on stack use, accompanied
+by live stack/domain guards; they do not replace P2's deeper interrupt gates.
+
+A4 adds **0 fixed and 0 per-Task reserved bank-zero bytes**, including alignment,
+guards and spare capacity. It also adds **0 persistent upper-state bytes**.
+The common Session remains **2,248 bytes per loaded Image**, including MD5;
+there are two guest slots, each with 131,072 backing bytes for its aligned 64 KiB
+bank. The guarded DP pool remains 544 bytes; native Task reservations and the
+resident SDX bridge capacity are unchanged. New helper code belongs to the
+ordinary upper code image. The mixed fixture's **16,384-byte upper static arena**
+and its output/counter arrays are test-only; full build reservations are recorded.
+
+### Admitted commands and identities
+
+Use uppercase ARC commands. `L/V` list, `X/E` extract, `A` creates/adds/replaces,
+`D` deletes, `U` updates/adds and `F` freshens existing older members. `N/W` control
+messages; `W` also suppresses extraction overwrite prompts. `B` retains the old
+archive after mutation. The excluded switches and non-atomic replacement limits
+above still apply. Hardware access, arbitrary SDX binaries and Commander remain
+outside this subset. Full P0/P1/P2 and hosted-system qualification remain open.
+
+The ARC patch manifest is **revision 4**, personality ABI **1**. Frozen original
+identities (no original binaries are redistributed here):
+
+| Module | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `MD5.COM` | 3,488 | `833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79` |
+| `ARC.COM` | 3,203 | `2107dcc06b29cf6ba5a26ad8aaf167f59f5211d2d93c08253594507a7d2217dd` |
+| `ARCLST.OVL` | 1,998 | `ea0b1f04ffa1c93d8b3fc69baafbb86854651665093c9ab3a091401c2946b7cd` |
+| `ARCEXT.OVL` | 1,911 | `b1dd56ac4bb133bfc55150c1c17e401f74903d79a8459c6997ec0105290ad5ba` |
+| `ARCADD.OVL` | 4,645 | `f0aa3ef786bc58567bd97a5b6dca58eadf1cdf8bac8bb0e6a3447a4d955d7408` |
+
+```sh
+python3 tools/test_sdx_arc_mixed.py --output build/sdx-arc/a4-mixed
+python3 tools/test_sdx_arc_mutate.py --output build/sdx-arc/a4-dates
+python3 tools/test_sdx_md5_acceptance.py --attributes --output build/sdx-arc/a4-md5-attributes
 ```

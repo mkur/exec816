@@ -207,7 +207,9 @@ PUBLIC BYTE FUNC Close(SDXSTATE.Session POINTER state BYTE slot)
     RETURN(134)
   FI
   IF state.enumerationSlot=slot THEN
-    DOS.UnLock(state.enumeration)
+    IF state.enumeration<>NULL THEN
+      DOS.UnLock(state.enumeration)
+    FI
     state.enumeration=NULL
     state.enumerationSlot=0
     RETURN(0)
@@ -327,7 +329,7 @@ PUBLIC BYTE FUNC Read(SDXSTATE.Session POINTER state BYTE POINTER frame
       FI
     FI
     IF (state.operation='U OR state.operation='F) AND
-        SDXSTATE.ReadWord(state.dp,$a1)=0 THEN
+        SDXDATE.Header(state)<>0 THEN
       RETURN(156)
     FI
     at=0
@@ -443,11 +445,11 @@ RETURN(0)
 
 PUBLIC BYTE FUNC Enumerate(SDXSTATE.Session POINTER state BYTE POINTER frame
     BYTE first)
-  BYTE slot,error
+  BYTE slot,error,exact
   CARD at,leaf
 
   IF first<>0 THEN
-    IF state.enumeration<>NULL OR (state.bank($779) & 8)<>0 THEN
+    IF state.enumerationSlot<>0 OR (state.bank($779) & 8)<>0 THEN
       RETURN(156)
     FI
     error=Path(state)
@@ -472,9 +474,19 @@ PUBLIC BYTE FUNC Enumerate(SDXSTATE.Session POINTER state BYTE POINTER frame
     IF slot=SDXABI.HANDLE_LIMIT THEN
       RETURN(161)
     FI
-    state.path(leaf)=0
+    exact=SDXNAMES.Exact(@state.directoryPattern)
+    IF exact=0 THEN
+      state.path(leaf)=0
+    FI
     state.enumeration=DOS.Lock(@state.path,DOS.SHARED_LOCK)
     IF state.enumeration=NULL THEN
+      IF exact<>0 AND DOS.IoErr()=DOS.ERROR_OBJECT_NOT_FOUND THEN
+        ; SDX still returns an owned search ID for an empty exact search.
+        state.enumerationSlot=slot+1
+        state.bank($760)=slot+1
+        ReadStatus(frame,$ff)
+        RETURN(0)
+      FI
       RETURN(MapError(state))
     FI
     state.enumerationSlot=slot+1
@@ -483,11 +495,16 @@ PUBLIC BYTE FUNC Enumerate(SDXSTATE.Session POINTER state BYTE POINTER frame
     IF DOS.Examine(state.enumeration,@state.directoryInfo)=0 THEN
       RETURN(MapError(state))
     FI
-  ELSEIF state.enumeration=NULL OR state.bank($760)<>state.enumerationSlot THEN
+  ELSEIF state.enumerationSlot=0 OR state.bank($760)<>state.enumerationSlot THEN
     RETURN(134)
   FI
+  exact=SDXNAMES.Exact(@state.directoryPattern)
+  IF first=0 AND exact<>0 THEN
+    ReadStatus(frame,$ff)
+    RETURN(0)
+  FI
   A816MEMORY.Move(@state.pattern,@state.directoryPattern,11)
-  WHILE DOS.ExNext(state.enumeration,@state.directoryInfo)<>0 DO
+  WHILE exact<>0 OR DOS.ExNext(state.enumeration,@state.directoryInfo)<>0 DO
     A816MEMORY.Move(BYTE POINTER(@state.info),BYTE POINTER(@state.directoryInfo),
         SIZEOF(DOS.FileInfoBlock))
     IF SDXNAMES.Matches(state,state.scan)<>0 THEN
@@ -506,8 +523,11 @@ PUBLIC BYTE FUNC Enumerate(SDXSTATE.Session POINTER state BYTE POINTER frame
       ReadStatus(frame,0)
       RETURN(0)
     FI
+    IF exact<>0 THEN
+      EXIT
+    FI
   OD
-  IF DOS.IoErr()<>DOS.ERROR_NO_MORE_ENTRIES THEN
+  IF exact=0 AND DOS.IoErr()<>DOS.ERROR_NO_MORE_ENTRIES THEN
     RETURN(MapError(state))
   FI
   ReadStatus(frame,$ff)

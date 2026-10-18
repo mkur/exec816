@@ -46,6 +46,6 @@ ownership and guest-slot reuse. The [P4 service subset](development/sdx-services
 adds fourteen MD5 imports, owned file handles, inline output and nonlocal traps.
 Both slices pass development checks. [M1/M2 MD5](development/sdx-md5.md) add
 real hashing, checksum verification, masks/P/H/A attributes, shell launch,
-SDFS reads, cancellation and concurrent guests. [A1–A3 ARC](development/sdx-arc.md)
-adds exact-overlay loading, listing, extraction and mutation; mixed-use checks remain open. These are
+SDFS reads, cancellation and concurrent guests. [A1–A4 ARC](development/sdx-arc.md)
+adds exact-overlay loading, listing, extraction, mutation and mixed-use/shell acceptance. These are
 development results, not full hosted-system qualification.

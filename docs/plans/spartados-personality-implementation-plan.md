@@ -1,8 +1,8 @@
 # Patched SDX binaries on Exec816
 
-Status: MD5 M1/M2 and ARC A1–A3 pass development checks, 19 October 2026. The first applications
+Status: MD5 M1/M2 and ARC A1–A4 pass development checks, 19 October 2026. The first applications
 are **6502 MD5, then 6502 ARC**. The pinned MD5 subset is admitted under Exec;
-ARC listing, extraction and mutation are admitted; mixed-use A4 remains open. This replaces the
+ARC listing, extraction, mutation and mixed-use acceptance are complete for the documented subset. This replaces the
 earlier MD5-only plan and its native-mode guest proposal.
 
 The [first execution record](../development/sdx-patches.md) covers native CRC32
@@ -15,7 +15,7 @@ source-audited synthetic commands through ordinary Processes.
 [P4](../development/sdx-services.md) passes the fourteen-import guest-call,
 cleanup and focused ABI probes. [M1/M2](../development/sdx-md5.md) add real MD5
 hashing, verification, selection, cancellation and concurrent guest checks.
-[A1–A3](../development/sdx-arc.md) add private overlays, listing, extraction and mutation.
+[A1–A4](../development/sdx-arc.md) add private overlays, listing, extraction, mutation, coexistence and shell recovery.
 These development results do not complete the full P0/P1/P2 qualification gates.
 
 [Design](spartados-personality-design.md) ·
@@ -340,10 +340,10 @@ records its exact supported operations and memory delta.
 | P4 MD5 services | **Passed for the audited synthetic catalog.** Fourteen-symbol guest-call probes cover inline output, two handles and nonlocal traps, plus terminal Close errors, capacity limits and raw/optimized frame layout. |
 | M1 Named-file MD5 | **Passed in development checks:** the adapted binary computes correct digests through native DOS and an ordinary shell launch. |
 | M2 Complete MD5 subset | **Passed in development checks:** multiple files, masks/P/H/A attributes, `/C`, errors, BREAK, redirection and two independent guests. Hardware `/H` and raw-directory `+S` remain unsupported. |
-| A1 ARC loading and listing | Main plus listing overlay execute with the patched helper, private exports and read-only `CAR:` resolution. |
-| A2 ARC extraction | Required codecs, output files, overwrite decisions, CRC failures and cleanup pass through native DOS. |
-| A3 ARC creation and mutation | Creation/addition/deletion and the admitted update operations preserve data, error reporting and temporary/backup ownership. |
-| A4 Mixed use and documentation | MD5 plus ARC, two ARC instances on separate archives, shell recovery and measured resource/timing limits pass; publish the supported subset. |
+| A1 ARC loading and listing | **Passed in development checks for the documented subset.** Main plus listing overlay execute with the patched helper, private exports and read-only `CAR:` resolution. |
+| A2 ARC extraction | **Passed in development checks for the documented subset.** Required codecs, output files, overwrite decisions, CRC failures and cleanup pass through native DOS. |
+| A3 ARC creation and mutation | **Passed in development checks for the documented subset.** Creation/addition/deletion and the admitted update operations preserve data, error reporting and temporary/backup ownership. |
+| A4 Mixed use and documentation | **Passed in development checks for the documented subset.** MD5 plus ARC, two ARC instances on separate archives, shell recovery and measured resource/timing limits pass; publish the supported subset. |
 
 ### P0 and P1 audit and patch proof
 
@@ -461,6 +461,11 @@ supported commands, original hashes, patch revisions, device profile, numeric
 timing/cancellation bounds and memory limits. Commander follows only after this
 scope; its display API and child execution are not hidden acceptance requirements.
 
+A1–A4 execution and resource records are linked from the [ARC implementation
+note](../development/sdx-arc.md). Store-only S failed in the pinned original
+control and remains excluded; A/D/U/F are the admitted mutation commands.
+These application gates do not close the earlier full P0/P1/P2 gates.
+
 ## Memory and ownership budget
 
 The patch/decoder components add **0 fixed and 0 per-Task reserved bank-zero bytes**.
@@ -469,7 +474,9 @@ P4 adds **0 further fixed or per-Task bank-zero bytes**; its 592-byte Session
 records and buffers are upper-heap owned. M1 adds no reservation growth. M2 adds
 **0 fixed and 0 per-Task bank-zero bytes** and grows each loaded Image's upper
 Session by **272 bytes**, to **864 bytes**, including alignment and capacity.
-Implementation reservations, including unused capacity, are:
+A1–A4 add **0 further fixed or per-Task bank-zero bytes**. The current common
+upper Session is **2,248 bytes per Image**; ARC uses up to four guest handle slots
+and MD5 two. Implementation reservations, including unused capacity, are:
 
 | Resource | Budget and lifetime |
 | --- | --- |
