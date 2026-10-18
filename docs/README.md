@@ -39,3 +39,6 @@ native identification/patching components and their executable checks.
 The [guest runtime slice](development/sdx-runtime.md) adds synthetic guests on
 ordinary Tasks, reversible early interrupt routing and pointer IRQ checks.
 Production guest admission and the remaining P2 gates are still open.
+
+The [native SDX decoder](development/sdx-loader.md) validates and relocates
+the pinned module records; Process integration and service admission are in progress.
