@@ -450,11 +450,12 @@ running. See [pipes](../reference/pipes.md) and [Process groups](../reference/pr
 ## Editing and BREAK
 
 The prompt is `> `. Typing inserts at the cursor; Backspace deletes before it,
-Tab inserts one space and Return submits the whole line. A single row follows
+Tab completes a name and Return submits the whole line. A single row follows
 the cursor, with `<` when text to the left is hidden.
 
 | Keys | Action |
 | --- | --- |
+| Tab | Complete an unquoted command or filename prefix at the end of its token. |
 | Ctrl-A / Ctrl-E | Beginning / end of line. |
 | Ctrl-B / Ctrl-F | One character left / right. |
 | Ctrl-L | Clear the screen and redraw the prompt and current input, retaining its cursor. |
@@ -470,8 +471,28 @@ lasts for this shell session. Moving forward past the newest entry restores your
 unfinished draft and cursor. Editing a recalled command does not alter its saved
 entry; browsing away loses those edits. Program input is excluded. History needs
 about 2.8 KiB of upper RAM; if unavailable, editing still works. There is no
-completion, search or history file. Ctrl-D exits an empty prompt; after partial
+history search or history file. Ctrl-D exits an empty prompt; after partial
 input it submits that final command and then exits normally.
+
+For example, `UNM<Tab>` completes `UNMOUNT `, and `TYPE SYS:READM<Tab>` can complete
+`TYPE SYS:README.TXT `. Matching ignores case and keeps the spelling already
+typed. A unique directory gains `/`; a unique file or command gains a space
+at the end of the line when room remains. Several matches extend only their
+common prefix. Following arguments and redirection text stay intact. TAB never
+executes a command, prints a candidate list or cycles through matches.
+
+The first command word searches builtins, current aliases, regular filenames in
+the current directory, and the current PATH. An explicit path searches only
+its parent directory. Arguments and redirection targets offer files and
+directories. ASSIGN prefixes retain their logical spelling. A filename candidate
+is not a promise that its contents are executable.
+
+Completion requires a nonempty final path component and the cursor at the end
+of that token. Quoted or wildcard tokens, empty prefixes, and command words
+immediately after RUN or a pipe are left unchanged. An incomplete directory
+scan or an extension exceeding 255 bytes also leaves the line unchanged.
+BREAK cancels discovery and the prompt. Programs reading inherited CON input
+retain ordinary TAB-as-space behavior.
 
 Ctrl-C/BREAK clears the prompt or cancels the foreground command, including with
 redirected streams. Cleanup and outstanding I/O retirement precede the next

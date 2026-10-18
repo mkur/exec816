@@ -1,0 +1,212 @@
+MODULE COMPLETIONFSTEST
+USE HEAPCORE
+USE FSBOOT
+INCLUDE "../../examples/shell/shell-session.inc"
+
+CARD checks,batches
+BYTE finished,fault,unlockFault
+
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ec00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC File(CSTRING name)
+
+  LET handle=DOS.Open(BYTE POINTER(name),DOS.MODE_NEWFILE)
+  Check(handle<>NULL)
+  Check(DOS.Close(handle)<>0)
+
+RETURN
+
+PROC Directory(CSTRING name)
+
+  LET lock=DOS.CreateDir(BYTE POINTER(name))
+  Check(lock<>NULL)
+  DOS.SetIoErr(0)
+  DOS.UnLock(lock)
+  Check(DOS.IoErr()=0)
+
+RETURN
+
+; Observer substitutions affect only the completion caller. Each ordinary
+; request still traverses the real DOS worker and releases its ownership.
+LONGINT FUNC CompletionBatch(DOS.FileLock POINTER lock
+    DOS.FileInfoBlock POINTER info DOS.DirBatch POINTER batch)
+
+  batches==+1
+  IF fault=1 THEN
+    DOS.SetIoErr(DOS.ERROR_DISK_NOT_VALIDATED)
+    RETURN(0)
+  FI
+
+  IF fault=3 AND batches=2 THEN
+    File(c"RAM:D8/MUTATED")
+  FI
+
+  LET count=DOS.ExNextBatch(lock,info,batch)
+  IF fault=2 AND batches=2 THEN
+    DOS.SetIoErr(DOS.ERROR_DISK_NOT_VALIDATED)
+  FI
+
+RETURN(count)
+
+PROC CompletionUnlock(DOS.FileLock POINTER lock)
+
+  IF unlockFault<>0 THEN
+    unlockFault=0
+    DOS.SetIoErr(DOS.ERROR_OBJECT_IN_USE)
+    RETURN
+  FI
+
+  DOS.UnLock(lock)
+
+RETURN
+
+PROC Complete(CSTRING text,expected)
+
+  LET state=ShellEdit()
+  STR.strlcpy(ShellLine(),text,LINE_CAPACITY)
+  state.edit.buffer=ShellLine()
+  state.edit.capacity=LINE_CAPACITY
+  state.edit.length=CARD(STR.strlen(text))
+  state.edit.cursor=state.edit.length
+  state.edit.replace=0
+  batches=0
+  DOS.SetIoErr(219)
+  ShellComplete()
+  Check(STR.strcmp(CSTRING(ShellLine()),expected)=0)
+  Check(DOS.IoErr()=219)
+  IF shell.done=0 THEN
+    Check(shell.retiredDirectory=NULL)
+    Check(shell.status=5 AND shell.error=123
+        AND shell.lastStatus=10 AND shell.lastError=205)
+  FI
+
+RETURN
+
+PROC Ram()
+
+  Directory(c"RAM:D0")
+  Directory(c"RAM:D1")
+  Directory(c"RAM:D4")
+  Directory(c"RAM:D5")
+  Directory(c"RAM:D8")
+  File(c"RAM:D1/ALONE")
+  File(c"RAM:D4/ONE")
+  File(c"RAM:D4/TWO")
+  File(c"RAM:D4/THREE")
+  File(c"RAM:D4/FOUR")
+  File(c"RAM:D5/MATCHONE")
+  File(c"RAM:D5/A")
+  File(c"RAM:D5/B")
+  File(c"RAM:D5/C")
+  File(c"RAM:D5/MATCHTWO")
+  File(c"RAM:D8/MATCHONE")
+  File(c"RAM:D8/A")
+  File(c"RAM:D8/B")
+  File(c"RAM:D8/C")
+  File(c"RAM:D8/D")
+  File(c"RAM:D8/E")
+  File(c"RAM:D8/F")
+  File(c"RAM:D8/MATCHTWO")
+  Complete(c"TYPE RAM:D0/A",c"TYPE RAM:D0/A")
+  Check(batches=1)
+  Complete(c"TYPE RAM:D1/AL",c"TYPE RAM:D1/ALONE ")
+  Check(batches=1)
+  Complete(c"TYPE RAM:D4/ON",c"TYPE RAM:D4/ONE ")
+  Check(batches=2)
+  Complete(c"TYPE RAM:D5/MA",c"TYPE RAM:D5/MATCH")
+  Check(batches=2)
+  Complete(c"TYPE RAM:D8/MA",c"TYPE RAM:D8/MATCH")
+  Check(batches=3)
+  Complete(c"TYPE RAM:D",c"TYPE RAM:D")
+  Complete(c"TYPE RAM:D1",c"TYPE RAM:D1/")
+
+  shell.pathCount=3
+  STR.strlcpy(ShellPathEntry(0),c"RAM:D1",256)
+  STR.strlcpy(ShellPathEntry(1),c"RAM:MISSING",256)
+  STR.strlcpy(ShellPathEntry(2),c"RAM:D4",256)
+  Complete(c"ALON",c"ALONE ")
+  Complete(c"ON",c"ONE ")
+  File(c"RAM:ALONE")
+  Complete(c"ALON",c"ALONE ")
+  File(c"RAM:D4/ALONG")
+  Complete(c"ALO",c"ALON")
+  Check(DOS.AssignPath(BYTE POINTER(c"C"),BYTE POINTER(c"RAM:D1"))<>0)
+  shell.pathCount=1
+  STR.strlcpy(ShellPathEntry(0),c"C:",256)
+  Complete(c"ALON",c"ALONE ")
+  Check(DOS.AssignPath(BYTE POINTER(c"C"),BYTE POINTER(c"RAM:D4"))<>0)
+  Complete(c"ON",c"ONE ")
+  Complete(c"TYPE C:ON",c"TYPE C:ONE ")
+  STR.strlcpy(ShellPathEntry(0),c"MISSING:",256)
+  Complete(c"HE",c"HE")
+  shell.pathCount=0
+
+  fault=1
+  Complete(c"HE",c"HE")
+  fault=2
+  Complete(c"TYPE RAM:D8/MA",c"TYPE RAM:D8/MA")
+  Check(batches=2)
+  fault=3
+  Complete(c"TYPE RAM:D8/MA",c"TYPE RAM:D8/MA")
+  Check(batches=2)
+  fault=0
+  Complete(c"TYPE RAM:D8/MA",c"TYPE RAM:D8/MATCH")
+  unlockFault=1
+  Complete(c"TYPE RAM:D1/AL",c"TYPE RAM:D1/AL")
+  Check(shell.done=1 AND shell.status=20 AND shell.retiredDirectory<>NULL)
+  DOS.SetIoErr(0)
+  DOS.UnLock(shell.retiredDirectory)
+  Check(DOS.IoErr()=0)
+  shell.retiredDirectory=NULL
+  shell.done=0
+  shell.status=5
+  shell.error=123
+
+RETURN
+
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  shell=ShellState POINTER(EXEC.AllocMem(SHELL_BYTES,
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Check(shell<>NULL)
+  Check(ShellAliasDefaults()<>0)
+  shell.directory=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Check(shell.directory<>NULL)
+  LET previous=DOS.CurrentDir(shell.directory)
+  Check(DOS.IoErr()=0)
+  shell.status=5
+  shell.error=123
+  shell.lastStatus=10
+  shell.lastError=205
+  Ram()
+  Complete(c"TYPE D1:READM",c"TYPE D1:README.TXT ")
+  Complete(c"TYPE D1:REA",c"TYPE D1:READ")
+  Complete(c"TYPE D1:TO",c"TYPE D1:TOOLS/")
+  Complete(c"TYPE D1:TOOLS/NO",c"TYPE D1:TOOLS/NOTE.TXT ")
+  Complete(c"TYPE D2:READM",c"TYPE D2:README.TXT ")
+  Complete(c"TYPE D2:REA",c"TYPE D2:READ")
+  Complete(c"TYPE D2:TO",c"TYPE D2:TOOLS/")
+  Complete(c"TYPE D2:TOOLS/NO",c"TYPE D2:TOOLS/NOTE.TXT ")
+  Check(DOS.AssignPath(BYTE POINTER(c"C"),NULL)<>0)
+  LET old=DOS.CurrentDir(previous)
+  Check(old=shell.directory AND DOS.IoErr()=0)
+  DOS.UnLock(old)
+  Check(DOS.IoErr()=0)
+  EXEC.FreeMem(BYTE POINTER(aliases),ALIAS_CAPACITY*SIZEOF(ShellAlias))
+  EXEC.FreeMem(BYTE POINTER(shell),SHELL_BYTES)
+  Check(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Check(EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

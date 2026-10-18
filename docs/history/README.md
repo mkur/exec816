@@ -1,5 +1,9 @@
 # Historical records
 
+- [Shell TAB completion](shell-completion.md): resumable native editing,
+  builtin/alias and streamed file/PATH matching, ownership/failure checks,
+  accurate disk timings and the tested standard OF816 demo.
+
 - [Native drag and queued UPDATE](native-drag-update.md): keep captured native
   outlines tracking across a periodic client's pending UPDATE; physical pixel,
   release, Escape, presenter-sleep and cleanup checks, with unchanged bank-zero

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 11,
+  "revision": 12,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -48,7 +48,15 @@
     "MOUNT_PROFILE_GENERIC57600": 4,
     "DIR_ENTRY_SIZE": 118,
     "DIR_BATCH_HEADER_SIZE": 2,
-    "DIR_BATCH_MAX": 16
+    "DIR_BATCH_MAX": 16,
+    "CONEDIT_START": 0,
+    "CONEDIT_RESUME": 1,
+    "CONEDIT_CANCEL": 2,
+    "CONEDIT_COMPLETE": 1,
+    "CONEDIT_LINE": 2,
+    "CONEDIT_EOF": 3,
+    "CONEDIT_CANCELLED": 4,
+    "CONEDIT_BUFFER_BYTES": 256
   },
   "dos_errors": {
     "ERROR_NO_FREE_STORE": 103,
@@ -445,6 +453,47 @@
           "entries",
           "DirEntry[1]",
           2
+        ]
+      ]
+    },
+    "ConsoleEditState": {
+      "size": 12,
+      "alignment": 2,
+      "fields": [
+        [
+          "buffer",
+          "BYTE POINTER",
+          0
+        ],
+        [
+          "action",
+          "BYTE",
+          3
+        ],
+        [
+          "length",
+          "CARD",
+          4
+        ],
+        [
+          "cursor",
+          "CARD",
+          6
+        ],
+        [
+          "replace",
+          "BYTE",
+          8
+        ],
+        [
+          "newline",
+          "BYTE",
+          9
+        ],
+        [
+          "capacity",
+          "CARD",
+          10
         ]
       ]
     }
@@ -1002,6 +1051,22 @@
       ],
       "outgoing_bytes": 9,
       "result_bytes": 4
+    },
+    "ConsoleEdit": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
+      "result_bytes": 4
     }
   },
   "cooked": {
@@ -1013,7 +1078,7 @@
       "HISTORY_SLOTS": 10
     },
     "session": {
-      "size": 410,
+      "size": 414,
       "fields": [
         [
           "references",
@@ -1104,6 +1169,11 @@
           "history",
           "History POINTER",
           407
+        ],
+        [
+          "editOwner",
+          "BYTE POINTER",
+          410
         ]
       ]
     },

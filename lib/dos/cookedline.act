@@ -38,6 +38,7 @@ PUBLIC PROC Init(Session POINTER state)
   state.viewStart=0
   state.screenCursor=0
   state.history=NULL
+  state.editOwner=NULL
 
 RETURN
 
@@ -182,6 +183,22 @@ PROC Erase(Session POINTER state CARD first,last)
 
 RETURN
 
+; Replace a valid edit atomically without changing its history browsing state.
+PUBLIC BYTE FUNC Replace(Session POINTER state BYTE POINTER text
+    CARD length,cursor)
+
+  IF length>=LINE_BYTES OR cursor>length OR state.discard<>0
+      OR state.ready<>0 OR state.eof<>0 THEN
+    RETURN(0)
+  FI
+
+  A816MEMORY.Move(state.line,text,SIZE(length))
+  state.length=length
+  state.cursor=cursor
+  state.appendEcho=0
+
+RETURN(1)
+
 ; Discard a damaged input line so partial keystrokes cannot form a command.
 PUBLIC PROC Lose(Session POINTER state LONGINT error)
 
@@ -194,7 +211,8 @@ PUBLIC PROC Lose(Session POINTER state LONGINT error)
 
 RETURN
 
-; Return 1 when editing changed, 2 when acquisition ends, otherwise 0.
+; Return 1 when editing changed, 2 when acquisition ends, 3 for an owned TAB
+; continuation, otherwise 0. Ordinary cooked callers keep TAB-as-space.
 PUBLIC BYTE FUNC Feed(Session POINTER state BYTE value)
   CARD index,target
 
@@ -320,6 +338,10 @@ PUBLIC BYTE FUNC Feed(Session POINTER state BYTE value)
   FI
 
   IF value=KEY_TAB THEN
+    IF state.editOwner<>NULL THEN
+      RETURN(3)
+    FI
+
     value=ASCII.SPACE
   FI
 

@@ -50,6 +50,7 @@ DELETE accepts files or empty directories.
 
 Prompt editing and ten-command history:
 Ctrl-A/E: start/end. Ctrl-B/F: left/right.
+TAB: complete a command or filename prefix.
 Ctrl-U: clear. Ctrl-K: delete to end.
 Ctrl-W: delete word. Ctrl-P/N: history.
 Atari Ctrl-+/*: left/right, Ctrl--/=: up/down.

@@ -14,7 +14,7 @@ from library_paths import read_source
 from launch_demo import write_launcher
 from native_program import ROOT, build, compiler, read_build, require, sha256
 
-DEMO_IMAGE_DATA_BYTES = 6400
+DEMO_IMAGE_DATA_BYTES = 7168
 WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
 IDE_DEMO_NOTE = ('\nThis development build also requires IDE Plus 2.0 rev E, PBI ID 0,\n'
@@ -140,9 +140,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     # Bound shell/client globals and shared static buffers in upper RAM.
     from generate_memory import PROFILE
     profile=json.loads(PROFILE.read_text())
-    # The bitmap shell uses 6,409 bytes with SIO imports: one extra page keeps
-    # code placement page-aligned. Combined desktop globals use 7,265 bytes,
-    # so its 7,424-byte arena includes 159 bytes of spare capacity.
+    # Prompt completion adds resident literals and native editor code. Keep the
+    # shared data arena page-aligned, with existing variant-specific headroom.
     # This is upper-bank capacity; Task/DP and bank-zero reservations are unchanged.
     profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES+(1024 if desktop else
         256 if bitmap_shell_only else 0)

@@ -24,6 +24,14 @@ Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved
 bank-zero costs for each slice before moving to the next.
 
+The [shell TAB completion plan](plans/shell-completion-implementation-plan.md)
+is implemented through SC3: resumable editing, builtin/alias and filesystem/PATH
+prefix completion, measured integration and the standard OF816 demo. Completion
+runs in the shell between editor calls, preserving DOS client and console-input
+ownership. It extends unique names or a shared prefix without candidate listing.
+The [development record](history/shell-completion.md) reports actual coverage,
+unchanged bank-zero reservations and measured disk-search latency.
+
 The [INFO slice](history/info-command.md) completes copied public volume queries,
 cached allocation statistics and a loadable command. It reports disk space,
 labels, backing device and access, keeps RAM's dynamic capacity explicit, and

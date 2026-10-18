@@ -11,7 +11,7 @@ session owns retained input, never a caller's buffer.
 
 ## Line acquisition and reads
 
-Printable ASCII inserts at the cursor, Tab inserts one space, and Backspace
+For ordinary Read, printable ASCII inserts at the cursor, Tab inserts one space, and Backspace
 deletes the character before the cursor. Return seals up to 255 edited characters followed by LF. Read returns
 bytes without NUL termination; small reads drain the retained line before new
 input is acquired. Zero-length Read consumes nothing and never waits.
@@ -49,7 +49,7 @@ characters and placing the physical caret. At width 36 this emits at most
 111 bytes into the existing 128-byte echo buffer. The remaining 17 bytes retain
 the prefix and its length. A screen clear resets the old caret before painting,
 so FF, prefix, text and cursor movement fit in the first 111 bytes as well.
-Session size and fixed/per-Task bank-zero reservations are unchanged.
+Fixed/per-Task bank-zero reservations are unchanged.
 The adapter reduces that width to fit the current row, retaining one unused
 final column; if no space remains it starts a new row. Echo uses the edited
 console even when command Output is redirected. One input lease spans line
@@ -85,12 +85,20 @@ browsing away discards those edits. Return, EOF, cancellation, loss and disablin
 history reset browsing. Toggling history preserves pending reads, drain position,
 EOF and discard state.
 
+The native [ConsoleEdit continuation](dos.md#resumable-console-editing) can pause
+on TAB while retaining the same edit, viewport, history and exclusive input
+lease. The collected request and DOS client are available for directory discovery
+between calls. A replacement is copied atomically before bounded redraw; only
+the final Return submission enters history. Ordinary Read is unchanged.
+
 The optional block is allocated once on first enable and freed on final session
 release. Allocation failure leaves editing usable and history disabled; the shell
-then stops trying for its lifetime. The session payload is 410 bytes (416 rounded)
+then stops trying for its lifetime. The session payload is 414 bytes (416 rounded)
 and the optional history block is 2,824 bytes in upper RAM. Compared with the old
 402-byte payload (408 rounded), one shell with history adds 2,832 bytes. Fixed
 and per-Task reserved bank-zero bytes are unchanged.
 
-Completion, history search/persistence, key repeat and terminal escape sequences
-are outside this contract.
+The continuation's owning-handle field uses the existing allocation's padding,
+so it adds no rounded heap bytes. Fixed, per-Task and idle bank-zero reservation
+deltas are zero. Candidate discovery belongs to the shell; history
+search/persistence, key repeat and terminal escape sequences remain unsupported.

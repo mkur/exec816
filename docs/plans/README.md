@@ -335,6 +335,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [Shell TAB completion](shell-completion-implementation-plan.md): SC1–SC3
+  implemented; resumable editing, builtin/alias and file/PATH prefix completion,
+  checked ownership/cancellation and the tested OF816 demo. See the
+  [development record](../history/shell-completion.md) for timings and scope.
 - [INFO command](info-command-implementation-plan.md): completed I1–I4;
   copied public volume queries, metadata-based disk statistics, a loadable
   command and distinct demo SYS/WORK labels. No filesystem scan or new Task.

@@ -44,7 +44,10 @@ CONST SCRATCH_OFFSET=DRAW_OFFSET+DRAW_CAPACITY
 CONST TRANSFER_OFFSET=SCRATCH_OFFSET+SCRATCH_CAPACITY
 CONST PATH_OFFSET=TRANSFER_OFFSET+TRANSFER_CAPACITY
 CONST PATH_CAPACITY=4
-CONST SHELL_BYTES=PATH_OFFSET+PATH_CAPACITY*LINE_CAPACITY
+CONST EDIT_OFFSET=PATH_OFFSET+PATH_CAPACITY*LINE_CAPACITY
+CONST EDIT_BYTES=20
+CONST COMPLETION_PATH_OFFSET=EDIT_OFFSET+EDIT_BYTES
+CONST SHELL_BYTES=COMPLETION_PATH_OFFSET+LINE_CAPACITY
 CONST ALIAS_CAPACITY=8
 CONST ALIAS_NAME_CAPACITY=16
 CONST ALIAS_TEXT_CAPACITY=128
@@ -87,6 +90,12 @@ CONST CMD_BREAK=19
 CONST CMD_EXECUTE=20
 CONST CMD_UNMOUNT=21
 CONST JOB_RUNNING=1,JOB_STOPPING=2,JOB_DONE=3
+
+TYPE ShellEditState=[
+  DOS.ConsoleEditState edit
+  CARD first,component,common
+  BYTE matches,directory
+]
 
 TYPE ShellWord=[BYTE POINTER text]
 TYPE ShellAlias=[
@@ -170,6 +179,16 @@ RETURN(BYTE POINTER(ADDRESS(shell)+SIZE(SCRATCH_OFFSET)))
 BYTE POINTER FUNC ShellTransfer()
 
 RETURN(BYTE POINTER(ADDRESS(shell)+SIZE(TRANSFER_OFFSET)))
+
+; Borrow prompt state without enlarging the stable command-state header.
+ShellEditState POINTER FUNC ShellEdit()
+
+RETURN(ShellEditState POINTER(ADDRESS(shell)+SIZE(EDIT_OFFSET)))
+
+; Parent names must survive Examine overwriting the shared scratch FIB.
+BYTE POINTER FUNC ShellCompletionPath()
+
+RETURN(BYTE POINTER(ADDRESS(shell)+SIZE(COMPLETION_PATH_OFFSET)))
 
 ; Keep the original reason a command failed, while allowing a fatal failure
 ; to end the session when continuing would be unsafe.
@@ -521,6 +540,8 @@ RETURN
 ; Invite another command on the shell's console, regardless of redirection.
 PROC ShellPrompt()
 
+  LET state=ShellEdit()
+  state.edit.action=DOS.CONEDIT_START
   ShellHistory(1)
   IF shell.done<>0 THEN
     RETURN
@@ -542,69 +563,85 @@ PROC ShellClear()
 
 RETURN
 
-; Recognize resident commands; other names are candidates for disk loading.
-; Ordinary dispatch and pipeline validation use the same classification.
+; One name definition serves command dispatch and prompt completion.
+CSTRING FUNC ShellCommandName(BYTE command)
+
+  CASE command OF
+  WHEN CMD_HELP THEN
+    RETURN(c"HELP")
+
+  WHEN CMD_ECHO THEN
+    RETURN(c"ECHO")
+
+  WHEN CMD_CD THEN
+    RETURN(c"CD")
+
+  WHEN CMD_EXIT THEN
+    RETURN(c"EXIT")
+
+  WHEN CMD_DIR THEN
+    RETURN(c"DIR")
+
+  WHEN CMD_TYPE THEN
+    RETURN(c"TYPE")
+
+  WHEN CMD_MEM THEN
+    RETURN(c"MEM")
+
+  WHEN CMD_TASKS THEN
+    RETURN(c"TASKS")
+
+  WHEN CMD_VER THEN
+    RETURN(c"VER")
+
+  WHEN CMD_MOUNT THEN
+    RETURN(c"MOUNT")
+
+  WHEN CMD_DEVICES THEN
+    RETURN(c"DEVICES")
+
+  WHEN CMD_PATH THEN
+    RETURN(c"PATH")
+
+  WHEN CMD_ALIAS THEN
+    RETURN(c"ALIAS")
+
+  WHEN CMD_UNALIAS THEN
+    RETURN(c"UNALIAS")
+
+  WHEN CMD_CLS THEN
+    RETURN(c"CLS")
+
+  WHEN CMD_RUN THEN
+    RETURN(c"RUN")
+
+  WHEN CMD_JOBS THEN
+    RETURN(c"JOBS")
+
+  WHEN CMD_BREAK THEN
+    RETURN(c"BREAK")
+
+  WHEN CMD_EXECUTE THEN
+    RETURN(c"EXECUTE")
+
+  WHEN CMD_UNMOUNT THEN
+    RETURN(c"UNMOUNT")
+
+  ESAC
+
+RETURN(c"")
+
+; Recognize resident commands without changing the candidate text.
 BYTE FUNC ShellClassify(BYTE POINTER word)
+  BYTE command
 
-  IF ShellEqual(word,c"RUN")<>0 THEN
-    RETURN(CMD_RUN)
-
-  ELSEIF ShellEqual(word,c"JOBS")<>0 THEN
-    RETURN(CMD_JOBS)
-
-  ELSEIF ShellEqual(word,c"BREAK")<>0 THEN
-    RETURN(CMD_BREAK)
-
-  ELSEIF ShellEqual(word,c"EXECUTE")<>0 THEN
-    RETURN(CMD_EXECUTE)
-
-  ELSEIF ShellEqual(word,c"HELP")<>0 THEN
-    RETURN(CMD_HELP)
-
-  ELSEIF ShellEqual(word,c"ECHO")<>0 THEN
-    RETURN(CMD_ECHO)
-
-  ELSEIF ShellEqual(word,c"CLS")<>0 THEN
-    RETURN(CMD_CLS)
-
-  ELSEIF ShellEqual(word,c"CD")<>0 THEN
-    RETURN(CMD_CD)
-
-  ELSEIF ShellEqual(word,c"EXIT")<>0 THEN
-    RETURN(CMD_EXIT)
-
-  ELSEIF ShellEqual(word,c"DIR")<>0 THEN
-    RETURN(CMD_DIR)
-
-  ELSEIF ShellEqual(word,c"TYPE")<>0 THEN
-    RETURN(CMD_TYPE)
-
-  ELSEIF ShellEqual(word,c"MEM")<>0 THEN
-    RETURN(CMD_MEM)
-
-  ELSEIF ShellEqual(word,c"TASKS")<>0 THEN
-    RETURN(CMD_TASKS)
-
-  ELSEIF ShellEqual(word,c"VER")<>0 THEN
-    RETURN(CMD_VER)
-
-  ELSEIF ShellEqual(word,c"UNMOUNT")<>0 THEN
-    RETURN(CMD_UNMOUNT)
-  ELSEIF ShellEqual(word,c"MOUNT")<>0 THEN
-    RETURN(CMD_MOUNT)
-
-  ELSEIF ShellEqual(word,c"PATH")<>0 THEN
-    RETURN(CMD_PATH)
-
-  ELSEIF ShellEqual(word,c"DEVICES")<>0 THEN
-    RETURN(CMD_DEVICES)
-
-  ELSEIF ShellEqual(word,c"ALIAS")<>0 THEN
-    RETURN(CMD_ALIAS)
-
-  ELSEIF ShellEqual(word,c"UNALIAS")<>0 THEN
-    RETURN(CMD_UNALIAS)
-  FI
+  FOR command=CMD_HELP TO CMD_UNMOUNT DO
+    IF command<>CMD_EXTERNAL THEN
+      IF ShellEqual(word,ShellCommandName(command))<>0 THEN
+        RETURN(command)
+      FI
+    FI
+  OD
 
 RETURN(CMD_EXTERNAL)
 
@@ -1245,6 +1282,7 @@ INCLUDE "shell-redirection.inc"
 INCLUDE "shell-path.inc"
 INCLUDE "shell-jobs.inc"
 INCLUDE "shell-execute.inc"
+INCLUDE "shell-completion.inc"
 
 ; Run a disk command in the foreground and keep its result for the shell.
 PROC ShellExternal()
@@ -1336,6 +1374,7 @@ PROC ShellDispatch()
     ShellText(DOS.Output(),c"Ctrl-L clear screen\n")
     ShellText(DOS.Output(),c"History: Ctrl-P/N or Atari up/down\n")
     ShellText(DOS.Output(),c"Atari left/right move the cursor\n")
+    ShellText(DOS.Output(),c"TAB completes commands and files\n")
 
   WHEN CMD_ECHO THEN
     used=0
@@ -1548,41 +1587,43 @@ RETURN
 ; Advance the interactive session as console input becomes available.
 ; Complete lines run as commands; cancellation returns to a fresh prompt.
 PROC ShellReadStep()
-  CARD limit
 
   IF shell.done<>0 THEN
     RETURN
   FI
 
-  LET line=ShellLine()
-  limit=LINE_CAPACITY-shell.length
-  IF limit>READ_CHUNK_SIZE THEN
-    limit=READ_CHUNK_SIZE
+  LET state=ShellEdit()
+  LET edit=@state.edit
+  LET result=DOS.ConsoleEdit(shell.console,edit)
+  LET error=DOS.IoErr()
+  IF result=DOS.CONEDIT_COMPLETE THEN
+    edit.action=DOS.CONEDIT_RESUME
+    ShellComplete()
+    RETURN
   FI
 
-  LET count=DOS.Read(shell.console,line+SIZE(shell.length),limit)
-  LET error=DOS.IoErr()
-  IF count>0 THEN
-    shell.length==+CARD(count)
-    IF line(shell.length-1)=ASCII.LF THEN
-      shell.length==-1
-      line(shell.length)=ASCII.NUL
+  edit.action=DOS.CONEDIT_START
+  IF result=DOS.CONEDIT_LINE THEN
+    shell.length=edit.length
+    IF edit.newline<>0 THEN
       ShellHistory(0)
       ShellCommand()
       ShellClear()
       IF shell.done=0 THEN
         ShellPrompt()
       FI
+
+    ELSE
+      ShellHistory(0)
+      IF shell.length<>0 THEN
+        ShellCommand()
+      FI
+
+      shell.done=1
     FI
 
-  ELSEIF count=0 THEN
+  ELSEIF result=DOS.CONEDIT_EOF THEN
     ShellHistory(0)
-    ; Ctrl-D may seal an unterminated final command before its one-shot EOF.
-    line(shell.length)=ASCII.NUL
-    IF shell.length<>0 THEN
-      ShellCommand()
-    FI
-
     shell.done=1
 
   ELSEIF error=DOS.ERROR_BREAK OR error=DOS.ERROR_LINE_TOO_LONG
@@ -1640,6 +1681,9 @@ BYTE FUNC ShellOpen(BYTE POINTER consoleName)
   job.state=0
   job.announce=0
   shell.historyAvailable=1
+  LET edit=ShellEdit()
+  edit.edit.buffer=ShellLine()
+  edit.edit.capacity=LINE_CAPACITY
   ShellPathReset()
   shell.diagnosticWord=$ff
   shell.console=DOS.Open(consoleName,DOS.MODE_READWRITE)
@@ -1701,6 +1745,17 @@ LONGINT FUNC ShellFinish()
 
   IF shell=NULL THEN
     RETURN(PROCESS.RETURN_FAIL)
+  FI
+
+  LET edit=ShellEdit()
+  IF edit.edit.action=DOS.CONEDIT_RESUME THEN
+    edit.edit.action=DOS.CONEDIT_CANCEL
+    IF DOS.ConsoleEdit(shell.console,@edit.edit)<0 THEN
+      ShellFail(PROCESS.RETURN_FAIL,DOS.IoErr())
+      RETURN(PROCESS.RETURN_FAIL)
+    FI
+
+    edit.edit.action=DOS.CONEDIT_START
   FI
 
   IF ShellStopJob()=0 THEN

@@ -1159,8 +1159,31 @@ PUBLIC BYTE POINTER FUNC OpenConsole()
 
 RETURN(DOSRAW.Open(client,scope.unit))
 
-; Configure only a live caller-owned cooked session. The cooked lease excludes
-; readers sharing an inherited session while allocation/configuration runs.
+; Admit an owned cooked handle once. The editor retains input ownership while
+; its collected request and DOS client can serve the caller between resumes.
+PUBLIC LONGINT FUNC ConsoleEdit(BYTE POINTER identity
+    ConsoleEditState POINTER edit)
+
+  LET owner=DOSCORE.Current()
+  LET client=DOSCLIENT.EnsureSlot(owner)
+  IF client=NULL THEN
+    RETURN(-1)
+  FI
+
+  LET header=Object(owner,identity,DOSOBJECTS.KIND_FILE)
+  IF header=NULL THEN
+    RETURN(-1)
+  FI
+
+  IF header.backend<>DOSOBJECTS.BACKEND_CON THEN
+    owner.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(-1)
+  FI
+
+RETURN(DOSCOOKED.Edit(client,DOSCOOKED.Handle POINTER(header),
+    DOSCOOKED.ConsoleEditState POINTER(edit)))
+
+; History configuration shares the editor's exclusive cooked-session lease.
 PUBLIC LONGINT FUNC SetConsoleHistory(BYTE POINTER identity BYTE enabled)
 
   LET owner=DOSCORE.Current()

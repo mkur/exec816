@@ -91,6 +91,10 @@ Ctrl-K delete to end, Ctrl-W delete previous word. Ctrl-P/N recalls the last
 Atari cursor chords: Ctrl-+ left, Ctrl-* right, Ctrl-- up, Ctrl-= down.
 Ctrl-L clears the screen and redraws the prompt and your current input.
 Up/down browse history. History lasts for this shell session only.
+TAB completes a nonempty command or filename prefix, ignoring case. A unique
+directory gains /; several matches extend their common prefix. For example,
+TYPE SYS:READM then TAB completes the README filename. Return runs the line.
+Quoted/wildcard tokens and command words after RUN or a pipe are unchanged.
 
 The disk also includes CMP, CKSUM, HEXDUMP, HEAD, GREP, LIST and MORE.
 Try HEAD STORY.TXT LINES 5, CKSUM STORY.TXT, or LIST NAMES.

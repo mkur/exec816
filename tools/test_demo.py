@@ -877,6 +877,44 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                             'Edited prompt bytes differ: '+text)
                     require(column==3+(len(text) if caret is None else caret),
                             'Edited prompt caret differs: '+text)
+                # TAB returns to the same prompt, using the retained editor and
+                # ordinary directory scans; only Return submits the result.
+                for prefix,wanted in [('UNM','UNMOUNT '),('MK','MKDIR '),
+                                      ('HE','HE'),('TYPE SYS:WO','TYPE SYS:WORK/')]:
+                    for char in prefix:press(char)
+                    generation=number(saved['scope']+14)
+                    press('\t');edit(wanted)
+                    require(number(saved['scope']+14)==generation,'TAB submitted a command')
+                    press('\x15')
+                for char in 'TYPE SYS:READM':press(char)
+                press('\t');edit('TYPE SYS:README.TXT ')
+                submit_edited('TYPE SYS:README.TXT',b'Errors are explained on the console.')
+                press('↑');edit('TYPE SYS:README.TXT ')
+                # Shorten a recalled filename, then complete it again.
+                for char in '\b\b\b\b\b\b':press(char)
+                edit('TYPE SYS:READM')
+                press('\t');edit('TYPE SYS:README.TXT ')
+                press('\x15')
+                command('ECHO old >RAM:RESULT')
+                for char in 'ECHO saved >RAM:RES':press(char)
+                press('\t');edit('ECHO saved >RAM:RESULT ')
+                submit_edited('ECHO saved >RAM:RESULT',b'> ')
+                command('TYPE RAM:RESULT',b'saved')
+                command('DELETE RAM:RESULT')
+                # Observe a live enumeration packet before sending physical
+                # BREAK; no synthetic cancellation or shortened disk timing.
+                for char in 'TYPE SYS:SELECT/A':press(char)
+                previous=number(saved['scope']+14)
+                b._cmd_ok('KEY TAB down')
+                packet=f'dw(${saved["scope"]+27:x})+db(${saved["scope"]+29:x})*65536'
+                rendezvous(f'(db(${saved["scope"]+21:x})=3)&(dw({packet}+22)=28)')
+                b._cmd_ok('KEY TAB up')
+                started=b.eval_expr('@clk')
+                press('\x03');ready(previous);result()
+                cells('completion-break')
+                saved['completion_break_cycles']=(b.eval_expr('@clk')-started)&0xffffffff
+                require(ledger()==saved['ledger'],'Completion retained input or mount ownership')
+                saved['completion']=True
                 # The pinned bridge omits PLUS; raw $86 decoding is checked in
                 # test_dos_cooked. Exercise its common edit path with Ctrl-B.
                 # Movement, insertion, Return away from EOF and deletion keys.
@@ -907,7 +945,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 parent_client=pointer(saved["scope"]+3)
                 condition=f'(db(${saved["top"]+51:x})=2)&(db(${parent_client+86:x})=1)'
                 rendezvous(condition)
-                for char in '↑programdata\n':press(char)
+                for char in '↑program\tdata\n':press(char)
                 rendezvous(condition)
                 press('\x04')
                 rendezvous(f'db(${parent_client+86:x})=0')
@@ -1066,7 +1104,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         autoboot_frames=saved.get('autoboot_frames'),startup_frames=saved.get('startup_frames'),desktop_ready_frames=saved.get('desktop_ready_frames'),
         loaded_panel_feedback=saved.get('loaded_panel_feedback'),distribution_root=str(distribution_root) if distribution_root else None,
         disk_boot=disk_boot,integration=saved.get('integration'),file_selector=saved.get('file_selector'),text_viewer=saved.get('text_viewer'),text_files=saved.get('text_files'),fixed_stop=saved.get('fixed_stop'),browser=saved.get('browser'),files_scrolling=saved.get('files_scrolling'),files_dialogs=saved.get('files_dialogs'),browser_stacks=saved.get('browser_stacks'),gem_stacks=saved.get('gem_stacks'),
-        editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
+        editing_history=saved.get('editing_history',False),completion=saved.get('completion',False),
+        completion_break_cycles=saved.get('completion_break_cycles'),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
         ide_work_audit=saved.get('ide_work_audit'),ide_work_files=saved.get('ide_work_files'),
         ide_media=str(fixture) if ide_only else None,

@@ -40,6 +40,9 @@ PROC Main()
   Check(SIZEOF(ShellState)=128)
   Check(ShellStart(shellRoot)<>0)
   Check(ADDRESS(shell)>=ADDRESS($10000))
+  ; Establish a known display after CON adopts the loader's retained OS text.
+  ShellByte(shell.console,ASCII.FF)
+  ShellPrompt()
   Pause(1)
   WHILE shell.done=0 DO
     ShellReadStep()

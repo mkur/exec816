@@ -73,6 +73,7 @@ slash-separated command-line argument.
 
 | Changed behavior | Development coverage |
 | --- | --- |
+| Shell TAB completion | `test_shell_completion.py --group matching` and `--group filesystem --case opt` cover matching and real RAM/MyDOS/SpartaDOS enumeration, batch boundaries and failure cleanup. `--group editor --case raw` is the small native ABI probe; `--group lifetime --case opt` exercises retained input ownership, same-Task filesystem I/O, cancellation/loss and ordinary Read. `test_completion_shell.py` checks physical keys, exact echo and the caret. Use the packaged `test_demo.py --editing` walkthrough for prompt/history/inherited CON integration. All require `--output DIR`. |
 | Desktop windows, clients and interaction | `test_desktop.py`, `test_desktop_presentation.py`, `test_desktop_apps.py` (optimized); physical `test_desktop_drag.py`, `measure_desktop.py`; selected startup/fault tests in `test_desktop_startup.py` and `test_desktop_fault.py`. `test_demo.py --boot-smoke` cold-boots the exact `build_demo.py --desktop` package. See [desktop evidence](../history/desktop.md) for actual coverage and open timing targets. |
 | Layers/region geometry and drawing lifetimes | `tools/test_layers.py --mode opt --output DIR`: independent region and scene pixel oracles, incremental software painting/copy fallback, stale/busy/exhausted transactions, bank-crossing scene storage, guards and OS return. This does not exercise VBXE window presentation. |
 | Retained console cells or controls | `tools/test_console_core.py` in optimized mode. |

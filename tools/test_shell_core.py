@@ -81,9 +81,7 @@ ENDMODULE
 
 def instrument(out,source='shell_core.act'):
     cooked_observer(out)
-    s=(ROOT/'examples/shell/shell-session.inc').read_text().replace('USE EXEC\n','USE EXEC\nUSE SHELLEDITPROBE\n',1).replace('PROC ShellWrite(','PROC NativeShellWrite(').replace('LONGINT FUNC ShellFinish()', 'LONGINT FUNC NativeShellFinish()')
-    for name in ('shell-execute.inc','shell-jobs.inc','shell-commands.inc','shell-mount-diagnostics.inc','shell-redirection.inc','shell-path.inc'):
-        s=s.replace('"'+name+'"','"'+str(ROOT/'examples/shell'/name)+'"')
+    s=read_source(ROOT/'examples/shell/shell-session.inc').replace('USE EXEC\n','USE EXEC\nUSE SHELLEDITPROBE\n',1).replace('PROC ShellWrite(','PROC NativeShellWrite(').replace('LONGINT FUNC ShellFinish()', 'LONGINT FUNC NativeShellFinish()')
     s=s.replace('BYTE FUNC ShellOpen(BYTE POINTER consoleName)','BYTE FUNC ShellOpen(BYTE POINTER consoleName)\n  SHELLEDITPROBE.Bind(@captureCount,@consumed,@suspend,@stage,@gate)')
     command_step='      ShellCommand()\n      ShellClear()'
     require(s.count(command_step)==1,'Missing shell command checkpoint')
@@ -271,6 +269,7 @@ def run(t,out,mode,bank=2,size=128,no_mount=False,smoke=False,eof=None,external=
             handle=int.from_bytes(far(state['shell'],3),'little');state['cooked']=int.from_bytes(far(handle+16,3),'little')
             expected.extend(external.startup_output(p) if external and hasattr(external,'startup_output')
                             else diagnostic_text(218,'Shell') if no_mount else b'')
+            expected.extend(b'> \x0c')
             expected.extend(draw(line))
             if external and hasattr(external,'startup_result'):
                 actual=tuple(int.from_bytes(far(state['shell']+offset,4),'little',signed=True)
@@ -292,9 +291,10 @@ def run(t,out,mode,bank=2,size=128,no_mount=False,smoke=False,eof=None,external=
             if external:
                 from types import SimpleNamespace
                 external.exercise(SimpleNamespace(command=command,check_screen=check_screen,append=append,press=press,
+                    submit=submit,cancel=cancel,frames=frames,key=key,
                     rendezvous=rendezvous,ready=ready,far=far,at=at,p=p,state=state,expected=expected,line=line,b=b))
             elif not smoke:
-                command('help',b'HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nCtrl-L clear screen\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\n')
+                command('help',b'HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT UNMOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nCtrl-L clear screen\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\nTAB completes commands and files\n')
                 command('cd',b'' if no_mount else b'D1:\n',211 if no_mount else 0)
                 if not no_mount:
                     for cmd in ('cd tools/sub','cd /','cd :','cd d1:tools','cd missing'):
@@ -309,7 +309,7 @@ def run(t,out,mode,bank=2,size=128,no_mount=False,smoke=False,eof=None,external=
                 append('echo '+'a'*250);check_screen('max-line');submit(b'a'*250+b'\n');check_screen('max-command')
                 append('echo '+'a'*250);press('b');expected.extend(draw(b'',bytes(line)));check_screen('overflow')
                 press('\n');ready();expected.extend(b'\n'+diagnostic_text(120,'Shell'));line.clear();expected.extend(draw(line))
-                append('echo\ttab');submit(b'tab\n');check_screen('tab')
+                append('echo tab');submit(b'tab\n');check_screen('space-separated-argument')
                 # Pause only in the fixture, after an actual translated key.
                 # The console worker continues to accept real typeahead.
                 b.poke(at('suspend'),1);append('e')
