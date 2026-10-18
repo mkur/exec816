@@ -40,7 +40,7 @@ LIST_CASES=[('LIST.OUT','L SAMPLE.ARC'),('VERBOSE.OUT','V SAMPLE.ARC'),
             ('MASK.OUT','L SAMPLE.ARC A*.BIN'),('EMPTY.OUT','V SAMPLE.ARC EMPTY.BIN')]
 
 
-def reference(out,extraction=False,creation=False):
+def reference(out,extraction=False,creation=False,store=False):
     source=out/'source';source.mkdir(parents=True,exist_ok=True)
     (source/'SAMPLE.ARC').write_bytes(archive(corpus()))
     commands=[f'ARC {args} >>{name}' for name,args in LIST_CASES]+['STOP.COM']
@@ -54,6 +54,7 @@ def reference(out,extraction=False,creation=False):
         expected=creation_corpus()
         for name,value in expected.items():(source/name).write_bytes(value)
         commands=['ARC A NEW.ARC *.BIN >>CREATE.OUT','ARC V NEW.ARC >>LIST.OUT','STOP.COM']
+    if store:commands=[c.replace('ARC A NEW.ARC','ARC AS NEW.ARC') for c in commands]
     (source/'AUTOEXEC.BAT').write_bytes(b'\x9b'.join(c.encode() for c in commands)+b'\x9b')
     (source/'CONFIG.SYS').write_bytes(b'USE OSRAM\x9bDEVICE SPARTA\x9bDEVICE SIO\x9b')
     (source/'STOP.COM').write_bytes(struct.pack('<HHH',65535,0x6000,0x6002)+b'\x4c\x00\x60'+struct.pack('<HHH',0x2e0,0x2e1,0x6000))
@@ -72,6 +73,11 @@ def reference(out,extraction=False,creation=False):
         b.pause();(out/'screen.png').write_bytes(b.screenshot());time.sleep(3);b.regs();b._cmd_ok('EJECT drive=0')
     extract(out/'input.atr',out/'readback')
     outputs={p.name:p.read_bytes().hex() for p in (out/'readback').glob('*.OUT')}
+    if store:
+        assert not (out/'readback/NEW.ARC').exists()
+        assert (out/'readback/NEW.XAR').exists()
+        for name,value in expected.items():assert (out/'readback'/name).read_bytes()==value
+        return dict(status='pass',tier='development',scope='Reproduced original S failure; no successful creation claimed',commands=commands,outputs=outputs,machine=machine,pin=PIN)
     if creation:
         from arc_archive import read
         files,entries=read((out/'readback/NEW.ARC').read_bytes())
@@ -157,11 +163,11 @@ def native(out,extraction=False):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--group',choices=['reference','reference-extract','reference-create','a1','a2'],required=True)
+    parser.add_argument('--group',choices=['reference','reference-extract','reference-create','reference-store','a1','a2'],required=True)
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
     result=dict(status='running');started=time.monotonic()
-    try:result=reference(out,args.group=='reference-extract',args.group=='reference-create') if args.group.startswith('reference') else native(out,args.group=='a2')
+    try:result=reference(out,args.group=='reference-extract',args.group in ('reference-create','reference-store'),args.group=='reference-store') if args.group.startswith('reference') else native(out,args.group=='a2')
     except Exception as e:result.update(status='fail',error=str(e));raise
     finally:
         result['seconds']=round(time.monotonic()-started,3)

@@ -9,6 +9,7 @@ USE SDXSTATE
 USE SDXFILE
 USE SDXFILES
 USE SDXIDENTIFY
+USE SDXARCADD
 
 ; ARC main loads one overlay synchronously. It cannot publish arbitrary code
 ; through CAR:; both the requested name and complete input identity are checked.
@@ -31,13 +32,17 @@ PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
   identity=0
   length=0
   IF O65READ.Equal(state.bank+name,BYTE POINTER("CAR:ARCLST.OVL")+1,14)<>0
-      AND state.bank($721)<=1 THEN
+      AND state.bank($721)<=2 THEN
     identity=3
     length=1998
   ELSEIF O65READ.Equal(state.bank+name,BYTE POINTER("CAR:ARCEXT.OVL")+1,14)<>0
       AND state.bank($721)=0 THEN
     identity=4
     length=1911
+  ELSEIF O65READ.Equal(state.bank+name,BYTE POINTER("CAR:ARCADD.OVL")+1,14)<>0
+      AND (state.bank($721)=0 OR state.bank($721)=2 OR state.bank($721)=3) THEN
+    identity=5
+    length=4645
   FI
   IF identity=0 THEN
     RETURN(156)
@@ -82,8 +87,11 @@ PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
           SDXABI.GUEST_LIMIT,@SDXABI.Resolve,@state.parentExport,1)
       IF plan<>NULL THEN
         state.overlayEnd=CARD(plan.end)
-        SDXFILE.Release(plan)
         error=0
+        IF identity=5 AND SDXARCADD.Patch(plan)<>0 THEN
+          error=156
+        FI
+        SDXFILE.Release(plan)
       ELSE
         cause=DOS.IoErr()
       FI
@@ -117,6 +125,7 @@ PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
   SDXSTATE.Word(frame,SDXABI.FRAME_PC,state.overlayBase)
   state.overlayActive=1
   state.overlayModule=identity
+  SDXSTATE.Word(state.bank,$2e7,state.overlayEnd)
 
 RETURN(0)
 
@@ -130,6 +139,7 @@ PUBLIC BYTE FUNC Retire(SDXSTATE.Session POINTER state BYTE POINTER frame)
   error=SDXFILES.CloseAll(state)
   state.overlayActive=0
   state.overlayModule=0
+  SDXSTATE.Word(state.bank,$2e7,state.overlayBase)
   state.trapCount=state.overlayTraps
   A816MEMORY.Move(frame+1,@state.overlayFrame,13)
   A816MEMORY.Clear(state.bank+state.overlayBase,

@@ -1,0 +1,203 @@
+MODULE SDXMUTATION
+USE DOS
+USE SDXSTATE
+USE SDXCOMMAND
+USE SDXNAMES
+USE A816MEMORY
+
+PUBLIC BYTE FUNC Active(SDXSTATE.Session POINTER state)
+
+RETURN(state.operation='A OR state.operation='D OR state.operation='U OR
+    state.operation='F)
+
+BYTE FUNC Same(BYTE POINTER left,right)
+  CARD index
+
+  index=0
+  WHILE index<256 DO
+    IF SDXCOMMAND.Upper(left(index))<>SDXCOMMAND.Upper(right(index)) THEN
+      RETURN(0)
+    FI
+    IF left(index)=0 THEN
+      RETURN(1)
+    FI
+    index==+1
+  OD
+
+RETURN(0)
+
+BYTE FUNC Error(LONGINT cause)
+
+  DOS.SetIoErr(cause)
+RETURN(0)
+
+; Every native namespace operation below uses paths captured from this Image.
+; Nothing acquires ownership merely because it has an ARC suffix.
+PUBLIC BYTE FUNC Begin(SDXSTATE.Session POINTER state)
+  CARD length,leaf,dot,index
+  DOS.FileLock POINTER lock
+
+  IF state.tempOwned<>0 OR state.archivePath(0)=0 THEN
+    RETURN(Error(DOS.ERROR_BAD_ARGUMENTS))
+  FI
+  IF state.archiveCause<>0 AND state.archiveCause<>DOS.ERROR_OBJECT_NOT_FOUND THEN
+    RETURN(Error(state.archiveCause))
+  FI
+  length=0
+  leaf=0
+  dot=0
+  WHILE state.archivePath(length)<>0 DO
+    IF state.archivePath(length)=': OR state.archivePath(length)='/ THEN
+      leaf=length+1
+      dot=0
+    ELSEIF state.archivePath(length)='. THEN
+      dot=length
+    ELSEIF state.archivePath(length)='? OR state.archivePath(length)='* THEN
+      RETURN(Error(DOS.ERROR_BAD_ARGUMENTS))
+    FI
+    length==+1
+  OD
+  IF dot=0 THEN
+    dot=length
+  FI
+  IF dot<leaf OR dot>251 THEN
+    RETURN(Error(DOS.ERROR_BAD_ARGUMENTS))
+  FI
+  A816MEMORY.Move(@state.tempPath,@state.archivePath,256)
+  A816MEMORY.Move(@state.backupPath,@state.archivePath,256)
+  A816MEMORY.Move(@state.tempPath+dot,BYTE POINTER(c".XAR"),5)
+  A816MEMORY.Move(@state.backupPath+dot,BYTE POINTER(c".BAK"),5)
+  IF Same(@state.path,@state.tempPath)=0 OR
+      Same(@state.archivePath,@state.tempPath)<>0 OR
+      Same(@state.archivePath,@state.backupPath)<>0 THEN
+    RETURN(Error(DOS.ERROR_BAD_ARGUMENTS))
+  FI
+  lock=DOS.Lock(@state.backupPath,DOS.SHARED_LOCK)
+  IF lock<>NULL THEN
+    DOS.UnLock(lock)
+    RETURN(Error(DOS.ERROR_OBJECT_EXISTS))
+  FI
+  IF DOS.IoErr()<>DOS.ERROR_OBJECT_NOT_FOUND THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Stage(SDXSTATE.Session POINTER state BYTE POINTER name)
+
+  IF state.tempOwned=0 OR state.archiveExists=0 OR state.backupOwned<>0 OR
+      Same(name,@state.archivePath)=0 THEN
+    RETURN(Error(DOS.ERROR_BAD_ARGUMENTS))
+  FI
+  IF DOS.Rename(@state.archivePath,@state.backupPath)=0 THEN
+    RETURN(0)
+  FI
+  state.backupOwned=1
+
+RETURN(1)
+
+BYTE FUNC TargetName(BYTE POINTER path,name)
+  CARD leaf,at
+  BYTE ARRAY pattern(11)
+
+  leaf=0
+  at=0
+  WHILE path(at)<>0 DO
+    IF path(at)=': OR path(at)='/ THEN
+      leaf=at+1
+    FI
+    at==+1
+  OD
+  IF SDXNAMES.Pattern(path+leaf,@pattern,0)=0 THEN
+    RETURN(0)
+  FI
+  FOR at=0 TO 10 DO
+    IF pattern(at)<>SDXCOMMAND.Upper(name(at)) THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Rename(SDXSTATE.Session POINTER state)
+
+  IF Same(@state.path,@state.archivePath)<>0 AND
+      TargetName(@state.backupPath,state.bank+$76d)<>0 THEN
+    RETURN(Stage(state,@state.path))
+  FI
+  IF state.tempOwned=0 OR Same(@state.path,@state.tempPath)=0 OR
+      TargetName(@state.archivePath,state.bank+$76d)=0 OR
+      (state.archiveExists<>0 AND state.backupOwned=0) THEN
+    RETURN(Error(DOS.ERROR_BAD_ARGUMENTS))
+  FI
+  IF DOS.Rename(@state.tempPath,@state.archivePath)=0 THEN
+    RETURN(0)
+  FI
+  state.tempOwned=0
+  state.published=1
+  IF state.backupOwned<>0 THEN
+    IF (state.bank($505) & $80)=0 THEN
+      IF DOS.DeleteFile(@state.backupPath)=0 THEN
+        RETURN(0)
+      FI
+    FI
+    state.backupOwned=0
+  FI
+
+RETURN(1)
+
+; The original B path tries to delete an old backup and ignores its status.
+; Only an absent backup is admitted: return its real not-found status. A
+; newly appeared file is a collision, never permission to remove it.
+PUBLIC BYTE FUNC BackupAbsent(SDXSTATE.Session POINTER state)
+  DOS.FileLock POINTER lock
+
+  IF Same(@state.path,@state.backupPath)=0 OR state.backupOwned<>0 THEN
+    RETURN(Error(DOS.ERROR_BAD_ARGUMENTS))
+  FI
+  lock=DOS.Lock(@state.backupPath,DOS.SHARED_LOCK)
+  IF lock<>NULL THEN
+    DOS.UnLock(lock)
+    RETURN(Error(DOS.ERROR_OBJECT_EXISTS))
+  FI
+  IF DOS.IoErr()<>DOS.ERROR_OBJECT_NOT_FOUND THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Called only after guest/native file continuations and handles have retired.
+; The adapter's terminal result retains BREAK even when the Process acknowledges
+; its signal here to permit bounded rollback/owned-temporary removal.
+PUBLIC LONGINT FUNC Retire(SDXSTATE.Session POINTER state)
+  LONGINT cause
+
+  cause=0
+  IF state.tempOwned=0 AND state.backupOwned=0 THEN
+    RETURN(0)
+  FI
+  IF DOS.BreakPending()<>0 THEN
+    DOS.ClearBreak()
+  FI
+  IF state.backupOwned<>0 AND state.published=0 THEN
+    IF DOS.Rename(@state.backupPath,@state.archivePath)=0 THEN
+      cause=DOS.IoErr()
+    ELSE
+      state.backupOwned=0
+    FI
+  FI
+  IF state.tempOwned<>0 THEN
+    IF DOS.DeleteFile(@state.tempPath)=0 THEN
+      IF cause=0 THEN
+        cause=DOS.IoErr()
+      FI
+    ELSE
+      state.tempOwned=0
+    FI
+  FI
+  ; After publication a failed backup removal leaves the old archive intact
+  ; as recovery data. Never roll the published archive back over a later user.
+
+RETURN(cause)
+
+ENDMODULE

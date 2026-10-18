@@ -35,6 +35,9 @@ PUBLIC TYPE Session=[
   BYTE writeSlot,writeDated
   LONGCARD writeRemaining
   LONGCARD ARRAY fileSizes(SDXABI.HANDLE_LIMIT)
+  BYTE operation,tempOwned,backupOwned,published,archiveExists
+  LONGINT archiveCause
+  BYTE ARRAY archivePath(256),tempPath(256),backupPath(256)
 ]
 
 BYTE occupied

@@ -37,8 +37,8 @@ ordinary Tasks with native service waits, forced return-boundary NMIs and
 traced stock-810 reads alongside pointer IRQs. P3/P4 add native loading and
 services. [M1/M2](development/sdx-md5.md) admit the pinned MD5 subset for hashing,
 verification, masks/P/H/A attributes, shell redirection, cancellation and
-concurrent Processes. [A1/A2 ARC](development/sdx-arc.md) adds loading, listing and extraction.
-Mutation and complete hosted-system qualification remain open.
+concurrent Processes. [A1–A3 ARC](development/sdx-arc.md) adds loading, listing, extraction and mutation.
+Mixed-use acceptance and complete hosted-system qualification remain open.
 
 Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved

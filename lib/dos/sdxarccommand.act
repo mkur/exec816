@@ -105,6 +105,13 @@ PUBLIC BYTE FUNC Expand(SDXSTATE.Session POINTER state BYTE POINTER frame)
 
   near=CARD(frame(SDXABI.FRAME_A)) OR (CARD(frame(SDXABI.FRAME_X)) LSH 8)
   target=state.bank+near
+  IF state.overlayModule=5 AND
+      SDXSTATE.ReadWord(frame,SDXABI.FRAME_PC)=$4b5a THEN
+    IF near<>$ab THEN
+      RETURN(156)
+    FI
+    target=state.dp+near
+  FI
   used=frame(SDXABI.FRAME_Y)
   IF LONGCARD(near)+used+13>=SDXABI.GUEST_LIMIT THEN
     RETURN(156)
@@ -187,6 +194,32 @@ PUBLIC BYTE FUNC Arithmetic(SDXSTATE.Session POINTER state BYTE POINTER frame
     index==-1
     state.bank(SDXABI.COMTAB+$107+index)=BYTE(result)
     result=result RSH 8
+  OD
+
+RETURN(0)
+
+; Original-library controls establish Y=8 at MUL_32+2: multiply the
+; first operand's top byte by the 24-bit second operand, returning X=$FF/Y=0.
+PUBLIC BYTE FUNC MultiplyEight(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  LONGCARD value
+  CARD index
+
+  IF state.overlayModule<>5 OR frame(SDXABI.FRAME_Y)<>8 OR
+      state.bank(SDXABI.COMTAB+$103)<>0 THEN
+    RETURN(156)
+  FI
+  value=0
+  FOR index=$104 TO $106 DO
+    value=(value LSH 8) OR state.bank(SDXABI.COMTAB+index)
+  OD
+  value=value*state.bank(SDXABI.COMTAB+$ff)
+  frame(SDXABI.FRAME_A)=BYTE(value RSH 24)
+  frame(SDXABI.FRAME_X)=$ff
+  frame(SDXABI.FRAME_Y)=0
+  frame(SDXABI.FRAME_P)=(frame(SDXABI.FRAME_P) & $7c) OR 2
+  FOR index=0 TO 3 DO
+    state.bank(SDXABI.COMTAB+$10a-index)=BYTE(value)
+    value=value RSH 8
   OD
 
 RETURN(0)

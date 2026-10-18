@@ -2,8 +2,8 @@
   "schema_version": 1,
   "personality_abi": 1,
   "id": "arc-450",
-  "revision": 3,
-  "execution_status": "A1-A2-development",
+  "revision": 4,
+  "execution_status": "A1-A3-development",
   "audit": "../../docs/development/sdx-arc.md",
   "modules": [
     {
@@ -102,13 +102,53 @@
       "bytes": 4645,
       "crc32": "03a08a5a",
       "sha256": "f0aa3ef786bc58567bd97a5b6dca58eadf1cdf8bac8bb0e6a3447a4d955d7408",
-      "patches": []
+      "patches": [
+        {
+          "id": "arc-add-dp-name",
+          "block": 1,
+          "offset": 240,
+          "expected": "99ab00",
+          "replacement": "bb95ab",
+          "intersections": [],
+          "fixups": [],
+          "reason": "Store the terminator through D, matching the name read through zero page. X and NZ are dead until overwritten; A/Y/C/V and the stack are unchanged.",
+          "contract": "Store the terminator through D, matching the name read through zero page. X and NZ are dead until overwritten; A/Y/C/V and the stack are unchanged.",
+          "regressions": [
+            "arc-a3-create-mutate",
+            "arc-library-partial-multiply"
+          ]
+        },
+        {
+          "id": "arc-add-multiply-eight",
+          "block": 1,
+          "offset": 3413,
+          "expected": "200200",
+          "replacement": "2080f5",
+          "intersections": [
+            {
+              "base": "MUL_32",
+              "offset": 3414
+            }
+          ],
+          "fixups": [],
+          "reason": "Bind the audited Y=8 MUL_32+2 entry to its own guest veneer; do not enter the normal veneer interior.",
+          "contract": "Bind the audited Y=8 MUL_32+2 entry to its own guest veneer; do not enter the normal veneer interior.",
+          "regressions": [
+            "arc-a3-create-mutate",
+            "arc-library-partial-multiply"
+          ]
+        }
+      ],
+      "direct_page_arguments": [
+        7120,
+        7165
+      ]
     }
   ],
   "unsupported": [
-    "Hardware option H; encryption G; print/test commands P/T; arbitrary modules",
-    "Creation, addition, deletion and date-based update/freshen pending A3",
-    "Dates beyond 2049 and directory entries as extracted members"
+    "Hardware H; encryption G; move M; print/test P/T; store-only S; arbitrary modules",
+    "Dates beyond 2049; unknown dates in U/F; directory entries as extracted members",
+    "Atomic replacement, power-loss recovery and automatic removal of pre-existing .XAR/.BAK files"
   ],
   "direct_page_arguments": [
     721

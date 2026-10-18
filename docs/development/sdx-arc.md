@@ -1,10 +1,10 @@
 # ARC on the SDX personality
 
-A1/A2 admit the pinned 6502 SDX 4.50 `ARC.COM`, `ARCLST.OVL` and `ARCEXT.OVL` for listing/extraction as
+A1–A3 admit the pinned 6502 SDX 4.50 `ARC.COM` and its three overlays for listing, extraction and archive mutation as
 ordinary Exec Processes. [Manifest](../../compat/sdx/arc-450.json),
 [plan](../plans/spartados-personality-implementation-plan.md),
 [service contract](../reference/sdx-services.md) and
-[execution record](sdx-arc-a1.json) define the development scope. Mutation remains disabled until its own acceptance gate passes. This is not
+[execution records](sdx-arc-a3.json) define the development scope. Mixed-use A4 checks remain in progress. This is not
 full hosted-system qualification.
 
 ## A1 loading and listing
@@ -43,7 +43,7 @@ produces zero with carry, which preserves ARC's 100% display for empty entries.
 skipping inline records and following the main export table and trap entries.
 It inventories 704 main, 244 listing, 488 extraction and 1,471 addition
 instructions. None of those decoded instructions is SEI. The extraction inventory includes both targets of each mutable LZW code/output
-vector. Addition remains preparation, not admission.
+vector. The A3 section below records addition admission.
 
 The optimized A1 run covers L/V, masks, an empty member, missing/corrupt overlays
 and subsequent recovery. Four outputs match original SDX byte for byte. Every
@@ -140,3 +140,89 @@ A3's reusable [exclusive-open dependency](dos-exclusive-open.json) passes 17 raw
 RAM and 31 optimized RAM/SDFS checks. `MODE_CREATE_EXCLUSIVE` reserves a new name
 atomically; `MODE_UPDATE_EXISTING` retains the existing archive as an exclusive
 writer without truncating or creating it. Both have zero bank-zero growth.
+
+## A3 creation and mutation
+
+`A archive files...` creates an archive or adds/replaces selected members.
+`D archive masks...` deletes selected members. `U` adds missing members and
+replaces older ones; `F` replaces older existing members only. `B` retains the
+old archive as `.BAK`; `N` and `W` keep the original message policy. Update and
+freshen require known source/member dates: an unspecified zero date is rejected,
+not treated as an invented timestamp. Newly written headers retain the source
+date. Ordinary `A` chooses stored, RLE or LZW output in the original compressor.
+
+ARCADD receives two checked patches. `STA $00AB,Y` becomes `TYX / STA $AB,X`
+at its audited filename terminator; X and NZ are dead there. Its `MUL_32+2`
+call receives a separate veneer, because entering the middle of the ordinary
+service veneer is invalid. Original-library probes establish the Y=8 operation:
+the top byte of the first operand times the 24-bit second operand, with the
+original register/flag results. The generator now preserves import addends in
+patch preimages. The overlay's MEMLO includes its entire BSS before execution.
+
+The original archive opens with the public exclusive-writer mode without
+truncation. The new `.XAR` uses atomic create-exclusive. A pre-existing `.XAR`
+or `.BAK` is a collision, including with `B`; the adapter never adopts or removes
+an unrelated file. ARC closes the completed temporary before replacement. The
+adapter stages the original under `.BAK`, then renames the owned temporary to
+the original name. That final rename is the replacement point. Without `B`,
+the owned backup is deleted after publication. With `B`, it remains for the user;
+move or remove it before another mutation of that archive.
+
+Every error after temporary ownership is terminal, after native I/O settles.
+This prevents ARC's header recovery from interpreting a read failure as a valid
+end marker and publishing incomplete work. Native Close/rollback preserves the
+first cause. A failed final rename restores the staged original and removes the
+owned temporary. BREAK also retires the guest first; only then does native
+cleanup acknowledge the signal to permit rollback, retaining Process result
+20/304. There is no guest resumption after that acknowledgement.
+
+Replacement spans several native namespace operations and is not atomic against
+power loss or independent native namespace operations. If rollback or deletion
+itself fails, a recoverable `.BAK`/`.XAR` can remain; the original causal error
+wins and a later invocation rejects the collision. These limits follow the
+[native write contract](../reference/filesystem-writes.md), not an emulated
+transaction guarantee.
+
+The [A3 record](sdx-arc-a3.json) contains **383 final RAM checks**, including byte-for-byte creation against
+original SDX, independent decoding/CRC and header dates, add/delete, backup
+contents, older/newer update and freshen, unknown-date rejection, native lease
+conflict, unrelated temporary/backup collisions, missing/corrupt ARCADD and
+recovery. **174 injected-failure checks** cover read, a committed one-byte short
+write, seek, late Close and final rename after staging. Each preserves the
+original archive, retires all handles and removes the owned temporary. Raw and
+optimized layout/frame probes each pass **44 checks**.
+
+Native SDFS runs add **46 normal**, **35 full-media**, **35 BREAK** and
+**35 protected-archive checks**. Independent file/directory read-back verifies
+archive contents, header dates, protected source preservation, unchanged original
+and filler after full media, and absence of owned temporary/backup files. BREAK
+observed **62 PAL ticks (1.24 seconds)** from request to settled retirement,
+using a stable 16-bit RTC sample. This is a measured case, not a universal bound.
+The full-media run saw 14,441 native IRQs. MD5's **136 checks**, extraction's
+**525 checks** and **15 SDX host tests** also pass.
+
+The pinned original `AS` control leaves `NEW.XAR` and never publishes `NEW.ARC`.
+Its store-only branch restores an output position before the corresponding save.
+`S` therefore remains rejected before guest entry. This observation applies to
+the pinned binary/configuration; ordinary `A` still produces stored members.
+Move `M`, encryption `G`, hardware `H`, print/test `P`/`T`, arbitrary overlays
+and unreviewed binary versions also remain unsupported.
+
+A3 adds **0 fixed and 0 per-Task reserved bank-zero bytes**, including guards,
+alignment and unused capacity. The enabled DP pool remains **544 bytes**.
+The upper Session grows **792 bytes**, from 1,456 to **2,248**, including four
+ARC handle slots, sizes, flags and three 256-byte ownership paths. This is already
+8-byte heap aligned. MD5 still admits two handles. ARCADD ends at **$AA76**,
+leaving **13,706 bytes** before the guest limit $E000 for its workspace. Its
+4,646-byte staging request reserves **4,648 bytes**, alongside the ordinary
+loader layout and 8,192-byte relocation bitmap. Guest backing, context storage
+and native Task reservations are unchanged. The large 32,768-byte static arena
+in the mutation fixtures is test-only.
+
+```sh
+python3 tools/test_sdx_arc.py --group reference-create --output build/sdx-arc/reference-create
+python3 tools/test_sdx_arc.py --group reference-store --output build/sdx-arc/reference-store
+python3 tools/test_sdx_arc_mutate.py --output build/sdx-arc/a3-final
+python3 tools/test_sdx_arc_faults.py --output build/sdx-arc/a3-faults
+python3 tools/test_sdx_arc_mutate_disk.py --output build/sdx-arc/a3-sdfs
+```

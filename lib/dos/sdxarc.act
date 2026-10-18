@@ -30,6 +30,11 @@ PUBLIC BYTE FUNC DirectPage(CARD site BYTE overlay)
       RETURN(1)
     FI
   FI
+  IF overlay=5 THEN
+    IF site=SDXABI.GUEST_START+$1bd0 OR site=SDXABI.GUEST_START+$1bfd THEN
+      RETURN(1)
+    FI
+  FI
 
 RETURN(site=SDXABI.GUEST_START+$2d1)
 

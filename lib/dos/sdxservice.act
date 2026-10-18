@@ -11,11 +11,20 @@ USE SDXPRINT
 USE SDXTRAPS
 USE SDXARCCOMMAND
 USE SDXOVERLAY
+USE SDXMUTATION
 
 BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
   BYTE value
 
   CASE event OF
+  WHEN SDXABI.ARC_MULTIPLY_EVENT THEN
+    RETURN(SDXARCCOMMAND.MultiplyEight(state,frame))
+  WHEN SDXABI.KERNEL_EVENT THEN
+    RETURN(SDXFILES.Kernel(state,frame))
+  WHEN SDXABI.CALL_REMOVE THEN
+    RETURN(SDXFILES.Remove(state))
+  WHEN SDXABI.CALL_FILELENG THEN
+    RETURN(SDXFILES.Length(state))
   WHEN SDXABI.CHECKPOINT_EVENT THEN
     RETURN(0)
   WHEN SDXABI.OVERLAY_RETURN_EVENT THEN
@@ -78,7 +87,7 @@ BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
   WHEN SDXABI.CALL_U_GETKEY THEN
     RETURN(SDXFILES.Key(state,frame))
   WHEN SDXABI.CALL_FOPEN THEN
-    RETURN(SDXFILES.Open(state))
+    RETURN(SDXFILES.Open(state,frame))
   WHEN SDXABI.CALL_FCLOSE THEN
     RETURN(SDXFILES.Close(state,state.bank($760)))
   WHEN SDXABI.CALL_FCLOSEAL THEN
@@ -114,23 +123,33 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   BYTE POINTER frame
   CARD event
   BYTE error,closeError,pendingError,cancelled,cleanupCalls,cleanup
-  LONGINT result,cause,pendingCause
+  LONGINT result,cause,pendingCause,cleanupCause
 
   state=SDXSTATE.Session POINTER(image.extension)
   SDXSTATE.Prepare(state)
   state.trapCount=0
+  state.operation=0
+  state.tempOwned=0
+  state.backupOwned=0
+  state.published=0
+  state.archiveExists=0
+  state.archiveCause=0
+  state.archivePath(0)=0
   state.nativeError=0
   error=SDXCOMMAND.Initialize(state,arguments,@image.name)
   IF error=0 AND state.profile=32 THEN
     IF arguments=NULL THEN
       error=156
     ELSEIF arguments(0)<>'L AND arguments(0)<>'V AND arguments(0)<>'X AND
-        arguments(0)<>'E THEN
+        arguments(0)<>'E AND arguments(0)<>'A AND arguments(0)<>'D AND
+        arguments(0)<>'U AND arguments(0)<>'F THEN
       error=156
     ELSE
+      state.operation=arguments(0)
       event=1
       WHILE arguments(event)<>0 AND arguments(event)<>32 DO
-        IF arguments(event)<>'N AND arguments(event)<>'W THEN
+        IF arguments(event)<>'N AND arguments(event)<>'W AND
+            arguments(event)<>'B THEN
           error=156
         FI
         event==+1
@@ -195,6 +214,12 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
       FI
     FI
     IF error<>0 THEN
+      ; ARC's header reader can mistake an I/O failure for end of archive.
+      ; Once replacement work is owned, no guest recovery may publish it.
+      IF SDXMUTATION.Active(state)<>0 AND (state.tempOwned<>0 OR
+          state.backupOwned<>0 OR state.published<>0) THEN
+        EXIT
+      FI
       IF state.nativeError=304 THEN
         error=128
         cancelled=1
@@ -216,6 +241,11 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   IF error=0 AND closeError<>0 THEN
     result=20
     cause=state.nativeError
+  FI
+  cleanupCause=SDXMUTATION.Retire(state)
+  IF cause=0 AND cleanupCause<>0 THEN
+    result=20
+    cause=cleanupCause
   FI
   state.trapCount=0
   state.overlayActive=0

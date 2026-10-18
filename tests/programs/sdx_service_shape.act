@@ -25,7 +25,7 @@ PROC Main()
 
   baseline=EXEC.AvailMem(0)
   sessionBytes=SIZEOF(SDXSTATE.Session)
-  Require(sessionBytes=1456)
+  Require(sessionBytes=2248)
   state=SDXSTATE.Session POINTER(EXEC.AllocMem(sessionBytes,EXEC.MEMF_CLEAR))
   Require(state<>NULL)
   state.context=EXEC.AllocMem(512,EXEC.MEMF_CLEAR)
@@ -42,7 +42,7 @@ PROC Main()
   Require(SDXTRAPS.Install(state,frame)=0)
   Require(state.trapCount=1 AND state.traps(0).handler=$3046
       AND state.traps(0).stack=$1dd)
-  Require(bytes(20)=$46 AND bytes(21)=$30 AND bytes(22)=$dd AND bytes(23)=1)
+  Require(bytes(26)=$46 AND bytes(27)=$30 AND bytes(28)=$dd AND bytes(29)=1)
   ; Deliver from a deeper guest stack and verify the complete suspended frame.
   SDXSTATE.Word(state.context,SDXABI.FIELDS_GUEST_S,$1b0)
   frame=SDXSTATE.GetFrame(state)

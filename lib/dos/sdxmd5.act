@@ -69,7 +69,7 @@ PUBLIC CARD FUNC Patch(SDXFILE.Layout POINTER plan)
   IF block=NULL THEN
     RETURN(1)
   FI
-  SDXSTATE.Word(@before2,1,$f100)
+  SDXSTATE.Word(@before2,1,SDXSTATE.ReadWord(@before2,1)+$f100)
   patches(2).offset=block.placed+310
   patches(2).length=3
   patches(2).expected=@before2

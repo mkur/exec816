@@ -1,8 +1,8 @@
 # Patched SDX binaries on Exec816
 
-Status: MD5 M1/M2 and ARC A1/A2 pass development checks, 18 October 2026. The first applications
+Status: MD5 M1/M2 and ARC A1–A3 pass development checks, 19 October 2026. The first applications
 are **6502 MD5, then 6502 ARC**. The pinned MD5 subset is admitted under Exec;
-ARC listing/extraction are admitted; mutation remains open. This replaces the
+ARC listing, extraction and mutation are admitted; mixed-use A4 remains open. This replaces the
 earlier MD5-only plan and its native-mode guest proposal.
 
 The [first execution record](../development/sdx-patches.md) covers native CRC32
@@ -15,7 +15,7 @@ source-audited synthetic commands through ordinary Processes.
 [P4](../development/sdx-services.md) passes the fourteen-import guest-call,
 cleanup and focused ABI probes. [M1/M2](../development/sdx-md5.md) add real MD5
 hashing, verification, selection, cancellation and concurrent guest checks.
-[A1/A2](../development/sdx-arc.md) add private overlays, listing and extraction.
+[A1–A3](../development/sdx-arc.md) add private overlays, listing, extraction and mutation.
 These development results do not complete the full P0/P1/P2 qualification gates.
 
 [Design](spartados-personality-design.md) ·
@@ -438,8 +438,9 @@ documented replacement point; do not claim atomic replacement beyond the
 [native write contract](../reference/filesystem-writes.md). Never remove a
 temporary or backup file merely because its name matches a convention.
 
-Native DOS currently lacks SetFileDate/SetProtection, seek beyond EOF and rename
-with replacement. P0 must identify which exact ARC paths require them. Implement
+Native DOS now provides SetFileDate and exclusive create/update opens; SetProtection,
+seek beyond EOF and rename with replacement remain absent. P0 must identify
+which exact ARC paths require them. Implement
 needed metadata operations as reusable public DOS capabilities in a separate
 executable dependency slice before accepting those paths. Do not silently drop
 timestamps or fake date comparisons: date-based update/freshen remains unavailable

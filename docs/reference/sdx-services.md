@@ -4,7 +4,7 @@
 
 [Reference index](README.md) · [Machine-readable ABI](../../abi/sdx.json) · [Development evidence](../development/sdx-services.md)
 
-Opt-in development personality for the exact pinned 6502 MD5.COM and ARC.COM with ARCLST.OVL/ARCEXT.OVL. MD5 hashing/verification, ARC L/V listing and X/E extraction with N/W flags are admitted. Creation and mutation remain unsupported.
+Opt-in development personality for the exact pinned 6502 MD5.COM and ARC.COM with ARCLST.OVL/ARCEXT.OVL/ARCADD.OVL. MD5 hashing/verification and ARC L/V, X/E, A/D/U/F with N/W/B flags are admitted. S/M/G/H/P/T and arbitrary modules remain unsupported.
 
 E=1, M=X=1, private aligned D, PBR=DBR=guest bank. Calls use JSR to the imported veneer. AX denotes low A and low X, little endian.
 
@@ -12,16 +12,16 @@ Except for documented results, calls preserve A (including hidden B), X, Y, P, D
 
 Ordinary near pointers select guest-bank storage below $E000. PRINTF argument-word sites classified by the admitted profile may instead select guest D+offset in bank zero. Sites are selected by the active audited overlay as well as the application. No numeric-address heuristic, stack pointers or extended-memory buffers are supported. VPRINTF admits only the pinned ARC single-RTS leaf.
 
-A service error is delivered only after native I/O settles. The newest trap is removed, S restored, A set to the SDX error byte and N set; other registers/flags remain as at the failing call. Files stay open. With no trap, the Process exits with primary 20; secondary is the original native IoErr, or the explicit SDX byte if no native error caused it. Final cleanup closes all owned handles and preserves the first cause. A caught native error retains its cause through cleanup and rethrow of the same SDX byte; successful new input clears that pending cause. MD5 digest mismatches print inverse BAD but return zero; malformed digest records are skipped with a balanced stack by an audited patch, and overlong records fail with SDX 137.
+A service error is delivered only after native I/O settles. The newest trap is removed, S restored, A set to the SDX error byte and N set; other registers/flags remain as at the failing call. Files stay open. With no trap, the Process exits with primary 20; secondary is the original native IoErr, or the explicit SDX byte if no native error caused it. Final cleanup closes all owned handles and preserves the first cause. A caught native error retains its cause through cleanup and rethrow of the same SDX byte; successful new input clears that pending cause. MD5 digest mismatches print inverse BAD but return zero; malformed digest records are skipped with a balanced stack by an audited patch, and overlong records fail with SDX 137. During ARC mutation, any error after temporary/backup ownership is terminal: the adapter retires native handles and performs owned cleanup instead of letting guest recovery publish incomplete work.
 
 | Symbol | Input | Effect | Registers and flags |
 | --- | --- | --- | --- |
 | `COMTAB` | Variable address; private command state. | BUFOFF=+$0A; FILLEN=+$1A; COMFNAM=+$21 (30 bytes); LBUF=+$3F (64 bytes). | No call or register effect. |
 | `FILE_P` | Variable address containing a near pointer to an ATASCII-EOL filename. | Initialized to COMTAB+$21; FOPEN dereferences this word. | No call or register effect. |
 | `FCLOSE` | file_id. | Consume the native file or directory handle, preserving a late Close error. A completed extracted member receives its captured timestamp; incomplete members cannot report successful Close. | A/X/Y/P preserved on success. |
-| `FCLOSEAL` | No arguments. | Closes both owned handles; completes all closes before returning the first error. | A/X/Y/P preserved on success. |
+| `FCLOSEAL` | No arguments. | Closes all owned handles; completes all closes before returning the first error. | A/X/Y/P preserved on success. |
 | `FGETC` | file_id=$0760. | Reads one binary byte. EOF returns A=$9B; otherwise A=data. | X=0/N=0/Z=1 for data; X=$FF/N=1/Z=0 for EOF. Y, hidden B and other P bits preserved. |
-| `FOPEN` | FILE_P; mode=4 read or ARC mode=8 output; scan; dateset/date/time for ARC members. | Two owned slots, including any directory search. Read resolves the first eligible 8.3 match. Output checks timestamp representability before truncation and retains date/length ownership until Close. | A/X/Y/P preserved on success. |
+| `FOPEN` | FILE_P; mode=4 read or ARC mode=8 output; scan; dateset/date/time for ARC members. | Two MD5 or four ARC owned slots, including directory search. Read resolves the first eligible 8.3 match. ARC source dates are returned at $077B..$0780. Extracted output checks dates before truncation; mutation uses exclusive-existing archive and create-exclusive temporary modes. | A/X/Y/P preserved on success. |
 | `FREAD` | file_id=$0760; addpos=$0782 (word); bytbuf=$0785 (nonzero word); memreix=$0787 must be zero. | Reads up to the requested count into an ordinary guest-bank buffer, continuing native short transfers. Writes actual count to bytbuf; addpos unchanged. | X=0/N=0/Z=1 for full transfer; X=$FF/N=1/Z=0 at EOF. A, Y, hidden B and other P bits preserved. |
 | `PRINTF` | Inline NUL format followed by pointer words; address classes fixed per admitted argument site. | Writes the bounded formatter stream to DOS.Output and resumes after all consumed pointer words. | A/X/Y/P preserved on success, including hidden B. |
 | `TOUPPER` | A=byte. | Converts ASCII a..z to A..Z; other bytes unchanged. | A=result; N/Z reflect result. X/Y, hidden B and other P bits preserved. |
@@ -38,12 +38,12 @@ A service error is delivered only after native I/O settles. The newest trap is r
 | `FSEEK` | file_id; little-endian 24-bit absolute position at $0782. | Seek within an owned file through DOS.Seek. | Preserved except documented results. |
 | `FTELL` | file_id. | Return current 24-bit position at $0782. | Preserved except documented results. |
 | `FWRITE` | file_id, addpos, bytbuf; ordinary guest-bank source. | Continue short native writes, report the first I/O error, and never write beyond the extracted header length. Only owned file handles are admitted. | Preserved except documented results. |
-| `REMOVE` | ARC audited subset; see development record. | Unsupported operations fail with SDX 156 until their milestone is admitted. | Preserved except documented results. |
+| `REMOVE` | FILE_P = the admitted original archive path. | Stage that archive under its owned backup name; arbitrary deletion and move-mode source deletion are unsupported. | Preserved except documented results. |
 | `U_EXPAND` | AX destination, Y index; internal 8.3 name at $0762. | Expand to dotted name and EOL; return updated Y. | Preserved except documented results. |
 | `U_FSPEC` | FILE_P ordinary guest pointer. | Add *.* for an empty leaf; retain COMTAB/FILE_P. | Preserved except documented results. |
 | `U_GEFINA` | FILE_P; only the audited ARC member-name wrapper selects D+$90. | Decode A: or @: and bounded path/8.3 name into SDX variables. | Preserved except documented results. |
 | `U_GETPAR` | COMTAB command cursor. | Consume the next bounded token into COMFNAM; return parameter status. | Preserved except documented results. |
-| `U_LOAD` | FILE_P = exact CAR:ARCLST.OVL (FLAG 0/1) or CAR:ARCEXT.OVL (FLAG 0). | Verify the pinned overlay, relocate with private _ARC export, run synchronously and retire owned handles/frame/overlay. | Preserved except documented results. |
+| `U_LOAD` | FILE_P = exact CAR:ARCLST.OVL (FLAG 0/1/2), CAR:ARCEXT.OVL (0), or CAR:ARCADD.OVL (0/2/3). | Verify the pinned overlay, relocate with private _ARC export, run synchronously and retire owned handles/frame/overlay. | Preserved except documented results. |
 | `VPRINTF` | Inline PRINTF record; PUT_V must name ARC main single-RTS leaf. | Consume the record with the audited discard callback; general callbacks fail. | Preserved except documented results. |
 | `DIV_32` | Big-endian 32-bit operands at COMTAB+$FF and +$103. | Quotient at +$107; zero divisor yields zero and carry set. | Preserved except documented results. |
 | `MUL_32` | Big-endian 32-bit operands at COMTAB+$FF and +$103. | Low 32-bit product at +$107; carry marks overflow. | Preserved except documented results. |
@@ -51,7 +51,7 @@ A service error is delivered only after native I/O settles. The newest trap is r
 | `__MISC` | A=1 only. | Pinned missing-DAYTIME policy: A=$9A, X=$FE, Y=$9B, NZ from X. ARC uses day/month and 24-hour time. | Preserved except documented results. |
 | `FFIRST` | FILE_P plus scan; regular-file masks only. | Open one retained DOS directory search; copy a matching public FIB into raw SDX dentry, with size, flags and timestamps. X=0/N=0 on match, X=$FF/N=1 on end; close the owned slot even at end. | Preserved except documented results. |
 | `FNEXT` | file_id for the retained directory search. | Advance the same private FIB/pattern cursor; same result convention as FFIRST. | Preserved except documented results. |
-| `FILELENG` | ARC audited subset; see development record. | Unsupported operations fail with SDX 156 until their milestone is admitted. | Preserved except documented results. |
+| `FILELENG` | file_id=$0760. | Return the captured source length as a 24-bit little-endian value at $0782..$0784. | Preserved except documented results. |
 | `U_GETKEY` | Ordinary Process input. | Read one byte into A, X=0/N=0. EOF is SDX 136; BREAK/I/O errors use normal native error delivery. No modifier-key/hardware emulation. | Preserved except documented results. |
 | `U_PATH` | AX/Y destination; device and path variables. | Expand A: plus the bounded path, return EOL position in Y; other devices fail. | Preserved except documented results. |
 
@@ -59,13 +59,15 @@ A service error is delivered only after native I/O settles. The newest trap is r
 
 LBUF holds at most 63 bytes including the command name and separating space, followed by ATASCII EOL. COMFNAM holds at most 29 filename bytes plus EOL. No quoted filenames or mixed signs within an attribute token.
 
-Guest A: and bare filenames map to an immutable build-configured native root (RAM: by default). Leading > or backslash denotes the mapped root; internal separators become /. The final 8.3 component supports * and padded ?. FOPEN selects the first matching regular file, preserving the input specification for output; it does not expand a mask into multiple commands. Scan bits require/exclude P/H/A through public DOS metadata. Other drives, parent notation, wildcard directories, raw directories (+S), ARC admits absolute seek/tell and X/E member writes. Extraction preserves representable timestamps through DOS.SetFileDate (1980..2049 or unspecified zero), rejects directory/path member names and unsupported codecs before opening the output. Members use stored methods 1/2, RLE 3, Huffman/RLE 4, 12-bit LZW/RLE 8 and SDX LZW 15. CRC warnings preserve the original zero exit status; W suppresses warnings. Short headers, truncated packed extents and inconsistent stored lengths fail explicitly. CAR: is read-only overlay lookup beneath the immutable sdx_car_root (RAM: by default). No global assignment is changed.
+Guest A: and bare filenames map to an immutable build-configured native root (RAM: by default). Leading > or backslash denotes the mapped root; internal separators become /. The final 8.3 component supports * and padded ?. FOPEN selects the first matching regular file, preserving the input specification for output; it does not expand a mask into multiple commands. Scan bits require/exclude P/H/A through public DOS metadata. Other drives, parent notation, wildcard directories and raw directories (+S) are unsupported. ARC admits absolute seek/tell and X/E member writes. Extraction preserves representable timestamps through DOS.SetFileDate (1980..2049 or unspecified zero), rejects directory/path member names and unsupported codecs before opening the output. Members use stored methods 1/2, RLE 3, Huffman/RLE 4, 12-bit LZW/RLE 8 and SDX LZW 15. CRC warnings preserve the original zero exit status; W suppresses warnings. Short headers, truncated packed extents and inconsistent stored lengths fail explicitly. CAR: is read-only overlay lookup beneath the immutable sdx_car_root (RAM: by default). No global assignment is changed.
 
 NUL-terminated inline format, at most 1023 bytes, then one near pointer word per operand (and per * width). Supported: %% and %b/%d/%e/%l unsigned 8/16/24/32-bit decimal, %x 24-bit hexadecimal, %c byte, %s string, %p pointer to string. Width uses its low byte; decimals allow at most 10 digits; zero padding, truncation and space padding are supported. Default %x is six zero-padded digits. Strings end at NUL or ATASCII EOL. %s uses an ordinary-bank string except audited ARC DP sites (bounded by 256 bytes); %p may fetch its pointer variable from audited DP storage but the target string is in the ordinary bank. %t is unsupported.
 
 Escapes a,b,e,f,n,r,t,z,backslash and i are supported; i toggles inverse bytes for printable characters within one call. Redirected output retains exact SDX bytes. Interactive output maps $9B/$7E/$7F/$7D to LF/BS/TAB/FF. The buffer is 256 bytes; partial native writes are continued, and write errors use normal trap delivery. No general Atari terminal emulation is provided.
 
-BREAK belongs to the ordinary Process. It is checked before guest entry, at service boundaries and by a patched checkpoint after each 64-byte compression block ($F280, event 14, outside the SDX import namespace). Native I/O settles before SDX 128 trap delivery. A caught BREAK allows only bounded cleanup calls, then exits with primary 20/secondary 304. Cleanup cannot clear cancellation. See the MD5 development record for measured timing on the pinned machine; no universal device-latency bound is claimed.
+BREAK belongs to the ordinary Process. It is checked before guest entry, at service boundaries and by a patched checkpoint after each 64-byte compression block ($F280, event 14, outside the SDX import namespace). Native I/O settles before SDX 128 trap delivery. A caught BREAK allows only bounded cleanup calls, then exits with primary 20/secondary 304. Guest cleanup cannot clear cancellation. ARC mutation retires the guest before acknowledging BREAK for native-only rollback and temporary removal; its terminal result remains 20/304. See the MD5 development record for measured timing on the pinned machine; no universal device-latency bound is claimed.
+
+ARC A/D/U/F keep the original under an exclusive native writer lease while constructing a create-exclusive .XAR. Existing .XAR/.BAK names cause a collision. After successful Close, stage the original as .BAK and rename the owned temporary to publish; B retains the backup, otherwise remove it. A failed final rename attempts rollback. Cleanup failure may leave recovery files. This is not atomic replacement or a power-loss guarantee. U/F reject unknown dates; headers preserve representable source dates. The private $0703 gate admits only the audited rename/delete-backup calls, and $F580 admits only the Y=8 MUL_32+2 operation. See the ARC development record for patches, ownership and measured limits.
 
 ## Error mapping
 
@@ -87,7 +89,7 @@ BREAK belongs to the ordinary Process. It is checked before guest entry, at serv
 | 156 | Unsupported or invalid operation/parameter; empty U_XFAIL; trap limit |
 | 158 | Native allocation failure |
 | 160 | Unmapped drive |
-| 161 | Two guest handles already open |
+| 161 | Guest handle limit reached (two for MD5; four for ARC including directory searches) |
 | 167 | Write protection |
 | 170 | File not found or explicit U_FAIL code |
 

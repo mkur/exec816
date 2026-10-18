@@ -5,6 +5,7 @@ USE SDXSTATE
 USE SDXCONFIG
 USE SDXNAMES
 USE SDXDATE
+USE SDXMUTATION
 USE A816MEMORY
 
 ; Errors use SDX's byte namespace at the guest boundary. Keep native IoErr in
@@ -92,12 +93,18 @@ BYTE FUNC Path(SDXSTATE.Session POINTER state)
 
 RETURN(156)
 
-PUBLIC BYTE FUNC Open(SDXSTATE.Session POINTER state)
-  BYTE error,slot,writing,dated
+PUBLIC BYTE FUNC Open(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  BYTE error,slot,writing,dated,archive,limit
   CARD index
   LONGINT mode
   DOS.FileHandle POINTER file
 
+  archive=state.profile=32 AND SDXMUTATION.Active(state)<>0 AND
+      SDXSTATE.ReadWord(frame,SDXABI.FRAME_PC)=$31f3
+  limit=2
+  IF state.profile=32 THEN
+    limit=SDXABI.HANDLE_LIMIT
+  FI
   writing=state.bank($778)=8 AND state.profile=32
   dated=writing<>0 AND state.bank($781)<>0
   IF (state.bank($778)<>4 AND writing=0) OR (state.bank($779) & 8)<>0 THEN
@@ -107,8 +114,14 @@ PUBLIC BYTE FUNC Open(SDXSTATE.Session POINTER state)
   IF error<>0 THEN
     RETURN(error)
   FI
+  IF archive<>0 THEN
+    A816MEMORY.Move(@state.archivePath,@state.path,256)
+  FI
   IF writing=0 THEN
     error=SDXNAMES.Resolve(state)
+    IF archive<>0 THEN
+      state.archiveCause=state.nativeError
+    FI
     IF error<>0 THEN
       IF state.nativeError<>0 THEN
         DOS.SetIoErr(state.nativeError)
@@ -116,8 +129,20 @@ PUBLIC BYTE FUNC Open(SDXSTATE.Session POINTER state)
       FI
       RETURN(error)
     FI
+    IF state.profile=32 AND SDXMUTATION.Active(state)<>0 THEN
+      ; ARCADD reads the opened source's date, separately from FFIRST's row.
+      error=SDXDATE.Directory(state)
+      IF error<>0 THEN
+        RETURN(error)
+      FI
+      A816MEMORY.Move(state.bank+$77b,state.bank+$79a,6)
+    FI
   ELSEIF state.writeSlot<>0 THEN
     RETURN(156)
+  ELSEIF SDXMUTATION.Active(state)<>0 THEN
+    IF SDXMUTATION.Begin(state)=0 THEN
+      RETURN(MapError(state))
+    FI
   ELSEIF dated<>0 THEN
     error=SDXDATE.Capture(state)
     IF error<>0 THEN
@@ -125,20 +150,32 @@ PUBLIC BYTE FUNC Open(SDXSTATE.Session POINTER state)
     FI
   FI
   slot=0
-  WHILE slot<SDXABI.HANDLE_LIMIT AND (state.handles(slot)<>NULL OR
+  WHILE slot<limit AND (state.handles(slot)<>NULL OR
       state.enumerationSlot=slot+1) DO
     slot==+1
   OD
-  IF slot=SDXABI.HANDLE_LIMIT THEN
+  IF slot=limit THEN
     RETURN(161)
   FI
   mode=DOS.MODE_OLDFILE
   IF writing<>0 THEN
     mode=DOS.MODE_NEWFILE
+    IF SDXMUTATION.Active(state)<>0 THEN
+      mode=DOS.MODE_CREATE_EXCLUSIVE
+    FI
+  ELSEIF archive<>0 THEN
+    mode=DOS.MODE_UPDATE_EXISTING
   FI
   file=DOS.Open(@state.path,mode)
   IF file=NULL THEN
+    IF archive<>0 THEN
+      state.archiveCause=DOS.IoErr()
+    FI
     RETURN(MapError(state))
+  FI
+  IF archive<>0 THEN
+    state.archiveExists=1
+    state.archiveCause=0
   FI
   IF writing=0 THEN
     state.fileSizes(slot)=LONGCARD(state.info.fib_Size)
@@ -146,6 +183,9 @@ PUBLIC BYTE FUNC Open(SDXSTATE.Session POINTER state)
   state.handles(slot)=file
   state.bank($760)=slot+1
   IF writing<>0 THEN
+    IF SDXMUTATION.Active(state)<>0 THEN
+      state.tempOwned=1
+    FI
     state.writeSlot=slot+1
     state.writeDated=dated
     A816MEMORY.Move(@state.writePath,@state.path,256)
@@ -286,6 +326,10 @@ PUBLIC BYTE FUNC Read(SDXSTATE.Session POINTER state BYTE POINTER frame
         RETURN(156)
       FI
     FI
+    IF (state.operation='U OR state.operation='F) AND
+        SDXSTATE.ReadWord(state.dp,$a1)=0 THEN
+      RETURN(156)
+    FI
     at=0
     WHILE at<13 AND target(at)<>0 DO
       IF target(at)=': OR target(at)='/ OR target(at)=92 OR
@@ -344,7 +388,7 @@ RETURN(0)
 PUBLIC BYTE FUNC Write(SDXSTATE.Session POINTER state BYTE POINTER frame
     BYTE single)
   BYTE slot
-  CARD at,count
+  CARD at,count,pc
   BYTE POINTER source
   LONGINT sent,total
 
@@ -363,6 +407,14 @@ PUBLIC BYTE FUNC Write(SDXSTATE.Session POINTER state BYTE POINTER frame
       RETURN(156)
     FI
     source=state.bank+at
+    pc=SDXSTATE.ReadWord(frame,SDXABI.FRAME_PC)
+    IF state.profile=32 AND (pc=$32be OR (state.overlayModule=5 AND
+        (pc=$4c0e OR pc=$4c1c))) THEN
+      IF (at<>$90 AND at<>$ab) OR count<>27 THEN
+        RETURN(156)
+      FI
+      source=state.dp+at
+    FI
   FI
   IF state.writeDated<>0 AND slot=state.writeSlot AND
       LONGCARD(count)>state.writeRemaining THEN
@@ -439,6 +491,11 @@ PUBLIC BYTE FUNC Enumerate(SDXSTATE.Session POINTER state BYTE POINTER frame
     A816MEMORY.Move(BYTE POINTER(@state.info),BYTE POINTER(@state.directoryInfo),
         SIZEOF(DOS.FileInfoBlock))
     IF SDXNAMES.Matches(state,state.scan)<>0 THEN
+      IF (state.operation='U OR state.operation='F) AND
+          state.info.fib_Date.ds_Days=0 AND state.info.fib_Date.ds_Minute=0 AND
+          state.info.fib_Date.ds_Tick=0 THEN
+        RETURN(156)
+      FI
       error=SDXDATE.Directory(state)
       IF error<>0 THEN
         RETURN(error)
@@ -470,6 +527,58 @@ PUBLIC BYTE FUNC Key(SDXSTATE.Session POINTER state BYTE POINTER frame)
   frame(SDXABI.FRAME_A)=state.character
   frame(SDXABI.FRAME_X)=0
   frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) & $7d
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Length(SDXSTATE.Session POINTER state)
+  BYTE slot
+
+  slot=state.bank($760)
+  IF slot=0 OR slot>SDXABI.HANDLE_LIMIT OR state.handles(slot-1)=NULL THEN
+    RETURN(134)
+  FI
+  SDXSTATE.Word(state.bank,$782,CARD(state.fileSizes(slot-1)))
+  state.bank($784)=BYTE(state.fileSizes(slot-1) RSH 16)
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Remove(SDXSTATE.Session POINTER state)
+  BYTE error
+
+  error=Path(state)
+  IF error<>0 THEN
+    RETURN(error)
+  FI
+  IF SDXMUTATION.Stage(state,@state.path)=0 THEN
+    RETURN(MapError(state))
+  FI
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Kernel(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  BYTE error,okay
+
+  IF state.profile<>32 OR SDXMUTATION.Active(state)=0 THEN
+    RETURN(156)
+  FI
+  error=Path(state)
+  IF error<>0 THEN
+    RETURN(error)
+  FI
+  IF frame(SDXABI.FRAME_Y)=11 THEN
+    okay=SDXMUTATION.Rename(state)
+    frame(SDXABI.FRAME_A)=0
+    frame(SDXABI.FRAME_P)=(frame(SDXABI.FRAME_P) & $7d) OR 2
+  ELSEIF frame(SDXABI.FRAME_Y)=12 THEN
+    okay=SDXMUTATION.BackupAbsent(state)
+    frame(SDXABI.FRAME_A)=170
+    frame(SDXABI.FRAME_P)=(frame(SDXABI.FRAME_P) & $7d) OR $80
+  ELSE
+    RETURN(156)
+  FI
+  IF okay=0 THEN
+    RETURN(MapError(state))
+  FI
 
 RETURN(0)
 
