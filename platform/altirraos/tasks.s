@@ -182,6 +182,12 @@ general_finalizer_start:
 .include "ideplus.s"
     .include "platform-timer.s"
     .include "calypsi-call.s"
+    .if SDX_PATCHES
+        .include "sdx-checksum.s"
+    .endif
+    .if SDX_RUNTIME_PROBE
+        .include "sdx-runtime-probe.s"
+    .endif
     .include "display.s"
     .include "blitter.s"
     .include "boot-diagnostics.s"

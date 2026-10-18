@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "personality_abi": 1,
+  "id": "md5-450",
+  "revision": 1,
+  "execution_status": "patch-probe-only",
+  "audit": "../../docs/plans/spartados-personality-inputs.json",
+  "modules": [
+    {
+      "file": "MD5.COM",
+      "role": "command",
+      "entry_export": "@MD5",
+      "bytes": 3488,
+      "crc32": "083eb436",
+      "sha256": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+      "patches": [
+        {
+          "id": "md5-compression-irq",
+          "reason": "Keep IRQs enabled during compression; retain the balanced PHP/PLP.",
+          "block": 1,
+          "offset": 1050,
+          "expected": "78",
+          "replacement": "ea",
+          "intersections": [],
+          "fixups": [],
+          "contract": "Only I differs between PHP at +0419 and PLP at +0965. All other registers, memory and stack effects are unchanged.",
+          "regressions": ["md5-sei-bytes", "md5-sdx-control-patched"]
+        }
+      ]
+    }
+  ],
+  "unsupported": ["Guest execution pending P2/P4", "Hardware option /H"]
+}

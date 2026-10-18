@@ -1,0 +1,31 @@
+{
+  "abi": "exec816.sdx.v1",
+  "version": 1,
+  "status": "patch-development",
+  "patch_limit": 16,
+  "errors": {"OK": 0, "PLAN": 1, "PREIMAGE": 2},
+  "modules": {"MD5.COM": 1, "ARC.COM": 2, "ARCLST.OVL": 3, "ARCEXT.OVL": 4, "ARCADD.OVL": 5},
+  "imports": {
+    "Update": {
+      "arguments": [
+        {"alignment": 1, "offset": 0, "size": 3},
+        {"alignment": 2, "offset": 4, "size": 2},
+        {"alignment": 2, "offset": 6, "size": 4}
+      ],
+      "outgoing_bytes": 11,
+      "result": "Some(NativeResult(A16X16))",
+      "label": "sdx_checksum_update",
+      "stack_peak": 5
+    }
+  },
+  "crc32": {
+    "polynomial": 3988292384,
+    "initial": 4294967295,
+    "xorout": 4294967295,
+    "table_entries": 256,
+    "pointer_dp": 128,
+    "state_dp": 132,
+    "entry": "sdx_crc32_update",
+    "contract": "Native E=0, M=X=0, decimal clear. A=byte count (0..65535); D+$80..82=far source pointer; D+$84..87=internal CRC, initially FFFFFFFF. Updates pointer and CRC, preserves Y/D/DBR/S, clobbers A/X/P. Long return. No IRQ masking. Caller owns scratch and input; split calls are permitted, including across a bank boundary. Final result is state XOR FFFFFFFF."
+  }
+}

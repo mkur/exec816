@@ -1,0 +1,498 @@
+{
+  "schema_version": 1,
+  "status": "static audit for proposed design",
+  "runtime_execution": false,
+  "scope": "Distribution and module hashes, standard SDX record traversal, declared blocks and symbols only. Not a complete instruction audit or an Exec816 compatibility result.",
+  "memory_scope": "Declared code/data/BSS sizes exclude placement padding, personality services, guest address-space reservations, additional runtime allocation and bank-zero stack/direct-page storage.",
+  "sources": [
+    {
+      "id": "toolkit-450",
+      "url": "https://sdx.atari8.info/sdx_files/4.50/toolkit.atr",
+      "bytes": 1474192,
+      "sha256": "25609a7ee5084b9a071bb4b1302ff775535b194a76a3acc9f05c9a0d9cec745e"
+    },
+    {
+      "id": "cartridge-450",
+      "url": "https://sdx.atari8.info/sdx_files/4.50/SDX450_maxflash1.car",
+      "bytes": 131088,
+      "sha256": "17fa6167b6de7997cceb67b8ab261c0c24eff5d9d8eeb4417a0644a87a9674c0"
+    },
+    {
+      "id": "toolkit-451",
+      "url": "https://sdx.atari8.info/sdx_files/4.51/toolkit.atr",
+      "bytes": 1474192,
+      "sha256": "74b73279417f94fc30639434501fea733717ac0004f92da18176dc954b82a52c"
+    }
+  ],
+  "applications": [
+    {
+      "id": "md5",
+      "distribution": "toolkit-450",
+      "archive": {
+        "path": "UTILS/FILEUTIL/MD5.ARC",
+        "bytes": 7769,
+        "sha256": "3c215eae4662d438b14ea374e309980632d11363aeade33d738481505add1976"
+      },
+      "modules": [
+        {
+          "file": "MD5.COM",
+          "bytes": 3488,
+          "sha256": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+          "declared_memory_bytes": 4727,
+          "blocks": [
+            {
+              "number": 1,
+              "control": 0,
+              "declared_offset": 0,
+              "bytes": 2535,
+              "bss": false
+            },
+            {
+              "number": 2,
+              "control": 64,
+              "declared_offset": 2535,
+              "bytes": 400,
+              "bss": false
+            },
+            {
+              "number": 3,
+              "control": 192,
+              "declared_offset": 2935,
+              "bytes": 1792,
+              "bss": true
+            }
+          ],
+          "imports": [
+            "COMTAB",
+            "FCLOSE",
+            "FCLOSEAL",
+            "FGETC",
+            "FILE_P",
+            "FOPEN",
+            "FREAD",
+            "PRINTF",
+            "TOUPPER",
+            "U_FAIL",
+            "U_GETATR",
+            "U_SFAIL",
+            "U_SLASH",
+            "U_XFAIL"
+          ],
+          "exports": [
+            {
+              "name": "@MD5",
+              "block": 1,
+              "offset": 0
+            }
+          ],
+          "relocation_records": 3,
+          "parsed_to_eof": true
+        }
+      ]
+    },
+    {
+      "id": "arc",
+      "distribution": "cartridge-450",
+      "modules": [
+        {
+          "file": "ARC.COM",
+          "bytes": 3203,
+          "sha256": "2107dcc06b29cf6ba5a26ad8aaf167f59f5211d2d93c08253594507a7d2217dd",
+          "declared_memory_bytes": 6764,
+          "blocks": [
+            {
+              "number": 1,
+              "control": 0,
+              "declared_offset": 0,
+              "bytes": 2459,
+              "bss": false
+            },
+            {
+              "number": 2,
+              "control": 128,
+              "declared_offset": 2459,
+              "bytes": 4305,
+              "bss": true
+            }
+          ],
+          "imports": [
+            "COMTAB",
+            "CURDEV",
+            "DEVNAME",
+            "FCLOSE",
+            "FGETC",
+            "FILE_P",
+            "FLAG",
+            "FOPEN",
+            "FPUTC",
+            "FREAD",
+            "FSEEK",
+            "FTELL",
+            "FWRITE",
+            "PRINTF",
+            "PUT_V",
+            "REMOVE",
+            "U_EXPAND",
+            "U_FAIL",
+            "U_FSPEC",
+            "U_GEFINA",
+            "U_GETPAR",
+            "U_LOAD",
+            "U_SFAIL",
+            "U_XFAIL",
+            "VPRINTF"
+          ],
+          "exports": [
+            {
+              "name": "@ARC",
+              "block": 1,
+              "offset": 0
+            },
+            {
+              "name": "_ARC",
+              "block": 1,
+              "offset": 2393
+            }
+          ],
+          "relocation_records": 2,
+          "parsed_to_eof": true,
+          "cartridge_ranges": [
+            [
+              54637,
+              2707
+            ],
+            [
+              57360,
+              496
+            ]
+          ]
+        },
+        {
+          "file": "ARCLST.OVL",
+          "bytes": 1998,
+          "sha256": "ea0b1f04ffa1c93d8b3fc69baafbb86854651665093c9ab3a091401c2946b7cd",
+          "declared_memory_bytes": 1714,
+          "blocks": [
+            {
+              "number": 1,
+              "control": 0,
+              "declared_offset": 0,
+              "bytes": 1714,
+              "bss": false
+            }
+          ],
+          "imports": [
+            "COMTAB",
+            "DIV_32",
+            "FLAG",
+            "MUL_32",
+            "PRINTF",
+            "PUTC",
+            "U_FAIL",
+            "U_GETPAR",
+            "_ARC",
+            "__MISC"
+          ],
+          "exports": [],
+          "relocation_records": 1,
+          "parsed_to_eof": true,
+          "cartridge_ranges": [
+            [
+              64412,
+              1124
+            ],
+            [
+              65552,
+              874
+            ]
+          ]
+        },
+        {
+          "file": "ARCEXT.OVL",
+          "bytes": 1911,
+          "sha256": "b1dd56ac4bb133bfc55150c1c17e401f74903d79a8459c6997ec0105290ad5ba",
+          "declared_memory_bytes": 18892,
+          "blocks": [
+            {
+              "number": 1,
+              "control": 0,
+              "declared_offset": 0,
+              "bytes": 1387,
+              "bss": false
+            },
+            {
+              "number": 2,
+              "control": 128,
+              "declared_offset": 1387,
+              "bytes": 17505,
+              "bss": true
+            }
+          ],
+          "imports": [
+            "COMTAB",
+            "FCLOSE",
+            "FFIRST",
+            "FILE_P",
+            "FLAG",
+            "FOPEN",
+            "PRINTF",
+            "PUTC",
+            "TOUPPER",
+            "U_EXPAND",
+            "U_FAIL",
+            "U_GETKEY",
+            "U_PATH",
+            "U_SFAIL",
+            "U_XFAIL",
+            "_ARC"
+          ],
+          "exports": [],
+          "relocation_records": 2,
+          "parsed_to_eof": true,
+          "cartridge_ranges": [
+            [
+              62501,
+              1911
+            ]
+          ]
+        },
+        {
+          "file": "ARCADD.OVL",
+          "bytes": 4645,
+          "sha256": "f0aa3ef786bc58567bd97a5b6dca58eadf1cdf8bac8bb0e6a3447a4d955d7408",
+          "declared_memory_bytes": 24586,
+          "blocks": [
+            {
+              "number": 1,
+              "control": 0,
+              "declared_offset": 0,
+              "bytes": 3638,
+              "bss": false
+            },
+            {
+              "number": 2,
+              "control": 128,
+              "declared_offset": 3638,
+              "bytes": 20948,
+              "bss": true
+            }
+          ],
+          "imports": [
+            "COMTAB",
+            "DEVNAME",
+            "DIV_32",
+            "FCLOSE",
+            "FFIRST",
+            "FILE_P",
+            "FILELENG",
+            "FLAG",
+            "FNEXT",
+            "FOPEN",
+            "FSEEK",
+            "FTELL",
+            "MUL_32",
+            "REMOVE",
+            "U_EXPAND",
+            "U_FAIL",
+            "U_FSPEC",
+            "U_GETPAR",
+            "_ARC"
+          ],
+          "exports": [],
+          "relocation_records": 2,
+          "parsed_to_eof": true,
+          "cartridge_ranges": [
+            [
+              57856,
+              4645
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sparta-commander",
+      "version": "1.1.1",
+      "distribution": "toolkit-451",
+      "archive": {
+        "path": "SHELLS/SC111.ARC",
+        "bytes": 29475,
+        "sha256": "e26b1b2366e9ad4f4ac80f0a79b8751c150738707b7b30a30049792bf51f7b70"
+      },
+      "modules": [
+        {
+          "file": "SC.COM",
+          "bytes": 1246,
+          "sha256": "8834abf40ad98dcf71a6dcc878a6e0d71252b5aecd1a965516c1b71753ba08f5",
+          "declared_memory_bytes": 1073,
+          "blocks": [
+            {
+              "number": 1,
+              "control": 0,
+              "declared_offset": 0,
+              "bytes": 813,
+              "bss": false
+            },
+            {
+              "number": 2,
+              "control": 128,
+              "declared_offset": 813,
+              "bytes": 260,
+              "bss": true
+            }
+          ],
+          "imports": [
+            "CKSPEC",
+            "COMTAB",
+            "DEVNAME",
+            "FCLOSE",
+            "FILE_P",
+            "FLAG",
+            "FOPEN",
+            "GETENV",
+            "PRINTF",
+            "PUTENV",
+            "TOUPPER",
+            "U_FAIL",
+            "U_GETKEY",
+            "U_GETPAR",
+            "U_LOAD",
+            "U_SFAIL",
+            "U_XFAIL",
+            "_RAWCON"
+          ],
+          "exports": [],
+          "relocation_records": 2,
+          "parsed_to_eof": true
+        },
+        {
+          "file": "SCMAIN.OVL",
+          "bytes": 15866,
+          "sha256": "df1d4393927eaedc28f8ebc0676e657db18ea175f7a647885afe4b2b8199215e",
+          "declared_memory_bytes": 18157,
+          "blocks": [
+            {
+              "number": 1,
+              "control": 0,
+              "declared_offset": 0,
+              "bytes": 6022,
+              "bss": false
+            },
+            {
+              "number": 2,
+              "control": 0,
+              "declared_offset": 6022,
+              "bytes": 6917,
+              "bss": false
+            },
+            {
+              "number": 3,
+              "control": 128,
+              "declared_offset": 12939,
+              "bytes": 5218,
+              "bss": true
+            }
+          ],
+          "imports": [
+            "CHDIR",
+            "CHMOD",
+            "COMTAB",
+            "CURDEV",
+            "DEVNAME",
+            "DIV_32",
+            "FCLEVEL",
+            "FCLOSE",
+            "FCLOSEAL",
+            "FGETC",
+            "FGETS",
+            "FILE_P",
+            "FLAG",
+            "FOPEN",
+            "FPUTC",
+            "FREAD",
+            "FSEEK",
+            "FTELL",
+            "FWRITE",
+            "GETCWD",
+            "GETDFREE",
+            "GETENV",
+            "MALLOC",
+            "MKDIR",
+            "MUL_32",
+            "PRINTF",
+            "PUT_V",
+            "PUTENV",
+            "REMOVE",
+            "RENAME",
+            "RENDIR",
+            "RMDIR",
+            "SYSLEVEL",
+            "TOUPPER",
+            "U_EXPAND",
+            "U_FAIL",
+            "U_GEFINA",
+            "U_GETKEY",
+            "U_GETNUM",
+            "U_GETPAR",
+            "U_GONOFF",
+            "U_LOAD",
+            "U_SFAIL",
+            "U_TOKEN",
+            "U_XFAIL",
+            "VPRINTF",
+            "_RAWCON",
+            "ERR_GMSG"
+          ],
+          "exports": [],
+          "relocation_records": 3,
+          "parsed_to_eof": true
+        },
+        {
+          "file": "SCBATMAN.OVL",
+          "bytes": 1228,
+          "sha256": "8fb7731e2743239f0f85f5e8943b601a6a16e003c6054f0e6c7508cf76cca0c5",
+          "declared_memory_bytes": 903,
+          "blocks": [
+            {
+              "number": 1,
+              "control": 0,
+              "declared_offset": 0,
+              "bytes": 772,
+              "bss": false
+            },
+            {
+              "number": 2,
+              "control": 128,
+              "declared_offset": 772,
+              "bytes": 131,
+              "bss": true
+            }
+          ],
+          "imports": [
+            "COMTAB",
+            "ERRNO",
+            "FCLEVEL",
+            "FCLOSE",
+            "FGETS",
+            "FLAG",
+            "FOPEN",
+            "GETENV",
+            "PRINTF",
+            "PUTENV",
+            "SYSLEVEL",
+            "U_ERROR",
+            "U_FAIL",
+            "U_GETPAR",
+            "U_SFAIL",
+            "U_TOKEN",
+            "U_XFAIL",
+            "XCOMLI"
+          ],
+          "exports": [],
+          "relocation_records": 2,
+          "parsed_to_eof": true
+        }
+      ]
+    }
+  ]
+}

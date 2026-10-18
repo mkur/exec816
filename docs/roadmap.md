@@ -20,6 +20,24 @@ the [earlier roadmap](history/roadmap-chronology.md) preserves the milestone log
 
 ## Commands and CLI
 
+The [SpartaDOS personality design](plans/spartados-personality-design.md) proposes
+running selected 6502 SDX applications as ordinary Exec Processes, in the order
+MD5 → ARC → Sparta Commander. Private upper-memory images and OS/SDX service
+adapters run audited 6502 binaries in emulation mode with version-specific
+load-time patches. The [MD5 and ARC implementation plan](plans/spartados-personality-implementation-plan.md)
+starts with patch manifests, page-one ownership and IRQ/NMI integration, then
+implements MD5 hashing/verification and ARC listing, extraction and mutation.
+Application acceptance requires executable failure, cancellation, concurrency
+and device-timing checks. Commander follows later. This remains separate from
+the existing SpartaDOS filesystem support.
+The [first implementation slice](development/sdx-patches.md) provides native
+CRC32 identification, checked patch transactions and component probes.
+The [P2 runtime slice](development/sdx-runtime.md) runs two synthetic guests on
+ordinary Tasks with native service waits, forced return-boundary NMIs and
+traced stock-810 reads alongside pointer IRQs. Production guest
+admission, complete interrupt/lifetime proof, native SDX loading/services and
+application acceptance remain open.
+
 Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved
 bank-zero costs for each slice before moving to the next.

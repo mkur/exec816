@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "personality_abi": 1,
+  "id": "arc-450",
+  "revision": 1,
+  "execution_status": "patch-probe-only",
+  "audit": "../../docs/plans/spartados-personality-inputs.json",
+  "modules": [
+    {
+      "file": "ARC.COM",
+      "role": "command",
+      "entry_export": "@ARC",
+      "bytes": 3203,
+      "crc32": "a179b08e",
+      "sha256": "2107dcc06b29cf6ba5a26ad8aaf167f59f5211d2d93c08253594507a7d2217dd",
+      "patches": [
+        {
+          "id": "arc-inline-six",
+          "reason": "Use the real page-one stack and D-relative F0-F5 with an upper-bank DBR.",
+          "block": 1,
+          "offset": 1517,
+          "expected": "8d611aba18bd030185fe6d611a9d0301bd040185ff69009d0401ac611ab1fe99ef0088d0f860",
+          "replacement": "8d000018a30385fe6d00008303a30485ff69008304ac0000bbb1fe95ef88d0f8baa00060eaea",
+          "assembly": "arc-inline.s",
+          "intersections": [
+            {"base": 2, "offset": 1518},
+            {"base": 2, "offset": 1528},
+            {"base": 2, "offset": 1544}
+          ],
+          "fixups": [
+            {"offset": 1, "kind": "block16", "block": 2, "addend": 4294},
+            {"offset": 9, "kind": "block16", "block": 2, "addend": 4294},
+            {"offset": 22, "kind": "block16", "block": 2, "addend": 4294}
+          ],
+          "contract": "E=1, aligned D, DBR=PBR=guest bank, decimal clear, A=6, nested JSR frames wholly in page one. Same A/X/Y/P and stack outputs as original; FE/FF hold old outer return, F0-F5 receive six bytes, outer return advances by six.",
+          "regressions": ["arc-inline-six-emitted"]
+        }
+      ]
+    },
+    {
+      "file": "ARCLST.OVL",
+      "role": "overlay",
+      "entry_export": null,
+      "bytes": 1998,
+      "crc32": "25745761",
+      "sha256": "ea0b1f04ffa1c93d8b3fc69baafbb86854651665093c9ab3a091401c2946b7cd",
+      "patches": []
+    },
+    {
+      "file": "ARCEXT.OVL",
+      "role": "overlay",
+      "entry_export": null,
+      "bytes": 1911,
+      "crc32": "a42ad9cb",
+      "sha256": "b1dd56ac4bb133bfc55150c1c17e401f74903d79a8459c6997ec0105290ad5ba",
+      "patches": []
+    },
+    {
+      "file": "ARCADD.OVL",
+      "role": "overlay",
+      "entry_export": null,
+      "bytes": 4645,
+      "crc32": "03a08a5a",
+      "sha256": "f0aa3ef786bc58567bd97a5b6dca58eadf1cdf8bac8bb0e6a3447a4d955d7408",
+      "patches": []
+    }
+  ],
+  "unsupported": ["Guest execution pending P2/A1", "Hardware option H", "Extraction and mutation pending their service audits"]
+}

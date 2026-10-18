@@ -29,3 +29,13 @@ work; a plan's presence does not mean it is still pending. Historical documents
 and the records in [development](development/), [qualification](qualification/)
 and [experiments](experiments/) apply to their recorded revisions and profiles.
 They do not qualify a later build automatically.
+
+The [emulation-mode preemption experiment](experiments/emulation-preemption.md)
+records a bounded NMI/native-mode round trip for the proposed SDX personality.
+The [implementation plan](plans/spartados-personality-implementation-plan.md)
+uses private upper banks and audited binary patches, targeting MD5 then ARC.
+The [patch infrastructure record](development/sdx-patches.md) covers the first
+native identification/patching components and their executable checks.
+The [guest runtime slice](development/sdx-runtime.md) adds synthetic guests on
+ordinary Tasks, reversible early interrupt routing and pointer IRQ checks.
+Production guest admission and the remaining P2 gates are still open.
