@@ -44,4 +44,5 @@ The [native SDX decoder](development/sdx-loader.md) validates and relocates
 the pinned module records. P3 adds synthetic command admission, ordinary Process
 ownership and guest-slot reuse. The [P4 service subset](development/sdx-services.md)
 adds fourteen MD5 imports, owned file handles, inline output and nonlocal traps.
-Both slices pass development checks; real MD5/ARC application gates remain open.
+Both slices pass development checks. [M1 MD5](development/sdx-md5.md) adds
+real named-file hashing, shell launch and SDFS reads. M2 and ARC remain open.

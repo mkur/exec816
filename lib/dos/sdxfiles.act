@@ -2,6 +2,7 @@ MODULE SDXFILES
 USE DOS
 USE SDXABI
 USE SDXSTATE
+USE SDXCONFIG
 
 ; Errors use SDX's byte namespace at the guest boundary. Keep native IoErr in
 ; the Session so an uncaught error reports its original native cause.
@@ -35,11 +36,12 @@ PUBLIC PROC ReadStatus(BYTE POINTER frame BYTE status)
 
 RETURN
 
-; P4's explicit per-guest A: mapping is the development RAM volume. No
-; process mutates global assignments. Other drives and directory scans fail.
+; The configured A: root is immutable for this personality instance. No
+; Process mutates global assignments. Other drives and directory scans fail.
 BYTE FUNC Path(SDXSTATE.Session POINTER state)
-  CARD at,index,source
+  CARD at,index,source,rootLength
   BYTE value
+  BYTE POINTER root
 
   at=SDXSTATE.ReadWord(state.bank,SDXABI.FILE_P)
   source=0
@@ -58,16 +60,18 @@ BYTE FUNC Path(SDXSTATE.Session POINTER state)
   IF state.bank(at+source)='> OR state.bank(at+source)=92 THEN
     source==+1
   FI
-  state.path(0)='R
-  state.path(1)='A
-  state.path(2)='M
-  state.path(3)=':
-  index=4
+  root=SDXCONFIG.DriveA()
+  index=0
+  WHILE root(index)<>0 DO
+    state.path(index)=root(index)
+    index==+1
+  OD
+  rootLength=index
   WHILE index<255 AND LONGCARD(at)+source<SDXABI.GUEST_LIMIT DO
     value=state.bank(at+source)
     IF value=$9b THEN
       state.path(index)=0
-      IF index=4 THEN
+      IF index=rootLength THEN
         RETURN(156)
       FI
       RETURN(0)

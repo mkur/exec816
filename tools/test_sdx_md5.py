@@ -51,15 +51,30 @@ def fixtures():
             'BIG.BIN': bytes((i*37+i//251) & 255 for i in range(65537))}
 
 
-def reference(out, input_dir, patched=False):
+def reference(out, input_dir, patched=False, extended=False):
     source = out/'source'
     source.mkdir(parents=True, exist_ok=True)
     data = fixtures()
+    if extended:
+        data.update({'V'+str(n)+'.BIN':bytes((i*37+i//251)&255 for i in range(n))
+                     for n in (55,56,63,64,65,256,39935,39936,39937,65535,65536,131073)})
     for name, raw in data.items():
         (source/name).write_bytes(raw)
     good = b'900150983cd24fb0d6963f7d28e17f72  ABC.BIN\n'
     (source/'GOOD.MD5').write_bytes(good)
     (source/'BAD.MD5').write_bytes(good.replace(b'90015098', b'00015098'))
+    edge_lists={
+        'ATARI':good.replace(b'\n',b'\x9b'),
+        'CRLF':good.replace(b'\n',b'\r\n'),
+        'FINAL':good.rstrip(b'\n'),
+        'BSD':b'MD5 (ABC.BIN) = 900150983cd24fb0d6963f7d28e17f72\x9b',
+        'EMPTY':b'',
+        'MALFORM':b'not a checksum\n1234 ABC.BIN\n'+good,
+        'LONG':b'x'*256+b'\n',
+        'ABSENT':good.replace(b'ABC.BIN',b'NONE.BIN'),
+    }
+    if extended:
+        for name,payload in edge_lists.items():(source/(name+'.MD5')).write_bytes(payload)
     binary = (input_dir/'MD5.COM').read_bytes()
     if patched:
         # Only the non-relocatable one-byte MD5 patch is written to this
@@ -83,11 +98,16 @@ def reference(out, input_dir, patched=False):
     commands = ['MD5 EMPTY.BIN >>EMPTY.OUT', 'MD5 ABC.BIN >>ABC.OUT',
                 'MD5 ABC.BIN EMPTY.BIN >>MULTI.OUT', 'MD5 /C GOOD.MD5 >>GOOD.OUT',
                 'MD5 /C BAD.MD5 >>BAD.OUT', 'MD5 ABSENT.BIN >>MISSING.OUT',
-                'MD5 BIG.BIN >>BIG.OUT', 'STOP.COM']
+                'MD5 BIG.BIN >>BIG.OUT']
+    if extended:
+        commands += [f'MD5 {name} >>{name[:-4]}.OUT' for name in data if name.startswith('V')]
+        commands += [f'MD5 /C {name}.MD5 >>C{name}.OUT' for name in edge_lists]
+        commands += ['MD5 A*.BIN >>MASK.OUT','MD5 A?C.BIN >>QMARK.OUT']
+    commands+=['STOP.COM']
     (source/'AUTOEXEC.BAT').write_bytes(b'\x9b'.join(c.encode('ascii') for c in commands)+b'\x9b')
     (source/'CONFIG.SYS').write_bytes(b'USE OSRAM\x9bDEVICE SPARTA\x9bDEVICE SIO\x9b')
     media = out/'reference.atr'
-    make(media, source, 2048, 256, 'MD5REF')
+    make(media, source, 4096 if extended else 2048, 256, 'MD5REF')
     before = sha256(media)
     with emulator(ROOT/'build/shell-paced-bridge', ROOT/'build/firmware/altirraos-816.rom', out, pin=PIN) as b:
         for key, value in PIN['configuration'].items():
@@ -98,7 +118,7 @@ def reference(out, input_dir, patched=False):
         b.bp_set(0x6000)
         b.boot(str(input_dir/'SDX450_maxflash1.car'))
         b.resume()
-        deadline = time.monotonic()+120
+        deadline = time.monotonic()+(1200 if extended else 120)
         while time.monotonic() < deadline:
             regs = b.regs()
             if int(regs['PC'].lstrip('$'), 16) == 0x6000:
@@ -117,7 +137,7 @@ def reference(out, input_dir, patched=False):
     extract(media, out/'readback')
     outputs = {p.name: p.read_bytes() for p in (out/'readback').glob('*.OUT')}
     digests = {}
-    for leaf in ('EMPTY', 'ABC', 'BIG'):
+    for leaf in [name[:-4] for name in data]:
         expected = hashlib.md5(data[leaf+'.BIN']).hexdigest()
         raw = outputs[leaf+'.OUT']
         found = re.findall(rb'= ([0-9A-Fa-f]{32})', raw)
@@ -129,8 +149,15 @@ def reference(out, input_dir, patched=False):
     require(outputs['GOOD.OUT'] == b'ABC.BIN: OK\x9b'
             and outputs['BAD.OUT'] == b'ABC.BIN: \xc2\xc1\xc4\x9b',
             'Verification control failed')
+    if extended:
+        for name in ('ATARI','CRLF','FINAL','BSD','MALFORM'):
+            require(outputs['C'+name+'.OUT']==b'ABC.BIN: OK\x9b','List syntax control: '+name)
+        require(outputs['CEMPTY.OUT']==b'' and outputs['CLONG.OUT']==b'', 'Empty/long list control')
+        require(outputs['CABSENT.OUT']==b'NONE.BIN: ', 'Missing verification target control')
+        for name in ('MASK','QMARK'):
+            require(b'900150983CD24FB0D6963F7D28E17F72' in outputs[name+'.OUT'], 'Option/mask control: '+name)
     return dict(status='pass', scope='SDX control; no Exec guest execution or captured command exit codes',
-                sei_patched=patched, executable_sha256=hashlib.sha256(binary).hexdigest(),
+                sei_patched=patched,extended=extended, executable_sha256=hashlib.sha256(binary).hexdigest(),
                 machine=machine, pin=PIN, media_before_sha256=before, media_after_sha256=sha256(media),
                 commands=commands, outputs={n: dict(hex=v.hex(), text=v.replace(b'\x9b', b'\n').decode('latin1'))
                                            for n, v in outputs.items()}, digests=digests)
@@ -151,7 +178,7 @@ def inspect(out, input_dir):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--group', choices=('inputs', 'reference', 'reference-patched', 'inspect'), required=True)
+    parser.add_argument('--group', choices=('inputs', 'reference', 'reference-patched', 'acceptance-reference', 'inspect'), required=True)
     parser.add_argument('--inputs', type=Path, default=ROOT/'build/sdx-md5/inputs')
     parser.add_argument('--nomarch', type=Path, default=ROOT/'build/research/s2-vbxe/nomarch-1.4/nomarch')
     parser.add_argument('--output', type=Path, required=True)
@@ -164,6 +191,7 @@ if __name__ == '__main__':
         result = {'inputs': lambda: dict(status='pass'),
                   'reference': lambda: reference(out, args.inputs.resolve()),
                   'reference-patched': lambda: reference(out, args.inputs.resolve(), patched=True),
+                  'acceptance-reference': lambda: reference(out,args.inputs.resolve(),extended=True),
                   'inspect': lambda: inspect(out, args.inputs.resolve())}[args.group]()
         result.update(group=args.group, inputs=pinned, bank_zero_delta=dict(fixed=0, per_task=0))
     except Exception as error:

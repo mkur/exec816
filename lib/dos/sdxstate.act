@@ -102,6 +102,8 @@ PUBLIC PROC Prepare(Session POINTER state)
   state.context=BYTE POINTER(ADDRESS(SDXABI.CONTEXT_BASE+
       LONGCARD(state.slot)*SDXABI.CONTEXT_BYTES))
   A816MEMORY.Clear(state.dp,256)
+  ; The guest's OS BREAK byte starts released; it never aliases host page zero.
+  state.dp($11)=$ff
   A816MEMORY.Clear(state.context,SDXABI.CONTEXT_BYTES)
   A816MEMORY.Fill(state.context,$a5,256)
   Word(state.context,SDXABI.FIELDS_GUEST_S,SDXABI.INITIAL_S)

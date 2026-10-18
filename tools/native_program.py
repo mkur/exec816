@@ -265,7 +265,7 @@ def place_after_foreign(memory, foreign):
 
 def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, cooperative=False,
           probe_flags=0x100, forward_signature=0, preemptive=False, banked=False,
-          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False, pump_divisor=0,sio_enabled=True,sdx=False,sdx_patches=False,sdx_runtime_probe=False,sdx_return_probe=0):
+          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False, pump_divisor=0,sio_enabled=True,sdx=False,sdx_patches=False,sdx_runtime_probe=False,sdx_return_probe=0,sdx_drive_a='RAM:'):
     require(type(sdx) is bool and (not sdx or (tasks and task_capacity==8)),
             'SDX personality requires the eight-Task profile')
     require(not (sdx and sdx_runtime_probe), 'Select personality or diagnostic fixture ownership')
@@ -358,7 +358,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         if sdx:
             import sdx_build
             import sdx_fixtures
-            sdx_build.configure(output,memory)
+            sdx_build.configure(output,memory,sdx_drive_a)
             memory['sdx_admission']=sdx_fixtures.generate(output)
         if tasks:
             import generate_heap
@@ -1100,6 +1100,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             provenance['sdx_inputs']={str(path.relative_to(ROOT)):sha256(path) for path in (
                 *sorted((ROOT/'lib/dos').glob('sdx*.act')),
                 ROOT/'tools/sdx_build.py',ROOT/'tools/sdx_fixtures.py',
+                ROOT/'tools/generate_sdx.py',ROOT/'compat/sdx/md5-450.json',
                 *sorted((ROOT/'compat/sdx/probes').glob('*.s')),
                 ROOT/'compat/sdx/probes/calls.inc')}
         provenance['sdx_runtime_probe']=sdx_runtime_probe
@@ -1339,6 +1340,8 @@ def main():
     parser.add_argument("--no-opt", action="store_true")
     parser.add_argument("--input-diagnostics", action="store_true", help="Compile full INPUT per-use audits (requires --tasks)")
     parser.add_argument("--tasks", action="store_true", help="Classic Exec Task API; root counts toward task capacity")
+    parser.add_argument('--sdx',action='store_true',help='Enable the audited SDX personality (requires eight Tasks)')
+    parser.add_argument('--sdx-drive-a',default='RAM:',help='Native volume/directory root for guest A:')
     parser.add_argument('--dos-mounts',type=Path,help='Explicit read-only MyDOS mount configuration (requires --tasks)')
     parser.add_argument("--console",action=argparse.BooleanOptionalAction,default=None,help="Start the resident native console (requires --tasks; defaults to kernel config)")
     parser.add_argument("--stack-checks",action=argparse.BooleanOptionalAction,default=None,help="Compiler and assembly stack checks (default: kernel config, enabled)")
@@ -1364,7 +1367,7 @@ def main():
                          json.loads(args.compiler_pin.read_text()) if args.compiler_pin else None)
     program = build(toolchain, args.source, args.output, not args.no_opt, cooperative=args.cooperative,
                     preemptive=args.preemptive, banked=args.banked, max_banks=args.max_banks,
-                    memory_profile=args.memory_profile, kernel_config=args.kernel_config, tasks=args.tasks, kernel_bank=args.kernel_bank,task_capacity=args.task_capacity,worker_stack=args.worker_stack,idle_stack=args.idle_stack,dos_mounts=mount_config['mounts'],system_mount=mount_config['system_mount'],console=args.console,stack_checks=args.stack_checks,input_diagnostics=args.input_diagnostics)
+                    memory_profile=args.memory_profile, kernel_config=args.kernel_config, tasks=args.tasks, kernel_bank=args.kernel_bank,task_capacity=args.task_capacity,worker_stack=args.worker_stack,idle_stack=args.idle_stack,dos_mounts=mount_config['mounts'],system_mount=mount_config['system_mount'],console=args.console,stack_checks=args.stack_checks,input_diagnostics=args.input_diagnostics,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a)
     print(f"Built {program['xex']}", flush=True)
     if args.bridge_dir:
         bridge_dir, rom = args.bridge_dir.resolve(), args.rom.resolve()

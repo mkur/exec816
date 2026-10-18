@@ -4,7 +4,7 @@
 
 [Reference index](README.md) · [Machine-readable ABI](../../abi/sdx.json) · [Development evidence](../development/sdx-services.md)
 
-Opt-in P4 development subset for source-audited synthetic commands. MD5 and ARC are not admitted for execution.
+Opt-in development personality: the pinned 6502 MD5.COM is admitted for named-file hashing (M1). M2 verification/cancellation acceptance is pending. ARC is not admitted.
 
 E=1, M=X=1, private aligned D, PBR=DBR=guest bank. Calls use JSR to the imported veneer. AX denotes low A and low X, little endian.
 
@@ -25,7 +25,7 @@ A service error is delivered only after native I/O settles. The newest trap is r
 | `FREAD` | file_id=$0760; addpos=$0782 (word); bytbuf=$0785 (nonzero word); memreix=$0787 must be zero. | Reads up to the requested count into an ordinary guest-bank buffer, continuing native short transfers. Writes actual count to bytbuf; addpos unchanged. | X=0/N=0/Z=1 for full transfer; X=$FF/N=1/Z=0 at EOF. A, Y, hidden B and other P bits preserved. |
 | `PRINTF` | Inline NUL format followed by pointer words; address classes fixed per admitted argument site. | Writes the bounded formatter stream to DOS.Output and resumes after all consumed pointer words. | A/X/Y/P preserved on success, including hidden B. |
 | `TOUPPER` | A=byte. | Converts ASCII a..z to A..Z; other bytes unchanged. | A=result; N/Z reflect result. X/Y, hidden B and other P bits preserved. |
-| `U_FAIL` | A=SDX error byte; zero is rejected as bad parameter 156. | Delivers to the newest trap or completes the Process; no ordinary return. | On caught error: A=error/N=1, S and PC select the trap; other registers/flags preserved. |
+| `U_FAIL` | A=SDX error byte; zero terminates the Process successfully. | Delivers to the newest trap or completes the Process; no ordinary return. | On caught error: A=error/N=1, S and PC select the trap; other registers/flags preserved. |
 | `U_GETATR` | A=default attribute mask; BUFOFF selects the next parameter. | Parses separate +/- P/H/A/S attribute tokens and one filename. Explicit attributes start from zero and clear the opposing bit. Updates $0779, BUFOFF, COMFNAM, FILLEN and FILE_P. | A=X=filename length; N=0, Z=1 if absent. Y, hidden B and other P bits preserved. |
 | `U_SFAIL` | AX=handler address in $3000..$DFFF. | Pushes handler and post-call S; at most ten traps. Invalid handler or overflow raises 156. | A/X/Y/P preserved on success. |
 | `U_SLASH` | AX=ordinary-bank array of (count,letter) pairs; Y=nonzero even byte count. BUFOFF selects parameter. | For a slash token, clears counts, decrements each matching count per occurrence and advances BUFOFF. Parsed /H and unknown options raise 156. For a non-option token, leaves the table and BUFOFF unchanged. | A=last uppercase option, or 0; N/Z reflect A. X/Y, hidden B and other P bits preserved. |
@@ -35,7 +35,7 @@ A service error is delivered only after native I/O settles. The newest trap is r
 
 LBUF holds at most 63 bytes including the command name and separating space, followed by ATASCII EOL. COMFNAM holds at most 29 filename bytes plus EOL. No quoted filenames or mixed signs within an attribute token.
 
-Guest A: and bare filenames map to RAM: within each Session. Leading > or backslash denotes the mapped root; internal separators become /. Other drives, wildcards, parent notation, scans, writes and seeks are unsupported. No global assignment is changed.
+Guest A: and bare filenames map to the immutable build-configured native root (RAM: by default). Leading > or backslash denotes the mapped root; internal separators become /. Other drives, wildcards, parent notation, scans, writes and seeks are unsupported. No global assignment is changed.
 
 NUL-terminated inline format, at most 253 bytes, then one near pointer word per operand (and per * width). Supported: %% and %b/%d/%e/%l unsigned 8/16/24/32-bit decimal, %x 24-bit hexadecimal, %c byte, %s string, %p pointer to string. Width uses its low byte; decimals allow at most 10 digits; zero padding, truncation and space padding are supported. Default %x is six zero-padded digits. Strings end at NUL or ATASCII EOL. %s requires an ordinary-bank string; %p may fetch its pointer variable from audited DP storage but the target string is in the ordinary bank. %t is unsupported.
 

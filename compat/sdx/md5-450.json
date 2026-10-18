@@ -2,8 +2,8 @@
   "schema_version": 1,
   "personality_abi": 1,
   "id": "md5-450",
-  "revision": 1,
-  "execution_status": "patch-probe-only",
+  "revision": 2,
+  "execution_status": "md5-development",
   "audit": "../../docs/plans/spartados-personality-inputs.json",
   "modules": [
     {
@@ -24,10 +24,21 @@
           "intersections": [],
           "fixups": [],
           "contract": "Only I differs between PHP at +0419 and PLP at +0965. All other registers, memory and stack effects are unchanged.",
-          "regressions": ["md5-sei-bytes", "md5-sdx-control-patched"]
+          "regressions": [
+            "md5-sei-bytes",
+            "md5-sdx-control-patched"
+          ]
         }
       ]
     }
   ],
-  "unsupported": ["Guest execution pending P2/P4", "Hardware option /H"]
+  "unsupported": [
+    "Hardware option /H",
+    "M2 acceptance pending"
+  ],
+  "direct_page_arguments": [
+    504,
+    754
+  ],
+  "instruction_audit": "../../docs/development/sdx-md5-audit.json"
 }

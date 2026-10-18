@@ -2,8 +2,8 @@
 
 P4 implements the fourteen MD5 imports and exercises them through source-audited
 6502 commands loaded by P3's ordinary Process path. This is a **development**
-result. The original MD5 and ARC binaries remain unadmitted; their instruction
-audits and application acceptance gates still apply.
+result for the P4 slice. [M1](sdx-md5.md) subsequently admits the audited MD5
+binary for named-file hashing; ARC remains unadmitted.
 
 [Plan](../plans/spartados-personality-implementation-plan.md) ·
 [Service contract](../reference/sdx-services.md) ·

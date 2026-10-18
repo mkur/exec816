@@ -154,7 +154,7 @@
     "U_FAIL": {
       "address": 61920,
       "event": 9,
-      "inputs": "A=SDX error byte; zero is rejected as bad parameter 156.",
+      "inputs": "A=SDX error byte; zero terminates the Process successfully.",
       "effects": "Delivers to the newest trap or completes the Process; no ordinary return.",
       "flags": "On caught error: A=error/N=1, S and PC select the trap; other registers/flags preserved."
     },
@@ -192,7 +192,7 @@
       "url": "https://sdx.atari8.info/sdx_files/4.50/SDX450_Programming_Guide.pdf",
       "sha256": "15982c51f2d0edc317b01121097d6da23e007910e2ad79f3ad02ac930fbc2b69"
     },
-    "scope": "Opt-in P4 development subset for source-audited synthetic commands. MD5 and ARC are not admitted for execution.",
+    "scope": "Opt-in development personality: the pinned 6502 MD5.COM is admitted for named-file hashing (M1). M2 verification/cancellation acceptance is pending. ARC is not admitted.",
     "entry": "E=1, M=X=1, private aligned D, PBR=DBR=guest bank. Calls use JSR to the imported veneer. AX denotes low A and low X, little endian.",
     "preservation": "Except for documented results, calls preserve A (including hidden B), X, Y, P, D and DBR. Ordinary calls resume after JSR; PRINTF skips its inline record. Error delivery selects the saved guest S and handler PC.",
     "pointers": "Ordinary near pointers select guest-bank storage below $E000. PRINTF argument-word sites classified by the admitted profile may instead select guest D+offset in bank zero. No numeric-address heuristic, stack pointers, extended-memory buffers or callbacks are supported.",
@@ -218,7 +218,7 @@
       "170": "File not found or explicit U_FAIL code"
     },
     "command_limit": "LBUF holds at most 63 bytes including the command name and separating space, followed by ATASCII EOL. COMFNAM holds at most 29 filename bytes plus EOL. No quoted filenames or mixed signs within an attribute token.",
-    "drive_policy": "Guest A: and bare filenames map to RAM: within each Session. Leading > or backslash denotes the mapped root; internal separators become /. Other drives, wildcards, parent notation, scans, writes and seeks are unsupported. No global assignment is changed.",
+    "drive_policy": "Guest A: and bare filenames map to the immutable build-configured native root (RAM: by default). Leading > or backslash denotes the mapped root; internal separators become /. Other drives, wildcards, parent notation, scans, writes and seeks are unsupported. No global assignment is changed.",
     "formatter": "NUL-terminated inline format, at most 253 bytes, then one near pointer word per operand (and per * width). Supported: %% and %b/%d/%e/%l unsigned 8/16/24/32-bit decimal, %x 24-bit hexadecimal, %c byte, %s string, %p pointer to string. Width uses its low byte; decimals allow at most 10 digits; zero padding, truncation and space padding are supported. Default %x is six zero-padded digits. Strings end at NUL or ATASCII EOL. %s requires an ordinary-bank string; %p may fetch its pointer variable from audited DP storage but the target string is in the ordinary bank. %t is unsupported.",
     "output": "Escapes a,b,e,f,n,r,t,z,backslash and i are supported; i toggles inverse bytes for printable characters within one call. Redirected output retains exact SDX bytes. Interactive output maps $9B/$7E/$7F/$7D to LF/BS/TAB/FF. The buffer is 256 bytes; partial native writes are continued, and write errors use normal trap delivery. No general Atari terminal emulation is provided."
   }

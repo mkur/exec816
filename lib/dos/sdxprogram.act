@@ -85,8 +85,10 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
           error=DOSCLIENT.IoErr()
           IF plan<>NULL THEN
             error=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
-            state.entry=SDXFILE.Symbol(plan,BYTE POINTER("MAIN    ")+1)
+            state.entry=SDXADMISSION.Entry(plan,profile)
             IF state.entry<>0 AND SDXADMISSION.Patch(plan,profile)=0 THEN
+              SDXSTATE.Word(state.bank,$2e7,CARD(plan.end))
+              SDXSTATE.Word(state.bank,$2e5,SDXABI.GUEST_LIMIT)
               SDXFILE.Release(plan)
               Gates(state.bank)
               SDXSTATE.Prepare(state)

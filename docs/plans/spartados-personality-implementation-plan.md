@@ -324,7 +324,7 @@ guest retry. Fault cleanup runs on a retained native context after I/O settles.
 
 P0/P1 now have the component implementation recorded above; their full exit
 gates remain open. P3/P4 pass the synthetic development scope described below;
-the application slices remain pending. P1 helper probes and P2 synthetic context work
+M1 passes the named-file development scope in [its record](../development/sdx-md5.md). M2 and ARC remain pending. P1 helper probes and P2 synthetic context work
 can proceed after their P0 inputs are frozen; real guest admission requires
 both. Each slice records its exact supported operations and memory delta.
 
@@ -335,7 +335,7 @@ both. Each slice records its exact supported operations and memory delta.
 | P2 Guest runtime | Upper-bank synthetic guests can be preempted, use native services, block/resume and exit with IRQ/NMI and host page-one coexistence. |
 | P3 Loader and Process | **Passed for the audited synthetic catalog.** Commands load/patch/bind and execute through ordinary Process ownership; rollback and slot reuse pass. |
 | P4 MD5 services | **Passed for the audited synthetic catalog.** Fourteen-symbol guest-call probes cover inline output, two handles and nonlocal traps, plus terminal Close errors, capacity limits and raw/optimized frame layout. |
-| M1 Named-file MD5 | The adapted binary computes correct digests through native DOS and an ordinary shell launch. |
+| M1 Named-file MD5 | **Passed in development checks:** the adapted binary computes correct digests through native DOS and an ordinary shell launch. |
 | M2 Complete MD5 subset | Multiple files, masks/attributes, `/C`, errors, BREAK, redirection and two independent guests pass. |
 | A1 ARC loading and listing | Main plus listing overlay execute with the patched helper, private exports and read-only `CAR:` resolution. |
 | A2 ARC extraction | Required codecs, output files, overwrite decisions, CRC failures and cleanup pass through native DOS. |

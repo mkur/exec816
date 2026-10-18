@@ -41,9 +41,6 @@ BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
     RETURN(SDXTRAPS.Remove(state))
   WHEN SDXABI.CALL_U_FAIL THEN
     value=frame(SDXABI.FRAME_A)
-    IF value=0 THEN
-      value=156
-    FI
     RETURN(value)
   ESAC
 
@@ -66,7 +63,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
     event=SDXRUNTIME.Run(state.slot)
     SDXSTATE.Guards()
     frame=SDXSTATE.GetFrame(state)
-    IF event=1 THEN
+    IF event=1 OR (event=SDXABI.CALL_U_FAIL AND frame(SDXABI.FRAME_A)=0) THEN
       result=LONGINT(frame(SDXABI.FRAME_A))
       EXIT
     FI
