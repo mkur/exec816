@@ -132,7 +132,8 @@ BYTE FUNC ShellRedirect(ShellContext POINTER context)
       FI
     FI
 
-    IF DOS.IsInteractive(context.shell.tempInput)<>0 OR DOS.IsInteractive(context.shell.tempOutput)<>0 THEN
+    ; Background output may name its console; keyboard input stays private.
+    IF DOS.IsInteractive(context.shell.tempInput)<>0 THEN
       ShellFail(context,PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_WRONG_TYPE)
       RETURN(0)
     FI

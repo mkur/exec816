@@ -1,8 +1,8 @@
 # Multiple shell sessions
 
 Status: implementation in progress, 2026-10-19. SS1 isolates the shell state and
-SS2 adds owner-requested cancellation. The controller and presentation slices
-remain. The
+SS2 adds owner-requested cancellation. SS3 adds grouped console activation and
+owned key notices. Controller integration and desktop presentation remain. The
 [SS1–SS8 implementation plan](shell-sessions-implementation-plan.md) defines
 the remaining interfaces and gates; [slice evidence](../history/shell-sessions.md)
 records actual checks without a hosted-system qualification claim.

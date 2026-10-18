@@ -9,6 +9,7 @@ USE CONSOLEWINDOWS
 USE CONSOLEFOREGROUND
 USE CONSOLECORE
 USE CONSOLEINPUT
+USE CONSOLEKEYS
 USE CONSOLEDRIVER
 USE CONSOLETILING
 
@@ -24,6 +25,30 @@ RETURN(CONSOLEDRIVER.ScreenHeight())
 PUBLIC CARD FUNC RequestBreak(LONGCARD unit)
 
 RETURN(CONSOLEFOREGROUND.RequestBreak(unit))
+
+; Replace the selected full-screen console, retaining its admitted lower pane.
+PUBLIC CARD FUNC Activate(LONGCARD previous,next)
+
+  IF DESKSTATE.Enabled()<>0 THEN
+    RETURN(CONSOLETYPES.CONTROL_UNSUPPORTED)
+  FI
+
+RETURN(CONSOLETILING.Activate(previous,next))
+
+; Subscribe from a presentation owner using caller-owned stable storage.
+PUBLIC CARD FUNC WatchKey(LONGCARD unit CARD code,qualifiers
+    LONGCARD signalMask CONSOLETYPES.KeyWatch POINTER watch)
+
+RETURN(CONSOLEKEYS.Watch(unit,code,qualifiers,signalMask,watch))
+
+PUBLIC BYTE FUNC TakeKey(CONSOLETYPES.KeyWatch POINTER watch
+    CONSOLETYPES.KeyNotice POINTER notice)
+
+RETURN(CONSOLEKEYS.Take(watch,notice))
+
+PUBLIC CARD FUNC UnwatchKey(CONSOLETYPES.KeyWatch POINTER watch)
+
+RETURN(CONSOLEKEYS.Unwatch(watch))
 
 ; Release the buffers owned by a dynamically allocated terminal.
 PROC FreeInstance(CONSOLETYPES.Window POINTER entry)
@@ -178,7 +203,7 @@ PUBLIC BYTE FUNC Destroy(LONGCARD unit)
   FI
 
   IF entry.owner<>owner OR entry.state<>CONSOLETYPES.WIN_PRESENTING
-      OR entry.scope<>BYTE POINTER(0) THEN
+      OR entry.scope<>BYTE POINTER(0) OR entry.watch<>NULL THEN
     EXEC.Permit()
     CONSOLETILING.Unlock()
     RETURN(0)
@@ -231,7 +256,8 @@ PUBLIC PROC RetirePane(LONGCARD unit)
   LET entry=CONSOLEWINDOWS.Find(unit)
   LET parent=CONSOLEWINDOWS.Find(0)
   IF windows.presenting=0 OR windows.pane<>unit OR entry=NULL
-      OR entry.owner<>BYTE POINTER(EXEC.FindTask(NULL)) THEN
+      OR entry.owner<>BYTE POINTER(EXEC.FindTask(NULL))
+      OR entry.watch<>NULL THEN
     HEAPCORE.Abort(4)
   FI
 

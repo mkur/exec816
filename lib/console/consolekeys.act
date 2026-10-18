@@ -1,0 +1,120 @@
+; Bounded key notices retain an owner and instance, never a reader or callback.
+MODULE CONSOLEKEYS
+USE EXEC
+USE INPUT
+USE HEAPCORE
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+INCLUDE "console-storage-action.inc"
+
+; Establish ownership once, before the worker can reach the caller's record.
+PUBLIC CARD FUNC Watch(LONGCARD unit CARD code,qualifiers LONGCARD mask
+    CONSOLETYPES.KeyWatch POINTER watch)
+
+  IF code>63 OR qualifiers>(INPUT.SHIFT OR INPUT.CONTROL) OR mask=0 THEN
+    RETURN(CONSOLETYPES.CONTROL_UNSUPPORTED)
+  FI
+
+  EXEC.Forbid()
+  LET entry=CONSOLEWINDOWS.Find(unit)
+  IF entry=NULL THEN
+    EXEC.Permit()
+    RETURN(CONSOLETYPES.CONTROL_BAD_UNIT)
+  FI
+
+  IF unit<>0 AND entry.owner<>BYTE POINTER(EXEC.FindTask(NULL)) THEN
+    EXEC.Permit()
+    RETURN(CONSOLETYPES.CONTROL_NOT_OWNER)
+  FI
+
+  LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
+  IF entry.watch<>NULL OR watch.bound<>0 OR service.state<>2
+      OR service.stop<>0 THEN
+    EXEC.Permit()
+    RETURN(CONSOLETYPES.CONTROL_BUSY)
+  FI
+
+  IF EXEC.RetainTask(EXEC.FindTask(NULL),@watch.owner)=0 THEN
+    EXEC.Permit()
+    RETURN(CONSOLETYPES.CONTROL_FAILED)
+  FI
+
+  watch.unit=unit
+  watch.code=code
+  watch.qualifiers=qualifiers
+  watch.wakeMask=mask
+  watch.pending=0
+  watch.bound=1
+  entry.watch=BYTE POINTER(watch)
+  EXEC.Permit()
+
+RETURN(CONSOLETYPES.CONTROL_OK)
+
+; Caller holds Forbid after desktop arbitration and captured-route resolution.
+PUBLIC BYTE FUNC Deliver(CONSOLETYPES.Window POINTER entry
+    INPUT.Event POINTER event)
+
+  LET watch=CONSOLETYPES.KeyWatch POINTER(entry.watch)
+  IF watch=NULL THEN
+    RETURN(0)
+  FI
+
+  IF (event.code & 63)<>watch.code OR event.qualifiers<>watch.qualifiers THEN
+    RETURN(0)
+  FI
+
+  IF watch.pending=0 THEN
+    watch.notice.unit=entry.unit
+    watch.notice.route=event.route
+    watch.notice.tick=event.tick
+    watch.pending=1
+    EXEC.Signal(watch.owner.task,watch.wakeMask)
+  FI
+
+RETURN(1)
+
+; Notice state is independent of the wake bit, which multiple watches may share.
+PUBLIC BYTE FUNC Take(CONSOLETYPES.KeyWatch POINTER watch
+    CONSOLETYPES.KeyNotice POINTER notice)
+
+  EXEC.Forbid()
+  IF watch.bound=0 OR watch.pending=0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  notice.unit=watch.notice.unit
+  notice.route=watch.notice.route
+  notice.tick=watch.notice.tick
+  watch.pending=0
+  EXEC.Permit()
+
+RETURN(1)
+
+; Withdraw the producer before releasing retention; a pending notice is dropped.
+PUBLIC CARD FUNC Unwatch(CONSOLETYPES.KeyWatch POINTER watch)
+
+  EXEC.Forbid()
+  IF watch.bound=0 THEN
+    EXEC.Permit()
+    RETURN(CONSOLETYPES.CONTROL_UNBOUND)
+  FI
+
+  IF watch.owner.task<>EXEC.FindTask(NULL) THEN
+    EXEC.Permit()
+    RETURN(CONSOLETYPES.CONTROL_NOT_OWNER)
+  FI
+
+  LET entry=CONSOLEWINDOWS.Find(watch.unit)
+  entry.watch=NULL
+  watch.bound=0
+  watch.pending=0
+  IF EXEC.ReleaseTask(@watch.owner)=0 THEN
+    HEAPCORE.Abort(4)
+  FI
+
+  EXEC.Permit()
+
+RETURN(CONSOLETYPES.CONTROL_OK)
+
+ENDMODULE

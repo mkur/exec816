@@ -101,3 +101,55 @@ All 498 host checks and the console/context generator checks pass. SS2 adds
 guards, alignment and unused capacity. It adds no worker, console metadata or
 per-request allocation. The native compiler, ROM and paced emulator pins remain
 unchanged; this is development coverage, not a new release qualification.
+
+## SS3 — grouped views and owned key notices
+
+`CONSOLE.Activate(previous,next)` admits two owned full-screen views through
+one existing presentation transaction. Worker controls erase the outgoing
+view, settle physical borrows, and then publish visibility/focus and capture
+routing together. Unit zero and its optional lower pane switch as a group.
+Hidden output retains its own cells. A hidden pane can open, finish or close
+without erasing another console or stealing focus; closure restores the
+parent's retained full height.
+
+`WatchKey`, `TakeKey` and `UnwatchKey` provide one bounded subscription per
+console. The worker applies desktop arbitration first, resolves the captured
+route, then copies a notice and signals the retained owner. It executes no
+caller callback and inserts no ordinary input byte. Pending events coalesce;
+withdrawal drops the notice and removes the producer before releasing its Task
+lease. Both ordinary destruction and pane closure reject live watches. Shared
+wake bits are left to the caller so withdrawing one watch cannot lose another
+watch's notification.
+
+OpenPane now requires selected Output to name unit zero, independent of display
+focus. The standard demo therefore launches `RUN PRIMES >CON:`. Background
+console output is allowed explicitly; background interactive input is still
+rejected. This is a general stream policy change, with no PRIMES special case
+or additional Process ABI. The shell jobs fixture covers the new output case,
+and the pane fixture runs its child through StartBackground with inherited
+unit-zero output and normal Process cleanup.
+
+The text and standalone bitmap fixtures each pass 72 checks with physical
+Ctrl+Shift+Space. They preserve a blocked read, mid-line draft/caret, paused TAB
+continuation, modifier release and hidden output. Exact text cells and bitmap
+pixels/caret are checked at seven stable selections, including hidden pane
+closure and creation. Ownership, no-op/busy/bad-layout/stale-unit rejection,
+pending-notice coalescing, unsubscribe and exact heap recovery are exercised.
+The raw/optimized native record probes each pass 12 checks. A separate nine-check
+lifetime case verifies withdrawal without a late wake and the guarded rejection
+of owner removal while a watch retains unit zero. Existing console allocation
+rollback/lifetime, pane, background-job and physical BREAK checks also pass.
+The actual selected cases and pinned inputs are in the development record.
+
+The console registry grows by 16 reserved upper bytes, from 880 to 896, for
+four watch pointers including alignment. A caller supplies each 36-byte watch
+and 10-byte notice; the API allocates no per-event memory and adds no worker.
+SS3 adds **0 fixed, 0 per-public-Task and 0 idle reserved bank-zero bytes**,
+including guards, alignment and unused capacity. Console fixture arenas reserve
+8 KiB of upper static data to fit the current shared runtime. Production Task,
+stack and DP reservations remain unchanged. Physical scanout observations wait
+for settled model/caret state and two complete bitmap frames; they are exact
+pixel checks, not switching-latency measurements.
+
+Shell controller integration, user-visible session commands and desktop tabs
+remain for SS4–SS8. SS3 does not claim release or physical-hardware qualification.

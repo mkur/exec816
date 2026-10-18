@@ -85,6 +85,7 @@ PUBLIC PROC Retired(CONSOLETYPES.Window POINTER entry)
 
   entry.instance=BYTE POINTER(0)
   entry.view=BYTE POINTER(0)
+  entry.watch=NULL
   entry.scope=BYTE POINTER(0)
   entry.route=0
   entry.baseRoute=0

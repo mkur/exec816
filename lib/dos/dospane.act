@@ -35,6 +35,25 @@ PUBLIC BYTE POINTER FUNC Open(CARD rows)
     RETURN(NULL)
   FI
 
+  ; Selected output establishes the parent independently of display focus.
+  LET output=DOSSTREAMS.Handle POINTER(client.output)
+  IF output=NULL THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(NULL)
+  FI
+
+  IF output.header.backend<>DOSOBJECTS.BACKEND_CON
+      AND output.header.backend<>DOSOBJECTS.BACKEND_RAW THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(NULL)
+  FI
+
+  LET endpoint=DOSRAW.RawEndpoint POINTER(output.endpoint)
+  IF endpoint.unit<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(NULL)
+  FI
+
   IF windows.pane<>0 THEN
     DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
     RETURN(NULL)
@@ -84,6 +103,7 @@ RETURN(NULL)
 ; before releasing the instance's Task lease. A busy close retains its handle.
 PUBLIC LONGINT FUNC Close(DOSCLIENT.ClientContext POINTER client
     DOSSTREAMS.Handle POINTER handle)
+  CONSOLETYPES.Window POINTER entry
 
   LET endpoint=DOSRAW.RawEndpoint POINTER(handle.endpoint)
   LET unit=endpoint.unit
@@ -103,6 +123,13 @@ PUBLIC LONGINT FUNC Close(DOSCLIENT.ClientContext POINTER client
 
       EXEC.Yield()
     OD
+
+    entry=CONSOLEWINDOWS.Find(unit)
+    IF entry.watch<>NULL THEN
+      CONSOLETILING.Unlock()
+      DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+      RETURN(0)
+    FI
 
     IF CONSOLETILING.CanResize(parent,CONSOLE.ScreenHeight())<>0 THEN
       EXIT

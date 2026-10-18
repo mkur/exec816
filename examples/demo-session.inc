@@ -10,8 +10,8 @@ BYTE FUNC DemoStart()
     RETURN(0)
   FI
 
-  ShellText(@context,context.shell.console,c"RUN PRIMES\n")
-  STR.strlcpy(ShellLine(@context),c"RUN PRIMES",LINE_CAPACITY)
+  ShellText(@context,context.shell.console,c"RUN PRIMES >CON:\n")
+  STR.strlcpy(ShellLine(@context),c"RUN PRIMES >CON:",LINE_CAPACITY)
   ShellCommand(@context)
   ShellClear(@context)
   IF context.shell.done=0 THEN

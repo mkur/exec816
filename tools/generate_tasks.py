@@ -343,7 +343,7 @@ ENDMODULE
     policy=policy.replace('MODULE TASKPOLICY\n','MODULE TASKPOLICY\nUSE IDEMETA\n',1)
     policy=policy.replace('PUBLIC CARD FUNC Init()',init+'\nPUBLIC CARD FUNC Init()')
     if console:
-        for module in ('consoledriver','consoleinput','consoledisplay','consolebitmap','consolecontrol','consoleforeground','consolewindows','consolecapture'):
+        for module in ('consoledriver','consolekeys','consoleinput','consoledisplay','consolebitmap','consolecontrol','consoleforeground','consolewindows','consolecapture'):
             driver=read_source(library_file(module+'.act'))
             driver=driver.replace('"console-storage-action.inc"','"'+str(Path(output)/'console-storage-action.inc')+'"')
             (directory/(module+'.act')).write_text(driver)

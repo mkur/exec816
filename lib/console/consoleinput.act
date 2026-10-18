@@ -6,6 +6,7 @@ USE CONSOLETYPES
 USE CONSOLECAPTURE
 USE CONSOLEFOREGROUND
 USE CONSOLEWINDOWS
+USE CONSOLEKEYS
 USE HEAPCORE
 USE DESKINPUT
 USE DESKMENU
@@ -201,8 +202,11 @@ PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
           Deliver(instance,$100)
         FI
       ELSEIF capturedEvent.kind=INPUT.EVENT_KEY AND entry<>NULL THEN
-        raw=LONGCARD(capturedEvent.code) OR (LONGCARD(capturedEvent.tick) LSH 16)
-        Deliver(CONSOLETYPES.Instance POINTER(entry.instance),raw)
+        IF CONSOLEKEYS.Deliver(entry,@capturedEvent)=0 THEN
+          raw=LONGCARD(capturedEvent.code)
+              OR (LONGCARD(capturedEvent.tick) LSH 16)
+          Deliver(CONSOLETYPES.Instance POINTER(entry.instance),raw)
+        FI
       FI
       EXEC.Permit()
     FI

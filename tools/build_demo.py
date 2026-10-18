@@ -87,7 +87,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'README.TXT').write_text(f'Exec816 {title} shell\n\n'
             f'The full {dimensions} screen is your shell.\nNo prime task is started.\n\n'
             'Try TASKS, DIR, MEM, HELLO | WC,\nand CAT STORY.TXT | WC.\n'
-            'RUN PRIMES opens a lower pane. JOBS shows its identity;\n'
+            'RUN PRIMES >CON: opens a lower pane. JOBS shows its identity;\n'
             'BREAK identity stops it. PRIMES PASSES 1 runs one foreground pass.\n'
             'EXIT returns to the OS.\n',encoding='ascii')
     if desktop:

@@ -160,7 +160,7 @@ CAT STORY.TXT | WC >NIL:
 Run `MEM`, repeat a few pipelines, and run `MEM` again to observe reclaimed
 command memory. `TASKS` at the prompt shows the shell, console, filesystem,
 SIO and loaded command Tasks. The optional demo starts C:PRIMES through RUN;
-the bitmap shell starts full-screen until you enter RUN PRIMES yourself.
+the bitmap shell starts full-screen until you enter RUN PRIMES >CON: yourself.
 A pipeline adds two temporary Tasks, using seven of the
 eight reserved slots. The prime search checks candidates up to 10,000 and then
 starts a new numbered pass; its latest prime eventually reaches 9,973.
@@ -168,7 +168,7 @@ starts a new numbered pass; its latest prime eventually reaches 9,973.
 JOBS shows the background Process identity. `BREAK identity` requests stop;
 pane closure restores the full shell, including its edited line.
 `PRIMES PASSES 1` runs one foreground pass and returns; with PASSES omitted
-or zero, it continues until BREAK. `RUN PRIMES PASSES 1` completes without
+or zero, it continues until BREAK. `RUN PRIMES PASSES 1 >CON:` completes without
 waiting for another shell command. The display updates only changed numbers.
 
 `EXIT` stops and collects the prime Process, closes its pane and restores the

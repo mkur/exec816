@@ -1,0 +1,52 @@
+MODULE CONSOLEKEYLAYOUT
+USE EXEC
+USE HEAPCORE
+USE CONSOLETYPES
+
+CONSOLETYPES.KeyWatch watch
+CONSOLETYPES.Window window
+CARD checks
+BYTE finished
+
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ec00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Populate(CONSOLETYPES.KeyWatch POINTER item)
+
+  item.unit=$12345678
+  item.owner.task=EXEC.Task POINTER($123456)
+  item.wakeMask=$01000000
+  item.notice.unit=item.unit
+  item.notice.route=$87654321
+  item.notice.tick=$abcd
+  item.pending=1
+
+RETURN
+
+PROC Main()
+
+  Check(SIZEOF(CONSOLETYPES.Window)=CONSOLETYPES.WINDOW_SIZE)
+  Check(SIZEOF(CONSOLETYPES.Windows)=CONSOLETYPES.WINDOWS_SIZE)
+  Check(SIZEOF(CONSOLETYPES.KeyWatch)=CONSOLETYPES.KEYWATCH_SIZE)
+  Check(SIZEOF(CONSOLETYPES.KeyNotice)=CONSOLETYPES.KEYNOTICE_SIZE)
+  Check(ADDRESS(@window.watch)-ADDRESS(@window)=CONSOLETYPES.WINDOW_WATCH)
+  Check(ADDRESS(@watch.owner)-ADDRESS(@watch)=CONSOLETYPES.KEYWATCH_OWNER)
+  Check(ADDRESS(@watch.pending)-ADDRESS(@watch)=CONSOLETYPES.KEYWATCH_PENDING)
+  Check(ADDRESS(@watch.notice)-ADDRESS(@watch)=CONSOLETYPES.KEYWATCH_NOTICE)
+  Populate(@watch)
+  Check(watch.unit=$12345678 AND watch.notice.unit=watch.unit)
+  Check(watch.notice.route=$87654321 AND watch.notice.tick=$abcd)
+  Check(ADDRESS(watch.owner.task)=$123456 AND watch.pending=1)
+  Check(watch.wakeMask=$01000000)
+  finished=1
+
+RETURN
+
+ENDMODULE

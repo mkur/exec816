@@ -1,0 +1,56 @@
+MODULE CONSOLEKEYLIFETIME
+USE EXEC
+USE INPUT
+USE CONSOLE
+USE CONSOLEKEYS
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE HEAPCORE
+
+CONSOLETYPES.KeyWatch watch
+CONSOLETYPES.KeyNotice notice
+INPUT.Event event
+CARD checks
+
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ec80+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Removing a watch owner is guarded even when it owns only permanent unit zero.
+PROC Main()
+  LONGCARD bits
+
+  LET bit=EXEC.AllocSignal($ff)
+  Check(bit<>$ff)
+  LET mask=LONGCARD(1) LSH bit
+  Check(CONSOLE.WatchKey(0,33,3,mask,@watch)=CONSOLETYPES.CONTROL_OK)
+  LET entry=CONSOLEWINDOWS.Find(0)
+  event.code=33
+  event.qualifiers=3
+  event.route=entry.route
+  event.tick=99
+  EXEC.Forbid()
+  Check(CONSOLEKEYS.Deliver(entry,@event)<>0)
+  EXEC.Permit()
+  Check(CONSOLE.UnwatchKey(@watch)=CONSOLETYPES.CONTROL_OK)
+  Check(CONSOLE.TakeKey(@watch,@notice)=0 AND watch.owner.task=NULL)
+  bits=EXEC.SetSignal(0,mask)
+  EXEC.Forbid()
+  Check(CONSOLEKEYS.Deliver(entry,@event)=0)
+  EXEC.Permit()
+  bits=EXEC.SetSignal(0,mask)
+  Check((bits & mask)=0)
+  Check(CONSOLE.WatchKey(0,33,3,mask,@watch)=CONSOLETYPES.CONTROL_OK)
+  Check(CONSOLE.TakeKey(@watch,@notice)=0)
+  EXEC.RemTask(NULL)
+  HEAPCORE.Abort($ecff)
+
+RETURN
+
+ENDMODULE

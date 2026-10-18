@@ -5,7 +5,7 @@
 The shell executes built-ins in its own Task and loads external commands into
 child Processes. It supports per-command stream redirection and one foreground
 pipeline of two external commands, plus one separately owned background job.
-`RUN PRIMES` opens a lower console pane; the optional [demo](demo.md) starts
+`RUN PRIMES >CON:` opens a lower console pane; the optional [demo](demo.md) starts
 that same disk command automatically. The shell also works as a resident entry.
 Source lives in [examples/shell](../../examples/shell/).
 
@@ -251,11 +251,12 @@ quoting and copied argument tail as ordinary commands. Built-ins and background
 pipelines are unsupported. A second running/stopping job reports error 202.
 
 Input and Output default to NIL. Explicit file/NIL redirection works normally,
-for example `RUN CAT <WORK:INPUT.TXT >WORK:OUTPUT.TXT`. Interactive redirection
-is rejected before launch. A background command has its own cancellation scope;
-keyboard BREAK applies to the shell's current foreground interaction. Commands
-requiring OpenConsole must run in the foreground. A graphical command can open
-its own output pane through OpenPane.
+for example `RUN CAT <WORK:INPUT.TXT >WORK:OUTPUT.TXT`. Interactive input redirection
+is rejected before launch; explicit console output is allowed. A background
+command has its own cancellation scope; keyboard BREAK applies to the shell's
+current foreground interaction. Commands requiring OpenConsole must run in the
+foreground. A pane command must select unit-zero console output, for example
+`RUN PRIMES >CON:`. This establishes the parent for OpenPane.
 
 JOBS shows the Process identity. `BREAK 7` requests stop for job 7 and returns
 the prompt; the command must cooperate and settle its I/O. Result collection
