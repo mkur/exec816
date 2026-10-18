@@ -1,0 +1,113 @@
+MODULE SDXPROGRAM
+USE EXEC
+USE DOSCLIENT
+USE O65TYPES
+USE O65MEMORY
+USE A816MEMORY
+USE PROGRAMIMAGE
+USE SDXABI
+USE SDXCONFIG
+USE SDXSTATE
+USE SDXFILE
+USE SDXADMISSION
+
+; The local veneer saves hidden B before entering another bank in native mode.
+PROC Veneer(BYTE POINTER bank CARD at,event)
+  BYTE ARRAY prefix=[$08 $78 $08 $18 $fb $c2 $30 $48 $da $5a $0b $8b $a9]
+  BYTE POINTER code
+  LONGCARD service
+
+  code=bank+at
+  A816MEMORY.Move(code,@prefix,13)
+  SDXSTATE.Word(code,13,event)
+  code(15)=$5c
+  service=LONGCARD(SDXCONFIG.SERVICE)
+  code(16)=BYTE(service)
+  code(17)=BYTE(service RSH 8)
+  code(18)=BYTE(service RSH 16)
+
+RETURN
+
+PROC Gates(BYTE POINTER bank)
+  CARD index
+  BYTE ARRAY restore=[$ea $38 $ea $fb $ea $28 $ea $40]
+
+  FOR index=0 TO 11 DO
+    Veneer(bank,$f100+index*32,index+2)
+  OD
+  Veneer(bank,$f060,1)
+  bank(SDXABI.EXIT_PC)=$20
+  SDXSTATE.Word(bank,SDXABI.EXIT_PC+1,$f060)
+  A816MEMORY.Move(bank+SDXABI.RETURN_PC,@restore,8)
+  IF SDXCONFIG.RETURN_PROBE>=8 THEN
+    bank(SDXABI.RETURN_PC+(SDXCONFIG.RETURN_PROBE-8)*2)=$cb
+  FI
+
+RETURN
+
+; Select an audited complete file before allocating or publishing an Image.
+PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
+  PROGRAMIMAGE.Image POINTER image
+  SDXSTATE.Session POINTER state
+  SDXFILE.Layout POINTER plan
+  LONGCARD base
+  LONGINT error
+  CARD slot
+  BYTE profile
+
+  profile=SDXADMISSION.Select(bytes,length)
+  IF profile=0 THEN
+    DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_UNSUPPORTED))
+    RETURN(NULL)
+  FI
+  error=LONGINT(O65TYPES.ERROR_NO_FREE_STORE)
+  image=PROGRAMIMAGE.Image POINTER(O65MEMORY.Allocate(SIZEOF(PROGRAMIMAGE.Image)))
+  IF image<>NULL THEN
+    state=SDXSTATE.Session POINTER(O65MEMORY.Allocate(SIZEOF(SDXSTATE.Session)))
+    IF state<>NULL THEN
+      image.extension=BYTE POINTER(state)
+      image.release=@SDXSTATE.Release
+      state.slot=$ff
+      state.profile=profile
+      slot=SDXSTATE.Claim()
+      IF slot<SDXABI.SLOTS THEN
+        state.slot=BYTE(slot)
+        image.backingBytes=131071
+        image.backing=O65MEMORY.Storage(SIZE(image.backingBytes))
+        IF image.backing<>NULL THEN
+          base=(LONGCARD(ADDRESS(image.backing))+$ffff) & LONGCARD($ffff0000)
+          state.bank=BYTE POINTER(ADDRESS(base))
+          image.text=ADDRESS(base)
+          image.textBytes=65536
+          A816MEMORY.Clear(state.bank,65536)
+          plan=SDXFILE.Load(bytes,length,state.bank,SDXABI.GUEST_START,
+              SDXABI.GUEST_LIMIT,@SDXABI.Resolve)
+          error=DOSCLIENT.IoErr()
+          IF plan<>NULL THEN
+            error=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+            state.entry=SDXFILE.Symbol(plan,BYTE POINTER("MAIN    ")+1)
+            IF state.entry<>0 AND SDXADMISSION.Patch(plan,profile)=0 THEN
+              SDXFILE.Release(plan)
+              Gates(state.bank)
+              SDXSTATE.Prepare(state)
+              image.kind=PROGRAMIMAGE.KIND_SDX
+              image.references=1
+              image.ownerHeld=1
+              image.magic=PROGRAMIMAGE.MAGIC
+              DOSCLIENT.SetError(0)
+              RETURN(image)
+            FI
+            SDXFILE.Release(plan)
+          FI
+        FI
+      ELSE
+        error=LONGINT(O65TYPES.ERROR_RESOURCE_LIMIT)
+      FI
+    FI
+    PROGRAMIMAGE.Free(image)
+  FI
+  DOSCLIENT.SetError(error)
+
+RETURN(NULL)
+
+ENDMODULE

@@ -41,4 +41,5 @@ ordinary Tasks, reversible early interrupt routing and pointer IRQ checks.
 Production guest admission and the remaining P2 gates are still open.
 
 The [native SDX decoder](development/sdx-loader.md) validates and relocates
-the pinned module records; Process integration and service admission are in progress.
+the pinned module records. P3 adds synthetic command admission, ordinary Process
+ownership and guest-slot reuse; P4 services remain in progress.

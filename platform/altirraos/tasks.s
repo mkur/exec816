@@ -185,7 +185,7 @@ general_finalizer_start:
     .if SDX_PATCHES
         .include "sdx-checksum.s"
     .endif
-    .if SDX_RUNTIME_PROBE
+    .if SDX_RUNTIME_PROBE .or SDX_ENABLED
         .include "sdx-runtime-probe.s"
     .endif
     .include "display.s"

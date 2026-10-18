@@ -3,14 +3,36 @@
   "version": 1,
   "status": "patch-development",
   "patch_limit": 16,
-  "errors": {"OK": 0, "PLAN": 1, "PREIMAGE": 2},
-  "modules": {"MD5.COM": 1, "ARC.COM": 2, "ARCLST.OVL": 3, "ARCEXT.OVL": 4, "ARCADD.OVL": 5},
+  "errors": {
+    "OK": 0,
+    "PLAN": 1,
+    "PREIMAGE": 2
+  },
+  "modules": {
+    "MD5.COM": 1,
+    "ARC.COM": 2,
+    "ARCLST.OVL": 3,
+    "ARCEXT.OVL": 4,
+    "ARCADD.OVL": 5
+  },
   "imports": {
     "Update": {
       "arguments": [
-        {"alignment": 1, "offset": 0, "size": 3},
-        {"alignment": 2, "offset": 4, "size": 2},
-        {"alignment": 2, "offset": 6, "size": 4}
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 2
+        },
+        {
+          "alignment": 2,
+          "offset": 6,
+          "size": 4
+        }
       ],
       "outgoing_bytes": 11,
       "result": "Some(NativeResult(A16X16))",
@@ -27,5 +49,100 @@
     "state_dp": 132,
     "entry": "sdx_crc32_update",
     "contract": "Native E=0, M=X=0, decimal clear. A=byte count (0..65535); D+$80..82=far source pointer; D+$84..87=internal CRC, initially FFFFFFFF. Updates pointer and CRC, preserves Y/D/DBR/S, clobbers A/X/P. Long return. No IRQ masking. Caller owns scratch and input; split calls are permitted, including across a bank boundary. Final result is state XOR FFFFFFFF."
+  },
+  "runtime": {
+    "slots": 2,
+    "resident_bank": 40,
+    "resident_reserved_bytes": 65536,
+    "code_offset": 32768,
+    "dp_bytes": 256,
+    "dp_guard_bytes": 16,
+    "context_base": 2652672,
+    "context_bytes": 512,
+    "fields": {
+      "native_s": 256,
+      "native_d": 258,
+      "guest_s": 260,
+      "event": 262,
+      "bank": 264
+    },
+    "frame": {
+      "dbr": 1,
+      "d": 2,
+      "y": 4,
+      "x": 6,
+      "a": 8,
+      "veneer_p": 10,
+      "p": 11,
+      "pc": 12
+    },
+    "guest_start": 12288,
+    "guest_limit": 57344,
+    "return_pc": 61568,
+    "exit_pc": 61440,
+    "initial_s": 480,
+    "minimum_s": 352,
+    "comtab": 1536,
+    "file_p": 1792,
+    "trap_limit": 10,
+    "handle_limit": 2
+  },
+  "guest_services": {
+    "COMTAB": {
+      "address": 1536,
+      "event": 0
+    },
+    "FILE_P": {
+      "address": 1792,
+      "event": 0
+    },
+    "FCLOSE": {
+      "address": 61696,
+      "event": 2
+    },
+    "FCLOSEAL": {
+      "address": 61728,
+      "event": 3
+    },
+    "FGETC": {
+      "address": 61760,
+      "event": 4
+    },
+    "FOPEN": {
+      "address": 61792,
+      "event": 5
+    },
+    "FREAD": {
+      "address": 61824,
+      "event": 6
+    },
+    "PRINTF": {
+      "address": 61856,
+      "event": 7
+    },
+    "TOUPPER": {
+      "address": 61888,
+      "event": 8
+    },
+    "U_FAIL": {
+      "address": 61920,
+      "event": 9
+    },
+    "U_GETATR": {
+      "address": 61952,
+      "event": 10
+    },
+    "U_SFAIL": {
+      "address": 61984,
+      "event": 11
+    },
+    "U_SLASH": {
+      "address": 62016,
+      "event": 12
+    },
+    "U_XFAIL": {
+      "address": 62048,
+      "event": 13
+    }
   }
 }

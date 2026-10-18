@@ -83,6 +83,7 @@ def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=Fal
              "-I", ROOT / "platform/altirraos", "-D", f"PROGRAM_ENTRY={entry}", "-D", f"DISPLAY_KIND={display_kind}",
              "-D", f"STACK_CHECKS={int(stack_checks)}",
              "-D", f"SDX_RETURN_PROBE={int((memory or {}).get('sdx_return_probe',0))}",
+             "-D", f"SDX_ENABLED={int((memory or {}).get('sdx_enabled',False))}",
              "-D", f"SDX_RUNTIME_PROBE={int((memory or {}).get('sdx_runtime_probe',False))}",
              "-D", f"SDX_PATCHES={int((memory or {}).get('sdx_patches',False))}",
              "-D", f"PROBE_NMI={probe_nmi}", "-D", f"INITIAL_I={initial_i}",
@@ -112,6 +113,9 @@ def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=Fal
         from generate_native_interrupts import ABI as native_interrupts
         native_base = storage(memory)['BASE']+native_interrupts['code_offset']
         config = config.replace('MEMORY {', f'MEMORY {{ NATIVEWORK: start=${native_base:x}, size=${native_interrupts["code_reserved_bytes"]:x}, file="%O.native";').replace('SEGMENTS {', 'SEGMENTS { NATIVE_WORK: load=NATIVEWORK,type=ro;')
+        if memory.get('sdx_enabled'):
+            sdx_base=memory['sdx_storage']['resident_base']+0x8000
+            config=config.replace('MEMORY {',f'MEMORY {{ SDXWORK: start=${sdx_base:x}, size=$8000, file="%O.sdx";').replace('SEGMENTS {','SEGMENTS { SDX_WORK: load=SDXWORK,type=ro;')
         binding_size = 58
         binding_base = storage(memory)['ENTRY_COUNT']
         blitter = json.loads((ROOT/'abi/blitter.json').read_text())
@@ -261,11 +265,15 @@ def place_after_foreign(memory, foreign):
 
 def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, cooperative=False,
           probe_flags=0x100, forward_signature=0, preemptive=False, banked=False,
-          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False, pump_divisor=0,sio_enabled=True,sdx_patches=False,sdx_runtime_probe=False,sdx_return_probe=0):
+          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False, pump_divisor=0,sio_enabled=True,sdx=False,sdx_patches=False,sdx_runtime_probe=False,sdx_return_probe=0):
+    require(type(sdx) is bool and (not sdx or (tasks and task_capacity==8)),
+            'SDX personality requires the eight-Task profile')
+    require(not (sdx and sdx_runtime_probe), 'Select personality or diagnostic fixture ownership')
+    sdx_patches = sdx_patches or sdx
     require(type(sdx_runtime_probe) is bool and (not sdx_runtime_probe or (tasks and task_capacity == 8)),
             'SDX runtime probe requires the eight-Task test profile')
     require(type(sdx_return_probe) is int and 0 <= sdx_return_probe <= 11
-            and (sdx_return_probe == 0 or sdx_runtime_probe),
+            and (sdx_return_probe == 0 or sdx_runtime_probe or sdx),
             'SDX return injection requires the runtime probe and a boundary in 1..11')
     require(type(sdx_patches) is bool and (not sdx_patches or tasks),
             'SDX patch support requires native Tasks')
@@ -322,6 +330,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                    if s.get('executable')]
     code_test = ' OR '.join(f'(value>=${lo:x} AND value<${hi:x})'
                            for lo, hi in code_ranges) or '0'
+    (output/'sdxbind.act').write_text((ROOT/'lib/dos/sdxbind.act').read_text())
     (output/'calypsimeta.act').write_text('MODULE CALYPSIMETA\n'
         'PUBLIC BYTE FUNC Code(LONGCARD value)\n\nRETURN('+code_test+')\nENDMODULE\n')
     exec_build = None
@@ -337,6 +346,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                                         memory_profile or generate_memory.PROFILE, max_banks,kernel_bank,upper_table)
         memory['boot_config'].update(system_selection)
         memory['sio_enabled']=sio_enabled
+        memory['sdx_enabled']=sdx
         memory['sdx_runtime_probe']=sdx_runtime_probe
         memory['sdx_return_probe']=sdx_return_probe
         memory['sdx_patches']=sdx_patches
@@ -345,6 +355,11 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         if upper_table:
             from task_capacity import configure
             configure(memory,task_capacity,worker_stack,idle_stack)
+        if sdx:
+            import sdx_build
+            import sdx_fixtures
+            sdx_build.configure(output,memory)
+            memory['sdx_admission']=sdx_fixtures.generate(output)
         if tasks:
             import generate_heap
             generate_heap.reserve_metadata(memory)
@@ -426,6 +441,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     labels = assemble(toolchain, output, APP_BASE, probe_nmi, initial_i, cooperative,
                       probe_flags=probe_flags, forward_signature=forward_signature, preemptive=preemptive,
                       memory=memory, tasks=tasks, policy_probe=policy_probe, irq_probe=irq_probe, manual_wake=manual_wake, pump_count=pump_count, pump_divisor=pump_divisor, heap_probe=heap_probe,console_test=console_native,console_enabled=console_enabled,stack_checks=stack_checks_enabled,boot_startup=console_enabled or console_deferred)
+    if sdx:
+        sdx_build.bindings(output,labels)
     if tasks:
         task_generate(output, labels)
     base_args = [toolchain["binary"], *(["--module-path", task_modules] if tasks else []),
@@ -443,8 +460,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             shape = memory_api['imports'][name.split('.')[1]]
             arguments, outgoing, result = shape['arguments'], shape['outgoing_bytes'], 'None'
             label, peak = shape['label'], memory_api['stack_peak']
-        elif tasks and name.startswith('SDXPROBE.'):
-            require(sdx_runtime_probe, 'SDX runtime probe is not enabled')
+        elif tasks and (name.startswith('SDXPROBE.') or name.startswith('SDXRUNTIME.')):
+            require(sdx_runtime_probe or sdx, 'SDX runtime is not enabled')
             operation = name.split('.')[1]
             require(operation in ('Install', 'Remove', 'Run'), 'Unknown SDX probe operation')
             label = 'sdx_probe_'+operation.lower()
@@ -803,6 +820,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         image['segments'].append({'address':labels['bankprobe'], 'bytes':list((output/'hosted.bin.probe').read_bytes()),
                                   'writable':False, 'executable':True})
         image_path.write_text(json.dumps(image, indent=2)+'\n')
+    if sdx:
+        image['segments'].extend(sdx_build.image(output))
     if tasks:
         process_storage = memory['process_storage']
         image['data'].append(dict(kind='global',id=max(d['id'] for d in image['data'])+1,
@@ -1076,9 +1095,15 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'task-kernel/task-console.inc','task-kernel/task-signals.inc','task-kernel/exectasks.act','task-kernel/taskstacks.act','task-kernel/taskinspect.act','task-kernel/deviceinspect.act')})
     if tasks:
         provenance['task_generated'].update({name:sha256(output/name) for name in ('ioresident.act','ioresidentmeta.act','ioadmission.act','idemeta.act','task-kernel/blocktransport.act')})
+        provenance['sdx_enabled']=sdx
+        if sdx:
+            provenance['sdx_inputs']={str(path.relative_to(ROOT)):sha256(path) for path in (
+                *sorted((ROOT/'lib/dos').glob('sdx*.act')),
+                ROOT/'tools/sdx_build.py',ROOT/'tools/sdx_fixtures.py',
+                ROOT/'compat/sdx/probes/process.s',ROOT/'compat/sdx/probes/calls.inc')}
         provenance['sdx_runtime_probe']=sdx_runtime_probe
         provenance['sdx_return_probe']=sdx_return_probe
-        if sdx_runtime_probe:
+        if sdx_runtime_probe or sdx:
             provenance['sdx_runtime_probe_inputs']={name:sha256(ROOT/name) for name in (
                 'platform/altirraos/sdx-runtime-probe.s', 'platform/altirraos/sdx-rom-shadow.s')}
         provenance['sdx_patches']=sdx_patches

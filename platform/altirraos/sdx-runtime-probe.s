@@ -1,8 +1,7 @@
-; P2 synthetic Task bridge. Fixed test-owned banks/pages; not an SDX loader.
-; Slot 0/1 belong to one ordinary Task each, across Run/service/Run calls.
-; Guest pages $7E00/$7F00 are borrowed only after startup retirement; the
-; fixture reserves upper banks $28/$30/$31 through the ordinary image owner.
-; Production slot allocation and binary admission remain deliberately absent.
+; Shared emulation-mode bridge. SDX_ENABLED uses generated DP reservations
+; and Image-owned guest banks. P2 diagnostic fixtures use the same transitions.
+; One Image retains each slot through the Process retirement acknowledgement.
+.include "generated/sdx.inc"
 SDX_ROM_IMAGE = $280000
 SDX_ROM_BACKUP = $284000
 SDX_ROM_STATE = $287800
@@ -25,11 +24,12 @@ SR_SERIAL_IRQS = $28781c
 SR_WORK = $28781e
 SR_COPY_IRQS = $287820
 SR_HOST = $287900
-SR_CONTEXT = $287a00             ; two 512-byte records, first 256 = page one
+SR_CONTEXT = SDX_CONTEXT_BASE             ; two 512-byte records, first 256 = page one
 SR_NATIVE_S = SR_CONTEXT+$100
 SR_NATIVE_D = SR_CONTEXT+$102
 SR_GUEST_S = SR_CONTEXT+$104
-SR_EVENT = SR_CONTEXT+$106
+SR_EVENT = SR_CONTEXT+SDX_FIELDS_EVENT
+SR_BANK = SR_CONTEXT+SDX_FIELDS_BANK
 
 ; Page-one transfers run on the native Task stack. Service owned byte/timer
 ; edges between at most sixteen words, without admitting ROM or scheduling.
@@ -80,11 +80,30 @@ name:
 .endmacro
 
 .macro sr_test_guest_pause pc
-    .local done, other, counted
+    .local done, other, counted, read_guest, write_guest
     .if SDX_RETURN_PROBE >= 8
         lda pc,s
         cmp #$f081+(SDX_RETURN_PROBE-8)*2
         bne done
+        .if SDX_ENABLED
+            lda f:SR_INDEX
+            tax
+            sep #$20
+            lda f:SR_BANK,x
+            sta f:read_guest+3
+            sta f:write_guest+3
+            rep #$20
+read_guest:
+            lda f:$00f080+(SDX_RETURN_PROBE-8)*2
+            and #$ff
+            cmp #$cb
+            bne done
+            sep #$20
+.a8
+            lda #$ea
+write_guest:
+            sta f:$00f080+(SDX_RETURN_PROBE-8)*2
+        .else
         lda f:SR_OWNER
         cmp #1
         bne other
@@ -108,6 +127,7 @@ other:
         lda #$ea
         sta f:$31f080+(SDX_RETURN_PROBE-8)*2
 counted:
+        .endif
         rep #$20
 .a16
         lda f:SR_FORCED
@@ -172,7 +192,11 @@ sdx_probe_installed:
 ; Fixed synthetic images are checked by the test packager. A production
 ; loader must reserve equivalent transition ranges before binary admission.
 
-.segment "NATIVE_WORK"
+.if SDX_ENABLED
+    .segment "SDX_WORK"
+.else
+    .segment "NATIVE_WORK"
+.endif
 .include "sdx-rom-shadow.s"
 .export sdx_probe_install, sdx_probe_remove, sdx_probe_run, sdx_probe_service
 .export sdx_probe_install_end, sdx_probe_remove_end, sdx_probe_run_end
@@ -270,6 +294,15 @@ sdx_probe_resume:
     tax
     txa
     sta f:SR_INDEX
+.if SDX_ENABLED
+    ; No guest runs during this native prefix. Once OWNER is published, NMI
+    ; only latches and the scheduler cannot change these jump operands.
+    sep #$20
+    lda f:SR_BANK,x
+    sta f:sr_jump_zero+3
+    sta f:sr_jump_one+3
+    rep #$20
+.endif
     lda #0
     sta f:SR_EVENT,x
     pea 0
@@ -328,9 +361,11 @@ sr_restore_checked:
     beq sr_restore_zero
 sr_restore_one:
     sr_test_restore sr_pause_one
+sr_jump_one:
     jml $31f080
 sr_restore_zero:
     sr_test_restore sr_pause_zero
+sr_jump_zero:
     jml $30f080
 sr_restore_end:
 sr_restore_pending:
@@ -656,10 +691,20 @@ sr_pause_done:
     and #$ff
     cmp #^sr_restore
     beq sr_intercept_restore
-    cmp #$30
-    jcc sr_native_nmi_return
-    cmp #$32
-    jcs sr_native_nmi_return
+    .if SDX_ENABLED
+        ; The saved PBR must match the retained owner's actual private bank.
+        pha
+        lda f:SR_INDEX
+        tax
+        pla
+        cmp f:SR_BANK,x
+        jne sr_native_nmi_return
+    .else
+        cmp #$30
+        jcc sr_native_nmi_return
+        cmp #$32
+        jcs sr_native_nmi_return
+    .endif
     lda 11,s
     cmp #$f080
     jcc sr_native_nmi_return

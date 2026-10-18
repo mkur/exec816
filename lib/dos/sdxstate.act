@@ -1,0 +1,114 @@
+MODULE SDXSTATE
+USE EXEC
+USE HEAPCORE
+USE SDXABI
+USE SDXCONFIG
+USE A816MEMORY
+
+PUBLIC TYPE Session=[
+  BYTE slot,profile
+  CARD entry
+  BYTE POINTER bank,dp,context
+]
+
+BYTE occupied
+
+PUBLIC CARD FUNC Claim()
+  CARD slot
+  BYTE mask
+
+  EXEC.Forbid()
+  slot=0
+  WHILE slot<SDXABI.SLOTS DO
+    mask=BYTE(1 LSH slot)
+    IF (occupied & mask)=0 THEN
+      occupied=occupied OR mask
+      EXEC.Permit()
+      RETURN(slot)
+    FI
+    slot==+1
+  OD
+  EXEC.Permit()
+
+RETURN(SDXABI.SLOTS)
+
+; These are domain guards, not repeated caller-handle validation.
+PUBLIC PROC Guards()
+  BYTE POINTER low,high
+  CARD index
+
+  low=BYTE POINTER(ADDRESS(SDXCONFIG.DP_BASE-SDXABI.DP_GUARD_BYTES))
+  high=BYTE POINTER(ADDRESS(SDXCONFIG.DP_BASE+SDXABI.SLOTS*256))
+  FOR index=0 TO SDXABI.DP_GUARD_BYTES-1 DO
+    IF low(index)<>$a5 OR high(index)<>$a5 THEN
+      HEAPCORE.Abort($ff9a)
+    FI
+  OD
+
+RETURN
+
+PUBLIC PROC Release(BYTE POINTER extension)
+  Session POINTER state
+
+  state=Session POINTER(extension)
+  IF state.slot<SDXABI.SLOTS THEN
+    Guards()
+    EXEC.Forbid()
+    occupied=occupied & BYTE($ff XOR (1 LSH state.slot))
+    EXEC.Permit()
+  FI
+  EXEC.FreeMem(extension,SIZEOF(Session))
+
+RETURN
+
+PUBLIC PROC Word(BYTE POINTER bytes CARD at,value)
+
+  bytes(at)=BYTE(value)
+  bytes(at+1)=BYTE(value RSH 8)
+
+RETURN
+
+PUBLIC CARD FUNC ReadWord(BYTE POINTER bytes CARD at)
+
+RETURN(CARD(bytes(at)) OR (CARD(bytes(at+1)) LSH 8))
+
+; Every suspended service has the same complete 13-byte guest frame.
+PUBLIC BYTE POINTER FUNC GetFrame(Session POINTER state)
+  CARD stack
+
+  stack=ReadWord(state.context,SDXABI.FIELDS_GUEST_S)
+  IF stack<SDXABI.MINIMUM_S OR stack>$1ef THEN
+    HEAPCORE.Abort($ff9a)
+  FI
+
+RETURN(state.context+stack-$100)
+
+PUBLIC PROC Prepare(Session POINTER state)
+  BYTE POINTER frame
+  CARD page
+
+  Guards()
+  page=SDXCONFIG.DP_BASE+CARD(state.slot)*256
+  state.dp=BYTE POINTER(ADDRESS(page))
+  state.context=BYTE POINTER(ADDRESS(SDXABI.CONTEXT_BASE+
+      LONGCARD(state.slot)*SDXABI.CONTEXT_BYTES))
+  A816MEMORY.Clear(state.dp,256)
+  A816MEMORY.Clear(state.context,SDXABI.CONTEXT_BYTES)
+  A816MEMORY.Fill(state.context,$a5,256)
+  Word(state.context,SDXABI.FIELDS_GUEST_S,SDXABI.INITIAL_S)
+  Word(state.context,SDXABI.FIELDS_BANK,
+      CARD(LONGCARD(ADDRESS(state.bank)) RSH 16))
+  frame=GetFrame(state)
+  frame(SDXABI.FRAME_DBR)=BYTE(LONGCARD(ADDRESS(state.bank)) RSH 16)
+  Word(frame,SDXABI.FRAME_D,page)
+  Word(frame,SDXABI.FRAME_Y,0)
+  Word(frame,SDXABI.FRAME_X,0)
+  Word(frame,SDXABI.FRAME_A,0)
+  frame(SDXABI.FRAME_VENEER_P)=$20
+  frame(SDXABI.FRAME_P)=$20
+  Word(frame,SDXABI.FRAME_PC,state.entry)
+  Word(state.context,$ee,SDXABI.EXIT_PC-1)
+
+RETURN
+
+ENDMODULE

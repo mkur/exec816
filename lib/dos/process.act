@@ -10,6 +10,7 @@ USE PROCESSSTATE
 USE HEAPCORE
 USE PROGRAMIMAGE
 USE CPROGRAMBIND
+USE SDXBIND
 INCLUDE "process-types.inc"
 INCLUDE "command-results.inc"
 
@@ -55,6 +56,10 @@ PUBLIC LONGINT FUNC ExecuteImage()
 
   IF image.magic<>PROGRAMIMAGE.MAGIC OR image.running<>1 THEN
     HEAPCORE.Abort($ff96)
+  FI
+
+  IF image.kind=PROGRAMIMAGE.KIND_SDX THEN
+    RETURN(SDXBIND.Run(image,process.arguments))
   FI
 
   IF image.kind=PROGRAMIMAGE.KIND_C THEN

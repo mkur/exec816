@@ -9,8 +9,9 @@ identification, checked patch transactions, original/patched SDX MD5 controls
 and isolated ARC helper tests. The [P2 runtime slice](../development/sdx-runtime.md)
 adds two synthetic guests on ordinary Tasks, native waits, forced final-return
 NMI checks and traced stock-810 reads alongside pointer IRQs.
-P0/P1/P2 are partial; production guest admission and application acceptance
-remain pending.
+P0/P1/P2 are partial. [P3](../development/sdx-loader.md) now passes for
+source-audited synthetic commands through ordinary Processes; third-party
+application admission and acceptance remain pending.
 
 [Design](spartados-personality-design.md) ·
 [Frozen inputs](spartados-personality-inputs.json) ·
@@ -329,7 +330,7 @@ both. Each slice records its exact supported operations and memory delta.
 | P0 Inputs and audit | Reproducible original-SDX controls; complete instruction/service/path classification for MD5 and staged ARC operations; patch candidates and machine pins. |
 | P1 Patch engine | Size/CRC32 selection, exact preimage checks, relocation-aware application and replacement assembly; focused emitted helper tests pass before real application launch. |
 | P2 Guest runtime | Upper-bank synthetic guests can be preempted, use native services, block/resume and exit with IRQ/NMI and host page-one coexistence. |
-| P3 Loader and Process | Synthetic SDX commands load/patch/bind and execute through ordinary Process ownership; rollback and slot reuse pass. |
+| P3 Loader and Process | **Passed for the audited synthetic catalog.** Commands load/patch/bind and execute through ordinary Process ownership; rollback and slot reuse pass. |
 | P4 MD5 services | The fourteen-symbol subset passes guest-call probes, including inline output, two handles and nonlocal traps. |
 | M1 Named-file MD5 | The adapted binary computes correct digests through native DOS and an ordinary shell launch. |
 | M2 Complete MD5 subset | Multiple files, masks/attributes, `/C`, errors, BREAK, redirection and two independent guests pass. |
@@ -455,12 +456,13 @@ scope; its display API and child execution are not hidden acceptance requirement
 
 ## Memory and ownership budget
 
-The current patch slice changes **0 fixed and 0 per-Task reserved bank-zero bytes**. Proposed
-implementation reservations, including unused capacity, are:
+The patch/decoder components add **0 fixed and 0 per-Task reserved bank-zero bytes**.
+Enabled P3 builds add **544 fixed and 0 per-Task bytes** for guarded guest DPs.
+Implementation reservations, including unused capacity, are:
 
 | Resource | Budget and lifetime |
 | --- | --- |
-| Guest DP pool | Two aligned 256-byte pages: **512 fixed reserved bank-zero bytes** in enabled builds. Each active guest uses one page from this pool; do not count it again as a per-Task increase. No native metadata or external DP guards. Count any additional placement padding explicitly. |
+| Guest DP pool | Two aligned 256-byte pages plus two 16-byte outer guards: **544 fixed reserved bank-zero bytes** in enabled builds. Each active guest uses one page from this pool; do not count it again as a per-Task increase. Generated placement adds no further padding. |
 | Physical guest stack | Existing `$0100–$01FF` OS reservation: **0 additional bytes**. Shared by ownership protocol, not a second stack allocation per guest. Budget interrupt pushes within its 256-byte capacity. |
 | Native Task DP/stack | Reuse current guarded pools: **0 planned growth** per public Task, root, kernel or idle. P2 must prove native service and interrupt headroom. |
 | Bank-zero bridge/state | Target **0 growth** within existing reservations, including code padding. Prove fit; any extra state, stack, guards or linker capacity requires a revised measured budget before admission. |

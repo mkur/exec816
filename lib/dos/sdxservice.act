@@ -1,0 +1,63 @@
+MODULE SDXSERVICE
+USE DOS
+USE DOSCLIENT
+USE PROGRAMIMAGE
+USE SDXABI
+USE SDXSTATE
+USE SDXRUNTIME
+
+; P3 literal output crosses the ordinary Process stream boundary while page
+; one is released. P4 extends this with the audited formatted-output subset.
+BYTE FUNC Print(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  CARD start,limit
+  LONGINT sent,total
+
+  start=SDXSTATE.ReadWord(frame,SDXABI.FRAME_PC)
+  limit=start
+  WHILE limit<$ffff AND state.bank(limit)<>0 DO
+    limit==+1
+  OD
+  IF limit=$ffff THEN
+    RETURN(0)
+  FI
+  total=0
+  WHILE total<LONGINT(limit-start) DO
+    sent=DOS.Write(DOS.Output(),state.bank+start+SIZE(total),
+        LONGINT(limit-start)-total)
+    IF sent<=0 THEN
+      RETURN(0)
+    FI
+    total==+sent
+  OD
+  SDXSTATE.Word(frame,SDXABI.FRAME_PC,limit+1)
+
+RETURN(1)
+
+PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
+  SDXSTATE.Session POINTER state
+  BYTE POINTER frame
+  CARD event
+
+  state=SDXSTATE.Session POINTER(image.extension)
+  SDXSTATE.Prepare(state)
+  DO
+    event=SDXRUNTIME.Run(state.slot)
+    SDXSTATE.Guards()
+    frame=SDXSTATE.GetFrame(state)
+    IF event=1 THEN
+      DOSCLIENT.SetError(0)
+      RETURN(LONGINT(frame(SDXABI.FRAME_A)))
+    FI
+    IF event=SDXABI.CALL_PRINTF THEN
+      IF Print(state,frame)=0 THEN
+        RETURN(20)
+      FI
+    ELSE
+      DOSCLIENT.SetError(307)
+      RETURN(20)
+    FI
+  OD
+
+RETURN(20)
+
+ENDMODULE

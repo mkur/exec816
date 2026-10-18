@@ -12,6 +12,14 @@ Other ROMs remain outside this platform contract. The
 [firmware diagnostics](../contributing/building.md#firmware-diagnostics) record
 bounded XLOS boot checks and their setup without extending platform qualification.
 
+The opt-in [SDX Process development profile](../development/sdx-loader.md)
+adds **544 fixed reserved bank-zero bytes** after bootstrap retirement: two
+aligned guest direct pages and two 16-byte outer guards, with no extra padding.
+It adds **0 bytes per native Task, root, kernel or idle**. The loading map and
+existing bridge reservations stay unchanged. Only the source-audited synthetic
+catalog is admitted; these development checks do not qualify third-party SDX
+applications or a release profile.
+
 ## Compiler and memory contract
 
 Use the revision and generated ABI selected by [actionc.json](../../toolchain/actionc.json):
