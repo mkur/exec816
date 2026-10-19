@@ -1,0 +1,14 @@
+--- a/__fs_fdopen.c
++++ b/__fs_fdopen.c
+@@ -153,7 +153,11 @@
+           goto errout;
+         }
+ 
++      stream->fs_next     = NULL;
+       stream->fs_flags    = 0;
++#if _CONFIG_NUNGET_CHARS > 0
++      stream->fs_nungotten = 0;
++#endif
+ 
+ #ifndef _CONFIG_STDIO_DISABLE_BUFFERING
+ #if BUFSIZ > 0

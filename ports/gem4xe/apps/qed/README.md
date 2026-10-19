@@ -64,6 +64,9 @@ its C APP and media while retaining the emitted native provider. It rejects a
 provider/import ABI mismatch. Omit it after changing native fixture/provider
 inputs. `--focused-abi` selects two ABI/return cycles in either compiler mode.
 
+See the [native runtime contract](native/README.md) for descriptor ownership,
+errors, stdio bounds and explicit calendar limitations.
+
 The body passed to `QedRuntimeRun` must retire GUI borrowers before returning.
 The Stop fixture exercises a borrowed allocated title, cooperative native
 `RequestStop`, window retirement, heap cleanup and ordinary collection; no

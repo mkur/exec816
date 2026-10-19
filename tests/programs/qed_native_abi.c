@@ -2,10 +2,12 @@
 #include "../../ports/gem4xe/apps/qed/native/qed-native.h"
 #include <string.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <proto/dos.h>
 
 __attribute__((section("exec_layout")))
 const UWORD QedNativeLayout[]={sizeof(void *),sizeof(void EXEC_PTR *),sizeof(_WORD),
-    sizeof(LONG),sizeof(OBJECT),offsetof(OBJECT,ob_spec),sizeof(TEDINFO)};
+    sizeof(LONG),sizeof(OBJECT),offsetof(OBJECT,ob_spec),sizeof(TEDINFO),sizeof(size_t),sizeof(fpos_t),sizeof(time_t)};
 
 static LONG transform(LONG value) { return value*7-3; }
 static LONG (*volatile callback)(LONG)=transform;
@@ -14,10 +16,13 @@ static int abi(void)
 {
     unsigned char *block,*edge;
     ULONG boundary,largest;
+    LONG previous;
     WORD message[8],x,y,b,k,key,count;
     struct Node node;
     unsigned char sample[16]={128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,255};
     if ((char)255!=255 || callback(9)!=60) return 71;
+    previous=SetIoErr(0x12345678L);
+    if (IoErr()!=0x12345678L || SetIoErr(previous)!=0x12345678L) return 76;
     largest=AvailMem(MEMF_UPPER|MEMF_LARGEST);
     if (!largest || largest>65536UL || AvailMem(MEMF_UPPER)<largest) return 75;
     block=AllocMem(65568UL,MEMF_UPPER|MEMF_LINEAR);

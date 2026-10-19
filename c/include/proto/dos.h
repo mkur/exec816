@@ -16,6 +16,7 @@ LONG EXEC_CALL ExamineExact(BPTR lock,struct FileInfoBlock *info);
 LONG EXEC_CALL ExNext(BPTR lock,struct FileInfoBlock *info);
 LONG EXEC_CALL ExNextBatch(BPTR lock,struct FileInfoBlock *info,struct DirBatch *batch);
 LONG EXEC_CALL IoErr(void);
+LONG EXEC_CALL SetIoErr(LONG error);
 BPTR EXEC_CALL CreateDir(CONST_STRPTR name);
 LONG EXEC_CALL DeleteFile(CONST_STRPTR name);
 LONG EXEC_CALL Rename(CONST_STRPTR oldName,CONST_STRPTR newName);

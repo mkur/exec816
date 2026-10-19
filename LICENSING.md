@@ -73,6 +73,10 @@ emulators or patches to upstream projects.
   `OF816-LICENSE.txt`.
 - The AltirraOS ROM retains Avery Lee's file-specific redistribution notice.
   Demo ZIPs include `ALTIRRAOS-LICENSE.txt`.
+- Calypsi runtime sources and the correction selected by
+  `toolchain/calypsi-runtime.json` retain their original Calypsi, Apache and
+  NuttX notices. Preparation preserves those notices beside the adapted source;
+  the Exec MIT interface grant does not relicense that material.
 - actionc and its runtime material retain their own licences. This includes
   `lib/exec/a816abi.act`, generated from the compiler's ABI, and the historical
   compiler Git bundle under `toolchain/`.

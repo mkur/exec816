@@ -98,3 +98,66 @@ checks return to baseline. Full QED heap demand remains unmeasured.
 
 Reserved bank-zero delta remains **0 fixed, 0 per-public-Task, 0 private idle**,
 including guards, alignment and unused capacity. QF3–QF6 remain open.
+
+## QF3: native files, stdio and terminal errors
+
+A four-slot per-image table now backs the retained GEMDOS calls and the pinned
+Calypsi file hooks. Descriptors start at 3, preserve complete native identities
+and retire exactly once after terminal Close. Standard output/error borrow the
+native context's Output handle. Create, exclusive create and existing update
+use the existing public modes; append and new-position seek preserve their
+native guarantees. Metadata uses ExamineExact and explicit availability.
+
+The [runtime contract](../../ports/gem4xe/apps/qed/native/README.md) lists error
+mapping, supported hooks and remaining calendar/stdio limits. Calypsi's emitted
+sizes are size_t=2, fpos_t=4 and time_t=8. Hooks preserve negated errno in size_t;
+GEMDOS calls retain LONG transfer counts. The file build selects the real
+integer formatter with `printf=nofloat`, including every independent relink.
+The default reduced formatter left `%ld` literal and was insufficient.
+
+The installed 5.18 `__fs_fdopen` did not initialize its FILE list link or unget
+count. The [pinned runtime correction](../../toolchain/calypsi-runtime.json)
+prepares a separate corrected source, retaining the original notices and
+archive. The general C emitter records this explicit source override. Poisoned
+allocations, two simultaneous streams, reopen/reuse and both FILE/buffer
+allocation failures exercise the corrected behavior. The runtime's startup
+adapter actually initializes its private standard streams; donor board startup
+and default heap/termination routines are absent from the linked fixture.
+
+SetIoErr is now an ordinary public C binding/import, and the shared wrapper
+preserves the application's native cause across AES teardown. C APP ABI 22
+requires matching rebuilt providers/applications. The focused raw/optimized
+probe checks the complete LONG error value as well as the emitted library
+widths. The current body/cleanup path distinguishes handled operational errors
+from an unhandled cause and promotes a cleanup failure after a successful body.
+
+The [QF3 record](../development/qed-native-qf3.json) identifies six selected
+cohorts: both ABI modes, optimized ownership and Stop, and real RAM plus each
+of SpartaDOS and MyDOS. The file cohort starts the same private image twice,
+then a separately loaded failure image. It checks exact binary bytes, native
+prefixes, a parsed quoted 8.3 name, inherited relative paths, EOF/short reads,
+update/seek positions and rejected seeks, descriptor admission rollback,
+stdio buffering/formatting, FILE/buffer allocation rollback and append.
+
+Failure hooks perform a real confirmed-prefix Write or a real terminal Close,
+then inject the tested operational result. They verify short/no-prefix writes,
+actual fclose EOF/errno, single retirement, reopening the confirmed bytes and
+ordinary Process result 20/secondary DISK_FULL after cleanup. These are adapter
+boundary injections; they do not qualify physical media failure or recovery.
+Both disk cases eject and audit the persisted ATR, including the nine exact
+SAVED.BIN bytes and complete allocation consistency. The native fixture mounts
+RAM explicitly and establishes its inherited current directory before entry.
+
+Calendar time remains unavailable (`time` returns -1/ENOSYS); native DateStamps
+remain separate metadata. The environment is empty. Optional calendar/autosave
+and other deferred editor callers still need complete-source adaptation.
+The editor's Save/Save As/backup policy is still strategy step 5.
+
+The focused host suite reports 518 tests with four historical-source skips.
+Native guards, IRQ/NMI, context restoration, heap baselines and ownership checks
+pass. These are development checks, not hosted-system qualification. Reserved
+bank-zero delta is **0 fixed, 0 per-public-Task, 0 private idle bytes**, including
+guards, alignment and unused capacity. Descriptor/runtime metadata is private
+upper-image/heap storage. The provider's DOS pointer table gains one 24-bit
+entry before link alignment; no bank-zero reservation changes. QF4–QF6 remain
+open.

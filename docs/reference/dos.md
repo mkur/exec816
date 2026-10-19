@@ -7,7 +7,7 @@ These are native pointers, not Amiga BPTRs. Names are NUL-terminated byte string
 I/O remains counted binary data. Exact signatures and constants come from
 [dos.act](../../lib/dos/dos.act) and [dos.json](../../abi/dos.json).
 The current native DOS ABI is revision 14; the loaded COMMAND ABI is version 19.
-The loaded C program ABI is version 21; rebuild applications with these bindings.
+The loaded C program ABI is version 22; rebuild applications with these bindings.
 
 ## Transfer ownership
 

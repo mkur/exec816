@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "version": "5.18",
+  "purpose": "Correct initialization of malloc-backed FILE list/unget state; standard stdio and native owned malloc",
+  "sources": {
+    "src/lib/stdio/__fs_fdopen.c": "17271cd147850dc6b0c57c1555573c2b2a193e9ca27b67d97d3389bc861f05b6"
+  },
+  "headers": {
+    "src/lib/b2c.h": "11cb37a566cc595df245dd3c7c45b34c8a2d538a1d08119804896d8835f8f8a1",
+    "src/lib/clock.h": "2edc5c522dfcb89e726aec2d38f55a4cf4731ab9c13d56c500da627f844ac180",
+    "src/lib/file.h": "96102fe58f0bfb2bb38460498d15b836aea2eba087d2cf3cc594b139272a8cf1",
+    "src/lib/libc.h": "ac2fb6b15024eb467aef383ac07504b716c440eea24dbda79e0b6bb1ae78014c",
+    "src/lib/streams.h": "4e6d2fba6591dfea0eacc48a5f492217ac5eceddb0d58c15cfcec09a61f0143d",
+    "include/calypsi/config.h": "d4e4a79546243bf40c9a3dd12f7f83f4f3eb9f68a7c331c9669cd8a1548e26b5",
+    "include/calypsi/stubs.h": "b1ff27927c72cd48249aa15b1f1baee6d46bedecb405008381f3b5057dffff20",
+    "include/stddef.h": "8a54f72e1ff0d3aaa6a54c1561f6d7a28b52bf7c4cf1c03503dbacfd8d4d09f5",
+    "include/stdint.h": "ee5d78bfc94868efe01434dd4fb444c37c7fd5c727216be26eb472d01730d89b",
+    "include/stdarg.h": "b7a736c79ee7f7e1e6d01faf03d53823431740aaa43deb9d43d60276a3b03873",
+    "include/stdio.h": "5040cba1a60be297cb9e1953dace7f9b4bd430b8caee49ddd4af47bffcf0361d",
+    "include/stdlib.h": "78fff9bf63d3bfcee4b702d89fefb8033aa6afc7d3e96f5deabf7f2d7c94e02a",
+    "include/string.h": "4aa2f879c5148c348396f4220f6011a5c49b433f6e1e00928c2f850126c9bb19",
+    "include/errno.h": "57316a2afcb5b4d770dee9033c09824e7f914b6cc486a6b5798973b9dd181d31",
+    "include/fcntl.h": "48c6045bd7b69791a23e85b86a646eea9623a5798fbb9e3ea5bdc360dad53d8f",
+    "include/limits.h": "16a1735b0d4bc5738b7a60b664e4e37fbba7ffca7115ca66b09cb8af7ca5966c",
+    "include/time.h": "727d90c8a85044b5bebd667d130a884379c5e711d42a276c5370920dffb40b01"
+  },
+  "patches": {
+    "toolchain/patches/calypsi-5.18-stream-initialization.patch": "f69553836c9668d670b868a7b5ad29106e0bf74673533d90faa381d6f18f8a21"
+  },
+  "notice": "Original Calypsi/Apache/NuttX notices remain in the prepared source; no compiler or archive replacement"
+}

@@ -19,7 +19,11 @@ source compatibility, not an Amiga binary ABI or a complete Amiga SDK.
 
 Install Calypsi 65816 **5.18** with `cc65816`, `as65816` and `ln65816` on PATH.
 The build uses `--code-model=large --data-model=huge`. The existing Exec816
-build prerequisites and pinned actionc checkout are also needed.
+build prerequisites and pinned actionc checkout are also needed. Keep the
+matching installed `src/lib` sources and headers: the build verifies and
+prepares the explicit [runtime correction](../../toolchain/calypsi-runtime.json)
+without changing the installation or archive. Its provenance appears beside
+the archive hash in each C image report.
 
 ```sh
 python3 tools/build_calypsi.py
@@ -57,7 +61,9 @@ automatically. The shared GUI stays in the compressed boot image. Close the init
 and APPs, with one owned child at a time.
 
 The shared wrapper registers AES before `main` and completes AES/resource cleanup
-on return. Handle `WM_CLOSED`, collect owned children, and return from `main`;
+on return. The wrapper captures the application's IoErr before shared GUI
+teardown and restores it for ordinary Process secondary-result collection.
+`SetIoErr` returns the previous full LONG value. Handle `WM_CLOSED`, collect owned children, and return from `main`;
 do not force-remove the Task or call `ExecDOSDetach` from a loaded application.
 Imports bind once at loading, so normal AES/VDI calls retain caller-local execution.
 The [C image contract](../reference/c-program-loading.md) defines relocation,
@@ -77,7 +83,7 @@ as needed, and `<proto/exec.h>` for the function declarations.
 | Public ports | `AddPort`, `RemPort`, `FindPort` |
 | Device I/O (`<exec/io.h>`) | `CreateIORequest`, `DeleteIORequest`, `OpenDevice`, `CloseDevice`, `BeginIO`, `SendIO`, `DoIO`, `CheckIO`, `WaitIO`, `AbortIO` |
 | Lists | `NewList`, `IsListEmpty` |
-| DOS (`<proto/dos.h>`) | `Output`, `Write`, `Open`, `Close`, `Read`, `Seek`, `Lock`, `UnLock`, `Examine`, `ExNext`, `ExamineExact`, `CreateDir`, `Rename`, `IoErr`, `ExecDOSDetach` |
+| DOS (`<proto/dos.h>`) | `Output`, `Write`, `Open`, `Close`, `Read`, `Seek`, `Lock`, `UnLock`, `Examine`, `ExNext`, `ExamineExact`, `CreateDir`, `Rename`, `IoErr`, `SetIoErr`, `ExecDOSDetach` |
 | Program launcher (`<exec816/program.h>`) | `ExecStartProgram`, `ExecCollectProgram`, `ExecBreakProgram`, `ExecWaitProgram`, `ExecProgramMask`, `ExecGetArgStr` |
 | Exec816 extension | `ExecYield` in `<exec816/runtime.h>` for low-level probes |
 

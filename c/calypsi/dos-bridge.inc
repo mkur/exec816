@@ -159,6 +159,10 @@ LONGINT FUNC CExNextBatch(LONGCARD lock,info,batch)
 RETURN(DOS.ExNextBatch(DOS.FileLock POINTER(ADDRESS(lock)),
     DOS.FileInfoBlock POINTER(ADDRESS(info)),DOS.DirBatch POINTER(ADDRESS(batch))))
 
+LONGINT FUNC CSetIoErr(LONGINT error LONGCARD unused LONGINT unused2)
+
+RETURN(DOS.SetIoErr(error))
+
 ; Bind once; each operation still uses the current Task's DOS context.
 PROC BindDos(BYTE unused)
 
@@ -188,5 +192,6 @@ PROC BindDos(BYTE unused)
   entries(22)=ADDRESS(@CMountVolume)
   entries(23)=ADDRESS(@CUnmountVolume)
   entries(24)=ADDRESS(@CExNextBatch)
+  entries(25)=ADDRESS(@CSetIoErr)
 
 RETURN

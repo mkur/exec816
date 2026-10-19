@@ -43,7 +43,7 @@ def variant(base,out,filesystem):
 
 def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=None,
         fixture_source=None,expected_completed=12,native_optimize=None,
-        release_compiler=False,rebuild_app=False):
+        release_compiler=False,rebuild_app=False,writable=False,ram=False):
     out.mkdir(parents=True,exist_ok=True)
     if reuse:
         p=read_build(out/'program');app=json.loads((out/'app/app.json').read_text())
@@ -54,6 +54,11 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
             require(app['abi']==ABI and provider['abi']==ABI['version'] and
                     provider['imports']==ABI['imports'],
                     'Rebuild the provider after a C application ABI change')
+            mounts=p['build']['dos_mounts']
+            require(mounts[0]['format']==(2 if filesystem=='sdfs' else 1) and
+                    (mounts[0]['access']=='readwrite')==writable and
+                    any(m['format']==3 for m in mounts)==ram,
+                    'Rebuild or derive the fixture for changed mount configuration')
         app=application(out/'app',app_sources or [ROOT/'tests/programs/c_process.c'],
                         optimize,**(app_options or {}))
         raw=(out/'app/program.app').read_bytes();media=out/'media';media.mkdir(exist_ok=True)
@@ -76,12 +81,15 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
         (out/'o65memory.act').write_text(text)
         (out/'o65control.act').write_text((ROOT/'tests/programs/o65control.act').read_text())
         if not reuse:
+            mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,
+                profile=4,format=2 if filesystem=='sdfs' else 1,
+                access='readwrite' if writable else 'readonly')]
+            if ram:mounts.append(dict(alias='RAM',format=3))
             p=build_desktop(out,source=fixture_source or ROOT/'tests/programs/c_process.act',program_output=out/'program',
                 optimize=optimize if native_optimize is None else native_optimize,
                 release_compiler=release_compiler,
                 build_applications=False,
-                system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,
-                    profile=4,format=2 if filesystem=='sdfs' else 1)])
+                system_mount='D1',dos_mounts=mounts)
     record=dict(status='running',tier='development',qualification=False,filesystem=filesystem,
                 app=app,build=p['build'],bank_zero_delta=bank_zero_delta(p['build']['memory']))
     try:
@@ -96,6 +104,8 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                 record['completed']=data(b,p['image'],'completed',True)
                 if any(d['name'].startswith('M_CPROCESSTEST_LASTPRIMARY_') for d in p['image']['data']):
                     record['last_primary']=data(b,p['image'],'lastPrimary',True)
+                if any(d['name'].startswith('M_CPROCESSTEST_LASTSECONDARY_') for d in p['image']['data']):
+                    record['last_secondary']=data(b,p['image'],'lastSecondary',True)
                 table=next(d for d in p['image']['data'] if d['name']=='M_PROCESSSTATE_TABLE')
                 layout=json.loads((ROOT/'abi/process.json').read_text())
                 offsets={name:offset for name,kind,offset in layout['record']}
@@ -111,6 +121,7 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                 raise
             ownership(b,p,p['output'])
             require(data(b,p['image'],'completed',True)==[expected_completed],'Incomplete C/native Process cycles')
+            if writable:b._cmd_ok('EJECT drive=0')
             record.update(status='pass',runtime=runtime,checks=data(b,p['image'],'checks',True),
                           completed=data(b,p['image'],'completed',True))
     except Exception as error:

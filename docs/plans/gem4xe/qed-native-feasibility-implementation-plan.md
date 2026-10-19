@@ -3,8 +3,8 @@
 [GEM plans](README.md) · [Feasibility design](qed-native-feasibility-design.md) ·
 [Initial scope](qed-scope-and-dependencies.md) · [Port strategy](qed-port-strategy.md)
 
-Status: QF1–QF2 implemented with [development evidence](../../history/qed-native-feasibility.md);
-QF3–QF6 remain open. These slices implement strategy step 2. They establish a real native runtime, source/layout evidence
+Status: QF1–QF3 implemented with [development evidence](../../history/qed-native-feasibility.md);
+QF4–QF6 remain open. These slices implement strategy step 2. They establish a real native runtime, source/layout evidence
 and a stack/admission decision before the QED resource/window work in step 3.
 The final editor remains subject to the later editing and saving gates.
 

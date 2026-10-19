@@ -16,12 +16,13 @@ LONG EXEC_CALL ExecProgramRun(ULONG argument)
 {
     const struct ExecProgramInvocation *invocation=(const void *)argument;
     int (*entry)(void)=(void *)invocation->entry;
-    LONG result=20;
+    LONG result=20,secondary;
     if (!ExecAESAttach(invocation->service)) return 20;
     /* Register before checking an early stop. Later stops address this live
      * registration, including the interval before the first wind_open. */
     if (appl_init()>=0)
         result=(*invocation->stopFlags&EXEC_PROGRAM_STOP_PENDING) ? 0:entry();
+    secondary=IoErr();
     /* Detach settles windows, borrowed drawing records, resources and timers
      * before native Process cleanup releases DOS and execution ownership. */
     if (!ExecAESDetach()) {
@@ -29,5 +30,6 @@ LONG EXEC_CALL ExecProgramRun(ULONG argument)
         Write(Output(),failed,sizeof(failed)-1);
         for (;;) Wait(0);
     }
+    SetIoErr(secondary);
     return result;
 }

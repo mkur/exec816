@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-#include "qed-runtime.h"
+#include "qed-files.h"
 #include <exec816/program.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +37,9 @@ int QedRuntimeRun(int (*body)(int,char **))
     char **argv;
     const char *tail=ExecGetArgStr();
     if (!tail || !QedArguments(tail,FindTask(NULL)->tc_Node.ln_Name,&argc,&argv)) return 20;
+    QedFilesBegin();
     result=body(argc,argv);
+    if (QedFilesCleanup(result ? IoErr():0) && !result) result=20;
     QedHeapCleanup();
     return result;
 }

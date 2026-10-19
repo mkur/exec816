@@ -11,13 +11,13 @@ from c_program import ABI, fixups, import_assembly, pack, shape, verify
 from native_program import ROOT, command, sha256
 
 
-def build(output,sources,optimize=True,probes=(),includes=(),definitions=None):
+def build(output,sources,optimize=True,probes=(),includes=(),definitions=None,runtime_attributes=None):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     assembly=output/'imports.s'
     assembly.write_text(import_assembly())
     image=emit(output,sources,[assembly,ROOT/'c/calypsi/image-info.s'],(),optimize=optimize,
-               probes=probes,includes=includes,definitions=definitions)
+               probes=probes,includes=includes,definitions=definitions,runtime_attributes=runtime_attributes)
     original=(ROOT/'c/calypsi/layout.scm').read_text()
     span=max(s['offset']+s['size'] for s in shape(image,ABI['link_bank']))
     last=ABI['max_banks']-(span+65535)//65536
@@ -26,8 +26,10 @@ def build(output,sources,optimize=True,probes=(),includes=(),definitions=None):
                       if int(m[1],16)>=ABI['link_bank']*65536 else m[0],original)
         config=output/'relocated.scm';config.write_text(layout)
         elf=output/'relocated.elf'
+        attributes=[part for name,value in image['provenance']['runtime_attributes'].items()
+                    for part in ('--rtattr',name+'='+value)]
         command([image['provenance']['tools']['ln65816']['path'],'--hosted','--program-root','main',
-                 '--program-start','main','--root-symbol','__exec_image_info',
+                 '--program-start','main','--root-symbol','__exec_image_info',*attributes,
                  '--no-data-init-table-section','--no-automatic-placement-rules','-o',elf,
                  *image['provenance']['link_objects'],config])
         return read_image(elf,base_bank=bank)
