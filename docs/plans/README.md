@@ -512,6 +512,16 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [QED initial scope and source dependencies](gem4xe/qed-scope-and-dependencies.md):
+  strategy step 1 fixed; English single-document scope, pinned QED/cflib sources,
+  required dependency paths and explicit deferrals. Source checks only; native
+  compilation and execution follow in step 2.
+
+- [QED port strategy](gem4xe/qed-port-strategy.md): high-level order from
+  verified dependencies and native feasibility through startup, editing,
+  reliable saving, coexistence and delivery; defines outcomes before the
+  later design notes and executable implementation plans.
+
 - [QED gap analysis](gem4xe/qed-gap-analysis.md): source study of the existing
   65816 port against Exec's resource/menu, VDI, event/dialog, runtime/filesystem
   and image/stack contracts; proposes a native port through editing, reliable

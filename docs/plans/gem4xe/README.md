@@ -1,5 +1,15 @@
 # GEM as a client of an Exec-like kernel
 
+The [QED initial scope and source dependencies](qed-scope-and-dependencies.md)
+fix strategy step 1: an English single-document editor, explicit source pins,
+required dependency paths and deferred startup behavior. Source checks pass;
+the native build and runtime proof follow in step 2.
+
+The [QED port strategy](qed-port-strategy.md) orders the work from verified
+dependencies and native runtime/memory feasibility through real QED startup,
+editing, reliable saving, measured coexistence and delivery. It sets the
+high-level sequence; design notes and executable implementation plans follow.
+
 The [QED gap analysis](qed-gap-analysis.md) recommends rebuilding the existing
 GEM4XE editor port as a native Exec application. It identifies resource/menu
 capacity, VDI, event/dialog, runtime/filesystem and image/stack gaps, with a

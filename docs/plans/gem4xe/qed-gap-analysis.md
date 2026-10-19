@@ -11,6 +11,10 @@ execution path.
 
 Status: source and contract analysis; QED has not been built or executed on
 Exec816. The proposed sequence below is not an implemented or qualified port.
+The [port strategy](qed-port-strategy.md) develops the order of work and the
+outcomes needed before proceeding to later design and implementation plans.
+Its [step 1 record](qed-scope-and-dependencies.md) fixes the initial scope and
+selects a reproducible QED/cflib source pair for the native port.
 
 ## Sources and scope
 
