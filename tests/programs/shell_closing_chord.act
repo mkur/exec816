@@ -1,0 +1,96 @@
+MODULE SHELLCLOSINGCHORDTEST
+USE FSBOOT
+INCLUDE "../../examples/shell/shell-session.inc"
+INCLUDE "../../examples/shell/shell-boot.inc"
+INCLUDE "../../examples/shell/shell-controller.inc"
+
+CARD checks
+BYTE phase,releaseFirst,finished
+LONGCARD baseline,peer
+PROCESS.Result peerResult
+
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ef00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Fixture-only noncooperative work retains its shell until explicitly released.
+PROC HoldClose(ShellContext POINTER context)
+
+  IF context.control.identity=1 THEN
+    WHILE releaseFirst=0 DO
+      EXEC.Yield()
+    OD
+  FI
+
+RETURN
+
+LONGINT FUNC Producer()
+  BYTE ignored
+  ShellSessionControl control
+
+  control.port=shellRequests
+  LET request=ShellSessionMessage POINTER(EXEC.AllocMem(
+      SHELLSESSIONMESSAGE_SIZE,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  LET payload=EXEC.AllocMem(SESSION_PATH_BYTES,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  Check(request<>NULL AND payload<>NULL)
+  WHILE sessions(0).ready=0 DO
+    EXEC.Yield()
+  OD
+
+  request.operation=SESSION_CREATE
+  request.payload=payload
+  request.capacity=SESSION_PATH_BYTES
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=0 AND selectedSession=2)
+  request.operation=SESSION_SELECT
+  request.session=1
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=0 AND selectedSession=1)
+  request.operation=SESSION_CLOSE
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=0 AND sessions(0).control.closeRequested=1)
+  Check(sessions(0).state=SESSION_STATE_CLOSING AND controllerLive=2)
+  phase=1
+  WHILE phase=1 DO
+    EXEC.Yield()
+  OD
+
+  Check(selectedSession=2 AND sessions(0).process<>0)
+  Check(sessions(0).state=SESSION_STATE_CLOSING AND controllerLive=2)
+  releaseFirst=1
+  WHILE controllerLive<>1 DO
+    EXEC.Yield()
+  OD
+
+  Check(selectedSession=2 AND contexts(0).shell=NULL)
+  request.operation=SESSION_CLOSE
+  request.session=2
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=0)
+  EXEC.FreeMem(payload,SESSION_PATH_BYTES)
+  EXEC.FreeMem(BYTE POINTER(request),SHELLSESSIONMESSAGE_SIZE)
+
+RETURN(0)
+
+PROC Main()
+  LONGINT result
+
+  baseline=EXEC.AvailMem(0)
+  Check(ShellControllerStart(0)<>0)
+  peer=PROCESS.Start(@Producer,NULL,0)
+  Check(peer<>0)
+  result=ShellControllerRun()
+  Check(PROCESS.Wait(peer,@peerResult)<>0 AND peerResult.primary=0)
+  ShellControllerStop()
+  Check(controllerLive=0 AND selectedSession=0)
+  Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+ENDMODULE

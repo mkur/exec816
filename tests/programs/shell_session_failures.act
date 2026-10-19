@@ -1,0 +1,133 @@
+MODULE SHELLSESSIONFAILURETEST
+USE CONSOLEWINDOWS
+USE FSBOOT
+USE SESSIONFAULT
+INCLUDE "../../examples/shell/shell-session.inc"
+INCLUDE "../../examples/shell/shell-boot.inc"
+INCLUDE "../../examples/shell/shell-controller.inc"
+
+CARD checks,faultCase,allocations,acceptedFailures
+BYTE finished,clientTested
+LONGCARD baseline,peer
+PROCESS.Result peerResult
+
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ee00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Prompt(LONGCARD identity)
+
+  LET session=ShellSessionFind(identity)
+  LET entry=CONSOLEWINDOWS.Find(session.startup.unit)
+  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  WHILE instance.readReady<>2 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; Real reply-port exhaustion is recoverable in the invoking interactive shell.
+PROC ClientFailure(ShellContext POINTER context)
+
+  IF context.control.identity=1 AND clientTested=0 THEN
+    context.shell.status=PROCESS.RETURN_OK
+    context.shell.error=0
+    SESSIONFAULT.wanted=2
+    SESSIONFAULT.Begin()
+    ShellSessionCommand(context,SESSION_QUERY)
+    SESSIONFAULT.active=0
+    Check(SESSIONFAULT.fired=1 AND SESSIONFAULT.failedSize=EXEC.MSGPORT_SIZE)
+    Check(context.shell.done=0 AND context.shell.status=PROCESS.RETURN_ERROR
+        AND context.shell.error=DOS.ERROR_NO_FREE_STORE)
+    context.shell.status=PROCESS.RETURN_OK
+    context.shell.error=0
+    clientTested=1
+  FI
+
+RETURN
+
+; Fail each admitted creation allocation once, retaining real cleanup paths.
+LONGINT FUNC Producer()
+  BYTE ignored
+  LONGCARD available,first,created
+  ShellSessionControl control
+
+  control.port=shellRequests
+  LET request=ShellSessionMessage POINTER(EXEC.AllocMem(
+      SHELLSESSIONMESSAGE_SIZE,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  LET payload=EXEC.AllocMem(SESSION_PATH_BYTES,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  LET windows=CONSOLEWINDOWS.Registry()
+  Check(request<>NULL AND payload<>NULL)
+  request.payload=payload
+  request.capacity=SESSION_PATH_BYTES
+  first=sessions(0).control.identity
+  Prompt(first)
+  allocations=1
+  faultCase=0
+  WHILE faultCase<=allocations DO
+    available=EXEC.AvailMem(0)
+    SESSIONFAULT.wanted=IF faultCase=0 THEN CARD($ffff) ELSE faultCase FI
+    request.operation=SESSION_CREATE
+    ignored=ShellSessionExchange(@control,request)
+    IF faultCase=0 THEN
+      allocations=SESSIONFAULT.count
+      Check(request.primary=0 AND allocations>10)
+    ELSE
+      Check(SESSIONFAULT.fired=1)
+    FI
+
+    IF request.primary=0 THEN
+      created=request.value
+      Prompt(created)
+      IF SESSIONFAULT.fired<>0 THEN
+        acceptedFailures==+1
+      FI
+
+      request.operation=SESSION_CLOSE
+      request.session=created
+      ignored=ShellSessionExchange(@control,request)
+      Check(request.primary=0)
+      WHILE controllerLive<>1 DO
+        EXEC.Yield()
+      OD
+    ELSE
+      Check(request.secondary<>0)
+    FI
+
+    Check(controllerLive=1 AND selectedSession=first)
+    Check(windows.liveCount=1 AND contexts(1).shell=NULL)
+    Check(sessions(1).state=SESSION_STATE_FREE AND sessions(1).watch.bound=0)
+    Check(EXEC.AvailMem(0)=available)
+    Prompt(first)
+    faultCase==+1
+  OD
+
+  request.operation=SESSION_CLOSE
+  request.session=first
+  ignored=ShellSessionExchange(@control,request)
+  EXEC.FreeMem(payload,SESSION_PATH_BYTES)
+  EXEC.FreeMem(BYTE POINTER(request),SHELLSESSIONMESSAGE_SIZE)
+
+RETURN(0)
+
+PROC Main()
+  LONGINT result
+
+  baseline=EXEC.AvailMem(0)
+  Check(ShellControllerStart(0)<>0)
+  peer=PROCESS.Start(@Producer,NULL,0)
+  Check(peer<>0)
+  result=ShellControllerRun()
+  Check(PROCESS.Wait(peer,@peerResult)<>0 AND peerResult.primary=0)
+  ShellControllerStop()
+  Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+ENDMODULE

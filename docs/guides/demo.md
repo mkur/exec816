@@ -4,6 +4,17 @@ An interactive shell occupies the upper 18 rows of the 40×24 screen. The lower
 six rows show an independent prime search. Commands load from disk; two external
 commands can exchange bytes through an anonymous pipe.
 
+`NEWSHELL` opens a second shell in the current directory. Switch with
+Ctrl+Shift+Space, or use `SESSIONS` and `SESSION number`. Drafts, history,
+directories, aliases and jobs belong to each shell; files and ASSIGNs are
+shared. TAB completes input in either shell. EXIT closes the selected session;
+the last EXIT returns to the OS. The prime pane stays with its original shell.
+
+Two shells plus prime leave room for one external command. A two-command
+pipeline then reports error 103 without closing either shell. In the original
+shell, use JOBS and BREAK with the displayed job number to stop prime before
+running that pipeline. See the [shell guide](shell.md#multiple-sessions).
+
 <img src="../images/demo-boot.png" alt="Exec816 boot messages and TASKS listing, with the prime task running below" width="672" style="image-rendering: pixelated;">
 
 The first screenshot is taken after `TASKS`, before other commands scroll the

@@ -34,12 +34,44 @@ Source lives in [examples/shell](../../examples/shell/).
 | `JOBS` | Show the running/stopping job or latest collected result. |
 | `BREAK identity` | Request cooperative cancellation of that job. |
 | `EXECUTE file` | Run a script through the ordinary command dispatcher. |
-| `EXIT` | Stop and collect the job, then release shell resources. |
+| `NEWSHELL` | Create and select a second shell in the current directory. |
+| `SESSIONS` | List live session numbers, their state and the selected marker. |
+| `SESSION number` | Select a ready session. |
+| `EXIT` | Stop this shell's job and close its session; select the survivor or shut down after the last session. |
 
 Command names and options ignore case. Plain MOUNT and MOUNT DIAGNOSTICS remain
 observational. New mounts require an explicit filesystem; there is no automatic
 format selection. A failed mount leaves a usable prompt; an offline
 SIO bus can require a cold boot after correcting the disk/profile setup.
+
+## Multiple sessions
+
+Text and standalone bitmap builds support two independent shell sessions.
+Use `NEWSHELL`, then Ctrl+Shift+Space to switch between ready sessions. Plain
+TAB still completes commands and paths. `SESSIONS` lists the live numbers;
+`SESSION 1` selects session 1 if it is still ready. Numbers increase throughout
+the boot and are never reused, so a replacement may be session 3 or 4.
+
+A new shell starts in the caller's current directory with default PATH and
+aliases, empty history and no job. Each shell retains its own draft, caret,
+directory, command results and job while hidden. Files, mounts and ASSIGNs are
+shared. Creation waits for startup; failure leaves the previous session selected.
+These three commands are interactive only: EXECUTE/startup scripts, RUN and
+pipelines reject them. SESSIONS supports ordinary output redirection.
+
+The first shell's prime pane follows that shell when switching. A shell on a
+different console cannot open that pane. Close a session with EXIT; the other
+remains usable. Closing a session requests cooperative cancellation and keeps
+its resources until its work finishes. A closing session can still switch to a
+ready peer with the chord. Desktop binding and tab controls are the next
+implementation slices; separate desktop shell windows are outside this plan.
+
+The eight-Task limit includes root, console, filesystem and SIO workers. With
+two shells and prime running, one external command fits; a two-command pipeline
+reports error 103 and releases partial admission. Stop prime using `JOBS` and
+`BREAK identity` in its owning shell to make room for that pipeline. Other
+desktop applications or drivers consume slots too; see the
+[variant census](../architecture/task-capacity.md#shell-controller-admission-budget).
 
 For a real or emulator SIO disk in D2:
 

@@ -5,8 +5,8 @@
 [Development record](../development/shell-sessions.json)
 
 Implementation proceeds through SS1–SS8. This record distinguishes the
-completed foundation and first-shell controller from the two-session and
-desktop presentation work still planned. Separate desktop windows remain outside this plan.
+completed text and standalone bitmap sessions from the desktop presentation
+work still planned. Separate desktop windows remain outside this plan.
 
 ## SS1 — explicit shell contexts
 
@@ -213,3 +213,55 @@ also records rejected nine-Task desktop/IDE workloads; capacity remains eight.
 Demo manifests distinguish requested peaks from admitted capacity. The shared
 upper static arena grows from 7,168 to 8,192 bytes, preserving the existing
 variant allowances. Desktop backing VRAM is unchanged.
+
+## SS5 — two text and standalone bitmap sessions
+
+The controller now admits two independent shell Processes. NEWSHELL copies the
+caller’s canonical directory, establishes a hidden console, waits for the
+child’s actual startup result, and selects it before replying. The new session
+starts with default PATH/aliases and empty history/jobs. SESSIONS writes an
+identity-sorted snapshot to selected Output; SESSION validates a full nonzero
+32-bit number. These commands share the normal classifier/completion source
+and are rejected in scripts, RUN and pipelines before a controller request.
+Ctrl+Shift+Space uses the captured console subscription, including a closing
+session whose command has not yet cooperated with cancellation.
+
+Retirement collects the child and withdraws its subscription before selecting
+a ready survivor and destroying the old created console. Failed CREATE replies
+follow complete rollback, so the caller can immediately retry. Vacant unit zero
+is reused only after its old endpoints and scope retire; normal open/reset plus
+an explicit clear removes the old transcript. Identities increase through
+FFFFFFFF and never wrap or name a replacement lifetime. A failed controller
+exchange remains an operational shell error and does not close its caller.
+
+Development checks pass 50 controller, 73 ownership, 14 closing-chord, and
+109 allocation/failure assertions. The allocation fixture fails each of 16
+creation allocations through READY publication and checks exact heap, Task,
+console and selection recovery. A separate injected reply-port failure checks
+that the invoking shell survives. The parser passes 582 assertions across 115
+cases. All 498 host tests and the affected generated-definition checks pass.
+
+The extracted standard text and standalone bitmap OF816 packages pass physical
+walkthroughs for separate directory/PATH/aliases, drafts, mid-line caret,
+TAB/history, shared ASSIGN/files, switching during real disk I/O, cancellation,
+capacity rejection, survivor selection, repeated EXIT/recreation and unit-zero
+reuse. The text run observes eight Tasks with prime plus one command, rejects
+a second-shell pipeline while prime remains live, then runs that pipeline at
+eight Tasks after stopping prime. The bitmap run observes seven and eight.
+Additional extracted runs check redirected input and ordinary inherited CON
+input while a peer remains usable, program-input exclusion from shell history,
+and rejection of a prime pane on the second shell’s nonzero output console.
+The bitmap guide was refreshed after the full walkthrough without changing its
+native XEX; the inherited-input run exercises that refreshed ZIP. Preserved
+manifests distinguish the exact artifacts used by each run.
+
+SS5 adds four upper static controller bytes for the pending shortcut identity.
+A created full-screen console allocates 1,352 upper bytes in text mode or 2,792
+in standalone bitmap mode, in addition to the shell’s existing allocations.
+The two-entry registry remains 660 bytes and its contexts 56 bytes. Each live
+shell uses one existing Task slot; no worker or backing VRAM is added. All
+bank-zero reservations remain unchanged: **0 fixed, 0 per-public-Task and
+0 idle bytes**, including guards, alignment and unused capacity. Per-case
+stack observations and emitted frame layouts are in the development record.
+Desktop binding/tabs and timing measurements remain SS6–SS8. These development
+checks make no release or physical-hardware qualification claim.

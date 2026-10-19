@@ -54,6 +54,73 @@ def controller(out, reuse=False):
                 checks=checks, build=program['build'], runtime=runtime, machine=machine)
 
 
+def closing_chord(out,reuse=False):
+    from shell_inspect import address
+    from os_boundary import run_to
+    out.mkdir(parents=True,exist_ok=True)
+    control=read_source(ROOT/'examples/shell/shell-controller.inc')
+    control=control.replace('    WHILE context.shell.done=0 DO','    HoldClose(context)\n    WHILE context.shell.done=0 DO',1)
+    observed=out/'controller-observed.inc';observed.write_text(control)
+    source=out/'shell_closing_chord.act'
+    source.write_text(read_source(ROOT/'tests/programs/shell_closing_chord.act',
+        includes={'shell-controller.inc':observed}))
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes']=8192
+    memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
+    program=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),
+        source,out,optimize=True,tasks=True,task_capacity=8,console=True,
+        dos_mounts=[],memory_profile=memory)
+    with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
+        for key,value in PIN['configuration'].items():
+            b.config(key,str(value).lower() if isinstance(value,bool) else value)
+        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
+        phase=address(program['image'],'phase','SHELLCLOSINGCHORDTEST');selected=address(program['image'],'selectedSession')
+        def reach(condition):
+            b.bp_clear_all();marker=program['labels']['native_nmi']
+            b.bp_set(marker,condition=condition);run_to(b,marker,3000,60,condition)
+        def before(b):
+            reach(f'db(${phase:x})=1')
+            for key in ('CTRL','SHIFT','SPACE'):b._cmd_ok(f'KEY {key} down')
+            reach(f'dw(${selected:x})=2')
+            for key in ('SPACE','SHIFT','CTRL'):b._cmd_ok(f'KEY {key} up')
+            reach(f'@frame>={b.eval_expr("@frame")+3}')
+            b.poke(phase,2);b.bp_clear_all()
+        runtime,_=execute(b,program,before_run=before,timeout=120,frame_limit=10000)
+        require(data(b,program['image'],'finished')==[1],'Closing chord fixture incomplete')
+        ownership(b,program,out)
+        checks=data(b,program['image'],'checks',True)[0]
+    return dict(status='pass',tier='development',group='closing-chord',mode='opt',
+                checks=checks,build=program['build'],runtime=runtime,machine=machine)
+
+
+def ownership_sessions(out, reuse=False):
+    out.mkdir(parents=True, exist_ok=True)
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes']=8192
+    memory=out/'fixture-memory.json'
+    memory.write_text(json.dumps(profile,indent=2)+'\n')
+    program=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),
+        ROOT/'tests/programs/shell_two_sessions.act',out,optimize=True,tasks=True,
+        task_capacity=8,console=True,dos_mounts=[],memory_profile=memory)
+    with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
+        for key,value in PIN['configuration'].items():
+            b.config(key,str(value).lower() if isinstance(value,bool) else value)
+        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
+        try:
+            runtime,_=execute(b,program,timeout=180,frame_limit=15000)
+        except Exception:
+            print('Two-session checks',data(b,program['image'],'checks',True),flush=True)
+            raise
+        require(data(b,program['image'],'finished')==[1],'Two-session fixture incomplete')
+        for slot in (0,2,4):
+            require(runtime['stack_observations'][slot]['untouched_above_floor']>=128,
+                    'Two-session stack headroom below gate')
+        ownership(b,program,out)
+        checks=data(b,program['image'],'checks',True)[0]
+    return dict(status='pass',tier='development',group='ownership',mode='opt',checks=checks,
+                build=program['build'],runtime=runtime,machine=machine)
+
+
 def command_close(out, bundle, reuse=False):
     # Force CLOSE after the shell's preflight check and during partial group
     # admission. Hooks rendezvous only; emitted loader/group/cleanup stay real.
@@ -260,6 +327,35 @@ def startup_exit(out, bundle):
         xex_sha256=sha256(bundle/'program.xex'),media_sha256=sha256(out/'system.atr'))
 
 
+def physical_text(out, bundle, probe=None):
+    from shell_session_walkthrough import Sessions,DiskSwitch,Inherited
+    from test_demo import run
+    import zipfile
+
+    out.mkdir(parents=True,exist_ok=True)
+    with zipfile.ZipFile(bundle/'exec816-demo.zip') as archive:
+        archive.extractall(bundle/'extracted')
+    scenario={'disk-switch':DiskSwitch,'inherited':Inherited}.get(probe,Sessions)(out,bundle)
+    record=run(bundle,boot_smoke=True,integration=scenario,
+               distribution_root=bundle/'extracted/exec816-demo')
+    if probe is None:
+        from filesystem_audit import Audit
+        from native_program import sha256
+        media=bundle/record['work_media'][0]['name']
+        audit=Audit(media.read_bytes())
+        getattr(audit,json.loads((bundle/'demo-manifest.json').read_text())['filesystem'])()
+        expected={'SHARED.TXT':b'shared\n',
+                  'SESS.TXT':b'  SESSION STATE\n  1 ready\n* 2 ready\n',
+                  'SCRIPT':b'NEWSHELL >WORK:BAD\n'}
+        require(all(audit.files[name]==payload for name,payload in expected.items())
+                and 'BAD' not in audit.files,'Persisted session files differ')
+        record['shared_files']=dict(media_sha256=sha256(media),
+                                   files={name:payload.hex() for name,payload in expected.items()})
+    record.update(group=probe or ('physical-bitmap' if scenario.bitmap else 'physical-text'),commands=scenario.commands,
+                  session_screens=scenario.screens,measured_peaks=scenario.peaks)
+    return record
+
+
 def packaged_pipeline(out, bundle):
     from test_demo import run
 
@@ -290,12 +386,23 @@ def packaged_pipeline(out, bundle):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--group', choices=('controller','desktop','startup-exit','command-close','packaged-pipeline'), required=True)
+    parser.add_argument('--group', choices=('inherited','closing-chord','disk-switch','allocation','physical-bitmap','physical-text','ownership','controller','desktop','startup-exit','command-close','packaged-pipeline'), required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--reuse', action='store_true')
     parser.add_argument('--bundle', type=Path)
     args = parser.parse_args()
-    if args.group=='packaged-pipeline':
+    if args.group=='closing-chord':
+        result=closing_chord(args.output.resolve(),args.reuse)
+    elif args.group=='allocation':
+        from shell_session_faults import run
+        result=run(args.output.resolve(),args.reuse)
+    elif args.group in ('inherited','disk-switch','physical-text','physical-bitmap'):
+        if args.bundle is None: parser.error('physical-text requires --bundle')
+        result=physical_text(args.output.resolve(),args.bundle.resolve(),
+                             args.group if args.group in ('inherited','disk-switch') else None)
+    elif args.group=='ownership':
+        result=ownership_sessions(args.output.resolve(),args.reuse)
+    elif args.group=='packaged-pipeline':
         if args.bundle is None: parser.error('packaged-pipeline requires --bundle')
         result=packaged_pipeline(args.output.resolve(),args.bundle.resolve())
     elif args.group=='command-close':

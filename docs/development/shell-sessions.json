@@ -7,10 +7,10 @@
     "SS1",
     "SS2",
     "SS3",
-    "SS4"
+    "SS4",
+    "SS5"
   ],
   "remaining_slices": [
-    "SS5",
     "SS6",
     "SS7",
     "SS8"
@@ -6821,6 +6821,2649 @@
         "Text/prime/native desktop/AES input and counter paths execute. GEM files-entry smoke has no mounted volume and verifies its optional application failure notice and orderly shell lifetime; full GEM desktop sessions remain for later slices.",
         "Stack observations cover selected development paths and are not worst-case static proofs.",
         "No full release matrix or new hardware qualification claim. Existing Task pools, compiler, ROM and emulator pins are unchanged."
+      ]
+    },
+    "SS5": {
+      "status": "pass",
+      "baseline_revision": "3fe8e02bcf45877febebd6bf246ba4f52bca275d",
+      "source_inputs": {
+        "examples/shell/shell-completion.inc": "7d229aa83cc46eb5ca8e0bfa746df500c02030acf52e97a7265304911c37a9e0",
+        "examples/shell/shell-controller.inc": "c6af7932a314e05e48fdbac280716ad3dd2efc28f0febdbb83207dbb00b1c516",
+        "examples/shell/shell-session.inc": "c9f1a843cd60ef9e5235557e494af1faf34c33d515b766459137dc074c9f5232",
+        "examples/shell/shell-sessions.inc": "3ab1e11b5a83f602abe1b4bfbff56df604ff1fdae8505c455bd08e6db956a931",
+        "platform/altirraos/memory-4m.json": "a884a22afe4e5dede712e2e98e67875a865f0a8c5c91f025ae5f668a80f0a2df",
+        "tests/programs/shell_closing_chord.act": "0fdfcdefcbb883cf4a75cdddb45f7984696c7a3efa9a884f738e38de70136040",
+        "tests/programs/shell_session_failures.act": "7fd71ab477211636cb090bd2c0c9bdcae5d74b48ec266ecf0c69d11dcc21f944",
+        "tests/programs/shell_two_sessions.act": "11e927edf1f64306e23cfd3557c514db7dd3d9a5da31023009d09610489fd471",
+        "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+        "toolchain/altirra-gem-vdi.json": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431",
+        "toolchain/altirra-shell-paced.json": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087",
+        "tools/build_demo.py": "2951e4f09d7908744c2565edda01229555c7926dd7f0ce05e1f109a58fbddaa4",
+        "tools/shell_session_faults.py": "f673ed2cb45361b7d4e18840c9b46dc033c73b05abdcab83bac19b5bb3e591af",
+        "tools/shell_session_walkthrough.py": "20be801cbb858ad1de456b30398cab35d010ba805c76e23252582053eedf8dc0",
+        "tools/test_o65_shell.py": "e8a788458f2773cd447c5eef97eeb927019db40a8b0e521345384edd84d80d5a",
+        "tools/test_shell_core.py": "467bba80e882bce645eb6ae756c632d6edd1c5e8eec036ca8a057702f9be0993",
+        "tools/test_shell_entry.py": "d4521012af40d1a15ff1dde362ecfed4d7a25654fb8b163b025555451ba75cc8",
+        "tools/test_shell_parser.py": "5f433dc4c0df5fff5d2b4dbfe258c01f2dd613639611f360cb550581a0850106",
+        "tools/test_shell_sessions.py": "8b3c6f5ec9db2e47d3b5ed5b289b99149ea8fc687507d522670bf74361b080b6"
+      },
+      "cases": {
+        "controller": {
+          "result": "build/shell-sessions/ss5-controller/results.json",
+          "result_sha256": "2963059e67974649f525b64a5f70530b0dbb16a1d460e9995776ff0d7571ac56",
+          "image_sha256": "9b064a8b12c4fb144b77fc32be0eecf99835699c91c5382caffefdeed9d85d02",
+          "xex_sha256": "f222ad94471562a62fc2506d4de937f53e0d0d7d33a2ead86f10f00beb7e5345",
+          "mode": "opt",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false,
+            "build_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+          },
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 117,
+            "native_irq_count": 0,
+            "created": 13,
+            "switches": 701,
+            "guards": "intact",
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 424,
+                "untouched_above_floor": 856
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 236,
+                "untouched_above_floor": 820
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 444,
+                "untouched_above_floor": 612
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 149,
+                "untouched_above_floor": 907
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 126,
+                "untouched_above_floor": 930
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 126,
+                "untouched_above_floor": 930
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 126,
+                "untouched_above_floor": 2178
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 126,
+                "untouched_above_floor": 2178
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 24,
+                "untouched_above_floor": 232
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 271,
+              "untouched_from_base": 1265,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic",
+            "vbxe": false,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "off",
+            "exeloadmode": "default",
+            "kernel_id": "$91213499097d0042",
+            "actual_kernel_id": "$91213499097d0042",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": 50,
+          "upper_static": {
+            "origin": 137472,
+            "reserved": 8192,
+            "span": 7630
+          },
+          "controller_frames": [
+            {
+              "name": "M_SHELLCONTROLLERTEST_SHELLSESSIONEXCHANGE_C5859D76",
+              "fixed_frame": 12,
+              "spill_bytes": 8,
+              "local_stack_peak": 22,
+              "outgoing_bytes": 7,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLCONTROLLERTEST_SHELLSESSIONCOMMAND_023134E2",
+              "fixed_frame": 20,
+              "spill_bytes": 12,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 5,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLCONTROLLERTEST_SHELLPROCESSENTRY_3ECED862",
+              "fixed_frame": 60,
+              "spill_bytes": 26,
+              "local_stack_peak": 72,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLCONTROLLERTEST_SHELLSESSIONCREATE_D9C2AB33",
+              "fixed_frame": 18,
+              "spill_bytes": 10,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 3,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLCONTROLLERTEST_SHELLCONTROLLERSTEP_C3BD099D",
+              "fixed_frame": 30,
+              "spill_bytes": 26,
+              "local_stack_peak": 38,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            }
+          ]
+        },
+        "ownership": {
+          "result": "build/shell-sessions/ss5-ownership/results.json",
+          "result_sha256": "ddd823653c15d06a6204c7288b30453bd566957537abab13470c0f0bc30409bf",
+          "image_sha256": "745a85bc423ee634b6eb9ceb0b475e7846e2dd353741c22f95052dc748e8ed99",
+          "xex_sha256": "42422079d5b1b422e1aa04c292523b79a4fa3214d5138adf216b039a7385ab6b",
+          "mode": "opt",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false,
+            "build_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+          },
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 153,
+            "native_irq_count": 0,
+            "created": 14,
+            "switches": 667,
+            "guards": "intact",
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 426,
+                "untouched_above_floor": 854
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 236,
+                "untouched_above_floor": 820
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 444,
+                "untouched_above_floor": 612
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 219,
+                "untouched_above_floor": 837
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 444,
+                "untouched_above_floor": 612
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 126,
+                "untouched_above_floor": 930
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 126,
+                "untouched_above_floor": 2178
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 126,
+                "untouched_above_floor": 2178
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 24,
+                "untouched_above_floor": 232
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 275,
+              "untouched_from_base": 1261,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic",
+            "vbxe": false,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "off",
+            "exeloadmode": "default",
+            "kernel_id": "$91213499097d0042",
+            "actual_kernel_id": "$91213499097d0042",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": 73,
+          "upper_static": {
+            "origin": 137472,
+            "reserved": 8192,
+            "span": 7629
+          },
+          "controller_frames": [
+            {
+              "name": "M_SHELLTWOSESSIONSTEST_SHELLSESSIONEXCHANGE_D7329D79",
+              "fixed_frame": 12,
+              "spill_bytes": 8,
+              "local_stack_peak": 22,
+              "outgoing_bytes": 7,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLTWOSESSIONSTEST_SHELLSESSIONCOMMAND_2A2250FB",
+              "fixed_frame": 20,
+              "spill_bytes": 12,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 5,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLTWOSESSIONSTEST_SHELLPROCESSENTRY_4914D5EF",
+              "fixed_frame": 60,
+              "spill_bytes": 26,
+              "local_stack_peak": 72,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLTWOSESSIONSTEST_SHELLSESSIONCREATE_E2CB1F6C",
+              "fixed_frame": 18,
+              "spill_bytes": 10,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 3,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLTWOSESSIONSTEST_SHELLCONTROLLERSTEP_085E79DC",
+              "fixed_frame": 30,
+              "spill_bytes": 26,
+              "local_stack_peak": 38,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            }
+          ]
+        },
+        "closing-chord": {
+          "result": "build/shell-sessions/ss5-closing-chord/results.json",
+          "result_sha256": "d6310e1f44487ee46b240db740de294576e018f664f4a5f3dfbc971e9ce509d2",
+          "image_sha256": "aa8729f93e3a1abfade5fd8e76c10af0775b129ec4f9f33bdfe194b22b4a7b31",
+          "xex_sha256": "3e0e07de6c68e3aa2a101347822cf46ac2bef84f2b147a92e61acdf60d09360d",
+          "mode": "opt",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false,
+            "build_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+          },
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 52,
+            "native_irq_count": 1,
+            "created": 4,
+            "switches": 249,
+            "guards": "intact",
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 422,
+                "untouched_above_floor": 858
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 236,
+                "untouched_above_floor": 820
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 444,
+                "untouched_above_floor": 612
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 147,
+                "untouched_above_floor": 909
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 444,
+                "untouched_above_floor": 612
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 24,
+                "untouched_above_floor": 232
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 258,
+              "untouched_from_base": 1278,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic",
+            "vbxe": false,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "off",
+            "exeloadmode": "default",
+            "kernel_id": "$91213499097d0042",
+            "actual_kernel_id": "$91213499097d0042",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": 14,
+          "upper_static": {
+            "origin": 137472,
+            "reserved": 8192,
+            "span": 7606
+          },
+          "controller_frames": [
+            {
+              "name": "M_SHELLCLOSINGCHORDTEST_SHELLSESSIONEXCHANGE_92B1FF13",
+              "fixed_frame": 12,
+              "spill_bytes": 8,
+              "local_stack_peak": 22,
+              "outgoing_bytes": 7,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLCLOSINGCHORDTEST_SHELLSESSIONCOMMAND_D4384079",
+              "fixed_frame": 20,
+              "spill_bytes": 12,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 5,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLCLOSINGCHORDTEST_SHELLPROCESSENTRY_2BF96CB9",
+              "fixed_frame": 60,
+              "spill_bytes": 26,
+              "local_stack_peak": 72,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLCLOSINGCHORDTEST_SHELLSESSIONCREATE_E0A88FEA",
+              "fixed_frame": 18,
+              "spill_bytes": 10,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 3,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLCLOSINGCHORDTEST_SHELLCONTROLLERSTEP_0DF700C6",
+              "fixed_frame": 30,
+              "spill_bytes": 26,
+              "local_stack_peak": 38,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            }
+          ]
+        },
+        "allocation": {
+          "result": "build/shell-sessions/ss5-allocation/results.json",
+          "result_sha256": "a77c847e17a9bb8acbc1c8e495b0611eff8133b9a1baac84cd98716c0947de2a",
+          "image_sha256": "a93717a5fbd83da00f223543d74389715cc1e731c69dd0b8d59f4a8f2d9711c1",
+          "xex_sha256": "ed84841572b958d580bee5c5fc90720e39bf0e1e2311f88c61b1ca0fa89484a5",
+          "mode": "opt",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false,
+            "build_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+          },
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 127,
+            "native_irq_count": 0,
+            "created": 15,
+            "switches": 344,
+            "guards": "intact",
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 422,
+                "untouched_above_floor": 858
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 236,
+                "untouched_above_floor": 820
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 444,
+                "untouched_above_floor": 612
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 172,
+                "untouched_above_floor": 884
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 444,
+                "untouched_above_floor": 612
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 24,
+                "untouched_above_floor": 232
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 277,
+              "untouched_from_base": 1259,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic",
+            "vbxe": false,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "off",
+            "exeloadmode": "default",
+            "kernel_id": "$91213499097d0042",
+            "actual_kernel_id": "$91213499097d0042",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": 109,
+          "allocations": 16,
+          "acceptedFailures": 0,
+          "observed_sources": {
+            "task-kernel/dosraw.act": "84e0ded31f30174e288af0055af2c40e08f581d1d80f92aeb9d2b8e2cd42122c",
+            "task-kernel/ideplusdriver.act": "4f7edb8e19a32fc6cef8b0396451f8a6c75368ec3fc43e6733256efbf276ffbb",
+            "task-kernel/consoledriver.act": "15101a6eb0bbfa9421d1632436e35afbb1c5f53bffed73ebfaca7ce86e70aa03"
+          },
+          "upper_static": {
+            "origin": 137472,
+            "reserved": 8192,
+            "span": 7624
+          },
+          "controller_frames": [
+            {
+              "name": "M_SHELLSESSIONFAILURETEST_SHELLSESSIONEXCHANGE_A31F2028",
+              "fixed_frame": 12,
+              "spill_bytes": 8,
+              "local_stack_peak": 22,
+              "outgoing_bytes": 7,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLSESSIONFAILURETEST_SHELLSESSIONCOMMAND_798099C0",
+              "fixed_frame": 20,
+              "spill_bytes": 12,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 5,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLSESSIONFAILURETEST_SHELLPROCESSENTRY_471C25AC",
+              "fixed_frame": 60,
+              "spill_bytes": 26,
+              "local_stack_peak": 72,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLSESSIONFAILURETEST_SHELLSESSIONCREATE_403DA861",
+              "fixed_frame": 18,
+              "spill_bytes": 10,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 3,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLSESSIONFAILURETEST_SHELLCONTROLLERSTEP_573E173F",
+              "fixed_frame": 30,
+              "spill_bytes": 26,
+              "local_stack_peak": 38,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            }
+          ]
+        },
+        "parser": {
+          "result": "build/shell-sessions/ss5-parser/results.json",
+          "result_sha256": "383918e473178525de2bf52f292cb7c6e3815c7ee66e0119d22615c17e03e8e2",
+          "image_sha256": "bb726c6f80898e4258d2ea2e3648ddd44b0a414b8ca7745ed015758f05f0b186",
+          "xex_sha256": "04fd672ae25015c0eda2791c33ea0d028209c079ba0e8b51e92a8fdff051cb5d",
+          "mode": "opt",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false,
+            "build_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+          },
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 23,
+            "native_irq_count": 0,
+            "created": 0,
+            "switches": 1,
+            "guards": "intact",
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 235,
+                "untouched_above_floor": 1045
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 24,
+                "untouched_above_floor": 232
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 258,
+              "untouched_from_base": 1278,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic",
+            "vbxe": false,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "off",
+            "exeloadmode": "default",
+            "kernel_id": "$91213499097d0042",
+            "actual_kernel_id": "$91213499097d0042",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "checks": 582,
+          "upper_static": {
+            "origin": 137472,
+            "reserved": 8192,
+            "span": 6535
+          },
+          "controller_frames": [
+            {
+              "name": "M_SHELLPARSER_SHELLSESSIONEXCHANGE_19A7C5E7",
+              "fixed_frame": 12,
+              "spill_bytes": 8,
+              "local_stack_peak": 22,
+              "outgoing_bytes": 7,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLPARSER_SHELLSESSIONCOMMAND_16BB9D1D",
+              "fixed_frame": 20,
+              "spill_bytes": 12,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 5,
+              "whole_task_stack_bound": null
+            }
+          ]
+        },
+        "physical-text": {
+          "result": "build/shell-sessions/ss5-physical-text/results.json",
+          "result_sha256": "2c538e206e7b7e7b32e2961b8104e9f5bc3979e503a9a10c9070b0266d3efad9",
+          "image_sha256": "9b1ec3519b55d162970808b9718e5d1d1acfdf90a11ec675a5fa418776e97d96",
+          "xex_sha256": "ce62f37b19f1a14ca3129899722a9de5565fc787b22157c3d37f2af8358c19c1",
+          "mode": "opt",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false,
+            "build_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+          },
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 5460,
+            "native_irq_count": 52657,
+            "created": 14,
+            "switches": 10941,
+            "guards": "intact",
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 416,
+                "untouched_above_floor": 864
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 301,
+                "untouched_above_floor": 755
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 625,
+                "untouched_above_floor": 431
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 185,
+                "untouched_above_floor": 871
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 593,
+                "untouched_above_floor": 463
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 510,
+                "untouched_above_floor": 546
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 615,
+                "untouched_above_floor": 1689
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 347,
+                "untouched_above_floor": 1957
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 131,
+                "untouched_above_floor": 125
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 275,
+              "untouched_from_base": 1261,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": false,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "off",
+            "exeloadmode": "default",
+            "kernel_id": "$d3d62d7c02434cc6",
+            "actual_kernel_id": "$d3d62d7c02434cc6",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "commands": [
+            {
+              "session": 1,
+              "command": "CD WORK:",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "ALIAS HI \"ECHO first\"",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "PATH CLEAR",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "SESSIONS",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "CD",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "PATH",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "HI",
+              "error": 205
+            },
+            {
+              "session": 2,
+              "command": "NEWSHELL",
+              "error": 103
+            },
+            {
+              "session": 2,
+              "command": "SESSION 0",
+              "error": 115
+            },
+            {
+              "session": 2,
+              "command": "SESSION 4294967296",
+              "error": 115
+            },
+            {
+              "session": 2,
+              "command": "SESSION 4294967295",
+              "error": 205
+            },
+            {
+              "session": 2,
+              "command": "SESSIONS >WORK:SESS.TXT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "TYPE WORK:SESS.TXT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "ECHO shared >WORK:SHARED.TXT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "ASSIGN X: WORK:",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "CAT SYS:LONG.TXT | WC",
+              "error": 103
+            },
+            {
+              "session": 2,
+              "command": "HELLO",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "RUN PRIMES >CON:",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "JOBS",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "ECHO \"NEWSHELL >WORK:BAD\" >WORK:SCRIPT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "EXECUTE WORK:SCRIPT",
+              "error": 209
+            },
+            {
+              "session": 2,
+              "command": "TYPE WORK:BAD",
+              "error": 205
+            },
+            {
+              "session": 2,
+              "command": "RUN NEWSHELL",
+              "error": 115
+            },
+            {
+              "session": 2,
+              "command": "NEWSHELL | WC",
+              "error": 115
+            },
+            {
+              "session": 2,
+              "command": "CD SYS:",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "HI",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "TYPE X:SHARED.TXT",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "CD",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "PATH",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "PATH RESET",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "CD SYS:",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "ECHO active-peer",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "JOBS",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "BREAK 2",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "JOBS",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "SESSION 2",
+              "error": 205
+            },
+            {
+              "session": 3,
+              "command": "SESSIONS",
+              "error": 0
+            },
+            {
+              "session": 3,
+              "command": "ECHO recreated",
+              "error": 0
+            },
+            {
+              "session": 4,
+              "command": "ECHO unit-zero-reused",
+              "error": 0
+            },
+            {
+              "session": 3,
+              "command": "ECHO survivor",
+              "error": 0
+            }
+          ],
+          "autoboot_frames": 249,
+          "measured_peaks": [
+            8,
+            8
+          ],
+          "session_screens": [
+            {
+              "session": 1,
+              "label": "CD WORK:",
+              "frame": 1109
+            },
+            {
+              "session": 1,
+              "label": "ALIAS HI \"ECHO first\"",
+              "frame": 1203
+            },
+            {
+              "session": 1,
+              "label": "PATH CLEAR",
+              "frame": 1252
+            },
+            {
+              "session": 1,
+              "label": "SESSIONS",
+              "frame": 1299
+            },
+            {
+              "session": 2,
+              "label": "second-ready",
+              "frame": 1366
+            },
+            {
+              "session": 2,
+              "label": "CD",
+              "frame": 1383
+            },
+            {
+              "session": 2,
+              "label": "PATH",
+              "frame": 1411
+            },
+            {
+              "session": 2,
+              "label": "HI",
+              "frame": 1492
+            },
+            {
+              "session": 2,
+              "label": "NEWSHELL",
+              "frame": 1541
+            },
+            {
+              "session": 2,
+              "label": "SESSION 0",
+              "frame": 1588
+            },
+            {
+              "session": 2,
+              "label": "SESSION 4294967296",
+              "frame": 1673
+            },
+            {
+              "session": 2,
+              "label": "SESSION 4294967295",
+              "frame": 1760
+            },
+            {
+              "session": 2,
+              "label": "SESSIONS >WORK:SESS.TXT",
+              "frame": 2024
+            },
+            {
+              "session": 2,
+              "label": "TYPE WORK:SESS.TXT",
+              "frame": 2116
+            },
+            {
+              "session": 2,
+              "label": "ECHO shared >WORK:SHARED.TXT",
+              "frame": 2379
+            },
+            {
+              "session": 2,
+              "label": "ASSIGN X: WORK:",
+              "frame": 2656
+            },
+            {
+              "session": 2,
+              "label": "CAT SYS:LONG.TXT | WC",
+              "frame": 3160
+            },
+            {
+              "session": 2,
+              "label": "HELLO",
+              "frame": 3293
+            },
+            {
+              "session": 2,
+              "label": "RUN PRIMES >CON:",
+              "frame": 3456
+            },
+            {
+              "session": 2,
+              "label": "JOBS",
+              "frame": 3494
+            },
+            {
+              "session": 2,
+              "label": "ECHO \"NEWSHELL >WORK:BAD\" >WORK:SCRIPT",
+              "frame": 3792
+            },
+            {
+              "session": 2,
+              "label": "EXECUTE WORK:SCRIPT",
+              "frame": 3893
+            },
+            {
+              "session": 2,
+              "label": "TYPE WORK:BAD",
+              "frame": 3960
+            },
+            {
+              "session": 2,
+              "label": "RUN NEWSHELL",
+              "frame": 4023
+            },
+            {
+              "session": 2,
+              "label": "NEWSHELL | WC",
+              "frame": 4090
+            },
+            {
+              "session": 2,
+              "label": "CD SYS:",
+              "frame": 4130
+            },
+            {
+              "session": 1,
+              "label": "chord-1",
+              "frame": 4188
+            },
+            {
+              "session": 1,
+              "label": "HI",
+              "frame": 4209
+            },
+            {
+              "session": 1,
+              "label": "TYPE X:SHARED.TXT",
+              "frame": 4297
+            },
+            {
+              "session": 1,
+              "label": "CD",
+              "frame": 4319
+            },
+            {
+              "session": 1,
+              "label": "PATH",
+              "frame": 4350
+            },
+            {
+              "session": 2,
+              "label": "chord-2",
+              "frame": 4398
+            },
+            {
+              "session": 2,
+              "label": "midline-draft",
+              "frame": 4416
+            },
+            {
+              "session": 1,
+              "label": "chord-1",
+              "frame": 4482
+            },
+            {
+              "session": 1,
+              "label": "PATH RESET",
+              "frame": 4536
+            },
+            {
+              "session": 1,
+              "label": "CD SYS:",
+              "frame": 4574
+            },
+            {
+              "session": 2,
+              "label": "chord-2",
+              "frame": 4751
+            },
+            {
+              "session": 2,
+              "label": "ECHO active-peer",
+              "frame": 5206
+            },
+            {
+              "session": 1,
+              "label": "chord-1",
+              "frame": 5217
+            },
+            {
+              "session": 1,
+              "label": "JOBS",
+              "frame": 5263
+            },
+            {
+              "session": 1,
+              "label": "BREAK 2",
+              "frame": 5304
+            },
+            {
+              "session": 1,
+              "label": "JOBS",
+              "frame": 5336
+            },
+            {
+              "session": 2,
+              "label": "chord-2",
+              "frame": 5342
+            },
+            {
+              "session": 1,
+              "label": "SESSION 2",
+              "frame": 5564
+            },
+            {
+              "session": 3,
+              "label": "SESSIONS",
+              "frame": 5650
+            },
+            {
+              "session": 3,
+              "label": "ECHO recreated",
+              "frame": 5712
+            },
+            {
+              "session": 4,
+              "label": "ECHO unit-zero-reused",
+              "frame": 5914
+            },
+            {
+              "session": 3,
+              "label": "ECHO survivor",
+              "frame": 5997
+            }
+          ],
+          "shared_files": {
+            "media_sha256": "1977d3e2486409946cbf0d33be08ce86efdac89a051ad91bf8a5df5c9e448cba",
+            "files": {
+              "SHARED.TXT": "7368617265640a",
+              "SESS.TXT": "202053455353494f4e2053544154450a2020312072656164790a2a20322072656164790a",
+              "SCRIPT": "4e45575348454c4c203e574f524b3a4241440a"
+            }
+          },
+          "upper_static": {
+            "origin": 137472,
+            "reserved": 8192,
+            "span": 7690
+          },
+          "controller_frames": [
+            {
+              "name": "M_DEMO_SHELLSESSIONEXCHANGE_6940984F",
+              "fixed_frame": 12,
+              "spill_bytes": 8,
+              "local_stack_peak": 22,
+              "outgoing_bytes": 7,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_DEMO_SHELLSESSIONCOMMAND_263812E5",
+              "fixed_frame": 20,
+              "spill_bytes": 12,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 5,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_DEMO_SHELLPROCESSENTRY_4F27D2ED",
+              "fixed_frame": 60,
+              "spill_bytes": 26,
+              "local_stack_peak": 72,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_DEMO_SHELLSESSIONCREATE_088A140E",
+              "fixed_frame": 18,
+              "spill_bytes": 10,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 3,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_DEMO_SHELLCONTROLLERSTEP_7AA8381A",
+              "fixed_frame": 30,
+              "spill_bytes": 26,
+              "local_stack_peak": 38,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            }
+          ]
+        },
+        "physical-bitmap": {
+          "result": "build/shell-sessions/ss5-physical-bitmap/results.json",
+          "result_sha256": "70ac57ea4ac528426ed678f58e6ff3375554f0b10e32b11a407e4f2fe15a4280",
+          "image_sha256": "b4731addd015f1120aaa136b26237239d8aacea5bc2999b4b93a543aba0687d5",
+          "xex_sha256": "3ed5d81e0785152f49bfd2084e131d027b1fa38868a5e12112e172dfd5e0cec8",
+          "mode": "opt",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false,
+            "build_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+          },
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 4582,
+            "native_irq_count": 47424,
+            "created": 12,
+            "switches": 6142,
+            "guards": "intact",
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 422,
+                "untouched_above_floor": 858
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 612,
+                "untouched_above_floor": 444
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 124,
+                "untouched_above_floor": 932
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 531,
+                "untouched_above_floor": 525
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 553,
+                "untouched_above_floor": 503
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 347,
+                "untouched_above_floor": 709
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 532,
+                "untouched_above_floor": 1772
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 311,
+                "untouched_above_floor": 1993
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 59,
+                "untouched_above_floor": 197
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 283,
+              "untouched_from_base": 1253,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$a6077cc67dbf48e2",
+            "actual_kernel_id": "$a6077cc67dbf48e2",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "commands": [
+            {
+              "session": 1,
+              "command": "CD WORK:",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "ALIAS HI \"ECHO first\"",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "PATH CLEAR",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "SESSIONS",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "CD",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "PATH",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "HI",
+              "error": 205
+            },
+            {
+              "session": 2,
+              "command": "NEWSHELL",
+              "error": 103
+            },
+            {
+              "session": 2,
+              "command": "SESSION 0",
+              "error": 115
+            },
+            {
+              "session": 2,
+              "command": "SESSION 4294967296",
+              "error": 115
+            },
+            {
+              "session": 2,
+              "command": "SESSION 4294967295",
+              "error": 205
+            },
+            {
+              "session": 2,
+              "command": "SESSIONS >WORK:SESS.TXT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "TYPE WORK:SESS.TXT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "ECHO shared >WORK:SHARED.TXT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "ASSIGN X: WORK:",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "HELLO",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "ECHO \"NEWSHELL >WORK:BAD\" >WORK:SCRIPT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "EXECUTE WORK:SCRIPT",
+              "error": 209
+            },
+            {
+              "session": 2,
+              "command": "TYPE WORK:BAD",
+              "error": 205
+            },
+            {
+              "session": 2,
+              "command": "RUN NEWSHELL",
+              "error": 115
+            },
+            {
+              "session": 2,
+              "command": "NEWSHELL | WC",
+              "error": 115
+            },
+            {
+              "session": 2,
+              "command": "CD SYS:",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "HI",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "TYPE X:SHARED.TXT",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "CD",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "PATH",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "PATH RESET",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "CD SYS:",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "ECHO active-peer",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "SESSION 2",
+              "error": 205
+            },
+            {
+              "session": 3,
+              "command": "SESSIONS",
+              "error": 0
+            },
+            {
+              "session": 3,
+              "command": "ECHO recreated",
+              "error": 0
+            },
+            {
+              "session": 4,
+              "command": "ECHO unit-zero-reused",
+              "error": 0
+            },
+            {
+              "session": 3,
+              "command": "ECHO survivor",
+              "error": 0
+            }
+          ],
+          "autoboot_frames": 249,
+          "measured_peaks": [
+            7,
+            8
+          ],
+          "session_screens": [
+            {
+              "session": 1,
+              "label": "CD WORK:",
+              "frame": 931
+            },
+            {
+              "session": 1,
+              "label": "ALIAS HI \"ECHO first\"",
+              "frame": 1023
+            },
+            {
+              "session": 1,
+              "label": "PATH CLEAR",
+              "frame": 1071
+            },
+            {
+              "session": 1,
+              "label": "SESSIONS",
+              "frame": 1112
+            },
+            {
+              "session": 2,
+              "label": "second-ready",
+              "frame": 1182
+            },
+            {
+              "session": 2,
+              "label": "CD",
+              "frame": 1198
+            },
+            {
+              "session": 2,
+              "label": "PATH",
+              "frame": 1222
+            },
+            {
+              "session": 2,
+              "label": "HI",
+              "frame": 1330
+            },
+            {
+              "session": 2,
+              "label": "NEWSHELL",
+              "frame": 1371
+            },
+            {
+              "session": 2,
+              "label": "SESSION 0",
+              "frame": 1416
+            },
+            {
+              "session": 2,
+              "label": "SESSION 4294967296",
+              "frame": 1497
+            },
+            {
+              "session": 2,
+              "label": "SESSION 4294967295",
+              "frame": 1579
+            },
+            {
+              "session": 2,
+              "label": "SESSIONS >WORK:SESS.TXT",
+              "frame": 1838
+            },
+            {
+              "session": 2,
+              "label": "TYPE WORK:SESS.TXT",
+              "frame": 1922
+            },
+            {
+              "session": 2,
+              "label": "ECHO shared >WORK:SHARED.TXT",
+              "frame": 2170
+            },
+            {
+              "session": 2,
+              "label": "ASSIGN X: WORK:",
+              "frame": 2413
+            },
+            {
+              "session": 2,
+              "label": "HELLO",
+              "frame": 2516
+            },
+            {
+              "session": 2,
+              "label": "ECHO \"NEWSHELL >WORK:BAD\" >WORK:SCRIPT",
+              "frame": 2805
+            },
+            {
+              "session": 2,
+              "label": "EXECUTE WORK:SCRIPT",
+              "frame": 2895
+            },
+            {
+              "session": 2,
+              "label": "TYPE WORK:BAD",
+              "frame": 2957
+            },
+            {
+              "session": 2,
+              "label": "RUN NEWSHELL",
+              "frame": 3016
+            },
+            {
+              "session": 2,
+              "label": "NEWSHELL | WC",
+              "frame": 3078
+            },
+            {
+              "session": 2,
+              "label": "CD SYS:",
+              "frame": 3115
+            },
+            {
+              "session": 1,
+              "label": "chord-1",
+              "frame": 3190
+            },
+            {
+              "session": 1,
+              "label": "HI",
+              "frame": 3206
+            },
+            {
+              "session": 1,
+              "label": "TYPE X:SHARED.TXT",
+              "frame": 3285
+            },
+            {
+              "session": 1,
+              "label": "CD",
+              "frame": 3301
+            },
+            {
+              "session": 1,
+              "label": "PATH",
+              "frame": 3325
+            },
+            {
+              "session": 2,
+              "label": "chord-2",
+              "frame": 3392
+            },
+            {
+              "session": 2,
+              "label": "midline-draft",
+              "frame": 3405
+            },
+            {
+              "session": 1,
+              "label": "chord-1",
+              "frame": 3473
+            },
+            {
+              "session": 1,
+              "label": "PATH RESET",
+              "frame": 3525
+            },
+            {
+              "session": 1,
+              "label": "CD SYS:",
+              "frame": 3561
+            },
+            {
+              "session": 2,
+              "label": "chord-2",
+              "frame": 3872
+            },
+            {
+              "session": 2,
+              "label": "ECHO active-peer",
+              "frame": 4201
+            },
+            {
+              "session": 1,
+              "label": "chord-1",
+              "frame": 4233
+            },
+            {
+              "session": 2,
+              "label": "chord-2",
+              "frame": 4274
+            },
+            {
+              "session": 1,
+              "label": "SESSION 2",
+              "frame": 4645
+            },
+            {
+              "session": 3,
+              "label": "SESSIONS",
+              "frame": 4755
+            },
+            {
+              "session": 3,
+              "label": "ECHO recreated",
+              "frame": 4819
+            },
+            {
+              "session": 4,
+              "label": "ECHO unit-zero-reused",
+              "frame": 5057
+            },
+            {
+              "session": 3,
+              "label": "ECHO survivor",
+              "frame": 5144
+            }
+          ],
+          "shared_files": {
+            "media_sha256": "1977d3e2486409946cbf0d33be08ce86efdac89a051ad91bf8a5df5c9e448cba",
+            "files": {
+              "SHARED.TXT": "7368617265640a",
+              "SESS.TXT": "202053455353494f4e2053544154450a2020312072656164790a2a20322072656164790a",
+              "SCRIPT": "4e45575348454c4c203e574f524b3a4241440a"
+            }
+          },
+          "upper_static": {
+            "origin": 137472,
+            "reserved": 8448,
+            "span": 7700
+          },
+          "controller_frames": [
+            {
+              "name": "M_SHELLAPP_SHELLSESSIONEXCHANGE_74776BB1",
+              "fixed_frame": 12,
+              "spill_bytes": 8,
+              "local_stack_peak": 22,
+              "outgoing_bytes": 7,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLAPP_SHELLSESSIONCOMMAND_58AB4E93",
+              "fixed_frame": 20,
+              "spill_bytes": 12,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 5,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLAPP_SHELLPROCESSENTRY_AD946447",
+              "fixed_frame": 60,
+              "spill_bytes": 26,
+              "local_stack_peak": 72,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLAPP_SHELLSESSIONCREATE_EE1B2034",
+              "fixed_frame": 18,
+              "spill_bytes": 10,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 3,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLAPP_SHELLCONTROLLERSTEP_5FE79994",
+              "fixed_frame": 30,
+              "spill_bytes": 26,
+              "local_stack_peak": 38,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            }
+          ]
+        },
+        "inherited": {
+          "result": "build/shell-sessions/ss5-inherited/results.json",
+          "result_sha256": "12383bc224e6eff4c3a77fe46cc322be3a2be4275ffcd211b900590ff956a110",
+          "image_sha256": "9b1ec3519b55d162970808b9718e5d1d1acfdf90a11ec675a5fa418776e97d96",
+          "xex_sha256": "ce62f37b19f1a14ca3129899722a9de5565fc787b22157c3d37f2af8358c19c1",
+          "mode": "opt",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false,
+            "build_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+          },
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 1646,
+            "native_irq_count": 17240,
+            "created": 9,
+            "switches": 2899,
+            "guards": "intact",
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 416,
+                "untouched_above_floor": 864
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 291,
+                "untouched_above_floor": 765
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 335,
+                "untouched_above_floor": 721
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 185,
+                "untouched_above_floor": 871
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 502,
+                "untouched_above_floor": 554
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 388,
+                "untouched_above_floor": 668
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 609,
+                "untouched_above_floor": 1695
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 521,
+                "untouched_above_floor": 1783
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 123,
+                "untouched_above_floor": 133
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 275,
+              "untouched_from_base": 1261,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": false,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "off",
+            "exeloadmode": "default",
+            "kernel_id": "$d3d62d7c02434cc6",
+            "actual_kernel_id": "$d3d62d7c02434cc6",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "commands": [
+            {
+              "session": 2,
+              "command": "ECHO inherited >RAM:INPUT.TXT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "TYPE <RAM:INPUT.TXT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "CAT <RAM:INPUT.TXT",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "ECHO reader-peer",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "PRIMES PASSES 1",
+              "error": 212
+            },
+            {
+              "session": 2,
+              "command": "ECHO inherited-survivor",
+              "error": 0
+            }
+          ],
+          "autoboot_frames": 249,
+          "measured_peaks": [],
+          "session_screens": [
+            {
+              "session": 2,
+              "label": "ECHO inherited >RAM:INPUT.TXT",
+              "frame": 1256
+            },
+            {
+              "session": 2,
+              "label": "TYPE <RAM:INPUT.TXT",
+              "frame": 1348
+            },
+            {
+              "session": 2,
+              "label": "CAT <RAM:INPUT.TXT",
+              "frame": 1669
+            },
+            {
+              "session": 1,
+              "label": "chord-1",
+              "frame": 1765
+            },
+            {
+              "session": 1,
+              "label": "ECHO reader-peer",
+              "frame": 1843
+            },
+            {
+              "session": 2,
+              "label": "chord-2",
+              "frame": 1854
+            },
+            {
+              "session": 2,
+              "label": "inherited-input",
+              "frame": 1922
+            },
+            {
+              "session": 1,
+              "label": "chord-1",
+              "frame": 1941
+            },
+            {
+              "session": 2,
+              "label": "PRIMES PASSES 1",
+              "frame": 2085
+            },
+            {
+              "session": 2,
+              "label": "ECHO inherited-survivor",
+              "frame": 2183
+            }
+          ],
+          "upper_static": {
+            "origin": 137472,
+            "reserved": 8192,
+            "span": 7690
+          },
+          "controller_frames": [
+            {
+              "name": "M_DEMO_SHELLSESSIONEXCHANGE_6940984F",
+              "fixed_frame": 12,
+              "spill_bytes": 8,
+              "local_stack_peak": 22,
+              "outgoing_bytes": 7,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_DEMO_SHELLSESSIONCOMMAND_263812E5",
+              "fixed_frame": 20,
+              "spill_bytes": 12,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 5,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_DEMO_SHELLPROCESSENTRY_4F27D2ED",
+              "fixed_frame": 60,
+              "spill_bytes": 26,
+              "local_stack_peak": 72,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_DEMO_SHELLSESSIONCREATE_088A140E",
+              "fixed_frame": 18,
+              "spill_bytes": 10,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 3,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_DEMO_SHELLCONTROLLERSTEP_7AA8381A",
+              "fixed_frame": 30,
+              "spill_bytes": 26,
+              "local_stack_peak": 38,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            }
+          ]
+        },
+        "inherited-bitmap": {
+          "result": "build/shell-sessions/ss5-inherited-bitmap/results.json",
+          "result_sha256": "a64b89b8d5e14096dd09f6abbd999c9cbcc719b60e88872b64da4a0039ddc222",
+          "image_sha256": "b4731addd015f1120aaa136b26237239d8aacea5bc2999b4b93a543aba0687d5",
+          "xex_sha256": "3ed5d81e0785152f49bfd2084e131d027b1fa38868a5e12112e172dfd5e0cec8",
+          "mode": "opt",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false,
+            "build_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+          },
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 1655,
+            "native_irq_count": 17590,
+            "created": 8,
+            "switches": 2004,
+            "guards": "intact",
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 422,
+                "untouched_above_floor": 858
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 296,
+                "untouched_above_floor": 760
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 123,
+                "untouched_above_floor": 933
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 444,
+                "untouched_above_floor": 612
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 531,
+                "untouched_above_floor": 525
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 434,
+                "untouched_above_floor": 622
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 532,
+                "untouched_above_floor": 1772
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 54,
+                "untouched_above_floor": 202
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 275,
+              "untouched_from_base": 1261,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$a6077cc67dbf48e2",
+            "actual_kernel_id": "$a6077cc67dbf48e2",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "commands": [
+            {
+              "session": 2,
+              "command": "ECHO inherited >RAM:INPUT.TXT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "TYPE <RAM:INPUT.TXT",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "CAT <RAM:INPUT.TXT",
+              "error": 0
+            },
+            {
+              "session": 1,
+              "command": "ECHO reader-peer",
+              "error": 0
+            },
+            {
+              "session": 2,
+              "command": "PRIMES PASSES 1",
+              "error": 212
+            },
+            {
+              "session": 2,
+              "command": "ECHO inherited-survivor",
+              "error": 0
+            }
+          ],
+          "autoboot_frames": 249,
+          "measured_peaks": [],
+          "session_screens": [
+            {
+              "session": 2,
+              "label": "ECHO inherited >RAM:INPUT.TXT",
+              "frame": 1082
+            },
+            {
+              "session": 2,
+              "label": "TYPE <RAM:INPUT.TXT",
+              "frame": 1168
+            },
+            {
+              "session": 2,
+              "label": "CAT <RAM:INPUT.TXT",
+              "frame": 1455
+            },
+            {
+              "session": 1,
+              "label": "chord-1",
+              "frame": 1526
+            },
+            {
+              "session": 1,
+              "label": "ECHO reader-peer",
+              "frame": 1598
+            },
+            {
+              "session": 2,
+              "label": "chord-2",
+              "frame": 1625
+            },
+            {
+              "session": 2,
+              "label": "inherited-input",
+              "frame": 1691
+            },
+            {
+              "session": 1,
+              "label": "chord-1",
+              "frame": 1726
+            },
+            {
+              "session": 2,
+              "label": "PRIMES PASSES 1",
+              "frame": 2118
+            },
+            {
+              "session": 2,
+              "label": "ECHO inherited-survivor",
+              "frame": 2218
+            }
+          ],
+          "upper_static": {
+            "origin": 137472,
+            "reserved": 8448,
+            "span": 7700
+          },
+          "controller_frames": [
+            {
+              "name": "M_SHELLAPP_SHELLSESSIONEXCHANGE_74776BB1",
+              "fixed_frame": 12,
+              "spill_bytes": 8,
+              "local_stack_peak": 22,
+              "outgoing_bytes": 7,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLAPP_SHELLSESSIONCOMMAND_58AB4E93",
+              "fixed_frame": 20,
+              "spill_bytes": 12,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 5,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLAPP_SHELLPROCESSENTRY_AD946447",
+              "fixed_frame": 60,
+              "spill_bytes": 26,
+              "local_stack_peak": 72,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLAPP_SHELLSESSIONCREATE_EE1B2034",
+              "fixed_frame": 18,
+              "spill_bytes": 10,
+              "local_stack_peak": 36,
+              "outgoing_bytes": 3,
+              "whole_task_stack_bound": null
+            },
+            {
+              "name": "M_SHELLAPP_SHELLCONTROLLERSTEP_5FE79994",
+              "fixed_frame": 30,
+              "spill_bytes": 26,
+              "local_stack_peak": 38,
+              "outgoing_bytes": 1,
+              "whole_task_stack_bound": null
+            }
+          ]
+        }
+      },
+      "host": {
+        "tests": 498,
+        "result": "pass",
+        "log": "build/shell-sessions/ss5-host.log",
+        "sha256": "2aababc41b709750532e999b4df118bbc3c6816e25733a5d459afb74f33ef8b8"
+      },
+      "generated": [
+        "tools/generate_shell_sessions.py --check",
+        "tools/generate_console.py --check"
+      ],
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1600,
+          1600,
+          1600,
+          1600,
+          1600,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 26848,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 58080,
+        "loading_including_os": 51600
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": 0,
+        "idle": 0,
+        "guards_alignment_unused_capacity_included": true
+      },
+      "resources": {
+        "additional_upper_static_controller_bytes": 4,
+        "controller_registry_bytes": 660,
+        "shell_context_array_bytes": 56,
+        "created_console_allocation_bytes": {
+          "text": 1352,
+          "standalone_bitmap": 2792
+        },
+        "additional_live_tasks_per_shell": 1,
+        "additional_worker_tasks": 0,
+        "additional_backing_vram": 0
+      },
+      "distributions": {
+        "demo-final": {
+          "path": "build/shell-sessions/ss5-demo-final/exec816-demo.zip",
+          "sha256": "a5da0ce569a704219a44d59e8307d74cbe97e17181d736ed70cdd54f4a899345",
+          "manifest": "build/shell-sessions/ss5-demo-final/demo-manifest.json",
+          "manifest_sha256": "d71fd0fce0de7c8cc2fa3f7d946b0349ac44348c2178736641b982386ad9472e",
+          "task_census": {
+            "shared_services_and_controller": 4,
+            "shell_processes": 1,
+            "prime": 1,
+            "initial_gui_processes": 0,
+            "prompt": 6,
+            "one_shell_pipeline_required": 8,
+            "two_shell_pipeline_required": 9,
+            "historical_peak_required": 8,
+            "historical_peak_admitted": true,
+            "capacity": 8
+          }
+        },
+        "bitmap-final": {
+          "path": "build/shell-sessions/ss5-bitmap-final/exec816-demo.zip",
+          "sha256": "824fa717c1c914e34f2acaca3c7c8d0bc1cae250eea7cfd3782694227da90537",
+          "manifest": "build/shell-sessions/ss5-bitmap-final/demo-manifest.json",
+          "manifest_sha256": "ce7eed6efcf646918d61ddc785c8785581eb2aed57bb9c07058867be0b13fe4a",
+          "task_census": {
+            "shared_services_and_controller": 4,
+            "shell_processes": 1,
+            "prime": 0,
+            "initial_gui_processes": 0,
+            "prompt": 5,
+            "one_shell_pipeline_required": 7,
+            "two_shell_pipeline_required": 8,
+            "historical_peak_required": 7,
+            "historical_peak_admitted": true,
+            "capacity": 8
+          }
+        }
+      },
+      "limits": [
+        "Text and standalone bitmap sessions are implemented; desktop binding and tabs remain SS6/SS7.",
+        "Allocation injection stops at READY publication. Optional history failure has separate existing coverage.",
+        "No switching latency claim before SS8 measurements; no release or physical-hardware qualification.",
+        "Eight public Task pools and four console slots are unchanged. Second-pipeline admission with two shells and prime is rejected."
       ]
     }
   }

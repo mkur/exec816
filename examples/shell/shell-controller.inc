@@ -15,10 +15,9 @@ ShellContext ARRAY contexts(SESSION_CAPACITY)
 ShellContext systemContext
 EXEC.MsgPort POINTER shellRequests
 ShellSessionMessage POINTER selectionRequest
-LONGCARD nextSession,selectedSession,shortcutMask
+LONGCARD nextSession,selectedSession,shortcutMask,shortcutTarget
 LONGINT controllerStatus,bootPrimary,bootSecondary
 BYTE shortcutBit,controllerLive,controllerRetry,firstFlags
-CONST SESSION_ADMISSION_LIMIT=1
 
 ; Formatting shared scalar identities never borrows another Task's DOS object.
 PROC ShellHexIdentity(LONGCARD identity BYTE POINTER text)
@@ -136,9 +135,18 @@ LONGINT FUNC ShellProcessEntry()
         ShellCommand(context)
         ShellClear(context)
       FI
-    ELSEIF context.shell.status<>PROCESS.RETURN_OK THEN
-      primary=context.shell.status
-      secondary=context.shell.error
+    ELSE
+      IF context.shell.status<>PROCESS.RETURN_OK THEN
+        primary=context.shell.status
+        secondary=context.shell.error
+      ELSE
+        ; A reused unit zero starts with a fresh transcript and input endpoint.
+        ShellByte(context,context.shell.console,ASCII.FF)
+        IF context.shell.status<>PROCESS.RETURN_OK THEN
+          primary=context.shell.status
+          secondary=context.shell.error
+        FI
+      FI
     FI
   FI
 
@@ -201,7 +209,7 @@ LONGINT FUNC ShellProcessEntry()
 RETURN(primary)
 
 ; Publish immutable startup data before Start can schedule its admitted entry.
-BYTE FUNC ShellSessionSpawn(ShellSession POINTER session
+BYTE FUNC ShellSessionSpawn(ShellSession POINTER session LONGCARD unit
     BYTE POINTER directory BYTE flags ShellSessionMessage POINTER request)
   BYTE ARRAY arguments(9)
 
@@ -215,7 +223,7 @@ BYTE FUNC ShellSessionSpawn(ShellSession POINTER session
   session.control.port=shellRequests
   session.control.closeRequested=0
   session.startup.identity=nextSession
-  session.startup.unit=0
+  session.startup.unit=unit
   session.startup.flags=flags
   STR.strlcpy(session.startup.directory,CSTRING(directory),SESSION_PATH_BYTES)
   session.createRequest=request
@@ -224,15 +232,15 @@ BYTE FUNC ShellSessionSpawn(ShellSession POINTER session
   session.result.primary=PROCESS.RETURN_OK
   session.result.secondary=0
   session.state=SESSION_STATE_CREATING
+  controllerLive==+1
   ShellHexIdentity(nextSession,arguments)
   session.process=PROCESS.Start(@ShellProcessEntry,arguments,8)
   IF session.process=0 THEN
-    session.state=SESSION_STATE_FREE
-    session.createRequest=NULL
+    session.result.primary=PROCESS.RETURN_FAIL
+    session.result.secondary=DOS.IoErr()
+    session.state=SESSION_STATE_RETIRING
     RETURN(0)
   FI
-
-  controllerLive==+1
 
 RETURN(1)
 
@@ -285,6 +293,76 @@ PROC ShellSessionQueryReply(ShellSessionMessage POINTER request)
 
 RETURN
 
+; Admit a fresh view and copy startup data before scheduling the child.
+PROC ShellSessionCreate(ShellSessionMessage POINTER request)
+  BYTE index,unitZero,started
+  LONGCARD unit
+  ShellSession POINTER available
+
+  IF controllerLive>=SESSION_CAPACITY OR nextSession=$ffffffff THEN
+    ShellSessionReply(request,PROCESS.RETURN_ERROR,DOS.ERROR_NO_FREE_STORE)
+    RETURN
+  FI
+
+  IF request.capacity<SESSION_PATH_BYTES THEN
+    ShellSessionReply(request,PROCESS.RETURN_ERROR,DOS.ERROR_BUFFER_OVERFLOW)
+    RETURN
+  FI
+
+  available=NULL
+  unitZero=1
+  FOR index=0 TO SESSION_CAPACITY-1 DO
+    IF sessions(index).state=SESSION_STATE_FREE THEN
+      available=@sessions(index)
+    ELSEIF sessions(index).startup.unit=0 THEN
+      unitZero=0
+    FI
+  OD
+
+  unit=0
+  IF unitZero=0 THEN
+    unit=CONSOLE.Create(CONSOLE.ScreenWidth(),CONSOLE.ScreenHeight())
+    IF unit=0 THEN
+      ShellSessionReply(request,PROCESS.RETURN_ERROR,DOS.ERROR_NO_FREE_STORE)
+      RETURN
+    FI
+  FI
+
+  ; Failed Start retains ownership until normal controller retirement.
+  started=ShellSessionSpawn(available,unit,request.payload,0,request)
+
+RETURN
+
+; Choose the next ready identity in creation order, wrapping at the end.
+ShellSession POINTER FUNC ShellSessionNext(LONGCARD identity)
+  BYTE index
+  ShellSession POINTER first,next
+
+  first=NULL
+  next=NULL
+  FOR index=0 TO SESSION_CAPACITY-1 DO
+    BEGIN
+      LET candidate=@sessions(index)
+      IF candidate.state=SESSION_STATE_READY THEN
+        IF first=NULL OR candidate.control.identity<first.control.identity THEN
+          first=candidate
+        FI
+
+        IF candidate.control.identity>identity THEN
+          IF next=NULL OR candidate.control.identity<next.control.identity THEN
+            next=candidate
+          FI
+        FI
+      FI
+    END
+  OD
+
+  IF next<>NULL THEN
+    RETURN(next)
+  FI
+
+RETURN(first)
+
 ; Requests are bounded by their producers and remain owned until exact reply.
 PROC ShellControllerRequests()
   ShellSessionMessage POINTER request
@@ -309,6 +387,11 @@ PROC ShellControllerRequests()
       ELSEIF request.primary<>PROCESS.RETURN_OK
           OR request.flags=SESSION_READY_EXIT
           OR session.control.closeRequested<>0 THEN
+        IF session.control.closeRequested<>0 THEN
+          request.primary=PROCESS.RETURN_ERROR
+          request.secondary=DOS.ERROR_BREAK
+        FI
+
         session.result.primary=request.primary
         session.result.secondary=request.secondary
         session.state=SESSION_STATE_CLOSING
@@ -338,8 +421,7 @@ PROC ShellControllerRequests()
       FI
 
     WHEN SESSION_CREATE THEN
-      ; SS4 admits the first session only; SS5 adds creation from live shells.
-      ShellSessionReply(request,PROCESS.RETURN_ERROR,DOS.ERROR_NO_FREE_STORE)
+      ShellSessionCreate(request)
 
     ELSE
       ShellSessionReply(request,PROCESS.RETURN_ERROR,DOS.ERROR_ACTION_NOT_KNOWN)
@@ -383,16 +465,20 @@ PROC ShellControllerReady()
           session.readyRequest=NULL
           ShellSessionReply(request,PROCESS.RETURN_ERROR,DOS.ERROR_BREAK)
         ELSE
-          status=ShellSessionSelect(session)
+          status=CONSOLETYPES.CONTROL_OK
+          IF session.watch.bound=0 THEN
+            status=CONSOLE.WatchKey(session.startup.unit,33,3,
+                shortcutMask,@session.watch)
+          FI
+
+          IF status=CONSOLETYPES.CONTROL_OK THEN
+            status=ShellSessionSelect(session)
+          FI
+
           IF status=CONSOLETYPES.CONTROL_BUSY THEN
             controllerRetry=1
           ELSE
             session.readyRequest=NULL
-            IF status=CONSOLETYPES.CONTROL_OK THEN
-              status=CONSOLE.WatchKey(session.startup.unit,33,3,
-                  shortcutMask,@session.watch)
-            FI
-
             IF status=CONSOLETYPES.CONTROL_OK THEN
               session.state=SESSION_STATE_READY
               session.ready=1
@@ -417,7 +503,7 @@ PROC ShellControllerReady()
 
 RETURN
 
-; Current SS4 selection consumes the chord without changing the sole draft.
+; Notices retain the captured session identity even if selection changed.
 PROC ShellControllerSelection()
   BYTE index
   CARD status
@@ -432,15 +518,38 @@ PROC ShellControllerSelection()
           IF notice.unit<>session.startup.unit THEN
             HEAPCORE.Abort($ff94)
           FI
+
+          IF session.state=SESSION_STATE_READY
+              OR session.state=SESSION_STATE_CLOSING THEN
+            BEGIN
+              LET next=ShellSessionNext(session.control.identity)
+              IF next<>NULL THEN
+                shortcutTarget=next.control.identity
+              FI
+            END
+          FI
         OD
       FI
     END
   OD
 
   IF selectionRequest=NULL THEN
+    BEGIN
+      LET target=ShellSessionFind(shortcutTarget)
+      IF target<>NULL AND target.state=SESSION_STATE_READY THEN
+        status=ShellSessionSelect(target)
+        IF status=CONSOLETYPES.CONTROL_BUSY THEN
+          controllerRetry=1
+          RETURN
+        FI
+      FI
+    END
+
+    shortcutTarget=0
     RETURN
   FI
 
+  shortcutTarget=0
   LET session=ShellSessionFind(selectionRequest.session)
   IF session=NULL THEN
     ShellSessionReply(selectionRequest,PROCESS.RETURN_ERROR,
@@ -467,9 +576,9 @@ PROC ShellControllerSelection()
 
 RETURN
 
-; Process collection precedes view retirement and reuse of all borrowed records.
+; Collection removes producers before selecting fallback and retiring views.
 PROC ShellControllerCollect()
-  BYTE index
+  BYTE index,pending
   CARD status
 
   FOR index=0 TO SESSION_CAPACITY-1 DO
@@ -489,7 +598,40 @@ PROC ShellControllerCollect()
           HEAPCORE.Abort($ff94)
         FI
       FI
+    END
+  OD
 
+  LET selected=ShellSessionFind(selectedSession)
+  IF selected<>NULL AND selected.state=SESSION_STATE_RETIRING THEN
+    BEGIN
+      LET fallback=ShellSessionNext(selectedSession)
+      IF fallback<>NULL THEN
+        status=ShellSessionSelect(fallback)
+        IF status=CONSOLETYPES.CONTROL_BUSY THEN
+          controllerRetry=1
+          RETURN
+        ELSEIF status<>CONSOLETYPES.CONTROL_OK THEN
+          HEAPCORE.Abort($ff94)
+        FI
+      ELSE
+        pending=0
+        FOR index=0 TO SESSION_CAPACITY-1 DO
+          IF sessions(index).state=SESSION_STATE_CREATING THEN
+            pending=1
+          FI
+        OD
+
+        ; Keep the visible previous view until a pending READY can replace it.
+        IF pending<>0 THEN
+          RETURN
+        FI
+      FI
+    END
+  FI
+
+  FOR index=0 TO SESSION_CAPACITY-1 DO
+    BEGIN
+      LET session=@sessions(index)
       IF session.state=SESSION_STATE_RETIRING THEN
         IF session.startup.unit<>0 THEN
           IF CONSOLE.Destroy(session.startup.unit)=0 THEN
@@ -510,19 +652,25 @@ PROC ShellControllerCollect()
               session.result.secondary=DOS.ERROR_BREAK
             FI
 
-            ShellSessionReply(session.createRequest,session.result.primary,
-                session.result.secondary)
-            session.createRequest=NULL
           FI
 
           IF selectedSession=session.control.identity THEN
             selectedSession=0
           FI
 
-          controllerStatus=session.result.primary
-          contexts(index).control=NULL
-          session.state=SESSION_STATE_FREE
-          controllerLive==-1
+          BEGIN
+            LET request=session.createRequest
+            session.createRequest=NULL
+            controllerStatus=session.result.primary
+            contexts(index).control=NULL
+            session.state=SESSION_STATE_FREE
+            controllerLive==-1
+            ; Reply may immediately schedule the creator: publish cleanup first.
+            IF request<>NULL THEN
+              ShellSessionReply(request,session.result.primary,
+                  session.result.secondary)
+            FI
+          END
         FI
       FI
     END
@@ -599,7 +747,8 @@ BYTE FUNC ShellControllerStart(BYTE prime)
   IF bootPrimary=PROCESS.RETURN_OK THEN
     directory=shellRoot
   FI
-  IF ShellSessionSpawn(@sessions(0),directory,firstFlags,NULL)=0 THEN
+  IF ShellSessionSpawn(@sessions(0),0,directory,firstFlags,NULL)=0 THEN
+    ShellControllerCollect()
     controllerStatus=PROCESS.RETURN_FAIL
     RETURN(0)
   FI

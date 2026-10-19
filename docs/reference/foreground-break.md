@@ -63,6 +63,13 @@ close flag belongs to the session controller and must be checked around new
 scope publication and command handoff. Process RequestStop keeps its existing
 child-ownership semantics.
 
+The resident shell controller sets that flag before RequestBreak, including
+when the console is temporarily unbound. A CLOSE reply acknowledges acceptance;
+it does not mean that the Process or console has retired. Root collects the
+shell after its own command/job cleanup, removes its key subscription, selects
+a ready survivor and then retires a created console. Noncooperative work keeps
+its resources and closing state while other sessions continue.
+
 ## Captured routing
 
 Each raw event carries a four-byte route generation captured by the IRQ. The

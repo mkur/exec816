@@ -1,0 +1,214 @@
+MODULE SHELLTWOSESSIONSTEST
+USE CONSOLEWINDOWS
+USE FSBOOT
+INCLUDE "../../examples/shell/shell-session.inc"
+INCLUDE "../../examples/shell/shell-boot.inc"
+INCLUDE "../../examples/shell/shell-controller.inc"
+
+CARD checks
+BYTE finished,releaseFillers
+LONGCARD baseline,peer
+LONGCARD ARRAY fillers(4)
+PROCESS.Result peerResult
+
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ed00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Real resident Processes occupy public slots without additional DOS objects.
+LONGINT FUNC Hold()
+
+  WHILE releaseFillers=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN(0)
+
+; Wait for the admitted shell to own a blocked read on its own foreground route.
+PROC Prompt(LONGCARD identity)
+
+  LET session=ShellSessionFind(identity)
+  Check(session<>NULL)
+  LET entry=CONSOLEWINDOWS.Find(session.startup.unit)
+  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  WHILE instance.readReady<>2 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; This producer owns its request, payload and port binding through every reply.
+LONGINT FUNC Producer()
+  BYTE index,cycle,ignored
+  LONGCARD first,second,replacement,available,oldUnit
+  ShellSessionControl control
+  PROCESS.Result result
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  control.port=shellRequests
+  LET request=ShellSessionMessage POINTER(EXEC.AllocMem(
+      SHELLSESSIONMESSAGE_SIZE,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  LET payload=EXEC.AllocMem(SESSION_PATH_BYTES,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  Check(request<>NULL AND payload<>NULL)
+  request.payload=payload
+  request.capacity=SESSION_PATH_BYTES
+  first=sessions(0).control.identity
+  Prompt(first)
+
+  ; Task exhaustion after view allocation must retire that view before replying.
+  FOR index=0 TO 3 DO
+    fillers(index)=PROCESS.Start(@Hold,NULL,0)
+    Check(fillers(index)<>0)
+  OD
+
+  available=EXEC.AvailMem(0)
+  request.operation=SESSION_CREATE
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary<>0 AND request.secondary=DOS.ERROR_NO_FREE_STORE)
+  Check(controllerLive=1 AND selectedSession=first)
+  Check(windows.liveCount=1 AND EXEC.AvailMem(0)=available)
+  releaseFillers=1
+  FOR index=0 TO 3 DO
+    Check(PROCESS.Wait(fillers(index),@result)<>0 AND result.primary=0)
+  OD
+
+  ; A successful CREATE replies only after the new view becomes selected.
+  request.operation=SESSION_CREATE
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=0)
+  second=request.value
+  Check(second>first+1 AND selectedSession=second AND controllerLive=2)
+  Prompt(second)
+  Check(contexts(0).shell<>contexts(1).shell
+      AND contexts(0).aliases<>contexts(1).aliases)
+  Check(contexts(0).shell.console<>contexts(1).shell.console)
+  Check(sessions(0).watch.bound<>0 AND sessions(1).watch.bound<>0)
+  oldUnit=sessions(1).startup.unit
+  Check(oldUnit<>0)
+
+  request.operation=SESSION_QUERY
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=0 AND request.value=2)
+  BEGIN
+    LET query=ShellSessionQuery POINTER(payload)
+    Check(query.entries(0).identity=first AND query.entries(0).selected=0)
+    Check(query.entries(1).identity=second AND query.entries(1).selected=1)
+    Check(query.entries(0).state=SESSION_STATE_READY
+        AND query.entries(1).state=SESSION_STATE_READY)
+  END
+
+  payload(0)=0
+  available=EXEC.AvailMem(0)
+  request.operation=SESSION_CREATE
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=PROCESS.RETURN_ERROR
+      AND request.secondary=DOS.ERROR_NO_FREE_STORE)
+  Check(selectedSession=second AND EXEC.AvailMem(0)=available)
+
+  request.operation=SESSION_SELECT
+  request.session=first
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=0 AND selectedSession=first)
+  request.operation=SESSION_CLOSE
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=0)
+  WHILE controllerLive<>1 DO
+    EXEC.Yield()
+  OD
+
+  Check(selectedSession=second AND contexts(0).shell=NULL)
+  Check(sessions(0).watch.bound=0 AND sessions(0).state=SESSION_STATE_FREE)
+  Prompt(second)
+  request.operation=SESSION_SELECT
+  request.session=first
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=PROCESS.RETURN_ERROR
+      AND request.secondary=DOS.ERROR_OBJECT_NOT_FOUND)
+
+  ; Reuse permanent unit zero repeatedly; old session identities stay stale.
+  FOR cycle=0 TO 3 DO
+    available=EXEC.AvailMem(0)
+    request.operation=SESSION_CREATE
+    ignored=ShellSessionExchange(@control,request)
+    Check(request.primary=0 AND selectedSession=request.value)
+    replacement=request.value
+    Check(replacement>second AND sessions(0).startup.unit=0)
+    Prompt(replacement)
+    request.operation=SESSION_CLOSE
+    request.session=replacement
+    ignored=ShellSessionExchange(@control,request)
+    Check(request.primary=0)
+    WHILE controllerLive<>1 DO
+      EXEC.Yield()
+    OD
+
+    Check(selectedSession=second AND EXEC.AvailMem(0)=available)
+    Prompt(second)
+  OD
+
+  ; Child directory setup failure also preserves selection and exact ownership.
+  available=EXEC.AvailMem(0)
+  STR.strlcpy(payload,c"MISSING:",SESSION_PATH_BYTES)
+  request.operation=SESSION_CREATE
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary<>0 AND request.secondary<>0)
+  Check(controllerLive=1 AND selectedSession=second)
+  Check(EXEC.AvailMem(0)=available AND contexts(0).shell=NULL)
+  payload(0)=0
+
+  ; The last identity is usable once. Exhaustion never wraps or allocates.
+  nextSession=$fffffffe
+  request.operation=SESSION_CREATE
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=0 AND request.value=$ffffffff)
+  replacement=request.value
+  Prompt(replacement)
+  request.operation=SESSION_CLOSE
+  request.session=second
+  ignored=ShellSessionExchange(@control,request)
+  WHILE controllerLive<>1 DO
+    EXEC.Yield()
+  OD
+
+  Check(selectedSession=replacement AND CONSOLEWINDOWS.Find(oldUnit)=NULL)
+  Check(sessions(1).watch.bound=0 AND contexts(1).shell=NULL)
+  available=EXEC.AvailMem(0)
+  request.operation=SESSION_CREATE
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=PROCESS.RETURN_ERROR
+      AND request.secondary=DOS.ERROR_NO_FREE_STORE)
+  Check(nextSession=$ffffffff AND EXEC.AvailMem(0)=available)
+  request.operation=SESSION_CLOSE
+  request.session=replacement
+  ignored=ShellSessionExchange(@control,request)
+  Check(request.primary=0)
+  EXEC.FreeMem(payload,SESSION_PATH_BYTES)
+  EXEC.FreeMem(BYTE POINTER(request),SHELLSESSIONMESSAGE_SIZE)
+
+RETURN(0)
+
+PROC Main()
+  LONGINT result
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  baseline=EXEC.AvailMem(0)
+  Check(ShellControllerStart(0)<>0)
+  peer=PROCESS.Start(@Producer,NULL,0)
+  Check(peer<>0)
+  result=ShellControllerRun()
+  Check(PROCESS.Wait(peer,@peerResult)<>0 AND peerResult.primary=0)
+  ShellControllerStop()
+  Check(controllerLive=0 AND selectedSession=0)
+  Check(contexts(0).shell=NULL AND contexts(1).shell=NULL)
+  Check(windows.liveCount=1)
+  Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+ENDMODULE

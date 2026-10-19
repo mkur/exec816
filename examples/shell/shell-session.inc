@@ -93,6 +93,7 @@ CONST CMD_JOBS=18
 CONST CMD_BREAK=19
 CONST CMD_EXECUTE=20
 CONST CMD_UNMOUNT=21
+CONST CMD_NEWSHELL=22,CMD_SESSIONS=23,CMD_SESSION=24
 CONST JOB_RUNNING=1,JOB_STOPPING=2,JOB_DONE=3
 
 TYPE ShellEditState=[
@@ -655,6 +656,15 @@ CSTRING FUNC ShellCommandName(BYTE command)
   WHEN CMD_UNMOUNT THEN
     RETURN(c"UNMOUNT")
 
+  WHEN CMD_NEWSHELL THEN
+    RETURN(c"NEWSHELL")
+
+  WHEN CMD_SESSIONS THEN
+    RETURN(c"SESSIONS")
+
+  WHEN CMD_SESSION THEN
+    RETURN(c"SESSION")
+
   ESAC
 
 RETURN(c"")
@@ -663,7 +673,7 @@ RETURN(c"")
 BYTE FUNC ShellClassify(BYTE POINTER word)
   BYTE command
 
-  FOR command=CMD_HELP TO CMD_UNMOUNT DO
+  FOR command=CMD_HELP TO CMD_SESSION DO
     IF command<>CMD_EXTERNAL THEN
       IF ShellEqual(word,ShellCommandName(command))<>0 THEN
         RETURN(command)
@@ -956,14 +966,16 @@ BYTE FUNC ShellParse(ShellContext POINTER context)
   FI
 
   IF (context.shell.command=CMD_HELP OR context.shell.command=CMD_EXIT OR context.shell.command=CMD_CLS
-      OR context.shell.command=CMD_JOBS
+      OR context.shell.command=CMD_JOBS OR context.shell.command=CMD_NEWSHELL
+      OR context.shell.command=CMD_SESSIONS
       OR (context.shell.command>=CMD_MEM AND context.shell.command<=CMD_DEVICES
       AND context.shell.command<>CMD_MOUNT))
     AND context.shell.argc<>1 THEN
     RETURN(0)
   FI
 
-  IF context.shell.command=CMD_UNMOUNT AND context.shell.argc<>2 THEN
+  IF (context.shell.command=CMD_UNMOUNT OR context.shell.command=CMD_SESSION)
+      AND context.shell.argc<>2 THEN
     RETURN(0)
   FI
 
@@ -1309,6 +1321,7 @@ INCLUDE "shell-mounts.inc"
 INCLUDE "shell-redirection.inc"
 INCLUDE "shell-path.inc"
 INCLUDE "shell-jobs.inc"
+INCLUDE "shell-sessions.inc"
 INCLUDE "shell-execute.inc"
 INCLUDE "shell-completion.inc"
 
@@ -1407,7 +1420,7 @@ PROC ShellDispatch(ShellContext POINTER context)
   CASE context.shell.command OF
   WHEN CMD_HELP THEN
     ShellLineText(context,DOS.Output(),
-        c"HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT UNMOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE EXIT")
+        c"HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT UNMOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE NEWSHELL SESSIONS SESSION EXIT")
     ShellText(context,DOS.Output(),c"Edit: Ctrl-A/E home/end, B/F left/right\n")
     ShellText(context,DOS.Output(),c"Ctrl-U clear, K cut end, W cut word\n")
     ShellText(context,DOS.Output(),c"Ctrl-L clear screen\n")
@@ -1492,6 +1505,15 @@ PROC ShellDispatch(ShellContext POINTER context)
   WHEN CMD_EXECUTE THEN
     ShellScriptOpen(context,context.shell.words(1).text,0)
 
+  WHEN CMD_NEWSHELL THEN
+    ShellSessionCommand(context,SESSION_CREATE)
+
+  WHEN CMD_SESSIONS THEN
+    ShellSessionCommand(context,SESSION_QUERY)
+
+  WHEN CMD_SESSION THEN
+    ShellSessionCommand(context,SESSION_SELECT)
+
   WHEN CMD_EXTERNAL THEN
     IF context.shell.background<>0 THEN
       ShellRun(context)
@@ -1526,6 +1548,11 @@ PROC ShellOneCommand(ShellContext POINTER context)
     IF ShellScope(context)<>0 THEN
       IF ShellPrepareCommand(context)=0 THEN
         ShellFail(context,PROCESS.RETURN_ERROR,DOS.ERROR_BAD_NUMBER)
+
+      ELSEIF context.shell.command>=CMD_NEWSHELL AND context.shell.command<=CMD_SESSION
+          AND (context.script<>NULL OR context.control=NULL) THEN
+        context.shell.diagnosticWord=0
+        ShellFail(context,PROCESS.RETURN_ERROR,DOS.ERROR_ACTION_NOT_KNOWN)
 
       ELSEIF context.shell.command=CMD_EXECUTE AND context.script<>NULL THEN
         ; Reject nesting before its redirections can create or truncate files.

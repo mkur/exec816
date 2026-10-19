@@ -301,7 +301,7 @@ def run(t,out,mode,bank=2,size=128,no_mount=False,smoke=False,eof=None,external=
                     submit=submit,cancel=cancel,frames=frames,key=key,
                     rendezvous=rendezvous,ready=ready,far=far,at=at,p=p,state=state,expected=expected,line=line,b=b))
             elif not smoke:
-                command('help',b'HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT UNMOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nCtrl-L clear screen\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\nTAB completes commands and files\n')
+                command('help',b'HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT UNMOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE NEWSHELL SESSIONS SESSION EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nCtrl-L clear screen\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\nTAB completes commands and files\n')
                 command('cd',b'' if no_mount else b'D1:\n',211 if no_mount else 0)
                 if not no_mount:
                     for cmd in ('cd tools/sub','cd /','cd :','cd d1:tools','cd missing'):

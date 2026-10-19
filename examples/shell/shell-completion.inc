@@ -154,7 +154,7 @@ RETURN
 PROC ShellCompletionNames(ShellContext POINTER context)
   BYTE command,index
 
-  FOR command=CMD_HELP TO CMD_UNMOUNT DO
+  FOR command=CMD_HELP TO CMD_SESSION DO
     IF command<>CMD_EXTERNAL THEN
       ShellCompletionMatch(context,BYTE POINTER(ShellCommandName(command)),0)
     FI
