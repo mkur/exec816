@@ -127,7 +127,7 @@ def fixture(out,extraction=False):
 
 def native(out,extraction=False):
     source,payload=fixture(out,extraction)
-    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=16384 if extraction else 12288
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=16384
     (out/'memory-profile.json').write_text(json.dumps(profile,indent=2)+'\n')
     program=build(compiler(ROOT/'build/actionc',release=True),source,out,tasks=True,task_capacity=8,console=False,console_test=True,sdx=True,image_data=payload,dos_mounts=[dict(alias='RAM',format=3)],memory_profile=out/'memory-profile.json')
     with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
@@ -145,7 +145,7 @@ def native(out,extraction=False):
         counts=bytes(data(b,program['image'],'counts'));raw=bytes(data(b,program['image'],'actual'))
         checks=int.from_bytes(bytes(data(b,program['image'],'checks')),'little')
         outputs={name:raw[i*1024:i*1024+int.from_bytes(counts[i*4:i*4+4],'little')].hex()
-                 for i,name in enumerate(([n for n,_ in LIST_CASES]+['MISSING.OVL','CORRUPT.OVL','RECOVERY.OUT']) if not extraction else ['EXTRACT.OUT','DECLINE.OUT','OVERWRITE.OUT','CRC.OUT'])}
+                 for i,name in enumerate(([n for n,_ in LIST_CASES]+['MISSING.OVL','CORRUPT.OVL','RECOVERY.OUT','HELP.EMPTY','HELP.NULL','HELP.SPACES']) if not extraction else ['EXTRACT.OUT','DECLINE.OUT','OVERWRITE.OUT','CRC.OUT'])}
     (out/'outputs.json').write_text(json.dumps(outputs,indent=2)+'\n')
     if extraction:
         original=json.loads((ROOT/'build/sdx-arc/reference-extract/results.json').read_text())
@@ -157,6 +157,10 @@ def native(out,extraction=False):
     (out/'outputs.json').write_text(json.dumps(outputs,indent=2)+'\n')
     original=json.loads((ROOT/'build/sdx-arc/reference/results.json').read_text())
     expected={**original['outputs'],'MISSING.OVL':'','CORRUPT.OVL':'','RECOVERY.OUT':original['outputs']['LIST.OUT']}
+    help_text=bytes.fromhex(outputs.pop('HELP.EMPTY'))
+    assert help_text==bytes.fromhex(outputs.pop('HELP.NULL'))
+    assert help_text==bytes.fromhex(outputs.pop('HELP.SPACES'))
+    assert b'Usage: ARC cmd[opt] arcfn [flist]' in help_text and b'filename is given.' in help_text
     assert outputs==expected,{k:bytes.fromhex(v) for k,v in outputs.items()}
     return dict(status='pass',tier='development',checks=checks,outputs=outputs,runtime=runtime,machine=machine,build=program['build'])
 

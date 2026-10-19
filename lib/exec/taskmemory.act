@@ -6,7 +6,7 @@ TYPE WritableRange=[
   SIZE bytes
 ]
 
-; Recognize a complete extent in the loader-declared writable image ranges.
+; Recognize a complete extent in the loader-declared writable payload and Task stack ranges.
 PUBLIC BYTE FUNC Writable(ADDRESS startAddress SIZE bytes)
   CARD index
   SIZE offset

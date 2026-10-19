@@ -326,12 +326,17 @@ stack guards, alignment and unused stack capacity remain reserved.
 
 The private console renderer reserves `$41000–$4AFFF` for one 512×160 packed
 Shell bitmap (pitch 256, 40,960 bytes). Both shared AES snapshots remain intact.
-Production VRAM reservations total 416,256 bytes; 108,032 remain unassigned
-(108,000 after the existing diagnostic exclusion). No CPU aperture, bank-zero
+Production VRAM reservations total 473,600 bytes; 50,688 remain unassigned
+(50,656 after the existing diagnostic exclusion). The terminal font masks
+reserve 20,480 bytes at `$3A000–$3EFFF` (18,432 populated), containing even/odd
+ATASCII glyphs from the pinned OS font. GEM retains its existing font atlas. No CPU aperture, bank-zero
 or per-Task reservation grows.
 
 Private console protocol version 13 adds backing text/fill operations without
-changing its 78-byte packet. The native text uploader's private record is 28
+changing its 78-byte packet. Foreground bit `$0100` selects the terminal
+ATASCII atlas for text, clipped text and backing text; its low nibble remains
+the logical pen. The flag is recorded in `abi/console-bitmap.json`.
+The native text uploader's private record is 28
 bytes, with destination pitch at offset 26; screen text continues to use pitch
 320. Every emitted destination record uses that pitch, including background
 and trailing fills. The uploader uses call-clobbered DP bytes through `$A9`

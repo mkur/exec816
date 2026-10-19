@@ -68,6 +68,24 @@ PUBLIC BYTE FUNC Glyph(BYTE value)
 
 RETURN(glyphs(value))
 
+; ATASCII cells keep inverse and graphics independent of stream controls.
+PROC AtasciiSpan(BYTE POINTER destination,source CARD count)
+  BYTE value,inverse
+  CARD index
+
+  FOR index=0 TO count-1 DO
+    value=source(index) & $7f
+    inverse=source(index) & $80
+    IF value<32 THEN
+      value==+64
+    ELSEIF value<96 THEN
+      value==-32
+    FI
+    destination(index)=value OR inverse
+  OD
+
+RETURN
+
 ; Require the exact GRAPHICS 0 display-list layout before borrowing its RAM.
 BYTE FUNC ListValid(CARD listBase,screen)
   BYTE POINTER bytes
@@ -363,7 +381,7 @@ PROC Cursor(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   LAYERTYPES.Rect caret,visible
 
   view.index=instance.lineStart+instance.column
-  IF view.focused=0 THEN
+  IF view.focused=0 OR (instance.caps & CONSOLETYPES.MODE_NO_CARET)<>0 THEN
     RETURN
   FI
 
@@ -429,6 +447,7 @@ BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     RETURN(0)
   FI
 
+  CONSOLEBITMAP.SetEncoding(instance.caps & CONSOLETYPES.MODE_ATASCII)
   caret=0
   backed=BackingEnabled(view)
   row=0
@@ -461,7 +480,9 @@ BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
           ; Only a complete last span can share the settled caret. The old
           ; caret must already be absent or erased by this opaque text.
           caret=instance.dirtyRows=1 AND last=instance.damageEnd(row)
-              AND view.focused<>0 AND instance.operation=CONSOLETYPES.OP_IDLE
+              AND view.focused<>0 AND (instance.caps &
+              (CONSOLETYPES.MODE_NO_CARET OR CONSOLETYPES.MODE_ATASCII))=0
+              AND instance.operation=CONSOLETYPES.OP_IDLE
               AND instance.row<view.height AND instance.column<view.width
               AND (view.cursorOn=0 OR (view.previousCursor>=base+first
               AND view.previousCursor<base+stop))
@@ -506,8 +527,13 @@ BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
             view.cursorOn=0
           FI
         ELSE
-          Span(view.screen+SIZE(Position(view.top+row,view.left+first)),
-              source,stop-first)
+          IF (instance.caps & CONSOLETYPES.MODE_ATASCII)<>0 THEN
+            AtasciiSpan(view.screen+SIZE(Position(view.top+row,view.left+first)),
+                source,stop-first)
+          ELSE
+            Span(view.screen+SIZE(Position(view.top+row,view.left+first)),
+                source,stop-first)
+          FI
         FI
       FI
 
@@ -545,6 +571,7 @@ PUBLIC PROC RemoveCursor(CONSOLETYPES.Presentation POINTER view)
   IF view.cursorOn<>0 AND CONSOLEBITMAP.Enabled()<>0 THEN
     BEGIN
       LET instance=CONSOLETYPES.Instance POINTER(view.instance)
+      CONSOLEBITMAP.SetEncoding(instance.caps & CONSOLETYPES.MODE_ATASCII)
       row=view.previousCursor/instance.width
       column=view.previousCursor MOD instance.width
       okay=CONSOLEBITMAP.Text((view.left+column) LSH 3,
@@ -682,6 +709,8 @@ RETURN
 PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
   BYTE ignored
+
+  CONSOLEBITMAP.SetEncoding(instance.caps & CONSOLETYPES.MODE_ATASCII)
 
   IF CONSOLEBITMAP.Pending()<>0 OR view.claimed=0 OR view.visible=0
       OR view.scrollState<>0 THEN

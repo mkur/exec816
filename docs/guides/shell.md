@@ -333,8 +333,12 @@ current directory, then the shell's PATH, initially `C:`. Standard shell startup
 assigns `C:` to the existing `SYS:C` directory, where the demo keeps its external
 commands. C: uses one assignment slot; S: uses a second when SYS:S exists.
 Both follow the selected system drive. A token containing
-`:` or `/`, such as `C:HELLO`, `SYS:C/HELLO` or `/TOOLS/HELLO`, names an exact DOS path.
-There is no extension guessing. The file must use the supported
+`:` or `/`, such as `C:HELLO`, `SYS:C/HELLO` or `/TOOLS/HELLO`, selects that DOS path.
+For each candidate, the shell tries the literal name first. If it is missing
+and the last component has no extension, it tries `.COM`. Thus `EDX` and
+`EDX.COM` both work, including explicit paths such as `D2:EDX`. An existing
+file that fails to load is an error and does not trigger suffix fallback.
+The file must use the supported
 [o65 command profile](../reference/program-loading.md). The child inherits
 selected streams and the current directory. Its copied argument tail retains
 quotes/escapes and omits shell redirection syntax.

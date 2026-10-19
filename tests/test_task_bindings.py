@@ -32,6 +32,16 @@ class TaskBindingsTests(unittest.TestCase):
         self.assertEqual(pairs,[(0x8800,32),(0x884a,26),(0x4ffef,42)])
         self.assertFalse(image['segments'][-1]['writable'])
 
+    def test_io_buffers_admit_task_stack_payload_but_exclude_guards(self):
+        image=dict(segments=[dict(address=0x10000,bytes=[0],writable=False)],
+                   zero_fill=[],data=[])
+        memory=dict(task_pools=[dict(stack_base=0x3000,stack_bytes=0x600,interrupt_reserve=0x100)])
+        count,_=writable_bindings(image,memory)
+        raw=bytes(image['segments'][-1]['bytes'])
+        self.assertEqual(count,1)
+        self.assertEqual(int.from_bytes(raw[:3],'little'),0x3100)
+        self.assertEqual(int.from_bytes(raw[4:7],'little'),0x500)
+
     def test_private_bindings_and_public_calls(self):
         from generate_memory import layout
         validate_memory(layout())

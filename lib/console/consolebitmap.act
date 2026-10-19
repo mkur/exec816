@@ -14,7 +14,7 @@ INCLUDE "console-bitmap-types.inc"
 BYTE drawingPending,drawingChanged
 ; Private text progress owns a scene token, never a source/view pointer.
 LONGCARD desktopToken
-CARD desktopIndex,desktopGlyph
+CARD desktopIndex,desktopGlyph,encoding
 BYTE desktopWasDirty
 LONGCARD completionMask
 CONST TEXT_GLYPHS=32, CLIPPED_GLYPHS=16
@@ -149,6 +149,14 @@ PUBLIC BYTE FUNC RawFill(CARD left,top,width,height,pen)
 
 RETURN(Run(OP_FILL))
 
+
+; The sole worker selects the instance encoding for each presentation turn.
+PUBLIC PROC SetEncoding(BYTE enabled)
+
+  encoding=IF enabled<>0 THEN CARD($100) ELSE CARD(0) FI
+
+RETURN
+
 PUBLIC BYTE FUNC BackingText(CARD x,y BYTE POINTER source CARD count)
 
   LET packet=GetPacket()
@@ -156,7 +164,7 @@ PUBLIC BYTE FUNC BackingText(CARD x,y BYTE POINTER source CARD count)
   packet.y=y
   packet.text=LONGCARD(ADDRESS(source))
   packet.width=count
-  packet.foreground=1
+  packet.foreground=1 OR encoding
   packet.background=0
 
 RETURN(Run(OP_BACKING_TEXT))
@@ -243,7 +251,7 @@ PUBLIC BYTE FUNC ClippedText(CARD x,y BYTE POINTER text CARD count,foreground,ba
   packet.y=y
   packet.text=LONGCARD(ADDRESS(text))
   packet.width=count
-  packet.foreground=foreground
+  packet.foreground=foreground OR encoding
   packet.background=background
   packet.clipLeft=CARD(clip.left)
   packet.clipTop=CARD(clip.top)
@@ -278,7 +286,7 @@ PUBLIC BYTE FUNC Text(CARD x,y BYTE POINTER text CARD count)
   packet.y=y
   packet.text=LONGCARD(ADDRESS(text))
   packet.width=count
-  packet.foreground=1
+  packet.foreground=1 OR encoding
   packet.background=0
 
 RETURN(Run(OP_TEXT))
@@ -331,7 +339,7 @@ PUBLIC BYTE FUNC TextCaret(CARD x,y BYTE POINTER characters CARD count,caretX,ca
   packet.y=y
   packet.text=LONGCARD(ADDRESS(characters))
   packet.width=count
-  packet.foreground=1
+  packet.foreground=1 OR encoding
   packet.background=0
   packet.fillX=caretX
   packet.fillY=caretY

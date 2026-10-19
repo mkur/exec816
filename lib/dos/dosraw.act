@@ -1,5 +1,6 @@
 MODULE DOSRAW
 USE EXEC
+USE CONSOLETYPES
 USE EXECLISTS
 USE DOSCORE
 USE TASKMEMORY
@@ -396,7 +397,8 @@ PUBLIC LONGINT FUNC Complete(DOSCLIENT.ClientContext POINTER client
 
   actual=request.io_Actual
   length=request.io_Length
-  reading=request.io_Command=EXEC.CMD_READ
+  reading=request.io_Command=EXEC.CMD_READ OR
+      request.io_Command=CONSOLETYPES.CONCMD_READ_KEYS
   secondary=LONGINT(error)
   IF error=EXEC.CONERR_INPUTOVERFLOW THEN
     secondary=ERROR_BUFFER_OVERFLOW

@@ -39,6 +39,18 @@ PROC Gates(BYTE POINTER bank)
   FOR index=0 TO 19 DO
     Veneer(bank,$f300+index*32,index+16)
   OD
+  Veneer(bank,$f5c0,SDXABI.CALL_CKSPEC)
+  Veneer(bank,$f5e0,SDXABI.CALL_U_PERROR)
+  FOR index=0 TO SDXABI.RAWCON_COUNT-1 DO
+    Veneer(bank,SDXABI.RAWCON_BASE+index*32,SDXABI.RAWCON_EVENT+index)
+  OD
+  bank($740)=9
+  SDXSTATE.Word(bank,$741,SDXABI.RAWCON_BASE)
+  SDXSTATE.Word(bank,$743,SDXABI.RAWCON_BASE+32)
+  SDXSTATE.Word(bank,$749,SDXABI.RAWCON_BASE+64)
+  SDXSTATE.Word(bank,$74d,SDXABI.RAWCON_BASE+96)
+  SDXSTATE.Word(bank,$74f,SDXABI.RAWCON_BASE+128)
+  SDXSTATE.Word(bank,$751,SDXABI.RAWCON_BASE+160)
   Veneer(bank,SDXABI.ARC_MULTIPLY_PC,SDXABI.ARC_MULTIPLY_EVENT)
   Veneer(bank,SDXABI.KERNEL_PC,SDXABI.KERNEL_EVENT)
   bank($703)=$4c
@@ -97,9 +109,12 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
           IF plan<>NULL THEN
             error=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
             state.entry=SDXADMISSION.Entry(plan,profile)
-            IF state.entry<>0 AND SDXADMISSION.Patch(plan,profile)=0 THEN
+            IF state.entry<>0 AND SDXADMISSION.Patch(plan,profile,SDXCONFIG.DP_BASE+CARD(slot)*256)=0 THEN
               SDXSTATE.Word(state.bank,$2e7,CARD(plan.end))
               SDXSTATE.Word(state.bank,$2e5,SDXABI.GUEST_LIMIT)
+              IF profile=64 THEN
+                SDXSTATE.Word(state.bank,$2e5,SDXABI.GUEST_LIMIT-1)
+              FI
               state.overlayBase=CARD(plan.end)
               state.parentExport.value=SDXFILE.Symbol(plan,BYTE POINTER("_ARC    ")+1)
               A816MEMORY.Move(@state.parentExport.name,BYTE POINTER("_ARC    ")+1,8)

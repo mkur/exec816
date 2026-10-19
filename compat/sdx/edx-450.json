@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "personality_abi": 1,
+  "id": "edx-450",
+  "revision": 1,
+  "execution_status": "EDX-development",
+  "audit": "../../docs/development/sdx-edx-audit.json",
+  "modules": [
+    {
+      "file": "EDX.COM",
+      "role": "command",
+      "entry_export": "@EDX",
+      "bytes": 6440,
+      "crc32": "56293a29",
+      "sha256": "1f9b1082bc6ad53f8b7cbac15044f434454c942a3b13f7f6b428e7b8b0ba8f69",
+      "patches": [
+        {
+          "id": "edx-bell",
+          "reason": "Hardware aliases select private guest RAM; disable the bell to preserve document bytes.",
+          "block": 1,
+          "offset": 291,
+          "expected": "a020a280ca8d0ad48e1fd0d0f788d0f260",
+          "replacement": "60eaeaeaeaeaeaeaeaeaeaeaeaeaeaeaea",
+          "intersections": [],
+          "fixups": [],
+          "contract": "RTS preserves all registers and flags. Audible bell is unsupported.",
+          "regressions": [
+            "edx-emitted-edit-save"
+          ]
+        },
+        {
+          "id": "edx-key-dispatch-dp",
+          "reason": "Absolute indirect JMP does not add the relocated 65816 direct page. Bind its pointer operand to the owning guest D+$87.",
+          "block": 1,
+          "offset": 578,
+          "expected": "6c8700",
+          "replacement": "6c0000",
+          "intersections": [],
+          "fixups": [
+            {
+              "kind": "direct_page16",
+              "offset": 1,
+              "addend": 135
+            }
+          ],
+          "contract": "JMP reads the dispatch pointer from the private bank-zero direct page; preserves registers, flags and caller return address.",
+          "regressions": [
+            "edx-emitted-edit-save"
+          ]
+        }
+      ]
+    }
+  ],
+  "direct_page_arguments": [],
+  "unsupported": [
+    "Audible bell",
+    "Live console resizing"
+  ]
+}

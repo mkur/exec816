@@ -1,0 +1,71 @@
+; Public console controls admit live local buffers and retain each I/O lease.
+MODULE CONSOLECELLTEST
+USE EXEC
+USE DOS
+USE DOSRAW
+USE DOSSTREAMS
+USE CONSOLEDRIVER
+USE CONSOLEINPUT
+USE CONSOLECORE
+USE CONSOLETYPES
+USE HEAPCORE
+
+CARD checks
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  BYTE mode,key
+  CARD ARRAY geometry(2)
+  BYTE ARRAY cells(40)
+  CARD row,column
+
+  LET baseline=EXEC.AvailMem(0)
+  LET file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  LET instance=CONSOLEDRIVER.GetInstance()
+  LET handle=DOSSTREAMS.Handle POINTER(file)
+  LET endpoint=DOSRAW.RawEndpoint POINTER(handle.endpoint)
+  Require(DOS.ConsoleInfo(file,BYTE POINTER(@geometry))<>0)
+  Require(geometry(0)=40 AND geometry(1)=24)
+  mode=$e0
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_MODE,0,@mode,1)=1)
+  Require((instance.caps & $e0)=$e0)
+  FOR row=0 TO 6 DO
+    FOR column=0 TO 39 DO
+      cells(column)=BYTE(row*40+column)
+    OD
+    Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELLS,
+        LONGCARD(row) LSH 16,@cells,40)=40)
+    FOR column=0 TO 39 DO
+      Require(instance.cells(CONSOLECORE.CellOffset(instance,row*40+column))
+          =BYTE(row*40+column))
+    OD
+  OD
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELLS,39,@cells,2)=-1)
+  CONSOLEINPUT.Deliver(instance,$10087)
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_READ_KEYS,0,@key,1)=1)
+  Require(key=$87 AND endpoint.reader=NULL AND endpoint.active=0)
+  CONSOLEINPUT.Deliver(instance,$200c0)
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_READ_KEYS,0,@key,1)=1)
+  Require(key=$c0 AND endpoint.reader=NULL AND endpoint.active=0)
+  mode=1
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_MODE,0,@mode,1)=-1)
+  Require((instance.caps & $e0)=$e0)
+  mode=0
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_MODE,0,@mode,1)=1)
+  Require((instance.caps & $e0)=0)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+ENDMODULE

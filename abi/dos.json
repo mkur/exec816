@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 14,
+  "revision": 15,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -1089,6 +1089,37 @@
         }
       ],
       "outgoing_bytes": 7,
+      "result_bytes": 4
+    },
+    "ConsoleIO": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 2
+        },
+        {
+          "alignment": 2,
+          "offset": 6,
+          "size": 4
+        },
+        {
+          "alignment": 1,
+          "offset": 10,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 14,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 19,
       "result_bytes": 4
     }
   },

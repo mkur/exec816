@@ -56,3 +56,11 @@ private stack/direct-page requirements and largest-free-block allocation.
 Separate original-SDX/XLOS controls produce exact Atari XEX and SDX relocatable
 output. Native Exec execution, repeated launches and the complete instruction
 audit remain open; the current MD5/ARC personality does not admit ELSA.
+
+The [EDX compatibility audit](development/sdx-edx-audit.json) inventories its
+6502 code, keyboard dispatch and `_RAWCON` display interface. Original-SDX
+edit/save and two-launch controls pass on the pinned AltirraOS/VBXE machine.
+The [EDX development port](development/sdx-edx.md) adds pinned admission,
+public console operations, qualified scan input and a bell patch. See the
+[utility guide](guides/sdx-utilities.md) for builds and editor commands.
+Development evidence does not qualify the general hosted system.

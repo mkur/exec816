@@ -1,0 +1,121 @@
+MODULE SDXEDXTEST
+USE EXEC
+USE DOS
+USE PROCESS
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE SDXSTATE
+USE CONSOLEDRIVER
+USE HEAPCORE
+USE FSBOOT
+
+CARD checks,currentCase
+LONGINT primary,secondary,reason
+LONGCARD guestBank,startFree,finishFree
+LONGCARD ARRAY freeAfter(10)
+BYTE ARRAY actual(128)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    reason=DOS.IoErr()
+    HEAPCORE.Abort($fb00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Put(BYTE POINTER path,bytes CARD count)
+
+  LET file=DOS.Open(path,DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,bytes,LONGINT(count))=LONGINT(count))
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Run(CARD number)
+  PROCESS.Result result
+  LONGCARD identity
+  BYTE POINTER arguments
+  CARD length
+
+  currentCase=number
+  LET image=PROGRAMFILE.Load(BYTE POINTER(c"RAM:EDX.COM"))
+  Require(image<>NULL)
+  LET state=SDXSTATE.Session POINTER(image.extension)
+  guestBank=LONGCARD(ADDRESS(state.bank))
+  arguments=BYTE POINTER(c"EDIT.TXT")
+  length=8
+  IF number=4 THEN
+    arguments=NULL
+    length=0
+  FI
+  Require(DOS.BeginForeground(DOS.Input())<>0)
+  identity=PROCESS.StartLoaded(BYTE POINTER(image),arguments,length,1)
+  Require(identity<>0)
+  Require(PROCESS.Wait(identity,@result)<>0)
+  Require(DOS.EndForeground()<>0)
+  primary=result.primary
+  secondary=result.secondary
+  IF number=3 THEN
+    Require(primary=20 AND secondary=304)
+  ELSE
+    Require(primary=0 AND secondary=0)
+  FI
+  Require(state.handles(0)=NULL AND state.handles(1)=NULL AND state.trapCount=0)
+  Require(state.screen=NULL AND state.screenOpen=0)
+  LET terminal=CONSOLEDRIVER.GetInstance()
+  Require((terminal.caps & $e0)=0)
+  SDXSTATE.Guards()
+  PROGRAM.Unload(image)
+  freeAfter(number)=EXEC.AvailMem(0)
+
+RETURN
+
+PROC Main()
+  LONGCARD baseline
+
+  ; Retire bootstrap filesystem/client resources before measuring this run.
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  baseline=EXEC.AvailMem(0)
+  startFree=baseline
+SETUP_FILES
+  LET console=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Require(console<>NULL)
+  LET oldInput=DOS.SelectInput(console)
+  LET oldOutput=DOS.SelectOutput(console)
+  freeAfter(0)=EXEC.AvailMem(0)
+  Run(1)
+  ; Hold slot zero so the second launch exercises the other direct page.
+  LET held=PROGRAMFILE.Load(BYTE POINTER(c"RAM:EDX.COM"))
+  Require(held<>NULL)
+  freeAfter(5)=EXEC.AvailMem(0)
+  Run(2)
+  PROGRAM.Unload(held)
+  freeAfter(6)=EXEC.AvailMem(0)
+  Run(3)
+  Run(4)
+  LET file=DOS.Open(BYTE POINTER(c"RAM:EDIT.TXT"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,@actual,128)=20)
+  Require(DOS.Close(file)<>0)
+  LET created=DOS.Open(BYTE POINTER(c"RAM:NEW.TXT"),DOS.MODE_OLDFILE)
+  Require(created<>NULL)
+  Require(DOS.Read(created,@actual+64,64)=3)
+  Require(actual(64)='X AND actual(65)=$81 AND actual(66)='b)
+  Require(DOS.Close(created)<>0)
+  DOS.SelectInput(oldInput)
+  DOS.SelectOutput(oldOutput)
+  Require(DOS.Close(console)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  freeAfter(7)=EXEC.AvailMem(0)
+  Require(FSBOOT.Stop()<>0)
+  finishFree=EXEC.AvailMem(0)
+  Require(finishFree=baseline)
+
+RETURN
+
+ENDMODULE

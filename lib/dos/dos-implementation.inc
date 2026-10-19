@@ -183,3 +183,8 @@ RETURN(DOSCALLS.MountVolume(name,DOSCALLS.SioMountSpec POINTER(spec)))
 PUBLIC LONGINT FUNC UnmountVolume(BYTE POINTER name)
 
 RETURN(DOSCALLS.UnmountVolume(name))
+
+PUBLIC LONGINT FUNC ConsoleIO(FileHandle POINTER file CARD command
+    LONGCARD offset BYTE POINTER buffer LONGINT length)
+
+RETURN(DOSCALLS.ConsoleIO(BYTE POINTER(file),command,offset,buffer,length))

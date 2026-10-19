@@ -12,8 +12,8 @@ USE FSBOOT
 CARD checks,currentCase
 LONGINT primary,secondary,reason
 LONGCARD guestBank
-BYTE ARRAY actual(7168)
-LONGINT ARRAY counts(7)
+BYTE ARRAY actual(10240)
+LONGINT ARRAY counts(10)
 
 PROC Require(BYTE okay)
 
@@ -83,6 +83,9 @@ RUN_CASES
   Require(DOS.DeleteFile(BYTE POINTER(c"RAM:ARCLST.OVL"))<>0)
   Require(DOS.Rename(BYTE POINTER(c"RAM:SAVED.OVL"),BYTE POINTER(c"RAM:ARCLST.OVL"))<>0)
   Run(6,BYTE POINTER(c"L SAMPLE.ARC"),12,0,0)
+  Run(7,BYTE POINTER(c""),0,0,0)
+  Run(8,NULL,0,0,0)
+  Run(9,BYTE POINTER(c"   "),3,0,0)
   Require(DOS.ReleaseContext()<>0)
   Require(FSBOOT.Stop()<>0)
   Require(EXEC.AvailMem(0)=baseline)

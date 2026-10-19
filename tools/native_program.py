@@ -1116,7 +1116,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'platform/altirraos/sdx-checksum.s','platform/altirraos/sdx-crc32.s',
                 'platform/altirraos/generated/sdx.inc',
                 'platform/altirraos/generated/sdx-crc32-table.inc',
-                'compat/sdx/md5-450.json','compat/sdx/arc-450.json')})
+                'compat/sdx/md5-450.json','compat/sdx/arc-450.json','compat/sdx/edx-450.json')})
         provenance['task_inputs']['tools/storage_profile.py']=sha256(ROOT/'tools/storage_profile.py')
         provenance['sio_enabled']=sio_enabled
     if sio_request_probe:

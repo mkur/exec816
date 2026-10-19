@@ -6,7 +6,7 @@
 These are native pointers, not Amiga BPTRs. Names are NUL-terminated byte strings;
 I/O remains counted binary data. Exact signatures and constants come from
 [dos.act](../../lib/dos/dos.act) and [dos.json](../../abi/dos.json).
-The current native DOS ABI is revision 14; the loaded COMMAND ABI is version 19.
+The current native DOS ABI is revision 15; the loaded COMMAND ABI is version 19.
 The loaded C program ABI is version 20; rebuild applications with these bindings.
 
 ## Transfer ownership
@@ -378,3 +378,9 @@ These operations and IsInteractive are also published through COMMAND for loaded
 programs. `COMMAND.ConsoleSize` names the four-byte output layout. A pager should
 query its Output geometry and open its foreground console for keys; selected
 Input remains the data stream.
+
+`ConsoleIO(file, command, offset, buffer, length)` submits
+[console controls](console.md#public-interface) through the caller's owned
+interactive endpoint. It preserves counted-transfer lifetime, request ownership
+and errors. Scan reads bypass cooked input; mode restoration can settle while
+foreground cancellation is pending.

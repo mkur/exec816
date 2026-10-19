@@ -1,0 +1,1170 @@
+{
+  "format": "exec816-edx-compatibility-audit-v1",
+  "date": "2026-10-19",
+  "source_revision": "572c4f2b7c3b0ab249922868d087e423d32506cf",
+  "tier": "development",
+  "qualification": false,
+  "status": "Pinned input and reviewed static audit complete; original-SDX edit/save and two-launch controls pass",
+  "recommendation": "EDX is a suitable candidate for the existing emulation-mode SDX personality after reusable console operations, qualified keyboard delivery, bounded file/memory services and a bell patch are implemented.",
+  "execution_under_exec": "Unsupported; no admission, guest patch or runtime implementation added",
+  "audit_limits": [
+    "Control flow was enumerated from entry, all three reviewed keyboard tables including trailing fallbacks, and the shared error continuation. This is not a formal proof of dynamic pointer bounds or all self-modifying writes.",
+    "Original-system controls exercise read, end-of-line movement, insertion, save, exit and two sequential launches. They do not prove all editing commands, error paths, maximum files/lines, or screen pixels.",
+    "No Exec execution, concurrent guest Processes, cancellation latency, stack high-water, filesystem failure injection or native console performance was measured.",
+    "No compiler/kernel/platform production code or ABI definitions were changed; existing MD5/ARC admission is unchanged."
+  ],
+  "sources": [
+    {
+      "name": "SDX 4.51 Toolkit",
+      "bytes": 1474192,
+      "sha256": "74b73279417f94fc30639434501fea733717ac0004f92da18176dc954b82a52c",
+      "url": "https://sdx.atari8.info/sdx_files/4.51/toolkit.atr",
+      "fresh_download_verified": true
+    },
+    {
+      "name": "EDX archive",
+      "bytes": 6554,
+      "sha256": "eb825e4deecc9a8483a85f99e5432ced0b21502eb6b7172d95b888f4a936b207",
+      "toolkit_path": "UTILS/FILEUTIL/EDX.ARC"
+    },
+    {
+      "name": "EDX.COM",
+      "bytes": 6440,
+      "sha256": "1f9b1082bc6ad53f8b7cbac15044f434454c942a3b13f7f6b428e7b8b0ba8f69",
+      "archive_path": "EDX.COM"
+    },
+    {
+      "name": "EDX manual",
+      "bytes": 1903,
+      "sha256": "51ea8dedcbd4f3cbedca459a0324b865f55af15eb53b77e9fc9511aa8310ed7e",
+      "archive_path": "EDX.MAN"
+    },
+    {
+      "name": "SVBXE 1.14 archive",
+      "bytes": 45521,
+      "sha256": "574b646a7767821aeb18a4e59d6daaed9c6a6a35ce2285d15ca0f60711cb2699",
+      "toolkit_path": "DRIVERS/SCRDRV/SVBXE114.ARC"
+    },
+    {
+      "name": "RC_VBXE.SYS",
+      "bytes": 9912,
+      "sha256": "5968c4fc128dbdb1b4ea184aeb50a9369c111114b46660b5ba1cb02918cd5f5f",
+      "archive_path": "RC_VBXE.SYS"
+    },
+    {
+      "name": "RC_GR8.SYS",
+      "bytes": 4482,
+      "sha256": "63d73b7c562a11db3fd4220b8095a12e0dbb20dff1115f68774078dc748adfa0",
+      "role": "Fallback driver inventory; 64K original-system setup returned SDX 158"
+    },
+    {
+      "name": "RAWCON manual",
+      "bytes": 2854,
+      "sha256": "fed7072dccf3b98e59e592406c31063f8fe3c287962676e3cf596762650c7654",
+      "role": "Function table and special operations"
+    },
+    {
+      "name": "SDX 4.51 original cartridge",
+      "bytes": 131088,
+      "sha256": "e400cba0ba7e20dc62c60019ab99de04d11f4a4fa841e20cacca7c44099940a3",
+      "url": "https://sdx.atari8.info/sdx_files/4.51/SDX451_maxflash1.car"
+    },
+    {
+      "name": "SDX 4.51 Programming Guide",
+      "bytes": 1068078,
+      "sha256": "257d622f35ca15696e1eefb319f5659447a0b6fbac26ffd79a32b5a0b48a7173",
+      "url": "https://sdx.atari8.info/sdx_files/4.51/SDX451_Programming_Guide.pdf"
+    }
+  ],
+  "static_inventory": {
+    "status": "reviewed-static-inventory-complete",
+    "scope": "Reviewed control-flow roots and veneer binding; no pointer-alias, stack-bound or complete runtime-safety proof",
+    "execution_admitted": false,
+    "blocks": [
+      {
+        "number": 1,
+        "control": 0,
+        "origin": 0,
+        "allocated_bytes": 5340,
+        "initialized_bytes": 5340
+      },
+      {
+        "number": 2,
+        "control": 128,
+        "origin": 5340,
+        "allocated_bytes": 480,
+        "initialized_bytes": 0
+      }
+    ],
+    "relocation_sites": 767,
+    "imports": [
+      "CKSPEC",
+      "COMTAB",
+      "FCLOSE",
+      "FILE_P",
+      "FOPEN",
+      "FREAD",
+      "FWRITE",
+      "U_FAIL",
+      "U_GETKEY",
+      "U_GETPAR",
+      "U_SFAIL",
+      "U_XFAIL",
+      "U_PERROR",
+      "_RAWCON"
+    ],
+    "import_calls": [
+      {
+        "offset": 148,
+        "symbol": "U_GETPAR",
+        "tail": false
+      },
+      {
+        "offset": 169,
+        "symbol": "CKSPEC",
+        "tail": false
+      },
+      {
+        "offset": 528,
+        "symbol": "U_GETKEY",
+        "tail": false
+      },
+      {
+        "offset": 962,
+        "symbol": "CKSPEC",
+        "tail": false
+      },
+      {
+        "offset": 1290,
+        "symbol": "U_SFAIL",
+        "tail": false
+      },
+      {
+        "offset": 1315,
+        "symbol": "FOPEN",
+        "tail": false
+      },
+      {
+        "offset": 1355,
+        "symbol": "FREAD",
+        "tail": false
+      },
+      {
+        "offset": 1362,
+        "symbol": "U_FAIL",
+        "tail": true
+      },
+      {
+        "offset": 1365,
+        "symbol": "U_XFAIL",
+        "tail": false
+      },
+      {
+        "offset": 1368,
+        "symbol": "FCLOSE",
+        "tail": false
+      },
+      {
+        "offset": 1529,
+        "symbol": "U_SFAIL",
+        "tail": false
+      },
+      {
+        "offset": 1559,
+        "symbol": "FOPEN",
+        "tail": false
+      },
+      {
+        "offset": 1587,
+        "symbol": "FWRITE",
+        "tail": false
+      },
+      {
+        "offset": 1590,
+        "symbol": "U_XFAIL",
+        "tail": false
+      },
+      {
+        "offset": 1593,
+        "symbol": "FCLOSE",
+        "tail": false
+      },
+      {
+        "offset": 1599,
+        "symbol": "FCLOSE",
+        "tail": false
+      },
+      {
+        "offset": 1610,
+        "symbol": "U_PERROR",
+        "tail": false
+      },
+      {
+        "offset": 1645,
+        "symbol": "U_GETKEY",
+        "tail": false
+      },
+      {
+        "offset": 5082,
+        "symbol": "CKSPEC",
+        "tail": false
+      }
+    ],
+    "dispatch_tables": [
+      {
+        "mode": 0,
+        "entries": [
+          {
+            "key": 136,
+            "modifiers": 0,
+            "break_entry": true,
+            "offset": 2443
+          },
+          {
+            "key": 27,
+            "modifiers": 0,
+            "break_entry": false,
+            "offset": 2443
+          },
+          {
+            "key": 30,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4431
+          },
+          {
+            "key": 31,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4460
+          },
+          {
+            "key": 1,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4490
+          },
+          {
+            "key": 26,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4524
+          },
+          {
+            "key": 28,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4551
+          },
+          {
+            "key": 29,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4606
+          },
+          {
+            "key": 95,
+            "modifiers": 192,
+            "break_entry": false,
+            "offset": 4662
+          },
+          {
+            "key": 124,
+            "modifiers": 192,
+            "break_entry": false,
+            "offset": 4708
+          },
+          {
+            "key": 2,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4754
+          },
+          {
+            "key": 5,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4805
+          },
+          {
+            "key": 22,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4883
+          },
+          {
+            "key": 20,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4124
+          },
+          {
+            "key": 7,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4192
+          },
+          {
+            "key": 157,
+            "modifiers": 64,
+            "break_entry": false,
+            "offset": 3484
+          },
+          {
+            "key": 156,
+            "modifiers": 64,
+            "break_entry": false,
+            "offset": 3865
+          },
+          {
+            "key": 12,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4304
+          },
+          {
+            "key": 19,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4384
+          },
+          {
+            "key": 69,
+            "modifiers": 192,
+            "break_entry": false,
+            "offset": 4248
+          },
+          {
+            "key": 155,
+            "modifiers": 0,
+            "break_entry": false,
+            "offset": 3058
+          },
+          {
+            "key": 17,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4933
+          },
+          {
+            "key": 126,
+            "modifiers": 0,
+            "break_entry": false,
+            "offset": 2535
+          },
+          {
+            "key": 254,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 3010
+          },
+          {
+            "key": 255,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 3037
+          }
+        ],
+        "offset": 5181,
+        "fallback_offset": 2498
+      },
+      {
+        "mode": 1,
+        "entries": [
+          {
+            "key": 136,
+            "modifiers": 0,
+            "break_entry": true,
+            "offset": 4955
+          },
+          {
+            "key": 155,
+            "modifiers": 0,
+            "break_entry": false,
+            "offset": 3058
+          }
+        ],
+        "offset": 5283,
+        "fallback_offset": 2498
+      },
+      {
+        "mode": 2,
+        "entries": [
+          {
+            "key": 136,
+            "modifiers": 0,
+            "break_entry": true,
+            "offset": 4956
+          },
+          {
+            "key": 27,
+            "modifiers": 0,
+            "break_entry": false,
+            "offset": 4956
+          },
+          {
+            "key": 155,
+            "modifiers": 0,
+            "break_entry": false,
+            "offset": 949
+          },
+          {
+            "key": 30,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4958
+          },
+          {
+            "key": 31,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4977
+          },
+          {
+            "key": 1,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 4996
+          },
+          {
+            "key": 26,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 5016
+          },
+          {
+            "key": 254,
+            "modifiers": 128,
+            "break_entry": false,
+            "offset": 5033
+          },
+          {
+            "key": 126,
+            "modifiers": 0,
+            "break_entry": false,
+            "offset": 5052
+          }
+        ],
+        "offset": 5293,
+        "fallback_offset": 5074
+      }
+    ],
+    "rawcon_bindings": [
+      {
+        "source_table_offset": 1,
+        "target_operand_offset": 230,
+        "function": "open"
+      },
+      {
+        "source_table_offset": 3,
+        "target_operand_offset": 227,
+        "function": "close"
+      },
+      {
+        "source_table_offset": 9,
+        "target_operand_offset": 238,
+        "function": "clear"
+      },
+      {
+        "source_table_offset": 13,
+        "target_operand_offset": 241,
+        "function": "get_character"
+      },
+      {
+        "source_table_offset": 15,
+        "target_operand_offset": 269,
+        "function": "put_character"
+      },
+      {
+        "source_table_offset": 17,
+        "target_operand_offset": 289,
+        "function": "special"
+      }
+    ],
+    "trap_root_offset": 1598,
+    "instruction_count": 2455,
+    "instruction_bytes": 5116,
+    "overlapping_instruction_bytes": [
+      274,
+      275,
+      277,
+      278,
+      280,
+      281
+    ],
+    "instructions_sha256": "88868f350ea2cecb8f8c12eb723a3b80b849913d7e0177e410ab12bf6b7e196a",
+    "direct_page_operands": [
+      34,
+      42,
+      43,
+      44,
+      46,
+      84,
+      85,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136,
+      137,
+      138,
+      139,
+      140,
+      141,
+      142,
+      143,
+      144,
+      145,
+      146,
+      147,
+      148,
+      149,
+      150,
+      151,
+      152,
+      153,
+      154,
+      155,
+      156,
+      157,
+      158,
+      159,
+      160,
+      161,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      169,
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      176,
+      177,
+      178,
+      179,
+      180,
+      181,
+      182
+    ],
+    "unrelocated_absolute_addresses": [
+      694,
+      703,
+      741,
+      742,
+      743,
+      744,
+      752,
+      766,
+      767,
+      1912,
+      1913,
+      1914,
+      1922,
+      1923,
+      1925,
+      1926,
+      24994,
+      25250,
+      30370
+    ],
+    "hardware_accesses": [
+      {
+        "offset": 296,
+        "instruction": "STA",
+        "mode": "abs",
+        "operand": 54282,
+        "bytes": 3,
+        "write": true,
+        "relocation": null
+      },
+      {
+        "offset": 299,
+        "instruction": "STX",
+        "mode": "abs",
+        "operand": 53279,
+        "bytes": 3,
+        "write": true,
+        "relocation": null
+      }
+    ],
+    "processor_control": [
+      {
+        "offset": 322,
+        "instruction": "SED",
+        "mode": "imp",
+        "operand": 0,
+        "bytes": 1
+      },
+      {
+        "offset": 348,
+        "instruction": "CLD",
+        "mode": "imp",
+        "operand": 0,
+        "bytes": 1
+      }
+    ]
+  },
+  "processor_contract": {
+    "mode": "6502 instructions in 65816 emulation mode; M=X=1",
+    "direct_page": "Uses D-relative workspace at $22, $2A-$2E, $54-$55 and $80-$B6. Existing private aligned guest DP is applicable; RAWCON must use the guest DP, not physical bank zero.",
+    "data_bank": "Original SDX executes in bank zero. Proposed Exec execution uses the existing private PBR=DBR guest bank. Near absolute legacy OS/SDX addresses then refer to guest-bank copies.",
+    "stack": "Uses ordinary emulation page one. Existing snapshot/restore bridge is applicable; stack high-water and guards are still unmeasured for EDX.",
+    "decimal": "SED at block-one +$0142 and CLD at +$015C form a 16-iteration decimal conversion loop. Complete P/context restoration remains required.",
+    "interrupts": "No SEI, CLI, TXS, native mode switch, interrupt vector installation or ROM service call appears in the reviewed traversal.",
+    "dummy_reads": "Three overlapping BIT/LDX instruction sequences at +$0111/+0114/+0117 perform dummy reads at $76A2/$61A2/$62A2. These are not screen addresses or additional allocations."
+  },
+  "memory": {
+    "initialized_application_bytes": 5340,
+    "declared_bss_bytes": 480,
+    "declared_total_bytes": 5820,
+    "bss_layout": [
+      {
+        "offset": 0,
+        "bytes": 32,
+        "role": "row address low bytes"
+      },
+      {
+        "offset": 32,
+        "bytes": 32,
+        "role": "row address high bytes"
+      },
+      {
+        "offset": 64,
+        "bytes": 32,
+        "role": "row lengths"
+      },
+      {
+        "offset": 96,
+        "bytes": 32,
+        "role": "horizontal offsets"
+      },
+      {
+        "offset": 128,
+        "bytes": 32,
+        "role": "row flags"
+      },
+      {
+        "offset": 160,
+        "bytes": 64,
+        "role": "filename"
+      },
+      {
+        "offset": 224,
+        "bytes": 256,
+        "role": "line editing buffer"
+      }
+    ],
+    "geometry": "Initial RAWCON open supplies width through ICAX3Z and height through ICAX5Z. EDX caps height at 32 and stores byte-sized dimensions. Documentation specifies 80 columns; other widths and live resizing are unqualified.",
+    "document_workspace": "EDX treats MEMLO ($02E7/8) as document start and MEMTOP ($02E5/6) as its limit. It does not import MALLOC or native extended memory services. Give each Process a private bounded conventional region and guest-local MEMLO/MEMTOP.",
+    "read_limit": "At +$0532..+$054B EDX requests MEMTOP-MEMLO+1 bytes, then raises 158 if EOF was not reached. The limit must include a writable overflow-probe byte; exact boundary behavior needs emitted-code qualification.",
+    "bank_zero_reserved_delta": {
+      "fixed": 0,
+      "per_task": 0,
+      "idle": 0,
+      "guards_alignment_unused_included": true,
+      "reason": "Audit-only changes. No reservations, Tasks, DP pools or stacks enlarged."
+    },
+    "proposed_port_budget": "Not established. Reuse existing emulation DP/page-one resources where valid; charge new console cells, attributes, veneers and documents to explicit upper-RAM budgets."
+  },
+  "rawcon": {
+    "device_model": "Calls through six words in the _RAWCON table. No CIOV/E:/S: dispatcher call appears in this binary.",
+    "bootstrap": "+$004B..+$0070 copies six function addresses from _RAWCON into JMP operand words in the private application core. Preserve per-instance writable code; a native callback address cannot be installed directly into a 16-bit JMP.",
+    "functions": [
+      {
+        "table_offset": 1,
+        "function": "open",
+        "veneer_offset": 229
+      },
+      {
+        "table_offset": 3,
+        "function": "close",
+        "veneer_offset": 226
+      },
+      {
+        "table_offset": 9,
+        "function": "clear",
+        "veneer_offset": 237
+      },
+      {
+        "table_offset": 13,
+        "function": "get_character",
+        "veneer_offset": 240
+      },
+      {
+        "table_offset": 15,
+        "function": "put_character",
+        "veneer_offset": 268
+      },
+      {
+        "table_offset": 17,
+        "function": "special",
+        "veneer_offset": 288
+      }
+    ],
+    "initialization": "ICAX1Z=$0C, ICAX2Z=$01 before open. Import returned geometry into the guest DP.",
+    "position": "Character get/put use guest ROWCRS=$54 and COLCRS=$55. Character bytes include inverse and ATASCII graphics; the cursor toggles bit 7 via get/XOR $80/put at +$0107.",
+    "specials": [
+      {
+        "code": 97,
+        "name": "scroll rows up"
+      },
+      {
+        "code": 98,
+        "name": "scroll rows down"
+      },
+      {
+        "code": 117,
+        "name": "scroll columns left"
+      },
+      {
+        "code": 118,
+        "name": "scroll columns right"
+      }
+    ],
+    "regions": "Specials receive guest ZIOCB command/aux fields. +$0EBC..+$0ECC temporarily changes guest BOTSCR=$02BF to bound a partial row scroll; preserve that region semantic.",
+    "lifecycle": "Close is also the final tail return from the application. It must retire only this Process console binding and restore the chosen session policy.",
+    "current_console_gaps": [
+      "CONCMD_WRITE_AT supports positioned printable ASCII spans but the public console lacks arbitrary cell reads and bounded row/column scroll operations.",
+      "Current retained output maps high-bit bytes to question marks. EDX needs exact readback plus inverse/ATASCII graphics representation, including its software caret.",
+      "Expose required operations through reusable public console/device APIs with ordinary ownership and completion rules. Do not call private worker/model internals from the SDX adapter or add editor-specific kernel services.",
+      "Native console caret and EDX software caret need one explicit per-instance ownership policy.",
+      "Measure per-cell bridge/device crossings before choosing batching. Use bounded span updates and preserve ordering before reads, scrolling, input and teardown."
+    ]
+  },
+  "legacy_state": {
+    "private_near_addresses": [
+      {
+        "address": 694,
+        "name": "INVFLG"
+      },
+      {
+        "address": 703,
+        "name": "BOTSCR"
+      },
+      {
+        "address": 741,
+        "name": "MEMTOP low"
+      },
+      {
+        "address": 742,
+        "name": "MEMTOP high"
+      },
+      {
+        "address": 743,
+        "name": "MEMLO low"
+      },
+      {
+        "address": 744,
+        "name": "MEMLO high"
+      },
+      {
+        "address": 752,
+        "name": "CRSINH"
+      },
+      {
+        "address": 766,
+        "name": "DSPFLG"
+      },
+      {
+        "address": 767,
+        "name": "SSFLAG"
+      },
+      {
+        "address": 1912,
+        "name": "mode"
+      },
+      {
+        "address": 1913,
+        "name": "scan"
+      },
+      {
+        "address": 1914,
+        "name": "attr"
+      },
+      {
+        "address": 1922,
+        "name": "addpos low"
+      },
+      {
+        "address": 1923,
+        "name": "addpos high"
+      },
+      {
+        "address": 1925,
+        "name": "bytbuf low"
+      },
+      {
+        "address": 1926,
+        "name": "bytbuf high"
+      }
+    ],
+    "initialization": "EDX sets DSPFLG/CRSINH to $FF and resets them plus SSFLAG to zero on normal exit. These must be guest-local state, with native console state managed separately."
+  },
+  "bell": {
+    "entry_offset": 291,
+    "bytes": 17,
+    "raw_hex": "a020a280ca8d0ad48e1fd0d0f788d0f260",
+    "writes": [
+      {
+        "offset": 296,
+        "address": 54282,
+        "name": "WSYNC"
+      },
+      {
+        "offset": 299,
+        "address": 53279,
+        "name": "CONSOL"
+      }
+    ],
+    "original": "32 outer iterations times 128 scanline-synchronized speaker writes; direct hardware use in the bank-zero original.",
+    "exec_hazard": "With DBR=guest bank, these accesses hit private RAM rather than physical I/O. If advertised as document workspace, $D01F/$D40A could be live text and the bell could corrupt it.",
+    "required_action": "Apply an identity-checked patch before admission to disable the bell or route it through a reusable device operation. Audible output may explicitly remain unsupported; do not leave these writes active."
+  },
+  "services": {
+    "existing_import_names": [
+      "COMTAB",
+      "FCLOSE",
+      "FILE_P",
+      "FOPEN",
+      "FREAD",
+      "FWRITE",
+      "U_FAIL",
+      "U_GETKEY",
+      "U_GETPAR",
+      "U_SFAIL",
+      "U_XFAIL"
+    ],
+    "missing_imports": [
+      {
+        "name": "CKSPEC",
+        "contract": "Z=1 for colon, greater-than, backslash or less-than path separators; otherwise Z=0."
+      },
+      {
+        "name": "U_PERROR",
+        "contract": "Y=error byte, AX=ordinary guest pointer to a buffer of at least 64 bytes; write an ATASCII-EOL-terminated error message."
+      },
+      {
+        "name": "_RAWCON",
+        "contract": "Guest-bank table of six used near callable veneer addresses, at offsets 1,3,9,13,15,17."
+      }
+    ],
+    "changes_to_existing": [
+      "U_GETKEY must return physical modifier qualifiers: X bit 7 Control, bit 6 Shift, bit 4 Help, with SDX A/N/Z behavior. Current MD5/ARC service returns X=0 and cannot drive EDX control commands.",
+      "INPUT already captures Shift/Control qualifiers, but the ordinary console byte stream discards them. Extend reusable per-instance key delivery through the console owner; do not acquire a competing global keyboard lease from the editor.",
+      "Retain BREAK cancellation outside ordinary key FIFO semantics. EDX uses negative input results for exit paths; native cancellation must remain authoritative through cleanup.",
+      "FOPEN/FREAD/FWRITE/FCLOSE need an EDX file profile with ordinary bounded document and save paths. Existing ARC mutation ownership and MD5 read-only policy do not admit arbitrary EDX writes.",
+      "FOPEN read uses mode 4/scan $80. Save uses mode 8/scan $58/attr 0, one near contiguous document buffer and one open file at a time.",
+      "Both load/save install U_SFAIL to the continuation +$063E. The error handler closes the selected file, calls U_PERROR into the line buffer, draws the message and waits for a key. Native error and cancellation cleanup precedence needs dedicated checks."
+    ]
+  },
+  "original_system_controls": {
+    "status": "pass",
+    "application": "Unmodified EDX.COM; source disk hash pinned",
+    "rom": "Pinned AltirraOS 3.44 for 65C816; no XLOS override",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+    "base_machine_pin": "toolchain/altirra-shell-paced.json",
+    "device_pin": "toolchain/altirra-gem-vdi.json devices[0]",
+    "effective_pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ]
+    },
+    "cartridge": {
+      "path": "build/edx-audit/reference.car",
+      "bytes": 131072,
+      "sha256": "3e74b4c7f5eff5b0c734c2889aba989ae2d1c2ce5972d8c44775921f5843ef84",
+      "construction": "Official SDXImageWeb CCAR loads the original header-stripped SDX451 image and replaces CONFIG.SYS only. SaveImage emits the raw 128KiB image, booted by the pinned bridge.",
+      "imager_revision": "8f4a1bf14eeb1a83c4123d4f377d91012167ef62",
+      "imager_url": "https://github.com/spartados-x/SDXImageWeb",
+      "wrapper_sha256": "2db61d157c64443a710088cf57e5c483a19492feab9994707f39541e12c115ca"
+    },
+    "config_hex": "555345204f5352414d9b4445564943452053504152544120313020389b4445564943452053494f9b4445564943452044313a52435f564258452e5359539b",
+    "initial_text_hex": "48454c4c4f9b5345434f4e44204c494e459b",
+    "stop_xex_hex": "ffff009002904c0090e002e1020090",
+    "records": [
+      {
+        "name": "single-launch",
+        "status": "pass",
+        "results": "build/edx-audit/reference-results.json",
+        "results_sha256": "ab82ac5acef8c885511309318353ee0cd7666a8171fc33b904e752e2dd3f3976",
+        "runner": "build/edx-audit/reference.py",
+        "runner_sha256": "3677475ce2160967065e3ad3c1c9c6164a9507c8885b3ad5eeb1512aeff2886b",
+        "application_code_base": 10444,
+        "returned_to_dos": true,
+        "saved_hex": "48454c4c4f589b5345434f4e44204c494e459b",
+        "expected_hex": "48454c4c4f589b5345434f4e44204c494e459b",
+        "keyboard_returns": [
+          {
+            "key": "Z",
+            "control": true,
+            "shift": false,
+            "A": "$1a",
+            "X": "$80"
+          },
+          {
+            "key": "X",
+            "control": false,
+            "shift": false,
+            "A": "$58",
+            "X": "$00"
+          },
+          {
+            "key": "S",
+            "control": true,
+            "shift": false,
+            "A": "$13",
+            "X": "$80"
+          },
+          {
+            "key": "RETURN",
+            "control": false,
+            "shift": false,
+            "A": "$9b",
+            "X": "$00"
+          },
+          {
+            "key": "ESC",
+            "control": false,
+            "shift": false,
+            "A": "$1b",
+            "X": "$00"
+          }
+        ]
+      },
+      {
+        "name": "two-launch-session",
+        "status": "pass",
+        "results": "build/edx-audit/repeat/reference-results.json",
+        "results_sha256": "187f7155a1f9b41b88e787ef9b141b401189b5479dc9f693ddca48a28d489f41",
+        "runner": "build/edx-audit/reference-repeat.py",
+        "runner_sha256": "b1f254f5ebfc775e1ba90df69a227a1338161136c6683c7e27c009d39d4d7bac",
+        "application_code_base": 10444,
+        "returned_to_dos": true,
+        "saved_hex": "48454c4c4f58589b5345434f4e44204c494e459b",
+        "expected_hex": "48454c4c4f58589b5345434f4e44204c494e459b",
+        "keyboard_returns": [
+          {
+            "key": "Z",
+            "control": true,
+            "shift": false,
+            "A": "$1a",
+            "X": "$80"
+          },
+          {
+            "key": "X",
+            "control": false,
+            "shift": false,
+            "A": "$58",
+            "X": "$00"
+          },
+          {
+            "key": "S",
+            "control": true,
+            "shift": false,
+            "A": "$13",
+            "X": "$80"
+          },
+          {
+            "key": "RETURN",
+            "control": false,
+            "shift": false,
+            "A": "$9b",
+            "X": "$00"
+          },
+          {
+            "key": "ESC",
+            "control": false,
+            "shift": false,
+            "A": "$1b",
+            "X": "$00"
+          },
+          {
+            "key": "Z",
+            "control": true,
+            "shift": false,
+            "A": "$1a",
+            "X": "$80"
+          },
+          {
+            "key": "X",
+            "control": false,
+            "shift": false,
+            "A": "$58",
+            "X": "$00"
+          },
+          {
+            "key": "S",
+            "control": true,
+            "shift": false,
+            "A": "$13",
+            "X": "$80"
+          },
+          {
+            "key": "RETURN",
+            "control": false,
+            "shift": false,
+            "A": "$9b",
+            "X": "$00"
+          },
+          {
+            "key": "ESC",
+            "control": false,
+            "shift": false,
+            "A": "$1b",
+            "X": "$00"
+          }
+        ]
+      }
+    ],
+    "keyboard": "Physical POKEY matrix scan commands. Breakpoints synchronize after U_GETKEY returns and before the next call; they do not replace code, register values, key results or file contents.",
+    "observation_limits": "Functionality and exact independent SDFS file readback only. No pixel/visual proof, latency timing, stack high-water or release qualification.",
+    "alternate_driver": "RC_GR8.SYS returned SDX 158 in the attempted 64K USE OSRAM configuration. The passing controls use original RC_VBXE.SYS and the pinned VBXE FX 1.26 device. This does not imply an Exec RAWCON adapter needs either original driver."
+  },
+  "validation": {
+    "host_suite": "python3 -m unittest discover -s tests -p \"test_*.py\"",
+    "host_tests": 537,
+    "status": "pass",
+    "new_tests": 11,
+    "static_placements": [
+      12288,
+      16640
+    ],
+    "static_placement_result": "Both traversals enumerate the same instruction offsets and legacy hardware access sites; this is a host placement check, not Exec execution.",
+    "tier": "development"
+  },
+  "reproduction": {
+    "static": "python3 tools/sdx_edx_audit.py path/to/EDX.COM --output build/edx-audit/static.json",
+    "focused_tests": "python3 -m unittest discover -s tests -p test_sdx_edx_audit.py",
+    "audit_tool_sha256": "d7e1a88742de552db382dc9f8ec51bbe86c3ff48b5bb28b5271cfc4ab442aa17",
+    "focused_test_sha256": "6cb41ae9a6075418cc5ea87375c66ff7c899f2726024752c1e12242fd447f3cf",
+    "static_output": "build/edx-audit/static.json",
+    "static_output_sha256": "d572beea07e1edf4e7386510a3dec05ef5792350f65afd6bc2aa23b0c47168e4",
+    "original_control": "python3 build/edx-audit/reference.py",
+    "repeat_control": "python3 build/edx-audit/reference-repeat.py",
+    "artifacts": "Pinned downloads, extracted third-party programs, CAR/disk images and control observations stay in ignored build/edx-audit; not distributed or committed."
+  },
+  "next_slices": [
+    "Define reusable console cell/attribute, scroll-region and qualified-key operations against existing instance/foreground ownership, including hidden/desktop views.",
+    "Build an EDX-shaped synthetic RAWCON client on emitted code with cell/caret readback, all four scroll operations, modifier/BREAK delivery and failure/close cleanup.",
+    "Admit the exact pinned EDX image only after the bell patch, private legacy state, bounded document/save profile and complete guest context tests pass.",
+    "Exercise real EDX read/edit/save, missing/read-only/full destinations, long lines/files, two concurrent console sessions, repeated launches, BREAK, stack guards and measured input/redraw cost."
+  ]
+}

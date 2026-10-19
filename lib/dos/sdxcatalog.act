@@ -23,6 +23,10 @@ PUBLIC BYTE FUNC Select(LONGCARD bytes,crc)
     RETURN(5)
   FI
 
+  IF bytes=6440 AND crc=$56293a29 THEN
+    RETURN(6)
+  FI
+
   IF bytes=3488 AND crc=$083eb436 THEN
     RETURN(1)
   FI

@@ -124,7 +124,7 @@ PUBLIC CARD FUNC Decode(CONSOLETYPES.Instance POINTER instance LONGCARD event)
   FI
 
   IF value>=97 AND value<=122 THEN
-    IF (instance.caps XOR shift)<>0 THEN
+    IF ((instance.caps & 1) XOR shift)<>0 THEN
       value==-32
     FI
   ELSEIF shift<>0 THEN
@@ -146,7 +146,21 @@ PUBLIC PROC Deliver(CONSOLETYPES.Instance POINTER instance LONGCARD event)
     RETURN
   FI
 
-  value=Decode(instance,event)
+  IF (instance.caps & CONSOLETYPES.MODE_RAW_KEYS)<>0 THEN
+    IF BYTE(event RSH 8)<>0 THEN
+      RETURN
+    FI
+    IF instance.lastValid<>0 AND instance.lastKey=CARD(event)
+        AND instance.lastTick=CARD(event RSH 16) THEN
+      RETURN
+    FI
+    instance.lastValid=1
+    instance.lastKey=CARD(event)
+    instance.lastTick=CARD(event RSH 16)
+    value=BYTE(event)
+  ELSE
+    value=Decode(instance,event)
+  FI
   IF value=$ffff THEN
     RETURN
   FI

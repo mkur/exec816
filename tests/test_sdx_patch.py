@@ -55,6 +55,22 @@ class SDXPatchTests(unittest.TestCase):
             self.assertEqual(len(result.record['patches']), 2)
         self.assertEqual(self.raw, original)
 
+    def test_private_direct_page_relocation_is_bounded_and_not_a_block_address(self):
+        patch=dict(id='dp',block=1,offset=10,expected='eaea',replacement='0000',
+                   intersections=[],fixups=[dict(kind='direct_page16',offset=0,addend=0x87)])
+        self.module['patches'].append(patch)
+        program=parse(self.raw)
+        original,layout=place(program,0x2000,0x8000,self.symbols)
+        for page in (0x6300,0x6400):
+            result,_=apply(program,self.module,original,layout,self.symbols,direct_page=page)
+            self.assertEqual(int.from_bytes(result[0x200a:0x200c],'little'),page+0x87)
+        for page in (0x6380,0x10000,-256):
+            with self.assertRaisesRegex(PatchError,'direct-page'):
+                apply(program,self.module,original,layout,self.symbols,direct_page=page)
+        patch['fixups'][0]['addend']=255
+        with self.assertRaisesRegex(PatchError,'outside page'):
+            apply(program,self.module,original,layout,self.symbols)
+
     def test_wrong_size_crc_and_host_sha(self):
         for changed in (self.raw+b'\0', self.raw[:-1], self.raw[:9]+b'\xff'+self.raw[10:]):
             with self.subTest(raw=changed), self.assertRaisesRegex(PatchError, 'size/CRC32'):
@@ -159,7 +175,7 @@ class SDXPatchTests(unittest.TestCase):
 
     def test_repository_manifest_selectors_and_generated_crc(self):
         catalog = manifests(ROOT/'compat/sdx')
-        self.assertEqual(len(selectors(catalog)), 5)
+        self.assertEqual(len(selectors(catalog)), 6)
         for name, content in products().items():
             self.assertEqual((ROOT/name).read_text(), content)
         abi = json.loads((ROOT/'abi/sdx.json').read_text())

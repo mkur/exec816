@@ -106,7 +106,8 @@ RETURN(1)
 BYTE FUNC Validate(EXEC.IOStdReq POINTER request)
 
   IF request.io_Offset<>0
-      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_AT THEN
+      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_AT
+      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_CELLS THEN
     RETURN(BYTE(EXEC.IOERR_BADADDRESS))
   FI
 
@@ -158,7 +159,8 @@ BYTE FUNC PositionValid(CONSOLETYPES.Instance POINTER instance
   FI
 
   FOR index=0 TO CARD(request.io_Length)-1 DO
-    IF request.io_Data(index)<ASCII.SPACE OR request.io_Data(index)>=127 THEN
+    IF request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT AND
+        (request.io_Data(index)<ASCII.SPACE OR request.io_Data(index)>=127) THEN
       RETURN(BYTE(EXEC.IOERR_BADLENGTH))
     FI
   OD
@@ -255,7 +257,8 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
     FI
 
     error=Validate(request)
-    IF error=0 AND request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT THEN
+    IF error=0 AND (request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT OR
+        request.io_Command=CONSOLETYPES.CONCMD_WRITE_CELLS) THEN
       error=PositionValid(instance,request)
     FI
     IF error<>0 THEN
@@ -303,7 +306,25 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
     RETURN(0)
   FI
 
-  IF request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT THEN
+  IF request.io_Command=CONSOLETYPES.CONCMD_MODE THEN
+    IF instance.writeCancel<>0 THEN
+      FinishWrite(instance,request)
+      RETURN(0)
+    FI
+    IF request.io_Length<>1 OR (request.io_Data(0) & $1f)<>0 THEN
+      request.io_Error=BYTE(EXEC.IOERR_BADLENGTH)
+    ELSE
+      CONSOLEINPUT.Clear(instance)
+      instance.caps=(instance.caps & 1) OR request.io_Data(0)
+      CONSOLECORE.Dirty(instance,0,instance.count)
+      request.io_Actual=1
+    FI
+    FinishWrite(instance,request)
+    RETURN(0)
+  FI
+
+  IF request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT OR
+      request.io_Command=CONSOLETYPES.CONCMD_WRITE_CELLS THEN
     RETURN(PositionedWrite(instance,request))
   FI
 

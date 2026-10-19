@@ -1,0 +1,350 @@
+; RAWCON translates an application-owned cell buffer through public console I/O.
+MODULE SDXSCREEN
+USE EXEC
+USE DOS
+USE DOSCLIENT
+USE SDXABI
+USE SDXSTATE
+USE SDXFILES
+USE SDXCOMMAND
+USE CONSOLETYPES
+USE A816MEMORY
+
+; Native operations never expose the console worker's retained model.
+; Borrow the stream binding, including bounded mode restoration after BREAK.
+BYTE FUNC SetMode(DOS.FileHandle POINTER file BYTE flags)
+  BYTE value
+
+  value=flags
+
+RETURN(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_MODE,0,@value,1)=1)
+
+; Complete counted copies before lending the guest another key.
+PUBLIC BYTE FUNC Flush(SDXSTATE.Session POINTER state)
+  CARD row
+  LONGINT sent
+
+  IF state.screenOpen=0 THEN
+    RETURN(0)
+  FI
+  FOR row=0 TO state.screenHeight-1 DO
+    IF state.screenDirty(row)<>0 THEN
+      sent=DOS.ConsoleIO(state.outputHandle,CONSOLETYPES.CONCMD_WRITE_CELLS,
+          LONGCARD(row) LSH 16,state.screen+SIZE(row*state.screenWidth),
+          LONGINT(state.screenWidth))
+      IF sent<>LONGINT(state.screenWidth) THEN
+        RETURN(SDXFILES.MapError(state))
+      FI
+      state.screenDirty(row)=0
+    FI
+  OD
+
+RETURN(0)
+
+; Release the cell buffer after restoring both standard console streams.
+PUBLIC PROC Retire(SDXSTATE.Session POINTER state)
+  BYTE clear
+  LONGINT ignored,cause
+
+  IF state.screen=NULL THEN
+    RETURN
+  FI
+  cause=DOS.IoErr()
+  clear=12
+  ignored=DOS.Write(state.outputHandle,@clear,1)
+  ignored=LONGINT(SetMode(DOS.Input(),0))
+  ignored=LONGINT(SetMode(state.outputHandle,0))
+  state.screenOpen=0
+  EXEC.FreeMem(state.screen,SIZE(state.screenWidth*state.screenHeight))
+  state.screen=NULL
+  DOS.SetIoErr(cause)
+
+RETURN
+
+; Admit one fixed interactive geometry before allocating its retained cells.
+BYTE FUNC Open(SDXSTATE.Session POINTER state)
+  CARD ARRAY geometry(2)
+  BYTE mode
+
+  IF DOS.IsInteractive(DOS.Input())=0 OR
+      DOS.IsInteractive(state.outputHandle)=0 THEN
+    RETURN(156)
+  FI
+  IF DOS.ConsoleInfo(state.outputHandle,BYTE POINTER(@geometry))=0 THEN
+    RETURN(SDXFILES.MapError(state))
+  FI
+  state.screenWidth=geometry(0)
+  state.screenHeight=geometry(1)
+  IF geometry(0)<32 OR geometry(0)>80 OR geometry(1)<2 OR geometry(1)>30 THEN
+    RETURN(156)
+  FI
+  state.screen=EXEC.AllocMem(SIZE(geometry(0)*geometry(1)),EXEC.MEMF_UPPER)
+  IF state.screen=NULL THEN
+    RETURN(158)
+  FI
+  mode=CONSOLETYPES.MODE_RAW_KEYS OR CONSOLETYPES.MODE_ATASCII
+      OR CONSOLETYPES.MODE_NO_CARET
+  IF SetMode(DOS.Input(),mode)=0 OR SetMode(state.outputHandle,mode)=0 THEN
+    Retire(state)
+    RETURN(SDXFILES.MapError(state))
+  FI
+  state.screenOpen=1
+  state.dp($2c)=BYTE(geometry(0))
+  state.dp($2e)=BYTE(geometry(1))
+  state.bank($2bf)=BYTE(geometry(1))
+
+RETURN(0)
+
+; Clearing belongs to the application model; presentation follows at input.
+PROC Clear(SDXSTATE.Session POINTER state)
+  CARD row
+
+  A816MEMORY.Fill(state.screen,32,SIZE(state.screenWidth*state.screenHeight))
+  FOR row=0 TO state.screenHeight-1 DO
+    state.screenDirty(row)=1
+  OD
+
+RETURN
+
+; All four scrolls operate on the client's own bounded cell rectangle.
+BYTE FUNC Scroll(SDXSTATE.Session POINTER state)
+  CARD row,column,last,first,width
+  BYTE operation,fill
+
+  operation=state.dp($22)
+  first=state.dp($2b)
+  last=state.bank($2bf)
+  width=state.screenWidth
+  IF first>=state.screenHeight THEN
+    RETURN(156)
+  FI
+  IF (operation=97 OR operation=98) AND
+      (last>state.screenHeight OR first>=last) THEN
+    RETURN(156)
+  FI
+  fill=32
+  IF operation=97 THEN
+    FOR row=first TO last-1 DO
+      IF row+1<last THEN
+        A816MEMORY.Move(state.screen+SIZE(row*width),
+            state.screen+SIZE((row+1)*width),SIZE(width))
+      ELSE
+        A816MEMORY.Fill(state.screen+SIZE(row*width),fill,SIZE(width))
+      FI
+      state.screenDirty(row)=1
+    OD
+  ELSEIF operation=98 THEN
+    row=last
+    WHILE row>first DO
+      row==-1
+      IF row>first THEN
+        A816MEMORY.Move(state.screen+SIZE(row*width),
+            state.screen+SIZE((row-1)*width),SIZE(width))
+      ELSE
+        A816MEMORY.Fill(state.screen+SIZE(row*width),fill,SIZE(width))
+      FI
+      state.screenDirty(row)=1
+    OD
+  ELSEIF operation=117 OR operation=118 THEN
+    ; Column scrolls name one row in ICAX2Z, independently of BOTSCR.
+    row=first
+    IF operation=117 THEN
+      FOR column=0 TO width-2 DO
+        state.screen(row*width+column)=state.screen(row*width+column+1)
+      OD
+      state.screen(row*width+width-1)=fill
+    ELSE
+      column=width-1
+      WHILE column<>0 DO
+        state.screen(row*width+column)=state.screen(row*width+column-1)
+        column==-1
+      OD
+      state.screen(row*width)=fill
+    FI
+    state.screenDirty(row)=1
+  ELSE
+    RETURN(156)
+  FI
+
+RETURN(0)
+
+; Dispatch the six table entries without exposing native model pointers.
+PUBLIC BYTE FUNC Call(SDXSTATE.Session POINTER state BYTE POINTER frame
+    CARD operation)
+  CARD column,row,at
+  BYTE error
+
+  IF operation=0 THEN
+    error=Open(state)
+    IF error=0 THEN
+      Clear(state)
+    FI
+    RETURN(error)
+  FI
+  IF operation=1 THEN
+    Retire(state)
+    RETURN(0)
+  FI
+  IF state.screenOpen=0 THEN
+    RETURN(156)
+  FI
+  IF operation=2 THEN
+    Clear(state)
+    RETURN(0)
+  FI
+  IF operation=5 THEN
+    RETURN(Scroll(state))
+  FI
+  column=state.dp($55)
+  row=state.dp($54)
+  IF column>=state.screenWidth OR row>=state.screenHeight THEN
+    RETURN(156)
+  FI
+  at=row*state.screenWidth+column
+  IF operation=3 THEN
+    frame(SDXABI.FRAME_A)=state.screen(at)
+    SDXCOMMAND.NZ(frame,frame(SDXABI.FRAME_A))
+  ELSEIF operation=4 THEN
+    IF state.screen(at)<>frame(SDXABI.FRAME_A) THEN
+      state.screen(at)=frame(SDXABI.FRAME_A)
+      state.screenDirty(row)=1
+    FI
+  ELSE
+    RETURN(156)
+  FI
+
+RETURN(0)
+
+; The guest supplies bounded storage for the retained native failure cause.
+PUBLIC BYTE FUNC ErrorText(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  CARD at,index
+  LONGINT cause,length
+
+  at=CARD(frame(SDXABI.FRAME_A)) OR (CARD(frame(SDXABI.FRAME_X)) LSH 8)
+  IF at>=SDXABI.GUEST_LIMIT-64 THEN
+    RETURN(156)
+  FI
+  cause=state.nativeError
+  IF cause=0 THEN
+    CASE frame(SDXABI.FRAME_Y) OF
+    WHEN 170 THEN
+      cause=205
+    WHEN 158 THEN
+      cause=103
+    WHEN 167 THEN
+      cause=214
+    WHEN 128 THEN
+      cause=304
+    ELSE
+      cause=115
+    ESAC
+  FI
+  length=DOS.Fault(cause,NULL,state.bank+at,64)
+  IF length<0 THEN
+    length=0
+  FI
+  index=0
+  WHILE index<63 AND state.bank(at+index)<>0 DO
+    index==+1
+  OD
+  state.bank(at+index)=$9b
+
+RETURN(0)
+
+; Preserve the scan's qualifiers until the original SDX key dispatcher sees it.
+PUBLIC BYTE FUNC Key(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  BYTE scan,index,value,mods,error
+  BYTE POINTER table
+  LONGINT got
+  BYTE ARRAY normal=[
+    $6c $6a $3b $00 $00 $6b $2b $2a $6f $00 $70 $75
+    $0a $69 $2d $3d $76 $00 $63 $00 $00 $62 $78 $7a
+    $34 $00 $33 $36 $1b $35 $32 $31 $2c $20 $2e $6e
+    $00 $6d $2f $00 $72 $00 $65 $79 $09 $74 $77 $71
+    $39 $00 $30 $37 $08 $38 $3c $3e $66 $68 $64 $00
+    $00 $67 $73 $61
+  ]
+  BYTE ARRAY shifted=[
+    $4c $4a $3a $00 $00 $4b $5c $5e $4f $00 $50 $55
+    $0a $49 $5f $7c $56 $00 $43 $00 $00 $42 $58 $5a
+    $24 $00 $23 $26 $1b $25 $22 $21 $5b $20 $5d $4e
+    $00 $4d $3f $00 $52 $00 $45 $59 $09 $54 $57 $51
+    $28 $00 $29 $27 $08 $40 $3c $3e $46 $48 $44 $00
+    $00 $47 $53 $41
+  ]
+
+  error=Flush(state)
+  IF error<>0 THEN
+    RETURN(error)
+  FI
+  DO
+    got=DOS.ConsoleIO(DOS.Input(),CONSOLETYPES.CONCMD_READ_KEYS,0,@scan,1)
+    IF got<>1 THEN
+      RETURN(SDXFILES.MapError(state))
+    FI
+    index=scan & 63
+    mods=scan & $c0
+    IF index=60 THEN
+      IF (mods & $80)<>0 THEN
+        state.editorCaps=2
+      ELSEIF (mods & $40)<>0 THEN
+        state.editorCaps=1
+      ELSE
+        state.editorCaps=IF state.editorCaps=1 THEN BYTE(0) ELSE BYTE(1) FI
+      FI
+    ELSEIF index=39 THEN
+      state.bank($2b6)=state.bank($2b6) XOR $80
+    ELSE
+      table=@normal
+      IF (mods & $40)<>0 THEN
+        table=@shifted
+      FI
+      value=table(index)
+      IF value<>0 THEN
+        IF index=12 THEN
+          value=$9b
+        ELSEIF index=52 THEN
+          value=IF mods=$80 THEN BYTE($fe) ELSE
+              IF mods=$40 THEN BYTE($9c) ELSE BYTE($7e) FI FI
+        ELSEIF index=54 AND mods=$40 THEN
+          value=$7d
+        ELSEIF index=55 AND mods=$40 THEN
+          value=$9d
+        ELSEIF index=55 AND mods=$80 THEN
+          value=$ff
+        ELSEIF mods=$80 AND index=6 THEN
+          value=$1e
+        ELSEIF mods=$80 AND index=7 THEN
+          value=$1f
+        ELSEIF mods=$80 AND index=14 THEN
+          value=$1c
+        ELSEIF mods=$80 AND index=15 THEN
+          value=$1d
+        ELSEIF index=26 AND mods=$80 THEN
+          RETURN(136)
+        ELSEIF index=33 AND mods=$80 THEN
+          value=0
+        ELSEIF value>='A AND value<='Z OR value>='a AND value<='z THEN
+          value=SDXCOMMAND.Upper(value)
+          IF mods=$80 THEN
+            value=value & 31
+          ELSEIF mods=0 AND state.editorCaps=0 THEN
+            value==+32
+          FI
+        FI
+        IF mods=0 AND state.editorCaps=2 AND value>=32 AND value<=125 THEN
+          value=(value & 31) XOR state.bank($2b6)
+        ELSEIF (mods & $80)=0 AND value>=32 AND value<=125 THEN
+          value=value XOR state.bank($2b6)
+        FI
+        frame(SDXABI.FRAME_X)=mods
+        frame(SDXABI.FRAME_A)=value
+        frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) & $7d
+        RETURN(0)
+      FI
+    FI
+  OD
+
+RETURN(0)
+
+ENDMODULE

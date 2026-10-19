@@ -645,10 +645,11 @@ PUBLIC LONGINT FUNC Write(BYTE POINTER identity,buffer LONGINT length)
 
 RETURN(result)
 
-; Console-only positioned output shares raw I/O ownership and cancellation.
-PUBLIC LONGINT FUNC WriteAt(BYTE POINTER identity CARD column,row
-    BYTE POINTER buffer LONGINT length)
+; Submit console controls through the existing owned stream endpoint.
+PUBLIC LONGINT FUNC ConsoleIO(BYTE POINTER identity CARD command
+    LONGCARD offset BYTE POINTER buffer LONGINT length)
   INT error
+  DOSBREAKTYPES.Scope POINTER scope
 
   LET slot=DOSCORE.Current()
   LET client=DOSCLIENT.EnsureSlot(slot)
@@ -669,19 +670,27 @@ PUBLIC LONGINT FUNC WriteAt(BYTE POINTER identity CARD column,row
   FI
 
   LET handle=DOSSTREAMS.Handle POINTER(header)
-  LET request=DOSRAW.Prepare(client,handle,buffer,length,0)
+  LET request=DOSRAW.Prepare(client,handle,buffer,length,command=CONSOLETYPES.CONCMD_READ_KEYS)
   IF request=NULL THEN
     RETURN(IF length=0 AND DOSCLIENT.IoErr()=0 THEN LONGINT(0)
         ELSE LONGINT(-1) FI)
   FI
 
-  request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT
-  request.io_Offset=LONGCARD(column)
-      OR (LONGCARD(row) LSH CONSOLETYPES.POSITION_ROW_SHIFT)
-  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),
-      DOSBREAKTYPES.Scope POINTER(client.foreground),client)
+  request.io_Command=command
+  request.io_Offset=offset
+  scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+  IF command=CONSOLETYPES.CONCMD_MODE THEN
+    scope=NULL
+  FI
+  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope,client)
 
 RETURN(DOSRAW.Complete(client,handle,error))
+
+PUBLIC LONGINT FUNC WriteAt(BYTE POINTER identity CARD column,row
+    BYTE POINTER buffer LONGINT length)
+
+RETURN(ConsoleIO(identity,CONSOLETYPES.CONCMD_WRITE_AT,LONGCARD(column)
+    OR (LONGCARD(row) LSH CONSOLETYPES.POSITION_ROW_SHIFT),buffer,length))
 
 ; Apply a position change only to a valid caller-owned file.
 PUBLIC LONGINT FUNC Seek(BYTE POINTER identity LONGINT offset,mode)

@@ -93,7 +93,7 @@ def validate_patches(program, module):
         touched = set()
         for fixup in patch['fixups']:
             kind, at = fixup['kind'], fixup['offset']
-            if kind not in ('block16', 'symbol16', 'relative8'):
+            if kind not in ('block16', 'symbol16', 'relative8', 'direct_page16'):
                 raise PatchError('Unknown replacement fixup kind')
             width = 1 if kind == 'relative8' else 2
             sites = set(range(at, at+width))
@@ -106,13 +106,16 @@ def validate_patches(program, module):
                 target = blocks.get(fixup['block'])
                 if target is None or not 0 <= fixup['addend'] < target.size:
                     raise PatchError('Replacement target outside block')
+            elif kind == 'direct_page16':
+                if not 0 <= fixup['addend'] < 255:
+                    raise PatchError('Direct-page pointer outside page')
             elif fixup['symbol'] not in program.imports:
                 raise PatchError('Replacement refers to undeclared import')
         validated.append((patch, expected, replacement))
     return validated
 
 
-def apply(program, module, original, layout, symbols):
+def apply(program, module, original, layout, symbols, direct_page=0):
     """Apply only after relocation; failure never exposes a partial result."""
     patches = validate_patches(program, module)
     blocks = {b.number: b for b in program.blocks}
@@ -136,8 +139,13 @@ def apply(program, module, original, layout, symbols):
         code = bytearray(replacement)
         for fix in patch['fixups']:
             kind, pos = fix['kind'], fix['offset']
-            target = (symbols[fix['symbol']] if kind == 'symbol16'
-                      else addresses[fix['block']]+fix['addend'])
+            if kind == 'direct_page16':
+                if not 0 <= direct_page <= 0xff00 or direct_page & 255:
+                    raise PatchError('Invalid direct-page placement')
+                target=direct_page+fix['addend']
+            else:
+                target = (symbols[fix['symbol']] if kind == 'symbol16'
+                          else addresses[fix['block']]+fix['addend'])
             if kind == 'relative8':
                 distance = target-(at+pos+1)
                 if not -128 <= distance <= 127:

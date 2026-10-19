@@ -9,6 +9,17 @@ extern UWORD DesktopFrame(struct ConsoleBitmapPacket *);
 void ConsoleBitmapEntry(void)
 {
     struct ConsoleBitmapPacket *p=&ConsoleBitmapPacket;
+    if ((p->foreground&0x100) && (p->operation==CON_BITMAP_TEXT ||
+        p->operation==CON_BITMAP_TEXT_CLIP || p->operation==CON_BITMAP_BACKING_TEXT)) {
+        p->status=GemDrawingAtasciiText(p->x,p->y,(const UBYTE *)p->text,p->width,
+            p->foreground&15,p->background,
+            p->operation==CON_BITMAP_TEXT_CLIP ? p->clipLeft:0,
+            p->operation==CON_BITMAP_TEXT_CLIP ? p->clipTop:0,
+            p->operation==CON_BITMAP_TEXT_CLIP ? p->clipRight:640,
+            p->operation==CON_BITMAP_TEXT_CLIP ? p->clipBottom:240,
+            p->operation==CON_BITMAP_BACKING_TEXT);
+        return;
+    }
     switch (p->operation) {
     case CON_BITMAP_MENU_ROW: p->status=DesktopMenuRow(p); break;
     case CON_BITMAP_DESKTOP: p->status=DesktopBackground(p); break;

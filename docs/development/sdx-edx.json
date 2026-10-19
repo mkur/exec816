@@ -1,0 +1,123 @@
+{
+  "format": "exec816-edx-development-v1",
+  "date": "2026-10-19",
+  "source_revision": "572c4f2b7c3b0ab249922868d087e423d32506cf",
+  "implementation_state": "Working tree implementation; individual builds retain their exact source identities",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "input_manifest": "../../compat/sdx/edx-450.json",
+  "input_audit": "sdx-edx-audit.json",
+  "edx_sha256": "1f9b1082bc6ad53f8b7cbac15044f434454c942a3b13f7f6b428e7b8b0ba8f69",
+  "tests": [
+    {
+      "path": "build/sdx-edx/text-complete/results.json",
+      "sha256": "688186031d2b2e1e17a1dfdfe6c219cffc2e0ffbdf711ff37ffa0222ee743073",
+      "scope": "40x24 EDX; two guest direct pages, edit/save, foreground BREAK, empty launch, inverse semigraphics and Caps transitions",
+      "checks": 57,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "compiler_override": false,
+      "optimized": true,
+      "image_sha256": "fcd8e7c88d307a0161a254dbf24afeca9db7dbe8f525f449d5e3467ab49d81b9",
+      "xex_sha256": "b442a04d8cdb866019c1bd60c695902b2aa3b1eb129eaaaf479d8994f8e846b2"
+    },
+    {
+      "path": "build/sdx-edx/bitmap-complete/results.json",
+      "sha256": "6a0023fad8f959e8a1f2159e31085d3e9dcc17d522326453d7835d4396f83374",
+      "scope": "80x30 EDX with the same cases and an independent OS-font pixel comparison",
+      "checks": 57,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "compiler_override": false,
+      "optimized": true,
+      "image_sha256": "7bb2f97db6ce0825ff399b317dca4abeda2d78abb9c9990395d2f9d1541f75b4",
+      "xex_sha256": "e2d3341df4189806e740623a5f3b192b473dd604646fdfc41612e8b40246f580"
+    },
+    {
+      "path": "build/sdx-edx/console-raw/results.json",
+      "sha256": "1095bcd3f5d510d38794296a65c700d2487859decc875b5a47da01a9d355f257",
+      "scope": "Raw emitted public console controls, local buffers, every cell byte, errors and successive scan leases",
+      "checks": 304,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "compiler_override": false,
+      "optimized": false,
+      "image_sha256": "142bbaaee78a24e474a29e3882c85ba3d1255de41bdb89775de3d95d6318ef03",
+      "xex_sha256": "23ea65b22f0bf88a346b5842334689f8c827d132c1b4ac0618db4daaaae639f6"
+    },
+    {
+      "path": "build/sdx-edx/console-opt/results.json",
+      "sha256": "30f037bd3a81b96638041f212f7dc140f52bd0c39e7fa85ecfa98a94867725c4",
+      "scope": "Optimized emitted public console controls with the same focused ABI cases",
+      "checks": 304,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "compiler_override": false,
+      "optimized": true,
+      "image_sha256": "69e35a02fb726a628986c8d8fe55b08ac143d1ea278da9c89682ec7339aae4dc",
+      "xex_sha256": "d241a2a1fa629d81735337a8162cb7b2733ac0ed4560734eec08ddc6420f62dd"
+    },
+    {
+      "path": "build/sdx-edx/arc/results.json",
+      "sha256": "cf7e183be0798eccb08d8b89f5614aaf62413fb38f93c1a54cfc889cc7810a9f",
+      "scope": "ARC listing, overlay errors/recovery and empty/NULL/space-only help",
+      "checks": 128,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "compiler_override": false,
+      "optimized": true,
+      "image_sha256": "8a4509d9a3292ded36a8596e14ea2c5c41d8c3a357e7015fad6a25b9e994056b",
+      "xex_sha256": "966a6f1f0a55fc8724ad2fdd809fe2b859a3130dcf9bf48ce05f846da6e7ba54"
+    },
+    {
+      "path": "build/sdx-edx/shape/results.json",
+      "sha256": "b12209fb5ed6c6d994a934b381f5caa0d1d566b6f118e2ca14ff80f5f60b73fe",
+      "scope": "Optimized SDX record layout and suspended guest frame",
+      "checks": 44,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "compiler_override": false,
+      "optimized": true,
+      "image_sha256": "12d32c37c636bb2991b6e86f0028c4337406a3619ba3f92c72816c93ad121f03",
+      "xex_sha256": "1380cf63aab6222b97732ed13762531ebb32f19433ff80f8c70305f16c45fa2e"
+    },
+    {
+      "path": "build/sdx-edx/mixed/results.json",
+      "sha256": "9535da1c177c60dc2ea5be0cd4085d3e9196286278ef025ab41b8ab3e5c3d46b",
+      "scope": "Concurrent MD5/ARC, native peer, SDFS, BREAK, ownership and shell",
+      "checks": 156,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "compiler_override": false,
+      "optimized": true,
+      "image_sha256": "715d73798fef72f7f67868160466d0cd82cc15ef09178279999facdfff1e7225",
+      "xex_sha256": "ddc9e007a12fa84043a06b24d9026d269aed114d3c5846469d0293a05f4cb252"
+    }
+  ],
+  "graphical_demo": {
+    "path": "build/edx-demo/graphical-checks.json",
+    "sha256": "c6717fb860f5663335cbaeee27550eef93c9878784eb5191a62227ce9ef9e7f5",
+    "scope": "OF816 boot into the 64x20 desktop Shell; bare ARC/ARC.COM, MD5, EDX save, extensionless lowercase edx, literal native-command priority, explicit EDX.COM, exact Sparta disk readback and clean shutdown",
+    "xex_sha256": "45d5eb4b22e575f1495f6268c3ab4cb2400a25926028a541074ade2722ec997b"
+  },
+  "host_tests": {
+    "count": 539,
+    "status": "pass",
+    "log": "build/edx-host-checks.log"
+  },
+  "memory": {
+    "bank_zero_change_bytes": {
+      "fixed": 0,
+      "per_task": 0,
+      "private_idle": 0
+    },
+    "existing_sdx_bank_zero_bytes": 544,
+    "session_bytes_before": 2252,
+    "session_bytes_after": 2290,
+    "session_allocation_change_bytes": 40,
+    "screen_max_bytes": 2400,
+    "screen_allocation_alignment": 8,
+    "terminal_font_vram_reserved_bytes": 20480,
+    "terminal_font_vram_used_bytes": 18432
+  },
+  "limits": [
+    "Development checks do not qualify the hosted system or physical hardware.",
+    "Inverse state is initialized at protected checkpoints in the extra key cases because the pinned bridge lacks the INVERSE key alias; other tested keys use POKEY matrix transitions. This is not interrupt qualification.",
+    "All editing commands, maximum documents, concurrent editors, live resizing and filesystem failure injection are not qualified by these checks.",
+    "Audible bell and Atari HELP-key qualifiers are unsupported."
+  ]
+}

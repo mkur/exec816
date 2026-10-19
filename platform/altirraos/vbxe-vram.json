@@ -150,10 +150,18 @@
       "capacity_bytes": 32768,
       "g3_used_bytes": 0,
       "g4_used_bytes": 0
+    },
+    {
+      "name": "terminal_font_masks",
+      "base": 237568,
+      "reserved_bytes": 20480,
+      "capacity_bytes": 18432,
+      "g3_used_bytes": 18432,
+      "g4_used_bytes": 18432
     }
   ],
-  "reserved_bytes": 453120,
-  "unassigned_bytes": 71168,
+  "reserved_bytes": 473600,
+  "unassigned_bytes": 50688,
   "diagnostics": [
     {
       "name": "cross_page_transfer",

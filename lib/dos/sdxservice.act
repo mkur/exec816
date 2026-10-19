@@ -12,11 +12,26 @@ USE SDXTRAPS
 USE SDXARCCOMMAND
 USE SDXOVERLAY
 USE SDXMUTATION
+USE SDXSCREEN
 
 BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
   BYTE value
 
+  IF state.profile=64 AND event>=SDXABI.RAWCON_EVENT AND
+      event<SDXABI.RAWCON_EVENT+SDXABI.RAWCON_COUNT THEN
+    RETURN(SDXSCREEN.Call(state,frame,event-SDXABI.RAWCON_EVENT))
+  FI
+
   CASE event OF
+  WHEN SDXABI.CALL_CKSPEC THEN
+    value=frame(SDXABI.FRAME_A)
+    frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) & $fd
+    IF value=': OR value='> OR value='< OR value=92 THEN
+      frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) OR 2
+    FI
+    RETURN(0)
+  WHEN SDXABI.CALL_U_PERROR THEN
+    RETURN(SDXSCREEN.ErrorText(state,frame))
   WHEN SDXABI.ARC_MULTIPLY_EVENT THEN
     RETURN(SDXARCCOMMAND.MultiplyEight(state,frame))
   WHEN SDXABI.KERNEL_EVENT THEN
@@ -85,6 +100,9 @@ BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
   WHEN SDXABI.CALL_FNEXT THEN
     RETURN(SDXFILES.Enumerate(state,frame,0))
   WHEN SDXABI.CALL_U_GETKEY THEN
+    IF state.profile=64 THEN
+      RETURN(SDXSCREEN.Key(state,frame))
+    FI
     RETURN(SDXFILES.Key(state,frame))
   WHEN SDXABI.CALL_FOPEN THEN
     RETURN(SDXFILES.Open(state,frame))
@@ -139,15 +157,24 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   SDXPRINT.Begin(state)
   error=SDXCOMMAND.Initialize(state,arguments,@image.name)
   IF error=0 AND state.profile=32 THEN
+    event=0
+    IF arguments<>NULL THEN
+      WHILE arguments(event)=32 DO
+        event==+1
+      OD
+    FI
     IF arguments=NULL THEN
-      error=156
-    ELSEIF arguments(0)<>'L AND arguments(0)<>'V AND arguments(0)<>'X AND
-        arguments(0)<>'E AND arguments(0)<>'A AND arguments(0)<>'D AND
-        arguments(0)<>'U AND arguments(0)<>'F THEN
-      error=156
+      state.operation=0
+    ELSEIF arguments(event)=0 THEN
+      state.operation=0
     ELSE
-      state.operation=arguments(0)
-      event=1
+      state.operation=arguments(event)
+      IF state.operation<>'L AND state.operation<>'V AND state.operation<>'X AND
+          state.operation<>'E AND state.operation<>'A AND state.operation<>'D AND
+          state.operation<>'U AND state.operation<>'F THEN
+        error=156
+      FI
+      event==+1
       WHILE arguments(event)<>0 AND arguments(event)<>32 DO
         IF arguments(event)<>'N AND arguments(event)<>'W AND
             arguments(event)<>'B THEN
@@ -157,6 +184,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
       OD
     FI
   FI
+
   result=20
   pendingCause=0
   pendingError=0
@@ -198,7 +226,8 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
         FI
         EXIT
       FI
-      IF event=SDXABI.CALL_U_FAIL AND frame(SDXABI.FRAME_A)=pendingError THEN
+      IF (event=SDXABI.CALL_U_FAIL AND frame(SDXABI.FRAME_A)=pendingError) OR
+          event=SDXABI.CALL_U_PERROR THEN
         state.nativeError=pendingCause
       FI
       error=Dispatch(state,frame,event)
@@ -260,6 +289,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
     result=20
     cause=cleanupCause
   FI
+  SDXSCREEN.Retire(state)
   state.trapCount=0
   state.overlayActive=0
   state.overlayModule=0

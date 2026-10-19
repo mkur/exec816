@@ -13,7 +13,8 @@
     "ARC.COM": 2,
     "ARCLST.OVL": 3,
     "ARCEXT.OVL": 4,
-    "ARCADD.OVL": 5
+    "ARCADD.OVL": 5,
+    "EDX.COM": 6
   },
   "imports": {
     "Update": {
@@ -93,7 +94,10 @@
     "arc_multiply_pc": 62848,
     "arc_multiply_event": 36,
     "kernel_pc": 62880,
-    "kernel_event": 37
+    "kernel_event": 37,
+    "rawcon_event": 40,
+    "rawcon_base": 62976,
+    "rawcon_count": 6
   },
   "guest_services": {
     "COMTAB": {
@@ -114,7 +118,7 @@
       "address": 61696,
       "event": 2,
       "inputs": "file_id.",
-      "effects": "Consume the owned file or search slot, preserving a late Close error. A completed extracted member receives its captured timestamp; incomplete members cannot report successful Close.",
+      "effects": "Consume the owned file or search slot, preserving a late Close error. A completed extracted member receives its captured timestamp; incomplete members cannot report successful Close. EDX cleanup accepts zero or an already-closed selector as a no-op.",
       "flags": "A/X/Y/P preserved on success."
     },
     "FCLOSEAL": {
@@ -134,8 +138,8 @@
     "FOPEN": {
       "address": 61792,
       "event": 5,
-      "inputs": "FILE_P; mode=4 read or ARC mode=8 output; scan; dateset/date/time for ARC members.",
-      "effects": "Two MD5 or four ARC owned slots, including directory search. Read resolves the first eligible 8.3 match. ARC source dates are returned at $077B..$0780. Extracted output checks dates before truncation; mutation uses exclusive-existing archive and create-exclusive temporary modes.",
+      "inputs": "FILE_P; mode=4 read or ARC/EDX mode=8 output; scan; dateset/date/time for ARC members.",
+      "effects": "Two MD5/EDX or four ARC owned slots, including directory search. Read resolves the first eligible 8.3 match. ARC source dates are returned at $077B..$0780. Extracted output checks dates before truncation; mutation uses exclusive-existing archive and create-exclusive temporary modes.",
       "flags": "A/X/Y/P preserved on success."
     },
     "FREAD": {
@@ -205,7 +209,7 @@
       "address": 1825,
       "event": 0,
       "inputs": "Private byte at $0721.",
-      "effects": "ARC main passes L=0 or V=1 to ARCLST.",
+      "effects": "ARC main passes L=0, V=1 or no-argument help=3 to ARCLST.",
       "flags": "Preserved except documented results."
     },
     "PUT_V": {
@@ -247,7 +251,7 @@
       "address": 62304,
       "event": 19,
       "inputs": "file_id, addpos, bytbuf; ordinary guest-bank source.",
-      "effects": "Continue short native writes, report the first I/O error, and never write beyond the extracted header length. Only owned file handles are admitted.",
+      "effects": "Continue short native writes and report the first I/O error. ARC extracted members cannot exceed their captured header length. EDX writes a bounded ordinary-bank document. Only owned file handles are admitted.",
       "flags": "Preserved except documented results."
     },
     "REMOVE": {
@@ -288,7 +292,7 @@
     "U_LOAD": {
       "address": 62496,
       "event": 25,
-      "inputs": "FILE_P = exact CAR:ARCLST.OVL (FLAG 0/1/2), CAR:ARCEXT.OVL (0), or CAR:ARCADD.OVL (0/2/3).",
+      "inputs": "FILE_P = exact CAR:ARCLST.OVL (FLAG 0/1/2/3), CAR:ARCEXT.OVL (0), or CAR:ARCADD.OVL (0/2/3).",
       "effects": "Verify the pinned overlay, relocate with private _ARC export, run synchronously and retire owned handles/frame/overlay.",
       "flags": "Preserved except documented results."
     },
@@ -352,7 +356,7 @@
       "address": 62784,
       "event": 34,
       "inputs": "Ordinary Process input.",
-      "effects": "Read one byte into A, X=0/N=0. EOF is SDX 136; BREAK/I/O errors use normal native error delivery. No modifier-key/hardware emulation.",
+      "effects": "MD5/ARC read ordinary Process input into A, X=0/N=0. EDX flushes screen rows, then returns ATASCII in A and Control/Shift qualifiers in X bits 7/6 from physical scans, bypassing cooked input. Native BREAK uses ordinary cancellation. EOF is SDX 136.",
       "flags": "Preserved except documented results."
     },
     "U_PATH": {
@@ -361,6 +365,27 @@
       "inputs": "AX/Y destination; device and path variables.",
       "effects": "Expand A: plus the bounded path, return EOL position in Y; other devices fail.",
       "flags": "Preserved except documented results."
+    },
+    "CKSPEC": {
+      "address": 62912,
+      "event": 38,
+      "inputs": "A=filename byte.",
+      "effects": "Set Z for colon, greater-than, less-than or backslash; clear Z for other bytes.",
+      "flags": "A/X/Y and all P bits except Z preserved."
+    },
+    "U_PERROR": {
+      "address": 62944,
+      "event": 39,
+      "inputs": "Y=SDX error, AX=ordinary guest buffer with 64 bytes available.",
+      "effects": "Write a bounded native error explanation followed by ATASCII EOL. Prefer the retained native cause; map standalone SDX errors to native equivalents.",
+      "flags": "Registers and flags preserved on success."
+    },
+    "_RAWCON": {
+      "address": 1856,
+      "event": 0,
+      "inputs": "Private table at $0740; count 9, word slots +1 open, +3 close, +9 clear, +13 get, +15 put, +17 special.",
+      "effects": "EDX profile only. Native interactive console geometry is returned in D+$2C/$2E. Read/write one cached ATASCII cell at ROWCRS D+$54/COLCRS D+$55. XIO 97/98 scroll rows within [ICAX2Z,BOTSCR); 117/118 scroll the named row horizontally. Flush dirty rows before keys. Close restores native console mode.",
+      "flags": "Get returns A with N/Z from the cell. Other registers/flags preserved on success. Normal SDX trap delivery on error."
     }
   },
   "guest_contract": {
@@ -368,7 +393,7 @@
       "url": "https://sdx.atari8.info/sdx_files/4.50/SDX450_Programming_Guide.pdf",
       "sha256": "15982c51f2d0edc317b01121097d6da23e007910e2ad79f3ad02ac930fbc2b69"
     },
-    "scope": "Opt-in development personality for the exact pinned 6502 MD5.COM and ARC.COM with ARCLST.OVL/ARCEXT.OVL/ARCADD.OVL. MD5 hashing/verification and ARC L/V, X/E, A/D/U/F with N/W/B flags are admitted. S/M/G/H/P/T and arbitrary modules remain unsupported.",
+    "scope": "Opt-in development personality for the exact pinned 6502 MD5.COM, ARC.COM with ARCLST.OVL/ARCEXT.OVL/ARCADD.OVL, and EDX.COM. MD5 hashing/verification, ARC no-argument help, L/V, X/E, A/D/U/F with N/W/B flags, and interactive EDX are admitted. Other ARC operations and arbitrary modules remain unsupported.",
     "entry": "E=1, M=X=1, private aligned D, PBR=DBR=guest bank. Calls use JSR to the imported veneer. AX denotes low A and low X, little endian.",
     "preservation": "Except for documented results, calls preserve A (including hidden B), X, Y, P, D and DBR. Ordinary calls resume after JSR; PRINTF skips its inline record. Error delivery selects the saved guest S and handler PC.",
     "pointers": "Ordinary near pointers select guest-bank storage below $E000. PRINTF argument-word sites classified by the admitted profile may instead select guest D+offset in bank zero. Sites are selected by the active audited overlay as well as the application. No numeric-address heuristic, stack pointers or extended-memory buffers are supported. VPRINTF admits only the pinned ARC single-RTS leaf.",
@@ -389,7 +414,7 @@
       "156": "Unsupported or invalid operation/parameter; empty U_XFAIL; trap limit",
       "158": "Native allocation failure",
       "160": "Unmapped drive",
-      "161": "Guest handle limit reached (two for MD5; four for ARC including directory searches)",
+      "161": "Guest handle limit reached (two for MD5/EDX; four for ARC including directory searches)",
       "167": "Write protection",
       "170": "File not found or explicit U_FAIL code"
     },
@@ -398,6 +423,7 @@
     "formatter": "NUL-terminated inline format, at most 1023 bytes, then one near pointer word per operand (and per * width). Supported: %% and %b/%d/%e/%l unsigned 8/16/24/32-bit decimal, %x 24-bit hexadecimal, %c byte, %s string, %p pointer to string. Width uses its low byte; decimals allow at most 10 digits; zero padding, truncation and space padding are supported. Default %x is six zero-padded digits. Strings end at NUL or ATASCII EOL. %s uses an ordinary-bank string except audited ARC DP sites (bounded by 256 bytes); %p may fetch its pointer variable from audited DP storage but the target string is in the ordinary bank. %t is unsupported.",
     "output": "Escapes a,b,e,f,n,r,t,z,backslash and i are supported; i toggles inverse bytes for printable characters within one call. The Process output handle and interactive property are borrowed once per invocation. Redirected calls complete immediately and retain exact SDX bytes. Interactive PRINTF/PUTC fragments share the existing 256-byte buffer, flushing at capacity, newline or editing controls, before any other guest service (including input and exit), and on retirement. Suppressed VPRINTF emits nothing and preserves pending ordinary output. Interactive output maps $9B/$7E/$7F/$7D to LF/BS/TAB/FF. Partial native writes are continued; write errors use normal trap delivery before the next service takes effect. Retirement preserves the first failure. No general Atari terminal emulation is provided.",
     "cancellation": "BREAK belongs to the ordinary Process. It is checked before guest entry, at service boundaries and by a patched checkpoint after each 64-byte compression block ($F280, event 14, outside the SDX import namespace). Native I/O settles before SDX 128 trap delivery. A caught BREAK allows only bounded cleanup calls, then exits with primary 20/secondary 304. Guest cleanup cannot clear cancellation. ARC mutation retires the guest before acknowledging BREAK for native-only rollback and temporary removal; its terminal result remains 20/304. See the MD5 development record for measured timing on the pinned machine; no universal device-latency bound is claimed.",
-    "arc_mutation": "ARC A/D/U/F keep the original under an exclusive native writer lease while constructing a create-exclusive .XAR. Existing .XAR/.BAK names cause a collision. After successful Close, stage the original as .BAK and rename the owned temporary to publish; B retains the backup, otherwise remove it. A failed final rename attempts rollback. Cleanup failure may leave recovery files. This is not atomic replacement or a power-loss guarantee. U/F reject unknown or invalid packed dates; source dates and comparisons require 1980..2049, with unspecified zero allowed only outside date comparisons. Headers preserve representable source dates. The private $0703 gate admits only the audited rename/delete-backup calls, and $F580 admits only the Y=8 MUL_32+2 operation. See the ARC development record for patches, ownership and measured limits."
+    "arc_mutation": "ARC A/D/U/F keep the original under an exclusive native writer lease while constructing a create-exclusive .XAR. Existing .XAR/.BAK names cause a collision. After successful Close, stage the original as .BAK and rename the owned temporary to publish; B retains the backup, otherwise remove it. A failed final rename attempts rollback. Cleanup failure may leave recovery files. This is not atomic replacement or a power-loss guarantee. U/F reject unknown or invalid packed dates; source dates and comparisons require 1980..2049, with unspecified zero allowed only outside date comparisons. Headers preserve representable source dates. The private $0703 gate admits only the audited rename/delete-backup calls, and $F580 admits only the Y=8 MUL_32+2 operation. See the ARC development record for patches, ownership and measured limits.",
+    "editor": "EDX uses its own bounded ATASCII cell buffer and the public console mode, cell-write and scan-read requests through DOS.ConsoleIO. Geometry is fixed for one invocation (32..80 columns, 2..30 rows); noninteractive redirects fail with SDX 156. Software inverse caret and row/column scrolling operate on the private buffer. File bytes remain unchanged, including ATASCII EOL. The identity-checked bell patch removes writes to hardware aliases in private RAM. Audible bell, live resize and Atari HELP-key qualifiers are unsupported. See the EDX development record for actual execution scope."
   }
 }

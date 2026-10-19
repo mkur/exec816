@@ -346,6 +346,37 @@ void vbxe_palette(uint8_t pal,uint8_t first,const uint8_t *rgb,uint16_t count)
     if (!fault) latch(VbxeOwnerPalette(&display,rgb));
 }
 
+/* The OS font is pinned by the platform. This atlas retains all ATASCII
+ * graphics and inverse glyphs without changing the normal GEM font atlas. */
+static UBYTE terminal_bits(UBYTE ch,UWORD row)
+{
+    UWORD glyph=ch&127;
+    const UBYTE *font=(const UBYTE *)0x00e000UL;
+    if (glyph<32) glyph+=64;
+    else if (glyph<96) glyph-=32;
+    return font[glyph*8+row] ^ ((ch&128) ? 255:0);
+}
+static void terminal_atlas(void)
+{
+    UWORD phase,row,ch,pixel,stride,at;
+    UBYTE bits;
+    for (phase=0;phase<2;phase++) {
+        stride=phase ? 1280:1024;
+        for (row=0;row<8;row++) {
+            memset(page,0,stride);
+            for (ch=0;ch<256;ch++) {
+                bits=terminal_bits((UBYTE)ch,row);
+                for (pixel=0;pixel<8;pixel++) if (bits&(128>>pixel)) {
+                    at=ch*(phase ? 5:4)+((pixel+phase)>>1);
+                    page[at]|=((pixel+phase)&1) ? 15:240;
+                }
+            }
+            latch(VbxeOwnerWrite(&display,(phase ? VBXE_TERMINAL_FONT_ODD:
+                VBXE_TERMINAL_FONT)+(ULONG)row*stride,page,stride));
+        }
+    }
+}
+
 /* Only successful acquisition changes private renderer state. Another Task's
  * failed open must not discard an owner's queued commands. */
 UWORD GemDrawingOpen(WORD *out)
@@ -368,6 +399,7 @@ UWORD GemDrawingOpen(WORD *out)
     memset(iconCache,0,sizeof(iconCache));iconNext=0;
     status=GemVdiOpen(out);
     flush();
+    if (!status && !fault) terminal_atlas();
     if (!status && !fault)
         latch(VbxeOwnerWrite(&display,GEM_FRAME_GADGET_BASE,GemFramePixels,sizeof(GemFramePixels)));
     if (!status && !fault) latch(VbxeOwnerShow(&display));
@@ -682,6 +714,45 @@ const struct GemBackend GemVbxeBackend={open_backend,command_backend,fence_backe
 
 ULONG GemDrawingCompletionMask(void)
 { return VbxeCompletionMask(&display); }
+
+/* Complete cells use the same checked text generator as the native console.
+ * Only partially exposed edge cells fall back to clipped pixel runs. */
+void GemDrawingPrepare(UWORD left,UWORD top,UWORD right,UWORD bottom);
+static UWORD draw_AtasciiText(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD backing)
+{
+    UWORD status,row,i,pixel,start,pen,a,b,c,d;
+    ULONG source=(ULONG)text;
+    ULONG font=(x&1) ? VBXE_TERMINAL_FONT_ODD:VBXE_TERMINAL_FONT;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if ((count && (!text || source>0x1000000UL-count)) ||
+        fg>15 || bg>15 || x>640 || count>(640-x)/8 || y>232 ||
+        left>right || right>640 || top>bottom || bottom>240)
+        return DISPLAY_BAD_ARGUMENT;
+    status=fence_owner(); if (status!=DISPLAY_OK) return status;
+    if (backing) return VbxeOwnerBackingText(&display,font,x,y,text,count,
+        (UBYTE)(map_col[fg]*17),(UBYTE)(map_col[bg]*17));
+    a=x>left ? x:left; b=y>top ? y:top;
+    c=x+count*8<right ? x+count*8:right; d=y+8<bottom ? y+8:bottom;
+    if (a>=c || b>=d) return DISPLAY_OK;
+    GemDrawingPrepare(a,b,c,d);
+    if (a==x && b==y && c==x+count*8 && d==y+8)
+        return VbxeOwnerText(&display,font,x,y,text,count,
+            (UBYTE)(map_col[fg]*17),(UBYTE)(map_col[bg]*17));
+    for (row=b;row<d;row++) for (i=0;i<count;i++) {
+        UBYTE bits=terminal_bits(text[i],row-y);
+        pixel=0;
+        while (pixel<8) {
+            start=pixel; pen=(bits&(128>>pixel)) ? fg:bg;
+            do { pixel++; } while (pixel<8 &&
+                (((bits&(128>>pixel)) ? fg:bg)==pen));
+            left=x+i*8+start; right=x+i*8+pixel;
+            if (left<a) left=a; if (right>c) right=c;
+            if (left<right) GemBitmapFill(left,row,right,row+1,pen);
+        }
+    }
+    return fence_owner();
+}
 
 static UWORD draw_TextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom)
@@ -1113,6 +1184,9 @@ NATIVE_UNIT(BackingFill,(UWORD x,UWORD y,UWORD width,UWORD height,UWORD pen),(x,
 NATIVE_UNIT(TextFill,(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD fillX,UWORD fillY,UWORD fillWidth,UWORD fillHeight,
     UWORD fillPen),(x,y,text,count,fg,bg,fillX,fillY,fillWidth,fillHeight,fillPen))
+NATIVE_UNIT(AtasciiText,(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD backing),
+    (x,y,text,count,fg,bg,left,top,right,bottom,backing))
 NATIVE_UNIT(TextClip,(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom),(x,y,text,count,fg,bg,left,top,right,bottom))
 NATIVE_UNIT(Pointer,(UWORD x,UWORD y,UWORD visible),(x,y,visible))

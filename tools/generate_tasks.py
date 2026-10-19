@@ -494,6 +494,12 @@ def writable_bindings(image, memory=None):
         for slot in range(CONSOLE_ABI['constants']['WINDOW_SLOTS']):
             base=cs['WINDOWS']+field('Windows','items')+slot*records['Window']['size']+field('Window','lease')
             ranges.append((base,base+12))
+    # Native callers may lend live stack-local buffers to synchronous I/O.
+    # Guards and the interrupt reserve remain outside the writable payload.
+    if memory is not None:
+        for pool in memory.get('task_pools', []):
+            ranges.append((pool['stack_base']+pool['interrupt_reserve'],
+                           pool['stack_base']+pool['stack_bytes']))
     merged = []
     for low,high in sorted(ranges):
         if merged and low == merged[-1][1]:

@@ -32,7 +32,7 @@ PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
   identity=0
   length=0
   IF O65READ.Equal(state.bank+name,BYTE POINTER("CAR:ARCLST.OVL")+1,14)<>0
-      AND state.bank($721)<=2 THEN
+      AND state.bank($721)<=3 THEN
     identity=3
     length=1998
   ELSEIF O65READ.Equal(state.bank+name,BYTE POINTER("CAR:ARCEXT.OVL")+1,14)<>0

@@ -43,5 +43,8 @@
     "DESKTOP": 16,
     "BACKING_TEXT": 17,
     "BACKING_FILL": 18
+  },
+  "foreground_flags": {
+    "ATASCII": 256
   }
 }

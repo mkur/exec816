@@ -25,7 +25,8 @@ def application_admission(application,profile,module_index=0):
         if sites:
             text+=f'  IF overlay={index} THEN\n    IF '+' OR '.join(f'site=SDXABI.GUEST_START+${at:x}' for at in sites)+' THEN\n      RETURN(1)\n    FI\n  FI\n'
     text+='\nRETURN('+(' OR '.join(f'site=SDXABI.GUEST_START+${at:x}' for at in manifest['direct_page_arguments']) or '0')+')\n\n'
-    text+='PUBLIC CARD FUNC Patch(SDXFILE.Layout POINTER plan)\n'
+    needs_dp=any(fix['kind']=='direct_page16' for patch in module['patches'] for fix in patch['fixups'])
+    text+='PUBLIC CARD FUNC Patch(SDXFILE.Layout POINTER plan'+(' CARD directPage' if needs_dp else '')+')\n'
     text+=f'  SDXPATCH.Patch ARRAY patches({len(module["patches"])})\n'
     text+='  SDXFILE.Block POINTER block,target\n'
     for i,patch in enumerate(module['patches']):
@@ -44,6 +45,9 @@ def application_admission(application,profile,module_index=0):
             text+=f'  target=SDXFILE.Find(plan,{fix["base"]})\n  IF target=NULL THEN\n    RETURN(1)\n  FI\n'
             text+=f'  SDXSTATE.Word(@before{i},{offset},SDXSTATE.ReadWord(@before{i},{offset})+target.placed-target.origin)\n'
         for fix in patch['fixups']:
+            if fix['kind']=='direct_page16':
+                text+=f'  SDXSTATE.Word(@after{i},{fix["offset"]},directPage+{fix["addend"]})\n'
+                continue
             assert fix['kind']=='block16'
             text+=f'  target=SDXFILE.Find(plan,{fix["block"]})\n  IF target=NULL THEN\n    RETURN(1)\n  FI\n'
             text+=f'  SDXSTATE.Word(@after{i},{fix["offset"]},target.placed+{fix["addend"]})\n'
@@ -66,7 +70,7 @@ def service_reference(abi):
     for name,item in abi['guest_services'].items():
         text+=f'| `{name}` | {item["inputs"]} | {item["effects"]} | {item["flags"]} |\n'
     text+='\n## Bounded operations\n\n'
-    for key in ('command_limit','drive_policy','formatter','output','cancellation','arc_mutation'):
+    for key in ('command_limit','drive_policy','formatter','output','cancellation','arc_mutation','editor'):
         text+=contract[key]+'\n\n'
     text+='## Error mapping\n\n| Native IoErr | Guest error |\n| --- | --- |\n'
     for native,guest in contract['native_error_map'].items():
@@ -143,6 +147,7 @@ def products():
             'lib/dos/sdxmd5.act': application_admission('md5',16),
             'lib/dos/sdxarc.act': application_admission('arc',32),
             'lib/dos/sdxarcadd.act': application_admission('arc',32,3),
+            'lib/dos/sdxedx.act': application_admission('edx',64),
             'docs/reference/sdx-services.md': service_reference(abi)}
 
 

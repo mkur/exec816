@@ -150,7 +150,8 @@ BYTE FUNC Immediate(EXEC.IOStdReq POINTER request)
   FI
 
   IF request.io_Offset<>0
-      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_AT THEN
+      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_AT
+      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_CELLS THEN
     RETURN(BYTE(EXEC.IOERR_BADADDRESS))
   FI
 
@@ -159,7 +160,10 @@ BYTE FUNC Immediate(EXEC.IOStdReq POINTER request)
   FI
 
   IF request.io_Command<>EXEC.CMD_READ AND request.io_Command<>EXEC.CMD_WRITE
-      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_AT THEN
+      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_AT
+      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_CELLS
+      AND request.io_Command<>CONSOLETYPES.CONCMD_MODE
+      AND request.io_Command<>CONSOLETYPES.CONCMD_READ_KEYS THEN
     RETURN(BYTE(EXEC.IOERR_NOCMD))
   FI
 
@@ -201,7 +205,8 @@ PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
     RETURN
   FI
 
-  IF request.io_Command=EXEC.CMD_READ THEN
+  IF request.io_Command=EXEC.CMD_READ OR
+      request.io_Command=CONSOLETYPES.CONCMD_READ_KEYS THEN
     IF instance.read<>NULL THEN
       request.io_Error=BYTE(EXEC.IOERR_UNITBUSY)
       Complete(request)
@@ -319,9 +324,9 @@ PROC Arrival(CONSOLETYPES.Service POINTER service)
   IF request<>NULL THEN
     instance=CONSOLETYPES.Instance POINTER(request.io_Unit)
     CASE request.io_Command OF
-    WHEN EXEC.CMD_READ THEN
+    WHEN EXEC.CMD_READ,CONSOLETYPES.CONCMD_READ_KEYS THEN
       instance.readReady=1
-    WHEN EXEC.CMD_WRITE,CONSOLETYPES.CONCMD_WRITE_AT THEN
+    WHEN EXEC.CMD_WRITE,CONSOLETYPES.CONCMD_WRITE_AT,CONSOLETYPES.CONCMD_WRITE_CELLS,CONSOLETYPES.CONCMD_MODE THEN
       EXECLISTS.AddTail(EXECLISTS.List POINTER(@instance.writes),
           @request.io_Message.mn_Node)
       IF request.io_Message.mn_Length>=EXEC.IOSTDREQ_SIZE

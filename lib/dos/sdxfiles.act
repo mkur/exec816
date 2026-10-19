@@ -105,9 +105,10 @@ PUBLIC BYTE FUNC Open(SDXSTATE.Session POINTER state BYTE POINTER frame)
   IF state.profile=32 THEN
     limit=SDXABI.HANDLE_LIMIT
   FI
-  writing=state.bank($778)=8 AND state.profile=32
+  writing=state.bank($778)=8 AND (state.profile=32 OR state.profile=64)
   dated=writing<>0 AND state.bank($781)<>0
-  IF (state.bank($778)<>4 AND writing=0) OR (state.bank($779) & 8)<>0 THEN
+  IF (state.bank($778)<>4 AND writing=0) OR
+      (state.profile<>64 AND (state.bank($779) & 8)<>0) THEN
     RETURN(156)
   FI
   error=Path(state)
@@ -203,6 +204,9 @@ PUBLIC BYTE FUNC Close(SDXSTATE.Session POINTER state BYTE slot)
   DOS.FileHandle POINTER file
   BYTE error
 
+  IF slot=0 AND state.profile=64 THEN
+    RETURN(0)
+  FI
   IF slot=0 OR slot>SDXABI.HANDLE_LIMIT THEN
     RETURN(134)
   FI
@@ -216,6 +220,9 @@ PUBLIC BYTE FUNC Close(SDXSTATE.Session POINTER state BYTE slot)
   FI
   file=state.handles(slot-1)
   IF file=NULL THEN
+    IF state.profile=64 THEN
+      RETURN(0)
+    FI
     RETURN(134)
   FI
   ; Close consumes the native handle even when its final operation fails.
@@ -449,7 +456,8 @@ PUBLIC BYTE FUNC Enumerate(SDXSTATE.Session POINTER state BYTE POINTER frame
   CARD at,leaf
 
   IF first<>0 THEN
-    IF state.enumerationSlot<>0 OR (state.bank($779) & 8)<>0 THEN
+    IF state.enumerationSlot<>0 OR
+      (state.bank($779) & 8)<>0 THEN
       RETURN(156)
     FI
     error=Path(state)

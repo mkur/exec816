@@ -108,6 +108,20 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
                        'docs/bitmap-shell-distribution.txt')).read_text()
         if demo.get('desktop'):
             guide = guide.replace('@POINTER_DESCRIPTION@', pointer_description(demo['kernel']['desktop_mouse']['profile']))
+    if (text_shell is not None or bitmap_shell is not None) and demo.get('sdx',{}).get('enabled'):
+        config=demo['sdx']
+        guide += ('\nSDX utility support: pinned MD5, ARC and EDX.\n'
+                  'The utility disk is supplied separately from this boot ZIP.\n'
+                  f'Guest A: files use {config["drive_a"]}; ARC overlays use {config["car_root"]}.\n'
+                  'EDX accepts a filename or opens a blank document. Ctrl-S saves;\n'
+                  'Return confirms the name; Escape exits. Bell and live resize\n'
+                  'are unsupported. ARC without arguments prints its original help.\n'
+                  'Command names accept the optional .COM suffix.\n')
+        if config['drive_a']=='D2:' and config['car_root']=='D2:':
+            guide += ('Attach the utility disk at D2, then in Shell enter:\n'
+                      '  MOUNT D2: FORMAT SPARTA READWRITE\n'
+                      '  D2:EDX EDIT.TXT\n'
+                      '  D2:ARC\n')
     if '@VERSION@' in guide:
         guide = guide.replace('@VERSION@', demo['kernel']['exec_build']['version'])
     guide = guide.replace('@SYSTEM_DISK@', media['name'])

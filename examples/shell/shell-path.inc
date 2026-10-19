@@ -198,6 +198,43 @@ BYTE FUNC ShellPathMiss(LONGINT error)
 
 RETURN(error=DOS.ERROR_OBJECT_NOT_FOUND OR error=DOS.ERROR_DIR_NOT_FOUND)
 
+; Try the literal name first, then the conventional SDX command suffix.
+PROGRAMIMAGE.Image POINTER FUNC ShellTryCommand(ShellContext POINTER context
+    BYTE POINTER name)
+  CARD index,length
+  BYTE extension
+
+  LET image=PROGRAMFILE.Load(name)
+  LET error=DOS.IoErr()
+  IF image<>NULL OR ShellPathMiss(error)=0 THEN
+    RETURN(image)
+  FI
+  index=0
+  extension=0
+  WHILE name(index)<>0 DO
+    IF name(index)=CHAR_COLON OR name(index)=CHAR_SLASH THEN
+      extension=0
+    ELSEIF name(index)='. THEN
+      extension=1
+    FI
+    index==+1
+  OD
+  IF extension<>0 THEN
+    RETURN(NULL)
+  FI
+  length=index
+  IF length+4>LINE_LIMIT THEN
+    DOS.SetIoErr(DOS.ERROR_LINE_TOO_LONG)
+    RETURN(NULL)
+  FI
+  LET candidate=ShellScratch(context)
+  STR.strlcpy(candidate,CSTRING(name),LINE_CAPACITY)
+  STR.strlcpy(candidate+SIZE(length),c".COM",LINE_CAPACITY-length)
+  LET suffixed=PROGRAMFILE.Load(candidate)
+  candidate(length)=0
+
+RETURN(suffixed)
+
 ; Search only executable names. The exact public loader remains unchanged.
 PROGRAMIMAGE.Image POINTER FUNC ShellLoadCommand(ShellContext POINTER context BYTE POINTER name)
   CARD index,length,used
@@ -209,7 +246,7 @@ PROGRAMIMAGE.Image POINTER FUNC ShellLoadCommand(ShellContext POINTER context BY
   index=0
   WHILE index<length DO
     IF name(index)=CHAR_COLON OR name(index)=CHAR_SLASH THEN
-      RETURN(PROGRAMFILE.Load(name))
+      RETURN(ShellTryCommand(context,name))
     FI
 
     index==+1
@@ -220,7 +257,7 @@ PROGRAMIMAGE.Image POINTER FUNC ShellLoadCommand(ShellContext POINTER context BY
     RETURN(NULL)
   FI
 
-  image=PROGRAMFILE.Load(name)
+  image=ShellTryCommand(context,name)
   error=DOS.IoErr()
   IF image<>NULL OR (ShellPathMiss(error)=0 AND error<>DOS.ERROR_NO_DEFAULT_DIR) THEN
     RETURN(image)
@@ -250,7 +287,7 @@ PROGRAMIMAGE.Image POINTER FUNC ShellLoadCommand(ShellContext POINTER context BY
       FI
 
       STR.strlcpy(candidate+SIZE(used),CSTRING(name),LINE_CAPACITY-used)
-      image=PROGRAMFILE.Load(candidate)
+      image=ShellTryCommand(context,candidate)
       error=DOS.IoErr()
       IF image<>NULL OR ShellPathMiss(error)=0 THEN
         RETURN(image)

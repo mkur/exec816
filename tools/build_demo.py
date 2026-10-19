@@ -560,7 +560,7 @@ if __name__=='__main__':
     parser.add_argument('--output',type=Path,default=ROOT/'build/demo')
     parser.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
     parser.add_argument('--release-compiler',action='store_true',help='Optimized host compiler for a text/bitmap shell or GEM desktop')
-    parser.add_argument('--sdx',action='store_true',help='Enable the pinned MD5/ARC development personality in a text or bitmap SIO demo')
+    parser.add_argument('--sdx',action='store_true',help='Enable the pinned MD5/ARC/EDX development personality in a text or bitmap SIO demo')
     parser.add_argument('--sdx-drive-a',default='RAM:',help='Immutable native root for SDX guest A: (requires --sdx)')
     parser.add_argument('--sdx-car-root',default='RAM:',help='Native directory containing the pinned ARC overlays (requires --sdx)')
     parser.add_argument('--ide-only',action='store_true',help='IDE SYS/WORK, no Exec SIO driver; include raw media and both carts')

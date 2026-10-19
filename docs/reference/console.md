@@ -29,6 +29,23 @@ Zero-length writes are harmless. Cancellation reports an accepted prefix and
 retains caller storage until the exact terminal reply. Other commands fail
 explicitly.
 
+`CONCMD_MODE=10` takes one byte: RAW_KEYS=$80, ATASCII=$40, NO_CARET=$20;
+other bits must be zero. It shares the write FIFO, clears pending input and
+preserves the instance Caps state. Set zero to restore native mode. Callers
+coordinate mode changes with their readers. `CONCMD_WRITE_CELLS=11` uses the
+same position and row bounds as WRITE_AT but accepts every byte as a cell.
+ATASCII mode maps all 256 characters, including inverse and graphics glyphs,
+on text and bitmap backends. `CONCMD_READ_KEYS=12` shares READ ownership and
+returns scan bytes when RAW_KEYS is set: scan index in bits 0..5, Shift in bit 6,
+Control in bit 7. It bypasses translation and cooked editing. BREAK retains its
+separate foreground cancellation route. NO_CARET lets an application draw its
+own caret. These operations use existing instance and request storage.
+
+`DOS.ConsoleIO(file,command,offset,buffer,length)` submits these requests through
+a caller-owned CON/RAW/pane FileHandle without opening another device binding.
+It keeps normal request lifetime, byte-count/error and cancellation semantics.
+MODE can restore the console while foreground cancellation is pending.
+
 A successful open owns the instance's device binding; arbitrary multiple device
 opens on it are rejected. The DOS stream adapter shares its own binding among
 multiple handles. Keep requests and buffers alive until completion collection.

@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Recover the pinned MD5 and ARC originals without modifying distributions."""
+"""Recover the pinned MD5, ARC and EDX originals without modifying distributions."""
 import argparse
 import json
+import subprocess
+import urllib.request
 from pathlib import Path
 
 from native_program import ROOT, require, sha256
 from sdx_patch import manifests, select
 from test_sdx_md5 import inputs
+from sdfs_reference import extract
 
 
 def prepare(out, nomarch):
@@ -31,6 +34,24 @@ def prepare(out, nomarch):
         else:
             path.write_bytes(raw)
         records[path.name] = dict(bytes=len(raw), sha256=sha256(path), crc32=selected['crc32'])
+    edx=out/'edx';edx.mkdir(parents=True,exist_ok=True)
+    audit=json.loads((ROOT/'docs/development/sdx-edx-audit.json').read_text())
+    sources={entry['name']:entry for entry in audit['sources']}
+    toolkit=edx/'toolkit.atr'
+    if not toolkit.exists():
+        toolkit.write_bytes(urllib.request.urlopen(sources['SDX 4.51 Toolkit']['url'],timeout=30).read())
+    require(sha256(toolkit)==sources['SDX 4.51 Toolkit']['sha256'],'Changed EDX toolkit')
+    archive=edx/'EDX.ARC'
+    if not archive.exists():
+        extract(toolkit,edx/'toolkit')
+        archive.write_bytes((edx/'toolkit'/sources['EDX archive']['toolkit_path']).read_bytes())
+    require(sha256(archive)==sources['EDX archive']['sha256'],'Changed EDX archive')
+    for name,source in [('EDX.COM','EDX.COM'),('EDX.MAN','EDX manual')]:
+        path=edx/name
+        if not path.exists():
+            path.write_bytes(subprocess.run([str(nomarch),'-p',str(archive),name.lower()],check=True,capture_output=True).stdout)
+        require(sha256(path)==sources[source]['sha256'],'Changed EDX input: '+name)
+        records[name]=dict(bytes=path.stat().st_size,sha256=sha256(path))
     (out/'inputs.json').write_text(json.dumps(records, indent=2)+'\n')
     return records
 

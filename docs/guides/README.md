@@ -29,4 +29,6 @@
 - [One C example on Exec816 and classic Amiga](amiga-c.md): build and run the
   same message exchange on both systems.
 
+- [SDX utilities](sdx-utilities.md): build and use the pinned MD5, ARC and EDX development programs.
+
 For semantics beyond an example, use the [API reference](../reference/README.md).
