@@ -2,7 +2,9 @@
 
 Status: implementation in progress, 2026-10-19. SS1 isolates the shell state and
 SS2 adds owner-requested cancellation. SS3 adds grouped console activation and
-owned key notices. Controller integration and desktop presentation remain. The
+owned key notices. SS4–SS5 add the controller and two text/bitmap sessions.
+SS6 binds either session to the existing desktop Shell frame. Tab controls and
+final measurements remain in progress. The
 [SS1–SS8 implementation plan](shell-sessions-implementation-plan.md) defines
 the remaining interfaces and gates; [slice evidence](../history/shell-sessions.md)
 records actual checks without a hosted-system qualification claim.
@@ -110,7 +112,7 @@ Proposed user commands are `NEWSHELL`, `SESSIONS` and `SESSION number`: create
 and select a shell, list sessions, and select an existing session. These are
 shell builtins backed by controller messages. Desktop New Shell and tab clicks
 use the same controller operations. The implementation plan fixes their names
-and error behavior; they are not current commands.
+and error behavior; the commands are implemented in SS5.
 
 NEWSHELL snapshots the invoking shell's canonical directory name into the
 request. The child resolves that path into its own lock; disappearance or

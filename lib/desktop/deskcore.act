@@ -11,6 +11,7 @@ USE A816MEMORY
 USE HEAPCORE
 USE DESKTYPES
 USE DESKMOVE
+USE DESKCONSOLE
 USE DESKGEOMETRY
 USE DESKCACHE
 USE DESKEVENTS
@@ -174,7 +175,7 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
     IF id<>0 AND id=service.consoleWindow AND service.consoleRoute<>NULL
         AND service.consoleFocus<>NULL THEN
       route=service.consoleRoute^
-      service.consoleFocus^=0
+      service.consoleFocus^=BYTE(service.consoleUnit & 3)
     ELSE
       BEGIN
         LET window=Find(service,id)
@@ -598,6 +599,8 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
       RestoreIcon(service,window)
     FI
     Focus(service,window.id)
+  WHEN DESKTYPES.BIND_CONSOLE THEN
+    RETURN(DESKCONSOLE.Bind(service,window,request))
   WHEN DESKTYPES.REPLACE THEN
     RETURN(Content(service,window,request))
   WHEN DESKTYPES.SET_TREE,DESKTYPES.UPDATE_WIDGETS,DESKTYPES.READ_WIDGET_STATE THEN
@@ -623,7 +626,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
       FI
 
       IF service.consoleWindow=window.id THEN
-        service.consoleWindow=0
+        DESKCONSOLE.Closed(service)
       FI
 
       DESKCACHE.Invalidate(service,window.id)

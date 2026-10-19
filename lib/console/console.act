@@ -85,7 +85,7 @@ PUBLIC LONGCARD FUNC Create(CARD width,height)
   CARD row,count
   LONGCARD unit
 
-  IF DESKSTATE.Enabled()<>0 OR width=0 OR height=0 OR width>CONSOLETYPES.MAX_WIDTH
+  IF width=0 OR height=0 OR width>CONSOLETYPES.MAX_WIDTH
       OR height>CONSOLETYPES.MAX_HEIGHT THEN
     RETURN(0)
   FI
@@ -185,6 +185,12 @@ PUBLIC BYTE FUNC Destroy(LONGCARD unit)
   FI
 
   LET registry=CONSOLEWINDOWS.Registry()
+  LET desktop=DESKSTATE.Get()
+  IF desktop<>NULL AND desktop.consoleWindow<>0
+      AND desktop.consoleUnit=unit THEN
+    RETURN(0)
+  FI
+
   IF registry.pane=unit THEN
     RETURN(0)
   FI

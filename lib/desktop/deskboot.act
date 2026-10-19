@@ -12,6 +12,7 @@ USE HEAPCORE
 DESKTYPES.Client client
 DESKTYPES.Request request
 LONGCARD shellWindow
+BYTE bindingConsole
 
 PUBLIC BYTE FUNC Enable()
 
@@ -167,5 +168,46 @@ RETURN(@client)
 PUBLIC LONGCARD FUNC WindowId()
 
 RETURN(shellWindow)
+
+; One controller-owned control lane; the root event loop keeps collecting
+; shell children while the presenter waits for the existing paint boundary.
+PUBLIC CARD FUNC BeginConsole(LONGCARD unit)
+
+  IF bindingConsole<>0 OR shellWindow=0 THEN
+    RETURN(DESKTYPES.BUSY)
+  FI
+
+  DESKTOP.Prepare(@request,DESKTYPES.BIND_CONSOLE)
+  request.window=shellWindow
+  request.target=unit
+  LET status=DESKTOP.Submit(@client,@request)
+  IF status=DESKTYPES.OK THEN
+    bindingConsole=1
+  FI
+
+RETURN(status)
+
+PUBLIC CARD FUNC CollectConsole()
+
+  IF bindingConsole=0 THEN
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  LET reply=DESKTOP.Collect(@client)
+  IF reply=NULL THEN
+    RETURN(DESKTYPES.PENDING)
+  FI
+
+  bindingConsole=0
+
+RETURN(reply.status)
+
+PUBLIC LONGCARD FUNC ConsoleMask()
+
+  IF bindingConsole=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(LONGCARD(1) LSH client.replies.mp_SigBit)
 
 ENDMODULE

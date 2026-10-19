@@ -60,7 +60,7 @@ PUBLIC PROC Sync()
     RETURN
   FI
 
-  LET entry=CONSOLEWINDOWS.Find(0)
+  LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ConsoleUnit())
   IF entry=NULL THEN
     RETURN
   FI

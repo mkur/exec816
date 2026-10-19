@@ -13,13 +13,17 @@ allocates no Task, stack, direct page or physical screen.
 `CONSOLE.Create(width,height)` returns a nonzero opaque LONGCARD unit, or zero
 if geometry, capacity, identity space, route storage or memory prevents creation.
 Width and height must fit the active display: 1–40 by 1–24 for text, or
-1–80 by 1–30 for bitmap. New instances start blank, at cursor (0,0),
+1–80 by 1–30 for standalone bitmap, or 1–64 by 1–20 for desktop.
+New instances start blank, at cursor (0,0),
 and hidden; writes still complete into their retained cells. These functions
-do not use DOS IoErr.
+do not use DOS IoErr. Desktop sessions select their full-size instances through
+[BIND_CONSOLE](desktop.md#operations); standalone tiled presentation calls
+remain unsupported in desktop mode.
 
 `CONSOLE.Destroy(unit)` returns one on success, zero on rejection. Only the
 creating Task may destroy a created instance. Open device/DOS references and
-foreground scopes and key subscriptions prevent destruction. The creating Task cannot be removed
+foreground scopes, key subscriptions and a published desktop binding prevent
+destruction. The creating Task cannot be removed
 while it owns an instance, including during creation or retirement. Closing a
 handle does not destroy its instance. Default unit zero cannot be destroyed.
 

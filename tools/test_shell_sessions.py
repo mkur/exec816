@@ -214,7 +214,7 @@ ENDMODULE
                 media_sha256=sha256(bundle/'system.atr'))
 
 
-def desktop(out, reuse=False):
+def desktop(out, reuse=False, multiple=False):
     from build_bitmap_console import build_bitmap
     from test_mouse_observe import PIN as pin, BRIDGE, ROM
     from shell_inspect import address, process_slot
@@ -224,8 +224,12 @@ def desktop(out, reuse=False):
     import adapter_state as adapter
 
     out.mkdir(parents=True, exist_ok=True)
+    from generate_memory import PROFILE
+    profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=9216
+    memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
     program = read_build(out/'program') if reuse else build_bitmap(
-        ROOT/'examples/desktop.act', out, desktop=True, release_compiler=True, dos_mounts=[])
+        ROOT/'examples/desktop.act', out, desktop=True, release_compiler=True,
+        dos_mounts=[dict(alias='RAM',format=3)] if multiple else [],memory_profile=memory)
     observed = []
     with emulator(BRIDGE, ROM, out, pin=pin) as b:
         for key, value in pin['configuration'].items():
@@ -274,6 +278,61 @@ def desktop(out, reuse=False):
             require(b'desktop' in cells, 'Desktop shell command output missing')
             (out/'shell.cells.bin').write_bytes(cells)
             b.screenshot(str(out/'shell.png'))
+            if multiple:
+                from generate_console import constants as console_layout
+                from generate_dos import ABI as dos_abi
+                c=console_layout()
+                selected=address(program['image'],'selectedSession')
+                live=address(program['image'],'controllerLive')
+                windows=program['build']['memory']['console_storage']['WINDOWS']
+                number=lambda at,size=4:int.from_bytes(b.memdump(at,size),'little')
+                def bind(identity,index):
+                    slot=process_slot(b,program,identity)
+                    context=ptr(program['build']['memory']['dos_storage']['BASE']+slot*16)
+                    scope=ptr(context+83)
+                    unit=number(scope+next(offset for name,_,offset in dos_abi['foreground']['fields'] if name=='unit'))
+                    entry=windows+c['WINDOWS_ITEMS']+(unit&3)*c['WINDOW_SIZE']
+                    state=ptr(address(program['image'],'shell','SHELLAPP',index))
+                    terminal=ptr(entry+c['WINDOW_INSTANCE'])
+                    return state,ptr(ptr(state)+16),terminal,scope
+                def command(text,identity,index):
+                    state,edit,terminal,scope=bind(identity,index)
+                    route=number(scope+14)
+                    for char in text:key(KEYS[char][0],False) if not KEYS[char][1] else shifted(KEYS[char][0])
+                    key('RETURN')
+                    reach(f'(db(${terminal+51:x})=2)&(dw(${scope+14:x})>{route&65535})')
+                    require(number(state+32)==0 and number(state+36)==0,f'Desktop session command failed: {text}: {number(state+32)}/{number(state+36)}')
+                    return read_cells(b.memdump,terminal)
+                def shifted(name):
+                    b._cmd_ok('KEY SHIFT down');key(name);b._cmd_ok('KEY SHIFT up')
+                def submit(text):
+                    for char in text:
+                        name,shift=KEYS[char]
+                        shifted(name) if shift else key(name)
+                    key('RETURN')
+                command('CD RAM:',1,0)
+                submit('NEWSHELL');reach(f'dw(${selected:x})=2')
+                second_state,second_edit,second_instance,second_scope=bind(2,1)
+                reach(f'db(${second_instance+51:x})=2')
+                observed.append(dict(second_shell_slot=process_slot(b,program,2)))
+                require(b'second' in command('ECHO second',2,1),'Second desktop shell output missing')
+                for char in 'second draft':key(KEYS[char][0])
+                for name in ('CTRL','SHIFT','SPACE'):b._cmd_ok(f'KEY {name} down')
+                reach(f'dw(${selected:x})=1')
+                for name in ('SPACE','SHIFT','CTRL'):b._cmd_ok(f'KEY {name} up')
+                frames()
+                require(b'first' in command('ECHO first',1,0),'First desktop shell output missing')
+                submit('SESSION 2');reach(f'dw(${selected:x})=2');frames()
+                require(number(second_edit+2,2)==12,'Desktop bind lost the second draft')
+                key('U',True)
+                submit('EXIT');reach(f'dw(${selected:x})=1');reach(f'db(${live:x})=1')
+                submit('NEWSHELL');reach(f'dw(${selected:x})=3')
+                third_state,third_edit,third_instance,third_scope=bind(3,1)
+                reach(f'db(${third_instance+51:x})=2')
+                submit('SESSION 1');reach(f'dw(${selected:x})=1');frames()
+                submit('EXIT');reach(f'dw(${selected:x})=3');reach(f'db(${live:x})=1')
+                require(b'survivor' in command('ECHO survivor',3,1),'Desktop survivor did not run')
+                b.screenshot(str(out/'two-sessions.png'))
             for char in 'exit': key(KEYS[char][0])
             b._cmd_ok('KEY RETURN down');b.bp_clear_all()
         runtime,_=execute(b,program,before_run=before,timeout=180,frame_limit=12000)
@@ -386,12 +445,14 @@ def packaged_pipeline(out, bundle):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--group', choices=('inherited','closing-chord','disk-switch','allocation','physical-bitmap','physical-text','ownership','controller','desktop','startup-exit','command-close','packaged-pipeline'), required=True)
+    parser.add_argument('--group', choices=('desktop-sessions','inherited','closing-chord','disk-switch','allocation','physical-bitmap','physical-text','ownership','controller','desktop','startup-exit','command-close','packaged-pipeline'), required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--reuse', action='store_true')
     parser.add_argument('--bundle', type=Path)
     args = parser.parse_args()
-    if args.group=='closing-chord':
+    if args.group=='desktop-sessions':
+        result=desktop(args.output.resolve(),args.reuse,multiple=True)
+    elif args.group=='closing-chord':
         result=closing_chord(args.output.resolve(),args.reuse)
     elif args.group=='allocation':
         from shell_session_faults import run

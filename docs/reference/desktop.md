@@ -80,6 +80,7 @@ Exact layouts, operation numbers and statuses come from
 | MOVE | Set the top-left position from `bounds.left/top`; preserve dimensions. |
 | RAISE | Move a window to the front. |
 | FOCUS | Focus a shown window and retain focus-change notices. |
+| BIND_CONSOLE | Replace the Shell window’s bound console with the owned unit in `target`; use the control lane. |
 | REPLACE | Validate and copy one complete retained command batch, then invalidate its layer. |
 | SET_TREE / UPDATE_WIDGETS / READ_WIDGET_STATE | Retain, patch or read [AES widget content](widgets.md) through the content lane. |
 | NEXT_EVENT | Reply with one available event, or retain the request without blocking other clients. |
@@ -98,12 +99,23 @@ half-open, within the outer rectangle minus 8-pixel side borders, 11-pixel title
 area and 2-pixel bottom border. Text is 8 pixels per character and 8 pixels
 high; offsets/counts must stay inside the supplied text. The entire batch is
 validated before retained content changes. No payload pointer survives reply.
-Console-kind admission is limited to the root controller and permanent console
-unit 0, with a 528×173 outer rectangle. Its 512×160 text origin stays on an
-8-pixel grid: outer x is a multiple of eight and outer y is 5 modulo eight. It cannot
-attach an arbitrary console unit. The presenter owns the permanent model; its
-shutdown refuses live desktop registrations. The root owns the shell streams
-and closes them before retiring its window.
+Console-kind OPEN is limited to the root controller and initially binds permanent
+unit zero. The single 528×173 frame retains 64×20 cells with a 512×160 text origin
+on an eight-pixel grid: outer x is a multiple of eight and outer y is 5 modulo
+eight. BIND_CONSOLE accepts another 64×20 console created by that controller.
+The caller retains the destination through exact reply collection; the published
+binding then prevents Destroy until replacement or window CLOSE. Shell streams
+belong to their individual Processes, which retire before controller shutdown.
+
+BIND_CONSOLE waits behind an active Layers transaction. Drawing/DMA, UPDATE or
+console presentation conflicts return BUSY without changing selection. At the
+settled boundary it removes the outgoing caret, discards gathered scroll reuse,
+changes the retained console/route, invalidates the sole backing owner, and
+marks the destination’s full model dirty. A successful reply commits binding;
+redraw follows asynchronously. Binding while another application is focused
+preserves that application’s keyboard route. Old view generations cannot
+acknowledge destination pixels. A drawing failure preserves the old binding;
+unquiesced device failure retains the existing storage/transaction semantics.
 
 ## Events and shutdown
 
@@ -141,8 +153,9 @@ widget gestures still wait for the existing scene and AES gates.
 Select desktop mode before starting the console. The root launch adapter binds
 an upper-RAM service, then registers and shows the permanent console as a framed
 shell. The existing full-screen bitmap and standard text startup modes remain
-available. Desktop mode rejects the console's tiled Create/Show/Hide/Focus
-operations; use window controls for desktop placement and visual focus.
+available. Create admits hidden console instances in desktop mode. Tiled
+Show/Hide/Focus and standalone Activate remain unsupported there; use native
+window controls and BIND_CONSOLE for placement, focus and selected content.
 
 The same worker owns console I/O, the display lease and every physical draw.
 Background, frame and retained content repair use Layers' visible damage. One

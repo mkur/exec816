@@ -736,13 +736,13 @@ PUBLIC PROC Worker()
                 AND view.scrollState<>CONSOLETYPES.SCROLL_GATHER THEN
               CONSOLEDISPLAY.Advance(view,instance,entry.unit)
             ELSE
-              IF entry.unit=0 THEN
+              IF entry.unit=DESKSTATE.ConsoleUnit() THEN
                 DESKMENUCACHE.ConsoleChanged(instance,view)
               FI
               completeWrite=WriteQuantum(instance,view,entry.unit)
             FI
 
-            IF entry.unit=0 THEN
+            IF entry.unit=DESKSTATE.ConsoleUnit() THEN
               DESKMENUCACHE.ConsoleChanged(instance,view)
             FI
             CONSOLEDISPLAY.Present(view,instance)
@@ -768,7 +768,7 @@ PUBLIC PROC Worker()
               AND CONSOLEBITMAP.TextPending()=0
               AND instance.write<>NULL AND instance.writeCancel<>0 THEN
             CONSOLECORE.EditQuantum(instance)
-            IF entry.unit=0 THEN
+            IF entry.unit=DESKSTATE.ConsoleUnit() THEN
               DESKMENUCACHE.ConsoleChanged(instance,view)
             FI
             IF instance.operation=CONSOLETYPES.OP_IDLE THEN

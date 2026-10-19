@@ -1,0 +1,136 @@
+; Presenter-owned replacement of the one Shell view and backing bitmap.
+MODULE DESKCONSOLE
+USE EXEC
+USE INPUT
+USE DISPLAY
+USE AESLOCKS
+USE DESKTYPES
+USE DESKSTATE
+USE DESKMOVE
+USE LAYERS
+USE LAYERTYPES
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE CONSOLEBITMAP
+USE CONSOLEDISPLAY
+USE CONSOLECORE
+USE HEAPCORE
+
+; Caller holds the settled scene boundary. The old cells stay retained.
+PUBLIC PROC Detach(DESKTYPES.Service POINTER service)
+
+  LET entry=CONSOLEWINDOWS.Find(service.consoleUnit)
+  IF entry<>NULL THEN
+    BEGIN
+      LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+      DESKMOVE.HideCaret()
+      CONSOLEDISPLAY.DiscardBatch()
+      view.visible=0
+      view.focused=0
+      view.scrollState=0
+      view.cursorOn=0
+      view.index=$ffff
+      view.generation==+1
+    END
+  FI
+
+  CONSOLEDISPLAY.RetireBacking()
+
+RETURN
+
+; With no Shell window the worker still services the permanent console. Reset
+; the binding before a created unit can retire or a later OPEN can reuse it.
+PUBLIC PROC Closed(DESKTYPES.Service POINTER service)
+
+  Detach(service)
+  LET entry=CONSOLEWINDOWS.Find(0)
+  EXEC.Forbid()
+  service.consoleWindow=0
+  service.consoleUnit=0
+  IF entry<>NULL THEN
+    service.consoleRoute=@entry.route
+  FI
+  DESKSTATE.Select(0)
+  EXEC.Permit()
+
+RETURN
+
+; The registered controller owns the target until exact reply, then keeps it
+; bound until another successful bind or window close. BUSY changes no binding.
+PUBLIC CARD FUNC Bind(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window DESKTYPES.Request POINTER request)
+  CARD status
+
+  IF window.id<>service.consoleWindow
+      OR window.kind<>DESKTYPES.CONTENT_CONSOLE
+      OR request.client.owner<>service.consoleOwner THEN
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET entry=CONSOLEWINDOWS.Find(request.target)
+  IF entry=NULL THEN
+    RETURN(DESKTYPES.BAD_ID)
+  FI
+
+  IF entry.unit<>0 AND entry.owner<>BYTE POINTER(service.consoleOwner) THEN
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  IF view.width<>64 OR view.height<>20
+      OR instance.width<>64 OR instance.height<>20 THEN
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  IF CONSOLEBITMAP.Failed()<>0 THEN
+    RETURN(DESKTYPES.DRAW_FAILED)
+  FI
+
+  IF windows.presenting<>0 OR service.scene.busy<>0
+      OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
+      OR AESLOCKS.PaintBlocked()<>0 THEN
+    RETURN(DESKTYPES.BUSY)
+  FI
+
+  IF window.console=request.target THEN
+    RETURN(DESKTYPES.OK)
+  FI
+
+  DESKMOVE.HideCaret()
+  IF CONSOLEBITMAP.Failed()<>0 THEN
+    RETURN(DESKTYPES.DRAW_FAILED)
+  FI
+
+  Detach(service)
+  view.claimed=1
+  view.visible=0
+  view.focused=0
+  view.scrollState=0
+  view.presentedGeneration=0
+  view.index=$ffff
+  view.generation==+1
+  CONSOLECORE.Dirty(instance,0,instance.count)
+  EXEC.Forbid()
+  window.console=entry.unit
+  service.consoleUnit=entry.unit
+  service.consoleRoute=@entry.route
+  IF service.focus=window.id THEN
+    windows.focusSlot=BYTE(entry.unit & 3)
+    status=INPUT.PublishRoute(INPUT.Lease POINTER(service.keyboard),entry.route)
+    IF status<>INPUT.OK THEN
+      HEAPCORE.Abort($fae8)
+    FI
+  FI
+  EXEC.Permit()
+
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  IF LAYERS.Invalidate(@service.scene,window.layer,@layer.bounds)
+      <>LAYERTYPES.OK THEN
+    HEAPCORE.Abort($faee)
+  FI
+
+RETURN(DESKTYPES.OK)
+
+ENDMODULE

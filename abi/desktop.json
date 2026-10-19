@@ -1,5 +1,5 @@
 {
-  "version": 14,
+  "version": 15,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 6,
@@ -94,7 +94,8 @@
     "TILE_LEFT": 104,
     "TILE_WIDTH": 88,
     "TILE_HEIGHT": 11,
-    "TILE_BOTTOM": 2
+    "TILE_BOTTOM": 2,
+    "BIND_CONSOLE": 16
   },
   "records": {
     "Event": [
@@ -452,6 +453,10 @@
       [
         "keyboard",
         "BYTE POINTER"
+      ],
+      [
+        "consoleUnit",
+        "LONGCARD"
       ],
       [
         "consoleRoute",

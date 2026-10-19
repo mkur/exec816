@@ -6,7 +6,7 @@ INCLUDE "../../examples/shell/shell-boot.inc"
 INCLUDE "../../examples/shell/shell-controller.inc"
 
 CARD checks
-BYTE finished,releaseFillers
+BYTE finished,releaseFillers,fillersReady
 LONGCARD baseline,peer
 LONGCARD ARRAY fillers(4)
 PROCESS.Result peerResult
@@ -21,9 +21,12 @@ PROC Check(BYTE okay)
 
 RETURN
 
-; Real resident Processes occupy public slots without additional DOS objects.
+; Real resident Processes occupy public slots without opening application I/O.
 LONGINT FUNC Hold()
 
+  EXEC.Forbid()
+  fillersReady==+1
+  EXEC.Permit()
   WHILE releaseFillers=0 DO
     EXEC.Yield()
   OD
@@ -65,6 +68,12 @@ LONGINT FUNC Producer()
   FOR index=0 TO 3 DO
     fillers(index)=PROCESS.Start(@Hold,NULL,0)
     Check(fillers(index)<>0)
+  OD
+
+  ; A launched Process still adopts its DOS context and reply port. Wait for
+  ; every filler to enter Hold before comparing unrelated heap ownership.
+  WHILE fillersReady<>4 DO
+    EXEC.Yield()
   OD
 
   available=EXEC.AvailMem(0)

@@ -401,7 +401,7 @@ def application_entry(routine):
         return False
     if routine['name'].startswith('M_DESKAPP_'):
         return bool(re.fullmatch(r'M_DESKAPP_RUN_[0-9A-F]+', routine['name']))
-    if routine['name'].startswith(('M_DESKTOP_', 'M_DESKCORE_', 'M_DESKMOVE_', 'M_DESKCACHE_', 'M_DESKEVENTS_', 'M_DESKSTATE_', 'M_DESKPAINT_', 'M_DESKINPUT_', 'M_DESKDRAG_', 'M_DESKHOST_', 'M_DESKBOOT_', 'M_DESKWIDGETS_', 'M_DESKWIDGETINPUT_')):
+    if routine['name'].startswith(('M_DESKTOP_', 'M_DESKCORE_', 'M_DESKCONSOLE_', 'M_DESKMOVE_', 'M_DESKCACHE_', 'M_DESKEVENTS_', 'M_DESKSTATE_', 'M_DESKPAINT_', 'M_DESKINPUT_', 'M_DESKDRAG_', 'M_DESKHOST_', 'M_DESKBOOT_', 'M_DESKWIDGETS_', 'M_DESKWIDGETINPUT_')):
         return False
     # The controller starts this registered Process callback. Other shared
     # shell helpers execute in that Process and cannot be admitted as entries.

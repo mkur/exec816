@@ -1,6 +1,7 @@
 ; Permanent registry entries outlive every borrowed instance pointer.
 MODULE CONSOLEWINDOWS
 USE DISPLAY
+USE DESKSTATE
 USE CONSOLETYPES
 USE CONSOLEBITMAP
 USE CONSOLEBATCH
@@ -122,11 +123,11 @@ PUBLIC BYTE FUNC Runnable(CONSOLETYPES.Window POINTER entry)
     RETURN(0)
   FI
 
-  ; The desktop binds console unit zero. Its frozen text continuation must
+  ; The bound desktop console's frozen text continuation must
   ; retire the scene token before a queued AES update lock can be granted.
   ; Finish existing work without admitting a new write under that lock.
   IF CONSOLEBITMAP.TextPending()<>0 THEN
-    RETURN(entry.unit=0)
+    RETURN(entry.unit=DESKSTATE.ConsoleUnit())
   FI
 
   IF AESLOCKS.PaintBlocked()<>0 THEN
@@ -164,14 +165,14 @@ PUBLIC CONSOLETYPES.Window POINTER FUNC Take()
   BYTE count,index
 
   windows=Registry()
-  ; A retained desktop text segment owns unit zero's frozen source. Select it
+  ; A retained desktop text segment owns the bound console's source. Select it
   ; before other views, including views with ready input, until it retires.
   IF windows.presenting<>0 THEN
     RETURN(NULL)
   FI
 
   IF windows.liveCount=1 OR CONSOLEBITMAP.TextPending()<>0 THEN
-    entry=@windows.items(0)
+    entry=@windows.items(BYTE(DESKSTATE.ConsoleUnit() & 3))
     entry.busy=1
     IF entry.state=CONSOLETYPES.WIN_LIVE THEN
       IF Runnable(entry)<>0 THEN

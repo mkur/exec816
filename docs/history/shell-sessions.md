@@ -5,8 +5,8 @@
 [Development record](../development/shell-sessions.json)
 
 Implementation proceeds through SS1–SS8. This record distinguishes the
-completed text and standalone bitmap sessions from the desktop presentation
-work still planned. Separate desktop windows remain outside this plan.
+completed text, standalone bitmap and desktop console binding from the tab
+controls and final measurements still planned. Separate desktop windows remain outside this plan.
 
 ## SS1 — explicit shell contexts
 
@@ -265,3 +265,58 @@ bank-zero reservations remain unchanged: **0 fixed, 0 per-public-Task and
 stack observations and emitted frame layouts are in the development record.
 Desktop binding/tabs and timing measurements remain SS6–SS8. These development
 checks make no release or physical-hardware qualification claim.
+
+## SS6 — one desktop Shell frame, selected console binding
+
+Native BIND_CONSOLE uses the registered controller’s existing control lane.
+Root retains its pending destination record and collects the exact desktop reply
+inside the ordinary shell event loop; a concurrent CLOSE cannot reuse that
+record. The presenter commits a replacement only after Layers, UPDATE and DMA
+allow it. It removes the old caret, retires gathered scroll reuse and backing
+ownership, changes the retained console and route, then schedules a full redraw.
+A bind preserves another application’s keyboard focus. Final retirement of a
+created console binds permanent unit zero before releasing the created view.
+Window CLOSE also resets the service binding, allowing unit zero to continue
+servicing I/O after the former bound console is destroyed.
+
+Painting, moving, focus, pending text and menu-cache invalidation now resolve
+the bound console. Only that view can write the existing 512×160 backing image;
+identity and presented model generation must match before copying it. Hidden
+consoles retain dirty cells. The existing complete unit/view/model identity
+checks protect scroll completion; binding resets view generations and rebuilds
+the destination rather than adopting an outgoing image.
+
+The raw and optimized layout probes each pass 114 checks. The presentation
+fixture compares nine complete desktop rasters while switching, scrolling a
+hidden console, retaining a covering window’s focus, hiding/showing and moving
+the Shell. Additional physical input iconifies Shell before a bind and restores
+it afterward. A replay of a retired source’s DMA completion leaves the selected
+model and view unchanged. The ownership fixture passes 84 checks, including
+CLOSE accepted during a held bind, subsequent retirement, repeated identity and
+unit reuse, capacity failures and exact heap recovery. A close request may remain
+CLOSING while a held paint prevents final console output; acceptance is distinct
+from completed retirement.
+
+The physical two-shell desktop walkthrough exercises NEWSHELL, SESSION, the
+captured chord, separate drafts, repeated close/recreate, a surviving second
+shell and last-created-console shutdown. It leaves at least 599 measured bytes
+above the protected floor for the exercised shell lifetimes and 830 for root.
+The nonzero-console watchdog cases preserve the old binding on a quiesced
+failure and retain the active scroll, client and I/O on an unquiesced failure.
+A backing scroll can own DMA without a Layers token; the fixture checks the
+actual retained owner. Existing AES window and menu cases, the text ownership
+regression, generated definitions and 498 host tests accompany these cases in
+the development record. The text fixture now waits for every filler Process to
+finish DOS adoption before taking its heap snapshot: an earlier snapshot could
+count a later 32-byte reply-port allocation as a failed-CREATE leak.
+
+The desktop Service record grows by four bytes to 18,722 (eight additional
+allocated upper bytes after rounding). New scalar globals contain 11 payload
+bytes; emitted static spans include their alignment. A full desktop console
+allocates 1,672 upper bytes. No Task, window slot or backing surface is added;
+the sole backing remains 40,960 VRAM bytes. Production arena capacities are
+unchanged. The desktop shell fixture now reserves the production desktop’s
+9 KiB upper arena instead of its old 8 KiB test-only limit. SS6 adds **0 fixed,
+0 per-public-Task and 0 idle reserved bank-zero bytes**, including guards,
+alignment and unused capacity. Tab controls and final measurements remain
+SS7–SS8; these development checks do not qualify a release or physical hardware.

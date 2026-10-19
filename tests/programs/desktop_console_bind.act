@@ -1,0 +1,213 @@
+MODULE DESKBINDTEST
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE HEAPCORE
+USE CONSOLE
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE CONSOLEBITMAP
+USE CONSOLEDISPLAY
+USE DESKTOP
+USE DESKTYPES
+USE DESKBOOT
+USE DESKSTATE
+USE DESKPAINT
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+
+CARD checks,checkpoint,gate
+LONGCARD second,panel
+BYTE ARRAY name(13)
+BYTE ARRAY line(64)
+DESKTYPES.Request request
+DESKTYPES.Content content
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC UnitName(LONGCARD unit)
+  BYTE index,value
+
+  name(0)=82
+  name(1)=65
+  name(2)=87
+  name(3)=58
+  name(12)=0
+  FOR index=0 TO 7 DO
+    value=BYTE((unit RSH ((7-index) LSH 2)) & 15)
+    name(index+4)=IF value<10 THEN value+48 ELSE value+87 FI
+  OD
+
+RETURN
+
+CARD FUNC Collect()
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
+
+  LET client=DESKBOOT.Binding()
+  reply=DESKTOP.Collect(client)
+  WHILE reply=NULL DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(client)
+  OD
+
+  Require(reply=@request)
+
+RETURN(reply.status)
+
+PROC Send(BYTE operation LONGCARD window)
+
+  request.operation=operation
+  request.window=window
+  Require(DESKTOP.Submit(DESKBOOT.Binding(),@request)=DESKTYPES.OK)
+  Require(Collect()=DESKTYPES.OK)
+
+RETURN
+
+PROC Bind(LONGCARD unit)
+
+  DESKTOP.Prepare(@request,DESKTYPES.BIND_CONSOLE)
+  request.target=unit
+  Send(DESKTYPES.BIND_CONSOLE,DESKBOOT.WindowId())
+  Require(DESKSTATE.ConsoleUnit()=unit)
+
+RETURN
+
+PROC Settled()
+
+  LET service=DESKSTATE.Get()
+  DO
+    IF service.scene.busy=0 AND DESKPAINT.Runnable()=0
+        AND CONSOLEBITMAP.Pending()=0 THEN
+      BEGIN
+        LET entry=CONSOLEWINDOWS.Find(service.consoleUnit)
+        LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+        LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+        IF view.visible=0 OR (CONSOLEDISPLAY.BackingReady(view,instance)<>0
+            AND (view.focused=0 OR view.cursorOn<>0)) THEN
+          RETURN
+        FI
+      END
+    FI
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Pause(CARD value)
+  CARD ignored
+
+  Settled()
+  ignored=EXECTASKS.Sleep(2)
+  checkpoint=value
+  WHILE gate<value DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Main()
+  CARD row,column,ignored
+  LONGCARD token
+
+  LET first=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  Require(first<>NULL)
+  second=CONSOLE.Create(64,20)
+  Require(second<>0)
+  UnitName(second)
+  LET other=DOS.Open(name,DOS.MODE_READWRITE)
+  Require(other<>NULL)
+  Require(DOS.Write(first,BYTE POINTER(c"\fAlpha"),6)=6)
+  Require(DOS.Write(other,BYTE POINTER(c"Beta"),4)=4)
+  Pause(1)
+  Bind(second)
+  Require(CONSOLE.Destroy(second)=0)
+  Pause(2)
+  FOR row=0 TO 24 DO
+    FOR column=0 TO 63 DO
+      line(column)=BYTE(33+(row*7+column) MOD 90)
+    OD
+    Require(DOS.Write(first,line,64)=64)
+  OD
+  Pause(3)
+
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_COMMANDS
+  request.payload=BYTE POINTER(c"Clip")
+  request.bytes=4
+  REGIONS.Assign(@request.bounds,113,93,273,173)
+  Send(DESKTYPES.OPEN,0)
+  panel=request.window
+  content.background=3
+  DESKTOP.Prepare(@request,DESKTYPES.REPLACE)
+  request.payload=BYTE POINTER(@content)
+  request.bytes=DESKTYPES.CONTENT_SIZE
+  Send(DESKTYPES.REPLACE,panel)
+  Send(DESKTYPES.SHOW,panel)
+  Send(DESKTYPES.FOCUS,panel)
+  Bind(0)
+  LET service=DESKSTATE.Get()
+  LET windows=CONSOLEWINDOWS.Registry()
+  Require(service.focus=panel AND windows.focusSlot=255)
+  Pause(4)
+  Require(DOS.Write(other,BYTE POINTER(c" hidden"),7)=7)
+  Bind(second)
+  Require(service.focus=panel AND windows.focusSlot=255)
+  Pause(5)
+  Send(DESKTYPES.HIDE,DESKBOOT.WindowId())
+  Bind(0)
+  Pause(6)
+  Send(DESKTYPES.SHOW,DESKBOOT.WindowId())
+  Send(DESKTYPES.RAISE,DESKBOOT.WindowId())
+  Send(DESKTYPES.FOCUS,DESKBOOT.WindowId())
+  Pause(7)
+  Send(DESKTYPES.CLOSE,panel)
+  DESKTOP.Prepare(@request,DESKTYPES.MOVE)
+  request.bounds.left=80
+  request.bounds.top=53
+  Send(DESKTYPES.MOVE,DESKBOOT.WindowId())
+  Bind(second)
+  Pause(8)
+
+  ; A queued bind borrows its destination until the existing paint retires.
+  Settled()
+  EXEC.Forbid()
+  Require(LAYERS.Invalidate(@service.scene,0,@service.scene.screen)=LAYERTYPES.OK)
+  Require(LAYERS.BeginPaint(@service.scene,0,@token)=LAYERTYPES.OK)
+  EXEC.Permit()
+  DESKTOP.Prepare(@request,DESKTYPES.BIND_CONSOLE)
+  request.window=DESKBOOT.WindowId()
+  request.target=0
+  Require(DESKTOP.Submit(DESKBOOT.Binding(),@request)=DESKTYPES.OK)
+  ignored=EXECTASKS.Sleep(2)
+  Require(DESKTOP.Collect(DESKBOOT.Binding())=NULL)
+  Require(service.consoleUnit=second)
+  Require(LAYERS.Finish(@service.scene,token,0)=LAYERTYPES.OK)
+  Require(Collect()=DESKTYPES.OK)
+  Pause(9)
+
+  DESKTOP.Prepare(@request,DESKTYPES.BIND_CONSOLE)
+  request.window=DESKBOOT.WindowId()
+  request.target=$fffffffd
+  Require(DESKTOP.Submit(DESKBOOT.Binding(),@request)=DESKTYPES.OK)
+  Require(Collect()=DESKTYPES.BAD_ID AND service.consoleUnit=0)
+  Bind(second)
+  DESKBOOT.Detach()
+  Require(DESKSTATE.ConsoleUnit()=0)
+  Require(DOS.Close(other)<>0)
+  Require(CONSOLE.Destroy(second)<>0)
+  Require(DOS.Write(first,BYTE POINTER(c"z"),1)=1)
+  Require(DOS.Close(first)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+ENDMODULE
