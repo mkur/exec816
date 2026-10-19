@@ -512,6 +512,12 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [QED native feasibility design](gem4xe/qed-native-feasibility-design.md) and
+  [QF1–QF6 implementation plan](gem4xe/qed-native-feasibility-implementation-plan.md):
+  strategy step 2; native ABI and owned runtime, real file/text-storage probes,
+  whole-QED layout, measured image/stack decisions and Process admission.
+  Design and plan prepared; implementation remains pending.
+
 - [QED initial scope and source dependencies](gem4xe/qed-scope-and-dependencies.md):
   strategy step 1 fixed; English single-document scope, pinned QED/cflib sources,
   required dependency paths and explicit deferrals. Source checks only; native

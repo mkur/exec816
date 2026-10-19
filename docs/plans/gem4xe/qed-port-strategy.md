@@ -9,8 +9,10 @@ and everyday coexistence. Use each result to decide which compatibility gaps
 need general platform support and which can be closed by adapting QED or cflib.
 
 Status: [step 1 scope and source baseline](qed-scope-and-dependencies.md) fixed;
-steps 2–7 remain proposed. Design notes and executable implementation plans
-follow separately. QED has not yet been built or executed on Exec816.
+step 2 has a [design](qed-native-feasibility-design.md) and
+[QF1–QF6 plan](qed-native-feasibility-implementation-plan.md), with implementation
+pending. Steps 3–7 remain proposed. QED has not yet been built or executed on
+Exec816.
 
 ## First usable editor
 
@@ -59,6 +61,11 @@ deliberately. New reusable services belong in the public interfaces, using
 ordinary Exec primitives. Compiler defects belong in the owning toolchain.
 
 ### Prove native build and runtime feasibility
+
+The [feasibility design](qed-native-feasibility-design.md) defines native
+ownership and the runtime/layout/stack gates. Its
+[implementation plan](qed-native-feasibility-implementation-plan.md) orders
+QF1–QF6 from emitted ABI probes to the step 3 handoff.
 
 Compile the selected source set against Exec's native C ABI and establish the
 real image layout, runtime dependencies and upper-memory cost. Use those
@@ -168,10 +175,10 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Use the fixed [step 1 baseline](qed-scope-and-dependencies.md) to write a short
-native-port feasibility design note covering runtime ownership, image layout,
-the retained link dependencies and the stack approach. Follow it with a small
-executable implementation plan for the native build and runtime proof in step 2.
+Begin QF1 in the [native feasibility implementation plan](qed-native-feasibility-implementation-plan.md#qf1-prepare-sources-and-prove-the-abi-boundary),
+using the fixed [step 1 baseline](qed-scope-and-dependencies.md) and
+[feasibility design](qed-native-feasibility-design.md). Prove the emitted ABI
+boundary and establish the prepared source/dependency ledger before runtime work.
 
 Let that result shape the resource, menu and workstation design. Prepare the
 editing and saving designs when their dependencies are understood; the save

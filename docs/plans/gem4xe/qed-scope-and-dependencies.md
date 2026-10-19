@@ -163,8 +163,9 @@ all 21 cflib exclusions, and the English resource header and menu extent.
 The manifest also records nine existing Exec input hashes. These are development
 source/content checks; they provide no emitted-code or hosted-system result.
 
-Proceed to a native build/runtime feasibility design note and a focused step 2
-implementation plan. The unresolved decisions are actual native image size,
+Proceed using the [native feasibility design](qed-native-feasibility-design.md)
+and [QF1–QF6 implementation plan](qed-native-feasibility-implementation-plan.md).
+The unresolved measured decisions are actual native image size,
 the retained runtime/link dependency set, allocator and error-exit ownership,
 stack requirements and any general Process admission change they require.
 Resource/VDI designs and the complete save recovery protocol follow in their

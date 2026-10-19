@@ -1,5 +1,12 @@
 # GEM as a client of an Exec-like kernel
 
+The [QED native feasibility design](qed-native-feasibility-design.md) and
+[QF1–QF6 plan](qed-native-feasibility-implementation-plan.md) define strategy
+step 2: prove a private native runtime and text-storage/file paths, measure
+the complete QED layout, and settle stack/admission requirements before GEM
+expansion. Implementation is pending; analysis-only links cannot be packaged
+or used as executable evidence.
+
 The [QED initial scope and source dependencies](qed-scope-and-dependencies.md)
 fix strategy step 1: an English single-document editor, explicit source pins,
 required dependency paths and deferred startup behavior. Source checks pass;
