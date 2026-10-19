@@ -32,7 +32,7 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-Import ABI 19 includes the current device/AES/file imports, `ExamineExact`,
+Import ABI 23 includes the current device/AES/file imports, `ExamineExact`,
 `MountVolume` and `UnmountVolume`, and the caller-local `ExecAESBeginUpdate` and
 `ExecAESPaintedChanges` [paint-completion helpers](aes.md#optional-repaint-completion).
 The generated C FileInfoBlock stays 260 bytes, with 30 reserved bytes and
@@ -45,6 +45,8 @@ Loaded C applications also use the existing `CreateMsgPort`, `DeleteMsgPort`,
 functions. Device requests use the ordinary
 [device I/O contract](device-io.md); no new kernel operation or clock is added.
 The desktop provider and its applications must be rebuilt together.
+The current imports also expose AvailMem and SetIoErr; the shared wrapper
+preserves the application's native secondary result across AES retirement.
 
 ## File layout
 
@@ -56,7 +58,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 19 |
+| 6 | 2 | Import ABI version, 23 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -75,7 +77,12 @@ offset of its thunk's three-byte operand. Each fixup is a 32-bit relative
 byte offset; fixups are strictly increasing. The loader adds the signed bank
 displacement modulo 256 to that byte.
 
-Limits are four segments, a 256 KiB file and a 192 KiB memory span. Admission
+Limits are six segments, a 256 KiB file and a 320 KiB memory span.
+The existing linker layout places code in relative banks 0, 2 and 4,
+initialized data/BSS in bank 1, and optional read-only tables in bank 3.
+ABI 23 admits the third code bank without changing this linker placement.
+The file staging limit stays 256 KiB. The loader's bounded segment array grows
+by 40 transient stack bytes; it adds no reserved bank-zero storage. Admission
 checks versions, file/segment bounds, executable entry, serialized fixup sites
 and available imports once. This does not verify arbitrary instruction streams
 or provide memory protection. Callers retain responsibility for valid API use.

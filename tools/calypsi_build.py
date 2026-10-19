@@ -45,7 +45,7 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
     objects = []
     for number, source in enumerate((*sources,*overrides)):
         obj = output/f'{number}-{source.stem}.o'
-        extra = (definitions or {}).get(source.name, ())
+        extra = (definitions or {}).get(str(source), (definitions or {}).get(source.name, ()))
         source_flags = [*flags[:-1], '-O2' if (source_optimization or {}).get(source.name, optimize) else '-O0']
         command([tools['cc65816']['path'], *source_flags, *extra, '-c', *include_args,
                  '--list-file', obj.with_suffix('.lst'), '-o', obj, source])

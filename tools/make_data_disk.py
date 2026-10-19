@@ -6,6 +6,7 @@ from native_program import ROOT,sha256
 import sdfs_reference
 from sector_images import ATRImage
 from make_shell_disk import make as mydos
+from analysis_artifact import reject_analysis
 
 def make(path,source=ROOT/'examples/shell-disk',binary_names=(),sector_bytes=128,filesystem='sdfs',sectors=720,label='EXEC816'):
     path=Path(path);source=Path(source);binary_names=set(binary_names)
@@ -24,6 +25,7 @@ def make(path,source=ROOT/'examples/shell-disk',binary_names=(),sector_bytes=128
             if item.is_dir():target.mkdir(parents=True,exist_ok=True);continue
             target.parent.mkdir(parents=True,exist_ok=True)
             data=item.read_bytes() if relative.as_posix() in binary_names else item.read_text(encoding='ascii').encode('ascii')
+            reject_analysis(data)
             expected[relative.as_posix()]=data;target.write_bytes(data)
         path.parent.mkdir(parents=True,exist_ok=True)
         sdfs_reference.make(path,staging,sectors,sector_bytes,label)

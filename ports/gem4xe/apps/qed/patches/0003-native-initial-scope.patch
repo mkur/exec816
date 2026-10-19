@@ -1,0 +1,7533 @@
+--- a/cflib/appexit.c
++++ b/cflib/appexit.c
+@@ -30,8 +30,5 @@
+ 
+ void exit_app(int ret)
+ {
+-	exit_gem();
+-	debug("finish with %d\n", ret);
+-
+-	exit(ret);
++    (void)ret;exit_gem();
+ }
+--- a/cflib/appexitg.c
++++ b/cflib/appexitg.c
+@@ -30,15 +30,7 @@
+ 
+ void exit_gem(void)
+ {
+-	if (gl_gdos)
+-		vst_unload_fonts(cf_vdi_handle, 0);
+-
+-	v_clsvwk(cf_vdi_handle);
+-
+-	exit_userdef();
+-
+-	if (__app_rsc_load)
+-		rsrc_free();
+-
+-	appl_exit();
++    if(cf_vdi_handle){v_clsvwk(cf_vdi_handle);cf_vdi_handle=0;}
++    if(__app_rsc_load){rsrc_free();__app_rsc_load=0;}
++    if(gl_apid>=0){appl_exit();gl_apid=-1;}
+ }
+--- a/cflib/appinit.c
++++ b/cflib/appinit.c
+@@ -28,93 +28,23 @@
+ #include "app.h"
+ 
+ 
++_WORD gl_apid=-1;
++
+ void init_app(char *rsc)
+ {
+-	_WORD d;
+-	long l;
+-	_WORD work_out[57];
+-	char s[128];
+-	char path[256];
+-
+-	debug("started\n");
+-	gl_apid = appl_init();
+-	gl_phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
+-	wind_get_grect(0, WF_WORKXYWH, &gl_desk);
+-	graf_mouse(ARROW, 0x0L);
+-	__app_hidden = 0;
+-#if defined(__PUREC__)
+-	gl_gem = _GemParBlk.global[0];
+-#else
+-	gl_gem = _AESversion;
+-#endif
+-
+-	if (getcookie("MiNT", &l))
+-		gl_mint = (short)l;
+-	gl_magx = get_magx_version();
+-	cf_magxPC = getcookie("MgPC", NULL);
+-	if (getcookie("nAES", &l))
+-		gl_naes = *(unsigned short *)l;
+-	if (getcookie("NVDI", &l))
+-		gl_nvdi = *(unsigned short *)l;
+-
+-	/*
+-	 * Detect XaAES
+-	 */
+-	if (wind_get(0, 0x5841, &d, &d, &d, &d) == 0x5841)
+-	{
+-		gl_xaaes = TRUE;
+-	}
+-
+-	/* SystemzeichensÑtze bestimmen */
+-	if (appl_xgetinfo(0, &sys_big_height, &sys_big_id, &d, &d) == 0)
+-	{
+-		sys_big_id = 1;
+-		if ((Getrez() == 0) || (Getrez() == 1))	/* ST-Low/Mid */
+-			sys_big_height = 6;
+-		else
+-			sys_big_height = 13;
+-	}
+-	if (appl_xgetinfo(1, &sys_sml_height, &sys_sml_id, &d, &d) == 0)
+-	{
+-		sys_sml_id = 1;
+-		sys_sml_height = 4;
+-	}
+-
+-	cf_vdi_handle = open_vwork(work_out);
+-	cf_font_anz = work_out[10];
+-	vq_extnd(cf_vdi_handle, TRUE, work_out);
+-	gl_planes = work_out[4];
+-
+-	/* Aus den Pixel-Hîhen Point-Hîhen ermitteln */
+-	sys_sml_pts = height2pts(cf_vdi_handle, sys_sml_id, sys_sml_height);
+-	sys_big_pts = height2pts(cf_vdi_handle, sys_big_id, sys_big_height);
+-
+-	gl_gdos = vq_vgdos() != -2;
+-	if (gl_gdos)
+-		cf_font_anz += vst_load_fonts(cf_vdi_handle, 0);
+-
+-	vst_font(cf_vdi_handle, sys_big_id);
+-	vst_point(cf_vdi_handle, sys_big_pts, &sys_wchar, &sys_hchar, &sys_wbox, &sys_hbox);
+-
+-	/*
+-	 * Startverzeichnis ermitteln. 
+-	 * Unter N.AES (Minix) kann es ungÅltige Pfade geben, daher der extra 
+-	 * path_exitst().
+-	 */
+-	shel_read(path, s);
+-	split_filename(path, gl_appdir, NULL);
+-	if (!path_exists(gl_appdir))
+-		get_path(gl_appdir, 0);
+-
+-	init_userdef();
+-
+-	if (rsc && *rsc != '\0')
+-	{
+-		__app_rsc_load = rsrc_load(rsc) != 0;
+-		if (!__app_rsc_load)
+-		{
+-			form_alert(1, "[3][RSC nicht gefunden!|RSC not found!][Exit]");
+-			exit_app(-1);
+-		}
+-	}
++    _WORD work_out[57];
++    (void)rsc; /* QED owns its resource acquisition and failure path. */
++    gl_apid=appl_init();
++    if(gl_apid<0)return;
++    gl_phys_handle=graf_handle(&gl_wchar,&gl_hchar,&gl_wbox,&gl_hbox);
++    wind_get_grect(0,WF_WORKXYWH,&gl_desk);
++    __app_hidden=0;gl_gem=0; /* No TOS/AES OS-version identity is claimed. */
++    gl_gdos=0;gl_mint=gl_magx=gl_naes=gl_nvdi=gl_xaaes=0;
++    sys_big_id=sys_sml_id=1;sys_big_height=sys_sml_height=gl_hchar;
++    sys_big_pts=sys_sml_pts=gl_hchar;
++    sys_wchar=gl_wchar;sys_hchar=gl_hchar;sys_wbox=gl_wbox;sys_hbox=gl_hbox;
++    cf_vdi_handle=open_vwork(work_out);cf_font_anz=work_out[10];
++    gl_planes=0;
++    if(cf_vdi_handle)while((1UL<<gl_planes)<(unsigned short)work_out[13])gl_planes++;
++    gl_appdir[0]=0; /* No TOS app-dir query; QED uses SYS:QED.RSC. */
+ }
+--- a/cflib/asciitab.c
++++ b/cflib/asciitab.c
+@@ -185,7 +185,7 @@
+ 					quit = TRUE;
+ 				}
+ 				else
+-					Bconout(2, 7);
++					((void)0) /* optional audible bell */;
+ 			}
+ 		}
+ 		if (event & MU_KEYBD)
+--- a/cflib/cfformdo.c
++++ b/cflib/cfformdo.c
+@@ -81,7 +81,7 @@
+ 			next_obj = cf_objc_find(tree, ROOT, MAX_DEPTH, m_x, m_y);
+ 			if (next_obj == -1)
+ 			{
+-				Bconout(2, 7);		/* beep */
++				((void)0) /* optional audible bell */;		/* beep */
+ 				next_obj = 0;
+ 			}
+ 			else
+--- a/cflib/cfmalloc.c
++++ b/cflib/cfmalloc.c
+@@ -29,31 +29,7 @@
+ 
+ void *cf_malloc(long size, char *who, int global)
+ {
+-	void *r = NULL;
+-
+-	if (global && getcookie("MiNT", NULL))
+-		r = (void *)Mxalloc(size, 0x23);
+-	else
+-		r = (void *)malloc(size);
+-
+-	if (r == NULL)
+-	{
+-		char msg[80];
+-
+-		if (gl_gem > 0)
+-		{
+-			sprintf(msg, "[3][CF-Lib (%s)|Can't allocate RAM!][Ignore|Exit]", who);
+-			if (form_alert(2, msg) == 2)
+-			{
+-				appl_exit();
+-				exit(-39);
+-			}
+-		}
+-		else
+-		{
+-			fprintf(stderr, "CF-Lib (%s)\nCan't allocate RAM!\n", who);
+-			exit(-39);
+-		}
+-	}
+-	return r;
++    (void)who;(void)global;
++    if(size<=0 || (unsigned long)size>65524UL)return NULL;
++    return malloc((size_t)size);
+ }
+--- a/cflib/cfobjced.c
++++ b/cflib/cfobjced.c
+@@ -39,70 +39,6 @@
+ 
+ void cf_objc_edit(OBJECT *tree, _WORD obj, _WORD kreturn, _WORD *idx, _WORD mode, _WORD kstate, _WORD *ctrl)
+ {
+-	if (!(tree[obj].ob_flags & OF_EDITABLE))
+-		return;
+-
+-	/* Ozk:
+-	 * We let XaAES get its hands on any keys!
+-	 */
+-	if (gl_xaaes)
+-	{
+-		objc_edit(tree, obj, kreturn, idx, mode);
+-		return;
+-	}
+-
+-	if (mode == ED_CHAR)
+-	{
+-		_WORD scan, i;
+-		long l;
+-		TEDINFO *ted;
+-		char *ptext;
+-		char buf[80];
+-
+-		*ctrl = FALSE;
+-
+-		ted = (TEDINFO *)get_obspec(tree, obj);
+-		ptext = ted->te_ptext;
+-
+-		scan = (kreturn & 0xff00) >> 8;
+-		if (kstate & K_CTRL)
+-		{
+-			switch (scan)
+-			{
+-			case 0x2D:											/* ^X -> Cut */
+-				scrap_wtxt(ptext);
+-				objc_edit(tree, obj, 0x11B, idx, ED_CHAR);		/* ESC: loeschen */
+-				*ctrl = TRUE;
+-				break;
+-
+-			case 0x2E:											/* ^C -> Copy */
+-				scrap_wtxt(ptext);
+-				*ctrl = TRUE;
+-				break;
+-
+-			case 0x2F:											/* ^V -> Paste */
+-				objc_edit(tree, obj, 0x11B, idx, ED_CHAR);		/* ESC: loeschen */
+-				scrap_rtxt(buf, &l, sizeof(buf));
+-				if (l > ted->te_txtlen - 1)
+-					l = ted->te_txtlen - 1;
+-				for (i = 0; i < l; i++)
+-					objc_edit(tree, obj, buf[i], idx, ED_CHAR);
+-				*ctrl = TRUE;
+-				break;
+-			}
+-		}
+-		else
+-		{
+-			switch (scan)
+-			{
+-			case 0x52:											/* INS -> ASCII-Tabelle */
+-				i = ascii_table(sys_big_id, sys_big_pts);
+-				if (i > 0)
+-					kreturn = i & 0xff;
+-				break;
+-			}
+-		}
+-	}
+-	if (!(kstate & K_CTRL))											/* keine Ctrl-Codes durchlassen */
+-		objc_edit(tree, obj, kreturn, idx, mode);
++    (void)kstate;*ctrl=FALSE;
++    if(tree[obj].ob_flags & OF_EDITABLE)objc_edit(tree,obj,kreturn,idx,mode);
+ }
+--- a/cflib/colorpop.c
++++ b/cflib/colorpop.c
+@@ -309,25 +309,25 @@
+ static _WORD is_colorpop_object(OBJECT *tree, _WORD obj)
+ {
+ 	return (tree[obj].ob_type & 0xff) == G_USERDEF
+-		&& ((tree[obj].ob_spec.userblk == &userblk)
+-		    || (tree[obj].ob_spec.userblk == &noncolor_userblk)
+-		    || (tree[obj].ob_spec.userblk >= popobj_userblk
+-			&& tree[obj].ob_spec.userblk < popobj_userblk + MAX_COLORPOP));
++		&& ((((USERBLK *)(ULONG)tree[obj].ob_spec) == &userblk)
++		    || (((USERBLK *)(ULONG)tree[obj].ob_spec) == &noncolor_userblk)
++		    || (((USERBLK *)(ULONG)tree[obj].ob_spec) >= popobj_userblk
++			&& ((USERBLK *)(ULONG)tree[obj].ob_spec) < popobj_userblk + MAX_COLORPOP));
+ }
+ 
+ /* Farb-Popub-Objektfarbe setzen */
+ void set_popobjcolor(OBJECT *tree, _WORD obj, _WORD color)
+ {
+ 	assert(is_colorpop_object(tree, obj));
+-	tree[obj].ob_spec.userblk->ub_parm &= 0xffff0000L;
+-	tree[obj].ob_spec.userblk->ub_parm |= (long) color & 0xffffL;
++	((USERBLK *)(ULONG)tree[obj].ob_spec)->ub_parm &= 0xffff0000L;
++	((USERBLK *)(ULONG)tree[obj].ob_spec)->ub_parm |= (long) color & 0xffffL;
+ }
+ 
+ /* Farb-Popup-Objektfarbe abfragen */
+ _WORD get_popobjcolor(OBJECT *tree, _WORD obj)
+ {
+ 	assert(is_colorpop_object(tree, obj));
+-	return (_WORD) (tree[obj].ob_spec.userblk->ub_parm & 0xffff);
++	return (_WORD) (((USERBLK *)(ULONG)tree[obj].ob_spec)->ub_parm & 0xffff);
+ }
+ 
+ /* Farbobjekt auf Userdef umstellen
+@@ -341,7 +341,7 @@
+ 
+ 	/* FIXME: Zur Zeit funzt das wg. get_objframe() nicht mit altem Typ im hibyte. */
+ 	tree[obj].ob_type = G_USERDEF;
+-	tree[obj].ob_spec.userblk = userblkp;
++	((USERBLK *)(ULONG)tree[obj].ob_spec) = userblkp;
+ 	userblkp->ub_code = colorpop_userdef;
+ 	userblkp->ub_parm = F_USEROBJ | (long) color;
+ 
+@@ -386,7 +386,7 @@
+ 	poptree[0].ob_x = 0;
+ 	poptree[0].ob_y = 0;
+ 	poptree[0].ob_type = G_BOX;
+-	poptree[0].ob_spec.index = 0x00ff1100L;
++	poptree[0].ob_spec = 0x00ff1100L;
+ 	poptree[0].ob_flags = OF_FL3DBAK;
+ 	poptree[0].ob_state = OS_SHADOWED;
+ 
+@@ -457,7 +457,7 @@
+ 		poptree[i].ob_width = size;
+ 		poptree[i].ob_height = size;
+ 		poptree[i].ob_type = G_USERDEF;
+-		poptree[i].ob_spec.userblk = &userblk;
++		((USERBLK *)(ULONG)poptree[i].ob_spec) = &userblk;
+ 		poptree[i].ob_flags = OF_SELECTABLE;
+ 		poptree[i].ob_state = 0;
+ 
+@@ -470,7 +470,7 @@
+ 	}
+ 
+ 	if (show_noncolor)
+-		poptree[1].ob_spec.userblk = &noncolor_userblk;
++		((USERBLK *)(ULONG)poptree[1].ob_spec) = &noncolor_userblk;
+ 
+ 	poptree[colors].ob_next = 0;
+ 	poptree[colors].ob_flags |= OF_LASTOB;
+--- a/cflib/debug.c
++++ b/cflib/debug.c
+@@ -33,95 +33,8 @@
+ 
+ #include <stdarg.h>
+ #include "intern.h"
+-
+-
+-int gl_debug = FALSE;
+-
+-static FILE *debug_handle = NULL;
+-static DEBUGDEV device;
+-static char progName[25];
+-
+-void debug_init(char *prog, DEBUGDEV dev, char *file)
++#include <stdarg.h>
++void debug(char *format,...)
+ {
+-	char devicename[20] = "";
+-
+-	strcpy(progName, prog);
+-	device = dev;
+-	switch (dev)
+-	{
+-		case Con:
+-			debug_handle = stdout;
+-			break;
+-		case TCon:
+-			if (appl_find("T-CON   ") > 0)
+-				debug_handle = stdout;
+-			else
+-				device = null;
+-			break;
+-		case Datei:
+-			strcpy(devicename, file);
+-			break;
+-		case Terminal:
+-			strcpy(devicename, "u:\\dev\\modem1");
+-			break;
+-		case Modem1:
+-			strcpy(devicename, "u:\\dev\\modem1");
+-			break;
+-		case Modem2:
+-			strcpy(devicename, "u:\\dev\\modem2");
+-			break;
+-		case Seriell1:
+-			strcpy(devicename, "u:\\dev\\serial1");
+-			break;
+-		case Seriell2:
+-			strcpy(devicename, "u:\\dev\\serial2");
+-			break;
+-		case Prn:
+-			strcpy(devicename, "u:\\dev\\prn");
+-			break;
+-		default:
+-			device = null;
+-			break;
+-	}
+-
+-	if (device != null)
+-		gl_debug = TRUE;
+-
+-	if (device != null && device != Con && device != TCon)
+-	{
+-		if (device == Datei)
+-			debug_handle = fopen(devicename, "a");
+-		else
+-			debug_handle = fopen(devicename, "w");
+-		if (debug_handle != NULL)
+-			setvbuf(debug_handle, NULL, _IONBF, 0);
+-	}
+-
+-	if (device == Terminal)
+-		debug("\33[2J\33[0;0H");			/* VT100-Terminal an Modem 1 */
++    va_list ap;va_start(ap,format);vfprintf(stderr,format,ap);va_end(ap);
+ }
+-
+-
+-void debug_exit(void)
+-{
+-	if (debug_handle != NULL && debug_handle != stdout)
+-		fclose(debug_handle);
+-	debug_handle = NULL;
+-	gl_debug = FALSE;
+-}
+-
+-
+-void debug(char *FormatString, ...)
+-{
+-	va_list arg_ptr;
+-
+-	if (gl_debug)
+-	{
+-		fprintf(debug_handle, "%s: ", progName);
+-		va_start(arg_ptr, FormatString);
+-		vfprintf(debug_handle, FormatString, arg_ptr);
+-		va_end(arg_ptr);
+-		if (device == Datei)
+-			fflush(debug_handle);
+-	}
+-}
+--- a/cflib/fdfindsc.c
++++ b/cflib/fdfindsc.c
+@@ -40,12 +40,11 @@
+ 
+ _WORD find_shortcut(OBJECT *tree, _WORD kstate, _WORD kreturn)
+ {
+-	static KEYTAB *keytab = NULL;
++
+ 	_WORD ret = -1;
+ 	_WORD scan;
+ 
+-	if (keytab == NULL)
+-		keytab = (KEYTAB *)Keytbl((void *)-1, (void *)-1, (void *)-1);
++
+ 
+ 	scan = (kreturn & 0xFF00) >> 8;
+ 
+@@ -68,10 +67,7 @@
+ 			pos = get_magx_shortcut(tree, obj, &c);
+ 			if (pos != -1)
+ 			{
+-				if ((scan >= 0x78) && (scan < 0x80))
+-					ascii = keytab->capslock[scan - 0x76];
+-				else
+-					ascii = keytab->capslock[scan];
++				ascii = toupper((unsigned char)kreturn);
+ 				if (toupper(c) == ascii)
+ 				{
+ 					ret = obj;
+@@ -80,7 +76,7 @@
+ 			}
+ 		} while (!(tree[obj].ob_flags & OF_LASTOB));
+ 	}
+-	if ((tree[ret].ob_flags & OF_HIDETREE) || (tree[ret].ob_state & OS_DISABLED))
++	if (ret>=0 && ((tree[ret].ob_flags & OF_HIDETREE) || (tree[ret].ob_state & OS_DISABLED)))
+ 		ret = -1;
+ 	return ret;
+ }
+--- a/cflib/fexists.c
++++ b/cflib/fexists.c
+@@ -26,14 +26,11 @@
+ 
+ #include "intern.h"
+ #include "file.h"
++#include "qed-files.h"
+ 
+ 
+ int file_exists(char *filename)
+ {
+-	if (filename[0] == '\0')
+-		return FALSE;
+-	/* include read-only, hidden, system and files with archive-bit
+-	 * (exclude volume labels and directories)
+-	 */
+-	return Fsfirst(filename, FA_RDONLY|FA_HIDDEN|FA_SYSTEM|FA_CHANGED) == 0;
++    struct QedFileInfo info;
++    return QedFileInfo(filename,&info)==0 && info.kind<0;
+ }
+--- a/cflib/file.h
++++ b/cflib/file.h
+@@ -30,18 +30,5 @@
+ 
+ #include "intern.h"
+ 
+-#if defined(__PUREC__)
+-#include <ext.h>
+-#define S_IFMT		0170000
+-#ifndef S_IFDIR
+-#define S_IFDIR		0040000
+-#endif
+-#ifndef S_ISDIR
+-#define S_ISDIR(m)	((m & S_IFMT) == S_IFDIR)
+-#endif
+-#else
+-#include <sys/stat.h>
+-#endif
+-
+ #include <ctype.h>
+ #include "app.h"
+--- a/cflib/fscase.c
++++ b/cflib/fscase.c
+@@ -30,30 +30,5 @@
+ 
+ int fs_case_sens(char *filename)
+ {
+-	char path[256];
+-	int ret;
+-
+-	/* Eigentlichen Dateinamen abschneiden und durch '.' ersetzen -
+-	   muû sein, da Datei evtl. noch nicht existiert... */
+-	split_filename(filename, path, NULL);
+-	strcat(path, ".");
+-	ret = (int)Dpathconf(path, 6);
+-
+-	/* MagiCPC 6.0 meldet 0, das ist aber falsch!! */
+-	if (cf_magxPC && ret == 0)
+-		ret = 2;
+-
+-	switch (ret)
+-	{
+-		case 0:				/* echter Unterschied, MinixFS */
+-			ret = FULL_CASE;
+-			break;
+-		case 2:				/* kein echter Unterschied, VFAT, MacFS */
+-			ret = HALF_CASE;
+-			break;
+-		default:
+-			ret = NO_CASE;	/* Dpathconf() nicht verfÅgbar, oder kein Unterschied */
+-	}
+-
+-	return ret;
++    (void)filename;return NO_CASE;
+ }
+--- a/cflib/fsexists.c
++++ b/cflib/fsexists.c
+@@ -26,6 +26,7 @@
+ 
+ #include "intern.h"
+ #include "file.h"
++#include "qed-files.h"
+ 
+ #ifndef FA_DIR
+ #define FA_DIR 0x10
+@@ -33,36 +34,6 @@
+ 
+ int path_exists(char *pathname)
+ {
+-	int r = FALSE;
+-	
+-	if (pathname[0] != '\0')
+-	{
+-		size_t len = strlen(pathname);
+-		int trailing_backslash = pathname[len-1] == '\\';
+-
+-		if (trailing_backslash)
+-			pathname[len-1] = '\0';
+-
+-		if (Fsfirst(pathname, FA_RDONLY|FA_HIDDEN|FA_SYSTEM|FA_DIR|FA_CHANGED) == 0
+-			&& ((Fgetdta())->dta_attribute & FA_DIR) != 0)
+-			r = TRUE;
+-
+-		if (trailing_backslash)
+-			pathname[len-1] = '\\';
+-
+-		/* Work-around fuer MagiCPC, wo der stat(<Laufwerk>) nicht funkt! */
+-		if (cf_magxPC && !r)
+-		{
+-			if (pathname[1] == ':' && len <= 3)	/* nur Laufwerk 'X:' oder 'X:\' */
+-			{
+-				char p[80];
+-
+-				/* Laufwerk existiert, wenn man das akt. Verzeichnis ermitteln kann */
+-				if (Dgetpath(p, toupper(pathname[0]) - 64) == 0)
+-					r = TRUE;
+-			}
+-		}
+-	}
+-
+-	return r;
++    struct QedFileInfo info;
++    return QedFileInfo(pathname,&info)==0 && info.kind>0;
+ }
+--- a/cflib/fsgetpth.c
++++ b/cflib/fsgetpth.c
+@@ -30,27 +30,5 @@
+ 
+ int get_path(char *path, char drive)
+ {
+-	int ret, drive_nr;
+-
+-	if (drive == 0)
+-	{
+-		drive = 'A' + Dgetdrv();		/* Aktuelles Laufwerk */
+-		if (drive > 'Z')
+-			drive = drive - 'Z' + '0';
+-	}
+-	else
+-		drive = toupper(drive);
+-	if (drive >= '1' && drive <= '6')	/* Laufwerk nach Z mit Big-DOS oder MetaDOS > 2.60 */
+-		drive_nr = drive - '1' + 26;
+-	else
+-		drive_nr = drive - 'A';
+-	path[0] = drive;
+-	path[1] = ':';
+-	ret = Dgetpath (path + 2, drive_nr + 1);
+-	strcat (path, "\\");
+-
+-	if (fs_case_sens(path) == NO_CASE)
+-		str_toupper(path);
+-
+-	return ret == 0;
++    (void)drive;path[0]=0;return TRUE;
+ }
+--- a/cflib/fslong.c
++++ b/cflib/fslong.c
+@@ -30,16 +30,5 @@
+ 
+ int fs_long_name(char *filename)
+ {
+-	char path[256];
+-	long ret;
+-
+-	/* eigentlichen Dateinamen abschneiden und durch '.' ersetzen -
+-	   muû sein, da Datei evtl. noch nicht existiert... */
+-	split_filename(filename, path, NULL);
+-	strcat(path, ".");
+-	ret = Dpathconf(path, 3);
+-	if (ret < 0 || ret == 12)
+-		ret = 0;
+-
+-	return (int) ret;
++    (void)filename;return 30;
+ }
+--- a/cflib/fsnorm.c
++++ b/cflib/fsnorm.c
+@@ -30,68 +30,7 @@
+ 
+ int make_normalpath(char *path)
+ {
+-	int i;
+-	char p[256];
+-	char *f, drv;
+-	int ret;
+-
+-	if (path[0] == '\0')
+-		return FALSE;
+-
+-#if !defined(__PUREC__)
+-	if (path[0] == '/')				/* UNIX-Pfad */
+-	{
+-		unx2dos(path, p);
+-		strcpy(path, p);
+-	}
+-#endif
+-
+-	/* Laufwerk bestimmen */
+-	if (path[1] != ':')				/* Kein Laufwerk */
+-	{
+-		drv = 'A' + Dgetdrv();		/* aktuelles Laufwerk */
+-		if (drv > 'Z')
+-			drv = drv - 'Z' + '0';	/* A..Z 1..6 */
+-		f = path;
+-	}
+-	else
+-	{
+-		path[0] = toupper(path[0]);
+-		drv = path[0];
+-		if (drv > 'Z')
+-			drv = drv - 'Z' + '0';	/* A..Z 1..6 */
+-		f = path + 2;
+-	}
+-	/* Pfad mit Laufwerk bestimmen */
+-	if (f[0] == '.' && (f[1] == '\\' || f[1] == '\0'))
+-	{
+-		get_path(p, drv);			/* aktuellen Pfad nehmen */
+-		if (f[1] == '\\')
+-			strcat(p, f + 2);
+-	}
+-	else if (f[0] != '\\')			/* Keine Root */
+-	{
+-		get_path(p, drv);
+-		strcat(p, f);
+-	}
+-	else
+-	{
+-		p[0] = drv;
+-		p[1] = ':';
+-		p[2] = '\0';
+-		strcat(p, f);
+-	}
+-
+-	i = (int)strlen(p);
+-	if (p[i - 1] != '\\')
+-	{
+-		p[i] = '\\';
+-		p[i + 1] = '\0';
+-	}
+-
+-	ret = path_exists(p);
+-
+-	/* always return path with trailing backslash */
+-	strcpy(path, p);
+-	return ret;
++    size_t n=strlen(path);
++    if(n && path[n-1]!='/' && path[n-1]!=':'){if(n>=254)return FALSE;path[n++]='/';path[n]=0;}
++    return path_exists(path);
+ }
+--- a/cflib/fssetext.c
++++ b/cflib/fssetext.c
+@@ -31,7 +31,7 @@
+ void set_extension(char *filename, char *new_ext)
+ {
+ 	char *ptr = strrchr(filename, '.');
+-	char *slash = strrchr(filename, '\\');
++	char *slash = strrchr(filename, '/');
+ 	char *colon = strrchr(filename, ':');
+ 
+ 	if (ptr == NULL || ptr == filename ||
+--- a/cflib/fsshort.c
++++ b/cflib/fsshort.c
+@@ -40,13 +40,13 @@
+ 		split_filename(path, NULL, help);
+ 	else if (path_len > maxlen)
+ 	{
+-		p1 = strchr(help, '\\');
++		p1 = strchr(help, '/');
+ 		p2 = p1;
+ 		path_len += 2;		/* zwei Punkte neu */
+ 		while (*p2 != '\0' && path_len > maxlen)
+ 		{
+ 			p2++;
+-			while (*p2 != '\\' && *p2 != '\0')
++			while (*p2 != '/' && *p2 != '\0')
+ 			{
+ 				p2++;
+ 				path_len--;
+@@ -60,7 +60,7 @@
+ 		}
+ 		else
+ 		{
+-			p2 = strrchr(help, '\\');
++			p2 = strrchr(help, '/');
+ 			memmove(help, p2, strlen(p2) + 1);
+ 		}
+ 	}
+--- a/cflib/fssplite.c
++++ b/cflib/fssplite.c
+@@ -31,7 +31,7 @@
+ void split_extension(char *filename, char *name, char *extension)
+ {
+ 	char *ptr = strrchr(filename, '.');
+-	char *slash = strrchr(filename, '\\');
++	char *slash = strrchr(filename, '/');
+ 	char *colon = strrchr(filename, ':');
+ 
+ 	if (ptr == NULL || ptr == filename ||
+--- a/cflib/fssplitf.c
++++ b/cflib/fssplitf.c
+@@ -30,35 +30,8 @@
+ 
+ void split_filename(char *fullname, char *path, char *name)
+ {
+-	char *str;
+-	char *str2;
+-
+-	str = strrchr(fullname, '\\');
+-	str2 = strrchr(fullname, '/');
+-	/* check for mixed name */
+-	if (str == NULL || str2 > str)
+-		str = str2;
+-
+-	if (path != NULL)
+-		path[0] = '\0';		/* schadet nix */
+-	if (name != NULL)
+-		name[0] = '\0';		/* ditto */
+-
+-	if (str != NULL)
+-	{
+-		/* Dateinamen holen */
+-		if (name != NULL)
+-			strcpy(name, str + 1);
+-
+-		/* Pfad mit Laufwerk bestimmen */
+-		if (path != NULL)
+-		{
+-			int len = (short)(str - (char *)fullname + 1);
+-
+-			strncpy(path, fullname, len);
+-			path[len] = '\0';
+-		}
+-	}
+-	else if (name != NULL)
+-		strcpy(name, fullname);
++    char *s=strrchr(fullname,'/'),*v=strrchr(fullname,':');
++    if(v && (!s || v>s))s=v;
++    if(name)strcpy(name,s?s+1:fullname);
++    if(path){size_t n=s?(size_t)(s-fullname+1):0;memmove(path,fullname,n);path[n]=0;}
+ }
+--- a/cflib/magxobj.c
++++ b/cflib/magxobj.c
+@@ -82,7 +82,7 @@
+ 			break;
+ 		}
+ 	}
+-	else if ((typ == G_FTEXT) && (flags & OF_FL3DBAK) && (tree[obj].ob_spec.tedinfo->te_thickness == -2))
++	else if ((typ == G_FTEXT) && (flags & OF_FL3DBAK) && (((TEDINFO *)(ULONG)tree[obj].ob_spec)->te_thickness == -2))
+ 		ret = MX_EDIT3D;
+ 	else
+ 		ret = MX_NOTXOBJ;
+--- a/cflib/magxsc.c
++++ b/cflib/magxsc.c
+@@ -40,9 +40,9 @@
+ 	if (mtyp == MX_SCRADIO || mtyp == MX_SCCHECK || mtyp == MX_SCEXIT || mtyp == MX_SCSTRING)
+ 	{
+ 		if ((tree[obj].ob_type & 0x00ff) == G_USERDEF)
+-			p = (char *)tree[obj].ob_spec.userblk->ub_parm;
++			p = (char *)((USERBLK *)(ULONG)tree[obj].ob_spec)->ub_parm;
+ 		else
+-			p = tree[obj].ob_spec.free_string;
++			p = ((char *)(ULONG)tree[obj].ob_spec);
+ 		us = (tree[obj].ob_state >> 8) & 0xff;
+ 		if (us != 0xFF)
+ 		{
+--- a/cflib/mdclose.c
++++ b/cflib/mdclose.c
+@@ -25,6 +25,7 @@
+  */
+ 
+ #include "mdial.h"
++#include "qed-runtime.h"
+ 
+ 
+ void close_mdial(MDIAL *dial)
+@@ -35,8 +36,8 @@
+ 		{
+ 			_WORD msg[8], d, event = 0;
+ 
+-			wind_close(dial->win_handle);
+-			wind_delete(dial->win_handle);
++			if(!wind_close(dial->win_handle) || !wind_delete(dial->win_handle))
++                QedRetirementFault("QED dialog retirement failed; live Process retained.\n");
+ 
+ 			/*
+ 			 * Alle auflaufenden Redraw-Messages abarbeiten, damit
+@@ -64,7 +65,7 @@
+ 		}
+ 
+ 		/* Dialog wieder herstellen */
+-		dial->tree[0].ob_spec.obspec.framesize = dial->save_frame;
++		dial->tree[0].ob_spec = (dial->tree[0].ob_spec & 0xff00ffffUL) | ((ULONG)(unsigned char)(dial->save_frame)<<16);
+ 		if (dial->delta_y != 0)
+ 			set_flag(dial->tree, 1, OF_HIDETREE, FALSE);
+ 		dial->tree[0].ob_y += dial->delta_y;
+--- a/cflib/mddo.c
++++ b/cflib/mddo.c
+@@ -63,7 +63,7 @@
+ 				case WM_TOPPED:
+ #if 0
+ 					if (msg[3] != dial->win_handle)
+-						Bconout(2, 7);
++						((void)0) /* optional audible bell */;
+ #endif
+ 					/* fall through */
+ 				case WM_NEWTOP:
+@@ -74,7 +74,7 @@
+ 
+ 				case WM_BOTTOMED:
+ 				case WF_M_BACKDROP:			/* WM_M_BACKDROPED MagiC 2.x */
+-					Bconout(2, 7);
++					((void)0) /* optional audible bell */;
+ 					break;
+ 
+ 				case WM_SHADED:
+@@ -113,7 +113,7 @@
+ 				dial->next_obj = cf_objc_find(dial->tree, ROOT, MAX_DEPTH, mx, my);
+ 				if (dial->next_obj == -1)
+ 				{
+-					Bconout(2, 7);
++					((void)0) /* optional audible bell */;
+ 					dial->next_obj = 0;
+ 				}
+ 				else
+--- a/cflib/mdopen.c
++++ b/cflib/mdopen.c
+@@ -43,8 +43,8 @@
+ 		__mdial_md_list = dial;
+ 
+ 		/* Rahmen abschalten */
+-		dial->save_frame = tree[0].ob_spec.obspec.framesize;
+-		tree[0].ob_spec.obspec.framesize = 0;
++		dial->save_frame = ((signed char)(tree[0].ob_spec >> 16));
++		tree[0].ob_spec = (tree[0].ob_spec & 0xff00ffffUL) | ((ULONG)(unsigned char)(0)<<16);
+ 
+ 		/* Zentrieren, nur beim ersten Mal */
+ 		if (tree[0].ob_x == 0 && tree[0].ob_y == 0)
+--- a/cflib/menu.c
++++ b/cflib/menu.c
+@@ -36,7 +36,7 @@
+ OBJECT *__menu_tree = NULL;
+ short __menu_disabled = FALSE;
+ short __menu_dis_cnt = 0;
+-KEYTAB *__menu_keys = NULL;
++
+ 
+ #ifdef __PUREC__
+ #include "menucre.c"
+--- a/cflib/menu.h
++++ b/cflib/menu.h
+@@ -38,7 +38,7 @@
+ extern OBJECT	*__menu_tree;
+ extern short	 __menu_disabled;
+ extern short	 __menu_dis_cnt;
+-extern KEYTAB	*__menu_keys;
++
+ 
+ 
+ #endif /* _menu_h */
+--- a/cflib/menucre.c
++++ b/cflib/menucre.c
+@@ -34,8 +34,7 @@
+ 
+ _WORD create_menu(OBJECT *t)
+ {
+-	if (__menu_keys == NULL)
+-		__menu_keys = (KEYTAB *)Keytbl((void *)-1, (void *)-1, (void *)-1);
++
+ 
+ 	if (__menu_tree == NULL)
+ 	{
+@@ -43,8 +42,8 @@
+ 		__menu_disabled = FALSE;
+ 		__menu_dis_cnt = 0;
+ 
+-		fix_menu(t);
+-		menu_bar(t, 1);
++		((void)0); /* Native loader owns resource geometry. */
++		if(!menu_bar(t,1)){__menu_tree=NULL;return FALSE;}
+ 		return TRUE;
+ 	}
+ 	else
+--- a/cflib/menudel.c
++++ b/cflib/menudel.c
+@@ -30,13 +30,15 @@
+  */
+ 
+ #include "menu.h"
++#include "qed-runtime.h"
+ 
+ 
+ void delete_menu(void)
+ {
+ 	if (__menu_tree != NULL)
+ 	{
+-		menu_bar(__menu_tree, 0);
++		if(!menu_bar(__menu_tree,0))
++            QedRetirementFault("QED menu retirement failed; live Process retained.\n");
+ 		__menu_tree = NULL;
+ 	}
+ }
+--- a/cflib/menuisk.c
++++ b/cflib/menuisk.c
+@@ -30,6 +30,7 @@
+  */
+ 
+ #include "menu.h"
++#include <ctype.h>
+ 
+ 
+ static _WORD check_item_key(char *str, _WORD kstate, _WORD kreturn)
+@@ -49,10 +50,8 @@
+ 	scan = (kreturn >> 8) & 0xff;
+ 	if (scan > 127)
+ 		return FALSE;
+-	if (scan >= 0x78 && scan < 0x80)
+-		ascii = __menu_keys->capslock[scan - 0x76];
+-	else
+-		ascii = __menu_keys->capslock[scan];
++	ascii=toupper((unsigned char)kreturn);
++	if((kstate & K_CTRL) && ascii>=1 && ascii<=26)ascii+='A'-1;
+ 
+ 	if (str[0] != '\0')
+ 	{
+--- a/cflib/nkccinit.c
++++ b/cflib/nkccinit.c
+@@ -25,44 +25,6 @@
+  */
+ 
+ #include "intern.h"
+-#ifdef __GNUC__
+-#include <mint/osbind.h>
+-#else
+-#include <tos.h>
+-#ifndef KEYTAB
+-#define _KEYTAB KEYTAB
+-#define caps capslock
+-#endif
+-#endif
+-
+-
+-#define VERSION 0x294
+-
+-/****************************************************************************
+- *
+- *	reduced NKCC for the CF-Lib
+- *
+- ****************************************************************************/
+-
+-/*  ASCII code translation table for Control key
+- *
+- *  first entry.B:  modified ASCII code returned by TOS
+- *  second entry.B: original ASCII code as stored in key table
+- *
+- *  The table is terminated with both entries 0
+- */
+-static unsigned short const nkc_asc_trans[] = {
+-	0x0032,				/* Control '2' becomes ASCII 0 */
+-	0x1e36, 			/* Control '6' becomes ASCII $1e */
+-	0x1f2d, 			/* Control '-' becomes ASCII $1f */
+-	0x0a0d,				/* Control Return/Enter: $d -> $a */
+-	0					/* terminator */
+-};
+-
+-
+-
+-static _KEYTAB nkc_keytab;
+-
+ static short const xscantab[] =
+ {
+ 	(NK_UP << 8) |	0x48,	   /* cursor up			    */
+@@ -85,507 +47,16 @@
+ 	-1
+ };
+ 
+-/****************************************************************************
+- *
+- *  nkc_init: initialize NKCC
+- *
+- ****************************************************************************/
+-_WORD nkc_init(void)
++
++_WORD nkc_init(void){return 0x294;}
++unsigned short nkc_tos2n(long key)
+ {
+-	void *pmin = (void *)-1;
+-	_KEYTAB *tbl;
+-	
+-	/* fetch addresses of TOS' key scan code translation tables */
+-	tbl = Keytbl(pmin, pmin, pmin);
+-	nkc_keytab.unshift = tbl->unshift;
+-	nkc_keytab.shift = tbl->shift;
+-	nkc_keytab.caps = tbl->caps;
+-	return VERSION;
++    unsigned short flags=(unsigned long)key>>16 & 0x1f00;
++    unsigned char scan=(unsigned long)key>>16,ascii=key;
++    const short *p=xscantab;
++    while(*p!=-1){if((unsigned char)*p==scan)return flags|NKF_FUNC|((unsigned short)*p>>8);p++;}
++    if(scan==0x53)return flags|NKF_FUNC|NK_DEL;
++    if(ascii==27 || ascii==8 || ascii==9 || ascii==13)return flags|NKF_FUNC|ascii;
++    if((flags & NKF_CTRL) && ascii>=1 && ascii<=26)ascii+='A'-1;
++    return flags|ascii;
+ }
+-
+-/*
+-*  In:   D0.L           key code in TOS format:
+-*                                   0                    1
+-*                       bit 31:     ignored              ignored
+-*                       bit 30:     ignored              ignored
+-*                       bit 29:     ignored              ignored
+-*                       bit 28:     no CapsLock          CapsLock
+-*                       bit 27:     no Alternate         Alternate pressed
+-*                       bit 26:     no Control           Control pressed
+-*                       bit 25:     no left Shift key    left Shift pressed
+-*                       bit 24:     no right Shift key   right Shift pressed
+-*
+-*                       bits 23...16: scan code
+-*                       bits 15...08: ignored
+-*                       bits 07...00: ASCII code (or rubbish in most cases
+-*                          when Control or Alternate is pressed ...)
+-*
+-*  Out:  D0.W           normalized key code:
+-*                       bits 15...08: flags:
+-*                                   0                    1
+-*                       NKF?_FUNC   printable char       "function key"
+-*                       NKF?_RESVD  ignore it            ignore it
+-*                       NKF?_NUM    main keypad          numeric keypad
+-*                       NKF?_CAPS   no CapsLock          CapsLock
+-*                       NKF?_ALT    no Alternate         Alternate pressed
+-*                       NKF?_CTRL   no Control           Control pressed
+-*                       NKF?_LSH    no left Shift key    left Shift pressed
+-*                       NKF?_RSH    no right Shift key   right Shift pressed
+-*
+-*                       bits 07...00: key code
+-*                       function (NKF?_FUNC set):
+-*                          < 32: special key (NK_...)
+-*                          >=32: printable char + Control and/or Alternate
+-*                       no function (NKF?_FUNC not set):
+-*                          printable character (0...255!!!)
+-*/
+-unsigned short nkc_tos2n(long toskey)
+-{
+-	const short *tab;
+-	const unsigned char *ktab;
+-	unsigned short state, scan, ascii;
+-	short nkc;
+-
+-	ascii = toskey & 0xff;
+-	state = (unsigned short)(toskey >> 16);
+-	scan = state & 0xff;
+-	
+-	if (scan == 0)
+-	{
+-		/* special handling for key codes created by TOS' 3.06 ASCII input */
+-		state &= NKF_CAPS;
+-		return ascii | state;
+-	}
+-	
+-	state &= (NKF_CAPS|NKF_SHIFT|NKF_CTRL|NKF_ALT);
+-	
+-	if (state & NKF_SHIFT)
+-		ktab = (const unsigned char *)nkc_keytab.shift;
+-	else if (state & NKF_CAPS)
+-		ktab = (const unsigned char *)nkc_keytab.caps;
+-	else
+-		ktab = (const unsigned char *)nkc_keytab.unshift;
+-
+-	/*
+-	 *------------- check if scan code is out of range
+-	 *
+-	 * Illegal scancodes can be used to produce 'macro key codes'. Their format is:
+-	 *
+-	 * - the scancode must be $84 or larger (should be $ff to work properly with old
+-	 *   versions of Mag!x)
+-	 * - the ASCII code must be in the range $20...$ff (values below are set to $20
+-	 *   by NKCC)
+-	 * - Alternate and Control are not used for the normalized key code. However,
+-	 *   if at least one of them is non-zero, then the numeric keypad flag will be
+-	 *   set in the resulting key code.
+-	 */
+-	if (scan >= 0x84)
+-	{
+-		/* Alternate or Control? */
+-		if (state & (NKF_ALT | NKF_CTRL))
+-		{
+-			/* yes: set numeric keypad flag */
+-			ascii |= NKF_NUM;
+-			/* mask off both flags */
+-			state &= NKF_CAPS | NKF_SHIFT;
+-		}
+-		/* set function and resvd */
+-		state |= NKF_FUNC | NKF_RESVD;
+-		/* ASCII code in range? */
+-		if ((unsigned char)ascii < 0x20)
+-		{
+-			/* no: use minimum */
+-			ascii = 0x20;
+-		}
+-		/* combine with ASCII code */
+-		return ascii | state;
+-	}
+-	
+-	/*
+-	 * check if Alternate + number: they have simulated scan codes
+-	 */
+-	if (scan >= 0x78)
+-	{
+-		ascii = ktab[scan - 0x76];
+-		state |= NKF_ALT;
+-	} else
+-	{
+-		/*
+-		 * check if exception scan code from cursor keypad
+-		 */
+-		/* no NKC found yet */
+-		nkc = 0;
+-		tab = xscantab;
+-		while (*tab > 0)
+-		{
+-			if ((*tab & 0xff) == scan)
+-			{
+-				nkc = (*tab >> 8) & 0xff;
+-				/* mark: key code found */
+-				ascii = 0;
+-				break;
+-			}
+-			tab++;
+-		}
+-		
+-		/*
+-		 * check if rubbish ASCII code and erase it, if so
+-		 */
+-		if (ascii <= 0x20 && ktab[scan] != ascii)
+-			ascii = 0;
+-		
+-		/*
+-		 * check if ASCII code could only be produced via Alternate key
+-		 * combination
+-		 */
+-		if (ascii != 0 && ktab[scan] != ascii)
+-			state &= ~NKF_ALT;
+-		
+-		/*
+-		 * check if ASCII code found yet, and set it, if not
+-		 */
+-		if (ascii == 0)
+-		{
+-			/* not found, use code from exception table */
+-			ascii = nkc;
+-			if (ascii == 0)
+-				ascii = ktab[scan];
+-		}
+-		
+-		/*
+-		 * check special case: delete key
+-		 */
+-		if (ascii == 0x7f)
+-			ascii = NK_DEL;
+-		
+-		/*
+-		 * check if key is on numeric keypad (via scan code)
+-		 */
+-		if (scan == 0x4a || scan == 0x4e || (scan >= 0x63 && scan <= 0x72))
+-			state |= NKF_NUM;
+-
+-		/*
+-		 * check if "function key" and set bit accordingly
+-		 */
+-		if (ascii < 0x20)
+-		{
+-			state |= NKF_FUNC;
+-			/* check special case: Return or Enter key */
+-			if (ascii == 0x0d && (state & NKF_NUM))
+-				ascii = NK_ENTER;
+-		}
+-		
+-		/*
+-		 * check if function key (F1-F10) via scan code
+-		 */
+-		if (scan >= 0x54 && scan <= 0x5d)
+-		{
+-			/* yes: scan code for unshifted key */
+-			scan -= 0x54 - 0x3b;
+-			if (state & NKF_SHIFT)
+-				state |= NKF_SHIFT;
+-		}
+-		/* (unshifted) function key? */
+-		if (scan >= 0x3b && scan <= 0x44)
+-		{
+-			/* yes: calc NKC */
+-			ascii = scan - 0x2b;
+-		}
+-	}
+-	
+-	/*
+-	 * final flag handling; mix key code (low byte) and flag byte
+-	 */
+-	ktab = (const unsigned char *)nkc_keytab.shift;
+-	nkc = ktab[scan];
+-	if ((state & NKF_FUNC) || (state & (NKF_CTRL|NKF_ALT)) == 0)
+-	{
+-		ktab = (const unsigned char *)nkc_keytab.unshift;
+-		if (ktab[scan] != nkc)
+-			return ascii | state;
+-	} else
+-	{
+-		state |= NKF_FUNC;
+-		ktab = (const unsigned char *)nkc_keytab.caps;
+-		if (ktab[scan] != nkc)
+-			return ascii | state;
+-		ascii = nkc;
+-	}
+-	state |= NKF_RESVD;
+-	return ascii | state;
+-}
+-
+-
+-/*
+- *  normalized key code -> scan code translation table
+- *  for unshifted key codes
+- *  indexed by function code (NK_...)
+- */
+-static unsigned char const n_to_scan_u[] = {
+-	0x00,                  /* invalid key code */
+-	0x48,                  /* cursor up */
+-	0x50,                  /* cursor down */
+-	0x4d,                  /* cursor right */
+-	0x4b,                  /* cursor left */
+-	0x49,                  /* Mac: page up */
+-	0x51,                  /* Mac: page down */
+-	0x4f,                  /* Mac: end */
+-	0x0e,                  /* Backspace */
+-	0x0f,                  /* Tab */
+-	0x72,                  /* Enter */
+-	0x52,                  /* Insert */
+-	0x47,                  /* ClrHome */
+-	0x1c,                  /* Return */
+-	0x62,                  /* Help */
+-	0x61,                  /* Undo */
+-	0x3b,                  /* function key #1 */
+-	0x3c,                  /* function key #2 */
+-	0x3d,                  /* function key #3 */
+-	0x3e,                  /* function key #4 */
+-	0x3f,                  /* function key #5 */
+-	0x40,                  /* function key #6 */
+-	0x41,                  /* function key #7 */
+-	0x42,                  /* function key #8 */
+-	0x43,                  /* function key #9 */
+-	0x44,                  /* function key #10 */
+-	0x45,                  /* Mac: F11 */
+-	0x01,                  /* Esc */
+-	0x46,                  /* Mac: F12 */
+-	0x37,                  /* Mac: F14 */
+-	0x00,                  /* reserved! */
+-	0x53                   /* Delete */
+-};
+-
+-/*
+- *  normalized key code -> scan code translation table
+- *  for shifted key codes
+- *  indexed by function code (NK_...)
+- */
+-static unsigned char const n_to_scan_s[] = {
+-	0x00,                  /* invalid key code */
+-	0x48,                  /* cursor up */
+-	0x50,                  /* cursor down */
+-	0x4d,                  /* cursor right */
+-	0x4b,                  /* cursor left */
+-	0x49,                  /* Mac: page up */
+-	0x51,                  /* Mac: page down */
+-	0x4f,                  /* Mac: end */
+-	0x0e,                  /* Backspace */
+-	0x0f,                  /* Tab */
+-	0x72,                  /* Enter */
+-	0x52,                  /* Insert */
+-	0x47,                  /* ClrHome */
+-	0x1c,                  /* Return */
+-	0x62,                  /* Help */
+-	0x61,                  /* Undo */
+-	0x54,                  /* function key #1 */
+-	0x55,                  /* function key #2 */
+-	0x56,                  /* function key #3 */
+-	0x57,                  /* function key #4 */
+-	0x58,                  /* function key #5 */
+-	0x59,                  /* function key #6 */
+-	0x5a,                  /* function key #7 */
+-	0x5b,                  /* function key #8 */
+-	0x5c,                  /* function key #9 */
+-	0x5d,                  /* function key #10 */
+-	0x45,                  /* Mac: F11 */
+-	0x01,                  /* Esc */
+-	0x46,                  /* Mac: F12 */
+-	0x37,                  /* Mac: F14 */
+-	0x00,                  /* reserved! */
+-	0x53                   /* Delete */
+-};
+-
+-
+-/****************************************************************************
+- *
+- *  nk_findscan: find scan code
+- *
+- ****************************************************************************/
+-
+-static unsigned char nk_findscan(const unsigned char *tab, unsigned short kcode)
+-{
+-	unsigned char scan;
+-	
+-	/* on numeric keypad? */
+-	if (kcode & NKF_NUM)
+-	{
+-		/* yes: try all numeric keypad scan codes first */
+-		scan = 0x4a;
+-		if ((unsigned char) kcode == tab[scan])
+-			return scan;
+-		scan = 0x4e;
+-		if ((unsigned char) kcode == tab[scan])
+-			return scan;
+-		scan = 0x63;
+-		do {
+-			if ((unsigned char) kcode == tab[scan])
+-				return scan;
+-		} while (++scan < 0x73);	
+-	}
+-	scan = 0x1;
+-	do {
+-		if ((unsigned char) kcode == tab[scan])
+-			return scan;
+-	} while (++scan < 0x78);
+-	return 0;
+-}
+-
+-
+-/****************************************************************************
+- *
+- *  nkc_n2tos: convert normalized key codes back to TOS format
+- *
+- ****************************************************************************/
+-
+-long nkc_n2tos(long kcode)
+-{
+-	unsigned short kstate;
+-	const unsigned char *tab;
+-	const unsigned char *scantab;
+-	unsigned char scan;
+-	unsigned long key;
+-	const unsigned short *asctab;
+-	
+-	kstate = (unsigned short)(kcode & (NKF_FUNC|NKF_ALT|NKF_CTRL));
+-	/* only function flag set? */
+-	if (kstate == NKF_FUNC && (unsigned char)kcode < 0x20)
+-	{
+-		/* macro key */
+-		
+-		/* isolate usable flags */
+-		kstate = (unsigned char) kcode;
+-		kcode &= NKF_CAPS | NKF_SHIFT;
+-		if (kstate & NKF_ALT)
+-			kcode |= NKF_ALT | NKF_CTRL;
+-		/* scan code always $ff */
+-		kcode |= 0xff;
+-		return ((unsigned long)kcode << 16) | kstate;
+-	}
+-	
+-	/* select system key table to use */
+-	kstate = kcode & NKF_SHIFT;
+-	if (kstate)
+-	{
+-		scantab = n_to_scan_s;
+-		tab = (const unsigned char *)nkc_keytab.shift;
+-	} else if (kcode & NKF_CAPS)
+-	{
+-		scantab = n_to_scan_s;
+-		tab = (const unsigned char *)nkc_keytab.caps;
+-	} else
+-	{
+-		scantab = n_to_scan_u;
+-		tab = (const unsigned char *)nkc_keytab.unshift;
+-	}
+-	
+-	if ((unsigned char)kcode >= 0x20)
+-	{
+-		/* handling for ASCII codes >= 32 */
+-		scan = nk_findscan(tab, kcode);
+-		if (scan == 0)
+-		{
+-			if (kcode & NKF_FUNC)
+-			{
+-				kcode = nkc_tolower(kcode);
+-				scan = nk_findscan(tab, kcode);
+-			}
+-		}
+-		if (scan == 0)
+-		{
+-			/* unknown source: treat key code as it was entered using the */
+-			/* TOS 3.06 direct ASCII input */
+-			kstate = (unsigned char)kcode;
+-			/* keep shift flags only */
+-			kcode &= NKF_SHIFT | NKF_CTRL | NKF_ALT | NKF_CAPS;
+-			return ((unsigned long)kcode << 16) | kstate;
+-		}
+-	} else
+-	{
+-		/* handling for ASCII codes < 32 */
+-		if (!(kcode & NKF_FUNC))
+-		{
+-			/* clear all flags except CapsLock */
+-			kcode &= NKF_CAPS | 0xff;
+-			kstate = (unsigned char)kcode;
+-			return ((unsigned long)kcode << 16) | kstate;
+-		}
+-		scan = scantab[(unsigned char)kcode];
+-		if (scan == 0)
+-			/* invalid key code!! return 0 */
+-			return 0;
+-		/* get scan code from unshifted tab. */
+-		scantab = n_to_scan_u;
+-		kstate = scantab[(unsigned char)kcode];
+-		/* get ASCII from system's table */
+-		kcode &= 0xff00;
+-		kcode |= scantab[(unsigned char) kstate];
+-	}
+-	
+-	/* flags and ASCII code */
+-	kstate = kcode;
+-	/* isolate shift flags */
+-	kcode &= NKF_SHIFT | NKF_CTRL | NKF_ALT | NKF_CAPS;
+-	/* merge with scan code */
+-	kcode |= scan;
+-	
+-	key = ((unsigned long)kcode << 16) | ((unsigned char)kstate);
+-	
+-	/* handling for Control key flag */
+-	if (kstate & NKF_CTRL)
+-	{
+-		if (scan == 0x4b)
+-		{
+-			/* scan code = "cursor left", change scan code to $73 */
+-			key += 0x280000l;
+-			key &= 0xffffff00l;
+-			return key;
+-		}
+-		if (scan == 0x4d)
+-		{
+-			/* scan code = "cursor right", change scan code to $74 */
+-			key += 0x270000l;
+-			key &= 0xffffff00l;
+-			return key;
+-		}
+-		if (scan == 0x47)
+-		{
+-			/* scan code = "ClrHome", change scan code to $77 */
+-			key += 0x300000l;
+-			return key;
+-		}
+-		asctab = nkc_asc_trans;
+-		while ((kstate = *asctab++) != 0)
+-		{
+-			if ((unsigned char)kstate == (unsigned char)kcode)
+-			{
+-				key = ((unsigned long)kcode << 16) | ((unsigned char)(kstate >> 8));
+-				return key;
+-			}
+-		}
+-		/* mask off upper 3 bits */
+-		key &= 0xffff001fUL;
+-		return key;
+-	}
+-	
+-	/* handling for Alternate key flag */
+-	if (kcode & NKF_ALT)
+-	{
+-		if (scan >= 0x02 && scan < 0x0d)
+-		{
+-			/* top row on main keyboard, change scan code */
+-			key += 0x760000l;
+-			/* and erase ASCII code */
+-			key &= 0xffffff00l;
+-			return key;
+-		}
+-		
+-		if (((unsigned char) kcode >= 'A' && (unsigned char) kcode <= 'Z') ||
+-			((unsigned char) kcode >= 'a' && (unsigned char) kcode <= 'z'))
+-			;
+-		else
+-			key &= 0xffffff00l;
+-	}
+-	
+-	return key;
+-}
+--- a/cflib/obgframe.c
++++ b/cflib/obgframe.c
+@@ -61,7 +61,7 @@
+ 
+ 		case G_TEXT:
+ 		case G_FTEXT:
+-			line = -(tree[obj].ob_spec.tedinfo->te_thickness);
++			line = -(((TEDINFO *)(ULONG)tree[obj].ob_spec)->te_thickness);
+ 			if (line && (tree[obj].ob_state & OS_SHADOWED))
+ 				shadow = abs(line * 2);
+ 			else
+@@ -70,7 +70,7 @@
+ 
+ 		case G_BOXTEXT:
+ 		case G_FBOXTEXT:
+-			line = -(tree[obj].ob_spec.tedinfo->te_thickness);
++			line = -(((TEDINFO *)(ULONG)tree[obj].ob_spec)->te_thickness);
+ 			if (line && (tree[obj].ob_state & OS_SHADOWED))
+ 				shadow = abs (line * 2);
+ 			break;
+@@ -78,7 +78,7 @@
+ 		case G_BOX:
+ 		case G_IBOX:
+ 		case G_BOXCHAR:
+-			line = -(tree[obj].ob_spec.obspec.framesize);
++			line = -(((signed char)(tree[obj].ob_spec >> 16)));
+ 			if (line && (tree[obj].ob_state & OS_SHADOWED))
+ 				shadow = abs(line * 2);
+ 			break;
+--- a/cflib/obgspec.c
++++ b/cflib/obgspec.c
+@@ -33,6 +33,6 @@
+ 
+ 	get_obtype(tree, obj, &ud);
+ 	if (ud)
+-		return tree[obj].ob_spec.userblk->ub_parm;
+-	return tree[obj].ob_spec.index;
++		return ((USERBLK *)(ULONG)tree[obj].ob_spec)->ub_parm;
++	return tree[obj].ob_spec;
+ }
+--- a/cflib/obgstr.c
++++ b/cflib/obgstr.c
+@@ -45,14 +45,14 @@
+ 
+ 	case G_CICON:
+ 	case G_ICON:
+-		strcpy(text, ((ICONBLK *) spec)->ib_ptext);
++		strcpy(text, (char *)(ULONG)((ICONBLK *) spec)->ib_ptext);
+ 		break;
+ 
+ 	case G_TEXT:
+ 	case G_BOXTEXT:
+ 	case G_FTEXT:
+ 	case G_FBOXTEXT:
+-		strcpy(text, ((TEDINFO *) spec)->te_ptext);
++		strcpy(text, (char *)(ULONG)((TEDINFO *) spec)->te_ptext);
+ 		break;
+ 
+ 	default:
+--- a/cflib/obsspec.c
++++ b/cflib/obsspec.c
+@@ -33,7 +33,7 @@
+ 
+ 	get_obtype(tree, obj, &ud);
+ 	if (ud)
+-		tree[obj].ob_spec.userblk->ub_parm = spec;
++		((USERBLK *)(ULONG)tree[obj].ob_spec)->ub_parm = spec;
+ 	else
+-		tree[obj].ob_spec.index = spec;
++		tree[obj].ob_spec = spec;
+ }
+--- a/cflib/obsstr.c
++++ b/cflib/obsstr.c
+@@ -45,14 +45,14 @@
+ 
+ 	case G_CICON:
+ 	case G_ICON:
+-		strcpy(((ICONBLK *) spec)->ib_ptext, text);
++		strcpy((char *)(ULONG)((ICONBLK *) spec)->ib_ptext, text);
+ 		break;
+ 
+ 	case G_TEXT:
+ 	case G_BOXTEXT:
+ 	case G_FTEXT:
+ 	case G_FBOXTEXT:
+-		strcpy(((TEDINFO *) spec)->te_ptext, text);
++		strcpy((char *)(ULONG)((TEDINFO *) spec)->te_ptext, text);
+ 		break;
+ 
+ 	default:
+--- a/cflib/ppappend.c
++++ b/cflib/ppappend.c
+@@ -61,7 +61,7 @@
+ 	p->tree[p->akt_item].ob_type = G_STRING;
+ 	p->tree[p->akt_item].ob_flags = OF_SELECTABLE | OF_LASTOB;
+ 	p->tree[p->akt_item].ob_state = state;
+-	p->tree[p->akt_item].ob_spec.free_string = text;
++	p->tree[p->akt_item].ob_spec = (ULONG)(text);
+ 	p->tree[p->akt_item].ob_x = 0;
+ 	p->tree[p->akt_item].ob_y = (p->akt_item - 1) * gl_hchar;
+ 	p->tree[p->akt_item].ob_width = p->item_len * gl_wchar;
+--- a/cflib/ppcreate.c
++++ b/cflib/ppcreate.c
+@@ -52,7 +52,7 @@
+ 	p->tree[0].ob_type = G_BOX;
+ 	p->tree[0].ob_flags = OF_FL3DBAK;
+ 	p->tree[0].ob_state = OS_SHADOWED;
+-	p->tree[0].ob_spec.index = 0x00ff1100L;	/* Rahmen, Farbe ... */
++	p->tree[0].ob_spec = 0x00ff1100L;	/* Rahmen, Farbe ... */
+ 	p->tree[0].ob_x = 0;
+ 	p->tree[0].ob_y = 0;
+ 	p->tree[0].ob_width = p->item_len;
+@@ -70,7 +70,7 @@
+ 	p->tree[1].ob_type = G_STRING;
+ 	p->tree[1].ob_flags = OF_SELECTABLE | OF_LASTOB;
+ 	p->tree[1].ob_state = OS_NORMAL;
+-	p->tree[1].ob_spec.free_string = text;
++	p->tree[1].ob_spec = (ULONG)(text);
+ 	p->tree[1].ob_x = 0;
+ 	p->tree[1].ob_y = 0;
+ 	p->tree[1].ob_width = p->item_len;
+--- a/cflib/ppdo.c
++++ b/cflib/ppdo.c
+@@ -32,7 +32,7 @@
+ 	_WORD flag, p_x, p_y, d;
+ 	MENU Menu, MData;
+ 
+-	Menu.mn_tree = p->tree;
++	Menu.mn_tree = (ULONG)(p->tree);
+ 	Menu.mn_menu = ROOT;
+ 	Menu.mn_item = 0;
+ 	Menu.mn_scroll = FALSE;
+--- a/cflib/pphandle.c
++++ b/cflib/pphandle.c
+@@ -121,7 +121,7 @@
+ 			if (first_offset > 0)
+ 				y -= (first_offset * gl_hchar);
+ 		}
+-		m1.mn_tree = pop;
++		m1.mn_tree = (ULONG)(pop);
+ 		m1.mn_menu = pop_obj;
+ 		m1.mn_item = item;
+ 		i = cf_menu_popup(&m1, x, y, &m2, 1, first_offset);
+--- a/cflib/ppmenu.c
++++ b/cflib/ppmenu.c
+@@ -49,7 +49,7 @@
+ 		GRECT box, r;
+ 		MFDB save;
+ 
+-		tree = m1->mn_tree;
++		tree = (OBJECT *)(ULONG)m1->mn_tree;
+ 		root = m1->mn_menu;
+ 		item = m1->mn_item;
+ 
+--- a/cflib/userdef.c
++++ b/cflib/userdef.c
+@@ -481,11 +481,11 @@
+ static void make_userdef(USERBLK *uPtr, OBJECT *tree, _WORD obj, _WORD __CDECL (*proc)(PARMBLK *p))
+ {
+ 	uPtr->ub_code = proc;						/* neue Zeichenfunktion */
+-	uPtr->ub_parm = tree[obj].ob_spec.index;	/* alte obSpec sichern */
++	uPtr->ub_parm = tree[obj].ob_spec;	/* alte obSpec sichern */
+ 
+ 	/* alten Typ hochschieben und neuen eintragen */
+ 	tree[obj].ob_type = (tree[obj].ob_type << 8) | G_USERDEF;
+-	tree[obj].ob_spec.userblk = uPtr;			/* Userblock eintragen */
++	((USERBLK *)(ULONG)tree[obj].ob_spec) = uPtr;			/* Userblock eintragen */
+ }
+ 
+ /* -- exportierte Funtkionen ------------------------------------------------- */
+@@ -604,10 +604,10 @@
+ 		i++;
+ 		if (tree[i].ob_type == G_STRING)
+ 		{
+-			if ((tree[i].ob_state & OS_DISABLED) && (tree[i].ob_spec.free_string[0] == '-'))
++			if ((tree[i].ob_state & OS_DISABLED) && (((char *)(ULONG)tree[i].ob_spec)[0] == '-'))
+ 			{
+ 				tree[i].ob_type = (tree[i].ob_type << 8) | G_USERDEF;
+-				tree[i].ob_spec.userblk = &menu_blk;
++				((USERBLK *)(ULONG)tree[i].ob_spec) = &menu_blk;
+ 			}
+ 		}
+ 	} while (!(tree[i].ob_flags & OF_LASTOB));
+@@ -626,13 +626,13 @@
+ 			if (mx_shortcut)
+ 				tree[i].ob_type = G_SHORTCUT;
+ 
+-			if ((tree[i].ob_state & OS_DISABLED) && (tree[i].ob_spec.free_string[0] == '-'))
++			if ((tree[i].ob_state & OS_DISABLED) && (((char *)(ULONG)tree[i].ob_spec)[0] == '-'))
+ 			{
+ 				tree[i].ob_type = (tree[i].ob_type << 8) | G_USERDEF;
+ 				if (thin_line)
+-					tree[i].ob_spec.userblk = &popup_blk;
++					((USERBLK *)(ULONG)tree[i].ob_spec) = &popup_blk;
+ 				else
+-					tree[i].ob_spec.userblk = &menu_blk;
++					((USERBLK *)(ULONG)tree[i].ob_spec) = &menu_blk;
+ 			}
+ 		}
+ 	} while (!(tree[i].ob_flags & OF_LASTOB));
+--- a/cflib/wdclick.c
++++ b/cflib/wdclick.c
+@@ -62,7 +62,7 @@
+ 				}
+ 			}
+ 			else
+-				Bconout(2, 7);
++				((void)0) /* optional audible bell */;
+ 		}
+ 		else if (mbutton == 2)		/* Rechtsklick ignorieren */
+ 			ret = TRUE;
+--- a/cflib/wdopen.c
++++ b/cflib/wdopen.c
+@@ -65,7 +65,7 @@
+ 		else											/* alles neu */
+ 		{
+ 			/* Rahmen abschalten */
+-			wd->tree[0].ob_spec.obspec.framesize = 0;
++			wd->tree[0].ob_spec = (wd->tree[0].ob_spec & 0xff00ffffUL) | ((ULONG)(unsigned char)(0)<<16);
+ 
+ 			if ((pos_x == -1) || (pos_y == -1))			/* Zentrieren */
+ 				form_center_grect(wd->tree, &r1);
+--- a/qed/gem4xe/cflib/cflibc.c
++++ b/qed/gem4xe/cflib/cflibc.c
+@@ -63,7 +63,7 @@
+ }
+ 
+ /* Bconout -- BIOS 3. gem4xe has no BIOS call gate, and does not need one
+- * for this: ALL SIX of cflib's uses are Bconout(2, 7), device 2 being the
++ * for this: ALL SIX of cflib's uses are ((void)0) /* optional audible bell */, device 2 being the
+  * console and 7 being BEL. It is a beep, and cfformdo.c:84 says so in a
+  * comment. asciitab.c:188, cfformdo.c:84, mddo.c:66/77/116, wdclick.c:65.
+  *
+--- a/qed/src/aktion.c
++++ b/qed/src/aktion.c
+@@ -50,8 +50,8 @@
+ 
+ 	if (aktion == NULL)
+ 	{
+-		rsrc_gaddr(R_TREE, AKTION,	&aktion);
+-		fix_dial(aktion);
++		rsrc_gaddr(R_TREE, AKTION,(void **)&aktion);
++		((void)0); /* Native loader owns resource geometry. */
+ 	}
+ 		
+ 	max_value = max(max, 1);
+--- a/qed/src/av.h
++++ b/qed/src/av.h
+@@ -53,4 +53,19 @@
+ extern void init_av				(void);
+ extern void term_av				(void);
+ 
++
++#ifdef QED_INITIAL_SCOPE
++/* Native initial scope: optional facility is compiled out at all callers. */
++#define send_avkey(...) (0)
++#define send_avdrag(...) (0)
++#define check_avobj(...) (0)
++#define send_avwinopen(...) (0)
++#define send_avwinclose(...) (0)
++#define send_avpathupdate(...) (0)
++#define call_help(...) (0)
++#define call_hyp(...) (0)
++#define handle_av(...) (0)
++#define init_av(...) (0)
++#define term_av(...) (0)
+ #endif
++#endif
+--- a/qed/src/block.c
++++ b/qed/src/block.c
+@@ -145,7 +145,7 @@
+ 		t_ptr->ypos = y;
+ 	}
+ 	else
+-		Bconout(2, 7);
++		((void)0) /* optional audible bell */;
+ }
+ 
+ static void search_backw(TEXTP t_ptr, char b_1, char b_2)	/* Klammersuche rÅckw. */
+@@ -188,7 +188,7 @@
+ 		t_ptr->ypos = y;
+ 	}
+ 	else
+-		Bconout(2, 7);
++		((void)0) /* optional audible bell */;
+ }
+ 
+ bool blk_mark_brace(TEXTP t_ptr)
+--- a/qed/src/clipbrd.c
++++ b/qed/src/clipbrd.c
+@@ -169,40 +169,11 @@
+ 
+ /*******************************************************************************/
+ 
+-void save_clip(void)		/* nur wegschreiben */
+-{
+-	if (clip_on_disk && clip_dirty)
+-	{
+-		scrap_clear();
+-		save_datei(clip_name, &clip_text, FALSE);
+-		clip_timestamp = file_time(clip_name, NULL, NULL);
+-		send_clip_change();
+-		clip_dirty = FALSE;
+-	}
+-}
+-
+-void load_clip(void)		/* nur laden */
+-{
+-	long	timestamp;
+-	
+-	/*
+-	 * Nur neu laden, wenn letzter Copy von qed bereits weggeschrieben wurde,
+-	 * ansonsten sind die aktuellen Klembrett-Daten noch in clip_text.
+-	*/
+-	if (clip_on_disk && !clip_dirty)
+-	{
+-		timestamp = file_time(clip_name, NULL, NULL);
+-		if (timestamp != clip_timestamp)
+-		{
+-			free_textring(&clip_text);
+-			if (last_was_bin)
+-				clip_text.ending = lns_binmode;
+-			if (load_datei(clip_name, &clip_text, FALSE, NULL) != 0)
+-				free_textring(&clip_text);
+-			clip_timestamp = timestamp;
+-		}
+-	}
+-}
++/* Native initial scope: save_clip is deferred. */
++
++
++/* Native initial scope: load_clip is deferred. */
++
+ 
+ 
+ void clip_takes_text(RINGP r)
+@@ -230,81 +201,13 @@
+ 	clip_dirty = TRUE;
+ }
+ 
+-static short get_first_drive(void)
+-{
+-	unsigned long	drives;
+-	short		drive;
+-
+-	drive = Dgetdrv();
+-	drives = Dsetdrv(drive);					/* Alle Laufwerke */
+-	if (drives == 0)
+-		drive = -1;
+-	else if (drives <= 3)
+-		drive = 0;										/* Benutze Laufwerk A */
+-	else
+-	{
+-		drives >>= 2;
+-		drive = 2;										/* Beginne bei Laufwerk C */
+-		while (!(drives & 1) && drive < 32)    /* Laufwerk gefunden */
+-		{
+-			drive++;
+-			drives >>= 1;
+-		}
+-	}
+-	return drive;
+-}
+-
+-void init_clipbrd(void)
+-{
+-	PATH		s;
+-	char		*str;
+-
+-	scrp_read (clip_dir);									/* Scrap-Directory lesen */
+-	if (clip_dir[0] == EOS)									/* Noch keines gesetzt */
+-	{
+-		if ((str=getenv("SCRAPDIR"))!=NULL && *str!=EOS)
+-			strcpy(clip_dir, str);
+-		else if ((str=getenv("CLIPBRD"))!=NULL && *str!=EOS)
+-			strcpy(clip_dir, str);
+-
+-		else
+-		{
+-			short drive;
+-
+-			strcpy (clip_dir, "A:\\CLIPBRD\\");
+-			drive = get_first_drive();
+-			if (drive > 0)
+-				clip_dir[0] = 'A' + (char) drive;
+-		}
+-		scrp_write (clip_dir);								/* Scrap-Directory setzen */
+-	}
+-	if (!make_normalpath(clip_dir))
+-	{
+-		if (clip_dir[0]=='A' || clip_dir[0]=='B' ||
+-		    clip_dir[0]=='a' || clip_dir[0]=='b')
+-			clip_dir[0] = EOS;						/* Kein Klemmbrett auf Disketten! */
+-		else
+-		{
+-			strcpy (s, clip_dir);
+-			s[strlen(s)-1] = EOS;					/* Backslash lîschen */
+-			if (Dcreate(s) != 0)
+-			{
+-				note(1, 0, NOSCRAP);
+-				clip_dir[0] = EOS;					/* Kein Klemmbrett */
+-			}
+-		}
+-	}
+-	init_textring(&clip_text);
+-	clip_dirty = FALSE;
+-
+-	if (clip_dir[0] == EOS)
+-		clip_on_disk = FALSE;
+-	else
+-	{
+-		strcpy(clip_name, clip_dir);
+-		strcat(clip_name, "scrap.txt");
+-	}
+-
+-	init_textring(&undo_text);
+-	clr_undo();
+-}
++/* Native initial scope: get_first_drive is deferred. */
++
++
++bool init_clipbrd(void)
++{
++    clip_dir[0]=EOS;clip_on_disk=FALSE;clip_dirty=FALSE;
++    if(!init_textring(&clip_text))return FALSE;
++    if(!init_textring(&undo_text)){kill_textring(&clip_text);return FALSE;}
++    clr_undo();return TRUE;
++}
+--- a/qed/src/clipbrd.h
++++ b/qed/src/clipbrd.h
+@@ -31,6 +31,14 @@
+ extern void		clip_add_text		(RINGP r);
+ 
+ 
+-extern void		init_clipbrd		(void);
++extern bool		init_clipbrd		(void);
+ 
++
++#ifdef QED_INITIAL_SCOPE
++#define load_clip(...) (0)
+ #endif
++
++#ifdef QED_INITIAL_SCOPE
++#define save_clip(...) (0)
++#endif
++#endif
+--- a/qed/src/comm.h
++++ b/qed/src/comm.h
+@@ -31,4 +31,13 @@
+ /* terminate all protocols */
+ void		term_comm		(void);
+ 
++
++#ifdef QED_INITIAL_SCOPE
++/* Native initial scope: optional facility is compiled out at all callers. */
++#define send_msg(...) (0)
++#define send_clip_change(...) (0)
++#define send_dhst(...) (0)
++#define init_comm(...) (0)
++#define term_comm(...) (0)
+ #endif
++#endif
+--- a/qed/src/dd.c
++++ b/qed/src/dd.c
+@@ -203,7 +203,7 @@
+ 				break;
+ 
+ 			default:
+-				Bconout(2, 7);
++				((void)0) /* optional audible bell */;
+ 				return;
+ 		}
+ 	}
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -428,7 +428,7 @@
+ 		}
+ 		change_window(window, t_ptr->filename, TRUE);
+ 		restore_edit();
+-		Bconout(2, 7);
++		((void)0) /* optional audible bell */;
+ 	}
+ 
+ 	if (find_poslist(lastpos_list, name, &desire_x, &desire_y) != NULL)
+@@ -441,24 +441,8 @@
+ 
+ /***************************************************************************/
+ 
+-static void print_edit (TEXTP t_ptr)
+-{
+-	FILENAME name;
+-	bool	 print_block;
+-	
+-	if (t_ptr->namenlos)
+-		strcpy(name, t_ptr->filename);
+-	else
+-		file_name(t_ptr->filename, name, FALSE);
+-	print_block = t_ptr->block;
+-	if (prn_start_dial(&print_block))
+-	{
+-		if (print_block)
+-			blk_drucken(name, t_ptr);
+-		else
+-			txt_drucken(name, t_ptr);
+-	}
+-} /* print_edit */
++/* Native initial scope: print_edit is deferred. */
++ /* print_edit */
+ 
+ 
+ void close_edit(char *mask, short flag)
+@@ -691,12 +675,12 @@
+ 
+ 	if (bstate & 2) 											/* Rechtsclick */
+ 	{
+-		if (strlen(error[0]) > 0)
++		if (FALSE)
+ 		{
+ 			blk_demark(t_ptr);
+ 			set_cursor(window, m_x, m_y);
+ 			restore_edit();
+-			handle_error(t_ptr);
++			((void)0);
+ 		}
+ 		return;													/* und wech... */
+ 	}
+@@ -813,7 +797,7 @@
+ 						}
+ 						else												/* das selbe */
+ 						{
+-							Bconout(2, 7);
++							((void)0) /* optional audible bell */;
+ #if 0
+ 							blk_delete(t_ptr);
+ 							set_cursor(window, m_x, m_y);
+@@ -823,10 +807,10 @@
+ 						restore_edit();
+ 					}
+ 					else
+-						Bconout(2, 7);
++						((void)0) /* optional audible bell */;
+ 				}
+ 				else														/* fremdes Fenster */
+-					send_dd(win_id, m_x, m_y, kstate, &t);				
++					((void)0);				
+ 				kill_textring(&t);
+ 			}
+ 			else
+@@ -998,53 +982,53 @@
+ 	{
+ 		setincl(actions, DO_CUT);
+ 		setincl(actions, DO_COPY);
+-		setincl(actions, DO_LEFT);
+-		setincl(actions, DO_RIGHT);
+-		setincl(actions, DO_BIG2SMALL);
+-		setincl(actions, DO_SMALL2BIG);
+-		setincl(actions, DO_CHNG_SMBG);
+-		setincl(actions, DO_CAPS);
+-		setincl(actions, DO_SORT);
++		((void)0);
++		((void)0);
++		((void)0);
++		((void)0);
++		((void)0);
++		((void)0);
++		((void)0);
+ 	}
+ 	else
+ 	{
+ 		setincl(actions, DO_LINECOPY);
+-		setincl(actions, DO_SWAPCHAR);
++		((void)0);
+ 	}
+ 	if (t_ptr->loc_opt->tab)
+ 	{
+-		setincl(actions, DO_TAB2LZ);
+-		setincl(actions, DO_LZ2TAB);
++		((void)0);
++		((void)0);
+ 	}
+ 	if (t_ptr->loc_opt->umbrechen)
+-		setincl(actions, DO_FORMAT);
++		((void)0);
+ 	else
+-		setincl(actions, DO_STRIPLINES);
++		((void)0);
+ 	if (window->flags & WI_OPEN)
+ 		setincl(actions, DO_CLOSE);
+ 	setincl(actions, DO_DELETE);
+ 	setincl(actions, DO_PASTE);
+ 	setincl(actions, DO_SELALL);
+ 	setincl(actions, DO_OPEN);
+-	setincl(actions, DO_INFO);
+-	setincl(actions, DO_HELP);
+-	setincl(actions, DO_PRINT);
++	((void)0);
++	((void)0);
++	((void)0);
+ 	if (!t_ptr->namenlos)
+-		setincl(actions,DO_ABAND);
++		((void)0);
+ 	setincl(actions, DO_SAVE);
+ 	setincl(actions, DO_SAVENEW);
+ 	setincl(actions, DO_FIND);
+ 	setincl(actions, DO_FINDNEXT);
+-	setincl(actions, DO_GOTO);
+-	setincl(actions, DO_ADD);
+-	setincl(actions, DO_UPDATE);
+-	setincl(actions, DO_ZEICHTAB);
+-	setincl(actions, DO_UMLAUT);
++	((void)0);
++	((void)0);
++	((void)0);
++	((void)0);
++	((void)0);
+ 	if (t_ptr->moved)
+-		setincl(actions, DO_AUTOSAVE);
+-	setincl(actions, DO_FEHLER);
++		((void)0);
++	((void)0);
+ 	if ((t_ptr->ypos - window->doc.y) > 0)
+-		setincl(actions, DO_TOPLINE);
++		((void)0);
+ }
+ 
+ /***************************************************************************/
+@@ -1060,74 +1044,50 @@
+ 	switch(action)
+ 	{
+ 		case DO_UNDO	:
++
+ 			erg = any_undo();
+ 			break;
+ 		case DO_CUT 	:
++
+ 			erg = t_ptr->block;
+  			break;
+ 		case DO_COPY	:
++
+ 			erg = t_ptr->block;
+ 			break;
+ 		case DO_LINECOPY:
++
+ 			erg = !(t_ptr->block);
+ 			break;
+ 		case DO_PASTE	:
++
+ 			erg = TRUE;
+ 			break;
+ 		case DO_SELALL :
++
+ 			erg = TRUE;
+ 			break;
+ 		case DO_CLOSE	:
+-		case DO_DELETE	:
++        case DO_DELETE:
++
+ 			erg = delete_edit(icon, t_ptr);
+ 			break;
+ 		case DO_OPEN	:
++
+ 			erg = TRUE;
+ 			break;
+-		case DO_INFO	:
++        /* Other donor actions are outside the initial native scope. */
++
++        case DO_SAVE:
++
+ 			erg = TRUE;
+ 			break;
+-		case DO_HELP	:
++		case DO_SAVENEW:
++
+ 			erg = TRUE;
+ 			break;
+-		case DO_LEFT	:
+-		case DO_RIGHT	:
+-		case DO_BIG2SMALL	:
+-		case DO_SMALL2BIG	:
+-		case DO_CHNG_SMBG	:
+-		case DO_CAPS		:
+-		case DO_SORT 		:
+-			erg = t_ptr->block;
+-			break;
+-		case DO_FORMAT :
+-			erg = t_ptr->loc_opt->umbrechen;
+-			break;
+-		case DO_PRINT	:
+-			erg = TRUE;
+-			break;
+-		case DO_ABAND	:
+-			if (t_ptr->namenlos)
+-				erg = FALSE;
+-			else
+-			{
+-				erg = TRUE;
+-				if (!ist_leer(&t_ptr->text) && t_ptr->moved!=0)
+-				{
+-					if (t_ptr->namenlos)
+-						strcpy(name, t_ptr->filename);
+-					else
+-						file_name(t_ptr->filename, name, FALSE);
+-					erg = (snote(1, 2, ABANDON, name) == 1);
+-				}
+-			}
+-			break;
+-		case DO_SAVE	:
+-			erg = TRUE;
+-			break;
+-		case DO_SAVENEW:
+-			erg = TRUE;
+-			break;
+ 		case DO_FIND :
++
+ 			if (t_ptr->block)
+ 			{
+ 				RING	r;
+@@ -1145,78 +1105,13 @@
+ 			erg = (find_erg!=0);
+ 			break;
+ 		case DO_FINDNEXT:
++
+ 			erg = TRUE;
+ 			break;
+-		case DO_ADD 	:
+-			erg = TRUE;
+-			break;
+-		case DO_GOTO	:
+-			erg = goto_line_dial();
+-			break;
+-		case DO_STRIPLINES:
+-			erg = !t_ptr->loc_opt->umbrechen;
+-			break;
+-		case DO_TAB2LZ :
+-			erg = t_ptr->loc_opt->tab;
+-			break;
+-		case DO_LZ2TAB :
+-			erg = t_ptr->loc_opt->tab;
+-			break;
+-		case DO_UPDATE	:
+-			erg = TRUE;
+-			break;
+-		case DO_ZEICHTAB:
+-			ascii_wert = ascii_table(font_id, 13);
+-			erg = (ascii_wert != -1);
+-			break;
+-		case DO_UMLAUT:
+-			erg = umlaut_dial();
+-			break;
+-		case DO_SWAPCHAR:
+-			erg = !t_ptr->block;
+-			break;
+-		case DO_AUTOSAVE :
+-			if (as_text && t_ptr->moved)
+-			{
+-				long	min;
+-				short	btn;
+-
+-				min = (short)((time(NULL) - t_ptr->asave) / 60L);
+-				if (min >= as_text_min)
+-				{
+-					if (as_text_ask)				/* Nachfrage ? */
+-					{
+-						if (t_ptr->namenlos)
+-							strcpy(name, t_ptr->filename);
+-						else
+-							file_name(t_ptr->filename, name, FALSE);
+-						Bconout(2, 7);
+-						btn = snote(2, 3, ASAVEASK, name);
+-						if (btn == 1)
+-							as_text = FALSE;
+-					}
+-					else
+-						btn = 2;
+-
+-					t_ptr->asave = time(NULL);
+-					erg = (btn == 2);
+-				}
+-				else
+-					erg = FALSE;
+-			}
+-			else
+-			{
+-				t_ptr->asave = time(NULL);
+-				erg = FALSE;
+-			}
+-			break;
+-		case DO_FEHLER :
+-			erg = TRUE;
+-			break;
+-		case DO_TOPLINE :
+-			erg = TRUE;
+-			break;
+-		default	:
++        /* Other donor actions are outside the initial native scope. */
++
++default	:
++
+ 			erg = FALSE;
+ 	}
+ 	return erg;
+@@ -1242,29 +1137,34 @@
+ 	switch(action)
+ 	{
+ 		case DO_UNDO	:
++
+ 			t_ptr->blk_mark_mode = FALSE;
+ 			blk_demark(t_ptr);
+ 			make_undo(t_ptr);
+ 			erg = 1;
+ 			break;
+ 		case DO_CUT 	:
++
+ 			t_ptr->blk_mark_mode = FALSE;
+ 			blk_cut(t_ptr);
+ 			restore_edit();
+ 			erg = 1;
+ 			break;
+ 		case DO_COPY	:
++
+ 			t_ptr->blk_mark_mode = FALSE;
+ 			blk_copy(t_ptr);
+ 			restore_edit();
+ 			erg = 1;
+ 			break;
+ 		case DO_LINECOPY:
++
+ 			line_copy(t_ptr);
+ 			restore_edit();
+ 			erg = 1;
+ 			break;
+ 		case DO_PASTE	:
++
+ 			t_ptr->blk_mark_mode = FALSE;
+ 			load_clip();
+ 			if (!ist_leer(&clip_text))
+@@ -1277,123 +1177,31 @@
+ 			erg = 1;
+ 			break;
+ 		case DO_SELALL :
++
+ 			t_ptr->blk_mark_mode = FALSE;
+ 			blk_mark_all(t_ptr);
+ 			restore_edit();
+ 			erg = 1;
+ 			break;
+ 		case DO_CLOSE	:
+-		case DO_DELETE	:
++        case DO_DELETE:
++
+ 			t_ptr->blk_mark_mode = FALSE;
+ 			destruct(icon);
+ 			erg = 1;
+ 			break;
+ 		case DO_OPEN	:
++
+ 			t_ptr->blk_mark_mode = FALSE;
+ 			if (!open_edit(icon))
+ 				erg = -1;
+ 			else
+ 				erg = 1;
+ 			break;
+-		case DO_INFO	:
+-			t_ptr->blk_mark_mode = FALSE;
+-			if (t_ptr->block)
+-				block_info(t_ptr);
+-			else
+-				info_edit(icon);
+-			erg = 1;
+-			break;
+-		case DO_HELP	:
+-			t_ptr->blk_mark_mode = FALSE;
+-			if (!t_ptr->block)
+-				blk_mark_word(t_ptr);
+-			if (t_ptr->block)
+-			{
+-				block_copy(t_ptr, &r);
+-				if (strlen(TEXT(FIRST(&r))) > 0)
+-					erg = call_help(TEXT(FIRST(&r)));
+-				else
+-					erg = call_hyp("main");
+-				kill_textring(&r);
+-			}
+-			else
+-				erg = call_hyp("main");
+-			break;
+-		case DO_LEFT	:
+-			t_ptr->blk_mark_mode = FALSE;
+-			blk_left(t_ptr);
+-			restore_edit();
+-			erg = 1;
+-			break;
+-		case DO_RIGHT	:
+-			t_ptr->blk_mark_mode = FALSE;
+-			blk_right(t_ptr);
+-			restore_edit();
+-			erg = 1;
+-			break;
+-		case DO_SMALL2BIG	:
+-			t_ptr->blk_mark_mode = FALSE;
+-			blk_upplow(t_ptr, BLK_UPPER);
+-			restore_edit();
+-			erg = 1;
+-			break;
+-		case DO_BIG2SMALL	:
+-			t_ptr->blk_mark_mode = FALSE;
+-			blk_upplow(t_ptr, BLK_LOWER);
+-			restore_edit();
+-			erg = 1;
+-			break;
+-		case DO_CHNG_SMBG	:
+-			t_ptr->blk_mark_mode = FALSE;
+-			blk_upplow(t_ptr, BLK_CH_UPLO);
+-			restore_edit();
+-			erg = 1;
+-			break;
+-		case DO_CAPS	:
+-			t_ptr->blk_mark_mode = FALSE;
+-			blk_upplow(t_ptr, BLK_CAPS);
+-			restore_edit();
+-			erg = 1;
+-			break;
+-		case DO_FORMAT :
+-			t_ptr->blk_mark_mode = FALSE;
+-			blk_demark(t_ptr);
+-			if (shift)
+-				total_format(t_ptr);
+-			else
+-				format(t_ptr);
+-			restore_edit();
+-			erg = 1;
+-			break;
+-		case DO_PRINT	:
+-			t_ptr->blk_mark_mode = FALSE;
+-			print_edit(t_ptr);
+-			erg = 1;
+-			break;
+-		case DO_ABAND	:
+-abandon:	strcpy(name, t_ptr->filename);
+-			bin = (t_ptr->text.ending == lns_binmode);
+-			destruct(icon);
+-			icon = load_edit(name, bin);
+-			if (icon > 0)
+-			{
+-				t_ptr = get_text(icon);
+-				erg = -1;
+-				if (t_ptr != NULL)
+-				{
+-					if (open_edit(icon))
+-					{
+-						memset(msgbuff, 0, (short) sizeof(msgbuff));
+-						msgbuff[0] = WM_TOPPED;
+-						msgbuff[3] = window->handle;
+-						send_msg(gl_apid);
+-						erg = 1;
+-					}
+-				}
+-			}
+-			clr_undo();
+-			break;
+-		case DO_SAVE	:
++        /* Other donor actions are outside the initial native scope. */
++
++        case DO_SAVE:
++
+ 			if (!t_ptr->namenlos)
+ 			{
+ 				t_ptr->blk_mark_mode = FALSE;
+@@ -1410,6 +1218,7 @@
+ 			}
+ 			/* Bei Namenlos zu DO_SAVENEW */
+ 		case DO_SAVENEW:
++
+ 			t_ptr->blk_mark_mode = FALSE;
+ 			if (t_ptr->block)
+ 			{
+@@ -1472,12 +1281,13 @@
+ 			}
+ 			break;
+ 		case DO_FIND	:
++
+ 			t_ptr->blk_mark_mode = FALSE;
+ 			if (find_erg == 1)
+ 			{
+ 				if (start_find(t_ptr,FALSE)==0)
+ 				{
+-					Bconout(2, 7);
++					((void)0) /* optional audible bell */;
+ 					end_play();
+ 				}
+ 			}
+@@ -1485,9 +1295,9 @@
+ 			{
+ 				if (find_erg == 2)
+ 				{
+-					if (start_replace(t_ptr) == 0)
++					if (start_find(t_ptr,FALSE) == 0)
+ 					{
+-						Bconout(2, 7);
++						((void)0) /* optional audible bell */;
+ 						end_play();
+ 					}
+ 				}
+@@ -1495,6 +1305,7 @@
+ 			erg = 1;
+ 			break;
+ 		case DO_FINDNEXT:
++
+ 			t_ptr->blk_mark_mode = FALSE;
+ 			if (t_ptr->block)
+ 				find_selection(t_ptr);
+@@ -1502,166 +1313,15 @@
+ 			{
+ 				if (do_next(t_ptr) != 1)
+ 				{
+-					Bconout(2, 7);
++					((void)0) /* optional audible bell */;
+ 					end_play();
+ 				}
+ 			}
+ 			erg = 1;
+ 			break;
+-		case DO_GOTO	:
+-			t_ptr->blk_mark_mode = FALSE;
+-			blk_demark(t_ptr);
+-			goto_line(t_ptr, desire_x, desire_y);
+-			restore_edit();
+-			erg = 1;
+-			break;
+-		case DO_STRIPLINES:
+-			t_ptr->blk_mark_mode = FALSE;
+-			blk_demark(t_ptr);
+-			graf_mouse(HOURGLASS, NULL);
+-			if (strip_endings(t_ptr))
+-			{
+-				t_ptr->max_line = NULL;
+-				line = t_ptr->cursor_line = get_line(&t_ptr->text, t_ptr->ypos);
+-				if (t_ptr->xpos > line->len)
+-					t_ptr->xpos = line->len;
+-				make_chg(t_ptr->link, POS_CHANGE, 0);		/* '*' in Titel */
+-			}
+-			graf_mouse(ARROW, NULL);
+-			hl_update_text(t_ptr);
+-			restore_edit();
+-			erg = 1;
+-			break;
+-		case DO_TAB2LZ :
+-			t_ptr->blk_mark_mode = FALSE;
+-			blk_demark(t_ptr);
+-			tab2lz(t_ptr);			
+-			hl_update_text(t_ptr);
+-			erg = 1;
+-			break;
+-		case DO_LZ2TAB :
+-			t_ptr->blk_mark_mode = FALSE;
+-			blk_demark(t_ptr);
+-			lz2tab(t_ptr);
+-			hl_update_text(t_ptr);
+-			erg = 1;
+-			break;
+-		case DO_ADD 	:
+-			if (shift)
+-				ok = select_single(name, "", rsc_string(INSNAMESTR));
+-			else
+-				ok = select_single(name, "", rsc_string(MERGESTR));
+-			if (ok)
+-			{
+-				if (shift)				/* Dateinamen einfÅgen */
+-				{
+-					RING		temp_ring;
+-					LINEP	col;
+-
+-					init_textring(&temp_ring);
+-					col = new_col(name, (short)strlen(name));
+-					col_insert(&temp_ring,&(temp_ring.head), col);
+-					blk_paste(t_ptr, &temp_ring);
+-					restore_edit();
+-					kill_textring(&temp_ring);
+-				}
+-				else								/* Dateiinhalt einfÅgen */
+-				{
+-					TEXTP temp_ptr = new_text(TEMP_LINK);
+-					short	antw;
+-					
+-					if (temp_ptr!=NULL)
+-					{
+-						set_text_name(temp_ptr, name, FALSE);
+-						antw = load(temp_ptr, TRUE);
+-						if (antw == 0)
+-						{
+-							if (t_ptr->loc_opt->umbrechen)
+-							{
+-								temp_ptr->loc_opt = t_ptr->loc_opt;
+-								make_absatz(temp_ptr);
+-								if (temp_ptr->loc_opt->format_by_load)
+-									total_format(temp_ptr);
+-							}
+-							blk_paste(t_ptr,&(temp_ptr->text));
+-							restore_edit();
+-						}
+-						else
+-							open_error(name, antw);
+-						destruct_text(temp_ptr);
+-					}
+-				}
+-			}
+-			erg = 1;
+-			break;
+-		case DO_UPDATE	:
+-			/* Schreibschutz oder Datei verÑndert? */
+-			if (file_exists(t_ptr->filename))
+-			{
+-				bool	read_only = file_readonly(t_ptr->filename);
+-
+-				if (read_only!=t_ptr->readonly)
+-				{
+-					t_ptr->readonly = read_only;
+-					make_chg(icon,POS_CHANGE,0);		/* Headline schreiben */
+-					restore_edit();
+-				}
+-				if (t_ptr->file_date_time!=-1L)
+-				{
+-					long date_time = file_time(t_ptr->filename,NULL,NULL);
+-
+-					if (date_time!=t_ptr->file_date_time)
+-					{
+-						file_name(t_ptr->filename, name, FALSE);
+-						if (snote(1, 2, MOVED3, name) == 1)
+-							goto abandon;
+-						else
+-							t_ptr->file_date_time = date_time;
+-					}
+-				}
+-			}
+-			/* KÅrzel updaten */
+-			ch_kurzel(t_ptr->loc_opt->kurzel, FALSE);
+-			erg = 1;
+-			break;
+-		case DO_ZEICHTAB:
+-			if (ascii_wert != -1)
+-			{
+-				char_insert(t_ptr, ascii_wert);
+-				hl_update(t_ptr);
+-			}
+-			restore_edit();
+-			erg = 1;
+-			break;
+-		case DO_UMLAUT:
+-			change_umlaute(t_ptr);
+-			hl_update_text(t_ptr);
+-			restore_edit();
+-			erg = 1;
+-			break;
+-		case DO_SWAPCHAR:
+-			char_swap(t_ptr);
+-			hl_update(t_ptr);
+-			restore_edit();
+-			break;
+-		case DO_AUTOSAVE:
+-			e_icon_edit(icon, DO_SAVE);
+-			break;
+-		case DO_FEHLER :
+-			if (error[0][0] != EOS)
+-			{
+-				blk_demark(t_ptr);
+-				restore_edit();
+-				handle_error(t_ptr);
+-			}
+-			break;
+-		case DO_TOPLINE :
+-			arrow_window(window, WA_DNLINE, t_ptr->ypos - window->doc.y);
+-			break;
+-		case DO_SORT :
+-			sort_block(t_ptr);
+-			break;
+-	}
++        /* Other donor actions are outside the initial native scope. */
++
++}
+ 	return erg;
+ }
+ 
+@@ -1669,137 +1329,8 @@
+ /* Es wurde etwas auf ein Textfenster geschoben										*/
+ /***************************************************************************/
+ 
+-static bool e_icon_drag(short icon, short source)
+-{
+-	WINDOWP	w = get_window(icon);
+-	TEXTP 	t_ptr;
+-	bool	ret = FALSE;
+-
+- 	if ((w->flags & WI_ICONIFIED) || (w->flags & WI_SHADED))
+- 		return FALSE;
+-
+-	switch (source)
+-	{
+-		case DRAGDROP_FILE :						/* Inhalt von drag_filename einfÅgen */
+-			t_ptr = get_text(icon);
+-			if (drag_filename[0] != EOS && t_ptr != NULL)
+-			{
+-				TEXTP temp_ptr = new_text(TEMP_LINK);
+-				short	antw;
+-				
+-				if (temp_ptr!=NULL)
+-				{
+-					set_text_name(temp_ptr, drag_filename, FALSE);
+-					antw = load(temp_ptr, TRUE);
+-					if (antw == 0)
+-					{
+-						blk_paste(t_ptr,&(temp_ptr->text));
+-						restore_edit();
+-					}
+-					else
+-						open_error(drag_filename, antw);
+-					destruct_text(temp_ptr);
+-					ret = TRUE;
+-				}
+-			}
+-			drag_filename[0] = EOS;
+-			break;
+-
+-		case DRAGDROP_PATH :						/* Text aus drag_filename einfÅgen */
+-			t_ptr = get_text(icon);
+-			if (drag_filename[0] != EOS && t_ptr != NULL)
+-			{
+-				if ((t_ptr->cursor_line->len + (short)strlen(drag_filename)) < MAX_LINE_LEN)
+-				{
+-					RING		temp_ring;
+-					LINEP	col;
+-						
+-					init_textring(&temp_ring);
+-					col = new_col(drag_filename, (short)strlen(drag_filename));
+-					col_insert(&temp_ring,&(temp_ring.head), col);
+-					if (drag_data_size > 1)
+-					{
+-						/* mehr als ein ARGS -> Zeilenvorschub */
+-						col = new_col("", 0);
+-						col_append(&temp_ring, col);
+-					}
+-					blk_paste(t_ptr, &temp_ring);
+-					restore_edit();
+-					kill_textring(&temp_ring);
+-					ret = TRUE;
+-				}
+-				else
+-					inote(1, 0, TOOLONG, MAX_LINE_LEN);
+-			}
+-			drag_filename[0] = EOS;
+-			break;
+-
+-		case DRAGDROP_DATA :						/* Textdaten einfÅgen */
+-			if (drag_data_size == DDS_RINGP)
+-			{
+-				RINGP	t;
+-				
+-				t_ptr = get_text(icon);
+-				t = (RINGP)drag_data;
+-				blk_paste(t_ptr, t);
+-				restore_edit();
+-				kill_textring(t);
+-				drag_data = NULL;
+-				drag_data_size = 0;
+-			}
+-			else
+-			if (drag_data_size > 0 && drag_data != NULL)
+-			{
+-				RING		temp_ring;
+-				LINEP	col;
+-				char		*p1, *p2, *zeile;
+-				long		delta;
+-				LINEP	line;
+-
+-debug("hier ist edit.DragDrop_DATA!!!\n");
+-				t_ptr = get_text(icon);
+-				init_textring(&temp_ring);
+-				line = &temp_ring.head;
+-				p1 = drag_data;
+-				p2 = strchr(p1, '\r');
+-				if (p2 != NULL)							/* mehrere Zeilen? */
+-				{
+-					zeile = (char *) malloc(MAX_LINE_LEN);
+-					while (p2 != NULL)
+-					{
+-						delta = p2 - p1;
+-						strncpy(zeile, p1, delta);
+-						zeile[delta] = EOS;
+-						col = new_col(zeile, (short)strlen(zeile));
+-						col_insert(&temp_ring,line, col);
+-						NEXT(line);
+-						p1 = p2 + 2;						/* \r\n Åberspringen */
+-						p2 = strchr(p1, '\r');
+-						temp_ring.lines++;
+-					}
+-					free(zeile);
+-				}
+-				else											/* nur eine Zeile ohne \r\n */
+-				{
+-					col = new_col(drag_data, (short)strlen(drag_data));
+-					col_insert(&temp_ring,line, col);
+-				}
+-				blk_paste(t_ptr, &temp_ring);
+-				restore_edit();
+-				kill_textring(&temp_ring);
+-				free(drag_data);							/* Speicher wieder freigeben */
+-				drag_data_size = 0L;
+-				ret = TRUE;
+-			}
+-			break;
+-
+-		default:
+-			if (debug_level)
+-				debug("edit.e_icon_drag(): Unbekannter Mode %d\n", source);
+-	}
+-
+-	return ret;
+-}
++/* Native initial scope: e_icon_drag is deferred. */
++
+ 
+ /***************************************************************************/
+ 
+@@ -2156,15 +1687,14 @@
+ 	insert_poslist(&lastpos_list, t_ptr->filename, t_ptr->xpos, t_ptr->ypos);
+ 
+ 	/* Text war Error-Datei */
+-	if (t_ptr == last_errtext)
+-		last_errtext = NULL;
++
+ 
+ 	close_window(window);
+ 	destruct_text(t_ptr);
+ 	del_icon(icon);
+ 	setexcl(used_info,icon);
+ 	clr_undo();
+-	do_all_icon(prj_type, DO_UPDATE);		/* Projekte updaten */
++	((void)0);		/* Projekte updaten */
+ }
+ 
+ /***************************************************************************/
+@@ -2218,7 +1748,7 @@
+ 	set_winfo(win, "");
+ 	
+ 	if (!namenlos)
+-		do_all_icon(prj_type, DO_UPDATE);				/* Projekte updaten */
++		((void)0);				/* Projekte updaten */
+ 
+ 	t_ptr->asave = time(NULL);
+ 
+@@ -2356,8 +1886,8 @@
+ {
+ 	setclr(chg_links);
+ 	setclr(used_info);
+-	drag_filename[0] = EOS;
+-	edit_type = decl_icon_type(e_icon_test, e_icon_edit, e_icon_exist, e_icon_drag);
++
++	edit_type = decl_icon_type(e_icon_test, e_icon_edit, e_icon_exist, NULL);
+ }
+ 
+ void	cursor_off(short wHandle)
+--- a/qed/src/error.c
++++ b/qed/src/error.c
+@@ -325,7 +325,7 @@
+ 	}
+ 	if (last_errtext != NULL)
+ 		last_errtext = NULL;
+-	Bconout(2, 7);
++	((void)0) /* optional audible bell */;
+ }
+ 
+ /*
+--- a/qed/src/event.c
++++ b/qed/src/event.c
+@@ -364,6 +364,7 @@
+ 	switch ((unsigned short)msg[0])							/* Art der Nachricht */
+ 	{
+ 		case MN_SELECTED:
++
+ 			if (makro_rec)						/* Makro wird Tastendruck vorgegaukelt */
+ 			{
+ 				short	kstate, kreturn;
+@@ -380,18 +381,22 @@
+ 			menu_ctrl = FALSE;
+ 			break;
+ 		case WM_REDRAW  :
++
+ 			if (msg[3] == akt_handle)
+ 				redraw_aktion();
+ 			else
+ 				redraw_window (window, (GRECT*)(msg+4));
+ 			break;
+ 		case WM_CLOSED  :
+-			do_icon(window->handle, DO_DELETE);
++
++			if(prepare_quit())do_quit();
+ 			break;
+ 		case WM_FULLED  :
++
+ 			full_window (window);
+ 			break;
+ 		case WM_ARROWED :
++
+ 		{
+ 			long amount = msg[4] >> 8;
+ 			if (!amount)
+@@ -401,137 +406,47 @@
+ 			break;
+ 		}
+ 		case WM_HSLID	 :
++
+ 			h_slider (window, msg[4]);
+ 			break;
+ 		case WM_VSLID	 :
++
+ 			v_slider (window, msg[4]);
+ 			break;
+ 		case WM_SIZED	 :
++
+ 			size_window (window, (GRECT*)(msg+4), TRUE);
+ 			break;
+ 		case WM_MOVED	 :
++
+ 			move_window (window, (GRECT*)(msg+4));
+ 			break;
+-		case WM_NEWTOP	 : /* Fenster von qed ist irgendwie nach oben gekommen */
+-		case WM_ONTOP	 :
++		case WM_NEWTOP	 :
++        case WM_ONTOP:
++
+ 			ontop_window(window);
+ 			break;
+ 		case WM_TOPPED  :
++
+ 			top_window (window);
+ 			break;
+-		case WM_UNTOPPED: /* qed hat jetzt nicht mehr das Top-Fenster */
++		case WM_UNTOPPED:
++ /* qed hat jetzt nicht mehr das Top-Fenster */
+ 			untop_window (window);
+ 			break;
+-		case WM_BOTTOMED: 	/* AES 4.00 MagiC 3 : Fenster nach hinten */
+-		case WM_M_BDROPPED :	/* Magic 2 */
+-			bottom_window (window, msg[0]);
+-			break;
+-		case WM_ICONIFY:
+-			iconify_window(window, (GRECT*)(msg+4));
+-			break;
+-		case WM_ALLICONIFY:
+-			all_iconify(window, (GRECT*)(msg+4));
+-			break;
+-		case WM_UNICONIFY:
+-			if (all_iconified)
+-				all_uniconify(NULL, (GRECT*)(msg+4));
+-			else
+-				uniconify_window(window, (GRECT*)(msg+4));
+-			break;
+-		case WM_SHADED :
+-		case WM_UNSHADED :
+-			shade_window(window, msg[0]);
+-			break;
+-
+-		case AP_TERM:
++        /* Other donor actions are outside the initial native scope. */
++
++        case AP_TERM:
++
+ 			if (all_iconified)
+ 				all_uniconify(NULL, NULL);
+-			quick_close = TRUE;
++			quick_close = FALSE;
+ 			if (prepare_quit())
+ 				do_quit();
+ 			break;
+-		case AP_DRAGDROP :
+-			if (all_iconified)
+-				Bconout(2, 7);
+-			else
+-				handle_dd(msg);
+-			break;
+-
+-		case SC_CHANGED :
+-			/*
+-			 * Ignorieren, da wir vor dem Paste sowieso neu laden.
+-			*/
+-			break;
+-
+-		case VA_START :
+-		case VA_PROTOSTATUS :
+-		case VA_DRAG_COMPLETE :
+-		case VA_DRAGACCWIND :
+-		case AV_SENDKEY :
+-			handle_av(msg);
+-			break;
+-
+-		case SE_INIT:
+-		case SE_OK:
+-		case SE_ACK:
+-		case SE_OPEN:
+-		case SE_ERROR:
+-		case SE_ERRFILE:
+-		case SE_PROJECT:
+-		case SE_QUIT:
+-		case SE_TERMINATE:
+-		case SE_CLOSE :
+-		case SE_MENU :
+-			if (all_iconified)
+-				all_uniconify(NULL, NULL);
+-		   handle_se(msg);
+-		   break;
+-
+-		case OLGA_INIT :
+-		case OLE_NEW :
+-		case OLGA_ACK :
+-		case OLE_EXIT :
+-			handle_olga(msg);
+-			break;
+-
+-		case SH_WDRAW:				/* schickt Freedom stÑndig */
+-		case DHST_ACK:				/* SMU antwortet */
+-			/* ignore */
+-			break;
+-
+-		case FONT_CHANGED :
+-			if (msg[4] != 0)
+-				font_id = msg[4];
+-			if (msg[5] != 0)
+-				font_pts = msg[5];
+-			font_change();	
+-			break;
+-			
+-		default:
+-			if (debug_level)
+-			{
+-				char	str[12];
+-				short	d, i, id;
+-	
+-				if ((appl_xgetinfo(4, &d, &d, &i, &d)) && (i == 1))	/* gibts appl_search? */
+-				{
+-					i = appl_search(0, str, &d, &id);
+-					while (i != 0)
+-					{
+-						if (id == msg[1])
+-							break;
+-						i = appl_search( 1, str, &d, &id);
+-					}
+-				}
+-				else
+-				{
+-					strcpy(str, "");
+-					id = msg[1];
+-				}
+-				debug("Unbekannte Msg %d (0x%X) von %s (%d)\n", msg[0], msg[0], str, id);
+-			}
+-			break;
+-	}
++        /* Other donor actions are outside the initial native scope. */
++
++}
+ }
+ 
+ /*****************************************************************************/
+@@ -562,19 +477,6 @@
+ 			if (clip_on_disk)
+ 				save_clip();
+ 
+-			if (as_text || as_prj)
+-			{
+-				/*
+-				 * Weil der do_all_icon() recht viel Rechenzeit verheizt, und
+-				 * AutoSave min. 1 min wartet, wird er nur jede Minute aufgerufen.
+-				*/
+-				t = Tgettime();
+-				if ((t - as_timer) >= 32)
+-				{
+-					do_all_icon(ALL_TYPES, DO_AUTOSAVE);
+-					as_timer = t;
+-				}
+-			}
+ 		}
+ 		if (ev.which & MU_KEYBD)					/* Taste */
+ 		{
+--- a/qed/src/file.c
++++ b/qed/src/file.c
+@@ -1,9 +1,10 @@
+ #include <errno.h>
+-#include <sys/stat.h>
++#include "qed-files.h"
+ #include <time.h>
+ #include <unistd.h>
+ 
+ #include "global.h"
++#include "menu.h"
+ #include "aktion.h"
+ #include "ausgabe.h"
+ #include "comm.h"
+@@ -550,7 +551,7 @@
+ short save(TEXTP t_ptr)
+ {
+ 	short		antw;
+-	struct stat	st;
++	struct QedFileInfo st;
+ 	bool		not_exists;
+ 
+ 	if (file_exists(t_ptr->filename))
+@@ -581,7 +582,7 @@
+ 		}
+ 	}
+ 	
+-	not_exists = (stat(t_ptr->filename, &st) != 0);
++	not_exists = (QedFileInfo(t_ptr->filename, &st) != 0);
+ 	
+ 	back_up(t_ptr);
+ 	antw = save_datei(t_ptr->filename, &t_ptr->text, TRUE);
+@@ -609,12 +610,7 @@
+ 	do_olga(OLGA_UPDATE, t_ptr->filename, NULL);
+ 
+ 	/* Attribute wieder herstellen */
+-	if (!not_exists)
+-	{
+-		Fchmod(t_ptr->filename, (st.st_mode & 0x0000FFFF));
+-		if (Pgetuid() == 0)						/* nur root darf Owner Ñndern */
+-			Fchown(t_ptr->filename, st.st_uid, st.st_gid);
+-	}
++	/* Native metadata preservation is part of the later save design. */
+ 
+ 	return antw;
+ }
+@@ -742,21 +738,11 @@
+ 
+ static int open_multi(char *path, char *name)
+ {
+-	if (name[0] != EOS)			/* fÅr den Fall, daû nur ein Verzeichnis kommt */
+-	{
+-		PATH	filename;
+-		short	r;
+-		
+-		strcpy(filename, path);
+-		strcat(filename, name);
+-		if (!shift_pressed() && filematch(filename, "*.QPJ", -1))
+-			r = load_projekt(filename);
+-		else
+-			r = load_edit(filename, multi_bin);
+-		if (r > 0)
+-			send_dhst(filename);
+-	}
+-	return TRUE;
++    PATH filename;
++    if(!name[0])return FALSE;
++    strcpy(filename,path);strcat(filename,name);
++    if(!prepare_quit())return FALSE;
++    return load_edit(filename,FALSE)>0;
+ }
+ 
+ void select_multi(bool binary)
+--- a/qed/src/find.c
++++ b/qed/src/find.c
+@@ -432,7 +432,7 @@
+ 	{
+ 		short	m;
+ 
+-		Bconout(2, 7);
++		((void)0) /* optional audible bell */;
+ 		if (vorw)
+ 			m = M_TSTART;
+ 		else
+@@ -584,157 +584,12 @@
+ 	return erg;
+ }
+ 
+-short start_replace(TEXTP t_ptr)
+-{
+-	char 	*ptr;
+-	short	len, erg, loc_r_modus, d,
+-			such_len, rpl_len;
+-	long	anz;
+-
+-	last_op = 2;
+-	graf_mouse(HOURGLASS, NULL);
+-	rpl_len	= (short) strlen(replace_txt);
+-	anz = 0L;
+-	init_suche(t_ptr, modus);
+-
+-	/* Nur zentrieren, wenn kein andere Pos bekannt. */
+-	if (rp_box_x == 0 && rp_box_y == 0)
+-		form_center(repask, &d, &d, &d, &d);
+-	else
+-	{
+-		repask[0].ob_x = rp_box_x;
+-		repask[0].ob_y = rp_box_y;
+-	}
+-	loc_r_modus = r_modus;
+-	
+-	while((erg=suchen(t_ptr, &such_len))==1)
+-	{
+-		len = rpl_len-such_len;
+-		if (start->len + len > MAX_LINE_LEN)
+-		{
+-			inote(1, 0, TOOLONG, MAX_LINE_LEN);
+-			erg = -1;
+-			break;
+-		}
+-		text_len = start->len-text_x;
+-		t_ptr->cursor_line = start;
+-		t_ptr->xpos = text_x;
+-		t_ptr->ypos = text_y;
+-		if (loc_r_modus != RP_ALL) 			/* Optional oder einzeln */
+-		{
+-			blk_demark(t_ptr);
+-			make_chg(t_ptr->link,POS_CHANGE,0);
+-			restore_edit();
+-			if (loc_r_modus == RP_OPT)
+-			{
+-				short antw;
+-
+-				blk_mark(t_ptr,0);
+-				t_ptr->xpos = text_x+such_len;
+-				blk_mark(t_ptr,1);
+-				restore_edit();
+-
+-				antw = simple_mdial(repask, 0) & 0x7fff;
+-
+-				/* die Pos des Dialogs merken */
+-				rp_box_x = repask[0].ob_x;
+-				rp_box_y = repask[0].ob_y;
+-
+-				if (antw == RAALL)					/* ab jetzt nicht mehr fragen */
+-					loc_r_modus = RP_ALL;
+-				else if (antw ==  RANEIN)			/* Nicht ersetzen */
+-				{
+-					if (vorw)
+-					{
+-						text_x++;
+-						text_len--;
+-					}
+-					else
+-					{
+-						text_len = text_x+such_len-1;
+-						text_x = 0;
+-					}
+-					continue;
+-				}
+-				else if (antw == RAENDE)			/* aufhîren */
+-				{
+-					erg = -1;
+-					break;
+-				}
+-				blk_demark(t_ptr);
+-			}
+-		}
+-		anz ++;
+-		get_undo_col(t_ptr);
+-		ptr = REALLOC(&start, text_x, len);
+-		memcpy(ptr, replace_txt, rpl_len);
+-		t_ptr->cursor_line = start;
+-		hl_update( t_ptr );
+-		if (loc_r_modus != RP_ALL)
+-		{
+-			make_chg(t_ptr->link,LINE_CHANGE,t_ptr->ypos);
+-			restore_edit();
+-			if (loc_r_modus == RP_FIRST) 
+-				break;
+-		}
+-		if (vorw)
+-		{
+-			text_x += rpl_len;
+-			text_len += len;
+-			text_len -= rpl_len;
+-		}
+-		else
+-		{
+-			text_len = text_x;
+-			text_x = 0;
+-		}
+-	}
+-	graf_mouse(ARROW, NULL);
+-	if (anz > 0L)
+-	{
+-		t_ptr->moved++;
+-		make_chg(t_ptr->link,POS_CHANGE,0); 		/* wg. `*'	*/
+-		if (loc_r_modus == RP_ALL)
+-		{
+-			if (t_ptr->block)
+-			{
+-				t_ptr->p1 = get_line(&t_ptr->text,t_ptr->z1);
+-				t_ptr->p2 = get_line(&t_ptr->text,t_ptr->z2);
+-				blk_demark(t_ptr);
+-			}
+-			make_chg(t_ptr->link,TOTAL_CHANGE,0);
+-		}
+-		if (loc_r_modus != RP_FIRST)
+-		{
+-			char	info[WINSTRLEN+1];
+-
+-			sprintf(info, rsc_string(REPLACESTR), anz);
+-			set_info(t_ptr, info);
+-		}
+-		if (erg!=-1)
+-			erg = 1;
+-	}
+-	else
+-		if (erg != -1) 
+-			erg = 0;
+-	restore_edit();
+-	return erg;
+-}
++/* Native initial scope: start_replace is deferred. */
++
+ 
+ short do_next(TEXTP t_ptr)
+ {
+-	short	erg;
+-	bool	direction;
+-
+-	direction = (shift_pressed()) ? (!s_vorw) : s_vorw;
+-	set_suchmode(s_str, r_str, s_grkl, s_quant, direction, s_wort, FALSE, s_round);
+-	if (last_op == 1)
+-		erg = start_find(t_ptr,FALSE);
+-	else if (last_op == 2)
+-		erg = start_replace(t_ptr);
+-	else
+-		erg = -1;
+-	return erg;
++    return start_find(t_ptr,FALSE);
+ }
+ 
+ void find_selection(TEXTP t_ptr)
+@@ -753,48 +608,14 @@
+ 			direction = (shift_pressed()) ? (!s_vorw) : s_vorw;
+ 			set_suchmode(s_str, r_str, s_grkl, s_quant, direction, s_wort, FALSE, s_round);
+ 			if (start_find(t_ptr, FALSE) == 0)
+-				Bconout(2, 7);
+-		}
+-	}
+-}
+-
+-
+-bool filematch(char *str, char *m, short fs_typ)
+-{
+-	char 	*where, mustertxt[HIST_LEN+1];
+-	short	i;
+-	bool	gk = FALSE, old_flg[2];
+-
+-	if ((str[0] == EOS) || (m[0] == EOS))
+-		return FALSE;
+-	
+-	if ((m[0] == '*') && (m[1] == '.'))		/* Ist m eine Extension? */
+-		gk = FALSE;									/* dann Groû == klein! */
+-	else
+-	{
+-		if (fs_typ == -1)
+-			fs_typ = fs_case_sens((char *)str);
+-		/* Echter GRkl-Unterscheidung nur bei Minix */
+-		gk = (fs_typ == FULL_CASE);
+-	}
+-
+-	old_flg[0] = (modus != M_CURSOR);
+-	old_flg[1] = g_round;
+-
+-	sprintf(mustertxt, "^%s$", m);
+-	set_suchmode(mustertxt, "", gk, TRUE, TRUE, FALSE, FALSE, FALSE);
+-	where = STRSTR2(str, (short) strlen(str), muster_txt, &i);
+-
+-	/* 
+-	 * FÅr den Fall, das ein Projekt durchsucht wird, wird filematch() fÅr
+-	 * die Zuordnung der lokalen Optionen fÅr jede durchsuchte Datei einmal
+-	 * aufgerufen. Damit danach die eigentlichen Such-Parameter wieder stimmen,
+-	 * der folgende Befehl!
+-	*/
+-	set_suchmode(s_str, r_str, s_grkl, s_quant, s_vorw, s_wort, old_flg[0], old_flg[1]);
+-
+-	return (where==str);
+-}
++				((void)0) /* optional audible bell */;
++		}
++	}
++}
++
++
++/* Native initial scope: filematch is deferred. */
++
+ 
+ /* Such-Dialoge *************************************************************/
+ 
+@@ -820,44 +641,12 @@
+ }
+ 
+ 
+-static bool build_popup(char h[HIST_ANZ][HIST_LEN+1], POPUP *pop)
+-{
+-	char	str[HIST_LEN + 1];
+-	short	i;
+-
+-	pop->tree = NULL;			/* init */
+-
+-	if (h[0][0] == EOS)
+-		return FALSE;
+-	
+-	strcpy(str, " ");
+-	strcat(str, h[0]);
+-	create_popup(pop, HIST_ANZ, HIST_LEN + 3, str);
+-
+-	for (i = 1; i < HIST_ANZ; i++)
+-	{
+-		if (h[i][0] != EOS)
+-		{
+-			strcpy(str, " ");
+-			strcat(str, h[i]);
+-			append_popup(pop, str);
+-		}
+-	}
+-	return (pop->tree != NULL);
+-}
+-
+-
+-static short circle_popup	(char h[HIST_ANZ][HIST_LEN+1], void *dial,
+-				 OBJECT* tree, short text_obj, short position)
+-{
+-	if ((position + 1 < HIST_ANZ) && (h[position + 1][0] != EOS))
+-		position++;
+-	else
+-		position = 0;
+-	set_string(tree, text_obj, h[position]);
+-	redraw_mdobj(dial, text_obj);
+-	return position;
+-}
++/* Native initial scope: build_popup is deferred. */
++
++
++
++/* Native initial scope: circle_popup is deferred. */
++
+ 
+ 
+ /*
+@@ -868,257 +657,26 @@
+ */
+ short replace_dial(void)
+ {
+-	short	antw = 0;
+-	short	d, r_cycle, s_cycle;
+-	bool	im_kreis, s_p_v, r_p_v;			/* *_popup_valid */
+-	bool	close = FALSE;
+-	MDIAL	*dial;
+-	POPUP	s_pop, r_pop;
+-	char	s[HIST_LEN+1];
+-			
+-	/* Klemmbrett sichern, damit die Dialog das aktuelle haben */
+-	save_clip();
+-
+-	set_state(replace, RPGLOBAL, OS_SELECTED, s_global);
+-	set_state(replace, RPCURSOR, OS_SELECTED, !s_global);
+-	set_state(replace, RPROUND, OS_SELECTED, s_round);
+-
+-	set_string(replace, RPTEXT1, s_str);
+-	set_string(replace, RPTEXT2, r_str);
+-	set_state(replace, RPGRKL, OS_SELECTED, s_grkl);
+-	set_state(replace, RPWILD, OS_SELECTED, s_quant);
+-	set_state(replace, RPWORT, OS_SELECTED, s_wort);
+-	set_state(replace, RPVORW, OS_SELECTED, s_vorw);
+-	set_state(replace, RPRUCKW, OS_SELECTED, !s_vorw);
+-	set_state(replace, RPFIRST, OS_SELECTED, r_modus==RP_FIRST);
+-	set_state(replace, RPALL, OS_SELECTED, r_modus==RP_ALL);
+-	set_state(replace, RPOPTION, OS_SELECTED, r_modus==RP_OPT);
+-
+-	s_p_v = build_popup(s_history, &s_pop);
+-	r_p_v = build_popup(r_history, &r_pop);
+-
+-	/* Popups ggf. abschalten */
+-	set_state(replace, RPSHIST, OS_DISABLED, !s_p_v);
+-	set_state(replace, RPEHIST, OS_DISABLED, !r_p_v);
+-
+-	s_cycle = 0;
+-	r_cycle = 0;
+-	dial = open_mdial(replace, RPTEXT1);
+-	if (dial != NULL)
+-	{
+-		while (!close)
+-		{
+-			antw = do_mdial(dial) & 0x7fff;
+-			switch (antw)
+-			{
+-				case RPSSTR :
+-					if (s_p_v)
+-						s_cycle = circle_popup(s_history, dial, replace, RPTEXT1, s_cycle);
+-					break;
+-				case RPSHIST :
+-					if (s_p_v)
+-					{
+-						d = handle_popup(replace, RPSHIST, s_pop.tree, 0, POP_OPEN);
+-						if (d > 0)
+-						{
+-							s_cycle = d;
+-							get_string(s_pop.tree, s_cycle, s);
+-							set_string(replace, RPTEXT1, s+1);
+-							redraw_mdobj(dial, RPTEXT1);
+-						}
+-					}
+-					break;
+-		
+-				case RPESTR :
+-					if (r_p_v)
+-						r_cycle = circle_popup(r_history, dial, replace, RPTEXT2, r_cycle);
+-					break;
+-				case RPEHIST :
+-					if (r_p_v)
+-					{
+-						d = handle_popup(replace, RPEHIST, r_pop.tree, 0, POP_OPEN);
+-						if (d > 0)
+-						{
+-							r_cycle = d;
+-							get_string(r_pop.tree, r_cycle, s);
+-							set_string(replace, RPTEXT2, s+1);
+-							redraw_mdobj(dial, RPTEXT2);
+-						}
+-					}
+-					break;
+-		
+-				case RPHELP :
+-					menu_help(TSEARCH, MFIND);
+-					set_state(replace, antw, OS_SELECTED, FALSE);
+-					redraw_mdobj(dial, antw);
+-					break;
+-		
+-				default:
+-					close = TRUE;
+-					break;
+-			}
+-		}
+-		close_mdial(dial);
+-		set_state(replace, antw, OS_SELECTED, FALSE);
+-		if (antw == RPOK || antw == RPERSATZ)
+-		{
+-			get_string(replace, RPTEXT1, s_str);
+-			get_string(replace, RPTEXT2, r_str);
+-			if ((strcmp(s_str, r_str) == 0) && (antw == RPERSATZ))
+-			{
+-				note(1, 0, RPSAME);
+-				return 0;
+-			}
+-			s_grkl	= get_state(replace,RPGRKL, OS_SELECTED);
+-			s_quant	= get_state(replace,RPWILD, OS_SELECTED);
+-			s_wort	= get_state(replace,RPWORT, OS_SELECTED);
+-			s_vorw = get_state(replace,RPVORW, OS_SELECTED);
+-			s_global = get_state(replace,RPGLOBAL, OS_SELECTED);
+-			s_round	= get_state(replace,RPROUND, OS_SELECTED);
+-	
+-			if (get_state(replace, RPFIRST, OS_SELECTED))
+-				r_modus = RP_FIRST;
+-			else if (get_state(replace, RPALL, OS_SELECTED))
+-				r_modus = RP_ALL;
+-			else
+-				r_modus = RP_OPT;
+-	
+-			if (s_str[0] != EOS)
+-				insert_history(s_history, s_str);
+-			if (r_str[0] != EOS)
+-				insert_history(r_history, r_str);
+-	
+-			im_kreis = s_round && (antw == RPOK);	/* 'im Kreis' nur bei Suchen, nicht beim Ersetzen */
+-			set_suchmode(s_str, r_str, s_grkl, s_quant, s_vorw, s_wort, s_global, im_kreis);
+-			return ((antw == RPOK) ? 1 : 2);
+-		}
+-	}
+-	if (s_p_v)
+-		free_popup(&s_pop);
+-	if (r_p_v)
+-		free_popup(&r_pop);
+-	return 0;
++    short answer;
++    set_string(replace,RPTEXT1,s_str);
++    set_state(replace,RPERSATZ,OS_DISABLED,TRUE);
++    set_state(replace,RPWILD,OS_DISABLED,TRUE);
++    set_state(replace,RPSHIST,OS_DISABLED,TRUE);
++    set_state(replace,RPEHIST,OS_DISABLED,TRUE);
++    answer=simple_mdial(replace,RPTEXT1)&0x7fff;
++    set_state(replace,answer,OS_SELECTED,FALSE);
++    if(answer!=RPOK)return 0;
++    get_string(replace,RPTEXT1,s_str);
++    s_quant=FALSE;s_wort=FALSE;s_grkl=FALSE;s_vorw=TRUE;s_global=FALSE;s_round=FALSE;
++    set_suchmode(s_str,"",FALSE,FALSE,TRUE,FALSE,FALSE,FALSE);
++    return s_str[0]?1:0;
+ }
+ 
+ /*
+  * Suchen auf Disk / in Projekt
+ */
+-bool findfile_dial(char *ff_path, bool in_prj)
+-{
+-	PATH	new_path = "", str = "";
+-	char 	s[HIST_LEN+1];
+-	short	antw = 0;
+-	short	d, cycle;
+-	bool	close = FALSE, p_v;
+-	MDIAL	*dial;
+-	POPUP	pop;
+-
+-	if( ff_mask[0] == EOS )
+-		strcpy( ff_mask, "*" );
+-		
+-	save_clip();
+-
+-	if (in_prj)							/* Suche im Projekt */
+-	{
+-		set_string(find_obj, FFTITLE, rsc_string(FFSTR2));
+-		set_state(find_obj, FFSELP, OS_DISABLED, TRUE);
+-		set_state(find_obj, FFREK, OS_DISABLED, TRUE);
+-		set_state(find_obj, FFREK, OS_SELECTED, FALSE);
+-		make_shortpath(ff_path, str, 50);
+-	}	
+-	else									/* Suche nach Dateien */
+-	{
+-		set_string(find_obj, FFTITLE, rsc_string(FFSTR1));
+-		set_state(find_obj, FFSELP, OS_DISABLED, FALSE);
+-		set_state(find_obj, FFREK, OS_DISABLED, FALSE);
+-		set_state(find_obj, FFREK, OS_SELECTED, ff_rekursiv);
+-		strcpy(new_path, ff_path);
+-		if (ff_path[0] != EOS)
+-			make_shortpath(ff_path, str, 50);
+-	}
+-	set_string(find_obj, FFPATH, str);
+-	set_string(find_obj, FFMASK, ff_mask);
+-	set_string(find_obj, FFTEXT, s_str);
+-	set_state(find_obj, FFGRKL, OS_SELECTED, s_grkl);
+-	set_state(find_obj, FFWILD, OS_SELECTED, s_quant);
+-	set_state(find_obj, FFWORT, OS_SELECTED, s_wort);
+-
+-	p_v =	build_popup(s_history, &pop);
+-
+-	/* Popup ggf. abschalten */
+-	set_state(find_obj, FFHIST, OS_DISABLED, !p_v);
+-
+-	cycle = 0;
+-
+-	dial = open_mdial(find_obj, FFTEXT );
+-/*	dial = open_mdial(find_obj, in_prj ? FFTEXT : FFMASK);*/
+-	if (dial != NULL)
+-	{
+-		while (!close)
+-		{
+-			antw = do_mdial(dial) & 0x7fff;
+-			switch (antw)
+-			{
+-				case FFSTR :
+-					if (p_v)
+-						cycle = circle_popup(s_history, dial, find_obj, FFTEXT, cycle);
+-					break;
+-				case FFHIST:
+-					if (p_v)
+-					{
+-						d = handle_popup(find_obj, FFHIST, pop.tree, 0, POP_OPEN);
+-						if (d > 0)
+-						{
+-							cycle = d;
+-							get_string(pop.tree, cycle, s);
+-							set_string(find_obj, FFTEXT, s+1);
+-							redraw_mdobj(dial, FFTEXT);
+-						}
+-					}
+-					break;
+-
+-				case FFSELP:
+-					if (select_path(new_path, rsc_string(SELPATHSTR)))
+-						set_string(find_obj, FFPATH, new_path);
+-					break;
+-	
+-				case FFHELP :
+-					menu_help(TSEARCH, MFIND);
+-					break;
+-	
+-				default:
+-					close = TRUE;
+-					break;
+-			}
+-			if (!close)
+-			{
+-				set_state(find_obj, antw, OS_SELECTED, FALSE);
+-				redraw_mdobj(dial, antw);
+-			}
+-		}
+-		close_mdial(dial);
+-		set_state(find_obj, antw, OS_SELECTED, FALSE);
+-		if (antw == FFOK)
+-		{
+-			get_string(find_obj, FFTEXT, s_str);
+-			get_string(find_obj, FFMASK, ff_mask);
+-			ff_rekursiv = get_state(find_obj, FFREK, OS_SELECTED);
+-			s_grkl	= get_state(find_obj, FFGRKL, OS_SELECTED);
+-			s_quant	= get_state(find_obj, FFWILD, OS_SELECTED);
+-			s_wort	= get_state(find_obj, FFWORT, OS_SELECTED);
+-			if (!in_prj)
+-				strcpy(ff_path, new_path);
+-			if (s_str[0] != EOS)
+-				insert_history(s_history, s_str);
+-			set_suchmode(s_str, "", s_grkl, s_quant, TRUE, s_wort, TRUE, FALSE);
+-			if (in_prj && s_str[0] == EOS)
+-				return FALSE;
+-			else
+-				return TRUE;
+-		}
+-	}
+-	return FALSE;
+-}
++/* Native initial scope: findfile_dial is deferred. */
++
+ 
+ 
+ 	
+@@ -1139,202 +697,48 @@
+ };
+ 
+ 
+-void change_umlaute(TEXTP t_ptr)
+-{
+-	LINEP	line;
+-	short		x, update;
+-	long		l;
+-	bool		cont = TRUE;
+-	bool		changed = FALSE;
++/* Native initial scope: change_umlaute is deferred. */
++
++
++/* Native initial scope: umlaut_dial is deferred. */
++
++
++
++
++
++bool filematch(char *str, char *m, short fs_typ)
++{
++	char 	*where, mustertxt[HIST_LEN+1];
++	short	i;
++	bool	gk = FALSE, old_flg[2];
++
++	if ((str[0] == EOS) || (m[0] == EOS))
++		return FALSE;
+ 	
+-	line = FIRST(&t_ptr->text);
+-	if (line != NULL)
+-	{
+-		x = bild_pos(t_ptr->xpos, t_ptr->cursor_line, TRUE, t_ptr->loc_opt->tabsize);
+-		start_aktion(rsc_string(UMLAUTSTR), TRUE, t_ptr->text.lines);
+-		l = 0;
+-		if (t_ptr->text.lines < 200)
+-			update = 10;
+-		else
+-			update = 100;
+-
+-		graf_mouse(HOURGLASS, NULL);
+-
+-		while (cont && !IS_TAIL(line))
+-		{
+-			if (line->len > 0)
+-			{
+-				short	u, xpos, len;
+-				char	c;
+-					
+-				xpos = 0;
+-				while (xpos < line->len)
+-				{
+-					c = TEXT(line)[xpos];
+-					if (((unsigned char)c) > 127)
+-					{
+-						for (u = 0; u <= 7; u++)
+-							if (c == umlaute[umlaut_from][u])
+-								break;
+-				
+-						if (u < 7)
+-						{
+-							changed = TRUE;
+-							if (umlaut_to == LaTeX)
+-							{
+-								if (line->len + 1 <= MAX_LINE_LEN)
+-								{
+-									TEXT(line)[xpos] = '"';
+-									xpos++;
+-									*(REALLOC(&line, xpos, 1)) = umlaute[umlaut_to][u];
+-								}
+-								else
+-									inote(1, 0, TOOLONG, MAX_LINE_LEN);
+-							}
+-							else if (umlaut_to == ASCII)
+-							{
+-								if (line->len + 1 <= MAX_LINE_LEN)
+-								{
+-									TEXT(line)[xpos] = umlaute[umlaut_to][u];
+-									xpos++;
+-									if (u == 6)
+-										*(REALLOC(&line, xpos, 1)) = 's';
+-									else
+-										*(REALLOC(&line, xpos, 1)) = 'e';
+-								}
+-								else
+-									inote(1, 0, TOOLONG, MAX_LINE_LEN);
+-							}
+-							else if (umlaut_to == HTML)
+-							{
+-								/* &auml; &szlig; */
+-								char	new[7] = "Xuml;";
+-
+-								if (u == 6)
+-									strcpy(new, "szlig;");
+-								else
+-									new[0] = umlaute[umlaut_to][u];
+-								len = (short)strlen(new);
+-								if (line->len + len <= MAX_LINE_LEN)
+-								{
+-									TEXT(line)[xpos] = '&';
+-									xpos++;
+-									INSERT(&line, xpos, len, new);
+-									xpos += len-1;
+-								}
+-								else
+-									inote(1, 0, TOOLONG, MAX_LINE_LEN);
+-							}
+-							else
+-								TEXT(line)[xpos] = umlaute[umlaut_to][u];
+-						}
+-					}
+-					xpos++;
+-				} /* while xpos */
+-			} /* while line */
+-			NEXT(line);
+-
+-			l++;
+-			if (l % update == 0)
+-				cont = do_aktion("", l);
+-		}
+-		
+-		graf_mouse(ARROW, NULL);
+-		end_aktion();
+-
+-		if (changed)
+-		{
+-			t_ptr->moved++;
+-			t_ptr->cursor_line = get_line(&t_ptr->text, t_ptr->ypos);
+-			t_ptr->xpos = inter_pos(x, t_ptr->cursor_line, TRUE, t_ptr->loc_opt->tabsize);
+-			make_chg(t_ptr->link, WT_CHANGE, 0);
+-			make_chg(t_ptr->link, TOTAL_CHANGE, 0);
+-			t_ptr->max_line = NULL;
+-
+-			if (t_ptr->loc_opt->umbrechen)
+-				total_format(t_ptr);
+-
+-			restore_edit();
+-		}
+-	}
+-}
+-
+-bool umlaut_dial(void)
+-{
+-	bool	ret = FALSE, close = FALSE;
+-	short	antw = 0;
+-	short	d, new_from, new_to;
+-	MDIAL	*dial;
+-	char	str[30];
+-		
+-	new_from = umlaut_from;
+-	new_to = umlaut_to;
+-	if (shift_pressed())				/* bei Shift: Quelle und Ziel vertauschen */
+-	{
+-		if (umlaut_to <= PC)			/* nur einbuchstabige kînnen umgedreht werden! */
+-		{
+-			new_from = umlaut_to;
+-			new_to = umlaut_from;
+-		}
+-		else
+-		{
+-			Bconout(2, 7);
+-			return FALSE;
+-		}
+-	}
+-	get_string(popups, UPFROMST + new_from, str);
+-	set_string(umlautkonv, UVON, str);
+-	get_string(popups, UPTOST + new_to, str);
+-	set_string(umlautkonv, UNACH, str);
+-
+-	dial = open_mdial(umlautkonv, 0);
+-	if (dial != NULL)
+-	{
+-		while (!close)
+-		{
+-			antw = do_mdial(dial) & 0x7fff;
+-			switch (antw)
+-			{
+-				case UVSTR :
+-				case UVON :
+-					if (antw == UVON)
+-						d = handle_popup(umlautkonv, UVON, popups, UMLAUTPOP1, POP_OPEN);
+-					else
+-						d = handle_popup(umlautkonv, UVON, popups, UMLAUTPOP1, POP_CYCLE);
+-					if (d > 0)
+-						new_from = d - UPFROMST;
+-					break;
+-				case UNSTR :
+-				case UNACH :
+-					if (antw == UNACH)
+-						d = handle_popup(umlautkonv, UNACH, popups, UMLAUTPOP2, POP_OPEN);
+-					else
+-						d = handle_popup(umlautkonv, UNACH, popups, UMLAUTPOP2, POP_CYCLE);
+-					if (d > 0)
+-						new_to = d - UPTOST;
+-					break;
+-
+-				default:
+-					close = TRUE;
+-					break;
+-			}
+-		}
+-		set_state(umlautkonv, antw, OS_SELECTED, FALSE);
+-		close_mdial(dial);
+-		if (antw == UKSTART)
+-		{
+-			if (new_from == new_to)
+-			{
+-				note(1, 0, NOKONV);
+-				ret = FALSE;
+-			}
+-			else
+-			{
+-				umlaut_from = new_from;
+-				umlaut_to = new_to;
+-				ret = TRUE;
+-			}
+-		}
+-	}
+-	return ret;
+-}
++	if ((m[0] == '*') && (m[1] == '.'))		/* Ist m eine Extension? */
++		gk = FALSE;									/* dann Groû == klein! */
++	else
++	{
++		if (fs_typ == -1)
++			fs_typ = fs_case_sens((char *)str);
++		/* Echter GRkl-Unterscheidung nur bei Minix */
++		gk = (fs_typ == FULL_CASE);
++	}
++
++	old_flg[0] = (modus != M_CURSOR);
++	old_flg[1] = g_round;
++
++	sprintf(mustertxt, "^%s$", m);
++	set_suchmode(mustertxt, "", gk, TRUE, TRUE, FALSE, FALSE, FALSE);
++	where = STRSTR2(str, (short) strlen(str), muster_txt, &i);
++
++	/* 
++	 * FÅr den Fall, das ein Projekt durchsucht wird, wird filematch() fÅr
++	 * die Zuordnung der lokalen Optionen fÅr jede durchsuchte Datei einmal
++	 * aufgerufen. Damit danach die eigentlichen Such-Parameter wieder stimmen,
++	 * der folgende Befehl!
++	*/
++	set_suchmode(s_str, r_str, s_grkl, s_quant, s_vorw, s_wort, old_flg[0], old_flg[1]);
++
++	return (where==str);
++}
+--- a/qed/src/global.c
++++ b/qed/src/global.c
+@@ -1,11 +1,12 @@
+ #include <stdarg.h>
+-#include <sys/stat.h>
++#include "qed-files.h"
+ #include <support.h>
+ #include <time.h>
+-#include <unistd.h>
++
+ #include <gemx.h>
+ 
+ #include "global.h"
++#include "app.h"
+ #include "hl.h"
+ #include "makro.h"
+ #include "options.h"
+@@ -156,7 +157,7 @@
+ static short do_note(short def, short undo, char *s)
+ {
+ 	wake_mouse();
+-	return do_walert(def, undo, s, " qed ");
++	(void)undo;return form_alert(def,s);
+ }
+ 
+ short note(short def, short undo, short idx)
+@@ -195,112 +196,11 @@
+ /* Konfigurationsdatei; returns TRUE wenn gefunden,
+  * filename enthÑlt in diesem Fall den kompletten Pfad
+  */
+-bool get_config_file( PATH filename, bool isdir )
+-{
+-	bool	found = FALSE;
+-	PATH	env, p_for_save = "";
+-	PATH	cfg_path;
+-/*	if (!gl_debug) */
+-	if (path_from_env("HOME", env))	/* 1. $HOME */
+-	{
+-	
+-		strcpy(cfg_path, env); /* 1a. $HOME/.qed */
+-		strcat(cfg_path, ".qed\\");
+-		if (path_exists(cfg_path))
+-	{
+-		strcat(cfg_path, filename);
+-			if (p_for_save[0] == EOS)
+-		strcpy(p_for_save, cfg_path);
+-			if( isdir )
+-				found = path_exists(cfg_path);
+-			else
+-		found = file_exists(cfg_path);
+-	}
+-
+-		if (!found)										/* 1b. $HOME */
+-	{
+-		strcpy(cfg_path, env);
+-			if (path_exists(cfg_path))
+-			{
+-		strcat(cfg_path, filename);
+-		if (p_for_save[0] == EOS)
+-			strcpy(p_for_save, cfg_path);
+-				if( isdir )
+-					found = path_exists(cfg_path);
+-				else
+-		found = file_exists(cfg_path);
+-			}
+-		}
+-
+-		if (!found)										/* 1c. $HOME/defaults */
+-		{
+-			strcpy(cfg_path, env);
+-			strcat(cfg_path, "defaults\\");
+-			if (path_exists(cfg_path))
+-			{
+-				strcat(cfg_path, filename);
+-				if (p_for_save[0] == EOS)
+-					strcpy(p_for_save, cfg_path);
+-				if( isdir )
+-					found = path_exists(cfg_path);
+-				else
+-				found = file_exists(cfg_path);
+-			}
+-		}		
+-		
+-	}
+-
+-	if (!found && path_from_env("QED", cfg_path))			/* 2. $QED */
+-	{
+-		strcat(cfg_path, filename);
+-		if (p_for_save[0] == EOS)
+-			strcpy(p_for_save, cfg_path);
+-		if( isdir )
+-			found = path_exists(cfg_path);
+-		else
+-			found = file_exists(cfg_path);
+-	}
+-
+-	if (!found && gl_appdir[0] != EOS)			/* 3. Startverzeichnis */
+-	{
+-		strcpy(cfg_path, gl_appdir);
+-		strcat(cfg_path, filename);
+-		if (p_for_save[0] == EOS)
+-			strcpy(p_for_save, cfg_path);
+-		if( isdir )
+-			found = path_exists(cfg_path);
+-		else
+-		found = file_exists(cfg_path);
+-	}
+-
+-	if (!found && (isdir ? path_exists(filename) : file_exists(filename)))			/* 4. aktuelles Verzeichnis */
+-	{
+-		get_path(cfg_path, 0);
+-		strcat(cfg_path, filename);
+-		if (p_for_save[0] == EOS)
+-			strcpy(p_for_save, cfg_path);
+-		found = TRUE;
+-	}
+-
+-	if (!found)
+-		strcpy(cfg_path, p_for_save);
+-
+-	strcpy(filename, cfg_path);
+-	
+-	debug("cfg_file: %s (%d)\n", cfg_path, found);
+-	
+-	return found;
+-}
+-
+-bool get_config_dir ( PATH p )
+-{
+-	bool ret;
+-	PATH tmp;
+-	strcpy( tmp, CFGNAME );
+-	ret = get_config_file( tmp, FALSE );
+-	split_filename( tmp, p, NULL);
+-	return ret;
+-}
++/* Native initial scope: get_config_file is deferred. */
++
++
++/* Native initial scope: get_config_dir is deferred. */
++
+ 
+ 
+ void file_name(char *fullname, char *filename, bool withoutExt)
+@@ -312,128 +212,45 @@
+ 
+ /*****************************************************************************/
+ 
+-static void make_date(struct tm *timev, char *date)
+-{
+-	if (date != NULL)
+-	{
+-		switch ((unsigned short)_idt & 0xF00)			/* Reihenfolge im Datum */
+-		{
+-			case 0x000:  /* MM/DD/YYYY */
+-				strftime(date, 11, "%m/%d/%Y", timev);
+-				break;
+-			case 0x100:  /* DD.MM.YYYY */
+-				strftime(date, 11, "%d.%m.%Y", timev);
+-				break;
+-			default:  /* YYYY-MM-DD */
+-				strftime(date, 11, "%Y-%m-%d", timev);
+-				break;
+-		}
+-	}
+-}
++/* Native initial scope: make_date is deferred. */
++
+ /*****************************************************************************/
+ 
+ void get_datum(char *date)
+ {
+-	time_t		ttime;
+-	struct tm	*timev;
+-
+-	time(&ttime);
+-	timev = localtime(&ttime);
+-	make_date(timev, date);
++    strcpy(date,"??"); /* Native calendar service is unavailable. */
+ }
+ 
+ /*****************************************************************************/
+ 
+ long file_time(char *filename, char *fdate, char *ftime)
+ {
+-	struct stat	s;
+-
+-	if (stat(filename, &s) == 0)
+-	{
+-		struct tm	*timev;
+-
+-		timev = localtime(&s.st_mtime);
+-		if (ftime != NULL)
+-			strftime(ftime, 9, "%H:%M:%S", timev);
+-		if (fdate != NULL)
+-			make_date(timev, fdate);
+-		return s.st_mtime;
+-	}
+-	else
+-	{
+-		if (ftime != NULL)
+-			strcpy(ftime, "??");
+-		if (fdate != NULL)
+-			strcpy(fdate, "??");
+-		return 0;
+-	}
++    /* Calendar change detection is unavailable; -1 disables its donor comparison. */
++    if(fdate)strcpy(fdate,"??");
++    if(ftime)strcpy(ftime,"??");
++    return -1L;
+ }
+ 
+ /*****************************************************************************/
+ long file_size(char *filename)
+ {
+-	struct stat	s;
+-	
+-	if (stat(filename, &s) == 0)
+-	{
+-		if (!S_ISREG(s.st_mode))
+-		{
+-			return -1;
+-		}
+-		return s.st_size;
+-	}
+-	return 0;
++    struct QedFileInfo info;
++    if(QedFileInfo(filename,&info)<0 || !info.sizeKnown || info.kind>0)return -1L;
++    return info.size;
+ }
+ 
+ /*****************************************************************************/
+ bool file_readonly (char *filename)
+ {
+-	struct stat	s;
+-	bool		ret = FALSE;
+-	
+-	if (stat(filename, &s) == 0)
+-	{
+-		short	uid, gid;
+-
+-		uid = Pgetuid();
+-		if (uid == -32)
+-			uid = 0;
+-		gid = Pgetgid();
+-		if (gid == -32)
+-			gid = 0;
+-		if (((uid == s.st_uid) && ((s.st_mode & S_IWUSR) != 0)) ||	
+-				/* Besitzer hat Schreibrecht */
+-		   
+-		  	 ((gid == s.st_gid) && ((s.st_mode & S_IWGRP) != 0)) ||	
+-		  	 	/* Gruppe hat Schreibrecht */
+-		    
+-		    (((s.st_mode & S_IWOTH) != 0))	||								
+-		    	/* Welt hat Schreibrecht */
+-		    
+-		    ((uid == 0) && ((s.st_mode & S_IWUSR) != 0)))				
+-		    	/* root darf, wenn Owner darf */
+-			ret = FALSE;
+-		else
+-			ret = TRUE;
+-	}
+-	return ret;
+-}
+-
+-
+-/***************************************************************************/
+-bool path_from_env(char *env, char *path)
+-{
+-	char	*p;
+-	bool	ret = FALSE;
+-		
+-	p = getenv(env);
+-	if (p != NULL)
+-	{
+-		strcpy(path, p);
+-		ret = make_normalpath(path);
+-	}
+-	return ret;
+-}
++    struct QedFileInfo info;
++    if(QedFileInfo(filename,&info)<0)return FALSE;
++    return (info.protection & 4)!=0;
++}
++
++
++/***************************************************************************/
++/* Native initial scope: path_from_env is deferred. */
++
+ 
+ /***************************************************************************/
+ bool is_bin_name(char *filename)
+@@ -456,113 +273,30 @@
+ /***************************************************************************/
+ 
+ /* Ein ziemlicher Hack... Abfragen, ob ein Font ein Vektorfont ist */
+-static bool font_is_vector(short idx)
+-{
+-	short workout[57];
+-	short fs_handle = open_vwork(workout);
+-	short f_anz = workout[10];
+-	char fontname[34];
+-	bool ret = FALSE;
+-	_WORD di, fonttype;
+-	
+-	if (gl_gdos)
+-	{
+-		f_anz += vst_load_fonts(fs_handle, 0);
+-		while (f_anz)
+-		{
+-			if (vqt_ext_name(fs_handle, f_anz, fontname, &fonttype, &di ) == idx)
+-			{
+-				ret = (fonttype & 1) ? FALSE : TRUE;
+-				break;
+-			} else if (vqt_name(fs_handle, f_anz, fontname) == idx)
+-			{
+-				ret = fontname[ 32 ] ? TRUE : FALSE;
+-				break;
+-			}
+-			f_anz--;
+-		}
+-		vst_unload_fonts(fs_handle, 0);
+-	}
+-	v_clsvwk(fs_handle);
+-	return ret;
+-}
++/* Native initial scope: font_is_vector is deferred. */
++
+ 
+ void font_change(void)
+ {
+-	_WORD ret, w1, w2, d, d1[5], effects[3];
+-
+-	vst_effects(vdi_handle, 0);
+-	/* *_cell werden NUR hier verÑndert */
+-	vst_font(vdi_handle, font_id);
+-	font_pts = vst_point(vdi_handle, font_pts, &d, &d, 
+-										&font_wcell, &font_hcell);
+-
+-	vqt_width(vdi_handle, 'W', &w1, &ret, &ret);
+-	vqt_width(vdi_handle, 'i', &w2, &ret, &ret);
+-	font_prop = (w1 != w2);
+-
+-	vst_effects(vdi_handle, HL_ITALIC);
+-	vqt_fontinfo(vdi_handle, &min_ascii, &max_ascii, d1, &d, effects);
+-	vst_effects(vdi_handle, TXT_NORMAL);
+-	if (min_ascii <= 0)
+-		min_ascii = 1;
+-
+-	font_vector = font_is_vector(font_id);
+-
+-	if ( font_vector )
+-	{	
+-		_WORD extent[8];
+-		vqt_extent(vdi_handle, "a", extent); /* no matter if prop font - font_wcell isn't used at all in that case */
+-		font_wcell = extent[2] - extent[0];
+-		font_hcell = extent[5] - extent[1];
+-	}
+-
+-	font_right_italicoffset = effects[ 2 ];
+-	font_left_italicoffset = effects[ 1 ];
+-
+-	/* Alle Fenster updaten */
+-	do_all_window(CLASS_ALL, do_font_change);
+-}
+-
+-void select_font(void)
+-{
+-	short	n_id, n_pts;
+-	bool	ok = FALSE;
+-
+-	n_id = font_id;
+-	n_pts = font_pts;
+-	ok = do_fontsel(FS_M_ALL, rsc_string(SELWFONTSTR), &n_id, &n_pts);
+-	if (ok)
+-	{
+-		font_id = n_id;
+-		font_pts = n_pts;
+-		font_change();
+-	}
+-	else if (n_id == -1 && n_pts == -1)
+-		note(1, 0, NOFSL);
+-}
++    /* Initial profile has one built-in fixed font and borrows CFLIB's workstation. */
++    font_id=sys_big_id; font_pts=sys_big_pts;
++    font_wcell=gl_wchar; font_hcell=gl_hchar;
++    min_ascii=1; max_ascii=255; font_prop=FALSE; font_vector=FALSE;
++    font_left_italicoffset=font_right_italicoffset=0;
++    do_all_window(CLASS_ALL,do_font_change);
++}
++
++/* Native initial scope: select_font is deferred. */
++
+ 
+ /***************************************************************************/
+ /* Initialisieren des Moduls																*/
+ /***************************************************************************/
+ void init_global (void)
+ {
+-	short	work_out[57];
+-	_WORD	ret, f_anz;
+-
+-	done = FALSE;
+-	clip_flag = TRUE;
+-
+-	vdi_handle = open_vwork(work_out);
+-	f_anz = work_out[10];
+-
+-	if (gl_gdos)
+-		f_anz += vst_load_fonts(vdi_handle, 0);
+-
+-	vst_alignment(vdi_handle, TA_LEFT, TA_TOP, &ret, &ret);
+-
+-	if (!getcookie("_IDT", &_idt))				/* Format fÅr Datum und Zeit */
+-		_idt = 0x0000112E;							/* DD.MM.YYYY HH:MM:SS */
++    _WORD ret;
++    done=FALSE;clip_flag=TRUE;vdi_handle=cf_vdi_handle;
++    vst_alignment(vdi_handle,TA_LEFT,TA_TOP,&ret,&ret);
+ }
+ 
+ /************************************************************************/
+@@ -570,7 +304,5 @@
+ /************************************************************************/
+ void term_global(void)
+ {
+-	if (gl_gdos)
+-		vst_unload_fonts(vdi_handle, 0);
+-	v_clsvwk(vdi_handle);
+-}
++    /* Workstation is borrowed from CFLIB and retired by exit_gem. */
++}
+--- a/qed/src/hl.h
++++ b/qed/src/hl.h
+@@ -17,3 +17,26 @@
+ void hl_change_text_type( TEXTP t_ptr, char *extension );
+ void hl_disable(void);
+ void hl_enable(void);
++#ifdef QED_INITIAL_SCOPE
++/* Native initial scope: optional facility is compiled out at all callers. */
++#define hl_init(...) (0)
++#define hl_exit(...) (0)
++#define hl_insert(...) (0)
++#define hl_insert_block(...) (0)
++#define hl_remove(...) (0)
++#define hl_remove_block(...) (0)
++#define hl_update(...) (0)
++#define hl_update_block(...) (0)
++#define hl_update_text(...) (0)
++#define hl_update_zeile(...) (0)
++#define hl_update_all(...) (0)
++#define hl_init_text(...) (0)
++#define hl_free(...) (0)
++#define hl_get_zeile(...) NULL
++#define hl_read_syn(...) (0)
++#define hl_write_syn(...) (0)
++#define hl_change_text_type(...) (0)
++#define hl_disable(...) (0)
++#define hl_enable(...) (0)
++#endif
++
+--- a/qed/src/kurzel.c
++++ b/qed/src/kurzel.c
+@@ -99,7 +99,7 @@
+ 		m = Marken + nr;
+ 		m->file[0] = EOS;
+ 		m->name[0] = EOS;
+-		str = menu[MMARKE1+nr].ob_spec.free_string + 5;
++		str = ((char *)(ULONG)menu[MMARKE1+nr].ob_spec) + 5;
+ 		len = MNAME_LEN;
+ 		while ((--len)>=0)
+ 			*str++ = ' ';
+@@ -256,7 +256,7 @@
+ 		if (IS_TAIL(col))
+ 		{
+ 			if (!online)			/* wenn man Auto-KÅrzel hat, pings sonst bei */
+-				Bconout(2,7);		/* jedem Zeichen, das kein KÅrzel ist! */
++				((void)0) /* optional audible bell */;		/* jedem Zeichen, das kein KÅrzel ist! */
+ 			return;
+ 		}
+ 		len = strncmp(buffer,KRZ_TXT(col),KRZ_LEN(col));
+@@ -265,7 +265,7 @@
+ 		if (len > 0)
+ 		{
+ 			if (!online)			/* dito. */
+-				Bconout(2,7);
++				((void)0) /* optional audible bell */;
+ 			return;
+ 		}
+ 	}
+--- a/qed/src/kurzel.h
++++ b/qed/src/kurzel.h
+@@ -25,4 +25,17 @@
+ extern void		ch_kurzel		(char *name, bool force_load);
+ /* wechselt gemÑû der lok. Optionen ggf. die KÅrzeldatei */
+ 
++
++#ifdef QED_INITIAL_SCOPE
++/* Native initial scope: optional facility is compiled out at all callers. */
++#define goto_line_dial(...) (0)
++#define set_marke(...) (0)
++#define get_marke(...) (0)
++#define init_marken(...) (0)
++#define goto_marke(...) (0)
++#define config_marken(...) (0)
++#define del_marke(...) (0)
++#define do_kurzel(...) (0)
++#define ch_kurzel(...) (0)
+ #endif
++#endif
+--- a/qed/src/main.c
++++ b/qed/src/main.c
+@@ -26,6 +26,7 @@
+ #endif
+ 
+ #include "global.h"
++#include "app.h"
+ #include "clipbrd.h"
+ #include "comm.h"
+ #include "edit.h"
+@@ -51,272 +52,29 @@
+ #include "hl.h"
+ 
+ 
+-static void __CDECL handle_term(long sig)
++/* Native initial scope: no donor OS personality, protocols or preferences. */
++#include "qed-runtime.h"
++#include <proto/dos.h>
++#include <proto/dos.h>
++static int editor_body(int argc,char **argv)
+ {
+-	(void) sig;
+-	abort_prog = TRUE;
++    int ready=0;
++    LONG cause=0;
++    nkc_init();init_app(NULL);
++    if(gl_apid<0 || cf_vdi_handle==0){exit_app(20);return 20;}
++    init_global();
++    if(init_resource()){
++        init_file();init_window();init_icon();init_memory();
++        init_edit();init_default_var();font_change();color_change();
++        if(init_clipbrd()){
++            short document=argc==2?load_edit(argv[1],FALSE):new_edit();
++            if(document>0){ready=1;main_loop();}
++        }
++        if(!ready || return_code)cause=IoErr();
++        term_file();term_window();kill_memory();
++    }else cause=IoErr();
++    term_resource();term_global();exit_app(return_code);
++    if(!ready || return_code)SetIoErr(cause);
++    return ready?return_code:20;
+ }
+-
+-static bool init_all(int argc, char *argv[])
+-{
+-	POSENTRY	*arglist = NULL;
+-
+-	init_global();
+-	if (debug_level & DBG_INIT)
+-		debug("init_global done.\n");
+-
+-	if (!init_resource())
+-		return FALSE;
+-
+-	if (debug_level & DBG_INIT)
+-		debug("init_resource done.\n");
+-		
+-	init_file();
+-	if (debug_level & DBG_INIT)
+-		debug("init_file done.\n");
+-
+-	init_window();
+-	if (debug_level & DBG_INIT)
+-		debug("init_window done.\n");
+-
+-	init_icon();
+-	if (debug_level & DBG_INIT)
+-		debug("init_icon done.\n");
+-
+-	init_memory();
+-	if (debug_level & DBG_INIT)
+-		debug("init_memory done.\n");
+-
+-	init_edit();
+-	if (debug_level & DBG_INIT)
+-		debug("init_edit done.\n");
+-
+-	init_makro ();
+-	if (debug_level & DBG_INIT)
+-		debug("init_makro done.\n");
+-
+-	init_marken();
+-	if (debug_level & DBG_INIT)
+-		debug("init_makren done.\n");
+-
+-	init_printer ();
+-	if (debug_level & DBG_INIT)
+-		debug("init_printer done.\n");
+-
+-	init_projekt ();
+-	if (debug_level & DBG_INIT)
+-		debug("init_projekt done.\n");
+-
+-	init_default_var();
+-	if (debug_level & DBG_INIT)
+-		debug("init_default_var done.\n");
+-
+-	option_load(&arglist);
+-	if (debug_level & DBG_INIT)
+-		debug("option_load done.\n");
+-
+-	hl_init();
+-	hl_read_syn();
+-	if (debug_level & DBG_INIT)
+-		debug("hl_read_syn done.\n");
+-
+-	font_change();
+-	color_change();
+-
+-	init_clipbrd();
+-	if (debug_level & DBG_INIT)
+-		debug("init_clipbrd done.\n");
+-
+-	init_comm();
+-	if (debug_level & DBG_INIT)
+-		debug("init_com done.\n");
+-	
+-	if (argc > 1)
+-	{
+-		short		i, x, l;
+-		long		y;
+-		PATH		str;
+-		bool		in_quote = FALSE;
+-
+-#ifndef PREDEF_DEBUG_LEVEL
+-		if (debug_level)
+-			i = 2;			/* --debug Åberspringen */
+-		else
+-#endif
+-			i = 1;
+-		while (i < argc)
+-		{
+-			/*
+-			 * MagXDesk liefert Namen mit Blanks nicht Åber ARGV sondern
+-			 * die Kommandozeile.
+-			*/
+-			if (in_quote)
+-			{
+-				strcat(str, " ");
+-				strcat(str, argv[i]);
+-				l = (short)strlen(str);
+-				if (str[l-1] == '\'')			/* letztens Namesteil gefunden */
+-				{
+-					str[l-1] = EOS;				/* ' am Ende lîschen */
+-					in_quote = FALSE;
+-				}
+-			}
+-			else if (argv[i][0] == '\'')
+-			{
+-				strcpy(str, argv[i]+1);
+-				in_quote = TRUE;
+-			}
+-			else
+-				strcpy(str, argv[i]);
+-			i++;
+-			if (!in_quote)
+-			{
+-				x = 0;
+-				y = 0;
+-				if ((i < argc) && isdigit(argv[i][0]))		/* next: Ziffer? -> Zeile */
+-				{
+-					y = max(0, atol(argv[i]) - 1);
+-					i++;
+-					if ((i < argc) && isdigit(argv[i][0]))	/* next: Ziffer? -> Spalte */
+-					{
+-						x = max(0, atoi(argv[i]) - 1);
+-						i++;
+-					}
+-				}
+-
+-				if (debug_level & DBG_ARG)
+-					debug("arglist= %s, %d, %ld\n", str, x, y);
+-				insert_poslist(&arglist, str, x, y);
+-			}
+-		}
+-	}
+-
+-	menu_icheck(menu, MOEINF, !overwrite);
+-	menu_icheck(menu, MOOVERW, overwrite);
+-
+-	open_poslist(arglist);
+-	delete_poslist(&arglist);
+-	if (debug_level & DBG_ARG)
+-		debug("arglist done.\n");
+-	
+-	return TRUE;
+-}
+-
+-int main(int argc, char *argv[])
+-{
+-	short	i, d;
+-	char	menu_str[20];
+-
+-#ifdef PREDEF_DEBUG_LEVEL
+-	debug_level = PREDEF_DEBUG_LEVEL;
+-#endif
+-
+-	(void) Pdomain(1);
+-	if ((argc > 1) && (strncmp(argv[1], "--debug", 7) == 0))
+-	{
+-		debug_level = DBG_GEN;
+-		if (isdigit(argv[1][7]))						/* folgt Level ? */
+-			debug_level |= atoi(argv[1]+7);
+-	}
+-#ifndef PREDEF_DEBUG_LEVEL
+-	else
+-		debug_level = 0;
+-#endif
+-
+-	if (debug_level)
+-	{
+-/* added by Heiko */
+-#ifdef DEBUG_LOGFILE
+-		debug_init("qed",Datei,DEBUG_LOGFILE );
+-#else
+-		if (gl_mint)		/* gl_mint wird erst vin init_app() gesetzt! */
+-			debug_init("qed", Con, NULL);
+-		else
+-			debug_init("qed", TCon, NULL);
+-#endif
+-
+-		debug( "*************************************************\n" );
+-	}
+-
+-	nkc_init();
+-	init_app(NULL);
+-	init_colorpop( 8 );
+-
+-	debug("Debug-Level: %d\n", debug_level);
+-
+-	if (debug_level & DBG_ARG)
+-	{
+-		debug("argc=  %d\n", argc);
+-		for (i = 0; i < argc; i++)
+-			debug("argv[%d]= >%s<\n", i, argv[i]);
+-	}
+-
+-	graf_mouse(HOURGLASS, NULL);
+-	
+-	return_code = 0;
+-
+-	if (gl_gem >= 0x400)
+-	{
+-		strcpy(menu_str, "  qed ");
+-		strcat(menu_str, QED_VERSION);
+-		if (debug_level)
+-			strcat(menu_str, "(debug)");
+-		menu_register(gl_apid, menu_str);
+-	}
+-
+-	Psignal(SIGINT, SIG_IGN);
+-	Psignal(SIGSYS, SIG_IGN);
+-	Psignal(SIGTERM, handle_term);
+-	Psignal(SIGQUIT, handle_term);
+-	Psignal(SIGHUP, handle_term);
+-
+-	if (appl_xgetinfo(12, &i, &d, &d, &d) && (i&8)==8)	/* gibts AP_TERM */
+-		shel_write(9, 1, 1, 0L, 0L);		/* wir kînnen es! */
+-
+-	if (debug_level & DBG_OS)
+-	{
+-		debug("gem=      0x%X\n", gl_gem);
+-		debug("mint=     0x%X\n", gl_mint);
+-		debug("magx=     0x%X\n", gl_magx);
+-		debug("naes=     0x%X\n", gl_naes);
+-		debug("gl_apid=  %d\n", gl_apid);
+-		debug("app_path= %s\n", gl_appdir);
+-	}
+-
+-	if (init_all(argc, argv))
+-	{
+-		graf_mouse(ARROW, NULL);
+-
+-		if (debug_level & DBG_INIT)
+-			debug("enter event loop...\n");
+-
+-		main_loop();
+-		if (debug_level & DBG_INIT)
+-			debug("event loop leaved.\n");
+-
+-  	exit_colorpop();
+-
+-		term_printer();
+-		if (debug_level & DBG_INIT)
+-			debug("term_printer done.\n");
+-		
+-		term_comm();
+-		if (debug_level & DBG_INIT)
+-			debug("term_comm done.\n");
+-		term_file();
+-		if (debug_level & DBG_INIT)
+-			debug("term_file done.\n");
+-		term_window();
+-		if (debug_level & DBG_INIT)
+-			debug("term_window done.\n");
+-	}
+-	term_resource();
+-	if (debug_level & DBG_INIT)
+-		debug("term_resource done.\n");
+-	term_global();
+-	if (debug_level & DBG_INIT)
+-		debug("term_global done.\n");
+-
+-	exit_app(return_code);
+-	return return_code;
+-}
++int main(void){return QedRuntimeRun(editor_body);}
+--- a/qed/src/makro.c
++++ b/qed/src/makro.c
+@@ -87,7 +87,7 @@
+ 			makro_rec_ptr->len++;
+ 		}
+ 		else
+-			Bconout(2, 7);
++			((void)0) /* optional audible bell */;
+ 	}
+ }
+ 
+@@ -189,7 +189,7 @@
+ 		m = makro_rec_ptr;
+ 		if (m == NULL)
+ 		{
+-			Bconout(2, 7);
++			((void)0) /* optional audible bell */;
+ 			return FALSE;
+ 		}
+ 	}
+@@ -202,7 +202,7 @@
+ 		if (i == MAKRO_ANZ)
+ 		{
+ 			if (!f_to_desk)						/* Ping nur, wenn nicht an AV-Server */
+-				Bconout(2, 7);
++				((void)0) /* optional audible bell */;
+ 			return FALSE;
+ 		}
+ 	}
+@@ -234,7 +234,7 @@
+ 				ret = TRUE;
+ 			}
+ 			else
+-				Bconout(2, 7);
++				((void)0) /* optional audible bell */;
+ 		}
+ 	}
+ 	else if(m->mode==BLOCK && !makro_rec && !makro_play)
+@@ -248,7 +248,7 @@
+ 		ret = TRUE;
+ 	}
+ 	else												/* Kein Eintrag gefunden */
+-		Bconout(2, 7);
++		((void)0) /* optional audible bell */;
+ 	return ret;
+ }
+ 
+--- a/qed/src/makro.h
++++ b/qed/src/makro.h
+@@ -24,4 +24,22 @@
+ 
+ extern void		init_makro		(void);
+ 
++
++#ifdef QED_INITIAL_SCOPE
++/* Native initial scope: optional facility is compiled out at all callers. */
++#define from_makro(...) (0)
++#define to_makro(...) (0)
++#define start_rec(...) (0)
++#define end_rec(...) (0)
++#define start_play(...) (0)
++#define end_play(...) (0)
++#define set_makro_str(...) (0)
++#define get_makro_str(...) (0)
++#define del_makro(...) (0)
++#define makro_dial(...) (0)
++#define init_makro(...) (0)
++#define makro_play FALSE
++#define makro_rec FALSE
++#define makro_shift 0
+ #endif
++#endif
+--- a/qed/src/menu.c
++++ b/qed/src/menu.c
+@@ -86,13 +86,6 @@
+ 					return FALSE;
+ 		}
+ 	}
+-	if ((!save_opt) != (!shift_pressed()))
+-	{
+-debug("before option_save\n");
+-		option_save();
+-		hl_write_syn();
+-debug("after\n");
+-	}
+ 	i = anz;
+ 	while ((--i)>=0)
+ 	{
+@@ -132,7 +125,7 @@
+ 	short	len, max_len;
+ 	char *str;
+ 
+-	str = menu[item].ob_spec.free_string + start_pos;
++	str = ((char *)(ULONG)menu[item].ob_spec) + start_pos;
+ 	len = (short) strlen(text);
+ 	max_len = (short) strlen(str) - 4;		/* ' ?? ' Shortcut nicht Åberscrieben! */
+ 	if (len > max_len)
+@@ -211,6 +204,18 @@
+ 		set_MCOPY(rsc_string(COPYSTR));
+ 
+ 	setup_semenu();				/* -> se.c */
++    /* Keep menus and their shortcut dispatch inside the same initial scope. */
++    for(i=0;;i++){
++        if((menu[i].ob_type&0xff)==G_STRING){
++            switch(i){
++            case MABOUT:case MNEWTEXT:case MOPEN:case MSAVE:case MSAVENEW:
++            case MQUIT:case MUNDO:case MCUT:case MCOPY:case MPASTE:
++            case MSELALL:case MCLOSE:case MFIND:case MFNDGOON:case MOEINF:case MOOVERW:break;
++            default:set_menu(i,FALSE);break;
++            }
++        }
++        if(menu[i].ob_flags&OF_LASTOB)break;
++    }
+ }
+ 
+ 
+@@ -278,45 +283,8 @@
+ }
+ 
+ 
+-void menu_help(short title, short item)
+-{
+-	char	help[128], str[128];
+-	short	i;
+-	
+-	/* Spezial-FÑlle: besonderer Text */
+-	if (item >= MMARKE1 && item <= MMARKE5)
+-		strcpy(str, rsc_string(HYPMARKESTR));
+-	else if (item == MPROJEKT)
+-		strcpy(str, rsc_string(DEFPRJSTR));
+-	else if (title == TSHELL)
+-		strcpy(str, "Shell");
+-	else if (item >= MHINTER && item <= MUNTER)
+-		strcpy(str, rsc_string(HYPANORDSTR));
+-	else
+-	{
+-		/* Spezial-Fall: Item ummappen */
+-		if (item == MOEINF)
+-			item = MOOVERW;
+-
+-		get_string(menu, item, help);
+-		
+-		/* die fÅhrenden ' ' Åberspringen */
+-		i = 0;
+-		while (help[i] == ' ')
+-			i++;
+-		strcpy(str, help+i);
+-
+-		/* Eintrag endet bei zwei ' ' oder zwei '.' */
+-		i = 0;
+-		while (((str[i] != ' ') || (str[i+1] != ' ')) &&
+-				 ((str[i] != '.') || (str[i+1] != '.')) &&
+-				 str[i] != EOS)
+-			i++;
+-		str[i] = EOS;
+-	}
+-	if (str[0] != EOS)
+-		call_hyp(str);
+-}
++/* Native initial scope: menu_help is deferred. */
++
+ 
+ 
+ static bool menu_key(short kstate, short kreturn)
+@@ -390,7 +358,7 @@
+ 	char 		str[10];
+ 
+ 	if (ctrl)
+-		menu_help(title, item);
++		((void)0);
+ 	else
+ 	{
+ 		w = winlist_top();
+@@ -398,67 +366,38 @@
+ 		switch (item)
+ 		{
+ 			case MABOUT :
++
+ 				info_dial();
+ 				break;
+ 
+ /* Datei */
+ 			case MNEWTEXT	:
+-				new_edit();
++
++				if(prepare_quit())new_edit();
+ 				break;
+ 
+ 			case MOPEN	 :
++
+ 				if (sel_window == NULL)
+ 					select_multi(FALSE);
+ 				else
+ 					action = DO_OPEN;
+ 				break;
+-
+-			case MADD	:
+-				action = DO_ADD;
+-				break;
+-
+-			case MNEWPROJ :
+-				new_projekt();
+-				break;
+-
+-			case MOPENBIN :
+-				if (sel_window == NULL)
+-					select_multi(TRUE);
+-				else
+-					debug("\aBinOpen aus Projekt geht noch nicht!\n");
+-				break;
+-
+-			case MDELETE :
+-				action = DO_DELETE;
+-				break;
+-
+-			case MSAVE:
++        /* Other donor actions are outside the initial native scope. */
++
++        case MSAVE:
++
+ 				action = DO_SAVE;
+ 				break;
+ 
+ 			case MSAVENEW:
++
+ 				action = DO_SAVENEW;
+ 				break;
+-
+-			case MABAND :
+-				action = DO_ABAND;
+-				break;
+-
+-			case MPRINT :
+-				action = DO_PRINT;
+-				break;
+-
+-			case MINFO	 :
+-				if (w == NULL)
+-					info_dial();
+-				else
+-					action = DO_INFO;
+-				break;
+-
+-			case MQUIT2 :
+-				quick_close = TRUE;
+-				/* kein break! */
+-			case MQUIT :
++        /* Other donor actions are outside the initial native scope. */
++
++        case MQUIT:
++
+ 				if (prepare_quit())
+ 				{
+ 					menu_tnormal(menu, title, TRUE);
+@@ -468,14 +407,17 @@
+ 
+ /* Bearbeiten */
+ 			case MUNDO	 :
++
+ 				action = DO_UNDO;
+ 				break;
+ 
+ 			case MCUT	 :
++
+ 				action = DO_CUT;
+ 				break;
+ 
+ 			case MCOPY	 :
++
+ 				if (w!=NULL && w->class==CLASS_EDIT)
+ 				{
+ 					TEXTP t_ptr = get_text(w->handle);
+@@ -487,238 +429,47 @@
+ 				break;
+ 
+ 			case MPASTE :
++
+ 				action = DO_PASTE;
+ 				break;
+-
+-			case MSEL	 :
+-				if (w!=NULL && w->class==CLASS_EDIT)
+-				{
+-					TEXTP t_ptr = get_text(w->handle);
+-					if (t_ptr->blk_mark_mode)
+-						t_ptr->blk_mark_mode = FALSE;
+-					else
+-					{
+-						blk_demark(t_ptr);
+-						restore_edit();
+-						blk_mark(t_ptr,0);
+-						t_ptr->blk_mark_mode = TRUE;
+-					}
+-				}
+-				break;
+-
+-			case MSELALL :
++        /* Other donor actions are outside the initial native scope. */
++
++        case MSELALL:
++
+ 				action = DO_SELALL;
+ 				break;
+-
+-			case MFORMAT :
+-				action = DO_FORMAT;
+-				break;
+-
+-			case MSWAP:
+-				action = DO_SWAPCHAR;
+-				break;
+-
+-			case MLEFT	 :
+-				action = DO_LEFT;
+-				break;
+-
+-			case MRIGHT :
+-				action = DO_RIGHT;
+-				break;
+-
+-			case MSORT :
+-				action = DO_SORT;
+-				break;
+-
+-			case MSMALLBIG :
+-				action = DO_CHNG_SMBG;
+-				break;
+-
+-			case MBIG:
+-				action = DO_SMALL2BIG;
+-				break;
+-
+-			case MSMALL :
+-				action = DO_BIG2SMALL;
+-				break;
+-
+-			case MCAPS:
+-				action = DO_CAPS;
+-				break;
+-
+-/* Fenster */
+-			case MCYCLE :
+-				if ((wind_cycle) && (send_avkey(4, 0x1117)))	/* ^W */
+-					break;
+-				cycle_window();
+-				break;
+-
+-			case MCLOSE :
+-				action = DO_CLOSE;
+-				break;
+-
+-			case MTOPLINE :
+-				action = DO_TOPLINE;
+-				break;
+-
+-			case MHINTER :
+-			case MNEBEN :
+-			case MUNTER :
+-				arrange_window(item);
+-				break;
+-
+-/* Suchen */
+-			case MFIND	 :
++        /* Other donor actions are outside the initial native scope. */
++
++        case MCLOSE:
++
++				if(prepare_quit())do_quit();
++				break;
++        /* Other donor actions are outside the initial native scope. */
++
++        case MFIND:
++
+ 				action = DO_FIND;
+ 				break;
+ 
+ 			case MFNDGOON:
++
+ 				action = DO_FINDNEXT;
+ 				break;
+-
+-			case MFNDFILE :
+-				find_on_disk();
+-				break;
+-
+-			case MGOTO	 :
+-				action = DO_GOTO;
+-				break;
+-
+-			case MSETMARK:
+-				if (w!=NULL)
+-					config_marken(get_text(w->handle));
+-				break;
+-
+-			case MMARKE1 :
+-			case MMARKE2 :
+-			case MMARKE3 :
+-			case MMARKE4 :
+-			case MMARKE5 :
+-				goto_marke(item-MMARKE1);
+-				break;
+-
+-/* Spezial */
+-			case MSRECORD:
+-				if (makro_rec)
+-					end_rec(TRUE);
+-				else
+-					start_rec();
+-				break;
+-
+-			case MSPLAY :
+-				if (shift_pressed())
+-				{
+-					set_string(makrorep, MREPANZ, "");
+-					antw = simple_mdial(makrorep, MREPANZ);
+-					if (antw == MREPOK)
+-					{
+-						get_string(makrorep, MREPANZ, str);
+-						anz = atoi(str);
+-					}
+-					else
+-						break;
+-				}
+-				else
+-					anz = 1;
+-				start_play(-1, anz);
+-				break;
+-
+-			case MSMAKRO :
+-				makro_dial();
+-				break;
+-
+-			case MZEICHEN:
+-				action = DO_ZEICHTAB;
+-				break;
+-
+-			case MUMLAUTE:
+-				action = DO_UMLAUT;
+-				break;
+-
+-			case MFEHLER:
+-				fehler_box();
+-				break;
+-
+-			case MFEHLERSPRUNG:
+-				action = DO_FEHLER;
+-				break;
+-
+-			case MSSTRIP :
+-				action = DO_STRIPLINES;
+-				break;
+-
+-			case MSTAB2LZ:
+-				action = DO_TAB2LZ;
+-				break;
+-
+-			case MSLZ2TAB:
+-				action = DO_LZ2TAB;
+-				break;
+-
+-/* Optionen */
+-			case MOEINF:
++        /* Other donor actions are outside the initial native scope. */
++
++        case MOEINF:
++
+ 				set_overwrite(FALSE);
+ 				break;
+ 
+ 			case MOOVERW:
++
+ 				set_overwrite(TRUE);
+ 				break;
+-
+-			case MOFONT :
+-				select_font();
+-				break;
+-
+-			case MGLOBALO:
+-				set_global_options();
+-				break;
+-
+-			case MLOCALOP:
+-				set_local_options();
+-				break;
+-				
+-			case MSYNTAXOP:
+-				set_syntax_options();
+-				break;
+-
+-			case MAUTOSAVE :
+-				set_autosave_options();
+-				break;
+-
+-			case MKLAMMER :
+-				set_klammer_options();
+-				break;
+-
+-			case MPRINTER :
+-				prn_cfg_dial();
+-				break;
+-
+-			case MPROJEKT :
+-				open_def_prj();
+-				break;
+-
+-			case MTAKEPRJ :
+-				add_to_def();
+-				break;
+-
+-			case MSOPTION:
+-				option_save();
+-				hl_write_syn();
+- 				break;
+-
+-/* Shell */
+-			case MSOPT :
+-			case MSQUIT :
+-			case MSMAKEFILE :
+-			case MSSHELL :
+-			case MSCOMP :
+-			case MSMAKE :
+-			case MSMAKEALL :
+-			case MSLINK :
+-			case MSEXEC :
+-			case MSMAKEEXEC :
+-				handle_es(item);
+-
+-			default:
++        /* Other donor actions are outside the initial native scope. */
++
++default:
++
+ 				break;
+ 		}
+ 		if (action!=-1)
+--- a/qed/src/olga.h
++++ b/qed/src/olga.h
+@@ -24,4 +24,12 @@
+ extern void	init_olga	(void);
+ extern void term_olga	(void);
+ 
++
++#ifdef QED_INITIAL_SCOPE
++/* Native initial scope: optional facility is compiled out at all callers. */
++#define handle_olga(...) (0)
++#define do_olga(...) (0)
++#define init_olga(...) (0)
++#define term_olga(...) (0)
+ #endif
++#endif
+--- a/qed/src/options.c
++++ b/qed/src/options.c
+@@ -39,40 +39,8 @@
+ bool	as_text_ask, as_prj_ask;
+ short	as_text_min, as_prj_min;
+ 
+-void set_autosave_options(void)
+-{
+-	short	antw;
+-
+-	set_state(autosave, ASTEXT, OS_SELECTED, as_text);
+-	set_short(autosave, ASTMIN, as_text_min);
+-	set_state(autosave, ASTASK, OS_SELECTED, as_text_ask);
+-
+-	set_state(autosave, ASPROJ, OS_SELECTED, as_prj);
+-	set_short(autosave, ASPMIN, as_prj_min);
+-	set_state(autosave, ASPASK, OS_SELECTED, as_prj_ask);
+-
+-	antw = simple_mdial(autosave, ASTMIN) & 0x7fff;
+-	if (antw == ASOK)
+-	{
+-		as_text = get_state(autosave, ASTEXT, OS_SELECTED);
+-		as_text_min = get_short(autosave, ASTMIN);
+-		if (as_text_min == 0)
+-			as_text = FALSE;
+-		if (as_text_min > 59)
+-			as_text_min = 59;
+-		as_text_ask = get_state(autosave, ASTASK, OS_SELECTED);
+-
+-		as_prj = get_state(autosave, ASPROJ, OS_SELECTED);
+-		as_prj_min = get_short(autosave, ASPMIN);
+-		if (as_prj_min == 0)
+-			as_prj = FALSE;
+-		if (as_prj_min > 59)
+-			as_prj_min = 59;
+-		as_prj_ask = get_state(autosave, ASPASK, OS_SELECTED);
+-
+-		do_all_icon(ALL_TYPES, DO_AUTOSAVE);
+-	}
+-}
++/* Native initial scope: set_autosave_options is deferred. */
++
+ 
+ 
+ /*
+@@ -89,212 +57,20 @@
+ PATH	helpprog;
+ char	bin_extension[BIN_ANZ][MASK_LEN+1];
+ 
+-static void do_avopen(WINDOWP window)
+-{
+-	send_avwinopen(window->handle);
+-}
+-
+-static void do_avclose(WINDOWP window)
+-{
+-	send_avwinclose(window->handle);
+-}
++/* Native initial scope: do_avopen is deferred. */
++
++
++/* Native initial scope: do_avclose is deferred. */
++
+ 
+ #if 0
+-static void set_popcolor(short s_obj, short d_obj)
+-{
+-	OBSPEC	spec;
+-	short		color;
+-
+-	spec.index = get_obspec(popups, s_obj);
+-	color = spec.obspec.interiorcol;			/* neue Farbe holen */
+-	spec.index = get_obspec(globalop, d_obj);
+-	spec.obspec.interiorcol = color;			/* neue Farbe setzen */
+-	set_obspec(globalop, d_obj, spec.index);
+-}
++/* Native initial scope: set_popcolor is deferred. */
++
+ #endif
+ 
+ 
+-void set_global_options(void)
+-{
+-	short	i, antw = 0;
+-	bool	old_cycle, new_cycle, new_fg, new_bg, new_block_fg, new_block_bg;
+-	bool	close = FALSE;
+-	char	n[23] = "";
+-	MDIAL	*dial;
+-	PATH	new_helpprog;
+-
+-	old_cycle = wind_cycle;
+-	set_state(globalop, GOASAVE, OS_SELECTED, save_opt);
+-	set_state(globalop, GOSAVEWIN, OS_SELECTED, save_win);
+-	set_state(globalop, GOCLIP, OS_DISABLED, (clip_dir[0] == EOS));
+-	set_state(globalop, GOCLIP, OS_SELECTED, clip_on_disk);
+-	set_state(globalop, GOBLINK, OS_SELECTED, blinking_cursor);
+-	set_state(globalop, GOCTRL, OS_SELECTED, ctrl_mark_mode);
+-	set_state(globalop, GOAVWIN, OS_SELECTED, wind_cycle);
+-	set_state(globalop, GOAVKEY, OS_SELECTED, f_to_desk);
+-	set_state(globalop, GOOLGA, OS_SELECTED, olga_autostart);
+-	set_state(globalop, GOKLAMMER, OS_SELECTED, emu_klammer);
+-
+-	set_state(globalop, GOWDIAL, OS_SELECTED, prn->use_pdlg);
+-
+-	set_short(globalop, GOTRANS, transfer_size);
+-
+-	set_state(globalop, GOSYNTAX, OS_SELECTED, syntax_active);
+-
+-	if (helpprog[0] != EOS)
+-		make_shortpath(helpprog, n, 22);
+-	else
+-		strcpy(n, "");
+-	set_string(globalop, GOHELPNAME, n);
+-	strcpy(new_helpprog, helpprog);
+-
+-	set_short(globalop, GOBLEN, bin_line_len);
+-	for (i = 4; i < BIN_ANZ; i++)
+-		set_string(globalop, i - 4 + GOBEXT1, bin_extension[i]);
+-
+-	set_popobjcolor(globalop, GOFCOL, fg_color);
+-	set_popobjcolor(globalop, GOBCOL, bg_color);
+-	set_popobjcolor(globalop, GOBLOCKFCOL, fg_block_color);
+-	set_popobjcolor(globalop, GOBLOCKBCOL, bg_block_color);
+-	new_fg = fg_color;
+-	new_bg = bg_color;
+-	new_block_fg = fg_block_color;
+-	new_block_bg = bg_block_color;
+-
+-	dial = open_mdial(globalop, GOTRANS);
+-	if (dial != NULL)
+-	{
+-		while (!close)
+-		{
+-			antw = do_mdial(dial) & 0x7fff;
+-			switch (antw)
+-			{
+-				case GOHELP :
+-					menu_help(TOPTIONS, MGLOBALO);
+-					break;
+-
+-				case GOHELPSEL :
+-					if (select_single(new_helpprog, "", rsc_string(FINDHPSTR)))
+-					{
+-						make_shortpath(new_helpprog, n, 22);
+-						set_string(globalop, GOHELPNAME, n);
+-						redraw_mdobj(dial, GOHELPNAME);
+-					}
+-					break;
+-
+-				case GOFCSTR :
+-				case GOFCOL :
+-					if (antw == GOFCOL)
+-						i = handle_colorpop(globalop, GOFCOL, POP_OPEN, 8, FALSE);
+-					else
+-						i = handle_colorpop(globalop, GOFCOL, POP_CYCLE, 8, FALSE);
+-					if (i > -1)
+-						new_fg = i;
+-
+-					break;
+-
+-				case GOBCSTR :
+-				case GOBCOL :
+-					if (antw == GOBCOL)
+-						i = handle_colorpop(globalop, GOBCOL, POP_OPEN, 8, FALSE);
+-					else
+-						i = handle_colorpop(globalop, GOBCOL, POP_CYCLE, 8, FALSE);
+-					if (i > -1)
+-						new_bg = i;
+-					break;
+-
+-				case GOBLOCKFCOL :
+-					i = handle_colorpop(globalop, GOBLOCKFCOL, POP_OPEN, 8, FALSE);
+-					if (i > -1)
+-						new_block_fg = i;
+-
+-					break;
+-
+-				case GOBLOCKBCOL :
+-					i = handle_colorpop(globalop, GOBLOCKBCOL, POP_OPEN, 8, FALSE);
+-					if (i > -1)
+-						new_block_bg = i;
+-					break;
+-
+-				default:
+-					close = TRUE;
+-					break;
+-			}
+-			if (!close)
+-			{
+-				set_state(globalop, antw, OS_SELECTED, FALSE);
+-				redraw_mdobj(dial, antw);
+-			}
+-		}
+-		set_state(globalop, antw, OS_SELECTED, FALSE);
+-		close_mdial(dial);
+-		if (antw == GOOK)
+-		{
+-			save_opt = get_state(globalop, GOASAVE, OS_SELECTED);
+-			save_win = get_state(globalop, GOSAVEWIN, OS_SELECTED);
+-			if (clip_dir[0] != EOS)
+-				clip_on_disk = get_state(globalop, GOCLIP, OS_SELECTED);
+-			blinking_cursor = get_state(globalop, GOBLINK, OS_SELECTED);
+-			ctrl_mark_mode = get_state(globalop, GOCTRL, OS_SELECTED);
+-			prn->use_pdlg = get_state(globalop, GOWDIAL, OS_SELECTED);
+-			olga_autostart = get_state(globalop, GOOLGA, OS_SELECTED);
+-			emu_klammer = get_state(globalop, GOKLAMMER, OS_SELECTED);
+-			transfer_size = get_short(globalop, GOTRANS);
+-			if (transfer_size == 0)
+-				transfer_size = 1;
+-
+-			if( syntax_active && !get_state(globalop, GOSYNTAX, OS_SELECTED))
+-			{
+-				hl_disable();
+-				syntax_active = FALSE;
+-			}
+-			else if( !syntax_active && get_state(globalop, GOSYNTAX, OS_SELECTED))
+-			{
+-				syntax_active = TRUE;
+-				hl_enable();
+-			}
+-
+-			new_cycle = get_state(globalop, GOAVWIN, OS_SELECTED);
+-			if (old_cycle && !new_cycle)						/* war an, nun aus */
+-			{
+-				do_all_window(CLASS_ALL, do_avclose);
+-				wind_cycle = new_cycle;
+-			}
+-			if (new_cycle && !old_cycle)						/* nun an, war aus */
+-			{
+-				wind_cycle = new_cycle;
+-				do_all_window(CLASS_ALL, do_avopen);
+-			}
+-			f_to_desk = get_state(globalop, GOAVKEY, OS_SELECTED);
+-
+-			bin_line_len = get_short(globalop, GOBLEN);
+-			if (bin_line_len < 1)
+-				bin_line_len = 1;
+-			if (bin_line_len > MAX_LINE_LEN)
+-				bin_line_len = MAX_LINE_LEN;
+-			for (i = 4; i < BIN_ANZ; i++)
+-				get_string(globalop, i - 4 + GOBEXT1, bin_extension[i]);
+-
+-			strcpy(helpprog, new_helpprog);
+-
+-			if (new_fg != fg_color || new_bg != bg_color)
+-			{
+-				fg_color = new_fg;
+-				bg_color = new_bg;
+-				color_change();
+-			}
+-			if (new_block_fg != fg_block_color || new_block_bg != bg_block_color)
+-			{
+-				fg_block_color = new_block_fg;
+-				bg_block_color = new_block_bg;
+-				color_change();
+-			}
+-
+-			if (olga_autostart)
+-				init_olga();
+-		}
+-	}
+-}
++/* Native initial scope: set_global_options is deferred. */
++
+ 
+ /*
+  * Klammerpaare
+@@ -302,27 +78,8 @@
+ QED_NEAR char	klammer_auf[11],
+ 		klammer_zu[11];
+ 
+-void set_klammer_options(void)
+-{
+-	short	antw;
+-	char	s1[11], s2[11];
+-
+-	set_string(klammer, KPAUF, klammer_auf);
+-	set_string(klammer, KPZU, klammer_zu);
+-	antw = simple_mdial(klammer, KPAUF);
+-	if (antw == KPOK)
+-	{
+-		get_string(klammer, KPAUF, s1);
+-		get_string(klammer, KPZU, s2);
+-		if (strlen(s1) == strlen(s2))
+-		{
+-			strcpy(klammer_auf, s1);
+-			strcpy(klammer_zu, s2);
+-		}
+-		else
+-			note(1, 0, KLAMMERERR);
+-	}
+-}
++/* Native initial scope: set_klammer_options is deferred. */
++
+ 
+ 
+ 
+@@ -353,519 +110,44 @@
+ 	lo->show_end = FALSE;
+ }
+ 
+-static void option_fill(void)
+-{
+-	char 		str[13] = "";
+-	LOCOPTP	lo;
+-
+-	lo = &local_options[active_local_option];
+-
+-	if (active_local_option < 2)
+-		strcpy(str, " ");
+-	else
+-		strcpy(str, " *.");
+-	strcat(str, lo->muster);
+-	set_string(localop, OTYPE, str);
+-
+-	set_state(localop, OTAB, OS_SELECTED, lo->tab);
+-	set_short(localop, OTABSIZE, lo->tabsize);
+-	set_state(localop, OEINRUCK, OS_SELECTED, lo->einruecken);
+-	set_string(localop, OWORT, lo->wort_str);
+-	set_state(localop, OUMBRUCH, OS_SELECTED, lo->umbrechen);
+-	set_state(localop, OFORMLOAD, OS_SELECTED, lo->format_by_load);
+-	set_state(localop, OFORMPASTE, OS_SELECTED, lo->format_by_paste);
+-	set_string(localop, OUMBTEXT, lo->umbruch_str);
+-	set_state(localop, OBACKUP, OS_SELECTED, lo->backup);
+-	set_string(localop, OEXT, lo->backup_ext);
+-	set_short(localop, OLINEAL, lo->lineal_len);
+-	if (lo->kurzel[0] != EOS)
+-		file_name(lo->kurzel, str, FALSE);
+-	else
+-		strcpy(str, rsc_string(KURZELSTR));
+-	set_string(localop, OKURZELNAME, str);
+-	set_state(localop, OSHOWEND, OS_SELECTED, lo->show_end);
+-}
+-
+-static void option_get(void)
+-{
+-	LOCOPTP	lo;
+-
+-	lo = &local_options[active_local_option];
+-	lo->tab = get_state(localop, OTAB, OS_SELECTED);
+-	lo->tabsize = get_short(localop, OTABSIZE);
+-	if (lo->tabsize < 1 || lo->tabsize > 50)
+-		lo->tabsize = 3;
+-	lo->umbrechen = get_state(localop, OUMBRUCH, OS_SELECTED);
+-	lo->einruecken = get_state(localop, OEINRUCK, OS_SELECTED);
+-	get_string(localop, OUMBTEXT, lo->umbruch_str);
+-	str2set(lo->umbruch_str,lo->umbruch_set);
+-	lo->format_by_load = get_state(localop, OFORMLOAD, OS_SELECTED);
+-	lo->format_by_paste = get_state(localop, OFORMPASTE, OS_SELECTED);
+-	lo->backup = get_state(localop, OBACKUP, OS_SELECTED);
+-	get_string(localop, OEXT, lo->backup_ext);
+-	lo->lineal_len = get_short(localop, OLINEAL);
+-	if (lo->lineal_len < 3 || lo->lineal_len > MAX_LINE_LEN)
+-		lo->lineal_len = 65;
+-	get_string(localop, OWORT, lo->wort_str);
+-	str2set(lo->wort_str,lo->wort_set);
+-	lo->show_end = get_state(localop, OSHOWEND, OS_SELECTED);
+-}
+-
+-
+-static void config_muster(void)
+-{
+-	short	i, antw;
+-	char 	str[MASK_LEN+1];
+-
+-	for (i = MFIRST; i <= MLAST; i++)
+-		set_string(muster, i, local_options[i + 2 - MFIRST].muster);
+-
+-	antw = simple_mdial(muster, MFIRST);
+-	if (antw == MOK)
+-	{
+-		for (i = MFIRST; i <= MLAST; i++)
+-		{
+-			get_string(muster, i, str);
+-			strcpy(local_options[i + 2 - MFIRST].muster, str);
+-		}
+-
+-		/* wurde der aktive gelÔøΩscht? */
+-		if (local_options[active_local_option].muster[0] == EOS)
+-		{
+-			active_local_option = 0;
+-			set_string(localop, OTYPE, " *");
+-		}
+-	}
+-}
+-
+-
+-static bool build_popup(POPUP *pop)
+-{
+-	char	str[MASK_LEN + 4];
+-	short	i;
+-
+-	strcpy(str, " ");
+-	strcat(str, local_options[0].muster);			/* * */
+-	create_popup(pop, LOCAL_ANZ, MASK_LEN+2, str);
+-
+-	strcpy(str, " ");										/* Binary */
+-	strcat(str, local_options[1].muster);
+-	append_popup(pop, str);
+-
+-	for (i = 2; i < LOCAL_ANZ; i++)
+-	{
+-		if (local_options[i].muster[0] != EOS)
+-		{
+-			strcpy(str, " *.");
+-			strcat(str, local_options[i].muster);
+-			append_popup(pop, str);
+-		}
+-	}
+-
+-	append_popup(pop, "--");
+-	append_popup(pop, rsc_string(CHAGESTR));
+-
+-	fix_popup(pop->tree, TRUE);
+-
+-	return (pop->tree != NULL);
+-}
+-
+-
+-void set_local_options(void)
+-{
+-	short		y, antw = 0;
+-	WINDOWP 	window;
+-	PATH		save_name;
+-	POPUP		pop;
+-	bool		close = FALSE;
+-	MDIAL		*dial;
+-	LOCOPT	*backup;
+-
+-	active_local_option = 0;
+-	window = winlist_top();
+-
+-	if ((window != NULL) && (window->class == CLASS_EDIT))
+-	{
+-		TEXTP t_ptr = get_text(window->handle);
+-
+-		/* gem4xe port: the plain pointer difference t_ptr->loc_opt -
+-		 * local_options makes Calypsi emit local_options' address as a
+-		 * 16-bit immediate (its far-arithmetic limit), which overflows for
+-		 * a far array, and a cast does not change it.  local_options is
+-		 * 12 KB, too big to place near (see QED_NEAR in options.h), so
+-		 * recover the index by pointer EQUALITY -- no arithmetic, no
+-		 * symbol immediate -- over the twenty entries.  Same result
+-		 * everywhere; this runs only when an editor window activates. */
+-		{
+-			short qi;
+-			active_local_option = 0;
+-			for (qi = 0; qi < LOCAL_ANZ; qi++)
+-				if (t_ptr->loc_opt == &local_options[qi])
+-				{
+-					active_local_option = qi;
+-					break;
+-				}
+-		}
+-	}
+-
+-	option_fill();
+-
+-	strcpy(save_name, local_options[active_local_option].kurzel);
+-	backup = (LOCOPT *)malloc(LOCAL_ANZ * sizeof(LOCOPT));
+-	memcpy(backup, local_options, (LOCAL_ANZ * sizeof(LOCOPT)));
+-
+-	build_popup(&pop);
+-
+-	dial = open_mdial(localop, OTABSIZE);
+-	if (dial != NULL)
+-	{
+-		while (!close)
+-		{
+-			antw = do_mdial(dial) & 0x7fff;
+-			switch (antw)
+-			{
+-				case OTYPESTR :
+-				case OTYPE :
+-					if (antw == OTYPE)
+-						y = handle_popup(localop, OTYPE, pop.tree, 0, POP_OPEN) - 1;
+-					else
+-						y = handle_popup(localop, OTYPE, pop.tree, 0, POP_CYCLE) - 1;
+-					if (y >= 0 && y != active_local_option)
+-					{
+-						if (y == pop.akt_item - 1)
+-						{
+-							config_muster();
+-							free_popup(&pop);		/* Popup neu aufbauen */
+-							build_popup(&pop);
+-							set_string(localop, OTYPE, " *");
+-						}
+-						else
+-						{
+-							option_get();
+-							active_local_option = y;
+-						}
+-						option_fill();
+-						redraw_mdobj(dial, OBOX);
+-					}
+-					break;
+-				case OKURZEL:
+-					if (shift_pressed())
+-					{
+-						strcpy(local_options[active_local_option].kurzel, "");
+-						krz_changed = TRUE;
+-						set_string(localop, OKURZELNAME, rsc_string(KURZELSTR));
+-						redraw_mdobj(dial, OKURZELNAME);
+-					}
+-					else
+-					{
+-						if (select_single(local_options[active_local_option].kurzel,
+-												"*.krz", rsc_string(FINDKURZELSTR)))
+-						{
+-							FILENAME str;
+-
+-							file_name(local_options[active_local_option].kurzel, str, FALSE);
+-							krz_changed = TRUE;
+-							set_string(localop, OKURZELNAME, str);
+-						}
+-					}
+-					break;
+-
+-				case LCHELP :
+-					menu_help(TOPTIONS, MLOCALOP);
+-					break;
+-
+-				default:
+-					close = TRUE;
+-					break;
+-			}
+-			if (!close)
+-			{
+-				set_state(localop, antw, OS_SELECTED, FALSE);
+-				redraw_mdobj(dial, antw);
+-			}
+-		}
+-		set_state(localop, antw, OS_SELECTED, FALSE);
+-		close_mdial(dial);
+-		free_popup(&pop);
+-
+-		if (antw == OOK)
+-		{
+-			option_get();
+-			update_loc_opt();
+-			absatz_edit();
+-			ch_kurzel(local_options[active_local_option].kurzel, TRUE);
+-		}
+-		else
+-		{
+-			strcpy(local_options[active_local_option].kurzel, save_name);
+-			memcpy(local_options, backup, (LOCAL_ANZ * sizeof(LOCOPT)));
+-		}
+-		free(backup);
+-	}
+-}
++/* Native initial scope: option_fill is deferred. */
++
++
++/* Native initial scope: option_get is deferred. */
++
++
++
++/* Native initial scope: config_muster is deferred. */
++
++
++
++/* Native initial scope: build_popup is deferred. */
++
++
++
++/* Native initial scope: set_local_options is deferred. */
++
+ 
+ /* Syntax-Optionen */
+-static bool build_txtname_popup(int txtidx, POPUP *pop)
+-{
+-	char *name;
+-	int idx = 0;
+-	int count = 0;
+-	char str[256];
+-	bool ret = FALSE;
+-
+-	while (Hl_EnumTxtNames(NULL, &count));
+-
+-	if (Hl_EnumTxtNames(&name, &idx))
+-	{
+-		strcpy(str, " ");
+-		strncpy(str+1, name, syntaxop[SYOTXT].ob_spec.tedinfo->te_txtlen - 2);
+-		if (create_popup(pop, count, syntaxop[SYOTXT].ob_spec.tedinfo->te_txtlen , str))
+-		{
+-			ret = TRUE;
+-			while (Hl_EnumTxtNames(&name, &idx))
+-			{
+-				strcpy(str, " ");
+-				strncpy(str+1, name, syntaxop[SYOTXT].ob_spec.tedinfo->te_txtlen - 2);
+-				append_popup(pop, str);
+-			}
+-		}
+-	}
+-	if (Hl_EnumTxtNames(&name, &txtidx))
+-	{
+-		strcpy(str, " ");
+-		strncpy(str+1, name, syntaxop[SYOTXT].ob_spec.tedinfo->te_txtlen - 2);
+-		set_string(syntaxop, SYOTXT, str);
+-	}
+-	return ret;
+-}
+-
+-static void disable_syntax_settings(bool disableit)
+-{
+-	set_string(syntaxop, SYORULE, "");
+-	set_state(syntaxop, SYORULE, OS_DISABLED, disableit);
+-	set_state(syntaxop, SYOBOLD, OS_DISABLED, disableit);
+-	set_state(syntaxop, SYOLIGHT, OS_DISABLED, disableit);
+-	set_state(syntaxop, SYOITALIC, OS_DISABLED, disableit);
+-	set_state(syntaxop, SYOCOLOR, OS_DISABLED, disableit);
+-	set_state(syntaxop, SYOSELCOLOR, OS_DISABLED, disableit);
+-	set_state(syntaxop, SYOCOLORTXT, OS_DISABLED, disableit);
+-	set_state(syntaxop, SYOSELCOLORTXT, OS_DISABLED, disableit);
+-	set_state(syntaxop, SYOSETSAMENAME, OS_DISABLED, disableit);
+-	if (disableit)
+-	{
+-		set_popobjcolor(syntaxop, SYOCOLOR, 1);
+-		set_popobjcolor(syntaxop, SYOSELCOLOR, 1);
+-	}
+-}
+-
+-static void get_syntax_settings(int txtidx, int idx)
+-{
+-	char str[256];
+-	HL_RULEINFO ri;
+-
+-	if (!Hl_EnumRules(txtidx, &ri, &idx)) /* idx wird zerstÔøΩrt */
+-	{
+-		disable_syntax_settings(TRUE);
+-		return;
+-	}
+-	disable_syntax_settings(FALSE);
+-
+-	strcpy(str, " ");
+-	strncpy(str+1, ri.name, syntaxop[SYORULE].ob_spec.tedinfo->te_txtlen - 2);
+-	set_string(syntaxop, SYORULE, str);
+-	set_state(syntaxop, SYOBOLD, OS_SELECTED, ri.attribs & HL_BOLD);
+-	set_state(syntaxop, SYOLIGHT, OS_SELECTED, ri.attribs & HL_LIGHT);
+-	set_state(syntaxop, SYOITALIC, OS_SELECTED, ri.attribs & HL_ITALIC);
+-	set_popobjcolor(syntaxop, SYOCOLOR, (ri.attribs & HL_COLOR) ? (short) ri.color : -2);
+-	set_popobjcolor(syntaxop, SYOSELCOLOR, (ri.attribs & HL_SELCOLOR) ? (short) ri.selcolor : -2);
+-
+-	set_state(syntaxop, SYOSETSAMENAME, OS_SELECTED, syntax_setsamename );
+-
+-	set_state(syntaxop, SYOACTIVE, OS_SELECTED, Hl_IsActive(txtidx));
+-
+-}
+-
+-static void store_syntax_settings(int txtidx, int idx)
+-{
+-	HL_RULEINFO ri, tri;
+-	int tidx = idx;
+-	if (syntaxop[SYOBOLD].ob_state & OS_DISABLED)
+-		return;
+-	ri.attribs =   ((syntaxop[SYOBOLD].ob_state & OS_SELECTED) ? HL_BOLD : 0)
+-	             | ((syntaxop[SYOLIGHT].ob_state & OS_SELECTED) ? HL_LIGHT : 0)
+-	             | ((syntaxop[SYOITALIC].ob_state & OS_SELECTED) ? HL_ITALIC : 0)
+-	             | ((get_popobjcolor(syntaxop, SYOCOLOR) != -2) ? HL_COLOR : 0)
+-	             | ((get_popobjcolor(syntaxop, SYOSELCOLOR) != -2) ? HL_SELCOLOR : 0);
+-	ri.color = get_popobjcolor(syntaxop, SYOCOLOR);
+-	ri.selcolor = get_popobjcolor(syntaxop, SYOSELCOLOR);
+-
+-	Hl_SetActive(txtidx, syntaxop[SYOACTIVE].ob_state & OS_SELECTED);
+-
+-	Hl_EnumRules( txtidx, &tri, &tidx ); /* check if rule settings have really changed */
+-	if( tri.attribs != ri.attribs        /* otherwise all rules would be changed if only SYOACTIVE had changed */
+-	||  tri.color != ri.color
+-	||  tri.selcolor != ri.selcolor )
+-	{
+-		if( syntax_setsamename )
+-		{
+-			HL_RULEINFO ltri, cri;
+-			Hl_EnumRules( txtidx, &ltri, &idx ); /* get rule name in ltri.name */
+-			txtidx = 0;
+-			while( Hl_EnumTxtNames( NULL, &txtidx ) ) /* compare for all texts */
+-			{
+-				idx = 0;
+-				while( Hl_EnumRules( txtidx-1, &cri, &idx )) /* and all rules */
+-					if( stricmp( ltri.name, cri.name ) == 0 ) /* set it if same name */
+-						Hl_ChangeRule(txtidx-1, idx-1, &ri);
+-			}
+-		}
+-		else
+-			Hl_ChangeRule(txtidx, idx, &ri);
+-	}
+-}
+-
+-
+-
+-static bool build_rule_popup(int txtidx, POPUP *pop)
+-{
+-	int idx = 0;
+-	int count = 0;
+-	char str[256];
+-	HL_RULEINFO ri;
+-	bool ret = FALSE;
+-
+-	while (Hl_EnumRules(txtidx, NULL, &count));
+-
+-	if (Hl_EnumRules(txtidx, &ri, &idx))
+-	{
+-		strcpy(str, " ");
+-		strncpy(str+1, ri.name, syntaxop[SYORULE].ob_spec.tedinfo->te_txtlen - 2);
+-		if (create_popup(pop, count, syntaxop[SYORULE].ob_spec.tedinfo->te_txtlen , str))
+-		{
+-			ret = TRUE;
+-			while (Hl_EnumRules(txtidx, &ri, &idx))
+-			{
+-				strcpy(str, " ");
+-				strncpy(str+1, ri.name, syntaxop[SYORULE].ob_spec.tedinfo->te_txtlen - 2);
+-				append_popup(pop, str);
+-			}
+-		}
+-	}
+-	return ret;
+-}
+-
+-void set_syntax_options(void)
+-{
+-	short	y, antw = 0;
+-	bool	close = FALSE;
+-	WINDOWP window;
+-	MDIAL	*dial;
+-	POPUP   txtnames, rules;
+-	int     act_txttype = 0, act_rule = 0;
+-	bool    saved = Hl_SaveSettings();
+-	bool setsamename;
+-
+-	window = winlist_top();
+-	if ((window != NULL) && (window->class == CLASS_EDIT))
+-	{
+-		TEXTP t_ptr = get_text(window->handle);
+-		PATH extension;
+-		split_extension(t_ptr->filename, NULL, extension);
+-		if ((act_txttype = Hl_TxtIndexByTxttype(extension)) == -1)
+-			act_txttype = 0;
+-	}
+-
+-	if (!build_txtname_popup(act_txttype, &txtnames))
+-	{
+-		set_string(syntaxop, SYOTXT, "");
+-		set_state(syntaxop, SYOTXT, OS_DISABLED, TRUE);
+-		set_state(syntaxop, SYOACTIVE, OS_DISABLED, TRUE);
+-	}
+-	build_rule_popup(act_txttype, &rules);
+-	get_syntax_settings(act_txttype, 0);
+-
+-	setsamename = syntax_setsamename;
+-
+-	dial = open_mdial(syntaxop, 0);
+-	if (dial != NULL)
+-	{
+-		while (!close)
+-		{
+-			antw = do_mdial(dial) & 0x7fff;
+-			switch (antw)
+-			{
+-				case SYOHELP:
+-					menu_help(TOPTIONS, MSYNTAXOP);
+-					break;
+-
+-				case SYOTXT:
+-					y = handle_popup(syntaxop, SYOTXT, txtnames.tree, 0, POP_OPEN) - 1;
+-					if (y == -1)
+-						break;
+-					store_syntax_settings(act_txttype, act_rule);
+-					act_txttype = y;
+-					act_rule = 0;
+-					free_popup(&rules);
+-					build_rule_popup(act_txttype, &rules);
+-					get_syntax_settings(act_txttype, 0);
+-					redraw_mdobj(dial, SYORULE);
+-					redraw_mdobj(dial, SYORULEFRAME);
+-					redraw_mdobj(dial, SYOACTIVE);
+-					break;
+-
+-				case SYORULE:
+-					y = handle_popup(syntaxop, SYORULE, rules.tree, 0, POP_OPEN) - 1;
+-					if (y == -1)
+-						break;
+-					store_syntax_settings(act_txttype, act_rule);
+-					act_rule = y;
+-					get_syntax_settings(act_txttype, act_rule);
+-					redraw_mdobj(dial, SYORULEFRAME);
+-					break;
+-
+-				case SYOSETSAMENAME:
+-					syntax_setsamename = syntaxop[SYOSETSAMENAME].ob_state & OS_SELECTED;
+-					break;
+-
+-				case SYOCOLOR:
+-					handle_colorpop(syntaxop, SYOCOLOR, POP_OPEN, 8, TRUE);
+-					break;
+-
+-				case SYOSELCOLOR:
+-					handle_colorpop(syntaxop, SYOSELCOLOR, POP_OPEN, 8, TRUE);
+-					break;
+-
+-				case SYOOK:
+-					store_syntax_settings(act_txttype, act_rule);
+-					if (saved)
+-						Hl_DeleteSaveSettings();
+-					hl_update_all();
+-					close = TRUE;
+-					break;
+-
+-				case SYOCANCEL:
+-					if (saved)
+-						Hl_RestoreSettings();
+-					syntax_setsamename = setsamename;
+-					close = TRUE;
+-					break;
+-
+-				default:
+-					close = TRUE;
+-					break;
+-
+-			}
+-			if (!close && antw != SYOSETSAMENAME)
+-			{
+-				set_state(syntaxop, antw, OS_SELECTED, FALSE);
+-				redraw_mdobj(dial, antw);
+-			}
+-		}
+-		set_state(syntaxop, antw, OS_SELECTED, FALSE);
+-		close_mdial(dial);
+-		free_popup(&txtnames);
+-	}
+-}
++/* Native initial scope: build_txtname_popup is deferred. */
++
++
++/* Native initial scope: disable_syntax_settings is deferred. */
++
++
++/* Native initial scope: get_syntax_settings is deferred. */
++
++
++/* Native initial scope: store_syntax_settings is deferred. */
++
++
++
++
++/* Native initial scope: build_rule_popup is deferred. */
++
++
++/* Native initial scope: set_syntax_options is deferred. */
++
+ 
+ /*
+  * Defaulteinstellungen
+@@ -900,10 +182,10 @@
+ 	save_opt	  = FALSE;
+ 	save_win  = FALSE;
+ 	wind_cycle = FALSE;
+-	clip_on_disk = TRUE;
++	clip_on_disk = FALSE;
+ 	overwrite  = FALSE;
+ 	transfer_size = 100;
+-	syntax_active = TRUE;
++	syntax_active = FALSE;
+ 	syntax_setsamename = FALSE;
+ 
+ 	c = getenv("STGUIDE");
+@@ -916,8 +198,7 @@
+ 	ctrl_mark_mode = FALSE;
+ 	f_to_desk = FALSE;
+ 
+-	for (i = 0; i < FEHLERANZ; i++)
+-		error[i][0] = EOS;
++
+ 
+ 	for (i = 0; i < LOCAL_ANZ; i++)
+ 		null_locopt(&local_options[i]);
+@@ -948,16 +229,6 @@
+ 	for (i = 4; i < BIN_ANZ; i++)
+ 		bin_extension[i][0] = EOS;
+ 
+-	se_autosave = FALSE;
+-	se_autosearch = FALSE;
+-	se_ignoreclose = FALSE;
+-
+-	for (i = 0; i < SHELLANZ; i++)
+-	{
+-		se_shells[i].name[0] = EOS;
+-		se_shells[i].makefile[0] = EOS;
+-	}
+-
+ 	umlaut_from = 0;
+ 	umlaut_to = 0;
+ 
+@@ -993,776 +264,43 @@
+ static LOCOPTP	lo = NULL;
+ static short	muster_nr = 1;
+ 
+-static bool get_cfg_path(void)
+-{
+-	bool found;
+-	short pl;
+-	strcpy(cfg_path, CFGNAME);
+-	found = get_config_file( cfg_path, FALSE );
+-	sprintf(dsp_name, "%04d%04d.qed", gl_desk.g_x + gl_desk.g_w, gl_desk.g_y + gl_desk.g_h);
+-	pl = min( gl_planes, 8 ); /* max. 8 planes supported; higher resolutions get the same color */
+-	sprintf(col_name, "col%02dbit.qed", pl );
+-	return found;
+-}
++/* Native initial scope: get_cfg_path is deferred. */
++
+ 
+ /******************************************************************************/
+ /* Dateioperation: Laden																		*/
+ /******************************************************************************/
+-void read_cfg_bool(char *str, bool *val)
+-{
+-	if (stricmp(str, "TRUE") == 0)
+-		*val = TRUE;
+-	if (stricmp(str, "FALSE") == 0)
+-		*val = FALSE;
+-}
+-
+-void read_cfg_str(char *str, char *val)
+-{
+-	val[0] = EOS;
+-	if ((str[0] == '"') && (str[1] == '"'))	/* nur "" -> leer */
+-		return;
+-	else
+-	{
+-		short	len, i, j;
+-
+-		if (str[0] == '"')
+-		{
+-			len = (short)strlen(str);
+-			j = 0;
+-			i = 1;
+-			while ((str[i] != '\"') && (i < len))
+-			{
+-				if ((str[i] == '\\') && (str[i+1] == '"'))
+-					i++;
+-				val[j++] = str[i++];
+-			}
+-			val[j] = EOS;
+-		}
+-	}
+-}
+-
+-
+-static void parse_line(POSENTRY **arglist, char *zeile)
+-{
+-	char	var[30], *p, tmp[80];
+-	short	x, i, d;
+-	long	y;
+-	PATH	filename;
+-
+-	/*
+-	 * STan: BUG? CRLF vs LF newlines in the .cfg file?
+-	 * 	 The real solution is to ensure the .cfg file is either in CRLF or LF
+-	 * 	 mode regardless to whether it runs under MiNT or SingleTOS. Other, quite nice
+-	 * 	 solution is to read and write the documentation using QED text file routine
+-	 * 	 itself. But this would need to rewrite the whole configuratin stuff.
+-	 * Skip empty lines
+-	 */
+-	if ( strlen(zeile) == 0 )
+-		return;
+-
+-	p = strchr(zeile, '=');
+-	if (p != NULL)
+-	{
+-		strncpy(var, zeile, p-zeile);
+-		var[p-zeile] = EOS;
+-		strcpy(buffer, p+1);
+-
+-		/* Autosave */
+-		if (strcmp(var, "AutoSavePrj") == 0)
+-			read_cfg_bool(buffer, &as_prj);
+-		else if(strcmp(var, "AutoSavePrjAsk") == 0)
+-			read_cfg_bool(buffer, &as_prj_ask);
+-		else if(strcmp(var, "AutoSavePrjMin") == 0)
+-			as_prj_min = atoi(buffer);
+-		else if(strcmp(var, "AutoSaveText") == 0)
+-			read_cfg_bool(buffer, &as_text);
+-		else if(strcmp(var, "AutoSaveTextAsk") == 0)
+-			read_cfg_bool(buffer, &as_text_ask);
+-		else if(strcmp(var, "AutoSaveTextMin") == 0)
+-			as_text_min = atoi(buffer);
+-
+-		/* BinÔøΩr-Extensions */
+-		else if (strcmp(var, "BinExtension") == 0)
+-		{
+-			read_cfg_str(buffer, tmp);
+-			for (i = 0; i < BIN_ANZ; i++)
+-			{
+-				if (stricmp(bin_extension[i], tmp) == 0)	/* schon drin */
+-					break;
+-				if (bin_extension[i][0] == EOS)
+-				{
+-					strcpy(bin_extension[i], tmp);
+-					break;
+-				}
+-			}
+-		}
+-
+-		/* DefaultPrj */
+-		else if(strcmp(var, "DefaultPrj") == 0)
+-		{
+-			read_cfg_str(buffer, def_prj_path);
+-			set_def_prj();
+-		}
+-
+-		/* Fehlerzeilen */
+-		else if(strcmp(var, "Error") == 0)
+-		{
+-			read_cfg_str(buffer, tmp);
+-			set_errorline(tmp);
+-		}
+-
+-		/* Globales */
+-		else if (strcmp(var, "GlobalAutosaveCfg") == 0)
+-			read_cfg_bool(buffer, &save_opt);
+-		else if (strcmp(var, "GlobalSaveWindows") == 0)
+-			read_cfg_bool(buffer, &save_win);
+-		else if (strcmp(var, "GlobalFgColor") == 0)
+-			fg_color = atoi(buffer);
+-		else if (strcmp(var, "GlobalBgColor") == 0)
+-			bg_color = atoi(buffer);
+-		else if (strcmp(var, "GlobalBlockFgColor") == 0)
+-			fg_block_color = atoi(buffer);
+-		else if (strcmp(var, "GlobalBlockBgColor") == 0)
+-			bg_block_color = atoi(buffer);
+-		else if (strcmp(var, "GlobalBinLineLen") == 0)
+-			bin_line_len = atoi(buffer);
+-		else if (strcmp(var, "GlobalBlinkCursor") == 0)
+-			read_cfg_bool(buffer, &blinking_cursor);
+-		else if (strcmp(var, "GlobalCtrlBlock") == 0)
+-			read_cfg_bool(buffer, &ctrl_mark_mode);
+-		else if (strcmp(var, "GlobalEmuKlammer") == 0)
+-			read_cfg_bool(buffer, &emu_klammer);
+-		else if (strcmp(var, "GlobalFtoDesk") == 0)
+-			read_cfg_bool(buffer, &f_to_desk);
+-		else if (strcmp(var, "GlobalGEMClip") == 0)
+-			read_cfg_bool(buffer, &clip_on_disk);
+-		else if (strcmp(var, "GlobalOlga") == 0)
+-			read_cfg_bool(buffer, &olga_autostart);
+-		else if (strcmp(var, "GlobalOverwrite") == 0)
+-			read_cfg_bool(buffer, &overwrite);
+-		else if (strcmp(var, "GlobalTransSize") == 0)
+-			transfer_size = atoi(buffer);
+-		else if (strcmp(var, "GlobalWindCycle") == 0)
+-			read_cfg_bool(buffer, &wind_cycle);
+-		else if (strcmp(var, "GlobalSyntaxActive") == 0)
+-			read_cfg_bool(buffer, &syntax_active);
+-		else if (strcmp(var, "SyntaxSetSameName") == 0)
+-			read_cfg_bool(buffer, &syntax_setsamename);
+-
+-		/* Hilfe-Programm */
+-		else if (strcmp(var, "HelpProgram") == 0)
+-			read_cfg_str(buffer, helpprog);
+-
+-		/* Klammerpaare */
+-		else if (strcmp(var, "KlammerAuf") == 0)
+-			read_cfg_str(buffer, klammer_auf);
+-		else if (strcmp(var, "KlammerZu") == 0)
+-			read_cfg_str(buffer, klammer_zu);
+-
+-		/* Lokales */
+-		else if (strcmp(var, "LocalBegin") == 0)
+-		{
+-			read_cfg_str(buffer, tmp);
+-
+-			/* SonderfÔøΩlle */
+-			if (strcmp(tmp, "*") == 0)
+-				muster_nr = 0;
+-			else if (strcmp(tmp, rsc_string(BINSTR)) == 0)
+-				muster_nr = 1;
+-			else
+-				muster_nr++;
+-
+-			lo = &(local_options[muster_nr]);
+-			strcpy(lo->muster, tmp);
+-		}
+-		else if (strcmp(var, "LocalEnd") == 0)
+-		{
+-			lo = NULL;
+-			if (muster_nr == 0)
+-				muster_nr = 1;
+-		}
+-		else if ((strcmp(var, "LocalBackup") == 0) && (lo != NULL))
+-			read_cfg_bool(buffer, &(lo->backup));
+-		else if ((strcmp(var, "LocalBackupExt") == 0) && (lo != NULL))
+-			read_cfg_str(buffer, lo->backup_ext);
+-		else if ((strcmp(var, "LocalInsert") == 0) && (lo != NULL))
+-			read_cfg_bool(buffer, &(lo->einruecken));
+-		else if ((strcmp(var, "LocalKurzel") == 0) && (lo != NULL))
+-			read_cfg_str(buffer, lo->kurzel);
+-		else if ((strcmp(var, "LocalTab") == 0) && (lo != NULL))
+-			read_cfg_bool(buffer, &(lo->tab));
+-		else if ((strcmp(var, "LocalTabSize") == 0) && (lo != NULL))
+-			lo->tabsize = atoi(buffer);
+-		else if ((strcmp(var, "LocalUmbruch") == 0) && (lo != NULL))
+-			read_cfg_bool(buffer, &(lo->umbrechen));
+-		else if ((strcmp(var, "LocalUmbruchLineLen") == 0) && (lo != NULL))
+-			lo->lineal_len = atoi(buffer);
+-		else if ((strcmp(var, "LocalUmbruchIns") == 0) && (lo != NULL))
+-			read_cfg_bool(buffer, &(lo->format_by_paste));
+-		else if ((strcmp(var, "LocalUmbruchLoad") == 0) && (lo != NULL))
+-			read_cfg_bool(buffer, &(lo->format_by_load));
+-		else if ((strcmp(var, "LocalUmbruchAt") == 0) && (lo != NULL))
+-		{
+-			read_cfg_str(buffer, lo->umbruch_str);
+-			str2set(lo->umbruch_str, lo->umbruch_set);
+-		}
+-		else if ((strcmp(var, "LocalUmbruchShow") == 0) && (lo != NULL))
+-			read_cfg_bool(buffer, &(lo->show_end));
+-		else if ((strcmp(var, "LocalWordSet") == 0) && (lo != NULL))
+-		{
+-			read_cfg_str(buffer, lo->wort_str);
+-			str2set(lo->wort_str,lo->wort_set);
+-		}
+-
+-		/* Makro */
+-		else if (strcmp(var, "Makro") == 0)
+-			set_makro_str(buffer);
+-
+-		/* Marken */
+-		else if (strcmp(var, "Marke") == 0)
+-		{
+-			read_cfg_str(buffer, filename);
+-			d = sscanf(buffer + strlen(filename) + 3, "%hd \"%[^\"]\" %ld %hd", &i, tmp, &y, &x);
+-			if (d != 4)		/* altes Format (<4.10) ohne " um tmp */
+-				sscanf(buffer + strlen(filename) + 3, "%hd %s %ld %hd", &i, tmp, &y, &x);
+-			set_marke(i, tmp, filename, y, x);
+-		}
+-
+-		/* offenen Dateien */
+-		else if (strcmp(var, "OpenPrj") == 0)
+-		{
+-			read_cfg_str(buffer, filename);
+-			insert_poslist(arglist, filename, 0, 0);
+-		}
+-		else if (strcmp(var, "OpenText") == 0)
+-		{
+-			read_cfg_str(buffer, filename);
+-			sscanf(buffer + strlen(filename) + 3, "%ld %hd", &y, &x);
+-			insert_poslist(arglist, filename, x, y);
+-		}
+-
+-		/* Drucker */
+-		else if (prn_get_cfg(var, buffer))
+-			/* do nothing */ ;
+-
+-		/* Ersetzen */
+-		else if (strcmp(var, "ReplaceBox") == 0)
+-			sscanf(buffer, "%hd %hd", &rp_box_x, &rp_box_y);
+-		else if (strcmp(var, "ReplaceMode") == 0)
+-			r_modus = atoi(buffer);
+-		else if (strcmp(var, "ReplaceStr") == 0)
+-			read_cfg_str(buffer, r_str);
+-		else if (strcmp(var, "ReplaceHistory") == 0)
+-		{
+-			read_cfg_str(buffer, tmp);
+-			for (i = 0; i < HIST_ANZ; i++)
+-				if (r_history[i][0] == EOS)
+-					break;
+-			if (i < HIST_ANZ)
+-				strcpy(r_history[i], tmp);
+-		}
+-		else if (strcmp(var, "ReplaceUmlautFrom") == 0)
+-			umlaut_from = atoi(buffer);
+-		else if (strcmp(var, "ReplaceUmlautTo") == 0)
+-			umlaut_to = atoi(buffer);
+-
+-		/* Suchen */
+-		else if (strcmp(var, "SearchFileMask") == 0)
+-			read_cfg_str(buffer, ff_mask);
+-		else if (strcmp(var, "SearchFileRek") == 0)
+-			read_cfg_bool(buffer, &ff_rekursiv);
+-		else if (strcmp(var, "SearchDown") == 0)
+-			read_cfg_bool(buffer, &s_vorw);
+-		else if (strcmp(var, "SearchGlobal") == 0)
+-			read_cfg_bool(buffer, &s_global);
+-		else if (strcmp(var, "SearchGrkl") == 0)
+-			read_cfg_bool(buffer, &s_grkl);
+-		else if (strcmp(var, "SearchHistory") == 0)
+-		{
+-			read_cfg_str(buffer, tmp);
+-			for (i = 0; i < HIST_ANZ; i++)
+-				if (s_history[i][0] == EOS)
+-					break;
+-			if (i < HIST_ANZ)
+-				strcpy(s_history[i], tmp);
+-		}
+-		else if (strcmp(var, "SearchQuant") == 0)
+-			read_cfg_bool(buffer, &s_quant);
+-		else if (strcmp(var, "SearchRound") == 0)
+-			read_cfg_bool(buffer, &s_round);
+-		else if (strcmp(var, "SearchWord") == 0)
+-			read_cfg_bool(buffer, &s_wort);
+-		else if (strcmp(var, "SearchStr") == 0)
+-			read_cfg_str(buffer, s_str);
+-
+-		/* SE-Protokoll */
+-		else if (strcmp(var, "SESave") == 0)
+-			read_cfg_bool(buffer, &se_autosave);
+-		else if (strcmp(var, "SESearch") == 0)
+-			read_cfg_bool(buffer, &se_autosearch);
+-		else if (strcmp(var, "SEIgnoreClose") == 0)
+-			read_cfg_bool(buffer, &se_ignoreclose);
+-		else if (strcmp(var, "SEShellName") == 0)
+-		{
+-			read_cfg_str(buffer, tmp);
+-			for (i = 0; i < SHELLANZ; i++)
+-				if (se_shells[i].name[0] == EOS)
+-					break;
+-			if (i < SHELLANZ)
+-				strcpy(se_shells[i].name, tmp);
+-		}
+-
+-		/* Fensterfont */
+-		else if (strcmp(var, "WinFontID") == 0)
+-			font_id = atoi(buffer);
+-		else if (strcmp(var, "WinFontSize") == 0)
+-			font_pts = atoi(buffer);
+-
+-		/* Fensterposition */
+-		else if (strcmp(var, "Window") == 0)
+-		{
+-			short	class;
+-			GRECT	size;
+-
+-			sscanf(buffer, "%hd %hd %hd %hd %hd",
+-				 &class, &size.g_x, &size.g_y, &size.g_w, &size.g_h);
+-			add_winlist(class, &size);
+-		}
+-
+-
+-		/* Unbekannte Zeile */
+-		else
+-		{
+-			if (strlen(var) > 28)
+-				var[28] = EOS;
+-			snote(1, 0, WRONGINF, var);
+-		}
+-	}
+-	else
+-	{
+-		if (strlen(zeile) > 28)
+-			zeile[28] = EOS;
+-		snote(1, 0, WRONGINF, zeile);
+-	}
+-}
+-
+-void option_load(POSENTRY **list)
+-{
+-	PATH	tmp;
+-
+-	if (!get_cfg_path())					/* keine qed.cfg gefunden */
+-		return;
+-
+-	fd = fopen(cfg_path, "r");
+-	if (fd != NULL)
+-	{
+-		/* 1. Zeile auf ID checken */
+-		fgets(buffer, (short)sizeof(buffer), fd);
+-		if (strncmp(buffer, "ID=qed", 6) == 0)
+-		{
+-			while (fgets(buffer, (short)sizeof(buffer), fd) != NULL)
+-			{
+-				if (buffer[strlen(buffer) - 1] == '\n')
+-					buffer[strlen(buffer) - 1] = EOS;
+-				parse_line(list, buffer);
+-			}
+-		}
+-		else
+-		{
+-			/* Zeile kurzhacken */
+-			if (strlen(buffer) > 28)
+-				buffer[28] = EOS;
+-			snote(1, 0, WRONGINF, buffer);
+-		}
+-		fclose(fd);
+-		fd = NULL;
+-
+-		/* Farb-abhÔøΩngige Parameter laden */
+-		split_filename(cfg_path, tmp, NULL);
+-		strcat(tmp, col_name);
+-		fd = fopen(tmp, "r");
+-		if (fd != NULL)
+-		{
+-			/* 1. Zeile auf ID checken */
+-			fgets(buffer, (short)sizeof(buffer), fd);
+-			if (strncmp(buffer, "ID=qed color configuration", 26) == 0)
+-			{
+-				while (fgets(buffer, (short)sizeof(buffer), fd) != NULL)
+-				{
+-					if (buffer[strlen(buffer) - 1] == '\n')
+-						buffer[strlen(buffer) - 1] = EOS;
+-					parse_line(list, buffer);
+-				}
+-			}
+-			else
+-			{
+-				/* Zeile kurzhacken */
+-				if (strlen(buffer) > 28)
+-					buffer[28] = EOS;
+-				snote(1, 0, WRONGINF, buffer);
+-			}
+-
+-			fclose(fd);
+-			fd = NULL;
+-
+-			set_drawmode();
+-
+-		}
+-
+-		/* AuflÔøΩsungs-abhÔøΩngige Parameter laden */
+-		split_filename(cfg_path, tmp, NULL);
+-		strcat(tmp, dsp_name);
+-		fd = fopen(tmp, "r");
+-		if (fd != NULL)
+-		{
+-			/* 1. Zeile auf ID checken */
+-			fgets(buffer, (short)sizeof(buffer), fd);
+-			if (strncmp(buffer, "ID=qed display configuration", 28) == 0)
+-			{
+-				while (fgets(buffer, (short)sizeof(buffer), fd) != NULL)
+-				{
+-					if (buffer[strlen(buffer) - 1] == '\n')
+-						buffer[strlen(buffer) - 1] = EOS;
+-					parse_line(list, buffer);
+-				}
+-			}
+-			else
+-			{
+-				/* Zeile kurzhacken */
+-				if (strlen(buffer) > 28)
+-					buffer[28] = EOS;
+-				snote(1, 0, WRONGINF, buffer);
+-			}
+-
+-			fclose(fd);
+-			fd = NULL;
+-
+-			set_drawmode();
+-
+-		}
+-
+-		/* Zum SchluÔøΩ noch 'pdlg.qed' */
+-		prn_get_cfg("PdlgRead", cfg_path);
+-	}
+-}
++/* Native initial scope: read_cfg_bool is deferred. */
++
++
++/* Native initial scope: read_cfg_str is deferred. */
++
++
++
++/* Native initial scope: parse_line is deferred. */
++
++
++/* Native initial scope: option_load is deferred. */
++
+ 
+ 
+ /******************************************************************************/
+ /* Dateioperation: Speichern																	*/
+ /******************************************************************************/
+-void write_cfg_str(char *var, char *value)
+-{
+-	if (strchr(value, '\"') != NULL)	/* " in value fÔøΩhrt zu \" in der Datei */
+-	{
+-		short	len, i;
+-
+-		fprintf(fd, "%s=\"", var);
+-		len = (short)strlen(value);
+-		for (i = 0; i < len; i++)
+-		{
+-			if (value[i] == '\"')
+-				fputc('\\', fd);
+-			fputc(value[i], fd);
+-		}
+-		fprintf(fd, "\"\n");
+-	}
+-	else
+-		fprintf(fd, "%s=\"%s\"\n", var, value);
+-}
+-
+-void write_cfg_int(char *var, short value)
+-{
+-	fprintf(fd, "%s=%d\n", var, value);
+-}
+-
+-void write_cfg_long(char *var, long value)
+-{
+-	fprintf(fd, "%s=%ld\n", var, value);
+-}
+-
+-void write_cfg_bool(char *var, bool value)
+-{
+-	fprintf(fd, "%s=%s\n", var, value ? "TRUE" : "FALSE");
+-}
+-
+-static void save_open_text(TEXTP t_ptr)
+-{
+-	WINDOWP	w = get_window(t_ptr->link);
+-
+-	if (!t_ptr->namenlos)
+-	{
+-		if (w->class == CLASS_EDIT)
+-		{
+-			fprintf(fd, "OpenText=\"%s\" %ld %d\n", t_ptr->filename,
+-				t_ptr->ypos,
+-				bild_pos(t_ptr->xpos, t_ptr->cursor_line, t_ptr->loc_opt->tab, t_ptr->loc_opt->tabsize));
+-		}
+-		if (w->class == CLASS_PROJEKT)
+-			write_cfg_str("OpenPrj", t_ptr->filename);
+-	}
+-}
+-
+-void option_save(void)
+-{
+-	short	i, x;
+-	long	y;
+-	PATH	path;
+-	LOCOPTP	lo_opt;
+-
+-	fd = fopen(cfg_path, "w");
+-	if (fd == NULL) {
+-		note(1, 0, WRITEERR);
+-		return;
+-	}
+-
+-	/* ID zur identifizierung */
+-	fprintf(fd, "ID=qed %s\n", QED_VERSION);
+-
+-	/* Autosave */
+-	write_cfg_bool("AutoSavePrj", as_prj);
+-	write_cfg_bool("AutoSavePrjAsk", as_prj_ask);
+-	write_cfg_int("AutoSavePrjMin", as_prj_min);
+-	write_cfg_bool("AutoSaveText", as_text);
+-	write_cfg_bool("AutoSaveTextAsk", as_text_ask);
+-	write_cfg_int("AutoSaveTextMin", as_text_min);
+-
+-	/* BinÔøΩr-Extionsions */
+-	for (i = 4; i < BIN_ANZ; i++)
+-		if (bin_extension[i][0] != EOS)
+-			write_cfg_str("BinExtension", bin_extension[i]);
+-
+-	/* Defaultprojekt */
+-	write_cfg_str("DefaultPrj", def_prj_path);
+-
+-	/* Fehlerzeilen */
+-	for (i = 0; i < FEHLERANZ; i++)
+-	{
+-		if (error[i][0] != EOS)
+-			write_cfg_str("Error", error[i]);
+-	}
+-
+-	/* Globales */
+-	write_cfg_bool("GlobalAutosaveCfg", save_opt);
+-	write_cfg_bool("GlobalSaveWindows", save_win);
+-	write_cfg_int ("GlobalBinLineLen", bin_line_len);
+-	write_cfg_bool("GlobalBlinkCursor", blinking_cursor);
+-	write_cfg_bool("GlobalCtrlBlock", ctrl_mark_mode);
+-	write_cfg_bool("GlobalEmuKlammer", emu_klammer);
+-	write_cfg_bool("GlobalFtoDesk", f_to_desk);
+-	write_cfg_bool("GlobalGEMClip", clip_on_disk);
+-	write_cfg_bool("GlobalOlga", olga_autostart);
+-	write_cfg_bool("GlobalOverwrite", overwrite);
+-	write_cfg_int ("GlobalTransSize", transfer_size);
+-	write_cfg_bool("GlobalWindCycle", wind_cycle);
+-	write_cfg_bool("GlobalSyntaxActive", syntax_active);
+-
+-	write_cfg_bool("SyntaxSetSameName", syntax_setsamename);
+-
+-	/* Hilfeprogramm */
+-	write_cfg_str("HelpProgram", helpprog);
+-
+-	/* Klammerpaare */
+-	write_cfg_str("KlammerAuf", klammer_auf);
+-	write_cfg_str("KlammerZu", klammer_zu);
+-
+-	/* Lokales */
+-	for (i = 0; i < LOCAL_ANZ; i++)
+-	{
+-		lo_opt = &local_options[i];
+-		if (lo_opt->muster[0] != EOS)
+-		{
+-			write_cfg_str("LocalBegin", lo_opt->muster);
+-			write_cfg_bool("LocalBackup", lo_opt->backup);
+-			write_cfg_str("LocalBackupExt", lo_opt->backup_ext);
+-			write_cfg_bool("LocalInsert", lo_opt->einruecken);
+-			write_cfg_str("LocalKurzel", lo_opt->kurzel);
+-			write_cfg_bool("LocalTab", lo_opt->tab);
+-			write_cfg_int("LocalTabSize", lo_opt->tabsize);
+-			write_cfg_bool("LocalUmbruch", lo_opt->umbrechen);
+-			write_cfg_int("LocalUmbruchLineLen", lo_opt->lineal_len);
+-			write_cfg_bool("LocalUmbruchIns", lo_opt->format_by_paste);
+-			write_cfg_bool("LocalUmbruchLoad", lo_opt->format_by_load);
+-			write_cfg_str("LocalUmbruchAt", lo_opt->umbruch_str);
+-			write_cfg_bool("LocalUmbruchShow", lo_opt->show_end);
+-			write_cfg_str("LocalWordSet", lo_opt->wort_str);
+-			write_cfg_str("LocalEnd", lo_opt->muster);
+-		}
+-	}
+-
+-	/* Makros */
+-	for (i = 0; i < MAKRO_ANZ; i++)
+-	{
+-		if (get_makro_str(i, buffer))
+-			fprintf(fd, "Makro=%s\n", buffer);
+-	}
+-
+-	/* Marken */
+-	for (i = 0; i < MARKEN_ANZ; i++)
+-	{
+-		if (get_marke(i, path, buffer, &y, &x))
+-			fprintf(fd, "Marke=\"%s\" %d \"%s\" %ld %d\n", buffer, i, path, y, x);
+-	}
+-
+-	/* Drucker */
+-	prn_save_cfg(cfg_path);
+-
+-	/* Ersetzen */
+-	write_cfg_int("ReplaceMode", r_modus);
+-	write_cfg_str("ReplaceStr", r_str);
+-	for (i = 0; i < HIST_ANZ; i++)
+-	{
+-		if (r_history[i][0] != EOS)
+-			write_cfg_str("ReplaceHistory", r_history[i]);
+-	}
+-	write_cfg_int("ReplaceUmlautFrom", umlaut_from);
+-	write_cfg_int("ReplaceUmlautTo", umlaut_to);
+-
+-	/* Suchen */
+-	write_cfg_str("SearchFileMask", ff_mask);
+-	write_cfg_bool("SearchFileRek", ff_rekursiv);
+-	write_cfg_bool("SearchDown", s_vorw);
+-	write_cfg_bool("SearchGlobal", s_global);
+-	write_cfg_bool("SearchGrkl", s_grkl);
+-	for (i = 0; i < HIST_ANZ; i++)
+-	{
+-		if (s_history[i][0] != EOS)
+-			write_cfg_str("SearchHistory", s_history[i]);
+-	}
+-
+-
+-	write_cfg_bool("SearchQuant", s_quant);
+-	write_cfg_bool("SearchRound", s_round);
+-	write_cfg_bool("SearchWord", s_wort);
+-	write_cfg_str("SearchStr", s_str);
+-
+-	/* SE-Protokoll */
+-	write_cfg_bool("SESave", se_autosave);
+-	write_cfg_bool("SESearch", se_autosearch);
+-	write_cfg_bool("SEIgnoreClose", se_ignoreclose);
+-	for (i = 0; i < SHELLANZ - 1; i++)
+-	{
+-		if (se_shells[i].name[0] != EOS)
+-			write_cfg_str("SEShellName", se_shells[i].name);
+-	}
+-
+-	fclose(fd);
+-	fd = NULL;
+-
+-	/* Farb-abhÔøΩngige Parameter sichern */
+-	split_filename(cfg_path, path, NULL);
+-	strcat(path, col_name);
+-	fd = fopen(path, "w");
+-	if (fd != NULL )
+-	{
+-		fprintf(fd, "ID=qed color configuration\n");
+-
+-		/* Farb-Infos */
+-		write_cfg_int("GlobalBgColor", bg_color);
+-		write_cfg_int("GlobalFgColor", fg_color);
+-		write_cfg_int("GlobalBlockBgColor", bg_block_color);
+-		write_cfg_int("GlobalBlockFgColor", fg_block_color);
+-
+-		fclose(fd);
+-		fd = NULL;
+-	}
+-
+-	/* save resolution dependent parameters */
+-	/* this is a bit hacked of course - but I am planning to replace the whole config stuff
+-	   by one global config file ASAP */
+-	{
+-		bool copied_ok = FALSE;
+-
+-		/* if the window settings shall not be saved, remove
+-		   the font settings from the file. These will be written, even if
+-		   save_win == FALSE. In this case The font settings are appended to the file. */
+-
+-		if( !save_win )
+-		{
+-			FILE *tf;
+-			PATH tmp;
+-			char	var[30], *p;
+-
+-			/* copy all lines except "WinFontID" and "WinFontSize" to a tempfile.
+-			   remove the old file and rename the tempfile to the new settings file. */
+-			split_filename(cfg_path, path, NULL);
+-			strcpy( tmp, path );
+-			strcat( path, dsp_name );
+-			strcat( tmp, "temp.qed" );
+-			fd = fopen( path, "r" );
+-			if (fd == NULL )
+-			{
+-				/* there is no such file -> write empty one */
+-				fd = fopen(path, "w" );
+-				if (fd != NULL ) {
+-						fprintf(fd, "ID=qed display configuration\n");
+-						copied_ok = TRUE;
+-						fclose(fd);
+-				}
+-			} else {
+-				tf = fopen( tmp, "w" );
+-				if( tf != NULL ) {
+-					while (fgets(buffer, (short)sizeof(buffer), fd) != NULL)
+-					{
+-						p = strchr(buffer, '=');
+-						if (p != NULL)
+-						{
+-							strncpy(var, buffer, p-buffer);
+-							var[p-buffer] = EOS;
+-							if( strcmp( var, "WinFontID" ) == 0 ||
+-							    strcmp( var, "WinFontSize" ) == 0 )
+-								continue;
+-						}
+-						if( strcmp( buffer, "ID=qed display configuration\n" ) == 0 )
+-							copied_ok = TRUE;
+-						fputs( buffer, tf );
+-					}
+-					fclose( tf );
+-					tf = NULL;
+-				}
+-				fclose(fd);
+-				fd = NULL;
+-
+-				if( copied_ok )
+-				{
+-						remove( path );
+-						rename( tmp, path );
+-				} else {
+-						remove( tmp );
+-				}
+-			}
+-		}
+-
+-		split_filename(cfg_path, path, NULL);
+-		strcat(path, dsp_name);
+-		fd = fopen(path, save_win ? "w" : "a" );
+-		if (fd != NULL )
+-		{
+-			if( save_win )
+-			{
+-				fprintf(fd, "ID=qed display configuration\n");
+-
+-				/* geladene Dateien */
+-				do_all_text(save_open_text);
+-
+-				/* Pos. der Replace-Ask-Box */
+-				fprintf(fd, "ReplaceBox=%d %d\n", rp_box_x, rp_box_y);
+-
+-				/* Fensterposition */
+-				save_winlist(fd);
+-			}
+-
+-			if( save_win || copied_ok )
+-			{
+-				/* Fensterfont */
+-				write_cfg_int("WinFontID", font_id);
+-				write_cfg_int("WinFontSize", font_pts);
+-			}
+-
+-			fclose(fd);
+-			fd = NULL;
+-		}
+-	}
+-
+-	split_filename(cfg_path, path, NULL);
+-	send_avpathupdate (path);
+-}
++/* Native initial scope: write_cfg_str is deferred. */
++
++
++/* Native initial scope: write_cfg_int is deferred. */
++
++
++/* Native initial scope: write_cfg_long is deferred. */
++
++
++/* Native initial scope: write_cfg_bool is deferred. */
++
++
++/* Native initial scope: save_open_text is deferred. */
++
++
++/* Native initial scope: option_save is deferred. */
++
+--- a/qed/src/projekt.c
++++ b/qed/src/projekt.c
+@@ -465,7 +465,7 @@
+ 								strcpy(name, t_ptr->filename);
+ 							else
+ 								file_name(t_ptr->filename, name, FALSE);
+-							Bconout(2, 7);
++							((void)0) /* optional audible bell */;
+ 							btn = snote(2, 3, ASAVEASK, name);
+ 							if (btn == 1)
+ 								as_prj = FALSE;
+@@ -782,7 +782,7 @@
+ 			}
+ 			break;
+ 		case DRAGDROP_DATA :
+-			Bconout(2, 7);
++			((void)0) /* optional audible bell */;
+ 			erg = FALSE;
+ 			break;
+ 		default:
+--- a/qed/src/projekt.h
++++ b/qed/src/projekt.h
+@@ -16,4 +16,16 @@
+ 
+ extern void	init_projekt	(void);
+ 
++
++#ifdef QED_INITIAL_SCOPE
++/* Native initial scope: optional facility is compiled out at all callers. */
++#define load_projekt(...) (0)
++#define add_to_projekt(...) (0)
++#define new_projekt(...) (0)
++#define find_on_disk(...) (0)
++#define set_def_prj(...) (0)
++#define open_def_prj(...) (0)
++#define add_to_def(...) (0)
++#define init_projekt(...) (0)
+ #endif
++#endif
+--- a/qed/src/rsc.c
++++ b/qed/src/rsc.c
+@@ -42,164 +42,29 @@
+ OBJECT 	*popups;
+ OBJECT 	*strings;
+ 
+-char		**alertmsg;
++char		*alertmsg[NUM_FRSTR];
+ 
+ 
+ static bool	rsc_init = FALSE;
+ 
+ bool init_resource(void)
+ {
+-	PATH	rsc_path;
+-	char t[20];
+-
+-	/* 1st, look in our own app dir */
+-	strcpy(rsc_path, gl_appdir);
+-	strcat(rsc_path, "qed.rsc");
+-	rsc_init = rsrc_load(rsc_path);
+-
+-	/* then look in $QED */
+-	if( !rsc_init && path_from_env("QED", rsc_path))
+-	{
+-		strcat(rsc_path, "qed.rsc");
+-		rsc_init = rsrc_load(rsc_path);
+-	}
+-	
+-	/* then look via shel_find */
+-	if (!rsc_init)
+-	{
+-		strcpy(rsc_path, "qed.rsc");
+-		shel_find(rsc_path);
+-		rsc_init = rsrc_load(rsc_path);
+-	}
+-
+-	if (rsc_init)
+-	{
+-		char	str[40];
+-		OBJECT	*tmp;
+-		
+-		/* Stimmt die RSC-Version? */
+-		rsrc_gaddr(R_TREE, VERSION, &tmp);
+-		get_string(tmp, RSC_VERSION, str);
+-		if (strcmp(str, QED_VERSION) != 0)
+-		{
+-			do_alert(1, 0, "[3][Falsche RSC-Version!|Wrong RSC version!][Exit]");
+-			rsrc_free();
+-			return FALSE;
+-		}
+-
+-		rsrc_gaddr(R_TREE, MENUTREE,	&menu);
+-		menu[ROOT].ob_width = gl_desk.g_w;
+-		/* nur temporÑr, da sonst die XXX kurz zusehen sind. */
+-		init_se_title(FALSE);
+-		create_menu(menu);
+-
+-		rsrc_gaddr(R_TREE, ABOUT,		&about);
+-		fix_dial(about);
+-		rsrc_gaddr(R_TREE, ABOUT2,		&about2);
+-		fix_dial(about2);
+-
+-		rsrc_gaddr(R_TREE, PRINT,		&print);
+-		fix_dial(print);
+-		rsrc_gaddr(R_TREE, TEXTINFO,	&textinfo);
+-		fix_dial(textinfo);
+-		rsrc_gaddr(R_TREE, PRJINFO,	&prjinfo);
+-		fix_dial(prjinfo);
+-		rsrc_gaddr(R_TREE, BLOCKINFO, &blockinfo);
+-		fix_dial(blockinfo);
+-		rsrc_gaddr(R_TREE, SORT,      &sort);
+-		fix_dial(sort);
+-
+-		rsrc_gaddr(R_TREE, REPLACE,	&replace);
+-		fix_dial(replace);
+-		rsrc_gaddr(R_TREE, REPASK,		&repask);
+-		fix_dial(repask);
+-		rsrc_gaddr(R_TREE, FINDFILE,	&find_obj);
+-		fix_dial(find_obj);
+-		rsrc_gaddr(R_TREE, POS,			&pos);
+-		fix_dial(pos);
+-		rsrc_gaddr(R_TREE, MARKEN,		&marken);
+-		fix_dial(marken);
+-
+-		rsrc_gaddr(R_TREE, MAKROREP, 	&makrorep);
+-		fix_dial(makrorep);
+-		rsrc_gaddr(R_TREE, FUNKTION,	&funktionstasten);
+-		fix_dial(funktionstasten);
+-		rsrc_gaddr(R_TREE, UMLAUTE, 	&umlautkonv);
+-		fix_dial(umlautkonv);
+-		rsrc_gaddr(R_TREE, FEHLER, 	&fehler);
+-		fix_dial(fehler);
+-
+-		rsrc_gaddr(R_TREE, GLOBALOP,	&globalop);
+-		fix_dial(globalop);
+-		fix_colorpopobj( globalop, GOFCOL, 0 ); /* Farbe wird in options.c jedesmal neu gesetzt */
+-		fix_colorpopobj( globalop, GOBCOL, 0 );
+-		fix_colorpopobj( globalop, GOBLOCKFCOL, 0 );
+-		fix_colorpopobj( globalop, GOBLOCKBCOL, 0 );
+-		
+-		rsrc_gaddr(R_TREE, LOCALOP,	&localop);
+-		fix_dial(localop);
+-		rsrc_gaddr(R_TREE, SYNTAXOP,	&syntaxop);
+-		fix_dial(syntaxop);
+-		fix_colorpopobj( syntaxop, SYOCOLOR, 0 ); /* Farbe wird in options.c jedesmal neu gesetzt */
+-		fix_colorpopobj( syntaxop, SYOSELCOLOR, 0 );
+-
+-		rsrc_gaddr(R_TREE, MUSTER,		&muster);
+-		fix_dial(muster);
+-		rsrc_gaddr(R_TREE, AUTOSAVE,  &autosave);
+-		fix_dial(autosave);
+-		rsrc_gaddr(R_TREE, KLAMMER,	&klammer);
+-		fix_dial(klammer);
+-		rsrc_gaddr(R_TREE, PRINTER,	&printer);
+-		fix_dial(printer);
+-		rsrc_gaddr(R_TREE, PRN_SUB,	&printer_sub);
+-		fix_dial(printer_sub);
+-
+-		rsrc_gaddr(R_TREE, SEOPTION, 	&seoptions);
+-		fix_dial(seoptions);
+-
+-		rsrc_gaddr(R_TREE, WINICON,	&winicon);
+-		rsrc_gaddr(R_TREE, POPUPS,		&popups);
+-		fix_popup(popups, TRUE);
+-
+-		rsrc_gaddr(R_TREE, STRINGS,   &strings);
+-		rsrc_gaddr(R_FRSTR, NOWINDOW,	&alertmsg);		/* _erster_ Alert */
+-
+-		/* Versionen eintragen */		
+-		set_string(about, ADATUM, __DATE__);
+-		strcpy( t, QED_VERSION );
+-		strcat( t, QED_REVISION );
+-		set_string(about, AVERSION, t);
+-#if defined(__GNUC__) || defined(_MINTLIB_SOURCE)
+-		get_patchlev(__Ident_gnulib, str);
+-#elif defined(__PUREC__)
+-		strcpy(str, "PCSTDLIB");
+-#else
+-		strcpy(str, "unknown");
+-#endif
+-		set_string(about2, AMINT, str);
+-#if defined(__GEMLIB__)
+-		get_patchlev(__Ident_gem, str);
+-#elif defined(__PUREC__)
+-		strcpy(str, "PCGEMLIB");
+-#else
+-		strcpy(str, "unknown");
+-#endif
+-		set_string(about2, AGEM, str);
+-		get_patchlev(__Ident_cflib, str);
+-		set_string(about2, ACF, str);
+-
+-#if 0
+-		/* Hintergrundfarbe Iconify */
+-		if (gl_planes > 1)
+-			winicon[WIBOX].ob_spec.obspec.interiorcol = LWHITE;
+-#endif
+-
+-		/* Strings in die Zeichenauswahl eintragen */
+-		set_asciitable_strings(rsc_string(ZEICHSTR1), rsc_string(ZEICHSTR2));
+-	}
+-	else
+-		do_alert(1, 0, "[3][Resource nicht gefunden!|Resource file not found!][Exit]");
+-	return rsc_init;
++    OBJECT *version;
++    short index;
++    char value[40];
++    rsc_init=rsrc_load("SYS:QED.RSC");
++    if(!rsc_init)return FALSE;
++    if(!rsrc_gaddr(R_TREE,VERSION,(void **)&version)){term_resource();return FALSE;}
++    get_string(version,RSC_VERSION,value);
++    if(strcmp(value,QED_VERSION)){term_resource();return FALSE;}
++    rsrc_gaddr(R_TREE,MENUTREE,(void **)&menu);if(!create_menu(menu)){term_resource();return FALSE;}
++    rsrc_gaddr(R_TREE,ABOUT,(void **)&about);rsrc_gaddr(R_TREE,ABOUT2,(void **)&about2);
++    rsrc_gaddr(R_TREE,TEXTINFO,(void **)&textinfo);rsrc_gaddr(R_TREE,BLOCKINFO,(void **)&blockinfo);
++    rsrc_gaddr(R_TREE,REPLACE,(void **)&replace);rsrc_gaddr(R_TREE,REPASK,(void **)&repask);
++    rsrc_gaddr(R_TREE,WINICON,(void **)&winicon);rsrc_gaddr(R_TREE,STRINGS,(void **)&strings);
++    for(index=0;index<NUM_FRSTR;index++)
++        rsrc_gaddr(R_FRSTR,index,(void **)&alertmsg[index]);
++    return TRUE;
+ }
+ 
+ 
+@@ -209,5 +74,6 @@
+ 	{
+ 		delete_menu();
+ 		rsrc_free();
++        rsc_init=FALSE;
+ 	}
+ }
+--- a/qed/src/rsc.h
++++ b/qed/src/rsc.h
+@@ -37,7 +37,7 @@
+ extern OBJECT 	*popups;
+ extern OBJECT 	*strings;
+ 
+-extern char		**alertmsg;
++extern char		*alertmsg[NUM_FRSTR];
+ 
+ /****** FUNCTIONS ************************************************************/
+ 
+--- a/qed/src/se.c
++++ b/qed/src/se.c
+@@ -61,16 +61,16 @@
+ 
+ static void set_titel(const char *titel, bool showbar)
+ {
+-	size_t maxlen = strlen(menu[TSHELL].ob_spec.free_string);
++	size_t maxlen = strlen(((char *)(ULONG)menu[TSHELL].ob_spec));
+ 	size_t len = strlen(titel);
+ 	short x, y;
+ 
+ 	if (showbar)
+ 		menu_bar(menu, 0);
+-	memset(menu[TSHELL].ob_spec.free_string, ' ', maxlen);
++	memset(((char *)(ULONG)menu[TSHELL].ob_spec), ' ', maxlen);
+ 	if (len >= maxlen)
+ 		len = maxlen - 1;
+-	memcpy(menu[TSHELL].ob_spec.free_string + 1, titel, len);
++	memcpy(((char *)(ULONG)menu[TSHELL].ob_spec) + 1, titel, len);
+ 	menu[TSHELL].ob_width = (len + 2) * sys_wbox;
+ 	objc_offset(menu, TSHELL, &x, &y);
+ 	menu[2].ob_width = x + menu[TSHELL].ob_width - menu[2].ob_x;
+--- a/qed/src/se.h
++++ b/qed/src/se.h
+@@ -43,4 +43,15 @@
+ extern void	init_se			(void);
+ extern void term_se			(void);
+ 
++
++#ifdef QED_INITIAL_SCOPE
++/* Native initial scope: optional facility is compiled out at all callers. */
++#define setup_semenu(...) (0)
++#define handle_se(...) (0)
++#define handle_es(...) (0)
++#define timer_se(...) (0)
++#define init_se_title(...) (0)
++#define init_se(...) (0)
++#define term_se(...) (0)
+ #endif
++#endif
+--- a/qed/src/sort.c
++++ b/qed/src/sort.c
+@@ -333,7 +333,7 @@
+ 			z2++;
+ 			if (IS_TAIL(lauf1) || IS_TAIL(lauf2))
+ 			{
+-				Bconout(2, 7);
++				((void)0) /* optional audible bell */;
+ 				quit = TRUE;
+ 			}
+ 		}
+--- a/qed/src/tasten.c
++++ b/qed/src/tasten.c
+@@ -364,7 +364,7 @@
+ 	/* Null nur in BinÑr erlaubt! */
+ 	if (c == 0 && t_ptr->text.ending != lns_binmode)
+ 	{
+-		Bconout(2, 7);
++		((void)0) /* optional audible bell */;
+ 		return;
+ 	}
+ 	
+@@ -432,7 +432,7 @@
+ 
+ static void expand_kurzel(TEXTP t_ptr)
+ {
+-	if (krz_loaded)
++	if (FALSE)
+ 	{
+ 		blk_demark(t_ptr);
+ 		if (ctrl_mark_mode)
+@@ -441,7 +441,7 @@
+ 		do_kurzel(t_ptr, FALSE);
+ 	}
+ 	else
+-		Bconout(2, 7);
++		((void)0) /* optional audible bell */;
+ }
+ 
+ 
+@@ -1212,7 +1212,7 @@
+ 		{
+ 			t_ptr->blk_mark_mode = FALSE;
+ 			char_insert(t_ptr, ascii_code);
+-			if (krz_loaded)
++			if (FALSE)
+ 				do_kurzel(t_ptr, TRUE);
+ 			hl_update( t_ptr );
+ 		}
+--- a/qed/src/text.c
++++ b/qed/src/text.c
+@@ -56,6 +56,7 @@
+ 	if (new != NULL)
+ 	{
+ 		new->next = NULL;
++        if(!init_textring(&new->text)){free(new);return NULL;}
+ 
+ 		/* Erster Text -> Wurzel */
+ 		if (text_list == NULL)
+@@ -69,7 +70,6 @@
+ 			p->next = new;
+ 		}
+ 		new->link = link;
+-		init_textring(&new->text);
+ 		nullen(new);
+ 		return new;		
+ 	}
+--- a/qed/src/window.c
++++ b/qed/src/window.c
+@@ -1,4 +1,5 @@
+ #include "global.h"
++#include "qed-runtime.h"
+ #include "av.h"
+ #include "clipbrd.h"
+ #include "comm.h"
+@@ -437,7 +438,7 @@
+ 
+ 	if (makro_rec)
+ 	{
+-		Bconout(2, 7);
++		((void)0) /* optional audible bell */;
+ 		return;
+ 	}
+ 
+@@ -988,7 +989,7 @@
+ 	{
+ 		wh = wind_create_grect(kind, &gl_desk);
+ 		if (wh < 0)
+-			return NULL;
++        {free_window(w);return NULL;}
+ 		w->handle = wh;
+ 		w->kind = kind;
+ 
+@@ -1042,25 +1043,16 @@
+ */
+ void close_window(WINDOWP w)
+ {
+-	if (w != NULL)
+-	{
+-		unclick_window();														/* Deselektieren */
+-		if ((w->flags & WI_OPEN) || (w->flags & WI_ICONIFIED))	/* Fenster offen? */
+-		{
+-			wake_mouse();
+-			if (w->close != NULL)
+-				(*w->close)(w);
+-
+-			wind_close(w->handle);
+-			wind_delete(w->handle);
+-
+-			send_avwinclose(w->handle);
+-			w->flags &= ~WI_OPEN;
+-			get_realtop();
+-			clr_undo();
+-		}
+-		free_window(w);
+-	}
++    if(w){
++        unclick_window();
++        if(w->flags & (WI_OPEN|WI_ICONIFIED)){
++            wake_mouse();
++            if(w->close)(*w->close)(w);
++            if(!wind_close(w->handle))QedRetirementFault("QED Close failed; live Process retained.\n");
++        }
++        if(!wind_delete(w->handle))QedRetirementFault("QED Delete failed; live Process retained.\n");
++        w->flags&=~WI_OPEN;free_window(w);get_realtop();clr_undo();
++    }
+ }
+ 
+ /*
+@@ -1195,5 +1187,7 @@
+ 
+ void term_window(void)
+ {
+-	term_winlist();
+-}
++    /* Retire every native borrower before owned private backing. */
++    while(used_list)close_window(used_list);
++    term_winlist();
++}
+--- a/qed/src/winlist.c
++++ b/qed/src/winlist.c
+@@ -297,7 +297,7 @@
+ 	}
+ 	if (p == NULL)							/* kein unbenutztes gefunden */
+ 		p = new_list_elem(class);
+-	free_to_used(p);
++	if(p)free_to_used(p);
+ 	return p;
+ }
+ 

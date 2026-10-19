@@ -19,6 +19,10 @@ typedef struct {
     void *fd_addr;
     WORD fd_w,fd_h,fd_wdwidth,fd_stand,fd_nplanes,fd_r1,fd_r2,fd_r3;
 } MFDB;
+#include "qed-gem-extra.h"
+#include <support.h>
+#define WF_HSLSIZE 15
+WORD objc_change_grect(OBJECT *,WORD,WORD,const GRECT *,WORD,WORD);
 
 /* gemlib supplies one long timer argument; Exec's public call uses two words. */
 static WORD QedEvntMulti(WORD flags, WORD clicks, WORD mask, WORD state,
@@ -31,4 +35,5 @@ static WORD QedEvntMulti(WORD flags, WORD clicks, WORD mask, WORD state,
         m2f,m2x,m2y,m2w,m2h,message,(UWORD)milliseconds,
         (UWORD)((ULONG)milliseconds>>16),mx,my,buttons,keys,key,count);
 }
+#define evnt_multi QedEvntMulti
 #endif

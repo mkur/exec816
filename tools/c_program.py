@@ -4,6 +4,7 @@ import struct
 from pathlib import Path
 
 from native_program import ROOT, require
+from analysis_artifact import reject_analysis
 
 ABI = json.loads((ROOT/'abi/c-program.json').read_text())
 BASE = ABI['link_bank'] << 16
@@ -50,6 +51,10 @@ def verify(original, linked, bank, relocations):
 
 
 def pack(image, relocations):
+    require('__exec_analysis_only' not in image['symbols'],
+            'Analysis-only image cannot be packaged')
+    for segment in image['segments']:
+        reject_analysis(bytes(segment['bytes']))
     segments=shape(image,ABI['link_bank'])
     require(0<len(segments)<=ABI['segment_limit'],'Too many C application segments')
     span=max(s['offset']+s['size'] for s in segments)

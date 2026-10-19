@@ -11,8 +11,8 @@ need general platform support and which can be closed by adapting QED or cflib.
 Status: [step 1 scope and source baseline](qed-scope-and-dependencies.md) fixed;
 step 2 has a [design](qed-native-feasibility-design.md) and
 [QF1–QF6 plan](qed-native-feasibility-implementation-plan.md), with
-[QF1–QF3 implemented](../../history/qed-native-feasibility.md) and QF4–QF6 open.
-Steps 3–7 remain proposed. The complete editor has not yet been built or executed on Exec816.
+[QF1–QF4 implemented](../../history/qed-native-feasibility.md) and QF5–QF6 open.
+Steps 3–7 remain proposed. The editor has not been packaged or executed as a runnable APP.
 
 ## First usable editor
 
@@ -175,10 +175,9 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Begin QF1 in the [native feasibility implementation plan](qed-native-feasibility-implementation-plan.md#qf1-prepare-sources-and-prove-the-abi-boundary),
-using the fixed [step 1 baseline](qed-scope-and-dependencies.md) and
-[feasibility design](qed-native-feasibility-design.md). Prove the emitted ABI
-boundary and establish the prepared source/dependency ledger before runtime work.
+Continue with QF5 in the [native feasibility implementation plan](qed-native-feasibility-implementation-plan.md#qf5-establish-stack-feasibility-and-admission).
+The complete graph and bounded image profile are measured; establish actual
+stack headroom and reliable admission before the final step 2 reconciliation.
 
 Let that result shape the resource, menu and workstation design. Prepare the
 editing and saving designs when their dependencies are understood; the save

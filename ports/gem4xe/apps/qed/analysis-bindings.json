@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "kind": "Nonreturning analysis bindings; never an executable runtime",
+  "bindings": [
+    {
+      "name": "appl_xgetinfo",
+      "declaration": "WORD appl_xgetinfo(WORD ap_gtype, WORD *ap_gout1, WORD *ap_gout2, WORD *ap_gout3, WORD *ap_gout4);",
+      "resolution": "Step 3: implement or adapt AES capability/input/cursor support against the public native GEM interface"
+    },
+    {
+      "name": "graf_dragbox",
+      "declaration": "WORD graf_dragbox(WORD w, WORD h, WORD sx, WORD sy, WORD bx, WORD by, WORD bw, WORD bh, WORD *px, WORD *py);",
+      "resolution": "Step 3: implement or adapt AES capability/input/cursor support against the public native GEM interface"
+    },
+    {
+      "name": "graf_mkstate",
+      "declaration": "WORD graf_mkstate(WORD *mx, WORD *my, WORD *mb, WORD *ks);",
+      "resolution": "Step 3: implement or adapt AES capability/input/cursor support against the public native GEM interface"
+    },
+    {
+      "name": "graf_mouse",
+      "declaration": "WORD graf_mouse(WORD mode, const WORD *form);",
+      "resolution": "Step 3: implement or adapt AES capability/input/cursor support against the public native GEM interface"
+    },
+    {
+      "name": "objc_sysvar",
+      "declaration": "WORD objc_sysvar(WORD mode, WORD which, WORD in1, WORD in2, WORD *out1, WORD *out2);",
+      "resolution": "Step 3: implement or adapt AES capability/input/cursor support against the public native GEM interface"
+    },
+    {
+      "name": "v_fillarea",
+      "declaration": "void v_fillarea(WORD handle, WORD count, const WORD *pxy);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    },
+    {
+      "name": "v_justified",
+      "declaration": "void v_justified(WORD handle, WORD x, WORD y, const char *s, WORD length, WORD word_space, WORD char_space);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    },
+    {
+      "name": "v_pline",
+      "declaration": "void v_pline(WORD handle, WORD count, WORD *pxy);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    },
+    {
+      "name": "vqt_extent",
+      "declaration": "void vqt_extent(WORD handle, const char *s, WORD *extent);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    },
+    {
+      "name": "vr_recfl",
+      "declaration": "void vr_recfl(WORD handle, WORD *pxy);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    },
+    {
+      "name": "vro_cpyfm",
+      "declaration": "void vro_cpyfm(WORD handle, WORD mode, const WORD *pxy, const MFDB *src, const MFDB *dst);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    },
+    {
+      "name": "vsl_color",
+      "declaration": "WORD vsl_color(WORD handle, WORD color);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    },
+    {
+      "name": "vst_alignment",
+      "declaration": "void vst_alignment(WORD handle, WORD hin, WORD vin, WORD *hout, WORD *vout);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    },
+    {
+      "name": "vst_effects",
+      "declaration": "WORD vst_effects(WORD handle, WORD effects);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    },
+    {
+      "name": "vst_font",
+      "declaration": "WORD vst_font(WORD handle, WORD font);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    },
+    {
+      "name": "vst_height",
+      "declaration": "void vst_height(WORD handle, WORD height, WORD *char_width, WORD *char_height, WORD *cell_width, WORD *cell_height);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    },
+    {
+      "name": "vst_point",
+      "declaration": "WORD vst_point(WORD handle, WORD point, WORD *char_width, WORD *char_height, WORD *cell_width, WORD *cell_height);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface"
+    }
+  ]
+}

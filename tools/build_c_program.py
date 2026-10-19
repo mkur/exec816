@@ -11,13 +11,26 @@ from c_program import ABI, fixups, import_assembly, pack, shape, verify
 from native_program import ROOT, command, sha256
 
 
-def build(output,sources,optimize=True,probes=(),includes=(),definitions=None,runtime_attributes=None):
+def build(output,sources,optimize=True,probes=(),includes=(),definitions=None,runtime_attributes=None,
+          extra_assembly=()):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     assembly=output/'imports.s'
     assembly.write_text(import_assembly())
-    image=emit(output,sources,[assembly,ROOT/'c/calypsi/image-info.s'],(),optimize=optimize,
+    image=emit(output,sources,[assembly,ROOT/'c/calypsi/image-info.s',*extra_assembly],(),optimize=optimize,
                probes=probes,includes=includes,definitions=definitions,runtime_attributes=runtime_attributes)
+    relocations,banks=verify_relocations(output,image)
+    payload,record=pack(image,relocations)
+    path=output/'program.app';path.write_bytes(payload)
+    record.update(abi=ABI,bytes=len(payload),sha256=sha256(path),verified_banks=banks,
+                  image=image,inputs={str(p):sha256(p) for p in (*sources,*extra_assembly)})
+    (output/'app.json').write_text(json.dumps(record,indent=2)+'\n')
+    return record
+
+
+def verify_relocations(output,image,roots=()):
+    """The same independent relocation proof for executable and analysis images."""
+    output=Path(output)
     original=(ROOT/'c/calypsi/layout.scm').read_text()
     span=max(s['offset']+s['size'] for s in shape(image,ABI['link_bank']))
     last=ABI['max_banks']-(span+65535)//65536
@@ -29,7 +42,8 @@ def build(output,sources,optimize=True,probes=(),includes=(),definitions=None,ru
         attributes=[part for name,value in image['provenance']['runtime_attributes'].items()
                     for part in ('--rtattr',name+'='+value)]
         command([image['provenance']['tools']['ln65816']['path'],'--hosted','--program-root','main',
-                 '--program-start','main','--root-symbol','__exec_image_info',*attributes,
+                 '--program-start','main','--root-symbol','__exec_image_info',
+                 *[part for name in roots for part in ('--root-symbol',name)],*attributes,
                  '--no-data-init-table-section','--no-automatic-placement-rules','-o',elf,
                  *image['provenance']['link_objects'],config])
         return read_image(elf,base_bank=bank)
@@ -38,12 +52,7 @@ def build(output,sources,optimize=True,probes=(),includes=(),definitions=None,ru
     # This detects address arithmetic that a single +1 comparison cannot prove.
     for bank in range(1,last+1):
         verify(image,link(bank),bank,relocations)
-    payload,record=pack(image,relocations)
-    path=output/'program.app';path.write_bytes(payload)
-    record.update(abi=ABI,bytes=len(payload),sha256=sha256(path),verified_banks=list(range(1,last+1)),
-                  image=image,inputs={str(p):sha256(p) for p in sources})
-    (output/'app.json').write_text(json.dumps(record,indent=2)+'\n')
-    return record
+    return relocations,list(range(1,last+1))
 
 
 if __name__=='__main__':

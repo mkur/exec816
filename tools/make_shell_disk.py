@@ -8,6 +8,7 @@ The three boot sectors are empty: launch the shell XEX with this as a data disk.
 import argparse
 import struct
 from pathlib import Path
+from analysis_artifact import reject_analysis
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT/'examples/shell-disk'
@@ -64,6 +65,7 @@ def make(path, source=SOURCE, binary_names=(), sector_bytes=128, sectors=SECTORS
             else:
                 relative = child.relative_to(source).as_posix()
                 payload = child.read_bytes() if relative in binary_names else child.read_text(encoding='ascii').encode('ascii')
+                reject_analysis(payload)
                 contents[child.relative_to(source).as_posix()] = payload
                 chain = allocate((len(payload)+payload_bytes-1)//payload_bytes)
                 flags = 0x42 if sectors <= 1023 else 0x46

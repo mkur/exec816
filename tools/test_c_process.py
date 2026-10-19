@@ -43,7 +43,7 @@ def variant(base,out,filesystem):
 
 def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=None,
         fixture_source=None,expected_completed=12,native_optimize=None,
-        release_compiler=False,rebuild_app=False,writable=False,ram=False):
+        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False):
     out.mkdir(parents=True,exist_ok=True)
     if reuse:
         p=read_build(out/'program');app=json.loads((out/'app/app.json').read_text())
@@ -68,6 +68,12 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
         for name,at,fmt,value in [('VERSION',6,'<H',0),('IMPORT',32+count*16,'<H',65535),
                                  ('FIXUP',32+count*16+imports*8,'<I',app['span'])]:
             changed=bytearray(raw);struct.pack_into(fmt,changed,at,value);(media/(name+'.APP')).write_bytes(changed)
+        if boundary_limits:
+            from c_program import ABI
+            for name,at,fmt,value in [('COUNT',10,'<H',ABI['segment_limit']+1),
+                                     ('SPAN',12,'<I',ABI['span_limit']+1)]:
+                changed=bytearray(raw[:32]);struct.pack_into('<I',changed,28,32)
+                struct.pack_into(fmt,changed,at,value);(media/(name+'.APP')).write_bytes(changed)
         native=out/'native/HELLO'
         compile_command(compiler(ROOT/'build/actionc',release=release_compiler),ROOT/'examples/commands/hello.act',native,optimize)
         (media/'HELLO').write_bytes(native.read_bytes())

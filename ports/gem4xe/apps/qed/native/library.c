@@ -3,6 +3,8 @@
 #include <calypsi/stubs.h>
 #include <time.h>
 #include <errno.h>
+#include <stdio.h>
+#include <exec816/runtime.h>
 
 extern void __initialize_global_streams(void);
 void __call_initialize_global_streams(void)
@@ -33,4 +35,9 @@ void _Stub_assert(const char *file,int line)
     static const char message[]="QED assertion; Process retained.\n";
     Write(Output(),message,sizeof(message)-1);
     for (;;) Wait(0);
+}
+void QedRetirementFault(const char *message)
+{
+    fputs(message,stderr);
+    for(;;)ExecYield();
 }

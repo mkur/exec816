@@ -6,13 +6,36 @@ from native_program import ROOT,require
 from prepare_qed import inventory,prepare,PORT
 from test_c_process import run as process_run
 
-def abi(out,optimize,focused=False,reuse=False):
+def abi(out,optimize,focused=False,reuse=False,layout=False):
     out.mkdir(parents=True,exist_ok=True)
     source=ROOT/'tests/programs/qed_native_abi.c'
     options=dict(definitions={source.name:['--char-is-unsigned']},probes=[(source,[
         ('huge pointer',4),('native pointer',3),('legacy word',2),('long',4),
         ('OBJECT',24),('OBJECT spec',12),('TEDINFO',28),
         ('size_t',2),('fpos_t',4),('time_t',8)])])
+    sources=[source]
+    if layout:
+        native=PORT/'native'
+        prepare(out/'inputs')
+        cflib=out/'inputs/source/cflib'
+        sources=[ROOT/'tests/programs/qed_native_layout.c',native/'support.c',native/'gem-helpers.c']
+        sources += [cflib/'nkccinit.c',cflib/'nkccgton.c']
+        options['definitions'][sources[0].name]=['-DQED_BAD_FORMAT='+str(
+            json.loads((ROOT/'abi/program.json').read_text())['errors']['BAD_FORMAT'])]
+        if optimize:options['definitions'][sources[0].name].append('-DQED_TEST_LIMITS=1')
+        options['includes']=[native,cflib]
+        assembly=[]
+        for name in ('QedLayoutFirst','QedLayoutLast'):
+            path=out/(name+'.s')
+            path.write_text('              .section farcode,text\n              .public '+name+'\n'+
+                            name+':\n              rtl\n              .space 65535\n')
+            assembly.append(path)
+        path=out/'QedLayoutTable.s'
+        path.write_text('              .section gemtables,rodata\n              .public QedLayoutTable\n'+
+                        'QedLayoutTable:\n              .word 0xabcd\n')
+        assembly.append(path)
+        options['extra_assembly']=assembly
+        focused=True
     # Keep the raw cohort to the ABI boundary, not the complete Process matrix.
     fixture=None;completed=12
     if not optimize or focused:
@@ -36,10 +59,16 @@ RETURN
 ENDMODULE
 ''')
         completed=2
-    record=process_run(out,optimize,reuse=reuse,rebuild_app=reuse,app_sources=[source],app_options=options,
-        fixture_source=fixture,expected_completed=completed,native_optimize=True,release_compiler=True)
+    record=process_run(out,optimize,reuse=reuse,rebuild_app=reuse,app_sources=sources,app_options=options,
+        fixture_source=fixture,expected_completed=completed,native_optimize=True,release_compiler=True,
+        boundary_limits=layout and optimize)
     require(record['runtime']['native_nmi_count']>0 and record['runtime']['native_irq_count']>0,
             'QED ABI probe missed native asynchronous entries')
+    if layout:
+        app=json.loads((out/'app/app.json').read_text())
+        require(4*65536<app['span']<=327680 and len(app['segments'])==6 and
+                app['image']['symbols']['main']>>16==16,
+                'Probe did not execute the newly admitted final code bank')
     return record
 
 
@@ -205,14 +234,14 @@ ENDMODULE
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--group',choices=('abi','sources','runtime','stop','files'),required=True)
+    p.add_argument('--group',choices=('abi','layout','sources','runtime','stop','files'),required=True)
     p.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs')
     p.add_argument('--case',choices=('raw','opt'),default='opt')
     p.add_argument('--from-build',action='store_true',help='Reuse the matched emitted provider and rebuild the probe APP')
     p.add_argument('--focused-abi',action='store_true',help='Two ABI/return cycles in either C mode')
     p.add_argument('--output',type=Path,required=True)
     a=p.parse_args();out=a.output.resolve()
-    if a.group=='abi':result=abi(out,a.case=='opt',a.focused_abi,a.from_build)
+    if a.group in ('abi','layout'):result=abi(out,a.case=='opt',a.focused_abi,a.from_build,a.group=='layout')
     elif a.group in ('runtime','stop'):result=runtime(out,a.case=='opt',a.from_build,a.group=='stop')
     elif a.group=='files':result=files(out,a.case=='opt',a.from_build,a.filesystem)
     else:result=inventory(out,a.case=='opt')

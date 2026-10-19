@@ -1,0 +1,809 @@
+{
+  "schema_version": 1,
+  "scope": "English single-document initial scope; analysis only until later GEM and saving gates",
+  "defines": [
+    "QED_INITIAL_SCOPE=1",
+    "QED_BANKED_MALLOC=1",
+    "_WORD=short",
+    "_UWORD=unsigned short"
+  ],
+  "units": [
+    {
+      "origin": "qed",
+      "path": "src/aktion.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/ausgabe.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/block.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/clipbrd.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/edit.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/event.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/file.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/find.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/global.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/icon.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/main.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/memory.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/menu.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/options.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/poslist.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/rsc.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/set.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/sort.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/tasten.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/text.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/umbruch.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/window.c"
+    },
+    {
+      "origin": "qed",
+      "path": "src/winlist.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "app.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "appexit.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "appexitg.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "apphidem.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "apphiden.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "appinit.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "appshowm.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "backgrd.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "cfformdo.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "cfformkb.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "cfmalloc.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "cfobjced.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "cfobjcfd.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "ddrtry.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "ddstry.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "debug.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "dragdrop.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fdeditva.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fdfinded.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fdfindsc.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fdsimple.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fexists.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fscase.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fsexists.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fsgetpth.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fslong.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fsnorm.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fssetext.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fsshort.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fssplite.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "fssplitf.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "globals.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "magxobj.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "magxsc.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "magxver.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "mallocg.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdchange.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdclose.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "mddo.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdial.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdmesag.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdopen.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdrdrobj.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdredraw.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdsimple.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdwincb.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "menu.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "menucre.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "menudel.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "menuisk.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "menutogg.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "nkcclowr.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "nkccuppr.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obfindfl.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obgflag.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obgframe.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obglong.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obgshort.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obgspec.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obgstate.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obgstr.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obgtype.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obredraw.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obsflag.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obslong.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obsshort.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obsspec.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obsstate.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obsstr.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obsulong.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "obtstate.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "ol2ts.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "patchlev.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "ppappend.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "ppcreate.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "ppdo.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "ppfree.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "pphandle.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "ppmenu.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "ppvalid.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "rpl_stat.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "sendstrt.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "ts2ol.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "vclip.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "vheight.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "vopnvwk.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "vqtrext.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "vstr2a.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdcallcb.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdchange.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdclick.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdclose.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdcreate.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wddelete.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wddraw.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wddrawcr.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdget.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdial.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdiconif.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdkey.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdmesag.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdopen.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdredri.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdredro.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "wdunico.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "xgetinfo.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "nkccinit.c"
+    },
+    {
+      "origin": "cflib",
+      "path": "nkccgton.c"
+    }
+  ],
+  "excluded": [
+    {
+      "origin": "qed",
+      "path": "src/av.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/comm.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/dd.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/error.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/highlite.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/hl.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/kurzel.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/makro.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/olga.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/prn_cfg.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/prn_out.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/projekt.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/se.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "qed",
+      "path": "src/wp-print.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "alerts.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "asciiset.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "asciitab.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "cicon.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "colorpop.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "comm.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "cookie.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "ddclose.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "ddcreate.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "ddopen.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "ddreply.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "dirent.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "file.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "filesel.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "fontsel.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "form_do.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "fssetpth.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "magx.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "misc.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "nkcc.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "nkccntog.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "objc.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "popup.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "purec.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "scclear.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "scdir.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "scrap.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "scrtxt.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "scwtxt.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "sendchan.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "sendspec.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "userdef.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "vdi.c",
+      "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    }
+  ],
+  "native_sources": [
+    "allocation.c",
+    "entry.c",
+    "files.c",
+    "library.c",
+    "support.c",
+    "gem-helpers.c"
+  ],
+  "features_removed": [
+    "preferences UI and persistence",
+    "syntax startup, callbacks and files",
+    "printing and printer workstations",
+    "macros and abbreviations",
+    "projects and error parser",
+    "accessory, AV, SE and OLGA protocols",
+    "disk scrap and dialog clipboard extensions",
+    "external help and ASCII tables",
+    "replacement and search histories",
+    "external fonts and automatic USERDEF decoration"
+  ],
+  "private_allowances": {
+    "code_bytes": 32768,
+    "data_bss_bytes": 16384
+  },
+  "resident_provider_allowances": {
+    "code_bytes": 16384,
+    "data_bss_bytes": 16384,
+    "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+    "table_bytes": 4096
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  },
+  "container_metadata_allowance_bytes": 16384
+}

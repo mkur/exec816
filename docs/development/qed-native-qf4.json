@@ -1,0 +1,4057 @@
+{
+  "schema_version": 1,
+  "slice": "QF4",
+  "status": "conditional-pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Complete retained-source analysis and bounded image profile; runnable boundary probes, not full editor execution",
+  "abi_version": 23,
+  "source_inputs": {
+    "schema_version": 1,
+    "sources": {
+      "qed": {
+        "revision": "454beb35fccd72c15a8494431f6637cd0cb553c7",
+        "tree": "842d0ed962f431b98fbba1a7038020b5805338bc",
+        "files": {
+          "dist/liesmich.txt": "c084b9c6551836b13c3f777cd7d23a6ee532c59797ea1239c314be8a380ebd8a",
+          "doc/qed-en.stg": "556c9c479345ce05745a59fd33e28404d6c7a7a70575665906f34cc3fd6c86f1",
+          "en/qed_en.rsc": "1c4a16fd78f41721847fbf4a71d9edfd52b90ea0e294e6f2ca78cd052920b406",
+          "gem4xe/COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+          "gem4xe/LICENSE-APACHE-2.0": "c323ee701fe73572b1f8294e8c2f297a1e5e1e7315716585638756d2c7ad9502",
+          "gem4xe/Makefile": "8a9670d1ed0298224f49b827d43da52c4f173b44d6e0c2e7c24667231e4049fd",
+          "gem4xe/NOTICE": "e4a48f363451f342c2e5e3b02c355420be5c045842c4e42f17cf7b51d0b0720b",
+          "gem4xe/README.md": "80d85cf9c79bfa70e0f45a921daee5f7b0cacff39da556075f4ed2e54d53a165",
+          "gem4xe/cflib/cflibc.c": "335017457a654a1cbcb89406fc3e71154281d55bbb1f2263da5dedb7763033dd",
+          "gem4xe/cflib/tos.h": "016f6ec7390c4d9293c14486fe3b4a976cd9d5acc0a3c4be900c94196f88c47b",
+          "gem4xe/include/gem.h": "87fea9b4f9655d1954db68385a08ba0d22458bf51a660b7be46e15e879884c3d",
+          "gem4xe/include/qed4xe.h": "18220c2f63c9bd3efc109f97499636ff9a4e1fc6052e11aed09e1dd5ff6f7799",
+          "gem4xe/src/qed4xe.c": "670afec8fd8488990621ea3e9766225e5b578746d51348a78db0256ff1c2c058",
+          "gem4xe/src/qedmem.c": "20f4aae611820f7cd4c1a27b103c5114131fc501c889fdfcd5eefbb032739265",
+          "gem4xe/src/qedstub.c": "b3bf77f3390ca9df168437f1e559fffe4e692551a6170543a7b2581822320573",
+          "gem4xe/tools/ci_gem4xe.py": "54b760052516bda7211d6a4c4f6277d74b945a7c9642020453b41d45593afa52",
+          "src/Makefile": "7936979b7d01914a420c83323ac5635d1005ebf106e84954089a6b1bb86cffad",
+          "src/Makefile.objs": "8ba4ceb493b7edc5c556b5cf92e509af69109060be4cdc533b1bbab6e0dbd0d6",
+          "src/QEDDEFS": "ef4bc4ef0f6ee3de450273fa3d6c1a779185b0c7c5968159a85c774b31dab26b",
+          "src/SRCFILES": "b21a323818eb795dfc936aedfba39a9789f359cc13178617b5e5d82f5e2ec315",
+          "src/aktion.c": "6a3036975805a8f7c7a9f3cf0920e944340713118ff8edfe42bc4b4331e78cae",
+          "src/aktion.h": "e989706257e005c3470fd912cbcf654699f34cca8730c170872dd84e636b7cce",
+          "src/ausgabe.c": "9079c1471b28df50107e5aa37d5fb6714d112d36d98f6fed3379e088e5a2fbd3",
+          "src/ausgabe.h": "24ee22a2f87136995ada9ab20b987f7f4540540f575549e2c1255b009e3f43d1",
+          "src/av.c": "c4d9f1817d3bc39cbb933b1362aa4727dc0e41022bddccf3589fed65515723a5",
+          "src/av.h": "7dc48f23042aa02c65179c751eeac83b6d3dbc12179cc1294a5ad55ee0c22c25",
+          "src/block.c": "f5a7a11d1b371267a5a9626ada73fd6cdc56c9f6c691f3e1a85b9beaacc08444",
+          "src/block.h": "914a10f95254b05dfffa9480d07ac9113556ebddc3f907f9ff5494a7945a9682",
+          "src/clipbrd.c": "59604ee3120da84bfe9d9a481895e179c37f24847af61d3772031c7dbdab114c",
+          "src/clipbrd.h": "bce5810c1ae0afe2d6dde7232e35242ab9a4a47557d2da88e5b32e7125dfc6b8",
+          "src/comm.c": "57542ddcd395a1697865e89debcfe213f353111558d2eb3f7272452bd3979bf2",
+          "src/comm.h": "e620f6a912d24d0030b6adb533b909f65832680bbca0bc444300da394c067655",
+          "src/dd.c": "0a8af8d2f70f405b1cd617435c8b190a8700af7ea431c95a055ce79254187bfa",
+          "src/dd.h": "22c2bf07cf979a5ca7e49ed111385e2c92f62050c3382b9744d434413d93a443",
+          "src/edit.c": "78885438022ce144493ecf0cf78f8739f8192cc077fcf9adf30aefc26b7dda5d",
+          "src/edit.h": "88ef34bd9d4e25bad66a93a677ca2fd9f5c4250687e6eb9386403b34a756e40e",
+          "src/error.c": "672b80c2cf375e3898aad26df316ca6d56cbb8ef21a1a7a647d7a3296f6d9415",
+          "src/error.h": "d5b125af99adfa305bf345097dcd50e2642384f2a52ca5c16b0331d0ec77f724",
+          "src/event.c": "b7249bb64928fbb10065d7ab4f45d4954456c1e64761d2ccd29c771565ed26da",
+          "src/event.h": "650d8ce1ce1c808cffc1e360d1f23f33cb94c6b3a331c8b4d39fc43b8ae47015",
+          "src/file.c": "6a8695ae701bea3ca2ac5e92833ae27f7b8ca113ac5a8dc0fc958fbddaaae217",
+          "src/file.h": "db12459eca2f99af6091c289948dbb7af5960feb8dba5c536d05b7c7572f93c8",
+          "src/find.c": "2c5326ab65f11001019e036a3a574a30cb167b7aca2a66a6a753c8f956f06e7d",
+          "src/find.h": "2e2ea0158821cf9905a27e6ddfe604b05d8b5de92c7c9a7a3e1c50727b671da9",
+          "src/global.c": "3e299cc2e5da27a8fbd7bb6076d9572e5a25b1acf2c4f6c393ffa68045640be5",
+          "src/global.h": "a820f6ca37cb353f4489e4fc6ea6db2b45dcf06c550fc97be7281b450f6a67d8",
+          "src/highlite.c": "2326c9060713b0460c1ce36b134a6498ab860d4f98c3fddbd332aa7743c4e1fc",
+          "src/highlite.h": "7fe71b307c640a1cad2e123832c6e51cfe371fb9ec5d5297743b480fe9dbe13d",
+          "src/hl.c": "1b1222a5e7e564837c702ec5cc468969963fd9a37688fbc36454fc27a99e1c96",
+          "src/hl.h": "9972429ee74b523b04e25cac7ad85581e897b66e1da1210c4fe10996c908ad6f",
+          "src/icon.c": "7ef7efe60fcddea7b142a300cb8ffbd07b725048fb5fb06f443c5e6ff325f4a6",
+          "src/icon.h": "9bbcbd10d6b3af659597876f151cfeb3512fa06c4a852333627bdee057e6bdc6",
+          "src/kurzel.c": "414e874311bd83f11bbc211e6c7fc7b828cd43d63998dd976504fbc5283a901c",
+          "src/kurzel.h": "efdc7fad7f6c7f8d65665b02251bb28415a2911731677be96194dc3bf22396ca",
+          "src/lists.h": "b739c2fa6ca090a726b9cd62c5340a222cf7fb38d61d35c5e69c21bee214aab6",
+          "src/main.c": "b9a6ddcd55606416d5935785f4495d2cf95d02942a32d1c897910093c3672ca7",
+          "src/makro.c": "574620b2e1a341b3da13d6fd53ec854c578c1f48d279c27685f515fffc0aed23",
+          "src/makro.h": "e86ad439075aaafc1d7beef0fb234e04da75cd1c44ac51dac99b1622d551acad",
+          "src/memory.c": "3c6410ae9b9e09f6d87a596587e103bdfc48521436f3f1cf16ee4f9c24763faf",
+          "src/memory.h": "891c4d560f9b75a13066c8f6e5766c9c7164e76816ea1ec5400a33eeaacd8066",
+          "src/menu.c": "e7a560c040df4439ee2fb58a7ec5d910d5d20eebeef95ae575facbdadce04db8",
+          "src/menu.h": "79c0fe9ea6138c9bada0f09c249facf1722790917dfc311fead6d6e6f08be99d",
+          "src/olga.c": "d6ede6f647210d283052716b695e7dcd743e7ba4711c04c399bec81d059c750e",
+          "src/olga.h": "46669285081feb2ecf08ff22bfb6d3540f17a67310c69e73073354e28fd296b1",
+          "src/options.c": "c69a252a9f0b6065c946284fe3eb4ec4f919314cdcd47e46ec9a58e107e134be",
+          "src/options.h": "3df82915d9a13cd6b14e4d9c81891fc7cf23df93bfc7624ce9e0b74b5035998d",
+          "src/poslist.c": "599d97e38f2d7de28dcf3a2f380896557739380e839cab06524c4580306ad644",
+          "src/poslist.h": "623b39a5b7cfbd9e01e921dc71d5471629ad0cdfa44fcec241c0f19a5063e6bd",
+          "src/printer.h": "eca6ae45f9733ba68ecb1e2877f23e5e191d55c016dc7fec8fc551fd11d91a43",
+          "src/prn_cfg.c": "1a5316d321fdda9676b57518a6e0d0b26266879ed1be5457ce4b992ea46d265c",
+          "src/prn_out.c": "8914b8bf4d5c1edca911cea95f471a6713497396e297ddfae064f6e05fbe844b",
+          "src/projekt.c": "77592b97a2b97f2cd43751792c785e6b53d1c74605a470092d619e06c5437a38",
+          "src/projekt.h": "80defc1736092d6706d5b9e94f5dfe7c49cecba901093b1640e09d4712a29ca2",
+          "src/qed.h": "4a96fc750d52e578c990496d1f83aff3cd889e70a752646f9d3fa3ce47980869",
+          "src/rsc.c": "5f056965afa3edcb6e0b3ee302a0a4ff7bc80cf685d44fd7f916f21c3e45d349",
+          "src/rsc.h": "911e86159412fa63263aab8ffad295660d29d61ddbc508b24a82dc2ba74a8f9a",
+          "src/se.c": "dd10e557a0639110a5f069b5f66167ece34669f153f7d64aa9eabca90d49e5e4",
+          "src/se.h": "187a82e91b9d12e06c261a9ba6ffab9f5f74e2b2a97a107c4b04e03a6a5bfdef",
+          "src/seproto.h": "b383cd9a031aad05ab5686a201bf7b40a749c1aef8095e362c3b245b1deca0b2",
+          "src/set.c": "e0cd2fa63ab538a5128ffcff28a7f1f68ed30bb92ce30d5388ddc6a42152a8f6",
+          "src/set.h": "aac1b284be37105f6b63f6effbc0bc5fb35cc513acecea7c8e6f4a21785dd0a0",
+          "src/sort.c": "ddff9fdcd3852a3086d2e396af19289bb1951f44a66b95327cd5efcf501a9e24",
+          "src/sort.h": "0255eb284e3a7f77c7d8677389fdf279b84f1ad9ddea791715c5ac1c84fb4c44",
+          "src/tasten.c": "9567c5e4c93836c3be0b6b3ca747fb8c83f0ac019c8968deeb206ba7f2ab532a",
+          "src/tasten.h": "7e20c17074161250468938d59d2b810d76bc7d87e561e6e1a4e215694919d2d2",
+          "src/text.c": "fa862d89ebe6d6b9c889e43d945165aace5c0e341be51f2ad53da6f61ffc8091",
+          "src/text.h": "6ebb3e68ead3820d0838d1b265cef5016934bec235dfaad5af4ca818c028d0fe",
+          "src/types.h": "95a77e5563ca88c34327d8d119689a1ac201b9d8c28077e13f62b7d17e2cb732",
+          "src/umbruch.c": "681578e738bc9f6668f843ae94f65455d247fc4cb4aaa62421fbd313d4c7e850",
+          "src/umbruch.h": "5a095a6335b127bf924da33290e079c19fd08b1948db4139565df9dd0ea5646e",
+          "src/vaproto.h": "2151af0a107f3266af576411ae2d3cb611d3df12a47c65cda3a9fbe8a72b3159",
+          "src/version.h": "cfcf990da34ead863f603e69c1f6eaf7847c27ef0f3b55f082c266d3708c699b",
+          "src/window.c": "0f46243093d8c3b97452764420187f2ffa038423f7ca2ad7e8b6e0a3d4a99360",
+          "src/window.h": "5a04ae574d3623c71872fac5c442d91c02c5a11f0d1d3e1b275c6bab334a1aea",
+          "src/winlist.c": "3636b04ae9d5120033c10c63d345f56c2bf156a8c24be9236f2180f84d559e6d",
+          "src/winlist.h": "378b492130319d1f0c66f0ced18af0bae0a6769d640071e2f2c8e45d6c00b59e",
+          "src/wp-print.c": "ba91204d74f55eea1e8c6e3c876b36c358db89e62fbecf947694544926761155",
+          "src/wp-print.h": "4723858577025072fe5d0756ce5f079bbb2b26645a769b40e637645affc6c106"
+        }
+      },
+      "cflib": {
+        "revision": "ce57817c3f68c7d346d1081768505e81acaee807",
+        "tree": "aa00256dc44096969025e2a1e1a03dcfa738547c",
+        "files": {
+          "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+          "Makefile": "5f9d5f0dbf3519ddf6c8a0098b7c09fd8e882af1d224a5d7ccd39f7a15086aee",
+          "README.md": "733b7d8f39ea20b67a41394971cc9be13f47f07dc909da49f8bb695558eb15d1",
+          "SRCFILES": "d19efa2ff0ebef6515f87f073f9d27f8a534d8c0dd02d4cd220ef1b24e49c118",
+          "VERSION": "7be086689f8101b9180faef02e48edefed9b6599703c09830a044e2dd20046c1",
+          "alerts.c": "785d13634a3a3bb56007997ceef812b1fc941183fa5ff7775a33dab97f5a35c8",
+          "app.c": "6ca651d0aa97ca9ac5a4e1b57aab75fb3bbe4517512e016cd8945013f61f8854",
+          "app.h": "0e419c027b0af3e573034190b7393f1069632fb271c817334cd74b809e0cb78b",
+          "appexit.c": "e9cc52370d6e2fed07d727efbc561fde6f97c94aa2ce447e45f5bee182994a52",
+          "appexitg.c": "6385b18ce4bb285d0231a032ee36eceb33b17206948694968b2689a4914965eb",
+          "apphidem.c": "1dd799cdd8463f16afcbb00446a2aca5e8189e4dea28b5b4dd8cece50ea2b64a",
+          "apphiden.c": "d1f27ee23ca1fdcb54605a6fd88b6cf72fa158062c752da97b18a8de6c40ae9b",
+          "appinit.c": "21732d5b50b7b84b75f2becdc52879770d0240f98d1e0743333e4dd6a5833d38",
+          "appshowm.c": "8308228d62e46632d789b7a09d89e28627ddeaede4c6a2017345ba08a9fafb08",
+          "asciiset.c": "60cdcd04ad564da31b92ef7b3aaf6bf9f9c68572a38e77c8621c81641db64ec4",
+          "asciitab.c": "87a64c32dd87cd0d77cc22465c7f6aaf32876eafff9233aea47a2e3fc00bf50d",
+          "backgrd.c": "8b75e09498fff366a48398b94193aa30f8cfc2cb218b2f86fdd072638eec2612",
+          "cfformdo.c": "972f452b021efd44d72a1eebab1d1b5571f75719601bdcdd3d367bed50244a4d",
+          "cfformkb.c": "2e6b75daff241c7b10cc2aab9e7e5ec0807374fc41e57deeb444603e45cde07c",
+          "cflib.h": "8c97994a7cb6237490a6d3a2eb74582f5276188859f1676f0f07e58d85429a51",
+          "cfmalloc.c": "e2c402f8334a5bc1187bb37d7f645792705b74d66c6efe1b067ccd34f65303f7",
+          "cfobjced.c": "c894a3966efa83a5c0c2623f0c2e2c605cc81279f4e9533a13af7d4e49fa2eb0",
+          "cfobjcfd.c": "10cb820d00c10a178209c4ea837a2acd439764b2875ae67b228f758a7873418d",
+          "cicon.c": "0653e209a1b1c26756d47e3e4bdb367728a9ea2ee690ecabf86f7c485412c120",
+          "colorpop.c": "9efc99120f3d1ea24af71c7be84500dca6169658b3b9ed416c70893f40f14e3f",
+          "comm.c": "85284ebbf37ab532a8f1eae2ea7b4b4278d56ac7873b3f65b87117b629f22b91",
+          "cookie.c": "072d96a12c3c155a1da695ff2fe46c115a13a6c6a92e5a1953fb1b403c7dfebb",
+          "ddclose.c": "3fc2df8121f2e607f103f8bb15a64f4d777360c97bdf7806c06aa75e0737bb82",
+          "ddcreate.c": "3312c450079667adda33f0be388735ca330cebd8448f1ca05af3f75513b6f182",
+          "ddopen.c": "5e2e8b4fcb5e9a5ffc0ba3ad4e82ffe86f8c7af706c4ea4eb2625d84083d0541",
+          "ddreply.c": "650177bdcd06fb2ae71fcfa14fbe363d7c08e055cfda3771f6605eac0a5d16c4",
+          "ddrtry.c": "b3ef501e4c6e2e21125e934ce8732344e29dc875085ccd0fc95b590d320c0e94",
+          "ddstry.c": "63fd3177ec9a47a089d9b36ed9c406c410f7825d9da1d22acf6932211298e2b7",
+          "debug.c": "daf2f302a782fcbf47f58d5a2f13b32f815c6f96430768ff878a6304ec053bc1",
+          "dirent.c": "dcc4b04fc17f8285a7c28ec593b50a2b8a47a2dc6b0a567eeeff675fa6d11594",
+          "dragdrop.c": "4119a5086956525bc67724037ef55ce71f0c09383e3c1e6f24775853ed5c77fb",
+          "dragdrop.h": "1dad3b295b436a42d81595d74dacd610d341a1a07b808f4915efe866c6e2bde3",
+          "fdeditva.c": "52736067748ac5fbb5ceac9532ac2a3591cf2275c7b074d2b6f50db24bfb8033",
+          "fdfinded.c": "18c56f84596b750f51cc8d4d60ff657c13d42009c4e8a535ed43f5f07e716e19",
+          "fdfindsc.c": "0baa0cd15157b662a42713df162b6f59da782461d605540bc35ce2f5ea26fc47",
+          "fdsimple.c": "68281b734ec1e31effc81b09015e8de6c4abe611b42c90ee8076553e1d296dd6",
+          "fexists.c": "e94c3759e54dcf43350c4e5296716fe2010acb24303888c18dabbaed57a558ac",
+          "file.c": "b6e31812054d2173965bc4a8942fb63610eb5e056b172cb944e1e40d519f09ee",
+          "file.h": "0d211c319661fbb37c01b57b927748d7ace705f437d76e477b44ca7eed4ae748",
+          "filesel.c": "b215809b83f7b7147e7d581517e0b49425dc9effb9f308f05b7a33db59f192b9",
+          "fontsel.c": "ecb56be31725943d7451f4210c5e102d2bb0c0969521fa1a3f6fff43bfb17bcc",
+          "form_do.c": "5536d7e2dd617e85ce068631f8e42f2629e6c993e75cbd009378c4bd5011ae22",
+          "fscase.c": "006c2e2d45a118f4663fa5b617287a7d453ef8c58fc27a488811c2252cb899f0",
+          "fsexists.c": "9a1c327fcd12dfbf780422c68ee2312949293f72efe07e22e6473d994a8e846a",
+          "fsgetpth.c": "6572e12a3abe6530cfff2e4942a18f3b56e781506d05e0b7fac0065204598754",
+          "fslong.c": "7bef46b9ae0e0c7bf6f714d9862cecae6e68f298f4b4688d7cd19eb694700cde",
+          "fsnorm.c": "52bb9d3d919096cb96dbd63c4eae22a07845f3c723e6d22629a57c7ec285fe2a",
+          "fssetext.c": "f51989727d5aadc7398f258d58cdf2b7f5b58e9ce84e3e4b4bbc84b8eec29289",
+          "fssetpth.c": "9b688b2d4ca1cb1dee332bfeba2b66dce8326eee98a358f30ab8ad6be3dd88ed",
+          "fsshort.c": "539fbbc33a2d0deeed37d1df23c7b149ff95720a5de96a798f287ca105fa15a9",
+          "fssplite.c": "2564554baff0f03b616af3d25ae22d3ce4b8b4b76ebd124a1f6802c6b8a4b483",
+          "fssplitf.c": "eab8476cafb3345302b0711ad9918bb75ba4afa2b6903d877a3b6e1ea9c27b26",
+          "globals.c": "25c179cc8d8ea9c784d01a4ec88e4d0378e91414ada3e6a03d271e86bc6ca896",
+          "inline.h": "a44c678327c0e48aba2c974b35c42be862f9d3badbc35665f031c9da0f2b0b3a",
+          "intern.h": "e54e3219d823a54ff9606a86c528921e21f551788aeef88b2924aeafe65a17c0",
+          "magx.c": "f5cbad72721b34b619226b2bc691d69c179cf42c87502a18da400f6c55803da8",
+          "magx.h": "e409bffd7f0acf3ccf392b44a918da358afe901a95d6d2078e3cad005a8fba23",
+          "magxobj.c": "23fe3c4d1437c7687aacff8d6f85e58ac93416b4d87fb0e5c1a8c5887735c619",
+          "magxsc.c": "9475765491617ee113f18aba0bcc9d685744ab33e63965a32d4bfa9949e0ca8d",
+          "magxver.c": "97e45fb28c5e4e6ad523a5d7ba09179caf852bc9a1d42123afae3a4c27be325c",
+          "mallocg.c": "4ecee2195c9a69d000a2a80d60cb8b3dbd0e4605f6eb2e6508628ec5dc116164",
+          "mdchange.c": "2e48c5cab78f672563841fbe0c7bc19634ab44f4071e15a80ab7b339db2f2cf0",
+          "mdclose.c": "538b57058361de19185411deab2656a91d6ea2743454056985b95465d4b5111a",
+          "mddo.c": "698627b0210cfb5eea2a7e248bce295411e873d84d06a9573f9b89d457d8cd53",
+          "mdial.c": "9bb7407adea453667cb869ac3019ce2145470507a15e3bc98aba46edb5a870a9",
+          "mdial.h": "abd2986c73028b39bf0471a39fa330669059d13de6351747df462f60b4530865",
+          "mdmesag.c": "f116bc6a9d074344232523bcbc49b47a7b8dcb85b33db04ecc37668b58ae44be",
+          "mdopen.c": "71f9b76578c5584066b3bf18c7bb9d564c6192d94b59d5cbac68dbc408245e7c",
+          "mdrdrobj.c": "757823d914f855136dc98a1efd6dfee0f2ceedc0e3f91a151944a842a2fb3981",
+          "mdredraw.c": "40d3bc4b90c854b550ada805b43edf0ababd551f13884bae69fe2d502b8af0b0",
+          "mdsimple.c": "9985b1b7f4707bcf57ee75e3ce985885d0e9241240126d8ff53540a87a4458bc",
+          "mdwincb.c": "318334242d144f1107e2101089e2055d322ad7302214e667c83cc64473ccc8db",
+          "menu.c": "658a7443c7a36981e19439a19c32a88145fd656223c3958be47b1accc249e04b",
+          "menu.h": "5122f607560c19f423f07595004c398e47b9462a77ded4d7f6ce659a0fbe3a1b",
+          "menucre.c": "cc6c57ba2cd86f20da8109cf6aac7c994fa261f84981c3cc9e92a1cb16c3e456",
+          "menudel.c": "21476a13d063518186789b4bce0c1191b93dd36f201e1fc0905db4b0ffae0831",
+          "menuisk.c": "4e0f7a83743b7114d7ebb76cf775a018df4e5cb5f2f1410df8818ccc7fb0dd15",
+          "menutogg.c": "e3fbd4d293dc418faf4777336f2ee311fd204592ad26972df16b0ccabe97ce32",
+          "misc.c": "0d167ad0b0b2bfbca1addb4ab2876a0a37b8af0ac0116c1a5c3b7698ded0e679",
+          "nkcc.c": "873c121fdf0aa75fe78f8dd24f5759d944efae6f53a5077f639198c4fd283679",
+          "nkccgton.c": "d90c86c29462ca6e64bc3eaf1fba8545ee5b02b82a5daaf59cfb29be8f37ff2e",
+          "nkccinit.c": "b25d224b9bd1d494a2222b19b070bf6a5bc5060da2b34a4137d9e5c241d60f3d",
+          "nkcclowr.c": "418b3a90ccbc5bce38eb20ecf153d869ced2cc681a48ea904b51675257ad0885",
+          "nkccntog.c": "d34d67cebbb35143f3e827cda8ad51f7e7635f3523421405cab897cbdc1e5fec",
+          "nkccuppr.c": "e7d173147ae71454847740be6d39ec0a6c0df224dc66635bc8342cf232300d81",
+          "obfindfl.c": "53478a31bb42688ab1c29a2537f6d6c0acdcfe898e0cc472da571978790c05d1",
+          "obgflag.c": "a1b1c0ab71cc824d92fbd807d7dccdef39530367d6e2a792e68d566a1df78fcd",
+          "obgframe.c": "d27b1d320816ba115fc5bfbeb439d56262930560ae401db0f5891a70723ce4e4",
+          "obglong.c": "80c59701c9a5ab70bb7b726c940685d8b2a24dcbf67cc04905102aac2a3eb9f9",
+          "obgshort.c": "6a0d2e9d962e3f72a037cbf2a68f32f7c9f8a41b6f90e0dca4a0d97d180f8b43",
+          "obgspec.c": "a6380c4e6e3f50a5c27bd8572fa71ab7cf919bf40e426f296ae5223bb1f34fcc",
+          "obgstate.c": "ac26a9cb4057db569be3687ac9db0115fa5d9157b03b69a18d3a10ce7d2892e7",
+          "obgstr.c": "b9fdb84b61d8f91abe29681d137896b17c998e915b2c92e243e1764328bc23d8",
+          "obgtype.c": "280ba23a9698bf37452cc1bc6b6fdbe0c853cded9379cb07b2c42c70c389a1b0",
+          "objc.c": "5e2ace399bbb6f465bcd0101e36e44046d7c1e57c972e924daea28b99bf502fc",
+          "obredraw.c": "73be0aaa57798f4b293f7f9d6833da3af551977adff37cb2189d4640e569148a",
+          "obsflag.c": "5191c8e8d7c6af30ffd39ff5cd35b074c53eb54d4b4179c8f2ec388e18a37965",
+          "obslong.c": "260a9fffa01ee849027a91387a87dac13fe539419f080b7c0c20742d06efb131",
+          "obsshort.c": "f6d9904ed3dc2ce2d521fe905e4131a33b17df24db09de5b18b7c0b779023016",
+          "obsspec.c": "371de167bc2ad8162431a73ec13435ea6baba75e9abddd379e04550921a3af7f",
+          "obsstate.c": "f94b617d926e813a1d6870e93fe0d7ac58c0bb4baa1114ce0f0aa1c5d9f20373",
+          "obsstr.c": "865f96d27bdf84edc484404f861901246a340046b556a7c439ebc35a0a5aa6be",
+          "obsulong.c": "6fff61f66c17e7f4c716bf1a2432381643562f77dcaaf63596205203b3cdcc15",
+          "obtstate.c": "b6f2729e5374dca1a3ac23c47992a44e7ed3e6a9b29df7a31e877e13ce52b053",
+          "ol2ts.c": "d3e508119aa27162a8436a10787540369d3729101a58c1adab4ebaab250656e6",
+          "patchlev.c": "c886508d83b54bd5f583e414971fe3b661b7db0a83b0bde28ccf43ecff5ab848",
+          "popup.c": "cc4a7826a5f094344ed11f9dc20576625cb2eafe0bafd98c1b175d7b3372aff3",
+          "ppappend.c": "c9b5f630a3dac0a778f0860e83b7a52a05fdf6d708fd97be530347699b9008ed",
+          "ppcreate.c": "55fc32baafcadbfb4411626de0a1f52e9c0b7011674d0eb54aa66b4939c6daff",
+          "ppdo.c": "208cbcc046a31d463c297e065501a3301c4af07a315608886b25231b81d1dc38",
+          "ppfree.c": "6a8c7877b91d71ca772e915938f66a974fc95a09718450c80d2afc4b01871be4",
+          "pphandle.c": "e943a6cf596237f953e74689e87ad71f3759348e07f295cd3241567a3ef163da",
+          "ppmenu.c": "156a52df9eeccd7cb3ef31da42cfc30026c89f154ef6dbc3607148e26e7aae75",
+          "ppvalid.c": "3876a5e776d06559d269f563ad2156531411ba76911b0224709ade4c7d897cd2",
+          "purec.c": "7d5dfdc8993b1656a7531b1c75dca93cad85140a96176e94000961de9bd4184b",
+          "rpl_stat.c": "05384487a582274553cedd472f9dac35f1676a8091cf2b055ef3cc15581497a5",
+          "scclear.c": "4e07e3cd035fb54f648dba40a76e2959f8044d22a08f106cfeb645d827e98140",
+          "scdir.c": "1067d83d4073fd53f0a3b4b84b8a56a1998502d59d5f3846f068c025801a20f9",
+          "scrap.c": "e1aad7726cc7c8c1ccee913f997b92e049c149ae6d842bd1de6bb5f7ae50b7c3",
+          "scrtxt.c": "069bbff70364452acab68e4720b0878f78425b02c15bd7f6adae0b90e2358d40",
+          "scwtxt.c": "c93a27e5631674dd6a8487709e3e4b6672964cb750b00a0538f7c1e2ec29d910",
+          "sendchan.c": "e5048d2c99e990d447824c75c05b48274335c3f3e0965ed27b554a4d63b07596",
+          "sendspec.c": "5a101e32791d3988bb56db4c4a097d56cdc7222fbf3325d0a144b044bc65b88a",
+          "sendstrt.c": "2e1d46cc2b20859fe99b3114669afaba2abbb0725cabb2fd6b3603d838b96356",
+          "symbols.h": "66ba9a9bbe313f942b7dfb0545b1aa78cbdfe08429d22619720d732181f5a684",
+          "ts2ol.c": "1664d05f2993159ced997716e576e8271df1cf679375535b597573c2ca61717d",
+          "userdef.c": "250d5c72b335776a3aa3b732807c3c113512b27360128379a2bc882b3ecbc719",
+          "vclip.c": "bd1d803db052cd301dbf85cc6dcf5053098dc4aeb61209daf92e92a6e7de627d",
+          "vdi.c": "e69e3940e627c590a9a8c51f9aff9b65772dbb4c384f75ef3ce88d669e70a453",
+          "vheight.c": "d84136c4cc4c86acb511eead6deb2dabdc38a5714c5c2111d36f6e5421559f40",
+          "vopnvwk.c": "22b7a4148f3582d4a259840c5d54f8de3a067672e0f4ce582bd03cf33c224750",
+          "vqtrext.c": "1a36c4ad5958577775d8f1b780452aa4f6d2b45a1206b8d00e5a1e1a9b104932",
+          "vstr2a.c": "6e81b19d0c2bb1344e39804cf417d4c82af4e250517e2ac261e99e2519a0ab67",
+          "wdcallcb.c": "86311165de5c952034eee31a48fb7fdf346402f75609fd3754a4a56e22bc2782",
+          "wdchange.c": "a389dfd4ac6ac8ecf956052175edca1dde6d4309ebe39ef2e7ee6ba2558906d2",
+          "wdclick.c": "a82fed6822fdd4ccf87bc7cbcbc591583c556394d4d75deecdc4fd2781669582",
+          "wdclose.c": "1bdbe4e1ada4d6ac48d9746e1a59485c23df96e59123961720b3842babbd2ec7",
+          "wdcreate.c": "545ca534707253f35f7d80e8007afe266f0f840b9476d04da00562ace1ec7c12",
+          "wddelete.c": "38e82a1389df3fc3d38d52e2f5298e310b831ae8ea152e6cb96ea42868dfbaad",
+          "wddraw.c": "93f1452f13c715b6be6e24b994368ffbdec95e35c45763343cc5a8d90c93155c",
+          "wddrawcr.c": "bf6716f71cf31e6d314efe05f9f0fefeca050d44769382b710a53d92478ace37",
+          "wdget.c": "16eb67b5bc5d91a5f93460356a34c3bcfcaf19ca7e332bd379b5d5c80d228e38",
+          "wdial.c": "e2c20e58fb99401f4f059cc40c59d6aadee0bf0d4992a372ed8cea0f4e9b8957",
+          "wdial.h": "bc01870cf9ba600ccf6e70cbc15fb21a7d559974b01f1c975afe32371c49b497",
+          "wdiconif.c": "25417f7d2e6afd37c9974d31667d7ff86e38cf0e063963e3212fc185687804b4",
+          "wdkey.c": "d4c284c728ecc2c45780abc1406d57fe91f938177c943e8d79535811a65741d6",
+          "wdlgevnt.h": "20e52c1ade9ee4f607c79e89e42b7045c41607e17c4f81de3c860e75c8daac52",
+          "wdlgfslx.h": "820e93b2c64aed6ca31743b05d9ee879875848bcc5fe82ee37a8581c6b187ae0",
+          "wdlgpdlg.h": "b8b5fa87664f70b10ad408627dfcc2f9013becdec96ea67185bd4c0339fc4e17",
+          "wdlgwdlg.h": "79f826fef840cda6e6dece792eca498bacb01ae3bb268e44a641d2ee3d51397c",
+          "wdmesag.c": "bf185c3588bcfddee8b9f15b34972ca873398b6d9dddf1fe43ac3e68320e79ae",
+          "wdopen.c": "70fbc4bb8252e6f401a733c257692ab36ac8d2432beae0eb55f69392caa38b47",
+          "wdredri.c": "4155380b121a6467ea865d054f26a7cee8820998733fe595ff52fb9e611381a0",
+          "wdredro.c": "d50b75d32438bdb68b6665e2c800ce94f89eee86791730ad12bff82c3bb8144e",
+          "wdunico.c": "bf7ad210fcfa6fde622107bde5505f2f77293279000a880767ac8f7ba4874d82",
+          "xfsl.h": "3c9c2a310bd5f1e532cae56d99bc623a9a352d97ed2c6ac8393e549a72f0136a",
+          "xgetinfo.c": "22a808bb627743ec901291c480b693b188aa20cafbb9e9e58f70fce18ded232d"
+        }
+      }
+    },
+    "patches": {
+      "0001-native-header-boundary.patch": "a5341390648d0351c8c70252c56c1205937c5b9b2ec0bd94676c3c67b09bdb4e",
+      "0002-text-allocation-failure.patch": "fe5d8b4a750072b974f9f7a0fce609ed12e3f4114859b099dffecdc17eb2d5d3",
+      "0003-native-initial-scope.patch": "80ce51ba57c5aac5ff4de23d3d5e469246b1df3c66ab1a837ceee6240938e1d6"
+    },
+    "native_inputs": {
+      "ports/gem4xe/apps/qed/native/README.md": "abf516504c8240bd14766ccd974ccdaecb66c0bdaa72c874e7edf934dd46777b",
+      "ports/gem4xe/apps/qed/native/allocation.c": "f24f51db604103a3475b0774d501a9b6a39ef53f5dcf05d880a13352ff8363c3",
+      "ports/gem4xe/apps/qed/native/entry.c": "273c751bebcd529a520ed2c4495b7e424ce12987cd05b60c3bb5ff39f7be6122",
+      "ports/gem4xe/apps/qed/native/files.c": "0633e39329a825c49b8101f1cb4765d75a371bfc9b9c3bf8c4f99ba583b02257",
+      "ports/gem4xe/apps/qed/native/gem-helpers.c": "6c8fd0a090850f250d3cb3fc31d979118a6bad88dd35ea0d38c4f6665d2b0f93",
+      "ports/gem4xe/apps/qed/native/gemx.h": "eb36ff0499f325287e35310981c00f17980d509c993e92c4b90bb49c803e7412",
+      "ports/gem4xe/apps/qed/native/library.c": "eacf019064da620040bae21243d0699396d5bb1bc572366a6c119bb70360eed0",
+      "ports/gem4xe/apps/qed/native/macros.h": "f308c921215845be083b18e4f0b97a5df0f2ef2e52bc650bfa2b4a4a14fa0bc3",
+      "ports/gem4xe/apps/qed/native/mintbind.h": "0bd4ed86f299138d23f6a85e2e050fef4593cce537b6ee4665c47296f86a7ea3",
+      "ports/gem4xe/apps/qed/native/qed-files.h": "e99e6aea77b4fcafc445451e45a1e22580df3b8036a483669b4bddf7a4549db6",
+      "ports/gem4xe/apps/qed/native/qed-gem-extra.h": "e72762b8bb6bb649b2e5a21064ad39a5d381ea8cd9a3d2225aabc52da3b421d9",
+      "ports/gem4xe/apps/qed/native/qed-native.h": "e20bfa70c6700cf441cfd2d1d4ccfbb84982d2ed256c199ef23147c67693a0a1",
+      "ports/gem4xe/apps/qed/native/qed-runtime.h": "9ebe69a3f5ad57bed4604a3a7ea2259380a268173a92593a857ae0f78fadfad2",
+      "ports/gem4xe/apps/qed/native/strings.h": "711b07ae9e2849959d36e7b5bcccc872c313f3116606b96d77adc97731705b99",
+      "ports/gem4xe/apps/qed/native/support.c": "f8ba6c9f42bac34cb60a3db532f167a0f6e9b98a7723d493c5e60c3ad88157cb",
+      "ports/gem4xe/apps/qed/native/support.h": "d9d51ae5779cd6533029d1a2c2a816472a892e70f37c3931987adac87d559185",
+      "ports/gem4xe/apps/qed/native/tos.h": "eb699b87e14b0dbb894c03227b2c68dfb054e9bc4a0a28317c920af519d3f1b4"
+    },
+    "exec_inputs": {
+      "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+      "toolchain/altirra-gem-vdi.json": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431",
+      "ports/gem4xe/inputs.json": "4b0eeb42b248daa95f1db1b42ea713c8babf5c015606519dfa168191654c72fa",
+      "ports/gem4xe/aes/inputs.json": "a0f5bd1c7c135a7c4252bcfbfae9844e8df3ebf5302fd38037560c82117cca4f",
+      "ports/gem4xe/aes-binding-inputs.json": "21bec97e95747ef868fd6df37c29dd03f31f3a02620115b9c9ba34afdb239079",
+      "abi/c-program.json": "ea0bed45989ca5398714a2590e67db316085a5972a05bc6cd0adffab9c25fd73",
+      "tools/calypsi_build.py": "83c66c4a40640f22a358a7948543e5be99444713a043abe066ad22a1246b21c1",
+      "tools/build_c_program.py": "1c805fdb02f6371a098aa1548fbd539136ff2a76fc6763824b3fff0758e047d0",
+      "c/calypsi/layout.scm": "89d2f08d613c7364eb4348514180c03eea3eeef5a2e0757ba56df3eb767b2976"
+    },
+    "native_input_changes": {
+      "abi/c-program.json": {
+        "baseline": "5e7474296d6bd2bb35e11a36110f2a559186331706781228694fe595c59d85b5",
+        "current": "ea0bed45989ca5398714a2590e67db316085a5972a05bc6cd0adffab9c25fd73"
+      },
+      "tools/calypsi_build.py": {
+        "baseline": "d4d49503aca9a0b227f29c8d606eaa6f3ffc11173f4e09b294cb531280b9e7b1",
+        "current": "83c66c4a40640f22a358a7948543e5be99444713a043abe066ad22a1246b21c1"
+      },
+      "tools/build_c_program.py": {
+        "baseline": "cb2588cf5272685a8183909fe6235aed706a74089477771f4bb18bb3ed08c49a",
+        "current": "1c805fdb02f6371a098aa1548fbd539136ff2a76fc6763824b3fff0758e047d0"
+      }
+    },
+    "source_manifest_sha256": "0be36101b10a0f161365927eece3b9409c96caaf786a647e22bf0ec96ce9cac6"
+  },
+  "selection": {
+    "schema_version": 1,
+    "scope": "English single-document initial scope; analysis only until later GEM and saving gates",
+    "defines": [
+      "QED_INITIAL_SCOPE=1",
+      "QED_BANKED_MALLOC=1",
+      "_WORD=short",
+      "_UWORD=unsigned short"
+    ],
+    "units": [
+      {
+        "origin": "qed",
+        "path": "src/aktion.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/ausgabe.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/block.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/clipbrd.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/edit.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/event.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/file.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/find.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/global.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/icon.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/main.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/memory.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/menu.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/options.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/poslist.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/rsc.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/set.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/sort.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/tasten.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/text.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/umbruch.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/window.c"
+      },
+      {
+        "origin": "qed",
+        "path": "src/winlist.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "app.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "appexit.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "appexitg.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "apphidem.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "apphiden.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "appinit.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "appshowm.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "backgrd.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "cfformdo.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "cfformkb.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "cfmalloc.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "cfobjced.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "cfobjcfd.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "ddrtry.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "ddstry.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "debug.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "dragdrop.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fdeditva.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fdfinded.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fdfindsc.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fdsimple.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fexists.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fscase.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fsexists.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fsgetpth.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fslong.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fsnorm.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fssetext.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fsshort.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fssplite.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "fssplitf.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "globals.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "magxobj.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "magxsc.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "magxver.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "mallocg.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "mdchange.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "mdclose.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "mddo.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "mdial.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "mdmesag.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "mdopen.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "mdrdrobj.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "mdredraw.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "mdsimple.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "mdwincb.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "menu.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "menucre.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "menudel.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "menuisk.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "menutogg.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "nkcclowr.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "nkccuppr.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obfindfl.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obgflag.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obgframe.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obglong.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obgshort.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obgspec.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obgstate.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obgstr.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obgtype.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obredraw.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obsflag.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obslong.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obsshort.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obsspec.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obsstate.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obsstr.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obsulong.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "obtstate.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "ol2ts.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "patchlev.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "ppappend.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "ppcreate.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "ppdo.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "ppfree.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "pphandle.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "ppmenu.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "ppvalid.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "rpl_stat.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "sendstrt.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "ts2ol.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "vclip.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "vheight.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "vopnvwk.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "vqtrext.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "vstr2a.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdcallcb.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdchange.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdclick.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdclose.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdcreate.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wddelete.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wddraw.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wddrawcr.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdget.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdial.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdiconif.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdkey.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdmesag.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdopen.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdredri.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdredro.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "wdunico.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "xgetinfo.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "nkccinit.c"
+      },
+      {
+        "origin": "cflib",
+        "path": "nkccgton.c"
+      }
+    ],
+    "excluded": [
+      {
+        "origin": "qed",
+        "path": "src/av.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/comm.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/dd.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/error.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/highlite.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/hl.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/kurzel.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/makro.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/olga.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/prn_cfg.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/prn_out.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/projekt.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/se.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "qed",
+        "path": "src/wp-print.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "alerts.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "asciiset.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "asciitab.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "cicon.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "colorpop.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "comm.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "cookie.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "ddclose.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "ddcreate.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "ddopen.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "ddreply.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "dirent.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "file.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "filesel.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "fontsel.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "form_do.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "fssetpth.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "magx.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "misc.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "nkcc.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "nkccntog.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "objc.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "popup.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "purec.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "scclear.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "scdir.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "scrap.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "scrtxt.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "scwtxt.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "sendchan.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "sendspec.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "userdef.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      },
+      {
+        "origin": "cflib",
+        "path": "vdi.c",
+        "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+      }
+    ],
+    "native_sources": [
+      "allocation.c",
+      "entry.c",
+      "files.c",
+      "library.c",
+      "support.c",
+      "gem-helpers.c"
+    ],
+    "features_removed": [
+      "preferences UI and persistence",
+      "syntax startup, callbacks and files",
+      "printing and printer workstations",
+      "macros and abbreviations",
+      "projects and error parser",
+      "accessory, AV, SE and OLGA protocols",
+      "disk scrap and dialog clipboard extensions",
+      "external help and ASCII tables",
+      "replacement and search histories",
+      "external fonts and automatic USERDEF decoration"
+    ],
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    },
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "private_idle": 0
+    },
+    "container_metadata_allowance_bytes": 16384
+  },
+  "bindings": [
+    {
+      "name": "appl_xgetinfo",
+      "declaration": "WORD appl_xgetinfo(WORD ap_gtype, WORD *ap_gout1, WORD *ap_gout2, WORD *ap_gout3, WORD *ap_gout4);",
+      "resolution": "Step 3: implement or adapt AES capability/input/cursor support against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obgframe.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ppmenu.c"
+      ]
+    },
+    {
+      "name": "graf_dragbox",
+      "declaration": "WORD graf_dragbox(WORD w, WORD h, WORD sx, WORD sy, WORD bx, WORD by, WORD bw, WORD bh, WORD *px, WORD *py);",
+      "resolution": "Step 3: implement or adapt AES capability/input/cursor support against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/edit.c"
+      ]
+    },
+    {
+      "name": "graf_mkstate",
+      "declaration": "WORD graf_mkstate(WORD *mx, WORD *my, WORD *mb, WORD *ks);",
+      "resolution": "Step 3: implement or adapt AES capability/input/cursor support against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/edit.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/global.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/apphiden.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ppdo.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/pphandle.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ppmenu.c"
+      ]
+    },
+    {
+      "name": "graf_mouse",
+      "declaration": "WORD graf_mouse(WORD mode, const WORD *form);",
+      "resolution": "Step 3: implement or adapt AES capability/input/cursor support against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/edit.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/file.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/find.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/umbruch.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/apphidem.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/appshowm.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fdsimple.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mdsimple.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ppmenu.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wddraw.c"
+      ]
+    },
+    {
+      "name": "objc_sysvar",
+      "declaration": "WORD objc_sysvar(WORD mode, WORD which, WORD in1, WORD in2, WORD *out1, WORD *out2);",
+      "resolution": "Step 3: implement or adapt AES capability/input/cursor support against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obgframe.c"
+      ]
+    },
+    {
+      "name": "v_fillarea",
+      "declaration": "void v_fillarea(WORD handle, WORD count, const WORD *pxy);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/ausgabe.c"
+      ]
+    },
+    {
+      "name": "v_justified",
+      "declaration": "void v_justified(WORD handle, WORD x, WORD y, const char *s, WORD length, WORD word_space, WORD char_space);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/ausgabe.c"
+      ]
+    },
+    {
+      "name": "v_pline",
+      "declaration": "void v_pline(WORD handle, WORD count, WORD *pxy);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/ausgabe.c"
+      ]
+    },
+    {
+      "name": "vqt_extent",
+      "declaration": "void vqt_extent(WORD handle, const char *s, WORD *extent);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/ausgabe.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/global.c"
+      ]
+    },
+    {
+      "name": "vr_recfl",
+      "declaration": "void vr_recfl(WORD handle, WORD *pxy);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/ausgabe.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/window.c"
+      ]
+    },
+    {
+      "name": "vro_cpyfm",
+      "declaration": "void vro_cpyfm(WORD handle, WORD mode, const WORD *pxy, const MFDB *src, const MFDB *dst);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/window.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/backgrd.c"
+      ]
+    },
+    {
+      "name": "vsl_color",
+      "declaration": "WORD vsl_color(WORD handle, WORD color);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/ausgabe.c"
+      ]
+    },
+    {
+      "name": "vst_alignment",
+      "declaration": "void vst_alignment(WORD handle, WORD hin, WORD vin, WORD *hout, WORD *vout);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/global.c"
+      ]
+    },
+    {
+      "name": "vst_effects",
+      "declaration": "WORD vst_effects(WORD handle, WORD effects);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": true,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/ausgabe.c"
+      ]
+    },
+    {
+      "name": "vst_font",
+      "declaration": "WORD vst_font(WORD handle, WORD font);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": false,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/global.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/vheight.c"
+      ]
+    },
+    {
+      "name": "vst_height",
+      "declaration": "void vst_height(WORD handle, WORD height, WORD *char_width, WORD *char_height, WORD *cell_width, WORD *cell_height);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": false,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/global.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/vheight.c"
+      ]
+    },
+    {
+      "name": "vst_point",
+      "declaration": "WORD vst_point(WORD handle, WORD point, WORD *char_width, WORD *char_height, WORD *cell_width, WORD *cell_height);",
+      "resolution": "Step 3: implement or adapt fixed-font metrics, drawing and scrolling against the public native GEM interface",
+      "linked": false,
+      "callers": [
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/global.c",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/vheight.c"
+      ]
+    }
+  ],
+  "compiler": {
+    "format": "calypsi65816-standalone-v1",
+    "elf_sha256": "19134e2c484d3555101928e416194df247ad67dc0cf257acbce0549df9204654",
+    "entry": 969975,
+    "task_entries": [],
+    "dp_workspace_bytes": 23,
+    "readonly_table_banks": [],
+    "stack_checks": false,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_task": 0
+    },
+    "platform_internal_inputs": {
+      "platform/altirraos/vbxe-internal.h": "e7456fc010edc6723611d9ffd310afc38ed333c532c4d1f9c0385c1be989a00b"
+    },
+    "tools": {
+      "cc65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    },
+    "linker_layout_sha256": "89d2f08d613c7364eb4348514180c03eea3eeef5a2e0757ba56df3eb767b2976",
+    "runtime": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/lib/clib-lc-hd.a",
+      "sha256": "321e782d2e18972ff29d32acf446a401012bd6da6959bb4b69c359c1412082db"
+    },
+    "runtime_source_overrides": {
+      "manifest_sha256": "3546ce27ada1737869dd8fd05df861cef30dcd0aa40732779a840ff2a0cb5e5d",
+      "original_sources": {
+        "src/lib/stdio/__fs_fdopen.c": "17271cd147850dc6b0c57c1555573c2b2a193e9ca27b67d97d3389bc861f05b6"
+      },
+      "headers": {
+        "src/lib/b2c.h": "11cb37a566cc595df245dd3c7c45b34c8a2d538a1d08119804896d8835f8f8a1",
+        "src/lib/clock.h": "2edc5c522dfcb89e726aec2d38f55a4cf4731ab9c13d56c500da627f844ac180",
+        "src/lib/file.h": "96102fe58f0bfb2bb38460498d15b836aea2eba087d2cf3cc594b139272a8cf1",
+        "src/lib/libc.h": "ac2fb6b15024eb467aef383ac07504b716c440eea24dbda79e0b6bb1ae78014c",
+        "src/lib/streams.h": "4e6d2fba6591dfea0eacc48a5f492217ac5eceddb0d58c15cfcec09a61f0143d",
+        "include/calypsi/config.h": "d4e4a79546243bf40c9a3dd12f7f83f4f3eb9f68a7c331c9669cd8a1548e26b5",
+        "include/calypsi/stubs.h": "b1ff27927c72cd48249aa15b1f1baee6d46bedecb405008381f3b5057dffff20",
+        "include/stddef.h": "8a54f72e1ff0d3aaa6a54c1561f6d7a28b52bf7c4cf1c03503dbacfd8d4d09f5",
+        "include/stdint.h": "ee5d78bfc94868efe01434dd4fb444c37c7fd5c727216be26eb472d01730d89b",
+        "include/stdarg.h": "b7a736c79ee7f7e1e6d01faf03d53823431740aaa43deb9d43d60276a3b03873",
+        "include/stdio.h": "5040cba1a60be297cb9e1953dace7f9b4bd430b8caee49ddd4af47bffcf0361d",
+        "include/stdlib.h": "78fff9bf63d3bfcee4b702d89fefb8033aa6afc7d3e96f5deabf7f2d7c94e02a",
+        "include/string.h": "4aa2f879c5148c348396f4220f6011a5c49b433f6e1e00928c2f850126c9bb19",
+        "include/errno.h": "57316a2afcb5b4d770dee9033c09824e7f914b6cc486a6b5798973b9dd181d31",
+        "include/fcntl.h": "48c6045bd7b69791a23e85b86a646eea9623a5798fbb9e3ea5bdc360dad53d8f",
+        "include/limits.h": "16a1735b0d4bc5738b7a60b664e4e37fbba7ffca7115ca66b09cb8af7ca5966c",
+        "include/time.h": "727d90c8a85044b5bebd667d130a884379c5e711d42a276c5370920dffb40b01"
+      },
+      "patches": {
+        "toolchain/patches/calypsi-5.18-stream-initialization.patch": "f69553836c9668d670b868a7b5ad29106e0bf74673533d90faa381d6f18f8a21"
+      },
+      "prepared_sources": {
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/runtime-source/__fs_fdopen.c": "18a100ba07106a60ec7a173a7639f88f8f4093cad735f39c6621292b9d9f854f"
+      }
+    },
+    "runtime_attributes": {
+      "printf": "nofloat"
+    },
+    "compiler_flags": [
+      "--code-model=large",
+      "--data-model=huge",
+      "-O2"
+    ],
+    "source_options": {
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/aktion.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/ausgabe.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/block.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/clipbrd.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/edit.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/event.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/file.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/find.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/global.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/icon.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/main.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/memory.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/menu.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/options.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/poslist.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/rsc.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/set.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/sort.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/tasten.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/text.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/umbruch.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/window.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/qed/src/winlist.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/app.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/appexit.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/appexitg.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/apphidem.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/apphiden.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/appinit.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/appshowm.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/backgrd.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/cfformdo.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/cfformkb.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/cfmalloc.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/cfobjced.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/cfobjcfd.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ddrtry.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ddstry.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/debug.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/dragdrop.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fdeditva.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fdfinded.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fdfindsc.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fdsimple.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fexists.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fscase.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fsexists.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fsgetpth.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fslong.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fsnorm.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fssetext.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fsshort.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fssplite.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/fssplitf.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/globals.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/magxobj.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/magxsc.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/magxver.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mallocg.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mdchange.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mdclose.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mddo.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mdial.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mdmesag.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mdopen.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mdrdrobj.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mdredraw.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mdsimple.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/mdwincb.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/menu.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/menucre.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/menudel.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/menuisk.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/menutogg.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/nkcclowr.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/nkccuppr.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obfindfl.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obgflag.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obgframe.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obglong.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obgshort.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obgspec.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obgstate.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obgstr.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obgtype.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obredraw.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obsflag.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obslong.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obsshort.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obsspec.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obsstate.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obsstr.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obsulong.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/obtstate.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ol2ts.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/patchlev.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ppappend.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ppcreate.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ppdo.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ppfree.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/pphandle.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ppmenu.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ppvalid.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/rpl_stat.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/sendstrt.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/ts2ol.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/vclip.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/vheight.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/vopnvwk.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/vqtrext.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/vstr2a.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdcallcb.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdchange.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdclick.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdclose.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdcreate.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wddelete.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wddraw.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wddrawcr.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdget.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdial.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdiconif.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdkey.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdmesag.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdopen.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdredri.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdredro.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/wdunico.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/xgetinfo.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/nkccinit.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/inputs/source/cflib/nkccgton.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/allocation.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/entry.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/files.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/library.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/support.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/gem-helpers.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration",
+        "--char-is-unsigned"
+      ],
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/analysis-traps.c": [
+        "-DQED_INITIAL_SCOPE=1",
+        "-DQED_BANKED_MALLOC=1",
+        "-D_WORD=short",
+        "-D_UWORD=unsigned short",
+        "-Werror=implicit-function-declaration"
+      ]
+    },
+    "source_optimization": {},
+    "checked_layout": {
+      "sizeof(BYTE)": 1,
+      "sizeof(WORD)": 2,
+      "sizeof(LONG)": 4,
+      "sizeof(BPTR)": 4,
+      "sizeof(APTR)": 4,
+      "sizeof(void EXEC_PTR *)": 3,
+      "sizeof(struct Node)": 11,
+      "sizeof(struct List)": 11,
+      "sizeof(struct MinNode)": 6,
+      "sizeof(struct MinList)": 9,
+      "sizeof(struct MsgPort)": 27,
+      "offsetof(struct MsgPort, mp_Node)": 0,
+      "offsetof(struct MsgPort, mp_Flags)": 11,
+      "offsetof(struct MsgPort, mp_SigBit)": 12,
+      "offsetof(struct MsgPort, mp_SigTask)": 13,
+      "offsetof(struct MsgPort, mp_MsgList)": 16,
+      "sizeof(struct Message)": 16,
+      "offsetof(struct Message, mn_Node)": 0,
+      "offsetof(struct Message, mn_ReplyPort)": 11,
+      "offsetof(struct Message, mn_Length)": 14,
+      "sizeof(struct IORequest)": 26,
+      "offsetof(struct IORequest, io_Message)": 0,
+      "offsetof(struct IORequest, io_Device)": 16,
+      "offsetof(struct IORequest, io_Unit)": 19,
+      "offsetof(struct IORequest, io_Command)": 22,
+      "offsetof(struct IORequest, io_Flags)": 24,
+      "offsetof(struct IORequest, io_Error)": 25,
+      "sizeof(struct IOStdReq)": 42,
+      "offsetof(struct IOStdReq, io_Message)": 0,
+      "offsetof(struct IOStdReq, io_Device)": 16,
+      "offsetof(struct IOStdReq, io_Unit)": 19,
+      "offsetof(struct IOStdReq, io_Command)": 22,
+      "offsetof(struct IOStdReq, io_Flags)": 24,
+      "offsetof(struct IOStdReq, io_Error)": 25,
+      "offsetof(struct IOStdReq, io_Actual)": 26,
+      "offsetof(struct IOStdReq, io_Length)": 30,
+      "offsetof(struct IOStdReq, io_Data)": 34,
+      "offsetof(struct IOStdReq, io_Offset)": 38,
+      "sizeof(struct Task)": 62,
+      "offsetof(struct Task, tc_Node)": 0,
+      "offsetof(struct Task, tc_Flags)": 11,
+      "offsetof(struct Task, tc_State)": 12,
+      "offsetof(struct Task, tc_IDNestCnt)": 13,
+      "offsetof(struct Task, tc_TDNestCnt)": 14,
+      "offsetof(struct Task, tc_SigAlloc)": 16,
+      "offsetof(struct Task, tc_SigWait)": 20,
+      "offsetof(struct Task, tc_SigRecvd)": 24,
+      "offsetof(struct Task, tc_SigExcept)": 28,
+      "offsetof(struct Task, tc_SPReg)": 32,
+      "offsetof(struct Task, tc_SPLower)": 36,
+      "offsetof(struct Task, tc_SPUpper)": 40,
+      "offsetof(struct Task, tc_MemEntry)": 43,
+      "offsetof(struct Task, tc_UserData)": 54,
+      "offsetof(struct Task, tc_ExecPrivate)": 58,
+      "sizeof(struct ExecCreateTaskPacket)": 16,
+      "offsetof(struct ExecCreateTaskPacket, name)": 0,
+      "offsetof(struct ExecCreateTaskPacket, priority)": 4,
+      "offsetof(struct ExecCreateTaskPacket, entry)": 8,
+      "offsetof(struct ExecCreateTaskPacket, stackSize)": 12,
+      "sizeof(struct ExecDosWriteArgs)": 12,
+      "offsetof(struct ExecDosWriteArgs, file)": 0,
+      "offsetof(struct ExecDosWriteArgs, buffer)": 4,
+      "offsetof(struct ExecDosWriteArgs, length)": 8,
+      "sizeof(struct TaskLease)": 12,
+      "offsetof(struct TaskLease, task)": 0,
+      "offsetof(struct TaskLease, pad)": 3,
+      "offsetof(struct TaskLease, incarnation)": 4,
+      "offsetof(struct TaskLease, identity)": 8,
+      "offsetof(struct TaskLease, pad2)": 11,
+      "sizeof(struct ExecRetainTaskPacket)": 6,
+      "offsetof(struct ExecRetainTaskPacket, lease)": 3,
+      "sizeof(struct DateStamp)": 12,
+      "offsetof(struct DateStamp, ds_Days)": 0,
+      "offsetof(struct DateStamp, ds_Minute)": 4,
+      "offsetof(struct DateStamp, ds_Tick)": 8,
+      "sizeof(struct FileInfoBlock)": 260,
+      "offsetof(struct FileInfoBlock, fib_DiskKey)": 0,
+      "offsetof(struct FileInfoBlock, fib_DirEntryType)": 4,
+      "offsetof(struct FileInfoBlock, fib_FileName)": 8,
+      "offsetof(struct FileInfoBlock, fib_Protection)": 116,
+      "offsetof(struct FileInfoBlock, fib_EntryType)": 120,
+      "offsetof(struct FileInfoBlock, fib_Size)": 124,
+      "offsetof(struct FileInfoBlock, fib_NumBlocks)": 128,
+      "offsetof(struct FileInfoBlock, fib_Date)": 132,
+      "offsetof(struct FileInfoBlock, fib_Comment)": 144,
+      "offsetof(struct FileInfoBlock, fib_OwnerUID)": 224,
+      "offsetof(struct FileInfoBlock, fib_OwnerGID)": 226,
+      "offsetof(struct FileInfoBlock, fib_Reserved)": 228,
+      "offsetof(struct FileInfoBlock, fib_InfoFlags)": 258,
+      "sizeof(struct VolumeInfo)": 62,
+      "offsetof(struct VolumeInfo, name)": 0,
+      "offsetof(struct VolumeInfo, label)": 32,
+      "offsetof(struct VolumeInfo, format)": 41,
+      "offsetof(struct VolumeInfo, backend)": 42,
+      "offsetof(struct VolumeInfo, readOnly)": 43,
+      "offsetof(struct VolumeInfo, state)": 44,
+      "offsetof(struct VolumeInfo, flags)": 45,
+      "offsetof(struct VolumeInfo, unit)": 46,
+      "offsetof(struct VolumeInfo, sectorBytes)": 48,
+      "offsetof(struct VolumeInfo, totalBlocks)": 50,
+      "offsetof(struct VolumeInfo, freeBlocks)": 54,
+      "offsetof(struct VolumeInfo, allocatedBytes)": 58,
+      "sizeof(struct SioMountSpec)": 8,
+      "offsetof(struct SioMountSpec, drive)": 0,
+      "offsetof(struct SioMountSpec, format)": 2,
+      "offsetof(struct SioMountSpec, profile)": 4,
+      "offsetof(struct SioMountSpec, access)": 6,
+      "sizeof(struct DirEntry)": 118,
+      "offsetof(struct DirEntry, name)": 0,
+      "offsetof(struct DirEntry, kind)": 108,
+      "offsetof(struct DirEntry, size)": 112,
+      "offsetof(struct DirEntry, infoFlags)": 116,
+      "sizeof(struct DirBatch)": 120,
+      "offsetof(struct DirBatch, capacity)": 0,
+      "offsetof(struct DirBatch, entries)": 2
+    },
+    "link_objects": [
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/0-aktion.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/1-ausgabe.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/2-block.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/3-clipbrd.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/4-edit.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/5-event.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/6-file.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/7-find.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/8-global.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/9-icon.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/10-main.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/11-memory.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/12-menu.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/13-options.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/14-poslist.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/15-rsc.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/16-set.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/17-sort.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/18-tasten.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/19-text.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/20-umbruch.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/21-window.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/22-winlist.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/23-app.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/24-appexit.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/25-appexitg.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/26-apphidem.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/27-apphiden.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/28-appinit.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/29-appshowm.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/30-backgrd.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/31-cfformdo.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/32-cfformkb.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/33-cfmalloc.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/34-cfobjced.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/35-cfobjcfd.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/36-ddrtry.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/37-ddstry.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/38-debug.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/39-dragdrop.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/40-fdeditva.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/41-fdfinded.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/42-fdfindsc.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/43-fdsimple.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/44-fexists.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/45-fscase.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/46-fsexists.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/47-fsgetpth.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/48-fslong.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/49-fsnorm.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/50-fssetext.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/51-fsshort.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/52-fssplite.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/53-fssplitf.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/54-globals.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/55-magxobj.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/56-magxsc.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/57-magxver.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/58-mallocg.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/59-mdchange.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/60-mdclose.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/61-mddo.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/62-mdial.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/63-mdmesag.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/64-mdopen.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/65-mdrdrobj.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/66-mdredraw.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/67-mdsimple.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/68-mdwincb.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/69-menu.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/70-menucre.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/71-menudel.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/72-menuisk.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/73-menutogg.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/74-nkcclowr.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/75-nkccuppr.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/76-obfindfl.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/77-obgflag.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/78-obgframe.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/79-obglong.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/80-obgshort.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/81-obgspec.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/82-obgstate.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/83-obgstr.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/84-obgtype.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/85-obredraw.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/86-obsflag.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/87-obslong.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/88-obsshort.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/89-obsspec.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/90-obsstate.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/91-obsstr.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/92-obsulong.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/93-obtstate.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/94-ol2ts.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/95-patchlev.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/96-ppappend.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/97-ppcreate.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/98-ppdo.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/99-ppfree.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/100-pphandle.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/101-ppmenu.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/102-ppvalid.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/103-rpl_stat.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/104-sendstrt.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/105-ts2ol.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/106-vclip.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/107-vheight.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/108-vopnvwk.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/109-vqtrext.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/110-vstr2a.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/111-wdcallcb.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/112-wdchange.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/113-wdclick.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/114-wdclose.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/115-wdcreate.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/116-wddelete.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/117-wddraw.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/118-wddrawcr.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/119-wdget.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/120-wdial.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/121-wdiconif.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/122-wdkey.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/123-wdmesag.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/124-wdopen.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/125-wdredri.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/126-wdredro.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/127-wdunico.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/128-xgetinfo.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/129-nkccinit.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/130-nkccgton.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/131-allocation.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/132-entry.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/133-files.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/134-library.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/135-support.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/136-gem-helpers.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/137-analysis-traps.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/138-__fs_fdopen.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/0-imports-asm.o",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/1-image-info-asm.o"
+    ],
+    "analysis_only": true
+  },
+  "layout": {
+    "code_bytes": 124786,
+    "initialized_bytes": 1372,
+    "bss_bytes": 20493,
+    "import_thunk_bytes": 396,
+    "span_bytes": 190322,
+    "image_holes_bytes": 43671,
+    "serialized_bytes_if_executable": 158238,
+    "relocation_count": 7798,
+    "heap_alignment_backing_bytes": 255860,
+    "future_full_profile_backing_bytes": 393216,
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "container_metadata_allowance_bytes": 16384,
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "resident_provider": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-final-opt/c-image.json",
+    "sha256": "3cbe73a99d43a1dafaf848bf98edb119974235a602ebb602c2aae37045fc1a78",
+    "code_bytes": 178056,
+    "table_bytes": 40145,
+    "data_bss_bytes": 25739,
+    "allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "link_units": [
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/0-aktion.o",
+      "archive": null,
+      "sections": {
+        "farcode": 1755,
+        "switch": 36,
+        "zhuge": 12
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/1-ausgabe.o",
+      "archive": null,
+      "sections": {
+        "farcode": 8960,
+        "zhuge": 20
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/2-block.o",
+      "archive": null,
+      "sections": {
+        "farcode": 7413,
+        "zhuge": 64
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/3-clipbrd.o",
+      "archive": null,
+      "sections": {
+        "farcode": 1789,
+        "zhuge": 1401
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/4-edit.o",
+      "archive": null,
+      "sections": {
+        "farcode": 12770,
+        "switch": 152,
+        "zhuge": 506
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/5-event.o",
+      "archive": null,
+      "sections": {
+        "chuge": 16,
+        "farcode": 1967,
+        "switch": 60,
+        "zhuge": 612
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/6-file.o",
+      "archive": null,
+      "sections": {
+        "chuge": 9,
+        "farcode": 6552,
+        "zhuge": 258
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/7-find.o",
+      "archive": null,
+      "sections": {
+        "chuge": 5,
+        "farcode": 5695,
+        "huge": 2,
+        "zhuge": 2574
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/8-global.o",
+      "archive": null,
+      "sections": {
+        "chuge": 3,
+        "farcode": 1420,
+        "zhuge": 52
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/9-icon.o",
+      "archive": null,
+      "sections": {
+        "farcode": 1055,
+        "zhuge": 282
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/10-main.o",
+      "archive": null,
+      "sections": {
+        "farcode": 339
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/11-memory.o",
+      "archive": null,
+      "sections": {
+        "chuge": 56,
+        "farcode": 6469,
+        "zhuge": 1064
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/12-menu.o",
+      "archive": null,
+      "sections": {
+        "chuge": 13,
+        "farcode": 2380,
+        "huge": 74,
+        "switch": 136
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/13-options.o",
+      "archive": null,
+      "sections": {
+        "chuge": 56,
+        "farcode": 1137,
+        "zhuge": 12626
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/14-poslist.o",
+      "archive": null,
+      "sections": {
+        "farcode": 624
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/15-rsc.o",
+      "archive": null,
+      "sections": {
+        "chuge": 17,
+        "farcode": 427,
+        "zhuge": 214
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/16-set.o",
+      "archive": null,
+      "sections": {
+        "farcode": 1158
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/18-tasten.o",
+      "archive": null,
+      "sections": {
+        "farcode": 9782,
+        "huge": 2,
+        "switch": 156,
+        "zhuge": 4
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/19-text.o",
+      "archive": null,
+      "sections": {
+        "chuge": 3,
+        "farcode": 2164,
+        "zhuge": 4
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/20-umbruch.o",
+      "archive": null,
+      "sections": {
+        "farcode": 5768,
+        "zhuge": 134
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/21-window.o",
+      "archive": null,
+      "sections": {
+        "chuge": 102,
+        "farcode": 8337,
+        "switch": 16,
+        "zhuge": 144
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/22-winlist.o",
+      "archive": null,
+      "sections": {
+        "farcode": 1030,
+        "zhuge": 10
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/23-app.o",
+      "archive": null,
+      "sections": {
+        "zhuge": 10
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/24-appexit.o",
+      "archive": null,
+      "sections": {
+        "farcode": 5
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/25-appexitg.o",
+      "archive": null,
+      "sections": {
+        "farcode": 57
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/26-apphidem.o",
+      "archive": null,
+      "sections": {
+        "farcode": 30
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/27-apphiden.o",
+      "archive": null,
+      "sections": {
+        "farcode": 173
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/28-appinit.o",
+      "archive": null,
+      "sections": {
+        "farcode": 309,
+        "huge": 2
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/29-appshowm.o",
+      "archive": null,
+      "sections": {
+        "farcode": 46
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/32-cfformkb.o",
+      "archive": null,
+      "sections": {
+        "farcode": 364,
+        "zhuge": 4
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/33-cfmalloc.o",
+      "archive": null,
+      "sections": {
+        "farcode": 42
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/34-cfobjced.o",
+      "archive": null,
+      "sections": {
+        "farcode": 140
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/35-cfobjcfd.o",
+      "archive": null,
+      "sections": {
+        "farcode": 177
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/38-debug.o",
+      "archive": null,
+      "sections": {
+        "farcode": 45
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/40-fdeditva.o",
+      "archive": null,
+      "sections": {
+        "farcode": 188
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/41-fdfinded.o",
+      "archive": null,
+      "sections": {
+        "chuge": 34,
+        "farcode": 339
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/42-fdfindsc.o",
+      "archive": null,
+      "sections": {
+        "farcode": 385
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/44-fexists.o",
+      "archive": null,
+      "sections": {
+        "farcode": 44
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/45-fscase.o",
+      "archive": null,
+      "sections": {
+        "farcode": 4
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/46-fsexists.o",
+      "archive": null,
+      "sections": {
+        "farcode": 54
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/47-fsgetpth.o",
+      "archive": null,
+      "sections": {
+        "farcode": 12
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/48-fslong.o",
+      "archive": null,
+      "sections": {
+        "farcode": 4
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/49-fsnorm.o",
+      "archive": null,
+      "sections": {
+        "farcode": 139
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/50-fssetext.o",
+      "archive": null,
+      "sections": {
+        "farcode": 289
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/51-fsshort.o",
+      "archive": null,
+      "sections": {
+        "farcode": 413
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/52-fssplite.o",
+      "archive": null,
+      "sections": {
+        "farcode": 308
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/53-fssplitf.o",
+      "archive": null,
+      "sections": {
+        "farcode": 255
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/54-globals.o",
+      "archive": null,
+      "sections": {
+        "huge": 4,
+        "zhuge": 308
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/55-magxobj.o",
+      "archive": null,
+      "sections": {
+        "farcode": 522
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/56-magxsc.o",
+      "archive": null,
+      "sections": {
+        "farcode": 431
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/60-mdclose.o",
+      "archive": null,
+      "sections": {
+        "chuge": 54,
+        "farcode": 502
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/61-mddo.o",
+      "archive": null,
+      "sections": {
+        "farcode": 1258,
+        "switch": 48
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/62-mdial.o",
+      "archive": null,
+      "sections": {
+        "zhuge": 8
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/63-mdmesag.o",
+      "archive": null,
+      "sections": {
+        "farcode": 710
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/64-mdopen.o",
+      "archive": null,
+      "sections": {
+        "chuge": 11,
+        "farcode": 1050
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/66-mdredraw.o",
+      "archive": null,
+      "sections": {
+        "farcode": 211
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/67-mdsimple.o",
+      "archive": null,
+      "sections": {
+        "farcode": 130
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/68-mdwincb.o",
+      "archive": null,
+      "sections": {
+        "farcode": 35
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/69-menu.o",
+      "archive": null,
+      "sections": {
+        "zhuge": 8
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/70-menucre.o",
+      "archive": null,
+      "sections": {
+        "chuge": 69,
+        "farcode": 79
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/71-menudel.o",
+      "archive": null,
+      "sections": {
+        "chuge": 52,
+        "farcode": 60
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/72-menuisk.o",
+      "archive": null,
+      "sections": {
+        "chuge": 31,
+        "farcode": 2358
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/73-menutogg.o",
+      "archive": null,
+      "sections": {
+        "farcode": 368
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/75-nkccuppr.o",
+      "archive": null,
+      "sections": {
+        "chuge": 256,
+        "farcode": 77
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/76-obfindfl.o",
+      "archive": null,
+      "sections": {
+        "farcode": 140
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/78-obgframe.o",
+      "archive": null,
+      "sections": {
+        "farcode": 1230,
+        "switch": 38
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/81-obgspec.o",
+      "archive": null,
+      "sections": {
+        "farcode": 176
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/83-obgstr.o",
+      "archive": null,
+      "sections": {
+        "chuge": 77,
+        "farcode": 237,
+        "switch": 36
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/84-obgtype.o",
+      "archive": null,
+      "sections": {
+        "farcode": 194
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/86-obsflag.o",
+      "archive": null,
+      "sections": {
+        "farcode": 241
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/90-obsstate.o",
+      "archive": null,
+      "sections": {
+        "farcode": 241
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/91-obsstr.o",
+      "archive": null,
+      "sections": {
+        "chuge": 77,
+        "farcode": 236,
+        "switch": 36
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/100-pphandle.o",
+      "archive": null,
+      "sections": {
+        "chuge": 1
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/108-vopnvwk.o",
+      "archive": null,
+      "sections": {
+        "farcode": 134
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/129-nkccinit.o",
+      "archive": null,
+      "sections": {
+        "chuge": 36,
+        "farcode": 224
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/130-nkccgton.o",
+      "archive": null,
+      "sections": {
+        "farcode": 102
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/131-allocation.o",
+      "archive": null,
+      "sections": {
+        "farcode": 1016,
+        "zhuge": 20
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/132-entry.o",
+      "archive": null,
+      "sections": {
+        "farcode": 985
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/133-files.o",
+      "archive": null,
+      "sections": {
+        "farcode": 2772,
+        "switch": 156,
+        "zhuge": 49
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/134-library.o",
+      "archive": null,
+      "sections": {
+        "chuge": 8,
+        "farcode": 182,
+        "zhuge": 4
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/135-support.o",
+      "archive": null,
+      "sections": {
+        "farcode": 712
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/136-gem-helpers.o",
+      "archive": null,
+      "sections": {
+        "chuge": 2,
+        "farcode": 1622
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/137-analysis-traps.o",
+      "archive": null,
+      "sections": {
+        "chuge": 29,
+        "farcode": 28
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/0-imports-asm.o",
+      "archive": null,
+      "sections": {
+        "farcode": 396
+      }
+    },
+    {
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-layout/1-image-info-asm.o",
+      "archive": null,
+      "sections": {
+        "execinfo": 16
+      }
+    },
+    {
+      "source": "pseudoRegisters.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "registers": 20
+      }
+    },
+    {
+      "source": "lib_fputs.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 228
+      }
+    },
+    {
+      "source": "lib_libfwrite.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 584
+      }
+    },
+    {
+      "source": "errno.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "zhuge": 2
+      }
+    },
+    {
+      "source": "lib_libfflush.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 570
+      }
+    },
+    {
+      "source": "vswitch32.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 192
+      }
+    },
+    {
+      "source": "lib_rdflush.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 233
+      }
+    },
+    {
+      "source": "lib_fseek.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 143
+      }
+    },
+    {
+      "source": "lib_wrflush.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 53
+      }
+    },
+    {
+      "source": "streamlist.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 185,
+        "zhuge": 99
+      }
+    },
+    {
+      "source": "lib_fclose.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 566
+      }
+    },
+    {
+      "source": "lib_fflush.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 56
+      }
+    },
+    {
+      "source": "lib_libflushall.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 141
+      }
+    },
+    {
+      "source": "lib_strlen.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 35
+      }
+    },
+    {
+      "source": "lib_strcpy.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 90
+      }
+    },
+    {
+      "source": "lib_memcpy.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 128
+      }
+    },
+    {
+      "source": "lib_vfprintf.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 88
+      }
+    },
+    {
+      "source": "__vsprintf_nofloat.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "chuge": 15,
+        "farcode": 4379,
+        "switch": 48
+      }
+    },
+    {
+      "source": "lib_stdoutstream.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 295
+      }
+    },
+    {
+      "source": "lib_fputc.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 139
+      }
+    },
+    {
+      "source": "lib_libnoflush.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 4
+      }
+    },
+    {
+      "source": "lib_memmove.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 218
+      }
+    },
+    {
+      "source": "integer.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 491
+      }
+    },
+    {
+      "source": "lib_sprintf.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 100
+      }
+    },
+    {
+      "source": "lib_memoutstream.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 340
+      }
+    },
+    {
+      "source": "controlFlow.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 14
+      }
+    },
+    {
+      "source": "lib_memset.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 71
+      }
+    },
+    {
+      "source": "memory.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 46
+      }
+    },
+    {
+      "source": "lib_strrchr.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 91
+      }
+    },
+    {
+      "source": "lib_strcat.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 149
+      }
+    },
+    {
+      "source": "ctype.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "chuge": 256,
+        "farcode": 142
+      }
+    },
+    {
+      "source": "vswitch16.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 123
+      }
+    },
+    {
+      "source": "lib_strcmp.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 78
+      }
+    },
+    {
+      "source": "lib_strncpy.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 234
+      }
+    },
+    {
+      "source": "spill.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 53,
+        "registers": 3
+      }
+    },
+    {
+      "source": "lib_labs.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 24
+      }
+    },
+    {
+      "source": "lib_strchr.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 43
+      }
+    },
+    {
+      "source": "lib_atoi.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 15
+      }
+    },
+    {
+      "source": "lib_strtol.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 353
+      }
+    },
+    {
+      "source": "lib_strtoul.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 567
+      }
+    },
+    {
+      "source": "lib_isbasedigit.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 259
+      }
+    },
+    {
+      "source": "lib_checkbase.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 326
+      }
+    },
+    {
+      "source": "lib_skipspace.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 76
+      }
+    },
+    {
+      "source": "getenv.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 433
+      }
+    },
+    {
+      "source": "lib_strnlen.o",
+      "archive": "clib-lc-hd.a",
+      "sections": {
+        "farcode": 41
+      }
+    }
+  ],
+  "link_summary_reconciled_bytes": 146690,
+  "verified_analysis_banks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61
+  ],
+  "analysis_elf_sha256": "19134e2c484d3555101928e416194df247ad67dc0cf257acbce0549df9204654",
+  "unresolved_essential_helpers": [],
+  "cohorts": {
+    "opt": {
+      "status": "pass",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "application_sha256": "cabc625bd41916414e846b708d53ad980776b3c21c65a72b25baa3dc3a606541",
+      "application_bytes": 137325,
+      "span": 266427,
+      "segment_count": 6,
+      "entry_link_bank": 16,
+      "verified_banks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59
+      ],
+      "compiler_flags": [
+        "--code-model=large",
+        "--data-model=huge",
+        "-O2"
+      ],
+      "source_options": {
+        "qed_native_layout.c": [
+          "-DQED_BAD_FORMAT=306",
+          "-DQED_TEST_LIMITS=1"
+        ]
+      },
+      "program_sha256": "851152437491fa352cd7cdf2676bf47f494da002ca99162a1dcfb40cc40eed1a",
+      "results_sha256": "5532531e4f003c3938ef82a1c6720f4b0f3437e1ceac2be803dee59ba371fc4c",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "native_irq_count": 5113,
+        "native_nmi_count": 9973,
+        "os_busy": 0,
+        "return_s": 14190,
+        "return_d": 3584,
+        "return_dbr": 0,
+        "fault_required": 0,
+        "irq_depth": 0
+      }
+    },
+    "raw": {
+      "status": "pass",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "application_sha256": "833c4491b1b45fb225fd904d612f85647550b8318c444f6db76287b4ed231a70",
+      "application_bytes": 136408,
+      "span": 265975,
+      "segment_count": 6,
+      "entry_link_bank": 16,
+      "verified_banks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59
+      ],
+      "compiler_flags": [
+        "--code-model=large",
+        "--data-model=huge",
+        "-O0"
+      ],
+      "source_options": {
+        "qed_native_abi.c": [
+          "--char-is-unsigned"
+        ],
+        "qed_native_layout.c": [
+          "-DQED_BAD_FORMAT=306"
+        ]
+      },
+      "program_sha256": "851152437491fa352cd7cdf2676bf47f494da002ca99162a1dcfb40cc40eed1a",
+      "results_sha256": "86fb9a7eff37a872e4fc0c84e0086c275d5bd21358b717328d884bfaac520dbb",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "native_irq_count": 47000,
+        "native_nmi_count": 9720,
+        "os_busy": 0,
+        "return_s": 14190,
+        "return_d": 3584,
+        "return_dbr": 0,
+        "fault_required": 0,
+        "irq_depth": 0
+      }
+    }
+  },
+  "identical_optimized_rebuild": {
+    "status": "pass",
+    "scope": "Final preprocessor selection preserves exactly the executed APP bytes",
+    "execution_results_sha256": "5532531e4f003c3938ef82a1c6720f4b0f3437e1ceac2be803dee59ba371fc4c",
+    "application_sha256": "cabc625bd41916414e846b708d53ad980776b3c21c65a72b25baa3dc3a606541",
+    "inputs": {
+      "/Users/michalkurcewicz/action/exec816-public/tests/programs/qed_native_layout.c": "0b787042726a3edec25b4fd8715027dd04fa94a08011a0075c771dec0dd26b5c",
+      "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/support.c": "f8ba6c9f42bac34cb60a3db532f167a0f6e9b98a7723d493c5e60c3ad88157cb",
+      "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/gem-helpers.c": "6c8fd0a090850f250d3cb3fc31d979118a6bad88dd35ea0d38c4f6665d2b0f93",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-final-opt/inputs/source/cflib/nkccinit.c": "993667ce61edfc4e9a7fb44efe33deb4794c2ee4cb33b15242a1ed682609428b",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-final-opt/inputs/source/cflib/nkccgton.c": "d90c86c29462ca6e64bc3eaf1fba8545ee5b02b82a5daaf59cfb29be8f37ff2e",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-final-opt/QedLayoutFirst.s": "9c4825fde846ad777615254131f7c28456883bf26d66d100ac36acbcf299cd4d",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-final-opt/QedLayoutLast.s": "e7da9736fa36cbc3c745bb9f3aa6ef6f4bd41c6e3e728a2042be46a7a94866ae",
+      "/Users/michalkurcewicz/action/exec816-public/build/qed-native/qf4-final-opt/QedLayoutTable.s": "7da9dd36c9642bb0faae7363b99b6d3331d1a011d489c7eab845c595968593e7"
+    }
+  },
+  "packaging_checks": [
+    "Direct packer rejects the rooted analysis symbol",
+    "Direct packer rejects the embedded marker without the symbol",
+    "MyDOS and SpartaDOS producers reject renamed analysis content before creating media"
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  },
+  "transient_loader_stack_delta_bytes": 40,
+  "remaining_gem": [
+    "RSC admission: 682 objects / 32 trees exceed current 256 / 8 limits",
+    "Menu tree has 126 objects; native tree/menu capacities are 32 / 33; design a compact selected menu",
+    "Free-string address access, supported object flags and resource/dialog decoration need native adaptation",
+    "Fixed-font drawing, metrics, selection, scrolling and caller-owned window/dialog behavior need step 3 execution"
+  ],
+  "limits": [
+    "14 of 17 catalogued later-GEM bindings are linked nonreturning analysis loops (28 bytes)",
+    "The 29-byte marker is analysis data; no executable QED APP exists",
+    "Future private code/data/container and resident provider allowances are caps requiring remeasurement",
+    "Full QED startup, editing, saving and fault recovery are unexecuted",
+    "QF5 stack bounds/admission and QF6 final baseline remain open"
+  ],
+  "host_checks": {
+    "status": "pass",
+    "tests": 522,
+    "skipped": 4,
+    "scope": "Host suite, affected generators and documentation content/local links"
+  }
+}

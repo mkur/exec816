@@ -161,3 +161,80 @@ guards, alignment and unused capacity. Descriptor/runtime metadata is private
 upper-image/heap storage. The provider's DOS pointer table gains one 24-bit
 entry before link alignment; no bank-zero reservation changes. QF4–QF6 remain
 open.
+
+
+## QF4: complete graph and bounded image profile
+
+The [QF4 evidence](../development/qed-native-qf4.json) records a real optimized
+link of the [selected source graph](../../ports/gem4xe/apps/qed/native-selection.json):
+131 translation units compile, with all 178 pinned editor/cflib candidates
+assigned a disposition. The closure retains 22 editor units, 54 cflib units,
+six native application-runtime units and 45 compiler archive members, plus
+imports, analysis bindings and virtual metadata. The corrected FILE allocator
+is compiled but discarded here because preference/stdio-file callers are
+excluded; QF3 separately executes it with actual stdio files.
+
+Source adaptations remove optional startup, command, timer and retirement
+paths together. Native entry uses bounded arguments, one owned workstation,
+fixed defaults, private clipboard storage and ordinary Process return.
+Resource discovery is `SYS:QED.RSC`; relative document paths keep their native
+context. Public flat OBJECT/TEDINFO fields replace donor union access through
+explicit casts and masks. Startup acquisition failures roll back their owners;
+window/dialog/menu retirement failures retain live backing rather than returning
+through heap cleanup. These full-editor paths are compiled analysis, not GUI
+execution or fault-recovery evidence.
+
+The [explicit GEM catalog](../../ports/gem4xe/apps/qed/analysis-bindings.json)
+contains 17 typed future interfaces, 14 of which survive this link as 28 bytes
+of nonreturning bindings. The rooted 29-byte marker survives filename changes.
+No unresolved essential helper is hidden in that set. Direct packaging rejects
+the symbol or marker, and both media producers reject renamed marked content.
+The declaration generator uses the existing hash-pinned GEM header as reference;
+public Exec records remain authoritative and no donor gateway is imported.
+
+| Measured private image cost | Bytes |
+| --- | ---: |
+| Code and switch tables, including imports/bindings | 124,786 |
+| Initialized data, including the analysis marker | 1,372 |
+| BSS | 20,493 |
+| Import thunks, already included in code | 396 |
+| Complete span | 190,322 |
+| Holes inside that span | 43,671 |
+| Serialized size if executable, including 7,798 fixups | 158,238 |
+| Rounded loader backing, including alignment capacity | 255,860 |
+
+These are full-source costs, not the smaller runtime fixture or donor package.
+The report reconciles all 146,690 loaded/virtual bytes in 130 linker units;
+virtual metadata and task-relative DP are not new bank-zero reservations.
+All 61 legal analysis-image bases independently reproduce bytes and symbols.
+
+The remaining local-code cap is 32 KiB, with 16 KiB data/BSS and 16 KiB extra
+container metadata. The latter can accommodate, for example, 4,000 additional
+fixups, 32 imports and two segments. These caps fit the bounded file/layout
+and must be remeasured as later code lands. They are conditional planning
+allowances, not estimates validated by editor execution.
+
+The matched resident provider uses 178,056 code bytes, 40,145 read-only table
+bytes and 25,739 initialized/BSS bytes. Separate caps of 16 KiB code, 4 KiB
+tables and 16 KiB data/BSS fit its existing banks. Crossing a cap requires a
+new fit decision; private QED growth is not charged to those provider caps.
+The original English resource still exceeds current resource/tree/menu limits,
+and the evidence lists those existing-interface gaps alongside the new bindings.
+
+C APP ABI 23 admits the existing third code bank through a five-bank span and
+six segments. The 256 KiB file cap and linker placement stay unchanged.
+Future full-profile alignment backing is at most 393,216 bytes. Both compiler
+modes execute an independent six-segment APP with main in the third code bank;
+all 59 permitted bases relink independently. The optimized probe additionally
+uses native loader calls to reject count/span overflow and verifies stable heap
+ownership. String conversion, rectangle and native key helpers execute in both
+modes. The final optimized preprocessor selection rebuilds to exactly the same
+APP bytes as the executed probe.
+
+The host suite reports 522 tests with four historical-source skips. All selected
+native checks preserve guards, ownership, context and actual IRQ/NMI activity.
+These remain development checks. Reserved bank-zero delta from QF3 is
+**0 fixed, 0 per-public-Task, 0 private-idle bytes**, including guards, alignment
+and unused capacity. The loader segment array adds 40 transient caller-stack
+bytes; it does not grow a reservation. QF5 stack/admission and QF6 reconciliation
+remain open. No QED analysis artifact is distributed in demo media.

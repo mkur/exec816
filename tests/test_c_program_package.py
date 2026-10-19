@@ -4,6 +4,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from c_program import fixups,verify,pack
 from generate_c_program import files
+from analysis_artifact import MARKER
 
 
 def image(bank):
@@ -23,7 +24,7 @@ class CProgramPackageTests(unittest.TestCase):
         for bank in (1,11,14,62):verify(original,image(bank),bank,relocations)
         wire,record=pack(original,relocations)
         self.assertEqual(struct.unpack_from('<4sHHBBHIIIHHI',wire),
-                         (b'C816',1,22,12,64,3,65544,0,2,1,20,len(wire)))
+                         (b'C816',1,23,12,64,3,65544,0,2,1,20,len(wire)))
         self.assertEqual(struct.unpack_from('<HHI',wire,32+3*16),(0,0,5))
         self.assertEqual(record['segments'][-1]['size'],4)
         self.assertEqual(wire[-12:],bytes(original['segments'][0]['bytes']+original['segments'][1]['bytes']))
@@ -44,5 +45,25 @@ class CProgramPackageTests(unittest.TestCase):
 
     def test_generated_native_limits_are_current(self):
         for path,content in files().items():self.assertEqual(path.read_text(),content)
+
+    def test_analysis_image_rejected_by_symbol_or_embedded_marker(self):
+        for symbol in (True,False):
+            original=image(12)
+            if symbol:original['symbols']['__exec_analysis_only']=0xd0000
+            else:original['segments'][1]['bytes']=list(MARKER)
+            with self.assertRaisesRegex(RuntimeError,'Analysis-only'):
+                pack(original,[])
+
+    def test_five_bank_extent_and_six_segments_are_bounded(self):
+        original=image(12)
+        for offset,flags in ((0x20000,1),(0x30000,0),(0x40000,1)):
+            original['segments'].append(dict(address=0xc0000+offset,bytes=[0x6b],
+                executable=flags==1,writable=False))
+        original['segments'][-1]['bytes']=[0x6b]*65536
+        _,record=pack(original,[])
+        self.assertEqual(len(record['segments']),6)
+        self.assertEqual(record['span'],327680)
+        original['segments'][-1]['bytes'].append(0)
+        with self.assertRaisesRegex(RuntimeError,'supported banks'):pack(original,[])
 
 if __name__=='__main__':unittest.main()

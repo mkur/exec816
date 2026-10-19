@@ -72,6 +72,42 @@ The Stop fixture exercises a borrowed allocated title, cooperative native
 `RequestStop`, window retirement, heap cleanup and ordinary collection; no
 private Task exit or donor board termination is used.
 
+## Complete retained-source layout
+
+```sh
+python3 tools/test_qed_native.py --group layout --case opt --output build/qed-native/layout-opt
+python3 tools/build_qed.py --output build/qed-native/layout --provider build/qed-native/layout-opt/c-image.json
+```
+
+The [selection ledger](native-selection.json) accounts for every pinned editor
+and cflib source: 131 selected units and 47 explicit exclusions. Native startup,
+fixed defaults, clipboard ownership, file metadata and ordinary retirement
+replace donor OS, configuration and accessory paths. Source patches retain the
+editor core. The resource location is `SYS:QED.RSC`; document paths keep their
+inherited native current directory. CFLIB's private path seed is an empty
+relative prefix, with no invented drive or application-directory identity.
+
+The declaration generator fetches only the hash-checked GEM reference header
+already pinned by Exec. It selects private constants/declarations, preserving
+the public native records. It imports no donor gateway or SDK runtime.
+`tools/generate_qed_compat.py --check` verifies the checked-in result.
+
+`build_qed.py` compiles the complete selection with the real runtime and an
+explicit [later-GEM binding catalog](analysis-bindings.json). It writes an
+**analysis ELF and layout report**, with no APP. Nonreturning bindings are
+limited to that catalog; an unresolved essential helper fails the real link.
+The report includes every retained archive member and verifies independent
+relinks at every legal base. The packer and both filesystem media producers
+reject the embedded analysis marker, including a renamed artifact.
+
+The layout group executes an independent loaded six-segment probe with its
+entry in the third code bank. It also checks real private string/geometry/key
+helpers; optimized cases reject excessive segment counts/spans through the
+native loader. Raw mode focuses on the compiler/layout boundary. Use the
+[history and evidence](../../../../docs/history/qed-native-feasibility.md) for
+exact measured costs, allowances and execution scope. This is not full QED
+startup, editing or saving evidence.
+
 ## Notices
 
 The QED pin includes `gem4xe/NOTICE`, `dist/liesmich.txt`, `doc/qed-en.stg`,
