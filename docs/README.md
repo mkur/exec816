@@ -49,3 +49,10 @@ real hashing, checksum verification, masks/P/H/A attributes, shell launch,
 SDFS reads, cancellation and concurrent guests. [A1–A4 ARC](development/sdx-arc.md)
 adds exact-overlay loading, listing, extraction, mutation and mixed-use/shell acceptance. These are
 development results, not full hosted-system qualification.
+
+The [ELSA X 1.05 compatibility audit](development/sdx-elsax105-audit.json)
+records its native SDX dependencies, compact blocks and 16/24-bit fixups,
+private stack/direct-page requirements and largest-free-block allocation.
+Separate original-SDX/XLOS controls produce exact Atari XEX and SDX relocatable
+output. Native Exec execution, repeated launches and the complete instruction
+audit remain open; the current MD5/ARC personality does not admit ELSA.

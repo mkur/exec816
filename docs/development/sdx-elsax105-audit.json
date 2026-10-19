@@ -1,0 +1,871 @@
+{
+  "format": "exec816-elsax105-compatibility-audit-v1",
+  "date": "2026-10-19",
+  "source_revision": "774ddbe0399fb99d1e64d49270c31cb7123254d1",
+  "tier": "development",
+  "qualification": false,
+  "status": "Input, relocation, dependency ABI and selected bootstrap audit complete; limited original-system controls",
+  "execution_under_exec": "Unsupported; no admission or runtime implementation added",
+  "recommendation": "Prefer ELSA X 1.05 over the 1.04 XEX for a native SDX adapter proof. Preserve the pinned assembler core and translate its native service ABI to ordinary Process/DOS/heap operations.",
+  "audit_limits": [
+    "This is not a complete reachable-instruction or self-modifying-code audit.",
+    "No native Exec execution, concurrent Processes, BREAK latency, stack high-water or error-exit status is qualified.",
+    "Successful controls cover separate cold launches only. A two-command batch stalled on its second launch.",
+    "The AltirraOS original-driver control failed during 65816 v3.7 startup before ELSA output; the cause is not established."
+  ],
+  "sources": [
+    {
+      "name": "ELSA X 1.05 archive",
+      "url": "https://drac030.krap.pl/elsax105.arc",
+      "bytes": 115083,
+      "sha256": "30f6861a7fa23b3e2f4a50dd3145a490031629a755be2dbe23f7562ff1da739d"
+    },
+    {
+      "name": "ELSAX.COM",
+      "archive_path": "ELSAX.COM",
+      "bytes": 27695,
+      "sha256": "6b55377eed3c1ef708f5d10e93d28f3d83e2bb755b097c80aa7be6e48e3ec859"
+    },
+    {
+      "name": "SDX 4.51 toolkit",
+      "url": "https://sdx.atari8.info/sdx_files/4.51/toolkit.atr",
+      "bytes": 1474192,
+      "sha256": "74b73279417f94fc30639434501fea733717ac0004f92da18176dc954b82a52c"
+    },
+    {
+      "name": "65816.ARC",
+      "archive_path": "816/SYSTEM/65816.ARC",
+      "sha256": "6bdd06e3dbfcd63a51f49072ab621a25c5a802e71cca61e157999d5597aed0cf"
+    },
+    {
+      "name": "SDX451_maxflash1.car",
+      "url": "https://sdx.atari8.info/sdx_files/4.51/SDX451_maxflash1.car",
+      "sha256": "e400cba0ba7e20dc62c60019ab99de04d11f4a4fa841e20cacca7c44099940a3"
+    },
+    {
+      "name": "SDX 4.51 Programming Guide",
+      "url": "https://sdx.atari8.info/sdx_files/4.51/SDX451_Programming_Guide.pdf",
+      "sha256": "257d622f35ca15696e1eefb319f5659447a0b6fbac26ffd79a32b5a0b48a7173"
+    }
+  ],
+  "dependency_modules": [
+    {
+      "file": "65816.SYS",
+      "bytes": 420,
+      "sha256": "f01b75170b13d8a3b7a33b302fa6e45f3443eed49cc38955874f25b34550c0df",
+      "role": "Preloader selects 65816.OVL for XLOS or 65816A.OVL for AltirraOS; EXT816 supplies the native application library"
+    },
+    {
+      "file": "65816.OVL",
+      "bytes": 8907,
+      "sha256": "21c645eeb2d9c0f5fabd777a60623f2e59e6fbad75de66b7f951b307557278fe",
+      "role": "Preloader selects 65816.OVL for XLOS or 65816A.OVL for AltirraOS; EXT816 supplies the native application library"
+    },
+    {
+      "file": "65816A.OVL",
+      "bytes": 9386,
+      "sha256": "de5fa69adfbf90341978edff598c530bb0233395545ba77a2053f4fc4baf2880",
+      "role": "Preloader selects 65816.OVL for XLOS or 65816A.OVL for AltirraOS; EXT816 supplies the native application library"
+    },
+    {
+      "file": "EXT816.OVL",
+      "bytes": 20831,
+      "sha256": "c3da24e0bdfe3a73d574587c5dec18f2cc0c603a7ea8dbf1c531699a8f1b69c2",
+      "role": "Preloader selects 65816.OVL for XLOS or 65816A.OVL for AltirraOS; EXT816 supplies the native application library"
+    }
+  ],
+  "declared_layout": [
+    {
+      "number": 1,
+      "tag": 65529,
+      "control": 67,
+      "memory_index": 3,
+      "origin": 0,
+      "loaded_bytes": 24320,
+      "allocated_bytes": 40833,
+      "bss_bytes": 16513,
+      "payload_offset": 8,
+      "alignment": 256
+    },
+    {
+      "number": 2,
+      "tag": 65534,
+      "control": 192,
+      "memory_index": 0,
+      "origin": 0,
+      "loaded_bytes": 0,
+      "allocated_bytes": 1296,
+      "bss_bytes": 1296,
+      "payload_offset": 24336,
+      "alignment": 256
+    }
+  ],
+  "entry": [
+    {
+      "name": "@ELSAX",
+      "block": 1,
+      "offset": 0
+    }
+  ],
+  "relocations": {
+    "record_count": 32,
+    "total_sites": 2410,
+    "widths": {
+      "2": 2332,
+      "3": 78
+    },
+    "internal_block1_sites": 2311,
+    "low_block2_sites": 5,
+    "rule": "Same-block and references to low memory use 16-bit fixups; high-memory imports/cross-block references use 24-bit fixups. Widths for dynamically registered driver symbols follow the documented native ABI.",
+    "current_loader": "SDXFILE and tools/sdx_file.py reject the opening $FFF9 record and do not implement native $x3 execution."
+  },
+  "imports": [
+    {
+      "name": "H_PRINTF",
+      "references": 28,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_SFAIL",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "65816.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 5609,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        },
+        {
+          "file": "65816A.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 6068,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        }
+      ]
+    },
+    {
+      "name": "H_LOWERC",
+      "references": 5,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "ERRNO",
+      "references": 1,
+      "memory_index": 0,
+      "providers": []
+    },
+    {
+      "name": "H_XFAIL",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "65816.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 5621,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        },
+        {
+          "file": "65816A.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 6080,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        }
+      ]
+    },
+    {
+      "name": "H_MEMCPY",
+      "references": 2,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "65816.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 5633,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        },
+        {
+          "file": "65816A.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 6092,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        }
+      ]
+    },
+    {
+      "name": "H_MEMSET",
+      "references": 2,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "65816.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 5645,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        },
+        {
+          "file": "65816A.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 6104,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        }
+      ]
+    },
+    {
+      "name": "COMTAB",
+      "references": 13,
+      "memory_index": 0,
+      "providers": []
+    },
+    {
+      "name": "H_GETPAR",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_PUTC",
+      "references": 4,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_UPPERC",
+      "references": 6,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_FAIL",
+      "references": 2,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "65816.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 5597,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        },
+        {
+          "file": "65816A.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 6056,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        }
+      ]
+    },
+    {
+      "name": "H_FREAD",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_FWRITE",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_FCLOSE",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "FILE_P",
+      "references": 2,
+      "memory_index": 0,
+      "providers": []
+    },
+    {
+      "name": "H_FILE_P",
+      "references": 2,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_FOPEN",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_PERROR",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_MALLOC",
+      "references": 2,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "65816.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 5657,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        },
+        {
+          "file": "65816A.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 6116,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        }
+      ]
+    },
+    {
+      "name": "H_MFREE",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "65816.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 5669,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        },
+        {
+          "file": "65816A.OVL",
+          "memory_index": 3,
+          "registration": "runtime S_ADD table",
+          "name_file_offset": 6128,
+          "contract": "SDX 4.51 Programming Guide 19.1.4 and 19.1.5; not an FFFC export"
+        }
+      ]
+    },
+    {
+      "name": "H_FPRNTF",
+      "references": 8,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_FPUTC",
+      "references": 4,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_GEFINA",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_IFP32",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_FTELL",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    },
+    {
+      "name": "H_FLEN",
+      "references": 1,
+      "memory_index": 3,
+      "providers": [
+        {
+          "file": "EXT816.OVL",
+          "memory_index": 3
+        }
+      ]
+    }
+  ],
+  "abi_requirements": {
+    "entry": "E=0, A/X/Y 8-bit, DBR=PBR=the loaded code bank; DP/SP initially supplied by the caller, then changed by ELSA.",
+    "calls": "JSL/JML to native H_* services, with full D/DBR and width preservation according to each service. This is separate from Action native ABI v2 and the current emulation-mode SDX frame.",
+    "memory_calls": "H_MEMCPY/H_MEMSET take stack-passed 32-bit arguments with high bytes zero, overlap semantics and callee cleanup; H_MALLOC/H_MFREE use 32-bit AX and Y/scan attributes.",
+    "io_calls": "H_FREAD/H_FWRITE take 32-bit count and far buffer on the stack, remove the buffer argument and leave actual count on the stack. FILE_P plus H_FILE_P select a far filename; file_id/mode/scan and other legacy variables still require private mapping.",
+    "traps": "Native H_SFAIL/H_XFAIL/H_FAIL require 24-bit continuations and full native S restoration, with Process-owned handles and settled I/O before error delivery.",
+    "exit": "ERRNO must become an explicit Process result policy. Original controls verify bytes and DOS return, not command error codes.",
+    "formatting": {
+      "inline_records": 36,
+      "console_calls": 28,
+      "listing_calls": 8,
+      "conversion_types": [
+        "b",
+        "c",
+        "d",
+        "l",
+        "p",
+        "s",
+        "t",
+        "x"
+      ],
+      "modifiers": [
+        "direct page <",
+        "caller stack !",
+        "variable width/index *"
+      ],
+      "additional_gap": "%t keyword-table output is unsupported by the present SDXPRINT subset; H_PRINTF also returns a character count in A.",
+      "reachability": "Inventory at named import operand sites with JSL context checked; no whole-program reachability claim."
+    },
+    "case_conversion": "H_LOWERC/H_UPPERC operate on bytes without losing native register widths.",
+    "floating_point": "H_IFP32 is imported. The reviewed caller accesses physical $0000D4..$0000D7 and FR0; a native adapter must supply private FP state instead of sharing host ROM workspace."
+  },
+  "memory": {
+    "initialized_upper_bytes": 24320,
+    "upper_bss_bytes": 16513,
+    "allocated_upper_bytes": 40833,
+    "declared_bank_zero_bytes": 1296,
+    "direct_page_bytes": 256,
+    "scratch_bytes": 16,
+    "native_stack_bytes": 1024,
+    "total_declared_bytes": 42129,
+    "additional_dynamic_memory": "Queries and requests the largest free upper block",
+    "reservation_delta_this_audit": {
+      "fixed": 0,
+      "per_task": 0,
+      "idle": 0
+    },
+    "port_budget": "Not established; guards, alignment, IRQ/NMI headroom and Task stack reuse require measurement"
+  },
+  "reviewed_bootstrap": [
+    {
+      "offset": 70,
+      "bytes_hex": "f400002b",
+      "observation": "PEA low block base; PLD selects the private direct page"
+    },
+    {
+      "offset": 1778,
+      "bytes_hex": "a20f057a9a5a",
+      "observation": "LDX low block + $050F; preserve Y while TXS selects its native stack"
+    },
+    {
+      "offset": 4599,
+      "bytes_hex": "a9feffa2ffff",
+      "observation": "Largest-free-block query in 32-bit AX"
+    },
+    {
+      "offset": 1530,
+      "bytes_hex": "8de106",
+      "observation": "Bootstrap writes the two MVN bank operands at block+$06E1"
+    },
+    {
+      "offset": 4609,
+      "bytes_hex": "30288d05908e0790a0000022000000",
+      "observation": "Store the query result without changing AX; request that entire block through H_MALLOC"
+    },
+    {
+      "offset": 7554,
+      "bytes_hex": "8fd40000ad759f8fd60000e22022000000afd40000",
+      "observation": "Floating-point conversion writes/reads physical bank-zero FR0 around H_IFP32"
+    }
+  ],
+  "integration_findings": [
+    {
+      "id": "native-context",
+      "priority": "required",
+      "finding": "The existing SDX runtime enters E=1 and snapshots page one. ELSA uses E=0, its private D and a relocated native stack, including stack-relative operands.",
+      "action": "Define reusable native foreign-context classification, Task/stack ownership and NMI/IRQ-safe entry, services and retirement; preserve all native context and existing Task guards."
+    },
+    {
+      "id": "native-records",
+      "priority": "required",
+      "finding": "One $FFF9/$43 compact upper block plus one $FFFE/$C0 low BSS block, with both two- and three-byte fixups.",
+      "action": "Extend the file decoder and symbol address model through emitted-code probes and independent placed-image comparisons before native application admission."
+    },
+    {
+      "id": "workspace",
+      "priority": "required",
+      "finding": "H_MALLOC(-2) queries the largest free contiguous block and ELSA immediately requests that full size. It does not limit its workspace to a small allocation.",
+      "action": "Provide a measured Process-owned allocation budget and consistent largest-free query semantics; document the departure from whole-machine SDX allocation."
+    },
+    {
+      "id": "private-globals",
+      "priority": "required",
+      "finding": "COMTAB, FILE_P, ERRNO, legacy I/O parameters, physical FR0 accesses and a self-modified MVN bank pair remain even though the service calls are native.",
+      "action": "Audit and map all such operands and state per Image/Process. Preserve exact checked binary patches and do not alias native compiler DP metadata. Each live instance must own mutable core/BSS state; the reviewed MVN bank patch rules out assuming the core is immutable shared text."
+    },
+    {
+      "id": "console",
+      "priority": "required",
+      "finding": "36 native inline formatting records include stack/DP addressing and keyword tables, and listing uses a separate output channel.",
+      "action": "Implement the required native formatter ABI and ordinary DOS streams for text and graphical shells; preserve redirected ATASCII and write failures."
+    },
+    {
+      "id": "completion",
+      "priority": "open",
+      "finding": "Repeated launches, includes/listings, allocation failures, source errors, native write errors, computed dispatch, SMC and bounded BREAK remain unqualified.",
+      "action": "Use separate focused acceptance cases with exact output, resource recovery, guards and concurrent native/GEM peers before demo packaging."
+    }
+  ],
+  "original_system_controls": [
+    {
+      "artifact": "build/elsax105-audit/reference-xlos-single/results.json",
+      "artifact_sha256": "b0291ba8a1545f9ec37f5ff4d24a9b3919c5ff8f057b5a7f9cbc0ff5ac71d435",
+      "status": "pass",
+      "completed": true,
+      "rom": "/Users/michalkurcewicz/xlos-20251207/XLOS816A.ROM",
+      "rom_sha256": "c105cb742b773bbd4f50fd9f941128330ce811f67755e3ae19130ca2f3a03312",
+      "rom_override": true,
+      "commands": [
+        "ELSAX /OABS.XEX ABS.MAE >>ABS.LOG",
+        "STOP.COM"
+      ],
+      "outputs": {
+        "ABS.LOG": {
+          "bytes": 184,
+          "sha256": "bf446f75b43c7b40a930d3f660e460df819791eecd6e6dee61aad50d6a872f31",
+          "hex": "5061737320313a204142532e4d41459b50617373203120636f6d706c6574659b5061737320323a204142532e4d41459b50617373203220636f6d706c6574659b9b34204c494e455320415353454d424c454420494e544f2031352042595445539b31204c4142454c5320444546494e45449b4f424a4543542046494c45204142532e584558205752495454454e204f55549b2a2a2a20444f4e452c20393320425954455320555345442c203339383934313120465245459b"
+        },
+        "ABS.XEX": {
+          "bytes": 15,
+          "sha256": "a55de67a054e2ca1ffc290f1b30736aeedade9fd533e6360182431d8bd2b9dcb",
+          "hex": "ffff00200220a92a60e002e1020020"
+        }
+      },
+      "failure": null,
+      "scope": "Original ELSA X 1.05 on original SDX 4.51 with its native modules; no Exec execution"
+    },
+    {
+      "artifact": "build/elsax105-audit/reference-xlos-rel/results.json",
+      "artifact_sha256": "76ac935205b58faa302d911639ed63db2dfd06be36209b2621c43ed83d391656",
+      "status": "pass",
+      "completed": true,
+      "rom": "/Users/michalkurcewicz/xlos-20251207/XLOS816A.ROM",
+      "rom_sha256": "c105cb742b773bbd4f50fd9f941128330ce811f67755e3ae19130ca2f3a03312",
+      "rom_override": true,
+      "commands": [
+        "ELSAX /OREL.COM REL.MAE >>REL.LOG",
+        "STOP.COM"
+      ],
+      "outputs": {
+        "REL.COM": {
+          "bytes": 24,
+          "sha256": "bc23a1b93f4572929ab43f0be2af2c235cfd4c0933f94096f389780a154a84ba",
+          "hex": "feff010000000300a92a60fcff0100004054494e59202020"
+        },
+        "REL.LOG": {
+          "bytes": 215,
+          "sha256": "e880fbe70476cad1d40142fbf27fc70a36837681a4d707734d06bca5dcb3c8b0",
+          "hex": "5061737320313a2052454c2e4d41459b50617373203120636f6d706c6574659b5061737320323a2052454c2e4d41459b50617373203220636f6d706c6574659b9b54424153453a2430303030303020544c454e3a243030303030332833299b9b33204c494e455320415353454d424c454420494e544f2032342042595445539b31204c4142454c5320444546494e45449b4f424a4543542046494c452052454c2e434f4d205752495454454e204f55549b2a2a2a20444f4e452c20373920425954455320555345442c203339383934323520465245459b"
+        }
+      },
+      "failure": null,
+      "scope": "Original ELSA X 1.05 on original SDX 4.51 with its native modules; no Exec execution"
+    },
+    {
+      "artifact": "build/elsax105-audit/reference-xlos/results.json",
+      "artifact_sha256": "5a288c66daa151d6275f0066fd839ccc11b285aac81656b4b7e201ea61c119fd",
+      "status": "fail",
+      "completed": false,
+      "rom": "/Users/michalkurcewicz/xlos-20251207/XLOS816A.ROM",
+      "rom_sha256": "c105cb742b773bbd4f50fd9f941128330ce811f67755e3ae19130ca2f3a03312",
+      "rom_override": true,
+      "commands": [
+        "ELSAX /OABS.XEX ABS.MAE >>ABS.LOG",
+        "ELSAX /OREL.COM REL.MAE >>REL.LOG",
+        "STOP.COM"
+      ],
+      "outputs": {
+        "ABS.LOG": {
+          "bytes": 184,
+          "sha256": "bf446f75b43c7b40a930d3f660e460df819791eecd6e6dee61aad50d6a872f31",
+          "hex": "5061737320313a204142532e4d41459b50617373203120636f6d706c6574659b5061737320323a204142532e4d41459b50617373203220636f6d706c6574659b9b34204c494e455320415353454d424c454420494e544f2031352042595445539b31204c4142454c5320444546494e45449b4f424a4543542046494c45204142532e584558205752495454454e204f55549b2a2a2a20444f4e452c20393320425954455320555345442c203339383934313120465245459b"
+        },
+        "ABS.XEX": {
+          "bytes": 15,
+          "sha256": "a55de67a054e2ca1ffc290f1b30736aeedade9fd533e6360182431d8bd2b9dcb",
+          "hex": "ffff00200220a92a60e002e1020020"
+        },
+        "REL.LOG": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "hex": ""
+        }
+      },
+      "failure": "No breakpoint at $9000 within 3000 frames; {'ok': True, 'PC': '$9565', 'A': '$20', 'X': '$02', 'Y': '$00', 'S': '$b6', 'P': '$36', 'flags': '--MX-IZ-', 'cycles': 42840605, 'clock_multiplier': 8, 'shadow_rom': True, 'mode': '65C816'}",
+      "scope": "Original ELSA X 1.05 on original SDX 4.51 with its native modules; no Exec execution"
+    },
+    {
+      "artifact": "build/elsax105-audit/reference-altirra/results.json",
+      "artifact_sha256": "e06085a9e0246210e8cf80b933908155e24ad0d59109b2b2279924b88b9ab958",
+      "status": "fail",
+      "completed": false,
+      "rom": "/Users/michalkurcewicz/action/exec816-commands/build/firmware/altirraos-816.rom",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "rom_override": false,
+      "commands": [
+        "ELSAX /OABS.XEX ABS.MAE >>ABS.LOG",
+        "ELSAX /OREL.COM REL.MAE >>REL.LOG",
+        "STOP.COM"
+      ],
+      "outputs": {},
+      "failure": "No breakpoint at $9000 within 3000 frames; {'ok': True, 'PC': '$0003', 'A': '$00', 'X': '$45', 'Y': '$e8', 'S': '$2e', 'P': '$ff', 'flags': 'NV-BDIZC', 'cycles': 42768562, 'clock_multiplier': 8, 'shadow_rom': True, 'mode': '65C816'}",
+      "scope": "Original ELSA X 1.05 on original SDX 4.51 with its native modules; no Exec execution"
+    }
+  ],
+  "control_environment": {
+    "pin": "toolchain/altirra-shell-paced.json",
+    "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+    "model": "800XL PAL, 65C816 x8, 64 KiB base plus 63 high banks, shadow ROM enabled",
+    "disk": "SDFS made/read by the pinned independent Altirra filesystem producer; fastest disk model; SIO patching off",
+    "reference_car": {
+      "upstream_revision": "8f4a1bf14eeb1a83c4123d4f377d91012167ef62",
+      "kept": [
+        "CAR     COM",
+        "COMMAND COM",
+        "CONFIG  SYS",
+        "DIR     COM",
+        "DIR     OVL",
+        "ENV     SYS",
+        "MENU    COM",
+        "SPARTA  SYS",
+        "SYSERR  MSG",
+        "X       COM"
+      ],
+      "removed": [
+        "RAMDISK SYS",
+        "RDIO0   OVL",
+        "RDIO1   OVL",
+        "RDIO2   OVL",
+        "SIO     SYS",
+        "SIO0    OVL",
+        "SIO1    OVL",
+        "SIO2    OVL",
+        "SIO3    OVL",
+        "SIO4    OVL",
+        "SIO5    OVL",
+        "APPEND  COM",
+        "ARC     COM",
+        "ARCADD  OVL",
+        "ARCEXT  OVL",
+        "ARCLST  OVL",
+        "ATARIDOSSYS",
+        "CHKDSK  COM",
+        "CHTD    COM",
+        "CHVOL   COM",
+        "COMEXE  SYS",
+        "COMP    COM",
+        "CON     COM",
+        "COPY    COM",
+        "DATE    COM",
+        "DELTREE COM",
+        "DELTREE OVL",
+        "DEV     COM",
+        "DF      COM",
+        "DIRS    COM",
+        "DOSKEY  SYS",
+        "DUMP    COM",
+        "ED      COM",
+        "ELSE    COM",
+        "EXIT    COM",
+        "FIND    COM",
+        "FIND    OVL",
+        "FOR     COM",
+        "FORMAT  COM",
+        "GOSUB   COM",
+        "GOTO    COM",
+        "IF      COM",
+        "INDUS   SYS",
+        "INKEY   COM",
+        "JIFFY   SYS",
+        "KEY     COM",
+        "LESS    COM",
+        "MAN     COM",
+        "MAP     COM",
+        "MDUMP   COM",
+        "MEM     COM",
+        "NEXT    COM",
+        "PEEK    COM",
+        "POKE    COM",
+        "PROC    COM",
+        "PWD     COM",
+        "QUICKED SYS",
+        "RETURN  COM",
+        "RS232   COM",
+        "RTIME8  SYS",
+        "RUNEXT  CFG",
+        "RUNEXT  SYS",
+        "SCANDIR OVL",
+        "SETPATHSCOM",
+        "SIOSET  COM",
+        "SORTDIR COM",
+        "SORTDIR OVL",
+        "TD      COM",
+        "TIME    COM",
+        "UNERASE COM",
+        "XEP80   SYS",
+        "Z       SYS",
+        "ALIASES INI",
+        "BLOAD   COM",
+        "FMT     COM",
+        "SAVE    COM"
+      ],
+      "inserted": [
+        "65816.SYS",
+        "65816.OVL",
+        "65816A.OVL",
+        "EXT816.OVL",
+        "SIO816.SYS",
+        "CONFIG.SYS"
+      ],
+      "car_sha256": "18f6e9a60dae697c17b0f7bd173eb071964dc8805dfaafeb60f1c2fcde7037b0"
+    },
+    "reference_car_scope": "Disposable original SDX 4.51 CAR customized with upstream SDX Imager, native modules from the pinned toolkit and native CONFIG.SYS; no SDX modules modified, no third-party payload redistributed.",
+    "reference_dependency_inputs": [
+      {
+        "file": "65816.SYS",
+        "bytes": 420,
+        "sha256": "f01b75170b13d8a3b7a33b302fa6e45f3443eed49cc38955874f25b34550c0df"
+      },
+      {
+        "file": "65816.OVL",
+        "bytes": 8907,
+        "sha256": "21c645eeb2d9c0f5fabd777a60623f2e59e6fbad75de66b7f951b307557278fe"
+      },
+      {
+        "file": "65816A.OVL",
+        "bytes": 9386,
+        "sha256": "de5fa69adfbf90341978edff598c530bb0233395545ba77a2053f4fc4baf2880"
+      },
+      {
+        "file": "EXT816.OVL",
+        "bytes": 20831,
+        "sha256": "c3da24e0bdfe3a73d574587c5dec18f2cc0c603a7ea8dbf1c531699a8f1b69c2"
+      },
+      {
+        "file": "SIO816.SYS",
+        "bytes": 2177,
+        "sha256": "5e12fb2eb46ab7ee2fddb0122fc82a7d1209ea375df78e310476594c40df17cf"
+      },
+      {
+        "file": "CONFIG.SYS",
+        "bytes": 59,
+        "sha256": "2fb13dbcd367b9eb749f74e4e83e861c899ef51cb779bc4f9e2f06f331969be3"
+      },
+      {
+        "file": "816/SYSTEM/SIO816.ARC",
+        "sha256": "37cc7b7ac9d8786fc3d8ad2633bc64b90af18d610ace3237cb003572f96c1cbe"
+      }
+    ],
+    "imager_cli_source_sha256": "9039b084fa9cb3364dbfc0291cab1ab80d049dccc648579606e5f9638d0a0c08"
+  },
+  "proposed_slices": [
+    "Native SDX record/24-bit symbol host oracle plus focused emitted loader probes, with malformed-input cases.",
+    "Small source-audited E=0 guest proving private D/S ownership, native service frames and IRQ/NMI transitions alongside an ordinary Task.",
+    "Pinned ELSA with bounded workspace, private data parameters and native file/output services; reproduce the absolute and relocatable reference bytes.",
+    "Includes, listing, source and I/O errors, repeated/concurrent launches, BREAK, cleanup and graphical/text shell integration."
+  ],
+  "reproduction": {
+    "static": "python3 tools/sdx_elsax_audit.py path/to/ELSAX.COM --dependencies path/to/extracted/65816.ARC --output build/elsax105-audit/audit.json",
+    "host": "python3 -m unittest discover -s tests -p test_sdx_elsax_audit.py",
+    "host_tests": 13,
+    "full_static_inventory": "build/elsax105-audit/audit.json",
+    "reference_runner": "build/elsax105-audit/reference.py",
+    "reference_runner_sha256": "bc13a3ac8f9b446f5d3d9f310d6f6a7bdd50f76ffedc6182504a49ef6803fbda",
+    "reference_source_inputs": {
+      "AUTOEXEC.BAT": "454c534158202f4f4142532e584558204142532e4d4145203e3e4142532e4c4f479b53544f502e434f4d9b",
+      "STOP.COM": "ffff009002904c0090e002e1020090",
+      "ABS.MAE": "7f2e6f72672024323030309b73746172747f6c646120232432619b7f7274739b7f2e72756e2073746172749b",
+      "REL.MAE": "7f2e72656c202430309b4074696e79257f6c646120232432619b7f7274739b"
+    },
+    "sdx_host_suite": "python3 -m unittest discover -s tests -p \"test_sdx*.py\"",
+    "sdx_host_suite_passes": 28,
+    "audit_tool_sha256": "0247cf0dc238dd9402cbf4eb58e32dbce820101588efc2e6452e6e3207b4fa45",
+    "focused_test_sha256": "7866a2fd3f5d8ae561d0283a973c76346a6c5fed99fc7db341301520d8c90607"
+  }
+}
