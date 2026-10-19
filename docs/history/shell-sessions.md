@@ -4,9 +4,10 @@
 [Implementation plan](../plans/shell-sessions-implementation-plan.md) ·
 [Development record](../development/shell-sessions.json)
 
-Implementation proceeds through SS1–SS8. This record distinguishes the
-completed text, standalone bitmap and desktop console binding from the tab
-controls and final measurements still planned. Separate desktop windows remain outside this plan.
+SS1–SS8 are implemented. This record covers two independent text/standalone
+bitmap sessions, tabs in one desktop Shell window, measured resource and
+latency observations, and refreshed OF816 packages. Separate desktop windows
+remain outside this plan.
 
 ## SS1 — explicit shell contexts
 
@@ -358,3 +359,175 @@ bank-zero delta is **0 fixed, 0 per-public-Task and 0 idle bytes**, including
 guards, alignment and unused capacity. Timing and final package measurements
 remain SS8; these are development checks, without release or physical-hardware
 qualification.
+
+## SS8 — final measurements and OF816 packages
+
+The standard text/prime package and optional GEM desktop package start one
+shell through the five-second OF816 autoboot. The extracted ZIPs include the
+matching system/work disks, pinned ROM, upstream notices, guide and checksums;
+build manifests and traces remain outside the distribution. A text-only package
+provides the matched one-shell benchmark. The desktop's initial Shell position
+now derives its top from the cell origin: `64-FRAME_SHELL_TOP` (37). The former
+40-pixel placement request failed the current console move-alignment check.
+
+These are optimized development observations on the recorded PAL, 8× 65C816,
+AltirraOS and generic56k SIO configuration, using the clean pinned release
+compiler. Each package's exact native image, ZIP, media, compiler, ROM, emulator
+and observer hashes accompany the machine-readable record. SS1's `e164ab75`
+text-only image is the comparison baseline. Its SYS media was replaced solely
+for the comparison with the final benchmark's byte-identical disk; the native
+SS1 image is unchanged. The original difference was a six-byte README command
+example. WORK and all command binaries also match.
+
+### Switching and independent progress
+
+Each final cohort contains twenty physical Ctrl+Shift+Space switches in each
+direction at idle and another twenty in each direction during sustained script
+output. Session 1 retains a mid-line draft; session 2 retains a 95-character
+line, mid-line caret and horizontal viewport. The observer waits for all queued
+editing before freezing those expectations, then checks draft, caret and
+viewport after every idle switch. It independently compares text screen bytes
+or the full desktop raster. Both shells make progress while the producer
+remains active; the output script interleaves each visible ECHO with eight
+reports to NIL, leaving scanout fences without pausing guest execution.
+
+Switch times below are milliseconds from physical chord injection to the first
+PAL interrupt checkpoint observing controller selection, then to independently
+correct pixels/caret. Each cell is median / nearest-rank p95. Sampling is one
+PAL frame (about 20.056 ms); scanout fences and preemption are included. These
+are end-to-end observations, not pure CPU timings or promised latency limits.
+The desktop observer first waits for scene damage and caret work to settle,
+then performs the independent raster check; its additional interrupt checkpoints
+are included in the pixel observation.
+
+| Display / workload / target | Selection median / p95 | Pixels median / p95 | Median frame / copy / present calls |
+| --- | ---: | ---: | ---: |
+| Text / idle / 1 | 40.1 / 40.1 | 80.2 / 80.2 | 0 / 0 / 6 |
+| Text / idle / 2 | 40.1 / 40.1 | 80.2 / 80.2 | 0 / 0 / 6 |
+| Text / output / 1 | 80.2 / 100.3 | 180.5 / 200.6 | 0 / 0 / 6 |
+| Text / output / 2 | 70.2 / 100.3 | 170.5 / 200.6 | 0 / 0 / 6 |
+| Desktop / idle / 1 | 80.2 / 80.2 | 641.8 / 641.8 | 25 / 1 / 10 |
+| Desktop / idle / 2 | 80.2 / 80.2 | 641.8 / 641.8 | 25 / 1 / 10 |
+| Desktop / output / 1 | 140.4 / 200.6 | 962.7 / 1163.2 | 25 / 1 / 11 |
+| Desktop / output / 2 | 160.4 / 200.6 | 1022.8 / 1103.1 | 25 / 3.5 / 14.5 |
+
+The record contains every sample and the complete marked bind, frame-paint,
+copy-launch and presentation calls within its interval. Partial calls and
+unmarked DMA work are excluded from those work counts. Cold backing rebuild
+and switches during an actual loaded command's disk read are separate samples.
+Covered, hidden, moved and physically iconified Shell cases reuse the native
+binding fixture and compare nine complete rasters per case. Their request-to-
+reply observations are distinct from pixel upper bounds, which also include
+the fixture's two sleep ticks. Binding behind another application preserves
+that application's keyboard focus. Those measurements do not claim a focus
+transfer.
+
+| Separate observation | Selection commit or bind reply | Correct-pixel observation |
+| --- | ---: | ---: |
+| Text, cold 2→1 | 40.1 ms | 80.2 ms |
+| Text, disk 2→1 | 40.1 ms | 80.2 ms |
+| Text, disk 1→2 | 40.1 ms | 80.2 ms |
+| Desktop, cold 2→1 | 80.2 ms | 641.8 ms |
+| Desktop, disk 2→1 | 80.2 ms | 722.0 ms |
+| Desktop, disk 1→2 | 80.2 ms | 802.2 ms |
+| Covered Shell bind | 11.9 ms | 1531.9 ms |
+| Iconified Shell bind | 11.1 ms | 245.5 ms |
+| Hidden Shell bind | 34.2 ms | 400.0 ms |
+| Moved cold backing bind | 11.8 ms | 608.3 ms |
+
+The desktop raster observer now resamples its expected terminal if queued
+input or output changes the model generation during a retry. A stale snapshot
+must not be mistaken for incorrect presentation. Script teardown records
+bounded physical BREAK retries: successive script commands replace the
+foreground generation, so a key captured just before retirement can expire.
+Both final cohorts stopped the script with one BREAK press.
+Stable-child disk cancellation and the durable CLOSE measurements below retain
+their separate checks.
+
+### One-shell comparison and cooperative close
+
+Five matched reports per command give the following medians. Visible output
+and NIL are reported separately; the differences include scheduling and image
+layout, so they do not isolate controller CPU cost.
+
+| Command | SS1 elapsed | Final elapsed | Change | SS1 / final Write time |
+| --- | ---: | ---: | ---: | ---: |
+| `ECHO one two` | 28.171 ms | 28.229 ms | +0.21% | 10.786 / 10.704 ms |
+| `ECHO one two >NIL:` | 28.703 ms | 29.410 ms | +2.46% | 0.987 / 1.012 ms |
+
+Gateway counts remain 55 and 52 respectively. The matched physical TAB checks
+cover resident names, aliases, default PATH search, current files and explicit
+disk paths. Default-search cold/warm input-to-visible observations change from
+1163/401 ms to 1183/401 ms; explicit-disk observations remain 1444/261 ms.
+The cold/warm SIO counts remain 1/0 and 3/0 respectively. All individual resolver
+and visible times, including resident/alias/current-file samples, are recorded.
+Both packages retain the 249-frame five-second autoboot observation.
+
+The optimized close fixture runs the real shell dispatcher and controller,
+using host flags only to trigger fixture phases. Root submits one ordinary
+CLOSE request. The prompt, actual disk read and live two-command pipeline
+cases each check exact retirement, heap recovery, guards and OS restoration.
+
+| Close point | Request to durable acceptance | Request to collected retirement |
+| --- | ---: | ---: |
+| Prompt | 1.044 ms | 175.268 ms |
+| Disk read | 1.081 ms | 547.891 ms |
+| Two-command pipeline | 1.082 ms | 455.625 ms |
+
+A deliberately noncooperative shell remains retained after acceptance while its
+peer switches, accepts physical input and prints a report. It retires only
+after the fixture releases its work. The recorded 3533 ms includes that
+intentional hold and peer input; it is not a cancellation bound.
+
+### Capacity, memory and validation scope
+
+The standard text/prime walkthrough exercises independent directory, PATH,
+alias, history and draft state; TAB, shared files/ASSIGNs, active disk switching,
+cancellation, capacity rejection, repeated close/recreate, unit-zero reuse and
+last-session OS return. With two shells and prime, a pipeline would require
+nine Tasks and fails cleanly. After prime stops, the pipeline runs at eight.
+The extracted desktop package uses physical New and tab close, rejects the
+nine-Task pipeline at two prompts, then runs it after one shell closes.
+
+| SIO workload | One prompt | Two prompts | Two prompts plus pipeline |
+| --- | ---: | ---: | ---: |
+| Text without prime | 5 | 6 | 8, admitted |
+| Standard text with prime | 6 | 7 | 9, rejected |
+| Desktop with its APP | 6 | 7 | 9, rejected |
+
+Each additional running APP consumes another slot. Mixed SIO+IDE adds a
+transport worker; IDE-only substitutes that worker and preserves the SIO count.
+Those IDE counts are structural accounting, not new IDE execution claims.
+
+| Package | One-shell / two-shell / survivor free heap | Final root headroom | Final shell-slot headroom |
+| --- | ---: | ---: | ---: |
+| Text | 2,729,064 / 2,720,200 / 2,729,064 | 864 | 612 / 525 |
+| Desktop | 1,862,304 / 1,853,120 / 1,862,304 | 701 | 478 / 472 |
+
+All entries are bytes. Inventories include the admitted console instances,
+heap regions, Task/Process/DOS ledger and each live identity/slot. Admitting the
+second shell uses 8,864 additional heap bytes in text and 9,184 in desktop,
+while using an already reserved Task slot. Closing it restores the initial
+free-heap total in both packages. Native close fixtures separately require
+exact full teardown recovery. All exercised
+root and shell slots exceed the 128-byte protected-floor target.
+
+Text static storage occupies 8,144/8,192 reserved upper bytes; desktop occupies
+8,578/9,216. The desktop's attached request block allocates 208 heap bytes, and
+the existing single backing remains 40,960 VRAM bytes. No Task or window slot,
+backing surface, or production static capacity is added in SS8. Its close
+fixture needs 8,201 bytes and reserves a separate 9,216-byte test arena; the
+production text arena remains 8,192. SS1's text image used 6,770/7,168 upper
+bytes; the production increase belongs to the earlier controller slices.
+
+All SS1–SS8 slices add **0 fixed, 0 per-public-Task and 0 idle reserved bank-zero
+bytes**, counting guards, alignment and unused capacity. The eight public
+slots, direct-page ownership and stack pools remain fixed. Slot watermarks are
+cumulative across lifetimes; the record associates each checkpoint with live
+identities and slots rather than claiming isolated per-incarnation peaks.
+
+The final development checks include 498 host tests, affected generated
+sources, content/link checks, the selected optimized emitted-code cases above,
+and the earlier slices' focused raw/optimized ABI probes. Separate desktop
+windows, forced Task termination, release matrices and physical-hardware
+qualification remain outside this implementation.

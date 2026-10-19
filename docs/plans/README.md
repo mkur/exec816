@@ -336,9 +336,10 @@ assuming work is pending. Current behavior belongs in the
 ## Programs and shell
 
 - [Multiple shell sessions design](shell-sessions-design.md) and
-  [SS1–SS8 plan](shell-sessions-implementation-plan.md): SS1–SS7 implemented; two
+  [SS1–SS8 plan](shell-sessions-implementation-plan.md): SS1–SS8 implemented; two
   independent shells, a root controller, switched text sessions and desktop
-  tabs before separate windows. Defines ownership, cancellation/pane changes
+  tabs, measured development evidence and refreshed OF816 packages. Separate
+  windows remain follow-on work. Defines ownership, cancellation/pane changes
   and the eight-Task concurrency limits; includes executable slices, message
   ownership, console control APIs, keyboard/tab behavior and validation gates.
 

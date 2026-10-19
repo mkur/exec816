@@ -4,10 +4,10 @@
 [Roadmap](../roadmap.md#commands-and-cli) ·
 [Testing policy](../contributing/testing.md)
 
-Status: implementation in progress, 2026-10-19. SS1–SS7 are complete; SS8 remains.
-See the [slice evidence](../history/shell-sessions.md) for actual development
-checks. Continue in order, keeping each slice executable and committing its
-implementation and validation record before the next slice.
+Status: implemented through SS8, 2026-10-19. Each executable slice was committed
+with its validation record. See the [slice evidence](../history/shell-sessions.md)
+for measured behavior, final OF816 packages and development scope. Release and
+physical-hardware qualification remain separate.
 
 The outcome is two independent resident shell Processes supervised by the
 existing root Task: switched text/standalone bitmap sessions first, then two

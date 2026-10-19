@@ -114,7 +114,11 @@ SESSION number and Ctrl-Shift-Space also switch; TAB completes commands/paths.
 Each shell keeps its own draft, caret, history, directory, aliases and job.
 EXIT closes only that session while another remains. Close is cooperative:
 its tab stays closing until its work retires. Two shells use two Task slots;
-close unused applications to leave capacity for external commands/pipelines.
+with the desktop APP running, two prompts use seven of eight slots. One external
+command fits; a two-command pipeline reports capacity failure. Close one shell
+or quit the desktop APP before running that pipeline. Each additional running
+GUI APP uses another slot. Mixed SIO+IDE builds need one further worker;
+IDE-only builds replace the SIO worker and keep the same total.
 
 Desk > Save Settings writes WORK:DESKTOP.CFG. Keep the writable disk to restore
 folder paths/sizes, view/sort, mouse preference and file associations next boot.

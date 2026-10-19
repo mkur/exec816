@@ -41,17 +41,56 @@ def scenes(font):
         yield overlay(raster,(320,120))
 
 
-def run(out,reuse=False,iconified=False,stale=False):
+
+def binding_timing(out, record, routines):
+    from measure_spartados_listing import spans,in_clock_window
+    from sio_transaction_trace import read_events,BASE_HZ
+    from native_program import sha256
+    work=spans(read_events(out/'emulator.log'),routines)
+    previous=0;rows=[]
+    for row in record['observations']:
+        end=record['iconified_visible_clock'] if record['iconified'] and row['stage']==4 else row['visible_clock']
+        requests=[x for x in work if x['kind']=='request' and in_clock_window(x,previous,end)]
+        if row['stage'] in (2,4,5,6,8):
+            require(len(requests)==1,'Missing measured bind request')
+            request=requests[0]
+            elapsed=((end-request['begin'])%(1<<32))/BASE_HZ*1000
+            rows.append(dict(stage=row['stage'],request_to_reply_ms=request['ms'],
+                request_to_pixels_upper_ms=elapsed,
+                work={name:len([x for x in work if x['kind']==name and
+                    in_clock_window(x,request['begin']%(1<<32),end)]) for name in routines if name!='request'}))
+        previous=row['visible_clock']
+    record['timing']=dict(rows=rows,trace_sha256=sha256(out/'emulator.log'),
+        scope='Real BIND request entry to acknowledged return; full independent pixels after settled paint, '
+        'two guest sleep ticks and a PAL interrupt checkpoint. Pixel elapsed is an upper bound including '
+        'that fixture delay. Stages 4/5 preserve covering-window focus; 4 is iconified when selected; '
+        '6 binds while hidden and 8 rebuilds cold backing after a move. No keyboard-focus transfer is '
+        'claimed while another window owns focus. Work counts include complete marked calls only.')
+
+
+def run(out,reuse=False,iconified=False,stale=False,measure=False):
     out.mkdir(parents=True,exist_ok=True)
     p=read_build(out/'program') if reuse else build_bitmap(
         ROOT/'tests/programs/desktop_console_bind.act',out,
         desktop=True,release_compiler=True)
     record=dict(status='running',tier='development',qualification=False,iconified=iconified,stale_completion=stale,build=p['build'],observations=[])
+    if measure:
+        from bitmap_console_performance import native_markers
+        from measure_read_8k import observe
+        routines=native_markers(p,[('DESKBINDTEST_BIND','request'),
+            ('DESKPAINT_FRAMESTEP','frame'),('CONSOLEBITMAP_COPYSTART','copy'),
+            ('CONSOLEDISPLAY_PRESENT','present')])
+        marks={}
+        for name,routine in routines.items():
+            marks[name+'_entry']=routine['entry']
+            for i,pc in enumerate(routine['returns']):marks[name+'_return_'+str(i)]=pc
+        observe(marks)
     address=lambda name: next(d['address'] for d in p['image']['data'] if '_DESKBINDTEST_'+name+'_' in d['name'])
     try:
         with emulator(BRIDGE,ROM,out,pin=PIN) as b:
             record['machine']=verify_machine(b,ROM,PIN)
             def before(b):
+                if measure:b.profile_start()
                 from desktop_mouse import schedule
                 from generate_desktop import layout
                 from desktop_oracle import compose
@@ -119,8 +158,10 @@ def run(out,reuse=False,iconified=False,stale=False):
                         icon_folder=out/'iconified-bind';icon_folder.mkdir(exist_ok=True)
                         packed=compose(b,p,font_bytes(out/'selected/src/vdi/font8x8.c'),Terminal(64,20),tuple(point()))
                         record['iconified_pixels']=pixels(b,icon_folder,packed,palette=DESKTOP_PALETTE)
+                        record['iconified_visible_clock']=b.eval_expr('@clk')
                         click(144,232);cycle();move(320,120);frames(100)
                     record['observations'].append(dict(stage=stage,pixels=pixels(b,folder,expected,palette=DESKTOP_PALETTE)))
+                    if measure:record['observations'][-1]['visible_clock']=b.eval_expr('@clk')
                     if iconified and stage==3:
                         click(552,34)
                         service=int.from_bytes(b.memdump(symbol('DESKSTATE','SERVICE'),3),'little')
@@ -129,9 +170,11 @@ def run(out,reuse=False,iconified=False,stale=False):
                     b.memload(address('GATE'),stage.to_bytes(2,'little'))
                 b.bp_clear_all()
             record['runtime'],_=execute(b,p,before_run=before,timeout=180,frame_limit=12000)
+            if measure:b.profile_stop()
             ownership(b,p,p['output'])
             record['checks']=data(b,p['image'],'checks',True)[0]
             record['status']='pass'
+        if measure:binding_timing(out,record,routines)
     except Exception as error:
         record.update(status='fail',error=str(error));raise
     finally:
@@ -145,4 +188,5 @@ if __name__=='__main__':
     parser.add_argument('--reuse',action='store_true')
     parser.add_argument('--iconified',action='store_true')
     parser.add_argument('--stale-completion',action='store_true')
-    args=parser.parse_args();run(args.output.resolve(),args.reuse,args.iconified,args.stale_completion)
+    parser.add_argument('--measure',action='store_true')
+    args=parser.parse_args();run(args.output.resolve(),args.reuse,args.iconified,args.stale_completion,args.measure)

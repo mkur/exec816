@@ -1,0 +1,117 @@
+MODULE SHELLCLOSEMEASURE
+USE FSBOOT
+INCLUDE "../../examples/shell/shell-session.inc"
+INCLUDE "../../examples/shell/shell-boot.inc"
+INCLUDE "../../examples/shell/shell-controller.inc"
+
+BYTE variant,go,closeNow,releaseFirst,finish,phase,finished
+CARD checks
+LONGCARD baseline
+
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ee00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Inserted only in this fixture, after the ordinary initial prompt. The first
+; shell runs the real dispatcher or intentionally refuses cooperative close.
+PROC FixtureWork(ShellContext POINTER context)
+
+  IF context.control.identity<>1 THEN
+    RETURN
+  FI
+
+  WHILE go=0 DO
+    EXEC.Yield()
+  OD
+
+  IF variant=1 THEN
+    STR.strlcpy(ShellLine(context),c"CAT SYS:LONG.TXT >NIL:",LINE_CAPACITY)
+    ShellCommand(context)
+  ELSEIF variant=2 THEN
+    STR.strlcpy(ShellLine(context),c"CAT SYS:LONG.TXT | WC",LINE_CAPACITY)
+    ShellCommand(context)
+  ELSEIF variant=3 THEN
+    WHILE releaseFirst=0 DO
+      EXEC.Yield()
+    OD
+  FI
+
+RETURN
+
+PROC Pump()
+  LONGCARD mask
+
+  mask=ShellControllerStep()
+  EXEC.Yield()
+
+RETURN
+
+; Passive PC markers delimit the ordinary request and observed collection.
+PROC CloseRequest()
+
+  ShellTabRequest(2,SESSION_CLOSE,1)
+
+RETURN
+
+PROC CloseRetired()
+
+  Check(controllerLive=1 AND sessions(0).process=0)
+  Check(contexts(0).shell=NULL AND selectedSession=2)
+  phase=3
+
+RETURN
+
+PROC Main()
+
+  baseline=EXEC.AvailMem(0)
+  Check(ShellControllerStart(0)<>0)
+  WHILE sessions(0).ready=0 DO
+    Pump()
+  OD
+
+  ShellTabRequest(0,SESSION_CREATE,0)
+  WHILE controllerLive<>2 OR sessions(1).ready=0 OR tabBusy<>0 DO
+    Pump()
+  OD
+
+  ShellTabRequest(1,SESSION_SELECT,1)
+  WHILE selectedSession<>1 OR tabBusy<>0 DO
+    Pump()
+  OD
+
+  phase=1
+  WHILE closeNow=0 DO
+    Pump()
+  OD
+
+  CloseRequest()
+  phase=2
+  WHILE controllerLive<>1 DO
+    Pump()
+  OD
+
+  CloseRetired()
+  WHILE finish=0 DO
+    Pump()
+  OD
+
+  ShellTabRequest(3,SESSION_CLOSE,2)
+  WHILE controllerLive<>0 DO
+    Pump()
+  OD
+
+  Check(DOS.AssignPath(BYTE POINTER(c"C"),NULL)<>0)
+  Check(DOS.AssignPath(BYTE POINTER(c"S"),NULL)<>0)
+  ShellControllerStop()
+  Check(FSBOOT.Stop()<>0)
+  Check(EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+ENDMODULE

@@ -186,7 +186,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             identity=number(at('job'))
             return state(far,p,out,identity) if identity else dict(progress=0,count=0)
         def rendezvous(condition):
-            b.bp_clear_all();marker=p['labels']['native_irq' if desktop else 'native_nmi']
+            # Measurement observers may use periodic VBI entry even when an
+            # idle desktop has no device IRQ pending.
+            checkpoint=getattr(integration,'interrupt_marker',None) if integration is not None else None
+            b.bp_clear_all();marker=p['labels'][checkpoint or ('native_irq' if desktop else 'native_nmi')]
             # Qualify bank zero: the bridge's PC fields and breakpoints use
             # the low word, which can also occur in the linked foreign image.
             condition=f'(@xpc=${marker:x})&({condition})'
@@ -276,6 +279,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     rgb=bytes((v&254)+(v>>7) for v in PALETTE)
                     colors={hw:rgb[pen*3:pen*3+3][::-1] for pen,hw in enumerate(PENS)}
                     for attempt in range(200):
+                        # Queued editor keys or a running producer can change
+                        # the model after the first scanout fence. Rebuild the
+                        # terminal snapshot before comparing another frame.
+                        if generations!=[number(i+console['INSTANCE_GENERATION']) for i in instances]:
+                            return cells(label)
                         packed=compose(b,p,r.font,terminal,saved['pointer'],counter_painter if gem_apps else None)
                         frame_data=b.rawscreen(str(folder/'scanout.bgra'))
                         raw=(folder/'scanout.bgra').read_bytes()

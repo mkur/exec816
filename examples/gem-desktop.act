@@ -22,7 +22,7 @@ PROC PlaceShell()
   DESKTOP.Prepare(@placement,DESKTYPES.MOVE)
   placement.window=DESKBOOT.WindowId()
   placement.bounds.left=112
-  placement.bounds.top=40
+  placement.bounds.top=64-DESKTYPES.FRAME_SHELL_TOP
   IF DESKTOP.Submit(binding,@placement)<>DESKTYPES.OK THEN
     RETURN
   FI

@@ -24,19 +24,14 @@ Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved
 bank-zero costs for each slice before moving to the next.
 
-The [multiple shell sessions design](plans/shell-sessions-design.md)
-separates shell state and lifetime, starting with two switched sessions and then
-desktop tabs. Separate windows follow the same session model. The design
-accounts for a root controller, existing Task/console limits, prime-pane
-switching and independent cancellation.
-SS1 isolates shell state, SS2 adds owner-requested cancellation, and SS3 adds
-grouped console switching and key notices. SS4 runs the first shell as a
-Process under the root controller;
-[development evidence](history/shell-sessions.md) records the native concurrency,
-layout, route, pipeline and physical presentation checks. The
-[SS1–SS8 plan](plans/shell-sessions-implementation-plan.md) orders reentrant
-state, console control, controller lifetime, two-session text behavior, desktop
-binding/tabs and measured OF816 delivery. SS1–SS7 are implemented; SS8 remains.
+The [multiple shell sessions plan](plans/shell-sessions-implementation-plan.md)
+is implemented through SS8: independent shell Processes under a root controller,
+switched text/standalone bitmap sessions, two desktop tabs, cooperative close
+and measured OF816 packages. The [development evidence](history/shell-sessions.md)
+records actual concurrency, presentation, resource and timing checks. Separate
+desktop windows still require the backing/VRAM design described in the
+[design note](plans/shell-sessions-design.md). Eight public Task slots remain
+fixed, with documented admission failures for larger workloads.
 
 The [shell TAB completion plan](plans/shell-completion-implementation-plan.md)
 is implemented through SC3: resumable editing, builtin/alias and filesystem/PATH

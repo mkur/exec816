@@ -2,7 +2,7 @@
 
 - [Multiple shell sessions](shell-sessions.md): incremental SS1–SS8 evidence,
   explicit per-session state, native layout and concurrency checks, resource
-  costs, desktop tabs and remaining final measurements.
+  costs, desktop tabs, final latency observations and tested OF816 packages.
 
 - [Shell TAB completion](shell-completion.md): resumable native editing,
   builtin/alias and streamed file/PATH matching, ownership/failure checks,
