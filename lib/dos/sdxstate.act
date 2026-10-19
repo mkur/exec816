@@ -7,6 +7,8 @@ USE SDXCONFIG
 USE A816MEMORY
 USE SDXFILE
 
+PUBLIC CONST OUTPUT_CAPACITY=256
+
 PUBLIC TYPE Trap=[CARD handler,stack]
 
 PUBLIC TYPE Session=[
@@ -18,7 +20,9 @@ PUBLIC TYPE Session=[
   BYTE trapCount,character,outputError,inverse
   LONGINT nativeError
   CARD outputUsed
-  BYTE ARRAY path(256),output(256),number(10)
+  DOS.FileHandle POINTER outputHandle
+  BYTE outputInteractive
+  BYTE ARRAY path(256),output(OUTPUT_CAPACITY),number(10)
   DOS.FileInfoBlock info
   BYTE ARRAY pattern(11)
   SDXFILE.Binding parentExport

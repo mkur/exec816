@@ -328,3 +328,46 @@ python3 tools/test_sdx_arc_mixed.py --output build/sdx-arc/a4-mixed
 python3 tools/test_sdx_arc_mutate.py --output build/sdx-arc/a4-dates
 python3 tools/test_sdx_md5_acceptance.py --attributes --output build/sdx-arc/a4-md5-attributes
 ```
+
+## Interactive output batching
+
+The shared SDX output adapter combines adjacent interactive `PRINTF` and `PUTC`
+fragments in its existing 256-byte buffer. It flushes at capacity, newline and
+editing controls, before other guest services (including input and exit), and
+on retirement. An overwrite prompt therefore reaches the console before its
+read begins. Suppressed `VPRINTF` leaves pending ordinary output intact.
+Redirected output still completes each original call and preserves ATASCII
+bytes. Short writes and native errors use the existing completion and trap
+paths; retirement preserves the first failure.
+
+The Process output handle and interactive property are borrowed once per guest
+invocation. Each loaded Image's upper Session grows from 2,248 to 2,252 bytes,
+or from 2,248 to 2,256 after allocation rounding: **8 upper-heap bytes per Image**.
+The buffer and static arena capacities are unchanged. Fixed, per-native-Task
+and idle reserved bank-zero growth are all **0 bytes**, including guards,
+alignment and unused capacity. The enabled personality retains its existing
+544-byte guarded direct-page pool.
+
+Focused emitted checks cover mixed formatted/character output, the buffer
+boundary, prompt visibility before a real input read, final partial records,
+error exit, discarded output, exact redirected bytes, native write failure and
+resource recovery. The Session/frame probes also run raw and optimized.
+The packaged graphical benchmark compares console and `NIL:` output on the
+same pinned ARC listing after warming the read cache. Its passive routine
+observations add no target instructions; elapsed times include preemption.
+
+On the pinned PAL 65816 x8 graphical desktop, the warm two-member sample
+listing falls from **3.333 s to 2.129 s**. Native writes, including the shell
+prompt, fall from **29 to 8**; their elapsed time falls from **1.567 s to
+0.297 s**. This compares one warm before sample with the median of two after
+samples. Total command time includes loading ARC and its overlay; typing is
+excluded. The matching `NIL:` timings are 1.688 s and 1.635 s.
+
+```sh
+python3 tools/test_sdx_output.py --output build/sdx-output/normal
+python3 tools/test_sdx_output.py --write-error --output build/sdx-output/write-error
+python3 tools/measure_sdx_console.py --bundle build/demo-sdx \
+  --utilities path/to/sdx-utils.atr --output build/sdx-output/measure
+```
+
+These are development checks, not full hosted-system or hardware qualification.

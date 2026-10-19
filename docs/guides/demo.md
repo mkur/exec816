@@ -67,6 +67,8 @@ and is excluded from release ZIPs. It requires this source checkout and Python 3
 build/demo/launch-altirra.command
 build/demo/launch-altirra.command --prepare-only
 build/demo/launch-altirra.command --altirra /path/to/AltirraSDL
+# Attach a persistent writable copy of another disk:
+build/demo/launch-altirra.command --disk 2 /path/to/utilities.atr
 # When the package includes cartridges:
 build/demo/launch-altirra.command --cart new
 ```
@@ -74,6 +76,8 @@ build/demo/launch-altirra.command --cart new
 `ALTIRRA` can also select the executable. `--config` selects another saved
 settings file; `--ide-firmware` overrides the local IDE BIOS path. Defaults find
 the local macOS AltirraSDL build, an installed application, or `AltirraSDL` on PATH.
+Repeat `--disk DRIVE IMAGE` for additional drives. SYS and WORK keep their assigned
+drives; additional images use persistent copies in the same local `altirra/` folder.
 
 The supplied SDFS 2.1 system disk has 2,880 sectors of 256 bytes (720 KiB
 nominal capacity), equivalent to 80 tracks, two sides and 18 sectors per track. The

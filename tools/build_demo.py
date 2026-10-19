@@ -15,6 +15,7 @@ from launch_demo import write_launcher
 from native_program import ROOT, build, compiler, read_build, require, sha256
 
 DEMO_IMAGE_DATA_BYTES = 8192
+SDX_DEMO_IMAGE_DATA_BYTES = 12288
 WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
 IDE_DEMO_NOTE = ('\nThis development build also requires IDE Plus 2.0 rev E, PBI ID 0,\n'
@@ -35,7 +36,7 @@ def record_cartridge_capacity(output):
     return capacity
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=False,sdx_drive_a='RAM:',sdx_car_root='RAM:'):
     require(sum((aes_counters,aes_input,gem_desktop))<=1, 'Select one resident GEM application profile')
     if aes_counters or aes_input or gem_desktop:
         desktop=True
@@ -46,6 +47,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     require(not (text_shell_only and (bitmap_shell_only or gem_vdi or bitmap_console)),
             'The shell-only text demo is a standalone boot selection')
     shell_only=bitmap_shell_only or text_shell_only
+    require(not sdx or not (gem_vdi or bitmap_console or ideplus or ide_only),
+            'The SDX demo requires a text or bitmap console with SIO disks')
     require(system_kib in (360,720),'System disk must be 360 or 720 KiB')
     if ide_only:
         sector_bytes=512
@@ -145,6 +148,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     # This is upper-bank capacity; Task/DP and bank-zero reservations are unchanged.
     profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES+(1024 if desktop else
         256 if bitmap_shell_only else 0)
+    if sdx:
+        profile['image_data_bytes']=SDX_DEMO_IMAGE_DATA_BYTES
     memory_profile=output/'demo-memory.json'
     memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     if bitmap_shell_only:
@@ -164,7 +169,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         program=builder(source=source,out=output/'bitmap-console',program_output=output,
             compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,mouse_profile=mouse_profile,
             system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,
-            sio_enabled=not ide_only,**({'release_compiler':release_compiler} if not desktop or gem_desktop else {}))
+            sio_enabled=not ide_only,sdx=sdx,sdx_drive_a=sdx_drive_a,sdx_car_root=sdx_car_root,
+            **({'release_compiler':release_compiler} if not desktop or gem_desktop else {}))
         copy_notices(output/'bitmap-console/selected',output)
         bitmap_pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
         if ide_only:
@@ -175,7 +181,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     else:
         program=build(toolchain,source,output,optimize=True,tasks=True,
                       task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
-                      system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only)
+                      system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only,
+                      sdx=sdx,sdx_drive_a=sdx_drive_a,sdx_car_root=sdx_car_root)
     if gem_desktop:
         for name in ('panel','counter','files','calc','dialog','text','g4bench'):
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
@@ -294,6 +301,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                         *sorted((ROOT/'lib/dos').glob('*.act'))]},
         bank_zero_delta=bank_zero_delta(program['build']['memory']),task_capacity=8,expected_peak_tasks=7,
         qualification='Focused development checks only; full release and general compiler qualification remain separate.')
+    if sdx:
+        record['sdx']=dict(enabled=True,drive_a=sdx_drive_a,car_root=sdx_car_root,
+                           fixed_bank_zero_bytes=544,per_task_bank_zero_bytes=0)
     if text_shell_only:
         record.update(shell_only=True,expected_peak_tasks=6)
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
@@ -550,6 +560,9 @@ if __name__=='__main__':
     parser.add_argument('--output',type=Path,default=ROOT/'build/demo')
     parser.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
     parser.add_argument('--release-compiler',action='store_true',help='Optimized host compiler for a text/bitmap shell or GEM desktop')
+    parser.add_argument('--sdx',action='store_true',help='Enable the pinned MD5/ARC development personality in a text or bitmap SIO demo')
+    parser.add_argument('--sdx-drive-a',default='RAM:',help='Immutable native root for SDX guest A: (requires --sdx)')
+    parser.add_argument('--sdx-car-root',default='RAM:',help='Native directory containing the pinned ARC overlays (requires --sdx)')
     parser.add_argument('--ide-only',action='store_true',help='IDE SYS/WORK, no Exec SIO driver; include raw media and both carts')
     parser.add_argument('--ideplus',action='store_true',help='Require the optional IDE: read-only development mount; fixture stays outside the ZIP')
     parser.add_argument('--format',choices=('sdfs','mydos'),default='sdfs')
@@ -586,7 +599,7 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')
     if not args.cartridge_from:
         print(f'Local Altirra launcher: {args.output}/launch-altirra.command')

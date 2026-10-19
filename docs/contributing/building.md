@@ -83,6 +83,28 @@ and GEM notices. See the [bitmap shell package guide](../bitmap-shell-distributi
 for VBXE configuration and commands. Reserved bank-zero memory is unchanged,
 both fixed and per Task; the prime Task is never started.
 
+For the opt-in SDX MD5/ARC development personality on the standard text demo:
+
+```sh
+python3 tools/build_demo.py --sdx --sdx-drive-a D2: --sdx-car-root D2: \
+  --release-compiler --output build/demo-sdx
+```
+
+Add `--gem-desktop` for the graphical desktop with the same SDX personality.
+The text profile keeps OF816's five-second shell/prime autoboot; the desktop
+profile keeps the five-second desktop autoboot without starting prime.
+Supply the pinned MD5.COM, ARC.COM and ARCLST/ARCEXT/ARCADD.OVL on a separate
+SDFS utility disk in D2.
+Attach the disk and run `MOUNT D2: FORMAT SPARTA READWRITE`, then
+`D2:MD5.COM ABC.TXT` or `D2:ARC.COM L SAMPLE.ARC` with suitable sample files.
+Guest A: and bare guest filenames select D2: independently of native CD; CAR:
+also selects D2: for overlays. The roots are immutable build settings.
+The [SDX service contract](../reference/sdx-services.md) lists supported operations.
+The profile reserves 12 KiB of upper static storage and the existing 544 fixed
+bank-zero bytes, including DP alignment and outer guards; per-Task growth is zero.
+Text and bitmap/desktop SIO builds can enable the personality. The default demo
+keeps SDX disabled.
+
 To refresh OF816 assembly, boot guides and the ZIP around an existing matching
 native build, use:
 

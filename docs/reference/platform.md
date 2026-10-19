@@ -140,6 +140,11 @@ profile adds one 256-byte page, for 8,448 bytes. Desktop profiles reserve 9 KiB;
 the SS8 GEM desktop uses 8,578 of 9,216 bytes (638 spare). These capacities are
 selected by `tools/build_demo.py`; code placement remains page-aligned.
 
+The opt-in text and bitmap/desktop SDX demos select a 12 KiB upper static arena
+for the composed shell controller and guest service globals. They use the
+existing 544-byte guarded SDX direct-page pool described above, with no
+additional fixed or per-Task bank-zero growth beyond that enabled profile.
+
 Session contexts, cooked editors, histories and console models use ordinary
 upper heap allocations. Desktop event/content requests additionally allocate
 208 bytes only while attached. The sole console backing remains 40,960 bytes

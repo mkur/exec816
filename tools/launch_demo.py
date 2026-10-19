@@ -92,7 +92,7 @@ def writable_copy(source, local):
     return target
 
 
-def prepare(demo, config, ide_firmware, cart=None):
+def prepare(demo, config, ide_firmware, cart=None, disks=()):
     demo = demo.resolve()
     record = json.loads(require_file(demo / 'demo-manifest.json').read_text())
     monitor = json.loads(require_file(demo / 'of816/of816.json').read_text())
@@ -154,6 +154,14 @@ def prepare(demo, config, ide_firmware, cart=None):
             f'Disk {drive - 1}': 'R' + str(require_file(demo / record['media'])),
             'Disk 7': 'W' + str(writable_copy(demo / 'work.atr', local)),
         })
+    for drive, source in disks:
+        if not 1 <= drive <= 8:
+            raise ValueError('Additional disk drive must be in D1..D8')
+        key = f'Disk {drive - 1}'
+        if json.dumps(key) in mounted:
+            raise ValueError(f'D{drive}: already has a demo disk attached')
+        set_values(settings, mounted.name,
+                   {key: 'W' + str(writable_copy(source.resolve(), local))})
     boot = require_file(demo / record['boot_image'])
     mode = '--run'
     if cart:
@@ -197,11 +205,14 @@ def main():
     parser.add_argument('--altirra', help='AltirraSDL executable or macOS .app; also accepts ALTIRRA')
     parser.add_argument('--ide-firmware', type=Path, default=ROOT / 'build/firmware/ideplus-bios-2.1.rom')
     parser.add_argument('--cart', choices=('old', 'new'), help='Boot a cartridge instead of the combined OF816 XEX')
+    parser.add_argument('--disk', nargs=2, action='append', default=[], metavar=('DRIVE', 'IMAGE'),
+                        help='Attach a persistent writable copy of an additional disk, e.g. --disk 2 utils.atr')
     parser.add_argument('--prepare-only', action='store_true', help='Write demo settings and print the launch command')
     args = parser.parse_args()
     try:
         binary = find_altirra(args.altirra)
-        config_home, media_args = prepare(args.demo, args.config.expanduser(), args.ide_firmware.expanduser(), args.cart)
+        disks = [(int(drive), Path(image).expanduser()) for drive, image in args.disk]
+        config_home, media_args = prepare(args.demo, args.config.expanduser(), args.ide_firmware.expanduser(), args.cart, disks)
         command = [str(binary), *media_args]
         print(f'Demo settings: {config_home / "altirra/settings.ini"}', flush=True)
         print(shlex.join(command), flush=True)

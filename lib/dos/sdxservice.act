@@ -136,6 +136,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   state.archiveCause=0
   state.archivePath(0)=0
   state.nativeError=0
+  SDXPRINT.Begin(state)
   error=SDXCOMMAND.Initialize(state,arguments,@image.name)
   IF error=0 AND state.profile=32 THEN
     IF arguments=NULL THEN
@@ -182,6 +183,10 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
     ELSEIF DOS.BreakPending()<>0 THEN
       error=128
       state.nativeError=304
+    FI
+    IF error=0 AND event<>SDXABI.CALL_PRINTF AND event<>SDXABI.CALL_PUTC
+        AND event<>SDXABI.CALL_VPRINTF THEN
+      error=SDXPRINT.Flush(state)
     FI
     IF error=0 THEN
       IF event=1 OR (event=SDXABI.CALL_U_FAIL AND frame(SDXABI.FRAME_A)=0) THEN
@@ -236,6 +241,14 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   cause=state.nativeError
   IF cause=0 THEN
     cause=LONGINT(error)
+  FI
+  ; An error or BREAK may retire a partly assembled line. Complete its native
+  ; write, preserving the first cause if that final write also fails.
+  closeError=SDXPRINT.Flush(state)
+  IF cause=0 AND closeError<>0 THEN
+    result=20
+    error=closeError
+    cause=state.nativeError
   FI
   closeError=SDXFILES.CloseAll(state)
   IF error=0 AND closeError<>0 THEN

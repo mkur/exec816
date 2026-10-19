@@ -5,17 +5,30 @@ USE SDXSTATE
 USE SDXFILES
 USE SDXADMISSION
 
-PROC Flush(SDXSTATE.Session POINTER state)
+; The Process owns this borrowed stream throughout one guest invocation.
+PUBLIC PROC Begin(SDXSTATE.Session POINTER state)
+
+  state.outputHandle=DOS.Output()
+  state.outputInteractive=DOS.IsInteractive(state.outputHandle)<>0
+  state.outputUsed=0
+  state.outputError=0
+  state.inverse=0
+  state.discardOutput=0
+
+RETURN
+
+; Input and other guest services drain a partial console line before their
+; effects. Redirected streams still complete every original output call.
+PUBLIC BYTE FUNC Flush(SDXSTATE.Session POINTER state)
   LONGINT sent,done
   CARD index
 
-  IF state.discardOutput<>0 THEN
-    state.outputUsed=0
-    RETURN
+  IF state.outputUsed=0 OR state.discardOutput<>0 THEN
+    RETURN(0)
   FI
   ; Redirected output retains the SDX byte stream. Native consoles consume
   ; ASCII controls; translate the four shared editing/line controls here.
-  IF DOS.IsInteractive(DOS.Output())<>0 THEN
+  IF state.outputInteractive<>0 THEN
     index=0
     WHILE index<state.outputUsed DO
       CASE state.output(index) OF
@@ -33,7 +46,7 @@ PROC Flush(SDXSTATE.Session POINTER state)
   FI
   done=0
   WHILE done<LONGINT(state.outputUsed) AND state.outputError=0 DO
-    sent=DOS.Write(DOS.Output(),@state.output+SIZE(done),
+    sent=DOS.Write(state.outputHandle,@state.output+SIZE(done),
         LONGINT(state.outputUsed)-done)
     IF sent<=0 THEN
       state.outputError=SDXFILES.MapError(state)
@@ -43,17 +56,21 @@ PROC Flush(SDXSTATE.Session POINTER state)
   OD
   state.outputUsed=0
 
-RETURN
+RETURN(state.outputError)
 
 PROC Emit(SDXSTATE.Session POINTER state BYTE value)
 
-  IF state.outputError=0 THEN
+  IF state.outputError=0 AND state.discardOutput=0 THEN
     IF value>=32 AND value<=124 THEN
       value=value XOR state.inverse
     FI
     state.output(state.outputUsed)=value
     state.outputUsed==+1
-    IF state.outputUsed=256 THEN
+    ; Newlines and editing controls remain visible immediately. Ordinary
+    ; fragments share the existing bounded buffer until the next service.
+    IF state.outputUsed=SDXSTATE.OUTPUT_CAPACITY OR
+        (state.outputInteractive<>0 AND
+          (value<32 OR value=$9b OR value=$7d OR value=$7e OR value=$7f)) THEN
       Flush(state)
     FI
   FI
@@ -124,7 +141,6 @@ PUBLIC BYTE FUNC Print(SDXSTATE.Session POINTER state BYTE POINTER frame)
   BYTE POINTER source
   LONGCARD number
 
-  state.outputUsed=0
   state.outputError=0
   state.inverse=0
   start=SDXSTATE.ReadWord(frame,SDXABI.FRAME_PC)
@@ -296,7 +312,9 @@ PUBLIC BYTE FUNC Print(SDXSTATE.Session POINTER state BYTE POINTER frame)
       FI
     FI
   OD
-  Flush(state)
+  IF state.outputInteractive=0 THEN
+    Flush(state)
+  FI
   IF state.outputError=0 THEN
     SDXSTATE.Word(frame,SDXABI.FRAME_PC,argument)
   FI
@@ -307,9 +325,10 @@ PUBLIC BYTE FUNC Character(SDXSTATE.Session POINTER state BYTE value)
 
   state.outputError=0
   state.inverse=0
-  state.outputUsed=0
   Emit(state,value)
-  Flush(state)
+  IF state.outputInteractive=0 THEN
+    Flush(state)
+  FI
 
 RETURN(state.outputError)
 
