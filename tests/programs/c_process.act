@@ -16,6 +16,7 @@ USE CSTRING.IMPL AS STR
 
 CARD checks,completed
 LONGCARD baseline
+LONGINT lastPrimary
 
 PROC Require(BYTE okay)
 
@@ -32,6 +33,7 @@ PUBLIC PROC Collected(LONGCARD id LONGINT expected)
 
   Require(id<>0)
   Require(PROCESS.Wait(id,@result)<>0)
+  lastPrimary=result.primary
   Require(result.primary=expected)
   completed==+1
 

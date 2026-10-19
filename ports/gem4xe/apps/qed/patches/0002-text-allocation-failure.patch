@@ -1,0 +1,90 @@
+--- a/qed/src/memory.c
++++ b/qed/src/memory.c
+@@ -84,6 +84,12 @@
+ 	{
+ 		i = BLOCKANZ;
+ 		mem_need_TQ = FALSE;
++	}
++
++	if (ptr == NULL)
++	{
++		mem_need_TQ = mem_need_BS = TRUE;
++		return FALSE;
+ 	}
+ 
+ 	*(void **)ptr = block_list;			/* In Liste einh„ngen */
+@@ -229,12 +235,14 @@
+ 
+ /* =========================================================== */
+ 
+-void INSERT(LINEP *a, short pos, short delta, char *str)
++bool INSERT(LINEP *a, short pos, short delta, char *str)
+ {
+ 	char	*ptr;
+ 	
+ 	ptr = REALLOC(a,pos,delta);
++	if (ptr == NULL) return FALSE;
+ 	memcpy(ptr, str, delta);
++	return TRUE;
+ }
+ 
+ /* =========================================================== */
+@@ -510,13 +518,17 @@
+  * auf NULL zeigt
+ */
+ 
+-void init_textring(RINGP r)
++bool init_textring(RINGP r)
+ {
+ 	LINEP	a;
+ 
+ 	r->head.info = HEAD;
+ 	r->tail.info = TAIL;
++	FIRST(r) = &r->tail;
++	LAST(r) = &r->head;
++	r->lines = 0;
+ 	a = new_col("",0);
++	if (a == NULL) return FALSE;
+ 	a->next = &r->tail;
+ 	a->prev = &r->head;
+ 	LAST(r) = a;
+@@ -527,6 +539,7 @@
+ 	r->ending = lns_tos;
+ 	r->max_line_len = MAX_LINE_LEN;
+ 	r->hl_anchor = NULL;
++	return TRUE;
+ }
+ 
+ long textring_bytes(RINGP r)
+@@ -560,6 +573,7 @@
+ {
+ 	LINEP line, frei, ende;
+ 
++	if (r->lines == 0) return;
+ 	frei = LAST(r);				/* letzte Zeile */
+ 	line = frei->prev;			/* vorletzte Zeile */
+ 	ende = FIRST(r);				/* erste Zeile */
+@@ -578,6 +592,7 @@
+ 
+ void kill_textring(RINGP r)
+ {
++	if (r->lines == 0) return;
+ 	free_textring(r);
+ 	FREE(FIRST(r));
+ 	FIRST(r) = NULL;
+--- a/qed/src/memory.h
++++ b/qed/src/memory.h
+@@ -36,11 +36,11 @@
+ extern short	col_offset	(RINGP t, LINEP col);
+ extern short	col_einrucken	(RINGP t, LINEP *col);
+ 
+-extern void	INSERT		(LINEP *a, short pos, short delta, char *str);
++extern bool	INSERT		(LINEP *a, short pos, short delta, char *str);
+ extern char	*REALLOC	(LINEP *a, short pos, short delta);
+ extern LINEP 	get_line	(RINGP r, long y);
+ 
+-extern void	init_textring	(RINGP r);
++extern bool	init_textring	(RINGP r);
+ extern long	textring_bytes	(RINGP r);
+ extern void	free_textring	(RINGP r);
+ extern void	kill_textring	(RINGP r);

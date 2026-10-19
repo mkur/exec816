@@ -1,0 +1,14 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+#ifndef QED_RUNTIME_H
+#define QED_RUNTIME_H
+#include "qed-native.h"
+#include <stddef.h>
+
+struct QedHeapStats { ULONG blocks, payload, backing, peakBacking; };
+void QedHeapSnapshot(struct QedHeapStats *stats);
+void QedHeapCleanup(void);
+/* Copy zero/one native path argument; argv[0] and the vector share ownership. */
+int QedArguments(const char *tail,const char *name,int *argc,char ***argv);
+/* The body releases GUI borrowers before returning to owned-runtime cleanup. */
+int QedRuntimeRun(int (*body)(int,char **));
+#endif

@@ -48,6 +48,53 @@ including guards, alignment and unused capacity. Existing guarded execution
 pools serve the fixture. Stack watermarks remain lower bounds; QF5 still needs
 frame/call bounds and actual stack observations for retained QED paths.
 
-QF2–QF6 remain open: owned entry/allocation with real text storage, file/stdio
-semantics, complete retained-source layout, stack/admission and reconciled
-handoff evidence. No QED APP or demo is published by QF1.
+No QED APP or demo is published by QF1.
+
+## QF2: owned entry, heap and text storage
+
+The native entry copies zero/one argument into owned upper storage, including
+the vector and program name. It accepts quoted native paths, rejects extra
+arguments and unmatched quotes, and enforces the Process 255-byte limit. The
+body returns through ordinary native `main`; it releases GUI borrowers before
+entry cleanup walks remaining owned allocations.
+
+`malloc`, `calloc`, `realloc`, `free`, `Malloc` and `Mfree` share a per-image
+ownership chain. Each allocation keeps its original native pointer and exact
+backing size in a 12-byte header. Zero requests, overflow, failed growth and
+release follow the design. `Malloc(-1)` queries public `AvailMem`, subtracts
+the owned header and respects the native bank constraint. Exec AllocMem can
+provide a complete 65,536-byte bank; the largest returned runtime payload is
+65,524 bytes. The eight-byte AllocVec prefix is unrelated to this backing.
+
+The existing public AvailMem binding is now an ordinary APP import. The
+machine-readable C APP ABI and generated native version advance to 21; matched
+providers and probes are rebuilt. No new kernel operation or bank-zero storage
+is introduced. Cached probe rebuilding checks the provider/import ABI before
+reusing native code.
+
+The fixture links actual QED `memory.c`. Its patch handles failed fallback
+acquisition and failed insertion growth, reports text-ring initialization
+failure, and permits repeated empty-ring release. The linked fixture closure
+contains no donor startup or exit routine. Test-only error notifications and
+highlight callbacks are identified in its source; they are not editor UI or
+layout substitutes. Error propagation through other retained editor callers
+still belongs to the complete-source adaptation and later editor work.
+
+The [QF2 record](../development/qed-native-qf2.json) records the optimized
+failure, content-preservation, bank-containment, text-store, private-instance,
+repeat/collection and cooperative Stop cases, plus focused raw/optimized
+AvailMem import probes. It also records the host checks and exact artifacts.
+The Stop case holds an owned title through a real window's borrowed lifetime,
+requests native Stop, retires the window, frees owned storage and collects the
+Process after the caller drops its Image reference.
+
+The one-character fixture's observed peak is 65,572 requested backing bytes:
+a 65,536-byte backing plus 36 bytes for owned arguments. Native eight-byte
+rounding makes those simultaneous blocks 65,576 bytes. This includes 24 bytes
+of runtime headers and four bytes of unused rounding; native heap bookkeeping
+uses its existing tables. General bounded argument storage requests at most
+536 bytes including its header. Final heap counters and parent free-memory
+checks return to baseline. Full QED heap demand remains unmeasured.
+
+Reserved bank-zero delta remains **0 fixed, 0 per-public-Task, 0 private idle**,
+including guards, alignment and unused capacity. QF3–QF6 remain open.

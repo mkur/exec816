@@ -45,6 +45,30 @@ native IRQ/NMI, guard, context and ownership checks. These are development
 checks, not hosted-system qualification or full QED execution. See the
 [implementation record](../../../../docs/history/qed-native-feasibility.md).
 
+## Owned runtime development checks
+
+```sh
+python3 tools/test_qed_native.py --group runtime --case opt --output build/qed-native/runtime-opt
+python3 tools/test_qed_native.py --group stop --case opt --output build/qed-native/stop-opt
+```
+
+These link the actual patched QED text allocator. Notification and highlighting
+callbacks belong only to the fixture. The allocation implementation keeps a
+12-byte owned header in upper memory, returns bank-contained blocks and uses
+the public `AvailMem` import for `Malloc(-1)`. The current loaded C ABI is in
+[abi/c-program.json](../../../../abi/c-program.json); rebuild the matched
+provider and applications after changes to it.
+
+For an existing fixture with unchanged native code, `--from-build` rebuilds
+its C APP and media while retaining the emitted native provider. It rejects a
+provider/import ABI mismatch. Omit it after changing native fixture/provider
+inputs. `--focused-abi` selects two ABI/return cycles in either compiler mode.
+
+The body passed to `QedRuntimeRun` must retire GUI borrowers before returning.
+The Stop fixture exercises a borrowed allocated title, cooperative native
+`RequestStop`, window retirement, heap cleanup and ordinary collection; no
+private Task exit or donor board termination is used.
+
 ## Notices
 
 The QED pin includes `gem4xe/NOTICE`, `dist/liesmich.txt`, `doc/qed-en.stg`,

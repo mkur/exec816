@@ -13,11 +13,13 @@ static LONG (*volatile callback)(LONG)=transform;
 static int abi(void)
 {
     unsigned char *block,*edge;
-    ULONG boundary;
+    ULONG boundary,largest;
     WORD message[8],x,y,b,k,key,count;
     struct Node node;
     unsigned char sample[16]={128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,255};
     if ((char)255!=255 || callback(9)!=60) return 71;
+    largest=AvailMem(MEMF_UPPER|MEMF_LARGEST);
+    if (!largest || largest>65536UL || AvailMem(MEMF_UPPER)<largest) return 75;
     block=AllocMem(65568UL,MEMF_UPPER|MEMF_LINEAR);
     if (!block) return 72;
     boundary=((ULONG)block&0xffff0000UL)+65536UL;
