@@ -29,10 +29,15 @@ def instrument(out,size):
         source=source.replace('BYTE ARRAY readPath=[68 65 84 65 46 66 73 78 0]','BYTE ARRAY readPath=[76 65 82 71 69 46 66 73 78 0]').replace('BYTE ARRAY readBase=[68 49 58 84 79 79 76 83 47 83 85 66 0]','BYTE ARRAY readBase=[68 49 58 0]')
     (out/'shell-break-common.inc').write_text(source)
     for name in ('shell_break.act','breakprobe.act'):(out/name).write_bytes((ROOT/'tests/programs'/name).read_bytes())
-    core=(ROOT/'examples/shell/shell-session.inc').read_text()
+    core=read_source(ROOT/'examples/shell/shell-session.inc')
     for name in ('shell-execute.inc','shell-jobs.inc','shell-commands.inc','shell-redirection.inc','shell-path.inc'):core=core.replace('"'+name+'"','"'+str(ROOT/'examples/shell'/name)+'"')
-    core=core.replace('PROC ShellDispatch()\n  CARD index','PROC ShellDispatch()\n  CARD index\n  IF scenario=1 AND shell.command=1 THEN Compute(0) RETURN FI')
-    core=core.replace('  ShellWrite(shell.console,prompt,2)','  BREAKPROBE.Prompt(prompt)\n  ShellWrite(shell.console,prompt,2)\n  BREAKPROBE.Retained(0)')
+    core=core.replace('''PROC ShellDispatch(ShellContext POINTER context)
+  CARD index,used''','''PROC ShellDispatch(ShellContext POINTER context)
+  CARD index,used
+  IF scenario=1 AND context.shell.command=1 THEN Compute(0) RETURN FI''')
+    core=core.replace('  ShellWrite(context,context.shell.console,prompt,2)','''  BREAKPROBE.Prompt(prompt)
+  ShellWrite(context,context.shell.console,prompt,2)
+  BREAKPROBE.Retained(0)''')
     (out/'shell-observed.inc').write_text(core)
     requests=read_source(ROOT/'lib/console/console-requests.inc')
     needle='  instance.write=NULL\n'

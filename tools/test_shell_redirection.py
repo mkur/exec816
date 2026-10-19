@@ -5,6 +5,7 @@ from pathlib import Path
 from native_program import ROOT,compiler,build,require,sha256,verify_machine
 from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
+from shell_inspect import data as shell_data
 from test_cooperative import data
 from banked_test_memory import read as far_read
 from test_shell_core import instrument,draw,collect_capture,HOOK,diagnostic_text
@@ -51,9 +52,11 @@ def run(t,out,mode,bank=2,size=128,scenario='basic'):
     observed=out/'shell-observed.inc'
     core=observed.read_text()
     hook_at=core.index('LONGCARD captureCount')
-    core=core[:hook_at]+HOOK.replace('PROC ShellWrite(', 'PROC ObserveWrite(').replace('  NativeShellWrite(handle,bytes,count)\n','')
+    core=core[:hook_at]+HOOK.replace('PROC ShellWrite(', 'PROC ObserveWrite(').replace('''  NativeShellWrite(context,handle,bytes,count)
+''','')
     require(core.count('  LET written=DOS.Write(')==1,'Missing shell write observer')
-    core=core.replace('PROC NativeShellWrite(', 'PROC ShellWrite(').replace('  LET written=DOS.Write(', '  ObserveWrite(handle,bytes,count)\n  LET written=DOS.Write(')
+    core=core.replace('PROC NativeShellWrite(', 'PROC ShellWrite(').replace('  LET written=DOS.Write(', '''  ObserveWrite(context,handle,bytes,count)
+  LET written=DOS.Write(''')
     observed.write_text(core)
     capture_address=None
     command_address=0xf8000
@@ -93,7 +96,7 @@ def run(t,out,mode,bank=2,size=128,scenario='basic'):
         b.regs=regs
         try:rt,_=execute(b,p,before_run=before,timeout=LIMITS['host_seconds'],frame_limit=LIMITS['guest_frames'])
         except Exception:
-            pointer=int.from_bytes(bytes(data(b,p['image'],'shell')),'little')
+            pointer=int.from_bytes(bytes(shell_data(b,p['image'],'shell')),'little')
             print('Redirection checks/executed',data(b,p['image'],'checks',True),data(b,p['image'],'executed',True),'shell result',[b.eval_expr(f'dw(${pointer+i:x})')for i in (24,28,32,36,54)],flush=True);raise
         finally:b.regs=original_regs
         counts={k:int.from_bytes(bytes(data(b,p['image'],k)),'little')for k in ('captureCount','checks','executed')}

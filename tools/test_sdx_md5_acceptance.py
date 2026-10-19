@@ -94,7 +94,7 @@ def fixture(out, cancellation=False, metadata=False):
         extra='\n'.join(line for line in extra.splitlines() if not line.startswith('USE '))
         text=text.replace('USE EXEC', '\n'.join(uses)+'\nUSE EXEC',1)
         text=text.replace('PROC Main()',extra+'\nPROC Main()')
-        start=text.index('  Run(0,');end=text.index('  Require(ShellFinish()',start)
+        start=text.index('  Run(0,');end=text.index('  Require(ShellFinish(@context)',start)
         text=text[:start]+''.join(f'  BreakRun({mode})\n' for mode in range(4))+text[end:]
         source.write_text(text)
     if cancellation or metadata:
@@ -125,7 +125,8 @@ def main():
         if not args.replay:source,payload=fixture(out,args.breaks,args.attributes)
         profile=out/'memory-profile.json'
         memory=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
-        memory['image_data_bytes']=8192;profile.write_text(json.dumps(memory,indent=2)+'\n')
+        # Per-session shell state and acceptance literals need a 9 KiB arena.
+        memory['image_data_bytes']=9216;profile.write_text(json.dumps(memory,indent=2)+'\n')
         mounts=[dict(alias='RAM',format=3)]
         disk=args.breaks or args.attributes
         if disk:mounts.append(dict(alias='DATA',unit=49,sectors=1024,sector_bytes=256,profile=4,format=2))

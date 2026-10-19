@@ -115,6 +115,16 @@ PUBLIC BYTE FUNC Enabled()
 
 RETURN(service<>NULL)
 
+; The controller retains a target through BIND_CONSOLE's exact reply. The
+; published binding then prevents console destruction until replacement/close.
+PUBLIC LONGCARD FUNC ConsoleUnit()
+
+  IF service=NULL THEN
+    RETURN(0)
+  FI
+
+RETURN(service.consoleUnit)
+
 PUBLIC PROC Select(LONGCARD id)
 
   selectedLayer=id

@@ -10,6 +10,8 @@ USE PROCESSSTATE
 USE O65CONTROL
 USE O65INTEGRATION
 INCLUDE "../../examples/shell/shell-session.inc"
+
+ShellContext context
 EXEC.Task ARRAY peers(3)
 PROC POINTER absent()
 BYTE ARRAY readerPath=[82 69 65 68 69 82 0]
@@ -57,16 +59,16 @@ PROC Command(BYTE POINTER text LONGINT status,error)
   CARD index
   BYTE POINTER line
 
-  line=ShellLine()
-  shell.length=CARD(text(0))
-  FOR index=0 TO shell.length-1 DO
+  line=ShellLine(@context)
+  context.shell.length=CARD(text(0))
+  FOR index=0 TO context.shell.length-1 DO
     line(index)=text(index+1)
   OD
 
-  line(shell.length)=0
-  ShellCommand()
-  O65INTEGRATION.Check(shell.done=0 AND shell.lastStatus=status
-      AND shell.lastError=error)
+  line(context.shell.length)=0
+  ShellCommand(@context)
+  O65INTEGRATION.Check(context.shell.done=0 AND context.shell.lastStatus=status
+      AND context.shell.lastError=error)
 
 RETURN
 
@@ -80,7 +82,7 @@ PROC Main()
   LONGCARD warm
 
   baseline=EXEC.AvailMem(0)
-  O65INTEGRATION.Check(ShellStart(shellRoot)<>0)
+  O65INTEGRATION.Check(ShellStart(@context,shellRoot)<>0)
   O65INTEGRATION.Pause(1)
   image=PROGRAMFILE.Load(readerPath)
   O65INTEGRATION.Check(image<>PROGRAMIMAGE.Image POINTER(0))
@@ -147,9 +149,9 @@ PROC Main()
   JoinPeer(0)
   JoinPeer(1)
   O65INTEGRATION.Check(O65INTEGRATION.entered=O65INTEGRATION.retired)
-  shell.status=0
-  shell.error=0
-  O65INTEGRATION.Check(ShellFinish()=0)
+  context.shell.status=0
+  context.shell.error=0
+  O65INTEGRATION.Check(ShellFinish(@context)=0)
   O65INTEGRATION.Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
   finished=1
 

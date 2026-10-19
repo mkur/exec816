@@ -1,0 +1,304 @@
+MODULE CONSOLEEDITTEST
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE DOS
+USE DOSCLIENT
+USE DOSCORE
+USE DOSOBJECTS
+USE DOSINHERIT
+USE DOSCOOKED
+USE DOSRAW
+USE COOKEDLINE
+USE CONSOLEINPUT
+USE CONSOLETYPES
+USE FSBOOT
+USE HEAPCORE
+USE CSTRING.IMPL AS STR
+
+CARD checks,peerChecks
+BYTE phase,gate,abiOnly,finished,peerDone
+EXEC.Task peer
+PROC POINTER absent()
+DOS.FileHandle POINTER con,raw
+BYTE POINTER inherited
+DOSCLIENT.ClientContext POINTER client
+DOSRAW.RawEndpoint POINTER endpoint
+COOKEDLINE.Session POINTER session
+DOS.ConsoleEditState edit
+BYTE ARRAY buffer(258),diskData(8)
+LONGINT event,cause
+
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ea00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC PeerCheck(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($eb00+(peerChecks & 255))
+  FI
+
+  peerChecks==+1
+
+RETURN
+
+PROC Pause(BYTE number)
+
+  phase=number
+  gate=0
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; The public call borrows only the interior of guarded caller storage.
+LONGINT FUNC ReadEdit(BYTE action)
+
+  edit.action=action
+  event=DOS.ConsoleEdit(con,@edit)
+  cause=DOS.IoErr()
+  Check(buffer(0)=$a5 AND buffer(257)=$a5)
+
+RETURN(event)
+
+PROC Paused()
+
+  Check(session.busy=1 AND session.editOwner=BYTE POINTER(con))
+  Check(client.busy=0 AND endpoint.active=1
+      AND endpoint.reader=BYTE POINTER(client))
+  Check(client.request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+      AND client.request.io_Device=NULL AND client.request.io_Data=NULL)
+  Check(EXEC.GetMsg(client.port)=NULL)
+
+RETURN
+
+PROC Idle()
+
+  Check(session.busy=0 AND session.editOwner=NULL)
+  Check(client.busy=0 AND endpoint.active=0 AND endpoint.reader=NULL)
+  Check(client.request.io_Device=NULL AND EXEC.GetMsg(client.port)=NULL)
+
+RETURN
+
+; Neither an inherited cooked reader nor an independently opened RAW reader
+; can consume the retained edit. Closing the inherited wrapper remains legal.
+PROC PeerEntry()
+
+  LET other=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  PeerCheck(other<>NULL)
+  DOSINHERIT.Adopt(DOSCORE.Current(),inherited)
+  PeerCheck(DOS.Read(DOS.FileHandle POINTER(inherited),diskData,1)=-1
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  PeerCheck(DOS.Read(other,diskData,1)=-1
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  PeerCheck(DOS.Close(DOS.FileHandle POINTER(inherited))<>0)
+  inherited=NULL
+  PeerCheck(DOS.Close(other)<>0 AND DOS.ReleaseContext()<>0)
+  peerDone=1
+
+RETURN
+
+PROC PeerReaders()
+
+  inherited=DOSINHERIT.Clone(DOSCORE.Current(),BYTE POINTER(con),
+      DOSOBJECTS.KIND_FILE)
+  Check(inherited<>NULL)
+  peer.tc_Node.ln_Type=EXEC.NT_TASK
+  peer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(4))
+  peer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(4))
+  peer.tc_SPReg=peer.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@peer.tc_MemEntry)
+  Check(EXEC.AddTask(@peer,@PeerEntry,absent)=@peer)
+  WHILE peer.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  Check(peerDone=1 AND session.references=1)
+  Paused()
+
+RETURN
+
+PROC Lifecycle()
+  CARD index
+
+  PeerReaders()
+  Check(DOS.Close(con)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Check(DOS.SetConsoleHistory(con,0)=0
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  edit.replace=1
+  edit.length=256
+  Check(ReadEdit(DOS.CONEDIT_RESUME)=-1 AND cause=DOS.ERROR_BAD_NUMBER)
+  Paused()
+  STR.strlcpy(edit.buffer,c"heLP ",256)
+  edit.length=5
+  edit.cursor=5
+  Pause(2)
+  Check(ReadEdit(DOS.CONEDIT_RESUME)=DOS.CONEDIT_COMPLETE)
+  Check(edit.length=5 AND edit.cursor=5 AND edit.replace=0)
+  Check(STR.strcmp(CSTRING(edit.buffer),c"heLP ")=0)
+  Paused()
+  Pause(3)
+  Check(ReadEdit(DOS.CONEDIT_RESUME)=DOS.CONEDIT_LINE)
+  Check(edit.length=5 AND edit.newline=1 AND session.history.count=1)
+  Idle()
+
+  Pause(4)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_LINE)
+  Check(edit.length=1 AND edit.newline=0 AND edit.buffer(0)='x)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_EOF)
+  Idle()
+  Pause(5)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_EOF)
+  Idle()
+
+  Pause(6)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_COMPLETE)
+  EXEC.Forbid()
+  CONSOLEINPUT.Lose(CONSOLETYPES.Instance POINTER(endpoint.owner.io_Unit))
+  EXEC.Permit()
+  STR.strlcpy(edit.buffer,c"GARBAGE",256)
+  edit.length=7
+  edit.cursor=7
+  edit.replace=1
+  Pause(7)
+  Check(ReadEdit(DOS.CONEDIT_RESUME)=-1 AND cause=DOS.ERROR_BUFFER_OVERFLOW)
+  Idle()
+  Pause(8)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_LINE)
+  Check(STR.strcmp(CSTRING(edit.buffer),c"ok")=0)
+
+  Check(DOS.BeginForeground(con)<>0)
+  Pause(9)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_COMPLETE)
+  Pause(10)
+  Check(DOS.BreakPending()<>0)
+  Check(ReadEdit(DOS.CONEDIT_RESUME)=-1 AND cause=DOS.ERROR_BREAK)
+  Idle()
+  Check(DOS.BeginForeground(con)<>0)
+  Pause(11)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_LINE)
+  Check(STR.strcmp(CSTRING(edit.buffer),c"ok")=0)
+  Check(DOS.EndForeground()<>0)
+
+  Pause(12)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_COMPLETE)
+  Check(ReadEdit(DOS.CONEDIT_CANCEL)=DOS.CONEDIT_CANCELLED)
+  Idle()
+  Check(DOS.SetConsoleHistory(con,0)<>0)
+  Pause(13)
+  Check(DOS.Read(con,edit.buffer,256)=4)
+  Check(edit.buffer(0)='a AND edit.buffer(1)=32 AND edit.buffer(2)='b
+      AND edit.buffer(3)=10)
+  Idle()
+
+  Pause(14)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_COMPLETE)
+  FOR index=0 TO 254 DO
+    edit.buffer(index)='X
+  OD
+
+  edit.buffer(255)=0
+  edit.length=255
+  edit.cursor=255
+  edit.replace=1
+  Pause(15)
+  Check(ReadEdit(DOS.CONEDIT_RESUME)=DOS.CONEDIT_LINE)
+  Check(edit.length=255 AND edit.newline=1 AND edit.buffer(255)=0)
+  Idle()
+
+  Pause(16)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_COMPLETE)
+  DOSCOOKED.failEcho=1
+  edit.replace=1
+  Check(ReadEdit(DOS.CONEDIT_RESUME)=-1 AND cause=EXEC.IOERR_BADADDRESS)
+  Idle()
+  Check(session.discard=1)
+  Pause(17)
+  Check(ReadEdit(DOS.CONEDIT_START)=-1 AND cause=EXEC.IOERR_BADADDRESS)
+  Idle()
+  Pause(18)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_LINE)
+  Check(STR.strcmp(CSTRING(edit.buffer),c"ok")=0)
+
+  Pause(19)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_COMPLETE)
+  EXEC.Forbid()
+  CONSOLEINPUT.Lose(CONSOLETYPES.Instance POINTER(endpoint.owner.io_Unit))
+  EXEC.Permit()
+  Check(ReadEdit(DOS.CONEDIT_CANCEL)=DOS.CONEDIT_CANCELLED)
+  Idle()
+  Check(session.discard=1)
+  Pause(20)
+  Check(ReadEdit(DOS.CONEDIT_START)=-1 AND cause=DOS.ERROR_BUFFER_OVERFLOW)
+  Idle()
+  Pause(21)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_LINE)
+  Check(STR.strcmp(CSTRING(edit.buffer),c"ok")=0)
+  Idle()
+
+RETURN
+
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  Check(SIZEOF(DOS.ConsoleEditState)=DOS.CONSOLEEDITSTATE_SIZE
+      AND SIZEOF(DOS.ConsoleEditState)=12)
+  Check(ADDRESS(@edit.action)-ADDRESS(@edit)=3
+      AND ADDRESS(@edit.length)-ADDRESS(@edit)=4
+      AND ADDRESS(@edit.capacity)-ADDRESS(@edit)=10)
+  con=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  raw=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  Check(con<>NULL AND raw<>NULL)
+  client=DOSCLIENT.Ensure()
+  LET cooked=DOSCOOKED.Handle POINTER(con)
+  session=cooked.state
+  endpoint=DOSRAW.RawEndpoint POINTER(cooked.stream.endpoint)
+  edit.buffer=@buffer(1)
+  edit.capacity=256
+  buffer(0)=$a5
+  buffer(257)=$a5
+  Check(DOS.ConsoleEdit(raw,@edit)=-1
+      AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  edit.capacity=255
+  Check(ReadEdit(DOS.CONEDIT_START)=-1 AND cause=DOS.ERROR_BAD_NUMBER)
+  edit.capacity=256
+  Check(DOS.SetConsoleHistory(con,1)<>0)
+  Check(DOS.Write(con,BYTE POINTER(c"> "),2)=2)
+  Pause(1)
+  Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_COMPLETE)
+  Check(edit.length=2 AND edit.cursor=2 AND edit.newline=0)
+  Check(STR.strcmp(CSTRING(edit.buffer),c"he")=0)
+  Paused()
+
+  LET file=DOS.Open(BYTE POINTER(c"D1:TOOLS/SUB/DATA.BIN"),DOS.MODE_OLDFILE)
+  Check(file<>NULL)
+  Check(DOS.Read(file,diskData,8)=8 AND DOS.Close(file)<>0)
+  Paused()
+  IF abiOnly<>0 THEN
+    Check(ReadEdit(DOS.CONEDIT_CANCEL)=DOS.CONEDIT_CANCELLED)
+    Idle()
+  ELSE
+    Lifecycle()
+  FI
+
+  LET again=DOS.Open(BYTE POINTER(c"D1:TOOLS/SUB/DATA.BIN"),DOS.MODE_OLDFILE)
+  Check(again<>NULL)
+  Check(DOS.Read(again,diskData,8)=8 AND DOS.Close(again)<>0)
+
+  Check(DOS.Close(con)<>0 AND DOS.Close(raw)<>0)
+  Check(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Check(EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

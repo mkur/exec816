@@ -9,6 +9,7 @@ USE CONSOLEWINDOWS
 USE CONSOLEFOREGROUND
 USE CONSOLECORE
 USE CONSOLEINPUT
+USE CONSOLEKEYS
 USE CONSOLEDRIVER
 USE CONSOLETILING
 
@@ -19,6 +20,35 @@ RETURN(CONSOLEDRIVER.ScreenWidth())
 PUBLIC CARD FUNC ScreenHeight()
 
 RETURN(CONSOLEDRIVER.ScreenHeight())
+
+; Presentation ownership permits cancellation even while this view is hidden.
+PUBLIC CARD FUNC RequestBreak(LONGCARD unit)
+
+RETURN(CONSOLEFOREGROUND.RequestBreak(unit))
+
+; Replace the selected full-screen console, retaining its admitted lower pane.
+PUBLIC CARD FUNC Activate(LONGCARD previous,next)
+
+  IF DESKSTATE.Enabled()<>0 THEN
+    RETURN(CONSOLETYPES.CONTROL_UNSUPPORTED)
+  FI
+
+RETURN(CONSOLETILING.Activate(previous,next))
+
+; Subscribe from a presentation owner using caller-owned stable storage.
+PUBLIC CARD FUNC WatchKey(LONGCARD unit CARD code,qualifiers
+    LONGCARD signalMask CONSOLETYPES.KeyWatch POINTER watch)
+
+RETURN(CONSOLEKEYS.Watch(unit,code,qualifiers,signalMask,watch))
+
+PUBLIC BYTE FUNC TakeKey(CONSOLETYPES.KeyWatch POINTER watch
+    CONSOLETYPES.KeyNotice POINTER notice)
+
+RETURN(CONSOLEKEYS.Take(watch,notice))
+
+PUBLIC CARD FUNC UnwatchKey(CONSOLETYPES.KeyWatch POINTER watch)
+
+RETURN(CONSOLEKEYS.Unwatch(watch))
 
 ; Release the buffers owned by a dynamically allocated terminal.
 PROC FreeInstance(CONSOLETYPES.Window POINTER entry)
@@ -55,7 +85,7 @@ PUBLIC LONGCARD FUNC Create(CARD width,height)
   CARD row,count
   LONGCARD unit
 
-  IF DESKSTATE.Enabled()<>0 OR width=0 OR height=0 OR width>CONSOLETYPES.MAX_WIDTH
+  IF width=0 OR height=0 OR width>CONSOLETYPES.MAX_WIDTH
       OR height>CONSOLETYPES.MAX_HEIGHT THEN
     RETURN(0)
   FI
@@ -155,6 +185,12 @@ PUBLIC BYTE FUNC Destroy(LONGCARD unit)
   FI
 
   LET registry=CONSOLEWINDOWS.Registry()
+  LET desktop=DESKSTATE.Get()
+  IF desktop<>NULL AND desktop.consoleWindow<>0
+      AND desktop.consoleUnit=unit THEN
+    RETURN(0)
+  FI
+
   IF registry.pane=unit THEN
     RETURN(0)
   FI
@@ -173,7 +209,7 @@ PUBLIC BYTE FUNC Destroy(LONGCARD unit)
   FI
 
   IF entry.owner<>owner OR entry.state<>CONSOLETYPES.WIN_PRESENTING
-      OR entry.scope<>BYTE POINTER(0) THEN
+      OR entry.scope<>BYTE POINTER(0) OR entry.watch<>NULL THEN
     EXEC.Permit()
     CONSOLETILING.Unlock()
     RETURN(0)
@@ -226,7 +262,8 @@ PUBLIC PROC RetirePane(LONGCARD unit)
   LET entry=CONSOLEWINDOWS.Find(unit)
   LET parent=CONSOLEWINDOWS.Find(0)
   IF windows.presenting=0 OR windows.pane<>unit OR entry=NULL
-      OR entry.owner<>BYTE POINTER(EXEC.FindTask(NULL)) THEN
+      OR entry.owner<>BYTE POINTER(EXEC.FindTask(NULL))
+      OR entry.watch<>NULL THEN
     HEAPCORE.Abort(4)
   FI
 

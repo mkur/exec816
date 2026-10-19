@@ -15,8 +15,9 @@ def glyph(value):
     if 97<=value<=122 or value==124:return value
     return 31
 
-def terminal(payload):
-    cells=bytearray(b' '*960);row=col=0
+def terminal(payload, initial=None):
+    cells=bytearray(initial[0] if initial else b' '*960)
+    row,col=divmod(initial[1],40) if initial else (0,0)
     def newline():
         nonlocal row,col,cells
         col=0

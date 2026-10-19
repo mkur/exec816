@@ -340,9 +340,8 @@ PUBLIC EXEC.IOStdReq POINTER FUNC Prepare(DOSCLIENT.ClientContext POINTER client
 
 RETURN(request)
 
-; Complete a raw transfer while preserving the device result and error.
-PUBLIC PROC Finish(DOSCLIENT.ClientContext POINTER client DOSSTREAMS.Handle
-    POINTER item BYTE reading)
+; Detach a settled request while optionally retaining its separate input lease.
+PUBLIC PROC Detach(DOSCLIENT.ClientContext POINTER client)
   EXEC.IOStdReq POINTER request
 
   request=client.request
@@ -356,6 +355,25 @@ PUBLIC PROC Finish(DOSCLIENT.ClientContext POINTER client DOSSTREAMS.Handle
   request.io_Length=0
   request.io_Actual=0
   request.io_Offset=0
+
+RETURN
+
+; A suspended cooked editor already owns the endpoint and a settled request.
+PUBLIC PROC Reattach(DOSCLIENT.ClientContext POINTER client DOSSTREAMS.Handle
+    POINTER item)
+
+  LET endpoint=RawEndpoint POINTER(item.endpoint)
+  client.busy=1
+  client.request.io_Device=endpoint.owner.io_Device
+  client.request.io_Unit=endpoint.owner.io_Unit
+
+RETURN
+
+; Complete a raw transfer while preserving the device result and error.
+PUBLIC PROC Finish(DOSCLIENT.ClientContext POINTER client DOSSTREAMS.Handle
+    POINTER item BYTE reading)
+
+  Detach(client)
   ReleaseOperation(RawEndpoint POINTER(item.endpoint),client,reading)
   client.busy=0
 

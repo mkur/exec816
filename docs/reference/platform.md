@@ -133,28 +133,27 @@ arena and all stack/DP reservations stay in place. The effective origin is
 recorded in `memory.json` and `layout.json`;
 normal extent and bank-ownership checks still apply to the combined image.
 
-The text demo uses a 6.25 KiB arena to hold its composed
-application globals and the resident fault strings. `tools/build_demo.py`
-derives `demo-memory.json` from the default profile with this explicit 4.25 KiB
-upper-RAM increase over the default. The latest 2 KiB increase holds IDE
-admission, APT and mount diagnostics, including unused arena capacity; it
-adds **0 fixed, 0 per-Task and 0 idle bank-zero bytes**.
-The bitmap shell with SIO client imports uses 6,409 bytes and reserves 6,656
-upper bytes (one additional 256-byte page, including 247 spare bytes). Code
-placement remains page-aligned. This adds **0 fixed, 0 per-Task and 0 idle
-bank-zero bytes**, including guards/alignment/unused bank-zero capacity.
-Desktop profiles add 1,024 bytes of upper arena capacity for menu state,
-labels and the combined shell/SIO globals (7.25 KiB total). The GEM desktop
-uses 7,265 bytes of its 7,424-byte arena, including 159 spare bytes. The extra
-512 bytes after combining the desktop and command branches add **0 fixed,
-0 per-Task and 0 idle bank-zero bytes**, including guards, alignment and unused
-bank-zero capacity. Its shared C runtime and renderer lookup tables are included
-in the compressed boot image;
-the loader expands all initialized extents before native startup publishes C
-bindings. They remain resident for the session. The panel, counter, Files,
-calculator, dialog example and text viewer remain separate disk-loaded APPs
-with Process-owned lifetimes.
-There is no shared GUI component file or native component-loader arena.
+The text demo reserves an 8 KiB upper static arena for its composed application
+state, controller, session registry and resident literals. The SS8 standard and
+shell-only builds each use 8,144 of 8,192 bytes (48 spare). The standalone bitmap
+profile adds one 256-byte page, for 8,448 bytes. Desktop profiles reserve 9 KiB;
+the SS8 GEM desktop uses 8,578 of 9,216 bytes (638 spare). These capacities are
+selected by `tools/build_demo.py`; code placement remains page-aligned.
+
+Session contexts, cooked editors, histories and console models use ordinary
+upper heap allocations. Desktop event/content requests additionally allocate
+208 bytes only while attached. The sole console backing remains 40,960 bytes
+in VRAM. SS1–SS8 add **0 fixed, 0 per-public-Task and 0 idle reserved bank-zero
+bytes**, including guards, alignment and unused capacity; no Task pools grow.
+Per-build emitted spans and heap/stack observations are recorded in
+[session evidence](../history/shell-sessions.md).
+
+The desktop's shared C runtime and renderer lookup tables are included in the
+compressed boot image. The loader expands all initialized extents before native
+startup publishes C bindings. They remain resident for the session. The panel,
+counter, Files, calculator, dialog example and text viewer remain separate
+disk-loaded APPs with Process-owned lifetimes. There is no shared GUI component
+file or native component-loader arena.
 Optional bitmap payloads inherit the matching demo’s arena size. Task pools and
 all bank-zero reservations are unchanged. Build reports record the selected
 capacity and actual image extents; standalone fixtures keep their separately

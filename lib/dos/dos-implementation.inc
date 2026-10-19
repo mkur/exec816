@@ -1,4 +1,10 @@
 ; Native source adapters preserve the public DOS record identities and ABI.
+PUBLIC LONGINT FUNC ConsoleEdit(FileHandle POINTER file
+    ConsoleEditState POINTER edit)
+
+RETURN(DOSCALLS.ConsoleEdit(BYTE POINTER(file),
+    DOSCALLS.ConsoleEditState POINTER(edit)))
+
 PUBLIC LONGINT FUNC GetVolume(CARD index VolumeInfo POINTER info)
 
 RETURN(DOSCALLS.GetVolume(index,DOSCALLS.VolumeInfo POINTER(info)))

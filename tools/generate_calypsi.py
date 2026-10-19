@@ -121,7 +121,8 @@ UBYTE EXEC_CALL ReleaseTask(struct TaskLease *lease)
     dos=['/* Generated from abi/dos.json by tools/generate_calypsi.py. */',
          '#ifndef EXEC_DOS_H','#define EXEC_DOS_H','#include <exec/types.h>']
     dos += [f'#define {name} ({value}L)' for name,value in
-            {**load('dos.json')['constants'],**load('dos.json')['dos_errors']}.items()]
+            {**load('dos.json')['constants'],**load('dos.json')['dos_errors']}.items()
+            if not name.startswith('CONEDIT_')]
     for name in ('DateStamp','FileInfoBlock','VolumeInfo','SioMountSpec','DirEntry','DirBatch'):
         dos.append('struct '+name+' {')
         for field,kind,offset in load('dos.json')['records'][name]['fields']:

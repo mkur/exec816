@@ -75,11 +75,13 @@ Exact layouts, operation numbers and statuses come from
 | Operation | Result |
 | --- | --- |
 | REGISTER | Retain owner and assign client identity. |
-| OPEN | Copy a title of at most 64 bytes and create a hidden, fixed-size, fully onscreen window. Four slots include hidden windows. Return its ID in `window`. |
+| OPEN | Copy a title of at most 64 bytes and create a hidden, fixed-size, fully onscreen window. Six slots include hidden windows. Return its ID in `window`. |
 | SHOW / HIDE | Change visibility. Hiding the focused window restores the frontmost remaining shown, routable window. |
 | MOVE | Set the top-left position from `bounds.left/top`; preserve dimensions. |
 | RAISE | Move a window to the front. |
 | FOCUS | Focus a shown window and retain focus-change notices. |
+| SET_TABS | Copy one `TabSnapshot` for the registered Shell controller through the content lane. |
+| BIND_CONSOLE | Replace the Shell window’s bound console with the owned unit in `target`; use the control lane. |
 | REPLACE | Validate and copy one complete retained command batch, then invalidate its layer. |
 | SET_TREE / UPDATE_WIDGETS / READ_WIDGET_STATE | Retain, patch or read [AES widget content](widgets.md) through the content lane. |
 | NEXT_EVENT | Reply with one available event, or retain the request without blocking other clients. |
@@ -98,12 +100,46 @@ half-open, within the outer rectangle minus 8-pixel side borders, 11-pixel title
 area and 2-pixel bottom border. Text is 8 pixels per character and 8 pixels
 high; offsets/counts must stay inside the supplied text. The entire batch is
 validated before retained content changes. No payload pointer survives reply.
-Console-kind admission is limited to the root controller and permanent console
-unit 0, with a 528×173 outer rectangle. Its 512×160 text origin stays on an
-8-pixel grid: outer x is a multiple of eight and outer y is 5 modulo eight. It cannot
-attach an arbitrary console unit. The presenter owns the permanent model; its
-shutdown refuses live desktop registrations. The root owns the shell streams
-and closes them before retiring its window.
+Console-kind OPEN is limited to the root controller and initially binds permanent
+unit zero. The single 528×189 frame retains 64×20 cells with a 512×160 text origin
+on an eight-pixel grid: outer x is a multiple of eight and outer y is 5 modulo
+eight. BIND_CONSOLE accepts another 64×20 console created by that controller.
+The caller retains the destination through exact reply collection; the published
+binding then prevents Destroy until replacement or window CLOSE. Shell streams
+belong to their individual Processes, which retire before controller shutdown.
+
+The Shell frame has a 16-pixel tab strip at outer `(8,11)`, width 512. Two
+240-pixel slots precede a 32-pixel New button; the rightmost 16 pixels of each
+occupied slot close that session. Cells begin at outer `(8,27)`. Generated
+`FRAME_SHELL_*` and `FRAME_TAB_*` constants define drawing and hit bounds.
+Other native and AES window work rectangles retain their existing geometry.
+
+SET_TABS accepts exactly one 18-byte `TabSnapshot`: two eight-byte `TabEntry`
+records (`identity`, `state`, `selected`, `busy`) and `newEnabled`, with generated
+alignment. Identity zero denotes an empty slot. States 1–4 mean starting, ready,
+closing and retiring. The presenter copies these scalars and retains no shell
+pointer. Snapshot admission invalidates the strip; it does not bind a console.
+
+A tab press captures the full session identity. Release must hit the same part
+of the same live window and identity; releasing outside, cancellation, loss or
+slot reuse cannot select or close a replacement. Select/New raises and focuses
+Shell through normal presenter policy. Closing an inactive tab preserves focus.
+EVENT_TAB_SELECT and EVENT_TAB_CLOSE carry the captured identity in `route`;
+`object` identifies the slot. EVENT_TAB_NEW has no session identity. Per-slot
+close identities survive ordinary queue pressure and coalesce repeated closes.
+The root controller submits its own CREATE/SELECT/CLOSE messages and retains
+independent close requests while creation or selection is pending. The presenter
+never runs a shell command or waits for a shell to terminate.
+
+BIND_CONSOLE waits behind an active Layers transaction. Drawing/DMA, UPDATE or
+console presentation conflicts return BUSY without changing selection. At the
+settled boundary it removes the outgoing caret, discards gathered scroll reuse,
+changes the retained console/route, invalidates the sole backing owner, and
+marks the destination’s full model dirty. A successful reply commits binding;
+redraw follows asynchronously. Binding while another application is focused
+preserves that application’s keyboard route. Old view generations cannot
+acknowledge destination pixels. A drawing failure preserves the old binding;
+unquiesced device failure retains the existing storage/transaction semantics.
 
 ## Events and shutdown
 
@@ -117,8 +153,7 @@ integration are DT3. Programmatic focus currently affects presentation.
 
 Cancel and collect NEXT_EVENT, collect other lanes, close every window, then
 UNREGISTER and collect its reply before `Dispose`. Dispose deletes the private
-port only when registration and all lanes are clear. Close requests from a
-future gadget will be events, never forced Task removal. Removing a registered
+port only when registration and all lanes are clear. Close requests are events, never forced Task removal. Removing a registered
 Task is an Exec lifetime violation and produces the existing launch fault.
 
 `DESKCORE.Init` uses a presenter-owned allocated signal; only that Task pumps,
@@ -141,8 +176,9 @@ widget gestures still wait for the existing scene and AES gates.
 Select desktop mode before starting the console. The root launch adapter binds
 an upper-RAM service, then registers and shows the permanent console as a framed
 shell. The existing full-screen bitmap and standard text startup modes remain
-available. Desktop mode rejects the console's tiled Create/Show/Hide/Focus
-operations; use window controls for desktop placement and visual focus.
+available. Create admits hidden console instances in desktop mode. Tiled
+Show/Hide/Focus and standalone Activate remain unsupported there; use native
+window controls and BIND_CONSOLE for placement, focus and selected content.
 
 The same worker owns console I/O, the display lease and every physical draw.
 Background, frame and retained content repair use Layers' visible damage. One

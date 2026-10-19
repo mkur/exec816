@@ -15,7 +15,7 @@ PUBLIC TYPE History=[
   BYTE ARRAY entries(2560)
   BYTE ARRAY draft(256)
 ]
-PUBLIC CONST SESSION_SIZE=410
+PUBLIC CONST SESSION_SIZE=414
 PUBLIC TYPE Session=[
   CARD references
   CARD length
@@ -35,4 +35,5 @@ PUBLIC TYPE Session=[
   CARD viewStart
   BYTE screenCursor
   History POINTER history
+  BYTE POINTER editOwner
 ]

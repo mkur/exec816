@@ -163,7 +163,7 @@ def main():
         observe(definition['marks'])
         media=args.media.resolve() if args.media else None
         commands=args.command or DEFAULT
-        if args.primes:commands=['RUN PRIMES']+commands+['BREAK 1','JOBS']
+        if args.primes:commands=['RUN PRIMES >CON:']+commands+['BREAK 1','JOBS']
         validate=validator(bundle,media);progress=[]
         def check(command, screen):
             validate(command,screen)

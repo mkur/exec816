@@ -1,5 +1,5 @@
 {
-  "version": 14,
+  "version": 16,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 6,
@@ -94,9 +94,55 @@
     "TILE_LEFT": 104,
     "TILE_WIDTH": 88,
     "TILE_HEIGHT": 11,
-    "TILE_BOTTOM": 2
+    "TILE_BOTTOM": 2,
+    "BIND_CONSOLE": 16,
+    "SET_TABS": 17,
+    "EVENT_TAB_SELECT": 10,
+    "EVENT_TAB_CLOSE": 11,
+    "EVENT_TAB_NEW": 12,
+    "FRAME_SHELL_TABS": 2048,
+    "FRAME_TAB_HEIGHT": 16,
+    "FRAME_TAB_WIDTH": 240,
+    "FRAME_TAB_CLOSE": 16,
+    "FRAME_TAB_NEW": 32,
+    "FRAME_SHELL_WIDTH": 512,
+    "FRAME_SHELL_TOP": 27,
+    "FRAME_SHELL_HEIGHT": 189,
+    "TAB_STARTING": 1,
+    "TAB_READY": 2,
+    "TAB_CLOSING": 3,
+    "TAB_RETIRING": 4
   },
   "records": {
+    "TabEntry": [
+      [
+        "identity",
+        "LONGCARD"
+      ],
+      [
+        "state",
+        "BYTE"
+      ],
+      [
+        "selected",
+        "BYTE"
+      ],
+      [
+        "busy",
+        "BYTE"
+      ]
+    ],
+    "TabSnapshot": [
+      [
+        "entries",
+        "TabEntry",
+        2
+      ],
+      [
+        "newEnabled",
+        "BYTE"
+      ]
+    ],
     "Event": [
       [
         "kind",
@@ -326,6 +372,11 @@
         "queue",
         "Event",
         "EVENTS"
+      ],
+      [
+        "tabCloses",
+        "LONGCARD",
+        2
       ]
     ],
     "Window": [
@@ -454,6 +505,10 @@
         "BYTE POINTER"
       ],
       [
+        "consoleUnit",
+        "LONGCARD"
+      ],
+      [
         "consoleRoute",
         "LONGCARD POINTER"
       ],
@@ -520,6 +575,10 @@
         "repairs",
         "LAYERTYPES.CacheRepair",
         2
+      ],
+      [
+        "tabs",
+        "TabSnapshot"
       ]
     ]
   }

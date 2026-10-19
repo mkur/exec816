@@ -2,6 +2,7 @@
 ; the registered root remains alive until its window and all replies retire.
 MODULE DESKBOOT
 USE EXEC
+USE A816MEMORY
 USE DESKTOP
 USE DESKTYPES
 USE DESKSTATE
@@ -9,9 +10,16 @@ USE DESKPAINT
 USE REGIONS
 USE HEAPCORE
 
+TYPE TabClient=[
+  DESKTYPES.Request eventRequest,tabsRequest
+  DESKTYPES.TabSnapshot snapshot
+]
+
 DESKTYPES.Client client
 DESKTYPES.Request request
+TabClient POINTER tabs
 LONGCARD shellWindow
+BYTE bindingConsole,eventPending,tabsPending,tabsValid
 
 PUBLIC BYTE FUNC Enable()
 
@@ -30,22 +38,56 @@ PUBLIC BYTE FUNC Enable()
 
 RETURN(1)
 
+; All three lanes share one reply port. Collect by exact request identity;
+; a completed event must never be mistaken for a console-binding acknowledgement.
+PROC Poll()
+  DESKTYPES.Request POINTER reply
+
+  DO
+    reply=DESKTOP.Collect(@client)
+    IF reply=NULL THEN
+      EXIT
+    FI
+    IF reply=@request THEN
+      bindingConsole=2
+    ELSEIF reply=@tabs.eventRequest THEN
+      eventPending=2
+    ELSEIF reply=@tabs.tabsRequest THEN
+      tabsPending=0
+      tabsValid=reply.status=DESKTYPES.OK
+    ELSE
+      HEAPCORE.Abort($fae4)
+    FI
+  OD
+
+RETURN
+
 CARD FUNC Call(BYTE operation)
   EXEC.Message POINTER message
-  DESKTYPES.Request POINTER reply
 
   request.operation=operation
   IF DESKTOP.Submit(@client,@request)<>DESKTYPES.OK THEN
     RETURN(DESKTYPES.BUSY)
   FI
 
-  reply=DESKTOP.Collect(@client)
-  WHILE reply=NULL DO
+  bindingConsole=1
+  Poll()
+  WHILE bindingConsole<>2 DO
     message=EXEC.WaitPort(client.replies)
-    reply=DESKTOP.Collect(@client)
+    Poll()
   OD
+  bindingConsole=0
 
-RETURN(reply.status)
+RETURN(request.status)
+
+PROC FreeTabs()
+
+  IF tabs<>NULL THEN
+    EXEC.FreeMem(BYTE POINTER(tabs),LONGCARD(SIZEOF(TabClient)))
+    tabs=NULL
+  FI
+
+RETURN
 
 ; Admission may fail after registration or window creation. Withdraw each
 ; published resource in reverse order before returning failure to the launcher.
@@ -72,12 +114,20 @@ BYTE FUNC Unwind()
     HEAPCORE.Abort($fae4)
   FI
 
+  FreeTabs()
+
 RETURN(0)
 
 PUBLIC BYTE FUNC Attach()
 
   IF DESKTOP.Init(@client,DESKSTATE.Get())=0 THEN
     RETURN(0)
+  FI
+
+  tabs=TabClient POINTER(EXEC.AllocMem(LONGCARD(SIZEOF(TabClient)),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF tabs=NULL THEN
+    RETURN(Unwind())
   FI
 
   DESKTOP.Prepare(@request,DESKTYPES.REGISTER)
@@ -91,7 +141,7 @@ PUBLIC BYTE FUNC Attach()
   request.bytes=5
   REGIONS.Assign(@request.bounds,32,40-DESKTYPES.WORK_TOP,
       32+DESKTYPES.WORK_LEFT+512+DESKTYPES.WORK_RIGHT,
-      40+160+DESKTYPES.WORK_BOTTOM)
+      40+DESKTYPES.FRAME_TAB_HEIGHT+160+DESKTYPES.WORK_BOTTOM)
   IF Call(DESKTYPES.OPEN)<>DESKTYPES.OK THEN
     RETURN(Unwind())
   FI
@@ -124,6 +174,7 @@ PUBLIC PROC Detach()
     RETURN
   FI
 
+  StopTabs()
   DESKTOP.Prepare(@request,DESKTYPES.CLOSE)
   request.window=shellWindow
   IF Call(DESKTYPES.CLOSE)<>DESKTYPES.OK THEN
@@ -135,6 +186,8 @@ PUBLIC PROC Detach()
   IF Call(DESKTYPES.UNREGISTER)<>DESKTYPES.OK OR DESKTOP.Dispose(@client)=0 THEN
     HEAPCORE.Abort($fae4)
   FI
+
+  FreeTabs()
 
   ; Close replies commit geometry before its final background repair retires.
   LET service=DESKSTATE.Get()
@@ -167,5 +220,141 @@ RETURN(@client)
 PUBLIC LONGCARD FUNC WindowId()
 
 RETURN(shellWindow)
+
+; One controller-owned control lane; the root event loop keeps collecting
+; shell children while the presenter waits for the existing paint boundary.
+PUBLIC CARD FUNC BeginConsole(LONGCARD unit)
+
+  IF bindingConsole<>0 OR shellWindow=0 THEN
+    RETURN(DESKTYPES.BUSY)
+  FI
+
+  DESKTOP.Prepare(@request,DESKTYPES.BIND_CONSOLE)
+  request.window=shellWindow
+  request.target=unit
+  LET status=DESKTOP.Submit(@client,@request)
+  IF status=DESKTYPES.OK THEN
+    bindingConsole=1
+  FI
+
+RETURN(status)
+
+PUBLIC CARD FUNC CollectConsole()
+
+  IF bindingConsole=0 THEN
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  Poll()
+  IF bindingConsole<>2 THEN
+    RETURN(DESKTYPES.PENDING)
+  FI
+
+  bindingConsole=0
+
+RETURN(request.status)
+
+PUBLIC LONGCARD FUNC ConsoleMask()
+
+  IF client.replies=NULL THEN
+    RETURN(0)
+  FI
+
+RETURN(LONGCARD(1) LSH client.replies.mp_SigBit)
+
+; The caller copies a completed event before the same record is rearmed.
+PUBLIC BYTE FUNC TakeEvent(DESKTYPES.Event POINTER event)
+  BYTE taken,status
+
+  IF shellWindow=0 THEN
+    RETURN(0)
+  FI
+
+  Poll()
+  taken=0
+  IF eventPending=2 THEN
+    IF tabs.eventRequest.status=DESKTYPES.OK THEN
+      A816MEMORY.Move(BYTE POINTER(event),BYTE POINTER(@tabs.eventRequest.event),
+          DESKTYPES.EVENT_SIZE)
+      taken=1
+    FI
+    eventPending=0
+  FI
+
+  IF eventPending=0 THEN
+    DESKTOP.Prepare(@tabs.eventRequest,DESKTYPES.NEXT_EVENT)
+    status=DESKTOP.Submit(@client,@tabs.eventRequest)
+    IF status=DESKTYPES.OK THEN
+      eventPending=1
+    FI
+  FI
+
+RETURN(taken)
+
+; Coalesce snapshots, retaining the published copy until its exact reply.
+PUBLIC BYTE FUNC SetTabs(DESKTYPES.TabSnapshot POINTER snapshot)
+  BYTE index,same,status
+
+  IF shellWindow=0 THEN
+    RETURN(0)
+  FI
+
+  Poll()
+  IF tabsPending<>0 THEN
+    RETURN(0)
+  FI
+
+  same=tabsValid
+  LET source=BYTE POINTER(snapshot)
+  LET previous=BYTE POINTER(@tabs.snapshot)
+  FOR index=0 TO DESKTYPES.TABSNAPSHOT_SIZE-1 DO
+    IF source(index)<>previous(index) THEN
+      same=0
+    FI
+  OD
+  IF same<>0 THEN
+    RETURN(0)
+  FI
+
+  A816MEMORY.Move(previous,source,DESKTYPES.TABSNAPSHOT_SIZE)
+  DESKTOP.Prepare(@tabs.tabsRequest,DESKTYPES.SET_TABS)
+  tabs.tabsRequest.window=shellWindow
+  tabs.tabsRequest.payload=previous
+  tabs.tabsRequest.bytes=DESKTYPES.TABSNAPSHOT_SIZE
+  status=DESKTOP.Submit(@client,@tabs.tabsRequest)
+  IF status=DESKTYPES.OK THEN
+    tabsPending=1
+    tabsValid=0
+  FI
+
+RETURN(status=DESKTYPES.OK)
+
+; Stop the event/content lanes before closing the window and unregistering.
+PUBLIC PROC StopTabs()
+  EXEC.Message POINTER message
+  CARD status
+
+  IF client.replies=NULL THEN
+    RETURN
+  FI
+
+  Poll()
+  IF eventPending=1 THEN
+    DESKTOP.Prepare(@request,DESKTYPES.CANCEL_EVENT)
+    request.target=tabs.eventRequest.sequence
+    status=Call(DESKTYPES.CANCEL_EVENT)
+    IF status<>DESKTYPES.OK AND status<>DESKTYPES.ALREADY_DONE THEN
+      HEAPCORE.Abort($fae4)
+    FI
+  FI
+
+  WHILE tabsPending<>0 OR eventPending=1 DO
+    message=EXEC.WaitPort(client.replies)
+    Poll()
+  OD
+  eventPending=0
+  tabsValid=0
+
+RETURN
 
 ENDMODULE

@@ -1,0 +1,135 @@
+MODULE SHELLCONTROLLERTEST
+USE CONSOLEWINDOWS
+USE FSBOOT
+INCLUDE "../../examples/shell/shell-session.inc"
+INCLUDE "../../examples/shell/shell-boot.inc"
+INCLUDE "../../examples/shell/shell-controller.inc"
+
+CARD checks
+BYTE closeMode,boundary,finished
+BYTE releaseFillers
+LONGCARD baseline,peer
+LONGCARD ARRAY fillers(6)
+PROCESS.Result peerResult
+
+; Abort at the first violated controller lifetime invariant.
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ec00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; The test generator inserts this rendezvous around real scope publication.
+PROC ScopeBoundary(ShellContext POINTER context BYTE phase)
+
+  IF context.control<>NULL AND closeMode=phase AND boundary=0 THEN
+    boundary=phase
+    WHILE context.control.closeRequested=0 DO
+      EXEC.Yield()
+    OD
+  FI
+
+RETURN
+
+; An independent producer requests close while root keeps servicing messages.
+LONGINT FUNC Producer()
+  BYTE ignored
+
+  LET request=ShellSessionMessage POINTER(EXEC.AllocMem(
+      SHELLSESSIONMESSAGE_SIZE,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  LET query=ShellSessionQuery POINTER(EXEC.AllocMem(
+      SHELLSESSIONQUERY_SIZE,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Check(request<>NULL AND query<>NULL)
+  LET session=@sessions(0)
+  LET control=@session.control
+  IF closeMode=0 THEN
+    BEGIN
+      LET entry=CONSOLEWINDOWS.Find(0)
+      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      WHILE instance.readReady<>2 DO
+        EXEC.Yield()
+      OD
+    END
+  ELSE
+    WHILE boundary<>closeMode DO
+      EXEC.Yield()
+    OD
+  FI
+
+  request.operation=SESSION_QUERY
+  request.payload=BYTE POINTER(query)
+  request.capacity=SHELLSESSIONQUERY_SIZE
+  ignored=ShellSessionExchange(control,request)
+  Check(request.primary=0 AND request.value=1)
+  Check(query.entries(0).identity=control.identity
+      AND query.entries(0).process=session.process)
+  IF closeMode=0 THEN
+    Check(query.entries(0).state=SESSION_STATE_READY
+        AND query.entries(0).selected=1)
+  ELSE
+    Check(query.entries(0).state=SESSION_STATE_CREATING)
+  FI
+
+  request.operation=SESSION_CLOSE
+  request.session=control.identity
+  ignored=ShellSessionExchange(control,request)
+  Check(request.primary=0 AND control.closeRequested=1)
+  EXEC.FreeMem(BYTE POINTER(query),SHELLSESSIONQUERY_SIZE)
+  EXEC.FreeMem(BYTE POINTER(request),SHELLSESSIONMESSAGE_SIZE)
+
+RETURN(0)
+
+; Occupy the remaining public slots without retaining root's DOS selections.
+LONGINT FUNC Hold()
+
+  WHILE releaseFillers=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN(0)
+
+; Reuse the controller after prompt, pre-bind and post-bind close races.
+PROC Main()
+  LONGINT result
+  BYTE index
+
+  baseline=EXEC.AvailMem(0)
+  FOR closeMode=0 TO 2 DO
+    boundary=0
+    Check(ShellControllerStart(0)<>0)
+    peer=PROCESS.Start(@Producer,NULL,0)
+    Check(peer<>0)
+    result=ShellControllerRun()
+    Check(PROCESS.Wait(peer,@peerResult)<>0 AND peerResult.primary=0)
+    ShellControllerStop()
+    Check(controllerLive=0 AND contexts(0).shell=NULL
+        AND sessions(0).state=SESSION_STATE_FREE)
+    Check(sessions(0).watch.bound=0 AND selectedSession=0)
+    Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+  OD
+
+  Check(nextSession=3)
+  FOR index=0 TO 5 DO
+    fillers(index)=PROCESS.Start(@Hold,NULL,0)
+    Check(fillers(index)<>0)
+  OD
+
+  Check(ShellControllerStart(0)=0 AND controllerLive=0)
+  Check(controllerStatus=PROCESS.RETURN_FAIL AND contexts(0).shell=NULL)
+  releaseFillers=1
+  FOR index=0 TO 5 DO
+    Check(PROCESS.Wait(fillers(index),@peerResult)<>0
+        AND peerResult.primary=0)
+  OD
+
+  ShellControllerStop()
+  Check(nextSession=4 AND sessions(0).state=SESSION_STATE_FREE)
+  Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+ENDMODULE

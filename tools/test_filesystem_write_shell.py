@@ -27,7 +27,8 @@ class WritableCommands(Commands):
         self.observers = instrument(out)
         observed = out/'shell-observed.inc'
         source = observed.read_text()
-        old = '  SHELLEDITPROBE.Capture(bytes,count)\n  NativeShellWrite(handle,bytes,count)'
+        old = '''  SHELLEDITPROBE.Capture(bytes,count)
+  NativeShellWrite(context,handle,bytes,count)'''
         require(source.count(old) == 1, 'Stale shell output observer')
         source = source.replace(old, '''  LET header=DOSOBJECTS.Find(DOSCORE.Current(),BYTE POINTER(handle),DOSOBJECTS.KIND_FILE)
   IF header<>NULL THEN
@@ -35,7 +36,7 @@ class WritableCommands(Commands):
       SHELLEDITPROBE.Capture(bytes,count)
     FI
   FI
-  NativeShellWrite(handle,bytes,count)''')
+  NativeShellWrite(context,handle,bytes,count)''')
         observed.write_text(source)
         profile = json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
         profile['image_data_bytes'] = 4096

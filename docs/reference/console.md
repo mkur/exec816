@@ -95,7 +95,7 @@ rotation between them, without a voluntary Task handoff per segment. A short
 WRITE's presentation pass completes its active fragment sequence before reply.
 Cancellation preserves the accepted prefix; a quiesced drawing failure retires
 the token without acknowledging partially drawn damage. A queued AES update lock
-still permits the existing unit-zero text continuation to finish and release
+still permits the existing bound-console text continuation to finish and release
 its scene token. Other views cannot replace its frozen source. A scene exposure
 acknowledges all dirty console rows only if it repainted the full window;
 partial exposure preserves model damage outside the painted rectangle.
@@ -107,8 +107,9 @@ client pixels by VRAM copy, with retained-cell drawing for unsupported clipped
 edges. The bitmap contains neither caret nor pointer. Position-only moves keep
 its pixels; invalidated in-flight batches rebuild from retained cells. This
 source must be current before a scene paint token freezes it. Screen exposure
-never acknowledges unfinished model-to-backing work. Other console units keep
-their existing presentation paths.
+never acknowledges unfinished model-to-backing work. Native BIND_CONSOLE replaces
+the owner at a settled boundary and rebuilds from its retained cells. Hidden
+console sessions preserve their own model damage without writing this surface.
 
 The text backend uses the installed OS font with the standard Atari screen-code
 mapping, with `?` for unsupported terminal bytes.

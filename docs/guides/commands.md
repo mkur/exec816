@@ -132,7 +132,9 @@ single resident implementations. New interfaces are generated from
 `abi/program.json`; rebuild the resident system and all commands together.
 
 The [PRIMES command](../../examples/commands/primes.act) demonstrates an owned
-lower pane. `OpenPane(rows)` returns an output handle; ordinary Close restores
+lower pane. Select unit-zero console output before calling OpenPane; the shell
+spelling for a background pane is `RUN PRIMES >CON:`. `OpenPane(rows)` returns
+an output handle; ordinary Close restores
 the default console's height. `WriteAt(handle,column,row,buffer,length)` writes
 one printable horizontal span and preserves the stream cursor. Check both its
 committed count and IoErr before saving displayed values. `Delay(ticks)` waits

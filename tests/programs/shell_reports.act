@@ -2,6 +2,8 @@ MODULE SHELLREPORTS
 USE HEAPCORE
 INCLUDE "shell-observed.inc"
 
+ShellContext context
+
 CONST CAPTURE_CAPACITY=8192,CASE_CAPACITY=40
 TYPE Mark=[CARD offset,writes]
 Mark ARRAY marks(CASE_CAPACITY)
@@ -32,7 +34,8 @@ RETURN
 
 ; Capture the emitted formatter's actual bytes, not a host reimplementation.
 ; The packaged measurement separately exercises the unchanged real Write path.
-PROC ShellWrite(DOS.FileHandle POINTER output BYTE POINTER bytes CARD count)
+PROC ShellWrite(ShellContext POINTER context
+    DOS.FileHandle POINTER output BYTE POINTER bytes CARD count)
 
   Require(count>0 AND count<=DRAW_CAPACITY)
   Require(capturedCount+count<=CAPTURE_CAPACITY)
@@ -101,14 +104,14 @@ PROC Boundary(CARD length)
   CARD index,used
 
   ; Draw neighbours are live shell storage, not newly allocated guards.
-  LET line=ShellLine()
-  LET scratch=ShellScratch()
-  LET transfer=ShellTransfer()
+  LET line=ShellLine(@context)
+  LET scratch=ShellScratch(@context)
+  LET transfer=ShellTransfer(@context)
   line(LINE_LIMIT)=$a5
   scratch(0)=$5a
-  A816MEMORY.Fill(ShellTransfer(),$3c,TRANSFER_CAPACITY)
-  used=ShellRowBytes(NULL,0,longText,length)
-  ShellRowEnd(NULL,used)
+  A816MEMORY.Fill(ShellTransfer(@context),$3c,TRANSFER_CAPACITY)
+  used=ShellRowBytes(@context,NULL,0,longText,length)
+  ShellRowEnd(@context,NULL,used)
   Require(line(LINE_LIMIT)=$a5 AND scratch(0)=$5a)
   FOR index=0 TO TRANSFER_CAPACITY-1 DO
     Require(transfer(index)=$3c)
@@ -118,9 +121,9 @@ RETURN
 
 PROC MountCase(CSTRING line LONGINT error CARD drive,format,profile,access)
 
-  STR.strlcpy(ShellLine(),line,LINE_CAPACITY)
-  Require(ShellParse()<>0 AND shell.command=CMD_MOUNT)
-  Require(ShellMountParse(parsedName,@parsedSpec)=error)
+  STR.strlcpy(ShellLine(@context),line,LINE_CAPACITY)
+  Require(ShellParse(@context)<>0 AND context.shell.command=CMD_MOUNT)
+  Require(ShellMountParse(@context,parsedName,@parsedSpec)=error)
   IF error=0 THEN
     Require(parsedSpec.drive=drive AND parsedSpec.format=format AND
         parsedSpec.profile=profile AND parsedSpec.access=access)
@@ -163,10 +166,10 @@ PROC Main()
   Require(allocation<>NULL)
   allocation(0)=$a5
   allocation(SHELL_BYTES+7)=$5a
-  shell=ShellState POINTER(allocation+SIZE(4))
-  aliases=ShellAlias POINTER(EXEC.AllocMem(
+  context.shell=ShellState POINTER(allocation+SIZE(4))
+  context.aliases=ShellAlias POINTER(EXEC.AllocMem(
       ALIAS_CAPACITY*SIZEOF(ShellAlias),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
-  Require(aliases<>NULL)
+  Require(context.aliases<>NULL)
   FOR index=0 TO 254 DO
     longText(index)=88
   OD
@@ -178,10 +181,10 @@ PROC Main()
   MarkCase()
   Require(allocation(0)=$a5 AND allocation(SHELL_BYTES+7)=$5a)
   Require(SIZEOF(ShellState)=HEADER_SIZE)
-  EXEC.FreeMem(BYTE POINTER(aliases),ALIAS_CAPACITY*SIZEOF(ShellAlias))
-  aliases=NULL
+  EXEC.FreeMem(BYTE POINTER(context.aliases),ALIAS_CAPACITY*SIZEOF(ShellAlias))
+  context.aliases=NULL
   EXEC.FreeMem(allocation,SHELL_BYTES+8)
-  shell=NULL
+  context.shell=NULL
   finished=1
 
 RETURN

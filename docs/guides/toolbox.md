@@ -48,7 +48,7 @@ and paths up to 255 bytes; exceeding a bound fails explicitly. It releases its
 locks on completion, errors and BREAK. There is no filesystem snapshot.
 
 `PRIMES PASSES 1` finishes after one pass: 1,229 primes, ending at 9,973.
-`PRIMES` runs in the foreground and physical BREAK stops it. `RUN PRIMES`
+`PRIMES` runs in the foreground and physical BREAK stops it. `RUN PRIMES >CON:`
 returns the prompt while calculation continues below it. Use JOBS to find its
 identity, then `BREAK identity` to stop it. Closing the pane restores the full
 shell display, including an edited line. See [background jobs](shell.md#one-background-job).

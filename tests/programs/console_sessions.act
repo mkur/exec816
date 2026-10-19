@@ -1,0 +1,219 @@
+MODULE CONSOLESESSIONTEST
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE HEAPCORE
+USE INPUT
+USE CONSOLE
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+USE CONSOLEDRIVER
+USE CONSOLETILING
+USE CONSOLEKEYS
+USE DOS
+USE PROGRAMAPI
+USE DOSSTREAMS
+USE CSTRING.IMPL AS STR
+
+CARD checks
+BYTE phase,gate,readerPhase,resume,finished
+LONGCARD target,wake
+EXEC.Task reader
+CONSOLETYPES.KeyWatch firstWatch,secondWatch,unusedWatch
+CONSOLETYPES.KeyNotice notice
+DOS.ConsoleEditState edit
+BYTE ARRAY draft(256),name(13)
+INPUT.Event event
+
+PROC Check(BYTE okay)
+
+  EXEC.Forbid()
+  IF okay=0 THEN
+    HEAPCORE.Abort($e800+checks)
+  FI
+
+  checks==+1
+  EXEC.Permit()
+
+RETURN
+
+PROC Pause(BYTE checkpoint)
+
+  gate=0
+  phase=checkpoint
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; The reader owns the edit and foreground scope, independently of presentation.
+PROC ReaderEntry()
+
+  Check(CONSOLE.WatchKey(target,33,3,wake,@unusedWatch)
+      =CONSOLETYPES.CONTROL_NOT_OWNER)
+  Check(CONSOLE.UnwatchKey(@secondWatch)=CONSOLETYPES.CONTROL_NOT_OWNER)
+  Check(CONSOLE.Activate(0,target)=CONSOLETYPES.CONTROL_NOT_OWNER)
+  LET file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Check(file<>NULL AND DOS.BeginForeground(file)<>0)
+  edit.buffer=draft
+  edit.capacity=256
+  edit.action=DOS.CONEDIT_START
+  readerPhase=1
+  Check(DOS.ConsoleEdit(file,@edit)=DOS.CONEDIT_COMPLETE)
+  Check(edit.length=2 AND edit.cursor=1 AND draft(0)='a AND draft(1)='b)
+  readerPhase=2
+  WHILE resume=0 DO
+    EXEC.Yield()
+  OD
+
+  edit.action=DOS.CONEDIT_RESUME
+  Check(DOS.ConsoleEdit(file,@edit)=DOS.CONEDIT_LINE)
+  Check(edit.length=3 AND edit.newline<>0 AND draft(0)='a AND draft(1)='c
+      AND draft(2)='b AND draft(3)=0)
+  Check(DOS.EndForeground()<>0 AND DOS.Close(file)<>0)
+  Check(DOS.ReleaseContext()<>0)
+  readerPhase=3
+
+RETURN
+
+; A copied notice carries the captured route; no synthetic input reaches Read.
+PROC Next(CONSOLETYPES.KeyWatch POINTER watch BYTE checkpoint
+    LONGCARD previous,next)
+  LONGCARD bits
+
+  phase=checkpoint
+  WHILE CONSOLE.TakeKey(watch,@notice)=0 DO
+    bits=EXEC.Wait(wake)
+  OD
+
+  Check(notice.unit=previous)
+  LET entry=CONSOLEWINDOWS.Find(previous)
+  Check(notice.route=entry.route)
+  Check(CONSOLE.Activate(previous,next)=CONSOLETYPES.CONTROL_OK)
+
+RETURN
+
+PROC Main()
+  BYTE index,value
+  LONGCARD bits
+
+  LET baseline=EXEC.AvailMem(0)
+  LET bit=EXEC.AllocSignal($ff)
+  Check(bit<>$ff)
+  wake=LONGCARD(1) LSH bit
+  LET file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Check(file<>NULL)
+  LET previousOutput=DOS.SelectOutput(file)
+  Check(CONSOLE.WatchKey(0,33,3,wake,@firstWatch)=CONSOLETYPES.CONTROL_OK)
+  Check(CONSOLEDRIVER.Stop()=0)
+  Check(CONSOLE.WatchKey(0,33,3,wake,@unusedWatch)=CONSOLETYPES.CONTROL_BUSY)
+  target=CONSOLE.Create(CONSOLE.ScreenWidth(),CONSOLE.ScreenHeight())
+  Check(target<>0)
+  Check(CONSOLE.WatchKey(target,33,3,wake,@secondWatch)
+      =CONSOLETYPES.CONTROL_OK)
+  Check(CONSOLE.Destroy(target)=0)
+  Check(CONSOLE.Activate(0,0)=CONSOLETYPES.CONTROL_OK)
+  Check(CONSOLETILING.Lock()<>0)
+  Check(CONSOLE.Activate(0,target)=CONSOLETYPES.CONTROL_BUSY)
+  CONSOLETILING.Unlock()
+  LET small=CONSOLE.Create(8,3)
+  Check(small<>0)
+  Check(CONSOLE.Activate(0,small)=CONSOLETYPES.CONTROL_BAD_LAYOUT)
+  Check(CONSOLE.Destroy(small)<>0)
+  LET pane=DOS.FileHandle POINTER(PROGRAMAPI.OpenPane(6))
+  Check(pane<>NULL)
+  Check(DOS.Write(pane,BYTE POINTER(c"PANE"),4)=4)
+  Check(DOS.Write(file,BYTE POINTER(c"> "),2)=2)
+  STR.strlcpy(name,c"CON:",13)
+  FOR index=0 TO 7 DO
+    value=BYTE((target RSH ((7-index) LSH 2)) & 15)
+    name(index+4)=IF value<10 THEN value+48 ELSE value+87 FI
+  OD
+
+  name(12)=0
+  LET other=DOS.Open(name,DOS.MODE_READWRITE)
+  Check(other<>NULL)
+  Check(DOS.Write(other,BYTE POINTER(c"SECOND"),6)=6)
+  reader.tc_Node.ln_Type=EXEC.NT_TASK
+  reader.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  reader.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  reader.tc_SPReg=reader.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@reader.tc_MemEntry)
+  Check(EXEC.AddTask(@reader,@ReaderEntry,NULL)=@reader)
+  WHILE readerPhase=0 DO
+    EXEC.Yield()
+  OD
+
+  Next(@firstWatch,1,0,target)
+  Check(readerPhase=1)
+  Check(DOS.Write(pane,BYTE POINTER(c" HIDDEN"),7)=7)
+  Next(@secondWatch,2,target,0)
+  Check(DOS.Write(other,BYTE POINTER(c" HIDDEN"),7)=7)
+  Next(@firstWatch,3,0,target)
+  Check(readerPhase=2)
+  Next(@secondWatch,4,target,0)
+  Check(edit.length=2 AND edit.cursor=1)
+  resume=1
+  phase=5
+  WHILE reader.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  Check(readerPhase=3)
+  Check(CONSOLE.Activate(0,target)=CONSOLETYPES.CONTROL_OK)
+  LET ignored=DOS.SelectOutput(other)
+  Check(PROGRAMAPI.OpenPane(6)=NULL AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  Pause(6)
+  BEGIN
+    LET registry=CONSOLEWINDOWS.Registry()
+    Check(CONSOLE.WatchKey(registry.pane,33,3,wake,@unusedWatch)
+        =CONSOLETYPES.CONTROL_OK)
+    Check(DOS.Close(pane)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+    Check(CONSOLE.UnwatchKey(@unusedWatch)=CONSOLETYPES.CONTROL_OK)
+  END
+
+  Check(DOS.Close(pane)<>0)
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET parent=CONSOLEDRIVER.GetInstance()
+  Check(windows.pane=0 AND parent.height=CONSOLE.ScreenHeight())
+  Check(windows.focusSlot=BYTE(target & 3))
+  BEGIN
+    LET savedOutput=DOS.SelectOutput(file)
+    LET hiddenPane=DOS.FileHandle POINTER(PROGRAMAPI.OpenPane(6))
+    Check(hiddenPane<>NULL)
+    Check(DOS.Write(hiddenPane,BYTE POINTER(c"HIDDEN NEW"),10)=10)
+    Check(DOS.Close(hiddenPane)<>0)
+    LET restoredOutput=DOS.SelectOutput(savedOutput)
+  END
+
+  Pause(7)
+  Check(CONSOLE.Activate(target,0)=CONSOLETYPES.CONTROL_OK)
+  Pause(8)
+  Check(DOS.Close(other)<>0 AND DOS.Close(file)<>0)
+  Check(DOS.ReleaseContext()<>0)
+  LET entry=CONSOLEWINDOWS.Find(target)
+  event.code=33
+  event.qualifiers=3
+  event.route=entry.route
+  event.tick=123
+  EXEC.Forbid()
+  Check(CONSOLEKEYS.Deliver(entry,@event)<>0)
+  event.tick=124
+  Check(CONSOLEKEYS.Deliver(entry,@event)<>0)
+  Check(secondWatch.notice.tick=123)
+  EXEC.Permit()
+  Check(CONSOLE.UnwatchKey(@secondWatch)=CONSOLETYPES.CONTROL_OK)
+  Check(CONSOLE.TakeKey(@secondWatch,@notice)=0)
+  Check(CONSOLE.UnwatchKey(@secondWatch)=CONSOLETYPES.CONTROL_UNBOUND)
+  Check(CONSOLE.Destroy(target)<>0)
+  Check(CONSOLE.Activate(0,target)=CONSOLETYPES.CONTROL_BAD_UNIT)
+  Check(CONSOLE.UnwatchKey(@firstWatch)=CONSOLETYPES.CONTROL_OK)
+  bits=EXEC.SetSignal(0,wake)
+  EXEC.FreeSignal(bit)
+  Check(EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+
+ENDMODULE

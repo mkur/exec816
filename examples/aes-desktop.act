@@ -4,21 +4,22 @@ USE DESKBOOT
 
 INCLUDE "shell/shell-session.inc"
 INCLUDE "shell/shell-boot.inc"
+INCLUDE "shell/shell-controller.inc"
+INCLUDE "shell/shell-desktop.inc"
 
 LONGINT exitStatus
 
 ; CountersStart/Stop are linked by the resident C application builder.
 PROC Main()
 
-  IF ShellBootStart(shellCon)<>0 THEN
+  IF ShellControllerStart(0)<>0 THEN
     IF CountersStart()=0 THEN
-      ShellText(shell.console,c"GEM counters unavailable")
-      ShellByte(shell.console,ASCII.LF)
+      ShellDesktopNotice(c"GEM counter apps unavailable\n")
     FI
 
-    WHILE shell.done=0 DO
-      ShellReadStep()
-    OD
+    exitStatus=ShellControllerRun()
+  ELSE
+    exitStatus=controllerStatus
   FI
 
   IF CountersStop()=0 THEN
@@ -29,7 +30,7 @@ PROC Main()
     HEAPCORE.Abort($faea)
   FI
 
-  exitStatus=ShellFinish()
+  ShellControllerStop()
 
 RETURN
 ENDMODULE

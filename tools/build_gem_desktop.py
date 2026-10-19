@@ -79,33 +79,17 @@ def build_desktop(out,source=None,program_output=None,files=False,**options):
     require(not {'PanelRun','CounterRun','BrowserRun','GEMPanel','GEMCounter','GEMBrowser',
                  'Calculator','calc_start','calc_ws','calc_panel','TextRun','GEMText','TextStep'} & sy.keys(),
             'Application body or model retained in shared GUI image')
-    service=''
-    if '      ShellReadStep()' in text:
-        service='''  ShellCollectJob()
-  IF job.state=JOB_RUNNING OR job.state=JOB_STOPPING THEN
-    mask=mask OR PROCESS.CompletionMask(job.identity)
-  FI
-
-'''
-        text=text.replace('      ShellReadStep()', '      DesktopReap()\n      ShellReadStep()')
     for module in ('AESBOOT','CALYPSICALL','DOSCLIENT','PROCESS'):
         if not re.search(r'(?m)^USE '+module+r'\s*$',text):
             text=re.sub(r'(?m)^(MODULE \w+\n)',r'\1USE '+module+'\n',text,count=1)
     text=text.replace('ENDMODULE',f'''
-; Collect only owned completions. This callback performs no recursive DOS I/O
-; while a shell read or packet owns the caller's DOS context.
+; Root collects its desktop children; shell jobs belong to their shell Process.
+; This callback performs no recursive DOS I/O.
 LONGCARD FUNC DesktopService()
   LONGCARD mask
 
   mask=LONGCARD(CALYPSICALL.Invoke(ADDRESS(${sy['GEMDesktopCollect']:x}),0))
-{service}RETURN(mask)
-
-PROC DesktopReap()
-
-  LET client=DOSCLIENT.Ensure()
-  client.waitMask=DesktopService()
-
-RETURN
+RETURN(mask)
 
 BYTE FUNC DesktopStart()
 

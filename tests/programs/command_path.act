@@ -19,7 +19,7 @@ TYPE State=[
   DOS.FileLock POINTER retiredDirectory
   Word ARRAY words(3)
 ]
-State POINTER shell
+State POINTER context.shell
 BYTE ARRAY scratch(264),output(512)
 CARD checks
 BYTE finished
@@ -34,7 +34,7 @@ PROC Require(BYTE okay)
 
 RETURN
 
-BYTE POINTER FUNC ShellScratch()
+BYTE POINTER FUNC ShellScratch(ShellContext POINTER context)
 
 RETURN(@scratch(0))
 
@@ -46,29 +46,31 @@ BYTE FUNC ShellEqual(BYTE POINTER text CSTRING expected)
 
 RETURN(STR.strcmp(CSTRING(text),expected)=0)
 
-PROC ShellFail(LONGINT primary,cause)
+PROC ShellFail(ShellContext POINTER context LONGINT primary,cause)
 
-  shell.status=primary
-  shell.error=cause
-  shell.done=BYTE(primary=20)
+  context.shell.status=primary
+  context.shell.error=cause
+  context.shell.done=BYTE(primary=20)
 
 RETURN
 
-BYTE FUNC ShellPoll()
+BYTE FUNC ShellPoll(ShellContext POINTER context)
 
   IF T.breakFlag<>0 THEN
-    ShellFail(10,304)
+    ShellFail(@context,10,304)
   FI
 
 RETURN(T.breakFlag)
 
-PROC ShellText(DOS.FileHandle POINTER handle CSTRING text)
+PROC ShellText(ShellContext POINTER context
+    DOS.FileHandle POINTER handle CSTRING text)
 
   STR.strlcat(output,text,SIZEOF(output))
 
 RETURN
 
-PROC ShellByte(DOS.FileHandle POINTER handle BYTE value)
+PROC ShellByte(ShellContext POINTER context
+    DOS.FileHandle POINTER handle BYTE value)
 
   LET index=STR.strlen(CSTRING(output))
   output(index)=value
@@ -76,14 +78,17 @@ PROC ShellByte(DOS.FileHandle POINTER handle BYTE value)
 
 RETURN
 
-PROC ShellLineText(DOS.FileHandle POINTER handle CSTRING text)
+PROC ShellLineText(ShellContext POINTER context
+    DOS.FileHandle POINTER handle CSTRING text)
 
-  ShellText(handle,text)
-  ShellByte(handle,ASCII.LF)
+  ShellText(@context,handle,text)
+  ShellByte(@context,handle,ASCII.LF)
 
 RETURN
 
 INCLUDE "../../examples/shell/shell-path.inc"
+
+ShellContext context
 
 ; Reset transport observations without changing the selected shell's PATH.
 PROC Reset()
@@ -100,10 +105,10 @@ PROC Reset()
   T.calls(0)=0
   T.success=c"C:HEAD"
   T.canonical=c"D1:ONE"
-  shell.status=0
-  shell.error=0
-  shell.done=0
-  shell.retiredDirectory=NULL
+  context.shell.status=0
+  context.shell.error=0
+  context.shell.done=0
+  context.shell.retiredDirectory=NULL
   output(0)=0
 
 RETURN
@@ -111,112 +116,112 @@ RETURN
 PROC Main()
   CARD index
 
-  shell=State POINTER($200000)
+  context.shell=State POINTER($200000)
   Reset()
-  ShellPathReset()
-  Require(shell.pathCount=1)
-  Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))<>NULL)
+  ShellPathReset(@context)
+  Require(context.shell.pathCount=1)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c"HEAD"))<>NULL)
   Require(T.attempts=2 AND T.error=0)
   Require(STR.strcmp(CSTRING(T.calls),c"HEAD\nC:HEAD\n")=0)
   Reset()
   T.success=c"HEAD"
-  Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))<>NULL AND T.attempts=1)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c"HEAD"))<>NULL AND T.attempts=1)
   Reset()
-  Require(ShellLoadCommand(BYTE POINTER(c"DIR/HEAD"))=NULL AND T.attempts=1)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c"DIR/HEAD"))=NULL AND T.attempts=1)
   Require(STR.strcmp(CSTRING(T.calls),c"DIR/HEAD\n")=0)
   Reset()
-  Require(ShellLoadCommand(BYTE POINTER(c":HEAD"))=NULL AND T.attempts=1)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c":HEAD"))=NULL AND T.attempts=1)
   Reset()
   T.firstError=201
-  Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))<>NULL AND T.attempts=2)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c"HEAD"))<>NULL AND T.attempts=2)
   Reset()
   T.firstError=204
-  Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))<>NULL AND T.attempts=2)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c"HEAD"))<>NULL AND T.attempts=2)
   FOR index=306 TO 309 DO
     Reset()
     T.firstError=LONGINT(index)
-    Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))=NULL)
+    Require(ShellLoadCommand(@context,BYTE POINTER(c"HEAD"))=NULL)
     Require(T.attempts=1 AND T.error=LONGINT(index))
   OD
 
   Reset()
   T.firstError=103
-  Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))=NULL AND T.error=103)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c"HEAD"))=NULL AND T.error=103)
   Reset()
   T.otherError=218
-  Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))=NULL AND T.error=218)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c"HEAD"))=NULL AND T.error=218)
   Require(T.attempts=1)
   Reset()
   T.firstError=205
   T.otherError=218
   T.success=c"NEVER"
-  Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))=NULL AND T.error=218)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c"HEAD"))=NULL AND T.error=218)
   Require(T.attempts=2)
   Reset()
   T.success=c"NEVER"
   T.otherError=204
-  Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))=NULL AND T.error=205)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c"HEAD"))=NULL AND T.error=205)
   Reset()
   T.breakAfter=1
-  Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))=NULL AND T.error=304)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c"HEAD"))=NULL AND T.error=304)
   Require(T.attempts=1)
   Reset()
-  LET longEntry=ShellPathEntry(0)
+  LET longEntry=ShellPathEntry(@context,0)
   FOR index=0 TO 254 DO
     longEntry(index)='x
   OD
 
   longEntry(255)=0
-  Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))=NULL AND T.error=120)
+  Require(ShellLoadCommand(@context,BYTE POINTER(c"HEAD"))=NULL AND T.error=120)
   Require(T.attempts=1)
-  ShellPathReset()
+  ShellPathReset(@context)
 
   Reset()
-  ShellPathUpdate(BYTE POINTER(c"one"),0)
-  Require(shell.pathCount=1 AND shell.error=0)
-  Require(STR.strcmp(CSTRING(ShellPathEntry(0)),c"D1:ONE")=0)
-  Require(T.locks=1 AND T.unlocks=1 AND shell.retiredDirectory=NULL)
+  ShellPathUpdate(@context,BYTE POINTER(c"one"),0)
+  Require(context.shell.pathCount=1 AND context.shell.error=0)
+  Require(STR.strcmp(CSTRING(ShellPathEntry(@context,0)),c"D1:ONE")=0)
+  Require(T.locks=1 AND T.unlocks=1 AND context.shell.retiredDirectory=NULL)
   T.canonical=c"d1:one"
-  ShellPathUpdate(BYTE POINTER(c"one"),1)
-  Require(shell.pathCount=1)
+  ShellPathUpdate(@context,BYTE POINTER(c"one"),1)
+  Require(context.shell.pathCount=1)
   T.canonical=c"D1:TWO"
-  ShellPathUpdate(BYTE POINTER(c"two"),1)
-  Require(shell.pathCount=2)
+  ShellPathUpdate(@context,BYTE POINTER(c"two"),1)
+  Require(context.shell.pathCount=2)
   T.canonical=c"D1:THREE"
-  ShellPathUpdate(BYTE POINTER(c"three"),1)
+  ShellPathUpdate(@context,BYTE POINTER(c"three"),1)
   T.canonical=c"D1:FOUR"
-  ShellPathUpdate(BYTE POINTER(c"four"),1)
-  Require(shell.pathCount=4)
+  ShellPathUpdate(@context,BYTE POINTER(c"four"),1)
+  Require(context.shell.pathCount=4)
   T.canonical=c"D1:FIVE"
-  ShellPathUpdate(BYTE POINTER(c"five"),1)
-  Require(shell.pathCount=4 AND shell.error=303)
+  ShellPathUpdate(@context,BYTE POINTER(c"five"),1)
+  Require(context.shell.pathCount=4 AND context.shell.error=303)
   FOR index=1 TO 5 DO
     Reset()
     T.mutation=BYTE(index)
-    ShellPathUpdate(BYTE POINTER(c"bad"),0)
-    Require(shell.pathCount=4 AND shell.error<>0)
-    Require(STR.strcmp(CSTRING(ShellPathEntry(0)),c"D1:ONE")=0)
+    ShellPathUpdate(@context,BYTE POINTER(c"bad"),0)
+    Require(context.shell.pathCount=4 AND context.shell.error<>0)
+    Require(STR.strcmp(CSTRING(ShellPathEntry(@context,0)),c"D1:ONE")=0)
     Require(T.locks=T.unlocks)
-    Require(BYTE(shell.retiredDirectory<>NULL)=BYTE(index=4))
+    Require(BYTE(context.shell.retiredDirectory<>NULL)=BYTE(index=4))
   OD
 
   Reset()
-  shell.argc=1
-  ShellPath()
+  context.shell.argc=1
+  ShellPath(@context)
   Require(STR.strcmp(CSTRING(output),c"Current directory\nD1:ONE\nD1:TWO\nD1:THREE\nD1:FOUR\n")=0)
-  shell.argc=2
-  shell.words(1).text=BYTE POINTER(c"CLEAR")
-  ShellPath()
-  Require(shell.pathCount=0)
-  ShellPathReset()
-  shell=State POINTER($210000)
+  context.shell.argc=2
+  context.shell.words(1).text=BYTE POINTER(c"CLEAR")
+  ShellPath(@context)
+  Require(context.shell.pathCount=0)
+  ShellPathReset(@context)
+  context.shell=State POINTER($210000)
   Reset()
-  shell.pathCount=0
+  context.shell.pathCount=0
   T.canonical=c"D1:SECOND"
-  ShellPathUpdate(BYTE POINTER(c"second"),0)
-  Require(STR.strcmp(CSTRING(ShellPathEntry(0)),c"D1:SECOND")=0)
-  shell=State POINTER($200000)
-  Require(shell.pathCount=1 AND STR.strcmp(CSTRING(ShellPathEntry(0)),c"C:")=0)
+  ShellPathUpdate(@context,BYTE POINTER(c"second"),0)
+  Require(STR.strcmp(CSTRING(ShellPathEntry(@context,0)),c"D1:SECOND")=0)
+  context.shell=State POINTER($200000)
+  Require(context.shell.pathCount=1 AND STR.strcmp(CSTRING(ShellPathEntry(@context,0)),c"C:")=0)
   finished=1
 
 RETURN

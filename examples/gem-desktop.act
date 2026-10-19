@@ -6,6 +6,8 @@ USE DESKTYPES
 
 INCLUDE "shell/shell-session.inc"
 INCLUDE "shell/shell-boot.inc"
+INCLUDE "shell/shell-controller.inc"
+INCLUDE "shell/shell-desktop.inc"
 
 LONGINT exitStatus
 DESKTYPES.Request placement
@@ -20,8 +22,8 @@ PROC PlaceShell()
   DESKTOP.Prepare(@placement,DESKTYPES.MOVE)
   placement.window=DESKBOOT.WindowId()
   placement.bounds.left=112
-  ; The console work origin must remain on its eight-pixel character grid.
-  placement.bounds.top=40-DESKTYPES.WORK_TOP
+  ; Keep the console work origin on its eight-pixel grid below the tabs.
+  placement.bounds.top=64-DESKTYPES.FRAME_SHELL_TOP
   IF DESKTOP.Submit(binding,@placement)<>DESKTYPES.OK THEN
     RETURN
   FI
@@ -35,16 +37,15 @@ RETURN
 ; DesktopStart/Stop are linked by the resident C application builder.
 PROC Main()
 
-  IF ShellBootStart(shellCon)<>0 THEN
+  IF ShellControllerStart(0)<>0 THEN
     PlaceShell()
     IF DesktopStart()=0 THEN
-      ShellText(shell.console,c"GEM desktop unavailable")
-      ShellByte(shell.console,ASCII.LF)
+      ShellDesktopNotice(c"GEM desktop unavailable\n")
     FI
 
-    WHILE shell.done=0 DO
-      ShellReadStep()
-    OD
+    exitStatus=ShellControllerRun()
+  ELSE
+    exitStatus=controllerStatus
   FI
 
   IF DesktopStop()=0 THEN
@@ -55,7 +56,7 @@ PROC Main()
     HEAPCORE.Abort($faea)
   FI
 
-  exitStatus=ShellFinish()
+  ShellControllerStop()
 
 RETURN
 ENDMODULE

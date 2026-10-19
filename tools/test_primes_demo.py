@@ -47,7 +47,7 @@ class Integration:
         def field_addresses():return symbols(read,h.p,self.bundle,number(job))
         require(number(height,2)==30 and number(pane)==0,'Default shell is split')
         baseline=h.ledger()['live']
-        h.command('RUN PRIMES')
+        h.command('RUN PRIMES >CON:')
         identity=number(job)
         h.rendezvous(f'dw(${height:x})=24')
         objects=field_addresses();candidate=objects['candidate'][0]
@@ -59,7 +59,7 @@ class Integration:
         h.command('HELLO | WC',b'1 3 17')
         h.command('COPY SYS:STORY.TXT WORK:PRIME.TXT')
         h.command('CMP SYS:STORY.TXT WORK:PRIME.TXT')
-        h.command('RUN PRIMES',error=202)
+        h.command('RUN PRIMES >CON:',error=202)
         h.command('PRIMES PASSES 1',error=202)
         static=snapshot('before-ctrl-l')
         for char in 'ECHO draft':h.press(char)
@@ -88,7 +88,7 @@ class Integration:
         h.command('JOBS',b'304')
         require(number(job+4)==10 and number(job+8)==304,'Wrong stopped-job outcome')
         h.command('BREAK '+str(identity),error=305)
-        h.command('RUN PRIMES PASSES 1')
+        h.command('RUN PRIMES PASSES 1 >CON:')
         successor=number(job);require(successor!=identity,'Reused Process identity')
         h.rendezvous(f'dw(${height:x})=24')
         h.command('BREAK '+str(identity),error=305)
@@ -104,7 +104,7 @@ class Integration:
         require(number(job+12,1)==3,'Command boundary did not collect completion')
         h.command('PRIMES PASSES 1')
         snapshot('foreground-finite')
-        h.command('RUN PRIMES')
+        h.command('RUN PRIMES >CON:')
         h.rendezvous(f'dw(${height:x})=24')
         h.saved['integration']=dict(baseline_tasks=baseline,background_tasks=baseline+1,final_sieve=final,
                 drafts=['ECHO draft','ECHO kept'],foreground_break_isolated=True,ctrl_l_prompt=True,

@@ -349,6 +349,18 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [Multiple shell sessions design](shell-sessions-design.md) and
+  [SS1–SS8 plan](shell-sessions-implementation-plan.md): SS1–SS8 implemented; two
+  independent shells, a root controller, switched text sessions and desktop
+  tabs, measured development evidence and refreshed OF816 packages. Separate
+  windows remain follow-on work. Defines ownership, cancellation/pane changes
+  and the eight-Task concurrency limits; includes executable slices, message
+  ownership, console control APIs, keyboard/tab behavior and validation gates.
+
+- [Shell TAB completion](shell-completion-implementation-plan.md): SC1–SC3
+  implemented; resumable editing, builtin/alias and file/PATH prefix completion,
+  checked ownership/cancellation and the tested OF816 demo. See the
+  [development record](../history/shell-completion.md) for timings and scope.
 - [INFO command](info-command-implementation-plan.md): completed I1–I4;
   copied public volume queries, metadata-based disk statistics, a loadable
   command and distinct demo SYS/WORK labels. No filesystem scan or new Task.

@@ -131,9 +131,9 @@ ENDMODULE
         make(out/'input.atr',files,1024,256,'MD5DATA')
     if shell:
         text=source.read_text().replace('CARD checks,currentCase',
-            'INCLUDE "'+str(ROOT/'examples/shell/shell-session.inc')+'"\n\nCARD checks,currentCase')
-        tail='''  Require(ShellStart(BYTE POINTER(c"RAM:"))<>0)
-  LET line=ShellLine()
+            'INCLUDE "'+str(ROOT/'examples/shell/shell-session.inc')+'"\n\nShellContext context\nCARD checks,currentCase')
+        tail='''  Require(ShellStart(@context,BYTE POINTER(c"RAM:"))<>0)
+  LET line=ShellLine(@context)
   LET command=BYTE POINTER(c"RAM:MD5 DATA.BIN >RAM:SHELL.OUT")
   index=0
   WHILE command(index)<>0 DO
@@ -141,10 +141,11 @@ ENDMODULE
     index==+1
   OD
   line(index)=0
-  shell.length=index
-  ShellCommand()
-  Require(shell.lastStatus=0 AND shell.lastError=0 AND shell.done=0)
-  Require(ShellFinish()=0 AND shell=NULL)
+  context.shell.length=index
+  ShellCommand(@context)
+  Require(context.shell.lastStatus=0 AND context.shell.lastError=0
+      AND context.shell.done=0)
+  Require(ShellFinish(@context)=0 AND context.shell=NULL)
   file=DOS.Open(BYTE POINTER(c"RAM:SHELL.OUT"),DOS.MODE_OLDFILE)
   Require(file<>NULL)
   Require(DOS.Read(file,@actual,128)=SHELL_BYTES)
@@ -181,7 +182,7 @@ def main():
         profile=None
         if args.shell:
             memory=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
-            memory['image_data_bytes']=7424
+            memory['image_data_bytes']=8192
             profile=out/'memory-profile.json';profile.write_text(json.dumps(memory,indent=2)+'\n')
         program=read_build(out) if args.replay else build(compiler(ROOT/'build/actionc',release=True),source,out,
             tasks=True,task_capacity=8,console=args.shell,console_test=True,sdx=True,

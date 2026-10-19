@@ -6,6 +6,7 @@ import shutil
 from pathlib import Path
 
 from build_command import compile_command
+from library_paths import read_source
 from make_data_disk import make
 from native_program import ROOT, compiler, require, sha256
 from test_shell_core import diagnostic_text, run
@@ -36,29 +37,59 @@ class Startup(Toolbox):
         super().instrument(out)
         source = out/'shell_core.act'
         text = source.read_text()
+        text = text.replace('ShellContext context\n', '')
         text = text.replace('INCLUDE "shell-observed.inc"',
-            'INCLUDE "shell-observed.inc"\nINCLUDE "'+str(ROOT/'examples/shell/shell-boot.inc')+'"')
-        text = text.replace('Check(ShellStart(shellRoot)<>0)', 'Check(ShellBootStart(shellCon)<>0)')
-        text = text.replace('  Pause(1)', '''  Check(script=NULL AND shell.redirectActive=0
-      AND shell.tempInput=NULL AND shell.tempOutput=NULL
-      AND DOS.Input()=shell.console AND DOS.Output()=shell.console)
-  Pause(1)''', 1)
-        # Assignments are system-wide and intentionally outlive ShellFinish.
-        # Remove these two boot mappings explicitly before the heap oracle.
-        marker = '  Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)'
-        require(text.count(marker) == 1, 'Missing startup allocation oracle')
-        text = text.replace(marker, '''  Check(DOS.AssignPath(BYTE POINTER(c"C"),NULL)<>0)
+            'INCLUDE "shell-observed.inc"\nINCLUDE "'+str(ROOT/'examples/shell/shell-boot.inc')+'"'
+            '\nINCLUDE "controller-observed.inc"')
+        text = text[:text.index('; Exercise the shared shell session')] + """
+; Root supervises the real shell Process while the host observes its prompt.
+PROC Main()
+  before=EXEC.AvailMem(0)
+  Check(SIZEOF(ShellState)=128)
+  Check(ShellControllerStart(0)<>0)
+  exitStatus=ShellControllerRun()
+  ShellControllerStop()
+  Check(exitStatus=0 AND contexts(0).shell=NULL)
+  Check(DOS.AssignPath(BYTE POINTER(c"C"),NULL)<>0)
   Check(DOS.AssignPath(BYTE POINTER(c"S"),NULL)<>0)
-'''+marker)
+  Check(DOS.ReleaseContext()<>0)
+  Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)
+  stage=3
+RETURN
+ENDMODULE
+"""
+        controller = read_source(ROOT/'examples/shell/shell-controller.inc')
+        controller = controller.replace('      ShellPrompt(context)', '''      ShellPrompt(context)
+      Check(context.script=NULL AND context.shell.redirectActive=0
+          AND context.shell.tempInput=NULL AND context.shell.tempOutput=NULL
+          AND DOS.Input()=context.shell.console AND DOS.Output()=context.shell.console)
+      ShellByte(context,context.shell.console,ASCII.FF)
+      ShellPrompt(context)
+      Pause(1)''', 1)
+        controller = controller.replace('  IF context.shell<>NULL THEN',
+            '  Pause(2)\n  IF context.shell<>NULL THEN', 1)
+        (out/'controller-observed.inc').write_text(controller)
+        # One capture spans root boot and the first child's startup/cleanup.
+        probe = out/'shelleditprobe.act'
+        probe.write_text(probe.read_text().replace(
+            '  captureBuffer=EXEC.AllocMem',
+            '  IF captureBuffer<>NULL THEN RETURN FI\n  captureBuffer=EXEC.AllocMem'))
+        profile = json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+        profile['image_data_bytes'] = 8192
+        self.memory_profile = out/'startup-memory.json'
+        self.memory_profile.write_text(json.dumps(profile, indent=2)+'\n')
         source.write_text(text)
         observed = out/'shell-observed.inc'
-        text = observed.read_text()
-        marker = '  SHELLEDITPROBE.Capture(bytes,count)\n  NativeShellWrite(handle,bytes,count)'
+        text = observed.read_text().replace(
+            'IF context.shell=ShellState POINTER(0) THEN SHELLEDITPROBE.Release(0) FI',
+            'IF context.control<>NULL AND context.shell=NULL THEN SHELLEDITPROBE.Release(0) FI')
+        marker = '''  SHELLEDITPROBE.Capture(bytes,count)
+  NativeShellWrite(context,handle,bytes,count)'''
         require(text.count(marker) == 1, 'Missing startup Write observer')
-        text = text.replace(marker, '''  IF handle=shell.console THEN
+        text = text.replace(marker, '''  IF handle=context.shell.console THEN
     SHELLEDITPROBE.Capture(bytes,count)
   FI
-  NativeShellWrite(handle,bytes,count)''')
+  NativeShellWrite(context,handle,bytes,count)''')
         observed.write_text(text)
 
     def prepare(self, toolchain, out, mode, size):
@@ -141,6 +172,7 @@ class Startup(Toolbox):
             (folder/'STARTUP').write_bytes(system)
         if user:
             (folder/'USER').write_bytes(user)
+        self.startup_tasks = tuple(n+1 for n in self.startup_tasks)
         self.files = make(out/'volume.atr', source,
                           binary_names={'C/'+name for name in self.commands},
                           sector_bytes=256, filesystem=self.filesystem, sectors=2000)
@@ -158,14 +190,14 @@ class Startup(Toolbox):
     def before_prompt(self, bridge, program, wait, key):
         if self.scenario == 'break':
             processes = program['build']['memory']['process_storage']['BASE']
-            wait(f'(db(${processes+4*128+77:x})=2)&(db(${processes+4*128+117:x})=2)')
+            wait(f'(db(${processes+5*128+77:x})=2)&(db(${processes+5*128+117:x})=2)')
             key('BREAK', 'down')
             wait(f'@frame>={bridge.eval_expr("@frame")+2}')
             key('BREAK', 'up')
 
     def startup_output(self, program):
         strings = program['build']['exec_build']['strings']
-        return (strings['banner']+strings['slots']+strings['stackChecks']+
+        return ('\n'+strings['banner']+strings['slots']+strings['stackChecks']+
                 'console.device: ready\n'+
                 strings['mountStart']+'SYS: -> D1: ready, read-only\n'+
                 'WORK: -> D8: ready, read-write\n\n').encode()+self.output
@@ -173,9 +205,9 @@ class Startup(Toolbox):
     def exercise(self, c):
         if self.scenario == 'normal':
             filesystem = b'SDFS       ' if self.filesystem == 'sdfs' else b'MyDOS      '
-            c.command('MOUNT', b'MOUNT FILESYSTEM ACCESS    STATE\n'+
-                      b'D1:   '+filesystem+b'read-only mounted\n'+
-                      b'WORK: '+filesystem+b'writable  mounted\n')
+            c.command('MOUNT', b'MOUNT FILESYSTEM ACCESS    STATE DEVICE/UNIT\n'+
+                      b'D1:   '+filesystem+b'read-only mounted sio.device/D1\n'+
+                      b'WORK: '+filesystem+b'writable  mounted sio.device/D8\n')
         c.command('ASSIGN', self.assigns)
         c.command('CD', self.directory)
         c.command('PATH', b'Current directory\nC:\n')
@@ -194,7 +226,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    toolchain = compiler(ROOT/'build/actionc')
+    toolchain = compiler(ROOT/'build/actionc', release=True)
     pin = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
     commands = {}
     names = SCENARIOS if args.scenario == 'all' else (args.scenario,)

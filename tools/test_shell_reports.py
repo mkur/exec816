@@ -30,7 +30,7 @@ def cases():
         expected.append(dict(label=label, output=output,
                              writes=writes if writes is not None else len(output.splitlines())))
 
-    case('tasks-empty', '  ShellTasks(NULL)', b'SLOT STATE    NAME\n')
+    case('tasks-empty', '  ShellTasks(@context,NULL)', b'SLOT STATE    NAME\n')
     setup = '''  taskCount=5
   taskRows(0).slot=0
   taskRows(0).state=TASKINSPECT.STATE_RUNNING
@@ -46,11 +46,11 @@ def cases():
   taskRows(4).slot=15
   taskRows(4).state=255
   STR.strlcpy(taskRows(4).name,c"unknown",24)
-  ShellTasks(NULL)'''
+  ShellTasks(@context,NULL)'''
     case('task-states-names-slots', setup,
          b'SLOT STATE    NAME\n0    RUNNING  main\n9    READY    (unnamed)\n'
          b'10   WAITING  waiter\n14   SLEEPING abcdefghijklmnopqrstuvw\n15   UNKNOWN  unknown\n')
-    case('devices-empty', '  ShellDevices(NULL)', b'DEVICE          STATE\n')
+    case('devices-empty', '  ShellDevices(@context,NULL)', b'DEVICE          STATE\n')
     case('devices', '''  deviceCount=4
   deviceRows(0).kind=DEVICEINSPECT.CONSOLE
   deviceRows(0).state=DEVICEINSPECT.READY
@@ -60,10 +60,10 @@ def cases():
   deviceRows(2).state=DEVICEINSPECT.INACTIVE
   deviceRows(3).kind=DEVICEINSPECT.IDEPLUS
   deviceRows(3).state=255
-  ShellDevices(NULL)''',
+  ShellDevices(@context,NULL)''',
          b'DEVICE          STATE\nconsole.device  ready\nsio.device      offline\n'
          b'timer.device    inactive\nideplus.device  unknown\n')
-    case('mounts-empty', '  ShellMounts(NULL)',
+    case('mounts-empty', '  ShellMounts(@context,NULL)',
          b'MOUNT FILESYSTEM ACCESS    STATE DEVICE/UNIT\nNo mounted filesystems\n')
     case('mount-types-access-offline-long-name', '''  mountCount=4
   STR.strlcpy(mountRows(0).name,c"SYS",32)
@@ -82,7 +82,7 @@ def cases():
   mountRows(3).format=255
   mountRows(3).readOnly=1
   mountRows(3).unit=56
-  ShellMounts(NULL)''',
+  ShellMounts(@context,NULL)''',
          b'MOUNT FILESYSTEM ACCESS    STATE DEVICE/UNIT\n'
          b'SYS:  MyDOS      read-only mounted sio.device/D1\n'
          b'WORK: SDFS       writable  offline ideplus.device/15\n  '+
@@ -92,7 +92,7 @@ def cases():
     case('mount-failure-numeric', '''  failurePresent=1
   mountFailure.error=5
   mountFailure.stage=FSTYPES.MOUNT_CONFIG
-  ShellMountFailureReport(NULL)''',
+  ShellMountFailureReport(@context,NULL)''',
          b'MOUNT FAILED  =filesystem service\nMOUNT PHASE   =invalid configuration\nMOUNT ERROR   =error 5\n')
     case('mount-failure-geometry', '''  STR.strlcpy(mountFailure.name,c"ABCDEFGHIJKLMNOPQRSTUVWXYZ12345",32)
   mountFailure.backend=BLOCKTYPES.BACKEND_IDEPLUS
@@ -104,11 +104,11 @@ def cases():
   partitions(15).reason=IDEPLUS.SLOT_READY
   partitions(15).sectors=1440
   partitions(15).bytes=512
-  ShellMountFailureReport(NULL)''',
+  ShellMountFailureReport(@context,NULL)''',
          b'MOUNT FAILED  =\nABCDEFGHIJKLMNOPQRSTUVWXYZ12345:\nMOUNT PHASE   =sector size mismatch\n'
          b'MOUNT ERROR   ='+f'{fault_messages()[205]} (205)\n'.encode()+
          b'MOUNT DEVICE  =ideplus.device/15\n  expected 12345 x 256B\n  actual   1440 x 512B\n')
-    case('mount-discovery-conflict', """  STR.strlcpy(mountFailure.name,c"DATA",32)
+    case('mount-discovery-conflict', '''  STR.strlcpy(mountFailure.name,c"DATA",32)
   mountFailure.backend=0
   mountFailure.unit=50
   mountFailure.stage=FSTYPES.MOUNT_DISCOVERY
@@ -118,28 +118,28 @@ def cases():
   mountFailure.percom(0)=40
   mountFailure.percom(3)=18
   mountFailure.percom(7)=128
-  ShellMountFailureReport(NULL)
+  ShellMountFailureReport(@context,NULL)
   mountFailure.reason=0
-  mountFailure.source=0""",
+  mountFailure.source=0''',
          b'MOUNT FAILED  =DATA:\nMOUNT PHASE   =disk geometry\n'
          b'MOUNT ERROR   ='+f'{fault_messages()[225]} (225)\n'.encode()+
          b'MOUNT DEVICE  =sio.device/D2\nMOUNT REASON  =STATUS/PERCOM conflict\n'
          b'MOUNT STATUS  =20 00 00 00 \nMOUNT PERCOM  =28 00 00 12 00 00 \n'
          b'MOUNT PERCOM  =00 80 00 00 00 00 \n')
-    case('mount-effective-geometry', """  STR.strlcpy(mountRows(0).name,c"DATA",32)
+    case('mount-effective-geometry', '''  STR.strlcpy(mountRows(0).name,c"DATA",32)
   mountRows(0).unit=50
   mountRows(0).format=FSFORMATS.SDFS
   mountRows(0).sectors=2880
   mountRows(0).bytes=256
   mountRows(0).profile=EXEC.SIO_PROFILE_GENERIC57600
   mountRows(0).source=FSDISCOVER.PERCOM
-  ShellMountDetails(NULL,@mountRows(0))""",
+  ShellMountDetails(@context,NULL,@mountRows(0))''',
          b'DATA:\n  D2 SpartaDOS read-only\n  2880 x 256B GENERIC57600\n  geometry: PERCOM\n')
     case('mount-open-reason', '''  mountFailure.stage=BLOCKTYPES.ADMIT_OPEN
   partitions(15).reason=IDEPLUS.SLOT_DELETED
-  ShellMountOpenReason(NULL,15)''', b'MOUNT REASON  =deleted APT slot\n')
-    case('ide-unattempted-visible', '  ShellIdeReport(NULL,1)', b'IDE CTRL      =UNATTEMPTED\n')
-    case('ide-unattempted-hidden', '  ShellIdeReport(NULL,0)', b'', 0)
+  ShellMountOpenReason(@context,NULL,15)''', b'MOUNT REASON  =deleted APT slot\n')
+    case('ide-unattempted-visible', '  ShellIdeReport(@context,NULL,1)', b'IDE CTRL      =UNATTEMPTED\n')
+    case('ide-unattempted-hidden', '  ShellIdeReport(@context,NULL,0)', b'', 0)
     case('ide-ready-partitions', '''  ideInfo.attempted=1
   ideInfo.controller=1
   ideInfo.disk=1
@@ -157,7 +157,7 @@ def cases():
   partitions(2).reason=IDEPLUS.SLOT_READY
   partitions(2).start=1568
   partitions(2).sectors=1440
-  ShellIdeReport(NULL,1)''',
+  ShellIdeReport(@context,NULL,1)''',
          b'IDE CTRL      =DETECTED (PBI ID 0)\nIDE PHASE     =ready\nIDE STATE     =2 GEN -1\n'
          b'IDE CARD      =$10\nIDE SECTORS   =2097152\nIDE CAPACITY  =1024 MiB (512B)\n'
          b'IDE WRITES    =BOARD PROTECTED\nAPT STATUS    =VALID\n'
@@ -171,7 +171,7 @@ def cases():
   ideInfo.slot=15
   ideInfo.boardStatus=0
   ideInfo.durable=0
-  ShellIdeReport(NULL,1)''',
+  ShellIdeReport(@context,NULL,1)''',
          b'IDE CTRL      =DETECTED (PBI ID 0)\nIDE PHASE     =ATA transfer\nIDE STATE     =2 GEN -1\n'
          b'IDE CARD      =$00\nIDE SECTORS   =2097152\nIDE CAPACITY  =1024 MiB (512B)\n'
          b'IDE WRITES    =NO DURABLE SUPPORT\nIDE ERROR     =ATA readiness timeout\n'
@@ -183,47 +183,47 @@ def cases():
   ideInfo.apt=0
   ideInfo.stage=IDEPLUS.STAGE_CONTROLLER
   ideInfo.reason=IDEPLUS.REASON_CONTROLLER_ABSENT
-  ShellIdeReport(NULL,1)''',
+  ShellIdeReport(@context,NULL,1)''',
          b'IDE CTRL      =NOT DETECTED (PBI ID 0)\nIDE PHASE     =controller detection\n'
          b'IDE STATE     =2 GEN -1\nIDE CARD      =$00\nIDE DISK      =NOT IDENTIFIED\n'
          b'IDE ERROR     =controller absent\nAPT STATUS    =NOT CHECKED\n')
-    case('jobs-empty', '  ShellJobs()', b'No background jobs\n')
+    case('jobs-empty', '  ShellJobs(@context)', b'No background jobs\n')
     for state, label in [('JOB_RUNNING', b'running'), ('JOB_STOPPING', b'stopping')]:
-        case('job-'+label.decode(), f'  job.identity=$ffffffff\n  job.state={state}\n  ShellJobReport(NULL)',
+        case('job-'+label.decode(), f'  context.job.identity=$ffffffff\n  context.job.state={state}\n  ShellJobReport(@context,NULL)',
              b'Job 4294967295 '+label+b'\n')
-    case('job-signed-results', '''  job.state=JOB_DONE
-  job.outcome.primary=$80000000
-  job.outcome.secondary=$7fffffff
-  ShellJobs()''', b'Job 4294967295 finished (-2147483648, 2147483647)\n')
-    case('alias-maximum', '''  STR.strlcpy(aliases(0).name,c"ABCDEFGHIJKLMNO",16)
-  STR.strlcpy(aliases(0).text,CSTRING(longText),128)
-  ShellAliasShow(0)''', b'ABCDEFGHIJKLMNO -> '+b'X'*127+b'\n', 2)
-    case('path-maximum', '''  shell.argc=1
-  shell.pathCount=1
-  STR.strlcpy(ShellPathEntry(0),CSTRING(longText),256)
-  ShellPath()''', b'Current directory\n'+b'X'*255+b'\n', 3)
-    case('echo-empty-argument', '''  shell.command=CMD_ECHO
-  shell.argc=4
-  shell.words(1).text=BYTE POINTER(c"")
-  shell.words(2).text=BYTE POINTER(c"one")
-  shell.words(3).text=BYTE POINTER(c"two")
-  ShellDispatch()''', b' one two\n')
-    case('echo-maximum', '''  shell.argc=2
-  shell.words(1).text=longText
-  ShellDispatch()''', b'X'*255+b'\n', 2)
+    case('job-signed-results', '''  context.job.state=JOB_DONE
+  context.job.outcome.primary=$80000000
+  context.job.outcome.secondary=$7fffffff
+  ShellJobs(@context)''', b'Job 4294967295 finished (-2147483648, 2147483647)\n')
+    case('alias-maximum', '''  STR.strlcpy(context.aliases(0).name,c"ABCDEFGHIJKLMNO",16)
+  STR.strlcpy(context.aliases(0).text,CSTRING(longText),128)
+  ShellAliasShow(@context,0)''', b'ABCDEFGHIJKLMNO -> '+b'X'*127+b'\n', 2)
+    case('path-maximum', '''  context.shell.argc=1
+  context.shell.pathCount=1
+  STR.strlcpy(ShellPathEntry(@context,0),CSTRING(longText),256)
+  ShellPath(@context)''', b'Current directory\n'+b'X'*255+b'\n', 3)
+    case('echo-empty-argument', '''  context.shell.command=CMD_ECHO
+  context.shell.argc=4
+  context.shell.words(1).text=BYTE POINTER(c"")
+  context.shell.words(2).text=BYTE POINTER(c"one")
+  context.shell.words(3).text=BYTE POINTER(c"two")
+  ShellDispatch(@context)''', b' one two\n')
+    case('echo-maximum', '''  context.shell.argc=2
+  context.shell.words(1).text=longText
+  ShellDispatch(@context)''', b'X'*255+b'\n', 2)
     for length in (0, 127, 128, 255):
         case('draw-boundary-'+str(length), f'  Boundary({length})', b'X'*length+b'\n', (length+1+127)//128)
-    case('number-boundary', '''  used=ShellRowBytes(NULL,0,longText,116)
-  used=ShellRowNumber(NULL,used,LONGINT($80000000))
-  ShellRowEnd(NULL,used)''', b'X'*116+b'-2147483648\n', 1)
-    case('unsigned-boundary', '''  used=ShellRowBytes(NULL,0,longText,118)
-  used=ShellRowUnsigned(NULL,used,$ffffffff)
-  ShellRowEnd(NULL,used)''', b'X'*118+b'4294967295\n', 2)
+    case('number-boundary', '''  used=ShellRowBytes(@context,NULL,0,longText,116)
+  used=ShellRowNumber(@context,NULL,used,LONGINT($80000000))
+  ShellRowEnd(@context,NULL,used)''', b'X'*116+b'-2147483648\n', 1)
+    case('unsigned-boundary', '''  used=ShellRowBytes(@context,NULL,0,longText,118)
+  used=ShellRowUnsigned(@context,NULL,used,$ffffffff)
+  ShellRowEnd(@context,NULL,used)''', b'X'*118+b'4294967295\n', 2)
     case('mem-flags', '''  memoryValues(0)=EXEC.AvailMem(0)
   memoryValues(1)=EXEC.AvailMem(EXEC.MEMF_LARGEST)
   memoryValues(2)=EXEC.AvailMem(EXEC.MEMF_LINEAR)
   memoryValues(3)=EXEC.AvailMem(EXEC.MEMF_LINEAR OR EXEC.MEMF_LARGEST)
-  ShellMem()''', b'', 4)
+  ShellMem(@context)''', b'', 4)
     return '\n'.join(source), expected
 
 

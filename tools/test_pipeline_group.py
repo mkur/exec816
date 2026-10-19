@@ -19,20 +19,31 @@ def run(out,mode,reuse=False):
     out.mkdir(parents=True,exist_ok=True)
     toolchain=compiler(ROOT/'build/actionc')
     blobs=[];commands={}
-    for name,source,address in [('HELLO','examples/commands/hello.act',0xe0000),
-                                ('WC','examples/commands/wc.act',0xe4000),
-                                ('FLOW','tests/programs/loaded_flow.act',0xe8000)]:
+    for name,source,address in [('HELLO','examples/commands/hello.act',0x3e0000),
+                                ('WC','examples/commands/wc.act',0x3e4000),
+                                ('FLOW','tests/programs/loaded_flow.act',0x3e8000)]:
         commands[name]=compile_command(toolchain,ROOT/source,out/name,mode=='opt')
         payload=(out/name).read_bytes();require(len(payload)<16384,'Oversize group fixture command')
         blobs.append((address,payload))
-    (out/'pipeline-fixture.inc').write_text(''.join(f'CONST {name}_BYTES={len(blob[1])}\n' for name,blob in zip(commands,blobs)))
+    (out/'pipeline-fixture.inc').write_text(''.join(
+        f'CONST {name}_BASE=${blob[0]:x}\nCONST {name}_BYTES={len(blob[1])}\n'
+        for name,blob in zip(commands,blobs)))
     source=out/'probe.act'
     source.write_text(read_source(ROOT/'tests/programs/pipeline_group.act',{'pipeline-fixture.inc':out/'pipeline-fixture.inc'}))
     shutil.copyfile(ROOT/'tests/programs/groupprobe.act',out/'groupprobe.act')
     text=read_source(ROOT/'lib/dos/process.act').replace('USE EXEC\n','USE EXEC\nUSE GROUPPROBE\n',1)
     needle='PROCESSSTATE.Entry POINTER FUNC Control(BYTE operation BYTE POINTER argument)\n'
     require(text.count(needle)==1,'Stale launch override')
-    text=text.replace(needle,needle+'''  IF operation=PROCESSSTATE.OP_LAUNCH AND GROUPPROBE.failLaunch<>0 THEN
+    text=text.replace(needle,needle+'''  IF operation=PROCESSSTATE.OP_LAUNCH AND GROUPPROBE.holdLaunch<>0 THEN
+    IF GROUPPROBE.holdLaunch=2 THEN
+      GROUPPROBE.holdLaunch=1
+    ELSE
+      WHILE GROUPPROBE.holdLaunch<>0 DO
+        EXEC.Yield()
+      OD
+    FI
+  FI
+  IF operation=PROCESSSTATE.OP_LAUNCH AND GROUPPROBE.failLaunch<>0 THEN
     GROUPPROBE.failLaunch==-1
     IF GROUPPROBE.failLaunch=0 THEN DOSCLIENT.SetError(ERROR_NO_FREE_STORE) RETURN(PROCESSSTATE.Entry POINTER(0)) FI
   FI
@@ -49,8 +60,13 @@ def run(out,mode,reuse=False):
     media=out/'files';media.mkdir(exist_ok=True)
     shutil.copyfile(ROOT/'examples/demo-disk/LONG.TXT',media/'LONG.TXT')
     make(out/'volume.atr',media)
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes']=8192
+    memory=out/'memory.json'
+    memory.write_text(json.dumps(profile,indent=2)+'\n')
     p=read_build(out) if reuse else build(toolchain,source,out,optimize=mode=='opt',tasks=True,task_capacity=8,
-         console=True,dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4)],image_data=blobs)
+         console=True,dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4)],
+         image_data=blobs,memory_profile=memory)
     require(p['build']['source_sha256']==sha256(source),'Stale group fixture')
     for address,payload in blobs:
         require(any(s['address']==address and bytes(s['bytes'])==payload for s in p['image']['segments']),'Stale loaded command')
@@ -62,9 +78,9 @@ def run(out,mode,reuse=False):
         machine=verify_machine(b,rom,PIN)
         try:runtime,_=execute(b,p,timeout=360,frame_limit=18000)
         except Exception:
-            print('Group progress:',{n:data(b,p['image'],n) for n in ('checks','cancellations','firstMode','secondMode','finished','warmRead','warmError','warmClose')},flush=True)
+            print('Group progress:',{n:data(b,p['image'],n) for n in ('checks','cancellations','firstMode','secondMode','finished','warmRead','warmError','warmClose','outcome')},flush=True)
             raise
-        require(data(b,p['image'],'finished')==[1] and data(b,p['image'],'cancellations',True)==[3],'Incomplete group scenarios')
+        require(data(b,p['image'],'finished')==[1] and data(b,p['image'],'cancellations',True)==[4],'Incomplete group scenarios')
         ownership(b,p,out);checks=data(b,p['image'],'checks',True)
     return dict(status='pass',tier='development',mode=mode,checks=checks,build=p['build'],runtime=runtime,machine=machine,
                 pin=PIN,commands=commands,media_sha256=sha256(out/'volume.atr'),bank_zero_delta=dict(fixed=0,per_task=0),

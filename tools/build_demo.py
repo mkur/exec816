@@ -14,7 +14,7 @@ from library_paths import read_source
 from launch_demo import write_launcher
 from native_program import ROOT, build, compiler, read_build, require, sha256
 
-DEMO_IMAGE_DATA_BYTES = 6400
+DEMO_IMAGE_DATA_BYTES = 8192
 WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
 IDE_DEMO_NOTE = ('\nThis development build also requires IDE Plus 2.0 rev E, PBI ID 0,\n'
@@ -87,7 +87,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'README.TXT').write_text(f'Exec816 {title} shell\n\n'
             f'The full {dimensions} screen is your shell.\nNo prime task is started.\n\n'
             'Try TASKS, DIR, MEM, HELLO | WC,\nand CAT STORY.TXT | WC.\n'
-            'RUN PRIMES opens a lower pane. JOBS shows its identity;\n'
+            'RUN PRIMES >CON: opens a lower pane. JOBS shows its identity;\n'
             'BREAK identity stops it. PRIMES PASSES 1 runs one foreground pass.\n'
             'EXIT returns to the OS.\n',encoding='ascii')
     if desktop:
@@ -140,9 +140,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     # Bound shell/client globals and shared static buffers in upper RAM.
     from generate_memory import PROFILE
     profile=json.loads(PROFILE.read_text())
-    # The bitmap shell uses 6,409 bytes with SIO imports: one extra page keeps
-    # code placement page-aligned. Combined desktop globals use 7,265 bytes,
-    # so its 7,424-byte arena includes 159 bytes of spare capacity.
+    # Prompt completion adds resident literals and native editor code. Keep the
+    # shared data arena page-aligned, with existing variant-specific headroom.
     # This is upper-bank capacity; Task/DP and bank-zero reservations are unchanged.
     profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES+(1024 if desktop else
         256 if bitmap_shell_only else 0)
@@ -285,7 +284,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                for name,payload in files.items()},
         source_inputs={str(path.relative_to(ROOT)):sha256(path) for path in
                        [ROOT/'VERSION',ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'examples/shell/shell-session.inc',
-                        ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-mount-diagnostics.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-jobs.inc',ROOT/'examples/shell/shell-execute.inc',ROOT/'examples/shell/shell-boot.inc',
+                        ROOT/'examples/shell/shell-controller.inc',ROOT/'examples/shell/shell-tabs.inc',ROOT/'examples/shell/shell-desktop.inc',ROOT/'examples/shell/shell-session-client.inc',ROOT/'examples/shell/shell-sessions.inc',ROOT/'examples/shell/shell-session-types.inc',ROOT/'examples/shell/shell-context-types.inc',ROOT/'abi/shell-sessions.json',ROOT/'tools/generate_shell_sessions.py',ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-mount-diagnostics.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-jobs.inc',ROOT/'examples/shell/shell-execute.inc',ROOT/'examples/shell/shell-boot.inc',
                         *(ROOT/'examples/commands'/name for name in ('command-common.inc','command-files.inc','command-write.inc','command-transfer.inc','command-pattern.inc','fuji-arguments.inc','fuji-images.inc')),
                         ROOT/'docs/guides/demo.md',ROOT/'docs/demo.png',ROOT/'docs/images/demo-boot.png',ROOT/'docs/demo-distribution.txt',
                         ROOT/'tools/package_demo.py',ROOT/'LICENSE',ROOT/'LICENSE-MIT',ROOT/'LICENSING.md',
@@ -300,9 +299,6 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             entry,ROOT/'docs/text-shell-distribution.txt')})
     if ideplus:
-        record['expected_peak_tasks']+=1
-        require(record['expected_peak_tasks']<=record['task_capacity'],
-                'Selected IDE demo exceeds the existing Task-slot capacity')
         record['ideplus']=dict(fixture='ideplus/fixture.json',access='readonly',
                                pin=json.loads((ROOT/'toolchain/altirra-ideplus.json').read_text()))
         record['source_inputs'].update({name:sha256(ROOT/name) for name in (
@@ -344,6 +340,21 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             ROOT/'tools/build_g4bench.py',ROOT/'tools/prepare_g4bench.py',
             *(p for p in (ROOT/'ports/gem4xe/apps/g4bench').rglob('*') if p.is_file()),
             *(p for p in (ROOT/'ports/gem4xe/apps/calculator').rglob('*') if p.is_file()))})
+    # The controller adds one Task to every former one-shell peak. Peaks
+    # beyond eight describe rejected workloads, never expanded reservations.
+    required = record['expected_peak_tasks'] + 1 + int(ideplus and not ide_only)
+    record['requested_peak_tasks'] = required
+    record['expected_peak_tasks'] = min(8, required)
+    gui = 2 if aes_counters or aes_input else 1 if desktop else 0
+    base = 4 + int(ideplus and not ide_only)
+    prime = int(not shell_only)
+    record['task_census'] = dict(shared_services_and_controller=base,
+        shell_processes=1, prime=prime, initial_gui_processes=gui,
+        prompt=base+1+prime+gui,
+        one_shell_pipeline_required=base+1+prime+gui+2,
+        two_shell_pipeline_required=base+2+prime+gui+2,
+        historical_peak_required=required,
+        historical_peak_admitted=required<=8, capacity=8)
     graphics=None
     if gem_vdi:
         from build_gem_artifact import build as build_graphics
@@ -456,6 +467,15 @@ def refresh_monitor(output):
         (output/'README.md').write_text(content)
         record['artifacts']['README.md']=sha256(output/'README.md')
         guides.append(guide)
+    else:
+        guide=ROOT/'docs/guides/demo.md'
+        (output/'README.md').write_text(guide.read_text())
+        record['artifacts']['README.md']=sha256(output/'README.md')
+        guides.append(guide)
+    for guide in guides:
+        name=str(guide.relative_to(ROOT))
+        if name in record['source_inputs']:
+            record['source_inputs'][name]=sha256(guide)
     record['monitor_refresh']=dict(native_xex_sha256=sha256(output/'program.xex'),
         native_build_sha256=sha256(output/'build.json'),
         source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in

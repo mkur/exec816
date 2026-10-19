@@ -15,6 +15,10 @@ from generate_console import constants
 
 def run(out, compiler_dir, bitmap=False, raw=False, reuse=False):
     out.mkdir(parents=True, exist_ok=True)
+    profile = json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes'] = 8192
+    memory = out/'fixture-memory.json'
+    memory.write_text(json.dumps(profile, indent=2)+'\n')
     source = ROOT/'tests/programs/console_pane.act'
     local = out/source.name
     if raw:
@@ -42,12 +46,13 @@ def run(out, compiler_dir, bitmap=False, raw=False, reuse=False):
     if bitmap:
         from build_bitmap_console import build_bitmap
         from test_mouse_observe import PIN, BRIDGE, ROM
-        p = read_build(out/'program') if reuse else build_bitmap(local, out, True, compiler_dir=compiler_dir)
+        p = read_build(out/'program') if reuse else build_bitmap(local, out, True, compiler_dir=compiler_dir,
+                  release_compiler=True, memory_profile=memory)
     else:
         PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
         BRIDGE, ROM = ROOT/'build/shell-paced-bridge', ROOT/'build/firmware/altirraos-816.rom'
-        p = read_build(out) if reuse else build(compiler(compiler_dir), local, out, optimize=not raw,
-                  tasks=True, task_capacity=8, console=not raw)
+        p = read_build(out) if reuse else build(compiler(compiler_dir, release=True), local, out, optimize=not raw,
+                  tasks=True, task_capacity=8, console=not raw, memory_profile=memory)
     if reuse:
         require(sha256(local) == sha256(source), 'Changed replay fixture')
         for group in ('task_inputs', 'console_inputs', 'banked_inputs'):

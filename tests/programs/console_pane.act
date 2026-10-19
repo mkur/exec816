@@ -61,7 +61,7 @@ PROC Core()
   OD
 
   Require(SIZEOF(CONSOLETYPES.Instance)=202)
-  Require(SIZEOF(CONSOLETYPES.Windows)=184)
+  Require(SIZEOF(CONSOLETYPES.Windows)=CONSOLETYPES.WINDOWS_SIZE)
 
 RETURN
 
@@ -120,6 +120,10 @@ PROC Main()
   Core()
   ioConsole=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
   Require(ioConsole<>NULL)
+  BEGIN
+    LET previous=DOS.SelectOutput(ioConsole)
+  END
+
   Require(DOS.BeginForeground(ioConsole)<>0)
   Rollback()
   LET instance=CONSOLEDRIVER.GetInstance()
@@ -133,7 +137,7 @@ PROC Main()
   OD
 
   Require(DOS.Write(ioConsole,BYTE POINTER(c"> "),2)=2)
-  LET child=PROCESS.Start(@Child,NULL,0)
+  LET child=PROCESS.StartBackground(@Child,NULL,0)
   Require(child<>0)
   WHILE phase=0 DO
     EXEC.Yield()

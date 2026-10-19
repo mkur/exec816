@@ -6,7 +6,7 @@
 These are native pointers, not Amiga BPTRs. Names are NUL-terminated byte strings;
 I/O remains counted binary data. Exact signatures and constants come from
 [dos.act](../../lib/dos/dos.act) and [dos.json](../../abi/dos.json).
-The current native DOS ABI is revision 11; the loaded COMMAND ABI is version 19.
+The current native DOS ABI is revision 14; the loaded COMMAND ABI is version 19.
 The loaded C program ABI is version 20; rebuild applications with these bindings.
 
 ## Transfer ownership
@@ -279,6 +279,38 @@ must be writable upper RAM satisfying the DOS transfer-range rule, and must not
 overlap the readable header. A valid nonempty destination is NUL-terminated on
 format failure; there is no truncated successful message. PrintFault can commit
 a prefix before a transport failure and makes no recursive diagnostic attempt.
+
+## Resumable console editing
+
+`ConsoleEdit(file, state)` is a native DOS extension for prompt clients that
+need to inspect input before submission. It accepts an owned CON handle and a
+12-byte `ConsoleEditState`: buffer pointer at 0, BYTE action at 3, CARD length
+at 4, CARD cursor at 6, BYTE replace at 8, BYTE newline at 9, CARD capacity at 10.
+The buffer must provide 256 writable bytes under the ordinary DOS transfer-range
+rule. It contains a NUL-terminated snapshot of at most 255 edited bytes.
+
+| Action | Effect |
+| --- | --- |
+| `CONEDIT_START` | Acquire the session and read until TAB, submission, EOF or error. |
+| `CONEDIT_RESUME` | Continue the owning handle's paused edit. If replace is nonzero, atomically copy length/cursor from the buffer and redraw. Otherwise retain the current edit. |
+| `CONEDIT_CANCEL` | Retire the owning handle's paused edit, clear valid typeahead and release input ownership; preserve discard-through-Return after input loss. No buffer is required. |
+
+Results are `CONEDIT_COMPLETE` for TAB, `CONEDIT_LINE` for submitted text,
+`CONEDIT_EOF` for one-shot EOF, `CONEDIT_CANCELLED`, or -1 with IoErr. Successful
+calls clear IoErr. LINE excludes LF and sets newline when Return submitted it;
+partial Ctrl-D returns LINE with newline zero, followed by EOF on the next START.
+COMPLETE supplies length/cursor, clears replace/newline, and retains the session,
+owning handle and endpoint input lease. It collects/detaches the request and frees
+the Task's DOS client for synchronous filesystem calls between invocations.
+No caller buffer is retained. RESUME/CANCEL must use the owning handle.
+
+The caller must retire every COMPLETE with RESUME or CANCEL. Owning-handle Close,
+other readers and history toggles fail with ERROR_OBJECT_IN_USE during a pause.
+Bad actions, insufficient capacity and invalid replacement bounds fail before
+altering ownership; a rejected RESUME remains paused. Terminal acquisition,
+transport and cancellation outcomes release ownership. BREAK and FIFO loss
+retain the ordinary [cooked input rules](cooked-console.md). Only Return records
+history; TAB and replacement do not. No COMMAND or C import is added.
 
 ## Console history
 

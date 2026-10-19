@@ -23,7 +23,7 @@ BYTE savedChact=ASTATE_CONSOLE_CHACT,savedPriority=ASTATE_CONSOLE_GPRIOR
 BYTE oldchr=$5d
 CARD savmsc=$58,sdlst=$230,oldadr=$5e
 DISPLAY.Lease lease
-LONGCARD bitmapUnit,bitmapGeneration,bitmapModel
+LONGCARD bitmapUnit,bitmapGeneration,bitmapModel,backingUnit
 BYTE bitmapReady,batchCopyReady
 
 CONST ROW_BUDGET=4, CELL_BUDGET=160
@@ -304,14 +304,14 @@ CARD FUNC CursorPosition(CONSOLETYPES.Presentation POINTER view
 
 RETURN(Position(view.top+instance.row,view.left+instance.column))
 
-; The one fixed bitmap belongs to the desktop's primary terminal lifetime.
+; Only the desktop binding may write the single fixed backing bitmap.
 PUBLIC BYTE FUNC BackingEnabled(CONSOLETYPES.Presentation POINTER view)
 
   IF DESKSTATE.Enabled()=0 OR view.width<>64 OR view.height<>20 THEN
     RETURN(0)
   FI
 
-  LET entry=CONSOLEWINDOWS.Find(0)
+  LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ConsoleUnit())
 
 RETURN(entry<>NULL AND entry.view=BYTE POINTER(view))
 
@@ -319,8 +319,25 @@ PUBLIC BYTE FUNC BackingReady(CONSOLETYPES.Presentation POINTER view
     CONSOLETYPES.Instance POINTER instance)
 
 RETURN(BackingEnabled(view)<>0 AND view.claimed<>0 AND CONSOLEBITMAP.Failed()=0
+    AND backingUnit=DESKSTATE.ConsoleUnit()
     AND instance.dirtyRows=0 AND view.scrollState=0
     AND view.presentedGeneration=instance.generation)
+
+; Bind only at the settled scene/DMA boundary. Retained generations on the
+; former owner cannot acknowledge the destination's cold backing.
+PUBLIC PROC RetireBacking()
+
+  backingUnit=$ffffffff
+
+RETURN
+
+PROC PublishBacking(CONSOLETYPES.Presentation POINTER view)
+
+  IF BackingEnabled(view)<>0 THEN
+    backingUnit=DESKSTATE.ConsoleUnit()
+  FI
+
+RETURN
 
 ; Model-to-backing retirement does not retire the screen's independent damage.
 PROC BackingDamage(CONSOLETYPES.Presentation POINTER view CARD x,y,width,height)
@@ -504,6 +521,7 @@ BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   OD
 
   IF instance.dirtyRows=0 THEN
+    PublishBacking(view)
     view.presentedGeneration=instance.generation
   FI
 

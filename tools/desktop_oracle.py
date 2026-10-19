@@ -2,7 +2,7 @@
 from generate_desktop import layout,ABI as DESKTOP_ABI
 from generate_layers import layout as layers_layout,ABI as LAYERS_ABI
 from gem_render_oracle import Raster, PENS
-from test_desktop_presentation import desktop, frame, rectangle, text, tile
+from test_desktop_presentation import desktop, frame, rectangle, text, tile, shell_tabs
 from test_gem_cursor import overlay
 from native_program import require
 
@@ -141,7 +141,14 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
                   info=window[wf['info']:wf['info']+64].split(b'\0')[0],
                   slider=(number(window,wf['sliderTop']),number(window,wf['sliderHeight'])))
         if kind == 1:
-            terminal.paint(result, (left+8)//8, (top+11)//8, number(window, wf['id'], 4) == focused)
+            tf=types['TabSnapshot']['fields'];ef=types['TabEntry']['fields']
+            snapshot=bridge.memdump(service+fields['tabs'],types['TabSnapshot']['size'])
+            entries=[]
+            for index in range(2):
+                start=tf['entries']+index*types['TabEntry']['size']
+                entries.append(tuple(number(snapshot,start+ef[name],4 if name=='identity' else 1) for name in ('identity','state','selected','busy')))
+            shell_tabs(result,bounds,entries,snapshot[tf['newEnabled']]!=0)
+            terminal.paint(result, (left+8)//8, (top+DESKTOP_ABI['constants']['FRAME_SHELL_TOP'])//8, number(window, wf['id'], 4) == focused)
         elif kind == 3:
             from control_panel_oracle import retained
             context = number(bridge.memdump(content_address-wf['content']+wf['widgets'], 3), 0, 3)

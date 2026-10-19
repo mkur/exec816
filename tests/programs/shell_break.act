@@ -4,6 +4,8 @@ USE DOSBREAK
 USE DOSBREAKTYPES
 USE BREAKPROBE
 INCLUDE "shell-break-common.inc"
+
+ShellContext context
 CARD scenario,checks
 VOLATILE BYTE computing
 LONGCARD loops
@@ -15,7 +17,7 @@ PROC Compute(BYTE unused)
   CARD index
 
   computing=1
-  WHILE ShellPoll()=0 DO
+  WHILE ShellPoll(@context)=0 DO
     FOR index=0 TO 63 DO
       loops==+1
     OD
@@ -29,7 +31,7 @@ PROC PrepareCommand(BYTE unused)
   BYTE POINTER line
   CARD index
 
-  line=ShellLine()
+  line=ShellLine(@context)
   index=0
   DO
     line(index)=commandText(index)
@@ -41,7 +43,7 @@ PROC PrepareCommand(BYTE unused)
     Check(index<96)
   OD
 
-  shell.length=index
+  context.shell.length=index
 
 RETURN
 
@@ -53,20 +55,20 @@ PROC Balanced(BYTE unused)
   client=DOSCLIENT.Ensure()
   scope=DOSBREAK.Current()
   Check(client.busy=0 AND client.objects=2 AND scope.pending=0)
-  Check(client.input=BYTE POINTER(shell.console)
-      AND client.output=BYTE POINTER(shell.console))
-  Check(client.directory=BYTE POINTER(shell.directory))
-  Check(shell.tempInput=DOS.FileHandle POINTER(0)
-      AND shell.tempOutput=DOS.FileHandle POINTER(0))
-  Check(shell.commandInput=DOS.FileHandle POINTER(0)
-      AND shell.retiredDirectory=DOS.FileLock POINTER(0))
+  Check(client.input=BYTE POINTER(context.shell.console)
+      AND client.output=BYTE POINTER(context.shell.console))
+  Check(client.directory=BYTE POINTER(context.shell.directory))
+  Check(context.shell.tempInput=DOS.FileHandle POINTER(0)
+      AND context.shell.tempOutput=DOS.FileHandle POINTER(0))
+  Check(context.shell.commandInput=DOS.FileHandle POINTER(0)
+      AND context.shell.retiredDirectory=DOS.FileLock POINTER(0))
   Check(client.request.io_Device=BYTE POINTER(0)
       AND client.request.io_Unit=BYTE POINTER(0))
   Check(EXECLISTS.IsListEmpty(@client.port.mp_MsgList)<>0)
   Check(scope.packet=BYTE POINTER(0) AND scope.enqueued=0)
   IF scenario=5 THEN
-    name=ShellScratch()
-    Check(DOS.NameFromLock(shell.directory,name,256)<>0)
+    name=ShellScratch(@context)
+    Check(DOS.NameFromLock(context.shell.directory,name,256)<>0)
     Check(name(0)=68 AND name(1)=49 AND name(2)=58 AND name(3)=0)
   FI
 
@@ -91,12 +93,12 @@ PROC BottomRow(BYTE unused)
   CARD index
   BYTE POINTER buffer
 
-  buffer=ShellTransfer()
+  buffer=ShellTransfer(@context)
   FOR index=0 TO 23 DO
     buffer(index)=10
   OD
 
-  Check(DOS.Write(shell.console,buffer,24)=24)
+  Check(DOS.Write(context.shell.console,buffer,24)=24)
 
 RETURN
 
@@ -108,7 +110,7 @@ PROC Main()
   initialHeap=EXEC.AvailMem(0)
   consoleTask=EXEC.FindTask(BYTE POINTER(0))
   Check(EXEC.AllocSignal(16)=16)
-  Check(ShellStart(shellRoot)<>0)
+  Check(ShellStart(@context,shellRoot)<>0)
   BREAKPROBE.scope=DOSBREAK.Current()
   AllocateReader(0)
   StartReader(0)
@@ -134,20 +136,20 @@ PROC Main()
   PrepareCommand(0)
   BREAKPROBE.armed=1
   probe.phase=2
-  ShellCommand()
-  Check(shell.lastStatus=10 AND shell.lastError=DOS.ERROR_BREAK AND shell.done=0)
+  ShellCommand(@context)
+  Check(context.shell.lastStatus=10 AND context.shell.lastError=DOS.ERROR_BREAK AND context.shell.done=0)
   Balanced(0)
   promptGeneration=BREAKPROBE.scope.generation
-  ShellClear()
-  ShellPrompt()
+  ShellClear(@context)
+  ShellPrompt(@context)
   BREAKPROBE.Usable(0)
   probe.phase=3
   WHILE probe.finish=0 DO
     ticks=EXECTASKS.Sleep(1)
   OD
 
-  ShellReadStep()
-  Check(shell.lastStatus=0 AND shell.lastError=0 AND shell.done=0)
+  ShellReadStep(@context)
+  Check(context.shell.lastStatus=0 AND context.shell.lastError=0 AND context.shell.done=0)
   Check(BREAKPROBE.scope.generation<>promptGeneration)
   Balanced(0)
   BREAKPROBE.Usable(0)
@@ -163,7 +165,7 @@ PROC Main()
 
   StopWork(0)
   Check(mix.allocations<>0 AND mix.messages<>0 AND mix.signals<>0)
-  Check(ShellFinish()=0 AND FSBOOT.Stop()<>0)
+  Check(ShellFinish(@context)=0 AND FSBOOT.Stop()<>0)
   EXEC.FreeMem(readBuffer,probe.expected)
   EXEC.FreeSignal(16)
   Check(EXEC.AvailMem(0)=initialHeap)

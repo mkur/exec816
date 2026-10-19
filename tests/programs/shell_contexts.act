@@ -1,0 +1,166 @@
+MODULE SHELLCONTEXTTEST
+USE CONSOLE
+USE CONSOLEDRIVER
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE CONSOLEINPUT
+USE FSBOOT
+USE TASKSTACKS
+USE EXECLISTS
+USE HEAPCORE
+INCLUDE "../../examples/shell/shell-session.inc"
+
+ShellContext first,second
+EXEC.Task peer
+CONSOLETYPES.Instance POINTER firstInput,secondInput
+LONGCARD unit
+CARD checks
+BYTE phase,finished
+BYTE ARRAY consoleName(13)
+
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ec00+(checks & 255))
+  FI
+
+  EXEC.Forbid()
+  checks==+1
+  EXEC.Permit()
+
+RETURN
+
+; Use exactly the same resident command code from both Tasks.
+PROC Command(ShellContext POINTER context CSTRING text)
+
+  STR.strlcpy(ShellLine(context),text,LINE_CAPACITY)
+  ShellCommand(context)
+  Check(context.shell.status=0)
+  ShellClear(context)
+
+RETURN
+
+PROC Directory(CSTRING name)
+
+  LET lock=DOS.CreateDir(BYTE POINTER(name))
+  Check(lock<>NULL)
+  DOS.UnLock(lock)
+  Check(DOS.IoErr()=0)
+
+RETURN
+
+; The fixture injects Ctrl+D at the translated-input boundary, under the
+; worker's exclusion. Neither shell is given a special read implementation.
+PROC Eof(CONSOLETYPES.Instance POINTER instance)
+
+  EXEC.Forbid()
+  CONSOLEINPUT.Deliver(instance,$123400ba)
+  LET service=CONSOLEDRIVER.GetService()
+  EXEC.Signal(@service.task,$40000000)
+  EXEC.Permit()
+
+RETURN
+
+PROC PeerEntry()
+
+  WHILE firstInput.read=NULL DO
+    EXEC.Yield()
+  OD
+
+  Check(ShellOpen(@second,consoleName)<>0)
+  ShellChange(@second,BYTE POINTER(c"RAM:TWO"))
+  Command(@second,c"ALIAS PRIVATE ECHO")
+  Command(@second,c"PATH SET RAM:TWO")
+  Command(@second,c"ECHO second")
+  Check(firstInput.read<>NULL)
+  Check(first.shell<>second.shell AND first.aliases<>second.aliases)
+  Check(DOS.Input()=second.shell.console AND DOS.Output()=second.shell.console)
+  Check(STR.strcmp(CSTRING(ShellScratch(@first)),c"first scratch")=0)
+  Check(STR.strcmp(CSTRING(ShellTransfer(@first)),c"first transfer")=0)
+  Check(first.shell.status=5 AND first.shell.error=17)
+  Check(STR.strcmp(CSTRING(ShellPathEntry(@first,0)),c"RAM:ONE")=0)
+  Check(ShellAliasIndex(@first,BYTE POINTER(c"PRIVATE"))=ALIAS_CAPACITY)
+  Check(ShellAliasIndex(@second,BYTE POINTER(c"PRIVATE"))<>ALIAS_CAPACITY)
+  ShellPrompt(@second)
+  STR.strlcpy(ShellScratch(@second),c"second scratch",LINE_CAPACITY)
+  STR.strlcpy(ShellTransfer(@second),c"second transfer",LINE_CAPACITY)
+  second.shell.status=5
+  second.shell.error=19
+  Eof(firstInput)
+  phase=1
+  ShellReadStep(@second)
+  Check(second.shell.done=1 AND second.shell.status=5 AND second.shell.error=19)
+  Check(STR.strcmp(CSTRING(ShellScratch(@second)),c"second scratch")=0)
+  Check(STR.strcmp(CSTRING(ShellTransfer(@second)),c"second transfer")=0)
+  Check(STR.strcmp(CSTRING(ShellPathEntry(@second,0)),c"RAM:TWO")=0)
+  Check(ShellFinish(@second)=5 AND second.shell=NULL)
+  phase=2
+
+RETURN
+
+PROC Main()
+  BYTE index,value
+
+  LET before=EXEC.AvailMem(0)
+  Directory(c"RAM:ONE")
+  Directory(c"RAM:TWO")
+  unit=CONSOLE.Create(CONSOLE.ScreenWidth(),CONSOLE.ScreenHeight())
+  Check(unit<>0)
+  STR.strlcpy(consoleName,c"CON:",13)
+  FOR index=0 TO 7 DO
+    value=BYTE((unit RSH ((7-index) LSH 2)) & 15)
+    IF value<10 THEN
+      consoleName(index+4)=value+48
+    ELSE
+      consoleName(index+4)=value+87
+    FI
+  OD
+
+  consoleName(12)=0
+  LET entry=CONSOLEWINDOWS.Find(unit)
+  secondInput=CONSOLETYPES.Instance POINTER(entry.instance)
+  firstInput=CONSOLEDRIVER.GetInstance()
+  Check(ShellOpen(@first,shellCon)<>0)
+  ShellChange(@first,BYTE POINTER(c"RAM:ONE"))
+  Command(@first,c"PATH SET RAM:ONE")
+  ShellPrompt(@first)
+  STR.strlcpy(ShellScratch(@first),c"first scratch",LINE_CAPACITY)
+  STR.strlcpy(ShellTransfer(@first),c"first transfer",LINE_CAPACITY)
+  first.shell.status=5
+  first.shell.error=17
+  peer.tc_Node.ln_Type=EXEC.NT_TASK
+  peer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
+  peer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))
+  peer.tc_SPReg=peer.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@peer.tc_MemEntry)
+  Check(EXEC.AddTask(@peer,@PeerEntry,NULL)=@peer)
+  ShellReadStep(@first)
+  Check(first.shell.done=1 AND first.shell.status=5 AND first.shell.error=17)
+  WHILE secondInput.read=NULL DO
+    EXEC.Yield()
+  OD
+
+  first.shell.done=0
+  Command(@first,c"ALIAS PRIVATE TYPE")
+  Command(@first,c"PATH SET RAM:ONE")
+  Command(@first,c"ECHO first")
+  Check(secondInput.read<>NULL)
+  Check(DOS.Input()=first.shell.console AND DOS.Output()=first.shell.console)
+  LET path=ShellScratch(@first)
+  Check(DOS.NameFromLock(first.shell.directory,path,LINE_CAPACITY)<>0)
+  Check(STR.strcmp(CSTRING(path),c"RAM:ONE")=0)
+  Eof(secondInput)
+  WHILE peer.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  Check(phase=2 AND second.shell=NULL)
+  Check(ShellFinish(@first)=0 AND first.shell=NULL)
+  Check(CONSOLE.Destroy(unit)<>0)
+  Check(FSBOOT.Stop()<>0)
+  Check(EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Text-console keys, shared loaded PRIMES startup, tiles and clean exit."""
+from library_paths import read_source
+from shell_inspect import address as shell_address
 import adapter_state as adapter
 import argparse
 import json
@@ -21,15 +23,29 @@ PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 
 def run(out, mode, reuse=False, compiler_dir=ROOT/'build/actionc'):
     out.mkdir(parents=True, exist_ok=True)
-    source = ROOT/'tests/programs/demo_console.act'
-    t=compiler(compiler_dir)
+    fixture = ROOT/'tests/programs/demo_console.act'
+    controller = read_source(ROOT/'examples/shell/shell-controller.inc')
+    controller = controller.replace('      ShellPrompt(context)',
+        '      ShellPrompt(context)\n      DemoBeforeRead(context)', 1)
+    controller = controller.replace('      ShellReadStep(context)',
+        '      ShellReadStep(context)\n      DemoAfterRead(context)', 1)
+    controller = controller.replace('  IF context.shell<>NULL THEN',
+        '  DemoBeforeFinish(context)\n  IF context.shell<>NULL THEN', 1)
+    observed = out/'controller-observed.inc'
+    observed.write_text(controller)
+    demo = out/'demo-observed.inc'
+    demo.write_text(read_source(ROOT/'examples/demo-session.inc',
+        includes={'shell-controller.inc': observed}))
+    source = out/'demo_console.act'
+    source.write_text(read_source(fixture, includes={'demo-session.inc': demo}))
+    t=compiler(compiler_dir, release=True)
     media=out/'media/C'
     compile_command(t,ROOT/'examples/commands/primes.act',media/'PRIMES')
     for suffix in ('profile','options'):
         (media/f'PRIMES.{suffix}.json').rename(out/f'PRIMES.{suffix}.json')
     make(out/'system.atr',out/'media',binary_names={'C/PRIMES'},filesystem='sdfs',sector_bytes=256,sectors=2880)
     profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
-    profile['image_data_bytes']=4096
+    profile['image_data_bytes']=8192
     (out/'memory.json').write_text(json.dumps(profile))
     p = read_build(out) if reuse else build(t, source, out,
         optimize=mode == 'opt', tasks=True, task_capacity=8, console=True,
@@ -40,8 +56,7 @@ def run(out, mode, reuse=False, compiler_dir=ROOT/'build/actionc'):
     binary = ROOT/'build/shell-paced-bridge/AltirraBridgeServer'
     rom = ROOT/'build/firmware/altirraos-816.rom'
     require(sha256(binary) == PIN['emulator']['sha256'] and sha256(rom) == PIN['rom']['sha256'], 'Unpinned machine')
-    def at(name):
-        return next(d['address'] for d in p['image']['data'] if '_DEMOTEST_'+name.upper()+'_' in d['name'])
+    def at(name):return shell_address(p['image'],name,"DEMOTEST")
     observed = []
     saved = {}
     with emulator(binary.parent, rom, out, pin=PIN) as b:

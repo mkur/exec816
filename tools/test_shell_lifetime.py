@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Real resident shell with private allocation/selector/close failure controls."""
+from shell_inspect import address as shell_address
 from library_paths import library_file, read_source
 import argparse,json,shutil
 from pathlib import Path
@@ -7,6 +8,7 @@ import generate_tasks
 from native_program import ROOT,build,compiler,require,sha256,verify_machine
 from os_boundary import emulator
 from test_dos_stack import execute,ownership
+from shell_inspect import data as shell_data
 from test_cooperative import data
 from banked_test_memory import read as far_read
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
@@ -14,8 +16,8 @@ LIMITS=dict(host_seconds=240,guest_frames=12000)
 
 def run(t,out,mode,bank=2,scenario=0):
     out.mkdir(parents=True,exist_ok=True)
-    session=(ROOT/'examples/shell/shell-session.inc').read_text().replace('DOS.CurrentDir(', 'TestDirectory(').replace('DOS.SelectOutput(', 'TestOutput(').replace('DOS.BeginForeground(', 'TestForeground(')
-    dispatch='          ShellDispatch()'
+    session=read_source(ROOT/'examples/shell/shell-session.inc', {'shell-redirection.inc':out/'shell-redirection.inc'}).replace('DOS.CurrentDir(', 'TestDirectory(').replace('DOS.SelectOutput(', 'TestOutput(').replace('DOS.BeginForeground(', 'TestForeground(')
+    dispatch='          ShellDispatch(context)'
     require(session.count(dispatch)==1,'Missing shell dispatch hook')
     session=session.replace(dispatch,'          TestDispatch(0)')
     session=session.replace('"shell-commands.inc"','"'+str(ROOT/'examples/shell/shell-commands.inc')+'"')
@@ -44,7 +46,7 @@ def run(t,out,mode,bank=2,scenario=0):
     finally:generate_tasks.policy_modules=original
     media=out/'volume.atr';shutil.copyfile(ROOT/'tests/fixtures/mydos/mydos450-128.atr',media);digest=sha256(media)
     require(sha256(ROOT/'build/shell-paced-bridge/AltirraBridgeServer')==PIN['emulator']['sha256'],'Unpinned shell emulator')
-    def at(name):return next(d['address']for d in p['image']['data']if '_SHELLAPP_'+name.upper()+'_'in d['name'])
+    def at(name):return shell_address(p['image'],name,"SHELLAPP")
     saved={}
     with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN)as b:
         for k,v in PIN['configuration'].items():b.config(k,str(v).lower()if isinstance(v,bool)else v)
@@ -53,14 +55,14 @@ def run(t,out,mode,bank=2,scenario=0):
             saved.update(screen=b.peek16(88),cursor=b.peek(752),mask=b.peek(16));saved['bytes']=b.memdump(saved['screen'],960);b.poke(at('scenario'),scenario)
         try:rt,_=execute(b,p,before_run=before,expected_status=4 if scenario==3 else 0,timeout=LIMITS['host_seconds'],frame_limit=LIMITS['guest_frames'])
         except Exception:
-            ptr=int.from_bytes(bytes(data(b,p['image'],'shell')),'little')
+            ptr=int.from_bytes(bytes(shell_data(b,p['image'],'shell')),'little')
             print('Shell lifetime checks',data(b,p['image'],'checks',True),'commands',data(b,p['image'],'commands',True),'events',data(b,p['image'],'events',True),'allocations',data(b,p['image'],'contextAttempts',True),data(b,p['image'],'portAttempts',True),'shell',ptr,'state',[b.eval_expr(f'dw(${ptr+i:x})')for i in (24,28,54)]if ptr else [],flush=True);raise
         counts={k:int.from_bytes(bytes(data(b,p['image'],k)),'little')for k in ('checks','commands','events')}
         raw=far_read(b,0xe1000,counts['events']*32,out);events=[]
         for offset in range(0,len(raw),32):
             a=raw[offset:offset+32];events.append(dict(tag=a[0],status=int.from_bytes(a[1:5],'little',signed=True),error=int.from_bytes(a[5:9],'little',signed=True),done=a[9],redirect_active=a[10],restore_failure=a[11],temporary_input=a[12],temporary_output=a[13],input_console=a[14],output_console=a[15],objects=a[16],busy=a[17],directory=a[18],endpoint_references=a[19],endpoint_active=a[20]))
         if scenario==3:
-            pointer=int.from_bytes(bytes(data(b,p['image'],'shell')),'little');require(pointer and events[-1]['objects']==2 and events[-1]['directory']==1,'Guard did not retain shell ownership')
+            pointer=int.from_bytes(bytes(shell_data(b,p['image'],'shell')),'little');require(pointer and events[-1]['objects']==2 and events[-1]['directory']==1,'Guard did not retain shell ownership')
         else:
             require(data(b,p['image'],'finished')==[1],'Incomplete shell lifetime');ownership(b,p,out)
             require(b.memdump(saved['screen'],960)==saved['bytes']and b.peek(752)==saved['cursor']and b.peek(16)==saved['mask'],'OS console not restored')

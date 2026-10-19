@@ -3,6 +3,7 @@ MODULE DESKPAINT
 USE DISPLAY
 USE EXEC
 USE DESKSTATE
+USE DESKTABS
 USE DESKTYPES
 USE DESKCORE
 USE DESKGEOMETRY
@@ -60,7 +61,7 @@ PUBLIC PROC Sync()
     RETURN
   FI
 
-  LET entry=CONSOLEWINDOWS.Find(0)
+  LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ConsoleUnit())
   IF entry=NULL THEN
     RETURN
   FI
@@ -77,10 +78,10 @@ PUBLIC PROC Sync()
   LET batch=CONSOLEBATCH.Get()
   LET layer=DESKCORE.Layer(service,window)
   left=CARD(layer.bounds.left+DESKTYPES.WORK_LEFT) RSH 3
-  top=CARD(layer.bounds.top+DESKTYPES.WORK_TOP) RSH 3
+  top=CARD(layer.bounds.top+DESKTYPES.FRAME_SHELL_TOP) RSH 3
   IF window.iconified<>0 THEN
     left=CARD(window.normalBounds.left+DESKTYPES.WORK_LEFT) RSH 3
-    top=CARD(window.normalBounds.top+DESKTYPES.WORK_TOP) RSH 3
+    top=CARD(window.normalBounds.top+DESKTYPES.FRAME_SHELL_TOP) RSH 3
   FI
   shown=layer.shown<>0 AND window.iconified=0
   focused=service.focus=window.id
@@ -134,44 +135,56 @@ BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
   BYTE result
 
   LET service=DESKSTATE.Get()
-  WHILE commandIndex<5 DO
-    CASE commandIndex OF
-    WHEN 0 THEN
-      REGIONS.Assign(@area,layer.bounds.left,layer.bounds.top,
-          layer.bounds.right,layer.bounds.top+DESKTYPES.TITLE_HEIGHT)
-
-    WHEN 1 THEN
-      REGIONS.Assign(@area,layer.bounds.left,layer.bounds.top+DESKTYPES.TITLE_HEIGHT,
-          layer.bounds.right,client.top)
-
-    WHEN 2 THEN
-      REGIONS.Assign(@area,layer.bounds.left,client.bottom,
-          layer.bounds.right,layer.bounds.bottom)
-
-    WHEN 3 THEN
-      REGIONS.Assign(@area,layer.bounds.left,client.top,
-          client.left,client.bottom)
-
-    ELSE
-      REGIONS.Assign(@area,client.right,client.top,
-          layer.bounds.right,client.bottom)
-    ESAC
-
-    REGIONS.Intersect(@area,@strip,@area)
-    IF REGIONS.Empty(@area)=0 THEN
-      result=CONSOLEBITMAP.Frame(@layer.bounds,@area,@window.title(0),
-          window.id=service.focus,window.kind<>DESKTYPES.CONTENT_CONSOLE,
-          window.frameKind,window.sliderTop,window.sliderHeight,@glyphOffset)
-      IF result<>1 THEN
-        RETURN(result)
-      FI
-
-      commandIndex==+1
-      IF commandIndex<>4 THEN
+  WHILE commandIndex<8 DO
+    IF commandIndex>=2 AND commandIndex<=4 THEN
+      IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+        result=DESKTABS.Paint(@layer.bounds,@strip,BYTE(commandIndex-2),@glyphOffset)
+        IF result<>1 THEN
+          RETURN(result)
+        FI
+        commandIndex==+1
         RETURN(2)
       FI
-    ELSE
       commandIndex==+1
+    ELSE
+      CASE commandIndex OF
+      WHEN 0 THEN
+        REGIONS.Assign(@area,layer.bounds.left,layer.bounds.top,
+            layer.bounds.right,layer.bounds.top+DESKTYPES.TITLE_HEIGHT)
+
+      WHEN 1 THEN
+        REGIONS.Assign(@area,layer.bounds.left,layer.bounds.top+DESKTYPES.TITLE_HEIGHT,
+            layer.bounds.right,client.top)
+
+      WHEN 5 THEN
+        REGIONS.Assign(@area,layer.bounds.left,client.bottom,
+            layer.bounds.right,layer.bounds.bottom)
+
+      WHEN 6 THEN
+        REGIONS.Assign(@area,layer.bounds.left,client.top,
+            client.left,client.bottom)
+
+      ELSE
+        REGIONS.Assign(@area,client.right,client.top,
+            layer.bounds.right,client.bottom)
+      ESAC
+
+      REGIONS.Intersect(@area,@strip,@area)
+      IF REGIONS.Empty(@area)=0 THEN
+        result=CONSOLEBITMAP.Frame(@layer.bounds,@area,@window.title(0),
+            window.id=service.focus,window.kind<>DESKTYPES.CONTENT_CONSOLE,
+            window.frameKind,window.sliderTop,window.sliderHeight,@glyphOffset)
+        IF result<>1 THEN
+          RETURN(result)
+        FI
+
+        commandIndex==+1
+        IF commandIndex<>7 THEN
+          RETURN(2)
+        FI
+      ELSE
+        commandIndex==+1
+      FI
     FI
   OD
 

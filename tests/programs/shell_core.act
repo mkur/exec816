@@ -4,6 +4,8 @@ USE FSBOOT
 USE DOSCLIENT
 USE DOSCORE
 INCLUDE "../../examples/shell/shell-session.inc"
+
+ShellContext context
 BYTE stage,gate
 CARD checks
 LONGINT exitStatus
@@ -38,16 +40,19 @@ PROC Main()
 
   before=EXEC.AvailMem(0)
   Check(SIZEOF(ShellState)=128)
-  Check(ShellStart(shellRoot)<>0)
-  Check(ADDRESS(shell)>=ADDRESS($10000))
+  Check(ShellStart(@context,shellRoot)<>0)
+  Check(ADDRESS(context.shell)>=ADDRESS($10000))
+  ; Establish a known display after CON adopts the loader's retained OS text.
+  ShellByte(@context,context.shell.console,ASCII.FF)
+  ShellPrompt(@context)
   Pause(1)
-  WHILE shell.done=0 DO
-    ShellReadStep()
+  WHILE context.shell.done=0 DO
+    ShellReadStep(@context)
   OD
 
   Pause(2)
-  exitStatus=ShellFinish()
-  Check(shell=ShellState POINTER(0) AND exitStatus=0)
+  exitStatus=ShellFinish(@context)
+  Check(context.shell=ShellState POINTER(0) AND exitStatus=0)
   owner=DOSCORE.Current()
   Check(owner.context=BYTE POINTER(0))
   Check(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)

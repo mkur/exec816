@@ -15,8 +15,12 @@ def run(out,optimize,bank,publication=False,removal=False,trace=False):
     out.mkdir(parents=True,exist_ok=True)
     source=out/'foreground_break.act'
     source.write_bytes((ROOT/'tests/programs/foreground_break.act').read_bytes())
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes']=8192
+    memory=out/'memory.json'
+    memory.write_text(json.dumps(profile,indent=2)+'\n')
     p=build(compiler(ROOT/'build/actionc'),source,out,optimize=optimize,tasks=True,
-            task_capacity=8,console=True,kernel_bank=bank)
+            task_capacity=8,console=True,kernel_bank=bank,memory_profile=memory)
     def at(name):return next(x['address'] for x in p['image']['data'] if '_FOREGROUNDBREAKTEST_'+name.upper()+'_' in x['name'])
     # Deliberately stall only this qualification image between the two native
     # route stores until a real NMI runs. Keep the original guard and stack use.
@@ -34,9 +38,9 @@ def run(out,optimize,bank,publication=False,removal=False,trace=False):
         # Admission also publishes zero before enabling hardware. Stall the
         # first high-word rollover route, after the console has acquired input.
         guard=bytes.fromhex('a307c90100d0')+bytes([len(delay)])
-        payload=original[:split]+guard+delay+original[split:];base=0xe0000
+        payload=original[:split]+guard+delay+original[split:];base=0x3e0000
         p['image']['segments'].append(dict(address=base,bytes=list(payload),writable=False,executable=True))
-        segment['bytes'][offset:offset+4]=[0x5c,0,0,14]
+        segment['bytes'][offset:offset+4]=[0x5c,*base.to_bytes(3,'little')]
         changed_image(p)
         race.update(half=base+split,payload_sha256=hashlib.sha256(payload).hexdigest())
     marks=dict(capture=p['labels']['input_capture'],durable=call_marker(p,'M_CONSOLEFOREGROUND_NOTIFYONE_','tasks_signal'))

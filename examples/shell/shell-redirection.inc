@@ -1,6 +1,7 @@
 ; Return to the shell's default streams after a command or failed redirection.
 ; Borrowed defaults must be restored before temporary handles can be released.
-BYTE FUNC ShellCloseTemporary(DOS.FileHandle POINTER handle)
+BYTE FUNC ShellCloseTemporary(ShellContext POINTER context
+    DOS.FileHandle POINTER handle)
 
   IF DOS.Close(handle)<>0 THEN
     RETURN(1)
@@ -9,148 +10,149 @@ BYTE FUNC ShellCloseTemporary(DOS.FileHandle POINTER handle)
   LET error=DOS.IoErr()
   IF DOSOBJECTS.Find(DOSCORE.Current(),BYTE POINTER(handle),
       DOSOBJECTS.KIND_FILE)<>NULL THEN
-    ShellFail(PROCESS.RETURN_FAIL,error)
+    ShellFail(context,PROCESS.RETURN_FAIL,error)
     RETURN(0)
   FI
 
   ; A terminal disk Close consumes its wrapper even on failure. Preserve an
   ; earlier command failure; otherwise report finalization failure and allow
   ; another prompt without retrying through the freed handle.
-  IF shell.status<PROCESS.RETURN_ERROR THEN
-    shell.status=PROCESS.RETURN_FAIL
-    shell.error=error
+  IF context.shell.status<PROCESS.RETURN_ERROR THEN
+    context.shell.status=PROCESS.RETURN_FAIL
+    context.shell.error=error
   FI
 
 RETURN(1)
 
-PROC ShellUnredirect()
+PROC ShellUnredirect(ShellContext POINTER context)
   DOS.FileHandle POINTER ignored
   BYTE failed
 
-  IF shell.redirectActive=0 THEN
+  IF context.shell.redirectActive=0 THEN
     RETURN
   FI
 
   failed=0
-  IF shell.redirectActive=2 THEN
-    ignored=DOS.SelectInput(shell.oldInput)
+  IF context.shell.redirectActive=2 THEN
+    ignored=DOS.SelectInput(context.shell.oldInput)
     IF DOS.IoErr()<>0 THEN
-      ShellFail(PROCESS.RETURN_FAIL,DOS.IoErr())
+      ShellFail(context,PROCESS.RETURN_FAIL,DOS.IoErr())
       failed=1
     FI
 
-    ignored=DOS.SelectOutput(shell.oldOutput)
+    ignored=DOS.SelectOutput(context.shell.oldOutput)
     IF DOS.IoErr()<>0 THEN
-      ShellFail(PROCESS.RETURN_FAIL,DOS.IoErr())
+      ShellFail(context,PROCESS.RETURN_FAIL,DOS.IoErr())
       failed=1
     FI
 
     IF failed<>0 THEN
-      shell.restoreFailure=1
+      context.shell.restoreFailure=1
       RETURN
     FI
 
-    shell.redirectActive=1
-    shell.restoreFailure=0
+    context.shell.redirectActive=1
+    context.shell.restoreFailure=0
   FI
 
-  IF shell.tempOutput<>NULL THEN
-    IF ShellCloseTemporary(shell.tempOutput)<>0 THEN
-      shell.tempOutput=NULL
+  IF context.shell.tempOutput<>NULL THEN
+    IF ShellCloseTemporary(context,context.shell.tempOutput)<>0 THEN
+      context.shell.tempOutput=NULL
     FI
   FI
 
-  IF shell.tempInput<>NULL THEN
-    IF ShellCloseTemporary(shell.tempInput)<>0 THEN
-      shell.tempInput=NULL
+  IF context.shell.tempInput<>NULL THEN
+    IF ShellCloseTemporary(context,context.shell.tempInput)<>0 THEN
+      context.shell.tempInput=NULL
     FI
   FI
 
-  IF shell.tempInput=NULL
-    AND shell.tempOutput=NULL THEN
-    shell.redirectActive=0
-    shell.oldInput=NULL
-    shell.oldOutput=NULL
+  IF context.shell.tempInput=NULL
+    AND context.shell.tempOutput=NULL THEN
+    context.shell.redirectActive=0
+    context.shell.oldInput=NULL
+    context.shell.oldOutput=NULL
   FI
 
 RETURN
 
 ; Give this command its requested input and output while retaining enough
 ; ownership information to restore the shell even if setup fails partway.
-BYTE FUNC ShellRedirect()
+BYTE FUNC ShellRedirect(ShellContext POINTER context)
   DOS.FileHandle POINTER ignored
 
-  IF shell.background=0 AND shell.inputRedirect=NO_REDIRECT
-      AND shell.outputRedirect=NO_REDIRECT THEN
+  IF context.shell.background=0 AND context.shell.inputRedirect=NO_REDIRECT
+      AND context.shell.outputRedirect=NO_REDIRECT THEN
     RETURN(1)
   FI
 
-  LET line=ShellLine()
-  shell.oldInput=DOS.Input()
-  shell.oldOutput=DOS.Output()
-  shell.redirectActive=1
-  IF shell.inputRedirect<>NO_REDIRECT THEN
-    shell.tempInput=DOS.Open(line+SIZE(shell.inputRedirect),DOS.MODE_OLDFILE)
-    IF shell.tempInput=NULL THEN
-      ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+  LET line=ShellLine(context)
+  context.shell.oldInput=DOS.Input()
+  context.shell.oldOutput=DOS.Output()
+  context.shell.redirectActive=1
+  IF context.shell.inputRedirect<>NO_REDIRECT THEN
+    context.shell.tempInput=DOS.Open(line+SIZE(context.shell.inputRedirect),DOS.MODE_OLDFILE)
+    IF context.shell.tempInput=NULL THEN
+      ShellFail(context,PROCESS.RETURN_ERROR,DOS.IoErr())
       RETURN(0)
     FI
-  ELSEIF shell.background<>0 THEN
-    shell.tempInput=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
-    IF shell.tempInput=NULL THEN
-      ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+  ELSEIF context.shell.background<>0 THEN
+    context.shell.tempInput=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+    IF context.shell.tempInput=NULL THEN
+      ShellFail(context,PROCESS.RETURN_ERROR,DOS.IoErr())
       RETURN(0)
     FI
   FI
 
-  IF shell.outputRedirect<>NO_REDIRECT THEN
+  IF context.shell.outputRedirect<>NO_REDIRECT THEN
     BEGIN
-      LET mode=IF shell.outputAppend<>0 THEN DOS.MODE_READWRITE
+      LET mode=IF context.shell.outputAppend<>0 THEN DOS.MODE_READWRITE
           ELSE DOS.MODE_NEWFILE FI
-      shell.tempOutput=DOS.Open(line+SIZE(shell.outputRedirect),mode)
-      IF shell.tempOutput=NULL THEN
-        ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+      context.shell.tempOutput=DOS.Open(line+SIZE(context.shell.outputRedirect),mode)
+      IF context.shell.tempOutput=NULL THEN
+        ShellFail(context,PROCESS.RETURN_ERROR,DOS.IoErr())
         RETURN(0)
       FI
 
-      IF shell.outputAppend<>0 THEN
-        IF DOS.Seek(shell.tempOutput,0,DOS.OFFSET_END)<0 THEN
-          ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+      IF context.shell.outputAppend<>0 THEN
+        IF DOS.Seek(context.shell.tempOutput,0,DOS.OFFSET_END)<0 THEN
+          ShellFail(context,PROCESS.RETURN_ERROR,DOS.IoErr())
           RETURN(0)
         FI
       FI
     END
   FI
 
-  IF shell.background<>0 THEN
-    IF shell.tempOutput=NULL THEN
-      shell.tempOutput=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
-      IF shell.tempOutput=NULL THEN
-        ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+  IF context.shell.background<>0 THEN
+    IF context.shell.tempOutput=NULL THEN
+      context.shell.tempOutput=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+      IF context.shell.tempOutput=NULL THEN
+        ShellFail(context,PROCESS.RETURN_ERROR,DOS.IoErr())
         RETURN(0)
       FI
     FI
 
-    IF DOS.IsInteractive(shell.tempInput)<>0 OR DOS.IsInteractive(shell.tempOutput)<>0 THEN
-      ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_WRONG_TYPE)
+    ; Background output may name its console; keyboard input stays private.
+    IF DOS.IsInteractive(context.shell.tempInput)<>0 THEN
+      ShellFail(context,PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_WRONG_TYPE)
       RETURN(0)
     FI
   FI
 
   ; Complete all opens and positioning before either selector.
-  shell.redirectActive=2
-  IF shell.tempInput<>NULL THEN
-    ignored=DOS.SelectInput(shell.tempInput)
+  context.shell.redirectActive=2
+  IF context.shell.tempInput<>NULL THEN
+    ignored=DOS.SelectInput(context.shell.tempInput)
     IF DOS.IoErr()<>0 THEN
-      ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+      ShellFail(context,PROCESS.RETURN_ERROR,DOS.IoErr())
       RETURN(0)
     FI
   FI
 
-  IF shell.tempOutput<>NULL THEN
-    ignored=DOS.SelectOutput(shell.tempOutput)
+  IF context.shell.tempOutput<>NULL THEN
+    ignored=DOS.SelectOutput(context.shell.tempOutput)
     IF DOS.IoErr()<>0 THEN
-      ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+      ShellFail(context,PROCESS.RETURN_ERROR,DOS.IoErr())
       RETURN(0)
     FI
   FI

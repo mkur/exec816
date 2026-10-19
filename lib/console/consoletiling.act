@@ -8,6 +8,7 @@ USE CONSOLEDRIVER
 USE CONSOLECONTROL
 USE CONSOLECAPTURE
 USE CONSOLECORE
+USE CONSOLEBITMAP
 USE DISPLAYADAPTER
 
 ; One presentation lock serializes use of this upper-RAM row buffer.
@@ -128,8 +129,10 @@ PUBLIC PROC ResizeLocked(CONSOLETYPES.Window POINTER entry CARD height)
 
   LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
   LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-  IF CONSOLECONTROL.Submit(CONSOLETYPES.CTL_ERASE,view)=0 THEN
-    HEAPCORE.Abort(4)
+  IF view.visible<>0 THEN
+    IF CONSOLECONTROL.Submit(CONSOLETYPES.CTL_ERASE,view)=0 THEN
+      HEAPCORE.Abort(4)
+    FI
   FI
 
   IF CONSOLECORE.Resize(instance,height,resizeRow)=0 THEN
@@ -144,6 +147,155 @@ PUBLIC PROC ResizeLocked(CONSOLETYPES.Window POINTER entry CARD height)
   view.presentedGeneration=0
 
 RETURN
+
+; Full-display views may include only the permanent console's admitted pane.
+BYTE FUNC FullView(CONSOLETYPES.Window POINTER entry)
+  CARD paneHeight
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  LET height=CONSOLEDRIVER.ScreenHeight()
+
+  paneHeight=0
+  IF entry.unit=0 AND windows.pane<>0 THEN
+    BEGIN
+      LET pane=CONSOLEWINDOWS.Find(windows.pane)
+      LET paneView=CONSOLETYPES.Presentation POINTER(pane.view)
+      IF paneView.left<>0 OR paneView.top<>view.height
+          OR paneView.width<>view.width OR paneView.visible<>view.visible THEN
+        RETURN(0)
+      FI
+
+      paneHeight=paneView.height
+    END
+  FI
+
+RETURN(view.left=0 AND view.top=0
+    AND instance.width=CONSOLEDRIVER.ScreenWidth()
+    AND instance.height+paneHeight=height)
+
+; Invalidate retained presentation without changing cells, input or its scope.
+PROC Expose(CONSOLETYPES.Window POINTER entry BYTE visible)
+
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  view.visible=visible
+  view.index=$ffff
+  view.previousCursor=$ffff
+  view.cursorOn=0
+  view.scrollState=0
+  view.generation==+1
+  view.presentedGeneration=0
+  IF visible<>0 THEN
+    view.claimed=1
+    instance.changeTick=DISPLAYADAPTER.Ticks()
+    CONSOLECORE.Dirty(instance,0,instance.count)
+  FI
+
+RETURN
+
+; Retain both groups through worker controls; publish one final capture route.
+PUBLIC CARD FUNC Activate(LONGCARD previous,next)
+  BYTE index,okay
+  CONSOLETYPES.Window POINTER pane
+
+  IF Lock()=0 THEN
+    RETURN(CONSOLETYPES.CONTROL_BUSY)
+  FI
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET old=CONSOLEWINDOWS.Find(previous)
+  LET target=CONSOLEWINDOWS.Find(next)
+  IF old=NULL OR target=NULL THEN
+    Unlock()
+    RETURN(CONSOLETYPES.CONTROL_BAD_UNIT)
+  FI
+
+  IF Owned(old)=0 OR Owned(target)=0 THEN
+    Unlock()
+    RETURN(CONSOLETYPES.CONTROL_NOT_OWNER)
+  FI
+
+  LET oldView=CONSOLETYPES.Presentation POINTER(old.view)
+  LET nextView=CONSOLETYPES.Presentation POINTER(target.view)
+  IF windows.focusSlot<>BYTE(previous & 3) OR oldView.visible=0
+      OR FullView(old)=0 OR FullView(target)=0 THEN
+    Unlock()
+    RETURN(CONSOLETYPES.CONTROL_BAD_LAYOUT)
+  FI
+
+  IF previous=next THEN
+    Unlock()
+    RETURN(CONSOLETYPES.CONTROL_OK)
+  FI
+
+  IF nextView.visible<>0 THEN
+    Unlock()
+    RETURN(CONSOLETYPES.CONTROL_BAD_LAYOUT)
+  FI
+
+  pane=NULL
+  IF windows.pane<>0 THEN
+    pane=CONSOLEWINDOWS.Find(windows.pane)
+  FI
+
+  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    BEGIN
+      LET other=@windows.items(index)
+      IF other<>old AND CONSOLEWINDOWS.Live(other)<>0 THEN
+        BEGIN
+          LET view=CONSOLETYPES.Presentation POINTER(other.view)
+          IF view.visible<>0 AND (previous<>0 OR other<>pane) THEN
+            Unlock()
+            RETURN(CONSOLETYPES.CONTROL_BAD_LAYOUT)
+          FI
+        END
+      FI
+    END
+  OD
+
+  okay=CONSOLECONTROL.Submit(CONSOLETYPES.CTL_ERASE,oldView)
+  IF okay<>0 AND previous=0 AND pane<>NULL THEN
+    okay=CONSOLECONTROL.Submit(CONSOLETYPES.CTL_ERASE,
+        CONSOLETYPES.Presentation POINTER(pane.view))
+  FI
+
+  ; The lock retains all source storage until the last physical borrow settles.
+  WHILE CONSOLEBITMAP.Pending()<>0 DO
+    EXEC.Yield()
+  OD
+
+  IF okay=0 OR CONSOLEBITMAP.Failed()<>0 THEN
+    Expose(old,1)
+    IF previous=0 AND pane<>NULL THEN
+      Expose(pane,1)
+    FI
+
+    Unlock()
+    RETURN(CONSOLETYPES.CONTROL_FAILED)
+  FI
+
+  nextView.screen=oldView.screen
+  EXEC.Forbid()
+  Expose(old,0)
+  oldView.focused=0
+  IF previous=0 AND pane<>NULL THEN
+    Expose(pane,0)
+  FI
+
+  Expose(target,1)
+  nextView.focused=1
+  IF next=0 AND pane<>NULL THEN
+    Expose(pane,1)
+  FI
+
+  windows.focusSlot=BYTE(next & 3)
+  CONSOLECAPTURE.Publish(target.route)
+  EXEC.Permit()
+  Unlock()
+
+RETURN(CONSOLETYPES.CONTROL_OK)
 
 ; Resize an owned tile without changing its identity, input route or width.
 PUBLIC BYTE FUNC ResizeHeight(LONGCARD unit CARD height)
@@ -212,11 +364,12 @@ PUBLIC BYTE FUNC Dock(LONGCARD unit)
   LET instance=CONSOLETYPES.Instance POINTER(parent.instance)
   LET view=CONSOLETYPES.Presentation POINTER(parent.view)
   LET childView=CONSOLETYPES.Presentation POINTER(child.view)
-  IF view.visible=0 OR view.left<>0 OR view.top<>0
+  IF view.left<>0 OR view.top<>0
       OR instance.width<>CONSOLEDRIVER.ScreenWidth()
       OR instance.height<>CONSOLEDRIVER.ScreenHeight()
       OR childView.visible<>0 OR pane.width<>instance.width
-      OR pane.height>=instance.height OR windows.focusSlot<>0 THEN
+      OR pane.height>=instance.height
+      OR (view.visible<>0 AND windows.focusSlot<>0) THEN
     Unlock()
     RETURN(0)
   FI
@@ -232,7 +385,7 @@ PUBLIC BYTE FUNC Dock(LONGCARD unit)
   childView.top=height
   childView.screen=view.screen
   childView.claimed=1
-  childView.visible=1
+  childView.visible=view.visible
   childView.focused=0
   childView.index=$ffff
   childView.previousCursor=$ffff

@@ -1,0 +1,189 @@
+MODULE CONSOLEOWNERBREAK
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE CONSOLE
+USE CONSOLEDRIVER
+USE CONSOLEFOREGROUND
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE DOS
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE DOSCLIENT
+USE PROCESS
+USE HEAPCORE
+USE CSTRING.IMPL AS STR
+
+EXEC.Task peer
+LONGCARD target,foreign,oldTag
+CONSOLETYPES.Instance POINTER input
+BYTE phase,gate,finished
+CARD checks
+BYTE ARRAY name(13),buffer(4)
+
+PROC Check(BYTE okay)
+
+  EXEC.Forbid()
+  IF okay=0 THEN
+    HEAPCORE.Abort($e600+(checks & 255))
+  FI
+
+  checks==+1
+  EXEC.Permit()
+
+RETURN
+
+PROC Pause(BYTE checkpoint)
+
+  gate=0
+  phase=checkpoint
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC AwaitPhase(BYTE checkpoint)
+
+  WHILE phase<>checkpoint DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; The console creator may cancel this reader, which owns its own DOS context.
+PROC Reader()
+
+  foreign=CONSOLE.Create(8,4)
+  Check(foreign<>0)
+  LET file=DOS.Open(name,DOS.MODE_READWRITE)
+  Check(file<>NULL)
+  Pause(1)
+  Check(DOS.BeginForeground(file)<>0)
+  Check(CONSOLE.RequestBreak(target)=CONSOLETYPES.CONTROL_NOT_OWNER
+      AND DOS.BreakPending()=0)
+  phase=2
+  Check(DOS.Read(file,buffer,4)=-1 AND DOS.IoErr()=DOS.ERROR_BREAK)
+  Check(DOS.BreakPending()<>0)
+  LET client=DOSCLIENT.Ensure()
+  Check(client.busy=0 AND client.request.io_Device=NULL
+      AND client.request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG)
+  Check(EXEC.GetMsg(client.port)=NULL)
+  DOS.ClearBreak()
+  Check(DOS.BeginForeground(file)<>0 AND DOS.BreakPending()=0)
+  Pause(3)
+  Check(DOS.BreakPending()<>0)
+  Check(DOS.EndForeground()<>0)
+  Pause(4)
+  Check(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
+  Pause(5)
+  Check(CONSOLE.Destroy(foreign)<>0)
+  phase=6
+
+RETURN
+
+; Cancellation admitted before foreground adoption follows the child handoff.
+LONGINT FUNC Child()
+
+  Check(DOS.BreakPending()<>0)
+  Check(DOS.Input()<>NULL AND DOS.IsInteractive(DOS.Input())<>0)
+  Check(DOS.Read(DOS.Input(),buffer,1)=-1 AND DOS.IoErr()=DOS.ERROR_BREAK)
+
+RETURN(PROCESS.RETURN_ERROR)
+
+PROC Main()
+  BYTE index,value
+  PROCESS.Result result
+
+  LET before=EXEC.AvailMem(0)
+  Check(CONSOLE.RequestBreak($ffffffff)=CONSOLETYPES.CONTROL_BAD_UNIT)
+  Check(CONSOLE.RequestBreak(0)=CONSOLETYPES.CONTROL_UNBOUND)
+  LET baseConsole=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Check(baseConsole<>NULL AND DOS.BeginForeground(baseConsole)<>0)
+  target=CONSOLE.Create(12,6)
+  Check(target<>0 AND CONSOLE.RequestBreak(target)=CONSOLETYPES.CONTROL_UNBOUND)
+  STR.strlcpy(name,c"CON:",13)
+  FOR index=0 TO 7 DO
+    value=BYTE((target RSH ((7-index) LSH 2)) & 15)
+    IF value<10 THEN
+      name(index+4)=value+48
+    ELSE
+      name(index+4)=value+87
+    FI
+  OD
+
+  name(12)=0
+  LET entry=CONSOLEWINDOWS.Find(target)
+  input=CONSOLETYPES.Instance POINTER(entry.instance)
+  peer.tc_Node.ln_Type=EXEC.NT_TASK
+  peer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  peer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  peer.tc_SPReg=peer.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@peer.tc_MemEntry)
+  Check(EXEC.AddTask(@peer,@Reader,NULL)=@peer)
+  AwaitPhase(1)
+  Check(CONSOLE.RequestBreak(foreign)=CONSOLETYPES.CONTROL_NOT_OWNER)
+  Check(CONSOLE.RequestBreak(target)=CONSOLETYPES.CONTROL_UNBOUND)
+  gate=1
+  WHILE input.read=NULL DO
+    EXEC.Yield()
+  OD
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  Check(windows.focusSlot=0)
+  Check(DOS.Write(baseConsole,BYTE POINTER(c"other console\n"),14)=14)
+  Check(DOS.BreakPending()=0)
+  DOS.SetIoErr(219)
+  EXEC.Forbid()
+  oldTag=entry.route
+  Check(CONSOLE.RequestBreak(target)=CONSOLETYPES.CONTROL_OK)
+  Check(CONSOLE.RequestBreak(target)=CONSOLETYPES.CONTROL_OK)
+  Check(DOS.IoErr()=219 AND DOS.BreakPending()=0 AND input.inputCount=0)
+  EXEC.Permit()
+  AwaitPhase(3)
+  EXEC.Forbid()
+  Check(entry.route<>oldTag)
+  Check(CONSOLEFOREGROUND.Deliver(oldTag)<>0)
+  LET scope=DOSBREAKTYPES.Scope POINTER(entry.scope)
+  Check(scope.pending=0)
+  Check(CONSOLE.RequestBreak(target)=CONSOLETYPES.CONTROL_OK)
+  EXEC.Permit()
+  gate=1
+  AwaitPhase(4)
+  Check(CONSOLE.RequestBreak(target)=CONSOLETYPES.CONTROL_UNBOUND)
+  Check(DOS.BreakPending()=0)
+  gate=1
+  AwaitPhase(5)
+  Check(CONSOLE.Destroy(target)<>0)
+  LET replacement=CONSOLE.Create(12,6)
+  Check(replacement<>0 AND replacement<>target
+      AND (replacement & 3)=(target & 3))
+  Check(CONSOLE.RequestBreak(target)=CONSOLETYPES.CONTROL_BAD_UNIT)
+  Check(CONSOLE.RequestBreak(replacement)=CONSOLETYPES.CONTROL_UNBOUND)
+  Check(CONSOLE.Destroy(replacement)<>0)
+  gate=1
+  WHILE peer.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  Check(phase=6 AND CONSOLE.RequestBreak(foreign)=CONSOLETYPES.CONTROL_BAD_UNIT)
+  LET oldInput=DOS.SelectInput(baseConsole)
+  LET oldOutput=DOS.SelectOutput(baseConsole)
+  Check(CONSOLE.RequestBreak(0)=CONSOLETYPES.CONTROL_OK)
+  LET identity=PROCESS.StartForeground(@Child,NULL,0)
+  Check(identity<>0)
+  Check(PROCESS.Wait(identity,@result)<>0 AND result.primary=PROCESS.RETURN_ERROR
+      AND result.secondary=DOS.ERROR_BREAK)
+  Check(DOS.BreakPending()=0)
+  Check(DOS.BeginForeground(baseConsole)<>0 AND DOS.BreakPending()=0)
+  LET ignoredInput=DOS.SelectInput(oldInput)
+  LET ignoredOutput=DOS.SelectOutput(oldOutput)
+  Check(DOS.EndForeground()<>0 AND DOS.Close(baseConsole)<>0)
+  Check(CONSOLE.RequestBreak(0)=CONSOLETYPES.CONTROL_UNBOUND)
+  Check(DOS.ReleaseContext()<>0 AND EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

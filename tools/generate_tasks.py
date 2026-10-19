@@ -343,7 +343,7 @@ ENDMODULE
     policy=policy.replace('MODULE TASKPOLICY\n','MODULE TASKPOLICY\nUSE IDEMETA\n',1)
     policy=policy.replace('PUBLIC CARD FUNC Init()',init+'\nPUBLIC CARD FUNC Init()')
     if console:
-        for module in ('consoledriver','consoleinput','consoledisplay','consolebitmap','consolecontrol','consoleforeground','consolewindows','consolecapture'):
+        for module in ('consoledriver','consolekeys','consoleinput','consoledisplay','consolebitmap','consolecontrol','consoleforeground','consolewindows','consolecapture'):
             driver=read_source(library_file(module+'.act'))
             driver=driver.replace('"console-storage-action.inc"','"'+str(Path(output)/'console-storage-action.inc')+'"')
             (directory/(module+'.act')).write_text(driver)
@@ -401,10 +401,12 @@ def application_entry(routine):
         return False
     if routine['name'].startswith('M_DESKAPP_'):
         return bool(re.fullmatch(r'M_DESKAPP_RUN_[0-9A-F]+', routine['name']))
-    if routine['name'].startswith(('M_DESKTOP_', 'M_DESKCORE_', 'M_DESKMOVE_', 'M_DESKCACHE_', 'M_DESKEVENTS_', 'M_DESKSTATE_', 'M_DESKPAINT_', 'M_DESKINPUT_', 'M_DESKDRAG_', 'M_DESKHOST_', 'M_DESKBOOT_', 'M_DESKWIDGETS_', 'M_DESKWIDGETINPUT_')):
+    if routine['name'].startswith(('M_DESKTOP_', 'M_DESKCORE_', 'M_DESKCONSOLE_', 'M_DESKTABS_', 'M_DESKMOVE_', 'M_DESKCACHE_', 'M_DESKEVENTS_', 'M_DESKSTATE_', 'M_DESKPAINT_', 'M_DESKINPUT_', 'M_DESKDRAG_', 'M_DESKHOST_', 'M_DESKBOOT_', 'M_DESKWIDGETS_', 'M_DESKWIDGETINPUT_')):
         return False
-    # These shared resident shell helpers run on the shell's Task. They are
-    # included into several application/fixture modules, not Task entries.
+    # The controller starts this registered Process callback. Other shared
+    # shell helpers execute in that Process and cannot be admitted as entries.
+    if re.fullmatch(r'M_.+_SHELLPROCESSENTRY_[0-9A-F]+', routine['name']):
+        return True
     if re.fullmatch(r'M_.+_SHELL[A-Z0-9]*_[0-9A-F]+', routine['name']):
         return False
     if routine['name'].startswith('M_PROCESS_') and not re.fullmatch(r'M_PROCESS_(?:RUN|FINISH|EXECUTEIMAGE)_[0-9A-F]+',routine['name']):

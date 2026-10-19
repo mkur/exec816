@@ -17,7 +17,7 @@ class DesktopContractTests(unittest.TestCase):
             self.assertEqual(len(constants), len(set(constants)))
         sizes = {name: value['size'] for name, value in generate_desktop.layout().items()}
         self.assertEqual(sizes['Request'], 92)
-        self.assertEqual(sizes['Service'], 18718)
+        self.assertEqual(sizes['Service'], 18772)
         self.assertEqual(generate_desktop.layout()['Request']['fields']['message'], 0)
         constants = generate_desktop.ABI['constants']
         self.assertEqual(constants['EVENTS'] & (constants['EVENTS'] - 1), 0)
@@ -26,7 +26,7 @@ class DesktopContractTests(unittest.TestCase):
     def test_library_calls_are_not_task_entries(self):
         self.assertFalse(application_entry({'name': 'M_DESKMENUCACHE_PUMP'}))
         self.assertFalse(application_entry({'name': 'M_LAYERCACHE_INIT'}))
-        for module in ('DESKTOP', 'DESKCORE', 'DESKMOVE', 'DESKCACHE', 'DESKEVENTS', 'DESKSTATE', 'DESKPAINT', 'DESKINPUT', 'DESKDRAG', 'DESKHOST', 'DESKBOOT', 'DESKWIDGETS', 'DESKWIDGETINPUT'):
+        for module in ('DESKTOP', 'DESKCORE', 'DESKCONSOLE', 'DESKTABS', 'DESKMOVE', 'DESKCACHE', 'DESKEVENTS', 'DESKSTATE', 'DESKPAINT', 'DESKINPUT', 'DESKDRAG', 'DESKHOST', 'DESKBOOT', 'DESKWIDGETS', 'DESKWIDGETINPUT'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
         for module in ('AESCORE', 'AESHOST', 'AESBOOT', 'AESSTATE', 'AESTYPES', 'AESLOCKS', 'AESGUI', 'AESWINDOW', 'AESWINDOWSTATE'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))

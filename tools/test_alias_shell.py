@@ -16,7 +16,8 @@ class AliasShell(Commands):
         super().instrument(out)
         observed=out/'shell-observed.inc'
         source=observed.read_text()
-        old='  SHELLEDITPROBE.Capture(bytes,count)\n  NativeShellWrite(handle,bytes,count)'
+        old='''  SHELLEDITPROBE.Capture(bytes,count)
+  NativeShellWrite(context,handle,bytes,count)'''
         require(source.count(old)==1,'Stale shell output observer')
         source=source.replace(old,'''  LET header=DOSOBJECTS.Find(DOSCORE.Current(),BYTE POINTER(handle),DOSOBJECTS.KIND_FILE)
   IF header<>NULL THEN
@@ -24,7 +25,7 @@ class AliasShell(Commands):
       SHELLEDITPROBE.Capture(bytes,count)
     FI
   FI
-  NativeShellWrite(handle,bytes,count)''')
+  NativeShellWrite(context,handle,bytes,count)''')
         observed.write_text(source)
 
     def prepare(self,toolchain,out,mode,size):

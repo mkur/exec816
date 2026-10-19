@@ -5,7 +5,7 @@
 The shell executes built-ins in its own Task and loads external commands into
 child Processes. It supports per-command stream redirection and one foreground
 pipeline of two external commands, plus one separately owned background job.
-`RUN PRIMES` opens a lower console pane; the optional [demo](demo.md) starts
+`RUN PRIMES >CON:` opens a lower console pane; the optional [demo](demo.md) starts
 that same disk command automatically. The shell also works as a resident entry.
 Source lives in [examples/shell](../../examples/shell/).
 
@@ -34,12 +34,51 @@ Source lives in [examples/shell](../../examples/shell/).
 | `JOBS` | Show the running/stopping job or latest collected result. |
 | `BREAK identity` | Request cooperative cancellation of that job. |
 | `EXECUTE file` | Run a script through the ordinary command dispatcher. |
-| `EXIT` | Stop and collect the job, then release shell resources. |
+| `NEWSHELL` | Create and select a second shell in the current directory. |
+| `SESSIONS` | List live session numbers, their state and the selected marker. |
+| `SESSION number` | Select a ready session. |
+| `EXIT` | Stop this shell's job and close its session; select the survivor or shut down after the last session. |
 
 Command names and options ignore case. Plain MOUNT and MOUNT DIAGNOSTICS remain
 observational. New mounts require an explicit filesystem; there is no automatic
 format selection. A failed mount leaves a usable prompt; an offline
 SIO bus can require a cold boot after correcting the disk/profile setup.
+
+## Multiple sessions
+
+Text, standalone bitmap and desktop builds support two independent shell sessions.
+Use `NEWSHELL`, then Ctrl+Shift+Space to switch between ready sessions. Plain
+TAB still completes commands and paths. `SESSIONS` lists the live numbers;
+`SESSION 1` selects session 1 if it is still ready. Numbers increase throughout
+the boot and are never reused, so a replacement may be session 3 or 4.
+
+A new shell starts in the caller's current directory with default PATH and
+aliases, empty history and no job. Each shell retains its own draft, caret,
+directory, command results and job while hidden. Files, mounts and ASSIGNs are
+shared. Creation waits for startup; failure leaves the previous session selected.
+These three commands are interactive only: EXECUTE/startup scripts, RUN and
+pipelines reject them. SESSIONS supports ordinary output redirection.
+
+The first shell's prime pane follows that shell when switching. A shell on a
+different console cannot open that pane. Close a session with EXIT; the other
+remains usable. Closing a session requests cooperative cancellation and keeps
+its resources until its work finishes. A closing session can still switch to a
+ready peer with the chord.
+
+On the desktop, the Shell window has two tabs and a **+** button. Click a tab to
+select it or its **x** to close it. With Shell focused, Ctrl+Shift+Space switches
+its sessions; Ctrl+Tab still cycles desktop windows. **+** starts a fresh shell in `SYS:` and is
+disabled while both slots are occupied. Tabs show starting, busy and closing
+states; closing cooperatively waits for the session's work to finish. Closing
+the last tab shuts down through the same path as the last EXIT. The window
+keeps 64×20 text cells; separate shell windows are not implemented.
+
+The eight-Task limit includes root, console, filesystem and SIO workers. With
+two shells and prime running, one external command fits; a two-command pipeline
+reports error 103 and releases partial admission. Stop prime using `JOBS` and
+`BREAK identity` in its owning shell to make room for that pipeline. Other
+desktop applications or drivers consume slots too; see the
+[variant census](../architecture/task-capacity.md#shell-controller-admission-budget).
 
 For a real or emulator SIO disk in D2:
 
@@ -251,11 +290,12 @@ quoting and copied argument tail as ordinary commands. Built-ins and background
 pipelines are unsupported. A second running/stopping job reports error 202.
 
 Input and Output default to NIL. Explicit file/NIL redirection works normally,
-for example `RUN CAT <WORK:INPUT.TXT >WORK:OUTPUT.TXT`. Interactive redirection
-is rejected before launch. A background command has its own cancellation scope;
-keyboard BREAK applies to the shell's current foreground interaction. Commands
-requiring OpenConsole must run in the foreground. A graphical command can open
-its own output pane through OpenPane.
+for example `RUN CAT <WORK:INPUT.TXT >WORK:OUTPUT.TXT`. Interactive input redirection
+is rejected before launch; explicit console output is allowed. A background
+command has its own cancellation scope; keyboard BREAK applies to the shell's
+current foreground interaction. Commands requiring OpenConsole must run in the
+foreground. A pane command must select unit-zero console output, for example
+`RUN PRIMES >CON:`. This establishes the parent for OpenPane.
 
 JOBS shows the Process identity. `BREAK 7` requests stop for job 7 and returns
 the prompt; the command must cooperate and settle its I/O. Result collection
@@ -450,11 +490,12 @@ running. See [pipes](../reference/pipes.md) and [Process groups](../reference/pr
 ## Editing and BREAK
 
 The prompt is `> `. Typing inserts at the cursor; Backspace deletes before it,
-Tab inserts one space and Return submits the whole line. A single row follows
+Tab completes a name and Return submits the whole line. A single row follows
 the cursor, with `<` when text to the left is hidden.
 
 | Keys | Action |
 | --- | --- |
+| Tab | Complete an unquoted command or filename prefix at the end of its token. |
 | Ctrl-A / Ctrl-E | Beginning / end of line. |
 | Ctrl-B / Ctrl-F | One character left / right. |
 | Ctrl-L | Clear the screen and redraw the prompt and current input, retaining its cursor. |
@@ -470,8 +511,28 @@ lasts for this shell session. Moving forward past the newest entry restores your
 unfinished draft and cursor. Editing a recalled command does not alter its saved
 entry; browsing away loses those edits. Program input is excluded. History needs
 about 2.8 KiB of upper RAM; if unavailable, editing still works. There is no
-completion, search or history file. Ctrl-D exits an empty prompt; after partial
+history search or history file. Ctrl-D exits an empty prompt; after partial
 input it submits that final command and then exits normally.
+
+For example, `UNM<Tab>` completes `UNMOUNT `, and `TYPE SYS:READM<Tab>` can complete
+`TYPE SYS:README.TXT `. Matching ignores case and keeps the spelling already
+typed. A unique directory gains `/`; a unique file or command gains a space
+at the end of the line when room remains. Several matches extend only their
+common prefix. Following arguments and redirection text stay intact. TAB never
+executes a command, prints a candidate list or cycles through matches.
+
+The first command word searches builtins, current aliases, regular filenames in
+the current directory, and the current PATH. An explicit path searches only
+its parent directory. Arguments and redirection targets offer files and
+directories. ASSIGN prefixes retain their logical spelling. A filename candidate
+is not a promise that its contents are executable.
+
+Completion requires a nonempty final path component and the cursor at the end
+of that token. Quoted or wildcard tokens, empty prefixes, and command words
+immediately after RUN or a pipe are left unchanged. An incomplete directory
+scan or an extension exceeding 255 bytes also leaves the line unchanged.
+BREAK cancels discovery and the prompt. Programs reading inherited CON input
+retain ordinary TAB-as-space behavior.
 
 Ctrl-C/BREAK clears the prompt or cancels the foreground command, including with
 redirected streams. Cleanup and outstanding I/O retirement precede the next

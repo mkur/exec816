@@ -1,5 +1,13 @@
 # Historical records
 
+- [Multiple shell sessions](shell-sessions.md): incremental SS1–SS8 evidence,
+  explicit per-session state, native layout and concurrency checks, resource
+  costs, desktop tabs, final latency observations and tested OF816 packages.
+
+- [Shell TAB completion](shell-completion.md): resumable native editing,
+  builtin/alias and streamed file/PATH matching, ownership/failure checks,
+  accurate disk timings and the tested standard OF816 demo.
+
 - [Native drag and queued UPDATE](native-drag-update.md): keep captured native
   outlines tracking across a periodic client's pending UPDATE; physical pixel,
   release, Escape, presenter-sleep and cleanup checks, with unchanged bank-zero

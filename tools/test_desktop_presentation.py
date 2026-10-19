@@ -116,6 +116,26 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
                     right-2-2*step,bottom-1-distance+step),1)
 
 
+def shell_tabs(raster, bounds, entries=(), new_enabled=False):
+    """Recompose the fixed strip from independently supplied session scalars."""
+    from generate_desktop import ABI
+    c=ABI['constants'];left,top,_,_=bounds
+    y=top+c['WORK_TOP']
+    for slot in range(3):
+        x=left+c['WORK_LEFT']+slot*c['FRAME_TAB_WIDTH']
+        width=c['FRAME_TAB_NEW'] if slot==2 else c['FRAME_TAB_WIDTH']
+        identity,state,selected,busy=entries[slot] if slot<len(entries) else (0,0,0,0)
+        paper=0 if slot<2 and identity and selected else 8
+        rectangle(raster,(x,y,x+width,y+c['FRAME_TAB_HEIGHT']),paper)
+        if slot==2:
+            text(raster,x+4,y+4,b' +',1 if new_enabled else 9,paper)
+        elif identity:
+            suffix=' starting' if state==1 else ' closing' if state>=3 else ' busy' if busy else ''
+            label=(f'Shell {identity}'+suffix).encode()[:26]
+            text(raster,x+4,y+4,label,1,paper)
+            text(raster,x+width-12,y+4,b'x',1,paper)
+
+
 def tile(raster, bounds, title):
     x,y,right,bottom=bounds
     rectangle(raster,bounds,0)
@@ -158,9 +178,10 @@ def scenes(font, accepted=None, full_coverage=False):
             terminal.feed(bytes(65+col % 26 for col in range(accepted)))
         raster = Raster(font)
         desktop(raster)
-        left, top = (32, 29) if stage < 3 else (80, 53)
-        frame(raster, (left, top, left+528, top+173), b'Shell', True)
-        terminal.paint(raster, (left+8)//8, (top+11)//8, True)
+        left, top = (32, 29) if stage < 3 else (80, 45)
+        frame(raster, (left, top, left+528, top+189), b'Shell', True)
+        shell_tabs(raster,(left,top,left+528,top+189))
+        terminal.paint(raster, (left+8)//8, (top+27)//8, True)
         if stage in (4, 5):
             frame(raster, (113, 93, 273, 173), b'Clip', False, 3, close=True)
             text(raster, 124, 107, b'XYZ', bg=3)
@@ -171,7 +192,7 @@ def scenes(font, accepted=None, full_coverage=False):
             frame(raster, (x, y, x+160, y+80), b'Clip', False, 3, close=True)
             text(raster, x+11, y+14, b'XYZ', bg=3)
         if stage in (16, 17, 19):
-            x,y,r,b=(80,53,608,226) if full_coverage and stage in (16,17) else (377,0,537,173)
+            x,y,r,b=(80,45,608,234) if full_coverage and stage in (16,17) else (377,0,537,173)
             frame(raster, (x,y,r,b), b'Clip', False, 3, close=True)
             text(raster, x+11, y+14, b'XYZ', bg=3)
         menu_bar(raster)

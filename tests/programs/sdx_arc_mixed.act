@@ -16,6 +16,8 @@ USE O65READ
 
 INCLUDE "SHELL_INCLUDE"
 
+ShellContext context
+
 CARD checks,currentCase,breakTicks,sessionBytes
 CARD ARRAY elapsed(4),guestUntouched(8)
 LONGCARD ARRAY peerProgress(4)
@@ -190,24 +192,27 @@ PROC Command(BYTE POINTER command LONGINT wantPrimary,wantSecondary)
   BYTE POINTER line
   CONSOLETYPES.Instance POINTER terminal
 
-  line=ShellLine()
+  line=ShellLine(@context)
   index=0
   WHILE command(index)<>0 DO
     line(index)=command(index)
     index==+1
   OD
   line(index)=0
-  shell.length=index
-  ShellCommand()
-  primary=shell.lastStatus
-  secondary=shell.lastError
-  Require(primary=wantPrimary AND secondary=wantSecondary AND shell.done=0)
-  Require(DOS.Input()=shell.console AND DOS.Output()=shell.console)
-  ShellClear()
+  context.shell.length=index
+  ShellCommand(@context)
+  primary=context.shell.lastStatus
+  secondary=context.shell.lastError
+  Require(primary=wantPrimary AND secondary=wantSecondary
+      AND context.shell.done=0)
+  Require(DOS.Input()=context.shell.console
+      AND DOS.Output()=context.shell.console)
+  ShellClear(@context)
   terminal=CONSOLEDRIVER.GetInstance()
   cell=CONSOLECORE.CellOffset(terminal,terminal.row*terminal.width+terminal.column)
-  ShellPrompt()
-  Require(shell.done=0 AND terminal.cells(cell)=62 AND terminal.cells(cell+1)=32)
+  ShellPrompt(@context)
+  Require(context.shell.done=0 AND terminal.cells(cell)=62
+      AND terminal.cells(cell+1)=32)
 
 RETURN
 
@@ -235,11 +240,11 @@ SETUP_FILES
       DOS.IoErr()=DOS.ERROR_OBJECT_NOT_FOUND)
   Pair(3,BYTE POINTER(c"A SHARE.ARC A.BIN"),BYTE POINTER(c"RAM:ARC.COM"),
       BYTE POINTER(c"D SHARE.ARC OLD.BIN"),3)
-  Require(ShellStart(BYTE POINTER(c"RAM:"))<>0)
+  Require(ShellStart(@context,BYTE POINTER(c"RAM:"))<>0)
   Command(BYTE POINTER(c"RAM:ARC.COM AS FAIL.ARC A.BIN >RAM:SHELL.OUT"),20,156)
   Command(BYTE POINTER(c"RAM:ARC.COM A FAIL.ARC A.BIN >RAM:SHELL.OUT"),0,0)
   Command(BYTE POINTER(c"RAM:ARC.COM L FAIL.ARC >RAM:SHELL.OUT"),0,0)
-  Require(ShellFinish()=0 AND shell=NULL)
+  Require(ShellFinish(@context)=0 AND context.shell=NULL)
   file=DOS.Open(BYTE POINTER(c"RAM:SHELL.OUT"),DOS.MODE_OLDFILE)
   Require(file<>NULL)
   shellBytes=DOS.Read(file,@shellOutput,1024)

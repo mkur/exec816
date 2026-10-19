@@ -194,7 +194,7 @@ BYTE FUNC AllIdle(CONSOLETYPES.Service POINTER service)
 
   FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
     IF windows.items(index).state<>CONSOLETYPES.WIN_FREE THEN
-      IF index<>0 THEN
+      IF index<>0 OR windows.items(index).watch<>NULL THEN
         RETURN(0)
       FI
 

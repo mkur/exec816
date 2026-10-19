@@ -11,6 +11,7 @@ BYTE stage,gate
 CARD checks,steps
 LONGCARD baseline
 LONGINT exitStatus
+PROCESSSTATE.Entry POINTER child
 CONSOLETYPES.Instance POINTER topInstance,bottomInstance
 CONSOLETYPES.Presentation POINTER topView,bottomView
 
@@ -38,15 +39,12 @@ PROC Pause(BYTE value)
 
 RETURN
 
-; Exercise the interactive demo's console lifecycle.
-PROC Main()
+; Observe the actual shell child after boot scripts and prime startup.
+PROC DemoBeforeRead(ShellContext POINTER context)
   CONSOLETYPES.Windows POINTER windows
   CONSOLETYPES.Window POINTER entry
   BYTE row
-  PROCESSSTATE.Entry POINTER child
 
-  baseline=EXEC.AvailMem(0)
-  Require(DemoStart()<>0)
   windows=CONSOLEWINDOWS.Registry()
   WHILE windows.pane=0 DO
     EXEC.Yield()
@@ -63,38 +61,55 @@ PROC Main()
   OD
 
   child=PROCESSSTATE.Entry POINTER(DOSCORE.Control(PROCESSSTATE.OP_FIND,
-      BYTE POINTER(@job.identity)))
+      BYTE POINTER(@context.job.identity)))
   Require(child<>NULL)
 
   FOR row=1 TO 20 DO
-    ShellText(shell.console,CSTRING(BYTE POINTER(@bootShellName)))
-    ShellByte(shell.console,10)
+    ShellText(context,context.shell.console,CSTRING(BYTE POINTER(@bootShellName)))
+    ShellByte(context,context.shell.console,10)
   OD
 
   Pause(1)
-  WHILE shell.done=0 DO
-    ShellReadStep()
-    steps==+1
-    IF steps=1 THEN
-      Pause(2)
-    FI
+RETURN
 
-    IF steps=2 THEN
-      BEGIN
-        LET scope=DOSBREAKTYPES.Scope POINTER(child.breakScope)
-        Require(child.state=PROCESSSTATE.STATE_RUNNING AND scope.pending=0)
-      END
-      Pause(3)
-    FI
-  OD
+; Run on the shell owner so the retained prime Process may be inspected.
+PROC DemoAfterRead(ShellContext POINTER context)
+
+  steps==+1
+  IF steps=1 THEN
+    Pause(2)
+  FI
+
+  IF steps=2 THEN
+    BEGIN
+      LET scope=DOSBREAKTYPES.Scope POINTER(child.breakScope)
+      Require(child.state=PROCESSSTATE.STATE_RUNNING AND scope.pending=0)
+    END
+    Pause(3)
+  FI
+
+RETURN
+
+PROC DemoBeforeFinish(ShellContext POINTER context)
 
   Require(steps=3)
   Pause(4)
-  Require(DOS.AssignPath(BYTE POINTER(c"C"),NULL)<>0)
-  exitStatus=DemoFinish()
-  Require(exitStatus=0 AND job.state=JOB_DONE AND shell=NULL)
-  windows=CONSOLEWINDOWS.Registry()
+RETURN
+
+; Only the controller collects the shell, then releases boot assignments.
+PROC Main()
+
+  baseline=EXEC.AvailMem(0)
+  Require(ShellControllerStart(1)<>0)
+  exitStatus=ShellControllerRun()
+  ShellControllerStop()
+  Require(exitStatus=0 AND contexts(0).job.state=JOB_DONE
+      AND contexts(0).shell=NULL)
+  LET windows=CONSOLEWINDOWS.Registry()
   Require(windows.liveCount=1)
+  Require(DOS.AssignPath(BYTE POINTER(c"C"),NULL)<>0)
+  Require(DOS.AssignPath(BYTE POINTER(c"S"),NULL)<>0)
+  Require(DOS.ReleaseContext()<>0)
   Require(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=baseline)
   stage=5
 

@@ -32,7 +32,7 @@ automatic-primes bitmap demo alongside the text boot.
 Wait for `SYS: ready` and the prompt. Try the [demo commands](demo.md): `TASKS`,
 `MOUNT`, `CD SYS:`, `DIR`, `HELLO`, `TYPE README.TXT`, `MEM`, `HELLO | WC` and
 `CAT STORY.TXT | WC`. The last two print `1 3 17` and `108 518 3171`. The shell
-starts with 80×30 cells. `RUN PRIMES` opens the lower 80×6 tile and keeps the
+starts with 80×30 cells. `RUN PRIMES >CON:` opens the lower 80×6 tile and keeps the
 80×24 shell interactive. JOBS lists its identity; `BREAK identity` stops it and
 restores the full shell. `PRIMES PASSES 1` runs one foreground pass, finding
 1,229 primes through 10,000, with latest prime 9,973. Only changed numeric fields

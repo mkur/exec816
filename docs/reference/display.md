@@ -343,3 +343,10 @@ asynchronous copy engine, clear the newly exposed rows, then render final dirty
 spans before publishing the new generation. This works while partly or fully
 covered. Batch cancellation and view retirement retain the existing DMA lifetime
 rules. Caret and pointer pixels are screen overlays, never backing contents.
+
+The desktop binding names the sole Shell backing owner. Binding another console
+invalidates that ownership and rebuilds all 64×20 cells before copying the new
+image. Ownership, fixed geometry and the view’s presented model generation must
+all match before reuse. Hidden consoles retain their own dirty cells and never
+paint into the selected console’s bitmap. Session switching adds no backing
+VRAM; it uses the same 40,960-byte reservation.

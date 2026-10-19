@@ -142,3 +142,47 @@ production map reserves the full VBXE aperture but does not yet map it.
 The [capacity implementation record](../history/task-capacity.md) preserves exact
 maps, before/after totals and experiments for its recorded revision. Its old code
 origins and serial timing limits are historical, not current build metadata.
+
+## Shell-controller admission budget
+
+The shell-session implementation keeps eight public slots. Root becomes the
+controller, so the first interactive shell uses an additional ordinary Process
+slot. Standard SIO builds have four shared Tasks (controller, console,
+filesystem and SIO), plus each shell, prime job, external command and desktop
+application. Bitmap rendering and desktop presentation share the console worker.
+The [implementation plan](../plans/shell-sessions-implementation-plan.md) requires
+these counts before updating each variant's tests and advertised workloads.
+
+| Variant/workload | One shell | Two shells | Admission with eight slots |
+| --- | ---: | ---: | --- |
+| Text or standalone bitmap, prompt only | 5 | 6 | Both fit |
+| Standard demo with prime, prompt | 6 | 7 | Both fit |
+| Standard demo with prime and two-command pipeline | 8 | 9 | Two-shell case rejects |
+| Plain shell and two command Tasks | 7 | 8 | Both fit |
+| Native desktop example and pipeline | 8 | 9 | Two-shell case rejects |
+| Two AES counters/input apps and one command | 8 | 9 | Two-shell case rejects |
+| Two AES counters/input apps and pipeline | 9 | 10 | Both reject |
+| Packaged GEM desktop (one desktop APP) and pipeline | 8 | 9 | Two-shell case rejects |
+| Packaged GEM desktop, one additional GUI APP and one command | 8 | 9 | Two-shell case rejects |
+| Packaged GEM desktop and two additional GUI APPs, no command | 8 | 9 | Two-shell case rejects |
+
+Each additional running GUI APP adds one Task. The GEM integration fixture
+that starts panel and counter directly has two application Tasks; its pipeline
+row matches the two-app AES row, rather than the packaged desktop's initial
+one-app row. A loaded image retained after completion does not consume a live
+Task slot, although its parent must still collect its owned Process resources.
+
+A mixed SIO+IDE build adds one transport worker to every row. An IDE-only shell
+replaces SIO with IDE and keeps the corresponding total. Thus the standard
+mixed-transport prime/pipeline workload requires nine slots even with one
+shell and must report normal capacity failure. Applications and prime are not
+silently stopped to admit a command. A two-command pipeline may prepare or
+start its first child before discovering exhaustion; it must unwind both
+stages and all stream ownership before reporting failure.
+
+For comparison with older records, add one to their same-workload peak for the
+first shell Process, or two for two shell Processes. Former peaks of 6, 7 and 8
+therefore require 7/8, 8/9 and 9/10 slots respectively. Values above eight are
+rejected workloads, not expanded pool reservations or measured admitted peaks.
+The current [session evidence](../history/shell-sessions.md) records which rows
+have actually executed; this census alone is not a qualification result.

@@ -11,6 +11,8 @@ USE FSBOOT
 
 INCLUDE "SHELL_INCLUDE"
 
+ShellContext context
+
 CARD checks,currentCase
 LONGINT primary,secondary,reason
 LONGCARD peer
@@ -58,7 +60,7 @@ PROC Recover()
   BYTE POINTER line,command
   CARD index
 
-  line=ShellLine()
+  line=ShellLine(@context)
   command=BYTE POINTER(c"RAM:MD5 ABC.BIN >RAM:RECOVER")
   index=0
   WHILE command(index)<>0 DO
@@ -66,9 +68,10 @@ PROC Recover()
     index==+1
   OD
   line(index)=0
-  shell.length=index
-  ShellCommand()
-  Require(shell.lastStatus=0 AND shell.lastError=0 AND shell.done=0)
+  context.shell.length=index
+  ShellCommand(@context)
+  Require(context.shell.lastStatus=0 AND context.shell.lastError=0
+      AND context.shell.done=0)
   CheckOutput(BYTE POINTER(c"RAM:RECOVER"),RECOVER_EXPECTED,RECOVER_BYTES)
 
 RETURN
@@ -163,10 +166,10 @@ PROC Main()
 
   baseline=EXEC.AvailMem(0)
 SETUP_FILES
-  Require(ShellStart(BYTE POINTER(c"RAM:"))<>0)
+  Require(ShellStart(@context,BYTE POINTER(c"RAM:"))<>0)
 RUN_CASES
   Concurrent()
-  Require(ShellFinish()=0 AND shell=NULL)
+  Require(ShellFinish(@context)=0 AND context.shell=NULL)
   Require(DOS.ReleaseContext()<>0)
   Require(FSBOOT.Stop()<>0)
   Require(EXEC.AvailMem(0)=baseline)

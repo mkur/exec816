@@ -1,22 +1,17 @@
 MODULE DEMO
 INCLUDE "demo-session.inc"
 LONGINT exitStatus
-BYTE started
 
-; Run the shared shell alongside the background prime-search demonstration.
+; Root supervises the shell, whose first startup launches the prime demo.
 PROC Main()
 
-  started=DemoStart()
-  IF started<>0 THEN
-    WHILE shell.done=0 DO
-      ShellReadStep()
-    OD
+  IF ShellControllerStart(1)<>0 THEN
+    exitStatus=ShellControllerRun()
+  ELSE
+    exitStatus=controllerStatus
   FI
 
-  exitStatus=DemoFinish()
-  IF started=0 AND exitStatus=0 THEN
-    exitStatus=20
-  FI
+  ShellControllerStop()
 
 RETURN
 

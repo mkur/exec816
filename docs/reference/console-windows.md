@@ -13,13 +13,17 @@ allocates no Task, stack, direct page or physical screen.
 `CONSOLE.Create(width,height)` returns a nonzero opaque LONGCARD unit, or zero
 if geometry, capacity, identity space, route storage or memory prevents creation.
 Width and height must fit the active display: 1–40 by 1–24 for text, or
-1–80 by 1–30 for bitmap. New instances start blank, at cursor (0,0),
+1–80 by 1–30 for standalone bitmap, or 1–64 by 1–20 for desktop.
+New instances start blank, at cursor (0,0),
 and hidden; writes still complete into their retained cells. These functions
-do not use DOS IoErr.
+do not use DOS IoErr. Desktop sessions select their full-size instances through
+[BIND_CONSOLE](desktop.md#operations); standalone tiled presentation calls
+remain unsupported in desktop mode.
 
 `CONSOLE.Destroy(unit)` returns one on success, zero on rejection. Only the
 creating Task may destroy a created instance. Open device/DOS references and
-foreground scopes prevent destruction. The creating Task cannot be removed
+foreground scopes, key subscriptions and a published desktop binding prevent
+destruction. The creating Task cannot be removed
 while it owns an instance, including during creation or retirement. Closing a
 handle does not destroy its instance. Default unit zero cannot be destroyed.
 
@@ -59,6 +63,71 @@ permanent unbound input route and a current route; scope renewal creates a new
 bound generation, and End returns to the permanent unbound route without needing
 another route allocation. Retired bound generations cannot cancel a new scope.
 All live instance routes participate in route-retention accounting.
+
+## Owner-requested foreground cancellation
+
+`CARD CONSOLE.RequestBreak(LONGCARD unit)` requests cooperative cancellation
+of the console's currently bound foreground interaction. The creator controls
+a created unit; any application Task may control permanent unit zero. Focus,
+visibility and the caller's selected DOS handles are irrelevant. No input byte
+is enqueued and DOS IoErr is preserved.
+
+Native controls use the generated `CONSOLETYPES.CONTROL_*` result namespace,
+separate from DOS errors and the older boolean presentation operations:
+
+| Result | Value | Meaning |
+| --- | --- | --- |
+| `CONTROL_OK` | 0 | The operation was accepted. Repeated cancellation coalesces. |
+| `CONTROL_BUSY` | 1 | A presentation operation or existing subscription prevents admission. |
+| `CONTROL_BAD_UNIT` | 2 | No live instance has that complete identity. |
+| `CONTROL_NOT_OWNER` | 3 | The caller does not control this created instance. |
+| `CONTROL_UNSUPPORTED` | 4 | The display mode or requested physical-key shape is unsupported. |
+| `CONTROL_BAD_LAYOUT` | 5 | The requested presentation is incompatible. |
+| `CONTROL_UNBOUND` | 6 | No bound foreground interaction or key subscription exists. |
+| `CONTROL_FAILED` | 7 | The admitted control could not complete. |
+
+RequestBreak returns only OK, BAD_UNIT, NOT_OWNER or UNBOUND. It does not wait
+for the command or its I/O to finish. Cancellation reaches the bound owner and
+any admitted foreground-group followers through the existing
+[foreground contract](foreground-break.md#owner-requested-cancellation).
+A caller implementing session close must retain its own close intent across
+an UNBOUND result or a later prompt; this operation targets only the interaction
+bound when it is called.
+
+## Full-screen activation and key notices
+
+`CARD CONSOLE.Activate(previous,next)` replaces one owned selected full-screen
+view with another in text or standalone bitmap mode. Unit zero may have its
+admitted lower pane; both views hide/show together. Input, pending reads,
+paused ConsoleEdit state and foreground scopes retain their identities.
+A same-unit call succeeds only if that unit is already selected. Unrelated
+visible tiles, incompatible dimensions and desktop mode fail before publication.
+BUSY permits retry after yielding. Both views remain retained until admitted
+worker drawing/DMA settles; one commit publishes visibility and the new captured
+route. OK means committed selection, while final redraw continues from retained
+cells. A pre-commit failure preserves the logical selection and invalidates its
+paint for repair. Existing unquiesced-device fault retention still applies.
+
+`WatchKey(unit,code,qualifiers,signalMask,watch)` registers one exact physical
+key per instance using a zero-initialized, caller-owned `CONSOLETYPES.KeyWatch`.
+The presentation owner supplies an allocated signal mask and stable upper-RAM
+storage. Code is the base Atari scan (0–63), qualifiers use INPUT.SHIFT and
+INPUT.CONTROL. The shell chord is code 33 with both qualifiers. Desktop input
+arbitration runs first; only an unclaimed event for the registered captured
+console route can notify the watch. No byte is inserted into ordinary input.
+
+`TakeKey(watch,notice)` copies and clears one pending `KeyNotice` and returns
+one, or zero when empty. The notice records unit, route and capture tick.
+Repeated events coalesce while pending. `UnwatchKey(watch)` first withdraws the
+producer, drops pending state and releases the owner Task lease. Destroy and
+service shutdown reject live subscriptions. The caller must unwatch before
+reusing/freeing its record, signal or Task. Take and Unwatch leave wake bits
+alone because multiple watches may share one signal; consume notices after
+Wait and clear/free the bit only after all producers have withdrawn.
+
+KeyWatch occupies 36 bytes and KeyNotice 10 bytes. Four watch pointers enlarge
+the resident registry by 16 upper bytes. No additional worker, bank-zero storage,
+per-event allocation or worker callback is introduced.
 
 ## Tiled presentation and focus
 
@@ -120,8 +189,10 @@ queued writes validate against the new geometry when claimed. Ordinary streams
 and pending reads retain their ownership.
 
 `COMMAND.OpenPane(rows)` prepares one full-width output instance below the
-permanent default console. The default must be visible at full screen size and
-focused; desktop mode rejects this operation. One association is supported.
+permanent default console. The caller's selected Output must be a RAW/CON handle for unit zero; another
+console, NIL or a disk stream reports ERROR_OBJECT_WRONG_TYPE. The parent must
+have full-screen dimensions before docking; desktop mode rejects this operation.
+One association is supported.
 A second pane or conflicting Show, Hide, Focus or resize returns busy. Unit-zero
 focus remains available. Allocation and admission failures preserve the layout.
 
@@ -129,12 +200,15 @@ The returned DOS handle owns retirement, unlike ordinary RAW/CON handles.
 Close restores the parent's full height before releasing the child's instance
 lease. Process return also closes it through ordinary DOS ownership cleanup,
 even while the parent is waiting in a cooked Read. Its draft and captured route
-survive. The pane is output-only and cannot be inherited as a selected stream.
-Additional RAW bindings must close before the owning pane can retire.
+survive. When the parent is hidden, closure restores its retained height without
+erasing the selected console or changing focus. The pane is output-only and cannot be inherited as a selected stream.
+Additional RAW bindings must close, and any key subscription must be withdrawn,
+before the owning pane can retire. A busy close retains its handle.
 
-The capacity field fits the instance's former alignment padding; the pane
-association fits the existing 880-byte resident console reservation. Bank-zero
-reservation changes by zero bytes. The implementation and development checks
+The capacity field fits the instance's former alignment padding. The console
+registry now reserves 896 upper bytes, including per-instance key-watch pointers;
+the pane association needs no additional storage. Bank-zero reservation changes
+by zero bytes. The implementation and development checks
 are recorded in the [pane record](../history/background-pane-primes.md).
 
 ## Memory and asynchronous entry

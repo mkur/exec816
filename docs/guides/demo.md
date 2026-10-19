@@ -4,6 +4,17 @@ An interactive shell occupies the upper 18 rows of the 40×24 screen. The lower
 six rows show an independent prime search. Commands load from disk; two external
 commands can exchange bytes through an anonymous pipe.
 
+`NEWSHELL` opens a second shell in the current directory. Switch with
+Ctrl+Shift+Space, or use `SESSIONS` and `SESSION number`. Drafts, history,
+directories, aliases and jobs belong to each shell; files and ASSIGNs are
+shared. TAB completes input in either shell. EXIT closes the selected session;
+the last EXIT returns to the OS. The prime pane stays with its original shell.
+
+Two shells plus prime leave room for one external command. A two-command
+pipeline then reports error 103 without closing either shell. In the original
+shell, use JOBS and BREAK with the displayed job number to stop prime before
+running that pipeline. See the [shell guide](shell.md#multiple-sessions).
+
 <img src="../images/demo-boot.png" alt="Exec816 boot messages and TASKS listing, with the prime task running below" width="672" style="image-rendering: pixelated;">
 
 The first screenshot is taken after `TASKS`, before other commands scroll the
@@ -158,17 +169,17 @@ CAT STORY.TXT | WC >NIL:
 ```
 
 Run `MEM`, repeat a few pipelines, and run `MEM` again to observe reclaimed
-command memory. `TASKS` at the prompt shows the shell, console, filesystem,
+command memory. `TASKS` at the prompt shows the controller, shell, console, filesystem,
 SIO and loaded command Tasks. The optional demo starts C:PRIMES through RUN;
-the bitmap shell starts full-screen until you enter RUN PRIMES yourself.
-A pipeline adds two temporary Tasks, using seven of the
+the bitmap shell starts full-screen until you enter RUN PRIMES >CON: yourself.
+A pipeline adds two temporary Tasks, using all
 eight reserved slots. The prime search checks candidates up to 10,000 and then
 starts a new numbered pass; its latest prime eventually reaches 9,973.
 
 JOBS shows the background Process identity. `BREAK identity` requests stop;
 pane closure restores the full shell, including its edited line.
 `PRIMES PASSES 1` runs one foreground pass and returns; with PASSES omitted
-or zero, it continues until BREAK. `RUN PRIMES PASSES 1` completes without
+or zero, it continues until BREAK. `RUN PRIMES PASSES 1 >CON:` completes without
 waiting for another shell command. The display updates only changed numbers.
 
 `EXIT` stops and collects the prime Process, closes its pane and restores the

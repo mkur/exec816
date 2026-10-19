@@ -117,7 +117,7 @@ PROC Position(INT x,y)
   BEGIN
     LET window=DESKCORE.Find(DESKSTATE.Get(),windowId)
     offset=IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
-        INT(DESKTYPES.WORK_TOP) ELSE INT(0) FI
+        INT(DESKTYPES.FRAME_SHELL_TOP) ELSE INT(0) FI
   END
   width=origin.right-origin.left
   height=origin.bottom-origin.top

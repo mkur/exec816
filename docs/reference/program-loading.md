@@ -103,7 +103,10 @@ existing reply port. Context cleanup closes the idle binding and frees it.
 
 
 `COMMAND.OpenPane(rows)` returns an owned, output-only lower console handle,
-or NULL with IoErr. It preserves the default console's input route and focus.
+or NULL with IoErr. Selected Output must belong to console unit zero; another
+console or a non-console stream reports ERROR_OBJECT_WRONG_TYPE. The call
+preserves the selected console's input route and focus, even when unit zero
+is hidden.
 `COMMAND.Close` and Process cleanup restore the parent's full height and retire
 the pane. Only one full-width pane is supported; desktop mode and inheritance
 of the pane handle are unsupported. See [console instances](console-windows.md).

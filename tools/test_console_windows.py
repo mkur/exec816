@@ -16,7 +16,11 @@ def run(out,mode):
     (out/'windowprobe.act').write_bytes((ROOT/'tests/programs/windowprobe.act').read_bytes())
     console=read_source(ROOT/'lib/console/console.act').replace('USE EXEC\n','USE EXEC\nUSE WINDOWPROBE\n',1).replace('EXEC.AllocMem(', 'WINDOWPROBE.AllocMem(')
     (out/'console.act').write_text(console)
-    p=build(compiler(ROOT/'build/actionc'),out/'console_windows.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,dos_mounts=[])
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes']=8192
+    memory=out/'fixture-memory.json'
+    memory.write_text(json.dumps(profile,indent=2)+'\n')
+    p=build(compiler(ROOT/'build/actionc',release=True),out/'console_windows.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,dos_mounts=[],memory_profile=memory)
     address=next(d['address'] for d in p['image']['data'] if '_CONSOLEWINDOWTEST_MODE_' in d['name'])
     results=[]
     for scenario in (0,1,2):

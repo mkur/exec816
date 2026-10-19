@@ -26,7 +26,7 @@ CARD aesStatus
 ; move may expose no console pixels, so damage alone cannot wake that work.
 PUBLIC PROC HideCaret()
 
-  LET entry=CONSOLEWINDOWS.Find(0)
+  LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ConsoleUnit())
   IF entry<>NULL THEN
     BEGIN
       LET view=CONSOLETYPES.Presentation POINTER(entry.view)
@@ -43,7 +43,7 @@ RETURN
 ; Copied pixels preserve the model; redraw moves discard any gathered batch.
 PROC Rebase(LAYERTYPES.Layer POINTER layer BYTE copied)
 
-  LET entry=CONSOLEWINDOWS.Find(0)
+  LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ConsoleUnit())
   IF entry=NULL THEN
     RETURN
   FI
@@ -64,7 +64,7 @@ PROC Rebase(LAYERTYPES.Layer POINTER layer BYTE copied)
   FI
 
   view.left=CARD(layer.bounds.left+DESKTYPES.WORK_LEFT) RSH 3
-  view.top=CARD(layer.bounds.top+DESKTYPES.WORK_TOP) RSH 3
+  view.top=CARD(layer.bounds.top+DESKTYPES.FRAME_SHELL_TOP) RSH 3
   view.cursorOn=0
   view.index=$ffff
   view.generation==+1
@@ -134,7 +134,7 @@ PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
           (layer.bounds.right-layer.bounds.left)) & 1)=0)
   IF eligible<>0 AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
     BEGIN
-      LET entry=CONSOLEWINDOWS.Find(0)
+      LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ConsoleUnit())
       LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
       LET batch=CONSOLEBATCH.Get()
       eligible=(instance.dirtyRows=0 AND batch.phase=CONSOLETYPES.BATCH_IDLE)

@@ -4,21 +4,22 @@ USE DESKBOOT
 
 INCLUDE "shell/shell-session.inc"
 INCLUDE "shell/shell-boot.inc"
+INCLUDE "shell/shell-controller.inc"
+INCLUDE "shell/shell-desktop.inc"
 
 LONGINT exitStatus
 
 ; The shell and demonstration client share only the desktop message service.
 PROC Main()
 
-  IF ShellBootStart(shellCon)<>0 THEN
+  IF ShellControllerStart(0)<>0 THEN
     IF DESKAPP.Start()=0 THEN
-      ShellText(shell.console,c"desktop app unavailable")
-      ShellByte(shell.console,ASCII.LF)
+      ShellDesktopNotice(c"desktop app unavailable\n")
     FI
 
-    WHILE shell.done=0 DO
-      ShellReadStep()
-    OD
+    exitStatus=ShellControllerRun()
+  ELSE
+    exitStatus=controllerStatus
   FI
 
   IF DESKBOOT.StopAdmission()=0 THEN
@@ -26,7 +27,7 @@ PROC Main()
   FI
 
   DESKAPP.Stop()
-  exitStatus=ShellFinish()
+  ShellControllerStop()
 
 RETURN
 

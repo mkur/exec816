@@ -30,7 +30,7 @@ class Walkthrough:
             c.command('CD RAM:')
             c.command('CMP SYS:LONG.TXT WORK:COPY.TXT')
         if self.copy_break:
-            c.command('RUN PRIMES')
+            c.command('RUN PRIMES >CON:')
             identity=c.number(c.at('job'))
             require(identity!=0,'Background PRIMES did not start')
             from prime_observer import state,symbols

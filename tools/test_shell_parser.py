@@ -7,7 +7,7 @@ from os_boundary import emulator
 from test_dos_stack import execute,ownership
 from test_cooperative import data
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
-FIXTURE_ADDRESS=0x30e000
+FIXTURE_ADDRESS=0x3e0000
 CASES=[('',0,[]),('   ',0,[]),('help',1,['help']),('HELP',1,['HELP']),('"echo" "" x',2,['echo','','x']),
        ('echo "hello world"',2,['echo','hello world']),('echo "a**b*"c"',2,['echo','a*b"c']),
        ('echo a*b',2,['echo','a*b']),('echo `literal`',2,['echo','`literal`']),
@@ -18,8 +18,12 @@ CASES=[('',0,[]),('   ',0,[]),('help',1,['help']),('HELP',1,['HELP']),('"echo" "
        ('tasks',8,['tasks']),('TASKS',8,['TASKS']),('ver',9,['ver']),('VER',9,['VER']),
        ('mount',10,['mount']),('MoUnT',10,['MoUnT']),('devices',11,['devices']),('DEVICES',11,['DEVICES']),
        ('echo '+' '.join(['x']*15),2,['echo']+['x']*15),('echo '+'x'*250,2,['echo','x'*250])]
-CASES += [(s,None,None) for s in ('echo '+' '.join(['x']*16),'echo "unterminated','echo "bad*"','echo "bad*x"','echo pre"word"','echo "word"post','echo one|two','echo one;two','echo>>NIL:','echo a>NIL:','help extra','cls extra','exit extra','tasks extra','ver extra','mount D2:','devices extra','cd one two','EXECUTE','EXECUTE ""','EXECUTE one two','EXECUTE FILE|WC','HELLO|EXECUTE FILE')]
+CASES += [(s,None,None) for s in ('echo '+' '.join(['x']*16),'echo "unterminated','echo "bad*"','echo "bad*x"','echo pre"word"','echo "word"post','echo one|two','echo one;two','echo>>NIL:','echo a>NIL:','help extra','cls extra','exit extra','tasks extra','ver extra','devices extra','cd one two','EXECUTE','EXECUTE ""','EXECUTE one two','EXECUTE FILE|WC','HELLO|EXECUTE FILE')]
 
+CASES += [(s,command,s.split()) for s,command in [('newshell',22),('SESSIONS',23),('session 4294967295',24)]]
+CASES += [(s,None,None) for s in ('NEWSHELL extra','SESSIONS extra','SESSION','SESSION 1 2','NEWSHELL|WC','HELLO|SESSIONS')]
+
+CASES += [('mount D2:',10,['mount','D2:']),('RUN NEWSHELL',17,['RUN','NEWSHELL']),('RUN SESSION 1',17,['RUN','SESSION','1'])]
 CASES += [(s,12,[s]) for s in ('mounts','device','unknown','HELLO','D1:TOOLS/HELLO')]
 CASES += [('ECHOARGS \"two words\" \"\" >NIL: x',12,['ECHOARGS','two words','','x'])]
 CAT_ARGUMENTS={'CAT\t"A** B"\t>NIL:':'A* B', 'CAT "a*\"b"':'a"b', 'CAT\tfoo\t':'foo'}
@@ -87,7 +91,7 @@ def run(t,out,mode):
         calls.append(f'  Parse({text(source)},{int(command is not None)},{command or 0},{len(words or [])})');checks+=1
         if command is not None:
             checks+=1
-            calls.append(f'  Check(shell.outputAppend={int(source in APPENDS)})');checks+=1
+            calls.append(f'  Check(context.shell.outputAppend={int(source in APPENDS)})');checks+=1
             if source in CAT_ARGUMENTS:
                 calls.append(f'  CatArgument({text(CAT_ARGUMENTS[source])})');checks+=1
             if source in TAILS:
@@ -96,7 +100,7 @@ def run(t,out,mode):
                 boundary,left,right=PIPELINES[source]
                 calls.append(f'  CheckPipeline({boundary},{text(left)},{text(right)})');checks+=3
             else:
-                calls.append('  Check(shell.pipeline=0)');checks+=1
+                calls.append('  Check(context.shell.pipeline=0)');checks+=1
             targets=REDIRECTS.get(source,(None,None))
             for side,target in enumerate(targets):
                 calls.append(f'  Redirect({side},{text(target)if target is not None else 65535})');checks+=1
@@ -104,13 +108,12 @@ def run(t,out,mode):
     (out/'shell-parser-cases.inc').write_text('PROC Cases()\n'+'\n'.join(calls)+'\nRETURN\n')
     (out/'shell_parser.act').write_text((ROOT/'tests/programs/shell_parser.act').read_text().replace('../../examples/shell/shell-session.inc',str(ROOT/'examples/shell/shell-session.inc')).replace('$e0000',f'${FIXTURE_ADDRESS:x}'))
     # The shared session brings in the shell's globals and fault strings;
-    # match the demo's 4 KiB upper-RAM arena without starting a console Task.
+    # match the demo's 8 KiB upper-RAM arena without starting a console Task.
     profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
-    profile['image_data_bytes']=4096
+    profile['image_data_bytes']=8192
     memory=out/'memory-profile.json'
     memory.write_text(json.dumps(profile,indent=2)+'\n')
-    # Raw resident code now reaches the old $0e0000 fixture location. Keep the
-    # byte oracle in a free upper bank, independent of emission size.
+    # Keep the byte oracle in the reserved fixture bank, clear of resident code.
     p=build(t,out/'shell_parser.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console=False,console_deferred=True,dos_mounts=[],memory_profile=memory,image_data=[(FIXTURE_ADDRESS,bytes(blob))])
     require(sha256(ROOT/'build/shell-paced-bridge/AltirraBridgeServer')==PIN['emulator']['sha256'],'Unpinned console bridge')
     require(sha256(ROOT/'build/firmware/altirraos-816.rom')==PIN['rom']['sha256'],'Unpinned ROM')
@@ -124,4 +127,4 @@ def run(t,out,mode):
     return dict(status='pass',mode=mode,build=p['build'],runtime=rt,machine=machine,pin=PIN,checks=checks,cases=CASES,fixture_sha256=sha256(out/'shell-parser-cases.inc'),source_inputs={s:sha256(ROOT/s)for s in ('examples/shell/shell-session.inc','examples/shell/shell-commands.inc','examples/shell/shell-redirection.inc','tests/programs/shell_parser.act','tools/test_shell_parser.py')})
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--case',choices=('raw','opt'),required=True);p.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');p.add_argument('--output',type=Path,required=True);a=p.parse_args();out=a.output.resolve();out.mkdir(parents=True,exist_ok=True)
-    r=run(compiler(a.compiler_dir),out,a.case);(out/'results.json').write_text(json.dumps(r,indent=2)+'\n');print('Shell parser passed',a.case,flush=True)
+    r=run(compiler(a.compiler_dir,release=True),out,a.case);(out/'results.json').write_text(json.dumps(r,indent=2)+'\n');print('Shell parser passed',a.case,flush=True)

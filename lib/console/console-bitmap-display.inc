@@ -225,6 +225,7 @@ PUBLIC PROC Advance(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
       batch.phase=CONSOLETYPES.BATCH_PAINT
     ELSE
       CONSOLECORE.Clean(instance)
+      PublishBacking(view)
       view.presentedGeneration=instance.generation
     FI
   FI

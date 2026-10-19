@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "Private console records; public requests remain exec816.io IOStdReq",
+  "scope": "Console records and native control results; device requests remain exec816.io IOStdReq",
   "constants": {
     "CONERR_INPUTOVERFLOW": 1,
     "RAW_SLOTS": 64,
@@ -44,19 +44,27 @@
     "BATCH_FLUSH_SHORT": 7,
     "SCROLL_GATHER": 4,
     "CONCMD_WRITE_AT": 9,
-    "POSITION_ROW_SHIFT": 16
+    "POSITION_ROW_SHIFT": 16,
+    "CONTROL_OK": 0,
+    "CONTROL_BUSY": 1,
+    "CONTROL_BAD_UNIT": 2,
+    "CONTROL_NOT_OWNER": 3,
+    "CONTROL_UNSUPPORTED": 4,
+    "CONTROL_BAD_LAYOUT": 5,
+    "CONTROL_UNBOUND": 6,
+    "CONTROL_FAILED": 7
   },
   "storage": {
     "service_offset": 0,
     "instance_offset": 160,
     "presentation_offset": 362,
-    "reserved_bytes": 880,
+    "reserved_bytes": 896,
     "capture_offset": 3072,
     "glyph_offset": 3632,
     "keymap_offset": 3760,
     "routes_offset": 416,
     "windows_offset": 688,
-    "bitmap_offset": 872
+    "bitmap_offset": 888
   },
   "records": {
     "Instance": {
@@ -510,7 +518,7 @@
       ]
     },
     "Window": {
-      "size": 38,
+      "size": 42,
       "alignment": 2,
       "fields": [
         [
@@ -562,6 +570,11 @@
           "lease",
           "EXEC.TaskLease",
           26
+        ],
+        [
+          "watch",
+          "BYTE POINTER",
+          38
         ]
       ]
     },
@@ -597,7 +610,7 @@
       ]
     },
     "Windows": {
-      "size": 184,
+      "size": 200,
       "alignment": 2,
       "fields": [
         [
@@ -638,12 +651,12 @@
         [
           "control",
           "Control",
-          172
+          188
         ],
         [
           "pane",
           "LONGCARD",
-          180
+          196
         ]
       ]
     },
@@ -710,6 +723,73 @@
           "last",
           "CARD[5]",
           34
+        ]
+      ]
+    },
+    "KeyNotice": {
+      "size": 10,
+      "alignment": 2,
+      "fields": [
+        [
+          "unit",
+          "LONGCARD",
+          0
+        ],
+        [
+          "route",
+          "LONGCARD",
+          4
+        ],
+        [
+          "tick",
+          "CARD",
+          8
+        ]
+      ]
+    },
+    "KeyWatch": {
+      "size": 36,
+      "alignment": 2,
+      "fields": [
+        [
+          "unit",
+          "LONGCARD",
+          0
+        ],
+        [
+          "code",
+          "CARD",
+          4
+        ],
+        [
+          "qualifiers",
+          "CARD",
+          6
+        ],
+        [
+          "owner",
+          "EXEC.TaskLease",
+          8
+        ],
+        [
+          "wakeMask",
+          "LONGCARD",
+          20
+        ],
+        [
+          "bound",
+          "BYTE",
+          24
+        ],
+        [
+          "pending",
+          "BYTE",
+          25
+        ],
+        [
+          "notice",
+          "KeyNotice",
+          26
         ]
       ]
     }

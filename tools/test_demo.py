@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Physical walkthrough of the exact packaged demo, without target-code observers."""
+from shell_inspect import address as shell_address, process_slot
 import adapter_state as adapter
 from stack_budget import bank_zero_delta
 import argparse
@@ -115,7 +116,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     emulator_hash=pin['mouse_input']['tooling']['sha256'] if bitmap and not ide_only else pin['emulator']['sha256']
     require(sha256(binary)==emulator_hash,'Unpinned demo emulator')
     require(rom_override is not None or sha256(rom)==pin['rom']['sha256'],'Unpinned demo ROM')
-    def at(name):return next(d['address'] for d in p['image']['data'] if ('_SHELLAPP_' if shell_only else '_DEMO_')+name.upper()+'_' in d['name'])
+    def at(name):return shell_address(p['image'],name,"SHELLAPP" if shell_only else "DEMO")
     if ide_only:
         from test_ideplus import ide_emulator
         fixture=out/'ide-walkthrough.img'
@@ -185,7 +186,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             identity=number(at('job'))
             return state(far,p,out,identity) if identity else dict(progress=0,count=0)
         def rendezvous(condition):
-            b.bp_clear_all();marker=p['labels']['native_irq' if desktop else 'native_nmi']
+            # Measurement observers may use periodic VBI entry even when an
+            # idle desktop has no device IRQ pending.
+            checkpoint=getattr(integration,'interrupt_marker',None) if integration is not None else None
+            b.bp_clear_all();marker=p['labels'][checkpoint or ('native_irq' if desktop else 'native_nmi')]
             # Qualify bank zero: the bridge's PC fields and breakpoints use
             # the low word, which can also occur in the linked foreign image.
             condition=f'(@xpc=${marker:x})&({condition})'
@@ -275,6 +279,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     rgb=bytes((v&254)+(v>>7) for v in PALETTE)
                     colors={hw:rgb[pen*3:pen*3+3][::-1] for pen,hw in enumerate(PENS)}
                     for attempt in range(200):
+                        # Queued editor keys or a running producer can change
+                        # the model after the first scanout fence. Rebuild the
+                        # terminal snapshot before comparing another frame.
+                        if generations!=[number(i+console['INSTANCE_GENERATION']) for i in instances]:
+                            return cells(label)
                         packed=compose(b,p,r.font,terminal,saved['pointer'],counter_painter if gem_apps else None)
                         frame_data=b.rawscreen(str(folder/'scanout.bgra'))
                         raw=(folder/'scanout.bgra').read_bytes()
@@ -554,7 +563,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 rendezvous(f'(db(${scope+54:x})=1)&(dw(${scope+48:x})!=0)&(dw(${scope+51:x})!=0)')
                 children=[pointer(scope+offset) for offset in (48,51)]
                 rendezvous('|'.join(f'({active(child)})' for child in children))
-                require(number(p['build']['task_storage']['LIVE'],1)==7,'Pipeline Task peak differs')
+                require(number(p['build']['task_storage']['LIVE'],1)==8,'Pipeline Task peak differs')
                 before=prime_state()['progress'];frames(60)
                 require(prime_state()['progress']>before,'Prime display did not advance during file I/O')
                 require(number(scope+54,1)==1,'Long pipeline finished before physical BREAK')
@@ -583,8 +592,6 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             saved.update(screen=b.peek16(88),cursor=b.peek(752),mask=b.peek(16))
             saved['screenBytes']=b.memdump(saved['screen'],960);b._cmd_ok('KEY ALL up')
             rendezvous(f'(dw(${at("shell"):x})!=0)|(db(${at("shell")+2:x})!=0)')
-            if not shell_only:
-                rendezvous(f'db(${at("started"):x})=1')
             saved['shell']=pointer(at('shell'))
             windows=p['build']['memory']['console_storage']['WINDOWS']
             row=windows+console['WINDOWS_ITEMS']
@@ -595,7 +602,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 saved['startup_frames']=b.eval_expr('@frame')-saved['exec_start_frame']
             if not shell_only and not disk_failure:
                 rendezvous(f'dw(${windows+console["WINDOWS_PANE"]:x})!=0')
-            dos=p['build']['memory']['dos_storage']['BASE'];saved['scope']=pointer(pointer(dos)+83)
+            dos=p['build']['memory']['dos_storage']['BASE']
+            saved['shell_slot']=process_slot(b,p)
+            saved['dos_slot']=dos+16*saved['shell_slot']
+            saved['scope']=pointer(pointer(saved['dos_slot'])+83)
             ready()
             if gem_desktop:
                 from gem_applications import symbols,MODELS
@@ -618,7 +628,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     diagnostic = dict(adapter_state=b.memdump(adapter.STATE,64).hex(),
                         pc=b.eval_expr('@xpc'),frame=b.eval_expr('@frame'),
                         read_state=number(saved['top']+51,1),scope=saved['scope'],
-                        current_scope=pointer(pointer(dos)+83),scope_bytes=far(saved['scope'],56).hex(),
+                        current_scope=pointer(pointer(saved['dos_slot'])+83),scope_bytes=far(saved['scope'],56).hex(),
                         shell=far(saved['shell'],40).hex(),live_tasks=number(p['build']['task_storage']['LIVE'],1),
                         cells=read_cells(far,saved['top']).decode('ascii',errors='replace'))
                     (out/'integration-failure.json').write_text(json.dumps(diagnostic,indent=2)+'\n')
@@ -650,9 +660,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 for character in 'EXIT':press(character)
                 b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
             if showcase:
-                command('TASKS',b'process')
+                command('TASKS',b'shell controller')
                 screenshot('boot-tasks.png',[p['build']['exec_build']['strings']['banner'].strip().encode(),b'exec: 8 task slots',
-                    b'SYS: -> D1: ready, read-only',b'SLOT STATE',b'dos.filesystem',b'process'])
+                    b'SYS: -> D1: ready, read-only',b'SLOT STATE',b'dos.filesystem',b'shell controller'])
                 command('MOUNT',b'SDFS' if manifest.get('filesystem')=='sdfs' else b'MyDOS')
                 command('CD SYS:')
                 command('DIR',b'STORY')
@@ -696,11 +706,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b.profile_start()
                 command('HELLO',b'Hello from disk!')
                 command('HELLO',b'Hello from disk!')
-                command('CAT STORY.TXT',b'system should also know how to stop.')
+                command('CAT STORY.TXT',b'network filesystem or an N: handler.')
                 command('WC <STORY.TXT',story_wc)
                 saved['memory']=memory();saved['ledger']=ledger()
                 command('HELLO',b'Hello from disk!')
-                command('CAT STORY.TXT',b'system should also know how to stop.')
+                command('CAT STORY.TXT',b'network filesystem or an N: handler.')
                 command('WC <STORY.TXT',story_wc)
                 command('CAT STORY.TXT | WC',story_wc)
                 require(memory()==saved['memory'],'Repeated commands retained heap storage')
@@ -754,7 +764,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 if shell_only:
                     tasks=command('TASKS',b'dos.filesystem')
                     require(b'primes' not in tasks.lower(),'Prime task started in shell-only demo')
-                    require(ledger()['live']==(6 if gem_apps else 5 if desktop else 4),'Unexpected shell-only idle Task count')
+                    require(ledger()['live']==manifest['task_census']['prompt'],'Unexpected shell-only idle Task count')
                     if input_apps:
                         require(b'GEM Input A' in tasks and b'GEM Input B' in tasks,'Missing GEM input Tasks')
                     elif counters:
@@ -803,9 +813,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 command('HEAD ?',b'Arguments: FILE,LINES/K/N')
                 # Two DOS names use the same cache. A smaller requested cache
                 # can evict file sectors while reloading the TYPE command.
-                command(f'TYPE D{system_drive}:STORY.TXT',b'system should also know how to stop.')
+                command(f'TYPE D{system_drive}:STORY.TXT',b'network filesystem or an N: handler.')
                 first=dict(hits=number(cache+16),misses=number(cache+20),evictions=number(cache+24))
-                command('TYPE SYS:STORY.TXT',b'system should also know how to stop.')
+                command('TYPE SYS:STORY.TXT',b'network filesystem or an N: handler.')
                 second=dict(hits=number(cache+16),misses=number(cache+20),evictions=number(cache+24))
                 require(second['hits']>first['hits'] and
                         (first['misses']==second['misses'] or
@@ -814,11 +824,16 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 saved['sys_cache']=dict(physical=first,system=second)
                 if desktop:
                     previous=begin('CAT SYS:STORY.TXT | WC')
-                    peak=8 if gem_apps else 7
-                    rendezvous(f'db(${p["build"]["task_storage"]["LIVE"]:x})={peak}')
-                    saved['desktop_peak_tasks']=peak
-                    ready(previous);result()
-                    require(story_wc in cells('desktop-pipeline'),'Desktop pipeline result differs')
+                    peak=manifest['task_census']['one_shell_pipeline_required']
+                    if peak<=8:
+                        rendezvous(f'db(${p["build"]["task_storage"]["LIVE"]:x})={peak}')
+                        saved['desktop_peak_tasks']=peak
+                        ready(previous);result()
+                        require(story_wc in cells('desktop-pipeline'),'Desktop pipeline result differs')
+                    else:
+                        ready(previous);result(103)
+                        require(ledger()==saved['ledger'],'Rejected desktop pipeline leaked ownership')
+                        saved['desktop_pipeline_capacity_rejected']=peak
                     # BREAK must still reach a writer whose obscured console
                     # is draining a full scroll repaint between source quanta.
                     baseline=ledger()
@@ -877,6 +892,44 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                             'Edited prompt bytes differ: '+text)
                     require(column==3+(len(text) if caret is None else caret),
                             'Edited prompt caret differs: '+text)
+                # TAB returns to the same prompt, using the retained editor and
+                # ordinary directory scans; only Return submits the result.
+                for prefix,wanted in [('UNM','UNMOUNT '),('MK','MKDIR '),
+                                      ('HE','HE'),('TYPE SYS:WO','TYPE SYS:WORK/')]:
+                    for char in prefix:press(char)
+                    generation=number(saved['scope']+14)
+                    press('\t');edit(wanted)
+                    require(number(saved['scope']+14)==generation,'TAB submitted a command')
+                    press('\x15')
+                for char in 'TYPE SYS:READM':press(char)
+                press('\t');edit('TYPE SYS:README.TXT ')
+                submit_edited('TYPE SYS:README.TXT',b'Errors are explained on the console.')
+                press('↑');edit('TYPE SYS:README.TXT ')
+                # Shorten a recalled filename, then complete it again.
+                for char in '\b\b\b\b\b\b':press(char)
+                edit('TYPE SYS:READM')
+                press('\t');edit('TYPE SYS:README.TXT ')
+                press('\x15')
+                command('ECHO old >RAM:RESULT')
+                for char in 'ECHO saved >RAM:RES':press(char)
+                press('\t');edit('ECHO saved >RAM:RESULT ')
+                submit_edited('ECHO saved >RAM:RESULT',b'> ')
+                command('TYPE RAM:RESULT',b'saved')
+                command('DELETE RAM:RESULT')
+                # Observe a live enumeration packet before sending physical
+                # BREAK; no synthetic cancellation or shortened disk timing.
+                for char in 'TYPE SYS:SELECT/A':press(char)
+                previous=number(saved['scope']+14)
+                b._cmd_ok('KEY TAB down')
+                packet=f'dw(${saved["scope"]+27:x})+db(${saved["scope"]+29:x})*65536'
+                rendezvous(f'(db(${saved["scope"]+21:x})=3)&(dw({packet}+22)=28)')
+                b._cmd_ok('KEY TAB up')
+                started=b.eval_expr('@clk')
+                press('\x03');ready(previous);result()
+                cells('completion-break')
+                saved['completion_break_cycles']=(b.eval_expr('@clk')-started)&0xffffffff
+                require(ledger()==saved['ledger'],'Completion retained input or mount ownership')
+                saved['completion']=True
                 # The pinned bridge omits PLUS; raw $86 decoding is checked in
                 # test_dos_cooked. Exercise its common edit path with Ctrl-B.
                 # Movement, insertion, Return away from EOF and deletion keys.
@@ -907,7 +960,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 parent_client=pointer(saved["scope"]+3)
                 condition=f'(db(${saved["top"]+51:x})=2)&(db(${parent_client+86:x})=1)'
                 rendezvous(condition)
-                for char in '↑programdata\n':press(char)
+                for char in '↑program\tdata\n':press(char)
                 rendezvous(condition)
                 press('\x04')
                 rendezvous(f'db(${parent_client+86:x})=0')
@@ -955,7 +1008,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             command('DIR',b'STORY')
             command('HELLO',b'Hello from disk!')
             command('TYPE README.TXT',b'Errors are explained on the console.')
-            command('TASKS',b'process')
+            command('TASKS',b'shell controller')
             command('HELLO | WC',b'1 3 17')
             command('CAT STORY.TXT | WC',story_wc)
             if work_media:
@@ -1066,21 +1119,23 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         autoboot_frames=saved.get('autoboot_frames'),startup_frames=saved.get('startup_frames'),desktop_ready_frames=saved.get('desktop_ready_frames'),
         loaded_panel_feedback=saved.get('loaded_panel_feedback'),distribution_root=str(distribution_root) if distribution_root else None,
         disk_boot=disk_boot,integration=saved.get('integration'),file_selector=saved.get('file_selector'),text_viewer=saved.get('text_viewer'),text_files=saved.get('text_files'),fixed_stop=saved.get('fixed_stop'),browser=saved.get('browser'),files_scrolling=saved.get('files_scrolling'),files_dialogs=saved.get('files_dialogs'),browser_stacks=saved.get('browser_stacks'),gem_stacks=saved.get('gem_stacks'),
-        editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
+        editing_history=saved.get('editing_history',False),completion=saved.get('completion',False),
+        completion_break_cycles=saved.get('completion_break_cycles'),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
         ide_work_audit=saved.get('ide_work_audit'),ide_work_files=saved.get('ide_work_files'),
         ide_media=str(fixture) if ide_only else None,
         measurements=saved.get('measurements'),desktop_interaction=saved.get('desktop_interaction'),
         mouse_profile_check=saved.get('mouse_profile_check'),counter_coexistence=saved.get('counter_coexistence'),input_coexistence=saved.get('input_coexistence'),
         copy_break_frames=saved.get('copy_break_frames'),
+        desktop_pipeline_capacity_rejected=saved.get('desktop_pipeline_capacity_rejected'),
         desktop_scroll_break_cycles=saved.get('desktop_scroll_break_cycles'),
         desktop_scroll_break_checkpoint=saved.get('desktop_scroll_break_checkpoint'),
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
-        baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=saved.get('desktop_peak_tasks') if desktop else None if stock_smoke or showcase or editing or disk_failure else 6 if shell_only else 7,
+        baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=saved.get('desktop_peak_tasks') if desktop else None if stock_smoke or showcase or editing or disk_failure else 7 if shell_only else 8,
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
-        scope='Extracted OF816 colour desktop: shared-window ownership, persistent background, on-demand launches and orderly EXIT' if colour_desktop else 'Extracted OF816 GEM desktop: panel/counter, RSC browser, popup keyboard/mouse, native command launch/cancel, deferred close, shell/pipeline, guards and EXIT' if gem_desktop else 'Extracted OF816 AES input demo: two independent key/button/timer apps, exact pixels, physical drag/top/close, native shell/disk, eight-Task pipeline, writable media and EXIT' if input_apps else 'Extracted OF816 AES counter demo: two ticking GEM applications, pixel drag/top/close, accelerated pointer, native shell/disk, eight-Task pipeline, writable media and EXIT' if counters else 'Missing companion disk: bounded startup failure, required-drive diagnostic, usable console, persistent offline bus and reset-required EXIT' if disk_failure=='missing-work' else 'Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT' if boot_smoke and shell_only and measurement_commands is None else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        scope='Extracted OF816 colour desktop: shared-window ownership, persistent background, on-demand launches and orderly EXIT' if colour_desktop else 'Extracted OF816 GEM desktop: panel/counter, RSC browser, popup keyboard/mouse, native command launch/cancel, deferred close, shell/pipeline, guards and EXIT' if gem_desktop else 'Extracted OF816 AES input demo: two independent key/button/timer apps, exact pixels, physical drag/top/close, native shell/disk, bounded pipeline admission, writable media and EXIT' if input_apps else 'Extracted OF816 AES counter demo: two ticking GEM applications, pixel drag/top/close, accelerated pointer, native shell/disk, bounded pipeline admission, writable media and EXIT' if counters else 'Missing companion disk: bounded startup failure, required-drive diagnostic, usable console, persistent offline bus and reset-required EXIT' if disk_failure=='missing-work' else 'Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, eight-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT' if boot_smoke and shell_only and measurement_commands is None else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
 
 
 if __name__=='__main__':
