@@ -34,6 +34,11 @@ Use the OS ROM, CPU, memory and disk settings described in ../README.txt.
 In AltirraSDL, boot the appropriate CAR instead of Exec-of816.xex. Keep the
 matching storage attached and BASIC disabled. A cold boot is required.
 
+For SIO cartridge builds, remove IDE Plus 2.0 from the emulator's devices before
+cold booting. An existing IDE Plus configuration can cause a blue-screen
+BOOT ERROR before the OF816 banner. IDE-only packages require their separate
+IDE Plus setup described in ../README.txt.
+
 The loader switches the cartridge off before every XEX initialization call.
 OF816 runs inside one of those calls, before the main kernel payload loads.
 EXEC816 or countdown expiry returns to the reader; it resumes copying from

@@ -22,6 +22,7 @@ PROC PlaceShell()
   DESKTOP.Prepare(@placement,DESKTYPES.MOVE)
   placement.window=DESKBOOT.WindowId()
   placement.bounds.left=112
+  ; Keep the console work origin on its eight-pixel grid below the tabs.
   placement.bounds.top=64-DESKTYPES.FRAME_SHELL_TOP
   IF DESKTOP.Submit(binding,@placement)<>DESKTYPES.OK THEN
     RETURN

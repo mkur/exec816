@@ -1,0 +1,257 @@
+MODULE SDXSERVICE
+USE DOS
+USE DOSCLIENT
+USE PROGRAMIMAGE
+USE SDXABI
+USE SDXSTATE
+USE SDXRUNTIME
+USE SDXFILES
+USE SDXCOMMAND
+USE SDXPRINT
+USE SDXTRAPS
+USE SDXARCCOMMAND
+USE SDXOVERLAY
+USE SDXMUTATION
+
+BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
+  BYTE value
+
+  CASE event OF
+  WHEN SDXABI.ARC_MULTIPLY_EVENT THEN
+    RETURN(SDXARCCOMMAND.MultiplyEight(state,frame))
+  WHEN SDXABI.KERNEL_EVENT THEN
+    RETURN(SDXFILES.Kernel(state,frame))
+  WHEN SDXABI.CALL_REMOVE THEN
+    RETURN(SDXFILES.Remove(state))
+  WHEN SDXABI.CALL_FILELENG THEN
+    RETURN(SDXFILES.Length(state))
+  WHEN SDXABI.CHECKPOINT_EVENT THEN
+    RETURN(0)
+  WHEN SDXABI.OVERLAY_RETURN_EVENT THEN
+    RETURN(SDXOVERLAY.Retire(state,frame))
+  WHEN SDXABI.CALL_U_LOAD THEN
+    RETURN(SDXOVERLAY.Load(state,frame))
+  WHEN SDXABI.CALL_U_GETPAR THEN
+    RETURN(SDXARCCOMMAND.Parameter(state,frame))
+  WHEN SDXABI.CALL_U_FSPEC THEN
+    RETURN(SDXARCCOMMAND.DefaultMask(state))
+  WHEN SDXABI.CALL_U_GEFINA THEN
+    RETURN(SDXARCCOMMAND.Decode(state,frame))
+  WHEN SDXABI.CALL_U_EXPAND THEN
+    RETURN(SDXARCCOMMAND.Expand(state,frame))
+  WHEN SDXABI.CALL_FSEEK THEN
+    RETURN(SDXFILES.Position(state,0))
+  WHEN SDXABI.CALL_FTELL THEN
+    RETURN(SDXFILES.Position(state,1))
+  WHEN SDXABI.CALL_DIV_32 THEN
+    RETURN(SDXARCCOMMAND.Arithmetic(state,frame,1))
+  WHEN SDXABI.CALL_MUL_32 THEN
+    RETURN(SDXARCCOMMAND.Arithmetic(state,frame,0))
+  WHEN SDXABI.CALL_PUTC THEN
+    RETURN(SDXPRINT.Character(state,frame(SDXABI.FRAME_A)))
+  WHEN SDXABI.CALL___MISC THEN
+    IF frame(SDXABI.FRAME_A)<>1 THEN
+      RETURN(156)
+    FI
+    ; Pinned __MISC function 1 selects DAYTIME. Native policy is day/month,
+    ; 24-hour output, the same nonzero-X branch as SDX's absent variable.
+    frame(SDXABI.FRAME_A)=$9a
+    frame(SDXABI.FRAME_X)=$fe
+    frame(SDXABI.FRAME_Y)=$9b
+    SDXCOMMAND.NZ(frame,$fe)
+    RETURN(0)
+  WHEN SDXABI.CALL_VPRINTF THEN
+    ; ARC installs this audited single-RTS leaf to suppress optional output.
+    IF state.profile<>32 OR SDXSTATE.ReadWord(state.bank,$722)<>
+        SDXABI.GUEST_START+$1cc THEN
+      RETURN(156)
+    FI
+    state.discardOutput=1
+    value=SDXPRINT.Print(state,frame)
+    state.discardOutput=0
+    RETURN(value)
+  WHEN SDXABI.CALL_U_PATH THEN
+    RETURN(SDXARCCOMMAND.Path(state,frame))
+  WHEN SDXABI.CALL_FWRITE THEN
+    RETURN(SDXFILES.Write(state,frame,0))
+  WHEN SDXABI.CALL_FPUTC THEN
+    RETURN(SDXFILES.Write(state,frame,1))
+  WHEN SDXABI.CALL_FFIRST THEN
+    value=SDXARCCOMMAND.Decode(state,frame)
+    IF value<>0 THEN
+      RETURN(value)
+    FI
+    RETURN(SDXFILES.Enumerate(state,frame,1))
+  WHEN SDXABI.CALL_FNEXT THEN
+    RETURN(SDXFILES.Enumerate(state,frame,0))
+  WHEN SDXABI.CALL_U_GETKEY THEN
+    RETURN(SDXFILES.Key(state,frame))
+  WHEN SDXABI.CALL_FOPEN THEN
+    RETURN(SDXFILES.Open(state,frame))
+  WHEN SDXABI.CALL_FCLOSE THEN
+    RETURN(SDXFILES.Close(state,state.bank($760)))
+  WHEN SDXABI.CALL_FCLOSEAL THEN
+    RETURN(SDXFILES.CloseAll(state))
+  WHEN SDXABI.CALL_FGETC THEN
+    RETURN(SDXFILES.Read(state,frame,1))
+  WHEN SDXABI.CALL_FREAD THEN
+    RETURN(SDXFILES.Read(state,frame,0))
+  WHEN SDXABI.CALL_PRINTF THEN
+    RETURN(SDXPRINT.Print(state,frame))
+  WHEN SDXABI.CALL_TOUPPER THEN
+    value=SDXCOMMAND.Upper(frame(SDXABI.FRAME_A))
+    frame(SDXABI.FRAME_A)=value
+    SDXCOMMAND.NZ(frame,value)
+    RETURN(0)
+  WHEN SDXABI.CALL_U_GETATR THEN
+    RETURN(SDXCOMMAND.Attributes(state,frame))
+  WHEN SDXABI.CALL_U_SLASH THEN
+    RETURN(SDXCOMMAND.Slash(state,frame))
+  WHEN SDXABI.CALL_U_SFAIL THEN
+    RETURN(SDXTRAPS.Install(state,frame))
+  WHEN SDXABI.CALL_U_XFAIL THEN
+    RETURN(SDXTRAPS.Remove(state))
+  WHEN SDXABI.CALL_U_FAIL THEN
+    value=frame(SDXABI.FRAME_A)
+    RETURN(value)
+  ESAC
+
+RETURN(156)
+
+PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
+  SDXSTATE.Session POINTER state
+  BYTE POINTER frame
+  CARD event
+  BYTE error,closeError,pendingError,cancelled,cleanupCalls,cleanup
+  LONGINT result,cause,pendingCause,cleanupCause
+
+  state=SDXSTATE.Session POINTER(image.extension)
+  SDXSTATE.Prepare(state)
+  state.trapCount=0
+  state.operation=0
+  state.tempOwned=0
+  state.backupOwned=0
+  state.published=0
+  state.archiveExists=0
+  state.archiveCause=0
+  state.archivePath(0)=0
+  state.nativeError=0
+  error=SDXCOMMAND.Initialize(state,arguments,@image.name)
+  IF error=0 AND state.profile=32 THEN
+    IF arguments=NULL THEN
+      error=156
+    ELSEIF arguments(0)<>'L AND arguments(0)<>'V AND arguments(0)<>'X AND
+        arguments(0)<>'E AND arguments(0)<>'A AND arguments(0)<>'D AND
+        arguments(0)<>'U AND arguments(0)<>'F THEN
+      error=156
+    ELSE
+      state.operation=arguments(0)
+      event=1
+      WHILE arguments(event)<>0 AND arguments(event)<>32 DO
+        IF arguments(event)<>'N AND arguments(event)<>'W AND
+            arguments(event)<>'B THEN
+          error=156
+        FI
+        event==+1
+      OD
+    FI
+  FI
+  result=20
+  pendingCause=0
+  pendingError=0
+  cancelled=0
+  cleanupCalls=0
+  IF DOS.BreakPending()<>0 THEN
+    error=128
+    state.nativeError=304
+  FI
+  WHILE error=0 DO
+    event=SDXRUNTIME.Run(state.slot)
+    SDXSTATE.Guards()
+    frame=SDXSTATE.GetFrame(state)
+    cleanup=event=SDXABI.CALL_FCLOSE OR event=SDXABI.CALL_FCLOSEAL OR
+        event=SDXABI.CALL_U_XFAIL OR event=SDXABI.CALL_U_FAIL
+    state.nativeError=0
+    IF cancelled<>0 THEN
+      cleanupCalls==+1
+      IF cleanup=0 OR cleanupCalls>SDXABI.HANDLE_LIMIT+SDXABI.TRAP_LIMIT+2 THEN
+        error=128
+        state.nativeError=304
+        EXIT
+      FI
+    ELSEIF DOS.BreakPending()<>0 THEN
+      error=128
+      state.nativeError=304
+    FI
+    IF error=0 THEN
+      IF event=1 OR (event=SDXABI.CALL_U_FAIL AND frame(SDXABI.FRAME_A)=0) THEN
+        IF cancelled<>0 THEN
+          error=128
+          state.nativeError=304
+        ELSE
+          result=LONGINT(frame(SDXABI.FRAME_A))
+        FI
+        EXIT
+      FI
+      IF event=SDXABI.CALL_U_FAIL AND frame(SDXABI.FRAME_A)=pendingError THEN
+        state.nativeError=pendingCause
+      FI
+      error=Dispatch(state,frame,event)
+      IF error<>0 AND cancelled<>0 THEN
+        error=128
+        state.nativeError=304
+      ELSEIF error<>0 AND pendingCause<>0 AND
+          (event=SDXABI.CALL_FCLOSE OR event=SDXABI.CALL_FCLOSEAL) THEN
+        error=pendingError
+        state.nativeError=pendingCause
+      FI
+      ; Preserve the first cause while the guest executes its cleanup handler.
+      ; Successful new input means a caught ordinary error was recovered.
+      IF error=0 AND (event=SDXABI.CALL_FOPEN OR event=SDXABI.CALL_FREAD OR
+          event=SDXABI.CALL_FGETC) THEN
+        pendingCause=0
+        pendingError=0
+      FI
+    FI
+    IF error<>0 THEN
+      ; ARC's header reader can mistake an I/O failure for end of archive.
+      ; Once replacement work is owned, no guest recovery may publish it.
+      IF SDXMUTATION.Active(state)<>0 AND (state.tempOwned<>0 OR
+          state.backupOwned<>0 OR state.published<>0) THEN
+        EXIT
+      FI
+      IF state.nativeError=304 THEN
+        error=128
+        cancelled=1
+      FI
+      IF pendingCause=0 THEN
+        pendingCause=state.nativeError
+        pendingError=error
+      FI
+      IF SDXTRAPS.Deliver(state,error)<>0 THEN
+        error=0
+      FI
+    FI
+  OD
+  cause=state.nativeError
+  IF cause=0 THEN
+    cause=LONGINT(error)
+  FI
+  closeError=SDXFILES.CloseAll(state)
+  IF error=0 AND closeError<>0 THEN
+    result=20
+    cause=state.nativeError
+  FI
+  cleanupCause=SDXMUTATION.Retire(state)
+  IF cause=0 AND cleanupCause<>0 THEN
+    result=20
+    cause=cleanupCause
+  FI
+  state.trapCount=0
+  state.overlayActive=0
+  state.overlayModule=0
+  DOSCLIENT.SetError(cause)
+
+RETURN(result)
+
+ENDMODULE

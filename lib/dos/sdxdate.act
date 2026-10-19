@@ -1,0 +1,109 @@
+MODULE SDXDATE
+USE DOS
+USE SDXSTATE
+USE FSBTYPES
+USE SDFSDATE
+USE A816MEMORY
+
+; SDX accepts years 1980..2079; the native SDFS timestamp is 1950..2049.
+; The admitted intersection is 1980..2049, plus the unspecified all-zero date.
+PUBLIC BYTE FUNC Capture(SDXSTATE.Session POINTER state)
+  BYTE ARRAY row(23),check(23)
+  FSBTYPES.Entry entry
+  BYTE index,nonzero
+
+  A816MEMORY.Clear(@row,23)
+  nonzero=0
+  FOR index=0 TO 5 DO
+    row(17+index)=state.bank($77b+index)
+    nonzero=nonzero OR row(17+index)
+  OD
+  state.writeDate.ds_Days=0
+  state.writeDate.ds_Minute=0
+  state.writeDate.ds_Tick=0
+  IF nonzero=0 THEN
+    RETURN(0)
+  FI
+  IF row(19)>=50 AND row(19)<80 THEN
+    RETURN(156)
+  FI
+  SDFSDATE.Decode(@entry,@row)
+  IF SDFSDATE.Encode(entry.days,entry.minutes,entry.ticks,@check)=0 THEN
+    RETURN(156)
+  FI
+  FOR index=17 TO 22 DO
+    IF row(index)<>check(index) THEN
+      RETURN(156)
+    FI
+  OD
+  state.writeDate.ds_Days=entry.days
+  state.writeDate.ds_Minute=entry.minutes
+  state.writeDate.ds_Tick=entry.ticks
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Directory(SDXSTATE.Session POINTER state)
+  BYTE POINTER row
+  BYTE flags
+
+  row=state.bank+$789
+  A816MEMORY.Clear(row,23)
+  flags=8
+  IF (state.info.fib_Protection & DOS.FIBF_WRITE)<>0 THEN
+    flags=flags OR 1
+  FI
+  IF (state.info.fib_Protection & DOS.FIBF_HIDDEN)<>0 THEN
+    flags=flags OR 2
+  FI
+  IF (state.info.fib_Protection & DOS.FIBF_ARCHIVE)<>0 THEN
+    flags=flags OR 4
+  FI
+  row(0)=flags
+  row(3)=BYTE(state.info.fib_Size)
+  row(4)=BYTE(state.info.fib_Size RSH 8)
+  row(5)=BYTE(state.info.fib_Size RSH 16)
+  IF state.info.fib_Date.ds_Days<>0 OR state.info.fib_Date.ds_Minute<>0 OR
+      state.info.fib_Date.ds_Tick<>0 THEN
+    ; ARC's packed year starts in 1980 (730 days after the DOS epoch).
+    IF state.info.fib_Date.ds_Days<730 THEN
+      RETURN(156)
+    FI
+    IF SDFSDATE.Encode(state.info.fib_Date.ds_Days,state.info.fib_Date.ds_Minute,
+        state.info.fib_Date.ds_Tick,row)=0 THEN
+      RETURN(156)
+    FI
+  FI
+
+RETURN(0)
+
+; U/F compare packed header dates directly, without extraction's date service.
+; Validate the same 1980..2049 calendar intersection before that comparison.
+PUBLIC BYTE FUNC Header(SDXSTATE.Session POINTER state)
+  CARD date,time,year
+  BYTE month,day,limit
+
+  date=SDXSTATE.ReadWord(state.dp,$a1)
+  time=SDXSTATE.ReadWord(state.dp,$a3)
+  year=date RSH 9
+  month=BYTE((date RSH 5) & 15)
+  day=BYTE(date & 31)
+  IF year>69 OR month=0 OR month>12 OR day=0 OR
+      (time RSH 11)>23 OR ((time RSH 5) & 63)>59 OR (time & 31)>29 THEN
+    RETURN(156)
+  FI
+  limit=31
+  IF month=2 THEN
+    limit=28
+    IF (year & 3)=0 THEN
+      limit=29
+    FI
+  ELSEIF month=4 OR month=6 OR month=9 OR month=11 THEN
+    limit=30
+  FI
+  IF day>limit THEN
+    RETURN(156)
+  FI
+
+RETURN(0)
+
+ENDMODULE

@@ -1,0 +1,231 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "scope": "M1 real MD5 named-file hashing, RAM shell and real SDFS",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "runs": {
+    "vectors-shell": {
+      "status": "pass",
+      "checks": 987,
+      "cases": [
+        {
+          "name": "empty",
+          "bytes": 0,
+          "md5": "d41d8cd98f00b204e9800998ecf8427e",
+          "expected": "4d44352028413a3e444154412e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b"
+        },
+        {
+          "name": "abc",
+          "bytes": 3,
+          "md5": "900150983cd24fb0d6963f7d28e17f72",
+          "expected": "4d44352028413a3e444154412e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b"
+        },
+        {
+          "name": "55",
+          "bytes": 55,
+          "md5": "a7555f1cbcea377c660265d60f0b43e9",
+          "expected": "4d44352028413a3e444154412e42494e29203d2041373535354631434243454133373743363630323635443630463042343345399b"
+        },
+        {
+          "name": "56",
+          "bytes": 56,
+          "md5": "6cd86ae039432adef6f4ae4574191b79",
+          "expected": "4d44352028413a3e444154412e42494e29203d2036434438364145303339343332414445463646344145343537343139314237399b"
+        },
+        {
+          "name": "63",
+          "bytes": 63,
+          "md5": "2f261e323d8e3c22a7c32f8797559d0b",
+          "expected": "4d44352028413a3e444154412e42494e29203d2032463236314533323344384533433232413743333246383739373535394430429b"
+        },
+        {
+          "name": "64",
+          "bytes": 64,
+          "md5": "e9621717bb98894e3cf92ee5e5b66c19",
+          "expected": "4d44352028413a3e444154412e42494e29203d2045393632313731374242393838393445334346393245453545354236364331399b"
+        },
+        {
+          "name": "65",
+          "bytes": 65,
+          "md5": "199bc7fa1758e209ca0c0e280d7135b7",
+          "expected": "4d44352028413a3e444154412e42494e29203d2031393942433746413137353845323039434130433045323830443731333542379b"
+        },
+        {
+          "name": "256",
+          "bytes": 256,
+          "md5": "f1c533f4ef3fcd76b5a1fe0684238164",
+          "expected": "4d44352028413a3e444154412e42494e29203d2046314335333346344546334643443736423541314645303638343233383136349b"
+        },
+        {
+          "name": "39935",
+          "bytes": 39935,
+          "md5": "13b30b2a6bafcd7fb12e99d5ab6dab22",
+          "expected": "4d44352028413a3e444154412e42494e29203d2031334233304232413642414643443746423132453939443541423644414232329b"
+        },
+        {
+          "name": "39936",
+          "bytes": 39936,
+          "md5": "02fa652b2f1f12edac03db26f746c14b",
+          "expected": "4d44352028413a3e444154412e42494e29203d2030324641363532423246314631324544414330334442323646373436433134429b"
+        },
+        {
+          "name": "39937",
+          "bytes": 39937,
+          "md5": "e95754444aaff087764f963503737bcb",
+          "expected": "4d44352028413a3e444154412e42494e29203d2045393537353434343441414646303837373634463936333530333733374243429b"
+        },
+        {
+          "name": "65535",
+          "bytes": 65535,
+          "md5": "a1a1f44bfac7ba1a1a6dd2ce7e501cc7",
+          "expected": "4d44352028413a3e444154412e42494e29203d2041314131463434424641433742413141314136444432434537453530314343379b"
+        },
+        {
+          "name": "65536",
+          "bytes": 65536,
+          "md5": "231d3babc51db2e3fab39f5bcc184a7b",
+          "expected": "4d44352028413a3e444154412e42494e29203d2032333144334241424335314442324533464142333946354243433138344137429b"
+        },
+        {
+          "name": "65537",
+          "bytes": 65537,
+          "md5": "d244a2222e2b7ff07b5b85657ecf86d4",
+          "expected": "4d44352028413a3e444154412e42494e29203d2044323434413232323245324237464630374235423835363537454346383644349b"
+        },
+        {
+          "name": "131073",
+          "bytes": 131073,
+          "md5": "5ef4b3a828ff1e41e4b24e9538e6294e",
+          "expected": "4d44352028413a3e444154412e42494e29203d2035454634423341383238464631453431453442323445393533384536323934459b"
+        },
+        {
+          "name": "shell",
+          "expected": "4d44352028444154412e42494e29203d2035454634423341383238464631453431453442323445393533384536323934459b"
+        }
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "seconds": 150.897,
+      "runtime": {
+        "native_nmi_count": 1514,
+        "native_irq_count": 0,
+        "switches": 1693,
+        "guards": "intact"
+      },
+      "build": {
+        "image_sha256": "99f95ac4ce0375262dc3453886c919502cb1e865959cd3e9b5a3b4fe126a4916",
+        "memory_sha256": "7d3054a5e54b4cf12205950e0de686ff42f5d10071150188ccadf91931977340"
+      },
+      "result_sha256": "0e42fe5b9a608e890d67d5e758b28208fcc2997f3d02d9872810c3f69abf7c63"
+    },
+    "sdfs": {
+      "status": "pass",
+      "checks": 192,
+      "cases": [
+        {
+          "name": "empty",
+          "bytes": 0,
+          "md5": "d41d8cd98f00b204e9800998ecf8427e",
+          "expected": "4d44352028413a3e4630302e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b"
+        },
+        {
+          "name": "abc",
+          "bytes": 3,
+          "md5": "900150983cd24fb0d6963f7d28e17f72",
+          "expected": "4d44352028413a3e4630312e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b"
+        },
+        {
+          "name": "65537",
+          "bytes": 65537,
+          "md5": "d244a2222e2b7ff07b5b85657ecf86d4",
+          "expected": "4d44352028413a3e4630322e42494e29203d2044323434413232323245324237464630374235423835363537454346383644349b"
+        }
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "seconds": 48.331,
+      "runtime": {
+        "native_nmi_count": 2556,
+        "native_irq_count": 17585,
+        "switches": 1688,
+        "guards": "intact"
+      },
+      "build": {
+        "image_sha256": "8278ab215246a541b46c9ddf84ade8804552ccec8418d65e21983526ed8909d7",
+        "memory_sha256": "68b5e86f011d901157d23d11327bc1deb0430b568236df6c390df45063b6fbe9"
+      },
+      "result_sha256": "9cc89cc3a9934f496edad1bfcdc982dffbfb1aba4e09243198c75da3f701061c"
+    }
+  }
+}

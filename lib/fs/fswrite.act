@@ -387,4 +387,32 @@ PUBLIC BYTE FUNC Rename(FSTYPES.Service POINTER service)
 
 RETURN(MYDOSWRITE.Rename(service,entry,service.work.wanted))
 
+; Metadata is a reusable namespace operation. An open file/lock prevents
+; mutation so no retained FIB or cursor acquires silently stale attributes.
+PUBLIC BYTE FUNC SetDate(FSTYPES.Service POINTER service LONGINT days,minutes,ticks)
+
+  LET entry=@service.work.entry
+  IF days<0 OR minutes<0 OR minutes>=1440 OR
+      ticks<0 OR ticks>=3000 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_BAD_NUMBER))
+  FI
+
+  IF entry.parent=0 OR FSLEASES.Busy(service.selected,entry,1,0)<>0 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_OBJECT_IN_USE))
+  FI
+
+  IF (entry.flags & FSBTYPES.PROTECTED)<>0 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_WRITE_PROTECTED))
+  FI
+
+  IF service.selected.spec.format=FSFORMATS.RAM THEN
+    RETURN(RAMWRITE.SetDate(service,entry,days,minutes,ticks))
+  FI
+
+  IF service.selected.spec.format=FSFORMATS.SDFS THEN
+    RETURN(SDFSWRITE.SetDate(service,entry,days,minutes,ticks))
+  FI
+
+RETURN(FSWRITEIO.Error(service,ERROR_ACTION_NOT_KNOWN))
+
 ENDMODULE

@@ -6,6 +6,9 @@
 .include "action65816-native-v2.inc"
 .include "exec-abi.inc"
 .include "layout.inc"
+.if SDX_ENABLED
+    .include "sdx-storage.inc"
+.endif
 .if GENERAL_TASKS
     .include "tasks.inc"
     .include "boot-diagnostics.inc"
@@ -255,6 +258,17 @@ clear_dp:
         rep #$20
     .endif
 startup_complete:
+    .if SDX_ENABLED
+        ; Adoption retired the bootstrap. Initialize the full pool, including
+        ; both external guards, before any guest can be admitted.
+        lda #$a5a5
+        ldx #SDX_DP_SLOTS*256+SDX_DP_GUARD*2-2
+sdx_initialize_dp:
+        sta a:SDX_DP_BASE-SDX_DP_GUARD,x
+        dex
+        dex
+        bpl sdx_initialize_dp
+    .endif
     .if GENERAL_TASKS
         jsl boot_vbxe_probe
         ldx #0
@@ -265,6 +279,14 @@ startup_complete:
     tcd
     lda #STACK_TOP
     tcs
+    .if SDX_ENABLED
+        ; Install before Task/device activity: ROM shadow copying masks IRQs.
+        jsl sdx_probe_install
+        cmp #0
+        beq :+
+        jmp finish
+:
+    .endif
     sep #$20
     lda #$40
     sta f:NMIEN
@@ -738,6 +760,15 @@ finish_devices_ready:
         .endif
         .if CONSOLE_NATIVE
             jsl console_shutdown
+        .endif
+        .if SDX_ENABLED
+            ; All device activations have retired. Keep NMI disabled throughout
+            ; restoration; the normal exit restores the original native vector.
+            jsl sdx_rom_remove
+            cmp #0
+            beq sdx_restore_done
+            jmp reset_required
+sdx_restore_done:
         .endif
         jsl HEAP_SHUTDOWN
 :

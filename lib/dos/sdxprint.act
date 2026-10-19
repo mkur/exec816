@@ -1,0 +1,316 @@
+MODULE SDXPRINT
+USE DOS
+USE SDXABI
+USE SDXSTATE
+USE SDXFILES
+USE SDXADMISSION
+
+PROC Flush(SDXSTATE.Session POINTER state)
+  LONGINT sent,done
+  CARD index
+
+  IF state.discardOutput<>0 THEN
+    state.outputUsed=0
+    RETURN
+  FI
+  ; Redirected output retains the SDX byte stream. Native consoles consume
+  ; ASCII controls; translate the four shared editing/line controls here.
+  IF DOS.IsInteractive(DOS.Output())<>0 THEN
+    index=0
+    WHILE index<state.outputUsed DO
+      CASE state.output(index) OF
+      WHEN $9b THEN
+        state.output(index)=10
+      WHEN $7e THEN
+        state.output(index)=8
+      WHEN $7f THEN
+        state.output(index)=9
+      WHEN $7d THEN
+        state.output(index)=12
+      ESAC
+      index==+1
+    OD
+  FI
+  done=0
+  WHILE done<LONGINT(state.outputUsed) AND state.outputError=0 DO
+    sent=DOS.Write(DOS.Output(),@state.output+SIZE(done),
+        LONGINT(state.outputUsed)-done)
+    IF sent<=0 THEN
+      state.outputError=SDXFILES.MapError(state)
+    ELSE
+      done==+sent
+    FI
+  OD
+  state.outputUsed=0
+
+RETURN
+
+PROC Emit(SDXSTATE.Session POINTER state BYTE value)
+
+  IF state.outputError=0 THEN
+    IF value>=32 AND value<=124 THEN
+      value=value XOR state.inverse
+    FI
+    state.output(state.outputUsed)=value
+    state.outputUsed==+1
+    IF state.outputUsed=256 THEN
+      Flush(state)
+    FI
+  FI
+
+RETURN
+
+; Address classes belong to audited inline argument sites. A small numeric
+; pointer alone never selects D-relative storage.
+BYTE POINTER FUNC Data(SDXSTATE.Session POINTER state CARD argument,needed)
+  CARD near
+
+  IF argument>=SDXABI.GUEST_LIMIT-1 THEN
+    RETURN(NULL)
+  FI
+  near=SDXSTATE.ReadWord(state.bank,argument)
+  IF SDXADMISSION.DirectPage(state.profile,argument,state.overlayModule)<>0 THEN
+    IF LONGCARD(near)+needed>256 THEN
+      RETURN(NULL)
+    FI
+    RETURN(state.dp+near)
+  FI
+  IF LONGCARD(near)+needed>SDXABI.GUEST_LIMIT THEN
+    RETURN(NULL)
+  FI
+
+RETURN(state.bank+near)
+
+PROC EmitNumber(SDXSTATE.Session POINTER state LONGCARD value BYTE radix
+    CARD width BYTE pad)
+  CARD count,index
+  BYTE digit
+
+  count=0
+  DO
+    digit=BYTE(value MOD radix)
+    IF digit<10 THEN
+      state.number(count)=digit+'0
+    ELSE
+      state.number(count)=digit-10+'A
+    FI
+    count==+1
+    value=value/radix
+    IF value=0 THEN
+      EXIT
+    FI
+  OD
+  IF width=0 THEN
+    width=count
+  FI
+  index=count
+  WHILE index<width DO
+    Emit(state,pad)
+    index==+1
+  OD
+  IF count>width THEN
+    count=width
+  FI
+  WHILE count<>0 DO
+    count==-1
+    Emit(state,state.number(count))
+  OD
+
+RETURN
+
+PUBLIC BYTE FUNC Print(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  CARD start,stop,at,argument,width,needed,index,length,near,limit
+  BYTE value,kind,pad,radix,escape
+  BYTE POINTER source
+  LONGCARD number
+
+  state.outputUsed=0
+  state.outputError=0
+  state.inverse=0
+  start=SDXSTATE.ReadWord(frame,SDXABI.FRAME_PC)
+  stop=start
+  WHILE stop<SDXABI.GUEST_LIMIT AND stop-start<=1023 AND state.bank(stop)<>0 DO
+    stop==+1
+  OD
+  IF stop>=SDXABI.GUEST_LIMIT OR stop-start>1023 THEN
+    RETURN(156)
+  FI
+  argument=stop+1
+  at=start
+  WHILE at<stop DO
+    value=state.bank(at)
+    at==+1
+    IF value=92 THEN
+      IF at=stop THEN
+        RETURN(156)
+      FI
+      escape=state.bank(at)
+      at==+1
+      CASE escape OF
+      WHEN 'a THEN
+        value=$fd
+      WHEN 'b THEN
+        value=$7e
+      WHEN 'e THEN
+        value=$1b
+      WHEN 'f THEN
+        value=$7d
+      WHEN 'n THEN
+        value=$9b
+      WHEN 'r THEN
+        value=$9b
+      WHEN 't THEN
+        value=$7f
+      WHEN 'i THEN
+        state.inverse=state.inverse XOR $80
+        value=0
+      WHEN 'z THEN
+        value=0
+      WHEN 92 THEN
+        value=92
+      ELSE
+        RETURN(156)
+      ESAC
+      IF escape<>'i THEN
+        Emit(state,value)
+      FI
+    ELSEIF value<>'% THEN
+      Emit(state,value)
+    ELSE
+      IF at=stop THEN
+        RETURN(156)
+      FI
+      IF state.bank(at)='% THEN
+        Emit(state,'% )
+        at==+1
+      ELSE
+        width=0
+        pad=32
+        IF state.bank(at)='0 THEN
+          pad='0
+          at==+1
+        FI
+        WHILE at<stop AND state.bank(at)>='0 AND state.bank(at)<='9 DO
+          width=BYTE(width*10+state.bank(at)-'0)
+          at==+1
+        OD
+        IF at<stop AND state.bank(at)='* THEN
+          source=Data(state,argument,2)
+          IF source=NULL THEN
+            RETURN(156)
+          FI
+          width=source(0)
+          argument==+2
+          at==+1
+        FI
+        IF at=stop THEN
+          RETURN(156)
+        FI
+        kind=state.bank(at)
+        at==+1
+        needed=1
+        radix=10
+        CASE kind OF
+        WHEN 'b THEN
+          needed=1
+        WHEN 'c THEN
+          needed=1
+        WHEN 's THEN
+          needed=1
+        WHEN 'p THEN
+          needed=2
+        WHEN 'd THEN
+          needed=2
+        WHEN 'e THEN
+          needed=3
+        WHEN 'l THEN
+          needed=4
+        WHEN 'x THEN
+          needed=3
+          radix=16
+          IF width=0 THEN
+            width=6
+            pad='0
+          FI
+        ELSE
+          RETURN(156)
+        ESAC
+        source=Data(state,argument,needed)
+        IF source=NULL THEN
+          RETURN(156)
+        FI
+        near=SDXSTATE.ReadWord(state.bank,argument)
+        argument==+2
+        IF kind='c THEN
+          Emit(state,source(0))
+        ELSEIF kind='s OR kind='p THEN
+          IF kind='p THEN
+            near=SDXSTATE.ReadWord(source,0)
+            IF near>=SDXABI.GUEST_LIMIT THEN
+              RETURN(156)
+            FI
+            source=state.bank+near
+          FI
+          ; Strings live in the guest bank. An audited %p operand can itself
+          ; live in D-relative storage, as MD5's current filename pointer does.
+          IF kind='s AND state.profile<>32 AND
+              SDXADMISSION.DirectPage(state.profile,argument-2,state.overlayModule)<>0 THEN
+            RETURN(156)
+          FI
+          limit=SDXABI.GUEST_LIMIT
+          IF kind='s AND SDXADMISSION.DirectPage(state.profile,argument-2,state.overlayModule)<>0 THEN
+            limit=256
+          FI
+          length=0
+          WHILE LONGCARD(near)+length<limit AND
+              source(length)<>0 AND source(length)<>$9b DO
+            length==+1
+          OD
+          IF LONGCARD(near)+length=limit THEN
+            RETURN(156)
+          FI
+          IF width<>0 AND length>width THEN
+            length=width
+          FI
+          index=0
+          WHILE index<length DO
+            Emit(state,source(index))
+            index==+1
+          OD
+          WHILE index<width DO
+            Emit(state,32)
+            index==+1
+          OD
+        ELSE
+          number=0
+          index=needed
+          WHILE index<>0 DO
+            index==-1
+            number=(number LSH 8) OR source(index)
+          OD
+          IF radix=10 AND width>10 THEN
+            RETURN(156)
+          FI
+          EmitNumber(state,number,radix,width,pad)
+        FI
+      FI
+    FI
+  OD
+  Flush(state)
+  IF state.outputError=0 THEN
+    SDXSTATE.Word(frame,SDXABI.FRAME_PC,argument)
+  FI
+
+RETURN(state.outputError)
+
+PUBLIC BYTE FUNC Character(SDXSTATE.Session POINTER state BYTE value)
+
+  state.outputError=0
+  state.inverse=0
+  state.outputUsed=0
+  Emit(state,value)
+  Flush(state)
+
+RETURN(state.outputError)
+
+ENDMODULE

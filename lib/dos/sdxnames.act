@@ -1,0 +1,165 @@
+MODULE SDXNAMES
+USE DOS
+USE SDXSTATE
+USE SDXCOMMAND
+
+; Expand one 8.3 component, including SDX's padded '?' and '*' semantics.
+PUBLIC BYTE FUNC Pattern(BYTE POINTER source,target BYTE wild)
+  CARD at,index,limit
+  BYTE value
+
+  FOR index=0 TO 10 DO
+    target(index)=32
+  OD
+  at=0
+  index=0
+  limit=8
+  WHILE source(at)<>0 DO
+    value=SDXCOMMAND.Upper(source(at))
+    at==+1
+    IF value='. THEN
+      IF limit=11 THEN
+        RETURN(0)
+      FI
+      index=8
+      limit=11
+    ELSEIF value='* AND wild<>0 THEN
+      WHILE index<limit DO
+        target(index)='?
+        index==+1
+      OD
+    ELSE
+      IF index=limit OR value<=32 OR value=': OR value='/ OR
+          value='* OR (value='? AND wild=0) THEN
+        RETURN(0)
+      FI
+      target(index)=value
+      index==+1
+    FI
+  OD
+
+RETURN(target(0)<>32)
+
+PUBLIC BYTE FUNC Exact(BYTE POINTER pattern)
+  BYTE index
+
+  FOR index=0 TO 10 DO
+    IF pattern(index)='? THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Matches(SDXSTATE.Session POINTER state BYTE attributes)
+  BYTE flags,index
+  BYTE ARRAY name(11)
+
+  IF state.info.fib_EntryType>=0 THEN
+    RETURN(0)
+  FI
+  flags=0
+  IF (state.info.fib_Protection & DOS.FIBF_WRITE)<>0 THEN
+    flags=flags OR 1
+  FI
+  IF (state.info.fib_Protection & DOS.FIBF_HIDDEN)<>0 THEN
+    flags=flags OR 2
+  FI
+  IF (state.info.fib_Protection & DOS.FIBF_ARCHIVE)<>0 THEN
+    flags=flags OR 4
+  FI
+  IF (flags & (attributes & 15))<>(attributes & 15) OR
+      (flags & (attributes RSH 4))<>0 THEN
+    RETURN(0)
+  FI
+  IF Pattern(@state.info.fib_FileName,@name,0)=0 THEN
+    RETURN(0)
+  FI
+  FOR index=0 TO 10 DO
+    IF state.pattern(index)<>'? AND state.pattern(index)<>name(index) THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+; FOPEN selects the first eligible directory entry, as the SDX mode-4 call
+; does. The caller retains the original specification for PRINTF output.
+PUBLIC BYTE FUNC Resolve(SDXSTATE.Session POINTER state)
+  DOS.FileLock POINTER lock
+  CARD at,leaf,index
+  BYTE found
+  LONGINT error
+
+  leaf=0
+  at=0
+  WHILE state.path(at)<>0 DO
+    IF state.path(at)=': OR state.path(at)='/ THEN
+      leaf=at+1
+    FI
+    at==+1
+  OD
+  IF Pattern(@state.path+leaf,@state.pattern,1)=0 THEN
+    RETURN(156)
+  FI
+  ; An exact name needs no directory cookie. Unrelated child mutations may
+  ; invalidate ExNext, but cannot invalidate this file's native lock/Examine.
+  IF Exact(@state.pattern)<>0 THEN
+    lock=DOS.Lock(@state.path,DOS.SHARED_LOCK)
+    IF lock=NULL THEN
+      state.nativeError=DOS.IoErr()
+      RETURN(170)
+    FI
+    error=0
+    IF DOS.Examine(lock,@state.info)=0 THEN
+      error=DOS.IoErr()
+    ELSEIF Matches(state,state.bank($779))=0 THEN
+      error=DOS.ERROR_OBJECT_NOT_FOUND
+    FI
+    DOS.UnLock(lock)
+    state.nativeError=error
+    IF error<>0 THEN
+      DOS.SetIoErr(error)
+      RETURN(170)
+    FI
+    RETURN(0)
+  FI
+  state.path(leaf)=0
+  lock=DOS.Lock(@state.path,DOS.SHARED_LOCK)
+  IF lock=NULL THEN
+    state.nativeError=DOS.IoErr()
+    RETURN(170)
+  FI
+  found=0
+  error=0
+  IF DOS.Examine(lock,@state.info)<>0 THEN
+    WHILE DOS.ExNext(lock,@state.info)<>0 DO
+      IF Matches(state,state.bank($779))<>0 THEN
+        found=1
+        EXIT
+      FI
+    OD
+  FI
+  IF found=0 THEN
+    error=DOS.IoErr()
+    IF error=DOS.ERROR_NO_MORE_ENTRIES OR error=0 THEN
+      error=DOS.ERROR_OBJECT_NOT_FOUND
+    FI
+  ELSE
+    index=0
+    WHILE state.info.fib_FileName(index)<>0 DO
+      state.path(leaf+index)=state.info.fib_FileName(index)
+      index==+1
+    OD
+    state.path(leaf+index)=0
+  FI
+  DOS.UnLock(lock)
+  state.nativeError=error
+  IF error<>0 THEN
+    DOS.SetIoErr(error)
+    RETURN(170)
+  FI
+
+RETURN(0)
+
+ENDMODULE

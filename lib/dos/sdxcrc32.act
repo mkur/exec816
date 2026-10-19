@@ -1,0 +1,7 @@
+MODULE SDXCRC32
+
+; Private ordinary native call, not an Exec gateway selector. State is the
+; uncomplemented running CRC. The wrapper and table live in upper memory.
+PUBLIC EXTERNAL LONGCARD FUNC Update(BYTE POINTER bytes CARD count LONGCARD state)
+
+ENDMODULE

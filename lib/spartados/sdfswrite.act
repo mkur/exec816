@@ -8,6 +8,7 @@ USE FSWRITEIO
 USE FSALLOC
 USE BLOCKTRANSPORT
 USE SDFS
+USE SDFSDATE
 USE SDFSTYPES
 USE A816MEMORY
 INCLUDE "../dos/dos-types.inc"
@@ -1020,5 +1021,19 @@ PUBLIC BYTE FUNC Rename(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
   FI
 
 RETURN(1)
+
+PUBLIC BYTE FUNC SetDate(FSTYPES.Service POINTER service FSBTYPES.Entry
+    POINTER entry LONGINT days,minutes,ticks)
+
+  LET state=FSWRITEIO.State(service)
+  IF EntryIO(service,entry,0)=0 THEN
+    RETURN(0)
+  FI
+
+  IF SDFSDATE.Encode(days,minutes,ticks,state.row)=0 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_BAD_NUMBER))
+  FI
+
+RETURN(EntryIO(service,entry,1))
 
 ENDMODULE

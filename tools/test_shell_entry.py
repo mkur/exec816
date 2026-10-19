@@ -68,15 +68,18 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
             def screen(stage):
                 cells,physical,cursor=terminal(payload,initial);instance=cs['INSTANCE']
                 wait(f'(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})=dw(${instance+54:x})+dw(${instance+10:x}))')
-                require(b.memdump(state['screen'],960)==physical,stage+' screen differs')
+                actual=b.memdump(state['screen'],960)
+                if actual!=physical:
+                    (out/'screen-actual.bin').write_bytes(actual)
+                    (out/'screen-expected.bin').write_bytes(physical)
+                require(actual==physical,stage+' screen differs')
                 return physical,cursor
             boot_screen,_=screen('Startup');(out/'boot.screen.bin').write_bytes(boot_screen)
             wait(f'@frame>={b.eval_expr("@frame")+2}');(out/'boot.png').write_bytes(b.screenshot())
             state['banner']=banner;state['command_times']=[]
             line=bytearray()
-            pin_revision=json.loads((ROOT/'toolchain/actionc.json').read_text())['revision']
-            version=f"Exec816 ({identity['display']})\nactionc pin: {pin_revision[:7]}\n".encode()
-            mounts_output=b'MOUNT FILESYSTEM ACCESS    STATE DEVICE/UNIT\n'+(b'No mounted filesystems\n'if error else b'D1:   MyDOS      read-only mounted sio.device/D1\n')
+            version=strings['version'].encode()
+            mounts_output=b'MOUNT FILESYSTEM ACCESS    STATE DEVICE/UNIT\n'+(b'No mounted filesystems\n'if error else b'D1:   MyDOS      read-only mounted sio.device/D1\nRAM:  RAM        writable  mounted\n')
             devices_output=b'DEVICE          STATE\nconsole.device  ready\nsio.device      '+(b'inactive'if no_mount else b'ready')+b'\ntimer.device    ready\nideplus.device  inactive\n'
             state.update(mounts_output=mounts_output.decode(),devices_output=devices_output.decode())
             commands=[('help',b'HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT UNMOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE NEWSHELL SESSIONS SESSION EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nCtrl-L clear screen\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\nTAB completes commands and files\n',0),
@@ -86,7 +89,11 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
                 ('devices',devices_output,0),('devices >nil:',b'',0),('devices extra',diagnostic_text(115,'Shell'),115),
                 ('echo ok',b'ok\n',0),('cd SYS:',diagnostic_text(error,'cd')if error else b'',error)]
             if not error:
-                listing=f"C/\nDOCS/\nHELLO.TXT {len(files['HELLO.TXT'])}\nREADME.TXT {len(files['README.TXT'])}\nS/\nTOOLS/\n".encode()
+                # MyDOS directory rows expose a sector-rounded size bound.
+                payload_bytes=mounts[0]['sector_bytes']-3
+                def size_bound(name):
+                    return ((len(files[name])+payload_bytes-1)//payload_bytes)*payload_bytes
+                listing=f"C/\nDOCS/\nHELLO.TXT <={size_bound('HELLO.TXT')}\nREADME.TXT <={size_bound('README.TXT')}\nS/\nTOOLS/\n".encode()
                 commands.extend([('dir',listing,0),('type hello.txt',files['HELLO.TXT'],0),
                     ('type readme.txt',files['README.TXT'],0),('cd docs',b'',0),
                     ('type commands.txt',files['DOCS/COMMANDS.TXT'],0),('cd :',b'',0),
@@ -123,12 +130,19 @@ def run(t,out,mode,no_mount=False,paced=False,invalid_disk=False,stack_checks=No
                     names=['shell controller','console.device']+([]if no_mount else ['sio.device'])+([]if no_mount or invalid_disk else ['dos.filesystem'])+['shell']
                     states={1:'READY',3:'RUNNING',4:'SLEEPING',5:'WAITING'}
                     rows=[]
-                    for slot,name in enumerate(names):
-                        raw=bytes(b.eval_expr(f'db(${pointer+transfer_offset+slot*26+i:x})')for i in range(26))
+                    seen=set();previous_slot=-1
+                    # Lazy driver startup can change which worker gets a slot.
+                    # TASKS reports the snapshot's actual ascending slot order.
+                    for index in range(len(names)):
+                        raw=bytes(b.eval_expr(f'db(${pointer+transfer_offset+index*26+i:x})')for i in range(26))
+                        slot=raw[0]
                         actual_name=raw[2:].split(b'\0',1)[0].decode('ascii')
-                        require(raw[0]==slot and actual_name==name,'Task snapshot identity differs')
-                        require(raw[1]==3 if name=='shell' else raw[1]in (1,5),'Task snapshot state differs')
-                        rows.append(f'{slot:<4} {states[raw[1]]:<8} {name}\n')
+                        require(previous_slot<slot<8 and actual_name in names and actual_name not in seen,
+                                f'Task snapshot identity differs: ({slot}, {actual_name})')
+                        require((slot==0)==(actual_name=='shell controller'),'Task snapshot root differs')
+                        require(raw[1]==3 if actual_name=='shell' else raw[1]in (1,5),'Task snapshot state differs')
+                        seen.add(actual_name);previous_slot=slot
+                        rows.append(f'{slot:<4} {states[raw[1]]:<8} {actual_name}\n')
                     output=('SLOT STATE    NAME\n'+''.join(rows)).encode()
                     state['tasks_output']=output.decode()
                 line.clear();payload.extend(b'\n'+output);payload.extend(draw(line))

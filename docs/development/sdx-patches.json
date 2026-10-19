@@ -1,0 +1,1208 @@
+{
+  "schema_version": 1,
+  "status": "partial",
+  "tier": "development",
+  "date": "2026-10-18",
+  "scope": "Native identification/patch components and isolated helper controls; no hosted SDX command admission",
+  "base_revision": "42bc8a5ceabb220af61624934bc6c7347959feb9",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "memory": {
+    "crc_wrapper_bytes": 31,
+    "crc_code_bytes": 52,
+    "crc_table_bytes": 1024,
+    "crc_total_upper_bytes": 1107,
+    "new_upper_reservation_bytes": 0,
+    "dp_pointer_scratch_bytes": 3,
+    "dp_crc_scratch_bytes": 4,
+    "guest_dp_pool_installed": false
+  },
+  "host_tests": {
+    "total": 509,
+    "passed": 503,
+    "skipped": 4,
+    "failed": 2,
+    "new_sdx_tests": 11,
+    "baseline_failures": [
+      {
+        "test": "test_c_program_package.CProgramPackageTests.test_reconstruction_moves_internal_pointers_and_preserves_import_placeholder",
+        "expected": 19,
+        "actual": 20
+      },
+      {
+        "test": "test_program_contract.ProgramContract.test_cstring_groups_bind_exact_signatures_and_native_shapes",
+        "expected": 1807,
+        "actual": 1844
+      }
+    ]
+  },
+  "assembly": [
+    {
+      "status": "pass",
+      "tier": "development",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "crc": [
+        {
+          "name": "empty",
+          "bytes": 0,
+          "crc32": "00000000",
+          "elapsed_base_cycles": 12,
+          "elapsed_ms": 0.006766481669178253
+        },
+        {
+          "name": "check",
+          "bytes": 9,
+          "crc32": "cbf43926",
+          "elapsed_base_cycles": 91,
+          "elapsed_ms": 0.05131248599126842
+        },
+        {
+          "name": "all-bytes",
+          "bytes": 256,
+          "crc32": "29058c73",
+          "elapsed_base_cycles": 2275,
+          "elapsed_ms": 1.2828121497817104
+        },
+        {
+          "name": "bank-crossing",
+          "bytes": 65535,
+          "crc32": "cf640580",
+          "elapsed_base_cycles": 597360,
+          "elapsed_ms": 336.83545749169343
+        },
+        {
+          "name": "MD5.COM",
+          "bytes": 3488,
+          "crc32": "083eb436",
+          "elapsed_base_cycles": 31722,
+          "elapsed_ms": 17.88719429247271
+        },
+        {
+          "name": "ARC.COM",
+          "bytes": 3203,
+          "crc32": "a179b08e",
+          "elapsed_base_cycles": 29072,
+          "elapsed_ms": 16.39292959052918
+        },
+        {
+          "name": "ARCLST.OVL",
+          "bytes": 1998,
+          "crc32": "25745761",
+          "elapsed_base_cycles": 18552,
+          "elapsed_ms": 10.460980660549579
+        },
+        {
+          "name": "ARCEXT.OVL",
+          "bytes": 1911,
+          "crc32": "a42ad9cb",
+          "elapsed_base_cycles": 17641,
+          "elapsed_ms": 9.947291927164464
+        },
+        {
+          "name": "ARCADD.OVL",
+          "bytes": 4645,
+          "crc32": "03a08a5a",
+          "elapsed_base_cycles": 42472,
+          "elapsed_ms": 23.948834121111563
+        }
+      ],
+      "arc": [
+        {
+          "placement": 8192,
+          "stack": 495,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "19eb0076ed00edab"
+        },
+        {
+          "placement": 8192,
+          "stack": 495,
+          "patched": true,
+          "dp": 8704,
+          "dbr": 3,
+          "state": "19eb0076ed00edab"
+        },
+        {
+          "placement": 8192,
+          "stack": 447,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "19bb0076bd00bdab"
+        },
+        {
+          "placement": 8192,
+          "stack": 447,
+          "patched": true,
+          "dp": 8704,
+          "dbr": 3,
+          "state": "19bb0076bd00bdab"
+        },
+        {
+          "placement": 8192,
+          "stack": 383,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "197b00767d007dab"
+        },
+        {
+          "placement": 8192,
+          "stack": 383,
+          "patched": true,
+          "dp": 8704,
+          "dbr": 3,
+          "state": "197b00767d007dab"
+        },
+        {
+          "placement": 16640,
+          "stack": 495,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "19eb0076ed00edab"
+        },
+        {
+          "placement": 16640,
+          "stack": 495,
+          "patched": true,
+          "dp": 8960,
+          "dbr": 3,
+          "state": "19eb0076ed00edab"
+        },
+        {
+          "placement": 16640,
+          "stack": 447,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "19bb0076bd00bdab"
+        },
+        {
+          "placement": 16640,
+          "stack": 447,
+          "patched": true,
+          "dp": 8960,
+          "dbr": 3,
+          "state": "19bb0076bd00bdab"
+        },
+        {
+          "placement": 16640,
+          "stack": 383,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "197b00767d007dab"
+        },
+        {
+          "placement": 16640,
+          "stack": 383,
+          "patched": true,
+          "dp": 8960,
+          "dbr": 3,
+          "state": "197b00767d007dab"
+        }
+      ],
+      "native_bank": 2,
+      "guest_bank": 3,
+      "crc_code_bytes": 52,
+      "crc_table_bytes": 1024,
+      "xex_sha256": "d6090d8111faad820ba2b4415ca71390a998d0540181f40a5e66a9010c32cd41",
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "scope": "Isolated emitted CRC32 and ARC helper; IRQ/NMI disabled; no Exec Process admission",
+      "seconds": 64.061,
+      "pin": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "source_patch": "toolchain/patches/altirra-console-probe.patch",
+          "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+          "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+          "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+          "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 63,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        },
+        "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+        "peripherals": [
+          {
+            "name": "fastest-125k",
+            "diskemu": "fastest",
+            "divisor": 0,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "stock-810",
+            "diskemu": "810",
+            "divisor": 40,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "happy-none",
+            "diskemu": "happy1050",
+            "divisor": 40,
+            "source": "src/Altirra/source/disk.cpp",
+            "firmware": "built-in high-level model; quiet command only"
+          }
+        ],
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true
+        },
+        "source_sha256": {
+          "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+          "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+          "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+        },
+        "observer": {
+          "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+        },
+        "keyboard_input": {
+          "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+          "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+          "initialization": "KEY ALL up enables scan mode before modifier changes",
+          "added_keys": {
+            "ASTERISK": 7,
+            "LESS": 54,
+            "GREATER": 55
+          },
+          "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+          "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+        },
+        "serial_regression_pins": [
+          "toolchain/altirra-sio-queued.json",
+          "toolchain/altirra-sio-sectors.json"
+        ]
+      },
+      "inputs": {
+        "MD5.COM": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+        "ARC.COM": "2107dcc06b29cf6ba5a26ad8aaf167f59f5211d2d93c08253594507a7d2217dd",
+        "ARCLST.OVL": "ea0b1f04ffa1c93d8b3fc69baafbb86854651665093c9ab3a091401c2946b7cd",
+        "ARCEXT.OVL": "b1dd56ac4bb133bfc55150c1c17e401f74903d79a8459c6997ec0105290ad5ba",
+        "ARCADD.OVL": "f0aa3ef786bc58567bd97a5b6dca58eadf1cdf8bac8bb0e6a3447a4d955d7408"
+      },
+      "sources": {
+        "abi/sdx.json": "9cc309d75fce0507d292ec0af6b5195072a704abfb3f93986786a430b0103f81",
+        "tools/generate_sdx.py": "f4b4e712a91dd380d5a50a9c018f398cceb8f64907da948a39dd5f2972b3360b",
+        "tools/sdx_file.py": "acd01711b7e2fdd502b4241745ed40fd5c5ed43a4430a7931d724b5e17b95d12",
+        "tools/sdx_patch.py": "07284e95f8614711cf448ac1769715b75752585df695397862985fb863729382",
+        "tools/test_sdx_patches.py": "36de0572d398175947ca6fb060bb3664765b89ffb4783081b65ddf4fb5febb1f",
+        "compat/sdx/md5-450.json": "01fd08383d77d39d00150faa9766b3cc83e760e8c3ae3f410207fb8309d86536",
+        "compat/sdx/arc-450.json": "b6061c40ee8229872e4acba1167d6e204d19b9addeb557ddf9c75ffa2f66fd0b",
+        "compat/sdx/arc-inline.s": "61d52fc4585567a1185cbda150cdf135f3133eb10dc7d6c57391e08a14ffdf3f",
+        "probes/sdx-patches/probe.s": "9fd39773a47dff6ee7ce7d85096277c553cf2427a699f739623fec7afacd1720",
+        "platform/altirraos/sdx-crc32.s": "6d4f0f772ff1a00885056feb8dac665f84f185e1260b655d22c16037171444ff",
+        "platform/altirraos/generated/sdx.inc": "5afd249e4634a7c51a913bccf0911212bbadafb392ae76a8735669fe90c50679",
+        "platform/altirraos/generated/sdx-crc32-table.inc": "25aaa36955291c40dd920a8f51067227822a961b9f8b601fc2037f652613a65d"
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "crc": [
+        {
+          "name": "empty",
+          "bytes": 0,
+          "crc32": "00000000",
+          "elapsed_base_cycles": 12,
+          "elapsed_ms": 0.006766481669178253
+        },
+        {
+          "name": "check",
+          "bytes": 9,
+          "crc32": "cbf43926",
+          "elapsed_base_cycles": 91,
+          "elapsed_ms": 0.05131248599126842
+        },
+        {
+          "name": "all-bytes",
+          "bytes": 256,
+          "crc32": "29058c73",
+          "elapsed_base_cycles": 2275,
+          "elapsed_ms": 1.2828121497817104
+        },
+        {
+          "name": "bank-crossing",
+          "bytes": 65535,
+          "crc32": "cf640580",
+          "elapsed_base_cycles": 597360,
+          "elapsed_ms": 336.83545749169343
+        },
+        {
+          "name": "MD5.COM",
+          "bytes": 3488,
+          "crc32": "083eb436",
+          "elapsed_base_cycles": 31722,
+          "elapsed_ms": 17.88719429247271
+        },
+        {
+          "name": "ARC.COM",
+          "bytes": 3203,
+          "crc32": "a179b08e",
+          "elapsed_base_cycles": 29072,
+          "elapsed_ms": 16.39292959052918
+        },
+        {
+          "name": "ARCLST.OVL",
+          "bytes": 1998,
+          "crc32": "25745761",
+          "elapsed_base_cycles": 18552,
+          "elapsed_ms": 10.460980660549579
+        },
+        {
+          "name": "ARCEXT.OVL",
+          "bytes": 1911,
+          "crc32": "a42ad9cb",
+          "elapsed_base_cycles": 17641,
+          "elapsed_ms": 9.947291927164464
+        },
+        {
+          "name": "ARCADD.OVL",
+          "bytes": 4645,
+          "crc32": "03a08a5a",
+          "elapsed_base_cycles": 42472,
+          "elapsed_ms": 23.948834121111563
+        }
+      ],
+      "arc": [
+        {
+          "placement": 8192,
+          "stack": 495,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "19eb0076ed00edab"
+        },
+        {
+          "placement": 8192,
+          "stack": 495,
+          "patched": true,
+          "dp": 8704,
+          "dbr": 6,
+          "state": "19eb0076ed00edab"
+        },
+        {
+          "placement": 8192,
+          "stack": 447,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "19bb0076bd00bdab"
+        },
+        {
+          "placement": 8192,
+          "stack": 447,
+          "patched": true,
+          "dp": 8704,
+          "dbr": 6,
+          "state": "19bb0076bd00bdab"
+        },
+        {
+          "placement": 8192,
+          "stack": 383,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "197b00767d007dab"
+        },
+        {
+          "placement": 8192,
+          "stack": 383,
+          "patched": true,
+          "dp": 8704,
+          "dbr": 6,
+          "state": "197b00767d007dab"
+        },
+        {
+          "placement": 16640,
+          "stack": 495,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "19eb0076ed00edab"
+        },
+        {
+          "placement": 16640,
+          "stack": 495,
+          "patched": true,
+          "dp": 8960,
+          "dbr": 6,
+          "state": "19eb0076ed00edab"
+        },
+        {
+          "placement": 16640,
+          "stack": 447,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "19bb0076bd00bdab"
+        },
+        {
+          "placement": 16640,
+          "stack": 447,
+          "patched": true,
+          "dp": 8960,
+          "dbr": 6,
+          "state": "19bb0076bd00bdab"
+        },
+        {
+          "placement": 16640,
+          "stack": 383,
+          "patched": false,
+          "dp": 0,
+          "dbr": 0,
+          "state": "197b00767d007dab"
+        },
+        {
+          "placement": 16640,
+          "stack": 383,
+          "patched": true,
+          "dp": 8960,
+          "dbr": 6,
+          "state": "197b00767d007dab"
+        }
+      ],
+      "native_bank": 5,
+      "guest_bank": 6,
+      "crc_code_bytes": 52,
+      "crc_table_bytes": 1024,
+      "xex_sha256": "9cf63d03a5683e65a323f3c8b864373442b527961408d504aec733147c19eb86",
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "scope": "Isolated emitted CRC32 and ARC helper; IRQ/NMI disabled; no Exec Process admission",
+      "seconds": 63.905,
+      "pin": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "source_patch": "toolchain/patches/altirra-console-probe.patch",
+          "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+          "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+          "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+          "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 63,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        },
+        "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+        "peripherals": [
+          {
+            "name": "fastest-125k",
+            "diskemu": "fastest",
+            "divisor": 0,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "stock-810",
+            "diskemu": "810",
+            "divisor": 40,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "happy-none",
+            "diskemu": "happy1050",
+            "divisor": 40,
+            "source": "src/Altirra/source/disk.cpp",
+            "firmware": "built-in high-level model; quiet command only"
+          }
+        ],
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true
+        },
+        "source_sha256": {
+          "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+          "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+          "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+        },
+        "observer": {
+          "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+        },
+        "keyboard_input": {
+          "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+          "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+          "initialization": "KEY ALL up enables scan mode before modifier changes",
+          "added_keys": {
+            "ASTERISK": 7,
+            "LESS": 54,
+            "GREATER": 55
+          },
+          "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+          "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+        },
+        "serial_regression_pins": [
+          "toolchain/altirra-sio-queued.json",
+          "toolchain/altirra-sio-sectors.json"
+        ]
+      },
+      "inputs": {
+        "MD5.COM": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+        "ARC.COM": "2107dcc06b29cf6ba5a26ad8aaf167f59f5211d2d93c08253594507a7d2217dd",
+        "ARCLST.OVL": "ea0b1f04ffa1c93d8b3fc69baafbb86854651665093c9ab3a091401c2946b7cd",
+        "ARCEXT.OVL": "b1dd56ac4bb133bfc55150c1c17e401f74903d79a8459c6997ec0105290ad5ba",
+        "ARCADD.OVL": "f0aa3ef786bc58567bd97a5b6dca58eadf1cdf8bac8bb0e6a3447a4d955d7408"
+      },
+      "sources": {
+        "abi/sdx.json": "9cc309d75fce0507d292ec0af6b5195072a704abfb3f93986786a430b0103f81",
+        "tools/generate_sdx.py": "f4b4e712a91dd380d5a50a9c018f398cceb8f64907da948a39dd5f2972b3360b",
+        "tools/sdx_file.py": "acd01711b7e2fdd502b4241745ed40fd5c5ed43a4430a7931d724b5e17b95d12",
+        "tools/sdx_patch.py": "07284e95f8614711cf448ac1769715b75752585df695397862985fb863729382",
+        "tools/test_sdx_patches.py": "36de0572d398175947ca6fb060bb3664765b89ffb4783081b65ddf4fb5febb1f",
+        "compat/sdx/md5-450.json": "01fd08383d77d39d00150faa9766b3cc83e760e8c3ae3f410207fb8309d86536",
+        "compat/sdx/arc-450.json": "b6061c40ee8229872e4acba1167d6e204d19b9addeb557ddf9c75ffa2f66fd0b",
+        "compat/sdx/arc-inline.s": "61d52fc4585567a1185cbda150cdf135f3133eb10dc7d6c57391e08a14ffdf3f",
+        "probes/sdx-patches/probe.s": "9fd39773a47dff6ee7ce7d85096277c553cf2427a699f739623fec7afacd1720",
+        "platform/altirraos/sdx-crc32.s": "6d4f0f772ff1a00885056feb8dac665f84f185e1260b655d22c16037171444ff",
+        "platform/altirraos/generated/sdx.inc": "5afd249e4634a7c51a913bccf0911212bbadafb392ae76a8735669fe90c50679",
+        "platform/altirraos/generated/sdx-crc32-table.inc": "25aaa36955291c40dd920a8f51067227822a961b9f8b601fc2037f652613a65d"
+      }
+    }
+  ],
+  "native": [
+    {
+      "status": "pass",
+      "mode": "opt",
+      "checks": 43,
+      "seconds": 22.595,
+      "artifact": "build/sdx-native/opt/results.json",
+      "artifact_sha256": "4779eb22c4a4eee358670aa989f850ed723b4dd5a217df232871e162cef30e9d",
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "compiler_override": false,
+      "image_sha256": "ce11ec2b6f158fb3049094d2b3f670a7d96cdef9a099d1b0d27aae6b2fe3856b",
+      "xex_sha256": "ac6a06278afa87dc55880aaf66c7f4b8df97cac76eb3c34a10ddf28869528147",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 87,
+          "untouched_above_floor": 1193
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 140,
+        "untouched_from_base": 1396,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "cases": [
+        {
+          "manifest": "md5-450",
+          "revision": 1,
+          "module": "MD5.COM",
+          "execution_status": "patch-probe-only",
+          "bytes": 3488,
+          "crc32": "083eb436",
+          "original_sha256": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+          "image_sha256": "a468aed725d5b79ff0e5e71896dfcc5757433b3decd473801089af9316911c14",
+          "patches": [
+            {
+              "id": "md5-compression-irq",
+              "address": 9242,
+              "before": "78",
+              "after": "ea"
+            }
+          ],
+          "placement": 8192
+        },
+        {
+          "manifest": "md5-450",
+          "revision": 1,
+          "module": "MD5.COM",
+          "execution_status": "patch-probe-only",
+          "bytes": 3488,
+          "crc32": "083eb436",
+          "original_sha256": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+          "image_sha256": "071e94a3fcd1da35b973d96040c2311d4521ad82a68d9883a0c620dff7f149d6",
+          "patches": [
+            {
+              "id": "md5-compression-irq",
+              "address": 17690,
+              "before": "78",
+              "after": "ea"
+            }
+          ],
+          "placement": 16640
+        },
+        {
+          "manifest": "arc-450",
+          "revision": 1,
+          "module": "ARC.COM",
+          "execution_status": "patch-probe-only",
+          "bytes": 3203,
+          "crc32": "a179b08e",
+          "original_sha256": "2107dcc06b29cf6ba5a26ad8aaf167f59f5211d2d93c08253594507a7d2217dd",
+          "image_sha256": "8e4dc93c6adac63ef37aaaa69871191dfd3dc90f8599ddf796879e6d4dd28f18",
+          "patches": [
+            {
+              "id": "arc-inline-six",
+              "address": 9709,
+              "before": "8d613aba18bd030185fe6d613a9d0301bd040185ff69009d0401ac613ab1fe99ef0088d0f860",
+              "after": "8d613a18a30385fe6d613a8303a30485ff69008304ac613abbb1fe95ef88d0f8baa00060eaea"
+            }
+          ],
+          "placement": 8192
+        },
+        {
+          "manifest": "arc-450",
+          "revision": 1,
+          "module": "ARC.COM",
+          "execution_status": "patch-probe-only",
+          "bytes": 3203,
+          "crc32": "a179b08e",
+          "original_sha256": "2107dcc06b29cf6ba5a26ad8aaf167f59f5211d2d93c08253594507a7d2217dd",
+          "image_sha256": "f01fbf4cf37b3059fef4f6b8c5ad73bb0dd59a397ac3e29dfc93d972d2391ad8",
+          "patches": [
+            {
+              "id": "arc-inline-six",
+              "address": 18157,
+              "before": "8d615bba18bd030185fe6d615b9d0301bd040185ff69009d0401ac615bb1fe99ef0088d0f860",
+              "after": "8d615b18a30385fe6d615b8303a30485ff69008304ac615bbbb1fe95ef88d0f8baa00060eaea"
+            }
+          ],
+          "placement": 16640
+        }
+      ],
+      "sdx_inputs": {
+        "abi/sdx.json": "9cc309d75fce0507d292ec0af6b5195072a704abfb3f93986786a430b0103f81",
+        "tools/generate_sdx.py": "f4b4e712a91dd380d5a50a9c018f398cceb8f64907da948a39dd5f2972b3360b",
+        "lib/dos/sdxcrc32.act": "d8d689de369f5eaef653e301a1a12c7602702f1b4f1dc47dab18b6da42bfc760",
+        "lib/dos/sdxcatalog.act": "20511b1b7d70e2058b762ce2ddfafa25ba53f7a47851de2194c85b2705ac32de",
+        "lib/dos/sdxidentify.act": "e7e59bec0ae32dd14511b30239c9f76e31d9585e3b9ef4a7dff17e337705d923",
+        "lib/dos/sdxpatch.act": "cc5fea7c1ed0c258aa06388854b3c291249b4be608631e92feb35a801cd93e6d",
+        "platform/altirraos/sdx-checksum.s": "2a1f3356fa6bc03bf1f34d5ed26353ae4f1411182c92690c54b20d90eba3e1b5",
+        "platform/altirraos/sdx-crc32.s": "6d4f0f772ff1a00885056feb8dac665f84f185e1260b655d22c16037171444ff",
+        "platform/altirraos/generated/sdx.inc": "5afd249e4634a7c51a913bccf0911212bbadafb392ae76a8735669fe90c50679",
+        "platform/altirraos/generated/sdx-crc32-table.inc": "25aaa36955291c40dd920a8f51067227822a961b9f8b601fc2037f652613a65d",
+        "compat/sdx/md5-450.json": "71013db641673bd947fbf7e1314ba530709685666dd6d6568070e0fe7594e49f",
+        "compat/sdx/arc-450.json": "b6061c40ee8229872e4acba1167d6e204d19b9addeb557ddf9c75ffa2f66fd0b"
+      }
+    },
+    {
+      "status": "pass",
+      "mode": "raw",
+      "checks": 37,
+      "seconds": 24.935,
+      "artifact": "build/sdx-native/raw/results.json",
+      "artifact_sha256": "54cf835ed7140e63d1e8955890c77742f4ba4fa39999974427c1331ed587e266",
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "compiler_override": false,
+      "image_sha256": "9f8e622cffde8af57535879dda7f9b98e0698f88e4599a9b651ac0fad01f288c",
+      "xex_sha256": "74f5abe02ff870f8f51ba319ef6c25245e77eef285378d8e3f590dfc3d177570",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 91,
+          "untouched_above_floor": 1189
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 134,
+        "untouched_from_base": 1402,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "cases": [
+        {
+          "manifest": "md5-450",
+          "revision": 1,
+          "module": "MD5.COM",
+          "execution_status": "patch-probe-only",
+          "bytes": 3488,
+          "crc32": "083eb436",
+          "original_sha256": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+          "image_sha256": "a468aed725d5b79ff0e5e71896dfcc5757433b3decd473801089af9316911c14",
+          "patches": [
+            {
+              "id": "md5-compression-irq",
+              "address": 9242,
+              "before": "78",
+              "after": "ea"
+            }
+          ],
+          "placement": 8192
+        },
+        {
+          "manifest": "arc-450",
+          "revision": 1,
+          "module": "ARC.COM",
+          "execution_status": "patch-probe-only",
+          "bytes": 3203,
+          "crc32": "a179b08e",
+          "original_sha256": "2107dcc06b29cf6ba5a26ad8aaf167f59f5211d2d93c08253594507a7d2217dd",
+          "image_sha256": "8e4dc93c6adac63ef37aaaa69871191dfd3dc90f8599ddf796879e6d4dd28f18",
+          "patches": [
+            {
+              "id": "arc-inline-six",
+              "address": 9709,
+              "before": "8d613aba18bd030185fe6d613a9d0301bd040185ff69009d0401ac613ab1fe99ef0088d0f860",
+              "after": "8d613a18a30385fe6d613a8303a30485ff69008304ac613abbb1fe95ef88d0f8baa00060eaea"
+            }
+          ],
+          "placement": 8192
+        }
+      ],
+      "sdx_inputs": {
+        "abi/sdx.json": "9cc309d75fce0507d292ec0af6b5195072a704abfb3f93986786a430b0103f81",
+        "tools/generate_sdx.py": "f4b4e712a91dd380d5a50a9c018f398cceb8f64907da948a39dd5f2972b3360b",
+        "lib/dos/sdxcrc32.act": "d8d689de369f5eaef653e301a1a12c7602702f1b4f1dc47dab18b6da42bfc760",
+        "lib/dos/sdxcatalog.act": "20511b1b7d70e2058b762ce2ddfafa25ba53f7a47851de2194c85b2705ac32de",
+        "lib/dos/sdxidentify.act": "e7e59bec0ae32dd14511b30239c9f76e31d9585e3b9ef4a7dff17e337705d923",
+        "lib/dos/sdxpatch.act": "cc5fea7c1ed0c258aa06388854b3c291249b4be608631e92feb35a801cd93e6d",
+        "platform/altirraos/sdx-checksum.s": "2a1f3356fa6bc03bf1f34d5ed26353ae4f1411182c92690c54b20d90eba3e1b5",
+        "platform/altirraos/sdx-crc32.s": "6d4f0f772ff1a00885056feb8dac665f84f185e1260b655d22c16037171444ff",
+        "platform/altirraos/generated/sdx.inc": "5afd249e4634a7c51a913bccf0911212bbadafb392ae76a8735669fe90c50679",
+        "platform/altirraos/generated/sdx-crc32-table.inc": "25aaa36955291c40dd920a8f51067227822a961b9f8b601fc2037f652613a65d",
+        "compat/sdx/md5-450.json": "71013db641673bd947fbf7e1314ba530709685666dd6d6568070e0fe7594e49f",
+        "compat/sdx/arc-450.json": "b6061c40ee8229872e4acba1167d6e204d19b9addeb557ddf9c75ffa2f66fd0b"
+      }
+    }
+  ],
+  "sdx_controls": [
+    {
+      "status": "pass",
+      "sei_patched": false,
+      "executable_sha256": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+      "commands": [
+        "MD5 EMPTY.BIN >>EMPTY.OUT",
+        "MD5 ABC.BIN >>ABC.OUT",
+        "MD5 ABC.BIN EMPTY.BIN >>MULTI.OUT",
+        "MD5 /C GOOD.MD5 >>GOOD.OUT",
+        "MD5 /C BAD.MD5 >>BAD.OUT",
+        "MD5 ABSENT.BIN >>MISSING.OUT",
+        "MD5 BIG.BIN >>BIG.OUT",
+        "STOP.COM"
+      ],
+      "outputs": {
+        "EMPTY.OUT": {
+          "hex": "4d44352028454d5054592e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b",
+          "text": "MD5 (EMPTY.BIN) = D41D8CD98F00B204E9800998ECF8427E\n"
+        },
+        "BIG.OUT": {
+          "hex": "4d443520284249472e42494e29203d2044323434413232323245324237464630374235423835363537454346383644349b",
+          "text": "MD5 (BIG.BIN) = D244A2222E2B7FF07B5B85657ECF86D4\n"
+        },
+        "ABC.OUT": {
+          "hex": "4d443520284142432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "text": "MD5 (ABC.BIN) = 900150983CD24FB0D6963F7D28E17F72\n"
+        },
+        "GOOD.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "MULTI.OUT": {
+          "hex": "4d443520284142432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b4d44352028454d5054592e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b",
+          "text": "MD5 (ABC.BIN) = 900150983CD24FB0D6963F7D28E17F72\nMD5 (EMPTY.BIN) = D41D8CD98F00B204E9800998ECF8427E\n"
+        },
+        "BAD.OUT": {
+          "hex": "4142432e42494e3a20c2c1c49b",
+          "text": "ABC.BIN: \u00c2\u00c1\u00c4\n"
+        },
+        "MISSING.OUT": {
+          "hex": "",
+          "text": ""
+        }
+      },
+      "digests": {
+        "EMPTY": "d41d8cd98f00b204e9800998ecf8427e",
+        "ABC": "900150983cd24fb0d6963f7d28e17f72",
+        "BIG": "d244a2222e2b7ff07b5b85657ecf86d4"
+      },
+      "media_before_sha256": "f10765b01b88ddda96c9aa42f136b60d0f9938b2e7458dc14df6e23e8ae3ef3c",
+      "media_after_sha256": "28441d2617031255727c73609648929168f1c19b8ad4a563622740c225309131",
+      "artifact": "build/sdx-md5/reference-current/results.json",
+      "artifact_sha256": "9cad5e0eb25cf3d186a9e3e56835903003c8a1df8008508b22d3e291be0315fd",
+      "scope": "Original SDX; no captured command exit codes or stderr"
+    },
+    {
+      "status": "pass",
+      "sei_patched": true,
+      "executable_sha256": "254bc14e07310a41b023fe2a77c46ac2b3a4fa5614c43694ec6ab60b4bef16a6",
+      "commands": [
+        "MD5 EMPTY.BIN >>EMPTY.OUT",
+        "MD5 ABC.BIN >>ABC.OUT",
+        "MD5 ABC.BIN EMPTY.BIN >>MULTI.OUT",
+        "MD5 /C GOOD.MD5 >>GOOD.OUT",
+        "MD5 /C BAD.MD5 >>BAD.OUT",
+        "MD5 ABSENT.BIN >>MISSING.OUT",
+        "MD5 BIG.BIN >>BIG.OUT",
+        "STOP.COM"
+      ],
+      "outputs": {
+        "EMPTY.OUT": {
+          "hex": "4d44352028454d5054592e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b",
+          "text": "MD5 (EMPTY.BIN) = D41D8CD98F00B204E9800998ECF8427E\n"
+        },
+        "BIG.OUT": {
+          "hex": "4d443520284249472e42494e29203d2044323434413232323245324237464630374235423835363537454346383644349b",
+          "text": "MD5 (BIG.BIN) = D244A2222E2B7FF07B5B85657ECF86D4\n"
+        },
+        "ABC.OUT": {
+          "hex": "4d443520284142432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b",
+          "text": "MD5 (ABC.BIN) = 900150983CD24FB0D6963F7D28E17F72\n"
+        },
+        "GOOD.OUT": {
+          "hex": "4142432e42494e3a204f4b9b",
+          "text": "ABC.BIN: OK\n"
+        },
+        "MULTI.OUT": {
+          "hex": "4d443520284142432e42494e29203d2039303031353039383343443234464230443639363346374432384531374637329b4d44352028454d5054592e42494e29203d2044343144384344393846303042323034453938303039393845434638343237459b",
+          "text": "MD5 (ABC.BIN) = 900150983CD24FB0D6963F7D28E17F72\nMD5 (EMPTY.BIN) = D41D8CD98F00B204E9800998ECF8427E\n"
+        },
+        "BAD.OUT": {
+          "hex": "4142432e42494e3a20c2c1c49b",
+          "text": "ABC.BIN: \u00c2\u00c1\u00c4\n"
+        },
+        "MISSING.OUT": {
+          "hex": "",
+          "text": ""
+        }
+      },
+      "digests": {
+        "EMPTY": "d41d8cd98f00b204e9800998ecf8427e",
+        "ABC": "900150983cd24fb0d6963f7d28e17f72",
+        "BIG": "d244a2222e2b7ff07b5b85657ecf86d4"
+      },
+      "media_before_sha256": "8bbd968f5ecfb6ca0f661a2037626f41b2d27a1ad5c3305b9e0994e691dce315",
+      "media_after_sha256": "f85687565da9cd08bf5463fd8b080af466f57eee64397e2113f97dd8091a3190",
+      "artifact": "build/sdx-md5/reference-patched/results.json",
+      "artifact_sha256": "3abd001208b58f95e40bd82f4016baa02f326c2afa6d9d183e4dda92028e0c3b",
+      "scope": "Original SDX; no captured command exit codes or stderr"
+    }
+  ],
+  "default_regression": {
+    "status": "pass",
+    "checks": [
+      58
+    ],
+    "scope": "Replay of unchanged eight-slot DOS stack fixture on the installed paced emulator; SDX support disabled",
+    "artifact": "build/sdx-default-regression/paced-replay.json",
+    "artifact_sha256": "6c0eef5d7a4a9d9b6523c96a1e6029c698e878f1bbb1130b12736bcd132fb2eb",
+    "xex_sha256": "6421d4fd7f93879d187e8405f25d735abf0153c2945d2d95384c9e13755ad1ea",
+    "sdx_patches": false,
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ]
+    },
+    "runner_note": "Legacy runner could not import its unavailable build/altirra-sio-multi SDK. Replayed the same hash-verified emitted build on the installed paced pin; no source override."
+  },
+  "pending": [
+    "Complete P0 instruction/service/path audit and ARC SDX controls",
+    "Helper IRQ/NMI qualification and complete native record/relocation/patch-plan construction",
+    "P2 production guest context, page-one exchange and early IRQ/NMI routing",
+    "P3 Process/Image lifetime and native loader admission",
+    "P4 and M1/M2 SDX services and MD5 command acceptance",
+    "A1-A4 ARC overlays, services, operations and concurrency"
+  ]
+}

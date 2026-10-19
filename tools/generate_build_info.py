@@ -24,14 +24,16 @@ def identity(root=ROOT):
 
 def generate(output, mounts, task_capacity, stack_checks=True, system_mount=None):
     build = identity()
+    build['version'] = (ROOT/'VERSION').read_text().strip()
     compiler = json.loads((ROOT/'toolchain/actionc.json').read_text())['revision']
     build.update(actionc_pin=compiler, task_capacity=task_capacity, stack_checks=stack_checks)
     mount = next((m for m in mounts if system_mount is not None and m['alias'].upper() == system_mount.upper()), None)
     build['mount'] = mount
-    strings = dict(banner=f"Exec816 ({build['display']})\n\n",
+    title = f"Exec816 {build['version']} ({build['display']})"
+    strings = dict(banner=title+'\n\n',
                    slots=f'exec: {task_capacity} task slots\n',
                    stackChecks=f'exec: stack checks {"enabled" if stack_checks else "disabled"}\n',
-                   version=f"Exec816 ({build['display']})\nactionc pin: {compiler[:7]}\n")
+                   version=f"{title}\nactionc pin: {compiler[:7]}\n")
     if mount:
         strings.update(sioReady='' if mount.get('device')=='ideplus.device' else
                        ' ready, '+PROFILE_NAMES[mount['profile']]+' profile\n',

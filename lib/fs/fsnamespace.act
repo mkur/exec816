@@ -25,10 +25,17 @@ RETURN(FSSTATUS.MORE)
 
 PUBLIC BYTE FUNC Resolved(FSTYPES.Service POINTER service)
   BYTE index
+  DateStamp POINTER date
 
   LET action=service.packet.sp_Pkt.dp_Type
   IF action=16 THEN
     RETURN(Done(service,FSWRITE.Delete(service)))
+  FI
+
+  IF action=34 THEN
+    date=DateStamp POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg4))
+    RETURN(Done(service,FSWRITE.SetDate(service,date.ds_Days,
+        date.ds_Minute,date.ds_Tick)))
   FI
 
   LET state=FSWRITEIO.State(service)

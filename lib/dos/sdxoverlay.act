@@ -1,0 +1,150 @@
+MODULE SDXOVERLAY
+USE EXEC
+USE DOS
+USE O65READ
+USE A816MEMORY
+USE SDXABI
+USE SDXCONFIG
+USE SDXSTATE
+USE SDXFILE
+USE SDXFILES
+USE SDXIDENTIFY
+USE SDXARCADD
+
+; ARC main loads one overlay synchronously. It cannot publish arbitrary code
+; through CAR:; both the requested name and complete input identity are checked.
+PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  BYTE POINTER staged,root,next
+  DOS.FileHandle POINTER file
+  SDXFILE.Layout POINTER plan
+  CARD name,index,used,stack,length
+  BYTE identity
+  LONGINT got,total,cause
+  BYTE error
+
+  IF state.profile<>32 OR state.overlayActive<>0 THEN
+    RETURN(156)
+  FI
+  name=SDXSTATE.ReadWord(state.bank,SDXABI.FILE_P)
+  IF name>=SDXABI.GUEST_LIMIT-14 OR state.bank(name+14)<>$9b THEN
+    RETURN(156)
+  FI
+  identity=0
+  length=0
+  IF O65READ.Equal(state.bank+name,BYTE POINTER("CAR:ARCLST.OVL")+1,14)<>0
+      AND state.bank($721)<=2 THEN
+    identity=3
+    length=1998
+  ELSEIF O65READ.Equal(state.bank+name,BYTE POINTER("CAR:ARCEXT.OVL")+1,14)<>0
+      AND state.bank($721)=0 THEN
+    identity=4
+    length=1911
+  ELSEIF O65READ.Equal(state.bank+name,BYTE POINTER("CAR:ARCADD.OVL")+1,14)<>0
+      AND (state.bank($721)=0 OR state.bank($721)=2 OR state.bank($721)=3) THEN
+    identity=5
+    length=4645
+  FI
+  IF identity=0 THEN
+    RETURN(156)
+  FI
+  root=SDXCONFIG.CarRoot()
+  used=0
+  WHILE root(used)<>0 DO
+    state.path(used)=root(used)
+    used==+1
+  OD
+  A816MEMORY.Move(@state.path+used,state.bank+name+4,10)
+  state.path(used+10)=0
+  file=DOS.Open(@state.path,DOS.MODE_OLDFILE)
+  IF file=NULL THEN
+    RETURN(SDXFILES.MapError(state))
+  FI
+  staged=EXEC.AllocMem(LONGCARD(length)+1,0)
+  total=0
+  cause=0
+  IF staged=NULL THEN
+    cause=103
+  ELSE
+    WHILE total<LONGINT(length)+1 DO
+      got=DOS.Read(file,staged+SIZE(total),LONGINT(length)+1-total)
+      IF got<0 THEN
+        cause=DOS.IoErr()
+        EXIT
+      FI
+      IF got=0 THEN
+        EXIT
+      FI
+      total==+got
+    OD
+  FI
+  IF DOS.Close(file)=0 AND cause=0 THEN
+    cause=DOS.IoErr()
+  FI
+  error=156
+  IF cause=0 AND total=LONGINT(length) THEN
+    IF SDXIDENTIFY.Select(staged,LONGCARD(total))=identity THEN
+      plan=SDXFILE.Load(staged,LONGCARD(total),state.bank,state.overlayBase,
+          SDXABI.GUEST_LIMIT,@SDXABI.Resolve,@state.parentExport,1)
+      IF plan<>NULL THEN
+        state.overlayEnd=CARD(plan.end)
+        error=0
+        IF identity=5 AND SDXARCADD.Patch(plan)<>0 THEN
+          error=156
+        FI
+        SDXFILE.Release(plan)
+      ELSE
+        cause=DOS.IoErr()
+      FI
+    FI
+  FI
+  IF staged<>NULL THEN
+    EXEC.FreeMem(staged,LONGCARD(length)+1)
+  FI
+  IF cause<>0 THEN
+    DOS.SetIoErr(cause)
+    RETURN(SDXFILES.MapError(state))
+  FI
+  IF error<>0 THEN
+    RETURN(error)
+  FI
+  stack=SDXSTATE.ReadWord(state.context,SDXABI.FIELDS_GUEST_S)
+  IF stack<SDXABI.MINIMUM_S+2 THEN
+    RETURN(158)
+  FI
+  state.overlayStack=stack
+  state.overlayTraps=state.trapCount
+  A816MEMORY.Move(@state.overlayFrame,frame+1,13)
+  ; Insert an ordinary guest RTS destination above the relocated saved frame.
+  next=frame-2
+  FOR index=1 TO 13 DO
+    next(index)=frame(index)
+  OD
+  SDXSTATE.Word(frame,12,SDXABI.OVERLAY_RETURN_PC-1)
+  SDXSTATE.Word(state.context,SDXABI.FIELDS_GUEST_S,stack-2)
+  frame=SDXSTATE.GetFrame(state)
+  SDXSTATE.Word(frame,SDXABI.FRAME_PC,state.overlayBase)
+  state.overlayActive=1
+  state.overlayModule=identity
+  SDXSTATE.Word(state.bank,$2e7,state.overlayEnd)
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Retire(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  BYTE error
+
+  IF state.overlayActive=0 OR
+      SDXSTATE.ReadWord(state.context,SDXABI.FIELDS_GUEST_S)<>state.overlayStack THEN
+    RETURN(156)
+  FI
+  error=SDXFILES.CloseAll(state)
+  state.overlayActive=0
+  state.overlayModule=0
+  SDXSTATE.Word(state.bank,$2e7,state.overlayBase)
+  state.trapCount=state.overlayTraps
+  A816MEMORY.Move(frame+1,@state.overlayFrame,13)
+  A816MEMORY.Clear(state.bank+state.overlayBase,
+      LONGCARD(state.overlayEnd-state.overlayBase))
+
+RETURN(error)
+
+ENDMODULE

@@ -1,0 +1,64 @@
+MODULE SDXPATCH
+USE SDXCATALOG
+
+; Built after record validation, placement and relocation. Both byte spans
+; are immutable, owned by the unpublished load transaction, and independent
+; of the target bank. Offsets are near addresses within that private bank.
+PUBLIC TYPE Patch=[
+  CARD offset,length
+  BYTE POINTER expected,replacement
+]
+
+; Verify all spans before changing any byte. The caller owns the private bank
+; throughout; scheduling is permitted and no executable is published here.
+PUBLIC CARD FUNC Apply(BYTE POINTER bank Patch POINTER patches CARD count)
+  CARD index,previous,byteIndex
+  LONGCARD end,previousEnd
+  Patch POINTER patch,other
+
+  IF count>SDXCATALOG.PATCH_LIMIT THEN
+    RETURN(SDXCATALOG.ERROR_PLAN)
+  FI
+
+  index=0
+  WHILE index<count DO
+    patch=@patches(index)
+    end=LONGCARD(patch.offset)+patch.length
+    IF patch.length=0 OR end>65536 THEN
+      RETURN(SDXCATALOG.ERROR_PLAN)
+    FI
+
+    previous=0
+    WHILE previous<index DO
+      other=@patches(previous)
+      previousEnd=LONGCARD(other.offset)+other.length
+      IF LONGCARD(patch.offset)<previousEnd AND LONGCARD(other.offset)<end THEN
+        RETURN(SDXCATALOG.ERROR_PLAN)
+      FI
+      previous==+1
+    OD
+
+    byteIndex=0
+    WHILE byteIndex<patch.length DO
+      IF bank(SIZE(LONGCARD(patch.offset)+byteIndex))<>patch.expected(byteIndex) THEN
+        RETURN(SDXCATALOG.ERROR_PREIMAGE)
+      FI
+      byteIndex==+1
+    OD
+    index==+1
+  OD
+
+  index=0
+  WHILE index<count DO
+    patch=@patches(index)
+    byteIndex=0
+    WHILE byteIndex<patch.length DO
+      bank(SIZE(LONGCARD(patch.offset)+byteIndex))=patch.replacement(byteIndex)
+      byteIndex==+1
+    OD
+    index==+1
+  OD
+
+RETURN(SDXCATALOG.ERROR_OK)
+
+ENDMODULE

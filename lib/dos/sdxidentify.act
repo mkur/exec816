@@ -1,0 +1,24 @@
+MODULE SDXIDENTIFY
+USE SDXCRC32
+USE SDXCATALOG
+
+; Hash immutable staged bytes once. The SDX file limit is one 64 KiB bank;
+; split the largest legal file because the native update count is 16 bits.
+PUBLIC BYTE FUNC Select(BYTE POINTER bytes LONGCARD length)
+  LONGCARD state
+
+  IF length<8 OR length>65536 THEN
+    RETURN(0)
+  FI
+
+  state=$ffffffff
+  IF length=65536 THEN
+    state=SDXCRC32.Update(bytes,65535,state)
+    state=SDXCRC32.Update(@bytes(65535),1,state)
+  ELSE
+    state=SDXCRC32.Update(bytes,CARD(length),state)
+  FI
+
+RETURN(SDXCATALOG.Select(length,state XOR $ffffffff))
+
+ENDMODULE

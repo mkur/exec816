@@ -63,6 +63,9 @@
 - Distribute the generated `exec816-demo.zip`, containing only boot files,
   a short user guide, license notices and checksums. Keep build intermediates,
   manifests and test output in the development directory.
+- Release packages must include old/new Atarimax 8 Mbit CAR images and the raw
+  1 MiB BIN alongside the matching XEX. Use `tools/build_demo.py --cartridge-from`
+  to add them to an existing package before publication.
 - Follow the [code style guide](docs/contributing/style.md) for handwritten Action!
   code. Apply it to new code and routines being changed; keep unrelated
   formatting separate and edit generated code through its generator.

@@ -1,0 +1,675 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "scope": "P3 native record decoder component; no guest admission or Process execution",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "sources": {
+    "lib/dos/sdxfile.act": "59dab056229acf310c903bf879ef7cd8f825b770db87fdcbcb55bce132c24888",
+    "tools/test_sdx_loader.py": "4b357261f2499bb0933bd4c4defe676bbdcbc1904561ee93f59f06060f7ae639"
+  },
+  "runs": {
+    "opt": {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 61,
+      "cases": [
+        {
+          "file": "MD5.COM",
+          "placement": 8192,
+          "end": 13056
+        },
+        {
+          "file": "MD5.COM",
+          "placement": 16640,
+          "end": 21504
+        },
+        {
+          "file": "ARC.COM",
+          "placement": 8192,
+          "end": 14956
+        },
+        {
+          "file": "ARC.COM",
+          "placement": 16640,
+          "end": 23404
+        },
+        {
+          "file": "ARCLST.OVL",
+          "placement": 8192,
+          "end": 9906
+        },
+        {
+          "file": "ARCLST.OVL",
+          "placement": 16640,
+          "end": 18354
+        },
+        {
+          "file": "ARCEXT.OVL",
+          "placement": 8192,
+          "end": 27084
+        },
+        {
+          "file": "ARCEXT.OVL",
+          "placement": 16640,
+          "end": 35532
+        },
+        {
+          "file": "ARCADD.OVL",
+          "placement": 8192,
+          "end": 32778
+        },
+        {
+          "file": "ARCADD.OVL",
+          "placement": 16640,
+          "end": 41226
+        }
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 259,
+        "native_irq_count": 0,
+        "switches": 1,
+        "vbi_count": 259,
+        "vbi_dispatches": 251,
+        "live_tasks": 0,
+        "created": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 228,
+            "untouched_above_floor": 1052
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "seconds": 26.154,
+      "build_identity": {
+        "image_sha256": "b9821fbe9439ee647810a4bfcf32fd168fd90ecbc6fe2993ea2bfef0a51d526c",
+        "xex_sha256": "0dc4cf4d3050ab27f1d325c66edbb7078bc27f7a1dca8aa6cd573e5a45811039",
+        "source_sha256": "f96b0fec6590950b6e1dc09c674beca6bd1d3de63b41bd86858d6a1c5aa00a07",
+        "optimize": true
+      }
+    },
+    "raw": {
+      "status": "pass",
+      "tier": "development",
+      "mode": "raw",
+      "checks": 20,
+      "cases": [
+        {
+          "file": "MD5.COM",
+          "placement": 8192,
+          "end": 13056
+        }
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 29,
+        "native_irq_count": 0,
+        "switches": 1,
+        "vbi_count": 29,
+        "vbi_dispatches": 26,
+        "live_tasks": 0,
+        "created": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 268,
+            "untouched_above_floor": 1012
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 264,
+          "untouched_from_base": 1272,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "seconds": 23.664,
+      "build_identity": {
+        "image_sha256": "255dce3b08052b9a0f4bfd1e562f8c989dfc140476db2a31805d98dffef69abd",
+        "xex_sha256": "e8dbb17a1b65a5aaff5183eb1e2ba4acf66e157817861fbeddeaf24e3044c6f8",
+        "source_sha256": "7973ddd17c743fc52e90652db8c9437dcef7205d23edcd5fa30d21efa2b4a912",
+        "optimize": false
+      }
+    }
+  },
+  "process_runs": {
+    "opt": {
+      "status": "pass",
+      "checks": 72,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 121,
+        "native_irq_count": 0,
+        "switches": 180,
+        "vbi_count": 121,
+        "vbi_dispatches": 83,
+        "live_tasks": 0,
+        "created": 9,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 392,
+            "untouched_above_floor": 888
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 207,
+            "untouched_above_floor": 849
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 287,
+            "untouched_above_floor": 769
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 287,
+            "untouched_above_floor": 769
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 26,
+            "untouched_above_floor": 230
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "image_sha256": "d69a08635dfe4901193771db726ece4973990cc728c56d67567a0573f07852d4",
+      "xex_sha256": "27831c5401ddb79e6300dcbbec23a87863b63d8a3dd11df0dd65035fec7aef44",
+      "root_source_sha256": "e5453d2831c1f37a87488651f0c504cc22d54c219c731b159830aa4446c9e9ed",
+      "seconds": 114.89
+    },
+    "return-1": {
+      "status": "pass",
+      "checks": 72,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 121,
+        "native_irq_count": 0,
+        "switches": 176,
+        "vbi_count": 121,
+        "vbi_dispatches": 85,
+        "live_tasks": 0,
+        "created": 9,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 392,
+            "untouched_above_floor": 888
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 207,
+            "untouched_above_floor": 849
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 287,
+            "untouched_above_floor": 769
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 287,
+            "untouched_above_floor": 769
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 26,
+            "untouched_above_floor": 230
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 271,
+          "untouched_from_base": 1265,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "image_sha256": "9d778e20ec045dd0a043db08649904799414f67cc36b1fb728152cbd37911040",
+      "xex_sha256": "adafa659f9425c72bd558baa8e646155835cb15c5d72118f56f7b5cdced53f92",
+      "root_source_sha256": "e5453d2831c1f37a87488651f0c504cc22d54c219c731b159830aa4446c9e9ed",
+      "seconds": 115.455
+    },
+    "return-7": {
+      "status": "pass",
+      "checks": 72,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 122,
+        "native_irq_count": 0,
+        "switches": 175,
+        "vbi_count": 122,
+        "vbi_dispatches": 84,
+        "live_tasks": 0,
+        "created": 9,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 392,
+            "untouched_above_floor": 888
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 207,
+            "untouched_above_floor": 849
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 287,
+            "untouched_above_floor": 769
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 287,
+            "untouched_above_floor": 769
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 26,
+            "untouched_above_floor": 230
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 271,
+          "untouched_from_base": 1265,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "image_sha256": "bef33283ae7be70f22be9f223a99776c0d26a5fbf5da005e8f819b202d50ea54",
+      "xex_sha256": "78be2e8137d39dfa00e3e28a68a890ff84f730c085e8e7fdb0b9289c53579020",
+      "root_source_sha256": "e5453d2831c1f37a87488651f0c504cc22d54c219c731b159830aa4446c9e9ed",
+      "seconds": 121.287
+    },
+    "return-8": {
+      "status": "pass",
+      "checks": 72,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 124,
+        "native_irq_count": 0,
+        "switches": 183,
+        "vbi_count": 124,
+        "vbi_dispatches": 85,
+        "live_tasks": 0,
+        "created": 9,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 392,
+            "untouched_above_floor": 888
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 207,
+            "untouched_above_floor": 849
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 287,
+            "untouched_above_floor": 769
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 287,
+            "untouched_above_floor": 769
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 26,
+            "untouched_above_floor": 230
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "image_sha256": "7507be4680646d2a4de833bf6a7b28011f3aee720758037a6e79b4c0f2b718fa",
+      "xex_sha256": "457fd978913debc1b1a24c51d8b9376f0b8a42a928635fe9fd657e5f935a4b70",
+      "root_source_sha256": "e5453d2831c1f37a87488651f0c504cc22d54c219c731b159830aa4446c9e9ed",
+      "seconds": 118.642
+    }
+  },
+  "process_memory": {
+    "dp_base": 25344,
+    "dp_reservation": {
+      "name": "sdx-direct-pages",
+      "address": 25328,
+      "size": 544
+    },
+    "fixed_bank_zero_bytes": 544,
+    "per_task_bank_zero_bytes": 0,
+    "resident_base": 2621440,
+    "resident_reserved_bytes": 65536
+  },
+  "process_scope": "P3 source-audited synthetic commands, dynamic guest banks and ordinary Processes; no MD5/ARC execution or full hosted qualification",
+  "native_process_regression": {
+    "status": "pass",
+    "checks": [
+      12
+    ],
+    "image_sha256": "1460b24e0141b7596af9b5d444988d9cbfca19f6cc6b5873ab416d4770da89c9",
+    "xex_sha256": "fdf84d909c85573fb27430acc3f49a44cea7d877e9f7634295d25dcfddd8be23",
+    "upper_static_data_reservation": 4096,
+    "guards": "intact"
+  }
+}

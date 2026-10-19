@@ -1,5 +1,19 @@
 # Implementation plans
 
+- [SpartaDOS personality for 6502 applications](spartados-personality-design.md):
+  proposed MD5 → ARC → Sparta Commander sequence using private upper-memory
+  images, emulation-mode execution and audited load-time patches. The
+  [implementation plan for MD5 and ARC](spartados-personality-implementation-plan.md)
+  defines exact-binary patch manifests, page-one ownership, IRQ/NMI gates,
+  native DOS adapters, overlay loading and executable application milestones.
+  [Patch infrastructure](../development/sdx-patches.md) is implemented and tested
+  as components. The [P2 runtime slice](../development/sdx-runtime.md) runs
+  synthetic guests on ordinary Tasks. [MD5 M1/M2](../development/sdx-md5.md) and
+  [ARC A1–A4](../development/sdx-arc.md) pass development acceptance for their
+  pinned subsets, including mixed use and shell recovery. The full P0/P1/P2
+  interrupt/lifetime gates and hosted-system qualification remain open.
+  Commander follows later.
+
 - [Batched directory enumeration design](directory-batching-design.md) and
   [EB1–EB3 plan](directory-batching-implementation-plan.md): EB1–EB2 implement the
   public ExNextBatch operation with compact caller-owned results, existing

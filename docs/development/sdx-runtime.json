@@ -1,0 +1,3520 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-18",
+  "status": "partial-P2-development",
+  "scope": "Reversible ROM shadow, early IRQ/NMI ownership, eleven forced return boundaries, two synthetic ordinary-Task guests and traced stock-810 reads with identical-image replay. No SDX binary admission or hosted-system qualification.",
+  "compiler_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act"
+  },
+  "platform_pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "bank_zero": {
+    "production_reserved_delta_fixed": 0,
+    "production_reserved_delta_per_task": 0,
+    "guards_alignment_unused_capacity_included": true,
+    "fixture_borrowed_dp_bytes": 512,
+    "fixture_dp_bytes_per_guest": 256,
+    "fixture_dp_pages": [
+      32256,
+      32512
+    ],
+    "resident_reserved_bytes": 4096
+  },
+  "upper_memory": {
+    "native_work_reserved_bytes": 8192,
+    "native_work_before_probe_without_crc": 5473,
+    "native_work_with_probe": 6905,
+    "probe_used_bytes": 1432,
+    "fixture_reserve_bytes": 163840,
+    "fixture_rom_and_state_capacity": 32768,
+    "fixture_guest_banks_capacity": 131072,
+    "guest_descriptor_capacity_each": 512,
+    "guest_stack_image_each": 256,
+    "host_stack_image": 256
+  },
+  "return_boundaries": {
+    "1": "after pending load",
+    "2": "before PLB",
+    "3": "after PLB",
+    "4": "after PLD",
+    "5": "after PLY",
+    "6": "after PLX",
+    "7": "after PLA",
+    "8": "guest bank before SEC",
+    "9": "guest bank before XCE",
+    "10": "emulation before PLP",
+    "11": "emulation before RTI"
+  },
+  "standalone": [
+    {
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_bank": 2,
+      "guest_dp": 8704,
+      "flags": 233,
+      "accumulator": 43981,
+      "phase": 0,
+      "vbis": 32,
+      "timer_irqs": 2437,
+      "deferred_native_nmis": 1,
+      "os_clock_ticks": 32,
+      "steady_guest_frames": 32,
+      "rom_and_underlay_restored": true,
+      "effective_rom_sha256": "36ec47afb37fd71071544e3dee00dfd309ee3259052eaeee8b0e1ae520d34696",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "e831"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "5c32"
+        }
+      ],
+      "shadow_code_bytes": 269,
+      "xex_sha256": "99a39fa1dbd7a8ff1a508f270350780d1580821f75d7a4d0228c8404d802b69c",
+      "tier": "development",
+      "scope": "Standalone P2 early IRQ/NMI and ROM-shadow component; no Exec Tasks or SDX application",
+      "pin": "toolchain/altirra-shell-paced.json",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "seconds": 0.805,
+      "inputs": {
+        "probes/sdx-runtime/probe.s": "89f0731d602ef12fcff4be79d82202691e178e1b2da21e06d3f48f35459e327e",
+        "probes/sdx-runtime/probe.cfg": "7aaf70d4042f8d3864b4b246d43d388db2721289862cde93338bd8868c862046",
+        "tools/test_sdx_runtime.py": "99e62ad5cba90283f09660b22c1108099f4f2918a65d4ef5d80b6391951c68cc",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "artifact": "build/sdx-runtime/bank2/result.json",
+      "artifact_sha256": "4cb5244e365a40c9efa8d59a5bdc9bb6f83f7760f9d849860968db154ebe3909",
+      "name": "bank2"
+    },
+    {
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_bank": 3,
+      "guest_dp": 8448,
+      "flags": 233,
+      "accumulator": 4709,
+      "phase": 0,
+      "vbis": 32,
+      "timer_irqs": 2437,
+      "deferred_native_nmis": 1,
+      "os_clock_ticks": 32,
+      "steady_guest_frames": 32,
+      "rom_and_underlay_restored": true,
+      "effective_rom_sha256": "36ec47afb37fd71071544e3dee00dfd309ee3259052eaeee8b0e1ae520d34696",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "e831"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "5c32"
+        }
+      ],
+      "shadow_code_bytes": 269,
+      "xex_sha256": "050c08a2b04fee1479c3a7d1bf1fb0afc196e840c8f9226f708bab6d1852af07",
+      "tier": "development",
+      "scope": "Standalone P2 early IRQ/NMI and ROM-shadow component; no Exec Tasks or SDX application",
+      "pin": "toolchain/altirra-shell-paced.json",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "seconds": 0.789,
+      "inputs": {
+        "probes/sdx-runtime/probe.s": "89f0731d602ef12fcff4be79d82202691e178e1b2da21e06d3f48f35459e327e",
+        "probes/sdx-runtime/probe.cfg": "7aaf70d4042f8d3864b4b246d43d388db2721289862cde93338bd8868c862046",
+        "tools/test_sdx_runtime.py": "99e62ad5cba90283f09660b22c1108099f4f2918a65d4ef5d80b6391951c68cc",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "artifact": "build/sdx-runtime/bank3/result.json",
+      "artifact_sha256": "fec345be41c7493cf945418f304e07582cf495cefa7f2be5d77aed7422492bcc",
+      "name": "bank3"
+    },
+    {
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_bank": 2,
+      "guest_dp": 8704,
+      "flags": 237,
+      "accumulator": 43981,
+      "phase": 0,
+      "vbis": 32,
+      "timer_irqs": 0,
+      "deferred_native_nmis": 0,
+      "os_clock_ticks": 32,
+      "steady_guest_frames": 32,
+      "rom_and_underlay_restored": true,
+      "effective_rom_sha256": "1baf58594b0fe36aa20aff61fd0796b2790b1ad540715409bf573d15008dfb88",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "e131"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "5532"
+        }
+      ],
+      "shadow_code_bytes": 269,
+      "xex_sha256": "54c197352de8674e3a34fc5d81dfcbdee3b4f6e3786c0e3873bf650b3caf38ca",
+      "tier": "development",
+      "scope": "Standalone P2 early IRQ/NMI and ROM-shadow component; no Exec Tasks or SDX application",
+      "pin": "toolchain/altirra-shell-paced.json",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "seconds": 0.79,
+      "inputs": {
+        "probes/sdx-runtime/probe.s": "89f0731d602ef12fcff4be79d82202691e178e1b2da21e06d3f48f35459e327e",
+        "probes/sdx-runtime/probe.cfg": "7aaf70d4042f8d3864b4b246d43d388db2721289862cde93338bd8868c862046",
+        "tools/test_sdx_runtime.py": "99e62ad5cba90283f09660b22c1108099f4f2918a65d4ef5d80b6391951c68cc",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "artifact": "build/sdx-runtime/masked/result.json",
+      "artifact_sha256": "767dae1416cad3ab883519c2c3877f636a86b39b2e489f32bee0fbdc3e3bb35c",
+      "name": "masked"
+    },
+    {
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_bank": 2,
+      "guest_dp": 8704,
+      "flags": 233,
+      "accumulator": 43981,
+      "phase": 1,
+      "vbis": 32,
+      "timer_irqs": 2404,
+      "deferred_native_nmis": 2,
+      "os_clock_ticks": 32,
+      "steady_guest_frames": 32,
+      "rom_and_underlay_restored": true,
+      "effective_rom_sha256": "36ec47afb37fd71071544e3dee00dfd309ee3259052eaeee8b0e1ae520d34696",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "e831"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "5c32"
+        }
+      ],
+      "shadow_code_bytes": 269,
+      "xex_sha256": "b0cea644d4ef3f6cdfedc9d9a2f2758d7077238df087429d1e32296908cd67a0",
+      "tier": "development",
+      "scope": "Standalone P2 early IRQ/NMI and ROM-shadow component; no Exec Tasks or SDX application",
+      "pin": "toolchain/altirra-shell-paced.json",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "seconds": 0.775,
+      "inputs": {
+        "probes/sdx-runtime/probe.s": "89f0731d602ef12fcff4be79d82202691e178e1b2da21e06d3f48f35459e327e",
+        "probes/sdx-runtime/probe.cfg": "7aaf70d4042f8d3864b4b246d43d388db2721289862cde93338bd8868c862046",
+        "tools/test_sdx_runtime.py": "99e62ad5cba90283f09660b22c1108099f4f2918a65d4ef5d80b6391951c68cc",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "artifact": "build/sdx-runtime/phase1/result.json",
+      "artifact_sha256": "284f61b0903b5d57c02456bf2cc71fb80adda16045ef72dd7dba87e6394a69b7",
+      "name": "phase1"
+    },
+    {
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_bank": 2,
+      "guest_dp": 8704,
+      "flags": 233,
+      "accumulator": 43981,
+      "phase": 2,
+      "vbis": 32,
+      "timer_irqs": 2405,
+      "deferred_native_nmis": 4,
+      "os_clock_ticks": 32,
+      "steady_guest_frames": 32,
+      "rom_and_underlay_restored": true,
+      "effective_rom_sha256": "36ec47afb37fd71071544e3dee00dfd309ee3259052eaeee8b0e1ae520d34696",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "e831"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "5c32"
+        }
+      ],
+      "shadow_code_bytes": 269,
+      "xex_sha256": "c62555d8892caaea77f4d4d3bd7dbb94c6b013f4b5017e37bad273910ee80f69",
+      "tier": "development",
+      "scope": "Standalone P2 early IRQ/NMI and ROM-shadow component; no Exec Tasks or SDX application",
+      "pin": "toolchain/altirra-shell-paced.json",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "seconds": 0.794,
+      "inputs": {
+        "probes/sdx-runtime/probe.s": "89f0731d602ef12fcff4be79d82202691e178e1b2da21e06d3f48f35459e327e",
+        "probes/sdx-runtime/probe.cfg": "7aaf70d4042f8d3864b4b246d43d388db2721289862cde93338bd8868c862046",
+        "tools/test_sdx_runtime.py": "99e62ad5cba90283f09660b22c1108099f4f2918a65d4ef5d80b6391951c68cc",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "artifact": "build/sdx-runtime/phase2/result.json",
+      "artifact_sha256": "5b9d603cee954bdcc09f4ebc2d8ba26c34530265491c4f3b8e0eb7de07f3437e",
+      "name": "phase2"
+    },
+    {
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_bank": 2,
+      "guest_dp": 8704,
+      "flags": 233,
+      "accumulator": 43981,
+      "phase": 3,
+      "vbis": 32,
+      "timer_irqs": 2436,
+      "deferred_native_nmis": 2,
+      "os_clock_ticks": 32,
+      "steady_guest_frames": 32,
+      "rom_and_underlay_restored": true,
+      "effective_rom_sha256": "36ec47afb37fd71071544e3dee00dfd309ee3259052eaeee8b0e1ae520d34696",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "e831"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "5c32"
+        }
+      ],
+      "shadow_code_bytes": 269,
+      "xex_sha256": "2dd11a979ff9c21c5b4c37b72c635e89c315afb7484b037063c228e4d3ac9832",
+      "tier": "development",
+      "scope": "Standalone P2 early IRQ/NMI and ROM-shadow component; no Exec Tasks or SDX application",
+      "pin": "toolchain/altirra-shell-paced.json",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "seconds": 0.796,
+      "inputs": {
+        "probes/sdx-runtime/probe.s": "89f0731d602ef12fcff4be79d82202691e178e1b2da21e06d3f48f35459e327e",
+        "probes/sdx-runtime/probe.cfg": "7aaf70d4042f8d3864b4b246d43d388db2721289862cde93338bd8868c862046",
+        "tools/test_sdx_runtime.py": "99e62ad5cba90283f09660b22c1108099f4f2918a65d4ef5d80b6391951c68cc",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "artifact": "build/sdx-runtime/phase3/result.json",
+      "artifact_sha256": "3541c3046f5a2116c868d923bd563f60ff9198e6f525907734721957c258833c",
+      "name": "phase3"
+    },
+    {
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_bank": 2,
+      "guest_dp": 8704,
+      "flags": 233,
+      "accumulator": 43981,
+      "phase": 4,
+      "vbis": 32,
+      "timer_irqs": 2405,
+      "deferred_native_nmis": 2,
+      "os_clock_ticks": 32,
+      "steady_guest_frames": 32,
+      "rom_and_underlay_restored": true,
+      "effective_rom_sha256": "36ec47afb37fd71071544e3dee00dfd309ee3259052eaeee8b0e1ae520d34696",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "e831"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "5c32"
+        }
+      ],
+      "shadow_code_bytes": 269,
+      "xex_sha256": "4a3093ffb0513849052c30e840b46b66d52efe3f21ebef55f7d00d772949ad04",
+      "tier": "development",
+      "scope": "Standalone P2 early IRQ/NMI and ROM-shadow component; no Exec Tasks or SDX application",
+      "pin": "toolchain/altirra-shell-paced.json",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "seconds": 0.776,
+      "inputs": {
+        "probes/sdx-runtime/probe.s": "89f0731d602ef12fcff4be79d82202691e178e1b2da21e06d3f48f35459e327e",
+        "probes/sdx-runtime/probe.cfg": "7aaf70d4042f8d3864b4b246d43d388db2721289862cde93338bd8868c862046",
+        "tools/test_sdx_runtime.py": "99e62ad5cba90283f09660b22c1108099f4f2918a65d4ef5d80b6391951c68cc",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "artifact": "build/sdx-runtime/phase4/result.json",
+      "artifact_sha256": "85d5df2aa7406fb9736c55300ca5d75630b7a87f911c91acaf695e8608497b7d",
+      "name": "phase4"
+    }
+  ],
+  "tasks": [
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 523,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 74662,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 84,
+      "owned_irqs": 7638,
+      "deferred_native_nmis": 22,
+      "early_entry_injection": false,
+      "return_boundary": 0,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 633,
+      "forced_return_nmis": 0,
+      "intercepted_returns": 3,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, blocking native services, native peer and pointer IRQs; no SDX binary or production slot allocator",
+      "seconds": 41.762,
+      "name": "return-normal",
+      "artifact": "build/sdx-tasks/return-normal/result.json",
+      "artifact_sha256": "ef5d019900c519a3108a9151702276f27ff1970bffc4baac208efdb128f93fb2",
+      "build_sha256": "4e4571acb4f8ee360048c3816a5ece37495c7be5dc2944e3112bdfb0574f8973",
+      "xex_sha256": "7e49ad27af96833edd300d8d581e640691b3f42df3a4acf36ff56b96d330c751",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 6905,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 167,
+        "native_irq_count": 4761,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 169,
+        "gateway_calls": 25,
+        "os_calls": 2,
+        "vbi_count": 167,
+        "vbi_dispatches": 165,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 139,
+            "untouched_above_floor": 1141
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 329,
+            "untouched_above_floor": 727
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 167,
+          "untouched_from_base": 1369,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 523,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 76217,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 83,
+      "owned_irqs": 7669,
+      "deferred_native_nmis": 24,
+      "early_entry_injection": true,
+      "return_boundary": 0,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 641,
+      "forced_return_nmis": 0,
+      "intercepted_returns": 3,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, blocking native services, native peer and pointer IRQs; no SDX binary or production slot allocator",
+      "seconds": 40.581,
+      "name": "return-early",
+      "artifact": "build/sdx-tasks/return-early/result.json",
+      "artifact_sha256": "f59e8c655af4c577a7ecdb501ce85d871af8c8d69e4262d129e5868ff77e3cbf",
+      "build_sha256": "8304fcd5a9fa498658b22030ad167813aa9e6eb27732ef92636f988429dedfda",
+      "xex_sha256": "1cf1c3a8786bd3906f8041a71f865062544d4d91c27d8138d6b12d95a35f76d2",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 6905,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 169,
+        "native_irq_count": 4834,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 169,
+        "gateway_calls": 25,
+        "os_calls": 2,
+        "vbi_count": 169,
+        "vbi_dispatches": 167,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 139,
+            "untouched_above_floor": 1141
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 169,
+          "untouched_from_base": 1367,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "raw",
+      "checks": 4,
+      "progress": [
+        1,
+        0
+      ],
+      "peer_iterations": 0,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 20,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 0,
+      "early_entry_injection": false,
+      "return_boundary": 0,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 0,
+      "intercepted_returns": 0,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Focused native Run ABI and guest service return; no SDX binary or production slot allocator",
+      "seconds": 43.918,
+      "name": "return-raw",
+      "artifact": "build/sdx-tasks/return-raw/result.json",
+      "artifact_sha256": "f8a0ec958d96ae692d1bc8faf8382651e6cab732049b41e66c5437297f9b3eb5",
+      "build_sha256": "4e43ca2189ec6d1428d64eaeb12f8ca48da488535793cff9dfd92aa8428907b6",
+      "xex_sha256": "1871de824b18d17f6606796a7c0543190a21c26bf7f47a45312378fe79c15438",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 6905,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 20,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 1,
+        "gateway_calls": 2,
+        "os_calls": 0,
+        "vbi_count": 20,
+        "vbi_dispatches": 20,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 54,
+            "untouched_above_floor": 1226
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 134,
+          "untouched_from_base": 1402,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 520,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 72937,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 79,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 1,
+      "early_entry_injection": false,
+      "return_boundary": 1,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 1,
+      "intercepted_returns": 1,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, native peer and forced VBI return boundary; no SDX binary or production slot allocator",
+      "seconds": 40.901,
+      "name": "return-1",
+      "artifact": "build/sdx-tasks/return-1/result.json",
+      "artifact_sha256": "13f6065afba253c0dbc54237289f5c2e117bb8173dffb32a2a146c76df63d74a",
+      "build_sha256": "51aaae610ac9bb1fe4e372a5fa0c9c5e5996c0087d4fc7f8db5aa19b3f9e78d1",
+      "xex_sha256": "a402ed2f9ab32e32ff80771a50e0012bdb4d317e1ba9ff32c19a94b9ed019255",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 6954,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 126,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 130,
+        "gateway_calls": 12,
+        "os_calls": 2,
+        "vbi_count": 126,
+        "vbi_dispatches": 126,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 66,
+            "untouched_above_floor": 1214
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_from_base": 1382,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 520,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 72614,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 79,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 2,
+      "early_entry_injection": false,
+      "return_boundary": 2,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 2,
+      "intercepted_returns": 2,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, native peer and forced VBI return boundary; no SDX binary or production slot allocator",
+      "seconds": 40.87,
+      "name": "return-2",
+      "artifact": "build/sdx-tasks/return-2/result.json",
+      "artifact_sha256": "8c671f207764b742d93b25075f02a6ad91f6ceb3027df42d7c0663005c209182",
+      "build_sha256": "65b36df6e65c1cd1b42b604c15376a77753f2bf2afcbb5695f703c2956223d9c",
+      "xex_sha256": "7c6ad3479f91c153aa531ab50f98a6616071125c143c30a18429245dd90297d6",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 6994,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 127,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 132,
+        "gateway_calls": 12,
+        "os_calls": 2,
+        "vbi_count": 127,
+        "vbi_dispatches": 127,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 66,
+            "untouched_above_floor": 1214
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_from_base": 1382,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 520,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 72613,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 79,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 2,
+      "early_entry_injection": false,
+      "return_boundary": 3,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 2,
+      "intercepted_returns": 2,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, native peer and forced VBI return boundary; no SDX binary or production slot allocator",
+      "seconds": 40.867,
+      "name": "return-3",
+      "artifact": "build/sdx-tasks/return-3/result.json",
+      "artifact_sha256": "983e7ebcb736dc1318191178eb04b41b117a0b713c6c0cbb532e579cf34b949f",
+      "build_sha256": "37b660345b01df4cf21e4b17edf315d43b7c5cb28893b0ed033a7644659c0e68",
+      "xex_sha256": "ea2be7c47d875a20a5c745e2230c310b5ec3a790e5fb8ba7ffe87580a6cbfc3b",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 6994,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 127,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 132,
+        "gateway_calls": 12,
+        "os_calls": 2,
+        "vbi_count": 127,
+        "vbi_dispatches": 127,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 66,
+            "untouched_above_floor": 1214
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_from_base": 1382,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 520,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 72613,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 79,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 2,
+      "early_entry_injection": false,
+      "return_boundary": 4,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 2,
+      "intercepted_returns": 2,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, native peer and forced VBI return boundary; no SDX binary or production slot allocator",
+      "seconds": 41.011,
+      "name": "return-4",
+      "artifact": "build/sdx-tasks/return-4/result.json",
+      "artifact_sha256": "ab53861e23017d8e82e19f91063c703ee91a7171cf6754b837068e51e5eccf98",
+      "build_sha256": "1dbe2402f5e69131f575c4a48ad7385d004d4997305e408c3ffaab94c039409b",
+      "xex_sha256": "9a65693a0b9eacdccd7bce1ea658a3242dd7f4b90715b10363b4919ddcde0f3b",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 6994,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 127,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 132,
+        "gateway_calls": 12,
+        "os_calls": 2,
+        "vbi_count": 127,
+        "vbi_dispatches": 127,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 66,
+            "untouched_above_floor": 1214
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_from_base": 1382,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 520,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 72613,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 79,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 2,
+      "early_entry_injection": false,
+      "return_boundary": 5,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 2,
+      "intercepted_returns": 2,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, native peer and forced VBI return boundary; no SDX binary or production slot allocator",
+      "seconds": 41.07,
+      "name": "return-5",
+      "artifact": "build/sdx-tasks/return-5/result.json",
+      "artifact_sha256": "8ca37ad3bd2cfef331b7796af6a375d9abceec264f861bcde727521b7f4c2539",
+      "build_sha256": "10a909567d3a955aac4caa9d6d090eed91992a26eca1567bf10655ec96766888",
+      "xex_sha256": "c8a2030afb628344b58aef6db494ca1c6ebb3de3b708953aa3976b9054fb731c",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 6994,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 127,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 132,
+        "gateway_calls": 12,
+        "os_calls": 2,
+        "vbi_count": 127,
+        "vbi_dispatches": 127,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 66,
+            "untouched_above_floor": 1214
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_from_base": 1382,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 520,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 72612,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 79,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 2,
+      "early_entry_injection": false,
+      "return_boundary": 6,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 2,
+      "intercepted_returns": 2,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, native peer and forced VBI return boundary; no SDX binary or production slot allocator",
+      "seconds": 41.033,
+      "name": "return-6",
+      "artifact": "build/sdx-tasks/return-6/result.json",
+      "artifact_sha256": "af69f7a920210217a5d3370cca078ec4805d45ff366b4772f4e4e4c73710cc04",
+      "build_sha256": "7bfa15994996a9697460cff276cdd5a3e89386af1e2a8fa4ef47fd6c491631d7",
+      "xex_sha256": "f79b3fcc11e45e0a7d0f2c14ce388f183e07bd51d81a4ee0dfae6389c4e57ac8",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 6994,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 127,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 132,
+        "gateway_calls": 12,
+        "os_calls": 2,
+        "vbi_count": 127,
+        "vbi_dispatches": 127,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 66,
+            "untouched_above_floor": 1214
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_from_base": 1382,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 520,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 72612,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 79,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 2,
+      "early_entry_injection": false,
+      "return_boundary": 7,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 2,
+      "intercepted_returns": 2,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, native peer and forced VBI return boundary; no SDX binary or production slot allocator",
+      "seconds": 40.973,
+      "name": "return-7",
+      "artifact": "build/sdx-tasks/return-7/result.json",
+      "artifact_sha256": "53e8b8b626da277ac413b27a725ebd0f68cba0b54caeb79b3223cfacf917daa3",
+      "build_sha256": "590a46b64190e04a7f1c8f16bbe0e491e7fef0084682112bde69f922b168e4f0",
+      "xex_sha256": "6b1791ae9173f182fe420d2829da9ce8233d26115b5140e217d082e61e2ff4fb",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 6994,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 127,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 132,
+        "gateway_calls": 12,
+        "os_calls": 2,
+        "vbi_count": 127,
+        "vbi_dispatches": 127,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 66,
+            "untouched_above_floor": 1214
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_from_base": 1382,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 520,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 72612,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 79,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 2,
+      "early_entry_injection": false,
+      "return_boundary": 8,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 2,
+      "intercepted_returns": 2,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, native peer and forced VBI return boundary; no SDX binary or production slot allocator",
+      "seconds": 40.932,
+      "name": "return-8",
+      "artifact": "build/sdx-tasks/return-8/result.json",
+      "artifact_sha256": "de53ca5bacbd3618b76f19509a6a8df0b033fbae00b5a038e651043342fa0433",
+      "build_sha256": "28f786b2c0868605abfa8df29f7de29579d09ea85b8cef3d1db97c9ea2f758cd",
+      "xex_sha256": "c841030d46dbe6e2f4fab1981e7f6f7579b890cb3e849b1b16ee4b71ed84fd7b",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 7043,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 128,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 132,
+        "gateway_calls": 12,
+        "os_calls": 2,
+        "vbi_count": 128,
+        "vbi_dispatches": 128,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 66,
+            "untouched_above_floor": 1214
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_from_base": 1382,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 520,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 72612,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 79,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 2,
+      "early_entry_injection": false,
+      "return_boundary": 9,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 2,
+      "intercepted_returns": 2,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, native peer and forced VBI return boundary; no SDX binary or production slot allocator",
+      "seconds": 40.916,
+      "name": "return-9",
+      "artifact": "build/sdx-tasks/return-9/result.json",
+      "artifact_sha256": "fcd426b0f76bd557b3a5dffee8d2cb7d7d275fa7553164881fef9ac1022d9683",
+      "build_sha256": "d8eb301c3b4a5f058ff240146e7b26474d35881661dab20c68cf11388526d83b",
+      "xex_sha256": "c7f7bf0329f524b19d2c09d8959e380c3e7bffae50765e60f60ff7a5a58275c2",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 7043,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 128,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 132,
+        "gateway_calls": 12,
+        "os_calls": 2,
+        "vbi_count": 128,
+        "vbi_dispatches": 128,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 66,
+            "untouched_above_floor": 1214
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_from_base": 1382,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 520,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 72614,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 81,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 0,
+      "early_entry_injection": false,
+      "return_boundary": 10,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 2,
+      "intercepted_returns": 0,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, native peer and forced VBI return boundary; no SDX binary or production slot allocator",
+      "seconds": 40.735,
+      "name": "return-10",
+      "artifact": "build/sdx-tasks/return-10/result.json",
+      "artifact_sha256": "ca200e78d51dfd443e6a1b75976e3606e2f983afb6801b4acb44e62afca082aa",
+      "build_sha256": "477455f2eaa466f5a0dbcc5697219bee652a36698f1ff84eaf7fa46c16d6396f",
+      "xex_sha256": "cc5d381bf4b0d278ac603fcee408a4c98b2b85945e6c0ded5e39250a1b72dbf8",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 7043,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 128,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 132,
+        "gateway_calls": 12,
+        "os_calls": 2,
+        "vbi_count": 128,
+        "vbi_dispatches": 128,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 66,
+            "untouched_above_floor": 1214
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_from_base": 1382,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 520,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 72614,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 81,
+      "owned_irqs": 0,
+      "deferred_native_nmis": 0,
+      "early_entry_injection": false,
+      "return_boundary": 11,
+      "sio": false,
+      "sectors_read": 0,
+      "guest_serial_irqs": 0,
+      "owned_work_handoffs": 0,
+      "copy_irq_polls": 0,
+      "forced_return_nmis": 2,
+      "intercepted_returns": 0,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests, native peer and forced VBI return boundary; no SDX binary or production slot allocator",
+      "seconds": 40.784,
+      "name": "return-11",
+      "artifact": "build/sdx-tasks/return-11/result.json",
+      "artifact_sha256": "2801da1da0615cb22e190d9c21da3a2cf3cc80d0338e790368a7233e4f1d9b82",
+      "build_sha256": "8687a282f853d0adae5ee89013f5537cca6f87e5939c5ef51c9e830764fe47cb",
+      "xex_sha256": "c9363e383c82bc720cd58608a8bf6f17f3bae091d9a4874b66259f1c63b167c1",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 7043,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 128,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 132,
+        "gateway_calls": 12,
+        "os_calls": 2,
+        "vbi_count": 128,
+        "vbi_dispatches": 128,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 2,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 66,
+            "untouched_above_floor": 1214
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 301,
+            "untouched_above_floor": 755
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 154,
+          "untouched_from_base": 1382,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "checks": 1564,
+      "progress": [
+        2,
+        2
+      ],
+      "peer_iterations": 8,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "810",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "guest_nmis": 93,
+      "owned_irqs": 9204,
+      "deferred_native_nmis": 36,
+      "early_entry_injection": false,
+      "return_boundary": 0,
+      "sio": true,
+      "sectors_read": 8,
+      "guest_serial_irqs": 536,
+      "owned_work_handoffs": 5,
+      "copy_irq_polls": 1000,
+      "forced_return_nmis": 0,
+      "intercepted_returns": 1,
+      "transition_pc_reservation": [
+        8553,
+        8619
+      ],
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "effective_rom_sha256": "a3fb8a54f60d49cd32d08412d34a747b9d28d23341613aaaf7aeceb10243ca80",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "vector_patches": [
+        {
+          "address": 65530,
+          "expected": "7bc1",
+          "replacement": "6921"
+        },
+        {
+          "address": 65534,
+          "expected": "e1c1",
+          "replacement": "7021"
+        }
+      ],
+      "source_sha256": {
+        "tools/test_sdx_tasks.py": "493f688e56b3aa80b51d252560d0ea44a56f461fadda7d127c542f4323338f48",
+        "platform/altirraos/sdx-runtime-probe.s": "8350f6a9d10782b58feecc4dc1215454cd5a7e50da10d3e796d79decd4607f30",
+        "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+      },
+      "production_bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "fixture_bank_zero_borrowed_bytes": 512,
+      "scope": "Two synthetic guests with real stock-810 reads and pointer IRQs; no SDX binary or production slot allocator",
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 1048,
+          "min_us": 6.2026081967467315,
+          "mean_us": 26.78452798770377,
+          "max_us": 72.73967794366622
+        },
+        "tx_refill": {
+          "count": 32,
+          "min_us": 7.330355141609774,
+          "mean_us": 21.709128688613564,
+          "max_us": 59.20671460530971
+        },
+        "command_setup": {
+          "count": 8,
+          "min_us": 1064.593115950712,
+          "mean_us": 1098.0026191922796,
+          "max_us": 1118.7249693041379
+        },
+        "command_hold": {
+          "count": 8,
+          "min_us": 744.8768570820394,
+          "mean_us": 812.5416737738218,
+          "max_us": 862.7264128202273
+        },
+        "masked_max_us": 9992.47228914304,
+        "byte_deadline_us": 530.0410640856298,
+        "observations_sha256": "cbdced506e6f8f354ea824387ad020ec13008c35aa7468e7e38d891f61b30abf"
+      },
+      "trace_replay": {
+        "status": "identical",
+        "xex_sha256": "635b3010c77f2be418d6d0c3185dc5b0bd8c11e4419f32ea161aab56c1bb052e"
+      },
+      "seconds": 48.088,
+      "name": "return-sio",
+      "artifact": "build/sdx-tasks/return-sio/result.json",
+      "artifact_sha256": "84685bf1306d986e6c9a00d487b6b6d80bc7734ab1d17430c4826ab6ea904d5a",
+      "build_sha256": "ef5ca359611640a9099a8479bb45d333563a873e1287a8007954a5d641fa8b9c",
+      "xex_sha256": "635b3010c77f2be418d6d0c3185dc5b0bd8c11e4419f32ea161aab56c1bb052e",
+      "shadow_code_bytes": 269,
+      "entry_stub_bytes": 67,
+      "total_native_work_used_bytes": 6905,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 152,
+        "native_irq_count": 2980,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "switches": 176,
+        "gateway_calls": 827,
+        "os_calls": 0,
+        "vbi_count": 152,
+        "vbi_dispatches": 138,
+        "irq_depth": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "created": 3,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 223,
+            "untouched_above_floor": 1057
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 133,
+            "untouched_above_floor": 923
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 82,
+            "untouched_above_floor": 974
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 78,
+            "untouched_above_floor": 978
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 265,
+          "untouched_from_base": 1271,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    }
+  ],
+  "default_regression": {
+    "artifact": "build/sdx-native/return-regression/results.json",
+    "checks": 43,
+    "status": "pass",
+    "payload_comparison": [
+      {
+        "file": "hosted.bin",
+        "bytes": 4096,
+        "sha256": "3c930a56ae91011e5efe98b665ce235a3c37b2404e66d594f284d3805e07af6f",
+        "unchanged": true
+      },
+      {
+        "file": "hosted.bin.native",
+        "bytes": 6580,
+        "sha256": "d84e1bb169d554e85fa877be3ad2284a6f0e25ecbd5b5b1d45fb055bdb4ee5da",
+        "unchanged": true
+      },
+      {
+        "file": "hosted.bin.signals",
+        "bytes": 10908,
+        "sha256": "d3189adbe67de8957e8d9caf5e4e93324a1ee0a515f5a5950fb947b39e4aeca6",
+        "unchanged": true
+      },
+      {
+        "file": "hosted.bin.blitter",
+        "bytes": 1688,
+        "sha256": "a116bc00722807bcaa710e652fbf2240bfbc66dff3e671ac539b5f6e0045a82f",
+        "unchanged": true
+      }
+    ]
+  },
+  "host_suite": {
+    "total": 509,
+    "passed": 503,
+    "skipped": 4,
+    "existing_failures": [
+      "test_c_program_package: expected native provider ABI 19, actual 20",
+      "test_program_contract: expected provider payload 1807, actual 1844"
+    ],
+    "log_sha256": "5afaee4f097bce4830f073931d8b4930d0eb38dc2f521b3427b0e7a7df53eda3"
+  },
+  "remaining": [
+    "Production guest DP/slot and Image/Process lifetime ownership",
+    "Deep guest stacks, repeated nested entries, lossless VBI accounting and production worst-case service delay",
+    "SIO writes/failures/cancellation, faster profiles and native return redirection under concurrent completions",
+    "Reset/mapping-conflict/shutdown lifetime policy for the RAM ROM shadow",
+    "Native SDX loading, callback/trap semantics and fourteen MD5 services",
+    "MD5 and ARC application acceptance"
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "personality_abi": 1,
+  "id": "md5-450",
+  "revision": 4,
+  "execution_status": "md5-development",
+  "audit": "../../docs/plans/spartados-personality-inputs.json",
+  "modules": [
+    {
+      "file": "MD5.COM",
+      "role": "command",
+      "entry_export": "@MD5",
+      "bytes": 3488,
+      "crc32": "083eb436",
+      "sha256": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+      "patches": [
+        {
+          "id": "md5-compression-irq",
+          "reason": "Keep IRQs enabled during compression; retain the balanced PHP/PLP.",
+          "block": 1,
+          "offset": 1050,
+          "expected": "78",
+          "replacement": "ea",
+          "intersections": [],
+          "fixups": [],
+          "contract": "Only I differs between PHP at +0419 and PLP at +0965. All other registers, memory and stack effects are unchanged.",
+          "regressions": [
+            "md5-sei-bytes",
+            "md5-sdx-control-patched"
+          ]
+        },
+        {
+          "id": "md5-break-checkpoint",
+          "reason": "Observe owning Process BREAK after every completed 64-byte compression block.",
+          "block": 1,
+          "offset": 2454,
+          "expected": "a511f0034c0a04",
+          "replacement": "2080f24c0000ea",
+          "intersections": [
+            {
+              "base": 1,
+              "offset": 2459
+            }
+          ],
+          "fixups": [
+            {
+              "offset": 4,
+              "kind": "block16",
+              "block": 1,
+              "addend": 1034
+            }
+          ],
+          "contract": "JSR to the native checkpoint preserves all registers/status and returns to the next-block loop. It replaces the private OS BREAK-byte poll; A/N/Z from that poll are dead before use. The cleanup trap receives SDX 128 only after native I/O settles.",
+          "regressions": [
+            "md5-vectors",
+            "md5-break-compression",
+            "md5-concurrent"
+          ]
+        },
+        {
+          "id": "md5-invalid-hex-pop",
+          "block": 1,
+          "offset": 310,
+          "expected": "4c0000",
+          "replacement": "288005",
+          "intersections": [
+            {
+              "base": "FCLOSE",
+              "offset": 311
+            }
+          ],
+          "fixups": [],
+          "reason": "Reuse the verification EOF tail as PLP/BRA retry, balancing PHP on invalid hex.",
+          "contract": "Invalid-hex paths enter with one saved P byte. Pop it and branch to the next-record loop at +013E. Normal EOF now returns at +0135; the existing final FCLOSEAL closes the checksum handle.",
+          "regressions": [
+            "md5-malformed-mixed",
+            "md5-empty-list",
+            "md5-original-malformed-control"
+          ]
+        },
+        {
+          "id": "md5-verification-eof",
+          "block": 1,
+          "offset": 321,
+          "expected": "30f3",
+          "replacement": "30f2",
+          "intersections": [],
+          "fixups": [],
+          "reason": "Return through the existing RTS; final FCLOSEAL owns checksum-file closure.",
+          "contract": "BMI targets +0135 instead of +0136. The caller removes its error trap and closes all files before U_FAIL 0.",
+          "regressions": [
+            "md5-checksum-lists"
+          ]
+        },
+        {
+          "id": "md5-invalid-high-hex",
+          "block": 1,
+          "offset": 419,
+          "expected": "d03c",
+          "replacement": "d091",
+          "intersections": [],
+          "fixups": [],
+          "reason": "Route invalid high hex nibble through the balanced retry.",
+          "contract": "Only the taken branch changes, to +0136. Valid digest parsing is identical.",
+          "regressions": [
+            "md5-malformed-mixed"
+          ]
+        },
+        {
+          "id": "md5-invalid-low-hex",
+          "block": 1,
+          "offset": 436,
+          "expected": "d02b",
+          "replacement": "d080",
+          "intersections": [],
+          "fixups": [],
+          "reason": "Route invalid low hex nibble through the balanced retry.",
+          "contract": "Only the taken branch changes, to +0136, exactly -128 bytes from the following PC.",
+          "regressions": [
+            "md5-malformed-mixed"
+          ]
+        }
+      ]
+    }
+  ],
+  "unsupported": [
+    "Hardware option /H",
+    "Directories/raw directory reads (+S)",
+    "Other drives, writes, seeks, overlays and general hardware access"
+  ],
+  "direct_page_arguments": [
+    504,
+    754
+  ],
+  "instruction_audit": "../../docs/development/sdx-md5-audit.json"
+}

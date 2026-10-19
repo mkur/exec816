@@ -3,7 +3,7 @@ USE EXEC
 USE HEAPCORE
 
 PUBLIC CONST MAGIC=LONGCARD($31474d49)
-PUBLIC CONST KIND_NATIVE=0, KIND_C=1
+PUBLIC CONST KIND_NATIVE=0, KIND_C=1, KIND_SDX=2
 PUBLIC CONST NAME_CAPACITY=24
 
 PUBLIC TYPE Image=[
@@ -13,11 +13,17 @@ PUBLIC TYPE Image=[
   LONGCARD backingBytes,textBytes,dataBytes,bssBytes
   ADDRESS text
   LONGINT FUNC POINTER entry()
+  BYTE POINTER extension
+  PROC POINTER release(BYTE POINTER extension)
   BYTE ARRAY name(NAME_CAPACITY)
 ]
 
 ; Release all segment allocations belonging to an unloaded program image.
 PUBLIC PROC Free(Image POINTER item)
+
+  IF item.extension<>NULL THEN
+    item.release(item.extension)
+  FI
 
   IF item.backing<>BYTE POINTER(0) THEN
     EXEC.FreeMem(item.backing,item.backingBytes)

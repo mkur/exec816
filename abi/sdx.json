@@ -1,0 +1,403 @@
+{
+  "abi": "exec816.sdx.v1",
+  "version": 1,
+  "status": "P4/M1/M2/A1-A4 development subset",
+  "patch_limit": 16,
+  "errors": {
+    "OK": 0,
+    "PLAN": 1,
+    "PREIMAGE": 2
+  },
+  "modules": {
+    "MD5.COM": 1,
+    "ARC.COM": 2,
+    "ARCLST.OVL": 3,
+    "ARCEXT.OVL": 4,
+    "ARCADD.OVL": 5
+  },
+  "imports": {
+    "Update": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 2,
+          "offset": 4,
+          "size": 2
+        },
+        {
+          "alignment": 2,
+          "offset": 6,
+          "size": 4
+        }
+      ],
+      "outgoing_bytes": 11,
+      "result": "Some(NativeResult(A16X16))",
+      "label": "sdx_checksum_update",
+      "stack_peak": 5
+    }
+  },
+  "crc32": {
+    "polynomial": 3988292384,
+    "initial": 4294967295,
+    "xorout": 4294967295,
+    "table_entries": 256,
+    "pointer_dp": 128,
+    "state_dp": 132,
+    "entry": "sdx_crc32_update",
+    "contract": "Native E=0, M=X=0, decimal clear. A=byte count (0..65535); D+$80..82=far source pointer; D+$84..87=internal CRC, initially FFFFFFFF. Updates pointer and CRC, preserves Y/D/DBR/S, clobbers A/X/P. Long return. No IRQ masking. Caller owns scratch and input; split calls are permitted, including across a bank boundary. Final result is state XOR FFFFFFFF."
+  },
+  "runtime": {
+    "slots": 2,
+    "resident_bank": 40,
+    "resident_reserved_bytes": 65536,
+    "code_offset": 32768,
+    "dp_bytes": 256,
+    "dp_guard_bytes": 16,
+    "context_base": 2652672,
+    "context_bytes": 512,
+    "fields": {
+      "native_s": 256,
+      "native_d": 258,
+      "guest_s": 260,
+      "event": 262,
+      "bank": 264
+    },
+    "frame": {
+      "dbr": 1,
+      "d": 2,
+      "y": 4,
+      "x": 6,
+      "a": 8,
+      "veneer_p": 10,
+      "p": 11,
+      "pc": 12
+    },
+    "guest_start": 12288,
+    "guest_limit": 57344,
+    "return_pc": 61568,
+    "exit_pc": 61440,
+    "initial_s": 480,
+    "minimum_s": 352,
+    "comtab": 4096,
+    "file_p": 1792,
+    "trap_limit": 10,
+    "handle_limit": 4,
+    "checkpoint_pc": 62080,
+    "checkpoint_event": 14,
+    "overlay_return_pc": 62144,
+    "overlay_return_event": 15,
+    "arc_multiply_pc": 62848,
+    "arc_multiply_event": 36,
+    "kernel_pc": 62880,
+    "kernel_event": 37
+  },
+  "guest_services": {
+    "COMTAB": {
+      "address": 4096,
+      "event": 0,
+      "inputs": "Variable address; private command state.",
+      "effects": "BUFOFF=+$0A; FILLEN=+$1A; COMFNAM=+$21 (30 bytes); LBUF=+$3F (64 bytes).",
+      "flags": "No call or register effect."
+    },
+    "FILE_P": {
+      "address": 1792,
+      "event": 0,
+      "inputs": "Variable address containing a near pointer to an ATASCII-EOL filename.",
+      "effects": "Initialized to COMTAB+$21; FOPEN dereferences this word.",
+      "flags": "No call or register effect."
+    },
+    "FCLOSE": {
+      "address": 61696,
+      "event": 2,
+      "inputs": "file_id.",
+      "effects": "Consume the owned file or search slot, preserving a late Close error. A completed extracted member receives its captured timestamp; incomplete members cannot report successful Close.",
+      "flags": "A/X/Y/P preserved on success."
+    },
+    "FCLOSEAL": {
+      "address": 61728,
+      "event": 3,
+      "inputs": "No arguments.",
+      "effects": "Closes all owned handles; completes all closes before returning the first error.",
+      "flags": "A/X/Y/P preserved on success."
+    },
+    "FGETC": {
+      "address": 61760,
+      "event": 4,
+      "inputs": "file_id=$0760.",
+      "effects": "Reads one binary byte. EOF returns A=$9B; otherwise A=data.",
+      "flags": "X=0/N=0/Z=1 for data; X=$FF/N=1/Z=0 for EOF. Y, hidden B and other P bits preserved."
+    },
+    "FOPEN": {
+      "address": 61792,
+      "event": 5,
+      "inputs": "FILE_P; mode=4 read or ARC mode=8 output; scan; dateset/date/time for ARC members.",
+      "effects": "Two MD5 or four ARC owned slots, including directory search. Read resolves the first eligible 8.3 match. ARC source dates are returned at $077B..$0780. Extracted output checks dates before truncation; mutation uses exclusive-existing archive and create-exclusive temporary modes.",
+      "flags": "A/X/Y/P preserved on success."
+    },
+    "FREAD": {
+      "address": 61824,
+      "event": 6,
+      "inputs": "file_id=$0760; addpos=$0782 (word); bytbuf=$0785 (nonzero word); memreix=$0787 must be zero.",
+      "effects": "Reads up to the requested count into an ordinary guest-bank buffer, continuing native short transfers. Writes actual count to bytbuf; addpos unchanged.",
+      "flags": "X=0/N=0/Z=1 for full transfer; X=$FF/N=1/Z=0 at EOF. A, Y, hidden B and other P bits preserved."
+    },
+    "PRINTF": {
+      "address": 61856,
+      "event": 7,
+      "inputs": "Inline NUL format followed by pointer words; address classes fixed per admitted argument site.",
+      "effects": "Writes the bounded formatter stream to DOS.Output and resumes after all consumed pointer words.",
+      "flags": "A/X/Y/P preserved on success, including hidden B."
+    },
+    "TOUPPER": {
+      "address": 61888,
+      "event": 8,
+      "inputs": "A=byte.",
+      "effects": "Converts ASCII a..z to A..Z; other bytes unchanged.",
+      "flags": "A=result; N/Z reflect result. X/Y, hidden B and other P bits preserved."
+    },
+    "U_FAIL": {
+      "address": 61920,
+      "event": 9,
+      "inputs": "A=SDX error byte; zero terminates the Process successfully.",
+      "effects": "Delivers to the newest trap or completes the Process; no ordinary return.",
+      "flags": "On caught error: A=error/N=1, S and PC select the trap; other registers/flags preserved."
+    },
+    "U_GETATR": {
+      "address": 61952,
+      "event": 10,
+      "inputs": "A=default attribute mask; BUFOFF selects the next parameter.",
+      "effects": "Parses separate +/- P/H/A/S attribute tokens and one filename. Explicit attributes start from zero and clear the opposing bit. Updates $0779, BUFOFF, COMFNAM, FILLEN and FILE_P.",
+      "flags": "A=X=filename length; N=0, Z=1 if absent. Y, hidden B and other P bits preserved."
+    },
+    "U_SFAIL": {
+      "address": 61984,
+      "event": 11,
+      "inputs": "AX=handler address in $3000..$DFFF.",
+      "effects": "Pushes handler and post-call S; at most ten traps. Invalid handler or overflow raises 156.",
+      "flags": "A/X/Y/P preserved on success."
+    },
+    "U_SLASH": {
+      "address": 62016,
+      "event": 12,
+      "inputs": "AX=ordinary-bank array of (count,letter) pairs; Y=nonzero even byte count. BUFOFF selects parameter.",
+      "effects": "For a slash token, clears counts, decrements each matching count per occurrence and advances BUFOFF. Parsed /H and unknown options raise 156. For a non-option token, leaves the table and BUFOFF unchanged.",
+      "flags": "A=last uppercase option, or 0; N/Z reflect A. X/Y, hidden B and other P bits preserved."
+    },
+    "U_XFAIL": {
+      "address": 62048,
+      "event": 13,
+      "inputs": "No arguments.",
+      "effects": "Removes the newest trap. Empty stack raises 156.",
+      "flags": "A/X/Y/P preserved on success."
+    },
+    "CURDEV": {
+      "address": 1824,
+      "event": 0,
+      "inputs": "Private byte at $0720.",
+      "effects": "Default guest device, 1 for A:.",
+      "flags": "Preserved except documented results."
+    },
+    "FLAG": {
+      "address": 1825,
+      "event": 0,
+      "inputs": "Private byte at $0721.",
+      "effects": "ARC main passes L=0 or V=1 to ARCLST.",
+      "flags": "Preserved except documented results."
+    },
+    "PUT_V": {
+      "address": 1826,
+      "event": 0,
+      "inputs": "Private word at $0722.",
+      "effects": "Only the audited ARC single-RTS callback is admitted.",
+      "flags": "Preserved except documented results."
+    },
+    "DEVNAME": {
+      "address": 4608,
+      "event": 0,
+      "inputs": "Private scratch at $1200.",
+      "effects": "Reserved guest device-name storage.",
+      "flags": "Preserved except documented results."
+    },
+    "FPUTC": {
+      "address": 62208,
+      "event": 16,
+      "inputs": "file_id, A byte.",
+      "effects": "Write one byte to an owned native file with the same length/error checks as FWRITE.",
+      "flags": "Preserved except documented results."
+    },
+    "FSEEK": {
+      "address": 62240,
+      "event": 17,
+      "inputs": "file_id; little-endian 24-bit absolute position at $0782.",
+      "effects": "Seek within an owned file through DOS.Seek.",
+      "flags": "Preserved except documented results."
+    },
+    "FTELL": {
+      "address": 62272,
+      "event": 18,
+      "inputs": "file_id.",
+      "effects": "Return current 24-bit position at $0782.",
+      "flags": "Preserved except documented results."
+    },
+    "FWRITE": {
+      "address": 62304,
+      "event": 19,
+      "inputs": "file_id, addpos, bytbuf; ordinary guest-bank source.",
+      "effects": "Continue short native writes, report the first I/O error, and never write beyond the extracted header length. Only owned file handles are admitted.",
+      "flags": "Preserved except documented results."
+    },
+    "REMOVE": {
+      "address": 62336,
+      "event": 20,
+      "inputs": "FILE_P = the admitted original archive path.",
+      "effects": "Stage that archive under its owned backup name; arbitrary deletion and move-mode source deletion are unsupported.",
+      "flags": "Preserved except documented results."
+    },
+    "U_EXPAND": {
+      "address": 62368,
+      "event": 21,
+      "inputs": "AX destination, Y index; internal 8.3 name at $0762.",
+      "effects": "Expand to dotted name and EOL; return updated Y.",
+      "flags": "Preserved except documented results."
+    },
+    "U_FSPEC": {
+      "address": 62400,
+      "event": 22,
+      "inputs": "FILE_P ordinary guest pointer.",
+      "effects": "Add *.* for an empty leaf; retain COMTAB/FILE_P.",
+      "flags": "Preserved except documented results."
+    },
+    "U_GEFINA": {
+      "address": 62432,
+      "event": 23,
+      "inputs": "FILE_P; only the audited ARC member-name wrapper selects D+$90.",
+      "effects": "Decode A: or @: and bounded path/8.3 name into SDX variables.",
+      "flags": "Preserved except documented results."
+    },
+    "U_GETPAR": {
+      "address": 62464,
+      "event": 24,
+      "inputs": "COMTAB command cursor.",
+      "effects": "Consume the next bounded token into COMFNAM; return parameter status.",
+      "flags": "Preserved except documented results."
+    },
+    "U_LOAD": {
+      "address": 62496,
+      "event": 25,
+      "inputs": "FILE_P = exact CAR:ARCLST.OVL (FLAG 0/1/2), CAR:ARCEXT.OVL (0), or CAR:ARCADD.OVL (0/2/3).",
+      "effects": "Verify the pinned overlay, relocate with private _ARC export, run synchronously and retire owned handles/frame/overlay.",
+      "flags": "Preserved except documented results."
+    },
+    "VPRINTF": {
+      "address": 62528,
+      "event": 26,
+      "inputs": "Inline PRINTF record; PUT_V must name ARC main single-RTS leaf.",
+      "effects": "Consume the record with the audited discard callback; general callbacks fail.",
+      "flags": "Preserved except documented results."
+    },
+    "DIV_32": {
+      "address": 62560,
+      "event": 27,
+      "inputs": "Big-endian 32-bit operands at COMTAB+$FF and +$103.",
+      "effects": "Quotient at +$107; zero divisor yields zero and carry set.",
+      "flags": "Preserved except documented results."
+    },
+    "MUL_32": {
+      "address": 62592,
+      "event": 28,
+      "inputs": "Big-endian 32-bit operands at COMTAB+$FF and +$103.",
+      "effects": "Low 32-bit product at +$107; carry marks overflow.",
+      "flags": "Preserved except documented results."
+    },
+    "PUTC": {
+      "address": 62624,
+      "event": 29,
+      "inputs": "A character.",
+      "effects": "Write through the native Process output using the shared console translation.",
+      "flags": "Preserved except documented results."
+    },
+    "__MISC": {
+      "address": 62656,
+      "event": 30,
+      "inputs": "A=1 only.",
+      "effects": "Pinned missing-DAYTIME policy: A=$9A, X=$FE, Y=$9B, NZ from X. ARC uses day/month and 24-hour time.",
+      "flags": "Preserved except documented results."
+    },
+    "FFIRST": {
+      "address": 62688,
+      "event": 31,
+      "inputs": "FILE_P plus scan; regular-file masks only.",
+      "effects": "Own one search slot: exact names use a file Lock/Examine, masks use a directory Lock/ExNext. An absent exact name returns an owned empty search. Fill the private SDX directory row and preserve native ownership/epoch errors.",
+      "flags": "Preserved except documented results."
+    },
+    "FNEXT": {
+      "address": 62720,
+      "event": 32,
+      "inputs": "file_id for the retained directory search.",
+      "effects": "Advance the owned wildcard search, or return EOF after the single exact-name entry. Native directory-cookie invalidation is an operational error.",
+      "flags": "Preserved except documented results."
+    },
+    "FILELENG": {
+      "address": 62752,
+      "event": 33,
+      "inputs": "file_id=$0760.",
+      "effects": "Return the captured source length as a 24-bit little-endian value at $0782..$0784.",
+      "flags": "Preserved except documented results."
+    },
+    "U_GETKEY": {
+      "address": 62784,
+      "event": 34,
+      "inputs": "Ordinary Process input.",
+      "effects": "Read one byte into A, X=0/N=0. EOF is SDX 136; BREAK/I/O errors use normal native error delivery. No modifier-key/hardware emulation.",
+      "flags": "Preserved except documented results."
+    },
+    "U_PATH": {
+      "address": 62816,
+      "event": 35,
+      "inputs": "AX/Y destination; device and path variables.",
+      "effects": "Expand A: plus the bounded path, return EOL position in Y; other devices fail.",
+      "flags": "Preserved except documented results."
+    }
+  },
+  "guest_contract": {
+    "guide": {
+      "url": "https://sdx.atari8.info/sdx_files/4.50/SDX450_Programming_Guide.pdf",
+      "sha256": "15982c51f2d0edc317b01121097d6da23e007910e2ad79f3ad02ac930fbc2b69"
+    },
+    "scope": "Opt-in development personality for the exact pinned 6502 MD5.COM and ARC.COM with ARCLST.OVL/ARCEXT.OVL/ARCADD.OVL. MD5 hashing/verification and ARC L/V, X/E, A/D/U/F with N/W/B flags are admitted. S/M/G/H/P/T and arbitrary modules remain unsupported.",
+    "entry": "E=1, M=X=1, private aligned D, PBR=DBR=guest bank. Calls use JSR to the imported veneer. AX denotes low A and low X, little endian.",
+    "preservation": "Except for documented results, calls preserve A (including hidden B), X, Y, P, D and DBR. Ordinary calls resume after JSR; PRINTF skips its inline record. Error delivery selects the saved guest S and handler PC.",
+    "pointers": "Ordinary near pointers select guest-bank storage below $E000. PRINTF argument-word sites classified by the admitted profile may instead select guest D+offset in bank zero. Sites are selected by the active audited overlay as well as the application. No numeric-address heuristic, stack pointers or extended-memory buffers are supported. VPRINTF admits only the pinned ARC single-RTS leaf.",
+    "errors": "A service error is delivered only after native I/O settles. The newest trap is removed, S restored, A set to the SDX error byte and N set; other registers/flags remain as at the failing call. Files stay open. With no trap, the Process exits with primary 20; secondary is the original native IoErr, or the explicit SDX byte if no native error caused it. Final cleanup closes all owned handles and preserves the first cause. A caught native error retains its cause through cleanup and rethrow of the same SDX byte; successful new input clears that pending cause. MD5 digest mismatches print inverse BAD but return zero; malformed digest records are skipped with a balanced stack by an audited patch, and overlong records fail with SDX 137. During ARC mutation, any error after temporary/backup ownership is terminal: the adapter retires native handles and performs owned cleanup instead of letting guest recovery publish incomplete work.",
+    "native_error_map": {
+      "103": 158,
+      "205": 170,
+      "202": 129,
+      "214": 167,
+      "304": 128,
+      "other": 144
+    },
+    "adapter_errors": {
+      "128": "Break mapped from native cancellation",
+      "129": "File already open",
+      "134": "Unknown/closed guest handle",
+      "144": "Other native I/O error",
+      "156": "Unsupported or invalid operation/parameter; empty U_XFAIL; trap limit",
+      "158": "Native allocation failure",
+      "160": "Unmapped drive",
+      "161": "Guest handle limit reached (two for MD5; four for ARC including directory searches)",
+      "167": "Write protection",
+      "170": "File not found or explicit U_FAIL code"
+    },
+    "command_limit": "LBUF holds at most 63 bytes including the command name and separating space, followed by ATASCII EOL. COMFNAM holds at most 29 filename bytes plus EOL. No quoted filenames or mixed signs within an attribute token.",
+    "drive_policy": "Guest A: and bare filenames map to an immutable build-configured native root (RAM: by default). Leading > or backslash denotes the mapped root; internal separators become /. The final 8.3 component supports * and padded ?. FOPEN selects the first matching regular file, preserving the input specification for output; it does not expand a mask into multiple commands. Scan bits require/exclude P/H/A through public DOS metadata. Other drives, parent notation, wildcard directories and raw directories (+S) are unsupported. ARC admits absolute seek/tell and X/E member writes. Extraction preserves representable timestamps through DOS.SetFileDate (1980..2049 or unspecified zero), rejects directory/path member names and unsupported codecs before opening the output. Members use stored methods 1/2, RLE 3, Huffman/RLE 4, 12-bit LZW/RLE 8 and SDX LZW 15. CRC warnings preserve the original zero exit status; W suppresses warnings. Short headers, truncated packed extents and inconsistent stored lengths fail explicitly. CAR: is read-only overlay lookup beneath the immutable sdx_car_root (RAM: by default). No global assignment is changed. Exact-file lookups use Lock/Examine; wildcard enumeration keeps native epoch semantics and may report 202 if another mutation invalidates its cookie.",
+    "formatter": "NUL-terminated inline format, at most 1023 bytes, then one near pointer word per operand (and per * width). Supported: %% and %b/%d/%e/%l unsigned 8/16/24/32-bit decimal, %x 24-bit hexadecimal, %c byte, %s string, %p pointer to string. Width uses its low byte; decimals allow at most 10 digits; zero padding, truncation and space padding are supported. Default %x is six zero-padded digits. Strings end at NUL or ATASCII EOL. %s uses an ordinary-bank string except audited ARC DP sites (bounded by 256 bytes); %p may fetch its pointer variable from audited DP storage but the target string is in the ordinary bank. %t is unsupported.",
+    "output": "Escapes a,b,e,f,n,r,t,z,backslash and i are supported; i toggles inverse bytes for printable characters within one call. Redirected output retains exact SDX bytes. Interactive output maps $9B/$7E/$7F/$7D to LF/BS/TAB/FF. The buffer is 256 bytes; partial native writes are continued, and write errors use normal trap delivery. No general Atari terminal emulation is provided.",
+    "cancellation": "BREAK belongs to the ordinary Process. It is checked before guest entry, at service boundaries and by a patched checkpoint after each 64-byte compression block ($F280, event 14, outside the SDX import namespace). Native I/O settles before SDX 128 trap delivery. A caught BREAK allows only bounded cleanup calls, then exits with primary 20/secondary 304. Guest cleanup cannot clear cancellation. ARC mutation retires the guest before acknowledging BREAK for native-only rollback and temporary removal; its terminal result remains 20/304. See the MD5 development record for measured timing on the pinned machine; no universal device-latency bound is claimed.",
+    "arc_mutation": "ARC A/D/U/F keep the original under an exclusive native writer lease while constructing a create-exclusive .XAR. Existing .XAR/.BAK names cause a collision. After successful Close, stage the original as .BAK and rename the owned temporary to publish; B retains the backup, otherwise remove it. A failed final rename attempts rollback. Cleanup failure may leave recovery files. This is not atomic replacement or a power-loss guarantee. U/F reject unknown or invalid packed dates; source dates and comparisons require 1980..2049, with unspecified zero allowed only outside date comparisons. Headers preserve representable source dates. The private $0703 gate admits only the audited rename/delete-backup calls, and $F580 admits only the Y=8 MUL_32+2 operation. See the ARC development record for patches, ownership and measured limits."
+  }
+}

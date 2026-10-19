@@ -1,5 +1,5 @@
-Exec816 colour GEM desktop
-=========================
+Exec816 @VERSION@ GEM desktop
+===========================
 
 A 640x240 colour desktop, folder windows and the native shell.
 Warm grey surfaces, blue-teal icons and patterned active titles give it an
@@ -26,6 +26,10 @@ Extract this ZIP into one folder. In System > Configure System, select:
   Input: ST mouse on joystick port 1; left button.
   SIO Patch and D: burst I/O disabled.
   "Unload disks when booting new image" disabled.
+
+For cartridge boot with the SIO disks below, remove IDE Plus 2.0 from the
+emulated devices and cold boot. An existing IDE Plus setup can cause a
+blue-screen BOOT ERROR before OF816 starts.
 
 1. Mount @SYSTEM_DISK@ in D1 with "Generic + 57600 baud" emulation.
    Mount a disposable copy of work.atr in D8, writable.
@@ -139,6 +143,6 @@ RUN C:DIALOG.APP demonstrates editable forms, alerts and the standard selector.
 RUN C:G4BENCH.APP runs the adapted drawing benchmark: Return starts, Escape
 stops/closes. Keep it uncovered. Results go to WORK:G4BENCH.TXT.
 
-This is a development preview. Dragging icons, recursive
-file operations, trash, horizontal scrolling and additional icon artwork are future
-work. The standard non-GUI distribution still boots the shell/prime demo.
+This package contains the GEM desktop and its windowed Shell.
+Desktop icon rearrangement, recursive file operations, trash, horizontal scrolling
+and additional icon artwork are future work.

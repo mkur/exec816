@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 12,
+  "revision": 14,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -56,7 +56,11 @@
     "CONEDIT_LINE": 2,
     "CONEDIT_EOF": 3,
     "CONEDIT_CANCELLED": 4,
-    "CONEDIT_BUFFER_BYTES": 256
+    "CONEDIT_BUFFER_BYTES": 256,
+    "FIBF_ARCHIVE": 16,
+    "FIBF_HIDDEN": 128,
+    "MODE_CREATE_EXCLUSIVE": 1010,
+    "MODE_UPDATE_EXISTING": 1011
   },
   "dos_errors": {
     "ERROR_NO_FREE_STORE": 103,
@@ -113,7 +117,10 @@
     "ACTION_RENAME_OBJECT": 17,
     "ACTION_INFO": 26,
     "ACTION_EXAMINE_EXACT": 25,
-    "ACTION_EXAMINE_BATCH": 28
+    "ACTION_EXAMINE_BATCH": 28,
+    "ACTION_SET_DATE": 34,
+    "ACTION_CREATE_EXCLUSIVE": 1010,
+    "ACTION_UPDATE_EXISTING": 1011
   },
   "records": {
     "DateStamp": {
@@ -1053,6 +1060,22 @@
       "result_bytes": 4
     },
     "ConsoleEdit": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
+      "result_bytes": 4
+    },
+    "SetFileDate": {
       "arguments": [
         {
           "alignment": 1,

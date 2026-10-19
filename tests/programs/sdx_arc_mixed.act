@@ -1,0 +1,259 @@
+MODULE SDXARCMIXED
+USE EXEC
+USE DOS
+USE PROCESS
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE SDXSTATE
+USE SDXABI
+USE HEAPCORE
+USE FSBOOT
+USE CONSOLEDRIVER
+USE CONSOLECORE
+USE CONSOLETYPES
+USE O65READ
+
+INCLUDE "SHELL_INCLUDE"
+
+ShellContext context
+
+CARD checks,currentCase,breakTicks,sessionBytes
+CARD ARRAY elapsed(4),guestUntouched(8)
+LONGCARD ARRAY peerProgress(4)
+LONGINT primary,secondary,reason
+VOLATILE LONGCARD peer
+BYTE stopPeer
+VOLATILE BYTE clockLow=$14,clockHigh=$13
+BYTE ARRAY actual(1024),hashOutput(128),shellOutput(1024)
+LONGINT hashBytes,shellBytes
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    reason=DOS.IoErr()
+    HEAPCORE.Abort($fd00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+CARD FUNC Clock()
+  BYTE high,low
+
+  DO
+    high=clockHigh
+    low=clockLow
+    IF high=clockHigh THEN
+      RETURN((CARD(high) LSH 8) OR CARD(low))
+    FI
+  OD
+
+RETURN(0)
+
+PROC Put(BYTE POINTER name,bytes LONGINT count)
+  DOS.FileHandle POINTER file
+
+  file=DOS.Open(name,DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,bytes,count)=count)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PUBLIC LONGINT FUNC PeerEntry()
+
+  WHILE stopPeer=0 DO
+    peer==+1
+  OD
+
+RETURN(0)
+
+PROC Retired(SDXSTATE.Session POINTER state CARD sample)
+  CARD index
+
+  FOR index=0 TO SDXABI.HANDLE_LIMIT-1 DO
+    Require(state.handles(index)=NULL)
+  OD
+  Require(state.trapCount=0 AND state.enumeration=NULL AND state.writeSlot=0)
+  Require(state.overlayActive=0 AND state.tempOwned=0 AND state.backupOwned=0)
+  index=0
+  WHILE index<256 AND state.context(index)=$a5 DO
+    index==+1
+  OD
+  guestUntouched(sample)=index
+  Require(index>=32)
+  SDXSTATE.Guards()
+
+RETURN
+
+; Each pair owns distinct images, output streams and retained parent bindings.
+PROC Pair(CARD number BYTE POINTER firstArgs,secondName,secondArgs BYTE mode)
+  PROGRAMIMAGE.Image POINTER first,second
+  SDXSTATE.Session POINTER one,two
+  DOS.FileHandle POINTER output1,output2,previous,file
+  LONGCARD firstId,secondId,peerId,before,attempt
+  PROCESS.Result result
+  CARD started,requested,event
+  BYTE ready
+
+  currentCase=number
+  first=PROGRAMFILE.Load(BYTE POINTER(c"RAM:ARC.COM"))
+  second=PROGRAMFILE.Load(secondName)
+  Require(first<>NULL AND second<>NULL)
+  one=SDXSTATE.Session POINTER(first.extension)
+  two=SDXSTATE.Session POINTER(second.extension)
+  Require(one.slot<>two.slot AND one.bank<>two.bank AND one.dp<>two.dp)
+  Require(one.parentExport.value=$3959)
+  IF mode<>0 THEN
+    Require(two.parentExport.value=$3959 AND @one.parentExport<>@two.parentExport)
+  FI
+  output1=DOS.Open(BYTE POINTER(c"RAM:FIRST"),DOS.MODE_NEWFILE)
+  output2=DOS.Open(BYTE POINTER(c"RAM:SECOND"),DOS.MODE_NEWFILE)
+  Require(output1<>NULL AND output2<>NULL)
+  previous=DOS.SelectOutput(output1)
+  stopPeer=0
+  before=peer
+  started=Clock()
+  peerId=PROCESS.StartBackground(@PeerEntry,NULL,0)
+  firstId=PROCESS.StartBackgroundLoaded(BYTE POINTER(first),firstArgs,ShellLength(firstArgs))
+  Require(peerId<>0 AND firstId<>0)
+  IF mode=3 THEN
+    ready=0
+    attempt=0
+    WHILE ready=0 AND attempt<LONGCARD(500000) DO
+      EXEC.Yield()
+      ready=one.archiveExists<>0
+      attempt==+1
+    OD
+    Require(ready<>0)
+  FI
+  DOS.SelectOutput(output2)
+  secondId=PROCESS.StartBackgroundLoaded(BYTE POINTER(second),secondArgs,ShellLength(secondArgs))
+  Require(secondId<>0)
+  DOS.SelectOutput(previous)
+  IF mode=2 THEN
+    ready=0
+    attempt=0
+    WHILE ready=0 AND attempt<LONGCARD(500000) DO
+      EXEC.Yield()
+      EXEC.Forbid()
+      event=SDXSTATE.ReadWord(one.context,SDXABI.FIELDS_EVENT)
+      ready=one.tempOwned<>0 AND event=SDXABI.CALL_FWRITE
+      IF ready<>0 THEN
+        Require(two.published=0)
+        requested=Clock()
+        Require(PROCESS.RequestBreak(firstId)<>0)
+      FI
+      EXEC.Permit()
+      attempt==+1
+    OD
+    Require(ready<>0)
+  FI
+  Require(PROCESS.Wait(firstId,@result)<>0)
+  primary=result.primary
+  secondary=result.secondary
+  IF mode=2 THEN
+    breakTicks=Clock()-requested
+    Require(primary=20 AND secondary=304 AND breakTicks<250)
+  ELSE
+    Require(primary=0 AND secondary=0)
+  FI
+  Require(PROCESS.Wait(secondId,@result)<>0)
+  primary=result.primary
+  secondary=result.secondary
+  IF mode=3 THEN
+    Require(primary=20 AND secondary=202)
+  ELSE
+    Require(primary=0 AND secondary=0)
+  FI
+  elapsed(number)=Clock()-started
+  peerProgress(number)=peer-before
+  Require(peerProgress(number)>0)
+  stopPeer=1
+  Require(PROCESS.Wait(peerId,@result)<>0 AND result.primary=0)
+  Retired(one,number*2)
+  Retired(two,number*2+1)
+  PROGRAM.Unload(first)
+  PROGRAM.Unload(second)
+  Require(DOS.Close(output1)<>0 AND DOS.Close(output2)<>0)
+  IF mode=0 THEN
+    file=DOS.Open(BYTE POINTER(c"RAM:SECOND"),DOS.MODE_OLDFILE)
+    Require(file<>NULL)
+    hashBytes=DOS.Read(file,@hashOutput,128)
+    Require(hashBytes>0 AND hashBytes<128)
+    Require(DOS.Close(file)<>0)
+  FI
+
+RETURN
+
+PROC Command(BYTE POINTER command LONGINT wantPrimary,wantSecondary)
+  CARD index,cell
+  BYTE POINTER line
+  CONSOLETYPES.Instance POINTER terminal
+
+  line=ShellLine(@context)
+  index=0
+  WHILE command(index)<>0 DO
+    line(index)=command(index)
+    index==+1
+  OD
+  line(index)=0
+  context.shell.length=index
+  ShellCommand(@context)
+  primary=context.shell.lastStatus
+  secondary=context.shell.lastError
+  Require(primary=wantPrimary AND secondary=wantSecondary
+      AND context.shell.done=0)
+  Require(DOS.Input()=context.shell.console
+      AND DOS.Output()=context.shell.console)
+  ShellClear(@context)
+  terminal=CONSOLEDRIVER.GetInstance()
+  cell=CONSOLECORE.CellOffset(terminal,terminal.row*terminal.width+terminal.column)
+  ShellPrompt(@context)
+  Require(context.shell.done=0 AND terminal.cells(cell)=62
+      AND terminal.cells(cell+1)=32)
+
+RETURN
+
+PROC Main()
+  LONGCARD baseline
+  DOS.FileHandle POINTER file
+
+  baseline=EXEC.AvailMem(0)
+  sessionBytes=SIZEOF(SDXSTATE.Session)
+SETUP_FILES
+  Pair(0,BYTE POINTER(c"A HASH.ARC A.BIN"),BYTE POINTER(c"RAM:MD5"),
+      BYTE POINTER(c"A.BIN"),0)
+  Pair(1,BYTE POINTER(c"A ONE.ARC A.BIN"),BYTE POINTER(c"RAM:ARC.COM"),
+      BYTE POINTER(c"A TWO.ARC B.BIN"),1)
+  Pair(2,BYTE POINTER(c"A FAIL.ARC A.BIN"),BYTE POINTER(c"RAM:ARC.COM"),
+      BYTE POINTER(c"A KEEP.ARC B.BIN"),2)
+  file=DOS.Open(BYTE POINTER(c"D1:FAIL.ARC"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,@actual,1024)=ORIGINAL_BYTES)
+  Require(O65READ.Equal(@actual,ORIGINAL_POINTER,ORIGINAL_BYTES)<>0)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.Open(BYTE POINTER(c"D1:FAIL.XAR"),DOS.MODE_OLDFILE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_NOT_FOUND)
+  Require(DOS.Open(BYTE POINTER(c"D1:FAIL.BAK"),DOS.MODE_OLDFILE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_NOT_FOUND)
+  Pair(3,BYTE POINTER(c"A SHARE.ARC A.BIN"),BYTE POINTER(c"RAM:ARC.COM"),
+      BYTE POINTER(c"D SHARE.ARC OLD.BIN"),3)
+  Require(ShellStart(@context,BYTE POINTER(c"RAM:"))<>0)
+  Command(BYTE POINTER(c"RAM:ARC.COM AS FAIL.ARC A.BIN >RAM:SHELL.OUT"),20,156)
+  Command(BYTE POINTER(c"RAM:ARC.COM A FAIL.ARC A.BIN >RAM:SHELL.OUT"),0,0)
+  Command(BYTE POINTER(c"RAM:ARC.COM L FAIL.ARC >RAM:SHELL.OUT"),0,0)
+  Require(ShellFinish(@context)=0 AND context.shell=NULL)
+  file=DOS.Open(BYTE POINTER(c"RAM:SHELL.OUT"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  shellBytes=DOS.Read(file,@shellOutput,1024)
+  Require(shellBytes>0 AND shellBytes<1024)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+ENDMODULE

@@ -1,11 +1,11 @@
 # Exec816 documentation
 
-Start with the [demo guide](guides/demo.md) to run Exec816, or the
+Start with the [GEM desktop guide](gem-desktop-distribution.txt) to run Exec816, or the
 [architecture overview](architecture/overview.md) to understand it.
 
 | I want to… | Start here |
 | --- | --- |
-| Install the ZIP and use its shell | [Installation](../README.md#installation), [demo](guides/demo.md), [shell](guides/shell.md) |
+| Install the ZIP and use its desktop | [Installation](../README.md#installation), [GEM desktop](gem-desktop-distribution.txt), [shell](guides/shell.md) |
 | Choose the system drive or cache size | [OF816 boot monitor](guides/boot-monitor.md) |
 | Write a disk command | [Command guide](guides/commands.md) |
 | Try Tasks and message passing | [Task examples](guides/tasks.md), [message example](guides/messages.md) |
@@ -29,3 +29,23 @@ work; a plan's presence does not mean it is still pending. Historical documents
 and the records in [development](development/), [qualification](qualification/)
 and [experiments](experiments/) apply to their recorded revisions and profiles.
 They do not qualify a later build automatically.
+
+The [emulation-mode preemption experiment](experiments/emulation-preemption.md)
+records a bounded NMI/native-mode round trip for the proposed SDX personality.
+The [implementation plan](plans/spartados-personality-implementation-plan.md)
+uses private upper banks and audited binary patches, targeting MD5 then ARC.
+The [patch infrastructure record](development/sdx-patches.md) covers the first
+native identification/patching components and their executable checks.
+The [guest runtime slice](development/sdx-runtime.md) adds synthetic guests on
+ordinary Tasks, reversible early interrupt routing and pointer IRQ checks.
+The remaining P2 qualification gates are still open.
+
+The [native SDX decoder](development/sdx-loader.md) validates and relocates
+the pinned module records. P3 adds synthetic command admission, ordinary Process
+ownership and guest-slot reuse. The [P4 service subset](development/sdx-services.md)
+adds fourteen MD5 imports, owned file handles, inline output and nonlocal traps.
+Both slices pass development checks. [M1/M2 MD5](development/sdx-md5.md) add
+real hashing, checksum verification, masks/P/H/A attributes, shell launch,
+SDFS reads, cancellation and concurrent guests. [A1–A4 ARC](development/sdx-arc.md)
+adds exact-overlay loading, listing, extraction, mutation and mixed-use/shell acceptance. These are
+development results, not full hosted-system qualification.

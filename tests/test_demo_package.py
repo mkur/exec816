@@ -19,7 +19,7 @@ class DemoPackageTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         (self.root/'docs').mkdir()
-        for name in ('LICENSE', 'LICENSE-MIT', 'LICENSING.md', 'docs/demo-distribution.txt',
+        for name in ('VERSION', 'LICENSE', 'LICENSE-MIT', 'LICENSING.md', 'docs/demo-distribution.txt',
                      'docs/bitmap-shell-distribution.txt', 'docs/text-shell-distribution.txt'):
             (self.root/name).write_bytes((ROOT/name).read_bytes())
         self.bundle = self.root/'bundle'
@@ -252,7 +252,10 @@ class DemoPackageTests(unittest.TestCase):
             artifacts[name]=hashlib.sha256(payload).hexdigest()
         manifest=source/'demo-manifest.json'
         manifest.write_text(json.dumps(dict(bitmap=True,shell_only=True,desktop=True,
-            gem_desktop=True,kernel={'desktop_mouse':{'profile':'mild'}},artifacts=artifacts)))
+            gem_desktop=True,kernel={'desktop_mouse':{'profile':'mild'},
+                'exec_build':{'version':(ROOT/'VERSION').read_text().strip()}},artifacts=artifacts)))
+        # Repackaging must retain the built image's version, even after a bump.
+        (self.root/'VERSION').write_text('99.0\n')
         path=self.bundle/'of816.json';record=json.loads(path.read_text())
         record['exec_xex_sha256']=artifacts['program.xex']
         record['media']['manifest_sha256']=hashlib.sha256(manifest.read_bytes()).hexdigest()
@@ -261,6 +264,8 @@ class DemoPackageTests(unittest.TestCase):
             package_demo.package(self.bundle,self.archive,bitmap_shell=source)
             with zipfile.ZipFile(self.archive) as archive:
                 text=archive.read('exec816-demo/README.txt')
+                self.assertIn(('Exec816 '+(ROOT/'VERSION').read_text().strip()+' GEM desktop').encode(),text)
+                self.assertNotIn(b'@VERSION@',text)
                 self.assertIn(b'CALC.APP',text);self.assertIn(b'SYS:CALC.RSC',text)
                 self.assertIn(b'G4BENCH.APP',text);self.assertIn(b'WORK:G4BENCH.TXT',text)
                 self.assertNotIn(b'@POINTER_',text)

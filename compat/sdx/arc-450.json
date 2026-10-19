@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "personality_abi": 1,
+  "id": "arc-450",
+  "revision": 4,
+  "execution_status": "A1-A4-development",
+  "audit": "../../docs/development/sdx-arc.md",
+  "modules": [
+    {
+      "file": "ARC.COM",
+      "role": "command",
+      "entry_export": "@ARC",
+      "bytes": 3203,
+      "crc32": "a179b08e",
+      "sha256": "2107dcc06b29cf6ba5a26ad8aaf167f59f5211d2d93c08253594507a7d2217dd",
+      "patches": [
+        {
+          "id": "arc-inline-six",
+          "reason": "Use the real page-one stack and D-relative F0-F5 with an upper-bank DBR.",
+          "block": 1,
+          "offset": 1517,
+          "expected": "8d611aba18bd030185fe6d611a9d0301bd040185ff69009d0401ac611ab1fe99ef0088d0f860",
+          "replacement": "8d000018a30385fe6d00008303a30485ff69008304ac0000bbb1fe95ef88d0f8baa00060eaea",
+          "assembly": "arc-inline.s",
+          "intersections": [
+            {
+              "base": 2,
+              "offset": 1518
+            },
+            {
+              "base": 2,
+              "offset": 1528
+            },
+            {
+              "base": 2,
+              "offset": 1544
+            }
+          ],
+          "fixups": [
+            {
+              "offset": 1,
+              "kind": "block16",
+              "block": 2,
+              "addend": 4294
+            },
+            {
+              "offset": 9,
+              "kind": "block16",
+              "block": 2,
+              "addend": 4294
+            },
+            {
+              "offset": 22,
+              "kind": "block16",
+              "block": 2,
+              "addend": 4294
+            }
+          ],
+          "contract": "E=1, aligned D, DBR=PBR=guest bank, decimal clear, A=6, nested JSR frames wholly in page one. Same A/X/Y/P and stack outputs as original; FE/FF hold old outer return, F0-F5 receive six bytes, outer return advances by six.",
+          "regressions": [
+            "arc-inline-six-emitted"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "ARCLST.OVL",
+      "role": "overlay",
+      "entry_export": null,
+      "bytes": 1998,
+      "crc32": "25745761",
+      "sha256": "ea0b1f04ffa1c93d8b3fc69baafbb86854651665093c9ab3a091401c2946b7cd",
+      "patches": [],
+      "direct_page_arguments": [
+        7556,
+        7118,
+        7120,
+        7139,
+        7193,
+        7195,
+        7325,
+        7350
+      ]
+    },
+    {
+      "file": "ARCEXT.OVL",
+      "role": "overlay",
+      "entry_export": null,
+      "bytes": 1911,
+      "crc32": "a42ad9cb",
+      "sha256": "b1dd56ac4bb133bfc55150c1c17e401f74903d79a8459c6997ec0105290ad5ba",
+      "patches": [],
+      "direct_page_arguments": [
+        6851,
+        7261
+      ]
+    },
+    {
+      "file": "ARCADD.OVL",
+      "role": "overlay",
+      "entry_export": null,
+      "bytes": 4645,
+      "crc32": "03a08a5a",
+      "sha256": "f0aa3ef786bc58567bd97a5b6dca58eadf1cdf8bac8bb0e6a3447a4d955d7408",
+      "patches": [
+        {
+          "id": "arc-add-dp-name",
+          "block": 1,
+          "offset": 240,
+          "expected": "99ab00",
+          "replacement": "bb95ab",
+          "intersections": [],
+          "fixups": [],
+          "reason": "Store the terminator through D, matching the name read through zero page. X and NZ are dead until overwritten; A/Y/C/V and the stack are unchanged.",
+          "contract": "Store the terminator through D, matching the name read through zero page. X and NZ are dead until overwritten; A/Y/C/V and the stack are unchanged.",
+          "regressions": [
+            "arc-a3-create-mutate",
+            "arc-library-partial-multiply"
+          ]
+        },
+        {
+          "id": "arc-add-multiply-eight",
+          "block": 1,
+          "offset": 3413,
+          "expected": "200200",
+          "replacement": "2080f5",
+          "intersections": [
+            {
+              "base": "MUL_32",
+              "offset": 3414
+            }
+          ],
+          "fixups": [],
+          "reason": "Bind the audited Y=8 MUL_32+2 entry to its own guest veneer; do not enter the normal veneer interior.",
+          "contract": "Bind the audited Y=8 MUL_32+2 entry to its own guest veneer; do not enter the normal veneer interior.",
+          "regressions": [
+            "arc-a3-create-mutate",
+            "arc-library-partial-multiply"
+          ]
+        }
+      ],
+      "direct_page_arguments": [
+        7120,
+        7165
+      ]
+    }
+  ],
+  "unsupported": [
+    "Hardware H; encryption G; move M; print/test P/T; store-only S; arbitrary modules",
+    "Preserving/comparing dates outside 1980..2049; unknown or invalid U/F dates; directory entries as extracted members",
+    "Atomic replacement, power-loss recovery and automatic removal of pre-existing .XAR/.BAK files"
+  ],
+  "direct_page_arguments": [
+    721
+  ]
+}

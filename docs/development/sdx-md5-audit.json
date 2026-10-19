@@ -1,0 +1,411 @@
+{
+  "status": "pass",
+  "sha256": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+  "layout": {
+    "blocks": {
+      "1": 12288,
+      "2": 14848,
+      "3": 15360
+    },
+    "end": 17152,
+    "exports": {
+      "@MD5": 12288
+    }
+  },
+  "manifest_revision": 4,
+  "patches": [
+    "md5-compression-irq",
+    "md5-break-checkpoint",
+    "md5-invalid-hex-pop",
+    "md5-verification-eof",
+    "md5-invalid-high-hex",
+    "md5-invalid-low-hex"
+  ],
+  "instructions": 1141,
+  "opcode_bytes": 2353,
+  "opcodes": [
+    5,
+    6,
+    8,
+    10,
+    16,
+    21,
+    24,
+    25,
+    29,
+    32,
+    36,
+    38,
+    40,
+    41,
+    42,
+    44,
+    48,
+    53,
+    56,
+    70,
+    72,
+    73,
+    74,
+    76,
+    80,
+    85,
+    96,
+    101,
+    102,
+    104,
+    105,
+    106,
+    109,
+    117,
+    120,
+    121,
+    125,
+    132,
+    133,
+    134,
+    136,
+    138,
+    141,
+    142,
+    144,
+    145,
+    149,
+    152,
+    153,
+    157,
+    160,
+    162,
+    164,
+    165,
+    166,
+    168,
+    169,
+    170,
+    173,
+    174,
+    176,
+    181,
+    184,
+    185,
+    189,
+    190,
+    192,
+    197,
+    198,
+    200,
+    201,
+    202,
+    208,
+    213,
+    221,
+    224,
+    229,
+    230,
+    232,
+    233,
+    240,
+    245,
+    246
+  ],
+  "calls": [
+    {
+      "offset": 10,
+      "symbol": "U_SLASH",
+      "tail": false
+    },
+    {
+      "offset": 20,
+      "symbol": "U_GETATR",
+      "tail": false
+    },
+    {
+      "offset": 28,
+      "symbol": "FOPEN",
+      "tail": false
+    },
+    {
+      "offset": 141,
+      "symbol": "U_FAIL",
+      "tail": true
+    },
+    {
+      "offset": 154,
+      "symbol": "U_SFAIL",
+      "tail": false
+    },
+    {
+      "offset": 187,
+      "symbol": "U_XFAIL",
+      "tail": false
+    },
+    {
+      "offset": 197,
+      "symbol": "FCLOSEAL",
+      "tail": false
+    },
+    {
+      "offset": 201,
+      "symbol": "U_FAIL",
+      "tail": true
+    },
+    {
+      "offset": 206,
+      "symbol": "TOUPPER",
+      "tail": false
+    },
+    {
+      "offset": 255,
+      "symbol": "FGETC",
+      "tail": false
+    },
+    {
+      "offset": 272,
+      "symbol": "FGETC",
+      "tail": false
+    },
+    {
+      "offset": 295,
+      "symbol": "U_FAIL",
+      "tail": true
+    },
+    {
+      "offset": 310,
+      "symbol": "FCLOSE",
+      "tail": true
+    },
+    {
+      "offset": 337,
+      "symbol": "TOUPPER",
+      "tail": false
+    },
+    {
+      "offset": 496,
+      "symbol": "PRINTF",
+      "tail": false
+    },
+    {
+      "offset": 520,
+      "symbol": "PRINTF",
+      "tail": false
+    },
+    {
+      "offset": 530,
+      "symbol": "PRINTF",
+      "tail": false
+    },
+    {
+      "offset": 547,
+      "symbol": "U_GETATR",
+      "tail": false
+    },
+    {
+      "offset": 562,
+      "symbol": "PRINTF",
+      "tail": false
+    },
+    {
+      "offset": 686,
+      "symbol": "FOPEN",
+      "tail": false
+    },
+    {
+      "offset": 716,
+      "symbol": "FCLOSE",
+      "tail": false
+    },
+    {
+      "offset": 724,
+      "symbol": "PRINTF",
+      "tail": false
+    },
+    {
+      "offset": 746,
+      "symbol": "PRINTF",
+      "tail": false
+    },
+    {
+      "offset": 766,
+      "symbol": "PRINTF",
+      "tail": false
+    },
+    {
+      "offset": 869,
+      "symbol": "FREAD",
+      "tail": false
+    },
+    {
+      "offset": 958,
+      "symbol": "U_FAIL",
+      "tail": true
+    },
+    {
+      "offset": 2465,
+      "symbol": "U_FAIL",
+      "tail": true
+    }
+  ],
+  "inline": {
+    "724": {
+      "format_hex": "4d44352028257329203d20",
+      "arguments": [
+        739
+      ]
+    },
+    "746": {
+      "format_hex": "25303278",
+      "arguments": [
+        754
+      ]
+    },
+    "766": {
+      "format_hex": "9b",
+      "arguments": []
+    },
+    "562": {
+      "format_hex": "9b5573653a9b9b4d4435205b2f485d205b643a5d5b706174685d66696c656e616d652e657874202e2e2e9b9b6f729b9b4d4435205b2f485d202f43205b643a5d5b706174685d6861736866696c652e6578749b9b2f482073637265656e206f66662028414e54494320444d41206f6666299b",
+      "arguments": []
+    },
+    "496": {
+      "format_hex": "25703a20",
+      "arguments": [
+        504
+      ]
+    },
+    "520": {
+      "format_hex": "4f4b9b",
+      "arguments": []
+    },
+    "530": {
+      "format_hex": "5c694241445c699b",
+      "arguments": []
+    }
+  },
+  "self_modifying_operands": [
+    754,
+    1122,
+    1123,
+    1130,
+    1131,
+    1137,
+    1138,
+    1144,
+    1145,
+    1182,
+    1419,
+    1420,
+    1427,
+    1428,
+    1434,
+    1435,
+    1441,
+    1442,
+    1479,
+    1725,
+    1726,
+    1733,
+    1734,
+    1740,
+    1741,
+    1747,
+    1748,
+    1785,
+    2014,
+    2015,
+    2022,
+    2023,
+    2029,
+    2030,
+    2036,
+    2037,
+    2074
+  ],
+  "dynamic_branches": {
+    "1181": [
+      0,
+      22,
+      68,
+      97,
+      0,
+      22,
+      68,
+      97,
+      0,
+      22,
+      68,
+      97,
+      0,
+      22,
+      68,
+      97
+    ],
+    "1478": [
+      0,
+      43,
+      115,
+      71,
+      0,
+      43,
+      115,
+      71,
+      0,
+      43,
+      115,
+      71,
+      0,
+      43,
+      115,
+      71
+    ],
+    "1784": [
+      0,
+      43,
+      87,
+      102,
+      0,
+      43,
+      87,
+      102,
+      0,
+      43,
+      87,
+      102,
+      0,
+      43,
+      87,
+      102
+    ],
+    "2073": [
+      0,
+      105,
+      33,
+      59,
+      0,
+      105,
+      33,
+      59,
+      0,
+      105,
+      33,
+      59,
+      0,
+      105,
+      33,
+      59
+    ]
+  },
+  "direct_page_arguments": [
+    504,
+    754
+  ],
+  "notes": [
+    "No indirect control transfers or undocumented opcodes.",
+    "MEMLO/MEMTOP and SDMCTL use private guest-bank storage.",
+    "Direct-page indexed accesses wrap in E=1; indirect buffer pointer is B8.",
+    "The /H path reads private RTCLOK and is rejected by parsed U_SLASH before entry.",
+    "The only SEI is compression offset 041A, patched to NOP.",
+    "Cleanup handler at 00C0 preserves error in X across FCLOSEAL and tail-calls U_FAIL.",
+    "Manifest revision 4 adds the native BREAK checkpoint and four edits balancing invalid-hex retry; original-SDX repaired control checks the latter independently."
+  ],
+  "scope": "Static reachable-code audit of the pinned original; patch preimages and relocation intersections validated. No guest binary is distributed."
+}

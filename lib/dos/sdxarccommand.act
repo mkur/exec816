@@ -1,0 +1,227 @@
+MODULE SDXARCCOMMAND
+USE SDXABI
+USE SDXSTATE
+USE SDXCOMMAND
+USE SDXNAMES
+
+; The command parser shares the existing bounded LBUF/COMFNAM contract.
+PUBLIC BYTE FUNC Parameter(SDXSTATE.Session POINTER state BYTE POINTER frame)
+
+  frame(SDXABI.FRAME_A)=0
+RETURN(SDXCOMMAND.Attributes(state,frame))
+
+PUBLIC BYTE FUNC DefaultMask(SDXSTATE.Session POINTER state)
+  CARD length,at
+  BYTE last
+
+  length=state.bank(SDXABI.COMTAB+$1a)
+  at=SDXABI.COMTAB+$21
+  last=0
+  IF length<>0 THEN
+    last=state.bank(at+length-1)
+  FI
+  IF length=0 OR last=': OR last='> OR last=92 THEN
+    IF length>26 THEN
+      RETURN(156)
+    FI
+    state.bank(at+length)='*
+    state.bank(at+length+1)='.
+    state.bank(at+length+2)='*
+    state.bank(at+length+3)=$9b
+    state.bank(SDXABI.COMTAB+$1a)=BYTE(length+3)
+    SDXSTATE.Word(state.bank,SDXABI.FILE_P,at)
+  FI
+
+RETURN(0)
+
+; ARC's member-match wrapper passes its D-relative header name at +061B.
+; Other audited calls pass ordinary pointers into the private bank.
+PUBLIC BYTE FUNC Decode(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  BYTE POINTER source
+  CARD near,at,leaf,index,pathStart
+  BYTE value,device
+
+  near=SDXSTATE.ReadWord(state.bank,SDXABI.FILE_P)
+  source=state.bank+near
+  IF SDXSTATE.ReadWord(frame,SDXABI.FRAME_PC)=SDXABI.GUEST_START+$61b THEN
+    source=state.dp+$90
+  FI
+  at=0
+  device=state.bank($720)
+  IF source(1)=': THEN
+    value=SDXCOMMAND.Upper(source(0))
+    IF value='@ THEN
+      device=0
+    ELSEIF value='A THEN
+      device=1
+    ELSE
+      RETURN(160)
+    FI
+    at=2
+  FI
+  state.bank($761)=device
+  pathStart=at
+  leaf=at
+  WHILE at<127 AND source(at)<>0 AND source(at)<>$9b DO
+    value=source(at)
+    IF value='> OR value=92 OR value='/ THEN
+      leaf=at+1
+    FI
+    at==+1
+  OD
+  IF at=127 OR leaf-pathStart>=64 OR at-leaf>=30 THEN
+    RETURN(156)
+  FI
+  index=0
+  WHILE pathStart<leaf DO
+    state.bank($7a0+index)=source(pathStart)
+    index==+1
+    pathStart==+1
+  OD
+  state.bank($7a0+index)=0
+  index=0
+  WHILE leaf<at DO
+    state.path(index)=source(leaf)
+    index==+1
+    leaf==+1
+  OD
+  state.path(index)=0
+  IF index=0 THEN
+    FOR index=0 TO 10 DO
+      state.bank($762+index)=32
+    OD
+  ELSEIF SDXNAMES.Pattern(@state.path,state.bank+$762,1)=0 THEN
+    ; ARC supplies .ARC/.XAR/.BAK as extension-only defaults to this parser.
+    IF state.path(0)<>'. THEN
+      RETURN(156)
+    FI
+  FI
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Expand(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  CARD near,index,used
+  BYTE POINTER target
+
+  near=CARD(frame(SDXABI.FRAME_A)) OR (CARD(frame(SDXABI.FRAME_X)) LSH 8)
+  target=state.bank+near
+  IF state.overlayModule=5 AND
+      SDXSTATE.ReadWord(frame,SDXABI.FRAME_PC)=$4b5a THEN
+    IF near<>$ab THEN
+      RETURN(156)
+    FI
+    target=state.dp+near
+  FI
+  used=frame(SDXABI.FRAME_Y)
+  IF LONGCARD(near)+used+13>=SDXABI.GUEST_LIMIT THEN
+    RETURN(156)
+  FI
+  FOR index=0 TO 10 DO
+    IF index=8 AND state.bank($76a)<>32 THEN
+      target(used)='.
+      used==+1
+    FI
+    IF state.bank($762+index)<>32 THEN
+      target(used)=state.bank($762+index)
+      used==+1
+    FI
+  OD
+  target(used)=$9b
+  frame(SDXABI.FRAME_Y)=BYTE(used)
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Path(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  CARD near,index,used
+  BYTE device
+
+  near=CARD(frame(SDXABI.FRAME_A)) OR (CARD(frame(SDXABI.FRAME_X)) LSH 8)
+  used=frame(SDXABI.FRAME_Y)
+  IF LONGCARD(near)+used+68>=SDXABI.GUEST_LIMIT THEN
+    RETURN(156)
+  FI
+  device=state.bank($761)
+  IF device<>0 AND device<>1 AND device<>$ff THEN
+    RETURN(160)
+  FI
+  IF device<>$ff THEN
+    state.bank(near+used)='A
+    state.bank(near+used+1)=':
+    used==+2
+  FI
+  index=0
+  WHILE index<64 AND state.bank($7a0+index)<>0 DO
+    state.bank(near+used)=state.bank($7a0+index)
+    index==+1
+    used==+1
+  OD
+  IF index=64 THEN
+    RETURN(156)
+  FI
+  state.bank(near+used)=$9b
+  frame(SDXABI.FRAME_Y)=BYTE(used)
+
+RETURN(0)
+
+; The listing overlay uses the low 32-bit result and carry overflow only.
+PUBLIC BYTE FUNC Arithmetic(SDXSTATE.Session POINTER state BYTE POINTER frame
+    BYTE divide)
+  LONGCARD left,right,result
+  CARD index
+
+  left=0
+  right=0
+  FOR index=0 TO 3 DO
+    left=(left LSH 8) OR state.bank(SDXABI.COMTAB+$ff+index)
+    right=(right LSH 8) OR state.bank(SDXABI.COMTAB+$103+index)
+  OD
+  frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) & $fe
+  IF divide<>0 THEN
+    IF right=0 THEN
+      frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) OR 1
+      result=0
+    ELSE
+      result=left/right
+    FI
+  ELSE
+    result=left*right
+    IF right<>0 AND left>LONGCARD($ffffffff)/right THEN
+      frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) OR 1
+    FI
+  FI
+  index=4
+  WHILE index<>0 DO
+    index==-1
+    state.bank(SDXABI.COMTAB+$107+index)=BYTE(result)
+    result=result RSH 8
+  OD
+
+RETURN(0)
+
+; Original-library controls establish Y=8 at MUL_32+2: multiply the
+; first operand's top byte by the 24-bit second operand, returning X=$FF/Y=0.
+PUBLIC BYTE FUNC MultiplyEight(SDXSTATE.Session POINTER state BYTE POINTER frame)
+  LONGCARD value
+  CARD index
+
+  IF state.overlayModule<>5 OR frame(SDXABI.FRAME_Y)<>8 OR
+      state.bank(SDXABI.COMTAB+$103)<>0 THEN
+    RETURN(156)
+  FI
+  value=0
+  FOR index=$104 TO $106 DO
+    value=(value LSH 8) OR state.bank(SDXABI.COMTAB+index)
+  OD
+  value=value*state.bank(SDXABI.COMTAB+$ff)
+  frame(SDXABI.FRAME_A)=BYTE(value RSH 24)
+  frame(SDXABI.FRAME_X)=$ff
+  frame(SDXABI.FRAME_Y)=0
+  frame(SDXABI.FRAME_P)=(frame(SDXABI.FRAME_P) & $7c) OR 2
+  FOR index=0 TO 3 DO
+    state.bank(SDXABI.COMTAB+$10a-index)=BYTE(value)
+    value=value RSH 8
+  OD
+
+RETURN(0)
+
+ENDMODULE

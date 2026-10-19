@@ -1,0 +1,358 @@
+MODULE SDXFILE
+USE EXEC
+USE DOSCLIENT
+USE O65TYPES
+USE O65READ
+USE O65MEMORY
+USE A816MEMORY
+
+PUBLIC CONST BLOCK_LIMIT=16, EXPORT_LIMIT=32
+CONST TOUCHED_BYTES=8192
+
+PUBLIC TYPE Block=[
+  BYTE number,control
+  CARD origin,bytes,placed
+  LONGCARD source
+]
+
+PUBLIC TYPE Export=[
+  BYTE block
+  CARD offset
+  BYTE ARRAY name(8)
+]
+
+PUBLIC TYPE Binding=[CARD value BYTE ARRAY name(8)]
+
+PUBLIC TYPE Layout=[
+  O65TYPES.Cursor wire
+  BYTE POINTER bank,touched
+  LONGCARD end
+  CARD blockCount,exportCount
+  Block ARRAY blocks(BLOCK_LIMIT)
+  Export ARRAY exports(EXPORT_LIMIT)
+]
+
+; Names are exactly eight printable, space-padded bytes on the wire.
+BYTE POINTER FUNC ReadName(O65TYPES.Cursor POINTER wire)
+  BYTE POINTER name
+  CARD index
+  BYTE nonspace
+
+  name=wire.bytes+SIZE(wire.at)
+  IF O65READ.Take(wire,8)=0 THEN
+    RETURN(NULL)
+  FI
+
+  nonspace=0
+  FOR index=0 TO 7 DO
+    IF name(index)<32 OR name(index)>126 THEN
+      O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+    FI
+    IF name(index)<>32 THEN
+      nonspace=1
+    FI
+  OD
+  IF nonspace=0 THEN
+    O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+  FI
+
+RETURN(name)
+
+PUBLIC Block POINTER FUNC Find(Layout POINTER plan BYTE number)
+  CARD index
+
+  index=0
+  WHILE index<plan.blockCount DO
+    IF plan.blocks(index).number=number THEN
+      RETURN(@plan.blocks(index))
+    FI
+    index==+1
+  OD
+
+RETURN(NULL)
+
+PUBLIC CARD FUNC Symbol(Layout POINTER plan BYTE POINTER name)
+  CARD index
+  Export POINTER symbol
+  Block POINTER block
+
+  index=0
+  WHILE index<plan.exportCount DO
+    symbol=@plan.exports(index)
+    IF O65READ.Equal(@symbol.name,name,8)<>0 THEN
+      block=Find(plan,symbol.block)
+      RETURN(CARD(LONGCARD(block.placed)+symbol.offset-block.origin))
+    FI
+    index==+1
+  OD
+
+RETURN(0)
+
+PUBLIC PROC Release(Layout POINTER plan)
+
+  IF plan<>NULL THEN
+    IF plan.touched<>NULL THEN
+      EXEC.FreeMem(plan.touched,TOUCHED_BYTES)
+    FI
+    EXEC.FreeMem(BYTE POINTER(plan),SIZEOF(Layout))
+  FI
+
+RETURN
+
+; Each relocated byte is touched at most once, including adjacent word sites.
+BYTE FUNC Mark(Layout POINTER plan CARD address)
+  CARD index
+  BYTE mask
+
+  index=address RSH 3
+  mask=BYTE(1 LSH (address & 7))
+  IF (plan.touched(index) & mask)<>0 THEN
+    RETURN(0)
+  FI
+  plan.touched(index)=plan.touched(index) OR mask
+
+RETURN(1)
+
+; First scan only decodes; second scan resolves forward references and binds.
+PROC Fixups(Layout POINTER plan LONGINT base BYTE apply)
+  O65TYPES.Cursor POINTER wire
+  Block POINTER target
+  CARD size,address
+  CARD POINTER word
+  LONGCARD start,position
+  LONGINT value
+  BYTE op,number
+
+  wire=@plan.wire
+  size=O65READ.U16(wire)
+  start=wire.at
+  position=0
+  number=0
+  WHILE wire.error=0 DO
+    op=O65READ.U8(wire)
+    IF op=$fc THEN
+      EXIT
+    FI
+    IF op=$fd THEN
+      O65READ.Fail(wire,O65TYPES.ERROR_UNSUPPORTED)
+    ELSEIF op=$fe THEN
+      number=O65READ.U8(wire)
+      position=0
+    ELSEIF op=$ff THEN
+      position==+250
+    ELSE
+      position==+op
+      IF number=0 THEN
+        O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+      ELSEIF apply<>0 THEN
+        target=Find(plan,number)
+        IF target=NULL THEN
+          O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+        ELSEIF position+2>target.bytes OR (target.control & $80)<>0 THEN
+          O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+        ELSE
+          address=CARD(LONGCARD(target.placed)+position)
+          value=LONGINT(CARD POINTER(plan.bank+address)^)+base
+          IF value<0 OR value>$ffff THEN
+            O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+          ELSEIF Mark(plan,address)=0 OR Mark(plan,address+1)=0 THEN
+            O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+          ELSE
+            word=CARD POINTER(plan.bank+address)
+            word^=CARD(value)
+          FI
+        FI
+      FI
+    FI
+    IF position>$ffff OR (size<>0 AND wire.at-start>=size) THEN
+      O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+    FI
+  OD
+  IF size<>0 AND wire.at-start<>size THEN
+    O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+  FI
+
+RETURN
+
+PROC Records(Layout POINTER plan LONGCARD limit BYTE apply
+    CARD FUNC POINTER resolve(BYTE POINTER name)
+    Binding POINTER bindings CARD bindingCount)
+  O65TYPES.Cursor POINTER wire
+  Block POINTER block
+  Export POINTER symbol
+  BYTE POINTER name
+  CARD tag,origin,size,index
+  BYTE number,control
+  LONGINT base
+
+  wire=@plan.wire
+  WHILE wire.at<wire.limit AND wire.error=0 DO
+    tag=O65READ.U16(wire)
+    CASE tag OF
+    WHEN $fffe THEN
+      number=O65READ.U8(wire)
+      control=O65READ.U8(wire)
+      origin=O65READ.U16(wire)
+      size=O65READ.U16(wire)
+      IF apply=0 THEN
+        IF number=0 OR size=0 OR (control & $3f)<>0 OR
+            Find(plan,number)<>NULL THEN
+          O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+        ELSEIF plan.blockCount=BLOCK_LIMIT THEN
+          O65READ.Fail(wire,O65TYPES.ERROR_RESOURCE_LIMIT)
+        ELSE
+          IF (control & $40)<>0 THEN
+            plan.end=(plan.end+255) & LONGCARD($ffffff00)
+          FI
+          IF O65READ.Extent(plan.end,size,limit)=0 THEN
+            O65READ.Fail(wire,O65TYPES.ERROR_RESOURCE_LIMIT)
+          ELSE
+            block=@plan.blocks(plan.blockCount)
+            plan.blockCount==+1
+            block.number=number
+            block.control=control
+            block.origin=origin
+            block.bytes=size
+            block.placed=CARD(plan.end)
+            block.source=wire.at
+            plan.end==+size
+          FI
+        FI
+      FI
+      IF (control & $80)=0 THEN
+        O65READ.Take(wire,size)
+      FI
+    WHEN $fffc THEN
+      number=O65READ.U8(wire)
+      origin=O65READ.U16(wire)
+      name=ReadName(wire)
+      IF apply=0 AND wire.error=0 THEN
+        IF plan.exportCount=EXPORT_LIMIT THEN
+          O65READ.Fail(wire,O65TYPES.ERROR_RESOURCE_LIMIT)
+        ELSE
+          index=0
+          WHILE index<plan.exportCount DO
+            IF O65READ.Equal(@plan.exports(index).name,name,8)<>0 THEN
+              O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+            FI
+            index==+1
+          OD
+          symbol=@plan.exports(plan.exportCount)
+          plan.exportCount==+1
+          symbol.block=number
+          symbol.offset=origin
+          A816MEMORY.Move(@symbol.name,name,8)
+        FI
+      FI
+    WHEN $fffd THEN
+      number=O65READ.U8(wire)
+      base=0
+      IF apply<>0 THEN
+        block=Find(plan,number)
+        IF block=NULL THEN
+          O65READ.Fail(wire,O65TYPES.ERROR_BAD_FORMAT)
+        ELSE
+          base=LONGINT(block.placed)-block.origin
+        FI
+      FI
+      Fixups(plan,base,apply)
+    WHEN $fffb THEN
+      name=ReadName(wire)
+      base=0
+      IF apply<>0 AND wire.error=0 THEN
+        index=0
+        WHILE index<bindingCount DO
+          IF O65READ.Equal(@bindings(index).name,name,8)<>0 THEN
+            base=LONGINT(bindings(index).value)
+            EXIT
+          FI
+          index==+1
+        OD
+        IF base=0 THEN
+          base=LONGINT(resolve(name))
+        FI
+        IF base=0 THEN
+          O65READ.Fail(wire,O65TYPES.ERROR_BAD_PROVIDER)
+        FI
+      FI
+      Fixups(plan,base,apply)
+    ELSE
+      O65READ.Fail(wire,O65TYPES.ERROR_UNSUPPORTED)
+    ESAC
+  OD
+
+RETURN
+
+; The bank is unpublished caller-owned storage. A failed transaction may
+; change it, but never its immutable staged input. Release the plan before
+; releasing that input. No executable admission policy is implied by decoding.
+PUBLIC Layout POINTER FUNC Load(BYTE POINTER bytes LONGCARD length
+    BYTE POINTER bank CARD start LONGCARD limit
+    CARD FUNC POINTER resolve(BYTE POINTER name)
+    Binding POINTER bindings CARD bindingCount)
+  Layout POINTER plan
+  Block POINTER block
+  Export POINTER symbol
+  CARD index,error
+
+  IF length<8 OR length>65536 OR start>=limit OR limit>65536 THEN
+    DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_BAD_FORMAT))
+    RETURN(NULL)
+  FI
+  plan=Layout POINTER(O65MEMORY.Allocate(SIZEOF(Layout)))
+  IF plan=NULL THEN
+    DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_NO_FREE_STORE))
+    RETURN(NULL)
+  FI
+  plan.wire.bytes=bytes
+  plan.wire.limit=length
+  plan.bank=bank
+  plan.end=start
+  Records(plan,limit,0,resolve,bindings,bindingCount)
+  IF plan.blockCount=0 THEN
+    O65READ.Fail(@plan.wire,O65TYPES.ERROR_BAD_FORMAT)
+  FI
+  index=0
+  WHILE index<plan.exportCount AND plan.wire.error=0 DO
+    symbol=@plan.exports(index)
+    block=Find(plan,symbol.block)
+    IF block=NULL THEN
+      O65READ.Fail(@plan.wire,O65TYPES.ERROR_BAD_FORMAT)
+    ELSEIF symbol.offset<block.origin OR
+        LONGCARD(symbol.offset)-block.origin>=block.bytes THEN
+      O65READ.Fail(@plan.wire,O65TYPES.ERROR_BAD_FORMAT)
+    FI
+    index==+1
+  OD
+  IF plan.wire.error=0 THEN
+    plan.touched=O65MEMORY.Allocate(TOUCHED_BYTES)
+    IF plan.touched=NULL THEN
+      O65READ.Fail(@plan.wire,O65TYPES.ERROR_NO_FREE_STORE)
+    ELSE
+      index=0
+      WHILE index<plan.blockCount DO
+        block=@plan.blocks(index)
+        IF (block.control & $80)<>0 THEN
+          A816MEMORY.Clear(bank+block.placed,block.bytes)
+        ELSE
+          A816MEMORY.Move(bank+block.placed,bytes+SIZE(block.source),block.bytes)
+        FI
+        index==+1
+      OD
+      plan.wire.at=0
+      Records(plan,limit,1,resolve,bindings,bindingCount)
+    FI
+  FI
+  error=plan.wire.error
+  IF error<>0 THEN
+    Release(plan)
+    DOSCLIENT.SetError(LONGINT(error))
+    RETURN(NULL)
+  FI
+  EXEC.FreeMem(plan.touched,TOUCHED_BYTES)
+  plan.touched=NULL
+  DOSCLIENT.SetError(0)
+
+RETURN(plan)
+
+ENDMODULE
