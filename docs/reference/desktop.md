@@ -75,11 +75,12 @@ Exact layouts, operation numbers and statuses come from
 | Operation | Result |
 | --- | --- |
 | REGISTER | Retain owner and assign client identity. |
-| OPEN | Copy a title of at most 64 bytes and create a hidden, fixed-size, fully onscreen window. Four slots include hidden windows. Return its ID in `window`. |
+| OPEN | Copy a title of at most 64 bytes and create a hidden, fixed-size, fully onscreen window. Six slots include hidden windows. Return its ID in `window`. |
 | SHOW / HIDE | Change visibility. Hiding the focused window restores the frontmost remaining shown, routable window. |
 | MOVE | Set the top-left position from `bounds.left/top`; preserve dimensions. |
 | RAISE | Move a window to the front. |
 | FOCUS | Focus a shown window and retain focus-change notices. |
+| SET_TABS | Copy one `TabSnapshot` for the registered Shell controller through the content lane. |
 | BIND_CONSOLE | Replace the Shell window’s bound console with the owned unit in `target`; use the control lane. |
 | REPLACE | Validate and copy one complete retained command batch, then invalidate its layer. |
 | SET_TREE / UPDATE_WIDGETS / READ_WIDGET_STATE | Retain, patch or read [AES widget content](widgets.md) through the content lane. |
@@ -100,12 +101,35 @@ area and 2-pixel bottom border. Text is 8 pixels per character and 8 pixels
 high; offsets/counts must stay inside the supplied text. The entire batch is
 validated before retained content changes. No payload pointer survives reply.
 Console-kind OPEN is limited to the root controller and initially binds permanent
-unit zero. The single 528×173 frame retains 64×20 cells with a 512×160 text origin
+unit zero. The single 528×189 frame retains 64×20 cells with a 512×160 text origin
 on an eight-pixel grid: outer x is a multiple of eight and outer y is 5 modulo
 eight. BIND_CONSOLE accepts another 64×20 console created by that controller.
 The caller retains the destination through exact reply collection; the published
 binding then prevents Destroy until replacement or window CLOSE. Shell streams
 belong to their individual Processes, which retire before controller shutdown.
+
+The Shell frame has a 16-pixel tab strip at outer `(8,11)`, width 512. Two
+240-pixel slots precede a 32-pixel New button; the rightmost 16 pixels of each
+occupied slot close that session. Cells begin at outer `(8,27)`. Generated
+`FRAME_SHELL_*` and `FRAME_TAB_*` constants define drawing and hit bounds.
+Other native and AES window work rectangles retain their existing geometry.
+
+SET_TABS accepts exactly one 18-byte `TabSnapshot`: two eight-byte `TabEntry`
+records (`identity`, `state`, `selected`, `busy`) and `newEnabled`, with generated
+alignment. Identity zero denotes an empty slot. States 1–4 mean starting, ready,
+closing and retiring. The presenter copies these scalars and retains no shell
+pointer. Snapshot admission invalidates the strip; it does not bind a console.
+
+A tab press captures the full session identity. Release must hit the same part
+of the same live window and identity; releasing outside, cancellation, loss or
+slot reuse cannot select or close a replacement. Select/New raises and focuses
+Shell through normal presenter policy. Closing an inactive tab preserves focus.
+EVENT_TAB_SELECT and EVENT_TAB_CLOSE carry the captured identity in `route`;
+`object` identifies the slot. EVENT_TAB_NEW has no session identity. Per-slot
+close identities survive ordinary queue pressure and coalesce repeated closes.
+The root controller submits its own CREATE/SELECT/CLOSE messages and retains
+independent close requests while creation or selection is pending. The presenter
+never runs a shell command or waits for a shell to terminate.
 
 BIND_CONSOLE waits behind an active Layers transaction. Drawing/DMA, UPDATE or
 console presentation conflicts return BUSY without changing selection. At the
@@ -129,8 +153,7 @@ integration are DT3. Programmatic focus currently affects presentation.
 
 Cancel and collect NEXT_EVENT, collect other lanes, close every window, then
 UNREGISTER and collect its reply before `Dispose`. Dispose deletes the private
-port only when registration and all lanes are clear. Close requests from a
-future gadget will be events, never forced Task removal. Removing a registered
+port only when registration and all lanes are clear. Close requests are events, never forced Task removal. Removing a registered
 Task is an Exec lifetime violation and produces the existing launch fault.
 
 `DESKCORE.Init` uses a presenter-owned allocated signal; only that Task pumps,

@@ -12,6 +12,7 @@ USE HEAPCORE
 USE DESKTYPES
 USE DESKMOVE
 USE DESKCONSOLE
+USE DESKTABS
 USE DESKGEOMETRY
 USE DESKCACHE
 USE DESKEVENTS
@@ -341,11 +342,11 @@ CARD FUNC Open(DESKTYPES.Service POINTER service
   IF request.value=DESKTYPES.CONTENT_CONSOLE THEN
     IF service.consoleOwner<>client.binding.owner OR service.consoleWindow<>0
         OR request.target<>0 OR (request.bounds.left & 7)<>0
-        OR ((request.bounds.top+DESKTYPES.WORK_TOP) & 7)<>0
+        OR ((request.bounds.top+DESKTYPES.FRAME_SHELL_TOP) & 7)<>0
         OR request.bounds.right-request.bounds.left<>
             512+DESKTYPES.WORK_LEFT+DESKTYPES.WORK_RIGHT
         OR request.bounds.bottom-request.bounds.top<>
-            160+DESKTYPES.WORK_TOP+DESKTYPES.WORK_BOTTOM THEN
+            160+DESKTYPES.FRAME_SHELL_TOP+DESKTYPES.WORK_BOTTOM THEN
       RETURN(DESKTYPES.BAD_ARGUMENT)
     FI
   FI
@@ -389,6 +390,7 @@ CARD FUNC Open(DESKTYPES.Service POINTER service
         window.kind=BYTE(request.value)
         window.console=request.target
         IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+          window.frameKind=DESKTYPES.FRAME_SHELL_TABS
           service.consoleWindow=window.id
         FI
         A816MEMORY.Move(@window.title(0),request.payload,request.bytes)
@@ -416,12 +418,12 @@ CARD FUNC Content(DESKTYPES.Service POINTER service
   width=CARD(layer.bounds.right-layer.bounds.left)
       -DESKTYPES.WORK_LEFT-DESKTYPES.WORK_RIGHT
   height=CARD(layer.bounds.bottom-layer.bounds.top)
-      -DESKTYPES.WORK_TOP-DESKTYPES.WORK_BOTTOM
+      -DESKTYPES.FRAME_SHELL_TOP-DESKTYPES.WORK_BOTTOM
   IF window.iconified<>0 THEN
     width=CARD(window.normalBounds.right-window.normalBounds.left)
         -DESKTYPES.WORK_LEFT-DESKTYPES.WORK_RIGHT
     height=CARD(window.normalBounds.bottom-window.normalBounds.top)
-        -DESKTYPES.WORK_TOP-DESKTYPES.WORK_BOTTOM
+        -DESKTYPES.FRAME_SHELL_TOP-DESKTYPES.WORK_BOTTOM
   FI
   IF source.count>DESKTYPES.COMMANDS OR source.textBytes>DESKTYPES.TEXT_BYTES
       OR source.background>15 THEN
@@ -568,6 +570,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
     FI
     DESKSTATE.TopChrome()
   WHEN DESKTYPES.HIDE THEN
+    DESKTABS.Retire(window.id)
     DESKWIDGETS.Cancel(service,window)
     status=LAYERS.Show(@service.scene,window.layer,0)
     ForgetIcon(service,window)
@@ -575,7 +578,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
   WHEN DESKTYPES.MOVE THEN
     IF window.kind=DESKTYPES.CONTENT_CONSOLE AND
         ((request.bounds.left & 7)<>0
-        OR ((request.bounds.top+DESKTYPES.WORK_TOP) & 7)<>0) THEN
+        OR ((request.bounds.top+DESKTYPES.FRAME_SHELL_TOP) & 7)<>0) THEN
       RETURN(DESKTYPES.BAD_ARGUMENT)
     FI
 
@@ -599,6 +602,8 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
       RestoreIcon(service,window)
     FI
     Focus(service,window.id)
+  WHEN DESKTYPES.SET_TABS THEN
+    RETURN(DESKTABS.Update(service,window,request))
   WHEN DESKTYPES.BIND_CONSOLE THEN
     RETURN(DESKCONSOLE.Bind(service,window,request))
   WHEN DESKTYPES.REPLACE THEN
@@ -606,6 +611,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
   WHEN DESKTYPES.SET_TREE,DESKTYPES.UPDATE_WIDGETS,DESKTYPES.READ_WIDGET_STATE THEN
     RETURN(DESKWIDGETS.Request(service,window,request))
   WHEN DESKTYPES.CLOSE THEN
+    DESKTABS.Retire(window.id)
     DESKWIDGETS.Cancel(service,window)
     status=LAYERS.Delete(@service.scene,window.layer)
     IF status=LAYERTYPES.OK THEN

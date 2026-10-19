@@ -214,7 +214,7 @@ ENDMODULE
                 media_sha256=sha256(bundle/'system.atr'))
 
 
-def desktop(out, reuse=False, multiple=False):
+def desktop(out, reuse=False, multiple=False, tabs=False):
     from build_bitmap_console import build_bitmap
     from test_mouse_observe import PIN as pin, BRIDGE, ROM
     from shell_inspect import address, process_slot
@@ -227,14 +227,26 @@ def desktop(out, reuse=False, multiple=False):
     from generate_memory import PROFILE
     profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=9216
     memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
+    mounts=[dict(alias='RAM',format=3)] if multiple else []
+    if tabs:
+        from make_data_disk import make
+        media=out/'media';media.mkdir(exist_ok=True)
+        (media/'README.TXT').write_text('Desktop tab fixture system volume.\n')
+        make(out/'system.atr',media,sector_bytes=256,sectors=2880)
+        mounts.append(dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,format=2))
     program = read_build(out/'program') if reuse else build_bitmap(
         ROOT/'examples/desktop.act', out, desktop=True, release_compiler=True,
-        dos_mounts=[dict(alias='RAM',format=3)] if multiple else [],memory_profile=memory)
+        dos_mounts=mounts,system_mount='D1' if tabs else None,memory_profile=memory)
+    if tabs:
+        # The fixture's default SIO profile is 1 (125 kbit/s).
+        pin=json.loads(json.dumps(pin))
+        pin['startup_configuration']['diskemu']='fastest'
     observed = []
     with emulator(BRIDGE, ROM, out, pin=pin) as b:
         for key, value in pin['configuration'].items():
             b.config(key, str(value).lower() if isinstance(value, bool) else value)
         machine = verify_machine(b, ROM, pin)
+        if tabs:b.mount(0,str(out/'system.atr'))
         def reach(condition):
             b.bp_clear_all()
             b.bp_set(program['labels']['native_nmi'], condition=condition)
@@ -288,6 +300,8 @@ def desktop(out, reuse=False, multiple=False):
                 number=lambda at,size=4:int.from_bytes(b.memdump(at,size),'little')
                 def bind(identity,index):
                     slot=process_slot(b,program,identity)
+                    if not any(o.get("session")==identity for o in observed):
+                        observed.append(dict(session=identity,shell_slot=slot))
                     context=ptr(program['build']['memory']['dos_storage']['BASE']+slot*16)
                     scope=ptr(context+83)
                     unit=number(scope+next(offset for name,_,offset in dos_abi['foreground']['fields'] if name=='unit'))
@@ -310,6 +324,96 @@ def desktop(out, reuse=False, multiple=False):
                         name,shift=KEYS[char]
                         shifted(name) if shift else key(name)
                     key('RETURN')
+                if tabs:
+                    from desktop_mouse import schedule
+                    from desktop_oracle import compose
+                    from bitmap_console_oracle import Terminal
+                    from gem_render_oracle import font_bytes, DESKTOP_PALETTE
+                    from test_gem_interactive import pixels
+                    b._cmd_ok('MOUSE ST')
+                    point=lambda:[number(symbol('DESKINPUT',axis),2) for axis in ('CURSORX','CURSORY')]
+                    def move(x,y):
+                        target=schedule(b,program,point(),(x,y))
+                        reach('&'.join(f'dw(${symbol("DESKINPUT",axis):x})={value}' for axis,value in zip(('CURSORX','CURSORY'),target)))
+                        frames(3)
+                    def edge(held):
+                        b._cmd_ok(f'MOUSE AT 2000 0 0 {int(held)}');frames(6)
+                    def click(x,y):
+                        move(x,y);edge(True);edge(False)
+                    def selected_is(identity):
+                        reach(f'dw(${selected:x})={identity}');frames(10)
+                    def exact(name,identity,index):
+                        state,edit,terminal,scope=bind(identity,index)
+                        frames(100)
+                        dt=desktop_layout();tf=dt['TabSnapshot']['fields'];ef=dt['TabEntry']['fields']
+                        snapshot=b.memdump(service+dt['Service']['fields']['tabs'],dt['TabSnapshot']['size'])
+                        entries=[tuple(int.from_bytes(snapshot[tf['entries']+i*dt['TabEntry']['size']+ef[field]:tf['entries']+i*dt['TabEntry']['size']+ef[field]+(4 if field=='identity' else 1)],'little') for field in ('identity','state','selected','busy')) for i in range(2)]
+                        expected={'single-tab':[(1,2,1,0),(0,0,0,0)],
+                                  'two-tabs-draft':[(1,2,0,0),(2,2,1,0)],
+                                  'inactive-closed':[(0,0,0,0),(2,2,1,0)],
+                                  'stale-release':[(3,2,1,0),(4,2,0,0)]}[name]
+                        require(entries==expected,f'Tab snapshot differs at {name}: {entries}')
+                        require(snapshot[tf['newEnabled']]==int(sum(bool(e[0]) for e in expected)<2),'New admission indicator differs')
+                        term=Terminal(64,20);term.cells[:]=read_cells(b.memdump,terminal)
+                        term.column=number(terminal+c['INSTANCE_COLUMN'],2)
+                        term.row=number(terminal+c['INSTANCE_LINESTART'],2)//64
+                        folder=out/name;folder.mkdir(exist_ok=True)
+                        raster=compose(b,program,font_bytes(out/'selected/src/vdi/font8x8.c'),term,tuple(point()))
+                        observed.append(dict(stage=name,pixels=pixels(b,folder,raster,palette=DESKTOP_PALETTE)))
+                    # Blank slot and a released-outside New gesture do nothing.
+                    click(320,48);require(number(live,1)==1,'Blank tab created a session')
+                    move(536,48);edge(True);move(536,80);edge(False)
+                    require(number(live,1)==1,'Outside release created a session')
+                    exact('single-tab',1,0)
+                    click(536,48);selected_is(2)
+                    second_state,second_edit,second_instance,second_scope=bind(2,1)
+                    reach(f'db(${second_instance+51:x})=2')
+                    require(b'second' in command('ECHO second',2,1),'New tab did not start shell')
+                    click(536,48);click(536,48)
+                    require(number(live,1)==2,'Disabled New changed admission')
+                    for char in 'second draft':key(KEYS[char][0])
+                    exact('two-tabs-draft',2,1)
+                    move(120,48);edge(True);key('ESC');edge(False)
+                    require(number(selected)==2,'Escape left tab capture armed')
+                    move(120,48);edge(True)
+                    loss=symbol('DESKSTATE','LOSSGENERATION')
+                    b.memload(loss,(number(loss)+1).to_bytes(4,'little'))
+                    edge(False)
+                    require(number(selected)==2,'Loss epoch left tab capture armed')
+                    move(120,48);edge(True);move(120,80);edge(False)
+                    require(number(selected)==2,'Outside tab release selected content')
+                    click(120,48);selected_is(1)
+                    command('ECHO first',1,0)
+                    click(360,48);selected_is(2)
+                    require(number(second_edit+2,2)==12,'Tab switch lost draft')
+                    key('U',True)
+                    # Close the inactive first tab without changing selection.
+                    click(272,48);click(272,48);reach(f'db(${live:x})=1')
+                    require(number(selected)==2,'Inactive close changed selection')
+                    exact('inactive-closed',2,1)
+                    click(536,48);selected_is(3)
+                    third_state,third_edit,third_instance,third_scope=bind(3,0)
+                    reach(f'db(${third_instance+51:x})=2')
+                    # Keep the old slot-one identity captured while commands
+                    # close it, reuse that slot and restore the other selection.
+                    click(360,48);selected_is(2)
+                    move(360,48);edge(True)
+                    submit('EXIT');selected_is(3);reach(f'db(${live:x})=1')
+                    submit('NEWSHELL');selected_is(4)
+                    fourth_state,fourth_edit,fourth_instance,fourth_scope=bind(4,1)
+                    reach(f'db(${fourth_instance+51:x})=2')
+                    submit('SESSION 3');selected_is(3)
+                    edge(False);frames(20)
+                    require(number(selected)==3,'Stale press selected reused slot')
+                    exact('stale-release',3,0)
+                    click(512,48);reach(f'db(${live:x})=1')
+                    require(number(selected)==3,'Closing fourth tab changed selection')
+                    command('ECHO survivor',3,0)
+                    # Last tab follows normal ordered desktop shutdown.
+                    move(272,48);edge(True)
+                    b._cmd_ok('MOUSE AT 2000 0 0 0');b.bp_clear_all()
+                    observed.append(dict(tab_input='pass',last_close=True,stale_identity=True))
+                    return
                 command('CD RAM:',1,0)
                 submit('NEWSHELL');reach(f'dw(${selected:x})=2')
                 second_state,second_edit,second_instance,second_scope=bind(2,1)
@@ -338,11 +442,11 @@ def desktop(out, reuse=False, multiple=False):
         runtime,_=execute(b,program,before_run=before,timeout=180,frame_limit=12000)
         b._cmd_ok('KEY ALL up')
         require(data(b,program['image'],'exitStatus',True)==[0,0], 'Desktop EXIT failed')
-        for slot in (0, observed[0]['shell_slot']):
+        for slot in {0}|{o['shell_slot'] for o in observed if 'shell_slot' in o}:
             require(runtime['stack_observations'][slot]['untouched_above_floor']>=128,
                     'Desktop controller/shell stack headroom below gate')
         ownership(b,program,program['output'])
-    return dict(status='pass',tier='development',group='desktop',mode='opt',
+    return dict(status='pass',tier='development',group='desktop-tabs' if tabs else 'desktop',mode='opt',
                 build=program['build'],runtime=runtime,machine=machine,observed=observed)
 
 
@@ -445,12 +549,14 @@ def packaged_pipeline(out, bundle):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--group', choices=('desktop-sessions','inherited','closing-chord','disk-switch','allocation','physical-bitmap','physical-text','ownership','controller','desktop','startup-exit','command-close','packaged-pipeline'), required=True)
+    parser.add_argument('--group', choices=('desktop-tabs','desktop-sessions','inherited','closing-chord','disk-switch','allocation','physical-bitmap','physical-text','ownership','controller','desktop','startup-exit','command-close','packaged-pipeline'), required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--reuse', action='store_true')
     parser.add_argument('--bundle', type=Path)
     args = parser.parse_args()
-    if args.group=='desktop-sessions':
+    if args.group=='desktop-tabs':
+        result=desktop(args.output.resolve(),args.reuse,multiple=True,tabs=True)
+    elif args.group=='desktop-sessions':
         result=desktop(args.output.resolve(),args.reuse,multiple=True)
     elif args.group=='closing-chord':
         result=closing_chord(args.output.resolve(),args.reuse)

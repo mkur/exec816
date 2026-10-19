@@ -3,8 +3,8 @@
 Status: implementation in progress, 2026-10-19. SS1 isolates the shell state and
 SS2 adds owner-requested cancellation. SS3 adds grouped console activation and
 owned key notices. SS4–SS5 add the controller and two text/bitmap sessions.
-SS6 binds either session to the existing desktop Shell frame. Tab controls and
-final measurements remain in progress. The
+SS6 binds either session to the existing desktop Shell frame; SS7 adds tab
+selection, New and cooperative close. Final SS8 measurements remain in progress. The
 [SS1–SS8 implementation plan](shell-sessions-implementation-plan.md) defines
 the remaining interfaces and gates; [slice evidence](../history/shell-sessions.md)
 records actual checks without a hosted-system qualification claim.

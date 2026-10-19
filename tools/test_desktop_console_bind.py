@@ -11,7 +11,7 @@ from os_boundary import emulator, run_to
 from test_mouse_observe import PIN, BRIDGE, ROM
 from test_dos_stack import execute, ownership
 from test_cooperative import data
-from test_desktop_presentation import desktop, frame, menu_bar
+from test_desktop_presentation import desktop, frame, menu_bar, shell_tabs
 from bitmap_console_oracle import Terminal
 from gem_render_oracle import Raster, font_bytes, DESKTOP_PALETTE
 from test_gem_cursor import overlay
@@ -29,10 +29,11 @@ def scenes(font):
         raster=Raster(font); desktop(raster)
         selected=second if stage in (2,3,5,8) else first
         focused=stage not in (4,5,6)
-        left,top=(80,53) if stage>=8 else (32,29)
+        left,top=(80,45) if stage>=8 else (32,29)
         if stage!=6:
-            frame(raster,(left,top,left+528,top+173),b'Shell',focused)
-            selected.paint(raster,(left+8)//8,(top+11)//8,focused)
+            frame(raster,(left,top,left+528,top+189),b'Shell',focused)
+            shell_tabs(raster,(left,top,left+528,top+189))
+            selected.paint(raster,(left+8)//8,(top+27)//8,focused)
         if stage in (4,5,6):
             frame(raster,(113,93,273,173),b'Clip',True,3,close=True)
         # Stage 7 raises Shell over the entire panel, retaining its pixels below.

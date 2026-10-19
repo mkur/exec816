@@ -15,7 +15,7 @@ from test_mouse_observe import PIN, BRIDGE, ROM
 from test_dos_stack import execute, ownership
 from gem_render_oracle import Raster, font_bytes, DESKTOP_PALETTE as PALETTE, PENS
 from bitmap_console_oracle import Terminal
-from test_desktop_presentation import desktop, rectangle, text, frame, menu_bar
+from test_desktop_presentation import desktop, rectangle, text, frame, menu_bar, shell_tabs
 from test_gem_cursor import overlay
 from generate_desktop import layout
 from desktop_budget import delta
@@ -84,8 +84,9 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                     raster = Raster(font)
                     desktop(raster)
                     if shell_live:
-                        frame(raster, (32, 29, 560, 202), b'Shell', focused == 1)
-                        terminal.paint(raster, 5, 5, focused == 1)
+                        frame(raster, (32, 29, 560, 218), b'Shell', focused == 1)
+                        shell_tabs(raster, (32, 29, 560, 218))
+                        terminal.paint(raster, 5, 7, focused == 1)
                     if panel_live:
                         panel(raster, focused == 2, status='Large [5]' if read('DESKAPP', 'updates') else 'Ready',
                               radio=5 if read('DESKAPP', 'updates') else 4,

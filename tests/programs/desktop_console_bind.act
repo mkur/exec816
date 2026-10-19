@@ -173,7 +173,13 @@ PROC Main()
   Send(DESKTYPES.CLOSE,panel)
   DESKTOP.Prepare(@request,DESKTYPES.MOVE)
   request.bounds.left=80
+  ; The taller tabbed frame rejects the old offscreen placement.
   request.bounds.top=53
+  request.window=DESKBOOT.WindowId()
+  Require(DESKTOP.Submit(DESKBOOT.Binding(),@request)=DESKTYPES.OK)
+  Require(Collect()=DESKTYPES.BAD_ARGUMENT)
+  Require(service.consoleUnit=0)
+  request.bounds.top=45
   Send(DESKTYPES.MOVE,DESKBOOT.WindowId())
   Bind(second)
   Pause(8)

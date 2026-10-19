@@ -1,6 +1,8 @@
 ; Presenter-owned replacement of the one Shell view and backing bitmap.
 MODULE DESKCONSOLE
 USE EXEC
+USE A816MEMORY
+USE DESKTABS
 USE INPUT
 USE DISPLAY
 USE AESLOCKS
@@ -45,6 +47,8 @@ PUBLIC PROC Closed(DESKTYPES.Service POINTER service)
   Detach(service)
   LET entry=CONSOLEWINDOWS.Find(0)
   EXEC.Forbid()
+  DESKTABS.Cancel()
+  A816MEMORY.Clear(BYTE POINTER(@service.tabs),DESKTYPES.TABSNAPSHOT_SIZE)
   service.consoleWindow=0
   service.consoleUnit=0
   IF entry<>NULL THEN

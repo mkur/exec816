@@ -58,6 +58,17 @@ PUBLIC BYTE FUNC Take(DESKTYPES.Service POINTER service
     FI
   OD
 
+  FOR slot=0 TO 1 DO
+    IF client.tabCloses(slot)<>0 THEN
+      event.kind=DESKTYPES.EVENT_TAB_CLOSE
+      event.window=service.consoleWindow
+      event.route=client.tabCloses(slot)
+      event.object=INT(slot)
+      client.tabCloses(slot)=0
+      RETURN(1)
+    FI
+  OD
+
   WHILE client.count<>0 DO
     A816MEMORY.Move(BYTE POINTER(event),BYTE POINTER(@client.queue(client.head)),
         DESKTYPES.EVENT_SIZE)
@@ -112,6 +123,13 @@ PUBLIC PROC Post(DESKTYPES.Service POINTER service LONGCARD id
     RETURN
   FI
 
+  IF event.kind=DESKTYPES.EVENT_TAB_CLOSE THEN
+    ; The controller cannot reuse a slot before consuming its close identity.
+    client.tabCloses(BYTE(event.object))=event.route
+    Wake(service,client)
+    RETURN
+  FI
+
   IF event.kind=DESKTYPES.EVENT_LOSS THEN
     client.head=0
     client.count=0
@@ -156,6 +174,12 @@ RETURN
 PUBLIC PROC Retire(DESKTYPES.ClientRecord POINTER client
     LONGCARD window BYTE slot)
   BYTE count,index,source,target,bit
+
+  LET service=DESKSTATE.Get()
+  IF window=service.consoleWindow THEN
+    client.tabCloses(0)=0
+    client.tabCloses(1)=0
+  FI
 
   bit=BYTE(1 LSH slot) XOR $ff
   client.closeBits=client.closeBits & bit

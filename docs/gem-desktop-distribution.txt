@@ -105,7 +105,16 @@ these applications running. The panel offers Off/Mild mouse acceleration and
 Apply/Defaults/Cancel; Tab, Space and Return operate its controls.
 TXT files open in Text. Other files launch as programs, with output in the shell.
 Close applications to release scarce Task/window slots. Desk > Quit Desktop
-stops its children. Shell EXIT stops the desktop and returns to the OS.
+stops its children. Closing the last shell session stops the desktop and returns to the OS.
+
+Shell retains 64 by 20 cells beneath two tab slots. Click + to create a session
+in SYS:, a tab to select it, or its x to close it. + is disabled with two sessions.
+NEWSHELL starts in the calling shell's directory; SESSIONS lists live numbers.
+SESSION number and Ctrl-Shift-Space also switch; TAB completes commands/paths.
+Each shell keeps its own draft, caret, history, directory, aliases and job.
+EXIT closes only that session while another remains. Close is cooperative:
+its tab stays closing until its work retires. Two shells use two Task slots;
+close unused applications to leave capacity for external commands/pipelines.
 
 Desk > Save Settings writes WORK:DESKTOP.CFG. Keep the writable disk to restore
 folder paths/sizes, view/sort, mouse preference and file associations next boot.

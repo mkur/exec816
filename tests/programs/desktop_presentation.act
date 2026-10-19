@@ -114,7 +114,7 @@ PROC Main()
   Pause(2)
   DESKTOP.Prepare(@request,DESKTYPES.MOVE)
   request.bounds.left=80
-  request.bounds.top=64-DESKTYPES.WORK_TOP
+  request.bounds.top=72-DESKTYPES.FRAME_SHELL_TOP
   Send(DESKTYPES.MOVE,DESKBOOT.WindowId())
   Pause(3)
   ; An odd-edged opaque panel cuts through console cells during exposure repair.
@@ -175,7 +175,7 @@ PROC Main()
   request.bytes=4
   REGIONS.Assign(@request.bounds,377,0,537,173)
   IF fullCoverage<>0 THEN
-    REGIONS.Assign(@request.bounds,80,64-DESKTYPES.WORK_TOP,608,224+DESKTYPES.WORK_BOTTOM)
+    REGIONS.Assign(@request.bounds,80,72-DESKTYPES.FRAME_SHELL_TOP,608,232+DESKTYPES.WORK_BOTTOM)
   FI
   Send(DESKTYPES.OPEN,0)
   panel=request.window

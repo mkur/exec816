@@ -64,7 +64,7 @@ PROC Rebase(LAYERTYPES.Layer POINTER layer BYTE copied)
   FI
 
   view.left=CARD(layer.bounds.left+DESKTYPES.WORK_LEFT) RSH 3
-  view.top=CARD(layer.bounds.top+DESKTYPES.WORK_TOP) RSH 3
+  view.top=CARD(layer.bounds.top+DESKTYPES.FRAME_SHELL_TOP) RSH 3
   view.cursorOn=0
   view.index=$ffff
   view.generation==+1

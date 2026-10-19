@@ -36,7 +36,7 @@ Process under the root controller;
 layout, route, pipeline and physical presentation checks. The
 [SS1–SS8 plan](plans/shell-sessions-implementation-plan.md) orders reentrant
 state, console control, controller lifetime, two-session text behavior, desktop
-binding/tabs and measured OF816 delivery. SS5–SS8 remain pending.
+binding/tabs and measured OF816 delivery. SS1–SS7 are implemented; SS8 remains.
 
 The [shell TAB completion plan](plans/shell-completion-implementation-plan.md)
 is implemented through SC3: resumable editing, builtin/alias and filesystem/PATH

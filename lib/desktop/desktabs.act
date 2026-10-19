@@ -1,0 +1,309 @@
+; Presenter-owned scalar tab snapshots and identity-preserving pointer capture.
+MODULE DESKTABS
+USE EXEC
+USE INPUT
+USE CSTRING.IMPL AS STR
+USE A816MEMORY
+USE DESKTYPES
+USE DESKSTATE
+USE DESKEVENTS
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+USE CONSOLEBITMAP
+
+LONGCARD capturedWindow,capturedIdentity,capturedLoss
+BYTE capturedPart
+BYTE ARRAY label(32)
+
+DESKTYPES.Window POINTER FUNC Window(DESKTYPES.Service POINTER service
+    LONGCARD identity)
+  BYTE slot
+
+  FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+    IF service.windows(slot).id=identity THEN
+      RETURN(@service.windows(slot))
+    FI
+  OD
+
+RETURN(NULL)
+
+PUBLIC BYTE FUNC Active()
+
+RETURN(capturedPart<>0)
+
+PUBLIC PROC Cancel()
+
+  capturedPart=0
+  capturedWindow=0
+  capturedIdentity=0
+
+RETURN
+
+PUBLIC PROC Observe()
+
+  IF capturedPart<>0 AND capturedLoss<>DESKSTATE.LossEpoch() THEN
+    Cancel()
+  FI
+
+RETURN
+
+PUBLIC PROC Retire(LONGCARD identity)
+
+  IF capturedWindow=identity THEN
+    Cancel()
+  FI
+
+RETURN
+
+; Content admission copies all scalars; no shell/context pointer is published.
+PUBLIC CARD FUNC Update(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window DESKTYPES.Request POINTER request)
+  BYTE ignored
+  LAYERTYPES.Rect strip
+
+  IF window.id<>service.consoleWindow
+      OR request.client.owner<>service.consoleOwner THEN
+    RETURN(DESKTYPES.BAD_ID)
+  FI
+
+  IF request.payload=NULL OR request.bytes<>DESKTYPES.TABSNAPSHOT_SIZE THEN
+    RETURN(DESKTYPES.BAD_ARGUMENT)
+  FI
+
+  A816MEMORY.Move(BYTE POINTER(@service.tabs),request.payload,
+      DESKTYPES.TABSNAPSHOT_SIZE)
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  REGIONS.Assign(@strip,layer.bounds.left+DESKTYPES.WORK_LEFT,
+      layer.bounds.top+DESKTYPES.WORK_TOP,
+      layer.bounds.left+DESKTYPES.WORK_LEFT+DESKTYPES.FRAME_SHELL_WIDTH,
+      layer.bounds.top+DESKTYPES.FRAME_SHELL_TOP)
+  ignored=LAYERS.Invalidate(@service.scene,window.layer,@strip)
+
+RETURN(DESKTYPES.OK)
+
+; Parts 1/2 and 3/4 select/close slots zero/one; part five creates a session.
+BYTE FUNC Hit(LAYERTYPES.Rect POINTER bounds INT x,y)
+  INT local
+  BYTE slot
+
+  IF y<bounds.top+DESKTYPES.WORK_TOP
+      OR y>=bounds.top+DESKTYPES.FRAME_SHELL_TOP THEN
+    RETURN(0)
+  FI
+
+  local=x-bounds.left-DESKTYPES.WORK_LEFT
+  IF local<0 OR local>=DESKTYPES.FRAME_SHELL_WIDTH THEN
+    RETURN(0)
+  FI
+
+  IF local>=2*DESKTYPES.FRAME_TAB_WIDTH THEN
+    RETURN(5)
+  FI
+
+  slot=BYTE(local/DESKTYPES.FRAME_TAB_WIDTH)
+  local=local-INT(slot)*DESKTYPES.FRAME_TAB_WIDTH
+
+RETURN(BYTE(1+slot*2+BYTE(local>=
+    DESKTYPES.FRAME_TAB_WIDTH-DESKTYPES.FRAME_TAB_CLOSE)))
+
+; An existing capture consumes its release even after a snapshot or loss.
+PUBLIC BYTE FUNC Captured(INPUT.Event POINTER sample)
+  BYTE part,slot,valid
+  LONGCARD identity,windowId
+  DESKTYPES.Event event
+
+  IF capturedPart=0 THEN
+    RETURN(0)
+  FI
+
+  IF sample.kind=INPUT.EVENT_LOSS
+      OR capturedLoss<>DESKSTATE.LossEpoch() THEN
+    Cancel()
+    RETURN(1)
+  FI
+
+  IF (sample.buttons & INPUT.LEFT)<>0 THEN
+    RETURN(1)
+  FI
+
+  part=capturedPart
+  identity=capturedIdentity
+  windowId=capturedWindow
+  Cancel()
+  LET service=DESKSTATE.Get()
+  LET window=Window(service,windowId)
+  IF window=NULL OR window.iconified<>0 THEN
+    RETURN(1)
+  FI
+
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  IF layer.shown=0 OR LAYERS.Hit(@service.scene,sample.x,sample.y)<>window.layer
+      OR Hit(@layer.bounds,sample.x,sample.y)<>part THEN
+    RETURN(1)
+  FI
+
+  valid=service.tabs.newEnabled
+  slot=0
+  IF part<>5 THEN
+    slot=(part-1) RSH 1
+    valid=identity<>0 AND service.tabs.entries(slot).identity=identity
+  FI
+
+  IF valid=0 THEN
+    RETURN(1)
+  FI
+
+  A816MEMORY.Clear(BYTE POINTER(@event),DESKTYPES.EVENT_SIZE)
+  event.window=windowId
+  event.route=identity
+  event.object=INT(slot)
+  event.kind=DESKTYPES.EVENT_TAB_SELECT
+  IF part=5 THEN
+    event.kind=DESKTYPES.EVENT_TAB_NEW
+  ELSEIF (part & 1)=0 THEN
+    event.kind=DESKTYPES.EVENT_TAB_CLOSE
+  FI
+
+  DESKEVENTS.Post(service,window.client,@event)
+  ; Defer ordinary raise/focus until the scene permits geometry changes.
+  IF event.kind<>DESKTYPES.EVENT_TAB_CLOSE THEN
+    RETURN(2)
+  FI
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Mouse(DESKTYPES.Window POINTER window
+    INPUT.Event POINTER sample BYTE released)
+  BYTE part,slot
+  LONGCARD identity
+
+  IF window.kind<>DESKTYPES.CONTENT_CONSOLE OR window.iconified<>0 THEN
+    RETURN(0)
+  FI
+
+  LET service=DESKSTATE.Get()
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  part=Hit(@layer.bounds,sample.x,sample.y)
+  IF part=0 THEN
+    RETURN(0)
+  FI
+
+  IF sample.kind<>INPUT.EVENT_BUTTON OR (sample.buttons & INPUT.LEFT)=0
+      OR released=0 THEN
+    RETURN(1)
+  FI
+
+  identity=0
+  IF part=5 THEN
+    IF service.tabs.newEnabled=0 THEN
+      RETURN(1)
+    FI
+  ELSE
+    slot=(part-1) RSH 1
+    identity=service.tabs.entries(slot).identity
+    IF identity=0 THEN
+      RETURN(1)
+    FI
+  FI
+
+  capturedPart=part
+  capturedIdentity=identity
+  capturedWindow=window.id
+  capturedLoss=DESKSTATE.LossEpoch()
+
+RETURN(1)
+
+PROC Name(DESKTYPES.TabEntry POINTER entry)
+  SIZE count
+
+  count=STR.strlcpy(label,c"Shell ",32)
+  count=STR.u32toa(entry.identity,@label(6),26)
+
+  IF entry.state=DESKTYPES.TAB_STARTING THEN
+    STR.strlcat(label,c" starting",32)
+  ELSEIF entry.state>=DESKTYPES.TAB_CLOSING THEN
+    STR.strlcat(label,c" closing",32)
+  ELSEIF entry.busy<>0 THEN
+    STR.strlcat(label,c" busy",32)
+  FI
+
+RETURN
+
+; One tab per paint quantum. The scene token freezes the copied snapshot.
+PUBLIC BYTE FUNC Paint(LAYERTYPES.Rect POINTER bounds,clip BYTE slot
+    CARD POINTER progress)
+  LAYERTYPES.Rect area,part
+  CARD pen,ink,width,count,first,last
+  INT left,top
+
+  LET service=DESKSTATE.Get()
+  left=bounds.left+DESKTYPES.WORK_LEFT+INT(slot)*DESKTYPES.FRAME_TAB_WIDTH
+  top=bounds.top+DESKTYPES.WORK_TOP
+  width=DESKTYPES.FRAME_TAB_WIDTH
+  pen=8
+  ink=1
+  label(0)=0
+  IF slot=2 THEN
+    width=DESKTYPES.FRAME_TAB_NEW
+    STR.strlcpy(label,c" +",32)
+    IF service.tabs.newEnabled=0 THEN
+      ink=9
+    FI
+  ELSE
+    BEGIN
+      LET entry=@service.tabs.entries(slot)
+      IF entry.identity<>0 THEN
+        Name(entry)
+        IF entry.selected<>0 THEN
+          pen=0
+        FI
+      FI
+    END
+  FI
+
+  REGIONS.Assign(@part,left,top,left+INT(width),top+DESKTYPES.FRAME_TAB_HEIGHT)
+  REGIONS.Intersect(@part,clip,@area)
+  IF REGIONS.Empty(@area)<>0 THEN
+    RETURN(1)
+  FI
+  IF progress^=0 THEN
+    IF CONSOLEBITMAP.RawFill(CARD(area.left),CARD(area.top),
+        CARD(area.right-area.left),CARD(area.bottom-area.top),pen)=0 THEN
+      RETURN(0)
+    FI
+    progress^=1
+  FI
+
+  count=CARD(STR.strlen(CSTRING(label)))
+  ; Reserve the last two cells for the close glyph on occupied tabs.
+  IF slot<>2 AND count>26 THEN
+    count=26
+  FI
+  first=progress^-1
+  last=first+12
+  IF last>count THEN
+    last=count
+  FI
+  IF last>first THEN
+    IF CONSOLEBITMAP.ClippedText(CARD(left+4)+(first LSH 3),CARD(top+4),
+        @label(first),last-first,ink,pen,@area)=0 THEN
+      RETURN(0)
+    FI
+  FI
+  progress^=last+1
+  IF last<count THEN
+    RETURN(2)
+  FI
+  IF slot<>2 AND service.tabs.entries(slot).identity<>0 THEN
+    IF CONSOLEBITMAP.ClippedText(CARD(left+INT(width)-12),CARD(top+4),
+        BYTE POINTER(c"x"),1,1,pen,@area)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  progress^=0
+
+RETURN(1)
+
+ENDMODULE

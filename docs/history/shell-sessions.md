@@ -320,3 +320,41 @@ unchanged. The desktop shell fixture now reserves the production desktop’s
 0 per-public-Task and 0 idle reserved bank-zero bytes**, including guards,
 alignment and unused capacity. Tab controls and final measurements remain
 SS7–SS8; these development checks do not qualify a release or physical hardware.
+
+## SS7 — desktop tabs and cooperative close controls
+
+The existing Shell frame now contains two fixed session tabs and New. The
+presenter receives an 18-byte copied snapshot and sends full session identities
+back to root. Root owns four bounded messages: create, select and one close per
+slot. Duplicate close events coalesce independently of queued selections. A
+press captures the identity, window and input-loss epoch; release outside,
+Escape, loss, hiding, retirement or slot reuse cancels the action. Selection
+raises and focuses Shell through ordinary desktop policy; an inactive close
+preserves focus. New starts in SYS: and disables while both slots are occupied.
+The last close drains event/content replies before the normal desktop shutdown.
+
+Raw and optimized layout probes pass 124 checks each. The final physical tab
+walkthrough compares four complete independent rasters and exercises empty
+slots, New capacity, retained drafts, repeated inactive close, release outside,
+Escape, an explicitly injected loss epoch, and release after the captured slot
+has been reused. Four shell lifetimes use slots 3 and 5, whose cumulative
+high-water headroom is 584 and 602 bytes above the protected floor; root retains
+842 bytes. Native lifetime/bind cases pass 84 and 109 checks, including CLOSE
+during a held bind, exact heap recovery, nine full rasters, physical iconification
+and stale completion replay. The latter also rejects the old offscreen position
+and checks a valid move with the taller frame. AES menu/window interaction and
+the 73-check text ownership regression pass. The updated full presentation
+fixture passes 117 checks and nineteen complete raster comparisons; 498 host
+tests and generated
+definitions pass. Case artifacts retain their exact source stage: the final
+physical run includes the last lifecycle-publication and shutdown guards.
+
+The Service record grows from 18,722 to 18,772 bytes (+48 allocated bytes after
+rounding). A desktop-only 202-byte request block allocates 208 upper bytes and
+shares the existing reply port. Keeping that block out of static storage leaves
+the text ownership fixture at 8,085/8,192 bytes; the final desktop tab fixture
+uses 8,641/9,216 bytes. No Task, window slot or VRAM surface is added. Reserved
+bank-zero delta is **0 fixed, 0 per-public-Task and 0 idle bytes**, including
+guards, alignment and unused capacity. Timing and final package measurements
+remain SS8; these are development checks, without release or physical-hardware
+qualification.

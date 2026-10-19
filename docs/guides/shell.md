@@ -46,7 +46,7 @@ SIO bus can require a cold boot after correcting the disk/profile setup.
 
 ## Multiple sessions
 
-Text and standalone bitmap builds support two independent shell sessions.
+Text, standalone bitmap and desktop builds support two independent shell sessions.
 Use `NEWSHELL`, then Ctrl+Shift+Space to switch between ready sessions. Plain
 TAB still completes commands and paths. `SESSIONS` lists the live numbers;
 `SESSION 1` selects session 1 if it is still ready. Numbers increase throughout
@@ -63,8 +63,15 @@ The first shell's prime pane follows that shell when switching. A shell on a
 different console cannot open that pane. Close a session with EXIT; the other
 remains usable. Closing a session requests cooperative cancellation and keeps
 its resources until its work finishes. A closing session can still switch to a
-ready peer with the chord. Desktop binding and tab controls are the next
-implementation slices; separate desktop shell windows are outside this plan.
+ready peer with the chord.
+
+On the desktop, the Shell window has two tabs and a **+** button. Click a tab to
+select it or its **x** to close it. With Shell focused, Ctrl+Shift+Space switches
+its sessions; Ctrl+Tab still cycles desktop windows. **+** starts a fresh shell in `SYS:` and is
+disabled while both slots are occupied. Tabs show starting, busy and closing
+states; closing cooperatively waits for the session's work to finish. Closing
+the last tab shuts down through the same path as the last EXIT. The window
+keeps 64×20 text cells; separate shell windows are not implemented.
 
 The eight-Task limit includes root, console, filesystem and SIO workers. With
 two shells and prime running, one external command fits; a two-command pipeline
