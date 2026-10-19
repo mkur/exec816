@@ -10,9 +10,9 @@ need general platform support and which can be closed by adapting QED or cflib.
 
 Status: [step 1 scope and source baseline](qed-scope-and-dependencies.md) fixed;
 step 2 has a [design](qed-native-feasibility-design.md) and
-[QF1–QF6 plan](qed-native-feasibility-implementation-plan.md), with implementation
-pending. Steps 3–7 remain proposed. QED has not yet been built or executed on
-Exec816.
+[QF1–QF6 plan](qed-native-feasibility-implementation-plan.md), with
+[QF1 implemented](../../history/qed-native-feasibility.md) and QF2–QF6 open.
+Steps 3–7 remain proposed. QED has not yet been built or executed on Exec816.
 
 ## First usable editor
 

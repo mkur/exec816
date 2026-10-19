@@ -41,12 +41,15 @@ def variant(base,out,filesystem):
     make(out/'system.atr',media,binary_names={p.name for p in media.iterdir()},
          filesystem=filesystem,sector_bytes=256,sectors=2880)
 
-def run(out,optimize,reuse=False,filesystem='sdfs'):
+def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=None,
+        fixture_source=None,expected_completed=12,native_optimize=None,
+        release_compiler=False):
     out.mkdir(parents=True,exist_ok=True)
     if reuse:
         p=read_build(out/'program');app=json.loads((out/'app/app.json').read_text())
     else:
-        app=application(out/'app',[ROOT/'tests/programs/c_process.c'],optimize)
+        app=application(out/'app',app_sources or [ROOT/'tests/programs/c_process.c'],
+                        optimize,**(app_options or {}))
         raw=(out/'app/program.app').read_bytes();media=out/'media';media.mkdir(exist_ok=True)
         (media/'PROBE.APP').write_bytes(raw);(media/'DESKTOP.RSC').write_bytes(resource())
         (media/'TRUNC.APP').write_bytes(raw[:-1])
@@ -55,7 +58,7 @@ def run(out,optimize,reuse=False,filesystem='sdfs'):
                                  ('FIXUP',32+count*16+imports*8,'<I',app['span'])]:
             changed=bytearray(raw);struct.pack_into(fmt,changed,at,value);(media/(name+'.APP')).write_bytes(changed)
         native=out/'native/HELLO'
-        compile_command(compiler(ROOT/'build/actionc'),ROOT/'examples/commands/hello.act',native,optimize)
+        compile_command(compiler(ROOT/'build/actionc',release=release_compiler),ROOT/'examples/commands/hello.act',native,optimize)
         (media/'HELLO').write_bytes(native.read_bytes())
         make(out/'system.atr',media,binary_names={p.name for p in media.iterdir()},
              filesystem=filesystem,sector_bytes=256,sectors=2880)
@@ -66,8 +69,11 @@ def run(out,optimize,reuse=False,filesystem='sdfs'):
                           '    RETURN(NULL)\n  FI\n\nRETURN(EXEC.AllocMem')
         (out/'o65memory.act').write_text(text)
         (out/'o65control.act').write_text((ROOT/'tests/programs/o65control.act').read_text())
-        p=build_desktop(out,source=ROOT/'tests/programs/c_process.act',program_output=out/'program',
-            optimize=optimize,system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,
+        p=build_desktop(out,source=fixture_source or ROOT/'tests/programs/c_process.act',program_output=out/'program',
+            optimize=optimize if native_optimize is None else native_optimize,
+            release_compiler=release_compiler,
+            build_applications=False,
+            system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,
                 profile=4,format=2 if filesystem=='sdfs' else 1)])
     record=dict(status='running',tier='development',qualification=False,filesystem=filesystem,
                 app=app,build=p['build'],bank_zero_delta=bank_zero_delta(p['build']['memory']))
@@ -83,7 +89,7 @@ def run(out,optimize,reuse=False,filesystem='sdfs'):
                 record['completed']=data(b,p['image'],'completed',True)
                 raise
             ownership(b,p,p['output'])
-            require(data(b,p['image'],'completed',True)==[12],'Incomplete C/native Process cycles')
+            require(data(b,p['image'],'completed',True)==[expected_completed],'Incomplete C/native Process cycles')
             record.update(status='pass',runtime=runtime,checks=data(b,p['image'],'checks',True),
                           completed=data(b,p['image'],'completed',True))
     except Exception as error:

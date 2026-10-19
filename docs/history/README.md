@@ -1,5 +1,8 @@
 # Historical records
 
+- [QED native feasibility](qed-native-feasibility.md): source preparation and
+  focused native ABI evidence; runtime, full layout and stack gates remain open.
+
 - [Multiple shell sessions](shell-sessions.md): incremental SS1–SS8 evidence,
   explicit per-session state, native layout and concurrency checks, resource
   costs, desktop tabs, final latency observations and tested OF816 packages.

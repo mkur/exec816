@@ -9,50 +9,41 @@ resource, donor adaptation examples and notices. It records the donor's source
 selection and the existing Exec toolchain/GUI inputs separately.
 
 This is an input baseline for the native Exec port. The donor does not pin its
-external cflib checkout; this pair has been checked at source level, not compiled
-or run together on Exec. The donor's SDK, startup and G4A build are references,
+external cflib checkout; this pair is the fixed source input. The native work below records compilation
+and focused execution separately; it does not establish a runnable editor. The donor's SDK, startup and G4A build are references,
 not the Exec build recipe. No donor sources are vendored by this baseline.
 
 ## Restore and verify
 
-Run from the Exec repository root, with unused `build/qed-sources/qed` and
-`build/qed-sources/cflib` destinations. The script checks out the pinned inputs
-and verifies their trees and file bytes without compiling or patching them.
-It also checks the recorded native inputs; a deliberate future change requires
-reviewing and updating that baseline.
+Run from the Exec repository root:
 
 ```sh
-python3 - <<'PY'
-from pathlib import Path
-import hashlib
-import json
-import subprocess
-
-pin = json.loads(Path('ports/gem4xe/apps/qed/inputs.json').read_text())
-for source in pin['sources']:
-    target = Path('build/qed-sources') / source['id']
-    assert not target.exists(), f'Choose an unused destination: {target}'
-    subprocess.run(['git', 'clone', '-c', 'core.autocrlf=false', '--no-checkout',
-                    source['repository'], str(target)], check=True)
-    subprocess.run(['git', '-C', str(target), 'checkout', '--detach',
-                    source['revision']], check=True)
-    tree = subprocess.check_output(['git', '-C', str(target), 'rev-parse',
-                                    'HEAD^{tree}'], text=True).strip()
-    assert tree == source['tree'], f'Changed source tree: {target}'
-    for name, expected in source['files'].items():
-        actual = hashlib.sha256((target / name).read_bytes()).hexdigest()
-        assert actual == expected, f'Changed source file: {target / name}'
-for name, expected in pin['exec_baseline']['input_files'].items():
-    actual = hashlib.sha256(Path(name).read_bytes()).hexdigest()
-    assert actual == expected, f'Changed Exec input: {name}'
-print('Pinned source trees and file hashes verified; no compilation performed.')
-PY
+python3 tools/prepare_qed.py --output build/qed-native/work
+python3 tools/test_qed_native.py --group sources --output build/qed-native/sources
+python3 tools/test_qed_native.py --group abi --case opt --output build/qed-native/abi-opt
+python3 tools/test_qed_native.py --group abi --case raw --output build/qed-native/abi-raw
 ```
 
-Keep adaptations and future generated files outside these upstream checkouts.
-The compilation inventories describe the donor baseline; the final native
-source/link closure is established in strategy step 2. Preserve exact source
-and resource bytes when checking hashes, including original text line endings.
+Preparation verifies every pinned raw file under `build/qed-sources/`, fetching
+missing files from the pinned revisions. Existing Git caches must also match
+the recorded commit and tree. Changed cached files are rejected. It copies the
+original bytes into `OUTPUT/source/`, then applies the ordered [patches](patches/).
+Repeating preparation replaces that generated work copy; keep edits in patches
+or [native sources](native/). Work and cache trees must be separate.
+
+`sources.json` identifies the source pins, patch and native-adapter hashes,
+current Exec inputs and deliberate changes against the frozen step 1 baseline.
+The historical baseline stays fixed. The inventory adds each candidate's actual
+native compiler command, diagnostics and undefined symbols. Its pending entries
+are adaptation work, not a passing complete build or link. Donor exclusions and
+board-support reference files have separate dispositions.
+
+The ABI group executes the port boundary through an ordinary loaded C Process.
+The raw cohort selects two ABI/return cycles; optimized checks also retain the
+existing Process concurrency, reuse and loader-failure scenarios. Both retain
+native IRQ/NMI, guard, context and ownership checks. These are development
+checks, not hosted-system qualification or full QED execution. See the
+[implementation record](../../../../docs/history/qed-native-feasibility.md).
 
 ## Notices
 

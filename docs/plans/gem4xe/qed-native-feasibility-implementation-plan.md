@@ -3,14 +3,14 @@
 [GEM plans](README.md) · [Feasibility design](qed-native-feasibility-design.md) ·
 [Initial scope](qed-scope-and-dependencies.md) · [Port strategy](qed-port-strategy.md)
 
-Status: QF1–QF6 proposed; implementation has not started. These slices implement
-strategy step 2. They establish a real native runtime, source/layout evidence
+Status: QF1 implemented with [development evidence](../../history/qed-native-feasibility.md);
+QF2–QF6 remain open. These slices implement strategy step 2. They establish a real native runtime, source/layout evidence
 and a stack/admission decision before the QED resource/window work in step 3.
 The final editor remains subject to the later editing and saving gates.
 
 Commit each coherent slice after its selected development checks pass. Keep
 the pinned QED/cflib inputs and first-editor scope. New tool, fixture and source
-paths below are proposed implementation locations, not existing commands.
+paths below become available as their slice lands.
 
 ## Slice order and completion gates
 
