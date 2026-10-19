@@ -500,6 +500,11 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [QED gap analysis](gem4xe/qed-gap-analysis.md): source study of the existing
+  65816 port against Exec's resource/menu, VDI, event/dialog, runtime/filesystem
+  and image/stack contracts; proposes a native port through editing, reliable
+  saving and concurrent use. QED execution on Exec remains untested.
+
 - [Control Panel session settings](gem4xe/control-panel-settings-plan.md): runtime
   Off/Mild acceleration, staged Apply/Cancel and focused redraw/lifetime checks.
   CP1–CP3 implemented; [development record](../history/control-panel-settings.md).

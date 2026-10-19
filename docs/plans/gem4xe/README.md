@@ -1,5 +1,11 @@
 # GEM as a client of an Exec-like kernel
 
+The [QED gap analysis](qed-gap-analysis.md) recommends rebuilding the existing
+GEM4XE editor port as a native Exec application. It identifies resource/menu
+capacity, VDI, event/dialog, runtime/filesystem and image/stack gaps, with a
+proposed sequence through editing, reliable saving and concurrent use. This is
+a source study; QED has not been built or executed on Exec.
+
 The [native drag/UPDATE plan](native-drag-update-plan.md) fixes periodic clients
 hiding a held window outline: queued acquisitions must let an already captured
 native gesture continue while active lock ownership keeps its existing
