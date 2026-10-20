@@ -4,13 +4,15 @@ The [QED startup design](qed-startup-design.md) and
 [QS1–QS5 implementation plan](qed-startup-implementation-plan.md) define
 strategy step 3: adapt resources/menus and fixed-font drawing, execute the real
 editor startup/close, and establish rollback, reuse and GUI stack evidence.
+QS1–QS5 are complete with [development evidence](../../history/qed-startup.md);
+editing and reliable Save remain strategy steps 4–5.
 
 The [QED native feasibility design](qed-native-feasibility-design.md) and
 [QF1–QF6 plan](qed-native-feasibility-implementation-plan.md) define strategy
 step 2: prove a private native runtime and text-storage/file paths, measure
 the complete QED layout, and settle stack/admission requirements before GEM
 expansion. [QF1–QF6 source, runtime, layout and admission checks](../../history/qed-native-feasibility.md)
-are implemented and reconciled; real QED startup remains step 3.
+are implemented and reconciled. Step 3 records actual application startup.
 Analysis-only links cannot be packaged or used as executable evidence.
 
 The [QED initial scope and source dependencies](qed-scope-and-dependencies.md)
@@ -27,7 +29,8 @@ The [QED gap analysis](qed-gap-analysis.md) recommends rebuilding the existing
 GEM4XE editor port as a native Exec application. It identifies resource/menu
 capacity, VDI, event/dialog, runtime/filesystem and image/stack gaps, with a
 proposed sequence through editing, reliable saving and concurrent use. This is
-a source study; the complete editor has not been built or executed on Exec.
+a historical source study; the later startup record identifies actual native
+builds and executions.
 
 The [native drag/UPDATE plan](native-drag-update-plan.md) fixes periodic clients
 hiding a held window outline: queued acquisitions must let an already captured

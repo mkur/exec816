@@ -168,3 +168,50 @@ continuation cap, 256-byte interrupt reserve and 128-byte headroom leaves
 243 bytes in the declared pool. All fourteen failure-fixture lifetimes retain
 identity/DP attribution. These observations do not qualify future editing or
 Save chains. Host checks pass 529 tests with four expected skips.
+
+## QS5 Current baseline and handoff
+
+The [reconciled step 3 record](../development/qed-startup-qs5.json) closes
+QS1–QS5. The auditor checks actual source inputs, tool/runtime identities, the
+current C APP ABI 25 / Process ABI 8, passive stack reinterpretation, and equal
+shared-provider code/data/import identities across all cohorts and the GEM demo.
+It reconciles thirty loaded Process cycles: focused raw/optimized resource and
+binding cases, optimized drawing/event probes, four production lifecycle cycles
+and fourteen failure/reuse cycles. Historical QF and earlier QS records remain
+unchanged. These are development checks, not hosted-system qualification.
+
+The ordinary executable contains 138,626 code, 1,302 initialized and 26,648 BSS
+bytes. Its 155,128-byte APP spans 269,698 image bytes and needs up to 335,236
+alignment-backing bytes. Relative to step 2, private code decreases 10,162 bytes,
+data/BSS decreases four and container metadata decreases 1,196. Provider code
+grows 980 bytes to 179,036; tables remain 40,145 and data/BSS 25,739. All frozen
+allowances fit; the remaining provider code allowance is 15,404 bytes.
+
+The RSC remains 10,500 bytes, with a 10,522-byte live resource owner before
+allocator rounding. Target-emitted constants establish 383-live / 384-reserved
+form bytes and 164-live/reserved popup bytes. Each saved-state array grew by
+64 upper bytes in QS1. The private heap snapshot requests 53,303 payload /
+53,351 backing bytes in four blocks, before underlying allocator rounding.
+Reserved bank-zero delta across QS1–QS5 is **0 fixed, 0 per-public-Task,
+0 private idle bytes**, including guards, alignment and unused capacity.
+
+The independent current analysis build still rejects packaging, while both
+analysis and executable builds pass all 59 legal-base relinks and the current
+frame ledger. Host checks pass 529 tests with four expected historical skips;
+the affected C-program/AES/VDI/QED generators and content/local-link checks pass.
+
+Both standard and GEM development ZIPs were rebuilt with build_demo.py, OF816,
+the pinned ROM and upstream notices. Exact extracted-package checks pass: the
+standard shell runs HELLO and CAT/WC then EXIT; GEM runs About, a disk-loaded
+Control Panel, RAM listing and EXIT. Both observe 249 PAL autoboot frames. All
+eight packaged C callers were rebuilt for ABI 25, including the RAM desktop.
+The ZIPs contain only boot files, user guidance, notices and checksums; QED and
+private fixtures remain outside distribution until strategy step 7.
+
+Step 4 now owns single-document New/Open policy, actual text editing, cursor and
+selection rendering, navigation/scrolling, long lines and required dialogs.
+Document pointer selection still reaches unsupported donor MU_M2 waits and must
+be adapted there. Step 5 owns actual QED Save/Save As/backup and failure-safe
+finalization with persisted-byte evidence. Later steps retain realistic
+coexistence/performance and supported delivery. The startup gate establishes
+the application base for that work.

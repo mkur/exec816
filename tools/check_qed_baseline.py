@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reconcile executed QED foundation artifacts against one current source/ABI baseline."""
+"""Reconcile executed QED artifacts against one current source/ABI baseline."""
 import argparse,hashlib,json,struct,zipfile
 from pathlib import Path
 from analysis_artifact import reject_analysis
@@ -12,12 +12,27 @@ def checked(path,digest):
     require(path.is_file() and sha256(path)==digest,'Changed evidence input: '+str(path))
 
 
+def provider_identity(resident):
+    # RAM-installed desktop files are boot payload, outside the shared provider.
+    tables=resident['provenance']['readonly_table_banks']
+    payload=dict(segments=[s for s in resident['segments'] if s['executable'] or
+        s['writable'] or s['address']>>16 in tables],zero_fill=resident['zero_fill'],
+        imports={name:resident['symbols'][name] for name in ABI['imports']})
+    return hashlib.sha256(json.dumps(payload,sort_keys=True).encode()).hexdigest()
+
+
 def check(layout_directory,cohort_directories,demo_directories,frames_path=None):
     layout=json.loads((layout_directory/'layout.json').read_text())
-    require(layout['complete_link'] and layout['status']=='analysis-only' and layout['abi']==ABI,
+    require(layout['complete_link'] and layout['status'] in ('analysis-only','executable-development') and layout['abi']==ABI,
             'Incomplete or stale complete-source layout')
-    checked(layout_directory/'program.elf',layout['analysis_elf_sha256'])
+    checked(layout_directory/'program.elf',layout.get('elf_sha256',layout.get('analysis_elf_sha256')))
+    if layout['status']=='executable-development':
+        checked(layout_directory/'program.app',layout['app']['sha256'])
+        reject_analysis((layout_directory/'program.app').read_bytes())
     for name,digest in layout['build_inputs'].items():checked(Path(name),digest)
+    reference=Path(layout['resident_provider']['path'])
+    checked(reference,layout['resident_provider']['sha256'])
+    identity=provider_identity(json.loads(reference.read_text()))
     frames_path=frames_path or layout_directory/'stack-frames.json'
     frames=json.loads(frames_path.read_text())
     require(frames['analysis_sha256']==sha256(layout_directory/'layout.json') and
@@ -32,6 +47,9 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
         program=read_build(directory/'program');build=program['build']
         provider=build['foreign_image']['c_program_provider']
         require(provider['abi']==ABI['version'] and provider['imports']==ABI['imports'],'Provider ABI differs')
+        resident=json.loads((directory/'c-image.json').read_text())
+        for name,digest in resident['provenance']['source_inputs'].items():checked(ROOT/name,digest)
+        require(provider_identity(resident)==identity,'Executed provider differs from the layout baseline')
         require(result['runtime']['native_nmi_count']>0 and result['runtime']['native_irq_count']>0,
                 'Missing native asynchronous entries')
         checked(directory/'app/program.app',result['app']['sha256'])
@@ -49,11 +67,11 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
         provenance=result['app']['image']['provenance']
         for tool in provenance['tools'].values():checked(Path(tool['path']),tool['sha256'])
         checked(Path(provenance['runtime']['path']),provenance['runtime']['sha256'])
-        observed=summarize(directory/'emulator.log',markers(program,result['app']),build['memory'],result.get('stack_window'))
+        observed=summarize(directory/'emulator.log',markers(program,result['app']),build['memory'],result.get('stack_windows',result.get('stack_window')))
         current_min=min(r['headroom'] for r in observed['minima'] if r['lifetime'] and r['kind']!='async')
         original_min=min(r['headroom'] for r in result['stacks']['minima'] if r['lifetime'] and r['kind']!='async')
         require(current_min==original_min,'Changed stack interpretation: '+str(directory))
-        cohorts.append(dict(reanalysis_sha256=sha256(ROOT/'tools/qed_stack_observer.py'),path=str(directory.relative_to(ROOT)),results_sha256=sha256(directory/'results.json'),
+        cohorts.append(dict(provider_sha256=sha256(directory/'c-image.json'),reanalysis_sha256=sha256(ROOT/'tools/qed_stack_observer.py'),path=str(directory.relative_to(ROOT)),results_sha256=sha256(directory/'results.json'),
             app_sha256=result['app']['sha256'],completed=result['completed'],checks=result['checks'],
             filesystem=result['filesystem'],stack_window=result.get('stack_window'),
             minimum_headroom=current_min,
@@ -82,6 +100,7 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
         row=dict(path=str(directory.relative_to(ROOT)),zip_sha256=sha256(path),files=names)
         if manifest.get('gem_desktop'):
             provider=json.loads((directory/'bitmap-console/c-image.json').read_text())
+            require(provider_identity(provider)==identity,'Packaged provider differs from the executed baseline')
             contract=provider['provenance']['c_program_provider']
             require(contract['abi']==ABI['version'] and contract['imports']==ABI['imports'],'Stale packaged provider')
             code=sum(len(s['bytes']) for s in provider['segments'] if s['executable'])
@@ -110,7 +129,7 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
             row.update(provider_sha256=sha256(directory/'bitmap-console/c-image.json'),
                 provider_code_bytes=code,provider_table_bytes=tables,provider_data_bss_bytes=data,apps=apps,rebuilt_callers=rebuilt)
         demos.append(row)
-    return dict(status='pass',tier='development',qualification=False,abi=ABI['version'],
+    return dict(status='pass',tier='development',qualification=False,abi=ABI['version'],provider_identity=identity,
         process_abi=json.loads((ROOT/'abi/process.json').read_text())['version'],
         layout_sha256=sha256(layout_directory/'layout.json'),frames_sha256=sha256(frames_path),
         auditor_sha256=sha256(Path(__file__)),source_pins=layout['inputs']['sources'],

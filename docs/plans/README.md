@@ -512,11 +512,17 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [QED startup design](gem4xe/qed-startup-design.md) and
+  [QS1–QS5 implementation plan](gem4xe/qed-startup-implementation-plan.md):
+  strategy step 3 complete; adapted resources, fixed-font source, real loaded
+  editor startup, Close/Quit/Stop, rollback, reuse and stack development checks.
+  [Evidence and limits](../history/qed-startup.md); editing/saving remain later gates.
+
 - [QED native feasibility design](gem4xe/qed-native-feasibility-design.md) and
   [QF1–QF6 implementation plan](gem4xe/qed-native-feasibility-implementation-plan.md):
   strategy step 2; native ABI and owned runtime, real file/text-storage probes,
   whole-QED layout, measured image/stack decisions and Process admission.
-  Design and plan prepared; implementation remains pending.
+  QF1–QF6 implemented and reconciled; GUI startup follows in step 3.
 
 - [QED initial scope and source dependencies](gem4xe/qed-scope-and-dependencies.md):
   strategy step 1 fixed; English single-document scope, pinned QED/cflib sources,
@@ -531,7 +537,7 @@ assuming work is pending. Current behavior belongs in the
 - [QED gap analysis](gem4xe/qed-gap-analysis.md): source study of the existing
   65816 port against Exec's resource/menu, VDI, event/dialog, runtime/filesystem
   and image/stack contracts; proposes a native port through editing, reliable
-  saving and concurrent use. QED execution on Exec remains untested.
+  saving and concurrent use. Later startup evidence records actual Exec execution.
 
 - [Control Panel session settings](gem4xe/control-panel-settings-plan.md): runtime
   Off/Mild acceleration, staged Apply/Cancel and focused redraw/lifetime checks.

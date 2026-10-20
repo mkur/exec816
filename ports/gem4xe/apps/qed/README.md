@@ -185,6 +185,7 @@ components.
 ## Real application startup
 
 ```sh
+python3 tools/test_qed_startup.py --group binding --output build/qed-startup/qs2-binding-opt
 python3 tools/build_qed.py --executable --output build/qed-startup/app \
   --provider build/qed-startup/qs2-binding-opt/c-image.json
 python3 tools/test_qed_startup.py --group startup --output build/qed-startup/startup
@@ -199,11 +200,34 @@ does not yet exist.
 The startup cohort loads the complete application and its generated resource
 through ordinary DOS/Process operations. It checks the actual menu, 8×8 font,
 single borrowed workstation, one document window and native empty-work-area
-pixels. Physical window Close, Ctrl+Q and another Close each retire normally;
-the supervisor collects/unloads and checks exact memory recovery. A focused
+pixels. Physical window Close, Ctrl+Q, another Close and cooperative RequestStop
+each retire normally. The supervisor collects/unloads and checks exact memory
+recovery. A focused
 `--group event` probe also executes the adapted poller request. Native event
 requests use supported left-button/down semantics, and menu shortcuts precede
 character insertion. See [startup evidence](../../../../docs/history/qed-startup.md).
 
 These are development startup checks, not editing, dialog or Save qualification.
 The QED APP remains outside distributed demo ZIPs until strategy step 7.
+
+```sh
+python3 tools/test_qed_startup.py --group failures --output build/qed-startup/failures
+python3 tools/measure_qed_frames.py --layout build/qed-startup/startup/app
+```
+
+The failure group builds a separate development APP with acquisition failures
+and persistent private allocation refusal. It executes missing/malformed resource
+loads through the real loader. It copies the unchanged APP to RAM: using DOS
+Read/Write for the failure sweep; resource reads stay on SYS:. The production
+startup cohort repeats disk APP loads. The ordinary executable omits the
+failure controls.
+Both cohorts require normal collection, clean owners and exact memory reuse;
+the observer attributes stack samples to each owned physical Process lifetime.
+The [current reconciled record](../../../../docs/development/qed-startup-qs5.json)
+identifies the matched ABI 25 callers, sources, runtime, ROM/emulator and exact
+standard/GEM package checks. Earlier QF/QS records retain their historical scope.
+
+Document pointer selection still reaches donor MU_M2 waits, which the native
+wait contract rejects. Treat document pointer interaction as unsupported until
+step 4 adapts those waits. Startup Close/Quit/Stop evidence does not establish
+New/Open policy, text editing, selection, dialogs or saved-file behavior.

@@ -103,7 +103,7 @@ def failures(out,reuse=False,reuse_app=False):
             for name,digest in prior['build_inputs'].items():
                 require(sha256(Path(name))==digest,'Changed QED APP input: '+name)
             return app
-        provider=out/'c-image.json' if reuse else ROOT/'build/qed-startup/qs3-startup/c-image.json'
+        provider=out/'c-image.json' if reuse else ROOT/'build/qed-startup/qs2-binding-opt/c-image.json'
         qed_build(target,provider,executable=True,
                   fixture=ROOT/'tests/programs/qed_startup_failures.c')
         return json.loads((target/'app.json').read_text())

@@ -4,7 +4,8 @@
 [Initial scope](qed-scope-and-dependencies.md) ·
 [Native foundation](../../history/qed-native-feasibility.md)
 
-Status: accepted for implementation. This is strategy step 3. Its gate is the
+Status: implemented through QS1–QS5 with
+[development evidence](../../history/qed-startup.md). This is strategy step 3. Its gate is the
 actual loaded QED application acquiring its resource and menu, opening an empty
 document window, processing redraw/close, and returning through normal Process
 collection. Editing and saving retain their separate strategy gates.

@@ -14,7 +14,11 @@ step 2 has a [design](qed-native-feasibility-design.md) and
 [QF1–QF6 implemented](../../history/qed-native-feasibility.md). The
 [reconciled foundation](../../development/qed-native-qf6.json) closes step 2;
 its complete-source image remains analysis-only, with conditional GUI budgets.
-Steps 3–7 remain proposed. The editor has not been packaged or executed as a runnable APP.
+Step 3 is implemented through its [design](qed-startup-design.md),
+[QS1–QS5 plan](qed-startup-implementation-plan.md) and
+[startup development evidence](../../history/qed-startup.md). A runnable private
+APP passes the empty-document/resource/menu/lifecycle gate. Steps 4–7 remain;
+editing and reliable Save are not established by startup checks.
 
 ## First usable editor
 
@@ -93,7 +97,7 @@ executable. If the required stack cannot fit the current Process launch
 contract, resolve that general constraint before building the rest of the UI;
 do not depend on QED happening to receive a larger free Task pool.
 
-The step 2 handoff fixes C APP ABI 24 and Process ABI 8. The complete source
+The historical step 2 handoff used C APP ABI 24 and Process ABI 8. The complete source
 image spans 279,860 bytes, with 345,396 bytes of alignment backing. QED declares
 a 2,560-byte stack requirement through general image admission. Its conservative
 source bound is 1,375 bytes; the separate 768-byte continuation cap must be
@@ -108,6 +112,15 @@ The port already consolidates workstation ownership in CFLIB, with QED borrowing
 it. Exceeding an allowance or stack cap requires a new fit decision.
 
 ### Start the real QED application
+
+Completed by [QS1–QS5](qed-startup-implementation-plan.md). The current C APP
+ABI is 25. The adapted resource has ten trees, 185 objects, 44 free strings and
+a 30-object menu. Real QED startup uses one CFLIB workstation, native fixed-font
+drawing and ordinary Process admission. Physical Close/Ctrl+Q and cooperative
+Stop retire normally; acquisition failures and repeated launches restore owners.
+See the [current baseline](../../development/qed-startup-qs5.json) for exact
+artifacts, costs and development scope. The source stack bound remains
+conditional for editing/dialog/file workflows not executed by this gate.
 
 Address resources, menus and workstation ownership together. Larger resources
 must be supported through loading, traversal, form storage and menu handling;
