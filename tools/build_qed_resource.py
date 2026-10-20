@@ -103,7 +103,11 @@ def menu(groups,mapping):
     for popup,(_,_,items) in zip(popups,groups):
         children=[]
         for name,label in items:
-            mapping[name]=len(tree);children.append(len(tree));tree.append(node(28,0,len(children)*12-12,176,12,'  '+label.ljust(19)))
+            parts=label.rsplit(' ',1)
+            # CFLIB recognizes a shortcut only at the end (at most one trailing
+            # blank). Keep its four-byte suffix intact for mutable Copy labels.
+            caption='  '+(parts[0].rstrip().ljust(17)+parts[1] if len(parts)==2 and parts[1].startswith('^') else label.ljust(19))
+            mapping[name]=len(tree);children.append(len(tree));tree.append(node(28,0,len(children)*12-12,176,12,caption))
         link(tree,popup,children)
     link(tree,0,[1,boxes]);link(tree,1,[2]);link(tree,2,list(range(3,3+len(groups))));link(tree,boxes,popups)
     tree[-1][4]|=32

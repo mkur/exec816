@@ -1,0 +1,291 @@
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -37,7 +37,7 @@
+ 
+ /****** DEFINES ************************************************************/
+ 
+-#define KIND	(NAME|INFO|CLOSER|FULLER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE|LFARROW|RTARROW|HSLIDE|SMALLER)
++#define KIND	(NAME|INFO|CLOSER|FULLER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE)
+ #define FLAGS	(WI_TEXT|WI_FONTSIZE|WI_REDRAW)
+ 
+ /* Anzahl der énderungen in allen Texten bis zum restore_edit */
+@@ -320,7 +320,7 @@
+ /* Anlegen einer neuen Textdatei 														*/
+ /***************************************************************************/
+ 
+-short new_edit(void)
++short new_edit(bool report_error)
+ {
+ 	short	icon;
+ 	TEXTP t_ptr;
+@@ -328,7 +328,7 @@
+ 	icon = crt_new_text("", FALSE);
+ 	if (icon < 0)
+ 	{
+-		note(1, 0, NOTEXT);
++		if(report_error)note(1, 0, NOTEXT);
+ 		return -1;
+ 	}
+ 	t_ptr = get_text(icon);
+@@ -336,7 +336,7 @@
+ 		make_absatz(t_ptr);
+ 	if (do_icon(icon,DO_OPEN) < 0)
+ 	{
+-		note(1, 0, NOWINDOW);
++		if(report_error)note(1, 0, NOWINDOW);
+ 		icon_edit(icon, DO_DELETE);
+ 		icon = -3;
+ 	}
+--- a/qed/src/edit.h
++++ b/qed/src/edit.h
+@@ -10,7 +10,7 @@
+ extern void		blink_edit		(void);
+ extern void		offblink_edit	(void);
+ extern void		onblink_edit	(void);
+-extern short		new_edit			(void);
++extern short		new_edit			(bool report_error);
+ extern short		load_edit		(char *filename, bool bin);
+ extern void		close_edit		(char *filename, short flag);
+ 
+--- a/qed/src/main.c
++++ b/qed/src/main.c
+@@ -67,7 +67,7 @@
+         init_file();init_window();init_icon();init_memory();
+         init_edit();init_default_var();font_change();color_change();
+         if(init_clipbrd()){
+-            short document=argc==2?load_edit(argv[1],FALSE):new_edit();
++            short document=argc==2?load_edit(argv[1],FALSE):new_edit(FALSE);
+             if(document>0){ready=1;main_loop();}
+         }
+         if(!ready || return_code)cause=IoErr();
+--- a/qed/src/menu.c
++++ b/qed/src/menu.c
+@@ -316,7 +316,7 @@
+ /* Datei */
+ 			case MNEWTEXT	:
+ 
+-				if(prepare_quit())new_edit();
++				if(prepare_quit())new_edit(TRUE);
+ 				break;
+ 
+ 			case MOPEN	 :
+--- a/qed/src/rsc.c
++++ b/qed/src/rsc.c
+@@ -47,23 +47,43 @@
+ 
+ static bool	rsc_init = FALSE;
+ 
++#include <proto/dos.h>
++#include <exec816/aes.h>
++static bool resource_failed(LONG cause)
++{
++    term_resource();SetIoErr(cause);return FALSE;
++}
++
+ bool init_resource(void)
+ {
+     OBJECT *version;
+     short index;
+     char value[40];
+     rsc_init=rsrc_load("SYS:QED.RSC");
+-    if(!rsc_init)return FALSE;
+-    if(!rsrc_gaddr(R_TREE,VERSION,(void **)&version)){term_resource();return FALSE;}
++    if(!rsc_init){
++        LONG cause=IoErr();
++        if(ExecAESDiagnostic()==AES_MALFORMED)cause=ERROR_OBJECT_WRONG_TYPE;
++        if(!cause)cause=ERROR_NO_FREE_STORE;
++        SetIoErr(cause);return FALSE;
++    }
++    if(!rsrc_gaddr(R_TREE,VERSION,(void **)&version))return resource_failed(ERROR_OBJECT_WRONG_TYPE);
+     get_string(version,RSC_VERSION,value);
+-    if(strcmp(value,QED_VERSION)){term_resource();return FALSE;}
+-    rsrc_gaddr(R_TREE,MENUTREE,(void **)&menu);if(!create_menu(menu)){term_resource();return FALSE;}
+-    rsrc_gaddr(R_TREE,ABOUT,(void **)&about);rsrc_gaddr(R_TREE,ABOUT2,(void **)&about2);
+-    rsrc_gaddr(R_TREE,TEXTINFO,(void **)&textinfo);rsrc_gaddr(R_TREE,BLOCKINFO,(void **)&blockinfo);
+-    rsrc_gaddr(R_TREE,REPLACE,(void **)&replace);rsrc_gaddr(R_TREE,REPASK,(void **)&repask);
+-    rsrc_gaddr(R_TREE,WINICON,(void **)&winicon);rsrc_gaddr(R_TREE,STRINGS,(void **)&strings);
++    if(strcmp(value,QED_VERSION))return resource_failed(ERROR_OBJECT_WRONG_TYPE);
++    if(!rsrc_gaddr(R_TREE,MENUTREE,(void **)&menu) ||
++       !rsrc_gaddr(R_TREE,ABOUT,(void **)&about) ||
++       !rsrc_gaddr(R_TREE,ABOUT2,(void **)&about2) ||
++       !rsrc_gaddr(R_TREE,TEXTINFO,(void **)&textinfo) ||
++       !rsrc_gaddr(R_TREE,BLOCKINFO,(void **)&blockinfo) ||
++       !rsrc_gaddr(R_TREE,REPLACE,(void **)&replace) ||
++       !rsrc_gaddr(R_TREE,REPASK,(void **)&repask) ||
++       !rsrc_gaddr(R_TREE,WINICON,(void **)&winicon) ||
++       !rsrc_gaddr(R_TREE,STRINGS,(void **)&strings))
++        return resource_failed(ERROR_OBJECT_WRONG_TYPE);
+     for(index=0;index<NUM_FRSTR;index++)
+-        rsrc_gaddr(R_STRING,index,(void **)&alertmsg[index]);
++        if(!rsrc_gaddr(R_STRING,index,(void **)&alertmsg[index]))
++            return resource_failed(ERROR_OBJECT_WRONG_TYPE);
++    if(!create_menu(menu))return resource_failed(ExecAESDiagnostic()==AES_RESOURCE?
++        ERROR_NO_FREE_STORE:ERROR_OBJECT_WRONG_TYPE);
+     return TRUE;
+ }
+ 
+--- a/qed/src/window.c
++++ b/qed/src/window.c
+@@ -427,7 +427,6 @@
+ 			wind_set_grect(w->handle, WF_UNICONIFY, (GRECT*)new);
+ 
+ 		w->flags &= ~WI_ICONIFIED;
+-		w->flags |= WI_OPEN;
+ 		top_window(w);
+ 	}
+ }
+@@ -918,7 +917,8 @@
+ {
+ 	GRECT	r;
+ 
+-	if (w && !(w->flags & WI_OPEN))
++	if(!w)return FALSE;
++	if (!(w->flags & WI_OPEN))
+ 	{
+ 
+ 		clr_undo();
+@@ -936,7 +936,8 @@
+ 
+ 		set_sliders(w, HORIZONTAL+VERTICAL, SLPOS+SLSIZE);
+ 
+-		wind_open_grect(w->handle, &r);
++        if(!wind_open_grect(w->handle,&r))return FALSE;
++        w->flags|=WI_OPEN;
+ 		top_handle = w->handle;
+ 		move_to_top(w);
+ 		redraw_window(w, &w->work);
+--- a/cflib/appinit.c
++++ b/cflib/appinit.c
+@@ -43,7 +43,8 @@
+     sys_big_id=sys_sml_id=1;sys_big_height=sys_sml_height=gl_hchar;
+     sys_big_pts=sys_sml_pts=gl_hchar;
+     sys_wchar=gl_wchar;sys_hchar=gl_hchar;sys_wbox=gl_wbox;sys_hbox=gl_hbox;
+-    cf_vdi_handle=open_vwork(work_out);cf_font_anz=work_out[10];
++    cf_vdi_handle=open_vwork(work_out);
++    cf_font_anz=cf_vdi_handle?work_out[10]:0;
+     gl_planes=0;
+     if(cf_vdi_handle)while((1UL<<gl_planes)<(unsigned short)work_out[13])gl_planes++;
+     gl_appdir[0]=0; /* No TOS app-dir query; QED uses SYS:QED.RSC. */
+--- a/qed/src/event.c
++++ b/qed/src/event.c
+@@ -138,7 +138,7 @@
+ 	events = MU_KEYBD | MU_BUTTON | MU_MESAG | MU_TIMER;
+ 	if (mouse_sleeps())
+ 		events |= MU_M1;
+-	ev.which = evnt_multi(events,	0x102, 3, 0,
++	ev.which = evnt_multi(events,	2, 1, 1,
+ 									1, old_mx, old_my, 1, 1,
+ 									0, 0, 0, 0, 0,
+ 									ev.msg, 0,
+@@ -172,7 +172,7 @@
+ 		if (mouse_sleeps())
+ 			events |= MU_M1;
+ 	}
+-	ev.which = evnt_multi(events,	0x102, 3, 0,
++	ev.which = evnt_multi(events,	2, 1, 1,
+ 									1, old_mx, old_my, 1, 1,
+ 									0, 0, 0, 0, 0,
+ 									ev.msg, 0,
+@@ -235,7 +235,7 @@
+ 	if (winlist_top() == NULL)
+ 		events &= (~MU_TIMER);
+ 
+-	ev->which = evnt_multi(events,	0x102, 3, 0,
++	ev->which = evnt_multi(events,	2, 1, 1,
+ 									1, old_mx, old_my, 1, 1,
+ 									0, 0, 0, 0, 0,
+ 									ev->msg, TIMER_INTERVALL,
+@@ -249,58 +249,17 @@
+ /* Ereignis-Verarbeitung																										 */
+ /*****************************************************************************/
+ 
+-static void handle_keybd(short kstate, short kreturn)
+-{
+-	WINDOWP window;
+-
+-	/* fÅr PC-Tastaturen wird Shift-Ctrl-8/9 nach KP-(/) gemappt */
+-	if (emu_klammer && kstate == 6)
+-	{
+-		if (kreturn == 0x908)		/* S-C-( */
+-		{
+-			kreturn = 0x6308;
+-			kstate = 4;
+-		}
+-		if (kreturn == 0xA09)		/* S-C-) */
+-		{
+-			kreturn = 0x6409;
+-			kstate = 4;
+-		}
+-	}
+-
+-#if 0
+-	if (debug_level)
+-	{
+-		TEXTP	t_ptr;
+-		
+-		window = winlist_top();
+-		if (window != NULL)
+-			t_ptr = get_text(window->handle);
+-		
+-		if (kstate == 4 && kreturn == 0x3B00)				/* ^F1 */
+-		{
+-			debug("Debug-Special: Ctrl-F1\n");
+-
+-			return;
+-		}
+-	}
+-#endif
+-
+-	to_makro(kstate, kreturn);
+-	if (!makro_play)
+-		sleep_mouse();
+-
+-	window = winlist_top();
+-	if (window == NULL)
+-		key_global(kstate, kreturn);
+-	else
+-	{
+-		if (!key_window(window, kstate, kreturn))
+-			key_global(kstate, kreturn);
+-	}
+-}
+-
+-/*****************************************************************************/
++static void handle_keybd(short kstate,short kreturn)
++{
++    WINDOWP window;
++    if(!makro_play)sleep_mouse();
++    /* Native normalized control letters remain ordinary character codes.
++     * Give the current menu its shortcuts before document insertion. */
++    if(key_global(kstate,kreturn))return;
++    window=winlist_top();
++    if(window)key_window(window,kstate,kreturn);
++}
++
+ static void handle_button(short m_x, short m_y, short bstate, short kstate, short breturn)
+ {
+ 	short		wh;
+@@ -482,6 +441,7 @@
+ 		{
+ 			offblink_edit();
+ 			handle_keybd(ev.kstate, ev.kreturn);
++            if(done)break;
+ 			menu_chg = TRUE;
+ 			onblink_edit();
+ 			while (idle()) 							/*	Auch fÅr Makro-Play-Abbruch */
+@@ -491,6 +451,7 @@
+ 		{
+ 			offblink_edit();
+ 			handle_button(ev.m_x, ev.m_y, ev.bstate, ev.kstate, ev.breturn);
++            if(done)break;
+ 			menu_chg = TRUE;
+ 			onblink_edit();
+ 		}
+@@ -500,6 +461,7 @@
+ 				menu_ctrl = (ev.kstate & K_CTRL);
+ 			offblink_edit();
+ 			handle_msg(ev.msg);
++            if(done)break;
+ 			menu_chg = TRUE;
+ 			onblink_edit();
+ 		}

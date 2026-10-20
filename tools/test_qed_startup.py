@@ -8,7 +8,7 @@ from build_qed_resource import build as resource_build
 from test_qed_native import process_run
 
 
-def resources(out,optimize=True,reuse=False,native_from=None,binding=False,drawing=False):
+def resources(out,optimize=True,reuse=False,native_from=None,binding=False,drawing=False,event=False):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
     if native_from:
         from test_c_process import variant
@@ -28,6 +28,13 @@ def resources(out,optimize=True,reuse=False,native_from=None,binding=False,drawi
             definitions={str(p):['--char-is-unsigned','-DQED_INITIAL_SCOPE=1','--no-cross-call',
                 '--no-interprocedural-cross-jump','-Dv_bar=QedRecordBar','-Dv_gtext=QedRecordText',
                 '-Dvsf_color=QedRecordFill','-Dvst_color=QedRecordInk'] for p in sources})
+    if event:
+        from prepare_qed import PORT
+        source=ROOT/'tests/programs/qed_startup_event.c'
+        sources=[source]
+        options=dict(includes=[PORT/'native',out/'inputs/source/qed/src',out/'inputs/source/cflib'],
+            definitions={str(p):['--char-is-unsigned','-DQED_INITIAL_SCOPE=1','--no-cross-call',
+                '--no-interprocedural-cross-jump'] for p in sources})
     fixture=out/'resources.act'
     prefix=(ROOT/'tests/programs/c_process.act').read_text().split('\nPROC Main()')[0]
     fixture.write_text(prefix+'''
@@ -62,10 +69,27 @@ ENDMODULE
     return result
 
 
+def startup(out,reuse=False):
+    from build_qed import build as qed_build
+    from qed_startup_observe import interact
+    out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
+    prepare(out/'inputs');resource_build(out/'resource',out/'inputs')
+    def application(target):
+        provider=out/'c-image.json' if reuse else ROOT/'build/qed-startup/qs2-binding-opt/c-image.json'
+        qed_build(target,provider,executable=True)
+        return json.loads((target/'app.json').read_text())
+    return process_run(out,True,reuse=reuse,rebuild_app=reuse,app_builder=application,
+        fixture_source=ROOT/'tests/programs/qed_startup.act',expected_completed=3,
+        native_optimize=True,release_compiler=True,stack_observation_index=2,
+        interaction=interact,loader_failures=False,retirement_timeout=60,
+        media_files={'QED.RSC':(out/'resource/QED.RSC').read_bytes()})
+
+
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True)
-    p.add_argument('--group',choices=['resources','binding','drawing'],default='resources');p.add_argument('--raw',action='store_true')
+    p.add_argument('--group',choices=['resources','binding','drawing','event','startup'],default='resources');p.add_argument('--raw',action='store_true')
     p.add_argument('--from-build',action='store_true')
     p.add_argument('--native-from',type=Path,help='Reuse unchanged native provider/fixture; rebuild this C probe')
     a=p.parse_args()
-    result=resources(a.output,not a.raw,a.from_build,a.native_from,a.group=='binding',a.group=='drawing');print(result['status'],result['completed'])
+    result=startup(a.output,a.from_build) if a.group=='startup' else resources(a.output,not a.raw,a.from_build,a.native_from,a.group=='binding',a.group=='drawing',a.group=='event')
+    print(result['status'],result['completed'])

@@ -3,7 +3,7 @@
   "menu": [
     ["TDESK", " QED ", [["MABOUT", "About QED..."]]],
     ["TFILE", " File ", [["MNEWTEXT", "New          ^N"], ["MOPEN", "Open...      ^O"], ["MSAVE", "Save         ^S"], ["MSAVENEW", "Save As...   ^M"], ["MCLOSE", "Close        ^U"], ["MQUIT", "Quit         ^Q"]]],
-    ["TEDIT", " Edit ", [["MUNDO", "Undo"], ["MCUT", "Cut          ^X"], ["MCOPY", "Copy         ^C"], ["MPASTE", "Paste        ^V"], ["MSELALL", "Select All   ^A"]]],
+    ["TEDIT", " Edit ", [["MUNDO", "Undo         ^Z"], ["MCUT", "Cut          ^X"], ["MCOPY", "Copy         ^C"], ["MPASTE", "Paste        ^V"], ["MSELALL", "Select All   ^A"]]],
     ["TSEARCH", " Search ", [["MFIND", "Find...      ^F"], ["MFNDGOON", "Find Next    ^G"]]],
     ["TOPTIONS", " Mode ", [["MOEINF", "Insert"], ["MOOVERW", "Overwrite"]]]
   ],

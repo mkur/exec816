@@ -71,3 +71,47 @@ rebuilds and exact-package smokes complete in QS5.
 Reserved bank-zero delta: **0 fixed, 0 per-public-Task, 0 private idle bytes**,
 including guards, alignment and unused reserved capacity. The actual costs and
 executions are identified in the [QS2 record](../development/qed-startup-qs2.json).
+
+## QS3 Actual executable startup
+
+Executable mode packs the complete retained graph as an ordinary C APP,
+without an analysis marker or trap. The default analysis artifact still rejects
+packing. Every legal-base relink passes; minimum-stack metadata remains 2,560
+bytes. Required resource pointers and free strings are checked before publishing
+the menu. Startup uses the supported native window flags and marks a window
+open only after successful admission. CFLIB owns one workstation; QED borrows it.
+
+The donor poller's negated-double-click/both-button request was outside the
+native contract. All retained main-loop polls now request supported double
+left-down events. Native normalized Ctrl letters reach menu shortcuts before
+ordinary text insertion; shortcut captions retain the donor parser's required
+trailing position. Termination breaks immediately after the final event rather
+than entering another idle wait after deleting the last window. A focused
+emitted poller regression complements the physical event checks.
+
+The loaded complete QED opens its actual Untitled document, installs the
+30-object menu, selects the built-in 8×8 font and paints its native work area.
+The pixel assertion checks the empty document's background, excluding the
+dynamic caret and presenter pointer. Physical Close, Ctrl+Q and another Close
+each return normally through collection and unload. Later cycles restore exact
+upper-memory availability. Snapshots include the actual resource/window pointers
+and private heap totals; they are observations, not a replacement editor.
+
+The [QS3 development record](../development/qed-startup-qs3.json) identifies
+artifacts, costs, pixel counts and emitted drawing entries. The passive observer
+selects the third launch's physical pool and Process lifetime through retirement.
+Native IRQ/NMI, direct-page ownership, guards and normal OS return are checked.
+These are startup development checks; failure/Stop closure and the current full
+source-frame ledger follow in QS4. Editing, dialogs and Save remain later gates.
+
+Reserved bank-zero delta: **0 fixed, 0 per-public-Task, 0 private idle bytes**,
+including guards, alignment and unused reserved capacity. Pool and region maps
+exactly match QS2. Resource owner and form/popup storage retain QS1 costs.
+
+The QS3 APP occupies 138,608 code, 1,300 initialized and 26,648 BSS bytes;
+its 155,084-byte container spans 269,680 image bytes and requests up to
+335,216 alignment-backing bytes. The observed private heap owns four blocks,
+53,303 payload / 53,351 backing bytes. The selected launch retains 1,691
+ordinary-sample and 1,708 after-reservation bytes above the interrupt floor
+(asynchronous minimum 1,609). The source-frame bound remains conditional
+until QS4 reconciles the changed graph.

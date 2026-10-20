@@ -29,7 +29,9 @@ class QedMenuTests(unittest.TestCase):
             self.assertLessEqual(tree[ids[name]][10],json.loads((ROOT/'abi/desktop.json').read_text())['constants']['MENU_BAR_HEIGHT'])
             for item,text in items:
                 self.assertEqual(tree[ids[item]][3],28)
-                self.assertIn(text,tree[ids[item]][6])
+                caption=tree[ids[item]][6]
+                self.assertEqual(' '.join(text.split()),' '.join(caption.split()))
+                if '^' in text:self.assertEqual(caption[-2:],text[-2:])
         self.assertEqual(len({ids[item] for _,_,items in groups for item,_ in items}),16)
 
 if __name__=='__main__':unittest.main()

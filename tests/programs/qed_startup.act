@@ -1,0 +1,113 @@
+; Ordinary loaded QED, observed through the existing Process and AES owners.
+MODULE CPROCESSTEST
+USE EXEC
+USE DOS
+USE PROGRAMFILE
+USE PROGRAM
+USE PROCESS
+USE AESSTATE
+USE AESCORE
+USE AESTYPES
+USE TIMER
+USE HEAPCORE
+
+CARD checks,completed,phase,cycle,menuObjects
+INT windowX,windowY,windowW,windowH
+LONGCARD baseline
+LONGINT lastPrimary
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC WindowReady()
+  CARD attempt
+  BYTE index,shown
+  AESSTATE.Client POINTER client
+
+  LET port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  LET clock=TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(port,
+      SIZEOF(TIMER.TimerClockRequest)))
+  Require(clock<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"timer.device"),TIMER.UNIT_VBLANK,
+      @clock.tc_Request,0)=0)
+  LET service=AESSTATE.Get()
+  FOR attempt=0 TO 999 DO
+    EXEC.Forbid()
+    shown=0
+    FOR index=0 TO AESTYPES.WINDOWS-1 DO
+      BEGIN
+        LET view=service.windows(index).view
+        IF view<>NULL AND view.shown<>0 THEN
+          shown=1
+          windowX=view.bounds.left
+          windowY=view.bounds.top
+          windowW=view.bounds.right-view.bounds.left
+          windowH=view.bounds.bottom-view.bounds.top
+          client=AESSTATE.Find(service,service.windows(index).owner)
+          IF client<>NULL AND client.menu<>NULL THEN
+            menuObjects=client.menu.count
+          FI
+
+          EXIT
+        FI
+      END
+    OD
+
+    EXEC.Permit()
+    IF shown<>0 THEN
+      EXIT
+    FI
+
+    clock.tc_Request.io_Command=TIMER.TD_READCLOCK
+    Require(EXEC.DoIO(@clock.tc_Request)=0)
+    Require(TIMER.Deadline(clock,0)<>0)
+    clock.tc_Request.io_Command=TIMER.TD_WAITUNTIL
+    Require(EXEC.DoIO(@clock.tc_Request)=0)
+  OD
+
+  EXEC.CloseDevice(@clock.tc_Request)
+  EXEC.DeleteIORequest(@clock.tc_Request)
+  EXEC.DeleteMsgPort(port)
+  Require(shown<>0 AND menuObjects=30)
+  phase=cycle+1
+
+RETURN
+
+PROC Main()
+  PROCESS.Result result
+
+  FOR cycle=0 TO 2 DO
+    BEGIN
+      LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:PROBE.APP"))
+      Require(image<>NULL)
+      LET child=PROCESS.StartLoaded(BYTE POINTER(image),NULL,0,0)
+      Require(child<>0)
+      WindowReady()
+      Require(PROCESS.Wait(child,@result)<>0)
+      lastPrimary=result.primary
+      Require(result.primary=0)
+      completed==+1
+      PROGRAM.Unload(image)
+      LET service=AESSTATE.Get()
+      Require(service.count=0 AND AESCORE.Idle(service)<>0)
+      IF cycle=0 THEN
+        baseline=EXEC.AvailMem(0)
+      ELSE
+        Require(EXEC.AvailMem(0)=baseline)
+      FI
+    END
+  OD
+
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

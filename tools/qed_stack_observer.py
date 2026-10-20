@@ -87,7 +87,7 @@ def summarize(path,points,memory,window=None):
     return dict(scope='Selected entries and emitted after-TCS sites. Per-pool Process lifetime ordinal starts at Process.Run; actual entry PC, DP and physical pool are recorded. Later native finalization is included until slot reuse. No watermark inference.',lifetimes=list(runs.values()),minima=list(rows.values()))
 
 
-def capture(bridge,program,record,index=0):
+def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600):
     """Profile one complete child, after Load and before the next disk load.
 
     Pause at existing bank-zero COP/restore rendezvous points. No guest code or
@@ -125,7 +125,9 @@ def capture(bridge,program,record,index=0):
             owner['clock_start']=bridge.eval_expr('@clk') & 0xffffffff
             bridge.profile_start('basicblock')
         try:
-            run_to(bridge,program['labels']['context_restore'],timeout=600,frame_limit=30000,condition=retired)
+            if during_run:during_run(owner)
+            bridge.bp_clear_all();bridge.bp_set(program['labels']['context_restore'],condition=retired)
+            run_to(bridge,program['labels']['context_restore'],timeout=retirement_timeout,frame_limit=30000,condition=retired)
         finally:
             if attempt==index:bridge.profile_stop()
         if attempt==index:owner['clock_end']=bridge.eval_expr('@clk') & 0xffffffff

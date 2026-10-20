@@ -9,8 +9,9 @@ resource, donor adaptation examples and notices. It records the donor's source
 selection and the existing Exec toolchain/GUI inputs separately.
 
 This is an input baseline for the native Exec port. The donor does not pin its
-external cflib checkout; this pair is the fixed source input. The native work below records compilation
-and focused execution separately; it does not establish a runnable editor. The donor's SDK, startup and G4A build are references,
+external cflib checkout; this pair is the fixed source input. The native work below records compilation and focused execution separately.
+Strategy step 3 now builds a runnable development APP and exercises real startup;
+editing and saving retain later gates. The donor's SDK, startup and G4A build are references,
 not the Exec build recipe. No donor sources are vendored by this baseline.
 
 ## Restore and verify
@@ -109,8 +110,9 @@ the public native records. It imports no donor gateway or SDK runtime.
 
 `build_qed.py` compiles the complete selection with the real runtime and an
 explicit [later-GEM binding catalog](analysis-bindings.json). It writes an
-**analysis ELF and layout report**, with no APP. Nonreturning bindings are
-limited to that catalog; an unresolved essential helper fails the real link.
+**analysis ELF and layout report** by default. The catalog now records explicit
+adaptations and the real input binding; no trap remains in the selected graph.
+An unresolved essential helper fails the real link.
 The report includes every retained archive member and verifies independent
 relinks at every legal base. The packer and both filesystem media producers
 reject the embedded analysis marker, including a renamed artifact.
@@ -131,7 +133,7 @@ python3 tools/test_qed_native.py --group masks --output build/qed-native/masks
 python3 tools/measure_qed_frames.py --layout build/qed-native/layout
 ```
 
-C APP ABI 24 declares a general minimum-stack requirement in the existing
+C APP ABI 25 retains a general minimum-stack requirement in the existing
 header. QED requests 2,560 total bytes, including the 256-byte interrupt reserve;
 ordinary Process admission selects a compatible free pool or fails before
 entry. The two existing larger pools keep their normal owners and capacities.
@@ -151,8 +153,7 @@ with physical pool, DP and per-pool Process lifetime ordinal. These samples
 retain the 128-byte headroom requirement and complement the source frame ledger.
 The ledger rejects unclassified indirect sites or unbounded source call cycles.
 It records a separate continuation cap for library/native/GEM work, which later
-GUI implementations must establish by full-chain measurements. The analysis ELF
-still provides no executable editor evidence.
+GUI implementations must establish by full-chain measurements. The independent analysis artifact remains unsuitable for execution.
 
 ## Reconciled foundation
 
@@ -180,3 +181,29 @@ adaptations and distributions. The donor states a no-fee redistribution
 condition for QED and its port files. Exec's MIT interface licence does not
 relicense that material. Final binary notices must match the actual linked
 components.
+
+## Real application startup
+
+```sh
+python3 tools/build_qed.py --executable --output build/qed-startup/app \
+  --provider build/qed-startup/qs2-binding-opt/c-image.json
+python3 tools/test_qed_startup.py --group startup --output build/qed-startup/startup
+```
+
+Executable mode requires a matching current provider and no pending analysis
+bindings. It packs an ordinary APP with the 2,560-byte minimum stack after
+all legal-base relinks. Default analysis mode keeps its packaging rejection.
+Use a provider produced by the resource/binding fixture if the example path
+does not yet exist.
+
+The startup cohort loads the complete application and its generated resource
+through ordinary DOS/Process operations. It checks the actual menu, 8×8 font,
+single borrowed workstation, one document window and native empty-work-area
+pixels. Physical window Close, Ctrl+Q and another Close each retire normally;
+the supervisor collects/unloads and checks exact memory recovery. A focused
+`--group event` probe also executes the adapted poller request. Native event
+requests use supported left-button/down semantics, and menu shortcuts precede
+character insertion. See [startup evidence](../../../../docs/history/qed-startup.md).
+
+These are development startup checks, not editing, dialog or Save qualification.
+The QED APP remains outside distributed demo ZIPs until strategy step 7.

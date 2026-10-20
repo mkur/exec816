@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "English single-document initial scope; analysis only until later GEM and saving gates",
+  "scope": "English single-document initial scope; executable development startup; editing and saving retain later gates",
   "defines": [
     "QED_INITIAL_SCOPE=1",
     "QED_BANKED_MALLOC=1",

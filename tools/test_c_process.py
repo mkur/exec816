@@ -44,15 +44,17 @@ def variant(base,out,filesystem):
 
 def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=None,
         fixture_source=None,expected_completed=12,native_optimize=None,
-        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0,media_files=None):
+        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0,media_files=None,app_builder=None,interaction=None,loader_failures=True,retirement_timeout=600):
     out.mkdir(parents=True,exist_ok=True)
     if reuse:
-        p=read_build(out/'program');app=json.loads((out/'app/app.json').read_text())
+        p=read_build(out/'program')
+        app=json.loads((out/'app/app.json').read_text()) if (out/'app/app.json').exists() else None
+        require(app is not None or rebuild_app,'Missing APP record; rebuild the application')
     if not reuse or rebuild_app:
         if reuse:
             from c_program import ABI
             provider=p['build']['foreign_image']['c_program_provider']
-            require(app['abi']==ABI and provider['abi']==ABI['version'] and
+            require(provider['abi']==ABI['version'] and
                     provider['imports']==ABI['imports'],
                     'Rebuild the provider after a C application ABI change')
             mounts=p['build']['dos_mounts']
@@ -60,16 +62,19 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                     (mounts[0]['access']=='readwrite')==writable and
                     any(m['format']==3 for m in mounts)==ram,
                     'Rebuild or derive the fixture for changed mount configuration')
-        app=application(out/'app',app_sources or [ROOT/'tests/programs/c_process.c'],
+        app=app_builder(out/'app') if app_builder else application(out/'app',app_sources or [ROOT/'tests/programs/c_process.c'],
                         optimize,**(app_options or {}))
         raw=(out/'app/program.app').read_bytes();media=out/'media';media.mkdir(exist_ok=True)
         (media/'PROBE.APP').write_bytes(raw);(media/'DESKTOP.RSC').write_bytes(resource())
         for name,payload in (media_files or {}).items():(media/name).write_bytes(payload)
-        (media/'TRUNC.APP').write_bytes(raw[:-1])
-        count=struct.unpack_from('<H',raw,10)[0];imports=struct.unpack_from('<H',raw,24)[0]
-        for name,at,fmt,value in [('VERSION',6,'<H',0),('IMPORT',32+count*16,'<H',65535),
-                                 ('FIXUP',32+count*16+imports*8,'<I',app['span'])]:
-            changed=bytearray(raw);struct.pack_into(fmt,changed,at,value);(media/(name+'.APP')).write_bytes(changed)
+        if loader_failures:
+            (media/'TRUNC.APP').write_bytes(raw[:-1])
+            count=struct.unpack_from('<H',raw,10)[0];imports=struct.unpack_from('<H',raw,24)[0]
+            for name,at,fmt,value in [('VERSION',6,'<H',0),('IMPORT',32+count*16,'<H',65535),
+                                     ('FIXUP',32+count*16+imports*8,'<I',app['span'])]:
+                changed=bytearray(raw);struct.pack_into(fmt,changed,at,value);(media/(name+'.APP')).write_bytes(changed)
+        else:
+            for name in ('TRUNC','VERSION','IMPORT','FIXUP'):(media/(name+'.APP')).unlink(missing_ok=True)
         if boundary_limits:
             from c_program import ABI
             for name,at,fmt,value in [('COUNT',10,'<H',ABI['segment_limit']+1),
@@ -119,7 +124,9 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
             record['machine']=verify_machine(b,ROM,PIN)
             try:
                 runtime,_=execute(b,p,timeout=600,frame_limit=30000,
-                    before_run=(lambda b:capture(b,p,record,stack_observation_index)) if observe_stacks else None)
+                    before_run=(lambda b:capture(b,p,record,stack_observation_index,
+                        during_run=(lambda owner:interaction(b,p,app,record,owner)) if interaction else None,
+                        retirement_timeout=retirement_timeout)) if observe_stacks else None)
             except Exception:
                 record['checks']=data(b,p['image'],'checks',True)
                 record['completed']=data(b,p['image'],'completed',True)

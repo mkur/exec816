@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "qualification": false,
+  "slice": "QS3",
+  "status": "pass",
+  "cohort": {
+    "path": "build/qed-startup/qs3-startup",
+    "results_sha256": "750aee2e40d7f1b72e3ccbf3f808a89b6235112fe6edb301211c9deede8dc87a",
+    "app_sha256": "d802d122c6239699627ad6ecbb0ff31a64a14d0156f6159a96f7a7da19eb5981",
+    "completed": [
+      3
+    ],
+    "checks": [
+      4194
+    ],
+    "scenes": [
+      {
+        "cycle": 0,
+        "process": 1,
+        "outer": [
+          16,
+          39,
+          608,
+          200
+        ],
+        "menu_objects": 30,
+        "resource_pointer": 298594,
+        "fixed_font": [
+          8,
+          8
+        ],
+        "work": [
+          24,
+          60,
+          608,
+          228
+        ],
+        "native_view": 309728,
+        "heap": [
+          4,
+          53303,
+          53351,
+          53351
+        ],
+        "pixels": {
+          "checked": 97824,
+          "sha256": "a3f573fa6d996a5fb88707270d26ab2977849dbda93ccb045155039d178ad311",
+          "assertion": "Native empty work area uses background pen zero; dynamic caret/pointer excluded"
+        },
+        "action": "physical window Close"
+      },
+      {
+        "cycle": 1,
+        "process": 2,
+        "outer": [
+          16,
+          39,
+          608,
+          200
+        ],
+        "menu_objects": 30,
+        "resource_pointer": 298594,
+        "fixed_font": [
+          8,
+          8
+        ],
+        "work": [
+          24,
+          60,
+          608,
+          228
+        ],
+        "native_view": 309728,
+        "heap": [
+          4,
+          53303,
+          53351,
+          53351
+        ],
+        "pixels": {
+          "checked": 98080,
+          "sha256": "2161aad7f8063a70ecbbf11156337f4e4dee3b5af75d91bf5b25c473c6312648",
+          "assertion": "Native empty work area uses background pen zero; dynamic caret/pointer excluded"
+        },
+        "action": "physical Ctrl+Q"
+      },
+      {
+        "cycle": 2,
+        "process": 3,
+        "outer": [
+          16,
+          39,
+          608,
+          200
+        ],
+        "menu_objects": 30,
+        "resource_pointer": 298594,
+        "fixed_font": [
+          8,
+          8
+        ],
+        "work": [
+          24,
+          60,
+          608,
+          228
+        ],
+        "native_view": 309728,
+        "heap": [
+          4,
+          53303,
+          53351,
+          53351
+        ],
+        "pixels": {
+          "checked": 98080,
+          "sha256": "2161aad7f8063a70ecbbf11156337f4e4dee3b5af75d91bf5b25c473c6312648",
+          "assertion": "Native empty work area uses background pen zero; dynamic caret/pointer excluded"
+        },
+        "action": "physical window Close"
+      }
+    ],
+    "emitted_entries": {
+      "init_resource": 1,
+      "v_opnvwk": 1,
+      "bild_out": 1,
+      "line_out": 27,
+      "close_window": 1,
+      "term_resource": 1
+    },
+    "stack_window": {
+      "slot": 7,
+      "identity": 3,
+      "image": 295704,
+      "record": 136418,
+      "image_base": 458752,
+      "app_entry": 727864,
+      "clock_start": 644913357,
+      "clock_end": 666336780,
+      "scope": "Selected owned C Process from PREPARING through retirement. Analysis selects its physical slot and first observed lifetime; later history samples are excluded."
+    },
+    "stacks": {
+      "scope": "Selected entries and emitted after-TCS sites. Per-pool Process lifetime ordinal starts at Process.Run; actual entry PC, DP and physical pool are recorded. Later native finalization is included until slot reuse. No watermark inference.",
+      "lifetimes": [
+        {
+          "slot": 7,
+          "ordinal": 1,
+          "dp": 5120,
+          "clock": 644955042,
+          "app_entry": 727864,
+          "identity": 3
+        }
+      ],
+      "minima": [
+        {
+          "slot": 7,
+          "lifetime": 1,
+          "kind": "ordinary-sample",
+          "minimum_s": 24138,
+          "dp": 5120,
+          "pool_bytes": 2560,
+          "expected_dp": 5120,
+          "headroom": 1691,
+          "pc": 1686247,
+          "marker": "M_DOSCLIENT_SETIOERR_93E1A287",
+          "clock": 665317392
+        },
+        {
+          "slot": 7,
+          "lifetime": 1,
+          "kind": "async",
+          "minimum_s": 24056,
+          "dp": 5120,
+          "pool_bytes": 2560,
+          "expected_dp": 5120,
+          "headroom": 1609,
+          "pc": 6912,
+          "marker": "native_irq",
+          "clock": 663722792
+        },
+        {
+          "slot": 7,
+          "lifetime": 1,
+          "kind": "frame-reservation",
+          "minimum_s": 24155,
+          "dp": 5120,
+          "pool_bytes": 2560,
+          "expected_dp": 5120,
+          "headroom": 1708,
+          "pc": 946778,
+          "marker": "provider:GemSolidFill:after-tcs",
+          "clock": 661764805
+        }
+      ]
+    }
+  },
+  "layout": {
+    "path": "build/qed-startup/qs3-startup/app/layout.json",
+    "sha256": "fb0a1a4dcafc6b3ceae513111fc875e59d208cd81e850345059b96864c9a7d00",
+    "code_bytes": 138608,
+    "initialized_bytes": 1300,
+    "bss_bytes": 26648,
+    "import_thunk_bytes": 400,
+    "span_bytes": 269680,
+    "image_holes_bytes": 103124,
+    "serialized_bytes_if_executable": 155084,
+    "relocation_count": 3566,
+    "heap_alignment_backing_bytes": 335216,
+    "future_full_profile_backing_bytes": 393216,
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "container_metadata_allowance_bytes": 16384,
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "resident_provider": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/qed-startup/qs3-startup/c-image.json",
+    "sha256": "f0b2dbad9a00d810dff16ff1bd8e0d4bd5f7495b6c42a79949ee6919c29d28e1",
+    "code_bytes": 179036,
+    "table_bytes": 40145,
+    "data_bss_bytes": 25739,
+    "allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "resource_sha256": "9c0cba3d944b458ba8234ce7ca01e21145b3fe87a656fac49ad0accb35118916",
+  "host_tests": {
+    "tests": 529,
+    "expected_skips": 4
+  },
+  "event_probe": {
+    "path": "build/qed-startup/qs3-event",
+    "results_sha256": "80f150d09123f338033bdb2bf630fa674ed2d6ebcd296102c5bb20414542d53b"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Pool and region reservations match QS2 exactly"
+  },
+  "limits": "Actual empty document, real Close and Ctrl+Q, repeated load/run/collect/unload. Editing, selection drags, dialogs and Save retain later gates."
+}

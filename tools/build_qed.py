@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compile and measure the retained QED graph; deliberately produces no APP."""
+"""Build the retained QED graph, with explicit analysis or executable output."""
 import argparse,json,re,struct
 from pathlib import Path
 
@@ -48,8 +48,9 @@ def units_from_listing(path):
         re.findall(r'>\s+(\w+)\s+([0-9a-f]+)',m[3])}) for m in re.finditer(pattern,text,re.M)]
 
 
-def build(output,provider):
+def build(output,provider,executable=False):
     output=Path(output).resolve();output.mkdir(parents=True,exist_ok=True)
+    for name in ('program.app','app.json'):(output/name).unlink(missing_ok=True)
     selection=selected();inputs=prepare(output/'inputs');native=PORT/'native'
     provider=Path(provider).resolve();resident=json.loads(provider.read_text())
     require(resident['provenance']['c_program_provider']['abi']==ABI['version'],
@@ -70,6 +71,7 @@ def build(output,provider):
             'Unknown QED binding disposition')
     header=(native/'qed-gem-extra.h').read_text()
     pending=[b for b in catalog if b.get('status','pending')=='pending']
+    require(not executable or not pending,'Executable QED still has analysis bindings')
     for b in pending:
         require(b['declaration'] in header and b['name'].startswith(('appl_','graf_','objc_','v_','vs','vq','vr')),
                 'Analysis binding must be an explicit later GEM interface: '+b['name'])
@@ -77,19 +79,20 @@ def build(output,provider):
     traps.write_text('#include "qed-native.h"\nconst char __exec_analysis_only[]="'+MARKER.decode()+'";\n'+
         '\n'.join(b['declaration'][:-1]+'{for(;;){}}' for b in pending)+'\n')
     sources=[output/'inputs/source'/u['origin']/u['path'] for u in selection['units']]
-    sources += [native/name for name in selection['native_sources']]+[traps]
+    sources += [native/name for name in selection['native_sources']]+([] if executable else [traps])
     definitions={str(p):['-D'+d for d in selection['defines']]+
         ['-Werror=implicit-function-declaration']+selection['compiler_options']+
         (['--char-is-unsigned'] if '/source/qed/' in str(p) or p.parent==native else [])
         for p in sources}
     imports=output/'imports.s';imports.write_text(import_assembly())
-    image=emit(output,sources,[imports,ROOT/'c/calypsi/image-info.s'],(),roots=['__exec_analysis_only'],
+    roots=[] if executable else ['__exec_analysis_only']
+    image=emit(output,sources,[imports,ROOT/'c/calypsi/image-info.s'],(),roots=roots,
         includes=[native,output/'inputs/source/qed/src',output/'inputs/source/cflib'],
         definitions=definitions,runtime_attributes={'printf':'nofloat'})
     # A complete real link is mandatory. Essential runtime helpers cannot enter the catalog.
     require(not {'exit','_Stub_exit','_Stub_assert','_Exit'} & set(image['symbols']),
             'Retained QED closure contains a board termination dependency')
-    image['provenance']['analysis_only']=True
+    image['provenance']['analysis_only']=not executable
     require(not any(b['name'] in image['symbols'] for b in catalog if b.get('status')=='adapted'),
             'An adapted donor GEM dependency is still linked')
     callers={b['name']:[] for b in catalog}
@@ -98,7 +101,7 @@ def build(output,provider):
         for name in callers:
             if name in symbols and symbols[name]['section']==0:callers[name].append(str(source))
     bindings=[dict(b,linked=b['name'] in image['symbols'],callers=callers[b['name']]) for b in catalog]
-    relocations,banks=verify_relocations(output,image,roots=['__exec_analysis_only'])
+    relocations,banks=verify_relocations(output,image,roots=roots)
     segments=shape(image,ABI['link_bank']);span=max(s['offset']+s['size'] for s in segments)
     code=sum(len(s['bytes']) for s in image['segments'] if s['executable'])
     initialized=sum(len(s['bytes']) for s in image['segments'] if not s['executable'])
@@ -110,14 +113,21 @@ def build(output,provider):
     require(initialized+bss+allowance['data_bss_bytes']<=65536,'QED data plus allowance exceeds its bank')
     require(serialized+sum(allowance.values())+selection['container_metadata_allowance_bytes']<=ABI['file_limit'],'QED serialized size plus allowance exceeds file cap')
     # Test the direct packer boundary, independently of any filename or sidecar.
-    try:pack(image,relocations)
-    except RuntimeError as error:require('Analysis-only' in str(error),'Unexpected packaging failure')
-    else:raise RuntimeError('Analysis artifact escaped packaging rejection')
+    if executable:
+        payload,app=pack(image,relocations,selection['minimum_stack_bytes'])
+        (output/'program.app').write_bytes(payload)
+        app.update(abi=ABI,bytes=len(payload),sha256=sha256(output/'program.app'),
+            verified_banks=banks,image=image,inputs={str(p):sha256(p) for p in sources})
+        (output/'app.json').write_text(json.dumps(app,indent=2)+'\n')
+    else:
+        try:pack(image,relocations)
+        except RuntimeError as error:require('Analysis-only' in str(error),'Unexpected packaging failure')
+        else:raise RuntimeError('Analysis artifact escaped packaging rejection')
     linked_units=units_from_listing(output/'link.lst')
     accounted=sum(sum(u['sections'].values()) for u in linked_units)
     require(accounted==code+initialized+bss+16+image['provenance']['dp_workspace_bytes'],
             'Link summary does not account for all loaded and virtual bytes')
-    record=dict(schema_version=1,status='analysis-only',tier='development',inputs=inputs,
+    record=dict(schema_version=1,status='executable-development' if executable else 'analysis-only',tier='development',inputs=inputs,
         selection=selection,bindings=bindings,analysis_bindings=[b['name'] for b in pending],abi=ABI,verified_banks=banks,
         complete_link=True,unresolved_essential_helpers=[],
         image=image,link_units=linked_units,link_summary_reconciled_bytes=accounted,
@@ -131,9 +141,11 @@ def build(output,provider):
             resident_provider_allowances=selection['resident_provider_allowances']),
         resident_provider=dict(path=str(provider),sha256=sha256(provider),code_bytes=provider_code,
             table_bytes=provider_tables,data_bss_bytes=provider_data,allowances=caps),
-        analysis_elf_sha256=sha256(output/'program.elf'),
+        elf_sha256=sha256(output/'program.elf'),
         build_inputs={str(p):sha256(p) for p in [*sources,PORT/'native-selection.json',PORT/'analysis-bindings.json',reference]},
         bank_zero_delta=selection['bank_zero_delta'])
+    if not executable:record['analysis_elf_sha256']=record['elf_sha256']
+    if executable:record['app']=dict(path=str(output/'program.app'),sha256=app['sha256'],bytes=app['bytes'],minimum_stack_bytes=selection['minimum_stack_bytes'])
     (output/'layout.json').write_text(json.dumps(record,indent=2)+'\n')
     return record
 
@@ -141,6 +153,7 @@ def build(output,provider):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--provider',type=Path,required=True);args=parser.parse_args()
-    result=build(args.output,args.provider)
-    print('QED complete analysis graph:',result['layout'])
+    parser.add_argument('--provider',type=Path,required=True)
+    parser.add_argument('--executable',action='store_true');args=parser.parse_args()
+    result=build(args.output,args.provider,args.executable)
+    print('QED',result['status'],result['layout'])
