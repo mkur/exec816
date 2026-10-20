@@ -26,6 +26,7 @@ typedef struct { WORD m_out, m_x, m_y, m_w, m_h; } MOBLK;
 WORD appl_init(void);
 WORD appl_exit(void);
 WORD graf_handle(WORD *wchar, WORD *hchar, WORD *wbox, WORD *hbox);
+WORD graf_mkstate(WORD *x, WORD *y, WORD *buttons, WORD *qualifiers);
 void v_opnvwk(WORD *work_in, WORD *handle, WORD *work_out);
 void v_clsvwk(WORD handle);
 void v_bar(WORD handle, const WORD *pxy);

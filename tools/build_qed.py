@@ -66,13 +66,16 @@ def build(output,provider):
     require(TARGET.read_text()==generate(reference),'Stale private QED GEM declarations')
     catalog=json.loads((PORT/'analysis-bindings.json').read_text())['bindings']
     require(len({b['name'] for b in catalog})==len(catalog),'Duplicate analysis binding')
+    require(all(b.get('status','pending') in ('pending','adapted','implemented') for b in catalog),
+            'Unknown QED binding disposition')
     header=(native/'qed-gem-extra.h').read_text()
-    for b in catalog:
+    pending=[b for b in catalog if b.get('status','pending')=='pending']
+    for b in pending:
         require(b['declaration'] in header and b['name'].startswith(('appl_','graf_','objc_','v_','vs','vq','vr')),
                 'Analysis binding must be an explicit later GEM interface: '+b['name'])
     traps=output/'analysis-traps.c'
     traps.write_text('#include "qed-native.h"\nconst char __exec_analysis_only[]="'+MARKER.decode()+'";\n'+
-        '\n'.join(b['declaration'][:-1]+'{for(;;){}}' for b in catalog)+'\n')
+        '\n'.join(b['declaration'][:-1]+'{for(;;){}}' for b in pending)+'\n')
     sources=[output/'inputs/source'/u['origin']/u['path'] for u in selection['units']]
     sources += [native/name for name in selection['native_sources']]+[traps]
     definitions={str(p):['-D'+d for d in selection['defines']]+
@@ -87,6 +90,8 @@ def build(output,provider):
     require(not {'exit','_Stub_exit','_Stub_assert','_Exit'} & set(image['symbols']),
             'Retained QED closure contains a board termination dependency')
     image['provenance']['analysis_only']=True
+    require(not any(b['name'] in image['symbols'] for b in catalog if b.get('status')=='adapted'),
+            'An adapted donor GEM dependency is still linked')
     callers={b['name']:[] for b in catalog}
     for number,source in enumerate(sources):
         symbols=object_symbols(output/(str(number)+'-'+source.stem+'.o'))
@@ -113,7 +118,7 @@ def build(output,provider):
     require(accounted==code+initialized+bss+16+image['provenance']['dp_workspace_bytes'],
             'Link summary does not account for all loaded and virtual bytes')
     record=dict(schema_version=1,status='analysis-only',tier='development',inputs=inputs,
-        selection=selection,bindings=bindings,abi=ABI,verified_banks=banks,
+        selection=selection,bindings=bindings,analysis_bindings=[b['name'] for b in pending],abi=ABI,verified_banks=banks,
         complete_link=True,unresolved_essential_helpers=[],
         image=image,link_units=linked_units,link_summary_reconciled_bytes=accounted,
         layout=dict(code_bytes=code,initialized_bytes=initialized,bss_bytes=bss,

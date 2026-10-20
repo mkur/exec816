@@ -40,3 +40,34 @@ including guards, alignment and unused reserved capacity. The pool and region
 maps exactly match QF5; the generic runner's older compaction comparison is not
 this slice's immediate reservation delta. These are development checks; actual
 QED startup and editor qualification remain later gates.
+
+## QS2 Fixed-font source and input boundary
+
+The retained QED output module uses an 81-byte private visible-cell buffer,
+the built-in 8×8 font and explicit baseline conversion. Empty rows and text
+use clipped public v_bar/v_gtext calls. Cursor visibility is published before
+redrawing its row; scrolling and line shifts redraw from actual text storage.
+Proportional/italic/XOR/raster paths and block drag/drop are removed. Flat
+resource frame calculations and public menu_popup replace the donor capability
+fallback. The native presenter keeps pointer ownership; donor shape/hide
+requests do not enter the link.
+
+The ordinary graf_mkstate named/AESPB snapshot is imported by current C APP
+ABI 25. Its four-word snapshot needs no persistent reservation. The input
+regression checks known coordinates and both interfaces, then proves that
+queued key/button records and wait interest survive the query and are consumed
+by the subsequent ordinary wait. Small raw/optimized loaded probes exercise
+the new import/calling boundary. The emitted renderer probe records calls from
+the actual adapted output module and checks tabs, viewport bounds, baseline
+conversion, empty text and empty rows. Its callbacks are fixture-only; actual
+native QED pixels belong to QS3.
+
+Every former analysis binding has an explicit disposition. The complete
+selected-source link contains no analysis trap; the analysis marker still
+prevents executable packaging until QS3. Editing/selection rendering, dialogs
+and saved-file behavior retain the later strategy gates. Matched application
+rebuilds and exact-package smokes complete in QS5.
+
+Reserved bank-zero delta: **0 fixed, 0 per-public-Task, 0 private idle bytes**,
+including guards, alignment and unused reserved capacity. The actual costs and
+executions are identified in the [QS2 record](../development/qed-startup-qs2.json).

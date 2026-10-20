@@ -120,6 +120,7 @@
 #define AES_OP_DRAG_OUTLINE 203
 #define AES_PAINT_REPORTS 8
 #define AES_UPDATE_WINDOW 512
+#define AES_OP_GRAF_MKSTATE 79
 struct AESMenuObject {
     WORD next;
     WORD head;

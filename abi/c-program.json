@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 24,
+  "version": 25,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -109,7 +109,8 @@
     "UnmountVolume",
     "ExNextBatch",
     "AvailMem",
-    "SetIoErr"
+    "SetIoErr",
+    "graf_mkstate"
   ],
   "stack_requirement": {
     "workspace_mask": 255,

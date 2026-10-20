@@ -1,6 +1,26 @@
 #include "aes-private.h"
 #include <proto/exec.h>
 
+/* One coherent snapshot, without consuming edges or altering wait interest.
+ * Pointer capture and key delivery publish this context's latest sample under
+ * the same short Task guard. Caller-owned output pointers remain live. */
+WORD ExecAESMouseState(struct ExecAESContext *c,WORD *x,WORD *y,WORD *buttons,WORD *qualifiers)
+{
+    WORD sx,sy,sb,sk;
+    const struct AESInputRecord *sample;
+    if (!c || !ExecAESEnter(c)) return 0;
+    sample=&c->endpoint->input->latest;
+    Forbid();
+    sx=sample->x;sy=sample->y;sb=sample->buttons;sk=sample->qualifiers;
+    Permit();
+    *x=sx;*y=sy;*buttons=sb;*qualifiers=sk;
+    c->busy=0;
+    return 1;
+}
+
+WORD graf_mkstate(WORD *x,WORD *y,WORD *buttons,WORD *qualifiers)
+{ return ExecAESMouseState(ExecAESContext(),x,y,buttons,qualifiers); }
+
 /* Private caller helpers: context admission belongs to the public event call.
  * Interest precedes its final queue inspection; no helper clears a signal. */
 UWORD ExecAESInputArm(struct ExecAESContext *c, UWORD flags)

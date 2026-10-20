@@ -118,7 +118,8 @@
     "OP_FIND": 106,
     "OP_DRAG_OUTLINE": 203,
     "PAINT_REPORTS": 8,
-    "UPDATE_WINDOW": 512
+    "UPDATE_WINDOW": 512,
+    "OP_GRAF_MKSTATE": 79
   },
   "records": {
     "MenuObject": [

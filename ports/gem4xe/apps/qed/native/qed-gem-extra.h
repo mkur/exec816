@@ -746,7 +746,6 @@ WORD form_error(WORD n);
 WORD graf_mouse(WORD mode, const WORD *form);
 WORD graf_growbox(WORD x1, WORD y1, WORD w1, WORD h1, WORD x2, WORD y2, WORD w2, WORD h2);
 WORD graf_shrinkbox(WORD x1, WORD y1, WORD w1, WORD h1, WORD x2, WORD y2, WORD w2, WORD h2);
-WORD graf_mkstate(WORD *mx, WORD *my, WORD *mb, WORD *ks);
 WORD graf_dragbox(WORD w, WORD h, WORD sx, WORD sy, WORD bx, WORD by, WORD bw, WORD bh, WORD *px, WORD *py);
 WORD shel_write(WORD doex, WORD isgr, WORD iscr, const char *cmd, const char *tail);
 WORD shel_get(void *buffer, WORD len);

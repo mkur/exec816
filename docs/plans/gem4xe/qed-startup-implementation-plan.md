@@ -3,8 +3,8 @@
 [GEM plans](README.md) · [Startup design](qed-startup-design.md) ·
 [Strategy](qed-port-strategy.md)
 
-Status: QS1 implemented with [development evidence](../../history/qed-startup.md).
-QS2–QS5 follow. Implement strategy step 3 in the following order.
+Status: QS1–QS2 implemented with [development evidence](../../history/qed-startup.md).
+QS3–QS5 follow. Implement strategy step 3 in the following order.
 Commit this design/plan, then commit each slice after its development checks.
 Preserve pinned upstream inputs and record any evidence-driven design amendment
 before depending on it. Every implementation slice reports reserved bank-zero

@@ -163,8 +163,11 @@ conditions, rebuilt demo callers and exact-package smokes. Run
 `tools/check_qed_baseline.py --help` to audit a reproduced layout and cohorts.
 The source frame tool accepts `--output` to preserve earlier ledgers.
 
-The editor remains analysis-only until step 3 replaces the listed GEM gaps and
-executes startup/close. Future GUI chains must establish the continuation cap;
+The [startup work](../../../../docs/history/qed-startup.md) has adapted the
+resources and fixed-font source and implemented the general input snapshot.
+The complete graph links without analysis traps; the catalog records each
+former binding's disposition. The analysis marker still prevents packaging
+until the real startup/close slice. Future GUI chains must establish the continuation cap;
 resource/menu adaptation and editing/saving are later gates. Proof fixtures and
 analysis artifacts remain outside the ZIP.
 

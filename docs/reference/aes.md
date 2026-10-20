@@ -14,7 +14,7 @@ The current source profile in [gem.h](../../c/include/gem.h) implements
 `evnt_mesag`, `evnt_timer`,
 `evnt_multi`, `evnt_multi_moblk`, `wind_update`, `wind_create`, `wind_open`,
 `wind_close`, `wind_delete`, `wind_get`, `wind_set`, `wind_set_str`, `wind_calc`,
-`graf_handle`
+`graf_handle`, `graf_mkstate`
 and the corresponding `aes_call(AESPB *)` operations.
 Other opcodes return zero with `ExecAESDiagnostic() == AES_UNSUPPORTED`.
 This is a rebuilt Calypsi source interface, not a GEM binary ABI or a complete
@@ -22,6 +22,14 @@ AES implementation. The object/form, resource and menu subsets are described
 below. Selected
 [private VDI workstation calls](gem-vdi.md#resident-application-workstations)
 execute directly in the caller.
+
+`graf_mkstate(&x,&y,&buttons,&qualifiers)` and AESPB opcode 79 (0 input words,
+5 output words, no addresses) return the context's latest published pointer
+sample. A short Task guard makes the four values coherent; raw IRQ capture
+does not mutate this AES storage. The query consumes no queued key/button
+record, changes no wait interest and performs no timer wait or RPC. It succeeds
+for a registered context even when its current window is ineligible for input.
+These are the latest presenter-published values, rather than a hardware read.
 
 Startup retains the endpoint returned by `AESBOOT.Port()` until every C Task
 has detached. Each application wrapper calls `ExecAESAttach(endpoint)` before
