@@ -5,8 +5,8 @@ from pathlib import Path
 from native_program import ROOT,build,compiler,require,sha256,read_build,verify_machine
 
 FIELDS=dict(ready=8,work=166,document=178,caret=224,anchor=228,first=232,left=234,
-            rows=236,columns=238,dirty=244,edits=856,paintTurns=860)
-LAYOUT=[('BasicApp size',178),('BasicDocument size',46),('BasicEditor size',864)]+[
+            rows=236,columns=238,dirty=244,edits=1576,paintTurns=1580)
+LAYOUT=[('BasicApp size',178),('BasicDocument size',46),('BasicEditor size',1664)]+[
     ('Basic '+n,FIELDS[n]) for n in ('ready','work','document','caret','anchor','first','left','rows','columns','dirty','edits','paintTurns')]
 
 
@@ -18,9 +18,9 @@ def build_editor(out,provider):
     from generate_memory import PROFILE
     from generate_mouse_acceleration import metadata
     out.mkdir(parents=True,exist_ok=True)
-    app=application(out/'app',[ROOT/'examples/gem-basic'/n for n in ('main.c','basic.c','editor.c','document.c','files.c','file-ui.c')]+[ROOT/'c/calypsi/file-list.c'],
+    app=application(out/'app',[ROOT/'examples/gem-basic'/n for n in ('main.c','basic.c','editor.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c')]+[ROOT/'c/calypsi/file-list.c'],
         probes=[(ROOT/'tests/programs/basic_editor_layout.c',LAYOUT)])
-    maximum=application(out/'maximum',[ROOT/'tests/programs/basic_maximum.c']+[ROOT/'examples/gem-basic'/n for n in ('basic.c','editor.c','document.c','files.c','file-ui.c')]+[ROOT/'c/calypsi/file-list.c'])
+    maximum=application(out/'maximum',[ROOT/'tests/programs/basic_maximum.c']+[ROOT/'examples/gem-basic'/n for n in ('basic.c','editor.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c')]+[ROOT/'c/calypsi/file-list.c'])
     application(out/'counter',[ROOT/'examples/gem-counter'/n for n in ('main.c','counter.c')])
     media=out/'media';media.mkdir(exist_ok=True)
     (media/'COUNTER.APP').write_bytes((out/'counter/program.app').read_bytes())
@@ -93,6 +93,10 @@ def exercise(out):
                         saved={'desktop_menu':{}}),click,move)
                     current=app if round<2 else json.loads((out/'maximum/app.json').read_text())
                     base=number(at('appBase'),4)+current['image']['symbols']['Basic']-(current['abi']['link_bank']<<16)
+                    storage=p['build']['memory']['process_storage'];ident=number(at('identity'),4)
+                    for slot in range(8):
+                        if number(storage['BASE']+slot*128+82,4)==ident:
+                            report.setdefault('placements',[]).append(dict(round=round,slot=slot,stack=p['build']['memory']['task_pools'][slot]['stack_bytes']))
                     def settled():
                         reach('(dw($%x)=1)&(dw($%x)=0)&(dw($%x)>0)'%
                             (base+FIELDS['ready'],base+FIELDS['dirty'],base+FIELDS['paintTurns']))
@@ -104,7 +108,8 @@ def exercise(out):
                             (out/'source-actual.bin').write_bytes(source);(out/'source-expected.bin').write_bytes(expected)
                             report['failure_model']=dict(bytes=count,expected=len(expected),caret=number(base+FIELDS['caret'],4),
                                 anchor=number(base+FIELDS['anchor'],4),edits=number(base+FIELDS['edits'],4),
-                                focus=menus.focus(),windows=menus.windows())
+                                focus=menus.focus(),windows=menus.windows(),status=b.memdump(base+FIELDS['edits']-81,81).split(b'\0')[0].decode('ascii','replace'))
+                            b.screenshot(str(out/'model-failure.png'))
                             raise RuntimeError('Physical editor bytes differ; see source-actual.bin/source-expected.bin')
                         starts=[0]+[i+1 for i,c in enumerate(expected) if c==10]
                         offsets=b.memdump(number(d+8,4),(len(starts)+1)*4)
@@ -157,7 +162,10 @@ def exercise(out):
                         report['cases'].append(dict(name=label,status='pass',sha256=hashlib.sha256(actual).hexdigest()))
                     def type_text(text):
                         for c in text:
+                            edits=number(base+FIELDS['edits']);start=b.eval_expr('@frame')
                             name,shift=KEYS[c];key(name,shift=shift)
+                            reach('dw($%x)!=%d'%(base+FIELDS['edits'],edits))
+                            report.setdefault('typing',[]).append(dict(character=repr(c),frames=b.eval_expr('@frame')-start))
                     if round==0:
                         counter=json.loads((out/'counter/app.json').read_text())
                         cb=number(at('counterBase'),4)+counter['image']['symbols']['GEMCounter']-(counter['abi']['link_bank']<<16)
@@ -199,7 +207,7 @@ def exercise(out):
                         report['latencies'].append(dict(name='five-character edit to scanout',frames=b.eval_expr('@frame')-start))
                     else:
                         key('ASTERISK',ctrl=True)
-                        report['maximum_navigation']=dict(caret=number(base+FIELDS['caret'],4),focus=menus.focus(),windows=menus.windows())
+                        report['maximum_navigation']=dict(caret=number(base+FIELDS['caret'],4),focus=menus.focus(),windows=menus.windows(),status=b.memdump(base+FIELDS['edits']-81,81).split(b'\0')[0].decode('ascii','replace'))
                         require(number(base+FIELDS['caret'],4)==1,'Physical cursor-right did not reach byte one')
                         peer=number(at('peerProgress'),4);start=b.eval_expr('@frame')
                         prior=number(base+FIELDS['edits'],4)

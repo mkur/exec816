@@ -5,6 +5,11 @@
 #include <string.h>
 #define CHECK(x) do { if (!(x)) return __LINE__; ++BasicEditorChecks; } while (0)
 volatile UWORD BasicEditorChecks;
+static UWORD unexpectedGUI;
+WORD wind_get(WORD window,WORD field,WORD *a,WORD *b,WORD *c,WORD *d)
+{ (void)window;(void)field;(void)a;(void)b;(void)c;(void)d;++unexpectedGUI;return 0; }
+WORD wind_set(WORD window,WORD field,WORD a,WORD b,WORD c,WORD d)
+{ (void)window;(void)field;(void)a;(void)b;(void)c;(void)d;++unexpectedGUI;return 0; }
 static struct BasicEditor e;
 static UBYTE bytes[512];
 static WORD text(const char *wanted)
@@ -46,7 +51,7 @@ LONG EXEC_CALL BasicEditorProbe(ULONG unused)
     CHECK(e.left==240 && e.caret==255);
     CHECK(BasicEditorKey(&e,'x',0)==BASIC_LINE_LENGTH && e.document.bytes==255 && e.document.generation==generation && e.caret==255);
     CHECK(!BasicEditorKey(&e,8,0) && e.document.bytes==254 && e.caret==254);
-    BasicDocumentDispose(&e.document);CHECK(AvailMem(MEMF_UPPER)==before);
+    CHECK(!unexpectedGUI);BasicDocumentDispose(&e.document);CHECK(AvailMem(MEMF_UPPER)==before);
     return 0;
 }
 int main(void) { return 0; }

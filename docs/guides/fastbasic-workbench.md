@@ -17,11 +17,22 @@ Use the File and Edit menus, or these shortcuts:
 | Extend selection | Shift with a cursor key, or drag over source |
 | Select all | Control+A |
 | Undo / Redo | Control+Z / Control+Y |
+| Find / Find Next / Replace | Control+F / Control+G / Control+R |
 | Insert newline / tab | Return / Tab |
 | Delete before / at caret | Backspace / Atari Delete |
 | Quit | Control+Q or the close gadget |
 | Scroll | Vertical arrows or slider |
 | Resize / move | Size gadget / title bar |
+
+Find and Replace compare letters without case. Enter up to 80 bytes in each
+field; Find Next wraps once, and All replaces every non-overlapping match as
+one Undo group. A replacement that exceeds the undo budget is refused without
+changing the source. Escape cancels a running search or replacement.
+
+Return repeats the line's leading spaces and tabs. Strings, comments and common
+keywords have separate colours. The Navigate menu moves between procedures and
+toggles the current procedure's fold. Folds affect display only; editing clears
+them. Use the compiler for syntax checking when the Run workflow is available.
 
 Tabs occupy eight-column stops. Long lines pan to keep the caret visible.
 Capacity errors leave the previous source intact. Undo includes selection

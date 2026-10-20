@@ -1,0 +1,1811 @@
+{
+  "format": "exec816-fastbasic-workbench-slice-v1",
+  "slice": "WB4",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-20",
+  "base_revision": "4ccfff3139e1c1f6b366a725e769160912949f86",
+  "source_inputs": {
+    "examples/gem-basic/main.c": "3b4747371db396da959505b0daa3906c3eed8eb18a4c3fa1ce0fb319efb9f982",
+    "examples/gem-basic/basic.c": "3b030474850a73de291994041e1a93ec8937ef90419f023feeaa5f10a8acf8ce",
+    "examples/gem-basic/basic.h": "711e3af6f644898a82139d503577ea8fa73eb40de9c7b8abaf2ebdbae3c73a8d",
+    "examples/gem-basic/editor.c": "d89361c8bed28572198018af1b3d59c5c7b4c95389fbed4baae77d8813ecaf6a",
+    "examples/gem-basic/editor.h": "28b149d3dc45aa79145776fce5de710eb738b97e9a997cc96fd0226da9bc659c",
+    "examples/gem-basic/document.c": "3db298950e73b396f0437c724cf9759cbf2fe21646f49e5c21f0fdff50393b24",
+    "examples/gem-basic/document.h": "e264a4d133e06fc14d152e8b5aa3ab7d761af4d95f18f2324eb97447e87454a9",
+    "examples/gem-basic/files.c": "0d3fe4871cc8476561382c75f929edb9b90ad22b27b3fb3ccebd527b03f55ad1",
+    "examples/gem-basic/files.h": "93078b500309ce7a493f0150a693d2b5e6ba24d7f3ed1e47f06fef630dab4815",
+    "examples/gem-basic/file-ui.c": "efc2d00ea05da4a22b89256cac9594e07ddd7bd65a3af73141c7d2c6dc7b5958",
+    "examples/gem-basic/file-ui.h": "bc6799f4308d45be421a8674d1d04eebe207fec70f38d60e92461a7bc7275ff0",
+    "examples/gem-basic/assist.c": "8ec9e45129a06f69a91af3595cd3b6561eb2112503c0a7e72abc88a1f64c4352",
+    "examples/gem-basic/assist.h": "13f27edd54c23c239ea758e04a0c006d49412261b98bf2319f67a9254c2e9cf3",
+    "examples/gem-basic/assist-ui.c": "510f0486b3ae2dd5a959bd2e8e8ddcfd8a975a57d49bca9e5d51d1e8d1676425",
+    "examples/gem-basic/assist-ui.h": "d611a0a38ffe9a6109951eb3c51942e4f970cd6bb0cc6404b0437e7e8e5528e3",
+    "tests/programs/basic_assist.c": "8ddc7adf2d3c5cf621a7ace7daaff9e830f4f9e106a27b42abf255f66c6d5c7d",
+    "tests/programs/basic_editor.c": "4a943b8a5641cf18d19ee9c97b14567841e03b79ce018985aa4d0d4d89fffd0b",
+    "tests/programs/basic_editor_layout.c": "b501476b1ed47a14be5e89e5e8373bd0a951a9a6c1888886812cabc50007ce72",
+    "tests/programs/basic_interaction.act": "afb44d6f5e2e9f7dd9a15c2f59c083dc4f644a8fdfd155611f2c45e99a619993",
+    "tests/programs/basic_files_interaction.act": "0ab75ae1eeadff6c2c6eca1132cf006589ee265ba1487cd3457b22d2b0a1813f",
+    "tools/test_fastbasic_assist.py": "875ac274acd0fbfdc146dc4d0e2c34c1400c9b78a3c678ff316479b8e6909583",
+    "tools/test_fastbasic_editor.py": "9670d86f41cb2abbba18d39ceb199e4e247b0a3f36a5c696efe9c2ef9b2448fb",
+    "tools/workbench_pixels.py": "03aadf93471995c3a7aa4fd0b66296db90fa1c90a9d4aaf23dd38fa34385aaef",
+    "tools/workbench_interaction.py": "66665d8821533ee914231572c6c7043a35a2e45d99d411cde956cfe7abe3a892",
+    "tools/workbench_files_interaction.py": "000678522b25ae1780bf03176d940b805a848da2c208151c09528f29bb1262d8",
+    "tools/test_fastbasic_workbench.py": "9a1dfc3dfb5849edce9c9067e2773c21632f1144e01c8f6333d6b2d515d0fd97",
+    "tools/build_demo.py": "cfbdd767933c2149477eeecc082f2cf8d52ff105d4b9b8d4f734f8aabfbbea68",
+    "tools/build_gem_desktop.py": "b9facf8af85528945b849f398e10c8ea506abe68e7f3231010338afbd7e93472",
+    "c/calypsi/file-list.c": "c70f8d6f4e6789d826fce9a26225ee6e3081da358c184c6e52a510f5a0853492"
+  },
+  "pins": {
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "ports/fastbasic/upstream.json": "3d68f368e7715cabcd979d55823c6b9fa0a1e9665838158a24e27507e16ec82e",
+    "abi/fastbasic.json": "6b5cb12a431831d74791e7ee49b759cba4fa8b01131ca2be721211da29f1234b",
+    "abi/c-program.json": "5e7474296d6bd2bb35e11a36110f2a559186331706781228694fe595c59d85b5",
+    "toolchain/altirra-gem-vdi.json": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431",
+    "toolchain/altirra-shell-paced.json": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087"
+  },
+  "evidence": [
+    {
+      "path": "build/fastbasic-workbench/wb4-model/results.json",
+      "sha256": "5cccb7f9f298be00cfc688668f7e5ed38155c72a9d2c2dbe767f7153e88281b5",
+      "status": "pass",
+      "checks": 506,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 3584,
+        "native_irq_count": 35118,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 516,
+            "untouched_above_floor": 764
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 278,
+          "untouched_from_base": 1258,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "path": "build/fastbasic-workbench/wb4-model-raw/results.json",
+      "sha256": "5d2f1c37cade45df495dc0d403f4767c2b4ef320c65c37b245ea4193aa846a84",
+      "status": "pass",
+      "checks": 506,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 3379,
+        "native_irq_count": 33111,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 516,
+            "untouched_above_floor": 764
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 260,
+          "untouched_from_base": 1276,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "path": "build/fastbasic-workbench/wb4-logical/results.json",
+      "sha256": "0c539527bb8b93abb3cc53c6c69389b42c7720393a9750e740d8b22b544fdd6e",
+      "status": "pass",
+      "checks": 30,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 4,
+        "native_irq_count": 47,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 558,
+            "untouched_above_floor": 722
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "path": "build/fastbasic-workbench/wb4-editor-regression/results.json",
+      "sha256": "9c8c9bd524915081db34bf41efed554d20eddee8231c8e2ee1be0b2b78e10156",
+      "status": "pass",
+      "checks": [
+        28
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 509,
+          "remaining_above_floor": 771
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 167,
+          "remaining_above_floor": 889
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 163,
+          "remaining_above_floor": 893
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 338,
+          "remaining_above_floor": 718
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 185,
+          "remaining_above_floor": 871
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 690,
+          "remaining_above_floor": 366
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 860,
+          "remaining_above_floor": 1444
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 916,
+          "remaining_above_floor": 1388
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 301,
+          "remaining_above_floor": 979
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 10097,
+        "native_irq_count": 12811,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 509,
+            "untouched_above_floor": 771
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 167,
+            "untouched_above_floor": 889
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 163,
+            "untouched_above_floor": 893
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 338,
+            "untouched_above_floor": 718
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 185,
+            "untouched_above_floor": 871
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 690,
+            "untouched_above_floor": 366
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 860,
+            "untouched_above_floor": 1444
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 916,
+            "untouched_above_floor": 1388
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 301,
+          "untouched_from_base": 1235,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "cases": [
+        {
+          "name": "typed-tabs",
+          "status": "pass",
+          "sha256": "1fad700e0556d05e89b80623e6a532eae5229a9b9830a74c8e5c240740039f64"
+        },
+        {
+          "name": "selection-replaced",
+          "status": "pass",
+          "sha256": "bde599bc1ece56ad600fa4f33b67ddf43716021bff378a2a287c123c9cd7a8f5"
+        },
+        {
+          "name": "undo-selection",
+          "status": "pass",
+          "sha256": "ec1421d760f42989a630ad28598151db9a1a4ba2ec2af868ec3faf960982ecf3"
+        },
+        {
+          "name": "keyboard-menu-undo",
+          "status": "pass",
+          "sha256": "ec1421d760f42989a630ad28598151db9a1a4ba2ec2af868ec3faf960982ecf3"
+        },
+        {
+          "name": "focus-cover-exposure",
+          "status": "pass",
+          "sha256": "bde599bc1ece56ad600fa4f33b67ddf43716021bff378a2a287c123c9cd7a8f5"
+        },
+        {
+          "name": "horizontal-pan",
+          "status": "pass",
+          "sha256": "4ead966aa1dce8a71bae8f40dcc46252fb52e9c74584b55ba2c68b5facd09cd6"
+        },
+        {
+          "name": "resized-partial-row",
+          "status": "pass",
+          "sha256": "0e182eff30856f2e17f0baae80bdb1d91dc82db980b68235af22a45451297925"
+        },
+        {
+          "name": "minimum-size",
+          "status": "pass",
+          "sha256": "231d44da4a3e484262dfa8ca69b2b398841abbdf1e4f09bd900ae6d6fb0d338c"
+        },
+        {
+          "name": "fresh-relaunch",
+          "status": "pass",
+          "sha256": "6cf685260d71eefc8a17066b7191d475767485fc6085f6d21da42a8b56a01316"
+        },
+        {
+          "name": "maximum-gap-delete",
+          "status": "pass",
+          "sha256": "c4f03d8ef71f1468c0b252de1cfe4d357987ab34d723896c1ddb77366d648480"
+        },
+        {
+          "name": "maximum-size-restored",
+          "status": "pass",
+          "sha256": "dd75f550f8d08e70194b684f368840ed3881cec18a8b3f942e0846b8b0d26d8b"
+        }
+      ],
+      "latencies": [
+        {
+          "name": "five-character edit to scanout",
+          "frames": 55
+        },
+        {
+          "name": "32767-byte document, one-byte gap moved 32766 bytes, delete to scanout",
+          "frames": 97,
+          "milliseconds": 1940,
+          "budget_frames": 120,
+          "peer_progress": 129
+        }
+      ],
+      "peer_progress": [
+        60326,
+        0
+      ],
+      "typing": [
+        {
+          "character": "'h'",
+          "frames": 7
+        },
+        {
+          "character": "'e'",
+          "frames": 7
+        },
+        {
+          "character": "'l'",
+          "frames": 7
+        },
+        {
+          "character": "'l'",
+          "frames": 10
+        },
+        {
+          "character": "'o'",
+          "frames": 11
+        },
+        {
+          "character": "'\\t'",
+          "frames": 9
+        },
+        {
+          "character": "'w'",
+          "frames": 10
+        },
+        {
+          "character": "'o'",
+          "frames": 11
+        },
+        {
+          "character": "'r'",
+          "frames": 10
+        },
+        {
+          "character": "'l'",
+          "frames": 12
+        },
+        {
+          "character": "'d'",
+          "frames": 10
+        },
+        {
+          "character": "'\\n'",
+          "frames": 9
+        },
+        {
+          "character": "'s'",
+          "frames": 11
+        },
+        {
+          "character": "'e'",
+          "frames": 11
+        },
+        {
+          "character": "'c'",
+          "frames": 13
+        },
+        {
+          "character": "'o'",
+          "frames": 11
+        },
+        {
+          "character": "'n'",
+          "frames": 10
+        },
+        {
+          "character": "'d'",
+          "frames": 11
+        },
+        {
+          "character": "'1'",
+          "frames": 7
+        },
+        {
+          "character": "'2'",
+          "frames": 8
+        },
+        {
+          "character": "'3'",
+          "frames": 10
+        },
+        {
+          "character": "'4'",
+          "frames": 11
+        },
+        {
+          "character": "'5'",
+          "frames": 12
+        },
+        {
+          "character": "'6'",
+          "frames": 12
+        },
+        {
+          "character": "'7'",
+          "frames": 10
+        },
+        {
+          "character": "'8'",
+          "frames": 11
+        },
+        {
+          "character": "'9'",
+          "frames": 11
+        },
+        {
+          "character": "'0'",
+          "frames": 10
+        },
+        {
+          "character": "'1'",
+          "frames": 13
+        },
+        {
+          "character": "'2'",
+          "frames": 10
+        },
+        {
+          "character": "'3'",
+          "frames": 11
+        },
+        {
+          "character": "'4'",
+          "frames": 11
+        },
+        {
+          "character": "'5'",
+          "frames": 11
+        },
+        {
+          "character": "'6'",
+          "frames": 12
+        },
+        {
+          "character": "'7'",
+          "frames": 10
+        },
+        {
+          "character": "'8'",
+          "frames": 11
+        },
+        {
+          "character": "'9'",
+          "frames": 11
+        },
+        {
+          "character": "'0'",
+          "frames": 11
+        },
+        {
+          "character": "'1'",
+          "frames": 12
+        },
+        {
+          "character": "'2'",
+          "frames": 11
+        },
+        {
+          "character": "'3'",
+          "frames": 11
+        },
+        {
+          "character": "'4'",
+          "frames": 11
+        },
+        {
+          "character": "'5'",
+          "frames": 11
+        },
+        {
+          "character": "'6'",
+          "frames": 12
+        },
+        {
+          "character": "'7'",
+          "frames": 11
+        },
+        {
+          "character": "'8'",
+          "frames": 11
+        },
+        {
+          "character": "'9'",
+          "frames": 11
+        },
+        {
+          "character": "'0'",
+          "frames": 12
+        },
+        {
+          "character": "'1'",
+          "frames": 12
+        },
+        {
+          "character": "'2'",
+          "frames": 11
+        },
+        {
+          "character": "'3'",
+          "frames": 11
+        },
+        {
+          "character": "'4'",
+          "frames": 11
+        },
+        {
+          "character": "'5'",
+          "frames": 11
+        },
+        {
+          "character": "'6'",
+          "frames": 12
+        },
+        {
+          "character": "'7'",
+          "frames": 12
+        },
+        {
+          "character": "'8'",
+          "frames": 11
+        },
+        {
+          "character": "'9'",
+          "frames": 11
+        },
+        {
+          "character": "'0'",
+          "frames": 12
+        },
+        {
+          "character": "'1'",
+          "frames": 11
+        },
+        {
+          "character": "'2'",
+          "frames": 12
+        },
+        {
+          "character": "'3'",
+          "frames": 11
+        },
+        {
+          "character": "'4'",
+          "frames": 11
+        },
+        {
+          "character": "'5'",
+          "frames": 12
+        },
+        {
+          "character": "'6'",
+          "frames": 13
+        },
+        {
+          "character": "'7'",
+          "frames": 11
+        },
+        {
+          "character": "'8'",
+          "frames": 11
+        },
+        {
+          "character": "'9'",
+          "frames": 12
+        },
+        {
+          "character": "'0'",
+          "frames": 13
+        },
+        {
+          "character": "'1'",
+          "frames": 13
+        },
+        {
+          "character": "'2'",
+          "frames": 11
+        },
+        {
+          "character": "'3'",
+          "frames": 11
+        },
+        {
+          "character": "'4'",
+          "frames": 12
+        },
+        {
+          "character": "'5'",
+          "frames": 12
+        },
+        {
+          "character": "'6'",
+          "frames": 13
+        },
+        {
+          "character": "'7'",
+          "frames": 11
+        },
+        {
+          "character": "'8'",
+          "frames": 12
+        },
+        {
+          "character": "'9'",
+          "frames": 11
+        },
+        {
+          "character": "'0'",
+          "frames": 13
+        },
+        {
+          "character": "'1'",
+          "frames": 13
+        },
+        {
+          "character": "'2'",
+          "frames": 11
+        },
+        {
+          "character": "'3'",
+          "frames": 12
+        },
+        {
+          "character": "'4'",
+          "frames": 12
+        },
+        {
+          "character": "'5'",
+          "frames": 12
+        },
+        {
+          "character": "'6'",
+          "frames": 13
+        },
+        {
+          "character": "'7'",
+          "frames": 12
+        },
+        {
+          "character": "'8'",
+          "frames": 11
+        },
+        {
+          "character": "'9'",
+          "frames": 12
+        },
+        {
+          "character": "'0'",
+          "frames": 14
+        },
+        {
+          "character": "'1'",
+          "frames": 13
+        },
+        {
+          "character": "'2'",
+          "frames": 12
+        },
+        {
+          "character": "'3'",
+          "frames": 11
+        },
+        {
+          "character": "'4'",
+          "frames": 12
+        },
+        {
+          "character": "'5'",
+          "frames": 13
+        },
+        {
+          "character": "'6'",
+          "frames": 13
+        },
+        {
+          "character": "'7'",
+          "frames": 13
+        },
+        {
+          "character": "'8'",
+          "frames": 11
+        },
+        {
+          "character": "'9'",
+          "frames": 12
+        },
+        {
+          "character": "'0'",
+          "frames": 14
+        },
+        {
+          "character": "'a'",
+          "frames": 7
+        },
+        {
+          "character": "'g'",
+          "frames": 7
+        },
+        {
+          "character": "'a'",
+          "frames": 8
+        },
+        {
+          "character": "'i'",
+          "frames": 10
+        },
+        {
+          "character": "'n'",
+          "frames": 9
+        }
+      ]
+    },
+    {
+      "path": "build/fastbasic-workbench/wb4-physical/results.json",
+      "sha256": "ab61674574030a11e62710745766cd82748d611f639c3873510a1b610435f00d",
+      "status": "pass",
+      "checks": [
+        43
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 7460,
+        "native_irq_count": 26541,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 438,
+            "untouched_above_floor": 842
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 139,
+            "untouched_above_floor": 917
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 163,
+            "untouched_above_floor": 893
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 152,
+            "untouched_above_floor": 904
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 318,
+            "untouched_above_floor": 738
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 149,
+            "untouched_above_floor": 907
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 839,
+            "untouched_above_floor": 1465
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 1120,
+            "untouched_above_floor": 1184
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 289,
+          "untouched_from_base": 1247,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "cases": [
+        {
+          "name": "save-new-atascii",
+          "bytes": 8,
+          "status": "pass"
+        },
+        {
+          "name": "new-cancel",
+          "bytes": 16,
+          "status": "pass"
+        },
+        {
+          "name": "new-after-save",
+          "bytes": 0,
+          "status": "pass"
+        },
+        {
+          "name": "open-saved",
+          "bytes": 16,
+          "status": "pass"
+        },
+        {
+          "name": "discard-open-selector-cancel",
+          "bytes": 8,
+          "status": "pass"
+        },
+        {
+          "name": "save-as",
+          "bytes": 8,
+          "status": "pass"
+        },
+        {
+          "name": "open-save-as",
+          "bytes": 8,
+          "status": "pass"
+        },
+        {
+          "name": "find-selected",
+          "bytes": 8,
+          "status": "pass"
+        },
+        {
+          "name": "find-selected",
+          "status": "pass",
+          "sha256": "e11217927d917863cc581c6a359b1f401ae5bf92defae3bc0fc04ea67c1630a6"
+        },
+        {
+          "name": "replace-all",
+          "bytes": 4,
+          "status": "pass"
+        },
+        {
+          "name": "replace-all",
+          "status": "pass",
+          "sha256": "8c6c915b278c15de67157966e64e4340241c5740480525aedb5a0e8103ef56d1"
+        },
+        {
+          "name": "undo-replace",
+          "bytes": 8,
+          "status": "pass"
+        },
+        {
+          "name": "undo-replace",
+          "status": "pass",
+          "sha256": "158c808309c618bb7cef8b362d4d1139a02571f390402b95a133a6d5a95acbe2"
+        },
+        {
+          "name": "lexical-string-comment",
+          "bytes": 25,
+          "status": "pass"
+        },
+        {
+          "name": "lexical-string-comment",
+          "status": "pass",
+          "sha256": "fc57eaee5ed313c616b8edaf196593c8744b9b43baa9921ca1fe63962f563535"
+        },
+        {
+          "name": "automatic-indent",
+          "bytes": 65,
+          "status": "pass"
+        },
+        {
+          "name": "automatic-indent",
+          "status": "pass",
+          "sha256": "43dd86134fc848a1a99070c11ed2f06650a222e735815259b9d22b2a4252104a"
+        },
+        {
+          "name": "folded-procedure",
+          "bytes": 65,
+          "status": "pass"
+        },
+        {
+          "name": "folded-procedure",
+          "status": "pass",
+          "sha256": "27c8b6929a3140558054428e9bac1a46d6392a358d3c27cf8aaf382049210f03"
+        },
+        {
+          "name": "folded-selection",
+          "bytes": 65,
+          "status": "pass"
+        },
+        {
+          "name": "folded-selection",
+          "status": "pass",
+          "sha256": "7f684a50887b2b74f6b85a1f83987f2baeb48bd6dae082d95f67b972a6482156"
+        },
+        {
+          "name": "unfolded-procedure",
+          "bytes": 65,
+          "status": "pass"
+        },
+        {
+          "name": "unfolded-procedure",
+          "status": "pass",
+          "sha256": "7cd941c8829ad2b1d8b844dcd93831c229428f93dc153880e4184579c8136ab6"
+        }
+      ],
+      "peer_progress": [
+        31846,
+        0
+      ],
+      "typing_frames": [
+        9,
+        9,
+        9,
+        9,
+        9,
+        9,
+        10,
+        10,
+        9,
+        9,
+        9,
+        9,
+        9,
+        9,
+        10,
+        10,
+        9,
+        9,
+        9,
+        9,
+        10,
+        12,
+        11,
+        11,
+        9,
+        9,
+        11,
+        11,
+        11,
+        12,
+        11,
+        11,
+        12,
+        12,
+        12,
+        12,
+        11,
+        12,
+        12,
+        12,
+        12,
+        12,
+        13,
+        12,
+        12,
+        13,
+        12,
+        13,
+        12,
+        9,
+        9,
+        9,
+        9,
+        11,
+        11,
+        12,
+        11,
+        11,
+        12,
+        11,
+        11,
+        11,
+        11,
+        11,
+        12,
+        12,
+        11,
+        11,
+        12,
+        11,
+        12,
+        12,
+        11,
+        12,
+        11,
+        11,
+        11,
+        11,
+        11,
+        12,
+        13,
+        12,
+        11,
+        11,
+        11,
+        12,
+        11,
+        11,
+        11,
+        12,
+        12,
+        12,
+        12,
+        11,
+        11,
+        12,
+        11,
+        11,
+        11,
+        12
+      ]
+    }
+  ],
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes": "Guards, alignment and unused capacity; existing Task pools and 544-byte guest pool retained"
+  },
+  "applications": {
+    "optimized": {
+      "record": "build/fastbasic-workbench/wb4-physical/app/app.json",
+      "record_sha256": "0f364505b4691c621e7e5d74573d7743753491908febb2781d24bf437d063257",
+      "sha256": "a323136c1a9ac2716ebb1ae9b18c093475f8b6d2f11b521402bd8cf94e07d858",
+      "bytes": 49172,
+      "span": 84528,
+      "verified_banks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62
+      ],
+      "checked_layout": {
+        "sizeof(BYTE)": 1,
+        "sizeof(WORD)": 2,
+        "sizeof(LONG)": 4,
+        "sizeof(BPTR)": 4,
+        "sizeof(APTR)": 4,
+        "sizeof(void EXEC_PTR *)": 3,
+        "sizeof(struct Node)": 11,
+        "sizeof(struct List)": 11,
+        "sizeof(struct MinNode)": 6,
+        "sizeof(struct MinList)": 9,
+        "sizeof(struct MsgPort)": 27,
+        "offsetof(struct MsgPort, mp_Node)": 0,
+        "offsetof(struct MsgPort, mp_Flags)": 11,
+        "offsetof(struct MsgPort, mp_SigBit)": 12,
+        "offsetof(struct MsgPort, mp_SigTask)": 13,
+        "offsetof(struct MsgPort, mp_MsgList)": 16,
+        "sizeof(struct Message)": 16,
+        "offsetof(struct Message, mn_Node)": 0,
+        "offsetof(struct Message, mn_ReplyPort)": 11,
+        "offsetof(struct Message, mn_Length)": 14,
+        "sizeof(struct IORequest)": 26,
+        "offsetof(struct IORequest, io_Message)": 0,
+        "offsetof(struct IORequest, io_Device)": 16,
+        "offsetof(struct IORequest, io_Unit)": 19,
+        "offsetof(struct IORequest, io_Command)": 22,
+        "offsetof(struct IORequest, io_Flags)": 24,
+        "offsetof(struct IORequest, io_Error)": 25,
+        "sizeof(struct IOStdReq)": 42,
+        "offsetof(struct IOStdReq, io_Message)": 0,
+        "offsetof(struct IOStdReq, io_Device)": 16,
+        "offsetof(struct IOStdReq, io_Unit)": 19,
+        "offsetof(struct IOStdReq, io_Command)": 22,
+        "offsetof(struct IOStdReq, io_Flags)": 24,
+        "offsetof(struct IOStdReq, io_Error)": 25,
+        "offsetof(struct IOStdReq, io_Actual)": 26,
+        "offsetof(struct IOStdReq, io_Length)": 30,
+        "offsetof(struct IOStdReq, io_Data)": 34,
+        "offsetof(struct IOStdReq, io_Offset)": 38,
+        "sizeof(struct Task)": 62,
+        "offsetof(struct Task, tc_Node)": 0,
+        "offsetof(struct Task, tc_Flags)": 11,
+        "offsetof(struct Task, tc_State)": 12,
+        "offsetof(struct Task, tc_IDNestCnt)": 13,
+        "offsetof(struct Task, tc_TDNestCnt)": 14,
+        "offsetof(struct Task, tc_SigAlloc)": 16,
+        "offsetof(struct Task, tc_SigWait)": 20,
+        "offsetof(struct Task, tc_SigRecvd)": 24,
+        "offsetof(struct Task, tc_SigExcept)": 28,
+        "offsetof(struct Task, tc_SPReg)": 32,
+        "offsetof(struct Task, tc_SPLower)": 36,
+        "offsetof(struct Task, tc_SPUpper)": 40,
+        "offsetof(struct Task, tc_MemEntry)": 43,
+        "offsetof(struct Task, tc_UserData)": 54,
+        "offsetof(struct Task, tc_ExecPrivate)": 58,
+        "sizeof(struct ExecCreateTaskPacket)": 16,
+        "offsetof(struct ExecCreateTaskPacket, name)": 0,
+        "offsetof(struct ExecCreateTaskPacket, priority)": 4,
+        "offsetof(struct ExecCreateTaskPacket, entry)": 8,
+        "offsetof(struct ExecCreateTaskPacket, stackSize)": 12,
+        "sizeof(struct ExecDosWriteArgs)": 12,
+        "offsetof(struct ExecDosWriteArgs, file)": 0,
+        "offsetof(struct ExecDosWriteArgs, buffer)": 4,
+        "offsetof(struct ExecDosWriteArgs, length)": 8,
+        "sizeof(struct TaskLease)": 12,
+        "offsetof(struct TaskLease, task)": 0,
+        "offsetof(struct TaskLease, pad)": 3,
+        "offsetof(struct TaskLease, incarnation)": 4,
+        "offsetof(struct TaskLease, identity)": 8,
+        "offsetof(struct TaskLease, pad2)": 11,
+        "sizeof(struct ExecRetainTaskPacket)": 6,
+        "offsetof(struct ExecRetainTaskPacket, lease)": 3,
+        "sizeof(struct DateStamp)": 12,
+        "offsetof(struct DateStamp, ds_Days)": 0,
+        "offsetof(struct DateStamp, ds_Minute)": 4,
+        "offsetof(struct DateStamp, ds_Tick)": 8,
+        "sizeof(struct FileInfoBlock)": 260,
+        "offsetof(struct FileInfoBlock, fib_DiskKey)": 0,
+        "offsetof(struct FileInfoBlock, fib_DirEntryType)": 4,
+        "offsetof(struct FileInfoBlock, fib_FileName)": 8,
+        "offsetof(struct FileInfoBlock, fib_Protection)": 116,
+        "offsetof(struct FileInfoBlock, fib_EntryType)": 120,
+        "offsetof(struct FileInfoBlock, fib_Size)": 124,
+        "offsetof(struct FileInfoBlock, fib_NumBlocks)": 128,
+        "offsetof(struct FileInfoBlock, fib_Date)": 132,
+        "offsetof(struct FileInfoBlock, fib_Comment)": 144,
+        "offsetof(struct FileInfoBlock, fib_OwnerUID)": 224,
+        "offsetof(struct FileInfoBlock, fib_OwnerGID)": 226,
+        "offsetof(struct FileInfoBlock, fib_Reserved)": 228,
+        "offsetof(struct FileInfoBlock, fib_InfoFlags)": 258,
+        "sizeof(struct VolumeInfo)": 62,
+        "offsetof(struct VolumeInfo, name)": 0,
+        "offsetof(struct VolumeInfo, label)": 32,
+        "offsetof(struct VolumeInfo, format)": 41,
+        "offsetof(struct VolumeInfo, backend)": 42,
+        "offsetof(struct VolumeInfo, readOnly)": 43,
+        "offsetof(struct VolumeInfo, state)": 44,
+        "offsetof(struct VolumeInfo, flags)": 45,
+        "offsetof(struct VolumeInfo, unit)": 46,
+        "offsetof(struct VolumeInfo, sectorBytes)": 48,
+        "offsetof(struct VolumeInfo, totalBlocks)": 50,
+        "offsetof(struct VolumeInfo, freeBlocks)": 54,
+        "offsetof(struct VolumeInfo, allocatedBytes)": 58,
+        "sizeof(struct SioMountSpec)": 8,
+        "offsetof(struct SioMountSpec, drive)": 0,
+        "offsetof(struct SioMountSpec, format)": 2,
+        "offsetof(struct SioMountSpec, profile)": 4,
+        "offsetof(struct SioMountSpec, access)": 6,
+        "sizeof(struct DirEntry)": 118,
+        "offsetof(struct DirEntry, name)": 0,
+        "offsetof(struct DirEntry, kind)": 108,
+        "offsetof(struct DirEntry, size)": 112,
+        "offsetof(struct DirEntry, infoFlags)": 116,
+        "sizeof(struct DirBatch)": 120,
+        "offsetof(struct DirBatch, capacity)": 0,
+        "offsetof(struct DirBatch, entries)": 2,
+        "BasicApp size": 178,
+        "BasicDocument size": 46,
+        "BasicEditor size": 1664,
+        "Basic ready": 8,
+        "Basic work": 166,
+        "Basic document": 178,
+        "Basic caret": 224,
+        "Basic anchor": 228,
+        "Basic first": 232,
+        "Basic left": 234,
+        "Basic rows": 236,
+        "Basic columns": 238,
+        "Basic dirty": 244,
+        "Basic edits": 1576,
+        "Basic paintTurns": 1580
+      }
+    },
+    "raw": {
+      "record": "build/fastbasic-workbench/wb4-raw-layout/app.json",
+      "record_sha256": "a45d105fddb254463b6350b08630f59f25a22bb2983e8d690dab3c27d8c823e1",
+      "sha256": "0a53997d55412114c79b13c73acb4d6e587897ddc56757abdea33ef0d3eeaaa5",
+      "bytes": 54413,
+      "span": 84528,
+      "verified_banks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62
+      ],
+      "checked_layout": {
+        "sizeof(BYTE)": 1,
+        "sizeof(WORD)": 2,
+        "sizeof(LONG)": 4,
+        "sizeof(BPTR)": 4,
+        "sizeof(APTR)": 4,
+        "sizeof(void EXEC_PTR *)": 3,
+        "sizeof(struct Node)": 11,
+        "sizeof(struct List)": 11,
+        "sizeof(struct MinNode)": 6,
+        "sizeof(struct MinList)": 9,
+        "sizeof(struct MsgPort)": 27,
+        "offsetof(struct MsgPort, mp_Node)": 0,
+        "offsetof(struct MsgPort, mp_Flags)": 11,
+        "offsetof(struct MsgPort, mp_SigBit)": 12,
+        "offsetof(struct MsgPort, mp_SigTask)": 13,
+        "offsetof(struct MsgPort, mp_MsgList)": 16,
+        "sizeof(struct Message)": 16,
+        "offsetof(struct Message, mn_Node)": 0,
+        "offsetof(struct Message, mn_ReplyPort)": 11,
+        "offsetof(struct Message, mn_Length)": 14,
+        "sizeof(struct IORequest)": 26,
+        "offsetof(struct IORequest, io_Message)": 0,
+        "offsetof(struct IORequest, io_Device)": 16,
+        "offsetof(struct IORequest, io_Unit)": 19,
+        "offsetof(struct IORequest, io_Command)": 22,
+        "offsetof(struct IORequest, io_Flags)": 24,
+        "offsetof(struct IORequest, io_Error)": 25,
+        "sizeof(struct IOStdReq)": 42,
+        "offsetof(struct IOStdReq, io_Message)": 0,
+        "offsetof(struct IOStdReq, io_Device)": 16,
+        "offsetof(struct IOStdReq, io_Unit)": 19,
+        "offsetof(struct IOStdReq, io_Command)": 22,
+        "offsetof(struct IOStdReq, io_Flags)": 24,
+        "offsetof(struct IOStdReq, io_Error)": 25,
+        "offsetof(struct IOStdReq, io_Actual)": 26,
+        "offsetof(struct IOStdReq, io_Length)": 30,
+        "offsetof(struct IOStdReq, io_Data)": 34,
+        "offsetof(struct IOStdReq, io_Offset)": 38,
+        "sizeof(struct Task)": 62,
+        "offsetof(struct Task, tc_Node)": 0,
+        "offsetof(struct Task, tc_Flags)": 11,
+        "offsetof(struct Task, tc_State)": 12,
+        "offsetof(struct Task, tc_IDNestCnt)": 13,
+        "offsetof(struct Task, tc_TDNestCnt)": 14,
+        "offsetof(struct Task, tc_SigAlloc)": 16,
+        "offsetof(struct Task, tc_SigWait)": 20,
+        "offsetof(struct Task, tc_SigRecvd)": 24,
+        "offsetof(struct Task, tc_SigExcept)": 28,
+        "offsetof(struct Task, tc_SPReg)": 32,
+        "offsetof(struct Task, tc_SPLower)": 36,
+        "offsetof(struct Task, tc_SPUpper)": 40,
+        "offsetof(struct Task, tc_MemEntry)": 43,
+        "offsetof(struct Task, tc_UserData)": 54,
+        "offsetof(struct Task, tc_ExecPrivate)": 58,
+        "sizeof(struct ExecCreateTaskPacket)": 16,
+        "offsetof(struct ExecCreateTaskPacket, name)": 0,
+        "offsetof(struct ExecCreateTaskPacket, priority)": 4,
+        "offsetof(struct ExecCreateTaskPacket, entry)": 8,
+        "offsetof(struct ExecCreateTaskPacket, stackSize)": 12,
+        "sizeof(struct ExecDosWriteArgs)": 12,
+        "offsetof(struct ExecDosWriteArgs, file)": 0,
+        "offsetof(struct ExecDosWriteArgs, buffer)": 4,
+        "offsetof(struct ExecDosWriteArgs, length)": 8,
+        "sizeof(struct TaskLease)": 12,
+        "offsetof(struct TaskLease, task)": 0,
+        "offsetof(struct TaskLease, pad)": 3,
+        "offsetof(struct TaskLease, incarnation)": 4,
+        "offsetof(struct TaskLease, identity)": 8,
+        "offsetof(struct TaskLease, pad2)": 11,
+        "sizeof(struct ExecRetainTaskPacket)": 6,
+        "offsetof(struct ExecRetainTaskPacket, lease)": 3,
+        "sizeof(struct DateStamp)": 12,
+        "offsetof(struct DateStamp, ds_Days)": 0,
+        "offsetof(struct DateStamp, ds_Minute)": 4,
+        "offsetof(struct DateStamp, ds_Tick)": 8,
+        "sizeof(struct FileInfoBlock)": 260,
+        "offsetof(struct FileInfoBlock, fib_DiskKey)": 0,
+        "offsetof(struct FileInfoBlock, fib_DirEntryType)": 4,
+        "offsetof(struct FileInfoBlock, fib_FileName)": 8,
+        "offsetof(struct FileInfoBlock, fib_Protection)": 116,
+        "offsetof(struct FileInfoBlock, fib_EntryType)": 120,
+        "offsetof(struct FileInfoBlock, fib_Size)": 124,
+        "offsetof(struct FileInfoBlock, fib_NumBlocks)": 128,
+        "offsetof(struct FileInfoBlock, fib_Date)": 132,
+        "offsetof(struct FileInfoBlock, fib_Comment)": 144,
+        "offsetof(struct FileInfoBlock, fib_OwnerUID)": 224,
+        "offsetof(struct FileInfoBlock, fib_OwnerGID)": 226,
+        "offsetof(struct FileInfoBlock, fib_Reserved)": 228,
+        "offsetof(struct FileInfoBlock, fib_InfoFlags)": 258,
+        "sizeof(struct VolumeInfo)": 62,
+        "offsetof(struct VolumeInfo, name)": 0,
+        "offsetof(struct VolumeInfo, label)": 32,
+        "offsetof(struct VolumeInfo, format)": 41,
+        "offsetof(struct VolumeInfo, backend)": 42,
+        "offsetof(struct VolumeInfo, readOnly)": 43,
+        "offsetof(struct VolumeInfo, state)": 44,
+        "offsetof(struct VolumeInfo, flags)": 45,
+        "offsetof(struct VolumeInfo, unit)": 46,
+        "offsetof(struct VolumeInfo, sectorBytes)": 48,
+        "offsetof(struct VolumeInfo, totalBlocks)": 50,
+        "offsetof(struct VolumeInfo, freeBlocks)": 54,
+        "offsetof(struct VolumeInfo, allocatedBytes)": 58,
+        "sizeof(struct SioMountSpec)": 8,
+        "offsetof(struct SioMountSpec, drive)": 0,
+        "offsetof(struct SioMountSpec, format)": 2,
+        "offsetof(struct SioMountSpec, profile)": 4,
+        "offsetof(struct SioMountSpec, access)": 6,
+        "sizeof(struct DirEntry)": 118,
+        "offsetof(struct DirEntry, name)": 0,
+        "offsetof(struct DirEntry, kind)": 108,
+        "offsetof(struct DirEntry, size)": 112,
+        "offsetof(struct DirEntry, infoFlags)": 116,
+        "sizeof(struct DirBatch)": 120,
+        "offsetof(struct DirBatch, capacity)": 0,
+        "offsetof(struct DirBatch, entries)": 2,
+        "BasicApp size": 178,
+        "BasicDocument size": 46,
+        "BasicEditor size": 1664,
+        "Basic ready": 8,
+        "Basic work": 166,
+        "Basic document": 178,
+        "Basic caret": 224,
+        "Basic anchor": 228,
+        "Basic first": 232,
+        "Basic left": 234,
+        "Basic rows": 236,
+        "Basic columns": 238,
+        "Basic dirty": 244,
+        "Basic edits": 1576,
+        "Basic paintTurns": 1580
+      }
+    }
+  },
+  "assistance": {
+    "find_bytes": 80,
+    "replace_bytes": 80,
+    "comparisons_per_step": 1024,
+    "procedure_entries": 256,
+    "procedure_lines_per_step": 4,
+    "folding": "Presentation only; edits invalidate the index and folds",
+    "replacement": "One atomic undo group, subject to the existing 16 KiB undo budget"
+  },
+  "latency_scope": "Physical key submission through accepted edit/independently checked scanout, including debugger overhead; PAL"
+}

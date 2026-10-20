@@ -101,3 +101,36 @@ pixel cases, including minimum-size dirty close. A live Counter and native peer
 continue while editing and dialogs run; the maximum-gap delete reaches matching
 scanout in 57 PAL frames (1,140 ms including probes), with peer progress 151.
 Warm heap restoration, final AES detach, guards and ownership all pass.
+
+## WB4 — editing assistance
+
+[WB4 evidence](../development/fastbasic-workbench-wb4.json) records 506 emitted
+model checks with optimized code and another 506 with the assistance module
+compiled raw. Cases cover repeated-prefix searches, full source capacity,
+replacement admission and cancellation, atomic Undo/Redo, lexical precedence,
+automatic indentation, exact procedure names, index overflow and presentation-only
+folding. The shared editor layout is checked with raw/optimized C emission and
+relocation through every admitted bank. All 544 host checks pass.
+
+The model regression exposed a Calypsi 5.18 code-generation defect under pointer
+register pressure: arithmetic assigned between fields through a spilled huge
+pointer could read the old destination instead. Both raw and optimized affected
+listings and failed observations are retained under
+`build/fastbasic-workbench/wb4-calypsi-diagnostic/`. Staging the arithmetic through
+a volatile scalar preserves the required load/store boundary. The emitted
+replacement regressions exercise those expressions in both modes. This is a
+Calypsi issue; no Action compiler semantics or optimizer policy was changed.
+
+Physical replay waits for each accepted edit rather than treating a completed
+paint as evidence that queued input has drained. Its timing observations include
+the physical key intervals and debugger overhead. The editor regression passes
+28 native checks and 11 pixel cases; assistance/file replay passes 43 native
+checks and 23 source/pixel cases. Accepted keys take at most 14 PAL frames in
+these fixtures. Deferring procedure indexing behind pending repaint reduces the
+maximum-gap delete to matching scanout from 119 to 97 PAL frames (1,940 ms),
+below the 120-frame development bound; its native peer advances 129 times.
+All guards, warm heap restoration, AES detach and ownership checks pass.
+Source, menu, index and job state live in the APP or
+upper heap. Added reserved bank-zero bytes remain **0 fixed, 0 root/kernel,
+0 for each public Task and 0 idle**, including guards, alignment and unused
+capacity; the existing guest pool remains 544 bytes.

@@ -4,8 +4,8 @@
 [Development evidence](../history/fastbasic-workbench.md) ·
 [Implementation plan](../plans/fastbasic-workbench-implementation-plan.md)
 
-`C:BASIC.APP` is a loadable native GEM application. WB0–WB3 provide the document
-model, editable window and file transactions. The integrated compiler workflow
+`C:BASIC.APP` is a loadable native GEM application. WB0–WB4 provide the document
+model, editable window, file transactions and editing assistance. The integrated compiler workflow
 is in progress; the first complete edit/Run delivery is WB9.
 Debugging and native graphics are outside WB0–WB9.
 
@@ -69,3 +69,21 @@ again until the next file operation. The application processes retained
 AES policy messages before repairing or reopening an interrupted selector/alert.
 The three candidate allocations and the full snapshot capacity are charged to
 upper heap; no Task stack or direct-page reservation grows.
+
+## Editing assistance
+
+Find and Replace accept up to 80 source bytes in each field and compare ASCII
+letters without case. Find Next starts after the caret and wraps once. Replace
+All scans an immutable source generation, prepares the minimal changed span and
+commits it as one undo group. Capacity or undo-budget refusal leaves the source
+unchanged. Search steps perform at most 1,024 comparisons; replacement copying
+uses at most 1 KiB per step. Escape cancels pending work.
+
+Return copies the current line's leading spaces and tabs. Lexical colouring
+recognizes strings and comments before whole-word keywords; it does not change
+source spelling or validate program semantics. Procedure indexing scans at most
+four lines per step, retains up to 256 names of at most 31 bytes and distinguishes
+names such as `A` and `AB`. Incomplete procedures cannot fold. Folding hides the
+body and ENDPROC while retaining the PROC line. Navigation or a revealed caret
+unfolds its destination. Source edits invalidate folds and restart indexing;
+folding does not change saved bytes, selection offsets or document generations.

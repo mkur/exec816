@@ -10,9 +10,10 @@ struct BasicEditor {
     UWORD first,left,rows,columns;
     WORD damageFirst,damageEnd,dirty,publish,dragging,mx,my;
     WORD minw,minh,sliderSize,sliderPosition;
-    OBJECT menu[18];
+    OBJECT menu[48];
     char row[81],status[81];
     ULONG edits,paintTurns;
+    UBYTE colors[80];
 };
 /* Borrows an initialized document until AES detach completes. */
 WORD BasicEditorRun(struct BasicEditor *);

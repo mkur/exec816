@@ -84,7 +84,7 @@ def wb0(out, reuse=False,provider=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice',choices=('WB0','WB1','WB2','WB3'),required=True)
+    p.add_argument('--slice',choices=('WB0','WB1','WB2','WB3','WB4'),required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--from-build',action='store_true')
     p.add_argument('--provider',type=Path,default=ROOT/'build/fastbasic-workbench/wb0/c-image.json')
@@ -109,3 +109,16 @@ if __name__=='__main__':
         decisions(a.output.resolve()/'decisions',a.from_build)
         if not a.from_build:prepare(a.output.resolve()/'physical',a.provider.resolve())
         exercise(a.output.resolve()/'physical')
+    elif a.slice=='WB4':
+        from test_fastbasic_assist import run
+        from test_fastbasic_editor import logical
+        from workbench_interaction import build_editor,exercise
+        from workbench_files_interaction import prepare,exercise as assistance
+        run(a.output.resolve()/'model',a.from_build)
+        run(a.output.resolve()/'model-raw',a.from_build,True)
+        logical(a.output.resolve()/'logical',a.from_build)
+        if not a.from_build:
+            build_editor(a.output.resolve()/'editor',a.provider.resolve())
+            prepare(a.output.resolve()/'physical',a.provider.resolve())
+        exercise(a.output.resolve()/'editor')
+        assistance(a.output.resolve()/'physical',True)

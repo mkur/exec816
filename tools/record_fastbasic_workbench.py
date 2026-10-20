@@ -5,6 +5,12 @@ from pathlib import Path
 from native_program import ROOT,sha256,require
 
 SOURCES={
+    'WB4':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h','editor.c','editor.h','document.c','document.h','files.c','files.h','file-ui.c','file-ui.h','assist.c','assist.h','assist-ui.c','assist-ui.h')]+[
+        'tests/programs/basic_assist.c','tests/programs/basic_editor.c','tests/programs/basic_editor_layout.c',
+        'tests/programs/basic_interaction.act','tests/programs/basic_files_interaction.act',
+        'tools/test_fastbasic_assist.py','tools/test_fastbasic_editor.py','tools/workbench_pixels.py',
+        'tools/workbench_interaction.py','tools/workbench_files_interaction.py','tools/test_fastbasic_workbench.py',
+        'tools/build_demo.py','tools/build_gem_desktop.py','c/calypsi/file-list.c'],
     'WB0':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h')]+[
         'tests/programs/basic_lifecycle.act','tests/programs/basic_lifecycle.c',
         'tools/test_fastbasic_workbench.py','tools/test_basic_workbench_baseline.py',
@@ -33,7 +39,7 @@ def record(slice,paths,staged=False):
     for path in paths:
         path=path.resolve();r=json.loads(path.read_text());require(r.get('status')=='pass','Failed evidence: '+str(path))
         case=dict(path=str(path.relative_to(ROOT)),sha256=sha256(path),status='pass')
-        for key in ('checks','completed','machine','stack_usage','integration','runtime','free_upper_words','cases','latencies','peer_progress'):
+        for key in ('checks','completed','machine','stack_usage','integration','runtime','free_upper_words','cases','latencies','peer_progress','typing','typing_frames'):
             if key in r:
                 if key=='runtime':
                     case[key]={k:r[key][k] for k in ('status','guards','native_nmi_count','native_irq_count',
@@ -67,6 +73,20 @@ def record(slice,paths,staged=False):
         result['parent_desktop_warming']=dict(bytes=368,resolved_path=256,timer_records=112,
             lifetime='Existing live desktop context; freed with context/endpoint retirement')
         result['fastbasic_compilers']=json.loads((ROOT/'build/fastbasic/build.json').read_text())['compilers']
+    elif slice=='WB4':
+        applications={}
+        for mode,directory in [('optimized','wb4-physical/app'),('raw','wb4-raw-layout')]:
+            path=ROOT/'build/fastbasic-workbench'/directory/'app.json';app=json.loads(path.read_text())
+            for name,digest in app['inputs'].items():
+                require(inputs[str(Path(name).relative_to(ROOT))]==digest,'APP/staged WB4 source differs: '+name)
+            applications[mode]=dict(record=str(path.relative_to(ROOT)),record_sha256=sha256(path),
+                sha256=app['sha256'],bytes=app['bytes'],span=app['span'],verified_banks=app['verified_banks'],
+                checked_layout=app['image']['provenance']['checked_layout'])
+        result['applications']=applications
+        result['assistance']=dict(find_bytes=80,replace_bytes=80,comparisons_per_step=1024,procedure_entries=256,
+            procedure_lines_per_step=4,folding='Presentation only; edits invalidate the index and folds',
+            replacement='One atomic undo group, subject to the existing 16 KiB undo budget')
+        result['latency_scope']='Physical key submission through accepted edit/independently checked scanout, including debugger overhead; PAL'
     elif slice=='WB3':
         path=ROOT/'build/fastbasic-workbench/wb3-physical/app/app.json'
         app=json.loads(path.read_text())
