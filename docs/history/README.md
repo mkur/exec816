@@ -1,5 +1,8 @@
 # Historical records
 
+- [QED editing](qed-editing.md): incremental QE1–QE7 editing, document
+  replacement, failure and stack development work; reliable saving follows.
+
 - [QED application startup](qed-startup.md): QS1–QS5 resource, real editor
   startup, lifecycle and GUI-stack development evidence.
 

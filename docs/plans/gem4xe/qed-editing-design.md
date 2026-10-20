@@ -5,7 +5,8 @@
 [Implementation plan](qed-editing-implementation-plan.md) ·
 [Startup evidence](../../history/qed-startup.md)
 
-Status: proposed strategy step 4; implementation has not started. The gate is
+Status: strategy step 4 in progress; QE1 is implemented with
+[development evidence](../../history/qed-editing.md). QE2–QE7 remain. The gate is
 an actual loaded QED APP opening one document, editing and navigating its text,
 selecting, copying/pasting, undoing and finding, with correct redraw and
 cancellable dialogs. New/Open must retain the current document on failure or
@@ -264,15 +265,21 @@ successful persisted output is not its oracle.
 
 ## Memory, stack and evidence
 
-Keep QED's declared 2,560-byte pool, 256-byte interrupt reserve and 128-byte
-headroom requirement. The startup source bound and 768-byte continuation
+Use QED's declared 2,560-byte pool as the starting point, retaining the 256-byte
+interrupt reserve and 128-byte headroom requirement. The user confirmed on
+2026-10-20 that a larger stack is acceptable when needed and bank-zero space
+permits it. Size any increase from emitted frames and complete workflow
+measurements, update ordinary image admission and the shared pool budget, and
+report the complete reservation change including guards, alignment and unused
+capacity. The startup source bound and 768-byte continuation
 allowance are conditional for the newly reached paths. Reconcile direct and
 indirect source frames and observe full emitted chains for editing, selection,
 clipboard/Undo, native forms/selector/alerts, reading and cancellation. Attribute
 samples to the actual Process lifetime, physical pool and DP, including emitted
 frame-reservation sites. A watermark or entry-only observation is insufficient.
-An exceeded cap requires a fit decision before advancing, not a silent stack
-increase or dependence on the largest currently free pool.
+An exceeded cap requires a measured fit decision before advancing. A justified
+stack increase is permitted; keep admission explicit rather than depending on
+which larger pool happens to be free.
 
 Retain the step 2 private/provider growth allowances against their frozen
 baseline; use QS5 as the immediate change comparison. Charge new state,

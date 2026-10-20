@@ -10,8 +10,9 @@ selection and the existing Exec toolchain/GUI inputs separately.
 
 This is an input baseline for the native Exec port. The donor does not pin its
 external cflib checkout; this pair is the fixed source input. The native work below records compilation and focused execution separately.
-Strategy step 3 now builds a runnable development APP and exercises real startup;
-editing and saving retain later gates. The donor's SDK, startup and G4A build are references,
+Strategy step 3 builds a runnable development APP and exercises real startup;
+the editing slices extend that baseline, while reliable saving retains its later gate.
+The donor's SDK, startup and G4A build are references,
 not the Exec build recipe. No donor sources are vendored by this baseline.
 
 ## Restore and verify
@@ -87,6 +88,26 @@ The body passed to `QedRuntimeRun` must retire GUI borrowers before returning.
 The Stop fixture exercises a borrowed allocated title, cooperative native
 `RequestStop`, window retirement, heap cleanup and ordinary collection; no
 private Task exit or donor board termination is used.
+
+## Editing development checks
+
+```sh
+python3 tools/test_qed_editing.py --group core --output build/qed-editing/core
+python3 tools/test_qed_editing.py --output build/qed-editing/editor
+```
+
+QE1 enables keyboard editing and Cancel-default Discard/Cancel retirement.
+The core probe exercises actual donor text routines at the line limit and
+under upper-heap exhaustion. The loaded editor uses physical keys, native
+dialogs and an independent text/pixel observer; its allocation wrapper refuses
+selected acquisitions and forwards every successful call to the actual allocator.
+The supervisor checks normal collection, unload and exact heap reuse.
+See the [editing record](../../../../docs/history/qed-editing.md) for the
+implemented slice, evidence and remaining commands. Save/Save As remain disabled.
+
+`--from-build` rebuilds the APP against an unchanged emitted native fixture.
+`--reuse-app` additionally verifies recorded APP input hashes for observer-only
+reruns. Omit both after changing provider or native fixture inputs.
 
 ## Complete retained-source layout
 
@@ -167,9 +188,9 @@ The source frame tool accepts `--output` to preserve earlier ledgers.
 The [startup work](../../../../docs/history/qed-startup.md) has adapted the
 resources and fixed-font source and implemented the general input snapshot.
 The complete graph links without analysis traps; the catalog records each
-former binding's disposition. The analysis marker still prevents packaging
-until the real startup/close slice. Future GUI chains must establish the continuation cap;
-resource/menu adaptation and editing/saving are later gates. Proof fixtures and
+former binding's disposition. Analysis mode retains its packaging marker;
+ordinary executable mode supplies the implemented startup and editing slices.
+Future GUI chains must establish the continuation cap. Proof fixtures and
 analysis artifacts remain outside the ZIP.
 
 ## Notices
@@ -227,7 +248,7 @@ The [current reconciled record](../../../../docs/development/qed-startup-qs5.jso
 identifies the matched ABI 25 callers, sources, runtime, ROM/emulator and exact
 standard/GEM package checks. Earlier QF/QS records retain their historical scope.
 
-Document pointer selection still reaches donor MU_M2 waits, which the native
-wait contract rejects. Treat document pointer interaction as unsupported until
-step 4 adapts those waits. Startup Close/Quit/Stop evidence does not establish
+QE1 detaches the document pointer callback and removes its donor MU_M2 wait.
+Document pointer interaction remains disabled until QE3 supplies the outer-event
+selection protocol. Startup Close/Quit/Stop evidence does not establish
 New/Open policy, text editing, selection, dialogs or saved-file behavior.

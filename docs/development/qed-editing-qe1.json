@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "slice": "QE1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "audit": {
+    "path": "build/qed-editing/qe1-baseline.json",
+    "sha256": "f20249f15812008854abce542755b0ba7120f70a020dbecf21508afaf78a9d11",
+    "auditor_sha256": "cff6d047bdfb64867d323e41886358aaae169fd14300faeafd78ea2f7ee37062",
+    "provider_identity": "ae117e8bf0de199dccf91b95e538de417c76ff989d8739b4a0ebb961c1ea957c"
+  },
+  "source_pins": {
+    "qed": {
+      "revision": "454beb35fccd72c15a8494431f6637cd0cb553c7",
+      "tree": "842d0ed962f431b98fbba1a7038020b5805338bc"
+    },
+    "cflib": {
+      "revision": "ce57817c3f68c7d346d1081768505e81acaee807",
+      "tree": "aa00256dc44096969025e2a1e1a03dcfa738547c"
+    }
+  },
+  "host_checks": {
+    "path": "build/qed-editing/qe1-host.log",
+    "sha256": "20f8467a63466c3c8ba3eb42b210c98350987e6b9f0e4e8b9f02bbac99ab56a9",
+    "tests": 529,
+    "expected_skips": 4
+  },
+  "executable": {
+    "path": "build/qed-editing/qe1-app",
+    "sha256": "c507dc7b3402f31598b98df94d0cf9ce858eafcf4bd1d07d811778dff8ca7478",
+    "layout": {
+      "code_bytes": 117580,
+      "initialized_bytes": 1399,
+      "bss_bytes": 27364,
+      "import_thunk_bytes": 400,
+      "span_bytes": 183116,
+      "image_holes_bytes": 36773,
+      "serialized_bytes_if_executable": 132731,
+      "relocation_count": 3214,
+      "heap_alignment_backing_bytes": 248652,
+      "future_full_profile_backing_bytes": 393216,
+      "private_allowances": {
+        "code_bytes": 32768,
+        "data_bss_bytes": 16384
+      },
+      "container_metadata_allowance_bytes": 16384,
+      "resident_provider_allowances": {
+        "code_bytes": 16384,
+        "data_bss_bytes": 16384,
+        "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+        "table_bytes": 4096
+      }
+    }
+  },
+  "frame_ledger": {
+    "source_chain_bytes": 1064,
+    "continuation_cap_bytes": 768,
+    "interrupt_reserve_bytes": 256,
+    "required_headroom_bytes": 128,
+    "admission_bytes": 2560,
+    "margin_bytes": 344
+  },
+  "growth_from_QS5": {
+    "private": {
+      "code_bytes": -21046,
+      "data_bss_bytes": 813,
+      "metadata_bytes": -1448
+    },
+    "provider": {
+      "code_bytes": 0,
+      "table_bytes": 0,
+      "data_bss_bytes": 0
+    }
+  },
+  "provider_remaining_allowances": {
+    "code_bytes": 15404,
+    "table_bytes": 4096,
+    "data_bss_bytes": 16384
+  },
+  "executed": [
+    {
+      "path": "build/qed-editing/qe1",
+      "results_sha256": "eb1e3d2821afd3bc91cd6d4e7eed6ca265df78d9f91f62329f565ac22ad3279e",
+      "completed": [
+        4
+      ],
+      "checks": [
+        7867
+      ],
+      "snapshots": [
+        "empty",
+        "insert",
+        "split",
+        "join",
+        "allocation-rollback",
+        "split-allocation-rollback",
+        "literal-tab",
+        "tab-delete",
+        "save-disabled",
+        "close-cancel",
+        "empty",
+        "native-up",
+        "native-right",
+        "overwrite",
+        "forward-delete-join",
+        "quit-cancel",
+        "empty",
+        "clean-shortcut",
+        "empty",
+        "stop-dirty",
+        "stop-cancel"
+      ],
+      "minimum_headroom": 1334
+    },
+    {
+      "path": "build/qed-editing/qe1-core",
+      "results_sha256": "dcf6a54a39e96db11b5e97783a37b1aa7197c326b59c5e076746eb9fd0272a3c",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 741
+    }
+  ],
+  "private_heap": {
+    "peak_backing_bytes": 53351,
+    "basis": "Private allocation headers included; underlying allocator rounding and native GUI owners charged separately"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Complete Task-pool and region maps equal QS5; guards, alignment and slack included"
+  },
+  "recorder_sha256": "d5b4f1c2526b69f6da26f404ebcf20155a4d14b006c81296bd687ca66a4ff5e4"
+}

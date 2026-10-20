@@ -4,7 +4,8 @@ The [QED editing design](qed-editing-design.md) and
 [QE1–QE7 implementation plan](qed-editing-implementation-plan.md) propose
 strategy step 4: native keyboard/selection, redraw and long-line navigation,
 internal clipboard/Undo, cancellable Find/dialogs and transactional
-single-document Open/New. Implementation is pending. Save/Save As and the
+single-document Open/New. QE1 keyboard editing and safe retirement pass their
+[development checks](../../history/qed-editing.md); QE2–QE7 remain. Save/Save As and the
 complete Save/Discard/Cancel workflow remain step 5.
 
 The [QED startup design](qed-startup-design.md) and

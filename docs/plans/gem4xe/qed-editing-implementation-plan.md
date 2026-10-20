@@ -3,7 +3,9 @@
 [GEM plans](README.md) · [Editing design](qed-editing-design.md) ·
 [Strategy](qed-port-strategy.md) · [Startup baseline](../../history/qed-startup.md)
 
-Status: proposed strategy step 4; QE1–QE7 are pending. Implement the
+Status: strategy step 4 in progress; QE1 passes its development checks,
+recorded in the [editing history](../../history/qed-editing.md). QE2–QE7 are
+pending. Implement the
 [editing design](qed-editing-design.md) in the following executable slices.
 Each slice builds on the ordinary loaded QED APP and commits after its selected
 development checks. Record a design amendment before relying on a measured
@@ -35,6 +37,7 @@ departure. Reliable saving remains strategy step 5.
 - Report code/data/container/provider changes against QS5 and remaining frozen
   allowances. Report reserved bank-zero delta as fixed / per-public-Task /
   private idle, including guards, alignment and unused capacity. Target **0/0/0**;
+  the user permits a measured stack increase when needed, as recorded in the design.
   charge upper-image, live heap, backing/rounding and transient peaks separately.
 - Run the host suite and affected generator checks for code changes, plus the
   selected emitted regressions. Documentation-only follow-ups need content and
