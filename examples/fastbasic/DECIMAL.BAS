@@ -1,0 +1,3 @@
+? "ENTER A DECIMAL";
+INPUT A%
+? A%*2

@@ -1,9 +1,10 @@
-# FastBasic integer target
+# FastBasic source target
 
 [Reference index](README.md) · [Programming guide](../guides/fastbasic.md) ·
-[Implementation record](../history/fastbasic-integer.md)
+[Integer record](../history/fastbasic-integer.md) ·
+[Floating-point record](../history/fastbasic-floating-point.md)
 
-FastBasic 4.7's 6502 integer compiler and runtime run in emulation mode as
+FastBasic 4.7's 6502 integer and floating-point compilers/runtimes run in emulation mode as
 ordinary Exec Processes. Build with the shared guest bridge enabled (`--sdx`);
 the demo's `--fastbasic` option also installs the compiler and examples.
 This source target has its own format and native services. The exact-binary
@@ -42,6 +43,11 @@ native cause. Parse errors use 306, unsupported services 307, allocation errors
 103 and BREAK 304. Invalid argument quoting/length reports 115. Close and flush
 errors are preserved when no earlier fatal error exists. Compilation writes
 directly to the chosen output; a failed write can leave a partial file.
+The compiler requires EOF within its remaining source-read buffer. An input
+that fills that buffer is rejected with 20/306 (`File error: 1`); source and
+compilation workspace share the guest bank. A source that fits may still exhaust
+parser/runtime allocation, reported as 103. Observed boundary sizes belong to
+the build's execution record rather than a general document-size guarantee.
 BREAK before the guest starts can cancel shell loading with 10/304. A running
 BASIC Process returns 20/304 through the ordinary child-result path.
 
@@ -50,15 +56,55 @@ VBLANK intervals through native cancellable delay. RAND uses per-invocation
 xorshift32 state, initially `$6D2B79F5`, reduced modulo the unsigned bound;
 RAND(0) returns zero. The sequence differs from Atari hardware RANDOM.
 
-The integer target rejects floating-point syntax, external USR assembly calls,
+FBCI rejects floating-point syntax. Both language variants reject external USR assembly calls,
 Atari graphics, sound, DLI, player/missile, raw SIO and FujiNet statements at
 compile time. The integrated editor is not included; use EDX. This profile is
 for rebuilt programs, not existing Atari XEX or arbitrary machine-code payloads.
 
+## Floating point
+
+FBC accepts the donor floating-point grammar, including `%` scalars/arrays,
+mixed expressions, comparisons, INT, VAL/STR$, INPUT/PRINT, powers, ABS/SGN,
+SQR, LOG/LOG10, EXP/EXP10, SIN/COS/ATN and DEG/RAD. Procedure parameters retain
+the donor integer convention; pass addresses to operate on floats in procedures.
+Integer FBCI remains available and uses the same current platform services.
+
+Numbers occupy six bytes: sign in bit 7 of the first byte, a biased base-100
+exponent in its low seven bits, followed by five packed-BCD mantissa bytes.
+Normalized values have nine or ten significant decimal digits, depending on
+exponent parity. Zero has exponent zero. The selected private Altirra provider
+supports positive normalized values from `1E-98` through `9.999999999E97`,
+and their negatives; smaller results underflow to zero. There are no IEEE
+NaN/infinity values or an IEEE rounding-mode interface.
+
+Literal conversion in both compilers and FP VAL uses the selected AFP decimal
+digit rules, truncating excess input precision. For example `1.234567895`
+becomes `1.23456789`. This deliberately fixes the donor host compiler's
+double-based rounding disagreement with its on-machine parser. Arithmetic and
+formatting follow the pinned math package; they do not promise bit identity
+with every Atari ROM. INT rounds magnitude and reapplies sign (`-1.5` becomes
+`-2`); converted magnitudes at least 32768 report error 3, including the
+negative boundary. Arithmetic/domain/range errors record BASIC ERR 3;
+invalid FP VAL records 18. These handled BASIC errors do not by themselves
+fail the Process. Capture ERR() immediately: subsequent console/file I/O can
+replace it. Native fatal allocation error 103 remains separate.
+
+Transcendental and noninteger-power results are approximate. Development cases
+check `4.0^0.5` against 2 with absolute tolerance `1E-7` (the selected provider
+returns `2.00000002`), plus exact selected zero/one, DEG/RAD and square-root
+controls. These case tolerances are not uniform accuracy bounds for all inputs.
+
+FP RND() uses the same per-invocation xorshift32 state and seed as integer RAND,
+advances it once, and divides the unsigned word by 4,294,967,296 in private FP
+code. It returns a value in `[0,1)`; interleaved calls share the sequence.
+`%TIME` converts one coherent public VBLANK snapshot, truncated to 24 bits.
+It counts VBLANK intervals and wraps at 24 bits; integer TIME uses the low 16.
+Neither operation reads Atari hardware or RTCLOK.
+
 ## Executable and memory contract
 
 [abi/fastbasic.json](../../abi/fastbasic.json) defines the `FB65` version 1,
-target `$4701` container. All words are little endian:
+target `$4702` container. All words are little endian:
 
 | Offset | Field |
 | --- | --- |
@@ -82,17 +128,23 @@ to ensure alignment, including unused capacity. Native session and file-image
 storage are additional upper-RAM costs; timer resources are allocated on demand.
 The per-instance saved page-one image and service buffers are in that session.
 
-The linker reserves D offsets `$80–EF`; current FBCI uses `$80–B8`. PEEK/POKE
+The linker reserves D offsets `$80–D3`; math registers and conversion state own
+`$D4–FF`. FP accesses that need absolute,Y use five native-initialized long
+pointers at D `$70–7E`, inside the existing full guest page. PEEK/POKE
 and DPEEK/DPOKE addresses 0–255 alias the instance's relocated D; other 16-bit
 addresses name its private bank. The `$FF` word boundary accesses private bank
 `$0100` for the second byte. MOVE addresses refer to the private bank, so copying
 the virtual D aliases with MOVE is unsupported. PEEK/POKE of nominal hardware
 addresses accesses private RAM. This convention provides no memory protection.
+The FP adaptation uses 65816 long-indirect instructions in emulation mode to
+reach that D state; it is not an executable for a plain 6502 machine.
 
-Private low memory contains stack-variable arrays at `$0480–04CF`, numeric and
+Private low memory contains integer stack-variable arrays at `$0480–04CF`,
+an eight-entry FP expression stack at `$04D0–04FF`, numeric and
 input scratch near `$057F–067F`, argument scratch at `$0800–08FF` and CIO records
-at `$0340`. Programs must respect compiler/runtime-owned storage. Services at
-`$F800–F95F` and the existing bridge intervals are reserved. No executable code
+at `$0340`. Time/random snapshots use four bytes at `$0700–0703`. Programs must
+respect compiler/runtime-owned storage. Services at
+`$F800–F99F` and the existing bridge intervals are reserved. No executable code
 is installed in bank zero to reproduce the donor's zero-page dispatch.
 
 ## Scheduling and ownership
@@ -105,8 +157,9 @@ replaced at source level. Startup does not close borrowed streams or initialize
 sound hardware. The command-line compiler uses `cmdmenu.asm`; the donor IDE's
 `compile.asm` and BRKKY ownership are outside this build.
 
-Native checkpoints occur every 64 dispatches, every 256 memory-copy/fill bytes
-and per parser line. The existing guest bridge retires the guest activation
+Native checkpoints occur every 64 dispatches, every 256 memory-copy/fill bytes,
+per parser line and every two completed FP math operations. The latter preserve
+carry/registers and run with decimal mode clear. The existing guest bridge retires the guest activation
 before native blocking I/O or scheduling. Its SWITCHING/OS_BUSY protocol,
 complete saved context and IRQ/NMI rules remain authoritative. No new kernel
 gateway or driver-private service is added; Exec still uses COP #$50.

@@ -1,4 +1,4 @@
-# Writing integer BASIC programs
+# Writing BASIC programs
 
 [Guide index](README.md) · [Target contract](../reference/fastbasic.md) ·
 [Build instructions](../../ports/fastbasic/README.md)
@@ -32,7 +32,7 @@ accepts LF, CRLF, CR and a missing final EOL. With no arguments it prompts for
 source and output names. Quote filenames containing spaces. Each argument is
 limited to 255 bytes; file paths are limited to 254.
 
-FBCI compiles on the Atari and writes a new Exec-loadable file. You can use an
+FBCI and FBC compile on the Atari and write new Exec-loadable files. You can use an
 optional `.COM` suffix when launching it. Literal names take priority, so a
 HELLO.COM in the current directory precedes the native HELLO in C:. `C:HELLO`
 continues to run that native example. A parse error reports line and column;
@@ -43,7 +43,20 @@ to try BREAK on a loop with no I/O. Redirection, including `HELLO >WORK:OUT.TXT`
 uses ordinary Process streams. Output files retain ATASCII `$9B` line endings.
 Keep a backup of WORK:; the supplied disk is disposable.
 
-This first delivery supports integer/string programs and native files. Floating
-point and the integrated IDE remain follow-ons. Hardware-dependent PEEK/POKE,
+For floating point, use FBC and the `%` variable suffix:
+
+```text
+EDX CALC.BAS
+FBC CALC.BAS CALC.COM
+CALC
+```
+
+The supplied CALC prints 3.75, 9 and 1. Compile DECIMAL.BAS with FBC to try
+decimal INPUT. Bare FBC prompts for source/output names, like FBCI. The smaller
+FBCI compiler accepts integer/string programs; FBC adds six-byte Atari numbers,
+arrays, conversions and math functions. Both use the same console/file backend.
+Rebuild older `$4701` executables; the current target identity is `$4702`.
+
+The integrated IDE remains a follow-on. Hardware-dependent PEEK/POKE,
 Atari graphics/sound and external USR routines are outside this target.
 See the target contract for KEY(), timing and memory differences.

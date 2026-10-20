@@ -1,5 +1,14 @@
 # GEM as a client of an Exec-like kernel
 
+The [FastBasic GEM workbench design](../fastbasic-workbench-design.md) proposes
+a loadable native editor and Run controller using hosted AES/VDI, with owned
+compiler/program Processes, source debugging and native graphics. It identifies
+the reusable child-stream, console-window and event-wait interfaces required
+before the integrated workflow can be delivered.
+The [WB0–WB14 plan](../fastbasic-workbench-implementation-plan.md) makes those
+interfaces executable before IDE integration and separates editor/Run,
+debugger, graphics and final-package acceptance.
+
 The [native drag/UPDATE plan](native-drag-update-plan.md) fixes periodic clients
 hiding a held window outline: queued acquisitions must let an already captured
 native gesture continue while active lock ownership keeps its existing

@@ -1,0 +1,26 @@
+X%=1E-98
+? X%
+X%=VAL("1E-99")
+? X%
+X%=VAL("1E98")
+? ERR()
+X%=SQR(-1.0)
+? ERR()
+X%=LOG(0.0)
+? ERR()
+X%=9.999999999E97
+? X%
+X%=X%*100.0
+? ERR()
+? STR$(0.0)
+X%=-32768.0
+I=INT(X%)
+E=ERR()
+? I;",";E
+? INT(-0.5)
+? INT(0.5)
+R%=RND()
+IF R%<>0.0 THEN ? "BAD ZERO"
+R%=RND()
+IF R%>=1.0 OR R%<0.9999999990 THEN ? "BAD MAX"
+? "ENDPOINTS OK"

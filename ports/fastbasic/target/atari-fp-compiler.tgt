@@ -1,0 +1,5 @@
+syntax a800.syn basic-internal.syn fileio.syn float.syn
+config fastbasic.cfg
+ca65 -tatari
+library fastbasic-fp.lib
+extension .com

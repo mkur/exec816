@@ -218,6 +218,12 @@ class Sessions:
             if not s.number(view+c['PRESENTATION_VISIBLE'],1):continue
             instance=s.number(entry+c['WINDOW_INSTANCE'],3)
             waits.extend([f'db(${instance+c["INSTANCE_DIRTYROWS"]:x})=0',
+                          f'db(${instance+c["INSTANCE_OPERATION"]:x})={c["OP_IDLE"]}',
+                          f'dw(${instance+c["INSTANCE_WRITE"]:x})=0',
+                          f'db(${instance+c["INSTANCE_WRITE"]+2:x})=0',
+                          f'db(${view+c["PRESENTATION_SCROLLSTATE"]:x})=0',
+                          f'dw(${view+c["PRESENTATION_PRESENTEDGENERATION"]:x})=dw(${instance+c["INSTANCE_GENERATION"]:x})',
+                          f'dw(${view+c["PRESENTATION_PRESENTEDGENERATION"]+2:x})=dw(${instance+c["INSTANCE_GENERATION"]+2:x})',
                           f'dw(${view+c["PRESENTATION_INDEX"]:x})=dw(${instance+c["INSTANCE_LINESTART"]:x})+dw(${instance+c["INSTANCE_COLUMN"]:x})'])
             visible.append((instance,view))
         s.rendezvous('&'.join('('+item+')' for item in waits))
@@ -248,7 +254,20 @@ class Sessions:
             folder=self.out/f'pixels-{len(self.screens)}';folder.mkdir(exist_ok=True)
             pixels(s.b,folder,raster.packed())
         else:
-            require(s.far(s.saved['screen'],960)==expected,'Physical session cells/caret differ: '+label)
+            actual=s.far(s.saved['screen'],960)
+            if actual!=expected:
+                import json
+                self.out.mkdir(parents=True,exist_ok=True)
+                (self.out/'screen-difference.json').write_text(json.dumps(dict(label=label,
+                    instances=[dict(instance=instance,view=view,
+                        dirty=s.number(instance+c['INSTANCE_DIRTYROWS'],1),
+                        writing=s.number(instance+c['INSTANCE_WRITE'],3),
+                        generation=s.number(instance+c['INSTANCE_GENERATION'],4),
+                        presented=s.number(view+c['PRESENTATION_PRESENTEDGENERATION'],4))
+                               for instance,view in visible],
+                    differences=[dict(index=i,actual=a,expected=e) for i,(a,e) in
+                                 enumerate(zip(actual,expected)) if a!=e]),indent=2)+'\n')
+            require(actual==expected,'Physical session cells/caret differ: '+label)
         self.screens.append(dict(session=self.identity,label=label,frame=s.b.eval_expr('@frame')))
         return read_cells(s.far,s.saved['top'])
 

@@ -1,0 +1,43 @@
+DIM A%(3)
+A%(0)=1.25
+A%(1)=2.5
+A%(2)=A%(0)+A%(1)
+? A%(2)
+? A%(1)
+X%=23.5
+FOR I=0 TO 5
+ ? PEEK(ADR(X%)+I)
+NEXT
+? INT(-1.5)
+? INT(32767.0)
+? ABS(-2.25)
+? SGN(-2.25)
+? 2.0^3
+? 4.0^0.5
+? EXP(0.0)
+? EXP10(2.0)
+? LOG(1.0)
+? LOG10(100.0)
+RAD
+? SIN(0.0)
+? COS(0.0)
+? ATN(0.0)
+DEG
+? SIN(90.0)
+? INT(ATN(1.0))
+X%=1.0/0.0
+? ERR()
+X%=VAL("XYZ")+0.0
+? ERR()
+? 1.25+2.5
+X%=1.5
+EXEC Work ADR(X%)
+PROC Work P
+ ? %(P)*2
+ENDPROC
+X%=1.234567895
+Y%=VAL("1.234567895")
+FOR I=0 TO 5
+ IF PEEK(ADR(X%)+I)<>PEEK(ADR(Y%)+I) THEN ? "BAD LITERAL"
+NEXT
+? X%

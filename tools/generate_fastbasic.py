@@ -9,6 +9,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def products():
     abi = json.loads((ROOT/'abi/fastbasic.json').read_text())
+    events = list(abi['services'].values())
+    if events != list(range(events[0], events[0]+len(events))):
+        raise ValueError('FastBasic service events must be unique and contiguous')
+    end = abi['service_base']+len(events)*abi['service_stride']
+    if abi['service_base'] < abi['limit'] or end > 0xfa00:
+        raise ValueError('FastBasic veneers overlap guest workspace or shared gates')
+    layout = abi['guest_layout']
+    if not (layout['ZP_LIMIT'] == layout['MATH_ZP_START'] < layout['MATH_ZP_LIMIT'] == 256
+            and layout['MATH_POINTERS']+layout['MATH_POINTER_COUNT']*3 <= layout['ZP_START']):
+        raise ValueError('Overlapping FastBasic direct-page regions')
     constants = dict(FILE_MAGIC=int.from_bytes(abi['magic'].encode(), 'little'),
                      VERSION=abi['version'], TARGET=abi['target'],
                      HEADER_BYTES=abi['header_bytes'], LOAD=abi['load'],

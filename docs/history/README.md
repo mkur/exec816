@@ -1,5 +1,9 @@
 # Historical records
 
+- [FastBasic floating-point delivery](fastbasic-floating-point.md): private
+  decimal math, on-machine FBC, literal agreement, bounded math checkpoints,
+  numeric/context/coexistence checks and both tested programming packages.
+
 - [FastBasic integer delivery](fastbasic-integer.md): source-built 6502 runtime,
   on-machine FBCI, native files/console, two-guest coexistence and packaged
   EDX → compile → run workflows; zero added bank-zero reservations.

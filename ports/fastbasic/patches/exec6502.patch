@@ -1,8 +1,17 @@
 diff --git a/Makefile b/Makefile
-index 8e55af5..beb0271 100644
+index 8e55af5..6a63810 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -608,15 +608,7 @@ SYNTAX_PARSER_SRC=\
+@@ -277,6 +277,8 @@ A800_AS_SRC=\
+ 
+ # FP Interpreter ASM files
+ A800_FP_AS_SRC=\
++    src/mathpack.asm\
++    src/fp_snapshot.asm\
+     $(A800_AS_SRC)\
+     src/interp/atarifp/fp_coef.asm\
+     src/interp/atarifp/fp_abs.asm\
+@@ -608,21 +610,12 @@ SYNTAX_PARSER_SRC=\
  	syntp.cc\
  
  # Syntax files for integer version
@@ -19,7 +28,13 @@ index 8e55af5..beb0271 100644
  
  # Syntax files for floating-point version
  SYNTAX_FP=\
-@@ -700,6 +692,8 @@ BUILD_FOLDERS=\
+ 	$(SYNTAX_INT)\
+ 	src/syntax/float.syn\
+-	src/syntax/fujinet.syn\
+ 
+ # Host compiler
+ COMPILER_HOST=\
+@@ -700,6 +693,10 @@ BUILD_FOLDERS=\
   build\
  
  
@@ -28,11 +43,147 @@ index 8e55af5..beb0271 100644
  include tests.mak
  include rules.mak
  include deps.mak
++
++build/gen/fp/cmdline-vers.asm: FB_FP_FLAGS += -t:atari-fp-compiler
 diff --git a/cc65/asminc/atari.inc b/cc65/asminc/atari.inc
-index 7c46b32..faa41f9 100644
+index 7c46b32..4b8a471 100644
 --- a/cc65/asminc/atari.inc
 +++ b/cc65/asminc/atari.inc
-@@ -1014,7 +1014,7 @@ CIOV_org    = $E456     ;vector to CIO
+@@ -964,28 +964,133 @@ PBCTL   = $D303         ;port B control
+ ; Floating Point Package Address Equates
+ ;-------------------------------------------------------------------------
+ 
++.ifdef FASTBASIC_FP
++.import fb_afp
++AFP=fb_afp
++.else
+ AFP     = $D800         ;convert ASCII to floating point
++.endif
++.ifdef FASTBASIC_FP
++.import fb_fasc
++FASC=fb_fasc
++.else
+ FASC    = $D8E6         ;convert floating point to ASCII
++.endif
++.ifdef FASTBASIC_FP
++.import fb_ifp
++IFP=fb_ifp
++.else
+ IFP     = $D9AA         ;convert integer to floating point
++.endif
++.ifdef FASTBASIC_FP
++.import fb_fpi
++FPI=fb_fpi
++.else
+ FPI     = $D9D2         ;convert floating point to integer
++.endif
++.ifdef FASTBASIC_FP
++.import fb_zfr0
++ZFR0=fb_zfr0
++.else
+ ZFR0    = $DA44         ;zero FR0
++.endif
++.ifdef FASTBASIC_FP
++.import fb_zf1
++ZF1=fb_zf1
++.else
+ ZF1     = $DA46         ;zero floating point number
++.endif
++.ifdef FASTBASIC_FP
++.import fb_fsub
++FSUB=fb_fsub
++.else
+ FSUB    = $DA60         ;subtract floating point numbers
++.endif
++.ifdef FASTBASIC_FP
++.import fb_fadd
++FADD=fb_fadd
++.else
+ FADD    = $DA66         ;add floating point numbers
++.endif
++.ifdef FASTBASIC_FP
++.import fb_fmul
++FMUL=fb_fmul
++.else
+ FMUL    = $DADB         ;multiply floating point numbers
++.endif
++.ifdef FASTBASIC_FP
++.import fb_fdiv
++FDIV=fb_fdiv
++.else
+ FDIV    = $DB28         ;divide floating point numbers
++.endif
++.ifdef FASTBASIC_FP
++.import fb_plyevl
++PLYEVL=fb_plyevl
++.else
+ PLYEVL  = $DD40         ;evaluate floating point polynomial
++.endif
++.ifdef FASTBASIC_FP
++.import fb_fld0r
++FLD0R=fb_fld0r
++.else
+ FLD0R   = $DD89         ;load floating point number
++.endif
++.ifdef FASTBASIC_FP
++.import fb_fld0p
++FLD0P=fb_fld0p
++.else
+ FLD0P   = $DD8D         ;load floating point number
++.endif
++.ifdef FASTBASIC_FP
++.import fb_fld1r
++FLD1R=fb_fld1r
++.else
+ FLD1R   = $DD98         ;load floating point number
++.endif
+ PLD1P   = $DD9C         ;load floating point number
++.ifdef FASTBASIC_FP
++.import fb_fst0r
++FST0R=fb_fst0r
++.else
+ FST0R   = $DDA7         ;store floating point number
++.endif
++.ifdef FASTBASIC_FP
++.import fb_fst0p
++FST0P=fb_fst0p
++.else
+ FST0P   = $DDAB         ;store floating point number
++.endif
++.ifdef FASTBASIC_FP
++.import fb_fmove
++FMOVE=fb_fmove
++.else
+ FMOVE   = $DDB6         ;move floating point number
++.endif
++.ifdef FASTBASIC_FP
++.import fb_log
++LOG=fb_log
++.else
+ LOG     = $DECD         ;calculate floating point logarithm
++.endif
++.ifdef FASTBASIC_FP
++.import fb_log10
++LOG10=fb_log10
++.else
+ LOG10   = $DED1         ;calculate floating point base 10 logarithm
++.endif
++.ifdef FASTBASIC_FP
++.import fb_exp
++EXP=fb_exp
++.else
+ EXP     = $DDC0         ;calculate floating point exponential
++.endif
++.ifdef FASTBASIC_FP
++.import fb_exp10
++EXP10=fb_exp10
++.else
+ EXP10   = $DDCC         ;calculate floating point base 10 exponential
++.endif
+ 
+ ;-------------------------------------------------------------------------
+ ; Device Handler Vector Table Address Equates
+@@ -1014,7 +1119,7 @@ CIOV_org    = $E456     ;vector to CIO
  SIOV_org    = $E459     ;vector to SIO
  SETVBV_org  = $E45C     ;vector to set VBLANK parameters
  .else
@@ -52,6 +203,18 @@ index 8f3d806..97ba30d 100644
  config fastbasic.cfg
  ca65 -tatari
  library fastbasic-int.lib
+diff --git a/compiler/atari-fp.tgt b/compiler/atari-fp.tgt
+index ef7a71f..a9e7a75 100644
+--- a/compiler/atari-fp.tgt
++++ b/compiler/atari-fp.tgt
+@@ -1,5 +1,4 @@
+-# Atari 8-bit computer, with floating point
+ include a800
+-syntax float.syn fujinet.syn
++syntax float.syn
+ library fastbasic-fp.lib
+-extension .xex
++extension .com
 diff --git a/src/a5200cart.asm b/src/a5200cart.asm
 index 6a54074..796e9a6 100644
 --- a/src/a5200cart.asm
@@ -179,6 +342,114 @@ index 251e495..bf16732 100644
          .import parser_alloc_init
  
          .include "atari.inc"
+diff --git a/src/compiler/atarifp.h b/src/compiler/atarifp.h
+index db25068..c8ecc7a 100644
+--- a/src/compiler/atarifp.h
++++ b/src/compiler/atarifp.h
+@@ -29,6 +29,8 @@ class atari_fp
+ {
+   private:
+     double num;
++    bool encoded = false;
++    bool decimal_valid = true;
+     uint8_t exp;
+     uint8_t mant[5];
+ 
+@@ -44,6 +46,7 @@ class atari_fp
+     uint8_t tobcd(int n) const { return (n / 10) * 16 + (n % 10); }
+     void update()
+     {
++        if(encoded) return;
+         exp = num < 0 ? 0x80 : 0x00;
+         double x = exp ? -num : num;
+         mant[0] = mant[1] = mant[2] = mant[3] = mant[4] = 0;
+@@ -78,7 +81,64 @@ class atari_fp
+   public:
+     atari_fp() : num(0.0) {}
+     atari_fp(double x) : num(x) {}
+-    bool valid() const { return num >= -1E98 && num <= 1E98; }
++    // Match the selected AFP: collect decimal digits, then truncate to five
++    // base-100 pairs. Binary double rounding must not change saved constants.
++    static atari_fp from_decimal(const std::string &text)
++    {
++        atari_fp value;
++        value.encoded = true;
++        value.exp = 0;
++        for(auto &byte: value.mant) byte = 0;
++        size_t pos = 0;
++        bool negative = pos < text.size() && text[pos] == '-';
++        if(pos < text.size() && (text[pos] == '-' || text[pos] == '+')) ++pos;
++        std::string digits;
++        int before_dot = 0;
++        bool dot = false;
++        while(pos < text.size() && text[pos] != 'E' && text[pos] != 'e')
++        {
++            char c = text[pos++];
++            if(c == '.')
++            {
++                if(dot) value.decimal_valid = false;
++                dot = true;
++            }
++            else if(c >= '0' && c <= '9')
++            {
++                digits += c;
++                if(!dot) ++before_dot;
++            }
++            else value.decimal_valid = false;
++        }
++        int power = 0;
++        if(pos < text.size())
++        {
++            ++pos;
++            bool minus = pos < text.size() && text[pos] == '-';
++            if(pos < text.size() && (text[pos] == '-' || text[pos] == '+')) ++pos;
++            while(pos < text.size())
++            {
++                char c = text[pos++];
++                if(c < '0' || c > '9') { value.decimal_valid = false; break; }
++                power = power * 10 + c - '0';
++                if(power > 999) { value.decimal_valid = false; break; }
++            }
++            if(minus) power = -power;
++        }
++        auto first = digits.find_first_not_of('0');
++        if(first == std::string::npos) return value;
++        int order = before_dot - int(first) - 1 + power;
++        int exponent = order >= 0 ? order / 2 : (order - 1) / 2;
++        if(exponent < -49) return value;
++        if(exponent >= 49) { value.decimal_valid = false; return value; }
++        auto mantissa = (order % 2 == 0 ? "0" : "") + digits.substr(first);
++        mantissa.resize(10, '0');
++        value.exp = (negative ? 0x80 : 0) | (64 + exponent);
++        for(int i = 0; i < 5; ++i)
++            value.mant[i] = (mantissa[2*i]-'0') * 16 + mantissa[2*i+1]-'0';
++        return value;
++    }
++    bool valid() const { return encoded ? decimal_valid : num >= -1E98 && num <= 1E98; }
+     std::string to_asm()
+     {
+         update();
+diff --git a/src/compiler/parser-actions.cc b/src/compiler/parser-actions.cc
+index 3ef274d..2d46e09 100644
+--- a/src/compiler/parser-actions.cc
++++ b/src/compiler/parser-actions.cc
+@@ -531,6 +531,7 @@ static int parse_fp_exp(parse &s)
+ 
+ static atari_fp get_fp_number(parse &s)
+ {
++    auto decimal_start = s.pos;
+     // Optional sign
+     bool sign = s.expect('-');
+ 
+@@ -568,7 +569,7 @@ static atari_fp get_fp_number(parse &s)
+     num = num * std::pow(10, parse_fp_exp(s) - dot + norm);
+     num = sign ? -num : num;
+ 
+-    auto fp = atari_fp(num);
++    auto fp = atari_fp::from_decimal(s.str.substr(decimal_start, s.pos-decimal_start));
+     auto sn = fp.to_string();
+     s.debug("(got '" + sn + "')");
+     s.add_text(sn);
 diff --git a/src/interp/a5200/drawto.asm b/src/interp/a5200/drawto.asm
 index 32c5940..c98e6f1 100644
 --- a/src/interp/a5200/drawto.asm
@@ -454,95 +725,63 @@ index 75b473c..f64ad81 100644
 -
 -; vi:syntax=asm_ca65
 diff --git a/src/interp/a800/str.asm b/src/interp/a800/str.asm
-index 2c2f5d5..3aa7721 100644
+index 2c2f5d5..34070ec 100644
 --- a/src/interp/a800/str.asm
 +++ b/src/interp/a800/str.asm
-@@ -23,79 +23,11 @@
+@@ -23,7 +23,7 @@
  ; example, they cover modification of the file, and distribution when not
  ; linked into a combine executable.)
  
 -
--; Print 16bit number
--; ------------------
--
--.ifdef FASTBASIC_FP
--        .export         int_to_fp, fp_to_str
--.endif
--        .import         neg_AX
++.ifdef FASTBASIC_FP
+ ; Print 16bit number
+ ; ------------------
+ 
+@@ -31,7 +31,7 @@
+         .export         int_to_fp, fp_to_str
+ .endif
+         .import         neg_AX
 -        .importzp       next_instruction
--
--
--        .segment        "RUNTIME"
--
--EXE_INT_STR:          ; AX = STRING( AX )
--
--        ; In the integer version we simply fall-through
--        ; from int_to_fp to fp_to_str, so we use 8 bytes less.
--        ;
--.ifdef FASTBASIC_FP
--        jsr     int_to_fp
--        jsr     fp_to_str
--        jmp     next_instruction
--.endif
--
--int_to_fp:
--FR0     = $D4
++        .import         next_instruction
+ 
+ 
+         .segment        "RUNTIME"
+@@ -49,7 +49,8 @@ EXE_INT_STR:          ; AX = STRING( AX )
+ 
+ int_to_fp:
+ FR0     = $D4
 -IFP     = $D9AA
--        cpx     #$80
--        php                     ; Store sign in C
--        bcc     positive
--        jsr     neg_AX
--positive:
--        sta     FR0
--        stx     FR0+1
--        jsr     IFP
--
--        asl     FR0
--        plp                     ; Get sign and store in FR0
--        ror     FR0
--
--.ifdef  FASTBASIC_FP
--        rts
--.endif
--        ; Fall through
--fp_to_str:
++.import fb_ifp
++IFP = fb_ifp
+         cpx     #$80
+         php                     ; Store sign in C
+         bcc     positive
+@@ -68,7 +69,8 @@ positive:
+ .endif
+         ; Fall through
+ fp_to_str:
 -FASC    = $D8E6
--INBUFF  = $F3
--LBUF    = $580
--        jsr     FASC
--        ; Decrease INBUFF, adds one byte for the string length
--        dec     INBUFF
--        ldy     #$0
--        ; Calculate length
--ploop:  iny
--        lda     (INBUFF), y
--        bpl     ploop
--        ; Ok, last character, set high bit to 0
--        and     #$7F
--        sta     (INBUFF), y
--        ; And store length into string start
--        tya
--        ldy     #0
--        sta     (INBUFF), y
--        ; Returns buffer in AX
--        lda     INBUFF
--        ldx     INBUFF+1
--.ifdef FASTBASIC_FP
--        rts
--.else
--        jmp     next_instruction
--.endif
--
++.import fb_fasc
++FASC = fb_fasc
+ INBUFF  = $F3
+ LBUF    = $580
+         jsr     FASC
+@@ -99,3 +101,15 @@ ploop:  iny
+         deftoken "INT_STR"
+ 
+ ; vi:syntax=asm_ca65
++
++.else
 +; Exec816 source port: native Process services replace OS entry.
 +        .import next_instruction
 +        .segment "RUNTIME"
 +EXE_INT_STR:
 +        jsr $f860
 +        jmp next_instruction
-         .include "deftok.inc"
-         deftoken "INT_STR"
--
--; vi:syntax=asm_ca65
++        .include "deftok.inc"
++        deftoken "INT_STR"
++
++.endif
 diff --git a/src/interp/a800/streol.asm b/src/interp/a800/streol.asm
 index 28c9dc2..66c2cc2 100644
 --- a/src/interp/a800/streol.asm
@@ -906,19 +1145,64 @@ index a304432..5ca564a 100644
          .include "atari.inc"
  
 diff --git a/src/interp/atarifp/fp_const.asm b/src/interp/atarifp/fp_const.asm
-index e9b42fe..c7ff38a 100644
+index e9b42fe..53807e6 100644
 --- a/src/interp/atarifp/fp_const.asm
 +++ b/src/interp/atarifp/fp_const.asm
-@@ -30,7 +30,8 @@
+@@ -30,9 +30,12 @@
          .export         check_fp_err
  
          .import         push_fr0, pop_fr1
 -        .importzp       next_instruction, cptr, IOERROR
-+        .importzp cptr, IOERROR
++        .importzp cptr, IOERROR, fp_quota
 +        .import next_instruction
  
          .include "atari.inc"
++.setcpu "65816"
++.include "fastbasic.inc"
  
+         .segment        "RUNTIME"
+ 
+@@ -41,7 +44,7 @@
+ 
+         ldy     #5
+ ldloop: lda     (cptr), y
+-        sta     FR0,y
++        sta     [FB_MATH_POINTERS],y
+         dey
+         bpl     ldloop
+ 
+@@ -61,6 +64,17 @@ ldloop: lda     (cptr), y
+         ; Checks FP error, restores INT stack
+         ; and returns to interpreter
+ .proc   check_fp_err
++        ; FP operations have a higher cost than integer bytecodes. Bound the
++        ; interval at two completed operations; decimal mode is clear here.
++        php
++        pha
++        dec     fp_quota
++        bne     :+
++        lda     #2
++        sta     fp_quota
++        jsr     FB_CHECKPOINT
++:       pla
++        plp
+         ; Check error from last FP op
+         bcc     xit
+         lda     #3
+diff --git a/src/interp/atarifp/fp_evalpoly.asm b/src/interp/atarifp/fp_evalpoly.asm
+index 1718aa3..1e8fda3 100644
+--- a/src/interp/atarifp/fp_evalpoly.asm
++++ b/src/interp/atarifp/fp_evalpoly.asm
+@@ -36,7 +36,8 @@
+ 
+         ; Evaluates ATAN polynomial
+ .proc   eval_atn_poly
+-ATNCOEF     = $DFAE
++.import fb_atncoef
++ATNCOEF = fb_atncoef
+         lda     #11
+         ldx     #<ATNCOEF
+         ldy     #>ATNCOEF
 diff --git a/src/interp/atarifp/fp_int.asm b/src/interp/atarifp/fp_int.asm
 index 7d761e2..06199dc 100644
 --- a/src/interp/atarifp/fp_int.asm
@@ -999,6 +1283,72 @@ index 47c602d..46862fb 100644
  
          .include "atari.inc"
  
+diff --git a/src/interp/atarifp/fp_rnd.asm b/src/interp/atarifp/fp_rnd.asm
+index 453ea10..ff25a20 100644
+--- a/src/interp/atarifp/fp_rnd.asm
++++ b/src/interp/atarifp/fp_rnd.asm
+@@ -24,45 +24,20 @@
+ ; linked into a combine executable.)
+ 
+ 
+-; Random number from 0.0 to 0.9999999999
+-; --------------------------------------
+ 
+-        .import         check_fp_err, push_fr0
+-
+-        .include "atari.inc"
+-
+-        .segment        "RUNTIME"
+-
+-        ; Returns a random FP number in the interval 0 <= X < 1
+-        ; Based on code from Altirra BASIC, (C) 2015 Avery Lee.
+-.proc   EXE_FP_RND
+-FPNORM=$DC00
+-        jsr     push_fr0
+-
+-        lda     #$3F
+-        sta     FR0
+-
+-        ; Get 5 digits
+-        ldx     #5
+-loop:
+-        ; Retries until we get a valid BCD number
+-get_bcd_digit:
+-        lda     RANDOM
+-        cmp     #$A0
+-        bcs     get_bcd_digit
+-        sta     FR0, x
+-        and     #$0F
+-        cmp     #$0A
+-        bcs     get_bcd_digit
+-        dex
+-        bne     loop
+-
+-        ; Re-normalize random value (for X < 0.01) and exit
+-        jsr     FPNORM
+-        jmp     check_fp_err
+-.endproc
+-
+-        .include "deftok.inc"
+-        deftoken "FP_RND"
+-
+-; vi:syntax=asm_ca65
++; Exec816: one coherent native snapshot, private six-byte arithmetic.
++.include "atari.inc"
++.include "fastbasic.inc"
++.import push_fr0, next_instruction, fb_unsigned32, check_fp_err, fp_uint32_scale
++.segment "RUNTIME"
++EXE_FP_RND:
++    jsr push_fr0
++    jsr FB_SERVICE_RANDOM32
++    jsr fb_unsigned32
++    ldx #<fp_uint32_scale
++    ldy #>fp_uint32_scale
++    jsr FLD1R
++    jsr FDIV
++    jmp check_fp_err
++.include "deftok.inc"
++deftoken "FP_RND"
 diff --git a/src/interp/atarifp/fp_sgn.asm b/src/interp/atarifp/fp_sgn.asm
 index dfcedc0..cce3404 100644
 --- a/src/interp/atarifp/fp_sgn.asm
@@ -1014,7 +1364,7 @@ index dfcedc0..cce3404 100644
          .include "atari.inc"
  
 diff --git a/src/interp/atarifp/fp_sincos.asm b/src/interp/atarifp/fp_sincos.asm
-index 3f3a262..e229eed 100644
+index 3f3a262..aaa46dc 100644
 --- a/src/interp/atarifp/fp_sincos.asm
 +++ b/src/interp/atarifp/fp_sincos.asm
 @@ -29,7 +29,7 @@
@@ -1026,8 +1376,28 @@ index 3f3a262..e229eed 100644
  
          .include "atari.inc"
  
+@@ -67,7 +67,8 @@
+ .endproc        ; Fall trough
+ 
+ .proc   SINCOS
+-FPNORM=$DC00
++.import fb_fpnorm
++FPNORM=fb_fpnorm
+ 
+         sty     tmp2    ; Store quadrant into tmp2
+ 
+@@ -78,8 +79,8 @@ FPNORM=$DC00
+         lda     DEGFLAG
+         beq     do_rad
+         ldx     #<fp_90
++        ldy     #>fp_90
+         ; TODO: in the case of the assert bellow, you could add an "INY"
+-        .assert (>fp_pi1_2) = (>fp_90), error, "PI/2 and 90 fp constants in different pages"
+ do_rad:
+ 
+         jsr     FLD1R
 diff --git a/src/interp/atarifp/fp_sqrt.asm b/src/interp/atarifp/fp_sqrt.asm
-index 0e76ed1..67383f0 100644
+index 0e76ed1..bb4fa8f 100644
 --- a/src/interp/atarifp/fp_sqrt.asm
 +++ b/src/interp/atarifp/fp_sqrt.asm
 @@ -28,7 +28,7 @@
@@ -1039,6 +1409,16 @@ index 0e76ed1..67383f0 100644
  
          .include "atari.inc"
  
+@@ -37,7 +37,8 @@
+         ; Square Root: Copied from Altirra BASIC
+         ; Copyright (C) 2015 Avery Lee, All Rights Reserved.
+ .proc   EXE_FP_SQRT
+-FPHALF= $DF6C
++.import fb_fphalf
++FPHALF=fb_fphalf
+ 
+         ; Store original X
+         ldx     #<FPSCR
 diff --git a/src/interp/atarifp/fp_store.asm b/src/interp/atarifp/fp_store.asm
 index b1157d2..3ec855c 100644
 --- a/src/interp/atarifp/fp_store.asm
@@ -1067,18 +1447,72 @@ index 4d85ef1..d9dd532 100644
          .segment        "RUNTIME"
  
 diff --git a/src/interp/atarifp/fp_time.asm b/src/interp/atarifp/fp_time.asm
-index 159593e..3863fdd 100644
+index 159593e..e767adf 100644
 --- a/src/interp/atarifp/fp_time.asm
 +++ b/src/interp/atarifp/fp_time.asm
-@@ -28,7 +28,7 @@
- ; ----------------------------
+@@ -24,50 +24,16 @@
+ ; linked into a combine executable.)
  
-         .import         push_fr0
+ 
+-; Floating Point TIME function
+-; ----------------------------
+ 
+-        .import         push_fr0
 -        .importzp       next_instruction
-+        .import next_instruction
- 
-         .include "atari.inc"
- 
+-
+-        .include "atari.inc"
+-
+-        .segment        "RUNTIME"
+-
+-.proc   EXE_FP_TIME
+-        jsr     push_fr0
+-        ; Get jiffies
+-retry:  lda     RTCLOK+2
+-        ldy     RTCLOK+1
+-        ldx     RTCLOK
+-        cmp     RTCLOK+2
+-        bne     retry
+-        pha
+-        ; Convert high two bytes to float
+-        stx     FR0+1
+-        sty     FR0
+-        jsr     IFP
+-        ; Multiply the result by 256
+-        ldx     #<fp_256
+-        ldy     #>fp_256
+-        jsr     FLD1R
+-        jsr     FMUL
+-        jsr     FMOVE
+-        ; Convert low byte to float
+-        pla
+-        sta     FR0
+-        lda     #0
+-        sta     FR0+1
+-        jsr     IFP
+-        ; Add
+-        jsr     FADD
+-        jmp     next_instruction
+-.endproc
+-
+-fp_256: ; 256 in floating point
+-        .byte $41,$02,$56,$00,$00,$00
+-
+-        .include "deftok.inc"
+-        deftoken "FP_TIME"
+-
+-; vi:syntax=asm_ca65
++; Exec816: one coherent native snapshot, private six-byte arithmetic.
++.include "atari.inc"
++.include "fastbasic.inc"
++.import push_fr0, next_instruction, fb_unsigned32, check_fp_err, fp_uint32_scale
++.segment "RUNTIME"
++EXE_FP_TIME:
++    jsr push_fr0
++    jsr FB_SERVICE_TICKS24
++    jsr fb_unsigned32
++    jmp next_instruction
++.include "deftok.inc"
++deftoken "FP_TIME"
 diff --git a/src/interp/atarifp/fp_val.asm b/src/interp/atarifp/fp_val.asm
 index 4b26ae7..9733fbf 100644
 --- a/src/interp/atarifp/fp_val.asm
@@ -1094,18 +1528,25 @@ index 4b26ae7..9733fbf 100644
          .include "atari.inc"
  
 diff --git a/src/interp/atarifp/fpmain.asm b/src/interp/atarifp/fpmain.asm
-index a10e907..7238dff 100644
+index a10e907..161654a 100644
 --- a/src/interp/atarifp/fpmain.asm
 +++ b/src/interp/atarifp/fpmain.asm
-@@ -28,7 +28,7 @@
+@@ -28,13 +28,14 @@
  ; ----------------------------------
  
          .export         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
 -        .exportzp       DEGFLAG, FPSTK_SIZE, fptr
-+        .exportzp DEGFLAG, FPSTK_SIZE, fptr
++        .exportzp DEGFLAG, FPSTK_SIZE, fptr, fp_quota
          .import         stack_end
  
          .zeropage
+ 
+         ; FP stack pointer
+ fptr:   .res    1
++fp_quota: .res 1
+         ; DEG/RAD flag
+ DEGFLAG:        .res    1
+ 
 diff --git a/src/interp/atarifp/mul6.asm b/src/interp/atarifp/mul6.asm
 index a23acf9..345ca15 100644
 --- a/src/interp/atarifp/mul6.asm
@@ -1844,7 +2285,7 @@ index 424662e..d8e6fed 100644
          .segment        "RUNTIME"
  
 diff --git a/src/interpreter.asm b/src/interpreter.asm
-index 74c6bf3..c61c130 100644
+index 74c6bf3..4c69890 100644
 --- a/src/interpreter.asm
 +++ b/src/interpreter.asm
 @@ -30,18 +30,17 @@
@@ -2021,15 +2462,19 @@ index 74c6bf3..c61c130 100644
  
          ; Store current stack position to rewind on error
          tsx
-@@ -199,7 +196,7 @@ start:
+@@ -199,9 +196,11 @@ start:
          lda     #STACK_SIZE
          sta     sptr
  .ifdef FASTBASIC_FP
 -        .importzp       fptr, FPSTK_SIZE
-+        .importzp fptr, FPSTK_SIZE
++        .importzp fptr, FPSTK_SIZE, fp_quota
          lda     #FPSTK_SIZE
          sta     fptr
++        lda     #2
++        sta     fp_quota
  .endif ; FASTBASIC_FP
+ 
+         ; Interpret opcodes
 diff --git a/src/memptr.asm b/src/memptr.asm
 index f9dc4c1..f074c4f 100644
 --- a/src/memptr.asm

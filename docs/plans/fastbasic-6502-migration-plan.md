@@ -1,10 +1,18 @@
 # FastBasic 6502 migration to Exec816
 
-Status: **FB0–FB5 functional integer delivery implemented**, 20 October 2026.
-See the [execution record](../history/fastbasic-integer.md) for actual development
-checks, design adjustments and remaining deeper acceptance gates. FB6/FB7 remain
-follow-ons. The design below preserves the original implementation sequence;
-the [current contract](../reference/fastbasic.md) defines shipped behavior.
+Status: **FB0–FB6 functional integer and floating-point delivery implemented**,
+20 October 2026. See the [integer record](../history/fastbasic-integer.md) and
+[floating-point record](../history/fastbasic-floating-point.md) for actual
+development checks, design adjustments and remaining qualification gates.
+The [FP design](fastbasic-floating-point-design.md) and
+[implementation plan](fastbasic-floating-point-implementation-plan.md) detail
+FB6. The [GEM workbench design](fastbasic-workbench-design.md) defines FB7's
+native editor/Run delivery and subsequent debugging/graphics gates, superseding
+the original Atari editor port direction. The design below preserves the
+original implementation sequence; the [current contract](../reference/fastbasic.md)
+defines shipped behavior.
+The [WB0–WB14 implementation plan](fastbasic-workbench-implementation-plan.md)
+delivers FB7 at WB9, followed by the debugger, graphics and final workbench package.
 
 [Plan index](README.md) · [Roadmap](../roadmap.md) ·
 [Platform contract](../reference/platform.md) ·
@@ -230,11 +238,13 @@ The first working integer delivery is FB0–FB5; FB6 and FB7 are follow-on work.
 | FB4 — On-machine integer compiler | Port FBCI and parser helpers, argument acquisition, memory allocation, diagnostics and output writer. Replace ROM helpers even in the integer build. | EDX edits a new source; FBCI compiles it on Exec; after FBCI retires, the shell loads and runs its output. Compare selected programs with original FastBasic and the host target; cover empty/boundary files, syntax errors with location, out-of-memory, failed save, BREAK during parsing/output and a subsequent successful compilation. |
 | FB5 — Coexistence and useful demo | Run the final compiler/runtime alongside existing applications; package the integer workflow and its documentation. | Repeated edit/compile/run, a BASIC busy loop beside MD5 or EDX, two guest slots plus rejection/recovery of a third load, SIO/pointer activity, console focus changes, cleanup and OS return pass on the pinned profile. Cold-boot and test the actual packaged text and desktop artifacts. |
 | FB6 — Floating point | Inventory every FP/math-package call and its workspace. Supply a private implementation or an explicitly marshalled native service; do not jump into shared ROM using guest pointers. Extend compiler, runtime and image identity together. | Compare six-byte Atari numeric representation, conversion, arithmetic, rounding, range/error behavior and nested parser/runtime use with the original. Verify independent state for two guests and all bridge guards. Publish the supported numeric contract before packaging FB/FBC. |
-| FB7 — Integrated editor | Port editor.bas and its screen-editor dependencies to public console cell/scan services; replace fixed geometry, global cursor/margin/key state and BRKKY ownership. | Physical-key edit/load/save, compile-to-file and run/return-to-editor work in both consoles, with supported fixed invocation geometry, exact document bytes, errors, BREAK, focus and complete mode/endpoint restoration. Publish unsupported editor controls and resizing behavior. |
+| FB7 — GEM editor and Run | Build a loadable native 65816 GEM application around FBC/FBCI, following the [workbench design](fastbasic-workbench-design.md). Reuse public Process/console services and add the general C stream, console-window and event-wait interfaces required for interactive children. | Physical-key edit/load/save and unsaved-buffer compile/run/return work on the GEM desktop, with structured diagnostics, exact source bytes, INPUT/GET/KEY, Stop, focus, exposure and complete child/mode/endpoint retirement. Shell compilation remains available in both consoles. |
 
 FB6 and FB7 both depend on FB5; an integer-only IDE can take FB7 first.
-Support for graphics/sound/network or external machine-code libraries requires
-separate plans and public device ownership contracts.
+Source debugging and native graphics follow the explicit gates in the workbench
+design; FB7 editor/Run acceptance does not complete them. Graphics implementation,
+sound/network and external machine-code libraries require their own plans and
+public device ownership contracts.
 
 ## Validation and delivery records
 

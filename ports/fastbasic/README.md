@@ -1,9 +1,12 @@
-# FastBasic integer target
+# FastBasic integer and floating-point targets
 
 This source port starts from FastBasic 4.7 and the submodule revisions in
 [upstream.json](upstream.json). It retains the donor parser and 6502 runtime.
 The [target contract](../../docs/reference/fastbasic.md) defines the Exec profile.
-Floating point and the integrated editor are follow-ons.
+FBC adds a private Altirra decimal math package; the integrated editor remains
+a follow-on. `target/mathpack.asm` is generated from the pinned mini65 source by
+`tools/generate_fastbasic_math.py`, retaining its own notice. Change the generator
+and regenerate, rather than editing that output.
 
 Build with Python 3, a C/C++ compiler, Make, Git and network access for the two
 SHA-256 checked source archives:
@@ -13,6 +16,8 @@ python3 tools/generate_fastbasic.py --check
 python3 tools/build_fastbasic.py
 python3 tools/build_fastbasic.py --compile examples/fastbasic/HELLO.BAS \
   --program-output build/fastbasic/HELLO.COM
+python3 tools/build_fastbasic.py --float --compile examples/fastbasic/CALC.BAS \
+  --program-output build/fastbasic/CALC.COM
 ```
 
 The helper builds the bundled cc65 assembler/linker and FastBasic host compiler,
@@ -20,7 +25,10 @@ then uses the host cross-compiler to build the on-machine frontend. The patched 
 Makefile selects `atari-int-compiler` for the internal compiler frontend and
 `atari-int` for user programs. Only the former admits the port's own assembly
 callbacks. The on-machine compiler itself emits the restricted user grammar.
-`build/fastbasic/FBCI.COM` contains that on-machine compiler. Its historical
+`build/fastbasic/FBCI.COM` contains the integer compiler; `FBC.COM` is the FP
+compiler, using `atari-fp-compiler` internally and restricted `atari-fp` for
+user output. The host compiler is rebuilt from patched sources so literal
+conversion agrees with AFP instead of binary-double rounding. Its historical
 intermediate name `source/build/bin/fbci.xex` does not describe its new format.
 
 `build.json` records source inputs, tool hashes and the FBCI envelope/hash.
@@ -37,10 +45,12 @@ already-patched `fastbasic/` tree run:
 ```sh
 make -j4 build/bin/fastbasic build/bin/ca65 build/bin/ld65 build/bin/ar65 \
   build/gen/syntp
-make -j4 build/bin/fbci.xex build/compiler/fastbasic-int.lib
+make -j4 build/bin/fbci.xex build/bin/fbc.xex \
+  build/compiler/fastbasic-int.lib build/compiler/fastbasic-fp.lib
 ```
 
-The resulting `build/bin/fbci.xex` is `FBCI.COM`. The target's Makefile builds
+The resulting `build/bin/fbci.xex` is `FBCI.COM` and `build/bin/fbc.xex` is
+`FBC.COM`. The target's Makefile builds
 its host cross-compiler before compiling the frontend.
 
 Development checks:
@@ -54,12 +64,22 @@ python3 tools/test_fastbasic_lifetime.py --return-probe 7 \
   --output build/fastbasic/lifetime-nmi
 python3 tools/test_fastbasic_faults.py
 python3 tools/audit_fastbasic.py
+python3 tools/audit_fastbasic.py --compiler FBC
+python3 tools/test_fastbasic.py --float --group all --output build/fastbasic/fp-all
+python3 tools/test_fastbasic.py --float --group runtime --decimal-probe --raw \
+  --output build/fastbasic/fp-raw
+python3 tools/test_fastbasic_controls.py --float --output build/fastbasic/fp-controls
+python3 tools/test_fastbasic_rom_control.py
+python3 tools/test_fastbasic_lifetime.py --float --output build/fastbasic/fp-lifetime
+python3 tools/test_fastbasic_faults.py --float --output build/fastbasic/fp-faults
 ```
 
 These need the pinned Action! compiler, AltirraOS ROM and Altirra bridge described
-in the repository's [build guide](../../docs/contributing/building.md). Original
-controls use mini65's Atari OS simulation, not physical hardware. Neither those
-controls nor the Exec development checks qualify arbitrary Atari programs.
+in the repository's [build guide](../../docs/contributing/building.md). The original
+fixture controls use mini65's Atari OS simulation. The separate ROM control
+runs an unmodified numeric program under original SDX and the pinned AltirraOS
+ROM, with the emulator math patch disabled. These and the Exec development
+checks do not qualify arbitrary Atari programs or physical hardware.
 
 Build boot demos with `tools/build_demo.py --fastbasic` (optionally
 `--bitmap-shell-only`), and run `tools/test_fastbasic_demo.py --bundle DIRECTORY`.

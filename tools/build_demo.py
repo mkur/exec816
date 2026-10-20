@@ -90,8 +90,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             if path.suffix in ('.COM','.OVL'):
                 shutil.copyfile(path,command_dir/path.name)
                 binary_names.add('C/'+path.name)
-        shutil.copyfile(ROOT/'build/fastbasic/FBCI.COM',command_dir/'FBCI.COM')
-        binary_names.add('C/FBCI.COM')
+        for name in ('FBCI.COM','FBC.COM'):
+            shutil.copyfile(ROOT/'build/fastbasic'/name,command_dir/name)
+            binary_names.add('C/'+name)
     sources=sorted(p for p in (ROOT/'examples/demo-disk').rglob('*') if p.is_file())
     for source in sources:
         # The media builder normalizes source text to LF; binary commands are exact.
@@ -324,9 +325,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['sdx']=dict(enabled=True,drive_a=sdx_drive_a,car_root=sdx_car_root,
                            fixed_bank_zero_bytes=544,per_task_bank_zero_bytes=0)
     if fastbasic:
-        record['fastbasic']=dict(compiler_sha256=fastbasic_record['compiler_sha256'],
-                                upstream=fastbasic_record['upstream'],
-                                inputs=fastbasic_record['inputs'])
+        record['fastbasic']=fastbasic_metadata(fastbasic_record)
     if text_shell_only:
         record.update(shell_only=True,expected_peak_tasks=6)
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
@@ -450,6 +449,18 @@ def add_ide_carts(output):
     shutil.copyfile(output/'carts/exec816-demo.zip',archive)
 
 
+FASTBASIC_NATIVE_INPUTS=('abi/fastbasic.json','lib/dos/fbabi.act',
+    'lib/dos/fbprogram.act','lib/dos/fbservice.act','lib/dos/fbstate.act',
+    'lib/dos/fbfiles.act')
+
+
+def fastbasic_metadata(record):
+    return dict(compiler_sha256=record['compiler_sha256'],
+        compilers=record['compilers'],target=record['target'],
+        upstream=record['upstream'],inputs=record['inputs'],
+        native_inputs={name:sha256(ROOT/name) for name in FASTBASIC_NATIVE_INPUTS})
+
+
 def refresh_fastbasic(output):
     """Replace the compiler disk file, keeping the verified native system."""
     from build_fastbasic import build as build_basic
@@ -460,8 +471,12 @@ def refresh_fastbasic(output):
             'FastBasic media refresh requires an existing FastBasic SIO demo')
     require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
             'Changed native demo artifacts')
+    require(record['fastbasic'].get('native_inputs')=={
+        name:sha256(ROOT/name) for name in FASTBASIC_NATIVE_INPUTS},
+        'FastBasic native ABI/backend changed; rebuild the full demo before refreshing its disk')
     _,basic=build_basic(ROOT/'build/fastbasic')
-    shutil.copyfile(ROOT/'build/fastbasic/FBCI.COM',output/'media/C/FBCI.COM')
+    for name in ('FBCI.COM','FBC.COM'):
+        shutil.copyfile(ROOT/'build/fastbasic'/name,output/'media/C'/name)
     binary_names={name for name in record['files'] if name.startswith('C/')}
     files=make(output/record['media'],output/'media',binary_names=binary_names,
                filesystem=record['filesystem'],sector_bytes=record['sector_bytes'],
@@ -471,8 +486,7 @@ def refresh_fastbasic(output):
                     for name,raw in files.items()}
     for name in (record['media'],Path(record['media']).with_suffix('.verification.json').name):
         if name in record['artifacts']:record['artifacts'][name]=sha256(output/name)
-    record['fastbasic']=dict(compiler_sha256=basic['compiler_sha256'],
-                            upstream=basic['upstream'],inputs=basic['inputs'])
+    record['fastbasic']=fastbasic_metadata(basic)
     path.write_text(json.dumps(record,indent=2)+'\n')
     return refresh_monitor(output)
 

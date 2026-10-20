@@ -21,12 +21,21 @@ the [earlier roadmap](history/roadmap-chronology.md) preserves the milestone log
 ## Commands and CLI
 
 The [FastBasic 6502 migration plan](plans/fastbasic-6502-migration-plan.md)
-has an implemented integer delivery in emulation mode, sharing the existing
-guest bridge and native DOS/console services. EDX → on-machine FBCI → freshly
-compiled shell command works in text and graphical consoles. The
-[execution record](history/fastbasic-integer.md) records development checks and
-remaining deeper acceptance gates. Floating point and the integrated editor
-follow in FB6/FB7.
+has implemented integer and floating-point delivery in emulation mode, sharing
+the existing guest bridge and native DOS/console services. EDX → on-machine
+FBCI/FBC → freshly compiled shell command works in text and graphical consoles.
+The [integer record](history/fastbasic-integer.md) and
+[FP record](history/fastbasic-floating-point.md) retain development checks and
+remaining qualification gates. The [FB6 plan](plans/fastbasic-floating-point-implementation-plan.md)
+and [design](plans/fastbasic-floating-point-design.md) describe the private math
+package and delivery slices. The [GEM workbench design](plans/fastbasic-workbench-design.md)
+sets the next direction: a loadable native GEM editor and Run controller around
+FastBasic, followed by source debugging and native graphics. FB7 covers the
+editor/Run workflow; the wider workbench has separate acceptance gates and
+reusable process/console/event integration prerequisites.
+The [WB0–WB14 implementation plan](plans/fastbasic-workbench-implementation-plan.md)
+orders those changes, with FB7 at WB9, debugger acceptance at WB11, BASIC
+graphics at WB13 and the complete packaged environment at WB14.
 
 The [SpartaDOS personality design](plans/spartados-personality-design.md) proposes
 running selected 6502 SDX applications as ordinary Exec Processes, in the order

@@ -1,0 +1,335 @@
+{
+  "format": "exec816-fastbasic-floating-point-development-v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "source_revision": "31143dfd0bb3c075d6e1f89b18dfd3bbde8a9f7d",
+  "working_tree": "Implementation inputs are hashed per build and below; preceding commit is not the working-tree identity",
+  "source_inputs": {
+    "abi/fastbasic.json": "6b5cb12a431831d74791e7ee49b759cba4fa8b01131ca2be721211da29f1234b",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "lib/dos/fbabi.act": "e2f57d5214c10085682540af3011c6d22ea81eec8eb71cc2d1f60766b3f7ab08",
+    "lib/dos/fbbind.act": "0f6d901057f85634da577ed24025fef70a09a22f9d3117b75276a98601e2bf00",
+    "lib/dos/fbfiles.act": "2af7f2254e1d628d19441d72b4f2f89f92aab30a82afbe4119a034b06c7c31ef",
+    "lib/dos/fbprogram.act": "c478b7b5a0056cfabb4e6aaf6eb9738d44375f655b801ec9a9ff11f5a9ddc243",
+    "lib/dos/fbservice.act": "9b8151056966473987c5e0d47f44b7d994e068dd36d4e71deffb8c353e72fbdd",
+    "lib/dos/fbstate.act": "78bcd7a1479018544d6b34306ed89132b3ced01cd105994bf4b7f194f3b79cd9",
+    "ports/fastbasic/NOTICE.txt": "4a37cc11a1ffdb5744f133add768a9aeafeee7f94e702b547e844a2ed8457cd1",
+    "ports/fastbasic/README.md": "b056585abffd8eb7518fb088e1a1b02a637b937d01b2b2fe71f1c7a2cdbf2023",
+    "ports/fastbasic/SDX-NOTICE.txt": "a1e4d9afd2a6ac478c13ba6a85d0a0b0444f9ebeba915d381de90995a14d94a1",
+    "ports/fastbasic/patches/exec6502.patch": "87c488e09094c4bf4c898bdcfc7d5be4f83dbbfd73cfc629d79a0bc0fecb73fe",
+    "ports/fastbasic/target/atari-fp-compiler.tgt": "589de98523bdaaa21c499c9876b78e53136a858c701e941dcf69c2b6f4a1e9af",
+    "ports/fastbasic/target/atari-int-compiler.tgt": "dbf93799084ea671d19f9dfdb5e0c49d4978f1de6d74ebec1e52e7e44c8dda44",
+    "ports/fastbasic/target/callbacks.asm": "7156764301ec81cd626c301a69a648e6eaf9d957dc37f3ad9a2000e60951ae1a",
+    "ports/fastbasic/target/cmdline.bas": "42fdc5297e3818c8aef1c508f43b91da35e692bd5c5454b885a427cd54ca603f",
+    "ports/fastbasic/target/exec.cfg": "98d1a1e18d38db0212b94535d34f56b6388a614c1e916f4a77e9eb39e74d29ce",
+    "ports/fastbasic/target/fastbasic.inc": "a83958d930f31844042c506ed840f3b0d32097411bb5ab6393de8200834d99cc",
+    "ports/fastbasic/target/fp_snapshot.asm": "17c0253e0d3f849dfa7727cf29e23f319a725f5182bd9957a3a967b26d3f6f1a",
+    "ports/fastbasic/target/header.asm": "d00993f10f1c53c543639a66ef15c82eb49a4adb050abfc38ce9b7597aa5dc5d",
+    "ports/fastbasic/target/helpers.asm": "4f7965558068d0d8dae870cfb44ae84b31d37c0cc079c3f94c122f24f76d861d",
+    "ports/fastbasic/target/mathpack.asm": "6be67a404772ce896ef3c3b0ca516151bfa6adfa5c6c0f791bbfae93f4e912f3",
+    "ports/fastbasic/upstream.json": "3d68f368e7715cabcd979d55823c6b9fa0a1e9665838158a24e27507e16ec82e",
+    "tools/audit_fastbasic.py": "b356bdfd0b3729f6bbb0694db8e687e3b3efdf343fadbff744ef1901486857a0",
+    "tools/build_fastbasic.py": "10155fe7bb7800574627f26c716533545fe06602e6ebcc400889659d5d5a528a",
+    "tools/fastbasic_test_support.py": "1cafba753eb0f5e4946fffdfe9303201cbb691e585c45fb79db56ee14a3fc4f6",
+    "tools/generate_fastbasic.py": "ea4ffcabebfc03b4a39e9e0085d503b319b7c1bf95a5cdc174fb924202adb5ee",
+    "tools/generate_fastbasic_math.py": "d4adb286af0e738b6adab680b3c3c7720c5d79d454afcec93979a4314177ec38",
+    "tools/package_fastbasic_source.py": "340e59085768d0964aef2531f58f393eb129591582fe7db3647d872083656b20",
+    "tools/record_fastbasic_fp.py": "32ffa77266a7f6df467d702410d6d2a94de77da97c74b0585669c70abfa6eb29",
+    "tools/test_fastbasic.py": "2356d12e6d91740f398ec33b948f89812d95e83c47ed7cfa4bd5d95096886d32",
+    "tools/test_fastbasic_controls.py": "73b787ede401222aa0aa8555ad001a03552ca2756789fb656610a2660a7592ce",
+    "tools/test_fastbasic_demo.py": "b36fd3b3929b7d9fe17ec40d1727868ba2b81bf23cddec6097779bfdf0b7a209",
+    "tools/test_fastbasic_faults.py": "ccfe1be50c609699b2c9f2bf5ae5279715db43d64db5408e55d49bf713114d12",
+    "tools/test_fastbasic_lifetime.py": "65790c10846312f56385c3527d5c03040326d2c3b0bd5d5dd9dd910a02cce81a",
+    "tools/test_fastbasic_rom_control.py": "aac180eeb6a333446b1c60f8961b73c0487bf2532fd7d53a245e4ea212da6f09",
+    "tools/shell_session_walkthrough.py": "cc03f8d1684f0d9a6c6d2874c256a8bb32aa05ca8e3dbe47981576ad8afed85f"
+  },
+  "upstream": {
+    "format": "exec816-fastbasic-inputs-v1",
+    "repository": "https://github.com/dmsc/fastbasic",
+    "revision": "55dc52f74fcfcf3e8afd29bb5b984ee1dc9b6a6f",
+    "release": "v4.7",
+    "archive": {
+      "url": "https://codeload.github.com/dmsc/fastbasic/tar.gz/55dc52f74fcfcf3e8afd29bb5b984ee1dc9b6a6f",
+      "sha256": "9b01e3c96dca8fc1c48e9eb8cdb760f97dbadccf3fc2cc6455ece9820bb51493"
+    },
+    "mini65": {
+      "revision": "30b85d1ee940b546ca7b5737be371ff6c7f99ed1",
+      "url": "https://codeload.github.com/dmsc/mini65-sim/tar.gz/30b85d1ee940b546ca7b5737be371ff6c7f99ed1",
+      "sha256": "b10f9a3f39213dacabf76d1604147ba16804da69d047d68589dd2166107d0f27"
+    },
+    "selection": [
+      "src/",
+      "cc65/",
+      "compiler/",
+      "Makefile",
+      "rules.mak",
+      "deps.mak",
+      "tests.mak",
+      "testsuite/src/",
+      "testsuite/tests/",
+      "LICENSE",
+      "README.md",
+      "version.mk"
+    ],
+    "license": "GPL-2.0-or-later; retain file-specific runtime linking exception"
+  },
+  "abi": {
+    "abi": "exec816.fastbasic.6502.v1",
+    "version": 1,
+    "magic": "FB65",
+    "target": 18178,
+    "header_bytes": 16,
+    "header": {
+      "magic": 0,
+      "version": 4,
+      "target": 6,
+      "load": 8,
+      "end": 10,
+      "entry": 12,
+      "limit": 14
+    },
+    "load": 12288,
+    "limit": 57344,
+    "channels": 4,
+    "guest_layout": {
+      "PROFILE": 128,
+      "IOCB_BASE": 832,
+      "IOCB_BYTES": 16,
+      "COLCRS": 85,
+      "MEMTOP": 741,
+      "MEMLO": 743,
+      "NUMBER_STRING": 1407,
+      "ARGUMENT_STRING": 2048,
+      "STRING_LIMIT": 255,
+      "RESULT_FAILURE": 20,
+      "ZP_START": 128,
+      "ZP_LIMIT": 212,
+      "MATH_ZP_START": 212,
+      "MATH_ZP_LIMIT": 256,
+      "MATH_POINTERS": 112,
+      "MATH_POINTER_COUNT": 5,
+      "FP_STACK": 1232,
+      "FP_STACK_BYTES": 48,
+      "NUMBER_BYTES": 6,
+      "SNAPSHOT": 1792,
+      "SNAPSHOT_BYTES": 4
+    },
+    "cio": {
+      "OK": 1,
+      "ALREADY_OPEN": 129,
+      "NOT_OPEN": 133,
+      "BAD_CHANNEL": 134,
+      "EOF": 136,
+      "UNSUPPORTED": 156,
+      "OPEN": 3,
+      "GET_RECORD": 5,
+      "GET_CHARS": 7,
+      "PUT_RECORD": 9,
+      "PUT_CHARS": 11,
+      "CLOSE": 12,
+      "MODE_READ": 4,
+      "MODE_NEW": 8,
+      "MODE_READWRITE": 12
+    },
+    "checkpoint": 62080,
+    "checkpoint_event": 14,
+    "service_base": 63488,
+    "service_stride": 32,
+    "services": {
+      "CIO": 64,
+      "PUT": 65,
+      "GETKEY": 66,
+      "STR": 67,
+      "TIME": 68,
+      "PAUSE": 69,
+      "RAND": 70,
+      "ARGUMENT": 71,
+      "ERROR": 72,
+      "UNSUPPORTED": 73,
+      "KEY": 74,
+      "TICKS24": 75,
+      "RANDOM32": 76
+    },
+    "upstream": {
+      "repository": "https://github.com/dmsc/fastbasic",
+      "revision": "55dc52f74fcfcf3e8afd29bb5b984ee1dc9b6a6f",
+      "release": "v4.7"
+    }
+  },
+  "compilers": {
+    "FBCI": {
+      "profile": {
+        "load": 12288,
+        "end": 18304,
+        "entry": 12602,
+        "limit": 57344,
+        "bytes": 6032
+      },
+      "sha256": "e2408a3fc4f8d8e9d892293d2861567714c707278ebc4a6c68a8644f8eea070c"
+    },
+    "FBC": {
+      "profile": {
+        "load": 12288,
+        "end": 21749,
+        "entry": 14727,
+        "limit": 57344,
+        "bytes": 9477
+      },
+      "sha256": "0fdb78c5d164592bfd1f8df7ecc5e0c5ba0c562d3686c6be74ee01526aff9833"
+    }
+  },
+  "evidence": {
+    "runtime_compiler": {
+      "path": "build/fastbasic/fp-all-final/results.json",
+      "sha256": "24ff4092742ba2a831226eaa41a57a0730e95e5f5b43ed9b0832822eb092aca3",
+      "checks": 110,
+      "reused_native_fixture": false
+    },
+    "integer_regression": {
+      "path": "build/fastbasic/fp-integer-regression/results.json",
+      "sha256": "9572e1fd7e6b1ec02a12c1b0dd61cbb3e2414dc908c82758223973b440355694",
+      "checks": 110,
+      "reused_native_fixture": false
+    },
+    "decimal_raw": {
+      "path": "build/fastbasic/fp-raw-final/results.json",
+      "sha256": "f49efcabb6d0280980de83cde18f56ae7855f0d003ee9b82c718be996aa20b97",
+      "checks": 18,
+      "reused_native_fixture": false
+    },
+    "decimal_optimized": {
+      "path": "build/fastbasic/fp-opt-final/results.json",
+      "sha256": "9d454efaa980c9f4faef5f9feb9d7d78d7941eab7a746022422f35f5e40d6ba2",
+      "checks": 18,
+      "reused_native_fixture": false
+    },
+    "numeric_edges": {
+      "path": "build/fastbasic/fp-edges-final/results.json",
+      "sha256": "ce283cab903677529afc5dff45cb7886e6eeff21b986825df652bd474808a737",
+      "checks": 17,
+      "reused_native_fixture": true
+    },
+    "source_capacity": {
+      "path": "build/fastbasic/fp-capacity/results.json",
+      "sha256": "bcf2e58281d2f3ea1e48b351e6966f6ce4b5eb803aec013bf2ccadf6cd635c96",
+      "checks": 81,
+      "source_capacity": 35308,
+      "source_base": 22036,
+      "capacity_results": [
+        0,
+        0,
+        20,
+        306,
+        20,
+        306
+      ],
+      "reused_native_fixture": false
+    },
+    "lifetime": {
+      "path": "build/fastbasic/fp-lifetime-final/results.json",
+      "sha256": "59546dd6e7a07397038d626b1b709361e426a0c7cad29301ebef65236e5a6151",
+      "checks": 75,
+      "return_probe": 0,
+      "breakTicks": 2,
+      "reused_native_fixture": false
+    },
+    "native_return_nmi": {
+      "path": "build/fastbasic/fp-lifetime-nmi/results.json",
+      "sha256": "c140e8170d6fa653acd643eee1f5c415bb7fe5833aa2f8569da7cc2db6340c18",
+      "checks": 75,
+      "return_probe": 7,
+      "breakTicks": 2,
+      "reused_native_fixture": false
+    },
+    "save_faults": {
+      "path": "build/fastbasic/fp-faults-final/results.json",
+      "sha256": "c1dbc0f307794b782dea9d06a857fa7c9df760f041b98e5eb4c867a4c83521e4",
+      "checks": 49,
+      "scope": "Test-only DOS boundary overrides with real file ownership; short writes, write error, late Close error, first-cause retention, recovery and full heap reclamation",
+      "reused_native_fixture": false
+    },
+    "original_controls": {
+      "path": "build/fastbasic/fp-controls/results.json",
+      "sha256": "6b89424a9e88d0899bdf62fe326d3080eb05a2798efe84a08fc2972181552e6a",
+      "scope": "Unmodified fp compiler/runtime in mini65 Atari OS simulation; no physical Atari/SDX or Exec interrupt qualification"
+    },
+    "original_rom_control": {
+      "path": "build/fastbasic/fp-rom-control/results.json",
+      "sha256": "f2537f604cb217e4ee8cf9b1a488e179404d6bcfb3b10ca9dfb798cc0498515c",
+      "scope": "Unmodified FastBasic runtime, real pinned AltirraOS ROM math, no emulator FP patch; no Exec context or physical hardware qualification"
+    },
+    "source_rebuild": {
+      "path": "build/fastbasic-fp-source-check/results.json",
+      "sha256": "f63f222d655e521b2249558f93fc6bfd2f1ef5ffdc035304c075a08ce416c533",
+      "scope": "Clean source-only build of both compilers and runtime libraries; no reused tools"
+    },
+    "refresh_rejection": {
+      "path": "build/fastbasic/fp-refresh-reject.json",
+      "sha256": "4f9255dee82d838d385f910ddd734b5be46f4db7afb1c62a6a88a04a620eeb02",
+      "scope": "Old native bundle rejects compiler disk refresh before mutation"
+    },
+    "refresh_matching": {
+      "path": "build/fastbasic/fp-refresh-match.json",
+      "sha256": "77ac6e9bfe315199e3e4b6369d03c2f2ad4a05856b777a24ad10263da2b8c010",
+      "scope": "Matching native ABI refreshes both compiler files, disk checksums and OF816; matching cartridges rebuilt"
+    },
+    "text_package": {
+      "path": "build/fastbasic-fp-demo/text/fastbasic-checks.json",
+      "sha256": "08ea7394f5f7a3a14a3e9e64c0790a5759cd732f6640ced6df6a01faa446dd80"
+    },
+    "graphical_package": {
+      "path": "build/fastbasic-fp-demo/graphical/fastbasic-checks.json",
+      "sha256": "4acae7dc56d3d91fc40eeea226d8dd499df8e2a1f94e5e6d1ec1659a70c687af"
+    }
+  },
+  "host_tests": {
+    "path": "build/fastbasic/fp-host-tests.log",
+    "sha256": "43c6e84104aeef183cd882f05615bf1c6cdd5b895322b94c2b416bc6db613fc0",
+    "tests": 544
+  },
+  "memory": {
+    "bank_zero_delta": {
+      "baseline": "Enabled SDX/integer profile",
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": 0,
+      "idle": 0,
+      "includes": "guards, alignment and unused capacity"
+    },
+    "shared_guarded_direct_pages": 544,
+    "aligned_bank_reservation_per_image": 131072,
+    "session_bytes": 2304,
+    "image_record_bytes": 72,
+    "native_module_code_bytes": {
+      "FBSTATE": 115,
+      "FBPROGRAM": 2162,
+      "FBFILES": 4989,
+      "FBSERVICE": 8619,
+      "FBBIND": 8
+    },
+    "private_fp_stack_bytes": 48,
+    "private_math_pointer_bytes": 15,
+    "snapshot_bytes": 4,
+    "note": "FP state uses existing guest-bank/D capacity. File snapshots add allocator-rounded upper bytes."
+  },
+  "packages": {
+    "text": {
+      "path": "build/fastbasic-fp-demo/text/exec816-demo.zip",
+      "sha256": "1abf057eff147e7b5d5f7e711c45fe438de225575d42304c5c889d4ac5e252d1"
+    },
+    "graphical": {
+      "path": "build/fastbasic-fp-demo/graphical/exec816-demo.zip",
+      "sha256": "4df4f61eeb3186fcc54c2fb6246dac76746e9c72ccb62c7aba49e86601c6417b"
+    }
+  },
+  "source_archive": "build/fastbasic-fp-demo/exec816-fastbasic-source.zip",
+  "source_archive_checksum": "External .zip.sha256 sidecar avoids a self-referential hash in the source archive",
+  "remaining": [
+    "General guest IRQ/NMI and hosted-system release qualification",
+    "Physical hardware qualification",
+    "Uniform numeric accuracy bounds outside the recorded corpus",
+    "Exhaustive parser/output cancellation and pointer/focus timing matrices",
+    "Integrated editor (FB7), hardware statements and external user USR"
+  ]
+}

@@ -1,11 +1,24 @@
 # Implementation plans
 
-- [FastBasic 6502 migration](fastbasic-6502-migration-plan.md): implemented FB0–FB5 functional
-  source port of the integer runtime and on-machine compiler, using the existing
+- [FastBasic 6502 migration](fastbasic-6502-migration-plan.md): implemented FB0–FB6 functional
+  source port of the integer/FP runtime and on-machine compilers, using the existing
   guest bridge, native console/files and EDX for editing. Covers executable
-  output loading, memory and interrupt gates, with floating point and the
-  integrated editor as FB6/FB7 follow-ons. The [execution record](../history/fastbasic-integer.md)
-  distinguishes development evidence from remaining deeper acceptance gates.
+  output loading, memory and interrupt gates; the integrated editor remains FB7.
+  The [integer record](../history/fastbasic-integer.md) and
+  [FP record](../history/fastbasic-floating-point.md) distinguish development
+  evidence from remaining qualification gates.
+  The [floating-point design](fastbasic-floating-point-design.md) and
+  [FB6 implementation plan](fastbasic-floating-point-implementation-plan.md)
+  define the private decimal math package, memory/ABI changes, on-machine FBC
+  delivery and numeric, interrupt and cancellation acceptance gates in five
+  executable slices.
+  The [GEM workbench design](fastbasic-workbench-design.md) defines the next
+  environment: a native GEM editor and Run controller, followed by source
+  debugging and native graphics. It replaces the earlier FB7 Atari editor port
+  direction while retaining FastBasic syntax and the current compiler/runtime.
+  The [WB0–WB14 implementation plan](fastbasic-workbench-implementation-plan.md)
+  orders runnable editor slices, reusable launch/wait/console interfaces, the
+  FB7 Run workflow, debug metadata/protocol, graphics and exact-package delivery.
 
 - [SpartaDOS personality for 6502 applications](spartados-personality-design.md):
   proposed MD5 → ARC → Sparta Commander sequence using private upper-memory

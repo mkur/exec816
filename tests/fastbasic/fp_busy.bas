@@ -1,0 +1,6 @@
+POKE $900,1
+DEG
+DO
+ A%=SIN(83.5)+SQR(999999.0)
+ B%=ATN(A%)+LOG(A%)
+LOOP

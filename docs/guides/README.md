@@ -16,7 +16,7 @@
 
 ## Writing programs
 
-- [FastBasic integer programs](fastbasic.md): edit with EDX, compile on the Atari and run the result.
+- [FastBasic programs](fastbasic.md): edit with EDX, compile with integer FBCI or floating-point FBC on the Atari and run the result.
 
 - [Disk commands](commands.md): `Main`, arguments, streams and return codes.
 - [Tasks](tasks.md): build and run the Task and signal examples.

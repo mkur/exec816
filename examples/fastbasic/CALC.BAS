@@ -1,0 +1,7 @@
+? "FLOAT BASIC"
+A%=1.25
+B%=2.5
+? A%+B%
+? SQR(81.0)
+DEG
+? SIN(90.0)

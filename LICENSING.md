@@ -23,7 +23,7 @@ repository root; directory entries include all files below them.
 | Files | Scope |
 | --- | --- |
 | `abi/` | Machine-readable interface definitions |
-| `lib/dos/fbabi.act`, `ports/fastbasic/target/helpers.asm`, `ports/fastbasic/target/callbacks.asm`, `ports/fastbasic/target/fastbasic.inc` | Exec-authored FastBasic runtime bindings and generated constants |
+| `lib/dos/fbabi.act`, `ports/fastbasic/target/helpers.asm`, `ports/fastbasic/target/callbacks.asm`, `ports/fastbasic/target/fp_snapshot.asm`, `ports/fastbasic/target/fastbasic.inc` | Exec-authored FastBasic runtime bindings and generated constants |
 | `c/` | Public C headers, Calypsi bindings, startup support and C examples |
 | `examples/`, except `examples/shell/` | Standalone examples, disk commands and sample data |
 | `lib/exec/exec.act`, `lib/exec/execos.act`, `lib/exec/execproducer.act` | Action! interface declarations |
@@ -75,10 +75,14 @@ emulators or patches to upstream projects.
 - FastBasic selected by `ports/fastbasic/upstream.json` and donor changes in
   `ports/fastbasic/patches/` retain GPL-2.0-or-later and the donor files' runtime
   linking exception where present. The target compiler source and executable
-  header retain their donor notices. The three Exec-authored runtime binding
+  header retain their donor notices. The Exec-authored runtime binding
   files listed above are MIT; this does not relicense FastBasic's parser or
   compiler. Distribute the modified compiler's corresponding source and build
   instructions with its binaries.
+- `ports/fastbasic/target/mathpack.asm` adapts Avery Lee's Altirra decimal math
+  source from the pinned mini65 dependency. Its original copyright and
+  permission notice are retained in the generated source. The generator is
+  Exec816 build code; it does not change the imported source's licence.
 - The AltirraOS ROM retains Avery Lee's file-specific redistribution notice.
   Demo ZIPs include `ALTIRRAOS-LICENSE.txt`.
 - actionc and its runtime material retain their own licences. This includes

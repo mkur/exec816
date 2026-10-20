@@ -90,8 +90,10 @@ SETUP_FILES
   Require(output1<>NULL AND output2<>NULL)
   LET previous=DOS.SelectOutput(output1)
   LET first=PROGRAMFILE.Load(BYTE POINTER(c"RAM:WORKER.COM"))
-  LET second=PROGRAMFILE.Load(BYTE POINTER(c"RAM:WORKER.COM"))
+  LET second=PROGRAMFILE.Load(BYTE POINTER(c"RAM:SECOND_GUEST.COM"))
   Require(first<>NULL AND second<>NULL)
+  Require(PROGRAMFILE.Load(BYTE POINTER(c"RAM:BUSY.COM"))=NULL)
+  Require(DOS.IoErr()=308)
   LET one=FBSTATE.Session POINTER(first.extension)
   LET two=FBSTATE.Session POINTER(second.extension)
   firstBank=one.guest.bank
@@ -138,6 +140,7 @@ SETUP_FILES
   Require(secondId<>0)
   Wait(secondId,0)
   PROGRAM.Unload(md5)
+FLOAT_COMPILER_RUN
   started=Clock()
   Require(PROCESS.RequestBreak(firstId)<>0)
   Wait(firstId,20)

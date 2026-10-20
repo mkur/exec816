@@ -13,10 +13,15 @@ import re
 
 from build_fastbasic import ABI, ROOT, profile, sha256
 from sdx_md5_audit import OPCODES
+from generate_fastbasic_math import ENTRIES
+
+GUEST_OPCODES = {**OPCODES, 0xb7: ('LDA', 'dp-long-y', 2),
+                 0x97: ('STA', 'dp-long-y', 2), 0x77: ('ADC', 'dp-long-y', 2),
+                 0xf7: ('SBC', 'dp-long-y', 2)}
 
 
-def audit(source):
-    prefix=source/'build/bin/fbci'
+def audit(source, compiler='FBCI'):
+    prefix=source/('build/bin/'+compiler.lower())
     raw=prefix.with_suffix('.xex').read_bytes()
     layout=profile(raw)
     labels={name:int(address,16) for address,name in re.findall(
@@ -24,7 +29,8 @@ def audit(source):
     memory=bytearray(65536)
     memory[ABI['load']-16:layout['end']]=raw
     roots={name:address for name,address in labels.items() if name.startswith('EXE_')
-           or name in ('COMPILE_BUFFER','FB_ARGUMENT','FB_ERROR','parser_start')}
+           or name in ('COMPILE_BUFFER','FB_ARGUMENT','FB_ERROR','parser_start')
+           or name in {'fb_'+entry.lower() for entry in ENTRIES if entry not in ('FPHALF','ATNCOEF')}}
     roots['container_entry']=layout['entry']
     dynamic={labels['dispatch_jump']:0xffff,labels['EXE_USR_CALL']:0xff00}
     services={ABI['checkpoint']:'checkpoint',**{
@@ -38,9 +44,9 @@ def audit(source):
         if not ABI['load']<=pc<layout['end']:
             raise ValueError(f'Out-of-image control transfer: {pc:#x}')
         op=memory[pc]
-        if op not in OPCODES:
+        if op not in GUEST_OPCODES:
             raise ValueError(f'Unreviewed opcode at {pc:#x}: {op:#x}')
-        name,mode,size=OPCODES[op]
+        name,mode,size=GUEST_OPCODES[op]
         if pc+size>layout['end']:raise ValueError('Truncated instruction')
         value=int.from_bytes(memory[pc+1:pc+size],'little')
         code[pc]=(name,mode,value)
@@ -60,12 +66,17 @@ def audit(source):
         if name=='RTS':continue
         if mode=='rel':pending.append(after+(value if value<128 else value-256))
         pending.append(after)
+    segments=prefix.with_suffix('.map').read_text()
+    zp=re.search(r'^ZEROPAGE\s+([0-9A-F]+)\s+([0-9A-F]+)\s+([0-9A-F]+)',segments,re.M)
     return dict(format='exec816-fastbasic-code-inventory-v1',status='pass',
         scope='Static emitted-code inventory with selected roots; no dynamic-pointer, parser-table, stack or interrupt qualification',
         compiler_sha256=sha256(prefix.with_suffix('.xex')),
         map_sha256=sha256(prefix.with_suffix('.map')),profile=layout,
         heap_start=labels['__HEAP_RUN__'],
-        direct_page=dict(start=0x80,used_end=0xb9,reserved_end=0xf0),
+        direct_page=dict(start=int(zp[1],16),used_end=int(zp[2],16)+1,
+                         used_bytes=int(zp[3],16),reserved_end=ABI['guest_layout']['ZP_LIMIT'],
+                         math_pointers=[ABI['guest_layout']['MATH_POINTERS'],
+                                        ABI['guest_layout']['MATH_POINTERS']+15]),
         roots=roots,instructions=len(code),modes=dict(Counter(v[1] for v in code.values())),
         services=sorted(calls,key=lambda item:item['pc']),
         private_mutable_jumps=dynamic,absolute_low_or_os_accesses=accesses,
@@ -78,8 +89,9 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source',type=Path,default=ROOT/'build/fastbasic/source')
     parser.add_argument('--output',type=Path,default=ROOT/'build/fastbasic/audit.json')
+    parser.add_argument('--compiler',choices=('FBCI','FBC'),default='FBCI')
     args=parser.parse_args()
-    result=audit(args.source.resolve())
+    result=audit(args.source.resolve(),args.compiler)
     args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(result,indent=2)+'\n')
     print('FastBasic inventory:',result['instructions'],'instructions;',

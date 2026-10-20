@@ -1,7 +1,7 @@
 
-FastBasic integer programming
+FastBasic integer and floating-point programming
 
-FBCI, EDX, MD5 and ARC are installed in SYS:C. At the shell, enter:
+FBCI, FBC, EDX, MD5 and ARC are installed in SYS:C. At the shell, enter:
   CD WORK:
   EDX HELLO.BAS
 EDX: Ctrl-Z goes to end of line; Ctrl-S saves; Return confirms; Esc exits.
@@ -12,13 +12,18 @@ The supplied example prints HELLO BASIC and 42. Use HELLO.COM explicitly
 if you run it from a directory without that compiled file: C:HELLO is a
 different native demonstration command. Bare FBCI prompts for both filenames.
 
+For floating point, edit CALC.BAS, compile with FBC CALC.BAS CALC.COM, then
+run CALC. It prints 3.75, 9 and 1. Floating variables use the % suffix.
+FBC DECIMAL.BAS DECIMAL.COM demonstrates decimal INPUT. Bare FBC also prompts.
+
 Try FBCI INPUT.BAS INPUT.COM, then INPUT. BREAK cancels execution, including
 BUSY.BAS, a loop with no I/O. Redirection and native paths are supported.
 The writable work disk is disposable; back it up before experimenting.
 
 This target supports integers, strings, arrays, procedures and native file
-I/O. Floating point, the integrated IDE, Atari graphics/sound and external
-USR assembly calls are not provided. KEY() returns a queued console character
+I/O, with six-byte Atari floating point and math functions in FBC.
+The integrated IDE, Atari graphics/sound and external USR assembly calls are
+not provided. Recompile older binaries for the current target. KEY() returns a queued console character
 (zero if none), rather than an Atari CH scan code. PEEK/POKE address private
 guest memory; they do not access Atari hardware. This is a development demo.
 See FASTBASIC-NOTICES.txt and the separate corresponding-source archive.

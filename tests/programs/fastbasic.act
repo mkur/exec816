@@ -14,7 +14,7 @@ CARD checks,currentCase,actualBytes,parseBytes,freshBytes,stateBytes
 LONGINT reason,primary,secondary
 LONGCARD guestBank
 BYTE ARRAY actual(1024)
-BYTE ARRAY parseOutput(256),fresh(4096)
+BYTE ARRAY parseOutput(256),fresh(16384)
 
 PROC Require(BYTE okay)
 
@@ -51,6 +51,7 @@ PROC Run(BYTE POINTER name,args CARD argumentBytes LONGINT expectedPrimary)
   IF expectedPrimary=0 THEN
     Require(secondary=0)
   FI
+  ; RUN_COMPLETION_CHECKS
   SDXSTATE.Guards()
   PROGRAM.Unload(image)
 

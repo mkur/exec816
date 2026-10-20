@@ -15,7 +15,7 @@ from shell_session_walkthrough import Sessions
 from test_demo import run
 from test_shell_core import KEYS
 
-KEYS.update({'(':('9',True),')':('0',True),'$':('4',True)})
+KEYS.update({'(':('9',True),')':('0',True),'$':('4',True),'%':('5',True),'+':('PLUS',False)})
 
 
 class Programming(Sessions):
@@ -118,7 +118,41 @@ class Programming(Sessions):
         self.command('ECHO abc >ABC.TXT')
         self.command('MD5 ABC.TXT',b'MD5 (ABC.TXT)')
         self.command('C:HELLO',b'Hello from disk!')
-        s.saved['integration']=dict(fastbasic=True,physical_input_get_key=True,
+        # Edit the floating-point example through the same physical editor keys.
+        before=s.begin('EDX CALC.BAS');pending()
+        key('Z',ctrl=True);pending()
+        key('BACKSPACE');pending()
+        key('X');pending()
+        key('2',shift=True);pending()
+        key('S',ctrl=True);pending();key('RETURN');pending()
+        key('ESC');s.ready(before);s.result()
+        self.command('FBC CALC.BAS CALC.COM',b'Compiled CALC.COM')
+        self.command('CALC',b'FLOAT BASICX')
+        self.command('CALC.COM',b'3.75')
+        before=s.begin('FBC');pending()
+        for char in 'CALC.BAS\n':s.press(char)
+        pending()
+        for char in 'FLOAT.COM\n':s.press(char)
+        s.ready(before);s.result()
+        self.command('FLOAT',b'FLOAT BASICX')
+        self.command('FBC DECIMAL.BAS DECIMAL.COM')
+        before=s.begin('DECIMAL');pending()
+        for char in '1.25\n':s.press(char)
+        s.ready(before);s.result()
+        require(b'2.5' in self.screen('decimal-input'),'FP INPUT/PRINT differs')
+        self.command('ECHO 1.25 >NUM.TXT')
+        self.command('DECIMAL <NUM.TXT >FLOAT.TXT')
+        self.command('TYPE FLOAT.TXT',b'2.5')
+        self.failure('FBC MISSING.BAS BAD.COM',205)
+        self.failure('FBC BAD.BAS BAD.COM',306)
+        self.failure('FBC CALC.BAS SYS:FAIL.COM',214)
+        self.command('ECHO "DO : X%=SQR(999999.0) : LOOP" >FBUSY.BAS')
+        self.command('FBC FBUSY.BAS FBUSY.COM')
+        before=s.begin('FBUSY')
+        s.rendezvous(f'(db(${s.saved["top"]+s.console["INSTANCE_CAPS"]:x})&$40)=$40')
+        s.frames(15);s.press('\x03');s.ready(before);self.failed_result(304)
+        self.command('CALC',b'3.75')
+        s.saved['integration']=dict(fastbasic=True,floating_point=True,physical_input_get_key=True,
                                     busy_break=True,commands=self.commands)
         s.save_screen(self.bundle/'boot-smoke.png')
         shutil.copyfile(self.bundle/'boot-smoke.png',self.bundle/'fastbasic.png')
@@ -149,9 +183,13 @@ def check(bundle):
     extract(bundle/'work-walkthrough.atr',readback)
     require((readback/'HELLO.BAS').read_bytes()==b'? "HELLO BASICX"\x9b? 6*7\x9b',
             'Editor save readback differs')
+    expected=(ROOT/'examples/fastbasic/CALC.BAS').read_bytes().replace(b'FLOAT BASIC',b'FLOAT BASICX').replace(b'\n',b'\x9b')
+    require((readback/'CALC.BAS').read_bytes()==expected,'FP editor save readback differs')
+    require((readback/'FLOAT.TXT').read_bytes()==b'ENTER A DECIMAL?2.5\x9b','Redirected FP bytes differ')
     result['generated']={name:dict(sha256=sha256(readback/name),
                                  profile=profile((readback/name).read_bytes()))
-                         for name in ('HELLO.COM','SECOND.COM','INPUT.COM','BUSY.COM')}
+                         for name in ('HELLO.COM','SECOND.COM','INPUT.COM','BUSY.COM',
+                                      'CALC.COM','FLOAT.COM','DECIMAL.COM','FBUSY.COM')}
     (bundle/'fastbasic-checks.json').write_text(json.dumps(
         dict(status='pass',tier='development',result=result),indent=2)+'\n')
     return result

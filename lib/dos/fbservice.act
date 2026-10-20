@@ -61,6 +61,27 @@ BYTE FUNC Clock(FBSTATE.Session POINTER state)
 
 RETURN(error=0)
 
+LONGCARD FUNC RandomWord(FBSTATE.Session POINTER state)
+  LONGCARD value
+
+  value=state.random
+  value=value XOR (value LSH 13)
+  value=value XOR (value RSH 17)
+  value=value XOR (value LSH 5)
+  state.random=value
+
+RETURN(value)
+
+PROC Snapshot(FBSTATE.Session POINTER state LONGCARD value)
+  CARD index
+
+  FOR index=0 TO FBABI.SNAPSHOT_BYTES-1 DO
+    state.guest.bank(FBABI.SNAPSHOT+index)=BYTE(value)
+    value=value RSH 8
+  OD
+
+RETURN
+
 PROC IntegerString(FBSTATE.Session POINTER state BYTE POINTER frame)
   CARD value,count,index
   BYTE negative
@@ -161,6 +182,16 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
       image.data,SIZE(image.dataBytes))
   FBPROGRAM.Gates(state.guest.bank)
   SDXSTATE.Prepare(@state.guest)
+  ; Long indirect pointers make absolute,Y math operands use this guest D.
+  ; Five pointers fit unused bytes in the existing full guest page.
+  FOR value=0 TO FBABI.MATH_POINTER_COUNT-1 DO
+    SDXSTATE.Word(state.guest.dp,FBABI.MATH_POINTERS+value*3,
+        CARD(ADDRESS(state.guest.dp)))
+  OD
+  state.guest.dp(FBABI.MATH_POINTERS)=$d4
+  state.guest.dp(FBABI.MATH_POINTERS+3)=$d5
+  state.guest.dp(FBABI.MATH_POINTERS+6)=$e0
+  state.guest.dp(FBABI.MATH_POINTERS+9)=$e1
   SDXSTATE.Word(state.guest.bank,FBABI.MEMTOP,FBABI.LIMIT)
   SDXSTATE.Word(state.guest.bank,FBABI.MEMLO,
       CARD(image.dataBytes)+FBABI.LOAD-FBABI.HEADER_BYTES)
@@ -232,17 +263,21 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
         cause=DOS.IoErr()
       FI
     WHEN FBABI.EVENT_RAND THEN
-      random=state.random
-      random=random XOR (random LSH 13)
-      random=random XOR (random RSH 17)
-      random=random XOR (random LSH 5)
-      state.random=random
+      random=RandomWord(state)
       IF value<>0 THEN
         random=random MOD LONGCARD(value)
       ELSE
         random=0
       FI
       SetWord(frame,CARD(random))
+    WHEN FBABI.EVENT_TICKS24 THEN
+      IF Clock(state)=0 THEN
+        cause=state.guest.nativeError
+      ELSE
+        Snapshot(state,state.clock.ticks_lo & LONGCARD($ffffff))
+      FI
+    WHEN FBABI.EVENT_RANDOM32 THEN
+      Snapshot(state,RandomWord(state))
     WHEN FBABI.EVENT_ARGUMENT THEN
       IF Argument(state,frame)=0 THEN
         cause=DOS.ERROR_BAD_NUMBER

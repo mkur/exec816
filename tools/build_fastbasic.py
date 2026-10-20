@@ -99,7 +99,7 @@ def prepare(output):
     verify_files(original, originals)
     patch = PORT/'patches/exec6502.patch'
     identities = {str(p.relative_to(ROOT)): sha256(p) for p in
-                  [Path(__file__), PORT/'upstream.json', ROOT/'abi/fastbasic.json', patch,
+                  [Path(__file__), ROOT/'tools/generate_fastbasic_math.py', PORT/'upstream.json', ROOT/'abi/fastbasic.json', patch,
                    *sorted((PORT/'target').glob('*'))] if p.is_file()}
     stamp = output/'port-inputs.json'
     source_stamp = output/'port-source.json'
@@ -125,15 +125,17 @@ def prepare(output):
         basic = source/'src/syntax/basic.syn'
         basic.write_text('\n'.join(line for line in basic.read_text().splitlines()
                                    if '"USR("' not in line)+'\n')
-        shutil.copy2(PORT/'target/atari-int-compiler.tgt', source/'compiler/atari-int-compiler.tgt')
-        for name in ('fastbasic.inc', 'helpers.asm', 'callbacks.asm'):
-            shutil.copy2(PORT/'target'/name, source/'src'/name)
+        added = {}
+        for name in ('atari-int-compiler.tgt', 'atari-fp-compiler.tgt'):
+            added['compiler/'+name] = PORT/'target'/name
+        for name in ('fastbasic.inc', 'helpers.asm', 'callbacks.asm', 'mathpack.asm', 'fp_snapshot.asm'):
+            added['src/'+name] = PORT/'target'/name
+        for name, path in added.items():
+            shutil.copy2(path, source/name)
         shutil.copy2(PORT/'target/exec.cfg', source/'compiler/fastbasic.cfg')
         shutil.copy2(PORT/'target/header.asm', source/'src/comp_header.asm')
         shutil.copy2(PORT/'target/cmdline.bas', source/'src/cmdline.bas')
-        names = set(originals) | {'src/syntax/basic-internal.syn',
-                'compiler/atari-int-compiler.tgt', 'src/fastbasic.inc',
-                'src/helpers.asm', 'src/callbacks.asm'}
+        names = set(originals) | set(added) | {'src/syntax/basic-internal.syn'}
         source_stamp.write_text(json.dumps({name: sha256(source/name)
                                             for name in sorted(names)}, indent=2)+'\n')
         stamp.write_text(json.dumps(identities, indent=2)+'\n')
@@ -146,17 +148,25 @@ def build(output):
     with (output/'build.log').open('w') as log:
         command(['make', '-j4', 'build/bin/fastbasic', 'build/bin/ca65',
                  'build/bin/ld65', 'build/bin/ar65', 'build/gen/syntp',
-                 'build/bin/fbci.xex', 'build/compiler/fastbasic-int.lib'], original, log)
-        for name in ('bin/fastbasic', 'bin/ca65', 'bin/ld65', 'bin/ar65', 'gen/syntp'):
+                 'build/bin/fbci.xex', 'build/bin/fbc.xex', 'build/compiler/fastbasic-int.lib'], original, log)
+        for name in ('bin/ca65', 'bin/ld65', 'bin/ar65', 'gen/syntp'):
             target = source/'build'/name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(original/'build'/name, target)
-        command(['make', '-j4', 'build/bin/fbci.xex', 'build/compiler/fastbasic-int.lib'], source, log)
+        command(['make', '-j4', 'build/bin/fastbasic', 'build/bin/fbci.xex',
+                 'build/bin/fbc.xex', 'build/compiler/fastbasic-int.lib',
+                 'build/compiler/fastbasic-fp.lib'], source, log)
     compiler = source/'build/bin/fbci.xex'
     layout = profile(compiler.read_bytes())
     shutil.copy2(compiler, output/'FBCI.COM')
+    compilers = {}
+    for name in ('FBCI', 'FBC'):
+        path = source/f'build/bin/{name.lower()}.xex'
+        shutil.copy2(path, output/(name+'.COM'))
+        compilers[name] = dict(profile=profile(path.read_bytes()), sha256=sha256(path))
     record = dict(format='exec816-fastbasic-build-v1', upstream=PIN,
                   inputs=identities, compiler=layout, compiler_sha256=sha256(compiler),
+                  target=ABI['target'], compilers=compilers,
                   source_files=json.loads((output/'port-source.json').read_text()),
                   tools={name:sha256(source/'build/bin'/name) for name in
                          ('fastbasic', 'ca65', 'ld65', 'ar65')})
@@ -164,7 +174,7 @@ def build(output):
     return source, record
 
 
-def compile_program(source, program, output, optimize=True):
+def compile_program(source, program, output, optimize=True, floating=False):
     source = Path(source).resolve()
     program, output = Path(program).resolve(), Path(output).resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -172,14 +182,14 @@ def compile_program(source, program, output, optimize=True):
     with output.with_suffix('.log').open('w') as log:
         options = [] if optimize else ['-n']
         command([source/'build/bin/fastbasic', '-target-path:compiler',
-                 '-syntax-path:src/syntax', '-t:atari-int', '-c', *options,
+                 '-syntax-path:src/syntax', '-t:atari-fp' if floating else '-t:atari-int', '-c', *options,
                  '-o', assembly, program], source, log)
         command([source/'build/bin/ca65', '-tatari', '-I', source/'cc65/asminc',
                  '-I', source/'src', '-o', obj, assembly], source, log)
         command([source/'build/bin/ld65', '-C', source/'compiler/fastbasic.cfg',
                  '-Ln', output.with_suffix('.lbl'), '-m', output.with_suffix('.map'),
-                 '-o', output, source/'build/obj/int/comp_header.o', obj,
-                 source/'build/compiler/fastbasic-int.lib'], source, log)
+                 '-o', output, source/f'build/obj/{"fp" if floating else "int"}/comp_header.o', obj,
+                 source/f'build/compiler/fastbasic-{"fp" if floating else "int"}.lib'], source, log)
     return profile(output.read_bytes())
 
 
@@ -188,9 +198,10 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, default=ROOT/'build/fastbasic')
     parser.add_argument('--compile', type=Path)
     parser.add_argument('--program-output', type=Path)
+    parser.add_argument('--float', action='store_true', dest='floating', help='Compile an FP user program')
     args = parser.parse_args()
     source, record = build(args.output)
     if args.compile:
         target = args.program_output or args.compile.with_suffix('.COM')
-        record['program'] = compile_program(source, args.compile, target)
+        record['program'] = compile_program(source, args.compile, target, floating=args.floating)
     print(json.dumps(record, indent=2))
