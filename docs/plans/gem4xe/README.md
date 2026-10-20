@@ -1,5 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
+The [QED startup design](qed-startup-design.md) and
+[QS1–QS5 implementation plan](qed-startup-implementation-plan.md) define
+strategy step 3: adapt resources/menus and fixed-font drawing, execute the real
+editor startup/close, and establish rollback, reuse and GUI stack evidence.
+
 The [QED native feasibility design](qed-native-feasibility-design.md) and
 [QF1–QF6 plan](qed-native-feasibility-implementation-plan.md) define strategy
 step 2: prove a private native runtime and text-storage/file paths, measure
