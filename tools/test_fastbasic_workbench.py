@@ -8,6 +8,7 @@ from native_program import ROOT, read_build, require, sha256, verify_machine
 
 def wb0(out, reuse=False,provider=False):
     from build_c_program import build as application
+    from c_program import ABI
     from build_fastbasic import build as fastbasic
     from build_gem_desktop import build_desktop
     from make_data_disk import make
@@ -19,8 +20,9 @@ def wb0(out, reuse=False,provider=False):
     out.mkdir(parents=True, exist_ok=True)
     if not reuse:
         if not provider:
-            production=application(out/'app', [ROOT/'examples/gem-basic'/n for n in ('main.c','basic.c')])
-            probe=application(out/'probe', [ROOT/'tests/programs/basic_lifecycle.c',ROOT/'examples/gem-basic/basic.c'])
+            production=application(out/'app', [ROOT/'examples/gem-basic'/n for n in
+                ('main.c','basic.c','editor.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c')]+[ROOT/'c/calypsi/file-list.c'])
+            probe=application(out/'probe', [ROOT/'tests/programs/basic_lifecycle.c',ROOT/'examples/gem-basic/basic.c'],minimum_stack=ABI['stack_floor_bytes'])
         else:production=json.loads((out/'app/app.json').read_text())
         _,basic=fastbasic(ROOT/'build/fastbasic')
         media=out/'media';media.mkdir(exist_ok=True)
@@ -84,7 +86,7 @@ def wb0(out, reuse=False,provider=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice',choices=('WB0','WB1','WB2','WB3','WB4'),required=True)
+    p.add_argument('--slice',choices=('WB0','WB1','WB2','WB3','WB4','WB5'),required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--from-build',action='store_true')
     p.add_argument('--provider',type=Path,default=ROOT/'build/fastbasic-workbench/wb0/c-image.json')
@@ -122,3 +124,19 @@ if __name__=='__main__':
             prepare(a.output.resolve()/'physical',a.provider.resolve())
         exercise(a.output.resolve()/'editor')
         assistance(a.output.resolve()/'physical',True)
+    elif a.slice=='WB5':
+        from test_c_launch_arguments import run as arguments
+        from test_program_launch import prepare,exercise
+        from test_c_process import run as cprocess
+        from test_process_lifetime import run as lifetimes,exercise as lifetimes_replay
+        out=a.output.resolve()
+        arguments(out/'arguments',True,a.from_build)
+        arguments(out/'arguments-raw',False,a.from_build)
+        if a.from_build:
+            directory=out/'process-lifetime'
+            lifetimes_replay(read_build(directory),'opt',{
+                name:sha256(directory/name) for name in ('process.act','dosclient.act','portcore.act')})
+        else:lifetimes(out/'process-lifetime','opt')
+        if not a.from_build:prepare(out/'launch')
+        exercise(out/'launch')
+        cprocess(out/'c-process',True,a.from_build)

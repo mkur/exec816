@@ -14,6 +14,7 @@ USE CSTRING.IMPL AS STR
 TYPE Admission=[
   LONGINT FUNC POINTER entry()
   PROC POINTER trampoline(),finalizer()
+  CARD minimumStack
 ]
 
 PROCESSSTATE.Table POINTER table
@@ -146,6 +147,7 @@ PROC AdmissionTests(BYTE unused)
   request.entry=@Child
   request.trampoline=@PROCESS.Run
   request.finalizer=@PROCESS.Finish
+  request.minimumStack=0
   lease=PROCESSSTATE.Entry POINTER(DOSCORE.Control(PROCESSSTATE.OP_RESERVE,
       BYTE POINTER(@request)))
   Require(lease<>PROCESSSTATE.Entry POINTER(0))

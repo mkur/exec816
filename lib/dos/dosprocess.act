@@ -11,6 +11,7 @@ USE DOSBREAKTYPES
 USE FSOPERATION
 USE CONSOLEFOREGROUND
 USE PROCESSSTATE
+USE PROCESSLAUNCH
 USE HEAPCORE
 INCLUDE "dos-types.inc"
 
@@ -52,36 +53,35 @@ RETURN(1)
 
 ; Retain the parent's selections before preparing the child's context.
 BYTE FUNC Snapshot(PROCESSSTATE.Entry POINTER process DOSCORE.DosSlot
-    POINTER owner DOSCLIENT.ClientContext POINTER client DOSBREAKTYPES.Scope
-    POINTER scope)
+    POINTER owner BYTE POINTER input,output,directory,console)
 
-  process.input=DOSINHERIT.Clone(owner,client.input,DOSOBJECTS.KIND_FILE)
-  IF client.input<>BYTE POINTER(0) AND process.input=BYTE POINTER(0) THEN
+  process.input=DOSINHERIT.Clone(owner,input,DOSOBJECTS.KIND_FILE)
+  IF input<>NULL AND process.input=NULL THEN
     RETURN(0)
   FI
 
-  IF client.output=client.input THEN
+  IF output=input THEN
     process.output=process.input
   ELSE
-    process.output=DOSINHERIT.Clone(owner,client.output,DOSOBJECTS.KIND_FILE)
+    process.output=DOSINHERIT.Clone(owner,output,DOSOBJECTS.KIND_FILE)
   FI
 
-  IF client.output<>BYTE POINTER(0) AND process.output=BYTE POINTER(0) THEN
+  IF output<>NULL AND process.output=NULL THEN
     RETURN(0)
   FI
 
-  process.directory=DOSINHERIT.Clone(owner,client.directory,DOSOBJECTS.KIND_LOCK)
-  IF client.directory<>BYTE POINTER(0) AND process.directory=BYTE POINTER(0) THEN
+  process.directory=DOSINHERIT.Clone(owner,directory,DOSOBJECTS.KIND_LOCK)
+  IF directory<>NULL AND process.directory=NULL THEN
     RETURN(0)
   FI
 
-  IF scope<>DOSBREAKTYPES.Scope POINTER(0) THEN
-    IF scope.handle=client.input THEN
+  IF console<>NULL THEN
+    IF console=input THEN
       process.console=process.input
-    ELSEIF scope.handle=client.output THEN
+    ELSEIF console=output THEN
       process.console=process.output
     ELSE
-      process.console=DOSINHERIT.Clone(owner,scope.handle,DOSOBJECTS.KIND_FILE)
+      process.console=DOSINHERIT.Clone(owner,console,DOSOBJECTS.KIND_FILE)
     FI
 
     IF process.console=BYTE POINTER(0) THEN
@@ -97,6 +97,7 @@ PUBLIC BYTE FUNC Prepare(PROCESSSTATE.Entry POINTER process BYTE foreground)
   DOSCLIENT.ClientContext POINTER client
   DOSBREAKTYPES.Scope POINTER scope
   BYTE okay
+  BYTE POINTER console
   LONGINT error
 
   owner=DOSCORE.Current()
@@ -131,7 +132,12 @@ PUBLIC BYTE FUNC Prepare(PROCESSSTATE.Entry POINTER process BYTE foreground)
   FI
 
   client.busy=1
-  okay=Snapshot(process,owner,client,scope)
+  console=NULL
+  IF scope<>NULL THEN
+    console=scope.handle
+  FI
+
+  okay=Snapshot(process,owner,client.input,client.output,client.directory,console)
   error=DOSCLIENT.IoErr()
   IF okay=0 THEN
     IF Discard(process)=0 THEN
@@ -153,6 +159,38 @@ PUBLIC BYTE FUNC Prepare(PROCESSSTATE.Entry POINTER process BYTE foreground)
   client.busy=0
 
 RETURN(1)
+
+; Clone explicitly selected resources without changing or suspending the parent.
+PUBLIC BYTE FUNC PrepareWith(PROCESSSTATE.Entry POINTER process
+    PROCESSLAUNCH.StartSpec POINTER specification)
+  BYTE POINTER directory
+  BYTE okay
+  LONGINT error
+
+  LET client=DOSCLIENT.Ensure()
+  IF client=NULL THEN
+    RETURN(0)
+  FI
+
+  LET owner=DOSCORE.Current()
+  IF owner.active<>0 OR client.busy<>0 OR client.suspended<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  directory=specification.directory
+  IF directory=NULL THEN
+    directory=client.directory
+  FI
+
+  client.busy=1
+  okay=Snapshot(process,owner,specification.input,specification.output,
+      directory,specification.console)
+  error=DOSCLIENT.IoErr()
+  client.busy=0
+  DOSCLIENT.SetError(error)
+
+RETURN(okay)
 
 ; Prepare a child context attached to the parent's foreground command group.
 PUBLIC BYTE FUNC PrepareGroup(PROCESSSTATE.Entry POINTER process BYTE
@@ -181,7 +219,7 @@ PUBLIC BYTE FUNC PrepareGroup(PROCESSSTATE.Entry POINTER process BYTE
 
   owner=DOSCORE.Current()
   client.busy=1
-  okay=Snapshot(process,owner,client,scope)
+  okay=Snapshot(process,owner,client.input,client.output,client.directory,scope.handle)
   error=DOSCLIENT.IoErr()
   IF okay=0 THEN
     IF Discard(process)=0 THEN
@@ -247,6 +285,29 @@ PROC PublishBreak(PROCESSSTATE.Entry POINTER process
 
 RETURN
 
+; Establish a private cancellation scope, optionally routing its owned console.
+BYTE FUNC EnterBackground(DOSCLIENT.ClientContext POINTER client BYTE
+    POINTER console)
+  DOSBREAKTYPES.Scope POINTER scope
+
+  IF console<>NULL THEN
+    IF DOSBREAK.Begin(console)=0 THEN
+      RETURN(0)
+    FI
+  ELSE
+    scope=DOSBREAK.Allocate(client,NULL)
+    IF scope=NULL THEN
+      RETURN(0)
+    FI
+
+    scope.active=1
+    client.foreground=BYTE POINTER(scope)
+  FI
+
+  client.foregroundLoan=DOSCLIENT.FOREGROUND_PROCESS
+
+RETURN(1)
+
 ; Attach prepared DOS ownership when the child begins execution.
 PUBLIC BYTE FUNC Adopt(PROCESSSTATE.Entry POINTER process
     DOSCLIENT.ClientContext POINTER client)
@@ -281,15 +342,7 @@ PUBLIC BYTE FUNC Adopt(PROCESSSTATE.Entry POINTER process
   ELSEIF process.foreground=PREPARED THEN
     okay=EnterForeground(process,client,console)
   ELSEIF (process.breakFlags & PROCESSSTATE.BREAK_BACKGROUND)<>0 THEN
-    BEGIN
-      LET scope=DOSBREAK.Allocate(client,NULL)
-      IF scope=NULL THEN
-        RETURN(0)
-      FI
-
-      scope.active=1
-      client.foreground=BYTE POINTER(scope)
-    END
+    okay=EnterBackground(client,console)
   FI
 
   IF okay<>0 AND client.foreground<>NULL THEN
@@ -371,11 +424,20 @@ PUBLIC BYTE FUNC Cleanup(PROCESSSTATE.Entry POINTER process)
           RETURN(0)
         FI
 
-        EXEC.Forbid()
-        client.foreground=NULL
-        scope.active=0
-        EXEC.Permit()
-        DOSBREAK.Free(scope)
+        IF scope.handle<>NULL THEN
+          client.foregroundLoan=0
+          IF DOSBREAK.End()=0 THEN
+            client.foregroundLoan=DOSCLIENT.FOREGROUND_PROCESS
+            RETURN(0)
+          FI
+        ELSE
+          EXEC.Forbid()
+          client.foreground=NULL
+          client.foregroundLoan=0
+          scope.active=0
+          EXEC.Permit()
+          DOSBREAK.Free(scope)
+        FI
       FI
     END
   ELSE

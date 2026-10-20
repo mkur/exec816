@@ -24,6 +24,9 @@ PUBLIC TYPE ClientContext=[
 ]
 
 PUBLIC CONST CLIENT_SIZE=106
+; foregroundLoan already distinguishes loan (1) and group (2) ownership.
+; Process-owned independent scopes also reject caller Begin/EndForeground.
+PUBLIC CONST FOREGROUND_PROCESS=3
 
 ; Read this Task's detailed DOS error without allocating a client context.
 PUBLIC LONGINT FUNC IoErr()

@@ -49,7 +49,9 @@ def verify(original, linked, bank, relocations):
                     'Relinking changed C symbol placement: '+name)
 
 
-def pack(image, relocations):
+def pack(image, relocations,minimum_stack=None):
+    if minimum_stack is None:minimum_stack=ABI['default_stack_bytes']
+    require(type(minimum_stack) is int and ABI['stack_floor_bytes']<=minimum_stack<=65535,'Invalid C stack requirement')
     segments=shape(image,ABI['link_bank'])
     require(0<len(segments)<=ABI['segment_limit'],'Too many C application segments')
     span=max(s['offset']+s['size'] for s in segments)
@@ -67,11 +69,11 @@ def pack(image, relocations):
     body+=b''.join(struct.pack('<HHI',ordinal,0,at) for ordinal,at in imports)
     body+=b''.join(struct.pack('<I',at) for at in relocations)
     body+=b''.join(s['payload'] for s in segments)
-    header=struct.pack('<4sHHBBHIIIHHI',ABI['magic'].encode(),1,ABI['version'],ABI['link_bank'],
+    header=struct.pack('<4sHHBBHIIIHHHHI',ABI['magic'].encode(),1,ABI['version'],ABI['link_bank'],
         ABI['max_banks'],len(segments),span,image['symbols']['main']-BASE,len(relocations),
-        len(imports),image['provenance']['dp_workspace_bytes'],ABI['header_bytes']+len(body))
+        len(imports),image['provenance']['dp_workspace_bytes'],minimum_stack,0,ABI['header_bytes']+len(body))
     require(len(header)+len(body)<=ABI['file_limit'],'C application file too large')
-    return header+body,dict(span=span,entry=image['symbols']['main']-BASE,relocations=relocations,
+    return header+body,dict(span=span,minimum_stack=minimum_stack,entry=image['symbols']['main']-BASE,relocations=relocations,
                             imports=imports,segments=[{k:v for k,v in s.items() if k!='payload'} for s in segments])
 
 

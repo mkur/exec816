@@ -67,8 +67,8 @@ LONG EXEC_CALL GEMDesktopStart(ULONG assets)
         }
     }
     active=1;GEMDesktopDone=GEMDesktopFailure=0;
-    GEMDesktopChildren[0]=ExecStartProgram(assets ? "RAM:DESKTOP.APP":"SYS:C/PANEL.APP",NULL,0);
-    if (!assets) GEMDesktopChildren[1]=ExecStartProgram("SYS:C/COUNTER.APP",NULL,0);
+    GEMDesktopChildren[0]=ExecStartProgram(assets ? "RAM:DESKTOP.APP":"SYS:C/PANEL.APP",NULL);
+    if (!assets) GEMDesktopChildren[1]=ExecStartProgram("SYS:C/COUNTER.APP",NULL);
     if (!GEMDesktopChildren[0] || (!assets && !GEMDesktopChildren[1])) {
         GEMDesktopStop(0);return 0;
     }

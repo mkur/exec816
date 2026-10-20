@@ -65,7 +65,8 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
       Word(bytes,6)<>VERSION OR bytes(8)<>LINK_BANK OR bytes(9)<>BANK_LIMIT OR
       count=0 OR count>SEGMENT_LIMIT OR span=0 OR span>SPAN_LIMIT OR
       (Word(bytes,26)<>20 AND Word(bytes,26)<>23) OR
-      Long(bytes,28)<>length OR relocations>FILE_LIMIT/4 THEN
+      Word(bytes,MINIMUM_STACK_OFFSET)<STACK_FLOOR OR Word(bytes,30)<>0 OR
+      Long(bytes,FILE_BYTES_OFFSET)<>length OR relocations>FILE_LIMIT/4 THEN
     DOSCLIENT.SetError(error)
     RETURN(NULL)
   FI
@@ -133,6 +134,7 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
   error=LONGINT(O65TYPES.ERROR_NO_FREE_STORE)
   image=PROGRAMIMAGE.Image POINTER(O65MEMORY.Allocate(SIZEOF(PROGRAMIMAGE.Image)))
   IF image<>NULL THEN
+    image.minimumStack=Word(bytes,MINIMUM_STACK_OFFSET)
     image.backingBytes=span+$ffff
     image.backing=O65MEMORY.Allocate(SIZE(image.backingBytes))
     IF image.backing<>NULL THEN

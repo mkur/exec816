@@ -16,6 +16,7 @@ PUBLIC TYPE Image=[
   BYTE POINTER extension
   PROC POINTER release(BYTE POINTER extension)
   BYTE ARRAY name(NAME_CAPACITY)
+  CARD minimumStack
 ]
 
 ; Release all segment allocations belonging to an unloaded program image.

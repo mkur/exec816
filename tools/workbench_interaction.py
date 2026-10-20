@@ -13,7 +13,7 @@ LAYOUT=[('BasicApp size',178),('BasicDocument size',46),('BasicEditor size',1664
 def build_editor(out,provider):
     from build_c_program import build as application
     from build_bitmap_console import prepare
-    from c_program import binding
+    from c_program import ABI,binding
     from make_data_disk import make
     from generate_memory import PROFILE
     from generate_mouse_acceleration import metadata
@@ -21,7 +21,7 @@ def build_editor(out,provider):
     app=application(out/'app',[ROOT/'examples/gem-basic'/n for n in ('main.c','basic.c','editor.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c')]+[ROOT/'c/calypsi/file-list.c'],
         probes=[(ROOT/'tests/programs/basic_editor_layout.c',LAYOUT)])
     maximum=application(out/'maximum',[ROOT/'tests/programs/basic_maximum.c']+[ROOT/'examples/gem-basic'/n for n in ('basic.c','editor.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c')]+[ROOT/'c/calypsi/file-list.c'])
-    application(out/'counter',[ROOT/'examples/gem-counter'/n for n in ('main.c','counter.c')])
+    application(out/'counter',[ROOT/'examples/gem-counter'/n for n in ('main.c','counter.c')],minimum_stack=ABI['stack_floor_bytes'])
     media=out/'media';media.mkdir(exist_ok=True)
     (media/'COUNTER.APP').write_bytes((out/'counter/program.app').read_bytes())
     (media/'BMAX.APP').write_bytes((out/'maximum/program.app').read_bytes())

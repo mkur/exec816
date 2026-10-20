@@ -134,3 +134,42 @@ Source, menu, index and job state live in the APP or
 upper heap. Added reserved bank-zero bytes remain **0 fixed, 0 root/kernel,
 0 for each public Task and 0 idle**, including guards, alignment and unused
 capacity; the existing guest pool remains 544 bytes.
+
+## WB5 — explicit child launch
+
+[WB5 evidence](../development/fastbasic-workbench-wb5.json) covers the generated
+24-byte C/20-byte native launch descriptor, explicit streams and directory,
+retained Image ownership, copied arguments, setup acknowledgment and independent
+console cancellation. The single current C ABI is 21 and Process ABI is 8.
+The existing Process row remains 128 bytes. New C `Input` and `AvailMem` imports
+expose existing public operations; no kernel operation or signal bit is added.
+
+Raw and optimized argument/return probes each pass 22 checks. The optimized
+Process lifetime regression passes 8,439 checks. The loader regression passes
+102 checks across 12 C/native executions, including bad stack/reserved header
+fields, allocation rollback, signed results, simultaneous instances and exact
+resource return. The configured-launch fixture passes 78 native checks and
+70 C controller checks, with 16 actual child-entry scope ownership checks.
+It exercises native, C and FB65
+children through actual emitted code, shared file position, project-relative
+files, parent-handle closure, private and bound-console BREAK, wrong-console
+setup failure, stack refusal/retry and failures at each acquired resource.
+Recorded fixture copies inject failures; production modules contain no switches.
+
+The graphical console worker uses an existing 2,560-byte pool. The workbench
+uses the other; ordinary native/FB65 children use an existing smaller pool.
+C images declare their requirement in the 36-byte ABI-21 header. The packer
+defaults to 2,560 bytes; Panel, Counter and the measured small test programs
+declare 1,312. Admission selects a fitting existing pool and reports 103 if
+none fits, even with smaller slots free. No pool is enlarged.
+
+Review found that a bound independent scope also needs Process ownership to
+prevent public EndForeground from freeing the published cancellation pointer.
+The existing ownership byte now distinguishes this state; Begin/End refusal
+and pointer preservation are exercised in the actual child context. Scope and
+client sizes remain 56 and 106 upper bytes. Image metadata grows from 72 to
+74 requested bytes (80 rounded, **8 additional upper bytes per image**), and
+the transient admission packet grows from 9 to 12 bytes. Added reserved
+bank-zero bytes remain **0 fixed, 0 root/kernel, 0 for each public Task and
+0 idle**, including guards, alignment, unused capacity and the existing guest
+pool. These development checks do not qualify the hosted system.

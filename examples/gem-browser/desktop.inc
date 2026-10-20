@@ -117,7 +117,7 @@ static ULONG desktop_launch(struct Desktop *d,const char *name,const char *args,
     ULONG child;
     for (i=0;i<DESKTOP_CHILDREN;++i) if (!d->children[i]) break;
     if (i==DESKTOP_CHILDREN) { strcpy(d->status,"Collect or close an application first");return 0; }
-    child=ExecStartProgram(name,args,length);
+    child=program_start(name,args,length);
     if (child) { d->children[i]=child;++d->launches;strcpy(d->status,"Application started"); }
     else strcpy(d->status,"Cannot launch: no Task slot or file unavailable");
     return child;

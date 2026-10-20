@@ -32,8 +32,9 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-Import ABI 19 includes the current device/AES/file imports, `ExamineExact`,
-`MountVolume` and `UnmountVolume`, and the caller-local `ExecAESBeginUpdate` and
+Import ABI 21 includes the current device/AES/file imports, `ExamineExact`,
+`MountVolume`, `UnmountVolume`, `ExNextBatch`, `Input`, `AvailMem`, the retained
+Image launcher, and the caller-local `ExecAESBeginUpdate` and
 `ExecAESPaintedChanges` [paint-completion helpers](aes.md#optional-repaint-completion).
 The generated C FileInfoBlock stays 260 bytes, with 30 reserved bytes and
 `fib_InfoFlags` at 258. Check the
@@ -48,7 +49,7 @@ The desktop provider and its applications must be rebuilt together.
 
 ## File layout
 
-All integers are little-endian. The 32-byte header is followed by segment
+All integers are little-endian. The 36-byte header is followed by segment
 records, import records, bank-fixup offsets and concatenated segment payloads.
 The header's file length must match exactly.
 
@@ -56,7 +57,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 19 |
+| 6 | 2 | Import ABI version, 21 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -65,7 +66,9 @@ The header's file length must match exactly.
 | 20 | 4 | Number of bank-byte fixups |
 | 24 | 2 | Number of imports |
 | 26 | 2 | Compiler lower-DP workspace, 20 or 23 bytes |
-| 28 | 4 | Complete file bytes |
+| 28 | 2 | Required reserved Task stack bytes, including interrupt headroom |
+| 30 | 2 | Reserved zero |
+| 32 | 4 | Complete file bytes |
 
 Each 16-byte segment has four 32-bit values: relative offset, serialized bytes,
 reserved bytes and flags (1 executable, 2 writable, 0 read-only data). Segments
@@ -79,6 +82,14 @@ Limits are four segments, a 256 KiB file and a 192 KiB memory span. Admission
 checks versions, file/segment bounds, executable entry, serialized fixup sites
 and available imports once. This does not verify arbitrary instruction streams
 or provide memory protection. Callers retain responsibility for valid API use.
+
+The packer defaults to a 2,560-byte stack requirement. `--minimum-stack` declares
+a different verified requirement, at least 1,312 bytes. Process admission selects
+the smallest free existing pool satisfying the image and caller requirements.
+It returns 103 if none fits, including when smaller slots remain free. Panel and
+Counter declare 1,312 bytes; the workbench declares 2,560. This selects existing
+pools and adds no reserved bank-zero storage. Image metadata requests 74 upper
+bytes, rounded to 80, eight more rounded bytes than the preceding layout.
 
 ## Storage and entry bridge
 
@@ -153,10 +164,23 @@ also exposes the existing DOS `DeleteFile` operation for desktop file management
 The [calculator guide](../guides/aes-applications.md#gem4xe-calculator) describes
 calculator input; keep SYS:CALC.RSC mounted.
 
-`ExecStartProgram(name, arguments, length)` uses the existing native Process
-argument-copy path. Length excludes NUL and is bounded at 255 bytes. Null/zero
-starts with an empty tail. This signature requires C component ABI 11 and a
-rebuild of the shared component and all APPs; there is no old-signature entry.
+`ExecStartProgram(name, spec)` accepts the generated 24-byte
+`struct ExecProgramStart` from `<exec816/program.h>`. Its five four-byte fields
+are arguments, input, output, directory and console, followed by two-byte length
+and minimumStack fields. Length excludes NUL and is bounded at 255 bytes;
+arguments are copied. Null spec supplies an empty tail, NIL input, shell RAW
+output, inherited directory and a private cancellation scope. Nonzero stream
+and directory handles are borrowed during Start and cloned into child ownership;
+parent selections remain usable. A nonzero console must be a caller-owned CON
+handle; the child binds an independent console/input/BREAK lifetime before entry.
+See the [Process contract](process.md#explicit-child-contexts) for setup failure,
+completion signals and ownership. Rebuild the provider and all APPs for ABI 21.
+
+`ExecLoadProgram(name)` returns one owned mutable Image. `ExecStartLoaded(image,
+spec)` retains execution ownership until collection; only one execution of that
+instance can be live. Release the load reference exactly once with
+`ExecReleaseProgram(image)`, either before or after collection. The path launcher
+releases its own temporary load reference once and returns only the child identity.
 Files associates a case-insensitive `.TXT` suffix with `C:TEXT.APP`, supplying
 one quoted Exec path of at most 127 bytes. Other files retain empty-argument
 program launching. Directories navigate normally, including while a child runs.

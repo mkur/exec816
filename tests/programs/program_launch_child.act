@@ -1,0 +1,40 @@
+MODULE LAUNCHCHILD
+USE COMMAND
+
+LONGINT FUNC Main()
+  BYTE value
+
+  LET args=BYTE POINTER(COMMAND.GetArgStr())
+  IF args(0)=72 THEN
+    WHILE COMMAND.BreakPending()=0 DO
+      COMMAND.Yield()
+    OD
+
+    RETURN(-17)
+  FI
+
+  IF args(0)<>82 OR args(1)<>0 THEN
+    RETURN(41)
+  FI
+
+  IF COMMAND.Read(COMMAND.Input(),@value,1)<>1 OR value<>90 THEN
+    RETURN(42)
+  FI
+
+  IF COMMAND.Write(COMMAND.Output(),@value,1)<>1
+      OR COMMAND.Write(COMMAND.Output(),BYTE POINTER(c"native"),6)<>6 THEN
+    RETURN(43)
+  FI
+
+  LET file=COMMAND.Open(BYTE POINTER(c"REL.TXT"),COMMAND.MODE_NEWFILE)
+  IF file=NULL THEN
+    RETURN(44)
+  FI
+
+  IF COMMAND.Write(file,BYTE POINTER(c"relative"),8)<>8
+      OR COMMAND.Close(file)=0 THEN
+    RETURN(45)
+  FI
+
+RETURN(7)
+ENDMODULE

@@ -1,13 +1,13 @@
 {
   "abi": "exec816.c-program",
-  "version": 20,
+  "version": 21,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
   "file_limit": 262144,
   "span_limit": 196608,
   "segment_limit": 4,
-  "header_bytes": 32,
+  "header_bytes": 36,
   "segment_bytes": 16,
   "import_bytes": 8,
   "imports": [
@@ -107,6 +107,15 @@
     "ExamineExact",
     "MountVolume",
     "UnmountVolume",
-    "ExNextBatch"
-  ]
+    "ExNextBatch",
+    "ExecLoadProgram",
+    "ExecReleaseProgram",
+    "ExecStartLoaded",
+    "Input",
+    "AvailMem"
+  ],
+  "minimum_stack_offset": 28,
+  "file_bytes_offset": 32,
+  "default_stack_bytes": 2560,
+  "stack_floor_bytes": 1312
 }

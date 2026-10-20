@@ -38,6 +38,12 @@ Save/Discard/Cancel; canceling a selector preserves the current document.
 The build selection is `tools/build_demo.py --basic-workbench` and retains the
 standard desktop, Shell, prime demo and five-second OF816 autoboot.
 
+The graphical console worker uses one existing 2,560-byte stack pool and the IDE
+uses the other. The sequential FastBasic/native child uses an existing smaller
+pool. Declared C image requirements are enforced at admission; another C program
+requiring 2,560 bytes is refused while both large pools are occupied. Panel and
+Counter declare their verified 1,312-byte requirements. No pool is enlarged.
+
 All reserved bank-zero costs remain unchanged from the enabled GEM/guest
 profile: zero added fixed, root/kernel, per-public-Task and idle bytes, including
 guards, alignment and unused capacity. Build-specific image sizes, timings,

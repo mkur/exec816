@@ -1,0 +1,176 @@
+MODULE PROGRAMLAUNCH
+USE EXEC
+USE DOS
+USE DOSCLIENT
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE PROCESS
+USE PROCESSLAUNCH
+USE PROCESSSTATE
+USE PROCESSCONTROL
+USE CONSOLE
+USE HEAPCORE
+
+CARD checks,controllerChecks,phase
+LONGINT primary,secondary,reason
+LONGCARD appBase
+BYTE ARRAY consoleName(13)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    reason=DOS.IoErr()
+    HEAPCORE.Abort($fc00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Collected(LONGCARD identity LONGINT expected)
+  PROCESS.Result outcome
+
+  Require(identity<>0)
+  Require(PROCESS.Wait(identity,@outcome)<>0)
+  primary=outcome.primary
+  secondary=outcome.secondary
+  Require(primary=expected AND secondary=0)
+
+RETURN
+
+PROC Main()
+  PROCESSLAUNCH.StartSpec specification
+  PROGRAMIMAGE.Image POINTER first,second,third
+  LONGCARD identity,one,two,baseline,unit
+  BYTE fault,index
+  BYTE ARRAY value(4)
+
+  Require(SIZEOF(PROCESSLAUNCH.StartSpec)=20)
+  Require(ADDRESS(@specification.minimumStack)-ADDRESS(@specification)=18)
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"RAM:PARENT.TXT"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  LET oldInput=DOS.SelectInput(input)
+  LET oldOutput=DOS.SelectOutput(output)
+  LET project=DOS.CreateDir(BYTE POINTER(c"RAM:PROJECT"))
+  Require(project<>NULL)
+  LET source=DOS.Open(BYTE POINTER(c"RAM:INPUT.TXT"),DOS.MODE_NEWFILE)
+  Require(source<>NULL AND DOS.Write(source,BYTE POINTER(c"Z"),1)=1)
+  Require(DOS.Close(source)<>0)
+  unit=CONSOLE.Create(16,4)
+  Require(unit<>0)
+  consoleName(0)=67
+  consoleName(1)=79
+  consoleName(2)=78
+  consoleName(3)=58
+  FOR index=0 TO 7 DO
+    BEGIN
+      LET digit=BYTE((unit RSH ((7-index)*4)) & 15)
+      consoleName(4+index)=IF digit<10 THEN digit+48 ELSE digit+55 FI
+    END
+  OD
+
+  consoleName(12)=0
+  LET controller=PROGRAMFILE.Load(BYTE POINTER(c"SYS:CONTROL.APP"))
+  Require(controller<>NULL)
+  appBase=LONGCARD(controller.text)
+  phase=1
+  Collected(PROCESS.StartLoaded(BYTE POINTER(controller),consoleName,12,0),0)
+  baseline=EXEC.AvailMem(0)
+  Collected(PROCESS.StartLoaded(BYTE POINTER(controller),consoleName,12,0),0)
+  Require(EXEC.AvailMem(0)=baseline)
+  controllerChecks=CARD POINTER(ADDRESS(appBase+CONTROLLER_CHECKS_OFFSET))^
+  Require(controllerChecks=70)
+  PROGRAM.Unload(controller)
+  Require(DOS.Input()=input AND DOS.Output()=output)
+  Require(DOS.Seek(output,0,DOS.OFFSET_BEGINNING)=2)
+  Require(DOS.Read(output,value,4)=2 AND value(0)=80 AND value(1)=80)
+
+  ; The console worker owns one large pool; a second large child cannot fit.
+  phase=2
+  first=PROGRAMFILE.Load(BYTE POINTER(c"SYS:LARGE.APP"))
+  second=PROGRAMFILE.Load(BYTE POINTER(c"SYS:LARGE.APP"))
+  Require(first<>NULL AND second<>NULL)
+  Require(first.minimumStack=2560)
+  specification.arguments=BYTE POINTER(c"H")
+  specification.input=NULL
+  specification.output=NULL
+  specification.directory=NULL
+  specification.console=NULL
+  specification.length=1
+  specification.minimumStack=0
+  one=PROCESS.StartConfigured(BYTE POINTER(first),BYTE POINTER(@specification))
+  Require(one<>0)
+  Require(PROCESS.StartConfigured(BYTE POINTER(second),BYTE POINTER(@specification))=0)
+  Require(DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Collected(one,-321)
+  Collected(PROCESS.StartConfigured(BYTE POINTER(second),BYTE POINTER(@specification)),-321)
+  PROGRAM.Unload(first)
+  PROGRAM.Unload(second)
+
+  ; Record-isolated failures before arguments, cloning, launch and child setup.
+  phase=3
+  LET native=PROGRAMFILE.Load(BYTE POINTER(c"SYS:NATIVE"))
+  Require(native<>NULL)
+  LET con=DOS.Open(consoleName,DOS.MODE_OLDFILE)
+  consoleName(0)=82
+  consoleName(1)=65
+  consoleName(2)=87
+  LET raw=DOS.Open(consoleName,DOS.MODE_NEWFILE)
+  LET incoming=DOS.Open(BYTE POINTER(c"RAM:INPUT.TXT"),DOS.MODE_OLDFILE)
+  LET outgoing=DOS.Open(BYTE POINTER(c"RAM:FAULT.TXT"),DOS.MODE_NEWFILE)
+  Require(con<>NULL AND raw<>NULL AND incoming<>NULL AND outgoing<>NULL)
+  specification.arguments=BYTE POINTER(c"H")
+  specification.input=BYTE POINTER(incoming)
+  specification.output=BYTE POINTER(outgoing)
+  specification.directory=BYTE POINTER(project)
+  specification.console=BYTE POINTER(con)
+  identity=PROCESS.StartConfigured(BYTE POINTER(native),BYTE POINTER(@specification))
+  Require(identity<>0 AND PROCESS.RequestBreak(identity)<>0)
+  Collected(identity,-17)
+  baseline=EXEC.AvailMem(0)
+  FOR fault=1 TO 8 DO
+    IF fault<>6 THEN
+      PROCESSCONTROL.fault=fault
+      identity=PROCESS.StartConfigured(BYTE POINTER(native),BYTE POINTER(@specification))
+      reason=DOS.IoErr()
+      PROCESSCONTROL.fault=0
+      Require(identity=0)
+      Require(reason=IF fault=4 THEN DOS.ERROR_OBJECT_IN_USE ELSE DOS.ERROR_NO_FREE_STORE FI)
+      Require(EXEC.AvailMem(0)=baseline)
+    FI
+  OD
+
+  FOR fault=1 TO 4 DO
+    PROCESSCONTROL.clones=0
+    PROCESSCONTROL.cloneFail=fault
+    identity=PROCESS.StartConfigured(BYTE POINTER(native),BYTE POINTER(@specification))
+    reason=DOS.IoErr()
+    PROCESSCONTROL.cloneFail=0
+    Require(identity=0 AND reason=DOS.ERROR_NO_FREE_STORE)
+    Require(EXEC.AvailMem(0)=baseline)
+  OD
+
+  specification.minimumStack=$ffff
+  Require(PROCESS.StartConfigured(BYTE POINTER(native),BYTE POINTER(@specification))=0)
+  Require(DOS.IoErr()=DOS.ERROR_NO_FREE_STORE AND EXEC.AvailMem(0)=baseline)
+  specification.minimumStack=0
+  identity=PROCESS.StartConfigured(BYTE POINTER(native),BYTE POINTER(@specification))
+  Require(identity<>0 AND PROCESS.RequestBreak(identity)<>0)
+  Collected(identity,-17)
+  Require(EXEC.AvailMem(0)=baseline)
+  PROGRAM.Unload(native)
+  Require(PROCESSCONTROL.scopeChecks>=12)
+  Require(DOS.Close(con)<>0 AND DOS.Close(raw)<>0)
+  Require(DOS.Close(incoming)<>0 AND DOS.Close(outgoing)<>0)
+  Require(CONSOLE.Destroy(unit)<>0)
+  DOS.UnLock(project)
+  DOS.SelectInput(oldInput)
+  DOS.SelectOutput(oldOutput)
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  phase=4
+
+RETURN
+ENDMODULE

@@ -16,6 +16,7 @@ Use the `PROCESS` module:
 | `StartLoaded(image, arguments, length, foreground)` | Start a validated Image through the resident dispatcher; retain it through kernel retirement and collection. A nonzero foreground byte requests the same console loan. |
 | `StartBackground(entry, arguments, length)` | As Start with a private cancellation scope; no parent suspension or keyboard loan. |
 | `StartBackgroundLoaded(image, arguments, length)` | The loaded-image form of StartBackground; retain execution ownership until collection. |
+| `StartConfigured(image, descriptor)` | Copy a `PROCESSLAUNCH.StartSpec`, clone its explicit resources, establish an independent cancellation/console scope and acknowledge setup before returning an owned identity. Null descriptor selects the C launch defaults described below. |
 | `RequestBreak(identity)` | Request cooperative cancellation of an owned scoped child. Return one on acceptance or zero with IoErr. |
 | `RequestStop(identity)` | Request native BREAK or, for an owned C/GEM child, cooperative `WM_CLOSED`. No forced removal. |
 | `CompletionMask(identity)` | Borrow an owned child's completion signal until collection; zero with IoErr for an invalid identity. |
@@ -59,7 +60,7 @@ that error slot and returns its previous value, without allocating a context.
 Process callbacks are admitted through a separate exact-signature function list
 in the existing upper-RAM DOS descriptor (one count byte and up to 36 three-byte
 addresses). Task entry/finalizer admission remains procedure-only. Process
-record keeps its 128-byte stride in Process ABI v7; its former four-byte tail
+record keeps its 128-byte stride in Process ABI v8; its four-byte tail
 stores cancellation flags and a three-byte published scope pointer.
 
 Commands return normally through a resident finalizer. Each child starts with an
@@ -141,6 +142,46 @@ freeing the scope. Background scope lifetime cannot be ended or replaced through
 DOS Begin/EndForeground. It lasts until ordinary child finalization; there is no
 forced termination or additional kernel job registry.
 
+## Explicit child contexts
+
+`PROCESSLAUNCH.StartSpec` is generated from `abi/process.json`. The native record
+is 20 bytes: three-byte argument/input/output/directory/console pointers at
+0/3/6/9/12, one unused alignment byte, then two-byte length and minimumStack at
+16/18. C uses the corresponding generated 24-byte record with four-byte pointers.
+The descriptor and argument buffer may be reused after Start returns. Embedded
+NUL in a nonempty argument tail is rejected before launch.
+
+Zero input/output selects newly opened NIL/shell RAW wrappers; zero directory
+inherits the parent's current directory. Explicit handles are cloned, with
+input/output/console aliases cloned once. File position, console endpoint and
+cooked-line sharing follow the ordinary inheritance rules above. A nonzero CON
+console receives an independent child route and BREAK scope. Zero console gets
+a private programmatic BREAK scope. The parent is never suspended or given
+different Input/Output selections.
+
+Independent scopes are Process-owned. The existing client ownership byte uses
+value 3 for this state, alongside foreground loans and group membership. Public
+Begin/EndForeground returns 202 while such a scope is live; finalization clears
+ownership only while retiring that exact scope. This preserves the published
+cancellation pointer without enlarging the context or scope records.
+
+Before user entry, the child adopts its wrappers, creates its context and break
+signal, and binds its console when supplied. Start returns an identity only after
+that setup succeeds. Failure is retired and collected internally before zero is
+returned with the first setup cause. Early BREAK remains latched. Setup and final
+completion share the existing parent-owned signal: the setup hint is cleared
+under Forbid only while final completion is not yet published. Callers must
+always try Collect before waiting, including when Start returned an already
+retired child. A signal neither collects the child nor transfers ownership.
+
+`minimumStack` is a reserved-byte requirement including interrupt headroom, as
+with Exec CreateTask. Admission takes the larger of it and the Image requirement
+and chooses a fitting existing pool. The transient admission packet grows from
+9 to 12 bytes; the fixed Process row remains 128. No stack, direct page or guard
+reservation grows. A C image records its declared requirement in its current
+[file header](c-program-loading.md#file-layout); native/guest images currently
+default to zero unless the caller supplies a requirement.
+
 ## Two-member foreground groups
 
 The resident `PIPELINE.Run` coordinator accepts two loaded Images and their
@@ -158,7 +199,7 @@ Both children must be prepared before `DOSGROUP.Seal` suspends parent DOS activi
 `StartPrepared(identity)` then launches each child; `DiscardPrepared(identity)`
 releases a child that has not launched. These operations are for this bounded
 resident coordinator, not general shell job control or loaded-command imports.
-Process ABI version 7 keeps the 128-byte row and these group operations.
+Process ABI version 8 keeps the 128-byte row and these group operations.
 
 The coordinator restores its selections and closes both parent pipe wrappers
 before sealing. Each child adopts its own DOS context and break signal, while

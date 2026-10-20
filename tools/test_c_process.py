@@ -14,6 +14,7 @@ from test_dos_stack import execute,ownership
 from test_mouse_observe import PIN,BRIDGE,ROM
 from test_cooperative import data
 from stack_budget import bank_zero_delta
+from c_program import ABI
 
 def variant(base,out,filesystem):
     """Reuse emitted routines; change only the serialized mount descriptor."""
@@ -46,16 +47,17 @@ def run(out,optimize,reuse=False,filesystem='sdfs'):
     if reuse:
         p=read_build(out/'program');app=json.loads((out/'app/app.json').read_text())
     else:
-        app=application(out/'app',[ROOT/'tests/programs/c_process.c'],optimize)
+        app=application(out/'app',[ROOT/'tests/programs/c_process.c'],optimize,minimum_stack=ABI['stack_floor_bytes'])
         raw=(out/'app/program.app').read_bytes();media=out/'media';media.mkdir(exist_ok=True)
         (media/'PROBE.APP').write_bytes(raw);(media/'DESKTOP.RSC').write_bytes(resource())
         (media/'TRUNC.APP').write_bytes(raw[:-1])
         count=struct.unpack_from('<H',raw,10)[0];imports=struct.unpack_from('<H',raw,24)[0]
-        for name,at,fmt,value in [('VERSION',6,'<H',0),('IMPORT',32+count*16,'<H',65535),
-                                 ('FIXUP',32+count*16+imports*8,'<I',app['span'])]:
+        for name,at,fmt,value in [('VERSION',6,'<H',0),('STACK',28,'<H',0),('RESERVED',30,'<H',1),
+                                 ('IMPORT',ABI['header_bytes']+count*16,'<H',65535),
+                                 ('FIXUP',ABI['header_bytes']+count*16+imports*8,'<I',app['span'])]:
             changed=bytearray(raw);struct.pack_into(fmt,changed,at,value);(media/(name+'.APP')).write_bytes(changed)
         native=out/'native/HELLO'
-        compile_command(compiler(ROOT/'build/actionc'),ROOT/'examples/commands/hello.act',native,optimize)
+        compile_command(compiler(ROOT/'build/actionc',release=True),ROOT/'examples/commands/hello.act',native,optimize)
         (media/'HELLO').write_bytes(native.read_bytes())
         make(out/'system.atr',media,binary_names={p.name for p in media.iterdir()},
              filesystem=filesystem,sector_bytes=256,sectors=2880)
@@ -67,6 +69,7 @@ def run(out,optimize,reuse=False,filesystem='sdfs'):
         (out/'o65memory.act').write_text(text)
         (out/'o65control.act').write_text((ROOT/'tests/programs/o65control.act').read_text())
         p=build_desktop(out,source=ROOT/'tests/programs/c_process.act',program_output=out/'program',
+            release_compiler=True,
             optimize=optimize,system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,
                 profile=4,format=2 if filesystem=='sdfs' else 1)])
     record=dict(status='running',tier='development',qualification=False,filesystem=filesystem,

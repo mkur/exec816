@@ -21,7 +21,10 @@ def run(out,optimize,reuse=False):
     else:
         f=emit(out/'c',[ROOT/'tests/programs/c_launch_arguments.c',ROOT/'c/calypsi/dos.c',ROOT/'c/calypsi/exec.c'],
             [ROOT/'c/calypsi/dos.s',ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/image-info.s'],(),optimize,
-            roots=['LaunchProbe','LaunchRelease','LaunchChecks','ExecDosEntries'])
+            roots=['LaunchProbe','LaunchRelease','LaunchChecks','ExecDosEntries'],
+            probes=[(ROOT/'tests/programs/program_start_layout.c',[
+                ('Start size',24),('arguments',0),('input',4),('output',8),('directory',12),
+                ('console',16),('length',20),('minimumStack',22),('Result size',8)])])
         child=out/'child.act'
         child.write_text('''MODULE ARGUMENTCHILD
 USE COMMAND
@@ -50,7 +53,7 @@ RETURN(IF length=0 THEN 7 ELSE IF length=1 THEN 8 ELSE IF length=255 THEN 9 ELSE
 ENDMODULE
 '''%f['symbols']['LaunchRelease'])
         media=out/'media';media.mkdir(exist_ok=True)
-        compile_command(compiler(ROOT/'build/actionc'),child,out/'native/ARGS',optimize)
+        compile_command(compiler(ROOT/'build/actionc',release=True),child,out/'native/ARGS',optimize)
         (media/'ARGS').write_bytes((out/'native/ARGS').read_bytes())
         make(out/'data.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,binary_names={'ARGS'})
         binding='CONST C_EXECDOSENTRIES=$%x\n'%f['symbols']['ExecDosEntries']+read_source(ROOT/'c/calypsi/dos-bridge.inc')
@@ -60,6 +63,7 @@ USE EXEC
 USE DOS
 USE PROCESS
 USE PROGRAM
+USE PROGRAMIMAGE
 USE PROGRAMFILE
 USE CALYPSICALL
 '''+binding+'''
@@ -76,7 +80,7 @@ ENDMODULE
         from generate_memory import PROFILE
         profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
         memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
-        p=build(compiler(ROOT/'build/actionc'),source,out/'program',tasks=True,task_capacity=8,
+        p=build(compiler(ROOT/'build/actionc',release=True),source,out/'program',tasks=True,task_capacity=8,
             foreign_image=f,optimize=optimize,console=True,
             dos_mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,profile=4,format=2)],
             memory_profile=memory)

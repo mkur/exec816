@@ -53,46 +53,91 @@ LONGINT FUNC CSeek(LONGCARD file LONGINT position,mode)
 
 RETURN(DOS.Seek(DOS.FileHandle POINTER(ADDRESS(file)),position,mode))
 
-; A launched command has no keyboard loan. Clone temporary NIL/RAW selections
-; through the normal Process path, then release the parent's temporary handles.
-LONGCARD FUNC CStartProgram(LONGCARD name,arguments,length)
-  LONGCARD identity
+; A launched command owns cloned resources and an independent cancellation scope.
+INCLUDE "program-start.inc"
 
-  LET image=PROGRAMFILE.Load(BYTE POINTER(ADDRESS(name)))
-  IF image=NULL THEN
+BYTE FUNC CMarshalStart(LONGCARD descriptor NativeProgramStart POINTER native)
+
+  native.arguments=NULL
+  native.input=NULL
+  native.output=NULL
+  native.directory=NULL
+  native.console=NULL
+  native.length=0
+  native.minimumStack=0
+  IF descriptor=0 THEN
+    RETURN(1)
+  FI
+
+  IF descriptor>$ffffff THEN
+    DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
     RETURN(0)
   FI
 
-  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
-  LET output=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_NEWFILE)
-  identity=0
-  IF input<>NULL AND output<>NULL THEN
-    BEGIN
-      LET oldInput=DOS.SelectInput(input)
-      LET oldOutput=DOS.SelectOutput(output)
-      identity=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),
-          BYTE POINTER(ADDRESS(arguments)),CARD(length))
-      LET error=DOS.IoErr()
-      DOS.SelectInput(oldInput)
-      DOS.SelectOutput(oldOutput)
-      DOS.Close(input)
-      DOS.Close(output)
-      PROGRAM.Unload(image)
-      DOS.SetIoErr(error)
-      RETURN(identity)
-    END
+  LET source=CProgramStart POINTER(ADDRESS(descriptor))
+  IF source.arguments>$ffffff OR source.input>$ffffff
+      OR source.output>$ffffff OR source.directory>$ffffff
+      OR source.console>$ffffff THEN
+    DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
   FI
 
+  native.arguments=BYTE POINTER(ADDRESS(source.arguments))
+  native.input=BYTE POINTER(ADDRESS(source.input))
+  native.output=BYTE POINTER(ADDRESS(source.output))
+  native.directory=BYTE POINTER(ADDRESS(source.directory))
+  native.console=BYTE POINTER(ADDRESS(source.console))
+  native.length=source.length
+  native.minimumStack=source.minimumStack
+
+RETURN(1)
+
+LONGCARD FUNC CLoadProgram(LONGCARD name,unused,unused2)
+
+  IF name>$ffffff THEN
+    DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(LONGCARD(ADDRESS(PROGRAMFILE.Load(BYTE POINTER(ADDRESS(name))))))
+
+LONGINT FUNC CReleaseProgram(LONGCARD image,unused,unused2)
+
+  IF image>$ffffff THEN
+    DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+  PROGRAM.Unload(PROGRAMIMAGE.Image POINTER(ADDRESS(image)))
+
+RETURN(1)
+
+LONGCARD FUNC CStartLoaded(LONGCARD image,descriptor,unused)
+  NativeProgramStart specification
+
+  IF image>$ffffff THEN
+    DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+  IF CMarshalStart(descriptor,@specification)=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(PROCESS.StartConfigured(BYTE POINTER(ADDRESS(image)),
+    BYTE POINTER(@specification)))
+
+; Drop exactly the temporary load reference; execution belongs to Collect.
+LONGCARD FUNC CStartProgram(LONGCARD name,descriptor,unused)
+
+  LET image=CLoadProgram(name,0,0)
+  IF image=0 THEN
+    RETURN(0)
+  FI
+
+  LET identity=CStartLoaded(image,descriptor,0)
   LET error=DOS.IoErr()
-  IF input<>NULL THEN
-    DOS.Close(input)
-  FI
-
-  IF output<>NULL THEN
-    DOS.Close(output)
-  FI
-
-  PROGRAM.Unload(image)
+  CReleaseProgram(image,0,0)
   DOS.SetIoErr(error)
 
 RETURN(identity)
@@ -188,5 +233,9 @@ PROC BindDos(BYTE unused)
   entries(22)=ADDRESS(@CMountVolume)
   entries(23)=ADDRESS(@CUnmountVolume)
   entries(24)=ADDRESS(@CExNextBatch)
+  entries(25)=ADDRESS(@CLoadProgram)
+  entries(26)=ADDRESS(@CReleaseProgram)
+  entries(27)=ADDRESS(@CStartLoaded)
+  entries(28)=ADDRESS(@DOS.Input)
 
 RETURN

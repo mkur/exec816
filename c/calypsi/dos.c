@@ -3,7 +3,7 @@
 #include <exec816/program.h>
 
 /* The launcher installs these native entry addresses before entering C. */
-void EXEC_PTR *ExecDosEntries[25];
+void EXEC_PTR *ExecDosEntries[29];
 
 ULONG EXEC_CALL _DosCall(UWORD entry, const struct ExecDosWriteArgs *args);
 
@@ -23,6 +23,7 @@ static ULONG call(UWORD entry,ULONG a,ULONG b,LONG c)
     struct ExecDosWriteArgs args={a,b,c};
     return _DosCall(entry*sizeof(ExecDosEntries[0]),&args);
 }
+BPTR EXEC_CALL Input(void) { return call(28,0,0,0); }
 BPTR EXEC_CALL Open(CONST_STRPTR name,LONG mode) { return call(2,(ULONG)name,mode,0); }
 LONG EXEC_CALL Close(BPTR file) { return call(3,file,0,0); }
 LONG EXEC_CALL Read(BPTR file,void *buffer,LONG length) { return call(4,file,(ULONG)buffer,length); }
@@ -33,8 +34,12 @@ LONG EXEC_CALL ExNext(BPTR lock,struct FileInfoBlock *info) { return call(8,lock
 LONG EXEC_CALL IoErr(void) { return call(9,0,0,0); }
 LONG EXEC_CALL Seek(BPTR file,LONG position,LONG mode) { return call(10,file,position,mode); }
 LONG EXEC_CALL ExecDOSDetach(void) { return call(11,0,0,0); }
-ULONG EXEC_CALL ExecStartProgram(CONST_STRPTR name,CONST_STRPTR arguments,UWORD length)
-{ return call(12,(ULONG)name,(ULONG)arguments,length); }
+ULONG EXEC_CALL ExecStartProgram(CONST_STRPTR name,const struct ExecProgramStart *spec)
+{ return call(12,(ULONG)name,(ULONG)spec,0); }
+APTR EXEC_CALL ExecLoadProgram(CONST_STRPTR name) { return (APTR)call(25,(ULONG)name,0,0); }
+void EXEC_CALL ExecReleaseProgram(APTR image) { call(26,(ULONG)image,0,0); }
+ULONG EXEC_CALL ExecStartLoaded(APTR image,const struct ExecProgramStart *spec)
+{ return call(27,(ULONG)image,(ULONG)spec,0); }
 LONG EXEC_CALL ExecCollectProgram(ULONG id,struct ExecProgramResult *result) { return call(13,id,(ULONG)result,0); }
 LONG EXEC_CALL ExecBreakProgram(ULONG id) { return call(14,id,0,0); }
 LONG EXEC_CALL ExecWaitProgram(ULONG id,struct ExecProgramResult *result) { return call(15,id,(ULONG)result,0); }

@@ -55,8 +55,12 @@ def overrides(out):
 def run(out, mode):
     out.mkdir(parents=True,exist_ok=True)
     modified = overrides(out)
-    program = build(compiler(ROOT/'build/actionc'),ROOT/'tests/programs/process_lifetime.act',out,
-                    optimize=mode == 'opt',tasks=True,task_capacity=8,console=False,console_deferred=True)
+    from generate_memory import PROFILE
+    profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
+    memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
+    program = build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/process_lifetime.act',out,
+                    optimize=mode == 'opt',tasks=True,task_capacity=8,console=False,console_deferred=True,
+                    memory_profile=memory)
     return exercise(program,mode,modified)
 
 

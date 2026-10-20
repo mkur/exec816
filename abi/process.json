@@ -1,6 +1,6 @@
 {
   "abi": "exec816.process",
-  "version": 7,
+  "version": 8,
   "argument_limit": 255,
   "record_bytes": 128,
   "states": {
@@ -260,6 +260,13 @@
         4
       ],
       "result_bytes": 4
+    },
+    "StartConfigured": {
+      "sizes": [
+        3,
+        3
+      ],
+      "result_bytes": 4
     }
   },
   "dos_storage": {
@@ -278,6 +285,57 @@
   },
   "break_flags": {
     "BACKGROUND": 1,
-    "PENDING": 2
+    "PENDING": 2,
+    "SETUP": 4,
+    "READY": 8,
+    "FAILED": 16
+  },
+  "launch": {
+    "c_bytes": 24,
+    "native_bytes": 20,
+    "fields": [
+      [
+        "arguments",
+        "pointer",
+        0,
+        0
+      ],
+      [
+        "input",
+        "pointer",
+        4,
+        3
+      ],
+      [
+        "output",
+        "pointer",
+        8,
+        6
+      ],
+      [
+        "directory",
+        "pointer",
+        12,
+        9
+      ],
+      [
+        "console",
+        "pointer",
+        16,
+        12
+      ],
+      [
+        "length",
+        "word",
+        20,
+        16
+      ],
+      [
+        "minimumStack",
+        "word",
+        22,
+        18
+      ]
+    ]
   }
 }

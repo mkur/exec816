@@ -78,7 +78,7 @@ as needed, and `<proto/exec.h>` for the function declarations.
 | Device I/O (`<exec/io.h>`) | `CreateIORequest`, `DeleteIORequest`, `OpenDevice`, `CloseDevice`, `BeginIO`, `SendIO`, `DoIO`, `CheckIO`, `WaitIO`, `AbortIO` |
 | Lists | `NewList`, `IsListEmpty` |
 | DOS (`<proto/dos.h>`) | `Output`, `Write`, `Open`, `Close`, `Read`, `Seek`, `Lock`, `UnLock`, `Examine`, `ExNext`, `ExamineExact`, `CreateDir`, `Rename`, `IoErr`, `ExecDOSDetach` |
-| Program launcher (`<exec816/program.h>`) | `ExecStartProgram`, `ExecCollectProgram`, `ExecBreakProgram`, `ExecWaitProgram`, `ExecProgramMask`, `ExecGetArgStr` |
+| Program launcher (`<exec816/program.h>`) | `ExecStartProgram`, `ExecLoadProgram`, `ExecStartLoaded`, `ExecReleaseProgram`, `ExecCollectProgram`, `ExecBreakProgram`, `ExecWaitProgram`, `ExecProgramMask`, `ExecGetArgStr` |
 | Exec816 extension | `ExecYield` in `<exec816/runtime.h>` for low-level probes |
 
 The standard launcher binds both DOS and caller-context device I/O. Include
@@ -299,14 +299,25 @@ Read accepts upper-RAM buffers and native stack buffers on MyDOS and SDFS.
 Each caller retains its handles and locks until Close/UnLock. After retiring
 all DOS resources, call ExecDOSDetach before removing a raw Task.
 
-`ExecStartProgram(name, arguments, length)` loads a native disk command or a
-supported C application with NIL input and RAW shell output. The Process copies
-0–255 argument bytes before launch returns, adds its own NUL, and retains that
-copy until collection. Length excludes NUL; use null/zero for an empty tail.
+`ExecStartProgram(name, &start)` loads a native disk command or a supported C
+application. Initialize `struct ExecProgramStart start={0}`, then set arguments
+and length, or explicit input/output/directory/console handles as needed. Null
+spec defaults to an empty tail, NIL input, RAW shell output, inherited directory
+and a private cancellation scope. The Process copies 0–255 argument bytes before
+launch returns, adds its own NUL, and retains that copy until collection.
 The caller may reuse or free its buffer after successful launch. Embedded NUL
 and invalid lengths are rejected by the existing Process admission boundary.
 The call returns a parent-owned Process identity, or zero on failure with IoErr.
-C component ABI 11 changes this signature; rebuild GEMSYS and all applications.
+C component ABI 21 changes this signature; rebuild the provider and all APPs.
+Start acknowledges child resource and console setup. `Input()`/`Output()` expose
+the child's cloned selections; a supplied CON console has independent BREAK
+routing while the parent's event loop and DOS context remain usable.
+
+Use `ExecLoadProgram` and `ExecStartLoaded` to retain a loaded instance. Release
+the load reference once with `ExecReleaseProgram`; execution remains retained
+until collection. An instance cannot execute twice concurrently. The build
+helper defaults to 2,560 reserved stack bytes; use `--minimum-stack` only with
+development evidence for the declared program stack requirement.
 
 ExecCollectProgram returns zero while
 pending and nonzero after copying primary/secondary results and collecting it.

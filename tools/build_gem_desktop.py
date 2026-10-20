@@ -20,7 +20,8 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
         applications[name]=application(out/'apps'/name,[ROOT/'examples'/folder/('desktop-main.c' if name=='desktop' else 'main.c'),
                                                        ROOT/'examples'/folder/(body+'.c'),
                                                        *([ROOT/'c/calypsi/file-list.c'] if name in ('files','desktop') else [])],
-            probes=[(ROOT/'tests/programs/gem_colour_desktop_layout.c',__import__('colour_desktop_model').LAYOUT)] if name=='desktop' else [])
+            probes=[(ROOT/'tests/programs/gem_colour_desktop_layout.c',__import__('colour_desktop_model').LAYOUT)] if name=='desktop' else [],
+            minimum_stack=ABI['stack_floor_bytes'] if name in ('panel','counter') else None)
     from build_calculator import build as calculator
     applications['calc']=calculator(out/'apps/calc')
     from build_g4bench import build as g4bench

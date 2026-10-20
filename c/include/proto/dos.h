@@ -4,6 +4,7 @@
 #include <dos/dos.h>
 
 BPTR EXEC_CALL Output(void);
+BPTR EXEC_CALL Input(void);
 LONG EXEC_CALL Write(BPTR file, const void *buffer, LONG length);
 
 BPTR EXEC_CALL Open(CONST_STRPTR name,LONG mode);

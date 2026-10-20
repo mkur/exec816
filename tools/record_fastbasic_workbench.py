@@ -5,13 +5,27 @@ from pathlib import Path
 from native_program import ROOT,sha256,require
 
 SOURCES={
+    'WB5':['abi/c-program.json','abi/process.json',
+        *['c/'+n for n in ('calypsi/dos.c','calypsi/dos-bridge.inc','calypsi/program-start.inc',
+            'include/exec816/program.h','include/exec816/program-start.h','include/proto/dos.h')],
+        *['lib/dos/'+n for n in ('process.act','processlaunch.act','process-types.inc','processstate.act',
+            'dosprocess.act','dosclient.act','programimage.act','cprogram.act','c-program-abi.inc','task-process.inc')],
+        'examples/gem-browser/browser.c','examples/gem-browser/desktop.inc','examples/gem-desktop/resident.c',
+        *['tests/programs/'+n for n in ('program_launch.act','program_launch.c','program_launch_child.act',
+            'program_launch_child.c','program_start_layout.c','c_launch_arguments.c','c_process.act','c_process.c','process_lifetime.act')],
+        'tests/fastbasic/launch.bas','tests/test_c_program_package.py',
+        *['tools/'+n for n in ('test_program_launch.py','test_c_launch_arguments.py','test_c_process.py','test_process_lifetime.py',
+            'build_c_program.py','c_program.py','generate_c_program.py','generate_process.py','build_bitmap_console.py',
+            'build_gem_desktop.py','test_directory_batch.py','test_directory_metadata_abi.py','test_mount_api_bridges.py',
+            'test_fastbasic_workbench.py','workbench_interaction.py')]],
     'WB4':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h','editor.c','editor.h','document.c','document.h','files.c','files.h','file-ui.c','file-ui.h','assist.c','assist.h','assist-ui.c','assist-ui.h')]+[
         'tests/programs/basic_assist.c','tests/programs/basic_editor.c','tests/programs/basic_editor_layout.c',
         'tests/programs/basic_interaction.act','tests/programs/basic_files_interaction.act',
         'tools/test_fastbasic_assist.py','tools/test_fastbasic_editor.py','tools/workbench_pixels.py',
         'tools/workbench_interaction.py','tools/workbench_files_interaction.py','tools/test_fastbasic_workbench.py',
         'tools/build_demo.py','tools/build_gem_desktop.py','c/calypsi/file-list.c'],
-    'WB0':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h')]+[
+    'WB0':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h','editor.c','editor.h','document.c',
+        'document.h','files.c','files.h','file-ui.c','file-ui.h','assist.c','assist.h','assist-ui.c','assist-ui.h')]+['c/calypsi/file-list.c',
         'tests/programs/basic_lifecycle.act','tests/programs/basic_lifecycle.c',
         'tools/test_fastbasic_workbench.py','tools/test_basic_workbench_baseline.py',
         'tools/build_demo.py','tools/build_gem_desktop.py','tools/gem_applications.py','tools/gem_desktop_oracle.py'],
@@ -39,7 +53,7 @@ def record(slice,paths,staged=False):
     for path in paths:
         path=path.resolve();r=json.loads(path.read_text());require(r.get('status')=='pass','Failed evidence: '+str(path))
         case=dict(path=str(path.relative_to(ROOT)),sha256=sha256(path),status='pass')
-        for key in ('checks','completed','machine','stack_usage','integration','runtime','free_upper_words','cases','latencies','peer_progress','typing','typing_frames'):
+        for key in ('checks','controllerChecks','scope_checks','completed','machine','stack_usage','integration','runtime','free_upper_words','cases','latencies','peer_progress','typing','typing_frames','fixture_overrides','optimize','c_elf_sha256','native_image_sha256'):
             if key in r:
                 if key=='runtime':
                     case[key]={k:r[key][k] for k in ('status','guards','native_nmi_count','native_irq_count',
@@ -66,13 +80,38 @@ def record(slice,paths,staged=False):
             require(inputs[str(Path(name).relative_to(ROOT))]==digest,'APP/staged input differs: '+name)
         result['application']={k:app[k] for k in ('bytes','sha256','span','verified_banks','abi')}
         result['image_backing']=dict(requested=app['span']+65535,rounded=(app['span']+65542)//8*8,
-            alignment=65536,metadata_bytes=72)
+            alignment=65536,metadata_bytes=74,rounded_metadata_bytes=80)
         result['capacity']=dict(public_tasks=8,normal_startup=6,IDE=1,sequential_child=1,
             guest_slots=2,AES_clients=4,windows=6,consoles=4,
             control='Close extra graphical applications or a second Shell before Run; startup is unchanged')
         result['parent_desktop_warming']=dict(bytes=368,resolved_path=256,timer_records=112,
             lifetime='Existing live desktop context; freed with context/endpoint retirement')
         result['fastbasic_compilers']=json.loads((ROOT/'build/fastbasic/build.json').read_text())['compilers']
+    elif slice=='WB5':
+        baseline_path=ROOT/'build/fastbasic-workbench/wb0-demo/build.json'
+        build_path=ROOT/'build/fastbasic-workbench/wb5-launch/program/build.json'
+        before=json.loads(baseline_path.read_text())['memory']['bank_zero_budget']
+        after=json.loads(build_path.read_text())['memory']['bank_zero_budget']
+        require(before==after,'Changed complete WB5 reserved bank-zero map')
+        result['memory_map']=dict(baseline=str(baseline_path.relative_to(ROOT)),baseline_sha256=sha256(baseline_path),
+            build=str(build_path.relative_to(ROOT)),build_sha256=sha256(build_path),bank_zero_budget=after)
+        result['launch']=dict(c_descriptor_bytes=24,native_descriptor_bytes=20,process_record_bytes=128,
+            setup='Adoption and independent scope/console binding acknowledged before returning an identity',
+            streams='Owned clones; aliases cloned once; parent context remains usable')
+        result['upper_memory']=dict(image_requested_bytes=74,image_rounded_bytes=80,image_rounded_delta=8,
+            transient_admission_bytes=12,transient_admission_delta=3)
+        result['stack_admission']=dict(default_c_reserved_bytes=2560,minimum_c_declaration=1312,
+            failure='103 when no existing pool fits; no reserved stack/DP growth',
+            graphical_console='Existing console worker uses one 2560-byte pool; BASIC uses the other; sequential FB65/native child uses an existing smaller pool')
+        result['provider']=dict(path='build/fastbasic-workbench/wb5-launch/c-image.json',
+            sha256=sha256(ROOT/'build/fastbasic-workbench/wb5-launch/c-image.json'))
+        result['applications']={}
+        for name,directory in [('controller','wb5-launch/controller'),('child','wb5-launch/child'),('loader-probe','wb5-c-process/app')]:
+            path=ROOT/'build/fastbasic-workbench'/directory/'app.json';app=json.loads(path.read_text())
+            for source,digest in app['inputs'].items():
+                require(inputs[str(Path(source).relative_to(ROOT))]==digest,'WB5 application source differs: '+source)
+            result['applications'][name]=dict(path=str(path.relative_to(ROOT)),sha256=sha256(path),
+                payload_sha256=app['sha256'],minimum_stack=app['minimum_stack'],bytes=app['bytes'],span=app['span'],verified_banks=app['verified_banks'])
     elif slice=='WB4':
         applications={}
         for mode,directory in [('optimized','wb4-physical/app'),('raw','wb4-raw-layout')]:

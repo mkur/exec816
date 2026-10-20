@@ -1,5 +1,6 @@
 MODULE PROCESS
 USE EXEC
+USE DOS
 USE DOSCORE
 USE DOSCLIENT
 USE DOSPROCESS
@@ -7,6 +8,7 @@ USE DOSGROUP
 USE DOSBREAKTYPES
 USE DOSBREAK
 USE PROCESSSTATE
+USE PROCESSLAUNCH
 USE HEAPCORE
 USE PROGRAMIMAGE
 USE CPROGRAMBIND
@@ -18,6 +20,7 @@ INCLUDE "command-results.inc"
 TYPE Admission=[
   LONGINT FUNC POINTER entry()
   PROC POINTER trampoline(),finalizer()
+  CARD minimumStack
 ]
 
 PROCESSSTATE.Entry POINTER FUNC Control(BYTE operation BYTE POINTER argument)
@@ -38,6 +41,24 @@ PUBLIC CSTRING FUNC GetArgStr()
   FI
 
 RETURN(CSTRING(process.arguments))
+
+; A setup hint shares the parent's completion signal. The immutable Process
+; state remains the authority for collection; no IRQ/NMI follows this pointer.
+PROC PublishSetup(PROCESSSTATE.Entry POINTER process BYTE okay)
+
+  IF (process.breakFlags & PROCESSSTATE.BREAK_SETUP)<>0 THEN
+    EXEC.Forbid()
+    IF okay<>0 THEN
+      process.breakFlags=process.breakFlags OR PROCESSSTATE.BREAK_READY
+    ELSE
+      process.breakFlags=process.breakFlags OR PROCESSSTATE.BREAK_FAILED
+    FI
+
+    EXEC.Signal(EXEC.Task POINTER(process.owner),process.mask)
+    EXEC.Permit()
+  FI
+
+RETURN
 
 ; The kernel admits this resident entry. The dynamic target remains private to
 ; a retained Image; ordinary AddTask never gains arbitrary loaded entry points.
@@ -91,15 +112,18 @@ PUBLIC PROC Run()
   IF client=DOSCLIENT.ClientContext POINTER(0) THEN
     process.primary=RETURN_FAIL
     process.secondary=DOSCLIENT.IoErr()
+    PublishSetup(process,0)
     RETURN
   FI
 
   IF DOSPROCESS.Adopt(process,client)=0 THEN
     process.primary=RETURN_FAIL
     process.secondary=DOSCLIENT.IoErr()
+    PublishSetup(process,0)
     RETURN
   FI
 
+  PublishSetup(process,1)
   DOSCLIENT.SetError(0)
   process.primary=process.entry()
   process.secondary=DOSCLIENT.IoErr()
@@ -160,9 +184,110 @@ PROC ReleaseStorage(PROCESSSTATE.Entry POINTER process)
 
 RETURN
 
+; Collect a finished child's result before releasing retained process
+; ownership.
+PUBLIC LONGINT FUNC Collect(LONGCARD identity Result POINTER outcome)
+  PROCESSSTATE.Entry POINTER process,accepted
+
+  IF outcome=Result POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+  process=Control(PROCESSSTATE.OP_CLAIM,BYTE POINTER(@identity))
+  IF process=PROCESSSTATE.Entry POINTER(0) THEN
+    RETURN(0)
+  FI
+
+  outcome.primary=process.primary
+  outcome.secondary=process.secondary
+  ReleaseStorage(process)
+  accepted=Control(PROCESSSTATE.OP_RELEASE,BYTE POINTER(process))
+  IF accepted<>process THEN
+    HEAPCORE.Abort($ff94)
+  FI
+
+RETURN(-1)
+
+; Borrow the owned child's durable completion signal until collection.
+PUBLIC LONGCARD FUNC CompletionMask(LONGCARD identity)
+
+  LET process=Control(PROCESSSTATE.OP_FIND,BYTE POINTER(@identity))
+  IF process=NULL THEN
+    RETURN(0)
+  FI
+
+RETURN(process.mask)
+
+; Wait for a child to finish and return its collected command result.
+PUBLIC LONGINT FUNC Wait(LONGCARD identity Result POINTER outcome)
+  PROCESSSTATE.Entry POINTER process
+  LONGCARD received
+
+  IF outcome=Result POINTER(0) THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+  DO
+    process=Control(PROCESSSTATE.OP_FIND,BYTE POINTER(@identity))
+    IF process=PROCESSSTATE.Entry POINTER(0) THEN
+      RETURN(0)
+    FI
+
+    IF process.state=PROCESSSTATE.STATE_RETIRED THEN
+      RETURN(Collect(identity,outcome))
+    FI
+
+    received=EXEC.Wait(process.mask)
+  OD
+
+RETURN(0)
+
+
+; Return an identity only after independent resource and console setup. Failed
+; setup is collected through the same retirement path as an ordinary command.
+LONGCARD FUNC Admitted(PROCESSSTATE.Entry POINTER process)
+  LONGCARD ignored,identity
+  LONGINT error
+  Result outcome
+
+  identity=process.identity
+  IF (process.breakFlags & PROCESSSTATE.BREAK_SETUP)=0 THEN
+    RETURN(identity)
+  FI
+
+  WHILE (process.breakFlags & (PROCESSSTATE.BREAK_READY
+      OR PROCESSSTATE.BREAK_FAILED))=0 DO
+    ignored=EXEC.Wait(process.mask)
+  OD
+
+  IF (process.breakFlags & PROCESSSTATE.BREAK_FAILED)<>0 THEN
+    error=process.secondary
+    IF Wait(identity,@outcome)=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    DOSCLIENT.SetError(error)
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  process.breakFlags=process.breakFlags & BYTE($ff-PROCESSSTATE.BREAK_SETUP
+      -PROCESSSTATE.BREAK_READY)
+  IF process.state<PROCESSSTATE.STATE_RETIRED THEN
+    ignored=EXEC.SetSignal(0,process.mask)
+  FI
+
+  EXEC.Permit()
+  DOSCLIENT.SetError(0)
+
+RETURN(identity)
+
 ; Prepare process resources before making its Task runnable.
 LONGCARD FUNC StartInternal(LONGINT FUNC POINTER entry() BYTE POINTER arguments
-    CARD length BYTE foreground PROGRAMIMAGE.Image POINTER image BYTE POINTER group BYTE background)
+    CARD length BYTE foreground PROGRAMIMAGE.Image POINTER image BYTE POINTER
+    group BYTE background PROCESSLAUNCH.StartSpec POINTER specification)
   Admission admission
   PROCESSSTATE.Entry POINTER process,accepted
   CARD index
@@ -174,7 +299,16 @@ LONGCARD FUNC StartInternal(LONGINT FUNC POINTER entry() BYTE POINTER arguments
     RETURN(0)
   FI
 
+  admission.minimumStack=0
+  IF specification<>NULL THEN
+    admission.minimumStack=specification.minimumStack
+  FI
+
   IF image<>PROGRAMIMAGE.Image POINTER(0) THEN
+    IF admission.minimumStack<image.minimumStack THEN
+      admission.minimumStack=image.minimumStack
+    FI
+
     IF PROGRAMIMAGE.Attach(image)=0 THEN
       DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
       RETURN(0)
@@ -231,6 +365,13 @@ LONGCARD FUNC StartInternal(LONGINT FUNC POINTER entry() BYTE POINTER arguments
         IF DOSPROCESS.PrepareGroup(process,group)<>0 THEN
           RETURN(identity)
         FI
+      ELSEIF specification<>NULL THEN
+        IF DOSPROCESS.PrepareWith(process,specification)<>0 THEN
+          accepted=Control(PROCESSSTATE.OP_LAUNCH,BYTE POINTER(process))
+          IF accepted=process THEN
+            RETURN(Admitted(process))
+          FI
+        FI
       ELSEIF DOSPROCESS.Prepare(process,foreground)<>0 THEN
         accepted=Control(PROCESSSTATE.OP_LAUNCH,BYTE POINTER(process))
         IF accepted=process THEN
@@ -260,13 +401,13 @@ PUBLIC LONGCARD FUNC Start(LONGINT FUNC POINTER entry() BYTE POINTER arguments
     CARD length)
 
 RETURN(StartInternal(entry,arguments,length,0,PROGRAMIMAGE.Image POINTER(0),
-    BYTE POINTER(0),0))
+    BYTE POINTER(0),0,NULL))
 
 PUBLIC LONGCARD FUNC StartForeground(LONGINT FUNC POINTER entry() BYTE
     POINTER arguments CARD length)
 
 RETURN(StartInternal(entry,arguments,length,1,PROGRAMIMAGE.Image POINTER(0),
-    BYTE POINTER(0),0))
+    BYTE POINTER(0),0,NULL))
 
 ; Start a process from an already loaded image with inherited DOS state.
 PUBLIC LONGCARD FUNC StartLoaded(BYTE POINTER image,arguments CARD length
@@ -278,14 +419,14 @@ PUBLIC LONGCARD FUNC StartLoaded(BYTE POINTER image,arguments CARD length
   FI
 
 RETURN(StartInternal(@ExecuteImage,arguments,length,foreground,
-    PROGRAMIMAGE.Image POINTER(image),BYTE POINTER(0),0))
+    PROGRAMIMAGE.Image POINTER(image),BYTE POINTER(0),0,NULL))
 
 ; Start a resident entry with a private cancellation scope and no keyboard loan.
 PUBLIC LONGCARD FUNC StartBackground(LONGINT FUNC POINTER entry() BYTE
     POINTER arguments CARD length)
 
 RETURN(StartInternal(entry,arguments,length,0,NULL,NULL,
-    PROCESSSTATE.BREAK_BACKGROUND))
+    PROCESSSTATE.BREAK_BACKGROUND,NULL))
 
 ; Loaded images retain execution ownership until ordinary Process collection.
 PUBLIC LONGCARD FUNC StartBackgroundLoaded(BYTE POINTER image,arguments CARD length)
@@ -296,7 +437,73 @@ PUBLIC LONGCARD FUNC StartBackgroundLoaded(BYTE POINTER image,arguments CARD len
   FI
 
 RETURN(StartInternal(@ExecuteImage,arguments,length,0,
-    PROGRAMIMAGE.Image POINTER(image),NULL,PROCESSSTATE.BREAK_BACKGROUND))
+    PROGRAMIMAGE.Image POINTER(image),NULL,PROCESSSTATE.BREAK_BACKGROUND,NULL))
+
+; The descriptor is borrowed only during Start. Child wrappers own independent
+; references; default temporary handles never replace the parent's selections.
+PUBLIC LONGCARD FUNC StartConfigured(BYTE POINTER image,descriptor)
+  PROCESSLAUNCH.StartSpec specification
+  BYTE ownInput,ownOutput
+  LONGCARD identity
+  LONGINT error
+
+  IF image=NULL THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+  specification.arguments=NULL
+  specification.input=NULL
+  specification.output=NULL
+  specification.directory=NULL
+  specification.console=NULL
+  specification.length=0
+  specification.minimumStack=0
+  IF descriptor<>NULL THEN
+    BEGIN
+      LET source=PROCESSLAUNCH.StartSpec POINTER(descriptor)
+      specification.arguments=source.arguments
+      specification.input=source.input
+      specification.output=source.output
+      specification.directory=source.directory
+      specification.console=source.console
+      specification.length=source.length
+      specification.minimumStack=source.minimumStack
+    END
+  FI
+
+  ownInput=BYTE(specification.input=NULL)
+  ownOutput=BYTE(specification.output=NULL)
+  identity=0
+  IF ownInput<>0 THEN
+    specification.input=BYTE POINTER(DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE))
+    IF specification.input=NULL THEN
+      RETURN(0)
+    FI
+  FI
+
+  IF ownOutput<>0 THEN
+    specification.output=BYTE POINTER(DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_NEWFILE))
+  FI
+
+  IF specification.output<>NULL THEN
+    identity=StartInternal(@ExecuteImage,specification.arguments,
+        specification.length,0,PROGRAMIMAGE.Image POINTER(image),NULL,
+        PROCESSSTATE.BREAK_BACKGROUND OR PROCESSSTATE.BREAK_SETUP,@specification)
+  FI
+
+  error=DOSCLIENT.IoErr()
+  IF ownInput<>0 THEN
+    DOS.Close(DOS.FileHandle POINTER(specification.input))
+  FI
+
+  IF ownOutput<>0 AND specification.output<>NULL THEN
+    DOS.Close(DOS.FileHandle POINTER(specification.output))
+  FI
+
+  DOSCLIENT.SetError(error)
+
+RETURN(identity)
 
 ; Task-side publication excludes switching. IRQ/NMI never follow these pointers.
 ; The kernel resolves the parent's identity before any scope is touched.
@@ -371,7 +578,7 @@ PUBLIC LONGCARD FUNC PrepareLoaded(BYTE POINTER image,arguments CARD length BYTE
   FI
 
 RETURN(StartInternal(@ExecuteImage,arguments,length,0,
-    PROGRAMIMAGE.Image POINTER(image),group,0))
+    PROGRAMIMAGE.Image POINTER(image),group,0,NULL))
 
 ; Launch a prepared process only after its admission checks still hold.
 PUBLIC BYTE FUNC StartPrepared(LONGCARD identity)
@@ -408,64 +615,5 @@ PUBLIC BYTE FUNC DiscardPrepared(LONGCARD identity)
 
 RETURN(1)
 
-; Collect a finished child's result before releasing retained process
-; ownership.
-PUBLIC LONGINT FUNC Collect(LONGCARD identity Result POINTER outcome)
-  PROCESSSTATE.Entry POINTER process,accepted
-
-  IF outcome=Result POINTER(0) THEN
-    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
-    RETURN(0)
-  FI
-
-  process=Control(PROCESSSTATE.OP_CLAIM,BYTE POINTER(@identity))
-  IF process=PROCESSSTATE.Entry POINTER(0) THEN
-    RETURN(0)
-  FI
-
-  outcome.primary=process.primary
-  outcome.secondary=process.secondary
-  ReleaseStorage(process)
-  accepted=Control(PROCESSSTATE.OP_RELEASE,BYTE POINTER(process))
-  IF accepted<>process THEN
-    HEAPCORE.Abort($ff94)
-  FI
-
-RETURN(-1)
-
-; Borrow the owned child's durable completion signal until collection.
-PUBLIC LONGCARD FUNC CompletionMask(LONGCARD identity)
-
-  LET process=Control(PROCESSSTATE.OP_FIND,BYTE POINTER(@identity))
-  IF process=NULL THEN
-    RETURN(0)
-  FI
-
-RETURN(process.mask)
-
-; Wait for a child to finish and return its collected command result.
-PUBLIC LONGINT FUNC Wait(LONGCARD identity Result POINTER outcome)
-  PROCESSSTATE.Entry POINTER process
-  LONGCARD received
-
-  IF outcome=Result POINTER(0) THEN
-    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
-    RETURN(0)
-  FI
-
-  DO
-    process=Control(PROCESSSTATE.OP_FIND,BYTE POINTER(@identity))
-    IF process=PROCESSSTATE.Entry POINTER(0) THEN
-      RETURN(0)
-    FI
-
-    IF process.state=PROCESSSTATE.STATE_RETIRED THEN
-      RETURN(Collect(identity,outcome))
-    FI
-
-    received=EXEC.Wait(process.mask)
-  OD
-
-RETURN(0)
 
 ENDMODULE

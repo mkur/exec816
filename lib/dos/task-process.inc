@@ -3,6 +3,7 @@
 TYPE ProcessAdmission=[
   LONGINT FUNC POINTER entry()
   PROC POINTER trampoline(),finalizer()
+  CARD minimumStack
 ]
 
 ; Resolve a process record against its owning Task incarnation.
@@ -96,7 +97,8 @@ PROCESSSTATE.Entry POINTER FUNC ProcessReserve(TaskControl POINTER caller
   PROCESSSTATE.Entry POINTER process
   DosSlot POINTER owner
   PROCESSSTATE.Table POINTER table
-  BYTE id
+  BYTE id,selected
+  CARD best
 
   owner=DosSlotFor(caller)
   table=PROCESSSTATE.Registry()
@@ -130,23 +132,31 @@ PROCESSSTATE.Entry POINTER FUNC ProcessReserve(TaskControl POINTER caller
     RETURN(PROCESSSTATE.Entry POINTER(0))
   FI
 
+  selected=0
+  best=$ffff
   FOR id=1 TO T_CAPACITY-1 DO
-    IF SlotFree(id)<>0 THEN
-      process=ProcessFor(id)
-      ProcessClear(process)
-      table.nextIdentity==+1
-      process.identity=table.nextIdentity
-      process.owner=BYTE POINTER(caller.item)
-      process.entry=admission.entry
-      process.trampoline=admission.trampoline
-      process.finalizer=admission.finalizer
-      process.signalBit=$ff
-      process.slot=id
-      process.state=PROCESSSTATE.STATE_PREPARING
-      owner.error=0
-      RETURN(process)
+    IF poolSize(id)>=admission.minimumStack AND poolSize(id)<best
+        AND SlotFree(id)<>0 THEN
+      selected=id
+      best=poolSize(id)
     FI
   OD
+
+  IF selected<>0 THEN
+    process=ProcessFor(selected)
+    ProcessClear(process)
+    table.nextIdentity==+1
+    process.identity=table.nextIdentity
+    process.owner=BYTE POINTER(caller.item)
+    process.entry=admission.entry
+    process.trampoline=admission.trampoline
+    process.finalizer=admission.finalizer
+    process.signalBit=$ff
+    process.slot=selected
+    process.state=PROCESSSTATE.STATE_PREPARING
+    owner.error=0
+    RETURN(process)
+  FI
 
 RETURN(PROCESSSTATE.Entry POINTER(0))
 

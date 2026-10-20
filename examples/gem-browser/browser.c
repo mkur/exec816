@@ -11,6 +11,13 @@ static const char *desktop_association(struct Desktop *,const char *);
 #include <string.h>
 #include <proto/exec.h>
 
+static ULONG program_start(const char *name,const char *arguments,UWORD length)
+{
+    struct ExecProgramStart start={0};
+    start.arguments=arguments;start.length=length;
+    return ExecStartProgram(name,&start);
+}
+
 enum { MENU_TITLE=3, MENU_OPEN=6, MENU_REFRESH=7, MENU_STOP=8, MENU_QUIT=9, MENU_PATH=10, MENU_NEW=11, MENU_RENAME=12, MENU_ICONS=15, MENU_LIST=16, MENU_NAME=17, MENU_PARENT=18, MENU_ALL=19, MENU_NONE=20 };
 enum { DIALOG_PATH=1,DIALOG_NEW=2,DIALOG_RENAME=3,DIALOG_COPY=4,DIALOG_COPYING=5,DIALOG_DELETE=6,DIALOG_REPLACE=7,DIALOG_DELETING=8 };
 static const OBJECT menuSource[] = {
@@ -739,8 +746,8 @@ static WORD open_item(struct Browser *b)
             memmove(b->target+1,b->target,length);
             b->target[0]='"';b->target[length+1]='"';b->target[length+2]=0;
             child=b->desktop ? desktop_launch(b->desktop,program,b->target,length+2):
-                ExecStartProgram(program,b->target,length+2);
-        } else child=b->desktop ? desktop_launch(b->desktop,b->target,NULL,0):ExecStartProgram(b->target,NULL,0);
+                program_start(program,b->target,length+2);
+        } else child=b->desktop ? desktop_launch(b->desktop,b->target,NULL,0):ExecStartProgram(b->target,NULL);
         if (!b->desktop) b->child=child;
         if (child) { ++b->launches;strcpy(b->status,b->desktop ? "Application started":"Running (File > Stop)"); }
         else strcpy(b->status,"Cannot launch this file");
