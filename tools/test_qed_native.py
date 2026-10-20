@@ -4,9 +4,13 @@ import argparse,json
 from pathlib import Path
 from native_program import ROOT,require
 from prepare_qed import inventory,prepare,PORT
-from test_c_process import run as process_run
+from test_c_process import run as _process_run
 
-def abi(out,optimize,focused=False,reuse=False,layout=False):
+def process_run(*args,**options):
+    options.setdefault('observe_stacks',True)
+    return _process_run(*args,**options)
+
+def abi(out,optimize,focused=False,reuse=False,layout=False,masks=False):
     out.mkdir(parents=True,exist_ok=True)
     source=ROOT/'tests/programs/qed_native_abi.c'
     options=dict(definitions={source.name:['--char-is-unsigned']},probes=[(source,[
@@ -35,6 +39,14 @@ def abi(out,optimize,focused=False,reuse=False,layout=False):
                         'QedLayoutTable:\n              .word 0xabcd\n')
         assembly.append(path)
         options['extra_assembly']=assembly
+        focused=True
+    if masks:
+        prepare(out/'inputs')
+        native=PORT/'native';qed=out/'inputs/source/qed/src';cflib=out/'inputs/source/cflib'
+        sources=[ROOT/'tests/programs/qed_native_masks.c',qed/'find.c',cflib/'nkccinit.c',cflib/'nkccuppr.c']
+        options.update(includes=[native,qed,cflib],definitions={str(path):[
+            '--char-is-unsigned','-DQED_INITIAL_SCOPE=1','--no-cross-call',
+            '--no-interprocedural-cross-jump'] for path in sources})
         focused=True
     # Keep the raw cohort to the ABI boundary, not the complete Process matrix.
     fixture=None;completed=12
@@ -81,7 +93,7 @@ def runtime(out,optimize,reuse=False,stop=False):
     sources=[source,native/'allocation.c',native/'entry.c',native/'files.c',native/'library.c',qed/'memory.c']
     options=dict(includes=[native,qed,cflib],runtime_attributes={'printf':'nofloat'},definitions={
         path.name:['--char-is-unsigned','-DQED_BANKED_MALLOC=1',
-                   '-Werror=implicit-function-declaration']+
+                   '-Werror=implicit-function-declaration','--no-cross-call','--no-interprocedural-cross-jump']+
                   (['-DAllocMem=QedFixtureAlloc'] if path.name=='allocation.c' else [])
         for path in sources})
     fixture=None;completed=12
@@ -158,7 +170,7 @@ ENDMODULE
         completed=2
     return process_run(out,True,reuse=reuse,rebuild_app=reuse,app_sources=sources,app_options=options,
                        native_optimize=True,release_compiler=True,fixture_source=fixture,
-                       expected_completed=completed)
+                       expected_completed=completed,stack_observation_index=1 if stop else 0)
 
 def files(out,optimize,reuse=False,filesystem='sdfs'):
     require(optimize,'File/runtime behavior uses optimized C')
@@ -166,7 +178,7 @@ def files(out,optimize,reuse=False,filesystem='sdfs'):
     native=PORT/'native';source=ROOT/'tests/programs/qed_native_files.c'
     sources=[source,native/'allocation.c',native/'entry.c',native/'files.c',native/'library.c']
     options=dict(includes=[native],runtime_attributes={'printf':'nofloat'},probes=[(source,[('size_t',2),('fpos_t',4),('time_t',8),('BPTR',4)])],
-        definitions={path.name:['--char-is-unsigned','-Werror=implicit-function-declaration']+
+        definitions={path.name:['--char-is-unsigned','-Werror=implicit-function-declaration','--no-cross-call','--no-interprocedural-cross-jump']+
             (['-DAllocMem=QedFixtureAlloc'] if path.name=='allocation.c' else [])+
             (['-DClose=QedFixtureClose','-DWrite=QedFixtureWrite'] if path.name=='files.c' else [])
             for path in sources})
@@ -232,17 +244,96 @@ ENDMODULE
     (out/'results.json').write_text(json.dumps(record,indent=2)+'\n')
     return record
 
+def admission(out,reuse=False):
+    out.mkdir(parents=True,exist_ok=True)
+    fixture=out/'qed-admission.act'
+    prefix=(ROOT/'tests/programs/c_process.act').read_text().split('\nPROC Main()')[0]
+    fixture.write_text(prefix+'''
+PROC Main()
+  BYTE slot,index
+  EXEC.Task POINTER task
+  LONGCARD nextIdentity,available
+
+  LET small=PROGRAMFILE.Load(BYTE POINTER(c"SYS:SMALL.APP"))
+  Require(small<>NULL AND small.minimumStack=0)
+  LET ordinary=Start(small,BYTE POINTER(c"B"))
+  Require(ordinary<>0)
+  LET table=PROCESSSTATE.Registry()
+  slot=0
+  FOR index=1 TO PROCESSSTATE.CAPACITY-1 DO
+    IF table.entries(index).identity=ordinary THEN
+      slot=index
+    FI
+  OD
+
+  task=EXEC.Task POINTER(@table.entries(slot).task(0))
+  Require(slot<>0 AND task.tc_SPUpper-task.tc_SPLower=1312)
+  Collected(ordinary,-124)
+  PROGRAM.Unload(small)
+  baseline=EXEC.AvailMem(0)
+
+  LET image=Load()
+  LET other=Load()
+  Require(image.minimumStack=2560)
+  LET first=Start(image,BYTE POINTER(c"B"))
+  Require(first<>0)
+  slot=0
+  FOR index=1 TO PROCESSSTATE.CAPACITY-1 DO
+    IF table.entries(index).identity=first THEN
+      slot=index
+    FI
+  OD
+
+  task=EXEC.Task POINTER(@table.entries(slot).task(0))
+  Require(slot<>0 AND task.tc_SPUpper-task.tc_SPLower=2560)
+  nextIdentity=table.nextIdentity
+  available=EXEC.AvailMem(0)
+  Require(Start(other,BYTE POINTER(c"F"))=0)
+  Require(DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(other.running=0 AND other.references=1)
+  Require(table.nextIdentity=nextIdentity AND EXEC.AvailMem(0)=available)
+  Collected(first,-124)
+  PROGRAM.Unload(image)
+  Collected(Start(other,BYTE POINTER(c"F")),-321)
+  PROGRAM.Unload(other)
+  Require(EXEC.AvailMem(0)=baseline)
+
+  LET tall=PROGRAMFILE.Load(BYTE POINTER(c"SYS:TALL.APP"))
+  Require(tall<>NULL AND tall.minimumStack=3008)
+  nextIdentity=table.nextIdentity
+  available=EXEC.AvailMem(0)
+  Require(Start(tall,BYTE POINTER(c"F"))=0)
+  Require(DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(tall.running=0 AND tall.references=1)
+  Require(table.nextIdentity=nextIdentity AND EXEC.AvailMem(0)=available)
+  PROGRAM.Unload(tall)
+  Require(EXEC.AvailMem(0)=baseline)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE
+''')
+    source=out/'qed-admission.c'
+    source.write_text((ROOT/'tests/programs/c_process.c').read_text().replace(
+        '    if (strcmp(FindTask(NULL)->tc_Node.ln_Name,"PROBE.APP")) return 56;\n','').replace(
+        '    if (strcmp(FindTask(NULL)->tc_Node.ln_Name,"PROBE.APP")) return 57;\n',''))
+    return process_run(out,True,reuse=reuse,rebuild_app=reuse,app_sources=[source],
+        app_options=dict(minimum_stack=2560),fixture_source=fixture,expected_completed=3,
+        native_optimize=True,release_compiler=True,stack_media=True,observe_stacks=True)
+
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--group',choices=('abi','layout','sources','runtime','stop','files'),required=True)
+    p.add_argument('--group',choices=('abi','layout','sources','runtime','stop','files','admission','masks'),required=True)
     p.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs')
     p.add_argument('--case',choices=('raw','opt'),default='opt')
     p.add_argument('--from-build',action='store_true',help='Reuse the matched emitted provider and rebuild the probe APP')
     p.add_argument('--focused-abi',action='store_true',help='Two ABI/return cycles in either C mode')
     p.add_argument('--output',type=Path,required=True)
     a=p.parse_args();out=a.output.resolve()
-    if a.group in ('abi','layout'):result=abi(out,a.case=='opt',a.focused_abi,a.from_build,a.group=='layout')
+    if a.group in ('abi','layout','masks'):result=abi(out,a.case=='opt',a.focused_abi,a.from_build,a.group=='layout',a.group=='masks')
     elif a.group in ('runtime','stop'):result=runtime(out,a.case=='opt',a.from_build,a.group=='stop')
+    elif a.group=='admission':result=admission(out,a.from_build)
     elif a.group=='files':result=files(out,a.case=='opt',a.from_build,a.filesystem)
     else:result=inventory(out,a.case=='opt')
     print('QED native',a.group,a.case,'passed' if a.group!='sources' else 'inventoried',flush=True)

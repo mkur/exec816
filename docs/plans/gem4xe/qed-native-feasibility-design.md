@@ -10,9 +10,8 @@ containing the real runtime and selected QED text-storage code, plus a separate
 whole-application compilation and layout study. This permits useful executable
 progress while resource, workstation and drawing support remain later work.
 
-Status: QF1–QF4 implemented for strategy step 2, with
-[development evidence](../../history/qed-native-feasibility.md). Stack/admission
-and final reconciliation remain open. The
+Status: QF1–QF5 implemented for strategy step 2, with
+[development evidence](../../history/qed-native-feasibility.md). Stack/admission is implemented; final reconciliation remains open. The
 [step 1 source manifest](../../../ports/gem4xe/apps/qed/inputs.json) fixes the
 upstream inputs and initial native baseline.
 
@@ -251,6 +250,43 @@ free pool under existing ownership rules, and reject exhaustion before running
 the entry. Record its precise public/serialized contract in an addendum before
 implementing it. Preserve one Task API; never depend on launch order, a private
 QED slot or an out-of-band launch hook.
+
+### QF5 admission addendum
+
+The emitted donor undo frame alone reserved 1,038 bytes, before its callers.
+Move large command scratch into private image BSS, preserving initialization
+and auditing nested event delivery; remove recursive pattern matching from
+the literal-Find scope. Ordinary 1,312-byte pools are not a promised editor
+budget even after that reduction. Use **2,560 bytes including the existing
+256-byte interrupt reserve** as the initial QED admission requirement. This
+uses the two existing larger pools, without changing their sizes or owners.
+The completed frame record must distinguish executed minima from conditional
+bounds for the later GEM paths; exceeding that budget reopens the gate.
+
+C application ABI **24** retains the 32-byte header. At offset 26, the low
+byte holds the existing 20/23-byte compiler workspace, and the high byte holds
+minimum stack size in 16-byte units. Zero requests the ordinary default;
+nonzero sizes round up, with an encoding maximum of 4,080 bytes. This is a
+general loaded-image contract, independent of the application name. The packer
+records the rounded requirement. The loader validates workspace once and
+retains the requirement in the upper-memory Image owner. Native/SDX images
+continue to request zero. Old C ABI images are rejected and rebuilt together
+with their provider; there is one current profile.
+
+Process ABI **8** adds a CARD minimumStack to the private reserve packet,
+leaving the 128-byte Process record unchanged. All loaded starts, including
+prepared/background starts, carry the Image requirement through that packet.
+Admission selects the smallest compatible free pool (first slot breaks ties)
+under the existing kernel activation. With no compatible pool it returns zero
+and ERROR_NO_FREE_STORE (103), before identity publication or child entry.
+Existing image Attach is rolled back; no argument, signal or DOS ownership is
+acquired. Normal retirement/collection permits reuse. No slot is reserved for
+QED, and an unavailable larger pool is an ordinary admission failure.
+
+Reserved bank-zero change: **0 fixed, 0 per-public-Task, 0 private idle**.
+The Image field and reserve packet add upper-owner/temporary stack storage,
+reported in the implementation evidence. Existing guards, IRQ/NMI protocol,
+interrupt floor and pool capacities remain the basis for the budget.
 
 ## Evidence and decision to proceed
 

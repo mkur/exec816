@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 23,
+  "version": 24,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -110,5 +110,11 @@
     "ExNextBatch",
     "AvailMem",
     "SetIoErr"
-  ]
+  ],
+  "stack_requirement": {
+    "workspace_mask": 255,
+    "shift": 8,
+    "unit_bytes": 16,
+    "maximum_bytes": 4080
+  }
 }

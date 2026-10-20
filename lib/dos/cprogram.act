@@ -45,7 +45,7 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
   ADDRESS POINTER entry
   LONGCARD span,entryAt,relocations,importsAt,fixupsAt,payload,offset,previous
   LONGCARD base,index
-  CARD count,imports,ordinal,part
+  CARD count,imports,ordinal,part,requirements,workspace
   BYTE delta
   LONGINT error
 
@@ -61,10 +61,12 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
   entryAt=Long(bytes,16)
   relocations=Long(bytes,20)
   imports=Word(bytes,24)
+  requirements=Word(bytes,26)
+  workspace=requirements & WORKSPACE_MASK
   IF Long(bytes,0)<>FILE_MAGIC OR Word(bytes,4)<>1 OR
       Word(bytes,6)<>VERSION OR bytes(8)<>LINK_BANK OR bytes(9)<>BANK_LIMIT OR
       count=0 OR count>SEGMENT_LIMIT OR span=0 OR span>SPAN_LIMIT OR
-      (Word(bytes,26)<>20 AND Word(bytes,26)<>23) OR
+      (workspace<>20 AND workspace<>23) OR
       Long(bytes,28)<>length OR relocations>FILE_LIMIT/4 THEN
     DOSCLIENT.SetError(error)
     RETURN(NULL)
@@ -168,6 +170,7 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
         image.references=1
         image.ownerHeld=1
         image.kind=PROGRAMIMAGE.KIND_C
+        image.minimumStack=(requirements RSH STACK_SHIFT)*STACK_UNIT
         image.magic=PROGRAMIMAGE.MAGIC
         DOSCLIENT.SetError(0)
         RETURN(image)

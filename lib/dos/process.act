@@ -17,6 +17,7 @@ INCLUDE "command-results.inc"
 TYPE Admission=[
   LONGINT FUNC POINTER entry()
   PROC POINTER trampoline(),finalizer()
+  CARD minimumStack
 ]
 
 PROCESSSTATE.Entry POINTER FUNC Control(BYTE operation BYTE POINTER argument)
@@ -174,6 +175,11 @@ LONGCARD FUNC StartInternal(LONGINT FUNC POINTER entry() BYTE POINTER arguments
       DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
       RETURN(0)
     FI
+  FI
+
+  admission.minimumStack=0
+  IF image<>NULL THEN
+    admission.minimumStack=image.minimumStack
   FI
 
   admission.entry=entry

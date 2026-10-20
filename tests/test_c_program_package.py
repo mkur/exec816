@@ -24,10 +24,20 @@ class CProgramPackageTests(unittest.TestCase):
         for bank in (1,11,14,62):verify(original,image(bank),bank,relocations)
         wire,record=pack(original,relocations)
         self.assertEqual(struct.unpack_from('<4sHHBBHIIIHHI',wire),
-                         (b'C816',1,23,12,64,3,65544,0,2,1,20,len(wire)))
+                         (b'C816',1,24,12,64,3,65544,0,2,1,20,len(wire)))
         self.assertEqual(struct.unpack_from('<HHI',wire,32+3*16),(0,0,5))
         self.assertEqual(record['segments'][-1]['size'],4)
         self.assertEqual(wire[-12:],bytes(original['segments'][0]['bytes']+original['segments'][1]['bytes']))
+
+    def test_stack_requirement_rounding_and_encoding_limit(self):
+        for requested,rounded in ((0,0),(1,16),(1312,1312),(2559,2560),(4080,4080)):
+            wire,record=pack(image(12),[],requested)
+            encoded=struct.unpack_from('<H',wire,26)[0]
+            self.assertEqual(encoded & 255,20)
+            self.assertEqual((encoded >> 8)*16,rounded)
+            self.assertEqual(record['minimum_stack'],rounded)
+        for requested in (-1,4081,1.5):
+            with self.assertRaisesRegex(RuntimeError,'minimum stack'):pack(image(12),[],requested)
 
     def test_rejects_changed_placement_and_unsupported_address_math(self):
         for change in ('layout','arithmetic'):

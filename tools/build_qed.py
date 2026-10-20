@@ -76,7 +76,7 @@ def build(output,provider):
     sources=[output/'inputs/source'/u['origin']/u['path'] for u in selection['units']]
     sources += [native/name for name in selection['native_sources']]+[traps]
     definitions={str(p):['-D'+d for d in selection['defines']]+
-        ['-Werror=implicit-function-declaration']+
+        ['-Werror=implicit-function-declaration']+selection['compiler_options']+
         (['--char-is-unsigned'] if '/source/qed/' in str(p) or p.parent==native else [])
         for p in sources}
     imports=output/'imports.s';imports.write_text(import_assembly())

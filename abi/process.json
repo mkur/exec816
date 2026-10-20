@@ -1,6 +1,6 @@
 {
   "abi": "exec816.process",
-  "version": 7,
+  "version": 8,
   "argument_limit": 255,
   "record_bytes": 128,
   "states": {

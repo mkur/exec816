@@ -50,7 +50,14 @@ def verify(original, linked, bank, relocations):
                     'Relinking changed C symbol placement: '+name)
 
 
-def pack(image, relocations):
+def pack(image, relocations, minimum_stack=0):
+    stack=ABI['stack_requirement']
+    require(type(minimum_stack) is int and 0<=minimum_stack<=stack['maximum_bytes'],
+            'Unencodable C application minimum stack')
+    units=(minimum_stack+stack['unit_bytes']-1)//stack['unit_bytes']
+    workspace=image['provenance']['dp_workspace_bytes']
+    require(workspace in (20,23),'Unsupported C compiler workspace')
+    requirements=workspace | (units << stack['shift'])
     require('__exec_analysis_only' not in image['symbols'],
             'Analysis-only image cannot be packaged')
     for segment in image['segments']:
@@ -74,10 +81,10 @@ def pack(image, relocations):
     body+=b''.join(s['payload'] for s in segments)
     header=struct.pack('<4sHHBBHIIIHHI',ABI['magic'].encode(),1,ABI['version'],ABI['link_bank'],
         ABI['max_banks'],len(segments),span,image['symbols']['main']-BASE,len(relocations),
-        len(imports),image['provenance']['dp_workspace_bytes'],ABI['header_bytes']+len(body))
+        len(imports),requirements,ABI['header_bytes']+len(body))
     require(len(header)+len(body)<=ABI['file_limit'],'C application file too large')
     return header+body,dict(span=span,entry=image['symbols']['main']-BASE,relocations=relocations,
-                            imports=imports,segments=[{k:v for k,v in s.items() if k!='payload'} for s in segments])
+                            imports=imports,minimum_stack=units*stack['unit_bytes'],segments=[{k:v for k,v in s.items() if k!='payload'} for s in segments])
 
 
 def import_assembly():

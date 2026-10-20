@@ -238,3 +238,63 @@ These remain development checks. Reserved bank-zero delta from QF3 is
 and unused capacity. The loader segment array adds 40 transient caller-stack
 bytes; it does not grow a reservation. QF5 stack/admission and QF6 reconciliation
 remain open. No QED analysis artifact is distributed in demo media.
+
+## QF5: stack ownership and general admission
+
+Patch 0004 moves large path/name, undo and line scratch to per-image upper
+storage. The main event record now has its natural Process lifetime. Each
+function keeps its own scratch; initial clearing is retained where required.
+Nested action/dialog loops forward redraw/geometry messages, and Close may
+invoke Save once. The literal-Find scope no longer links recursive pattern
+matching; private file masks use a constant-storage iterative wildcard matcher.
+The mask fixture executes the actual patched function.
+
+The optimized graph disables cross-call and cross-function tail sharing to
+keep frames attributable to source functions. This costs about 23 KiB of code
+compared with the first QF5 layout, charged in the measured image. The
+[frame tool](../../tools/measure_qed_frames.py) counts emitted reservations,
+saved registers and static push sites conservatively, including instructions
+sharing a label row. It classifies the 21 source indirect-call sites and their
+finite action contexts, rejecting unknown sites and source call cycles.
+
+The final source bound is **1,375 bytes**. A separate **768-byte continuation
+cap** covers bridge/library/native/GEM work below an application call. Adding
+the 256-byte interrupt reserve and required 128-byte headroom gives 2,527
+bytes, leaving 33 bytes in a 2,560-byte pool. This is a conditional source fit;
+future implemented GUI chains must establish the continuation cap with real
+full-chain samples. The analysis ELF does not qualify those paths.
+
+C APP ABI **24** uses the existing header: byte 26 remains the 20/23-byte
+compiler workspace and byte 27 declares minimum stack in 16-byte units. The
+packer rounds up and rejects unencodable requirements. The loader retains the
+requirement in the upper Image owner, which grows from 72 to 76 bytes. All
+loaded start/prepare variants use the shared admission path. Native/SDX images
+request the ordinary default.
+
+Process ABI **8** adds minimumStack to its private reserve packet (9 to 12
+bytes); the public Process row remains 128 bytes. Admission takes the smallest
+compatible existing free pool. No compatible pool returns error 103 before
+identity publication or child entry, undoing the Image execution reference.
+It acquires no argument, signal or DOS ownership on that failure. The two
+larger pools retain their existing users; no QED slot or launch ordering is
+introduced. Collection makes a retired pool reusable.
+
+The [QF5 evidence](../development/qed-native-qf5.json) identifies the exact
+optimized runtime, file, Stop, mask and admission cohorts, plus the focused
+raw layout/bridge cohort. Passive observations record actual S after emitted
+frame reservations, native entries, physical pool, DP and Process lifetime
+ordinal. Process samples require at least 128 bytes above the interrupt floor;
+IRQ/NMI/context-restore samples are separate. Existing guard/context/resource
+checks remain enabled. These are development checks, not system qualification.
+
+The final analysis uses 148,788 code bytes, 1,367 initialized bytes and 26,587
+BSS bytes, spanning 279,860 bytes. Conditional serialized size is 166,551 bytes
+and rounded alignment backing is 345,396 bytes. All 59 legal bases reproduce
+bytes and symbols. The previous private and resident allowances still fit.
+The detailed source ledger remains outside demo media.
+
+Reserved bank-zero delta from QF4: **0 fixed, 0 per-public-Task, 0 private idle
+bytes**, including guards, alignment, reserve and unused capacity. The generated
+budgets compare equal. The reserve and StartInternal fixed frames each grow
+four transient bytes; pools do not grow. QF6 reconciles the final baseline and
+refreshes the matched demo applications before the step 3 handoff.

@@ -12,7 +12,7 @@ from native_program import ROOT, command, sha256
 
 
 def build(output,sources,optimize=True,probes=(),includes=(),definitions=None,runtime_attributes=None,
-          extra_assembly=()):
+          extra_assembly=(),minimum_stack=0):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     assembly=output/'imports.s'
@@ -20,7 +20,7 @@ def build(output,sources,optimize=True,probes=(),includes=(),definitions=None,ru
     image=emit(output,sources,[assembly,ROOT/'c/calypsi/image-info.s',*extra_assembly],(),optimize=optimize,
                probes=probes,includes=includes,definitions=definitions,runtime_attributes=runtime_attributes)
     relocations,banks=verify_relocations(output,image)
-    payload,record=pack(image,relocations)
+    payload,record=pack(image,relocations,minimum_stack)
     path=output/'program.app';path.write_bytes(payload)
     record.update(abi=ABI,bytes=len(payload),sha256=sha256(path),verified_banks=banks,
                   image=image,inputs={str(p):sha256(p) for p in (*sources,*extra_assembly)})
@@ -60,5 +60,6 @@ if __name__=='__main__':
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--source',type=Path,action='append',required=True)
     parser.add_argument('--raw',action='store_true')
+    parser.add_argument('--minimum-stack',type=int,default=0,help='Total pool bytes including interrupt reserve')
     args=parser.parse_args()
-    build(args.output,[p.resolve() for p in args.source],not args.raw)
+    build(args.output,[p.resolve() for p in args.source],not args.raw,minimum_stack=args.minimum_stack)

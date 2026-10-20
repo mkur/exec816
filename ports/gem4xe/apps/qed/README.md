@@ -108,6 +108,37 @@ native loader. Raw mode focuses on the compiler/layout boundary. Use the
 exact measured costs, allowances and execution scope. This is not full QED
 startup, editing or saving evidence.
 
+## Stack and admission checks
+
+```sh
+python3 tools/test_qed_native.py --group admission --output build/qed-native/admission
+python3 tools/test_qed_native.py --group masks --output build/qed-native/masks
+python3 tools/measure_qed_frames.py --layout build/qed-native/layout
+```
+
+C APP ABI 24 declares a general minimum-stack requirement in the existing
+header. QED requests 2,560 total bytes, including the 256-byte interrupt reserve;
+ordinary Process admission selects a compatible free pool or fails before
+entry. The two existing larger pools keep their normal owners and capacities.
+The admission fixture checks ordinary selection, larger-pool occupancy,
+pre-entry exhaustion, image rollback and collection/reuse.
+
+Patch 0004 moves per-command paths, undo/line scratch and the persistent event
+record into private upper-image storage. Nested file/dialog loops deliver
+redraw and geometry messages, with finite Close-to-Save action nesting. The
+file-mask matcher is iterative; Find remains literal. The mask fixture links
+that actual source. `-O2` remains enabled; the port disables cross-call and
+cross-function tail sharing to keep emitted function frames auditable. The
+layout report charges that measured code cost.
+
+QED native groups collect passive S samples at emitted entries/frame sites,
+with physical pool, DP and per-pool Process lifetime ordinal. These samples
+retain the 128-byte headroom requirement and complement the source frame ledger.
+The ledger rejects unclassified indirect sites or unbounded source call cycles.
+It records a separate continuation cap for library/native/GEM work, which later
+GUI implementations must establish by full-chain measurements. The analysis ELF
+still provides no executable editor evidence.
+
 ## Notices
 
 The QED pin includes `gem4xe/NOTICE`, `dist/liesmich.txt`, `doc/qed-en.stg`,

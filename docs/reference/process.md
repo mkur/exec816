@@ -119,6 +119,14 @@ The shell's state-changing built-ins remain local. Exact-path disk commands use
 reading the next prompt. A resident foreground caller uses `StartForeground`
 followed by `Wait`.
 
+Loaded Images may declare `minimumStack`, including the interrupt reserve.
+All loaded start and prepare variants use it in the ordinary reservation path.
+Admission takes the smallest compatible free pool; zero retains ordinary
+selection. If no pool fits, start/prepare returns zero and sets error 103 before
+publishing an identity. The Image execution reference rolls back; arguments,
+signals and DOS state have not been acquired. The private ABI 8 reserve packet
+adds a CARD requirement; Process rows remain 128 bytes and pools do not grow.
+
 ## Background cancellation
 
 Background starts retain the ordinary Input, Output and directory snapshots,
@@ -158,7 +166,7 @@ Both children must be prepared before `DOSGROUP.Seal` suspends parent DOS activi
 `StartPrepared(identity)` then launches each child; `DiscardPrepared(identity)`
 releases a child that has not launched. These operations are for this bounded
 resident coordinator, not general shell job control or loaded-command imports.
-Process ABI version 7 keeps the 128-byte row and these group operations.
+Process ABI version 8 keeps the 128-byte row and these group operations.
 
 The coordinator restores its selections and closes both parent pipe wrappers
 before sealing. Each child adopts its own DOS context and break signal, while

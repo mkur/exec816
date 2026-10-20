@@ -805,5 +805,10 @@
     "per_public_task": 0,
     "private_idle": 0
   },
-  "container_metadata_allowance_bytes": 16384
+  "container_metadata_allowance_bytes": 16384,
+  "compiler_options": [
+    "--no-cross-call",
+    "--no-interprocedural-cross-jump"
+  ],
+  "minimum_stack_bytes": 2560
 }

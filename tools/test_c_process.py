@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Exercise disk C/native dispatch and Process-owned image/AES teardown."""
-import argparse,json,shutil,struct
+import argparse,os,json,shutil,struct
 from pathlib import Path
 from native_program import ROOT,compiler,read_build,require,sha256,verify_machine
 from build_c_program import build as application
@@ -20,6 +20,7 @@ def variant(base,out,filesystem):
     from banked_image import emit
     from generate_dos_mounts import encode
     out.mkdir(parents=True,exist_ok=True)
+    shutil.copy2(base/'c-image.json',out/'c-image.json')
     for name in ('program','app','media'):
         shutil.copytree(base/name,out/name,dirs_exist_ok=True)
     p=read_build(out/'program');record=p['build'];original=record['image_sha256']
@@ -43,7 +44,7 @@ def variant(base,out,filesystem):
 
 def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=None,
         fixture_source=None,expected_completed=12,native_optimize=None,
-        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False):
+        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0):
     out.mkdir(parents=True,exist_ok=True)
     if reuse:
         p=read_build(out/'program');app=json.loads((out/'app/app.json').read_text())
@@ -74,6 +75,11 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                                      ('SPAN',12,'<I',ABI['span_limit']+1)]:
                 changed=bytearray(raw[:32]);struct.pack_into('<I',changed,28,32)
                 struct.pack_into(fmt,changed,at,value);(media/(name+'.APP')).write_bytes(changed)
+        if stack_media:
+            for name,required in [('SMALL',0),('TALL',3008)]:
+                changed=bytearray(raw)
+                struct.pack_into('<H',changed,26,(struct.unpack_from('<H',raw,26)[0]&255)|((required//16)<<8))
+                (media/(name+'.APP')).write_bytes(changed)
         native=out/'native/HELLO'
         compile_command(compiler(ROOT/'build/actionc',release=release_compiler),ROOT/'examples/commands/hello.act',native,optimize)
         (media/'HELLO').write_bytes(native.read_bytes())
@@ -100,11 +106,19 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                 app=app,build=p['build'],bank_zero_delta=bank_zero_delta(p['build']['memory']))
     try:
         require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
+        if observe_stacks:
+            from qed_stack_observer import markers,summarize,capture
+            points=markers(p,app)
+            (out/'stack-markers.json').write_text(json.dumps(points,indent=2)+'\n')
+            saved_trace={k:os.environ.get(k) for k in ('EXEC816_LATENCY_TRACE','EXEC816_LATENCY_PCS')}
+            os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in points))
         with emulator(BRIDGE,ROM,out,pin=PIN) as b:
             for k,v in PIN['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
             b.mount(0,str(out/'system.atr'))
             record['machine']=verify_machine(b,ROM,PIN)
-            try:runtime,_=execute(b,p,timeout=600,frame_limit=30000)
+            try:
+                runtime,_=execute(b,p,timeout=600,frame_limit=30000,
+                    before_run=(lambda b:capture(b,p,record,stack_observation_index)) if observe_stacks else None)
             except Exception:
                 record['checks']=data(b,p['image'],'checks',True)
                 record['completed']=data(b,p['image'],'completed',True)
@@ -133,7 +147,14 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
     except Exception as error:
         record.update(status='fail',error=str(error))
         raise
-    finally:(out/'results.json').write_text(json.dumps(record,indent=2)+'\n')
+    finally:
+        if observe_stacks and 'saved_trace' in locals():
+            for key,value in saved_trace.items():
+                if value is None:os.environ.pop(key,None)
+                else:os.environ[key]=value
+            if record['status']=='pass':
+                record['stacks']=summarize(out/'emulator.log',points,p['build']['memory'],record.get('stack_window'))
+        (out/'results.json').write_text(json.dumps(record,indent=2)+'\n')
     return record
 
 if __name__=='__main__':

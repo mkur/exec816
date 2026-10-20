@@ -9,6 +9,7 @@ PUBLIC CONST NAME_CAPACITY=24
 PUBLIC TYPE Image=[
   LONGCARD magic,references
   BYTE ownerHeld,running,kind
+  CARD minimumStack
   BYTE POINTER backing,data,bss
   LONGCARD backingBytes,textBytes,dataBytes,bssBytes
   ADDRESS text

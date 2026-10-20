@@ -32,7 +32,7 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-Import ABI 23 includes the current device/AES/file imports, `ExamineExact`,
+Import ABI 24 includes the current device/AES/file imports, `ExamineExact`,
 `MountVolume` and `UnmountVolume`, and the caller-local `ExecAESBeginUpdate` and
 `ExecAESPaintedChanges` [paint-completion helpers](aes.md#optional-repaint-completion).
 The generated C FileInfoBlock stays 260 bytes, with 30 reserved bytes and
@@ -48,6 +48,15 @@ The desktop provider and its applications must be rebuilt together.
 The current imports also expose AvailMem and SetIoErr; the shared wrapper
 preserves the application's native secondary result across AES retirement.
 
+Use `--minimum-stack BYTES` to declare a total pool requirement, including
+its 256-byte interrupt reserve. The packer rounds up to 16 bytes, with a maximum
+encoding of 4,080 bytes. This is admission metadata, not a C stack-overflow check.
+The loader retains it in the upper-memory Image owner; all loaded Process starts
+select the smallest compatible free pool. No compatible pool means start returns
+zero with ERROR_NO_FREE_STORE (103), before child entry or identity publication.
+Image ownership rolls back and normal collection permits reuse. Existing pool
+sizes, guards and bank-zero reservations are unchanged.
+
 ## File layout
 
 All integers are little-endian. The 32-byte header is followed by segment
@@ -58,7 +67,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 23 |
+| 6 | 2 | Import ABI version, 24 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -66,7 +75,8 @@ The header's file length must match exactly.
 | 16 | 4 | Entry offset from aligned image base |
 | 20 | 4 | Number of bank-byte fixups |
 | 24 | 2 | Number of imports |
-| 26 | 2 | Compiler lower-DP workspace, 20 or 23 bytes |
+| 26 | 1 | Compiler lower-DP workspace, 20 or 23 bytes |
+| 27 | 1 | Minimum stack in 16-byte units; zero uses ordinary admission |
 | 28 | 4 | Complete file bytes |
 
 Each 16-byte segment has four 32-bit values: relative offset, serialized bytes,
