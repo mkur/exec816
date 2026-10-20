@@ -7,7 +7,7 @@ USE LAYERS
 USE REGIONS
 
 DESKTYPES.Service POINTER service
-LONGCARD selectedLayer,scrollToken,lossGeneration
+LONGCARD selectedLayer,selectedUnit,scrollToken,lossGeneration
 EXEC.Task POINTER launcher
 PUBLIC BYTE outlineVisible
 PUBLIC LONGCARD barLayer,popupLayer,desktopWindow,desktopLayer
@@ -108,6 +108,8 @@ RETURN(status)
 PUBLIC PROC Bind(DESKTYPES.Service POINTER value)
 
   service=value
+  selectedUnit=0
+  selectedLayer=0
 
 RETURN
 
@@ -119,15 +121,54 @@ RETURN(service<>NULL)
 ; published binding then prevents console destruction until replacement/close.
 PUBLIC LONGCARD FUNC ConsoleUnit()
 
+RETURN(selectedUnit)
+
+PUBLIC LONGCARD FUNC ShellUnit()
+
   IF service=NULL THEN
     RETURN(0)
   FI
 
 RETURN(service.consoleUnit)
 
-PUBLIC PROC Select(LONGCARD id)
+PUBLIC BYTE FUNC IsConsole(DESKTYPES.Window POINTER window)
 
-  selectedLayer=id
+RETURN(window.kind=DESKTYPES.CONTENT_CONSOLE
+    OR (window.kind=DESKTYPES.CONTENT_AES AND window.console<>0))
+
+PUBLIC PROC SelectConsole(LONGCARD unit,layer)
+
+  selectedUnit=unit
+  selectedLayer=layer
+
+RETURN
+
+; Binding lookup belongs to scene policy. Console lifetime and presentation
+; share this identity without importing the driver into the scene state.
+PUBLIC DESKTYPES.Window POINTER FUNC FindConsoleWindow(LONGCARD unit)
+  BYTE index
+
+  IF service<>NULL THEN
+    FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+      BEGIN
+        LET window=@service.windows(index)
+        IF window.id<>0 AND IsConsole(window)<>0 AND window.console=unit THEN
+          RETURN(window)
+        FI
+      END
+    OD
+  FI
+
+RETURN(NULL)
+
+PUBLIC PROC SelectConsoleUnit(LONGCARD unit)
+
+  LET window=FindConsoleWindow(unit)
+  selectedUnit=unit
+  selectedLayer=0
+  IF window<>NULL THEN
+    selectedLayer=window.layer
+  FI
 
 RETURN
 

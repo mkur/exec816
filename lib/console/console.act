@@ -185,9 +185,7 @@ PUBLIC BYTE FUNC Destroy(LONGCARD unit)
   FI
 
   LET registry=CONSOLEWINDOWS.Registry()
-  LET desktop=DESKSTATE.Get()
-  IF desktop<>NULL AND desktop.consoleWindow<>0
-      AND desktop.consoleUnit=unit THEN
+  IF DESKSTATE.FindConsoleWindow(unit)<>NULL THEN
     RETURN(0)
   FI
 

@@ -32,7 +32,12 @@ explicitly.
 `CONCMD_MODE=10` takes one byte: RAW_KEYS=$80, ATASCII=$40, NO_CARET=$20;
 other bits must be zero. It shares the write FIFO, clears pending input and
 preserves the instance Caps state. Set zero to restore native mode. Callers
-coordinate mode changes with their readers. `CONCMD_WRITE_CELLS=11` uses the
+coordinate mode changes with their readers. `CONCMD_GET_MODE=14` snapshots the
+currently applied `$E0` mode flags into one writable byte without clearing input
+or claiming READ. Length and Actual are one. It observes applied state; wait for
+a queued MODE operation's completion before relying on its new value.
+Applications temporarily changing modes must save and restore this snapshot.
+`CONCMD_WRITE_CELLS=11` uses the
 same position and row bounds as WRITE_AT but accepts every byte as a cell.
 ATASCII mode maps all 256 characters, including inverse and graphics glyphs,
 on text and bitmap backends. `CONCMD_READ_KEYS=12` shares READ ownership and

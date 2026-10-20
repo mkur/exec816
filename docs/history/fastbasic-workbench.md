@@ -210,3 +210,33 @@ also checks the current 33-object menu record: 380 bytes, including alignment,
 with 66-byte parent/x/y arrays. Its old 340-byte expectations were
 stale and failed before reaching the C contexts; the corrected fixture keeps
 the independent literal layout checks.
+
+## WB7 — application-owned console window
+
+[WB7 evidence](../development/fastbasic-workbench-wb7.json) records the ordinary
+loadable C application controlling its own 64×20 retained-cell console through
+C ABI 23 and AES wire 17. The console remains bound until window deletion;
+streams and cancellation scopes retain it until their exact retirement. The
+existing worker renders each bound view with its own frame and focus route.
+
+Two physical application cycles pass 176 application checks per cycle and 19
+controller checks, plus 20 raw/optimized console binding checks. Eight independent
+ROM-font pixel comparisons cover initial, exposed, moved and completed output.
+Both exact transcripts include cooked numeric input, GET and KEY. Editor menu
+Save remains usable during INPUT; menu Stop, output close and early Stop retire
+children. Menu Stop takes 138 observed frames in each cycle, including the
+physical menu approach and debugger overhead. Shell cells and mode are preserved,
+warm heap returns exactly, and all stack/domain guards remain intact.
+
+The optimized cell-I/O regression passes 316 checks and the layer regression
+8,924. Existing native text-window lifetime cases also pass. CONCMD_GET_MODE
+reads applied flags without claiming or consuming input. FastBasic restores the
+previous console mode after retirement, keeping completed application output in
+the ROM font. All 545 host tests pass. These are development checks, not hosted
+system qualification.
+
+The selected console identity adds four upper bytes, its private C bridge table
+15, and the public import table 15. An owned console requests 1,664 upper bytes
+(1,672 allocator bytes). No worker, signal or Task is added. Reserved bank-zero
+growth is **0 fixed, 0 root/kernel, 0 per public Task and 0 idle**, counting
+guards, alignment, unused capacity and the unchanged 544-byte guest pool.

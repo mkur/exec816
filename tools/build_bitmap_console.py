@@ -75,6 +75,8 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
         extra_roots.append('ExecIOEntry')
     sources += list(client_sources)
     if ROOT/'c/calypsi/aes.c' in sources:
+        sources.append(ROOT/'c/calypsi/console.c')
+        assembly.append(ROOT/'c/calypsi/console.s')
         sources.append(ROOT/'c/calypsi/aes-update.c')
         assembly.append(ROOT/'c/calypsi/aes-update.s')
         sources.append(ROOT/'c/calypsi/aes-windows.c')
@@ -143,6 +145,10 @@ def prepare(source,out,foreign,desktop=False,aes=False,mouse_profile=None):
         text=text.replace('USE EXEC\n','USE EXEC\nUSE DOS\nUSE PROGRAMFILE\nUSE PROGRAM\nUSE PROGRAMIMAGE\nUSE PROCESS\n',1)
         binding+=f'CONST C_EXECDOSENTRIES=${sy["ExecDosEntries"]:x}\n'
         binding+=read_source(ROOT/'c/calypsi/dos-bridge.inc')
+    if 'ExecConsoleEntries' in sy:
+        text=text.replace('USE EXEC\n','USE EXEC\nUSE CONSOLE\nUSE CONSOLETYPES\n',1)
+        binding+=f'CONST C_EXECCONSOLEENTRIES=${sy["ExecConsoleEntries"]:x}\n'
+        binding+=read_source(ROOT/'c/calypsi/console-bridge.inc')
     binding+=f'''
 PROC Main()
 
@@ -169,6 +175,8 @@ RETURN
         binding=binding.replace('  BindDisplay()', '  BindDos(0)\n  BindDisplay()', 1)
     if 'ExecIOEntry' in sy:
         binding=binding.replace('  BindDisplay()', '  BindIO()\n  BindDisplay()', 1)
+    if 'ExecConsoleEntries' in sy:
+        binding=binding.replace('  BindDisplay()', '  BindConsole()\n  BindDisplay()', 1)
     if 'ConsoleBridgeProbe' in sy:
         binding=binding.replace('  BindDisplay()',f'  LET probe=LONGCARD POINTER(${sy["ConsoleProbeNative"]:x})\n  probe^=LONGCARD(ADDRESS(@CONSOLEBITMAP.Call))\n  LET target=LONGCARD POINTER(${sy["ConsoleProbeTarget"]:x})\n  target^=${sy["ConsoleProbeBoundary"]:x}\n  CONSOLEBITMAP.Call(${sy["ConsoleBridgeProbe"]:x})\n  BindDisplay()',1)
     if 'ConsoleBridgeProbe' in sy:

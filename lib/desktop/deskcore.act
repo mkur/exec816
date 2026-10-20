@@ -12,6 +12,7 @@ USE HEAPCORE
 USE DESKTYPES
 USE DESKMOVE
 USE DESKCONSOLE
+USE CONSOLEWINDOWS
 USE DESKTABS
 USE DESKGEOMETRY
 USE DESKCACHE
@@ -129,9 +130,7 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
 
   ; Focus changes only the title and caret. Restore the old caret while its
   ; presentation still describes the outgoing console, without dirtying text.
-  IF service.focus=service.consoleWindow THEN
-    DESKMOVE.HideCaret()
-  FI
+  DESKMOVE.HideCaret()
 
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     IF service.windows(index).id<>0 THEN
@@ -173,18 +172,20 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
       service.consoleFocus^=255
     FI
 
-    IF id<>0 AND id=service.consoleWindow AND service.consoleRoute<>NULL
-        AND service.consoleFocus<>NULL THEN
-      route=service.consoleRoute^
-      service.consoleFocus^=BYTE(service.consoleUnit & 3)
-    ELSE
-      BEGIN
-        LET window=Find(service,id)
-        IF window<>NULL THEN
+    BEGIN
+      LET window=Find(service,id)
+      IF window<>NULL THEN
+        IF DESKSTATE.IsConsole(window)<>0 THEN
+          BEGIN
+            LET entry=CONSOLEWINDOWS.Find(window.console)
+            route=entry.route
+            service.consoleFocus^=BYTE(window.console & 3)
+          END
+        ELSE
           route=window.keyRoute
         FI
-      END
-    FI
+      FI
+    END
 
     inputStatus=INPUT.PublishRoute(INPUT.Lease POINTER(service.keyboard),route)
     IF inputStatus<>INPUT.OK THEN
@@ -304,7 +305,9 @@ PUBLIC PROC ForgetIcon(DESKTYPES.Service POINTER service
     BEGIN
       LAYERTYPES.Rect work
       DESKGEOMETRY.Work(window.frameKind,bounds,@work)
-      LAYERS.ExternalArea(@service.scene,window.layer,@work)
+      IF window.console=0 THEN
+        LAYERS.ExternalArea(@service.scene,window.layer,@work)
+      FI
       BEGIN
         LET item=AESWINDOWSTATE.FindRecord(window.id)
         DESKGEOMETRY.Slider(window,bounds,item.view.vslide,item.view.vsize)

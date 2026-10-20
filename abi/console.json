@@ -59,7 +59,8 @@
     "MODE_RAW_KEYS": 128,
     "MODE_ATASCII": 64,
     "MODE_NO_CARET": 32,
-    "CONCMD_PEEK_INPUT": 13
+    "CONCMD_PEEK_INPUT": 13,
+    "CONCMD_GET_MODE": 14
   },
   "storage": {
     "service_offset": 0,

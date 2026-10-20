@@ -5,6 +5,18 @@ from pathlib import Path
 from native_program import ROOT,sha256,require
 
 SOURCES={
+    'WB7':['abi/aes-server.json','abi/c-program.json','abi/console.json','c/include/exec816/console.h',
+        'c/calypsi/console.c','c/calypsi/console.s','c/calypsi/console-bridge.inc','c/calypsi/aes-windows.c',
+        'c/include/exec816/aes-wire.h','lib/aes/aestypes.act','lib/aes/aeswindow.act','lib/aes/aeswindowstate.act',
+        *['lib/desktop/'+n for n in ('deskstate.act','deskconsole.act','desk-owned-console.inc','deskcore.act',
+            'deskpaint.act','deskmove.act','deskcache.act','deskhost.act','deskmenucache.act','deskboot.act')],
+        *['lib/console/'+n for n in ('console.act','consoledriver.act','consoledisplay.act','consoletypes.act','console-requests.inc')],
+        'lib/dos/fbservice.act','platform/altirraos/console-layout.inc','tools/generate_console.py',
+        'tests/programs/console_cell_io.act','tools/test_console_cells.py',
+        'lib/display/layers.act','lib/dos/c-program-abi.inc','tests/test_c_program_package.py',
+        'tests/programs/console_window.c','tests/programs/console_calls.c','tests/programs/layers-external-checks.inc',
+        'tools/test_console_window.py','tools/console_window_interaction.py','tools/test_fastbasic_workbench.py',
+        'tools/build_bitmap_console.py'],
     'WB6':['abi/aes-wait.json','abi/c-program.json','c/include/exec816/aes-wait.h',
         'c/include/exec816/aes.h','c/calypsi/aes-events.c','lib/dos/c-program-abi.inc',
         'tools/generate_aes_wait.py','tools/generate_c_program.py','tools/test_aes_exec_wait.py',
@@ -61,7 +73,7 @@ def record(slice,paths,staged=False):
     for path in paths:
         path=path.resolve();r=json.loads(path.read_text());require(r.get('status')=='pass','Failed evidence: '+str(path))
         case=dict(path=str(path.relative_to(ROOT)),sha256=sha256(path),status='pass')
-        for key in ('checks','client_checks','bridge_words','AESChecks','AESFailures','AESWaitChecks','AESWaitFailures','AESWaitStage','controllerChecks','scope_checks','completed','machine','stack_usage','integration','runtime','free_upper_words','cases','latencies','peer_progress','typing','typing_frames','fixture_overrides','optimize','c_elf_sha256','native_image_sha256'):
+        for key in ('checks','abi_checks','transcripts','stop_frames','root_mode_preserved','root_cells_preserved','client_checks','bridge_words','AESChecks','AESFailures','AESWaitChecks','AESWaitFailures','AESWaitStage','controllerChecks','scope_checks','completed','machine','stack_usage','integration','runtime','free_upper_words','cases','latencies','peer_progress','typing','typing_frames','fixture_overrides','optimize','c_elf_sha256','native_image_sha256'):
             if key in r:
                 if key=='runtime':
                     case[key]={k:r[key][k] for k in ('status','guards','native_nmi_count','native_irq_count',
@@ -95,6 +107,23 @@ def record(slice,paths,staged=False):
         result['parent_desktop_warming']=dict(bytes=368,resolved_path=256,timer_records=112,
             lifetime='Existing live desktop context; freed with context/endpoint retirement')
         result['fastbasic_compilers']=json.loads((ROOT/'build/fastbasic/build.json').read_text())['compilers']
+    elif slice=='WB7':
+        before=ROOT/'build/fastbasic-workbench/wb0-demo/build.json'
+        after=ROOT/'build/fastbasic-workbench/wb7-final/program/build.json'
+        baseline=json.loads(before.read_text())['memory']['bank_zero_budget']
+        current=json.loads(after.read_text())['memory']['bank_zero_budget']
+        require(baseline==current,'Changed complete WB7 reserved bank-zero map')
+        result['memory_map']=dict(baseline=str(before.relative_to(ROOT)),baseline_sha256=sha256(before),
+            build=str(after.relative_to(ROOT)),build_sha256=sha256(after),bank_zero_budget=current)
+        result['console']=dict(columns=64,rows=20,workers_added=0,signals_added=0,
+            selected_identity_upper_bytes=4,c_bridge_table_upper_bytes=15,import_table_growth_upper_bytes=15,
+            instance_requested_bytes=1664,instance_rounded_bytes=1672,
+            lifetime='Owned window until deletion, then streams/scope until exact retirement',
+            backing='Shell unchanged; other windows share bounded clipped retained-cell rendering')
+        app_path=ROOT/'build/fastbasic-workbench/wb7-final/app/app.json';app=json.loads(app_path.read_text())
+        for name,digest in app['inputs'].items():require(sha256(Path(name))==digest,'Changed WB7 APP input: '+name)
+        result['application']=dict(path=str(app_path.relative_to(ROOT)),sha256=sha256(app_path),
+            bytes=app['bytes'],span=app['span'],verified_banks=app['verified_banks'])
     elif slice=='WB6':
         before=ROOT/'build/fastbasic-workbench/wb5-c-process/program/build.json'
         after=ROOT/'build/fastbasic-workbench/wb6-wait/program/build.json'

@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 16
+#define AES_VERSION 17
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -120,6 +120,7 @@
 #define AES_OP_DRAG_OUTLINE 203
 #define AES_PAINT_REPORTS 8
 #define AES_UPDATE_WINDOW 512
+#define AES_WF_EXEC_CONSOLE 24578
 struct AESMenuObject {
     WORD next;
     WORD head;

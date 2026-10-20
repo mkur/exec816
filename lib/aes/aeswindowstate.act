@@ -89,7 +89,7 @@ PROC Publish(AESSTATE.Window POINTER client BYTE copied)
         OR layer.bounds.bottom-layer.bounds.top<>view.bounds.bottom-view.bounds.top THEN
       DESKCACHE.Changed(desktop,client.window)
     FI
-    IF copied=0 THEN
+    IF copied=0 AND client.window.console=0 THEN
       LAYERS.ExternalArea(@desktop.scene,layer.id,@work)
     FI
   FI

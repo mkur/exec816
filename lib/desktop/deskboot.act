@@ -206,7 +206,7 @@ PUBLIC PROC Disable()
     FI
 
     DESKSTATE.Bind(NULL)
-    DESKSTATE.Select(0)
+    DESKSTATE.SelectConsole(0,0)
     DESKSTATE.SetLauncher(NULL)
     EXEC.FreeMem(BYTE POINTER(service),DESKTYPES.SERVICE_SIZE)
   FI

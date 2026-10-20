@@ -86,7 +86,7 @@ def wb0(out, reuse=False,provider=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice',choices=('WB0','WB1','WB2','WB3','WB4','WB5','WB6'),required=True)
+    p.add_argument('--slice',choices=('WB0','WB1','WB2','WB3','WB4','WB5','WB6','WB7'),required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--from-build',action='store_true')
     p.add_argument('--provider',type=Path,default=ROOT/'build/fastbasic-workbench/wb0/c-image.json')
@@ -151,3 +151,17 @@ if __name__=='__main__':
         from test_aes_server import run as contexts
         for mode in ('raw','opt'):
             contexts(out/('bridge-'+mode),mode,a.from_build)
+    elif a.slice=='WB7':
+        from test_console_window import prepare,exercise
+        from test_console_windows import run as lifetimes
+        from test_console_cells import run as cells
+        from test_layers import run as layers
+        out=a.output.resolve()
+        if not a.from_build:prepare(out/'console')
+        exercise(out/'console')
+        if not a.from_build:
+            result=lifetimes(out/'lifetimes','opt')
+            (out/'lifetimes/results.json').write_text(json.dumps(result,indent=2)+'\n')
+            result=cells(out/'cells',True)
+            (out/'cells/results.json').write_text(json.dumps(result,indent=2)+'\n')
+            layers(out/'layers','opt')

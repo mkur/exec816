@@ -329,7 +329,7 @@ PUBLIC BYTE FUNC BackingEnabled(CONSOLETYPES.Presentation POINTER view)
     RETURN(0)
   FI
 
-  LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ConsoleUnit())
+  LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ShellUnit())
 
 RETURN(entry<>NULL AND entry.view=BYTE POINTER(view))
 
@@ -337,7 +337,7 @@ PUBLIC BYTE FUNC BackingReady(CONSOLETYPES.Presentation POINTER view
     CONSOLETYPES.Instance POINTER instance)
 
 RETURN(BackingEnabled(view)<>0 AND view.claimed<>0 AND CONSOLEBITMAP.Failed()=0
-    AND backingUnit=DESKSTATE.ConsoleUnit()
+    AND backingUnit=DESKSTATE.ShellUnit()
     AND instance.dirtyRows=0 AND view.scrollState=0
     AND view.presentedGeneration=instance.generation)
 
@@ -352,7 +352,7 @@ RETURN
 PROC PublishBacking(CONSOLETYPES.Presentation POINTER view)
 
   IF BackingEnabled(view)<>0 THEN
-    backingUnit=DESKSTATE.ConsoleUnit()
+    backingUnit=DESKSTATE.ShellUnit()
   FI
 
 RETURN
@@ -390,7 +390,7 @@ PROC Cursor(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     RETURN
   FI
 
-  IF BackingEnabled(view)<>0 THEN
+  IF DESKSTATE.Enabled()<>0 THEN
     BEGIN
       LET service=DESKSTATE.Get()
       LET layer=LAYERS.Find(@service.scene,DESKSTATE.Selected())

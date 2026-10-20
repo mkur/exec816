@@ -52,7 +52,7 @@ PUBLIC DESKTYPES.Window POINTER FUNC ByLayer(LONGCARD id)
 RETURN(NULL)
 
 ; Placement changes invalidate the old caret and any gather-only scroll batch.
-PUBLIC PROC Sync()
+PROC SyncView(DESKTYPES.Window POINTER window)
   CARD left,top
   BYTE shown,focused
 
@@ -61,27 +61,20 @@ PUBLIC PROC Sync()
     RETURN
   FI
 
-  LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ConsoleUnit())
+  LET entry=CONSOLEWINDOWS.Find(window.console)
   IF entry=NULL THEN
     RETURN
   FI
 
   LET view=CONSOLETYPES.Presentation POINTER(entry.view)
   LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
-  LET window=DESKCORE.Find(service,service.consoleWindow)
-  IF window=NULL THEN
-    view.visible=0
-    DESKSTATE.Select(0)
-    RETURN
-  FI
-
   LET batch=CONSOLEBATCH.Get()
   LET layer=DESKCORE.Layer(service,window)
   left=CARD(layer.bounds.left+DESKTYPES.WORK_LEFT) RSH 3
-  top=CARD(layer.bounds.top+DESKTYPES.FRAME_SHELL_TOP) RSH 3
+  top=CARD(layer.bounds.top+DESKGEOMETRY.Top(window.frameKind)) RSH 3
   IF window.iconified<>0 THEN
     left=CARD(window.normalBounds.left+DESKTYPES.WORK_LEFT) RSH 3
-    top=CARD(window.normalBounds.top+DESKTYPES.FRAME_SHELL_TOP) RSH 3
+    top=CARD(window.normalBounds.top+DESKGEOMETRY.Top(window.frameKind)) RSH 3
   FI
   shown=layer.shown<>0 AND window.iconified=0
   focused=service.focus=window.id
@@ -90,7 +83,9 @@ PUBLIC PROC Sync()
       view.presentedGeneration=0
       CONSOLECORE.Dirty(instance,0,instance.count)
     FI
-    CONSOLEBATCH.Reset()
+    IF batch.unit=entry.unit THEN
+      CONSOLEBATCH.Reset()
+    FI
     view.scrollState=0
     view.left=left
     view.top=top
@@ -111,7 +106,27 @@ PUBLIC PROC Sync()
     view.index=$ffff
   FI
 
-  DESKSTATE.Select(layer.id)
+
+RETURN
+
+PUBLIC PROC Sync()
+  BYTE index
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.scene.busy<>0 THEN
+    RETURN
+  FI
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    BEGIN
+      LET window=@service.windows(index)
+      IF window.id<>0 AND DESKSTATE.IsConsole(window)<>0 THEN
+        SyncView(window)
+      FI
+    END
+  OD
+  IF CONSOLEBITMAP.TextPending()=0 AND CONSOLEBITMAP.Pending()=0 THEN
+    DESKSTATE.SelectConsoleUnit(DESKSTATE.ShellUnit())
+  FI
 
 RETURN
 
@@ -137,7 +152,7 @@ BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
   LET service=DESKSTATE.Get()
   WHILE commandIndex<8 DO
     IF commandIndex>=2 AND commandIndex<=4 THEN
-      IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+      IF window.id=service.consoleWindow THEN
         result=DESKTABS.Paint(@layer.bounds,@strip,BYTE(commandIndex-2),@glyphOffset)
         IF result<>1 THEN
           RETURN(result)
@@ -172,7 +187,7 @@ BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
       REGIONS.Intersect(@area,@strip,@area)
       IF REGIONS.Empty(@area)=0 THEN
         result=CONSOLEBITMAP.Frame(@layer.bounds,@area,@window.title(0),
-            window.id=service.focus,window.kind<>DESKTYPES.CONTENT_CONSOLE,
+            window.id=service.focus,window.id<>service.consoleWindow,
             window.frameKind,window.sliderTop,window.sliderHeight,@glyphOffset)
         IF result<>1 THEN
           RETURN(result)
@@ -283,7 +298,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
 
   IF started=0 THEN
     ; Restore frame and client together, but never replay a stored title.
-    IF window.kind<>DESKTYPES.CONTENT_CONSOLE
+    IF DESKSTATE.IsConsole(window)=0
         AND (window.frameKind=DESKTYPES.FRAME_BORDERLESS
           OR strip.top>=layer.bounds.top+DESKTYPES.TITLE_HEIGHT) THEN
       cached=DESKCACHE.Restore(service,window,@layer.bounds,@strip)
@@ -317,13 +332,13 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
   FI
 
   IF started=PAINT_CLIENT THEN
-    IF window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
+    IF DESKSTATE.IsConsole(window)=0 THEN
       REGIONS.Intersect(@client,@strip,@area)
-      IF window.kind=DESKTYPES.CONTENT_AES THEN
+      IF window.kind=DESKTYPES.CONTENT_AES AND window.console=0 THEN
         AESWINDOWSTATE.Damage(window,@area)
       FI
 
-      IF window.kind=DESKTYPES.CONTENT_AES THEN
+      IF window.kind=DESKTYPES.CONTENT_AES AND window.console=0 THEN
         RETURN(1)
       FI
 
@@ -342,7 +357,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
     RETURN(1)
   FI
 
-  IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+  IF DESKSTATE.IsConsole(window)<>0 THEN
     BEGIN
       LET entry=CONSOLEWINDOWS.Find(window.console)
       IF entry=NULL THEN
@@ -384,7 +399,8 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
       index=CONSOLECORE.CellOffset(instance,row*instance.width+first)
       entry.busy=1
       okay=TextStep(CARD(client.left)+(first LSH 3),
-          CARD(client.top)+(row LSH 3),instance.cells+SIZE(index),count,1,0,@area)
+          CARD(client.top)+(row LSH 3),instance.cells+SIZE(index),count,
+          1 OR (instance.caps & CONSOLETYPES.MODE_ATASCII),0,@area)
       entry.busy=0
       IF okay<>1 THEN
         RETURN(okay)
@@ -538,7 +554,7 @@ BYTE FUNC SelectStrip(DESKTYPES.Window POINTER window
   LET service=DESKSTATE.Get()
   saved=0
   IF window<>NULL AND window.iconified=0
-      AND window.kind<>DESKTYPES.CONTENT_CONSOLE
+      AND DESKSTATE.IsConsole(window)=0
       AND ((damage.left OR damage.right OR layer.bounds.left) & 1)=0 THEN
     ; A pinned restore is still the selected body partition until retirement.
     saved=(started=PAINT_CACHE OR DESKCACHE.Lookup(service,window,
@@ -586,7 +602,7 @@ BYTE FUNC SelectStrip(DESKTYPES.Window POINTER window
       FI
       REGIONS.Intersect(damage,@part,@strip)
       IF partIndex=1 THEN
-        IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+        IF DESKSTATE.IsConsole(window)<>0 THEN
           BEGIN
             LET entry=CONSOLEWINDOWS.Find(window.console)
             whole=CONSOLEDISPLAY.BackingReady(
@@ -635,6 +651,9 @@ PUBLIC BYTE FUNC Pump()
   FI
 
   IF paintToken=0 THEN
+    IF service.scene.busy<>0 THEN
+      RETURN(0)
+    FI
     ; An active token still needs continuation/retirement with no new damage.
     IF service.scene.visibleDamage=0 OR CONSOLEBITMAP.Failed()<>0
         OR AESLOCKS.PaintBlocked()<>0 THEN
@@ -671,7 +690,7 @@ PUBLIC BYTE FUNC Pump()
     FI
     IF candidate<>NULL THEN
       window=ByLayer(candidate.id)
-      IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE
+      IF window<>NULL AND DESKSTATE.IsConsole(window)<>0
           AND window.iconified=0 THEN
         BEGIN
           LET entry=CONSOLEWINDOWS.Find(window.console)
@@ -755,7 +774,7 @@ PUBLIC BYTE FUNC Pump()
   FI
 
   fullConsole=0
-  IF done<>0 AND window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE
+  IF done<>0 AND window<>NULL AND DESKSTATE.IsConsole(window)<>0
       AND window.iconified=0 THEN
     ; An exposure can cover only part of a console whose model still has
     ; dirty rows elsewhere. Only a full-window repaint acknowledges them all.
@@ -763,7 +782,8 @@ PUBLIC BYTE FUNC Pump()
         AND REGIONS.Equal(@layer.damage.rects(0),@layer.bounds)<>0
   FI
 
-  IF done<>0 AND window<>NULL AND window.kind=DESKTYPES.CONTENT_AES THEN
+  IF done<>0 AND window<>NULL AND window.kind=DESKTYPES.CONTENT_AES
+      AND window.console=0 THEN
     IF window.iconified=0 THEN
       AESWINDOWSTATE.Handoff(window)
     FI
@@ -776,7 +796,7 @@ PUBLIC BYTE FUNC Pump()
     DESKCACHE.Consider(service,window)
   FI
   DESKMENUCACHE.Notify()
-  IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE
+  IF window<>NULL AND DESKSTATE.IsConsole(window)<>0
       AND window.iconified=0 THEN
     BEGIN
       LET entry=CONSOLEWINDOWS.Find(window.console)

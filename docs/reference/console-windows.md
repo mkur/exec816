@@ -16,9 +16,10 @@ Width and height must fit the active display: 1–40 by 1–24 for text, or
 1–80 by 1–30 for standalone bitmap, or 1–64 by 1–20 for desktop.
 New instances start blank, at cursor (0,0),
 and hidden; writes still complete into their retained cells. These functions
-do not use DOS IoErr. Desktop sessions select their full-size instances through
-[BIND_CONSOLE](desktop.md#operations); standalone tiled presentation calls
-remain unsupported in desktop mode.
+do not use DOS IoErr. The Shell selects its full-size instances through
+[BIND_CONSOLE](desktop.md#operations). Other GEM applications use the owned
+window binding below. Standalone tiled presentation calls remain unsupported
+in desktop mode.
 
 `CONSOLE.Destroy(unit)` returns one on success, zero on rejection. Only the
 creating Task may destroy a created instance. Open device/DOS references and
@@ -63,6 +64,48 @@ permanent unbound input route and a current route; scope renewal creates a new
 bound generation, and End returns to the permanent unbound route without needing
 another route allocation. Retired bound generations cannot cancel a new scope.
 All live instance routes participate in route-retention accounting.
+
+## Application-owned GEM console
+
+The public C header [exec816/console.h](../../c/include/exec816/console.h)
+provides `ExecConsoleCreate(width,height)`, `ExecConsoleDestroy(unit)`,
+`ExecConsoleMode(console,mode)` and `ExecConsoleGetMode(console)`. Create and Destroy have the native lifetime,
+return and IoErr rules above. Mode uses an owned CON handle and returns one on
+success; select `EXEC_CONSOLE_ATASCII` before starting a FastBasic reader.
+Keep active readers retired while changing modes.
+GetMode returns the applied mode flags, or -1 with IoErr; it consumes no input
+and claims no reader. FastBasic saves these flags before selecting ATASCII and
+restores them after execution, including cancellation. An owner which selected
+ATASCII keeps its completed glyphs; the ordinary Shell returns to its native mode.
+
+`ExecAESConsole(window,unit)` binds a caller-owned 64×20 instance to a closed,
+fixed-size GEM window belonging to that application's AES context. Its work
+area must be 512×160 pixels and aligned to eight pixels in both axes. For
+example, `NAME|CLOSER|MOVER` with outer `(56,21,528,173)` has work area
+`(64,32,512,160)`. Bind before `wind_open`; other geometry is rejected. Moving
+must preserve that alignment and dimensions. The function returns one after
+publication, or zero with the AES diagnostic on failure. Rebuild the provider
+and applications for C import ABI 23 and AES wire ABI 17.
+
+The console worker owns retained cells, caret and drawing. GEM owns the frame,
+focus, visibility and ordinary `WM_TOPPED`, `WM_MOVED` and `WM_CLOSED` delivery.
+The application handles those messages; it does not paint the console client
+on `WM_REDRAW`. Hiding or covering it preserves output and pending input.
+The Shell keeps its own tabs and backing bitmap. Other console windows use the
+same worker's bounded, clipped retained-cell path; no painter Task or bitmap
+reservation is added.
+
+The window retains the unit through `wind_close`; `wind_delete` releases the
+binding after drawing retires. Destruction still refuses live streams or a
+child's scope. Close/delete the window, collect the child and close owned
+CON/RAW handles before destroying the instance. A scope can remain live while
+the window is hidden. Supply its CON handle in `ExecProgramStart.console` to
+route input and BREAK independently of the source window and Shell. Menu Stop
+uses `ExecBreakProgram` regardless of output focus. The selected presentation
+identity uses four upper-RAM bytes; the C bridge table uses fifteen and the
+current import table grows by fifteen. Console and stream buffers use ordinary
+upper heap. Added reserved bank-zero storage is **zero**, including each Task's
+stack/direct page.
 
 ## Owner-requested foreground cancellation
 

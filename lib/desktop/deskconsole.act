@@ -17,6 +17,9 @@ USE CONSOLEBITMAP
 USE CONSOLEDISPLAY
 USE CONSOLECORE
 USE HEAPCORE
+USE DESKGEOMETRY
+
+INCLUDE "desk-owned-console.inc"
 
 ; Caller holds the settled scene boundary. The old cells stay retained.
 PUBLIC PROC Detach(DESKTYPES.Service POINTER service)
@@ -54,7 +57,7 @@ PUBLIC PROC Closed(DESKTYPES.Service POINTER service)
   IF entry<>NULL THEN
     service.consoleRoute=@entry.route
   FI
-  DESKSTATE.Select(0)
+  DESKSTATE.SelectConsole(0,0)
   EXEC.Permit()
 
 RETURN

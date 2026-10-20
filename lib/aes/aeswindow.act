@@ -3,6 +3,7 @@ MODULE AESWINDOW
 USE EXEC
 USE INPUT
 USE CONSOLEINPUT
+USE DESKCONSOLE
 USE A816MEMORY
 USE AESSTATE
 USE AESTYPES
@@ -58,6 +59,18 @@ BYTE FUNC ValidBounds(CARD kind INT x,y,width,height
   REGIONS.Assign(rect,x,y,x+width,y+height)
 
 RETURN(1)
+
+BYTE FUNC ConsoleBounds(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds)
+  LAYERTYPES.Rect work
+
+  IF window.console=0 THEN
+    RETURN(1)
+  FI
+  DESKGEOMETRY.Work(window.frameKind,bounds,@work)
+
+RETURN(work.right-work.left=512 AND work.bottom-work.top=160
+    AND ((work.left OR work.top) & 7)=0)
 
 CARD FUNC Create(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     AESTYPES.Request POINTER request)
@@ -170,6 +183,9 @@ PROC Delete(AESSTATE.Window POINTER item)
   BYTE status
 
   LET desktop=DESKSTATE.Get()
+  IF item.window.console<>0 THEN
+    DESKCONSOLE.Release(item.window)
+  FI
   AESMOUSE.CancelWindow(item.view.epoch)
   AESGUI.Close(item)
   status=LAYERS.Delete(@desktop.scene,item.window.layer)
@@ -266,21 +282,26 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
 
     IF ValidBounds(window.frameKind,request.intin(1),request.intin(2),request.intin(3),
         request.intin(4),@bounds)=0
+        OR ConsoleBounds(window,@bounds)=0
         OR ((window.frameKind & AESTYPES.SIZER)=0
         AND (bounds.right-bounds.left<>layer.bounds.right-layer.bounds.left
         OR bounds.bottom-bounds.top<>layer.bounds.bottom-layer.bounds.top)) THEN
       RETURN(AESTYPES.MALFORMED)
     FI
 
-    routeStatus=INPUT.CreateRoute(INPUT.Lease POINTER(desktop.keyboard),INPUT.ROUTE_UNFILTERED,
-        @window.keyRoute)
-    IF routeStatus<>INPUT.OK THEN
-      RETURN(AESTYPES.RESOURCE)
+    IF window.console=0 THEN
+      routeStatus=INPUT.CreateRoute(INPUT.Lease POINTER(desktop.keyboard),
+          INPUT.ROUTE_UNFILTERED,@window.keyRoute)
+      IF routeStatus<>INPUT.OK THEN
+        RETURN(AESTYPES.RESOURCE)
+      FI
     FI
-
     IF AESGUI.Open(service,client,item)=0 THEN
-      routeStatus=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),window.keyRoute)
-      window.keyRoute=0
+      IF window.keyRoute<>0 THEN
+        routeStatus=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),
+            window.keyRoute)
+        window.keyRoute=0
+      FI
       RETURN(AESTYPES.OVERFLOW)
     FI
 
@@ -304,6 +325,17 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     Delete(item)
   ELSEIF request.operation=AESTYPES.OP_SET THEN
     CASE request.intin(1) OF
+    WHEN AESTYPES.WF_EXEC_CONSOLE THEN
+      BEGIN
+        LET unit=(LONGCARD(CARD(request.intin(2))) LSH 16)
+            OR LONGCARD(CARD(request.intin(3)))
+        LET bound=DESKCONSOLE.Attach(window,unit,client.binding.owner)
+        IF bound=DESKTYPES.BUSY THEN
+          RETURN(AESTYPES.PENDING)
+        ELSEIF bound<>DESKTYPES.OK THEN
+          RETURN(AESTYPES.MALFORMED)
+        FI
+      END
     WHEN AESTYPES.WF_NAME,AESTYPES.WF_INFO THEN
       titleAddress=(LONGCARD(CARD(request.intin(2))) LSH 16)
           OR LONGCARD(CARD(request.intin(3)))
@@ -370,7 +402,8 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     WHEN AESTYPES.WF_CXYWH THEN
       IF window.iconified<>0 THEN
         IF ValidBounds(window.frameKind,request.intin(2),request.intin(3),
-            request.intin(4),request.intin(5),@bounds)=0 THEN
+            request.intin(4),request.intin(5),@bounds)=0
+            OR ConsoleBounds(window,@bounds)=0 THEN
           RETURN(AESTYPES.MALFORMED)
         FI
         IF (window.frameKind & AESTYPES.SIZER)=0
@@ -393,6 +426,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       FI
       IF ValidBounds(window.frameKind,request.intin(2),request.intin(3),request.intin(4),
           request.intin(5),@bounds)=0
+          OR ConsoleBounds(window,@bounds)=0
           OR ((window.frameKind & AESTYPES.SIZER)=0
           AND (bounds.right-bounds.left<>layer.bounds.right-layer.bounds.left
           OR bounds.bottom-bounds.top<>layer.bounds.bottom-layer.bounds.top)) THEN

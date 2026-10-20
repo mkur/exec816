@@ -317,7 +317,7 @@ PUBLIC BYTE FUNC Cache()
     BEGIN
       LET window=@service.windows(index)
       IF DESKCACHE.TakeCandidate(index)<>0
-          AND window.id<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE
+          AND window.id<>0 AND DESKSTATE.IsConsole(window)=0
           AND window.iconified=0
           AND window.visualRevision<>0
           AND window.captureAttempt<>window.visualRevision THEN

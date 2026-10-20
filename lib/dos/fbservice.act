@@ -204,13 +204,19 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   state.consoleMode=0
   state.guest.screenWidth=0
   IF state.guest.outputInteractive<>0 THEN
-    mode=CONSOLETYPES.MODE_ATASCII
+    mode=0
     IF DOS.ConsoleInfo(DOS.Output(),BYTE POINTER(@geometry))=0 OR
-        DOS.ConsoleIO(DOS.Output(),CONSOLETYPES.CONCMD_MODE,0,@mode,1)<>1 THEN
+        DOS.ConsoleIO(DOS.Output(),CONSOLETYPES.CONCMD_GET_MODE,0,@mode,1)<>1 THEN
       cause=DOS.IoErr()
     ELSE
-      state.consoleMode=1
-      state.guest.screenWidth=geometry(0)
+      state.consoleMode=mode OR 1
+      mode=CONSOLETYPES.MODE_ATASCII
+      IF DOS.ConsoleIO(DOS.Output(),CONSOLETYPES.CONCMD_MODE,0,@mode,1)<>1 THEN
+        cause=DOS.IoErr()
+        state.consoleMode=0
+      ELSE
+        state.guest.screenWidth=geometry(0)
+      FI
     FI
   FI
   DO
@@ -336,7 +342,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
     state.clockPort=NULL
   FI
   IF state.consoleMode<>0 THEN
-    mode=0
+    mode=state.consoleMode & $e0
     IF DOS.ConsoleIO(DOS.Output(),CONSOLETYPES.CONCMD_MODE,0,@mode,1)<>1
         AND cause=0 THEN
       cause=DOS.IoErr()

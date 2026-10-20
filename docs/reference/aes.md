@@ -132,7 +132,7 @@ use this same implementation. Key/button opcodes are 20 (0/1/0/0) and 21
 ### Combined GUI and Exec wait
 
 `ExecAESWait(struct ExecAESWaitSpec *)` is a caller-local extension in C
-application ABI 22. The [generated record](../../abi/aes-wait.json) is 58 bytes:
+application ABI 23. The [generated record](../../abi/aes-wait.json) is 58 bytes:
 GUI flags/button/M1 inputs at 0–16, milliseconds at 18, caller-owned signalMask
 at 22, received bits at 26, eight message words at 30 and six ordinary mouse/key
 outputs at 46–56. Include `<exec816/aes.h>`. GUI flags have the same supported
@@ -230,8 +230,8 @@ it with `wind_update(END_UPDATE)`. The caller must restrict drawing/model change
 to that window. Nested calls keep the outer scope, including nested ordinary
 `BEG_UPDATE`; an ordinary outer BEGIN still covers every owned window. Empty or
 hidden scoped updates invalidate their target, while untouched siblings remain
-eligible for caching. The helper uses wire version 16's UPDATE_WINDOW flag and
-C program import version 17; rebuild programs and their matching host.
+eligible for caching. The helper uses the current wire version 17's UPDATE_WINDOW
+flag and C program import version 23; rebuild programs and their matching host.
 
 Update ownership also excludes native console painting/scrolling, widget
 feedback, background repair and cache capture. Mouse ownership defers native
@@ -419,9 +419,11 @@ UPDATE requests still wait for MCTRL release, and a queued lock may pause native
 painting. This is a bounded Exec extension, not GEM's synchronous drag-box API.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 14 has a 112-byte request and permits init, exit, update,
+profile: version 17 has a 226-byte request and permits init, exit, update,
 window mutations, cold display delegation, menu publication, session mouse
 preferences, `wind_find` and application outline admission on the RPC endpoint.
+`ExecAESConsole` uses the current `WF_EXEC_CONSOLE` window selector for
+[application-owned console content](console-windows.md#application-owned-gem-console).
 Other window queries and rectangle conversion remain local. The input inbox is
 754 bytes, including 20 bytes of frozen M1 pointer scratch; each registration
 uses 1,306 bytes before heap rounding. Public GEM arrays remain private to each caller. Rebuild
