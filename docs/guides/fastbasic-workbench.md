@@ -4,14 +4,15 @@
 [Command-line compiler workflow](fastbasic.md)
 
 Build the optional demo with `python3 tools/build_demo.py --basic-workbench`.
-Start `BASIC` from the Shell, or launch `C:BASIC.APP` from Files. The WB2 scratch
-editor supports typing and selection; Open/Save and compiler controls are still
-being implemented. Closing this slice discards its buffer.
+Start `BASIC` from the Shell, or launch `C:BASIC.APP` from Files. The editor supports Open, Save and Save As. Compiler controls are still being
+implemented for WB9. Unsaved changes are resolved before New, Open or Quit.
 
 Use the File and Edit menus, or these shortcuts:
 
 | Action | Control |
 | --- | --- |
+| New / Open | Control+N / Control+O |
+| Save / Save As | Control+S / Control+W |
 | Move caret | Atari cursor keys (Control with their printed arrow key) |
 | Extend selection | Shift with a cursor key, or drag over source |
 | Select all | Control+A |
@@ -25,3 +26,15 @@ Use the File and Edit menus, or these shortcuts:
 Tabs occupy eight-column stops. Long lines pan to keep the caret visible.
 Capacity errors leave the previous source intact. Undo includes selection
 replacement and has a fixed 16 KiB budget; very large replacements are refused.
+
+Select a writable destination such as `WORK:` or `RAM:` in the standard file
+selector. Paths longer than 127 bytes are rejected. New source uses ATASCII
+line endings; existing uniform LF/CRLF/CR/ATASCII endings are preserved. Opening
+mixed endings makes the normalized source dirty.
+
+Save writes a snapshot, so subsequent edits remain unsaved. Escape cancels a
+file job. If publication fails, paged error dialogs name temporary/backup recovery
+copies (File → Recovery paths displays them again); retain those files until you have recovered the desired version. The
+old destination can have moved to its backup before the final rename fails.
+Choose Save, Discard or Cancel when asked about unsaved changes; canceling an
+Open/Save As selector also preserves your current source and committed path.

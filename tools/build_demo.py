@@ -363,7 +363,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             record['basic_workbench']=True
             record['source_inputs'].update({str(p.relative_to(ROOT)):sha256(p)
                 for p in [ROOT/'examples/gem-basic'/name for name in
-                    ('main.c','basic.c','basic.h','editor.c','editor.h','document.c','document.h')]})
+                    ('main.c','basic.c','basic.h','editor.c','editor.h','document.c','document.h','files.c','files.h','file-ui.c','file-ui.h')]})
         record['artifacts'].update({name:sha256(output/name) for name in CALCULATOR_NOTICES+G4BENCH_NOTICES})
         record['calculator']=provenance
         record['g4bench']=benchmark_provenance

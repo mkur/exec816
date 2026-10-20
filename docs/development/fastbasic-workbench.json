@@ -17,6 +17,11 @@
       "status": "pass",
       "record": "docs/development/fastbasic-workbench-wb2.json",
       "sha256": "2833ec6b38705ce44c2c07a8448bdcab7ebf640f8632861bb7cbe011b9d745d2"
+    },
+    "WB3": {
+      "status": "pass",
+      "record": "docs/development/fastbasic-workbench-wb3.json",
+      "sha256": "e43300c5b599163b58f3c8f42f96dff4801f4ab5f86902da4de84c67d292800b"
     }
   }
 }

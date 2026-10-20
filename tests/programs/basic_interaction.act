@@ -32,9 +32,17 @@ LONGINT FUNC Peer()
 
 RETURN(0)
 
+LONGINT FUNC Hold()
+
+  WHILE peerDone=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN(0)
+
 PROC Main()
   PROCESS.Result result
-  LONGCARD peerId
+  LONGCARD peerId,holdOne
 
   LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
   LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
@@ -43,6 +51,8 @@ PROC Main()
   LET oldOutput=DOS.SelectOutput(output)
   peerId=PROCESS.StartBackground(@Peer,NULL,0)
   Require(peerId<>0)
+  holdOne=PROCESS.StartBackground(@Hold,NULL,0)
+  Require(holdOne<>0)
   FOR round=0 TO 2 DO
   BEGIN
     BYTE POINTER path=BYTE POINTER(c"SYS:BASIC.APP")
@@ -73,13 +83,11 @@ PROC Main()
     secondary=result.secondary
     Require(primary=0 AND secondary=0)
     PROGRAM.Unload(image)
-    IF round=0 THEN
-      Require(PROCESS.RequestStop(counterId)<>0)
-      Require(PROCESS.Wait(counterId,@result)<>0 AND result.primary=0)
-    FI
-
     LET service=AESSTATE.Get()
-    Require(service.count=0 AND AESCORE.Idle(service)<>0)
+    Require(service.count=1)
+    WHILE AESCORE.Runnable(service)<>0 DO
+      EXEC.Yield()
+    OD
     IF round=0 THEN
       baseline=EXEC.AvailMem(0)
     ELSEIF round=1 THEN
@@ -93,8 +101,13 @@ PROC Main()
   END
   OD
 
+  Require(PROCESS.RequestStop(counterId)<>0)
+  Require(PROCESS.Wait(counterId,@result)<>0 AND result.primary=0)
+  LET finalService=AESSTATE.Get()
+  Require(finalService.count=0 AND AESCORE.Idle(finalService)<>0)
   peerDone=1
   Require(PROCESS.Wait(peerId,@result)<>0 AND result.primary=0)
+  Require(PROCESS.Wait(holdOne,@result)<>0 AND result.primary=0)
   DOS.SelectInput(oldInput)
   DOS.SelectOutput(oldOutput)
   Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)

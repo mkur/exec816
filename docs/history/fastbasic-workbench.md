@@ -70,3 +70,34 @@ check take 36 frames, including the scripted press/release intervals. These
 samples are development measurements, not latency qualification. Stack guards,
 complete ownership and allocation return pass. Added reserved bank-zero costs
 remain zero in every category, including each public Task.
+
+## WB3 — files and replacement decisions
+
+[WB3 evidence](../development/fastbasic-workbench-wb3.json) records 148 controlled
+file-engine checks, 70 checks on each of RAM/SDFS/MyDOS, 103 controller checks and
+43 native integration checks with seven physical file workflows. Exact persisted
+ATASCII bytes are read by an ordinary native client after the editor exits.
+Tests cover EOL normalization and preservation, capacity boundaries, split CRLF,
+short/failed transfers, consumed Close failures, each publication stage,
+allocation failures, cancellation, recovery copies and successful retries.
+
+Physical input exercises Save, Save As, Open, New Cancel/Save, Open Discard plus
+selector Cancel, and reopening saved documents. The fixture occupies the smaller
+native pools with ordinary clients so the APP runs in an existing large application pool,
+as it does after normal demo startup. An earlier undersized-fixture run completed
+its file checks but failed the reserved interrupt-headroom check; it is not
+counted as passing evidence. No pool was enlarged. All final guards and ownership
+checks pass, with zero added fixed, root/kernel, per-Task or idle bank-zero bytes.
+
+The minimum client is 288×128 so Save/Discard/Cancel fits after resizing.
+Recovery names use separate alerts with 32-character lines, escaped delimiters
+and no truncation. A 127-byte path case exercises failed final publication,
+complete temporary/backup recovery, literal `]`/`|` bytes and the File menu's
+Recovery paths action through the actual GEM alert parser. Failed presentation
+parks the alert until requested again instead of spinning the event loop.
+
+The file-enabled editor also passes 28 native checks and all 11 existing physical
+pixel cases, including minimum-size dirty close. A live Counter and native peer
+continue while editing and dialogs run; the maximum-gap delete reaches matching
+scanout in 57 PAL frames (1,140 ms including probes), with peer progress 151.
+Warm heap restoration, final AES detach, guards and ownership all pass.

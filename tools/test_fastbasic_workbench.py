@@ -84,7 +84,7 @@ def wb0(out, reuse=False,provider=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice',choices=('WB0','WB1','WB2'),required=True)
+    p.add_argument('--slice',choices=('WB0','WB1','WB2','WB3'),required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--from-build',action='store_true')
     p.add_argument('--provider',type=Path,default=ROOT/'build/fastbasic-workbench/wb0/c-image.json')
@@ -99,4 +99,13 @@ if __name__=='__main__':
         from workbench_interaction import build_editor,exercise
         logical(a.output.resolve()/'logical',a.from_build)
         if not a.from_build:build_editor(a.output.resolve()/'physical',a.provider.resolve())
+        exercise(a.output.resolve()/'physical')
+    elif a.slice=='WB3':
+        from test_fastbasic_files import run
+        from test_fastbasic_file_ui import run as decisions
+        from workbench_files_interaction import prepare,exercise
+        for fs in ('mock','ram','sdfs','mydos'):
+            run(a.output.resolve()/fs,fs=='mock',a.from_build,fs)
+        decisions(a.output.resolve()/'decisions',a.from_build)
+        if not a.from_build:prepare(a.output.resolve()/'physical',a.provider.resolve())
         exercise(a.output.resolve()/'physical')

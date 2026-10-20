@@ -18,9 +18,9 @@ def build_editor(out,provider):
     from generate_memory import PROFILE
     from generate_mouse_acceleration import metadata
     out.mkdir(parents=True,exist_ok=True)
-    app=application(out/'app',[ROOT/'examples/gem-basic'/n for n in ('main.c','basic.c','editor.c','document.c')],
+    app=application(out/'app',[ROOT/'examples/gem-basic'/n for n in ('main.c','basic.c','editor.c','document.c','files.c','file-ui.c')]+[ROOT/'c/calypsi/file-list.c'],
         probes=[(ROOT/'tests/programs/basic_editor_layout.c',LAYOUT)])
-    maximum=application(out/'maximum',[ROOT/'tests/programs/basic_maximum.c']+[ROOT/'examples/gem-basic'/n for n in ('basic.c','editor.c','document.c')])
+    maximum=application(out/'maximum',[ROOT/'tests/programs/basic_maximum.c']+[ROOT/'examples/gem-basic'/n for n in ('basic.c','editor.c','document.c','files.c','file-ui.c')]+[ROOT/'c/calypsi/file-list.c'])
     application(out/'counter',[ROOT/'examples/gem-counter'/n for n in ('main.c','counter.c')])
     media=out/'media';media.mkdir(exist_ok=True)
     (media/'COUNTER.APP').write_bytes((out/'counter/program.app').read_bytes())
@@ -192,7 +192,7 @@ def exercise(out):
                         picture('resized-partial-row',b'1234567890'*8)
                         x,y,w,h=[number(base+FIELDS['work']+i*2) for i in range(4)]
                         move(x+w+8,y+h+5);edge(1);move(x+40,y+40);edge(0);frames(30)
-                        require(number(base+FIELDS['work']+4)>=208 and number(base+FIELDS['work']+6)>=128,'Editor minimum work area')
+                        require(number(base+FIELDS['work']+4)>=288 and number(base+FIELDS['work']+6)>=128,'Editor minimum work area')
                         picture('minimum-size',b'1234567890'*8)
                     elif round==1:
                         start=b.eval_expr('@frame');type_text('again');picture('fresh-relaunch',b'again')
@@ -211,7 +211,19 @@ def exercise(out):
                             frames=elapsed,milliseconds=elapsed*20,budget_frames=120,peer_progress=progress))
                         key('X');picture('maximum-size-restored',b'x'+b'a'*254+b'\n'+(b'a'*255+b'\n')*126+b'a'*255)
                     x,y,w,h=[number(base+FIELDS['work']+i*2) for i in range(4)]
+                    changed=number(base+FIELDS['document']+32,4)!=number(base+FIELDS['document']+36,4)
                     click(x,y-6)
+                    if changed:
+                        from generate_aes_server import expected_layout,layout
+                        foreign=json.loads((out/'c-image.json').read_text());context=0
+                        for slot in range(4):
+                            candidate=number(foreign['symbols']['contexts']+4*slot,4)
+                            if candidate and number(candidate+layout()['Request']['fields']['global']+4)==number(base):context=candidate
+                        require(context,'No editor context for dirty decision')
+                        where=context+dict(expected_layout())['C context form']
+                        reach('(dw($%x)|dw($%x))!=0'%(where,where+2));frames(10)
+                        tree=number(number(where,4),4);button=tree+8*24
+                        click(number(tree+16)+number(button+16)+number(button+20)//2,number(tree+18)+number(button+18)+8)
                     reach('dw($%x)=2'%at('stage'))
                     b.memload(at('gate'),(round+1).to_bytes(2,'little'))
                 b.bp_clear_all()

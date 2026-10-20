@@ -1,0 +1,100 @@
+MODULE BASICFILEINTERACTION
+USE EXEC
+USE DOS
+USE PROGRAM
+USE PROGRAMFILE
+USE PROCESS
+USE AESSTATE
+USE AESCORE
+USE HEAPCORE
+
+CARD checks,stage,peerDone
+LONGCARD appBase,identity,peerProgress
+LONGINT primary,secondary
+BYTE ARRAY actual(32)
+BYTE ARRAY first=[80 82 73 78 84 32 55 155 80 82 73 78 84 32 56 155]
+BYTE ARRAY second=[80 82 73 78 84 32 57 155]
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc80+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+LONGINT FUNC Peer()
+
+  WHILE peerDone=0 DO
+    peerProgress==+1
+    EXEC.Yield()
+  OD
+
+RETURN(0)
+
+LONGINT FUNC Hold()
+
+  WHILE peerDone=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN(0)
+
+PROC Verify(BYTE POINTER name,expected CARD count)
+  CARD index
+
+  LET file=DOS.Open(name,DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,@actual(0),32)=LONGINT(count))
+  FOR index=0 TO count-1 DO
+    Require(actual(index)=expected(index))
+  OD
+
+  Require(DOS.Close(file)<>0 AND DOS.DeleteFile(name)<>0)
+
+RETURN
+
+PROC Main()
+  PROCESS.Result result
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  LET oldInput=DOS.SelectInput(input)
+  LET oldOutput=DOS.SelectOutput(output)
+  LET peerId=PROCESS.StartBackground(@Peer,NULL,0)
+  Require(peerId<>0)
+  ; Occupy smaller native pools, retaining the existing large application
+  ; pools for the graphical client. No reservation is enlarged.
+  LET holdOne=PROCESS.StartBackground(@Hold,NULL,0)
+  LET holdTwo=PROCESS.StartBackground(@Hold,NULL,0)
+  Require(holdOne<>0 AND holdTwo<>0)
+  LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:BASIC.APP"))
+  Require(image<>NULL)
+  appBase=LONGCARD(ADDRESS(image.text))
+  identity=PROCESS.StartLoaded(BYTE POINTER(image),NULL,0,0)
+  Require(identity<>0)
+  stage=1
+  Require(PROCESS.Wait(identity,@result)<>0)
+  primary=result.primary
+  secondary=result.secondary
+  Require(primary=0 AND secondary=0)
+  PROGRAM.Unload(image)
+  Verify(BYTE POINTER(c"RAM:EDITOR.BAS"),@first(0),16)
+  Verify(BYTE POINTER(c"RAM:SECOND.BAS"),@second(0),8)
+  LET service=AESSTATE.Get()
+  Require(service.count=0 AND AESCORE.Idle(service)<>0)
+  peerDone=1
+  Require(PROCESS.Wait(peerId,@result)<>0 AND result.primary=0)
+  Require(PROCESS.Wait(holdOne,@result)<>0 AND result.primary=0)
+  Require(PROCESS.Wait(holdTwo,@result)<>0 AND result.primary=0)
+  DOS.SelectInput(oldInput)
+  DOS.SelectOutput(oldOutput)
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  stage=2
+
+RETURN
+ENDMODULE
