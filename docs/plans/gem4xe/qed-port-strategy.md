@@ -18,7 +18,9 @@ Step 3 is implemented through its [design](qed-startup-design.md),
 [QS1–QS5 plan](qed-startup-implementation-plan.md) and
 [startup development evidence](../../history/qed-startup.md). A runnable private
 APP passes the empty-document/resource/menu/lifecycle gate. Steps 4–7 remain;
-editing and reliable Save are not established by startup checks.
+step 4 has a proposed [editing design](qed-editing-design.md) and
+[QE1–QE7 plan](qed-editing-implementation-plan.md), with implementation pending.
+Editing and reliable Save are not established by startup checks.
 
 ## First usable editor
 
@@ -139,6 +141,15 @@ for subsequent work.
 
 ### Make editing work
 
+The [editing design](qed-editing-design.md) and
+[QE1–QE7 implementation plan](qed-editing-implementation-plan.md) specify this
+gate. They order keyboard editing, viewport/drawing, selection, clipboard/Undo,
+native dialogs/Find, checked reading/replacement and reconciled evidence.
+The step 4 implementation will disable Save/Save As and offer Discard/Cancel
+for modified replacement/retirement until step 5. This interim restriction
+preserves the final scope's Save/Discard/Cancel target without depending on
+unchecked donor writes.
+
 Extend drawing and events around the editor's required operations: readable
 text, cursor and selection, navigation, scrolling, exposure and ordinary window
 messages. Settle button predicates and press, release and drag behavior
@@ -204,14 +215,12 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Continue with QF5 in the [native feasibility implementation plan](qed-native-feasibility-implementation-plan.md#qf5-establish-stack-feasibility-and-admission).
-The complete graph and bounded image profile are measured; establish actual
-stack headroom and reliable admission before the final step 2 reconciliation.
-
-Let that result shape the resource, menu and workstation design. Prepare the
-editing and saving designs when their dependencies are understood; the save
-constraints discovered at the outset must guide the runtime boundary. Keep
-each later implementation plan tied to a runnable outcome in the sequence.
+Start QE1 in the [editing implementation plan](qed-editing-implementation-plan.md#qe1-keyboard-editing-and-safe-retirement)
+when implementation is requested. The proposed design/plan follows the completed
+startup baseline; its preparation does not establish editing behavior. Commit
+each executable slice after its development checks, recording actual memory,
+stack and failure evidence. Prepare the saving design after the editing gate,
+using the file-format and replacement guarantees established there.
 
 This strategy adds **0 reserved bank-zero bytes**, fixed or per-Task, including
 guards, alignment and unused capacity. Each implementation slice must account

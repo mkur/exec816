@@ -1,5 +1,12 @@
 # GEM as a client of an Exec-like kernel
 
+The [QED editing design](qed-editing-design.md) and
+[QE1–QE7 implementation plan](qed-editing-implementation-plan.md) propose
+strategy step 4: native keyboard/selection, redraw and long-line navigation,
+internal clipboard/Undo, cancellable Find/dialogs and transactional
+single-document Open/New. Implementation is pending. Save/Save As and the
+complete Save/Discard/Cancel workflow remain step 5.
+
 The [QED startup design](qed-startup-design.md) and
 [QS1–QS5 implementation plan](qed-startup-implementation-plan.md) define
 strategy step 3: adapt resources/menus and fixed-font drawing, execute the real
