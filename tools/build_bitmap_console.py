@@ -100,7 +100,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     if renderer_source is not None:
         sources[sources.index(ad/'gem-vbxe.c')]=renderer_source
     foreign=emit(out/'drawing',sources,assembly,client_entries,
-        optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
+        optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe','ConsoleProbeClobber'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
             'gem-vbxe.c':['-DGEM_DRAWING_ONLY']+(['-DEXEC_DESKTOP_STYLE'] if widgets else [])},
         probes=[(ROOT/'c/calypsi/console-bitmap-layout.c',expected_layout())]+extra_probes+list(client_probes),
@@ -108,6 +108,16 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     for name in ('GemServiceWorker','GemClientInit','GemVbxeBackend'):
         require(name not in foreign['symbols'],'Unexpected GUI policy: '+name)
     foreign['provenance'].update(extraction=extraction,fixture_bridge=probe,fixture_fault=fault,source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [*sources,*assembly,ROOT/'abi/console-bitmap.json',ROOT/'c/include/hardware/console-bitmap.h']})
+    if probe:
+        end=max([s['address']+len(s['bytes']) for s in foreign['segments']]+
+            [s['address']+s['size'] for s in foreign['zero_fill']])
+        boundary=(end+65535)//65536*65536
+        target=foreign['symbols']['ConsoleProbeClobber']
+        foreign['segments'].append(dict(address=boundary,bytes=[0x5c,*target.to_bytes(3,'little')],
+            writable=False,executable=True))
+        foreign['symbols']['ConsoleProbeBoundary']=boundary
+        foreign['provenance']['bridge_boundary_probe']=dict(entry=boundary,target=target,
+            scope='Fixture-only JML at a zero low PC; two stack parities and all 24 lower DP bytes')
     if widgets or widget_probe:foreign['provenance']['aes_extraction']=aes_record
     if widgets:foreign['provenance']['desktop_palette_sha256']=sha256(ad/'gem-desktop-palette.h')
     if widget_probe:foreign['provenance']['builder_probe_sha256']=sha256(probe_source)
@@ -160,7 +170,7 @@ RETURN
     if 'ExecIOEntry' in sy:
         binding=binding.replace('  BindDisplay()', '  BindIO()\n  BindDisplay()', 1)
     if 'ConsoleBridgeProbe' in sy:
-        binding=binding.replace('  BindDisplay()',f'  LET probe=LONGCARD POINTER(${sy["ConsoleProbeNative"]:x})\n  probe^=LONGCARD(ADDRESS(@CONSOLEBITMAP.Call))\n  CONSOLEBITMAP.Call(${sy["ConsoleBridgeProbe"]:x})\n  BindDisplay()',1)
+        binding=binding.replace('  BindDisplay()',f'  LET probe=LONGCARD POINTER(${sy["ConsoleProbeNative"]:x})\n  probe^=LONGCARD(ADDRESS(@CONSOLEBITMAP.Call))\n  LET target=LONGCARD POINTER(${sy["ConsoleProbeTarget"]:x})\n  target^=${sy["ConsoleProbeBoundary"]:x}\n  CONSOLEBITMAP.Call(${sy["ConsoleBridgeProbe"]:x})\n  BindDisplay()',1)
     if 'ConsoleBridgeProbe' in sy:
         checks=''
         for entry,packet in [(0xbffff,sy['ConsoleBitmapPacket']),(0xd0000,sy['ConsoleBitmapPacket']),

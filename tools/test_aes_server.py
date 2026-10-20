@@ -40,9 +40,9 @@ def context_program(out, optimize):
             access = field+'(0)' if counts else field
             checks += [f'  Require(ADDRESS(@{variable}.{access})-ADDRESS(packet)={layout()[name]["fields"][field]})']
     checks += ['  LET menu=AESSTATE.Menu POINTER(packet)',
-               '  Require(SIZEOF(AESSTATE.Menu)=340)',
-               '  Require(ADDRESS(@menu.x(0))-ADDRESS(@menu.parent(0))=64)',
-               '  Require(ADDRESS(@menu.y(0))-ADDRESS(@menu.parent(0))=128)']
+               '  Require(SIZEOF(AESSTATE.Menu)=380)',
+               '  Require(ADDRESS(@menu.x(0))-ADDRESS(@menu.parent(0))=66)',
+               '  Require(ADDRESS(@menu.y(0))-ADDRESS(@menu.parent(0))=132)']
     source = out/'context.act'
     source.write_text('''MODULE AESPROBE
 USE EXEC
@@ -122,7 +122,7 @@ ENDMODULE
     memory = out/'fixture-memory.json'
     memory.write_text(json.dumps(profile, indent=2)+'\n')
     launcher = prepare(source, out, foreign, desktop=True)
-    program = build(compiler(ROOT/'build/actionc'), launcher, out/'program',
+    program = build(compiler(ROOT/'build/actionc',release=True), launcher, out/'program',
         optimize=optimize, tasks=True, task_capacity=8, foreign_image=foreign,
         console_deferred=True, memory_profile=memory)
     return program, foreign
@@ -172,6 +172,7 @@ def check_bridge(words, entry):
         require(row[3] == row[16] and row[4] == row[17], 'Bridge S/D changed')
         require(row[5] == 0, 'Bridge P/DBR changed')
         require(row[6:16] == list(range(0x5a00, 0x5a0a)), 'C DP workspace changed')
+        require(row[18:20] == [0x5a0a,0x5a0b], 'C spill-helper DP workspace changed')
     require((words[3] ^ words[23]) & 1, 'Missing opposite bridge stack parities')
 
 
@@ -194,7 +195,7 @@ def caller_probes(out, timer=False):
     binding=binding.replace(needle, '    AESAfterRead(c);\n'+needle)
     binding = binding.replace('    SendIO(&t->alarm->tc_Request);',
         '    AESBeforeSend(c);\n    SendIO(&t->alarm->tc_Request);')
-    binding=binding.replace('        Wait(mask);', '        AESBeforeWait(c, mask);\n        Wait(mask);')
+    binding=binding.replace('        seen|=Wait(mask)&externalMask;', '        AESBeforeWait(c, mask);\n        seen|=Wait(mask)&externalMask;')
     (out/'aes-events.c').write_text(binding)
 
 

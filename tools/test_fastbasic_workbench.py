@@ -86,7 +86,7 @@ def wb0(out, reuse=False,provider=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice',choices=('WB0','WB1','WB2','WB3','WB4','WB5'),required=True)
+    p.add_argument('--slice',choices=('WB0','WB1','WB2','WB3','WB4','WB5','WB6'),required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--from-build',action='store_true')
     p.add_argument('--provider',type=Path,default=ROOT/'build/fastbasic-workbench/wb0/c-image.json')
@@ -140,3 +140,14 @@ if __name__=='__main__':
         if not a.from_build:prepare(out/'launch')
         exercise(out/'launch')
         cprocess(out/'c-process',True,a.from_build)
+    elif a.slice=='WB6':
+        from test_aes_exec_wait import prepare,exercise
+        from test_aes_server import applications
+        out=a.output.resolve()
+        if not a.from_build:prepare(out/'wait')
+        exercise(out/'wait')
+        applications(out/'input-events','input_events',replay=a.from_build)
+        applications(out/'events','events',replay=a.from_build)
+        from test_aes_server import run as contexts
+        for mode in ('raw','opt'):
+            contexts(out/('bridge-'+mode),mode,a.from_build)

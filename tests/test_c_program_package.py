@@ -23,7 +23,7 @@ class CProgramPackageTests(unittest.TestCase):
         for bank in (1,11,14,62):verify(original,image(bank),bank,relocations)
         wire,record=pack(original,relocations)
         self.assertEqual(struct.unpack_from('<4sHHBBHIIIHHHHI',wire),
-                         (b'C816',1,21,12,64,3,65544,0,2,1,20,2560,0,len(wire)))
+                         (b'C816',1,22,12,64,3,65544,0,2,1,20,2560,0,len(wire)))
         self.assertEqual(struct.unpack_from('<HHI',wire,ABI['header_bytes']+3*16),(0,0,5))
         self.assertEqual(record['segments'][-1]['size'],4)
         self.assertEqual(wire[-12:],bytes(original['segments'][0]['bytes']+original['segments'][1]['bytes']))

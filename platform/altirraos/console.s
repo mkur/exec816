@@ -111,7 +111,7 @@ console_span_end:
 
 ; Ordinary Action -> Calypsi call. The upper-bank entry has been admitted by
 ; CONSOLEBITMAP.Bind. Packet arguments/results live in checked upper storage.
-; Save all native registers and Calypsi's twenty lower-DP bytes on this Task's
+; Save all native registers and Calypsi's 24 lower-DP bytes on this Task's
 ; own stack. IRQ/NMI and scheduling remain enabled throughout. C may call back
 ; into Action through the independent display bridge, with its own alignment.
 .export console_bitmap_call,console_bitmap_return,console_bitmap_done,console_bitmap_call_end
@@ -125,17 +125,17 @@ console_bitmap_call:
     phy
     phd
     phb
-.repeat 10, I
+.repeat 12, I
     lda I*2
     pha
 .endrepeat
     jsl console_bitmap_dispatch
 console_bitmap_return:
-    lda 22,s
+    lda 26,s
     tcd
-.repeat 10, I
+.repeat 12, I
     pla
-    sta 18-I*2
+    sta 22-I*2
 .endrepeat
     plb
     pld
@@ -146,13 +146,14 @@ console_bitmap_return:
 console_bitmap_done:
     rtl
 console_bitmap_dispatch:
-    lda 37,s
+    lda 41,s
     sec
     sbc #1
     sta A816_DP_SCRATCH_OFFSET
     sep #$20
-    lda 39,s
-    sbc #0
+    lda 43,s
+    ; RTL wraps the low PC without carrying into PBR. Preserve the entry bank
+    ; even when subtracting one from a $0000 entry produced $ffff below.
     pha
     rep #$20
     lda A816_DP_SCRATCH_OFFSET

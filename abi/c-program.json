@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 21,
+  "version": 22,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -112,7 +112,8 @@
     "ExecReleaseProgram",
     "ExecStartLoaded",
     "Input",
-    "AvailMem"
+    "AvailMem",
+    "ExecAESWait"
   ],
   "minimum_stack_offset": 28,
   "file_bytes_offset": 32,

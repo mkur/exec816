@@ -129,6 +129,34 @@ The named wrappers, `evnt_multi_moblk` and correctly sized AES parameter blocks
 use this same implementation. Key/button opcodes are 20 (0/1/0/0) and 21
 (3/5/0/0); multi remains 25 (16/7/1/0).
 
+### Combined GUI and Exec wait
+
+`ExecAESWait(struct ExecAESWaitSpec *)` is a caller-local extension in C
+application ABI 22. The [generated record](../../abi/aes-wait.json) is 58 bytes:
+GUI flags/button/M1 inputs at 0–16, milliseconds at 18, caller-owned signalMask
+at 22, received bits at 26, eight message words at 30 and six ordinary mouse/key
+outputs at 46–56. Include `<exec816/aes.h>`. GUI flags have the same supported
+values and input-window requirements as evnt_multi. Zero GUI flags is valid
+with a nonzero signalMask. `MU_EXEC` ($8000) is an output bit, selected whenever
+received is nonzero; it can accompany GUI/timer readiness.
+
+The caller owns the selected signal bits for the entire call. AES neither
+dequeues an external port nor collects a child or frees a borrowed signal.
+Masks overlapping its private receive, RPC-reply or retained timer signals fail
+with AES_MALFORMED. Unrelated signal bits are left unchanged. A Process completion
+mask remains borrowed only until collection; try Collect before waiting so an
+already retired child does not depend on a new notification.
+
+The wait latches selected pending bits before selection, rechecks them with the
+GUI commit guard held and retains bits returned by Exec Wait. Once readiness is
+frozen, arrivals during timer cancellation remain pending for the following call.
+GUI withdrawal starts another decision against the same deadline. An unsuccessful
+decision restores already observed external notifications, returns zero and
+clears the output fields; inspect ExecAESDiagnostic and retry after handling the
+reported GUI condition. No polling timer or new worker/signal is required.
+The AES context and all reserved bank-zero capacities remain unchanged; the
+58-byte descriptor belongs to caller storage.
+
 `MU_M1` matches the latest eligible pointer against the selected rectangle:
 `m_out=0` waits inside, `m_out=1` waits outside; width/height must be positive.
 Right and bottom edges are exclusive. Motion coalesces in the existing snapshot

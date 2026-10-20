@@ -41,7 +41,7 @@ def caller(out):
         'void AESAfterRead(struct ExecAESContext *c);\n')
     for old, new in (
         ('    return TRUE;\nfailure:', '    AESAfterRead(c);\n    return TRUE;\nfailure:'),
-        ('        Wait(mask);', '        AESBeforeWait(c, mask);\n        Wait(mask);'),
+        ('        seen|=Wait(mask)&externalMask;', '        AESBeforeWait(c, mask);\n        seen|=Wait(mask)&externalMask;'),
         ('    SendIO(&t->alarm->tc_Request);', '    AESBeforeSend(c);\n    SendIO(&t->alarm->tc_Request);'),
         ('        t->state = AES_ALARM_RETIRING;', '        t->state = AES_ALARM_RETIRING;\n        AESBeforeCancel(c);')):
         require(source.count(old) == 1, 'Input wait boundary changed: '+old)

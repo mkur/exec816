@@ -115,6 +115,15 @@ the profile base and ABI offsets. Larger resident Atari DOS layouts remain
 unsupported; Exec's own DOS/file services are independent of that restriction.
 This boundary does not itself qualify a particular third-party loader.
 
+The ordinary bitmap call adapter preserves all native registers and 24 bytes of
+lower direct-page workspace on the calling Task's stack. Its synthesized RTL
+target keeps the original program bank even for an entry at offset `$0000`;
+RTL wraps PC without a carry into PBR. The bank-boundary correction and four
+additional transient save bytes fit the existing console code/Task stack
+reservations: **0 added fixed, root/kernel, per-Task or idle reserved bank-zero
+bytes**. See the [workbench development record](../history/fastbasic-workbench.md)
+for the raw/optimized register and boundary probes.
+
 Ordinary compiled globals default to a 2 KiB `image_data` arena in the selected
 upper kernel bank, after resident metadata and 256-byte alignment. Emitted code
 starts after the full arena. The image owns its bank even when some capacity is

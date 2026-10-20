@@ -1,5 +1,7 @@
 #include "aes-private.h"
 #include <proto/exec.h>
+#include <string.h>
+#include <stddef.h>
 
 /* Called exactly once at a public direct-call boundary. Helpers use the
  * admitted context instead of looking it up or entering it recursively. */
@@ -148,9 +150,9 @@ static BOOL port_ready(struct MsgPort *port)
 }
 
 static WORD events(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
-                   WORD *message, BOOL blocking)
+                   WORD *message, BOOL blocking,ULONG externalMask,ULONG *received)
 {
-    ULONG high = 0, low = 0, mask = 0;
+    ULONG high = 0, low = 0, mask = 0,seen = 0,fresh,privateMask;
     UWORD ready = 0, status = AES_OK, inputFlags, i;
     BOOL submitted = FALSE, armed = FALSE, timerReady = FALSE;
     struct AESDelivery *record = NULL;
@@ -159,7 +161,7 @@ static WORD events(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
     for (i = 0; i < AES_INTOUT_WORDS; ++i) c->intout[i] = 0;
     inputFlags = flags & (AES_MU_KEYBD | AES_MU_BUTTON | AES_MU_M1);
     input = c->endpoint->input;
-    if (flags == 0 || (flags & ~(AES_MU_KEYBD | AES_MU_BUTTON | AES_MU_M1 | AES_MU_MESAG | AES_MU_TIMER))) {
+    if ((!flags && !externalMask) || (flags & ~(AES_MU_KEYBD | AES_MU_BUTTON | AES_MU_M1 | AES_MU_MESAG | AES_MU_TIMER))) {
         status = AES_UNSUPPORTED;
         goto done;
     }
@@ -195,10 +197,18 @@ static WORD events(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
         mask |= 1UL << c->timer.port->mp_SigBit;
         timerReady = milliseconds == 0;
     }
+    /* These signals belong to the registered AES binding, including retained
+     * timer resources from an earlier call. External masks are caller-owned. */
+    privateMask=(1UL<<c->receiving->mp_SigBit)|(1UL<<c->replies->mp_SigBit);
+    if (c->timer.port) privateMask|=1UL<<c->timer.port->mp_SigBit;
+    if (externalMask&privateMask) { status=AES_MALFORMED;goto done; }
+    mask|=externalMask;
 decide:
     for (;;) {
+        if (externalMask) seen|=SetSignal(0,externalMask)&externalMask;
         ready = ExecAESInputSelect(c, inputFlags);
         if (c->diagnostic != AES_OK) { status = c->diagnostic; goto done; }
+        if (seen) ready|=MU_EXEC;
         if ((flags & AES_MU_MESAG) && ExecAESMessageReady(c)) ready |= AES_MU_MESAG;
         if ((flags & AES_MU_TIMER) && !timerReady) {
             if (submitted && port_ready(c->timer.port)) {
@@ -218,6 +228,12 @@ decide:
         }
         if (timerReady) ready |= AES_MU_TIMER;
         Forbid();
+        fresh=externalMask ? SetSignal(0,externalMask)&externalMask:0;
+        seen|=fresh;
+        if (seen) ready|=MU_EXEC;
+        if (fresh && (flags&AES_MU_TIMER) && !timerReady) {
+            Permit();continue; /* Include a due clock in the new decision. */
+        }
         status = ExecAESInputCommitState(c, inputFlags);
         if (status != AES_OK) { Permit(); goto done; }
         if (!ExecAESInputStable(c, inputFlags) ||
@@ -247,7 +263,7 @@ decide:
             submitted = TRUE;
             continue; /* Recheck immediate reply/arrival before sleeping. */
         }
-        Wait(mask);
+        seen|=Wait(mask)&externalMask;
     }
     /* Readiness and result snapshots are now frozen. Later publication stays
      * queued for the following decision, including arrivals during AbortIO. */
@@ -307,6 +323,10 @@ done:
     }
     if (status != AES_OK)
         for (i = 0; i < AES_INTOUT_WORDS; ++i) c->intout[i] = 0;
+    /* An aborted GUI decision must not consume a caller's notification. New
+     * arrivals during timer retirement already remain pending for next time. */
+    if (status!=AES_OK && seen) { SetSignal(seen,seen);seen=0; }
+    if (received) *received=seen;
     c->diagnostic = status;
     c->busy = 0;
     return status == AES_OK ? (WORD)ready : 0;
@@ -316,10 +336,29 @@ done:
  * It shares exactly the blocking path's selection and atomic payload commit. */
 WORD ExecAESPoll(struct ExecAESContext *c,UWORD flags,WORD *message)
 {
-    return events(c,flags,0,message,FALSE);
+    return events(c,flags,0,message,FALSE,0,NULL);
 }
 
 WORD ExecAESEvents(struct ExecAESContext *c,UWORD flags,ULONG milliseconds,WORD *message)
 {
-    return events(c,flags,milliseconds,message,TRUE);
+    return events(c,flags,milliseconds,message,TRUE,0,NULL);
+}
+
+WORD ExecAESWait(struct ExecAESWaitSpec *spec)
+{
+    struct ExecAESContext *c=ExecAESContext();WORD result;
+    if (!c) return 0;
+    if (!ExecAESPointer(spec,sizeof(*spec))) { c->diagnostic=AES_MALFORMED;return 0; }
+    memset(&spec->received,0,sizeof(*spec)-offsetof(struct ExecAESWaitSpec,received));
+    if (c->busy) { c->diagnostic=AES_BUSY;return 0; }
+    c->intin[0]=spec->flags;c->intin[1]=spec->buttonClicks;
+    c->intin[2]=spec->buttonMask;c->intin[3]=spec->buttonState;
+    c->intin[4]=spec->m1Flags;c->intin[5]=spec->m1X;c->intin[6]=spec->m1Y;
+    c->intin[7]=spec->m1Width;c->intin[8]=spec->m1Height;
+    result=events(c,spec->flags,spec->milliseconds,spec->message,TRUE,spec->signalMask,&spec->received);
+    if (result) {
+        spec->mouseX=c->intout[1];spec->mouseY=c->intout[2];spec->mouseButtons=c->intout[3];
+        spec->keyState=c->intout[4];spec->key=c->intout[5];spec->clicks=c->intout[6];
+    }
+    return result;
 }

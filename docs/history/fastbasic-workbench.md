@@ -173,3 +173,40 @@ the transient admission packet grows from 9 to 12 bytes. Added reserved
 bank-zero bytes remain **0 fixed, 0 root/kernel, 0 for each public Task and
 0 idle**, including guards, alignment, unused capacity and the existing guest
 pool. These development checks do not qualify the hosted system.
+
+## WB6 — combined GUI/Exec wait
+
+[WB6 evidence](../development/fastbasic-workbench-wb6.json) records the generated
+58-byte caller-owned descriptor and `ExecAESWait` in C ABI 22. The combined
+fixture passes 38 emitted checks for pending/coalesced/unrelated signals, caller
+message ownership, simultaneous GUI readiness, arrivals before sleep and during
+timer retirement, error notification restoration, private-mask refusal, an
+already retired Process, close delivery, a second ordinary caller and cleanup.
+The input-event regression passes 705 checks, and the timer/event regression
+passes 371. Public layout is checked with raw and optimized C emission. This
+adds no AES context bytes, signal or worker.
+
+The timer/event regression exposed an existing platform adapter defect when
+the newly linked `ConsoleBitmapEntry` landed at `$0E0000`. The bitmap adapter
+borrowed into the preceding bank while synthesizing an RTL target, but RTL
+increments only its 16-bit PC. The previous event code passed 371 checks; the
+new layout stalled during console startup, before either native or C test
+entry. The adapter now preserves the original bank, as the ordinary Calypsi
+bridge already did, and saves all 24 lower-DP bytes used by Calypsi helpers.
+This is an Exec platform fix; compiler semantics were not changed.
+
+The bridge probe places a fixture-only JML at an exact upper-bank boundary and
+checks both stack parities, full registers, stack/direct-page restoration and
+all 24 lower-DP bytes. Its 80-byte result allocation is unchanged: previously
+unused result words now capture the additional four DP bytes. The adapter uses
+10 more bytes within its existing console code reservation and four more
+transient stack bytes per call. Added reserved bank-zero costs remain **0 fixed,
+0 root/kernel, 0 per public Task and 0 idle**, including guards, alignment and
+unused capacity. The boundary stub reserves one upper bank only in probe builds.
+
+Raw and optimized context runs each pass 1,081 checks in each of two C contexts,
+plus both boundary bridge calls. All 545 host tests pass. The context fixture
+also checks the current 33-object menu record: 380 bytes, including alignment,
+with 66-byte parent/x/y arrays. Its old 340-byte expectations were
+stale and failed before reaching the C contexts; the corrected fixture keeps
+the independent literal layout checks.

@@ -2,6 +2,7 @@
 #define EXEC816_AES_H
 #include <exec816/aes-wire.h>
 #include <devices/timer.h>
+#include <exec816/aes-wait.h>
 
 struct ExecAESTimer {
     struct MsgPort *port;

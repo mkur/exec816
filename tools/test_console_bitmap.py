@@ -82,6 +82,7 @@ def run(out,mode,replay=False,observe=False,performance=False):
                             require(w(6)==w(32) and w(8)==w(34),'Bridge lost S/D')
                             require(row[10:12]==bytes([0,0]),'Bridge lost P/DBR: '+row.hex())
                             require([w(12+i*2) for i in range(10)]==list(range(0x5a00,0x5a0a)),'Bridge lost lower DP')
+                            require([w(36),w(38)]==[0x5a0a,0x5a0b],'Bridge lost spill-helper DP bytes')
                             records.append(dict(stack=w(6),dp=w(8),registers=row.hex()))
                         require((records[0]['stack']^records[1]['stack'])&1,'Missing odd/even bridge entry')
                         result['bridge_context']=records

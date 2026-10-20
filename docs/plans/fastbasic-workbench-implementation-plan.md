@@ -1,6 +1,6 @@
 # FastBasic GEM workbench implementation plan
 
-Status: implementation in progress, 20 October 2026. WB0–WB5 pass development checks; WB6–WB9 are in progress. See the [slice record](../history/fastbasic-workbench.md).
+Status: implementation in progress, 20 October 2026. WB0–WB6 pass development checks; WB7–WB9 are in progress. See the [slice record](../history/fastbasic-workbench.md).
 
 [Design note](fastbasic-workbench-design.md) · [Plan index](README.md) ·
 [GEM integration](gem4xe/README.md) · [Migration plan](fastbasic-6502-migration-plan.md) ·

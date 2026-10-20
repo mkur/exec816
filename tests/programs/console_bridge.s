@@ -6,7 +6,7 @@
               .rtmodel codeModel,"large"
               .rtmodel dataModel,"huge"
               .rtmodel core,"65816"
-              .extern ConsoleProbeNative,ConsoleProbeResults,ConsoleProbeCase
+              .extern ConsoleProbeNative,ConsoleProbeTarget,ConsoleProbeResults,ConsoleProbeCase
               .section farcode,text
               .public ConsoleBridgeProbe
 ConsoleBridgeProbe:
@@ -32,11 +32,15 @@ ConsoleBridgeProbe:
               sta dp:16
               lda ##23049
               sta dp:18
+              lda ##23050
+              sta dp:20
+              lda ##23051
+              sta dp:22
               sep #0x20
-              lda #(.byte2 ConsoleProbeClobber)
+              lda long:ConsoleProbeTarget+2
               pha
               rep #0x20
-              lda ##(.word0 ConsoleProbeClobber)
+              lda long:ConsoleProbeTarget
               pha
               tsc
               sta long:ConsoleProbeResults+32
@@ -86,6 +90,10 @@ ConsoleBridgeProbe:
               sta long:ConsoleProbeResults+28
               lda dp:18
               sta long:ConsoleProbeResults+30
+              lda dp:20
+              sta long:ConsoleProbeResults+36
+              lda dp:22
+              sta long:ConsoleProbeResults+38
               tsc
               clc
               adc ##3
@@ -115,11 +123,15 @@ ConsoleBridgeProbe:
               sta dp:16
               lda ##23049
               sta dp:18
+              lda ##23050
+              sta dp:20
+              lda ##23051
+              sta dp:22
               sep #0x20
-              lda #(.byte2 ConsoleProbeClobber)
+              lda long:ConsoleProbeTarget+2
               pha
               rep #0x20
-              lda ##(.word0 ConsoleProbeClobber)
+              lda long:ConsoleProbeTarget
               pha
               tsc
               sta long:ConsoleProbeResults+72
@@ -169,6 +181,10 @@ ConsoleBridgeProbe:
               sta long:ConsoleProbeResults+68
               lda dp:18
               sta long:ConsoleProbeResults+70
+              lda dp:20
+              sta long:ConsoleProbeResults+76
+              lda dp:22
+              sta long:ConsoleProbeResults+78
               tsc
               clc
               adc ##4
@@ -183,6 +199,7 @@ ConsoleProbeDispatch:
               dec a
               pha
               rtl
+              .public ConsoleProbeClobber
 ConsoleProbeClobber:
               lda ##42240
               sta dp:0
@@ -204,6 +221,10 @@ ConsoleProbeClobber:
               sta dp:16
               lda ##42249
               sta dp:18
+              lda ##42250
+              sta dp:20
+              lda ##42251
+              sta dp:22
               ldx ##3
 ConsoleProbeWait:
               ldy ##65535
