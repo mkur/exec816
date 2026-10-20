@@ -14,6 +14,11 @@
 
 - [Optional interactive GEM/VDI demo](gem-vdi.md): ST mouse and keyboard controls during disk I/O, with VBXE graphics.
 
+## Upstream application references
+
+- [GEM4XE/QED reference](gem4xe-qed-reference.md): reproducible two-disk
+  Altirra setup, pinned original application and verified editing/save workflow.
+
 ## Writing programs
 
 - [Disk commands](commands.md): `Main`, arguments, streams and return codes.

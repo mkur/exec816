@@ -1,0 +1,39 @@
+GEM4XE v0.12 release:
+https://github.com/slaapliedje/gem4xe/releases/tag/v0.12
+Pinned GEM4XE source (GPL v2 or later; application kit LGPL 2.1 or later):
+https://github.com/slaapliedje/gem4xe/tree/fe5704f01bd72d32b966245d201254dddf7a8806
+https://github.com/slaapliedje/gem4xe/archive/fe5704f01bd72d32b966245d201254dddf7a8806.tar.gz
+
+GEM4XE.car is the original system cartridge with MOUSEPORT=1 selected and a
+normal DESKTOP.INF layout added in one spare directory slot. That layout
+opens D2 automatically with a *.PRG mask. The CLOCK.ACC, CALC.ACC and
+CONTROL.ACC directory aliases are named .ACX to disable startup accessories
+and leave enough VDI workstations for QED and CFLIB. No executable or resource
+payload has been changed.
+QED is not present in this cartridge.
+
+qed.atr is a new MyDOS-format disk populated with the original release's
+QED.PRG, QED.RSC, QED.TXT, QEDLGPL.TXT and QEDAPACH.TXT, plus SAMPLE.TXT and
+QED.CFG. The configuration sets normal window dimensions,
+fixed font size and the internal clipboard without changing QED code.
+QED.PRG SHA256: 6ad1bb4b228ab60d1727c623dec1324aa8056aed52ef3cdeb987322885ef4340
+QED.RSC SHA256: 1c4a16fd78f41721847fbf4a71d9edfd52b90ea0e294e6f2ca78cd052920b406
+QED upstream: https://github.com/freemint/qed
+cflib upstream: https://github.com/freemint/cflib
+See licenses/QED.TXT for authors, component licenses and the no-sale notice.
+
+MyDOS 4.50: Charles Marslett and Bob Puff, 24 November 1988.
+The supplied READ.ME declares the release public domain.
+Original image SHA256: 0c13eb9175975636e231be335341eb91fd143dc19e090efa995c09374ff313a1
+https://ftp.pigwa.net/stuff/collections/holmes%20cd/Holmes%201/ATR%20Programs/Disk%20Operating%20Systems/Mydos%204.50.atr
+See licenses/MYDOS-READ.ME, preserved in its original ATASCII encoding.
+
+AltirraOS 3.44 for 65C816, Avery Lee, built from unmodified Altirra 4.40
+source with _KERNEL_XLXE=1 and _KERNEL_816=1.
+Source: https://www.virtualdub.org/downloads/Altirra-4.40-src.7z
+Source archive SHA256: 77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca
+ROM SHA256: 85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7
+See licenses/ALTIRRAOS-816-LICENSE.txt for the upstream permission notice.
+The older XL/XE 3.11 ROM places part of its keyboard table where GEM installs
+native vectors; this setup uses the dedicated 65C816 ROM instead.
+AltirraSDL (installed separately): https://github.com/ilmenit/AltirraSDL

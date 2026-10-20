@@ -1,5 +1,8 @@
 # GEM as a client of an Exec-like kernel
 
+The separate [upstream GEM4XE/QED setup](../../guides/gem4xe-qed-reference.md)
+preserves a working reference for behavior comparisons during the port.
+
 The [QED editing design](qed-editing-design.md) and
 [QE1–QE7 implementation plan](qed-editing-implementation-plan.md) propose
 strategy step 4: native keyboard/selection, redraw and long-line navigation,

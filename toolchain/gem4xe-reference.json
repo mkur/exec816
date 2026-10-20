@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "release": "https://github.com/slaapliedje/gem4xe/releases/tag/v0.12",
+  "tag": "v0.12",
+  "commit": "fe5704f01bd72d32b966245d201254dddf7a8806",
+  "assets": {
+    "gem4xe-0.12-qed.atr": "fc74938ef884e6d07337fdb444c4904f94d639b904c1b3d4a8672ae5de257d54",
+    "gem4xe-0.12.atr": "170494434a4775c5a1c56980945625cb0fd9c17828895fceba7f28a011d80a1a",
+    "gem4xe-0.12.car": "7fd13434f451e6cfd2f00667c2761a597ebec844442def0f7f62211d09129b46",
+    "gem4xe-0.12.sha256": "896c53a73c9b25d3ca8e926fbd936157ec661d9643de9333b3eeda7e533f7976"
+  },
+  "source_files": {
+    "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+    "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+    "docs/guide.md": "5764191ee0f72d171b003d76a49ebf2f5be30eca3daad069ee4180f7c4caf1b0"
+  },
+  "mydos": {
+    "url": "https://ftp.pigwa.net/stuff/collections/holmes%20cd/Holmes%201/ATR%20Programs/Disk%20Operating%20Systems/Mydos%204.50.atr",
+    "sha256": "0c13eb9175975636e231be335341eb91fd143dc19e090efa995c09374ff313a1"
+  },
+  "rom_pin": "toolchain/altirra.json",
+  "rom_notice_sha256": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+  "media": {
+    "GEM4XE.car": "127dbeb704aa5cd5f5f6a3317e31fd1578a0c0b0c3a1ac5c6d1060c6ec08f5ff",
+    "mydos-boot.atr": "0c13eb9175975636e231be335341eb91fd143dc19e090efa995c09374ff313a1",
+    "qed.atr": "75d7db0831aef46e9601844e5f6d3b33e8e92bfb77f5c44a6a2b378dfba3da60",
+    "firmware/altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7"
+  },
+  "validated_emulator": {
+    "source": "https://github.com/ilmenit/AltirraSDL",
+    "platform": "macOS arm64",
+    "sha256": "a6b463819ae1064e98bd4d797427f47855879d7a2e2ad263eed5c1bcd348d5ca",
+    "evidence": "docs/development/gem4xe-qed-reference.json"
+  }
+}
