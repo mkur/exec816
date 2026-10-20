@@ -84,9 +84,12 @@ def wb0(out, reuse=False,provider=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice',choices=('WB0',),required=True)
+    p.add_argument('--slice',choices=('WB0','WB1'),required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--from-build',action='store_true')
     p.add_argument('--reuse-provider',action='store_true',help='WB0: check and reuse the emitted GEM provider')
     a=p.parse_args()
-    wb0(a.output.resolve(),a.from_build,a.reuse_provider)
+    if a.slice=='WB0':wb0(a.output.resolve(),a.from_build,a.reuse_provider)
+    else:
+        from test_fastbasic_document import wb1
+        wb1(a.output.resolve(),a.from_build)

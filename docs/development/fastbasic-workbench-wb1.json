@@ -1,0 +1,224 @@
+{
+  "format": "exec816-fastbasic-workbench-slice-v1",
+  "slice": "WB1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-20",
+  "base_revision": "8b2cc4cfc17f0bc072ccdd19c2fee85e57969e21",
+  "source_inputs": {
+    "examples/gem-basic/document.c": "3db298950e73b396f0437c724cf9759cbf2fe21646f49e5c21f0fdff50393b24",
+    "examples/gem-basic/document.h": "e264a4d133e06fc14d152e8b5aa3ab7d761af4d95f18f2324eb97447e87454a9",
+    "tests/programs/basic_document.c": "95e51041d8eab4623465c2e00399d9ac0af6c57e77120b64540cbd3a7438ba1d",
+    "tools/test_fastbasic_document.py": "076cfa41833e12f836d1b075d5daada76919ae6836bfbda6b18ff59a4830d996"
+  },
+  "pins": {
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "ports/fastbasic/upstream.json": "3d68f368e7715cabcd979d55823c6b9fa0a1e9665838158a24e27507e16ec82e",
+    "abi/fastbasic.json": "6b5cb12a431831d74791e7ee49b759cba4fa8b01131ca2be721211da29f1234b",
+    "abi/c-program.json": "5e7474296d6bd2bb35e11a36110f2a559186331706781228694fe595c59d85b5",
+    "toolchain/altirra-gem-vdi.json": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431",
+    "toolchain/altirra-shell-paced.json": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087"
+  },
+  "evidence": [
+    {
+      "path": "build/fastbasic-workbench/wb1/results.json",
+      "sha256": "f0846e4e38e389de11f56e2ad8eb7c61e17432468759df237335ad9078f19ddf",
+      "status": "pass",
+      "checks": 130,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 242,
+          "remaining_above_floor": 1038
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 276,
+          "remaining_above_floor": 1004
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 1554,
+        "native_irq_count": 15226,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 242,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 276,
+          "untouched_from_base": 1260,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    }
+  ],
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes": "Guards, alignment and unused capacity; existing Task pools and 544-byte guest pool retained"
+  },
+  "document": {
+    "bytes": 32768,
+    "lines": 4096,
+    "line_bytes": 255,
+    "index_entries": 4097,
+    "index_bytes": 16388,
+    "undo_bytes": 16384,
+    "requested_upper_bytes": 65540,
+    "rounded_upper_bytes": 65544,
+    "test_guards_upper_bytes": 96
+  }
+}
