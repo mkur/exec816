@@ -8,6 +8,7 @@ ULONG AESService;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD VDIPhase,VDIGo,VDIStage[2],VDICommand[2],VDIUnits[2],VDITextUnits[2];
 volatile UWORD VDIGlyphUnits[2],VDIClipNative[12],VDIClipGlyphs[12];
+volatile UWORD VDIModeUnits[2];
 static struct Task *root,*tasks[2];
 static ULONG wake,starts[2];
 static char longText[193];
@@ -32,6 +33,7 @@ void VDIYield(void)
     UWORD who=FindTask(NULL)==tasks[0] ? 0:1;
     ++VDIUnits[who];
     if (VDIUnits[who]==1) ExecYield();
+    if (VDIStage[who]==7 && ++VDIModeUnits[who]==1) ExecYield();
 }
 
 /* Run after the accelerated path has packed its shared byte scratch. */
@@ -39,6 +41,7 @@ void VDITextYield(void)
 {
     UWORD who=FindTask(NULL)==tasks[0] ? 0:1;
     if (++VDITextUnits[who]==1) ExecYield();
+    if (VDIStage[who]==7 && ++VDIModeUnits[who]==1) ExecYield();
 }
 
 /* Test-only device-entry count, including the fallback's clipped cells. */
@@ -89,6 +92,53 @@ static void draw_clips(WORD handle,WORD window)
     CHECK(wind_update(END_UPDATE));
 }
 
+/* Public named/PB mode calls, clipping and per-Task persistence. */
+static void draw_modes(UWORD who,WORD handle,WORD window)
+{
+    WORD x,y,w,h,box[4],clip[4],mode=MD_TRANS,reply=0;
+    WORD control[12]={32,0,0,1,0,0,0,0,0,0,0,0};
+    VDIPB pb={control,&mode,NULL,&reply,NULL};
+    struct ExecAESContext *c=ExecAESContext();
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
+    control[6]=handle;
+    CHECK(c->workstation->writeMode==MD_REPLACE);
+    CHECK(vswr_mode(handle,who?MD_TRANS:MD_REPLACE)==(who?MD_TRANS:MD_REPLACE));
+    box[0]=x;box[1]=y;box[2]=x+w-1;box[3]=y+44;
+    vs_clip(handle,0,box);vsf_color(handle,5);v_bar(handle,box);
+    vdi_call(&pb);CHECK(reply==MD_TRANS && control[4]==1);
+    CHECK(c->workstation->writeMode==MD_TRANS);
+    vst_color(handle,0);v_gtext(handle,x+1,y+6,"A W09 BC");
+    vst_color(handle,6);clip[0]=x+14;clip[1]=y+11;clip[2]=x+103;clip[3]=y+14;
+    vs_clip(handle,1,clip);v_gtext(handle,x+11,y+15,"A W09 BC DEF");
+    CHECK(vswr_mode(handle,3)==0 && ExecAESDiagnostic()==AES_UNSUPPORTED);
+    CHECK(c->workstation->writeMode==MD_TRANS);
+    vs_clip(handle,0,box);v_gtext(handle,x+3,y+24,"still transparent");
+    CHECK(vswr_mode(handle,MD_REPLACE)==MD_REPLACE);
+    v_gtext(handle,x+1,y+33,"replace paper");
+    box[1]=y+36;box[3]=y+39;box[2]=x+31;
+    vsf_color(handle,4);v_bar(handle,box);
+    CHECK(vswr_mode(handle,MD_TRANS)==MD_TRANS);
+    box[0]=x+32;box[2]=x+63;v_bar(handle,box);
+    /* Yielding inside the renderer cannot change another caller's mode. */
+    CHECK(c->workstation->writeMode==MD_TRANS);
+    CHECK(wind_update(END_UPDATE));
+    CHECK(vswr_mode(handle,who?MD_TRANS:MD_REPLACE)==(who?MD_TRANS:MD_REPLACE));
+}
+
+static void draw_private_mode(UWORD who,WORD handle,WORD window)
+{
+    WORD x,y,w,h,box[4];
+    CHECK(ExecAESContext()->workstation->writeMode==(who?MD_TRANS:MD_REPLACE));
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
+    box[0]=x;box[1]=y+48;box[2]=x+127;box[3]=y+55;
+    vs_clip(handle,0,box);vsf_color(handle,3);v_bar(handle,box);
+    vst_color(handle,1);v_gtext(handle,x+1,y+54,"Own mode");
+    CHECK(ExecAESContext()->workstation->writeMode==(who?MD_TRANS:MD_REPLACE));
+    CHECK(wind_update(END_UPDATE));
+}
+
 static void rectangle_pairs(WORD handle,WORD x,WORD y)
 {
     static const WORD cases[4][4]={
@@ -133,6 +183,7 @@ static void draw(UWORD who,WORD handle,WORD window)
     CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
     sequence=c->sequence;
     CHECK(c->workstation->fillColor==(who ? 2:4));
+    CHECK(c->workstation->writeMode==MD_REPLACE);
     vs_clip(handle,0,huge);
     v_bar(handle,huge); CHECK(ExecAESDiagnostic()==AES_OK);
     clip[0]=x+8; clip[1]=y+12; clip[2]=x+78; clip[3]=y+14;
@@ -267,6 +318,8 @@ static void worker(UWORD who)
             }
         } else if (command==4) CHECK(wind_set(window,WF_CXYWH,201,65,400,140));
         else if (command==6) draw_clips(handle,window);
+        else if (command==7) draw_modes(who,handle,window);
+        else if (command==8) draw_private_mode(who,handle,window);
         else if (command==9) break;
         Forbid(); VDIStage[who]=command; Signal(root,wake); Permit();
     }
@@ -325,6 +378,13 @@ UWORD AESRun(void)
     issue(1,6); while (VDIStage[1]!=6) Wait(wake);
     VDIPhase=6;
     while (VDIGo<6) ExecYield();
+    issue(0,7); issue(1,7);
+    while (VDIStage[0]!=7 || VDIStage[1]!=7) Wait(wake);
+    issue(0,8); issue(1,8);
+    while (VDIStage[0]!=8 || VDIStage[1]!=8) Wait(wake);
+    CHECK(VDIModeUnits[0]>0 && VDIModeUnits[1]>0);
+    VDIPhase=7;
+    while (VDIGo<7) ExecYield();
     issue(0,9); issue(1,9);
     while (AESDone!=2) Wait(wake);
     FreeMem(textAllocation,65700UL);

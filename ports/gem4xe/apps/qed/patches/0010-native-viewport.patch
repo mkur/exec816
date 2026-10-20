@@ -1,0 +1,293 @@
+--- a/qed/src/ausgabe.c
++++ b/qed/src/ausgabe.c
+@@ -77,10 +77,10 @@
+ 
+ void set_drawmode(void) { vswr_mode(vdi_handle,MD_REPLACE); }
+ 
+-short cursor_xpos(TEXTP t,short position,bool *italic)
++long cursor_xpos(TEXTP t,short position,bool *italic)
+ {
+     if(italic)*italic=FALSE;
+-    return bild_pos(position,t->cursor_line,t->loc_opt->tab,t->loc_opt->tabsize)*font_wcell;
++    return (long)bild_pos(position,t->cursor_line,t->loc_opt->tab,t->loc_opt->tabsize)*font_wcell;
+ }
+ 
+ void fill_area(short x,short y,short w,short h,short color)
+@@ -118,36 +118,61 @@
+ }
+ 
+ /* Bounded visible cells belong to this private image, never bank zero. */
+-static char cells[81];
++static char cells[81],run[81];
++static unsigned char marked[80];
++static bool selected_byte(TEXTP t,long row,short byte)
++{
++    if(!t->block || row<t->z1 || row>t->z2)return FALSE;
++    return (row>t->z1 || byte>=t->x1) && (row<t->z2 || byte<t->x2);
++}
+ void line_out(WINDOWP w,TEXTP t,short row)
+ {
+-    LINEP line=visible_line(t,w->doc.y+row);
+-    const char *source;
+-    short index=0,repeat=0,count=0,limit=(w->work.g_w+7)/8;
+-    long column=0;
++    long absolute=w->doc.y+row,column=0;
++    LINEP line=visible_line(t,absolute);
++    short index=0,repeat,count,first,last,limit=(w->work.g_w+7)/8;
++    short tab=t->loc_opt->tabsize,remaining=tab;
+     short y=w->work.g_y+row*font_hcell;
++    char ch;
++    bool mark;
+     fill_area(w->work.g_x,y,w->work.g_w,font_hcell,bg_color);
+-    if(!line)return;
++    if(!line){vswr_mode(vdi_handle,MD_REPLACE);return;}
+     if(limit>80)limit=80;
+-    source=TEXT(line);
+-    while(index<line->len && count<limit){
+-        char ch=source[index++];
+-        repeat=ch=='\t' && t->loc_opt->tab ? t->loc_opt->tabsize-column%t->loc_opt->tabsize:1;
++    memset(cells,' ',limit);memset(marked,0,limit);
++    while(index<line->len && column<w->doc.x+limit){
++        ch=TEXT(line)[index];mark=selected_byte(t,absolute,index++);
++        if(ch=='\t' && t->loc_opt->tab){repeat=remaining;remaining=tab;}
++        else{repeat=1;if(--remaining==0)remaining=tab;}
+         if(ch=='\t')ch=' ';
+-        while(repeat-- && count<limit){
+-            if(column>=w->doc.x)cells[count++]=ch;
++        if(column+repeat<=w->doc.x){column+=repeat;continue;}
++        while(repeat-- && column<w->doc.x+limit){
++            if(column>=w->doc.x){
++                count=(short)(column-w->doc.x);cells[count]=ch;marked[count]=mark;
++            }
+             ++column;
+         }
+     }
+-    cells[count]=0;
+-    vst_color(vdi_handle,fg_color);
+-    if(count)v_gtext(vdi_handle,w->work.g_x,y+EXEC_VDI_FONT_TOP,cells);
++    /* A selected newline has one visible cell; EOF has no newline. */
++    if(index==line->len && !IS_LAST(line) && column>=w->doc.x &&
++       column<w->doc.x+limit && selected_byte(t,absolute,line->len))
++        marked[(short)(column-w->doc.x)]=1;
++    vswr_mode(vdi_handle,MD_TRANS);
++    for(first=0;first<limit;first=last){
++        for(last=first+1;last<limit && marked[last]==marked[first];last++);
++        count=last-first;
++        if(marked[first])fill_area(w->work.g_x+first*font_wcell,y,count*font_wcell,font_hcell,bg_block_color);
++        while(count>0 && cells[first+count-1]==' ')--count;
++        if(count){
++            memcpy(run,cells+first,count);run[count]=0;
++            vst_color(vdi_handle,marked[first]?fg_block_color:fg_color);
++            v_gtext(vdi_handle,w->work.g_x+first*font_wcell,y+EXEC_VDI_FONT_TOP,run);
++        }
++    }
++    vswr_mode(vdi_handle,MD_REPLACE);
+ }
+ 
+ void bild_out(WINDOWP w,TEXTP t)
+ {
+     short row,rows=(w->work.g_h+font_hcell-1)/font_hcell;
+-    head_out(w,t);
+     for(row=0;row<rows;row++)line_out(w,t,row);
+ }
+ void bild_blkout(WINDOWP w,TEXTP t,long first,long last)
+@@ -163,13 +188,13 @@
+ void cursor(WINDOWP w,TEXTP t)
+ {
+     short row=(short)(t->ypos-w->doc.y);
+-    short x=w->work.g_x+cursor_xpos(t,t->xpos,NULL)-(short)w->doc.x*font_wcell;
++    long x=(long)w->work.g_x+cursor_xpos(t,t->xpos,NULL)-w->doc.x*font_wcell;
+     GRECT clip,area={w->work.g_x,w->work.g_y+row*font_hcell,w->work.g_w,font_hcell};
+     if(row<0 || row>=w->w_height || !wind_update(BEG_UPDATE))return;
+     if(rc_first(w->handle,&area,&clip))do{
+         set_clip(TRUE,&clip);line_out(w,t,row);
+         if(!t->blink && x>=w->work.g_x && x<w->work.g_x+w->work.g_w)
+-            fill_area(x,area.g_y,overwrite?font_wcell:2,font_hcell,fg_color);
++            fill_area((short)x,area.g_y,overwrite?font_wcell:2,font_hcell,fg_color);
+     }while(rc_next(w->handle,&clip));
+     wind_update(END_UPDATE);
+ }
+--- a/qed/src/ausgabe.h
++++ b/qed/src/ausgabe.h
+@@ -18,7 +18,7 @@
+ extern void		line_out			(WINDOWP window, TEXTP t_ptr, short wy);
+ extern void		bild_out			(WINDOWP window, TEXTP t_ptr);
+ extern void		bild_blkout		(WINDOWP window, TEXTP t_ptr, long z1, long z2);
+-extern short		cursor_xpos		(TEXTP t_ptr, short pos, bool *cursor_italic );
++extern long		cursor_xpos		(TEXTP t_ptr, short pos, bool *cursor_italic );
+ extern void		cursor			(WINDOWP window, TEXTP t_ptr);
+ 
+ extern void 	set_drawmode	(void);
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -505,9 +505,7 @@
+ 	long	y;
+ 	
+ 	y = (my - window->work.g_y);
+-	if (y < 0)
+-		y -= font_hcell;
+-	y /= font_hcell;
++	y = y<0 ? -((-y+font_hcell-1)/font_hcell):y/font_hcell;
+ 	y += window->doc.y;
+ 	if (y >= t_ptr->text.lines)
+ 		y = t_ptr->text.lines-1;
+@@ -518,70 +516,15 @@
+ }
+ 
+ /* Ermittelt aus einer Mauspos (mx) die zugeh”rige x-Position im Text */
+-static short get_xpos(WINDOWP window, long ypos, short mx)
+-{
+-	TEXTP	t_ptr = get_text(window->handle);
+-	short	x;
+-	LINEP	col;
+-
+-	col = get_line(&t_ptr->text, ypos);
+-
+-	if (font_prop)
+-	{
+-		short	i, x_soll, s, e, xl; 
+-		short	save_xpos;
+-		
+-		save_xpos = t_ptr->xpos;
+-		
+-		x_soll = (mx - window->work.g_x) + ((short) window->doc.x * font_wcell);
+-
+-		/* Zur groben Positionierung machen wir "Halbierungs-Algorithmus" */
+-		s = 0;
+-		e = col->len;
+-		xl = -1;
+-		while (TRUE)
+-		{
+-			x = s + ((e - s) / 2);
+-			if (x == xl)
+-				break;
+-			t_ptr->xpos = x;
+-			i = cursor_xpos(t_ptr, t_ptr->xpos, NULL);
+-			if (i > x_soll)
+-				e = x;			/* in linker H„lfte */
+-			else
+-				s = x;			/* in rechter H„lfte */
+-			xl = x;				
+-		}
+-		/* jetzt Fein-Positionierung zeichenweise heranbewegen */
+-		for (x = s; x <= e; x++)
+-		{
+-			t_ptr->xpos = x;
+-			i = cursor_xpos(t_ptr, t_ptr->xpos, NULL);
+-			if (i > x_soll) 
+-				break;
+-		}
+-		x--;
+-
+-		t_ptr->xpos = save_xpos;
+-	}
+-	else
+-	{
+-
+-		x = mx - window->work.g_x;
+-		if (x > 0)
+-		{
+-			x /= font_wcell;
+-			x += (short) window->doc.x;
+-		}
+-		else if (window->doc.x > 0)
+-			x = (short) window->doc.x - 1;
+-		else
+-			x = 0;
+-
+-		x = inter_pos(x, col, t_ptr->loc_opt->tab, t_ptr->loc_opt->tabsize);
+-	}
+-
+-	return x;	
++static short get_xpos(WINDOWP w,long row,short mx)
++{
++    TEXTP t=get_text(w->handle);
++    LINEP line=get_line(&t->text,row);
++    long dx=(long)mx-w->work.g_x;
++    long column=w->doc.x+(dx<0 ? -((-dx+font_wcell-1)/font_wcell):dx/font_wcell);
++    if(column<0)column=0;
++    if(column>bild_len(line,t->loc_opt->tab,t->loc_opt->tabsize))return line->len;
++    return inter_pos((short)column,line,t->loc_opt->tab,t->loc_opt->tabsize);
+ }
+ 
+ static void set_cursor(WINDOWP window, short mx, short my)
+@@ -1208,7 +1151,7 @@
+ void 
+ cursor_visible(WINDOWP window, TEXTP t_ptr)
+ {
+-	short	x_new;
++	long	x_new;
+ 	long	y_new;
+ 
+ 	y_new = t_ptr->ypos - window->doc.y;
+@@ -1227,7 +1170,7 @@
+ 			arrow_window(window, WA_DNLINE, y_new-window->w_height/2);
+ 	}
+ 
+-	x_new = cursor_xpos(t_ptr, t_ptr->xpos, NULL) - (short) window->doc.x * font_wcell;
++	x_new = cursor_xpos(t_ptr, t_ptr->xpos, NULL) - window->doc.x * font_wcell;
+ 	if (x_new < 0)
+ 		arrow_window(window, WA_LFLINE, -(x_new/font_wcell) + window->w_width/2);
+ 	else if (x_new >= window->work.g_w)
+@@ -1363,7 +1306,9 @@
+         if(!setin(chg_links,link))continue;
+         w=get_window(link);if(!w)continue;
+         t=get_text(link);
+-        w->doc.h=t->text.lines;w->doc.w=get_longestline(t)+1;
++        w->doc.h=t->text.lines;w->doc.w=get_longestline(t);
++        if(w->doc.x>w->doc.w-w->w_width)w->doc.x=max(0L,w->doc.w-w->w_width);
++        if(w->doc.y>w->doc.h-w->w_height)w->doc.y=max(0L,w->doc.h-w->w_height);
+         set_sliders(w,VERTICAL,SLPOS+SLSIZE);
+         /* Caption RPCs precede visible-rectangle enumeration and painting. */
+         head_out(w,t);change_window(w,t->filename,t->moved!=0);
+--- a/qed/src/tasten.c
++++ b/qed/src/tasten.c
+@@ -82,7 +82,7 @@
+ 		long rest = t_ptr->text.lines-t_ptr->ypos-1;
+ 
+ 		if (rest==0) return FALSE;
+-		if (delta>rest) delta = (short)rest;
++		if (delta>rest) delta = rest;
+ 		t_ptr->ypos += delta;
+ 		while (--delta>=0)	NEXT(l_ptr);
+ 		t_ptr->cursor_line = l_ptr;
+--- a/qed/src/types.h
++++ b/qed/src/types.h
+@@ -175,6 +175,7 @@
+ 	void		(*close)	(struct _window *window);
+ 	void		(*iconify)	(struct _window *window);
+ 	void		(*uniconify)	(struct _window *window);
++	GRECT full_size; /* Native full/restore owns its previous accepted bounds. */
+ } WINDOW, *WINDOWP;
+ 
+ typedef void (*WIN_DOFUNC)(WINDOWP w);
+--- a/qed/src/window.c
++++ b/qed/src/window.c
+@@ -353,17 +353,16 @@
+ */
+ void full_window(WINDOWP w)
+ {
+-	GRECT	new;
+-
+-	if (w != NULL && w->kind & FULLER)
+-	{
+-		if (w->flags & WI_FULLED)					/* Mache Fenster klein */
+-			wind_get_grect(w->handle, WF_PREVXYWH, &new);
+-		else												/* Mache Fenster grož */
+-			wind_get_grect(w->handle, WF_FULLXYWH, &new);
+-		get_work(w, &new, WORK_MOVED|WORK_SIZED);
+-		w->flags ^= WI_FULLED;
+-	}
++    GRECT target;
++    if(!w || !(w->kind&FULLER))return;
++    if(w->flags&WI_FULLED)target=w->full_size;
++    else{
++        if(!wind_get_grect(w->handle,WF_CURRXYWH,&w->full_size))return;
++        target=gl_desk;
++    }
++    get_work(w,&target,WORK_MOVED|WORK_SIZED);
++    w->flags^=WI_FULLED;
++    if(w->flags&WI_REDRAW)redraw_window(w,&w->work);
+ }
+ 
+ /*

@@ -194,9 +194,6 @@ typedef struct {
 #ifndef IP_SOLID
 #define IP_SOLID        7
 #endif
-#ifndef MD_TRANS
-#define MD_TRANS        2
-#endif
 #ifndef MD_XOR
 #define MD_XOR          3
 #endif

@@ -94,9 +94,15 @@ private Task exit or donor board termination is used.
 ```sh
 python3 tools/test_qed_editing.py --group core --output build/qed-editing/core
 python3 tools/test_qed_editing.py --output build/qed-editing/editor
+python3 tools/test_qed_viewport.py --output build/qed-editing/viewport
+python3 tools/test_vdi_modes_abi.py --mode opt --output build/qed-editing/vdi-opt
+python3 tools/test_vdi_modes_abi.py --mode raw --output build/qed-editing/vdi-raw
 ```
 
 QE1 enables keyboard editing and Cancel-default Discard/Cancel retirement.
+QE2 adds transparent VDI text, widened long-line navigation and exposure/geometry
+checks with another ordinary GEM client. The viewport runner can select
+`--scenario long` or `--scenario geometry`; the default runs both in one session.
 The core probe exercises actual donor text routines at the line limit and
 under upper-heap exhaustion. The loaded editor uses physical keys, native
 dialogs and an independent text/pixel observer; its allocation wrapper refuses

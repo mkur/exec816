@@ -19,9 +19,9 @@ Step 3 is implemented through its [design](qed-startup-design.md),
 [startup development evidence](../../history/qed-startup.md). A runnable private
 APP passes the empty-document/resource/menu/lifecycle gate. Steps 4–7 remain;
 step 4 follows its [editing design](qed-editing-design.md) and
-[QE1–QE7 plan](qed-editing-implementation-plan.md). QE1 keyboard editing and
-safe retirement pass their [development checks](../../history/qed-editing.md);
-QE2–QE7 remain.
+[QE1–QE7 plan](qed-editing-implementation-plan.md). QE1–QE2 keyboard editing,
+safe retirement and viewport drawing pass their
+[development checks](../../history/qed-editing.md); QE3–QE7 remain.
 Editing and reliable Save are not established by startup checks.
 
 ## First usable editor
@@ -217,11 +217,10 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Continue with QE2 in the [editing implementation plan](qed-editing-implementation-plan.md#qe2-redraw-viewport-and-transparent-vdi-text).
-QE1 extends the startup baseline with keyboard editing and safe retirement.
-Commit
-each executable slice after its development checks, recording actual memory,
-stack and failure evidence. Prepare the saving design after the editing gate,
+Continue with QE3 in the [editing implementation plan](qed-editing-implementation-plan.md#qe3-selection-without-a-nested-modal-wait).
+QE1–QE2 extend the startup baseline with keyboard editing, safe retirement
+and viewport drawing. Commit each executable slice after its development
+checks, recording actual memory, stack and failure evidence. Prepare the saving design after the editing gate,
 using the file-format and replacement guarantees established there.
 
 This strategy adds **0 reserved bank-zero bytes**, fixed or per-Task, including

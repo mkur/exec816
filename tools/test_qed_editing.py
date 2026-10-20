@@ -9,29 +9,32 @@ from test_qed_native import process_run
 from qed_editing_observe import interact
 
 
+def build_editor(target,provider,reuse_app=False):
+    if reuse_app:
+        from native_program import require,sha256
+        from c_program import ABI
+        from build_qed import selected
+        prepare(target/'inputs')
+        app=json.loads((target/'app.json').read_text())
+        layout=json.loads((target/'layout.json').read_text())
+        require(app['abi']==ABI and layout['selection']==selected(),'Changed APP contract')
+        require(sha256(target/'program.app')==app['sha256'],'Changed serialized APP')
+        for name,digest in layout['build_inputs'].items():
+            require(sha256(Path(name))==digest,'Changed APP input: '+name)
+        return app
+    build(target,provider,executable=True,
+          fixture=ROOT/'tests/programs/qed_editing_faults.c',
+          fixture_calls={'tasten.c':{'new_col':'QedEditNewCol'},
+                         'ausgabe.c':{'cursor':'QedEditCursor'},
+                         'event.c':{'key_window':'QedEditKeyWindow'}},
+          fixture_roots=['QedEditingLayout'])
+    return json.loads((target/'app.json').read_text())
+
 def run(out,reuse=False,reuse_app=False,scenario='all'):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
     prepare(out/'inputs')
-    def application(target):
-        if reuse_app:
-            from native_program import require,sha256
-            from c_program import ABI
-            from build_qed import selected
-            prepare(target/'inputs')
-            app=json.loads((target/'app.json').read_text())
-            layout=json.loads((target/'layout.json').read_text())
-            require(app['abi']==ABI and layout['selection']==selected(),'Changed APP contract')
-            require(sha256(target/'program.app')==app['sha256'],'Changed serialized APP')
-            for name,digest in layout['build_inputs'].items():
-                require(sha256(Path(name))==digest,'Changed APP input: '+name)
-            return app
-        provider=out/'c-image.json' if reuse else ROOT/'build/qed-startup/qs2-binding-opt/c-image.json'
-        build(target,provider,executable=True,
-              fixture=ROOT/'tests/programs/qed_editing_faults.c',
-              fixture_calls={'tasten.c':{'new_col':'QedEditNewCol'},
-                             'event.c':{'key_window':'QedEditKeyWindow'}},
-              fixture_roots=['QedEditingLayout'])
-        return json.loads((target/'app.json').read_text())
+    provider=out/'c-image.json' if reuse else ROOT/'build/qed-startup/qs2-binding-opt/c-image.json'
+    def application(target):return build_editor(target,provider,reuse_app)
     return process_run(out,True,reuse=reuse,rebuild_app=reuse,app_builder=application,
         fixture_source=ROOT/'tests/programs/qed_editing.act',expected_completed=4,
         native_optimize=True,release_compiler=True,stack_observation_index=3,

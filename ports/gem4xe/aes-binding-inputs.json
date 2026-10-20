@@ -385,7 +385,7 @@
     "10": "4: selected VBXE packed 4bpp display",
     "others": "zero; resources are per-context and obtained with rsrc_gaddr, no GEM system pointers exposed"
   },
-  "unsupported": "Unlisted opcodes, unsupported window fields/kinds and off-screen windows fail explicitly. evnt_multi supports MU_KEYBD/MU_BUTTON/MU_M1/MU_MESAG/MU_TIMER; MU_M2 is unsupported. Left button mask=1, state=0/1, clicks=1/2/0x0101. Application VDI uses the visible work area under BEG_UPDATE; fixed font, solid fill and replace mode only.",
+  "unsupported": "Unlisted opcodes, unsupported window fields/kinds and off-screen windows fail explicitly. evnt_multi supports MU_KEYBD/MU_BUTTON/MU_M1/MU_MESAG/MU_TIMER; MU_M2 is unsupported. Left button mask=1, state=0/1, clicks=1/2/0x0101. Application VDI uses the visible work area under BEG_UPDATE; fixed font, solid fill and replace/transparent text modes (1/2). Unsupported writing modes preserve the previous mode.",
   "vdi_calls": {
     "v_opnvwk": {
       "opcode": 100,

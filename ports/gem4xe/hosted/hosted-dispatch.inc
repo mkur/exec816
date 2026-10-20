@@ -232,7 +232,7 @@ void GemVdiPaint(void *context)
     first=(UWORD)(u->left-x)>>3;
     x+=(WORD)(first<<3);
     middle=x+(x<u->left ? 8:0);
-    if (u->top==u->y-6 && u->bottom==u->y+2 && middle<u->right)
+    if (u->writeMode==EXEC_VDI_REPLACE && u->top==u->y-6 && u->bottom==u->y+2 && middle<u->right)
         count=(UWORD)(u->right-middle)>>3;
     if (count) {
         extern void vbxe_text_run(uint16_t,uint16_t,const uint8_t *,uint16_t,uint16_t,uint16_t);
@@ -247,9 +247,14 @@ void GemVdiPaint(void *context)
     vwk.xmn_clip=u->left; vwk.ymn_clip=u->top;
     vwk.xmx_clip=u->right-1; vwk.ymx_clip=u->bottom-1;
     vwk.text_color=u->textColor; vwk.fill_color=u->fillColor;
-    vwk.wrt_mode=0; vwk.fill_style=1; vwk.fill_per=0;
+    vwk.wrt_mode=u->writeMode-1; vwk.fill_style=1; vwk.fill_per=0;
     vwk.h_align=vwk.v_align=vwk.text_effects=0;
-    if (count) {
+    if (u->writeMode==EXEC_VDI_TRANS) {
+        /* The opaque TEXT_RUN path always paints paper. Transparent glyphs
+         * retain every background pixel, including partial cells/rows. */
+        for (i=first;i<u->count && x<u->right;++i,x+=8)
+            dev_glyph(u->glyphs[i],x,u->y-6,0);
+    } else if (count) {
         /* The native run fences before these edges are queued. Drawing
          * both edges afterwards lets them share a single generic list;
          * clipped replacement glyphs clear only their own paper pixels. */

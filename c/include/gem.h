@@ -14,6 +14,7 @@ typedef struct {
 } AESPB;
 typedef struct { WORD *contrl, *intin, *ptsin, *intout, *ptsout; } VDIPB;
 #define MD_REPLACE 1
+#define MD_TRANS 2
 #define FIS_SOLID 1
 
 typedef struct { WORD m_out, m_x, m_y, m_w, m_h; } MOBLK;

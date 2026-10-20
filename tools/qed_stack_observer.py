@@ -140,13 +140,14 @@ def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600
         if attempt==index or profile_all:
             owner['clock_start']=bridge.eval_expr('@clk') & 0xffffffff
             bridge.profile_start('basicblock')
-        try:
-            after=during_run(owner) if during_run else None
-            bridge.bp_clear_all();bridge.bp_set(program['labels']['context_restore'],condition=retired)
-            rendezvous(program['labels']['context_restore'],timeout=retirement_timeout,frame_limit=30000,condition=retired)
-            if after:after()
-        finally:
-            if attempt==index or profile_all:bridge.profile_stop()
+            # SetProfiler keeps the CPU history flag enabled after End(). The
+            # pinned observer writes selected PC/S/D samples from that history
+            # path. Aggregate basic-block counts are unused and expensive.
+            bridge.profile_stop()
+        after=during_run(owner) if during_run else None
+        bridge.bp_clear_all();bridge.bp_set(program['labels']['context_restore'],condition=retired)
+        rendezvous(program['labels']['context_restore'],timeout=retirement_timeout,frame_limit=30000,condition=retired)
+        if after:after()
         if attempt==index or profile_all:
             owner['clock_end']=bridge.eval_expr('@clk') & 0xffffffff
             if profile_all:record.setdefault('stack_windows',[]).append(owner)

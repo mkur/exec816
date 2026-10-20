@@ -3,8 +3,8 @@
 [GEM plans](README.md) · [Editing design](qed-editing-design.md) ·
 [Strategy](qed-port-strategy.md) · [Startup baseline](../../history/qed-startup.md)
 
-Status: strategy step 4 in progress; QE1 passes its development checks,
-recorded in the [editing history](../../history/qed-editing.md). QE2–QE7 are
+Status: strategy step 4 in progress; QE1–QE2 pass their development checks,
+recorded in the [editing history](../../history/qed-editing.md). QE3–QE7 are
 pending. Implement the
 [editing design](qed-editing-design.md) in the following executable slices.
 Each slice builds on the ordinary loaded QED APP and commits after its selected

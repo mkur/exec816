@@ -4,7 +4,7 @@
 [QE1–QE7 plan](../plans/gem4xe/qed-editing-implementation-plan.md) ·
 [Startup baseline](qed-startup.md)
 
-Status: QE1 implemented; QE2–QE7 remain. The
+Status: QE1–QE2 implemented; QE3–QE7 remain. The
 [QE1 development record](../development/qed-editing-qe1.json) binds the ordinary
 executable, source audit, actual-source core probe and loaded editor session.
 
@@ -92,3 +92,66 @@ Measured reserved bank-zero delta: **0 fixed, 0 per-public-Task, 0 private idle
 bytes**, including guards, alignment and unused capacity. Complete Task-pool
 and region maps equal QS5. No shared provider changed, so QE1 needs no demo
 refresh. QED remains outside distributed demos and reliable saving is pending.
+
+
+## QE2 Viewport and transparent text
+
+The [QE2 development record](../development/qed-editing-qe2.json) binds the
+production image, viewport sessions, small raw/optimized VDI boundary probes
+and separate instrumented VDI pixel fixture. `MD_TRANS` writes glyph foreground
+pixels while preserving the background. Replace remains the default;
+unsupported modes retain the previous attribute, solid bars remain solid and
+attributes remain local to each workstation. The machine-readable internal
+VDI records are version 2; the unchanged APP import contract needs no ABI bump.
+Matched provider/callers are rebuilt.
+
+QED paints explicit row and selected-run backgrounds, draws bounded foreground
+runs transparently and restores replace mode. Expanded columns and absolute
+pixels use widened arithmetic. The fixed-font mouse mapping and desired-column
+navigation use the same tab interpretation; shortened text and resized windows
+clamp the origins. Full/Restore uses desktop bounds and a retained previous
+rectangle, because native AES does not implement the donor FULL/PREV queries.
+This adds eight upper-memory bytes per QED window. Tabs left of the viewport are skipped by spans, and a running
+tab phase avoids a long division for each tab during every redraw.
+
+The independent observer checks logical donor-ring bytes, viewport origins,
+normal text and caret pixels. Physical keyboard input constructs a 513-tab line
+whose final display column exceeds a signed WORD when multiplied by eight.
+Separate short-line geometry checks exercise move, full/restore, resize,
+vertical arrows/pages/thumb and cursor revelation. An independently loaded
+ordinary GEM client covers and exposes the document; its pixels are also
+checked. Each session retires through ordinary Process collection/unload and
+checks exact warm heap reuse. These are development checks, not hosted-system
+or release qualification.
+
+QE2 development checks pass: 529 host tests with four expected historical skips;
+two optimized loaded-editor sessions with four editor lifetimes each; two
+lifetimes each for the raw/optimized C boundary probe; and 463 checks in the
+separate two-workstation VDI pixel fixture. The long session repeats geometry
+and scrolling with the 513-tab line and directly checks sixteen visible caret
+pixels at each caret checkpoint. Supervisor check counters are native CARD
+values and can wrap during long sessions; their final values are not cumulative
+assertion counts. Native IRQ/NMI, context restoration, guards and normal
+retirement remain part of each runner.
+
+The source-frame bound remains 1,064 bytes, with the same 344-byte conditional
+margin under the 2,560-byte admission. Passive selected-PC/S/D tracing covers
+entire owned lifetimes. The collector immediately stops the unused aggregate
+profiler: the pinned emulator retains CPU history sampling after aggregate
+collection stops. Recorded traces still include later mutations, drawing,
+caret and retirement samples.
+
+Against QS5, the production image has 19,062 fewer code bytes and 974 more
+initialized plus BSS bytes. It serializes to 134,847 bytes and requires 250,640
+bytes of heap backing after bank-alignment capacity and eight-byte rounding. The production provider adds 221 code bytes, with
+no table or static-data growth. Each workstation grows from 378 to 382 logical
+upper-memory bytes; both round to 384 bytes in the allocator. The observed
+private heap peak is 53,359 bytes including private allocation headers, eight
+bytes above QE1 for the retained full/restore rectangle; underlying rounding
+and native GUI/resource owners are charged separately. Shared-provider
+demo refresh and exact-package smoke checks remain QE7 work.
+
+Measured reserved bank-zero delta: **0 fixed, 0 per-public-Task, 0 private idle
+bytes**, including guards, alignment and unused capacity. Complete Task-pool
+and region reservations equal QS5. No stack increase was required by QE2.
+Selection commands remain disabled until QE3.

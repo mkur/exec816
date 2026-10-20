@@ -11,10 +11,13 @@
 #define EXEC_VDI_FONT_TOP 6
 #define EXEC_VDI_TEXT_CHUNK 80
 #define EXEC_VDI_STRIP_ROWS 16
+#define EXEC_VDI_REPLACE 1
+#define EXEC_VDI_TRANS 2
 struct ExecVDIUnit {
     uint16_t operation;
     uint16_t textColor;
     uint16_t fillColor;
+    uint16_t writeMode;
     uint16_t left;
     uint16_t top;
     uint16_t right;

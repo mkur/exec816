@@ -4,11 +4,22 @@
 #include "global.h"
 #include "memory.h"
 #include "window.h"
+#include "ausgabe.h"
 #include <proto/dos.h>
 #include <stddef.h>
 
 volatile unsigned short QedEditFailLine,QedEditFailureHits;
 volatile unsigned short QedEditKeyCalls,QedLastKey,QedLastQualifiers;
+volatile unsigned short QedCursorPaints,QedPaintedBlink,QedPaintedX;
+volatile long QedPaintedY;
+void QedEditCursor(WINDOWP window,TEXTP text);
+
+void cursor(WINDOWP window,TEXTP text)
+{
+    QedEditCursor(window,text);
+    QedPaintedBlink=text->blink;QedPaintedX=text->xpos;QedPaintedY=text->ypos;
+    ++QedCursorPaints;
+}
 
 bool QedEditKeyWindow(WINDOWP window,short qualifiers,short key)
 {
@@ -33,5 +44,6 @@ const unsigned short QedEditingLayout[]={
     offsetof(TEXT,x1),offsetof(TEXT,z2),offsetof(TEXT,x2),
     sizeof(LINE),offsetof(LINE,next),offsetof(LINE,len),
     offsetof(RING,head),offsetof(RING,tail),offsetof(RING,lines),offsetof(RING,ending),
-    offsetof(TEXT,link),sizeof(WINDOW),offsetof(WINDOW,doc),offsetof(WINDOW,work)
+    offsetof(TEXT,link),sizeof(WINDOW),offsetof(WINDOW,doc),offsetof(WINDOW,work),
+    offsetof(TEXT,blink),offsetof(TEXT,cursor),offsetof(WINDOW,title),offsetof(WINDOW,info)
 };

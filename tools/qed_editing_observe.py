@@ -14,7 +14,7 @@ class Editor:
         self.pending_dispatch=None
         delta=owner['image_base']-(app['abi']['link_bank']<<16)
         self.sy={n:a+delta for n,a in app['image']['symbols'].items()}
-        self.offsets=struct.unpack('<23H',b.memdump(self.sy['QedEditingLayout'],46))
+        self.offsets=struct.unpack('<27H',b.memdump(self.sy['QedEditingLayout'],54))
         self.font=font_bytes(p['output'].parent/'selected/src/vdi/font8x8.c')
         self.provider=json.loads((p['output'].parent/'c-image.json').read_text())['symbols']
         fields=layout()['Request']['fields']
@@ -130,7 +130,8 @@ class Editor:
             lines.append(self.b.memdump(line+o[12],length));line=self.get(line+o[13],4)
         require(line==ring+o[16],'Broken text ring tail')
         return dict(pointer=t,lines=lines,x=self.get(t+o[3]),y=self.get(t+o[4],4),
-                    dirty=self.get(t+o[5],4),ending=self.get(ring+o[18]))
+                    dirty=self.get(t+o[5],4),ending=self.get(ring+o[18]),
+                    blink=self.get(t+o[23],1),caret=self.get(t+o[24],1))
     def check(self,name,lines,x=None,y=None,pixels=True):
         self.frames(20);state=self.text()
         require(state['lines']==lines,f'{name}: expected {lines!r}, got {state["lines"]!r}')
@@ -143,39 +144,89 @@ class Editor:
         item['window']=dict(pointer=w,columns=self.get(w+o[22]-4),rows=self.get(w+o[22]-2),
             document=list(struct.unpack('<4i',self.b.memdump(w+o[21],16))),
             work=list(struct.unpack('<4h',self.b.memdump(w+o[22],8))),
+            title=self.b.memdump(w+o[25],128).split(b'\0')[0].decode('latin1'),
             font=[self.get(self.sy['font_wcell']),self.get(self.sy['font_hcell'])])
         self.scene['snapshots'].append(item)
         if pixels:item['pixels']=self.pixels(name,lines,state)
         print('QED editing:',name,flush=True)
         return state
-    def pixels(self,name,lines,state):
+    def geometry(self):
         c=self.context();view=layout()['WindowView']['fields']
         views=c+dict(expected_layout())['C context views']
         shown=[self.get(views+i*4,4) for i in range(ABI['constants']['WINDOWS'])
                if self.get(views+i*4,4) and self.get(self.get(views+i*4,4)+view['shown'])]
         require(len(shown)==1,'Not exactly one editor window')
-        left,top,right,bottom=struct.unpack('<4h',self.b.memdump(shown[0]+view['work'],8))
+        return {n:list(struct.unpack('<4h',self.b.memdump(shown[0]+view[n],8)))
+                for n in ('bounds','work')}
+    def pixels(self,name,lines,state,caret=False):
+        # Publication and completed video scanout can lag an application return.
+        # Require the exact independent image within a bounded frame interval.
+        for attempt in range(120):
+            if caret:
+                state=self.text()
+                if state['blink'] or not state['caret']:
+                    self.frames(2);continue
+            try:
+                result=self._pixels(name,lines,state,caret)
+                if caret:require(result['caret_checked']>0,'Caret was entirely excluded from the pixel oracle')
+                return dict(**result,observations=attempt+1)
+            except RuntimeError as error:
+                if ': text pixel ' not in str(error) or attempt==119:raise
+                self.frames(2)
+        raise RuntimeError('No completed visible caret frame: '+name)
+    def _pixels(self,name,lines,state,caret=False):
+        left,top,right,bottom=self.geometry()['work']
+        w=self.get(self.sy['used_list'],4)
+        dx,dy,_,_=struct.unpack('<4i',self.b.memdump(w+self.offsets[21],16))
         target=self.p['output'].parent/('edit-'+str(self.scene['cycle'])+'-'+name+'.bgra')
         capture=self.b.rawscreen(str(target));raw=target.read_bytes()
         colors=[bytes((v&254)+(v>>7) for v in DESKTOP_PALETTE[i*3:i*3+3])[::-1] for i in range(2)]
         pointer=[self.get(self.input_at(n)) for n in ('cursorX','cursorY')]
-        checked=0
-        for row,line in enumerate(lines):
+        checked=caret_checked=0
+        for row in range((bottom-top+7)//8):
+            logical=dy+row;line=lines[logical] if logical<len(lines) else b''
             display=line.expandtabs(8)
             for yy in range(8):
                 y=top+row*8+yy
                 if y>=bottom:continue
-                for col in range(min(len(display)+2,(right-left)//8)):
-                    ch=display[col] if col<len(display) else 32
+                for col in range((right-left+7)//8):
+                    column=dx+col
+                    ch=display[column] if column<len(display) else 32
                     for xx in range(8):
                         x=left+col*8+xx
-                        if row==state['y'] and x in range(left+len(line[:state['x']].expandtabs(8))*8,left+len(line[:state['x']].expandtabs(8))*8+8):continue
+                        if x>=right:continue
+                        cursor_column=len(line[:state['x']].expandtabs(8))
+                        at_cursor=logical==state['y'] and column==cursor_column
+                        if not caret and at_cursor:continue
+                        if any(l<=x<r and t<=y<b for l,t,r,b in getattr(self,'covered',[])):continue
                         if pointer[0]<=x<pointer[0]+16 and pointer[1]<=y<pointer[1]+16:continue
-                        expected=colors[bool(self.font[yy*256+ch]&(128>>xx))]
+                        ink=bool(self.font[yy*256+ch]&(128>>xx))
+                        if caret and state['caret'] and not state['blink'] and at_cursor and \
+                           xx<(8 if self.get(self.sy['overwrite'],1) else 2):
+                            ink=True;caret_checked+=1
+                        expected=colors[ink]
                         at=y*capture.stride+64+x*4
                         require(raw[at:at+3]==expected,f'{name}: text pixel {x},{y} ({ch})')
                         checked+=1
-        return dict(checked=checked,sha256=hashlib.sha256(raw).hexdigest())
+        return dict(checked=checked,caret_checked=caret_checked,sha256=hashlib.sha256(raw).hexdigest())
+    def caret_pixels(self,name,lines,x,y):
+        self.move(630,20)
+        state=self.text();t=state['pointer'];before=self.get(self.sy['QedCursorPaints'])
+        c=self.context();offset=dict(expected_layout())['C context updateDepth']
+        condition='&'.join(['dw($%x)!=%d'%(self.sy['QedCursorPaints'],before),
+            'dw($%x)=0'%self.sy['QedPaintedBlink'],
+            'db($%x)=0'%(t+self.offsets[23]),'db($%x)!=0'%(t+self.offsets[24]),
+            'dw($%x)=%d'%(self.sy['QedPaintedX'],x),'dw($%x)=%d'%(self.sy['QedPaintedY'],y),
+            'dw($%x)=0'%(c+offset)])
+        for _ in range(12):
+            self.reach(condition)
+            # RAWSCREEN returns the completed scanout, rather than live VRAM.
+            # A frame after the painter's return may still contain its clear.
+            self.frames(2);state=self.text()
+            if not state['blink'] and self.get(c+offset)==0:break
+        else:raise RuntimeError('Caret never reached a completed visible video frame')
+        require(state['lines']==lines and state['x']==x and state['y']==y,'Caret checkpoint changed text')
+        self.scene.setdefault('carets',[]).append(dict(name=name,pixels=self.pixels(name,lines,state,caret=True)))
 
 
 def interact(b,p,app,record,owner,keys_only=False):

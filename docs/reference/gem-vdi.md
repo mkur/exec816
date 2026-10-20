@@ -22,7 +22,7 @@ The 57-word inquiry is generated from [vdi-client.json](../../abi/vdi-client.jso
 It describes 640×240, sixteen colours, one fixed 8×8 face and the bar GDP.
 Line, marker, polygon, raster-copy, input-device and external-font capabilities
 are not advertised. Other supported calls are `v_clsvwk`, `v_bar`, `v_gtext`,
-`vs_clip`, `vsf_color`, `vst_color`, `vsf_interior(1)` and `vswr_mode(1)`.
+`vs_clip`, `vsf_color`, `vst_color`, `vsf_interior(1)` and `vswr_mode(1/2)`.
 Named calls and `vdi_call(VDIPB *)` share helpers; opcodes/counts are recorded in
 the [binding manifest](../../ports/gem4xe/aes-binding-inputs.json).
 
@@ -31,7 +31,12 @@ and `wind_update(BEG_UPDATE)` ownership. Every draw is confined to its published
 visible work region, intersected with the private user clip. Clip-off removes
 only that user clip. Inclusive signed corners are ordered and widened before
 conversion; empty intersections do no hardware work. Text is left-aligned at
-the baseline, with top at `y-6`, and uses replace mode. Named strings stream
+the baseline, with top at `y-6`. A workstation starts in `MD_REPLACE` (1):
+glyph paper becomes pen zero. `MD_TRANS` (2) paints only glyph ink, including
+pen-zero ink, preserving paper pixels. Both named and parameter-block mode
+setters return the accepted mode; unsupported modes return zero and preserve
+the previous mode. Solid bars replace every covered pixel in either mode.
+Clipping, damage and bounded drawing ownership are identical in both modes. Named strings stream
 until their terminator or screen-right exclusion; parameter-block text uses its
 explicit word count. Glyph indices are 0–255, a caller obligation. Strings are
 not truncated at a fixed call-size limit.
@@ -56,11 +61,14 @@ are application responsibilities. Closing releases only the virtual grant,
 signal and storage. `appl_exit` also closes an omitted workstation before
 retiring the registration. Failure to release ownership prevents disposal.
 
-Private storage is 378 live / 384 heap-reserved upper bytes per workstation,
-including its grant and parameter arrays. The AES context is 267 live / 272
-reserved bytes. No Task, DP, stack pool, bank-zero reservation, staging page or
-VRAM extent is added. See [WA4 evidence](../development/aes-windows-wa4.json) for
-emitted layout, preemption, pixel and stack checks. The
+Private storage is 382 live / 384 heap-reserved upper bytes per workstation,
+including its grant and parameter arrays. The current shared AES context is
+482 live / 488 reserved bytes. Transparent text adds four logical workstation
+bytes without increasing its rounded allocation. No Task, DP, stack pool,
+bank-zero reservation, staging page or VRAM extent is added. See
+[QE2 evidence](../history/qed-editing.md#qe2-viewport-and-transparent-text) for
+the current VDI boundary/pixel checks and [WA4 evidence](../development/aes-windows-wa4.json)
+for the original layout, preemption, pixel and stack checks. The
 [two-counter demo](../guides/aes-applications.md#optional-of816-counter-desktop)
 exercises this interface beside native shell/disk work using existing 1 KiB
 caller stacks. The [WA6 record](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)

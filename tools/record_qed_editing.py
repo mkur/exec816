@@ -4,11 +4,11 @@ import argparse
 import json
 import re
 from pathlib import Path
-from check_qed_baseline import check
+from check_qed_baseline import check, checked
 from native_program import ROOT, require, sha256
 
 
-def record(slice_name, directory, cohorts, destination, host_log):
+def record(slice_name, directory, cohorts, destination, host_log, supplements=()):
     audit = check(directory, cohorts, [])
     audit_path = directory.parent / (slice_name.lower()+'-baseline.json')
     audit_path.write_text(json.dumps(audit, indent=2)+'\n')
@@ -64,6 +64,38 @@ def record(slice_name, directory, cohorts, destination, host_log):
                     (snapshot['name'] not in ('empty', 'clean-shortcut')),
                     'Incorrect ending/dirty state: '+snapshot['name'])
                 require(snapshot['pixels']['checked'] > 0, 'Missing independent pixels')
+    if slice_name == 'QE2':
+        expected={'wide-line-end','wide-desired-column','wide-line-start',
+            'covered-document','moved-document','covered-after-move','exposed-document',
+            'full-document','restored-document','resized-document','vertical-end',
+            'vertical-up','vertical-down','vertical-page-up','vertical-page-down',
+            'vertical-thumb-top','cursor-revealed'}
+        seen={s['name'] for scene in scenes for s in scene['snapshots']}
+        require(expected<=seen,'Incomplete QE2 checkpoints: '+str(expected-seen))
+        carets={c['name'] for scene in scenes for c in scene.get('carets',[])
+                if c['pixels'].get('caret_checked',0)>0}
+        require({'wide-line-caret','wide-start-caret','exposed-caret','scrolled-caret'}<=carets,
+                'Missing completed caret pixel checks')
+        require(all(s['pixels']['checked']>0 for scene in scenes for s in scene['snapshots']),
+                'Missing viewport pixels')
+        for path,item in zip(cohorts,executed):
+            if not (path/'peer/app.json').exists():continue
+            peer=json.loads((path/'peer/app.json').read_text())
+            checked(path/'peer/program.app',peer['sha256'])
+            for name,digest in peer['inputs'].items():checked(Path(name),digest)
+            item['peer_app_sha256']=peer['sha256']
+    supplemental=[]
+    for path in supplements:
+        result=json.loads((path/'results.json').read_text())
+        require(result['status']=='pass' and result['AESFailures']==0 and
+                result['AESDone']==2 and result['mode_pixels'], 'Failed VDI pixel cohort')
+        resident=json.loads((path/'c-image.json').read_text())
+        for name,digest in resident['provenance']['source_inputs'].items():
+            checked(ROOT/name,digest)
+        supplemental.append(dict(path=str(path.relative_to(ROOT)),
+            results_sha256=sha256(path/'results.json'),provider_sha256=sha256(path/'c-image.json'),
+            checks=result['AESChecks'],mode_pixels=result['mode_pixels'],
+            scope='Instrumented general VDI provider; separate from production provider identity'))
     result = dict(schema_version=1, slice=slice_name, status='pass', tier='development',
         qualification=False,
         audit=dict(path=str(audit_path.relative_to(ROOT)), sha256=sha256(audit_path),
@@ -73,11 +105,14 @@ def record(slice_name, directory, cohorts, destination, host_log):
         host_checks=dict(path=str(host_log.relative_to(ROOT)),sha256=sha256(host_log),
             tests=int(host[1]),expected_skips=int(host[2] or 0)),
         executable=dict(path=str(directory.relative_to(ROOT)),
-            sha256=layout['app']['sha256'], layout=measured),
+            sha256=layout['app']['sha256'], layout=measured,
+            requested_image_backing_bytes=measured['span_bytes']+65535,
+            rounded_image_backing_bytes=(measured['span_bytes']+65535+7)//8*8,
+            backing_basis='CAPP bank-alignment request, rounded to the public heap eight-byte allocation; historical layout field rounds to four bytes'),
         frame_ledger={k: frames[k] for k in ('source_chain_bytes', 'continuation_cap_bytes',
             'interrupt_reserve_bytes', 'required_headroom_bytes', 'admission_bytes', 'margin_bytes')},
         growth_from_QS5=dict(private=private_growth, provider=provider_growth),
-        provider_remaining_allowances=remaining, executed=executed,
+        provider_remaining_allowances=remaining, executed=executed, supplemental=supplemental,
         private_heap=dict(peak_backing_bytes=max((s['private_heap'][3] for scene in scenes
             for s in scene['snapshots'] if 'private_heap' in s),default=0),
             basis='Private allocation headers included; underlying allocator rounding and native GUI owners charged separately'),
@@ -95,7 +130,8 @@ if __name__ == '__main__':
     parser.add_argument('--cohort', type=Path, action='append', required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--host-log', type=Path, required=True)
+    parser.add_argument('--supplement', type=Path, action='append', default=[])
     args = parser.parse_args()
     record(args.slice, args.layout.resolve(), [p.resolve() for p in args.cohort],
-           args.output, args.host_log.resolve())
+           args.output, args.host_log.resolve(), [p.resolve() for p in args.supplement])
     print('QED editing evidence reconciled:', args.slice)
