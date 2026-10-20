@@ -7,6 +7,10 @@ from test_desktop_presentation import rectangle
 
 def paint(bridge,symbols,r,title,bounds):
     left,top,right,bottom=bounds
+    if 'Basic' in symbols:
+        r.clip=(left+8,top+11,right-9,bottom-3);r.text=1
+        r.apply(8,(left+12,top+21),b'FastBasic')
+        r.clip=(0,0,639,239);return
     if title in (b'Dialog example',b'Alert',b'File selector'):
         from standard_dialog_oracle import paint as dialog
         dialog(bridge,symbols,r,bounds)

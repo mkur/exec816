@@ -1,0 +1,120 @@
+MODULE BASICLIFECYCLE
+USE EXEC
+USE DOS
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE PROCESS
+USE AESSTATE
+USE AESCORE
+USE HEAPCORE
+
+CARD checks,completed
+LONGCARD baseline,freeUpper
+LONGINT primary,secondary
+BYTE ARRAY source=[80 82 73 78 84 32 34 87 66 48 34 155]
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Collected(LONGCARD id LONGINT expected)
+  PROCESS.Result result
+
+  Require(id<>0)
+  Require(PROCESS.Wait(id,@result)<>0)
+  primary=result.primary
+  secondary=result.secondary
+  Require(result.primary=expected AND result.secondary=0)
+  completed==+1
+
+RETURN
+
+LONGINT FUNC Hold()
+
+  WHILE DOS.BreakPending()=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN(0)
+
+PROC Main()
+  PROGRAMIMAGE.Image POINTER first,second
+  LONGCARD one,two
+  BYTE round
+  CARD count,index
+  LONGCARD ARRAY holds(8)
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  LET oldInput=DOS.SelectInput(input)
+  LET oldOutput=DOS.SelectOutput(output)
+  ; Warm driver and shared service allocations before measuring ownership.
+  first=PROGRAMFILE.Load(BYTE POINTER(c"SYS:PROBE.APP"))
+  Require(first<>NULL)
+  Collected(PROCESS.StartLoaded(BYTE POINTER(first),NULL,0,0),-124)
+  PROGRAM.Unload(first)
+  LET file=DOS.Open(BYTE POINTER(c"RAM:HEL.BAS"),DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,source,12)=12)
+  Require(DOS.Close(file)<>0)
+  first=PROGRAMFILE.Load(BYTE POINTER(c"SYS:FBCI.COM"))
+  Require(first<>NULL)
+  Collected(PROCESS.StartBackgroundLoaded(BYTE POINTER(first),
+      BYTE POINTER(c"RAM:HEL.BAS RAM:HEL.COM"),23),0)
+  PROGRAM.Unload(first)
+  first=PROGRAMFILE.Load(BYTE POINTER(c"RAM:HEL.COM"))
+  Require(first<>NULL)
+  Collected(PROCESS.StartBackgroundLoaded(BYTE POINTER(first),NULL,0),0)
+  PROGRAM.Unload(first)
+  baseline=EXEC.AvailMem(0)
+  freeUpper=EXEC.AvailMem(EXEC.MEMF_UPPER)
+  FOR round=0 TO 2 DO
+    first=PROGRAMFILE.Load(BYTE POINTER(c"SYS:PROBE.APP"))
+    second=PROGRAMFILE.Load(BYTE POINTER(c"SYS:PROBE.APP"))
+    Require(first<>NULL AND second<>NULL AND first.text<>second.text)
+    one=PROCESS.StartLoaded(BYTE POINTER(first),BYTE POINTER(c"B"),1,0)
+    two=PROCESS.StartLoaded(BYTE POINTER(second),BYTE POINTER(c"B"),1,0)
+    Require(PROCESS.StartLoaded(BYTE POINTER(first),NULL,0,0)=0)
+    PROGRAM.Unload(second)
+    Collected(one,-124)
+    Collected(two,-124)
+    Collected(PROCESS.StartLoaded(BYTE POINTER(first),NULL,0,0),-125)
+    PROGRAM.Unload(first)
+    Require(EXEC.AvailMem(0)=baseline)
+  OD
+
+  count=0
+  WHILE count<8 DO
+    one=PROCESS.StartBackground(@Hold,NULL,0)
+    IF one=0 THEN
+      EXIT
+    FI
+
+    holds(count)=one
+    count==+1
+  OD
+
+  Require(count>0 AND count<8 AND DOS.IoErr()=103)
+  FOR index=0 TO count-1 DO
+    Require(PROCESS.RequestBreak(holds(index))<>0)
+    Collected(holds(index),0)
+  OD
+
+  Require(EXEC.AvailMem(0)=baseline)
+  LET service=AESSTATE.Get()
+  Require(service.count=0 AND AESCORE.Idle(service)<>0)
+  DOS.SelectInput(oldInput)
+  DOS.SelectOutput(oldOutput)
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+ENDMODULE

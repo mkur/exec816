@@ -1,0 +1,12 @@
+{
+  "format": "exec816-fastbasic-workbench-development-v1",
+  "tier": "development",
+  "qualification": false,
+  "slices": {
+    "WB0": {
+      "status": "pass",
+      "record": "docs/development/fastbasic-workbench-wb0.json",
+      "sha256": "5e423541cfddec3d47946eb487f0d36124a3bd329feba1f26e59f1ac1015b760"
+    }
+  }
+}

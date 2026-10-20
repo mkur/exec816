@@ -8,7 +8,7 @@ from generate_memory import PROFILE
 from native_program import ROOT,build,compiler,require
 
 
-def build_desktop(out,source=None,program_output=None,files=False,**options):
+def build_desktop(out,source=None,program_output=None,files=False,basic_workbench=False,**options):
     from library_paths import read_source
     from c_program import ABI,binding
     from build_c_program import build as application
@@ -29,6 +29,9 @@ def build_desktop(out,source=None,program_output=None,files=False,**options):
         ROOT/'examples/gem-text'/name for name in ('main.c','text.c','document.c')]+
         [ROOT/'c/calypsi/file-list.c'],probes=[
             (ROOT/'tests/programs/gem_text_layout.c',__import__('text_model').LAYOUT)])
+    if basic_workbench:
+        applications['basic']=application(out/'apps/basic',[
+            ROOT/'examples/gem-basic'/name for name in ('main.c','basic.c')])
     from build_gem_resource import resource
     desktop_resource=resource()
     if 'dos_mounts' not in options:

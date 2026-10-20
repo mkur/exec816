@@ -1,5 +1,7 @@
 # Historical records
 
+- [FastBasic workbench](fastbasic-workbench.md): incremental native GEM editor and compiler controller delivery, resource budgets and development evidence.
+
 - [FastBasic floating-point delivery](fastbasic-floating-point.md): private
   decimal math, on-machine FBC, literal agreement, bounded math checkpoints,
   numeric/context/coexistence checks and both tested programming packages.

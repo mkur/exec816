@@ -36,7 +36,9 @@ def record_cartridge_capacity(output):
     return capacity
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=False,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=False,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False):
+    if basic_workbench:
+        fastbasic=gem_desktop=True
     if fastbasic:
         sdx,sdx_drive_a,sdx_car_root=True,'WORK:','SYS:C/'
     require(sum((aes_counters,aes_input,gem_desktop))<=1, 'Select one resident GEM application profile')
@@ -178,7 +180,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         if gem_desktop:
             from build_gem_desktop import build_desktop
             from functools import partial
-            builder=partial(build_desktop,files=True)
+            builder=partial(build_desktop,files=True,basic_workbench=basic_workbench)
         elif aes_input:
             from build_gem_input import build_inputs
             builder=build_inputs
@@ -204,7 +206,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only,
                       sdx=sdx,sdx_drive_a=sdx_drive_a,sdx_car_root=sdx_car_root)
     if gem_desktop:
-        for name in ('panel','counter','files','calc','dialog','text','g4bench'):
+        for name in ('panel','counter','files','calc','dialog','text','g4bench')+(('basic',) if basic_workbench else ()):
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
             binary_names.add('C/'+name.upper()+'.APP')
         calculator=output/'bitmap-console/apps/calc'
@@ -357,6 +359,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             *sorted((ROOT/'examples/gem-input').glob('*')))})
     if gem_desktop:
         record.update(gem_desktop=True,expected_peak_tasks=8)
+        if basic_workbench:
+            record['basic_workbench']=True
+            record['source_inputs'].update({str(p.relative_to(ROOT)):sha256(p)
+                for p in [ROOT/'examples/gem-basic'/name for name in ('main.c','basic.c','basic.h')]})
         record['artifacts'].update({name:sha256(output/name) for name in CALCULATOR_NOTICES+G4BENCH_NOTICES})
         record['calculator']=provenance
         record['g4bench']=benchmark_provenance
@@ -626,6 +632,7 @@ if __name__=='__main__':
     parser.add_argument('--release-compiler',action='store_true',help='Optimized host compiler for a text/bitmap shell or GEM desktop')
     parser.add_argument('--sdx',action='store_true',help='Enable the pinned MD5/ARC/EDX development personality in a text or bitmap SIO demo')
     parser.add_argument('--fastbasic',action='store_true',help='Include the integer FastBasic compiler, examples and SDX tools; maps guest A: to WORK: and CAR: to SYS:C/')
+    parser.add_argument('--basic-workbench',action='store_true',help='Include BASIC.APP in the GEM desktop with FastBasic compilers')
     parser.add_argument('--sdx-drive-a',default='RAM:',help='Immutable native root for SDX guest A: (requires --sdx)')
     parser.add_argument('--sdx-car-root',default='RAM:',help='Native directory containing the pinned ARC overlays (requires --sdx)')
     parser.add_argument('--ide-only',action='store_true',help='IDE SYS/WORK, no Exec SIO driver; include raw media and both carts')
@@ -669,7 +676,7 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic,basic_workbench=args.basic_workbench)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')
     if not args.cartridge_from:
         print(f'Local Altirra launcher: {args.output}/launch-altirra.command')
