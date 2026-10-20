@@ -1,0 +1,228 @@
+MODULE FBFILES
+USE EXEC
+USE DOS
+USE FBABI
+USE FBSTATE
+USE SDXABI
+USE SDXSTATE
+USE SDXPRINT
+USE SDXFILES
+USE CONSOLETYPES
+
+; CIO-compatible status is local to FastBasic, with the original native cause.
+PUBLIC BYTE FUNC Error(FBSTATE.Session POINTER state)
+
+RETURN(SDXFILES.MapError(@state.guest))
+
+PUBLIC PROC SetStatus(BYTE POINTER frame BYTE value,status)
+
+  frame(SDXABI.FRAME_A)=value
+  frame(SDXABI.FRAME_Y)=status
+  frame(SDXABI.FRAME_P)=(frame(SDXABI.FRAME_P) & $7d) OR (status & $80)
+  IF status=0 THEN
+    frame(SDXABI.FRAME_P)=frame(SDXABI.FRAME_P) OR 2
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC Flush(FBSTATE.Session POINTER state)
+
+RETURN(SDXPRINT.Flush(@state.guest))
+
+PUBLIC BYTE FUNC Character(FBSTATE.Session POINTER state BYTE value,channel)
+  LONGINT sent
+
+  IF channel=0 THEN
+    IF value=$9b THEN
+      state.guest.dp(FBABI.COLCRS)=0
+    ELSEIF value>=32 AND value<$7d THEN
+      state.guest.dp(FBABI.COLCRS)==+1
+      IF state.guest.screenWidth<>0 AND
+          CARD(state.guest.dp(FBABI.COLCRS))>=state.guest.screenWidth THEN
+        state.guest.dp(FBABI.COLCRS)=0
+      FI
+    FI
+    RETURN(SDXPRINT.Character(@state.guest,value))
+  FI
+  IF channel>=FBABI.CHANNELS OR state.guest.handles(channel)=NULL THEN
+    RETURN(FBABI.CIO_NOT_OPEN)
+  FI
+  state.guest.character=value
+  sent=DOS.Write(state.guest.handles(channel),@state.guest.character,1)
+  IF sent<>1 THEN
+    RETURN(Error(state))
+  FI
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Key(FBSTATE.Session POINTER state BYTE POINTER frame)
+  LONGINT got
+
+  IF DOS.IsInteractive(DOS.Input())<>0 THEN
+    got=DOS.ConsoleIO(DOS.Input(),CONSOLETYPES.CONCMD_READ_KEYS,0,
+        @state.guest.character,1)
+  ELSE
+    got=DOS.Read(DOS.Input(),@state.guest.character,1)
+  FI
+  IF got<0 THEN
+    RETURN(Error(state))
+  ELSEIF got=0 THEN
+    RETURN(FBABI.CIO_EOF)
+  FI
+  IF state.guest.character=10 THEN
+    state.guest.character=$9b
+  FI
+  SetStatus(frame,state.guest.character,FBABI.CIO_OK)
+
+RETURN(0)
+
+; All buffers belong to the admitted bank; filesystem handles belong to this run.
+PUBLIC PROC Call(FBSTATE.Session POINTER state BYTE POINTER frame)
+  CARD channel,control,at,requested,index,actual
+  BYTE command,status,value
+  DOS.FileHandle POINTER file
+  LONGINT got,sent,done,mode
+  BYTE POINTER buffer
+
+  channel=CARD(frame(SDXABI.FRAME_X)) RSH 4
+  control=FBABI.IOCB_BASE+channel*FBABI.IOCB_BYTES
+  command=state.guest.bank(control+2)
+  status=FBABI.CIO_OK
+  value=frame(SDXABI.FRAME_A)
+  IF channel>=FBABI.CHANNELS THEN
+    SetStatus(frame,value,FBABI.CIO_BAD_CHANNEL)
+    RETURN
+  FI
+  at=SDXSTATE.ReadWord(state.guest.bank,control+4)
+  requested=SDXSTATE.ReadWord(state.guest.bank,control+8)
+  buffer=state.guest.bank+at
+  file=state.guest.handles(channel)
+  CASE command OF
+  WHEN FBABI.CIO_OPEN THEN
+    IF channel=0 OR file<>NULL THEN
+      status=FBABI.CIO_ALREADY_OPEN
+    ELSE
+      index=0
+      WHILE index<FBABI.STRING_LIMIT AND buffer(index)<>$9b AND buffer(index)<>0 DO
+        state.guest.path(index)=buffer(index)
+        index==+1
+      OD
+      state.guest.path(index)=0
+      mode=0
+      IF state.guest.bank(control+10)=FBABI.CIO_MODE_READ THEN
+        mode=DOS.MODE_OLDFILE
+      ELSEIF state.guest.bank(control+10)=FBABI.CIO_MODE_NEW THEN
+        mode=DOS.MODE_NEWFILE
+      ELSEIF state.guest.bank(control+10)=FBABI.CIO_MODE_READWRITE THEN
+        mode=DOS.MODE_READWRITE
+      FI
+      IF index=FBABI.STRING_LIMIT OR mode=0 THEN
+        status=FBABI.CIO_UNSUPPORTED
+      ELSE
+        state.guest.handles(channel)=DOS.Open(@state.guest.path,mode)
+        IF state.guest.handles(channel)=NULL THEN
+          status=Error(state)
+        FI
+      FI
+    FI
+  WHEN FBABI.CIO_CLOSE THEN
+    IF channel<>0 AND file<>NULL THEN
+      state.guest.handles(channel)=NULL
+      IF DOS.Close(file)=0 THEN
+        status=Error(state)
+      FI
+    FI
+  WHEN FBABI.CIO_GET_RECORD,FBABI.CIO_GET_CHARS THEN
+    IF channel<>0 AND file=NULL THEN
+      status=FBABI.CIO_NOT_OPEN
+    ELSEIF command=FBABI.CIO_GET_CHARS AND requested=0 THEN
+      IF channel=0 THEN
+        status=Key(state,frame)
+        IF status=0 THEN
+          value=frame(SDXABI.FRAME_A)
+          status=FBABI.CIO_OK
+        FI
+      ELSE
+        got=DOS.Read(file,@state.guest.character,1)
+        IF got<0 THEN
+          status=Error(state)
+        ELSEIF got=0 THEN
+          status=FBABI.CIO_EOF
+        ELSE
+          value=state.guest.character
+        FI
+      FI
+    ELSE
+      IF channel=0 THEN
+        file=DOS.Input()
+      FI
+      actual=0
+      WHILE actual<requested DO
+        IF command=FBABI.CIO_GET_RECORD THEN
+          got=DOS.Read(file,buffer+actual,1)
+        ELSE
+          got=DOS.Read(file,buffer+actual,LONGINT(requested-actual))
+        FI
+        IF got<0 THEN
+          status=Error(state)
+          EXIT
+        ELSEIF got=0 THEN
+          status=FBABI.CIO_EOF
+          EXIT
+        FI
+        actual==+CARD(got)
+        IF command=FBABI.CIO_GET_RECORD THEN
+          IF buffer(actual-1)=10 THEN
+            buffer(actual-1)=$9b
+          FI
+          IF buffer(actual-1)=$9b THEN
+            EXIT
+          FI
+        FI
+      OD
+      SDXSTATE.Word(state.guest.bank,control+8,actual)
+    FI
+  WHEN FBABI.CIO_PUT_RECORD,FBABI.CIO_PUT_CHARS THEN
+    IF channel<>0 AND file=NULL THEN
+      status=FBABI.CIO_NOT_OPEN
+    ELSE
+      IF command=FBABI.CIO_PUT_RECORD THEN
+        requested=0
+        WHILE requested<FBABI.STRING_LIMIT AND buffer(requested)<>$9b DO
+          requested==+1
+        OD
+        requested==+1
+      FI
+      IF channel=0 THEN
+        index=0
+        WHILE index<requested DO
+          status=Character(state,buffer(index),0)
+          IF status<>0 THEN
+            EXIT
+          FI
+          index==+1
+        OD
+        IF status=0 THEN
+          status=FBABI.CIO_OK
+        FI
+      ELSE
+        done=0
+        WHILE done<LONGINT(requested) DO
+          sent=DOS.Write(file,buffer+SIZE(done),LONGINT(requested)-done)
+          IF sent<=0 THEN
+            status=Error(state)
+            EXIT
+          FI
+          done==+sent
+        OD
+      FI
+    FI
+  ELSE
+    status=FBABI.CIO_UNSUPPORTED
+  ESAC
+  state.guest.bank(control+3)=status
+  SetStatus(frame,value,status)
+
+RETURN
+
+ENDMODULE

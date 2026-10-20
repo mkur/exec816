@@ -1,0 +1,25 @@
+MODULE FBSTATE
+USE EXEC
+USE SDXSTATE
+USE SDXABI
+USE TIMER
+
+PUBLIC TYPE Session=[
+  SDXSTATE.Session guest
+  LONGCARD random
+  EXEC.MsgPort POINTER clockPort
+  TIMER.TimerClockRequest POINTER clock
+  BYTE POINTER arguments
+  BYTE consoleMode
+]
+
+; The guest pool is shared with SDX; this allocation has its own exact size.
+PUBLIC PROC Release(BYTE POINTER extension)
+
+  LET state=Session POINTER(extension)
+  SDXSTATE.Unclaim(state.guest.slot)
+  EXEC.FreeMem(extension,SIZEOF(Session))
+
+RETURN
+
+ENDMODULE

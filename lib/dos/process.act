@@ -11,6 +11,7 @@ USE HEAPCORE
 USE PROGRAMIMAGE
 USE CPROGRAMBIND
 USE SDXBIND
+USE FBBIND
 INCLUDE "process-types.inc"
 INCLUDE "command-results.inc"
 
@@ -60,6 +61,10 @@ PUBLIC LONGINT FUNC ExecuteImage()
 
   IF image.kind=PROGRAMIMAGE.KIND_SDX THEN
     RETURN(SDXBIND.Run(image,process.arguments))
+  FI
+
+  IF image.kind=PROGRAMIMAGE.KIND_FASTBASIC THEN
+    RETURN(FBBIND.Run(image,process.arguments))
   FI
 
   IF image.kind=PROGRAMIMAGE.KIND_C THEN

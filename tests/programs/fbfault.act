@@ -1,0 +1,46 @@
+MODULE FBFAULT
+USE DOS
+
+PUBLIC CONST WRITE_ERROR=1,CLOSE_ERROR=2,SHORT_WRITE=4
+PUBLIC BYTE mode
+DOS.FileHandle POINTER destination
+
+; Test-only DOS boundary wrapper: real ownership and real RAM file storage.
+PUBLIC DOS.FileHandle POINTER FUNC Open(BYTE POINTER name LONGINT access)
+
+  LET file=DOS.Open(name,access)
+  IF access=DOS.MODE_NEWFILE THEN
+    destination=file
+  FI
+
+RETURN(file)
+
+PUBLIC LONGINT FUNC Write(DOS.FileHandle POINTER file BYTE POINTER bytes
+    LONGINT length)
+
+  IF file=destination THEN
+    IF (mode & WRITE_ERROR)<>0 THEN
+      DOS.SetIoErr(DOS.ERROR_DISK_FULL)
+      RETURN(-1)
+    FI
+    IF (mode & SHORT_WRITE)<>0 AND length>7 THEN
+      length=7
+    FI
+  FI
+
+RETURN(DOS.Write(file,bytes,length))
+
+PUBLIC LONGINT FUNC Close(DOS.FileHandle POINTER file)
+
+  LET result=DOS.Close(file)
+  IF file=destination THEN
+    destination=NULL
+    IF (mode & CLOSE_ERROR)<>0 THEN
+      DOS.SetIoErr(DOS.ERROR_DISK_NOT_VALIDATED)
+      RETURN(0)
+    FI
+  FI
+
+RETURN(result)
+
+ENDMODULE

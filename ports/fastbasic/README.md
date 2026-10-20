@@ -1,0 +1,69 @@
+# FastBasic integer target
+
+This source port starts from FastBasic 4.7 and the submodule revisions in
+[upstream.json](upstream.json). It retains the donor parser and 6502 runtime.
+The [target contract](../../docs/reference/fastbasic.md) defines the Exec profile.
+Floating point and the integrated editor are follow-ons.
+
+Build with Python 3, a C/C++ compiler, Make, Git and network access for the two
+SHA-256 checked source archives:
+
+```sh
+python3 tools/generate_fastbasic.py --check
+python3 tools/build_fastbasic.py
+python3 tools/build_fastbasic.py --compile examples/fastbasic/HELLO.BAS \
+  --program-output build/fastbasic/HELLO.COM
+```
+
+The helper builds the bundled cc65 assembler/linker and FastBasic host compiler,
+then uses the host cross-compiler to build the on-machine frontend. The patched source's
+Makefile selects `atari-int-compiler` for the internal compiler frontend and
+`atari-int` for user programs. Only the former admits the port's own assembly
+callbacks. The on-machine compiler itself emits the restricted user grammar.
+`build/fastbasic/FBCI.COM` contains that on-machine compiler. Its historical
+intermediate name `source/build/bin/fbci.xex` does not describe its new format.
+
+`build.json` records source inputs, tool hashes and the FBCI envelope/hash.
+`port-source.json` hashes every donor and added target source file. Reused source
+caches are checked; edited caches fail rather than silently replacing a pin.
+Make changes in [patches/exec6502.patch](patches/exec6502.patch) or [target/](target/),
+then rebuild. Build directories are disposable; original source is verified
+against the archives before reuse. The checked-in patch retains donor notices;
+target helper/callback routines and generated interface constants are MIT.
+
+To rebuild from the accompanying source ZIP without fetching archives, in the
+already-patched `fastbasic/` tree run:
+
+```sh
+make -j4 build/bin/fastbasic build/bin/ca65 build/bin/ld65 build/bin/ar65 \
+  build/gen/syntp
+make -j4 build/bin/fbci.xex build/compiler/fastbasic-int.lib
+```
+
+The resulting `build/bin/fbci.xex` is `FBCI.COM`. The target's Makefile builds
+its host cross-compiler before compiling the frontend.
+
+Development checks:
+
+```sh
+python3 tools/test_fastbasic_controls.py
+python3 tools/test_fastbasic.py --group all --output build/fastbasic/all
+python3 tools/test_fastbasic.py --group runtime --raw --output build/fastbasic/raw
+python3 tools/test_fastbasic_lifetime.py --output build/fastbasic/lifetime
+python3 tools/test_fastbasic_lifetime.py --return-probe 7 \
+  --output build/fastbasic/lifetime-nmi
+python3 tools/test_fastbasic_faults.py
+python3 tools/audit_fastbasic.py
+```
+
+These need the pinned Action! compiler, AltirraOS ROM and Altirra bridge described
+in the repository's [build guide](../../docs/contributing/building.md). Original
+controls use mini65's Atari OS simulation, not physical hardware. Neither those
+controls nor the Exec development checks qualify arbitrary Atari programs.
+
+Build boot demos with `tools/build_demo.py --fastbasic` (optionally
+`--bitmap-shell-only`), and run `tools/test_fastbasic_demo.py --bundle DIRECTORY`.
+Ship `exec816-fastbasic-source.zip` from `tools/package_fastbasic_source.py`
+alongside the boot ZIPs. It contains the complete modified donor and Exec source
+snapshot, notices and build instructions. See [NOTICE.txt](NOTICE.txt) and
+[LICENSING.md](../../LICENSING.md).

@@ -23,6 +23,7 @@ repository root; directory entries include all files below them.
 | Files | Scope |
 | --- | --- |
 | `abi/` | Machine-readable interface definitions |
+| `lib/dos/fbabi.act`, `ports/fastbasic/target/helpers.asm`, `ports/fastbasic/target/callbacks.asm`, `ports/fastbasic/target/fastbasic.inc` | Exec-authored FastBasic runtime bindings and generated constants |
 | `c/` | Public C headers, Calypsi bindings, startup support and C examples |
 | `examples/`, except `examples/shell/` | Standalone examples, disk commands and sample data |
 | `lib/exec/exec.act`, `lib/exec/execos.act`, `lib/exec/execproducer.act` | Action! interface declarations |
@@ -71,6 +72,13 @@ emulators or patches to upstream projects.
 
 - OF816 retains its upstream BSD-2-Clause licence. Demo ZIPs include
   `OF816-LICENSE.txt`.
+- FastBasic selected by `ports/fastbasic/upstream.json` and donor changes in
+  `ports/fastbasic/patches/` retain GPL-2.0-or-later and the donor files' runtime
+  linking exception where present. The target compiler source and executable
+  header retain their donor notices. The three Exec-authored runtime binding
+  files listed above are MIT; this does not relicense FastBasic's parser or
+  compiler. Distribute the modified compiler's corresponding source and build
+  instructions with its binaries.
 - The AltirraOS ROM retains Avery Lee's file-specific redistribution notice.
   Demo ZIPs include `ALTIRRAOS-LICENSE.txt`.
 - actionc and its runtime material retain their own licences. This includes

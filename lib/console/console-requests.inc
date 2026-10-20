@@ -163,6 +163,7 @@ BYTE FUNC Immediate(EXEC.IOStdReq POINTER request)
       AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_AT
       AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_CELLS
       AND request.io_Command<>CONSOLETYPES.CONCMD_MODE
+      AND request.io_Command<>CONSOLETYPES.CONCMD_PEEK_INPUT
       AND request.io_Command<>CONSOLETYPES.CONCMD_READ_KEYS THEN
     RETURN(BYTE(EXEC.IOERR_NOCMD))
   FI
@@ -196,6 +197,23 @@ PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
 
   IF service.state<>2 OR service.stop<>0 THEN
     request.io_Error=BYTE(EXEC.IOERR_UNITBUSY)
+    Complete(request)
+    RETURN
+  FI
+
+  ; Snapshot the owned endpoint's FIFO without consuming a byte or a reader.
+  IF request.io_Command=CONSOLETYPES.CONCMD_PEEK_INPUT THEN
+    IF standard.io_Length<>2 THEN
+      request.io_Error=BYTE(EXEC.IOERR_BADLENGTH)
+    ELSE
+      standard.io_Data(0)=0
+      standard.io_Data(1)=0
+      IF instance.inputCount<>0 THEN
+        standard.io_Data(0)=1
+        standard.io_Data(1)=instance.fifo(instance.inputTail)
+      FI
+      standard.io_Actual=2
+    FI
     Complete(request)
     RETURN
   FI

@@ -36,7 +36,9 @@ def record_cartridge_capacity(output):
     return capacity
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=False,sdx_drive_a='RAM:',sdx_car_root='RAM:'):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=False,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False):
+    if fastbasic:
+        sdx,sdx_drive_a,sdx_car_root=True,'WORK:','SYS:C/'
     require(sum((aes_counters,aes_input,gem_desktop))<=1, 'Select one resident GEM application profile')
     if aes_counters or aes_input or gem_desktop:
         desktop=True
@@ -78,6 +80,18 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (command_dir/(name+'.options.json')).rename(output/(name+'.options.json'))
         (command_dir/(name+'.profile.json')).rename(output/(name+'.profile.json'))
     binary_names={f'C/{name}' for name in commands}
+    fastbasic_record=None
+    if fastbasic:
+        from build_fastbasic import build as build_basic
+        from make_sdx_utils import build as build_utilities
+        _,fastbasic_record=build_basic(ROOT/'build/fastbasic')
+        build_utilities(output/'utilities',ROOT/'build/sdx-inputs')
+        for path in (output/'utilities/source').glob('*'):
+            if path.suffix in ('.COM','.OVL'):
+                shutil.copyfile(path,command_dir/path.name)
+                binary_names.add('C/'+path.name)
+        shutil.copyfile(ROOT/'build/fastbasic/FBCI.COM',command_dir/'FBCI.COM')
+        binary_names.add('C/FBCI.COM')
     sources=sorted(p for p in (ROOT/'examples/demo-disk').rglob('*') if p.is_file())
     for source in sources:
         # The media builder normalizes source text to LF; binary commands are exact.
@@ -119,7 +133,12 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'VIEW.TXT').write_bytes((ROOT/'examples/gem-text/VIEW.TXT').read_bytes())
     (workspace/'README.TXT').write_text('Disposable Exec816 WORK: disk.\n'
         'Copy this ATR before experimenting. Mount it in drive D8.\n',encoding='ascii')
-    make(output/'work.atr',workspace,filesystem=filesystem,
+    work_binaries=set()
+    if fastbasic:
+        for example in sorted((ROOT/'examples/fastbasic').glob('*.BAS')):
+            (workspace/example.name).write_bytes(example.read_bytes().replace(b'\r\n',b'\n').replace(b'\n',b'\x9b'))
+            work_binaries.add(example.name)
+    make(output/'work.atr',workspace,binary_names=work_binaries,filesystem=filesystem,
          sector_bytes=WORK_SECTOR_BYTES,sectors=WORK_SECTORS,label='WORK')
     mounts.append(dict(alias='WORK',unit=56,sectors=WORK_SECTORS,sector_bytes=WORK_SECTOR_BYTES,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
@@ -304,6 +323,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if sdx:
         record['sdx']=dict(enabled=True,drive_a=sdx_drive_a,car_root=sdx_car_root,
                            fixed_bank_zero_bytes=544,per_task_bank_zero_bytes=0)
+    if fastbasic:
+        record['fastbasic']=dict(compiler_sha256=fastbasic_record['compiler_sha256'],
+                                upstream=fastbasic_record['upstream'],
+                                inputs=fastbasic_record['inputs'])
     if text_shell_only:
         record.update(shell_only=True,expected_peak_tasks=6)
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
@@ -425,6 +448,33 @@ def add_ide_carts(output):
     archive=output/'exec816-demo.zip'
     augment_demo(archive,output/'carts',sha256(archive))
     shutil.copyfile(output/'carts/exec816-demo.zip',archive)
+
+
+def refresh_fastbasic(output):
+    """Replace the compiler disk file, keeping the verified native system."""
+    from build_fastbasic import build as build_basic
+    output=output.resolve()
+    path=output/'demo-manifest.json'
+    record=json.loads(path.read_text())
+    require(record.get('fastbasic') and not record.get('ide_only'),
+            'FastBasic media refresh requires an existing FastBasic SIO demo')
+    require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
+            'Changed native demo artifacts')
+    _,basic=build_basic(ROOT/'build/fastbasic')
+    shutil.copyfile(ROOT/'build/fastbasic/FBCI.COM',output/'media/C/FBCI.COM')
+    binary_names={name for name in record['files'] if name.startswith('C/')}
+    files=make(output/record['media'],output/'media',binary_names=binary_names,
+               filesystem=record['filesystem'],sector_bytes=record['sector_bytes'],
+               sectors=record['system_sectors'],label='SYS')
+    record['files']={name:dict(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),
+                    **({} if name in binary_names else dict(lines=raw.count(b'\n'),words=len(raw.split()))))
+                    for name,raw in files.items()}
+    for name in (record['media'],Path(record['media']).with_suffix('.verification.json').name):
+        if name in record['artifacts']:record['artifacts'][name]=sha256(output/name)
+    record['fastbasic']=dict(compiler_sha256=basic['compiler_sha256'],
+                            upstream=basic['upstream'],inputs=basic['inputs'])
+    path.write_text(json.dumps(record,indent=2)+'\n')
+    return refresh_monitor(output)
 
 
 def refresh_monitor(output):
@@ -561,6 +611,7 @@ if __name__=='__main__':
     parser.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
     parser.add_argument('--release-compiler',action='store_true',help='Optimized host compiler for a text/bitmap shell or GEM desktop')
     parser.add_argument('--sdx',action='store_true',help='Enable the pinned MD5/ARC/EDX development personality in a text or bitmap SIO demo')
+    parser.add_argument('--fastbasic',action='store_true',help='Include the integer FastBasic compiler, examples and SDX tools; maps guest A: to WORK: and CAR: to SYS:C/')
     parser.add_argument('--sdx-drive-a',default='RAM:',help='Immutable native root for SDX guest A: (requires --sdx)')
     parser.add_argument('--sdx-car-root',default='RAM:',help='Native directory containing the pinned ARC overlays (requires --sdx)')
     parser.add_argument('--ide-only',action='store_true',help='IDE SYS/WORK, no Exec SIO driver; include raw media and both carts')
@@ -579,11 +630,16 @@ if __name__=='__main__':
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
     parser.add_argument('--text-shell-only',action='store_true',help='Autoboot OF816 into a full-screen standard shell without primes')
     parser.add_argument('--refresh-monitor',action='store_true',help='Refresh OF816 and the ZIP around an existing verified native demo')
+    parser.add_argument('--refresh-fastbasic',action='store_true',help='Rebuild FBCI and refresh its system disk, OF816 and ZIP around verified native code')
     parser.add_argument('--refresh-loader',action='store_true',help='Repack unchanged native code with the current loader, OF816 and ZIP')
     parser.add_argument('--cartridge-from',type=Path,help='Add Atarimax boot images to an existing demo ZIP without rebuilding its XEX')
     parser.add_argument('--cartridge-source-sha256',help='Required checksum of the existing demo ZIP')
     args=parser.parse_args()
-    if args.refresh_loader:
+    if args.refresh_fastbasic:
+        if args.refresh_loader or args.refresh_monitor or args.cartridge_from or args.cartridge_source_sha256:
+            parser.error('--refresh-fastbasic cannot be combined with other refresh modes')
+        refresh_fastbasic(args.output)
+    elif args.refresh_loader:
         if args.refresh_monitor or args.cartridge_from or args.cartridge_source_sha256:
             parser.error('--refresh-loader cannot be combined with other refresh modes')
         refresh_loader(args.output)
@@ -599,7 +655,7 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')
     if not args.cartridge_from:
         print(f'Local Altirra launcher: {args.output}/launch-altirra.command')

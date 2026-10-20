@@ -20,6 +20,14 @@ the [earlier roadmap](history/roadmap-chronology.md) preserves the milestone log
 
 ## Commands and CLI
 
+The [FastBasic 6502 migration plan](plans/fastbasic-6502-migration-plan.md)
+has an implemented integer delivery in emulation mode, sharing the existing
+guest bridge and native DOS/console services. EDX → on-machine FBCI → freshly
+compiled shell command works in text and graphical consoles. The
+[execution record](history/fastbasic-integer.md) records development checks and
+remaining deeper acceptance gates. Floating point and the integrated editor
+follow in FB6/FB7.
+
 The [SpartaDOS personality design](plans/spartados-personality-design.md) proposes
 running selected 6502 SDX applications as ordinary Exec Processes, in the order
 MD5 → ARC → Sparta Commander. Private upper-memory images and OS/SDX service

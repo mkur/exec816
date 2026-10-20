@@ -84,16 +84,21 @@ PUBLIC PROC Guards()
 
 RETURN
 
-PUBLIC PROC Release(BYTE POINTER extension)
-  Session POINTER state
+PUBLIC PROC Unclaim(BYTE slot)
 
-  state=Session POINTER(extension)
-  IF state.slot<SDXABI.SLOTS THEN
+  IF slot<SDXABI.SLOTS THEN
     Guards()
     EXEC.Forbid()
-    occupied=occupied & BYTE($ff XOR (1 LSH state.slot))
+    occupied=occupied & BYTE($ff XOR (1 LSH slot))
     EXEC.Permit()
   FI
+
+RETURN
+
+PUBLIC PROC Release(BYTE POINTER extension)
+
+  LET state=Session POINTER(extension)
+  Unclaim(state.slot)
   EXEC.FreeMem(extension,SIZEOF(Session))
 
 RETURN

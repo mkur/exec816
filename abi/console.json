@@ -58,7 +58,8 @@
     "CONCMD_READ_KEYS": 12,
     "MODE_RAW_KEYS": 128,
     "MODE_ATASCII": 64,
-    "MODE_NO_CARET": 32
+    "MODE_NO_CARET": 32,
+    "CONCMD_PEEK_INPUT": 13
   },
   "storage": {
     "service_offset": 0,

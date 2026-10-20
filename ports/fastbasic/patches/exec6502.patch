@@ -1,0 +1,2215 @@
+diff --git a/Makefile b/Makefile
+index 8e55af5..beb0271 100644
+--- a/Makefile
++++ b/Makefile
+@@ -608,15 +608,7 @@ SYNTAX_PARSER_SRC=\
+ 	syntp.cc\
+ 
+ # Syntax files for integer version
+-SYNTAX_INT=\
+-	src/syntax/a800.syn\
+-	src/syntax/basic.syn\
+-	src/syntax/dli.syn\
+-	src/syntax/fileio.syn\
+-	src/syntax/pm.syn\
+-	src/syntax/graphics.syn\
+-	src/syntax/sio.syn\
+-	src/syntax/sound.syn\
++SYNTAX_INT=src/syntax/a800.syn src/syntax/basic.syn src/syntax/fileio.syn
+ 
+ # Syntax files for floating-point version
+ SYNTAX_FP=\
+@@ -700,6 +692,8 @@ BUILD_FOLDERS=\
+  build\
+ 
+ 
++build/gen/int/cmdline-vers.asm: FB_INT_FLAGS += -t:atari-int-compiler
++A800_AS_SRC += src/helpers.asm src/callbacks.asm
+ include tests.mak
+ include rules.mak
+ include deps.mak
+diff --git a/cc65/asminc/atari.inc b/cc65/asminc/atari.inc
+index 7c46b32..faa41f9 100644
+--- a/cc65/asminc/atari.inc
++++ b/cc65/asminc/atari.inc
+@@ -1014,7 +1014,7 @@ CIOV_org    = $E456     ;vector to CIO
+ SIOV_org    = $E459     ;vector to SIO
+ SETVBV_org  = $E45C     ;vector to set VBLANK parameters
+ .else
+-CIOV    = $E456         ;vector to CIO
++CIOV    = $F800         ;vector to CIO
+ SIOV    = $E459         ;vector to SIO
+ SETVBV  = $E45C         ;vector to set VBLANK parameters
+ ; aliases in order not to have to sprinkle common code with .ifdefs
+diff --git a/compiler/a800.tgt b/compiler/a800.tgt
+index 8f3d806..97ba30d 100644
+--- a/compiler/a800.tgt
++++ b/compiler/a800.tgt
+@@ -1,5 +1,5 @@
+ # Atari 8-bit computers, base file
+-syntax a800.syn basic.syn dli.syn fileio.syn pm.syn graphics.syn sound.syn extended.syn sio.syn
++syntax a800.syn basic.syn fileio.syn
+ config fastbasic.cfg
+ ca65 -tatari
+ library fastbasic-int.lib
+diff --git a/src/a5200cart.asm b/src/a5200cart.asm
+index 6a54074..796e9a6 100644
+--- a/src/a5200cart.asm
++++ b/src/a5200cart.asm
+@@ -35,10 +35,9 @@
+         .import         __DATA_LOAD__, __DATA_RUN__, __DATA_SIZE__
+         ; Move
+         .import         move_dwn
+-        .importzp       move_dwn_src, move_dwn_dst
+-
+-        .exportzp       COLRSH, DINDEX, COLCRS, ROWCRS, SAVMSC
+-        .exportzp       BASIC_TOP, array_ptr
++        .importzp move_dwn_src, move_dwn_dst
++        .exportzp COLRSH, DINDEX, COLCRS, ROWCRS, SAVMSC
++        .exportzp BASIC_TOP, array_ptr
+         .export         STICK0, STICK1, STICK2, STICK3
+         .export         STRIG0, STRIG1, STRIG2, STRIG3
+         .export         PTRIG0
+diff --git a/src/actions.asm b/src/actions.asm
+index 00f6c05..67357f9 100644
+--- a/src/actions.asm
++++ b/src/actions.asm
+@@ -28,23 +28,23 @@
+         .export         E_VAR_SET_TYPE, E_LABEL_SET_TYPE
+         .export         E_LABEL, E_LABEL_DEF, E_LABEL_CREATE, E_DO_EXEC
+         .export         E_PUSH_VAR, E_POP_VAR
+-        .exportzp       VT_WORD, VT_STRING, VT_FLOAT, VT_UNDEF
+-        .exportzp       VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_ARRAY_STRING, VT_ARRAY_FLOAT
+-        .exportzp       LT_PROC_DATA, LT_PROC_2, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
+-        .importzp       var_sp, loop_sp, bpos, bptr, tmp1, tmp2, tmp3, opos
+-        .exportzp       reloc_addr
++        .exportzp VT_WORD, VT_STRING, VT_FLOAT, VT_UNDEF
++        .exportzp VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_ARRAY_STRING, VT_ARRAY_FLOAT
++        .exportzp LT_PROC_DATA, LT_PROC_2, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1, LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
++        .importzp var_sp, loop_sp, bpos, bptr, tmp1, tmp2, tmp3, opos
++        .exportzp reloc_addr
+         ; From runtime.asm
+         .import         read_word
+         ; From vars.asm
+         .import         var_search, name_new, label_search
+-        .importzp       var_namelen, label_count, var_count
++        .importzp var_namelen, label_count, var_count
+         ; From alloc.asm
+         .import         alloc_laddr
+-        .importzp       prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr
++        .importzp prog_ptr, laddr_ptr, laddr_buf, var_ptr, label_ptr
+         ; From parser.asm
+         .import         parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
+         ; From error.asm
+-        .importzp       ERR_LOOP
++        .importzp ERR_LOOP
+ 
+ .ifdef FASTBASIC_FP
+         ; Exported only in Floating Point version
+diff --git a/src/alloc.asm b/src/alloc.asm
+index cf41216..9084084 100644
+--- a/src/alloc.asm
++++ b/src/alloc.asm
+@@ -63,10 +63,9 @@
+ 
+         .export         alloc_prog, alloc_laddr
+         .export         parser_alloc_init, alloc_area_8
+-
+-        .importzp       prog_ptr, laddr_ptr, mem_end, var_buf, tmp1, end_ptr
++        .importzp prog_ptr, laddr_ptr, mem_end, var_buf, tmp1, end_ptr
+         .import         move_dwn, err_nomem
+-        .importzp       move_dwn_src, move_dwn_dst
++        .importzp move_dwn_src, move_dwn_dst
+ 
+ .zeropage
+ save_x:  .res 1
+@@ -85,7 +84,7 @@ alloc_size=     tmp1
+ 
+         ; Increase program memory area by "opos" (size in bytes)
+ .proc alloc_prog
+-        .importzp       opos
++        .importzp opos
+         lda     opos
+         ldx     #prog_ptr - mem_start
+         .assert prog_ptr = mem_start, error, "Prog Ptr should be at mem start"
+diff --git a/src/cartridge.asm b/src/cartridge.asm
+index 7b3b4df..c49914e 100644
+--- a/src/cartridge.asm
++++ b/src/cartridge.asm
+@@ -38,7 +38,7 @@
+         .import         __DATA_LOAD__, __DATA_RUN__, __DATA_SIZE__
+         ; Move
+         .import         move_dwn
+-        .importzp       move_dwn_src, move_dwn_dst
++        .importzp move_dwn_src, move_dwn_dst
+ 
+         .code
+         ; Forces an error if compilation options allows self-modifying-code:
+diff --git a/src/cmdmenu.asm b/src/cmdmenu.asm
+index 0a90367..dc58018 100644
+--- a/src/cmdmenu.asm
++++ b/src/cmdmenu.asm
+@@ -33,7 +33,7 @@
+         .import compiled_num_vars, compiled_var_page
+         .importzp var_count, saved_cpu_stack
+         ; From alloc.asm
+-        .importzp  prog_ptr
++        .importzp prog_ptr
+         .import parser_alloc_init
+ 
+         ; Exported to CMDLINE.BAS
+@@ -65,6 +65,7 @@ COMPILE_BUFFER:
+ 
+         ; Loops 2 times with X=$FE and X=$FF, exits with X=0
+         ; C = clear and X = $FE on enter
++        sec ; Profile end is exclusive; donor NEWPTR is inclusive.
+ sto_loop:
+         ; Copy program pointer to the "NEWPTR" editor variable
+         lda     <(prog_ptr - $FE),x     ; prog_ptr is ZP
+diff --git a/src/compile.asm b/src/compile.asm
+index 251e495..bf16732 100644
+--- a/src/compile.asm
++++ b/src/compile.asm
+@@ -37,7 +37,7 @@
+         .import interpreter_run, compiled_num_vars, compiled_var_page, var_page
+         .importzp interpreter_cptr, var_count, sptr, saved_cpu_stack
+         ; From alloc.asm
+-        .importzp  prog_ptr
++        .importzp prog_ptr
+         .import parser_alloc_init
+ 
+         .include "atari.inc"
+diff --git a/src/interp/a5200/drawto.asm b/src/interp/a5200/drawto.asm
+index 32c5940..c98e6f1 100644
+--- a/src/interp/a5200/drawto.asm
++++ b/src/interp/a5200/drawto.asm
+@@ -26,13 +26,13 @@
+ 
+ ; Line drawing
+ ; ------------
+-
+-        .importzp       DINDEX, COLOR, IOERROR, COLCRS, ROWCRS, tmp4
+-        .importzp       SAVMSC, next_instruction, tmp1, tmp2, tmp3
++        .importzp DINDEX, COLOR, IOERROR, COLCRS, ROWCRS, tmp4
++        .importzp SAVMSC, tmp1, tmp2, tmp3
++        .import next_instruction
+         .import         gr_mask_p, gr_shift_x, gr_mask_s, EXE_PUT
+ 
+         .export         get_pixel_addr, plot_rcount
+-        .exportzp       plot_mask
++        .exportzp plot_mask
+ 
+         .zeropage
+ plot_mask:      .res 1
+diff --git a/src/interp/a5200/getkey.asm b/src/interp/a5200/getkey.asm
+index 229407b..4ae84eb 100644
+--- a/src/interp/a5200/getkey.asm
++++ b/src/interp/a5200/getkey.asm
+@@ -26,8 +26,7 @@
+ 
+ ; GET from keyboard
+ ; -----------------
+-
+-        .importzp       next_instruction
++        .import next_instruction
+         .import         CH
+         .export         get_key
+ 
+diff --git a/src/interp/a5200/graphics.asm b/src/interp/a5200/graphics.asm
+index 0316c31..870995d 100644
+--- a/src/interp/a5200/graphics.asm
++++ b/src/interp/a5200/graphics.asm
+@@ -28,8 +28,9 @@
+ ; -----------------------------
+ 
+         .export         set_grmode, gr_mask_p, gr_shift_x
+-        .importzp       tmp1, move_dest, next_instruction
+-        .importzp       DINDEX, COLCRS, ROWCRS, SAVMSC, COLOR
++        .importzp tmp1, move_dest
++        .import next_instruction
++        .importzp DINDEX, COLCRS, ROWCRS, SAVMSC, COLOR
+         .import         mem_set_0, MEMTOP, GPRIOR
+ 
+         .segment        "RUNTIME"
+diff --git a/src/interp/a5200/input.asm b/src/interp/a5200/input.asm
+index e450a48..de58e5c 100644
+--- a/src/interp/a5200/input.asm
++++ b/src/interp/a5200/input.asm
+@@ -26,8 +26,8 @@
+ 
+ ; INPUT string
+ ; ------------
+-
+-        .importzp       next_instruction, COLCRS
++        .importzp COLCRS
++        .import next_instruction
+         .import         get_key, putc, line_buf
+         .export         INPUT_WIDTH
+ 
+diff --git a/src/interp/a5200/locate.asm b/src/interp/a5200/locate.asm
+index 87c9e59..b300f7c 100644
+--- a/src/interp/a5200/locate.asm
++++ b/src/interp/a5200/locate.asm
+@@ -26,9 +26,9 @@
+ 
+ ; LOCATE statement
+ ; ----------------
+-
+-        .importzp       DINDEX, COLOR, IOERROR, COLCRS, ROWCRS, tmp4
+-        .importzp       next_instruction, plot_mask
++        .importzp DINDEX, COLOR, IOERROR, COLCRS, ROWCRS, tmp4
++        .importzp plot_mask
++        .import next_instruction
+         .import         plot_rcount, get_pixel_addr, get_text_addr
+ 
+         .segment        "RUNTIME"
+diff --git a/src/interp/a5200/putchar.asm b/src/interp/a5200/putchar.asm
+index 3d944ac..652a3ee 100644
+--- a/src/interp/a5200/putchar.asm
++++ b/src/interp/a5200/putchar.asm
+@@ -28,8 +28,8 @@
+ ; -----------------------
+ 
+         .export         putc, get_text_addr
+-        .importzp       tmp4
+-        .importzp       DINDEX, COLCRS, ROWCRS, SAVMSC
++        .importzp tmp4
++        .importzp DINDEX, COLCRS, ROWCRS, SAVMSC
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/a5200/str.asm b/src/interp/a5200/str.asm
+index b89d66c..6844f8a 100644
+--- a/src/interp/a5200/str.asm
++++ b/src/interp/a5200/str.asm
+@@ -28,7 +28,8 @@
+ ; ------------------
+ 
+         .import         neg_AX, line_buf
+-        .importzp       next_instruction, tmp1
++        .importzp tmp1
++        .import next_instruction
+ 
+ 
+         .segment        "RUNTIME"
+diff --git a/src/interp/a5200/val.asm b/src/interp/a5200/val.asm
+index f8a365b..afa4d40 100644
+--- a/src/interp/a5200/val.asm
++++ b/src/interp/a5200/val.asm
+@@ -28,7 +28,8 @@
+ ; ------------------------
+ 
+         .import         neg_AX
+-        .importzp       IOERROR, tmp1, tmp2, tmp3, tmp4, next_instruction
++        .importzp IOERROR, tmp1, tmp2, tmp3, tmp4
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/a800/getkey.asm b/src/interp/a800/getkey.asm
+index b0a280b..eac11f9 100644
+--- a/src/interp/a800/getkey.asm
++++ b/src/interp/a800/getkey.asm
+@@ -23,34 +23,20 @@
+ ; example, they cover modification of the file, and distribution when not
+ ; linked into a combine executable.)
+ 
+-
+-; GET from keyboard
+-; -----------------
+-
+-        .importzp       IOERROR, next_instruction
+-
+-        .include "atari.inc"
+-
+-        .segment        "RUNTIME"
+-
+-.proc   EXE_GETKEY
+-        jsr     getkey
+-        sty     IOERROR
+-        ldx     #0
+-        jmp     next_instruction
+-.endproc
+-
+-.proc   getkey
+-        lda     KEYBDV+5
+-        pha
+-        lda     KEYBDV+4
+-        pha
+-        lda     #12
+-        sta     ICAX1Z          ; fix problems with direct call to KEYBDV
+-        rts
+-.endproc
+-
++; Exec816 source port: native Process services replace OS entry.
++        .import next_instruction
++        .importzp IOERROR
++        .segment "RUNTIME"
++EXE_GETKEY:
++        jsr $f840
++        sty IOERROR
++        ldx #0
++        jmp next_instruction
+         .include "deftok.inc"
+         deftoken "GETKEY"
+ 
+-; vi:syntax=asm_ca65
++        .segment "RUNTIME"
++EXE_KEY:
++        jsr $f940
++        jmp next_instruction
++        deftoken "KEY"
+diff --git a/src/interp/a800/graphics.asm b/src/interp/a800/graphics.asm
+index a4241cb..5b6622a 100644
+--- a/src/interp/a800/graphics.asm
++++ b/src/interp/a800/graphics.asm
+@@ -30,7 +30,8 @@
+ 
+         .export         CIOV_CMD_A, CIOV_CMD, CIOV_IOERR
+         .import         IOCHN_16
+-        .importzp       COLOR, IOCHN, IOERROR, next_instruction
++        .importzp COLOR, IOCHN, IOERROR
++        .import next_instruction
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/a800/input.asm b/src/interp/a800/input.asm
+index d275173..570b637 100644
+--- a/src/interp/a800/input.asm
++++ b/src/interp/a800/input.asm
+@@ -26,8 +26,8 @@
+ 
+ ; INPUT string
+ ; ------------
+-
+-        .importzp       IOCHN, IOERROR, next_instruction
++        .importzp IOCHN, IOERROR
++        .import next_instruction
+         .export         line_buf
+ 
+         .include "atari.inc"
+diff --git a/src/interp/a800/iochn.asm b/src/interp/a800/iochn.asm
+index 1cb9fe6..715d4ab 100644
+--- a/src/interp/a800/iochn.asm
++++ b/src/interp/a800/iochn.asm
+@@ -28,7 +28,8 @@
+ ; --------------------
+ 
+         .export         IOCHN_16
+-        .importzp       IOCHN, next_instruction
++        .importzp IOCHN
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/a800/putchar.asm b/src/interp/a800/putchar.asm
+index 75b473c..f64ad81 100644
+--- a/src/interp/a800/putchar.asm
++++ b/src/interp/a800/putchar.asm
+@@ -23,36 +23,14 @@
+ ; example, they cover modification of the file, and distribution when not
+ ; linked into a combine executable.)
+ 
+-
+-; CIO put character
+-; -----------------
+-
+-        .export         putc
+-        .importzp       IOCHN, IOERROR, tmp3
+-
+-        .include "atari.inc"
+-
+-        .segment        "RUNTIME"
+-
+-.proc   putc_direct
+-        tay
+-        ldx     IOCHN
+-        lda     ICAX1,X
+-        sta     ICAX1Z
+-        lda     ICPTH, x
+-        pha
+-        lda     ICPTL, x
+-        pha
+-        tya
+-        rts
+-.endproc
+-
+-.proc   putc
+-        sty     tmp3+1
+-        jsr     putc_direct
+-        sty     IOERROR
+-save_y: ldy     tmp3+1
++; Exec816 source port: native Process services replace OS entry.
++        .export putc
++        .importzp IOCHN, IOERROR, tmp3
++        .segment "RUNTIME"
++putc:
++        sty tmp3+1
++        ldx IOCHN
++        jsr $f820
++        sty IOERROR
++        ldy tmp3+1
+         rts
+-.endproc
+-
+-; vi:syntax=asm_ca65
+diff --git a/src/interp/a800/str.asm b/src/interp/a800/str.asm
+index 2c2f5d5..3aa7721 100644
+--- a/src/interp/a800/str.asm
++++ b/src/interp/a800/str.asm
+@@ -23,79 +23,11 @@
+ ; example, they cover modification of the file, and distribution when not
+ ; linked into a combine executable.)
+ 
+-
+-; Print 16bit number
+-; ------------------
+-
+-.ifdef FASTBASIC_FP
+-        .export         int_to_fp, fp_to_str
+-.endif
+-        .import         neg_AX
+-        .importzp       next_instruction
+-
+-
+-        .segment        "RUNTIME"
+-
+-EXE_INT_STR:          ; AX = STRING( AX )
+-
+-        ; In the integer version we simply fall-through
+-        ; from int_to_fp to fp_to_str, so we use 8 bytes less.
+-        ;
+-.ifdef FASTBASIC_FP
+-        jsr     int_to_fp
+-        jsr     fp_to_str
+-        jmp     next_instruction
+-.endif
+-
+-int_to_fp:
+-FR0     = $D4
+-IFP     = $D9AA
+-        cpx     #$80
+-        php                     ; Store sign in C
+-        bcc     positive
+-        jsr     neg_AX
+-positive:
+-        sta     FR0
+-        stx     FR0+1
+-        jsr     IFP
+-
+-        asl     FR0
+-        plp                     ; Get sign and store in FR0
+-        ror     FR0
+-
+-.ifdef  FASTBASIC_FP
+-        rts
+-.endif
+-        ; Fall through
+-fp_to_str:
+-FASC    = $D8E6
+-INBUFF  = $F3
+-LBUF    = $580
+-        jsr     FASC
+-        ; Decrease INBUFF, adds one byte for the string length
+-        dec     INBUFF
+-        ldy     #$0
+-        ; Calculate length
+-ploop:  iny
+-        lda     (INBUFF), y
+-        bpl     ploop
+-        ; Ok, last character, set high bit to 0
+-        and     #$7F
+-        sta     (INBUFF), y
+-        ; And store length into string start
+-        tya
+-        ldy     #0
+-        sta     (INBUFF), y
+-        ; Returns buffer in AX
+-        lda     INBUFF
+-        ldx     INBUFF+1
+-.ifdef FASTBASIC_FP
+-        rts
+-.else
+-        jmp     next_instruction
+-.endif
+-
++; Exec816 source port: native Process services replace OS entry.
++        .import next_instruction
++        .segment "RUNTIME"
++EXE_INT_STR:
++        jsr $f860
++        jmp next_instruction
+         .include "deftok.inc"
+         deftoken "INT_STR"
+-
+-; vi:syntax=asm_ca65
+diff --git a/src/interp/a800/streol.asm b/src/interp/a800/streol.asm
+index 28c9dc2..66c2cc2 100644
+--- a/src/interp/a800/streol.asm
++++ b/src/interp/a800/streol.asm
+@@ -36,25 +36,25 @@
+ ; Copy string to LBUFF storing an EOL at end, allows calling OS routines
+ ; Returns LBUFF in INBUFF
+ .proc   get_str_eol
+-INTLBUF = $DA51
+-        sta     INBUFF
+-        stx     INBUFF+1
+-        ; Get length
+-        ldy     #0
+-        ; Init CIX
+-        sty     CIX
+-        lda     (INBUFF), y
++        .import fb_intlbuf
++INTLBUF = fb_intlbuf
++        sta INBUFF
++        stx INBUFF+1
++        ldy #0
++        sty CIX
++        lda (INBUFF),y
+         tay
+-        bpl     ok
+-        ldy     #$7f    ; String too long, just overwrite last character
+-ok:     lda     #$9B
++        lda #$9b
++        sta LBUFF,y
+ copy:
+-        sta     LBUFF, y
+-        lda     (INBUFF), y
++        cpy #0
++        beq done
++        lda (INBUFF),y
+         dey
+-        bpl     copy
+-        ; Copy LBUFF address to INBUFF
+-        jmp     INTLBUF
++        sta LBUFF,y
++        bne copy
++done:
++        jmp INTLBUF
+ .endproc
+ 
+ ; vi:syntax=asm_ca65
+diff --git a/src/interp/a800/val.asm b/src/interp/a800/val.asm
+index f02fd56..30654fc 100644
+--- a/src/interp/a800/val.asm
++++ b/src/interp/a800/val.asm
+@@ -29,7 +29,8 @@
+ 
+         .export         read_word
+         .import         neg_AX, get_str_eol
+-        .importzp       IOERROR, tmp1, tmp2, next_instruction
++        .importzp IOERROR, tmp1, tmp2
++        .import next_instruction
+ 
+         .include "atari.inc"
+ 
+@@ -47,7 +48,8 @@
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ; Convert string to integer (word)
+ .proc   read_word
+-SKBLANK = $DBA1
++        .import fb_skipblank
++SKBLANK = fb_skipblank
+         ; Skips white space at start
+         jsr     SKBLANK
+ 
+diff --git a/src/interp/a800/xio.asm b/src/interp/a800/xio.asm
+index d95f5de..bcc022b 100644
+--- a/src/interp/a800/xio.asm
++++ b/src/interp/a800/xio.asm
+@@ -29,7 +29,7 @@
+ 
+         .export         CIOV_CMD_POP2
+         .import         CIOV_CMD_A, IOCHN_16, stack_l, stack_h, get_str_eol
+-        .importzp       sptr
++        .importzp sptr
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/absneg.asm b/src/interp/absneg.asm
+index 02e6a91..7fb86b1 100644
+--- a/src/interp/absneg.asm
++++ b/src/interp/absneg.asm
+@@ -28,7 +28,7 @@
+ ; ------------------
+ 
+         .import         neg_AX
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/addsub.asm b/src/interp/addsub.asm
+index 34e716b..527f8ee 100644
+--- a/src/interp/addsub.asm
++++ b/src/interp/addsub.asm
+@@ -28,7 +28,7 @@
+ ; ------------------
+ 
+         .import         neg_AX, stack_l, stack_h
+-        .importzp       next_ins_incsp
++        .import next_ins_incsp
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/atari/color.asm b/src/interp/atari/color.asm
+index 33a1a7c..9cfa8cc 100644
+--- a/src/interp/atari/color.asm
++++ b/src/interp/atari/color.asm
+@@ -26,8 +26,7 @@
+ 
+ ; COLOR zeropage variable
+ ; -----------------------
+-
+-        .exportzp       COLOR
++        .exportzp COLOR
+ 
+         .zeropage
+ 
+diff --git a/src/interp/atari/pause.asm b/src/interp/atari/pause.asm
+index a869c74..596d5c7 100644
+--- a/src/interp/atari/pause.asm
++++ b/src/interp/atari/pause.asm
+@@ -23,31 +23,11 @@
+ ; example, they cover modification of the file, and distribution when not
+ ; linked into a combine executable.)
+ 
+-
+-; Pause for a number of jiffies
+-; -----------------------------
+-
+-        .importzp       next_instruction
+-
+-        .include        "target.inc"
+-
+-        .segment        "RUNTIME"
+-
+-.proc   EXE_PAUSE
+-        tay
+-        iny
+-        inx
+-wait:   lda     RTCLOK2
+-:       cmp     RTCLOK2
+-        beq     :-
+-        dey
+-        bne     wait
+-        dex
+-        bne     wait
+-        jmp     next_instruction
+-.endproc
+-
++; Exec816 source port: native Process services replace OS entry.
++        .import next_instruction
++        .segment "RUNTIME"
++EXE_PAUSE:
++        jsr $f8a0
++        jmp next_instruction
+         .include "deftok.inc"
+         deftoken "PAUSE"
+-
+-; vi:syntax=asm_ca65
+diff --git a/src/interp/atari/pmgraphics.asm b/src/interp/atari/pmgraphics.asm
+index 9690e3b..4afb39c 100644
+--- a/src/interp/atari/pmgraphics.asm
++++ b/src/interp/atari/pmgraphics.asm
+@@ -29,7 +29,8 @@
+ 
+         .export         PMGBASE, PMGMODE
+         .import         err_nomem
+-        .importzp       array_ptr, next_instruction
++        .importzp array_ptr
++        .import next_instruction
+ 
+         .include        "target.inc"
+ 
+diff --git a/src/interp/atari/position.asm b/src/interp/atari/position.asm
+index 48aedd6..4043356 100644
+--- a/src/interp/atari/position.asm
++++ b/src/interp/atari/position.asm
+@@ -28,7 +28,7 @@
+ ; ---------------------------------------------
+ 
+         .import         stack_l, stack_h
+-        .importzp       next_ins_incsp
++        .import next_ins_incsp
+ 
+         .include "target.inc"
+ 
+diff --git a/src/interp/atari/print_tab.asm b/src/interp/atari/print_tab.asm
+index 514497b..f83bc91 100644
+--- a/src/interp/atari/print_tab.asm
++++ b/src/interp/atari/print_tab.asm
+@@ -28,8 +28,9 @@
+ ; ---------------------------------------------
+ 
+         .import         putc, stack_l, print_str_tmp1
+-        .importzp       sptr, next_instruction, tmp1, tmp2, tmp3
+-        .exportzp       PRINT_RTAB_ARG
++        .importzp sptr, tmp1, tmp2, tmp3
++        .import next_instruction
++        .exportzp PRINT_RTAB_ARG
+ 
+ 
+ PRINT_RTAB_ARG = tmp3
+diff --git a/src/interp/atari/rand.asm b/src/interp/atari/rand.asm
+index 590766d..a0c00ff 100644
+--- a/src/interp/atari/rand.asm
++++ b/src/interp/atari/rand.asm
+@@ -23,47 +23,11 @@
+ ; example, they cover modification of the file, and distribution when not
+ ; linked into a combine executable.)
+ 
+-
+-; Random integer
+-; --------------
+-
+-        .importzp       tmp1, tmp2, next_instruction
+-
+-        .include        "target.inc"
+-
+-        .segment        "RUNTIME"
+-
+-.proc   EXE_RAND        ; AX= RANDOM from 0 to AX-1
+-
+-        ldy     #0
+-        stx     tmp1+1
+-
+-get_l:  iny
+-        cpy     #$10
+-        rol
+-        rol     tmp1+1
+-        bpl     get_l
+-        sta     tmp1
+-
+-        ; Now, get a number in the range
+-retry:  ldx     RANDOM
+-        cpx     tmp1
+-        lda     RANDOM
+-        sta     tmp2
+-        sbc     tmp1+1
+-        bcs     retry
+-
+-        ; And scale back
+-        txa
+-scale:  lsr     tmp2
+-        ror
+-        dey
+-        bne     scale
+-        ldx     tmp2
+-xit:    jmp     next_instruction
+-.endproc
+-
++; Exec816 source port: native Process services replace OS entry.
++        .import next_instruction
++        .segment "RUNTIME"
++EXE_RAND:
++        jsr $f8c0
++        jmp next_instruction
+         .include "deftok.inc"
+         deftoken "RAND"
+-
+-; vi:syntax=asm_ca65
+diff --git a/src/interp/atari/soundoff.asm b/src/interp/atari/soundoff.asm
+index 6e84043..cbd278e 100644
+--- a/src/interp/atari/soundoff.asm
++++ b/src/interp/atari/soundoff.asm
+@@ -23,24 +23,8 @@
+ ; example, they cover modification of the file, and distribution when not
+ ; linked into a combine executable.)
+ 
+-
+-; Silence all sound channels (SOUND without parameters)
+-; -----------------------------------------------------
+-
+-        .export         SOUND_OFF
+-        .importzp       next_instruction
+-
+-        .include        "target.inc"
+-
+-        .segment        "RUNTIME"
+-
+-.proc   SOUND_OFF
+-        ldy     #7
+-        lda     #0
+-:       sta     AUDF1, y
+-        dey
+-        bpl     :-
++; Exec816 source port: native Process services replace OS entry.
++        .export SOUND_OFF
++        .segment "RUNTIME"
++SOUND_OFF:
+         rts
+-.endproc
+-
+-; vi:syntax=asm_ca65
+diff --git a/src/interp/atari/time.asm b/src/interp/atari/time.asm
+index 3c2c498..f963305 100644
+--- a/src/interp/atari/time.asm
++++ b/src/interp/atari/time.asm
+@@ -23,25 +23,11 @@
+ ; example, they cover modification of the file, and distribution when not
+ ; linked into a combine executable.)
+ 
+-
+-; TIME function, returns current time in jiffies
+-; ----------------------------------------------
+-
+-        .importzp       next_instruction
+-
+-        .include        "target.inc"
+-
+-        .segment        "RUNTIME"
+-
+-.proc   EXE_TIME
+-retry:  ldx     RTCLOK1
+-        lda     RTCLOK2
+-        cpx     RTCLOK1
+-        bne     retry
+-        jmp     next_instruction
+-.endproc
+-
++; Exec816 source port: native Process services replace OS entry.
++        .import next_instruction
++        .segment "RUNTIME"
++EXE_TIME:
++        jsr $f880
++        jmp next_instruction
+         .include "deftok.inc"
+         deftoken "TIME"
+-
+-; vi:syntax=asm_ca65
+diff --git a/src/interp/atarifp/fp_abs.asm b/src/interp/atarifp/fp_abs.asm
+index 2bdf66e..6f09699 100644
+--- a/src/interp/atarifp/fp_abs.asm
++++ b/src/interp/atarifp/fp_abs.asm
+@@ -26,8 +26,7 @@
+ 
+ ; Floating Point Absolute and Negative
+ ; ------------------------------------
+-
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_atn.asm b/src/interp/atarifp/fp_atn.asm
+index a304432..5ca564a 100644
+--- a/src/interp/atarifp/fp_atn.asm
++++ b/src/interp/atarifp/fp_atn.asm
+@@ -29,7 +29,7 @@
+ 
+         .import         eval_atn_poly, check_fp_err
+         .import         fp_180pi, fp_pi1_2, FP_SET_1
+-        .importzp       DEGFLAG, tmp2
++        .importzp DEGFLAG, tmp2
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_const.asm b/src/interp/atarifp/fp_const.asm
+index e9b42fe..c7ff38a 100644
+--- a/src/interp/atarifp/fp_const.asm
++++ b/src/interp/atarifp/fp_const.asm
+@@ -30,7 +30,8 @@
+         .export         check_fp_err
+ 
+         .import         push_fr0, pop_fr1
+-        .importzp       next_instruction, cptr, IOERROR
++        .importzp cptr, IOERROR
++        .import next_instruction
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_int.asm b/src/interp/atarifp/fp_int.asm
+index 7d761e2..06199dc 100644
+--- a/src/interp/atarifp/fp_int.asm
++++ b/src/interp/atarifp/fp_int.asm
+@@ -28,7 +28,8 @@
+ ; ---------------------
+ 
+         .import         neg_AX, pop_fr0
+-        .importzp       IOERROR, next_instruction
++        .importzp IOERROR
++        .import next_instruction
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_intfp.asm b/src/interp/atarifp/fp_intfp.asm
+index e0b5469..f0c1172 100644
+--- a/src/interp/atarifp/fp_intfp.asm
++++ b/src/interp/atarifp/fp_intfp.asm
+@@ -28,7 +28,7 @@
+ ; -------------------------
+ 
+         .import         push_fr0, int_to_fp
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/atarifp/fp_ipow.asm b/src/interp/atarifp/fp_ipow.asm
+index 9e99c8e..d551036 100644
+--- a/src/interp/atarifp/fp_ipow.asm
++++ b/src/interp/atarifp/fp_ipow.asm
+@@ -28,7 +28,8 @@
+ ; ----------------------
+ 
+         .import         check_fp_err, neg_AX, FP_SET_1
+-        .importzp       tmp1, tmp2, IOERROR, next_instruction
++        .importzp tmp1, tmp2, IOERROR
++        .import next_instruction
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_load.asm b/src/interp/atarifp/fp_load.asm
+index 580d203..36e80ad 100644
+--- a/src/interp/atarifp/fp_load.asm
++++ b/src/interp/atarifp/fp_load.asm
+@@ -28,7 +28,7 @@
+ ; ---------------------------------------
+ 
+         .import         push_fr0
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_pop.asm b/src/interp/atarifp/fp_pop.asm
+index 340e5be..6350355 100644
+--- a/src/interp/atarifp/fp_pop.asm
++++ b/src/interp/atarifp/fp_pop.asm
+@@ -29,7 +29,7 @@
+ 
+         .export         pop_fr1, pop_fr0
+         .import         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
+-        .importzp       fptr
++        .importzp fptr
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_push.asm b/src/interp/atarifp/fp_push.asm
+index 47c602d..46862fb 100644
+--- a/src/interp/atarifp/fp_push.asm
++++ b/src/interp/atarifp/fp_push.asm
+@@ -29,7 +29,7 @@
+ 
+         .export         push_fr0
+         .import         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
+-        .importzp       fptr
++        .importzp fptr
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_sgn.asm b/src/interp/atarifp/fp_sgn.asm
+index dfcedc0..cce3404 100644
+--- a/src/interp/atarifp/fp_sgn.asm
++++ b/src/interp/atarifp/fp_sgn.asm
+@@ -26,8 +26,7 @@
+ 
+ ; Floating Point SGN
+ ; ------------------
+-
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_sincos.asm b/src/interp/atarifp/fp_sincos.asm
+index 3f3a262..e229eed 100644
+--- a/src/interp/atarifp/fp_sincos.asm
++++ b/src/interp/atarifp/fp_sincos.asm
+@@ -29,7 +29,7 @@
+ 
+         .import         fp_sin_coef, fp_pi1_2, fp_90
+         .import         eval_poly_x2, check_fp_err, FP_SET_1
+-        .importzp       DEGFLAG, tmp2
++        .importzp DEGFLAG, tmp2
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_sqrt.asm b/src/interp/atarifp/fp_sqrt.asm
+index 0e76ed1..67383f0 100644
+--- a/src/interp/atarifp/fp_sqrt.asm
++++ b/src/interp/atarifp/fp_sqrt.asm
+@@ -28,7 +28,7 @@
+ ; -----------
+ 
+         .import         check_fp_err
+-        .importzp       tmp2
++        .importzp tmp2
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_store.asm b/src/interp/atarifp/fp_store.asm
+index b1157d2..3ec855c 100644
+--- a/src/interp/atarifp/fp_store.asm
++++ b/src/interp/atarifp/fp_store.asm
+@@ -28,7 +28,8 @@
+ ; --------------------------------------
+ 
+         .import         pop_fr0
+-        .importzp       next_instruction, saddr
++        .importzp saddr
++        .import next_instruction
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_str.asm b/src/interp/atarifp/fp_str.asm
+index 4d85ef1..d9dd532 100644
+--- a/src/interp/atarifp/fp_str.asm
++++ b/src/interp/atarifp/fp_str.asm
+@@ -28,7 +28,7 @@
+ ; ---------------------------------------
+ 
+         .import         pop_fr0, fp_to_str
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/atarifp/fp_time.asm b/src/interp/atarifp/fp_time.asm
+index 159593e..3863fdd 100644
+--- a/src/interp/atarifp/fp_time.asm
++++ b/src/interp/atarifp/fp_time.asm
+@@ -28,7 +28,7 @@
+ ; ----------------------------
+ 
+         .import         push_fr0
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fp_val.asm b/src/interp/atarifp/fp_val.asm
+index 4b26ae7..9733fbf 100644
+--- a/src/interp/atarifp/fp_val.asm
++++ b/src/interp/atarifp/fp_val.asm
+@@ -28,7 +28,8 @@
+ ; --------------------------------
+ 
+         .import         push_fr0, get_str_eol
+-        .importzp       IOERROR, next_instruction
++        .importzp IOERROR
++        .import next_instruction
+ 
+         .include "atari.inc"
+ 
+diff --git a/src/interp/atarifp/fpmain.asm b/src/interp/atarifp/fpmain.asm
+index a10e907..7238dff 100644
+--- a/src/interp/atarifp/fpmain.asm
++++ b/src/interp/atarifp/fpmain.asm
+@@ -28,7 +28,7 @@
+ ; ----------------------------------
+ 
+         .export         fpstk_0, fpstk_1, fpstk_2, fpstk_3, fpstk_4, fpstk_5
+-        .exportzp       DEGFLAG, FPSTK_SIZE, fptr
++        .exportzp DEGFLAG, FPSTK_SIZE, fptr
+         .import         stack_end
+ 
+         .zeropage
+diff --git a/src/interp/atarifp/mul6.asm b/src/interp/atarifp/mul6.asm
+index a23acf9..345ca15 100644
+--- a/src/interp/atarifp/mul6.asm
++++ b/src/interp/atarifp/mul6.asm
+@@ -26,8 +26,8 @@
+ 
+ ; Multiplies by 6 - used to access floating-point arrays
+ ; ------------------------------------------------------
+-
+-        .importzp       next_instruction, tmp1
++        .importzp tmp1
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/bitand.asm b/src/interp/bitand.asm
+index 5c9b523..684bb2c 100644
+--- a/src/interp/bitand.asm
++++ b/src/interp/bitand.asm
+@@ -28,7 +28,7 @@
+ ; -----------
+ 
+         .import         stack_l, stack_h
+-        .importzp       next_ins_incsp
++        .import next_ins_incsp
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/bitexor.asm b/src/interp/bitexor.asm
+index ff509da..f106778 100644
+--- a/src/interp/bitexor.asm
++++ b/src/interp/bitexor.asm
+@@ -28,7 +28,7 @@
+ ; ------------
+ 
+         .import         stack_l, stack_h
+-        .importzp       next_ins_incsp
++        .import next_ins_incsp
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/bitor.asm b/src/interp/bitor.asm
+index b52ba3e..4b9f7c4 100644
+--- a/src/interp/bitor.asm
++++ b/src/interp/bitor.asm
+@@ -28,7 +28,7 @@
+ ; ----------
+ 
+         .import         stack_l, stack_h
+-        .importzp       next_ins_incsp
++        .import next_ins_incsp
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/chr.asm b/src/interp/chr.asm
+index b609e16..acacb00 100644
+--- a/src/interp/chr.asm
++++ b/src/interp/chr.asm
+@@ -26,8 +26,7 @@
+ 
+ ; Convert byte to one character string
+ ; ------------------------------------
+-
+-        .importzp next_instruction
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/clearmem.asm b/src/interp/clearmem.asm
+index 9841d16..deb98a5 100644
+--- a/src/interp/clearmem.asm
++++ b/src/interp/clearmem.asm
+@@ -29,10 +29,10 @@
+ 
+         .export         clear_data, alloc_array, mem_set, err_nomem, mem_set_0
+         .export         compiled_num_vars, compiled_var_page, CLEAR_DATA
+-        .exportzp       saved_cpu_stack
++        .exportzp saved_cpu_stack
+ 
+         .import         putc, var_page, __HEAP_RUN__, __HEAP_SIZE__
+-        .importzp       tmp1, array_ptr, move_dest
++        .importzp tmp1, array_ptr, move_dest
+ 
+         .include        "target.inc"
+ 
+@@ -129,7 +129,8 @@ loop:   dey
+         sta     (move_dest), y
+         bne     loop
+ 
+-nxt:    dex
++nxt:    jsr $f280
++        dex
+         bne     pgloop
+ 
+         rts
+@@ -144,6 +145,8 @@ memory_error_code:
+         .byte   TOK_PRINT_STR, TOK_END
+ 
+ err_nomem:
++        lda #3
++        jsr $f900
+         lda     #<memory_error_code
+         ldx     #>memory_error_code
+         jmp     interpreter_jump_ax
+diff --git a/src/interp/cmpstr.asm b/src/interp/cmpstr.asm
+index 666d550..8e35fcc 100644
+--- a/src/interp/cmpstr.asm
++++ b/src/interp/cmpstr.asm
+@@ -28,7 +28,7 @@
+ ; ------------------
+ 
+         .import         stack_l, stack_h, pushXX_set0
+-        .importzp       tmp1, tmp2, tmp3, sptr
++        .importzp tmp1, tmp2, tmp3, sptr
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/comp0.asm b/src/interp/comp0.asm
+index b07050c..ed082ac 100644
+--- a/src/interp/comp0.asm
++++ b/src/interp/comp0.asm
+@@ -29,7 +29,8 @@
+ 
+         .export         pushXX_set0
+         .import         stack_l, stack_h, pushAX
+-        .importzp       next_instruction, sptr
++        .importzp sptr
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/const.asm b/src/interp/const.asm
+index 6299992..c2abc88 100644
+--- a/src/interp/const.asm
++++ b/src/interp/const.asm
+@@ -28,7 +28,8 @@
+ ; -------------------------------------
+ 
+         .import         pushAX
+-        .importzp       next_instruction, cptr
++        .importzp cptr
++        .import next_instruction
+         .export         inc_cptr_1, inc_cptr_2
+ 
+         .segment        "RUNTIME"
+diff --git a/src/interp/const_poke.asm b/src/interp/const_poke.asm
+index 27ef813..6a0c36e 100644
+--- a/src/interp/const_poke.asm
++++ b/src/interp/const_poke.asm
+@@ -28,7 +28,7 @@
+ ; -----------------------------------------------
+ 
+         .import         inc_cptr_1, inc_cptr_2
+-        .importzp       cptr, saddr
++        .importzp cptr, saddr
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/copystr.asm b/src/interp/copystr.asm
+index aa10612..e6750aa 100644
+--- a/src/interp/copystr.asm
++++ b/src/interp/copystr.asm
+@@ -28,8 +28,10 @@
+ ; ------------------------------------
+ 
+         .import         alloc_array
+-        .importzp       array_ptr, tmp1, saddr, next_instruction
+-        .importzp       move_source, move_dest, move_loop
++        .importzp array_ptr, tmp1, saddr
++        .import next_instruction
++        .importzp move_source, move_dest
++        .import move_loop
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/dec.asm b/src/interp/dec.asm
+index 09e1018..660627d 100644
+--- a/src/interp/dec.asm
++++ b/src/interp/dec.asm
+@@ -28,7 +28,8 @@
+ ; ---------------------------
+ 
+         .import         get_op_var
+-        .importzp       next_instruction, saddr
++        .importzp saddr
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/div.asm b/src/interp/div.asm
+index c28ccc3..857d8cc 100644
+--- a/src/interp/div.asm
++++ b/src/interp/div.asm
+@@ -28,7 +28,8 @@
+ ; --------------------
+ 
+         .import         neg_AX, stack_l, stack_h
+-        .importzp       tmp1, tmp2, tmp3, divmod_sign, next_ins_incsp, sptr
++        .importzp tmp1, tmp2, tmp3, divmod_sign, sptr
++        .import next_ins_incsp
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/dpeek.asm b/src/interp/dpeek.asm
+index 6f27315..246b45a 100644
+--- a/src/interp/dpeek.asm
++++ b/src/interp/dpeek.asm
+@@ -28,7 +28,8 @@
+ ; ------------------------------------
+ 
+         .import         get_op_var, pushAX
+-        .importzp       next_instruction, tmp1
++        .importzp tmp1
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+@@ -41,6 +42,22 @@
+ .endproc        ; Fall through:
+ 
+ .proc   EXE_DPEEK  ; AX = PEEK(AX) + 256 * PEEK(AX+1)
++        cpx #0
++        bne banked
++        tax
++        lda 0,x
++        pha
++        inx
++        beq cross
++        lda 0,x
++        jmp finish_dp
++cross:
++        lda $100
++finish_dp:
++        tax
++        pla
++        jmp next_instruction
++banked:
+ .ifdef NO_SMCODE
+         sta     tmp1
+         stx     tmp1+1
+diff --git a/src/interp/dpoke.asm b/src/interp/dpoke.asm
+index 7eee719..89a9781 100644
+--- a/src/interp/dpoke.asm
++++ b/src/interp/dpoke.asm
+@@ -26,14 +26,34 @@
+ 
+ ; Writes a 16-bit value to an address
+ ; -----------------------------------
+-
+-        .importzp       next_instruction, saddr
++        .importzp saddr
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+ .proc   EXE_DPOKE  ; DPOKE SADDR, AX
+-        ldy     #0
+-        sta     (saddr), y
++        ldy saddr+1
++        bne banked
++        pha
++        txa
++        tay
++        ldx saddr
++        pla
++        sta 0,x
++        inx
++        tya
++        cpx #0
++        beq cross
++        sta 0,x
++        jmp done_dp
++cross:
++        sta $100
++done_dp:
++        tax
++        jmp next_instruction
++banked:
++        ldy #0
++        sta (saddr),y
+         iny
+         txa
+         sta     (saddr), y
+diff --git a/src/interp/for.asm b/src/interp/for.asm
+index 690890a..acb4f59 100644
+--- a/src/interp/for.asm
++++ b/src/interp/for.asm
+@@ -28,7 +28,8 @@
+ ; --------------------------------
+ 
+         .import         stack_l, stack_h, pushAX
+-        .importzp       next_ins_incsp, sptr, tmp3
++        .importzp sptr, tmp3
++        .import next_ins_incsp
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/for_exit.asm b/src/interp/for_exit.asm
+index 367a4a0..d4b87c6 100644
+--- a/src/interp/for_exit.asm
++++ b/src/interp/for_exit.asm
+@@ -28,7 +28,8 @@
+ ; ------------------
+ 
+         .export         next_ins_incsp_2
+-        .importzp       next_ins_incsp, sptr
++        .importzp sptr
++        .import next_ins_incsp
+ 
+ 
+         .segment        "RUNTIME"
+diff --git a/src/interp/inc.asm b/src/interp/inc.asm
+index 4051720..d3bfdf6 100644
+--- a/src/interp/inc.asm
++++ b/src/interp/inc.asm
+@@ -28,7 +28,8 @@
+ ; ---------------------------
+ 
+         .import         get_op_var
+-        .importzp       next_instruction, saddr
++        .importzp saddr
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/jump.asm b/src/interp/jump.asm
+index 3748d0f..37e20e0 100644
+--- a/src/interp/jump.asm
++++ b/src/interp/jump.asm
+@@ -28,7 +28,8 @@
+ ; ------------------------
+ 
+         .export         interpreter_jump_fixup, interpreter_jump_ax
+-        .importzp       next_instruction, cptr
++        .importzp cptr
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/land.asm b/src/interp/land.asm
+index ab90607..db76325 100644
+--- a/src/interp/land.asm
++++ b/src/interp/land.asm
+@@ -28,7 +28,7 @@
+ ; -----------
+ 
+         .import         stack_l
+-        .importzp       next_ins_incsp
++        .import next_ins_incsp
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/lnot.asm b/src/interp/lnot.asm
+index 0c2fd98..c97a4dc 100644
+--- a/src/interp/lnot.asm
++++ b/src/interp/lnot.asm
+@@ -26,8 +26,7 @@
+ 
+ ; Logical NOT
+ ; -----------
+-
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/lor.asm b/src/interp/lor.asm
+index d97c107..437d833 100644
+--- a/src/interp/lor.asm
++++ b/src/interp/lor.asm
+@@ -28,7 +28,7 @@
+ ; ----------
+ 
+         .import         stack_l
+-        .importzp       next_ins_incsp
++        .import next_ins_incsp
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/move.asm b/src/interp/move.asm
+index a3d1685..8fded32 100644
+--- a/src/interp/move.asm
++++ b/src/interp/move.asm
+@@ -28,7 +28,8 @@
+ ; -------------------------
+ 
+         .import         stack_l, stack_h, next_ins_incsp_2, move_get_ptr
+-        .importzp       move_source, move_dest, move_ins, move_loop
++        .importzp move_source, move_dest
++        .import move_ins, move_loop
+ 
+ src = move_source
+ dst = move_dest
+diff --git a/src/interp/mset.asm b/src/interp/mset.asm
+index b54fa89..1e47a01 100644
+--- a/src/interp/mset.asm
++++ b/src/interp/mset.asm
+@@ -28,7 +28,7 @@
+ ; ---------------------------------------
+ 
+         .import         stack_l, stack_h, next_ins_incsp_2, mem_set
+-        .importzp       tmp1, move_dest
++        .importzp tmp1, move_dest
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/mul.asm b/src/interp/mul.asm
+index df30820..6b197a4 100644
+--- a/src/interp/mul.asm
++++ b/src/interp/mul.asm
+@@ -28,7 +28,8 @@
+ ; --------------
+ 
+         .import         stack_l, stack_h
+-        .importzp       tmp1, tmp2, tmp3, next_ins_incsp
++        .importzp tmp1, tmp2, tmp3
++        .import next_ins_incsp
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/nmove.asm b/src/interp/nmove.asm
+index 53b0277..4ac211a 100644
+--- a/src/interp/nmove.asm
++++ b/src/interp/nmove.asm
+@@ -29,9 +29,9 @@
+ 
+         .export         move_dwn, move_get_ptr
+         .import         stack_l, stack_h, next_ins_incsp_2
+-
+-        .exportzp       move_dwn_src, move_dwn_dst
+-        .importzp       tmp3, move_source, move_dest, move_ins, move_loop
++        .exportzp move_dwn_src, move_dwn_dst
++        .importzp tmp3, move_source, move_dest
++        .import move_ins, move_loop
+ move_dwn_src= move_source
+ move_dwn_dst= move_dest
+ 
+diff --git a/src/interp/peek.asm b/src/interp/peek.asm
+index 5144a04..1b17f83 100644
+--- a/src/interp/peek.asm
++++ b/src/interp/peek.asm
+@@ -26,12 +26,19 @@
+ 
+ ; Reads an 8-bit value from an address
+ ; ------------------------------------
+-
+-        .importzp       next_instruction, tmp1
++        .importzp tmp1
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+ .proc   EXE_PEEK  ; AX = *(AX)
++        cpx #0
++        bne banked
++        tax
++        lda 0,x
++        ldx #0
++        jmp next_instruction
++banked:
+ .ifdef NO_SMCODE
+         sta     tmp1
+         stx     tmp1+1
+diff --git a/src/interp/peekb.asm b/src/interp/peekb.asm
+index 96f8daf..0185aca 100644
+--- a/src/interp/peekb.asm
++++ b/src/interp/peekb.asm
+@@ -26,8 +26,7 @@
+ 
+ ; Reads an 8-bit value from a constant address
+ ; --------------------------------------------
+-
+-        .importzp       cptr
++        .importzp cptr
+         .import         inc_cptr_1
+ 
+         .segment        "RUNTIME"
+@@ -35,8 +34,9 @@
+ .proc   EXE_BYTE_PEEK  ; AX = PEEK(read 1 byte from op)
+         ldx     #0
+         lda     (cptr, x)
+-        tay
+-        lda     0, y
++        tax
++        lda     0, x
++        ldx     #0
+         jmp     inc_cptr_1
+ .endproc
+ 
+diff --git a/src/interp/poke.asm b/src/interp/poke.asm
+index 966cd4c..7863ee3 100644
+--- a/src/interp/poke.asm
++++ b/src/interp/poke.asm
+@@ -26,14 +26,28 @@
+ 
+ ; Writes an 8-bit value to an address
+ ; -----------------------------------
+-
+-        .importzp       next_instruction, saddr
++        .importzp saddr
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+ .proc   EXE_POKE  ; POKE SADDR, A
+-        ldy     #0
+-        sta     (saddr), y
++        ldy saddr+1
++        bne banked
++        pha
++        txa
++        tay
++        ldx saddr
++        pla
++        sta 0,x
++        pha
++        tya
++        tax
++        pla
++        jmp next_instruction
++banked:
++        ldy #0
++        sta (saddr),y
+         jmp     next_instruction
+ .endproc
+ 
+diff --git a/src/interp/pop.asm b/src/interp/pop.asm
+index 0a6b24e..14b2133 100644
+--- a/src/interp/pop.asm
++++ b/src/interp/pop.asm
+@@ -26,8 +26,7 @@
+ 
+ ; Stack pop
+ ; ---------
+-
+-        .importzp       next_ins_incsp
++        .import next_ins_incsp
+         .import stack_l, stack_h
+ 
+         .segment        "RUNTIME"
+diff --git a/src/interp/print_str.asm b/src/interp/print_str.asm
+index eeace6c..a87f643 100644
+--- a/src/interp/print_str.asm
++++ b/src/interp/print_str.asm
+@@ -28,8 +28,9 @@
+ ; ------------
+ 
+         .import         putc, stack_l
+-        .importzp       tmp1, tmp2, tmp3, next_instruction, sptr
+-        .importzp       PRINT_COLOR
++        .importzp tmp1, tmp2, tmp3, sptr
++        .import next_instruction
++        .importzp PRINT_COLOR
+         .export         print_str_tmp1
+ 
+         .segment        "RUNTIME"
+diff --git a/src/interp/push.asm b/src/interp/push.asm
+index c6352aa..4f1c931 100644
+--- a/src/interp/push.asm
++++ b/src/interp/push.asm
+@@ -28,7 +28,7 @@
+ ; ----------
+ 
+         .import         pushAX
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/put.asm b/src/interp/put.asm
+index a76b081..606afd7 100644
+--- a/src/interp/put.asm
++++ b/src/interp/put.asm
+@@ -28,7 +28,7 @@
+ ; ------------------------
+ 
+         .import         putc
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/putbyte.asm b/src/interp/putbyte.asm
+index 4fb7791..b20ec4e 100644
+--- a/src/interp/putbyte.asm
++++ b/src/interp/putbyte.asm
+@@ -28,7 +28,7 @@
+ ; -----------------------
+ 
+         .import         putc, inc_cptr_1
+-        .importzp       cptr
++        .importzp cptr
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/return.asm b/src/interp/return.asm
+index d9dbbfd..f6e5d1c 100644
+--- a/src/interp/return.asm
++++ b/src/interp/return.asm
+@@ -26,8 +26,8 @@
+ 
+ ; Return from subroutine
+ ; ----------------------
+-
+-        .importzp       next_instruction, cptr
++        .importzp cptr
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/saddr.asm b/src/interp/saddr.asm
+index d4e8bc1..84783e9 100644
+--- a/src/interp/saddr.asm
++++ b/src/interp/saddr.asm
+@@ -28,8 +28,8 @@
+ ; ---------------------------------------------------------------
+ 
+         .import         get_op_var
+-        .importzp       next_instruction
+-        .exportzp       saddr
++        .import next_instruction
++        .exportzp saddr
+ 
+         .zeropage
+ saddr:  .res 2
+diff --git a/src/interp/sgn.asm b/src/interp/sgn.asm
+index 42a9df1..7db234f 100644
+--- a/src/interp/sgn.asm
++++ b/src/interp/sgn.asm
+@@ -26,8 +26,7 @@
+ 
+ ; SGN, extract sign
+ ; -----------------
+-
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/shl8.asm b/src/interp/shl8.asm
+index 2072c1f..cf96ca3 100644
+--- a/src/interp/shl8.asm
++++ b/src/interp/shl8.asm
+@@ -26,8 +26,7 @@
+ 
+ ; SHL8, shift left by 8 (multiply by 256)
+ ; ---------------------------------------
+-
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/strindex.asm b/src/interp/strindex.asm
+index 8abc517..e96147b 100644
+--- a/src/interp/strindex.asm
++++ b/src/interp/strindex.asm
+@@ -26,8 +26,7 @@
+ 
+ ; String indexing
+ ; ---------------
+-
+-        .importzp       tmp1, tmp3
++        .importzp tmp1, tmp3
+         .import         stack_l, stack_h, next_ins_incsp_2, line_buf
+ 
+         .segment        "RUNTIME"
+diff --git a/src/interp/ushl.asm b/src/interp/ushl.asm
+index 4b431f4..b6c6391 100644
+--- a/src/interp/ushl.asm
++++ b/src/interp/ushl.asm
+@@ -26,8 +26,7 @@
+ 
+ ; Shift Left (multiplies by 2)
+ ; ----------------------------
+-
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/usr.asm b/src/interp/usr.asm
+index f829bde..98f248d 100644
+--- a/src/interp/usr.asm
++++ b/src/interp/usr.asm
+@@ -26,8 +26,7 @@
+ 
+ ; USR - call user assembly routine
+ ; --------------------------------
+-
+-        .importzp       next_instruction
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/varadd.asm b/src/interp/varadd.asm
+index 1bab330..7ea0ce1 100644
+--- a/src/interp/varadd.asm
++++ b/src/interp/varadd.asm
+@@ -28,7 +28,8 @@
+ ; ------------------------------------
+ 
+         .import         get_op_var, pushAX
+-        .importzp       next_instruction, tmp1, tmp2
++        .importzp tmp1, tmp2
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interp/varaddr.asm b/src/interp/varaddr.asm
+index 9350572..deb840f 100644
+--- a/src/interp/varaddr.asm
++++ b/src/interp/varaddr.asm
+@@ -28,7 +28,8 @@
+ ; ----------------------
+ 
+         .export         get_op_var, var_page
+-        .importzp       next_instruction, cptr
++        .importzp cptr
++        .import next_instruction
+         .import         __HEAP_RUN__
+ 
+         ; Start of HEAP - aligned to 256 bytes
+diff --git a/src/interp/varstore.asm b/src/interp/varstore.asm
+index 424662e..d8e6fed 100644
+--- a/src/interp/varstore.asm
++++ b/src/interp/varstore.asm
+@@ -28,7 +28,8 @@
+ ; -------------------------
+ 
+         .import         get_op_var, alloc_array
+-        .importzp       next_instruction, tmp2, move_dest
++        .importzp tmp2, move_dest
++        .import next_instruction
+ 
+         .segment        "RUNTIME"
+ 
+diff --git a/src/interpreter.asm b/src/interpreter.asm
+index 74c6bf3..c61c130 100644
+--- a/src/interpreter.asm
++++ b/src/interpreter.asm
+@@ -30,18 +30,17 @@
+         .export         start
+         .export         interpreter_run, stack_l, stack_h
+         .export         pushAX, stack_end
+-
+-        .exportzp       interpreter_cptr, sptr, cptr
+-        .exportzp       next_ins_incsp, next_instruction
+-        .exportzp       IOCHN, IOERROR, tmp1, tmp2, tmp3, divmod_sign
+-        .exportzp       PRINT_COLOR
+-        .exportzp       move_source
+-        .exportzp       move_dest
+-        .exportzp       move_ins, move_loop
++        .exportzp interpreter_cptr, sptr, cptr
++        .export next_ins_incsp, next_instruction
++        .exportzp IOCHN, IOERROR, tmp1, tmp2, tmp3, divmod_sign
++        .exportzp PRINT_COLOR
++        .exportzp move_source
++        .exportzp move_dest
++        .export move_ins, move_loop
+ 
+         ; From clearmem.asm
+         .import         clear_data
+-        .importzp       saved_cpu_stack
++        .importzp saved_cpu_stack
+ 
+         ; From jumptab.asm
+         .import         __JUMPTAB_RUN__
+@@ -56,7 +55,7 @@ tmp1:   .res    2
+ tmp2:   .res    2
+ tmp3:   .res    2
+ .ifdef NO_SMCODE
+-        .exportzp       tmp4
++        .exportzp tmp4
+ tmp4:   .res    2
+ .endif
+ divmod_sign:
+@@ -98,42 +97,52 @@ stack_end =     stack_h + STACK_SIZE
+ ; so the minimum time for an opcode is 30 cycles, this means we could
+ ; execute at up to 58k opcodes per second.
+ ;
+-        ; Code in ZP: (16 bytes)
+-        .segment "INTERP": zeropage
+-.proc   interpreter
+-nxt_incsp:
+-        inc     z:sptr
+-nxtins:
+-cload:  ldy     $1234           ;4
+-        inc     z:cload+1       ;5
+-        bne     adj             ;2
+-        inc     z:cload+2       ;1 (1 * 255 + 5 * 1) / 256 = 1.016
+-adj:    sty     z:jump+1        ;3
+-ldsptr: ldy     #0              ;2
+-jump:   jmp     (__JUMPTAB_RUN__);5 = 27 cycles per call
+-
+-.endproc
+-
+-sptr                    =       interpreter::ldsptr+1
+-cptr                    =       interpreter::cload+1
+-next_instruction        =       interpreter::nxtins
+-next_ins_incsp          =       interpreter::nxt_incsp
+-interpreter_cptr        =       cptr
+-
+-        ; MOVE routine - in ZP to make code smaller
+-        ; at preparing pointers
+-.proc   move_loop
+-        ; 14/15 cycles / iteration:
+-src:    lda     $FF00,y
+-dst:    sta     $FF00,y
+-ins:    dey
+-        bne     move_loop
++        ; D-relative pointers stay in bank zero; executable code is private.
++        .zeropage
++sptr:   .res 1
++cptr:   .res 2
++quota:  .res 1
++move_source: .res 2
++move_dest: .res 2
++interpreter_cptr = cptr
++        .segment "RUNTIME"
++next_ins_incsp:
++        inc sptr
++next_instruction:
++        pha
++        txa
++        pha
++        dec quota
++        bne dispatch
++        lda #64
++        sta quota
++        jsr $f280
++ dispatch:
++        ldy #0
++        lda (cptr),y
++        tay
++        inc cptr
++        bne :+
++        inc cptr+1
++:       lda __JUMPTAB_RUN__,y
++        sta dispatch_jump+1
++        lda __JUMPTAB_RUN__+1,y
++        sta dispatch_jump+2
++        pla
++        tax
++        pla
++        ldy sptr
++ dispatch_jump:
++        jmp $ffff
++        ; Both directions share D-relative pointers and a private instruction.
++move_loop:
++        lda (move_source),y
++        sta (move_dest),y
++move_ins:
++        dey
++        bne move_loop
++        jsr $f280
+         rts
+-.endproc
+-move_source     =       move_loop::src+1
+-move_dest       =       move_loop::dst+1
+-move_ins        =       move_loop::ins
+-
+ 
+         ; Define our data segment, so it is always present
+         .data
+@@ -154,6 +163,8 @@ start:
+         ; Init code pointer
+         sta     cptr
+         stx     cptr+1
++        lda     #64
++        sta     quota
+ 
+         ; Get memory for all variables and clear the values
+         jsr     clear_data
+@@ -161,22 +172,9 @@ start:
+ .ifdef __ATARI5200__
+         lda     #0
+ .else
+-        ; Close al I/O channels
+-        lda     #$70
+-:       tax
+-        lda     #CLOSE
+-        sta     ICCOM, x
+-        jsr     CIOV
+-        txa
+-        sec
+-        sbc     #$10
+-        bne     :-
+-
+-        ; Clear TAB position, IO channel and IO error
+-        ;
+-        ; lda     #0  ; A == 0 from above
+-        sta     IOCHN
+-        sta     IOERROR
++        lda #0
++        sta IOCHN
++        sta IOERROR
+ .endif
+         ; Clears PRINT_COLOR and location 0 to allow a null-pointer representation
+         ; for an empty string (length = 0).
+@@ -184,12 +182,11 @@ start:
+         sta     0
+ 
+ .ifdef FASTBASIC_FP
+-        .importzp       DEGFLAG
++        .importzp DEGFLAG
+         sta     DEGFLAG
+ .endif ; FASTBASIC_FP
+ 
+-        ; Sound off
+-        jsr     SOUND_OFF
++        ; Device ownership belongs to the native adapter.
+ 
+         ; Store current stack position to rewind on error
+         tsx
+@@ -199,7 +196,7 @@ start:
+         lda     #STACK_SIZE
+         sta     sptr
+ .ifdef FASTBASIC_FP
+-        .importzp       fptr, FPSTK_SIZE
++        .importzp fptr, FPSTK_SIZE
+         lda     #FPSTK_SIZE
+         sta     fptr
+ .endif ; FASTBASIC_FP
+diff --git a/src/memptr.asm b/src/memptr.asm
+index f9dc4c1..f074c4f 100644
+--- a/src/memptr.asm
++++ b/src/memptr.asm
+@@ -26,9 +26,8 @@
+ 
+ ; Parser Memory Areas
+ ; -------------------
+-
+-        .exportzp       prog_ptr, array_ptr, var_buf, var_ptr, mem_end
+-        .exportzp       label_buf, label_ptr, laddr_buf, laddr_ptr, end_ptr
++        .exportzp prog_ptr, array_ptr, var_buf, var_ptr, mem_end
++        .exportzp label_buf, label_ptr, laddr_buf, laddr_ptr, end_ptr
+ 
+         .zeropage
+ 
+@@ -49,7 +48,7 @@ laddr_ptr=      mem_end
+ mem_end:        .res    2
+ 
+         ; Share this to BASIC runtime, to use less ZP memory
+-        .exportzp       BASIC_TOP
++        .exportzp BASIC_TOP
+ array_ptr=      laddr_buf
+ BASIC_TOP= array_ptr
+ 
+diff --git a/src/parse.asm b/src/parse.asm
+index 99c15ba..63771d7 100644
+--- a/src/parse.asm
++++ b/src/parse.asm
+@@ -21,31 +21,31 @@
+ 
+         .export         parser_start, parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
+         ; Parser state
+-        .exportzp       bptr, bpos, bmax, linenum, buf_ptr
+-        .exportzp       loop_sp, var_sp
++        .exportzp bptr, bpos, bmax, linenum, buf_ptr
++        .exportzp loop_sp, var_sp
+         ; Output state
+-        .exportzp       opos
++        .exportzp opos
+         ; From actions.asm
+-        .importzp       VT_WORD, VT_STRING, VT_FLOAT, VT_UNDEF
+-        .importzp       VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_ARRAY_STRING, VT_ARRAY_FLOAT
+-        .importzp       LT_PROC_DATA, LT_PROC_2, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1
+-        .importzp       LT_WHILE_2, LT_FOR_1,LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
++        .importzp VT_WORD, VT_STRING, VT_FLOAT, VT_UNDEF
++        .importzp VT_ARRAY_WORD, VT_ARRAY_BYTE, VT_ARRAY_STRING, VT_ARRAY_FLOAT
++        .importzp LT_PROC_DATA, LT_PROC_2, LT_DO_LOOP, LT_REPEAT, LT_WHILE_1
++        .importzp LT_WHILE_2, LT_FOR_1, LT_FOR_2, LT_EXIT, LT_IF, LT_ELSE, LT_ELIF
+         ; From alloc.asm
+         .import         alloc_prog
+-        .importzp       prog_ptr, end_ptr, BASIC_TOP
++        .importzp prog_ptr, end_ptr, BASIC_TOP
+         ; From vars.asm
+-        .exportzp       var_count, label_count
++        .exportzp var_count, label_count
+         ; From runtime.asm
+-        .importzp       IOCHN, COLOR, IOERROR, PRINT_COLOR, PRINT_RTAB_ARG
++        .importzp IOCHN, COLOR, IOERROR, PRINT_COLOR, PRINT_RTAB_ARG
+         .import         putc
+         ; From interpreter.asm
+-        .importzp       DEGFLAG, DEGFLAG_DEG, DEGFLAG_RAD, saved_cpu_stack
++        .importzp DEGFLAG, DEGFLAG_DEG, DEGFLAG_RAD, saved_cpu_stack
+         .import         EXE_END, PMGMODE, PMGBASE
+         ; Interpreted commands
+         .import         CLEAR_DATA, SOUND_OFF
+         ; From errors.asm
+         .import         error_msg_list
+-        .importzp       ERR_PARSE, ERR_NO_ELOOP, ERR_LABEL, ERR_TOO_LONG
++        .importzp ERR_PARSE, ERR_NO_ELOOP, ERR_LABEL, ERR_TOO_LONG
+ 
+         .zeropage
+ buf_ptr:.res 2
+@@ -72,8 +72,10 @@ zp_clear_end:
+ bptr    = INBUFF
+ bpos    = CIX
+ ; And some math-pack routines not exported
+-INTLBUF = $DA51
+-SKBLANK = $DBA1
++        .import fb_intlbuf
++INTLBUF = fb_intlbuf
++        .import fb_skipblank
++SKBLANK = fb_skipblank
+ parser_skipws   = SKBLANK
+ 
+ ;; Parser SM commands:
+@@ -115,8 +117,7 @@ SM_EMIT_N=      SM_EMIT_28 + 1
+ 
+ ; Now, the rest of the code
+         .code
+-
+-        .importzp       laddr_ptr, laddr_buf
++        .importzp laddr_ptr, laddr_buf
+ 
+ lbl_chk_nxt:
+         lda     (laddr_buf), y
+@@ -200,6 +201,7 @@ zp_clear:
+         bpl     zp_clear
+ 
+ parse_line:
++        jsr $f280
+         ldx     #0
+         stx     bpos
+         stx     bmax
+diff --git a/src/standalone.asm b/src/standalone.asm
+index ea731a9..b0f0c4f 100644
+--- a/src/standalone.asm
++++ b/src/standalone.asm
+@@ -28,7 +28,7 @@
+ ; --------------------------------
+ 
+         ; Main bytecode symbol
+-        .exportzp       array_ptr, BASIC_TOP
++        .exportzp array_ptr, BASIC_TOP
+ 
+         .zeropage
+ 
+diff --git a/src/syntax/basic.syn b/src/syntax/basic.syn
+index 2790658..e256294 100644
+--- a/src/syntax/basic.syn
++++ b/src/syntax/basic.syn
+@@ -52,7 +52,7 @@ TOKENS {
+  # Print statements
+  TOK_PRINT_STR, TOK_PRINT_TAB, TOK_PRINT_RTAB
+  # Simple console input and output
+- TOK_GETKEY, TOK_INPUT_STR, TOK_PUT, TOK_BYTE_PUT
++ TOK_KEY, TOK_GETKEY, TOK_INPUT_STR, TOK_PUT, TOK_BYTE_PUT
+  # Jumps
+  TOK_JUMP, TOK_CJUMP, TOK_CNJUMP, TOK_CALL, TOK_RET, TOK_CRET, TOK_CNRET
+  # FOR loop support
+@@ -166,17 +166,13 @@ INT_FUNCTIONS: integer variable or function
+         # Functions without parameters
+         "Fre()"  emit { TOK_NUM, &MEMTOP, TOK_DPEEK, TOK_PUSH_BYTE, BASIC_TOP, TOK_DPEEK, TOK_SUB }
+         "Err()"  emit { TOK_BYTE_PEEK, IOERROR }
+-        "Key()"  emit { TOK_NUM, &CH, TOK_PEEK, TOK_PUSH_BYTE, 255, TOK_BIT_EXOR }
++        "Key()"  emit TOK_KEY
+         # Variables
+         emit TOK_VAR_LOAD E_VAR_WORD
+         # Functions with parameters
+         "Abs"    T_EXPR emit TOK_ABS
+         "SGn"    T_EXPR emit TOK_SGN
+         "Peek"   T_EXPR emit TOK_PEEK
+-        "PAddle" emit { TOK_NUM, &PADDL0, TOK_PUSH_BYTE, 7 } RD_PORT
+-        "PTrig"  emit { TOK_NUM, &PTRIG0, TOK_PUSH_BYTE, 7 } RD_PORT
+-        "Stick"  emit { TOK_NUM, &STICK0, TOK_PUSH_BYTE, 3 } RD_PORT
+-        "STRig"  emit { TOK_NUM, &STRIG0, TOK_PUSH_BYTE, 3 } RD_PORT
+         "Rand"   T_EXPR emit TOK_RAND
+         "Dpeek"  T_EXPR emit TOK_DPEEK
+         "USR("   EXPR emit TOK_USR_ADDR USR_EXPR_MORE ")" emit TOK_USR_CALL
+@@ -519,7 +515,6 @@ STATEMENT: statement
+         "ELIf" emit { TOK_JUMP, LT_ELIF } E_ELSEIF FORCE_BOOL_EXPR emit { TOK_CJUMP, LT_IF } E_PUSH_LT
+         "Endif" E_EOL E_POP_IF
+         "EXit" emit TOK_JUMP E_EXIT_LOOP
+-        "POSition" POSITION
+         "DIm" DIM_VAR DIM_MORE
+         "PAuse" PAUSE_OPT emit TOK_PAUSE
+         "INC" VAR_WORD_LVALUE_SADDR emit TOK_INC
+diff --git a/src/vars.asm b/src/vars.asm
+index 10bec2c..2717ad3 100644
+--- a/src/vars.asm
++++ b/src/vars.asm
+@@ -20,10 +20,10 @@
+ ; --------------------------------------------
+ 
+         .export         var_search, label_search, name_new
+-        .exportzp       var_namelen
++        .exportzp var_namelen
+ 
+         ; From alloc.asm
+-        .importzp       var_buf, prog_ptr, label_count, var_count, label_buf
++        .importzp var_buf, prog_ptr, label_count, var_count, label_buf
+         .import         alloc_area_8
+         ; From parser.asm
+         .import         parser_skipws
+@@ -129,7 +129,7 @@ skip_var:
+ next_var:
+ 
+ .ifdef FASTBASIC_FP
+-        .importzp       VT_FLOAT
++        .importzp VT_FLOAT
+         ; Check if variable is FP and add two to the number, this allocates
+         ; 6 bytes to the variable at runtime.
+         lda     (var), y        ; Get type

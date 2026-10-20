@@ -1,0 +1,17 @@
+SpartaDOS X utilities accompanying the FastBasic workflow
+
+EDX, MD5 and ARC are the original binaries selected by Exec816's SDX input
+manifests, with version-specific adaptations applied in RAM when loaded.
+They retain their original authorship and distribution terms.
+
+EDX: EDitor for SpartaDOS X, (c) 2017 Mono/Tristesse.
+Original EDX archive and manual: SpartaDOS X 4.51 Toolkit,
+https://sdx.atari8.info/sdx_files/4.51/toolkit.atr
+
+MD5 and ARC: SpartaDOS X Toolkit/cartridge distributions.
+Input locations, checksums and version records are in the accompanying source:
+  exec816/docs/plans/spartados-personality-inputs.json
+  exec816/docs/development/sdx-edx-audit.json
+  exec816/compat/sdx/
+
+The Exec816 GPL/MIT licence map does not relicense these original utilities.

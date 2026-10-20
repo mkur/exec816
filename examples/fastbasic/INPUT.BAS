@@ -1,0 +1,6 @@
+? "YOUR NAME";
+INPUT NAME$
+? "HELLO ";NAME$
+? "PRESS A KEY"
+GET K
+? "KEY ";K

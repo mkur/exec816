@@ -41,6 +41,13 @@ Control in bit 7. It bypasses translation and cooked editing. BREAK retains its
 separate foreground cancellation route. NO_CARET lets an application draw its
 own caret. These operations use existing instance and request storage.
 
+`CONCMD_PEEK_INPUT=13` immediately returns two bytes `{present, firstByte}`
+without consuming the FIFO or claiming READ ownership. Length must be exactly
+two; Actual is two even when `present=0`. The caller coordinates with other
+readers; the snapshot does not reserve the byte. Bytes are translated normally,
+or raw scans in RAW_KEYS mode. Stream WRITE preserves all 256 byte values in
+ATASCII mode; native mode continues to replace unsupported high bytes with `?`.
+
 `DOS.ConsoleIO(file,command,offset,buffer,length)` submits these requests through
 a caller-owned CON/RAW/pane FileHandle without opening another device binding.
 It keeps normal request lifetime, byte-count/error and cancellation semantics.

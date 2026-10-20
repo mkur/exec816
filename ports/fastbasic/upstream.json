@@ -1,0 +1,17 @@
+{
+  "format": "exec816-fastbasic-inputs-v1",
+  "repository": "https://github.com/dmsc/fastbasic",
+  "revision": "55dc52f74fcfcf3e8afd29bb5b984ee1dc9b6a6f",
+  "release": "v4.7",
+  "archive": {
+    "url": "https://codeload.github.com/dmsc/fastbasic/tar.gz/55dc52f74fcfcf3e8afd29bb5b984ee1dc9b6a6f",
+    "sha256": "9b01e3c96dca8fc1c48e9eb8cdb760f97dbadccf3fc2cc6455ece9820bb51493"
+  },
+  "mini65": {
+    "revision": "30b85d1ee940b546ca7b5737be371ff6c7f99ed1",
+    "url": "https://codeload.github.com/dmsc/mini65-sim/tar.gz/30b85d1ee940b546ca7b5737be371ff6c7f99ed1",
+    "sha256": "b10f9a3f39213dacabf76d1604147ba16804da69d047d68589dd2166107d0f27"
+  },
+  "selection": ["src/", "cc65/", "compiler/", "Makefile", "rules.mak", "deps.mak", "tests.mak", "testsuite/src/", "testsuite/tests/", "LICENSE", "README.md", "version.mk"],
+  "license": "GPL-2.0-or-later; retain file-specific runtime linking exception"
+}

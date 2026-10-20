@@ -74,6 +74,21 @@ RETURN(SDXSERVICE.Run(image,arguments))
 
 ENDMODULE
 ''')
+    (Path(output)/'fbbind.act').write_text('''MODULE FBBIND
+USE PROGRAMIMAGE
+USE FBPROGRAM
+USE FBSERVICE
+
+PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
+
+RETURN(FBPROGRAM.Load(bytes,length))
+
+PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
+
+RETURN(FBSERVICE.Run(image,arguments))
+
+ENDMODULE
+''')
 
 
 def bindings(output, labels):

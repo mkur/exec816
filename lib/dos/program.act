@@ -10,6 +10,8 @@ USE PROGRAMPLACE
 USE CPROGRAM
 USE CPROGRAMBIND
 USE SDXBIND
+USE FBBIND
+USE FBABI
 
 ; Validate, allocate and relocate an image before exposing it as executable.
 PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
@@ -17,6 +19,10 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
   PROGRAMIMAGE.Image POINTER image
   LONGINT error
   ADDRESS POINTER entryAddress
+
+  IF length>=4 AND LONGCARD POINTER(bytes)^=FBABI.FILE_MAGIC THEN
+    RETURN(FBBIND.Load(bytes,length))
+  FI
 
   IF length>=2 AND CARD POINTER(bytes)^=$fffe THEN
     RETURN(SDXBIND.Load(bytes,length))

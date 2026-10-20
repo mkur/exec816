@@ -1,0 +1,335 @@
+{
+  "format": "exec816-fastbasic-integer-development-v1",
+  "date": "2026-10-20",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "source_revision": "bccf53cb9e740af428aeae39a74a83cc1696ac22",
+  "implementation_state": "Uncommitted working tree; each build records its exact inputs",
+  "compiler": {
+    "load": 12288,
+    "end": 18242,
+    "entry": 12540,
+    "limit": 57344,
+    "bytes": 5970
+  },
+  "compiler_sha256": "9444e6164d34046d7abc09dad3fcce4d3ed903f8b3e054d60aae8b7155ca2313",
+  "upstream": {
+    "format": "exec816-fastbasic-inputs-v1",
+    "repository": "https://github.com/dmsc/fastbasic",
+    "revision": "55dc52f74fcfcf3e8afd29bb5b984ee1dc9b6a6f",
+    "release": "v4.7",
+    "archive": {
+      "url": "https://codeload.github.com/dmsc/fastbasic/tar.gz/55dc52f74fcfcf3e8afd29bb5b984ee1dc9b6a6f",
+      "sha256": "9b01e3c96dca8fc1c48e9eb8cdb760f97dbadccf3fc2cc6455ece9820bb51493"
+    },
+    "mini65": {
+      "revision": "30b85d1ee940b546ca7b5737be371ff6c7f99ed1",
+      "url": "https://codeload.github.com/dmsc/mini65-sim/tar.gz/30b85d1ee940b546ca7b5737be371ff6c7f99ed1",
+      "sha256": "b10f9a3f39213dacabf76d1604147ba16804da69d047d68589dd2166107d0f27"
+    },
+    "selection": [
+      "src/",
+      "cc65/",
+      "compiler/",
+      "Makefile",
+      "rules.mak",
+      "deps.mak",
+      "tests.mak",
+      "testsuite/src/",
+      "testsuite/tests/",
+      "LICENSE",
+      "README.md",
+      "version.mk"
+    ],
+    "license": "GPL-2.0-or-later; retain file-specific runtime linking exception"
+  },
+  "host_tests": {
+    "count": 542,
+    "path": "build/fastbasic/host-tests.log",
+    "sha256": "dcdc634b04fe551bcdc59347bf0c4f4f233c1725e221253176fc6a3bdff6397b"
+  },
+  "tests": [
+    {
+      "path": "build/fastbasic/controls/results.json",
+      "sha256": "5992943a4ca7ec34aeaff801aa034a57ea326a8fd12898ae383494192d8c2b5d",
+      "scope": "Original compiler/runtime controls in mini65 Atari OS simulation"
+    },
+    {
+      "path": "build/fastbasic/final/results.json",
+      "sha256": "f1483f9b3296c036be49727e47c01737e4ef0c18f5a387a2b6d6f8323f23d5ed",
+      "scope": "Final optimized integer runtime/compiler, stdin GET, errors, images and recovery",
+      "checks": 108,
+      "session_bytes": 2304,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "optimized": true,
+      "image_sha256": "fed771e34d4b0c522fca4c4639f8a27e3ddead32fac019acf41b233432ec2db0",
+      "xex_sha256": "6d7065c1a1ddbbedce5008569f5d4a58d934dcd309274354674319bcc695238a",
+      "native_stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 399,
+          "untouched_above_floor": 881
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 207,
+          "untouched_above_floor": 849
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 389,
+          "untouched_above_floor": 667
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 117,
+          "untouched_above_floor": 139
+        }
+      ]
+    },
+    {
+      "path": "build/fastbasic/raw-abi/results.json",
+      "sha256": "aae6abc56f80765fb1fec7e75fad5213c33a150f01216ebb00c77087d99973b6",
+      "scope": "Focused raw runtime ABI",
+      "checks": 17,
+      "session_bytes": 2304,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "optimized": false,
+      "image_sha256": "7f1d1bd6bb728ede1166973ddccb061c695bc850df14b28c9744ab21084de2d8",
+      "xex_sha256": "a5965bccf009e6cab91a2da49eebca4a966b1c6395030b2aa054dd8b2bede5de"
+    },
+    {
+      "path": "build/fastbasic/lifetime/results.json",
+      "sha256": "96f1c7979ae54c879e6763f1c3335fcbbfa8a34692aeeee9eae6016350e67a45",
+      "scope": "Two guests/native peer, SDX MD5, relaunch and no-I/O BREAK",
+      "checks": 59,
+      "breakTicks": 2,
+      "firstProgress": 95,
+      "secondProgress": 92,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "optimized": true,
+      "image_sha256": "bc6e2d08daf9bb396ad53b197b08f0d1f1e22c35759a4a1a82da58a250eb5b22",
+      "xex_sha256": "1fc67f513d115afcb345b7c4c2f5c9be3d20ec86339be3e0255aab8795de4022"
+    },
+    {
+      "path": "build/fastbasic/lifetime-nmi/results.json",
+      "sha256": "e3d2e9e619b3e10d93489ab393004fb133e3f787fd2dcd3fa89af47b34009fc6",
+      "scope": "Selected forced native NMI return boundary",
+      "checks": 59,
+      "breakTicks": 2,
+      "firstProgress": 99,
+      "secondProgress": 89,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "optimized": true,
+      "image_sha256": "eeddaf2ced58eb8f267949b24cb2f1dfd5e3b454601a223b720d884c86895b4b",
+      "xex_sha256": "297de3ca12f9fe9650618b6991bbe8f00a3467004025307e2307a4c061eec057"
+    },
+    {
+      "path": "build/fastbasic/faults/results.json",
+      "sha256": "0f7c63de911a66f99ce88104575a1b216496af527865ef9bd6e87f9239d2cfb7",
+      "scope": "Short write, write/Close failure, first cause and recovery",
+      "checks": 49,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "optimized": true,
+      "image_sha256": "518ce8acf10298a4844212f669320d209b384e51a0eb869c8a213d66bf2cf5a5",
+      "xex_sha256": "69a0799ba4a272a34063b7cabebe386a86c20bc954a9eca6161090cdd661107d"
+    },
+    {
+      "path": "build/fastbasic/console-opt/results.json",
+      "sha256": "dd3f6b7ebcbd51c7f297491a3bd5d5de67a2fb0e8d33a4279395e2c1b716f2cf",
+      "scope": "Optimized console peek and ATASCII stream",
+      "checks": 311,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "optimized": true,
+      "image_sha256": "c8392923cacea3a0aa0cbaf9c4ada8f3d5c50524178cca7d410fe9c7b383ae76",
+      "xex_sha256": "ae32a073e5d3034d3bfd605fe730d18313f2ace21d73f2d8b1aa4b0767223c17"
+    },
+    {
+      "path": "build/fastbasic/console-raw/results.json",
+      "sha256": "809137dcbd53941bf79da4f2574d57f634357382451941759ae19e66f8b3eb01",
+      "scope": "Raw console peek and ATASCII stream",
+      "checks": 311,
+      "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "optimized": false,
+      "image_sha256": "3a57c7ec6817d98b48262e5d80c4e1c5e5ef4442e683d4aabfefe976a482d010",
+      "xex_sha256": "6d4501db4acddcd462f08f4999e25702fff2b0e3d884c0915d62915cea193901"
+    },
+    {
+      "path": "build/fastbasic-source-check/results.json",
+      "sha256": "9223dc434599363b884c0dacc070a21ff4dced05aafc5cf18e7114720463aebf",
+      "scope": "Clean source build, no reused host binaries"
+    }
+  ],
+  "bank_zero": {
+    "relative_to": "Existing enabled SDX profile",
+    "fixed_delta": 0,
+    "root_delta": 0,
+    "kernel_delta": 0,
+    "per_task_delta": 0,
+    "idle_delta": 0,
+    "existing_shared_guest_pool_bytes": 544,
+    "shared_guest_slots": 2,
+    "includes_guards_alignment_unused_capacity": true
+  },
+  "upper_memory": {
+    "bank_backing_requested": 131071,
+    "bank_backing_reserved": 131072,
+    "session_bytes": 2304,
+    "image_bytes": 72,
+    "file_snapshot_rounding": 8,
+    "compiler_image_total_bytes": 139424,
+    "shared_bridge_reserved_bytes": 65536,
+    "fastbasic_module_code_bytes_in_text_demo": 14882,
+    "image_data_arena_reserved_bytes": 12288
+  },
+  "audit": {
+    "path": "build/fastbasic/audit.json",
+    "sha256": "fe88ff76ad579ff3e00668bea51ead88e9055691b78fd3204cd38a80bb86b860"
+  },
+  "remaining": [
+    "Full IRQ/NMI transition matrices and physical hardware qualification",
+    "Maximum source/string/array capacity qualification",
+    "Parser/save-phase BREAK timing and pointer-IRQ/focus stress during compilation",
+    "Floating point and integrated editor are follow-ons"
+  ],
+  "demos": [
+    {
+      "console": "text",
+      "evidence": "build/fastbasic-demo/text/fastbasic-checks.json",
+      "evidence_sha256": "8b95d40ed5bd7e68b9ddedcd713118fb517bc0cf015746226787fa483f57d070",
+      "archive": "build/fastbasic-demo/text/exec816-demo.zip",
+      "archive_sha256": "35c23a35de24e7fd989cd578bbf80344a73fcde98a13956a8da921293732c8e3",
+      "compiler_sha256": "9444e6164d34046d7abc09dad3fcce4d3ed903f8b3e054d60aae8b7155ca2313",
+      "redirected_output_hex": "36359b3f44419b",
+      "generated": {
+        "HELLO.COM": {
+          "sha256": "2424dc598469950d174241661af68998aede4e1b9a9b22079f2b292885971943",
+          "profile": {
+            "load": 12288,
+            "end": 14662,
+            "entry": 12540,
+            "limit": 57344,
+            "bytes": 2390
+          }
+        },
+        "SECOND.COM": {
+          "sha256": "2424dc598469950d174241661af68998aede4e1b9a9b22079f2b292885971943",
+          "profile": {
+            "load": 12288,
+            "end": 14662,
+            "entry": 12540,
+            "limit": 57344,
+            "bytes": 2390
+          }
+        },
+        "INPUT.COM": {
+          "sha256": "0b8caa8c6ba223294df8bb1daa651e6a7b1e7bcb58175f8b58e8f378e6348119",
+          "profile": {
+            "load": 12288,
+            "end": 14706,
+            "entry": 12540,
+            "limit": 57344,
+            "bytes": 2434
+          }
+        },
+        "BUSY.COM": {
+          "sha256": "348779c983c21f76b49a35ba2fa9fc9d2a0e182ce44ad1f355b6a3e981f5c98e",
+          "profile": {
+            "load": 12288,
+            "end": 14637,
+            "entry": 12540,
+            "limit": 57344,
+            "bytes": 2365
+          }
+        }
+      }
+    },
+    {
+      "console": "graphical",
+      "evidence": "build/fastbasic-demo/graphical/fastbasic-checks.json",
+      "evidence_sha256": "76c4dabc2fc322ced3980dd75b58147c1de7f303fb19ee92e70ee5656e8d2b6d",
+      "archive": "build/fastbasic-demo/graphical/exec816-demo.zip",
+      "archive_sha256": "e4b73fd8576e56e002eeb958e4834704891474458fd3d76cf4dc92509c7d164f",
+      "compiler_sha256": "9444e6164d34046d7abc09dad3fcce4d3ed903f8b3e054d60aae8b7155ca2313",
+      "redirected_output_hex": "36359b3f44419b",
+      "generated": {
+        "HELLO.COM": {
+          "sha256": "2424dc598469950d174241661af68998aede4e1b9a9b22079f2b292885971943",
+          "profile": {
+            "load": 12288,
+            "end": 14662,
+            "entry": 12540,
+            "limit": 57344,
+            "bytes": 2390
+          }
+        },
+        "SECOND.COM": {
+          "sha256": "2424dc598469950d174241661af68998aede4e1b9a9b22079f2b292885971943",
+          "profile": {
+            "load": 12288,
+            "end": 14662,
+            "entry": 12540,
+            "limit": 57344,
+            "bytes": 2390
+          }
+        },
+        "INPUT.COM": {
+          "sha256": "0b8caa8c6ba223294df8bb1daa651e6a7b1e7bcb58175f8b58e8f378e6348119",
+          "profile": {
+            "load": 12288,
+            "end": 14706,
+            "entry": 12540,
+            "limit": 57344,
+            "bytes": 2434
+          }
+        },
+        "BUSY.COM": {
+          "sha256": "348779c983c21f76b49a35ba2fa9fc9d2a0e182ce44ad1f355b6a3e981f5c98e",
+          "profile": {
+            "load": 12288,
+            "end": 14637,
+            "entry": 12540,
+            "limit": 57344,
+            "bytes": 2365
+          }
+        }
+      }
+    }
+  ],
+  "source_archive": "build/fastbasic-demo/exec816-fastbasic-source.zip (checksum stored beside the archive)"
+}

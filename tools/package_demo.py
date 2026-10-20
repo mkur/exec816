@@ -72,6 +72,13 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
             raise ValueError(f'Changed demo artifact: {name}')
         files[name] = content
     files['OF816-LICENSE.txt'] = (bundle/'OF816-LICENSE.txt').read_bytes()
+    manifest_path=bundle.parent/'demo-manifest.json'
+    demo_manifest=json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    if demo_manifest.get('fastbasic'):
+        upstream=ROOT/'build/fastbasic/source'
+        files['FASTBASIC-COPYING.txt']=(upstream/'LICENSE').read_bytes()
+        files['FASTBASIC-NOTICES.txt']=(ROOT/'ports/fastbasic/NOTICE.txt').read_bytes()
+        files['SDX-UTILITIES-NOTICE.txt']=(ROOT/'ports/fastbasic/SDX-NOTICE.txt').read_bytes()
     for name, source in LICENSE_FILES.items():
         files[name] = (ROOT/source).read_bytes()
     guide = (ROOT/'docs/demo-distribution.txt').read_text()
@@ -125,6 +132,8 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
     if '@VERSION@' in guide:
         guide = guide.replace('@VERSION@', demo['kernel']['exec_build']['version'])
     guide = guide.replace('@SYSTEM_DISK@', media['name'])
+    if demo_manifest.get('fastbasic'):
+        guide += (ROOT/'docs/fastbasic-distribution.txt').read_text()
     guide = guide.replace('@SYSTEM_DRIVE@', str(record['boot_config']['system_drive']))
     if graphics is not None:
         record = json.loads((graphics/'graphics.json').read_text())

@@ -194,7 +194,10 @@ at offsets `$4000–$467F`; version 8 uses 1,218 bytes for 36 providers and adds
 ReadArgsOrHelp, Fault and PrintFault. Its reserved capacity is unchanged. Its location and
 capacity are generated from the program ABI. This adds no arena reservation.
 Process ABI v3 uses three previously reserved row bytes for the Image reference;
-the row remains 128 bytes. An Image record is 42 requested/48 rounded heap bytes.
+the row remains 128 bytes. The current Image record occupies 72 requested and
+rounded heap bytes, including its name and optional personality extension hooks.
+FastBasic adds a kind value without changing that record layout; its
+[integer profile](fastbasic.md) owns its additional bank/session/file storage.
 
 ## Disk loading and shell dispatch
 

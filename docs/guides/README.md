@@ -16,6 +16,8 @@
 
 ## Writing programs
 
+- [FastBasic integer programs](fastbasic.md): edit with EDX, compile on the Atari and run the result.
+
 - [Disk commands](commands.md): `Main`, arguments, streams and return codes.
 - [Tasks](tasks.md): build and run the Task and signal examples.
 - [Message passing](messages.md): a small port of an Amiga Exec example.

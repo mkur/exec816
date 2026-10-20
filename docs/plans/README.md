@@ -1,5 +1,12 @@
 # Implementation plans
 
+- [FastBasic 6502 migration](fastbasic-6502-migration-plan.md): implemented FB0–FB5 functional
+  source port of the integer runtime and on-machine compiler, using the existing
+  guest bridge, native console/files and EDX for editing. Covers executable
+  output loading, memory and interrupt gates, with floating point and the
+  integrated editor as FB6/FB7 follow-ons. The [execution record](../history/fastbasic-integer.md)
+  distinguishes development evidence from remaining deeper acceptance gates.
+
 - [SpartaDOS personality for 6502 applications](spartados-personality-design.md):
   proposed MD5 → ARC → Sparta Commander sequence using private upper-memory
   images, emulation-mode execution and audited load-time patches. The

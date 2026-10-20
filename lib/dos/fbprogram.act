@@ -1,0 +1,98 @@
+MODULE FBPROGRAM
+USE EXEC
+USE DOSCLIENT
+USE O65TYPES
+USE O65MEMORY
+USE A816MEMORY
+USE PROGRAMIMAGE
+USE FBABI
+USE FBSTATE
+USE SDXSTATE
+USE SDXABI
+USE SDXPROGRAM
+
+; Reuse the established guest entry/return gates and add the BASIC services.
+PUBLIC PROC Gates(BYTE POINTER bank)
+  CARD index
+
+  SDXPROGRAM.Gates(bank)
+  FOR index=0 TO FBABI.SERVICE_COUNT-1 DO
+    SDXPROGRAM.Veneer(bank,FBABI.SERVICE_CIO+index*FBABI.SERVICE_STRIDE,
+        FBABI.EVENT_CIO+index)
+  OD
+
+RETURN
+
+PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
+  PROGRAMIMAGE.Image POINTER image
+  FBSTATE.Session POINTER state
+  CARD finish,entry,span,slot
+  LONGCARD base
+  LONGINT error
+
+  error=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+  IF length<FBABI.HEADER_BYTES THEN
+    DOSCLIENT.SetError(error)
+    RETURN(NULL)
+  FI
+  IF SDXSTATE.ReadWord(bytes,FBABI.HEADER_VERSION)<>FBABI.VERSION OR
+      SDXSTATE.ReadWord(bytes,FBABI.HEADER_TARGET)<>FBABI.TARGET THEN
+    DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_UNSUPPORTED))
+    RETURN(NULL)
+  FI
+  finish=SDXSTATE.ReadWord(bytes,FBABI.HEADER_END)
+  entry=SDXSTATE.ReadWord(bytes,FBABI.HEADER_ENTRY)
+  IF SDXSTATE.ReadWord(bytes,FBABI.HEADER_LOAD)<>FBABI.LOAD OR
+      SDXSTATE.ReadWord(bytes,FBABI.HEADER_LIMIT)<>FBABI.LIMIT OR
+      finish<=FBABI.LOAD OR finish>FBABI.LIMIT OR
+      entry<FBABI.LOAD OR entry>=finish THEN
+    DOSCLIENT.SetError(error)
+    RETURN(NULL)
+  FI
+  span=finish-FBABI.LOAD
+  IF length<>LONGCARD(span)+FBABI.HEADER_BYTES THEN
+    DOSCLIENT.SetError(error)
+    RETURN(NULL)
+  FI
+
+  image=PROGRAMIMAGE.Image POINTER(O65MEMORY.Allocate(SIZEOF(PROGRAMIMAGE.Image)))
+  error=LONGINT(O65TYPES.ERROR_NO_FREE_STORE)
+  IF image<>NULL THEN
+    state=FBSTATE.Session POINTER(O65MEMORY.Allocate(SIZEOF(FBSTATE.Session)))
+    IF state<>NULL THEN
+      state.guest.slot=SDXABI.SLOTS
+      image.extension=BYTE POINTER(state)
+      image.release=FBSTATE.Release
+      slot=SDXSTATE.Claim()
+      IF slot<SDXABI.SLOTS THEN
+        state.guest.slot=BYTE(slot)
+        state.guest.profile=FBABI.PROFILE
+        state.guest.entry=entry
+        image.backingBytes=131071
+        image.backing=O65MEMORY.Storage(SIZE(image.backingBytes))
+        image.dataBytes=length
+        image.data=O65MEMORY.Storage(SIZE(length))
+        IF image.backing<>NULL AND image.data<>NULL THEN
+          base=(LONGCARD(ADDRESS(image.backing))+$ffff) & LONGCARD($ffff0000)
+          state.guest.bank=BYTE POINTER(ADDRESS(base))
+          image.text=ADDRESS(base)
+          image.textBytes=65536
+          A816MEMORY.Move(image.data,bytes,SIZE(length))
+          image.kind=PROGRAMIMAGE.KIND_FASTBASIC
+          image.references=1
+          image.ownerHeld=1
+          image.magic=PROGRAMIMAGE.MAGIC
+          DOSCLIENT.SetError(0)
+          RETURN(image)
+        FI
+      ELSE
+        error=LONGINT(O65TYPES.ERROR_RESOURCE_LIMIT)
+      FI
+    FI
+    PROGRAMIMAGE.Free(image)
+  FI
+  DOSCLIENT.SetError(error)
+
+RETURN(NULL)
+
+ENDMODULE

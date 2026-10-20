@@ -1,0 +1,6 @@
+# Bootstrap-only target. User programs have no external machine-code USR.
+syntax a800.syn basic-internal.syn fileio.syn
+config fastbasic.cfg
+ca65 -tatari
+library fastbasic-int.lib
+extension .com

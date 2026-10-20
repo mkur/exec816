@@ -1,5 +1,9 @@
 # Historical records
 
+- [FastBasic integer delivery](fastbasic-integer.md): source-built 6502 runtime,
+  on-machine FBCI, native files/console, two-guest coexistence and packaged
+  EDX → compile → run workflows; zero added bank-zero reservations.
+
 - [Multiple shell sessions](shell-sessions.md): incremental SS1–SS8 evidence,
   explicit per-session state, native layout and concurrency checks, resource
   costs, desktop tabs, final latency observations and tested OF816 packages.

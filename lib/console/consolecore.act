@@ -415,7 +415,7 @@ CARD FUNC FeedInto(CONSOLETYPES.Instance POINTER instance BYTE POINTER bytes
           EXIT
         FI
 
-        IF value>=128 THEN
+        IF value>=128 AND (instance.caps & CONSOLETYPES.MODE_ATASCII)=0 THEN
           value='?
         FI
 

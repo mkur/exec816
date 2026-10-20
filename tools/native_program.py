@@ -331,6 +331,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     code_test = ' OR '.join(f'(value>=${lo:x} AND value<${hi:x})'
                            for lo, hi in code_ranges) or '0'
     (output/'sdxbind.act').write_text((ROOT/'lib/dos/sdxbind.act').read_text())
+    (output/'fbbind.act').write_text((ROOT/'lib/dos/fbbind.act').read_text())
     (output/'calypsimeta.act').write_text('MODULE CALYPSIMETA\n'
         'PUBLIC BYTE FUNC Code(LONGCARD value)\n\nRETURN('+code_test+')\nENDMODULE\n')
     exec_build = None
@@ -352,6 +353,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         memory['sdx_patches']=sdx_patches
         if sdx_patches:
             command(["python3", ROOT / "tools/generate_sdx.py", "--check"])
+            command(["python3", ROOT / "tools/generate_fastbasic.py", "--check"])
         if upper_table:
             from task_capacity import configure
             configure(memory,task_capacity,worker_stack,idle_stack)
@@ -1097,6 +1099,11 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         provenance['task_generated'].update({name:sha256(output/name) for name in ('ioresident.act','ioresidentmeta.act','ioadmission.act','idemeta.act','task-kernel/blocktransport.act')})
         provenance['sdx_enabled']=sdx
         if sdx:
+            provenance['fastbasic_inputs']={str(path.relative_to(ROOT)):sha256(path)
+                for path in (ROOT/'abi/fastbasic.json',ROOT/'tools/build_fastbasic.py',
+                    ROOT/'tools/generate_fastbasic.py',
+                    *sorted((ROOT/'lib/dos').glob('fb*.act')),
+                    *sorted(p for p in (ROOT/'ports/fastbasic').rglob('*') if p.is_file()))}
             provenance['sdx_inputs']={str(path.relative_to(ROOT)):sha256(path) for path in (
                 *sorted((ROOT/'lib/dos').glob('sdx*.act')),
                 ROOT/'tools/sdx_build.py',ROOT/'tools/sdx_fixtures.py',

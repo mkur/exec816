@@ -1,0 +1,3 @@
+DO
+  INC A
+LOOP

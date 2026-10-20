@@ -1,0 +1,318 @@
+MODULE FBSERVICE
+USE EXEC
+USE DOS
+USE DOSCLIENT
+USE DOSDELAY
+USE TIMER
+USE A816MEMORY
+USE PROGRAMIMAGE
+USE FBABI
+USE FBSTATE
+USE FBPROGRAM
+USE FBFILES
+USE SDXABI
+USE SDXSTATE
+USE SDXRUNTIME
+USE SDXPRINT
+USE SDXFILES
+USE CONSOLETYPES
+USE O65TYPES
+
+; Hidden B is preserved; the 6502 integer result is the low A/X pair.
+PROC SetWord(BYTE POINTER frame CARD value)
+
+  frame(SDXABI.FRAME_A)=BYTE(value)
+  frame(SDXABI.FRAME_X)=BYTE(value RSH 8)
+
+RETURN
+
+CARD FUNC Word(BYTE POINTER frame)
+
+RETURN(CARD(frame(SDXABI.FRAME_A)) OR
+    (CARD(frame(SDXABI.FRAME_X)) LSH 8))
+
+BYTE FUNC Clock(FBSTATE.Session POINTER state)
+  INT error
+
+  IF state.clock=NULL THEN
+    state.clockPort=EXEC.CreateMsgPort()
+    IF state.clockPort=NULL THEN
+      state.guest.nativeError=DOS.ERROR_NO_FREE_STORE
+      RETURN(0)
+    FI
+    state.clock=TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(
+        state.clockPort,SIZEOF(TIMER.TimerClockRequest)))
+    IF state.clock=NULL THEN
+      state.guest.nativeError=DOS.ERROR_NO_FREE_STORE
+      RETURN(0)
+    FI
+    error=EXEC.OpenDevice(BYTE POINTER(c"timer.device"),TIMER.UNIT_VBLANK,
+        @state.clock.tc_Request,0)
+    IF error<>0 THEN
+      state.guest.nativeError=LONGINT(error)
+      RETURN(0)
+    FI
+  FI
+  state.clock.tc_Request.io_Command=TIMER.TD_READCLOCK
+  error=EXEC.DoIO(@state.clock.tc_Request)
+  IF error<>0 THEN
+    state.guest.nativeError=LONGINT(error)
+  FI
+
+RETURN(error=0)
+
+PROC IntegerString(FBSTATE.Session POINTER state BYTE POINTER frame)
+  CARD value,count,index
+  BYTE negative
+
+  value=Word(frame)
+  negative=value>=$8000
+  IF negative<>0 THEN
+    value=CARD(0)-value
+  FI
+  count=0
+  DO
+    state.guest.number(count)=BYTE(value MOD 10)+'0
+    value=value/10
+    count==+1
+    IF value=0 THEN
+      EXIT
+    FI
+  OD
+  index=0
+  IF negative<>0 THEN
+    state.guest.bank(FBABI.NUMBER_STRING+1)='-
+    index=1
+  FI
+  WHILE count<>0 DO
+    count==-1
+    state.guest.bank(FBABI.NUMBER_STRING+1+index)=state.guest.number(count)
+    index==+1
+  OD
+  state.guest.bank(FBABI.NUMBER_STRING)=BYTE(index)
+  SetWord(frame,FBABI.NUMBER_STRING)
+
+RETURN
+
+; Arguments stay owned by the Process. Copy one quoted or unquoted field.
+BYTE FUNC Argument(FBSTATE.Session POINTER state BYTE POINTER frame)
+  CARD wanted,field,at,used
+  BYTE quoted,value
+
+  wanted=Word(frame)
+  field=0
+  at=0
+  IF state.arguments<>NULL THEN
+    DO
+      WHILE state.arguments(at)=32 DO
+        at==+1
+      OD
+      IF state.arguments(at)=0 THEN
+        EXIT
+      FI
+      used=0
+      quoted=0
+      DO
+        value=state.arguments(at)
+        IF value=0 OR (value=32 AND quoted=0) THEN
+          EXIT
+        FI
+        IF value=34 THEN
+          quoted=quoted XOR 1
+        ELSE
+          IF used=FBABI.STRING_LIMIT THEN
+            RETURN(0)
+          FI
+          state.guest.bank(FBABI.ARGUMENT_STRING+1+used)=value
+          used==+1
+        FI
+        at==+1
+      OD
+      IF quoted<>0 THEN
+        RETURN(0)
+      FI
+      IF field=wanted THEN
+        state.guest.bank(FBABI.ARGUMENT_STRING)=BYTE(used)
+        SetWord(frame,FBABI.ARGUMENT_STRING)
+        RETURN(1)
+      FI
+      field==+1
+    OD
+  FI
+  SetWord(frame,0)
+
+RETURN(1)
+
+PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
+  FBSTATE.Session POINTER state
+  BYTE POINTER frame
+  CARD event,value
+  BYTE error
+  LONGINT result,cause
+  LONGCARD random
+  BYTE ARRAY pending(2)
+  CARD ARRAY geometry(2)
+  BYTE mode
+
+  state=FBSTATE.Session POINTER(image.extension)
+  A816MEMORY.Clear(state.guest.bank,65536)
+  ; The on-machine writer owns a mutable copy of its executable header too.
+  A816MEMORY.Move(state.guest.bank+FBABI.LOAD-FBABI.HEADER_BYTES,
+      image.data,SIZE(image.dataBytes))
+  FBPROGRAM.Gates(state.guest.bank)
+  SDXSTATE.Prepare(@state.guest)
+  SDXSTATE.Word(state.guest.bank,FBABI.MEMTOP,FBABI.LIMIT)
+  SDXSTATE.Word(state.guest.bank,FBABI.MEMLO,
+      CARD(image.dataBytes)+FBABI.LOAD-FBABI.HEADER_BYTES)
+  state.arguments=arguments
+  state.random=$6d2b79f5
+  state.guest.nativeError=0
+  SDXPRINT.Begin(@state.guest)
+  result=0
+  cause=0
+  state.consoleMode=0
+  state.guest.screenWidth=0
+  IF state.guest.outputInteractive<>0 THEN
+    mode=CONSOLETYPES.MODE_ATASCII
+    IF DOS.ConsoleInfo(DOS.Output(),BYTE POINTER(@geometry))=0 OR
+        DOS.ConsoleIO(DOS.Output(),CONSOLETYPES.CONCMD_MODE,0,@mode,1)<>1 THEN
+      cause=DOS.IoErr()
+    ELSE
+      state.consoleMode=1
+      state.guest.screenWidth=geometry(0)
+    FI
+  FI
+  DO
+    IF cause<>0 THEN
+      EXIT
+    FI
+    IF DOS.BreakPending()<>0 THEN
+      cause=DOS.ERROR_BREAK
+      EXIT
+    FI
+    event=SDXRUNTIME.Run(state.guest.slot)
+    SDXSTATE.Guards()
+    frame=SDXSTATE.GetFrame(@state.guest)
+    IF DOS.BreakPending()<>0 THEN
+      cause=DOS.ERROR_BREAK
+      EXIT
+    FI
+    IF event=1 THEN
+      EXIT
+    FI
+    IF event<>FBABI.EVENT_PUT AND FBFILES.Flush(state)<>0 THEN
+      cause=state.guest.nativeError
+      EXIT
+    FI
+    error=0
+    value=Word(frame)
+    CASE event OF
+    WHEN FBABI.CHECKPOINT_EVENT THEN
+      ; The bridge has retired the guest activation before this checkpoint.
+    WHEN FBABI.EVENT_CIO THEN
+      FBFILES.Call(state,frame)
+    WHEN FBABI.EVENT_PUT THEN
+      error=FBFILES.Character(state,BYTE(value),frame(SDXABI.FRAME_X) RSH 4)
+      FBFILES.SetStatus(frame,BYTE(value),IF error=0 THEN BYTE(1) ELSE error FI)
+    WHEN FBABI.EVENT_GETKEY THEN
+      error=FBFILES.Key(state,frame)
+      IF error<>0 THEN
+        FBFILES.SetStatus(frame,0,error)
+      FI
+    WHEN FBABI.EVENT_STR THEN
+      IntegerString(state,frame)
+    WHEN FBABI.EVENT_TIME THEN
+      IF Clock(state)=0 THEN
+        cause=state.guest.nativeError
+      ELSE
+        SetWord(frame,CARD(state.clock.ticks_lo))
+      FI
+    WHEN FBABI.EVENT_PAUSE THEN
+      IF DOSDELAY.Delay(LONGCARD(value)+1)=0 THEN
+        cause=DOS.IoErr()
+      FI
+    WHEN FBABI.EVENT_RAND THEN
+      random=state.random
+      random=random XOR (random LSH 13)
+      random=random XOR (random RSH 17)
+      random=random XOR (random LSH 5)
+      state.random=random
+      IF value<>0 THEN
+        random=random MOD LONGCARD(value)
+      ELSE
+        random=0
+      FI
+      SetWord(frame,CARD(random))
+    WHEN FBABI.EVENT_ARGUMENT THEN
+      IF Argument(state,frame)=0 THEN
+        cause=DOS.ERROR_BAD_NUMBER
+      FI
+    WHEN FBABI.EVENT_KEY THEN
+      IF DOS.IsInteractive(DOS.Input())=0 THEN
+        cause=DOS.ERROR_OBJECT_WRONG_TYPE
+      ELSEIF DOS.ConsoleIO(DOS.Input(),CONSOLETYPES.CONCMD_PEEK_INPUT,0,
+          @pending,2)<>2 THEN
+        cause=DOS.IoErr()
+      ELSE
+        value=0
+        IF pending(0)<>0 THEN
+          value=IF pending(1)=0 THEN CARD(256) ELSE CARD(pending(1)) FI
+        FI
+        SetWord(frame,value)
+      FI
+    WHEN FBABI.EVENT_ERROR THEN
+      IF BYTE(value)=3 THEN
+        cause=DOS.ERROR_NO_FREE_STORE
+      ELSEIF BYTE(value)=2 THEN
+        cause=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+      ELSE
+        cause=state.guest.nativeError
+        IF cause=0 THEN
+          cause=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+        FI
+      FI
+    ELSE
+      cause=LONGINT(O65TYPES.ERROR_UNSUPPORTED)
+    ESAC
+    IF cause<>0 OR state.guest.outputError<>0 THEN
+      IF cause=0 THEN
+        cause=state.guest.nativeError
+      FI
+      EXIT
+    FI
+  OD
+  error=FBFILES.Flush(state)
+  IF cause=0 AND error<>0 THEN
+    cause=state.guest.nativeError
+  FI
+  error=SDXFILES.CloseAll(@state.guest)
+  IF cause=0 AND error<>0 THEN
+    cause=state.guest.nativeError
+  FI
+  IF state.clock<>NULL THEN
+    IF state.clock.tc_Request.io_Device<>NULL THEN
+      EXEC.CloseDevice(@state.clock.tc_Request)
+    FI
+    EXEC.DeleteIORequest(@state.clock.tc_Request)
+    state.clock=NULL
+  FI
+  IF state.clockPort<>NULL THEN
+    EXEC.DeleteMsgPort(state.clockPort)
+    state.clockPort=NULL
+  FI
+  IF state.consoleMode<>0 THEN
+    mode=0
+    IF DOS.ConsoleIO(DOS.Output(),CONSOLETYPES.CONCMD_MODE,0,@mode,1)<>1
+        AND cause=0 THEN
+      cause=DOS.IoErr()
+    FI
+    state.consoleMode=0
+  FI
+  IF cause<>0 THEN
+    result=FBABI.RESULT_FAILURE
+  FI
+  DOSCLIENT.SetError(cause)
+
+RETURN(result)
+
+ENDMODULE

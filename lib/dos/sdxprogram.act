@@ -12,7 +12,7 @@ USE SDXFILE
 USE SDXADMISSION
 
 ; The local veneer saves hidden B before entering another bank in native mode.
-PROC Veneer(BYTE POINTER bank CARD at,event)
+PUBLIC PROC Veneer(BYTE POINTER bank CARD at,event)
   BYTE ARRAY prefix=[$08 $78 $08 $18 $fb $c2 $30 $48 $da $5a $0b $8b $a9]
   BYTE POINTER code
   LONGCARD service
@@ -28,7 +28,7 @@ PROC Veneer(BYTE POINTER bank CARD at,event)
 
 RETURN
 
-PROC Gates(BYTE POINTER bank)
+PUBLIC PROC Gates(BYTE POINTER bank)
   CARD index
   BYTE ARRAY restore=[$ea $38 $ea $fb $ea $28 $ea $40]
 

@@ -50,9 +50,19 @@ PROC Main()
     OD
   OD
   Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELLS,39,@cells,2)=-1)
+  row=instance.row
+  column=instance.column
+  cells(0)=$81
+  Require(DOS.Write(file,@cells,1)=1)
+  Require(instance.cells(CONSOLECORE.CellOffset(instance,row*40+column))=$81)
   CONSOLEINPUT.Deliver(instance,$10087)
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_PEEK_INPUT,0,@cells,1)=-1)
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_PEEK_INPUT,0,@cells,2)=2)
+  Require(cells(0)=1 AND cells(1)=$87 AND instance.inputCount=1)
   Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_READ_KEYS,0,@key,1)=1)
   Require(key=$87 AND endpoint.reader=NULL AND endpoint.active=0)
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_PEEK_INPUT,0,@cells,2)=2)
+  Require(cells(0)=0 AND cells(1)=0 AND instance.read=NULL)
   CONSOLEINPUT.Deliver(instance,$200c0)
   Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_READ_KEYS,0,@key,1)=1)
   Require(key=$c0 AND endpoint.reader=NULL AND endpoint.active=0)

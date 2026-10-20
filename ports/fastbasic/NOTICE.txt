@@ -1,0 +1,17 @@
+FastBasic integer environment for Exec816
+
+Source: https://github.com/dmsc/fastbasic
+FastBasic 4.7, commit 55dc52f74fcfcf3e8afd29bb5b984ee1dc9b6a6f.
+Copyright (c) 2017-2025 Daniel Serpell and contributors.
+GPL version 2 or later. Retain the runtime linking exception in source files
+where provided; FBCI includes the compiler and is distributed under the GPL.
+See FASTBASIC-COPYING.txt and the corresponding source's README.md and headers.
+
+Modifications: private-bank 6502 interpreter, Exec target envelope, native
+console/files/clock services, cancellation checkpoints and compiler frontend.
+Own target helper/callback code and ABI definitions are MIT licensed.
+The source package includes the bundled cc65 notices and pinned mini65 source.
+
+Complete corresponding source and build instructions accompany this demo as
+exec816-fastbasic-source.zip. Keep that archive with binary redistributions.
+Ports, pins and patches: ports/fastbasic/ in the Exec816 source tree.

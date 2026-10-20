@@ -1,0 +1,164 @@
+MODULE FASTBASICLIFETIME
+USE EXEC
+USE DOS
+USE PROCESS
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE FBSTATE
+USE SDXSTATE
+USE HEAPCORE
+USE FSBOOT
+
+CARD checks,currentCase,breakTicks
+LONGINT reason,primary,secondary
+VOLATILE LONGCARD firstProgress,secondProgress
+VOLATILE BYTE stopPeer
+BYTE POINTER firstBank,secondBank
+VOLATILE BYTE clockLow=$14,clockHigh=$13
+BYTE ARRAY actual(128)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    reason=DOS.IoErr()
+    HEAPCORE.Abort($fb00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+CARD FUNC Clock()
+  BYTE high,low
+
+  DO
+    high=clockHigh
+    low=clockLow
+  UNTIL high=clockHigh
+  OD
+
+RETURN((CARD(high) LSH 8) OR CARD(low))
+
+PROC Put(BYTE POINTER path,bytes CARD count)
+
+  LET file=DOS.Open(path,DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,bytes,LONGINT(count))=LONGINT(count))
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PUBLIC LONGINT FUNC PeerEntry()
+
+  WHILE stopPeer=0 DO
+    IF firstBank($900)=1 THEN
+      firstProgress==+1
+    FI
+    IF secondBank($900)=1 THEN
+      secondProgress==+1
+    FI
+    EXEC.Yield()
+  OD
+
+RETURN(0)
+
+PROC Wait(LONGCARD identity LONGINT expected)
+  PROCESS.Result result
+
+  Require(PROCESS.Wait(identity,@result)<>0)
+  primary=result.primary
+  secondary=result.secondary
+  Require(primary=expected)
+  IF expected=0 THEN
+    Require(secondary=0)
+  ELSE
+    Require(secondary=DOS.ERROR_BREAK)
+  FI
+
+RETURN
+
+PROC Main()
+  CARD started
+  LONGCARD firstId,secondId,peerId
+
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  LET baseline=EXEC.AvailMem(0)
+SETUP_FILES
+  LET output1=DOS.Open(BYTE POINTER(c"RAM:FIRST.TXT"),DOS.MODE_NEWFILE)
+  LET output2=DOS.Open(BYTE POINTER(c"RAM:SECOND.TXT"),DOS.MODE_NEWFILE)
+  Require(output1<>NULL AND output2<>NULL)
+  LET previous=DOS.SelectOutput(output1)
+  LET first=PROGRAMFILE.Load(BYTE POINTER(c"RAM:WORKER.COM"))
+  LET second=PROGRAMFILE.Load(BYTE POINTER(c"RAM:WORKER.COM"))
+  Require(first<>NULL AND second<>NULL)
+  LET one=FBSTATE.Session POINTER(first.extension)
+  LET two=FBSTATE.Session POINTER(second.extension)
+  firstBank=one.guest.bank
+  secondBank=two.guest.bank
+  currentCase=1
+  peerId=PROCESS.StartBackground(@PeerEntry,NULL,0)
+  firstId=PROCESS.StartBackgroundLoaded(BYTE POINTER(first),NULL,0)
+  DOS.SelectOutput(output2)
+  secondId=PROCESS.StartBackgroundLoaded(BYTE POINTER(second),NULL,0)
+  Require(peerId<>0 AND firstId<>0 AND secondId<>0)
+  DOS.SelectOutput(previous)
+  Wait(firstId,0)
+  Wait(secondId,0)
+  stopPeer=1
+  Wait(peerId,0)
+  Require(firstProgress>0 AND secondProgress>0)
+  Require(one.guest.dp<>two.guest.dp AND one.guest.bank<>two.guest.bank)
+  PROGRAM.Unload(second)
+  ; Retained-Image relaunch resets mutable code operands, data and direct page.
+  DOS.SelectOutput(output1)
+  firstId=PROCESS.StartBackgroundLoaded(BYTE POINTER(first),NULL,0)
+  Require(firstId<>0)
+  Wait(firstId,0)
+  firstId=PROCESS.StartBackgroundLoaded(BYTE POINTER(first),NULL,0)
+  Require(firstId<>0)
+  Wait(firstId,0)
+  PROGRAM.Unload(first)
+  currentCase=2
+  LET busy=PROGRAMFILE.Load(BYTE POINTER(c"RAM:BUSY.COM"))
+  Require(busy<>NULL)
+  LET state=FBSTATE.Session POINTER(busy.extension)
+  firstId=PROCESS.StartBackgroundLoaded(BYTE POINTER(busy),NULL,0)
+  Require(firstId<>0)
+  started=Clock()
+  WHILE state.guest.bank($900)=0 AND CARD(Clock()-started)<100 DO
+    EXEC.Yield()
+  OD
+  Require(state.guest.bank($900)=1)
+  ; The audited SDX image uses the same remaining guest slot and bridge.
+  DOS.SelectOutput(output2)
+  LET md5=PROGRAMFILE.Load(BYTE POINTER(c"RAM:MD5.COM"))
+  Require(md5<>NULL)
+  secondId=PROCESS.StartBackgroundLoaded(BYTE POINTER(md5),BYTE POINTER(c"ABC.TXT"),7)
+  Require(secondId<>0)
+  Wait(secondId,0)
+  PROGRAM.Unload(md5)
+  started=Clock()
+  Require(PROCESS.RequestBreak(firstId)<>0)
+  Wait(firstId,20)
+  breakTicks=Clock()-started
+  Require(breakTicks<=2)
+  PROGRAM.Unload(busy)
+  SDXSTATE.Guards()
+  DOS.SelectOutput(previous)
+  Require(DOS.Close(output1)<>0 AND DOS.Close(output2)<>0)
+  LET file=DOS.Open(BYTE POINTER(c"RAM:FIRST.TXT"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,@actual,128)=21)
+  Require(DOS.Close(file)<>0)
+  LET other=DOS.Open(BYTE POINTER(c"RAM:SECOND.TXT"),DOS.MODE_OLDFILE)
+  Require(other<>NULL)
+  Require(DOS.Read(other,@actual+32,96)>7)
+  Require(DOS.Close(other)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+ENDMODULE

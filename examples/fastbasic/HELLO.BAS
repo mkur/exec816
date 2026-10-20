@@ -1,0 +1,2 @@
+? "HELLO BASIC"
+? 6*7
