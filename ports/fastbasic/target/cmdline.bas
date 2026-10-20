@@ -26,13 +26,19 @@
 
 ' Exec816 on-machine FastBasic integer compiler. Donor parser/runtime remain 6502.
 FileName$ = ""
+SourceName$ = ""
+DiagnosticName$ = ""
+JobName$ = ""
+LastError=0
+dim Diagnostic(9)
 dim MemStart(-1) byte
 MemEnd = adr(MemStart)
 dim NewPtr
 ArgNumber = 0
 
 proc FileError
-  LastError=err()
+  Diagnostic(1)=LastError
+  if len(DiagnosticName$) then i = usr(@FB_ERROR, 1)
   ? "File error: "; LastError
   ' Native cleanup closes channels while preserving this first failure.
   i = usr(@FB_ERROR, 1)
@@ -56,16 +62,38 @@ endproc
 
 ArgNumber = 0
 exec InputFileName
+SourceName$=FileName$
+i=usr(@FB_ARGUMENT, 2)
+if i then DiagnosticName$=$(i)
+i=usr(@FB_ARGUMENT, 3)
+if i then JobName$=$(i)
+Diagnostic(0)=1
+Diagnostic(1)=0
+Diagnostic(2)=@@LINENUM
+Diagnostic(3)=@@BMAX
+Diagnostic(4)=@COMP_DIAG_ERROR
+Diagnostic(5)=@FB_DIAG_MESSAGES
+Diagnostic(6)=adr(SourceName$)
+Diagnostic(7)=adr(DiagnosticName$)
+Diagnostic(8)=adr(JobName$)
+if len(DiagnosticName$) or len(JobName$)
+  i=usr(@FB_DIAGNOSTIC, adr(Diagnostic))
+endif
 open #1, 4, 0, FileName$
-if err() > 127 then exec FileError
+LastError=err()
+if LastError > 127 then exec FileError
 bget #1, adr(MemStart), dpeek(@MEMTOP) - adr(MemStart)
-if err() <> 136 then exec FileError
+LastError=err()
+if LastError <> 136 then exec FileError
 MemEnd = dpeek($358) + adr(MemStart)
 close #1
-if err() > 127 then exec FileError
+LastError=err()
+if LastError > 127 then exec FileError
 ' Compact CRLF while accepting LF, CR and the ATASCII documents from EDX.
 r = adr(MemStart)
 w = r
+SourceLine=1
+SourceColumn=0
 while r < MemEnd
   v = peek(r)
   inc r
@@ -76,6 +104,22 @@ while r < MemEnd
     v=$9B
   elif v=10
     v=$9B
+  endif
+  if v=$9B
+    inc SourceLine
+    SourceColumn=0
+  else
+    if SourceColumn=255 or (v<>9 and (v<32 or v>126))
+      Diagnostic(0)=2
+      Diagnostic(1)=256
+      if SourceColumn=255 then Diagnostic(1)=257
+      dpoke @@LINENUM,SourceLine
+      poke @@BMAX,SourceColumn
+      ? "Invalid source at line ";SourceLine;" column ";SourceColumn
+      i=usr(@FB_ERROR,2)
+      end
+    endif
+    inc SourceColumn
   endif
   poke w,v
   inc w
@@ -91,20 +135,29 @@ endif
 MemEnd=w
 dpoke @@RELOC_OFFSET, @BYTECODE_ADDR - MemEnd
 dpoke @@BUF_PTR, adr(MemStart)
+Diagnostic(0)=2
 if usr(@COMPILE_BUFFER, MemEnd)
   ? " at line "; dpeek(@@LINENUM); " column "; peek(@@BMAX)
   i = usr(@FB_ERROR, 2)
   end
 endif
 exec InputFileName
+Diagnostic(0)=3
 open #1, 8, 0, FileName$
-if err() > 127 then exec FileError
+LastError=err()
+if LastError > 127 then exec FileError
 bput #1, @COMP_HEAD_1, 16
-if err() > 127 then exec FileError
+LastError=err()
+if LastError > 127 then exec FileError
 bput #1, @__JUMPTAB_RUN__, @COMP_RT_SIZE
-if err() > 127 then exec FileError
+LastError=err()
+if LastError > 127 then exec FileError
 bput #1, MemEnd, NewPtr - MemEnd + 1
-if err() > 127 then exec FileError
+LastError=err()
+if LastError > 127 then exec FileError
 close #1
-if err() > 127 then exec FileError
+LastError=err()
+if LastError > 127 then exec FileError
+Diagnostic(0)=4
+Diagnostic(1)=0
 ? "Compiled "; FileName$

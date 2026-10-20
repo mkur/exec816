@@ -38,6 +38,13 @@ Make changes in [patches/exec6502.patch](patches/exec6502.patch) or [target/](ta
 then rebuild. Build directories are disposable; original source is verified
 against the archives before reuse. The checked-in patch retains donor notices;
 target helper/callback routines and generated interface constants are MIT.
+The maintained command-line frontend optionally registers a diagnostic job before
+source I/O. It normalizes line endings, rejects source lines over 255 bytes and
+unsupported bytes before entering the donor parser, and keeps tab byte positions.
+The port-owned whitespace helper accepts ASCII tab between tokens. The donor
+parser stores its error-table offset before printing; the native adapter writes
+the bounded record after the guest retires its channels. See the target contract
+for the four-argument diagnostic invocation and required completion checks.
 
 To rebuild from the accompanying source ZIP without fetching archives, in the
 already-patched `fastbasic/` tree run:

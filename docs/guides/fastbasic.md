@@ -55,7 +55,7 @@ The supplied CALC prints 3.75, 9 and 1. Compile DECIMAL.BAS with FBC to try
 decimal INPUT. Bare FBC prompts for source/output names, like FBCI. The smaller
 FBCI compiler accepts integer/string programs; FBC adds six-byte Atari numbers,
 arrays, conversions and math functions. Both use the same console/file backend.
-Rebuild older `$4701` executables; the current target identity is `$4702`.
+Rebuild older `$4701`/`$4702` executables; the current target identity is `$4703`.
 
 The integrated IDE remains a follow-on. Hardware-dependent PEEK/POKE,
 Atari graphics/sound and external USR routines are outside this target.

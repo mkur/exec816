@@ -104,7 +104,7 @@ Neither operation reads Atari hardware or RTCLOK.
 ## Executable and memory contract
 
 [abi/fastbasic.json](../../abi/fastbasic.json) defines the `FB65` version 1,
-target `$4702` container. All words are little endian:
+target `$4703` container. All words are little endian:
 
 | Offset | Field |
 | --- | --- |
@@ -144,7 +144,7 @@ an eight-entry FP expression stack at `$04D0–04FF`, numeric and
 input scratch near `$057F–067F`, argument scratch at `$0800–08FF` and CIO records
 at `$0340`. Time/random snapshots use four bytes at `$0700–0703`. Programs must
 respect compiler/runtime-owned storage. Services at
-`$F800–F99F` and the existing bridge intervals are reserved. No executable code
+`$F800–F9BF` and the existing bridge intervals are reserved. No executable code
 is installed in bank zero to reproduce the donor's zero-page dispatch.
 
 ## Scheduling and ownership
@@ -171,3 +171,35 @@ FastBasic consumes slots from that pool rather than enlarging it.
 Development checks exercise selected interrupt boundaries and coexistence;
 general guest interrupt qualification and physical hardware qualification remain
 open. See the linked implementation record for actual execution scope.
+
+## Compiler diagnostic file
+
+The optional command tail is `source output diagnostics eight-hex-digit-job`.
+The first two filenames retain their ordinary CLI and interactive behavior.
+Diagnostic jobs require all four arguments, a nonzero 32-bit hexadecimal job
+and source/diagnostic paths of at most 127 bytes. Registering invalid identities
+fails before source or command I/O. The supplied source names an immutable
+ATASCII snapshot owned by the controller through compiler retirement.
+
+[The machine-readable record](../../abi/fastbasic-diagnostics.json) generates
+the native writer constants and C header. Its 224 little-endian bytes contain
+`FBD1`, version/size, job, stage, BASIC error, signed native cause, one-based
+logical line, zero-based source byte column, exact source path and a bounded
+message. Line zero means unavailable. Tabs are skipped between tokens without expanding the source bytes; columns
+precede tab expansion. Lines over 255 bytes and unsupported source characters
+are rejected before the donor parser, with BASIC diagnostic codes 257 and 256. Source
+and message capacities include their NUL bytes (128 and 64). Reserved bytes
+are zero. Stages are source, parse, output and complete.
+
+The compiler records parser failure before printing its human-readable message.
+The native adapter emits the record after guest channels and console mode
+retire, with checked Write/Close. A requested diagnostic failure fails an
+otherwise successful job; an earlier parser or I/O cause wins. A controller
+must require successful Process results, a complete diagnostic with matching
+job/source/generation and a fresh validated COM. File existence alone is not
+success. Diagnostics do not extend the compiler's source or guest memory limits.
+
+The registration is borrowed until Run retires. It adds six requested upper
+bytes to the native Session (2,304 → 2,310 requested, 2,312 → 2,320
+allocator bytes) and a transient 224-byte upper allocation when
+writing. The fixed guest pool, Tasks and reserved bank-zero sizes are unchanged.

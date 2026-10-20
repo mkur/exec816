@@ -1,0 +1,1218 @@
+{
+  "format": "exec816-fastbasic-workbench-slice-v1",
+  "slice": "WB8",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-21",
+  "base_revision": "5e71165429055ed520aee79aaa491e1b3cfbf60e",
+  "source_inputs": {
+    "abi/fastbasic.json": "5a1fe29ee676b935618873ab704f9e462ed0c515b9be6d2e31097725823c0ae9",
+    "abi/fastbasic-diagnostics.json": "8a0c4447d253cc81384972da8cdb0f04ff1b9b9094dee737316a0a3618181274",
+    "lib/dos/fbabi.act": "132397013ea7109d7f9d0f3bf0978bc9892c45ddac35460f93a0e1649f29eaae",
+    "lib/dos/fbdiagabi.act": "4ed36425d4d05fd10006a61ee8acec63380d3e8c6ec260323d63960eca87f1dd",
+    "lib/dos/fbdiagnostic.act": "0ba6b3dec08287c514d478c72852cf95395a6c30cbae37d572fbb4efd2c850ce",
+    "lib/dos/fbservice.act": "bc53686217552387733d9bb0a53bc5001c4a1d35c8516c88f801e23a4024d950",
+    "lib/dos/fbstate.act": "1b5c46c5b502c281bc9d108d2ee325a1bad13223fbf98e7c4caeb2e8674b534f",
+    "c/include/exec816/fastbasic-diagnostic.h": "366ee5af5acd49b5424c4dfb58e94f8307ce2f2531872e6b459c269635cd8a5f",
+    "c/calypsi/fastbasic-diagnostic.c": "81c201fc01df1f9d3acec89ef0397b31ee9603e35bfb16211e28c616730a8a8c",
+    "ports/fastbasic/patches/exec6502.patch": "48e4d1f84e85068e306c017a0f2c4f593d455f0b165287b58af1dbfedc373de3",
+    "ports/fastbasic/target/cmdline.bas": "85008fdbfad22969e56c0b21e0645c71ce7b2c812258f7c81ae51b2dfc4a5fc0",
+    "ports/fastbasic/target/callbacks.asm": "84f867d37cfb98e5caac584cc82c0a2d52df290afbea8d8ab450184e13aa8c21",
+    "ports/fastbasic/target/helpers.asm": "efd931da9b869871d6c0305d3cdaa5b38edb3a45b4406518be76f4cc22c943e0",
+    "ports/fastbasic/target/fastbasic.inc": "3c2ec0df5f3fed42dc3f3bf0cd32aed48c46cb4101ea5a9b238e17e590ae2fe3",
+    "tools/generate_fastbasic.py": "ea4ffcabebfc03b4a39e9e0085d503b319b7c1bf95a5cdc174fb924202adb5ee",
+    "tools/generate_fastbasic_diagnostics.py": "5bee8b250a2808eca25c278418a6c5b58697914e03d655bb3ecec753bf80d300",
+    "tools/build_fastbasic.py": "10155fe7bb7800574627f26c716533545fe06602e6ebcc400889659d5d5a528a",
+    "tools/test_fastbasic_diagnostics.py": "9dd763dcf4168036701bf71fc7d42ce92c1e9b2b2e6d688264fceddc03bf7d7b",
+    "tools/test_fastbasic_diagnostic_faults.py": "6b2174244c9c5dada5d4ebedbb7b7802696ca9f2b886041f7f0779c38e038c1f",
+    "tools/test_fastbasic_diagnostic_layout.py": "a5292f0688a461996da0e2783cda56f641b191272f0eddac3db8c23844d3c25b",
+    "tools/test_fastbasic_faults.py": "ccfe1be50c609699b2c9f2bf5ae5279715db43d64db5408e55d49bf713114d12",
+    "tools/test_fastbasic_workbench.py": "9691bf35e9ff86db81b9953fff0b1a9556cc0a348d42e0be0966ed3e3ab6dd02",
+    "tests/test_fastbasic_diagnostic_schema.py": "24976233ac001cf640c2fa1f807802641db468177a3e841a0a889c0617e823db",
+    "tests/programs/fastbasic_diagnostic_layout.c": "819f3064b4b1b159f4fd26b82d367cad38d55d5200403744c997f6e1015a9a32",
+    "tests/programs/fbdiagnostic_fault.act": "ca18754c114430cf61ba9526dc060685964ab08b65df75759e33bd37488ed4df"
+  },
+  "pins": {
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "ports/fastbasic/upstream.json": "3d68f368e7715cabcd979d55823c6b9fa0a1e9665838158a24e27507e16ec82e",
+    "abi/fastbasic.json": "5a1fe29ee676b935618873ab704f9e462ed0c515b9be6d2e31097725823c0ae9",
+    "abi/c-program.json": "902cd65b07c6a6de4b743b5d0982caf7369f77eda369287d96a37a5bc6dd930e",
+    "toolchain/altirra-gem-vdi.json": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431",
+    "toolchain/altirra-shell-paced.json": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087"
+  },
+  "evidence": [
+    {
+      "path": "build/fastbasic-workbench/wb8-diagnostics/results.json",
+      "sha256": "49e57d5e249fc6bb7e02caff6a1ed383293825e496de617dd8859c5a1b452680",
+      "status": "pass",
+      "checks": 191,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 893,
+        "native_irq_count": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 425,
+            "untouched_above_floor": 855
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 207,
+            "untouched_above_floor": 849
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 401,
+            "untouched_above_floor": 655
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 26,
+            "untouched_above_floor": 230
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 277,
+          "untouched_from_base": 1259,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "cases": [
+        {
+          "index": 1,
+          "name": "first",
+          "compiler": "FBCI",
+          "source": "RAM:S1.BAS",
+          "stage": 2,
+          "basic_error": 28,
+          "cause": 306,
+          "line": 1,
+          "column": 1,
+          "message": "parse error",
+          "sha256": "0c8c6cde868ff4590ce637d806f8786fc4df19846e08f24c1750aedbe09d34c2"
+        },
+        {
+          "index": 2,
+          "name": "last",
+          "compiler": "FBCI",
+          "source": "RAM:S2.BAS",
+          "stage": 2,
+          "basic_error": 28,
+          "cause": 306,
+          "line": 2,
+          "column": 1,
+          "message": "parse error",
+          "sha256": "acdc8362de7ebc4582086fd35ffcecf785930a608328a0ddc400357d955bcf1c"
+        },
+        {
+          "index": 3,
+          "name": "tab",
+          "compiler": "FBCI",
+          "source": "RAM:S3.BAS",
+          "stage": 2,
+          "basic_error": 28,
+          "cause": 306,
+          "line": 1,
+          "column": 2,
+          "message": "parse error",
+          "sha256": "5ff341008ce37726ef5771523e14b4a199012ff194c74aa2b7a88d3d29384ac5"
+        },
+        {
+          "index": 4,
+          "name": "statement",
+          "compiler": "FBCI",
+          "source": "RAM:S4.BAS",
+          "stage": 2,
+          "basic_error": 28,
+          "cause": 306,
+          "line": 1,
+          "column": 6,
+          "message": "parse error",
+          "sha256": "0c7bf4369503e0480d06039d5027ec9759763876597cd081d46bb35abc27ea87"
+        },
+        {
+          "index": 5,
+          "name": "unterminated",
+          "compiler": "FBCI",
+          "source": "RAM:S5.BAS",
+          "stage": 4,
+          "basic_error": 0,
+          "cause": 0,
+          "line": 0,
+          "column": 0,
+          "message": "Compiled",
+          "sha256": "9e2eb549f81c01be36c47d6db68b92b6c15c818d99788ef6b25c0a57f3c5338c"
+        },
+        {
+          "index": 6,
+          "name": "empty",
+          "compiler": "FBCI",
+          "source": "RAM:S6.BAS",
+          "stage": 4,
+          "basic_error": 0,
+          "cause": 0,
+          "line": 0,
+          "column": 0,
+          "message": "Compiled",
+          "sha256": "c9c3dfea06630fc3dab487e7f6c5992f260f6b4284989d1a7575af560de8b95b"
+        },
+        {
+          "index": 7,
+          "name": "crlf",
+          "compiler": "FBCI",
+          "source": "RAM:S7.BAS",
+          "stage": 4,
+          "basic_error": 0,
+          "cause": 0,
+          "line": 0,
+          "column": 0,
+          "message": "Compiled",
+          "sha256": "b2026e874f814064ff8f9eb7804afc2fd67b4ef6ab0708aedbf884e934b23789"
+        },
+        {
+          "index": 8,
+          "name": "longline",
+          "compiler": "FBCI",
+          "source": "RAM:S8.BAS",
+          "stage": 2,
+          "basic_error": 257,
+          "cause": 306,
+          "line": 1,
+          "column": 255,
+          "message": "Line exceeds 255 bytes",
+          "sha256": "4614e2581dcb4f1ff26265a1a448e9e58eea170e8bff40026a3033709685a069"
+        },
+        {
+          "index": 9,
+          "name": "badbyte",
+          "compiler": "FBCI",
+          "source": "RAM:S9.BAS",
+          "stage": 2,
+          "basic_error": 256,
+          "cause": 306,
+          "line": 1,
+          "column": 3,
+          "message": "Unsupported source byte",
+          "sha256": "3ef766d08abf36e909d243d05eafaa84de5007270a4544143f224f803e1952e4"
+        },
+        {
+          "index": 10,
+          "name": "oversize",
+          "compiler": "FBCI",
+          "source": "RAM:S10.BAS",
+          "stage": 1,
+          "basic_error": 1,
+          "cause": 308,
+          "line": 0,
+          "column": 0,
+          "message": "Source input failed",
+          "sha256": "81427677a3af680a2d230f1f33c0854a780e331d8429aab6383a861b82e65484"
+        },
+        {
+          "index": 11,
+          "name": "first",
+          "compiler": "FBC",
+          "source": "RAM:S1.BAS",
+          "stage": 2,
+          "basic_error": 28,
+          "cause": 306,
+          "line": 1,
+          "column": 1,
+          "message": "parse error",
+          "sha256": "a06d77d08f77a56b4094547efe993f3c4322a8ede7e168c019b8614e60afd22e"
+        },
+        {
+          "index": 12,
+          "name": "last",
+          "compiler": "FBC",
+          "source": "RAM:S2.BAS",
+          "stage": 2,
+          "basic_error": 28,
+          "cause": 306,
+          "line": 2,
+          "column": 1,
+          "message": "parse error",
+          "sha256": "612cd96d82f393bb23da31e4631eeaa8e2ff5a5ec0ee5ccd020cbfe471026685"
+        },
+        {
+          "index": 13,
+          "name": "tab",
+          "compiler": "FBC",
+          "source": "RAM:S3.BAS",
+          "stage": 2,
+          "basic_error": 28,
+          "cause": 306,
+          "line": 1,
+          "column": 2,
+          "message": "parse error",
+          "sha256": "2c9c8a1b26b4fae5cce4d0150976ab076ec2841d44b5435d18bd85f9a58fd904"
+        },
+        {
+          "index": 14,
+          "name": "statement",
+          "compiler": "FBC",
+          "source": "RAM:S4.BAS",
+          "stage": 2,
+          "basic_error": 28,
+          "cause": 306,
+          "line": 1,
+          "column": 6,
+          "message": "parse error",
+          "sha256": "e21c47d5bbd496d72e8d4ed2e6e2327bd29467700a05d1f3fb806301a9dafbd7"
+        },
+        {
+          "index": 15,
+          "name": "unterminated",
+          "compiler": "FBC",
+          "source": "RAM:S5.BAS",
+          "stage": 4,
+          "basic_error": 0,
+          "cause": 0,
+          "line": 0,
+          "column": 0,
+          "message": "Compiled",
+          "sha256": "4d0e1f26a2bf769562e4416a437054037b4f6aabe11919c8c2aa5d25011b6d33"
+        },
+        {
+          "index": 16,
+          "name": "empty",
+          "compiler": "FBC",
+          "source": "RAM:S6.BAS",
+          "stage": 4,
+          "basic_error": 0,
+          "cause": 0,
+          "line": 0,
+          "column": 0,
+          "message": "Compiled",
+          "sha256": "aa256f1f71e7375aeeac615448601e58a0f4b7d8f78564a02abcc651a57e138e"
+        },
+        {
+          "index": 17,
+          "name": "crlf",
+          "compiler": "FBC",
+          "source": "RAM:S7.BAS",
+          "stage": 4,
+          "basic_error": 0,
+          "cause": 0,
+          "line": 0,
+          "column": 0,
+          "message": "Compiled",
+          "sha256": "b8ce123d9dafb397444a559cbe54f35f21e27b2230ea542c979fbe1f74ab0eea"
+        },
+        {
+          "index": 18,
+          "name": "longline",
+          "compiler": "FBC",
+          "source": "RAM:S8.BAS",
+          "stage": 2,
+          "basic_error": 257,
+          "cause": 306,
+          "line": 1,
+          "column": 255,
+          "message": "Line exceeds 255 bytes",
+          "sha256": "20320bdbb09bf4660cacd9a902439660952b17392fbcfa3e3aa902396e4fa669"
+        },
+        {
+          "index": 19,
+          "name": "badbyte",
+          "compiler": "FBC",
+          "source": "RAM:S9.BAS",
+          "stage": 2,
+          "basic_error": 256,
+          "cause": 306,
+          "line": 1,
+          "column": 3,
+          "message": "Unsupported source byte",
+          "sha256": "bd60514dfc76a66a2dc58d88f0f34d4240f4e6e4bbcee07122d31211a173dc8e"
+        },
+        {
+          "index": 20,
+          "name": "oversize",
+          "compiler": "FBC",
+          "source": "RAM:S10.BAS",
+          "stage": 1,
+          "basic_error": 1,
+          "cause": 308,
+          "line": 0,
+          "column": 0,
+          "message": "Source input failed",
+          "sha256": "acb286911f5a6f12617796c377693b7ffdc774bc1bae7cf8d784f05051c85381"
+        }
+      ]
+    },
+    {
+      "path": "build/fastbasic-workbench/wb8-faults/results.json",
+      "sha256": "6be75dd364f8728405abdf013830d81a30d0cd6a57be96bdb710e7da77600ea2",
+      "status": "pass",
+      "checks": 191,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 1399,
+        "native_irq_count": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 365,
+            "untouched_above_floor": 915
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 207,
+            "untouched_above_floor": 849
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 423,
+            "untouched_above_floor": 633
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 26,
+            "untouched_above_floor": 230
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 277,
+          "untouched_from_base": 1259,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "cases": [
+        {
+          "compiler": "FBCI",
+          "mode": 1,
+          "cause": 221
+        },
+        {
+          "compiler": "FBCI",
+          "mode": 2,
+          "cause": 213
+        },
+        {
+          "compiler": "FBCI",
+          "mode": 3,
+          "cause": 221
+        },
+        {
+          "compiler": "FBCI",
+          "mode": 4,
+          "cause": 0
+        },
+        {
+          "compiler": "FBCI",
+          "mode": 5,
+          "cause": 221
+        },
+        {
+          "compiler": "FBCI",
+          "mode": 6,
+          "cause": 213
+        },
+        {
+          "compiler": "FBCI",
+          "mode": 7,
+          "cause": 205
+        },
+        {
+          "compiler": "FBCI",
+          "mode": 8,
+          "cause": 213
+        },
+        {
+          "compiler": "FBCI",
+          "mode": 9,
+          "cause": 213
+        },
+        {
+          "compiler": "FBCI",
+          "mode": 10,
+          "cause": 103
+        },
+        {
+          "compiler": "FBCI",
+          "mode": 0,
+          "cause": 0
+        },
+        {
+          "compiler": "FBCI",
+          "source": "RAM:BAD.BAS",
+          "job": "12345678",
+          "mode": 5,
+          "cause": 306
+        },
+        {
+          "compiler": "FBCI",
+          "source": "RAM:SOURCE.BAS",
+          "job": "00000000",
+          "mode": 0,
+          "cause": 115
+        },
+        {
+          "compiler": "FBCI",
+          "source": "RAM:SOURCE.BAS",
+          "job": "BAD",
+          "mode": 0,
+          "cause": 115
+        },
+        {
+          "compiler": "FBCIOOM",
+          "source": "RAM:SOURCE.BAS",
+          "job": "12345678",
+          "mode": 0,
+          "cause": 103
+        },
+        {
+          "compiler": "FBC",
+          "mode": 1,
+          "cause": 221
+        },
+        {
+          "compiler": "FBC",
+          "mode": 2,
+          "cause": 213
+        },
+        {
+          "compiler": "FBC",
+          "mode": 3,
+          "cause": 221
+        },
+        {
+          "compiler": "FBC",
+          "mode": 4,
+          "cause": 0
+        },
+        {
+          "compiler": "FBC",
+          "mode": 5,
+          "cause": 221
+        },
+        {
+          "compiler": "FBC",
+          "mode": 6,
+          "cause": 213
+        },
+        {
+          "compiler": "FBC",
+          "mode": 7,
+          "cause": 205
+        },
+        {
+          "compiler": "FBC",
+          "mode": 8,
+          "cause": 213
+        },
+        {
+          "compiler": "FBC",
+          "mode": 9,
+          "cause": 213
+        },
+        {
+          "compiler": "FBC",
+          "mode": 10,
+          "cause": 103
+        },
+        {
+          "compiler": "FBC",
+          "mode": 0,
+          "cause": 0
+        },
+        {
+          "compiler": "FBC",
+          "source": "RAM:BAD.BAS",
+          "job": "12345678",
+          "mode": 5,
+          "cause": 306
+        },
+        {
+          "compiler": "FBC",
+          "source": "RAM:SOURCE.BAS",
+          "job": "00000000",
+          "mode": 0,
+          "cause": 115
+        },
+        {
+          "compiler": "FBC",
+          "source": "RAM:SOURCE.BAS",
+          "job": "BAD",
+          "mode": 0,
+          "cause": 115
+        },
+        {
+          "compiler": "FBCOOM",
+          "source": "RAM:SOURCE.BAS",
+          "job": "12345678",
+          "mode": 0,
+          "cause": 103
+        }
+      ]
+    },
+    {
+      "path": "build/fastbasic-workbench/wb8-layout/results.json",
+      "sha256": "b7b9061e336b8e8aa39e858bd787a3e75487133b19635b3ebc3b649c70b6e408",
+      "status": "pass",
+      "checks": 16,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 0,
+        "native_irq_count": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 82,
+            "untouched_above_floor": 1198
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 140,
+          "untouched_from_base": 1396,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": true
+    },
+    {
+      "path": "build/fastbasic-workbench/wb8-layout-raw/results.json",
+      "sha256": "23ed060b337057bdee03c2d6ed8d8b4d76f81133ab22137e720e1d28113288dd",
+      "status": "pass",
+      "checks": 16,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 0,
+        "native_irq_count": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 85,
+            "untouched_above_floor": 1195
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 134,
+          "untouched_from_base": 1402,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": false
+    },
+    {
+      "path": "build/fastbasic-workbench/wb8-cli-faults/results.json",
+      "sha256": "8b3c763ad2ffe3f6291e9108a8875a79dd899ba688a994f9ba2260462eea2063",
+      "status": "pass",
+      "checks": 49,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 330,
+        "native_irq_count": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 369,
+            "untouched_above_floor": 911
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 207,
+            "untouched_above_floor": 849
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 409,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 26,
+            "untouched_above_floor": 230
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 277,
+          "untouched_from_base": 1259,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    {
+      "path": "build/fastbasic-workbench/wb8-cli-fp-current/results.json",
+      "sha256": "74793a3fdc632a493673ba61ac21cba36e84f0c939a78592410ff2e1b1db627d",
+      "status": "pass",
+      "checks": 49,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 513,
+        "native_irq_count": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 369,
+            "untouched_above_floor": 911
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 223,
+            "untouched_above_floor": 833
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 409,
+            "untouched_above_floor": 647
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 26,
+            "untouched_above_floor": 230
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 277,
+          "untouched_from_base": 1259,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    }
+  ],
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes": "Guards, alignment and unused capacity; existing Task pools and 544-byte guest pool retained"
+  },
+  "compilers": {
+    "path": "build/fastbasic/build.json",
+    "sha256": "ac2912726c3c8c5bce969c87bbee4982b89810757d7b870fa8275a0ed157bebf",
+    "target": 18179,
+    "variants": {
+      "FBCI": {
+        "profile": {
+          "load": 12288,
+          "end": 18702,
+          "entry": 12602,
+          "limit": 57344,
+          "bytes": 6430
+        },
+        "sha256": "aef3594c45b007c5af2564b235b81043dd61279810b13fb572266f6c7e63c769"
+      },
+      "FBC": {
+        "profile": {
+          "load": 12288,
+          "end": 22147,
+          "entry": 14727,
+          "limit": 57344,
+          "bytes": 9875
+        },
+        "sha256": "6e0529e3ce7037b64ce305b222f8f81c434ea2479a9cdd6eaaf0f06d4255cc3a"
+      }
+    }
+  },
+  "memory_map": {
+    "baseline": "build/fastbasic-workbench/wb0-demo/build.json",
+    "baseline_sha256": "9733353c986ab705cde8e1ecc19c4fb923fd32f89eee7241993c92cdd48be862",
+    "build": "build/fastbasic-workbench/wb8-diagnostics/build.json",
+    "build_sha256": "d8ec3e9399a299ddb92718344a49510045747feaa978f15f403873e96f42de8e",
+    "bank_zero_budget": {
+      "fixed_runtime": 11072,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 27392,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 58624,
+      "loading_including_os": 51600
+    }
+  },
+  "diagnostics": {
+    "record_bytes": 224,
+    "registration_bytes": 18,
+    "session_requested_upper_delta": 6,
+    "session_before": 2304,
+    "session_after": 2310,
+    "session_rounded_before": 2312,
+    "session_rounded_after": 2320,
+    "transient_record_upper_bytes": 224,
+    "source_limit": "Existing flat guest allocation; 255 bytes per source line",
+    "identity": "Nonzero 32-bit job plus immutable absolute source path",
+    "completion": "Process success and matching complete diagnostic and fresh validated COM are all required"
+  }
+}

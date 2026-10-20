@@ -10,6 +10,7 @@ USE FBABI
 USE FBSTATE
 USE FBPROGRAM
 USE FBFILES
+USE FBDIAGNOSTIC
 USE SDXABI
 USE SDXSTATE
 USE SDXRUNTIME
@@ -196,6 +197,8 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   SDXSTATE.Word(state.guest.bank,FBABI.MEMLO,
       CARD(image.dataBytes)+FBABI.LOAD-FBABI.HEADER_BYTES)
   state.arguments=arguments
+  state.diagnostic=0
+  state.diagnosticJob=0
   state.random=$6d2b79f5
   state.guest.nativeError=0
   SDXPRINT.Begin(@state.guest)
@@ -288,6 +291,13 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
       IF Argument(state,frame)=0 THEN
         cause=DOS.ERROR_BAD_NUMBER
       FI
+    WHEN FBABI.EVENT_DIAGNOSTIC THEN
+      state.diagnosticJob=FBDIAGNOSTIC.Register(state,value)
+      IF state.diagnosticJob=0 THEN
+        cause=DOS.ERROR_BAD_NUMBER
+      ELSE
+        state.diagnostic=value
+      FI
     WHEN FBABI.EVENT_KEY THEN
       IF DOS.IsInteractive(DOS.Input())=0 THEN
         cause=DOS.ERROR_OBJECT_WRONG_TYPE
@@ -349,6 +359,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
     FI
     state.consoleMode=0
   FI
+  cause=FBDIAGNOSTIC.Complete(state,state.diagnostic,state.diagnosticJob,cause)
   IF cause<>0 THEN
     result=FBABI.RESULT_FAILURE
   FI

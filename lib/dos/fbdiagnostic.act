@@ -1,0 +1,217 @@
+; Optional compiler-owned diagnostic output. The guest registration stays live
+; until Run retires; no request or guest location escapes that lifetime.
+MODULE FBDIAGNOSTIC
+USE EXEC
+USE DOS
+USE FBABI
+USE FBSTATE
+USE FBDIAGABI
+USE SDXSTATE
+USE O65TYPES
+
+BYTE FUNC ReadByte(FBSTATE.Session POINTER state CARD location)
+
+  IF location<256 THEN
+    RETURN(state.guest.dp(location))
+  FI
+
+RETURN(state.guest.bank(location))
+
+CARD FUNC ReadWord(FBSTATE.Session POINTER state CARD location)
+
+RETURN(CARD(ReadByte(state,location))
+    OR (CARD(ReadByte(state,location+1)) LSH 8))
+
+; Registration admits the descriptor and bounded file identities once. A
+; zero result refuses entry before the compiler reads or writes a source.
+PUBLIC LONGCARD FUNC Register(FBSTATE.Session POINTER state CARD registration)
+  BYTE value,index,length
+  CARD location
+  LONGCARD job
+
+  IF registration<FBABI.LOAD
+      OR registration>FBABI.LIMIT-FBDIAGABI.REGISTER_BYTES THEN
+    RETURN(0)
+  FI
+  location=ReadWord(state,registration+FBDIAGABI.REGISTER_JOB_POINTER)
+  IF ReadByte(state,location)<>8 THEN
+    RETURN(0)
+  FI
+  job=0
+  FOR index=1 TO 8 DO
+    value=ReadByte(state,location+CARD(index))
+    IF value>=48 AND value<=57 THEN
+      value==-48
+    ELSEIF value>=65 AND value<=70 THEN
+      value==-55
+    ELSEIF value>=97 AND value<=102 THEN
+      value==-87
+    ELSE
+      RETURN(0)
+    FI
+    job=(job LSH 4) OR LONGCARD(value)
+  OD
+  FOR index=0 TO 1 DO
+    location=ReadWord(state,registration+FBDIAGABI.REGISTER_SOURCE_POINTER
+        +CARD(index)*2)
+    length=ReadByte(state,location)
+    IF length=0 OR length>=FBDIAGABI.SOURCE_CAPACITY THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(job)
+
+PROC PutWord(BYTE POINTER entry CARD offset,value)
+
+  SDXSTATE.Word(entry,offset,value)
+
+RETURN
+
+PROC PutLong(BYTE POINTER entry CARD offset LONGCARD value)
+
+  LET destination=LONGCARD POINTER(entry+SIZE(offset))
+  destination^=value
+
+RETURN
+
+PROC Message(BYTE POINTER entry,message)
+  CARD count
+
+  count=0
+  WHILE count<FBDIAGABI.MESSAGE_CAPACITY-1 AND message(count)<>0 DO
+    entry(FBDIAGABI.FIELD_MESSAGE+count)=message(count)
+    count==+1
+  OD
+  PutWord(entry,FBDIAGABI.FIELD_MESSAGE_BYTES,count)
+
+RETURN
+
+; The parser's message table has characters shifted left one bit, with the
+; final character marked in bit zero. Its error is a byte offset in that table.
+PROC ParserMessage(FBSTATE.Session POINTER state BYTE POINTER entry
+    CARD table BYTE error)
+  BYTE value
+  CARD count
+
+  count=0
+  WHILE count<FBDIAGABI.MESSAGE_CAPACITY-1 DO
+    value=ReadByte(state,table+CARD(error)+count)
+    entry(FBDIAGABI.FIELD_MESSAGE+count)=value RSH 1
+    count==+1
+    IF (value & 1)<>0 THEN
+      EXIT
+    FI
+  OD
+  PutWord(entry,FBDIAGABI.FIELD_MESSAGE_BYTES,count)
+
+RETURN
+
+; Called after guest channels retire, before its bank and native cause retire.
+; A requested diagnostic failure fails a successful job; an earlier cause wins.
+PUBLIC LONGINT FUNC Complete(FBSTATE.Session POINTER state CARD registration
+    LONGCARD job LONGINT cause)
+  BYTE POINTER entry
+  DOS.FileHandle POINTER file
+  CARD stage,basic,location,length,index,position,line,column
+  BYTE parseError
+  LONGINT failure,count,closed
+
+  IF registration=0 THEN
+    RETURN(cause)
+  FI
+  stage=ReadWord(state,registration+FBDIAGABI.REGISTER_STAGE)
+  basic=ReadWord(state,registration+FBDIAGABI.REGISTER_BASIC_ERROR)
+  parseError=0
+  line=0
+  column=0
+  IF stage=FBDIAGABI.STAGE_PARSE THEN
+    location=ReadWord(state,registration+FBDIAGABI.REGISTER_LINE_POINTER)
+    line=ReadWord(state,location)
+    location=ReadWord(state,registration+FBDIAGABI.REGISTER_COLUMN_POINTER)
+    column=CARD(ReadByte(state,location))
+    IF basic=256 OR basic=257 THEN
+      cause=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+    FI
+    location=ReadWord(state,registration+FBDIAGABI.REGISTER_PARSER_ERROR_POINTER)
+    parseError=ReadByte(state,location)
+    IF parseError<>0 THEN
+      basic=CARD(parseError)
+      cause=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+    FI
+  ELSEIF stage=FBDIAGABI.STAGE_SOURCE AND basic=FBABI.CIO_OK THEN
+    ; Filling the complete input allocation without EOF is a source capacity
+    ; failure, even though the last individual transfer itself succeeded.
+    cause=LONGINT(O65TYPES.ERROR_RESOURCE_LIMIT)
+  FI
+
+  entry=EXEC.AllocMem(FBDIAGABI.BYTES,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  IF entry=NULL THEN
+    RETURN(IF cause<>0 THEN cause ELSE LONGINT(DOS.ERROR_NO_FREE_STORE) FI)
+  FI
+  PutLong(entry,FBDIAGABI.FIELD_MAGIC,FBDIAGABI.MAGIC)
+  PutWord(entry,FBDIAGABI.FIELD_VERSION,FBDIAGABI.VERSION)
+  PutWord(entry,FBDIAGABI.FIELD_BYTES,FBDIAGABI.BYTES)
+  PutLong(entry,FBDIAGABI.FIELD_JOB,job)
+  PutWord(entry,FBDIAGABI.FIELD_STAGE,stage)
+  PutWord(entry,FBDIAGABI.FIELD_BASIC_ERROR,basic)
+  PutLong(entry,FBDIAGABI.FIELD_NATIVE_CAUSE,LONGCARD(cause))
+  PutLong(entry,FBDIAGABI.FIELD_LINE,LONGCARD(line))
+  PutWord(entry,FBDIAGABI.FIELD_BYTE_COLUMN,column)
+  location=ReadWord(state,registration+FBDIAGABI.REGISTER_SOURCE_POINTER)
+  length=CARD(ReadByte(state,location))
+  PutWord(entry,FBDIAGABI.FIELD_SOURCE_BYTES,length)
+  FOR index=0 TO length-1 DO
+    entry(FBDIAGABI.FIELD_SOURCE+index)=ReadByte(state,location+1+index)
+  OD
+  IF parseError<>0 THEN
+    location=ReadWord(state,registration+FBDIAGABI.REGISTER_MESSAGE_TABLE)
+    ParserMessage(state,entry,location,parseError)
+  ELSEIF stage=FBDIAGABI.STAGE_PARSE AND basic=257 THEN
+    Message(entry,BYTE POINTER(c"Line exceeds 255 bytes"))
+  ELSEIF stage=FBDIAGABI.STAGE_PARSE AND basic=256 THEN
+    Message(entry,BYTE POINTER(c"Unsupported source byte"))
+  ELSEIF cause=0 THEN
+    Message(entry,BYTE POINTER(c"Compiled"))
+  ELSEIF stage=FBDIAGABI.STAGE_SOURCE THEN
+    Message(entry,BYTE POINTER(c"Source input failed"))
+  ELSEIF stage=FBDIAGABI.STAGE_OUTPUT THEN
+    Message(entry,BYTE POINTER(c"Command output failed"))
+  ELSE
+    Message(entry,BYTE POINTER(c"Compiler failed"))
+  FI
+
+  location=ReadWord(state,registration+FBDIAGABI.REGISTER_DIAGNOSTIC_POINTER)
+  length=CARD(ReadByte(state,location))
+  FOR index=0 TO length-1 DO
+    state.guest.path(index)=ReadByte(state,location+1+index)
+  OD
+  state.guest.path(length)=0
+  failure=0
+  file=DOS.Open(@state.guest.path,DOS.MODE_NEWFILE)
+  IF file=NULL THEN
+    failure=DOS.IoErr()
+  ELSE
+    position=0
+    WHILE position<FBDIAGABI.BYTES AND failure=0 DO
+      count=DOS.Write(file,entry+SIZE(position),
+          LONGINT(FBDIAGABI.BYTES-position))
+      IF count<=0 THEN
+        failure=DOS.IoErr()
+        IF failure=0 THEN
+          failure=DOS.ERROR_DISK_FULL
+        FI
+      ELSE
+        position==+CARD(count)
+      FI
+    OD
+    closed=DOS.Close(file)
+    IF closed=0 AND failure=0 THEN
+      failure=DOS.IoErr()
+    FI
+  FI
+  EXEC.FreeMem(entry,FBDIAGABI.BYTES)
+
+RETURN(IF cause<>0 THEN cause ELSE failure FI)
+
+ENDMODULE

@@ -240,3 +240,38 @@ The selected console identity adds four upper bytes, its private C bridge table
 (1,672 allocator bytes). No worker, signal or Task is added. Reserved bank-zero
 growth is **0 fixed, 0 root/kernel, 0 per public Task and 0 idle**, counting
 guards, alignment, unused capacity and the unchanged 544-byte guest pool.
+
+## WB8 — structured compiler diagnostics
+
+[WB8 evidence](../development/fastbasic-workbench-wb8.json) freezes the generated
+224-byte FBD1 record and 18-byte borrowed guest registration. Both compiler
+variants rebuild together for target `$4703`. The optional four-argument CLI
+registers a nonzero hexadecimal job and exact immutable source path before I/O.
+Ordinary two-filename and interactive compilation remain available.
+
+The integer and FP paths pass 191 emitted checks across 20 source cases: first
+and last line, tab, same-line statement, missing final EOL, empty input, CRLF,
+long line, malformed byte and source capacity. Independent byte locations agree
+for both variants. Testing exposed a donor parser loop for lines over 255 bytes;
+the maintained frontend now rejects these before parser entry. ASCII tabs are
+skipped between tokens without expanding source bytes. The parser stores its
+message offset before human output, preserving its first cause.
+
+A second fixture passes 191 checks covering 30 failure scenarios and recovery:
+partial COM write, Close and combined first-cause failure, positive short writes,
+source read/Close, diagnostic Open/Write/Close/allocation, malformed/zero jobs,
+parser allocation exhaustion, and a syntax failure with failing diagnostic I/O.
+Overrides are fixture-local and use real RAM files. The parser allocation probe
+reduces MEMTOP at the real allocator prologue, with its trampoline outside BSS
+and heap ownership. Both ordinary CLI fault/compile/run regressions pass 49
+checks each, including FP output. Raw and optimized C layout/reader probes each
+pass 16 checks, rejecting stale jobs, mismatched sources and malformed bounds.
+All 547 host tests pass. Development checks do not qualify the hosted system.
+
+The Session grows by six requested upper bytes: 2,304 → 2,310 requested and
+2,312 → 2,320 allocator bytes. Record emission temporarily requests 224 upper
+bytes. No Task, guest slot, signal or reserved bank-zero allocation grows:
+**0 fixed, 0 root/kernel, 0 per public Task and 0 idle**, including guards,
+alignment, unused capacity and the existing 544-byte guest pool. The complete
+reserved map matches WB0. The controller must require successful Process results,
+a matching complete record and a fresh validated COM before execution.

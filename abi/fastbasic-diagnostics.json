@@ -1,0 +1,29 @@
+{
+  "abi": "exec816.fastbasic.diagnostic",
+  "version": 1,
+  "magic": "FBD1",
+  "bytes": 224,
+  "source_capacity": 128,
+  "message_capacity": 64,
+  "fields": {
+    "magic": 0,
+    "version": 4,
+    "bytes": 6,
+    "job": 8,
+    "stage": 12,
+    "basic_error": 14,
+    "native_cause": 16,
+    "line": 20,
+    "byte_column": 24,
+    "source_bytes": 26,
+    "message_bytes": 28,
+    "reserved": 30,
+    "source": 32,
+    "message": 160
+  },
+  "stages": {"source": 1, "parse": 2, "output": 3, "complete": 4},
+  "registration_words": {"stage": 0, "basic_error": 1, "line_pointer": 2, "column_pointer": 3, "parser_error_pointer": 4, "message_table": 5, "source_pointer": 6, "diagnostic_pointer": 7, "job_pointer": 8},
+  "arguments": "source output [diagnostics eight-hex-digit-job]",
+  "location": "One-based logical line; zero-based byte column before tab expansion. Zero line means unavailable.",
+  "identity": "Nonzero job plus exact source path identifies one immutable snapshot; consumers reject another job or source."
+}

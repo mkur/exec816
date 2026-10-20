@@ -86,7 +86,7 @@ def wb0(out, reuse=False,provider=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice',choices=('WB0','WB1','WB2','WB3','WB4','WB5','WB6','WB7'),required=True)
+    p.add_argument('--slice',choices=('WB0','WB1','WB2','WB3','WB4','WB5','WB6','WB7','WB8'),required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--from-build',action='store_true')
     p.add_argument('--provider',type=Path,default=ROOT/'build/fastbasic-workbench/wb0/c-image.json')
@@ -165,3 +165,20 @@ if __name__=='__main__':
             result=cells(out/'cells',True)
             (out/'cells/results.json').write_text(json.dumps(result,indent=2)+'\n')
             layers(out/'layers','opt')
+
+    elif a.slice=='WB8':
+        from build_fastbasic import build as guests
+        from test_fastbasic_diagnostics import run as diagnostics
+        from test_fastbasic_diagnostic_faults import run as faults
+        from test_fastbasic_diagnostic_layout import run as layout
+        from test_fastbasic_faults import run as cli
+        out=a.output.resolve()
+        if not a.from_build:guests(ROOT/'build/fastbasic')
+        for name,function in [('diagnostics',diagnostics),('faults',faults)]:
+            result=function(out/name,a.from_build)
+            (out/name/'results.json').write_text(json.dumps(result,indent=2)+'\n')
+        if not a.from_build:
+            layout(out/'layout',True);layout(out/'layout-raw',False)
+            for floating,name in [(False,'cli-integer'),(True,'cli-float')]:
+                result=cli(out/name,floating)
+                (out/name/'results.json').write_text(json.dumps(result,indent=2)+'\n')

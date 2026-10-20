@@ -5,6 +5,15 @@ from pathlib import Path
 from native_program import ROOT,sha256,require
 
 SOURCES={
+    'WB8':['abi/fastbasic.json','abi/fastbasic-diagnostics.json',
+        'lib/dos/fbabi.act','lib/dos/fbdiagabi.act','lib/dos/fbdiagnostic.act','lib/dos/fbservice.act','lib/dos/fbstate.act',
+        'c/include/exec816/fastbasic-diagnostic.h','c/calypsi/fastbasic-diagnostic.c',
+        'ports/fastbasic/patches/exec6502.patch','ports/fastbasic/target/cmdline.bas',
+        'ports/fastbasic/target/callbacks.asm','ports/fastbasic/target/helpers.asm','ports/fastbasic/target/fastbasic.inc',
+        'tools/generate_fastbasic.py','tools/generate_fastbasic_diagnostics.py','tools/build_fastbasic.py',
+        'tools/test_fastbasic_diagnostics.py','tools/test_fastbasic_diagnostic_faults.py',
+        'tools/test_fastbasic_diagnostic_layout.py','tools/test_fastbasic_faults.py','tools/test_fastbasic_workbench.py',
+        'tests/test_fastbasic_diagnostic_schema.py','tests/programs/fastbasic_diagnostic_layout.c','tests/programs/fbdiagnostic_fault.act'],
     'WB7':['abi/aes-server.json','abi/c-program.json','abi/console.json','c/include/exec816/console.h',
         'c/calypsi/console.c','c/calypsi/console.s','c/calypsi/console-bridge.inc','c/calypsi/aes-windows.c',
         'c/include/exec816/aes-wire.h','lib/aes/aestypes.act','lib/aes/aeswindow.act','lib/aes/aeswindowstate.act',
@@ -81,7 +90,7 @@ def record(slice,paths,staged=False):
                 else:case[key]=r[key]
         cases.append(case)
     result=dict(format='exec816-fastbasic-workbench-slice-v1',slice=slice,status='pass',
-        tier='development',qualification=False,date='2026-10-20',
+        tier='development',qualification=False,date=__import__('datetime').date.today().isoformat(),
         base_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         source_inputs=inputs,pins={n:sha256(ROOT/n) for n in ('toolchain/actionc.json','ports/fastbasic/upstream.json',
             'abi/fastbasic.json','abi/c-program.json','toolchain/altirra-gem-vdi.json','toolchain/altirra-shell-paced.json')},
@@ -107,6 +116,24 @@ def record(slice,paths,staged=False):
         result['parent_desktop_warming']=dict(bytes=368,resolved_path=256,timer_records=112,
             lifetime='Existing live desktop context; freed with context/endpoint retirement')
         result['fastbasic_compilers']=json.loads((ROOT/'build/fastbasic/build.json').read_text())['compilers']
+    elif slice=='WB8':
+        guest_path=ROOT/'build/fastbasic/build.json';guest=json.loads(guest_path.read_text())
+        for name,digest in guest['inputs'].items():require(sha256(ROOT/name)==digest,'Changed compiler input: '+name)
+        result['compilers']=dict(path=str(guest_path.relative_to(ROOT)),sha256=sha256(guest_path),
+            target=guest['target'],variants=guest['compilers'])
+        before=ROOT/'build/fastbasic-workbench/wb0-demo/build.json'
+        after=ROOT/'build/fastbasic-workbench/wb8-diagnostics/build.json'
+        baseline=json.loads(before.read_text())['memory']['bank_zero_budget']
+        current=json.loads(after.read_text())['memory']['bank_zero_budget']
+        require(baseline==current,'Changed complete WB8 reserved bank-zero map')
+        result['memory_map']=dict(baseline=str(before.relative_to(ROOT)),baseline_sha256=sha256(before),
+            build=str(after.relative_to(ROOT)),build_sha256=sha256(after),bank_zero_budget=current)
+        result['diagnostics']=dict(record_bytes=224,registration_bytes=18,
+            session_requested_upper_delta=6,session_before=2304,session_after=2310,
+            session_rounded_before=2312,session_rounded_after=2320,transient_record_upper_bytes=224,
+            source_limit='Existing flat guest allocation; 255 bytes per source line',
+            identity='Nonzero 32-bit job plus immutable absolute source path',
+            completion='Process success and matching complete diagnostic and fresh validated COM are all required')
     elif slice=='WB7':
         before=ROOT/'build/fastbasic-workbench/wb0-demo/build.json'
         after=ROOT/'build/fastbasic-workbench/wb7-final/program/build.json'

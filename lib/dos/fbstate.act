@@ -11,6 +11,8 @@ PUBLIC TYPE Session=[
   TIMER.TimerClockRequest POINTER clock
   BYTE POINTER arguments
   BYTE consoleMode
+  CARD diagnostic
+  LONGCARD diagnosticJob
 ]
 
 ; The guest pool is shared with SDX; this allocation has its own exact size.

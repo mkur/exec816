@@ -14,8 +14,11 @@ fb_skipblank:
     ldy CIX
 loop:
     lda (INBUFF),y
+    cmp #9
+    beq advance
     cmp #' '
     bne done
+advance:
     iny
     bne loop
 done:

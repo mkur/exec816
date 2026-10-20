@@ -1,0 +1,62 @@
+; Fixture-only DOS and diagnostic allocation boundary failures.
+MODULE FBDFAULT
+USE EXEC
+USE DOS
+USE CSTRING.IMPL AS STR
+PUBLIC BYTE mode
+DOS.FileHandle POINTER destination,diagnostic,source
+BYTE wrote
+PUBLIC DOS.FileHandle POINTER FUNC Open(BYTE POINTER name LONGINT access)
+  DOS.FileHandle POINTER file
+
+  IF STR.strcmp(CSTRING(name),c"RAM:DIAG.DIA")=0 AND mode=7 THEN
+    DOS.SetIoErr(DOS.ERROR_OBJECT_NOT_FOUND)
+    RETURN(NULL)
+  FI
+  file=DOS.Open(name,access)
+  IF STR.strcmp(CSTRING(name),c"RAM:FRESH.COM")=0 THEN
+    destination=file
+    wrote=0
+  ELSEIF STR.strcmp(CSTRING(name),c"RAM:DIAG.DIA")=0 THEN
+    diagnostic=file
+  ELSEIF STR.strcmp(CSTRING(name),c"RAM:SOURCE.BAS")=0 THEN
+    source=file
+  FI
+RETURN(file)
+PUBLIC LONGINT FUNC Read(DOS.FileHandle POINTER file BYTE POINTER bytes LONGINT length)
+  IF file=source AND mode=8 THEN
+    DOS.SetIoErr(DOS.ERROR_DISK_NOT_VALIDATED)
+    RETURN(-1)
+  FI
+RETURN(DOS.Read(file,bytes,length))
+PUBLIC LONGINT FUNC Write(DOS.FileHandle POINTER file BYTE POINTER bytes LONGINT length)
+  IF (file=destination AND (mode=1 OR mode=3) AND wrote<>0)
+      OR (file=diagnostic AND mode=5) THEN
+    DOS.SetIoErr(DOS.ERROR_DISK_FULL)
+    RETURN(-1)
+  FI
+  IF file=destination AND (mode=1 OR mode=3 OR mode=4) AND length>7 THEN
+    length=7
+  FI
+  wrote=1
+RETURN(DOS.Write(file,bytes,length))
+PUBLIC LONGINT FUNC Close(DOS.FileHandle POINTER file)
+  LONGINT result
+  BYTE fail
+  fail=(file=destination AND (mode=2 OR mode=3))
+      OR (file=diagnostic AND mode=6) OR (file=source AND mode=9)
+  result=DOS.Close(file)
+  IF file=destination THEN destination=NULL FI
+  IF file=diagnostic THEN diagnostic=NULL FI
+  IF file=source THEN source=NULL FI
+  IF fail<>0 THEN
+    DOS.SetIoErr(DOS.ERROR_DISK_NOT_VALIDATED)
+    RETURN(0)
+  FI
+RETURN(result)
+PUBLIC BYTE POINTER FUNC AllocMem(LONGCARD length,flags)
+  IF mode=10 AND length=224 THEN
+    RETURN(NULL)
+  FI
+RETURN(EXEC.AllocMem(length,flags))
+ENDMODULE
