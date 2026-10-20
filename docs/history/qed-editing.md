@@ -4,8 +4,7 @@
 [QE1–QE7 plan](../plans/gem4xe/qed-editing-implementation-plan.md) ·
 [Startup baseline](qed-startup.md)
 
-Status: QE1–QE2 implemented; QE3 is an incomplete implementation checkpoint,
-and QE4–QE7 remain. The
+Status: QE1–QE3 implemented with development evidence; QE4–QE7 remain. The
 [QE1 development record](../development/qed-editing-qe1.json) binds the ordinary
 executable, source audit, actual-source core probe and loaded editor session.
 
@@ -157,44 +156,97 @@ bytes**, including guards, alignment and unused capacity. Complete Task-pool
 and region reservations equal QS5. No stack increase was required by QE2.
 Selection commands remain disabled until QE3.
 
-## QE3 Selection checkpoint — incomplete
+## QE3 Event-driven selection
 
-The current patch replaces the nested pointer wait with outer-event selection,
-release rearming and an outside-work autoscroll deadline. It adds byte-based
-Shift selection and enables Select All. Until QE4, editing an active selection
-reports that the operation is unavailable. General AES changes permit another
-client's short UPDATE during work capture and add the optional
-[`WF_EXEC_FOCUS` subscription](../reference/aes.md); explicit MCTRL and native
-gesture exclusion remain in place.
+The [QE3 development record](../development/qed-editing-qe3.json) reconciles
+four loaded-editor lifetimes, focused raw/optimized actual-source navigation
+and shortcut probes, and separate emitted AES pointer/focus and lock fixtures.
+The recorded images and traces match the current source/ABI inputs. This closes
+the selection slice; clipboard/Undo, dialogs/Find and checked document
+replacement remain QE4–QE6. Editing an active selection still reports that the
+operation is unavailable until QE4 establishes coherent replacement/Undo.
 
-Development checks pass for 529 host tests with four expected historical skips,
-168 emitted AES pointer/focus checks, 181 emitted AES lock checks and two
-optimized actual-source navigation lifetimes. The production APP builds and
-its conditional source-frame ledger fits the existing admission. The retained
-QED C profile now disables inlining to avoid the observed Calypsi 5.18 Ctrl-End
-field-access defect. The focused raw and optimized actual-source navigation
-comparisons now both pass.
+The outer event dispatcher now owns pointer selection, release rearming and
+outside-work autoscroll. Stable byte anchors produce normalized half-open
+ranges across tabs, blank lines and newline cells. Release coordinates are
+accepted before a gesture ends. Shift-click, logical Shift-navigation and
+Select All share the range representation; plain navigation collapses a range.
+Escape, geometry/focus changes, native input loss, Close and cooperative Stop
+cancel the gesture and require release before another press can start it.
+Donor word/brace/column selection and block drag/drop remain disabled.
 
-The original loaded-editor checkpoint timed out after Shift-click while
-dispatching Control-A (`build/qed-editing/qe3-final/results.json`). Physical
-capture and native AES delivery were correct. The C handler entered with
-`$1E01` and Control; its last native menu request completed successfully.
-Calypsi 5.18 emitted a conditional byte increment in CF-Lib's shortcut parser
-that left M=1 at a join followed by word-immediate instructions. The CPU then
-ran outside the APP. Patch 0012 keeps the normalized character word-wide.
-It changes the port's character intermediate, with no kernel/compiler pin
-change or per-routine Exec special case.
+The physical keyboard's Control-bearing arrow chords do not expose every
+logical Shift-navigation combination. The loaded session verifies Shift-click
+and records that physical Shift-Right is unavailable on the pinned mapping;
+raw/optimized actual-source probes cover the logical navigation operations.
+The [shortcut record](../development/qed-shortcuts.json) separately covers all
+Control-letter encodings, their printable counterparts, modifier rejection and
+disabled commands. No claim is made that every logical scan is physically
+reachable.
 
-The [focused development record](../development/qed-shortcuts.json) binds raw
-and optimized actual-source parser checks: every Control-letter encoding and
-its printable counterpart, modifier rejection and disabled commands, across
-two fresh Processes per mode. The previous byte-intermediate source fails the
-same isolated optimized probe. The loaded editor now passes Control-A,
-collapse, peer painting, and geometry/focus/input-loss cancellation.
-Autoscroll and complete four-lifetime retirement evidence remain pending;
-QE3 is not complete and has no reconciled passing development record yet.
+Inside work, a held stationary pointer sleeps with key/button/pointer interest,
+no active timer and no UPDATE or MCTRL ownership. An independently loaded GEM
+client completes another paint during that wait. General AES lock policy now
+allows a short UPDATE during another client's work capture while preserving
+the captured input recipient, explicit MCTRL exclusion and native frame-gesture
+exclusion. Optional [`WF_EXEC_FOCUS`](../reference/aes.md) notifications let QED
+cancel on a focus transition through the ordinary event queue.
+
+Outside work, QED requests a nonzero 100 ms deadline and advances at most one
+row/column per axis per step. The observer first waits for QED to consume the
+outside position, then requires progress within 250 PAL frames and checks the
+rate bound. This accommodates an already running selection repaint; it does
+not establish a 100 ms end-to-end response time. All four directions pass,
+including tab-expanded horizontal endpoints. A selected clock failure retains
+the document, exits the gesture and permits subsequent selection.
+
+The ordinary loaded session checks forward/backward ranges, selected tab spaces
+and newline cells, fast press/release, held-button rearming, focus/geometry and
+input-loss cancellation, exposure repair and sixteen independently checked
+caret pixels. Close/Stop Cancel and subsequent Discard retire through normal
+Process collection/unload. Four editor lifetimes return exact warm heap
+availability. Native IRQ/NMI, context restoration and guards pass. The final
+supervisor CARD value is 22,047; it can wrap and is not a cumulative assertion
+count. Separate AES fixtures pass 168 pointer/focus checks (including 21 boundary
+checks) and 181 lock checks. Host checks pass 536 tests with four expected
+historical skips, and the affected AES/QED generators match their inputs.
+These are development checks, not hosted-system or release qualification.
+
+Two Calypsi 5.18 issues were resolved before the final loaded run. The inlined
+Ctrl-End path accessed the wrong TEXT field, so the retained QED profile keeps
+`-O2` and disables C inlining uniformly. CF-Lib's conditional byte increment
+left the generated CPU width inconsistent at a join; patch 0012 keeps the
+normalized shortcut character word-wide. The original source fails the isolated
+optimized shortcut probe, while corrected raw and optimized probes pass. These
+are port/Calypsi profile restrictions; the actionc compiler pin is unchanged.
+
+Passive stack observation now includes emitted native AES frame reservations
+and distinguishes Process.Run entry from its after-TCS reservation. Counting
+both as new lifetimes previously excluded later application samples. The
+loaded editor retains **1,382 bytes above the 256-byte interrupt reserve** in
+its existing 2,560-byte pool at the lowest ordinary/frame sample. Corrected
+shortcut-trace interpretation retains 705/713 bytes in the separate optimized/raw
+probes. Their original result files and frozen shortcut record remain unchanged;
+explicit stack-only derivatives bind the original result and trace hashes and
+the current observer. They are reanalysis of those executions, not new runs.
+
+The source-frame bound is 893 bytes. With the conditional 768-byte continuation
+allowance, 256-byte interrupt reserve and 128-byte required headroom, admission
+has 515 bytes of margin. Future clipboard, dialog and file paths must extend
+this evidence. No stack increase is required for the executed QE3 workflows.
+
+Against QS5, the production APP has 14,073 fewer code bytes, 1,112 more
+initialized plus BSS bytes and 576 fewer container-metadata bytes. It serializes
+to 140,686 bytes, spans 190,089 bytes and requires 255,624 bytes of aligned heap
+backing including eight-byte allocator rounding. The C provider remains 221
+code bytes above QS5, with no table/static-data growth; 15,183 code bytes remain
+within its frozen allowance. Observed private heap peak remains 53,359 bytes
+including private headers; underlying rounding and native GUI/resource owners
+are charged separately.
 
 Reserved bank-zero delta is **0 fixed, 0 per-public-Task and 0 private idle
 bytes**, including guards, alignment and unused capacity. Complete Task-pool
 and region reservations match QS5. Shared-provider demo refresh remains QE7
-work; QED remains outside distributed demos.
+work; QED remains outside distributed demos. The separate
+[upstream reference setup](../guides/gem4xe-qed-reference.md) supports donor
+behavior comparisons without changing the Exec port's implementation status.

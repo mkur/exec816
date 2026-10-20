@@ -111,13 +111,24 @@ The supervisor checks normal collection, unload and exact heap reuse.
 See the [editing record](../../../../docs/history/qed-editing.md) for the
 implemented slice, evidence and remaining commands. Save/Save As remain disabled.
 
-QE3's selection checkpoint is incomplete: the loaded-editor runner currently
-times out at Control-A before reaching its later combined checks. Use
-`tools/test_qed_selection.py --output DIR` to reproduce that gate, or select
-`--group logical` for the passing optimized actual-source navigation probe.
-The focused raw comparison is available with `--group logical --raw` and remains
-pending. See the [checkpoint status](../../../../docs/history/qed-editing.md#qe3-selection-checkpoint--incomplete)
-before interpreting these runners as evidence of a completed selection slice.
+QE3 enables event-driven pointer/Shift selection, Select All, release rearming
+and bounded outside-work autoscroll. The loaded-editor runner verifies ranges
+and pixels, cancellation, peer drawing, ordinary retirement and heap reuse:
+
+```sh
+python3 tools/test_qed_selection.py --output build/qed-editing/selection
+python3 tools/test_qed_selection.py --group logical --output build/qed-editing/selection-logical
+python3 tools/test_qed_selection.py --group logical --raw --output build/qed-editing/selection-logical-raw
+python3 tools/test_qed_selection.py --group shortcuts --output build/qed-editing/shortcuts
+python3 tools/test_qed_selection.py --group shortcuts --raw --output build/qed-editing/shortcuts-raw
+```
+
+The small raw/optimized comparisons cover actual-source navigation and the
+shortcut parser after the documented Calypsi profile/source corrections.
+See the [selection evidence](../../../../docs/history/qed-editing.md#qe3-event-driven-selection)
+for physical key limitations, stack accounting and exact executed scope.
+Clipboard/Undo and edits replacing an active selection remain QE4 work;
+dialogs/Find, New/Open replacement and reliable saving remain later slices.
 
 `--from-build` rebuilds the APP against an unchanged emitted native fixture.
 `--reuse-app` additionally verifies recorded APP input hashes for observer-only

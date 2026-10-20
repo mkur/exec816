@@ -3,11 +3,11 @@
 [GEM plans](README.md) · [Editing design](qed-editing-design.md) ·
 [Strategy](qed-port-strategy.md) · [Startup baseline](../../history/qed-startup.md)
 
-Status: strategy step 4 in progress; QE1–QE2 pass their development checks,
-recorded in the [editing history](../../history/qed-editing.md). QE3 has an
-[incomplete checkpoint](../../history/qed-editing.md#qe3-selection-checkpoint--incomplete)
-with Select All repaired; its complete integration gate and QE4–QE7
-remain pending. Implement the
+Status: strategy step 4 in progress; QE1–QE3 pass their development checks,
+recorded in the [editing history](../../history/qed-editing.md). The
+[selection record](../../development/qed-editing-qe3.json) closes QE3's loaded
+integration, cancellation, autoscroll and stack gates. QE4–QE7 remain; continue
+with internal clipboard and grouped Undo. Implement the
 [editing design](qed-editing-design.md) in the following executable slices.
 Each slice builds on the ordinary loaded QED APP and commits after its selected
 development checks. Record a design amendment before relying on a measured

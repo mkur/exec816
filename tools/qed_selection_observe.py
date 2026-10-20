@@ -205,6 +205,27 @@ def byte_at_column(line,column):
     return len(line)
 
 
+def stationary_scroll(e,axis,before,direction):
+    # Physical arrival can precede completion of an earlier selection paint.
+    # Start observing once QED has consumed the outside position, then require
+    # actual viewport progress within a bounded interval rather than assuming
+    # that a whole paint and the next deadline fit in a short fixed delay.
+    physical=[e.get(e.input_at(n)) for n in ('cursorX','cursorY')]
+    e.reach('(dw($%x)=%d)&(dw($%x)=%d)'%
+        (e.sy['pointer_x'],physical[0],e.sy['pointer_y'],physical[1]))
+    start=e.b.eval_expr('@frame')
+    window=e.get(e.sy['used_list'],4)
+    at=window+e.offsets[21]+axis*4
+    e.reach('(dw($%x)!=%d)|(@frame>=%d)'%(at,before,start+250))
+    first=e.b.eval_expr('@frame');e.frames(30);finish=e.b.eval_expr('@frame')
+    during=document(e)[axis];steps=(during-before)*direction
+    observation=dict(axis='xy'[axis],direction=direction,origin_before=before,
+        origin_after=during,first_progress_frames=first-start,frames=finish-start,steps=steps)
+    e.scene.setdefault('autoscroll',[]).append(observation)
+    require(1<=steps<=(finish-start)//5+1,'Unbounded or absent autoscroll: '+str(observation))
+    return observation
+
+
 def autoscroll(e,lines):
     e.key('A',ctrl=True);e.key('MINUS',ctrl=True)
     e.selection('scroll-start',lines,None,0,0)
@@ -219,16 +240,12 @@ def autoscroll(e,lines):
         anchor=byte_at_column(lines[0],before+1)
         e.move(*e.cell(1,0));e.edge(True);e.stage(1)
         e.move(work[0]-3 if direction<0 else work[2]+3,work[1]+4)
-        start=e.b.eval_expr('@frame');e.frames(18);finish=e.b.eval_expr('@frame')
-        during=document(e)[0];steps=(during-before)*direction
-        require(1<=steps<=(finish-start)//5+1,'Unbounded or absent horizontal autoscroll')
+        stationary_scroll(e,0,before,direction)
         e.edge(False);e.stage(0)
         endpoint=byte_at_column(lines[0],document(e)[0]+(0 if direction<0 else columns-1))
         first,last=sorted((anchor,endpoint))
         e.selection('scroll-left' if direction<0 else 'scroll-right',lines,
             (0,first,0,last),endpoint,0)
-        e.scene.setdefault('autoscroll',[]).append(dict(axis='x',direction=direction,
-            frames=finish-start,steps=steps))
     e.key('A',ctrl=True);e.key('MINUS',ctrl=True)
     e.selection('before-tall-document',lines,None,0,0)
     for _ in range(32):e.key('RETURN')
@@ -239,16 +256,12 @@ def autoscroll(e,lines):
         work=e.geometry()['work'];before=document(e)[1];anchor=before+row
         e.move(*e.cell(0,row));e.edge(True);e.stage(1)
         e.move(work[0]+1,work[3]+3 if direction>0 else work[1]-3)
-        start=e.b.eval_expr('@frame');e.frames(18);finish=e.b.eval_expr('@frame')
-        during=document(e)[1];steps=(during-before)*direction
-        require(1<=steps<=(finish-start)//5+1,'Unbounded or absent vertical autoscroll')
+        stationary_scroll(e,1,before,direction)
         e.edge(False);e.stage(0)
         endpoint=document(e)[1]+(rows-1 if direction>0 else 0)
         endpoint=min(endpoint,len(lines)-1);first,last=sorted((anchor,endpoint))
         e.selection('scroll-down' if direction>0 else 'scroll-up',lines,
             (first,0,last,0),0,endpoint)
-        e.scene.setdefault('autoscroll',[]).append(dict(axis='y',direction=direction,
-            frames=finish-start,steps=steps))
     e.key('ESC');e.expected_range=None
     e.b.memload(e.sy['QedSelectionFailClock'],struct.pack('<H',1))
     before=e.get(e.sy['QedSelectionClockFailures'])

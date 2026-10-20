@@ -5,8 +5,8 @@
 [Implementation plan](qed-editing-implementation-plan.md) ·
 [Startup evidence](../../history/qed-startup.md)
 
-Status: strategy step 4 in progress; QE1–QE2 are implemented with
-[development evidence](../../history/qed-editing.md). QE3–QE7 remain. The gate is
+Status: strategy step 4 in progress; QE1–QE3 are implemented with
+[development evidence](../../history/qed-editing.md). QE4–QE7 remain. The gate is
 an actual loaded QED APP opening one document, editing and navigating its text,
 selecting, copying/pasting, undoing and finding, with correct redraw and
 cancellable dialogs. New/Open must retain the current document on failure or

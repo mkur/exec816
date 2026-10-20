@@ -8,6 +8,7 @@ from native_program import require
 
 
 def markers(program,app):
+    from native_program import ROOT
     points={}
     resident=json.loads((program['output'].parent/'c-image.json').read_text())
     public={'ExecProgramRun','_DOSCall',*ABI['imports']}
@@ -32,11 +33,25 @@ def markers(program,app):
                 if at and name:points.setdefault(base+int(at[1],16)+1+delta,prefix+name+':after-tcs')
     entries(resident,'provider:')
     frames(resident,program['output'].parent/'drawing','provider:')
+    decoder={'__name__':'qed_stack_decoder'}
+    source=ROOT/'build/actionc/tools/disassemble65816.py'
+    exec(compile(source.read_text(),str(source),'exec'),decoder)
     for routine in program['image']['routines']:
         if routine['name'].startswith(('M_PROCESS_RUN_','M_PROCESS_FINISH_',
                 'M_DOSCLIENT_','M_DOSCALLS_','M_HEAP_','M_HEAPCORE_',
-                'M_TASKPOLICY_PROCESS')):
+                'M_TASKPOLICY_PROCESS','M_AESLOCAL_','M_AESLOCKS_',
+                'M_AESMOUSE_','M_AESWINDOWSTATE_')):
             points[routine['address']]=routine['name']
+            segment=next(s for s in program['image']['segments'] if
+                s['address']<=routine['address'] and routine['address']+routine['size']
+                    <=s['address']+len(s['bytes']))
+            start=routine['address']-segment['address']
+            listing=decoder['disassemble']({**program['image'],'version':3,'segments':[
+                dict(address=routine['address'],executable=True,
+                    bytes=segment['bytes'][start:start+routine['size']])]})
+            for line in listing.splitlines():
+                if line.endswith(' TCS'):
+                    points[int(line[:6],16)+1]=routine['name']+':after-tcs'
     # An APP cannot occupy resident storage. Exclude those bases, so candidate
     # relocation markers cannot masquerade as a different resident routine.
     occupied=[(s['address'],s['address']+len(s['bytes'])) for im in (program['image'],resident) for s in im['segments']]
@@ -64,7 +79,7 @@ def summarize(path,points,memory,window=None):
             owner=next(((n,p) for n,p in pools if p['stack_base']<=s<p['stack_base']+p['stack_bytes']),None)
             if owner is None:continue
             slot,pool=owner;name=points.get(pc,'unknown')
-            if name.startswith('M_PROCESS_RUN_'):
+            if name.startswith('M_PROCESS_RUN_') and not name.endswith(':after-tcs'):
                 lifetimes[slot]+=1
                 runs[slot,lifetimes[slot]]=dict(slot=slot,ordinal=lifetimes[slot],dp=dp,clock=int(fields[0]))
             if name=='app:main' and (slot,lifetimes[slot]) in runs:
