@@ -121,3 +121,38 @@ ABI changes. Refresh standard and GEM development packages with build_demo.py,
 OF816 and pinned ROM/notices; preserve five-second standard shell/prime autoboot.
 Run affected smokes on the exact ZIP. Keep private QED fixtures and reports out
 of distribution; QED delivery remains strategy step 7.
+
+## QS4 fixture and error policy refinement
+
+Acquisition-failure wrappers exist only in the development APP. They fail the
+application's AES initialization, workstation/resource acquisition, menu
+publication and window create/open calls, forwarding every non-failing request
+to the public binding. Process startup has already established the native AES
+registration before QED's idempotent initialization call; this case tests QED's
+unwind, not failure inside that earlier provider registration. Existing provider
+and Process failure checks own that lower boundary. No production entry mode,
+kernel hook or successful substitute binding is introduced. Missing/malformed
+resource cases use the real DOS/resource loader. A separate fixture wrapper
+refuses private allocator backing from a selected acquisition onward.
+
+Startup failure returns a Process error and its original native cause rather
+than attempting an alert before the application is ready. Ordinary editor
+alerts become available when the first document is acquired. Private backing
+allocation failure records ERROR_NO_FREE_STORE; cleanup preserves that cause.
+The passive observer covers each failing Process lifetime and the normal Stop
+paths. Controls are set only after ordinary image ownership, before entry, and
+are omitted from the production APP.
+
+Failed window-open rollback snapshots its cause before deleting the partial
+document. Closing-position history publication is removed from the initial
+native scope: retirement must not allocate a history node or query a default
+directory for an unnamed document. This was exposed by the window-open failure
+case, which otherwise replaced ERROR_NO_FREE_STORE with ERROR_NO_DEFAULT_DIR.
+
+For the failure sweep, the supervisor copies the unchanged serialized APP from
+SYS: to a normal RAM: file through public DOS Read/Write, then performs fresh
+ProgramFile.Load/start/wait/unload cycles from that file. QED still reads its
+resource from SYS:. This removes repeated serial transfer from the acquisition
+failure sweep; the separate production cohort retains repeated disk APP loads.
+The RAM file and temporary copy buffer are fixture-only upper-memory costs,
+retired before fixture completion. Bank-zero reservations stay unchanged.

@@ -115,3 +115,56 @@ its 155,084-byte container spans 269,680 image bytes and requests up to
 ordinary-sample and 1,708 after-reservation bytes above the interrupt floor
 (asynchronous minimum 1,609). The source-frame bound remains conditional
 until QS4 reconciles the changed graph.
+
+## QS4 Failure, Stop and stack closure
+
+Startup alerts are deferred until the first document is ready. An acquisition
+failure returns primary 20 and preserves its native cause through retirement;
+private backing allocation failure records ERROR_NO_FREE_STORE. Failed window-open
+rollback preserves the cause before deleting its partial document. Deferred
+closing-position history publication is removed, avoiding an allocation and
+default-directory query during retirement. This also
+avoids entering a modal alert while window/document acquisition is incomplete.
+
+The development failure APP forwards successful public requests and refuses
+one selected application acquisition boundary. It covers QED's AES init call,
+workstation, resource, menu and native window create/open calls, plus actual
+missing/malformed resource loads and persistent refusal from each of the first
+four private allocations. Its first/final normal launches use public RequestStop.
+The AES-init case follows the native Process provider's registration; it tests
+QED's unwind, with lower provider setup failure owned by existing native tests.
+No production test mode or kernel protocol is introduced.
+
+The failure cohort copies the unchanged APP from SYS: to RAM: with public
+DOS Read/Write, then uses ordinary RAM-file load/start/wait/unload for each
+case. Resource reads remain on SYS:. The separate production cohort repeats
+actual disk APP loads. After retirement, fixture
+observations require no private heap blocks, resource/menu/window owners or
+resident AES context. The supervisor requires idle native service, released
+image execution ownership, the expected primary/secondary result and exact
+memory recovery. A separate unchanged-production-body cohort exercises physical
+Close, Ctrl+Q, repeated Close and cooperative Stop.
+
+The passive observer captures each failure/Stop lifetime with physical stack
+pool, Process identity and direct-page attribution. The emitted source ledger
+accepts the current executable as well as the independent analysis image.
+Its typed callback catalog and finite action contexts still reject new indirect
+sites and unbounded cycles. The [QS4 record](../development/qed-startup-qs4.json)
+separates the conservative source bound, observed full chains and conditional
+continuation allowance. Future editing, dialog and file workflows must establish
+their own continuation evidence. Native IRQ/NMI, guards and OS return remain
+part of the executed development checks.
+
+Reserved bank-zero delta: **0 fixed, 0 per-public-Task, 0 private idle bytes**,
+including guards, alignment and unused capacity. The startup flag adds two
+initialized private-image bytes; resident storage is unchanged. Fixture control
+words and failure wrappers are absent from the production APP.
+
+QS4 completes four production disk-launch cycles and fourteen failure/reuse
+cycles. Minimum ordinary headroom is 1,691 production / 1,687 failure-fixture
+bytes above the interrupt floor; full observed ordinary chains use 613 / 617
+bytes. The 1,165-byte conservative source bound plus the separate 768-byte
+continuation cap, 256-byte interrupt reserve and 128-byte headroom leaves
+243 bytes in the declared pool. All fourteen failure-fixture lifetimes retain
+identity/DP attribution. These observations do not qualify future editing or
+Save chains. Host checks pass 529 tests with four expected skips.

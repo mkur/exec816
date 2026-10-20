@@ -48,7 +48,7 @@ def units_from_listing(path):
         re.findall(r'>\s+(\w+)\s+([0-9a-f]+)',m[3])}) for m in re.finditer(pattern,text,re.M)]
 
 
-def build(output,provider,executable=False):
+def build(output,provider,executable=False,fixture=None):
     output=Path(output).resolve();output.mkdir(parents=True,exist_ok=True)
     for name in ('program.app','app.json'):(output/name).unlink(missing_ok=True)
     selection=selected();inputs=prepare(output/'inputs');native=PORT/'native'
@@ -84,6 +84,16 @@ def build(output,provider,executable=False):
         ['-Werror=implicit-function-declaration']+selection['compiler_options']+
         (['--char-is-unsigned'] if '/source/qed/' in str(p) or p.parent==native else [])
         for p in sources}
+    if fixture is not None:
+        # Development-only failing acquisition calls; no alternate editor body.
+        replacements=dict(appl_init='QedFailAES',v_opnvwk='QedFailVDI',
+            rsrc_load='QedFailResource',menu_bar='QedFailMenu',
+            wind_create='QedFailCreate',wind_open='QedFailOpen')
+        for source in sources:
+            definitions[str(source)]+=['-D'+a+'='+b for a,b in replacements.items()]
+            if source==native/'allocation.c':definitions[str(source)]+=['-DAllocMem=QedFixtureAlloc']
+        sources.append(Path(fixture).resolve())
+        definitions[str(sources[-1])]=['--char-is-unsigned',*selection['compiler_options']]
     imports=output/'imports.s';imports.write_text(import_assembly())
     roots=[] if executable else ['__exec_analysis_only']
     image=emit(output,sources,[imports,ROOT/'c/calypsi/image-info.s'],(),roots=roots,

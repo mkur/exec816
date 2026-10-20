@@ -29,6 +29,9 @@ def interact(bridge,program,app,record,owner):
     def frames(count):reach('@frame>='+str(bridge.eval_expr('@frame')+count))
     if not record.get('qed_startup'):
         bridge._cmd_ok('MOUSE ST');bridge._cmd_ok('KEY ALL up')
+    if get(address('cycle'))==3:
+        record.setdefault('qed_startup',[]).append(dict(cycle=3,action='supervisor RequestStop',process=owner['identity']))
+        return
     reach('dw($%x)=dw($%x)+1'%(address('phase'),address('cycle')))
     cycle=get(address('cycle'));frames(80)
     print('QED window ready, cycle',cycle,flush=True)

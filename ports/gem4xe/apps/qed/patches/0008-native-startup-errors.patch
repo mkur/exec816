@@ -1,0 +1,90 @@
+--- a/qed/src/main.c
++++ b/qed/src/main.c
+@@ -56,21 +56,25 @@
+ #include "qed-runtime.h"
+ #include <proto/dos.h>
+ #include <proto/dos.h>
++short QedStarting=1;
+ static int editor_body(int argc,char **argv)
+ {
+     int ready=0;
+     LONG cause=0;
+     nkc_init();init_app(NULL);
+-    if(gl_apid<0 || cf_vdi_handle==0){exit_app(20);return 20;}
++    if(gl_apid<0 || cf_vdi_handle==0){
++        cause=IoErr();if(!cause)cause=ERROR_NO_FREE_STORE;
++        exit_app(20);SetIoErr(cause);return 20;
++    }
+     init_global();
+     if(init_resource()){
+         init_file();init_window();init_icon();init_memory();
+         init_edit();init_default_var();font_change();color_change();
+         if(init_clipbrd()){
+             short document=argc==2?load_edit(argv[1],FALSE):new_edit(FALSE);
+-            if(document>0){ready=1;main_loop();}
++            if(document>0){ready=1;QedStarting=0;main_loop();}
+         }
+-        if(!ready || return_code)cause=IoErr();
++        if(!ready || return_code){cause=IoErr();if(!cause)cause=ERROR_NO_FREE_STORE;}
+         term_file();term_window();kill_memory();
+     }else cause=IoErr();
+     term_resource();term_global();exit_app(return_code);
+--- a/qed/src/global.c
++++ b/qed/src/global.c
+@@ -134,8 +134,11 @@
+ /*****************************************************************************/
+ /* some day this nonsense with x different alert routines will
+    have to be replaced by a variable argument list */
++extern short QedStarting;
+ static short do_note(short def, short undo, char *s)
+ {
++    /* Startup errors return their native cause to the launching Process. */
++    if(QedStarting)return 0;
+ 	wake_mouse();
+ 	(void)undo;return form_alert(def,s);
+ }
+--- a/qed/src/rsc.c
++++ b/qed/src/rsc.c
+@@ -82,8 +82,12 @@
+     for(index=0;index<NUM_FRSTR;index++)
+         if(!rsrc_gaddr(R_STRING,index,(void **)&alertmsg[index]))
+             return resource_failed(ERROR_OBJECT_WRONG_TYPE);
+-    if(!create_menu(menu))return resource_failed(ExecAESDiagnostic()==AES_RESOURCE?
+-        ERROR_NO_FREE_STORE:ERROR_OBJECT_WRONG_TYPE);
++    if(!create_menu(menu)){
++        LONG cause=IoErr();
++        if(!cause)cause=ExecAESDiagnostic()==AES_RESOURCE?
++            ERROR_NO_FREE_STORE:ERROR_OBJECT_WRONG_TYPE;
++        return resource_failed(cause);
++    }
+     return TRUE;
+ }
+ 
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -1,4 +1,5 @@
+ #include <support.h>
++#include <proto/dos.h>
+ #include <time.h>
+ 
+ #include "global.h"
+@@ -336,8 +337,10 @@
+ 		make_absatz(t_ptr);
+ 	if (do_icon(icon,DO_OPEN) < 0)
+ 	{
++		LONG cause=IoErr();
+ 		if(report_error)note(1, 0, NOWINDOW);
+ 		icon_edit(icon, DO_DELETE);
++        SetIoErr(cause);
+ 		icon = -3;
+ 	}
+ 	return icon;
+@@ -1592,7 +1595,7 @@
+ 	TEXTP t_ptr = get_text(icon);
+ 	WINDOWP window = get_window(icon);
+ 
+-	insert_poslist(&lastpos_list, t_ptr->filename, t_ptr->xpos, t_ptr->ypos);
++    /* Position history is outside the native initial scope. */
+ 
+ 	/* Text war Error-Datei */
+ 

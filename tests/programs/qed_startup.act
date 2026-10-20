@@ -14,7 +14,7 @@ USE HEAPCORE
 CARD checks,completed,phase,cycle,menuObjects
 INT windowX,windowY,windowW,windowH
 LONGCARD baseline
-LONGINT lastPrimary
+LONGINT lastPrimary,lastSecondary
 
 PROC Require(BYTE okay)
 
@@ -84,17 +84,22 @@ RETURN
 PROC Main()
   PROCESS.Result result
 
-  FOR cycle=0 TO 2 DO
+  FOR cycle=0 TO 3 DO
     BEGIN
       LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:PROBE.APP"))
       Require(image<>NULL)
       LET child=PROCESS.StartLoaded(BYTE POINTER(image),NULL,0,0)
       Require(child<>0)
       WindowReady()
+      IF cycle=3 THEN
+        Require(PROCESS.RequestStop(child)<>0)
+      FI
       Require(PROCESS.Wait(child,@result)<>0)
       lastPrimary=result.primary
-      Require(result.primary=0)
+      lastSecondary=result.secondary
+      Require(result.primary=0 AND result.secondary=0)
       completed==+1
+      Require(image.running=0 AND image.references=1)
       PROGRAM.Unload(image)
       LET service=AESSTATE.Get()
       Require(service.count=0 AND AESCORE.Idle(service)<>0)

@@ -76,8 +76,13 @@ def summarize(path,points,memory,window=None):
                     pool_bytes=pool['stack_bytes'],expected_dp=pool.get('dp'),headroom=s+1-pool['stack_base']-256,
                     pc=pc,marker=name,clock=int(fields[0]))
     if window is not None:
-        rows={k:v for k,v in rows.items() if v['slot']==window['slot'] and v['lifetime']==1}
-        runs={k:{**v,'identity':window['identity']} for k,v in runs.items() if v['slot']==window['slot'] and v['ordinal']==1}
+        windows=window if isinstance(window,list) else [window]
+        ordinals=defaultdict(int);selected={}
+        for owner in windows:
+            ordinals[owner['slot']]+=1
+            selected[owner['slot'],ordinals[owner['slot']]]=owner['identity']
+        rows={k:v for k,v in rows.items() if (v['slot'],v['lifetime']) in selected}
+        runs={k:{**v,'identity':selected[k]} for k,v in runs.items() if k in selected}
     require(rows,'No passive stack samples')
     for row in rows.values():
         if row['lifetime']>0 and row['kind']!='async':
@@ -87,13 +92,14 @@ def summarize(path,points,memory,window=None):
     return dict(scope='Selected entries and emitted after-TCS sites. Per-pool Process lifetime ordinal starts at Process.Run; actual entry PC, DP and physical pool are recorded. Later native finalization is included until slot reuse. No watermark inference.',lifetimes=list(runs.values()),minima=list(rows.values()))
 
 
-def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600):
+def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600,profile_all=False):
     """Profile one complete child, after Load and before the next disk load.
 
     Pause at existing bank-zero COP/restore rendezvous points. No guest code or
     data is changed. The PREPARING row is already owned and has its Image.
     """
     import json
+    import adapter_state as adapter
     from native_program import ROOT
     from os_boundary import run_to
     table=next(d['address'] for d in program['image']['data'] if d['name']=='M_PROCESSSTATE_TABLE')
@@ -101,9 +107,19 @@ def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600
     fields={name:offset for name,kind,offset in layout['record']}
     count=(next(d['size'] for d in program['image']['data'] if d['address']==table)-4)//layout['record_bytes']
     preparing='|'.join(f'(db(${table+slot*128+fields["state"]:x})=1)' for slot in range(1,count))
+    def rendezvous(address,**options):
+        original=bridge.regs
+        def regs():
+            value=original()
+            require(not bridge.eval_expr(adapter.STOPPED),
+                    'Process fixture stopped before completing the selected lifetimes')
+            return value
+        bridge.regs=regs
+        try:return run_to(bridge,address,**options)
+        finally:bridge.regs=original
     for attempt in range(index+1):
         bridge.bp_clear_all();bridge.bp_set(program['labels']['native_cop'],condition=preparing)
-        run_to(bridge,program['labels']['native_cop'],timeout=180,frame_limit=10000,condition=preparing)
+        rendezvous(program['labels']['native_cop'],timeout=180,frame_limit=10000,condition=preparing)
         owners=[]
         for slot in range(1,count):
             at=table+slot*128;row=bridge.memdump(at,128)
@@ -121,15 +137,18 @@ def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600
                  f'(dw(${at+fields["identity"]:x})!={identity&65535})|'
                  f'(dw(${at+fields["identity"]+2:x})!={identity>>16})')
         bridge.bp_clear_all();bridge.bp_set(program['labels']['context_restore'],condition=retired)
-        if attempt==index:
+        if attempt==index or profile_all:
             owner['clock_start']=bridge.eval_expr('@clk') & 0xffffffff
             bridge.profile_start('basicblock')
         try:
-            if during_run:during_run(owner)
+            after=during_run(owner) if during_run else None
             bridge.bp_clear_all();bridge.bp_set(program['labels']['context_restore'],condition=retired)
-            run_to(bridge,program['labels']['context_restore'],timeout=retirement_timeout,frame_limit=30000,condition=retired)
+            rendezvous(program['labels']['context_restore'],timeout=retirement_timeout,frame_limit=30000,condition=retired)
+            if after:after()
         finally:
-            if attempt==index:bridge.profile_stop()
-        if attempt==index:owner['clock_end']=bridge.eval_expr('@clk') & 0xffffffff
+            if attempt==index or profile_all:bridge.profile_stop()
+        if attempt==index or profile_all:
+            owner['clock_end']=bridge.eval_expr('@clk') & 0xffffffff
+            if profile_all:record.setdefault('stack_windows',[]).append(owner)
         bridge.bp_clear_all()
     record['stack_window']=dict(**owner,scope='Selected owned C Process from PREPARING through retirement. Analysis selects its physical slot and first observed lifetime; later history samples are excluded.')

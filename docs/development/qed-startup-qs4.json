@@ -1,0 +1,1176 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "qualification": false,
+  "slice": "QS4",
+  "status": "pass",
+  "cohorts": [
+    {
+      "path": "build/qed-startup/qs4-startup",
+      "results_sha256": "a6e37b3c81528549c77e152c5b94650d0798eb8bf0f650cc6e2e522984b955f6",
+      "app_sha256": "97714ab6dd80dcad148b36cc22e4625a057bd6f4abc8ba28e3fef7f0dd4dba36",
+      "completed": [
+        4
+      ],
+      "checks": [
+        5598
+      ],
+      "scenes": [
+        {
+          "cycle": 0,
+          "process": 1,
+          "outer": [
+            16,
+            39,
+            608,
+            200
+          ],
+          "menu_objects": 30,
+          "resource_pointer": 298594,
+          "fixed_font": [
+            8,
+            8
+          ],
+          "work": [
+            24,
+            60,
+            608,
+            228
+          ],
+          "native_view": 309728,
+          "heap": [
+            4,
+            53303,
+            53351,
+            53351
+          ],
+          "pixels": {
+            "checked": 97824,
+            "sha256": "a3f573fa6d996a5fb88707270d26ab2977849dbda93ccb045155039d178ad311",
+            "assertion": "Native empty work area uses background pen zero; dynamic caret/pointer excluded"
+          },
+          "action": "physical window Close"
+        },
+        {
+          "cycle": 1,
+          "process": 2,
+          "outer": [
+            16,
+            39,
+            608,
+            200
+          ],
+          "menu_objects": 30,
+          "resource_pointer": 298594,
+          "fixed_font": [
+            8,
+            8
+          ],
+          "work": [
+            24,
+            60,
+            608,
+            228
+          ],
+          "native_view": 309728,
+          "heap": [
+            4,
+            53303,
+            53351,
+            53351
+          ],
+          "pixels": {
+            "checked": 98080,
+            "sha256": "2161aad7f8063a70ecbbf11156337f4e4dee3b5af75d91bf5b25c473c6312648",
+            "assertion": "Native empty work area uses background pen zero; dynamic caret/pointer excluded"
+          },
+          "action": "physical Ctrl+Q"
+        },
+        {
+          "cycle": 2,
+          "process": 3,
+          "outer": [
+            16,
+            39,
+            608,
+            200
+          ],
+          "menu_objects": 30,
+          "resource_pointer": 298594,
+          "fixed_font": [
+            8,
+            8
+          ],
+          "work": [
+            24,
+            60,
+            608,
+            228
+          ],
+          "native_view": 309728,
+          "heap": [
+            4,
+            53303,
+            53351,
+            53351
+          ],
+          "pixels": {
+            "checked": 98080,
+            "sha256": "2161aad7f8063a70ecbbf11156337f4e4dee3b5af75d91bf5b25c473c6312648",
+            "assertion": "Native empty work area uses background pen zero; dynamic caret/pointer excluded"
+          },
+          "action": "physical window Close"
+        },
+        {
+          "cycle": 3,
+          "action": "supervisor RequestStop",
+          "process": 4
+        }
+      ],
+      "stacks": {
+        "scope": "Selected entries and emitted after-TCS sites. Per-pool Process lifetime ordinal starts at Process.Run; actual entry PC, DP and physical pool are recorded. Later native finalization is included until slot reuse. No watermark inference.",
+        "lifetimes": [
+          {
+            "slot": 7,
+            "ordinal": 1,
+            "dp": 5120,
+            "clock": 861054068,
+            "app_entry": 727882,
+            "identity": 4
+          }
+        ],
+        "minima": [
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "ordinary-sample",
+            "minimum_s": 24138,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1691,
+            "pc": 1686247,
+            "marker": "M_DOSCLIENT_SETIOERR_93E1A287",
+            "clock": 878836285
+          },
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "async",
+            "minimum_s": 24069,
+            "dp": 3072,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1622,
+            "pc": 7470,
+            "marker": "context_restore",
+            "clock": 878660094
+          },
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "frame-reservation",
+            "minimum_s": 24155,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1708,
+            "pc": 946778,
+            "marker": "provider:GemSolidFill:after-tcs",
+            "clock": 877883743
+          }
+        ]
+      },
+      "minimum_headroom": 1691,
+      "maximum_observed_ordinary_chain_bytes": 613,
+      "guards": "intact",
+      "native_irq_count": 55420,
+      "native_nmi_count": 24422
+    },
+    {
+      "path": "build/qed-startup/qs4-failures",
+      "results_sha256": "ce5e43e7bb8a085897154a3ada3f9fbb6502034c1112b51b9afafb6b09a204d1",
+      "app_sha256": "0c60abb81f8a8022ae9cd46d732c6fae381508b81382a744ca55a9a37d1f1bf3",
+      "completed": [
+        14
+      ],
+      "checks": [
+        1797
+      ],
+      "scenes": [
+        {
+          "cycle": 0,
+          "name": "Stop warm-up",
+          "process": 1,
+          "point": 0,
+          "allocation_at": 0,
+          "hits": 0,
+          "allocation_calls": 4,
+          "heap": [
+            0,
+            0,
+            0,
+            53351
+          ]
+        },
+        {
+          "cycle": 1,
+          "name": "window opening",
+          "process": 2,
+          "point": 6,
+          "allocation_at": 0,
+          "hits": 1,
+          "allocation_calls": 4,
+          "heap": [
+            0,
+            0,
+            0,
+            53351
+          ]
+        },
+        {
+          "cycle": 2,
+          "name": "application AES acquisition",
+          "process": 3,
+          "point": 1,
+          "allocation_at": 0,
+          "hits": 1,
+          "allocation_calls": 1,
+          "heap": [
+            0,
+            0,
+            0,
+            35
+          ]
+        },
+        {
+          "cycle": 3,
+          "name": "workstation acquisition",
+          "process": 4,
+          "point": 2,
+          "allocation_at": 0,
+          "hits": 1,
+          "allocation_calls": 1,
+          "heap": [
+            0,
+            0,
+            0,
+            35
+          ]
+        },
+        {
+          "cycle": 4,
+          "name": "resource acquisition",
+          "process": 5,
+          "point": 3,
+          "allocation_at": 0,
+          "hits": 1,
+          "allocation_calls": 1,
+          "heap": [
+            0,
+            0,
+            0,
+            35
+          ]
+        },
+        {
+          "cycle": 5,
+          "name": "menu publication",
+          "process": 6,
+          "point": 4,
+          "allocation_at": 0,
+          "hits": 1,
+          "allocation_calls": 1,
+          "heap": [
+            0,
+            0,
+            0,
+            35
+          ]
+        },
+        {
+          "cycle": 6,
+          "name": "window creation",
+          "process": 7,
+          "point": 5,
+          "allocation_at": 0,
+          "hits": 1,
+          "allocation_calls": 3,
+          "heap": [
+            0,
+            0,
+            0,
+            52829
+          ]
+        },
+        {
+          "cycle": 7,
+          "name": "missing resource",
+          "process": 8,
+          "point": 7,
+          "allocation_at": 0,
+          "hits": 1,
+          "allocation_calls": 1,
+          "heap": [
+            0,
+            0,
+            0,
+            35
+          ]
+        },
+        {
+          "cycle": 8,
+          "name": "malformed resource",
+          "process": 9,
+          "point": 8,
+          "allocation_at": 0,
+          "hits": 1,
+          "allocation_calls": 1,
+          "heap": [
+            0,
+            0,
+            0,
+            35
+          ]
+        },
+        {
+          "cycle": 9,
+          "name": "private allocation 1",
+          "process": 10,
+          "point": 0,
+          "allocation_at": 1,
+          "hits": 1,
+          "allocation_calls": 1,
+          "heap": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "cycle": 10,
+          "name": "private allocation 2",
+          "process": 11,
+          "point": 0,
+          "allocation_at": 2,
+          "hits": 2,
+          "allocation_calls": 3,
+          "heap": [
+            0,
+            0,
+            0,
+            35
+          ]
+        },
+        {
+          "cycle": 11,
+          "name": "private allocation 3",
+          "process": 12,
+          "point": 0,
+          "allocation_at": 3,
+          "hits": 1,
+          "allocation_calls": 3,
+          "heap": [
+            0,
+            0,
+            0,
+            52455
+          ]
+        },
+        {
+          "cycle": 12,
+          "name": "private allocation 4",
+          "process": 13,
+          "point": 0,
+          "allocation_at": 4,
+          "hits": 1,
+          "allocation_calls": 4,
+          "heap": [
+            0,
+            0,
+            0,
+            52829
+          ]
+        },
+        {
+          "cycle": 13,
+          "name": "Stop reuse",
+          "process": 14,
+          "point": 0,
+          "allocation_at": 0,
+          "hits": 0,
+          "allocation_calls": 4,
+          "heap": [
+            0,
+            0,
+            0,
+            53351
+          ]
+        }
+      ],
+      "stacks": {
+        "scope": "Selected entries and emitted after-TCS sites. Per-pool Process lifetime ordinal starts at Process.Run; actual entry PC, DP and physical pool are recorded. Later native finalization is included until slot reuse. No watermark inference.",
+        "lifetimes": [
+          {
+            "slot": 7,
+            "ordinal": 1,
+            "dp": 5120,
+            "clock": 213766634,
+            "app_entry": 2694481,
+            "identity": 1
+          },
+          {
+            "slot": 7,
+            "ordinal": 2,
+            "dp": 5120,
+            "clock": 237684743,
+            "app_entry": 2694481,
+            "identity": 2
+          },
+          {
+            "slot": 7,
+            "ordinal": 3,
+            "dp": 5120,
+            "clock": 244762886,
+            "app_entry": 2694481,
+            "identity": 3
+          },
+          {
+            "slot": 7,
+            "ordinal": 4,
+            "dp": 5120,
+            "clock": 249918171,
+            "app_entry": 2694481,
+            "identity": 4
+          },
+          {
+            "slot": 7,
+            "ordinal": 5,
+            "dp": 5120,
+            "clock": 255050050,
+            "app_entry": 2694481,
+            "identity": 5
+          },
+          {
+            "slot": 7,
+            "ordinal": 6,
+            "dp": 5120,
+            "clock": 260305867,
+            "app_entry": 2694481,
+            "identity": 6
+          },
+          {
+            "slot": 7,
+            "ordinal": 7,
+            "dp": 5120,
+            "clock": 266742471,
+            "app_entry": 2694481,
+            "identity": 7
+          },
+          {
+            "slot": 7,
+            "ordinal": 8,
+            "dp": 5120,
+            "clock": 273556978,
+            "app_entry": 2694481,
+            "identity": 8
+          },
+          {
+            "slot": 7,
+            "ordinal": 9,
+            "dp": 5120,
+            "clock": 278880370,
+            "app_entry": 2694481,
+            "identity": 9
+          },
+          {
+            "slot": 7,
+            "ordinal": 10,
+            "dp": 5120,
+            "clock": 286012120,
+            "app_entry": 2694481,
+            "identity": 10
+          },
+          {
+            "slot": 7,
+            "ordinal": 11,
+            "dp": 5120,
+            "clock": 291152893,
+            "app_entry": 2694481,
+            "identity": 11
+          },
+          {
+            "slot": 7,
+            "ordinal": 12,
+            "dp": 5120,
+            "clock": 297917559,
+            "app_entry": 2694481,
+            "identity": 12
+          },
+          {
+            "slot": 7,
+            "ordinal": 13,
+            "dp": 5120,
+            "clock": 304693536,
+            "app_entry": 2694481,
+            "identity": 13
+          },
+          {
+            "slot": 7,
+            "ordinal": 14,
+            "dp": 5120,
+            "clock": 311646679,
+            "app_entry": 2694481,
+            "identity": 14
+          }
+        ],
+        "minima": [
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "ordinary-sample",
+            "minimum_s": 24134,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1687,
+            "pc": 1686515,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 215041656
+          },
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "async",
+            "minimum_s": 24069,
+            "dp": 3072,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1622,
+            "pc": 7470,
+            "marker": "context_restore",
+            "clock": 231557696
+          },
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "frame-reservation",
+            "minimum_s": 24153,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1706,
+            "pc": 952263,
+            "marker": "provider:cursor_render:after-tcs",
+            "clock": 231143773
+          },
+          {
+            "slot": 7,
+            "lifetime": 2,
+            "kind": "ordinary-sample",
+            "minimum_s": 24134,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1687,
+            "pc": 1686515,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 237967797
+          },
+          {
+            "slot": 7,
+            "lifetime": 2,
+            "kind": "async",
+            "minimum_s": 24103,
+            "dp": 24107,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1656,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 237967924
+          },
+          {
+            "slot": 7,
+            "lifetime": 2,
+            "kind": "frame-reservation",
+            "minimum_s": 24283,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1836,
+            "pc": 846034,
+            "marker": "provider:ExecAESSubmit:after-tcs",
+            "clock": 237842379
+          },
+          {
+            "slot": 7,
+            "lifetime": 3,
+            "kind": "ordinary-sample",
+            "minimum_s": 24392,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1945,
+            "pc": 1686247,
+            "marker": "M_DOSCLIENT_SETIOERR_93E1A287",
+            "clock": 244902874
+          },
+          {
+            "slot": 7,
+            "lifetime": 3,
+            "kind": "async",
+            "minimum_s": 24359,
+            "dp": 3072,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1912,
+            "pc": 7470,
+            "marker": "context_restore",
+            "clock": 244903790
+          },
+          {
+            "slot": 7,
+            "lifetime": 3,
+            "kind": "frame-reservation",
+            "minimum_s": 24459,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 2012,
+            "pc": 2589121,
+            "marker": "app:init_app:after-tcs",
+            "clock": 244889463
+          },
+          {
+            "slot": 7,
+            "lifetime": 4,
+            "kind": "ordinary-sample",
+            "minimum_s": 24348,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1901,
+            "pc": 1686247,
+            "marker": "M_DOSCLIENT_SETIOERR_93E1A287",
+            "clock": 250063832
+          },
+          {
+            "slot": 7,
+            "lifetime": 4,
+            "kind": "async",
+            "minimum_s": 24315,
+            "dp": 3072,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1868,
+            "pc": 7470,
+            "marker": "context_restore",
+            "clock": 250064748
+          },
+          {
+            "slot": 7,
+            "lifetime": 4,
+            "kind": "frame-reservation",
+            "minimum_s": 24394,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1947,
+            "pc": 935956,
+            "marker": "provider:ExecAESWindowGet:after-tcs",
+            "clock": 250062924
+          },
+          {
+            "slot": 7,
+            "lifetime": 5,
+            "kind": "ordinary-sample",
+            "minimum_s": 24301,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1854,
+            "pc": 1062203,
+            "marker": "provider:AllocMem",
+            "clock": 255197908
+          },
+          {
+            "slot": 7,
+            "lifetime": 5,
+            "kind": "async",
+            "minimum_s": 24242,
+            "dp": 3072,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1795,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 255208309
+          },
+          {
+            "slot": 7,
+            "lifetime": 5,
+            "kind": "frame-reservation",
+            "minimum_s": 24283,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1836,
+            "pc": 846034,
+            "marker": "provider:ExecAESSubmit:after-tcs",
+            "clock": 255208143
+          },
+          {
+            "slot": 7,
+            "lifetime": 6,
+            "kind": "ordinary-sample",
+            "minimum_s": 24134,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1687,
+            "pc": 1686515,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 260589196
+          },
+          {
+            "slot": 7,
+            "lifetime": 6,
+            "kind": "async",
+            "minimum_s": 24115,
+            "dp": 3072,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1668,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 260541300
+          },
+          {
+            "slot": 7,
+            "lifetime": 6,
+            "kind": "frame-reservation",
+            "minimum_s": 24283,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1836,
+            "pc": 846034,
+            "marker": "provider:ExecAESSubmit:after-tcs",
+            "clock": 260463605
+          },
+          {
+            "slot": 7,
+            "lifetime": 7,
+            "kind": "ordinary-sample",
+            "minimum_s": 24134,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1687,
+            "pc": 1686515,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 267025850
+          },
+          {
+            "slot": 7,
+            "lifetime": 7,
+            "kind": "async",
+            "minimum_s": 24120,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1673,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 267026102
+          },
+          {
+            "slot": 7,
+            "lifetime": 7,
+            "kind": "frame-reservation",
+            "minimum_s": 24283,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1836,
+            "pc": 846034,
+            "marker": "provider:ExecAESSubmit:after-tcs",
+            "clock": 266900146
+          },
+          {
+            "slot": 7,
+            "lifetime": 8,
+            "kind": "ordinary-sample",
+            "minimum_s": 24134,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1687,
+            "pc": 1686515,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 273827089
+          },
+          {
+            "slot": 7,
+            "lifetime": 8,
+            "kind": "async",
+            "minimum_s": 24103,
+            "dp": 24107,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1656,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 273827188
+          },
+          {
+            "slot": 7,
+            "lifetime": 8,
+            "kind": "frame-reservation",
+            "minimum_s": 24283,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1836,
+            "pc": 846034,
+            "marker": "provider:ExecAESSubmit:after-tcs",
+            "clock": 273715027
+          },
+          {
+            "slot": 7,
+            "lifetime": 9,
+            "kind": "ordinary-sample",
+            "minimum_s": 24134,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1687,
+            "pc": 1686515,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 279137658
+          },
+          {
+            "slot": 7,
+            "lifetime": 9,
+            "kind": "async",
+            "minimum_s": 24103,
+            "dp": 24107,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1656,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 279137781
+          },
+          {
+            "slot": 7,
+            "lifetime": 9,
+            "kind": "frame-reservation",
+            "minimum_s": 24283,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1836,
+            "pc": 846034,
+            "marker": "provider:ExecAESSubmit:after-tcs",
+            "clock": 279038263
+          },
+          {
+            "slot": 7,
+            "lifetime": 10,
+            "kind": "ordinary-sample",
+            "minimum_s": 24474,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 2027,
+            "pc": 1686247,
+            "marker": "M_DOSCLIENT_SETIOERR_93E1A287",
+            "clock": 286130746
+          },
+          {
+            "slot": 7,
+            "lifetime": 10,
+            "kind": "async",
+            "minimum_s": 24441,
+            "dp": 3072,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1994,
+            "pc": 7470,
+            "marker": "context_restore",
+            "clock": 286131665
+          },
+          {
+            "slot": 7,
+            "lifetime": 10,
+            "kind": "frame-reservation",
+            "minimum_s": 24552,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 2105,
+            "pc": 2477723,
+            "marker": "app:QedArguments:after-tcs",
+            "clock": 286130554
+          },
+          {
+            "slot": 7,
+            "lifetime": 11,
+            "kind": "ordinary-sample",
+            "minimum_s": 24134,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1687,
+            "pc": 1686515,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 291431480
+          },
+          {
+            "slot": 7,
+            "lifetime": 11,
+            "kind": "async",
+            "minimum_s": 24071,
+            "dp": 24075,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1624,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 291431659
+          },
+          {
+            "slot": 7,
+            "lifetime": 11,
+            "kind": "frame-reservation",
+            "minimum_s": 24283,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1836,
+            "pc": 846034,
+            "marker": "provider:ExecAESSubmit:after-tcs",
+            "clock": 291311278
+          },
+          {
+            "slot": 7,
+            "lifetime": 12,
+            "kind": "ordinary-sample",
+            "minimum_s": 24134,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1687,
+            "pc": 1686515,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 298188206
+          },
+          {
+            "slot": 7,
+            "lifetime": 12,
+            "kind": "async",
+            "minimum_s": 24071,
+            "dp": 24075,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1624,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 298188386
+          },
+          {
+            "slot": 7,
+            "lifetime": 12,
+            "kind": "frame-reservation",
+            "minimum_s": 24283,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1836,
+            "pc": 846034,
+            "marker": "provider:ExecAESSubmit:after-tcs",
+            "clock": 298062407
+          },
+          {
+            "slot": 7,
+            "lifetime": 13,
+            "kind": "ordinary-sample",
+            "minimum_s": 24134,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1687,
+            "pc": 1686515,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 304976773
+          },
+          {
+            "slot": 7,
+            "lifetime": 13,
+            "kind": "async",
+            "minimum_s": 24102,
+            "dp": 24107,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1655,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 304976909
+          },
+          {
+            "slot": 7,
+            "lifetime": 13,
+            "kind": "frame-reservation",
+            "minimum_s": 24283,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1836,
+            "pc": 846034,
+            "marker": "provider:ExecAESSubmit:after-tcs",
+            "clock": 304851005
+          },
+          {
+            "slot": 7,
+            "lifetime": 14,
+            "kind": "ordinary-sample",
+            "minimum_s": 24134,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1687,
+            "pc": 1686515,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 312000831
+          },
+          {
+            "slot": 7,
+            "lifetime": 14,
+            "kind": "async",
+            "minimum_s": 24069,
+            "dp": 3072,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1622,
+            "pc": 7470,
+            "marker": "context_restore",
+            "clock": 315094377
+          },
+          {
+            "slot": 7,
+            "lifetime": 14,
+            "kind": "frame-reservation",
+            "minimum_s": 24153,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1706,
+            "pc": 952263,
+            "marker": "provider:cursor_render:after-tcs",
+            "clock": 314654785
+          }
+        ]
+      },
+      "minimum_headroom": 1687,
+      "maximum_observed_ordinary_chain_bytes": 617,
+      "guards": "intact",
+      "native_irq_count": 9722,
+      "native_nmi_count": 8578
+    }
+  ],
+  "frame_ledger": {
+    "path": "build/qed-startup/qs4-startup/app/stack-frames.json",
+    "sha256": "df75e3627e8a515109ee5a90a2935d403715c06bb423654374f74d756f523ec1",
+    "source_chain_bytes": 1165,
+    "chain": [
+      "main",
+      "QedRuntimeRun",
+      "editor_body",
+      "main_loop",
+      "key_global",
+      "menu_key",
+      "handle_menu",
+      "select_multi",
+      "select_file",
+      "open_multi",
+      "prepare_quit",
+      "icon_test",
+      "e_icon_test",
+      "delete_edit",
+      "do_icon(Save)",
+      "e_icon_edit(Save)",
+      "save",
+      "save_datei",
+      "save_to_fd",
+      "do_aktion",
+      "handle_msg(redraw-only)",
+      "size_window",
+      "move_window",
+      "get_work",
+      "set_sliders"
+    ],
+    "continuation_cap_bytes": 768,
+    "interrupt_reserve_bytes": 256,
+    "required_headroom_bytes": 128,
+    "admission_bytes": 2560,
+    "margin_bytes": 243,
+    "limit": "Source-frame bound only. The continuation cap includes bridge and library/native/GEM work below an application call; executed startup/lifecycle chains check that cap separately. Editing/dialog/file paths must establish it when implemented; current samples are not a bound on those future paths."
+  },
+  "layout": {
+    "code_bytes": 138626,
+    "initialized_bytes": 1302,
+    "bss_bytes": 26648,
+    "import_thunk_bytes": 400,
+    "span_bytes": 269698,
+    "image_holes_bytes": 103122,
+    "serialized_bytes_if_executable": 155128,
+    "relocation_count": 3572,
+    "heap_alignment_backing_bytes": 335236,
+    "future_full_profile_backing_bytes": 393216,
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "container_metadata_allowance_bytes": 16384,
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "resident_provider": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/qed-startup/qs4-startup/c-image.json",
+    "sha256": "6816057b657a08c248b76ae3ac9c2dcddb5e2b2ac2ce5ad1d26b618b7848e3d1",
+    "code_bytes": 179036,
+    "table_bytes": 40145,
+    "data_bss_bytes": 25739,
+    "allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Pool and region reservations exactly match QS3"
+  },
+  "upper_memory_changes": "Production startup flag adds two initialized private-image bytes. Fixture control words are absent from production. Provider storage is unchanged.",
+  "failure_media": {
+    "application": "RAM:PROBE.APP",
+    "copied_from": "SYS:PROBE.APP",
+    "resource": "SYS:QED.RSC",
+    "copy_buffer_bytes": 4096
+  },
+  "host_tests": {
+    "tests": 529,
+    "expected_skips": 4
+  },
+  "limits": "Entry and emitted after-TCS samples with physical pool, lifetime and DP attribution. Observed full ordinary chains are below the separate 768-byte continuation cap; future editing/dialog/file paths retain their gates. Application AES acquisition fault follows the Process provider registration, which has separate native failure coverage."
+}

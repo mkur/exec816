@@ -65,3 +65,8 @@ in a separate work copy. It initializes FILE list/unget state, preserving the
 original library notices and archive. The emitted file fixture poisons malloc
 backing and exercises multiple streams, allocation rollback, buffering and
 terminal fclose failure. These checks do not qualify QED's Save/backup workflow.
+
+A failed private allocator backing acquisition records ERROR_NO_FREE_STORE in
+IoErr so startup can return its causal failure after GUI/runtime cleanup.
+Startup failure uses the Process result before ordinary editor alerts become
+available. See [startup ownership](../../../../../docs/history/qed-startup.md).

@@ -44,7 +44,7 @@ def variant(base,out,filesystem):
 
 def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=None,
         fixture_source=None,expected_completed=12,native_optimize=None,
-        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0,media_files=None,app_builder=None,interaction=None,loader_failures=True,retirement_timeout=600):
+        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0,media_files=None,app_builder=None,interaction=None,loader_failures=True,retirement_timeout=600,profile_all=False):
     out.mkdir(parents=True,exist_ok=True)
     if reuse:
         p=read_build(out/'program')
@@ -126,7 +126,7 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                 runtime,_=execute(b,p,timeout=600,frame_limit=30000,
                     before_run=(lambda b:capture(b,p,record,stack_observation_index,
                         during_run=(lambda owner:interaction(b,p,app,record,owner)) if interaction else None,
-                        retirement_timeout=retirement_timeout)) if observe_stacks else None)
+                        retirement_timeout=retirement_timeout,profile_all=profile_all)) if observe_stacks else None)
             except Exception:
                 record['checks']=data(b,p['image'],'checks',True)
                 record['completed']=data(b,p['image'],'completed',True)
@@ -161,7 +161,7 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                 if value is None:os.environ.pop(key,None)
                 else:os.environ[key]=value
             if record['status']=='pass':
-                record['stacks']=summarize(out/'emulator.log',points,p['build']['memory'],record.get('stack_window'))
+                record['stacks']=summarize(out/'emulator.log',points,p['build']['memory'],record.get('stack_windows',record.get('stack_window')))
         (out/'results.json').write_text(json.dumps(record,indent=2)+'\n')
     return record
 

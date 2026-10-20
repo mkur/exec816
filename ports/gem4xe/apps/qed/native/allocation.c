@@ -2,6 +2,7 @@
  * Per-image ownership. The header is the exact original AllocMem pointer.
  */
 #include "qed-runtime.h"
+#include <proto/dos.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,7 +20,7 @@ void *malloc(size_t bytes)
     if (!bytes || bytes>65536UL-sizeof(*block)) return NULL;
     backing=(ULONG)bytes+sizeof(*block);
     block=AllocMem(backing,MEMF_UPPER);
-    if (!block) return NULL;
+    if (!block) { SetIoErr(ERROR_NO_FREE_STORE);return NULL; }
     block->previous=NULL;block->next=owned;block->bytes=bytes;
     if (owned) owned->previous=block;
     owned=block;
