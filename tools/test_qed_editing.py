@@ -9,7 +9,7 @@ from test_qed_native import process_run
 from qed_editing_observe import interact
 
 
-def build_editor(target,provider,reuse_app=False):
+def build_editor(target,provider,reuse_app=False,selection=False):
     if reuse_app:
         from native_program import require,sha256
         from c_program import ABI
@@ -18,15 +18,21 @@ def build_editor(target,provider,reuse_app=False):
         app=json.loads((target/'app.json').read_text())
         layout=json.loads((target/'layout.json').read_text())
         require(app['abi']==ABI and layout['selection']==selected(),'Changed APP contract')
+        options=layout['image']['provenance']['source_options']
+        editing=next(v for n,v in options.items() if n.endswith('/qed/src/edit.c'))
+        require(('-DCreateIORequest=QedSelectionCreateIORequest' in editing)==selection,
+                'Changed selection fixture contract')
         require(sha256(target/'program.app')==app['sha256'],'Changed serialized APP')
         for name,digest in layout['build_inputs'].items():
             require(sha256(Path(name))==digest,'Changed APP input: '+name)
         return app
+    calls={'tasten.c':{'new_col':'QedEditNewCol'},
+           'ausgabe.c':{'cursor':'QedEditCursor'},
+           'event.c':{'key_window':'QedEditKeyWindow','key_global':'QedEditGlobalKey'}}
+    if selection:calls['edit.c']={'CreateIORequest':'QedSelectionCreateIORequest'}
     build(target,provider,executable=True,
           fixture=ROOT/'tests/programs/qed_editing_faults.c',
-          fixture_calls={'tasten.c':{'new_col':'QedEditNewCol'},
-                         'ausgabe.c':{'cursor':'QedEditCursor'},
-                         'event.c':{'key_window':'QedEditKeyWindow'}},
+          fixture_calls=calls,
           fixture_roots=['QedEditingLayout'])
     return json.loads((target/'app.json').read_text())
 

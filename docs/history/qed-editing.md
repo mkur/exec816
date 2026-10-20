@@ -4,7 +4,8 @@
 [QE1–QE7 plan](../plans/gem4xe/qed-editing-implementation-plan.md) ·
 [Startup baseline](qed-startup.md)
 
-Status: QE1–QE2 implemented; QE3–QE7 remain. The
+Status: QE1–QE2 implemented; QE3 is an incomplete implementation checkpoint,
+and QE4–QE7 remain. The
 [QE1 development record](../development/qed-editing-qe1.json) binds the ordinary
 executable, source audit, actual-source core probe and loaded editor session.
 
@@ -155,3 +156,33 @@ Measured reserved bank-zero delta: **0 fixed, 0 per-public-Task, 0 private idle
 bytes**, including guards, alignment and unused capacity. Complete Task-pool
 and region reservations equal QS5. No stack increase was required by QE2.
 Selection commands remain disabled until QE3.
+
+## QE3 Selection checkpoint — incomplete
+
+The current patch replaces the nested pointer wait with outer-event selection,
+release rearming and an outside-work autoscroll deadline. It adds byte-based
+Shift selection and enables Select All. Until QE4, editing an active selection
+reports that the operation is unavailable. General AES changes permit another
+client's short UPDATE during work capture and add the optional
+[`WF_EXEC_FOCUS` subscription](../reference/aes.md); explicit MCTRL and native
+gesture exclusion remain in place.
+
+Development checks pass for 529 host tests with four expected historical skips,
+168 emitted AES pointer/focus checks, 181 emitted AES lock checks and two
+optimized actual-source navigation lifetimes. The production APP builds and
+its conditional source-frame ledger fits the existing admission. The retained
+QED C profile now disables inlining to avoid the observed Calypsi 5.18 Ctrl-End
+field-access defect. The focused raw comparison remains pending.
+
+The latest loaded-editor run reaches forward/backward selection, Escape and
+Shift-click checks, then times out awaiting the global key handler's completed
+return for Control-A. Its local result is
+`build/qed-editing/qe3-final/results.json`. The failure remains unresolved;
+the later peer, cancellation, autoscroll and four-lifetime retirement checks
+have not passed together on this checkpoint. QE3 is not complete, and there is
+no reconciled passing QE3 development record or qualification claim.
+
+Reserved bank-zero delta is **0 fixed, 0 per-public-Task and 0 private idle
+bytes**, including guards, alignment and unused capacity. Complete Task-pool
+and region reservations match QS5. Shared-provider demo refresh remains QE7
+work; QED remains outside distributed demos.

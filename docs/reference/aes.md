@@ -189,6 +189,21 @@ if unavailable. A normal contended BEGIN waits in arrival order among eligible
 callers; an existing mouse owner can upgrade without waiting behind a dependent
 peer. Exit releases every owned hold. Message and timer service continue.
 
+A work-area pointer capture retains its input recipient through release while
+other clients may acquire short UPDATE sections and paint. Their implicit
+mouse hold does not replace that recipient. Explicit MCTRL remains unavailable
+to a competing capture owner until release; native frame gestures and pending
+window transactions retain their existing admission rules.
+
+`wind_set(window,WF_EXEC_FOCUS,enabled,0,0,0)` opts an owned window into native
+`WM_ONTOP`/`WM_UNTOPPED` focus notices. The default is disabled. Enabling an open
+window publishes its current focus level; subsequent focus changes use the
+existing GUI message delivery and require `MU_MESAG`, without polling. Pending
+focus changes coalesce to the latest level per window. Disabling prevents new
+notices; an already delivered notice remains consumable. Closing retires
+pending notices with the window epoch. These report accepted focus changes;
+`WM_TOPPED` remains a request for the application to raise its window.
+
 BEGIN/END UPDATE use the same native policy in either the caller or presenter.
 At a safe presenter boundary, the binding claims a private metadata gate and
 performs bounded acquisition/release synchronously. It releases that gate before

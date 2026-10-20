@@ -96,6 +96,7 @@ CARD FUNC Create(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
 
         item.owner=client.id
         item.preserve=0
+        item.focusNotices=0
         window.id=desktop.nextWindow
         desktop.nextWindow==+1
         window.kind=DESKTYPES.CONTENT_AES
@@ -188,6 +189,7 @@ PROC Delete(AESSTATE.Window POINTER item)
   item.view.shown=0
   item.owner=0
   item.preserve=0
+  item.focusNotices=0
   item.window=NULL
   item.view=NULL
   item.gui.window=0
@@ -345,6 +347,12 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
         bounds.bottom=bounds.top+DESKTYPES.FRAME_INFO_HEIGHT
       FI
       status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
+    WHEN AESTYPES.WF_EXEC_FOCUS THEN
+      item.focusNotices=(request.intin(2)<>0)
+      IF item.focusNotices<>0 THEN
+        AESGUI.Post(service,item,AESTYPES.GUI_FOCUS,
+            INT(window.id=desktop.focus),0,0,0)
+      FI
     WHEN AESTYPES.WF_EXEC_PRESERVE THEN
       ; Set before opening. Reporting every content change is the caller's
       ; promise; this changes exposure policy, not snapshot eligibility.

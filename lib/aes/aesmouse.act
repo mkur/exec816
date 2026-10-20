@@ -43,6 +43,12 @@ PUBLIC BYTE FUNC LockReady(LONGCARD client)
 
 RETURN(latest.buttons=0 OR (owner=client AND owner<>0))
 
+; Work capture routes input independently of another client's short painting
+; scope. Unreleased native gestures and release-rearm still exclude admission.
+PUBLIC BYTE FUNC UpdateReady(LONGCARD client)
+
+RETURN(LockReady(client)<>0 OR (owner<>0 AND needRelease=0 AND manager=0))
+
 ; Presenter-only access for a visual attached to the existing physical capture.
 PUBLIC BYTE FUNC DragReady(LONGCARD client,epoch)
 

@@ -46,6 +46,13 @@ void AESClientOne(void)
         else if (peerCommand == 5) {
             CHECK(wind_close(peerWindow) && wind_delete(peerWindow));
             CHECK(wind_update(BEG_MCTRL));
+        } else if (peerCommand == 6) {
+            /* Paint ownership does not replace another client's capture. */
+            CHECK(wind_update(BEG_UPDATE));
+            CHECK(wind_update(BEG_CHECK|BEG_UPDATE));
+            CHECK(!wind_update(BEG_CHECK|BEG_MCTRL));
+            CHECK(ExecAESDiagnostic()==AES_OK);
+            CHECK(wind_update(END_UPDATE) && wind_update(END_UPDATE));
         } else break;
         peerFinished = peerCommand; Signal(controller, wake);
     }
@@ -86,6 +93,37 @@ static void take(struct AESInputInbox *in, WORD x, WORD y, UWORD buttons)
     CHECK(in->buttons[head & 15].qualifiers == 2);
     CHECK(in->buttons[head & 15].epoch == in->buttonEpoch);
     ++in->buttonHead;
+}
+
+static void focus_notice(WORD window, WORD wanted)
+{
+    WORD message[8],x,y,buttons,keys,key,clicks,events;
+    UWORD attempt;
+    for (attempt=0;attempt<48;++attempt) {
+        events=evnt_multi(MU_MESAG|MU_TIMER,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,message,50,0,
+            &x,&y,&buttons,&keys,&key,&clicks);
+        CHECK(events!=0);
+        if ((events&MU_MESAG) && message[3]==window && message[0]==wanted) return;
+    }
+    CHECK(0);
+}
+
+static void no_focus_notice(WORD window)
+{
+    WORD message[8],x,y,buttons,keys,key,clicks,events;
+    UWORD attempt;
+    for (attempt=0;attempt<48;++attempt) {
+        events=evnt_multi(MU_MESAG|MU_TIMER,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,message,50,0,
+            &x,&y,&buttons,&keys,&key,&clicks);
+        CHECK(events!=0);
+        if (events&MU_MESAG)
+            CHECK(message[3]!=window ||
+                (message[0]!=WM_ONTOP && message[0]!=WM_UNTOPPED));
+        else if (events&MU_TIMER) return;
+    }
+    CHECK(0);
 }
 
 UWORD AESRun(void)
@@ -152,6 +190,8 @@ UWORD AESRun(void)
     CHECK(in->eligible);
 
     edge(60, 80, 1);
+    send(6);
+    CHECK(in->eligible && !peerInput->eligible);
     send(2); /* Competitor cannot steal a physical gesture. */
     peerFinished = peerEntered = 0; peerCommand = 3; Signal(peer, peerWake);
     while (!peerEntered) Wait(wake);
@@ -207,6 +247,19 @@ UWORD AESRun(void)
     CHECK(ExecAESInputRecover(c, AES_INPUT_BUTTON) == AES_INPUT_LOST);
     edge(70, 90, 0);
     CHECK(in->eligible && in->keyHead == in->keyTail);
+
+    CHECK(wind_set(handle,WF_EXEC_FOCUS,1,0,0,0));
+    focus_notice(handle,WM_ONTOP);
+    send(1);focus_notice(handle,WM_UNTOPPED);
+    CHECK(wind_set(handle,WF_TOP,0,0,0,0));
+    focus_notice(handle,WM_ONTOP);
+    CHECK(wind_set(handle,WF_EXEC_FOCUS,0,0,0,0));
+    send(1);no_focus_notice(handle);
+    CHECK(wind_set(handle,WF_EXEC_FOCUS,1,0,0,0));
+    focus_notice(handle,WM_UNTOPPED);
+    CHECK(wind_set(handle,WF_EXEC_FOCUS,0,0,0,0));
+    CHECK(wind_set(handle,WF_TOP,0,0,0,0));
+    no_focus_notice(handle);
 
     send(5); /* Windowless MCTRL owns exclusion, never fabricates content. */
     sample(2, 3, 70, 90, 1, 1);

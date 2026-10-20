@@ -808,7 +808,8 @@
   "container_metadata_allowance_bytes": 16384,
   "compiler_options": [
     "--no-cross-call",
-    "--no-interprocedural-cross-jump"
+    "--no-interprocedural-cross-jump",
+    "--no-inline"
   ],
   "minimum_stack_bytes": 2560
 }

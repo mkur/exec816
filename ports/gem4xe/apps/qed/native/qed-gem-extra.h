@@ -323,12 +323,6 @@ typedef struct {
 #ifndef WM_NEWTOP
 #define WM_NEWTOP   29
 #endif
-#ifndef WM_UNTOPPED
-#define WM_UNTOPPED 30
-#endif
-#ifndef WM_ONTOP
-#define WM_ONTOP    31
-#endif
 #ifndef AC_OPEN
 #define AC_OPEN     40
 #endif

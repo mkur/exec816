@@ -131,6 +131,11 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
     delivery.delivery.words(0)=AESTYPES.WM_ARROWED
   ELSEIF kind=AESTYPES.GUI_CLOSED THEN
     delivery.delivery.words(0)=AESTYPES.WM_CLOSED
+  ELSEIF kind=AESTYPES.GUI_FOCUS THEN
+    delivery.delivery.words(0)=AESTYPES.WM_UNTOPPED
+    IF notice.x<>0 THEN
+      delivery.delivery.words(0)=AESTYPES.WM_ONTOP
+    FI
   FI
 
   delivery.delivery.words(1)=0

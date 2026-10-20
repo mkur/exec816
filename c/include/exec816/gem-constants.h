@@ -42,6 +42,9 @@
 #define INFO 16
 #define WF_INFO 3
 #define WM_FULLED 23
+#define WM_UNTOPPED 30
+#define WM_ONTOP 31
+#define WF_EXEC_FOCUS 24578
 #define WF_WORKXYWH WF_WXYWH
 #define WF_CURRXYWH WF_CXYWH
 #endif

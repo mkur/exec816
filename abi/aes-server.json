@@ -38,7 +38,7 @@
     "ENDPOINT_RETIRED": 3,
     "RPC_INTIN_WORDS": 6,
     "RPC_INTOUT_WORDS": 5,
-    "GUI_KINDS": 9,
+    "GUI_KINDS": 10,
     "GUI_REDRAW": 0,
     "GUI_TOPPED": 1,
     "GUI_MOVED": 2,
@@ -119,7 +119,11 @@
     "OP_DRAG_OUTLINE": 203,
     "PAINT_REPORTS": 8,
     "UPDATE_WINDOW": 512,
-    "OP_GRAF_MKSTATE": 79
+    "OP_GRAF_MKSTATE": 79,
+    "GUI_FOCUS": 9,
+    "WM_UNTOPPED": 30,
+    "WM_ONTOP": 31,
+    "WF_EXEC_FOCUS": 24578
   },
   "records": {
     "MenuObject": [
@@ -721,6 +725,9 @@
     "FULLER",
     "INFO",
     "WF_INFO",
-    "WM_FULLED"
+    "WM_FULLED",
+    "WM_UNTOPPED",
+    "WM_ONTOP",
+    "WF_EXEC_FOCUS"
   ]
 }

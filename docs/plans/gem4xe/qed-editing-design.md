@@ -137,7 +137,26 @@ capability, with independent pixel and ownership tests, not an editor-only hook.
 Replace the nested `wi_click` wait with application gesture state serviced by
 the main event dispatcher. Existing native capture retains the work-area
 recipient through release; selection needs no long-lived UPDATE or explicit
-MCTRL ownership. Drawing takes short UPDATE sections only.
+MCTRL ownership.
+
+QE3 inspection found that `AESMOUSE.LockReady` currently excludes both lock
+classes while another client owns that work capture. Amend general AES
+admission so UPDATE may paint during another application's work-area capture;
+MCTRL continues to require capture compatibility. Keep update ownership,
+explicit mouse holds, native frame gestures, pending window mutations and
+queue ordering in the existing shared policy. UPDATE's short implicit mouse
+hold must not replace the captured input recipient. Exercise held-pointer
+peer painting, recipient/release retention and the existing lock regressions.
+This change uses the current public operation and adds no driver-specific
+service or bank-zero reservation. Drawing takes short UPDATE sections only.
+
+QE3 also requires a reusable focus-notification subscription because the
+initial native AES profile publishes top-window identity but sends no GEM
+focus notices. `WF_EXEC_FOCUS` opts one window into `WM_ONTOP`/`WM_UNTOPPED`
+through the existing bounded GUI delivery. Pending changes coalesce to the
+latest focus level; QED cancels a gesture on either notice, including a rapid
+loss and regain. Keep the default unsubscribed for existing clients. This
+adds no kernel operation, polling timer or bank-zero reservation.
 
 | State | Wait/transition |
 | --- | --- |
@@ -264,6 +283,16 @@ Read-only fixture sessions and private text observations establish this gate;
 successful persisted output is not its oracle.
 
 ## Memory, stack and evidence
+
+QE3's actual-source navigation probe exposed a Calypsi 5.18 C inlining defect:
+the inlined Ctrl-End path loaded the cursor row at TEXT offset 66 where the
+source reads the line count at offset 44, producing row -1 in a three-line
+document. The outlined optimized function emits the correct field access.
+Disable C inlining uniformly in the retained QED compilation profile, keeping
+`-O2`, rather than changing an individual navigation routine to accommodate
+the compiler. Exercise the actual routines with this profile and with raw C,
+then remeasure the complete APP's frames, size and loaded behavior. This is a
+Calypsi profile restriction; it does not change the pinned actionc compiler.
 
 Use QED's declared 2,560-byte pool as the starting point, retaining the 256-byte
 interrupt reserve and 128-byte headroom requirement. The user confirmed on

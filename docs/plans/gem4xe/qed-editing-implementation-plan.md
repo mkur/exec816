@@ -4,8 +4,10 @@
 [Strategy](qed-port-strategy.md) · [Startup baseline](../../history/qed-startup.md)
 
 Status: strategy step 4 in progress; QE1–QE2 pass their development checks,
-recorded in the [editing history](../../history/qed-editing.md). QE3–QE7 are
-pending. Implement the
+recorded in the [editing history](../../history/qed-editing.md). QE3 has an
+[incomplete checkpoint](../../history/qed-editing.md#qe3-selection-checkpoint--incomplete)
+with a failing loaded-editor Select All check; its completion gate and QE4–QE7
+remain pending. Implement the
 [editing design](qed-editing-design.md) in the following executable slices.
 Each slice builds on the ordinary loaded QED APP and commits after its selected
 development checks. Record a design amendment before relying on a measured

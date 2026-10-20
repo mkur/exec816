@@ -44,7 +44,7 @@ PUBLIC TYPE Window=[
   AESTYPES.WindowView POINTER view
   DESKTYPES.Window POINTER window
   LAYERTYPES.Rect paintDamage
-  BYTE paintDirty,preserve
+  BYTE paintDirty,preserve,focusNotices
 ]
 
 PUBLIC TYPE Client=[

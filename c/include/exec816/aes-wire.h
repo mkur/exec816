@@ -39,7 +39,7 @@
 #define AES_ENDPOINT_RETIRED 3
 #define AES_RPC_INTIN_WORDS 6
 #define AES_RPC_INTOUT_WORDS 5
-#define AES_GUI_KINDS 9
+#define AES_GUI_KINDS 10
 #define AES_GUI_REDRAW 0
 #define AES_GUI_TOPPED 1
 #define AES_GUI_MOVED 2
@@ -121,6 +121,10 @@
 #define AES_PAINT_REPORTS 8
 #define AES_UPDATE_WINDOW 512
 #define AES_OP_GRAF_MKSTATE 79
+#define AES_GUI_FOCUS 9
+#define AES_WM_UNTOPPED 30
+#define AES_WM_ONTOP 31
+#define AES_WF_EXEC_FOCUS 24578
 struct AESMenuObject {
     WORD next;
     WORD head;

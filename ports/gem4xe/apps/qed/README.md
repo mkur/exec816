@@ -111,6 +111,14 @@ The supervisor checks normal collection, unload and exact heap reuse.
 See the [editing record](../../../../docs/history/qed-editing.md) for the
 implemented slice, evidence and remaining commands. Save/Save As remain disabled.
 
+QE3's selection checkpoint is incomplete: the loaded-editor runner currently
+times out at Control-A before reaching its later combined checks. Use
+`tools/test_qed_selection.py --output DIR` to reproduce that gate, or select
+`--group logical` for the passing optimized actual-source navigation probe.
+The focused raw comparison is available with `--group logical --raw` and remains
+pending. See the [checkpoint status](../../../../docs/history/qed-editing.md#qe3-selection-checkpoint--incomplete)
+before interpreting these runners as evidence of a completed selection slice.
+
 `--from-build` rebuilds the APP against an unchanged emitted native fixture.
 `--reuse-app` additionally verifies recorded APP input hashes for observer-only
 reruns. Omit both after changing provider or native fixture inputs.
@@ -173,7 +181,9 @@ redraw and geometry messages, with finite Close-to-Save action nesting. The
 file-mask matcher is iterative; Find remains literal. The mask fixture links
 that actual source. `-O2` remains enabled; the port disables cross-call and
 cross-function tail sharing to keep emitted function frames auditable. The
-layout report charges that measured code cost.
+QE3 profile also disables C inlining after the actual-source Ctrl-End probe
+exposed an incorrect field access in Calypsi 5.18's inlined code. The layout
+report charges the resulting code cost.
 
 QED native groups collect passive S samples at emitted entries/frame sites,
 with physical pool, DP and per-pool Process lifetime ordinal. These samples

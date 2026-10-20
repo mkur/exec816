@@ -28,7 +28,10 @@ def frame_cost(instructions):
 
 
 def measure(out,destination=None):
-    require(set(json.loads((out / 'layout.json').read_text())['selection']['compiler_options']) == {'--no-cross-call', '--no-interprocedural-cross-jump'}, 'Frame ledger needs stable function boundaries')
+    options=set(json.loads((out / 'layout.json').read_text())['selection']['compiler_options'])
+    require({'--no-cross-call','--no-interprocedural-cross-jump'}<=options
+            and options<={'--no-cross-call','--no-interprocedural-cross-jump','--no-inline'},
+            'Frame ledger needs stable function boundaries')
     report = json.loads((out / 'layout.json').read_text())
     require(sha256(out/'program.elf')==report.get('elf_sha256',report.get('analysis_elf_sha256')),
             'QED build is incomplete or changed')
@@ -90,7 +93,7 @@ def measure(out,destination=None):
         res = (v['weight'] + value + 3, [v['name']] + path)
         done[k] = res
         return res
-    callbacks = {'QedRuntimeRun': ['editor_body'], 'do_icon': ['e_icon_test', 'e_icon_edit'], 'icon_test': ['e_icon_test'], 'icon_edit': ['e_icon_edit'], 'icon_exist': ['e_icon_exist'], 'do_all_window': ['do_absatz', 'do_color_change'], 'get_work': [], 'redraw_window': ['wi_draw'], 'uniconify_window': ['wi_uniconify'], 'ontop_window': ['wi_top'], 'untop_window': [], 'top_window': ['wi_top'], 'create_window': ['crt_edit'], 'close_window': [], 'click_window': ['wi_click'], 'unclick_window': [], 'key_window': ['wi_key'], 'select_file': ['open_multi'], 'cf_form_keybd': [], 'handle_mdial_msg': ['handle_msg'], 'suche1': ['STRSTR', 'STRSTR1']}
+    callbacks = {'QedRuntimeRun': ['editor_body'], 'do_icon': ['e_icon_test', 'e_icon_edit'], 'icon_test': ['e_icon_test'], 'icon_edit': ['e_icon_edit'], 'icon_exist': ['e_icon_exist'], 'do_all_window': ['do_absatz', 'do_color_change'], 'snap_window': [], 'redraw_window': ['wi_draw'], 'uniconify_window': ['wi_uniconify'], 'ontop_window': ['wi_top'], 'untop_window': [], 'top_window': ['wi_top'], 'create_window': ['crt_edit'], 'close_window': [], 'click_window': ['wi_click'], 'unclick_window': [], 'key_window': ['wi_key'], 'select_file': ['open_multi'], 'cf_form_keybd': [], 'handle_mdial_msg': ['handle_msg'], 'suche1': ['STRSTR', 'STRSTR1']}
     indirect = {v['name'] for v in graph.values() if any((addresses[e][2] == '_JmpIndLong' for e in v['edges']))}
     require(indirect == set(callbacks), 'Unclassified or stale indirect callback contract: ' + str(indirect ^ set(callbacks)))
     for v in graph.values():
