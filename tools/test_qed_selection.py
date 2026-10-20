@@ -30,19 +30,26 @@ def run(out,reuse=False,reuse_app=False,native_from=None,scroll=True):
             'QED.RSC':(out/'inputs/resource/QED.RSC').read_bytes()})
 
 
-def logical(out,reuse=False,native_from=None,optimize=True):
+def logical(out,reuse=False,native_from=None,optimize=True,shortcuts=False):
     from prepare_qed import PORT
     from test_c_process import variant
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     if native_from:variant(native_from.resolve(),out,'sdfs');reuse=True
     prepare(out/'inputs')
     qed=out/'inputs/source/qed/src';native=PORT/'native'
-    sources=[ROOT/'tests/programs/qed_selection_core.c']
-    sources += [qed/name for name in ('tasten.c','memory.c','clipbrd.c','ausgabe.c','block.c')]
+    if shortcuts:
+        sources=[ROOT/'tests/programs/qed_shortcuts.c']
+        sources += [out/'inputs/source/cflib'/name for name in ('menuisk.c','nkccuppr.c')]
+    else:
+        sources=[ROOT/'tests/programs/qed_selection_core.c']
+        sources += [qed/name for name in ('tasten.c','memory.c','clipbrd.c','ausgabe.c','block.c')]
     sources += [native/name for name in ('entry.c','allocation.c','files.c','library.c')]
-    definitions={str(p):['--char-is-unsigned','-DQED_BANKED_MALLOC=1',
+    definitions={str(p):([] if '/source/cflib/' in str(p) else ['--char-is-unsigned'])+
+        ['-DQED_BANKED_MALLOC=1',
         *selected()['compiler_options']] for p in sources}
-    definitions[str(qed/'tasten.c')].append('-Dform_alert=QedRecordAlert')
+    if not shortcuts:definitions[str(qed/'tasten.c')].append('-Dform_alert=QedRecordAlert')
+    else:definitions[str(out/'inputs/source/cflib/menuisk.c')].append(
+        '-Dmenu_tnormal=QedRecordMenuNormal')
     fixture=out/'logical.act'
     prefix=(ROOT/'tests/programs/c_process.act').read_text().split('\nPROC Main()')[0]
     fixture.write_text(prefix+"""
@@ -82,10 +89,10 @@ if __name__=='__main__':
     p.add_argument('--reuse-app',action='store_true')
     p.add_argument('--native-from',type=Path)
     p.add_argument('--no-scroll',action='store_true')
-    p.add_argument('--group',choices=['editor','logical'],default='editor')
+    p.add_argument('--group',choices=['editor','logical','shortcuts'],default='editor')
     p.add_argument('--raw',action='store_true',help='Focused actual-source logical probe only')
     a=p.parse_args()
-    if a.raw and a.group!='logical':p.error('--raw requires --group logical')
-    r=logical(a.output,a.from_build,a.native_from,not a.raw) if a.group=='logical' else run(
+    if a.raw and a.group=='editor':p.error('--raw requires a focused probe')
+    r=logical(a.output,a.from_build,a.native_from,not a.raw,a.group=='shortcuts') if a.group!='editor' else run(
         a.output,a.from_build,a.reuse_app,a.native_from,not a.no_scroll)
     print(r['status'],r['completed'])

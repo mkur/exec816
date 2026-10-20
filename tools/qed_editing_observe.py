@@ -36,7 +36,7 @@ class Editor:
     def native(self,name,size=2):return self.get(self.at(name),size)
     def input_at(self,name):
         return next(d['address'] for d in self.p['image']['data'] if '_DESKINPUT_'+name.upper()+'_' in d['name'])
-    def reach(self,condition):
+    def reach(self,condition,timeout=120):
         b,p=self.b,self.p
         b.bp_clear_all();b.bp_set(p['labels']['native_irq'],condition=condition)
         b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
@@ -47,7 +47,7 @@ class Editor:
                     'Editing fixture stopped: checks='+str(self.native('checks')))
             return result
         b.regs=regs
-        try:run_to(b,p['labels']['native_irq'],condition=condition,timeout=120,frame_limit=9000)
+        try:run_to(b,p['labels']['native_irq'],condition=condition,timeout=timeout,frame_limit=9000)
         finally:b.regs=original
     def frames(self,n=30):self.reach('@frame>='+str(self.b.eval_expr('@frame')+n))
     def key(self,name,ctrl=False,shift=False,settle=12,dialog=False,dispatch=True):

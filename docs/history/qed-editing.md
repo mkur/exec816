@@ -172,15 +172,27 @@ Development checks pass for 529 host tests with four expected historical skips,
 optimized actual-source navigation lifetimes. The production APP builds and
 its conditional source-frame ledger fits the existing admission. The retained
 QED C profile now disables inlining to avoid the observed Calypsi 5.18 Ctrl-End
-field-access defect. The focused raw comparison remains pending.
+field-access defect. The focused raw and optimized actual-source navigation
+comparisons now both pass.
 
-The latest loaded-editor run reaches forward/backward selection, Escape and
-Shift-click checks, then times out awaiting the global key handler's completed
-return for Control-A. Its local result is
-`build/qed-editing/qe3-final/results.json`. The failure remains unresolved;
-the later peer, cancellation, autoscroll and four-lifetime retirement checks
-have not passed together on this checkpoint. QE3 is not complete, and there is
-no reconciled passing QE3 development record or qualification claim.
+The original loaded-editor checkpoint timed out after Shift-click while
+dispatching Control-A (`build/qed-editing/qe3-final/results.json`). Physical
+capture and native AES delivery were correct. The C handler entered with
+`$1E01` and Control; its last native menu request completed successfully.
+Calypsi 5.18 emitted a conditional byte increment in CF-Lib's shortcut parser
+that left M=1 at a join followed by word-immediate instructions. The CPU then
+ran outside the APP. Patch 0012 keeps the normalized character word-wide.
+It changes the port's character intermediate, with no kernel/compiler pin
+change or per-routine Exec special case.
+
+The [focused development record](../development/qed-shortcuts.json) binds raw
+and optimized actual-source parser checks: every Control-letter encoding and
+its printable counterpart, modifier rejection and disabled commands, across
+two fresh Processes per mode. The previous byte-intermediate source fails the
+same isolated optimized probe. The loaded editor now passes Control-A,
+collapse, peer painting, and geometry/focus/input-loss cancellation.
+Autoscroll and complete four-lifetime retirement evidence remain pending;
+QE3 is not complete and has no reconciled passing development record yet.
 
 Reserved bank-zero delta is **0 fixed, 0 per-public-Task and 0 private idle
 bytes**, including guards, alignment and unused capacity. Complete Task-pool

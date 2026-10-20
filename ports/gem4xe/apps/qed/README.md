@@ -182,7 +182,11 @@ file-mask matcher is iterative; Find remains literal. The mask fixture links
 that actual source. `-O2` remains enabled; the port disables cross-call and
 cross-function tail sharing to keep emitted function frames auditable. The
 QE3 profile also disables C inlining after the actual-source Ctrl-End probe
-exposed an incorrect field access in Calypsi 5.18's inlined code. The layout
+exposed an incorrect field access in Calypsi 5.18's inlined code. Shortcut
+normalization also keeps its character intermediate word-wide: the compiler
+omitted a width restore after its conditional byte increment. The
+[focused raw/optimized checks](../../../../docs/development/qed-shortcuts.json)
+execute the actual CF-Lib parser. The layout
 report charges the resulting code cost.
 
 QED native groups collect passive S samples at emitted entries/frame sites,

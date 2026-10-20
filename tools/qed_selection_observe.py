@@ -20,7 +20,17 @@ class SelectionEditor(Editor):
             before=self.get(self.sy['QedGlobalKeyCalls'])
             options.setdefault('dispatch',False)
             result=super().key(name,ctrl=ctrl,**options)
-            self.reach('dw($%x)!=%d'%(self.sy['QedGlobalKeyCalls'],before))
+            try:self.reach('dw($%x)!=%d'%(self.sy['QedGlobalKeyCalls'],before),timeout=30)
+            except Exception:
+                self.scene['shortcut_failure']=dict(registers=self.b.regs(),
+                    pc=self.b.eval_expr('@xpc'),
+                    counters={n:self.get(self.sy[n]) for n in ('QedGlobalKeyCalls',
+                        'QedGlobalKeyEntered','QedGlobalLastKey','QedGlobalLastQualifiers',
+                        'QedEditKeyCalls','QedLastKey','QedLastQualifiers')},
+                    pointer_state=self.get(self.sy['pointer_state']),
+                    context=self.b.memdump(self.context(),dict(expected_layout())['C context size']).hex(),
+                    task=self.b.memdump(self.task,128).hex())
+                raise
             return result
         return super().key(name,ctrl=ctrl,**options)
     def text(self):
@@ -125,8 +135,8 @@ def interact(b,p,app,record,owner,scroll=True):
         b.memload(e.at('control'),struct.pack('<H',cycle+1));return e.retire_key('Q',ctrl=True)
     if cycle==3:
         e.key('X');e.move(*e.cell(0,0));e.edge(True);e.stage(1)
-        b.memload(e.at('control'),struct.pack('<H',4));e.alert(2)
-        e.stage(2);e.edge(False);e.stage(0)
+        b.memload(e.at('control'),struct.pack('<H',4));e.stage(2)
+        e.edge(False);e.alert(2);e.stage(0)
         e.selection('selection-stop-cancel',[b'x'],None,0,0)
         b.memload(e.at('control'),struct.pack('<H',104))
         return e.alert(1,retiring=True)
@@ -174,7 +184,7 @@ def interact(b,p,app,record,owner,scroll=True):
     e.move(*e.cell(31,0));e.stage(2);e.edge(False);e.stage(0)
     e.selection('input-loss-cancels',lines,None,5,0)
     e.move(*e.cell(30,0));e.edge(True);e.stage(1)
-    e.peer_command(3);e.alert(2);e.stage(2);e.edge(False);e.stage(0)
+    e.peer_command(3);e.stage(2);e.edge(False);e.alert(2);e.stage(0)
     e.selection('selection-close-cancel',lines,None,5,0)
     b.memload(e.at('control'),struct.pack('<H',100))
     e.reach('dw($%x)=101'%e.at('phase'));e.covered=[]
@@ -244,7 +254,7 @@ def autoscroll(e,lines):
     before=e.get(e.sy['QedSelectionClockFailures'])
     e.move(*e.cell(1,1));e.edge(True);e.stage(1)
     work=e.geometry()['work'];e.move(work[0]-3,work[1]+12)
-    e.alert(1);e.stage(2);e.edge(False);e.stage(0)
+    e.stage(2);e.edge(False);e.alert(1);e.stage(0)
     require(e.get(e.sy['QedSelectionClockFailures'])==before+1,'Clock refusal was not reached')
     e.key('ESC');e.expected_range=None
     state=e.text();e.selection('clock-failure-retains-document',lines,None,state['x'],state['y'])

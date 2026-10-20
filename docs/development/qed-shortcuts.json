@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Actual CF-Lib is_menu_key: all 26 control bytes, all 26 printable control-letter counterparts, unmodified-key rejection and a disabled command. Two Process lifetimes per mode; notification and label sinks do not claim GUI/input delivery.",
+  "compiler_defect": "Calypsi 5.18 emits SEP #$20 / STA for conditional char += 64, but omits REP #$20 at the join before word-immediate instructions. The port now keeps the normalized character in WORD.",
+  "probes": [
+    {
+      "mode": "opt",
+      "path": "build/qed-editing/qe3-shortcuts-opt",
+      "results_sha256": "2d5da2442e14caf3ca7af74e708d17a68290973aef309d9f65c41dbfaa6f71bd",
+      "app_sha256": "10af42ca98714ef64707160e530603a2d566b4204d8a63ed9f5c0ad12edd5131",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "fixture_sha256": "08c4bcc986de93c7bed0bfaaee85b2457a0b9997af99f70bb582757377edc51a",
+      "source_inputs": {
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-editing/qe3-shortcuts-opt/inputs/source/cflib/menuisk.c": "2f404088e6965e3ac58d1ba11650e1bcee3274c1cc42e6d466215d8737e8a7e8",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-editing/qe3-shortcuts-opt/inputs/source/cflib/nkccuppr.c": "e7d173147ae71454847740be6d39ec0a6c0df224dc66635bc8342cf232300d81"
+      },
+      "compiler_options": {
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-editing/qe3-shortcuts-opt/inputs/source/cflib/menuisk.c": [
+          "-DQED_BANKED_MALLOC=1",
+          "--no-cross-call",
+          "--no-interprocedural-cross-jump",
+          "--no-inline",
+          "-Dmenu_tnormal=QedRecordMenuNormal"
+        ],
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-editing/qe3-shortcuts-opt/inputs/source/cflib/nkccuppr.c": [
+          "-DQED_BANKED_MALLOC=1",
+          "--no-cross-call",
+          "--no-interprocedural-cross-jump",
+          "--no-inline"
+        ]
+      },
+      "tools": {
+        "cc65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+          "version": "Calypsi ISO C compiler for 65816 version 5.18",
+          "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+        },
+        "as65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+          "version": "Calypsi assembler for 65816 version 5.18",
+          "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+        },
+        "ln65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+          "version": "Calypsi linker for 65816 version 5.18",
+          "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+        }
+      },
+      "minimum_headroom": 1051
+    },
+    {
+      "mode": "raw",
+      "path": "build/qed-editing/qe3-shortcuts-raw",
+      "results_sha256": "cede2293b1c8110d6568095d160f880314dcb14339856a87909748cefd131559",
+      "app_sha256": "f359b07c8463568846cc2925c668678f370cae20adcc44933fb44bc0fbba2b45",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "fixture_sha256": "08c4bcc986de93c7bed0bfaaee85b2457a0b9997af99f70bb582757377edc51a",
+      "source_inputs": {
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-editing/qe3-shortcuts-raw/inputs/source/cflib/menuisk.c": "2f404088e6965e3ac58d1ba11650e1bcee3274c1cc42e6d466215d8737e8a7e8",
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-editing/qe3-shortcuts-raw/inputs/source/cflib/nkccuppr.c": "e7d173147ae71454847740be6d39ec0a6c0df224dc66635bc8342cf232300d81"
+      },
+      "compiler_options": {
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-editing/qe3-shortcuts-raw/inputs/source/cflib/menuisk.c": [
+          "-DQED_BANKED_MALLOC=1",
+          "--no-cross-call",
+          "--no-interprocedural-cross-jump",
+          "--no-inline",
+          "-Dmenu_tnormal=QedRecordMenuNormal"
+        ],
+        "/Users/michalkurcewicz/action/exec816-public/build/qed-editing/qe3-shortcuts-raw/inputs/source/cflib/nkccuppr.c": [
+          "-DQED_BANKED_MALLOC=1",
+          "--no-cross-call",
+          "--no-interprocedural-cross-jump",
+          "--no-inline"
+        ]
+      },
+      "tools": {
+        "cc65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+          "version": "Calypsi ISO C compiler for 65816 version 5.18",
+          "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+        },
+        "as65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+          "version": "Calypsi assembler for 65816 version 5.18",
+          "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+        },
+        "ln65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+          "version": "Calypsi linker for 65816 version 5.18",
+          "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+        }
+      },
+      "minimum_headroom": 1051
+    }
+  ],
+  "negative_control": {
+    "path": "build/qed-editing/qe3-shortcuts-before",
+    "results_sha256": "45e5987df19ff568dc0010cac8db14911f22191e6a1973dfbf8c38da3f7075df",
+    "status": "fail",
+    "error": "No breakpoint at $1d2e within 30000 frames; {'ok': True, 'PC': '$c237', 'A': '$00', 'X': '$00', 'Y': '$00', 'S': '$dc', 'P': '$84', 'flags': 'N----I--', 'cycles': 65535143, 'clock_multiplier': 8, 'shadow_rom': True, 'mode': '65C816'}",
+    "source": "Previous menuisk.c with byte intermediate; isolated probe uses unsigned char default. This diagnostic is not a supported build profile."
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  }
+}

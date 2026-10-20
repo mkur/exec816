@@ -14,6 +14,7 @@
 volatile unsigned short QedEditFailLine,QedEditFailureHits;
 volatile unsigned short QedEditKeyCalls,QedLastKey,QedLastQualifiers;
 volatile unsigned short QedGlobalKeyCalls;
+volatile unsigned short QedGlobalKeyEntered,QedGlobalLastKey,QedGlobalLastQualifiers;
 volatile unsigned short QedCursorPaints,QedPaintedBlink,QedPaintedX;
 volatile long QedPaintedY;
 volatile unsigned short QedSelectionFailClock,QedSelectionClockFailures;
@@ -43,6 +44,7 @@ bool QedEditKeyWindow(WINDOWP window,short qualifiers,short key)
 }
 bool QedEditGlobalKey(short qualifiers,short key)
 {
+    ++QedGlobalKeyEntered;QedGlobalLastKey=key;QedGlobalLastQualifiers=qualifiers;
     bool result=key_global(qualifiers,key);
     ++QedGlobalKeyCalls;return result;
 }
