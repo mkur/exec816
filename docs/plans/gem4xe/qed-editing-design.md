@@ -5,8 +5,8 @@
 [Implementation plan](qed-editing-implementation-plan.md) ·
 [Startup evidence](../../history/qed-startup.md)
 
-Status: strategy step 4 in progress; QE1–QE3 are implemented with
-[development evidence](../../history/qed-editing.md). QE4–QE7 remain. The gate is
+Status: strategy step 4 in progress; QE1–QE4 are implemented with
+[development evidence](../../history/qed-editing.md). QE5–QE7 remain. The gate is
 an actual loaded QED APP opening one document, editing and navigating its text,
 selecting, copying/pasting, undoing and finding, with correct redraw and
 cancellable dialogs. New/Open must retain the current document on failure or
@@ -190,6 +190,21 @@ toggle behavior where applicable; five internal operation tags are not five
 independent Undo levels. Document the emitted behavior, with no new Redo API.
 Reset Undo and selection on successful document replacement; retain the internal
 clipboard across New/Open. Retire all three owners on exit.
+
+QE4 audit amendment: the donor Cut deletes before its clipboard copy and the
+block insertion/deletion helpers perform fallible reallocations after list
+surgery. Prepare a complete replacement chain for the affected **whole lines**
+using the donor LINE allocator, then exchange it with the live span in one
+non-failing ownership transfer. Keep the displaced span in the donor private
+Undo ring. Undo exchanges that span back without allocating and swaps the
+saved cursor/range metadata, preserving the single-group toggle semantics.
+Adjacent ordinary edits on the same line retain the original group; a block
+operation, split/join, or edit after Undo starts a new group. This replaces the
+unsafe operation-tag replay inside the existing block/clipboard owners; it
+adds neither a second text store nor whole-document snapshots. Peak backing is
+the old Undo span, prepared new affected lines and any prepared clipboard until
+commit; measure those owners separately. Failed preparation retains all prior
+editing state. Reserved bank-zero change remains zero.
 
 ## Dialogs, Find and command interruption
 

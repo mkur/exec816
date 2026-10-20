@@ -127,7 +127,7 @@ The small raw/optimized comparisons cover actual-source navigation and the
 shortcut parser after the documented Calypsi profile/source corrections.
 See the [selection evidence](../../../../docs/history/qed-editing.md#qe3-event-driven-selection)
 for physical key limitations, stack accounting and exact executed scope.
-Clipboard/Undo and edits replacing an active selection remain QE4 work;
+QE4 enables clipboard/Undo and edits replacing an active selection;
 dialogs/Find, New/Open replacement and reliable saving remain later slices.
 
 `--from-build` rebuilds the APP against an unchanged emitted native fixture.
@@ -283,3 +283,18 @@ QE1 detaches the document pointer callback and removes its donor MU_M2 wait.
 Document pointer interaction remains disabled until QE3 supplies the outer-event
 selection protocol. Startup Close/Quit/Stop evidence does not establish
 New/Open policy, text editing, selection, dialogs or saved-file behavior.
+
+QE4's transaction and loaded-editor checks:
+
+```sh
+python3 tools/test_qed_clipboard.py --output build/qed-editing/clipboard-core
+python3 tools/test_qed_clipboard.py --group editor --output build/qed-editing/clipboard-editor
+```
+
+The focused core exercises actual donor LINE/clipboard/Undo ownership, allocation
+refusal, line bounds and multi-bank content; notification sinks do not claim GUI
+behavior. The editor cohort uses physical keys and menu clicks, independent
+text/clipboard/pixel checks and four ordinary Process lifetimes. Undo swaps one
+affected-line group without allocating and toggles on repetition. See the
+[QE4 evidence](../../../../docs/history/qed-editing.md#qe4-internal-clipboard-and-grouped-undo)
+for exact stack, heap and development scope. Save/Save As remain disabled.

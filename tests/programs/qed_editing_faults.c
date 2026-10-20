@@ -15,6 +15,7 @@ volatile unsigned short QedEditFailLine,QedEditFailureHits;
 volatile unsigned short QedEditKeyCalls,QedLastKey,QedLastQualifiers;
 volatile unsigned short QedGlobalKeyCalls;
 volatile unsigned short QedGlobalKeyEntered,QedGlobalLastKey,QedGlobalLastQualifiers;
+volatile unsigned short QedMenuCalls,QedMenuEntered,QedMenuLastItem;
 volatile unsigned short QedCursorPaints,QedPaintedBlink,QedPaintedX;
 volatile long QedPaintedY;
 volatile unsigned short QedSelectionFailClock,QedSelectionClockFailures;
@@ -47,6 +48,11 @@ bool QedEditGlobalKey(short qualifiers,short key)
     ++QedGlobalKeyEntered;QedGlobalLastKey=key;QedGlobalLastQualifiers=qualifiers;
     bool result=key_global(qualifiers,key);
     ++QedGlobalKeyCalls;return result;
+}
+void QedEditMenu(short title,short item,bool control)
+{
+    ++QedMenuEntered;QedMenuLastItem=item;
+    handle_menu(title,item,control);++QedMenuCalls;
 }
 LINEP QedEditNewCol(char *text,short length)
 {

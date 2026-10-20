@@ -27,8 +27,11 @@ def build_editor(target,provider,reuse_app=False,selection=False):
             require(sha256(Path(name))==digest,'Changed APP input: '+name)
         return app
     calls={'tasten.c':{'new_col':'QedEditNewCol'},
+           'clipbrd.c':{'new_col':'QedEditNewCol'},
+           'block.c':{'new_col':'QedEditNewCol'},
            'ausgabe.c':{'cursor':'QedEditCursor'},
-           'event.c':{'key_window':'QedEditKeyWindow','key_global':'QedEditGlobalKey'}}
+           'event.c':{'key_window':'QedEditKeyWindow','key_global':'QedEditGlobalKey',
+                      'handle_menu':'QedEditMenu'}}
     if selection:calls['edit.c']={'CreateIORequest':'QedSelectionCreateIORequest'}
     build(target,provider,executable=True,
           fixture=ROOT/'tests/programs/qed_editing_faults.c',
@@ -36,7 +39,7 @@ def build_editor(target,provider,reuse_app=False,selection=False):
           fixture_roots=['QedEditingLayout'])
     return json.loads((target/'app.json').read_text())
 
-def run(out,reuse=False,reuse_app=False,scenario='all'):
+def run(out,reuse=False,reuse_app=False,scenario='all',interaction=None):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
     prepare(out/'inputs')
     provider=out/'c-image.json' if reuse else ROOT/'build/qed-startup/qs2-binding-opt/c-image.json'
@@ -45,12 +48,13 @@ def run(out,reuse=False,reuse_app=False,scenario='all'):
         fixture_source=ROOT/'tests/programs/qed_editing.act',expected_completed=4,
         native_optimize=True,release_compiler=True,stack_observation_index=3,
         profile_all=True,ram=True,
-        interaction=lambda *args:interact(*args,keys_only=scenario=='keys'),loader_failures=False,
+        interaction=interaction or (lambda *args:interact(*args,keys_only=scenario=='keys')),loader_failures=False,
         retirement_timeout=90,media_files={'QED.RSC':(out/'inputs/resource/QED.RSC').read_bytes()})
 
 
 def core(out,reuse=False,native_from=None):
     from prepare_qed import PORT
+    from build_qed import selected
     from test_c_process import variant
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
     if native_from:variant(Path(native_from).resolve(),out,'sdfs');reuse=True
@@ -59,8 +63,9 @@ def core(out,reuse=False,native_from=None):
     sources=[ROOT/'tests/programs/qed_editing_core.c',qed/'tasten.c',qed/'memory.c',qed/'clipbrd.c']
     sources += [native/name for name in ('entry.c','allocation.c','files.c','library.c')]
     definitions={str(p):['--char-is-unsigned','-DQED_BANKED_MALLOC=1',
-        '--no-cross-call','--no-interprocedural-cross-jump'] for p in sources}
+        *selected()['compiler_options']] for p in sources}
     definitions[str(qed/'tasten.c')].append('-Dform_alert=QedRecordAlert')
+    definitions[str(qed/'clipbrd.c')].append('-Dform_alert=QedRecordAlert')
     definitions[str(native/'allocation.c')].append('-DAllocMem=QedFixtureAlloc')
     fixture=out/'core.act'
     prefix=(ROOT/'tests/programs/c_process.act').read_text().split('\nPROC Main()')[0]

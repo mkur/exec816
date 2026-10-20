@@ -4,7 +4,7 @@
 [QE1–QE7 plan](../plans/gem4xe/qed-editing-implementation-plan.md) ·
 [Startup baseline](qed-startup.md)
 
-Status: QE1–QE3 implemented with development evidence; QE4–QE7 remain. The
+Status: QE1–QE4 implemented with development evidence; QE5–QE7 remain. The
 [QE1 development record](../development/qed-editing-qe1.json) binds the ordinary
 executable, source audit, actual-source core probe and loaded editor session.
 
@@ -250,3 +250,74 @@ and region reservations match QS5. Shared-provider demo refresh remains QE7
 work; QED remains outside distributed demos. The separate
 [upstream reference setup](../guides/gem4xe-qed-reference.md) supports donor
 behavior comparisons without changing the Exec port's implementation status.
+
+## QE4 Internal clipboard and grouped Undo
+
+The [QE4 development record](../development/qed-editing-qe4.json) closes the
+clipboard/Undo slice. Menu and Control shortcuts now enable selection-based
+Copy/Cut, internal Paste and one operation-group Undo. Copy without a selection
+is unavailable; donor current-line Copy and Shift-append clipboard behavior
+are outside this scope. The clipboard remains private to the application.
+
+The donor's Cut copied after deleting, and its block helpers could fail after
+partially changing the live ring. Patch 0013 repairs these owning routines:
+Copy prepares its entire candidate before replacing the clipboard; Cut also
+prepares the document replacement before publishing either owner. Paste,
+selection replacement, ordinary typing, split and join prepare detached donor
+LINE chains. Boundary lengths/counts are checked before allocation or mutation.
+Successful commit exchanges only the affected whole-line span. The displaced
+span becomes the single private Undo group; the complete document is never
+snapshotted. Failed preparation retains text, cursor/range, clipboard and Undo.
+
+Undo exchanges those chains without allocating and swaps saved cursor/range
+metadata. Repeated Undo toggles the group. Adjacent ordinary edits on one line
+retain the original group; split/join, block operations and edits after Undo
+start a new group. Dirty state stays conservative, including Undo back to an
+empty document. There is no separate Redo API, multi-level history, external
+clipboard or reliable Save claim. Destination line-ending convention is
+preserved when pasting, including a clipboard ending in an empty logical line.
+
+Four optimized loaded-editor lifetimes pass independent text/range, clipboard
+byte, normal/selected and caret pixel checks. They exercise menu and shortcut
+operations, tabs/blank lines, newline-only selections, Cut to empty, Paste from
+empty, grouped typing, Undo toggling, edit-after-Undo, selection replacement,
+clipboard/Cut allocation rollback, Stop Cancel and ordinary retirement. Heap
+availability returns exactly after warm reuse. The final supervisor CARD value
+is 12,996, rather than a cumulative assertion count. The menu observer now
+leaves a title vertically before traversing the popup row, preventing diagonal
+ST motion from entering the next heading; a forwarding counter confirms the
+actual selected command has returned before the next menu operation.
+
+Two optimized actual-source transaction lifetimes cover line/clipboard
+allocation failures, overlong Paste/join refusal, retained prior Undo, and
+allocation-free Undo with the refusal hook armed. An 80 × 1,023-byte document
+exercises multi-bank Copy/Cut/Paste/Undo and destination CRLF convention. Its
+measured private heap peak is 262,136 bytes, including allocation headers and
+reserved donor-arena capacity. This isolated fixture uses notification/geometry
+sinks and claims no GUI behavior. Two further actual-source lifetimes retain
+the prior line-limit and genuine upper-heap exhaustion regression.
+
+Development checks pass: 536 host tests with four expected historical skips,
+affected generator checks and reconciled emitted images/traces. Native IRQ/NMI,
+DP/context restoration, stack/domain guards, collection and unload pass. The
+loaded editor's lowest ordinary/frame sample retains 1,316 bytes above its
+256-byte interrupt reserve; the two focused fixtures retain 577 and 601 bytes
+in their smaller pools. The production source bound remains 893 bytes, leaving
+515 bytes of conditional margin under the existing 2,560-byte admission. No
+stack increase is required for these workflows; dialogs and reading must extend
+this evidence in QE5–QE6.
+
+The production APP serializes to 135,554 bytes and spans 185,730 bytes; aligned
+heap backing with eight-byte rounding is 251,272 bytes. Code is 120,194 bytes,
+with 1,464 initialized and 25,549 BSS bytes. The loaded GUI session's private
+heap peak remains 53,359 bytes; its small document stays within the initial
+donor arena. APP backing, native GUI/resource owners and the larger isolated
+transaction workload are charged separately. The shared C provider is unchanged
+from QE3.
+
+Reserved bank-zero delta: **0 fixed, 0 per-public-Task and 0 private idle bytes**,
+including guards, alignment and unused capacity. Task-pool and region maps
+match QS5. Shared-provider demo refresh stays with QE7. These are development
+checks; hosted-system and release qualification remain separate. QE5 native
+dialogs/Find is next, followed by QE6 checked reading/replacement and QE7's
+combined session and package handoff.

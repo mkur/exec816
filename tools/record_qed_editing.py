@@ -70,6 +70,8 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
         origin = checked_stack_reanalysis(path, result)
         if origin is not None:
             executed[-1]['stack_reanalysis'] = origin
+        if 'clipboard_core' in result:
+            executed[-1]['clipboard_core_heap'] = result['clipboard_core']
     if slice_name == 'QE1':
         expected = {'empty', 'insert', 'split', 'join', 'allocation-rollback',
             'split-allocation-rollback', 'literal-tab', 'tab-delete', 'save-disabled',
@@ -130,6 +132,23 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
             'Missing independent selection pixels')
         require(any(c['name']=='selection-exposed-caret' and c['pixels']['caret_checked']>0
             for scene in scenes for c in scene.get('carets',[])),'Missing exposed caret')
+    if slice_name=='QE4':
+        expected={'shortcut-copy','shortcut-cut','shortcut-paste','undo-cut',
+            'undo-toggle-cut','undo-paste','undo-toggle-paste','menu-cut-newline',
+            'menu-paste-newline','menu-undo','menu-toggle','clipboard-allocation-rollback',
+            'cut-allocation-rollback','typed-selection-replacement','undo-selection-replacement',
+            'undo-typing-group','toggle-typing-group','edit-invalidates-toggle',
+            'cut-to-empty','paste-from-empty','clipboard-stop-cancel'}
+        seen={s['name'] for scene in scenes for s in scene['snapshots']}
+        require(expected<=seen,'Incomplete QE4 checkpoints: '+str(expected-seen))
+        require({s['cycle'] for s in scenes}=={0,1,2,3},'Missing clipboard lifetimes')
+        require(all(s['pixels']['checked']>0 for scene in scenes for s in scene['snapshots']),
+            'Missing independent clipboard pixels')
+        require(any(scene.get('clipboard') for scene in scenes),'Missing clipboard byte oracle')
+        require(any(c['name']=='clipboard-caret' and c['pixels']['caret_checked']>0
+            for scene in scenes for c in scene.get('carets',[])),'Missing clipboard caret')
+        require(any(item.get('clipboard_core_heap',{}).get('peak_backing',0)>131072
+            for item in executed),'Missing multi-bank clipboard heap observation')
     supplemental=[]
     for path in supplements:
         result=json.loads((path/'results.json').read_text())

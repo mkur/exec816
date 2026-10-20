@@ -30,7 +30,7 @@ def run(out,reuse=False,reuse_app=False,native_from=None,scroll=True):
             'QED.RSC':(out/'inputs/resource/QED.RSC').read_bytes()})
 
 
-def logical(out,reuse=False,native_from=None,optimize=True,shortcuts=False):
+def logical(out,reuse=False,native_from=None,optimize=True,shortcuts=False,clipboard=False,interaction=None):
     from prepare_qed import PORT
     from test_c_process import variant
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
@@ -41,13 +41,17 @@ def logical(out,reuse=False,native_from=None,optimize=True,shortcuts=False):
         sources=[ROOT/'tests/programs/qed_shortcuts.c']
         sources += [out/'inputs/source/cflib'/name for name in ('menuisk.c','nkccuppr.c')]
     else:
-        sources=[ROOT/'tests/programs/qed_selection_core.c']
+        sources=[ROOT/'tests/programs'/('qed_clipboard_core.c' if clipboard else 'qed_selection_core.c')]
         sources += [qed/name for name in ('tasten.c','memory.c','clipbrd.c','ausgabe.c','block.c')]
     sources += [native/name for name in ('entry.c','allocation.c','files.c','library.c')]
     definitions={str(p):([] if '/source/cflib/' in str(p) else ['--char-is-unsigned'])+
         ['-DQED_BANKED_MALLOC=1',
         *selected()['compiler_options']] for p in sources}
     if not shortcuts:definitions[str(qed/'tasten.c')].append('-Dform_alert=QedRecordAlert')
+    if clipboard:
+        for name in ('clipbrd.c','block.c'):
+            definitions[str(qed/name)].append('-Dnew_col=QedCoreNewCol')
+        definitions[str(qed/'clipbrd.c')].append('-Dform_alert=QedRecordAlert')
     else:definitions[str(out/'inputs/source/cflib/menuisk.c')].append(
         '-Dmenu_tnormal=QedRecordMenuNormal')
     fixture=out/'logical.act'
@@ -79,7 +83,7 @@ ENDMODULE
         app_options=dict(includes=[native,qed,out/'inputs/source/cflib'],definitions=definitions,
                          runtime_attributes={'printf':'nofloat'}),
         fixture_source=fixture,expected_completed=2,native_optimize=True,
-        release_compiler=True,loader_failures=False)
+        release_compiler=True,loader_failures=False,interaction=interaction)
 
 
 if __name__=='__main__':

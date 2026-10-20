@@ -108,6 +108,10 @@ class Editor:
         self.click(128+positions[heading][0]+objects[heading][9]//2,5)
         left=max(0,min(128+positions[parent][0],640-objects[parent][9]))
         top=max(11,positions[parent][1]);top=min(top,240-objects[parent][10])
+        # Leave the title bar vertically before moving across a popup row;
+        # diagonal ST motion can otherwise enter the neighbouring heading.
+        self.move(128+positions[heading][0]+objects[heading][9]//2,
+                  top+positions[entry][1]-positions[parent][1]+objects[entry][10]//2)
         self.click(left+positions[entry][0]-positions[parent][0]+objects[entry][9]//2,
                    top+positions[entry][1]-positions[parent][1]+objects[entry][10]//2)
         if item in ('MOOVERW','MOEINF'):

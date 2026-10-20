@@ -19,9 +19,9 @@ Step 3 is implemented through its [design](qed-startup-design.md),
 [startup development evidence](../../history/qed-startup.md). A runnable private
 APP passes the empty-document/resource/menu/lifecycle gate. Steps 4–7 remain;
 step 4 follows its [editing design](qed-editing-design.md) and
-[QE1–QE7 plan](qed-editing-implementation-plan.md). QE1–QE3 keyboard editing,
-safe retirement, viewport drawing and selection pass their
-[development checks](../../history/qed-editing.md); QE4–QE7 remain.
+[QE1–QE7 plan](qed-editing-implementation-plan.md). QE1–QE4 keyboard editing,
+safe retirement, viewport drawing, selection and clipboard/Undo pass their
+[development checks](../../history/qed-editing.md); QE5–QE7 remain.
 Editing and reliable Save are not established by startup checks.
 
 ## First usable editor
@@ -217,10 +217,10 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Continue with QE4 in the [editing implementation plan](qed-editing-implementation-plan.md#qe4-clipboard-and-donor-undo).
-QE1–QE3 extend the startup baseline with keyboard editing, safe retirement,
-viewport drawing and event-driven selection. QE4 enables internal Cut/Copy/Paste
-and grouped Undo with coherent failure behavior. Commit each executable slice after its development
+Continue with QE5 in the [editing implementation plan](qed-editing-implementation-plan.md#qe5-native-dialogs-and-literal-find).
+QE1–QE4 extend the startup baseline with keyboard editing, safe retirement,
+viewport drawing, event-driven selection and internal clipboard/Undo. QE5 adds
+native cancellable dialogs and literal Find/Find Next. Commit each executable slice after its development
 checks, recording actual memory, stack and failure evidence. Prepare the saving design after the editing gate,
 using the file-format and replacement guarantees established there.
 
