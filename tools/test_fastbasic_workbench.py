@@ -84,12 +84,19 @@ def wb0(out, reuse=False,provider=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--slice',choices=('WB0','WB1'),required=True)
+    p.add_argument('--slice',choices=('WB0','WB1','WB2'),required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--from-build',action='store_true')
+    p.add_argument('--provider',type=Path,default=ROOT/'build/fastbasic-workbench/wb0/c-image.json')
     p.add_argument('--reuse-provider',action='store_true',help='WB0: check and reuse the emitted GEM provider')
     a=p.parse_args()
     if a.slice=='WB0':wb0(a.output.resolve(),a.from_build,a.reuse_provider)
-    else:
+    elif a.slice=='WB1':
         from test_fastbasic_document import wb1
         wb1(a.output.resolve(),a.from_build)
+    elif a.slice=='WB2':
+        from test_fastbasic_editor import logical
+        from workbench_interaction import build_editor,exercise
+        logical(a.output.resolve()/'logical',a.from_build)
+        if not a.from_build:build_editor(a.output.resolve()/'physical',a.provider.resolve())
+        exercise(a.output.resolve()/'physical')

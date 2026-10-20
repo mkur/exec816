@@ -1,0 +1,104 @@
+MODULE BASICINTERACTION
+USE EXEC
+USE DOS
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE PROCESS
+USE AESSTATE
+USE AESCORE
+USE HEAPCORE
+
+CARD checks,stage,round,gate,peerDone
+LONGCARD appBase,identity,baseline,peerProgress,counterBase,counterId
+LONGINT primary,secondary
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb80+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+LONGINT FUNC Peer()
+
+  WHILE peerDone=0 DO
+    peerProgress==+1
+    EXEC.Yield()
+  OD
+
+RETURN(0)
+
+PROC Main()
+  PROCESS.Result result
+  LONGCARD peerId
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  LET oldInput=DOS.SelectInput(input)
+  LET oldOutput=DOS.SelectOutput(output)
+  peerId=PROCESS.StartBackground(@Peer,NULL,0)
+  Require(peerId<>0)
+  FOR round=0 TO 2 DO
+  BEGIN
+    BYTE POINTER path=BYTE POINTER(c"SYS:BASIC.APP")
+
+    IF round=0 THEN
+      BEGIN
+        LET counter=PROGRAMFILE.Load(BYTE POINTER(c"SYS:COUNTER.APP"))
+        Require(counter<>NULL)
+        counterBase=LONGCARD(ADDRESS(counter.text))
+        counterId=PROCESS.StartBackgroundLoaded(BYTE POINTER(counter),NULL,0)
+        Require(counterId<>0)
+        PROGRAM.Unload(counter)
+      END
+    FI
+
+    IF round=2 THEN
+      path=BYTE POINTER(c"SYS:BMAX.APP")
+    FI
+
+    LET image=PROGRAMFILE.Load(path)
+    Require(image<>NULL)
+    appBase=LONGCARD(ADDRESS(image.text))
+    identity=PROCESS.StartLoaded(BYTE POINTER(image),NULL,0,0)
+    Require(identity<>0)
+    stage=1
+    Require(PROCESS.Wait(identity,@result)<>0)
+    primary=result.primary
+    secondary=result.secondary
+    Require(primary=0 AND secondary=0)
+    PROGRAM.Unload(image)
+    IF round=0 THEN
+      Require(PROCESS.RequestStop(counterId)<>0)
+      Require(PROCESS.Wait(counterId,@result)<>0 AND result.primary=0)
+    FI
+
+    LET service=AESSTATE.Get()
+    Require(service.count=0 AND AESCORE.Idle(service)<>0)
+    IF round=0 THEN
+      baseline=EXEC.AvailMem(0)
+    ELSEIF round=1 THEN
+      Require(EXEC.AvailMem(0)=baseline)
+    FI
+
+    stage=2
+    WHILE gate=round DO
+      EXEC.Yield()
+    OD
+  END
+  OD
+
+  peerDone=1
+  Require(PROCESS.Wait(peerId,@result)<>0 AND result.primary=0)
+  DOS.SelectInput(oldInput)
+  DOS.SelectOutput(oldOutput)
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+ENDMODULE

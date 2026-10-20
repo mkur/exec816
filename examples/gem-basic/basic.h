@@ -9,8 +9,7 @@ struct BasicApp {
     WORD cellw,cellh,input[11],output[57],message[8],work[4];
     ULONG paints;
 };
+#define BASIC_WINDOW_KIND (NAME|CLOSER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE)
 WORD BasicOpen(struct BasicApp *);
 WORD BasicClose(struct BasicApp *);
-WORD BasicEvent(struct BasicApp *,WORD *);
-WORD BasicRun(struct BasicApp *);
 #endif

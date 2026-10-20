@@ -1,5 +1,7 @@
 # Reference
 
+- [FastBasic workbench](fastbasic-workbench.md): native GEM editor limits, ownership and current delivery.
+
 [Documentation home](../README.md)
 
 These pages describe the current interfaces. Generated declarations and the

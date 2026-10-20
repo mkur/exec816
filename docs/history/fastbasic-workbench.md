@@ -50,3 +50,23 @@ split/join, cross-line replacement, redo invalidation, whole-group undo eviction
 failed allocations, rejected edits, generation overflow and maximum gap moves.
 Large moves yield after at most 1 KiB while preserving logical contents.
 All reserved bank-zero deltas, including per-Task costs, remain zero.
+
+## WB2 — window editing
+
+[WB2 evidence](../development/fastbasic-workbench-wb2.json) records 29 logical
+editing checks, 25 native integration checks and 11 independently compared
+physical pixel cases. Physical Atari keyboard/mouse input covers tabs,
+selection replacement, Undo/Redo, keyboard menu Undo, horizontal panning,
+minimum-size and partial-row resize, focus/cover/exposure, close/relaunch and
+a maximum-distance gap move with a one-byte gap in a 32,767-byte document.
+Both raw and optimized emitted private-layout probes and relocation through
+all 62 admitted banks pass.
+
+The maximum-gap Backspace reaches matching scanout in 49 PAL frames (980 ms),
+below the preselected 120-frame bound; a native peer advances 286 times during
+that interval. This upper-bound observation includes debugger/probe overhead,
+not just application CPU. Five physically typed characters and their scanout
+check take 36 frames, including the scripted press/release intervals. These
+samples are development measurements, not latency qualification. Stack guards,
+complete ownership and allocation return pass. Added reserved bank-zero costs
+remain zero in every category, including each public Task.

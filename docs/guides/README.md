@@ -1,5 +1,7 @@
 # Guides
 
+- [FastBasic workbench](fastbasic-workbench.md): editor controls and delivery status.
+
 [Documentation home](../README.md)
 
 ## Running Exec816
