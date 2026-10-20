@@ -139,6 +139,20 @@ It records a separate continuation cap for library/native/GEM work, which later
 GUI implementations must establish by full-chain measurements. The analysis ELF
 still provides no executable editor evidence.
 
+## Reconciled foundation
+
+QF1–QF6 are complete for strategy step 2. The
+[final development record](../../../../docs/development/qed-native-qf6.json)
+identifies the actual compiled baseline, selected native executions, stack
+conditions, rebuilt demo callers and exact-package smokes. Run
+`tools/check_qed_baseline.py --help` to audit a reproduced layout and cohorts.
+The source frame tool accepts `--output` to preserve earlier ledgers.
+
+The editor remains analysis-only until step 3 replaces the listed GEM gaps and
+executes startup/close. Future GUI chains must establish the continuation cap;
+resource/menu adaptation and editing/saving are later gates. Proof fixtures and
+analysis artifacts remain outside the ZIP.
+
 ## Notices
 
 The QED pin includes `gem4xe/NOTICE`, `dist/liesmich.txt`, `doc/qed-en.stg`,

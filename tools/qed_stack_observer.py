@@ -3,6 +3,7 @@ from collections import defaultdict
 from pathlib import Path
 import json,re
 from c_program import ABI
+from program_image_layout import LAYOUT as IMAGE_LAYOUT,FIELDS as IMAGE_FIELDS
 from native_program import require
 
 
@@ -112,9 +113,9 @@ def capture(bridge,program,record,index=0):
             owners.append(dict(slot=slot,identity=number('identity',4),image=number('image',3),record=at))
         require(len(owners)==1,'Ambiguous prepared Process observation')
         owner=owners[0];require(owner['image']!=0,'Prepared observation preceded Image ownership')
-        image=bridge.memdump(owner['image'],76)
-        require(image[10]==1,'Observation selected a non-C Image')
-        owner.update(image_base=int.from_bytes(image[40:43],'little'),app_entry=int.from_bytes(image[43:46],'little'))
+        image=bridge.memdump(owner['image'],IMAGE_LAYOUT['size'])
+        require(image[IMAGE_FIELDS['kind']]==1,'Observation selected a non-C Image')
+        owner.update(image_base=int.from_bytes(image[IMAGE_FIELDS['text']:IMAGE_FIELDS['text']+3],'little'),app_entry=int.from_bytes(image[IMAGE_FIELDS['entry']:IMAGE_FIELDS['entry']+3],'little'))
         at=owner['record'];identity=owner['identity']
         retired=(f'(db(${at+fields["state"]:x})>=4)|'
                  f'(dw(${at+fields["identity"]:x})!={identity&65535})|'

@@ -6,6 +6,7 @@ DESKTOP.APP differs, with an emitted layout probe for the experimental buffer.
 Guest memory is observed, not patched. Run each case in a fresh output directory.
 """
 import argparse
+from program_image_layout import FIELDS as IMAGE_FIELDS
 import json
 import shutil
 import tempfile
@@ -216,7 +217,7 @@ class CopyProbe:
             profile=json.loads((s.p['output']/'COPY.profile.json').read_text())
             buffer=next(o for o in profile['objects'] if '_COPY_TRANSFERBUFFER_' in o['name'])
             require(buffer['size']==16384 and buffer['location']['section']=='Bss','Changed shell COPY buffer')
-            address=s.number(image+17,3)+buffer['location']['offset']
+            address=s.number(image+IMAGE_FIELDS['bss'],3)+buffer['location']['offset']
             arg=packet_base+fields['dp_Arg2']
             target='(dw(%s+%d)=%d)&(db(%s+%d)=%d)'%(packet,arg,address&65535,packet,arg+2,address>>16)
             s.rendezvous(action('READ')+'&'+target);start_time=clock()

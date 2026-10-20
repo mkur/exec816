@@ -10,8 +10,10 @@ containing the real runtime and selected QED text-storage code, plus a separate
 whole-application compilation and layout study. This permits useful executable
 progress while resource, workstation and drawing support remain later work.
 
-Status: QF1–QF5 implemented for strategy step 2, with
-[development evidence](../../history/qed-native-feasibility.md). Stack/admission is implemented; final reconciliation remains open. The
+Status: QF1–QF6 implemented for strategy step 2, with
+[development evidence](../../history/qed-native-feasibility.md). The final
+runtime/layout/admission baseline is reconciled; later GUI paths remain
+conditional on their listed budgets and execution gates. The
 [step 1 source manifest](../../../ports/gem4xe/apps/qed/inputs.json) fixes the
 upstream inputs and initial native baseline.
 

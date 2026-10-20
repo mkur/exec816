@@ -11,7 +11,9 @@ need general platform support and which can be closed by adapting QED or cflib.
 Status: [step 1 scope and source baseline](qed-scope-and-dependencies.md) fixed;
 step 2 has a [design](qed-native-feasibility-design.md) and
 [QF1–QF6 plan](qed-native-feasibility-implementation-plan.md), with
-[QF1–QF4 implemented](../../history/qed-native-feasibility.md) and QF5–QF6 open.
+[QF1–QF6 implemented](../../history/qed-native-feasibility.md). The
+[reconciled foundation](../../development/qed-native-qf6.json) closes step 2;
+its complete-source image remains analysis-only, with conditional GUI budgets.
 Steps 3–7 remain proposed. The editor has not been packaged or executed as a runnable APP.
 
 ## First usable editor
@@ -90,6 +92,20 @@ stack use must be revisited as dialogs, drawing and file operations become
 executable. If the required stack cannot fit the current Process launch
 contract, resolve that general constraint before building the rest of the UI;
 do not depend on QED happening to receive a larger free Task pool.
+
+The step 2 handoff fixes C APP ABI 24 and Process ABI 8. The complete source
+image spans 279,860 bytes, with 345,396 bytes of alignment backing. QED declares
+a 2,560-byte stack requirement through general image admission. Its conservative
+source bound is 1,375 bytes; the separate 768-byte continuation cap must be
+established by later full GUI measurements. The 128-byte headroom target and
+existing interrupt reserve remain in force; no bank-zero reservations grew.
+
+Step 3 keeps private code/data/container allowances of 32/16/16 KiB and resident
+code/table/data allowances of 16/4/16 KiB. It must resolve the original resource's
+682 objects and 32 trees, its 126-object menu, free strings and supported
+object flags, plus the [explicit binding catalog](../../../ports/gem4xe/apps/qed/analysis-bindings.json).
+The port already consolidates workstation ownership in CFLIB, with QED borrowing
+it. Exceeding an allowance or stack cap requires a new fit decision.
 
 ### Start the real QED application
 

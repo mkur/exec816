@@ -8,6 +8,11 @@ This is development evidence for strategy step 2. It does not qualify the
 hosted system or establish that the complete QED editor runs. Detailed logs,
 listings and generated work copies stay under `build/qed-native/`.
 
+Current result: QF1–QF6 are complete for the native foundation. The
+[final baseline](../development/qed-native-qf6.json) reconciles the compiled
+inputs and conditional budgets; real QED startup and trusted saving remain
+strategy steps 3–5. Earlier slice records below retain their historical scope.
+
 ## QF1: sources and native ABI
 
 The preparer verifies all 260 pinned QED/cflib input files and keeps fetched
@@ -298,3 +303,54 @@ bytes**, including guards, alignment, reserve and unused capacity. The generated
 budgets compare equal. The reserve and StartInternal fixed frames each grow
 four transient bytes; pools do not grow. QF6 reconciles the final baseline and
 refreshes the matched demo applications before the step 3 handoff.
+
+## QF6: reconciled baseline and step 3 handoff
+
+The [final record](../development/qed-native-qf6.json) and
+[baseline auditor](../../tools/check_qed_baseline.py) reconcile seven current-ABI
+cohorts: 27 Process cycles covering admission, actual text allocation/runtime,
+SpartaDOS and MyDOS files/stdio, literal masks, raw layout/bridge and cooperative
+Stop. The auditor compares compiled sources with the final prepared tree,
+checks native/provider/tool/archive hashes and recomputes stack observations.
+The selected Process headroom minima remain 531, 509, 433, 784, 857 and 737
+bytes for admission, runtime, SpartaDOS files, raw layout, masks and Stop;
+the final record includes MyDOS separately. These are observations of selected
+executions, rather than bounds on arbitrary editor paths.
+
+The final source ledger conservatively retains every editor-action branch when
+bounding nested Save. Its bound remains **1,375 bytes**, conditional on the
+separate 768-byte continuation cap. The QF5 ledger remains preserved. Image
+costs and future private/resident allowances remain as measured in QF5. Maximum
+loading overlap for file staging, full-profile image backing and its 76-byte
+owner is 655,436 upper bytes before other owners. Runtime allocation headers,
+bank containment, arguments and document storage are separate costs.
+
+Both demo packages were rebuilt with `tools/build_demo.py`, OF816, matching
+disks, pinned AltirraOS ROM, notices and checksums. The standard shell/prime
+package retains five-second autoboot (249 observed PAL frames). Its exact ZIP
+passes shell boot, disk HELLO, CAT/WC pipeline and EXIT. The GEM development
+package rebuilds all eight C callers for ABI 24: seven disk applications and
+the RAM desktop. Its exact ZIP passes RAM desktop/resource startup, About,
+disk-loaded Control Panel, RAM directory listing and orderly EXIT. The audit
+checks packaged checksums, provider fit and absence of analysis/development
+artifacts. These are development smokes, not release qualification.
+
+Development inspectors now derive Image offsets from the authoritative native
+record. This migrates GEM, PRIMES, COPY and QED observations after the owner
+field change; it does not change the executed package bytes. Host checks pass
+528 tests with four historical-source skips, alongside affected generators and
+content/local-link checks.
+
+Step 3 must adapt the 682-object/32-tree English resource and 126-object menu
+against current 256/8 resource and 32/33 object/menu capacities, implement
+free-string access and supported decorations, and replace the explicitly listed
+later-GEM bindings. Keep the one owned CFLIB workstation borrowed by QED. First
+execute empty-window startup, failure unwind and repeat close, then measure
+full GUI chains against the stack continuation cap. Preserve the private and
+resident allowances; crossing one reopens the fit decision. Editing, NUL input
+conversion, Save/Save As, backup collisions and terminal Close decisions remain
+steps 4–5. QED delivery remains step 7.
+
+Reserved bank-zero delta from QF5: **0 fixed, 0 per-public-Task, 0 private idle
+bytes**, including guards, alignment, reserve and unused capacity. No runnable
+QED APP or QED analysis artifact is included in either distribution.

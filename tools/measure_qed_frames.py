@@ -27,7 +27,7 @@ def frame_cost(instructions):
     return reserves,pushes
 
 
-def measure(out):
+def measure(out,destination=None):
     require(set(json.loads((out / 'layout.json').read_text())['selection']['compiler_options']) == {'--no-cross-call', '--no-interprocedural-cross-jump'}, 'Frame ledger needs stable function boundaries')
     report = json.loads((out / 'layout.json').read_text())
     require(sha256(out/'program.elf')==report['analysis_elf_sha256'],
@@ -119,7 +119,7 @@ def measure(out):
     for v in list(graph.values()):
         if v['name'] != 'select_multi':
             v['edges'] = [selectnone if e == byname['select_file'] else e for e in v['edges']]
-    saveedit = clone('e_icon_edit', 'e_icon_edit(Save)', ['save_absatz', 'save', 'make_chg', 'restore_edit', 'save_new', 'save_as', 'block_copy', 'new_text', 'destruct_text'])
+    saveedit = clone('e_icon_edit', 'e_icon_edit(Save)')
     savetest = clone('e_icon_test', 'e_icon_test(Save)', [])
     savedispatch = clone('do_icon', 'do_icon(Save)', [])
     graph[savedispatch]['edges'] = [saveedit, savetest]
@@ -147,11 +147,12 @@ def measure(out):
     required = source_bytes + continuation_cap + 256 + 128
     require(required <= report['selection']['minimum_stack_bytes'], 'Conditional stack budget exceeds admission')
     result = dict(status='conditional-source-bound', source_chain_bytes=source_bytes, chain=chain, continuation_cap_bytes=continuation_cap, interrupt_reserve_bytes=256, required_headroom_bytes=128, admission_bytes=report['selection']['minimum_stack_bytes'], margin_bytes=report['selection']['minimum_stack_bytes'] - required, method='For each retained emitted source section, sum immediate TSC/SBC/TCS reservations and all static push sites at 16-bit width, plus three bytes at each call/tail edge. This overcounts disjoint branches. Compiler-balanced loops reuse their stack. Cross-call and cross-function tail sharing are disabled. Typed callbacks and finite action contexts are audited below; new indirect sites or cycles reject the report.', limit='Source-frame bound only. The continuation cap includes bridge and library/native/GEM work below an application call; future implemented GUI paths must establish that cap and sample full chains before editor execution is qualified. Current runtime samples are separate execution evidence, not a bound on missing GEM.', callbacks=callbacks, contexts=['Nested action/dialog messages: REDRAW/MOVED/SIZED only', 'select_single/select_path pass NULL; only select_multi invokes open_multi', 'delete_edit may invoke Save once; Save does not invoke delete_edit', 'load_edit/new_edit/restore_edit use Open or unchecked Delete', 'wi_top invokes disabled Update, whose test returns false'], source_nodes=[{**v, 'key': k} for k, v in graph.items()], analysis_sha256=sha256(out / 'layout.json'), listings={p.name: sha256(p) for p in out.glob('*-*.lst')}, compiler_options=report['selection']['compiler_options'])
-    (out / 'stack-frames.json').write_text(json.dumps(result, indent=2) + '\n')
+    (destination or out / 'stack-frames.json').write_text(json.dumps(result, indent=2) + '\n')
     return result
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--layout', type=Path, required=True)
+    parser.add_argument('--output',type=Path)
     args = parser.parse_args()
-    result = measure(args.layout.resolve())
+    result = measure(args.layout.resolve(),args.output)
     print('QED source frame bound:', result['source_chain_bytes'], 'bytes; conditional margin:', result['margin_bytes'])

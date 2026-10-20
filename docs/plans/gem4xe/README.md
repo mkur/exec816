@@ -4,14 +4,14 @@ The [QED native feasibility design](qed-native-feasibility-design.md) and
 [QF1–QF6 plan](qed-native-feasibility-implementation-plan.md) define strategy
 step 2: prove a private native runtime and text-storage/file paths, measure
 the complete QED layout, and settle stack/admission requirements before GEM
-expansion. [QF1–QF5 source, runtime, layout and admission checks](../../history/qed-native-feasibility.md)
-are implemented; final reconciliation remains open.
+expansion. [QF1–QF6 source, runtime, layout and admission checks](../../history/qed-native-feasibility.md)
+are implemented and reconciled; real QED startup remains step 3.
 Analysis-only links cannot be packaged or used as executable evidence.
 
 The [QED initial scope and source dependencies](qed-scope-and-dependencies.md)
 fix strategy step 1: an English single-document editor, explicit source pins,
 required dependency paths and deferred startup behavior. Source checks pass;
-the native build and runtime proof follow in step 2.
+the native build and runtime foundation is recorded in step 2.
 
 The [QED port strategy](qed-port-strategy.md) orders the work from verified
 dependencies and native runtime/memory feasibility through real QED startup,

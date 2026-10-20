@@ -2,7 +2,7 @@
 
 - [QED native feasibility](qed-native-feasibility.md): source preparation and
   focused ABI, owned-runtime, native-file, complete-layout and stack/admission
-  evidence; final reconciliation remains open.
+  evidence reconciled for step 2, with conditional budgets and the step 3 handoff.
 
 - [Multiple shell sessions](shell-sessions.md): incremental SS1–SS8 evidence,
   explicit per-session state, native layout and concurrency checks, resource
