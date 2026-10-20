@@ -443,12 +443,6 @@ typedef struct {
 #ifndef R_ICONBLK
 #define R_ICONBLK   3
 #endif
-#ifndef R_STRING
-#define R_STRING    5
-#endif
-#ifndef R_FRSTR
-#define R_FRSTR     15
-#endif
 #ifndef MODE_RSHIFT
 #define MODE_RSHIFT 0x01
 #endif

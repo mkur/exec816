@@ -442,5 +442,15 @@
       "intout": 0,
       "ptsout_pairs": 0
     }
+  },
+  "resource_limits": {
+    "file_bytes": 65535,
+    "objects": 256,
+    "trees": 16,
+    "objects_per_tree": 64,
+    "depth": 8,
+    "free_strings": 256,
+    "free_string_characters": 255,
+    "menu_objects": 33
   }
 }

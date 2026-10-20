@@ -1,5 +1,8 @@
 # Historical records
 
+- [QED application startup](qed-startup.md): QS1–QS5 resource, real editor
+  startup, lifecycle and GUI-stack development evidence.
+
 - [QED native feasibility](qed-native-feasibility.md): source preparation and
   focused ABI, owned-runtime, native-file, complete-layout and stack/admission
   evidence reconciled for step 2, with conditional budgets and the step 3 handoff.

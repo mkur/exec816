@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "qualification": false,
+  "slice": "QS1",
+  "status": "pass",
+  "cohorts": [
+    {
+      "path": "build/qed-startup/qs1-opt",
+      "results_sha256": "b5aac7362431297dabacb91cdca545fb6fcd18ea91f0e3e3ca08a8b8712a76e3",
+      "app_sha256": "f57905d2e58fc3755ea3809d42cb6a8effa7b0e0e2d3d75169960ecf61f9a74f",
+      "completed": [
+        2
+      ],
+      "minimum_headroom": 455,
+      "native_irq_count": 48979,
+      "native_nmi_count": 1268
+    },
+    {
+      "path": "build/qed-startup/qs1-raw",
+      "results_sha256": "c096bae013097d18349e94c3b0822636b04dbd47375c0aec4ca8bf80503de2d2",
+      "app_sha256": "21d9080fc439a79eb0f510d2bfbb5cd89f42d1bb6a2a88b39f127b2494202a08",
+      "completed": [
+        2
+      ],
+      "minimum_headroom": 459,
+      "native_irq_count": 49345,
+      "native_nmi_count": 1270
+    }
+  ],
+  "host_tests": {
+    "tests": 529,
+    "expected_skips": 4
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Task pools and region reservations exactly match QF5 runtime"
+  },
+  "upper_memory": {
+    "resource_owner_bytes": 22,
+    "qed_resource_bytes": 10500,
+    "form_saved_state_growth_bytes": 64,
+    "popup_saved_state_growth_bytes": 64,
+    "provider_code_bytes": 178654,
+    "provider_tables_bytes": 40145,
+    "provider_data_bss_bytes": 25739
+  },
+  "resource_selection_sha256": "f64a8d436340fd3ac5ceb61a4b42d2afcc1d593ba77755e4c1fb959eb42125d9",
+  "generator_sha256": "107d74232e73ff10235ac817f166346a5a9654c348685162077540b697df2464"
+}

@@ -37,12 +37,19 @@ def prepare(output,cache=CACHE):
         sources[item['id']]=dict(revision=item['revision'],tree=item['tree'],files=item['files'])
     patches=sorted((PORT/'patches').glob('*.patch'))
     for patch in patches:command(['patch','-p1','-F','0','-t','-i',patch],cwd=output/'source')
+    adapted=None
+    if (PORT/'resource-selection.json').exists():
+        from build_qed_resource import build as resource_build
+        (output/'qed-donor.h').write_bytes((cache/'qed/src/qed.h').read_bytes())
+        adapted=resource_build(output/'resource',output)
+        (output/'source/qed/src/qed.h').write_bytes((output/'resource/qed.h').read_bytes())
     record=dict(schema_version=1,sources=sources,patches={p.name:sha256(p) for p in patches},
         native_inputs={str(p.relative_to(ROOT)):sha256(p) for p in sorted((PORT/'native').rglob('*')) if p.is_file()},
         exec_inputs={name:sha256(ROOT/name) for name in pin['exec_baseline']['input_files']},
         native_input_changes={name:dict(baseline=digest,current=sha256(ROOT/name))
             for name,digest in pin['exec_baseline']['input_files'].items() if sha256(ROOT/name)!=digest},
         source_manifest_sha256=sha256(PORT/'inputs.json'))
+    if adapted:record['native_resource']=adapted
     output.mkdir(parents=True,exist_ok=True)
     (output/'sources.json').write_text(json.dumps(record,indent=2)+'\n')
     return record

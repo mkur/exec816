@@ -44,7 +44,7 @@ def variant(base,out,filesystem):
 
 def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=None,
         fixture_source=None,expected_completed=12,native_optimize=None,
-        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0):
+        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0,media_files=None):
     out.mkdir(parents=True,exist_ok=True)
     if reuse:
         p=read_build(out/'program');app=json.loads((out/'app/app.json').read_text())
@@ -64,6 +64,7 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                         optimize,**(app_options or {}))
         raw=(out/'app/program.app').read_bytes();media=out/'media';media.mkdir(exist_ok=True)
         (media/'PROBE.APP').write_bytes(raw);(media/'DESKTOP.RSC').write_bytes(resource())
+        for name,payload in (media_files or {}).items():(media/name).write_bytes(payload)
         (media/'TRUNC.APP').write_bytes(raw[:-1])
         count=struct.unpack_from('<H',raw,10)[0];imports=struct.unpack_from('<H',raw,24)[0]
         for name,at,fmt,value in [('VERSION',6,'<H',0),('IMPORT',32+count*16,'<H',65535),

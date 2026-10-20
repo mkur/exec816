@@ -1,0 +1,187 @@
+--- a/qed/src/menu.c
++++ b/qed/src/menu.c
+@@ -27,12 +27,11 @@
+ /****** VARIABLES ************************************************************/
+ 
+ /* Menuenummer zu einer Aktion */
+-short menu_nr[] =	{MUNDO, MCUT, MCOPY, MPASTE, MSELALL, MCLOSE, -1, 
+-		  						 MINFO, -1, MLEFT, MRIGHT, MFORMAT, MPRINT, MABAND, 
+-		  						 MSAVE, MSAVENEW, MFIND, MFNDGOON, MADD, MGOTO, MSSTRIP,
+-		  						 MSTAB2LZ, -1, MSLZ2TAB, -1, MZEICHEN, MSWAP, MSMALL, 
+-		  						 MBIG, MSMALLBIG, MCAPS, MUMLAUTE, -1, MFEHLERSPRUNG, 
+-		  						 MDELETE, MSORT, MTOPLINE};
++static const short menu_actions[][2] = {
++    {MUNDO,DO_UNDO},{MCUT,DO_CUT},{MCOPY,DO_COPY},{MPASTE,DO_PASTE},
++    {MSELALL,DO_SELALL},{MSAVE,DO_SAVE},{MSAVENEW,DO_SAVENEW},
++    {MFIND,DO_FIND},{MFNDGOON,DO_FINDNEXT}
++};
+ 
+ 
+ /*****************************************************************************/
+@@ -144,78 +143,22 @@
+ }
+ 
+ 
+-void update_menu (void)
+-{
+-	WINDOWP	window;
+-	static SET		all_actions;
+-	short		i, nr;
+-
+-	setclr(all_actions);
+-	window = winlist_top();
+-
+-	if (sel_window != NULL) /* Aktion fr selektierte Objekte */
+-	{
+-		icon_exist(sel_window->handle + SUB_ICON, all_actions);
+-		mark_menu(MSEL, FALSE);
+-		set_menu(MSEL, FALSE);
+-		set_menu(MSETMARK, FALSE);
+-	}
+-	else							/* Aktionen fr oberstes Fenster */
+-	{
+-		if (window != NULL)
+-			icon_exist(window->handle, all_actions);
+-
+-		if (window != NULL && window->class == CLASS_EDIT && 
+-			 !(window->flags & WI_ICONIFIED) && !(window->flags & WI_SHADED))
+-		{
+-			TEXTP t_ptr = get_text(window->handle);
+-
+-			mark_menu(MSEL, (!ctrl_mark_mode && t_ptr->blk_mark_mode));
+-			set_menu(MSEL, !ctrl_mark_mode);
+-			set_menu(MSETMARK,TRUE);
+-		}
+-		else
+-		{
+-			mark_menu(MSEL,FALSE);
+-			set_menu(MSEL,FALSE);
+-			set_menu(MSETMARK,FALSE);
+-		}
+-	}
+-
+-	i = num_openwin(CLASS_ALL);
+-	set_menu(MCYCLE, ((i >= 2) || wind_cycle));
+-
+-	i = num_openwin(CLASS_EDIT);
+-	set_menu(MHINTER, (i >= 2));
+-	set_menu(MNEBEN, (i >= 2));
+-	set_menu(MUNTER, (i >= 2));
+-
+-	mark_menu(MSRECORD, makro_rec);
+-
+-	for (i = DO_ANZ; (--i) >= 0; )
+-	{
+-		nr = menu_nr[i];
+-		if (nr > -1)
+-			set_menu(nr, setin(all_actions,i));
+-	}
+-	if (setin(all_actions, DO_LINECOPY))
+-		set_MCOPY(rsc_string(LCOPYSTR));
+-	else if (setin(all_actions, DO_COPY))
+-		set_MCOPY(rsc_string(COPYSTR));
+-
+-	setup_semenu();				/* -> se.c */
+-    /* Keep menus and their shortcut dispatch inside the same initial scope. */
+-    for(i=0;;i++){
+-        if((menu[i].ob_type&0xff)==G_STRING){
+-            switch(i){
+-            case MABOUT:case MNEWTEXT:case MOPEN:case MSAVE:case MSAVENEW:
+-            case MQUIT:case MUNDO:case MCUT:case MCOPY:case MPASTE:
+-            case MSELALL:case MCLOSE:case MFIND:case MFNDGOON:case MOEINF:case MOOVERW:break;
+-            default:set_menu(i,FALSE);break;
+-            }
+-        }
+-        if(menu[i].ob_flags&OF_LASTOB)break;
++void update_menu(void)
++{
++    static SET actions;
++    WINDOWP w=winlist_top();
++    unsigned i;
++    setclr(actions);
++    if(w)icon_exist(w->handle,actions);
++    for(i=0;i<sizeof(menu_actions)/sizeof(menu_actions[0]);i++)
++        set_menu(menu_actions[i][0],setin(actions,menu_actions[i][1]));
++    set_menu(MCLOSE,w!=NULL);
++    if(setin(actions,DO_LINECOPY) || setin(actions,DO_COPY)){
++        fillup_menu(MCOPY,setin(actions,DO_LINECOPY)?rsc_string(LCOPYSTR):rsc_string(COPYSTR),2);
++        set_menu(MCOPY,TRUE);
+     }
++    mark_menu(MOEINF,!overwrite);
++    mark_menu(MOOVERW,overwrite);
+ }
+ 
+ 
+--- a/qed/src/rsc.c
++++ b/qed/src/rsc.c
+@@ -63,7 +63,7 @@
+     rsrc_gaddr(R_TREE,REPLACE,(void **)&replace);rsrc_gaddr(R_TREE,REPASK,(void **)&repask);
+     rsrc_gaddr(R_TREE,WINICON,(void **)&winicon);rsrc_gaddr(R_TREE,STRINGS,(void **)&strings);
+     for(index=0;index<NUM_FRSTR;index++)
+-        rsrc_gaddr(R_FRSTR,index,(void **)&alertmsg[index]);
++        rsrc_gaddr(R_STRING,index,(void **)&alertmsg[index]);
+     return TRUE;
+ }
+ 
+--- a/qed/src/window.c
++++ b/qed/src/window.c
+@@ -1120,58 +1120,7 @@
+ /*
+  * Fenster anordnen. Funktion kommt aus den 7Up 2.3 Quellen.
+ */
+-void arrange_window(short mode)
+-{
+-	short		count, xstep, ystep, k, diff;
+-	GRECT		rect;
+-	WINDOWP	p = used_list;
+-
+-	count = num_openwin(CLASS_EDIT);
+-	if (count > 1)
+-	{
+-		xstep = gl_desk.g_w / count;
+-		diff = (count - 1) * xstep + MIN_WIDTH - gl_desk.g_w;
+-		if( diff > 0)
+-			xstep -= diff / count;
+-
+-		ystep = gl_desk.g_h / count;
+-		diff = (count - 1) * ystep + MIN_HEIGHT - gl_desk.g_h;
+-		if(diff > 0)
+-			ystep -= diff / count;
+-
+-		k = 0;
+-		while (p)
+-		{
+-			if ((p->flags & WI_OPEN) && (p->kind & SIZER) && (p->flags & WI_TEXT))
+-			{
+-				switch(mode)
+-				{
+-					case MHINTER:
+-						rect.g_x = k * gl_desk.g_y + gl_desk.g_x;
+-						rect.g_y = k * gl_desk.g_y + gl_desk.g_y;
+-						rect.g_w = gl_desk.g_w - (count - 1) * gl_desk.g_y;
+-						rect.g_h = gl_desk.g_h - (count - 1) * gl_desk.g_y;
+-						break;
+-					case MNEBEN:
+-						rect.g_x = k * xstep + gl_desk.g_x;
+-						rect.g_y = gl_desk.g_y;
+-						rect.g_w = xstep;
+-						rect.g_h = gl_desk.g_h;
+-						break;
+-					case MUNTER:
+-						rect.g_x = gl_desk.g_x;
+-						rect.g_y = k * ystep + gl_desk.g_y;
+-						rect.g_w = gl_desk.g_w;
+-						rect.g_h = ystep;
+-						break;
+-				}
+-				size_window(p, &rect, TRUE);
+-				k++;
+-			}
+-			p = p->next;
+-		}
+-	}
+-}
++/* Multi-document arrangement is outside the initial scope. */
+ 
+ /*
+  * Modul-Init

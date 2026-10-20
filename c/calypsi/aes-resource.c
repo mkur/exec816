@@ -6,9 +6,10 @@
 /* Standard RSC words/longs are big endian, independent of host pointer order. */
 struct ExecAESResource {
     ULONG bytes;
-    UWORD trees,objects;
+    UWORD trees,objects,strings;
     OBJECT *object;
     OBJECT **tree;
+    char **string;
 };
 static UWORD word(const UBYTE *p) { return ((UWORD)p[0]<<8)|p[1]; }
 static ULONG wide(const UBYTE *p) { return ((ULONG)word(p)<<16)|word(p+2); }
@@ -155,9 +156,11 @@ WORD rsrc_gaddr(WORD type,WORD index,void **address)
     struct ExecAESContext *c=ExecAESContext();
     if (!c || !ExecAESEnter(c)) return 0;
     *address=NULL;
-    if (type!=R_TREE) c->diagnostic=AES_UNSUPPORTED;
-    else if (!c->resource || (UWORD)index>=c->resource->trees) c->diagnostic=AES_MALFORMED;
-    else *address=c->resource->tree[index];
+    if (type!=R_TREE && type!=R_STRING && type!=R_FRSTR) c->diagnostic=AES_UNSUPPORTED;
+    else if (!c->resource || (UWORD)index>=(type==R_TREE ? c->resource->trees:c->resource->strings)) c->diagnostic=AES_MALFORMED;
+    else if (type==R_TREE) *address=c->resource->tree[index];
+    else if (type==R_STRING) *address=c->resource->string[index];
+    else *address=&c->resource->string[index];
     c->busy=0; return *address!=NULL;
 }
 
@@ -168,7 +171,7 @@ WORD rsrc_load(const char *name)
     BPTR file;
     UBYTE header[36],*data,*p;
     LONG length,got,at=0;
-    UWORD bytes,classic,version,colours=0,colourAt=0,objects,trees,objectAt,treeAt,tedAt,teds,iconAt,icons,i,j,type,editable,capacity;
+    UWORD bytes,classic,version,colours=0,colourAt=0,objects,trees,objectAt,treeAt,tedAt,teds,iconAt,icons,stringAt,strings,i,j,type,editable,capacity;
     ULONG spec,offset;
     OBJECT *o;
     TEDINFO *ted;
@@ -182,7 +185,9 @@ WORD rsrc_load(const char *name)
     objects=word(header+20); trees=word(header+22);
     tedAt=word(header+4);teds=word(header+24);
     iconAt=word(header+6);icons=word(header+26);
-    if ((version!=0 && version!=4) || bytes<36 || !objects || objects>256 || !trees || trees>8 ||
+    stringAt=word(header+10);strings=word(header+30);
+    if ((version!=0 && version!=4) || bytes<36 || !objects || objects>256 || !trees || trees>16 ||
+        strings>256 || (strings && (stringAt<36 || (stringAt&1) || (ULONG)stringAt+(ULONG)strings*4>bytes)) ||
         teds>256 || icons>256 || word(header+28) ||
         (icons && (iconAt<36 || (iconAt&1) || (ULONG)iconAt+(ULONG)icons*34>bytes)) ||
         (teds && (tedAt<36 || (ULONG)tedAt+(ULONG)teds*28>bytes)) ||
@@ -194,8 +199,9 @@ WORD rsrc_load(const char *name)
     bytes=(UWORD)length;
     r=AllocMem((ULONG)sizeof(*r)+bytes,MEMF_PUBLIC);
     if (!r) { c->diagnostic=AES_RESOURCE; goto finish; }
-    r->bytes=(ULONG)sizeof(*r)+bytes; r->trees=trees; r->objects=objects;
+    r->bytes=(ULONG)sizeof(*r)+bytes; r->trees=trees; r->objects=objects;r->strings=strings;
     data=(UBYTE *)(r+1);r->object=(OBJECT *)(data+objectAt);r->tree=(OBJECT **)(data+treeAt);
+    r->string=(char **)(data+stringAt);
     while (at<bytes) {
         got=Read(file,data+at,(LONG)bytes-at);
         if (got<=0) goto malformed;
@@ -207,13 +213,19 @@ WORD rsrc_load(const char *name)
         if (status<0) { c->diagnostic=AES_RESOURCE;goto finish; }
     }
     /* Validate all file extents before relocation. No repeated draw-time audit. */
+    for (i=0;i<strings;++i) {
+        offset=wide(data+stringAt+(ULONG)i*4);
+        if (offset>=bytes) goto malformed;
+        for (j=0;j<=255 && offset+j<bytes && data[offset+j];++j) {}
+        if (j>255 || offset+j>=bytes) goto malformed;
+    }
     for (i=0;i<objects;++i) {
         p=data+objectAt+(ULONG)i*24;type=word(p+6);spec=wide(p+12);
         if (type!=G_BOX && type!=G_IBOX && type!=G_STRING && type!=G_TITLE && type!=G_BUTTON &&
             type!=G_TEXT && type!=G_BOXTEXT && type!=G_FTEXT && type!=G_FBOXTEXT && type!=G_ICON && type!=G_CICON)
             goto malformed;
         if (word(p+8)&~(SELECTABLE|DEFAULT|EXIT|EDITABLE|RBUTTON|LASTOB|HIDETREE) ||
-            word(p+10)&~(SELECTED|DISABLED)) goto malformed;
+            word(p+10)&~(SELECTED|CHECKED|DISABLED)) goto malformed;
         if ((word(p+8)&EDITABLE) && type!=G_TEXT && type!=G_BOXTEXT &&
             type!=G_FTEXT && type!=G_FBOXTEXT) goto malformed;
         if (type==G_STRING || type==G_TITLE || type==G_BUTTON) {
@@ -296,6 +308,9 @@ WORD rsrc_load(const char *name)
     }
     for (i=0;i<trees;++i) {
         offset=wide(data+treeAt+(ULONG)i*4);r->tree[i]=(OBJECT *)(data+offset);
+    }
+    for (i=0;i<strings;++i) {
+        offset=wide(data+stringAt+(ULONG)i*4);r->string[i]=(char *)(data+offset);
     }
     okay=1; goto finish;
 malformed:

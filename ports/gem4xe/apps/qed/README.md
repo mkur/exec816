@@ -15,6 +15,21 @@ not the Exec build recipe. No donor sources are vendored by this baseline.
 
 ## Restore and verify
 
+Preparation also generates the compact English resource and matching `qed.h`
+from [resource-selection.json](resource-selection.json). It retains ten trees,
+185 objects, a 30-object menu and 44 free strings in 10,500 bytes. Local indices
+within non-menu trees are preserved; discarded menu identifiers are removed.
+The donor cache remains unchanged. The selection strips decoration and marks
+deferred Find controls disabled. Generated artifacts are under `OUTPUT/resource/`.
+
+```sh
+python3 tools/test_qed_startup.py --group resources --output build/qed-startup/resources
+```
+
+The resource check runs a loaded C Process, standard named/AESPB string access,
+all retained trees, writable fields, menu installation, rejected replacement
+and cleanup/reuse. These are development checks for startup resources.
+
 Run from the Exec repository root:
 
 ```sh

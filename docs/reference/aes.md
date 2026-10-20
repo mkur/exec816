@@ -475,7 +475,7 @@ includes the optional `--aes-input` OF816 build. The application object/form and
 `G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT`, `G_BOXTEXT`, `G_FTEXT`,
 `G_FBOXTEXT`, `G_ICON` and `G_CICON`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/EDITABLE/
 RBUTTON/LASTOB/HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
-with at most 32 objects, eight levels and 63 characters per label (12 for
+with at most 64 objects, eight levels and 63 characters per label (12 for
 `G_CICON`). Coordinates
 are pixels. Box specs use a signed border-thickness byte; centering and drawing
 include outward borders. Unsupported object types, indirect specs and user callbacks are
@@ -651,18 +651,29 @@ See the [development record](../history/file-selector.md).
 
 ## Resources and popup menus
 
-`rsrc_load`, `rsrc_free`, `rsrc_gaddr(R_TREE, index, &tree)` and `rsrc_obfix`
+`rsrc_load`, `rsrc_free`, `rsrc_gaddr` and `rsrc_obfix`
 provide named and AESPB bindings (110/111/112/114). Load accepts classic
 big-endian version-zero RSC files and version-four colour-icon extensions,
-at most 65,535 bytes in total, 256 objects and eight
+at most 65,535 bytes in total, 256 objects and sixteen
 trees, using the object/string subset above. Each tree ends with LASTOB within
-32 objects. Up to 256 TEDINFO records support the text types above. Templates
+64 objects. The menu service retains its independent 33-object ceiling.
+Up to 256 TEDINFO records support the text types above. Templates
 and validation strings are NUL-terminated, at most 63 characters. Load fixes full
 upper-memory addresses. Noneditable records normalize text/template lengths to
 string length plus NUL, including files with zero length fields. EDITABLE records
 preserve their declared 1–128-byte text capacity; the complete writable extent
 and its initial NUL must be present in the file. Shared TEDINFO records are fixed
 once. Text remains writable within the resource's supplied buffer.
+`rsrc_gaddr(R_TREE,index,&tree)` returns a relocated tree. A free-string table
+has at most 256 entries, with strings terminated within 255 characters.
+`R_STRING` returns its selected char pointer; `R_FRSTR` returns the address of
+the relocated pointer slot. These full addresses belong to the resource until
+replacement/free. Failed loading, including terminal Close failure, preserves
+the prior resource. Free-table extents and termination are checked at admission.
+The resource owner uses 22 upper-memory bytes plus the file. The 64-object
+saved-state capacity adds 64 upper-memory bytes to each form/popup owner;
+reserved bank-zero growth is zero. The separate hosted widget packet keeps its
+32-object ceiling.
 The shipped `CALC.RSC` uses this contract for its twelve-byte numeric display
 buffer. `CALC.APP` keeps the loaded tree private to each Process instance.
 G_ICON resources contain standard 34-byte ICONBLKs and monochrome mask/data
