@@ -40,16 +40,20 @@ def diagnostic_addresses(profile=None):
     for r in profile['test_scratch']:
         key = 'TEST_'+r['name'].upper().replace('-','_')
         if (key in result or type(r['address']) is not int or type(r['size']) is not int or
-                not 0 <= r['address'] < r['address']+r['size'] <= 0x8000):
+                not 0 <= r['address'] < r['address']+r['size'] <= 0xbc00):
             raise ValueError('Invalid diagnostic scratch')
         result.update({key:r['address'],key+'_BYTES':r['size']})
     return result
 
 
 def probe_address(slot):
-    if not 0 <= slot < 8:
-        raise ValueError('Register capture supports eight Tasks')
-    return PROBE0+slot*32 if slot < 4 else TEST_REGISTER_EXTENSION+(slot-4)*32
+    if not 0 <= slot < 12:
+        raise ValueError('Register capture supports twelve Tasks')
+    if slot < 4:
+        return PROBE0+slot*32
+    if slot < 8:
+        return TEST_REGISTER_EXTENSION+(slot-4)*32
+    return TEST_REGISTER_HIGH+(slot-8)*32
 
 
 def direct_pages(profile=None):
@@ -86,6 +90,16 @@ def addresses(profile=None):
         raise ValueError('Invalid adapter state page')
     return dict(STATE=region['address'], STATE_BYTES=region['size'],
                 **{name:region['address']+offset for name,offset in offsets.items()})
+
+
+def launch_memory(profile=None):
+    """Startup claim is independent of the standalone image/console bounds."""
+    profile = profile or json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    high = next(r for r in profile['regions'] if r['name']=='os-high')['address']
+    minimum = profile['memtop_required']
+    if type(high) is not int or type(minimum) is not int or not 0 < high <= minimum < 65536:
+        raise ValueError('Invalid launch memory claim')
+    return dict(MEMTOP_REQUIRED=minimum,MEMLO_CLAIM=high)
 
 
 # Host observers use the same single supported placement as generated bindings.

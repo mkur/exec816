@@ -7,24 +7,25 @@ BASELINE = Path(__file__).resolve().parents[1]/'docs/development/bank-zero-compa
 
 
 def current_task_memory():
-    """Default eight-Task platform contract, independent of a fixture build."""
+    """Default twelve-Task platform contract, independent of a fixture build."""
     from generate_memory import layout
     from task_capacity import configure
     memory = layout(upper_table=True)
-    configure(memory, 8)
+    configure(memory, 12)
     return memory
 
 
 def bank_zero_delta(memory):
     """Include each pool's guards, DP and unused capacity, including overrides."""
     source = BASELINE.read_bytes()
-    key = {4: 'four', 8: 'eight'}[memory['task_capacity']]
+    key = 'four' if memory['task_capacity']==4 else 'eight'
     before = json.loads(source)['bank_zero']['after'][key]
     after = memory['bank_zero_budget']
     return dict(baseline='bank-zero-compaction',
                 baseline_sha256=hashlib.sha256(source).hexdigest(),
                 fixed=after['fixed_runtime']-before['fixed_runtime'],
-                per_public_task=[a-b for a,b in zip(after['public'],before['public'])],
+                per_public_task=[a-(before['public'][i] if i<len(before['public']) else 0)
+                                 for i,a in enumerate(after['public'])],
                 idle=after['idle']-before['idle'],
                 runtime=after['runtime_including_os']-before['runtime_including_os'],
                 loading=after['loading_including_os']-before['loading_including_os'])

@@ -176,8 +176,8 @@ Run `MEM`, repeat a few pipelines, and run `MEM` again to observe reclaimed
 command memory. `TASKS` at the prompt shows the controller, shell, console, filesystem,
 SIO and loaded command Tasks. The optional demo starts C:PRIMES through RUN;
 the bitmap shell starts full-screen until you enter RUN PRIMES >CON: yourself.
-A pipeline adds two temporary Tasks, using all
-eight reserved slots. The prime search checks candidates up to 10,000 and then
+A pipeline adds two temporary Tasks within the twelve-slot layout.
+The prime search checks candidates up to 10,000 and then
 starts a new numbered pass; its latest prime eventually reaches 9,973.
 
 JOBS shows the background Process identity. `BREAK identity` requests stop;

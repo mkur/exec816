@@ -4,13 +4,20 @@
 .a16
 .i16
 .macro probe_slot_offset
+    .local low, done
     .if GENERAL_TASKS
         ; Four captures fit in adapter state; the rest use test-only scratch.
+        cmp #8*32
+        bcc low
+        clc
+        adc #E816_TEST_REGISTER_HIGH-E816_PROBE0-8*32
+        bra done
+low:
         cmp #4*32
-        bcc :+
+        bcc done
         clc
         adc #E816_TEST_REGISTER_EXTENSION-E816_PROBE0-4*32
-:
+done:
     .endif
 .endmacro
 raw_context_probe:

@@ -63,9 +63,9 @@
 - Distribute the generated `exec816-demo.zip`, containing only boot files,
   a short user guide, license notices and checksums. Keep build intermediates,
   manifests and test output in the development directory.
-- Release packages must include old/new Atarimax 8 Mbit CAR images and the raw
-  1 MiB BIN alongside the matching XEX. Use `tools/build_demo.py --cartridge-from`
-  to add them to an existing package before publication.
+- The current platform boots from XEX/OF816 with BASIC disabled and no cartridge.
+  Cartridge launching is unsupported; its historical loader conflicts with the
+  high bank-zero Task pools. Do not add CAR/BIN images to current demo packages.
 - Follow the [code style guide](docs/contributing/style.md) for handwritten Action!
   code. Apply it to new code and routines being changed; keep unrelated
   formatting separate and edit generated code through its generator.

@@ -45,10 +45,52 @@ class CapacityPackaging(unittest.TestCase):
         self.assertTrue(all(p['dp_reserved_bytes']==256 for p in pools))
         self.assertEqual(m['regions']['staging'][0]-(pools[-1]['stack_base']+pools[-1]['stack_bytes']+16),16)
 
+    def test_twelve_pools_keep_existing_domains_and_boot_arena(self):
+        m=layout(upper_table=True)
+        pools=configure(m,12)
+        self.assertEqual([p['dp'] for p in pools],
+                         [0x0d00+i*256 for i in range(8)]+[0x9000,0x9100,0x9200,0x9300,0x1500])
+        self.assertEqual([p['stack_base'] for p in pools],
+                         [0x2610,0x3250,0x3790,0x3cd0,0x4210,0x4750,0x4c90,0x56b0,
+                          0x9410,0x9950,0x9e90,0xa3d0,0x60d0])
+        self.assertEqual([p['stack_bytes'] for p in pools],
+                         [1536]+[1312]*5+[2560]*2+[1312]*3+[2560,512])
+        c=storage(m)
+        self.assertEqual((c['CAPACITY'],c['IDLE'],c['METADATA_BYTES']),(12,12,1792))
+        self.assertEqual(m['regions']['os-high'],[0xbc00,0x10000])
+        self.assertEqual(m['constants']['MEMTOP_REQUIRED'],0xbc00)
+        self.assertEqual(m['bank_zero_budget']['runtime_including_os'],54464)
+        self.assertEqual(m['runtime_free_ranges'],[
+            dict(address=0x62e0,size=7456),dict(address=0xade0,size=3616)])
+        for phase in m['phase_reservations'].values():
+            self.assertTrue(all(a['address']+a['size']<=b['address'] for a,b in zip(phase,phase[1:])))
+        from sdx_build import configure as sdx_configure
+        import tempfile
+        with tempfile.TemporaryDirectory() as folder:
+            sdx_configure(Path(folder),m)
+        self.assertEqual(m['sdx_storage']['dp_base'],0x6300)
+        self.assertEqual(sum(r['size'] for r in m['runtime_free_ranges']),10528)
+        from generate_process import reserve_metadata
+        reserve_metadata(m,12)
+        self.assertEqual(m['process_storage']['BYTES'],1540)
+
+    def test_high_pools_reject_display_aperture_aliases_and_bad_dp_maps(self):
+        for key,index,value in (('direct_pages',8,0x9101),('direct_pages',8,0x9100),
+                                ('direct_pages',8,0x8000),('direct_pages',8,0xbc00),
+                                ('bases',11,0xb210),('bases',9,0x6f10)):
+            m=layout(upper_table=True)
+            m['profile']['task_stacks']['12'][key][index]=value
+            with self.subTest(key=key,index=index,value=value),self.assertRaises(RuntimeError):
+                configure(m,12)
+        m=layout(upper_table=True)
+        m['profile']['task_stacks']['12']['direct_pages'].pop()
+        with self.assertRaisesRegex(RuntimeError,'Invalid stack/direct-page map'):
+            configure(m,12)
+
     def test_compact_maps_preserve_all_stack_reservations(self):
         for capacity,bases,total,loading in (
-            (4,[0x2610,0x3250,0x3870,0x3e90,0x44b0],51904,52848),
-            (8,[0x2610,0x3250,0x3790,0x3cd0,0x4210,0x4750,0x4c90,0x56b0,0x60d0],58080,51600)):
+            (4,[0x2610,0x3250,0x3870,0x3e90,0x44b0],40640,41584),
+            (8,[0x2610,0x3250,0x3790,0x3cd0,0x4210,0x4750,0x4c90,0x56b0,0x60d0],46816,40336)):
             with self.subTest(capacity=capacity):
                 m=layout(upper_table=capacity==8)
                 pools=configure(m,capacity)
@@ -62,7 +104,7 @@ class CapacityPackaging(unittest.TestCase):
                 self.assertEqual(sum(r['size'] for r in m['runtime_reservations']),total)
                 self.assertEqual(m['regions']['kernel-stack'],[0x2c20,0x3240])
                 end = 0x4ac0 if capacity == 4 else 0x62e0
-                self.assertEqual(m['runtime_free_ranges'],[dict(address=end,size=0x8000-end)])
+                self.assertEqual(m['runtime_free_ranges'],[dict(address=end,size=0x8000-end),dict(address=0x9000,size=0x2c00)])
                 phases=m['phase_reservations']
                 self.assertEqual(sum(r['size'] for r in phases['loading']),loading)
                 self.assertEqual(sum(r['size'] for r in phases['initialization']),total+2048)
@@ -94,7 +136,7 @@ class CapacityPackaging(unittest.TestCase):
         for capacity,base in ((4,0x0f00),(8,0x1000),(8,0x0c00),(8,0xff00)):
             m=layout(upper_table=capacity==8)
             m['profile']['direct_pages']['task_base']=base
-            with self.subTest(capacity=capacity,base=base),self.assertRaisesRegex(RuntimeError,'overlaps'):
+            with self.subTest(capacity=capacity,base=base),self.assertRaisesRegex(RuntimeError,'Bootstrap direct page'):
                 configure(m,capacity)
         # The unused portion of the near bank table remains reserved too.
         m=layout()
@@ -127,7 +169,7 @@ class CapacityPackaging(unittest.TestCase):
             self.assertEqual(delta['fixed'],0)
             self.assertEqual(delta['idle'],0)
             self.assertEqual(delta['per_public_task'],[0]+[n-1024 for n in expected])
-            self.assertEqual(delta['runtime'],512+sum(n-1024 for n in expected))
+            self.assertEqual(delta['runtime'],512+sum(n-1024 for n in expected)-11264)
         m=layout()
         configure(m,4)
         self.assertEqual(bank_zero_delta(m)['per_public_task'],[0]*4)

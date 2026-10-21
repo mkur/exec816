@@ -99,15 +99,16 @@ def main():
     p.add_argument('--output',type=Path,default=ROOT/'build/signals-tests/capacity')
     p.add_argument('--mode',choices=('raw','opt'))
     p.add_argument('--kernel-bank',type=int,action='append')
-    p.add_argument('--capacity',type=int,default=8)
+    p.add_argument('--capacity',type=int,default=12)
+    p.add_argument('--release-compiler',action='store_true')
     p.add_argument('--worker-stack',type=int)
     p.add_argument('--idle-stack',type=int)
     p.add_argument('--flags',type=lambda x:int(x,0),default=0x100)
     p.add_argument('--burst',type=int,choices=(2,3))
     p.add_argument('--observe',action='store_true',help='Measure post/drain costs with the passive 24-bit observer on the 8x profile')
     args=p.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
-    require(args.flags==0x100 or args.capacity<=8 and not args.burst,'Register capture supports at most eight tasks, without burst probe')
-    toolchain=compiler(args.compiler_dir)
+    require(args.flags==0x100 or args.capacity<=12 and not args.burst,'Register capture supports at most twelve tasks, without burst probe')
+    toolchain=compiler(args.compiler_dir,release=args.release_compiler)
     pin=PIN;observer=None
     if args.observe:
         from test_signals_irq import PIN as fast_pin
@@ -135,10 +136,13 @@ def main():
                     machine=verify_machine(bridge,args.rom,pin)
                     borrowed = {}
                     extra = max(0,args.capacity*32-128) if args.flags!=0x100 else 0
+                    scratch = [(adapter.TEST_REGISTER_EXTENSION,min(extra,128))]
+                    if extra>128:
+                        scratch.append((adapter.TEST_REGISTER_HIGH,extra-128))
                     def before_run(b):
                         if extra:
-                            require(extra <= adapter.TEST_REGISTER_EXTENSION_BYTES,'Register scratch too small')
-                            borrowed['bytes'] = b.memdump(adapter.TEST_REGISTER_EXTENSION,extra)
+                            for address,size in scratch:
+                                borrowed[address] = b.memdump(address,size)
                         if args.observe:
                             b.profile_start()
                     result,_=execute(bridge,program,frame_limit=6000,timeout=480,load_timeout=180,
@@ -147,11 +151,13 @@ def main():
                         observed=check_case(bridge,program,result,args)
                     finally:
                         if extra:
-                            bridge.memload(adapter.TEST_REGISTER_EXTENSION,borrowed['bytes'])
+                            for address,payload in borrowed.items():
+                                bridge.memload(address,payload)
                     if extra:
-                        require(bridge.memdump(adapter.TEST_REGISTER_EXTENSION,extra) == borrowed['bytes'],
-                                'Register scratch not restored')
-                        observed['scratch']=dict(address=adapter.TEST_REGISTER_EXTENSION,size=extra,restored=True)
+                        require(all(bridge.memdump(at,len(payload))==payload
+                                    for at,payload in borrowed.items()),'Register scratch not restored')
+                        observed['scratch']=[dict(address=at,size=len(payload),restored=True)
+                                             for at,payload in borrowed.items()]
                 case=dict(name=name,status='pass',build=program['build'],runtime=result,machine=machine,observed=observed,
                     diagnostic_bank_zero_delta=extra)
                 if args.observe:

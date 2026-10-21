@@ -2,8 +2,9 @@
 FastBasic workbench
 -------------------
 
-From Shell, type RUN C:BASIC.APP. Keep one shell and close extra applications
-so a compiler/program Task and an output window remain available.
+From Shell, type RUN C:BASIC.APP. The twelve-Task layout allows a second shell
+beside the workbench and its compiler/program Task. Output windows and AES
+clients have separate limits; close extra applications when those are full.
 
 Type PRINT 1.25*2.0 and press Control+Return: output should contain 2.5.
 Program > Integer compiler selects FBCI; floating point is the default.

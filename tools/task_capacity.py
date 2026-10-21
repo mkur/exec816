@@ -9,7 +9,8 @@ def configure(memory, capacity, worker_stack=None, idle_stack=None):
     profile = memory['profile']
     require(str(capacity) in profile['task_stacks'], 'No supported stack map for Task capacity')
     spec = profile['task_stacks'][str(capacity)]
-    require(len(spec['bases']) == len(spec['sizes']) == capacity+1, 'Invalid stack map')
+    require(len(spec['bases']) == len(spec['sizes']) == len(spec['direct_pages']) == capacity+1,
+            'Invalid stack/direct-page map')
     for value in (worker_stack, idle_stack):
         require(value is None or type(value) is int and 512 <= value <= 2560 and value % 16 == 0,
                 'Stack reservation must be 512..2560 bytes, aligned to 16')
@@ -30,7 +31,7 @@ def configure(memory, capacity, worker_stack=None, idle_stack=None):
 
     def reserve(start, size, name):
         end = start+size
-        require(regions['state'][1] <= start < end <= 0x9000 and
+        require(regions['state'][1] <= start < end <= regions['os-high'][0] and
                 all(end <= a or start >= b for a,b,_ in used) and
                 all(end <= regions[n][0] or start >= regions[n][1]
                     for n in ('loader','staging')),
@@ -48,7 +49,10 @@ def configure(memory, capacity, worker_stack=None, idle_stack=None):
         if i < 2:
             require(base == regions[f'task{i}-stack'][0]+16,
                     'Bootstrap stack differs from its reservation')
-        page = dp['TASK0_DP']+i*profile['direct_pages']['task_stride']
+        page = spec['direct_pages'][i]
+        require(type(page) is int and page % 256 == 0, 'Invalid aligned Task direct page')
+        if i < 2:
+            require(page == dp[f'TASK{i}_DP'], 'Bootstrap direct page differs from its reservation')
         reserve(page,256,f'dp{i}')
         reserve(base-16,size+32,f'stack{i}')
         pools.append(dict(dp=page,dp_reserved_bytes=256,stack_base=base,

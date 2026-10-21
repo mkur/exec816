@@ -91,7 +91,7 @@ def build_inputs(out,source=None,program_output=None,load=False,panel=False,**op
     compiler_dir=options.pop('compiler_dir',ROOT/'build/actionc')
     launcher=prepare(source,out,foreign,desktop=True,aes=True,mouse_profile=mouse_profile)
     program=build(compiler(compiler_dir),launcher,program_output or out/'program',
-        tasks=True,task_capacity=8,foreign_image=foreign,console_deferred=True,
+        tasks=True,task_capacity=options.pop('task_capacity',8),foreign_image=foreign,console_deferred=True,
         memory_profile=memory,**options)
     from generate_mouse_acceleration import metadata
     program['build']['desktop_mouse']=metadata(mouse_profile)

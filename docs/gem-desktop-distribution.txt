@@ -27,9 +27,8 @@ Extract this ZIP into one folder. In System > Configure System, select:
   SIO Patch and D: burst I/O disabled.
   "Unload disks when booting new image" disabled.
 
-For cartridge boot with the SIO disks below, remove IDE Plus 2.0 from the
-emulated devices and cold boot. An existing IDE Plus setup can cause a
-blue-screen BOOT ERROR before OF816 starts.
+Boot with no cartridge. This build uses RAM beneath the former cartridge/BASIC
+windows for Task stacks and direct pages.
 
 1. Mount @SYSTEM_DISK@ in D1 with "Generic + 57600 baud" emulation.
    Mount a disposable copy of work.atr in D8, writable.
@@ -118,9 +117,8 @@ SESSION number and Ctrl-Shift-Space also switch; TAB completes commands/paths.
 Each shell keeps its own draft, caret, history, directory, aliases and job.
 EXIT closes only that session while another remains. Close is cooperative:
 its tab stays closing until its work retires. Two shells use two Task slots;
-with the desktop APP running, two prompts use seven of eight slots. One external
-command fits; a two-command pipeline reports capacity failure. Close one shell
-or quit the desktop APP before running that pipeline. Each additional running
+with the desktop APP running, two prompts use seven of twelve slots. A
+two-command pipeline can run while both prompts remain open. Each additional running
 GUI APP uses another slot. Mixed SIO+IDE builds need one further worker;
 IDE-only builds replace the SIO worker and keep the same total.
 

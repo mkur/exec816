@@ -10,6 +10,23 @@ from generate_tasks import ABI, check_routine, constants, generate_kernel, polic
 
 
 class TaskBindingsTests(unittest.TestCase):
+    def test_larger_writable_table_keeps_exact_disjoint_permissions(self):
+        for count in (72,96,97):
+            image=dict(data=[],zero_fill=[],segments=[
+                dict(address=0x30000+i*16,bytes=[0,0],writable=True,executable=False)
+                for i in range(count)])
+            if count>ABI['metadata']['writable_range_capacity']:
+                with self.assertRaisesRegex(RuntimeError,'Too many writable'):
+                    writable_bindings(image)
+            else:
+                actual,address=writable_bindings(image)
+                self.assertEqual(actual,count)
+                raw=bytes(image['segments'][-1]['bytes'])
+                self.assertEqual(len(raw),count*8)
+                for i in range(count):
+                    self.assertEqual(int.from_bytes(raw[i*8:i*8+3],'little'),0x30000+i*16)
+                    self.assertEqual(int.from_bytes(raw[i*8+4:i*8+7],'little'),2)
+
     def test_boot_configuration_is_not_a_task_entry(self):
         from generate_tasks import application_entry
         self.assertFalse(application_entry({'name':'M_BOOTCONFIG_INIT_1234'}))

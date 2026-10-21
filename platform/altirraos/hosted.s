@@ -87,7 +87,7 @@ start:
     cmp #STATE+1
     bcs memory_fault
     lda MEMTOP
-    cmp #APP_LIMIT
+    cmp #E816_MEMTOP_REQUIRED
     bcc memory_fault
     bra memory_ok
 memory_fault:
@@ -123,7 +123,7 @@ clear_state:
         lda MEMLO
     .endif
     sta OLD_MEMLO
-    lda #APP_LIMIT
+    lda #E816_MEMLO_CLAIM
     sta MEMLO
     lda VNMIN
     sta OLD_NMI

@@ -110,7 +110,9 @@ unsupported; a cold boot reloads the manifest.
 The launch profile reserves `$0000–$09FF` for the OS or a small binary loader
 and places the 256-byte adapter state at `$0A00–$0AFF`. Both loader and hosted
 entry require the original `MEMLO <= $0A00`; hosted entry checks before writing
-that page. `MEMTOP` must still cover `$9000`. State fields are generated from
+that page. `MEMTOP` must be at least `$BC00`; the loader and hosted entry publish
+`MEMLO=$BC00` until shutdown restores its original value. BASIC must be disabled
+and no cartridge may be mapped. State fields are generated from
 the profile base and ABI offsets. Larger resident Atari DOS layouts remain
 unsupported; Exec's own DOS/file services are independent of that restriction.
 This boundary does not itself qualify a particular third-party loader.
@@ -174,33 +176,45 @@ capacity and actual image extents; standalone fixtures keep their separately
 recorded profiles.
 
 The profile reserves **`$8000–$8FFF` (4 KiB) for the VBXE CPU aperture** during
-loading and runtime. Persistent Exec reservations are packed below it:
+loading and runtime. The standard twelve-Task map uses the
+[audited high RAM](../history/high-bank-zero-audit.md) while preserving the
+ROM display list at `$BC20–$BC3F` and screen at `$BC40–$BFFF`:
 
-| Eight-Task range | Ownership |
+| Twelve-Task range | Ownership |
 | --- | --- |
 | `$0A00–$0AFF` | Adapter state |
 | `$0B00–$0BFF` | Boot state |
 | `$0C00–$0CFF` | Kernel DP |
-| `$0D00–$14FF` | Public Task DPs |
-| `$1500–$15FF` | Idle DP |
-| `$1600–$25FF` | Resident platform adapter, including segment padding |
-| `$2600–$62DF` | Root, kernel, worker and idle stacks, including guards |
-| `$62E0–$7FFF` | 7,456 unreserved bytes after startup |
+| `$0D00–$14FF` | Public Task DPs 0–7 |
+| `$1500–$15FF` | Idle DP, logical slot 12 |
+| `$1600–$25FF` | Resident platform adapter, including padding |
+| `$2600–$62DF` | Existing root, kernel, worker and idle stacks with guards |
+| `$62E0–$7FFF` | 7,456 bytes available after startup, before optional SDX pages |
+| `$8000–$8FFF` | VBXE CPU aperture |
+| `$9000–$93FF` | Public Task DPs 8–11 |
+| `$9400–$ADDF` | New worker stacks with guards |
+| `$ADE0–$BBFF` | 3,616 unreserved bytes |
+| `$BC00–$FFFF` | OS display, boundary slack, ROM and hardware |
 
-The [platform profile](../../platform/altirraos/memory-4m.json) defines physical
-placement. Kernel DP is `$0C00`; public slot `i` owns `$0D00+i*$100`, and idle
-owns slot `capacity`. Four-Task DPs end at `$11FF`, followed by the full near
-bank-table reservation at `$1200–$15FF`. The eight-Task table is in upper RAM.
-Generated assembly/Action! constants and the resident linker configuration use
-this profile. Unsupported capacities and overlaps are rejected.
+The [platform profile](../../platform/altirraos/memory-4m.json) publishes explicit
+per-capacity `direct_pages`, stack bases and sizes. Generated arrays are
+authoritative; do not derive later DPs from the root's address. Four-Task
+fixtures keep the full near bank-table reservation; eight- and twelve-Task
+builds keep that table in upper RAM. Unsupported maps and overlaps fail packaging.
 
-The root stack starts at `$2610`, the kernel stack at `$2C30`; each reserves
-1,536 stack bytes with 16-byte guards at both ends. Other stack bases and sizes
-are published in `task_pools`; see [Task capacity](../architecture/task-capacity.md).
-All DPs remain exactly 256 bytes without guards. In the eight-Task profile,
-slots 1–5 have 1,312-byte stacks, slots 6–7 have 2,560 bytes and private idle
-has 512 bytes. Every stack retains checked bounds and an internal 256-byte
-interrupt reserve. Four-Task pools remain 1,536 bytes each.
+Root and kernel stacks remain at `$2610` and `$2C30`, each with 1,536 bytes and
+two 16-byte guards. Public slots 1–5 and 8–10 have 1,312 stack bytes; slots 6,
+7 and 11 have 2,560 bytes. New bases are `$9410`, `$9950`, `$9E90` and `$A3D0`.
+Idle retains `$60D0` with 512 bytes. Every stack includes a 256-byte interrupt
+reserve; every DP is exactly 256 bytes without outer guards or padding.
+
+Relative to the previous eight-Task SDX map, new public pools reserve 7,648
+bytes (three at 1,600 and one at 2,848, including DP and stack guards). Existing
+slots, root, kernel, idle and fixed Exec reservations each add zero bytes.
+Reducing the OS reservation by 11,264 bytes gives a net 3,616-byte reduction
+in total reserved bank zero. The SDX-enabled standard demo leaves 10,528 bytes
+unreserved. See [Task capacity](../architecture/task-capacity.md) for the full
+budget and [development evidence](../history/twelve-task-layout.md).
 
 Temporary staging occupies `$62F0–$66FF`, the manifest `$6700–$6EFF`, and the
 loader `$6F00–$7BFF`. They form one boot arena clear of every persistent pool.

@@ -143,11 +143,11 @@ state and nesting fields are observations, not controls. UserData belongs to
 the application and follows its own synchronization rules.
 
 The hosted kernel accepts stack allocations from build-reserved ranges, each
-with an associated private direct page. Four- and [eight-task layouts](../architecture/task-capacity.md)
+with an associated private direct page. Four-, eight- and [twelve-Task layouts](../architecture/task-capacity.md)
 use the same Task API, with root included and idle additional. Generated
 TASKSTACKS bounds describe storage, not public identity. An occupied range
-cannot be admitted again. General bank-zero allocation and twelve/sixteen-task
-qualification remain future work.
+cannot be admitted again. The standard demo selects twelve public slots.
+General bank-zero allocation and sixteen-Task qualification remain future work.
 
 Supply the complete reserved stack bounds. `tc_SPReg` identifies the initial
 native S, rather than being discarded in favor of the upper bound. Its default

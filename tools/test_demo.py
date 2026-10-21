@@ -21,7 +21,7 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None):
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None,boot_verbose=False):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
     require(disk_failure in (None,'missing','missing-work','wrong'),'Unknown disk failure')
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
@@ -1038,7 +1038,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         if bootstrap is not None:bootstrap(b,p)
         reset_required=disk_failure in ('missing','missing-work')
         runtime,_=execute(b,p,preloaded=bootstrap is not None,before_run=before,timeout=240,frame_limit=12000,
-                          expected_status=0xff93 if reset_required else 0)
+                          expected_status=0xff93 if reset_required else 0,boot_verbose=boot_verbose)
         if measurement_commands is not None and profile_commands:b.profile_stop()
         b._cmd_ok('KEY ALL up')
         require(number(at('exitStatus'))==0,'Demo EXIT failed')

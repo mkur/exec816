@@ -266,12 +266,12 @@ def place_after_foreign(memory, foreign):
 def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, cooperative=False,
           probe_flags=0x100, forward_signature=0, preemptive=False, banked=False,
           max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False, pump_divisor=0,sio_enabled=True,sdx=False,sdx_patches=False,sdx_runtime_probe=False,sdx_return_probe=0,sdx_drive_a='RAM:',sdx_car_root='RAM:'):
-    require(type(sdx) is bool and (not sdx or (tasks and task_capacity==8)),
-            'SDX personality requires the eight-Task profile')
+    require(type(sdx) is bool and (not sdx or (tasks and task_capacity>=8)),
+            'SDX personality requires at least eight Tasks')
     require(not (sdx and sdx_runtime_probe), 'Select personality or diagnostic fixture ownership')
     sdx_patches = sdx_patches or sdx
-    require(type(sdx_runtime_probe) is bool and (not sdx_runtime_probe or (tasks and task_capacity == 8)),
-            'SDX runtime probe requires the eight-Task test profile')
+    require(type(sdx_runtime_probe) is bool and (not sdx_runtime_probe or (tasks and task_capacity >= 8)),
+            'SDX runtime probe requires at least eight Tasks')
     require(type(sdx_return_probe) is int and 0 <= sdx_return_probe <= 11
             and (sdx_return_probe == 0 or sdx_runtime_probe or sdx),
             'SDX return injection requires the runtime probe and a boundary in 1..11')

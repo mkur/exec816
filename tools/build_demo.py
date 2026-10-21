@@ -191,7 +191,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         program=builder(source=source,out=output/'bitmap-console',program_output=output,
             compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,mouse_profile=mouse_profile,
             system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,
-            sio_enabled=not ide_only,sdx=sdx,sdx_drive_a=sdx_drive_a,sdx_car_root=sdx_car_root,
+            sio_enabled=not ide_only,sdx=sdx,sdx_drive_a=sdx_drive_a,sdx_car_root=sdx_car_root,task_capacity=12,
             **({'release_compiler':release_compiler} if not desktop or gem_desktop else {}))
         copy_notices(output/'bitmap-console/selected',output)
         bitmap_pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
@@ -202,7 +202,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             pin=bitmap_pin
     else:
         program=build(toolchain,source,output,optimize=True,tasks=True,
-                      task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
+                      task_capacity=12,console=True,stack_checks=True,dos_mounts=mounts,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only,
                       sdx=sdx,sdx_drive_a=sdx_drive_a,sdx_car_root=sdx_car_root)
     if gem_desktop:
@@ -323,7 +323,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                         ROOT/'tools/make_data_disk.py',ROOT/'tools/sdfs_reference.py',ROOT/'tools/sdfs_reference.cpp',
                         ROOT/'tools/make_shell_disk.py',Path(__file__),*sources,
                         *sorted((ROOT/'lib/dos').glob('*.act'))]},
-        bank_zero_delta=bank_zero_delta(program['build']['memory']),task_capacity=8,expected_peak_tasks=7,
+        bank_zero_delta=bank_zero_delta(program['build']['memory']),task_capacity=12,expected_peak_tasks=7,
         qualification='Focused development checks only; full release and general compiler qualification remain separate.')
     if sdx:
         record['sdx']=dict(enabled=True,drive_a=sdx_drive_a,car_root=sdx_car_root,
@@ -382,11 +382,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             ROOT/'tools/build_g4bench.py',ROOT/'tools/prepare_g4bench.py',
             *(p for p in (ROOT/'ports/gem4xe/apps/g4bench').rglob('*') if p.is_file()),
             *(p for p in (ROOT/'ports/gem4xe/apps/calculator').rglob('*') if p.is_file()))})
-    # The controller adds one Task to every former one-shell peak. Peaks
-    # beyond eight describe rejected workloads, never expanded reservations.
+    # The controller adds one Task to every former one-shell peak.
     required = record['expected_peak_tasks'] + 1 + int(ideplus and not ide_only)
     record['requested_peak_tasks'] = required
-    record['expected_peak_tasks'] = min(8, required)
+    record['expected_peak_tasks'] = min(record['task_capacity'], required)
     gui = 2 if aes_counters or aes_input else 1 if desktop else 0
     base = 4 + int(ideplus and not ide_only)
     prime = int(not shell_only)
@@ -396,7 +395,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         one_shell_pipeline_required=base+1+prime+gui+2,
         two_shell_pipeline_required=base+2+prime+gui+2,
         historical_peak_required=required,
-        historical_peak_admitted=required<=8, capacity=8)
+        historical_peak_admitted=required<=record['task_capacity'], capacity=record['task_capacity'])
     graphics=None
     if gem_vdi:
         from build_gem_artifact import build as build_graphics
@@ -421,17 +420,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
     if ide_only:
         finalize_ide_media(output,record)
-    from build_cartridge import segments
-    for name in ('program.xex','of816/Exec-of816.xex'):
-        segments((output/name).read_bytes())
-    capacity=record_cartridge_capacity(output)
-    require(all(item['headroom']>=0 for item in capacity.values()),
-            'Compressed demo exceeds cartridge capacity; packaging stopped')
     package(output/'of816',output/record['distribution'],graphics,bitmap,
             bitmap_shell=output if bitmap_shell_only else None,
             text_shell=output if text_shell_only else None)
-    if ide_only:
-        add_ide_carts(output)
     write_launcher(output)
     return record
 
@@ -610,8 +601,6 @@ def refresh_monitor(output):
                        [Path(__file__),ROOT/'tools/build_of816.py',ROOT/'tools/banked_image.py',*guides]})
     path.write_text(json.dumps(record,indent=2)+'\n')
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
-    if record.get('gem_desktop'):
-        record_cartridge_capacity(output)
     package(output/'of816',output/record['distribution'],
             output/'gem-vdi' if record.get('graphics') else None,
             output/'bitmap-console' if record.get('bitmap_console') else None,

@@ -145,11 +145,11 @@ class MemoryRelocationTests(unittest.TestCase):
     def test_retirement_separates_loading_and_runtime_reservations(self):
         from ports_budget import current
         budgets = current()
-        for capacity, total, saving, loading in (('four',51904,-80,1616),('eight',58080,-2688,1536)):
+        for capacity, total, saving, loading in (('four',40640,-80,1616),('eight',46816,-2688,1536)):
             before, after = budgets['before'][capacity], budgets['after'][capacity]
             self.assertEqual(after['runtime_including_os'], total)
-            self.assertEqual(after['runtime_including_os']-before['runtime_including_os'], -6144-saving)
-            self.assertEqual(after['loading_including_os']-before['loading_including_os'], -4096-loading)
+            self.assertEqual(after['runtime_including_os']-before['runtime_including_os'], -6144-saving-11264)
+            self.assertEqual(after['loading_including_os']-before['loading_including_os'], -4096-loading-11264)
             per_task = 32 if capacity == 'four' else 256
             expected = [v-per_task for v in before['public']]
             if capacity == 'eight':

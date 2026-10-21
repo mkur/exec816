@@ -114,7 +114,7 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
              'task1-dp':[dp['TASK1_DP'],dp['TASK1_DP']+256],
              'kernel-dp':[dp['KERNEL_DP'],dp['KERNEL_DP']+256],
              'vbxe-aperture':[0x8000,0x9000],
-             'os-high':[0x9000,0x10000]}
+             'os-high':[0xbc00,0x10000]}
     stacks = adapter.stack_addresses()
     fixed.update({owner+'-stack':[stacks[owner.upper()+'_STACK_BASE']-16,
                                  stacks[owner.upper()+'_STACK_CEILING']+17]
@@ -122,7 +122,7 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
     require(all(regions.get(k) == v for k,v in fixed.items()),
             'Fixed OS/adapter reservation differs from hosted layout')
     integer(platform['image_data_bytes'], 1, 65536, 'image data capacity')
-    require(platform['memlo_limit'] == adapter.STATE and platform['memtop_required'] == 0x9000,
+    require(platform['memlo_limit'] == adapter.STATE and platform['memtop_required'] == 0xbc00,
             'Memory bounds differ from hosted console/launch contract')
     usable = platform['usable_banks']
     require(1 not in usable, 'Bank $01 is reserved for platform firmware')

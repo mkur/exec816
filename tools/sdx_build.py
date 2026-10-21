@@ -19,7 +19,7 @@ def configure(output, memory, drive_a='RAM:', car_root='RAM:'):
     # Resident loader/provider strings and console state exceed the default 2 KiB.
     memory['profile']['image_data_bytes']=max(memory['profile']['image_data_bytes'],4096)
     require(runtime['resident_bank'] in memory['usable_banks'], 'SDX resident bank is unavailable')
-    require(memory['task_capacity']==8, 'SDX currently requires the eight-Task profile')
+    require(memory['task_capacity']>=8, 'SDX requires at least eight Tasks')
     guard, count = runtime['dp_guard_bytes'], runtime['slots']
     size = count*256+guard*2
     # Allocate from the generated post-adoption map, excluding diagnostic

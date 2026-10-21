@@ -132,46 +132,15 @@ distribution ZIP. Rebuild the whole demo for kernel/runtime ABI changes.
 See the [boot-loading contract](../reference/boot-loading.md) for encoding,
 context and memory limits.
 
-Release packages must include old/new Atarimax 8 Mbit CAR images and the raw
-1 MiB BIN alongside the XEX. Before publishing a demo that does not yet include
-them, use a separate output directory to add the images while preserving its
-exact XEX, disk and firmware:
+Current packages boot from XEX through OF816 with BASIC disabled and no
+cartridge. The twelve-Task map uses RAM that the historical cartridge loader
+borrowed, so CAR/BIN launching is unsupported. Distribute `exec816-demo.zip`
+with its matching system/work disks, ROM, guide, license notices and checksums;
+do not augment it with cartridge images.
 
-```sh
-python3 tools/build_demo.py --cartridge-from path/to/exec816-demo.zip \
-  --cartridge-source-sha256 <published-ZIP-SHA256> --output build/cartridge-demo
-```
-
-Publish `build/cartridge-demo/exec816-demo.zip` and generate its external checksum
-after this step; the input ZIP's checksum no longer describes the release package.
-
-This requires Python and ca65/ld65, without recompiling Exec or OF816. The new
-`exec816-demo.zip` adds old/new Atarimax CAR headers over the same 1 MiB ROM,
-a raw BIN for programming, the [cartridge guide](../cartridge-distribution.txt)
-and updated checksums. The 128 KiB cartridge is unsupported. The RAM loader
-temporarily borrows `$9000–$93FF` below the cartridge-era OS screen, with no
-additional runtime bank-zero reservation or per-Task cost. It switches the
-cartridge off around INITAD callbacks and before entering the unchanged XEX.
-CPU, ROM and memory requirements remain those of the input demo; physical
-cartridge/accelerator hardware requires separate qualification.
-
-Check an image with the matching development build and Exec source revision
-(use a checkout of the release tag for an older published demo):
-
-```sh
-python3 tools/test_cartridge.py \
-  --cartridge-build build/cartridge-demo/cartridge-build/Exec-of816 \
-  --demo-build build/demo --exec-source path/to/matching/exec816 \
-  --output build/cartridge-check-new --variant new
-```
-
-Repeat with `--variant old --manual` and a different output directory to check
-the other power-on bank, final-second countdown cancellation and Forth entry.
-The fixture checks the cartridge handoff, documented shell/disk commands and
-EXIT, using the source revision's original guard and ownership assertions.
-It selects the bitmap/desktop boot smoke or the standard shell/prime walkthrough
-from the matching demo manifest. Upper-RAM reads use the debugger without
-borrowing the cartridge-era OS screen or loader workspace.
+Historical cartridge tools and records require the source and memory map of
+that older release. They do not qualify the current layout. See the
+[high-RAM audit](../history/high-bank-zero-audit.md) for the address conflict.
 
 ## Firmware diagnostics
 

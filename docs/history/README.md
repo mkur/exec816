@@ -1,5 +1,13 @@
 # Historical records
 
+- [Twelve-Task layout](twelve-task-layout.md): four high-RAM pools, a third
+  large stack, MEMLO admission/return, emitted context and coexistence checks,
+  and the refreshed OF816 graphical programming demo.
+
+- [High bank-zero RAM audit](high-bank-zero-audit.md): 11 KiB available above
+  the VBXE aperture on the pinned cartridge-free profile; ROM screen ownership,
+  CPU/hosted canary evidence and room for twelve Tasks with a third large stack.
+
 - [FastBasic workbench](fastbasic-workbench.md): incremental native GEM editor and compiler controller delivery, resource budgets and development evidence.
 
 - [FastBasic floating-point delivery](fastbasic-floating-point.md): private

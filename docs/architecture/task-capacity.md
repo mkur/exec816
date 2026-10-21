@@ -2,187 +2,93 @@
 
 [Architecture index](README.md) · [Runtime model](runtime.md)
 
-The current layouts support four or eight public Tasks plus private idle on the
-pinned AltirraOS platform. Root and service workers count toward public capacity;
-the kernel's service-entry context and idle do not. Plain Task builds default to
-four; the standard demo selects eight. Both run the same kernel and API.
+The standard demo provides **twelve public Tasks plus private idle** on the
+pinned cartridge-free AltirraOS platform. Root and service workers count toward
+public capacity; kernel service entry and idle do not. Four- and eight-Task
+fixtures use the same kernel and Task API. Plain native test builds default to
+four; `tools/build_demo.py` selects twelve.
 
 ## Slots and lifetime
 
 A waiting Task retains its slot, native stack and direct page. Removal makes
-those pools reusable; extra prepared descriptors do not increase simultaneous
+those pools reusable; more prepared descriptors do not increase simultaneous
 capacity. Files, mounts, ports and console instances allocate state without
 adding execution pools once their shared service exists.
 
-Select `--task-capacity 8` when packaging a suitable resident application. The
-[signal example](../guides/tasks.md) fills that profile with root, console and six
-workers. A ninth admission is rejected. Other capacities need a new checked platform stack map; the current packager
-rejects them.
+Select `--task-capacity 12` when packaging a resident application with the
+standard map. Root and eleven workers can be live simultaneously; another
+admission fails without disturbing their ownership. Supported fixture maps are
+four and eight; other capacities require a checked map and are rejected.
+Guest slots, AES clients, windows and console instances retain their own limits.
 
 Use generated `TASKSTACKS.StackLower(slot)` and `StackUpper(slot)` values, with
-an exclusive upper bound. Prepare `tc_SPReg=tc_SPUpper-SIZE(2)` as required by the
-[Task API](../reference/tasks.md). Never copy a historical stack address or assume
-all slots have the same size.
+an exclusive upper bound. Prepare `tc_SPReg=tc_SPUpper-SIZE(2)` as required by
+the [Task API](../reference/tasks.md). Do not infer stack addresses from slot
+numbers. A Task owns a 256-byte aligned DP, but the twelve-Task DP map is not
+contiguous: public slots 8–11 use `$9000–$93FF`; idle becomes slot 12 while
+keeping DP `$1500` and stack `$60D0`.
 
-## Checked placement and lifetime
+## Placement and admission
 
-Stacks and aligned DPs require bank zero; public records and private scheduling
-metadata can live in upper RAM. The eight-slot profile uses five ordinary worker
-stacks, two larger worker stacks and a smaller idle stack, and places the bank
-ownership table in upper RAM. Persistent pools
-are packed below the temporary boot arena, so initializing a later slot does
-not overwrite loader/staging storage.
-
-The packager rejects image/reservation overlap. Kernel-bank selection changes the
-resident image placement, not the fundamental bank-zero CPU requirement. Stack
-checks and canaries cover tested use; arbitrary call depth can still exceed a
-configured stack. Scheduling is FIFO even though Task priorities are retained.
-
-## Complete bank-zero budget
-
-Read the build's `memory.json`, especially `runtime_reservations`, `task_pools`
-and `bank_zero_budget`. Account separately for:
-
-- OS and fixed Exec reservations, including kernel/interrupt storage.
-- Root, each other public slot and private idle.
-- Each aligned 256-byte DP, with no external guards or stride padding.
-- Stack allocations, guards and interrupt reserve.
-- Loading-only ranges and the free area available after their retirement.
-
-Payload bytes and reserved bytes answer different questions. A small live object
-inside a larger reserved arena does not make the rest of that arena free.
-Implementation slices must report fixed/per-Task reservation deltas, including
-zero; see the [platform budget rule](../reference/platform.md#bank-zero-memory-budget).
-
-Moving state to `$0800`, placing globals in upper RAM and retiring the manifest
-after startup recovered **10,240 fixed bank-zero bytes; 0 bytes per Task**;
-see the [relocation record](../development/bank-zero-relocation.json).
-The subsequent [VBXE aperture reservation](../development/vbxe-aperture.json)
-assigns 4,096 of those bytes to `$8000–$8FFF`, leaving a net recovery of
-6,144 bytes. The subsequent [DP compaction record](../development/dp-compaction.json)
-recovers another 192 bytes for four Tasks or 2,336 bytes for eight. The fixed
-saving is 32 bytes in either layout; each public Task and idle save 32 or 256
-bytes respectively. Stack reservations and public Task capacity are unchanged.
-
-| Reservation after startup | Four public Tasks | Eight public Tasks |
-| --- | ---: | ---: |
-| OS/loader ranges | 31,232 | 31,232 |
-| Fixed Exec runtime, including aperture, guards and slack | 11,552 | 10,528 |
-| Public and idle pools | 9,120 | 16,320 |
-| Total reserved | 51,904 | 58,080 |
-| One contiguous unreserved range | 13,632 | 7,456 |
-
-The manifest still occupies 2 KiB during loading. Total loading reservations
-are 52,848 and 51,600 bytes respectively. Every DP now reserves exactly 256
-bytes. Eight-Task slots 1–5 have 1,312 stack bytes; slots 6–7 have 2,560 bytes.
-Each adds 32 external guard bytes and includes 256 bytes of interrupt reserve.
-Root has 1,536 stack bytes and idle 512; every four-Task stack has 1,536 bytes.
-Initialization retains the 2 KiB manifest in addition to the runtime budget.
+Stacks and DPs require bank zero; Task, Process and DOS metadata lives in upper
+RAM. The twelve-Task map keeps all existing physical pools, root/kernel
+contexts, boot storage and SDX guest pages. It adds three ordinary worker
+stacks and a third large stack above the VBXE aperture. The
+[platform contract](../reference/platform.md#bank-zero-memory-budget) defines
+those addresses. The [high-RAM audit](../history/high-bank-zero-audit.md)
+records the source and machine evidence for reclaiming that RAM.
 
 `CreateTask` chooses the smallest free pool that fits the rounded request,
-breaking equal-size ties by slot order. A 2,560-byte request uses one of the
-two larger pools; a third fails while both remain owned. Small requests use
-ordinary pools first but can consume the larger ones. Root and idle are never
-creation candidates. Process launch still selects its first free slot and has
-no stack-size parameter. These are shared pools, with no reservation for GEM.
+breaking equal-size ties by slot order. Eight ordinary pools have 1,312-byte
+stacks; large pools in slots 6, 7 and 11 have 2,560 bytes. Three large requests
+can coexist; a fourth fails even when ordinary pools remain free. Small
+requests prefer ordinary pools but can consume large ones. Root and idle are
+never creation candidates. Process launch uses the same shared pools and has
+no stack-size argument. No pool is reserved for GEM.
 
-The larger allocation leaves 2,304 bytes above the interrupt floor before
-native frames and nested adapter use. Passing a larger size to `CreateTask`
-does not allocate bank-zero memory. Explicit build-time `--worker-stack`
-overrides replace every worker size without moving bases; the packager rejects
-overlap, including overlap with boot storage. Omitted overrides use the profile.
-The [development record](../development/larger-task-stacks.json) measures the
-two-pool change: fixed delta 0, slots 6–7 +1,536 bytes each, total +3,072.
-The [application headroom change](../history/gem-application-stack-headroom.md)
-subsequently adds 256 bytes to slots 1–5, totaling 1,280 bytes, and relocates the
-boot arena in its original profile. Its recorded 3 KiB loader reservation
-reduces loading-only storage by 2 KiB; those addresses remain historical.
-The subsequent [file-selector change](../history/file-selector.md#fsel4-loadable-consumer-and-of816-package)
-adds another 32 bytes to each of slots 1–5 (160 total) within the existing
-pre-staging gap. Root, kernel, service-pool and idle sizes, guards and DP
-reservations remain unchanged; 16 bytes remain between the final guard and
-staging. Four-Task stack placement and runtime budgets are unchanged.
+Each stack has two 16-byte outer guards and an internal 256-byte interrupt
+reserve. Large stacks leave 2,304 bytes before native frames and adapter use.
+Root and kernel each have 1,536 bytes, idle 512. Four-Task fixtures retain
+1,536-byte stacks; eight-Task fixtures retain five ordinary and two large
+workers. Explicit `--worker-stack` overrides change allocations without moving
+bases; overlap and malformed ranges are rejected. A request never dynamically
+grows a bank-zero stack. Keep checked bounds enabled and measure actual depth.
 
-[Bank-zero compaction](../development/bank-zero-compaction.json) packs the
-persistent reservations together, with no additional eight-Task byte savings.
-It removes the obsolete 240-byte near context reservation in four-Task builds;
-current Task metadata remains in upper RAM. Per-Task costs do not change.
+The map excludes the VBXE aperture at `$8000–$8FFF` and reserves
+`$BC00–$FFFF` for OS display, ROM and hardware. BASIC must be disabled and no
+cartridge may be mapped. Loader and native entry require MEMTOP at least
+`$BC00`, claim memory through MEMLO `$BC00`, and restore the original MEMLO on
+shutdown. Native graphics retains the OS display at `$BC20–$BFFF` for return.
 
-The current map starts at `$0A00`, protecting 512 more bytes for the OS or
-binary loader. Fixed Exec runtime and per-Task costs are unchanged. Reducing
-unused temporary loader capacity initially kept loading totals unchanged.
-Combining ordinary-pool growth with this map moves staging to `$62F0`, the
-manifest to `$6700` and the compressed loader to `$6F00`. Loader capacity is
-3,328 bytes, ending at `$7C00`; the current totals are in the table above.
-See the [platform contract](../reference/platform.md#bank-zero-memory-budget).
+## Reservation accounting
 
-Kernel DP is `$0C00`. Public slot `i` has DP `$0D00+i*$100`; idle is slot
-`capacity`. The four-Task DP area ends at `$11FF`, followed by the full near
-bank table at `$1200–$15FF`. The eight-Task DP area ends at `$15FF`. Both
-capacities then place the resident adapter at `$1600–$25FF`.
+The build's `memory.json` is authoritative. Count guards, alignment, reserved
+slack and every DP, separating fixed and per-Task costs. These 4 MiB budgets
+exclude the optional 544-byte SDX guest-DP pool:
 
-Stack placement is explicit in the platform profile. Four-Task bases, including
-idle, are `$2610`, `$3250`, `$3870`, `$3E90`, `$44B0`. Eight-Task bases are
-`$2610`, `$3250`, `$3790`, `$3CD0`, `$4210`, `$4750`, `$4C90`, `$56B0`, `$60D0`.
-Kernel stack starts at `$2C30`, with 1,536 bytes. Every stack retains 16-byte
-guards at both ends; adjacent guarded reservations have no extra padding.
+| Runtime reservation | Four public Tasks | Eight public Tasks | Twelve public Tasks |
+| --- | ---: | ---: | ---: |
+| OS ranges | 19,968 | 19,968 | 19,968 |
+| Fixed Exec, including kernel stack and aperture | 11,552 | 10,528 | 10,528 |
+| Public and idle pools | 9,120 | 16,320 | 23,968 |
+| Total reserved | 40,640 | 46,816 | 54,464 |
+| Total unreserved | 24,896 | 18,720 | 11,072 |
 
-After startup, the free range is `$4AC0–$7FFF` for four Tasks or `$62E0–$7FFF`
-for eight. Staging, manifest and loader temporarily occupy `$62F0–$7BFF` inside
-this area. The manifest remains live until `startup_complete`. Generated
-`phase_reservations` and `runtime_free_ranges` describe these lifetimes; free
-space remains unregistered with the heap.
+Loading reservations are 41,584 bytes for four Tasks and 40,336 for eight or
+twelve. Initialization retains the 2 KiB manifest until `startup_complete`.
+Persistent pools do not overlap any live bootstrap bytes. Runtime unreserved
+ranges are not automatically registered with the general heap.
 
-The diagnostic eight-Task register capture stores its additional 128 bytes
-at `$7D00–$7D7F`, clear of boot state and production pools. Other observer
-scratch is declared in `diagnostic_scratch` and checked against every phase.
-Instrumented builds account for this temporary borrowing separately. The
-production map reserves the full VBXE aperture but does not yet map it.
+Compared with the previous standard eight-Task SDX build, existing public
+slots, root, kernel, idle and fixed Exec storage grow by **zero bytes**. Three
+new ordinary slots cost 1,600 bytes each and the new large slot 2,848 bytes:
+**7,648 added pool bytes**. Reclaiming 11,264 OS-reserved bytes reduces total
+reserved bank zero by **3,616 bytes**. The SDX build has **10,528 bytes free**,
+split between the low retired boot area and `$ADE0–$BBFF`. Task metadata adds
+512 upper bytes, Process records 512 and DOS slots 64; generated pool arrays
+also grow in upper RAM. Test-only register capture borrows an additional
+128 bytes without reserving production memory.
 
-The [capacity implementation record](../history/task-capacity.md) preserves exact
-maps, before/after totals and experiments for its recorded revision. Its old code
-origins and serial timing limits are historical, not current build metadata.
-
-## Shell-controller admission budget
-
-The shell-session implementation keeps eight public slots. Root becomes the
-controller, so the first interactive shell uses an additional ordinary Process
-slot. Standard SIO builds have four shared Tasks (controller, console,
-filesystem and SIO), plus each shell, prime job, external command and desktop
-application. Bitmap rendering and desktop presentation share the console worker.
-The [implementation plan](../plans/shell-sessions-implementation-plan.md) requires
-these counts before updating each variant's tests and advertised workloads.
-
-| Variant/workload | One shell | Two shells | Admission with eight slots |
-| --- | ---: | ---: | --- |
-| Text or standalone bitmap, prompt only | 5 | 6 | Both fit |
-| Standard demo with prime, prompt | 6 | 7 | Both fit |
-| Standard demo with prime and two-command pipeline | 8 | 9 | Two-shell case rejects |
-| Plain shell and two command Tasks | 7 | 8 | Both fit |
-| Native desktop example and pipeline | 8 | 9 | Two-shell case rejects |
-| Two AES counters/input apps and one command | 8 | 9 | Two-shell case rejects |
-| Two AES counters/input apps and pipeline | 9 | 10 | Both reject |
-| Packaged GEM desktop (one desktop APP) and pipeline | 8 | 9 | Two-shell case rejects |
-| Packaged GEM desktop, one additional GUI APP and one command | 8 | 9 | Two-shell case rejects |
-| Packaged GEM desktop and two additional GUI APPs, no command | 8 | 9 | Two-shell case rejects |
-
-Each additional running GUI APP adds one Task. The GEM integration fixture
-that starts panel and counter directly has two application Tasks; its pipeline
-row matches the two-app AES row, rather than the packaged desktop's initial
-one-app row. A loaded image retained after completion does not consume a live
-Task slot, although its parent must still collect its owned Process resources.
-
-A mixed SIO+IDE build adds one transport worker to every row. An IDE-only shell
-replaces SIO with IDE and keeps the corresponding total. Thus the standard
-mixed-transport prime/pipeline workload requires nine slots even with one
-shell and must report normal capacity failure. Applications and prime are not
-silently stopped to admit a command. A two-command pipeline may prepare or
-start its first child before discovering exhaustion; it must unwind both
-stages and all stream ownership before reporting failure.
-
-For comparison with older records, add one to their same-workload peak for the
-first shell Process, or two for two shell Processes. Former peaks of 6, 7 and 8
-therefore require 7/8, 8/9 and 9/10 slots respectively. Values above eight are
-rejected workloads, not expanded pool reservations or measured admitted peaks.
-The current [session evidence](../history/shell-sessions.md) records which rows
-have actually executed; this census alone is not a qualification result.
+See the [twelve-Task delivery record](../history/twelve-task-layout.md) for
+actual development execution, remaining qualification scope and the OF816 demo.
+Older reservation records retain their original layouts and hashes.

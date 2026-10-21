@@ -214,7 +214,7 @@ RETURN
 
 
 def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,desktop=False,aes=False,
-                 client_sources=(),client_entries=(),client_roots=(),client_probes=(),mouse_profile=None,release_compiler=False,**kwargs):
+                 client_sources=(),client_entries=(),client_roots=(),client_probes=(),mouse_profile=None,release_compiler=False,task_capacity=8,**kwargs):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
     if aes:
         from generate_aes_server import files as aes_files
@@ -231,7 +231,7 @@ def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output
         client_roots=client_roots,client_probes=client_probes)
     launcher=prepare(Path(source),out,foreign,desktop,aes,mouse_profile)
     program=build(compiler(compiler_dir or ROOT/'build/actionc',release=release_compiler),launcher,program_output or out/'program',optimize=optimize,tasks=True,
-                 task_capacity=8,console=False,console_deferred=True,foreign_image=foreign,**kwargs)
+                 task_capacity=task_capacity,console=False,console_deferred=True,foreign_image=foreign,**kwargs)
     if desktop:
         from generate_mouse_acceleration import metadata
         program['build']['desktop_mouse']=metadata(mouse_profile)

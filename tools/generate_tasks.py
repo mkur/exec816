@@ -506,7 +506,7 @@ def writable_bindings(image, memory=None):
             merged[-1] = (merged[-1][0],high)
         else:
             merged.append((low,high))
-    require(len(merged) <= 64, 'Too many writable task ranges')
+    require(len(merged) <= ABI['metadata']['writable_range_capacity'], 'Too many writable task ranges')
     end = max([s['address']+len(s['bytes']) for s in image['segments']]+
               [s['address']+s['size'] for s in image['zero_fill']])
     address = (end+1)//2*2

@@ -1,0 +1,124 @@
+MODULE TWELVEPOOLS
+USE EXEC
+USE EXECTASKS
+USE EXECOS
+USE HEAPCORE
+USE TASKSTACKS
+INCLUDE "../../lib/exec/exec-abi.inc"
+
+CONST LARGE_COUNT=3,WORKERS=11
+TYPE Holder=[EXEC.Task POINTER item]
+Holder ARRAY holders(WORKERS)
+EXEC.Task POINTER parent
+VOLATILE BYTE ready,finished,release
+VOLATILE CARD ticks=E816_VBI_COUNT
+CARD checks
+CARD ARRAY outputStatus(LARGE_COUNT)
+VOLATILE CARD ARRAY progress(LARGE_COUNT)
+BYTE ARRAY text=[72 73 71 72 32 83 84 65 67 75 155]
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+
+; Retain nested local data across ROM staging and real preemption.
+PROC Deep(BYTE who,depth)
+  BYTE ARRAY local(192)
+  CARD index,start,ignored
+
+  FOR index=0 TO 191 DO
+    local(index)=BYTE(index) XOR who XOR depth
+  OD
+
+  IF depth<>0 THEN
+    Deep(who,depth-1)
+  ELSE
+    outputStatus(who)=EXECOS.Write(text,11)
+    start=ticks
+    progress(who)=1
+    WHILE release=0 OR ticks-start<4 DO
+      progress(who)==+1
+    OD
+
+    ignored=EXECTASKS.Sleep(1)
+  FI
+
+  FOR index=0 TO 191 DO
+    Require(local(index)=(BYTE(index) XOR who XOR depth))
+  OD
+
+RETURN
+
+
+PROC Worker()
+
+  LET self=EXEC.FindTask(NULL)
+  LET who=BYTE(self.tc_UserData)
+  EXEC.Forbid()
+  ready==+1
+  EXEC.Permit()
+  LET ignored=EXEC.Wait(1)
+  IF who<LARGE_COUNT THEN
+    Deep(who,5)
+  FI
+
+  EXEC.Forbid()
+  finished==+1
+  EXEC.Signal(parent,$10000)
+  EXEC.RemTask(NULL)
+
+RETURN
+
+
+PROC Main()
+  BYTE index
+  CARD ignored
+  LONGCARD received
+
+  Require(TASKSTACKS.CAPACITY=12)
+  parent=EXEC.FindTask(NULL)
+  EXEC.Forbid()
+  FOR index=0 TO LARGE_COUNT-1 DO
+    holders(index).item=EXEC.CreateTask(c"large",0,@Worker,2560)
+    Require(holders(index).item<>NULL)
+    holders(index).item.tc_UserData=SIZE(index)
+  OD
+
+  Require(holders(0).item.tc_SPLower=ADDRESS(TASKSTACKS.LOWER6))
+  Require(holders(1).item.tc_SPLower=ADDRESS(TASKSTACKS.LOWER7))
+  Require(holders(2).item.tc_SPLower=ADDRESS(TASKSTACKS.LOWER11))
+  Require(EXEC.CreateTask(NULL,0,@Worker,2560)=NULL)
+  FOR index=LARGE_COUNT TO WORKERS-1 DO
+    holders(index).item=EXEC.CreateTask(c"ordinary",0,@Worker,1)
+    Require(holders(index).item<>NULL)
+    holders(index).item.tc_UserData=SIZE(index)
+  OD
+
+  Require(EXEC.CreateTask(NULL,0,@Worker,1)=NULL)
+  EXEC.Permit()
+  WHILE ready<>WORKERS DO
+    ignored=EXECTASKS.Sleep(1)
+  OD
+
+  FOR index=0 TO WORKERS-1 DO
+    EXEC.Signal(holders(index).item,1)
+  OD
+
+  WHILE finished<>WORKERS DO
+    received=EXEC.Wait($10000)
+  OD
+
+  FOR index=0 TO LARGE_COUNT-1 DO
+    Require(outputStatus(index)=1)
+  OD
+
+RETURN
+
+ENDMODULE

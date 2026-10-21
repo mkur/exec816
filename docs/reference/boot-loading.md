@@ -6,8 +6,9 @@ The generated XEX loads the bank-zero bootstrap, resident adapter and manifest,
 then calls setup through INITAD. OF816 runs next, before the upper-RAM kernel
 payload. Its five-second autoboot or `EXEC816` returns to the reader with RTS.
 Subsequent INITAD callbacks expand the kernel into its final addresses; the
-guarded RUNAD enters it only after every extent is complete. The Atarimax
-wrapper feeds the same XEX records to the same loader.
+guarded RUNAD enters it only after every extent is complete. Current builds
+require BASIC disabled and no cartridge; the historical Atarimax wrapper
+conflicts with the high bank-zero Task pools and is unsupported.
 
 The bootstrap and OF816 remain uncompressed. The host packages kernel copy/code
 extents as independent raw LZ4 blocks, using HC level 12 and up to 65,535 bytes

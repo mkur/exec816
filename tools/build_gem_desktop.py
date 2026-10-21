@@ -123,7 +123,7 @@ ENDMODULE
     release_compiler=options.pop('release_compiler',False)
     launcher=prepare(source,out,foreign,desktop=True,aes=True,mouse_profile=mouse_profile)
     program=build(compiler(compiler_dir,release=release_compiler),launcher,program_output or out/'program',
-        tasks=True,task_capacity=8,foreign_image=foreign,console_deferred=True,
+        tasks=True,task_capacity=options.pop('task_capacity',8),foreign_image=foreign,console_deferred=True,
         memory_profile=memory,**options)
     from generate_mouse_acceleration import metadata
     program['build']['desktop_mouse']=metadata(mouse_profile)
