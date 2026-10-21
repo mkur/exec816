@@ -96,11 +96,10 @@ newly committed document names use the canonical path. Carry this identity
 through a later modified decision instead of resolving an ASSIGN a second time.
 Update callers and expected titles/paths together; retain one current behavior.
 
-This selects one reusable binding addition: expose the existing native
-`NameFromLock` operation to loaded C callers. It is absent from the current
-[C DOS declarations](../../../c/include/proto/dos.h). Add it through the
+QW1 exposes the existing native `NameFromLock` operation to loaded C callers
+through the [C DOS declarations](../../../c/include/proto/dos.h), the
 machine-readable [C import ABI](../../../abi/c-program.json) and generated
-bridge, bump the one current C APP ABI, and rebuild provider and callers.
+bridge. The one current C APP ABI is 26; provider and callers are rebuilt together.
 Its native semantics stay unchanged;
 no new DOS operation or kernel selector is needed. Do not inspect private lock
 records or change QED's current directory to simulate this operation.

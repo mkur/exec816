@@ -92,3 +92,8 @@ A failed private allocator backing acquisition records ERROR_NO_FREE_STORE in
 IoErr so startup can return its causal failure after GUI/runtime cleanup.
 Startup failure uses the Process result before ordinary editor alerts become
 available. See [startup ownership](../../../../../docs/history/qed-startup.md).
+
+QW2 prepares canonical physical paths with `path.c` before reading a document.
+A candidate retains its ordinary directory lock through commit or cancellation;
+selected-file metadata queries release their locks immediately. No current-directory
+mutation or private lock layout is used. Save commands remain disabled.

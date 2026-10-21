@@ -136,7 +136,7 @@ static int body(int argc,char **argv)
     QedDocumentCommit(&text);
     CHECK(text.text.lines==81 && FIRST(&text.text)->len==1023 && LAST(&text.text)->len==0 &&
         !text.moved && !text.block && text.xpos==0 && text.ypos==0 && !any_undo() &&
-        !window.doc.x && !window.doc.y && !strcmp(text.filename,"SYS:LONG.TXT") && same(&clip_text,"k"),130);
+        !window.doc.x && !window.doc.y && !strcmp(text.filename,"D1:LONG.TXT") && same(&clip_text,"k"),130);
     CHECK(QedDocumentBegin("SYS:LONG.TXT") && complete()==1,131);
     QedHeapSnapshot(&QedDocumentHeap);QedDocumentCancel();
     CHECK(text.text.lines==81 && !text.moved && same(&clip_text,"k"),132);

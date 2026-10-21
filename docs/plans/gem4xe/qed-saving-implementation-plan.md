@@ -4,7 +4,7 @@
 [Strategy](qed-port-strategy.md) ·
 [Editing handoff](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff)
 
-Status: QW1 implemented; QW2–QW8 remain for strategy step 5. See the
+Status: QW1–QW2 implemented; QW3–QW8 remain for strategy step 5. See the
 [implementation record](../../history/qed-saving.md). The
 [QE7 development baseline](../../development/qed-editing-qe7.json) is the
 starting point. Save/Save As

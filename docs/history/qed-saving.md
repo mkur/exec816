@@ -31,3 +31,29 @@ Continuation and asynchronous-entry evidence retain their stated scope.
 Reserved bank-zero growth is **0 fixed / 0 per-public-Task / 0 private idle
 bytes**, including guards, alignment and unused capacity. Complete reservation
 and Task-pool maps match the retained startup baseline.
+
+## QW2 Canonical paths and parent ownership
+
+Open and launch now establish a directory parent with ordinary Lock/Examine,
+obtain its physical name through NameFromLock, and retain the parent until
+candidate cancellation or commit. They read and commit one canonical path;
+relative/SYS/ASSIGN input spellings remain accepted. Selected-file query locks
+retire before later Rename. Save commands remain disabled.
+
+The [QW2 record](../development/qed-saving-qw2.json) covers the actual path
+owner, reassignment through a native child, retained-parent rename/deletion
+exclusion, released query locks, nominal builder limits, two reader lifetimes
+on each disk filesystem, and four real editor lifetimes with document pixels,
+canonical names, failed launches and Stop decisions. The 255/256-byte builder
+boundary is a pure emitted helper check; it does not claim a 255-byte physical
+path in today's bounded 16-level namespace. Reader ownership includes two
+80 KiB rings and 16 Open/New reuse pairs. Observed private peak is 214,860 bytes;
+minimum reader headroom is 543 bytes.
+
+The APP grows by 1,518 code bytes and six BSS bytes to 106,721 code / 1,640
+initialized / 23,769 BSS bytes, with a 121,709-byte container. Path preparation's
+256-byte name scratch and 260-byte FIB use 540 private backing bytes (544 after
+Exec's eight-byte allocation rounding); the retained native parent is a separate
+DOS owner. Source-frame bound remains 776 bytes, conditional margin 632 bytes.
+The provider is unchanged. Reserved bank-zero delta is **0 fixed / 0
+per-public-Task / 0 private idle bytes**, including guards, alignment and slack.

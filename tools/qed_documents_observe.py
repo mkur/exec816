@@ -72,13 +72,28 @@ class DocumentEditor(DialogEditor):
         require(self.get(self.sy['undo_valid'],1)==1,'Failed/cancelled command lost Undo')
         self.clipboard([b'head'])
 
-def interact(b,p,app,record,owner,combined=False):
+def interact(b,p,app,record,owner,combined=False,paths_only=False):
     e=DocumentEditor(b,p,app,record,owner);cycle=e.native('cycle')
     if cycle==0:b._cmd_ok('MOUSE ST');b._cmd_ok('KEY ALL up')
     e.reach('dw($%x)=%d'%(e.at('phase'),cycle+1));e.frames(40)
+    if paths_only:
+        if cycle==0:
+            e.launched('canonical-sys-launch',fixtures()['LONG.TXT'].split(b'\n'),81920,path=b'D1:LONG.TXT')
+            b.memload(e.at('control'),struct.pack('<H',1));e.reach('dw($%x)=100'%e.at('phase'))
+            e.click(100,44);e.frames(20)
+            e.choose('SMALL.TXT');e.loaded('canonical-selector-open',fixtures()['SMALL.TXT'].split(b'\n'),path=b'D1:SMALL.TXT')
+            b.memload(e.at('control'),struct.pack('<H',100));e.reach('dw($%x)=101'%e.at('phase'))
+            b.memload(e.at('control'),struct.pack('<H',101));return e.retire_key('Q',ctrl=True)
+        if cycle in (1,2):
+            e.form_open();e.alert(1);e.loaded('canonical-failed-launch',[b''])
+            b.memload(e.at('control'),struct.pack('<H',cycle+1));return e.retire_key('Q',ctrl=True)
+        e.launched('canonical-relative-launch',[b'one',b'last'],9,ending=0,path=b'D1:CRLF.TXT')
+        e.key('A');b.memload(e.at('control'),struct.pack('<H',4))
+        e.reach('dw($%x)=104'%e.at('phase'));e.alert(2);e.command_idle()
+        b.memload(e.at('control'),struct.pack('<H',104));return e.alert(1,retiring=True)
     if cycle==0:
         long_lines=fixtures()['LONG.TXT'].split(b'\n')
-        e.launched('launch-multibank',long_lines,81920,path=b'SYS:LONG.TXT')
+        e.launched('launch-multibank',long_lines,81920,path=b'D1:LONG.TXT')
         e.scene['loaded_bytes']=len(fixtures()['LONG.TXT'])
         if combined:
             combined_session(e)
@@ -136,8 +151,8 @@ def interact(b,p,app,record,owner,combined=False):
         e.key('Q',ctrl=True);return e.alert(1,retiring=True)
     if cycle==1:
         e.form_open();e.alert(1);e.loaded('failed-launch-empty',[b''])
-        e.choose('CRLF.TXT',menu=True);e.loaded('crlf-open-commits',[b'one',b'last'],ending=0,path=b'SYS:CRLF.TXT')
-        e.choose('EMPTY.TXT');e.loaded('clean-replacement-title',[b''],path=b'SYS:EMPTY.TXT')
+        e.choose('CRLF.TXT',menu=True);e.loaded('crlf-open-commits',[b'one',b'last'],ending=0,path=b'D1:CRLF.TXT')
+        e.choose('EMPTY.TXT');e.loaded('clean-replacement-title',[b''],path=b'D1:EMPTY.TXT')
         b.memload(e.at('control'),struct.pack('<H',2));return e.retire_key('Q',ctrl=True)
     if cycle==2:
         e.form_open();e.alert(1);e.loaded('extra-arguments-empty',[b''])
@@ -146,7 +161,7 @@ def interact(b,p,app,record,owner,combined=False):
         require(e.get(e.sy['QedEditFailureHits'])==1,'Candidate allocation refusal not reached')
         e.selection('candidate-allocation-rollback',[b'a'],None,1,0)
         b.memload(e.at('control'),struct.pack('<H',3));e.key('Q',ctrl=True);return e.alert(1,retiring=True)
-    e.launched('launch-crlf',[b'one',b'last'],9,ending=0,path=b'CRLF.TXT')
+    e.launched('launch-crlf',[b'one',b'last'],9,ending=0,path=b'D1:CRLF.TXT')
     e.key('A');e.key('N',ctrl=True);e.form_open()
     b.memload(e.at('control'),struct.pack('<H',4));e.reach('dw($%x)=104'%e.at('phase'));e.frames(30)
     e.alert(2);e.command_idle();e.selection('replacement-stop-cancel',[b'aone',b'last'],None,1,0)
@@ -159,7 +174,7 @@ def combined_session(e):
     # Keep the 80 KiB launch/read-cancel gates, then combine interaction on
     # twelve maximum-length lines. Double large ownership is a reader-core gate.
     lines=fixtures()['SESSION.TXT'].split(b'\n');last=len(lines)-2
-    e.choose('SESSION.TXT',menu=True);e.loaded('combined-open-long',lines,path=b'SYS:SESSION.TXT')
+    e.choose('SESSION.TXT',menu=True);e.loaded('combined-open-long',lines,path=b'D1:SESSION.TXT')
     e.select('combined-copy-range',lines,e.cell(0,0),e.cell(4,0),(0,0,0,4),(4,0))
     e.menu('TEDIT','MCOPY');e.clipboard([b'head'])
     e.menu('TEDIT','MCUT');cut=[lines[0][4:],*lines[1:]]
@@ -182,7 +197,7 @@ def combined_session(e):
 def combined_overlap(e):
     from qed_viewport_observe import peer_pixels
     lines=fixtures()['SESSION.TXT'].split(b'\n')
-    e.choose('SESSION.TXT');e.decision(1);e.loaded('combined-peer-open',lines,path=b'SYS:SESSION.TXT')
+    e.choose('SESSION.TXT');e.decision(1);e.loaded('combined-peer-open',lines,path=b'D1:SESSION.TXT')
     e.peer_command(2);e.frames(30);e.covered=[(0,60,224,172)]
     e.selection('combined-covered',lines,None,0,0);peer_pixels(e,'combined-peer')
     e.click(100,44);e.frames(30);e.covered=[]

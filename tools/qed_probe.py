@@ -7,7 +7,7 @@ from test_qed_native import process_run
 
 def run_probe(out,fixture,native_units=(),qed_units=(),calls=None,native_from=None,
               interaction=None,media_files=None,filesystem='sdfs',interactive_lifetimes=False,
-              minimum_stack=0,probes=()):
+              minimum_stack=0,probes=(),writable=False,ram=False,loader_failures=False):
     from test_c_process import variant
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     reuse=native_from is not None
@@ -49,6 +49,7 @@ ENDMODULE
                          runtime_attributes={'printf':'nofloat'},minimum_stack=minimum_stack,
                          probes=[(ROOT/'tests/programs'/name,layout) for name,layout in probes]),
         fixture_source=supervisor,expected_completed=2,native_optimize=True,
-        release_compiler=True,loader_failures=False,interaction=interaction,
+        release_compiler=True,loader_failures=loader_failures,interaction=interaction,
+        writable=writable,ram=ram,
         media_files=media_files,filesystem=filesystem,
         stack_observation_index=1 if interactive_lifetimes else 0,profile_all=interactive_lifetimes)

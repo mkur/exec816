@@ -31,9 +31,9 @@ def core_heap(b,p,app,record,owner):
 
 def core(output,native_from,filesystem='sdfs'):
     from qed_probe import run_probe
-    return run_probe(output,'qed_documents_core.c',native_units=('document.c',),
+    return run_probe(output,'qed_documents_core.c',native_units=('document.c','path.c'),
         qed_units=('memory.c','clipbrd.c','block.c','tasten.c'),native_from=native_from,
-        filesystem=filesystem,interaction=core_heap,media_files=fixtures(),
+        filesystem=filesystem,interaction=core_heap,media_files=fixtures(),writable=True,ram=True,
         calls={'document.c':dict(malloc='QedDocAllocate',new_col='QedDocLine',
             Fread='QedDocRead',Fclose='QedDocClose'),
             'tasten.c':dict(form_alert='QedDocAlert'),'clipbrd.c':dict(form_alert='QedDocAlert')})
@@ -56,20 +56,21 @@ def fixtures():
         'NUL.TXT':b'ab\x00c', 'MIXED.TXT':b'a\nb\r\n', 'MIXED2.TXT':b'a\r\nb\n',
         'CR.TXT':b'a\rb', 'ENDCR.TXT':b'a\r', 'WIDE.TXT':b'a'*1024}
 
-def editor(output,native_from=None,reuse=False,reuse_app=False,filesystem='sdfs',combined=False):
+def editor(output,native_from=None,reuse=False,reuse_app=False,filesystem='sdfs',combined=False,provider_from=None,writable=False,paths_only=False):
     from test_qed_selection import run
     return run(output,reuse=reuse,reuse_app=reuse_app,native_from=native_from,
         fixture_source=ROOT/'tests/programs/qed_documents.act',media_files=fixtures(),
-        filesystem=filesystem,provider_from=ROOT/'build/qed-editing/qe5-core/c-image.json',
-        interaction=lambda *args:__import__('qed_documents_observe').interact(*args,combined=combined))
+        filesystem=filesystem,provider_from=provider_from or ROOT/'build/qed-editing/qe5-core/c-image.json',writable=writable,
+        interaction=lambda *args:__import__('qed_documents_observe').interact(*args,combined=combined,paths_only=paths_only))
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--paths-only',action='store_true');p.add_argument('--provider-from',type=Path);p.add_argument('--writable',action='store_true')
     p.add_argument('--native-from',type=Path);p.add_argument('--from-build',action='store_true')
     p.add_argument('--reuse-app',action='store_true');p.add_argument('--combined',action='store_true')
     p.add_argument('--filesystem',choices=['sdfs','mydos'],default='sdfs')
     p.add_argument('--group',choices=['editor','core','title'],default='editor')
     a=p.parse_args();r=(title(a.output,a.native_from) if a.group=='title' else
         core(a.output,a.native_from,a.filesystem) if a.group=='core' else
-        editor(a.output,a.native_from,a.from_build,a.reuse_app,a.filesystem,a.combined))
+        editor(a.output,a.native_from,a.from_build,a.reuse_app,a.filesystem,a.combined,a.provider_from,a.writable,a.paths_only))
     print(r['status'],r['completed'])
