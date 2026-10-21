@@ -1,0 +1,45 @@
+--- a/qed/src/clipbrd.c
++++ b/qed/src/clipbrd.c
+@@ -120,7 +120,9 @@
+     t->ypos=y1+inserted-1;t->xpos=endx;t->cursor_line=get_line(&t->text,t->ypos);
+     t->p1=t->p2=NULL;t->z1=t->z2=-1;t->block=FALSE;t->cursor=TRUE;
+     t->up_down=FALSE;t->blk_mark_mode=FALSE;t->max_line=NULL;t->moved=1;
+-    make_chg(t->link,TOTAL_CHANGE,y1);make_chg(t->link,POS_CHANGE,0);
++    /* A same-row replacement preserves every following row's position. */
++    make_chg(t->link,removed==1 && inserted==1?LINE_CHANGE:TOTAL_CHANGE,y1);
++    make_chg(t->link,POS_CHANGE,0);
+     return TRUE;
+ failed:
+     kill_textring(&prepared);return qed_edit_error();
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -1099,6 +1099,8 @@
+ 
+ void restore_edit(void)
+ {
++    long oldx,oldy;
++    bool clamped;
+     short i,link;
+     WINDOWP w;
+     TEXTP t;
+@@ -1106,14 +1108,19 @@
+     for(link=setmin(chg_links);link<=setmax(chg_links);link++){
+         if(!setin(chg_links,link))continue;
+         w=get_window(link);if(!w)continue;
+-        t=get_text(link);
++        t=get_text(link);oldx=w->doc.x;oldy=w->doc.y;
+         w->doc.h=t->text.lines;w->doc.w=get_longestline(t);
+         if(w->doc.x>w->doc.w-w->w_width)w->doc.x=max(0L,w->doc.w-w->w_width);
+         if(w->doc.y>w->doc.h-w->w_height)w->doc.y=max(0L,w->doc.h-w->w_height);
++        clamped=w->doc.x!=oldx || w->doc.y!=oldy;
+         set_sliders(w,VERTICAL,SLPOS+SLSIZE);
+         /* Caption RPCs precede visible-rectangle enumeration and painting. */
+         head_out(w,t);change_window(w,t->filename,t->moved!=0);
+         if(pointer_state!=1)cursor_visible(w,t);
++        /* Clamping after a shortened longest line moves all displayed rows. */
++        if(clamped){
++            area=w->work;redraw_window(w,&area);continue;
++        }
+         for(i=0;i<chg_anz;i++){
+             if(chg[i].link!=link)continue;
+             if(chg[i].c==POS_CHANGE || chg[i].c==WT_CHANGE || chg[i].c==NOP_CHANGE)continue;

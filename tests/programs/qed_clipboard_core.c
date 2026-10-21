@@ -10,6 +10,7 @@ static TEXT text;
 static WINDOW window;
 static LOCOPT options;
 static unsigned short errors,fail_line;
+static short damage_kind;
 volatile unsigned short QedClipboardFinished;
 struct QedHeapStats QedClipboardHeap;
 bool overwrite,clip_on_disk;
@@ -27,7 +28,7 @@ void hl_insert(RINGP ring,LINEP line){}
 void hl_remove(RINGP ring,LINEP line){}
 void hl_update_zeile(RINGP ring,LINEP line){}
 void end_play(void){}
-void make_chg(short link,short kind,long row){}
+void make_chg(short link,short kind,long row){if(kind!=POS_CHANGE)damage_kind=kind;}
 void cursor_visible(WINDOWP view,TEXTP document){}
 WINDOWP get_window(short handle){return &window;}
 static bool equals(RINGP ring,const char *expected)
@@ -100,9 +101,11 @@ static int body(int argc,char **argv)
     fail_line=0;qed_undo(&text);CHECK(equals(&text.text,"ab\tcd\nefgh"),115);
     /* Typing coalesces on one line; an edit after Undo starts a fresh group. */
     CHECK(document(""),116);char_insert(&text,'a');char_insert(&text,'b');char_insert(&text,'c');
+    CHECK(damage_kind==LINE_CHANGE,141);
     qed_undo(&text);CHECK(equals(&text.text,""),117);qed_undo(&text);CHECK(equals(&text.text,"abc"),118);
     qed_undo(&text);char_insert(&text,'x');qed_undo(&text);CHECK(equals(&text.text,""),119);
-    char_cr(&text);CHECK(equals(&text.text,"\n"),120);qed_undo(&text);CHECK(equals(&text.text,""),121);
+    char_cr(&text);CHECK(equals(&text.text,"\n") && damage_kind==TOTAL_CHANGE,120);
+    qed_undo(&text);CHECK(equals(&text.text,"") && damage_kind==TOTAL_CHANGE,121);
     /* Selected replacement is one operation group, including line joins. */
     CHECK(document("one\ntwo\nthree"),122);select_range(0,1,2,2);
     CHECK(edit_key(&text,&window,0,'X'),123);CHECK(equals(&text.text,"oXree"),124);

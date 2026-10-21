@@ -26,11 +26,13 @@ requires separate cohorts:
 | --- | ---: | --- |
 | QED baseline | 7 | Controller, console, filesystem, SIO, shell, desktop APP and QED |
 | QED and Counter | 8 | Add an ordinary loaded GUI client; shell remains at its prompt |
-| QED and checksum | 8 | Shell RUN starts the native CKSUM command on an unrelated large WORK file; Counter is closed |
+| QED and checksum | 8 | Shell starts foreground CKSUM on an unrelated large WORK file while QED remains its background job; Counter is closed |
 
 The checksum cohort supplies real shell command execution, CPU work and disk
 reads without introducing the SDX guest profile solely for MD5/ARC. These are
-the strategy's shell-activity alternative. Never run the checksum and Counter
+the strategy's shell-activity alternative. A shell owns one background job, so
+QED uses RUN and CKSUM uses its ordinary foreground command path; input focus
+can return to QED while that command runs. Never run the checksum and Counter
 simultaneously with QED. Attempt one additional launch at the full peer cohort
 to check ordinary capacity failure and cleanup, without increasing any pools.
 
@@ -103,6 +105,12 @@ guard results. No kernel, driver or scheduler policy change is planned. Exec's
 current scheduling and public coordination semantics remain authoritative.
 
 ## Changes and completion
+
+The first baseline exposed whole-viewport damage after every character. QC1a
+narrows same-row replacement damage and retains full redraw when clamping moves
+the viewport. This is a QED rendering-policy correction; the response limits,
+public interfaces and capacities remain unchanged. See the
+[implementation record](../../history/qed-coexistence.md#qc1a-incremental-edit-damage).
 
 Optimize only a measured failure or material bottleneck in this workflow. Keep
 application drawing policy in QED, reusable GUI behavior in AES/VDI, filesystem

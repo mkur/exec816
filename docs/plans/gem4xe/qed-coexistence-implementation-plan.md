@@ -36,6 +36,12 @@ heap, aligned image backing and per-application costs separate.
 
 ## QC1 Production baseline
 
+The initial baseline's insertion limit failed because every character marked
+the whole viewport dirty. Implement and commit QC1a's focused row-damage fix
+before completing this baseline; retain the original failure and unchanged
+acceptance limits. The [history](../../history/qed-coexistence.md) records this
+additional executable slice.
+
 Add a host observer for the normal loaded production APP, reusing existing
 physical input, document and pixel oracles. Resolve its relocated symbols and
 matching target-emitted C offsets. Reject stale source/layout/provider inputs.
@@ -57,7 +63,8 @@ restored pixels. At eight live Tasks, one extra command must fail normally and
 restore its temporary ownership. Close and collect Counter before the next
 cohort.
 
-Run QED with shell-launched native CKSUM reading an unrelated large WORK file.
+Run QED with foreground shell CKSUM reading an unrelated large WORK file. QED
+already occupies that shell's single background job; do not attempt a second RUN.
 Verify the command is still live during measured input, its read/computation
 progress advances, and it eventually reports the independently computed
 checksum and length. Both cohorts use the same production APP and workflow as

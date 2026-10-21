@@ -1,0 +1,205 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "QC1a incremental same-row damage correction: actual-source clipboard/editing core and six production warm insertion samples; complete QC1 and QC2/QC3 gates remain pending",
+  "cause": "qed_replace marked TOTAL_CHANGE even for a same-row replacement, redrawing all visible rows before the next key could run",
+  "correction": "Same-row replacement marks LINE_CHANGE; line-count changes and Undo keep full damage. restore_edit requests full damage if clamping changes the viewport origin.",
+  "production": {
+    "app": {
+      "path": "build/qed-coexist/production-final/program.app",
+      "sha256": "cf349b78e061b30521b94eee44dc99e7dafe7019bcb2fba2beb30f4af9099a44"
+    },
+    "layout": {
+      "path": "build/qed-coexist/production-final/layout.json",
+      "sha256": "cf9538c019489e853ffc68f9737cce3701d6eace88cf9652c0221ced46ab574f"
+    },
+    "sources": {
+      "path": "build/qed-coexist/production-final/inputs/sources.json",
+      "sha256": "4069a0889a4058dc91c3adcb859da8b410b5268c6a252359635770fd16a48221"
+    },
+    "frames": {
+      "path": "build/qed-coexist/production-final/stack-frames.json",
+      "sha256": "93e42160f41d7a21a389f3a1ef3a219377f23df3d874882843b2e759ec22929c"
+    }
+  },
+  "bytes": {
+    "code_bytes": 111015,
+    "initialized_bytes": 2770,
+    "bss_bytes": 22212,
+    "serialized_bytes_if_executable": 128141,
+    "span_bytes": 176551
+  },
+  "delta": {
+    "code_bytes": 258,
+    "initialized_bytes": 0,
+    "bss_bytes": 0,
+    "serialized_bytes_if_executable": 262,
+    "relocation_count": 1
+  },
+  "exec_image_backing_bytes": 242088,
+  "exec_image_backing_delta_bytes": 256,
+  "stack": {
+    "source_chain_bytes": 503,
+    "continuation_cap_bytes": 768,
+    "interrupt_reserve_bytes": 256,
+    "required_headroom_bytes": 128,
+    "admission_bytes": 2560,
+    "margin_bytes": 905
+  },
+  "core": {
+    "result": {
+      "path": "build/qed-coexist/core-opt/results.json",
+      "sha256": "db669d8608c7acc5d56ebe8c2f7e64b3b8d5431fb91ed1c9cbdd1d4c4ccacda2"
+    },
+    "trace": {
+      "path": "build/qed-coexist/core-opt/emulator.log",
+      "sha256": "4d37c4c544e76be8ba40b6d94706cabe3c6db7a67af14b0c3ec992b339b03866"
+    },
+    "actual_changed_unit": {
+      "path": "build/qed-coexist/core-opt/inputs/source/qed/src/clipbrd.c",
+      "sha256": "4f35d9d510e2e5e36542fb9056ddcc7e28b4369fd30d6b9d2b36e9f4d7e87b80"
+    },
+    "current_clipboard_unit_identical": true,
+    "completed": [
+      2
+    ],
+    "guards": "intact",
+    "note": "This core does not link edit.c. Its prepared patch ledger predates the final clamp-guard wording; its compiled clipboard unit and headers match the current production bytes."
+  },
+  "before": {
+    "progress": {
+      "path": "build/qed-coexist/qc1-profile2/coexist-progress.json",
+      "sha256": "823450ce928705c4a3eff8a669fe5f8588a26a82882545fff4bc13d250b57e3f"
+    },
+    "profile": {
+      "path": "build/qed-coexist/qc1-profile2/insertion-profile.json",
+      "sha256": "a57961ff46d21ab3256f34193baa519bc448d61cc3b05dd1f34ab0be28895101"
+    },
+    "app": {
+      "path": "build/qed-cursor/production/program.app",
+      "sha256": "1317584795999fb207183403a77587984f3a2c2291441e0398abbbf3a83494e7"
+    },
+    "samples": [
+      {
+        "name": "insert-0",
+        "elapsed_ms": 260.7260716767765,
+        "limit_ms": 500,
+        "observations": 11,
+        "endpoint": "first independently correct completed scanout",
+        "observed": {
+          "checked": 98048,
+          "caret_checked": 0,
+          "sha256": "a26365e3ae24d7c62c0b41b56f4abd343c29c8114f21661668b8648d250be345"
+        }
+      },
+      {
+        "name": "insert-1",
+        "elapsed_ms": 942.6255922433566,
+        "limit_ms": 500,
+        "observations": 45,
+        "endpoint": "first independently correct completed scanout",
+        "observed": {
+          "checked": 98048,
+          "caret_checked": 0,
+          "sha256": "22d6893f8f716bcc011f7a8b36ca2f8310ef18f1254c90b68c6ccae7aa50800d"
+        }
+      }
+    ],
+    "profile_limit": "The pinned bridge reports only low-word callgraph PCs; no bank-specific charged-CPU attribution is claimed."
+  },
+  "after": {
+    "progress": {
+      "path": "build/qed-coexist/qc1-final/coexist-progress.json",
+      "sha256": "2621ae9214ff0517bc76c89ee2ade117acd62365d37e634826bc0740c00e62ec"
+    },
+    "samples": [
+      {
+        "name": "insert-0",
+        "elapsed_ms": 140.39152554558282,
+        "limit_ms": 500,
+        "observations": 5,
+        "endpoint": "first independently correct completed scanout",
+        "observed": {
+          "checked": 98048,
+          "caret_checked": 0,
+          "sha256": "def6bb2c2e1e42dfbcfc2a379b0ba1e539be1aa1ba4bc8694a49e1ce8ff2f927"
+        }
+      },
+      {
+        "name": "insert-1",
+        "elapsed_ms": 381.06118168144246,
+        "limit_ms": 500,
+        "observations": 17,
+        "endpoint": "first independently correct completed scanout",
+        "observed": {
+          "checked": 98048,
+          "caret_checked": 0,
+          "sha256": "ab08d6a14cb978e9687c7b1b393d5dcf6e71cc3ca1a8b32f9c26f66a9b09e429"
+        }
+      },
+      {
+        "name": "insert-2",
+        "elapsed_ms": 200.557952800971,
+        "limit_ms": 500,
+        "observations": 8,
+        "endpoint": "first independently correct completed scanout",
+        "observed": {
+          "checked": 98048,
+          "caret_checked": 0,
+          "sha256": "7d7d20e6e529beccb521d8187017657f9091ce95b5f82f56e51acde256f54bf7"
+        }
+      },
+      {
+        "name": "insert-3",
+        "elapsed_ms": 200.5585166744434,
+        "limit_ms": 500,
+        "observations": 8,
+        "endpoint": "first independently correct completed scanout",
+        "observed": {
+          "checked": 98048,
+          "caret_checked": 0,
+          "sha256": "fab68c6cfddb237d5c07d41b92859c60f086a029b2ca194ee3e839e4e63d56bc"
+        }
+      },
+      {
+        "name": "insert-4",
+        "elapsed_ms": 220.61436834188777,
+        "limit_ms": 500,
+        "observations": 9,
+        "endpoint": "first independently correct completed scanout",
+        "observed": {
+          "checked": 98048,
+          "caret_checked": 0,
+          "sha256": "534d84e78128b50dc947a6b43d9de3cff0816b06b5350ae8a91a6ce8918756ec"
+        }
+      },
+      {
+        "name": "insert-5",
+        "elapsed_ms": 240.67078388280456,
+        "limit_ms": 500,
+        "observations": 10,
+        "endpoint": "first independently correct completed scanout",
+        "observed": {
+          "checked": 98048,
+          "caret_checked": 0,
+          "sha256": "7db12de854e05c86a621bf2dcf7621563c99e1d6c741c491d83d59976af67bd9"
+        }
+      }
+    ],
+    "maximum_ms": 381.06118168144246
+  },
+  "inputs": {
+    "ports/gem4xe/apps/qed/patches/0018-native-edit-damage.patch": "c999e85c4d3d5d941509c994ff092068a823e88d8a9687038efddb6a1f2fbb42",
+    "tests/programs/qed_clipboard_core.c": "1890476183db07524bbc93c304929090e762033a5e36ae3407fc75e2934ab725",
+    "tools/qed_coexist_observe.py": "8aab487496318a24c45045ae0eeb3613df90371c53440cedbbe37b6dc7c517bc",
+    "tools/test_qed_coexist.py": "e6b9288584dacfa848410f34df2ffb540885d1765e0957841123cabe368d3eed"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Same native desktop XEX/provider and complete Task/DP/guard/alignment/slack reservations as the cursor-paint preview"
+  }
+}
