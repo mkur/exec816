@@ -9,7 +9,7 @@ from test_qed_native import process_run
 from qed_editing_observe import interact
 
 
-def build_editor(target,provider,reuse_app=False,selection=False):
+def build_editor(target,provider,reuse_app=False,selection=False,saving=False):
     if reuse_app:
         from native_program import require,sha256
         from c_program import ABI
@@ -35,10 +35,16 @@ def build_editor(target,provider,reuse_app=False,selection=False):
            'event.c':{'key_window':'QedEditKeyWindow','key_global':'QedEditGlobalKey',
                       'handle_menu':'QedEditMenu'}}
     if selection:calls['edit.c']={'CreateIORequest':'QedSelectionCreateIORequest'}
+    if saving:
+        calls['saving.c']={'form_alert':'QedSaveAlert'}
+        calls['stage.c']={'Fwrite':'QedSaveFaultWrite'}
+        calls['files.c']={'Close':'QedSaveFaultClose'}
+        calls['save.c']={'Rename':'QedSaveFaultRename','DeleteFile':'QedSaveFaultDelete'}
     build(target,provider,executable=True,
-          fixture=ROOT/'tests/programs/qed_editing_faults.c',
+          fixture=ROOT/'tests/programs'/('qed_saving_faults.c' if saving else 'qed_editing_faults.c'),
+          fixture_inputs=[ROOT/'tests/programs/qed_editing_faults.c'] if saving else (),
           fixture_calls=calls,
-          fixture_roots=['QedEditingLayout'])
+          fixture_roots=['QedEditingLayout',*(['QedSavingLayout'] if saving else [])])
     return json.loads((target/'app.json').read_text())
 
 def run(out,reuse=False,reuse_app=False,scenario='all',interaction=None):

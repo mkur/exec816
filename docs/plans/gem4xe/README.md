@@ -8,10 +8,10 @@ The [QED saving design](qed-saving-design.md) and
 step 5: checked serialization and terminal Close, sibling-file publication with
 one retained backup, explicit recovery outcomes and Save/Discard/Cancel
 continuations.
-QW1 starts with the public C binding and one rebuilt ABI; later slices add
-canonical paths, staging, publication, menu saving, modified continuations,
-failure/reuse evidence and gate reconciliation. These slices remain proposed;
-Save remains disabled in the current editor.
+QW1–QW5 implement the public C binding/current ABI, canonical paths, staging,
+publication and loaded-editor Save/Save As. QW6–QW8 add modified continuations,
+selected deeper failures and the reconciled saving gate. See the
+[saving implementation record](../../history/qed-saving.md).
 
 The [QED editing design](qed-editing-design.md) and
 [QE1–QE7 implementation plan](qed-editing-implementation-plan.md) implement

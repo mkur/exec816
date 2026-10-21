@@ -25,8 +25,9 @@ The real editor opens, edits, navigates, selects, copies/pastes, undoes and find
 with checked single-document replacement and Cancel-default Discard/Cancel.
 Reliable saving, practical coexistence and supported delivery remain steps 5–7.
 Step 5 has a [saving design](qed-saving-design.md) and
-[QW1–QW8 plan](qed-saving-implementation-plan.md); executable implementation
-and acceptance remain next.
+[QW1–QW8 plan](qed-saving-implementation-plan.md). QW1–QW5 implement canonical
+paths, checked staging/publication and loaded-editor Save/Save As; modified
+continuations and final saving acceptance remain QW6–QW8.
 
 ## First usable editor
 
@@ -227,18 +228,8 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Start QW1 in the [saving implementation plan](qed-saving-implementation-plan.md#qw1-public-c-canonical-name-binding):
-expose native NameFromLock to C, update the single C APP ABI, rebuild affected
-providers/callers and run its focused boundary/startup/package checks.
-The [editing gate](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff)
-provides checked reading/replacement, retained LF/CRLF and final-newline
-properties, native paths, coherent Undo/clipboard ownership and measured
-failure/stack budgets. Define reliable Save/Save As, existing-file consent,
-backup policy, checked write/Close, persisted-byte recovery and the full
-Save/Discard/Cancel workflow. Keep Save disabled until those acceptance checks
-pass. Commit each executable slice after its development checks.
-
-This strategy adds **0 reserved bank-zero bytes**, fixed or per-Task, including
-guards, alignment and unused capacity. Each implementation slice must account
-for its own actual reservation changes under the
-[platform budget](../../reference/platform.md#bank-zero-memory-budget).
+Continue with QW6 in the [saving implementation plan](qed-saving-implementation-plan.md#qw6-savediscardcancel-continuations):
+add Cancel-default Save/Discard/Cancel and explicit post-save New/Open/Exit
+continuations. Open rereads its retained canonical candidate after Saved.
+QW7 supplies selected deeper disk/transport cases and QW8 reconciles the saving
+gate before strategy step 6. Commit each executable slice after development checks.

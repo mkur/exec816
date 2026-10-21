@@ -3,6 +3,8 @@
  */
 #include "qed-commands.h"
 #include "qed-document.h"
+#include "qed-saving.h"
+#include "menu.h"
 #include "block.h"
 #include "edit.h"
 #include "find.h"
@@ -13,7 +15,7 @@
 #include <proto/dos.h>
 
 enum { CMD_NONE,CMD_FIND_FORM,CMD_FIND_SEARCH,CMD_ABOUT,CMD_ABOUT2,
-       CMD_OPEN_FORM,CMD_PREPARE,CMD_DOCUMENT_READ,CMD_ERROR,CMD_ARGUMENT_ERROR };
+       CMD_OPEN_FORM,CMD_PREPARE,CMD_DOCUMENT_READ,CMD_ERROR,CMD_ARGUMENT_ERROR,CMD_EXIT_DECISION };
 static short command_kind;
 static bool command_waiting;
 static TEXTP command_text;
@@ -65,7 +67,8 @@ void QedCommandsCancel(void)
 bool QedCommandsSearching(void){return command_kind==CMD_FIND_SEARCH;}
 bool QedCommandsWorking(void)
 {
-    return QedCommandsSearching() || command_kind==CMD_PREPARE ||
+    return QedSavingBusy() || command_kind==CMD_EXIT_DECISION ||
+           QedCommandsSearching() || command_kind==CMD_PREPARE ||
            command_kind==CMD_DOCUMENT_READ || command_kind==CMD_ERROR || command_kind==CMD_ARGUMENT_ERROR;
 }
 void QedArgumentsError(void)
@@ -84,6 +87,14 @@ void QedOpenStart(TEXTP text,const char *path)
 void QedNewStart(TEXTP text)
 {
     QedCommandsCancel();command_text=text;new_document=TRUE;command_kind=CMD_PREPARE;
+}
+void QedSaveCommand(TEXTP text,bool save_as)
+{
+    QedCommandsCancel();QedSavingStart(text,save_as);
+}
+void QedExitStart(void)
+{
+    QedCommandsCancel();command_text=get_top_text();command_kind=CMD_EXIT_DECISION;
 }
 void QedFindStart(TEXTP text,bool prompt)
 {
@@ -128,8 +139,20 @@ static void find_step(void)
 }
 void QedCommandsStep(void)
 {
-    short answer,kind=command_kind;OBJECT *tree;
+    short answer,kind;OBJECT *tree;
+    if(QedSavingBusy()){QedSavingStep();if(QedSavingBusy())return;}
+    if(QedSavingExitPending()){QedExitStart();return;}
+    kind=command_kind;
     if(kind==CMD_NONE || command_waiting)return;
+    if(kind==CMD_EXIT_DECISION){
+        answer=1;
+        if(command_text && (command_text->moved || QedSavingAttention()))
+            answer=form_alert(2,"[2][Discard unsaved text and save details?][Discard|Cancel]");
+        if(!answer && ExecAESDiagnostic()==AES_PENDING){command_waiting=TRUE;return;}
+        QedCommandsCancel();
+        if(answer==1){QedSavingForget();do_quit();}
+        return;
+    }
     if(kind==CMD_ERROR || kind==CMD_ARGUMENT_ERROR){
         LONG cause=command_error;
         if(kind==CMD_ARGUMENT_ERROR)answer=form_alert(1,"[1][Use zero or one document argument.][OK]");

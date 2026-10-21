@@ -129,11 +129,12 @@ def measure(out,destination=None):
         v = graph[byname[name]]
         graph[k] = {**v, 'name': label, 'edges': v['edges'][:] if allowed is None else [byname[n] for n in allowed if n in byname]}
         return k
-    selectnone = clone('select_file', 'select_file(NULL)', [])
-    graph[selectnone]['edges'] = [e for e in graph[byname['select_file']]['edges'] if e != byname.get('open_multi')]
-    for v in list(graph.values()):
-        if v['name'] != 'select_multi':
-            v['edges'] = [selectnone if e == byname['select_file'] else e for e in v['edges']]
+    if 'select_file' in byname:
+        selectnone = clone('select_file', 'select_file(NULL)', [])
+        graph[selectnone]['edges'] = [e for e in graph[byname['select_file']]['edges'] if e != byname.get('open_multi')]
+        for v in list(graph.values()):
+            if v['name'] != 'select_multi':
+                v['edges'] = [selectnone if e == byname['select_file'] else e for e in v['edges']]
     saveedit = clone('e_icon_edit', 'e_icon_edit(Save)')
     savetest = clone('e_icon_test', 'e_icon_test(Save)', [])
     savedispatch = clone('do_icon', 'do_icon(Save)', [])
@@ -161,7 +162,7 @@ def measure(out,destination=None):
     continuation_cap = 768
     required = source_bytes + continuation_cap + 256 + 128
     require(required <= report['selection']['minimum_stack_bytes'], 'Conditional stack budget exceeds admission')
-    result = dict(status='conditional-source-bound', source_chain_bytes=source_bytes, chain=chain, continuation_cap_bytes=continuation_cap, interrupt_reserve_bytes=256, required_headroom_bytes=128, admission_bytes=report['selection']['minimum_stack_bytes'], margin_bytes=report['selection']['minimum_stack_bytes'] - required, method='For each retained emitted source section, sum immediate TSC/SBC/TCS reservations and all static push sites at 16-bit width, plus three bytes at each call/tail edge. This overcounts disjoint branches. Compiler-balanced loops reuse their stack. Cross-call and cross-function tail sharing are disabled. Typed callbacks and finite action contexts are audited below; new indirect sites or cycles reject the report.', limit='Source-frame bound only. The continuation cap includes bridge and library/native/GEM work below an application call; executed startup/lifecycle chains check that cap separately. Editing/dialog/file paths must establish it when implemented; current samples are not a bound on those future paths.', callbacks=callbacks, contexts=['Nested action/dialog messages: REDRAW/MOVED/SIZED only', ('select_single/select_path pass NULL; only select_multi invokes open_multi' if 'open_multi' in sym else 'Legacy path/Save selector callers pass NULL; the multi-file callback is retired'), 'Native delete_edit uses Discard/Cancel; Save remains disabled', 'Linked new_edit/restore_edit use Open or unchecked Delete', 'wi_top invokes disabled Update, whose test returns false'], source_nodes=[{**v, 'key': k} for k, v in graph.items()], analysis_sha256=sha256(out / 'layout.json'), listings={p.name: sha256(p) for p in listings}, compiler_options=report['selection']['compiler_options'])
+    result = dict(status='conditional-source-bound', source_chain_bytes=source_bytes, chain=chain, continuation_cap_bytes=continuation_cap, interrupt_reserve_bytes=256, required_headroom_bytes=128, admission_bytes=report['selection']['minimum_stack_bytes'], margin_bytes=report['selection']['minimum_stack_bytes'] - required, method='For each retained emitted source section, sum immediate TSC/SBC/TCS reservations and all static push sites at 16-bit width, plus three bytes at each call/tail edge. This overcounts disjoint branches. Compiler-balanced loops reuse their stack. Cross-call and cross-function tail sharing are disabled. Typed callbacks and finite action contexts are audited below; new indirect sites or cycles reject the report.', limit='Source-frame bound only. The continuation cap includes bridge and library/native/GEM work below an application call; executed startup/lifecycle chains check that cap separately. Editing/dialog/file paths must establish it when implemented; current samples are not a bound on those future paths.', callbacks=callbacks, contexts=['Nested action/dialog messages: REDRAW/MOVED/SIZED only', ('select_single/select_path pass NULL; only select_multi invokes open_multi' if 'open_multi' in sym else 'Legacy path/Save selector callers pass NULL; the multi-file callback is retired'), ('Native deletion follows the outer asynchronous decision; saving borrows a frozen ring' if 'QedSavingStep' in sym else 'Native delete_edit uses Discard/Cancel; Save remains disabled'), 'Linked new_edit/restore_edit use Open or unchecked Delete', 'wi_top invokes disabled Update, whose test returns false'], source_nodes=[{**v, 'key': k} for k, v in graph.items()], analysis_sha256=sha256(out / 'layout.json'), listings={p.name: sha256(p) for p in listings}, compiler_options=report['selection']['compiler_options'])
     (destination or out / 'stack-frames.json').write_text(json.dumps(result, indent=2) + '\n')
     return result
 if __name__ == '__main__':

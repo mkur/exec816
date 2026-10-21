@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "English single-document native editing and transactional read-only replacement; reliable saving remains deferred",
+  "scope": "English single-document native editing, canonical replacement and transactional saving; modified Save continuations follow QW6",
   "defines": [
     "QED_INITIAL_SCOPE=1",
     "QED_BANKED_MALLOC=1",
@@ -791,7 +791,8 @@
     "document.c",
     "path.c",
     "stage.c",
-    "save.c"
+    "save.c",
+    "saving.c"
   ],
   "features_removed": [
     "preferences UI and persistence",
@@ -805,7 +806,8 @@
     "replacement and search histories",
     "external fonts and automatic USERDEF decoration",
     "donor MDIAL interactive loops",
-    "destructive donor load and multi-file callback"
+    "destructive donor load and multi-file callback",
+    "donor save, backup and automatic write implementation"
   ],
   "private_allowances": {
     "code_bytes": 32768,

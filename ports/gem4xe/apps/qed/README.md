@@ -369,3 +369,19 @@ the captured Process image base; prior evidence keeps its original interpretatio
 | Native Find/Find Next and About; cancellable forms, selector and read preparation | Find is literal, case-sensitive and forward without wrap; replacement/regex search is deferred. |
 | Cancel-default Discard/Cancel for replacement and retirement | Save/Save As, Save/Discard/Cancel, backups, checked finalization and persisted-byte recovery are strategy step 5. |
 | Selected ordinary-peer, failure, reuse and stack development checks | Practical workload responsiveness and supported QED distribution remain steps 6–7; QED is absent from demo ZIPs. |
+
+## QW5 loaded-editor saving
+
+The private development APP now enables full-document Save and Save As through
+one event-owned native transaction. Existing destination and older-backup
+replacement have separate Cancel-default consent. Recovery pages retain
+D/T/B/E roles, causes and phases; dismissing a notice never means Saved.
+Unresolved details require an explicit Forget before another save. This frees
+the record, leaving files for manual recovery. Save preserves clipboard,
+selection, view and Undo, and starts a new typing group. Busy mutations are
+consumed before the document unfreezes; Close/Stop waits for a safe boundary.
+The donor save/backup/restore implementation is retired from the selected graph.
+
+See the [saving record](../../../../docs/history/qed-saving.md#qw5-loaded-editor-save-and-save-as)
+for actual filesystem, error, stack and resource checks. New/Open/Exit still
+use Discard/Cancel until QW6; strategy step 5 remains open through QW8.

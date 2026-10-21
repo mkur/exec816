@@ -1,5 +1,5 @@
 """Independent OBJECT/TED form pixels using the pinned donor AES rasterizer."""
-import struct,sys
+import ast,struct,sys
 from native_program import ROOT
 from generate_aes_server import expected_layout
 from gem_render_oracle import PENS
@@ -43,4 +43,17 @@ def paint(b,context,r):
         i,index=caret;o=objects[i];x=root.ob_x+o.ob_x+index*8;y=root.ob_y+o.ob_y+(o.ob_height-8)//2
         for yy in range(y,y+8):device.dev.plot(x,yy,1)
     r.pixels[:]=bytes(n for byte in device.dev.s.mem[:76800] for n in (byte>>4,byte&15))
+    from file_selector_model import FORM_ALERT
+    alert=number(session+FORM_ALERT,4)
+    if alert:
+        icon=number(alert+508)
+        if icon:
+            donor=ast.parse((ROOT/'build/gem-vdi/upstream/tools/gemdata.py').read_text())
+            masks=next(ast.literal_eval(n.value) for n in donor.body if isinstance(n,ast.Assign)
+                and any(isinstance(t,ast.Name) and t.id=='ALERT_ICONS' for t in n.targets))
+            words=masks[('NOTE','QUEST','STOP')[icon-1]]
+            for yy in range(32):
+                for xx in range(32):
+                    if words[yy*2+xx//16] & (0x8000>>(xx%16)):
+                        r.pixels[(root.ob_y+16+yy)*640+root.ob_x+16+xx]=PENS[1]
     return root.ob_x,root.ob_y,root.ob_width,root.ob_height

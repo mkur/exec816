@@ -127,3 +127,45 @@ per-public-Task / 0 private idle bytes**, including guards, alignment and slack.
 
 Save menus remain disabled. These explicit preauthorized core intents do not
 establish loaded-editor consent, modified decisions or GUI recovery reporting.
+
+## QW5 Loaded-editor Save and Save As
+
+Save and Save As now share one event-owned production transaction and always
+serialize the complete document. The native selector and separate
+Cancel-default destination/older-backup consents precede creation. Consent
+shows the canonical target and default-attribute/Hidden/Archive restriction.
+The donor save/backup/restore paths are removed from the selected graph.
+
+Saved alone commits the canonical identity and clean state. Text, selection,
+view, clipboard and functional Undo survive; an explicit typing boundary
+prevents new input coalescing into the pre-save group. Mutating input is consumed
+while the transaction borrows the ring. An idle input/queue drain precedes
+unfreezing. Escape after publication cannot change Saved into Cancelled.
+Close/Stop cancels safe staging or waits for namespace work to stabilize.
+
+The [QW5 record](../development/qed-saving-qw5.json) binds four loaded-editor
+lifetimes on each writable disk format, with RAM saving/reopening, menu and
+shortcut input, default cancellation, full selected-document output, Undo,
+busy-key rejection, ordinary-peer paint progress, failed Write, uncertain Close,
+publication rollback, complete long-path paging and cooperative Stop. A true
+native allocation refusal preserves the notice record/document; Escape retries.
+A further GUI cohort checks published-but-failed E cleanup, forced dirty state,
+review/Cancel/explicit Forget, selector cancellation and a fresh successful Save
+As. Recovery Forget leaves files intact; no automatic repair is attempted.
+
+Independent closed-image audits check exact D/B bytes, unchanged CRLF/deep
+inputs, the retained uncertain T or E, and consistent whole-volume ownership.
+These are development checks; injected adapter failures do not establish an
+offline transport result. QW7 supplies selected physical faults.
+
+Production size is 109,678 code / 2,818 initialized / 22,208 BSS bytes,
+serialized 126,500 bytes. The source-frame bound is 503 bytes, conditional margin
+905; the main GUI cohorts' observed minimum headroom is 1,328 bytes and observed
+private peak 111,309 bytes. Changing the descriptive selection scope leaves
+the production APP byte-identical. The provider is unchanged. Reserved
+bank-zero delta is **0 fixed / 0 per-public-Task / 0 private idle bytes**,
+including guards, alignment and unused reserved capacity.
+
+Save/Save As are enabled; modified New/Open/Close/Quit/Stop still use
+Discard/Cancel until QW6. Saving remains a private development feature and the
+strategy step 5 gate remains open through QW8.

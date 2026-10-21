@@ -93,7 +93,7 @@ short QedStagePoll(struct QedStage *s)
             if(Fclose(closing)<0){
                 cause=QedFileCloseError();if(!cause)cause=IoErr();
                 if(!s->cleanup){s->cleanup=cause;s->cleanup_phase=CLEAN;}
-                if(!s->cause)s->cause=cause;
+                if(!s->cause){s->cause=cause;s->cause_phase=CLEAN;}
                 s->safe=0;s->result=QED_STAGE_UNCERTAIN;
             }else s->close_ok=1;
             return QED_STAGE_PENDING;
@@ -101,7 +101,7 @@ short QedStagePoll(struct QedStage *s)
         if(s->owned && s->safe){
             if(!DeleteFile(s->name)){
                 cause=IoErr();s->cleanup=cause;s->cleanup_phase=CLEAN;
-                if(!s->cause)s->cause=cause;
+                if(!s->cause){s->cause=cause;s->cause_phase=CLEAN;}
                 s->result=QedSaveLogicalError(cause) ? QED_STAGE_FAILED:QED_STAGE_UNCERTAIN;
             }else s->owned=0;
         }

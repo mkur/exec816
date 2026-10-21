@@ -27,6 +27,8 @@ class DocumentEditor(DialogEditor):
     def choose(self,leaf,volume=None,settle=True,menu=False):
         if menu:self.menu('TFILE','MOPEN')
         else:self.key('O',ctrl=True)
+        return self.choose_path(leaf,volume,settle)
+    def choose_path(self,leaf,volume=None,settle=True):
         self.selector_ready()
         if volume is not None:
             self.click(*self.selector_xy(3,end=True))
@@ -36,9 +38,16 @@ class DocumentEditor(DialogEditor):
             self.reach('dw($%x)=1'%(self.selector()+F['valid']))
         self.click(*self.selector_xy(5,end=True))
         previous=self.b.memdump(self.selector()+F['file'],13).split(b'\0')[0]
-        for _ in previous:self.form_key('BACKSPACE',settle=3)
-        self.type_form(leaf)
-        actual=self.b.memdump(self.selector()+F['file'],13).split(b'\0')[0]
+        file_at=self.selector()+F['file']
+        def wait_file(value):
+            self.reach('&'.join('db($%x)=%d'%(file_at+i,ch) for i,ch in enumerate(value+b'\0')))
+        for length in range(len(previous)-1,-1,-1):
+            self.form_key('BACKSPACE',settle=3);wait_file(previous[:length])
+        typed=b''
+        for ch in leaf:
+            key,shift=KEYS[ch];self.form_key(key,shift=shift,settle=4)
+            typed+=ch.encode();wait_file(typed)
+        actual=self.b.memdump(file_at,13).split(b'\0')[0]
         require(actual==leaf.encode(),'Native selector filename differs: '+repr(actual))
         old=self.form();self.form_key('RETURN',settle=0)
         self.reach('(dw($%x)=0)&(dw($%x)=0)'%(old+FORM_SELECTOR,old+FORM_SELECTOR+2))

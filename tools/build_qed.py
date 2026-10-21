@@ -48,7 +48,7 @@ def units_from_listing(path):
         re.findall(r'>\s+(\w+)\s+([0-9a-f]+)',m[3])}) for m in re.finditer(pattern,text,re.M)]
 
 
-def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixture_roots=()):
+def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixture_roots=(),fixture_inputs=()):
     output=Path(output).resolve();output.mkdir(parents=True,exist_ok=True)
     for name in ('program.app','app.json'):(output/name).unlink(missing_ok=True)
     selection=selected();inputs=prepare(output/'inputs');native=PORT/'native'
@@ -154,7 +154,7 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
         resident_provider=dict(path=str(provider),sha256=sha256(provider),code_bytes=provider_code,
             table_bytes=provider_tables,data_bss_bytes=provider_data,allowances=caps),
         elf_sha256=sha256(output/'program.elf'),
-        build_inputs={str(p):sha256(p) for p in [*sources,PORT/'native-selection.json',PORT/'analysis-bindings.json',reference]},
+        build_inputs={str(p):sha256(p) for p in [*sources,*fixture_inputs,PORT/'native-selection.json',PORT/'analysis-bindings.json',reference]},
         bank_zero_delta=selection['bank_zero_delta'])
     if not executable:record['analysis_elf_sha256']=record['elf_sha256']
     if executable:record['app']=dict(path=str(output/'program.app'),sha256=app['sha256'],bytes=app['bytes'],minimum_stack_bytes=selection['minimum_stack_bytes'])

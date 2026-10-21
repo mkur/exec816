@@ -281,6 +281,13 @@ Automatic attempts to reuse/delete recovery files are deferred. After the
 notice is acknowledged, explicit Save As to another path remains a recovery
 route; a new operation must not silently overwrite unresolved recovery names.
 
+The QW5 review offers Details, Forget and Cancel before replacing a retained
+record with a new save. Forget explicitly releases the private record and
+parent lease, leaving every recovery file for manual handling. Cancel retains
+the record. Reporting refusal keeps the document and record live for retry;
+an explicit Discard decision may retire them. No review choice automatically
+repairs, renames or deletes recovery files.
+
 ## Modified decisions and event ownership
 
 Use one Save/Discard/Cancel policy for modified New, Open, Close, Quit and
