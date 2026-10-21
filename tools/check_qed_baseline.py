@@ -21,7 +21,7 @@ def provider_identity(resident):
     return hashlib.sha256(json.dumps(payload,sort_keys=True).encode()).hexdigest()
 
 
-def check(layout_directory,cohort_directories,demo_directories,frames_path=None):
+def check(layout_directory,cohort_directories,demo_directories,frames_path=None,persisted_media=False):
     layout=json.loads((layout_directory/'layout.json').read_text())
     require(layout['complete_link'] and layout['status'] in ('analysis-only','executable-development') and layout['abi']==ABI,
             'Incomplete or stale complete-source layout')
@@ -63,7 +63,14 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
                 'Missing native asynchronous entries')
         checked(directory/'app/program.app',result['app']['sha256'])
         if 'init_resource' in result['app']['image']['symbols']:
-            checked(directory/'media/QED.RSC',resource['resource_sha256'])
+            if persisted_media:
+                from filesystem_audit import Audit
+                media=Audit((directory/'system.atr').read_bytes())
+                getattr(media,result['filesystem'])()
+                require(hashlib.sha256(media.files['QED.RSC']).hexdigest()==resource['resource_sha256'] and
+                        hashlib.sha256(media.files['PROBE.APP']).hexdigest()==result['app']['sha256'],
+                        'Persisted APP/resource differs: '+str(directory))
+            else:checked(directory/'media/QED.RSC',resource['resource_sha256'])
         checked(directory/'program/program.a816.json',build['image_sha256'])
         checked(program['xex'],build['xex_sha256'])
         for group in ('platform_inputs','task_inputs','console_inputs','banked_inputs'):

@@ -11,7 +11,8 @@ selection and the existing Exec toolchain/GUI inputs separately.
 This is an input baseline for the native Exec port. The donor does not pin its
 external cflib checkout; this pair is the fixed source input. The native work below records compilation and focused execution separately.
 Strategy step 3 builds a runnable development APP and exercises real startup;
-the editing slices extend that baseline, while reliable saving retains its later gate.
+the editing and saving slices extend that baseline; practical coexistence and
+supported delivery retain their later gates.
 The donor's SDK, startup and G4A build are references,
 not the Exec build recipe. No donor sources are vendored by this baseline.
 
@@ -182,7 +183,7 @@ python3 tools/test_qed_native.py --group masks --output build/qed-native/masks
 python3 tools/measure_qed_frames.py --layout build/qed-native/layout
 ```
 
-C APP ABI 25 retains a general minimum-stack requirement in the existing
+The current C APP ABI retains a general minimum-stack requirement in the existing
 header. QED requests 2,560 total bytes, including the 256-byte interrupt reserve;
 ordinary Process admission selects a compatible free pool or fails before
 entry. The two existing larger pools keep their normal owners and capacities.
@@ -367,7 +368,7 @@ the captured Process image base; prior evidence keeps its original interpretatio
 | Byte text, uniform LF/CRLF, absent final newline, literal tabs; 1,023-byte logical lines | NUL, mixed/CR-only endings and wider lines are rejected; no conversion or Unicode decoding. |
 | Fixed-font editing, navigation/panning, selection, internal clipboard, grouped toggling Undo | Printing, external fonts, macros, external clipboard and advanced block modes are deferred. |
 | Native Find/Find Next and About; cancellable forms, selector and read preparation | Find is literal, case-sensitive and forward without wrap; replacement/regex search is deferred. |
-| Save/Save As, checked staging/publication and one retained backup; Cancel-default Save/Discard/Cancel for replacement and retirement | Selected deeper operational failures and final gate reconciliation remain QW7–QW8; autosave and automatic recovery are deferred. |
+| Save/Save As, checked staging/publication and one retained backup; Cancel-default Save/Discard/Cancel for replacement and retirement | Selected logical/transport failures and exact persisted bytes pass development checks; power-loss atomicity, concurrent same-target writers, autosave and automatic recovery are unsupported. |
 | Selected ordinary-peer, failure, reuse and stack development checks | Practical workload responsiveness and supported QED distribution remain steps 6–7; QED is absent from demo ZIPs. |
 
 ## QW5 loaded-editor saving
@@ -398,4 +399,38 @@ stabilizes; a declined Stop leaves the Process live.
 
 The [QW6 record](../../../../docs/history/qed-saving.md#qw6-savediscardcancel-continuations)
 binds physical decisions, aliases, reread failure, supersession and resource
-reuse. Operational failure closure and the final saving gate remain QW7–QW8.
+reuse. QW7–QW8 add operational failure closure and the reconciled saving gate.
+
+
+## Saving gate and coexistence handoff
+
+The [saving implementation record](../../../../docs/history/qed-saving.md#qw8-saving-gate-and-coexistence-handoff)
+reconciles QW1–QW8 under C APP ABI 26. The combined editor checks use the same
+selected production sources and a fixture that forwards successful operations:
+
+```sh
+python3 tools/test_qed_saving_gate.py --output build/qed-saving/combined \
+  --native-from build/qed-saving/qw7-cleanup-stop-bounded
+python3 tools/test_qed_fresh_reopen.py --output build/qed-saving/fresh-sdfs \
+  --writer build/qed-saving/combined --filesystem sdfs --combined \
+  --native-from build/qed-saving/qw8-fresh-mydos
+```
+
+The fresh reader mounts the exact closed writer ATR read-only with newly
+started native services. It neither regenerates the volume nor substitutes its
+APP, and verifies that the image hash remains unchanged. The separate
+operational probes select consistent disposable volumes, actual physical
+faults and foreground BREAK; reset-required outcomes are not normal OS return.
+See the immutable records for exact commands, filesystems, inputs and limits.
+
+Save serializes the whole document, preserves LF/CRLF and trailing newlines,
+and checks terminal Close before publication. Existing D and B require separate
+consent. The old D becomes B; failure retains confirmed recovery paths and both
+causes. A new destination uses normal creation metadata. Hidden/Archive and
+broader metadata preservation are not promised. Review/Forget releases only the
+recovery record; it leaves disk files intact for manual handling.
+
+The step 6 workload will measure responsiveness and fragmentation with another
+GEM application and shell or MD5/ARC activity. Current peer/pixel checks do not
+establish that workload's latency. QED remains a private development APP;
+normal launch/distribution, final notices and publication belong to step 7.

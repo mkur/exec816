@@ -262,3 +262,71 @@ production APP and its 503-byte source bound / 905-byte conditional margin are
 reused. Provider and reserved bank-zero deltas remain **0 fixed / 0
 per-public-Task / 0 private idle bytes**, including guards, alignment and unused
 capacity. These are development checks; QW8 reconciles the complete saving gate.
+
+## QW8 Saving gate and coexistence handoff
+
+The [QW8 record](../development/qed-saving-qw8.json) reconciles the current
+production sources, C APP ABI 26/provider, source-frame ledger, selected emitted
+PCs, resource and runtime/toolchain with the frozen QW1–QW7 evidence. Earlier
+records retain their exact executed scope and hashes. The current combined
+session uses four ordinary loaded Processes on writable SpartaDOS; MyDOS's
+current QW6 continuation and QW7 operational cohorts supply its complementary
+scope. No old-ABI QE7 run is counted as current execution.
+
+The combined workflow opens twelve maximum-length tabbed lines, copies/cuts,
+toggles Undo, pastes, Finds/Finds Next and pans to a literal match. It checks
+independent text, selection, caret, document/form and peer pixels. Save As
+preserves the viewport/clipboard; named Save cancels by default, then rotates
+the backup. A causal Write failure and uncertain Close keep dirty text; recovery
+Cancel retains details, and explicit Forget leaves the uncertain T intact before
+a successful fresh Save As. Ordinary reopen reads the saved bytes. Modified
+Open saves the current document while retaining a separate candidate, then
+rereads and commits the chosen path. Close Cancel preserves edits; Quit Discard
+retires that session. Further lifetimes cover New Save, deep-path Close Save and
+staged cancellation followed by Stop Save. All four retire normally. The last
+Stop arrives during native reclamation of a 256 KiB older backup.
+
+Closed-image audits independently check COMBO/FRESH destinations, their previous
+backups, the retained uncertain T, deep-path output and CRLF output, together
+with whole-volume allocation. A new native-service instance mounts that exact
+SpartaDOS writer image read-only and reopens FRESH; a separate new-service MyDOS
+reader reopens the exact QW6 writer image. Both verify document pixels, normal
+collection and an unchanged complete ATR hash. Neither rebuilds the writer's
+media nor inserts a replacement APP into it.
+
+Production remains 110,152 code / 2,770 initialized / 22,212 BSS bytes,
+serialized 127,210 bytes and aligned image backing 241,224 bytes. Against QE7,
+code grows 4,953 bytes, initialized plus BSS shrinks 421, container metadata
+grows 1,056 and aligned image backing grows 4,952. Remaining private growth
+allowances from that editing baseline are 27,815 code / 16,384 data-BSS /
+15,328 metadata bytes. The public canonical-name binding costs 25 provider code
+and four data-BSS bytes; remaining provider allowances are 15,132 code / 16,380
+data-BSS / 4,096 table bytes. No later slice changes that provider.
+
+Admission remains 2,560 bytes: source bound 503, continuation allowance 768,
+interrupt reserve 256 and required headroom 128 leave conditional margin 905.
+The combined session retains 1,324 bytes of minimum selected headroom and
+58,892 bytes of observed private peak. Its held Save has a 13-line Open
+candidate, clipboard and Undo live together with 58,889 bytes of private
+backing, while the ordinary peer continues painting. Complete reservation maps
+and the selected-PC measurements are bound in the record. Save's state/buffer, independent candidate, clipboard/Undo, native
+parent and filesystem backing remain distinct owners; QW7 records RAM capacity
+and transient-copy costs rather than counting disk payload as private heap.
+Reserved bank-zero delta is **0 fixed / 0 per-public-Task / 0 private idle
+bytes**, including guards, alignment and unused reserved capacity.
+
+Both exact QW1 demo ZIPs retain matching source inputs (128 standard, 206 GEM),
+all packaged checksums, OF816, pinned ROM/notices and their passing 249-frame
+five-second shell/prime smokes. They are reused without rebuilding unchanged
+packages. Private QED remains outside them. No publication is requested; old/new
+Atarimax CAR and raw 1 MiB BIN images remain required before a future release.
+
+Strategy step 5 is complete at this development scope. The step 6 starting
+point is a working native Open/Edit/Find/Save/Close session with normal
+collection and warm reuse. Measure responsiveness, fragmentation, peak backing
+and cleanup under an ordinary GEM peer plus shell or MD5/ARC activity, respecting
+shared Task capacity. Existing peer progress is not a realistic-load latency
+claim. Supported delivery and final QED notices remain strategy step 7.
+Power-loss atomicity, concurrent same-target mutation, autosave, broader metadata
+restoration and automatic repair/recovery scanning remain unsupported. These
+checks do not qualify the hosted system, a release or physical media.

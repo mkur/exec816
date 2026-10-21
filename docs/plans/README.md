@@ -512,11 +512,16 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [QED saving design](gem4xe/qed-saving-design.md) and
+  [QW1–QW8 implementation plan](gem4xe/qed-saving-implementation-plan.md):
+  strategy step 5; canonical names, exact staging, checked backup/publication,
+  recovery and Save/Discard/Cancel. See the [saving evidence](../history/qed-saving.md).
+
 - [QED editing design](gem4xe/qed-editing-design.md) and
   [QE1–QE7 implementation plan](gem4xe/qed-editing-implementation-plan.md):
   strategy step 4; native editing/selection, long-line redraw,
   clipboard/Undo, cancellable dialogs/Find and staged single-document Open/New.
-  QE1–QE5 pass [development checks](../history/qed-editing.md); QE6–QE7 remain.
+  QE1–QE7 pass [development checks](../history/qed-editing.md).
   Reliable saving remains step 5.
 
 - [QED startup design](gem4xe/qed-startup-design.md) and

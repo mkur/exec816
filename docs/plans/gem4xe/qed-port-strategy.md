@@ -21,13 +21,13 @@ APP passes the empty-document/resource/menu/lifecycle gate. Step 4 is implemente
 through its [editing design](qed-editing-design.md),
 [QE1–QE7 plan](qed-editing-implementation-plan.md) and
 [editing development evidence](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff).
-The real editor opens, edits, navigates, selects, copies/pastes, undoes and finds,
-with checked single-document replacement and Cancel-default Discard/Cancel.
-Reliable saving, practical coexistence and supported delivery remain steps 5–7.
-Step 5 has a [saving design](qed-saving-design.md) and
-[QW1–QW8 plan](qed-saving-implementation-plan.md). QW1–QW7 implement canonical
-paths, checked staging/publication, loaded-editor Save/Save As and modified
-continuations and selected deeper operational cases. Final saving acceptance remains QW8.
+The real editor opens, edits, navigates, selects, copies/pastes, undoes and finds.
+Step 5 is implemented through the [saving design](qed-saving-design.md),
+[QW1–QW8 plan](qed-saving-implementation-plan.md) and
+[reconciled saving evidence](../../history/qed-saving.md#qw8-saving-gate-and-coexistence-handoff).
+Canonical paths, checked staging/publication, Save/Save As, backups/recovery,
+Save/Discard/Cancel and selected operational failures pass development checks.
+Practical coexistence and supported delivery remain steps 6–7.
 
 ## First usable editor
 
@@ -228,7 +228,9 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Continue with QW8 in the [saving implementation plan](qed-saving-implementation-plan.md#qw8-reconcile-the-saving-gate-and-hand-off-coexistence):
-reconcile the combined editor workflow, persisted media and current resource
-evidence before strategy step 6.
-Commit each executable slice after development checks.
+Prepare the step 6 coexistence design and implementation plan from the
+[saving handoff](../../history/qed-saving.md#qw8-saving-gate-and-coexistence-handoff).
+Measure the complete Open/Edit/Find/Save/Close workflow beside another ordinary
+GEM application and shell or MD5/ARC activity within shared Task capacity.
+Use latency, fragmentation, peak backing and retirement measurements to choose
+the next improvement. Keep supported delivery and publication at step 7.

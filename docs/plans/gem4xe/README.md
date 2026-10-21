@@ -8,9 +8,9 @@ The [QED saving design](qed-saving-design.md) and
 step 5: checked serialization and terminal Close, sibling-file publication with
 one retained backup, explicit recovery outcomes and Save/Discard/Cancel
 continuations.
-QW1–QW7 implement the public C binding/current ABI, canonical paths, staging,
+QW1–QW8 implement the public C binding/current ABI, canonical paths, staging,
 publication, loaded-editor Save/Save As, modified continuations and selected
-deeper failures. QW8 reconciles the saving gate. See the
+deeper failures. The reconciled saving development gate passes. See the
 [saving implementation record](../../history/qed-saving.md).
 
 The [QED editing design](qed-editing-design.md) and
@@ -19,8 +19,8 @@ strategy step 4: native keyboard/selection, redraw and long-line navigation,
 internal clipboard/Undo, cancellable Find/dialogs and checked single-document
 Open/New. The [editing gate](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff)
 passes its development checks, including the combined session and package
-reconciliation. Save/Save As and the full Save/Discard/Cancel workflow remain
-step 5; practical coexistence and supported QED delivery remain steps 6–7.
+reconciliation. Reliable saving and the full Save/Discard/Cancel workflow now
+pass step 5; practical coexistence and supported QED delivery remain steps 6–7.
 
 The [QED startup design](qed-startup-design.md) and
 [QS1–QS5 implementation plan](qed-startup-implementation-plan.md) define

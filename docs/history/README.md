@@ -1,12 +1,12 @@
 # Historical records
 
-- [QED reliable saving](qed-saving.md): QW1–QW7 canonical paths/current C ABI,
-  checked staging/publication, loaded-editor saving, modified continuations and operational failures; the final gate follows
-  the step 5 plan.
+- [QED reliable saving](qed-saving.md): QW1–QW8 canonical paths/current C ABI,
+  checked staging/publication, loaded-editor saving, modified continuations,
+  operational failures and the reconciled step 5 development gate.
 
 - [QED editing](qed-editing.md): incremental QE1–QE7 editing, document
   replacement, failure, stack and package development evidence; QE1–QE7 pass
-  the step 4 editing gate, with reliable saving next.
+  the step 4 editing gate; saving has its own step 5 record.
 
 - [QED application startup](qed-startup.md): QS1–QS5 resource, real editor
   startup, lifecycle and GUI-stack development evidence.

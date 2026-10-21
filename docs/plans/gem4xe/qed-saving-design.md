@@ -9,8 +9,8 @@
 Status: accepted design for strategy step 5, based on the
 [QE7 development baseline](../../development/qed-editing-qe7.json). The
 [QW1–QW8 plan](qed-saving-implementation-plan.md) derives the executable work.
-Save/Save As remain disabled until the corresponding executable acceptance
-checks pass. Implementation progress and measured evidence belong to the
+QW1–QW8 now pass the selected development checks, with Save/Save As enabled.
+Implementation progress and measured evidence belong to the
 [historical record](../../history/qed-saving.md).
 
 The gate is the real loaded QED saving and reopening exact document bytes on
