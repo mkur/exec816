@@ -228,7 +228,8 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Prepare the step 6 coexistence design and implementation plan from the
+Implement the [step 6 coexistence design](qed-coexistence-design.md) and
+[QC1–QC4 plan](qed-coexistence-implementation-plan.md) from the
 [saving handoff](../../history/qed-saving.md#qw8-saving-gate-and-coexistence-handoff).
 Measure the complete Open/Edit/Find/Save/Close workflow beside another ordinary
 GEM application and shell or MD5/ARC activity within shared Task capacity.

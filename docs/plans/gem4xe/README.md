@@ -3,6 +3,11 @@
 The separate [upstream GEM4XE/QED setup](../../guides/gem4xe-qed-reference.md)
 preserves a working reference for behavior comparisons during the port.
 
+The [QED coexistence design](qed-coexistence-design.md) and
+[QC1–QC4 implementation plan](qed-coexistence-implementation-plan.md) define
+strategy step 6: measured production responsiveness beside a GUI peer or shell
+checksum job, admitted Task counts, memory fragmentation and repeated lifetimes.
+
 The [QED saving design](qed-saving-design.md) and
 [QW1–QW8 implementation plan](qed-saving-implementation-plan.md) define strategy
 step 5: checked serialization and terminal Close, sibling-file publication with

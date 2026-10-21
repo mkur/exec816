@@ -512,6 +512,11 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [QED coexistence design](gem4xe/qed-coexistence-design.md) and
+  [QC1–QC4 implementation plan](gem4xe/qed-coexistence-implementation-plan.md):
+  strategy step 6; production response under GUI/shell load, Task admission,
+  memory fragmentation and repeated lifetime/failure checks.
+
 - [QED saving design](gem4xe/qed-saving-design.md) and
   [QW1–QW8 implementation plan](gem4xe/qed-saving-implementation-plan.md):
   strategy step 5; canonical names, exact staging, checked backup/publication,
