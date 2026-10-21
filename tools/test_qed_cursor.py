@@ -14,6 +14,17 @@ from generate_aes_server import expected_layout
 TEXT=b'the cursor should blink without repainting this line\nsecond line'
 
 
+def visible_caret(e,name,lines,x,y):
+    # Edits can paint the caret inside line_out; a cursor() callback is not
+    # required. Completed scanout and the document state are the endpoint.
+    e.move(630,20)
+    state=e.text()
+    require(state['lines']==lines and state['x']==x and state['y']==y,
+            'Caret checkpoint changed text')
+    e.scene.setdefault('carets',[]).append(dict(name=name,
+        pixels=e.pixels(name,lines,state,caret=True)))
+
+
 def interact(b,p,app,record,owner):
     e=SavingEditor(b,p,app,record,owner);cycle=e.native('cycle')
     if cycle==0:b._cmd_ok('MOUSE ST');b._cmd_ok('KEY ALL up')
@@ -23,20 +34,31 @@ def interact(b,p,app,record,owner):
         b.memload(e.at('control'),struct.pack('<H',1));e.reach('dw($%x)=100'%e.at('phase'))
         e.click(100,44);e.move(630,20)
         for index in range(4):
-            e.caret_pixels('idle-visible-'+str(index),lines,0,0)
+            visible_caret(e,'idle-visible-'+str(index),lines,0,0)
             t=e.text()['pointer'];depth=e.context()+dict(expected_layout())['C context updateDepth']
             e.reach('(db($%x)=1)&(dw($%x)=0)'%(t+e.offsets[23],depth));e.frames(2)
-            state=e.text();require(state['blink']==1,'Hidden caret checkpoint changed')
-            e.scene.setdefault('hidden_carets',[]).append(e.pixels('idle-hidden-'+str(index),lines,state,caret=True))
+            for attempt in range(32):
+                state=e.text()
+                if state['blink']==1:
+                    try:
+                        # The convenience pixels(caret=True) waits for a visible
+                        # caret. Check this hidden state directly instead.
+                        pixels=e._pixels('idle-hidden-'+str(index),lines,state,caret=True)
+                        break
+                    except RuntimeError as error:
+                        if ': text pixel ' not in str(error):raise
+                e.frames(1)
+            else:raise RuntimeError('Hidden caret glyph was not restored')
+            e.scene.setdefault('hidden_carets',[]).append(dict(**pixels,blink=1,observations=attempt+1))
         require(e.get(e.sy['QedCursorWideDraws'])==0,'Cursor repainted outside its band')
         require(e.get(e.sy['QedCursorGlyphs'])>=4,'Idle blink did not restore its underlying glyph')
         e.peer_command(2);e.frames(40);e.covered=[(0,60,224,172)]
         e.selection('cursor-covered',lines,None,0,0);peer_pixels(e,'cursor-peer')
         e.frames(120);peer_pixels(e,'cursor-peer-idle')
         e.click(100,44);e.covered=[];e.frames(40)
-        e.caret_pixels('cursor-exposed',lines,0,0)
+        visible_caret(e,'cursor-exposed',lines,0,0)
         e.select('cursor-selection',lines,e.cell(0,0),e.cell(4,0),(0,0,0,4),(4,0))
-        e.key('ESC');e.expected_range=None;e.caret_pixels('cursor-after-selection',lines,4,0)
+        e.key('ESC');e.expected_range=None;visible_caret(e,'cursor-after-selection',lines,4,0)
         require(e.get(e.sy['QedCursorWideDraws'])==0,'Selection/exposure widened caret drawing')
         e.scene['caret_draws']=dict(bars=e.get(e.sy['QedCursorBars']),glyphs=e.get(e.sy['QedCursorGlyphs']),
             outside_band=e.get(e.sy['QedCursorWideDraws']),idle_transitions=8)
@@ -56,7 +78,11 @@ def interact(b,p,app,record,owner):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--native-from',type=Path,required=True)
+    parser.add_argument('--reuse-app',action='store_true')
+    parser.add_argument('--first-stack-only',action='store_true',help='Trace only the first idle/exposure lifetime')
     a=parser.parse_args();files=fixtures();files['LONG.TXT']=TEXT
     r=run(a.output,native_from=a.native_from,fixture_source=ROOT/'tests/programs/qed_cleanup_stop.act',
-        media_files=files,saving=True,caret=True,writable=True,interaction=interact)
+        media_files=files,saving=True,caret=True,reuse_app=a.reuse_app,writable=True,interaction=interact,
+        profile_all=not a.first_stack_only,stack_observation_index=0 if a.first_stack_only else 3,
+        stack_observation_count=4)
     print(r['status'],r['completed'])

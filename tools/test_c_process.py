@@ -49,7 +49,7 @@ def variant(base,out,filesystem,unit=None,sectors=None):
 
 def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=None,
         fixture_source=None,expected_completed=12,native_optimize=None,
-        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0,media_files=None,app_builder=None,interaction=None,loader_failures=True,retirement_timeout=600,profile_all=False,prepare_media=None,execution=None):
+        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0,media_files=None,app_builder=None,interaction=None,loader_failures=True,retirement_timeout=600,profile_all=False,prepare_media=None,execution=None,stack_observation_count=None):
     out.mkdir(parents=True,exist_ok=True)
     execution=execution or {}
     binary=execution.get('binary',BRIDGE);pin=execution.get('pin',PIN)
@@ -138,7 +138,7 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                 runtime,_=execute(b,p,timeout=600,frame_limit=30000,expected_status=expected_status,
                     before_run=(lambda b:capture(b,p,record,stack_observation_index,
                         during_run=(lambda owner:interaction(b,p,app,record,owner)) if interaction else None,
-                        retirement_timeout=retirement_timeout,profile_all=profile_all)) if observe_stacks else None)
+                        retirement_timeout=retirement_timeout,profile_all=profile_all,observation_count=stack_observation_count)) if observe_stacks else None)
             except Exception:
                 record['checks']=data(b,p['image'],'checks',True)
                 record['completed']=data(b,p['image'],'completed',True)

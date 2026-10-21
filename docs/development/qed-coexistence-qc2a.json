@@ -1,0 +1,284 @@
+{
+  "schema_version": 1,
+  "status": "partial-gate",
+  "tier": "development",
+  "qualification": false,
+  "scope": "QC2a executable painting improvement; baseline, cursor and damage pass; checksum scrolling still exceeds the unchanged 1000 ms limit, so step 6 remains open",
+  "production": {
+    "app": {
+      "path": "build/qed-coexist/final-production/program.app",
+      "sha256": "3dbc6f0af296755942a6a16a231c0b2d48bac7a9e8e04882a447250427d746d7"
+    },
+    "layout": {
+      "path": "build/qed-coexist/final-production/layout.json",
+      "sha256": "e9ae7046ff91a201a1a6ad8eec6c01b2300e50dec69e00481d4705000864cbc9"
+    },
+    "sources": {
+      "path": "build/qed-coexist/final-production/inputs/sources.json",
+      "sha256": "22bc09dcd4b900d93045c8e8a2b92805e94250ebd9bc7cc2d83a3b8a2b1c024d"
+    },
+    "frames": {
+      "path": "build/qed-coexist/final-production/stack-frames.json",
+      "sha256": "8bb6d88ff48d4bc4ad073225e41a0228042cf82c6d3e6a82d29dcbaa48933045"
+    }
+  },
+  "baseline": {
+    "path": "build/qed-coexist/qc1-ready/coexist-results.json",
+    "sha256": "2f59cf6870fdfdbcaf679e15ce9e774294e98ee0daeb35f2f25f3b6aeeac286d"
+  },
+  "baseline_trace": {
+    "path": "build/qed-coexist/qc1-ready/emulator.log",
+    "sha256": "4524f381dcb799bfeb7952a9a23e89cbba477396088210b948f99ae76767dac4"
+  },
+  "idle": {
+    "path": "build/qed-coexist/blink-complete/results.json",
+    "sha256": "57c444fb69685d2e783ea6b405b17e8368a0d22b81b9bcb7dd2509f764ec5133"
+  },
+  "idle_trace": {
+    "path": "build/qed-coexist/blink-complete/emulator.log",
+    "sha256": "b12c17ba4265bb2b43dd665dd7f50af3fe5e1c954f57ce9801618840ea892fd7"
+  },
+  "idle_lifetimes": [
+    4
+  ],
+  "damage": {
+    "path": "build/qed-coexist/damage-current/results.json",
+    "sha256": "d0361fb97a3ddb3a96b678df8abb689cad7db4b14063edd991ff9b46f0f53884"
+  },
+  "damage_trace": {
+    "path": "build/qed-coexist/damage-current/emulator.log",
+    "sha256": "251c74231375f7f24aebdb5fee67ab1162e6827ec99621a2c807ad3756c0a070"
+  },
+  "damage_lifetimes": [
+    2
+  ],
+  "damage_cases": 14,
+  "baseline_samples": [
+    {
+      "name": "insert-0",
+      "elapsed_ms": 160.44681333955475,
+      "limit_ms": 500,
+      "observations": 6,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "29327bc4f002eed2ef474f937cab0cff8554705366dc1fbf8e0a98f0ecfc9e37"
+      }
+    },
+    {
+      "name": "insert-1",
+      "elapsed_ms": 260.7266355502489,
+      "limit_ms": 500,
+      "observations": 11,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "336f479dda1029c41126a9c73597cc354e09f9904c31540b3fe18b56b4ef1058"
+      }
+    },
+    {
+      "name": "insert-2",
+      "elapsed_ms": 140.39039779863796,
+      "limit_ms": 500,
+      "observations": 5,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "7d7d20e6e529beccb521d8187017657f9091ce95b5f82f56e51acde256f54bf7"
+      }
+    },
+    {
+      "name": "insert-3",
+      "elapsed_ms": 120.33567387813848,
+      "limit_ms": 500,
+      "observations": 4,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "fab68c6cfddb237d5c07d41b92859c60f086a029b2ca194ee3e839e4e63d56bc"
+      }
+    },
+    {
+      "name": "insert-4",
+      "elapsed_ms": 160.4462494660823,
+      "limit_ms": 500,
+      "observations": 6,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "6870bba39a6e4ab2114e51f85c5c8f1ce7812099e428a10577b3129dfa8b5684"
+      }
+    },
+    {
+      "name": "insert-5",
+      "elapsed_ms": 180.50266500699908,
+      "limit_ms": 500,
+      "observations": 7,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "7db12de854e05c86a621bf2dcf7621563c99e1d6c741c491d83d59976af67bd9"
+      }
+    },
+    {
+      "name": "navigate-27",
+      "elapsed_ms": 501.39629168610855,
+      "limit_ms": 1000,
+      "observations": 23,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "e78b5811d01137da75feed66ed53ac5dd08f2fba4cb092897fc55df773ae6b98"
+      }
+    },
+    {
+      "name": "navigate-28",
+      "elapsed_ms": 621.7314016907745,
+      "limit_ms": 1000,
+      "observations": 29,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "d6c45f47c55c5f00ba003056f485da582088535c42c183d902680c3ba753a21c"
+      }
+    },
+    {
+      "name": "navigate-29",
+      "elapsed_ms": 561.5638466884416,
+      "limit_ms": 1000,
+      "observations": 26,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "e1a657401edf2e068f1250d6e7d60c33020c003037231500863b8647632c28ef"
+      }
+    },
+    {
+      "name": "navigate-30",
+      "elapsed_ms": 481.3404400186642,
+      "limit_ms": 1000,
+      "observations": 22,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "5ef7e46b74cf28a6e6f072233e1f01419c56dd4ac6e506af4641cc7537c8fe10"
+      }
+    },
+    {
+      "name": "navigate-31",
+      "elapsed_ms": 661.8425411521908,
+      "limit_ms": 1000,
+      "observations": 31,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "9fae516d980ead737e120c0d62b142ea0d9a57bf2652c897f29519079b97ed22"
+      }
+    },
+    {
+      "name": "navigate-32",
+      "elapsed_ms": 481.3404400186642,
+      "limit_ms": 1000,
+      "observations": 22,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "66ea110f261ee8e09cf39119175cc2bae76bb49d14e83f04a1150fbb8ebf8d96"
+      }
+    },
+    {
+      "name": "find-open",
+      "elapsed_ms": 340.9494783465538,
+      "limit_ms": 1500,
+      "observations": 15,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "pixels": 36864
+      }
+    },
+    {
+      "name": "find-reopen",
+      "elapsed_ms": 260.725507803304,
+      "limit_ms": 1500,
+      "observations": 11,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "pixels": 36864
+      }
+    },
+    {
+      "name": "find-dismiss",
+      "elapsed_ms": 601.6761138968027,
+      "limit_ms": 1500,
+      "observations": 28,
+      "endpoint": "first independently correct completed scanout",
+      "observed": {
+        "checked": 98048,
+        "caret_checked": 0,
+        "sha256": "93b60d0530faf5f90cb7ad45efa63dc8e8cf3dbbafdd779a35c175c5f8fb06eb"
+      }
+    }
+  ],
+  "remaining_failure": {
+    "cohort": "checksum",
+    "endpoint": "navigate-29",
+    "elapsed_ms": 1042.9,
+    "limit_ms": 1000,
+    "observer_log": {
+      "path": "build/qed-coexist-qc2-checksum-ready.log",
+      "sha256": "cc9e4bffdebec8e79b7be58668ea920c6ba4c5cf274dbd469a2f8b8066ad4b4e"
+    },
+    "trace": {
+      "path": "build/qed-coexist/qc2-checksum-ready/emulator.log",
+      "sha256": "f06ba2c58efb1fdc386706d48c54860073a57f2fdd5e5623164aeb8e2d6a3d2f"
+    }
+  },
+  "warmup": "Untimed navigation must reach completed scanout before timed samples; earlier logical-state-only positioning left a paint queued.",
+  "host": {
+    "path": "build/qed-coexist-final-host.log",
+    "sha256": "77395b5975f724fe73c84a810f20354c93e57f617d638a50e25c8893603f255c"
+  },
+  "host_tests": 552,
+  "host_skipped": 4,
+  "layout": {
+    "code_bytes": 113706,
+    "initialized_bytes": 2770,
+    "bss_bytes": 22212,
+    "import_thunk_bytes": 404,
+    "span_bytes": 179242,
+    "image_holes_bytes": 40554,
+    "serialized_bytes_if_executable": 131056,
+    "relocation_count": 3419,
+    "heap_alignment_backing_bytes": 244780,
+    "future_full_profile_backing_bytes": 393216,
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "container_metadata_allowance_bytes": 16384,
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Unchanged native XEX/provider and full DP/stack/guard/alignment/slack reservations"
+  }
+}

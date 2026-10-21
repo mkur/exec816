@@ -92,6 +92,10 @@ class Coexistence:
             if row < 27:
                 e.key('EQUALS', ctrl=True, settle=3)
                 e.reach('dw($%x)=%d' % (e.text()['pointer']+e.offsets[4], row))
+                if row == 26:
+                    # Timed navigation starts after the untimed warm-up's
+                    # completed scanout, as subsequent timed samples do.
+                    e.pixels('navigation-warmup', lines, e.text())
             else:
                 def navigation():
                     require(e.text()['y'] == row, 'Pending row navigation')
@@ -182,9 +186,9 @@ def check(output, bundle, production, layout_from, cohort, profile=False, factor
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output', type=Path, required=True)
-    p.add_argument('--bundle', type=Path, default=ROOT/'build/qed-coexist/preview')
-    p.add_argument('--production', type=Path, default=ROOT/'build/qed-coexist/production-final')
-    p.add_argument('--layout-from', type=Path, default=ROOT/'build/qed-coexist/qc3-final/app')
+    p.add_argument('--bundle', type=Path, default=ROOT/'build/qed-coexist/final-preview')
+    p.add_argument('--production', type=Path, default=ROOT/'build/qed-coexist/final-production')
+    p.add_argument('--layout-from', type=Path, default=ROOT/'build/qed-coexist/qc3-current/app')
     p.add_argument('--cohort', choices=['baseline'], default='baseline')
     p.add_argument('--profile-insert', action='store_true', help='Collect a bounded host callgraph around measured insertion')
     a = p.parse_args()

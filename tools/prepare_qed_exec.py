@@ -119,7 +119,7 @@ def prepare(output, base, qed):
     desktop['qed_preview'] = dict(abi=ABI['version'], app_sha256=layout['app']['sha256'],
         production_layout=str(qed / 'layout.json'), production_layout_sha256=sha256(qed / 'layout.json'),
         base_manifest=str(base / 'demo-manifest.json'), base_manifest_sha256=sha256(base / 'demo-manifest.json'),
-        host_tool_changes=changes, scope='User-requested local preview; strategy steps 6/7 and release qualification remain open')
+        host_tool_changes=changes, scope='User-requested local preview; step 6 evidence is recorded separately and supported delivery/release remains step 7')
     desktop['source_inputs'].update({str(p.relative_to(ROOT)): sha256(p) for p in
         (Path(__file__), ROOT / 'tools/build_demo.py', ROOT / 'tools/package_demo.py',
          ROOT / 'docs/qed-exec-distribution.txt')})
@@ -144,9 +144,9 @@ def prepare(output, base, qed):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output', type=Path, default=ROOT / 'build/qed-coexist/preview')
+    parser.add_argument('--output', type=Path, default=ROOT / 'build/qed-coexist/final-preview')
     parser.add_argument('--demo-from', type=Path, default=ROOT / 'build/qed-saving/qw1-gem')
-    parser.add_argument('--qed-from', type=Path, default=ROOT / 'build/qed-coexist/production-final')
+    parser.add_argument('--qed-from', type=Path, default=ROOT / 'build/qed-coexist/final-production')
     args = parser.parse_args()
     prepare(args.output, args.demo_from, args.qed_from)
     print('Launch: ' + str(args.output / 'launch-qed.command'))

@@ -1,0 +1,27 @@
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -1099,7 +1099,7 @@
+ 
+ void restore_edit(void)
+ {
+-    long oldx,oldy;
++    long oldx,oldy,first,last;
+     bool clamped;
+     short i,link;
+     WINDOWP w;
+@@ -1129,6 +1129,15 @@
+                 long row=chg[i].y-w->doc.y;
+                 if(row<0 || row>=w->w_height)continue;
+                 area.g_y+=(short)row*font_hcell;area.g_h=font_hcell;
++            }else if(chg[i].c==BLK_CHANGE && i+1<chg_anz &&
++                     chg[i+1].link==link && chg[i+1].c==BLK_CHANGE){
++                /* Selection damage is a pair of inclusive row endpoints. */
++                first=min(chg[i].y,chg[i+1].y)-w->doc.y;
++                last=max(chg[i].y,chg[i+1].y)-w->doc.y;++i;
++                if(last<0 || first>=w->w_height)continue;
++                first=max(0L,first);last=min((long)w->w_height-1,last);
++                area.g_y+=(short)first*font_hcell;
++                area.g_h=(short)(last-first+1)*font_hcell;
+             }
+             redraw_window(w,&area);
+         }

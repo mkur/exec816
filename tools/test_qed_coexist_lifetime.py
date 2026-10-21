@@ -89,7 +89,8 @@ if __name__ == '__main__':
     args = parser.parse_args(); files = fixtures(); files['LONG.TXT'] = LARGE
     result = run(args.output, native_from=args.native_from,
         fixture_source=ROOT/'tests/programs/qed_cleanup_stop.act', media_files=files,
-        saving=True, caret=True, writable=True, interaction=interact)
+        saving=True, caret=True, writable=True, interaction=interact,
+        profile_all=False, stack_observation_index=0, stack_observation_count=4)
     result['observer_inputs'] = {str(p.relative_to(ROOT)): sha256(p) for p in
         [Path(__file__), ROOT/'tools/qed_coexist_observe.py']}
     (args.output/'results.json').write_text(json.dumps(result, indent=2)+'\n')

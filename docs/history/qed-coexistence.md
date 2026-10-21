@@ -88,3 +88,36 @@ costs, peak samples and headroom are retained in the record.
 Reserved bank-zero delta remains **0 fixed / 0 per-public-Task / 0 private idle
 bytes**, including guards, alignment and unused capacity. No native parent,
 provider or Task-pool growth is required.
+
+
+## QC2a Bounded selection, caret and navigation painting
+
+Loaded measurements found three sources of avoidable work: selection endpoint
+pairs each repainted the whole viewport; character edits hid and revealed the
+caret in separate transactions; ordinary rows cleared the background before
+painting text. Patches 0019–0022 retain paired row damage, include the caret in
+edit/navigation paints, use existing opaque replace text for default-colour
+unselected rows, and let the scroll owner paint a revealed viewport once.
+Selected rows retain explicit background fills. Idle blinking retains patch
+0017's narrow caret band.
+
+The actual-source damage probe now covers 14 cases over two loaded lifetimes,
+including paired/reversed/clipped selection damage, viewport clamps, scroll
+ownership and current-row caret inclusion. Its drawing observers establish
+requested rectangles; the normal cohorts and cursor fixture supply independent
+GUI pixels. The cursor fixture checks actual completed visible and hidden
+caret frames, allowing either a row paint or the blink callback to reveal it.
+
+The final source bound is 520 bytes, with the existing 768-byte continuation
+allowance, 256-byte interrupt reserve, 128-byte headroom target and 2,560-byte
+admission. Its conditional margin is 888 bytes. Native reservations remain
+**0 fixed / 0 per-public-Task / 0 private idle bank-zero bytes**, including
+guards, alignment and unused capacity. ABI, provider and Task pools are unchanged.
+
+The [QC2a record](../development/qed-coexistence-qc2a.json) freezes this
+intermediate production image. The baseline passes all response and collection
+checks; the cursor fixture completes four lifetimes and verifies real hidden
+caret pixels. The checksum cohort still reaches 1,043 ms on a later viewport
+navigation, exceeding the unchanged 1,000 ms limit. This slice therefore keeps
+the coexistence gate open. Timed navigation begins after an independently
+completed warm-up frame; the earlier logical-only warm-up could queue a paint.

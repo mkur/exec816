@@ -54,7 +54,9 @@ desktop. Failure interposition belongs to a separately identified fixture that
 forwards successful operations to the real implementation.
 
 Measure physical key-down to the first independently correct completed video
-frame for warm insertion and navigation. Poll scanout once per PAL frame and
+frame for warm insertion and navigation. Before the timed navigation block,
+wait for the untimed positioning sequence to reach completed scanout; cursor
+state alone can precede its viewport paint. Poll scanout once per PAL frame and
 report the resulting upper bound, including keyboard scan and up to one frame
 of observation quantization. Release keys after three frames so a slow painter
 cannot create auto-repeat. Compare text pixels outside the caret band; logical
@@ -111,6 +113,14 @@ narrows same-row replacement damage and retains full redraw when clamping moves
 the viewport. This is a QED rendering-policy correction; the response limits,
 public interfaces and capacities remain unchanged. See the
 [implementation record](../../history/qed-coexistence.md#qc1a-incremental-edit-damage).
+
+Loaded measurements also exposed repeated full selection redraws and separate
+caret/text transactions. Patches 0019–0022 consume paired selection endpoints,
+paint the caret inside edit/navigation row updates, use opaque default-colour
+rows through existing VDI replace text, and avoid repeating a scroll owner's
+complete paint. Selection colours keep their existing explicit fill path; idle
+blinking keeps its narrow caret-band path. These changes remain QED painting
+policy, with the same response limits, ABI and capacities.
 
 Optimize only a measured failure or material bottleneck in this workflow. Keep
 application drawing policy in QED, reusable GUI behavior in AES/VDI, filesystem

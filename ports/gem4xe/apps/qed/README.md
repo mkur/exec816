@@ -452,3 +452,35 @@ pixels, selection and peer-window exposure:
 python3 tools/test_qed_cursor.py --output build/qed-cursor/editor \
   --native-from build/qed-saving/qw7-cleanup-stop-bounded
 ```
+
+
+## Practical workload development checks
+
+The [coexistence design](../../../../docs/plans/gem4xe/qed-coexistence-design.md)
+and [implementation history](../../../../docs/history/qed-coexistence.md) define
+separate production baseline, Counter and shell-checksum cohorts within the
+eight public Task slots. The production APP has no measurement interposition;
+its observers use physical input and independently rendered completed frames.
+A separate fixture supplies real allocation refusals and four repeated lifetimes.
+
+```sh
+python3 tools/test_qed_damage.py --output build/qed-coexist/damage-reproduced
+python3 tools/test_qed_coexist_lifetime.py --output build/qed-coexist/lifetime-reproduced \
+  --native-from build/qed-coexist/qc3-complete
+python3 tools/test_qed_coexist.py --output build/qed-coexist/baseline-reproduced
+python3 tools/test_qed_coexist_load.py --cohort peer --output build/qed-coexist/peer-reproduced
+python3 tools/test_qed_coexist_load.py --cohort checksum --output build/qed-coexist/checksum-reproduced
+```
+
+Build current production sources and prepare a matching preview before the
+production cohorts. Their `--production`, `--bundle` and `--layout-from`
+arguments select separate reproduced artifacts. The layout input is a fixture
+compiled with matching headers; its emitted offsets describe the production
+records without adding instrumentation to the shipped APP. Test disks are
+disposable and separate from the interactive WORK disk.
+
+Patches 0018–0022 bound same-row/selection damage, combine text and caret paints,
+use existing opaque default-colour text, and avoid duplicate scroll paints.
+The actual-source damage probe covers 14 rectangle-policy cases; full drawing
+and independent pixels belong to the production and cursor checks. Bank-zero
+reservations and shared Task capacities remain unchanged.

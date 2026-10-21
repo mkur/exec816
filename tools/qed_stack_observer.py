@@ -145,11 +145,13 @@ def summarize_owned(path,program,app,memory,windows):
     return result
 
 
-def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600,profile_all=False):
+def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600,profile_all=False,observation_count=None):
     """Profile one complete child, after Load and before the next disk load.
 
     Pause at existing bank-zero COP/restore rendezvous points. No guest code or
     data is changed. The PREPARING row is already owned and has its Image.
+    observation_count can keep later interactive lifetimes running without
+    adding them to the selected stack window.
     """
     import json
     import adapter_state as adapter
@@ -170,7 +172,9 @@ def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600
         bridge.regs=regs
         try:return run_to(bridge,address,**options)
         finally:bridge.regs=original
-    for attempt in range(index+1):
+    interactions=index+1 if observation_count is None else observation_count
+    require(interactions>index>=0,'Selected stack lifetime is outside the interaction count')
+    for attempt in range(interactions):
         bridge.bp_clear_all();bridge.bp_set(program['labels']['native_cop'],condition=preparing)
         rendezvous(program['labels']['native_cop'],timeout=180,frame_limit=10000,condition=preparing)
         owners=[]
@@ -204,5 +208,5 @@ def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600
         if attempt==index or profile_all:
             owner['clock_end']=bridge.eval_expr('@clk') & 0xffffffff
             if profile_all:record.setdefault('stack_windows',[]).append(owner)
+            record['stack_window']=dict(**owner,scope='Selected owned C Process from PREPARING through retirement. Analysis selects its physical slot and first observed lifetime; later history samples are excluded.')
         bridge.bp_clear_all()
-    record['stack_window']=dict(**owner,scope='Selected owned C Process from PREPARING through retirement. Analysis selects its physical slot and first observed lifetime; later history samples are excluded.')
