@@ -12,10 +12,13 @@ from test_cooperative import data
 def logical(out,reuse=False):
     out.mkdir(parents=True,exist_ok=True)
     sources=[ROOT/'tests/programs/basic_editor.c',ROOT/'examples/gem-basic/document.c',
-             ROOT/'examples/gem-basic/editor.c',ROOT/'examples/gem-basic/assist.c',ROOT/'examples/gem-basic/assist-ui.c',ROOT/'c/calypsi/exec.c']
+             ROOT/'examples/gem-basic/editor.c',ROOT/'examples/gem-basic/editor-paint.c',ROOT/'examples/gem-basic/assist.c',ROOT/'examples/gem-basic/assist-ui.c',ROOT/'c/calypsi/exec.c']
     if not reuse:
+        # Keep unused GUI entry points discardable in this key-only probe;
+        # production painting/event behavior is covered by the loadable APP.
         f=emit(out/'c',sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/image-info.s'],(),True,
-            roots=['BasicEditorProbe','BasicEditorChecks'])
+            roots=['BasicEditorProbe','BasicEditorChecks'],
+            definitions={name:['--no-interprocedural-cross-jump'] for name in ('editor.c','editor-paint.c','assist-ui.c')})
         (out/'c-image.json').write_text(json.dumps(f,indent=2)+'\n')
         source=out/'probe.act'
         source.write_text('MODULE BASICEDITOR\nUSE CALYPSICALL\nLONGINT result\nPROC Main()\n'

@@ -1,7 +1,7 @@
 # FastBasic 6502 migration to Exec816
 
-Status: **FB0–FB6 functional integer and floating-point delivery implemented**,
-20 October 2026. See the [integer record](../history/fastbasic-integer.md) and
+Status: **FB0–FB7 functional integer, floating-point and native editor/Run
+delivery implemented**, 21 October 2026. See the [integer record](../history/fastbasic-integer.md) and
 [floating-point record](../history/fastbasic-floating-point.md) for actual
 development checks, design adjustments and remaining qualification gates.
 The [FP design](fastbasic-floating-point-design.md) and
@@ -12,7 +12,9 @@ the original Atari editor port direction. The design below preserves the
 original implementation sequence; the [current contract](../reference/fastbasic.md)
 defines shipped behavior.
 The [WB0–WB14 implementation plan](fastbasic-workbench-implementation-plan.md)
-delivers FB7 at WB9, followed by the debugger, graphics and final workbench package.
+completes FB7 at WB9; its [slice record](../history/fastbasic-workbench.md)
+retains the passing development gates. Debugging, graphics and the complete
+workbench package remain later deliveries.
 
 [Plan index](README.md) · [Roadmap](../roadmap.md) ·
 [Platform contract](../reference/platform.md) ·

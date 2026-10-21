@@ -14,6 +14,14 @@ ULONG EXEC_CALL ExecStartProgram(CONST_STRPTR name,const struct ExecProgramStart
 /* One load reference; release it once. Start retains execution until Collect.
  * Loaded instances are mutable and admit one execution at a time. */
 APTR EXEC_CALL ExecLoadProgram(CONST_STRPTR name);
+/* Cooperative equivalent. Begin borrows the path during its Open. Step performs
+ * one DOS operation (Read <=1024 bytes): 0 pending, 1 staged/closed, -1 error.
+ * Take consumes a completed job, validates and transfers one Image reference.
+ * Cancel consumes any admitted job. Preserve IoErr before other I/O. */
+APTR EXEC_CALL ExecLoadBegin(CONST_STRPTR path);
+LONG EXEC_CALL ExecLoadStep(APTR job);
+APTR EXEC_CALL ExecLoadTake(APTR job);
+void EXEC_CALL ExecLoadCancel(APTR job);
 void EXEC_CALL ExecReleaseProgram(APTR image);
 ULONG EXEC_CALL ExecStartLoaded(APTR image,const struct ExecProgramStart *spec);
 LONG EXEC_CALL ExecCollectProgram(ULONG id,struct ExecProgramResult *result);

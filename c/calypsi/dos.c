@@ -3,7 +3,7 @@
 #include <exec816/program.h>
 
 /* The launcher installs these native entry addresses before entering C. */
-void EXEC_PTR *ExecDosEntries[29];
+void EXEC_PTR *ExecDosEntries[33];
 
 ULONG EXEC_CALL _DosCall(UWORD entry, const struct ExecDosWriteArgs *args);
 
@@ -53,3 +53,8 @@ LONG EXEC_CALL MountVolume(CONST_STRPTR name,const struct SioMountSpec *spec) { 
 LONG EXEC_CALL UnmountVolume(CONST_STRPTR name) { return call(23,(ULONG)name,0,0); }
 LONG EXEC_CALL ExNextBatch(BPTR lock,struct FileInfoBlock *info,struct DirBatch *batch)
 { return call(24,lock,(ULONG)info,(LONG)(ULONG)batch); }
+
+APTR EXEC_CALL ExecLoadBegin(CONST_STRPTR path) { return (APTR)call(29,(ULONG)path,0,0); }
+LONG EXEC_CALL ExecLoadStep(APTR job) { return call(30,(ULONG)job,0,0); }
+APTR EXEC_CALL ExecLoadTake(APTR job) { return (APTR)call(31,(ULONG)job,0,0); }
+void EXEC_CALL ExecLoadCancel(APTR job) { call(32,(ULONG)job,0,0); }

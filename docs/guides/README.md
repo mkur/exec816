@@ -1,6 +1,6 @@
 # Guides
 
-- [FastBasic workbench](fastbasic-workbench.md): editor controls and delivery status.
+- [FastBasic workbench](fastbasic-workbench.md) · [Bundled quickstart](../basic-workbench-distribution.txt): editor controls and delivery status.
 
 [Documentation home](../README.md)
 

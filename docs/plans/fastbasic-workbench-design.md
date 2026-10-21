@@ -1,8 +1,9 @@
 # FastBasic GEM workbench design
 
-Status: proposed, 20 October 2026. This defines the next programming environment;
-the [current FastBasic contract](../reference/fastbasic.md) continues to describe
-the delivered command-line compilers and runtime.
+Status: first editor/Run delivery implemented through WB9, 21 October 2026.
+Source debugging and native graphics remain planned. The
+[current FastBasic contract](../reference/fastbasic.md) and
+[workbench contract](../reference/fastbasic-workbench.md) describe shipped behavior.
 
 [Implementation plan](fastbasic-workbench-implementation-plan.md) ·
 [Plan index](README.md) · [GEM integration](gem4xe/README.md) ·

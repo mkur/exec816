@@ -32,7 +32,8 @@ WORD BasicFindBegin(struct BasicFind *,const struct BasicDocument *,const UBYTE 
 /* At most 1024 byte comparisons per step; 0 pending, 1 found, -1 end/stale. */
 WORD BasicFindStep(struct BasicFind *,const struct BasicDocument *);
 WORD BasicReplaceMatches(struct BasicDocument *,const UBYTE *,UWORD,const UBYTE *,UWORD,WORD,ULONG *);
-WORD BasicIndent(struct BasicDocument *,ULONG,ULONG,ULONG *);
+/* Caller owns BASIC_COLUMNS+1 scratch bytes through the edit. */
+WORD BasicIndent(struct BasicDocument *,ULONG,ULONG,ULONG *,UBYTE *);
 void BasicLexLine(const struct BasicDocument *,UWORD,UBYTE *);
 void BasicAssistBegin(struct BasicAssist *,const struct BasicDocument *);
 WORD BasicAssistStep(struct BasicAssist *,const struct BasicDocument *);

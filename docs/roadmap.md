@@ -29,10 +29,10 @@ The [integer record](history/fastbasic-integer.md) and
 remaining qualification gates. The [FB6 plan](plans/fastbasic-floating-point-implementation-plan.md)
 and [design](plans/fastbasic-floating-point-design.md) describe the private math
 package and delivery slices. The [GEM workbench design](plans/fastbasic-workbench-design.md)
-sets the next direction: a loadable native GEM editor and Run controller around
-FastBasic, followed by source debugging and native graphics. FB7 covers the
-editor/Run workflow; the wider workbench has separate acceptance gates and
-reusable process/console/event integration prerequisites.
+has delivered the native GEM editor and Check/Run/Stop/Build controller through
+WB9, completing FB7. The [workbench record](history/fastbasic-workbench.md) retains
+its development evidence and packaged walkthroughs. Source debugging and native
+graphics remain open, with separate acceptance gates.
 The [WB0–WB14 implementation plan](plans/fastbasic-workbench-implementation-plan.md)
 orders those changes, with FB7 at WB9, debugger acceptance at WB11, BASIC
 graphics at WB13 and the complete packaged environment at WB14.

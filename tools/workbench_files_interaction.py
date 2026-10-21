@@ -13,8 +13,8 @@ def prepare(out,provider):
     from generate_memory import PROFILE
     from generate_mouse_acceleration import metadata
     out.mkdir(parents=True,exist_ok=True)
-    sources=[ROOT/'examples/gem-basic'/n for n in ('main.c','basic.c','editor.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c')]
-    app=application(out/'app',sources+[ROOT/'c/calypsi/file-list.c'],probes=[(ROOT/'tests/programs/basic_editor_layout.c',LAYOUT)])
+    sources=[ROOT/'examples/gem-basic'/n for n in ('main.c','basic.c','editor.c','editor-paint.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c','build.c')]
+    app=application(out/'app',sources+[ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/fastbasic-diagnostic.c'],probes=[(ROOT/'tests/programs/basic_editor_layout.c',LAYOUT)])
     media=out/'media';media.mkdir(exist_ok=True)
     (media/'BASIC.APP').write_bytes((out/'app/program.app').read_bytes())
     make(out/'system.atr',media,binary_names={'BASIC.APP'},filesystem='sdfs',sector_bytes=256,sectors=2880)

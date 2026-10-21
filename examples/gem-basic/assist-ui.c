@@ -12,7 +12,7 @@ static struct {
     WORD request,finding,wrapped;
     char needle[81],replacement[81];
     OBJECT dialog[8];TEDINFO fields[2];
-    UBYTE lexical[255];
+    UBYTE lexical[BASIC_COLUMNS+1];
 } ui;
 static const OBJECT dialog[]={
     {-1,1,7,G_BOX,0,0,0x1170,0,0,400,100},
@@ -54,6 +54,12 @@ void BasicAssistanceCancel(struct BasicEditor *e)
     if (active) status(e,"Search/replacement cancelled");
 }
 WORD BasicAssistanceBusy(void) { return ui.replace.phase!=0; }
+WORD BasicAssistanceIndent(struct BasicEditor *e,ULONG at,ULONG removed,ULONG *caret)
+{
+    /* Painting and edits run sequentially in this Task. Reuse the pen buffer
+     * through BasicReplace, including its cooperative gap moves. */
+    return BasicIndent(&e->document,at,removed,caret,ui.lexical);
+}
 WORD BasicAssistanceWork(const struct BasicEditor *e)
 { return !current(e) || ui.index.scan<e->document.lines || ui.request || ui.finding || ui.replace.phase; }
 UWORD BasicAssistanceLine(const struct BasicEditor *e,UWORD row)

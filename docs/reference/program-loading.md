@@ -236,3 +236,15 @@ The shell reuses its transfer buffer for arguments and final fault text. PATH
 adds 1,024 upper-RAM bytes per shell; the shell header remains 128 bytes. There
 is no fixed or per-Task bank-zero reservation increase.
 The staging allocation is the exact file length, rounded by the existing heap.
+
+## File staging jobs
+
+`PROGRAMLOAD.Begin(path)` opens a file and returns a caller-owned Job.
+`Advance(job)` performs one DOS operation (Read at most 1 KiB): 0 pending,
+1 staged with the handle closed, -1 failed. `Take(job)` consumes a completed
+job, delegates validation to PROGRAM.Load and transfers its Image reference.
+`Cancel(job)` consumes any admitted job and preserves its first error during
+cleanup. Failed jobs require Cancel; an early Take refusal retains the job.
+PROGRAMFILE.Load uses this same path as a synchronous convenience.
+The [C interface](c-program-loading.md#cooperative-file-loading) exposes the
+same lifetime. No Task, signal or reserved bank-zero capacity is added.

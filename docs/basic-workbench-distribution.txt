@@ -1,0 +1,25 @@
+
+FastBasic workbench
+-------------------
+
+From Shell, type RUN C:BASIC.APP. Keep one shell and close extra applications
+so a compiler/program Task and an output window remain available.
+
+Type PRINT 1.25*2.0 and press Control+Return: output should contain 2.5.
+Program > Integer compiler selects FBCI; floating point is the default.
+Control+Shift+Return checks without running. Compile errors select the source
+byte and reveal folded lines. Successful Run returns to the editor position.
+
+Select FastBasic output to enter INPUT/GET/KEY; select FastBasic for shortcuts.
+Control+K, Program > Stop or closing output cancels the child. Program > Output
+reopens completed output. Quit waits for the child before Save/Discard/Cancel.
+Source edits are frozen during a job; Save and Save As remain available.
+
+Control+B builds a standalone release COM. Choose WORK: as its destination.
+Build does not save the source. Close the editor, then run the COM from Shell.
+If publication or cleanup reports recovery paths, keep those copies; File >
+Recovery paths displays build paths in output. RAM: contents vanish on reboot.
+
+This first workbench delivery includes editing, Check, Run, Stop and Build.
+Source debugging and native graphics are pending. FBC/FBCI remain available
+from the shell, including the EDX edit/compile/run workflow.

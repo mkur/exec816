@@ -289,6 +289,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     if ide_only:
         guide=ide_only_guide(bitmap_shell_only)
+    if basic_workbench:
+        guide+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
     guide=guide.replace('@VERSION@',program['build']['exec_build']['version'])
     (output/'README.md').write_text(guide)
     if ideplus:
@@ -361,9 +363,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record.update(gem_desktop=True,expected_peak_tasks=8)
         if basic_workbench:
             record['basic_workbench']=True
+            record['source_inputs']['docs/basic-workbench-distribution.txt']=sha256(ROOT/'docs/basic-workbench-distribution.txt')
             record['source_inputs'].update({str(p.relative_to(ROOT)):sha256(p)
                 for p in [ROOT/'examples/gem-basic'/name for name in
-                    ('main.c','basic.c','basic.h','editor.c','editor.h','document.c','document.h','files.c','files.h','file-ui.c','file-ui.h','assist.c','assist.h','assist-ui.c','assist-ui.h')]})
+                    ('main.c','basic.c','basic.h','editor.c','editor-paint.c','editor.h','document.c','document.h','files.c','files.h','file-ui.c','file-ui.h','assist.c','assist.h','assist-ui.c','assist-ui.h','build.c','build.h','build-job.h')]})
         record['artifacts'].update({name:sha256(output/name) for name in CALCULATOR_NOTICES+G4BENCH_NOTICES})
         record['calculator']=provenance
         record['g4bench']=benchmark_provenance
@@ -458,7 +461,9 @@ def add_ide_carts(output):
 
 FASTBASIC_NATIVE_INPUTS=('abi/fastbasic.json','lib/dos/fbabi.act',
     'lib/dos/fbprogram.act','lib/dos/fbservice.act','lib/dos/fbstate.act',
-    'lib/dos/fbfiles.act')
+    'lib/dos/fbfiles.act','abi/fastbasic-diagnostics.json','lib/dos/fbdiagabi.act',
+    'lib/dos/fbdiagnostic.act','abi/c-program.json','lib/dos/c-program-abi.inc',
+    'lib/dos/programload.act','lib/dos/programfile.act')
 
 
 def fastbasic_metadata(record):
@@ -484,7 +489,9 @@ def refresh_fastbasic(output):
     _,basic=build_basic(ROOT/'build/fastbasic')
     for name in ('FBCI.COM','FBC.COM'):
         shutil.copyfile(ROOT/'build/fastbasic'/name,output/'media/C'/name)
-    binary_names={name for name in record['files'] if name.startswith('C/')}
+    # Preserve the original byte/text classification, including root resources
+    # and binary fixtures. Executable-directory membership is insufficient.
+    binary_names={name for name,info in record['files'].items() if 'lines' not in info}
     files=make(output/record['media'],output/'media',binary_names=binary_names,
                filesystem=record['filesystem'],sector_bytes=record['sector_bytes'],
                sectors=record['system_sectors'],label='SYS')
@@ -496,6 +503,44 @@ def refresh_fastbasic(output):
     record['fastbasic']=fastbasic_metadata(basic)
     path.write_text(json.dumps(record,indent=2)+'\n')
     return refresh_monitor(output)
+
+
+def refresh_workbench(output):
+    """Rebuild the disk application around a matching, unchanged native system."""
+    from build_c_program import build as application
+    from c_program import ABI
+    output=output.resolve();path=output/'demo-manifest.json'
+    record=json.loads(path.read_text())
+    require(record.get('basic_workbench') and record.get('fastbasic'),
+            'Workbench refresh requires an existing workbench demo')
+    require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
+            'Changed native demo artifacts')
+    require(record['fastbasic'].get('native_inputs')=={
+        name:sha256(ROOT/name) for name in FASTBASIC_NATIVE_INPUTS},
+        'Native ABI/backend changed; rebuild the full workbench demo')
+    allowed={'tools/build_demo.py','docs/basic-workbench-distribution.txt'}
+    for name,digest in record['source_inputs'].items():
+        if name.startswith('examples/gem-basic/') or name in allowed:continue
+        require(sha256(ROOT/name)==digest,'Changed native demo input: '+name)
+    directory=output/'bitmap-console/apps/basic'
+    previous=json.loads((directory/'app.json').read_text())
+    # A previous failed media rebuild may already have staged this verified APP.
+    staged=record.get('workbench_refresh',{}).get('sha256')
+    require(previous['sha256'] in (record['files']['C/BASIC.APP']['sha256'],staged) and
+            sha256(output/'media/C/BASIC.APP')==previous['sha256'],
+            'Changed previous workbench application')
+    sources=[Path(name) for name in previous['inputs']]
+    require(all(p.is_relative_to(ROOT) for p in sources),'Foreign workbench source path')
+    current=application(directory,sources,minimum_stack=ABI['stack_floor_bytes'])
+    shutil.copyfile(directory/'program.app',output/'media/C/BASIC.APP')
+    for name in record['source_inputs']:
+        if name.startswith('examples/gem-basic/') or name in allowed:
+            record['source_inputs'][name]=sha256(ROOT/name)
+    record['workbench_refresh']=dict(previous_sha256=previous['sha256'],sha256=current['sha256'],
+        minimum_stack=current['minimum_stack'],native_xex_sha256=sha256(output/'program.xex'),
+        application_record_sha256=sha256(directory/'app.json'))
+    path.write_text(json.dumps(record,indent=2)+'\n')
+    return refresh_fastbasic(output)
 
 
 def refresh_monitor(output):
@@ -545,6 +590,8 @@ def refresh_monitor(output):
             content=content.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
         if record.get('ideplus'):
             content+=IDE_DEMO_NOTE
+        if record.get('basic_workbench'):
+            extra=ROOT/'docs/basic-workbench-distribution.txt';content+=extra.read_text();guides.append(extra)
         (output/'README.md').write_text(content)
         record['artifacts']['README.md']=sha256(output/'README.md')
         guides.append(guide)
@@ -653,11 +700,16 @@ if __name__=='__main__':
     parser.add_argument('--text-shell-only',action='store_true',help='Autoboot OF816 into a full-screen standard shell without primes')
     parser.add_argument('--refresh-monitor',action='store_true',help='Refresh OF816 and the ZIP around an existing verified native demo')
     parser.add_argument('--refresh-fastbasic',action='store_true',help='Rebuild FBCI and refresh its system disk, OF816 and ZIP around verified native code')
+    parser.add_argument('--refresh-workbench',action='store_true',help='Rebuild BASIC.APP and refresh matching FastBasic media, OF816 and ZIP')
     parser.add_argument('--refresh-loader',action='store_true',help='Repack unchanged native code with the current loader, OF816 and ZIP')
     parser.add_argument('--cartridge-from',type=Path,help='Add Atarimax boot images to an existing demo ZIP without rebuilding its XEX')
     parser.add_argument('--cartridge-source-sha256',help='Required checksum of the existing demo ZIP')
     args=parser.parse_args()
-    if args.refresh_fastbasic:
+    if args.refresh_workbench:
+        if args.refresh_fastbasic or args.refresh_loader or args.refresh_monitor or args.cartridge_from or args.cartridge_source_sha256:
+            parser.error('--refresh-workbench cannot be combined with other refresh modes')
+        refresh_workbench(args.output)
+    elif args.refresh_fastbasic:
         if args.refresh_loader or args.refresh_monitor or args.cartridge_from or args.cartridge_source_sha256:
             parser.error('--refresh-fastbasic cannot be combined with other refresh modes')
         refresh_fastbasic(args.output)

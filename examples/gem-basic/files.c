@@ -14,7 +14,7 @@ static WORD release(struct BasicFileJob *j)
     BPTR handle=j->handle;j->handle=0;
     if (handle && !Close(handle)) { cause(j,IoErr());okay=0; }
     BasicDocumentDispose(&j->candidate);
-    if (j->snapshot) { FreeMem(j->snapshot,BASIC_BYTES);j->snapshot=0; }
+    if (j->snapshot) { FreeMem(j->snapshot,j->save==2 ? j->bytes:BASIC_BYTES);j->snapshot=0; }
     j->phase=0;
     return okay;
 }
@@ -57,6 +57,13 @@ WORD BasicSaveBegin(struct BasicFileJob *j,const struct BasicDocument *d,
     j->bytes=d->bytes;j->generation=d->generation;
     BasicCopy(d,0,j->snapshot,d->bytes);
     return 1;
+}
+
+WORD BasicSaveBufferBegin(struct BasicFileJob *j,UBYTE *bytes,ULONG length,const char *path)
+{
+    if (!bytes || !length) { j->error=ERROR_BAD_NUMBER;return 0; }
+    if (!start(j,path)) return 0;
+    j->snapshot=bytes;j->bytes=length;j->save=2;return 1;
 }
 
 static void delimiter(struct BasicFileJob *j,UWORD style)
@@ -150,7 +157,11 @@ static WORD save_step(struct BasicFileJob *j,struct BasicDocument *d,struct Basi
     if (j->phase==2) {
         if (j->offset==j->pending) {
             j->offset=j->pending=0;
-            while (j->at<j->bytes && n<sizeof(j->buffer)) {
+            if (j->save==2) {
+                n=j->bytes-j->at>sizeof(j->buffer) ? sizeof(j->buffer):j->bytes-j->at;
+                memcpy(j->buffer,j->snapshot+j->at,n);j->at+=n;
+            }
+            while (j->save==1 && j->at<j->bytes && n<sizeof(j->buffer)) {
                 c=j->snapshot[j->at];
                 if (c==10 && j->named.eol==BASIC_EOL_CRLF) {
                     if (n+2>sizeof(j->buffer)) break;
@@ -189,7 +200,8 @@ static WORD save_step(struct BasicFileJob *j,struct BasicDocument *d,struct Basi
         if (!Rename(j->temporary,j->named.path)) { cause(j,IoErr());return -1; }
         j->temporary[0]=0;j->phase=7;return 0;
     }
-    *named=j->named;d->saved=j->generation;
+    if (named) *named=j->named;
+    if (j->save==1) d->saved=j->generation;
     if (j->moved && !DeleteFile(j->backup)) j->warning=IoErr();
     else j->backup[0]=0;
     release(j);return 1;

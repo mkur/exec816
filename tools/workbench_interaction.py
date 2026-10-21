@@ -18,9 +18,9 @@ def build_editor(out,provider):
     from generate_memory import PROFILE
     from generate_mouse_acceleration import metadata
     out.mkdir(parents=True,exist_ok=True)
-    app=application(out/'app',[ROOT/'examples/gem-basic'/n for n in ('main.c','basic.c','editor.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c')]+[ROOT/'c/calypsi/file-list.c'],
+    app=application(out/'app',[ROOT/'examples/gem-basic'/n for n in ('main.c','basic.c','editor.c','editor-paint.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c','build.c')]+[ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/fastbasic-diagnostic.c'],
         probes=[(ROOT/'tests/programs/basic_editor_layout.c',LAYOUT)])
-    maximum=application(out/'maximum',[ROOT/'tests/programs/basic_maximum.c']+[ROOT/'examples/gem-basic'/n for n in ('basic.c','editor.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c')]+[ROOT/'c/calypsi/file-list.c'])
+    maximum=application(out/'maximum',[ROOT/'tests/programs/basic_maximum.c']+[ROOT/'examples/gem-basic'/n for n in ('basic.c','editor.c','editor-paint.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c','build.c')]+[ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/fastbasic-diagnostic.c'])
     application(out/'counter',[ROOT/'examples/gem-counter'/n for n in ('main.c','counter.c')],minimum_stack=ABI['stack_floor_bytes'])
     media=out/'media';media.mkdir(exist_ok=True)
     (media/'COUNTER.APP').write_bytes((out/'counter/program.app').read_bytes())

@@ -9,6 +9,7 @@ void BasicAssistanceRequest(WORD);
 void BasicAssistanceCancel(struct BasicEditor *);
 WORD BasicAssistanceWork(const struct BasicEditor *);
 WORD BasicAssistanceBusy(void);
+WORD BasicAssistanceIndent(struct BasicEditor *,ULONG,ULONG,ULONG *);
 WORD BasicAssistanceStep(struct BasicEditor *);
 UWORD BasicAssistanceLine(const struct BasicEditor *,UWORD);
 UWORD BasicAssistanceRow(const struct BasicEditor *,UWORD);

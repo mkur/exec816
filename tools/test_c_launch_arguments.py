@@ -21,7 +21,7 @@ def run(out,optimize,reuse=False):
     else:
         f=emit(out/'c',[ROOT/'tests/programs/c_launch_arguments.c',ROOT/'c/calypsi/dos.c',ROOT/'c/calypsi/exec.c'],
             [ROOT/'c/calypsi/dos.s',ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/image-info.s'],(),optimize,
-            roots=['LaunchProbe','LaunchRelease','LaunchChecks','ExecDosEntries'],
+            roots=['LaunchProbe','LaunchRelease','LaunchChecks','LaunchBefore','LaunchAfter','ExecDosEntries'],
             probes=[(ROOT/'tests/programs/program_start_layout.c',[
                 ('Start size',24),('arguments',0),('input',4),('output',8),('directory',12),
                 ('console',16),('length',20),('minimumStack',22),('Result size',8)])])
@@ -54,8 +54,9 @@ ENDMODULE
 '''%f['symbols']['LaunchRelease'])
         media=out/'media';media.mkdir(exist_ok=True)
         compile_command(compiler(ROOT/'build/actionc',release=True),child,out/'native/ARGS',optimize)
+        (media/'EMPTY').write_bytes(b'')
         (media/'ARGS').write_bytes((out/'native/ARGS').read_bytes())
-        make(out/'data.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,binary_names={'ARGS'})
+        make(out/'data.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,binary_names={'ARGS','EMPTY'})
         binding='CONST C_EXECDOSENTRIES=$%x\n'%f['symbols']['ExecDosEntries']+read_source(ROOT/'c/calypsi/dos-bridge.inc')
         source=out/'probe.act'
         source.write_text('''MODULE CLAUNCHTEST
@@ -65,6 +66,7 @@ USE PROCESS
 USE PROGRAM
 USE PROGRAMIMAGE
 USE PROGRAMFILE
+USE PROGRAMLOAD
 USE CALYPSICALL
 '''+binding+'''
 LONGINT result
@@ -91,7 +93,7 @@ ENDMODULE
         machine=verify_machine(b,rom,pin)
         runtime,_=execute(b,p,timeout=180,frame_limit=12000,timer_irq=False)
         result=data(b,p['image'],'result',True)
-        require(result==[0,0],'Launch argument assertion: '+str(result))
+        require(result==[0,0],'Launch argument assertion: '+str(result)+' heap '+str({n:int.from_bytes(b.memdump(f["symbols"][n],4),"little") for n in ("LaunchBefore","LaunchAfter")}))
         checks=int.from_bytes(b.memdump(f['symbols']['LaunchChecks'],2),'little')
         ownership(b,p,p['output'])
     record=dict(status='pass',tier='development',optimize=optimize,checks=checks,machine=machine,

@@ -67,7 +67,7 @@ void BasicFilesDispose(void) { BasicFilesCancel();ui.cancelled=0; }
 
 static WORD choose(struct BasicEditor *e,WORD save)
 {
-    WORD button;
+    static WORD button;
     if (!*ui.pattern) strcpy(ui.pattern,"WORK:*.BAS");
     if (!fsel_exinput(ui.pattern,ui.file,&button,save ? "Save BASIC source":"Open BASIC source")) {
         if (ExecAESDiagnostic()==AES_PENDING) return 0;
@@ -83,7 +83,9 @@ static WORD choose(struct BasicEditor *e,WORD save)
 
 WORD BasicFilesStep(struct BasicEditor *e)
 {
-    WORD action,result;
+    /* This image has one file controller; keep its small decision workspace
+     * out of the stack used by nested selector and filesystem calls. */
+    static WORD action,result;
     if (ui.request==BASIC_FILE_RECOVERY) {
         ui.request=0;
         if (ui.job.error || ui.job.warning || *ui.job.temporary || *ui.job.backup) ui.dialog=1;
@@ -130,10 +132,13 @@ WORD BasicFilesStep(struct BasicEditor *e)
     }
     if (action==BASIC_FILE_QUIT) { ui.request=0;ui.quit=1;return 1; }
     if (action==BASIC_FILE_NEW) {
-        struct BasicDocument fresh;
-        if (BasicDocumentInit(&fresh)) status(e,"Not enough memory for a new source");
+        /* No file job is active here. Reuse its existing candidate descriptor,
+         * then transfer the new document before clearing that ownership. */
+        struct BasicDocument *fresh=&ui.job.candidate;
+        if (BasicDocumentInit(fresh)) status(e,"Not enough memory for a new source");
         else {
-            BasicDocumentDispose(&e->document);e->document=fresh;
+            BasicDocumentDispose(&e->document);e->document=*fresh;
+            memset(fresh,0,sizeof(*fresh));
             memset(&ui.named,0,sizeof(ui.named));e->caret=e->anchor=e->first=e->left=0;status(e,"New source");
         }
         ui.request=0;return 0;

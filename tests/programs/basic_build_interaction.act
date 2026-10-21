@@ -1,0 +1,126 @@
+MODULE BASICBUILDINTERACTION
+USE EXEC
+USE DOS
+USE FSBOOT
+USE PROGRAM
+USE PROGRAMFILE
+USE PROCESS
+USE AESSTATE
+USE AESCORE
+USE HEAPCORE
+
+CARD checks,stage,cycle,peerDone
+LONGCARD appBase,identity,peerProgress,freeUpper
+LONGINT primary,secondary
+BYTE ARRAY marker(4)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fe80+checks)
+  FI
+  checks==+1
+
+RETURN
+
+LONGINT FUNC Peer()
+
+  WHILE peerDone=0 DO
+    peerProgress==+1
+    EXEC.Yield()
+  OD
+
+RETURN(0)
+
+; Existing names must survive every partial scratch-name reservation retry.
+PROC Seed(BYTE POINTER name)
+
+  LET file=DOS.Open(name,DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,BYTE POINTER(c"KEEP"),4)=4)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Preserved(BYTE POINTER name)
+
+  LET file=DOS.Open(name,DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,@marker(0),4)=4)
+  Require(marker(0)=75 AND marker(1)=69 AND marker(2)=69 AND marker(3)=80)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Main()
+  PROCESS.Result result
+  LONGCARD warm
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  LET oldInput=DOS.SelectInput(input)
+  LET oldOutput=DOS.SelectOutput(output)
+  LET peerId=PROCESS.StartBackground(@Peer,NULL,0)
+  Require(peerId<>0)
+  Seed(BYTE POINTER(c"RAM:A0000001.BAS"))
+  Seed(BYTE POINTER(c"RAM:A0000002.COM"))
+  Seed(BYTE POINTER(c"RAM:A0000003.DIA"))
+  LET project=DOS.CreateDir(BYTE POINTER(c"RAM:PROJECT"))
+  LET other=DOS.CreateDir(BYTE POINTER(c"RAM:OTHER"))
+  Require(project<>NULL AND other<>NULL)
+  DOS.UnLock(project)
+  DOS.UnLock(other)
+  LET relative=DOS.Open(BYTE POINTER(c"RAM:PROJECT/REL.TXT"),DOS.MODE_NEWFILE)
+  Require(relative<>NULL)
+  Require(DOS.Write(relative,BYTE POINTER(c"PROJECTVALUE\x9b"),13)=13)
+  Require(DOS.Close(relative)<>0)
+  warm=0
+  FOR cycle=0 TO 1 DO
+    BEGIN
+      LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:C/BASIC.APP"))
+      Require(image<>NULL)
+      appBase=LONGCARD(ADDRESS(image.text))
+      identity=PROCESS.StartLoaded(BYTE POINTER(image),NULL,0,0)
+      Require(identity<>0)
+      stage=1
+      Require(PROCESS.Wait(identity,@result)<>0)
+      primary=result.primary
+      secondary=result.secondary
+      Require(primary=0 AND secondary=0)
+      PROGRAM.Unload(image)
+      LET service=AESSTATE.Get()
+      Require(service.count=0 AND AESCORE.Idle(service)<>0)
+      Preserved(BYTE POINTER(c"RAM:A0000001.BAS"))
+      Preserved(BYTE POINTER(c"RAM:A0000002.COM"))
+      Preserved(BYTE POINTER(c"RAM:A0000003.DIA"))
+      ; Neither the exited IDE nor the compiler is needed by a built command.
+      LET command=PROGRAMFILE.Load(BYTE POINTER(c"RAM:RELEASE.COM"))
+      Require(command<>NULL)
+      identity=PROCESS.StartLoaded(BYTE POINTER(command),NULL,0,0)
+      Require(identity<>0)
+      PROGRAM.Unload(command)
+      Require(PROCESS.Wait(identity,@result)<>0)
+      Require(result.primary=0 AND result.secondary=0)
+      Require(DOS.DeleteFile(BYTE POINTER(c"RAM:RELEASE.COM"))<>0)
+      Require(DOS.DeleteFile(BYTE POINTER(c"RAM:PROJECT/REL.BAS"))<>0)
+      Require(DOS.DeleteFile(BYTE POINTER(c"RAM:OTHER/AFTER.BAS"))<>0)
+      freeUpper=EXEC.AvailMem(0)
+      IF cycle=0 THEN
+        warm=freeUpper
+      ELSE
+        Require(freeUpper=warm)
+      FI
+      stage=0
+    END
+  OD
+  peerDone=1
+  Require(PROCESS.Wait(peerId,@result)<>0 AND result.primary=0)
+  DOS.SelectInput(oldInput)
+  DOS.SelectOutput(oldOutput)
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  stage=2
+
+RETURN
+ENDMODULE

@@ -117,11 +117,11 @@ WORD BasicReplaceMatches(struct BasicDocument *d,const UBYTE *needle,UWORD lengt
     }
     BasicReplaceCancel(job);FreeMem(job,sizeof(*job));return result;
 }
-WORD BasicIndent(struct BasicDocument *d,ULONG at,ULONG removed,ULONG *caret)
+WORD BasicIndent(struct BasicDocument *d,ULONG at,ULONG removed,ULONG *caret,UBYTE *text)
 {
-    UBYTE text[256];ULONG start=d->line[BasicLine(d,at)];UWORD n=1;WORD result;
+    ULONG start=d->line[BasicLine(d,at)];UWORD n=1;WORD result;
     text[0]=10;
-    while (start<at && n<sizeof(text) && (BasicByte(d,start)==32 || BasicByte(d,start)==9)) text[n++]=BasicByte(d,start++);
+    while (start<at && n<BASIC_COLUMNS+1 && (BasicByte(d,start)==32 || BasicByte(d,start)==9)) text[n++]=BasicByte(d,start++);
     result=BasicReplace(d,at,removed,text,n);if (!result) *caret=at+n;return result;
 }
 

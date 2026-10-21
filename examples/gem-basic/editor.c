@@ -3,20 +3,23 @@
 #include "file-ui.h"
 #include "assist-ui.h"
 #include "assist.h"
+#include "build.h"
+#include <exec816/aes-wait.h>
 #include <exec816/aes.h>
 #include <string.h>
 
 enum { MENU_NEW=8,MENU_OPEN=9,MENU_SAVE=10,MENU_SAVE_AS=11,MENU_QUIT=12,MENU_RECOVERY=13,
     MENU_UNDO=15,MENU_REDO=16,MENU_ALL=17,MENU_FIND=18,MENU_NEXT=19,MENU_REPLACE=20,
-    MENU_PROC_NEXT=22,MENU_PROC_PREVIOUS=23,MENU_FOLD=24 };
+    MENU_PROC_NEXT=22,MENU_PROC_PREVIOUS=23,MENU_FOLD=24,
+    MENU_CHECK=27,MENU_RUN=28,MENU_STOP=29,MENU_BUILD=30,MENU_INTEGER=31,MENU_OUTPUT=32 };
 static const OBJECT menu[]={
     {-1,1,6,G_IBOX,0,0,0,0,0,640,240},
     {6,2,2,G_BOX,0,0,0x1100,0,0,640,11},
-    {1,3,5,G_IBOX,0,0,0,8,0,424,11},
+    {1,3,25,G_IBOX,0,0,0,8,0,424,11},
     {4,-1,-1,G_TITLE,0,0,(ULONG)"File",0,0,48,11},
     {5,-1,-1,G_TITLE,0,0,(ULONG)"Edit",48,0,48,11},
-    {2,-1,-1,G_TITLE,0,0,(ULONG)"Navigate",96,0,80,11},
-    {0,7,21,G_IBOX,0,0,0,0,11,640,229},
+    {25,-1,-1,G_TITLE,0,0,(ULONG)"Navigate",96,0,80,11},
+    {0,7,26,G_IBOX,0,0,0,0,11,640,229},
     {14,8,13,G_BOX,0,0,0x1100,8,0,160,66},
     {9,-1,-1,G_STRING,0,0,(ULONG)"New       ^N",0,0,160,11},
     {10,-1,-1,G_STRING,0,0,(ULONG)"Open      ^O",0,11,160,11},
@@ -31,10 +34,18 @@ static const OBJECT menu[]={
     {19,-1,-1,G_STRING,0,0,(ULONG)"Find      ^F",0,33,160,11},
     {20,-1,-1,G_STRING,0,0,(ULONG)"Find Next ^G",0,44,160,11},
     {14,-1,-1,G_STRING,0,0,(ULONG)"Replace All ^R",0,55,160,11},
-    {6,22,24,G_BOX,0,0,0x1100,104,0,184,33},
+    {26,22,24,G_BOX,0,0,0x1100,104,0,184,33},
     {23,-1,-1,G_STRING,0,0,(ULONG)"Next procedure",0,0,184,11},
     {24,-1,-1,G_STRING,0,0,(ULONG)"Previous procedure",0,11,184,11},
-    {21,-1,-1,G_STRING,LASTOB,0,(ULONG)"Fold / Unfold",0,22,184,11}
+    {21,-1,-1,G_STRING,0,0,(ULONG)"Fold / Unfold",0,22,184,11},
+    {2,-1,-1,G_TITLE,0,0,(ULONG)"Program",176,0,72,11},
+    {6,27,32,G_BOX,0,0,0x1100,184,0,208,66},
+    {28,-1,-1,G_STRING,0,0,(ULONG)"Check    ^Shift Return",0,0,208,11},
+    {29,-1,-1,G_STRING,0,0,(ULONG)"Run      ^Return",0,11,208,11},
+    {30,-1,-1,G_STRING,0,0,(ULONG)"Stop     ^K",0,22,208,11},
+    {31,-1,-1,G_STRING,0,0,(ULONG)"Build    ^B",0,33,208,11},
+    {32,-1,-1,G_STRING,0,0,(ULONG)"Integer compiler",0,44,208,11},
+    {26,-1,-1,G_STRING,LASTOB,0,(ULONG)"Output",0,55,208,11}
 };
 static WORD min(WORD a,WORD b) { return a<b ? a:b; }
 static WORD max(WORD a,WORD b) { return a>b ? a:b; }
@@ -96,92 +107,6 @@ ULONG BasicEditorPosition(const struct BasicEditor *e,WORD x,WORD y)
     return at_column(&e->document,line,col);
 }
 
-static void row_text(struct BasicEditor *e,UWORD line)
-{
-    ULONG at,col=0,next;UWORD i=0;UBYTE c;
-    memset(e->row,' ',e->columns);e->row[e->columns]=0;
-    if (line>=e->document.lines) return;
-    at=e->document.line[line];
-    while (at<e->document.bytes && i<e->columns) {
-        c=BasicByte(&e->document,at++);if (c==10) break;
-        next=c==9 ? (col+8)&~7UL:col+1;
-        while (col<next) { if (col>=e->left) e->row[i++]=c==9 ? ' ':c;++col;if (i==e->columns) break; }
-    }
-}
-
-static WORD paint(struct BasicEditor *e)
-{
-    struct BasicApp *a=&e->app;WORD r[4],clip[4],bar[4],i,y,end,okay=1;
-    ULONG lo=e->anchor<e->caret ? e->anchor:e->caret,hi=e->anchor>e->caret ? e->anchor:e->caret;
-    ULONG start,finish,at;UWORD line;
-    end=min(e->damageEnd,e->damageFirst+4);
-    if (end==e->damageEnd && end-e->damageFirst==4) --end;
-    y=a->work[1]+e->damageFirst*a->cellh;
-    if (!ExecAESBeginUpdate(a->window)) return 0;
-    if (!wind_get(a->window,WF_FIRSTXYWH,&r[0],&r[1],&r[2],&r[3])) okay=0;
-    while (okay && r[2] && r[3]) {
-        clip[0]=max(a->work[0],r[0]);clip[1]=max(y,r[1]);
-        clip[2]=min(a->work[0]+a->work[2],r[0]+r[2])-1;
-        clip[3]=min(a->work[1]+end*a->cellh,r[1]+r[3])-1;
-        if (clip[0]<=clip[2] && clip[1]<=clip[3]) {
-            vs_clip(a->vdi,1,clip);vsf_color(a->vdi,0);v_bar(a->vdi,clip);vst_color(a->vdi,1);
-            for (i=e->damageFirst;i<end;++i) {
-                line=BasicAssistanceLine(e,i);row_text(e,line);
-                BasicAssistanceColors(e,line,e->colors);
-                {
-                    UWORD column=0,stop;char saved;
-                    while (column<e->columns) {
-                        stop=column+1;while (stop<e->columns && e->colors[stop]==e->colors[column]) ++stop;
-                        saved=e->row[stop];e->row[stop]=0;vst_color(a->vdi,e->colors[column]);
-                        v_gtext(a->vdi,a->work[0]+4+column*a->cellw,a->work[1]+i*a->cellh+6,e->row+column);
-                        e->row[stop]=saved;column=stop;
-                    }
-                }
-                if (line<e->document.lines && lo<hi && lo<e->document.line[line+1] && hi>e->document.line[line]) {
-                    at=lo>e->document.line[line] ? lo:e->document.line[line];start=BasicColumn(&e->document,at);
-                    at=hi<e->document.line[line+1] ? hi:e->document.line[line+1];
-                    if (at>e->document.line[line] && at<=e->document.bytes && BasicByte(&e->document,at-1)==10) --at;
-                    finish=BasicColumn(&e->document,at);if (hi>at) ++finish;
-                    bar[0]=a->work[0]+4+max(0,(WORD)start-e->left)*a->cellw;
-                    bar[2]=a->work[0]+3+min(e->columns,(WORD)finish-e->left)*a->cellw;
-                    bar[1]=a->work[1]+i*a->cellh+7;bar[3]=bar[1];
-                    if (bar[0]<=bar[2]) { vsf_color(a->vdi,3);v_bar(a->vdi,bar); }
-                }
-                if (line==BasicLine(&e->document,e->caret)) {
-                    start=BasicColumn(&e->document,e->caret);
-                    if (start>=e->left && start<e->left+e->columns) {
-                        bar[0]=bar[2]=a->work[0]+4+(start-e->left)*a->cellw;
-                        bar[1]=a->work[1]+i*a->cellh;bar[3]=bar[1]+a->cellh-1;
-                        vsf_color(a->vdi,1);v_bar(a->vdi,bar);
-                    }
-                }
-            }
-            okay=ExecAESDiagnostic()==AES_OK;
-        }
-        if (end==e->damageEnd) {
-            clip[0]=max(a->work[0],r[0]);clip[1]=max(a->work[1]+e->rows*a->cellh,r[1]);
-            clip[2]=min(a->work[0]+a->work[2],r[0]+r[2])-1;
-            clip[3]=min(a->work[1]+a->work[3],r[1]+r[3])-1;
-            if (clip[0]<=clip[2] && clip[1]<=clip[3]) {
-                vs_clip(a->vdi,1,clip);vsf_color(a->vdi,0);v_bar(a->vdi,clip);vst_color(a->vdi,1);
-                memset(e->row,' ',e->columns);e->row[e->columns]=0;
-                e->row[0]=BasicDirty(&e->document) ? '*':' ';
-                if (e->columns>2) {
-                    UWORD n=strlen(e->status);if (n>e->columns-2) n=e->columns-2;
-                    memcpy(e->row+2,e->status,n);
-                }
-                v_gtext(a->vdi,a->work[0]+4,a->work[1]+e->rows*a->cellh+10,e->row);
-                if (!ExecAESPainted(a->window,clip[0],clip[1],clip[2]-clip[0]+1,clip[3]-clip[1]+1)) okay=0;
-            }
-        }
-        if (!wind_get(a->window,WF_NEXTXYWH,&r[0],&r[1],&r[2],&r[3])) okay=0;
-    }
-    if (okay) okay=ExecAESPainted(a->window,a->work[0],y,a->work[2],(end-e->damageFirst)*a->cellh);
-    if (!wind_update(END_UPDATE)) okay=0;
-    if (okay) { e->damageFirst=end;e->dirty=end<e->damageEnd;++e->paintTurns; }
-    return okay;
-}
-
 WORD BasicEditorKey(struct BasicEditor *e,WORD key,WORD mods)
 {
     struct BasicDocument *d=&e->document;UBYTE c=key&255;
@@ -207,7 +132,7 @@ WORD BasicEditorKey(struct BasicEditor *e,WORD key,WORD mods)
         e->caret=e->anchor=lo;goto edited;
     } else if (c==9 || c==13 || (c>=32 && c<=126 && !(mods&12))) {
         if (c==13) {
-            result=BasicIndent(d,lo,hi-lo,&at);if (result) return result;
+            result=BasicAssistanceIndent(e,lo,hi-lo,&at);if (result) return result;
             e->caret=e->anchor=at;goto edited;
         }
         result=BasicReplace(d,lo,hi-lo,&c,1);if (result) return result;
@@ -229,8 +154,13 @@ edited:
 
 WORD BasicEditorRun(struct BasicEditor *e)
 {
-    WORD quit=0,result=20,events,mx=0,my=0,buttons,mods,key,clicks,i,action,x,y;
+    WORD quit=0,quitPending=0,result=20;
+    /* Each mutable application image owns one editor Task. Keep its event
+     * workspace in upper image data, leaving headroom for nested GEM/DOS calls. */
+    static WORD events,mx,my,buttons,mods,key,clicks,i,action,x,y;
+    static struct ExecAESWaitSpec wait;
     struct BasicApp *a=&e->app;
+    mx=my=0;
     BasicAssistanceInit(e);
     if (!BasicOpen(a)) goto finish;
     if (!wind_calc(WC_BORDER,BASIC_WINDOW_KIND,0,0,288,128,&x,&y,&e->minw,&e->minh)) goto finish;
@@ -240,9 +170,15 @@ WORD BasicEditorRun(struct BasicEditor *e)
     strcpy(e->status,"Ctrl+O Open  Ctrl+S Save");
     BasicEditorDamage(e,0,BASIC_LINES);result=0;
     while (!quit && !result) {
-        events=evnt_multi(MU_KEYBD|MU_BUTTON|MU_MESAG|(e->dragging ? MU_M1:0)|((e->dirty || BasicFilesWork() || BasicAssistanceWork(e)) ? MU_TIMER:0),
-            1,1,e->dragging ? 0:1,1,mx,my,1,1,0,0,0,0,0,a->message,
-            0,0,&mx,&my,&buttons,&mods,&key,&clicks);
+        memset(&wait,0,sizeof(wait));
+        wait.flags=MU_KEYBD|MU_BUTTON|MU_MESAG|(e->dragging ? MU_M1:0)|
+            ((e->dirty || BasicFilesWork() || BasicAssistanceWork(e) || BasicBuildWork()) ? MU_TIMER:0);
+        wait.buttonClicks=1;wait.buttonMask=1;wait.buttonState=e->dragging ? 0:1;
+        wait.m1Flags=1;wait.m1X=mx;wait.m1Y=my;wait.m1Width=wait.m1Height=1;
+        wait.signalMask=BasicBuildMask();
+        events=ExecAESWait(&wait);
+        mx=wait.mouseX;my=wait.mouseY;buttons=wait.mouseButtons;mods=wait.keyState;
+        key=wait.key;clicks=wait.clicks;memcpy(a->message,wait.message,sizeof(a->message));
         if (!events) {
             if (ExecAESDiagnostic()==AES_INPUT_LOST) { e->dragging=0;continue; }
             result=20;break;
@@ -251,8 +187,13 @@ WORD BasicEditorRun(struct BasicEditor *e)
         if (events&MU_MESAG) {
             WORD *m=a->message;
             if (m[0]==MN_SELECTED) { action=m[4];if (!menu_tnormal(e->menu,m[3],1)) result=20; }
+            else if (BasicBuildMessage(e,m)) { }
             else if (m[3]==a->window) switch (m[0]) {
-            case WM_CLOSED:BasicAssistanceCancel(e);BasicFilesRequest(BASIC_FILE_QUIT);break;
+            case WM_CLOSED:
+                BasicAssistanceCancel(e);
+                if (BasicBuildBusy()) { quitPending=1;BasicBuildStop(); }
+                else BasicFilesRequest(BASIC_FILE_QUIT);
+                break;
             case WM_TOPPED:if (!wind_set(a->window,WF_TOP,0,0,0,0)) result=20;break;
             case WM_SIZED:
                 m[6]=max(e->minw,m[6]);m[7]=max(e->minh,m[7]);
@@ -274,7 +215,10 @@ WORD BasicEditorRun(struct BasicEditor *e)
         }
         if (quit || result) break;
         if (events&MU_KEYBD) {
+            if ((mods&4) && (key&255)==13) { action=(mods&3) ? MENU_CHECK:MENU_RUN;events&=~MU_KEYBD; }
             switch (key&255) {
+            case 11:action=MENU_STOP;break;
+            case 2:action=MENU_BUILD;break;
             case 14:action=MENU_NEW;break;
             case 15:action=MENU_OPEN;break;
             case 19:action=MENU_SAVE;break;
@@ -286,20 +230,27 @@ WORD BasicEditorRun(struct BasicEditor *e)
             case 18:action=MENU_REPLACE;break;
             }
         }
+        if (action>=MENU_CHECK && action<=MENU_OUTPUT) {
+            BasicBuildRequest(e,action-MENU_CHECK+BASIC_BUILD_CHECK);events&=~MU_KEYBD;action=0;
+        }
+        if (action==MENU_QUIT && BasicBuildBusy()) {
+            quitPending=1;BasicBuildStop();events&=~MU_KEYBD;action=0;
+        }
+        if ((action==MENU_NEW || action==MENU_OPEN) && BasicBuildBusy()) { events&=~MU_KEYBD;action=0; }
         if (action>=MENU_NEW && action<=MENU_QUIT) {
             BasicAssistanceCancel(e);BasicFilesRequest(action-MENU_NEW+BASIC_FILE_NEW);events&=~MU_KEYBD;
         }
-        if (action==MENU_RECOVERY) BasicFilesRequest(BASIC_FILE_RECOVERY);
-        if (action>=MENU_FIND && action<=MENU_REPLACE) {
+        if (action==MENU_RECOVERY && !BasicBuildRecovery(e)) BasicFilesRequest(BASIC_FILE_RECOVERY);
+        if (!BasicBuildBusy() && action>=MENU_FIND && action<=MENU_REPLACE) {
             BasicAssistanceRequest(action-MENU_FIND+BASIC_ASSIST_FIND);events&=~MU_KEYBD;
         }
-        if (action>=MENU_PROC_NEXT && action<=MENU_FOLD) {
+        if (!BasicBuildBusy() && action>=MENU_PROC_NEXT && action<=MENU_FOLD) {
             BasicAssistanceRequest(action-MENU_PROC_NEXT+BASIC_ASSIST_PROC_NEXT);events&=~MU_KEYBD;
         }
         if (action==MENU_UNDO) { key=26;events|=MU_KEYBD; }
         if (action==MENU_REDO) { key=25;events|=MU_KEYBD; }
         if (action==MENU_ALL) { key=1;events|=MU_KEYBD; }
-        if ((events&MU_KEYBD) && !BasicFilesLoading() && !BasicAssistanceBusy()) {
+        if ((events&MU_KEYBD) && !BasicBuildBusy() && !BasicFilesLoading() && !BasicAssistanceBusy()) {
             i=BasicEditorKey(e,key,mods);
             if (i) {
                 const char *message="Edit rejected";
@@ -328,6 +279,8 @@ WORD BasicEditorRun(struct BasicEditor *e)
             e->caret=BasicEditorPosition(e,mx,my);BasicEditorReveal(e);BasicEditorDamage(e,0,BASIC_LINES);
         }
         if ((events&MU_BUTTON) && !buttons) e->dragging=0;
+        BasicBuildStep(e);
+        if (quitPending && !BasicBuildBusy()) { quitPending=0;BasicFilesRequest(BASIC_FILE_QUIT); }
         if (BasicFilesWork()) {
             i=BasicFilesStep(e);if (i==1) break;if (i==2) continue;
             if (!viewport(e)) result=20;
@@ -340,9 +293,10 @@ WORD BasicEditorRun(struct BasicEditor *e)
             if (!ExecAESBeginUpdate(a->window) || !wind_update(END_UPDATE)) { result=20;break; }
             e->publish=0;
         }
-        if (e->dirty && !paint(e)) result=20;
+        if (e->dirty && !BasicEditorPaint(e)) result=20;
     }
 finish:
+    BasicBuildDispose();
     BasicAssistanceDispose();
     BasicFilesDispose();
     if (!BasicClose(a)) result=20;

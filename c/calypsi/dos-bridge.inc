@@ -101,6 +101,24 @@ LONGCARD FUNC CLoadProgram(LONGCARD name,unused,unused2)
 
 RETURN(LONGCARD(ADDRESS(PROGRAMFILE.Load(BYTE POINTER(ADDRESS(name))))))
 
+LONGCARD FUNC CLoadBegin(LONGCARD path,unused,unused2)
+
+RETURN(LONGCARD(ADDRESS(PROGRAMLOAD.Begin(BYTE POINTER(ADDRESS(path))))))
+
+LONGINT FUNC CLoadStep(LONGCARD job,unused,unused2)
+
+RETURN(LONGINT(PROGRAMLOAD.Advance(PROGRAMLOAD.Job POINTER(ADDRESS(job)))))
+
+LONGCARD FUNC CLoadTake(LONGCARD job,unused,unused2)
+
+RETURN(LONGCARD(ADDRESS(PROGRAMLOAD.Take(PROGRAMLOAD.Job POINTER(ADDRESS(job))))))
+
+LONGINT FUNC CLoadCancel(LONGCARD job,unused,unused2)
+
+  PROGRAMLOAD.Cancel(PROGRAMLOAD.Job POINTER(ADDRESS(job)))
+
+RETURN(1)
+
 LONGINT FUNC CReleaseProgram(LONGCARD image,unused,unused2)
 
   IF image>$ffffff THEN
@@ -237,5 +255,9 @@ PROC BindDos(BYTE unused)
   entries(26)=ADDRESS(@CReleaseProgram)
   entries(27)=ADDRESS(@CStartLoaded)
   entries(28)=ADDRESS(@DOS.Input)
+  entries(29)=ADDRESS(@CLoadBegin)
+  entries(30)=ADDRESS(@CLoadStep)
+  entries(31)=ADDRESS(@CLoadTake)
+  entries(32)=ADDRESS(@CLoadCancel)
 
 RETURN

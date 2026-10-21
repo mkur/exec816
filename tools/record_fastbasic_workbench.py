@@ -5,6 +5,57 @@ from pathlib import Path
 from native_program import ROOT,sha256,require
 
 SOURCES={
+    'WB9':[
+        'abi/c-program.json',
+        'c/calypsi/dos-bridge.inc',
+        'c/calypsi/dos.c',
+        'c/include/exec816/program.h',
+        'examples/gem-basic/assist-ui.c',
+        'examples/gem-basic/assist-ui.h',
+        'examples/gem-basic/assist.c',
+        'examples/gem-basic/assist.h',
+        'examples/gem-basic/build-job.h',
+        'examples/gem-basic/build.c',
+        'examples/gem-basic/build.h',
+        'examples/gem-basic/editor.c',
+        'examples/gem-basic/editor-paint.c',
+        'examples/gem-basic/editor.h',
+        'examples/gem-basic/file-ui.c',
+        'examples/gem-basic/files.c',
+        'examples/gem-basic/files.h',
+        'lib/dos/c-program-abi.inc',
+        'lib/dos/programfile.act',
+        'lib/dos/programload.act',
+        'tests/programs/basic_assist.c',
+        'tests/programs/basic_build_cancel.act',
+        'tests/programs/basic_build_cancel.c',
+        'tests/programs/basic_build_interaction.act',
+        'tests/programs/basic_build_layout.c',
+        'tests/programs/basic_files.c',
+        'tests/programs/c_launch_arguments.c',
+        'tests/test_c_program_package.py',
+        'tools/basic_build_model.py',
+        'tools/build_bitmap_console.py',
+        'tools/build_demo.py',
+        'tools/build_gem_desktop.py',
+        'tools/record_fastbasic_workbench.py',
+        'tools/test_aes_exec_wait.py',
+        'tools/test_c_launch_arguments.py',
+        'tools/test_console_window.py',
+        'tools/test_directory_batch.py',
+        'tools/test_directory_metadata_abi.py',
+        'tools/test_fastbasic_build.py',
+        'tools/test_fastbasic_build_cancel.py',
+        'tools/test_fastbasic_workbench.py',
+        'tools/test_mount_api_bridges.py',
+        'tools/workbench_build_interaction.py',
+        'tools/workbench_files_interaction.py',
+        'tools/workbench_interaction.py',
+        'tests/test_workbench_refresh.py',
+        'tools/test_workbench_demo.py',
+        'tools/test_workbench_source.py',
+        'tools/test_fastbasic_editor.py',
+    ],
     'WB8':['abi/fastbasic.json','abi/fastbasic-diagnostics.json',
         'lib/dos/fbabi.act','lib/dos/fbdiagabi.act','lib/dos/fbdiagnostic.act','lib/dos/fbservice.act','lib/dos/fbstate.act',
         'c/include/exec816/fastbasic-diagnostic.h','c/calypsi/fastbasic-diagnostic.c',
@@ -47,24 +98,24 @@ SOURCES={
             'build_c_program.py','c_program.py','generate_c_program.py','generate_process.py','build_bitmap_console.py',
             'build_gem_desktop.py','test_directory_batch.py','test_directory_metadata_abi.py','test_mount_api_bridges.py',
             'test_fastbasic_workbench.py','workbench_interaction.py')]],
-    'WB4':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h','editor.c','editor.h','document.c','document.h','files.c','files.h','file-ui.c','file-ui.h','assist.c','assist.h','assist-ui.c','assist-ui.h')]+[
+    'WB4':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h','editor.c','editor-paint.c','editor.h','document.c','document.h','files.c','files.h','file-ui.c','file-ui.h','assist.c','assist.h','assist-ui.c','assist-ui.h')]+[
         'tests/programs/basic_assist.c','tests/programs/basic_editor.c','tests/programs/basic_editor_layout.c',
         'tests/programs/basic_interaction.act','tests/programs/basic_files_interaction.act',
         'tools/test_fastbasic_assist.py','tools/test_fastbasic_editor.py','tools/workbench_pixels.py',
         'tools/workbench_interaction.py','tools/workbench_files_interaction.py','tools/test_fastbasic_workbench.py',
         'tools/build_demo.py','tools/build_gem_desktop.py','c/calypsi/file-list.c'],
-    'WB0':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h','editor.c','editor.h','document.c',
+    'WB0':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h','editor.c','editor-paint.c','editor.h','document.c',
         'document.h','files.c','files.h','file-ui.c','file-ui.h','assist.c','assist.h','assist-ui.c','assist-ui.h')]+['c/calypsi/file-list.c',
         'tests/programs/basic_lifecycle.act','tests/programs/basic_lifecycle.c',
         'tools/test_fastbasic_workbench.py','tools/test_basic_workbench_baseline.py',
         'tools/build_demo.py','tools/build_gem_desktop.py','tools/gem_applications.py','tools/gem_desktop_oracle.py'],
     'WB1':['examples/gem-basic/document.c','examples/gem-basic/document.h',
         'tests/programs/basic_document.c','tools/test_fastbasic_document.py'],
-    'WB3':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h','editor.c','editor.h','document.c','document.h','files.c','files.h','file-ui.c','file-ui.h')]+[
+    'WB3':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h','editor.c','editor-paint.c','editor.h','document.c','document.h','files.c','files.h','file-ui.c','file-ui.h')]+[
         'tests/programs/basic_files.c','tests/programs/basic_file_ui.c','tests/programs/basic_files_interaction.act',
         'tests/programs/basic_interaction.act','tools/test_fastbasic_files.py','tools/test_fastbasic_file_ui.py',
         'tools/workbench_files_interaction.py','tools/workbench_interaction.py','tools/build_demo.py','tools/build_gem_desktop.py','c/calypsi/file-list.c','c/calypsi/aes-alert.c'],
-    'WB2':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h','editor.c','editor.h','document.c','document.h')]+[
+    'WB2':['examples/gem-basic/'+n for n in ('main.c','basic.c','basic.h','editor.c','editor-paint.c','editor.h','document.c','document.h')]+[
         'tests/programs/basic_editor.c','tests/programs/basic_editor_layout.c','tests/programs/basic_interaction.act',
         'tests/programs/basic_maximum.c','tools/test_fastbasic_editor.py','tools/workbench_interaction.py',
         'tools/build_demo.py','tools/build_gem_desktop.py'],
@@ -96,7 +147,47 @@ def record(slice,paths,staged=False):
             'abi/fastbasic.json','abi/c-program.json','toolchain/altirra-gem-vdi.json','toolchain/altirra-shell-paced.json')},
         evidence=cases,reserved_bank_zero_delta=dict(fixed=0,root_kernel=0,per_public_task=[0]*8,idle=0,
             includes='Guards, alignment and unused capacity; existing Task pools and 544-byte guest pool retained'))
-    if slice=='WB0':
+    if slice=='WB9':
+        before=ROOT/'build/fastbasic-workbench/wb0-demo/build.json'
+        after=ROOT/'build/fastbasic-workbench/wb9-demo-final/build.json'
+        baseline=json.loads(before.read_text())['memory']['bank_zero_budget']
+        current=json.loads(after.read_text())['memory']['bank_zero_budget']
+        require(baseline==current,'Changed complete WB9 reserved bank-zero map')
+        result['memory_map']=dict(baseline=str(before.relative_to(ROOT)),baseline_sha256=sha256(before),
+            build=str(after.relative_to(ROOT)),build_sha256=sha256(after),bank_zero_budget=current)
+        application=ROOT/'build/fastbasic-workbench/wb9-demo-final/bitmap-console/apps/basic/app.json'
+        app=json.loads(application.read_text())
+        for name,digest in app['inputs'].items():require(sha256(Path(name))==digest,'Changed WB9 APP input: '+name)
+        require(app['minimum_stack']==1312,'Wrong BASIC stack declaration')
+        result['application']={k:app[k] for k in ('sha256','bytes','span','minimum_stack','verified_banks')}
+        result['controller']=dict(job_static_upper_bytes=2415,publication_static_upper_bytes=2524,
+            scratch_recovery_static_upper_bytes=51,immutable_source_upper_bytes=32768,
+            editor_bytes=1664,document_requested_upper_bytes=65540,document_rounded_upper_bytes=65544,
+            indentation='256 caller-owned bytes reuse the lexical buffer; one additional static upper byte',
+            event_workspace_static_upper_bytes=80,file_ui_workspace_static_upper_bytes=6,
+            renderer='Separate translation unit keeps painting workspace out of the persistent event-loop frame',
+            children=1,child_poll_timers=0,loader_requested_upper_bytes=43,loader_rounded_upper_bytes=48,
+            loader_read_bytes=1024,loader_staging_limit=262144,native_c_table_upper_delta=12,c_import_table_upper_delta=12)
+        result['runtime_allocations']=dict(session_requested=2310,session_rounded=2312,
+            diagnostic_record=224,output_requested=1664,output_rounded=1672,
+            image_metadata_requested=74,image_metadata_rounded=80,
+            app_backing_requested=app['span']+65535,app_backing_rounded=(app['span']+65542)//8*8,
+            includes='Allocation rounding and unused alignment capacity; APP static objects are inside its backing')
+        result['capacity']=dict(public_tasks=8,normal_desktop=6,BASIC=1,sequential_child=1,
+            BASIC_reserved_stack=1312,large_pools='Existing Desktop and console worker pools retained',
+            guest_slots=2,AES_clients=4,windows=6,consoles=4)
+        result['packages']={}
+        for name,directory in [('GEM','wb9-release'),('text','wb9-text-release')]:
+            archive=ROOT/'build/fastbasic-workbench'/directory/'exec816-demo.zip'
+            result['packages'][name]=dict(path=str(archive.relative_to(ROOT)),sha256=sha256(archive),
+                bytes=archive.stat().st_size,contents='OF816 XEX, old/new Atarimax CAR, raw 1 MiB BIN, matching SYS/WORK, ROM, guide, notices, checksums')
+        result['source_delivery']=dict(archive='build/fastbasic-workbench/exec816-fastbasic-source.zip',
+            checksum='Companion .zip.sha256; kept outside this archived source record to avoid a self-hash cycle',
+            final_rebuild='build/fastbasic-workbench/wb9-source-final/results.json',
+            tools='Bundled FastBasic/cc65/mini65 sources; installed external Calypsi 5.18')
+        result['wb8_accounting_erratum']='Frozen WB8 rounded absolute values included an inapplicable 8-byte prefix; correct 2304 -> 2312 for requested 2304 -> 2310. Delta remains 8 upper bytes and zero reserved bank-zero.'
+        result['delivery']='First FB7 editor/Check/Run/Stop/Build delivery; debugger and native graphics remain WB10 onward'
+    elif slice=='WB0':
         baseline_path=ROOT/'build/fastbasic-fp-demo/graphical/build.json'
         build_path=ROOT/'build/fastbasic-workbench/wb0-demo/build.json'
         baseline=json.loads(baseline_path.read_text())['memory']['bank_zero_budget']

@@ -126,7 +126,7 @@ LONG EXEC_CALL BasicFileProbe(ULONG unused)
     static const UBYTE *text[]={ (const UBYTE *)"A\tB\x9b" "C\x9b",(const UBYTE *)"A\tB\nC\n",
         (const UBYTE *)"A\tB\r\nC\r\n",(const UBYTE *)"A\tB\rC\r" };
     static const UWORD sizes[]={6,6,8,6};
-    UWORD i,style;ULONG baseline,generation;
+    UWORD i,style;ULONG baseline,generation,at,saved;UBYTE *binary;BPTR handle;LONG got;
     (void)unused;
 #ifndef BASIC_FILE_MOCK
     CHECK(store(BASIC_VOLUME "WARM.TMP",(const UBYTE *)"x",1) && DeleteFile(BASIC_VOLUME "WARM.TMP"));
@@ -225,6 +225,42 @@ LONG EXEC_CALL BasicFileProbe(ULONG unused)
     reset();
 #else
     CHECK(DeleteFile(BASIC_VOLUME "IN.BAS") && DeleteFile(BASIC_VOLUME "OUT.BAS"));
+#endif
+    /* Executables exceed the text buffer and include every byte value. Their
+     * publication shares text recovery without EOL translation or Save marks. */
+    generation=document.generation;saved=document.saved;
+    binary=AllocMem(45072UL,MEMF_UPPER);CHECK(binary);
+    for (at=0;at<45072UL;++at) binary[at]=(UBYTE)at;
+    CHECK(BasicSaveBufferBegin(&job,binary,45072UL,BASIC_VOLUME "BINARY.COM"));
+    for (i=0;i<256 && job.phase;++i) CHECK(BasicFileStep(&job,NULL,NULL)>=0);
+    CHECK(!job.phase && !job.error && !job.snapshot);
+    CHECK(document.generation==generation && document.saved==saved);
+    handle=Open(BASIC_VOLUME "BINARY.COM",MODE_OLDFILE);CHECK(handle);
+    at=0;
+    do {
+        got=Read(handle,actual,1024);CHECK(got>=0);
+        for (i=0;i<got;++i) CHECK(actual[i]==(UBYTE)(at+i));
+        at+=got;
+    } while (got);
+    CHECK(at==45072UL && Close(handle));CHECK(DeleteFile(BASIC_VOLUME "BINARY.COM"));
+#ifdef BASIC_FILE_MOCK
+    for (style=0;style<3;++style) {
+        reset();CHECK(store(BASIC_VOLUME "BINARY.COM",(const UBYTE *)"OLD",3));
+        binary=AllocMem(1030,MEMF_UPPER);CHECK(binary);
+        for (i=0;i<1030;++i) source[i]=binary[i]=(UBYTE)i;
+        CHECK(BasicSaveBufferBegin(&job,binary,1030,BASIC_VOLUME "BINARY.COM"));
+        fault=style==0 ? 6:style==1 ? 8:11;renameCount=0;
+        if (!style) CHECK(finish()==1);else CHECK(finish()==-1);
+        CHECK(!job.snapshot && !job.handle && !opened);
+        CHECK(document.generation==generation && document.saved==saved);
+        fault=0;
+        if (!style) CHECK(equals(BASIC_VOLUME "BINARY.COM",source,1030));
+        else {
+            CHECK(job.temporary[0] && equals(job.temporary,source,1030));
+            CHECK(equals(style==1 ? BASIC_VOLUME "BINARY.COM":job.backup,(const UBYTE *)"OLD",3));
+        }
+    }
+    reset();
 #endif
     BasicDocumentDispose(&document);CHECK(AvailMem(MEMF_UPPER)==baseline);
     return 0;

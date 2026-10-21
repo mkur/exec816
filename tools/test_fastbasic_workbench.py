@@ -21,7 +21,7 @@ def wb0(out, reuse=False,provider=False):
     if not reuse:
         if not provider:
             production=application(out/'app', [ROOT/'examples/gem-basic'/n for n in
-                ('main.c','basic.c','editor.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c')]+[ROOT/'c/calypsi/file-list.c'])
+                ('main.c','basic.c','editor.c','editor-paint.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c','build.c')]+[ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/fastbasic-diagnostic.c'])
             probe=application(out/'probe', [ROOT/'tests/programs/basic_lifecycle.c',ROOT/'examples/gem-basic/basic.c'],minimum_stack=ABI['stack_floor_bytes'])
         else:production=json.loads((out/'app/app.json').read_text())
         _,basic=fastbasic(ROOT/'build/fastbasic')

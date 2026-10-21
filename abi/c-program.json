@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 23,
+  "version": 24,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -118,7 +118,11 @@
     "ExecConsoleDestroy",
     "ExecConsoleMode",
     "ExecAESConsole",
-    "ExecConsoleGetMode"
+    "ExecConsoleGetMode",
+    "ExecLoadBegin",
+    "ExecLoadStep",
+    "ExecLoadTake",
+    "ExecLoadCancel"
   ],
   "minimum_stack_offset": 28,
   "file_bytes_offset": 32,

@@ -1,9 +1,10 @@
 # Implementation plans
 
-- [FastBasic 6502 migration](fastbasic-6502-migration-plan.md): implemented FB0–FB6 functional
+- [FastBasic 6502 migration](fastbasic-6502-migration-plan.md): implemented FB0–FB7 functional
   source port of the integer/FP runtime and on-machine compilers, using the existing
   guest bridge, native console/files and EDX for editing. Covers executable
-  output loading, memory and interrupt gates; the integrated editor remains FB7.
+  output loading, memory and interrupt gates. The native GEM editor/Run
+  delivery completes FB7 through WB9; debugging and graphics remain pending.
   The [integer record](../history/fastbasic-integer.md) and
   [FP record](../history/fastbasic-floating-point.md) distinguish development
   evidence from remaining qualification gates.

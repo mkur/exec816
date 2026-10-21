@@ -1,0 +1,168 @@
+; Cooperative file staging shared by synchronous and GUI callers. Each Step
+; performs one DOS operation, with reads bounded to 1024 bytes. No worker.
+MODULE PROGRAMLOAD
+USE EXEC
+USE DOS
+USE DOSCLIENT
+USE O65TYPES
+USE PROGRAM
+USE PROGRAMIMAGE
+USE CSTRING.IMPL AS STR
+
+PUBLIC TYPE Job=[
+  DOS.FileHandle POINTER file
+  BYTE POINTER bytes
+  LONGINT length,position,error
+  BYTE phase
+  BYTE ARRAY name(PROGRAMIMAGE.NAME_CAPACITY)
+]
+
+PROC Release(Job POINTER loading)
+  LONGINT closed
+
+  IF loading.file<>NULL THEN
+    closed=DOS.Close(loading.file)
+    loading.file=NULL
+    IF closed=0 AND loading.error=0 THEN
+      loading.error=DOS.IoErr()
+    FI
+  FI
+  IF loading.bytes<>NULL THEN
+    EXEC.FreeMem(loading.bytes,SIZE(loading.length))
+  FI
+  LET error=loading.error
+  EXEC.FreeMem(BYTE POINTER(loading),SIZEOF(Job))
+  DOSCLIENT.SetError(error)
+
+RETURN
+
+PUBLIC Job POINTER FUNC Begin(BYTE POINTER path)
+  BYTE POINTER leaf,scan
+
+  LET loading=Job POINTER(EXEC.AllocMem(SIZEOF(Job),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF loading=NULL THEN
+    DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_NO_FREE_STORE))
+    RETURN(NULL)
+  FI
+  loading.file=DOS.Open(path,DOS.MODE_OLDFILE)
+  IF loading.file=NULL THEN
+    loading.error=DOS.IoErr()
+    Release(loading)
+    RETURN(NULL)
+  FI
+  leaf=path
+  scan=path
+  WHILE scan^<>0 DO
+    IF scan^=58 OR scan^=47 OR scan^=92 THEN
+      leaf=scan+1
+    FI
+    scan==+1
+  OD
+  STR.strlcpy(@loading.name(0),CSTRING(leaf),PROGRAMIMAGE.NAME_CAPACITY)
+  loading.phase=1
+
+RETURN(loading)
+
+; 0 is pending, 1 is staged/closed, -1 is failed. Failure retains the Job until
+; Cancel; Take transfers the Image and consumes a completed Job.
+PUBLIC INT FUNC Advance(Job POINTER loading)
+  LONGINT count
+
+  IF loading.error=0 AND DOS.BreakPending()<>0 THEN
+    loading.error=DOS.ERROR_BREAK
+  FI
+  IF loading.error<>0 THEN
+    DOSCLIENT.SetError(loading.error)
+    RETURN(-1)
+  FI
+  CASE loading.phase OF
+  WHEN 1 THEN
+    count=DOS.Seek(loading.file,0,DOS.OFFSET_END)
+    IF count<0 THEN
+      loading.error=DOS.IoErr()
+    ELSE
+      loading.phase=2
+    FI
+  WHEN 2 THEN
+    loading.length=DOS.Seek(loading.file,0,DOS.OFFSET_BEGINNING)
+    IF loading.length<0 THEN
+      loading.error=DOS.IoErr()
+    ELSEIF loading.length=0 THEN
+      loading.error=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+    ELSEIF LONGCARD(loading.length)>O65TYPES.LIMIT_FILE THEN
+      loading.error=LONGINT(O65TYPES.ERROR_RESOURCE_LIMIT)
+    ELSE
+      loading.bytes=EXEC.AllocMem(SIZE(loading.length),
+          EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+      IF loading.bytes=NULL THEN
+        loading.error=LONGINT(O65TYPES.ERROR_NO_FREE_STORE)
+      ELSE
+        loading.phase=3
+      FI
+    FI
+  WHEN 3 THEN
+    count=loading.length-loading.position
+    IF count>1024 THEN
+      count=1024
+    FI
+    count=DOS.Read(loading.file,loading.bytes+SIZE(loading.position),count)
+    IF count<0 THEN
+      loading.error=DOS.IoErr()
+    ELSEIF count=0 OR count>loading.length-loading.position THEN
+      loading.error=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+    ELSE
+      loading.position==+count
+      IF loading.position=loading.length THEN
+        loading.phase=4
+      FI
+    FI
+  WHEN 4 THEN
+    count=DOS.Close(loading.file)
+    loading.file=NULL
+    IF count=0 THEN
+      loading.error=DOS.IoErr()
+    ELSE
+      loading.phase=5
+    FI
+  ESAC
+  DOSCLIENT.SetError(loading.error)
+  IF loading.error<>0 THEN
+    RETURN(-1)
+  FI
+
+RETURN(IF loading.phase=5 THEN INT(1) ELSE INT(0) FI)
+
+PUBLIC PROGRAMIMAGE.Image POINTER FUNC Take(Job POINTER loading)
+  PROGRAMIMAGE.Image POINTER image
+
+  IF loading.phase<>5 OR loading.error<>0 THEN
+    DOSCLIENT.SetError(IF loading.error<>0 THEN loading.error
+        ELSE LONGINT(DOS.ERROR_OBJECT_IN_USE) FI)
+    RETURN(NULL)
+  FI
+  image=NULL
+  IF DOS.BreakPending()<>0 THEN
+    loading.error=DOS.ERROR_BREAK
+  ELSE
+    image=PROGRAM.Load(loading.bytes,LONGCARD(loading.length))
+    loading.error=DOS.IoErr()
+    IF image<>NULL AND DOS.BreakPending()<>0 THEN
+      PROGRAM.Unload(image)
+      image=NULL
+      loading.error=DOS.ERROR_BREAK
+    FI
+    IF image<>NULL THEN
+      STR.strlcpy(@image.name(0),CSTRING(@loading.name(0)),PROGRAMIMAGE.NAME_CAPACITY)
+    FI
+  FI
+  Release(loading)
+
+RETURN(image)
+
+PUBLIC PROC Cancel(Job POINTER loading)
+
+  Release(loading)
+
+RETURN
+ENDMODULE

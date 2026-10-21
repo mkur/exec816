@@ -53,8 +53,12 @@ LONG EXEC_CALL BasicAssistProbe(ULONG unused)
     CHECK(BasicUndo(&d) && text("one ONE stone one"));
     CHECK(BasicRedo(&d) && text("x x stx x"));
     CHECK(!set("  \tPRINT 1"));caret=0;
-    CHECK(!BasicIndent(&d,d.bytes,0,&caret) && text("  \tPRINT 1\n  \t") && caret==d.bytes);
+    CHECK(!BasicIndent(&d,d.bytes,0,&caret,colors) && text("  \tPRINT 1\n  \t") && caret==d.bytes);
     CHECK(BasicUndo(&d) && text("  \tPRINT 1"));
+    memset(bytes,' ',255);bytes[255]=0;CHECK(!set((const char *)bytes));
+    colors[256]=0xa5;
+    CHECK(!BasicIndent(&d,255,0,&caret,colors) && d.bytes==511 && caret==511);
+    CHECK(BasicByte(&d,255)==10 && BasicByte(&d,510)==32 && colors[256]==0xa5);
     CHECK(!set("pRiNt \"IF REM PROC\" ' THEN"));
     memset(colors,77,sizeof(colors));BasicLexLine(&d,0,colors);
     CHECK(colors[0]==4 && colors[4]==4 && colors[5]==1);

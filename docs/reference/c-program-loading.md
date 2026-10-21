@@ -32,8 +32,8 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-Import ABI 23 includes the current device/AES/file imports, `ExamineExact`,
-`MountVolume`, `UnmountVolume`, `ExNextBatch`, `Input`, `AvailMem`, the retained
+Import ABI 24 includes the current device/AES/file imports, `ExamineExact`,
+`MountVolume`, `UnmountVolume`, `ExNextBatch`, `Input`, `AvailMem`, the cooperative loader, retained
 Image launcher, `ExecAESWait`, owned-console lifecycle/window bindings, and the caller-local `ExecAESBeginUpdate` and
 `ExecAESPaintedChanges` [paint-completion helpers](aes.md#optional-repaint-completion).
 The generated C FileInfoBlock stays 260 bytes, with 30 reserved bytes and
@@ -57,7 +57,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 23 |
+| 6 | 2 | Import ABI version, 24 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -87,7 +87,7 @@ The packer defaults to a 2,560-byte stack requirement. `--minimum-stack` declare
 a different verified requirement, at least 1,312 bytes. Process admission selects
 the smallest free existing pool satisfying the image and caller requirements.
 It returns 103 if none fits, including when smaller slots remain free. Panel and
-Counter declare 1,312 bytes; the workbench declares 2,560. This selects existing
+Counter and the workbench declare 1,312 bytes. This selects existing
 pools and adds no reserved bank-zero storage. Image metadata requests 74 upper
 bytes, rounded to 80, eight more rounded bytes than the preceding layout.
 
@@ -136,7 +136,7 @@ Fixed, per-public-Task and private-idle bank-zero reservation changes are all
 **0 bytes**, including guards, alignment and unused reserved capacity. The
 bridge and image use existing Task stacks and DPs; loader metadata and image
 backings live in upper RAM. `PROGRAMFILE.Load` temporarily stages the complete
-APP in upper RAM using reads of at most 4 KiB, then frees that file buffer
+APP in upper RAM using reads of at most 1 KiB, then frees that file buffer
 after validation/copying. The shared GUI runtime is expanded from the
 [compressed boot image](boot-loading.md) into its reserved extents before
 native startup; it needs no disk component or separate payload buffer.
@@ -174,7 +174,7 @@ and directory handles are borrowed during Start and cloned into child ownership;
 parent selections remain usable. A nonzero console must be a caller-owned CON
 handle; the child binds an independent console/input/BREAK lifetime before entry.
 See the [Process contract](process.md#explicit-child-contexts) for setup failure,
-completion signals and ownership. Rebuild the provider and all APPs for ABI 23.
+completion signals and ownership. Rebuild the provider and all APPs for ABI 24.
 
 `ExecLoadProgram(name)` returns one owned mutable Image. `ExecStartLoaded(image,
 spec)` retains execution ownership until collection; only one execution of that
@@ -208,3 +208,23 @@ Atarimax package, physical input, launch/relaunch and ownership restoration. It
 also records cold-start cost, application backing sizes and a bounded resident
 versus loaded button-scanout comparison. These are development checks, with
 unchanged bank-zero reservations and an unchanged compiler pin.
+
+## Cooperative file loading
+
+C ABI 24 adds `ExecLoadBegin`, `ExecLoadStep`, `ExecLoadTake` and
+`ExecLoadCancel`. Begin opens the file and borrows the name only during that
+call. The caller owns the returned job. Step performs one DOS operation,
+with reads bounded to 1,024 bytes, and returns 0 pending, 1 staged and closed,
+or -1 failed with IoErr. On failure the job remains owned until Cancel.
+
+Take consumes a completed job, validates its immutable staging through the
+ordinary PROGRAM.Load path and transfers one Image reference, or returns NULL
+with the validation error. Calling Take before completion refuses the call and
+retains the job. Cancel consumes an admitted job, closes its file and releases
+staging, preserving an earlier error across Close. The synchronous Load entry
+uses the same implementation. No loader worker, signal or kernel operation is
+added. Resource ownership and valid live pointers remain caller responsibilities.
+
+The caller processes GUI events between steps and requests cancellation between
+operations. Begin's Open and Take's allocation/validation remain synchronous;
+these bounds do not promise asynchronous filesystem lookup or relocation.

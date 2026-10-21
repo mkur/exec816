@@ -58,7 +58,8 @@ RAND(0) returns zero. The sequence differs from Atari hardware RANDOM.
 
 FBCI rejects floating-point syntax. Both language variants reject external USR assembly calls,
 Atari graphics, sound, DLI, player/missile, raw SIO and FujiNet statements at
-compile time. The integrated editor is not included; use EDX. This profile is
+compile time. The donor Atari editor is not included. Use EDX or the native
+[GEM workbench](fastbasic-workbench.md) for editing and integrated Run. This profile is
 for rebuilt programs, not existing Atari XEX or arbitrary machine-code payloads.
 
 ## Floating point
@@ -200,6 +201,6 @@ job/source/generation and a fresh validated COM. File existence alone is not
 success. Diagnostics do not extend the compiler's source or guest memory limits.
 
 The registration is borrowed until Run retires. It adds six requested upper
-bytes to the native Session (2,304 → 2,310 requested, 2,312 → 2,320
+bytes to the native Session (2,304 → 2,310 requested, 2,304 → 2,312
 allocator bytes) and a transient 224-byte upper allocation when
 writing. The fixed guest pool, Tasks and reserved bank-zero sizes are unchanged.

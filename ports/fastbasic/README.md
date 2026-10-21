@@ -3,8 +3,7 @@
 This source port starts from FastBasic 4.7 and the submodule revisions in
 [upstream.json](upstream.json). It retains the donor parser and 6502 runtime.
 The [target contract](../../docs/reference/fastbasic.md) defines the Exec profile.
-FBC adds a private Altirra decimal math package; the integrated editor remains
-a follow-on. `target/mathpack.asm` is generated from the pinned mini65 source by
+FBC adds a private Altirra decimal math package; the native GEM workbench integrates editing, Check, Run, Stop and Build. `target/mathpack.asm` is generated from the pinned mini65 source by
 `tools/generate_fastbasic_math.py`, retaining its own notice. Change the generator
 and regenerate, rather than editing that output.
 
@@ -94,3 +93,28 @@ Ship `exec816-fastbasic-source.zip` from `tools/package_fastbasic_source.py`
 alongside the boot ZIPs. It contains the complete modified donor and Exec source
 snapshot, notices and build instructions. See [NOTICE.txt](NOTICE.txt) and
 [LICENSING.md](../../LICENSING.md).
+
+The optional native workbench demo is `tools/build_demo.py --basic-workbench`.
+Its [guide](../../docs/guides/fastbasic-workbench.md) describes the first editor/Run
+profile. Source debugging and native graphics have separate later gates.
+
+To rebuild BASIC.APP from the source ZIP, use the supplied `exec816/` tree and
+an installed Calypsi 65816 5.18 toolchain (large code, huge data). No Action
+compiler checkout or downloaded GEM tree is needed for this disk application:
+
+```sh
+cd exec816
+python3 tools/build_c_program.py --output build/basic \
+  --minimum-stack 1312 \
+  --source examples/gem-basic/main.c --source examples/gem-basic/basic.c \
+  --source examples/gem-basic/editor.c --source examples/gem-basic/editor-paint.c \
+  --source examples/gem-basic/document.c \
+  --source examples/gem-basic/files.c --source examples/gem-basic/file-ui.c \
+  --source examples/gem-basic/assist.c --source examples/gem-basic/assist-ui.c \
+  --source examples/gem-basic/build.c --source c/calypsi/file-list.c \
+  --source c/calypsi/fastbasic-diagnostic.c
+```
+
+The result is `build/basic/program.app`. Use the matching native system from the
+boot package; the C program ABI and FastBasic target must agree. Calypsi is an
+external licensed prerequisite and is not part of this corresponding-source ZIP.

@@ -32,7 +32,7 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
             (ROOT/'tests/programs/gem_text_layout.c',__import__('text_model').LAYOUT)])
     if basic_workbench:
         applications['basic']=application(out/'apps/basic',[
-            ROOT/'examples/gem-basic'/name for name in ('main.c','basic.c','editor.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c')]+[ROOT/'c/calypsi/file-list.c'])
+            ROOT/'examples/gem-basic'/name for name in ('main.c','basic.c','editor.c','editor-paint.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c','build.c')]+[ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/fastbasic-diagnostic.c'],minimum_stack=ABI['stack_floor_bytes'])
     from build_gem_resource import resource
     desktop_resource=resource()
     if 'dos_mounts' not in options:

@@ -16,6 +16,7 @@ struct BasicEditor {
     UBYTE colors[80];
 };
 /* Borrows an initialized document until AES detach completes. */
+WORD BasicEditorPaint(struct BasicEditor *);
 WORD BasicEditorRun(struct BasicEditor *);
 WORD BasicEditorKey(struct BasicEditor *,WORD,WORD);
 void BasicEditorReveal(struct BasicEditor *);

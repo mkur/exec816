@@ -5,8 +5,8 @@
 [Implementation plan](../plans/fastbasic-workbench-implementation-plan.md)
 
 `C:BASIC.APP` is a loadable native GEM application. WB0–WB4 provide the document
-model, editable window, file transactions and editing assistance. The integrated compiler workflow
-is in progress; the first complete edit/Run delivery is WB9.
+model, editable window, file transactions and editing assistance. WB9 completes
+the first integrated edit/Check/Run/Stop/Build delivery (FB7).
 Debugging and native graphics are outside WB0–WB9.
 
 The document holds at most 32,768 counted bytes, 4,096 editable lines and
@@ -38,9 +38,9 @@ Save/Discard/Cancel; canceling a selector preserves the current document.
 The build selection is `tools/build_demo.py --basic-workbench` and retains the
 standard desktop, Shell, prime demo and five-second OF816 autoboot.
 
-The graphical console worker uses one existing 2,560-byte stack pool and the IDE
-uses the other. The sequential FastBasic/native child uses an existing smaller
-pool. Declared C image requirements are enforced at admission; another C program
+The Desktop and graphical console worker use the two existing 2,560-byte
+stack pools. BASIC declares a measured 1,312-byte requirement and shares the
+existing smaller pools with the sequential FastBasic/native child. Declared C image requirements are enforced at admission; another C program
 requiring 2,560 bytes is refused while both large pools are occupied. Panel and
 Counter declare their verified 1,312-byte requirements. No pool is enlarged.
 
@@ -93,3 +93,48 @@ names such as `A` and `AB`. Incomplete procedures cannot fold. Folding hides the
 body and ENDPROC while retaining the PROC line. Navigation or a revealed caret
 unfolds its destination. Source edits invalidate folds and restart indexing;
 folding does not change saved bytes, selection offsets or document generations.
+
+## Check, Run, Stop and Build
+
+The Program menu selects floating point (`FBC`) by default. Its Integer compiler
+checkmark selects `FBCI`. Check compiles without executing; Run compiles and runs
+the unsaved document. Build chooses a destination for a standalone release COM.
+The command has no dependency on the editor or compiler after publication.
+Source debugging and native graphics remain pending.
+
+A job freezes source edits, New, Open and replacement while retaining the caret,
+selection and viewport. Save and Save As may serialize the same document during
+a running program. The job retains the project directory selected at admission;
+a later Save As does not change that child's relative-file directory. Unsaved
+buffers inherit the application's directory. Source files need not be saved to
+Run.
+
+Each job copies an immutable ATASCII snapshot and exclusively reserves three RAM
+scratch names. The eight-character stem encodes the full nonzero 32-bit identity,
+using A–P for its high nibble so the name starts with a letter. Existing names
+are preserved, including collisions after partial reservation. A successful
+compiler Process, matching complete `FBD1` diagnostic, unchanged source generation
+and freshly validated COM are all required. A failed or stopped job never runs
+an earlier command. Compiler execution and Image references retire before the
+program is loaded. One child runs at a time.
+
+A compiler error selects the exact source byte and reveals its line, including
+folded procedures. Other completions restore the retained caret, selection and
+viewport. Native errors and both child results remain distinct; an earlier cause
+survives cleanup failures. Ordinary BASIC handled ERR behavior is unchanged.
+Runtime source locations require the later debugger slices.
+
+The application creates one 64×20 output console on demand. Select it to enter
+INPUT/GET/KEY; select the source to edit or use shortcuts. Stop, output close and
+Quit request cancellation without releasing a live child's resources. Quit waits
+for retirement before asking about unsaved source. Closing output retains its
+contents for Program → Output or the next job. Completion uses the public
+combined AES/Exec wait, without a child-poll timer.
+
+Loading stages perform one DOS operation per turn, with reads bounded to 1 KiB,
+through the public cooperative program loader. Build copies binary bytes through
+the same checked Close, exclusive temporary and no-replace Rename protocol as
+source Save. It does not mark the source saved. This replacement is not atomic;
+retained temporary/backup names are recovery copies. Scratch cleanup warnings
+also retain their paths. File → Recovery paths prints build recovery paths into
+the output window. Only owned scratch is removed, after all its users retire.

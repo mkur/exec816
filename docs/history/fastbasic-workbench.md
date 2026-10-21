@@ -269,9 +269,85 @@ pass 16 checks, rejecting stale jobs, mismatched sources and malformed bounds.
 All 547 host tests pass. Development checks do not qualify the hosted system.
 
 The Session grows by six requested upper bytes: 2,304 → 2,310 requested and
-2,312 → 2,320 allocator bytes. Record emission temporarily requests 224 upper
+2,304 → 2,312 allocator bytes. The frozen WB8 JSON originally added an
+inapplicable eight-byte allocation prefix to both absolute rounded sizes;
+this corrects the absolute accounting without changing the recorded eight-byte
+upper-memory delta or rewriting the frozen evidence. Record emission temporarily requests 224 upper
 bytes. No Task, guest slot, signal or reserved bank-zero allocation grows:
 **0 fixed, 0 root/kernel, 0 per public Task and 0 idle**, including guards,
 alignment, unused capacity and the existing 544-byte guest pool. The complete
 reserved map matches WB0. The controller must require successful Process results,
 a matching complete record and a fresh validated COM before execution.
+
+## WB9 — integrated editor and Run delivery
+
+[WB9 evidence](../development/fastbasic-workbench-wb9.json) completes the first
+FB7 delivery: unsaved Check/Run with FBC or FBCI, exact diagnostic navigation,
+Stop and a standalone release Build. The controller retains one source
+generation, project directory, caret/selection/viewport and one sequential
+child. Compiler references retire before program loading; completion uses the
+public combined wait without a child-poll timer. The current C import ABI is 24.
+Source debugging and native graphics remain WB10 onward.
+
+The optimized production APP passes two complete physical application cycles:
+24 source/output/pixel cases and 67 native checks. These include floating point,
+integer mode, decimal INPUT, GET/KEY, syntax error/fix, folded-line revelation,
+busy-loop Stop, collision preservation, project-relative input across Save As,
+standalone execution after editor exit, exact warm heap and ownership return.
+The focused key model passes 30 checks; indentation passes 509 checks in each
+of raw/optimized modes, including the 255-byte boundary. File control passes 103.
+
+Separate Stop and Quit replays exercise snapshot/write, compiler loading,
+parser execution, compiler output, program loading, execution, pending INPUT,
+retirement, binary reading and publication. Every case permits a fresh successful
+Run. Failed Task admission (103), retained scratch cleanup warnings (205),
+recovery paths and repeated load/exit pass. Each fixture has 25 native checks;
+phase holds and error injection exist only in hashed fixture copies. The maximum
+observed actual controller turn is 64 PAL ticks against the selected 120-tick
+development budget, excluding fixture holds. This is not a device-latency bound.
+
+The public cooperative loader shares validation with synchronous loading. Its
+43-byte Job rounds to 48 upper bytes; each staging read is at most 1 KiB and the
+generic file limit remains 256 KiB. Raw and optimized ABI/cancellation probes
+pass 64 checks each, including early Take refusal and exact heap return. Binary
+publication shares source Save's checked Close and no-replace Rename recovery
+protocol: 45,346 controlled checks and 45,245 each on RAM/SDFS, including a
+45,072-byte all-byte-pattern payload. Build never marks source saved.
+
+BASIC now declares 1,312 reserved stack bytes. Event workspace (80 bytes), file
+control workspace (6) and one additional indentation byte live in its private
+upper image; indentation reuses the existing lexical buffer. Separating painting
+keeps its automatic workspace out of the long-lived event loop. The production
+replay touches at most 1,014 bytes, leaving 42 bytes above the required 256-byte
+interrupt reserve. The packaged demo touches 1,000, leaving 56. The Desktop and
+console worker retain the two existing 2,560-byte pools; BASIC and its sequential
+child fit the remaining pools with all standard startup applications present.
+Earlier runs that crossed the interrupt reserve are retained as failed evidence.
+No stack or DP pool was enlarged.
+
+The APP is 63,949 file bytes and spans 90,586 upper bytes; aligned backing
+requests 156,121 bytes, rounded to 156,128. Its controller (2,415), publication
+job (2,524) and scratch recovery paths (51) are inside that backing. The immutable
+source requests 32,768 upper bytes. Native C dispatch and application import
+tables each grow by 12 upper bytes. All added reserved bank-zero costs remain
+**0 fixed, 0 root/kernel, 0 for each of eight public Tasks and 0 idle**, including
+guards, alignment and unused capacity. The complete reserved map matches WB0;
+the shared guest reservation remains 544 bytes.
+
+The exact final GEM and matching text boot ZIPs pass clean-extraction OF816
+walkthroughs with the five-second autoboot (249 observed PAL frames), matching
+SYS/WORK/ROM/notices, normal startup and EXIT. GEM exercises Open/edit/Save,
+unsaved Run, diagnostics, decimal/GET/KEY input, busy Stop, output close, Build,
+IDE exit and shell execution of the release COM while Desktop coexists. Both
+packages run ARC help, MD5 and native HELLO; saved bytes and MD5 are independently
+checked. Old/new Atarimax CAR and raw 1 MiB BIN are included; cartridge hardware
+is not qualified by the XEX walkthrough.
+
+Corresponding source is a separate deterministic ZIP with complete modified
+FastBasic, bundled cc65/mini65 and Exec sources, pins, notices and offline
+instructions. A clean extraction rebuilds both compilers, BASIC.APP and a release
+example byte-for-byte; installed Calypsi 5.18 remains an external prerequisite.
+Final source checksums and its clean rebuild report accompany the development
+artifacts, outside the archived record to avoid self-referential checksums.
+All 548 host tests and affected generators pass. These are development checks,
+not hosted-system release or physical-hardware qualification.

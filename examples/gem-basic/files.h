@@ -20,6 +20,9 @@ struct BasicFileJob {
  * remain available afterwards for reporting complete recovery copies. */
 WORD BasicLoadBegin(struct BasicFileJob *,const char *);
 WORD BasicSaveBegin(struct BasicFileJob *,const struct BasicDocument *,const struct BasicFile *,const char *);
+/* Transfers an immutable allocation only on admission. Shares the same checked
+ * publication/recovery path, preserving every byte and the source generation. */
+WORD BasicSaveBufferBegin(struct BasicFileJob *,UBYTE *,ULONG,const char *);
 WORD BasicFileStep(struct BasicFileJob *,struct BasicDocument *,struct BasicFile *);
 void BasicFileCancel(struct BasicFileJob *);
 #endif
