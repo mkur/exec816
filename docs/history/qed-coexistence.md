@@ -34,3 +34,28 @@ Production costs and upper-image backing deltas are in the record. Reserved
 bank-zero growth is **0 fixed / 0 per-public-Task / 0 private idle bytes**,
 including guards, alignment and unused capacity. The native desktop and its
 provider remain byte-identical to the interactive cursor-paint preview.
+
+## QC1 Production baseline
+
+The [QC1 record](../development/qed-coexistence-qc1.json) binds a complete
+production session cold-booted from the refreshed exact OF816 ZIP. Ordinary
+shell RUN opens a tabbed document, six insertions coalesce into Undo, navigation
+crosses the visible viewport, Find opens/searches/reopens/cancels, two saves
+create and rotate a backup, and ordinary Open rereads the saved document.
+Independent text/form pixels and closed-image bytes/allocation pass. Quit,
+shell collection and EXIT restore ordinary ownership and native guards.
+
+Insertion, navigation, Find and clean Quit pass their original design limits.
+Paused snapshots use the existing `SWITCHING` exclusion for all system heap
+writers; they validate free-list order, bounds, alignment and totals using the
+machine-readable heap records. The final warmed free bytes, largest extent and
+extent count equal the initial checkpoint. The record keeps QED private backing
+separate from the system heap and aligned image allocation. Seven host cases
+cover valid fragmented/allocated heaps and corrupt lists/accounting.
+
+The refreshed demo uses the standard builder, matching OF816, media, ROM and
+notices, with its five-second startup intact. Package and observer hashes are
+retained; the native desktop XEX is unchanged. Reserved bank-zero delta remains
+**0 fixed / 0 per-public-Task / 0 private idle bytes**, including guards,
+alignment and unused capacity. Concurrent cohorts and repeated use remain
+QC2–QC3; this baseline does not complete step 6.
