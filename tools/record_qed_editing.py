@@ -3,6 +3,7 @@
 import argparse
 import json
 import re
+import zipfile
 from pathlib import Path
 from check_qed_baseline import check, checked
 from native_program import ROOT, require, sha256
@@ -24,8 +25,48 @@ def checked_stack_reanalysis(path, result):
     return origin
 
 
-def record(slice_name, directory, cohorts, destination, host_log, supplements=(),protocols=()):
-    audit = check(directory, cohorts, [])
+def package_records(directories, audits, cartridge_paths):
+    records=[]
+    for directory,audit in zip(directories,audits):
+        manifest=directory/'demo-manifest.json'
+        info=json.loads(manifest.read_text())
+        smoke=directory/('gem-desktop-results.json' if info.get('gem_desktop') else 'demo-results.json')
+        result=json.loads(smoke.read_text())
+        require(result['status']=='pass' and not result['measurement_media_override'] and
+            result['bundle_manifest_sha256']==sha256(manifest) and
+            result['rom']['sha256']==info['pin']['rom']['sha256'] and
+            result['autoboot_frames']==249,'Stale or overridden exact-package smoke')
+        extracted=Path(result['distribution_root'])
+        if not extracted.is_absolute():extracted=ROOT/extracted
+        with zipfile.ZipFile(directory/'exec816-demo.zip') as archive:
+            for name in archive.namelist():
+                if name.endswith('/'):continue
+                relative=Path(name).relative_to('exec816-demo')
+                require((extracted/relative).read_bytes()==archive.read(name),
+                    'Smoke extraction differs from current ZIP: '+name)
+        checked(extracted/'Exec-of816.xex',result['boot_xex_sha256'])
+        checked(extracted/'system.atr',result['initial_media_sha256'])
+        records.append(dict(**audit,smoke_path=str(smoke.relative_to(ROOT)),
+            smoke_sha256=sha256(smoke),scope=result['scope'],
+            autoboot_frames=result['autoboot_frames'],integration=result['integration'],
+            machine=result['machine']))
+    for path in cartridge_paths:
+        cartridge=json.loads(path.read_text())
+        target=next((r for r in records if r['zip_sha256']==cartridge['zip_sha256']),None)
+        require(target is not None,'Cartridges do not belong to a recorded package')
+        with zipfile.ZipFile(ROOT/target['path']/'exec816-demo.zip') as archive:
+            import hashlib
+            for name,digest in cartridge['files'].items():
+                require(hashlib.sha256(archive.read('exec816-demo/'+name)).hexdigest()==digest,
+                    'Cartridge package file differs: '+name)
+        target['cartridges']=dict(path=str(path.relative_to(ROOT)),sha256=sha256(path),
+            source_zip_sha256=cartridge['source_zip_sha256'],images=cartridge['cartridges'])
+    return records
+
+
+def record(slice_name, directory, cohorts, destination, host_log, supplements=(),protocols=(),
+           demos=(),cartridges=()):
+    audit = check(directory, cohorts, demos)
     audit_path = directory.parent / (slice_name.lower()+'-baseline.json')
     audit_path.write_text(json.dumps(audit, indent=2)+'\n')
     host = re.search(r'Ran (\d+) tests.*\n\nOK(?: \(skipped=(\d+)\))?\s*$',
@@ -205,6 +246,22 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
         require(any(s.get('loaded_bytes')==81920 for s in scenes),'Missing multi-bank loaded text')
         require(any(item.get('document_core_heap',{}).get('peak_backing',0)>163840
             for item in executed),'Missing double-document heap observation')
+    if slice_name=='QE7':
+        expected={'combined-open-long','combined-cut','combined-undo-cut','combined-toggle-cut',
+            'combined-paste','combined-undo-paste','combined-toggle-paste','combined-find',
+            'combined-find-next','combined-panned-match','combined-peer-open','combined-covered',
+            'combined-exposed','combined-peer-new','combined-return-head','combined-close-cancel',
+            'open-cancel-retains-document','ram-open-commits','read-input-cancel-retains-document'}
+        session=next((s for s in scenes if expected<={x['name'] for x in s['snapshots']}),None)
+        require(session is not None,'Missing combined ordinary editing session')
+        carets={c['name'] for c in session.get('carets',[]) if c['pixels'].get('caret_checked',0)>0}
+        require({'combined-panned-caret','combined-exposed-caret'}<=carets,
+            'Missing combined independent caret pixels')
+        require(any(p['name']=='combined-peer' and p['checked']>0 for p in session.get('peer_pixels',[])),
+            'Missing covered peer pixels')
+        require(any(json.loads((p/'results.json').read_text()).get('stack_marker_scope')=='owned-image'
+            for p in cohorts),'Missing actual-image stack attribution')
+        require(len(demos)==2 and cartridges,'Missing standard/GEM package reconciliation')
     supplemental=[]
     for path in supplements:
         result=json.loads((path/'results.json').read_text())
@@ -257,6 +314,39 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
         recorder_sha256=sha256(Path(__file__)))
     if protocol_records:
         result['protocol_checks']=protocol_records
+    if demos:
+        result['packages']=package_records(demos,audit['demos'],cartridges)
+    if slice_name=='QE7':
+        result['test_inputs']={name:sha256(ROOT/name) for name in (
+            'tests/programs/qed_documents.act','tests/programs/qed_editing_faults.c',
+            'tests/programs/qed_documents_core.c','tests/programs/qed_title.c',
+            'tests/programs/qed_selection_peer.c','tools/test_qed_documents.py',
+            'tools/test_qed_selection.py','tools/test_qed_editing.py','tools/test_c_process.py',
+            'tools/qed_documents_observe.py','tools/qed_dialogs_observe.py',
+            'tools/qed_selection_observe.py','tools/qed_editing_observe.py','tools/qed_clipboard_observe.py',
+            'tools/qed_viewport_observe.py','tools/qed_form_oracle.py','tools/qed_stack_observer.py')}
+        result['native_fixtures']=[]
+        result['media_fixtures']=[]
+        from test_qed_documents import fixtures
+        from filesystem_audit import Audit
+        for path in cohorts:
+            build=json.loads((path/'program/build.json').read_text())
+            source=path/build['source']
+            if source.is_file():
+                checked(source,build['source_sha256'])
+                result['native_fixtures'].append(dict(path=str(source.relative_to(ROOT)),
+                    sha256=build['source_sha256']))
+            if not (path/'media/LONG.TXT').exists():continue
+            native=json.loads((path/'results.json').read_text())
+            disk=Audit((path/'system.atr').read_bytes());getattr(disk,native['filesystem'])()
+            files={}
+            for name,payload in fixtures().items():
+                if not (path/'media'/name).exists():continue
+                require((path/'media'/name).read_bytes()==payload and disk.files[name]==payload,
+                    'Text fixture differs from the executed media: '+str(path/name))
+                files[name]=sha256(path/'media'/name)
+            result['media_fixtures'].append(dict(path=str(path.relative_to(ROOT)),
+                atr_sha256=sha256(path/'system.atr'),files=files))
     if slice_name=='QE3':
         result['selection']=dict(inside_wait=editor[0]['inside_wait'],autoscroll=scroll)
         path=ROOT/'docs/development/qed-shortcuts.json'
@@ -274,8 +364,11 @@ if __name__ == '__main__':
     parser.add_argument('--host-log', type=Path, required=True)
     parser.add_argument('--supplement', type=Path, action='append', default=[])
     parser.add_argument('--protocol', type=Path, action='append', default=[])
+    parser.add_argument('--demo', type=Path, action='append', default=[])
+    parser.add_argument('--cartridge', type=Path, action='append', default=[])
     args = parser.parse_args()
     record(args.slice, args.layout.resolve(), [p.resolve() for p in args.cohort],
            args.output, args.host_log.resolve(), [p.resolve() for p in args.supplement],
-           [p.resolve() for p in args.protocol])
+           [p.resolve() for p in args.protocol], [p.resolve() for p in args.demo],
+           [p.resolve() for p in args.cartridge])
     print('QED editing evidence reconciled:', args.slice)

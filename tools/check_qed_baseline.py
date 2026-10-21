@@ -5,7 +5,7 @@ from pathlib import Path
 from analysis_artifact import reject_analysis
 from c_program import ABI
 from native_program import ROOT,read_build,require,sha256
-from qed_stack_observer import markers,summarize
+from qed_stack_observer import markers,summarize,summarize_owned
 
 
 def checked(path,digest):
@@ -52,6 +52,8 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
         result=json.loads((directory/'results.json').read_text())
         require(result['status']=='pass' and result['app']['abi']==ABI,'Failed/stale cohort: '+str(directory))
         program=read_build(directory/'program');build=program['build']
+        native_source=directory/build['source']
+        if native_source.is_file():checked(native_source,build['source_sha256'])
         provider=build['foreign_image']['c_program_provider']
         require(provider['abi']==ABI['version'] and provider['imports']==ABI['imports'],'Provider ABI differs')
         resident=json.loads((directory/'c-image.json').read_text())
@@ -76,7 +78,11 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
         provenance=result['app']['image']['provenance']
         for tool in provenance['tools'].values():checked(Path(tool['path']),tool['sha256'])
         checked(Path(provenance['runtime']['path']),provenance['runtime']['sha256'])
-        observed=summarize(directory/'emulator.log',markers(program,result['app']),build['memory'],result.get('stack_windows',result.get('stack_window')))
+        windows=result.get('stack_windows',result.get('stack_window'))
+        if result.get('stack_marker_scope')=='owned-image':
+            observed=summarize_owned(directory/'emulator.log',program,result['app'],build['memory'],windows)
+        else:
+            observed=summarize(directory/'emulator.log',markers(program,result['app']),build['memory'],windows)
         current_min=min(r['headroom'] for r in observed['minima'] if r['lifetime'] and r['kind']!='async')
         original_min=min(r['headroom'] for r in result['stacks']['minima'] if r['lifetime'] and r['kind']!='async')
         require(current_min==original_min,'Changed stack interpretation: '+str(directory))
@@ -88,6 +94,7 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
     demos=[]
     for directory in demo_directories:
         manifest=json.loads((directory/'demo-manifest.json').read_text())
+        for name,digest in manifest['source_inputs'].items():checked(ROOT/name,digest)
         for name,digest in manifest['artifacts'].items():checked(directory/name,digest)
         path=directory/'exec816-demo.zip'
         with zipfile.ZipFile(path) as archive:
@@ -107,6 +114,10 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
             require(hashlib.sha256(archive.read('exec816-demo/altirraos-816.rom')).hexdigest()==
                     manifest['pin']['rom']['sha256'],'Unpinned packaged ROM')
         row=dict(path=str(directory.relative_to(ROOT)),zip_sha256=sha256(path),files=names)
+        from filesystem_audit import Audit
+        media=Audit((directory/'system.atr').read_bytes());getattr(media,manifest['filesystem'])()
+        require(not any(name.upper().split('/')[-1] in ('QED.APP','QED.RSC')
+                        for name in media.files),'Private QED escaped into demo media')
         if manifest.get('gem_desktop'):
             provider=json.loads((directory/'bitmap-console/c-image.json').read_text())
             require(provider_identity(provider)==identity,'Packaged provider differs from the executed baseline')

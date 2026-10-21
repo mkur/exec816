@@ -34,6 +34,39 @@ class QedFrameTests(unittest.TestCase):
             frame_cost([(0,'3b','tsc',''),(1,'e9..','sbc','##unsupported'),(4,'1b','tcs','')])
 
 class QedObservationTests(unittest.TestCase):
+    def test_actual_image_base_resolves_aliases_and_excludes_candidate_sites(self):
+        from tempfile import TemporaryDirectory
+        from unittest.mock import patch
+        import qed_stack_observer as observer
+        memory=dict(task_pools=[dict(stack_base=0x2000,stack_bytes=1312,dp=0x1000)],
+                    regions={'kernel-stack':(0x3000,0x3400)})
+        native={0x1234:'M_PROCESS_RUN_TEST'}
+        broad={**native,0x1240:'app:wrong-name',0x1242:'app:wrong-base:after-tcs',
+               0x1244:'app:another-alias'}
+        actual={**native,0x1240:'app:main',0x1244:'app:actual:after-tcs'}
+        # The candidate-only site has a lower S and a different DP. It is not
+        # an APP frame for this owner and must not affect either check.
+        events=[(10,0x1234,0x2500,0x1000),(11,0x1240,0x2480,0x1000),
+                (12,0x1242,0x2010,0x1001),(13,0x1244,0x2400,0x1000)]
+        log=''.join(f'[SIOPOC] cpu {clock} 0 8 {pc:06x} 0000 0000 0000 {s:04x} {dp:04x} 00 00 0\n'
+                    for clock,pc,s,dp in events)
+        owner=dict(slot=0,identity=41,image_base=0x50000)
+        with TemporaryDirectory() as directory:
+            path=Path(directory)/'trace.log';path.write_text(log)
+            def points(program,app,image_bases=None):
+                if image_bases is not None:self.assertEqual(image_bases,[owner['image_base']])
+                return actual if image_bases is not None else broad
+            with patch.object(observer,'markers',side_effect=points):
+                report=observer.summarize_owned(path,{}, {},memory,[owner])
+                self.assertEqual(report['lifetimes'][0]['app_entry'],0x1240)
+                frame=next(x for x in report['minima'] if x['kind']=='frame-reservation')
+                self.assertEqual(frame['marker'],'app:actual:after-tcs')
+                self.assertEqual(frame['minimum_s'],0x2400)
+                # Actual sites still enforce direct-page ownership.
+                path.write_text(log.replace('2400 1000','2400 1001'))
+                with self.assertRaisesRegex(RuntimeError,'direct-page ownership'):
+                    observer.summarize_owned(path,{}, {},memory,[owner])
+
     def test_stack_reanalysis_preserves_execution_evidence(self):
         import json
         from tempfile import TemporaryDirectory

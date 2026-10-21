@@ -9,8 +9,13 @@ from the existing GEM4XE 65816 source port and rebuild it against Exec's native
 Process, AES, VDI and DOS services. The SDX personality is not the proposed
 execution path.
 
-Status: source and contract analysis; QED has not been built or executed on
-Exec816. The proposed sequence below is not an implemented or qualified port.
+Status at the assessed revision: source and contract analysis, before a native
+QED build or execution. The sections below retain that original gap inventory.
+Current [native feasibility](../../history/qed-native-feasibility.md),
+[startup](../../history/qed-startup.md) and
+[editing evidence](../../history/qed-editing.md) record the implemented native
+port and its remaining saving, coexistence and delivery gates. These development
+checks do not qualify the hosted system.
 The [port strategy](qed-port-strategy.md) develops the order of work and the
 outcomes needed before proceeding to later design and implementation plans.
 Its [step 1 record](qed-scope-and-dependencies.md) fixes the initial scope and

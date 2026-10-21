@@ -130,8 +130,8 @@ See the [selection evidence](../../../../docs/history/qed-editing.md#qe3-event-d
 for physical key limitations, stack accounting and exact executed scope.
 QE4 enables clipboard/Undo and edits replacing an active selection;
 QE5 adds native dialogs and literal Find. QE6 adds checked New/Open and launch
-replacement. Combined editing reconciliation is QE7; reliable saving is strategy
-step 5.
+replacement. QE7 reconciles the combined editing session and package evidence;
+reliable saving remains strategy step 5.
 
 `--from-build` rebuilds the APP against an unchanged emitted native fixture.
 `--reuse-app` additionally verifies recorded APP input hashes for observer-only
@@ -317,7 +317,7 @@ can resume a retired native Find draft; Close/Stop cancels it. The controller
 returns to normal event handling after each 256 search positions. About and
 Find use native forms; the ten unused donor MDIAL units are excluded. The
 selector adapter uses native path[128]/leaf[13] buffers and preserves native
-volume/relative paths. Selecting a file does not yet replace a document.
+volume/relative paths. QE6 connects an accepted choice to checked replacement.
 
 The core cohort isolates signed results, path capacities and bounded search;
 the selector cohort uses the real native selector. The loaded editor checks
@@ -345,3 +345,27 @@ conversion. It returns to the outer event loop between 4 KiB reads. Relative
 paths use the inherited current directory; invalid/extra launch arguments are
 reported beside an empty editable document. No automatic binary mode, file
 creation, Save, backup or persisted-byte claim is selected.
+
+
+QE7's combined session uses the same ordinary APP and four-lifetime supervisor:
+
+```sh
+python3 tools/test_qed_documents.py --combined --output build/qed-editing/combined
+```
+
+QE1–QE7 pass the [editing development gate](../../../../docs/history/qed-editing.md#qe7-editing-gate-and-saving-handoff).
+The combined session uses an 81,920-byte launch and twelve maximum-length lines
+for interaction. It combines long tabbed text, selection/clipboard/Undo, literal Find/Next,
+horizontal panning, peer overlap/exposure, cancelled and committed replacement,
+and dirty Close/Stop decisions. State, document/caret/peer pixels and collection
+are checked independently. New passive stack summaries resolve APP sites against
+the captured Process image base; prior evidence keeps its original interpretation.
+
+| Supported in the private development APP | Remaining acceptance work |
+| --- | --- |
+| One document; zero/one launch path; native selector Open and New | Multiple document windows and donor multi-file loading are deferred. |
+| Byte text, uniform LF/CRLF, absent final newline, literal tabs; 1,023-byte logical lines | NUL, mixed/CR-only endings and wider lines are rejected; no conversion or Unicode decoding. |
+| Fixed-font editing, navigation/panning, selection, internal clipboard, grouped toggling Undo | Printing, external fonts, macros, external clipboard and advanced block modes are deferred. |
+| Native Find/Find Next and About; cancellable forms, selector and read preparation | Find is literal, case-sensitive and forward without wrap; replacement/regex search is deferred. |
+| Cancel-default Discard/Cancel for replacement and retirement | Save/Save As, Save/Discard/Cancel, backups, checked finalization and persisted-byte recovery are strategy step 5. |
+| Selected ordinary-peer, failure, reuse and stack development checks | Practical workload responsiveness and supported QED distribution remain steps 6–7; QED is absent from demo ZIPs. |

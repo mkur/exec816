@@ -95,7 +95,8 @@ class Editor:
             self.pending_dispatch=None
         self.frames(10)
     def close(self):
-        self.click(self.native('windowX')+6,self.native('windowY')+5)
+        left,top,_,_=self.geometry()['bounds']
+        self.click(left+6,top+5)
     def menu(self,title,item):
         from application_menu_oracle import source
         tree=self.get(self.sy['menu'],4)

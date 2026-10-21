@@ -4,7 +4,8 @@
 [QE1–QE7 plan](../plans/gem4xe/qed-editing-implementation-plan.md) ·
 [Startup baseline](qed-startup.md)
 
-Status: QE1–QE6 implemented with development evidence; QE7 remains. The
+Status: QE1–QE7 implemented with development evidence; strategy step 4 is
+complete at this scope. Reliable saving remains step 5. The
 [QE1 development record](../development/qed-editing-qe1.json) binds the ordinary
 executable, source audit, actual-source core probe and loaded editor session.
 
@@ -460,3 +461,76 @@ tables and data are unchanged from QE5.
 Reserved bank-zero delta: **0 fixed, 0 per-public-Task and 0 private idle bytes**,
 including guards, alignment and unused capacity. These are development checks;
 combined editing reconciliation and the package handoff remain QE7 work.
+
+## QE7 Editing gate and saving handoff
+
+The [QE7 development record](../development/qed-editing-qe7.json) reconciles one
+current production layout, resource, provider and ABI with the combined ordinary
+editor session and the matching QE6 failure/reuse cohorts. Earlier records and
+traces retain their original scope. The combined test uses the same QE6 APP;
+fixture-only allocation interposition forwards successful real operations.
+
+The session checks an 81,920-byte launch, then opens 12,288 bytes containing
+twelve 1,023-byte lines, tabbed first/last lines and a trailing empty line. It
+physically selects, uses Copy/Cut/Paste, toggles grouped Undo, finds the first
+and last-line matches,
+and pans to a 50-byte match farther along the last line. Independent text,
+range, document/caret and peer pixels cover those actions and overlap/exposure.
+It then cancels and commits replacements, retains Undo after failure, preserves
+the clipboard across Open/New, cancels an active read and exercises dirty
+Close/Stop Cancel and Discard. All four Process lifetimes return through normal
+collection and unload, with exact warm heap reuse. The observer waits for
+published menu availability before opening a popup after a long repaint, uses
+current accepted geometry for Close and raises the ordinary peer through its
+public GEM operation before checking overlap.
+
+New stack summaries select APP labels from each captured owner's actual image
+base. The broad trace filter still starts before loading; a multi-bank image can
+place different candidate labels at the same PC. Classification excludes those
+candidate-only sites while retaining native/provider sites, physical pools,
+Process ordinals and DP checks. A focused host regression covers alias resolution,
+a candidate-only low-S/wrong-DP site, and rejection of wrong DP at an actual site.
+Historical summaries remain unchanged. These are selected-PC observations,
+not a watermark or proof of unexecuted chains.
+
+The combined minimum headroom is 1,345 bytes above the separate
+interrupt reserve. The current source chain bound remains 776 bytes; adding the
+768-byte continuation cap, 256-byte interrupt reserve and 128-byte headroom target
+leaves 632 bytes under the existing 2,560-byte admission. QE6's actual-source
+reader/title probes remain applicable because their linked inputs are unchanged;
+the double-document private peak remains 214,860 bytes. The combined GUI peak
+is 110,935 bytes, including private headers and donor arena slack.
+Public heap rounding and native GUI allocations are separate from these private
+counters; complete native heap return is checked. The production APP/layout and
+provider sizes are unchanged from QE6. Save chains remain conditional and must
+be measured when implemented.
+
+Development checks pass 539 host tests with four expected skips and current
+C-program/AES/VDI/QED compatibility generator checks. The evidence binds the
+rendered native fixture, C fixture and observer sources, exact media text,
+resource, source pins, compiler/runtime inputs, provider identity and traces.
+The checks do not qualify the hosted system or a release.
+
+The GEM demo was refreshed through `tools/build_demo.py` for the shared drawing,
+window and native-form changes accumulated in QE2–QE5. Its rebuilt C callers use
+the matching provider/ABI. The exact ZIP smoke passes OF816's 249-PAL-frame
+five-second autoboot, RAM desktop/resource startup, About, disk Panel/title,
+RAM listing and orderly EXIT. The package includes pinned ROM/notices/checksums
+and old/new Atarimax CAR plus raw 1 MiB BIN images for the matching XEX. Cartridge
+content is audited; this does not add a physical-hardware claim. The unchanged
+standard shell/prime demo reuses its QS5 passing smoke with current source-input
+and exact ZIP/extraction identities. QED APP/resource files remain absent from
+both distributions. Intermediates, manifests and traces stay in development.
+
+Reserved bank-zero delta: **0 fixed, 0 per-public-Task and 0 private idle bytes**,
+including guards, alignment and unused capacity. No stack increase was needed.
+
+Strategy step 4 is complete at this development scope. Step 5 starts with the
+saving design and implementation plan. Preserve byte text, uniform LF/CRLF,
+absent final newline and the 1,023-byte line bound; use the current document's
+full native path and explicit unknown metadata. Define Save/Save As and
+Save/Discard/Cancel with existing-file consent, backup policy, short/failed
+writes, terminal Close and persisted-byte recovery. A failed save must retain
+the live document and its modified state. Keep write actions disabled until
+those acceptance checks pass on both selected filesystems. Practical workload
+responsiveness and supported QED delivery remain strategy steps 6–7.

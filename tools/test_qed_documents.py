@@ -51,23 +51,25 @@ def fixtures():
         'BOUNDARY.TXT':(b'a'*1023+b'\r\n')*3+b'b'*1020+b'\r\nlast',
         'LONG.TXT':prefix+b'a'*(1023-len(prefix))+b'\n'+(b'a'*1023+b'\n')*78+
             suffix+b'z'*(1023-len(suffix))+b'\n',
+        'SESSION.TXT':prefix+b'a'*(1023-len(prefix))+b'\n'+(b'a'*1023+b'\n')*10+
+            suffix+b'z'*(1023-len(suffix))+b'\n',
         'NUL.TXT':b'ab\x00c', 'MIXED.TXT':b'a\nb\r\n', 'MIXED2.TXT':b'a\r\nb\n',
         'CR.TXT':b'a\rb', 'ENDCR.TXT':b'a\r', 'WIDE.TXT':b'a'*1024}
 
-def editor(output,native_from=None,reuse=False,reuse_app=False,filesystem='sdfs'):
+def editor(output,native_from=None,reuse=False,reuse_app=False,filesystem='sdfs',combined=False):
     from test_qed_selection import run
     return run(output,reuse=reuse,reuse_app=reuse_app,native_from=native_from,
         fixture_source=ROOT/'tests/programs/qed_documents.act',media_files=fixtures(),
         filesystem=filesystem,provider_from=ROOT/'build/qed-editing/qe5-core/c-image.json',
-        interaction=__import__('qed_documents_observe').interact)
+        interaction=lambda *args:__import__('qed_documents_observe').interact(*args,combined=combined))
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True)
     p.add_argument('--native-from',type=Path);p.add_argument('--from-build',action='store_true')
-    p.add_argument('--reuse-app',action='store_true')
+    p.add_argument('--reuse-app',action='store_true');p.add_argument('--combined',action='store_true')
     p.add_argument('--filesystem',choices=['sdfs','mydos'],default='sdfs')
     p.add_argument('--group',choices=['editor','core','title'],default='editor')
     a=p.parse_args();r=(title(a.output,a.native_from) if a.group=='title' else
         core(a.output,a.native_from,a.filesystem) if a.group=='core' else
-        editor(a.output,a.native_from,a.from_build,a.reuse_app,a.filesystem))
+        editor(a.output,a.native_from,a.from_build,a.reuse_app,a.filesystem,a.combined))
     print(r['status'],r['completed'])

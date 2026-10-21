@@ -8,9 +8,21 @@ class ClipboardEditor(SelectionEditor):
     global_commands=('C','X','V','Z')
     pending_global=None
     def menu(self,title,item):
+        # A long repaint can expose the selection before the outer loop has
+        # published the corresponding command availability. Opening a popup
+        # earlier can capture its old disabled state.
+        tree=self.get(self.sy['menu'],4)
         before=self.get(self.sy['QedMenuCalls'])
-        super().menu(title,item)
-        self.reach('dw($%x)!=%d'%(self.sy['QedMenuCalls'],before))
+        try:
+            self.reach('(dw($%x)&8)=0'%(tree+self.ids[item]*24+10))
+            super().menu(title,item)
+            self.reach('dw($%x)!=%d'%(self.sy['QedMenuCalls'],before))
+        except Exception:
+            self.scene['menu_failure']=dict(item=item,source_state=self.get(tree+self.ids[item]*24+10),
+                menu_calls=self.get(self.sy['QedMenuCalls']),last_item=self.get(self.sy['QedMenuLastItem']),
+                pointer_state=self.get(self.sy['pointer_state']))
+            self.b.rawscreen(str(self.p['output'].parent/'menu-failure.bgra'))
+            raise
         require(self.get(self.sy['QedMenuLastItem'])==self.ids[item],'Wrong menu command')
     def key(self,name,ctrl=False,**options):
         if ctrl and name in self.global_commands:

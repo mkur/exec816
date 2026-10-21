@@ -4,19 +4,20 @@ The separate [upstream GEM4XE/QED setup](../../guides/gem4xe-qed-reference.md)
 preserves a working reference for behavior comparisons during the port.
 
 The [QED editing design](qed-editing-design.md) and
-[QE1–QE7 implementation plan](qed-editing-implementation-plan.md) propose
+[QE1–QE7 implementation plan](qed-editing-implementation-plan.md) implement
 strategy step 4: native keyboard/selection, redraw and long-line navigation,
-internal clipboard/Undo, cancellable Find/dialogs and transactional
-single-document Open/New. QE1–QE6 keyboard editing, safe retirement, viewport
-drawing, selection, clipboard/Undo, Find and checked document replacement pass
-their [development checks](../../history/qed-editing.md); QE7 remains. Save/Save As and the complete Save/Discard/Cancel workflow remain step 5.
+internal clipboard/Undo, cancellable Find/dialogs and checked single-document
+Open/New. The [editing gate](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff)
+passes its development checks, including the combined session and package
+reconciliation. Save/Save As and the full Save/Discard/Cancel workflow remain
+step 5; practical coexistence and supported QED delivery remain steps 6–7.
 
 The [QED startup design](qed-startup-design.md) and
 [QS1–QS5 implementation plan](qed-startup-implementation-plan.md) define
 strategy step 3: adapt resources/menus and fixed-font drawing, execute the real
 editor startup/close, and establish rollback, reuse and GUI stack evidence.
 QS1–QS5 are complete with [development evidence](../../history/qed-startup.md);
-editing and reliable Save remain strategy steps 4–5.
+step 4 editing is now implemented; reliable Save remains strategy step 5.
 
 The [QED native feasibility design](qed-native-feasibility-design.md) and
 [QF1–QF6 plan](qed-native-feasibility-implementation-plan.md) define strategy

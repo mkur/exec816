@@ -72,7 +72,7 @@ class DocumentEditor(DialogEditor):
         require(self.get(self.sy['undo_valid'],1)==1,'Failed/cancelled command lost Undo')
         self.clipboard([b'head'])
 
-def interact(b,p,app,record,owner):
+def interact(b,p,app,record,owner,combined=False):
     e=DocumentEditor(b,p,app,record,owner);cycle=e.native('cycle')
     if cycle==0:b._cmd_ok('MOUSE ST');b._cmd_ok('KEY ALL up')
     e.reach('dw($%x)=%d'%(e.at('phase'),cycle+1));e.frames(40)
@@ -80,6 +80,9 @@ def interact(b,p,app,record,owner):
         long_lines=fixtures()['LONG.TXT'].split(b'\n')
         e.launched('launch-multibank',long_lines,81920,path=b'SYS:LONG.TXT')
         e.scene['loaded_bytes']=len(fixtures()['LONG.TXT'])
+        if combined:
+            combined_session(e)
+            e.key('A',ctrl=True);e.key('MINUS',ctrl=True);e.key('ESC')
         # Keep the real multi-bank load/pixel gate, then isolate replacement
         # rollback on a small tabbed document. The core covers double large owners.
         dirty=e.get(e.get(e.sy['text_list'],4)+e.offsets[5],4);e.key('N',ctrl=True)
@@ -114,6 +117,7 @@ def interact(b,p,app,record,owner):
         e.clipboard([b'head']);e.key('V',ctrl=True);e.selection('clipboard-survives-new',[b'head'],None,4,0)
         b.memload(e.at('control'),struct.pack('<H',1));e.reach('dw($%x)=100'%e.at('phase'));e.frames(30)
         e.click(100,44);e.frames(20)
+        if combined:combined_overlap(e)
         e.key('O',ctrl=True);e.selector_ready();e.peer_command(1);e.command_idle()
         e.selection('selector-policy-cancels-open',[b'head'],None,4,0)
         e.choose('LONG.TXT',settle=False)
@@ -125,7 +129,11 @@ def interact(b,p,app,record,owner):
         e.scene['read_cancel']=dict(prepared_lines=before,descriptor_retired=True)
         e.selection('read-input-cancel-retains-document',[b'head'],None,4,0)
         b.memload(e.at('control'),struct.pack('<H',100));e.reach('dw($%x)=101'%e.at('phase'))
-        b.memload(e.at('control'),struct.pack('<H',101));e.key('Q',ctrl=True);return e.alert(1,retiring=True)
+        b.memload(e.at('control'),struct.pack('<H',101))
+        if combined:
+            e.close();e.form_open();e.alert(2);e.command_idle()
+            e.selection('combined-close-cancel',[b'head'],None,4,0)
+        e.key('Q',ctrl=True);return e.alert(1,retiring=True)
     if cycle==1:
         e.form_open();e.alert(1);e.loaded('failed-launch-empty',[b''])
         e.choose('CRLF.TXT',menu=True);e.loaded('crlf-open-commits',[b'one',b'last'],ending=0,path=b'SYS:CRLF.TXT')
@@ -146,3 +154,39 @@ def interact(b,p,app,record,owner):
         'Stop Cancel retained a replacement candidate')
     b.memload(e.at('control'),struct.pack('<H',104));return e.alert(1,retiring=True)
 
+
+def combined_session(e):
+    # Keep the 80 KiB launch/read-cancel gates, then combine interaction on
+    # twelve maximum-length lines. Double large ownership is a reader-core gate.
+    lines=fixtures()['SESSION.TXT'].split(b'\n');last=len(lines)-2
+    e.choose('SESSION.TXT',menu=True);e.loaded('combined-open-long',lines,path=b'SYS:SESSION.TXT')
+    e.select('combined-copy-range',lines,e.cell(0,0),e.cell(4,0),(0,0,0,4),(4,0))
+    e.menu('TEDIT','MCOPY');e.clipboard([b'head'])
+    e.menu('TEDIT','MCUT');cut=[lines[0][4:],*lines[1:]]
+    e.selection('combined-cut',cut,None,0,0)
+    e.key('Z',ctrl=True);e.selection('combined-undo-cut',lines,(0,0,0,4),4,0)
+    e.key('Z',ctrl=True);e.selection('combined-toggle-cut',cut,None,0,0)
+    e.menu('TEDIT','MPASTE');e.selection('combined-paste',lines,None,4,0)
+    e.key('Z',ctrl=True);e.selection('combined-undo-paste',cut,None,0,0)
+    e.key('Z',ctrl=True);e.selection('combined-toggle-paste',lines,None,4,0)
+    e.key('A',ctrl=True);e.key('MINUS',ctrl=True)
+    e.open_find();e.type_form('needle');e.accept_find();e.command_idle()
+    e.selection('combined-find',lines,(0,5,0,11),11,0)
+    e.key('G',ctrl=True);e.command_idle();e.selection('combined-find-next',lines,(last,5,last,11),11,last)
+    e.open_find();e.clear_field();e.type_form('z'*50);e.accept_find();e.command_idle()
+    for _ in range(4):e.key('G',ctrl=True);e.command_idle()
+    e.selection('combined-panned-match',lines,(last,219,last,269),269,last)
+    require(document(e)[0]>0,'Long-line Find did not pan horizontally')
+    e.key('ESC');e.expected_range=None;e.caret_pixels('combined-panned-caret',lines,269,last)
+
+def combined_overlap(e):
+    from qed_viewport_observe import peer_pixels
+    lines=fixtures()['SESSION.TXT'].split(b'\n')
+    e.choose('SESSION.TXT');e.decision(1);e.loaded('combined-peer-open',lines,path=b'SYS:SESSION.TXT')
+    e.peer_command(2);e.frames(30);e.covered=[(0,60,224,172)]
+    e.selection('combined-covered',lines,None,0,0);peer_pixels(e,'combined-peer')
+    e.click(100,44);e.frames(30);e.covered=[]
+    e.selection('combined-exposed',lines,None,0,0)
+    e.expected_range=None;e.caret_pixels('combined-exposed-caret',lines,0,0)
+    e.key('N',ctrl=True);e.loaded('combined-peer-new',[b''])
+    e.key('V',ctrl=True);e.selection('combined-return-head',[b'head'],None,4,0)

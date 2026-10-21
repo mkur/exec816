@@ -1,0 +1,566 @@
+{
+  "schema_version": 1,
+  "slice": "QE7",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "audit": {
+    "path": "build/qed-editing/qe7-baseline.json",
+    "sha256": "08b44e66f1dfa0c7544a4600d9c09a9567b95075284f57f53a4d45996312a789",
+    "auditor_sha256": "2cf5781fd31289549fb1dcf9a8b48c9c6662faa6013d7f314d5774a94670642d",
+    "provider_identity": "b41ffdf385e6226b7fa2eb6288c0cb9e8056d43b3b6c54e1a7c29deac517e0aa"
+  },
+  "source_pins": {
+    "qed": {
+      "revision": "454beb35fccd72c15a8494431f6637cd0cb553c7",
+      "tree": "842d0ed962f431b98fbba1a7038020b5805338bc"
+    },
+    "cflib": {
+      "revision": "ce57817c3f68c7d346d1081768505e81acaee807",
+      "tree": "aa00256dc44096969025e2a1e1a03dcfa738547c"
+    }
+  },
+  "resource": {
+    "path": "build/qed-editing/qe6-production/inputs/resource/resource.json",
+    "sha256": "b5441d2171c522f18e9b2f42d1d1cee4fbac27df7e8ab778e0736980a0bdc88b",
+    "resource_sha256": "9095194c1b2055ecbd31b6bcde7604a47dd6da6d4796e0b4b1a52993588d08e7",
+    "generator_sha256": "5e9eb42a4504c436e767c8ff9f762a36e5527841ff3cef9a41510e80230a2ae9",
+    "selection_sha256": "97c647a9638053762245b40a8257d1abe25845657bce8da07f173174c4daf6e1"
+  },
+  "host_checks": {
+    "path": "build/qed-editing/qe7-host.log",
+    "sha256": "2500f94080e0eaf43f242f46a605a2e25f065d1ae60ea3224a7a03b48583dd78",
+    "tests": 539,
+    "expected_skips": 4
+  },
+  "executable": {
+    "path": "build/qed-editing/qe6-production",
+    "sha256": "bbea74c07dbf4151aa852dc70736a8bb6ec2ef414b4acfb025ecda1adb2695a0",
+    "layout": {
+      "code_bytes": 105199,
+      "initialized_bytes": 1640,
+      "bss_bytes": 23763,
+      "import_thunk_bytes": 400,
+      "span_bytes": 170735,
+      "image_holes_bytes": 40133,
+      "serialized_bytes_if_executable": 120071,
+      "relocation_count": 3084,
+      "heap_alignment_backing_bytes": 236272,
+      "future_full_profile_backing_bytes": 393216,
+      "private_allowances": {
+        "code_bytes": 32768,
+        "data_bss_bytes": 16384
+      },
+      "container_metadata_allowance_bytes": 16384,
+      "resident_provider_allowances": {
+        "code_bytes": 16384,
+        "data_bss_bytes": 16384,
+        "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+        "table_bytes": 4096
+      }
+    },
+    "requested_image_backing_bytes": 236270,
+    "rounded_image_backing_bytes": 236272,
+    "backing_basis": "CAPP bank-alignment request, rounded to the public heap eight-byte allocation; historical layout field rounds to four bytes"
+  },
+  "frame_ledger": {
+    "source_chain_bytes": 776,
+    "continuation_cap_bytes": 768,
+    "interrupt_reserve_bytes": 256,
+    "required_headroom_bytes": 128,
+    "admission_bytes": 2560,
+    "margin_bytes": 632
+  },
+  "growth_from_QS5": {
+    "private": {
+      "code_bytes": -33427,
+      "data_bss_bytes": -2547,
+      "metadata_bytes": -1968
+    },
+    "provider": {
+      "code_bytes": 247,
+      "table_bytes": 0,
+      "data_bss_bytes": 0
+    }
+  },
+  "provider_remaining_allowances": {
+    "code_bytes": 15157,
+    "table_bytes": 4096,
+    "data_bss_bytes": 16384
+  },
+  "executed": [
+    {
+      "path": "build/qed-editing/qe7-combined-final",
+      "results_sha256": "5d1b70dcae635757b3fe0026eeebbf3cc4dd1f65888adc2c2fc8cca6ff7828c1",
+      "completed": [
+        4
+      ],
+      "checks": [
+        49347,
+        0
+      ],
+      "snapshots": [
+        "launch-multibank",
+        "combined-open-long",
+        "combined-copy-range",
+        "combined-cut",
+        "combined-undo-cut",
+        "combined-toggle-cut",
+        "combined-paste",
+        "combined-undo-paste",
+        "combined-toggle-paste",
+        "combined-find",
+        "combined-find-next",
+        "combined-panned-match",
+        "new-after-large-load",
+        "loaded-copy-range",
+        "loaded-selection-edit",
+        "candidate-retained-range",
+        "format-error-retains-document",
+        "new-cancel-retains-document",
+        "selector-cancel-retains-document",
+        "open-cancel-retains-document",
+        "undo-survives-replacement-failure",
+        "undo-toggle-after-cancel",
+        "ram-open-commits",
+        "old-undo-cleared",
+        "clipboard-survives-open",
+        "new-discard-commits",
+        "clipboard-survives-new",
+        "combined-peer-open",
+        "combined-covered",
+        "combined-exposed",
+        "combined-peer-new",
+        "combined-return-head",
+        "selector-policy-cancels-open",
+        "read-input-cancel-retains-document",
+        "combined-close-cancel",
+        "failed-launch-empty",
+        "crlf-open-commits",
+        "clean-replacement-title",
+        "extra-arguments-empty",
+        "candidate-allocation-old",
+        "candidate-allocation-rollback",
+        "launch-crlf",
+        "replacement-stop-cancel"
+      ],
+      "minimum_headroom": 1345,
+      "peer_app_sha256": "e431e41447c1a2365b052229341c9958fef15ff172fa44b644d2834866350e56"
+    },
+    {
+      "path": "build/qed-editing/qe6-editor-mydos",
+      "results_sha256": "19f449e67c44babd25caf0ba096192b6b94f4353114d87a822f19e141cb2a87f",
+      "completed": [
+        4
+      ],
+      "checks": [
+        28563,
+        0
+      ],
+      "snapshots": [
+        "launch-multibank",
+        "new-after-large-load",
+        "loaded-copy-range",
+        "loaded-selection-edit",
+        "candidate-retained-range",
+        "format-error-retains-document",
+        "new-cancel-retains-document",
+        "selector-cancel-retains-document",
+        "open-cancel-retains-document",
+        "undo-survives-replacement-failure",
+        "undo-toggle-after-cancel",
+        "ram-open-commits",
+        "old-undo-cleared",
+        "clipboard-survives-open",
+        "new-discard-commits",
+        "clipboard-survives-new",
+        "selector-policy-cancels-open",
+        "read-input-cancel-retains-document",
+        "failed-launch-empty",
+        "crlf-open-commits",
+        "clean-replacement-title",
+        "extra-arguments-empty",
+        "candidate-allocation-old",
+        "candidate-allocation-rollback",
+        "launch-crlf",
+        "replacement-stop-cancel"
+      ],
+      "minimum_headroom": 1345,
+      "peer_app_sha256": "e431e41447c1a2365b052229341c9958fef15ff172fa44b644d2834866350e56"
+    },
+    {
+      "path": "build/qed-editing/qe6-core-sdfs",
+      "results_sha256": "99f7abc9e7858be13d50a0aaf79c1ab9e74687006a3dd993967a6f05840a9c15",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 555,
+      "document_core_heap": {
+        "blocks": 5,
+        "payload": 209656,
+        "backing": 209716,
+        "peak_backing": 214860
+      }
+    },
+    {
+      "path": "build/qed-editing/qe6-core-mydos",
+      "results_sha256": "ca085fdcbef8f04080d941925aa8975ae3dcf9c8f25e0bee9e1e974327b4a053",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 555,
+      "document_core_heap": {
+        "blocks": 5,
+        "payload": 209656,
+        "backing": 209716,
+        "peak_backing": 214860
+      }
+    },
+    {
+      "path": "build/qed-editing/qe6-title",
+      "results_sha256": "7f4cca0c6cf86d7e93d4c80a7d5443d707fc3120da2bb83bea13740c5d63f46d",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 813
+    }
+  ],
+  "supplemental": [],
+  "private_heap": {
+    "peak_backing_bytes": 110935,
+    "basis": "Private allocation headers included; underlying allocator rounding and native GUI owners charged separately"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Complete Task-pool and region maps equal QS5; guards, alignment and slack included"
+  },
+  "recorder_sha256": "abb7aa49d0df41d936b75f118004efdeb10ce63ac654d12700f58900df046f12",
+  "packages": [
+    {
+      "path": "build/qed-startup/qs5-standard",
+      "zip_sha256": "8be41398d09fc72cd543bc9c1e40e7a758f0437dc26fafcd666d5d3b57506169",
+      "files": [
+        "exec816-demo/ALTIRRAOS-LICENSE.txt",
+        "exec816-demo/EXEC816-GPL-3.0.txt",
+        "exec816-demo/EXEC816-LICENSING.md",
+        "exec816-demo/EXEC816-MIT.txt",
+        "exec816-demo/Exec-of816.xex",
+        "exec816-demo/OF816-LICENSE.txt",
+        "exec816-demo/README.txt",
+        "exec816-demo/SHA256SUMS",
+        "exec816-demo/altirraos-816.rom",
+        "exec816-demo/system.atr",
+        "exec816-demo/work.atr"
+      ],
+      "smoke_path": "build/qed-startup/qs5-standard/demo-results.json",
+      "smoke_sha256": "371ae6424e08222f39e847f0e8c1b40b451d24901b6f83cd0bd77e9c4e51f574",
+      "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+      "autoboot_frames": 249,
+      "integration": null,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$93c20218ef1e67ae",
+        "actual_kernel_id": "$93c20218ef1e67ae",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    {
+      "path": "build/qed-editing/qe7-gem",
+      "zip_sha256": "10751ea7220e2a7c0a31100473045ab941c4de0decde9f7c69aa32bad4369a8d",
+      "files": [
+        "exec816-demo/ALTIRRAOS-LICENSE.txt",
+        "exec816-demo/CALCULATOR-COPYING.LIB.txt",
+        "exec816-demo/CALCULATOR-COPYING.txt",
+        "exec816-demo/CALCULATOR-LICENSING.md",
+        "exec816-demo/CALCULATOR-PROVENANCE.txt",
+        "exec816-demo/EXEC816-GPL-3.0.txt",
+        "exec816-demo/EXEC816-LICENSING.md",
+        "exec816-demo/EXEC816-MIT.txt",
+        "exec816-demo/Exec-of816.xex",
+        "exec816-demo/G4BENCH-COPYING.LIB.txt",
+        "exec816-demo/G4BENCH-COPYING.txt",
+        "exec816-demo/G4BENCH-LICENSING.md",
+        "exec816-demo/G4BENCH-PROVENANCE.txt",
+        "exec816-demo/GEM-COPYING.LIB.txt",
+        "exec816-demo/GEM-COPYING.txt",
+        "exec816-demo/GEM-FONT-NOTICE.txt",
+        "exec816-demo/GEM-LICENSING.md",
+        "exec816-demo/OF816-LICENSE.txt",
+        "exec816-demo/README.txt",
+        "exec816-demo/SHA256SUMS",
+        "exec816-demo/altirraos-816.rom",
+        "exec816-demo/cartridge/Exec-of816-atarimax-8mbit-new.car",
+        "exec816-demo/cartridge/Exec-of816-atarimax-8mbit-old.car",
+        "exec816-demo/cartridge/Exec-of816-atarimax-8mbit.bin",
+        "exec816-demo/cartridge/README.txt",
+        "exec816-demo/system.atr",
+        "exec816-demo/work.atr"
+      ],
+      "provider_sha256": "e846389de3b0c9606b957d8b2e693409a2626f8ccbcae31786c68f92d883f3d7",
+      "provider_code_bytes": 179283,
+      "provider_table_bytes": 40145,
+      "provider_data_bss_bytes": 25739,
+      "apps": [
+        "C/TEXT.APP",
+        "C/PANEL.APP",
+        "C/G4BENCH.APP",
+        "C/FILES.APP",
+        "C/DIALOG.APP",
+        "C/COUNTER.APP",
+        "C/CALC.APP"
+      ],
+      "rebuilt_callers": [
+        "panel",
+        "desktop",
+        "calc",
+        "dialog",
+        "g4bench",
+        "files",
+        "text",
+        "counter"
+      ],
+      "smoke_path": "build/qed-editing/qe7-gem/gem-desktop-results.json",
+      "smoke_sha256": "ed6e61f5e20f56cb35d428e34f9f989657795bfe4356695b536eedf676b1fa2d",
+      "scope": "Extracted OF816 colour desktop: shared-window ownership, persistent background, on-demand launches and orderly EXIT",
+      "autoboot_frames": 249,
+      "integration": {
+        "profile": "ram-desktop-smoke",
+        "desktop_from_ram": true,
+        "resource_from_ram": true,
+        "about": true,
+        "panel_from_disk": true,
+        "panel_title": true
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$d87c21b7044bc325",
+        "actual_kernel_id": "$d87c21b7044bc325",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "cartridges": {
+        "path": "build/qed-editing/qe7-gem-carts/cartridge-demo.json",
+        "sha256": "25cb4558891908b1da541c8892120bf11033296ee0f77058603b718a3288ba2d",
+        "source_zip_sha256": "33080a6800495c66e107a666a00e520e15808112017c68b82bb489d06b0e0126",
+        "images": {
+          "Exec-of816.xex": {
+            "format": "exec816-atarimax-v1",
+            "input_xex": "Exec-of816.xex",
+            "input_xex_bytes": 591688,
+            "input_xex_sha256": "32c777a204a3de223892830b55e5ac12e84886609b38cb356a5326bd65bf2410",
+            "segments": 1596,
+            "init_callbacks": 709,
+            "cartridge_bytes": 1048576,
+            "types": {
+              "old": 42,
+              "new": 75
+            },
+            "labels": {
+              "cart_bank": 37164,
+              "cart_calls": 37165,
+              "cart_failed": 37040,
+              "cart_init": 48640,
+              "cart_loaded": 37051,
+              "cart_loader": 36864,
+              "cart_loader_end": 37172,
+              "cart_remaining": 37169,
+              "cart_segments": 37167,
+              "cart_start": 48641
+            },
+            "source_sha256": "60b0dc9a2f963e24bf5defb080a72672d096e01f80f730afae8523582fe86a64",
+            "builder_sha256": "0694a0c0bc09e90367f05ba4b0dd925d9967aef0a35684b68594808a850512bf",
+            "files": {
+              "Exec-of816-atarimax-8mbit.bin": "f13e0e05c811f6fec7862908500f0dfcf400dd2411aee3ce1a3e0f4f0a2c1496",
+              "Exec-of816-atarimax-8mbit-old.car": "9960d684bfa3d7814318101fb119e2eae6d383b1f5dcaf75828054be8e59a69f",
+              "Exec-of816-atarimax-8mbit-new.car": "9123da0e19a2af64c68e4e4212c02b28fcd069707f7f0c50490f949aedd621a0"
+            },
+            "bank_zero_delta": {
+              "fixed_runtime": 0,
+              "per_public_task": 0,
+              "idle": 0
+            },
+            "boot_only_borrowed": {
+              "start": 36864,
+              "end": 37888,
+              "bytes": 1024
+            },
+            "scope": "Cold boot on the pinned native-65816 AltirraOS profile; physical hardware unqualified."
+          }
+        }
+      }
+    }
+  ],
+  "test_inputs": {
+    "tests/programs/qed_documents.act": "73871d1b783ff024a1edead264fd2c240345780588fbfe3b88f5bac4c63ca7cf",
+    "tests/programs/qed_editing_faults.c": "11b32de0eeace7e5ddbb688e4853337bab7f1e72288c7ae81473c4bd580dcf81",
+    "tests/programs/qed_documents_core.c": "25820fc7d902f7abc4025cdeeefe0c16f54fb0864e891e44ac6a4586e2332f33",
+    "tests/programs/qed_title.c": "9c93c3257a4ea4524da4ba2e69ca9c798e05d35347c4d3f50d55cc3264fb5f98",
+    "tests/programs/qed_selection_peer.c": "6d0a9ab55059b4ef2c2b98a87207f9288a36233d64bf4933021af1bf26f9eed7",
+    "tools/test_qed_documents.py": "a6cc17ba4d21ebc21a7a057e7f39865c908463b65906e32e883b5e8d3cbcb219",
+    "tools/test_qed_selection.py": "a24f18eddeef091f31b8b7cc29dfd0f6c0e792b4381bf3c5d3275deebc35e5b1",
+    "tools/test_qed_editing.py": "0ec72cfa569948905d8fe4a0d77239a86f69a4431c38fcc95ce0a1ad8c52fbf6",
+    "tools/test_c_process.py": "60a9ffe7fd93ff161b2859d901a9d8906be7879c88491f7800539c4159b01549",
+    "tools/qed_documents_observe.py": "5f9397503ff9970c0468d1b1a5f1ff79cd3faa75b7d1e9e295b8f368167dfacd",
+    "tools/qed_dialogs_observe.py": "e890bb42ca682d16c3b6c20430df258b1294c9bfcbdf9d44630eab54baec851b",
+    "tools/qed_selection_observe.py": "29c8529f4afbde65bc0350293f0c7db54775c2189144de8d386693f5e22348dc",
+    "tools/qed_editing_observe.py": "32643836b93899a4821bc52f6e1549857a378030ce3c9afdf0bf1ff05e2d4bd5",
+    "tools/qed_clipboard_observe.py": "bd24cb30f05b26b8b37edf779d8fefdb1a1d155e04db87239b7440b6c7522c8d",
+    "tools/qed_viewport_observe.py": "0566f909ebb9fc018fdb327822b99bfcf90289adbfc8a9000f1a8624a1fc0407",
+    "tools/qed_form_oracle.py": "9c4bf9a06b78fccec9ef388f3bf3e31b7b4e9a8870f15397a12ce77806b9532d",
+    "tools/qed_stack_observer.py": "072c2414971ce4a5181bc0d0063a05fecc302ad528d937cdab9976dfd4b922fe"
+  },
+  "native_fixtures": [
+    {
+      "path": "build/qed-editing/qe7-combined-final/launcher.act",
+      "sha256": "197a4dab02271ad934dc8ba3c74d3537ecc1b01bafc019fbca103e18205d47d9"
+    }
+  ],
+  "media_fixtures": [
+    {
+      "path": "build/qed-editing/qe7-combined-final",
+      "atr_sha256": "0a212dc6ccacfcfb4f4af16f98812cbba2f810e8f18a687a728a871d6bd50d56",
+      "files": {
+        "EMPTY.TXT": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "SMALL.TXT": "a95f64970330b715ff481ddcf5fdbddd60ea36319df721ef73f2546d2d533e42",
+        "CRLF.TXT": "a9ee35a85a1b5fb1ede1cd3142affefe20280871c08ff3247fa942589b5993af",
+        "NOLAST.TXT": "894891f8b78a9945b0aa07e70d5f71f10b1f1990af127de561cc0ac36024c188",
+        "BOUNDARY.TXT": "daa6bf7baa0c6dfba204e40de605ca0a26b651a2d97d775438e4fe57af650b4d",
+        "LONG.TXT": "4440792d8252ab7a2e12464755ec1340f635e18739924b0d49c28071ed3c0d96",
+        "SESSION.TXT": "d4f36787fb1b3cea91fe5bf7be2d07d246c425ee6f18a80c5ee226db621013b0",
+        "NUL.TXT": "6c032e631d39a14d85aff7e319546af701e26c97b57ca95fbfe9c6ba855f67bf",
+        "MIXED.TXT": "09908e5976ef56a1d49699e026f6925c1435ea0a07e73002d0f1e5abe78e8634",
+        "MIXED2.TXT": "953bba9ac9726eaea07e844abcf144a0afe998039257c7a88b6665819597f39d",
+        "CR.TXT": "af9081672dd5ef3247a30c2db5b0dafcc9bcf981a26aefb3c55d210d43fcc14e",
+        "ENDCR.TXT": "961a57df036f6c4f44ca8a054271c45e823f469bcc439f0255c40974c3e3d131",
+        "WIDE.TXT": "2edc986847e209b4016e141a6dc8716d3207350f416969382d431539bf292e4a"
+      }
+    },
+    {
+      "path": "build/qed-editing/qe6-editor-mydos",
+      "atr_sha256": "4b330f7704f7b1193f67abbee07d149ff8e82787a983fdd4e904330b54648062",
+      "files": {
+        "EMPTY.TXT": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "SMALL.TXT": "a95f64970330b715ff481ddcf5fdbddd60ea36319df721ef73f2546d2d533e42",
+        "CRLF.TXT": "a9ee35a85a1b5fb1ede1cd3142affefe20280871c08ff3247fa942589b5993af",
+        "NOLAST.TXT": "894891f8b78a9945b0aa07e70d5f71f10b1f1990af127de561cc0ac36024c188",
+        "BOUNDARY.TXT": "daa6bf7baa0c6dfba204e40de605ca0a26b651a2d97d775438e4fe57af650b4d",
+        "LONG.TXT": "4440792d8252ab7a2e12464755ec1340f635e18739924b0d49c28071ed3c0d96",
+        "NUL.TXT": "6c032e631d39a14d85aff7e319546af701e26c97b57ca95fbfe9c6ba855f67bf",
+        "MIXED.TXT": "09908e5976ef56a1d49699e026f6925c1435ea0a07e73002d0f1e5abe78e8634",
+        "MIXED2.TXT": "953bba9ac9726eaea07e844abcf144a0afe998039257c7a88b6665819597f39d",
+        "CR.TXT": "af9081672dd5ef3247a30c2db5b0dafcc9bcf981a26aefb3c55d210d43fcc14e",
+        "ENDCR.TXT": "961a57df036f6c4f44ca8a054271c45e823f469bcc439f0255c40974c3e3d131",
+        "WIDE.TXT": "2edc986847e209b4016e141a6dc8716d3207350f416969382d431539bf292e4a"
+      }
+    },
+    {
+      "path": "build/qed-editing/qe6-core-sdfs",
+      "atr_sha256": "45b1d4eba52cf66c40c83539340ea700b92f80a4af9811d944f51de766c4cd71",
+      "files": {
+        "EMPTY.TXT": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "SMALL.TXT": "a95f64970330b715ff481ddcf5fdbddd60ea36319df721ef73f2546d2d533e42",
+        "CRLF.TXT": "a9ee35a85a1b5fb1ede1cd3142affefe20280871c08ff3247fa942589b5993af",
+        "NOLAST.TXT": "894891f8b78a9945b0aa07e70d5f71f10b1f1990af127de561cc0ac36024c188",
+        "BOUNDARY.TXT": "daa6bf7baa0c6dfba204e40de605ca0a26b651a2d97d775438e4fe57af650b4d",
+        "LONG.TXT": "4440792d8252ab7a2e12464755ec1340f635e18739924b0d49c28071ed3c0d96",
+        "NUL.TXT": "6c032e631d39a14d85aff7e319546af701e26c97b57ca95fbfe9c6ba855f67bf",
+        "MIXED.TXT": "09908e5976ef56a1d49699e026f6925c1435ea0a07e73002d0f1e5abe78e8634",
+        "MIXED2.TXT": "953bba9ac9726eaea07e844abcf144a0afe998039257c7a88b6665819597f39d",
+        "CR.TXT": "af9081672dd5ef3247a30c2db5b0dafcc9bcf981a26aefb3c55d210d43fcc14e",
+        "ENDCR.TXT": "961a57df036f6c4f44ca8a054271c45e823f469bcc439f0255c40974c3e3d131",
+        "WIDE.TXT": "2edc986847e209b4016e141a6dc8716d3207350f416969382d431539bf292e4a"
+      }
+    },
+    {
+      "path": "build/qed-editing/qe6-core-mydos",
+      "atr_sha256": "a5f26b5f1c02ec0251173945a36ae949b7d7b286de4ffa37fd3970d18a3db9e3",
+      "files": {
+        "EMPTY.TXT": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "SMALL.TXT": "a95f64970330b715ff481ddcf5fdbddd60ea36319df721ef73f2546d2d533e42",
+        "CRLF.TXT": "a9ee35a85a1b5fb1ede1cd3142affefe20280871c08ff3247fa942589b5993af",
+        "NOLAST.TXT": "894891f8b78a9945b0aa07e70d5f71f10b1f1990af127de561cc0ac36024c188",
+        "BOUNDARY.TXT": "daa6bf7baa0c6dfba204e40de605ca0a26b651a2d97d775438e4fe57af650b4d",
+        "LONG.TXT": "4440792d8252ab7a2e12464755ec1340f635e18739924b0d49c28071ed3c0d96",
+        "NUL.TXT": "6c032e631d39a14d85aff7e319546af701e26c97b57ca95fbfe9c6ba855f67bf",
+        "MIXED.TXT": "09908e5976ef56a1d49699e026f6925c1435ea0a07e73002d0f1e5abe78e8634",
+        "MIXED2.TXT": "953bba9ac9726eaea07e844abcf144a0afe998039257c7a88b6665819597f39d",
+        "CR.TXT": "af9081672dd5ef3247a30c2db5b0dafcc9bcf981a26aefb3c55d210d43fcc14e",
+        "ENDCR.TXT": "961a57df036f6c4f44ca8a054271c45e823f469bcc439f0255c40974c3e3d131",
+        "WIDE.TXT": "2edc986847e209b4016e141a6dc8716d3207350f416969382d431539bf292e4a"
+      }
+    }
+  ]
+}

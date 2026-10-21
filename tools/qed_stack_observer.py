@@ -7,7 +7,7 @@ from program_image_layout import LAYOUT as IMAGE_LAYOUT,FIELDS as IMAGE_FIELDS
 from native_program import require
 
 
-def markers(program,app):
+def markers(program,app,image_bases=None):
     from native_program import ROOT
     points={}
     resident=json.loads((program['output'].parent/'c-image.json').read_text())
@@ -57,6 +57,7 @@ def markers(program,app):
     occupied=[(s['address'],s['address']+len(s['bytes'])) for im in (program['image'],resident) for s in im['segments']]
     for bank in app['verified_banks']:
         low=bank*65536;high=low+app['span']
+        if image_bases is not None and low not in image_bases:continue
         if any(low<b and a<high for a,b in occupied):continue
         delta=(bank-ABI['link_bank'])*65536
         entries(app['image'],'app:',delta,True)
@@ -66,8 +67,15 @@ def markers(program,app):
     return points
 
 
-def summarize(path,points,memory,window=None):
+def summarize(path,points,memory,window=None,scoped_points=None):
     pools=list(enumerate(memory['task_pools']));rows={};lifetimes=defaultdict(int);runs={}
+    selected={}
+    if window is not None:
+        windows=window if isinstance(window,list) else [window]
+        ordinals=defaultdict(int)
+        for owner in windows:
+            ordinals[owner['slot']]+=1
+            selected[owner['slot'],ordinals[owner['slot']]]=owner['identity']
     low,high=memory['regions']['kernel-stack']
     pools.append(('kernel',dict(stack_base=low+16,stack_bytes=high-low-32)))
     with path.open() as source:
@@ -82,6 +90,10 @@ def summarize(path,points,memory,window=None):
             if name.startswith('M_PROCESS_RUN_') and not name.endswith(':after-tcs'):
                 lifetimes[slot]+=1
                 runs[slot,lifetimes[slot]]=dict(slot=slot,ordinal=lifetimes[slot],dp=dp,clock=int(fields[0]))
+            if scoped_points is not None:
+                local=scoped_points.get(selected.get((slot,lifetimes[slot])),points)
+                if pc not in local:continue
+                name=local[pc]
             if name=='app:main' and (slot,lifetimes[slot]) in runs:
                 runs[slot,lifetimes[slot]]['app_entry']=pc
             kind='async' if name in ('native_irq','native_nmi','context_restore') else ('frame-reservation' if name.endswith(':after-tcs') else 'ordinary-sample')
@@ -91,11 +103,6 @@ def summarize(path,points,memory,window=None):
                     pool_bytes=pool['stack_bytes'],expected_dp=pool.get('dp'),headroom=s+1-pool['stack_base']-256,
                     pc=pc,marker=name,clock=int(fields[0]))
     if window is not None:
-        windows=window if isinstance(window,list) else [window]
-        ordinals=defaultdict(int);selected={}
-        for owner in windows:
-            ordinals[owner['slot']]+=1
-            selected[owner['slot'],ordinals[owner['slot']]]=owner['identity']
         rows={k:v for k,v in rows.items() if (v['slot'],v['lifetime']) in selected}
         runs={k:{**v,'identity':selected[k]} for k,v in runs.items() if k in selected}
     require(rows,'No passive stack samples')
@@ -105,6 +112,16 @@ def summarize(path,points,memory,window=None):
                     'Process sample lost direct-page ownership: '+str(row))
             require(row['headroom']>=128,'Process stack headroom below 128: '+str(row))
     return dict(scope='Selected entries and emitted after-TCS sites. Per-pool Process lifetime ordinal starts at Process.Run; actual entry PC, DP and physical pool are recorded. Later native finalization is included until slot reuse. No watermark inference.',lifetimes=list(runs.values()),minima=list(rows.values()))
+
+
+
+def summarize_owned(path,program,app,memory,windows):
+    """Classify APP sites using each captured owner's actual relocation base."""
+    owners=windows if isinstance(windows,list) else [windows]
+    scoped={w['identity']:markers(program,app,[w['image_base']]) for w in owners}
+    result=summarize(path,markers(program,app),memory,windows,scoped_points=scoped)
+    result['scope']='Actual captured APP image bases and native/provider sites; per-pool Process ordinals, DP and guards remain checked. Broad candidate-only sites are excluded. Selected-PC observations, not a watermark.'
+    return result
 
 
 def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600,profile_all=False):

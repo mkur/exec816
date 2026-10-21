@@ -17,13 +17,13 @@ its complete-source image remains analysis-only, with conditional GUI budgets.
 Step 3 is implemented through its [design](qed-startup-design.md),
 [QS1–QS5 plan](qed-startup-implementation-plan.md) and
 [startup development evidence](../../history/qed-startup.md). A runnable private
-APP passes the empty-document/resource/menu/lifecycle gate. Steps 4–7 remain;
-step 4 follows its [editing design](qed-editing-design.md) and
-[QE1–QE7 plan](qed-editing-implementation-plan.md). QE1–QE6 keyboard editing,
-safe retirement, viewport drawing, selection, clipboard/Undo, Find and checked
-document replacement pass their [development checks](../../history/qed-editing.md);
-QE7 remains.
-Editing and reliable Save are not established by startup checks.
+APP passes the empty-document/resource/menu/lifecycle gate. Step 4 is implemented
+through its [editing design](qed-editing-design.md),
+[QE1–QE7 plan](qed-editing-implementation-plan.md) and
+[editing development evidence](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff).
+The real editor opens, edits, navigates, selects, copies/pastes, undoes and finds,
+with checked single-document replacement and Cancel-default Discard/Cancel.
+Reliable saving, practical coexistence and supported delivery remain steps 5–7.
 
 ## First usable editor
 
@@ -218,13 +218,14 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Continue with QE7 in the [editing implementation plan](qed-editing-implementation-plan.md#qe7-reconcile-the-editing-gate-and-hand-off-saving).
-QE1–QE6 extend the startup baseline with keyboard editing, safe retirement,
-viewport drawing, event-driven selection, internal clipboard/Undo, native
-cancellable dialogs, literal Find/Find Next and checked single-document Open/New.
-Commit each executable slice after its development
-checks, recording actual memory, stack and failure evidence. Prepare the saving design after the editing gate,
-using the file-format and replacement guarantees established there.
+Prepare the step 5 saving design, then an implementation plan based on it.
+The [editing gate](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff)
+provides checked reading/replacement, retained LF/CRLF and final-newline
+properties, native paths, coherent Undo/clipboard ownership and measured
+failure/stack budgets. Define reliable Save/Save As, existing-file consent,
+backup policy, checked write/Close, persisted-byte recovery and the full
+Save/Discard/Cancel workflow. Keep Save disabled until those acceptance checks
+pass. Commit each executable slice after its development checks.
 
 This strategy adds **0 reserved bank-zero bytes**, fixed or per-Task, including
 guards, alignment and unused capacity. Each implementation slice must account

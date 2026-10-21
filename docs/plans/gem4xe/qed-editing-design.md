@@ -5,8 +5,9 @@
 [Implementation plan](qed-editing-implementation-plan.md) ·
 [Startup evidence](../../history/qed-startup.md)
 
-Status: strategy step 4 in progress; QE1–QE6 are implemented with
-[development evidence](../../history/qed-editing.md). QE7 remains. The gate is
+Status: strategy step 4 is implemented through QE1–QE7 with
+[development evidence](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff).
+The gate is
 an actual loaded QED APP opening one document, editing and navigating its text,
 selecting, copying/pasting, undoing and finding, with correct redraw and
 cancellable dialogs. New/Open must retain the current document on failure or
@@ -353,6 +354,12 @@ indirect source frames and observe full emitted chains for editing, selection,
 clipboard/Undo, native forms/selector/alerts, reading and cancellation. Attribute
 samples to the actual Process lifetime, physical pool and DP, including emitted
 frame-reservation sites. A watermark or entry-only observation is insufficient.
+QE7 attribution amendment: the trace may include sites from all legal APP
+relocation candidates so capture can begin before loading. Classify those sites
+using each captured owner's actual image base. Multi-bank APPs can otherwise
+assign a different candidate's function name to the same PC. Exclude candidate-only
+sites, retain native/provider sites, and keep historical summaries unchanged
+under their recorded interpretation. New records identify this scoped analysis.
 An exceeded cap requires a measured fit decision before advancing. A justified
 stack increase is permitted; keep admission explicit rather than depending on
 which larger pool happens to be free.

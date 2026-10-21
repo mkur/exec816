@@ -3,18 +3,16 @@
 [GEM plans](README.md) · [Editing design](qed-editing-design.md) ·
 [Strategy](qed-port-strategy.md) · [Startup baseline](../../history/qed-startup.md)
 
-Status: strategy step 4 in progress; QE1–QE6 pass their development checks,
-recorded in the [editing history](../../history/qed-editing.md). The
-[selection record](../../development/qed-editing-qe3.json) closes QE3's loaded
-integration, cancellation, autoscroll and stack gates. The
-[clipboard record](../../development/qed-editing-qe4.json) closes QE4, and the
-[dialog record](../../development/qed-editing-qe5.json) closes QE5. The
-[document record](../../development/qed-editing-qe6.json) closes QE6. QE7
-remains; continue with the combined editing session and package handoff. Implement the
-[editing design](qed-editing-design.md) in the following executable slices.
-Each slice builds on the ordinary loaded QED APP and commits after its selected
-development checks. Record a design amendment before relying on a measured
-departure. Reliable saving remains strategy step 5.
+Status: strategy step 4 implemented through QE1–QE7 with
+[development evidence](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff).
+The [final record](../../development/qed-editing-qe7.json) reconciles the ordinary
+editing/replacement session, selected operational failure/reuse cases, source
+and observed stack bounds, current provider/resource/ABI and matching demo
+packages. Earlier slice records retain their original scope. Reliable saving
+remains strategy step 5; prepare its design and implementation plan next.
+Each slice below builds on the ordinary loaded QED APP and commits after its
+selected development checks. Design amendments precede measured departures.
+These checks do not qualify the hosted system or a release.
 
 | Slice | Runnable result | Depends on |
 | --- | --- | --- |

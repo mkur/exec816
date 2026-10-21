@@ -24,6 +24,8 @@ def variant(base,out,filesystem):
     for name in ('program','app','media'):
         shutil.copytree(base/name,out/name,dirs_exist_ok=True)
     p=read_build(out/'program');record=p['build'];original=record['image_sha256']
+    source=Path(record['source'])
+    if source.name==str(source) and (base/source).is_file():shutil.copy2(base/source,out/source)
     mounts=record['dos_mounts'];mounts[0]['format']=2 if filesystem=='sdfs' else 1
     address=record['task_storage']['BASE']+0x900
     segment=next(s for s in p['image']['segments'] if s['address']==address)
@@ -113,7 +115,7 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
     try:
         require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
         if observe_stacks:
-            from qed_stack_observer import markers,summarize,capture
+            from qed_stack_observer import markers,summarize_owned,capture
             points=markers(p,app)
             (out/'stack-markers.json').write_text(json.dumps(points,indent=2)+'\n')
             saved_trace={k:os.environ.get(k) for k in ('EXEC816_LATENCY_TRACE','EXEC816_LATENCY_PCS')}
@@ -161,7 +163,8 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                 if value is None:os.environ.pop(key,None)
                 else:os.environ[key]=value
             if record['status']=='pass':
-                record['stacks']=summarize(out/'emulator.log',points,p['build']['memory'],record.get('stack_windows',record.get('stack_window')))
+                record['stacks']=summarize_owned(out/'emulator.log',p,app,p['build']['memory'],record.get('stack_windows',record.get('stack_window')))
+                record['stack_marker_scope']='owned-image'
         (out/'results.json').write_text(json.dumps(record,indent=2)+'\n')
     return record
 
