@@ -10,7 +10,7 @@
 
 struct Descriptor { BPTR handle; UWORD append; LONG causal; };
 static struct Descriptor files[QED_FILE_SLOTS];
-static LONG firstError,lastError;
+static LONG firstError,lastError,lastCloseError;
 static UBYTE cleaning;
 /* This initializer belongs to the pinned Calypsi runtime (streamlist.c). */
 extern void __call_initialize_global_streams(void);
@@ -65,16 +65,17 @@ static BPTR handle(int fd)
 }
 static int opened(const char *path,LONG mode,int append)
 {
-    BPTR native=Open(path,mode);
+    BPTR native;
     int index;
-    if (!native) return fail(IoErr());
-    for (index=0;index<QED_FILE_SLOTS;++index) if (!files[index].handle) {
-        files[index].handle=native;files[index].append=append;files[index].causal=0;
-        return index+3;
-    }
-    Close(native);
-    return fail(ERROR_NO_MORE_ENTRIES);
+    /* Admit the descriptor before a mode that may create a filesystem object. */
+    for(index=0;index<QED_FILE_SLOTS && files[index].handle;index++){}
+    if(index==QED_FILE_SLOTS)return fail(ERROR_NO_MORE_ENTRIES);
+    native=Open(path,mode);
+    if(!native)return fail(IoErr());
+    files[index].handle=native;files[index].append=append;files[index].causal=0;
+    return index+3;
 }
+
 int _Stub_open(const char *path,int flags,...)
 {
     LONG mode;
@@ -94,12 +95,14 @@ int _Stub_close(int fd)
     BPTR native;
     LONG causal;
     if (fd>=0 && fd<=2) return 0;
-    native=handle(fd);
+    lastCloseError=0;native=handle(fd);
     if (!native) return fail(ERROR_BAD_NUMBER);
     /* Idle terminal Close consumes the native identity on either result. */
     causal=files[fd-3].causal;
     files[fd-3].handle=0;files[fd-3].append=0;files[fd-3].causal=0;
-    if (!Close(native)) return fail(causal ? causal:IoErr());
+    if (!Close(native)) {
+        lastCloseError=IoErr();return fail(causal ? causal:lastCloseError);
+    }
     if (causal) SetIoErr(causal);
     return 0;
 }
@@ -171,6 +174,9 @@ LONG Fopen(const char *path,WORD mode)
 }
 LONG Fcreate(const char *path,WORD attributes)
 { return attributes ? gem_error(fail(ERROR_ACTION_NOT_KNOWN)):gem_error(opened(path,MODE_NEWFILE,0)); }
+LONG QedFileExclusive(const char *path)
+{ return gem_error(opened(path,MODE_CREATE_EXCLUSIVE,0)); }
+LONG QedFileCloseError(void) { return lastCloseError; }
 LONG Fclose(WORD fd) { return gem_error(_Stub_close(fd)); }
 LONG Fread(WORD fd,LONG bytes,void *buffer)
 { return bytes<0 ? gem_error(fail(ERROR_BAD_ARGUMENTS)):gem_error(read_native(fd,buffer,bytes)); }
@@ -190,7 +196,7 @@ UWORD QedFileCount(void)
 }
 void QedFilesBegin(void)
 {
-    firstError=lastError=0;
+    firstError=lastError=lastCloseError=0;
     if (!stdout) __call_initialize_global_streams();
 }
 LONG QedFilesCleanup(LONG cause)

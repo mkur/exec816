@@ -7,7 +7,7 @@ from test_qed_native import process_run
 
 def run_probe(out,fixture,native_units=(),qed_units=(),calls=None,native_from=None,
               interaction=None,media_files=None,filesystem='sdfs',interactive_lifetimes=False,
-              minimum_stack=0,probes=(),writable=False,ram=False,loader_failures=False):
+              minimum_stack=0,probes=(),writable=False,ram=False,loader_failures=False,extra_inputs=()):
     from test_c_process import variant
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     reuse=native_from is not None
@@ -46,6 +46,7 @@ ENDMODULE
 ''')
     return process_run(out,True,reuse=reuse,rebuild_app=reuse,app_sources=sources,
         app_options=dict(includes=[native,qed,out/'inputs/source/cflib'],definitions=definitions,
+                         extra_inputs=extra_inputs,
                          runtime_attributes={'printf':'nofloat'},minimum_stack=minimum_stack,
                          probes=[(ROOT/'tests/programs'/name,layout) for name,layout in probes]),
         fixture_source=supervisor,expected_completed=2,native_optimize=True,

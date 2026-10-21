@@ -57,3 +57,36 @@ Exec's eight-byte allocation rounding); the retained native parent is a separate
 DOS owner. Source-frame bound remains 776 bytes, conditional margin 632 bytes.
 The provider is unchanged. Reserved bank-zero delta is **0 fixed / 0
 per-public-Task / 0 private idle bytes**, including guards, alignment and slack.
+
+## QW3 Exact serialization and exclusive staging
+
+The resumable writer counts before creation, then emits at most 4,096 bytes and
+visits at most 256 line boundaries per poll. It preserves LINE bytes and emits
+LF/CRLF only between logical lines. One bank-contained 4 KiB upper-heap buffer
+retains partial-output and separator state. Exclusive creation admits its
+private descriptor slot before native Open; exhaustion cannot leave a created
+file. Confirmed short prefixes advance once. Zero/negative progress or any
+causal Write error fails; terminal Close consumes its identity once and retains
+its separate cause. Unknown mutation/Close outcomes retain the possible T.
+
+The [QW3 record](../development/qed-saving-qw3.json) binds optimized actual-source
+RAM/SpartaDOS/MyDOS checks, two Process lifetimes per cohort, collision/exhaustion,
+allocation/admission failure, causal short/full writes, Close uncertainty,
+cancellation/cleanup failure, count overflow, empty/trailing lines, maximum
+lines and 80 KiB output. Focused cases split CR from LF at byte 4,096 and retain
+literal ATASCII 155. Independent closed-ATR audits find two exact 81,920-byte
+staged files on each disk filesystem with consistent allocation and no lost
+sectors. The files are staging artifacts, not published destinations.
+
+Observed private peak is 108,984 bytes, including the multi-bank LINE owner and
+allocation headers; the serialization buffer costs 4,108 backing bytes (4,112
+after Exec allocation rounding). The main cohorts' minimum observed headroom
+is 1,807 bytes in an existing compatible pool. The production APP grows by 44
+code and four BSS bytes for adapter lifecycle accounting: 106,765 code / 1,640
+initialized / 23,773 BSS, serialized 121,789 bytes. The uncalled stage unit is
+not a production entry point. Production source bound remains 776 bytes,
+conditional margin 632 bytes. Provider and reserved bank-zero growth remain
+**0 fixed / 0 per-public-Task / 0 private idle bytes**, with complete maps equal.
+
+Save/Save As remain disabled. Staging readiness is not Saved; no D/B
+publication or GUI consent is claimed by this slice.

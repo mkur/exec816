@@ -97,3 +97,8 @@ QW2 prepares canonical physical paths with `path.c` before reading a document.
 A candidate retains its ordinary directory lock through commit or cancellation;
 selected-file metadata queries release their locks immediately. No current-directory
 mutation or private lock layout is used. Save commands remain disabled.
+
+QW3's `stage.c` owns exact bounded serialization and a closed exclusive T.
+It never publishes D or changes B. The descriptor adapter admits slots before
+creation and exposes terminal Close's own cause separately. Stage readiness
+is private core state; the real menu remains disabled until QW5.

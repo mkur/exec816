@@ -12,7 +12,7 @@ from native_program import ROOT, command, sha256
 
 
 def build(output,sources,optimize=True,probes=(),includes=(),definitions=None,runtime_attributes=None,
-          extra_assembly=(),minimum_stack=0):
+          extra_assembly=(),minimum_stack=0,extra_inputs=()):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     assembly=output/'imports.s'
@@ -23,7 +23,7 @@ def build(output,sources,optimize=True,probes=(),includes=(),definitions=None,ru
     payload,record=pack(image,relocations,minimum_stack)
     path=output/'program.app';path.write_bytes(payload)
     record.update(abi=ABI,bytes=len(payload),sha256=sha256(path),verified_banks=banks,
-                  image=image,inputs={str(p):sha256(p) for p in (*sources,*extra_assembly)})
+                  image=image,inputs={str(p):sha256(p) for p in (*sources,*extra_assembly,*extra_inputs)})
     (output/'app.json').write_text(json.dumps(record,indent=2)+'\n')
     return record
 

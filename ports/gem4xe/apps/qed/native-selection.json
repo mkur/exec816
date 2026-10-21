@@ -789,7 +789,8 @@
     "gem-helpers.c",
     "commands.c",
     "document.c",
-    "path.c"
+    "path.c",
+    "stage.c"
   ],
   "features_removed": [
     "preferences UI and persistence",

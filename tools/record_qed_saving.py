@@ -5,7 +5,7 @@ from pathlib import Path
 from native_program import ROOT,require,sha256
 from c_program import ABI
 
-def record(slice_name,layout,cohorts,packages,host_log,destination):
+def record(slice_name,layout,cohorts,packages,host_log,destination,supplements=()):
     require(not destination.exists(),'Evidence is immutable: choose a new record')
     host=host_log.read_text()
     require(re.search(r'Ran \d+ tests.*\n\nOK(?: \(skipped=\d+\))?\s*$',host,re.S),
@@ -46,6 +46,7 @@ def record(slice_name,layout,cohorts,packages,host_log,destination):
             result['bundle_manifest_sha256']==sha256(directory/'demo-manifest.json'),
             'Missing matching exact-package smoke')
         data['packages'].append(dict(zip=stamped(directory/'exec816-demo.zip'),smoke=stamped(smoke)))
+    data['supplements']=[stamped(p) for p in supplements]
     data['bank_zero_delta']=dict(fixed=0,per_public_task=0,private_idle=0,
         basis='Complete regions and task_pools equal the retained QS4 map, including guards/alignment/slack')
     destination.write_text(json.dumps(data,indent=2)+'\n')
@@ -55,6 +56,7 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--slice',required=True)
     p.add_argument('--layout',type=Path);p.add_argument('--cohort',type=Path,action='append',default=[])
     p.add_argument('--package',type=Path,action='append',default=[])
+    p.add_argument('--supplement',type=Path,action='append',default=[])
     p.add_argument('--host-log',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
     a=p.parse_args();record(a.slice,a.layout.resolve() if a.layout else None,
-        [v.resolve() for v in a.cohort],[v.resolve() for v in a.package],a.host_log.resolve(),a.output.resolve())
+        [v.resolve() for v in a.cohort],[v.resolve() for v in a.package],a.host_log.resolve(),a.output.resolve(),[v.resolve() for v in a.supplement])
