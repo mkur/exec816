@@ -25,9 +25,9 @@ The real editor opens, edits, navigates, selects, copies/pastes, undoes and find
 with checked single-document replacement and Cancel-default Discard/Cancel.
 Reliable saving, practical coexistence and supported delivery remain steps 5–7.
 Step 5 has a [saving design](qed-saving-design.md) and
-[QW1–QW8 plan](qed-saving-implementation-plan.md). QW1–QW6 implement canonical
+[QW1–QW8 plan](qed-saving-implementation-plan.md). QW1–QW7 implement canonical
 paths, checked staging/publication, loaded-editor Save/Save As and modified
-continuations. Deeper operational cases and final saving acceptance remain QW7–QW8.
+continuations and selected deeper operational cases. Final saving acceptance remains QW8.
 
 ## First usable editor
 
@@ -228,7 +228,7 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Continue with QW7 in the [saving implementation plan](qed-saving-implementation-plan.md#qw7-targeted-disk-failures-and-resource-closure):
-exercise selected deeper disk-full, physical transport, BREAK and resource
-cases, then reconcile the saving gate in QW8 before strategy step 6.
+Continue with QW8 in the [saving implementation plan](qed-saving-implementation-plan.md#qw8-reconcile-the-saving-gate-and-hand-off-coexistence):
+reconcile the combined editor workflow, persisted media and current resource
+evidence before strategy step 6.
 Commit each executable slice after development checks.

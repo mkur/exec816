@@ -1,0 +1,104 @@
+MODULE CPROCESSTEST
+USE EXEC
+USE DOS
+USE DOSCLIENT
+USE PROGRAMFILE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROCESS
+USE PROCESSSTATE
+USE AESSTATE
+USE AESCORE
+USE O65CONTROL
+USE O65TYPES
+USE HEAPCORE
+USE CSTRING.IMPL AS STR
+
+CARD checks,completed,control,phase
+LONGCARD baseline
+LONGINT lastPrimary,lastSecondary
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PUBLIC PROC Collected(LONGCARD id LONGINT expected)
+  PROCESS.Result result
+
+  Require(id<>0)
+  Require(PROCESS.Wait(id,@result)<>0)
+  lastPrimary=result.primary
+  Require(result.primary=expected)
+  completed==+1
+
+RETURN
+
+PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load()
+  BYTE ARRAY path(32)
+
+  STR.strlcpy(path,c"SYS:PROBE.APP",SIZEOF(path))
+  LET image=PROGRAMFILE.Load(path)
+  STR.strlcpy(path,c"overwritten",SIZEOF(path))
+  Require(image<>NULL)
+  Require(image.kind=PROGRAMIMAGE.KIND_C)
+  Require(STR.strcmp(CSTRING(@image.name(0)),c"PROBE.APP")=0)
+
+RETURN(image)
+
+PUBLIC LONGCARD FUNC Start(PROGRAMIMAGE.Image POINTER image BYTE POINTER args)
+
+RETURN(PROCESS.StartLoaded(BYTE POINTER(image),args,1,0))
+
+PROC Bad(BYTE POINTER name LONGINT error)
+
+  Require(PROGRAMFILE.Load(name)=NULL)
+  Require(DOS.IoErr()=error)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+PROC Main()
+  PROCESS.Result result
+  LONGCARD attempt
+
+  Require(DOS.AssignPath(BYTE POINTER(c"D1"),BYTE POINTER(c"SYS:"))<>0)
+  LET image=Load()
+  LET console=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
+  Require(console<>NULL AND DOS.BeginForeground(console)<>0)
+  LET child=PROCESS.StartLoaded(BYTE POINTER(image),BYTE POINTER(c"F"),1,1)
+  Require(child<>0)
+  phase=1
+  FOR attempt=0 TO 1999999 DO
+    IF control=1 THEN
+      Require(PROCESS.RequestBreak(child)<>0)
+      control=0
+      phase=2
+    FI
+
+    IF PROCESS.Collect(child,@result)<>0 THEN
+      EXIT
+    FI
+
+    EXEC.Yield()
+  OD
+
+  Require(attempt<1999999)
+  lastPrimary=result.primary
+  lastSecondary=result.secondary
+  Require(result.primary=-321)
+  completed=1
+  Require(image.running=0 AND image.references=1)
+  PROGRAM.Unload(image)
+  Require(DOS.EndForeground()<>0 AND DOS.Close(console)<>0)
+  Require(DOS.AssignPath(BYTE POINTER(c"D1"),NULL)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

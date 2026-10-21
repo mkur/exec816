@@ -5,7 +5,7 @@ from pathlib import Path
 from native_program import ROOT,require
 from qed_probe import run_probe
 
-def heap(b,p,app,record,owner):
+def heap(b,p,app,record,owner,timeout=480,frame_limit=30000):
     from os_boundary import run_to
     import adapter_state as adapter
     from test_cooperative import data
@@ -21,7 +21,7 @@ def heap(b,p,app,record,owner):
         return values
     b.regs=regs
     try:
-        run_to(b,p['labels']['native_cop'],condition=condition,timeout=480,frame_limit=30000)
+        run_to(b,p['labels']['native_cop'],condition=condition,timeout=timeout,frame_limit=frame_limit)
         require(b.peek16(symbols['QedSavingFinished'])==1,'Saving helper returned early: '+str(b.peek16(symbols['QedProbeReturned'])))
     except Exception:
         record['saving_failure']={n:int.from_bytes(b.memdump(symbols[n],2),'little')

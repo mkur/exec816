@@ -4,7 +4,7 @@
 [Strategy](qed-port-strategy.md) ·
 [Editing handoff](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff)
 
-Status: QW1–QW6 implemented; QW7–QW8 remain for strategy step 5. See the
+Status: QW1–QW7 implemented; QW8 remains for strategy step 5. See the
 [implementation record](../../history/qed-saving.md). The
 [QE7 development baseline](../../development/qed-editing-qe7.json) is the
 starting point. QW5 enables Save/Save As and QW6 adds the full Save/Discard/Cancel workflow. Step 5 closes only after QW8

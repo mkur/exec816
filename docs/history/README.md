@@ -1,7 +1,7 @@
 # Historical records
 
-- [QED reliable saving](qed-saving.md): QW1–QW6 canonical paths/current C ABI,
-  checked staging/publication, loaded-editor saving and modified continuations; remaining slices follow
+- [QED reliable saving](qed-saving.md): QW1–QW7 canonical paths/current C ABI,
+  checked staging/publication, loaded-editor saving, modified continuations and operational failures; the final gate follows
   the step 5 plan.
 
 - [QED editing](qed-editing.md): incremental QE1–QE7 editing, document

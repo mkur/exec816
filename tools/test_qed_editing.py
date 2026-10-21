@@ -9,7 +9,7 @@ from test_qed_native import process_run
 from qed_editing_observe import interact
 
 
-def build_editor(target,provider,reuse_app=False,selection=False,saving=False):
+def build_editor(target,provider,reuse_app=False,selection=False,saving=False,long_cleanup=False):
     if reuse_app:
         from native_program import require,sha256
         from c_program import ABI
@@ -22,6 +22,8 @@ def build_editor(target,provider,reuse_app=False,selection=False,saving=False):
         editing=next(v for n,v in options.items() if n.endswith('/qed/src/edit.c'))
         require(('-DCreateIORequest=QedSelectionCreateIORequest' in editing)==selection,
                 'Changed selection fixture contract')
+        require(any(n.endswith('/qed_saving_cleanup_faults.c') for n in options)==long_cleanup,
+                'Changed long-cleanup fixture contract')
         require(sha256(target/'program.app')==app['sha256'],'Changed serialized APP')
         for name,digest in layout['build_inputs'].items():
             require(sha256(Path(name))==digest,'Changed APP input: '+name)
@@ -42,8 +44,10 @@ def build_editor(target,provider,reuse_app=False,selection=False,saving=False):
         calls['files.c']={'Close':'QedSaveFaultClose'}
         calls['save.c']={'Rename':'QedSaveFaultRename','DeleteFile':'QedSaveFaultDelete'}
     build(target,provider,executable=True,
-          fixture=ROOT/'tests/programs'/('qed_saving_faults.c' if saving else 'qed_editing_faults.c'),
-          fixture_inputs=[ROOT/'tests/programs/qed_editing_faults.c'] if saving else (),
+          fixture=ROOT/'tests/programs'/('qed_saving_cleanup_faults.c' if long_cleanup else
+              ('qed_saving_faults.c' if saving else 'qed_editing_faults.c')),
+          fixture_inputs=([ROOT/'tests/programs/qed_editing_faults.c']+
+              ([ROOT/'tests/programs/qed_saving_faults.c'] if long_cleanup else [])) if saving else (),
           fixture_calls=calls,
           fixture_roots=['QedEditingLayout',*(['QedSavingLayout'] if saving else [])])
     return json.loads((target/'app.json').read_text())

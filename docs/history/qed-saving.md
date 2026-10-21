@@ -206,3 +206,59 @@ source bound 503 and conditional margin 905 bytes. The descriptive selection
 update leaves APP bytes unchanged. Provider growth and reserved bank-zero delta
 remain **0 fixed / 0 per-public-Task / 0 private idle bytes**, including guards,
 alignment and unused capacity. These checks are development evidence.
+
+## QW7 Operational failures and resource closure
+
+The [QW7 record](../development/qed-saving-qw7.json) combines optimized
+actual-source writer checks with the loaded editor's large-cleanup Stop case.
+Consistent disposable 720-sector images cover payload exhaustion, checked
+Close and cleanup, reclamation, successful retry and twelve further saves on
+both formats. A separately prepared 64-entry MyDOS root rejects staging
+creation without changing D/B. Each logical cohort runs two collected Process
+lifetimes with exact warm heap return; closed-image audits check bytes and
+whole-volume allocation. The GUI cleanup cohort uses 2,880 sectors.
+
+The [saving fault pin](../../toolchain/qed-saving-sio-faults.json) identifies the
+exact current bridge binary, ROM, configuration and existing D8 peripheral
+fault code. Activation follows actual WRITE payload transmission, before its
+checksum/data ACK/completion. Terminal E and protocol X reach QED's real writer
+on both disk formats. They preserve causes 3/7, consume Close once, retain the
+possible T and perform no speculative Rename/Delete. MyDOS's offline case
+confirms a 253-byte prefix; it is never resent. Ordinary foreground RequestBreak
+before Write and after 4,096 committed bytes similarly preserves ERROR_BREAK,
+closed T and the original Process secondary result. GUI notices and cooperative
+Stop remain independently checked through the real editor.
+
+After retirement the selected interrupted writers have zero private allocation
+blocks/payload/backing. Healthy cases check normal ownership and OS restoration.
+Protocol/offline cases require `$FF93`, disabled interrupts, intact guards and
+released caller-buffer pointers. The platform deliberately parks before
+HEAP_SHUTDOWN: retained bank claims must be exclusively new HEAP-owned claims
+from previously free banks. This is neither normal hosted return nor a healthy
+volume claim. Invalidated images are kept separate; subsequent writes start
+from newly constructed good media. Application/Process retirement is distinct
+from kernel storage retained until reset.
+
+The loaded-editor Stop check cancels staged writing, declines the fresh modified
+decision, then retries. After publication the caller blocks in native deletion
+of a 256 KiB E; a second ordinary RequestStop is delivered there. Deletion must
+finish before clean retirement. The closed image retains the new D and original
+D in B, with E reclaimed. Delete/Close have operation/volume bounds; the 4 KiB
+serializer budget is not their frame deadline.
+
+Two 80 KiB RAM files use 262,256 bytes including native nodes. With the staged
+third buffer, observed post-poll growth is 399,168 bytes relative to the pre-file
+baseline, including three 131,072-byte capacities and 5,952 bytes of private and
+native overhead. Publication returns to the two-file cost; deletion returns
+exactly to baseline. Source inspection of RAM growth adds a possible transient
+65,536-byte old buffer before copy/free, giving a 464,704-byte bound for that
+incremental interval; this transient is not claimed as a sampled watermark.
+Normal writer private peak is 114,502 bytes and minimum selected headroom
+1,733 bytes. Disk payloads, directory entries and retained recovery files are
+accounted separately from private allocation backing.
+
+No production source or public ABI changes were required. The matching QW6
+production APP and its 503-byte source bound / 905-byte conditional margin are
+reused. Provider and reserved bank-zero deltas remain **0 fixed / 0
+per-public-Task / 0 private idle bytes**, including guards, alignment and unused
+capacity. These are development checks; QW8 reconciles the complete saving gate.

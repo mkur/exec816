@@ -7,11 +7,11 @@ from test_qed_native import process_run
 
 def run_probe(out,fixture,native_units=(),qed_units=(),calls=None,native_from=None,
               interaction=None,media_files=None,filesystem='sdfs',interactive_lifetimes=False,
-              minimum_stack=0,probes=(),writable=False,ram=False,loader_failures=False,extra_inputs=(),prepare_media=None):
+              minimum_stack=0,probes=(),writable=False,ram=False,loader_failures=False,extra_inputs=(),prepare_media=None,lifetimes=2,fixture_source=None,execution=None):
     from test_c_process import variant
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     reuse=native_from is not None
-    if reuse:variant(native_from.resolve(),out,filesystem)
+    if reuse:variant(native_from.resolve(),out,filesystem,unit=(execution or {}).get('unit',49),sectors=(execution or {}).get('sectors',2880))
     prepare(out/'inputs')
     native=PORT/'native';qed=out/'inputs/source/qed/src'
     sources=[ROOT/'tests/programs'/fixture]
@@ -44,13 +44,15 @@ RETURN
 
 ENDMODULE
 ''')
+    if lifetimes!=2:
+        supervisor.write_text(supervisor.read_text().replace('FOR cycle=0 TO 1 DO','FOR cycle=0 TO '+str(lifetimes-1)+' DO'))
     return process_run(out,True,reuse=reuse,rebuild_app=reuse,app_sources=sources,
         app_options=dict(includes=[native,qed,out/'inputs/source/cflib'],definitions=definitions,
                          extra_inputs=extra_inputs,
                          runtime_attributes={'printf':'nofloat'},minimum_stack=minimum_stack,
                          probes=[(ROOT/'tests/programs'/name,layout) for name,layout in probes]),
-        fixture_source=supervisor,expected_completed=2,native_optimize=True,
+        fixture_source=fixture_source or supervisor,expected_completed=lifetimes,native_optimize=True,
         release_compiler=True,loader_failures=loader_failures,interaction=interaction,
-        writable=writable,ram=ram,prepare_media=prepare_media,
+        writable=writable,ram=ram,prepare_media=prepare_media,execution=execution,
         media_files=media_files,filesystem=filesystem,
         stack_observation_index=1 if interactive_lifetimes else 0,profile_all=interactive_lifetimes)
