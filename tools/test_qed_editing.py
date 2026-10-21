@@ -9,7 +9,7 @@ from test_qed_native import process_run
 from qed_editing_observe import interact
 
 
-def build_editor(target,provider,reuse_app=False,selection=False,saving=False,long_cleanup=False):
+def build_editor(target,provider,reuse_app=False,selection=False,saving=False,long_cleanup=False,caret=False):
     if reuse_app:
         from native_program import require,sha256
         from c_program import ABI
@@ -24,6 +24,8 @@ def build_editor(target,provider,reuse_app=False,selection=False,saving=False,lo
                 'Changed selection fixture contract')
         require(any(n.endswith('/qed_saving_cleanup_faults.c') for n in options)==long_cleanup,
                 'Changed long-cleanup fixture contract')
+        require(any(n.endswith('/qed_cursor_faults.c') for n in options)==caret,
+                'Changed caret fixture contract')
         require(sha256(target/'program.app')==app['sha256'],'Changed serialized APP')
         for name,digest in layout['build_inputs'].items():
             require(sha256(Path(name))==digest,'Changed APP input: '+name)
@@ -37,6 +39,7 @@ def build_editor(target,provider,reuse_app=False,selection=False,saving=False,lo
            'event.c':{'key_window':'QedEditKeyWindow','key_global':'QedEditGlobalKey',
                       'handle_menu':'QedEditMenu'}}
     if selection:calls['edit.c']={'CreateIORequest':'QedSelectionCreateIORequest'}
+    if caret:calls['ausgabe.c'].update(v_bar='QedCursorBar',v_gtext='QedCursorText')
     if saving:
         calls['document.c']['Fopen']='QedSaveDocumentOpen'
         calls['saving.c']={'form_alert':'QedSaveAlert'}
@@ -44,10 +47,10 @@ def build_editor(target,provider,reuse_app=False,selection=False,saving=False,lo
         calls['files.c']={'Close':'QedSaveFaultClose'}
         calls['save.c']={'Rename':'QedSaveFaultRename','DeleteFile':'QedSaveFaultDelete'}
     build(target,provider,executable=True,
-          fixture=ROOT/'tests/programs'/('qed_saving_cleanup_faults.c' if long_cleanup else
+          fixture=ROOT/'tests/programs'/('qed_cursor_faults.c' if caret else 'qed_saving_cleanup_faults.c' if long_cleanup else
               ('qed_saving_faults.c' if saving else 'qed_editing_faults.c')),
           fixture_inputs=([ROOT/'tests/programs/qed_editing_faults.c']+
-              ([ROOT/'tests/programs/qed_saving_faults.c'] if long_cleanup else [])) if saving else (),
+              ([ROOT/'tests/programs/qed_saving_faults.c'] if long_cleanup or caret else [])) if saving else (),
           fixture_calls=calls,
           fixture_roots=['QedEditingLayout',*(['QedSavingLayout'] if saving else [])])
     return json.loads((target/'app.json').read_text())

@@ -1,0 +1,472 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Idle cursor paint correction and refreshed local preview; strategy steps 6/7 remain open",
+  "cause": "Timer-driven cursor() called line_out(), clearing and repainting the entire cursor row at every blink",
+  "correction": "Clip/paint only the 2-pixel insert caret or one-cell overwrite caret; hiding restores its background and a single glyph",
+  "production": {
+    "app": {
+      "path": "build/qed-cursor/production/program.app",
+      "sha256": "1317584795999fb207183403a77587984f3a2c2291441e0398abbbf3a83494e7"
+    },
+    "layout": {
+      "path": "build/qed-cursor/production/layout.json",
+      "sha256": "6afad9794c55bc31b1bca644946c004c52666451cb14a93aaf71f43a1b8c2cad"
+    },
+    "sources": {
+      "path": "build/qed-cursor/production/inputs/sources.json",
+      "sha256": "edef3b1ca649371ea7364eaba7f41b75c796b3cc59ea9648708062829de297e5"
+    },
+    "resource": {
+      "path": "build/qed-cursor/production/inputs/resource/QED.RSC",
+      "sha256": "9095194c1b2055ecbd31b6bcde7604a47dd6da6d4796e0b4b1a52993588d08e7"
+    },
+    "abi": 26,
+    "layout_bytes": {
+      "code_bytes": 110757,
+      "initialized_bytes": 2770,
+      "bss_bytes": 22212,
+      "import_thunk_bytes": 404,
+      "span_bytes": 176293,
+      "image_holes_bytes": 40554,
+      "serialized_bytes_if_executable": 127879,
+      "relocation_count": 3362,
+      "heap_alignment_backing_bytes": 241828,
+      "future_full_profile_backing_bytes": 393216,
+      "private_allowances": {
+        "code_bytes": 32768,
+        "data_bss_bytes": 16384
+      },
+      "container_metadata_allowance_bytes": 16384,
+      "resident_provider_allowances": {
+        "code_bytes": 16384,
+        "data_bss_bytes": 16384,
+        "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+        "table_bytes": 4096
+      }
+    },
+    "exec_aligned_image_backing_bytes": 241832,
+    "previous_backing_bytes": 241224,
+    "backing_delta_bytes": 608,
+    "delta_bytes": {
+      "code_bytes": 605,
+      "initialized_bytes": 0,
+      "bss_bytes": 0,
+      "serialized_bytes_if_executable": 669,
+      "relocation_count": 16
+    },
+    "accounting": "layout heap_alignment_backing_bytes is the four-byte requirement; Exec rounds the allocated image backing to eight bytes",
+    "stack_frames": {
+      "path": "build/qed-cursor/production/stack-frames.json",
+      "sha256": "f9c02ccbb6865604fb89f09f6cccefa8aba8c7dae07bcecdf568ea712a6e55c0"
+    },
+    "stack": {
+      "status": "conditional-source-bound",
+      "source_chain_bytes": 503,
+      "continuation_cap_bytes": 768,
+      "interrupt_reserve_bytes": 256,
+      "required_headroom_bytes": 128,
+      "admission_bytes": 2560,
+      "margin_bytes": 905
+    },
+    "toolchain_pin": {
+      "path": "toolchain/actionc.json",
+      "sha256": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100"
+    },
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "compiler_options": [
+      "--no-cross-call",
+      "--no-interprocedural-cross-jump",
+      "--no-inline"
+    ]
+  },
+  "focused": {
+    "command": "python3 tools/test_qed_cursor.py --output build/qed-cursor/editor --native-from build/qed-saving/qw7-cleanup-stop-bounded",
+    "result": {
+      "path": "build/qed-cursor/editor/results.json",
+      "sha256": "178115ddb6731f55945cd85acbbd738c91e5c6839f22208d49c167468535a61b"
+    },
+    "trace": {
+      "path": "build/qed-cursor/editor/emulator.log",
+      "sha256": "f530ca106a463c03669138051a7fd22d474ad2ea3783bb6b5d8b805b8f2cee5e"
+    },
+    "app": {
+      "path": "build/qed-cursor/editor/app/program.app",
+      "sha256": "4b2068519176ffd7a5f2cb2bdf494b644dd342d8cf8cb596fe84f9fc1a470779"
+    },
+    "layout": {
+      "path": "build/qed-cursor/editor/app/layout.json",
+      "sha256": "4e7f3c3bb5264fcca099ccb65f7d08f7609537da0758b84e0e7b65b73f747558"
+    },
+    "checks": [
+      8869,
+      0
+    ],
+    "completed": [
+      4
+    ],
+    "caret_draws": {
+      "bars": 58,
+      "glyphs": 25,
+      "outside_band": 0,
+      "idle_transitions": 8
+    },
+    "minimum_selected_headroom_bytes": 1475,
+    "guards": "intact",
+    "runtime_status": 0,
+    "coverage": [
+      "Eight idle visible/hidden transitions with independent text/caret pixel comparison",
+      "Actual forwarded VDI bars remain inside the caret band and glyph restores are single-character",
+      "Ordinary peer covers the editor and stays intact over idle frames; editor exposure redraws correctly",
+      "Selection followed by Escape restores expected text and caret pixels",
+      "Four loaded lifetimes cover regular/missing/deep/CRLF launches, normal Quit, Stop Cancel then Discard and warm ownership return"
+    ],
+    "limits": "Focused insert-caret runtime checks; overwrite width, tabs and EOL preservation are reviewed source behavior. This is not a full editing or hosted qualification matrix.",
+    "execution": {
+      "pin": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "source_patch": "toolchain/patches/altirra-console-probe.patch",
+          "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+          "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+          "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+          "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 63,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true,
+          "addons": "custom"
+        },
+        "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+        "peripherals": [
+          {
+            "name": "fastest-125k",
+            "diskemu": "fastest",
+            "divisor": 0,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "stock-810",
+            "diskemu": "810",
+            "divisor": 40,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "happy-none",
+            "diskemu": "happy1050",
+            "divisor": 40,
+            "source": "src/Altirra/source/disk.cpp",
+            "firmware": "built-in high-level model; quiet command only"
+          }
+        ],
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true
+        },
+        "source_sha256": {
+          "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+          "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+          "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+          "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+          "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+        },
+        "observer": {
+          "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+        },
+        "keyboard_input": {
+          "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+          "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+          "initialization": "KEY ALL up enables scan mode before modifier changes",
+          "added_keys": {
+            "ASTERISK": 7,
+            "LESS": 54,
+            "GREATER": 55
+          },
+          "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+          "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+        },
+        "serial_regression_pins": [
+          "toolchain/altirra-sio-queued.json",
+          "toolchain/altirra-sio-sectors.json"
+        ],
+        "devices": [
+          {
+            "tag": "vbxe",
+            "settings": {
+              "version": 126,
+              "alt_page": false,
+              "shared_mem": false
+            },
+            "readback": [
+              {
+                "address": 54848,
+                "bytes": [
+                  16,
+                  38
+                ]
+              }
+            ],
+            "vram_bytes": 524288,
+            "register_base": 54784
+          }
+        ],
+        "startup_configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true,
+          "diskemu": "generic56k"
+        },
+        "disk_workload": {
+          "format": "SDFS",
+          "unit": 49,
+          "sectors": 720,
+          "sector_bytes": 128,
+          "exec_profile": 4,
+          "nominal_baud": 57600
+        },
+        "mouse_input": {
+          "model": "ST mouse",
+          "port": 1,
+          "internal_port": 0,
+          "map": "Mouse -> ST Mouse (port 1)",
+          "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+          "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+          "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+          "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+          "commands": [
+            "MOUSE ST",
+            "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+            "MOUSE CLEAR"
+          ],
+          "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+          "tooling": {
+            "binary": "build/mouse-bridge/AltirraBridgeServer",
+            "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+            "patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "source_sha256": {
+              "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+              "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+              "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+              "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+            }
+          },
+          "initial_acceptance": {
+            "transitions_per_second_per_axis": 1000,
+            "minimum_transition_spacing_us": 1000,
+            "minimum_button_level_us": 10000,
+            "required_max_sample_gap_us_exclusive": 1000,
+            "visible_response_pal_ticks": 12
+          },
+          "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+        }
+      },
+      "drive": 0,
+      "unit": 49,
+      "sectors": 2880,
+      "expected_status": 0
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "package": {
+    "command": "python3 tools/prepare_qed_exec.py && python3 tools/test_qed_exec_setup.py --bundle build/qed-exec-altirra-fixed",
+    "result": {
+      "path": "build/qed-exec-altirra-fixed/qed-setup-results.json",
+      "sha256": "97d04b18e6ff0a4be077186458638930b60b46a37291d007e25b7cd22910348e"
+    },
+    "preview": {
+      "path": "build/qed-exec-altirra-fixed/qed-preview.json",
+      "sha256": "dc63327cf64c2b11ee209bc40dc86f2a4602f3b90fa8dc27ccd2f8c289c1d425"
+    },
+    "manifest": {
+      "path": "build/qed-exec-altirra-fixed/demo-manifest.json",
+      "sha256": "0d2dcaaa55470a24b181c36738e566e2a72c171d5c16460ae47b102dc061661e"
+    },
+    "zip": {
+      "path": "build/qed-exec-altirra-fixed/exec816-demo.zip",
+      "sha256": "6cacbea0b0a51cc5908968bf06aa3568097cedd3e0be2b19657f8c9eb56f7fb8"
+    },
+    "native_xex": {
+      "path": "build/qed-exec-altirra-fixed/program.xex",
+      "sha256": "d1f88715f9ee4a683487d469a983564bf542ddc4789a8976e048a904b5ef312b"
+    },
+    "boot_xex": {
+      "path": "build/qed-exec-altirra-fixed/of816/Exec-of816.xex",
+      "sha256": "e858811202c42702ffe74af6c3ac187d8ed66e4419b48201c1090e3d95ccfe1a"
+    },
+    "rom": {
+      "path": "build/qed-exec-altirra-fixed/of816/altirraos-816.rom",
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7"
+    },
+    "screenshot": {
+      "path": "build/qed-exec-altirra-fixed/qed-running.png",
+      "sha256": "022a8674bbf4df5a468942ad1630e916a936d7c51f35e0d10570a5d9cbe61e41"
+    },
+    "production_app": true,
+    "integration": {
+      "production_app": true,
+      "normal_shell_launch": true,
+      "lifetimes": 2,
+      "saves": 3,
+      "backup_rotation": true,
+      "reopen": true,
+      "native_ownership_return": true
+    },
+    "allocation": {
+      "sectors": 2880,
+      "sector_bytes": 256,
+      "allocated": 13,
+      "free": 2867,
+      "files": 3,
+      "directories": 1
+    },
+    "saved_sha256": "c538c11e3b8b721deffe54276280a6e5930a50428448bd8f249f9f0a9a4be0e9",
+    "autoboot_frames": 249,
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$d2a6f8f69bd943b3",
+      "actual_kernel_id": "$d2a6f8f69bd943b3",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "guards": "intact",
+    "runtime_status": 0,
+    "stale_build_check": {
+      "path": "build/qed-cursor/stale-package-check.json",
+      "sha256": "d65da77a8e29edd0a1597c947b4ac547657730bdb723b076b27ad06d39b6840a"
+    },
+    "migration": {
+      "path": "build/qed-cursor/migration.json",
+      "sha256": "777378ed05198c10a7ffad28fd7eed58c7f992bb65bee5a8288b0858a1a696e9"
+    },
+    "launcher_prepare_only": "pass; D8 resolves to the original writable disk, not the clean template",
+    "prior_evidence": "All top-level artifact path/SHA256 entries in docs/development/qed-exec-setup.json rechecked intact. The generated old launcher now forwards to the new setup; WORK data untouched."
+  },
+  "host": {
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "result": {
+      "path": "build/qed-cursor-host.log",
+      "sha256": "6dddc8e93e0bbc2db820e2eeb55e8facd9c85b83e9a347172234c30e398da5cf"
+    },
+    "tests": 541,
+    "skipped": 4,
+    "status": "pass"
+  },
+  "inputs": {
+    "ports/gem4xe/apps/qed/patches/0017-native-caret-paint.patch": "0c09674a8a7aebcff5e935059c126df0735dee4ff5abd4f7851a00f9b4b957bb",
+    "tests/programs/qed_cursor_faults.c": "d98e64759d1163ac4cd8dc8fdac5115c2ae7cf2b4b206d78e762ab7bc3f9eeb9",
+    "tests/programs/qed_editing_faults.c": "11b32de0eeace7e5ddbb688e4853337bab7f1e72288c7ae81473c4bd580dcf81",
+    "tests/programs/qed_saving_faults.c": "5256b08e77677d6e98b488ff815271375d5b299c76155e98697db572d125ed33",
+    "tools/test_qed_cursor.py": "38cd0325f2a7fe1f15d91075890fa25d2d7badf1d7327d69ea7f78eea9c6e1f6",
+    "tools/test_qed_editing.py": "573ed0bcb6b763407d52bf35c4500eb81b87d4105de63a2ac2eae49957cd9ec1",
+    "tools/test_qed_selection.py": "aca82de8e07b286c5403e97f1961081725a50aaac28e22e246c76e5050dd75d1",
+    "tools/prepare_qed_exec.py": "46db65051024ad040bff95f5d8d01b8bfddbfef484f8669b45bafab5900748a9",
+    "tools/test_qed_exec_setup.py": "d08b7f9648a4bf6d5b3242cae5bf1aa9da4f5706e304d3d4be24a67870e7b9f0",
+    "tools/qed_saving_observe.py": "5d73fef53edc889284bd3b45767cd236cb0ddffcb295716b71714af9fa282c70",
+    "tools/qed_editing_observe.py": "22626e1941334dec64678222756a40786cc7aa7a9161fce4818925c70982751d",
+    "tools/qed_selection_observe.py": "88802daad72dd002af0badd25a6c0c528e5ec69906a1717e36e2d864a0d26ddb",
+    "tools/qed_viewport_observe.py": "c2a42edf37837b383f122bdfff0bf2c61e6d0be6769370340dcad4a93f338b8b",
+    "tools/build_qed.py": "831d401632de169a6145de7e9b0806f4e4e79f0f1019668fa05d700e63098796",
+    "tools/measure_qed_frames.py": "01f626a7ff0845f9552691766ef6790c2ce0eacdb821a257984a5eace9ea6dbb"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Relative to the previous interactive preview: same native desktop XEX, map and Task pools; includes guards, alignment and all unused reserved capacity. The focused fixture result separately retains its historical compaction-baseline accounting."
+  }
+}

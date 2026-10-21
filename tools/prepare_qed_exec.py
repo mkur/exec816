@@ -62,6 +62,9 @@ def prepare(output, base, qed):
     for name, digest in desktop['artifacts'].items():
         require(sha256(base / name) == digest, 'Changed base artifact: ' + name)
     layout = read(qed / 'layout.json')
+    patches = {p.name: sha256(p) for p in (ROOT / 'ports/gem4xe/apps/qed/patches').glob('*.patch')}
+    require(read(qed / 'inputs/sources.json')['patches'] == patches,
+            'Rebuild QED after changing its ordered source patches')
     require(layout['status'] == 'executable-development' and layout['abi'] == ABI and
             not layout['image']['provenance']['analysis_only'], 'Use current executable QED')
     require(not any('/tests/programs/' in name for name in layout['build_inputs']), 'Do not package a QED fixture')
@@ -141,9 +144,9 @@ def prepare(output, base, qed):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output', type=Path, default=ROOT / 'build/qed-exec-altirra')
+    parser.add_argument('--output', type=Path, default=ROOT / 'build/qed-exec-altirra-fixed')
     parser.add_argument('--demo-from', type=Path, default=ROOT / 'build/qed-saving/qw1-gem')
-    parser.add_argument('--qed-from', type=Path, default=ROOT / 'build/qed-saving/qw6-final')
+    parser.add_argument('--qed-from', type=Path, default=ROOT / 'build/qed-cursor/production')
     args = parser.parse_args()
     prepare(args.output, args.demo_from, args.qed_from)
     print('Launch: ' + str(args.output / 'launch-qed.command'))

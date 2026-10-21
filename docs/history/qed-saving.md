@@ -350,3 +350,31 @@ The preview does not extend practical-workload or release qualification.
 Native code and all stack/DP reservations stay unchanged: **0 fixed / 0
 per-public-Task / 0 private idle reserved bank-zero bytes**, including guards,
 alignment and unused capacity.
+
+## Idle cursor repaint correction
+
+Interactive use exposed row flicker while QED was idle. Each timer-driven caret
+blink called `line_out`, clearing and redrawing the complete cursor row. Patch
+0017 limits the visible-rectangle clip and painting to the caret band: two
+pixels in insert mode or one font cell in overwrite mode. Hiding the caret
+restores the underlying background and one glyph, retaining selection colours,
+tab and end-of-line handling. The timer and normal text redraw paths remain
+unchanged.
+
+The [cursor-paint development record](../development/qed-cursor.json) binds the
+new production image, source-frame measurement and emitted checks. The focused
+test observes actual forwarded VDI requests during idle blinking, checks both
+caret states against independent text pixels, covers/exposes the window behind
+an ordinary peer, selects text and checks normal retirement across four loaded
+lifetimes. The exact refreshed production ZIP also passes the normal shell
+launch, editing/save/backup/reopen and ownership-return walkthrough. Earlier
+records and their packaged artifacts retain their original hashes and paths.
+
+The updated [interactive setup](../guides/qed-exec.md) retains the user's existing
+writable WORK disk through a link and redirects the old local QED launcher to
+the refreshed package. Restarting Altirra loads the new APP. Stack admission and
+the source-frame bound are unchanged; code and image growth are recorded in the
+development record. Native desktop code and all bank-zero reservations remain
+unchanged: **0 fixed / 0 per-public-Task / 0 private idle bytes**, including
+guards, alignment and unused capacity. This correction does not extend strategy
+steps 6/7 or hosted/release qualification.

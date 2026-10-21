@@ -439,3 +439,16 @@ The step 6 workload will measure responsiveness and fragmentation with another
 GEM application and shell or MD5/ARC activity. Current peer/pixel checks do not
 establish that workload's latency. QED remains a private development APP;
 normal launch/distribution, final notices and publication belong to step 7.
+
+## Idle caret painting
+
+Patch 0017 restores only the caret band during blinking, avoiding the visible
+clear/redraw of the whole cursor row. The [development record](../../../../docs/history/qed-saving.md#idle-cursor-repaint-correction)
+binds the updated production build and local preview. The focused emitted check
+forwards real VDI calls, rejects row-wide caret requests, and verifies idle
+pixels, selection and peer-window exposure:
+
+```sh
+python3 tools/test_qed_cursor.py --output build/qed-cursor/editor \
+  --native-from build/qed-saving/qw7-cleanup-stop-bounded
+```
