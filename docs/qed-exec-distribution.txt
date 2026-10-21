@@ -1,0 +1,63 @@
+Native Exec816 QED -- interactive development setup
+==================================================
+
+QED runs as an ordinary native Exec Process on the GEM desktop. This is the
+Exec port, with editing, Find, clipboard/Undo, Save/Save As and backups.
+
+START ON THIS MAC
+
+Double-click launch-qed.command beside the development build. Allow OF816's
+five-second countdown to finish, then wait for the desktop and shell.
+Capture/release the mouse with F12 (possibly Fn+F12), or Input > Capture Mouse.
+
+Click the Shell window and enter:
+
+  RUN C:QED.APP
+
+Alternatively, open C: on the desktop and double-click QED.APP. Close QED before
+starting another copy. Leave the other GUI applications closed for this preview.
+QED opens an empty document. Ctrl+O opens a file; choose WORK:SAMPLE.TXT.
+Use Ctrl+N for New, Ctrl+S for Save and Ctrl+M for Save As.
+Ctrl+A selects all; Ctrl+C/X/V copies/cuts/pastes; Ctrl+Z toggles Undo.
+Use the Search menu for Find and Find Next. Ctrl+Q quits QED.
+
+SAVE YOUR WORK
+
+SYS: in D1 contains QED and its resource and is read-only. WORK: in D8 is
+writable; use it for documents. RAM: is temporary and disappears on reboot.
+Save As accepts WORK: (the committed title may show its physical name D8:).
+Replacing a document and replacing an older backup require separate consent;
+Cancel is the default. The previous document is retained as .BAK.
+Modified New/Open/Close/Quit offer Save, Discard and Cancel.
+
+The local launcher copies work.atr into the build's altirra/ directory on first
+use and reuses that writable copy on later launches. Keep the entire altirra/
+directory when moving saved work. The packaged work.atr stays a clean template.
+Close this emulator instance before launching another with the same WORK disk.
+EXIT in the shell closes the Exec desktop after QED has quit.
+
+MANUAL ALTIRRASDL SETUP (INCLUDING AN EXTRACTED ZIP)
+
+Requires AltirraSDL with the 65C816 high-memory extension used by Exec816.
+Select Atari 800XL, PAL, BASIC off, plain 65C816 at 8x (14.28 MHz), shadow ROMs
+enabled, 64K base RAM and 63 high banks (4 MiB total). Use the included
+altirraos-816.rom as XL/XE OS. Add VBXE FX 1.26 at D6xx with private 512K VRAM.
+Select ST Mouse on port 1 and disable keyboard joystick maps. Remove IDE Plus,
+U1MB and Rapidus. Disable SIO patches, burst I/O and fast boot.
+Mount system.atr read-only in D1 with Generic + 57600 baud emulation, and a
+private copy of work.atr writable in D8. Keep disks mounted when loading an XEX.
+Boot Exec-of816.xex and let the five-second countdown finish.
+Pressing a key during the countdown enters OF816; EXEC816 resumes startup.
+
+SCOPE AND NOTICES
+
+This is a local development preview. Practical workload measurements and
+supported release delivery remain separate work. It does not promise power-loss
+atomicity, concurrent writers to one target, autosave or automatic disk repair.
+Use a copy of any document you wish to try.
+
+QED may be given away but must not be sold. QED-NOTICE.txt and QED-TERMS.txt
+retain upstream notices; QED-PROVENANCE.txt describes this native adaptation.
+QED-COPYING.LIB.txt and QED-APACHE-2.0.txt retain library terms.
+The EXEC816, GEM, calculator, G4BENCH, OF816 and AltirraOS notices cover the
+other included components. SHA256SUMS covers every packaged boot/guide file.

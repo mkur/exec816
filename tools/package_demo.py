@@ -23,6 +23,8 @@ CALCULATOR_NOTICES = ('CALCULATOR-COPYING.txt','CALCULATOR-COPYING.LIB.txt',
                       'CALCULATOR-LICENSING.md','CALCULATOR-PROVENANCE.txt')
 G4BENCH_NOTICES = ('G4BENCH-COPYING.txt','G4BENCH-COPYING.LIB.txt',
                   'G4BENCH-LICENSING.md','G4BENCH-PROVENANCE.txt')
+QED_NOTICES = ('QED-NOTICE.txt','QED-TERMS.txt','QED-COPYING.LIB.txt',
+               'QED-APACHE-2.0.txt','QED-PROVENANCE.txt')
 
 
 def ide_only_guide(bitmap=False):
@@ -96,7 +98,7 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
             raise ValueError('Expected a shell-only bitmap build')
         if demo['artifacts']['program.xex'] != record['exec_xex_sha256']:
             raise ValueError('OF816 does not wrap this bitmap shell')
-        for name in GEM_NOTICES + (CALCULATOR_NOTICES+G4BENCH_NOTICES if demo.get('gem_desktop') else ()):
+        for name in GEM_NOTICES + (CALCULATOR_NOTICES+G4BENCH_NOTICES if demo.get('gem_desktop') else ()) + (QED_NOTICES if demo.get('qed_preview') else ()):
             content = (bitmap_shell/name).read_bytes()
             if hashlib.sha256(content).hexdigest() != demo['artifacts'][name]:
                 raise ValueError(f'Changed bitmap shell notice: {name}')
@@ -106,6 +108,8 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
                        'docs/aes-counter-distribution.txt' if demo.get('aes_counters') else
                        'docs/desktop-distribution.txt' if demo.get('desktop') else
                        'docs/bitmap-shell-distribution.txt')).read_text()
+        if demo.get('qed_preview'):
+            guide = (ROOT/'docs/qed-exec-distribution.txt').read_text()
         if demo.get('desktop'):
             guide = guide.replace('@POINTER_DESCRIPTION@', pointer_description(demo['kernel']['desktop_mouse']['profile']))
     if '@VERSION@' in guide:

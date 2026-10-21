@@ -453,7 +453,7 @@ def refresh_monitor(output):
         return record
     guides=[ROOT/'docs/guides/boot-monitor.md',ROOT/'docs/demo-distribution.txt']
     if record.get('shell_only'):
-        guide=ROOT/('docs/gem-desktop-distribution.txt' if record.get('gem_desktop') else 'docs/aes-input-distribution.txt' if record.get('aes_input') else
+        guide=ROOT/('docs/qed-exec-distribution.txt' if record.get('qed_preview') else 'docs/gem-desktop-distribution.txt' if record.get('gem_desktop') else 'docs/aes-input-distribution.txt' if record.get('aes_input') else
                     'docs/aes-counter-distribution.txt' if record.get('aes_counters') else
                     'docs/desktop-distribution.txt' if record.get('desktop') else
                     'docs/bitmap-shell-distribution.txt' if record.get('bitmap') else

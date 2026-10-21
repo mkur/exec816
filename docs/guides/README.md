@@ -4,6 +4,9 @@
 
 ## Running Exec816
 
+- [Native Exec QED in Altirra](qed-exec.md): production editor preview, private
+  emulator settings and persistent writable document storage.
+
 - [Demo](demo.md): build artifacts, machine setup and a walkthrough.
 - [Bitmap console preview](bitmap-console.md): optional 80×30 VBXE shell, setup and measured limits.
 - [IDE Plus development setup](ideplus.md): optional APT disk, native ATA driver and writable admission.

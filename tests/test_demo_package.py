@@ -242,6 +242,32 @@ class DemoPackageTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'Changed bitmap shell notice'):
                 package_demo.package(self.bundle,self.archive,bitmap_shell=source)
 
+    def test_qed_preview_notices_are_required_and_packaged(self):
+        source=self.root/'qed';source.mkdir()
+        for guide in ('gem-desktop-distribution.txt','qed-exec-distribution.txt'):
+            (self.root/'docs'/guide).write_bytes((ROOT/'docs'/guide).read_bytes())
+        artifacts={'program.xex':'native-image-digest'}
+        for name in package_demo.GEM_NOTICES+package_demo.CALCULATOR_NOTICES+package_demo.G4BENCH_NOTICES+package_demo.QED_NOTICES:
+            payload=('notice '+name).encode();(source/name).write_bytes(payload)
+            artifacts[name]=hashlib.sha256(payload).hexdigest()
+        manifest=source/'demo-manifest.json'
+        manifest.write_text(json.dumps(dict(bitmap=True,shell_only=True,desktop=True,gem_desktop=True,
+            qed_preview={'abi':26},kernel={'desktop_mouse':{'profile':'mild'}},artifacts=artifacts)))
+        path=self.bundle/'of816.json';record=json.loads(path.read_text())
+        record['exec_xex_sha256']=artifacts['program.xex']
+        record['media']['manifest_sha256']=hashlib.sha256(manifest.read_bytes()).hexdigest()
+        path.write_text(json.dumps(record))
+        with patch.object(package_demo,'ROOT',self.root):
+            package_demo.package(self.bundle,self.archive,bitmap_shell=source)
+            with zipfile.ZipFile(self.archive) as archive:
+                guide=archive.read('exec816-demo/README.txt')
+                self.assertIn(b'RUN C:QED.APP',guide);self.assertIn(b'WORK:SAMPLE.TXT',guide)
+                for name in package_demo.QED_NOTICES:
+                    self.assertEqual(archive.read('exec816-demo/'+name),(source/name).read_bytes())
+            (source/package_demo.QED_NOTICES[0]).write_text('changed')
+            with self.assertRaisesRegex(ValueError,'Changed bitmap shell notice'):
+                package_demo.package(self.bundle,self.archive,bitmap_shell=source)
+
     def test_calculator_notices_and_desktop_guide(self):
         source=self.root/'desktop';source.mkdir()
         guide='docs/gem-desktop-distribution.txt'

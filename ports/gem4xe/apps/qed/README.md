@@ -3,6 +3,11 @@
 [Initial scope and dependencies](../../../../docs/plans/gem4xe/qed-scope-and-dependencies.md) ·
 [Port strategy](../../../../docs/plans/gem4xe/qed-port-strategy.md)
 
+For interactive use, the [native Exec Altirra preview](../../../../docs/guides/qed-exec.md)
+packages the current production editor on the ordinary GEM desktop, with a
+private launcher and persistent writable WORK disk. This local setup does not
+close the separate strategy step 6/7 gates.
+
 [inputs.json](inputs.json) pins the selected QED GEM4XE fork and FreeMiNT cflib
 sources, their Git trees and the raw-byte SHA-256 hashes of the editor, headers,
 resource, donor adaptation examples and notices. It records the donor's source

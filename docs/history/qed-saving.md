@@ -330,3 +330,23 @@ claim. Supported delivery and final QED notices remain strategy step 7.
 Power-loss atomicity, concurrent same-target mutation, autosave, broader metadata
 restoration and automatic repair/recovery scanning remain unsupported. These
 checks do not qualify the hosted system, a release or physical media.
+
+## Interactive native preview
+
+At the user's request, the [native Altirra setup](../guides/qed-exec.md) makes
+the current production APP available on the normal Exec GEM desktop before
+strategy steps 6/7. The [setup record](../development/qed-exec-setup.json) binds
+the exact ZIP, APP/resource, pinned ROM/emulator and normal launch walkthrough.
+It reuses the verified desktop XEX, adds QED to C: and its resource to SYS:,
+and supplies a separate writable WORK disk with SAMPLE.TXT. OF816 retains the
+five-second startup; the launcher uses private settings and preserves its local
+writable disk. The ordinary demo builder refreshes matching boot media/notices.
+
+The selected development check launches production QED through the shell,
+edits and saves three times across two loaded lifetimes, reopens, rotates the
+backup and checks exact persisted bytes/allocation. QED retires normally;
+`JOBS` at the next shell command boundary collects its completed Process.
+The preview does not extend practical-workload or release qualification.
+Native code and all stack/DP reservations stay unchanged: **0 fixed / 0
+per-public-Task / 0 private idle reserved bank-zero bytes**, including guards,
+alignment and unused capacity.
