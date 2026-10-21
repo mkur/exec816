@@ -63,6 +63,11 @@ restored pixels. At eight live Tasks, one extra command must fail normally and
 restore its temporary ownership. Close and collect Counter before the next
 cohort.
 
+While Counter is live, also use the owning shell's ordinary BREAK command to
+request QED Stop, hold and Cancel its modified decision, and verify peer
+progress and resumed editing. This supplies the Stop-with-peer part of the
+lifetime gate through the production launch path.
+
 Run QED with foreground shell CKSUM reading an unrelated large WORK file. QED
 already occupies that shell's single background job; do not attempt a second RUN.
 Verify the command is still live during measured input, its read/computation

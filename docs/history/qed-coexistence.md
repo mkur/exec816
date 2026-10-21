@@ -59,3 +59,32 @@ retained; the native desktop XEX is unchanged. Reserved bank-zero delta remains
 **0 fixed / 0 per-public-Task / 0 private idle bytes**, including guards,
 alignment and unused capacity. Concurrent cohorts and repeated use remain
 QC2–QC3; this baseline does not complete step 6.
+
+## QC3 Lifetime and allocation failures
+
+The [QC3 record](../development/qed-coexistence-qc3.json) binds four loaded
+lifetimes using the current production patches and forwarding refusal hooks.
+The first opens a larger document beside an ordinary periodic peer. A failed
+line allocation retains its bytes and clean state; clipboard and Undo then
+coexist with that document. Modified New Cancel preserves the edit, Discard
+commits an empty document, and an actual form-allocation refusal retains it.
+Twelve edit/paste/Undo/New cycles preserve the clipboard and restore identical
+heap extents after each warmed reset, while the peer continues painting.
+
+Later lifetimes cover a missing launch, a deep path and cooperative Stop during
+Find, followed by Cancel and a second Stop/Discard. Normal collection restores
+the native parent's warmed memory baseline. The record keeps this fixture's
+Stop scope separate from the normal Counter/shell Stop check in QC2. Selected
+ordinary/native/asynchronous stack observations and all guards pass; production
+latency remains the uninstrumented cohort's measurement.
+
+A separate small emitted probe executes the actual `restore_edit` and
+`make_chg` code against drawing-boundary observers. It checks row damage,
+horizontal and vertical clamp promotion, an unchanged origin and explicit full
+damage across two loaded lifetimes. This verifies the incremental fix's clamp
+policy without claiming that stubbed drawing is a GUI pixel check. Complete
+costs, peak samples and headroom are retained in the record.
+
+Reserved bank-zero delta remains **0 fixed / 0 per-public-Task / 0 private idle
+bytes**, including guards, alignment and unused capacity. No native parent,
+provider or Task-pool growth is required.
