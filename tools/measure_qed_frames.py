@@ -27,12 +27,20 @@ def frame_cost(instructions):
     return reserves,pushes
 
 
+def source_listings(image):
+    paths=[Path(obj).with_suffix('.lst') for obj in image['provenance']['link_objects']
+           if not Path(obj).stem.endswith('-asm')]
+    require(all(path.is_file() for path in paths),'Missing linked source listing')
+    return paths
+
+
 def measure(out,destination=None):
     options=set(json.loads((out / 'layout.json').read_text())['selection']['compiler_options'])
     require({'--no-cross-call','--no-interprocedural-cross-jump'}<=options
             and options<={'--no-cross-call','--no-interprocedural-cross-jump','--no-inline'},
             'Frame ledger needs stable function boundaries')
     report = json.loads((out / 'layout.json').read_text())
+    listings=source_listings(report['image'])
     require(sha256(out/'program.elf')==report.get('elf_sha256',report.get('analysis_elf_sha256')),
             'QED build is incomplete or changed')
     sym = report['image']['symbols']
@@ -45,7 +53,7 @@ def measure(out,destination=None):
 
     def targetaddr(address):
         return next((k for k, (a, b, n) in addresses.items() if a <= address < b), None)
-    for p in out.glob('*-*.lst'):
+    for p in listings:
         obj = object_symbols(p.with_suffix('.o'))
         unit = int(p.name.split('-')[0])
         chunks = re.split('\\\\ [0-9a-f]{6}\\s+\\.section ', p.read_text(errors='replace'))
@@ -70,7 +78,7 @@ def measure(out,destination=None):
                 if dest and dest != k:
                     edges.append(dest)
             graph[k] = dict(name=head, weight=reserves + pushes, reserves=reserves, pushes=pushes, edges=sorted(set(edges)), source=p.name)
-    source_units={int(p.stem.split('-')[0]) for p in out.glob('*-*.lst')}
+    source_units={int(p.stem.split('-')[0]) for p in listings}
     require(all(k in graph for k in addresses if k[0] in source_units),
             'Retained source section missing from frame ledger')
     visiting = []
@@ -94,6 +102,9 @@ def measure(out,destination=None):
         done[k] = res
         return res
     callbacks = {'QedRuntimeRun': ['editor_body'], 'do_icon': ['e_icon_test', 'e_icon_edit'], 'icon_test': ['e_icon_test'], 'icon_edit': ['e_icon_edit'], 'icon_exist': ['e_icon_exist'], 'do_all_window': ['do_absatz', 'do_color_change'], 'snap_window': [], 'redraw_window': ['wi_draw'], 'uniconify_window': ['wi_uniconify'], 'ontop_window': ['wi_top'], 'untop_window': [], 'top_window': ['wi_top'], 'create_window': ['crt_edit'], 'close_window': [], 'click_window': ['wi_click'], 'unclick_window': [], 'key_window': ['wi_key'], 'select_file': ['open_multi'], 'cf_form_keybd': [], 'handle_mdial_msg': ['handle_msg'], 'suche1': ['STRSTR', 'STRSTR1']}
+    # Retired donor helpers are absent from later images. Unknown indirect
+    # sites and changed contracts in functions still linked remain errors.
+    callbacks = {name: targets for name, targets in callbacks.items() if name in sym}
     indirect = {v['name'] for v in graph.values() if any((addresses[e][2] == '_JmpIndLong' for e in v['edges']))}
     require(indirect == set(callbacks), 'Unclassified or stale indirect callback contract: ' + str(indirect ^ set(callbacks)))
     for v in graph.values():
@@ -149,7 +160,7 @@ def measure(out,destination=None):
     continuation_cap = 768
     required = source_bytes + continuation_cap + 256 + 128
     require(required <= report['selection']['minimum_stack_bytes'], 'Conditional stack budget exceeds admission')
-    result = dict(status='conditional-source-bound', source_chain_bytes=source_bytes, chain=chain, continuation_cap_bytes=continuation_cap, interrupt_reserve_bytes=256, required_headroom_bytes=128, admission_bytes=report['selection']['minimum_stack_bytes'], margin_bytes=report['selection']['minimum_stack_bytes'] - required, method='For each retained emitted source section, sum immediate TSC/SBC/TCS reservations and all static push sites at 16-bit width, plus three bytes at each call/tail edge. This overcounts disjoint branches. Compiler-balanced loops reuse their stack. Cross-call and cross-function tail sharing are disabled. Typed callbacks and finite action contexts are audited below; new indirect sites or cycles reject the report.', limit='Source-frame bound only. The continuation cap includes bridge and library/native/GEM work below an application call; executed startup/lifecycle chains check that cap separately. Editing/dialog/file paths must establish it when implemented; current samples are not a bound on those future paths.', callbacks=callbacks, contexts=['Nested action/dialog messages: REDRAW/MOVED/SIZED only', 'select_single/select_path pass NULL; only select_multi invokes open_multi', 'delete_edit may invoke Save once; Save does not invoke delete_edit', 'load_edit/new_edit/restore_edit use Open or unchecked Delete', 'wi_top invokes disabled Update, whose test returns false'], source_nodes=[{**v, 'key': k} for k, v in graph.items()], analysis_sha256=sha256(out / 'layout.json'), listings={p.name: sha256(p) for p in out.glob('*-*.lst')}, compiler_options=report['selection']['compiler_options'])
+    result = dict(status='conditional-source-bound', source_chain_bytes=source_bytes, chain=chain, continuation_cap_bytes=continuation_cap, interrupt_reserve_bytes=256, required_headroom_bytes=128, admission_bytes=report['selection']['minimum_stack_bytes'], margin_bytes=report['selection']['minimum_stack_bytes'] - required, method='For each retained emitted source section, sum immediate TSC/SBC/TCS reservations and all static push sites at 16-bit width, plus three bytes at each call/tail edge. This overcounts disjoint branches. Compiler-balanced loops reuse their stack. Cross-call and cross-function tail sharing are disabled. Typed callbacks and finite action contexts are audited below; new indirect sites or cycles reject the report.', limit='Source-frame bound only. The continuation cap includes bridge and library/native/GEM work below an application call; executed startup/lifecycle chains check that cap separately. Editing/dialog/file paths must establish it when implemented; current samples are not a bound on those future paths.', callbacks=callbacks, contexts=['Nested action/dialog messages: REDRAW/MOVED/SIZED only', 'select_single/select_path pass NULL; only select_multi invokes open_multi', 'delete_edit may invoke Save once; Save does not invoke delete_edit', 'load_edit/new_edit/restore_edit use Open or unchecked Delete', 'wi_top invokes disabled Update, whose test returns false'], source_nodes=[{**v, 'key': k} for k, v in graph.items()], analysis_sha256=sha256(out / 'layout.json'), listings={p.name: sha256(p) for p in listings}, compiler_options=report['selection']['compiler_options'])
     (destination or out / 'stack-frames.json').write_text(json.dumps(result, indent=2) + '\n')
     return result
 if __name__ == '__main__':

@@ -40,6 +40,13 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
             frames['interrupt_reserve_bytes']+frames['required_headroom_bytes']<=frames['admission_bytes'],
             'Stale or excessive source stack ledger')
     canonical=layout_directory/'inputs/source'
+    resource_path=layout_directory/'inputs/resource/resource.json'
+    resource=json.loads(resource_path.read_text())
+    checked(layout_directory/'inputs/resource/QED.RSC',resource['resource_sha256'])
+    checked(canonical/'qed/src/qed.h',resource['header_sha256'])
+    checked(ROOT/'tools/build_qed_resource.py',resource['generator_sha256'])
+    checked(ROOT/'ports/gem4xe/apps/qed/resource-selection.json',resource['selection_sha256'])
+    checked(canonical/'qed/en/qed_en.rsc',resource['source_sha256'])
     cohorts=[];inputs={}
     for directory in cohort_directories:
         result=json.loads((directory/'results.json').read_text())
@@ -53,6 +60,8 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
         require(result['runtime']['native_nmi_count']>0 and result['runtime']['native_irq_count']>0,
                 'Missing native asynchronous entries')
         checked(directory/'app/program.app',result['app']['sha256'])
+        if 'init_resource' in result['app']['image']['symbols']:
+            checked(directory/'media/QED.RSC',resource['resource_sha256'])
         checked(directory/'program/program.a816.json',build['image_sha256'])
         checked(program['xex'],build['xex_sha256'])
         for group in ('platform_inputs','task_inputs','console_inputs','banked_inputs'):
@@ -132,6 +141,9 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None)
     return dict(status='pass',tier='development',qualification=False,abi=ABI['version'],provider_identity=identity,
         process_abi=json.loads((ROOT/'abi/process.json').read_text())['version'],
         layout_sha256=sha256(layout_directory/'layout.json'),frames_sha256=sha256(frames_path),
+        resource=dict(path=str(resource_path.relative_to(ROOT)),sha256=sha256(resource_path),
+            resource_sha256=resource['resource_sha256'],generator_sha256=resource['generator_sha256'],
+            selection_sha256=resource['selection_sha256']),
         auditor_sha256=sha256(Path(__file__)),source_pins=layout['inputs']['sources'],
         verified_source_inputs=inputs,cohorts=cohorts,demos=demos)
 

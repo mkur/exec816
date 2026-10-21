@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "slice": "QE5",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "audit": {
+    "path": "build/qed-editing/qe5-baseline.json",
+    "sha256": "0622949a4727089888a8c07406f62fdfeb306ff246e613bce3eb919000494ddc",
+    "auditor_sha256": "ac05790b7bc5fc295f88b66f84e3f93fe42b8e8fdaaff0b17db62a59c4f0c757",
+    "provider_identity": "b41ffdf385e6226b7fa2eb6288c0cb9e8056d43b3b6c54e1a7c29deac517e0aa"
+  },
+  "source_pins": {
+    "qed": {
+      "revision": "454beb35fccd72c15a8494431f6637cd0cb553c7",
+      "tree": "842d0ed962f431b98fbba1a7038020b5805338bc"
+    },
+    "cflib": {
+      "revision": "ce57817c3f68c7d346d1081768505e81acaee807",
+      "tree": "aa00256dc44096969025e2a1e1a03dcfa738547c"
+    }
+  },
+  "resource": {
+    "path": "build/qed-editing/qe5-production/inputs/resource/resource.json",
+    "sha256": "b5441d2171c522f18e9b2f42d1d1cee4fbac27df7e8ab778e0736980a0bdc88b",
+    "resource_sha256": "9095194c1b2055ecbd31b6bcde7604a47dd6da6d4796e0b4b1a52993588d08e7",
+    "generator_sha256": "5e9eb42a4504c436e767c8ff9f762a36e5527841ff3cef9a41510e80230a2ae9",
+    "selection_sha256": "97c647a9638053762245b40a8257d1abe25845657bce8da07f173174c4daf6e1"
+  },
+  "host_checks": {
+    "path": "build/qed-editing/qe5-host.log",
+    "sha256": "6b73e9c4d6241d0152ab820b682b83f4842b2b0d68d32131dd99bda91c56d71a",
+    "tests": 538,
+    "expected_skips": 4
+  },
+  "executable": {
+    "path": "build/qed-editing/qe5-production",
+    "sha256": "2a3fdf0fe59011304768ab4739658839ea8711b7bd2955971e35de242f43983c",
+    "layout": {
+      "code_bytes": 107605,
+      "initialized_bytes": 1426,
+      "bss_bytes": 24192,
+      "import_thunk_bytes": 400,
+      "span_bytes": 173141,
+      "image_holes_bytes": 39918,
+      "serialized_bytes_if_executable": 121911,
+      "relocation_count": 2996,
+      "heap_alignment_backing_bytes": 238676,
+      "future_full_profile_backing_bytes": 393216,
+      "private_allowances": {
+        "code_bytes": 32768,
+        "data_bss_bytes": 16384
+      },
+      "container_metadata_allowance_bytes": 16384,
+      "resident_provider_allowances": {
+        "code_bytes": 16384,
+        "data_bss_bytes": 16384,
+        "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+        "table_bytes": 4096
+      }
+    },
+    "requested_image_backing_bytes": 238676,
+    "rounded_image_backing_bytes": 238680,
+    "backing_basis": "CAPP bank-alignment request, rounded to the public heap eight-byte allocation; historical layout field rounds to four bytes"
+  },
+  "frame_ledger": {
+    "source_chain_bytes": 893,
+    "continuation_cap_bytes": 768,
+    "interrupt_reserve_bytes": 256,
+    "required_headroom_bytes": 128,
+    "admission_bytes": 2560,
+    "margin_bytes": 515
+  },
+  "growth_from_QS5": {
+    "private": {
+      "code_bytes": -31021,
+      "data_bss_bytes": -2332,
+      "metadata_bytes": -2320
+    },
+    "provider": {
+      "code_bytes": 247,
+      "table_bytes": 0,
+      "data_bss_bytes": 0
+    }
+  },
+  "provider_remaining_allowances": {
+    "code_bytes": 15157,
+    "table_bytes": 4096,
+    "data_bss_bytes": 16384
+  },
+  "executed": [
+    {
+      "path": "build/qed-editing/qe5-editor",
+      "results_sha256": "d764492b5ea7059c3064546604a360c349ead3aff14aef54c87122206944a7ab",
+      "completed": [
+        4
+      ],
+      "checks": [
+        14483,
+        0
+      ],
+      "snapshots": [
+        "dialogs-empty",
+        "literal-find",
+        "literal-find-next",
+        "find-not-found-retains-range",
+        "find-cancel-retains-pattern",
+        "find-move-resumes-draft",
+        "find-close-cancel",
+        "find-close-escape-zero",
+        "find-too-small",
+        "dialogs-empty",
+        "find-field-limit",
+        "dialogs-empty",
+        "find-allocation-rollback",
+        "about-cancel",
+        "dialogs-empty",
+        "find-stop-cancel"
+      ],
+      "minimum_headroom": 1421,
+      "peer_app_sha256": "e431e41447c1a2365b052229341c9958fef15ff172fa44b644d2834866350e56"
+    },
+    {
+      "path": "build/qed-editing/qe5-adapters",
+      "results_sha256": "c89c651cce03f6235859f866ab9c7c8a12c0b9aec7979029526ba9a757e61c23",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 777
+    },
+    {
+      "path": "build/qed-editing/qe5-selector",
+      "results_sha256": "2b084072fafd4d3d6083730c9876c651be83c01e4ed91a0d2aea03ee4fc73c51",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 1371,
+      "qed_selector": [
+        {
+          "identity": 1,
+          "executed": [
+            "accepted native selection",
+            "Escape cancellation",
+            "move interruption",
+            "exact deferred WM_MOVED consumed once",
+            "selector reuse after interruption"
+          ]
+        },
+        {
+          "identity": 2,
+          "executed": [
+            "accepted native selection",
+            "Escape cancellation",
+            "move interruption",
+            "exact deferred WM_MOVED consumed once",
+            "selector reuse after interruption"
+          ]
+        }
+      ]
+    }
+  ],
+  "supplemental": [],
+  "private_heap": {
+    "peak_backing_bytes": 53359,
+    "basis": "Private allocation headers included; underlying allocator rounding and native GUI owners charged separately"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Complete Task-pool and region maps equal QS5; guards, alignment and slack included"
+  },
+  "recorder_sha256": "b06460539261b2bc4d86d63e3fcd4c7587a87487d0b41d85561f208e4d2068c9",
+  "protocol_checks": [
+    {
+      "path": "build/qed-editing/qe5-forms-current",
+      "results_sha256": "90a0b8b00d7d85588efc469da39842a415a60f87a5aa51db9c203aa2da148729",
+      "checks": 207,
+      "boundary_checks": 0,
+      "scope": "Separate emitted AES protocol fixture; no QED session or production-provider identity claim"
+    }
+  ]
+}

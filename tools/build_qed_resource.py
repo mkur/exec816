@@ -6,6 +6,26 @@ from native_program import ROOT,require,sha256
 from prepare_qed import PORT,prepare
 
 
+def find_form(tree,ids,teds):
+    """Keep donor IDs while exposing only the literal field and two actions."""
+    label,field,accept,cancel=(ids[n] for n in ('RPSSTR','RPTEXT1','RPOK','RPRAUS'))
+    for obj in tree[1:]:
+        obj[:3]=[-1,-1,-1];obj[4]=128;obj[5]=8
+    tree[0][1:3]=[label,cancel];tree[0][7:]=[0,0,512,72]
+    active=[label,field,accept,cancel]
+    for i,index in enumerate(active):
+        tree[index][0]=active[i+1] if i+1<len(active) else 0
+        tree[index][4]=tree[index][5]=0
+    tree[label][3]=28;tree[label][6]='Find:';tree[label][7:]=[16,16,40,8]
+    tree[field][4]=8;tree[field][7:]=[64,16,400,8]
+    ted=teds[tree[field][6][1]]
+    ted[:3]=['','_'*50,'X'*50];ted[9:11]=[51,51]
+    for index,caption,x in ((accept,'Find',336),(cancel,'Cancel',432)):
+        tree[index][3]=26;tree[index][4]=5|(2 if index==accept else 0)
+        tree[index][6]=caption;tree[index][7:]=[x,40,64,16]
+    tree[-1][4]|=32
+
+
 def resource(work):
     work=Path(work); donor=work/'source/qed'
     data=(donor/'en/qed_en.rsc').read_bytes()
@@ -40,9 +60,17 @@ def resource(work):
             if old_flags&32:break
         if tree_name=='MENUTREE':tree=menu(selection['menu'],mapping)
         if tree_name=='REPLACE':
-            for name in selection['disabled_find_objects']:
-                require(name in ids,'Unknown deferred Find object: '+name)
-                tree[ids[name]][5]|=8
+            find_form(tree,ids,teds)
+        for key,value in selection.get('text_overrides',{}).get(tree_name,{}).items():
+            index=ids[key] if key in ids else int(key)
+            obj=tree[index]
+            if obj[3] in (21,22,29,30):
+                ted=teds[obj[6][1]]
+                require(len(value)<ted[9],'Override exceeds retained TED capacity')
+                ted[0]=value
+            else:
+                require(obj[3] in (26,28),'Override requires a text object')
+                obj[6]=value
         trees.append(tree)
     # Repack only retained descriptors, strings and bitmap planes. Every TED text
     # has separate writable backing; its capacity survives the load relocation.

@@ -72,6 +72,8 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
             executed[-1]['stack_reanalysis'] = origin
         if 'clipboard_core' in result:
             executed[-1]['clipboard_core_heap'] = result['clipboard_core']
+        if 'qed_selector' in result:
+            executed[-1]['qed_selector'] = result['qed_selector']
     if slice_name == 'QE1':
         expected = {'empty', 'insert', 'split', 'join', 'allocation-rollback',
             'split-allocation-rollback', 'literal-tab', 'tab-delete', 'save-disabled',
@@ -99,7 +101,7 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
                 'Missing completed caret pixel checks')
         require(all(s['pixels']['checked']>0 for scene in scenes for s in scene['snapshots']),
                 'Missing viewport pixels')
-    if slice_name in ('QE2','QE3'):
+    if slice_name in ('QE2','QE3','QE5'):
         for path,item in zip(cohorts,executed):
             if not (path/'peer/app.json').exists():continue
             peer=json.loads((path/'peer/app.json').read_text())
@@ -149,6 +151,27 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
             for scene in scenes for c in scene.get('carets',[])),'Missing clipboard caret')
         require(any(item.get('clipboard_core_heap',{}).get('peak_backing',0)>131072
             for item in executed),'Missing multi-bank clipboard heap observation')
+    if slice_name=='QE5':
+        expected={'literal-find','literal-find-next','find-not-found-retains-range',
+            'find-cancel-retains-pattern','find-move-resumes-draft','find-close-cancel','find-close-escape-zero',
+            'find-too-small','find-field-limit','find-allocation-rollback',
+            'about-cancel','find-stop-cancel'}
+        seen={s['name'] for scene in scenes for s in scene['snapshots']}
+        require(expected<=seen,'Incomplete QE5 checkpoints: '+str(expected-seen))
+        require({s['cycle'] for s in scenes}=={0,1,2,3},'Missing dialog lifetimes')
+        require(all(s['pixels']['checked']>0 for scene in scenes for s in scene['snapshots']),
+            'Missing document pixels around dialogs')
+        forms={f['name'] for scene in scenes for f in scene.get('forms',[]) if f['pixels']>0}
+        require({'find-empty','find-literal','about','about-native-details'}<=forms,'Missing independent native form pixels')
+        require(any(s.get('accepted_pattern_bytes')==50 for s in scenes),'Missing Find field limit')
+        session=next(s for s in scenes if 'form_peer' in s)
+        peer=session['form_peer'];move=session['form_move']
+        require(peer['task_state']==4 and peer['update']==peer['mctrl']==0 and
+            peer['paints_before']!=peer['paints_after'],'Dialog blocked its ordinary peer')
+        require(move['starts_after']==move['starts_before']+1,'Move did not resume exactly once')
+        selectors=[s for item in executed for s in item.get('qed_selector',[])]
+        require(len(selectors)==2 and all(len(s['executed'])==5 for s in selectors),
+            'Missing actual native selector lifetimes')
     supplemental=[]
     for path in supplements:
         result=json.loads((path/'results.json').read_text())
@@ -181,6 +204,7 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
             auditor_sha256=audit['auditor_sha256'],provider_identity=audit['provider_identity']),
         source_pins={name: {k: pin[k] for k in ('revision', 'tree')}
                      for name, pin in audit['source_pins'].items()},
+        resource=audit['resource'],
         host_checks=dict(path=str(host_log.relative_to(ROOT)),sha256=sha256(host_log),
             tests=int(host[1]),expected_skips=int(host[2] or 0)),
         executable=dict(path=str(directory.relative_to(ROOT)),
@@ -198,9 +222,10 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
         bank_zero_delta=dict(fixed=0, per_public_task=0, private_idle=0,
             basis='Complete Task-pool and region maps equal QS5; guards, alignment and slack included'),
         recorder_sha256=sha256(Path(__file__)))
+    if protocol_records:
+        result['protocol_checks']=protocol_records
     if slice_name=='QE3':
         result['selection']=dict(inside_wait=editor[0]['inside_wait'],autoscroll=scroll)
-        result['protocol_checks']=protocol_records
         path=ROOT/'docs/development/qed-shortcuts.json'
         result['shortcut_checks']=dict(path=str(path.relative_to(ROOT)),sha256=sha256(path))
     destination.write_text(json.dumps(result, indent=2)+'\n')

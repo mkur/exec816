@@ -1,0 +1,810 @@
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -8,6 +8,7 @@
+ #include "ausgabe.h"
+ #include "av.h"
+ #include "block.h"
++#include "qed-commands.h"
+ #include "clipbrd.h"
+ #include "comm.h"
+ #include "dd.h"
+@@ -777,7 +778,7 @@
+ 	setincl(actions, DO_SAVE);
+ 	setincl(actions, DO_SAVENEW);
+ 	setincl(actions, DO_FIND);
+-	setincl(actions, DO_FINDNEXT);
++	if(s_str[0])setincl(actions, DO_FINDNEXT);
+ 	((void)0);
+ 	((void)0);
+ 	((void)0);
+@@ -847,28 +848,8 @@
+ 
+ 			erg = TRUE;
+ 			break;
+-		case DO_FIND :
+-
+-			if (t_ptr->block)
+-			{
+-				RING	r;
+-	
+-				/* copy to R_STR */
+-				block_copy(t_ptr, &r);
+-				if (strlen(TEXT(FIRST(&r))) > 0)
+-				{
+-					strncpy(s_str, TEXT(FIRST(&r)), HIST_LEN);
+-					kill_textring(&r);
+-					s_str[HIST_LEN] = EOS;
+-				}
+-			}
+-			find_erg = replace_dial();
+-			erg = (find_erg!=0);
+-			break;
+-		case DO_FINDNEXT:
+-
+-			erg = TRUE;
+-			break;
++        case DO_FIND:erg=TRUE;break;
++        case DO_FINDNEXT:erg=s_str[0]!=0;break;
+         /* Other donor actions are outside the initial native scope. */
+ 
+ default	:
+@@ -1043,45 +1024,8 @@
+ 					erg = -1;
+ 			}
+ 			break;
+-		case DO_FIND	:
+-
+-			t_ptr->blk_mark_mode = FALSE;
+-			if (find_erg == 1)
+-			{
+-				if (start_find(t_ptr,FALSE)==0)
+-				{
+-					((void)0) /* optional audible bell */;
+-					end_play();
+-				}
+-			}
+-			else
+-			{
+-				if (find_erg == 2)
+-				{
+-					if (start_find(t_ptr,FALSE) == 0)
+-					{
+-						((void)0) /* optional audible bell */;
+-						end_play();
+-					}
+-				}
+-			}
+-			erg = 1;
+-			break;
+-		case DO_FINDNEXT:
+-
+-			t_ptr->blk_mark_mode = FALSE;
+-			if (t_ptr->block)
+-				find_selection(t_ptr);
+-			else
+-			{
+-				if (do_next(t_ptr) != 1)
+-				{
+-					((void)0) /* optional audible bell */;
+-					end_play();
+-				}
+-			}
+-			erg = 1;
+-			break;
++        case DO_FIND:QedFindStart(t_ptr,TRUE);erg=1;break;
++        case DO_FINDNEXT:QedFindStart(t_ptr,FALSE);erg=1;break;
+         /* Other donor actions are outside the initial native scope. */
+ 
+ }
+--- a/qed/src/event.c
++++ b/qed/src/event.c
+@@ -7,6 +7,7 @@
+ #include "edit.h"
+ #include "file.h"
+ #include "find.h"
++#include "qed-commands.h"
+ #include "icon.h"
+ #include "menu.h"
+ #include "makro.h"
+@@ -216,6 +217,7 @@
+         if(mouse_sleeps())events|=MU_M1;
+         if(winlist_top()!=NULL && blinking_cursor)events|=MU_TIMER;
+     }
++    if(QedCommandsSearching()){events|=MU_TIMER;delay=1;}
+     ev->which=evnt_multi(events,1,1,state?0:1,
+         1,old_mx,old_my,1,1,0,0,0,0,0,ev->msg,delay,
+         &ev->m_x,&ev->m_y,&ev->bstate,&ev->kstate,&ev->kreturn,&ev->breturn);
+@@ -401,16 +403,16 @@
+ {
+     static QEDEVENT ev;
+     short state;
+-    set_mdial_wincb(handle_msg);update_menu();onblink_edit();
++    update_menu();onblink_edit();
+     while(!done){
+         next_action(&ev);
+         if(!ev.which)continue;
+         if(ev.which&MU_MESAG){
+-            offblink_edit();handle_msg(ev.msg);
++            offblink_edit();QedCommandsMessage(ev.msg);handle_msg(ev.msg);
+             if(done)break;
+         }
+         if(ev.which&MU_KEYBD){
+-            offblink_edit();handle_keybd(ev.kstate,ev.kreturn);
++            offblink_edit();QedCommandsCancel();handle_keybd(ev.kstate,ev.kreturn);
+             if(done)break;
+         }
+         state=QedPointerState();
+@@ -418,11 +420,11 @@
+             offblink_edit();
+             QedPointerEvent(ev.m_x,ev.m_y,ev.bstate,(ev.which&MU_TIMER)!=0);
+         }else if((ev.which&MU_BUTTON) && (ev.bstate&1)){
+-            offblink_edit();handle_button(ev.m_x,ev.m_y,ev.bstate,ev.kstate,ev.breturn);
++            offblink_edit();QedCommandsCancel();handle_button(ev.m_x,ev.m_y,ev.bstate,ev.kstate,ev.breturn);
+         }else if(ev.which==MU_TIMER && blinking_cursor)blink_edit();
+         if(ev.which&MU_M1)wake_mouse();
+-        restore_edit();update_menu();end_undo_seq();
++        restore_edit();QedCommandsStep();restore_edit();update_menu();end_undo_seq();
+         if(ev.which!=MU_TIMER)onblink_edit();
+     }
+-    QedPointerCancel();
+-}
++    QedCommandsCancel();QedPointerCancel();
++}
+--- a/qed/src/find.c
++++ b/qed/src/find.c
+@@ -1,26 +1,5 @@
+ #include "global.h"
+-#include "aktion.h"
+-#include "ausgabe.h"
+-#include "block.h"
+-#include "clipbrd.h"
+-#include "comm.h"
+-#include "edit.h"
+-#include "event.h"
+-#include "file.h"
+-#include "icon.h"
+-#include "memory.h"
+-#include "rsc.h"
+-#include "set.h"
+-#include "tasten.h"
+-#include "text.h"
+-#include "umbruch.h"
+-#include "window.h"
+ #include "find.h"
+-#include "hl.h"
+-
+-extern void	menu_help(short title, short item);
+-
+-/* exportierte Variablen ***************************************************/
+ 
+ bool					s_grkl, s_quant, s_wort, s_vorw, s_global, s_round,
+ 						ff_rekursiv;
+@@ -31,590 +10,6 @@
+ 						ff_mask[15+1];
+ 
+ UMLAUTENCODING 	umlaut_from, umlaut_to;
+-
+-/*****************************************************************************/
+-
+-#define SETANZ 		5
+-
+-#define M_CURSOR		0		/* Werte fÅr modus von start_suche */
+-#define M_TSTART		1
+-#define M_TENDE		2
+-
+-static LINEP 	start;
+-static short		text_len, text_x,
+-					last_op = -1;
+-static long		text_y;
+-static SET		wort_set;
+-
+-/* Variablen, die Åber set_suchmode gesetzt werden */
+-/* !!! muessen bei match gesichet werden !!! */
+-static bool		quantor, vorw, grkl, wort, modus, g_round, line_start;
+-static short		muster_len;
+-static char 	muster_txt[HIST_LEN+1];
+-static char 	replace_txt[HIST_LEN+1];
+-static SET		group[SETANZ];
+-static short		setanz;
+-static short		delta[256];
+-
+-/* lokale Prototypen *****************************************************/
+-static bool	build_popup (char h[HIST_ANZ][HIST_LEN+1], POPUP *pop);
+-
+-/*=======================================================================*/
+-
+-static void init_suche(TEXTP t_ptr, short mode)
+-{
+-	if (mode == M_CURSOR)
+-	{
+-		start = t_ptr->cursor_line;
+-		text_y = t_ptr->ypos;
+-		if (vorw)
+-		{
+-			text_x = t_ptr->xpos;
+-			text_len = start->len-t_ptr->xpos;
+-			if (text_len>0)
+-			{
+-/*
+-	Muû das sein? Dann findet ^G nÑmlich nichts, wenn der Cursor auf dem
+-	gesuchten steht!?
+-				text_x++;
+-				text_len--;
+-*/
+-			}
+-			else if (!IS_LAST(start))
+-			{
+-				NEXT(start);
+-				text_y++;
+-				text_x = 0;
+-				text_len = start->len;
+-			}
+-		}
+-		else
+-		{
+-			text_x = 0;
+-			text_len = t_ptr->xpos;
+-			if (text_len>0)
+-			{
+-/*
+-	Diese Zeile mÅûte eigentlich auch raus, damit das gefunden wird (rÅckwÑrts)
+-	wo der Cursor 'draufsteht. Dann klappt aber der ^G nicht, da dann der
+-	Cursor (Blockmarkierung!) wieder hinter dem gefundenen steht und so immer
+-	wieder das gleiche findet!
+-*/
+-				text_len--;
+-			}
+-			else if (!IS_FIRST(start))
+-			{
+-				PREV(start);
+-				text_y--;
+-				text_len = start->len;
+-			}
+-		}
+-	}
+-	else if (mode==M_TSTART)
+-	{
+-		start = FIRST(&t_ptr->text);
+-		text_x = 0;
+-		text_len = start->len;
+-		text_y = 0;
+-	}
+-	else
+-	{
+-		start = LAST(&t_ptr->text);
+-		text_x = 0;
+-		text_len = start->len;
+-		text_y = t_ptr->text.lines-1;
+-	}
+-	setcpy(wort_set,t_ptr->loc_opt->wort_set);
+-}
+-
+-static short suche1(LINEP col, short x, short str_len, short *such_len,
+-						char*(*call)(char*,short,char*,short*))
+-/* vorw */
+-{
+-	char *ptr, *str, *str2;
+-
+-	if (quantor)
+-	{
+-		if (x>0 && line_start)									/* Muster am Anfang finden */
+-			return -1;
+-		if (x+str_len<col->len && muster_len>=2 &&
+-			 muster_txt[muster_len-2]=='[' && (muster_txt[muster_len-1])==0xFC)
+-			return -1;
+-	}
+-	ptr = TEXT(col);
+-	str = ptr+x;
+-	str2 = (*call)(str, str_len, muster_txt, such_len);
+-	if (str2==NULL) return -1;
+-	if (wort)
+-	{
+-		while (!(str2==ptr || !setin(wort_set,str2[-1])) ||
+-				 !(str2[*such_len]==EOS || !setin(wort_set,str2[*such_len])))
+-		{
+-			str2++;
+-			str_len -= (short)(str2 - str);
+-			str = str2;
+-			str2 = (*call)(str, str_len, muster_txt, such_len);
+-			if (str2==NULL) return -1;
+-		}
+-	}
+-	return (short)(str2 - ptr);
+-}
+-
+-static short suche2(LINEP col, short x, short str_len, short *such_len,
+-						char*(*call)(char*,short,char*,short*))
+-/* rauf */
+-{
+-	short	x2, merk;
+-
+-	merk = 0;
+-	while (TRUE)
+-	{
+-		x2 = suche1(col, x, str_len, such_len, call);
+-		if (x2==-1) break;
+-		x2++; 								/* Weiter suchen */
+-		str_len -= x2-x;					/* RestlÑnge */
+-		merk = x = x2;
+-	}
+-	return merk-1;
+-}
+-
+-static char *STRSTR(char *str_anf, short str_len, char *mstr_anf, short *found_len)
+-/* Suche ohne Quantoren */
+-{
+-	char *mstr, *str;
+-	short	i, mstr_len = muster_len;
+-
+-	*found_len = mstr_len;
+-	str_anf += mstr_len;
+-	str_len -= mstr_len;
+-	mstr_anf += mstr_len;
+-	while (str_len>=0)
+-	{
+-		str = str_anf;
+-		mstr = mstr_anf;
+-		i = mstr_len;
+-		while(TRUE)
+-		{
+-			if (*(--mstr)!=*(--str)) break;		/* Match fehlgeschlagen */
+-			if ((--i)<=0) return(str); 			/* gefunden */
+-			if (*(--mstr)!=*(--str)) break;		/* Match fehlgeschlagen */
+-			if ((--i)<=0) return(str);				/* gefunden */
+-			if (*(--mstr)!=*(--str)) break;		/* Match fehlgeschlagen */
+-			if ((--i)<=0) return(str); 			/* gefunden */
+-			if (*(--mstr)!=*(--str)) break;		/* Match fehlgeschlagen */
+-			if ((--i)<=0) return(str); 			/* gefunden */
+-		}
+-		i = delta[(unsigned char)str_anf[-1]];
+-		str_anf += i;										/* weiterrÅcken */
+-		str_len -= i;
+-	}
+-	return(NULL);
+-}
+-
+-static char *STRSTR1(char *str_anf, short str_len, char *mstr_anf, short *found_len)
+-/* Suche ohne Quantoren (Gross/Klein) */
+-{
+-	char *mstr, *str, s;
+-	short	i, mstr_len = muster_len;
+-
+-	*found_len = mstr_len;
+-	str_anf += mstr_len;
+-	str_len -= mstr_len;
+-	mstr_anf += mstr_len;
+-	while (str_len>=0)
+-	{
+-		str = str_anf;
+-		mstr = mstr_anf;
+-		i = mstr_len;
+-		while (TRUE)
+-		{
+-			s = *(--str);
+-/*
+-			if (s>='a' && s<='z') s-=32;
+-			else if (s=='î') s = 'ô';
+-			else if (s=='Å') s = 'ö';
+-			else if (s=='Ñ') s = 'é';
+-*/
+-			s = nkc_toupper(s);
+-			if (*(--mstr)!=s) 
+-				break;					/* Match fehlgeschlagen */
+-			if ((--i)<=0) 
+-				return (str);			/* gefunden */
+-		}
+-		s = str_anf[-1];
+-/*
+-		if (s>='a' && s<='z') s-=32;
+-		else if (s=='î') s = 'ô';
+-		else if (s=='Å') s = 'ö';
+-		else if (s=='Ñ') s = 'é';
+-*/
+-		s = nkc_toupper(s);
+-		i = delta[(unsigned char)s];
+-		str_anf += i;										/* weiterrÅcken */
+-		str_len -= i;
+-	}
+-	return(NULL);
+-}
+-
+-/* Recursive pattern matching is outside the native literal-Find scope. */
+-
+-
+-/* rein : start, text_x, text_len, text_y */
+-/* raus : start, text_x, text_len, text_y */
+-/* -1:Abbruch, 0:nichts gefunden 1:gefunden */
+-
+-static short suchen2(short *such_len)
+-{
+-	char*	(*call)	(char*,short,char*,short*);
+-	long	y;
+-	LINEP line;
+-	short	step, x;
+-
+-	x = text_x;
+-	y = text_y;
+-	line = start;
+-	if (muster_len==0) return 0;
+-	step = 70;
+-	if (quantor)
+-		call = STRSTR;
+-	else if (grkl)
+-		call = STRSTR;
+-	else
+-		call = STRSTR1;
+-	if (vorw)
+-	{
+-		while (TRUE)
+-		{
+-			if ((text_x=suche1(line,x,text_len,such_len,call))>=0)
+-			{
+-				text_y = y;
+-				start = line;
+-				return 1;
+-			}
+-			NEXT(line); y++; x = 0; text_len = line->len;
+-			if (IS_TAIL(line)) return 0;
+-			if ((--step)==0)
+-			{
+-/*
+-				if (check_for_abbruch() && note(1, 2, BREAK) == 1) 
+-					return -1;
+-*/
+-				step = 70;
+-			}
+-		}
+-	}
+-	else
+-	{
+-		while (TRUE)
+-		{
+-			if ((text_x=suche2(line,x,text_len,such_len,call))>=0)
+-			{
+-				text_y = y;
+-				start = line;
+-				return 1;
+-			}
+-			PREV(line);
+-			if (IS_HEAD(line)) return 0;
+-			y--;
+-			x = 0;
+-			text_len = line->len;
+-			if ((--step)==0)
+-			{
+-/*
+-				if (check_for_abbruch() && note(1, 2, BREAK) == 1) 
+-					return -1;
+-*/
+-				step = 70;
+-			}
+-		}
+-	}
+-}
+-
+-/* rein : start, text_x, text_len, text_y */
+-/* raus : start, text_x, text_len, text_y */
+-/* -1:Abbruch, 0:nichts gefunden 1:gefunden */
+-
+-static short suchen(TEXTP t_ptr, short *such_len)
+-{
+-	short	erg;
+-
+-	erg = suchen2(such_len);
+-	if (erg==0 && g_round)
+-	{
+-		short	m;
+-
+-		((void)0) /* optional audible bell */;
+-		if (vorw)
+-			m = M_TSTART;
+-		else
+-			m = M_TENDE;
+-		init_suche(t_ptr,m);
+-		erg = suchen2(such_len);
+-	}
+-	return erg;
+-}
+-
+-/* ====================================================================== */
+-
+-static void set_suchmode(char *Muster, char *Replace, bool Grkl, bool Quantor, 
+-			 bool Vorw, bool Wort, bool Global, bool Round)
+-{
+-	char	*ptr, *d, help[HIST_LEN+1];
+-	bool	invers;
+-
+-	/* Spezial fÅr '@' am Editfeld-Anfang! */
+-	if (Muster[0] == '\\' && Muster[1] == '@' && Quantor)
+-		strcpy(muster_txt, Muster+1);		/* \ Åberspringen */
+-	else
+-		strcpy(muster_txt, Muster);
+-
+-	if (Replace[0] == '\\' && Replace[1] == '@' && Quantor)
+-		strcpy(replace_txt, Replace+1);
+-	else
+-		strcpy(replace_txt, Replace);
+-	
+-	grkl = Grkl;
+-	quantor = Quantor;
+-	vorw = Vorw;
+-	wort = Wort;
+-	g_round = Round;
+-	setanz = 0;
+-	if (!grkl) 
+-		str_toupper(muster_txt);
+-	if (quantor)
+-	{
+-		d = help;
+-		ptr = muster_txt;
+-		if (*ptr=='^')
+-		{
+-			line_start = TRUE;
+-			ptr++;
+-		}
+-		else
+-			line_start = FALSE;
+-
+-		for (; *ptr; ptr++)
+-		{
+-			*d++ = *ptr;
+-			if (*ptr=='$' && ptr[1]==EOS)
+-			{
+-				d[-1] = '[';
+-				*d++ = 0xFC;
+-			}
+-			else if (*ptr=='[' && setanz<SETANZ)
+-			{
+-				char *merk = ptr;
+-
+-				ptr++;
+-				invers = FALSE;
+-				if (*ptr=='^')
+-				{
+-					invers = TRUE;
+-					ptr++;
+-				}
+-				setclr(group[setanz]);
+-				while(*ptr && *ptr!=']')
+-				{
+-					if (ptr[0]=='-' && ptr[-1]!='[' && ptr[1]!=']')
+-					{
+-						char i;
+-
+-						ptr++;
+-						for (i=ptr[-2]; i<*ptr; i++)
+-							setincl(group[setanz],i);
+-					}
+-					else
+-						setincl(group[setanz],*ptr++);
+-				}
+-				if (*ptr)							/* Keine ']' gefunden */
+-				{
+-					if (invers)
+-						setnot(group[setanz]);
+-					setanz++;
+-					*d++ = setanz; 				/* immer einen grîûer (weil nie Null) */
+-				}
+-				else
+-				{
+-					*d++ = 0xFF;					/* Echtes '[' */
+-					ptr = merk; 					/* Neu Scannen */
+-				}
+-			}
+-		}
+-		if (wort && d>help)						/* nur Worte und Åberhaupt ein Muster */
+-		{
+-			*d++ = '[';
+-			*d++ = 0xFE;							/* Wortende */
+-		}
+-		*d = EOS;
+-		strcpy(muster_txt, help);
+-		muster_len = (short) strlen(muster_txt);
+-	}
+-	else
+-	{
+-		short i,j;
+-
+-		muster_len = (short) strlen(muster_txt);
+-		for (i=0; i<256; i++) 
+-			delta[i] = muster_len;
+-		j = muster_len-1;
+-		for (i=0; i<j; i++) 
+-			delta[(unsigned char)muster_txt[i]] = j-i;
+-	}
+-	if (Global)
+-	{
+-		if (vorw)
+-			modus = M_TSTART;
+-		else
+-			modus = M_TENDE;
+-	}
+-	else
+-			modus = M_CURSOR;
+-}
+-
+-short start_find(TEXTP t_ptr, bool quiet)
+-{
+-	short	len, erg;
+-
+-	last_op = 1;
+-	(void)0; /* Native presenter owns the pointer. */
+-	init_suche(t_ptr, modus);			/* Suchzeiger an den Start bringen */
+-	erg = suchen(t_ptr,&len);
+-	(void)0; /* Native presenter owns the pointer. */
+-	if (erg == 1 && !quiet)
+-	{
+-		blk_demark(t_ptr);
+-		t_ptr->cursor_line = start;
+-		t_ptr->xpos = text_x;
+-		t_ptr->ypos = text_y;
+-		make_chg(t_ptr->link,POS_CHANGE,0);
+-		blk_mark(t_ptr,0);
+-		t_ptr->xpos = text_x+len;
+-		blk_mark(t_ptr,1);
+-		restore_edit();
+-	}
+-	return erg;
+-}
+-
+-/* Native initial scope: start_replace is deferred. */
+-
+-
+-short do_next(TEXTP t_ptr)
+-{
+-    return start_find(t_ptr,FALSE);
+-}
+-
+-void find_selection(TEXTP t_ptr)
+-{
+-	if (t_ptr->block)
+-	{
+-		RING	r;
+-		bool	direction;
+-		
+-		block_copy(t_ptr, &r);
+-		if (strlen(TEXT(FIRST(&r))) > 0)
+-		{
+-			strncpy(s_str, TEXT(FIRST(&r)), HIST_LEN);
+-			kill_textring(&r);
+-			s_str[HIST_LEN] = EOS;
+-			direction = (shift_pressed()) ? (!s_vorw) : s_vorw;
+-			set_suchmode(s_str, r_str, s_grkl, s_quant, direction, s_wort, FALSE, s_round);
+-			if (start_find(t_ptr, FALSE) == 0)
+-				((void)0) /* optional audible bell */;
+-		}
+-	}
+-}
+-
+-
+-/* Native initial scope: filematch is deferred. */
+-
+-
+-/* Such-Dialoge *************************************************************/
+-
+-static void insert_history(char h[HIST_ANZ][HIST_LEN+1], char *str)
+-{
+-	short	i,j;
+-	char	old_history[HIST_ANZ][HIST_LEN+1];
+-
+-	/* alte History merken */
+-	memcpy(old_history[0], h[0], HIST_ANZ*(HIST_LEN+1));
+-	strcpy(h[0], str);
+-	j = 1;
+-	/* n-1 kopieren */
+-	for (i = 0; i < (HIST_ANZ - 1); i++)
+-	{
+-		/* jeden Eintrag nur einmal */
+-		if ((old_history[i][0] != EOS) && (strcmp(old_history[i], h[0])!=0))
+-		{
+-			strcpy(h[j], old_history[i]);
+-			j++;
+-		}
+-	}
+-}
+-
+-
+-/* Native initial scope: build_popup is deferred. */
+-
+-
+-
+-/* Native initial scope: circle_popup is deferred. */
+-
+-
+-
+-/*
+- * Suchen/Ersetzen in Texten
+- * RÅckgabe: 	0: Abbruch
+- *					1: Suchen
+- *					2: Ersetzen
+-*/
+-short replace_dial(void)
+-{
+-    short answer;
+-    set_string(replace,RPTEXT1,s_str);
+-    set_state(replace,RPERSATZ,OS_DISABLED,TRUE);
+-    set_state(replace,RPWILD,OS_DISABLED,TRUE);
+-    set_state(replace,RPSHIST,OS_DISABLED,TRUE);
+-    set_state(replace,RPEHIST,OS_DISABLED,TRUE);
+-    answer=simple_mdial(replace,RPTEXT1)&0x7fff;
+-    set_state(replace,answer,OS_SELECTED,FALSE);
+-    if(answer!=RPOK)return 0;
+-    get_string(replace,RPTEXT1,s_str);
+-    s_quant=FALSE;s_wort=FALSE;s_grkl=FALSE;s_vorw=TRUE;s_global=FALSE;s_round=FALSE;
+-    set_suchmode(s_str,"",FALSE,FALSE,TRUE,FALSE,FALSE,FALSE);
+-    return s_str[0]?1:0;
+-}
+-
+-/*
+- * Suchen auf Disk / in Projekt
+-*/
+-/* Native initial scope: findfile_dial is deferred. */
+-
+-
+-
+-	
+-/*****************************************************************************/
+-/*
+- * Umlaute konvertieren
+-*/
+-
+-static char umlaute[8][7] =
+-{	/* Ñ	  é	  î	  ô	  Å	  ö	  û	*/
+-	{ 0x84, 0x8E, 0x94, 0x99, 0x81, 0x9A, 0x9E},	/* Atari */
+-	{ 0xE4, 0xC4, 0xF6, 0xD6, 0xFC, 0xDC, 0xDF},	/* Latin */
+-	{ 0x8A, 0x80, 0x9A, 0x85, 0x9F, 0x86, 0xA7},	/* Mac */
+-	{ 0x84, 0x8E, 0x94, 0x99, 0x81, 0x9A, 0xE1},	/* PC */
+-	{  'a',  'A',  'o',  'O',  'u',  'U',  's'},	/* LaTeX */
+-	{  'a',  'A',  'o',  'O',  'u',  'U',  's'},	/* HTML */
+-	{  'a',  'A',  'o',  'O',  'u',  'U',  's'},	/* ASCII */
+-};
+-
+-
+-/* Native initial scope: change_umlaute is deferred. */
+-
+-
+-/* Native initial scope: umlaut_dial is deferred. */
+-
+-
+-
+ 
+ 
+ bool filematch(char *str, char *m, short fs_typ)
+--- a/qed/src/menu.c
++++ b/qed/src/menu.c
+@@ -8,6 +8,7 @@
+ #include "error.h"
+ #include "file.h"
+ #include "find.h"
++#include "qed-commands.h"
+ #include "icon.h"
+ #include "kurzel.h"
+ #include "makro.h"
+@@ -35,14 +36,7 @@
+ 
+ 
+ /*****************************************************************************/
+-static void info_dial(void)
+-{
+-	short	antw;
+-
+-	antw = simple_mdial(about, 0) & 0x7fff;
+-	if (antw == AINFO)
+-		simple_mdial(about2, 0);
+-}
++static void info_dial(void){QedAboutStart();}
+ 
+ /*****************************************************************************/
+ void	set_overwrite(bool over)
+@@ -154,10 +148,9 @@
+         set_menu(menu_actions[i][0],setin(actions,menu_actions[i][1]));
+     set_menu(MCLOSE,w!=NULL);
+     /* Commands become available only with their executable slice. */
+-    set_menu(MABOUT,FALSE);set_menu(MNEWTEXT,FALSE);set_menu(MOPEN,FALSE);
++    set_menu(MABOUT,TRUE);set_menu(MNEWTEXT,FALSE);set_menu(MOPEN,FALSE);
+     set_menu(MSAVE,FALSE);set_menu(MSAVENEW,FALSE);
+     /* Select All follows the current document actions. */
+-    set_menu(MFIND,FALSE);set_menu(MFNDGOON,FALSE);
+     mark_menu(MOEINF,!overwrite);
+     mark_menu(MOOVERW,overwrite);
+ }

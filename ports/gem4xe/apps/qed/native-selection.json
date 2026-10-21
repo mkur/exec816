@@ -246,46 +246,6 @@
     },
     {
       "origin": "cflib",
-      "path": "mdchange.c"
-    },
-    {
-      "origin": "cflib",
-      "path": "mdclose.c"
-    },
-    {
-      "origin": "cflib",
-      "path": "mddo.c"
-    },
-    {
-      "origin": "cflib",
-      "path": "mdial.c"
-    },
-    {
-      "origin": "cflib",
-      "path": "mdmesag.c"
-    },
-    {
-      "origin": "cflib",
-      "path": "mdopen.c"
-    },
-    {
-      "origin": "cflib",
-      "path": "mdrdrobj.c"
-    },
-    {
-      "origin": "cflib",
-      "path": "mdredraw.c"
-    },
-    {
-      "origin": "cflib",
-      "path": "mdsimple.c"
-    },
-    {
-      "origin": "cflib",
-      "path": "mdwincb.c"
-    },
-    {
-      "origin": "cflib",
       "path": "menu.c"
     },
     {
@@ -768,6 +728,56 @@
       "origin": "cflib",
       "path": "vdi.c",
       "reason": "Deferred feature or donor platform implementation; no entry in the selected native graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdchange.c",
+      "reason": "QE5 native forms replace the donor MDIAL live call graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdclose.c",
+      "reason": "QE5 native forms replace the donor MDIAL live call graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "mddo.c",
+      "reason": "QE5 native forms replace the donor MDIAL live call graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdial.c",
+      "reason": "QE5 native forms replace the donor MDIAL live call graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdmesag.c",
+      "reason": "QE5 native forms replace the donor MDIAL live call graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdopen.c",
+      "reason": "QE5 native forms replace the donor MDIAL live call graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdrdrobj.c",
+      "reason": "QE5 native forms replace the donor MDIAL live call graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdredraw.c",
+      "reason": "QE5 native forms replace the donor MDIAL live call graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdsimple.c",
+      "reason": "QE5 native forms replace the donor MDIAL live call graph"
+    },
+    {
+      "origin": "cflib",
+      "path": "mdwincb.c",
+      "reason": "QE5 native forms replace the donor MDIAL live call graph"
     }
   ],
   "native_sources": [
@@ -776,7 +786,8 @@
     "files.c",
     "library.c",
     "support.c",
-    "gem-helpers.c"
+    "gem-helpers.c",
+    "commands.c"
   ],
   "features_removed": [
     "preferences UI and persistence",
@@ -788,7 +799,8 @@
     "disk scrap and dialog clipboard extensions",
     "external help and ASCII tables",
     "replacement and search histories",
-    "external fonts and automatic USERDEF decoration"
+    "external fonts and automatic USERDEF decoration",
+    "donor MDIAL interactive loops"
   ],
   "private_allowances": {
     "code_bytes": 32768,

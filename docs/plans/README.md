@@ -516,7 +516,7 @@ assuming work is pending. Current behavior belongs in the
   [QE1–QE7 implementation plan](gem4xe/qed-editing-implementation-plan.md):
   strategy step 4; native editing/selection, long-line redraw,
   clipboard/Undo, cancellable dialogs/Find and staged single-document Open/New.
-  QE1–QE4 pass [development checks](../history/qed-editing.md); QE5–QE7 remain.
+  QE1–QE5 pass [development checks](../history/qed-editing.md); QE6–QE7 remain.
   Reliable saving remains step 5.
 
 - [QED startup design](gem4xe/qed-startup-design.md) and

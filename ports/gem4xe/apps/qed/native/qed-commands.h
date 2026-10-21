@@ -1,0 +1,17 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+#ifndef QED_COMMANDS_H
+#define QED_COMMANDS_H
+#include "global.h"
+#define QED_DIALOG_FAILED (-1)
+#define QED_DIALOG_CANCELLED 0
+#define QED_DIALOG_ACCEPTED 1
+#define QED_DIALOG_INTERRUPTED 2
+short QedNativeForm(OBJECT *tree,short start);
+short QedChooseFile(const char *initial,char *destination,const char *title);
+void QedFindStart(TEXTP text,bool prompt);
+void QedAboutStart(void);
+void QedCommandsCancel(void);
+void QedCommandsMessage(short *message);
+void QedCommandsStep(void);
+bool QedCommandsSearching(void);
+#endif

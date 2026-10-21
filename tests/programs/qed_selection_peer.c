@@ -44,7 +44,7 @@ int main(void)
             QedPeerCommand=0;
             if(command==2){if(!wind_set(window,WF_TOP,0,0,0,0))return 107;}
             else{
-                message[0]=command==1?WM_MOVED:WM_CLOSED;
+                message[0]=command==1?WM_MOVED:(command==4?WM_SIZED:WM_CLOSED);
                 message[1]=appl_init();message[2]=0;message[3]=QedPeerHandle;
                 for(i=0;i<4;i++)message[4+i]=QedPeerBounds[i];
                 if(!appl_write(QedPeerDestination,16,message))return 108;

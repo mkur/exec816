@@ -4,7 +4,7 @@
 [QE1–QE7 plan](../plans/gem4xe/qed-editing-implementation-plan.md) ·
 [Startup baseline](qed-startup.md)
 
-Status: QE1–QE4 implemented with development evidence; QE5–QE7 remain. The
+Status: QE1–QE5 implemented with development evidence; QE6–QE7 remain. The
 [QE1 development record](../development/qed-editing-qe1.json) binds the ordinary
 executable, source audit, actual-source core probe and loaded editor session.
 
@@ -321,3 +321,70 @@ match QS5. Shared-provider demo refresh stays with QE7. These are development
 checks; hosted-system and release qualification remain separate. QE5 native
 dialogs/Find is next, followed by QE6 checked reading/replacement and QE7's
 combined session and package handoff.
+
+## QE5 Native dialogs and literal Find
+
+The [QE5 development record](../development/qed-editing-qe5.json) binds native
+Find/About, the selector adapter and their scoped development checks. Patch
+0014 removes the selected donor MDIAL call graph; all ten MDIAL source units
+are excluded in the source-selection ledger. Find's retained local resource
+IDs now expose one 50-byte field, Find and Cancel. Unsupported replacement,
+history, direction, wildcard, case and wrap controls are hidden and disabled.
+About keeps the donor credits, replaces version placeholders with the native
+port identity and names its actual compiler/platform libraries. Its license
+label follows the pinned GPL-3.0-only source notices.
+
+Find is case-sensitive, literal and forward from the cursor, without wrap.
+Find Next continues beyond the current match. A match selects/reveals its
+range; not-found preserves the cursor/range. Cancel preserves the last accepted
+pattern. A bounded controller checks at most 256 positions before returning to
+the outer event dispatcher. It retains one draft in private upper storage,
+resumes it after compatible geometry policy and cancels before Close/Stop or
+ordinary document input. Native sessions retire before the exact deferred
+message is consumed once; no recursive document policy runs on the form stack.
+
+All form results are checked while signed before masking or object indexing.
+Idle Escape now dismisses the general native form with -1/AES_OK, on both
+borrowed and temporary hosts. Escape during a held control still cancels the
+press and waits for release. The reusable form regression covers both rules.
+No ABI layout or kernel service changes. The selector adapter uses native
+path[128]/leaf[13] buffers, checks joined capacity, preserves native volume and
+relative paths, and keeps the destination untouched on Cancel/error/policy
+interruption. Menu Open remains disabled until QE6 owns candidate publication.
+
+The loaded-editor cohort checks physical Find field editing/focus, literal
+metacharacters, Find Next/not-found, the 50-byte limit, outside release,
+Escape/Cancel, About, geometry-resumed drafts, Close/Stop Cancel, non-fitting
+forms and a real native form allocation failure. Text/range and document/form
+pixels are independent observations. A periodic ordinary GEM peer paints while
+QED sleeps without UPDATE/MCTRL ownership. Four Process lifetimes retire through
+normal collection/unload and exact warm-heap reuse. Separate two-lifetime probes
+cover signed results, adapter capacities, bounded long-line search and cancelled
+borrowed-line ownership, plus real native selector accept/Escape/move interruption
+and reuse. Those probes do not claim an application document replacement.
+
+The frame analyzer now follows actual linked object listings, ignoring stale
+numbered files from excluded source units. Linked indirect sites still require
+an explicit callback contract. The production source bound remains 893 bytes,
+with a 768-byte continuation cap, 256-byte interrupt reserve, 128-byte headroom
+target and 515-byte conditional margin under 2,560-byte admission. Reading and
+replacement chains remain QE6 work. Shared-provider changes require matching
+providers/callers and the demo refresh in QE7.
+
+The production APP has 107,605 code, 1,426 initialized and 24,192 BSS bytes,
+serializes to 121,911 bytes and spans 173,141 bytes. Eight-byte-rounded image
+backing is 238,680 bytes. Removing MDIAL reduces code by 12,589 bytes and BSS by
+1,357 bytes from QE4. General idle Escape adds 26 resident code bytes, with no
+table/data growth. The selector observer now uses the current 64-object form
+layout (383-byte form, selector pointer at 379), verified by an emitted C layout
+probe; its older 32-object offset described historical builds only.
+
+Reserved bank-zero delta: **0 fixed, 0 per-public-Task and 0 private idle bytes**,
+including guards, alignment and unused capacity. No Task-pool reservation grows.
+The record contains exact current image/provider costs and observed stack
+minima: 1,421 bytes above the interrupt reserve in the GUI session, 777 in the
+adapter/search probe and 1,371 in the selector probe. The private GUI heap peak
+is 53,359 bytes; native dialog owners and APP backing are charged separately.
+The general form fixture passes 207 checks. Host checks: 538 tests, four expected
+historical skips. These are
+development checks; hosted-system and release qualification remain separate.

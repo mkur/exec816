@@ -99,13 +99,13 @@ class SelectionEditor(Editor):
         app=json.loads((self.p['output'].parent/'peer/app.json').read_text())
         delta=candidates[0]-(app['abi']['link_bank']<<16)
         return {n:v+delta for n,v in app['image']['symbols'].items()}
-    def peer_command(self,command):
+    def peer_command(self,command,bounds=None):
         peer=self.peer();before=self.get(peer['QedPeerCalls'])
-        state=self.text();bounds=self.geometry()['bounds']
+        state=self.text();current=self.geometry()['bounds']
         self.b.memload(peer['QedPeerDestination'],struct.pack('<H',self.get(self.sy['gl_apid'])))
         self.b.memload(peer['QedPeerHandle'],struct.pack('<H',self.get(state['pointer']+self.offsets[19])))
-        self.b.memload(peer['QedPeerBounds'],struct.pack('<4h',bounds[0]+8,bounds[1],
-            bounds[2]-bounds[0],bounds[3]-bounds[1]))
+        self.b.memload(peer['QedPeerBounds'],struct.pack('<4h',*(bounds or
+            [current[0]+8,current[1],current[2]-current[0],current[3]-current[1]])))
         self.b.memload(peer['QedPeerCommand'],struct.pack('<H',command))
         self.reach('dw($%x)!=%d'%(peer['QedPeerCalls'],before))
     def wait_inside(self):

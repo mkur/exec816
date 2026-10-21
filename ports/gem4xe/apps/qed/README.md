@@ -128,7 +128,8 @@ shortcut parser after the documented Calypsi profile/source corrections.
 See the [selection evidence](../../../../docs/history/qed-editing.md#qe3-event-driven-selection)
 for physical key limitations, stack accounting and exact executed scope.
 QE4 enables clipboard/Undo and edits replacing an active selection;
-dialogs/Find, New/Open replacement and reliable saving remain later slices.
+QE5 adds native dialogs and literal Find. New/Open replacement and reliable
+saving remain later slices.
 
 `--from-build` rebuilds the APP against an unchanged emitted native fixture.
 `--reuse-app` additionally verifies recorded APP input hashes for observer-only
@@ -142,7 +143,7 @@ python3 tools/build_qed.py --output build/qed-native/layout --provider build/qed
 ```
 
 The [selection ledger](native-selection.json) accounts for every pinned editor
-and cflib source: 131 selected units and 47 explicit exclusions. Native startup,
+and cflib source with explicit selections and exclusions. Native startup,
 fixed defaults, clipboard ownership, file metadata and ordinary retirement
 replace donor OS, configuration and accessory paths. Source patches retain the
 editor core. The resource location is `SYS:QED.RSC`; document paths keep their
@@ -298,3 +299,25 @@ text/clipboard/pixel checks and four ordinary Process lifetimes. Undo swaps one
 affected-line group without allocating and toggles on repetition. See the
 [QE4 evidence](../../../../docs/history/qed-editing.md#qe4-internal-clipboard-and-grouped-undo)
 for exact stack, heap and development scope. Save/Save As remain disabled.
+
+QE5's native dialogs and literal Find checks:
+
+```sh
+python3 tools/test_qed_dialogs.py --group editor --output build/qed-editing/dialog-editor
+python3 tools/test_qed_dialogs.py --group core --output build/qed-editing/dialog-core
+python3 tools/test_qed_dialogs.py --group selector --output build/qed-editing/dialog-selector
+```
+
+Find accepts up to 50 literal, case-sensitive bytes, searches forward without
+wrap, and selects the match. Find Next continues from the cursor. Cancel keeps
+the last accepted pattern; not-found keeps the position/range. Geometry policy
+can resume a retired native Find draft; Close/Stop cancels it. The controller
+returns to normal event handling after each 256 search positions. About and
+Find use native forms; the ten unused donor MDIAL units are excluded. The
+selector adapter uses native path[128]/leaf[13] buffers and preserves native
+volume/relative paths. Selecting a file does not yet replace a document.
+
+The core cohort isolates signed results, path capacities and bounded search;
+the selector cohort uses the real native selector. The loaded editor checks
+physical input, document/form pixels, cancellation, allocation failure and peer
+progress. See [QE5 evidence](../../../../docs/history/qed-editing.md#qe5-native-dialogs-and-literal-find).

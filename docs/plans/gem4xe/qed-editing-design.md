@@ -5,8 +5,8 @@
 [Implementation plan](qed-editing-implementation-plan.md) ·
 [Startup evidence](../../history/qed-startup.md)
 
-Status: strategy step 4 in progress; QE1–QE4 are implemented with
-[development evidence](../../history/qed-editing.md). QE5–QE7 remain. The gate is
+Status: strategy step 4 in progress; QE1–QE5 are implemented with
+[development evidence](../../history/qed-editing.md). QE6–QE7 remain. The gate is
 an actual loaded QED APP opening one document, editing and navigating its text,
 selecting, copying/pasting, undoing and finding, with correct redraw and
 cancellable dialogs. New/Open must retain the current document on failure or
@@ -207,6 +207,13 @@ commit; measure those owners separately. Failed preparation retains all prior
 editing state. Reserved bank-zero change remains zero.
 
 ## Dialogs, Find and command interruption
+
+QE5 audit amendment: native `form_do` previously used Escape only to disarm a
+held press. Add general idle-Escape dismissal as -1 / AES_OK for borrowed and
+temporary forms; held-press cancellation/release rearming stays unchanged.
+This reuses the existing public operation and negative-result contract, with
+no wire/layout or bank-zero reservation change. Rebuild matched providers and
+exercise the reusable form behavior alongside QED's Cancel/Escape paths.
 
 Use native `form_do`, `form_alert` and `fsel_exinput` for the selected workflows,
 retiring the donor MDIAL loop from their live call graph. Forms borrow the

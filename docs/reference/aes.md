@@ -560,6 +560,9 @@ traverses fields. A press previews selection; an inside release commits and an
 outside release or Escape cancels it. Entry/loss waits for release before a new
 press. No motion/hover feedback is promised. Return activates DEFAULT; Space
 activates a focused button. Accepted EXIT returns its index with SELECTED set.
+When no mouse button is held, Escape dismisses either a borrowed or temporary
+form with **-1 / AES_OK**. It does not select an EXIT object. Alert dismissal
+therefore returns zero, preserving the rule that cancellation is never consent.
 
 A direct call creates and finishes an implicit session. START permits repeated
 calls on the same tree until FINISH. Temporary windows accept movement and

@@ -5,6 +5,7 @@ from qed_editing_observe import Editor
 from qed_selection_observe import SelectionEditor
 
 class ClipboardEditor(SelectionEditor):
+    global_commands=('C','X','V','Z')
     pending_global=None
     def menu(self,title,item):
         before=self.get(self.sy['QedMenuCalls'])
@@ -12,7 +13,7 @@ class ClipboardEditor(SelectionEditor):
         self.reach('dw($%x)!=%d'%(self.sy['QedMenuCalls'],before))
         require(self.get(self.sy['QedMenuLastItem'])==self.ids[item],'Wrong menu command')
     def key(self,name,ctrl=False,**options):
-        if ctrl and name in ('C','X','V','Z'):
+        if ctrl and name in self.global_commands:
             before=self.get(self.sy['QedGlobalKeyCalls'])
             dialog=options.pop('dialog',False)
             options['dispatch']=False

@@ -16,6 +16,8 @@ volatile unsigned short QedEditKeyCalls,QedLastKey,QedLastQualifiers;
 volatile unsigned short QedGlobalKeyCalls;
 volatile unsigned short QedGlobalKeyEntered,QedGlobalLastKey,QedGlobalLastQualifiers;
 volatile unsigned short QedMenuCalls,QedMenuEntered,QedMenuLastItem;
+volatile unsigned short QedFormStarts,QedFormReturns,QedFormAnswer,QedFormDiagnostic;
+volatile unsigned short QedFormFailAllocation,QedFormAllocationFailures;
 volatile unsigned short QedCursorPaints,QedPaintedBlink,QedPaintedX;
 volatile long QedPaintedY;
 volatile unsigned short QedSelectionFailClock,QedSelectionClockFailures;
@@ -53,6 +55,24 @@ void QedEditMenu(short title,short item,bool control)
 {
     ++QedMenuEntered;QedMenuLastItem=item;
     handle_menu(title,item,control);++QedMenuCalls;
+}
+WORD QedEditFormDo(OBJECT *tree,WORD start)
+{
+    struct Held {struct Held *next;ULONG bytes;};
+    struct Held *held=NULL,*block;ULONG bytes;WORD answer;
+    if(QedFormFailAllocation){
+        QedFormFailAllocation=0;
+        while((bytes=AvailMem(MEMF_UPPER|MEMF_LARGEST))>=sizeof(*block)){
+            block=(struct Held *)AllocMem(bytes,MEMF_UPPER);
+            if(!block)break;
+            block->next=held;block->bytes=bytes;held=block;
+        }
+    }
+    ++QedFormStarts;answer=form_do(tree,start);++QedFormReturns;
+    QedFormAnswer=answer;QedFormDiagnostic=ExecAESDiagnostic();
+    if(held && QedFormDiagnostic==AES_RESOURCE)++QedFormAllocationFailures;
+    while(held){block=held;held=block->next;FreeMem(block,block->bytes);}
+    return answer;
 }
 LINEP QedEditNewCol(char *text,short length)
 {

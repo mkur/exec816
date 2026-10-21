@@ -2,9 +2,19 @@
 import sys,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from measure_qed_frames import emitted_instructions,frame_cost
+from measure_qed_frames import emitted_instructions,frame_cost,source_listings
 
 class QedFrameTests(unittest.TestCase):
+    def test_retired_unit_listings_do_not_override_the_current_link(self):
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as directory:
+            root=Path(directory)
+            linked=root/'0-current.o'
+            linked.with_suffix('.lst').write_text('current frame')
+            (root/'0-retired.lst').write_text('obsolete frame')
+            image=dict(provenance=dict(link_objects=[str(linked),str(root/'1-imports-asm.o')]))
+            self.assertEqual(source_listings(image),[linked.with_suffix('.lst')])
+
     def test_inline_entry_reservation_is_counted_with_saved_registers(self):
         listing=r'''
     \ 000000 3b        undo:     tsc
