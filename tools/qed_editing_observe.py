@@ -138,7 +138,8 @@ class Editor:
                     blink=self.get(t+o[23],1),caret=self.get(t+o[24],1))
     def check(self,name,lines,x=None,y=None,pixels=True):
         self.frames(20);state=self.text()
-        require(state['lines']==lines,f'{name}: expected {lines!r}, got {state["lines"]!r}')
+        require(state['lines']==lines,f'{name}: document differs: expected '+
+            str([len(v) for v in lines])+', got '+str([len(v) for v in state['lines']]))
         require(x is None or state['x']==x,name+': wrong cursor column '+str(state['x']))
         require(y is None or state['y']==y,name+': wrong cursor row '+str(state['y']))
         item={k:v for k,v in state.items() if k!='lines'}

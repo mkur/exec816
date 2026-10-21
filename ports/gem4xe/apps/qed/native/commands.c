@@ -2,15 +2,18 @@
  * One private command draft. Native dialogs retire before outer event policy.
  */
 #include "qed-commands.h"
+#include "qed-document.h"
 #include "block.h"
 #include "edit.h"
 #include "find.h"
 #include "memory.h"
 #include "rsc.h"
+#include "text.h"
 #include <exec816/aes.h>
 #include <proto/dos.h>
 
-enum { CMD_NONE,CMD_FIND_FORM,CMD_FIND_SEARCH,CMD_ABOUT,CMD_ABOUT2 };
+enum { CMD_NONE,CMD_FIND_FORM,CMD_FIND_SEARCH,CMD_ABOUT,CMD_ABOUT2,
+       CMD_OPEN_FORM,CMD_PREPARE,CMD_DOCUMENT_READ,CMD_ERROR,CMD_ARGUMENT_ERROR };
 static short command_kind;
 static bool command_waiting;
 static TEXTP command_text;
@@ -19,6 +22,9 @@ static LINEP search_line;
 static long search_row;
 static short search_column,search_length;
 static char selector_path[128],selector_leaf[13];
+static char open_path[256];
+static bool new_document;
+static LONG command_error;
 static short bad_path(void){SetIoErr(ERROR_BAD_ARGUMENTS);return QED_DIALOG_FAILED;}
 
 short QedNativeForm(OBJECT *tree,short start)
@@ -53,9 +59,32 @@ short QedChooseFile(const char *initial,char *destination,const char *title)
 }
 void QedCommandsCancel(void)
 {
+    if(command_kind==CMD_DOCUMENT_READ)QedDocumentCancel();
     command_kind=CMD_NONE;command_waiting=FALSE;command_text=NULL;search_line=NULL;
 }
 bool QedCommandsSearching(void){return command_kind==CMD_FIND_SEARCH;}
+bool QedCommandsWorking(void)
+{
+    return QedCommandsSearching() || command_kind==CMD_PREPARE ||
+           command_kind==CMD_DOCUMENT_READ || command_kind==CMD_ERROR || command_kind==CMD_ARGUMENT_ERROR;
+}
+void QedArgumentsError(void)
+{
+    QedCommandsCancel();command_error=ERROR_BAD_ARGUMENTS;command_kind=CMD_ARGUMENT_ERROR;
+}
+void QedOpenStart(TEXTP text,const char *path)
+{
+    QedCommandsCancel();command_text=text;new_document=FALSE;
+    if(!path){command_kind=CMD_OPEN_FORM;return;}
+    if(!*path || strlen(path)>=sizeof(open_path)){
+        command_error=ERROR_BAD_ARGUMENTS;command_kind=CMD_ERROR;return;
+    }
+    strcpy(open_path,path);command_kind=CMD_PREPARE;
+}
+void QedNewStart(TEXTP text)
+{
+    QedCommandsCancel();command_text=text;new_document=TRUE;command_kind=CMD_PREPARE;
+}
 void QedFindStart(TEXTP text,bool prompt)
 {
     QedCommandsCancel();command_text=text;
@@ -75,6 +104,7 @@ void QedCommandsMessage(short *message)
     switch(message[0]){
     case WM_REDRAW:case WM_MOVED:case WM_SIZED:case WM_FULLED:
     case WM_ARROWED:case WM_HSLID:case WM_VSLID:
+    case WM_TOPPED:case WM_NEWTOP:case WM_ONTOP:
         command_waiting=FALSE;break;
     default:QedCommandsCancel();break;
     }
@@ -100,6 +130,39 @@ void QedCommandsStep(void)
 {
     short answer,kind=command_kind;OBJECT *tree;
     if(kind==CMD_NONE || command_waiting)return;
+    if(kind==CMD_ERROR || kind==CMD_ARGUMENT_ERROR){
+        LONG cause=command_error;
+        if(kind==CMD_ARGUMENT_ERROR)answer=form_alert(1,"[1][Use zero or one document argument.][OK]");
+        else if(cause==ERROR_NO_FREE_STORE)answer=form_alert(1,"[1][Not enough memory for the document.][OK]");
+        else if(cause==ERROR_BAD_ARGUMENTS)answer=form_alert(1,"[1][Unsupported text format or path.|Use LF or CRLF; lines up to 1023 bytes.][OK]");
+        else answer=form_alert(1,"[1][The document could not be read.|The current document is unchanged.][OK]");
+        if(!answer && ExecAESDiagnostic()==AES_PENDING){command_waiting=TRUE;return;}
+        QedCommandsCancel();
+        make_chg(get_top_text()->link,TOTAL_CHANGE,0);
+        SetIoErr(cause);return;
+    }
+    if(kind==CMD_OPEN_FORM){
+        answer=QedChooseFile(NULL,open_path,"Open text document");
+        if(answer==QED_DIALOG_ACCEPTED)command_kind=CMD_PREPARE;
+        else if(answer==QED_DIALOG_FAILED){command_error=ERROR_BAD_ARGUMENTS;command_kind=CMD_ERROR;}
+        else QedCommandsCancel();
+        return;
+    }
+    if(kind==CMD_PREPARE){
+        if(QedDocumentBegin(new_document?NULL:open_path))command_kind=CMD_DOCUMENT_READ;
+        else {command_error=QedDocumentError();command_kind=CMD_ERROR;}
+        return;
+    }
+    if(kind==CMD_DOCUMENT_READ){
+        answer=QedDocumentPoll();
+        if(answer<0){command_error=QedDocumentError();command_kind=CMD_ERROR;return;}
+        if(answer>0){
+            if(!command_text->moved || form_alert(2,"[2][Discard unsaved changes?][Discard|Cancel]")==1)
+                QedDocumentCommit(command_text);
+            QedCommandsCancel();
+        }
+        return;
+    }
     if(kind==CMD_FIND_SEARCH){find_step();return;}
     tree=kind==CMD_FIND_FORM?replace:(kind==CMD_ABOUT?about:about2);
     if(kind==CMD_FIND_FORM)set_string(tree,RPTEXT1,find_draft);

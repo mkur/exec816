@@ -1,0 +1,523 @@
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -317,102 +317,6 @@
+ 	if(icon>0)head_out(get_window(icon),t_ptr);
+ 	return icon;
+ } /* new_edit */
+-
+-/***************************************************************************/
+-
+-short load_edit(char *name, bool bin)
+-/* return: <=0 wurde nicht geladen */
+-/* 		  =0	weitere Texte versuchen sinnvoll */
+-/* 		  <0	weiter Texte versuchen nicht sinnvoll */
+-{
+-	WINDOWP 	window;
+-	TEXTP 		t_ptr;
+-	static FILENAME	datei;
+-	static PATH		path;
+-	short		err, icon;
+-
+-	store_path(name);
+-
+-	if (!bin && is_bin_name(name))
+-		bin = TRUE;
+-
+-	split_filename(name, path, datei);
+-	if ((icon = text_still_loaded(name)) > 0)			/* schon geladen */
+-	{
+-		if (do_icon(icon, DO_OPEN) < 0)					/* nur Fenster auf */
+-			note(1, 0, NOWINDOW);
+-		return icon;
+-	}
+-
+-	icon = crt_new_text(name, bin);						/* neuen Text anlegen */
+-	if (icon < 0)
+-	{
+-		note(1, 0, NOTEXT);
+-		return -1;												/* hat keinen Zweck mehr */
+-	}
+-	t_ptr = get_text(icon);
+-	
+-	if ((err = load(t_ptr, TRUE)) == -33)				/* File not Found */
+-	{
+-		if (path_exists(path))
+-		{
+-			if (snote(1, 2, NEWTEXT, datei) == 2)		/* neue Datei anlegen */
+-			{
+-				icon_edit(icon, DO_DELETE);
+-				return 0;										/* naechsten versuche */
+-			}
+-		}
+-		else
+-		{
+-			snote(1, 0, READERR, datei);
+-			icon_edit(icon, DO_DELETE);
+-			return 0;											/* naechsten versuchen */
+-		}
+-	}
+-	else if (err)												/* anderer Fehler */
+-	{
+-		snote(1, 0, READERR, datei);
+-		icon_edit(icon, DO_DELETE);
+-		return 0;
+-	}
+-	if (t_ptr->loc_opt->umbrechen)
+-	{
+-		make_absatz(t_ptr);
+-		if (t_ptr->loc_opt->format_by_load)
+-			total_format(t_ptr);
+-	}
+-	window = get_window(icon);
+-	window->doc.x = 0;
+-	window->doc.y = 0;
+-	window->doc.w = get_longestline(t_ptr);
+-	window->doc.h = t_ptr->text.lines;
+-	if (do_icon(icon, DO_OPEN) < 0)
+-	{
+-		note(1, 0, NOWINDOW);
+-		icon_edit(icon, DO_DELETE);
+-		icon = -2;
+-	}
+-	if (t_ptr->moved) 										
+-	{
+-		if (t_ptr->loc_opt->umbrechen)					/* format_by_load */
+-			set_info(t_ptr, rsc_string(UMBRUCHSTR));
+-		else														/*	Nullbytes */
+-		{
+-			make_chg(t_ptr->link,TOTAL_CHANGE,0);
+-			set_info(t_ptr, rsc_string(NULLBYTESTR));
+-		}
+-		change_window(window, t_ptr->filename, TRUE);
+-		restore_edit();
+-		((void)0) /* optional audible bell */;
+-	}
+-
+-	if (find_poslist(lastpos_list, name, &desire_x, &desire_y) != NULL)
+-		icon_edit(icon, DO_GOTO);
+-	else
+-		insert_poslist(&lastpos_list, name, 0, 0);
+-
+-	return icon;
+-}
+ 
+ /***************************************************************************/
+ 
+--- a/qed/src/event.c
++++ b/qed/src/event.c
+@@ -217,7 +217,7 @@
+         if(mouse_sleeps())events|=MU_M1;
+         if(winlist_top()!=NULL && blinking_cursor)events|=MU_TIMER;
+     }
+-    if(QedCommandsSearching()){events|=MU_TIMER;delay=1;}
++    if(QedCommandsWorking()){events|=MU_TIMER;delay=1;}
+     ev->which=evnt_multi(events,1,1,state?0:1,
+         1,old_mx,old_my,1,1,0,0,0,0,0,ev->msg,delay,
+         &ev->m_x,&ev->m_y,&ev->bstate,&ev->kstate,&ev->kreturn,&ev->breturn);
+--- a/qed/src/file.c
++++ b/qed/src/file.c
+@@ -42,292 +42,7 @@
+ 
+ 
+ 
+-short load(TEXTP t_ptr, bool verbose)
+-{
+-	short	antw;
+-	bool	null_byte;
+-	
+-	antw = load_datei(t_ptr->filename, &t_ptr->text, verbose, &null_byte);
+-	
+-	
+-	t_ptr->cursor_line = t_ptr->text.head.next;
+-	t_ptr->readonly = file_readonly(t_ptr->filename);
+-	if (null_byte)
+-		t_ptr->moved++;
+-	if (antw == 0)
+-	{
+-		t_ptr->file_date_time = file_time(t_ptr->filename,NULL,NULL);
+-		hl_init_text( t_ptr );
+-	}
+-	else
+-		t_ptr->file_date_time = -1L;
+-	return(antw);
+-}
+-
+-short load_from_fd(short fd, char *name, RINGP t, bool verbose, bool *null_byte, long size)
+-{
+-	short		antw;
+-	bool		nb = FALSE, 
+-				ol = FALSE;
+-	char		*buffer, *zeile;
+-	LINEP 	start, next;
+-	long		l, p, bytes = 0L;
+-	short		n;
+-	bool		new_line, cr = FALSE, mem = TRUE;
+-
+-	/* Puffer anfordern */
+-	buffer = (char *)malloc(BUFFERSIZE);
+-	zeile = malloc(MAX_LINE_LEN + 2);				/* + 2 fr Zeilenende */
+-
+-	if (buffer == NULL || zeile == NULL)
+-	{
+-		note(1, 0, NOMEMORY);
+-		return -ENOMEM;
+-	}				
+-
+-	nb = FALSE;
+-	(void)0; /* Native presenter owns the pointer. */
+-
+-	/* Progress-Bar */
+-	verbose = verbose && ((size >> 10) >= transfer_size);
+-	if (verbose)
+-	{
+-		char		str[40];
+-		static FILENAME	file;
+-
+-		strcpy(str, rsc_string(LOADSTR));
+-		file_name(name, file, FALSE);
+-		strcat(str, file);
+-		start_aktion(str, FALSE, size);
+-	}
+-
+-
+-	/* Liste vorbereiten */
+-	start = t->tail.prev;
+-
+-	/* Einlesen */
+-	l = Fread(fd, BUFFERSIZE, buffer);
+-
+-	n = 0;
+-	new_line = FALSE;
+-	while (mem && (l > 0))
+-	{
+-		p = 0;
+-		while (mem && (p < l))
+-		{
+-			if (t->ending != lns_binmode)
+-			{
+-				if (buffer[p] == 0x0D)				/* CR -> Mac */
+-				{
+-					new_line = TRUE;
+-					p++;
+-					cr = TRUE;
+-					t->ending = lns_apple;
+-				}
+-				else if (buffer[p] == 0x0A)		/* LF */
+-				{
+-					p++;
+-					if (cr)								/* CRLF -> TOS*/
+-					{
+-						cr = FALSE;
+-						t->ending = lns_tos;
+-					}
+-					else
+-					{
+-						new_line = TRUE;				/* -> Unix */
+-						t->ending = lns_unix;
+-					}
+-				}
+-				else if (n >= t->max_line_len)	/* šberl„nge */
+-				{
+-					ol = TRUE;
+-					new_line = TRUE;
+-				}
+-				else 
+-				{
+-					/* Nullbyte? */
+-					if (buffer[p] == '\0')
+-					{
+-						nb = TRUE;
+-						buffer[p] = ' ';				/* Durch Leerzeichen ersetzen */
+-					}
+-					zeile[n] = buffer[p];
+-					n++;
+-					p++;
+-				}
+-			}
+-			else	/* lns_binmode */
+-			{
+-				if (n >= (t->max_line_len - 1))
+-					new_line = TRUE;
+-				zeile[n] = buffer[p];
+-				n++;
+-				p++;
+-			}
+-			
+-			if (new_line)
+-			{
+-				zeile[n] = EOS;
+-				start->next = new_col(zeile, n);
+-				if (start->next == NULL)
+-					mem = FALSE;
+-				else
+-				{
+-					start = start->next;
+-					if (ol)
+-					{
+-						start->info |= OVERLEN;
+-						ol = FALSE;
+-					}
+-				}
+-				n = 0;
+-				new_line = FALSE;
+-			}
+-		} /* while */
+-
+-		if (verbose)
+-		{
+-			bytes += BUFFERSIZE;
+-			do_aktion("", bytes);
+-		}
+-		l = Fread(fd, BUFFERSIZE, buffer);
+-
+-		/* EOF */
+-		if (l == 0)
+-		{
+-			/* letzte Zeile ohne Zeilenende! */
+-			if (n > 0)
+-			{
+-				zeile[n] = EOS;
+-				start->next = new_col(zeile, n);
+-				if (start->next == NULL)
+-					mem = FALSE;
+-				else
+-					start = start->next;
+-			}
+-
+-			/* letzte Zeile hatte ZE -> ein Dummyzeile anh„ngen */
+-			else if (n == 0)
+-			{
+-				start->next = new_col(zeile, 0);
+-				if (start->next == NULL)
+-					mem = FALSE;
+-				else
+-					start = start->next;
+-			}
+-		}
+-	} /* while */
+-
+-	if (mem)
+-	{
+-		/* Ring schliežen */
+-		t->tail.prev = start;
+-		start->next = &t->tail;
+-
+-		/* Anzahl der Zeilen ermitteln */
+-		start = t->head.next;
+-		next = start->next;
+-		for (l = 0; !IS_TAIL(start); l++)
+-		{
+-			next->prev = start;
+-			start = next;
+-			NEXT(next);
+-		}
+-		t->lines = l;
+-		if (l > 1L)
+-			col_delete(t, t->head.next);
+-
+-		antw = 0;
+-	}
+-	else
+-	{
+-		/* Speichermangel! Bisher gelesene Zeilen freigeben. */
+-		next = FIRST(t);
+-		while (next)
+-		{
+-			start = next;
+-			NEXT(next);
+-			free_col(t,start);
+-		}
+-		(void)0; /* Native presenter owns the pointer. */
+-		note(1, 0, NOMEMORY);
+-		antw = -ENOMEM;
+-	}
+-
+-	free(buffer);
+-	free(zeile);
+-	
+-	if (verbose)
+-		end_aktion();
+-
+-	(void)0; /* Native presenter owns the pointer. */
+-
+-	if (null_byte != NULL)
+-		*null_byte = nb;
+-	return(antw);
+-}
+-
+-short load_datei(char *name, RINGP t, bool verbose, bool *null_byte)
+-{
+-	short	antw, fd;
+-	long	size;
+-	
+-	/* gr”že der Datei ermitteln */
+-	size = file_size(name);
+-	if (size >= 0)
+-	{
+-		fd = (short) Fopen(name, 0);
+-		if (fd > 0)
+-		{
+-			antw = load_from_fd(fd, name, t, verbose, null_byte, size);
+-			Fclose(fd);
+-		} else
+-		{
+-			antw = fd;
+-		}
+-	} else
+-	{
+-		antw = -1;
+-	}
+-
+-	return antw;
+-}
+-
+-
+-/*
+- * Ermittelt die anzahl der Bytes und Zeilen der bergebenen Datei.
+- * Wird bei der Projektverwaltung (Info) benutzt.
+- */
+-short infoload(char *name, long *bytes, long *lines)
+-{
+-	RING	t;
+-	short	antw = 1;
+-
+-	if (file_exists(name))
+-	{
+-		init_textring(&t);
+-		if (load_datei(name, &t, FALSE, NULL) == 0)
+-		{
+-			*bytes = textring_bytes(&t);
+-			*lines = t.lines;
+-			antw = 0;
+-		}
+-		kill_textring(&t);
+-	}
+-	else
+-	{
+-		char	s[28];
+-		
+-		*bytes = 0;
+-		*lines = 0;
+-		make_shortpath(name, s, 28);
+-		snote(1, 0, READERR, s);
+-	}
+-	return antw;
+-}
+-
+-
+-/****************************************************************************/
++/* Native reading is owned by the detached document controller. */
+ 
+ static void backup_name(char *name, char *ext)
+ {
+@@ -738,32 +453,6 @@
+ 	return ok;
+ }
+ 
+-static int open_multi(char *path, char *name)
+-{
+-    static PATH filename;
+-    if(!name[0])return FALSE;
+-    strcpy(filename,path);strcat(filename,name);
+-    if(!prepare_quit())return FALSE;
+-    return load_edit(filename,FALSE)>0;
+-}
+-
+-void select_multi(bool binary)
+-{
+-	static PATH		path;
+-	FILENAME	name = "";
+-	char		*title;
+-
+-	multi_bin = binary;
+-	strcpy(path, last_path);
+-
+-	if (binary)
+-		title = rsc_string(LOADBINSTR);
+-	else
+-		title = rsc_string(LOADFILESTR);
+-	select_file(path, name, "", title, open_multi);
+-}
+-
+-/******************************************************************************/
+ void init_file(void)
+ {
+ 	get_path(last_path, 0);							/* Aktuellen Pfad holen */
+--- a/qed/src/main.c
++++ b/qed/src/main.c
+@@ -54,6 +54,7 @@
+ 
+ /* Native initial scope: no donor OS personality, protocols or preferences. */
+ #include "qed-runtime.h"
++#include "qed-commands.h"
+ #include <proto/dos.h>
+ #include <proto/dos.h>
+ short QedStarting=1;
+@@ -74,7 +75,8 @@
+             short document=new_edit(FALSE);
+             if(document>0){
+                 ready=1;QedStarting=0;
+-                if(argc>1)form_alert(1,"[1][Document arguments are not available.][OK]");
++                if(argc==0)QedArgumentsError();
++                else if(argc>1)QedOpenStart(get_text(document),argv[1]);
+                 main_loop();
+             }
+         }
+--- a/qed/src/menu.c
++++ b/qed/src/menu.c
+@@ -148,7 +148,7 @@
+         set_menu(menu_actions[i][0],setin(actions,menu_actions[i][1]));
+     set_menu(MCLOSE,w!=NULL);
+     /* Commands become available only with their executable slice. */
+-    set_menu(MABOUT,TRUE);set_menu(MNEWTEXT,FALSE);set_menu(MOPEN,FALSE);
++    set_menu(MABOUT,TRUE);set_menu(MNEWTEXT,w!=NULL);set_menu(MOPEN,w!=NULL);
+     set_menu(MSAVE,FALSE);set_menu(MSAVENEW,FALSE);
+     /* Select All follows the current document actions. */
+     mark_menu(MOEINF,!overwrite);
+@@ -276,15 +276,12 @@
+ /* Datei */
+ 			case MNEWTEXT	:
+ 
+-				if(prepare_quit())new_edit(TRUE);
++				QedNewStart(get_top_text());
+ 				break;
+ 
+ 			case MOPEN	 :
+ 
+-				if (sel_window == NULL)
+-					select_multi(FALSE);
+-				else
+-					action = DO_OPEN;
++                QedOpenStart(get_top_text(),NULL);
+ 				break;
+         /* Other donor actions are outside the initial native scope. */
+ 
+--- a/qed/src/window.c
++++ b/qed/src/window.c
+@@ -1,4 +1,5 @@
+ #include "global.h"
++#include <exec816/desktop-geometry.h>
+ #include "qed-runtime.h"
+ #include "av.h"
+ #include "clipbrd.h"
+@@ -843,13 +844,13 @@
+ */
+ void set_wtitle(WINDOWP w, char *filename)
+ {
+-	if (w->flags & WI_CHANGED)
+-		sprintf(w->title, " *%s ", filename);
+-	else
+-		sprintf(w->title, " %s ", filename);
+-
+-	if ((w->flags & WI_OPEN) && (w->kind & NAME))
+-		wind_set_str(w->handle, WF_NAME, w->title);
++    short out=0,input=0;
++    w->title[out++]=' ';
++    if(w->flags & WI_CHANGED)w->title[out++]='*';
++    while(filename[input] && out<min(WINSTRLEN-1,DESKTOP_TITLE_BYTES-2))w->title[out++]=filename[input++];
++    w->title[out++]=' ';w->title[out]=0;
++    if((w->flags & WI_OPEN) && (w->kind & NAME))
++        wind_set_str(w->handle,WF_NAME,w->title);
+ }
+ 
+ /*

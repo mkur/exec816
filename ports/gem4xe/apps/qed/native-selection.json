@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "English single-document initial scope; executable development startup; editing and saving retain later gates",
+  "scope": "English single-document native editing and transactional read-only replacement; reliable saving remains deferred",
   "defines": [
     "QED_INITIAL_SCOPE=1",
     "QED_BANKED_MALLOC=1",
@@ -787,7 +787,8 @@
     "library.c",
     "support.c",
     "gem-helpers.c",
-    "commands.c"
+    "commands.c",
+    "document.c"
   ],
   "features_removed": [
     "preferences UI and persistence",
@@ -800,7 +801,8 @@
     "external help and ASCII tables",
     "replacement and search histories",
     "external fonts and automatic USERDEF decoration",
-    "donor MDIAL interactive loops"
+    "donor MDIAL interactive loops",
+    "destructive donor load and multi-file callback"
   ],
   "private_allowances": {
     "code_bytes": 32768,

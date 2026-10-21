@@ -11,23 +11,24 @@ from test_qed_native import process_run
 from qed_selection_observe import interact
 
 
-def run(out,reuse=False,reuse_app=False,native_from=None,scroll=True,interaction=None):
+def run(out,reuse=False,reuse_app=False,native_from=None,scroll=True,interaction=None,
+        fixture_source=None,media_files=None,filesystem='sdfs',provider_from=None):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     if native_from:
         from test_c_process import variant
-        variant(native_from.resolve(),out,'sdfs');reuse=True
+        variant(native_from.resolve(),out,filesystem);reuse=True
         shutil.copytree(native_from.resolve()/'selected',out/'selected',dirs_exist_ok=True)
     prepare(out/'inputs')
     application(out/'peer',[ROOT/'tests/programs/qed_selection_peer.c'],minimum_stack=1024)
-    provider=out/'c-image.json' if reuse else ROOT/'build/qed-editing/qe2/c-image.json'
+    provider=out/'c-image.json' if reuse else provider_from or ROOT/'build/qed-editing/qe2/c-image.json'
     return process_run(out,True,reuse=reuse,rebuild_app=reuse,
         app_builder=lambda target:build_editor(target,provider,reuse_app,selection=True),
-        fixture_source=ROOT/'tests/programs/qed_selection.act',expected_completed=4,
+        fixture_source=fixture_source or ROOT/'tests/programs/qed_selection.act',expected_completed=4,
         native_optimize=True,release_compiler=True,stack_observation_index=3,
-        profile_all=True,ram=True,interaction=interaction or (lambda *args:interact(*args,scroll=scroll)),loader_failures=False,
+        profile_all=True,ram=True,filesystem=filesystem,interaction=interaction or (lambda *args:interact(*args,scroll=scroll)),loader_failures=False,
         retirement_timeout=90,media_files={
             'PEER.APP':(out/'peer/program.app').read_bytes(),
-            'QED.RSC':(out/'inputs/resource/QED.RSC').read_bytes()})
+            'QED.RSC':(out/'inputs/resource/QED.RSC').read_bytes(),**(media_files or {})})
 
 
 def logical(out,reuse=False,native_from=None,optimize=True,shortcuts=False,clipboard=False,interaction=None):

@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "slice": "QE6",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "audit": {
+    "path": "build/qed-editing/qe6-baseline.json",
+    "sha256": "d4e4efc2aa5dab85730e58fc4798757f678655739a44bbc09c0a2071c979cf56",
+    "auditor_sha256": "ac05790b7bc5fc295f88b66f84e3f93fe42b8e8fdaaff0b17db62a59c4f0c757",
+    "provider_identity": "b41ffdf385e6226b7fa2eb6288c0cb9e8056d43b3b6c54e1a7c29deac517e0aa"
+  },
+  "source_pins": {
+    "qed": {
+      "revision": "454beb35fccd72c15a8494431f6637cd0cb553c7",
+      "tree": "842d0ed962f431b98fbba1a7038020b5805338bc"
+    },
+    "cflib": {
+      "revision": "ce57817c3f68c7d346d1081768505e81acaee807",
+      "tree": "aa00256dc44096969025e2a1e1a03dcfa738547c"
+    }
+  },
+  "resource": {
+    "path": "build/qed-editing/qe6-production/inputs/resource/resource.json",
+    "sha256": "b5441d2171c522f18e9b2f42d1d1cee4fbac27df7e8ab778e0736980a0bdc88b",
+    "resource_sha256": "9095194c1b2055ecbd31b6bcde7604a47dd6da6d4796e0b4b1a52993588d08e7",
+    "generator_sha256": "5e9eb42a4504c436e767c8ff9f762a36e5527841ff3cef9a41510e80230a2ae9",
+    "selection_sha256": "97c647a9638053762245b40a8257d1abe25845657bce8da07f173174c4daf6e1"
+  },
+  "host_checks": {
+    "path": "build/qed-editing/qe6-host.log",
+    "sha256": "ccc384fb552754345b5db48403dadbf16fccd3cee8cd499d4f24dd24a95394ef",
+    "tests": 538,
+    "expected_skips": 4
+  },
+  "executable": {
+    "path": "build/qed-editing/qe6-production",
+    "sha256": "bbea74c07dbf4151aa852dc70736a8bb6ec2ef414b4acfb025ecda1adb2695a0",
+    "layout": {
+      "code_bytes": 105199,
+      "initialized_bytes": 1640,
+      "bss_bytes": 23763,
+      "import_thunk_bytes": 400,
+      "span_bytes": 170735,
+      "image_holes_bytes": 40133,
+      "serialized_bytes_if_executable": 120071,
+      "relocation_count": 3084,
+      "heap_alignment_backing_bytes": 236272,
+      "future_full_profile_backing_bytes": 393216,
+      "private_allowances": {
+        "code_bytes": 32768,
+        "data_bss_bytes": 16384
+      },
+      "container_metadata_allowance_bytes": 16384,
+      "resident_provider_allowances": {
+        "code_bytes": 16384,
+        "data_bss_bytes": 16384,
+        "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+        "table_bytes": 4096
+      }
+    },
+    "requested_image_backing_bytes": 236270,
+    "rounded_image_backing_bytes": 236272,
+    "backing_basis": "CAPP bank-alignment request, rounded to the public heap eight-byte allocation; historical layout field rounds to four bytes"
+  },
+  "frame_ledger": {
+    "source_chain_bytes": 776,
+    "continuation_cap_bytes": 768,
+    "interrupt_reserve_bytes": 256,
+    "required_headroom_bytes": 128,
+    "admission_bytes": 2560,
+    "margin_bytes": 632
+  },
+  "growth_from_QS5": {
+    "private": {
+      "code_bytes": -33427,
+      "data_bss_bytes": -2547,
+      "metadata_bytes": -1968
+    },
+    "provider": {
+      "code_bytes": 247,
+      "table_bytes": 0,
+      "data_bss_bytes": 0
+    }
+  },
+  "provider_remaining_allowances": {
+    "code_bytes": 15157,
+    "table_bytes": 4096,
+    "data_bss_bytes": 16384
+  },
+  "executed": [
+    {
+      "path": "build/qed-editing/qe6-editor",
+      "results_sha256": "0c7626cad69af28492e1874935446d819fae283a10dbe2c4baa2c98c6d9040b5",
+      "completed": [
+        4
+      ],
+      "checks": [
+        28851,
+        0
+      ],
+      "snapshots": [
+        "launch-multibank",
+        "new-after-large-load",
+        "loaded-copy-range",
+        "loaded-selection-edit",
+        "candidate-retained-range",
+        "format-error-retains-document",
+        "new-cancel-retains-document",
+        "selector-cancel-retains-document",
+        "open-cancel-retains-document",
+        "undo-survives-replacement-failure",
+        "undo-toggle-after-cancel",
+        "ram-open-commits",
+        "old-undo-cleared",
+        "clipboard-survives-open",
+        "new-discard-commits",
+        "clipboard-survives-new",
+        "selector-policy-cancels-open",
+        "read-input-cancel-retains-document",
+        "failed-launch-empty",
+        "crlf-open-commits",
+        "clean-replacement-title",
+        "extra-arguments-empty",
+        "candidate-allocation-old",
+        "candidate-allocation-rollback",
+        "launch-crlf",
+        "replacement-stop-cancel"
+      ],
+      "minimum_headroom": 1345,
+      "peer_app_sha256": "e431e41447c1a2365b052229341c9958fef15ff172fa44b644d2834866350e56"
+    },
+    {
+      "path": "build/qed-editing/qe6-editor-mydos",
+      "results_sha256": "19f449e67c44babd25caf0ba096192b6b94f4353114d87a822f19e141cb2a87f",
+      "completed": [
+        4
+      ],
+      "checks": [
+        28563,
+        0
+      ],
+      "snapshots": [
+        "launch-multibank",
+        "new-after-large-load",
+        "loaded-copy-range",
+        "loaded-selection-edit",
+        "candidate-retained-range",
+        "format-error-retains-document",
+        "new-cancel-retains-document",
+        "selector-cancel-retains-document",
+        "open-cancel-retains-document",
+        "undo-survives-replacement-failure",
+        "undo-toggle-after-cancel",
+        "ram-open-commits",
+        "old-undo-cleared",
+        "clipboard-survives-open",
+        "new-discard-commits",
+        "clipboard-survives-new",
+        "selector-policy-cancels-open",
+        "read-input-cancel-retains-document",
+        "failed-launch-empty",
+        "crlf-open-commits",
+        "clean-replacement-title",
+        "extra-arguments-empty",
+        "candidate-allocation-old",
+        "candidate-allocation-rollback",
+        "launch-crlf",
+        "replacement-stop-cancel"
+      ],
+      "minimum_headroom": 1345,
+      "peer_app_sha256": "e431e41447c1a2365b052229341c9958fef15ff172fa44b644d2834866350e56"
+    },
+    {
+      "path": "build/qed-editing/qe6-core-sdfs",
+      "results_sha256": "99f7abc9e7858be13d50a0aaf79c1ab9e74687006a3dd993967a6f05840a9c15",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 555,
+      "document_core_heap": {
+        "blocks": 5,
+        "payload": 209656,
+        "backing": 209716,
+        "peak_backing": 214860
+      }
+    },
+    {
+      "path": "build/qed-editing/qe6-core-mydos",
+      "results_sha256": "ca085fdcbef8f04080d941925aa8975ae3dcf9c8f25e0bee9e1e974327b4a053",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 555,
+      "document_core_heap": {
+        "blocks": 5,
+        "payload": 209656,
+        "backing": 209716,
+        "peak_backing": 214860
+      }
+    },
+    {
+      "path": "build/qed-editing/qe6-title",
+      "results_sha256": "7f4cca0c6cf86d7e93d4c80a7d5443d707fc3120da2bb83bea13740c5d63f46d",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 813
+    }
+  ],
+  "supplemental": [],
+  "private_heap": {
+    "peak_backing_bytes": 110935,
+    "basis": "Private allocation headers included; underlying allocator rounding and native GUI owners charged separately"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Complete Task-pool and region maps equal QS5; guards, alignment and slack included"
+  },
+  "recorder_sha256": "5a54a871065b883480a694cf8c3343ab89fd24e067911a68b009e10863b8fbe6"
+}

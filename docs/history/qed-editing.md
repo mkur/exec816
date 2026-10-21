@@ -4,7 +4,7 @@
 [QE1–QE7 plan](../plans/gem4xe/qed-editing-implementation-plan.md) ·
 [Startup baseline](qed-startup.md)
 
-Status: QE1–QE5 implemented with development evidence; QE6–QE7 remain. The
+Status: QE1–QE6 implemented with development evidence; QE7 remains. The
 [QE1 development record](../development/qed-editing-qe1.json) binds the ordinary
 executable, source audit, actual-source core probe and loaded editor session.
 
@@ -388,3 +388,75 @@ is 53,359 bytes; native dialog owners and APP backing are charged separately.
 The general form fixture passes 207 checks. Host checks: 538 tests, four expected
 historical skips. These are
 development checks; hosted-system and release qualification remain separate.
+
+## QE6 Checked reading and transactional replacement
+
+The [QE6 development record](../development/qed-editing-qe6.json) binds the
+single-document reader/controller, actual source probes and loaded-editor
+checks. Patch 0015 retires the donor's destructive loader and multi-file callback.
+New/Open and zero/one native launch argument use one controller; all preparation
+runs from the outer event loop. The old TEXT and window remain registered while
+an unregistered donor LINE ring is prepared. Each step reads at most 4 KiB,
+then permits ordinary events and cancellation.
+
+The reader owns a 4 KiB heap read buffer and a 1,024-byte heap line buffer.
+Positive short reads continue; zero EOF and negative/secondary errors are
+separate. Terminal Close retires the descriptor on either result and must
+succeed before readiness. Cleanup retains the first native cause. LF/CRLF must
+be uniform, including a CR/LF pair across the 4 KiB boundary. NUL, CR-only,
+mixed endings and 1,024-byte logical lines fail without conversion. Empty and
+unterminated files retain one empty/last logical line as appropriate; a final
+newline remains a trailing empty line. New/newline-free text uses LF.
+
+A complete candidate precedes the Cancel-default Discard/Cancel decision.
+Cancel, failure and interruption free only candidate owners. Commit exchanges
+rings into the existing TEXT/window, resets Undo/range/cursor/viewport, marks
+clean and retains the clipboard. Dates remain unknown and editing a private
+copy is permitted; Save will establish write metadata. Selector interruption
+cancels its unpublished draft. Read preparation continues across compatible
+geometry/focus-gain notifications, including the native WM_ONTOP notification,
+and cancels before destructive policy or document input. The title formatter
+honors the native 65-byte capacity while retaining the full 256-byte path in
+TEXT, and refreshes clean-to-clean replacements explicitly.
+
+Two actual-source lifetimes on each of SpartaDOS and MyDOS cover empty,
+unterminated and tabbed text, LF/CRLF, 1,023-byte lines, a split CR/LF pair,
+format rejection, missing file and no-default-directory errors, both buffer
+allocation boundaries, an appended-line allocation failure, negative/short
+reads and terminal Close failure. A combined read/Close error retains the read
+cause. Cancellation preserves text, cursor/range, Undo and viewport. Success
+resets those owners and retains the clipboard; sixteen Open/New reuse pairs
+return to the same reserved private backing. Two 81,920-byte candidates exercise
+multi-bank storage and simultaneous old/new ownership. The measured private
+peak is 214,860 bytes including allocation headers and unused donor-arena
+capacity. These probes use notification/geometry sinks and claim no GUI action.
+A separate actual title-formatter probe checks the 255-byte input, both modified
+states, the 64-character native caption and adjacent backing bytes.
+
+The loaded-editor record covers native launch/Open/New, exact donor text and
+independent pixels, retained Undo/selection after format/consent failures,
+clipboard persistence, clean-title replacement, native selector interruption,
+input cancellation during an active read, invalid/missing launch paths and
+cooperative Stop during the modified decision. Relative launch paths inherit
+an explicitly selected native current directory. Exactly one TEXT/window is
+retained throughout each Process lifetime. Startup argument errors use the
+same queued, resumable native notice as reader errors; dismissal requests a
+full document repaint so temporary alert pixels cannot remain in the work area.
+Saving and persisted-byte recovery
+remain unsupported.
+
+The production image has 105,199 code, 1,640 initialized and 23,763 BSS bytes;
+its APP is 120,071 bytes, spans 170,735 bytes and needs 236,272 bytes of aligned,
+eight-byte-rounded backing. The source frame bound falls to 776 bytes after
+retiring the old load path. With the separate 768-byte continuation cap,
+256-byte interrupt reserve and 128-byte headroom target, conditional margin is
+632 bytes under the existing 2,560-byte admission. The focused reader probes
+retain at least 555 bytes above their interrupt reserve. The loaded SDFS and
+MyDOS cohorts each complete four lifetimes, retaining at least 1345 bytes above
+the interrupt reserve; the title probe completes two lifetimes with 813 bytes.
+The host suite passes 538 tests with four expected skips. Shared-provider code,
+tables and data are unchanged from QE5.
+
+Reserved bank-zero delta: **0 fixed, 0 per-public-Task and 0 private idle bytes**,
+including guards, alignment and unused capacity. These are development checks;
+combined editing reconciliation and the package handoff remain QE7 work.

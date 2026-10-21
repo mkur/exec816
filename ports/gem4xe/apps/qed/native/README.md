@@ -14,6 +14,28 @@ body must capture and restore its first unhandled cause if it performs later
 I/O. A cleanup failure promotes a successful result to 20. Handled operational
 errors do not automatically fail an otherwise successful body.
 
+Arguments accept zero or one native path, including a quoted path. Invalid
+syntax/extra arguments reach the body with argc=0 so QED can report the error
+beside its empty document. Allocation failure returns 20 before entry. Normal
+argc/argv storage remains owned by this runtime. The public Process caller must
+provide the argument byte count and any current directory to inherit; relative
+paths retain the native no-default-directory error when none is selected.
+
+`document.c` prepares a detached donor LINE ring with a 4 KiB read buffer and a
+1,024-byte line buffer in private upper memory. One poll reads at most 4 KiB;
+positive short reads continue, EOF is distinct from error, and terminal Close
+is checked before readiness. LF/CRLF must be uniform, including a CR/LF pair
+split across buffers. NUL, CR-only, mixed endings and lines beyond 1,023 bytes
+fail without conversion. Empty and unterminated text keep their exact logical
+representation. Reading never creates or writes a file.
+
+The command controller owns preparation, cancellation and the modified decision.
+Only a complete accepted candidate transfers into the existing TEXT/window;
+Undo/selection/viewport reset and the private clipboard remains. Cancel/failure
+frees the candidate and preserves the old state. Native causes survive buffer,
+ring and descriptor cleanup. Dates remain unknown; Save will establish its own
+write metadata. File selection uses native path[128]/leaf[13] capacities.
+
 The four owned descriptor slots use identities 3–6 and keep complete native
 BPTRs. Standard output/error borrow `Output()` and cannot close its native
 ownership. Standard input is explicitly unsupported. Retained GEMDOS and

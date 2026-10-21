@@ -11,6 +11,7 @@ void QedHeapCleanup(void);
 void QedRetirementFault(const char *message);
 /* Copy zero/one native path argument; argv[0] and the vector share ownership. */
 int QedArguments(const char *tail,const char *name,int *argc,char ***argv);
-/* The body releases GUI borrowers before returning to owned-runtime cleanup. */
+/* argc=0 reports invalid launch input; the editor opens an empty document.
+ * The body releases GUI borrowers before returning to owned-runtime cleanup. */
 int QedRuntimeRun(int (*body)(int,char **));
 #endif

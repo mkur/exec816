@@ -74,6 +74,8 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
             executed[-1]['clipboard_core_heap'] = result['clipboard_core']
         if 'qed_selector' in result:
             executed[-1]['qed_selector'] = result['qed_selector']
+        if 'document_core' in result:
+            executed[-1]['document_core_heap'] = result['document_core']
     if slice_name == 'QE1':
         expected = {'empty', 'insert', 'split', 'join', 'allocation-rollback',
             'split-allocation-rollback', 'literal-tab', 'tab-delete', 'save-disabled',
@@ -101,7 +103,7 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
                 'Missing completed caret pixel checks')
         require(all(s['pixels']['checked']>0 for scene in scenes for s in scene['snapshots']),
                 'Missing viewport pixels')
-    if slice_name in ('QE2','QE3','QE5'):
+    if slice_name in ('QE2','QE3','QE5','QE6','QE7'):
         for path,item in zip(cohorts,executed):
             if not (path/'peer/app.json').exists():continue
             peer=json.loads((path/'peer/app.json').read_text())
@@ -172,6 +174,37 @@ def record(slice_name, directory, cohorts, destination, host_log, supplements=()
         selectors=[s for item in executed for s in item.get('qed_selector',[])]
         require(len(selectors)==2 and all(len(s['executed'])==5 for s in selectors),
             'Missing actual native selector lifetimes')
+    if slice_name in ('QE6','QE7'):
+        expected={'launch-multibank','format-error-retains-document',
+            'new-cancel-retains-document','selector-cancel-retains-document',
+            'open-cancel-retains-document','undo-survives-replacement-failure',
+            'ram-open-commits','old-undo-cleared','clipboard-survives-open',
+            'new-discard-commits','clipboard-survives-new','selector-policy-cancels-open',
+            'read-input-cancel-retains-document','failed-launch-empty','crlf-open-commits',
+            'clean-replacement-title','extra-arguments-empty','candidate-allocation-rollback',
+            'launch-crlf','replacement-stop-cancel'}
+        seen={s['name'] for scene in scenes for s in scene['snapshots']}
+        require(expected<=seen,'Incomplete document checkpoints: '+str(expected-seen))
+        require({s['cycle'] for s in scenes}=={0,1,2,3},'Missing document lifetimes')
+        require(all(s['pixels']['checked']>0 for scene in scenes for s in scene['snapshots']),
+            'Missing independent replacement pixels')
+        require({json.loads((p/'results.json').read_text())['filesystem'] for p in cohorts}==
+            {'sdfs','mydos'},'Missing native filesystem readers')
+        for scene in scenes:
+            replacements=scene.get('replacements',[])
+            require(len({(r['text'],r['window']) for r in replacements})<=1,
+                'Replacement created a new document/window')
+            snapshots={s['name']:s for s in scene['snapshots']}
+            for replacement in replacements:
+                require(snapshots[replacement['name']]['window']['title']==
+                    ' '+replacement['path'][:62]+' ',
+                    'Replacement did not refresh its bounded clean title')
+            if 'read_cancel' in scene:
+                require(0<scene['read_cancel']['prepared_lines']<80 and
+                    scene['read_cancel']['descriptor_retired'],'Reader cancellation was not active')
+        require(any(s.get('loaded_bytes')==81920 for s in scenes),'Missing multi-bank loaded text')
+        require(any(item.get('document_core_heap',{}).get('peak_backing',0)>163840
+            for item in executed),'Missing double-document heap observation')
     supplemental=[]
     for path in supplements:
         result=json.loads((path/'results.json').read_text())

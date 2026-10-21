@@ -19,7 +19,8 @@ not the Exec build recipe. No donor sources are vendored by this baseline.
 
 Preparation also generates the compact English resource and matching `qed.h`
 from [resource-selection.json](resource-selection.json). It retains ten trees,
-185 objects, a 30-object menu and 44 free strings in 10,500 bytes. Local indices
+185 objects, a 30-object menu and 44 free strings. Current byte sizes are
+recorded in the generated resource manifest. Local indices
 within non-menu trees are preserved; discarded menu identifiers are removed.
 The donor cache remains unchanged. The selection strips decoration and marks
 deferred Find controls disabled. Generated artifacts are under `OUTPUT/resource/`.
@@ -128,8 +129,9 @@ shortcut parser after the documented Calypsi profile/source corrections.
 See the [selection evidence](../../../../docs/history/qed-editing.md#qe3-event-driven-selection)
 for physical key limitations, stack accounting and exact executed scope.
 QE4 enables clipboard/Undo and edits replacing an active selection;
-QE5 adds native dialogs and literal Find. New/Open replacement and reliable
-saving remain later slices.
+QE5 adds native dialogs and literal Find. QE6 adds checked New/Open and launch
+replacement. Combined editing reconciliation is QE7; reliable saving is strategy
+step 5.
 
 `--from-build` rebuilds the APP against an unchanged emitted native fixture.
 `--reuse-app` additionally verifies recorded APP input hashes for observer-only
@@ -321,3 +323,25 @@ The core cohort isolates signed results, path capacities and bounded search;
 the selector cohort uses the real native selector. The loaded editor checks
 physical input, document/form pixels, cancellation, allocation failure and peer
 progress. See [QE5 evidence](../../../../docs/history/qed-editing.md#qe5-native-dialogs-and-literal-find).
+
+QE6's checked loading and replacement checks:
+
+```sh
+python3 tools/test_qed_documents.py --output build/qed-editing/documents
+python3 tools/test_qed_documents.py --group core --output build/qed-editing/document-core
+python3 tools/test_qed_documents.py --group title --output build/qed-editing/document-title
+```
+
+Open, New and a zero/one document argument use one controller and the existing
+document/window. A detached candidate must finish its checked read and Close
+before a modified document prompts for Discard/Cancel. Cancel, interrupted
+selection, read/format/allocation failure retain the old editing state. Commit
+resets Undo, cursor, selection and viewport while preserving the clipboard.
+The native title is bounded to 64 characters; the full path stays in TEXT.
+
+The reader accepts uniform LF/CRLF, empty text and an absent final newline. It
+rejects NUL, mixed/CR-only endings and logical lines beyond 1,023 bytes without
+conversion. It returns to the outer event loop between 4 KiB reads. Relative
+paths use the inherited current directory; invalid/extra launch arguments are
+reported beside an empty editable document. No automatic binary mode, file
+creation, Save, backup or persisted-byte claim is selected.

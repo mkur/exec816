@@ -10,8 +10,12 @@ short QedNativeForm(OBJECT *tree,short start);
 short QedChooseFile(const char *initial,char *destination,const char *title);
 void QedFindStart(TEXTP text,bool prompt);
 void QedAboutStart(void);
+void QedOpenStart(TEXTP text,const char *path);
+void QedNewStart(TEXTP text);
+void QedArgumentsError(void);
 void QedCommandsCancel(void);
 void QedCommandsMessage(short *message);
 void QedCommandsStep(void);
 bool QedCommandsSearching(void);
+bool QedCommandsWorking(void);
 #endif

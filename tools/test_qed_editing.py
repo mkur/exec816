@@ -30,6 +30,7 @@ def build_editor(target,provider,reuse_app=False,selection=False):
            'clipbrd.c':{'new_col':'QedEditNewCol'},
            'block.c':{'new_col':'QedEditNewCol'},
            'commands.c':{'form_do':'QedEditFormDo'},
+           'document.c':{'new_col':'QedEditNewCol'},
            'ausgabe.c':{'cursor':'QedEditCursor'},
            'event.c':{'key_window':'QedEditKeyWindow','key_global':'QedEditGlobalKey',
                       'handle_menu':'QedEditMenu'}}

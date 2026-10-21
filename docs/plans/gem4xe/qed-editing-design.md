@@ -5,8 +5,8 @@
 [Implementation plan](qed-editing-implementation-plan.md) ·
 [Startup evidence](../../history/qed-startup.md)
 
-Status: strategy step 4 in progress; QE1–QE5 are implemented with
-[development evidence](../../history/qed-editing.md). QE6–QE7 remain. The gate is
+Status: strategy step 4 in progress; QE1–QE6 are implemented with
+[development evidence](../../history/qed-editing.md). QE7 remains. The gate is
 an actual loaded QED APP opening one document, editing and navigating its text,
 selecting, copying/pasting, undoing and finding, with correct redraw and
 cancellable dialogs. New/Open must retain the current document on failure or
@@ -252,6 +252,31 @@ bounded chunks with message/cancellation opportunities between chunks, without
 retaining invalid line pointers across a replacement command.
 
 ## Reading and single-document replacement
+
+QE6 audit amendment: the native reader owns one detached donor ring, a 4 KiB
+heap read buffer and a 1,024-byte heap line buffer. Each read step consumes at
+most one buffer, then returns to normal event handling. The controller prepares
+Open/New from that outer loop, rather than running DOS on a menu callback stack.
+Selector policy interruption cancels that Open draft: the native selector only
+publishes edited strings on acceptance, so its unaccepted field contents cannot
+be resumed through the existing public interface. Find retains its resumable
+draft. Compatible window geometry/focus-gain messages retain an active read;
+other policy or document input cancels it before acting on the old document.
+
+The imported window-title formatter also assumed a short GEMDOS filename and
+could overflow its 128-byte backing for native paths. Bound that owning
+formatter to the native 65-byte title contract; retain the exact path in TEXT's
+256-byte filename. Explicitly refresh
+the title even when replacing a clean document with another clean document.
+No file dates/protection are synthesized: the initial read baseline keeps date
+unknown and permits editing a private copy; Save must obtain its own write
+metadata in step 5. Invalid launch arguments reach the editor as argc=0 so it
+can report them beside an empty, editable document. Allocation failure still
+fails startup. This private runtime convention changes no public Process ABI.
+Startup argument/error notices also run from the outer controller. A notice
+interrupted by compatible policy retains its cause and resumes after the exact
+deferred message; Close/Stop cancels it. Initial window notifications must not
+silently consume the diagnostic.
 
 All launch-path, Open and New requests use one document controller. Accept zero
 or one native document argument; report extra/invalid arguments. Launch without
