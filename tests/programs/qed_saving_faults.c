@@ -6,6 +6,13 @@
 volatile UWORD QedSaveHoldWrite,QedSaveHoldRename,QedSaveWriteCalls,QedSaveCloseCalls,QedSaveRenameCalls,QedSaveDeleteCalls;
 volatile UWORD QedSaveFailWrite,QedSaveFailClose,QedSaveFailRename,QedSaveFailDelete;
 volatile UWORD QedSaveFailAlert,QedSaveAlertFailures,QedSaveAlertDiagnostic,QedSaveAlerts;
+volatile UWORD QedSaveFailOpen,QedSaveDocumentOpens;
+LONG QedSaveDocumentOpen(const char *name,WORD mode)
+{
+    ++QedSaveDocumentOpens;
+    if(QedSaveFailOpen){QedSaveFailOpen=0;SetIoErr(ERROR_OBJECT_NOT_FOUND);return -1;}
+    return Fopen(name,mode);
+}
 LONG QedSaveFaultWrite(WORD fd,LONG bytes,const void *data)
 {
     LONG result;++QedSaveWriteCalls;

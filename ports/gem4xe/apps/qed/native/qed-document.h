@@ -5,6 +5,7 @@
 #include <proto/dos.h>
 /* One detached candidate. Poll returns pending / ready / failed. */
 bool QedDocumentBegin(const char *path);
+bool QedDocumentReread(void);
 short QedDocumentPoll(void);
 void QedDocumentCancel(void);
 LONG QedDocumentError(void);

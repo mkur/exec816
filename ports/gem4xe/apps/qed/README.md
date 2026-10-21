@@ -367,7 +367,7 @@ the captured Process image base; prior evidence keeps its original interpretatio
 | Byte text, uniform LF/CRLF, absent final newline, literal tabs; 1,023-byte logical lines | NUL, mixed/CR-only endings and wider lines are rejected; no conversion or Unicode decoding. |
 | Fixed-font editing, navigation/panning, selection, internal clipboard, grouped toggling Undo | Printing, external fonts, macros, external clipboard and advanced block modes are deferred. |
 | Native Find/Find Next and About; cancellable forms, selector and read preparation | Find is literal, case-sensitive and forward without wrap; replacement/regex search is deferred. |
-| Cancel-default Discard/Cancel for replacement and retirement | Save/Save As, Save/Discard/Cancel, backups, checked finalization and persisted-byte recovery are strategy step 5. |
+| Save/Save As, checked staging/publication and one retained backup; Cancel-default Save/Discard/Cancel for replacement and retirement | Selected deeper operational failures and final gate reconciliation remain QW7–QW8; autosave and automatic recovery are deferred. |
 | Selected ordinary-peer, failure, reuse and stack development checks | Practical workload responsiveness and supported QED distribution remain steps 6–7; QED is absent from demo ZIPs. |
 
 ## QW5 loaded-editor saving
@@ -385,3 +385,17 @@ The donor save/backup/restore implementation is retired from the selected graph.
 See the [saving record](../../../../docs/history/qed-saving.md#qw5-loaded-editor-save-and-save-as)
 for actual filesystem, error, stack and resource checks. New/Open/Exit still
 use Discard/Cancel until QW6; strategy step 5 remains open through QW8.
+
+## QW6 modified continuations
+
+New, Open, Close, Quit and cooperative Stop use one Cancel-default
+Save/Discard/Cancel decision. Only Saved continues the original action.
+A retained Open parent/name survives Save As, then Open drops its earlier ring
+and rereads that same canonical path. A failed reread keeps the saved clean
+current document and its committed identity. New keeps its independent empty
+candidate. A newer Close/Stop supersedes an older replacement after save work
+stabilizes; a declined Stop leaves the Process live.
+
+The [QW6 record](../../../../docs/history/qed-saving.md#qw6-savediscardcancel-continuations)
+binds physical decisions, aliases, reread failure, supersession and resource
+reuse. Operational failure closure and the final saving gate remain QW7–QW8.

@@ -169,3 +169,40 @@ including guards, alignment and unused reserved capacity.
 Save/Save As are enabled; modified New/Open/Close/Quit/Stop still use
 Discard/Cancel until QW6. Saving remains a private development feature and the
 strategy step 5 gate remains open through QW8.
+
+## QW6 Save/Discard/Cancel continuations
+
+One Cancel-default decision now controls modified New/Open/Close/Quit/Stop.
+Save retains an explicit continuation without recursive file policy. Only Saved
+continues. Cancel, interrupted/zero decisions and non-Saved outcomes retire the
+prepared replacement and preserve the current document. A newer Close/Stop
+supersedes an older replacement after publication/restoration/cleanup stabilizes.
+
+Open always drops its earlier ring and rereads its frozen canonical path after
+Saved, retaining the directory parent continuously. This also handles Save As
+to the pending Open target. Failed rereading reports Open failure while keeping
+the now-saved clean document and committed Save As name. New's independent
+empty candidate is committed only after success or explicit Discard.
+
+The [QW6 record](../development/qed-saving-qw6.json) covers four loaded-editor
+lifetimes on each disk format, physical New/Open/Close/Quit choices and ordinary
+RequestStop, unnamed Save As, selector cancellation, failed Save, D1/SYS/ASSIGN
+same-target rereads, Save As to the Open candidate, injected reread failure and
+a Close superseding New at a held native Rename. The interrupted New/Stop
+case retires the candidate; Cancel leaves the Process live and a later Stop
+saves before retirement. Closed-image audits check exact saved/backup bytes and
+allocation. The focused SpartaDOS retry uses a one-byte initial launch; MyDOS
+keeps the 80 KiB launch. Existing multi-bank reader/stager cohorts remain separate.
+
+Stack sampling now resolves retained C entries and TCS sites through object
+sections and linker placement, checking each emitted opcode. This distinguishes
+private helpers with the same name as an exported function in another unit.
+Active editing observers use the current three-button choices and selector
+cancellation in place of former disabled-Save checks. Historical traces/records
+retain their original scope. Current observed minimum
+headroom is 1,324 bytes; observed private peak is 111,309 bytes. Production is
+110,152 code / 2,770 initialized / 22,212 BSS bytes, serialized 127,210 bytes;
+source bound 503 and conditional margin 905 bytes. The descriptive selection
+update leaves APP bytes unchanged. Provider growth and reserved bank-zero delta
+remain **0 fixed / 0 per-public-Task / 0 private idle bytes**, including guards,
+alignment and unused capacity. These checks are development evidence.

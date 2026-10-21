@@ -96,7 +96,7 @@ def interact(b,p,app,record,owner):
         e.scene['form_move']=dict(starts_before=starts,starts_after=e.get(e.sy['QedFormStarts']),
             last_diagnostic=e.get(e.sy['QedFormDiagnostic']))
         e.cancel_find();e.selection('find-move-resumes-draft',lines,(0,7,0,9),9,0)
-        e.open_find();e.peer_command(3);e.alert(2);e.command_idle()
+        e.open_find();e.peer_command(3);e.alert(3);e.command_idle()
         e.selection('find-close-cancel',lines,(0,7,0,9),9,0)
         e.open_find();e.peer_command(3);e.frames(30)
         require(e.form()!=0,'Missing modified decision for alert-zero case')
@@ -111,7 +111,7 @@ def interact(b,p,app,record,owner):
         e.frames(30)
         b.memload(e.at('control'),struct.pack('<H',100));e.reach('dw($%x)=101'%e.at('phase'))
         e.key('ESC');e.expected_range=None;e.caret_pixels('find-exposed-caret',lines,9,0)
-        b.memload(e.at('control'),struct.pack('<H',101));e.key('Q',ctrl=True);return e.alert(1,retiring=True)
+        b.memload(e.at('control'),struct.pack('<H',101));e.key('Q',ctrl=True);return e.alert(2,retiring=True)
     if cycle==1:
         e.key('A');e.open_find()
         for i in range(51):
@@ -120,7 +120,7 @@ def interact(b,p,app,record,owner):
         require(e.field()==b'a'*50,'Find field exceeded or lost its 50-byte capacity')
         e.accept_find();e.alert(1);e.selection('find-field-limit',[b'a'],None,1,0)
         e.scene['accepted_pattern_bytes']=len(e.accepted())
-        b.memload(e.at('control'),struct.pack('<H',2));e.key('Q',ctrl=True);return e.alert(1,retiring=True)
+        b.memload(e.at('control'),struct.pack('<H',2));e.key('Q',ctrl=True);return e.alert(2,retiring=True)
     if cycle==2:
         e.b.memload(e.sy['QedFormFailAllocation'],struct.pack('<H',1))
         e.key('F',ctrl=True);e.alert(1);e.command_idle()
@@ -135,5 +135,5 @@ def interact(b,p,app,record,owner):
         e.selection('about-cancel',[b''],None,0,0)
         b.memload(e.at('control'),struct.pack('<H',3));return e.retire_key('Q',ctrl=True)
     e.key('A');e.open_find();b.memload(e.at('control'),struct.pack('<H',4))
-    e.alert(2);e.command_idle();e.selection('find-stop-cancel',[b'a'],None,1,0)
-    b.memload(e.at('control'),struct.pack('<H',104));return e.alert(1,retiring=True)
+    e.alert(3);e.command_idle();e.selection('find-stop-cancel',[b'a'],None,1,0)
+    b.memload(e.at('control'),struct.pack('<H',104));return e.alert(2,retiring=True)

@@ -124,7 +124,7 @@ def interact(b,p,app,record,owner,scenario='all'):
     e.caret_pixels('exposed-caret',lines,0,1)
     if scenario=='long':
         b.memload(e.at('control'),struct.pack('<H',101))
-        e.key('Q',ctrl=True);return e.alert(1,retiring=True)
+        e.key('Q',ctrl=True);return e.alert(2,retiring=True)
 
     old=e.geometry()['bounds'];e.click(old[2]-8,old[1]+5)
     wait_columns(e,different=73)
@@ -160,4 +160,4 @@ def interact(b,p,app,record,owner,scenario='all'):
     e.key('EQUALS',ctrl=True);e.check('cursor-revealed',lines,0,33)
     origin(e,y=maximum);e.caret_pixels('scrolled-caret',lines,0,33)
     b.memload(e.at('control'),struct.pack('<H',101))
-    e.key('Q',ctrl=True);return e.alert(1,retiring=True)
+    e.key('Q',ctrl=True);return e.alert(2,retiring=True)

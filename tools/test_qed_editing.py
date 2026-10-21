@@ -36,6 +36,7 @@ def build_editor(target,provider,reuse_app=False,selection=False,saving=False):
                       'handle_menu':'QedEditMenu'}}
     if selection:calls['edit.c']={'CreateIORequest':'QedSelectionCreateIORequest'}
     if saving:
+        calls['document.c']['Fopen']='QedSaveDocumentOpen'
         calls['saving.c']={'form_alert':'QedSaveAlert'}
         calls['stage.c']={'Fwrite':'QedSaveFaultWrite'}
         calls['files.c']={'Close':'QedSaveFaultClose'}

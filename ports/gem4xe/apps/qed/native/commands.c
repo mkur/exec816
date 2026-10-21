@@ -4,6 +4,7 @@
 #include "qed-commands.h"
 #include "qed-document.h"
 #include "qed-saving.h"
+#include "qed-save.h"
 #include "menu.h"
 #include "block.h"
 #include "edit.h"
@@ -15,7 +16,8 @@
 #include <proto/dos.h>
 
 enum { CMD_NONE,CMD_FIND_FORM,CMD_FIND_SEARCH,CMD_ABOUT,CMD_ABOUT2,
-       CMD_OPEN_FORM,CMD_PREPARE,CMD_DOCUMENT_READ,CMD_ERROR,CMD_ARGUMENT_ERROR,CMD_EXIT_DECISION };
+       CMD_OPEN_FORM,CMD_PREPARE,CMD_DOCUMENT_READ,CMD_ERROR,CMD_ARGUMENT_ERROR,CMD_EXIT_DECISION,
+       CMD_DOCUMENT_DECISION,CMD_WAIT_SAVE };
 static short command_kind;
 static bool command_waiting;
 static TEXTP command_text;
@@ -25,7 +27,9 @@ static long search_row;
 static short search_column,search_length;
 static char selector_path[128],selector_leaf[13];
 static char open_path[256];
-static bool new_document;
+static bool new_document,post_save_read;
+enum { INTENT_NONE,INTENT_NEW,INTENT_OPEN,INTENT_EXIT };
+static short pending_intent;
 static LONG command_error;
 static short bad_path(void){SetIoErr(ERROR_BAD_ARGUMENTS);return QED_DIALOG_FAILED;}
 
@@ -61,13 +65,16 @@ short QedChooseFile(const char *initial,char *destination,const char *title)
 }
 void QedCommandsCancel(void)
 {
-    if(command_kind==CMD_DOCUMENT_READ)QedDocumentCancel();
+    if(command_kind==CMD_DOCUMENT_READ || command_kind==CMD_DOCUMENT_DECISION ||
+       command_kind==CMD_WAIT_SAVE)QedDocumentCancel();
+    pending_intent=INTENT_NONE;post_save_read=FALSE;
     command_kind=CMD_NONE;command_waiting=FALSE;command_text=NULL;search_line=NULL;
 }
 bool QedCommandsSearching(void){return command_kind==CMD_FIND_SEARCH;}
 bool QedCommandsWorking(void)
 {
     return QedSavingBusy() || command_kind==CMD_EXIT_DECISION ||
+           command_kind==CMD_DOCUMENT_DECISION || command_kind==CMD_WAIT_SAVE ||
            QedCommandsSearching() || command_kind==CMD_PREPARE ||
            command_kind==CMD_DOCUMENT_READ || command_kind==CMD_ERROR || command_kind==CMD_ARGUMENT_ERROR;
 }
@@ -77,7 +84,7 @@ void QedArgumentsError(void)
 }
 void QedOpenStart(TEXTP text,const char *path)
 {
-    QedCommandsCancel();command_text=text;new_document=FALSE;
+    QedCommandsCancel();command_text=text;new_document=FALSE;pending_intent=INTENT_OPEN;
     if(!path){command_kind=CMD_OPEN_FORM;return;}
     if(!*path || strlen(path)>=sizeof(open_path)){
         command_error=ERROR_BAD_ARGUMENTS;command_kind=CMD_ERROR;return;
@@ -86,7 +93,7 @@ void QedOpenStart(TEXTP text,const char *path)
 }
 void QedNewStart(TEXTP text)
 {
-    QedCommandsCancel();command_text=text;new_document=TRUE;command_kind=CMD_PREPARE;
+    QedCommandsCancel();command_text=text;new_document=TRUE;pending_intent=INTENT_NEW;command_kind=CMD_PREPARE;
 }
 void QedSaveCommand(TEXTP text,bool save_as)
 {
@@ -94,7 +101,7 @@ void QedSaveCommand(TEXTP text,bool save_as)
 }
 void QedExitStart(void)
 {
-    QedCommandsCancel();command_text=get_top_text();command_kind=CMD_EXIT_DECISION;
+    QedCommandsCancel();command_text=get_top_text();pending_intent=INTENT_EXIT;command_kind=CMD_EXIT_DECISION;
 }
 void QedFindStart(TEXTP text,bool prompt)
 {
@@ -144,13 +151,27 @@ void QedCommandsStep(void)
     if(QedSavingExitPending()){QedExitStart();return;}
     kind=command_kind;
     if(kind==CMD_NONE || command_waiting)return;
-    if(kind==CMD_EXIT_DECISION){
-        answer=1;
+    if(kind==CMD_EXIT_DECISION || kind==CMD_DOCUMENT_DECISION){
+        answer=2;
         if(command_text && (command_text->moved || QedSavingAttention()))
-            answer=form_alert(2,"[2][Discard unsaved text and save details?][Discard|Cancel]");
-        if(!answer && ExecAESDiagnostic()==AES_PENDING){command_waiting=TRUE;return;}
-        QedCommandsCancel();
-        if(answer==1){QedSavingForget();do_quit();}
+            answer=form_alert(3,"[2][Save changes before continuing?][Save|Discard|Cancel]");
+        if(answer==1){
+            command_kind=CMD_WAIT_SAVE;QedSavingStart(command_text,FALSE);
+        }else if(answer==2){
+            QedSavingForget();
+            if(pending_intent==INTENT_EXIT){QedCommandsCancel();do_quit();}
+            else{QedDocumentCommit(command_text);QedCommandsCancel();}
+        }else QedCommandsCancel();
+        return;
+    }
+    if(kind==CMD_WAIT_SAVE){
+        answer=QedSavingTakeResult();if(!answer)return;
+        if(answer!=QED_SAVE_SAVED){QedCommandsCancel();return;}
+        if(pending_intent==INTENT_EXIT){QedCommandsCancel();do_quit();return;}
+        if(pending_intent==INTENT_NEW){QedDocumentCommit(command_text);QedCommandsCancel();return;}
+        post_save_read=TRUE;
+        if(QedDocumentReread())command_kind=CMD_DOCUMENT_READ;
+        else{command_error=QedDocumentError();command_kind=CMD_ERROR;}
         return;
     }
     if(kind==CMD_ERROR || kind==CMD_ARGUMENT_ERROR){
@@ -172,7 +193,10 @@ void QedCommandsStep(void)
         return;
     }
     if(kind==CMD_PREPARE){
-        if(QedDocumentBegin(new_document?NULL:open_path))command_kind=CMD_DOCUMENT_READ;
+        if(QedDocumentBegin(new_document?NULL:open_path)){
+            if(!new_document)strcpy(open_path,QedDocumentName());
+            command_kind=CMD_DOCUMENT_READ;
+        }
         else {command_error=QedDocumentError();command_kind=CMD_ERROR;}
         return;
     }
@@ -180,9 +204,9 @@ void QedCommandsStep(void)
         answer=QedDocumentPoll();
         if(answer<0){command_error=QedDocumentError();command_kind=CMD_ERROR;return;}
         if(answer>0){
-            if(!command_text->moved || form_alert(2,"[2][Discard unsaved changes?][Discard|Cancel]")==1)
-                QedDocumentCommit(command_text);
-            QedCommandsCancel();
+            if(post_save_read || (!command_text->moved && !QedSavingAttention())){
+                QedDocumentCommit(command_text);QedCommandsCancel();
+            }else command_kind=CMD_DOCUMENT_DECISION;
         }
         return;
     }

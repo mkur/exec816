@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "English single-document native editing, canonical replacement and transactional saving; modified Save continuations follow QW6",
+  "scope": "English single-document native editing, canonical replacement and transactional saving with Save/Discard/Cancel continuations",
   "defines": [
     "QED_INITIAL_SCOPE=1",
     "QED_BANKED_MALLOC=1",

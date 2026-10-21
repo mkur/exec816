@@ -84,8 +84,10 @@ class Editor:
         return lambda:self.b._cmd_ok('KEY ALL up')
     def alert(self,button,retiring=False):
         self.frames(30);session=self.form();require(session,'Expected native alert')
-        # The first eligible button has focus; Cancel is the explicit default.
-        key='RETURN' if button==2 else 'SPACE'
+        # First eligible focus is independent of the alert's default button.
+        for _ in range(button-1):
+            self.key('TAB',settle=8,dispatch=False)
+        key='SPACE'
         if retiring:return self.retire_key(key)
         self.key(key,settle=0,dialog=True,dispatch=False)
         at=self.context()+dict(expected_layout())['C context form']
@@ -94,6 +96,13 @@ class Editor:
             self.reach('dw($%x)!=%d'%(self.sy['QedEditKeyCalls'],self.pending_dispatch))
             self.pending_dispatch=None
         self.frames(10)
+    def save_selector_cancel(self):
+        self.key('S',ctrl=True,dispatch=False)
+        at=self.context()+dict(expected_layout())['C context form']
+        self.reach('(dw($%x)!=0)|(dw($%x)!=0)'%(at,at+2))
+        self.key('ESC',dispatch=False)
+        self.reach('(dw($%x)=0)&(dw($%x)=0)'%(at,at+2))
+        self.reach('dw($%x)=0'%self.sy['saving_kind'])
     def close(self):
         left,top,_,_=self.geometry()['bounds']
         self.click(left+6,top+5)
@@ -258,8 +267,8 @@ def interact(b,p,app,record,owner,keys_only=False):
         require(e.get(e.sy['QedEditFailureHits'])==2,'Line failures were not reached')
         e.key('TAB');e.key('D');e.check('literal-tab',[b'abc\td'],5,0)
         e.key('BACKSPACE');e.key('BACKSPACE');e.check('tab-delete',[b'abc'],3,0)
-        e.key('S',ctrl=True);e.check('save-disabled',[b'abc'],3,0)
-        e.close();e.alert(2);e.check('close-cancel',[b'abc'],3,0)
+        e.save_selector_cancel();e.check('save-selector-cancel',[b'abc'],3,0)
+        e.close();e.alert(3);e.check('close-cancel',[b'abc'],3,0)
     elif cycle==1:
         for key in ('A','B','C'):e.key(key)
         e.key('RETURN');e.key('MINUS',ctrl=True)
@@ -268,15 +277,15 @@ def interact(b,p,app,record,owner,keys_only=False):
         e.check('native-right',[b'abc',b''],2,0)
         e.menu('TOPTIONS','MOOVERW');e.key('X');e.check('overwrite',[b'abx',b''],3,0)
         e.key('BACKSPACE',ctrl=True);e.check('forward-delete-join',[b'abx'],3,0)
-        e.key('Q',ctrl=True);e.alert(2);e.check('quit-cancel',[b'abx'],3,0)
+        e.key('Q',ctrl=True);e.alert(3);e.check('quit-cancel',[b'abx'],3,0)
     elif cycle==2:
-        e.key('S',ctrl=True);e.check('clean-shortcut',[b''],0,0)
+        e.save_selector_cancel();e.check('clean-save-selector-cancel',[b''],0,0)
     else:
         e.key('A');e.check('stop-dirty',[b'a'],1,0)
     # Fixture control coordinates its ordinary RequestStop; it never edits QED.
     b.memload(e.at('control'),struct.pack('<H',cycle+1))
     if cycle==3:
-        e.alert(2);e.check('stop-cancel',[b'a'],1,0)
+        e.alert(3);e.check('stop-cancel',[b'a'],1,0)
     if cycle==2:return e.retire_key('Q',ctrl=True)
     else:
-        e.key('Q',ctrl=True);return e.alert(1,retiring=True)
+        e.key('Q',ctrl=True);return e.alert(2,retiring=True)

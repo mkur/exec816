@@ -7,17 +7,6 @@ from test_qed_documents import fixtures
 
 class SavingEditor(DocumentEditor):
     global_commands=DocumentEditor.global_commands+('S','M','U','Q')
-    def alert(self,button,retiring=False):
-        # Three-button recovery/modified decisions have a different default.
-        # Select the requested button physically instead of assuming button 2.
-        self.frames(30);session=self.form();require(session,'Expected native alert')
-        for _ in range(button-1):self.form_key('TAB',settle=8)
-        if retiring:return self.retire_key('SPACE')
-        self.form_key('SPACE',settle=0)
-        from generate_aes_server import expected_layout
-        at=self.context()+dict(expected_layout())['C context form']
-        self.reach('(dw($%x)=0)&(dw($%x)=0)'%(at,at+2))
-        self.frames(10)
     def command_idle(self):
         self.reach('(dw($%x)=0)&(dw($%x)=0)'%(self.sy['command_kind'],self.sy['saving_kind']),timeout=480)
         self.frames(10)
@@ -91,7 +80,7 @@ def interact(b,p,app,record,owner):
         e.selection('close-uncertain-forces-dirty',[b'abcdefg'],None,7,0)
         e.key('S',ctrl=True);e.form_open();e.alert(3);e.command_idle()
         require(e.get(e.sy['recovery'],4)==recovery,'Cancelled recovery review overwrote record')
-        e.close();e.form_open();e.alert(2);e.command_idle()
+        e.close();e.form_open();e.alert(3);e.command_idle()
         e.selection('failed-save-close-cancel',[b'abcdefg'],None,7,0)
         e.put('QedSaveHoldRename',1);before=e.get(e.sy['QedSaveRenameCalls'])
         e.key('S',ctrl=True);e.form_open();e.alert(2);e.consents(backup=True)
@@ -114,11 +103,11 @@ def interact(b,p,app,record,owner):
         for _ in range(2):e.form_open();e.form_pixels('long-target-consent');e.alert(1)
         e.report();e.selection('long-publication-failure-keeps-document',[b'adeep'],None,1,0)
         require(e.name()==path and e.text()['dirty']==1,'Long failure committed state')
-        b.memload(e.at('control'),struct.pack('<H',3));e.key('Q',ctrl=True);return e.alert(1,retiring=True)
+        b.memload(e.at('control'),struct.pack('<H',3));e.key('Q',ctrl=True);return e.alert(2,retiring=True)
     e.launched('saving-stop-launch',[b'one',b'last'],9,ending=0,path=b'D1:CRLF.TXT')
     e.key('A');before=e.get(e.sy['QedSaveWriteCalls']);e.put('QedSaveHoldWrite',1)
     e.key('S',ctrl=True);e.consents();e.write_held(before)
     b.memload(e.at('control'),struct.pack('<H',4));e.reach('dw($%x)=104'%e.at('phase'))
-    e.put('QedSaveHoldWrite',0);e.form_open();e.alert(2);e.command_idle()
+    e.put('QedSaveHoldWrite',0);e.form_open();e.alert(3);e.command_idle()
     e.selection('staging-stop-cancel',[b'aone',b'last'],None,1,0)
-    b.memload(e.at('control'),struct.pack('<H',104));return e.alert(1,retiring=True)
+    b.memload(e.at('control'),struct.pack('<H',104));return e.alert(2,retiring=True)

@@ -7,6 +7,7 @@ from file_selector_model import FORM_SELECTOR,FIELDS as F
 from test_shell_core import KEYS
 from test_qed_documents import fixtures
 from qed_viewport_observe import document
+from generate_aes_server import expected_layout
 
 class DocumentEditor(DialogEditor):
     global_commands=DialogEditor.global_commands+('N','O')
@@ -16,7 +17,8 @@ class DocumentEditor(DialogEditor):
     def selector_ready(self):
         self.form_open();at=self.form()+FORM_SELECTOR
         self.reach('(dw($%x)!=0)|(dw($%x)!=0)'%(at,at+2))
-        self.reach('dw($%x)=1'%(self.selector()+F['valid']));self.frames(20)
+        self.reach('(dw($%x)=1)&(dw($%x)=0)'%
+            (self.selector()+F['valid'],self.selector()+F['loading']));self.frames(20)
     def selector_xy(self,index,end=False):
         base=self.selector();obj=base+index*24
         return (self.get(base+16)+self.get(obj+16)+(self.get(obj+20)-2 if end else self.get(obj+20)//2),
@@ -30,17 +32,29 @@ class DocumentEditor(DialogEditor):
         return self.choose_path(leaf,volume,settle)
     def choose_path(self,leaf,volume=None,settle=True):
         self.selector_ready()
+        def wait_text(at,value):
+            self.reach('&'.join('db($%x)=%d'%(at+i,ch) for i,ch in enumerate(value+b'\0')))
+        def focus(index):
+            self.click(*self.selector_xy(index,end=True))
+            self.reach('dw($%x)=%d'%(self.context()+dict(expected_layout())['C context editObject'],index))
         if volume is not None:
-            self.click(*self.selector_xy(3,end=True))
+            focus(3)
+            path_at=self.selector()+F['path']
             old=self.b.memdump(self.selector()+F['path'],128).split(b'\0')[0]
-            for _ in old:self.form_key('BACKSPACE',settle=3)
-            self.type_form(volume+':*.*');self.form_key('RETURN',settle=20)
-            self.reach('dw($%x)=1'%(self.selector()+F['valid']))
-        self.click(*self.selector_xy(5,end=True))
+            for length in range(len(old)-1,-1,-1):
+                self.form_key('BACKSPACE',settle=3);wait_text(path_at,old[:length])
+            typed=b''
+            for ch in volume+':*.*':
+                key,shift=KEYS[ch];self.form_key(key,shift=shift,settle=4)
+                typed+=ch.encode();wait_text(path_at,typed)
+            self.form_key('RETURN',settle=20)
+            wait_text(self.selector()+F['directory'],(volume+':').encode())
+            self.selector_ready()
+        focus(5)
         previous=self.b.memdump(self.selector()+F['file'],13).split(b'\0')[0]
         file_at=self.selector()+F['file']
         def wait_file(value):
-            self.reach('&'.join('db($%x)=%d'%(file_at+i,ch) for i,ch in enumerate(value+b'\0')))
+            wait_text(file_at,value)
         for length in range(len(previous)-1,-1,-1):
             self.form_key('BACKSPACE',settle=3);wait_file(previous[:length])
         typed=b''
@@ -98,8 +112,8 @@ def interact(b,p,app,record,owner,combined=False,paths_only=False):
             b.memload(e.at('control'),struct.pack('<H',cycle+1));return e.retire_key('Q',ctrl=True)
         e.launched('canonical-relative-launch',[b'one',b'last'],9,ending=0,path=b'D1:CRLF.TXT')
         e.key('A');b.memload(e.at('control'),struct.pack('<H',4))
-        e.reach('dw($%x)=104'%e.at('phase'));e.alert(2);e.command_idle()
-        b.memload(e.at('control'),struct.pack('<H',104));return e.alert(1,retiring=True)
+        e.reach('dw($%x)=104'%e.at('phase'));e.alert(3);e.command_idle()
+        b.memload(e.at('control'),struct.pack('<H',104));return e.alert(2,retiring=True)
     if cycle==0:
         long_lines=fixtures()['LONG.TXT'].split(b'\n')
         e.launched('launch-multibank',long_lines,81920,path=b'D1:LONG.TXT')
@@ -110,7 +124,7 @@ def interact(b,p,app,record,owner,combined=False,paths_only=False):
         # Keep the real multi-bank load/pixel gate, then isolate replacement
         # rollback on a small tabbed document. The core covers double large owners.
         dirty=e.get(e.get(e.sy['text_list'],4)+e.offsets[5],4);e.key('N',ctrl=True)
-        if dirty:e.decision(1)
+        if dirty:e.decision(2)
         e.loaded('new-after-large-load',[b''])
         for key in ('H','E','A','D','TAB','N','E','E','D','L','E'):e.key(key)
         e.key('A',ctrl=True);e.key('MINUS',ctrl=True)
@@ -123,21 +137,21 @@ def interact(b,p,app,record,owner,combined=False,paths_only=False):
         span=(0,1,0,2);view=document(e)[:2]
         e.choose('NUL.TXT');e.decision(1)
         e.unchanged('format-error-retains-document',lines,span,2,0,view)
-        e.key('N',ctrl=True);e.decision(2)
+        e.key('N',ctrl=True);e.decision(3)
         e.unchanged('new-cancel-retains-document',lines,span,2,0,view)
         e.key('O',ctrl=True);e.selector_ready();e.form_key('ESC');e.command_idle()
         e.unchanged('selector-cancel-retains-document',lines,span,2,0,view)
-        e.choose('SMALL.TXT');e.decision(2)
+        e.choose('SMALL.TXT');e.decision(3)
         e.unchanged('open-cancel-retains-document',lines,span,2,0,view)
         e.key('Z',ctrl=True);e.selection('undo-survives-replacement-failure',long_lines,(0,0,0,4),4,0)
         e.key('Z',ctrl=True);e.selection('undo-toggle-after-cancel',lines,span,2,0)
-        e.choose('SMALL.TXT',volume='RAM');e.decision(1)
+        e.choose('SMALL.TXT',volume='RAM');e.decision(2)
         small=fixtures()['SMALL.TXT'].split(b'\n')
         e.loaded('ram-open-commits',small,path=b'RAM:SMALL.TXT');e.clipboard([b'head'])
         e.key('Z',ctrl=True);e.selection('old-undo-cleared',small,None,0,0)
         e.key('V',ctrl=True);pasted=[b'head'+small[0],*small[1:]]
         e.selection('clipboard-survives-open',pasted,None,4,0)
-        e.menu('TFILE','MNEWTEXT');e.decision(1);e.loaded('new-discard-commits',[b''])
+        e.menu('TFILE','MNEWTEXT');e.decision(2);e.loaded('new-discard-commits',[b''])
         e.clipboard([b'head']);e.key('V',ctrl=True);e.selection('clipboard-survives-new',[b'head'],None,4,0)
         b.memload(e.at('control'),struct.pack('<H',1));e.reach('dw($%x)=100'%e.at('phase'));e.frames(30)
         e.click(100,44);e.frames(20)
@@ -155,9 +169,9 @@ def interact(b,p,app,record,owner,combined=False,paths_only=False):
         b.memload(e.at('control'),struct.pack('<H',100));e.reach('dw($%x)=101'%e.at('phase'))
         b.memload(e.at('control'),struct.pack('<H',101))
         if combined:
-            e.close();e.form_open();e.alert(2);e.command_idle()
+            e.close();e.form_open();e.alert(3);e.command_idle()
             e.selection('combined-close-cancel',[b'head'],None,4,0)
-        e.key('Q',ctrl=True);return e.alert(1,retiring=True)
+        e.key('Q',ctrl=True);return e.alert(2,retiring=True)
     if cycle==1:
         e.form_open();e.alert(1);e.loaded('failed-launch-empty',[b''])
         e.choose('CRLF.TXT',menu=True);e.loaded('crlf-open-commits',[b'one',b'last'],ending=0,path=b'D1:CRLF.TXT')
@@ -169,14 +183,14 @@ def interact(b,p,app,record,owner,combined=False,paths_only=False):
         e.b.memload(e.sy['QedEditFailLine'],struct.pack('<H',1));e.key('N',ctrl=True);e.decision(1)
         require(e.get(e.sy['QedEditFailureHits'])==1,'Candidate allocation refusal not reached')
         e.selection('candidate-allocation-rollback',[b'a'],None,1,0)
-        b.memload(e.at('control'),struct.pack('<H',3));e.key('Q',ctrl=True);return e.alert(1,retiring=True)
+        b.memload(e.at('control'),struct.pack('<H',3));e.key('Q',ctrl=True);return e.alert(2,retiring=True)
     e.launched('launch-crlf',[b'one',b'last'],9,ending=0,path=b'D1:CRLF.TXT')
     e.key('A');e.key('N',ctrl=True);e.form_open()
     b.memload(e.at('control'),struct.pack('<H',4));e.reach('dw($%x)=104'%e.at('phase'));e.frames(30)
-    e.alert(2);e.command_idle();e.selection('replacement-stop-cancel',[b'aone',b'last'],None,1,0)
+    e.alert(3);e.command_idle();e.selection('replacement-stop-cancel',[b'aone',b'last'],None,1,0)
     require(e.get(e.sy['descriptor'])==65535 and e.get(e.sy['candidate']+e.offsets[17],4)==0,
         'Stop Cancel retained a replacement candidate')
-    b.memload(e.at('control'),struct.pack('<H',104));return e.alert(1,retiring=True)
+    b.memload(e.at('control'),struct.pack('<H',104));return e.alert(2,retiring=True)
 
 
 def combined_session(e):
@@ -206,7 +220,7 @@ def combined_session(e):
 def combined_overlap(e):
     from qed_viewport_observe import peer_pixels
     lines=fixtures()['SESSION.TXT'].split(b'\n')
-    e.choose('SESSION.TXT');e.decision(1);e.loaded('combined-peer-open',lines,path=b'D1:SESSION.TXT')
+    e.choose('SESSION.TXT');e.decision(2);e.loaded('combined-peer-open',lines,path=b'D1:SESSION.TXT')
     e.peer_command(2);e.frames(30);e.covered=[(0,60,224,172)]
     e.selection('combined-covered',lines,None,0,0);peer_pixels(e,'combined-peer')
     e.click(100,44);e.frames(30);e.covered=[]

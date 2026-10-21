@@ -136,10 +136,10 @@ def interact(b,p,app,record,owner,scroll=True):
     if cycle==3:
         e.key('X');e.move(*e.cell(0,0));e.edge(True);e.stage(1)
         b.memload(e.at('control'),struct.pack('<H',4));e.stage(2)
-        e.edge(False);e.alert(2);e.stage(0)
+        e.edge(False);e.alert(3);e.stage(0)
         e.selection('selection-stop-cancel',[b'x'],None,0,0)
         b.memload(e.at('control'),struct.pack('<H',104))
-        return e.alert(1,retiring=True)
+        return e.alert(2,retiring=True)
 
     for key in ('A','B','TAB','C','D','RETURN','RETURN','E','F','G','H'):e.key(key)
     lines=[b'ab\tcd',b'',b'efgh']
@@ -184,7 +184,7 @@ def interact(b,p,app,record,owner,scroll=True):
     e.move(*e.cell(31,0));e.stage(2);e.edge(False);e.stage(0)
     e.selection('input-loss-cancels',lines,None,5,0)
     e.move(*e.cell(30,0));e.edge(True);e.stage(1)
-    e.peer_command(3);e.stage(2);e.edge(False);e.alert(2);e.stage(0)
+    e.peer_command(3);e.stage(2);e.edge(False);e.alert(3);e.stage(0)
     e.selection('selection-close-cancel',lines,None,5,0)
     b.memload(e.at('control'),struct.pack('<H',100))
     e.reach('dw($%x)=101'%e.at('phase'));e.covered=[]
@@ -193,7 +193,7 @@ def interact(b,p,app,record,owner,scroll=True):
     e.caret_pixels('selection-exposed-caret',lines,2,2)
     if scroll:lines=autoscroll(e,lines)
     b.memload(e.at('control'),struct.pack('<H',101))
-    e.key('Q',ctrl=True);return e.alert(1,retiring=True)
+    e.key('Q',ctrl=True);return e.alert(2,retiring=True)
 
 
 def byte_at_column(line,column):

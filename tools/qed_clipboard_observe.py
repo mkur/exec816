@@ -99,5 +99,5 @@ def interact(b,p,app,record,owner):
     else:
         e.key('A');e.selection('clipboard-stop-dirty',[b'a'],None,1,0)
     b.memload(e.at('control'),struct.pack('<H',cycle+1))
-    if cycle==3:e.alert(2);e.selection('clipboard-stop-cancel',[b'a'],None,1,0)
-    e.key('Q',ctrl=True);return e.alert(1,retiring=True)
+    if cycle==3:e.alert(3);e.selection('clipboard-stop-cancel',[b'a'],None,1,0)
+    e.key('Q',ctrl=True);return e.alert(2,retiring=True)

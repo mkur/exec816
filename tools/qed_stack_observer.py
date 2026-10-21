@@ -20,17 +20,38 @@ def markers(program,app,image_bases=None):
             if any(s['address']<=pc<s['address']+len(s['bytes']) for s in executable):
                 points.setdefault(pc+delta,prefix+name)
     def frames(image,directory,prefix,delta=0):
-        for obj in image['provenance']['link_objects']:
-            listing=Path(obj).with_suffix('.lst')
-            if not listing.exists():continue
-            name=None;base=0
-            for line in listing.read_text(errors='replace').splitlines():
-                if '.section ' in line:name=None
-                label=re.search(r'\\ ([0-9a-f]{6})\s+(?:[0-9a-f.]+\s+)?(`?[^\s:`]+`?):',line)
-                if label and name is None and label[2].strip('`') in image['symbols']:
-                    name=label[2].strip('`');base=image['symbols'][name]-int(label[1],16)
-                at=re.search(r'\\ ([0-9a-f]{6}) 1b\s+tcs',line)
-                if at and name:points.setdefault(base+int(at[1],16)+1+delta,prefix+name+':after-tcs')
+        # Local C names can shadow exported symbols in other translation units.
+        # Resolve each retained function through its object section and linker
+        # placement, then verify the observed opcode in the emitted image.
+        from build_qed import object_symbols
+        objects=[Path(obj) for obj in image['provenance']['link_objects']]
+        linked=objects[0].parent/'link.lst'
+        require(linked.is_file(),'Missing actual linker placement for stack markers')
+        pattern=(r"([^\n]+?) in section 'farcode'\s+placed at address ([a-f0-9]+)-([a-f0-9]+) "
+                 r"of size [a-f0-9]+\n\([^\n]*?unit (\d+) section index (\d+)\)")
+        placements={(int(m[4]),int(m[5])):(int(m[2],16),int(m[3],16)+1)
+                    for m in re.finditer(pattern,linked.read_text())}
+        for obj in objects:
+            listing=obj.with_suffix('.lst')
+            if not listing.is_file() or not obj.stem.split('-')[0].isdigit():continue
+            symbols=object_symbols(obj);unit=int(obj.stem.split('-')[0])
+            chunks=re.split(r'\\ [0-9a-f]{6}\s+\.section ',listing.read_text(errors='replace'))
+            for chunk in chunks:
+                if not chunk.startswith('farcode,text'):continue
+                labels=re.findall(r'\\ ([0-9a-f]{6})\s+(?:[a-f0-9.]+\s+)?(`?[^\s:`]+`?):',chunk,re.M)
+                head=next((n.strip('`') for at,n in labels if at=='000000' and n.strip('`') in symbols),None)
+                if head is None:continue
+                location=placements.get((unit,symbols[head]['section']))
+                if location is None:continue
+                base,end=location
+                label=head if image['symbols'].get(head)==base else obj.stem.split('-',1)[-1]+':'+head
+                points.setdefault(base+delta,prefix+label)
+                for match in re.finditer(r'\\ ([0-9a-f]{6}) 1b\s+tcs',chunk):
+                    pc=base+int(match[1],16)
+                    segment=next((s for s in image['segments'] if s['address']<=pc<s['address']+len(s['bytes'])),None)
+                    require(pc<end and segment and segment['bytes'][pc-segment['address']]==0x1b,
+                            'Stack marker disagrees with linked TCS instruction')
+                    points.setdefault(pc+1+delta,prefix+label+':after-tcs')
     entries(resident,'provider:')
     frames(resident,program['output'].parent/'drawing','provider:')
     decoder={'__name__':'qed_stack_decoder'}

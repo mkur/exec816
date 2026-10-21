@@ -65,6 +65,18 @@ bool QedDocumentBegin(const char *path)
     fd=Fopen(candidate_path.name,0);if(fd<0)return failed(IoErr());
     descriptor=(short)fd;return TRUE;
 }
+/* A successful Save may have replaced the pending Open target. Retain the
+ * frozen physical parent while dropping and rereading its earlier candidate. */
+bool QedDocumentReread(void)
+{
+    LONG fd;
+    buffers_free();kill_textring(&candidate);qed_ring_empty(&candidate);
+    cause=source_bytes=0;line_length=0;pending_cr=ready=FALSE;convention=-1;
+    read_buffer=malloc(4096);line_buffer=malloc(MAX_LINE_LEN+1);
+    if(!read_buffer || !line_buffer)return failed(ERROR_NO_FREE_STORE);
+    fd=Fopen(candidate_path.name,0);if(fd<0)return failed(IoErr());
+    descriptor=(short)fd;return TRUE;
+}
 short QedDocumentPoll(void)
 {
     LONG bytes;unsigned short i;unsigned char ch;short ending,fd;
