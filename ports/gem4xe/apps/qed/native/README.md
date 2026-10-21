@@ -102,3 +102,9 @@ QW3's `stage.c` owns exact bounded serialization and a closed exclusive T.
 It never publishes D or changes B. The descriptor adapter admits slots before
 creation and exposes terminal Close's own cause separately. Stage readiness
 is private core state; the real menu remains disabled until QW5.
+
+QW4's `save.c` owns the D/T/B/E transaction and persistent recovery facts. Its
+core caller supplies explicit authorization; it does not simulate GUI consent.
+Only confirmed logical moves are reversed, and post-publication errors retain
+new D. Unknown outcomes perform no speculative filesystem cleanup. Menu Save
+and Save As remain disabled until QW5.

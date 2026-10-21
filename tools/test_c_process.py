@@ -47,7 +47,7 @@ def variant(base,out,filesystem):
 
 def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=None,
         fixture_source=None,expected_completed=12,native_optimize=None,
-        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0,media_files=None,app_builder=None,interaction=None,loader_failures=True,retirement_timeout=600,profile_all=False):
+        release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0,media_files=None,app_builder=None,interaction=None,loader_failures=True,retirement_timeout=600,profile_all=False,prepare_media=None):
     out.mkdir(parents=True,exist_ok=True)
     if reuse:
         p=read_build(out/'program')
@@ -109,7 +109,8 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                 release_compiler=release_compiler,
                 build_applications=False,
                 system_mount='D1',dos_mounts=mounts)
-    record=dict(status='running',tier='development',qualification=False,filesystem=filesystem,
+    if prepare_media:prepare_media(out/'system.atr',filesystem)
+    record=dict(initial_media_sha256=sha256(out/'system.atr'),status='running',tier='development',qualification=False,filesystem=filesystem,
                 app=app,build=p['build'],bank_zero_delta=bank_zero_delta(p['build']['memory']))
     try:
         require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')

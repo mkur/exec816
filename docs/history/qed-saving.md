@@ -90,3 +90,40 @@ conditional margin 632 bytes. Provider and reserved bank-zero growth remain
 
 Save/Save As remain disabled. Staging readiness is not Saved; no D/B
 publication or GUI consent is claimed by this slice.
+
+## QW4 Backup/publication transaction and recovery ownership
+
+The production core preallocates D/T/B/E and metadata/phase/error state. A
+preauthorized caller stages and closes T, moves any older B to a unique E,
+moves D to B, publishes T to D and only then removes E. `.BAK` destinations use
+`.BKP`. If D is absent, an independent B is neither queried nor changed.
+Logical forward failures reverse only confirmed moves. A failed reversal stops
+cleanup. Unknown mutation/Close outcomes retain names and never trigger
+speculative restoration/deletion. After publication, new D is never deleted
+for rollback. Required E cleanup failure is a non-Saved result with publication
+recorded. The record retains both causes and confirmed staging/namespace phases.
+
+The [QW4 record](../development/qed-saving-qw4.json) binds two ordinary Process
+lifetimes per cohort on RAM and both writable disk formats: new/existing D/B,
+separate authorization cancellation, twelve repeated saves, real E collision,
+256-candidate exhaustion, all three forward renames, both reversals, T/E cleanup,
+Close failure, cancellation and unknown-error policy. It also covers allocation
+refusal before creation, in-use D/B, directory collisions, protected D/B and
+preservation of the previous object's protection/date metadata in B. SDFS
+Hidden/Archive flags are disclosed inputs; a newly created D uses defaults.
+Independent closed-ATR audits find the exact five-byte new D and original
+three-byte B, consistent allocation and no unexpected T/E files. Injected
+uncertainty establishes policy coverage; physical offline transport remains QW7.
+
+Observed private peak is 57,974 bytes with the small test ring. The save owner
+costs 1,398 payload / 1,410 private backing bytes (1,416 after Exec rounding);
+with its buffer the incremental private backing is 5,518 bytes (5,528 rounded),
+plus the native directory owner. The buffer retires before namespace moves.
+Minimum core headroom is 1,745 bytes in an existing compatible pool.
+The uncalled production APP layout remains 106,765 code / 1,640 initialized /
+23,773 BSS bytes, serialized 121,789 bytes; source bound 776, conditional margin
+632. Provider and reserved bank-zero deltas remain **0 fixed / 0
+per-public-Task / 0 private idle bytes**, including guards, alignment and slack.
+
+Save menus remain disabled. These explicit preauthorized core intents do not
+establish loaded-editor consent, modified decisions or GUI recovery reporting.

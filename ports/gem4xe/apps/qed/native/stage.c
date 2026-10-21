@@ -33,7 +33,7 @@ int QedTemporaryName(const struct QedPath *target,const char *extension,char *na
 }
 static void fail(struct QedStage *s,LONG cause,int safe)
 {
-    if(!s->cause)s->cause=cause ? cause:ERROR_SEEK_ERROR;
+    if(!s->cause){s->cause=cause ? cause:ERROR_SEEK_ERROR;s->cause_phase=s->phase;}
     s->safe=safe;s->result=safe ? QED_STAGE_FAILED:QED_STAGE_UNCERTAIN;s->phase=CLEAN;
 }
 static void cursor(struct QedStage *s)
@@ -89,18 +89,18 @@ short QedStagePoll(struct QedStage *s)
     }
     if(s->phase==CLEAN){
         if(s->descriptor>=0){
-            closing=s->descriptor;s->descriptor=-1;
+            closing=s->descriptor;s->descriptor=-1;s->close_done=1;
             if(Fclose(closing)<0){
                 cause=QedFileCloseError();if(!cause)cause=IoErr();
-                if(!s->cleanup)s->cleanup=cause;
+                if(!s->cleanup){s->cleanup=cause;s->cleanup_phase=CLEAN;}
                 if(!s->cause)s->cause=cause;
                 s->safe=0;s->result=QED_STAGE_UNCERTAIN;
-            }
+            }else s->close_ok=1;
             return QED_STAGE_PENDING;
         }
         if(s->owned && s->safe){
             if(!DeleteFile(s->name)){
-                cause=IoErr();s->cleanup=cause;
+                cause=IoErr();s->cleanup=cause;s->cleanup_phase=CLEAN;
                 if(!s->cause)s->cause=cause;
                 s->result=QedSaveLogicalError(cause) ? QED_STAGE_FAILED:QED_STAGE_UNCERTAIN;
             }else s->owned=0;
@@ -120,14 +120,14 @@ short QedStagePoll(struct QedStage *s)
         if(QedPathEqual(s->name,s->target->name))return QED_STAGE_PENDING;
         fd=QedFileExclusive(s->name);
         if(fd<0){cause=IoErr();if(cause!=ERROR_OBJECT_EXISTS)fail(s,cause,cause==ERROR_NO_MORE_ENTRIES || QedSaveLogicalError(cause));}
-        else{s->descriptor=(short)fd;s->owned=1;s->phase=WRITE;}
+        else{s->descriptor=(short)fd;s->owned=s->created=1;s->phase=WRITE;}
         return QED_STAGE_PENDING;
     }
     if(s->phase==CLOSE){
-        closing=s->descriptor;s->descriptor=-1;
+        closing=s->descriptor;s->descriptor=-1;s->close_done=1;
         if(Fclose(closing)<0)fail(s,IoErr(),0);
         else if(s->confirmed!=s->expected)fail(s,ERROR_SEEK_ERROR,1);
-        else{s->phase=READY;return QED_STAGE_READY;}
+        else{s->close_ok=1;s->phase=READY;return QED_STAGE_READY;}
         return QED_STAGE_PENDING;
     }
     if(s->sent==s->used){

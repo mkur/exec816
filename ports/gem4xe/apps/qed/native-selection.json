@@ -790,7 +790,8 @@
     "commands.c",
     "document.c",
     "path.c",
-    "stage.c"
+    "stage.c",
+    "save.c"
   ],
   "features_removed": [
     "preferences UI and persistence",
