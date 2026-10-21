@@ -69,13 +69,13 @@ ENDMODULE
     return result
 
 
-def startup(out,reuse=False):
+def startup(out,reuse=False,provider_from=None):
     from build_qed import build as qed_build
     from qed_startup_observe import interact
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
     prepare(out/'inputs');resource_build(out/'resource',out/'inputs')
     def application(target):
-        provider=out/'c-image.json' if reuse else ROOT/'build/qed-startup/qs2-binding-opt/c-image.json'
+        provider=out/'c-image.json' if reuse else provider_from or ROOT/'build/qed-startup/qs2-binding-opt/c-image.json'
         qed_build(target,provider,executable=True)
         return json.loads((target/'app.json').read_text())
     return process_run(out,True,reuse=reuse,rebuild_app=reuse,app_builder=application,
@@ -119,8 +119,9 @@ if __name__=='__main__':
     p.add_argument('--group',choices=['resources','binding','drawing','event','startup','failures'],default='resources');p.add_argument('--raw',action='store_true')
     p.add_argument('--from-build',action='store_true')
     p.add_argument('--reuse-app',action='store_true',help='Failure observer only: verify and reuse the unchanged APP')
+    p.add_argument('--provider-from',type=Path,help='Matching current provider for a new startup fixture')
     p.add_argument('--native-from',type=Path,help='Reuse unchanged native provider/fixture; rebuild this C probe')
     a=p.parse_args()
     require(not a.reuse_app or a.group=='failures','APP reuse is limited to the failure observer')
-    result=failures(a.output,a.from_build,a.reuse_app) if a.group=='failures' else startup(a.output,a.from_build) if a.group=='startup' else resources(a.output,not a.raw,a.from_build,a.native_from,a.group=='binding',a.group=='drawing',a.group=='event')
+    result=failures(a.output,a.from_build,a.reuse_app) if a.group=='failures' else startup(a.output,a.from_build,a.provider_from) if a.group=='startup' else resources(a.output,not a.raw,a.from_build,a.native_from,a.group=='binding',a.group=='drawing',a.group=='event')
     print(result['status'],result['completed'])

@@ -324,8 +324,9 @@ preserve the document. A cancelled Stop is a declined cooperative request;
 the Process remains live and must not be collected as though it exited.
 
 This is an explicit interim restriction, not completion of the final scope's
-Save/Discard/Cancel workflow. Step 5 implements that workflow and enables the
-write actions only after checked save/backup/finalization behavior exists.
+Save/Discard/Cancel workflow. The [step 5 saving design](qed-saving-design.md)
+defines that workflow and its post-save Open reread rule. Enable the write
+actions only after checked save/backup/finalization behavior exists.
 Step 4 must not use the donor's unchecked save result to authorize destruction.
 Read-only fixture sessions and private text observations establish this gate;
 successful persisted output is not its oracle.

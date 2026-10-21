@@ -1,5 +1,8 @@
 # Historical records
 
+- [QED reliable saving](qed-saving.md): QW1 public canonical-name binding and
+  current C ABI; the remaining saving slices follow the step 5 plan.
+
 - [QED editing](qed-editing.md): incremental QE1–QE7 editing, document
   replacement, failure, stack and package development evidence; QE1–QE7 pass
   the step 4 editing gate, with reliable saving next.

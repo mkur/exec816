@@ -24,6 +24,9 @@ through its [editing design](qed-editing-design.md),
 The real editor opens, edits, navigates, selects, copies/pastes, undoes and finds,
 with checked single-document replacement and Cancel-default Discard/Cancel.
 Reliable saving, practical coexistence and supported delivery remain steps 5–7.
+Step 5 has a [saving design](qed-saving-design.md) and
+[QW1–QW8 plan](qed-saving-implementation-plan.md); executable implementation
+and acceptance remain next.
 
 ## First usable editor
 
@@ -174,6 +177,12 @@ until the saving gate passes.
 
 ### Make saving trustworthy
 
+The [saving design](qed-saving-design.md) selects the publication, backup,
+recovery and modified-decision semantics for this gate. Its
+[QW1–QW8 plan](qed-saving-implementation-plan.md) orders the binding/path
+foundation, serializer, transaction, menu integration, modified continuations
+and failure/reuse/gate evidence before completion.
+
 Build on the runtime semantics established earlier and adapt QED's complete
 save and backup workflow. Determine what happens to the original, backup,
 partially written output and modified in-memory document at each failure.
@@ -218,7 +227,9 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Prepare the step 5 saving design, then an implementation plan based on it.
+Start QW1 in the [saving implementation plan](qed-saving-implementation-plan.md#qw1-public-c-canonical-name-binding):
+expose native NameFromLock to C, update the single C APP ABI, rebuild affected
+providers/callers and run its focused boundary/startup/package checks.
 The [editing gate](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff)
 provides checked reading/replacement, retained LF/CRLF and final-newline
 properties, native paths, coherent Undo/clipboard ownership and measured

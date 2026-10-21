@@ -132,7 +132,8 @@ def prepare(source,out,foreign,desktop=False,aes=False,mouse_profile=None):
     if 'ExecDosEntries' in sy:
         text=text.replace('USE EXEC\n','USE EXEC\nUSE DOS\nUSE PROGRAMFILE\nUSE PROGRAM\nUSE PROCESS\n',1)
         binding+=f'CONST C_EXECDOSENTRIES=${sy["ExecDosEntries"]:x}\n'
-        binding+=read_source(ROOT/'c/calypsi/dos-bridge.inc')
+        binding+=read_source(ROOT/'c/calypsi/dos-bridge.inc').replace('@DOS_ENTRIES@',
+            read_source(ROOT/'c/calypsi/dos-entries.inc').rstrip())
     binding+=f'''
 PROC Main()
 

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 25,
+  "version": 26,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -110,12 +110,123 @@
     "ExNextBatch",
     "AvailMem",
     "SetIoErr",
-    "graf_mkstate"
+    "graf_mkstate",
+    "NameFromLock"
   ],
   "stack_requirement": {
     "workspace_mask": 255,
     "shift": 8,
     "unit_bytes": 16,
     "maximum_bytes": 4080
-  }
+  },
+  "dos_entries": [
+    {
+      "name": "Output",
+      "native": "DOS.Output"
+    },
+    {
+      "name": "Write",
+      "native": "CWrite"
+    },
+    {
+      "name": "Open",
+      "native": "COpen"
+    },
+    {
+      "name": "Close",
+      "native": "CClose"
+    },
+    {
+      "name": "Read",
+      "native": "CRead"
+    },
+    {
+      "name": "Lock",
+      "native": "CLock"
+    },
+    {
+      "name": "UnLock",
+      "native": "CUnLock"
+    },
+    {
+      "name": "Examine",
+      "native": "CExamine"
+    },
+    {
+      "name": "ExNext",
+      "native": "CExNext"
+    },
+    {
+      "name": "IoErr",
+      "native": "DOS.IoErr"
+    },
+    {
+      "name": "Seek",
+      "native": "CSeek"
+    },
+    {
+      "name": "ExecDOSDetach",
+      "native": "DOS.ReleaseContext"
+    },
+    {
+      "name": "ExecStartProgram",
+      "native": "CStartProgram"
+    },
+    {
+      "name": "ExecCollectProgram",
+      "native": "CCollectProgram"
+    },
+    {
+      "name": "ExecBreakProgram",
+      "native": "CBreakProgram"
+    },
+    {
+      "name": "ExecWaitProgram",
+      "native": "CWaitProgram"
+    },
+    {
+      "name": "ExecGetArgStr",
+      "native": "CGetArgStr"
+    },
+    {
+      "name": "ExecProgramMask",
+      "native": "CProgramMask"
+    },
+    {
+      "name": "CreateDir",
+      "native": "CCreateDir"
+    },
+    {
+      "name": "Rename",
+      "native": "CRename"
+    },
+    {
+      "name": "DeleteFile",
+      "native": "CDeleteFile"
+    },
+    {
+      "name": "ExamineExact",
+      "native": "CExamineExact"
+    },
+    {
+      "name": "MountVolume",
+      "native": "CMountVolume"
+    },
+    {
+      "name": "UnmountVolume",
+      "native": "CUnmountVolume"
+    },
+    {
+      "name": "ExNextBatch",
+      "native": "CExNextBatch"
+    },
+    {
+      "name": "SetIoErr",
+      "native": "CSetIoErr"
+    },
+    {
+      "name": "NameFromLock",
+      "native": "CNameFromLock"
+    }
+  ]
 }

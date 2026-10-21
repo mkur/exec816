@@ -4,6 +4,7 @@ import argparse,os,json,shutil,struct
 from pathlib import Path
 from native_program import ROOT,compiler,read_build,require,sha256,verify_machine
 from build_c_program import build as application
+from c_program import ABI
 from build_gem_desktop import build_desktop
 from build_gem_resource import resource
 from build_command import compile_command
@@ -54,7 +55,6 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
         require(app is not None or rebuild_app,'Missing APP record; rebuild the application')
     if not reuse or rebuild_app:
         if reuse:
-            from c_program import ABI
             provider=p['build']['foreign_image']['c_program_provider']
             require(provider['abi']==ABI['version'] and
                     provider['imports']==ABI['imports'],
@@ -72,13 +72,12 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
         if loader_failures:
             (media/'TRUNC.APP').write_bytes(raw[:-1])
             count=struct.unpack_from('<H',raw,10)[0];imports=struct.unpack_from('<H',raw,24)[0]
-            for name,at,fmt,value in [('VERSION',6,'<H',0),('IMPORT',32+count*16,'<H',65535),
+            for name,at,fmt,value in [('VERSION',6,'<H',ABI['version']-1),('IMPORT',32+count*16,'<H',65535),
                                      ('FIXUP',32+count*16+imports*8,'<I',app['span'])]:
                 changed=bytearray(raw);struct.pack_into(fmt,changed,at,value);(media/(name+'.APP')).write_bytes(changed)
         else:
             for name in ('TRUNC','VERSION','IMPORT','FIXUP'):(media/(name+'.APP')).unlink(missing_ok=True)
         if boundary_limits:
-            from c_program import ABI
             for name,at,fmt,value in [('COUNT',10,'<H',ABI['segment_limit']+1),
                                      ('SPAN',12,'<I',ABI['span_limit']+1)]:
                 changed=bytearray(raw[:32]);struct.pack_into('<I',changed,28,32)

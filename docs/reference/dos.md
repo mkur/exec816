@@ -378,3 +378,7 @@ These operations and IsInteractive are also published through COMMAND for loaded
 programs. `COMMAND.ConsoleSize` names the four-byte output layout. A pager should
 query its Output geometry and open its foreground console for keys; selected
 Input remains the data stream.
+
+The C `NameFromLock(BPTR lock, STRPTR buffer, LONG length)` binding has the
+same capacity, ownership and error semantics as the native operation. It returns
+the physical canonical path; the caller retains and must release the lock.

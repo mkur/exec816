@@ -163,35 +163,20 @@ LONGINT FUNC CSetIoErr(LONGINT error LONGCARD unused LONGINT unused2)
 
 RETURN(DOS.SetIoErr(error))
 
+LONGINT FUNC CNameFromLock(LONGCARD lock,buffer LONGINT length)
+
+  IF lock>$ffffff OR buffer>$ffffff THEN
+    DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(DOS.NameFromLock(DOS.FileLock POINTER(ADDRESS(lock)),
+    BYTE POINTER(ADDRESS(buffer)),length))
+
 ; Bind once; each operation still uses the current Task's DOS context.
 PROC BindDos(BYTE unused)
 
   LET entries=ADDRESS POINTER(C_EXECDOSENTRIES)
-  entries(0)=ADDRESS(@DOS.Output)
-  entries(1)=ADDRESS(@CWrite)
-  entries(2)=ADDRESS(@COpen)
-  entries(3)=ADDRESS(@CClose)
-  entries(4)=ADDRESS(@CRead)
-  entries(5)=ADDRESS(@CLock)
-  entries(6)=ADDRESS(@CUnLock)
-  entries(7)=ADDRESS(@CExamine)
-  entries(8)=ADDRESS(@CExNext)
-  entries(9)=ADDRESS(@DOS.IoErr)
-  entries(10)=ADDRESS(@CSeek)
-  entries(11)=ADDRESS(@DOS.ReleaseContext)
-  entries(12)=ADDRESS(@CStartProgram)
-  entries(13)=ADDRESS(@CCollectProgram)
-  entries(14)=ADDRESS(@CBreakProgram)
-  entries(15)=ADDRESS(@CWaitProgram)
-  entries(16)=ADDRESS(@CGetArgStr)
-  entries(17)=ADDRESS(@CProgramMask)
-  entries(18)=ADDRESS(@CCreateDir)
-  entries(19)=ADDRESS(@CRename)
-  entries(20)=ADDRESS(@CDeleteFile)
-  entries(21)=ADDRESS(@CExamineExact)
-  entries(22)=ADDRESS(@CMountVolume)
-  entries(23)=ADDRESS(@CUnmountVolume)
-  entries(24)=ADDRESS(@CExNextBatch)
-  entries(25)=ADDRESS(@CSetIoErr)
+@DOS_ENTRIES@
 
 RETURN

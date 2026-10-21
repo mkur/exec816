@@ -3,6 +3,16 @@
 The separate [upstream GEM4XE/QED setup](../../guides/gem4xe-qed-reference.md)
 preserves a working reference for behavior comparisons during the port.
 
+The [QED saving design](qed-saving-design.md) and
+[QW1–QW8 implementation plan](qed-saving-implementation-plan.md) define strategy
+step 5: checked serialization and terminal Close, sibling-file publication with
+one retained backup, explicit recovery outcomes and Save/Discard/Cancel
+continuations.
+QW1 starts with the public C binding and one rebuilt ABI; later slices add
+canonical paths, staging, publication, menu saving, modified continuations,
+failure/reuse evidence and gate reconciliation. These slices remain proposed;
+Save remains disabled in the current editor.
+
 The [QED editing design](qed-editing-design.md) and
 [QE1–QE7 implementation plan](qed-editing-implementation-plan.md) implement
 strategy step 4: native keyboard/selection, redraw and long-line navigation,

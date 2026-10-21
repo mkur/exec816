@@ -32,7 +32,7 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-Import ABI 24 includes the current device/AES/file imports, `ExamineExact`,
+Import ABI 26 includes the current device/AES/file imports, `ExamineExact`,
 `MountVolume` and `UnmountVolume`, and the caller-local `ExecAESBeginUpdate` and
 `ExecAESPaintedChanges` [paint-completion helpers](aes.md#optional-repaint-completion).
 The generated C FileInfoBlock stays 260 bytes, with 30 reserved bytes and
@@ -45,7 +45,7 @@ Loaded C applications also use the existing `CreateMsgPort`, `DeleteMsgPort`,
 functions. Device requests use the ordinary
 [device I/O contract](device-io.md); no new kernel operation or clock is added.
 The desktop provider and its applications must be rebuilt together.
-The current imports also expose AvailMem and SetIoErr; the shared wrapper
+The current imports also expose `NameFromLock`, AvailMem and SetIoErr; the shared wrapper
 preserves the application's native secondary result across AES retirement.
 
 Use `--minimum-stack BYTES` to declare a total pool requirement, including
@@ -67,7 +67,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 24 |
+| 6 | 2 | Import ABI version, 26 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
