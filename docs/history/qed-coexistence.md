@@ -108,7 +108,7 @@ requested rectangles; the normal cohorts and cursor fixture supply independent
 GUI pixels. The cursor fixture checks actual completed visible and hidden
 caret frames, allowing either a row paint or the blink callback to reveal it.
 
-The final source bound is 520 bytes, with the existing 768-byte continuation
+The QC2a source bound is 520 bytes, with the existing 768-byte continuation
 allowance, 256-byte interrupt reserve, 128-byte headroom target and 2,560-byte
 admission. Its conditional margin is 888 bytes. Native reservations remain
 **0 fixed / 0 per-public-Task / 0 private idle bank-zero bytes**, including
@@ -121,3 +121,22 @@ caret pixels. The checksum cohort still reaches 1,043 ms on a later viewport
 navigation, exceeding the unchanged 1,000 ms limit. This slice therefore keeps
 the coexistence gate open. Timed navigation begins after an independently
 completed warm-up frame; the earlier logical-only warm-up could queue a paint.
+
+
+## QC2b Multi-row paper and text runs
+
+The later checksum scroll still exceeded its fixed limit. Patch 0023 clears a
+clipped multi-row damage rectangle once, then draws its rows without padded
+trailing spaces. Selected/non-default colours retain their explicit fills;
+single-row edits retain the opaque path. This reduces glyph work through
+existing VDI calls and keeps damage, clipping and application policy in QED.
+
+The [QC2b record](../development/qed-coexistence-qc2b.json) binds the production
+image and focused emitted checks: 14 actual-source rectangle cases over two
+lifetimes and four cursor/exposure/lifecycle sessions with real visible and
+hidden caret pixels. Normal production cohorts and repeated-use evidence remain
+separate. The source bound is 554 bytes, leaving an 854-byte conditional margin
+under the unchanged 2,560-byte admission. The image needs 245,096 bytes of
+8-byte-aligned backing. Reserved bank-zero delta is **0 fixed /
+0 per-public-Task / 0 private idle bytes**, including guards, alignment and
+unused capacity; native/provider and shared Task capacities are unchanged.

@@ -120,7 +120,10 @@ paint the caret inside edit/navigation row updates, use opaque default-colour
 rows through existing VDI replace text, and avoid repeating a scroll owner's
 complete paint. Selection colours keep their existing explicit fill path; idle
 blinking keeps its narrow caret-band path. These changes remain QED painting
-policy, with the same response limits, ABI and capacities.
+policy, with the same response limits, ABI and capacities. Patch 0023 clears a clipped multi-row damage area once,
+then omits padded trailing glyphs from its text runs; single-row edits retain
+the opaque row path. The later checksum scroll failure measured 1,043 ms, so
+this further change is required before closing the unchanged response gate.
 
 Optimize only a measured failure or material bottleneck in this workflow. Keep
 application drawing policy in QED, reusable GUI behavior in AES/VDI, filesystem

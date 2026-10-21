@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "status": "focused-pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "QC2b multi-row paper clear and unpadded text runs; selected damage/idle emitted regressions pass. Normal production coexistence and repeated-use gates are reconciled separately.",
+  "production": {
+    "app": {
+      "path": "build/qed-coexist/gate-production/program.app",
+      "sha256": "40f350428580f81c98da80843efb0f0fb1cd47f5ec61c0ac39d849457bbe735d"
+    },
+    "layout": {
+      "path": "build/qed-coexist/gate-production/layout.json",
+      "sha256": "15ba76e2b0286e5a4a361d9b5a4eefb97e368581afba567d9930205efd11959d"
+    },
+    "sources": {
+      "path": "build/qed-coexist/gate-production/inputs/sources.json",
+      "sha256": "4b14b72d435ab37514d7089e3d71cde3a8d2755736215813d6838da04de84d79"
+    },
+    "frames": {
+      "path": "build/qed-coexist/gate-production/stack-frames.json",
+      "sha256": "ebda899a3732315da08ba8a63bf819703244176ef3e2e72c77a4d9cbc22da5e0"
+    }
+  },
+  "layout": {
+    "code_bytes": 114018,
+    "initialized_bytes": 2770,
+    "bss_bytes": 22212,
+    "import_thunk_bytes": 404,
+    "span_bytes": 179554,
+    "image_holes_bytes": 40554,
+    "serialized_bytes_if_executable": 131408,
+    "relocation_count": 3429,
+    "heap_alignment_backing_bytes": 245092,
+    "future_full_profile_backing_bytes": 393216,
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "container_metadata_allowance_bytes": 16384,
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "exec_image_backing_bytes": 245096,
+  "stack": {
+    "source_chain_bytes": 554,
+    "continuation_cap_bytes": 768,
+    "interrupt_reserve_bytes": 256,
+    "required_headroom_bytes": 128,
+    "admission_bytes": 2560,
+    "margin_bytes": 854
+  },
+  "idle": {
+    "result": {
+      "path": "build/qed-coexist/blink-gate/results.json",
+      "sha256": "71b4aa174557f762e94a608f3eba1ec2efdd25986074c6e2926d0d38ea31fb65"
+    },
+    "trace": {
+      "path": "build/qed-coexist/blink-gate/emulator.log",
+      "sha256": "b669b28ffd3e63080f2e09b9fb0a61715dd31775583ec763fd58bdd4dfdabf47"
+    },
+    "lifetimes": 4,
+    "real_hidden_caret_checks": 4
+  },
+  "damage": {
+    "result": {
+      "path": "build/qed-coexist/damage-gate/results.json",
+      "sha256": "35c3d61568e05861c1d7556931c8a1b699af905357c5444ee65b2bc71b9d42f5"
+    },
+    "trace": {
+      "path": "build/qed-coexist/damage-gate/emulator.log",
+      "sha256": "738cafefe2996cd3fcc9f08b844d0527c6ddef724ec4c7589a0db39650d991db"
+    },
+    "lifetimes": 2,
+    "cases": 14
+  },
+  "host": {
+    "result": {
+      "path": "build/qed-coexist-gate-host.log",
+      "sha256": "9b06fa04d59ca6e5f852feb75d97f69b84fd3650441e8979f2ddaf7d27c8519f"
+    },
+    "tests": 552,
+    "skipped": 4
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Byte-identical native desktop and provider; all existing stack/DP/guard/alignment/slack reservations retained"
+  }
+}
