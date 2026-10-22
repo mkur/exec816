@@ -157,7 +157,10 @@ BYTE FUNC Shown(DESKTYPES.Window POINTER window)
   IF window.kind=DESKTYPES.CONTENT_AES THEN
     BEGIN
       LET client=AESWINDOWSTATE.Find(window.id)
-      RETURN(client<>NULL AND client.endpoint.input.windowEpoch<>0)
+      ; Input interest can be absent while an open window is covered or its
+      ; client waits only for messages/timers. Its registered lifetime and the
+      ; shown layer still permit ordinary window-manager selection.
+      RETURN(client<>NULL)
     END
   FI
 

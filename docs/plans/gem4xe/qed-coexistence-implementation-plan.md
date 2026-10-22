@@ -83,6 +83,18 @@ QC1, with independent disposable media. Record all latency samples, Task peaks,
 heap checkpoints and closed-image bytes. Diagnose and fix a measured failure
 in a separate executable slice if necessary; do not add speculative VDI work.
 
+The integration follow-up corrects the native desktop's shown-window selector
+without using input-wait interest as window visibility. Rebuild the native demo,
+provider and production APP before its final Counter/CRC cohorts, and compare
+complete bank-zero reservations with the earlier preview. Existing focused C
+fixtures remain identified separately for their unchanged QED source/ABI paths.
+Observe long checksum completion in bounded progress intervals, rather than
+applying the one-operation wait to the whole 512 KiB command.
+Complete content painting before caption publication, including clamp and
+scroll-owner exits; verify caption ordering in the actual-source damage probe.
+Repeat the normal cohorts and affected rendering/lifetime fixtures with this
+final patch set before reconciling the gate.
+
 ## QC3 Repeated lifetime and failures
 
 Add a targeted four-lifetime emitted fixture derived from the current saving

@@ -183,8 +183,22 @@ class Loads:
             s.rendezvous('(dw($%x)=0)&(dw($%x)=0)' % (at, at+2))
             self.state['collected'] = True
         elif self.cohort == 'checksum':
-            s.ready(self.previous); s.result()
+            self.state['completion_progress'] = []
+            for index in range(120):
+                if s.number(self.row+self.e.fields['state'], 1) != 2:
+                    break
+                before = (s.number(self.crc, 4), s.number(self.cache+20, 4))
+                s.frames(500)
+                if s.number(self.row+self.e.fields['state'], 1) != 2:
+                    break
+                after = (s.number(self.crc, 4), s.number(self.cache+20, 4))
+                self.state['completion_progress'].append(dict(frames=(index+1)*500,
+                    crc=after[0], cache_misses=after[1]))
+                require(before != after, 'Checksum made no progress in 500 frames')
+            else:
+                raise RuntimeError('Checksum exceeded its 60000-frame aggregate bound')
             self.menus.select('Shell')
+            s.ready(self.previous); s.result()
             expected = ('%d %d' % (cksum(self.payload), len(self.payload))).encode()
             require(expected in read_cells(s.far, s.saved['top']),
                     'Native checksum output differs from independent POSIX checksum')

@@ -188,3 +188,50 @@ capacity and metadata. Image backing is 247,848 bytes; the source bound is
 584 bytes with an 824-byte conditional margin. Reserved bank-zero growth is
 **0 fixed / 0 per-public-Task / 0 private idle bytes**, including guards,
 alignment and unused capacity. No public ABI, provider or Task pool changes.
+
+
+## QC2e Loaded response and window selection
+
+The ordinary Counter workflow exposed a native desktop bug: `Shown` treated
+keyboard/pointer wait interest as window visibility. An open registered AES
+window must remain selectable while its client waits for messages or timers.
+The selector now follows its registered lifetime and shown layer. The refreshed
+native demo runs the complete Counter focus, Stop/Cancel, exposure and collection
+workflow. The public AES contract records this policy; no ABI or Task capacity
+changes are required, and the C provider identity is unchanged.
+
+The first refreshed checksum attempt still measured 1,002.8 ms on navigation.
+Patch 0026 completes content painting before position/modified caption calls,
+including clamp and scroll-owner exits. Caption invalidation stays outside the
+complete visible-rectangle iteration. The actual-source probe rejects caption
+publication before a requested paint. The production observer also saves the
+scanout expected by the shared result writer; two preceding completed workflows
+had failed that report-finalization step and do not count as passing cohorts.
+
+The final normal-package runs use the same production APP, exact OF816 ZIP and
+unchanged limits. Maxima are rounded to the nearest millisecond:
+
+| Cohort | Insert (6 samples) | Navigate (6 samples) | Find open/reopen/dismiss (3 samples) | Clean Quit |
+| --- | ---: | ---: | ---: | ---: |
+| QED and idle shell | 241 ms | 421 ms | 562 ms | 762 ms |
+| QED, Counter and idle shell | 301 ms | 521 ms | 622 ms | 862 ms |
+| QED and foreground 512 KiB checksum | 441 ms | 762 ms | 963 ms | 802 ms |
+| Limit per sample | 500 ms | 1,000 ms | 1,500 ms | 2,000 ms |
+
+Counter advances while Find and the modified Stop decision are held, and its
+label and covered/exposed QED pixels match independent expectations. An extra
+command at eight public Tasks fails with error 103 and restores temporary
+ownership. Both loaded clients close and collect normally. The checksum input
+remains unchanged, its read/computation advances throughout QED input and Find,
+and its final `3650126349 524288` result matches an independent POSIX CRC.
+Completion is observed in 500-frame progress intervals, within the amended
+60,000-frame aggregate bound; individual disk-operation and input limits stay
+unchanged. Every cohort independently audits exact document/backup bytes and
+closed SDFS allocation.
+
+The image still needs 247,848 upper bytes of aligned backing, including the
+2,420-byte cell snapshot reservation. The source bound remains 584 bytes with
+824 bytes of conditional margin under the existing 2,560-byte admission.
+The refreshed native budget is identical to the cursor preview, including
+all guards, DP reservations, alignment and unused capacity: **0 fixed /
+0 per-public-Task / 0 private idle bank-zero bytes** of growth.

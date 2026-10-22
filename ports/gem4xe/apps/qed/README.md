@@ -479,11 +479,13 @@ compiled with matching headers; its emitted offsets describe the production
 records without adding instrumentation to the shipped APP. Test disks are
 disposable and separate from the interactive WORK disk.
 
-Patches 0018–0025 bound same-row/selection damage, combine text and caret paints,
+Patches 0018–0026 bound same-row/selection damage, combine text and caret paints,
 use existing opaque default-colour text, avoid duplicate scroll paints,
 clear multi-row damage once before drawing unpadded text runs, and retain
 plain screen cells for consecutive full-work navigation paints. Messages,
 non-navigation input and partial/selected paints invalidate that snapshot.
+Content painting completes before position/modified caption publication;
+caption invalidation remains outside visible-rectangle iteration.
 The actual-source damage probe covers 16 rectangle/slider-policy cases; full drawing
 and independent pixels belong to the production and cursor checks. Bank-zero
 reservations and shared Task capacities remain unchanged.

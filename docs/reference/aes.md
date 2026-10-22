@@ -796,7 +796,9 @@ headings switches menus. Disabled/hidden entries cannot activate. Outside click,
 Escape, BREAK and input loss cancel without passing the click to a window.
 Ctrl+Shift+Escape enters the application menu; Left/Right changes titles,
 Up/Down or Tab/Shift+Tab selects entries, and Return activates. Ctrl+Escape opens
-Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching.
+Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching. The window selector
+uses registered, shown window lifetimes independently of keyboard/pointer wait
+interest. Iconified windows remain in the menu and cycling skips them.
 
 The private C context is 368 bytes. Rebuild bindings and applications with
 the current C component ABI (14).

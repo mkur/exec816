@@ -75,6 +75,12 @@ Pin the following development limits before measuring:
 | Clean Quit after pending I/O finishes | 2,000 ms to Process retirement |
 | Individual disk operation | Bounded completion within the existing 12,000-frame desktop observer limit |
 
+The aggregate 512 KiB checksum command may span many disk reads. Observe its
+CRC or physical-cache progress every 500 frames, with a 60,000-frame aggregate
+completion bound; each normal read still uses the existing bounded transport.
+This is separate from a single disk operation and from input response limits.
+A stalled progress interval fails rather than extending that bound.
+
 Record all samples and maximum/median per cohort. Relative changes are useful
 diagnostics; they do not replace the absolute limits. The small sample counts
 are development observations, not percentile or worst-case latency proofs.
@@ -111,7 +117,14 @@ Keep the existing 2,560-byte QED admission, conditional source bound and native
 continuation allowance unless measurements justify a change. Preserve guards,
 DP ownership and complete native context. Observe ordinary and asynchronous
 stack headroom in the targeted lifetime fixture and inspect production runtime
-guard results. No kernel, driver or scheduler policy change is planned. Exec's
+guard results. No kernel, driver or scheduler policy change is planned. The measured Counter
+selection failure requires one desktop-policy correction: list registered,
+shown windows independently of whether their client currently publishes a
+keyboard/pointer wait. The existing layer visibility and client lifetime are
+authoritative. Refresh the native desktop and matching provider/APP/package,
+remeasure complete bank-zero reservations, and rerun the affected production
+cohorts. Reuse rendering/lifetime fixtures only for their unchanged ABI and
+QED-source scope; they do not qualify the new desktop selector. Exec's
 current scheduling and public coordination semantics remain authoritative.
 
 ## Changes and completion
@@ -147,6 +160,12 @@ geometry, messages and non-navigation input invalidate this snapshot. Idle blink
 keeps its caret-band path. Full redraw after invalidation establishes a fresh
 snapshot; response limits remain warm-input measurements, not cold-redraw bounds.
 The retained cell array costs 2,400 upper-image bytes plus its small metadata.
+
+Patch 0026 completes viewport painting before updating position/modified
+captions. Caption invalidation remains outside the complete visible-rectangle
+iteration, including clamp and scroll-owner paths. This removes a caption round
+trip from the text feedback path after a loaded sample missed the unchanged
+1,000 ms navigation limit by 2.8 ms; captions still update on every restoration.
 
 Optimize only a measured failure or material bottleneck in this workflow. Keep
 application drawing policy in QED, reusable GUI behavior in AES/VDI, filesystem

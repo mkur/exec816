@@ -1,0 +1,31 @@
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -1117,15 +1117,13 @@
+         if(w->doc.y>w->doc.h-w->w_height)w->doc.y=max(0L,w->doc.h-w->w_height);
+         clamped=w->doc.x!=oldx || w->doc.y!=oldy;
+         if(resized || w->doc.y!=oldy)set_sliders(w,VERTICAL,SLPOS+SLSIZE);
+-        /* Caption RPCs precede visible-rectangle enumeration and painting. */
+-        head_out(w,t);change_window(w,t->filename,t->moved!=0);
+         if(pointer_state!=1)cursor_visible(w,t);
+         /* Clamping after a shortened longest line moves all displayed rows. */
+         if(clamped){
+-            area=w->work;redraw_window(w,&area);continue;
++            area=w->work;redraw_window(w,&area);goto caption;
+         }
+         /* Cursor revelation's scroll owner has already painted this viewport. */
+-        if(w->doc.x!=oldx || w->doc.y!=oldy)continue;
++        if(w->doc.x!=oldx || w->doc.y!=oldy)goto caption;
+         painted=FALSE;
+         for(i=0;i<chg_anz;i++){
+             if(chg[i].link!=link)continue;
+@@ -1157,6 +1155,10 @@
+             area=w->work;area.g_y+=(short)first*font_hcell;area.g_h=font_hcell;
+             redraw_window(w,&area);
+         }
++caption:
++        /* Complete content before caption RPCs; never interrupt a visible
++         * rectangle iteration with window-manager invalidation. */
++        head_out(w,t);change_window(w,t->filename,t->moved!=0);
+     }
+     chg_anz=0;setclr(chg_links);
+ }
