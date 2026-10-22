@@ -7,6 +7,8 @@ The [QED coexistence design](qed-coexistence-design.md) and
 [QC1–QC4 implementation plan](qed-coexistence-implementation-plan.md) define
 strategy step 6: measured production responsiveness beside a GUI peer or shell
 checksum job, admitted Task counts, memory fragmentation and repeated lifetimes.
+The [reconciled development gate](../../history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff)
+passes; supported delivery remains step 7.
 
 The [QED saving design](qed-saving-design.md) and
 [QW1–QW8 implementation plan](qed-saving-implementation-plan.md) define strategy
@@ -25,7 +27,8 @@ internal clipboard/Undo, cancellable Find/dialogs and checked single-document
 Open/New. The [editing gate](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff)
 passes its development checks, including the combined session and package
 reconciliation. Reliable saving and the full Save/Discard/Cancel workflow now
-pass step 5; practical coexistence and supported QED delivery remain steps 6–7.
+pass step 5; practical coexistence now passes step 6. Supported QED delivery
+remains step 7.
 
 The [QED startup design](qed-startup-design.md) and
 [QS1–QS5 implementation plan](qed-startup-implementation-plan.md) define

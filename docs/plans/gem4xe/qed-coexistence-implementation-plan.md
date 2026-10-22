@@ -8,6 +8,11 @@ handoff. Each slice has an executable result and commits after its selected
 development checks. Keep measurements and completion status in the
 implementation history and machine-readable records.
 
+Status: QC1–QC4 pass the selected development gate, recorded in the
+[implementation history](../../history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff)
+and [reconciled evidence](../../development/qed-coexistence-qc4.json).
+Supported delivery and release work remain step 7.
+
 | Slice | Executable result | Dependency |
 | --- | --- | --- |
 | QC1 | Production observer and matched baseline workflow with visible response and heap measurements | Current cursor-paint preview |

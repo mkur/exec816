@@ -27,7 +27,11 @@ Step 5 is implemented through the [saving design](qed-saving-design.md),
 [reconciled saving evidence](../../history/qed-saving.md#qw8-saving-gate-and-coexistence-handoff).
 Canonical paths, checked staging/publication, Save/Save As, backups/recovery,
 Save/Discard/Cancel and selected operational failures pass development checks.
-Practical coexistence and supported delivery remain steps 6–7.
+Step 6 now passes the [coexistence design](qed-coexistence-design.md) and
+[QC1–QC4 plan](qed-coexistence-implementation-plan.md): all three production
+cohorts, repeated use, refusals, peer progress and resource/response gates pass
+the [selected development checks](../../history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff).
+Supported delivery and release work remain step 7.
 
 ## First usable editor
 
@@ -228,10 +232,11 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Implement the [step 6 coexistence design](qed-coexistence-design.md) and
-[QC1–QC4 plan](qed-coexistence-implementation-plan.md) from the
-[saving handoff](../../history/qed-saving.md#qw8-saving-gate-and-coexistence-handoff).
-Measure the complete Open/Edit/Find/Save/Close workflow beside another ordinary
-GEM application and shell or MD5/ARC activity within shared Task capacity.
-Use latency, fragmentation, peak backing and retirement measurements to choose
-the next improvement. Keep supported delivery and publication at step 7.
+Prepare the step 7 delivery design and implementation plan from the
+[reconciled coexistence gate](../../history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff).
+Reconcile the agreed single-document scope and explicit deferrals, then validate
+what users receive through Files and shell launch paths. Preserve the measured
+native configuration, current ABI, source/license provenance and saved WORK.
+Supported packaging and any requested release qualification/publication remain
+separate from step 6's development checks; publication must include matching
+old/new Atarimax CAR and raw BIN images through the standard demo builder.

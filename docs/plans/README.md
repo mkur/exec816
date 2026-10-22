@@ -515,7 +515,9 @@ assuming work is pending. Current behavior belongs in the
 - [QED coexistence design](gem4xe/qed-coexistence-design.md) and
   [QC1–QC4 implementation plan](gem4xe/qed-coexistence-implementation-plan.md):
   strategy step 6; production response under GUI/shell load, Task admission,
-  memory fragmentation and repeated lifetime/failure checks.
+  memory fragmentation and repeated lifetime/failure checks. The
+  [selected development gate](../history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff)
+  passes; supported delivery remains step 7.
 
 - [QED saving design](gem4xe/qed-saving-design.md) and
   [QW1–QW8 implementation plan](gem4xe/qed-saving-implementation-plan.md):

@@ -1,0 +1,2165 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Strategy step 6 selected production coexistence, latency, lifetime and ownership gate; supported delivery/release remains step 7",
+  "production": {
+    "app": {
+      "path": "build/qed-coexist/caption-production/program.app",
+      "sha256": "2c516eaa36c4fd2f3fc60661070790f671cea9633225ff66b30f8f91ca65c1a7"
+    },
+    "layout": {
+      "path": "build/qed-coexist/caption-production/layout.json",
+      "sha256": "a5aaf5d17d4d90e2f83b6f39f3eaaafb3bb77815de9d643dfa87980401bd42e8"
+    },
+    "sources": {
+      "path": "build/qed-coexist/caption-production/inputs/sources.json",
+      "sha256": "b847c8b5809a9623496548d533d9dce20fa3673e0a6080a917b61b66304ddf94"
+    },
+    "frames": {
+      "path": "build/qed-coexist/caption-production/stack-frames.json",
+      "sha256": "09aacd09993e997e7906e2147d62143be162326c314dd188c4f0b7e3f54c2627"
+    }
+  },
+  "layout": {
+    "code_bytes": 116776,
+    "initialized_bytes": 2774,
+    "bss_bytes": 24628,
+    "import_thunk_bytes": 404,
+    "span_bytes": 182312,
+    "image_holes_bytes": 38134,
+    "serialized_bytes_if_executable": 134502,
+    "relocation_count": 3512,
+    "heap_alignment_backing_bytes": 247848,
+    "future_full_profile_backing_bytes": 393216,
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "container_metadata_allowance_bytes": 16384,
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "exec_image_backing_bytes": 247848,
+  "source_stack": {
+    "source_bytes": 584,
+    "margin_bytes": 824,
+    "continuation_cap_bytes": 768,
+    "admission_bytes": 2560
+  },
+  "package": {
+    "zip": {
+      "path": "build/qed-coexist/caption-preview/exec816-demo.zip",
+      "sha256": "f63b2d526d7cd3a886589f50caf8dbd51c8fbb7bbd3f6a3d4fcc676bef884208"
+    },
+    "manifest": {
+      "path": "build/qed-coexist/caption-preview/demo-manifest.json",
+      "sha256": "f1682848a753316b8e799fdaeacd3fae09ed1770625f4cd3d369a313806db392"
+    },
+    "preview": {
+      "path": "build/qed-coexist/caption-preview/qed-preview.json",
+      "sha256": "0382a2f68c49423abb08f5e2e0eb430d4e6e71c596da865c0144bebf6acdb29e"
+    },
+    "native_xex": {
+      "path": "build/qed-coexist/caption-preview/program.xex",
+      "sha256": "dc7cc0ddc0d47beac93008bce961bcc461c3139bc0e38e903202f46b02ba3795"
+    },
+    "boot_xex": {
+      "path": "build/qed-coexist/caption-preview/of816/Exec-of816.xex",
+      "sha256": "cb632d7562a76d23d146cccb5cddbce9be25b01d8e23ff849d025c1ccfd059d3"
+    },
+    "rom": {
+      "path": "build/qed-coexist/caption-preview/of816/altirraos-816.rom",
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7"
+    }
+  },
+  "local_preview": {
+    "refresh": {
+      "path": "build/qed-coexist/launcher-refresh.json",
+      "sha256": "a1c2c1f38cf881071b0d949b4c8c94e120d7fc418f6b0dcef67e5de74b10d9ff"
+    },
+    "prepare_only": {
+      "path": "build/qed-coexist/launcher-prepare-only.log",
+      "sha256": "621d4fecaf486243cdb13e3aced5cec5468dbcca27a28d25f49338b22d6cdb29"
+    },
+    "scope": "Existing launchers forward to the measured preview; private D8 settings reuse the existing writable disk through a symlink. No GUI emulator was launched."
+  },
+  "native_refresh": {
+    "before_xex": {
+      "path": "build/qed-exec-altirra-fixed/program.xex",
+      "sha256": "d1f88715f9ee4a683487d469a983564bf542ddc4789a8976e048a904b5ef312b"
+    },
+    "current_build": {
+      "path": "build/qed-coexist/caption-preview/build.json",
+      "sha256": "3a247cc9884dd9b93ddb7ab5e83f2c9b3657f5cec6060f28cab433ff0560e1fa"
+    },
+    "before_bank_zero": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 26848,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 58080,
+      "loading_including_os": 51600
+    },
+    "after_bank_zero": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 26848,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 58080,
+      "loading_including_os": 51600
+    },
+    "selector_source": {
+      "path": "lib/desktop/deskmenu.act",
+      "sha256": "8a80d0bb9cf3fe365af485f1a9f224a4610a1ec7cbf2ca8fbbcf1437d8badecb"
+    },
+    "resident_provider_identity_unchanged": true,
+    "focused_fixture_scope": "Retained matched QED-source/C-ABI rendering and lifetime fixtures use their recorded native providers. The refreshed desktop selector and transport are exercised by all three new normal-package cohorts."
+  },
+  "preceding_attempts": {
+    "checksum": {
+      "path": "build/qed-coexist-qc2-checksum-native.log",
+      "sha256": "f9c9ed8b96b5248e64822e0b788e549dfa7e23408358cd9bc7d6aa7135f8cc66"
+    },
+    "checksum_trace": {
+      "path": "build/qed-coexist/qc2-checksum-native/emulator.log",
+      "sha256": "d0eec6b8fa212352242d73b1cbe884bbe0d5a841ee7748e2d0386e72ea317459"
+    },
+    "baseline": {
+      "path": "build/qed-coexist-qc1-native.log",
+      "sha256": "5d907dab3518961e01c49f519345418491e4a205774a5cbe1cb6a95c0a01d9c6"
+    },
+    "counter": {
+      "path": "build/qed-coexist-qc2-peer-native.log",
+      "sha256": "4e4b84ae0d7bae17861d0361e701aaba04dad3fd7ce2b84e29f66fa1b5453d93"
+    },
+    "scope": "The refreshed selector completed the Counter workflow. These baseline/Counter attempts then failed report finalization because the observer omitted boot-smoke.png. The checksum attempt failed navigation at 1002.8 ms. The current observer saves the required scanout; patch 0026 paints content before caption RPCs. None of these preceding attempts counts as a passing cohort."
+  },
+  "cache": {
+    "result": {
+      "path": "build/qed-coexist/cache-caption/results.json",
+      "sha256": "d0cc9327a22ab875ef1b170a49878eb5c12cfdde5e757a73183a06a47b2e8fd3"
+    },
+    "trace": {
+      "path": "build/qed-coexist/cache-caption/emulator.log",
+      "sha256": "7ff88ad4f101cfb17079f8c46b2050f79b3327a482c3d8527bdf71d6ab0b7f32"
+    },
+    "scope": {
+      "shorter_line_frames": 5,
+      "navigation_keys": 28,
+      "old_eof_restored": true,
+      "cover_expose": true,
+      "edit_and_undo_invalidation": true
+    },
+    "lifetimes": 4
+  },
+  "cohorts": {
+    "baseline": {
+      "result": {
+        "path": "build/qed-coexist/qc1-caption/coexist-results.json",
+        "sha256": "10be462a40bda38529c5a29dc7cbf6afc3396e9a0847b94c9fa9e6f405910092"
+      },
+      "trace": {
+        "path": "build/qed-coexist/qc1-caption/emulator.log",
+        "sha256": "0a5bd8e400ff39ad12fb3f77fe2ce4821a32842f2089b806b5e2a20dde3ca722"
+      },
+      "disk": {
+        "path": "build/qed-coexist/qc1-caption/work-walkthrough.atr",
+        "sha256": "509a726e4a1723698306e969d125f52ca4a6e89d181933de63e5a54bb7582adc"
+      },
+      "latency": {
+        "insert": {
+          "samples": 6,
+          "median_ms": 140.3909616721104,
+          "maximum_ms": 240.6702200093321
+        },
+        "navigate": {
+          "samples": 6,
+          "median_ms": 401.1170333488868,
+          "maximum_ms": 421.1723211428587
+        },
+        "find": {
+          "samples": 3,
+          "median_ms": 340.9494783465538,
+          "maximum_ms": 561.564410561914
+        }
+      },
+      "quit_ms": 762.1223633628849,
+      "load": null,
+      "initial_heap": {
+        "free_bytes": 1796640,
+        "largest_bytes": 1638400,
+        "free_extents": 9,
+        "regions": [
+          [
+            196608,
+            786432,
+            158240
+          ],
+          [
+            2490368,
+            4128768,
+            1638400
+          ]
+        ],
+        "extents": [
+          [
+            223576,
+            8
+          ],
+          [
+            224096,
+            40
+          ],
+          [
+            224400,
+            80
+          ],
+          [
+            302896,
+            112
+          ],
+          [
+            308848,
+            16
+          ],
+          [
+            327376,
+            304
+          ],
+          [
+            361240,
+            70504
+          ],
+          [
+            699256,
+            87176
+          ],
+          [
+            2490368,
+            1638400
+          ]
+        ]
+      },
+      "final_heap": {
+        "free_bytes": 1796640,
+        "largest_bytes": 1638400,
+        "free_extents": 9,
+        "regions": [
+          [
+            196608,
+            786432,
+            158240
+          ],
+          [
+            2490368,
+            4128768,
+            1638400
+          ]
+        ],
+        "extents": [
+          [
+            223576,
+            8
+          ],
+          [
+            224096,
+            40
+          ],
+          [
+            224400,
+            80
+          ],
+          [
+            302896,
+            112
+          ],
+          [
+            308848,
+            16
+          ],
+          [
+            327376,
+            304
+          ],
+          [
+            361240,
+            70504
+          ],
+          [
+            699256,
+            87176
+          ],
+          [
+            2490368,
+            1638400
+          ]
+        ]
+      },
+      "checkpoints": [
+        {
+          "name": "loaded",
+          "heap": {
+            "free_bytes": 1480864,
+            "largest_bytes": 1256048,
+            "free_extents": 10,
+            "regions": [
+              [
+                196608,
+                786432,
+                90312
+              ],
+              [
+                2490368,
+                4128768,
+                1390552
+              ]
+            ],
+            "extents": [
+              [
+                223576,
+                8
+              ],
+              [
+                224128,
+                8
+              ],
+              [
+                308848,
+                16
+              ],
+              [
+                327664,
+                16
+              ],
+              [
+                363592,
+                32
+              ],
+              [
+                376264,
+                55480
+              ],
+              [
+                699256,
+                21640
+              ],
+              [
+                773320,
+                13112
+              ],
+              [
+                2490368,
+                134504
+              ],
+              [
+                2872720,
+                1256048
+              ]
+            ]
+          },
+          "qed_private": [
+            4,
+            53325,
+            53373,
+            58517
+          ],
+          "live_tasks": 7
+        },
+        {
+          "name": "undo-and-viewport",
+          "heap": {
+            "free_bytes": 1480864,
+            "largest_bytes": 1256048,
+            "free_extents": 10,
+            "regions": [
+              [
+                196608,
+                786432,
+                90312
+              ],
+              [
+                2490368,
+                4128768,
+                1390552
+              ]
+            ],
+            "extents": [
+              [
+                223576,
+                8
+              ],
+              [
+                224128,
+                8
+              ],
+              [
+                308848,
+                16
+              ],
+              [
+                327664,
+                16
+              ],
+              [
+                363592,
+                32
+              ],
+              [
+                376264,
+                55480
+              ],
+              [
+                699256,
+                21640
+              ],
+              [
+                773320,
+                13112
+              ],
+              [
+                2490368,
+                134504
+              ],
+              [
+                2872720,
+                1256048
+              ]
+            ]
+          },
+          "qed_private": [
+            4,
+            53325,
+            53373,
+            58517
+          ],
+          "live_tasks": 7
+        },
+        {
+          "name": "saved",
+          "heap": {
+            "free_bytes": 1480864,
+            "largest_bytes": 1256048,
+            "free_extents": 10,
+            "regions": [
+              [
+                196608,
+                786432,
+                90312
+              ],
+              [
+                2490368,
+                4128768,
+                1390552
+              ]
+            ],
+            "extents": [
+              [
+                223576,
+                8
+              ],
+              [
+                224128,
+                8
+              ],
+              [
+                308848,
+                16
+              ],
+              [
+                327664,
+                16
+              ],
+              [
+                363592,
+                32
+              ],
+              [
+                376264,
+                55480
+              ],
+              [
+                699256,
+                21640
+              ],
+              [
+                773320,
+                13112
+              ],
+              [
+                2490368,
+                134504
+              ],
+              [
+                2872720,
+                1256048
+              ]
+            ]
+          },
+          "qed_private": [
+            4,
+            53325,
+            53373,
+            58891
+          ],
+          "live_tasks": 7
+        }
+      ],
+      "allocation": {
+        "sectors": 2880,
+        "sector_bytes": 256,
+        "allocated": 2086,
+        "free": 794,
+        "files": 5,
+        "directories": 1
+      },
+      "runtime_status": 0,
+      "guards": "intact",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$a2cfa3d755a5601d",
+        "actual_kernel_id": "$a2cfa3d755a5601d",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "autoboot_frames": 249
+    },
+    "peer": {
+      "result": {
+        "path": "build/qed-coexist/qc2-peer-caption/coexist-results.json",
+        "sha256": "fdf199f3af0fa70bc5ce8c9fd0b495013655a1ae07bc45fbee8e7bb5f065b546"
+      },
+      "trace": {
+        "path": "build/qed-coexist/qc2-peer-caption/emulator.log",
+        "sha256": "71a6b0509bc2b62bbc69c94d555d906bc6c9f9550e3b66272fa28287a12f6743"
+      },
+      "disk": {
+        "path": "build/qed-coexist/qc2-peer-caption/work-walkthrough.atr",
+        "sha256": "2b5560fabe80991f084912b2c31d3c8d651577654ac04748561951b78cb2873d"
+      },
+      "latency": {
+        "insert": {
+          "samples": 6,
+          "median_ms": 160.44653140281852,
+          "maximum_ms": 300.83777501166514
+        },
+        "navigate": {
+          "samples": 6,
+          "median_ms": 471.3125141849421,
+          "maximum_ms": 521.4515794800805
+        },
+        "find": {
+          "samples": 3,
+          "median_ms": 361.00589388747056,
+          "maximum_ms": 621.731965564247
+        }
+      },
+      "quit_ms": 862.4016217001067,
+      "load": {
+        "cohort": "peer",
+        "samples": [
+          {
+            "name": "typing-complete",
+            "value": 6,
+            "live_tasks": 8
+          },
+          {
+            "name": "navigation-complete",
+            "value": 16,
+            "live_tasks": 8
+          },
+          {
+            "name": "form-start",
+            "value": 16,
+            "live_tasks": 8
+          },
+          {
+            "name": "form-end",
+            "value": 18,
+            "live_tasks": 8
+          },
+          {
+            "name": "stop-form-start",
+            "value": 183,
+            "live_tasks": 8
+          },
+          {
+            "name": "stop-form-end",
+            "value": 185,
+            "live_tasks": 8
+          }
+        ],
+        "identity": 6,
+        "admission_heap": {
+          "before": {
+            "free_bytes": 1345688,
+            "largest_bytes": 1256048,
+            "free_extents": 8,
+            "regions": [
+              [
+                196608,
+                786432,
+                86440
+              ],
+              [
+                2490368,
+                4128768,
+                1259248
+              ]
+            ],
+            "extents": [
+              [
+                224128,
+                8
+              ],
+              [
+                308848,
+                16
+              ],
+              [
+                327664,
+                16
+              ],
+              [
+                380096,
+                51648
+              ],
+              [
+                699256,
+                21640
+              ],
+              [
+                773320,
+                13112
+              ],
+              [
+                2621672,
+                3200
+              ],
+              [
+                2872720,
+                1256048
+              ]
+            ]
+          },
+          "after": {
+            "free_bytes": 1345688,
+            "largest_bytes": 1256048,
+            "free_extents": 8,
+            "regions": [
+              [
+                196608,
+                786432,
+                86440
+              ],
+              [
+                2490368,
+                4128768,
+                1259248
+              ]
+            ],
+            "extents": [
+              [
+                224128,
+                8
+              ],
+              [
+                308848,
+                16
+              ],
+              [
+                327664,
+                16
+              ],
+              [
+                380096,
+                51648
+              ],
+              [
+                699256,
+                21640
+              ],
+              [
+                773320,
+                13112
+              ],
+              [
+                2621672,
+                3200
+              ],
+              [
+                2872720,
+                1256048
+              ]
+            ]
+          }
+        },
+        "ninth_task_rejected": true,
+        "form_progress": true,
+        "counter_label_pixels": 832,
+        "cover_expose": true,
+        "cooperative_stop_cancel": true,
+        "collected": true
+      },
+      "initial_heap": {
+        "free_bytes": 1796272,
+        "largest_bytes": 1638400,
+        "free_extents": 10,
+        "regions": [
+          [
+            196608,
+            786432,
+            157872
+          ],
+          [
+            2490368,
+            4128768,
+            1638400
+          ]
+        ],
+        "extents": [
+          [
+            223576,
+            8
+          ],
+          [
+            224096,
+            40
+          ],
+          [
+            224400,
+            80
+          ],
+          [
+            302896,
+            112
+          ],
+          [
+            308848,
+            16
+          ],
+          [
+            327664,
+            16
+          ],
+          [
+            361240,
+            1968
+          ],
+          [
+            363288,
+            68456
+          ],
+          [
+            699256,
+            87176
+          ],
+          [
+            2490368,
+            1638400
+          ]
+        ]
+      },
+      "final_heap": {
+        "free_bytes": 1796272,
+        "largest_bytes": 1638400,
+        "free_extents": 10,
+        "regions": [
+          [
+            196608,
+            786432,
+            157872
+          ],
+          [
+            2490368,
+            4128768,
+            1638400
+          ]
+        ],
+        "extents": [
+          [
+            223576,
+            8
+          ],
+          [
+            224096,
+            40
+          ],
+          [
+            224400,
+            80
+          ],
+          [
+            302896,
+            112
+          ],
+          [
+            308848,
+            16
+          ],
+          [
+            327664,
+            16
+          ],
+          [
+            361240,
+            1968
+          ],
+          [
+            363288,
+            68456
+          ],
+          [
+            699256,
+            87176
+          ],
+          [
+            2490368,
+            1638400
+          ]
+        ]
+      },
+      "checkpoints": [
+        {
+          "name": "loaded",
+          "heap": {
+            "free_bytes": 1345688,
+            "largest_bytes": 1256048,
+            "free_extents": 8,
+            "regions": [
+              [
+                196608,
+                786432,
+                86440
+              ],
+              [
+                2490368,
+                4128768,
+                1259248
+              ]
+            ],
+            "extents": [
+              [
+                224128,
+                8
+              ],
+              [
+                308848,
+                16
+              ],
+              [
+                327664,
+                16
+              ],
+              [
+                380096,
+                51648
+              ],
+              [
+                699256,
+                21640
+              ],
+              [
+                773320,
+                13112
+              ],
+              [
+                2621672,
+                3200
+              ],
+              [
+                2872720,
+                1256048
+              ]
+            ]
+          },
+          "qed_private": [
+            4,
+            53325,
+            53373,
+            58517
+          ],
+          "live_tasks": 8
+        },
+        {
+          "name": "undo-and-viewport",
+          "heap": {
+            "free_bytes": 1345688,
+            "largest_bytes": 1256048,
+            "free_extents": 8,
+            "regions": [
+              [
+                196608,
+                786432,
+                86440
+              ],
+              [
+                2490368,
+                4128768,
+                1259248
+              ]
+            ],
+            "extents": [
+              [
+                224128,
+                8
+              ],
+              [
+                308848,
+                16
+              ],
+              [
+                327664,
+                16
+              ],
+              [
+                380096,
+                51648
+              ],
+              [
+                699256,
+                21640
+              ],
+              [
+                773320,
+                13112
+              ],
+              [
+                2621672,
+                3200
+              ],
+              [
+                2872720,
+                1256048
+              ]
+            ]
+          },
+          "qed_private": [
+            4,
+            53325,
+            53373,
+            58517
+          ],
+          "live_tasks": 8
+        },
+        {
+          "name": "saved",
+          "heap": {
+            "free_bytes": 1345688,
+            "largest_bytes": 1256048,
+            "free_extents": 8,
+            "regions": [
+              [
+                196608,
+                786432,
+                86440
+              ],
+              [
+                2490368,
+                4128768,
+                1259248
+              ]
+            ],
+            "extents": [
+              [
+                224128,
+                8
+              ],
+              [
+                308848,
+                16
+              ],
+              [
+                327664,
+                16
+              ],
+              [
+                380096,
+                51648
+              ],
+              [
+                699256,
+                21640
+              ],
+              [
+                773320,
+                13112
+              ],
+              [
+                2621672,
+                3200
+              ],
+              [
+                2872720,
+                1256048
+              ]
+            ]
+          },
+          "qed_private": [
+            4,
+            53325,
+            53373,
+            58891
+          ],
+          "live_tasks": 8
+        }
+      ],
+      "allocation": {
+        "sectors": 2880,
+        "sector_bytes": 256,
+        "allocated": 2346,
+        "free": 534,
+        "files": 6,
+        "directories": 1
+      },
+      "runtime_status": 0,
+      "guards": "intact",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$ba68df832ea92229",
+        "actual_kernel_id": "$ba68df832ea92229",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "autoboot_frames": 249
+    },
+    "checksum": {
+      "result": {
+        "path": "build/qed-coexist/qc2-checksum-caption/coexist-results.json",
+        "sha256": "0c662d1637b2979ffd117180779124e16d275e25b983f840787273f42e629107"
+      },
+      "trace": {
+        "path": "build/qed-coexist/qc2-checksum-caption/emulator.log",
+        "sha256": "6f42e533a08ab30adcf1584bfe3b2769268f53dc3be4d89b6ae079b059a7fdd1"
+      },
+      "disk": {
+        "path": "build/qed-coexist/qc2-checksum-caption/work-walkthrough.atr",
+        "sha256": "509a726e4a1723698306e969d125f52ca4a6e89d181933de63e5a54bb7582adc"
+      },
+      "latency": {
+        "insert": {
+          "samples": 6,
+          "median_ms": 220.61408640515157,
+          "maximum_ms": 441.22930055724794
+        },
+        "navigate": {
+          "samples": 6,
+          "median_ms": 722.0106600279963,
+          "maximum_ms": 762.1229272363574
+        },
+        "find": {
+          "samples": 3,
+          "median_ms": 481.34100389213665,
+          "maximum_ms": 962.6814439108009
+        }
+      },
+      "quit_ms": 802.2340666977736,
+      "load": {
+        "cohort": "checksum",
+        "samples": [
+          {
+            "name": "input-start",
+            "value": 701854206,
+            "live_tasks": 8
+          },
+          {
+            "name": "typing-complete",
+            "value": 110940783,
+            "live_tasks": 8
+          },
+          {
+            "name": "navigation-complete",
+            "value": 536107787,
+            "live_tasks": 8
+          },
+          {
+            "name": "form-start",
+            "value": 610784360,
+            "live_tasks": 8
+          },
+          {
+            "name": "form-end",
+            "value": 1662380744,
+            "live_tasks": 8
+          }
+        ],
+        "initial_cache_misses": 624,
+        "initial_crc": 0,
+        "form_progress": true,
+        "completion_progress": [
+          {
+            "frames": 500,
+            "crc": 1671911580,
+            "cache_misses": 735
+          },
+          {
+            "frames": 1000,
+            "crc": 1808261032,
+            "cache_misses": 754
+          },
+          {
+            "frames": 1500,
+            "crc": 581061585,
+            "cache_misses": 774
+          },
+          {
+            "frames": 2000,
+            "crc": 2794580169,
+            "cache_misses": 792
+          },
+          {
+            "frames": 2500,
+            "crc": 2135081789,
+            "cache_misses": 808
+          },
+          {
+            "frames": 3000,
+            "crc": 1118725053,
+            "cache_misses": 827
+          },
+          {
+            "frames": 3500,
+            "crc": 1742751562,
+            "cache_misses": 845
+          },
+          {
+            "frames": 4000,
+            "crc": 3616326427,
+            "cache_misses": 864
+          },
+          {
+            "frames": 4500,
+            "crc": 3107521103,
+            "cache_misses": 885
+          },
+          {
+            "frames": 5000,
+            "crc": 647204929,
+            "cache_misses": 903
+          },
+          {
+            "frames": 5500,
+            "crc": 3372462097,
+            "cache_misses": 922
+          },
+          {
+            "frames": 6000,
+            "crc": 1036534484,
+            "cache_misses": 941
+          },
+          {
+            "frames": 6500,
+            "crc": 143695339,
+            "cache_misses": 961
+          },
+          {
+            "frames": 7000,
+            "crc": 3413134230,
+            "cache_misses": 980
+          },
+          {
+            "frames": 7500,
+            "crc": 2618458466,
+            "cache_misses": 999
+          },
+          {
+            "frames": 8000,
+            "crc": 2856789094,
+            "cache_misses": 1018
+          },
+          {
+            "frames": 8500,
+            "crc": 271845605,
+            "cache_misses": 1036
+          },
+          {
+            "frames": 9000,
+            "crc": 2084333808,
+            "cache_misses": 1054
+          },
+          {
+            "frames": 9500,
+            "crc": 2048963449,
+            "cache_misses": 1073
+          },
+          {
+            "frames": 10000,
+            "crc": 3856679832,
+            "cache_misses": 1092
+          },
+          {
+            "frames": 10500,
+            "crc": 2554917779,
+            "cache_misses": 1112
+          },
+          {
+            "frames": 11000,
+            "crc": 1089610148,
+            "cache_misses": 1130
+          },
+          {
+            "frames": 11500,
+            "crc": 1257623479,
+            "cache_misses": 1147
+          },
+          {
+            "frames": 12000,
+            "crc": 1254162461,
+            "cache_misses": 1166
+          },
+          {
+            "frames": 12500,
+            "crc": 3758029661,
+            "cache_misses": 1185
+          },
+          {
+            "frames": 13000,
+            "crc": 303954580,
+            "cache_misses": 1203
+          },
+          {
+            "frames": 13500,
+            "crc": 431097784,
+            "cache_misses": 1223
+          },
+          {
+            "frames": 14000,
+            "crc": 1305745,
+            "cache_misses": 1241
+          },
+          {
+            "frames": 14500,
+            "crc": 833967448,
+            "cache_misses": 1261
+          },
+          {
+            "frames": 15000,
+            "crc": 3348094568,
+            "cache_misses": 1280
+          },
+          {
+            "frames": 15500,
+            "crc": 3417543802,
+            "cache_misses": 1300
+          },
+          {
+            "frames": 16000,
+            "crc": 3891220775,
+            "cache_misses": 1318
+          },
+          {
+            "frames": 16500,
+            "crc": 1134029925,
+            "cache_misses": 1336
+          },
+          {
+            "frames": 17000,
+            "crc": 1737851868,
+            "cache_misses": 1356
+          },
+          {
+            "frames": 17500,
+            "crc": 4270371035,
+            "cache_misses": 1374
+          },
+          {
+            "frames": 18000,
+            "crc": 3729902697,
+            "cache_misses": 1394
+          },
+          {
+            "frames": 18500,
+            "crc": 3008449381,
+            "cache_misses": 1413
+          },
+          {
+            "frames": 19000,
+            "crc": 2355727499,
+            "cache_misses": 1432
+          },
+          {
+            "frames": 19500,
+            "crc": 1345591228,
+            "cache_misses": 1450
+          },
+          {
+            "frames": 20000,
+            "crc": 415317571,
+            "cache_misses": 1469
+          },
+          {
+            "frames": 20500,
+            "crc": 420611505,
+            "cache_misses": 1489
+          },
+          {
+            "frames": 21000,
+            "crc": 901562855,
+            "cache_misses": 1509
+          },
+          {
+            "frames": 21500,
+            "crc": 3814728978,
+            "cache_misses": 1528
+          },
+          {
+            "frames": 22000,
+            "crc": 1243216049,
+            "cache_misses": 1548
+          },
+          {
+            "frames": 22500,
+            "crc": 1358844919,
+            "cache_misses": 1566
+          },
+          {
+            "frames": 23000,
+            "crc": 4040423263,
+            "cache_misses": 1586
+          },
+          {
+            "frames": 23500,
+            "crc": 792008922,
+            "cache_misses": 1602
+          },
+          {
+            "frames": 24000,
+            "crc": 3483821815,
+            "cache_misses": 1622
+          },
+          {
+            "frames": 24500,
+            "crc": 2198363937,
+            "cache_misses": 1641
+          },
+          {
+            "frames": 25000,
+            "crc": 1402127515,
+            "cache_misses": 1661
+          },
+          {
+            "frames": 25500,
+            "crc": 1476510535,
+            "cache_misses": 1679
+          },
+          {
+            "frames": 26000,
+            "crc": 732709531,
+            "cache_misses": 1699
+          },
+          {
+            "frames": 26500,
+            "crc": 2410091452,
+            "cache_misses": 1719
+          },
+          {
+            "frames": 27000,
+            "crc": 765689468,
+            "cache_misses": 1738
+          },
+          {
+            "frames": 27500,
+            "crc": 736215253,
+            "cache_misses": 1758
+          },
+          {
+            "frames": 28000,
+            "crc": 212530514,
+            "cache_misses": 1778
+          },
+          {
+            "frames": 28500,
+            "crc": 3736265503,
+            "cache_misses": 1796
+          },
+          {
+            "frames": 29000,
+            "crc": 1266930379,
+            "cache_misses": 1814
+          },
+          {
+            "frames": 29500,
+            "crc": 2083972380,
+            "cache_misses": 1834
+          },
+          {
+            "frames": 30000,
+            "crc": 3685241980,
+            "cache_misses": 1852
+          },
+          {
+            "frames": 30500,
+            "crc": 1928093773,
+            "cache_misses": 1871
+          },
+          {
+            "frames": 31000,
+            "crc": 1278143102,
+            "cache_misses": 1890
+          },
+          {
+            "frames": 31500,
+            "crc": 2024737843,
+            "cache_misses": 1907
+          },
+          {
+            "frames": 32000,
+            "crc": 1352469505,
+            "cache_misses": 1927
+          },
+          {
+            "frames": 32500,
+            "crc": 2955366543,
+            "cache_misses": 1947
+          },
+          {
+            "frames": 33000,
+            "crc": 3636652686,
+            "cache_misses": 1965
+          },
+          {
+            "frames": 33500,
+            "crc": 1521497444,
+            "cache_misses": 1985
+          },
+          {
+            "frames": 34000,
+            "crc": 3864675863,
+            "cache_misses": 2005
+          },
+          {
+            "frames": 34500,
+            "crc": 1809364804,
+            "cache_misses": 2025
+          },
+          {
+            "frames": 35000,
+            "crc": 4139551423,
+            "cache_misses": 2044
+          },
+          {
+            "frames": 35500,
+            "crc": 1489150680,
+            "cache_misses": 2062
+          },
+          {
+            "frames": 36000,
+            "crc": 2247235725,
+            "cache_misses": 2081
+          },
+          {
+            "frames": 36500,
+            "crc": 516261795,
+            "cache_misses": 2098
+          },
+          {
+            "frames": 37000,
+            "crc": 1071947844,
+            "cache_misses": 2118
+          },
+          {
+            "frames": 37500,
+            "crc": 1725513047,
+            "cache_misses": 2136
+          },
+          {
+            "frames": 38000,
+            "crc": 2202401947,
+            "cache_misses": 2155
+          },
+          {
+            "frames": 38500,
+            "crc": 3033621283,
+            "cache_misses": 2174
+          },
+          {
+            "frames": 39000,
+            "crc": 1842701215,
+            "cache_misses": 2193
+          },
+          {
+            "frames": 39500,
+            "crc": 2991651505,
+            "cache_misses": 2211
+          },
+          {
+            "frames": 40000,
+            "crc": 2926814423,
+            "cache_misses": 2230
+          },
+          {
+            "frames": 40500,
+            "crc": 2206077486,
+            "cache_misses": 2249
+          },
+          {
+            "frames": 41000,
+            "crc": 184651367,
+            "cache_misses": 2269
+          },
+          {
+            "frames": 41500,
+            "crc": 3258739118,
+            "cache_misses": 2289
+          },
+          {
+            "frames": 42000,
+            "crc": 3010162974,
+            "cache_misses": 2308
+          },
+          {
+            "frames": 42500,
+            "crc": 2629648476,
+            "cache_misses": 2328
+          },
+          {
+            "frames": 43000,
+            "crc": 2027042015,
+            "cache_misses": 2346
+          },
+          {
+            "frames": 43500,
+            "crc": 2867582933,
+            "cache_misses": 2364
+          },
+          {
+            "frames": 44000,
+            "crc": 3885123869,
+            "cache_misses": 2384
+          },
+          {
+            "frames": 44500,
+            "crc": 275769229,
+            "cache_misses": 2402
+          },
+          {
+            "frames": 45000,
+            "crc": 1539775025,
+            "cache_misses": 2421
+          },
+          {
+            "frames": 45500,
+            "crc": 2223575199,
+            "cache_misses": 2439
+          },
+          {
+            "frames": 46000,
+            "crc": 1250861188,
+            "cache_misses": 2459
+          },
+          {
+            "frames": 46500,
+            "crc": 3873230091,
+            "cache_misses": 2479
+          },
+          {
+            "frames": 47000,
+            "crc": 1137525809,
+            "cache_misses": 2497
+          },
+          {
+            "frames": 47500,
+            "crc": 207283345,
+            "cache_misses": 2517
+          },
+          {
+            "frames": 48000,
+            "crc": 4220696865,
+            "cache_misses": 2538
+          },
+          {
+            "frames": 48500,
+            "crc": 1945223116,
+            "cache_misses": 2556
+          },
+          {
+            "frames": 49000,
+            "crc": 2099793246,
+            "cache_misses": 2572
+          },
+          {
+            "frames": 49500,
+            "crc": 3787775021,
+            "cache_misses": 2592
+          },
+          {
+            "frames": 50000,
+            "crc": 2259666679,
+            "cache_misses": 2610
+          },
+          {
+            "frames": 50500,
+            "crc": 1435175497,
+            "cache_misses": 2628
+          },
+          {
+            "frames": 51000,
+            "crc": 3600353193,
+            "cache_misses": 2646
+          },
+          {
+            "frames": 51500,
+            "crc": 327833643,
+            "cache_misses": 2665
+          },
+          {
+            "frames": 52000,
+            "crc": 1236226005,
+            "cache_misses": 2685
+          }
+        ],
+        "checksum": "3650126349 524288",
+        "final_cache_misses": 2693,
+        "collected": true
+      },
+      "initial_heap": {
+        "free_bytes": 1796640,
+        "largest_bytes": 1638400,
+        "free_extents": 9,
+        "regions": [
+          [
+            196608,
+            786432,
+            158240
+          ],
+          [
+            2490368,
+            4128768,
+            1638400
+          ]
+        ],
+        "extents": [
+          [
+            223576,
+            8
+          ],
+          [
+            224096,
+            40
+          ],
+          [
+            224400,
+            80
+          ],
+          [
+            302896,
+            112
+          ],
+          [
+            308848,
+            16
+          ],
+          [
+            327376,
+            304
+          ],
+          [
+            361240,
+            70504
+          ],
+          [
+            699256,
+            87176
+          ],
+          [
+            2490368,
+            1638400
+          ]
+        ]
+      },
+      "final_heap": {
+        "free_bytes": 1796640,
+        "largest_bytes": 1638400,
+        "free_extents": 9,
+        "regions": [
+          [
+            196608,
+            786432,
+            158240
+          ],
+          [
+            2490368,
+            4128768,
+            1638400
+          ]
+        ],
+        "extents": [
+          [
+            223576,
+            8
+          ],
+          [
+            224096,
+            40
+          ],
+          [
+            224400,
+            80
+          ],
+          [
+            302896,
+            112
+          ],
+          [
+            308848,
+            16
+          ],
+          [
+            327376,
+            304
+          ],
+          [
+            361240,
+            70504
+          ],
+          [
+            699256,
+            87176
+          ],
+          [
+            2490368,
+            1638400
+          ]
+        ]
+      },
+      "checkpoints": [
+        {
+          "name": "loaded",
+          "heap": {
+            "free_bytes": 1410024,
+            "largest_bytes": 1256048,
+            "free_extents": 10,
+            "regions": [
+              [
+                196608,
+                786432,
+                88800
+              ],
+              [
+                2490368,
+                4128768,
+                1321224
+              ]
+            ],
+            "extents": [
+              [
+                223576,
+                8
+              ],
+              [
+                224128,
+                8
+              ],
+              [
+                327664,
+                16
+              ],
+              [
+                363616,
+                8
+              ],
+              [
+                376720,
+                4744
+              ],
+              [
+                382480,
+                49264
+              ],
+              [
+                699256,
+                21640
+              ],
+              [
+                773320,
+                13112
+              ],
+              [
+                2559696,
+                65176
+              ],
+              [
+                2872720,
+                1256048
+              ]
+            ]
+          },
+          "qed_private": [
+            4,
+            53325,
+            53373,
+            58517
+          ],
+          "live_tasks": 8
+        },
+        {
+          "name": "undo-and-viewport",
+          "heap": {
+            "free_bytes": 1410024,
+            "largest_bytes": 1256048,
+            "free_extents": 10,
+            "regions": [
+              [
+                196608,
+                786432,
+                88800
+              ],
+              [
+                2490368,
+                4128768,
+                1321224
+              ]
+            ],
+            "extents": [
+              [
+                223576,
+                8
+              ],
+              [
+                224128,
+                8
+              ],
+              [
+                327664,
+                16
+              ],
+              [
+                363616,
+                8
+              ],
+              [
+                376720,
+                4744
+              ],
+              [
+                382480,
+                49264
+              ],
+              [
+                699256,
+                21640
+              ],
+              [
+                773320,
+                13112
+              ],
+              [
+                2559696,
+                65176
+              ],
+              [
+                2872720,
+                1256048
+              ]
+            ]
+          },
+          "qed_private": [
+            4,
+            53325,
+            53373,
+            58517
+          ],
+          "live_tasks": 8
+        },
+        {
+          "name": "saved",
+          "heap": {
+            "free_bytes": 1410024,
+            "largest_bytes": 1256048,
+            "free_extents": 10,
+            "regions": [
+              [
+                196608,
+                786432,
+                88800
+              ],
+              [
+                2490368,
+                4128768,
+                1321224
+              ]
+            ],
+            "extents": [
+              [
+                223576,
+                8
+              ],
+              [
+                224128,
+                8
+              ],
+              [
+                327664,
+                16
+              ],
+              [
+                363616,
+                8
+              ],
+              [
+                376720,
+                4744
+              ],
+              [
+                382480,
+                49264
+              ],
+              [
+                699256,
+                21640
+              ],
+              [
+                773320,
+                13112
+              ],
+              [
+                2559696,
+                65176
+              ],
+              [
+                2872720,
+                1256048
+              ]
+            ]
+          },
+          "qed_private": [
+            4,
+            53325,
+            53373,
+            58891
+          ],
+          "live_tasks": 8
+        }
+      ],
+      "allocation": {
+        "sectors": 2880,
+        "sector_bytes": 256,
+        "allocated": 2086,
+        "free": 794,
+        "files": 5,
+        "directories": 1
+      },
+      "runtime_status": 0,
+      "guards": "intact",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$9051a8ed656a25dc",
+        "actual_kernel_id": "$9051a8ed656a25dc",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "autoboot_frames": 249
+    }
+  },
+  "desktop_warmup": {
+    "result": {
+      "path": "build/qed-coexist/qc2-peer-caption/desktop-warmup.json",
+      "sha256": "85d6ca72e35b78c68ed220edfbb33f58bbff2aa871d1172d98c64062c8c19aa7"
+    },
+    "cold_free_bytes": 1796640,
+    "warm_free_bytes": 1796272,
+    "retained_upper_bytes": 368,
+    "accumulating_bytes": 0,
+    "timer_backing_bytes": 112,
+    "path_backing_bytes": 256
+  },
+  "lifetime": {
+    "result": {
+      "path": "build/qed-coexist/qc3-caption/results.json",
+      "sha256": "965c6ab24d02ce74f1183c2ebff3ae32f4c711b0763640ba1fc913419417ca50"
+    },
+    "trace": {
+      "path": "build/qed-coexist/qc3-caption/emulator.log",
+      "sha256": "3ae543d845a7ba7718e650babaafe89dcb36f9da16e9babd6a777e4e8bdf7901"
+    },
+    "scope": {
+      "document_bytes": 65154,
+      "repeated_edits": 12,
+      "line_refusals": 1,
+      "form_refusals": 1,
+      "navigation_keys": 64,
+      "peer_paints": 470,
+      "exact_heap_restoration": true
+    },
+    "private_peak_requested_backing_bytes": 163355,
+    "private_stats_scope": "QED allocator payload plus its headers, before native heap rounding; actual rounded system occupancy is covered by native free extents.",
+    "minimum_sampled_system_free_bytes": 1634264,
+    "minimum_selected_headroom_bytes": 1264,
+    "stack_scope": "Selected PCs in the first large-document lifetime only; guards and functional collection in all four. Actual captured APP image bases and native/provider sites; per-pool Process ordinals, DP and guards remain checked. Broad candidate-only sites are excluded. Selected-PC observations, not a watermark."
+  },
+  "idle": {
+    "result": {
+      "path": "build/qed-coexist/blink-caption/results.json",
+      "sha256": "577658a89ab3dc282e779dd3735d9956956ad7ef8aa49fed570f1e66f20296bf"
+    },
+    "trace": {
+      "path": "build/qed-coexist/blink-caption/emulator.log",
+      "sha256": "119919e59ced20777cc18c593c9f7c2348285e3d8a32fff16dee2db579d473ed"
+    },
+    "draws": {
+      "bars": 47,
+      "glyphs": 21,
+      "outside_band": 0,
+      "idle_transitions": 8
+    },
+    "real_hidden_caret_checks": 4
+  },
+  "damage": {
+    "result": {
+      "path": "build/qed-coexist/damage-caption/results.json",
+      "sha256": "ebd794595440fcfef96b43e554dfa946cbcc1c43a5186430ed53c921afc8509c"
+    },
+    "trace": {
+      "path": "build/qed-coexist/damage-caption/emulator.log",
+      "sha256": "ef5c62e3527f51a25546b4dd3abaa0d04efa7d9ce5c9e47c4e8038856f85733e"
+    },
+    "cases": 16
+  },
+  "stop_dispatch": "Owning shell EXECUTE reads 65,544-byte STOP.CMD, then resolves a temporary alias to ordinary BREAK; QED is focused before the decision opens; alias removed after Cancel.",
+  "host": {
+    "result": {
+      "path": "build/qed-coexist-caption-final-host.log",
+      "sha256": "29869f9d00ef798cf9c81afd00b70fc952ef2af096a74b2f9899a3dd1e640138"
+    },
+    "tests": 552,
+    "skipped": 4
+  },
+  "inputs": {
+    "tools/record_qed_coexist.py": "bb79932d8b0e42d9f121684a78e41a3070b58a3b4c3f62386ba28931d531fb6a",
+    "tools/test_qed_coexist.py": "ba8aa9fbf8b16ff617d97830e9dd60c2af73810a6446829060c3d4da7bded5c9",
+    "tools/qed_coexist_observe.py": "8aab487496318a24c45045ae0eeb3613df90371c53440cedbbe37b6dc7c517bc",
+    "tools/qed_coexist_load.py": "cb530451ff3c56113b38ed4b06442e1c6b6105c101380cf35cdb229e6adf0a4c",
+    "tools/test_qed_coexist_load.py": "f4bba4cebe6044bf3fd2042f2ba4a935fb9e5f649b0aa016e7cba7b93b976022",
+    "tools/qed_coexist_warm.py": "ea16ea325da223eed79d1a0ecca541ebdeeec9220ea1da2b5ec7751d2885c796",
+    "tools/test_qed_cache.py": "f3ed8f35b93a7a4a5dd425fa73b470a4fdf2ed0044b8ae3462b390ba34ef2b32",
+    "c/calypsi/aes-events.c": "e38754d9a56e7d5141c2c7a67761c8812706a346e91be12426333396fba96e58",
+    "lib/dos/doscalls.act": "850a8902b24a09e3059d9b553b68d2ebc08c700e3d2a27c15230f837e906fa73",
+    "tools/test_qed_coexist_lifetime.py": "6239d86a4adf49547707a72ce3cfb9ddbde159177fceddb626e035351a745882",
+    "tools/test_qed_cursor.py": "521fc5572b3e03be8cf94ed2c34f9dc37a7ea768a2f354bd9840f9ee9ba1a457",
+    "tools/qed_stack_observer.py": "6f28dbf830784b480b7c7a27b93453027cce7ca1597f3646e0b9fbb695d8709c",
+    "tools/test_c_process.py": "381ce96c59c2826c3342bea8e7ba7e56f4685e5e14d9d62c4bb737907919d89b",
+    "tools/test_qed_selection.py": "bbafdc877b7d2856d77f584f0a8b003381556b3ddd6a4da96035fcca9f271c0f",
+    "tests/test_qed_stack_capture.py": "6d2cf921faf1dbaaf62bd5112d8aeab4070f62ec3935e5f48ec45de7805cb757",
+    "tests/programs/qed_damage_core.c": "d4fe9e793ed793eab6eb71f6277f164e56f1ceb040551c9f0cce6a6953c098d5",
+    "lib/exec/heap-system.inc": "94797829fe94ee950bdd6813c70fc38c3861f1c843deb2d02c563f1f50ee33d4"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Refreshed desktop selector; complete measured bank-zero budget equals the interactive cursor preview, including every Task/DP/stack/guard/alignment/slack reservation"
+  },
+  "limits": "Pinned ROM/emulator and 8x PAL configuration; sampled response and backing, first-lifetime selected stack tracing plus all-lifetime guards. No worst-case or hosted/release qualification claim."
+}

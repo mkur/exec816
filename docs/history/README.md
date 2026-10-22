@@ -1,7 +1,8 @@
 # Historical records
 
 - [QED practical coexistence](qed-coexistence.md): measured production response,
-  incremental edit damage and the step 6 workload/resource gate.
+  bounded drawing, window selection and the passing step 6 workload/resource
+  development gate; supported delivery remains step 7.
 
 - [QED reliable saving](qed-saving.md): QW1–QW8 canonical paths/current C ABI,
   checked staging/publication, loaded-editor saving, modified continuations,

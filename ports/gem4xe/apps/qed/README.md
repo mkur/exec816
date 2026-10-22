@@ -5,8 +5,8 @@
 
 For interactive use, the [native Exec Altirra preview](../../../../docs/guides/qed-exec.md)
 packages the current production editor on the ordinary GEM desktop, with a
-private launcher and persistent writable WORK disk. This local setup does not
-close the separate strategy step 6/7 gates.
+private launcher and persistent writable WORK disk. Strategy step 6 passes its
+selected coexistence development checks; supported delivery remains step 7.
 
 [inputs.json](inputs.json) pins the selected QED GEM4XE fork and FreeMiNT cflib
 sources, their Git trees and the raw-byte SHA-256 hashes of the editor, headers,
@@ -16,8 +16,8 @@ selection and the existing Exec toolchain/GUI inputs separately.
 This is an input baseline for the native Exec port. The donor does not pin its
 external cflib checkout; this pair is the fixed source input. The native work below records compilation and focused execution separately.
 Strategy step 3 builds a runnable development APP and exercises real startup;
-the editing and saving slices extend that baseline; practical coexistence and
-supported delivery retain their later gates.
+the editing, saving and practical coexistence slices extend that baseline.
+Supported delivery retains its separate step 7 gate.
 The donor's SDK, startup and G4A build are references,
 not the Exec build recipe. No donor sources are vendored by this baseline.
 
@@ -435,10 +435,10 @@ causes. A new destination uses normal creation metadata. Hidden/Archive and
 broader metadata preservation are not promised. Review/Forget releases only the
 recovery record; it leaves disk files intact for manual handling.
 
-The step 6 workload will measure responsiveness and fragmentation with another
-GEM application and shell or MD5/ARC activity. Current peer/pixel checks do not
-establish that workload's latency. QED remains a private development APP;
-normal launch/distribution, final notices and publication belong to step 7.
+The [step 6 workload gate](../../../../docs/history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff)
+now passes measured responsiveness, fragmentation and retirement beside Counter
+and a shell checksum command. QED remains a development APP; supported
+delivery, final scope/notices and publication belong to step 7.
 
 ## Idle caret painting
 
@@ -466,7 +466,7 @@ A separate fixture supplies real allocation refusals and four repeated lifetimes
 ```sh
 python3 tools/test_qed_damage.py --output build/qed-coexist/damage-reproduced
 python3 tools/test_qed_coexist_lifetime.py --output build/qed-coexist/lifetime-reproduced \
-  --native-from build/qed-coexist/qc3-complete
+  --native-from build/qed-coexist/qc3-caption
 python3 tools/test_qed_coexist.py --output build/qed-coexist/baseline-reproduced
 python3 tools/test_qed_coexist_load.py --cohort peer --output build/qed-coexist/peer-reproduced
 python3 tools/test_qed_coexist_load.py --cohort checksum --output build/qed-coexist/checksum-reproduced

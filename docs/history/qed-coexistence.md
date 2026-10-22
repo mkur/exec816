@@ -4,8 +4,10 @@
 [Implementation plan](../plans/gem4xe/qed-coexistence-implementation-plan.md) ·
 [Saving handoff](qed-saving.md#qw8-saving-gate-and-coexistence-handoff)
 
-Strategy step 6 is in progress. The production baseline, Counter/shell cohorts
-and repeated lifetime gate will establish the selected development scope.
+Strategy step 6 passes its selected development gate. The production baseline,
+Counter/shell cohorts and repeated lifetime/resource checks are bound by the
+[QC4 record](../development/qed-coexistence-qc4.json). Supported delivery and
+release qualification/publication remain step 7.
 
 ## QC1a Incremental edit damage
 
@@ -235,3 +237,64 @@ The image still needs 247,848 upper bytes of aligned backing, including the
 The refreshed native budget is identical to the cursor preview, including
 all guards, DP reservations, alignment and unused capacity: **0 fixed /
 0 per-public-Task / 0 private idle bank-zero bytes** of growth.
+
+
+## QC4 Reconciled gate and delivery handoff
+
+The [QC4 record](../development/qed-coexistence-qc4.json), produced by
+[`record_qed_coexist.py`](../../tools/record_qed_coexist.py), closes strategy
+step 6 at the development tier. It binds current source patches, executable
+APP/resource, source-frame ledger, unchanged C provider identity, compiler,
+pinned ROM/emulator, refreshed native desktop and exact OF816 ZIP. Prior
+intermediate records and failed attempts remain preserved.
+
+All three production cohorts pass the 816-byte, 49-row document workflow,
+fifteen physical-key response samples, clean Quit, exact save/backup bytes,
+normal JOBS collection and EXIT. Counter and the checksum each reach eight
+public Tasks without enlarging the pool. Native runtime status is zero and
+all guards are intact. The normal five-second OF816 countdown is retained.
+The package contains only boot files, guide, notices and checksums.
+
+The final patch set also passes four large-document lifetimes with a
+65,154-byte document, 64 navigation keys, twelve exact-heap reuse cycles,
+real line/form allocation refusals and cooperative Stop Cancel/Discard. Four
+idle/exposure lifetimes verify actual visible and hidden caret frames and
+caret-band drawing. Four further lifetimes cover variable-length cached
+scrolling, the former EOF caret, covering/exposure, edit and Undo invalidation.
+Sixteen actual-source damage/slider cases run across two lifetimes, including
+caption ordering. Focused fixtures retain their recorded native providers;
+all three normal-package cohorts exercise the refreshed native selector.
+
+Production baseline and checksum collection restore 1,796,640 free bytes,
+a 1,638,400-byte largest extent and nine free extents. Counter collection
+restores its independently verified warm baseline: 1,796,272 bytes, the same
+largest extent and ten extents. Its 368 upper bytes remain owned by the live
+desktop and do not accumulate across warm-ups. The large-document fixture's
+private allocator peak requests 163,355 bytes including its headers, before
+native heap rounding; actual native free extents are checked separately.
+Its minimum sampled system free space is 1,634,264 bytes. Selected stack PCs
+in the first large-document lifetime retain at least 1,264 bytes of headroom;
+guards and functional collection cover all four lifetimes. These samples and
+the conditional source bound are not a worst-case stack proof.
+
+Native reservations remain 10,528 fixed runtime bytes, public Task slots of
+1,824, five times 1,600, and twice 2,848 bytes, plus 800 private-idle bytes:
+26,848 total excluding the OS reservation, 58,080 including it. Loading uses
+20,368 bytes excluding the OS reservation, 51,600 including it. These figures
+include DP, stacks, guards, alignment and unused reserved capacity. Every
+reservation equals the preceding cursor preview: **0 fixed / 0 per-public-Task /
+0 private idle bank-zero bytes** of growth. Upper APP backing remains 247,848
+bytes and shared capacity remains eight public Tasks.
+
+Host checks pass **552 tests, four skipped**. Content/local-link checks and
+`git diff --check` pass. The existing local launchers forward to the measured
+preview; prepare-only validation confirms private D8 settings use the original
+writable WORK disk through a symlink. Its size and modification time are
+unchanged; no GUI emulator was launched. See the [launch guide](../guides/qed-exec.md).
+
+Step 7 starts from this gate: reconcile the agreed single-document scope and
+explicit deferrals, specify supported delivery, and verify its Files/shell
+launch paths, notices and reproducibility. Requested release qualification and
+publication remain separate work; release packages must add matching old/new
+Atarimax CAR images and the raw BIN through the normal demo builder. Step 6
+does not claim hosted-system or release qualification.
