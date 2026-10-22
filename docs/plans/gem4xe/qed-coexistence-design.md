@@ -138,6 +138,16 @@ including a same-height reopen. A scroll owner that has changed the model positi
 publishes the calculated position without first reading the old GUI value.
 This removes redundant AES round trips and preserves the public slider calls.
 
+Patch 0025 retains at most 30 by 80 plain screen cells in QED's private upper
+image. Consecutive full-work navigation paints compare new physical cells,
+write each changed span opaquely, restore the former caret cell and draw the
+new caret. It uses the existing clipped VDI entries; no VRAM reads or new service
+are needed. Single-row/partial damage, selection, non-default colours, different
+geometry, messages and non-navigation input invalidate this snapshot. Idle blink
+keeps its caret-band path. Full redraw after invalidation establishes a fresh
+snapshot; response limits remain warm-input measurements, not cold-redraw bounds.
+The retained cell array costs 2,400 upper-image bytes plus its small metadata.
+
 Optimize only a measured failure or material bottleneck in this workflow. Keep
 application drawing policy in QED, reusable GUI behavior in AES/VDI, filesystem
 and transport coordination with their owners, and compiler defects in actionc.

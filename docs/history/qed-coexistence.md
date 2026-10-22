@@ -164,3 +164,27 @@ change remains **0 fixed / 0 per-public-Task / 0 private idle bytes**, including
 guards, alignment and unused capacity. No Task pool, ABI or provider changes.
 The checksum run still reaches 1,023 ms on viewport navigation, so step 6 remains
 open. Full viewport rendering now needs a further measured application change.
+
+
+## QC2d Plain navigation cell snapshots
+
+Patch 0025 retains a bounded 30-by-80 screen-cell snapshot for consecutive full,
+plain navigation redraws. It writes changed spans opaquely and restores the old
+caret cell even when that cell lies beyond the changed text. Partial/row damage,
+selection, other colours, geometry changes, messages and non-navigation input
+invalidate it. Rendering continues through existing clipped VDI calls.
+
+The [QC2d record](../development/qed-coexistence-qc2d.json) binds the new image,
+passing baseline, four large-document lifetimes with 64 navigation keys,
+four idle-cursor lifetimes, sixteen damage/slider cases over two lifetimes,
+and four further cache lifetimes. The latter checks variable line lengths,
+former EOF caret restoration, covering/exposing the window, editing and Undo.
+Both loaded cohorts now pass all fifteen response samples. Their remaining
+issues concern Counter selection after shell use and the aggregate checksum
+wait; this intermediate record does not close collection or step 6.
+
+The cache reserves 2,420 upper-image bytes, including its full 2,400-cell
+capacity and metadata. Image backing is 247,848 bytes; the source bound is
+584 bytes with an 824-byte conditional margin. Reserved bank-zero growth is
+**0 fixed / 0 per-public-Task / 0 private idle bytes**, including guards,
+alignment and unused capacity. No public ABI, provider or Task pool changes.

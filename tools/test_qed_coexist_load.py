@@ -41,9 +41,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--cohort', choices=['peer', 'checksum'], required=True)
-    parser.add_argument('--bundle', type=Path, default=ROOT/'build/qed-coexist/sync-preview')
-    parser.add_argument('--production', type=Path, default=ROOT/'build/qed-coexist/sync-production')
-    parser.add_argument('--layout-from', type=Path, default=ROOT/'build/qed-coexist/qc3-sync/app')
+    parser.add_argument('--bundle', type=Path, default=ROOT/'build/qed-coexist/cells-preview')
+    parser.add_argument('--production', type=Path, default=ROOT/'build/qed-coexist/cells-production')
+    parser.add_argument('--layout-from', type=Path, default=ROOT/'build/qed-coexist/qc3-cells/app')
     a = parser.parse_args()
     check(a.output.resolve(), a.bundle.resolve(), a.production.resolve(), a.layout_from.resolve(),
           a.cohort, factory=LoadedCoexistence)

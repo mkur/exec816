@@ -144,9 +144,9 @@ def prepare(output, base, qed):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output', type=Path, default=ROOT / 'build/qed-coexist/sync-preview')
+    parser.add_argument('--output', type=Path, default=ROOT / 'build/qed-coexist/cells-preview')
     parser.add_argument('--demo-from', type=Path, default=ROOT / 'build/qed-saving/qw1-gem')
-    parser.add_argument('--qed-from', type=Path, default=ROOT / 'build/qed-coexist/sync-production')
+    parser.add_argument('--qed-from', type=Path, default=ROOT / 'build/qed-coexist/cells-production')
     args = parser.parse_args()
     prepare(args.output, args.demo_from, args.qed_from)
     print('Launch: ' + str(args.output / 'launch-qed.command'))

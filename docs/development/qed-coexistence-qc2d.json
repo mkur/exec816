@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "status": "partial-gate",
+  "tier": "development",
+  "qualification": false,
+  "scope": "QC2d private cell snapshots for consecutive plain full-work navigation. Functional baseline, repeated large-document navigation, cursor/exposure and shorter-line cache regressions pass. All loaded response samples pass; loaded collection issues remain separate.",
+  "production": {
+    "app": {
+      "path": "build/qed-coexist/cells-production/program.app",
+      "sha256": "c1b1c55566a935fce1196cfbea0a89e4621d05557ce17a3a3e423a1b2b85632f"
+    },
+    "layout": {
+      "path": "build/qed-coexist/cells-production/layout.json",
+      "sha256": "bd71fc66acbb8d1882aec8cd5230f88dbbf5571c5b83c43c2cd11d72193fa4f4"
+    },
+    "sources": {
+      "path": "build/qed-coexist/cells-production/inputs/sources.json",
+      "sha256": "a27cd6052af8d10ba60acfb7041c4fb50867615693a70967f80634612c7e5adb"
+    },
+    "frames": {
+      "path": "build/qed-coexist/cells-production/stack-frames.json",
+      "sha256": "4b80249b87f91298c7b25ee6f5306852557d301a07d8ca77006ac6843ded0fd2"
+    }
+  },
+  "layout": {
+    "code_bytes": 116776,
+    "initialized_bytes": 2774,
+    "bss_bytes": 24628,
+    "import_thunk_bytes": 404,
+    "span_bytes": 182312,
+    "image_holes_bytes": 38134,
+    "serialized_bytes_if_executable": 134502,
+    "relocation_count": 3512,
+    "heap_alignment_backing_bytes": 247848,
+    "future_full_profile_backing_bytes": 393216,
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "container_metadata_allowance_bytes": 16384,
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "upper_cache_reserved_bytes": 2420,
+  "cell_capacity_bytes": 2400,
+  "metadata_bytes": 20,
+  "cases": {
+    "baseline": {
+      "path": "build/qed-coexist/qc1-cells/coexist-results.json",
+      "sha256": "f65ce759c319f17e80ed46e0496b6de939b8811c4db18b2f35227e5ad22e5501"
+    },
+    "lifetime": {
+      "path": "build/qed-coexist/qc3-cells/results.json",
+      "sha256": "9fac99e38e2a0387cb94551cefbd0ec1be9aac220421a200954db08c3106108b"
+    },
+    "idle": {
+      "path": "build/qed-coexist/blink-cells/results.json",
+      "sha256": "7aad7f65874ec27a504507aa9f285b19c7f267b7fcc7bd5144d15e5c1dc8773a"
+    },
+    "damage": {
+      "path": "build/qed-coexist/damage-cells-final/results.json",
+      "sha256": "fc3b6df1ade9fbc37574b2adcef54c40428158712c525081e5e73c26d340f05e"
+    },
+    "cache": {
+      "path": "build/qed-coexist/cache-cells/results.json",
+      "sha256": "d261cc45c80078861bd0ea9c6823ecf2d4daa1e6f399a25086f0c0b6a85cf2e5"
+    }
+  },
+  "traces": {
+    "baseline": {
+      "path": "build/qed-coexist/qc1-cells/emulator.log",
+      "sha256": "b6b6f96ceb1ca0d1d85d8e57df32e77b2b1ca22f8027c298a230ea338fe2c61a"
+    },
+    "lifetime": {
+      "path": "build/qed-coexist/qc3-cells/emulator.log",
+      "sha256": "d274c444c74b595da4a3dacd133db1ec95ef79cd5fa60012ce93928c4e0996cb"
+    },
+    "idle": {
+      "path": "build/qed-coexist/blink-cells/emulator.log",
+      "sha256": "942ece48ea9c2e324fda1a650b8697c39e394289ef3d4f0930fe89b800cd4bb4"
+    },
+    "damage": {
+      "path": "build/qed-coexist/damage-cells-final/emulator.log",
+      "sha256": "9c6643ba261ed5509ca26b4331c5af70a9597bb8f2da6199dc106572056b06c6"
+    },
+    "cache": {
+      "path": "build/qed-coexist/cache-cells/emulator.log",
+      "sha256": "965d73f70444f45231cfed046730cac3a4436b8d33b2c2df692acd7d37ec68aa"
+    }
+  },
+  "pending": {
+    "peer": {
+      "observer_log": {
+        "path": "build/qed-coexist-qc2-peer-cells.log",
+        "sha256": "ec8292912a73ae4886ef37a8bd83271f9dfb719a534140cf8977330758e4f893"
+      },
+      "trace": {
+        "path": "build/qed-coexist/qc2-peer-cells/emulator.log",
+        "sha256": "456f2b2fab79b04ba676c185b0c934cb8603a962f584f4367f0e560f5db7717a"
+      },
+      "reason": "Counter could not be selected by Ctrl-Tab after shell use; all 15 response gates and Stop/Cancel passed"
+    },
+    "checksum": {
+      "observer_log": {
+        "path": "build/qed-coexist-qc2-checksum-cells.log",
+        "sha256": "d491d759ca4699798831c6528dac7a3aab56a49591db2b8b55415ab181f2ed30"
+      },
+      "trace": {
+        "path": "build/qed-coexist/qc2-checksum-cells/emulator.log",
+        "sha256": "9bfea3b0ddd02c20c48e5c9836853d61976c3dbd7c89ed1b3550131045a00d12"
+      },
+      "reason": "512 KiB foreground checksum still active after the generic 12000-frame command wait; all 15 response gates passed"
+    }
+  },
+  "host": {
+    "result": {
+      "path": "build/qed-coexist-cells-host.log",
+      "sha256": "a2bcb549857ec34de33e92917540ea5db4ef3aa06c7119866924bffd0979ae5d"
+    },
+    "tests": 552,
+    "skipped": 4
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Private upper-image cache; unchanged native desktop/provider and all stack/DP/guard/alignment/slack reservations"
+  }
+}

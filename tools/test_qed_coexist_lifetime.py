@@ -32,6 +32,10 @@ def interact(b, p, app, record, owner):
         b.memload(e.at('control'), struct.pack('<H', 1)); e.reach('dw($%x)=100' % e.at('phase'))
         e.click(100, 44); e.move(630, 20)
         peer = e.peer(); paints = e.get(peer['QedPeerPaints'])
+        for _ in range(32): e.key('EQUALS', ctrl=True, settle=3)
+        e.selection('coexist-cached-down', lines, None, 0, 32)
+        for _ in range(32): e.key('MINUS', ctrl=True, settle=3)
+        e.selection('coexist-cached-up', lines, None, 0, 0)
         e.put('QedEditFailLine', 1); e.key('A', dialog=True); e.alert(1)
         e.selection('coexist-line-refusal', lines, None, 0, 0)
         require(e.get(e.sy['QedEditFailureHits']) == 1, 'Line-allocation refusal not reached')
@@ -63,7 +67,7 @@ def interact(b, p, app, record, owner):
                 require(current == baseline, 'Repeated editing accumulated heap fragmentation')
         require(e.get(peer['QedPeerPaints']) > paints, 'Peer stopped during allocation/reuse checks')
         e.scene['coexist_lifetime'] = dict(document_bytes=len(LARGE), repeated_edits=12,
-            line_refusals=1, form_refusals=1, peer_paints=e.get(peer['QedPeerPaints'])-paints,
+            line_refusals=1, form_refusals=1, navigation_keys=64, peer_paints=e.get(peer['QedPeerPaints'])-paints,
             exact_heap_restoration=True)
         b.memload(e.at('control'), struct.pack('<H', 100)); e.reach('dw($%x)=101' % e.at('phase'))
         b.memload(e.at('control'), struct.pack('<H', 101)); e.click(100, 44)

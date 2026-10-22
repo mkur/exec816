@@ -1,0 +1,237 @@
+--- a/qed/src/ausgabe.c
++++ b/qed/src/ausgabe.c
+@@ -125,21 +125,15 @@
+     if(!t->block || row<t->z1 || row>t->z2)return FALSE;
+     return (row>t->z1 || byte>=t->x1) && (row<t->z2 || byte<t->x2);
+ }
+-static void output_line(WINDOWP w,TEXTP t,short row,bool cleared)
++static bool prepare_cells(WINDOWP w,TEXTP t,short row,short limit)
+ {
+     long absolute=w->doc.y+row,column=0;
+     LINEP line=visible_line(t,absolute);
+-    short index=0,repeat,count,first,last,limit=(w->work.g_w+7)/8;
+-    short tab=t->loc_opt->tabsize,remaining=tab;
+-    short y=w->work.g_y+row*font_hcell;
++    short index=0,repeat,count,tab=t->loc_opt->tabsize,remaining=tab;
+     char ch;
+-    bool mark,plain;
+-    if(!line){
+-        if(!cleared)fill_area(w->work.g_x,y,w->work.g_w,font_hcell,bg_color);
+-        vswr_mode(vdi_handle,MD_REPLACE);return;
+-    }
+-    if(limit>80)limit=80;
++    bool mark;
+     memset(cells,' ',limit);memset(marked,0,limit);
++    if(!line)return FALSE;
+     while(index<line->len && column<w->doc.x+limit){
+         ch=TEXT(line)[index];mark=selected_byte(t,absolute,index++);
+         if(ch=='\t' && t->loc_opt->tab){repeat=remaining;remaining=tab;}
+@@ -157,6 +151,29 @@
+     if(index==line->len && !IS_LAST(line) && column>=w->doc.x &&
+        column<w->doc.x+limit && selected_byte(t,absolute,line->len))
+         marked[(short)(column-w->doc.x)]=1;
++    return TRUE;
++}
++
++static void row_caret(WINDOWP w,TEXTP t,short row)
++{
++    if(t->cursor && !t->blink && w->doc.y+row==t->ypos){
++        long x=(long)w->work.g_x+cursor_xpos(t,t->xpos,NULL)-w->doc.x*font_wcell;
++        if(x>=w->work.g_x && x<(long)w->work.g_x+w->work.g_w)
++            fill_area((short)x,w->work.g_y+row*font_hcell,min(overwrite?font_wcell:2,
++                w->work.g_x+w->work.g_w-(short)x),font_hcell,fg_color);
++    }
++}
++
++static void output_line(WINDOWP w,TEXTP t,short row,bool cleared)
++{
++    short count,first,last,limit=(w->work.g_w+7)/8;
++    short y=w->work.g_y+row*font_hcell;
++    bool plain;
++    if(limit>80)limit=80;
++    if(!prepare_cells(w,t,row,limit)){
++        if(!cleared)fill_area(w->work.g_x,y,w->work.g_w,font_hcell,bg_color);
++        vswr_mode(vdi_handle,MD_REPLACE);return;
++    }
+     /* Native replace-mode text supplies paper colour zero. One opaque run
+      * paints the complete ordinary row without a separate physical bar unit. */
+     plain=bg_color==0;
+@@ -185,30 +202,87 @@
+     }
+     }
+     vswr_mode(vdi_handle,MD_REPLACE);
+-    /* Character editing repaints the old caret and the new one in this update. */
+-    if(t->cursor && !t->blink && absolute==t->ypos){
+-        long x=(long)w->work.g_x+cursor_xpos(t,t->xpos,NULL)-w->doc.x*font_wcell;
+-        if(x>=w->work.g_x && x<(long)w->work.g_x+w->work.g_w)
+-            fill_area((short)x,y,min(overwrite?font_wcell:2,
+-                w->work.g_x+w->work.g_w-(short)x),font_hcell,fg_color);
+-    }
++    row_caret(w,t,row);
++}
++
++/* Private screen cells are useful only across full, plain, consecutive
++ * navigation paints. Messages, other input and partial paints invalidate them. */
++#define OUTPUT_ROWS 30
++static char output_cells[OUTPUT_ROWS][80];
++static GRECT output_work;
++static WINDOWP output_window;
++static bool output_valid,output_navigation;
++static short output_caret_row=-1,output_caret_column=-1;
++
++void invalidate_output(void)
++{
++    output_valid=FALSE;output_navigation=FALSE;
++}
++void navigation_output(void){output_navigation=TRUE;}
++
++static void remember_caret(WINDOWP w,TEXTP t)
++{
++    long row=t->ypos-w->doc.y,column=cursor_xpos(t,t->xpos,NULL)/font_wcell-w->doc.x;
++    output_caret_row=t->cursor && row>=0 && row<w->w_height ? (short)row:-1;
++    output_caret_column=t->cursor && column>=0 && column<w->w_width ? (short)column:-1;
++}
++static void remember_output(WINDOWP w,TEXTP t)
++{
++    short row;
++    for(row=0;row<w->w_height;row++){
++        prepare_cells(w,t,row,w->w_width);
++        memcpy(output_cells[row],cells,w->w_width);
++    }
++    output_window=w;output_work=w->work;output_valid=TRUE;
++    remember_caret(w,t);
++}
++static void changed_output(WINDOWP w,TEXTP t)
++{
++    short row,first,last,count,limit=w->w_width;
++    vswr_mode(vdi_handle,MD_REPLACE);vst_color(vdi_handle,fg_color);
++    for(row=0;row<w->w_height;row++){
++        prepare_cells(w,t,row,limit);
++        for(first=0;first<limit && cells[first]==output_cells[row][first];first++);
++        for(last=limit;last>first && cells[last-1]==output_cells[row][last-1];last--);
++        /* A blink may have changed this cell after the snapshot. Restore its
++         * glyph even if the underlying text is identical in the new view. */
++        if(row==output_caret_row && output_caret_column>=0){
++            if(first==last){first=output_caret_column;last=first+1;}
++            else{first=min(first,output_caret_column);last=max(last,output_caret_column+1);}
++        }
++        if(first<last){
++            count=last-first;memcpy(run,cells+first,count);run[count]=0;
++            v_gtext(vdi_handle,w->work.g_x+first*font_wcell,
++                w->work.g_y+row*font_hcell+EXEC_VDI_FONT_TOP,run);
++        }
++        memcpy(output_cells[row],cells,limit);row_caret(w,t,row);
++    }
++    remember_caret(w,t);
+ }
+ 
+ void line_out(WINDOWP w,TEXTP t,short row)
+ {
+-    output_line(w,t,row,FALSE);
+-}
+-
+-/* A clipped multi-row redraw clears its paper once. Text runs can then omit
+- * trailing spaces, avoiding padded glyph work while retaining row edit paints. */
+-void lines_out(WINDOWP w,TEXTP t,short first,short last)
++    invalidate_output();output_line(w,t,row,FALSE);
++}
++
++/* A full plain viewport can retain its physical cells between navigation
++ * events. Every other damage rectangle keeps the existing complete painter. */
++void lines_out(WINDOWP w,TEXTP t,short first,short last,GRECT *area)
+ {
+     short row;
+-    if(first>last)return;
++    bool plain=first==0 && last==w->w_height-1 && w->w_height<=OUTPUT_ROWS &&
++        w->w_width<=80 && w->w_width>0 && font_wcell==8 && font_hcell==8 &&
++        w->work.g_w==w->w_width*8 && w->work.g_h==w->w_height*8 &&
++        !t->block && fg_color==1 && bg_color==0 && !memcmp(area,&w->work,sizeof(GRECT));
++    if(first>last){invalidate_output();return;}
++    if(!plain)invalidate_output();
++    if(plain && output_valid && output_navigation && output_window==w &&
++       !memcmp(&output_work,&w->work,sizeof(GRECT))){changed_output(w,t);return;}
+     if(first==last){line_out(w,t,first);return;}
+     fill_area(w->work.g_x,w->work.g_y+first*font_hcell,w->work.g_w,
+         (last-first+1)*font_hcell,bg_color);
+     for(row=first;row<=last;row++)output_line(w,t,row,TRUE);
++    if(plain)remember_output(w,t);
+ }
+ 
+ 
+--- a/qed/src/ausgabe.h
++++ b/qed/src/ausgabe.h
+@@ -16,7 +16,9 @@
+ 
+ extern void		head_out			(WINDOWP window, TEXTP t_ptr);
+ extern void		line_out			(WINDOWP window, TEXTP t_ptr, short wy);
+-extern void lines_out(WINDOWP window,TEXTP text,short first,short last);
++extern void invalidate_output(void);
++extern void navigation_output(void);
++extern void lines_out(WINDOWP window,TEXTP text,short first,short last,GRECT *area);
+ extern void		bild_out			(WINDOWP window, TEXTP t_ptr);
+ extern void		bild_blkout		(WINDOWP window, TEXTP t_ptr, long z1, long z2);
+ extern long		cursor_xpos		(TEXTP t_ptr, short pos, bool *cursor_italic );
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -558,7 +558,7 @@
+     set_clip(TRUE,area);
+     if(first<0)first=0;
+     if(last>=w->w_height)last=w->w_height-1;
+-    lines_out(w,t,first,last);
++    lines_out(w,t,first,last,area);
+ }
+ 
+ 
+--- a/qed/src/event.c
++++ b/qed/src/event.c
+@@ -1,5 +1,6 @@
+ #include <exec816/aes.h>
+ #include "global.h"
++#include "ausgabe.h"
+ #include "aktion.h"
+ #include "av.h"
+ #include "clipbrd.h"
+@@ -245,6 +246,7 @@
+     unsigned char ch=(unsigned char)key,scan=(unsigned short)key>>8;
+     bool navigation=scan==0x48 || scan==0x50 || scan==0x4b || scan==0x4d ||
+         scan==0x47 || scan==0x4f || scan==0x49 || scan==0x51;
++    if(navigation)navigation_output();else invalidate_output();
+     if(w && w->class==CLASS_EDIT && (navigation || (!(kstate&K_CTRL) &&
+        (ch>=32 || ch==8 || ch==9 || ch==13)))){
+         TEXTP t=get_text(w->handle);
+@@ -420,19 +422,19 @@
+ {
+     static QEDEVENT ev;
+     short state;
+-    update_menu();onblink_edit();
++    invalidate_output();update_menu();onblink_edit();
+     while(!done){
+         next_action(&ev);
+         if(!ev.which)continue;
+         QedSavingObserved(ev.which);
+         if(ev.which&MU_MESAG){
+-            offblink_edit();
++            invalidate_output();offblink_edit();
+             if(!QedSavingMessage(ev.msg)){QedCommandsMessage(ev.msg);handle_msg(ev.msg);}
+             if(done)break;
+         }
+         if(ev.which&MU_KEYBD){
+             if(QedSavingBusy()){
+-                offblink_edit();QedSavingKey(ev.kstate,ev.kreturn);
++                invalidate_output();offblink_edit();QedSavingKey(ev.kstate,ev.kreturn);
+             }else{
+                 prepare_key_caret(ev.kstate,ev.kreturn);
+                 QedCommandsCancel();handle_keybd(ev.kstate,ev.kreturn);
+@@ -441,10 +443,10 @@
+         }
+         state=QedPointerState();
+         if(!QedSavingBusy() && state && (ev.which&(MU_BUTTON|MU_M1|MU_TIMER))){
+-            offblink_edit();
++            invalidate_output();offblink_edit();
+             QedPointerEvent(ev.m_x,ev.m_y,ev.bstate,(ev.which&MU_TIMER)!=0);
+         }else if(!QedSavingBusy() && (ev.which&MU_BUTTON) && (ev.bstate&1)){
+-            offblink_edit();QedCommandsCancel();handle_button(ev.m_x,ev.m_y,ev.bstate,ev.kstate,ev.breturn);
++            invalidate_output();offblink_edit();QedCommandsCancel();handle_button(ev.m_x,ev.m_y,ev.bstate,ev.kstate,ev.breturn);
+         }else if(ev.which==MU_TIMER && blinking_cursor)blink_edit();
+         if(ev.which&MU_M1)wake_mouse();
+         restore_edit();QedCommandsStep();restore_edit();update_menu();end_undo_seq();
