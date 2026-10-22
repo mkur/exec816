@@ -9,7 +9,16 @@ from test_qed_coexist import Coexistence, LOAD, check
 
 
 class LoadedCoexistence(Coexistence):
-    inputs = (Path(__file__), ROOT/'tools/qed_coexist_load.py')
+    inputs = (Path(__file__), ROOT/'tools/qed_coexist_load.py', ROOT/'tools/qed_coexist_warm.py')
+
+    def exercise(self, session):
+        if self.cohort == 'peer':
+            from qed_coexist_warm import warm
+            warmed = warm(session)
+        result = super().exercise(session)
+        if self.cohort == 'peer':
+            self.report['desktop_warmup'] = warmed
+        return result
 
     def start_load(self, session, menus, click, editor, report):
         self.load = Loads(session, menus, click, editor, self.cohort, LOAD, report)
@@ -32,9 +41,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--cohort', choices=['peer', 'checksum'], required=True)
-    parser.add_argument('--bundle', type=Path, default=ROOT/'build/qed-coexist/final-preview')
-    parser.add_argument('--production', type=Path, default=ROOT/'build/qed-coexist/final-production')
-    parser.add_argument('--layout-from', type=Path, default=ROOT/'build/qed-coexist/qc3-current/app')
+    parser.add_argument('--bundle', type=Path, default=ROOT/'build/qed-coexist/sync-preview')
+    parser.add_argument('--production', type=Path, default=ROOT/'build/qed-coexist/sync-production')
+    parser.add_argument('--layout-from', type=Path, default=ROOT/'build/qed-coexist/qc3-sync/app')
     a = parser.parse_args()
     check(a.output.resolve(), a.bundle.resolve(), a.production.resolve(), a.layout_from.resolve(),
           a.cohort, factory=LoadedCoexistence)

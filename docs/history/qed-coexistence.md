@@ -140,3 +140,27 @@ under the unchanged 2,560-byte admission. The image needs 245,096 bytes of
 8-byte-aligned backing. Reserved bank-zero delta is **0 fixed /
 0 per-public-Task / 0 private idle bytes**, including guards, alignment and
 unused capacity; native/provider and shared Task capacities are unchanged.
+
+
+## QC2c Slider publication and warmed desktop ownership
+
+Patch 0024 synchronizes vertical sliders for height/clamp changes and full
+model resets, including same-height reopen. Ordinary navigation avoids those
+unchanged reads; the scroll owner publishes its calculated position without
+reading the old GUI value. Sixteen actual-source damage/slider cases pass.
+
+The [QC2c record](../development/qed-coexistence-qc2c.json) freezes passing
+baseline and Counter workflows, four repeated editing lifetimes, four cursor
+lifetimes and the two-lifetime damage probe. The Counter gate includes normal
+Stop/Cancel, peer progress, exposure, exact disk bytes and ordinary collection.
+Its first-use 368 upper bytes belong to the live desktop: a 256-byte command-path
+buffer and 112 bytes for its timer port and two requests. Their pointers have
+live DOS/C owners. A second Counter warm-up restores identical extents; the
+subsequent measured cohort restores this actual warm baseline exactly.
+
+The source bound is 560 bytes and its conditional margin 848 bytes; image
+backing is 245,360 bytes with eight-byte heap alignment. Reserved bank-zero
+change remains **0 fixed / 0 per-public-Task / 0 private idle bytes**, including
+guards, alignment and unused capacity. No Task pool, ABI or provider changes.
+The checksum run still reaches 1,023 ms on viewport navigation, so step 6 remains
+open. Full viewport rendering now needs a further measured application change.

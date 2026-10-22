@@ -479,9 +479,9 @@ compiled with matching headers; its emitted offsets describe the production
 records without adding instrumentation to the shipped APP. Test disks are
 disposable and separate from the interactive WORK disk.
 
-Patches 0018–0023 bound same-row/selection damage, combine text and caret paints,
+Patches 0018–0024 bound same-row/selection damage, combine text and caret paints,
 use existing opaque default-colour text, avoid duplicate scroll paints,
 and clear multi-row damage once before drawing unpadded text runs.
-The actual-source damage probe covers 14 rectangle-policy cases; full drawing
+The actual-source damage probe covers 16 rectangle/slider-policy cases; full drawing
 and independent pixels belong to the production and cursor checks. Bank-zero
 reservations and shared Task capacities remain unchanged.

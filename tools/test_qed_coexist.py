@@ -31,6 +31,10 @@ class Coexistence:
         shutil.copytree(target.parent/'workspace-source', directory, dirs_exist_ok=True)
         (directory/'SESSION.TXT').write_bytes(DOCUMENT)
         (directory/'LOAD.BIN').write_bytes(LOAD)
+        if self.cohort == 'peer':
+            # EXECUTE runs in the owning shell. Its ordinary comment reads
+            # leave time to return focus before the final cooperative BREAK.
+            (directory/'STOP.CMD').write_bytes(b'; delay\n'*8192+b'STOPQED\n')
         make(target, directory, binary_names={'LOAD.BIN'}, filesystem='sdfs',
              sector_bytes=256, sectors=2880, label='WORK')
 
@@ -138,6 +142,19 @@ class Coexistence:
         s.command('MEM')
         report['final_heap'] = heap_checkpoint(s.rendezvous, s.far, s.p['build']['memory'])
         a, b = report['initial_heap'], report['final_heap']
+        # Keep completion evidence even when an ownership/memory assertion fails.
+        if a['free_bytes'] != b['free_bytes']:
+            pieces = []
+            for start, size in a['extents']:
+                spans = [(start, start+size)]
+                for free, count in b['extents']:
+                    spans = [part for lo, hi in spans for part in
+                             [(lo, min(hi, free)), (max(lo, free+count), hi)]
+                             if part[0] < part[1]]
+                pieces.extend(spans)
+            report['newly_allocated_spans'] = [dict(address=lo, bytes=hi-lo,
+                prefix=s.far(lo, min(hi-lo, 512)).hex()) for lo, hi in pieces[:12]]
+        (s.p['output']/'coexist-completion.json').write_text(json.dumps(report, indent=2)+'\n')
         require((a['free_bytes'], a['largest_bytes']) == (b['free_bytes'], b['largest_bytes']),
                 'Production workflow retained memory or fragmentation')
         report['normal_collection'] = True
@@ -186,9 +203,9 @@ def check(output, bundle, production, layout_from, cohort, profile=False, factor
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output', type=Path, required=True)
-    p.add_argument('--bundle', type=Path, default=ROOT/'build/qed-coexist/final-preview')
-    p.add_argument('--production', type=Path, default=ROOT/'build/qed-coexist/final-production')
-    p.add_argument('--layout-from', type=Path, default=ROOT/'build/qed-coexist/qc3-current/app')
+    p.add_argument('--bundle', type=Path, default=ROOT/'build/qed-coexist/sync-preview')
+    p.add_argument('--production', type=Path, default=ROOT/'build/qed-coexist/sync-production')
+    p.add_argument('--layout-from', type=Path, default=ROOT/'build/qed-coexist/qc3-sync/app')
     p.add_argument('--cohort', choices=['baseline'], default='baseline')
     p.add_argument('--profile-insert', action='store_true', help='Collect a bounded host callgraph around measured insertion')
     a = p.parse_args()

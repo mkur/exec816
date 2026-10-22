@@ -8,6 +8,7 @@ from gem_applications import symbols
 from generate_aes_server import ABI, layout, expected_layout
 from native_program import require
 from program_image_layout import FIELDS as IMAGE
+from qed_coexist_observe import heap_checkpoint
 
 
 def cksum(data):
@@ -59,8 +60,13 @@ class Loads:
             require(self.live() == 8, 'Peer cohort did not fill eight public Tasks')
             self.state['identity'] = identity
             self.focus('Shell'); before = s.ledger()
+            initial_heap = heap_checkpoint(s.rendezvous, s.far, s.p['build']['memory'])
             previous = s.begin('HELLO'); s.ready(previous); s.result(103)
             require(s.ledger() == before, 'Rejected ninth Task retained ownership')
+            final_heap = heap_checkpoint(s.rendezvous, s.far, s.p['build']['memory'])
+            self.state['admission_heap'] = dict(before=initial_heap, after=final_heap)
+            (s.p['output']/'coexist-admission.json').write_text(json.dumps(self.state['admission_heap'], indent=2)+'\n')
+            require(initial_heap == final_heap, 'Rejected ninth Task retained heap backing')
             self.state['ninth_task_rejected'] = True
             self.focus('SESSION.TXT'); e.move(630, 20)
         elif self.cohort == 'checksum':
@@ -157,14 +163,20 @@ class Loads:
             e = self.e
             e.key('H'); modified = [b'h'+self.lines[0], *self.lines[1:]]
             self.focus('Shell')
-            previous = s.begin('BREAK '+str(e.owner['identity'])); s.ready(previous); s.result()
-            e.form_open(); self.focus('SESSION.TXT'); self.sample('stop-form-start'); e.frames(100); self.sample('stop-form-end')
+            previous = s.begin('ALIAS STOPQED "BREAK '+str(e.owner['identity'])+'"')
+            s.ready(previous); s.result()
+            previous = s.begin('EXECUTE WORK:STOP.CMD')
+            require(not e.form(), 'Stop script reached BREAK before focus could return')
+            self.focus('SESSION.TXT'); e.form_open(); s.ready(previous); s.result()
+            self.sample('stop-form-start'); e.frames(100); self.sample('stop-form-end')
             require(self.state['samples'][-1]['value'] > self.state['samples'][-2]['value'],
                     'Counter stopped during the QED Stop decision')
             e.alert(3); e.command_idle(); e.selection('peer-stop-cancel', modified, None, 1, 0)
             e.choose('SESSION.TXT', 'WORK'); e.form_open(); e.alert(2)
             e.loaded('peer-after-stop', self.lines, path=b'WORK:SESSION.TXT')
             self.state['cooperative_stop_cancel'] = True
+            self.focus('Shell')
+            previous = s.begin('UNALIAS STOPQED'); s.ready(previous); s.result()
             self.focus('Counter')
             self.click(self.peer_bounds[0]+6, self.peer_bounds[1]+5)
             at = self.desk+DESKTOP['children']

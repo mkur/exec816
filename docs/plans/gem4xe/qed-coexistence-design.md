@@ -84,6 +84,14 @@ any changed acceptance criterion.
 
 ## Memory and lifetime
 
+Warm the desktop's own first-use resources before the Counter cohort's idle
+baseline: launch/collect Counter twice and require identical second checkpoints.
+Identify the retained 256-byte DOS command-path buffer and 112 bytes for its
+AES timer port/two requests in the live desktop's owners. Report this 368-byte
+upper-memory first-use cost separately; these existing lazy resources remain
+until desktop teardown. They are not an accumulating QED/Counter leak or new
+bank-zero reservations.
+
 Capture upper heap free bytes, largest free extent and free-extent count at
 warmed idle, document/clipboard/Undo peaks, forms, active load and collection.
 Keep QED's private allocator totals separate from its aligned image backing and
@@ -124,6 +132,11 @@ policy, with the same response limits, ABI and capacities. Patch 0023 clears a c
 then omits padded trailing glyphs from its text runs; single-row edits retain
 the opaque row path. The later checksum scroll failure measured 1,043 ms, so
 this further change is required before closing the unchanged response gate.
+Patch 0024 also avoids vertical slider synchronization when document height and
+clamping are unchanged; full damage still synchronizes after a model reset,
+including a same-height reopen. A scroll owner that has changed the model position
+publishes the calculated position without first reading the old GUI value.
+This removes redundant AES round trips and preserves the public slider calls.
 
 Optimize only a measured failure or material bottleneck in this workflow. Keep
 application drawing policy in QED, reusable GUI behavior in AES/VDI, filesystem

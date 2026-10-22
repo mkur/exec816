@@ -57,7 +57,10 @@ Keep this runnable before adding load. Apply the design's response limits now.
 
 ## QC2 Admitted concurrent workloads
 
-Extend the same scenario to an ordinary loaded Counter APP. Check its timer
+Before its warmed idle baseline, launch and collect Counter twice. Identify
+the desktop-owned path/timer allocations, record their 368-byte first-use upper
+backing, and require identical repeated warm heap extents. Then extend the same
+scenario to an ordinary loaded Counter APP. Check its timer
 progress during QED input and a held form, cover/expose QED, and validate the
 restored pixels. At eight live Tasks, one extra command must fail normally and
 restore its temporary ownership. Close and collect Counter before the next
@@ -65,7 +68,10 @@ cohort.
 
 While Counter is live, also use the owning shell's ordinary BREAK command to
 request QED Stop, hold and Cancel its modified decision, and verify peer
-progress and resumed editing. This supplies the Stop-with-peer part of the
+progress and resumed editing. Run BREAK through ordinary EXECUTE with a
+temporary alias and a comment-reading delay, returning input to QED before
+the decision opens; remove the alias afterward. This uses no additional Task.
+This supplies the Stop-with-peer part of the
 lifetime gate through the production launch path.
 
 Run QED with foreground shell CKSUM reading an unrelated large WORK file. QED
