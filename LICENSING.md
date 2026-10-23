@@ -23,6 +23,7 @@ repository root; directory entries include all files below them.
 | Files | Scope |
 | --- | --- |
 | `abi/` | Machine-readable interface definitions |
+| `ports/gem4xe/apps/qed/native/*.c` and `*.h`, except `qed-gem-extra.h` | Exec-authored QED native adapters; the generated GEM header retains LGPL-2.1-or-later |
 | `c/` | Public C headers, Calypsi bindings, startup support and C examples |
 | `examples/`, except `examples/shell/` | Standalone examples, disk commands and sample data |
 | `lib/exec/exec.act`, `lib/exec/execos.act`, `lib/exec/execproducer.act` | Action! interface declarations |
@@ -83,6 +84,11 @@ emulators or patches to upstream projects.
 - Emulator patches under `toolchain/patches/` remain subject to the licences
   of the upstream files they modify. They are not covered by the MIT interface
   grant.
+- QED and CF-Lib inputs in `ports/gem4xe/apps/qed/inputs.json` and their
+  ordered patches retain donor notices. QED distribution must be free of
+  charge; CF-Lib retains LGPL-2.1-or-later. The generated
+  `native/qed-gem-extra.h` retains its GEM LGPL notice. The native adapter MIT
+  exception above covers only Exec-authored code.
 - GEM4XE source selected by `ports/gem4xe/selection.json` and
   `ports/gem4xe/aes/selection.json`, calculator sources pinned by
   `ports/gem4xe/apps/calculator/inputs.json`, benchmark sources pinned by

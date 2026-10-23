@@ -43,7 +43,9 @@ def stage(output, directory, provider):
         'Source pins, ordered patches and adapters: ports/gem4xe/apps/qed/\n'
         'in https://github.com/mkur/exec816 (see LICENSING.md).\n'
         'QED and this port must not be distributed for a fee.\n'
-        'CF-Lib and Calypsi runtime retain their file-specific terms.\n')
+        'Exec-authored native adapters use the authorized MIT grant.\n'
+        'Generated GEM declarations, CF-Lib and Calypsi runtime keep their terms.\n'
+        'Matching source/relink materials accompany the boot ZIP separately.\n')
     return dict(abi=ABI['version'], app_sha256=layout['app']['sha256'],
         resource_sha256=sha256(directory/'inputs/resource/QED.RSC'), provider_identity=identity,
         production_layout=str(directory/'layout.json'), production_layout_sha256=sha256(directory/'layout.json'),

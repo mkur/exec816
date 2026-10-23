@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-3.0-only
+/* SPDX-License-Identifier: MIT
  * Canonical physical names with a retained ordinary directory lock.
  */
 #include "qed-path.h"

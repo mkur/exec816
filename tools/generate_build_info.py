@@ -17,7 +17,9 @@ def identity(root=ROOT):
         revision = git('rev-parse', 'HEAD')
         dirty = bool(git('status', '--porcelain', '--untracked-files=normal'))
         return dict(revision=revision, dirty=dirty,
-                    display=revision[:7] + ('-dirty' if dirty else ''))
+                    # Keep upper-image string extents stable when freezing a
+                    # development build into a clean reproducible candidate.
+                    display=revision[:7] + ('-dirty' if dirty else '-clean'))
     except (OSError, subprocess.CalledProcessError):
         return dict(revision=None, dirty=False, display='unknown')
 

@@ -128,3 +128,26 @@ reservation table. Bank-zero growth: **0 fixed / 0 per-public-Task / 0 private
 idle bytes**, including guards, alignment and unused capacity. The Task pool
 remains eight and QED admission 2,560 bytes. Functional completion does not close
 the outstanding distribution grant or establish hosted/release qualification.
+
+
+## Authorized grant and final input freeze
+
+The copyright holder explicitly confirmed ownership and authorized the reviewed
+MIT grant for the 27 Exec-authored native QED `.c`/`.h` files. The exact post-grant
+hashes and authority are recorded in `ports/gem4xe/apps/qed/delivery.json` and
+`LICENSING.md`; generated `qed-gem-extra.h` retains LGPL-2.1-or-later. Donor and
+runtime terms remain in force. This resolves QD1's distribution question.
+
+Source/relink packaging, two-build comparison and the final delivery recorder
+have host negative checks and preparation-candidate execution. The source archive
+supplies mapped sources/objects and independently relinks all 61 admitted banks;
+a changed retained CF-Lib routine has booted edit/save/reopen normally on separate
+diagnostic media. These preparation results do not close QD6 or QD7: both await
+reproduction and exact-package execution from the final clean source revision.
+
+Build identifiers now explicitly use equal-width `-clean` and `-dirty` suffixes,
+keeping generated upper-data extents stable across a freeze. A clean image uses
+12 more upper-data bytes than the former suffix-free format, with **0 fixed /
+0 per-public-Task / 0 private idle reserved bank-zero bytes** added, including
+guards, alignment and unused capacity. The final build must confirm unchanged
+segment geometry and identify every runtime-byte difference before reusing QC4.

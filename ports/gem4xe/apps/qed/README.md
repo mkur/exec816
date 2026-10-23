@@ -3,10 +3,10 @@
 [Initial scope and dependencies](../../../../docs/plans/gem4xe/qed-scope-and-dependencies.md) ·
 [Port strategy](../../../../docs/plans/gem4xe/qed-port-strategy.md)
 
-For interactive use, the [native Exec Altirra preview](../../../../docs/guides/qed-exec.md)
+For interactive use, the [native Exec Altirra setup](../../../../docs/guides/qed-exec.md)
 packages the current production editor on the ordinary GEM desktop, with a
 private launcher and persistent writable WORK disk. Strategy step 6 passes its
-selected coexistence development checks; supported delivery remains step 7.
+selected coexistence development checks. The [delivery record](../../../../docs/history/qed-delivery.md) tracks the normal package and final step 7 gates.
 
 [inputs.json](inputs.json) pins the selected QED GEM4XE fork and FreeMiNT cflib
 sources, their Git trees and the raw-byte SHA-256 hashes of the editor, headers,
@@ -269,7 +269,7 @@ requests use supported left-button/down semantics, and menu shortcuts precede
 character insertion. See [startup evidence](../../../../docs/history/qed-startup.md).
 
 These are development startup checks, not editing, dialog or Save qualification.
-The QED APP remains outside distributed demo ZIPs until strategy step 7.
+The normal `build_demo.py --gem-desktop --qed` path now packages the production APP. These earlier startup checks retain their original scope.
 
 ```sh
 python3 tools/test_qed_startup.py --group failures --output build/qed-startup/failures
@@ -437,8 +437,9 @@ recovery record; it leaves disk files intact for manual handling.
 
 The [step 6 workload gate](../../../../docs/history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff)
 now passes measured responsiveness, fragmentation and retirement beside Counter
-and a shell checksum command. QED remains a development APP; supported
-delivery, final scope/notices and publication belong to step 7.
+and a shell checksum command. The normal delivery build and final
+source/notices gates are recorded in [delivery history](../../../../docs/history/qed-delivery.md).
+Full release qualification and publication remain separate.
 
 ## Idle caret painting
 

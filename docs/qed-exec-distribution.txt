@@ -52,10 +52,12 @@ automatic repair and general hosted/hardware qualification are not claimed.
 
 SOURCE AND NOTICES
 
-This is a development delivery candidate. QED may be given away but must not
+This is the supported development port. QED may be given away but must not
 be sold. QED-NOTICE.txt and QED-TERMS.txt retain upstream notices;
 QED-PROVENANCE.txt describes this adaptation. QED-COPYING.LIB.txt and
 QED-APACHE-2.0.txt retain library terms. EXEC816-GPL-3.0.txt, EXEC816-MIT.txt,
 EXEC816-LICENSING.md and the GEM, calculator, G4BENCH, OF816-LICENSE.txt
 and ALTIRRAOS-LICENSE.txt notices cover the other included components.
 SHA256SUMS covers every packaged boot file, guide and notice.
+Matching source/relink materials and QED-DELIVERY-SHA256SUMS accompany this
+boot ZIP separately. Keep them together when redistributing the port.

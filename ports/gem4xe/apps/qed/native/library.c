@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-3.0-only */
+/* SPDX-License-Identifier: MIT */
 #include "qed-files.h"
 #include <calypsi/stubs.h>
 #include <time.h>

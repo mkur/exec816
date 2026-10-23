@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-3.0-only */
+/* SPDX-License-Identifier: MIT */
 #ifndef QED_SAVING_H
 #define QED_SAVING_H
 #include "global.h"

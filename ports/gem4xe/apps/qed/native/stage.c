@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-3.0-only
+/* SPDX-License-Identifier: MIT
  * A closed exclusive sibling is staging readiness, never a Saved result.
  */
 #include "qed-stage.h"

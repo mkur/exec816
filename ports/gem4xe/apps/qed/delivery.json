@@ -3,13 +3,11 @@
   "grants": {
     "qed": "Donor QED terms, including no-fee redistribution",
     "cflib": "LGPL-2.1-or-later",
-    "native": "GPL-3.0-only; compatibility with donor terms unresolved",
+    "native": "MIT for Exec-authored native adapters; generated GEM declarations retain LGPL-2.1-or-later",
     "bindings": "MIT",
     "runtime": "Calypsi/Apache/NuttX file-specific terms"
   },
-  "unresolved": [
-    "native-adapter-grant"
-  ],
+  "unresolved": [],
   "requirements": {
     "launch": {
       "scope_row": "Launch and exit",
@@ -113,5 +111,42 @@
     "power-loss atomicity",
     "same-target concurrent writers",
     "automatic disk repair"
-  ]
+  ],
+  "grant_decisions": {
+    "native-adapter-grant": {
+      "status": "authorized",
+      "license": "MIT",
+      "authority": "The user holds the necessary copyrights and explicitly authorizes this 27-file MIT grant in the implementation session.",
+      "notice_sha256": "f4b2a3de82bc48226a1cfcabc610e7276bea4d144074a3242c385ffe18c7fb77",
+      "files": {
+        "ports/gem4xe/apps/qed/native/allocation.c": "01e3fd776afcef5c8d82b1509b4539c74f10915b55cb1ce621b4dc5171f4c6a7",
+        "ports/gem4xe/apps/qed/native/commands.c": "c0d06334196ab21494f4af086eec6c844c298e128ba7ccc4dd3181b24fbff839",
+        "ports/gem4xe/apps/qed/native/document.c": "af7408c56e63bcedc925e759568448d1bf7d06be521be0ef6c3610cbf0595097",
+        "ports/gem4xe/apps/qed/native/entry.c": "664d8c3b43079e50e0acf010b1a4ad42f23d5e5487da75aa8bc3cdb8b639ebb7",
+        "ports/gem4xe/apps/qed/native/files.c": "08110cab0405dabe3f8638c477db6a6b308fc9cc9ee794eff446c42a29cc733f",
+        "ports/gem4xe/apps/qed/native/gem-helpers.c": "4fbd68f2d543a049d90c758761ea9f3012a3768bdd76219ea7c3cf94f73f28e5",
+        "ports/gem4xe/apps/qed/native/gemx.h": "a421c0bad6f6e475e80f6101e2db8a19a0ad960cc4e4690f5d402ff95127be59",
+        "ports/gem4xe/apps/qed/native/library.c": "33f6d60789368096775e13bc346a77d3577b10518a8ae08e38da4744ea446147",
+        "ports/gem4xe/apps/qed/native/macros.h": "853ec641af965d74cf6976c323ce09c89a8c013f5301e46e57735016e0f4207d",
+        "ports/gem4xe/apps/qed/native/mintbind.h": "e512bf9d65f1a471d6d8d51225d261571e0acd64513bc132b53f8afba1fd4f69",
+        "ports/gem4xe/apps/qed/native/path.c": "d2d2ac0c809f9b9c4ad0465d5cb57b6304b1f49ba663717265fa233846749415",
+        "ports/gem4xe/apps/qed/native/qed-commands.h": "bb51a32045ee976ec064d3b1217ddc180e4a3ade8b85f2e7654cafb54ac7ebfa",
+        "ports/gem4xe/apps/qed/native/qed-document.h": "154389d84f9cd533c5ddf5493df5f7e5508b8281ead9cd0a60a0415d2329d534",
+        "ports/gem4xe/apps/qed/native/qed-files.h": "4af7bf1f4fab294654fa773b0809329a9bd092e90843574aad83fc419c01cc5e",
+        "ports/gem4xe/apps/qed/native/qed-native.h": "8fd52c7de5dfe13c3a61f6bcf4644be6e2ec3a17fb8c1f3d5ccba0ad69b6f05a",
+        "ports/gem4xe/apps/qed/native/qed-path.h": "d1d9477fba816e7f086abf9d0287bbcb5b66750ae5e950578e592722f3eb5650",
+        "ports/gem4xe/apps/qed/native/qed-runtime.h": "f42b594410de4d201d2094ca058ec36dcf4996ad32c815494d964eb3f310469d",
+        "ports/gem4xe/apps/qed/native/qed-save.h": "933790038e69ee250b64c4f9ad8ac224cfe357292f2aa948e7f2117c610e2644",
+        "ports/gem4xe/apps/qed/native/qed-saving.h": "c793b4f3df48b0ba26c2801d5e74f30568a771ad2963450b7af1af5dccbaecc2",
+        "ports/gem4xe/apps/qed/native/qed-stage.h": "c4784771de1429fb558daedf77f1a6dd42df261022465ddcb8641b642dce9396",
+        "ports/gem4xe/apps/qed/native/save.c": "2a67f58da86ea3cb4360e1950bb58c12d22163f745709d521bc5859eacf76f64",
+        "ports/gem4xe/apps/qed/native/saving.c": "d867392fe93c7718e7ccdf4d090069a7b231fe879539959685dbedf13559ec21",
+        "ports/gem4xe/apps/qed/native/stage.c": "f61f41163c7f8a9ec10424bc470595ef0493df8ceb7c4ecc7b1b8fd07fb5abc3",
+        "ports/gem4xe/apps/qed/native/strings.h": "57d4b8725bde228868494ec18ae6b143199d3e0e07361f34d072cf2e91598b8e",
+        "ports/gem4xe/apps/qed/native/support.c": "ee8a3f663ce5c7b5ab7e73d9ba4e66bfb7b1f677e57484cbce19c9a2b0616cb3",
+        "ports/gem4xe/apps/qed/native/support.h": "38a4675cb30e1fd58990ea381d7e549b4d5833a39ee2762ac826a0488f0eee17",
+        "ports/gem4xe/apps/qed/native/tos.h": "4994226a2e774fdad845b13c11cb3f539b3caac054f37b1ed032d15009611476"
+      }
+    }
+  }
 }

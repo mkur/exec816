@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-3.0-only
+/* SPDX-License-Identifier: MIT
  * D/T/B/E publication over public no-replacement namespace operations.
  */
 #include "qed-save.h"

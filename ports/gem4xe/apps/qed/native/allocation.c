@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-3.0-only
+/* SPDX-License-Identifier: MIT
  * Per-image ownership. The header is the exact original AllocMem pointer.
  */
 #include "qed-runtime.h"

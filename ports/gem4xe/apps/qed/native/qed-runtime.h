@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-3.0-only */
+/* SPDX-License-Identifier: MIT */
 #ifndef QED_RUNTIME_H
 #define QED_RUNTIME_H
 #include "qed-native.h"

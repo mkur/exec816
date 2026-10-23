@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-3.0-only
+/* SPDX-License-Identifier: MIT
  * One event-owned save. Native forms and DOS calls run without caller locks.
  */
 #include "qed-saving.h"

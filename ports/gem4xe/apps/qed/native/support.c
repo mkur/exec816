@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-3.0-only */
+/* SPDX-License-Identifier: MIT */
 #include "support.h"
 #include <ctype.h>
 int strnicmp(const char *a,const char *b,size_t n)

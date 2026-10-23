@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-3.0-only
+/* SPDX-License-Identifier: MIT
  * Detached donor LINE ownership. No live document changes before commit.
  */
 #include "qed-document.h"

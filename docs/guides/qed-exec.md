@@ -12,7 +12,7 @@ donor comparisons.
 From the repository root:
 
 ```sh
-build/qed-delivery/normal/launch-qed.command
+build/qed-delivery/final/launch-qed.command
 ```
 
 Allow the five-second OF816 countdown and desktop startup to complete. Capture
@@ -31,14 +31,14 @@ keyboard controls, limits, notices and manual emulator settings.
 The launcher finds local AltirraSDL or accepts an explicit app/executable:
 
 ```sh
-build/qed-delivery/normal/launch-qed.command --altirra /path/to/AltirraSDL.app
-build/qed-delivery/normal/launch-qed.command --prepare-only
+build/qed-delivery/final/launch-qed.command --altirra /path/to/AltirraSDL.app
+build/qed-delivery/final/launch-qed.command --prepare-only
 ```
 
 It generates private settings from a dedicated seed, using a 65C816 at 8x,
 63 high banks, VBXE and ST Mouse on port 1. It does not edit ordinary emulator
 settings. SYS: in D1 is read-only. WORK: in D8 uses a persistent writable copy
-selected in `build/qed-delivery/normal/altirra/workspace.json`. A new workspace
+selected in `build/qed-delivery/final/altirra/workspace.json`. A new workspace
 creates `altirra/work.atr`; keep that directory with saved work. The selection
 survives replacement of the clean template and setup refreshes. To select an
 existing private disk explicitly, pass `--work /path/to/saved.atr`. Local
@@ -47,16 +47,9 @@ A broken selection fails without creating a blank replacement. Old hash-named
 disks need an explicit selection or a recorded prior private mount. Close the emulator
 before opening another instance against the same writable disk.
 
-The refresh retains the idle-cursor fix and adds bounded edit/scroll painting
-and correct window cycling while a client waits for messages or timers. Close
-the running emulator and restart to load the new system and APP. The previous local setup remains untouched. Both original
-local launch directories, `build/qed-exec-altirra/` and
-`build/qed-exec-altirra-fixed/`, forward to the earlier caption-preview launcher.
-
-In the earlier caption-preview setup, the WORK path links to
-`build/qed-exec-altirra/altirra/work-cecdf2d9dbc4ceb8.atr`, preserving saved
-documents without copying or modifying the disk. Keep that original directory
-as well. A freshly prepared setup creates its own writable copy on first launch.
+Keep an existing setup and its saved WORK until you explicitly select that disk
+with `--work`. Earlier caption-preview launch directories keep their original
+selection; building the supported setup does not migrate or modify them.
 
 ## Rebuild and verify
 
@@ -64,10 +57,10 @@ The ordinary builder prepares the provider, pinned QED/cflib sources, ordered
 patches, resource and conditional source-frame ledger before packaging:
 
 ```sh
-python3 tools/build_demo.py --output build/qed-delivery/normal \
+python3 tools/build_demo.py --output build/qed-delivery/final \
   --gem-desktop --qed --format sdfs --sector-bytes 256 --system-kib 720 \
   --mouse-profile mild --release-compiler
-python3 tools/test_qed_exec_setup.py --bundle build/qed-delivery/normal
+python3 tools/test_qed_exec_setup.py --bundle build/qed-delivery/final
 ```
 
 Install the pinned actionc, Calypsi 5.18, Altirra bridge/ROM and OF816 build
@@ -85,3 +78,18 @@ follow README.txt's manual setup. The current
 from [step 6 coexistence evidence](../development/qed-coexistence-qc4.json).
 Full release qualification and matching old/new Atarimax CAR/raw BIN delivery
 remain separate from these development checks.
+
+## Source and relinking
+
+The boot ZIP is accompanied by `exec816-qed-<revision>-source-relink.tar.gz`
+and `QED-DELIVERY-SHA256SUMS`. Keep these together for redistribution. The source
+archive contains Exec sources, prepared application/library sources, ordered
+patches, resources, retained objects and exact tool/runtime identities. Install
+Calypsi 5.18 separately; its compiler and SDK archive are not included.
+
+Extract the source archive and follow `qed-source-relink/README.txt` to relink
+unchanged objects or replace a retained CF-Lib object from modified source.
+An unchanged relink must reproduce QED.APP exactly. A changed-library APP is a
+separate diagnostic build. QED redistribution must remain free of charge;
+Exec-authored native adapters use the authorized MIT grant, while donor,
+generated GEM declarations and compiler/runtime notices retain their own terms.

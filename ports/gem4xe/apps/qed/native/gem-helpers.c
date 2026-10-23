@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-3.0-only
+/* SPDX-License-Identifier: MIT
  * Local convenience operations over the public GEM ABI, with no trap bindings.
  */
 #include "qed-native.h"
