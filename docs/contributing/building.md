@@ -19,6 +19,7 @@ the demo builder verifies their hashes before compiling.
 | --- | --- | --- |
 | Action! compiler and native ABI | [actionc.json](../../toolchain/actionc.json) | `build/actionc` |
 | Demo emulator and ROM | [altirra-shell-paced.json](../../toolchain/altirra-shell-paced.json) | `build/shell-paced-bridge/AltirraBridgeServer`, `build/firmware/altirraos-816.rom` |
+| SDFS producer | [sdfs_reference.py](../../tools/sdfs_reference.py), [adapter](../../tools/sdfs_reference.cpp) | `build/altirra-irq-fix`, portable `build/latency` libraries |
 | OF816 | [of816.json](../../toolchain/of816.json) | `build/of816-upstream` |
 | Kernel defaults | [kernel.json](../../config/kernel.json) | repository file |
 | Default demo mounts | [shell-sdfs.json](../../config/shell-sdfs.json) | repository file |
@@ -40,6 +41,21 @@ input check. The emulator is [AltirraSDL](https://github.com/ilmenit/AltirraSDL)
 upstream Altirra will not run the current Exec816 build.
 See the [platform contract](../reference/platform.md) for the
 machine boundary and the pin's provenance for platform inputs.
+
+SDFS media creation also needs the pinned AltirraSDL source tree at
+`build/altirra-irq-fix`, with its portable latency build prepared. The independent
+producer checks the two SDFS source hashes in `tools/sdfs_reference.py` and links
+`ATIO`, `ATCore` and `system` archives under `build/latency/src/`. Build those
+libraries using the pinned emulator's configuration before making SDFS media.
+Prepare the small host producer once before concurrent builds:
+
+```sh
+python3 -c 'import sys; sys.path.insert(0,"tools"); import sdfs_reference; print(sdfs_reference.reference())'
+```
+
+The media verification report records the producer hash. Clean-checkout QED
+reproduction may share these verified tool/source caches; it must not import a
+previous QED APP, provider or disk. See the [QED build guide](../guides/qed-exec.md).
 
 ## Build the demo
 

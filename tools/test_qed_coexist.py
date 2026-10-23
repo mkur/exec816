@@ -203,8 +203,8 @@ def check(output, bundle, production, layout_from, cohort, profile=False, factor
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output', type=Path, required=True)
-    p.add_argument('--bundle', type=Path, default=ROOT/'build/qed-coexist/caption-preview')
-    p.add_argument('--production', type=Path, default=ROOT/'build/qed-coexist/caption-production')
+    p.add_argument('--bundle', type=Path, default=ROOT/'build/qed-delivery/normal')
+    p.add_argument('--production', type=Path, default=ROOT/'build/qed-delivery/normal/qed-production')
     p.add_argument('--layout-from', type=Path, default=ROOT/'build/qed-coexist/qc3-caption/app')
     p.add_argument('--cohort', choices=['baseline'], default='baseline')
     p.add_argument('--profile-insert', action='store_true', help='Collect a bounded host callgraph around measured insertion')
