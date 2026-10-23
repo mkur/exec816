@@ -145,5 +145,9 @@ void BasicBuildStep(struct BasicEditor *e)
     content(e,0);
     mode=index%11==3 ? 128:index%11==4 ? 240:16;
     b.serial=(0x80000000UL|((ULONG)index<<12)|mode)-1;
-    BasicBuildRequest(e,target==12 || target==13 ? BASIC_BUILD_PUBLISH:BASIC_BUILD_RUN);
+    if (target==10 || target==12 || target==13)
+        BasicBuildRequest(e,BASIC_BUILD_PUBLISH);
+    else if (index==23 || target==5 || target==7 || target==8)
+        BasicBuildRequest(e,BASIC_BUILD_CHECK);
+    else BasicBuildRequest(e,BASIC_BUILD_RUN);
 }

@@ -21,7 +21,7 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None,boot_verbose=False):
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None,boot_verbose=False,sio_peer=None,emulator_output=None):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
     require(disk_failure in (None,'missing','missing-work','wrong'),'Unknown disk failure')
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
@@ -104,7 +104,14 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         require(measurement_commands is not None and boot_smoke,
                 'Explicit comparison media is restricted to measurement runs')
         expected_media_sha256=measurement_media_sha256
-    require(sha256(media_path)==expected_media_sha256,'Changed companion media')
+    if manifest.get('bootable_atr'):
+        from filesystem_audit import Audit
+        initial=Audit(media_path.read_bytes());initial.sdfs()
+        for name in ('BOOT.LDR','EXEC816.XEX'):
+            require(__import__('hashlib').sha256(initial.files[name]).hexdigest()==manifest['files'][name]['sha256'],
+                    'Changed boot file on writable system disk: '+name)
+    else:
+        require(sha256(media_path)==expected_media_sha256,'Changed companion media')
     if stock_smoke:require(manifest['mounts'][0]['sector_bytes']==128,'STOCK810 requires 128-byte sectors')
     ideplus=manifest.get('ideplus')
     binary=ROOT/('build/mouse-bridge/AltirraBridgeServer' if bitmap or ideplus or ide_only else 'build/shell-paced-bridge/AltirraBridgeServer');rom=ROOT/'build/firmware/altirraos-816.rom'
@@ -129,27 +136,36 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         require(sha256(fixture)==expected_ide_sha256,'Changed IDE demo fixture')
         environment=ide_emulator(out,fixture)
     else:
-        environment=emulator(binary.parent,rom,out,pin=pin)
+        environment=emulator(binary.parent,rom,emulator_output or out,pin=pin)
     with environment as b:
         for key,value in manifest['configuration'].items():b.config(key,str(value).lower() if isinstance(value,bool) else value)
         if disk_boot:b.config('exeloadmode','diskboot')
         if stock_smoke:b.config('diskemu','810')
         if desktop:b._cmd_ok('MOUSE ST')
+        if sio_peer is not None:
+            b.device_set('custom',path=str(sio_peer.script),hotreload=False,allowunsafe=True)
         saved['pointer']=(320,120)
-        mounted=None if ide_only else (ROOT/'tests/fixtures/mydos/mydos450-128.atr' if disk_failure=='wrong' else None if disk_failure=='missing' else media_path)
+        mounted=None if ide_only or sio_peer is not None else (ROOT/'tests/fixtures/mydos/mydos450-128.atr' if disk_failure=='wrong' else None if disk_failure=='missing' else media_path)
         mounted_hash=sha256(mounted) if mounted else None
         if mounted:b.mount(system_drive-1,str(mounted))
         work_media=[]
         for item in manifest.get('additional_media', []):
-            target=out/(Path(item['name']).stem+'-walkthrough.atr')
             source=(distribution_root or out)/item['name']
             require(sha256(source)==item['sha256'],'Changed extracted writable media')
-            shutil.copyfile(source,target)
+            if sio_peer is None:
+                target=out/(Path(item['name']).stem+'-walkthrough.atr')
+                shutil.copyfile(source,target)
+            else:
+                external=[Path(path) for drive,path,_ in sio_peer.mounts if drive==item['drive']]
+                require(len(external)==1,'Missing external writable media')
+                target=external[0]
             if integration is not None and hasattr(integration,'prepare_work'):
                 integration.prepare_work(target,item)
-            if disk_failure!='missing-work':b.mount(item['drive']-1,str(target))
+            if disk_failure!='missing-work' and sio_peer is None:b.mount(item['drive']-1,str(target))
             work_media.append((item,target))
-        machine=verify_machine(b,rom,pin)
+        checked_pin=pin if sio_peer is None else {**pin,'devices':[*pin.get('devices',[]),
+            dict(tag='custom',settings=dict(path=str(sio_peer.script),hotreload=False,allowunsafe=True))]}
+        machine=verify_machine(b,rom,checked_pin)
         def far(address,length):
             return b.memdump(address,length)
         def number(address,length=4):return int.from_bytes(far(address,length),'little')
@@ -1059,7 +1075,15 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             boot=p['build']['memory']['constants']
             require(b.memdump(boot['MANIFEST'],boot['MANIFEST_CAPACITY'])==bytes([0xd3])*boot['MANIFEST_CAPACITY'],
                     'OF816 shell reused retired manifest data')
-        require(sha256(media_path)==expected_media_sha256,'Read-only demo media changed')
+        if manifest.get('bootable_atr'):
+            b._cmd_ok('EJECT drive=0')
+            from filesystem_audit import Audit
+            audit=Audit(media_path.read_bytes());saved['bootable_media_audit']=audit.sdfs()
+            for name in ('BOOT.LDR','EXEC816.XEX'):
+                require(__import__('hashlib').sha256(audit.files[name]).hexdigest()==manifest['files'][name]['sha256'],
+                        'Boot file changed during single-disk session: '+name)
+        else:
+            require(sha256(media_path)==expected_media_sha256,'Read-only demo media changed')
         if ideplus:require(sha256(fixture)==expected_ide_sha256,'Read-only IDE fixture changed')
         if ide_only:
             from filesystem_audit import Audit
@@ -1073,7 +1097,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             saved['ide_work_audit']=audit.sdfs()
             saved['ide_work_files']={name:dict(bytes=len(payload),sha256=__import__('hashlib').sha256(payload).hexdigest())
                                      for name,payload in audit.files.items()}
-        if mounted:require(sha256(mounted)==mounted_hash,'Initially mounted media changed')
+        if mounted and not manifest.get('bootable_atr'):
+            require(sha256(mounted)==mounted_hash,'Initially mounted media changed')
         saved['work_media']=[]
         if work_media:
             from filesystem_audit import Audit

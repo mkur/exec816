@@ -5,6 +5,15 @@ Source debugging and native graphics remain planned. The
 [current FastBasic contract](../reference/fastbasic.md) and
 [workbench contract](../reference/fastbasic-workbench.md) describe shipped behavior.
 
+Run now follows the implemented [source-interpreter design](fastbasic-interpreter-design.md)
+and [FI0–FI7 plan](fastbasic-interpreter-implementation-plan.md).
+It uses direct source-buffer execution; the compiler-child workflow below records the
+WB0–WB9 starting design. Check/Build remain available. WB10 must add source
+metadata and hooks to the source parser/runtime as well as both standalone
+compiler paths; WB11 must retain a running interpreter Process for pause and
+inspection rather than relaunch an Image. Graphics remains a public native
+service used by both source and standalone execution.
+
 [Implementation plan](fastbasic-workbench-implementation-plan.md) ·
 [Plan index](README.md) · [GEM integration](gem4xe/README.md) ·
 [Migration plan](fastbasic-6502-migration-plan.md) ·

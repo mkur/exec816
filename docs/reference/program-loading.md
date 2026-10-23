@@ -153,10 +153,13 @@ with 30 reserved bytes and `fib_InfoFlags` at offset 258. Rebuild commands and
 providers together. Program ABI version 17 adds MountVolume/UnmountVolume and the
 eight-byte SioMountSpec record. Version 18 publishes the ordinary
 [SIO client library](sio-client.md) for native disk/control clients and loadable
-commands. The provider manifest uses 1,807 of 1,856 reserved upper-RAM bytes;
-the 160-byte pointer-input state moves another 128 bytes within existing Task
-arena slack to preserve separation. Bank-zero reservations are unchanged.
-The C program ABI remains version 17, with the existing mount wrappers.
+commands. Version 19 adds batched enumeration; version 20 adds the
+[FastBasic buffer attachment](fastbasic.md#source-buffer-attachment).
+The provider manifest uses 1,881 of 1,888 reserved upper-RAM bytes. This adds
+32 bytes of reserved table capacity; the 160-byte pointer-input state moves
+from upper Task-bank offset `$4740` to `$4760`, consuming the existing 32-byte
+gap before its `$4800` capture reservation. The full upper bank and all
+bank-zero reservations are unchanged. The matching C program ABI is version 26.
 See [user mounts](dos.md#user-sio-mounts).
 
 

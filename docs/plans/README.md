@@ -1,5 +1,28 @@
 # Implementation plans
 
+- [Boot-only fast SIO reader](boot-only-fast-sio-implementation-plan.md): implemented
+  BF0–BF8 slices for an Exec-owned split-XEX takeover, shared ATR/XEX execution,
+  nominal 57,600-baud negotiation, OF816 suspension, native SIO handoff and
+  measured final-package delivery. Zero added runtime bank-zero bytes;
+  [development evidence](../history/boot-only-fast-sio.md).
+
+- [Bootable Exec816 system ATR design](bootable-system-atr-design.md) and
+  [BA0–BA4 implementation plan](bootable-system-atr-implementation-plan.md):
+  implemented single D1 disk containing the OF816/kernel XEX, SDFS system files and writable
+  WORK directory. Defines boot-reader memory lifetime, firmware/native SIO
+  handoff, media construction and emulator/FujiNet acceptance. The
+  [development record](../history/bootable-system-atr.md) covers final-package
+  cold boot/save/reboot and temporary versus runtime reservations.
+
+- [FastBasic source interpreter design](fastbasic-interpreter-design.md) and
+  [FI0–FI7 implementation plan](fastbasic-interpreter-implementation-plan.md):
+  implemented delivery, starting with FB/FBI source execution in one guest
+  Process, then unsaved-buffer Run in BASIC.APP. Reuses the integer/FP parser
+  and runtime, with no Run scratch files or new bank-zero reservations.
+  The [persistent-session follow-up](fastbasic-session-plan.md) implements retained
+  interpreter state and explicit restart. Standalone compiler enhancements, debugging, direct mode
+  and graphics follow later; existing FBC/FBCI and Check/Build stay available.
+
 - [FastBasic 6502 migration](fastbasic-6502-migration-plan.md): implemented FB0–FB7 functional
   source port of the integer/FP runtime and on-machine compilers, using the existing
   guest bridge, native console/files and EDX for editing. Covers executable
@@ -20,6 +43,8 @@
   The [WB0–WB14 implementation plan](fastbasic-workbench-implementation-plan.md)
   orders runnable editor slices, reusable launch/wait/console interfaces, the
   FB7 Run workflow, debug metadata/protocol, graphics and exact-package delivery.
+  WB0–WB9 are implemented; the source-interpreter delivery above takes priority
+  over pending WB10–WB14 and replaces Run's original compiler-child backend.
 
 - [SpartaDOS personality for 6502 applications](spartados-personality-design.md):
   proposed MD5 → ARC → Sparta Commander sequence using private upper-memory

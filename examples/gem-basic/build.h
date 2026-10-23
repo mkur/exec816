@@ -3,7 +3,7 @@
 #define BASIC_BUILD_H
 #include "editor.h"
 enum { BASIC_BUILD_CHECK=1,BASIC_BUILD_RUN,BASIC_BUILD_STOP,BASIC_BUILD_PUBLISH,
-    BASIC_BUILD_INTEGER,BASIC_BUILD_OUTPUT };
+    BASIC_BUILD_INTEGER,BASIC_BUILD_OUTPUT,BASIC_BUILD_RESTART };
 void BasicBuildRequest(struct BasicEditor *,WORD);
 WORD BasicBuildBusy(void);
 WORD BasicBuildWork(void);

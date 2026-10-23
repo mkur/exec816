@@ -3,18 +3,29 @@ FastBasic workbench
 -------------------
 
 From Shell, type RUN C:BASIC.APP. The twelve-Task layout allows a second shell
-beside the workbench and its compiler/program Task. Output windows and AES
+beside the workbench and its interpreter Task. Output windows and AES
 clients have separate limits; close extra applications when those are full.
 
 Type PRINT 1.25*2.0 and press Control+Return: output should contain 2.5.
-Program > Integer compiler selects FBCI; floating point is the default.
-Control+Shift+Return checks without running. Compile errors select the source
+Run interprets the unsaved buffer without source, COM or diagnostic scratch files.
+Program > Integer mode selects FBI for Run; floating point (FB) is the default.
+Control+Shift+Return checks with FBC/FBCI without running. Parse errors select the source
 byte and reveal folded lines. Successful Run returns to the editor position.
 
 Select FastBasic output to enter INPUT/GET/KEY; select FastBasic for shortcuts.
-Control+K, Program > Stop or closing output cancels the child. Program > Output
-reopens completed output. Quit waits for the child before Save/Discard/Cancel.
+Control+K, Program > Stop or closing output cancels the current run. Program > Output
+reopens completed output. Quit waits for the run before Save/Discard/Cancel.
+Run keeps the interpreter Process and BASIC state between runs. Try
+A=A+1:PRINT A twice: it prints 1, then 2. Program > Restart interpreter clears
+BASIC state while keeping the source. Changing Integer mode also resets it.
+Repeated DIM keeps arrays of the same type and size; Restart before changing
+those declarations. An idle interpreter continues to occupy a Task/guest slot.
 Source edits are frozen during a job; Save and Save As remain available.
+
+From Shell, FB WORK:CALC.BAS and FBI WORK:HELLO.BAS run source directly.
+FB WORK:DECIMAL.BAS demonstrates decimal INPUT; BREAK stops FB WORK:BUSY.BAS.
+FB/FBI require one source path. Source input is limited to 32 KiB, and its
+parser, bytecode and variables still share one 64 KiB guest bank.
 
 Control+B builds a standalone release COM. Choose WORK: as its destination.
 Build does not save the source. Close the editor, then run the COM from Shell.

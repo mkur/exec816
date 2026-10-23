@@ -132,7 +132,7 @@ use this same implementation. Key/button opcodes are 20 (0/1/0/0) and 21
 ### Combined GUI and Exec wait
 
 `ExecAESWait(struct ExecAESWaitSpec *)` is a caller-local extension in C
-application ABI 23. The [generated record](../../abi/aes-wait.json) is 58 bytes:
+application ABI 26. The [generated record](../../abi/aes-wait.json) is 58 bytes:
 GUI flags/button/M1 inputs at 0–16, milliseconds at 18, caller-owned signalMask
 at 22, received bits at 26, eight message words at 30 and six ordinary mouse/key
 outputs at 46–56. Include `<exec816/aes.h>`. GUI flags have the same supported
@@ -231,7 +231,7 @@ to that window. Nested calls keep the outer scope, including nested ordinary
 `BEG_UPDATE`; an ordinary outer BEGIN still covers every owned window. Empty or
 hidden scoped updates invalidate their target, while untouched siblings remain
 eligible for caching. The helper uses the current wire version 17's UPDATE_WINDOW
-flag and C program import version 23; rebuild programs and their matching host.
+flag and C program import version 26; rebuild programs and their matching host.
 
 Update ownership also excludes native console painting/scrolling, widget
 feedback, background repair and cache capture. Mouse ownership defers native
@@ -758,7 +758,7 @@ at x=0..127, application menus occupy x=128..559, and Windows is at x=560.
 The supported tree has root children for the bar and dropdown container. The
 bar's active container holds G_TITLE siblings paired in order with G_BOX
 siblings under the dropdown container. Items are direct G_STRING children.
-G_IBOX containers, selected/checked/disabled/hidden states, 33 objects, depth eight and
+G_IBOX containers, selected/checked/disabled/hidden states, 34 objects, depth eight and
 63-byte labels are supported. Titles fit caller coordinates x=0..431; the
 presenter translates their display and hit coordinates by 128 pixels.
 Titles fit the eleven-row bar. Bundled menus use eleven-row items; arbitrary
@@ -998,7 +998,7 @@ caller successfully finishes every drawable change in the UPDATE scope. It
 only records completion if the work area was already complete at lock grant;
 otherwise it succeeds without claiming pixels, preserving the repaint fallback.
 Files uses it for incremental selection. Like `ExecAESPainted`, it is
-caller-local and adds no RPC. C application ABI 19 exports this helper; rebuild
+caller-local and adds no RPC. The current C application ABI exports this helper; rebuild
 the runtime and applications together.
 
 The UPDATE snapshot's `AESWindowView.pixelsReady` is nonzero when Layers had no

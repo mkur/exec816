@@ -1,0 +1,117 @@
+; Native completion records outlive guest parser workspace, not their Process.
+MODULE FBRESULT
+USE DOS
+USE FBSTATE
+USE FBSESSION
+USE FBABI
+USE FBINTERPABI
+USE FBSOURCE
+USE A816MEMORY
+USE O65TYPES
+USE CSTRING.IMPL AS STR
+
+; Capture parser fields before execution reclaims its temporary tables.
+PUBLIC LONGINT FUNC Phase(FBSTATE.Session POINTER state CARD phase)
+  CARD table,index
+  BYTE value
+
+  LET item=state.interpreter
+  IF item=NULL THEN
+    RETURN(LONGINT(O65TYPES.ERROR_UNSUPPORTED))
+  FI
+  IF phase=FBINTERPABI.PHASE_PREPARE THEN
+    RETURN(FBSESSION.Prepare(state))
+  FI
+  IF phase=FBINTERPABI.PHASE_DIM THEN
+    RETURN(FBSESSION.Dimension(state))
+  FI
+  IF phase=FBINTERPABI.PHASE_EXECUTE THEN
+    BEGIN
+      LET error=FBSESSION.Execute(state)
+      IF error<>0 THEN
+        RETURN(error)
+      FI
+    END
+  FI
+  item.result.phase=phase
+  IF phase=FBINTERPABI.PHASE_PARSE THEN
+    item.result.location=1
+    table=FBSOURCE.Cap(state,FBINTERPABI.CAP_FIELD_LINE)
+    item.result.line=CARD(FBSOURCE.ReadByte(state,table)) OR
+        (CARD(FBSOURCE.ReadByte(state,table+1)) LSH 8)
+    table=FBSOURCE.Cap(state,FBINTERPABI.CAP_FIELD_COLUMN)
+    item.result.column=CARD(FBSOURCE.ReadByte(state,table))
+    table=FBSOURCE.Cap(state,FBINTERPABI.CAP_FIELD_ERROR)
+    item.result.basic=CARD(FBSOURCE.ReadByte(state,table))
+    table=FBSOURCE.Cap(state,FBINTERPABI.CAP_FIELD_MESSAGES)
+        +item.result.basic
+    index=0
+    WHILE index<FBINTERPABI.MESSAGE_CAPACITY-1 DO
+      value=FBSOURCE.ReadByte(state,table+index)
+      item.result.message(index)=value RSH 1
+      index==+1
+      IF (value & 1)<>0 THEN
+        EXIT
+      FI
+    OD
+    item.result.message(index)=0
+    item.result.messageBytes=index
+    RETURN(LONGINT(O65TYPES.ERROR_BAD_FORMAT))
+  FI
+  IF phase<>FBINTERPABI.PHASE_EXECUTE AND
+      phase<>FBINTERPABI.PHASE_COMPLETE THEN
+    RETURN(LONGINT(O65TYPES.ERROR_BAD_FORMAT))
+  FI
+
+RETURN(0)
+
+; Results become visible before the normal Process completion signal is sent.
+PUBLIC PROC Complete(FBSTATE.Session POINTER state LONGINT cause)
+  CARD length,used
+
+  LET item=state.interpreter
+  IF item=NULL THEN
+    RETURN
+  FI
+  item.result.cause=cause
+  item.result.primary=IF cause=0 THEN 0 ELSE FBABI.RESULT_FAILURE FI
+  IF cause=0 THEN
+    item.result.phase=FBINTERPABI.PHASE_COMPLETE
+    STR.strlcpy(@item.result.message,c"Completed",FBINTERPABI.MESSAGE_CAPACITY)
+  ELSEIF item.result.messageBytes=0 THEN
+    DOS.Fault(cause,c"FastBasic",@item.result.message,
+        FBINTERPABI.MESSAGE_CAPACITY)
+  FI
+  item.result.messageBytes=STR.strnlen(@item.result.message,
+      FBINTERPABI.MESSAGE_CAPACITY)
+  IF item.attached=2 THEN
+    A816MEMORY.Move(BYTE POINTER(ADDRESS(item.source.result)),
+        BYTE POINTER(@item.result),FBINTERPABI.RESULT_BYTES)
+    item.attached=0
+  ELSEIF cause<>0 THEN
+    ; Parser prints its donor message; append its location. Other failures use
+    ; the bounded native description. All text passes through native streams.
+    IF item.result.phase=FBINTERPABI.PHASE_PARSE AND
+        item.result.location<>0 THEN
+      STR.strlcpy(@item.buffer,c" at line ",1024)
+    ELSE
+      STR.strlcpy(@item.buffer,CSTRING(@item.result.message),1024)
+      IF item.result.location<>0 THEN
+        STR.strlcat(@item.buffer,c" at line ",1024)
+      FI
+    FI
+    used=STR.strlen(CSTRING(@item.buffer))
+    IF item.result.location<>0 THEN
+      length=STR.u32toa(LONGCARD(item.result.line),@item.buffer+used,1024-used)
+      used==+length
+      STR.strlcat(@item.buffer,c" column ",1024)
+      used=STR.strlen(CSTRING(@item.buffer))
+      used==+STR.u32toa(LONGCARD(item.result.column),@item.buffer+used,1024-used)
+    FI
+    item.buffer(used)=10
+    DOS.Write(DOS.Output(),@item.buffer,LONGINT(used)+1)
+  FI
+
+RETURN
+
+ENDMODULE

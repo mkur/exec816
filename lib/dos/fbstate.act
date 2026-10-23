@@ -3,6 +3,21 @@ USE EXEC
 USE SDXSTATE
 USE SDXABI
 USE TIMER
+USE FBINTERPABI
+
+PUBLIC TYPE Interpreter=[
+  CARD capability
+  BYTE attached
+  FBINTERPABI.Session POINTER channel
+  EXEC.MsgPort POINTER requests
+  BYTE POINTER symbols
+  CARD symbolBytes,variableCount,heapEnd
+  CARD ARRAY dimensions(256)
+  BYTE prepared,executing
+  FBINTERPABI.Source source
+  FBINTERPABI.Result result
+  BYTE ARRAY buffer(1024),arguments(384)
+]
 
 PUBLIC TYPE Session=[
   SDXSTATE.Session guest
@@ -13,6 +28,7 @@ PUBLIC TYPE Session=[
   BYTE consoleMode
   CARD diagnostic
   LONGCARD diagnosticJob
+  Interpreter POINTER interpreter
 ]
 
 ; The guest pool is shared with SDX; this allocation has its own exact size.
@@ -20,6 +36,12 @@ PUBLIC PROC Release(BYTE POINTER extension)
 
   LET state=Session POINTER(extension)
   SDXSTATE.Unclaim(state.guest.slot)
+  IF state.interpreter<>NULL THEN
+    IF state.interpreter.symbols<>NULL THEN
+      EXEC.FreeMem(state.interpreter.symbols,state.interpreter.symbolBytes)
+    FI
+    EXEC.FreeMem(BYTE POINTER(state.interpreter),SIZEOF(Interpreter))
+  FI
   EXEC.FreeMem(extension,SIZEOF(Session))
 
 RETURN

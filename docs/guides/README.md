@@ -6,6 +6,9 @@
 
 ## Running Exec816
 
+- [FujiNet split-disk boot](fujinet-split-boot.md): XEX on D1, SYS on D2 and
+  writable WORK on D8, including CONFIG's OPTION → Boot path.
+- [Bootable system ATR](bootable-system-atr.md): one writable D1 disk containing OF816, Exec and system/workspace files.
 - [Demo](demo.md): build artifacts, machine setup and a walkthrough.
 - [Bitmap console preview](bitmap-console.md): optional 80×30 VBXE shell, setup and measured limits.
 - [IDE Plus development setup](ideplus.md): optional APT disk, native ATA driver and writable admission.

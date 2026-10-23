@@ -1,0 +1,22 @@
+; Observe the first native BREAK decision without changing production policy.
+MODULE FBITIMING
+PUBLIC VOLATILE CARD observed
+PUBLIC VOLATILE BYTE seen
+VOLATILE BYTE clockLow=$14,clockHigh=$13
+
+PUBLIC PROC Mark()
+  BYTE high,low
+
+  IF seen=0 THEN
+    DO
+      high=clockHigh
+      low=clockLow
+    UNTIL high=clockHigh
+    OD
+    observed=(CARD(high) LSH 8) OR CARD(low)
+    seen=1
+  FI
+
+RETURN
+
+ENDMODULE

@@ -19,6 +19,7 @@ def package(output, build_dir=ROOT/'build/fastbasic'):
                                    '--exclude-standard','-z'],cwd=ROOT).split(b'\0')
     for raw in names:
         if not raw:continue
+        if raw==b'exec816-demo.zip':continue  # Separate binary distribution.
         name=raw.decode()
         path=ROOT/name
         if path.is_file():files['exec816/'+name]=path.read_bytes()
@@ -27,7 +28,8 @@ def package(output, build_dir=ROOT/'build/fastbasic'):
         'target already applied, including bundled cc65 and mini65 sources.\n'
         'exec816/ is the current working source snapshot, including native\n'
         'adapters, pins, patch, examples and build instructions.\n\n'
-        'See exec816/ports/fastbasic/README.md to rebuild FBCI.COM and FBC.COM.\n'
+        'See exec816/ports/fastbasic/README.md to rebuild FB.COM, FBI.COM,\n'
+        'FBCI.COM, FBC.COM and BASIC.APP.\n'
         'See exec816/docs/contributing/building.md for the native system.\n'
         'No build intermediates are included. Preserve all donor notices.\n').encode()
     files['fastbasic-inputs.json']=(json.dumps(identities,indent=2)+'\n').encode()

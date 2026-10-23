@@ -1,0 +1,17 @@
+{
+  "format": "exec816-boot-atr-v1",
+  "version": 1,
+  "sectors": 8192,
+  "sector_bytes": 256,
+  "boot_address": 12288,
+  "boot_bytes": 384,
+  "boot_entry": 12416,
+  "locator_offset": 64,
+  "locator_magic": "EBA1",
+  "locator_size": 12,
+  "locator_fields": {"magic": 0, "first_sector": 4, "sector_count": 6, "load_address": 8, "entry": 10},
+  "reader_address": 16384,
+  "reader_bytes": 8192,
+  "guard_bytes": 16,
+  "reader_entry": 16400
+}

@@ -1,7 +1,14 @@
 
 FastBasic integer and floating-point programming
 
-FBCI, FBC, EDX, MD5 and ARC are installed in SYS:C. At the shell, enter:
+FB, FBI, FBCI, FBC, EDX, MD5 and ARC are installed in SYS:C. Run source with:
+  FB WORK:CALC.BAS
+  FBI WORK:HELLO.BAS
+FB includes floating point; FBI is integer-only. Each requires a source path.
+No temporary COM is created. Standard input remains available to BASIC.
+Source is limited to 32 KiB; parser, bytecode and heap share its guest bank.
+
+For the existing standalone compiler workflow, enter:
   CD WORK:
   EDX HELLO.BAS
 EDX: Ctrl-Z goes to end of line; Ctrl-S saves; Return confirms; Esc exits.
@@ -22,8 +29,9 @@ The writable work disk is disposable; back it up before experimenting.
 
 This target supports integers, strings, arrays, procedures and native file
 I/O, with six-byte Atari floating point and math functions in FBC.
-The integrated IDE, Atari graphics/sound and external USR assembly calls are
-not provided. Recompile older binaries for the current target. KEY() returns a queued console character
+The optional BASIC.APP editor runs unsaved source. Source debugging, Atari
+graphics/sound and external USR assembly calls are not provided. Recompile older
+binaries for target $4705. KEY() returns a queued console character
 (zero if none), rather than an Atari CH scan code. PEEK/POKE address private
 guest memory; they do not access Atari hardware. This is a development demo.
 See FASTBASIC-NOTICES.txt and the separate corresponding-source archive.

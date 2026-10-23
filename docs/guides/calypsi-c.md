@@ -308,7 +308,7 @@ launch returns, adds its own NUL, and retains that copy until collection.
 The caller may reuse or free its buffer after successful launch. Embedded NUL
 and invalid lengths are rejected by the existing Process admission boundary.
 The call returns a parent-owned Process identity, or zero on failure with IoErr.
-C component ABI 21 changes this signature; rebuild the provider and all APPs.
+Use the current C import ABI 26 and rebuild the provider and all APPs together.
 Start acknowledges child resource and console setup. `Input()`/`Output()` expose
 the child's cloned selections; a supplied CON console has independent BREAK
 routing while the parent's event loop and DOS context remain usable.

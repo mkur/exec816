@@ -85,7 +85,7 @@ example, `NAME|CLOSER|MOVER` with outer `(56,21,528,173)` has work area
 `(64,32,512,160)`. Bind before `wind_open`; other geometry is rejected. Moving
 must preserve that alignment and dimensions. The function returns one after
 publication, or zero with the AES diagnostic on failure. Rebuild the provider
-and applications for C import ABI 23 and AES wire ABI 17.
+and applications for C import ABI 26 and AES wire ABI 17.
 
 The console worker owns retained cells, caret and drawing. GEM owns the frame,
 focus, visibility and ordinary `WM_TOPPED`, `WM_MOVED` and `WM_CLOSED` delivery.

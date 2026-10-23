@@ -21,6 +21,9 @@ def xex_segments(raw):
     require(raw[:2] == b'\xff\xff', 'Expected XEX executable')
     offset = 2
     while offset < len(raw):
+        if raw[offset:offset+2]==b'\xff\xff':
+            offset+=2
+            continue
         require(offset+4 <= len(raw), 'Truncated XEX segment header')
         low, high = struct.unpack_from('<HH', raw, offset)
         offset += 4
@@ -214,6 +217,17 @@ SEGMENTS {{
                   transient_upper_banks=[layout['OF_CODE'] >> 16,layout['OF_DATA'] >> 16],
                   assembler=command(['ca65','--version'],stderr=subprocess.STDOUT).strip(),
                   linker=command(['ld65','--version'],stderr=subprocess.STDOUT).strip())
+    record['local_callbacks']=[program['labels']['loader_init'],
+                               program['labels']['loader_of_begin'],labels['of_load']]
+    canonical=output/'Exec-core.xex'
+    canonical.write_bytes(raw)
+    record.update(canonical_xex=canonical.name,canonical_xex_sha256=sha256(canonical))
+    demo=json.loads((exec_build/'demo-manifest.json').read_text())
+    if demo.get('boot_sio') and not (demo.get('ide_only') or demo.get('ideplus')):
+        from build_boot_fast import wrap
+        record['boot_sio']=wrap(canonical,xex,output/'boot-sio',record,demo['boot_sio'],
+                                loader_address=program['build']['memory']['constants']['LOADER'])
+        record['xex_sha256']=sha256(xex)
     (output/'of816.json').write_text(json.dumps(record,indent=2)+'\n')
     # Preserve upstream's redistribution notice with the runnable bundle.
     (output/'OF816-LICENSE.txt').write_bytes((upstream/'LICENSE').read_bytes())

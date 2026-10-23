@@ -3,7 +3,9 @@
 This source port starts from FastBasic 4.7 and the submodule revisions in
 [upstream.json](upstream.json). It retains the donor parser and 6502 runtime.
 The [target contract](../../docs/reference/fastbasic.md) defines the Exec profile.
-FBC adds a private Altirra decimal math package; the native GEM workbench integrates editing, Check, Run, Stop and Build. `target/mathpack.asm` is generated from the pinned mini65 source by
+FB/FBI interpret source in one Process without scratch COM files. FBC adds a
+private Altirra decimal math package; the native GEM workbench integrates editing,
+source Run/Stop and compiler-backed Check/Build. `target/mathpack.asm` is generated from the pinned mini65 source by
 `tools/generate_fastbasic_math.py`, retaining its own notice. Change the generator
 and regenerate, rather than editing that output.
 
@@ -30,10 +32,21 @@ user output. The host compiler is rebuilt from patched sources so literal
 conversion agrees with AFP instead of binary-double rounding. Its historical
 intermediate name `source/build/bin/fbci.xex` does not describe its new format.
 
+The same helper builds `FB.COM` (integer/FP source interpreter) and `FBI.COM`
+(integer-only). Their assembly bootstrap, parser and complete user runtime link
+through `target/source-run.mak`; intermediate names are `fbrun.xex` and
+`fbirun.xex`. Run `FB WORK:CALC.BAS` or `FBI WORK:HELLO.BAS`. Both require one
+source path. The generated source attachment records are defined in
+`abi/fastbasic-interpreter.json`; BASIC.APP supplies an unsaved buffer through
+`ExecBasicAttach` and ordinary Process start/collection. BASIC.APP retains a
+message-driven interpreter Process between runs; Restart interpreter resets it.
+See the [session contract](../../docs/reference/fastbasic.md#persistent-interpreter-sessions).
+
 `build.json` records source inputs, tool hashes and the FBCI envelope/hash.
 `port-source.json` hashes every donor and added target source file. Reused source
 caches are checked; edited caches fail rather than silently replacing a pin.
-Make changes in [patches/exec6502.patch](patches/exec6502.patch) or [target/](target/),
+Make changes in [patches/exec6502.patch](patches/exec6502.patch),
+[patches/session.patch](patches/session.patch) or [target/](target/),
 then rebuild. Build directories are disposable; original source is verified
 against the archives before reuse. The checked-in patch retains donor notices;
 target helper/callback routines and generated interface constants are MIT.
@@ -52,16 +65,24 @@ already-patched `fastbasic/` tree run:
 make -j4 build/bin/fastbasic build/bin/ca65 build/bin/ld65 build/bin/ar65 \
   build/gen/syntp
 make -j4 build/bin/fbci.xex build/bin/fbc.xex \
+  build/bin/fbrun.xex build/bin/fbirun.xex \
   build/compiler/fastbasic-int.lib build/compiler/fastbasic-fp.lib
 ```
 
-The resulting `build/bin/fbci.xex` is `FBCI.COM` and `build/bin/fbc.xex` is
-`FBC.COM`. The target's Makefile builds
+The resulting `build/bin/fbci.xex` is `FBCI.COM`, `build/bin/fbc.xex` is
+`FBC.COM`, `build/bin/fbrun.xex` is `FB.COM`, and `build/bin/fbirun.xex` is
+`FBI.COM`. The target's Makefile builds
 its host cross-compiler before compiling the frontend.
 
 Development checks:
 
 ```sh
+python3 tools/generate_fastbasic_interpreter.py --check
+python3 tools/test_fastbasic_interpreter.py --output build/fastbasic-interpreter/core
+python3 tools/test_fastbasic_interpreter.py --group admission --output build/fastbasic-interpreter/admission
+python3 tools/test_fastbasic_interpreter.py --group attach --raw --output build/fastbasic-interpreter/attach-raw
+python3 tools/test_fastbasic_interpreter_lifetime.py --float --return-probe 7 --decimal \
+  --output build/fastbasic-interpreter/lifetime-high
 python3 tools/test_fastbasic_controls.py
 python3 tools/test_fastbasic.py --group all --output build/fastbasic/all
 python3 tools/test_fastbasic.py --group runtime --raw --output build/fastbasic/raw

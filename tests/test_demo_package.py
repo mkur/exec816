@@ -20,7 +20,8 @@ class DemoPackageTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         (self.root/'docs').mkdir()
         for name in ('VERSION', 'LICENSE', 'LICENSE-MIT', 'LICENSING.md', 'docs/demo-distribution.txt',
-                     'docs/bitmap-shell-distribution.txt', 'docs/text-shell-distribution.txt'):
+                     'docs/bitmap-shell-distribution.txt', 'docs/text-shell-distribution.txt',
+                     'docs/fujinet-split-distribution.txt'):
             (self.root/name).write_bytes((ROOT/name).read_bytes())
         self.bundle = self.root/'bundle'
         self.bundle.mkdir()
@@ -70,6 +71,22 @@ class DemoPackageTests(unittest.TestCase):
         for name, digest in checksums.items():
             self.assertEqual(hashlib.sha256(files[name]).hexdigest(), digest)
         self.assertNotIn(b'@SYSTEM_', files['README.txt'])
+
+    def test_split_xex_guide_uses_packaged_system_drive(self):
+        path=self.bundle/'of816.json'
+        record=json.loads(path.read_text());record['boot_config']['system_drive']=2
+        path.write_text(json.dumps(record))
+        (self.root/'demo-manifest.json').write_text(json.dumps(
+            dict(kernel=dict(exec_build=dict(version='test-split')))))
+        with patch.object(package_demo,'ROOT',self.root):
+            package_demo.package(self.bundle,self.archive)
+        with zipfile.ZipFile(self.archive) as archive:
+            guide=archive.read('exec816-demo/README.txt')
+        self.assertIn(b'D1: Exec-of816.xex',guide)
+        self.assertIn(b'D2: system.atr',guide)
+        self.assertIn(b'D8: work.atr',guide)
+        self.assertIn(b'SYS on D2 automatically',guide)
+        self.assertNotIn(b'@SYSTEM_',guide)
 
     def test_disposable_workspace_is_checked_and_packaged(self):
         content = b'disposable writable disk'

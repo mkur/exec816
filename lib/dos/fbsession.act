@@ -1,0 +1,212 @@
+; A workbench session is an ordinary Process serving caller-owned Exec messages.
+MODULE FBSESSION
+USE EXEC
+USE DOS
+USE FBSTATE
+USE FBABI
+USE FBINTERPABI
+USE FBSOURCE
+USE SDXSTATE
+USE SDXABI
+USE A816MEMORY
+
+; Workspace addresses belong to the validated, matching source engine.
+CARD FUNC Field(FBSTATE.Session POINTER state CARD offset)
+
+RETURN(SDXSTATE.ReadWord(state.guest.bank,
+    FBSOURCE.Cap(state,FBINTERPABI.CAP_FIELD_WORKSPACE)+offset))
+
+CARD FUNC ReadPointer(FBSTATE.Session POINTER state CARD offset)
+
+RETURN(SDXSTATE.ReadWord(state.guest.dp,Field(state,offset)))
+
+PROC SetPointer(FBSTATE.Session POINTER state CARD offset,value)
+
+  SDXSTATE.Word(state.guest.dp,Field(state,offset),value)
+
+RETURN
+
+; Parser temporaries live below a fixed variable arena. Stable symbol numbers
+; and guest addresses keep scalar, string and array references valid after edits.
+PUBLIC LONGINT FUNC Prepare(FBSTATE.Session POINTER state)
+  CARD base,index
+
+  LET item=state.interpreter
+  IF item.channel=NULL THEN
+    BEGIN
+      LET frame=SDXSTATE.GetFrame(@state.guest)
+      frame(SDXABI.FRAME_A)=0
+      frame(SDXABI.FRAME_X)=0
+    END
+    RETURN(0)
+  FI
+  base=ReadPointer(state,FBINTERPABI.WORKSPACE_FIELD_VAR_BUF)
+  IF LONGCARD(base)+LONGCARD(item.symbolBytes)>=
+      LONGCARD(FBINTERPABI.SESSION_VARIABLE_BASE) THEN
+    RETURN(DOS.ERROR_NO_FREE_STORE)
+  FI
+  IF item.symbolBytes<>0 THEN
+    A816MEMORY.Move(state.guest.bank+base,item.symbols,item.symbolBytes)
+  FI
+  base==+item.symbolBytes
+  SetPointer(state,FBINTERPABI.WORKSPACE_FIELD_LABEL_BUF,base)
+  SetPointer(state,FBINTERPABI.WORKSPACE_FIELD_LADDR_BUF,base)
+  SetPointer(state,FBINTERPABI.WORKSPACE_FIELD_MEM_END,base)
+  index=Field(state,FBINTERPABI.WORKSPACE_FIELD_VAR_COUNT)
+  state.guest.dp(index)=BYTE(item.variableCount)
+  SDXSTATE.Word(state.guest.bank,FBABI.MEMTOP,
+      FBINTERPABI.SESSION_VARIABLE_BASE)
+  LET frame=SDXSTATE.GetFrame(@state.guest)
+  frame(SDXABI.FRAME_A)=1
+  frame(SDXABI.FRAME_X)=0
+
+RETURN(0)
+
+; Commit the new name table only after a complete parse. Failed parses leave
+; the previous bindings and all data intact. Newly appended slots start at zero.
+PUBLIC LONGINT FUNC Execute(FBSTATE.Session POINTER state)
+  CARD base,finish,count
+  BYTE POINTER symbols
+
+  LET item=state.interpreter
+  IF item.channel=NULL THEN
+    RETURN(0)
+  FI
+  base=ReadPointer(state,FBINTERPABI.WORKSPACE_FIELD_VAR_BUF)
+  finish=ReadPointer(state,FBINTERPABI.WORKSPACE_FIELD_LABEL_BUF)
+  count=finish-base
+  symbols=NULL
+  IF count<>0 THEN
+    symbols=EXEC.AllocMem(count,EXEC.MEMF_UPPER)
+    IF symbols=NULL THEN
+      RETURN(DOS.ERROR_NO_FREE_STORE)
+    FI
+    A816MEMORY.Move(symbols,state.guest.bank+base,count)
+  FI
+  IF item.symbols<>NULL THEN
+    EXEC.FreeMem(item.symbols,item.symbolBytes)
+  FI
+  item.symbols=symbols
+  item.symbolBytes=count
+  item.variableCount=CARD(state.guest.dp(
+      Field(state,FBINTERPABI.WORKSPACE_FIELD_VAR_COUNT)))
+  IF item.prepared=0 THEN
+    A816MEMORY.Clear(state.guest.bank+FBINTERPABI.SESSION_VARIABLE_BASE,
+        FBINTERPABI.SESSION_VARIABLE_BYTES)
+    item.heapEnd=FBINTERPABI.SESSION_VARIABLE_BASE
+        +FBINTERPABI.SESSION_VARIABLE_BYTES
+    item.prepared=1
+  FI
+  state.guest.bank(Field(state,FBINTERPABI.WORKSPACE_FIELD_VAR_PAGE))=
+      BYTE(FBINTERPABI.SESSION_VARIABLE_BASE RSH 8)
+  SetPointer(state,FBINTERPABI.WORKSPACE_FIELD_ARRAY_PTR,item.heapEnd)
+  SDXSTATE.Word(state.guest.bank,FBABI.MEMTOP,FBABI.LIMIT)
+  item.executing=1
+
+RETURN(0)
+
+; DIM declarations are idempotent within a session. A changed dimension must
+; request a restart, so existing pointers can never silently name a smaller area.
+PUBLIC LONGINT FUNC Dimension(FBSTATE.Session POINTER state)
+  CARD code,index,slot,count,base,remaining,used
+
+  LET item=state.interpreter
+  code=ReadPointer(state,FBINTERPABI.WORKSPACE_FIELD_CPTR)
+  index=CARD(state.guest.bank(code))
+  slot=FBINTERPABI.SESSION_VARIABLE_BASE+index*2
+  count=ReadPointer(state,FBINTERPABI.WORKSPACE_FIELD_TMP2)
+  base=SDXSTATE.ReadWord(state.guest.bank,slot)
+  IF base=0 THEN
+    base=item.heapEnd
+    IF count>=FBABI.LIMIT-base THEN
+      RETURN(DOS.ERROR_NO_FREE_STORE)
+    FI
+    remaining=count
+    used=0
+    WHILE remaining<>0 DO
+      BEGIN
+        LET chunk=IF remaining>1024 THEN CARD(1024) ELSE remaining FI
+        A816MEMORY.Clear(state.guest.bank+base+used,chunk)
+        used==+chunk
+        remaining==-chunk
+        IF DOS.BreakPending()<>0 THEN
+          RETURN(DOS.ERROR_BREAK)
+        FI
+        EXEC.Yield()
+      END
+    OD
+    item.heapEnd==+count
+    SetPointer(state,FBINTERPABI.WORKSPACE_FIELD_ARRAY_PTR,item.heapEnd)
+    SDXSTATE.Word(state.guest.bank,slot,base)
+    item.dimensions(index)=count
+  ELSEIF item.dimensions(index)<>count THEN
+    RETURN(DOS.ERROR_BAD_NUMBER)
+  FI
+  SetPointer(state,FBINTERPABI.WORKSPACE_FIELD_CPTR,code+1)
+  LET frame=SDXSTATE.GetFrame(@state.guest)
+  frame(SDXABI.FRAME_A)=BYTE(base)
+  frame(SDXABI.FRAME_X)=BYTE(base RSH 8)
+
+RETURN(0)
+
+; Failed allocations may leave the donor bump pointer beyond MEMTOP. Keep the
+; last valid checkpoint, including allocations completed before an interruption.
+PUBLIC PROC Checkpoint(FBSTATE.Session POINTER state)
+  CARD finish
+
+  LET item=state.interpreter
+  IF item<>NULL THEN
+    IF item.channel<>NULL AND item.executing<>0 THEN
+      finish=ReadPointer(state,FBINTERPABI.WORKSPACE_FIELD_ARRAY_PTR)
+      IF finish>=FBINTERPABI.SESSION_VARIABLE_BASE
+          +FBINTERPABI.SESSION_VARIABLE_BYTES AND finish<FBABI.LIMIT THEN
+        item.heapEnd=finish
+      FI
+    FI
+  FI
+
+RETURN
+
+; The reply transfers the request and its borrowed source/result back together.
+PUBLIC PROC Reply(FBSTATE.Interpreter POINTER item
+    FBINTERPABI.Request POINTER request)
+
+  item.executing=0
+  EXEC.ReplyMsg(@request.message)
+
+RETURN
+
+; A durable port signal wakes an idle Process; it does not consume a Task poll.
+PUBLIC FBINTERPABI.Request POINTER FUNC Next(FBSTATE.Interpreter POINTER item)
+  FBINTERPABI.Request POINTER request
+  EXEC.Message POINTER ignored
+
+  DO
+    request=FBINTERPABI.Request POINTER(EXEC.GetMsg(item.requests))
+    IF request<>NULL THEN
+      DOS.ClearBreak()
+      item.source=request.source
+      item.attached=1
+      RETURN(request)
+    FI
+    ignored=EXEC.WaitPort(item.requests)
+  OD
+
+RETURN(NULL)
+
+PUBLIC PROC Reset(FBSTATE.Interpreter POINTER item)
+
+  IF item.symbols<>NULL THEN
+    EXEC.FreeMem(item.symbols,item.symbolBytes)
+  FI
+  item.symbols=NULL
+  item.symbolBytes=0
+  item.variableCount=0
+  item.heapEnd=0
+  item.prepared=0
+  item.executing=0
+  A816MEMORY.Clear(BYTE POINTER(@item.dimensions),512)
+
+RETURN
+
+ENDMODULE

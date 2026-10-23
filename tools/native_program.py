@@ -354,6 +354,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         if sdx_patches:
             command(["python3", ROOT / "tools/generate_sdx.py", "--check"])
             command(["python3", ROOT / "tools/generate_fastbasic.py", "--check"])
+            command(["python3", ROOT / "tools/generate_fastbasic_interpreter.py", "--check"])
         if upper_table:
             from task_capacity import configure
             configure(memory,task_capacity,worker_stack,idle_stack)

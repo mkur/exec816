@@ -1,11 +1,11 @@
 {
   "abi": "exec816.program",
-  "version": 19,
+  "version": 20,
   "profile": "actionc.o65.compact.v3",
   "native_abi": "action65816.native.v2",
   "entry_signature": 684236356,
   "provider_offset": 16384,
-  "provider_capacity": 1856,
+  "provider_capacity": 1888,
   "provider_operation": 3,
   "result_codes": {
     "OK": 0,
@@ -530,6 +530,19 @@
         [
           "BYTE POINTER",
           "batch"
+        ]
+      ]
+    },
+    "BasicAttach": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "image"
+        ],
+        [
+          "BYTE POINTER",
+          "source"
         ]
       ]
     }

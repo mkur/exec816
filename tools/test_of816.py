@@ -12,7 +12,7 @@ from test_dos_stack import execute
 from test_heap_api import clean_ownership
 from test_shell_core import KEYS
 
-KEYS = {**KEYS, '@':('8',True), '!':('1',True)}
+KEYS = {**KEYS, '@':('8',True), '!':('1',True), ',':('COMMA',False)}
 
 PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 
@@ -69,12 +69,12 @@ def press(bridge, labels, character, target=None):
     bridge.bp_clear_all()
     target = target or labels['of_wait_key']
     previous = bridge.peek16(labels['of_keys'])
-    condition = f'dw(${labels["of_keys"]:x})>{previous}'
-    bridge.bp_set(target,condition=condition)
+    condition = f'(dw(${labels["of_keys"]:x})>{previous})&(@xpc=${target:x})'
+    bridge.bp_set(target&0xffff,condition=condition)
     if shift:
         bridge._cmd_ok('KEY SHIFT down')
     require(bridge._cmd_ok(f'KEY {name} down')['raw_scan'], 'Physical key delivery required')
-    run_to(bridge,target,3000,60,condition)
+    run_to(bridge,target&0xffff,3000,60,condition)
     bridge._cmd_ok(f'KEY {name} up')
     if shift:
         bridge._cmd_ok('KEY SHIFT up')

@@ -7,6 +7,12 @@ const UWORD BasicBuildLayout[]={
     offsetof(struct BasicBuildJob,unit),offsetof(struct BasicBuildJob,caret),
     offsetof(struct BasicBuildJob,cause),offsetof(struct BasicBuildJob,compilerResult),
     offsetof(struct BasicBuildJob,programResult),offsetof(struct BasicBuildJob,diagnostic),
+    offsetof(struct BasicBuildJob,interpreterResult),
     offsetof(struct BasicBuildJob,window),offsetof(struct BasicBuildJob,source),
-    offsetof(struct BasicBuildJob,target)
+    offsetof(struct BasicBuildJob,target),
+    sizeof(struct BasicInterpreterSession),
+    offsetof(struct BasicInterpreterSession,image),
+    offsetof(struct BasicInterpreterSession,child),
+    offsetof(struct BasicInterpreterSession,channel),
+    offsetof(struct BasicInterpreterSession,request)
 };

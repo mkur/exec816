@@ -16,8 +16,11 @@
 #include <string.h>
 
 enum { CHOOSE=1,RESERVE,RETRY_NAMES,SNAPSHOT,WRITE_SOURCE,CLOSE_SOURCE,LOAD_COMPILER,
-    COMPILER,DIAGNOSTIC,LOAD_PROGRAM,PROGRAM,READ_BINARY,PUBLISH,RETIRE };
+    COMPILER,DIAGNOSTIC,LOAD_PROGRAM,PROGRAM,READ_BINARY,PUBLISH,RETIRE,
+    PREPARE_RUN,LOAD_INTERPRETER,WAIT_INTERPRETER,CLOSE_INTERPRETER };
 static struct BasicBuildJob b;
+/* One Process owns the engine, BASIC data and open channels between jobs. */
+static struct BasicInterpreterSession resident __attribute__((aligned(2)));
 static struct BasicFileJob publication;
 static char scratchRecovery[3][17];
 
@@ -69,33 +72,94 @@ failed:
     cause(IoErr());close_output();return 0;
 }
 WORD BasicBuildBusy(void) { return b.phase!=0; }
-WORD BasicBuildWork(void) { return b.phase && !b.child; }
-ULONG BasicBuildMask(void) { return b.child ? ExecProgramMask(b.child):0; }
+WORD BasicBuildWork(void)
+{ return b.phase && !b.child && !resident.pending && !(resident.child && !resident.ready); }
+ULONG BasicBuildMask(void)
+{
+    ULONG mask=b.child ? ExecProgramMask(b.child):0;
+    if (resident.child) mask|=ExecProgramMask(resident.child);
+    if (resident.replies) mask|=1UL<<resident.replies->mp_SigBit;
+    return mask;
+}
 void BasicBuildStop(void)
-{ if (b.phase) { b.stop=1;if (b.child) ExecBreakProgram(b.child); } }
+{ if (b.phase) { b.stop=1;if (b.child) ExecBreakProgram(b.child);
+    if (resident.pending && resident.request.command==FBI_COMMAND_RUN) ExecBreakProgram(resident.child); } }
+
+static void resident_release(void)
+{
+    if (resident.image) ExecReleaseProgram(resident.image);
+    if (resident.replies) DeleteMsgPort(resident.replies);
+    memset(&resident,0,sizeof(resident));
+}
+static void resident_submit(UWORD command)
+{
+    struct ExecBasicSource *source=&resident.request.source;
+    memset(&resident.request,0,sizeof(resident.request));
+    resident.request.message.mn_ReplyPort=resident.replies;
+    resident.request.message.mn_Length=sizeof(resident.request);
+    resident.request.command=command;
+    source->version=FBI_VERSION;source->bytes=FBI_SOURCE_BYTES;
+    source->source=b.snapshot;source->length=b.bytes;
+    source->job=b.job;source->generation=b.generation;
+    source->result=&b.interpreterResult;
+    resident.pending=1;resident.replied=0;
+    PutMsg(resident.channel.port,&resident.request.message);
+}
+static void resident_poll(void)
+{
+    struct Message *message;
+    if (!resident.replies) return;
+    while ((message=GetMsg(resident.replies))!=NULL) {
+        if (message==&resident.channel.message) resident.ready=1;
+        else if (message==&resident.request.message) {
+            resident.pending=0;resident.replied=1;
+        }
+    }
+}
 
 void BasicBuildRequest(struct BasicEditor *e,WORD action)
 {
     if (action==BASIC_BUILD_STOP) { BasicBuildStop();return; }
     if (action==BASIC_BUILD_OUTPUT) { if (!output()) status(e,"Cannot open output");return; }
+    if (action==BASIC_BUILD_RESTART && b.phase && b.action==BASIC_BUILD_RUN) {
+        resident.restart=1;BasicBuildStop();status(e,"Stopping to restart interpreter");return;
+    }
     if (b.phase || BasicFilesWork() || BasicAssistanceBusy()) { status(e,"Finish the current job first");return; }
     if (action==BASIC_BUILD_INTEGER) {
         b.integer=!b.integer;menu_icheck(e->menu,31,b.integer);
-        status(e,b.integer ? "Integer compiler selected":"Floating-point compiler selected");return;
+        if (resident.child) {
+            b.action=action;b.cause=b.warning=b.stop=0;b.phase=CLOSE_INTERPRETER;
+            resident_submit(FBI_COMMAND_QUIT);
+            status(e,"Changing interpreter mode");
+        } else status(e,b.integer ? "Integer mode selected":"Floating-point mode selected");
+        return;
+    }
+    if (action==BASIC_BUILD_RESTART && !resident.child) {
+        status(e,"Interpreter restarted");return;
     }
     b.action=action;b.stop=b.owned=b.live=0;b.cause=b.warning=0;b.job=0;
     b.caret=e->caret;b.anchor=e->anchor;b.first=e->first;b.left=e->left;
     b.generation=e->document.generation;b.bytes=e->document.bytes;b.at=0;
     memset(&b.compilerResult,0,sizeof(b.compilerResult));memset(&b.programResult,0,sizeof(b.programResult));
     memset(&b.diagnostic,0,sizeof(b.diagnostic));
+    memset(&b.interpreterResult,0,sizeof(b.interpreterResult));
     b.project[0]=0;
     if (*BasicFilesPath()) {
         if (!FileSplit(BasicFilesPath(),b.project,b.mask)) { status(e,"Invalid project path");return; }
         b.directory=Lock(b.project,SHARED_LOCK);
         if (!b.directory) { status(e,"Cannot retain project directory");return; }
     }
-    b.phase=action==BASIC_BUILD_PUBLISH ? CHOOSE:RESERVE;
-    BasicAssistanceCancel(e);status(e,"Preparing immutable source");
+    if (action==BASIC_BUILD_RESTART) {
+        if (b.serial==0xffffffffUL) {
+            if (b.directory) { UnLock(b.directory);b.directory=0; }
+            status(e,"Job identity exhausted");return;
+        }
+        b.job=++b.serial;b.bytes=0;resident_submit(FBI_COMMAND_RESET);
+        b.phase=PROGRAM;status(e,"Restarting interpreter");return;
+    }
+    b.phase=action==BASIC_BUILD_PUBLISH ? CHOOSE:
+        action==BASIC_BUILD_RUN ? PREPARE_RUN:RESERVE;
+    BasicAssistanceCancel(e);status(e,"Preparing program");
 }
 
 static void retire(void) { b.phase=RETIRE;b.at=0; }
@@ -113,11 +177,13 @@ static LONG load(const char *name)
     result=ExecLoadStep(b.loading);if (result<=0) return result;
     b.image=ExecLoadTake(b.loading);b.loading=0;return b.image ? 1:-1;
 }
-static WORD start(WORD compiler)
+static WORD start_compiler(void)
 {
     struct ExecProgramStart s={0};
-    s.arguments=compiler ? b.args:NULL;s.length=compiler ? strlen(b.args):0;
-    s.input=b.input;s.output=b.output;s.console=b.input;s.directory=b.directory;
+    s.arguments=b.args;s.length=strlen(b.args);
+    /* The retained interpreter owns the keyboard. Compiler jobs are fully
+     * described by arguments and use the launcher's default NIL input. */
+    s.output=b.output;s.directory=b.directory;
     b.child=ExecStartLoaded(b.image,&s);
     if (!b.child) cause(IoErr());
     /* Collect owns execution; release the load reference before any next load. */
@@ -150,29 +216,77 @@ static void load_turn(struct BasicEditor *e)
     const char *name;
     LONG result;
     WORD compiling=b.phase==LOAD_COMPILER;
-    if (compiling) {
+    WORD interpreting=b.phase==LOAD_INTERPRETER;
+    if (interpreting) name=b.integer ? "SYS:C/FBI.COM":"SYS:C/FB.COM";
+    else if (compiling) {
         if (b.integer) name="SYS:C/FBCI.COM";
         else name="SYS:C/FBC.COM";
     } else name=b.command;
     result=load(name);
     if (result<0) { cause(IoErr());retire();return; }
     if (!result) return;
+    if (interpreting) {
+        struct ExecBasicSource source={0};struct ExecProgramStart spec={0};
+        resident.replies=CreateMsgPort();
+        if (!resident.replies) { cause(ERROR_NO_FREE_STORE);retire();return; }
+        memset(&resident.channel,0,sizeof(resident.channel));
+        resident.channel.message.mn_ReplyPort=resident.replies;
+        resident.channel.message.mn_Length=sizeof(resident.channel);
+        source.version=FBI_VERSION;source.bytes=FBI_SOURCE_BYTES;
+        source.job=b.job;source.result=&b.interpreterResult;
+        source.session=&resident.channel;
+        if (!ExecBasicAttach(b.image,&source)) {
+            cause(IoErr());resident_release();retire();return;
+        }
+        spec.input=b.input;spec.output=b.output;spec.console=b.input;spec.directory=b.directory;
+        resident.child=ExecStartLoaded(b.image,&spec);
+        if (!resident.child) { cause(IoErr());resident_release();retire();return; }
+        resident.image=b.image;b.image=0;b.phase=WAIT_INTERPRETER;return;
+    }
     if (!compiling && b.action==BASIC_BUILD_PUBLISH) {
         release_image();b.phase=READ_BINARY;b.at=0;return;
     }
-    if (!start(compiling)) { cause(IoErr());retire();return; }
-    if (compiling) {
-        b.phase=COMPILER;status(e,"Compiling - Ctrl+K Stop");
-    } else {
-        b.phase=PROGRAM;status(e,"Running - Ctrl+K Stop");
-        wind_set(b.window,WF_TOP,0,0,0,0);
-    }
+    if (!start_compiler()) { cause(IoErr());retire();return; }
+    b.phase=COMPILER;status(e,"Compiling - Ctrl+K Stop");
 }
 
 void BasicBuildStep(struct BasicEditor *e)
 {
     LONG result,count,error;UWORD i,n;WORD selected;const char *name;
+    resident_poll();
+    if (resident.child) {
+        struct ExecProgramResult ended;
+        if (ExecCollectProgram(resident.child,&ended)) {
+            resident.child=0;
+            if (b.phase!=CLOSE_INTERPRETER) cause(ended.secondary ? ended.secondary:ERROR_BAD_STREAM_NAME);
+            resident_release();
+            if (b.phase==CLOSE_INTERPRETER) {
+                b.phase=0;status(e,b.integer ? "Integer mode selected; state reset":"Floating-point mode selected; state reset");return;
+            }
+            if (b.phase) retire();
+        }
+    }
     if (!b.phase) return;
+    if (b.phase==CLOSE_INTERPRETER) return;
+    if (b.phase==PROGRAM && resident.child) {
+        const struct ExecBasicResult *report=&b.interpreterResult;
+        if (!resident.replied) return;
+        resident.replied=0;
+        b.programResult.primary=report->primary;b.programResult.secondary=report->cause;
+        if (report->version!=FBI_VERSION || report->bytes!=FBI_RESULT_BYTES ||
+            report->job!=b.job || report->generation!=b.generation ||
+            report->phase<FBI_PHASE_SOURCE || report->phase>FBI_PHASE_COMPLETE)
+            cause(ERROR_BAD_STREAM_NAME);
+        else if (report->cause) {
+            cause(report->cause);b.diagnostic.native_cause=report->cause;
+            b.diagnostic.line=report->location ? report->line:0;
+            b.diagnostic.byte_column=report->column;
+            memcpy(b.diagnostic.message,report->message,sizeof(b.diagnostic.message));
+            b.diagnostic.message[sizeof(b.diagnostic.message)-1]=0;diagnostic(e);
+        }
+        if (b.stop) cause(ERROR_BREAK);
+        retire();
+    }
     if (b.child) {
         struct ExecProgramResult *r=b.phase==COMPILER ? &b.compilerResult:&b.programResult;
         if (!ExecCollectProgram(b.child,r)) return;
@@ -180,7 +294,6 @@ void BasicBuildStep(struct BasicEditor *e)
         if (r->secondary) cause(r->secondary);
         else if (r->primary) cause(r->primary);
         if (b.stop) { cause(ERROR_BREAK);retire();return; }
-        if (b.phase==PROGRAM) { retire();return; }
         b.phase=DIAGNOSTIC;return;
     }
     if (b.stop && b.phase!=RETIRE) {
@@ -189,6 +302,16 @@ void BasicBuildStep(struct BasicEditor *e)
         retire();return;
     }
     switch (b.phase) {
+    case WAIT_INTERPRETER:
+        if (!resident.ready) break;
+        resident_submit(FBI_COMMAND_RUN);b.phase=PROGRAM;
+        status(e,"Running - Ctrl+K Stop");wind_set(b.window,WF_TOP,0,0,0,0);break;
+    case PREPARE_RUN:
+        if (b.serial==0xffffffffUL) { cause(ERROR_BAD_NUMBER);retire();break; }
+        b.job=++b.serial;
+        b.snapshot=AllocMem(BASIC_BYTES,MEMF_UPPER);
+        if (!b.snapshot) { cause(ERROR_NO_FREE_STORE);retire();break; }
+        b.phase=SNAPSHOT;break;
     case CHOOSE:
         if (!*b.pattern) strcpy(b.pattern,"WORK:*.COM");
         selected=0;
@@ -240,7 +363,14 @@ void BasicBuildStep(struct BasicEditor *e)
         BasicCopy(&e->document,b.at,b.snapshot+b.at,n);
         for (i=0;i<n;++i) if (b.snapshot[b.at+i]==10) b.snapshot[b.at+i]=155;
         b.at+=n;
-        if (b.at==b.bytes) { b.at=0;b.phase=WRITE_SOURCE; }
+        if (b.at==b.bytes) {
+            b.at=0;
+            if (b.action==BASIC_BUILD_RUN) {
+                if (!output()) { cause(IoErr());retire();break; }
+                if (resident.child) b.phase=WAIT_INTERPRETER;
+                else { b.phase=LOAD_INTERPRETER;status(e,"Loading source interpreter"); }
+            } else b.phase=WRITE_SOURCE;
+        }
         break;
     case WRITE_SOURCE:
         if (!b.file) { b.file=Open(b.source,MODE_NEWFILE);if (!b.file) { cause(IoErr());retire(); }break; }
@@ -257,6 +387,7 @@ void BasicBuildStep(struct BasicEditor *e)
         b.phase=LOAD_COMPILER;status(e,b.integer ? "Loading integer compiler":"Loading floating-point compiler");break;
     case LOAD_COMPILER:
     case LOAD_PROGRAM:
+    case LOAD_INTERPRETER:
         load_turn(e);break;
     case DIAGNOSTIC:
         if (!b.file) { b.file=Open(b.diagnostics,MODE_OLDFILE);if (!b.file) { cause(IoErr());retire(); }break; }
@@ -323,8 +454,9 @@ void BasicBuildStep(struct BasicEditor *e)
                 if (b.output) { Write(b.output,b.notice,strlen(b.notice));Write(b.output,"\n",1); }
             }
         } else status(e,b.warning ? "Completed with cleanup warning":
-            b.action==BASIC_BUILD_CHECK ? "Check passed":b.action==BASIC_BUILD_PUBLISH ? "Standalone command built":"Program completed");
+            b.action==BASIC_BUILD_RESTART ? "Interpreter restarted":b.action==BASIC_BUILD_CHECK ? "Check passed":b.action==BASIC_BUILD_PUBLISH ? "Standalone command built":"Program completed");
         b.phase=0;
+        if (resident.restart) { resident.restart=0;BasicBuildRequest(e,BASIC_BUILD_RESTART); }
         break;
     }
 }
@@ -362,6 +494,18 @@ void BasicBuildDispose(void)
     UWORD i;const char *name;
     BasicBuildStop();
     if (b.child) { struct ExecProgramResult result;ExecWaitProgram(b.child,&result);b.child=0; }
+    if (resident.child) {
+        struct ExecProgramResult ended;
+        while (resident.child && (!resident.ready || resident.pending)) {
+            Wait(BasicBuildMask());resident_poll();
+            if (ExecCollectProgram(resident.child,&ended)) resident.child=0;
+        }
+        if (resident.child) {
+            resident_submit(FBI_COMMAND_QUIT);
+            ExecWaitProgram(resident.child,&ended);resident.child=0;
+        }
+    }
+    resident_poll();resident_release();
     if (b.loading) { ExecLoadCancel(b.loading);b.loading=0; }
     release_image();close_file();
     for (i=0;i<b.owned;++i) if (b.live&(1U<<i)) {

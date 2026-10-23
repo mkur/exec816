@@ -119,6 +119,16 @@ LONGINT FUNC CLoadCancel(LONGCARD job,unused,unused2)
 
 RETURN(1)
 
+LONGINT FUNC CBasicAttach(LONGCARD image,source,unused)
+
+  IF image>$ffffff OR source>$ffffff THEN
+    DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(PROGRAM.BasicAttach(PROGRAMIMAGE.Image POINTER(ADDRESS(image)),
+    BYTE POINTER(ADDRESS(source))))
+
 LONGINT FUNC CReleaseProgram(LONGCARD image,unused,unused2)
 
   IF image>$ffffff THEN
@@ -259,5 +269,6 @@ PROC BindDos(BYTE unused)
   entries(30)=ADDRESS(@CLoadStep)
   entries(31)=ADDRESS(@CLoadTake)
   entries(32)=ADDRESS(@CLoadCancel)
+  entries(33)=ADDRESS(@CBasicAttach)
 
 RETURN

@@ -22,6 +22,15 @@ from workbench_interaction import FIELDS
 class TwelveTasks(Sessions):
     interrupt_marker='native_nmi'
 
+    def source_shell(self):
+        pass
+
+    def source_checks(self,**context):
+        pass
+
+    def source_after_quit(self):
+        pass
+
     def screen(self,label):
         # Sessions' flat bitmap oracle does not include GEM application layers.
         # Inspect the retained shell model; this case validates Task coexistence.
@@ -53,16 +62,19 @@ class TwelveTasks(Sessions):
             b._cmd_ok('MOUSE AT 2000 0 0 1');frames(12)
             b._cmd_ok('MOUSE AT 2000 0 0 0');frames(30)
 
-        def key(name,ctrl=False):
+        def key(name,ctrl=False,shift=False):
             if ctrl:b._cmd_ok('KEY CTRL down')
+            if shift:b._cmd_ok('KEY SHIFT down')
             b._cmd_ok('KEY '+name+' down');frames(4)
             b._cmd_ok('KEY '+name+' up')
+            if shift:b._cmd_ok('KEY SHIFT up')
             if ctrl:b._cmd_ok('KEY CTRL up')
             frames(4)
 
         menus=Menus(s,click,move)
         menus.select('Shell')
         require(n(live,1)==6,'Unexpected standard desktop census')
+        self.source_shell()
         self.command('RUN C:BASIC.APP')
         basic_app=next(item for item in instances(b,s.p,self.bundle/'bitmap-console')
                        if item['name']=='basic')
@@ -74,6 +86,7 @@ class TwelveTasks(Sessions):
         self.wait_selected(2)
         self.bind(2)
         s.ready()
+        reach('db($%x)=8'%live)
         require(n(live,1)==8,'Workbench and two shells did not coexist')
 
         route=s.begin('CAT SYS:LONG.TXT | WC')
@@ -88,11 +101,14 @@ class TwelveTasks(Sessions):
         def replace(text):
             menus.select('FastBasic')
             key('A',ctrl=True)
+            document=basic+FIELDS['document']
+            reach('(dw($%x)=0)&(dw($%x)=%d)'%(basic+FIELDS['anchor'],basic+FIELDS['caret'],n(document+20,4)))
+            reach('dw($%x)=0'%(basic+FIELDS['dirty']))
             for char in text:
+                previous=n(basic+FIELDS['edits'],2)
                 name,shift=KEYS[char]
-                if shift:b._cmd_ok('KEY SHIFT down')
-                key(name)
-                if shift:b._cmd_ok('KEY SHIFT up')
+                key(name,shift=shift)
+                reach('dw($%x)!=%d'%(basic+FIELDS['edits'],previous))
 
         def output():
             unit=n(job+JOB['unit'],4)
@@ -101,10 +117,12 @@ class TwelveTasks(Sessions):
             require(n(row+s.console['WINDOW_UNIT'],4)==unit,'Stale BASIC output window')
             return read_cells(s.far,n(row+s.console['WINDOW_INSTANCE'],3))
 
+        b.state_save(str(self.bundle/'before-initial-run.altstate2'))
+        (self.bundle/'before-initial-run.json').write_text(json.dumps(dict(basic=basic,job=job))+'\n')
         replace('PRINT 1.25*2.0: DO : LOOP')
         key('RETURN',ctrl=True)
         reach('db($%x)=9'%live)
-        self.compiler_peak=n(live,1)
+        self.execution_peak=n(live,1)
         for _ in range(1200):
             if b'2.5' in output():break
             frames(3)
@@ -112,13 +130,15 @@ class TwelveTasks(Sessions):
         menus.select('FastBasic')
         key('K',ctrl=True)
         reach('(dw($%x)=0)&(dw($%x)!=0)'%(job+JOB['phase'],job+JOB['job']))
-        require(n(job+JOB['cause'],4)==304 and n(live,1)==8,'Stop did not retire the child')
+        require(n(job+JOB['cause'],4)==304 and n(live,1)==9,'Stop did not retain the interpreter')
         replace('PRINT 1.25*2.0')
         previous=n(job+JOB['job'],4)
         key('RETURN',ctrl=True)
-        reach('(dw($%x)=0)&(dw($%x)!=%d)'%(job+JOB['phase'],job+JOB['job'],previous))
+        reach('(dw($%x)=0)&(dw($%x)!=0)&(dw($%x)!=%d)'%(job+JOB['phase'],job+JOB['job'],job+JOB['job'],previous))
         require(n(job+JOB['cause'],4)==0 and b'2.5' in output(),'Finite Run failed')
-        print('Two shells + BASIC + compiler/program:',self.compiler_peak,'Tasks',flush=True)
+        print('Two shells + BASIC + execution:',self.execution_peak,'Tasks',flush=True)
+        self.source_checks(basic=basic,job=job,replace=replace,output=output,
+            key=key,reach=reach,frames=frames,menus=menus,n=n,click=click)
         s.save_screen(self.bundle/'twelve-task.png')
 
         # Quit through the real unsaved-source Discard dialog.
@@ -141,15 +161,16 @@ class TwelveTasks(Sessions):
         self.bind(1)
         s.ready()
         require(n(live,1)==6,'Closing the second shell retained a Task')
+        self.source_after_quit()
         s.saved['integration']=dict(twelve_tasks=True,pipeline_peak=self.pipeline_peak,
-                                    compiler_peak=self.compiler_peak,run_stop=True,two_shells=True)
+                                    execution_peak=self.execution_peak,run_stop=True,two_shells=True)
         s.save_screen(self.bundle/'boot-smoke.png')
         for char in 'EXIT':s.press(char)
         b._cmd_ok('KEY RETURN down');b.bp_clear_all()
 
 
-def check(bundle):
-    session=TwelveTasks(bundle/'twelve-task',bundle)
+def check(bundle,session_class=TwelveTasks):
+    session=session_class(bundle/'twelve-task',bundle)
     require(json.loads((bundle/'demo-manifest.json').read_text())['task_capacity']==12,
             'Select a twelve-Task demo')
     extracted=bundle/'twelve-task-extracted'

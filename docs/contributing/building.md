@@ -60,6 +60,16 @@ desktop controls, the [console demo guide](../guides/demo.md) for other source-b
 and the [boot monitor guide](../guides/boot-monitor.md) for
 repackaging an existing image.
 
+For a single writable disk that boots through ROM sector reads, add
+`--bootable-atr`. It retains OF816 and packages SYS and WORK on D1. The
+[bootable ATR guide](../guides/bootable-system-atr.md) covers the graphical
+FastBasic build, disk-only refresh and persistent launcher copy.
+
+For FujiNet's separate XEX/system/work disks, add `--system-drive 2` instead.
+Mount the XEX on D1, the system disk on D2 and writable WORK on D8. See the
+[split-disk guide](../guides/fujinet-split-boot.md), including firmware selection
+and CONFIG's OPTION → Boot path.
+
 For a full-screen standard text shell without starting the prime task, use:
 
 ```sh
@@ -247,3 +257,18 @@ ATR, pinned AltirraOS ROM, notices and checksums. Distribute only the generated
 The [desktop guide](../desktop-distribution.txt) specifies ST mouse/port 1 and
 records the outstanding interaction timing limits. This builds a local preview;
 it does not publish a GitHub release.
+
+For SIO boot images, `--boot-sio auto` selects the shared boot-only 57,600 baud
+reader. `--boot-sio standard` retains standard-speed bulk loading for recovery
+and matched measurements; native storage keeps its configured profile. To
+change this policy around verified, frozen OF816/native bytes, use:
+
+```sh
+python3 tools/build_demo.py --output build/fujinet-split/demo \
+  --refresh-boot-sio --boot-sio auto
+```
+
+The canonical `of816/Exec-core.xex` remains a development artifact; the split
+package contains its wrapped `Exec-of816.xex`, while the combined ATR stores
+the canonical stream internally. See the
+[boot SIO contract](../reference/boot-loading.md#boot-only-sio-reader).

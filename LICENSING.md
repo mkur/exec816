@@ -23,7 +23,7 @@ repository root; directory entries include all files below them.
 | Files | Scope |
 | --- | --- |
 | `abi/` | Machine-readable interface definitions |
-| `lib/dos/fbabi.act`, `ports/fastbasic/target/helpers.asm`, `ports/fastbasic/target/callbacks.asm`, `ports/fastbasic/target/fp_snapshot.asm`, `ports/fastbasic/target/fastbasic.inc` | Exec-authored FastBasic runtime bindings and generated constants |
+| `lib/dos/fbabi.act`, `lib/dos/fbinterpabi.act`, `ports/fastbasic/target/helpers.asm`, `ports/fastbasic/target/callbacks.asm`, `ports/fastbasic/target/fp_snapshot.asm`, `ports/fastbasic/target/fastbasic.inc`, `ports/fastbasic/target/source-run.asm`, `ports/fastbasic/target/source-run.inc` | Exec-authored FastBasic runtime bindings, source bootstrap and generated constants |
 | `c/` | Public C headers, Calypsi bindings, startup support and C examples |
 | `examples/`, except `examples/shell/` | Standalone examples, disk commands and sample data |
 | `lib/exec/exec.act`, `lib/exec/execos.act`, `lib/exec/execproducer.act` | Action! interface declarations |

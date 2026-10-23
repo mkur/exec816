@@ -10,6 +10,7 @@ USE FBSTATE
 USE SDXSTATE
 USE SDXABI
 USE SDXPROGRAM
+USE FBINTERPABI
 
 ; Reuse the established guest entry/return gates and add the BASIC services.
 PUBLIC PROC Gates(BYTE POINTER bank)
@@ -26,7 +27,7 @@ RETURN
 PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
   PROGRAMIMAGE.Image POINTER image
   FBSTATE.Session POINTER state
-  CARD finish,entry,span,slot
+  CARD finish,entry,span,slot,capability
   LONGCARD base
   LONGINT error
 
@@ -55,6 +56,39 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
     RETURN(NULL)
   FI
 
+  capability=0
+  IF finish-entry>=FBINTERPABI.CAP_OFFSET+FBINTERPABI.CAP_BYTES THEN
+    BEGIN
+      LET at=entry-FBABI.LOAD+FBABI.HEADER_BYTES+FBINTERPABI.CAP_OFFSET
+      IF LONGCARD POINTER(bytes+at)^=FBINTERPABI.CAP_MAGIC THEN
+        capability=entry+FBINTERPABI.CAP_OFFSET
+        IF SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_VERSION)
+            <>FBINTERPABI.VERSION OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_BYTES)
+            <>FBINTERPABI.CAP_BYTES OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_VARIANT)
+            >FBINTERPABI.VARIANT_FLOAT OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_SOURCE)<finish OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_SOURCE)
+            >=FBABI.LIMIT-256 OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_LINE)>=255 OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_COLUMN)>=256 OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_ERROR)<FBABI.LOAD OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_ERROR)>=
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_SOURCE) OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_MESSAGES)<FBABI.LOAD OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_MESSAGES)>=finish OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_WORKSPACE)<entry OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_WORKSPACE)>
+            finish-FBINTERPABI.WORKSPACE_BYTES OR
+            SDXSTATE.ReadWord(bytes,at+FBINTERPABI.CAP_FIELD_RESERVED)<>0 THEN
+          DOSCLIENT.SetError(error)
+          RETURN(NULL)
+        FI
+      FI
+    END
+  FI
+
   image=PROGRAMIMAGE.Image POINTER(O65MEMORY.Allocate(SIZEOF(PROGRAMIMAGE.Image)))
   error=LONGINT(O65TYPES.ERROR_NO_FREE_STORE)
   IF image<>NULL THEN
@@ -63,6 +97,16 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
       state.guest.slot=SDXABI.SLOTS
       image.extension=BYTE POINTER(state)
       image.release=FBSTATE.Release
+      IF capability<>0 THEN
+        state.interpreter=FBSTATE.Interpreter POINTER(
+            O65MEMORY.Allocate(SIZEOF(FBSTATE.Interpreter)))
+        IF state.interpreter=NULL THEN
+          PROGRAMIMAGE.Free(image)
+          DOSCLIENT.SetError(error)
+          RETURN(NULL)
+        FI
+        state.interpreter.capability=capability
+      FI
       slot=SDXSTATE.Claim()
       IF slot<SDXABI.SLOTS THEN
         state.guest.slot=BYTE(slot)

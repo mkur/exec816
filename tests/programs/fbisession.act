@@ -1,0 +1,193 @@
+; Retained Process, private guest bank and public Exec request/reply lifetime.
+MODULE FBISESSIONTEST
+USE EXEC
+USE DOS
+USE PROCESS
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE FBSTATE
+USE FBPORTFAIL
+USE FBINTERPABI
+USE SDXSTATE
+USE HEAPCORE
+USE FSBOOT
+
+CARD checks,currentCase,actualBytes,stateBytes
+LONGINT reason,primary,secondary
+LONGCARD guestBank,identity,job
+PROGRAMIMAGE.Image POINTER image
+FBSTATE.Session POINTER state
+EXEC.MsgPort POINTER replies
+FBINTERPABI.Session channel
+FBINTERPABI.Request request
+FBINTERPABI.Source attachment
+FBINTERPABI.Result report
+BYTE ARRAY actual(1024)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    reason=DOS.IoErr()
+    HEAPCORE.Abort($fb00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Put(BYTE POINTER path,bytes CARD count)
+
+  LET file=DOS.Open(path,DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,bytes,LONGINT(count))=LONGINT(count))
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Reply()
+  EXEC.Message POINTER message
+
+  message=EXEC.WaitPort(replies)
+  Require(EXEC.GetMsg(replies)=@request.message)
+  Require(report.version=FBINTERPABI.VERSION)
+  Require(report.bytes=FBINTERPABI.RESULT_BYTES)
+  Require(report.job=job)
+  Require(report.generation=job+100)
+  primary=report.primary
+  secondary=report.cause
+  Require(image.running=1)
+  Require(LONGCARD(ADDRESS(state.guest.bank))=guestBank)
+  Require(PROCESS.Collect(identity,PROCESS.Result POINTER(@actual))=0)
+  SDXSTATE.Guards()
+
+RETURN
+
+PROC Submit(CARD command BYTE POINTER source CARD count)
+
+  job==+1
+  request.command=command
+  request.source.version=FBINTERPABI.VERSION
+  request.source.bytes=FBINTERPABI.SOURCE_BYTES
+  request.source.source=LONGCARD(ADDRESS(source))
+  request.source.length=LONGCARD(count)
+  request.source.job=job
+  request.source.generation=job+100
+  request.source.result=LONGCARD(ADDRESS(@report))
+  request.source.session=0
+  request.message.mn_ReplyPort=replies
+  request.message.mn_Length=FBINTERPABI.REQUEST_BYTES
+  EXEC.PutMsg(channel.port,@request.message)
+
+RETURN
+
+PROC Run(BYTE POINTER source CARD count LONGINT expected)
+
+  Submit(FBINTERPABI.COMMAND_RUN,source,count)
+  Reply()
+  Require(secondary=expected)
+  Require(primary=IF expected=0 THEN LONGINT(0) ELSE LONGINT(20) FI)
+
+RETURN
+
+PROC Open(BYTE POINTER name)
+  EXEC.Message POINTER message
+
+  image=PROGRAMFILE.Load(name)
+  Require(image<>NULL)
+  state=FBSTATE.Session POINTER(image.extension)
+  guestBank=LONGCARD(ADDRESS(state.guest.bank))
+  replies=EXEC.CreateMsgPort()
+  Require(replies<>NULL)
+  channel.message.mn_ReplyPort=replies
+  channel.message.mn_Length=FBINTERPABI.SESSION_BYTES
+  attachment.version=FBINTERPABI.VERSION
+  attachment.bytes=FBINTERPABI.SOURCE_BYTES
+  attachment.job=1
+  attachment.result=LONGCARD(ADDRESS(@report))
+  attachment.session=LONGCARD(ADDRESS(@channel))
+  Require(PROGRAM.BasicAttach(image,BYTE POINTER(@attachment))<>0)
+  identity=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),NULL,0)
+  Require(identity<>0)
+  message=EXEC.WaitPort(replies)
+  Require(EXEC.GetMsg(replies)=@channel.message)
+  Require(channel.port<>NULL)
+
+RETURN
+
+PROC Close()
+  PROCESS.Result result
+  EXEC.Message POINTER message
+
+  Submit(FBINTERPABI.COMMAND_QUIT,NULL,0)
+  Require(PROCESS.Wait(identity,@result)<>0)
+  Require(result.primary=0 AND result.secondary=0)
+  Require(EXEC.GetMsg(replies)=@request.message)
+  Require(channel.port=NULL)
+  Require(image.running=0)
+  PROGRAM.Unload(image)
+  EXEC.DeleteMsgPort(replies)
+
+RETURN
+
+; Failure before the ready reply still ends every borrow at collection. The
+; same retained Image must then accept an ordinary one-shot buffer invocation.
+PROC RefusedPort()
+  PROCESS.Result result
+
+  image=PROGRAMFILE.Load(BYTE POINTER(c"RAM:FBI.COM"))
+  Require(image<>NULL)
+  state=FBSTATE.Session POINTER(image.extension)
+  replies=EXEC.CreateMsgPort()
+  Require(replies<>NULL)
+  channel.message.mn_ReplyPort=replies
+  channel.message.mn_Length=FBINTERPABI.SESSION_BYTES
+  attachment.version=FBINTERPABI.VERSION
+  attachment.bytes=FBINTERPABI.SOURCE_BYTES
+  attachment.job=1
+  attachment.result=LONGCARD(ADDRESS(@report))
+  attachment.session=LONGCARD(ADDRESS(@channel))
+  Require(PROGRAM.BasicAttach(image,BYTE POINTER(@attachment))<>0)
+  FBPORTFAIL.once=1
+  identity=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),NULL,0)
+  Require(identity<>0)
+  Require(PROCESS.Wait(identity,@result)<>0)
+  Require(result.primary=20 AND result.secondary=103)
+  Require(state.interpreter.attached=0)
+  Require(state.interpreter.channel=NULL)
+  Require(channel.port=NULL)
+  attachment.session=0
+  Require(PROGRAM.BasicAttach(image,BYTE POINTER(@attachment))<>0)
+  identity=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),NULL,0)
+  Require(identity<>0)
+  Require(PROCESS.Wait(identity,@result)<>0)
+  Require(result.primary=0 AND result.secondary=0)
+  Require(report.version=FBINTERPABI.VERSION)
+  PROGRAM.Unload(image)
+  EXEC.DeleteMsgPort(replies)
+
+RETURN
+
+PROC Main()
+
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  LET baseline=EXEC.AvailMem(0)
+  stateBytes=SIZEOF(FBSTATE.Session)
+SETUP_FILES
+  LET output=DOS.Open(BYTE POINTER(c"RAM:OUT.TXT"),DOS.MODE_NEWFILE)
+  Require(output<>NULL)
+  LET previous=DOS.SelectOutput(output)
+  RefusedPort()
+RUN_PROGRAMS
+  DOS.SelectOutput(previous)
+  Require(DOS.Close(output)<>0)
+  LET file=DOS.Open(BYTE POINTER(c"RAM:OUT.TXT"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  actualBytes=CARD(DOS.Read(file,@actual,1024))
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+ENDMODULE

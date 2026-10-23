@@ -11,7 +11,7 @@
 enum { MENU_NEW=8,MENU_OPEN=9,MENU_SAVE=10,MENU_SAVE_AS=11,MENU_QUIT=12,MENU_RECOVERY=13,
     MENU_UNDO=15,MENU_REDO=16,MENU_ALL=17,MENU_FIND=18,MENU_NEXT=19,MENU_REPLACE=20,
     MENU_PROC_NEXT=22,MENU_PROC_PREVIOUS=23,MENU_FOLD=24,
-    MENU_CHECK=27,MENU_RUN=28,MENU_STOP=29,MENU_BUILD=30,MENU_INTEGER=31,MENU_OUTPUT=32 };
+    MENU_CHECK=27,MENU_RUN=28,MENU_STOP=29,MENU_BUILD=30,MENU_INTEGER=31,MENU_OUTPUT=32,MENU_RESTART=33 };
 static const OBJECT menu[]={
     {-1,1,6,G_IBOX,0,0,0,0,0,640,240},
     {6,2,2,G_BOX,0,0,0x1100,0,0,640,11},
@@ -39,13 +39,14 @@ static const OBJECT menu[]={
     {24,-1,-1,G_STRING,0,0,(ULONG)"Previous procedure",0,11,184,11},
     {21,-1,-1,G_STRING,0,0,(ULONG)"Fold / Unfold",0,22,184,11},
     {2,-1,-1,G_TITLE,0,0,(ULONG)"Program",176,0,72,11},
-    {6,27,32,G_BOX,0,0,0x1100,184,0,208,66},
+    {6,27,33,G_BOX,0,0,0x1100,184,0,240,77},
     {28,-1,-1,G_STRING,0,0,(ULONG)"Check    ^Shift Return",0,0,208,11},
     {29,-1,-1,G_STRING,0,0,(ULONG)"Run      ^Return",0,11,208,11},
     {30,-1,-1,G_STRING,0,0,(ULONG)"Stop     ^K",0,22,208,11},
     {31,-1,-1,G_STRING,0,0,(ULONG)"Build    ^B",0,33,208,11},
-    {32,-1,-1,G_STRING,0,0,(ULONG)"Integer compiler",0,44,208,11},
-    {26,-1,-1,G_STRING,LASTOB,0,(ULONG)"Output",0,55,208,11}
+    {32,-1,-1,G_STRING,0,0,(ULONG)"Integer mode",0,44,208,11},
+    {33,-1,-1,G_STRING,0,0,(ULONG)"Output",0,55,240,11},
+    {26,-1,-1,G_STRING,LASTOB,0,(ULONG)"Restart interpreter",0,66,240,11}
 };
 static WORD min(WORD a,WORD b) { return a<b ? a:b; }
 static WORD max(WORD a,WORD b) { return a>b ? a:b; }
@@ -230,7 +231,7 @@ WORD BasicEditorRun(struct BasicEditor *e)
             case 18:action=MENU_REPLACE;break;
             }
         }
-        if (action>=MENU_CHECK && action<=MENU_OUTPUT) {
+        if (action>=MENU_CHECK && action<=MENU_RESTART) {
             BasicBuildRequest(e,action-MENU_CHECK+BASIC_BUILD_CHECK);events&=~MU_KEYBD;action=0;
         }
         if (action==MENU_QUIT && BasicBuildBusy()) {

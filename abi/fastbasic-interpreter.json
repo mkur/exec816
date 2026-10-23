@@ -1,0 +1,108 @@
+{
+  "abi": "exec816.fastbasic.interpreter",
+  "version": 2,
+  "source_limit": 32768,
+  "message_capacity": 96,
+  "capability": {
+    "magic": "FBI1",
+    "bytes": 24,
+    "entry_offset": 3,
+    "fields": {
+      "magic": 0,
+      "version": 4,
+      "bytes": 6,
+      "variant": 8,
+      "source": 10,
+      "line": 12,
+      "column": 14,
+      "error": 16,
+      "messages": 18,
+      "workspace": 20,
+      "reserved": 22
+    }
+  },
+  "variants": {
+    "INTEGER": 0,
+    "FLOAT": 1
+  },
+  "phases": {
+    "SOURCE": 1,
+    "PARSE": 2,
+    "EXECUTE": 3,
+    "COMPLETE": 4,
+    "PREPARE": 5,
+    "DIM": 6
+  },
+  "source": {
+    "bytes": 28,
+    "fields": {
+      "version": 0,
+      "bytes": 2,
+      "source": 4,
+      "length": 8,
+      "job": 12,
+      "generation": 16,
+      "result": 20,
+      "session": 24
+    }
+  },
+  "result": {
+    "bytes": 128,
+    "fields": {
+      "version": 0,
+      "bytes": 2,
+      "job": 4,
+      "generation": 8,
+      "phase": 12,
+      "location": 14,
+      "primary": 16,
+      "cause": 20,
+      "basic": 24,
+      "line": 26,
+      "column": 28,
+      "message_bytes": 30,
+      "message": 32
+    }
+  },
+  "session": {
+    "bytes": 19,
+    "fields": {
+      "message": 0,
+      "port": 16
+    }
+  },
+  "request": {
+    "bytes": 46,
+    "fields": {
+      "message": 0,
+      "command": 16,
+      "source": 18
+    }
+  },
+  "commands": {
+    "RUN": 1,
+    "RESET": 2,
+    "QUIT": 3
+  },
+  "workspace": {
+    "bytes": 22,
+    "fields": {
+      "var_buf": 0,
+      "var_count": 2,
+      "label_buf": 4,
+      "laddr_buf": 6,
+      "mem_end": 8,
+      "prog_ptr": 10,
+      "array_ptr": 12,
+      "var_page": 14,
+      "clear_start": 16,
+      "clear_end": 17,
+      "cptr": 18,
+      "tmp2": 20
+    }
+  },
+  "session_memory": {
+    "VARIABLE_BASE": 40960,
+    "VARIABLE_BYTES": 512
+  }
+}

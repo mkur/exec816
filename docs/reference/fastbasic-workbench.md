@@ -2,11 +2,13 @@
 
 [Reference index](README.md) · [Controls](../guides/fastbasic-workbench.md) ·
 [Development evidence](../history/fastbasic-workbench.md) ·
+[Source Run evidence](../history/fastbasic-interpreter.md) ·
 [Implementation plan](../plans/fastbasic-workbench-implementation-plan.md)
 
 `C:BASIC.APP` is a loadable native GEM application. WB0–WB4 provide the document
-model, editable window, file transactions and editing assistance. WB9 completes
-the first integrated edit/Check/Run/Stop/Build delivery (FB7).
+model, editable window, file transactions and editing assistance. WB9 completed
+the first integrated edit/Check/Run/Stop/Build delivery (FB7). Source Run now
+uses the [interpreter](fastbasic.md#source-execution) and its buffer attachment.
 Debugging and native graphics are outside WB0–WB9.
 
 The document holds at most 32,768 counted bytes, 4,096 editable lines and
@@ -30,19 +32,19 @@ four text rows, releases it and obtains fresh visible rectangles for the next
 unit. Input loss cancels pointer selection. Large gap moves yield in units
 of at most 1 KiB without exposing partial logical text.
 
-The default workbench demo leaves two public Task slots after normal startup:
-one for BASIC.APP and one sequential compiler/program child. Other applications
-can consume those slots. The application advertises implemented
+The twelve-Task demo starts six public Tasks. BASIC.APP and one interpreter
+child use eight; a second shell brings that to nine. Other applications can
+consume the remaining slots, with separate guest/client/window limits. The application advertises implemented
 editing and file controls. New, Open and Quit resolve unsaved changes with
 Save/Discard/Cancel; canceling a selector preserves the current document.
 The build selection is `tools/build_demo.py --basic-workbench` and retains the
 standard desktop, Shell, prime demo and five-second OF816 autoboot.
 
-The Desktop and graphical console worker use the two existing 2,560-byte
-stack pools. BASIC declares a measured 1,312-byte requirement and shares the
-existing smaller pools with the sequential FastBasic/native child. Declared C image requirements are enforced at admission; another C program
-requiring 2,560 bytes is refused while both large pools are occupied. Panel and
-Counter declare their verified 1,312-byte requirements. No pool is enlarged.
+Desktop and graphical console use two of the three 2,560-byte stack pools.
+BASIC declares a 1,312-byte requirement and shares ordinary pools with its
+child. Another large request can use the third pool if free; small requests can
+also consume large pools. Declared C requirements are enforced at admission.
+Panel and Counter retain their 1,312-byte requirements. No pool is enlarged.
 
 All reserved bank-zero costs remain unchanged from the enabled GEM/guest
 profile: zero added fixed, root/kernel, per-public-Task and idle bytes, including
@@ -96,20 +98,45 @@ folding does not change saved bytes, selection offsets or document generations.
 
 ## Check, Run, Stop and Build
 
-The Program menu selects floating point (`FBC`) by default. Its Integer compiler
-checkmark selects `FBCI`. Check compiles without executing; Run compiles and runs
-the unsaved document. Build chooses a destination for a standalone release COM.
+The Program menu selects floating point by default. Its Integer mode checkmark
+selects FBI for Run and FBCI for Check/Build; default Run uses FB and Check/Build
+use FBC. Run interprets the unsaved document. Check compiles without executing;
+Build chooses a destination for a standalone release COM.
 The command has no dependency on the editor or compiler after publication.
-Source debugging and native graphics remain pending.
+Source debugging and native graphics remain pending. Check/Build use a fresh
+standalone scope; define any bindings that were supplied by an earlier Run
+before compiling that source on its own.
 
 A job freezes source edits, New, Open and replacement while retaining the caret,
 selection and viewport. Save and Save As may serialize the same document during
-a running program. The job retains the project directory selected at admission;
-a later Save As does not change that child's relative-file directory. Unsaved
-buffers inherit the application's directory. Source files need not be saved to
+a running program. Check/Build retain the project directory selected at job admission. The
+interpreter keeps the directory chosen when its Process first starts; later
+Save As/Open and Restart do not change that Process directory. Changing numeric
+mode or reopening BASIC starts a new session using the current project directory.
+Unsaved buffers initially inherit the application's directory. Source files need not be saved to
 Run.
 
-Each job copies an immutable ATASCII snapshot and exclusively reserves three RAM
+The first Run loads FB/FBI cooperatively and starts a persistent interpreter
+Process. Later Run requests use that same Process and bank, attaching an
+immutable snapshot until the request's completion reply. Values, strings,
+arrays, modes and open channels survive END, Stop and recoverable errors.
+Source is parsed again with stable bindings; a parse failure runs no partial
+program. No source/COM/diagnostic scratch files or compiler Process are used.
+Version, job/source generation and completion records must match before an
+error location is selected.
+
+Program → Restart interpreter closes channels and resets BASIC state in the
+same Process. It leaves the source document and output contents in place.
+Changing Integer mode shuts down the old session and selects a fresh engine for
+the next Run. New/Open do not implicitly reset the interpreter. Quit keeps the
+session through a canceled unsaved-document query; final application teardown
+sends QUIT and collects it. Idle state retains a Task and one shared guest slot.
+Check/Build can use the other guest slot. Their complete argument list and NIL
+input let them compile without taking the idle interpreter's console keyboard. See the
+[session contract](fastbasic.md#persistent-interpreter-sessions) for workspace,
+DIM and type-change rules.
+
+Check/Build copy an immutable ATASCII snapshot and exclusively reserve three RAM
 scratch names. The eight-character stem encodes the full nonzero 32-bit identity,
 using A–P for its high nibble so the name starts with a letter. Existing names
 are preserved, including collisions after partial reservation. A successful
@@ -118,7 +145,7 @@ and freshly validated COM are all required. A failed or stopped job never runs
 an earlier command. Compiler execution and Image references retire before the
 program is loaded. One child runs at a time.
 
-A compiler error selects the exact source byte and reveals its line, including
+A source/parser or compiler error selects the reported byte and reveals its line, including
 folded procedures. Other completions restore the retained caret, selection and
 viewport. Native errors and both child results remain distinct; an earlier cause
 survives cleanup failures. Ordinary BASIC handled ERR behavior is unchanged.
@@ -127,9 +154,9 @@ Runtime source locations require the later debugger slices.
 The application creates one 64×20 output console on demand. Select it to enter
 INPUT/GET/KEY; select the source to edit or use shortcuts. Stop, output close and
 Quit request cancellation without releasing a live child's resources. Quit waits
-for retirement before asking about unsaved source. Closing output retains its
-contents for Program → Output or the next job. Completion uses the public
-combined AES/Exec wait, without a child-poll timer.
+for the active request to finish before asking about unsaved source. Closing output retains its
+contents for Program → Output or the next job. Run completion uses the reply-port signal in the public combined AES/Exec wait,
+without a child-poll timer.
 
 Loading stages perform one DOS operation per turn, with reads bounded to 1 KiB,
 through the public cooperative program loader. Build copies binary bytes through

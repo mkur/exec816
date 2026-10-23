@@ -21,7 +21,7 @@ GUEST_OPCODES = {**OPCODES, 0xb7: ('LDA', 'dp-long-y', 2),
 
 
 def audit(source, compiler='FBCI'):
-    prefix=source/('build/bin/'+compiler.lower())
+    prefix=source/('build/bin/'+{'FB':'fbrun','FBI':'fbirun'}.get(compiler,compiler.lower()))
     raw=prefix.with_suffix('.xex').read_bytes()
     layout=profile(raw)
     labels={name:int(address,16) for address,name in re.findall(
@@ -29,7 +29,7 @@ def audit(source, compiler='FBCI'):
     memory=bytearray(65536)
     memory[ABI['load']-16:layout['end']]=raw
     roots={name:address for name,address in labels.items() if name.startswith('EXE_')
-           or name in ('COMPILE_BUFFER','FB_ARGUMENT','FB_ERROR','parser_start')
+                   or name in ('COMPILE_BUFFER','FB_ARGUMENT','FB_ERROR','parser_start','source_entry')
            or name in {'fb_'+entry.lower() for entry in ENTRIES if entry not in ('FPHALF','ATNCOEF')}}
     roots['container_entry']=layout['entry']
     dynamic={labels['dispatch_jump']:0xffff,labels['EXE_USR_CALL']:0xff00}
@@ -80,7 +80,7 @@ def audit(source, compiler='FBCI'):
         roots=roots,instructions=len(code),modes=dict(Counter(v[1] for v in code.values())),
         services=sorted(calls,key=lambda item:item['pc']),
         private_mutable_jumps=dynamic,absolute_low_or_os_accesses=accesses,
-        exclusions=['Unreachable donor IDE compile.asm and BRKKY ownership',
+        exclusions=['Donor IDE BRKKY ownership is not part of the Exec engines',
                     'User grammar excludes external USR and hardware statements',
                     'Parser action-table returns and data-dependent addresses reviewed at source level'])
 
@@ -89,7 +89,7 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source',type=Path,default=ROOT/'build/fastbasic/source')
     parser.add_argument('--output',type=Path,default=ROOT/'build/fastbasic/audit.json')
-    parser.add_argument('--compiler',choices=('FBCI','FBC'),default='FBCI')
+    parser.add_argument('--compiler',choices=('FBCI','FBC','FB','FBI'),default='FBCI')
     args=parser.parse_args()
     result=audit(args.source.resolve(),args.compiler)
     args.output.parent.mkdir(parents=True,exist_ok=True)

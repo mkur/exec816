@@ -1,0 +1,46 @@
+Exec816 @VERSION@ split-disk FujiNet boot
+=======================================
+
+Use these FujiNet drive slots:
+
+  D1: Exec-of816.xex   read-only (FujiNet PicoBoot loads the XEX)
+  D@SYSTEM_DRIVE@: system.atr       read-only (Exec SYS:)
+  D8: work.atr         writable (Exec WORK:)
+
+Mount all three before booting. In FujiNet CONFIG, hold OPTION to boot the
+selected slots and release it when OF816 appears. A quick press can enable
+BASIC during CONFIG's own ROM reboot, even with Altirra's BASIC setting off.
+Cold reset may return to CONFIG when its boot menu is enabled.
+Keep BASIC disabled and no cartridge inserted.
+Leave the keyboard alone for the five-second OF816 countdown. This build
+selects SYS on D@SYSTEM_DRIVE@ automatically; no Forth drive override is required.
+To enter Forth, press a key during the countdown and type EXEC816 when ready.
+
+Use the included pinned AltirraOS 65816 ROM, Atari 800XL PAL, 65C816 at 14.28 MHz,
+shadow ROMs enabled, 64K base RAM plus 4032K linear high RAM. Disable SIO Patch,
+D: burst I/O and fast boot. Native disk transfers use the 57600 baud profile.
+@DISPLAY_REQUIREMENTS@
+
+Keep the three files from this same package together. An XEX from the combined
+exec816.atr package has different mount defaults and is not this split build.
+Keep a backup of work.atr; saved programs and preferences modify it.
+
+Try HELLO, DIR SYS:, DIR WORK: and HELP. SYS: is read-only, WORK: is persistent,
+RAM: is temporary. Final EXIT stops Exec and restores the OS display; cold-reset
+to boot again. Kernel boot failures happen before system-volume mounting;
+changing a disk assignment cannot repair a failed XEX transfer.
+The new error line includes a hexadecimal code and MEMLO/MEMTOP values:
+01 bounds, 02 manifest, 03 staged data, 04 incomplete loading.
+For 01 with MEMLO=$0700 MEMTOP=$9C1F, repeat boot while holding OPTION until
+loading starts. Exec requires MEMTOP >= $BC00; the tested BASIC-off value is
+$BC1F. Do not change MEMTOP manually.
+
+For direct emulator XEX launch, mount system.atr in D@SYSTEM_DRIVE@ and work.atr in D8.
+The local launch script prepares those mounts automatically.
+
+Boot loading negotiates 57600 baud with FujiNet after the small standard-speed
+reader. Interactive Forth gets standard-speed ROM I/O; loading resumes fast
+when you enter EXEC816. Keep FujiNet's HSIO index at 8 for native disk access.
+A failed transfer parks with an error and requires reset. Rebuild with
+--boot-sio standard for a standard-speed boot comparison/recovery image;
+this does not change the native 57600 baud disk profile.

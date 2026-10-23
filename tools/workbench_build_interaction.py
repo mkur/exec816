@@ -204,12 +204,12 @@ def exercise(out,scenario=None):
      report['controller_trace']={n:number(current['base']+address-(app['abi']['link_bank']<<16),4) for n,address in app['image']['symbols'].items() if (n.startswith('BuildProbe') and n!='BuildProbeSpec') or n.startswith('Workbench') or n in ('FixtureHeld','FixtureCompleted','FixtureRecovered','FixtureReady','FixtureFinished','FixtureChecks','FixtureMaxTurnTicks','FixtureRecoveryShown')}
      if 'BuildProbeSpec' in app['image']['symbols']:
       report['start_spec']=bridge.memdump(current['base']+app['image']['symbols']['BuildProbeSpec']-(app['abi']['link_bank']<<16),24).hex()
-      report['arguments']=bridge.memdump(current['job']+393,80).split(b'\0')[0].decode('ascii','replace')
+      report['arguments']=bridge.memdump(current['job']+JOB['source']+51,80).split(b'\0')[0].decode('ascii','replace')
      report['compiler_result']=bridge.memdump(current['job']+JOB['compilerResult'],8).hex()
      report['program_result']=bridge.memdump(current['job']+JOB['programResult'],8).hex()
      report['diagnostic']=bridge.memdump(current['job']+JOB['diagnostic'],224).hex()
      report['status_text']=bridge.memdump(current['basic']+1495,81).split(b'\0')[0].decode('ascii','replace')
-     report['scratch']={n:bridge.memdump(current['job']+offset,17).split(b'\0')[0].decode('ascii','replace') for n,offset in [('source',342),('command',359),('diagnostics',376)]}
+     report['scratch']={n:bridge.memdump(current['job']+JOB['source']+17*i,17).split(b'\0')[0].decode('ascii','replace') for i,n in enumerate(('source','command','diagnostics'))}
      report['snapshot']={n:number(current['job']+offset,4 if n in ('job','child','unit','cause') else 2) for n,offset in JOB.items() if n in ('phase','job','child','unit','window','cause')}
      report['editor']=dict(caret=number(current['basic']+FIELDS['caret'],4),bytes=number(current['basic']+FIELDS['document']+20,4))
      bridge.screenshot(str(out/'failure.png'))

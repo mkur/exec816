@@ -35,6 +35,19 @@ def ide_only_guide(bitmap=False):
     ).replace('@CONSOLE_NAME@', '80 by 30 VBXE bitmap shell' if bitmap else 'standard shell')
 
 
+def bootable_guide(bitmap=False):
+    return (ROOT/'docs/bootable-atr-distribution.txt').read_text().replace('@DISPLAY_REQUIREMENTS@',
+        'Graphical builds require a VBXE FX core at $D600 with private 512K VRAM\n'
+        'and an ST mouse on joystick port 1.'
+        if bitmap else 'This build uses the standard Atari text display.')
+
+
+def split_guide(drive,bitmap=False):
+    return (ROOT/'docs/fujinet-split-distribution.txt').read_text().replace('@SYSTEM_DRIVE@',str(drive)).replace('@DISPLAY_REQUIREMENTS@',
+        'Graphical builds require VBXE FX at $D600 with private 512K VRAM and\n'
+        'an ST mouse on joystick port 1.' if bitmap else 'This build uses the standard Atari text display.')
+
+
 def pointer_description(profile):
     return {
         'mild': 'The pointer uses mild acceleration: slow movement gives one screen pixel\n'
@@ -74,6 +87,7 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
     files['OF816-LICENSE.txt'] = (bundle/'OF816-LICENSE.txt').read_bytes()
     manifest_path=bundle.parent/'demo-manifest.json'
     demo_manifest=json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    demo=demo_manifest
     if demo_manifest.get('fastbasic'):
         upstream=ROOT/'build/fastbasic/source'
         files['FASTBASIC-COPYING.txt']=(upstream/'LICENSE').read_bytes()
@@ -115,6 +129,14 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
                        'docs/bitmap-shell-distribution.txt')).read_text()
         if demo.get('desktop'):
             guide = guide.replace('@POINTER_DESCRIPTION@', pointer_description(demo['kernel']['desktop_mouse']['profile']))
+    if demo_manifest.get('bootable_atr'):
+        guide=bootable_guide(demo_manifest.get('bitmap',False))
+        if demo_manifest.get('basic_workbench'):
+            guide+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
+    elif record['boot_config']['system_drive'] not in (0,1):
+        guide=split_guide(record['boot_config']['system_drive'],demo_manifest.get('bitmap',False))
+        if demo_manifest.get('basic_workbench'):
+            guide+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
     if (text_shell is not None or bitmap_shell is not None) and demo.get('sdx',{}).get('enabled'):
         config=demo['sdx']
         guide += ('\nSDX utility support: pinned MD5, ARC and EDX.\n'

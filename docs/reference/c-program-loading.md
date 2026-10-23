@@ -32,7 +32,9 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-Import ABI 24 includes the current device/AES/file imports, `ExamineExact`,
+Import ABI 26 adds public `Wait`, `PutMsg` and `GetMsg` imports for persistent
+message-driven services. It includes `ExecBasicAttach` for the
+[source interpreter](fastbasic.md#source-buffer-attachment), the current device/AES/file imports, `ExamineExact`,
 `MountVolume`, `UnmountVolume`, `ExNextBatch`, `Input`, `AvailMem`, the cooperative loader, retained
 Image launcher, `ExecAESWait`, owned-console lifecycle/window bindings, and the caller-local `ExecAESBeginUpdate` and
 `ExecAESPaintedChanges` [paint-completion helpers](aes.md#optional-repaint-completion).
@@ -57,7 +59,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 24 |
+| 6 | 2 | Import ABI version, 26 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -174,7 +176,7 @@ and directory handles are borrowed during Start and cloned into child ownership;
 parent selections remain usable. A nonzero console must be a caller-owned CON
 handle; the child binds an independent console/input/BREAK lifetime before entry.
 See the [Process contract](process.md#explicit-child-contexts) for setup failure,
-completion signals and ownership. Rebuild the provider and all APPs for ABI 24.
+completion signals and ownership. Rebuild the provider and all APPs for ABI 26.
 
 `ExecLoadProgram(name)` returns one owned mutable Image. `ExecStartLoaded(image,
 spec)` retains execution ownership until collection; only one execution of that
@@ -211,7 +213,7 @@ unchanged bank-zero reservations and an unchanged compiler pin.
 
 ## Cooperative file loading
 
-C ABI 24 adds `ExecLoadBegin`, `ExecLoadStep`, `ExecLoadTake` and
+The current C ABI exports `ExecLoadBegin`, `ExecLoadStep`, `ExecLoadTake` and
 `ExecLoadCancel`. Begin opens the file and borrows the name only during that
 call. The caller owns the returned job. Step performs one DOS operation,
 with reads bounded to 1,024 bytes, and returns 0 pending, 1 staged and closed,

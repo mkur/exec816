@@ -1,7 +1,7 @@
 # Editing FastBasic in GEM
 
 [Guide index](README.md) · [Limits](../reference/fastbasic-workbench.md) ·
-[Command-line compiler workflow](fastbasic.md)
+[Source interpreter and compiler workflow](fastbasic.md)
 
 Build the optional demo with `python3 tools/build_demo.py --basic-workbench`.
 Type `RUN C:BASIC.APP` in Shell, or launch `C:BASIC.APP` from Files. The editor supports Open, Save and Save As. The Program menu offers Check, Run, Stop and Build. Unsaved changes are resolved before New, Open or Quit.
@@ -51,14 +51,24 @@ old destination can have moved to its backup before the final rename fails.
 Choose Save, Discard or Cancel when asked about unsaved changes; canceling an
 Open/Save As selector also preserves your current source and committed path.
 
-Floating point is the default. Select Program → Integer compiler for FBCI.
+Floating point is the default. Select Program → Integer mode for integer-only Run.
 Try `PRINT 1.25*2.0`, then Run: output should contain `2.5`. Select the output
 window when a program asks for input; its keyboard belongs to that program.
 Select FastBasic again for editor shortcuts. Program → Output reopens completed
-output. Source edits are frozen during jobs; Save and Save As remain available.
+output. Run uses the source interpreter directly, without saving source or
+creating a temporary COM. Source edits are frozen during jobs; Save and Save As remain available.
 
-Stop or close output to cancel a busy program or pending input. Quit waits for
-its child before offering Save/Discard/Cancel. Check and successful Run preserve
+Run retains the interpreter Process and BASIC state between runs. Assignments
+still execute each time. Try `A=A+1:PRINT A`: repeated Run prints 1, then 2.
+Program → Restart interpreter stops an active run and clears variables, arrays, strings, open files and
+modes, while keeping your source. The next Run starts from empty state. Changing
+Integer mode also resets state. Repeated DIM keeps an array of the same type and
+size; use Restart before changing a declaration's type or size. Restart also
+recovers memory from old variables and allocations.
+
+Stop or close output to cancel a busy program or pending input. The interpreter
+keeps changes already made. Quit waits for the active run before offering
+Save/Discard/Cancel; canceling Quit preserves interpreter state. Check and successful Run preserve
 the editor position; compiler errors select the reported byte.
 
 Build chooses a release COM destination without saving the source. After closing

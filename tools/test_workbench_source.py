@@ -37,6 +37,7 @@ def check(archive, output, application):
              'build/bin/ld65', 'build/bin/ar65', 'build/gen/syntp'], donor)
         run(['make', '-j4'], donor/'testsuite/mini65')
         run(['make', '-j4', 'build/bin/fbci.xex', 'build/bin/fbc.xex',
+             'build/bin/fbrun.xex', 'build/bin/fbirun.xex',
              'build/compiler/fastbasic-int.lib', 'build/compiler/fastbasic-fp.lib'], donor)
         sources = ['examples/gem-basic/'+name for name in
                    ('main.c', 'basic.c', 'editor.c', 'editor-paint.c', 'document.c',
@@ -61,6 +62,8 @@ def check(archive, output, application):
                     expected, floating=True)
     pairs = {'FBCI.COM': (donor/'build/bin/fbci.xex', ROOT/'build/fastbasic/FBCI.COM'),
              'FBC.COM': (donor/'build/bin/fbc.xex', ROOT/'build/fastbasic/FBC.COM'),
+             'FB.COM': (donor/'build/bin/fbrun.xex', ROOT/'build/fastbasic/FB.COM'),
+             'FBI.COM': (donor/'build/bin/fbirun.xex', ROOT/'build/fastbasic/FBI.COM'),
              'BASIC.APP': (output/'application/program.app', application),
              'HELLO.COM': (output/'HELLO.COM', expected)}
     products = {}

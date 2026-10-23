@@ -150,10 +150,14 @@ def prepare(demo, config, ide_firmware, cart=None, disks=()):
     mounted.clear()
     if not record.get('ide_only'):
         drive = monitor['boot_config']['system_drive']
-        set_values(settings, mounted.name, {
-            f'Disk {drive - 1}': 'R' + str(require_file(demo / record['media'])),
-            'Disk 7': 'W' + str(writable_copy(demo / 'work.atr', local)),
-        })
+        if record.get('bootable_atr'):
+            set_values(settings,mounted.name,
+                {f'Disk {drive-1}':'W'+str(writable_copy(demo/record['media'],local))})
+        else:
+            set_values(settings, mounted.name, {
+                f'Disk {drive - 1}': 'R' + str(require_file(demo / record['media'])),
+                'Disk 7': 'W' + str(writable_copy(demo / 'work.atr', local)),
+            })
     for drive, source in disks:
         if not 1 <= drive <= 8:
             raise ValueError('Additional disk drive must be in D1..D8')
@@ -163,6 +167,8 @@ def prepare(demo, config, ide_firmware, cart=None, disks=()):
         set_values(settings, mounted.name,
                    {key: 'W' + str(writable_copy(source.resolve(), local))})
     boot = require_file(demo / record['boot_image'])
+    if record.get('bootable_atr'):
+        boot=writable_copy(demo/record['media'],local)
     mode = '--run'
     if cart:
         name = f'exec816-demo/cartridge/Exec-of816-atarimax-8mbit-{cart}.car'

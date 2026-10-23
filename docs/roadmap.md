@@ -33,9 +33,18 @@ has delivered the native GEM editor and Check/Run/Stop/Build controller through
 WB9, completing FB7. The [workbench record](history/fastbasic-workbench.md) retains
 its development evidence and packaged walkthroughs. Source debugging and native
 graphics remain open, with separate acceptance gates.
+The [FastBasic source interpreter](plans/fastbasic-interpreter-design.md) now
+runs `.BAS` through FB/FBI in one guest Process. BASIC.APP Run attaches its
+unsaved buffer to the same engine. Translation stays in memory, with no
+source/COM/diagnostic scratch files. The [delivery record](history/fastbasic-interpreter.md)
+contains FI0–FI7 development evidence. The [persistent-session follow-up](plans/fastbasic-session-plan.md) retains the
+workbench interpreter Process and BASIC state, with explicit restart. New
+standalone compiler work, debugging, direct mode and graphics remain open.
+Existing FBC/FBCI and workbench Check/Build remain available.
 The [WB0–WB14 implementation plan](plans/fastbasic-workbench-implementation-plan.md)
-orders those changes, with FB7 at WB9, debugger acceptance at WB11, BASIC
-graphics at WB13 and the complete packaged environment at WB14.
+retains the delivered FB7 at WB9 and later debugger/graphics gates. Pending
+WB10–WB14 must use the interpreter's live Process for source metadata, pause
+and inspection, and share native graphics with standalone execution.
 
 The [SpartaDOS personality design](plans/spartados-personality-design.md) proposes
 running selected 6502 SDX applications as ordinary Exec Processes, in the order
@@ -392,6 +401,21 @@ See the [execution record](history/g4bench-port.md) for correctness checks and
 separate idle/counter desktop observations. No renderer speedup is claimed.
 
 ## Follow-on capabilities
+
+The [bootable system ATR plan](plans/bootable-system-atr-implementation-plan.md)
+delivers a single writable D1 image with OF816, system files and WORK directory.
+Its [development record](history/bootable-system-atr.md) separates direct ROM
+boot and actual FujiNet-PC transport from physical hardware qualification.
+IDE power-on boot remains separate.
+
+The [boot-only fast SIO reader plan](plans/boot-only-fast-sio-implementation-plan.md)
+delivers BF0–BF8 for nominal 57,600-baud boot loading. It retains the split
+D1 XEX/D2 SYS/D8 WORK setup, shares the reader with the combined ATR, and
+defines bounded negotiation, OF816 suspension and native SIO handoff. The
+runtime bank-zero increase is zero, with the split build borrowing the existing
+ATR reader arena during loading. Matched boot measurements, focused failures
+and package persistence are recorded in the
+[development record](history/boot-only-fast-sio.md).
 
 User SIO mounts are implemented through UM5 at the development tier; see the
 [implementation record](history/user-sio-mounts.md). The

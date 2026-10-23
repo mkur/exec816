@@ -1,0 +1,119 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "archive_sha256": "71cc8371f3e8c0f50441300b16cebb22d2aff07c70b1799bafb05d85fcd83f65",
+  "products": {
+    "FBCI.COM": {
+      "bytes": 6534,
+      "sha256": "d056c8e077a432013f3c82dea1c65260c7e16d4c1c812a716b21e6c9ae55f1b8"
+    },
+    "FBC.COM": {
+      "bytes": 9995,
+      "sha256": "d7aaf9ae38dc666eaf7903ea7c44464b82da4a13ed5a0c4f4e848c84cabb30dc"
+    },
+    "FB.COM": {
+      "bytes": 9224,
+      "sha256": "8480220a8ca7a1b85a7bc8535474539df7ee56f3ffac78ae3958ba7a66d3da7b"
+    },
+    "FBI.COM": {
+      "bytes": 5763,
+      "sha256": "fdeb2490c5e55bcac0280d18b1107f6a5ea37532fc7f70ac90b5f7d68c20e8f6"
+    },
+    "BASIC.APP": {
+      "bytes": 67472,
+      "sha256": "1e573c40b52f99792cd24a18892f7c4e5db0121b6ebf8dd0728af96bf563e163"
+    },
+    "HELLO.COM": {
+      "bytes": 2832,
+      "sha256": "b6142cfec2d027b4c87c06ea59a20490de95df56c818734821af6e7c71f0a927"
+    }
+  },
+  "commands": [
+    [
+      "make",
+      "-j4",
+      "build/bin/fastbasic",
+      "build/bin/ca65",
+      "build/bin/ld65",
+      "build/bin/ar65",
+      "build/gen/syntp"
+    ],
+    [
+      "make",
+      "-j4"
+    ],
+    [
+      "make",
+      "-j4",
+      "build/bin/fbci.xex",
+      "build/bin/fbc.xex",
+      "build/bin/fbrun.xex",
+      "build/bin/fbirun.xex",
+      "build/compiler/fastbasic-int.lib",
+      "build/compiler/fastbasic-fp.lib"
+    ],
+    [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "tools/build_c_program.py",
+      "--output",
+      "/Users/michalkurcewicz/action/exec816-commands/build/boot-fast/source-rebuild/application",
+      "--minimum-stack",
+      "1312",
+      "--source",
+      "examples/gem-basic/main.c",
+      "--source",
+      "examples/gem-basic/basic.c",
+      "--source",
+      "examples/gem-basic/editor.c",
+      "--source",
+      "examples/gem-basic/editor-paint.c",
+      "--source",
+      "examples/gem-basic/document.c",
+      "--source",
+      "examples/gem-basic/files.c",
+      "--source",
+      "examples/gem-basic/file-ui.c",
+      "--source",
+      "examples/gem-basic/assist.c",
+      "--source",
+      "examples/gem-basic/assist-ui.c",
+      "--source",
+      "examples/gem-basic/build.c",
+      "--source",
+      "c/calypsi/file-list.c",
+      "--source",
+      "c/calypsi/fastbasic-diagnostic.c"
+    ],
+    [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "-c",
+      "import sys;from pathlib import Path;sys.path.insert(0,\"tools\");from build_fastbasic import compile_program;compile_program(Path(sys.argv[1]),Path(sys.argv[2]),Path(sys.argv[3]),floating=True)",
+      "/Users/michalkurcewicz/action/exec816-commands/build/boot-fast/source-rebuild/source/fastbasic",
+      "/Users/michalkurcewicz/action/exec816-commands/build/boot-fast/source-rebuild/source/exec816/examples/fastbasic/HELLO.BAS",
+      "/Users/michalkurcewicz/action/exec816-commands/build/boot-fast/source-rebuild/HELLO.COM"
+    ]
+  ],
+  "network": "No downloads; bundled donor/cc65 source and installed Calypsi 5.18",
+  "application_inputs": {
+    "examples/gem-basic/main.c": "3b4747371db396da959505b0daa3906c3eed8eb18a4c3fa1ce0fb319efb9f982",
+    "examples/gem-basic/basic.c": "3b030474850a73de291994041e1a93ec8937ef90419f023feeaa5f10a8acf8ce",
+    "examples/gem-basic/editor.c": "b9d262f730a3c217d5dc32069414b2f8454e41bdd8ca7abe342b1ea6a5520310",
+    "examples/gem-basic/editor-paint.c": "95c20c6d6fa2c44a1a4ada6ea42ef8ea365bace09eba33a428d200c927e9eb0d",
+    "examples/gem-basic/document.c": "3db298950e73b396f0437c724cf9759cbf2fe21646f49e5c21f0fdff50393b24",
+    "examples/gem-basic/files.c": "ebd3c9c889f2718870be867f82fa2640a15813557feed15463ebfa3ee5552222",
+    "examples/gem-basic/file-ui.c": "67cf5c0b070f441b980361672e15598f1135265d102ca3a066d3d474aaebb28f",
+    "examples/gem-basic/assist.c": "dd5ad7f92aa1f98895ef8fbfd3fcd28cd39795de9c3af5af2696a03869c373fd",
+    "examples/gem-basic/assist-ui.c": "8fbff370cdd34d89769cac64718b13ec83b7faf328d708a62ebf6fde70d21095",
+    "examples/gem-basic/build.c": "65ba6b0b9310f5c2fdfd76b649abd3e5aa44072ea01220d6cb9fded4f0814761",
+    "c/calypsi/file-list.c": "c70f8d6f4e6789d826fce9a26225ee6e3081da358c184c6e52a510f5a0853492",
+    "c/calypsi/fastbasic-diagnostic.c": "81c201fc01df1f9d3acec89ef0397b31ee9603e35bfb16211e28c616730a8a8c"
+  },
+  "format": "exec816-boot-only-fast-sio-source-development-v1",
+  "date": "2026-10-23",
+  "archive": "build/boot-fast/exec816-fastbasic-source.zip",
+  "rebuild_results": "build/boot-fast/source-rebuild/results.json",
+  "rebuild_results_sha256": "5379e7fabdfabe024e3a5d32d2f383ac35246b177170cde0db3eb6cdd0d4edb3",
+  "current_non_documentation_files_compared": 2397,
+  "scope": "Checksum-verified corresponding-source archive; clean offline rebuild of six products. Archive frozen before post-build evidence publication."
+}

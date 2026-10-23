@@ -1,0 +1,244 @@
+; Source acquisition and normalization run after the bridge retires the guest.
+MODULE FBSOURCE
+USE EXEC
+USE DOS
+USE DOSARGS
+USE DOSCLIENT
+USE FBABI
+USE FBINTERPABI
+USE FBSTATE
+USE SDXSTATE
+USE SDXABI
+USE A816MEMORY
+USE PROGRAMIMAGE
+USE O65TYPES
+USE CSTRING.IMPL AS STR
+
+; Copy the small descriptor once; source and result remain caller-owned.
+PUBLIC LONGINT FUNC Attach(PROGRAMIMAGE.Image POINTER image
+    FBINTERPABI.Source POINTER source)
+
+  IF image=NULL THEN
+    DOSCLIENT.SetError(DOS.ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+  IF image.kind<>PROGRAMIMAGE.KIND_FASTBASIC OR
+      image.ownerHeld<>1 OR image.running<>0 THEN
+    DOSCLIENT.SetError(DOS.ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+  LET state=FBSTATE.Session POINTER(image.extension)
+  IF state.interpreter=NULL THEN
+    DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_UNSUPPORTED))
+    RETURN(0)
+  FI
+  IF source=NULL THEN
+    DOSCLIENT.SetError(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+  IF source.version<>FBINTERPABI.VERSION OR
+      source.bytes<>FBINTERPABI.SOURCE_BYTES OR source.job=0 OR
+      source.length>LONGCARD(FBINTERPABI.SOURCE_LIMIT) OR
+      (source.source=0 AND source.length<>0) OR source.result=0 OR
+      source.source>LONGCARD($ffffff) OR
+      source.source>LONGCARD($1000000)-source.length OR
+      source.result>LONGCARD($1000000)-FBINTERPABI.RESULT_BYTES THEN
+    DOSCLIENT.SetError(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+  IF source.session>LONGCARD($1000000)-FBINTERPABI.SESSION_BYTES THEN
+    DOSCLIENT.SetError(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+  state.interpreter.source=source^
+  state.interpreter.attached=1
+  DOSCLIENT.SetError(0)
+
+RETURN(1)
+
+; A collected child releases its borrow even if DOS setup never entered BASIC.
+PUBLIC PROC Collected(PROGRAMIMAGE.Image POINTER image)
+
+  LET state=FBSTATE.Session POINTER(image.extension)
+  IF state.interpreter<>NULL THEN
+    state.interpreter.attached=0
+    ; Collection also ends a startup session borrow if request-port creation
+    ; failed before the engine could publish its ready reply.
+    state.interpreter.channel=NULL
+  FI
+
+RETURN
+
+; Engine-owned addresses were established at load; low addresses name guest D.
+PUBLIC BYTE FUNC ReadByte(FBSTATE.Session POINTER state CARD address)
+
+  IF address<256 THEN
+    RETURN(state.guest.dp(address))
+  FI
+
+RETURN(state.guest.bank(address))
+
+PUBLIC CARD FUNC Cap(FBSTATE.Session POINTER state CARD field)
+
+RETURN(SDXSTATE.ReadWord(state.guest.bank,
+    state.interpreter.capability+field))
+
+; Fresh result state is distinct from the source attachment's borrowed fields.
+PUBLIC PROC Begin(FBSTATE.Session POINTER state)
+
+  IF state.interpreter<>NULL THEN
+    BEGIN
+      LET item=state.interpreter
+      A816MEMORY.Clear(BYTE POINTER(@item.result),FBINTERPABI.RESULT_BYTES)
+      item.result.version=FBINTERPABI.VERSION
+      item.result.bytes=FBINTERPABI.RESULT_BYTES
+      item.result.phase=FBINTERPABI.PHASE_SOURCE
+      IF item.attached=1 THEN
+        item.attached=2
+        item.result.job=item.source.job
+        item.result.generation=item.source.generation
+      ELSE
+        item.attached=0
+      FI
+    END
+  FI
+
+RETURN
+
+; Reject a bad source byte at the current normalized line and byte column.
+PROC Invalid(FBSTATE.Interpreter POINTER item)
+
+  item.result.location=1
+
+RETURN
+
+; File and buffer input share exactly one bounded normalization path.
+PUBLIC LONGINT FUNC Load(FBSTATE.Session POINTER state)
+  DOS.FileHandle POINTER file
+  ADDRESS path
+  BYTE POINTER input
+  LONGCARD total,remaining
+  LONGINT got,cause
+  CARD destination,limit,index,used
+  BYTE value,previousCR,last
+
+  LET item=state.interpreter
+  file=NULL
+  input=NULL
+  remaining=0
+  cause=0
+  total=0
+  destination=Cap(state,FBINTERPABI.CAP_FIELD_SOURCE)
+  ; Parser initialization reserves one output page above the source.
+  limit=IF item.channel<>NULL THEN FBINTERPABI.SESSION_VARIABLE_BASE-256
+      ELSE FBABI.LIMIT-256 FI
+  previousCR=0
+  last=0
+  item.result.line=1
+  item.result.column=0
+  IF item.attached=2 THEN
+    input=BYTE POINTER(ADDRESS(item.source.source))
+    remaining=item.source.length
+  ELSE
+    IF DOSARGS.Parse(CSTRING(state.arguments),c"SOURCE/A",@path,1,
+        @item.arguments,SIZEOF(item.arguments))<>0 THEN
+      BEGIN
+        LET usage=c"Use: FB source (floating point) or FBI source (integer)\n"
+        DOS.Write(DOS.Output(),BYTE POINTER(usage),LONGINT(STR.strlen(usage)))
+        RETURN(DOS.ERROR_BAD_NUMBER)
+      END
+    FI
+    file=DOS.Open(BYTE POINTER(path),DOS.MODE_OLDFILE)
+    IF file=NULL THEN
+      RETURN(DOS.IoErr())
+    FI
+  FI
+  DO
+    IF DOS.BreakPending()<>0 THEN
+      cause=DOS.ERROR_BREAK
+      EXIT
+    FI
+    IF file<>NULL THEN
+      got=DOS.Read(file,@item.buffer,SIZEOF(item.buffer))
+      IF got<0 THEN
+        cause=DOS.IoErr()
+        EXIT
+      FI
+    ELSE
+      got=LONGINT(IF remaining>1024 THEN LONGCARD(1024) ELSE remaining FI)
+      IF got<>0 THEN
+        A816MEMORY.Move(@item.buffer,input,SIZE(got))
+        input=input+got
+        remaining=remaining-LONGCARD(got)
+      FI
+    FI
+    IF got=0 THEN
+      EXIT
+    FI
+    total=total+LONGCARD(got)
+    IF total>LONGCARD(FBINTERPABI.SOURCE_LIMIT) THEN
+      cause=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+      EXIT
+    FI
+    used=CARD(got)
+    index=0
+    WHILE index<used DO
+      value=item.buffer(index)
+      index==+1
+      IF value=10 AND previousCR<>0 THEN
+        previousCR=0
+      ELSE
+        previousCR=value=13
+        IF value=13 OR value=10 THEN
+          value=$9b
+        FI
+        IF value=$9b THEN
+          item.result.line==+1
+          item.result.column=0
+        ELSEIF item.result.column=255 OR
+            (value<>9 AND (value<32 OR value>126)) THEN
+          Invalid(item)
+          cause=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+          EXIT
+        ELSE
+          item.result.column==+1
+        FI
+        IF destination>=limit THEN
+          cause=DOS.ERROR_NO_FREE_STORE
+          EXIT
+        FI
+        state.guest.bank(destination)=value
+        destination==+1
+        last=value
+      FI
+    OD
+    IF cause<>0 THEN
+      EXIT
+    FI
+    EXEC.Yield()
+  OD
+  IF file<>NULL THEN
+    IF DOS.Close(file)=0 AND cause=0 THEN
+      cause=DOS.IoErr()
+    FI
+  FI
+  IF cause<>0 THEN
+    RETURN(cause)
+  FI
+  IF last<>$9b THEN
+    IF destination>=limit THEN
+      RETURN(DOS.ERROR_NO_FREE_STORE)
+    FI
+    state.guest.bank(destination)=$9b
+    destination==+1
+  FI
+  LET frame=SDXSTATE.GetFrame(@state.guest)
+  frame(SDXABI.FRAME_A)=BYTE(destination)
+  frame(SDXABI.FRAME_X)=BYTE(destination RSH 8)
+  item.result.phase=FBINTERPABI.PHASE_PARSE
+  item.result.line=0
+  item.result.column=0
+
+RETURN(0)
+
+ENDMODULE

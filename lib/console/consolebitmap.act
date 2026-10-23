@@ -153,7 +153,7 @@ RETURN(Run(OP_FILL))
 ; The sole worker selects the instance encoding for each presentation turn.
 PUBLIC PROC SetEncoding(BYTE enabled)
 
-  encoding=IF enabled<>0 THEN CARD($100) ELSE CARD(0) FI
+  encoding=IF enabled<>0 THEN CARD(FOREGROUND_ATASCII) ELSE CARD(0) FI
 
 RETURN
 
@@ -243,6 +243,8 @@ PUBLIC BYTE FUNC MenuRow(LAYERTYPES.Rect POINTER bounds,clip
 
 RETURN(IF progress^=0 THEN 1 ELSE 2 FI)
 
+; Scene clients select their own encoding; a prior console turn owns no flag
+; in this explicit foreground value.
 PUBLIC BYTE FUNC ClippedText(CARD x,y BYTE POINTER text CARD count,foreground,background
     LAYERTYPES.Rect POINTER clip)
 
@@ -251,7 +253,7 @@ PUBLIC BYTE FUNC ClippedText(CARD x,y BYTE POINTER text CARD count,foreground,ba
   packet.y=y
   packet.text=LONGCARD(ADDRESS(text))
   packet.width=count
-  packet.foreground=foreground OR encoding
+  packet.foreground=foreground
   packet.background=background
   packet.clipLeft=CARD(clip.left)
   packet.clipTop=CARD(clip.top)

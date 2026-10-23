@@ -9,7 +9,7 @@ from pathlib import Path
 from build_command import compile_command
 from build_of816 import build as build_monitor
 from make_data_disk import make
-from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,G4BENCH_NOTICES,pointer_description,ide_only_guide
+from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,G4BENCH_NOTICES,pointer_description,ide_only_guide,bootable_guide
 from library_paths import read_source
 from launch_demo import write_launcher
 from native_program import ROOT, build, compiler, read_build, require, sha256
@@ -36,7 +36,7 @@ def record_cartridge_capacity(output):
     return capacity
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=False,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=False,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False,bootable_atr=False,system_drive=1,boot_sio='auto'):
     if basic_workbench:
         fastbasic=gem_desktop=True
     if fastbasic:
@@ -53,7 +53,16 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     shell_only=bitmap_shell_only or text_shell_only
     require(not sdx or not (gem_vdi or bitmap_console or ideplus or ide_only),
             'The SDX demo requires a text or bitmap console with SIO disks')
-    require(system_kib in (360,720),'System disk must be 360 or 720 KiB')
+    if bootable_atr:
+        require(filesystem=='sdfs' and sector_bytes==256 and
+                not (ide_only or ideplus or gem_vdi or bitmap_console),
+                'Bootable ATR requires a standalone SIO SDFS/256 demo')
+        system_kib=2048
+    require(type(system_drive) is int and 1<=system_drive<=7,'System drive must be D1..D7; WORK reserves D8')
+    require(system_drive==1 or not (bootable_atr or ide_only or ideplus),
+            'System drive selection requires the split SIO disk profile')
+    require(system_kib in ((2048,) if bootable_atr else (360,720)),
+            'System disk must be 360/720 KiB, or 2 MiB with --bootable-atr')
     if ide_only:
         sector_bytes=512
     system_sectors=system_kib*1024//sector_bytes
@@ -71,7 +80,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     rom=ROOT/'build/firmware/altirraos-816.rom'
     require(sha256(binary)==pin['emulator']['sha256'] and sha256(rom)==pin['rom']['sha256'],'Install the pinned paced bridge and ROM before building the demo')
     media=output/'media';media.mkdir(exist_ok=True)
-    if ide_only:
+    if ide_only or bootable_atr:
         # This generated file is installed only after composing the final XEX.
         (media/'EXEC816.XEX').unlink(missing_ok=True)
     command_dir=media/'C';command_dir.mkdir(exist_ok=True)
@@ -92,7 +101,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             if path.suffix in ('.COM','.OVL'):
                 shutil.copyfile(path,command_dir/path.name)
                 binary_names.add('C/'+path.name)
-        for name in ('FBCI.COM','FBC.COM'):
+        for name in ('FBCI.COM','FBC.COM','FB.COM','FBI.COM'):
             shutil.copyfile(ROOT/'build/fastbasic'/name,command_dir/name)
             binary_names.add('C/'+name)
     sources=sorted(p for p in (ROOT/'examples/demo-disk').rglob('*') if p.is_file())
@@ -121,13 +130,20 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         # Remove generated copies left by a pre-RAM desktop build in this output.
         (media/'DESKTOP.RSC').unlink(missing_ok=True)
         (command_dir/'DESKTOP.APP').unlink(missing_ok=True)
-    disk_name='system.atr'
+    if system_drive!=1:
+        from package_demo import split_guide
+        content=split_guide(system_drive,bitmap_shell_only)
+        if basic_workbench:content+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
+        (media/'README.TXT').write_text(content.replace('@VERSION@',(ROOT/'VERSION').read_text().strip()),encoding='ascii')
+    disk_name='exec816.atr' if bootable_atr else 'system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name
     config=ROOT/('config/shell-sdfs-256.json' if filesystem=='sdfs' and sector_bytes==256 else f'config/shell-{filesystem}.json')
     mount_config=json.loads(config.read_text())
     mounts=mount_config['mounts']
     mounts[0]['sectors']=system_sectors
     mounts[0]['sector_bytes']=sector_bytes
+    mounts[0].update(alias=f'D{system_drive}',unit=48+system_drive)
+    mount_config['system_mount']=f'D{system_drive}'
     # Keep SYS read-only and provide explicitly disposable writable media.
     # D8 avoids colliding when the boot monitor selects D1..D7 for SYS.
     workspace=output/'workspace-source'
@@ -141,10 +157,19 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         for example in sorted((ROOT/'examples/fastbasic').glob('*.BAS')):
             (workspace/example.name).write_bytes(example.read_bytes().replace(b'\r\n',b'\n').replace(b'\n',b'\x9b'))
             work_binaries.add(example.name)
-    make(output/'work.atr',workspace,binary_names=work_binaries,filesystem=filesystem,
-         sector_bytes=WORK_SECTOR_BYTES,sectors=WORK_SECTORS,label='WORK')
-    mounts.append(dict(alias='WORK',unit=56,sectors=WORK_SECTORS,sector_bytes=WORK_SECTOR_BYTES,
-                       profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
+    if bootable_atr:
+        mounts[0]['access']='readwrite'
+        (workspace/'README.TXT').write_text('Exec816 workspace on the boot volume.\nBack up exec816.atr to preserve your work.\n',encoding='ascii')
+        shutil.copytree(workspace,media/'WORK',dirs_exist_ok=True)
+        binary_names.update('WORK/'+p.relative_to(workspace).as_posix()
+                            for p in workspace.rglob('*') if p.is_file())
+        startup=media/'S/STARTUP'
+        startup.write_text('ASSIGN WORK: SYS:WORK\n'+startup.read_text(encoding='ascii'),encoding='ascii')
+    else:
+        make(output/'work.atr',workspace,binary_names=work_binaries,filesystem=filesystem,
+             sector_bytes=WORK_SECTOR_BYTES,sectors=WORK_SECTORS,label='WORK')
+        mounts.append(dict(alias='WORK',unit=56,sectors=WORK_SECTORS,sector_bytes=WORK_SECTOR_BYTES,
+                           profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     if ideplus:
         mounts.append(dict(alias='IDE',device='ideplus.device',unit=2,profile=0,
                            sectors=system_kib*1024//512,sector_bytes=512,
@@ -289,10 +314,17 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     if ide_only:
         guide=ide_only_guide(bitmap_shell_only)
+    if bootable_atr:
+        guide=bootable_guide(bitmap_shell_only)
+    if system_drive!=1:
+        from package_demo import split_guide
+        guide=split_guide(system_drive,bitmap_shell_only)
     if basic_workbench:
         guide+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
     guide=guide.replace('@VERSION@',program['build']['exec_build']['version'])
     (output/'README.md').write_text(guide)
+    if bootable_atr:
+        (media/'README.TXT').write_text(guide,encoding='ascii')
     if ideplus:
         with (output/'README.md').open('a') as note:
             note.write(IDE_DEMO_NOTE)
@@ -303,13 +335,13 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         configuration={**pin['configuration'],'diskemu':'generic56k'},mounts=mounts,commands=commands,
         media=disk_name,filesystem=filesystem,sector_bytes=sector_bytes,
         system_kib=system_kib,system_sectors=system_sectors,
-        additional_media=[dict(name='work.atr',sha256=sha256(output/'work.atr'),
+        additional_media=[] if bootable_atr else [dict(name='work.atr',sha256=sha256(output/'work.atr'),
                                drive=8,alias='WORK',access='readwrite',
                                filesystem=filesystem,sectors=WORK_SECTORS,
                                sector_bytes=WORK_SECTOR_BYTES)],
         boot_image='of816/Exec-of816.xex',boot_manifest='of816/of816.json',
         distribution='exec816-demo.zip',
-        artifacts={name:sha256(output/name) for name in ('program.xex',disk_name,'work.atr','README.md',*([proof_name] if filesystem=='sdfs' else []))},
+        artifacts={name:sha256(output/name) for name in ('program.xex',disk_name,*(() if bootable_atr else ('work.atr',)),'README.md',*([proof_name] if filesystem=='sdfs' else []))},
         files={name:dict(bytes=len(payload),sha256=hashlib.sha256(payload).hexdigest(),
                         **({} if name in binary_names else dict(lines=payload.count(b'\n'),words=len(payload.split()))))
                for name,payload in files.items()},
@@ -325,6 +357,11 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                         *sorted((ROOT/'lib/dos').glob('*.act'))]},
         bank_zero_delta=bank_zero_delta(program['build']['memory']),task_capacity=12,expected_peak_tasks=7,
         qualification='Focused development checks only; full release and general compiler qualification remain separate.')
+    if bootable_atr:
+        record['bootable_atr']=True
+        record['source_inputs']['docs/bootable-atr-distribution.txt']=sha256(ROOT/'docs/bootable-atr-distribution.txt')
+    if system_drive!=1:
+        record['source_inputs']['docs/fujinet-split-distribution.txt']=sha256(ROOT/'docs/fujinet-split-distribution.txt')
     if sdx:
         record['sdx']=dict(enabled=True,drive_a=sdx_drive_a,car_root=sdx_car_root,
                            fixed_bank_zero_bytes=544,per_task_bank_zero_bytes=0)
@@ -416,13 +453,63 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['source_inputs'].update({name:sha256(ROOT/name) for name in (
             'tools/build_ide_media.py','docs/ide-only-distribution.txt','toolchain/altirra-ideplus.json')})
         (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
+    record['boot_sio']=boot_sio if not (ide_only or ideplus) else None
+    (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
     # OF816 records this final manifest, including the optional artifact.
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
     if ide_only:
         finalize_ide_media(output,record)
+    if bootable_atr:
+        finalize_bootable_media(output,record)
     package(output/'of816',output/record['distribution'],graphics,bitmap,
             bitmap_shell=output if bitmap_shell_only else None,
             text_shell=output if text_shell_only else None)
+    write_launcher(output)
+    return record
+
+
+def finalize_bootable_media(output,record):
+    from build_bootable_atr import build as boot_disk
+    from build_of816 import finalize_media
+    monitor=json.loads((output/'of816/of816.json').read_text())
+    image=output/record['media']
+    canonical=output/'of816'/monitor.get('canonical_xex','Exec-of816.xex')
+    report=boot_disk(image,output/'media',canonical,output/'boot-media',monitor,boot_sio=record.get('boot_sio','standard'))
+    readme=(output/'media/README.TXT').read_bytes()
+    record['files']['README.TXT']=dict(bytes=len(readme),sha256=hashlib.sha256(readme).hexdigest(),
+        lines=readme.count(b'\n'),words=len(readme.split()))
+    for name in ('BOOT.LDR','EXEC816.XEX'):
+        data=(output/'boot-media/disk-boot-reader.bin' if name=='BOOT.LDR'
+              else canonical).read_bytes()
+        record['files'][name]=dict(bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
+    record.update(bootable_atr=report,boot_image='of816/'+record['media'],additional_media=[])
+    record['artifacts'][record['media']]=sha256(image)
+    record['artifacts'][image.with_suffix('.verification.json').name]=sha256(image.with_suffix('.verification.json'))
+    record['source_inputs'].update(report['inputs'])
+    (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
+    finalize_media(output/'of816',output)
+
+
+def refresh_boot_disk(output):
+    """Refresh disk reader/media/guides without recomposing the frozen OF816 XEX."""
+    output=output.resolve()
+    record=json.loads((output/'demo-manifest.json').read_text())
+    require(record.get('bootable_atr'),'Boot-disk refresh requires a bootable ATR build')
+    require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
+            'Changed native demo artifacts')
+    content=bootable_guide(record.get('bitmap',False))
+    if record.get('basic_workbench'):
+        content+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
+    content=content.replace('@VERSION@',record['kernel']['exec_build']['version'])
+    (output/'README.md').write_text(content)
+    (output/'media/README.TXT').write_text(content,encoding='ascii')
+    record['artifacts']['README.md']=sha256(output/'README.md')
+    for name in ('tools/build_demo.py','tools/package_demo.py','docs/bootable-atr-distribution.txt'):
+        record['source_inputs'][name]=sha256(ROOT/name)
+    finalize_bootable_media(output,record)
+    package(output/'of816',output/record['distribution'],
+        bitmap_shell=output if record.get('bitmap') else None,
+        text_shell=output if record.get('shell_only') and not record.get('bitmap') else None)
     write_launcher(output)
     return record
 
@@ -454,12 +541,16 @@ FASTBASIC_NATIVE_INPUTS=('abi/fastbasic.json','lib/dos/fbabi.act',
     'lib/dos/fbprogram.act','lib/dos/fbservice.act','lib/dos/fbstate.act',
     'lib/dos/fbfiles.act','abi/fastbasic-diagnostics.json','lib/dos/fbdiagabi.act',
     'lib/dos/fbdiagnostic.act','abi/c-program.json','lib/dos/c-program-abi.inc',
-    'lib/dos/programload.act','lib/dos/programfile.act')
+    'lib/dos/programload.act','lib/dos/programfile.act',
+    'abi/fastbasic-interpreter.json','lib/dos/fbinterpabi.act',
+    'lib/dos/fbsource.act','lib/dos/fbresult.act','lib/dos/fbsession.act','lib/dos/fbbind.act',
+    'lib/dos/program.act','lib/dos/programapi.act','abi/program.json',
+    'c/calypsi/dos.c','c/calypsi/dos-bridge.inc')
 
 
 def fastbasic_metadata(record):
     return dict(compiler_sha256=record['compiler_sha256'],
-        compilers=record['compilers'],target=record['target'],
+        compilers=record['compilers'],engines=record['engines'],target=record['target'],
         upstream=record['upstream'],inputs=record['inputs'],
         native_inputs={name:sha256(ROOT/name) for name in FASTBASIC_NATIVE_INPUTS})
 
@@ -478,11 +569,12 @@ def refresh_fastbasic(output):
         name:sha256(ROOT/name) for name in FASTBASIC_NATIVE_INPUTS},
         'FastBasic native ABI/backend changed; rebuild the full demo before refreshing its disk')
     _,basic=build_basic(ROOT/'build/fastbasic')
-    for name in ('FBCI.COM','FBC.COM'):
+    for name in ('FBCI.COM','FBC.COM','FB.COM','FBI.COM'):
         shutil.copyfile(ROOT/'build/fastbasic'/name,output/'media/C'/name)
     # Preserve the original byte/text classification, including root resources
     # and binary fixtures. Executable-directory membership is insufficient.
     binary_names={name for name,info in record['files'].items() if 'lines' not in info}
+    binary_names.update('C/'+name for name in ('FB.COM','FBI.COM'))
     files=make(output/record['media'],output/'media',binary_names=binary_names,
                filesystem=record['filesystem'],sector_bytes=record['sector_bytes'],
                sectors=record['system_sectors'],label='SYS')
@@ -534,6 +626,53 @@ def refresh_workbench(output):
     return refresh_fastbasic(output)
 
 
+def refresh_boot_guide(output,program,record):
+    """Refresh local guides without changing frozen executable bytes."""
+    guides=[ROOT/'docs/guides/boot-monitor.md',ROOT/'docs/demo-distribution.txt',
+            ROOT/'LICENSE',ROOT/'LICENSE-MIT',ROOT/'LICENSING.md']
+    drive=program['build']['memory']['boot_config']['system_drive']
+    if record.get('shell_only'):
+        guide=ROOT/('docs/gem-desktop-distribution.txt' if record.get('gem_desktop') else 'docs/aes-input-distribution.txt' if record.get('aes_input') else
+                    'docs/aes-counter-distribution.txt' if record.get('aes_counters') else
+                    'docs/desktop-distribution.txt' if record.get('desktop') else
+                    'docs/bitmap-shell-distribution.txt' if record.get('bitmap') else
+                    'docs/text-shell-distribution.txt')
+        content=guide.read_text().replace('@SYSTEM_DISK@',record['media']).replace('@SYSTEM_DRIVE@',str(drive))
+        if record.get('bootable_atr'):
+            content=bootable_guide(record.get('bitmap',False))
+            guide=ROOT/'docs/bootable-atr-distribution.txt'
+        elif drive!=1:
+            from package_demo import split_guide
+            content=split_guide(drive,record.get('bitmap',False))
+            guide=ROOT/'docs/fujinet-split-distribution.txt'
+        if record.get('desktop'):
+            content=content.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
+        if record.get('ideplus'):
+            content+=IDE_DEMO_NOTE
+        if record.get('basic_workbench'):
+            extra=ROOT/'docs/basic-workbench-distribution.txt';content+=extra.read_text();guides.append(extra)
+        (output/'README.md').write_text(content.replace('@VERSION@',program['build']['exec_build']['version']))
+        record['artifacts']['README.md']=sha256(output/'README.md')
+        guides.append(guide)
+    elif drive!=1:
+        from package_demo import split_guide
+        guide=ROOT/'docs/fujinet-split-distribution.txt'
+        content=split_guide(drive).replace('@VERSION@',program['build']['exec_build']['version'])
+        (output/'README.md').write_text(content)
+        record['artifacts']['README.md']=sha256(output/'README.md')
+        guides.append(guide)
+    else:
+        guide=ROOT/'docs/guides/demo.md'
+        (output/'README.md').write_text(guide.read_text())
+        record['artifacts']['README.md']=sha256(output/'README.md')
+        guides.append(guide)
+    for guide in guides:
+        name=str(guide.relative_to(ROOT))
+        if name in record['source_inputs']:
+            record['source_inputs'][name]=sha256(guide)
+    return guides
+
+
 def refresh_monitor(output):
     """Refresh boot assembly/guides around the verified existing native payload."""
     output=output.resolve()
@@ -568,42 +707,56 @@ def refresh_monitor(output):
         add_ide_carts(output)
         write_launcher(output)
         return record
-    guides=[ROOT/'docs/guides/boot-monitor.md',ROOT/'docs/demo-distribution.txt']
-    if record.get('shell_only'):
-        guide=ROOT/('docs/gem-desktop-distribution.txt' if record.get('gem_desktop') else 'docs/aes-input-distribution.txt' if record.get('aes_input') else
-                    'docs/aes-counter-distribution.txt' if record.get('aes_counters') else
-                    'docs/desktop-distribution.txt' if record.get('desktop') else
-                    'docs/bitmap-shell-distribution.txt' if record.get('bitmap') else
-                    'docs/text-shell-distribution.txt')
-        drive=program['build']['memory']['boot_config']['system_drive']
-        content=guide.read_text().replace('@SYSTEM_DISK@',record['media']).replace('@SYSTEM_DRIVE@',str(drive))
-        if record.get('desktop'):
-            content=content.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
-        if record.get('ideplus'):
-            content+=IDE_DEMO_NOTE
-        if record.get('basic_workbench'):
-            extra=ROOT/'docs/basic-workbench-distribution.txt';content+=extra.read_text();guides.append(extra)
-        (output/'README.md').write_text(content)
-        record['artifacts']['README.md']=sha256(output/'README.md')
-        guides.append(guide)
-    else:
-        guide=ROOT/'docs/guides/demo.md'
-        (output/'README.md').write_text(guide.read_text())
-        record['artifacts']['README.md']=sha256(output/'README.md')
-        guides.append(guide)
-    for guide in guides:
-        name=str(guide.relative_to(ROOT))
-        if name in record['source_inputs']:
-            record['source_inputs'][name]=sha256(guide)
+    guides=refresh_boot_guide(output,program,record)
     record['monitor_refresh']=dict(native_xex_sha256=sha256(output/'program.xex'),
         native_build_sha256=sha256(output/'build.json'),
         source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in
                        [Path(__file__),ROOT/'tools/build_of816.py',ROOT/'tools/banked_image.py',*guides]})
     path.write_text(json.dumps(record,indent=2)+'\n')
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
+    if record.get('bootable_atr'):
+        finalize_bootable_media(output,record)
     package(output/'of816',output/record['distribution'],
             output/'gem-vdi' if record.get('graphics') else None,
             output/'bitmap-console' if record.get('bitmap_console') else None,
+            bitmap_shell=output if record.get('shell_only') and record.get('bitmap') else None,
+            text_shell=output if record.get('shell_only') and not record.get('bitmap') else None)
+    write_launcher(output)
+    return record
+
+
+def refresh_boot_sio(output,policy):
+    """Rewrap frozen OF816/native bytes; refresh readers and matching media."""
+    from build_boot_fast import wrap
+    from build_of816 import finalize_media
+    output=output.resolve()
+    program=read_build(output)
+    path=output/'demo-manifest.json'
+    record=json.loads(path.read_text())
+    require(not (record.get('ide_only') or record.get('ideplus')),'Fast boot requires SIO media')
+    require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
+            'Changed native demo artifacts')
+    monitor_path=output/'of816/of816.json'
+    monitor=json.loads(monitor_path.read_text())
+    if 'canonical_xex' not in monitor:
+        record['boot_sio']=policy
+        path.write_text(json.dumps(record,indent=2)+'\n')
+        return refresh_monitor(output)
+    canonical=output/'of816'/monitor['canonical_xex']
+    require(sha256(canonical)==monitor['canonical_xex_sha256'] and
+            sha256(output/'of816/Exec-of816.xex')==monitor['xex_sha256'],
+            'Changed canonical/boot image')
+    record['boot_sio']=policy
+    refresh_boot_guide(output,program,record)
+    path.write_text(json.dumps(record,indent=2)+'\n')
+    monitor['exec_build']=str(output)
+    monitor['boot_sio']=wrap(canonical,output/'of816/Exec-of816.xex',output/'of816/boot-sio',monitor,policy,
+                             loader_address=program['build']['memory']['constants']['LOADER'])
+    monitor['xex_sha256']=sha256(output/'of816/Exec-of816.xex')
+    monitor_path.write_text(json.dumps(monitor,indent=2)+'\n')
+    if record.get('bootable_atr'):finalize_bootable_media(output,record)
+    else:finalize_media(output/'of816',output)
+    package(output/'of816',output/record['distribution'],
             bitmap_shell=output if record.get('shell_only') and record.get('bitmap') else None,
             text_shell=output if record.get('shell_only') and not record.get('bitmap') else None)
     write_launcher(output)
@@ -670,6 +823,9 @@ if __name__=='__main__':
     parser.add_argument('--sdx',action='store_true',help='Enable the pinned MD5/ARC/EDX development personality in a text or bitmap SIO demo')
     parser.add_argument('--fastbasic',action='store_true',help='Include the integer FastBasic compiler, examples and SDX tools; maps guest A: to WORK: and CAR: to SYS:C/')
     parser.add_argument('--basic-workbench',action='store_true',help='Include BASIC.APP in the GEM desktop with FastBasic compilers')
+    parser.add_argument('--bootable-atr',action='store_true',help='Boot one writable 2 MiB SDFS ATR on D1, including kernel and WORK directory')
+    parser.add_argument('--system-drive',type=int,choices=range(1,8),default=1,
+                        help='Default SYS drive for split SIO media; use 2 with FujiNet XEX in D1 (WORK stays D8)')
     parser.add_argument('--sdx-drive-a',default='RAM:',help='Immutable native root for SDX guest A: (requires --sdx)')
     parser.add_argument('--sdx-car-root',default='RAM:',help='Native directory containing the pinned ARC overlays (requires --sdx)')
     parser.add_argument('--ide-only',action='store_true',help='IDE SYS/WORK, no Exec SIO driver; include raw media and both carts')
@@ -687,14 +843,26 @@ if __name__=='__main__':
     parser.add_argument('--mouse-profile',choices=('off','mild'),help='Desktop pointer profile (default from config/mouse.json)')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
     parser.add_argument('--text-shell-only',action='store_true',help='Autoboot OF816 into a full-screen standard shell without primes')
+    parser.add_argument('--boot-sio',choices=('auto','standard'),default='auto',help='Boot-only SIO policy; auto negotiates divisor 8, standard keeps bulk reads at divisor 40')
+    parser.add_argument('--refresh-boot-sio',action='store_true',help='Refresh boot readers/media/ZIP while preserving verified canonical OF816/native bytes')
     parser.add_argument('--refresh-monitor',action='store_true',help='Refresh OF816 and the ZIP around an existing verified native demo')
+    parser.add_argument('--refresh-boot-disk',action='store_true',help='Refresh a bootable ATR and its guide around the unchanged native/OF816 XEX')
     parser.add_argument('--refresh-fastbasic',action='store_true',help='Rebuild FBCI and refresh its system disk, OF816 and ZIP around verified native code')
     parser.add_argument('--refresh-workbench',action='store_true',help='Rebuild BASIC.APP and refresh matching FastBasic media, OF816 and ZIP')
     parser.add_argument('--refresh-loader',action='store_true',help='Repack unchanged native code with the current loader, OF816 and ZIP')
     parser.add_argument('--cartridge-from',type=Path,help='Add Atarimax boot images to an existing demo ZIP without rebuilding its XEX')
     parser.add_argument('--cartridge-source-sha256',help='Required checksum of the existing demo ZIP')
     args=parser.parse_args()
-    if args.refresh_workbench:
+    if args.refresh_boot_sio:
+        require(not any((args.refresh_boot_disk,args.refresh_workbench,args.refresh_fastbasic,args.refresh_loader,args.refresh_monitor,args.cartridge_from)),
+                '--refresh-boot-sio cannot be combined with other refresh modes')
+        refresh_boot_sio(args.output,args.boot_sio)
+    elif args.refresh_boot_disk:
+        require(not any((args.refresh_workbench,args.refresh_fastbasic,args.refresh_loader,
+                         args.refresh_monitor,args.cartridge_from,args.cartridge_source_sha256)),
+                '--refresh-boot-disk cannot be combined with another refresh mode')
+        refresh_boot_disk(args.output)
+    elif args.refresh_workbench:
         if args.refresh_fastbasic or args.refresh_loader or args.refresh_monitor or args.cartridge_from or args.cartridge_source_sha256:
             parser.error('--refresh-workbench cannot be combined with other refresh modes')
         refresh_workbench(args.output)
@@ -718,7 +886,7 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic,basic_workbench=args.basic_workbench)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic,basic_workbench=args.basic_workbench,bootable_atr=args.bootable_atr,system_drive=args.system_drive,boot_sio=args.boot_sio)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')
     if not args.cartridge_from:
         print(f'Local Altirra launcher: {args.output}/launch-altirra.command')

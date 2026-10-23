@@ -1,5 +1,13 @@
 # Historical records
 
+- [Boot-only fast SIO](boot-only-fast-sio.md): shared split/ATR reader, bounded speed recovery, OF816/native ownership, measured boot time and development evidence.
+
+- [Persistent FastBasic interpreter](fastbasic-session.md): retained Process/state, explicit restart and current development evidence.
+
+- [FastBasic source interpreter](fastbasic-interpreter.md): FB/FBI, one-Process
+  source Run in BASIC.APP, bounded input/results, lifetime and resource checks,
+  and matching OF816/corresponding-source delivery.
+
 - [Twelve-Task layout](twelve-task-layout.md): four high-RAM pools, a third
   large stack, MEMLO admission/return, emitted context and coexistence checks,
   and the refreshed OF816 graphical programming demo.
@@ -353,6 +361,10 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Platform and boot
 
+- [FujiNet split XEX boot](fujinet-xex-boot.md): matched D1/D2/D8 package,
+  CONFIG/OPTION handoff, concrete loader errors and transport evidence.
+- [Bootable system ATR](bootable-system-atr.md): one writable D1 with OF816,
+  native SYS and WORK assignment; disk-reader lifetime and FujiNet-PC evidence.
 - [Compressed kernel loader](loader-compression.md): streaming LZ4 implementation,
   actual standard/VBXE XEX sizes, emitted decoder speed and boot checks; the
   [64 KiB follow-up](loader-compression.md#64-kib-follow-up) measures the larger default.

@@ -83,6 +83,12 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
 
 RETURN(PROGRAMIMAGE.Image POINTER(0))
 
+; Attach source to an admitted language engine without starting a new Task.
+PUBLIC LONGINT FUNC BasicAttach(PROGRAMIMAGE.Image POINTER image
+    BYTE POINTER source)
+
+RETURN(FBBIND.Attach(image,source))
+
 ; Release an image only after its execution ownership permits unloading.
 PUBLIC PROC Unload(PROGRAMIMAGE.Image POINTER image)
 

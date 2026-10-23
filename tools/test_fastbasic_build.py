@@ -17,11 +17,11 @@ def prepare(out,provider,app_only=False,fixture=None,extra_media=None,minimum_st
  sources=[ROOT/'examples/gem-basic'/n for n in ('main.c','basic.c','editor.c','editor-paint.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c','build.c')]+[ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/fastbasic-diagnostic.c']
  app=application(out/'app',sources,minimum_stack=ABI['stack_floor_bytes'] if minimum_stack is None else minimum_stack,probes=[(ROOT/'tests/programs/basic_editor_layout.c',EDITOR_LAYOUT),(ROOT/'tests/programs/basic_build_layout.c',JOB_LAYOUT)])
  media=out/'media';(media/'C').mkdir(parents=True,exist_ok=True)
- for name,path in [('BASIC.APP',out/'app/program.app'),('FBC.COM',ROOT/'build/fastbasic/FBC.COM'),('FBCI.COM',ROOT/'build/fastbasic/FBCI.COM')]:shutil.copyfile(path,media/'C'/name)
+ for name,path in [('BASIC.APP',out/'app/program.app'),*[(n+'.COM',ROOT/f'build/fastbasic/{n}.COM') for n in ('FBC','FBCI','FB','FBI')]]:shutil.copyfile(path,media/'C'/name)
  for name,raw in (extra_media or {}).items():
   path=media/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(raw)
  (media/'REL.TXT').write_bytes(b'123\x9b')
- make(out/'system.atr',media,binary_names={'C/BASIC.APP','C/FBC.COM','C/FBCI.COM','REL.TXT'}|set(extra_media or {}),filesystem='sdfs',sector_bytes=256,sectors=2880)
+ make(out/'system.atr',media,binary_names={'C/BASIC.APP','C/FBC.COM','C/FBCI.COM','C/FB.COM','C/FBI.COM','REL.TXT'}|set(extra_media or {}),filesystem='sdfs',sector_bytes=256,sectors=2880)
  if app_only:return app
  foreign=json.loads(provider.read_text())
  for path,digest in foreign['provenance']['source_inputs'].items():require(sha256(ROOT/path)==digest,'Changed provider: '+path)

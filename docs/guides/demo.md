@@ -22,6 +22,10 @@ boot messages out of view.
 
 ## Install and boot
 
+For the source-build profile that boots and saves on one writable D1 disk, use
+the [bootable system ATR guide](bootable-system-atr.md). The instructions below
+describe the external-XEX package with separate system and work disks.
+
 Download `exec816-demo.zip` from [Releases](https://github.com/mkur/exec816/releases)
 and extract it. The `exec816-demo/` folder
 contains `Exec-of816.xex`, `system.atr`, `work.atr`, `altirraos-816.rom`, `README.txt`, license

@@ -1,0 +1,36 @@
+{
+  "format": "exec816-boot-sio-v1",
+  "version": 1,
+  "reader_address": 16384,
+  "reader_bytes": 8192,
+  "guard_bytes": 16,
+  "divisors": {
+    "STANDARD": 40,
+    "FAST": 8
+  },
+  "policies": {
+    "standard": 0,
+    "auto": 1
+  },
+  "deadline_frames": 100,
+  "resync_attempts": 3,
+  "descriptor": {
+    "magic": "BSI1",
+    "size": 41,
+    "fields": {
+      "magic": 0,
+      "version": 4,
+      "policy": 5,
+      "unit": 6,
+      "native_divisor": 7,
+      "payload_offset": 8,
+      "payload_size": 11,
+      "identity": 14,
+      "descriptor_offset": 30,
+      "monitor_entry": 33,
+      "local_callbacks": 35
+    }
+  },
+  "prefix_reader_offset": 19,
+  "prefix_bytes": 8217
+}

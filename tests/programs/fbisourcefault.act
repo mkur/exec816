@@ -1,0 +1,47 @@
+; Test-only boundary injection; real files and their ownership still retire.
+MODULE FBISOURCEFAULT
+USE DOS
+
+PUBLIC BYTE mode
+
+PUBLIC DOS.FileHandle POINTER FUNC Open(BYTE POINTER name LONGINT access)
+
+RETURN(DOS.Open(name,access))
+
+PUBLIC LONGINT FUNC Read(DOS.FileHandle POINTER file BYTE POINTER buffer
+    LONGINT length)
+
+  IF mode=2 OR mode=4 THEN
+    DOS.SetIoErr(DOS.ERROR_DISK_FULL)
+    RETURN(-1)
+  FI
+  IF mode=1 AND length>7 THEN
+    length=7
+  FI
+
+RETURN(DOS.Read(file,buffer,length))
+
+PUBLIC LONGINT FUNC Close(DOS.FileHandle POINTER file)
+
+  LET closed=DOS.Close(file)
+  IF mode=3 OR mode=4 THEN
+    DOS.SetIoErr(DOS.ERROR_DISK_NOT_VALIDATED)
+    RETURN(0)
+  FI
+
+RETURN(closed)
+
+PUBLIC LONGINT FUNC Write(DOS.FileHandle POINTER file BYTE POINTER buffer
+    LONGINT length)
+
+  IF mode=8 THEN
+    DOS.SetIoErr(DOS.ERROR_DISK_FULL)
+    RETURN(-1)
+  FI
+  IF mode=16 AND length>7 THEN
+    length=7
+  FI
+
+RETURN(DOS.Write(file,buffer,length))
+
+ENDMODULE

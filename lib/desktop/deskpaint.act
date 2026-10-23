@@ -397,10 +397,12 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
       first=CARD(area.left-client.left) RSH 3
       count=((CARD(area.right-client.left)+7) RSH 3)-first
       index=CONSOLECORE.CellOffset(instance,row*instance.width+first)
+      LET foreground=IF (instance.caps & CONSOLETYPES.MODE_ATASCII)<>0 THEN
+          CARD(1 OR CONSOLEBITMAP.FOREGROUND_ATASCII) ELSE CARD(1) FI
       entry.busy=1
       okay=TextStep(CARD(client.left)+(first LSH 3),
           CARD(client.top)+(row LSH 3),instance.cells+SIZE(index),count,
-          1 OR (instance.caps & CONSOLETYPES.MODE_ATASCII),0,@area)
+          foreground,0,@area)
       entry.busy=0
       IF okay<>1 THEN
         RETURN(okay)

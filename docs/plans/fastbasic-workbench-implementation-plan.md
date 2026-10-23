@@ -3,6 +3,14 @@
 Status: WB0–WB9 implemented with passing development checks, 21 October 2026.
 This completes the first FB7 editor/Run delivery; WB10–WB14 remain pending. See the [slice record](../history/fastbasic-workbench.md).
 
+The [source-interpreter design](fastbasic-interpreter-design.md) and
+[FI0–FI7 plan](fastbasic-interpreter-implementation-plan.md) replace Run's
+compiler-child workflow while retaining existing Check/Build. WB0–WB9 below
+remain the original delivery record. For pending WB10, generate debug metadata
+from the source engine and both standalone compiler paths. WB11 must pause and
+inspect the same live interpreter Process; restarting an Image discards its
+state. WB13 must share graphics services between source and standalone execution.
+
 [Design note](fastbasic-workbench-design.md) · [Plan index](README.md) ·
 [GEM integration](gem4xe/README.md) · [Migration plan](fastbasic-6502-migration-plan.md) ·
 [Current FastBasic contract](../reference/fastbasic.md) ·

@@ -1,0 +1,41 @@
+Exec816 @VERSION@ bootable system disk
+====================================
+
+Mount exec816.atr writable in D1 and cold-boot. No other disk is required.
+The ATR contains the OF816 monitor, kernel, commands, applications and WORK
+directory. Keep a backup: saved programs and settings modify this disk.
+
+Use the pinned AltirraOS 65816 ROM included here and AltirraSDL, Atari 800XL PAL,
+65C816 at 14.28 MHz, shadow ROMs enabled, 64K base RAM plus 4032K high RAM.
+Disable internal BASIC and remove cartridges. Disable SIO Patch, D: burst I/O
+and fast boot. Use Generic + 57600 baud disk emulation.
+@DISPLAY_REQUIREMENTS@
+
+Leave the keyboard alone for the five-second OF816 countdown, or press a key
+to enter Forth and type EXEC816 when ready. Keep the disk attached throughout
+Forth: loading resumes afterwards. No SYSTEM-DRIVE! override is needed.
+
+SYS: and D1: name the same writable volume. C: contains commands, S: contains
+startup scripts, and WORK: names SYS:WORK. RAM: is temporary and disappears on
+reboot. DIR, MOUNT, ASSIGN and HELP show the system. Try:
+
+  HELLO
+  ECHO saved >WORK:TEST.TXT
+  CAT WORK:TEST.TXT
+
+WORK files and desktop preferences survive cold boot. EXIT closes the selected
+shell; the final EXIT stops Exec and restores the OS display. Cold-reset to boot
+again. BOOT.LDR and EXEC816.XEX are protected boot files; replace the whole image
+when updating the system, and copy your WORK files into the new image.
+
+With FujiNet, select the ATR from SD in drive slot 1, writable, then boot.
+The matching external Exec-of816.xex is supplied for recovery/development;
+normal startup uses the ATR. The ROM/memory/display requirements still apply.
+Development results and qualification scope are recorded separately.
+
+Boot loading negotiates 57600 baud with FujiNet after the small standard-speed
+reader. Interactive Forth gets standard-speed ROM I/O; loading resumes fast
+when you enter EXEC816. Keep FujiNet's HSIO index at 8 for native disk access.
+A failed transfer parks with an error and requires reset. Rebuild with
+--boot-sio standard for a standard-speed boot comparison/recovery image;
+this does not change the native 57600 baud disk profile.

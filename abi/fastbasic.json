@@ -2,7 +2,7 @@
   "abi": "exec816.fastbasic.6502.v1",
   "version": 1,
   "magic": "FB65",
-  "target": 18179,
+  "target": 18181,
   "header_bytes": 16,
   "header": {
     "magic": 0,
@@ -74,7 +74,9 @@
     "KEY": 74,
     "TICKS24": 75,
     "RANDOM32": 76,
-    "DIAGNOSTIC": 77
+    "DIAGNOSTIC": 77,
+    "SOURCE": 78,
+    "SOURCE_RESULT": 79
   },
   "upstream": {
     "repository": "https://github.com/dmsc/fastbasic",

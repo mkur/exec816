@@ -87,7 +87,7 @@
 #define AES_MOUSE_OFF 0
 #define AES_MOUSE_MILD 1
 #define AES_OP_MENU 202
-#define AES_MENU_OBJECTS 33
+#define AES_MENU_OBJECTS 34
 #define AES_MN_SELECTED 10
 #define AES_GUI_MENU 4
 #define AES_SIZER 32

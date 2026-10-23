@@ -149,6 +149,16 @@ PUBLIC PROC Prepare(Session POINTER state)
     state.editorCaps=1
     state.bank($2b6)=0
   FI
+  Enter(state)
+
+RETURN
+
+; Start an invocation in an existing private DP/bank without clearing its data.
+PUBLIC PROC Enter(Session POINTER state)
+  BYTE POINTER frame
+  CARD page
+
+  page=SDXCONFIG.DP_BASE+CARD(state.slot)*256
   A816MEMORY.Clear(state.context,SDXABI.CONTEXT_BYTES)
   A816MEMORY.Fill(state.context,$a5,256)
   Word(state.context,SDXABI.FIELDS_GUEST_S,SDXABI.INITIAL_S)

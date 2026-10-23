@@ -40,9 +40,9 @@ def context_program(out, optimize):
             access = field+'(0)' if counts else field
             checks += [f'  Require(ADDRESS(@{variable}.{access})-ADDRESS(packet)={layout()[name]["fields"][field]})']
     checks += ['  LET menu=AESSTATE.Menu POINTER(packet)',
-               '  Require(SIZEOF(AESSTATE.Menu)=380)',
-               '  Require(ADDRESS(@menu.x(0))-ADDRESS(@menu.parent(0))=66)',
-               '  Require(ADDRESS(@menu.y(0))-ADDRESS(@menu.parent(0))=132)']
+               '  Require(SIZEOF(AESSTATE.Menu)=390)',
+               '  Require(ADDRESS(@menu.x(0))-ADDRESS(@menu.parent(0))=68)',
+               '  Require(ADDRESS(@menu.y(0))-ADDRESS(@menu.parent(0))=136)']
     source = out/'context.act'
     source.write_text('''MODULE AESPROBE
 USE EXEC

@@ -98,8 +98,9 @@ def prepare(output):
     originals = {**archive_files(raw), **archive_files(mini, 'testsuite/mini65/')}
     verify_files(original, originals)
     patch = PORT/'patches/exec6502.patch'
+    session_patch = PORT/'patches/session.patch'
     identities = {str(p.relative_to(ROOT)): sha256(p) for p in
-                  [Path(__file__), ROOT/'tools/generate_fastbasic_math.py', PORT/'upstream.json', ROOT/'abi/fastbasic.json', patch,
+                  [Path(__file__), ROOT/'tools/generate_fastbasic_math.py', ROOT/'tools/generate_fastbasic_interpreter.py', PORT/'upstream.json', ROOT/'abi/fastbasic.json', ROOT/'abi/fastbasic-interpreter.json', patch, session_patch,
                    *sorted((PORT/'target').glob('*'))] if p.is_file()}
     stamp = output/'port-inputs.json'
     source_stamp = output/'port-source.json'
@@ -119,6 +120,8 @@ def prepare(output):
             with (output/'prepare.log').open('w') as log:
                 command(['git', 'apply', '--check', patch], staging, log)
                 command(['git', 'apply', patch], staging, log)
+                command(['git', 'apply', '--check', session_patch], staging, log)
+                command(['git', 'apply', session_patch], staging, log)
             shutil.move(staging, source)
         # Only the bootstrap compiler may emit calls to port-owned assembly.
         shutil.copy2(source/'src/syntax/basic.syn', source/'src/syntax/basic-internal.syn')
@@ -130,11 +133,16 @@ def prepare(output):
             added['compiler/'+name] = PORT/'target'/name
         for name in ('fastbasic.inc', 'helpers.asm', 'callbacks.asm', 'mathpack.asm', 'fp_snapshot.asm'):
             added['src/'+name] = PORT/'target'/name
+        for name in ('source-run.asm','source-run.inc'):
+            added['src/'+name] = PORT/'target'/name
+        added['source-run.mak'] = PORT/'target/source-run.mak'
         for name, path in added.items():
             shutil.copy2(path, source/name)
         shutil.copy2(PORT/'target/exec.cfg', source/'compiler/fastbasic.cfg')
         shutil.copy2(PORT/'target/header.asm', source/'src/comp_header.asm')
         shutil.copy2(PORT/'target/cmdline.bas', source/'src/cmdline.bas')
+        with (source/'Makefile').open('a') as makefile:
+            makefile.write('\ninclude source-run.mak\n')
         names = set(originals) | set(added) | {'src/syntax/basic-internal.syn'}
         source_stamp.write_text(json.dumps({name: sha256(source/name)
                                             for name in sorted(names)}, indent=2)+'\n')
@@ -155,7 +163,8 @@ def build(output):
             shutil.copy2(original/'build'/name, target)
         command(['make', '-j4', 'build/bin/fastbasic', 'build/bin/fbci.xex',
                  'build/bin/fbc.xex', 'build/compiler/fastbasic-int.lib',
-                 'build/compiler/fastbasic-fp.lib'], source, log)
+                 'build/compiler/fastbasic-fp.lib', 'build/bin/fbrun.xex',
+                 'build/bin/fbirun.xex'], source, log)
     compiler = source/'build/bin/fbci.xex'
     layout = profile(compiler.read_bytes())
     shutil.copy2(compiler, output/'FBCI.COM')
@@ -164,9 +173,14 @@ def build(output):
         path = source/f'build/bin/{name.lower()}.xex'
         shutil.copy2(path, output/(name+'.COM'))
         compilers[name] = dict(profile=profile(path.read_bytes()), sha256=sha256(path))
+    engines={}
+    for name,stem in (('FB','fbrun'),('FBI','fbirun')):
+        path=source/f'build/bin/{stem}.xex'
+        shutil.copy2(path,output/(name+'.COM'))
+        engines[name]=dict(profile=profile(path.read_bytes()),sha256=sha256(path))
     record = dict(format='exec816-fastbasic-build-v1', upstream=PIN,
                   inputs=identities, compiler=layout, compiler_sha256=sha256(compiler),
-                  target=ABI['target'], compilers=compilers,
+                  target=ABI['target'], compilers=compilers, engines=engines,
                   source_files=json.loads((output/'port-source.json').read_text()),
                   tools={name:sha256(source/'build/bin'/name) for name in
                          ('fastbasic', 'ca65', 'ld65', 'ar65')})

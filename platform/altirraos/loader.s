@@ -484,8 +484,46 @@ progress_failed:
     ldx #<failure_message
     ldy #>failure_message
     jsr progress_text
+    lda loader_error
+    jsr progress_hex_byte
+    ldx #<memlo_message
+    ldy #>memlo_message
+    jsr progress_text
+    lda $02e8
+    jsr progress_hex_byte
+    lda $02e7
+    jsr progress_hex_byte
+    ldx #<memtop_message
+    ldy #>memtop_message
+    jsr progress_text
+    lda $02e6
+    jsr progress_hex_byte
+    lda $02e5
+    jsr progress_hex_byte
+    lda #$9b
+    jsr progress_putchar
 @done:
     rts
+
+progress_hex_byte:
+    pha
+    lsr
+    lsr
+    lsr
+    lsr
+    jsr progress_hex_nibble
+    pla
+progress_hex_nibble:
+    and #$0f
+    cmp #10
+    bcc @digit
+    clc
+    adc #'A'-10
+    jmp progress_putchar
+@digit:
+    clc
+    adc #'0'
+    jmp progress_putchar
 
 progress_text:
     stx @read+1
@@ -557,7 +595,9 @@ progress_putchar:
 boot_banner: .byte "Exec816 boot",$9b,0
 of_message: .byte "Loading OF816 ",0
 exec_message: .byte "Loading Exec816 ",0
-failure_message: .byte "Exec816 load failed",$9b,0
+failure_message: .byte "Exec816 load failed $",0
+memlo_message: .byte " MEMLO=$",0
+memtop_message: .byte " MEMTOP=$",0
 loader_progress_bytes: .word 0
 loader_progress_stage: .byte 0
 progress_character: .byte 0

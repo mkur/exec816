@@ -1,0 +1,1677 @@
+{
+  "format": "exec816-boot-only-fast-sio-development-v1",
+  "date": "2026-10-23",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "source_inputs": {
+    "abi/boot-sio.json": "928ddd1b62654e086f70adff89db77d7a5855ad5d6567bd0cdbf6d58a1191936",
+    "tools/build_boot_fast.py": "d098afe7651f9aa7b91056a34f3cd47ff92a8398afbda23ec60a9dd76a495908",
+    "tools/build_bootable_atr.py": "c88c65205bf9199dce93c1f6f34d94363777fa330143a170ce55b5c87b2097cf",
+    "platform/altirraos/disk-boot-reader.s": "6b3aa4ea2011458eb569df74866e679c30c1a977acec2ec3b5f00774291aa02b",
+    "platform/altirraos/boot-xex.inc": "384f57aafe1b8b909027129054b7d00c2d6ac7c3eccd8daf1d857194b7fa3951",
+    "platform/altirraos/boot-takeover.inc": "436719aef2bbfc6db1423c86a43973f807e6a1e9db0de5bfc7f48b7a7eb60f04",
+    "platform/altirraos/boot-sio.inc": "ca753f74938db95bb33362b19408d4f537ef65b142f23cfef1b2bc16dca47f9b",
+    "platform/altirraos/boot-sio-policy.inc": "534b329b766ae57f3d3efb4d6e1853453c74ebd53bd8bac6c07d3bad7951dd11",
+    "tools/record_boot_fast.py": "fa4ee6b9f935dc3ef8f7471eb2787509567e731e8c6000c561572e39effa585e",
+    "tools/test_boot_fast.py": "1b2ee3b1f1884e13b6265dcd2dd3cfc979519ce2840b75e3aeec7c14229c60e9",
+    "tools/test_boot_fast_errors.py": "cbf0433cb43bb1d62fcef32534fd4e51dc9103957699438ae46492ef5c66c555",
+    "tools/test_boot_fast_direct.py": "7a2d4797f4392d56e448ce8efe380ac70f34aa9ddf373cd750899fd3dac77c88",
+    "tools/measure_boot_fast.py": "2f4efb2ea245017a43f5276f3d9b812eb7a5d73cde2908b50ed2925bec8d32f9",
+    "tools/test_disk_boot_reader.py": "ac7a991fddd169eb439788638dd9a804b7eb67450db05d8935799bab7ef7ee45",
+    "tools/test_fujinet_xex.py": "6ad07bd209bbd8a101c1aa271989c95a892d47491e119ff3fa48e73b49d2e012",
+    "tools/test_bootable_atr.py": "6b4e17e099dfcd1e1996484bf628744799d437ddae2f09421d439fd7cc30057e",
+    "tools/boot_forth_check.py": "791a6e7cdd827f6b962cea7d0deeb535661e3335cfbb24109308649e4041db37",
+    "tools/fujinet_pc_peer.py": "e694246921d9265a6515d50e97f244ca43ab36db88f6e90ad6ac647ee4b433d9",
+    "tools/test_of816.py": "e820d222a683a9dbba0435e9660ead58bc3432aabf59ecb936a6e2b1490b9db0",
+    "probes/boot-sio/forth-status.s": "22881f045ae702cc33d193cf563b0d5f28b9ed64598704306b947b83911f9a99",
+    "tools/build_demo.py": "cf646d1893b58cda5b81cf4fbe793881a6b2a13600f097381768b55d3268bd8a",
+    "tools/build_of816.py": "cb2f8e21b0d7ecc3c53e9f80203453ee630b37df7b5116e3d1d15cb50d7988dc",
+    "tools/package_demo.py": "37c6de67ddd2dc6818943bf0a40d4c647171b0ac72cf314623a09cd81ef5835e",
+    "tools/package_fastbasic_source.py": "0673cfad6d9b73821cc2ca696c90e1369de9389a27b20da9e600f44a71826b8f",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra.json": "5ad56ae12ca012928cd322bc884bc77b1edab59313a16cd1133388d8dbfe4db6",
+    "toolchain/of816.json": "33c692f20996f093062bc18fc648faf0102b2c9f17682a2d86461645ab9c33a1",
+    "docs/reference/boot-loading.md": "5cd33d724cb1bf3687a59446962c6c5b3df6d6a0bbadbdee80d122e9eb54269c",
+    "docs/reference/platform.md": "5543b9b17ee9d666fcf6ff32fad4ddff3730a5138e90412d85934f4e250a27aa",
+    "docs/guides/fujinet-split-boot.md": "4e2785ebe5fd953de01ccafa6d947c86d5618d63c026f27d1bf57370ef4e0b1c",
+    "docs/guides/bootable-system-atr.md": "130e780f5a977962d8b186b975dfda482773e1840e0df8e0e9bf34d9d94f2fe5",
+    "docs/history/boot-only-fast-sio.md": "c35afb6dbacecef6b270f1b38615ac7fb280905fb2bde4447acbfcd9f0e7d381",
+    "docs/plans/boot-only-fast-sio-implementation-plan.md": "67ecc5e71d4280a30b06fea7b412c91d3c7849145e58cfd25dab10fdf6b73655",
+    "docs/fujinet-split-distribution.txt": "44778297d1f231448651c9ca11d16be5002e99445e980aa32bd7fd1223f7581e",
+    "docs/bootable-atr-distribution.txt": "211883dc994a111992ffd1015d285de4bd1b856661c36ec9eaaf708652df68d8"
+  },
+  "evidence": {
+    "split_save": {
+      "path": "build/boot-fast/final-split/results.json",
+      "sha256": "72a8cfb0239af1182b4a1f441da32ef37c94e7ed70bb0421aa9a8618e96cbbd4",
+      "summary": {
+        "status": "pass",
+        "xex_sha256": "540b2e67f75d991382af48600ef6fe7d5b73f769cfc801b92cf8944ccf85333b",
+        "xex_boot": {
+          "configuration_menu_option_boot": true,
+          "option_held_through_first_init": true,
+          "first_native_init_frame": 703,
+          "rom_disk_boot": true,
+          "memlo": 1792,
+          "memtop": 48159,
+          "of816_frame": 958,
+          "countdown_start_frame": 958,
+          "countdown_frames": 249,
+          "of816_return_frame": 1207,
+          "native_bytes_verified": 1745490,
+          "loader_error": 0,
+          "native_handoff_frame": 7952,
+          "guards": "intact",
+          "firmware_context": "restored"
+        },
+        "persisted": false,
+        "media_before": {
+          "Exec-of816.xex": "4adcc11dd21ee0eb5f08890363b5d14ef20569a81a9feec6984947d6d01017e2",
+          "system.atr": "0bd0a835f48ee8b9f980ddcdc67028e3b1e49d8480aa2f03583f584a83942fae",
+          "work.atr": "2cd66034a144214e78abccd0467e1fd635a51dabe540f1af17a756bb68cd54c5"
+        },
+        "work_after": "664e54ee146f5c2527525db3a1b27b2f4986831eb814aa0f3255501c42656b54",
+        "initial_media_sha256": null,
+        "media_sha256": "0bd0a835f48ee8b9f980ddcdc67028e3b1e49d8480aa2f03583f584a83942fae",
+        "scope": "Extracted OF816 colour desktop: shared-window ownership, persistent background, on-demand launches and orderly EXIT",
+        "transport": {
+          "commands": {
+            "83": 7,
+            "82": 2882,
+            "63": 4,
+            "234": 3,
+            "250": 1,
+            "244": 2,
+            "242": 2,
+            "218": 1,
+            "215": 1,
+            "217": 1,
+            "80": 33
+          },
+          "endpoint_rates": {
+            "19200/19200": 70,
+            "57600/57600": 2865,
+            "19200/57600": 2
+          },
+          "rate_mismatches": 2,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "split_manual_reboot": {
+      "path": "build/boot-fast/final-split/reboot-results.json",
+      "sha256": "163ab9946ac1d6eb65e574a35f5008e134f3a9a8f8db88f4e078f7bfe9c63e6c",
+      "summary": {
+        "status": "pass",
+        "xex_sha256": "540b2e67f75d991382af48600ef6fe7d5b73f769cfc801b92cf8944ccf85333b",
+        "xex_boot": {
+          "configuration_menu_option_boot": true,
+          "option_held_through_first_init": true,
+          "first_native_init_frame": 705,
+          "rom_disk_boot": true,
+          "memlo": 1792,
+          "memtop": 48159,
+          "of816_frame": 960,
+          "manual": {
+            "cancel": {
+              "key": "X",
+              "delay_frames": 0,
+              "held_frames": 2,
+              "seconds_remaining": 5,
+              "cancelled": true,
+              "key_consumed": true,
+              "stays_in_forth": true
+            },
+            "rom_status": 1,
+            "arithmetic": 42,
+            "pause_frames": 100,
+            "pause_vbi_ticks": 100,
+            "source_sha256": "22881f045ae702cc33d193cf563b0d5f28b9ed64598704306b947b83911f9a99",
+            "fixture_sha256": "52eaf04b6789be8f2a3163506743050ee5e38b4fe16fcb615f42d4421f959989",
+            "fixture_scope": "Test-only CODE word calls an emitted bank-zero STAGE probe; production monitor unchanged"
+          },
+          "of816_return_frame": 1635,
+          "native_bytes_verified": 1745490,
+          "loader_error": 0,
+          "native_handoff_frame": 8380,
+          "guards": "intact",
+          "firmware_context": "restored"
+        },
+        "persisted": true,
+        "media_before": {
+          "Exec-of816.xex": "4adcc11dd21ee0eb5f08890363b5d14ef20569a81a9feec6984947d6d01017e2",
+          "system.atr": "0bd0a835f48ee8b9f980ddcdc67028e3b1e49d8480aa2f03583f584a83942fae",
+          "work.atr": "664e54ee146f5c2527525db3a1b27b2f4986831eb814aa0f3255501c42656b54"
+        },
+        "work_after": "664e54ee146f5c2527525db3a1b27b2f4986831eb814aa0f3255501c42656b54",
+        "initial_media_sha256": null,
+        "media_sha256": "0bd0a835f48ee8b9f980ddcdc67028e3b1e49d8480aa2f03583f584a83942fae",
+        "scope": "Extracted OF816 colour desktop: shared-window ownership, persistent background, on-demand launches and orderly EXIT",
+        "transport": {
+          "commands": {
+            "83": 8,
+            "82": 2894,
+            "63": 4,
+            "234": 3,
+            "250": 1,
+            "244": 2,
+            "242": 2,
+            "218": 1,
+            "215": 1,
+            "217": 1
+          },
+          "endpoint_rates": {
+            "19200/19200": 71,
+            "57600/57600": 2844,
+            "19200/57600": 2
+          },
+          "rate_mismatches": 2,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "standard": {
+      "path": "build/boot-fast/final-standard/results.json",
+      "sha256": "41e4e5f18568a1e416d253e2040f58d7c0b2e7899b1157d88ab60a3266579eef",
+      "summary": {
+        "status": "pass",
+        "policy": "standard",
+        "canonical_sha256": "98d4297dec11e706d3cc99eccff25ce2d407bd8b675a508a0e86a2ea1e8fa280",
+        "xex_sha256": "2abf70e49eed71dffb7808e5f41c2dcc55671021e755391b26298a566a0145bb",
+        "boot": {
+          "configuration_menu_option_boot": true,
+          "option_held_through_first_init": true,
+          "first_native_init_frame": 999,
+          "rom_disk_boot": true,
+          "memlo": 1792,
+          "memtop": 48159,
+          "of816_frame": 1729,
+          "countdown_start_frame": 1729,
+          "countdown_frames": 249,
+          "of816_return_frame": 1978,
+          "native_bytes_verified": 1745490,
+          "loader_error": 0,
+          "native_handoff_frame": 20561,
+          "guards": "intact",
+          "firmware_context": "restored"
+        },
+        "scope": "CONFIG and exact native image/context/guard handoff; Tasks/filesystem/EXIT are covered separately",
+        "transport": {
+          "commands": {
+            "83": 6,
+            "82": 2793,
+            "63": 2,
+            "234": 3,
+            "250": 1,
+            "244": 2,
+            "242": 2,
+            "218": 1,
+            "215": 1,
+            "217": 1
+          },
+          "endpoint_rates": {
+            "19200/19200": 2721,
+            "57600/57600": 89,
+            "19200/57600": 2
+          },
+          "rate_mismatches": 2,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "first_auto": {
+      "path": "build/boot-fast/full-auto/results.json",
+      "sha256": "bbe37ed0d84a4701e2e78c68daadfb000ba7f6a6b5c824fe4daa6b7420cc4623",
+      "summary": {
+        "status": "pass",
+        "policy": "auto",
+        "canonical_sha256": "98d4297dec11e706d3cc99eccff25ce2d407bd8b675a508a0e86a2ea1e8fa280",
+        "xex_sha256": "916a0cc93028d527d3861dbd18d1304ab77083c19152c4eaa9e760fee0081082",
+        "boot": {
+          "configuration_menu_option_boot": true,
+          "option_held_through_first_init": true,
+          "rom_disk_boot": true,
+          "memlo": 1792,
+          "memtop": 48159,
+          "countdown_frames": 250,
+          "native_bytes_verified": 1745490,
+          "loader_error": 0,
+          "native_handoff_frame": 7939,
+          "guards": "intact",
+          "firmware_context": "restored"
+        },
+        "scope": "CONFIG and exact native image/context/guard handoff; Tasks/filesystem/EXIT are covered separately",
+        "transport": {
+          "commands": {
+            "83": 7,
+            "82": 2792,
+            "63": 4,
+            "234": 3,
+            "250": 1,
+            "244": 2,
+            "242": 2,
+            "218": 1,
+            "215": 1,
+            "217": 1
+          },
+          "endpoint_rates": {
+            "19200/19200": 68,
+            "57600/57600": 2744,
+            "19200/57600": 2
+          },
+          "rate_mismatches": 2,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "first_standard": {
+      "path": "build/boot-fast/full-standard/results.json",
+      "sha256": "7e843fef8dc8c588d2f7f15cfa059e16c4fa2848757a158ecb0d36d408151c39",
+      "summary": {
+        "status": "pass",
+        "policy": "standard",
+        "canonical_sha256": "98d4297dec11e706d3cc99eccff25ce2d407bd8b675a508a0e86a2ea1e8fa280",
+        "xex_sha256": "070f0acc5fb6e9f0142a164bca1bc195c49deff5ba70270c4dfc236de6b1c4c3",
+        "boot": {
+          "configuration_menu_option_boot": true,
+          "option_held_through_first_init": true,
+          "rom_disk_boot": true,
+          "memlo": 1792,
+          "memtop": 48159,
+          "countdown_frames": 249,
+          "native_bytes_verified": 1745490,
+          "loader_error": 0,
+          "native_handoff_frame": 20553,
+          "guards": "intact",
+          "firmware_context": "restored"
+        },
+        "scope": "CONFIG and exact native image/context/guard handoff; Tasks/filesystem/EXIT are covered separately",
+        "transport": {
+          "commands": {
+            "83": 6,
+            "82": 2792,
+            "63": 2,
+            "234": 3,
+            "250": 1,
+            "244": 2,
+            "242": 2,
+            "218": 1,
+            "215": 1,
+            "217": 1
+          },
+          "endpoint_rates": {
+            "19200/19200": 2720,
+            "57600/57600": 89,
+            "19200/57600": 2
+          },
+          "rate_mismatches": 2,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "atr_save": {
+      "path": "build/boot-fast/atr-demo/atr-fujinet-boot-results.json",
+      "sha256": "c91508810fa6863e3f5174fc2a5b82c1fbd2787ab0493e9793a39adb5ab7097b",
+      "summary": {
+        "status": "pass",
+        "xex_sha256": "737b01b2b58ee3cc42182fee10cdb462aebca8850342b4e717ac7303b7a0abf9",
+        "atr_boot": {
+          "first_stage_rom_boot": true,
+          "memlo": 1792,
+          "firmware_to_of_frame": 591,
+          "countdown_frames": 249,
+          "native_handoff_frame": 7520,
+          "callbacks": 778,
+          "reads": 2615,
+          "source_bytes": 663239,
+          "reader_guards": "intact",
+          "firmware_context_restored": true,
+          "native_bytes_verified": 1745390
+        },
+        "persisted": false,
+        "initial_media_sha256": "aa8bf860a7d7d51170bdf5fc2e7b77beb12b8d2721fad5eeaff748a0cb447606",
+        "media_sha256": "a07051d8c5d1742343454821ff3912f59bcbde0ea8653cde76220cad63b457e9",
+        "boot_code_locator_and_protection": "intact",
+        "scope": "Extracted OF816 colour desktop: shared-window ownership, persistent background, on-demand launches and orderly EXIT",
+        "transport": {
+          "commands": {
+            "83": 5,
+            "82": 2869,
+            "63": 3,
+            "80": 99
+          },
+          "endpoint_rates": {
+            "19200/19200": 40,
+            "57600/57600": 2936
+          },
+          "rate_mismatches": 0,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "atr_reboot": {
+      "path": "build/boot-fast/atr-demo/atr-fujinet-reboot-results.json",
+      "sha256": "53baa1b9521cdf2fd8532317a0382bab4fb1b4a789b855825bec4b7394e018a4",
+      "summary": {
+        "status": "pass",
+        "xex_sha256": "737b01b2b58ee3cc42182fee10cdb462aebca8850342b4e717ac7303b7a0abf9",
+        "atr_boot": {
+          "first_stage_rom_boot": true,
+          "memlo": 1792,
+          "firmware_to_of_frame": 591,
+          "manual": {
+            "key": "X",
+            "delay_frames": 0,
+            "held_frames": 2,
+            "seconds_remaining": 5,
+            "cancelled": true,
+            "key_consumed": true,
+            "stays_in_forth": true
+          },
+          "native_handoff_frame": 7674,
+          "callbacks": 778,
+          "reads": 2615,
+          "source_bytes": 663239,
+          "reader_guards": "intact",
+          "firmware_context_restored": true,
+          "native_bytes_verified": 1745390
+        },
+        "persisted": true,
+        "initial_media_sha256": "a07051d8c5d1742343454821ff3912f59bcbde0ea8653cde76220cad63b457e9",
+        "media_sha256": "a07051d8c5d1742343454821ff3912f59bcbde0ea8653cde76220cad63b457e9",
+        "boot_code_locator_and_protection": "intact",
+        "scope": "Extracted OF816 colour desktop: shared-window ownership, persistent background, on-demand launches and orderly EXIT",
+        "transport": {
+          "commands": {
+            "83": 5,
+            "82": 2839,
+            "63": 3
+          },
+          "endpoint_rates": {
+            "19200/19200": 40,
+            "57600/57600": 2807
+          },
+          "rate_mismatches": 0,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "reader": {
+      "path": "build/boot-fast/reader-final-all/results.json",
+      "sha256": "d445f66ef0d192bf0d54dac5ca25d3c1e0f04faf06abdc15f1a4b751a15d96b8",
+      "summary": {
+        "status": "pass",
+        "cases": [
+          {
+            "status": "pass",
+            "case": "fragmented-large",
+            "frame": 3879,
+            "callbacks": 300
+          },
+          {
+            "status": "pass",
+            "case": "header",
+            "frame": 352,
+            "callbacks": 0
+          },
+          {
+            "status": "pass",
+            "case": "missing",
+            "frame": 372,
+            "callbacks": 0
+          },
+          {
+            "status": "pass",
+            "case": "truncated",
+            "frame": 395,
+            "callbacks": 0
+          },
+          {
+            "status": "pass",
+            "case": "zero-sector",
+            "frame": 386,
+            "callbacks": 0
+          },
+          {
+            "status": "pass",
+            "case": "map-cycle",
+            "frame": 1790,
+            "callbacks": 120
+          },
+          {
+            "status": "pass",
+            "case": "reader-overwrite",
+            "frame": 395,
+            "callbacks": 0
+          },
+          {
+            "status": "pass",
+            "case": "first-guard",
+            "frame": 346,
+            "callbacks": 0
+          },
+          {
+            "status": "pass",
+            "case": "break",
+            "frame": 346,
+            "callbacks": 0
+          },
+          {
+            "status": "pass",
+            "case": "read-failure",
+            "frame": 350,
+            "callbacks": 0
+          }
+        ]
+      }
+    },
+    "errors": {
+      "path": "build/boot-fast/errors-final/results.json",
+      "sha256": "58a33ea954215649dd017f3466c7134d7dd14c88d2e9ffaac868f7d93ead638b",
+      "summary": {
+        "status": "pass",
+        "cases": [
+          {
+            "status": "pass",
+            "case": "disabled",
+            "cause": 0,
+            "frame": 575,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 9,
+                "82": 79,
+                "63": 3
+              },
+              "endpoint_rates": {
+                "19200/19200": 91
+              },
+              "rate_mismatches": 0,
+              "faults": [],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "unsupported",
+            "cause": 0,
+            "frame": 1173,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 15,
+                "82": 79,
+                "63": 3
+              },
+              "endpoint_rates": {
+                "19200/19200": 91,
+                "19200/38400": 6
+              },
+              "rate_mismatches": 6,
+              "faults": [],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "query-lost",
+            "cause": 0,
+            "frame": 870,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 12,
+                "82": 79,
+                "63": 5
+              },
+              "endpoint_rates": {
+                "19200/19200": 89,
+                "19200/57600": 2,
+                "57600/57600": 5
+              },
+              "rate_mismatches": 2,
+              "faults": [
+                {
+                  "fault": "query-lost",
+                  "command": "313f7301e4",
+                  "queries": 1
+                }
+              ],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "query-checksum",
+            "cause": 0,
+            "frame": 769,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 12,
+                "82": 79,
+                "63": 5
+              },
+              "endpoint_rates": {
+                "19200/19200": 89,
+                "19200/57600": 2,
+                "57600/57600": 5
+              },
+              "rate_mismatches": 2,
+              "faults": [
+                {
+                  "fault": "query-checksum",
+                  "command": "313f7301e4",
+                  "queries": 1
+                }
+              ],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "read-checksum",
+            "cause": 143,
+            "frame": 298,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 3,
+                "82": 42,
+                "63": 1
+              },
+              "endpoint_rates": {
+                "19200/19200": 44,
+                "57600/57600": 2
+              },
+              "rate_mismatches": 0,
+              "faults": [
+                {
+                  "fault": "read-checksum",
+                  "command": "31527401f8",
+                  "queries": 1
+                }
+              ],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "read-error",
+            "cause": 144,
+            "frame": 298,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 3,
+                "82": 42,
+                "63": 1
+              },
+              "endpoint_rates": {
+                "19200/19200": 44,
+                "57600/57600": 2
+              },
+              "rate_mismatches": 0,
+              "faults": [
+                {
+                  "fault": "read-error",
+                  "command": "31527401f8",
+                  "queries": 1
+                }
+              ],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "terminal-error",
+            "cause": 144,
+            "frame": 395,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 3,
+                "82": 42,
+                "63": 1
+              },
+              "endpoint_rates": {
+                "19200/19200": 44,
+                "57600/57600": 2
+              },
+              "rate_mismatches": 0,
+              "faults": [
+                {
+                  "fault": "terminal-error",
+                  "command": "31527401f8",
+                  "queries": 1
+                }
+              ],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "nak",
+            "cause": 139,
+            "frame": 296,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 3,
+                "82": 42,
+                "63": 1
+              },
+              "endpoint_rates": {
+                "19200/19200": 44,
+                "57600/57600": 2
+              },
+              "rate_mismatches": 0,
+              "faults": [
+                {
+                  "fault": "nak",
+                  "command": "31527401f8",
+                  "queries": 1
+                }
+              ],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "disconnect",
+            "cause": 138,
+            "frame": 395,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 3,
+                "82": 42,
+                "63": 1
+              },
+              "endpoint_rates": {
+                "19200/19200": 44,
+                "57600/57600": 2
+              },
+              "rate_mismatches": 0,
+              "faults": [
+                {
+                  "fault": "disconnect",
+                  "command": "31527401f8",
+                  "queries": 1
+                }
+              ],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "bounds",
+            "cause": 201,
+            "frame": 265,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 1,
+                "82": 37
+              },
+              "endpoint_rates": {
+                "19200/19200": 38
+              },
+              "rate_mismatches": 0,
+              "faults": [],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "break",
+            "cause": 200,
+            "frame": 371,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 3,
+                "82": 71,
+                "63": 1
+              },
+              "endpoint_rates": {
+                "19200/19200": 44,
+                "57600/57600": 31
+              },
+              "rate_mismatches": 0,
+              "faults": [],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "source-changed",
+            "cause": 205,
+            "frame": 396,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 5,
+                "82": 75,
+                "63": 2
+              },
+              "endpoint_rates": {
+                "19200/19200": 49,
+                "57600/57600": 33
+              },
+              "rate_mismatches": 0,
+              "faults": [],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "native-incompatible",
+            "cause": 204,
+            "frame": 576,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 10,
+                "82": 79,
+                "63": 4
+              },
+              "endpoint_rates": {
+                "19200/19200": 93
+              },
+              "rate_mismatches": 0,
+              "faults": [],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "metadata",
+            "cause": 202,
+            "frame": 265,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 1,
+                "82": 37
+              },
+              "endpoint_rates": {
+                "19200/19200": 38
+              },
+              "rate_mismatches": 0,
+              "faults": [],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "truncated",
+            "cause": 196,
+            "frame": 371,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 3,
+                "82": 71,
+                "63": 1
+              },
+              "endpoint_rates": {
+                "19200/19200": 44,
+                "57600/57600": 31
+              },
+              "rate_mismatches": 0,
+              "faults": [],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "partial-data",
+            "cause": 138,
+            "frame": 395,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 3,
+                "82": 42,
+                "63": 1
+              },
+              "endpoint_rates": {
+                "19200/19200": 44,
+                "57600/57600": 2
+              },
+              "rate_mismatches": 0,
+              "faults": [
+                {
+                  "fault": "partial-data",
+                  "command": "31527401f8",
+                  "queries": 1
+                }
+              ],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "chain-self",
+            "cause": 194,
+            "frame": 298,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 3,
+                "82": 42,
+                "63": 1
+              },
+              "endpoint_rates": {
+                "19200/19200": 44,
+                "57600/57600": 2
+              },
+              "rate_mismatches": 0,
+              "faults": [
+                {
+                  "fault": "chain-self",
+                  "command": "31527401f8",
+                  "queries": 1
+                }
+              ],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "chain-zero",
+            "cause": 196,
+            "frame": 298,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 3,
+                "82": 42,
+                "63": 1
+              },
+              "endpoint_rates": {
+                "19200/19200": 44,
+                "57600/57600": 2
+              },
+              "rate_mismatches": 0,
+              "faults": [
+                {
+                  "fault": "chain-zero",
+                  "command": "31527401f8",
+                  "queries": 1
+                }
+              ],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          },
+          {
+            "status": "pass",
+            "case": "chain-count",
+            "cause": 194,
+            "frame": 298,
+            "guards": "intact",
+            "transport": {
+              "commands": {
+                "83": 3,
+                "82": 42,
+                "63": 1
+              },
+              "endpoint_rates": {
+                "19200/19200": 44,
+                "57600/57600": 2
+              },
+              "rate_mismatches": 0,
+              "faults": [
+                {
+                  "fault": "chain-count",
+                  "command": "31527401f8",
+                  "queries": 1
+                }
+              ],
+              "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+            }
+          }
+        ]
+      }
+    },
+    "direct": {
+      "path": "build/boot-fast/direct-final/results.json",
+      "sha256": "62228980936d0bb5441b892dc2f0e19c81ac9daaa088d42f4387c930458d3073",
+      "summary": {
+        "status": "pass",
+        "cases": [
+          {
+            "status": "pass",
+            "case": "absent",
+            "frame": 110,
+            "callbacks": 2
+          },
+          {
+            "status": "pass",
+            "case": "unrelated",
+            "frame": 52,
+            "callbacks": 2
+          }
+        ]
+      }
+    },
+    "post_monitor_error": {
+      "path": "build/boot-fast/post-monitor-error/results.json",
+      "sha256": "0027b03a34ce5cb6ffe8a1550ceb619f6babbfe4239866b42751e05ee07390df",
+      "summary": {
+        "status": "pass",
+        "policy": "auto",
+        "canonical_sha256": "98d4297dec11e706d3cc99eccff25ce2d407bd8b675a508a0e86a2ea1e8fa280",
+        "xex_sha256": "916a0cc93028d527d3861dbd18d1304ab77083c19152c4eaa9e760fee0081082",
+        "boot": {
+          "configuration_menu_option_boot": true,
+          "option_held_through_first_init": true,
+          "rom_disk_boot": true,
+          "memlo": 1792,
+          "memtop": 48159,
+          "countdown_frames": 250,
+          "post_monitor_failure": 143,
+          "native_entered": false
+        },
+        "scope": "CONFIG and exact native image/context/guard handoff; Tasks/filesystem/EXIT are covered separately",
+        "transport": {
+          "commands": {
+            "83": 7,
+            "82": 303,
+            "63": 4,
+            "234": 3,
+            "250": 1,
+            "244": 2,
+            "242": 2,
+            "218": 1,
+            "215": 1,
+            "217": 1
+          },
+          "endpoint_rates": {
+            "19200/19200": 68,
+            "57600/57600": 255,
+            "19200/57600": 2
+          },
+          "rate_mismatches": 2,
+          "faults": [
+            {
+              "fault": "read-checksum",
+              "command": "315216029b",
+              "queries": 4
+            }
+          ],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "manual_forth": {
+      "path": "build/boot-fast/manual-complete/results.json",
+      "sha256": "a0abe186d26e817fd9349098fc789898c64407fad2c7af95f2549f8bfea38c56",
+      "summary": {
+        "status": "pass",
+        "policy": "auto",
+        "canonical_sha256": "98d4297dec11e706d3cc99eccff25ce2d407bd8b675a508a0e86a2ea1e8fa280",
+        "xex_sha256": "4adcc11dd21ee0eb5f08890363b5d14ef20569a81a9feec6984947d6d01017e2",
+        "boot": {
+          "configuration_menu_option_boot": true,
+          "option_held_through_first_init": true,
+          "first_native_init_frame": 706,
+          "rom_disk_boot": true,
+          "memlo": 1792,
+          "memtop": 48159,
+          "of816_frame": 961,
+          "manual": {
+            "cancel": {
+              "key": "X",
+              "delay_frames": 0,
+              "held_frames": 2,
+              "seconds_remaining": 5,
+              "cancelled": true,
+              "key_consumed": true,
+              "stays_in_forth": true
+            },
+            "rom_status": 1,
+            "arithmetic": 42,
+            "pause_frames": 100,
+            "pause_vbi_ticks": 100,
+            "source_sha256": "22881f045ae702cc33d193cf563b0d5f28b9ed64598704306b947b83911f9a99",
+            "fixture_sha256": "52eaf04b6789be8f2a3163506743050ee5e38b4fe16fcb615f42d4421f959989",
+            "fixture_scope": "Test-only CODE word calls an emitted bank-zero STAGE probe; production monitor unchanged"
+          },
+          "of816_return_frame": 1636,
+          "native_bytes_verified": 1745490,
+          "loader_error": 0,
+          "native_handoff_frame": 8381,
+          "guards": "intact",
+          "firmware_context": "restored"
+        },
+        "scope": "CONFIG and exact native image/context/guard handoff; Tasks/filesystem/EXIT are covered separately",
+        "transport": {
+          "commands": {
+            "83": 8,
+            "82": 2793,
+            "63": 4,
+            "234": 3,
+            "250": 1,
+            "244": 2,
+            "242": 2,
+            "218": 1,
+            "215": 1,
+            "217": 1
+          },
+          "endpoint_rates": {
+            "19200/19200": 71,
+            "57600/57600": 2743,
+            "19200/57600": 2
+          },
+          "rate_mismatches": 2,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "cohort_1_standard": {
+      "path": "build/boot-fast/cohort-1-standard/results.json",
+      "sha256": "276ed21c2899f6408f7a492b2e090dfd3000c111814c4ffb077518081d672501",
+      "summary": {
+        "status": "pass",
+        "frame": 1501,
+        "pages": 128,
+        "callbacks": 128,
+        "nmi_point": 0,
+        "guards": "intact",
+        "policy": "standard",
+        "canonical_sha256": "e5bee58b7f8c5dd80da338884f650b3f977d426d1220e5596489980488d1853c",
+        "xex_sha256": "72d229d84f77c5bc6d1e56505ec8fcab725ec713cedace86b959267f6dc74697",
+        "transport": {
+          "commands": {
+            "83": 2,
+            "82": 207
+          },
+          "endpoint_rates": {
+            "19200/19200": 209
+          },
+          "rate_mismatches": 0,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "cohort_1_auto": {
+      "path": "build/boot-fast/cohort-1-auto/results.json",
+      "sha256": "5f493a6bf38077814406c81137996fcce05aea7d5c722d7afaf58266d3d19c80",
+      "summary": {
+        "status": "pass",
+        "frame": 714,
+        "pages": 128,
+        "callbacks": 128,
+        "nmi_point": 0,
+        "guards": "intact",
+        "policy": "auto",
+        "canonical_sha256": "e5bee58b7f8c5dd80da338884f650b3f977d426d1220e5596489980488d1853c",
+        "xex_sha256": "e200b2da708a5b7a103d48517bb4e2de50881ec4f80eac94adfcb13dc6cc068b",
+        "transport": {
+          "commands": {
+            "83": 4,
+            "82": 207,
+            "63": 2
+          },
+          "endpoint_rates": {
+            "19200/19200": 45,
+            "57600/57600": 168
+          },
+          "rate_mismatches": 0,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "cohort_2_standard": {
+      "path": "build/boot-fast/cohort-2-standard/results.json",
+      "sha256": "276ed21c2899f6408f7a492b2e090dfd3000c111814c4ffb077518081d672501",
+      "summary": {
+        "status": "pass",
+        "frame": 1501,
+        "pages": 128,
+        "callbacks": 128,
+        "nmi_point": 0,
+        "guards": "intact",
+        "policy": "standard",
+        "canonical_sha256": "e5bee58b7f8c5dd80da338884f650b3f977d426d1220e5596489980488d1853c",
+        "xex_sha256": "72d229d84f77c5bc6d1e56505ec8fcab725ec713cedace86b959267f6dc74697",
+        "transport": {
+          "commands": {
+            "83": 2,
+            "82": 207
+          },
+          "endpoint_rates": {
+            "19200/19200": 209
+          },
+          "rate_mismatches": 0,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "cohort_2_auto": {
+      "path": "build/boot-fast/cohort-2-auto/results.json",
+      "sha256": "5f493a6bf38077814406c81137996fcce05aea7d5c722d7afaf58266d3d19c80",
+      "summary": {
+        "status": "pass",
+        "frame": 714,
+        "pages": 128,
+        "callbacks": 128,
+        "nmi_point": 0,
+        "guards": "intact",
+        "policy": "auto",
+        "canonical_sha256": "e5bee58b7f8c5dd80da338884f650b3f977d426d1220e5596489980488d1853c",
+        "xex_sha256": "e200b2da708a5b7a103d48517bb4e2de50881ec4f80eac94adfcb13dc6cc068b",
+        "transport": {
+          "commands": {
+            "83": 4,
+            "82": 207,
+            "63": 2
+          },
+          "endpoint_rates": {
+            "19200/19200": 45,
+            "57600/57600": 168
+          },
+          "rate_mismatches": 0,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "nmi_1": {
+      "path": "build/boot-fast/nmi-1-delivery/results.json",
+      "sha256": "5440d6a8250d99a2f001b8dcaebd4a0fa0d907dc5bd015b50dd4615328ccd68f",
+      "summary": {
+        "status": "pass",
+        "frame": 475,
+        "pages": 4,
+        "callbacks": 4,
+        "nmi_point": 1,
+        "guards": "intact",
+        "policy": "auto",
+        "canonical_sha256": "a4e3da8ed58f1b98477c95358f42a10e58292438bd0d7f999188f4dcb9ff2f8f",
+        "xex_sha256": "f6432a7846c5e847e35b7fbaf06acb551ab869844a1f0d7866b8f08a39f1a89d",
+        "transport": {
+          "commands": {
+            "83": 16,
+            "82": 87,
+            "63": 10
+          },
+          "endpoint_rates": {
+            "19200/19200": 69,
+            "57600/57600": 44
+          },
+          "rate_mismatches": 0,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "nmi_2": {
+      "path": "build/boot-fast/nmi-2-delivery/results.json",
+      "sha256": "189c4348d0c29b4009b49576d0d2f80a090b614a53bfe445342ce0915bf6f393",
+      "summary": {
+        "status": "pass",
+        "frame": 475,
+        "pages": 4,
+        "callbacks": 4,
+        "nmi_point": 2,
+        "guards": "intact",
+        "policy": "auto",
+        "canonical_sha256": "a4e3da8ed58f1b98477c95358f42a10e58292438bd0d7f999188f4dcb9ff2f8f",
+        "xex_sha256": "934da26475e266b8f72f19a15fe4d974100c8e85b2edd6083a2f5334d025189f",
+        "transport": {
+          "commands": {
+            "83": 16,
+            "82": 87,
+            "63": 10
+          },
+          "endpoint_rates": {
+            "19200/19200": 69,
+            "57600/57600": 44
+          },
+          "rate_mismatches": 0,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "nmi_3": {
+      "path": "build/boot-fast/nmi-3-delivery/results.json",
+      "sha256": "ecb172cafc154267f396cf79227d081c3bcdd590c21373c045da1fe36be01cc8",
+      "summary": {
+        "status": "pass",
+        "frame": 476,
+        "pages": 4,
+        "callbacks": 4,
+        "nmi_point": 3,
+        "guards": "intact",
+        "policy": "auto",
+        "canonical_sha256": "a4e3da8ed58f1b98477c95358f42a10e58292438bd0d7f999188f4dcb9ff2f8f",
+        "xex_sha256": "1d7ca67339c46a465ab0954ac7137a1436acf3601494c30feba378988b9740aa",
+        "transport": {
+          "commands": {
+            "83": 16,
+            "82": 87,
+            "63": 10
+          },
+          "endpoint_rates": {
+            "19200/19200": 69,
+            "57600/57600": 44
+          },
+          "rate_mismatches": 0,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    },
+    "nmi_4": {
+      "path": "build/boot-fast/nmi-4-delivery/results.json",
+      "sha256": "dd55218af4db79b9ef13e9a666042592fe0e5fb02431a142a3be60566ff4d05c",
+      "summary": {
+        "status": "pass",
+        "frame": 476,
+        "pages": 4,
+        "callbacks": 4,
+        "nmi_point": 4,
+        "guards": "intact",
+        "policy": "auto",
+        "canonical_sha256": "a4e3da8ed58f1b98477c95358f42a10e58292438bd0d7f999188f4dcb9ff2f8f",
+        "xex_sha256": "8246e09ba1966783eae92bacc646e0a713848d47768e2b505486302a12916b60",
+        "transport": {
+          "commands": {
+            "83": 16,
+            "82": 87,
+            "63": 10
+          },
+          "endpoint_rates": {
+            "19200/19200": 69,
+            "57600/57600": 44
+          },
+          "rate_mismatches": 0,
+          "faults": [],
+          "scope": "Real FujiNet-PC/NetSIO media operations through raw-SIO custom-device relay; no wall-clock or physical UART qualification"
+        }
+      }
+    }
+  },
+  "host": {
+    "tests": 567,
+    "log_sha256": "560914869b5c22e94a369cb237a6d203b8a5b1cb154985925437159c0bf41a9e"
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "override": false,
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "optimize": true
+  },
+  "canonical": {
+    "bytes": 663395,
+    "sha256": "98d4297dec11e706d3cc99eccff25ce2d407bd8b675a508a0e86a2ea1e8fa280"
+  },
+  "reader": {
+    "format": "exec816-boot-sio-v1",
+    "policy": "auto",
+    "canonical_sha256": "98d4297dec11e706d3cc99eccff25ce2d407bd8b675a508a0e86a2ea1e8fa280",
+    "xex_sha256": "4adcc11dd21ee0eb5f08890363b5d14ef20569a81a9feec6984947d6d01017e2",
+    "canonical_bytes": 663395,
+    "prefix_bytes": 8217,
+    "descriptor": "4253493101010108192000631f0a98d4297dec11e706d3cc99eccff25ce2160200552c476fcb75302c",
+    "descriptor_offset": 534,
+    "labels": {
+      "bo_cleanup": 18234,
+      "bo_clock": 18586,
+      "bo_command": 18592,
+      "bo_complete": 18393,
+      "bo_divisor": 18577,
+      "bo_done": 18579,
+      "bo_error": 18578,
+      "bo_left": 18582,
+      "bo_new_vectors": 18565,
+      "bo_phase": 18580,
+      "bo_ready": 18585,
+      "bo_rx": 18405,
+      "bo_store": 18485,
+      "bo_sum": 18581,
+      "bo_transfer": 17949,
+      "bo_tx": 18386,
+      "bo_txindex": 18598,
+      "bo_value": 18584,
+      "bo_waittype": 18597,
+      "boot_fast_fail": 18851,
+      "boot_index_seen": 18850,
+      "boot_query_done": 18621,
+      "boot_query_error": 18852,
+      "boot_reply": 18846,
+      "file_offset": 19154,
+      "reader_callback": 17447,
+      "reader_callbacks": 19150,
+      "reader_end": 19712,
+      "reader_error": 19146,
+      "reader_failed": 18905,
+      "reader_guard_high": 24560,
+      "reader_guard_low": 16384,
+      "reader_park": 19004,
+      "reader_phase": 19147,
+      "reader_reads": 19152,
+      "reader_run": 17473,
+      "reader_sector": 19148,
+      "reader_start": 16400,
+      "take_bad": 16840,
+      "take_bounds": 16836,
+      "take_descriptor": 16899,
+      "take_return": 16850,
+      "take_selected": 16886,
+      "xex_start": 17167
+    },
+    "used_bytes": 3344,
+    "reserved_bytes": 8192,
+    "memory": {
+      "native_loading_union": 40336,
+      "disk_loading_union": 48528,
+      "loading_union_delta": 8192,
+      "first_stage_union_delta": 0,
+      "runtime_union_delta": 0,
+      "reader_claim_bytes": 8192,
+      "first_stage_claim_bytes": 384,
+      "borrowed_public_stacks": [
+        {
+          "slot": 3,
+          "bytes": 512,
+          "runtime_delta": 0
+        },
+        {
+          "slot": 4,
+          "bytes": 1344,
+          "runtime_delta": 0
+        },
+        {
+          "slot": 5,
+          "bytes": 1344,
+          "runtime_delta": 0
+        },
+        {
+          "slot": 6,
+          "bytes": 2592,
+          "runtime_delta": 0
+        },
+        {
+          "slot": 7,
+          "bytes": 2400,
+          "runtime_delta": 0
+        }
+      ],
+      "native_budget": {
+        "fixed_runtime": 11072,
+        "idle": 800,
+        "loading_excluding_os": 20368,
+        "loading_including_os": 40336,
+        "public": [
+          1824,
+          1600,
+          1600,
+          1600,
+          1600,
+          1600,
+          2848,
+          2848,
+          1600,
+          1600,
+          1600,
+          2848
+        ],
+        "runtime_excluding_os": 35040,
+        "runtime_including_os": 55008
+      }
+    },
+    "inputs": {
+      "abi/boot-sio.json": "928ddd1b62654e086f70adff89db77d7a5855ad5d6567bd0cdbf6d58a1191936",
+      "tools/build_boot_fast.py": "d098afe7651f9aa7b91056a34f3cd47ff92a8398afbda23ec60a9dd76a495908",
+      "tools/build_bootable_atr.py": "c88c65205bf9199dce93c1f6f34d94363777fa330143a170ce55b5c87b2097cf",
+      "platform/altirraos/disk-boot-reader.s": "6b3aa4ea2011458eb569df74866e679c30c1a977acec2ec3b5f00774291aa02b",
+      "platform/altirraos/boot-xex.inc": "384f57aafe1b8b909027129054b7d00c2d6ac7c3eccd8daf1d857194b7fa3951",
+      "platform/altirraos/boot-takeover.inc": "436719aef2bbfc6db1423c86a43973f807e6a1e9db0de5bfc7f48b7a7eb60f04",
+      "platform/altirraos/boot-sio.inc": "ca753f74938db95bb33362b19408d4f537ef65b142f23cfef1b2bc16dca47f9b",
+      "platform/altirraos/boot-sio-policy.inc": "534b329b766ae57f3d3efb4d6e1853453c74ebd53bd8bac6c07d3bad7951dd11"
+    }
+  },
+  "rom": {
+    "name": "altirraos-816.rom",
+    "bytes": 16384,
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "license": "ALTIRRAOS-LICENSE.txt",
+    "license_sha256": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6"
+  },
+  "emulator_pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 1,
+      "internal_port": 0,
+      "map": "Mouse -> ST Mouse (port 1)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "firmware": {
+    "binary_sha256": "d1a2173bf116f75021eedbd2261fde2f3adeeea9a4bac7537e792f311743bef3",
+    "revision": "808feb26fa3cea91f1bc8a6254cfc9eab3c90580",
+    "configuration": "[General]\ndevicename=Exec816-test\nhsioindex=8\nconfigenabled=1\nstatus_wait_enabled=0\n[WiFi]\nenabled=1\n[Host1]\ntype=SD\nname=SD\n[Mount1]\nhostslot=1\npath=/Exec-of816.xex\nmode=r\n[Mount2]\nhostslot=1\npath=/system.atr\nmode=r\n[Mount8]\nhostslot=1\npath=/work.atr\nmode=w\n[BOIP]\nenabled=1\nhost=127.0.0.1\nport=54917\n",
+    "protocol_sources": {
+      "lib/bus/sio/sio.cpp": "3dfe33aa38175c202bf69fd15813835db5e6f09abdca95f24c221cba27a394fe",
+      "lib/bus/sio/NetSIO.cpp": "666471bf157e2d26ef6d27b8dd1e1ca5b0b8226357fd8ab85aeded7c3b342d39",
+      "lib/device/sio/disk.cpp": "4ae5a1c206a49a46d18dbdfe7778af7f948780bda2d47708e15f5c36beb7e874"
+    }
+  },
+  "rom_protocol_sources": {
+    "interrupt.s": "283a5f83205888ce803cefc0f3c1b411629762ded879da147e260db440448f86",
+    "interrupt816.s": "e21affeb94ee22b8f6b68f0f9aa22f1f933b1325cecce7d1e23b998cabc3cd7f",
+    "syscall816.s": "dd68fa52433c3723ecc7d8bdec0c312565787f94c8ddcfb139b71ce6d82c9536",
+    "sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+  },
+  "performance": {
+    "standard_frames": 20561,
+    "auto_frames": 7952,
+    "full_boot_ratio": 2.585638832997988,
+    "limitations": "Guest PAL time includes CONFIG, prefix, negotiation, OF816 and interleaved transfer/decode. Host waits pause emulation; no physical UART claim."
+  },
+  "artifacts": {
+    "build/boot-fast/demo/exec816-demo.zip": {
+      "bytes": 815554,
+      "sha256": "a3a0b16c2b05cd6449409b34a9e8e8037625d946df9896de17993937afcd0334"
+    },
+    "build/boot-fast/demo/of816/Exec-of816.xex": {
+      "bytes": 671612,
+      "sha256": "4adcc11dd21ee0eb5f08890363b5d14ef20569a81a9feec6984947d6d01017e2"
+    },
+    "build/boot-fast/demo/system.atr": {
+      "bytes": 736912,
+      "sha256": "0bd0a835f48ee8b9f980ddcdc67028e3b1e49d8480aa2f03583f584a83942fae"
+    },
+    "build/boot-fast/atr-demo/exec816-demo.zip": {
+      "bytes": 1371834,
+      "sha256": "77d15669fc69c61aa08ffd30d2c4d3517040b7d7c1f14e3f45703a63b196a0d3"
+    },
+    "build/boot-fast/atr-demo/of816/exec816.atr": {
+      "bytes": 2096784,
+      "sha256": "aa8bf860a7d7d51170bdf5fc2e7b77beb12b8d2721fad5eeaff748a0cb447606"
+    }
+  },
+  "physical_uart_qualified": false,
+  "release_matrix_run": false
+}

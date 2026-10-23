@@ -67,7 +67,8 @@ BYTE FUNC DesktopPart(LAYERTYPES.Rect POINTER bounds BYTE text
         FI
 
         okay=ClippedText(CARD(bounds.left)+(desktopGlyph LSH 3),CARD(bounds.top),
-            source+SIZE(desktopGlyph),stop-desktopGlyph,foreground,background,@clip)
+            source+SIZE(desktopGlyph),stop-desktopGlyph,foreground OR encoding,
+            background,@clip)
         IF okay=0 THEN
           EXIT
         FI

@@ -7,6 +7,8 @@ Start with the [GEM desktop guide](gem-desktop-distribution.txt) to run Exec816,
 | --- | --- |
 | Install the ZIP and use its desktop | [Installation](../README.md#installation), [GEM desktop](gem-desktop-distribution.txt), [shell](guides/shell.md) |
 | Choose the system drive or cache size | [OF816 boot monitor](guides/boot-monitor.md) |
+| Boot and save on a single FujiNet disk | [Bootable system ATR](guides/bootable-system-atr.md) |
+| Boot an XEX with separate FujiNet disks | [Split-disk FujiNet boot](guides/fujinet-split-boot.md) |
 | Write a disk command | [Command guide](guides/commands.md) |
 | Try Tasks and message passing | [Task examples](guides/tasks.md), [message example](guides/messages.md) |
 | Understand which code runs in which Task | [Runtime model](architecture/runtime.md) |

@@ -15,6 +15,7 @@ def files():
     a+=f'PUBLIC CONST PACKET_BYTES={ABI["packet_bytes"]}\n'
     a+='PUBLIC TYPE Binding=[ADDRESS entry BYTE POINTER packet BYTE enabled,failed]\n'
     a+=''.join(f'PUBLIC CONST OP_{k}={v}\n' for k,v in ops.items())
+    a+=''.join(f'PUBLIC CONST FOREGROUND_{k}={v}\n' for k,v in ABI['foreground_flags'].items())
     layout='#include <hardware/console-bitmap.h>\n__attribute__((section("exec_layout"))) const unsigned short __exec_layout[]={\nsizeof(struct ConsoleBitmapPacket),\n'
     layout+=''.join(f'offsetof(struct ConsoleBitmapPacket,{f}),\n' for f in ABI['fields'])+'};\n'
     return {ROOT/'c/include/hardware/console-bitmap.h':c,ROOT/'lib/console/console-bitmap-types.inc':a,ROOT/'c/calypsi/console-bitmap-layout.c':layout}

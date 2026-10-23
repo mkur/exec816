@@ -278,6 +278,16 @@ resumes. It retires its keyboard, vectors and borrowed native storage at that
 return. The manifest, staging and loader remain live until their existing
 startup boundaries; returning from the monitor does not retire them early.
 
+The [boot-only SIO reader](boot-loading.md#boot-only-sio-reader) reserves the
+complete `$4000–$5FFF` arena during split-XEX and ATR loading. It borrows idle
+Task stacks, including intersecting guards and spare capacity, and retires
+before those stacks are initialized. This adds 8,192 loading-phase bytes to
+the split profile and zero beyond the ATR's existing reader reservation;
+fixed/root/kernel/per-public-Task/idle runtime growth is zero. Generated media
+reports include the full union and per-pool intersections. ROM VBI remains
+active while its serial-vector transitions exclude serial IRQs and deferred
+OS I/O; no boot handler survives native handoff.
+
 The reserved aperture supports the optional [display adapter](display.md). The
 [aperture development record](../development/vbxe-aperture.json) covers the
 unmapped RAM reservation, loading, Task execution and OF816 handoff; mapped

@@ -18,6 +18,10 @@ USE SDXPRINT
 USE SDXFILES
 USE CONSOLETYPES
 USE O65TYPES
+USE FBSOURCE
+USE FBRESULT
+USE FBSESSION
+USE FBINTERPABI
 
 ; Hidden B is preserved; the 6502 integer result is the low A/X pair.
 PROC SetWord(BYTE POINTER frame CARD value)
@@ -165,18 +169,10 @@ BYTE FUNC Argument(FBSTATE.Session POINTER state BYTE POINTER frame)
 
 RETURN(1)
 
-PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
-  FBSTATE.Session POINTER state
-  BYTE POINTER frame
-  CARD event,value
-  BYTE error
-  LONGINT result,cause
-  LONGCARD random
-  BYTE ARRAY pending(2)
-  CARD ARRAY geometry(2)
-  BYTE mode
+; Restart replaces guest memory inside the same native Process and bank.
+PROC Initialize(PROGRAMIMAGE.Image POINTER image FBSTATE.Session POINTER state)
+  CARD value
 
-  state=FBSTATE.Session POINTER(image.extension)
   A816MEMORY.Clear(state.guest.bank,65536)
   ; The on-machine writer owns a mutable copy of its executable header too.
   A816MEMORY.Move(state.guest.bank+FBABI.LOAD-FBABI.HEADER_BYTES,
@@ -196,11 +192,56 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   SDXSTATE.Word(state.guest.bank,FBABI.MEMTOP,FBABI.LIMIT)
   SDXSTATE.Word(state.guest.bank,FBABI.MEMLO,
       CARD(image.dataBytes)+FBABI.LOAD-FBABI.HEADER_BYTES)
+  state.random=$6d2b79f5
+
+RETURN
+
+; Close retained native resources only on explicit reset or final session exit.
+LONGINT FUNC Cleanup(FBSTATE.Session POINTER state)
+  LONGINT cause
+
+  cause=0
+  IF SDXFILES.CloseAll(@state.guest)<>0 THEN
+    cause=state.guest.nativeError
+  FI
+  IF state.clock<>NULL THEN
+    IF state.clock.tc_Request.io_Device<>NULL THEN
+      EXEC.CloseDevice(@state.clock.tc_Request)
+    FI
+    EXEC.DeleteIORequest(@state.clock.tc_Request)
+    state.clock=NULL
+  FI
+  IF state.clockPort<>NULL THEN
+    EXEC.DeleteMsgPort(state.clockPort)
+    state.clockPort=NULL
+  FI
+
+RETURN(cause)
+
+LONGINT FUNC Invocation(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
+  FBSTATE.Session POINTER state
+  BYTE POINTER frame
+  CARD event,value
+  BYTE error
+  LONGINT result,cause
+  LONGCARD random
+  BYTE ARRAY pending(2)
+  CARD ARRAY geometry(2)
+  BYTE mode
+
+  state=FBSTATE.Session POINTER(image.extension)
+  IF state.interpreter=NULL THEN
+    Initialize(image,state)
+  ELSEIF state.interpreter.channel=NULL THEN
+    Initialize(image,state)
+  ELSE
+    SDXSTATE.Enter(@state.guest)
+  FI
   state.arguments=arguments
   state.diagnostic=0
   state.diagnosticJob=0
-  state.random=$6d2b79f5
   state.guest.nativeError=0
+  FBSOURCE.Begin(state)
   SDXPRINT.Begin(@state.guest)
   result=0
   cause=0
@@ -232,6 +273,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
     FI
     event=SDXRUNTIME.Run(state.guest.slot)
     SDXSTATE.Guards()
+    FBSESSION.Checkpoint(state)
     frame=SDXSTATE.GetFrame(@state.guest)
     IF DOS.BreakPending()<>0 THEN
       cause=DOS.ERROR_BREAK
@@ -298,6 +340,14 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
       ELSE
         state.diagnostic=value
       FI
+    WHEN FBABI.EVENT_SOURCE THEN
+      IF state.interpreter=NULL THEN
+        cause=LONGINT(O65TYPES.ERROR_UNSUPPORTED)
+      ELSE
+        cause=FBSOURCE.Load(state)
+      FI
+    WHEN FBABI.EVENT_SOURCE_RESULT THEN
+      cause=FBRESULT.Phase(state,value)
     WHEN FBABI.EVENT_KEY THEN
       IF DOS.IsInteractive(DOS.Input())=0 THEN
         cause=DOS.ERROR_OBJECT_WRONG_TYPE
@@ -336,20 +386,20 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   IF cause=0 AND error<>0 THEN
     cause=state.guest.nativeError
   FI
-  error=SDXFILES.CloseAll(@state.guest)
-  IF cause=0 AND error<>0 THEN
-    cause=state.guest.nativeError
-  FI
-  IF state.clock<>NULL THEN
-    IF state.clock.tc_Request.io_Device<>NULL THEN
-      EXEC.CloseDevice(@state.clock.tc_Request)
-    FI
-    EXEC.DeleteIORequest(@state.clock.tc_Request)
-    state.clock=NULL
-  FI
-  IF state.clockPort<>NULL THEN
-    EXEC.DeleteMsgPort(state.clockPort)
-    state.clockPort=NULL
+  IF state.interpreter=NULL THEN
+    BEGIN
+      LET cleanup=Cleanup(state)
+      IF cause=0 THEN
+        cause=cleanup
+      FI
+    END
+  ELSEIF state.interpreter.channel=NULL THEN
+    BEGIN
+      LET cleanup=Cleanup(state)
+      IF cause=0 THEN
+        cause=cleanup
+      FI
+    END
   FI
   IF state.consoleMode<>0 THEN
     mode=state.consoleMode & $e0
@@ -360,11 +410,62 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
     state.consoleMode=0
   FI
   cause=FBDIAGNOSTIC.Complete(state,state.diagnostic,state.diagnosticJob,cause)
+  FBRESULT.Complete(state,cause)
   IF cause<>0 THEN
     result=FBABI.RESULT_FAILURE
   FI
   DOSCLIENT.SetError(cause)
 
 RETURN(result)
+
+; CLI invocations remain one-shot. An attached session owns one ordinary
+; Process, replying after each run and waiting until the next Run/reset/quit.
+PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
+  FBINTERPABI.Request POINTER request
+  LONGINT result,cause
+
+  LET state=FBSTATE.Session POINTER(image.extension)
+  LET item=state.interpreter
+  IF item=NULL THEN
+    RETURN(Invocation(image,arguments))
+  FI
+  IF item.source.session=0 OR item.attached<>1 THEN
+    RETURN(Invocation(image,arguments))
+  FI
+  item.channel=FBINTERPABI.Session POINTER(ADDRESS(item.source.session))
+  item.requests=EXEC.CreateMsgPort()
+  IF item.requests=NULL THEN
+    DOSCLIENT.SetError(DOS.ERROR_NO_FREE_STORE)
+    RETURN(FBABI.RESULT_FAILURE)
+  FI
+  Initialize(image,state)
+  item.channel.port=item.requests
+  EXEC.ReplyMsg(@item.channel.message)
+  DO
+    request=FBSESSION.Next(item)
+    IF request.command=FBINTERPABI.COMMAND_QUIT THEN
+      FBSESSION.Reply(item,request)
+      EXIT
+    FI
+    IF request.command=FBINTERPABI.COMMAND_RESET THEN
+      cause=Cleanup(state)
+      FBSESSION.Reset(item)
+      Initialize(image,state)
+      FBSOURCE.Begin(state)
+      FBRESULT.Complete(state,cause)
+    ELSE
+      result=Invocation(image,arguments)
+    FI
+    FBSESSION.Reply(item,request)
+  OD
+  cause=Cleanup(state)
+  item.channel.port=NULL
+  EXEC.DeleteMsgPort(item.requests)
+  item.requests=NULL
+  item.channel=NULL
+  FBSESSION.Reset(item)
+  DOSCLIENT.SetError(cause)
+
+RETURN(IF cause=0 THEN LONGINT(0) ELSE LONGINT(FBABI.RESULT_FAILURE) FI)
 
 ENDMODULE

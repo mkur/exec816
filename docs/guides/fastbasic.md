@@ -16,7 +16,23 @@ graphical console. Both builds include OF816 and the matching system disk, ROM
 and WORK: disk. The standard demo keeps its five-second shell/prime autoboot.
 Start it with the generated `launch-altirra.command`.
 
-The compiler and SDX tools are in SYS:C; the writable examples are in WORK:.
+The interpreters, compilers and SDX tools are in SYS:C; examples are in WORK:.
+Run source directly:
+
+```text
+FB WORK:CALC.BAS
+FBI WORK:HELLO.BAS
+```
+
+FB includes floating point; FBI is integer-only. Each requires one source path
+and runs without creating a COM file. Standard input remains available for the
+program. Try `FB WORK:DECIMAL.BAS` for decimal INPUT and `FB WORK:BUSY.BAS` for
+BREAK on a no-I/O loop. Quote a source path when needed. Sources have a 32 KiB
+input cap and still share their guest bank with parser, bytecode and variables.
+
+The native [GEM workbench](fastbasic-workbench.md) runs unsaved buffers through
+the same interpreter. For a standalone command, the existing compiler workflow
+is still available.
 At the shell:
 
 ```text
@@ -55,8 +71,8 @@ The supplied CALC prints 3.75, 9 and 1. Compile DECIMAL.BAS with FBC to try
 decimal INPUT. Bare FBC prompts for source/output names, like FBCI. The smaller
 FBCI compiler accepts integer/string programs; FBC adds six-byte Atari numbers,
 arrays, conversions and math functions. Both use the same console/file backend.
-Rebuild older `$4701`/`$4702` executables; the current target identity is `$4703`.
+Rebuild older executables; the current target identity is `$4705`.
 
-The integrated IDE remains a follow-on. Hardware-dependent PEEK/POKE,
+Source debugging and native graphics remain follow-ons. Hardware-dependent PEEK/POKE,
 Atari graphics/sound and external USR routines are outside this target.
 See the target contract for KEY(), timing and memory differences.

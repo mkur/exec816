@@ -201,6 +201,19 @@ PUBLIC LONGINT FUNC Collect(LONGCARD identity Result POINTER outcome)
 
   outcome.primary=process.primary
   outcome.secondary=process.secondary
+  IF process.image<>NULL THEN
+    BEGIN
+      LET image=PROGRAMIMAGE.Image POINTER(process.image)
+      ; Configured Start collects failed setup internally before returning zero;
+      ; that refused launch preserves its attachment for retry. A returned child
+      ; identity ends the caller's borrow at collection, including setup failure.
+      IF image.kind=PROGRAMIMAGE.KIND_FASTBASIC AND
+          ((process.breakFlags & PROCESSSTATE.BREAK_SETUP)=0 OR
+          (process.breakFlags & PROCESSSTATE.BREAK_FAILED)=0) THEN
+        FBBIND.Collected(image)
+      FI
+    END
+  FI
   ReleaseStorage(process)
   accepted=Control(PROCESSSTATE.OP_RELEASE,BYTE POINTER(process))
   IF accepted<>process THEN

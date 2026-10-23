@@ -1,0 +1,246 @@
+--- a/src/parse.asm
++++ b/src/parse.asm
+@@ -19,6 +19,8 @@
+ ; Parser state machine interpreter
+ ; --------------------------------
+ 
++        .export parser_resume
++        .exportzp zp_clear_start, zp_clear_end
+         .export         parser_start, parser_error, parser_skipws, parser_emit_byte, parser_inc_opos
+         ; Parser state
+         .exportzp bptr, bpos, bmax, linenum, buf_ptr
+@@ -205,6 +207,9 @@
+         dex
+         bpl     zp_clear
+ 
++parser_resume:
++        tsx
++        stx saved_cpu_stack
+ parse_line:
+         jsr $f280
+         ldx     #0
+--- a/src/interpreter.asm
++++ b/src/interpreter.asm
+@@ -28,6 +28,10 @@
+ ; ----------------------
+ 
+         .export         start
++        .export runtime_persistent
++        .bss
++runtime_persistent: .res 1
++        .export interpreter_resume
+         .export         interpreter_run, stack_l, stack_h
+         .export         pushAX, stack_end
+         .exportzp interpreter_cptr, sptr, cptr
+@@ -188,6 +192,7 @@
+ 
+         ; Device ownership belongs to the native adapter.
+ 
++runtime_stack_init:
+         ; Store current stack position to rewind on error
+         tsx
+         stx     saved_cpu_stack
+@@ -207,6 +212,15 @@
+         jmp     next_instruction
+ .endproc
+ 
++; Source sessions retain variables, the allocator and BASIC modes. Only the
++; invocation's code pointer and expression/control stacks start afresh.
++interpreter_resume:
++        sta cptr
++        stx cptr+1
++        lda #64
++        sta quota
++        jmp interpreter_run::runtime_stack_init
++
+         ; Stores AX into stack, at return Y is the stack pointer.
+ .proc   pushAX
+         sta     stack_l-1, y
+--- a/src/actions.asm
++++ b/src/actions.asm
+@@ -331,6 +331,39 @@
+ .endproc
+ 
+ ; Creates a new variable, with no type (the type will be set by parser next)
++        .bss
++        .export parser_persistent
++parser_persistent: .res 1
++dim_existing: .res 1
++dim_type: .res 1
++        .code
++; A persistent DIM reuses a binding of exactly the same type. Other variable
++; creation and all compiler/one-shot parsing retain their existing semantics.
++.proc E_DIM_CREATE
++        lda #0
++        sta dim_existing
++        lda parser_persistent
++        beq fresh
++        jsr var_search
++        bcs fresh
++        sta dim_type
++        inc dim_existing
++        jmp emit_varn
++fresh:  jmp E_VAR_CREATE
++.endproc
++.proc E_DIM_SET_TYPE
++        lda dim_existing
++        beq fresh
++        jsr get_last_tok
++        cmp dim_type
++        bne wrong
++        clc
++        rts
++wrong:  sec
++        rts
++fresh:  jmp E_VAR_SET_TYPE
++.endproc
++
+ .proc   E_VAR_CREATE
+         ; Check if we have a valid name - this exits on error!
+         ; Search existing var
+--- a/src/interp/varstore.asm
++++ b/src/interp/varstore.asm
+@@ -29,7 +29,7 @@
+ 
+         .import         get_op_var, alloc_array
+         .importzp tmp2, move_dest
+-        .import next_instruction
++        .import next_instruction, runtime_persistent
+ 
+         .segment        "RUNTIME"
+ 
+@@ -40,6 +40,16 @@
+ .endproc
+ 
+ .proc   EXE_DIM         ; AX = array size, variable in opcode
++        sta tmp2
++        stx tmp2+1
++        lda runtime_persistent
++        beq fresh
++        lda #6                  ; FBI_PHASE_DIM
++        ldx #0
++        jsr $f9e0               ; FB_SERVICE_SOURCE_RESULT
++        jmp next_instruction
++fresh:  lda tmp2
++        ldx tmp2+1
+         jsr     alloc_array
+         lda     move_dest
+         ldx     move_dest+1
+--- a/src/syntax/basic.syn
++++ b/src/syntax/basic.syn
+@@ -404,7 +404,7 @@
+         VAR_CREATE_TYPE
+ 
+ DIM_VAR: new variable name
+-        E_VAR_CREATE E_PUSH_VAR DIM_VAR_TYPE E_VAR_SET_TYPE emit TOK_DIM E_POP_VAR
++        E_DIM_CREATE E_PUSH_VAR DIM_VAR_TYPE E_DIM_SET_TYPE emit TOK_DIM E_POP_VAR
+         E_VAR_WORD E_PUSH_VAR
+         emit { VT_STRING } E_VAR_SEARCH "$" E_PUSH_VAR
+ 
+--- a/src/compiler/parser-actions.cc
++++ b/src/compiler/parser-actions.cc
+@@ -771,8 +771,10 @@
+     {"E_PUSH_VAR", SMB_E_PUSH_VAR},
+     {"E_REM", SMB_E_REM},
+     {"E_VAR_CREATE", SMB_E_VAR_CREATE},
++    {"E_DIM_CREATE", SMB_E_VAR_CREATE},
+     {"E_VAR_SEARCH", SMB_E_VAR_SEARCH},
+     {"E_VAR_SET_TYPE", SMB_E_VAR_SET_TYPE},
++    {"E_DIM_SET_TYPE", SMB_E_VAR_SET_TYPE},
+     {"E_VAR_WORD", SMB_E_VAR_WORD}};
+ 
+ bool call_parsing_action(const std::string name, parse &s)
+--- a/src/actions.asm
++++ b/src/actions.asm
+@@ -24,6 +24,7 @@
+         .export         E_POP_IF, E_ELSEIF, E_EXIT_LOOP
+         .export         E_POP_WHILE, E_POP_FOR, E_POP_PROC_DATA, E_POP_PROC_2
+         .export         E_CONST_STRING
++        .export E_DIM_CREATE, E_DIM_SET_TYPE
+         .export         E_VAR_CREATE, E_VAR_WORD, E_VAR_SEARCH
+         .export         E_VAR_SET_TYPE, E_LABEL_SET_TYPE
+         .export         E_LABEL, E_LABEL_DEF, E_LABEL_CREATE, E_DO_EXEC
+@@ -372,7 +373,14 @@
+         ; Create new variable - exits on error
+         ldx     #var_ptr - prog_ptr
+         jsr     name_new
+-        ldx     var_count
++        lda parser_persistent
++        beq :+
++        lda var_count
++        cmp #255
++        bne :+
++        sec
++        rts
++:       ldx     var_count
+         inc     var_count
+         ; Fall through
+ .endproc
+@@ -393,6 +401,16 @@
+         bpl     no_float        ; float is > 127
+ 
+         ; Increment variable count to allocate 4 more bytes
++        pha
++        lda parser_persistent
++        beq :+
++        lda var_count
++        cmp #254
++        bcc :+
++        pla
++        sec
++        rts
++:       pla
+         inc     var_count
+         inc     var_count
+ 
+--- a/src/syntax/basic.syn
++++ b/src/syntax/basic.syn
+@@ -74,6 +74,7 @@
+  E_POP_WHILE, E_POP_FOR, E_POP_PROC_DATA, E_POP_PROC_2
+  E_CONST_STRING
+  E_VAR_CREATE, E_VAR_SET_TYPE, E_LABEL_SET_TYPE
++ E_DIM_CREATE, E_DIM_SET_TYPE
+  E_VAR_WORD, E_VAR_SEARCH
+  E_LABEL, E_LABEL_DEF, E_LABEL_CREATE, E_DO_EXEC
+  E_PUSH_VAR, E_POP_VAR
+--- a/src/actions.asm
++++ b/src/actions.asm
+@@ -346,7 +346,9 @@
+         lda parser_persistent
+         beq fresh
+         jsr var_search
+-        bcs fresh
++        bcc existing
++        jmp E_VAR_CREATE::create
++existing:
+         sta dim_type
+         inc dim_existing
+         jmp emit_varn
+@@ -371,6 +373,7 @@
+         jsr     var_search
+         bcc     E_VAR_WORD::not_found ; Exit with error if already exists
+         ; Create new variable - exits on error
++create:
+         ldx     #var_ptr - prog_ptr
+         jsr     name_new
+         lda parser_persistent
+--- a/src/actions.asm
++++ b/src/actions.asm
+@@ -347,7 +347,7 @@
+         beq fresh
+         jsr var_search
+         bcc existing
+-        jmp E_VAR_CREATE::create
++        jmp var_create_new
+ existing:
+         sta dim_type
+         inc dim_existing
+@@ -373,7 +373,7 @@
+         jsr     var_search
+         bcc     E_VAR_WORD::not_found ; Exit with error if already exists
+         ; Create new variable - exits on error
+-create:
++::var_create_new:
+         ldx     #var_ptr - prog_ptr
+         jsr     name_new
+         lda parser_persistent

@@ -28,8 +28,11 @@ bits, directories or files at mount: this is not a filesystem checker. Validate
 referenced structures as they are accessed, including sector ranges, map
 back-links, missing pages, cycles and bounded traversal.
 
-The delivered ATR is a data volume paired with an independently loaded XEX.
-Disk bootstrapping and the SpartaDOS operating system are outside this driver.
+The default ATR is a data volume paired with an independently loaded XEX.
+The optional [bootable system ATR](boot-loading.md#bootable-system-atr) stores
+the reader and XEX as normal files and adds executable boot sectors. That
+bootstrap remains separate from this runtime driver and adds no SDFS format or
+SpartaDOS operating-system dependency.
 
 ## Files and maps
 
