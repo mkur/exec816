@@ -270,5 +270,5 @@ checks alone cannot mark that release qualified or published.
 The delivery media revision requested after QD7 separates QED from the main
 system: `qed.atr` carries APP/resource/notices, SYS stays generic, and WORK stays
 private. The user mounts QED through the public MOUNT command; it is not a
-required boot volume. The current guide and subsequent delivery history record
-this revision; earlier QD1–QD7 hashes retain their original media layout.
+required boot volume. The current guide and [delivery record](../../history/qed-delivery.md#separate-application-disk-revision)
+validate this revision; earlier QD1–QD7 hashes retain their original media layout.

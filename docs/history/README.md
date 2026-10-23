@@ -2,7 +2,7 @@
 
 - [QED supported delivery](qed-delivery.md): component inventory, current
   requirements, reproducible boot/source artifacts and the passing QD1–QD7
-  supported development-delivery gate.
+  supported development-delivery gate and separate optional application disk.
 
 - [QED practical coexistence](qed-coexistence.md): measured production response,
   bounded drawing, window selection and the passing step 6 workload/resource

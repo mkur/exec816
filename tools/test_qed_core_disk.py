@@ -21,7 +21,7 @@ def check(bundle,output):
     with zipfile.ZipFile(output/'exec816-demo.zip') as archive:archive.extractall(output/'extracted')
     result=run(output,boot_smoke=True,distribution_root=output/'extracted/exec816-demo',
                omit_media=('qed.atr',),profile_commands=False)
-    result.update(qualification=False,scope='Exact core SYS/OF816 boot with optional QED disk absent; ordinary commands, WORK writes and EXIT',
+    result.update(qualification=False,scope='Exact core SYS/OF816 boot with optional QED disk absent; desktop folder ownership, HELLO and EXIT',
                   zip_sha256=sha256(bundle/'exec816-demo.zip'))
     (output/'core-only-results.json').write_text(json.dumps(result,indent=2)+'\n')
     return result

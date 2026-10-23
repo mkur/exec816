@@ -287,7 +287,38 @@ Reserved bank-zero growth: **0 fixed / 0 per-public-Task / 0 private idle bytes*
 including guards, alignment and unused capacity. Dynamic application-volume
 ownership remains ordinary upper-memory DOS state.
 
-The new disk placement supersedes the earlier QD1–QD7 layout. Those records keep
-their original hashes and cases. Host checks and fresh emitted package checks
-for this media revision are recorded below when completed; earlier evidence
-alone does not validate the new disk/APP/resource path.
+The [application-disk record](../development/qed-application-disk.json) passes
+587 host checks (four skipped), a fresh exact-ZIP shell/Files session with three
+QED lifetimes, two missing-resource failure/collection lifetimes on a diagnostic
+application disk, and a core-only desktop/folder/HELLO/EXIT smoke with D2 absent.
+The healthy QED session starts from inherited `WORK:REL`, loads its resource from
+QED:, saves with backup rotation, reopens, exercises Quit Cancel/Save, and returns
+normally through each parent. Independent WORK inspection verifies `cab` and
+`ab`; all sessions have intact guards, zero live Tasks and normal OS return.
+Both read-only SYS and application images remain unchanged. The core-only check
+does not run the optional filesystem-write cases; its descriptive scope was
+corrected without altering the observed execution or files.
+
+SYS now contains 51 files and uses 1,218/2,880 sectors; QED uses 782/2,880 with
+nine files, including its notices; clean WORK remains 11/2,880. All other SYS
+payloads match the earlier package; its README returns to the generic desktop
+guide. The APP differs in exactly three bytes, replacing the resource prefix
+SYS with QED. Provider, resource, native geometry and runtime code are unchanged;
+native build-identifier strings differ. Source frames remain 584 bytes, aligned
+APP backing 247,848 upper bytes, and the 824-byte conditional admission margin
+is unchanged. The additional mounted filesystem uses ordinary upper-heap state;
+no new fixed upper or bank-zero arena is reserved.
+
+The matching source/relink companion has been rebuilt from clean revision
+`96c98edacb4cf6b34838f43020bbfe9de079b6a9`. Relinking from the extracted archive
+reproduces the new APP exactly and independently verifies all 61 admitted banks.
+The private launcher mounts D1/D2 read-only and selects a new private writable
+D8 without touching existing WORK or earlier launch settings. Use the current
+[setup guide](../guides/qed-exec.md); the bundle is
+`build/qed-delivery/separate-disk`, with source/checksums under
+`build/qed-separate-disk/source`.
+
+This placement supersedes the earlier QD1–QD7 layout. Those records retain their
+original hashes and scope. This follow-up runs development checks for the changed
+media/resource path; it does not restamp the earlier two-build, response,
+full qualification or cartridge evidence.
