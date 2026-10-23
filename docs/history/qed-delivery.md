@@ -162,3 +162,48 @@ monitor assemblies match exactly; the complete final build and exact-ZIP gates
 must use the subsequent freeze. This changes only four informational upper-code
 literal bytes, with **0 fixed / 0 per-public-Task / 0 private idle bank-zero
 bytes** added, including guards, alignment and unused capacity.
+
+
+## QD6 Reproducibility, grants and source delivery
+
+The [QD6 record](../development/qed-delivery-qd6.json) passes from clean source
+revision `5d901b5f4efce8d1bbff6b7cd20dd3c83adfa7b0`. Two empty-output builds,
+including a separate clean checkout using only documented tools and verified
+source caches, produce identical copies of all 28 selected runtime files.
+These include native/OF816 XEX, QED APP/resource, both disk templates, ROM,
+notices, guides and the complete boot ZIP. The OF816 timestamp correction above
+is part of this final source freeze; the failed earlier comparison is preserved.
+
+The copyright holder's explicit MIT authorization resolves the 27 native
+adapter files. Generated GEM declarations, donor QED/CF-Lib and compiler/runtime
+material retain their own terms. QED redistribution remains free of charge.
+The versioned source/relink archive and external `QED-DELIVERY-SHA256SUMS`
+accompany the small boot ZIP. They supply corresponding Exec, application,
+selected library and runtime-support sources, ordered patches, resources,
+mapped retained objects and exact compiler/runtime identities. The proprietary
+compiler and SDK archive are installed separately and are not redistributed.
+
+Relinking from the extracted archive reproduces the production APP exactly.
+A second link changes a retained CF-Lib `nkc_toupper` routine and produces a
+different APP; both links independently verify all 61 admitted banks. That
+modified APP runs only on a separate diagnostic SYS: two ordinary lifetimes,
+three saves, backup rotation, reopen, normal collection and OS return pass,
+with intact guards and independent closed-image byte/allocation checks.
+
+The final APP/resource/provider match QC4 exactly. Every native segment's
+address and size match; all runtime bytes match except 24 generated banner/version
+identifier bytes. MIT notice changes do not alter the APP. This explicitly
+preserves QD1–QD5's functional and scoped QC4/QW reuse without restamping it.
+The final production ZIP session remains QD7's separate completion requirement.
+
+Development validation: 583 host tests (four skipped), source/material negative
+checks, clean reproduction, archive-extracted relinks and the changed-library
+boot. APP size is 134,502 bytes, span 182,312, aligned upper backing 247,848;
+the unchanged retained cell cache costs 2,420 upper bytes. SYS uses 1,769/2,880
+sectors and clean WORK uses 11/2,880. Native/OF816 XEX sizes are 566,522/591,604
+bytes, without a cartridge boot claim. The complete reservation table and each
+Task's DP/stack/guards are in the record. Source frames remain 584 bytes with
+824 bytes of conditional admission margin. Bank-zero growth is **0 fixed /
+0 per-public-Task / 0 private idle bytes**, including guards, alignment and
+unused capacity; eight public Tasks and 2,560-byte QED admission remain.
+Full release/hosted/hardware qualification and publication remain separate.

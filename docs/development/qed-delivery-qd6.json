@@ -1,0 +1,362 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "source_revision": "5d901b5f4efce8d1bbff6b7cd20dd3c83adfa7b0",
+  "source_identity": {
+    "revision": "5d901b5f4efce8d1bbff6b7cd20dd3c83adfa7b0",
+    "dirty": false,
+    "display": "5d901b5-clean",
+    "version": "0.2",
+    "actionc_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "task_capacity": 8,
+    "stack_checks": true,
+    "mount": {
+      "profile": 4,
+      "boot": 1,
+      "format": 2,
+      "access": "readonly",
+      "alias": "D1",
+      "unit": 49,
+      "sectors": 2880,
+      "sector_bytes": 256,
+      "device": "sio.device"
+    },
+    "strings": {
+      "banner": "Exec816 0.2 (5d901b5-clean)\n\n",
+      "slots": "exec: 8 task slots\n",
+      "stackChecks": "exec: stack checks enabled\n",
+      "version": "Exec816 0.2 (5d901b5-clean)\nactionc pin: 05c01f3\n",
+      "sioReady": " ready, 57.6k profile\n",
+      "mountStart": "Filesystems: mounting...\n",
+      "otherMountsReady": "\nRAM: ready, read-write (volatile)\nWORK: -> D8: ready, read-write",
+      "systemReady": "SYS: -> D",
+      "mountFailure": "Filesystem startup failed; check configured disks\nRequired: WORK: on D8:\nUse CD SYS: to retry; cold-boot after SIO failure"
+    }
+  },
+  "app_sha256": "2c516eaa36c4fd2f3fc60661070790f671cea9633225ff66b30f8f91ca65c1a7",
+  "resource_sha256": "9095194c1b2055ecbd31b6bcde7604a47dd6da6d4796e0b4b1a52993588d08e7",
+  "provider_identity": "5408e60ed7efd8cdccb791d753b508a16afd9fa65371cdc7461ad5d95f6f2d1e",
+  "zip_sha256": "284529af5acd646d5c67870409d2ccec6a45891d20078ec35c53682bd234a2a6",
+  "bundle": "build/qed-delivery/final-v2",
+  "grant": {
+    "status": "authorized",
+    "license": "MIT",
+    "files": 27,
+    "authority": "Copyright holder confirmed: I hold the rights and authorize the proposed MIT grant",
+    "policy": {
+      "path": "ports/gem4xe/apps/qed/delivery.json",
+      "sha256": "e59d3499415bd192fa9d5027c6448465f981b75820e2ce154ed298061f1aa0cd"
+    },
+    "notice": {
+      "path": "LICENSING.md",
+      "sha256": "f4b2a3de82bc48226a1cfcabc610e7276bea4d144074a3242c385ffe18c7fb77"
+    },
+    "unresolved": []
+  },
+  "reproduction": {
+    "path": "build/qed-delivery/final-v2-repro-results.json",
+    "sha256": "7c8480ecd79e8fc478c84a4ff513d24072ac90963734d1bc48c3864daeea477c"
+  },
+  "timestamp_correction": {
+    "path": "build/qed-delivery/repro-timestamp-difference.json",
+    "sha256": "a37c359237b245ee6b11381f31ab6886bb62ae3fd0b499d89d6b8903a3f1d926"
+  },
+  "runtime_files_compared": 28,
+  "prerequisites": {
+    "path": "build/qed-delivery/final-v2-prerequisites.json",
+    "sha256": "ad76b7152253fb688932dee45c0c4ac273260da06ad3a48d2b7f68dd34248a54"
+  },
+  "source_companion": {
+    "status": "prepared",
+    "tier": "development",
+    "qualification": false,
+    "unresolved": [],
+    "archive": "/Users/michalkurcewicz/action/exec816-public/build/qed-delivery/final-v2-source/exec816-qed-5d901b5f4efc-source-relink.tar.gz",
+    "sha256": "b0201ce1ec17cec18ea2f3d24fc48f7fcf40bd9c76e14eae9860c6dd5383433d",
+    "source_material_sha256": "488618e31c26ff2223ad7411b5104d83b1cc8ed044da6e79bbc7b0478ecbeee4",
+    "source_revision": "5d901b5f4efce8d1bbff6b7cd20dd3c83adfa7b0",
+    "zip_sha256": "284529af5acd646d5c67870409d2ccec6a45891d20078ec35c53682bd234a2a6",
+    "result": {
+      "sha256": "b0201ce1ec17cec18ea2f3d24fc48f7fcf40bd9c76e14eae9860c6dd5383433d",
+      "source_revision": "5d901b5f4efce8d1bbff6b7cd20dd3c83adfa7b0",
+      "files": 4015
+    }
+  },
+  "source_checksums": {
+    "path": "build/qed-delivery/final-v2-source/QED-DELIVERY-SHA256SUMS",
+    "sha256": "ff3561f05a086085e7cdcab995ac96a7134894c91dbcad7b75546773c1129ecb"
+  },
+  "relink": {
+    "path": "build/qed-delivery/final-v2-relink/relink-results.json",
+    "sha256": "fbf640dc4de80d2064cbe74438bf91040487f10757305798f29c8b7f8bb3315c"
+  },
+  "modified_relink": {
+    "path": "build/qed-delivery/final-v2-relink-modified/relink-results.json",
+    "sha256": "a9eb155cc7f6dbc6fcf303dd87c4cac394f3ef272a13986e8f6b96d2d30d43f5"
+  },
+  "modified_boot": {
+    "path": "build/qed-delivery/final-v2-relink-boot/relink-boot-results.json",
+    "sha256": "bd9f55a152861779070e87d2ddeb3946cff6bcf405d8bfec8099fa192c207ded"
+  },
+  "modified_boot_integration": {
+    "production_app": false,
+    "normal_shell_launch": true,
+    "lifetimes": 2,
+    "saves": 3,
+    "backup_rotation": true,
+    "reopen": true,
+    "native_ownership_return": true,
+    "changed_library_diagnostic": true
+  },
+  "actual_link_inventory": {
+    "path": "build/qed-delivery/final-v2-inventory.json",
+    "sha256": "449c5857dae6b67e9b805e59b4ab43bcdc9f1931569d56bcdba7224cee63d916"
+  },
+  "runtime_comparison": {
+    "path": "build/qed-delivery/final-v2-native-audit.json",
+    "sha256": "20bd8f599fbfdc6dc0cc6129985e7e0914ef094d6db5758efd8936cb28712b08"
+  },
+  "native_runtime_reuse": {
+    "geometry_identical": true,
+    "only_build_strings": true,
+    "byte_differences": [
+      139758,
+      139759,
+      139760,
+      139761,
+      139762,
+      139763,
+      139764,
+      139766,
+      139767,
+      139768,
+      139769,
+      139770,
+      139845,
+      139846,
+      139847,
+      139848,
+      139849,
+      139850,
+      139851,
+      139853,
+      139854,
+      139855,
+      139856,
+      139857
+    ],
+    "scope": "QD1\u2013QD5 functional/QC4/QW evidence remains scoped to the identical APP/provider/runtime behavior; comments grant and generated identity changes explicitly bound"
+  },
+  "native_bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "idle": 800,
+    "runtime_excluding_os": 26848,
+    "loading_excluding_os": 20368,
+    "runtime_including_os": 58080,
+    "loading_including_os": 51600
+  },
+  "native_task_pools": [
+    {
+      "dp": 3328,
+      "dp_reserved_bytes": 256,
+      "stack_base": 9744,
+      "stack_bytes": 1536,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 3584,
+      "dp_reserved_bytes": 256,
+      "stack_base": 12880,
+      "stack_bytes": 1312,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 3840,
+      "dp_reserved_bytes": 256,
+      "stack_base": 14224,
+      "stack_bytes": 1312,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 4096,
+      "dp_reserved_bytes": 256,
+      "stack_base": 15568,
+      "stack_bytes": 1312,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 4352,
+      "dp_reserved_bytes": 256,
+      "stack_base": 16912,
+      "stack_bytes": 1312,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 4608,
+      "dp_reserved_bytes": 256,
+      "stack_base": 18256,
+      "stack_bytes": 1312,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 4864,
+      "dp_reserved_bytes": 256,
+      "stack_base": 19600,
+      "stack_bytes": 2560,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 5120,
+      "dp_reserved_bytes": 256,
+      "stack_base": 22192,
+      "stack_bytes": 2560,
+      "interrupt_reserve": 256
+    },
+    {
+      "dp": 5376,
+      "dp_reserved_bytes": 256,
+      "stack_base": 24784,
+      "stack_bytes": 512,
+      "interrupt_reserve": 256
+    }
+  ],
+  "native_bank_zero_reservations": {
+    "fixed_runtime": 10528,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "idle": 800,
+    "runtime_excluding_os": 26848,
+    "loading_excluding_os": 20368,
+    "runtime_including_os": 58080,
+    "loading_including_os": 51600
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  },
+  "source_frames": {
+    "ledger": {
+      "path": "build/qed-delivery/final-v2/qed-production/stack-frames.json",
+      "sha256": "ac80c127c62262ddab011f0aaf53c9f4ef38fb188be9292668e4f30089e38978"
+    },
+    "status": "conditional-source-bound",
+    "source_bound": 584,
+    "margin_bytes": 824,
+    "admission": 2560
+  },
+  "image_layout": {
+    "app": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/qed-delivery/final-v2/qed-production/program.app",
+      "sha256": "2c516eaa36c4fd2f3fc60661070790f671cea9633225ff66b30f8f91ca65c1a7",
+      "bytes": 134502,
+      "minimum_stack_bytes": 2560
+    },
+    "layout": {
+      "code_bytes": 116776,
+      "initialized_bytes": 2774,
+      "bss_bytes": 24628,
+      "import_thunk_bytes": 404,
+      "span_bytes": 182312,
+      "image_holes_bytes": 38134,
+      "serialized_bytes_if_executable": 134502,
+      "relocation_count": 3512,
+      "heap_alignment_backing_bytes": 247848,
+      "future_full_profile_backing_bytes": 393216,
+      "private_allowances": {
+        "code_bytes": 32768,
+        "data_bss_bytes": 16384
+      },
+      "container_metadata_allowance_bytes": 16384,
+      "resident_provider_allowances": {
+        "code_bytes": 16384,
+        "data_bss_bytes": 16384,
+        "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+        "table_bytes": 4096
+      }
+    },
+    "upper_aligned_backing_bytes": 247848,
+    "cell_cache_bytes": 2420,
+    "cell_cache_scope": "Unchanged production APP and QC4 retained allocation measurement"
+  },
+  "allocation": {
+    "system.atr": {
+      "sectors": 2880,
+      "sector_bytes": 256,
+      "allocated": 1769,
+      "free": 1111,
+      "files": 53,
+      "directories": 6
+    },
+    "work.atr": {
+      "sectors": 2880,
+      "sector_bytes": 256,
+      "allocated": 11,
+      "free": 2869,
+      "files": 2,
+      "directories": 1
+    }
+  },
+  "host": {
+    "tests": 583,
+    "skipped": 4,
+    "status": "pass",
+    "log": {
+      "path": "build/qed-delivery/freeze-v2-host.log",
+      "sha256": "3c8335f48635c61808505417d102c9d61bbbdfd3afc173fdec9d580fa33a9f22"
+    }
+  },
+  "preserved_reports": {
+    "qd1": {
+      "path": "docs/development/qed-delivery-qd1.json",
+      "sha256": "0deed995316d1ee381eeb5233bdd717f6e08ac6bf63222e448fe97f4a2170bbe"
+    },
+    "qd2": {
+      "path": "docs/development/qed-delivery-qd2.json",
+      "sha256": "ce511383b7c1cd134136c151f59465b314228f1a0ea467e0d37f37c38cb55e44"
+    },
+    "qd3": {
+      "path": "docs/development/qed-delivery-qd3.json",
+      "sha256": "a85b1bfeda159ff5d6a42716cbaf6cd5c0c965d14bf07182302477eb67fd68f5"
+    },
+    "qd4": {
+      "path": "docs/development/qed-delivery-qd4.json",
+      "sha256": "64a39802a4da54033a635cf88eb21ed02561b4dd1cdf4ff16d2ae4430ef35be2"
+    },
+    "qd5": {
+      "path": "docs/development/qed-delivery-qd5.json",
+      "sha256": "3d1292ab8c5e68df16f0c205f0023b2e50a5c904564acdfdaadc8a7f4279f3ee"
+    }
+  },
+  "cartridge_capacity": {
+    "program.xex": {
+      "bytes": 566522,
+      "capacity_only": true
+    },
+    "of816/Exec-of816.xex": {
+      "bytes": 591604,
+      "capacity_only": true
+    }
+  },
+  "release": "Full qualification, matching old/new Atarimax CAR/raw BIN and publication remain separate"
+}

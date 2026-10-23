@@ -14,9 +14,9 @@ Status: [QD1 inventory passes](../../history/qed-delivery.md#qd1-component-and-s
 [QD3 persistent WORK passes](../../history/qed-delivery.md#qd3-persistent-work-selection);
 [QD4 launch paths pass](../../history/qed-delivery.md#qd4-ordinary-launch-parents-and-failures);
 [QD5 functional gate passes](../../history/qed-delivery.md#qd5-editor-storage-and-matched-evidence);
-QD6–QD7 remain. The copyright holder authorized the adapter MIT grant;
-final frozen-source reproduction, source/relink and exact-ZIP gates remain. Full release
-qualification and publication are a separate phase.
+[QD6 reproduction/source delivery passes](../../history/qed-delivery.md#qd6-reproducibility-grants-and-source-delivery).
+The native adapter MIT grant is authorized. QD7 final exact-ZIP reconciliation
+remains; full release qualification and publication are a separate phase.
 
 | Slice | Completion result | Dependencies |
 | --- | --- | --- |
