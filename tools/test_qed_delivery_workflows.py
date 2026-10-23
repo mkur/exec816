@@ -15,7 +15,7 @@ from filesystem_audit import Audit
 from gem_applications import symbols
 from make_data_disk import make
 from native_program import ROOT, require, sha256
-from qed_coexist_observe import ProductionEditor, emitted_offsets
+from qed_coexist_observe import ProductionEditor, emitted_offsets, heap_checkpoint
 from qed_demo import verify, SAMPLE
 from test_demo import run
 from test_shell_core import KEYS
@@ -41,7 +41,7 @@ class Workflow:
         (source/'REL').mkdir()
         (source/'REL/REL.TXT').write_bytes(b'relative\n')
         if self.case == 'files':
-            (source/'DESKTOP.CFG').write_bytes(b'EXEC816_DESKTOP 1\nASSOC TXT C:QED.APP\n')
+            (source/'DESKTOP.CFG').write_bytes(b'EXEC816_DESKTOP 1\nFOLDER 120 16 432 220 1 1 SYS:\nASSOC TXT C:QED.APP\n')
         make(target, source, binary_names=set(FORMATS), filesystem='sdfs', sector_bytes=256,
              sectors=2880, label='WORK')
 
@@ -73,17 +73,21 @@ class Workflow:
         for char in 'EXIT':s.press(char)
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()
 
-    def editor(self, identity):
+    def editor(self, identity, expected_bytes=None):
         self.s.frames(80)
         e=ProductionEditor(self.s,self.production,self.offsets,identity,self.s.p['output'],self.report,self.report['lifetimes'])
         e.reach('(dw($%x)!=0)|(dw($%x)!=0)'%(e.sy['text_list'],e.sy['text_list']+2))
+        e.reach('dw($%x)=0'%e.sy['QedStarting'])
+        if expected_bytes is not None:
+            e.reach('(dw($%x)=%d)&(dw($%x)=%d)'%(e.sy['source_bytes'],expected_bytes&65535,e.sy['source_bytes']+2,expected_bytes>>16))
         self.report['lifetimes']+=1
         return e
 
-    def launch(self, command):
+    def launch(self, command, expected_bytes=None):
+        print('Delivery launch:',command,flush=True)
         self.menus.select('Shell')
         old=self.s.begin(command);self.s.ready(old);self.s.result()
-        return self.editor(self.s.number(self.s.at('job')))
+        return self.editor(self.s.number(self.s.at('job')),expected_bytes)
 
     def focus(self,e):
         e.command_idle();self.s.frames(50);e.click(*e.cell(0,0));e.move(632,20)
@@ -99,22 +103,27 @@ class Workflow:
     def shell(self):
         e=self.launch('RUN C:QED.APP');self.focus(e);e.loaded('no-argument',[b'']);self.retire(e)
         self.report['cases'].append('shell-no-argument')
-        e=self.launch('RUN C:QED.APP "WORK:SAMPLE.TXT"');self.focus(e)
+        e=self.launch('RUN C:QED.APP "WORK:SAMPLE.TXT"',len(SAMPLE));self.focus(e)
         e.loaded('quoted-argument',SAMPLE.split(b'\n'),path=b'WORK:SAMPLE.TXT');self.retire(e)
         self.report['cases'].append('shell-quoted-path')
         self.s.command('CD WORK:REL')
-        e=self.launch('RUN C:QED.APP REL.TXT');self.focus(e)
+        e=self.launch('RUN C:QED.APP REL.TXT',9);self.focus(e)
         e.loaded('relative-argument',[b'relative',b''],path=b'WORK:REL/REL.TXT');self.retire(e)
         self.s.command('CD SYS:');self.report['cases'].append('inherited-relative-path')
-        for argument in ('WORK:ABSENT.TXT','WORK:NUL.TXT','WORK:SAMPLE.TXT WORK:LF.TXT','"WORK:SAMPLE.TXT'):
+        for argument in ('WORK:ABSENT.TXT','WORK:NUL.TXT','WORK:SAMPLE.TXT WORK:LF.TXT'):
             e=self.launch('RUN C:QED.APP '+argument);e.form_open();e.form_pixels('rejected-launch')
             e.alert(1);self.focus(e);e.loaded('rejected-argument',[b'']);self.retire(e)
             self.report['cases'].append('rejected:'+argument)
+        self.menus.select('Shell');old=self.s.begin('RUN C:QED.APP "WORK:SAMPLE.TXT')
+        self.s.ready(old);self.s.result(error=115)
+        require(self.s.ledger()==self.baseline,'Rejected shell syntax retained ownership')
+        self.report['cases'].append('shell-rejected-malformed-syntax')
 
     def folder_path(self,base,value):
         def key(name,shift=False):
             if shift:self.s.b._cmd_ok('KEY SHIFT down')
-            self.s.press(name)
+            self.s.b._cmd_ok('KEY '+name+' down');self.s.frames(3)
+            self.s.b._cmd_ok('KEY '+name+' up')
             if shift:self.s.b._cmd_ok('KEY SHIFT up')
             self.s.frames(10)
         key('P');self.s.rendezvous('dw($%x)=1'%(base+F['dialog']))
@@ -127,28 +136,50 @@ class Workflow:
         s=self.s;directory=s.p['output']/'bitmap-console'
         resident=json.loads((directory/'c-image.json').read_text())['symbols']
         desk=symbols(s.b,s.p,directory,'desktop',s.number(resident['GEMDesktopChildren']))['GEMDesk']
+        s.rendezvous('dw($%x)=1'%(desk+D['ready']))
         base=s.number(desk+D['folders']);require(base,'No initial Files folder')
         require(s.number(desk+D['settingsLoaded'],2)==1,'Association settings not loaded')
         children=desk+D['children']
         self.menus.select('SYS:');self.folder_path(base,'SYS:C')
         for activation in ('keyboard','double-click'):
             select(s,base,'QED.APP',self.click)
-            if activation=='keyboard':s.press('RETURN')
-            else:select(s,base,'QED.APP',self.click);select(s,base,'QED.APP',self.click)
+            if activation=='keyboard':self.menus.key('RETURN')
+            else:
+                for _ in range(2):
+                    s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(3)
+                    s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(3)
+                s.frames(50)
             s.rendezvous('(dw($%x)!=0)|(dw($%x)!=0)'%(children,children+2))
             identity=s.number(children);e=self.editor(identity);self.focus(e);e.loaded('files-empty',[b''])
             self.retire(e,children);self.report['cases'].append('files-app-'+activation)
             self.menus.select('SYS:C')
-        self.folder_path(base,'WORK:');select(s,base,'SAMPLE.TXT',self.click);s.press('RETURN')
+        self.folder_path(base,'WORK:');select(s,base,'SAMPLE.TXT',self.click);self.menus.key('RETURN')
         s.rendezvous('(dw($%x)!=0)|(dw($%x)!=0)'%(children,children+2))
-        identity=s.number(children);e=self.editor(identity);self.focus(e)
+        identity=s.number(children);e=self.editor(identity,len(SAMPLE));self.focus(e)
         e.loaded('files-association',SAMPLE.split(b'\n'),path=b'WORK:SAMPLE.TXT')
+        self.menus.select('WORK:');self.click(296,8);self.click(304,72)
+        s.rendezvous('(dw($%x)!=0)|(dw($%x)!=0)'%(children+4,children+6))
+        self.menus.select('WORK:');require(s.ledger()['live']==8,'Counter+QED did not occupy capacity')
+        admitted=s.far(children,12);before=heap_checkpoint(s.rendezvous,s.far,s.p['build']['memory'])
+        self.click(296,8);self.click(304,39)
+        s.rendezvous('db($%x)=67'%(desk+D['status']))
+        s.frames(50)
+        require(s.far(children,12)==admitted and s.ledger()['live']==8,'Full-capacity launch changed children')
+        status=s.far(desk+D['status'],65).split(b'\0')[0]
+        require(status.startswith(b'Cannot launch'),'Full-capacity launch did not report failure')
+        after=heap_checkpoint(s.rendezvous,s.far,s.p['build']['memory'])
+        require(before['extents']==after['extents'],'Rejected launch retained upper backing')
+        self.menus.select('Counter');self.menus.close()
+        s.rendezvous('(dw($%x)=0)&(dw($%x)=0)'%(children+4,children+6))
+        self.report['cases'].append('full-capacity-launch-refused-and-unwound')
         self.menus.select('WORK:');x,y=[s.number(base+F['work']+i*2,2) for i in range(2)]
         self.click(x,y-8);s.rendezvous('(dw($%x)=0)&(dw($%x)=0)'%(desk+D['folders'],desk+D['folders']+2))
         require(s.number(children)==identity,'Folder close retired desktop-owned QED')
         self.focus(e);e.text_pixels('survives-folder-close',SAMPLE.split(b'\n'));self.retire(e,children)
         # Restore a normal folder before comparing baseline lock/owner counts.
-        self.click(296,8);self.click(304,28);s.frames(200)
+        self.click(600,236);s.frames(100)
+        self.click(296,8);self.click(304,28)
+        s.rendezvous('(dw($%x)!=0)|(dw($%x)!=0)'%(desk+D['folders'],desk+D['folders']+2))
         base=s.number(desk+D['folders']);wait_listing(s,base)
         self.report['cases'].append('association-child-survives-folder-close')
 

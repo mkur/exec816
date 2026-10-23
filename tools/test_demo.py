@@ -21,7 +21,7 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None):
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None,diagnostic_media_sha256=None):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
     require(disk_failure in (None,'missing','missing-work','wrong'),'Unknown disk failure')
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
@@ -104,6 +104,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         require(measurement_commands is not None and boot_smoke,
                 'Explicit comparison media is restricted to measurement runs')
         expected_media_sha256=measurement_media_sha256
+    if diagnostic_media_sha256 is not None:
+        require(boot_smoke and integration is not None and measurement_media_sha256 is None and
+                media_path != (distribution_root or out)/media,
+                'Diagnostic media requires a separate image and a focused integration observer')
+        expected_media_sha256=diagnostic_media_sha256
     require(sha256(media_path)==expected_media_sha256,'Changed companion media')
     if stock_smoke:require(manifest['mounts'][0]['sector_bytes']==128,'STOCK810 requires 128-byte sectors')
     ideplus=manifest.get('ideplus')
@@ -1132,6 +1137,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         desktop_scroll_break_checkpoint=saved.get('desktop_scroll_break_checkpoint'),
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
         baseline_memory=saved.get('memory'),baseline_ownership=saved.get('ledger'),peak_tasks=saved.get('desktop_peak_tasks') if desktop else None if stock_smoke or showcase or editing or disk_failure else 7 if shell_only else 8,
+        diagnostic_media_sha256=diagnostic_media_sha256,
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,

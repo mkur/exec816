@@ -68,3 +68,30 @@ cases, physical reopen/pixel comparison, normal JOBS collection, guards and OS
 return. Bank-zero reservation growth: **0 fixed / 0 per-public-Task / 0 private
 idle bytes**, including guards, alignment and unused capacity. QD4 launch/storage
 cases in the shared observer await their own gates.
+
+## QD4 Ordinary launch parents and failures
+
+The [QD4 record](../development/qed-delivery-qd4.json) binds seven shell cases
+and four Files cases against the exact QD2 ZIP. They cover no argument, a quoted
+path, inherited WORK subdirectory resolution with SYS resource discovery,
+missing/unsupported documents, extra arguments and malformed shell quoting.
+The shell rejects the malformed quote before launching QED; the other rejected
+inputs report beside an intact empty editor and collect normally.
+
+Files keyboard/double-click activation and a disposable `DESKTOP.CFG` TXT-to-QED
+association pass. The desktop retains its own child after the launching folder
+closes. QED plus Counter fills eight Task slots; another application launch
+fails normally, with the exact pre-attempt free extents restored. Both parents
+collect their own children. The unconfigured text-viewer default and clean
+WORK template remain unchanged. Independent closed-image inspection confirms
+all document bytes unchanged.
+
+Two explicit diagnostic SYS images omit or corrupt QED.RSC. Each completes two
+failed startups, returning 20 and collecting without a retained window or owner.
+These runs are separate from healthy exact-package execution. All four completed
+sessions report intact guards, asynchronous entries, native ownership return and
+normal OS return. No target implementation change was needed; observer startup,
+input and completion waits were corrected while developing these checks.
+
+Bank-zero growth: **0 fixed / 0 per-public-Task / 0 private idle bytes**, including
+guards, alignment and unused capacity. The public Task pool remains eight.
