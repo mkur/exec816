@@ -31,7 +31,10 @@ Step 6 now passes the [coexistence design](qed-coexistence-design.md) and
 [QC1–QC4 plan](qed-coexistence-implementation-plan.md): all three production
 cohorts, repeated use, refusals, peer progress and resource/response gates pass
 the [selected development checks](../../history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff).
-Supported delivery and release work remain step 7.
+Step 7 now passes [QD1–QD7](../../history/qed-delivery.md#qd7-supported-development-delivery):
+normal reproducible packaging, preserved WORK, both launch parents, supported
+scope and corresponding source/relink delivery. Full release qualification and
+publication remain separate.
 
 ## First usable editor
 
@@ -237,15 +240,13 @@ features visible. Apply the [two-tier testing policy](../../contributing/testing
 focused emitted-code checks accompany implementation; full qualification is a
 separate activity for a release or an explicit qualification request.
 
-## Work to begin next
+## Release follow-up
 
-Begin QD1 of the [delivery implementation plan](qed-delivery-implementation-plan.md)
-from the [step 7 design](qed-delivery-design.md) and
-[reconciled coexistence gate](../../history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff).
-Inventory the actual components and distribution questions, and map the agreed
-single-document scope to current evidence. Then implement the normal build,
-workspace preservation and delivered launch/editor checks in dependency order.
-Preserve the measured configuration, current ABI, source provenance and saved WORK.
-Supported packaging and any requested release qualification/publication remain
-separate from step 6's development checks; publication must include matching
-old/new Atarimax CAR and raw BIN images through the standard demo builder.
+The [step 7 delivery gate](../../history/qed-delivery.md#qd7-supported-development-delivery)
+closes the initial supported development port. Continue ordinary changes with
+focused development checks. When a release or qualification is requested,
+freeze the matching source/toolchain/platform/media/observer inputs and run the
+full applicable matrices. Add old/new Atarimax CAR and raw BIN images through
+the standard demo builder, verify their matching payloads and actual boots,
+and publish the matching boot and source/relink artifacts only after those
+gates pass. Physical hardware requires separate evidence.

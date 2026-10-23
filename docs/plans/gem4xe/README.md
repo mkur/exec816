@@ -6,15 +6,17 @@ preserves a working reference for behavior comparisons during the port.
 The [QED supported delivery design](qed-delivery-design.md) and
 [QD1–QD7 implementation plan](qed-delivery-implementation-plan.md) define
 strategy step 7: normal reproducible demo builds, extracted-package Files/shell
-launch, persistent WORK, source/notices and scope reconciliation. Implementation
-and delivery evidence remain pending.
+launch, persistent WORK, source/notices and scope reconciliation. The
+[QD1–QD7 delivery gate](../../history/qed-delivery.md#qd7-supported-development-delivery)
+now passes at the supported development tier. Full release qualification and publication
+remain separate.
 
 The [QED coexistence design](qed-coexistence-design.md) and
 [QC1–QC4 implementation plan](qed-coexistence-implementation-plan.md) define
 strategy step 6: measured production responsiveness beside a GUI peer or shell
 checksum job, admitted Task counts, memory fragmentation and repeated lifetimes.
 The [reconciled development gate](../../history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff)
-passes; supported delivery remains step 7.
+passes; [step 7 delivery](../../history/qed-delivery.md#qd7-supported-development-delivery) now passes separately.
 
 The [QED saving design](qed-saving-design.md) and
 [QW1–QW8 implementation plan](qed-saving-implementation-plan.md) define strategy
@@ -34,7 +36,7 @@ Open/New. The [editing gate](../../history/qed-editing.md#qe7-editing-gate-and-s
 passes its development checks, including the combined session and package
 reconciliation. Reliable saving and the full Save/Discard/Cancel workflow now
 pass step 5; practical coexistence now passes step 6. Supported QED delivery
-remains step 7.
+now passes step 7 at the development tier.
 
 The [QED startup design](qed-startup-design.md) and
 [QS1–QS5 implementation plan](qed-startup-implementation-plan.md) define

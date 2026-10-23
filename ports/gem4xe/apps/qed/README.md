@@ -17,7 +17,8 @@ This is an input baseline for the native Exec port. The donor does not pin its
 external cflib checkout; this pair is the fixed source input. The native work below records compilation and focused execution separately.
 Strategy step 3 builds a runnable development APP and exercises real startup;
 the editing, saving and practical coexistence slices extend that baseline.
-Supported delivery retains its separate step 7 gate.
+The [step 7 delivery gate](../../../../docs/history/qed-delivery.md#qd7-supported-development-delivery)
+now passes for the supported development port; full release qualification is separate.
 The donor's SDK, startup and G4A build are references,
 not the Exec build recipe. No donor sources are vendored by this baseline.
 
@@ -473,7 +474,7 @@ python3 tools/test_qed_coexist_load.py --cohort peer --output build/qed-coexist/
 python3 tools/test_qed_coexist_load.py --cohort checksum --output build/qed-coexist/checksum-reproduced
 ```
 
-Build current production sources and prepare a matching preview before the
+Build current production sources through the normal demo builder before the
 production cohorts. Their `--production`, `--bundle` and `--layout-from`
 arguments select separate reproduced artifacts. The layout input is a fixture
 compiled with matching headers; its emitted offsets describe the production
@@ -490,3 +491,20 @@ caption invalidation remains outside visible-rectangle iteration.
 The actual-source damage probe covers 16 rectangle/slider-policy cases; full drawing
 and independent pixels belong to the production and cursor checks. Bank-zero
 reservations and shared Task capacities remain unchanged.
+
+
+## Supported development delivery
+
+[QD1–QD7](../../../../docs/history/qed-delivery.md#qd7-supported-development-delivery)
+close the initial English single-document scope through the ordinary demo builder.
+See the [current guide](../../../../docs/guides/qed-exec.md) for manual ZIP boot,
+private local launch, persistent WORK, normal builds and source/relink use.
+The boot ZIP and versioned source/relink archive have matching external checksums;
+keep both when redistributing QED, which must remain free of charge.
+
+The native adapters use the copyright holder's authorized MIT grant; generated
+GEM declarations retain LGPL, and donor/runtime material retains its own terms.
+The delivered APP/resource/provider match the measured QC4 production editor.
+Fresh exact-ZIP checks cover both ordinary launch parents and persisted saves;
+the complete original gap/scope reconciliation and limits are in the delivery record.
+Full release/hosted/hardware qualification and cartridge publication remain separate.

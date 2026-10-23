@@ -1,11 +1,12 @@
 # Historical records
 
 - [QED supported delivery](qed-delivery.md): component inventory, current
-  requirements and incremental normal-package delivery evidence.
+  requirements, reproducible boot/source artifacts and the passing QD1–QD7
+  supported development-delivery gate.
 
 - [QED practical coexistence](qed-coexistence.md): measured production response,
   bounded drawing, window selection and the passing step 6 workload/resource
-  development gate; supported delivery remains step 7.
+  development gate; supported delivery passes separately in QD1–QD7.
 
 - [QED reliable saving](qed-saving.md): QW1–QW8 canonical paths/current C ABI,
   checked staging/publication, loaded-editor saving, modified continuations,

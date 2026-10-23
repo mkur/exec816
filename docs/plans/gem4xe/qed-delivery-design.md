@@ -14,7 +14,10 @@ This design starts from the passing
 [QC4 development gate](../../development/qed-coexistence-qc4.json). Its scope is
 delivery and reconciliation of the existing port. The
 [QD1–QD7 implementation plan](qed-delivery-implementation-plan.md) derives the
-executable work. Implementation and delivery evidence remain pending.
+executable work. [QD1–QD7 now pass](../../history/qed-delivery.md#qd7-supported-development-delivery)
+at the supported development-delivery tier; full release qualification and
+publication remain separate. Design-time grant questions below are resolved in
+that record and the current licence map.
 
 ## Supported configuration and scope
 

@@ -207,3 +207,65 @@ Task's DP/stack/guards are in the record. Source frames remain 584 bytes with
 0 per-public-Task / 0 private idle bytes**, including guards, alignment and
 unused capacity; eight public Tasks and 2,560-byte QED admission remain.
 Full release/hosted/hardware qualification and publication remain separate.
+
+
+## QD7 Supported development delivery
+
+The [final delivery record](../development/qed-delivery-qd7.json) passes all
+QD1–QD6 gates, all nine initial scope rows, the authorized grant, exact final
+ZIP/media and matching source/relink companion. Strategy step 7 is complete at
+the supported development-delivery tier. The native source freeze remains
+`5d901b5f4efce8d1bbff6b7cd20dd3c83adfa7b0`; later result/documentation commits
+change no packaged or executable input.
+
+The final exact-extracted-ZIP session runs three QED lifetimes through both
+shell and Files parents. It checks Discard, Save As, named Save/backup, reopen,
+Files document association, Quit Cancel preserving the dirty document, Quit Save
+continuation, parent-specific collection and normal EXIT. Independent closed-image
+inspection finds `FINAL.TXT = cab` and `FINAL.BAK = ab`, with valid allocation.
+Text/form pixels, the five-second OF816 countdown, native IRQ/NMI entry, intact
+guards, zero live Tasks and normal OS return pass. The diagnostic modified-library
+execution remains separate from this healthy production-package result.
+
+The recorder rejects missing scope rows, unresolved grants, changed ZIP/media,
+incomplete execution, stale APP/provider evidence, changed reproduction files
+and missing/mismatched source material. It binds the current final observer,
+source freeze, ROM/configuration, APP/resource/provider, gates and companion
+hashes. QD1–QD5 evidence retains its original cases; QD6's full runtime comparison
+justifies scoped reuse. The original [gap assessment](../plans/gem4xe/qed-gap-analysis.md)
+remains historical.
+
+| Original gap | Delivered closure |
+| --- | --- |
+| Large application/loading | Current multi-segment C APP ABI, checked 2,560-byte admission and ordinary Process lifetime. |
+| Resources/menus | Generated compact English resource plus reusable resource/free-string support; selected commands remain reachable. |
+| Drawing/events/dialogs | Fixed-font public AES/VDI services plus adapted caret, bounded painting, selection and dialog loops; measured QC4 coexistence. |
+| Files/runtime | Native owned handles/allocation and checked DOS save/publication/recovery over RAM, MyDOS and SpartaDOS. |
+| Memory/lifecycle | Private upper allocations, source-frame ledger, observed pool/guard checks, refusal/reuse and normal parent collection. |
+| Distribution | Normal reproducible boot ZIP, persistent WORK selection, resolved notices and matching source/relink material. |
+
+These closures describe the QED adaptation and its documented public services;
+they do not promise every donor GEM operation as a general Exec API. All
+[initial exclusions](../plans/gem4xe/qed-scope-and-dependencies.md#initial-supported-scope)
+remain: Unicode/mixed/CR-only/binary editing, additional documents/instances,
+replace/pattern/history search, external clipboard, printing/GDOS/fonts,
+preferences/autosave/syntax/projects/macros/column selection, donor file-management,
+accessory/help and AV/OLGA/SE/MiNT protocols. Power-loss atomicity, concurrent
+writers to one target and automatic disk repair remain outside the storage
+contract. Document capacity is memory-dependent; the 1,023-byte line and
+native/selector path limits are unchanged.
+
+Use the [current setup/build/source guide](../guides/qed-exec.md). The final
+local bundle is `build/qed-delivery/final-v2`; matching source and external
+checksums are under `build/qed-delivery/final-v2-source`. Existing private WORK
+and earlier launch selections are preserved. The boot ZIP contains only boot
+files, clean media, guide, notices and checksums; development material stays
+outside. The final record and QD6 include complete budget/media costs.
+Bank-zero growth remains **0 fixed / 0 per-public-Task / 0 private idle bytes**,
+including guards, alignment and unused capacity. Eight public Tasks and the
+2,560-byte QED admission remain unchanged.
+
+Development checks pass; this does not qualify the hosted system, a release,
+cartridge boot or physical hardware. Full applicable matrices, matching old/new
+Atarimax CAR and raw BIN images, cartridge boots and publication are a separate
+release follow-up.

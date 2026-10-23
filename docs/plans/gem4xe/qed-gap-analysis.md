@@ -14,8 +14,11 @@ QED build or execution. The sections below retain that original gap inventory.
 Current [native feasibility](../../history/qed-native-feasibility.md),
 [startup](../../history/qed-startup.md) and
 [editing evidence](../../history/qed-editing.md) record the implemented native
-port and its remaining saving, coexistence and delivery gates. These development
-checks do not qualify the hosted system.
+port. [Saving](../../history/qed-saving.md),
+[coexistence](../../history/qed-coexistence.md) and
+[supported development delivery](../../history/qed-delivery.md#qd7-supported-development-delivery)
+now close the agreed initial scope. These development checks do not qualify
+the hosted system. The original assessment below is preserved.
 The [port strategy](qed-port-strategy.md) develops the order of work and the
 outcomes needed before proceeding to later design and implementation plans.
 Its [step 1 record](qed-scope-and-dependencies.md) fixes the initial scope and

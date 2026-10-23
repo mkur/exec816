@@ -4,8 +4,8 @@
 
 ## Running Exec816
 
-- [Native Exec QED in Altirra](qed-exec.md): production editor preview, private
-  emulator settings and persistent writable document storage.
+- [Native Exec QED in Altirra](qed-exec.md): supported development port,
+  private emulator settings, persistent WORK and source/relink instructions.
 
 - [Demo](demo.md): build artifacts, machine setup and a walkthrough.
 - [Bitmap console preview](bitmap-console.md): optional 80×30 VBXE shell, setup and measured limits.
