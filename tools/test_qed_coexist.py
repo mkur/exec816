@@ -14,6 +14,7 @@ from make_data_disk import make
 from native_program import ROOT, require, sha256
 from qed_coexist_observe import ProductionEditor, emitted_offsets, heap_checkpoint
 from test_demo import run
+from qed_demo import mount_editor
 
 DOCUMENT = b'\n'.join(b'row %02d\tneedle %02d' % (i, i) for i in range(48)) + b'\n'
 LOAD = bytes(range(256))*2048
@@ -65,12 +66,13 @@ class Coexistence:
             s.b._cmd_ok('MOUSE AT 2000 0 0 0'); s.frames(50)
         s.saved['desktop_menu'] = {}
         menus = Menus(s, click, move); menus.select('Shell')
+        mount_editor(s)
         baseline = s.ledger()
         report = dict(cohort=self.cohort, production_app=True, timings=[], checkpoints=[])
         self.report = report
         s.command('MEM')  # Warm the normal shell's reporting/storage path.
         report['initial_heap'] = heap_checkpoint(s.rendezvous, s.far, s.p['build']['memory'])
-        old = s.begin('RUN C:QED.APP WORK:SESSION.TXT'); s.ready(old); s.result()
+        old = s.begin('RUN QED:QED.APP WORK:SESSION.TXT'); s.ready(old); s.result()
         identity = s.number(s.at('job'))
         e = ProductionEditor(s, self.production, self.offsets, identity, s.p['output'], report, 0)
         e.reach('dw($%x)=%d' % (e.sy['source_bytes'], len(DOCUMENT)))
@@ -203,9 +205,9 @@ def check(output, bundle, production, layout_from, cohort, profile=False, factor
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output', type=Path, required=True)
-    p.add_argument('--bundle', type=Path, default=ROOT/'build/qed-delivery/normal')
-    p.add_argument('--production', type=Path, default=ROOT/'build/qed-delivery/normal/qed-production')
-    p.add_argument('--layout-from', type=Path, default=ROOT/'build/qed-coexist/qc3-caption/app')
+    p.add_argument('--bundle', type=Path, default=ROOT/'build/qed-delivery/separate-disk')
+    p.add_argument('--production', type=Path, default=ROOT/'build/qed-delivery/separate-disk/qed-production')
+    p.add_argument('--layout-from', type=Path, default=ROOT/'build/qed-separate-disk/layout-fixture')
     p.add_argument('--cohort', choices=['baseline'], default='baseline')
     p.add_argument('--profile-insert', action='store_true', help='Collect a bounded host callgraph around measured insertion')
     a = p.parse_args()

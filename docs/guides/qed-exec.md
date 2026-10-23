@@ -3,7 +3,8 @@
 [Guides](README.md) · [QED coexistence evidence](../history/qed-coexistence.md)
 
 This setup runs the native Exec QED on the normal GEM desktop. It includes the
-production APP, its matching English resource, OF816 and the pinned 65C816 ROM.
+production APP and English resource on a separate `qed.atr`, plus the main
+system, OF816 and the pinned 65C816 ROM. `system.atr` contains no QED payload.
 The separate [GEM4XE reference](gem4xe-qed-reference.md) remains available for
 donor comparisons.
 
@@ -12,12 +13,13 @@ donor comparisons.
 From the repository root:
 
 ```sh
-build/qed-delivery/final-v2/launch-qed.command
+build/qed-delivery/separate-disk/launch-qed.command
 ```
 
 Allow the five-second OF816 countdown and desktop startup to complete. Capture
 the mouse with F12 (possibly Fn+F12), or Input → Capture Mouse. Click Shell and
-enter `RUN C:QED.APP`. Alternatively, open C: on the desktop and double-click
+enter `MOUNT QED: DRIVE 2 FORMAT SPARTA`, then `RUN QED:QED.APP`.
+Alternatively, open QED: on the desktop and double-click
 QED.APP. One additional Counter application is covered by the coexistence
 checks. Close it before starting a foreground checksum command; this setup
 has eight public Task slots.
@@ -31,14 +33,15 @@ keyboard controls, limits, notices and manual emulator settings.
 The launcher finds local AltirraSDL or accepts an explicit app/executable:
 
 ```sh
-build/qed-delivery/final-v2/launch-qed.command --altirra /path/to/AltirraSDL.app
-build/qed-delivery/final-v2/launch-qed.command --prepare-only
+build/qed-delivery/separate-disk/launch-qed.command --altirra /path/to/AltirraSDL.app
+build/qed-delivery/separate-disk/launch-qed.command --prepare-only
 ```
 
 It generates private settings from a dedicated seed, using a 65C816 at 8x,
 63 high banks, VBXE and ST Mouse on port 1. It does not edit ordinary emulator
-settings. SYS: in D1 is read-only. WORK: in D8 uses a persistent writable copy
-selected in `build/qed-delivery/final-v2/altirra/workspace.json`. A new workspace
+settings. SYS: in D1 and the optional QED disk in D2 are read-only.
+The main system boots without QED; mount its volume explicitly when needed. WORK: in D8 uses a persistent writable copy
+selected in `build/qed-delivery/separate-disk/altirra/workspace.json`. A new workspace
 creates `altirra/work.atr`; keep that directory with saved work. The selection
 survives replacement of the clean template and setup refreshes. To select an
 existing private disk explicitly, pass `--work /path/to/saved.atr`. Local
@@ -57,10 +60,10 @@ The ordinary builder prepares the provider, pinned QED/cflib sources, ordered
 patches, resource and conditional source-frame ledger before packaging:
 
 ```sh
-python3 tools/build_demo.py --output build/qed-delivery/final-v2 \
+python3 tools/build_demo.py --output build/qed-delivery/separate-disk \
   --gem-desktop --qed --format sdfs --sector-bytes 256 --system-kib 720 \
   --mouse-profile mild --release-compiler
-python3 tools/test_qed_exec_setup.py --bundle build/qed-delivery/final-v2
+python3 tools/test_qed_exec_setup.py --bundle build/qed-delivery/separate-disk
 ```
 
 Install the pinned actionc, Calypsi 5.18, Altirra bridge/ROM and OF816 build

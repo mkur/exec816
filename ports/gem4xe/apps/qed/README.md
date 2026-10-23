@@ -155,7 +155,7 @@ The [selection ledger](native-selection.json) accounts for every pinned editor
 and cflib source with explicit selections and exclusions. Native startup,
 fixed defaults, clipboard ownership, file metadata and ordinary retirement
 replace donor OS, configuration and accessory paths. Source patches retain the
-editor core. The resource location is `SYS:QED.RSC`; document paths keep their
+editor core. The production resource location is `QED:QED.RSC` on the separate application disk; document paths keep their
 inherited native current directory. CFLIB's private path seed is an empty
 relative prefix, with no invented drive or application-directory identity.
 
@@ -508,3 +508,9 @@ The delivered APP/resource/provider match the measured QC4 production editor.
 Fresh exact-ZIP checks cover both ordinary launch parents and persisted saves;
 the complete original gap/scope reconciliation and limits are in the delivery record.
 Full release/hosted/hardware qualification and cartridge publication remain separate.
+
+The application is distributed on `qed.atr` (APP, resource and notices), separate
+from the core `system.atr` and writable WORK. Mount the optional read-only disk
+with `MOUNT QED: DRIVE 2 FORMAT SPARTA`; launch `RUN QED:QED.APP`. The main
+system has no QED boot dependency. Isolated development fixtures explicitly
+select their own SYS resource path at compile time; production uses QED:.

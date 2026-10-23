@@ -11,7 +11,7 @@ from desktop_mouse import schedule
 from make_data_disk import make
 from native_program import ROOT, require, sha256
 from prime_observer import process_record
-from qed_demo import verify
+from qed_demo import verify, mount_editor
 from test_demo import run
 
 
@@ -27,10 +27,10 @@ class StartupFailure:
             move(x,y);s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(15)
             s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(50)
         s.saved['desktop_menu']={};menus=Menus(s,click,move);menus.select('Shell')
-        baseline=s.ledger();fields={n:o for n,_,o in json.loads((ROOT/'abi/process.json').read_text())['record']}
+        mount_editor(s);baseline=s.ledger();fields={n:o for n,_,o in json.loads((ROOT/'abi/process.json').read_text())['record']}
         results=[]
         for cycle in range(2):
-            old=s.begin('RUN C:QED.APP');s.ready(old);s.result()
+            old=s.begin('RUN QED:QED.APP');s.ready(old);s.result()
             identity=s.number(s.at('job'));row=process_record(s.far,s.p,identity)
             s.rendezvous('db($%x)=4'%(row+fields['state']))
             result=s.number(row+fields['primary'])
@@ -53,15 +53,15 @@ def check(output,bundle,case):
                 n.endswith(('-results.json','.bgra')) or n=='work-walkthrough.atr']
     shutil.copytree(bundle,output,ignore=ignore)
     with zipfile.ZipFile(output/'exec816-demo.zip') as archive:archive.extractall(output/'extracted')
-    source=output/'diagnostic-source';shutil.copytree(output/'media',source)
+    source=output/'diagnostic-source';shutil.copytree(output/'qed-media',source)
     if case=='missing':(source/'QED.RSC').unlink()
     else:(source/'QED.RSC').write_bytes(b'invalid resource')
-    diagnostic=output/'diagnostic-system.atr'
+    diagnostic=output/'diagnostic-qed.atr'
     make(diagnostic,source,binary_names={p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file()},
-         filesystem='sdfs',sector_bytes=256,sectors=2880,label='SYS')
+         filesystem='sdfs',sector_bytes=256,sectors=2880,label='QED')
     inputs={str(p.relative_to(ROOT)):sha256(p) for p in (Path(__file__),ROOT/'tools/test_demo.py')}
     result=run(output,boot_smoke=True,distribution_root=output/'extracted/exec816-demo',
-        media_path=diagnostic,diagnostic_media_sha256=sha256(diagnostic),
+        companion_overrides={'qed.atr':dict(path=str(diagnostic),sha256=sha256(diagnostic))},
         integration=StartupFailure(),profile_commands=False)
     result.update(qualification=False,scope='QED diagnostic '+case+' resource; not a healthy exact-package run',
         zip_sha256=sha256(output/'exec816-demo.zip'),observer_inputs=inputs)

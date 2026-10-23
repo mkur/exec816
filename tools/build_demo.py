@@ -218,9 +218,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         build_editor(editor,provider,executable=True)
         measure(editor)
         qed_entry=stage(output,editor,provider)
-        binary_names.update({'C/QED.APP','QED.RSC'})
-        (media/'README.TXT').write_text(qed_guide(program['build']['exec_build']['version'],
-            program['build']['desktop_mouse']['profile']),encoding='ascii')
+        # QED is an optional application disk; leave the core SYS files intact.
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources}|({'VIEW.TXT'} if gem_desktop else set()),'Unexpected stale file in demo media directory')
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
                    sector_bytes=sector_bytes,sectors=system_sectors,label='SYS')
@@ -364,6 +362,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if qed:
         from package_demo import QED_NOTICES
         record['qed']=qed_entry
+        record['additional_media'].append(dict(name='qed.atr',sha256=qed_entry['media_sha256'],
+            drive=2,alias='QED',access='readonly',filesystem='sdfs',sectors=2880,sector_bytes=256))
+        record['artifacts']['qed.atr']=qed_entry['media_sha256']
         record['artifacts'].update({name:sha256(output/name) for name in QED_NOTICES})
         record['source_inputs'].update({str(p.relative_to(ROOT)):sha256(p) for p in (
             ROOT/'tools/qed_demo.py',ROOT/'tools/qed_delivery.py',ROOT/'tools/build_qed.py',
@@ -589,7 +590,7 @@ if __name__=='__main__':
                         help='Nominal system disk capacity; WORK is always 720 KiB with 256-byte sectors')
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
-    parser.add_argument('--qed',action='store_true',help='Include production QED in the GEM desktop SDFS package')
+    parser.add_argument('--qed',action='store_true',help='Add a separate production QED application disk to the GEM desktop package')
     parser.add_argument('--gem-desktop',action='store_true',help='GEM Control Panel and counter beside the shell')
     parser.add_argument('--aes-input',action='store_true',help='Autoboot two interactive GEM input apps beside the native shell')
     parser.add_argument('--aes-counters',action='store_true',help='Autoboot the optional two-counter GEM desktop beside the native shell')

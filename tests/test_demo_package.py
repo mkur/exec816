@@ -261,7 +261,7 @@ class DemoPackageTests(unittest.TestCase):
             package_demo.package(self.bundle,self.archive,bitmap_shell=source)
             with zipfile.ZipFile(self.archive) as archive:
                 guide=archive.read('exec816-demo/README.txt')
-                self.assertIn(b'RUN C:QED.APP',guide);self.assertIn(b'WORK:SAMPLE.TXT',guide)
+                self.assertIn(b'RUN QED:QED.APP',guide);self.assertIn(b'WORK:SAMPLE.TXT',guide)
                 for name in package_demo.QED_NOTICES:
                     self.assertEqual(archive.read('exec816-demo/'+name),(source/name).read_bytes())
             (source/package_demo.QED_NOTICES[0]).write_text('changed')

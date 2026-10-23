@@ -228,6 +228,12 @@ def prepare(demo, config, ide_firmware, cart=None, work=None):
             f'Disk {drive - 1}': 'R' + str(require_file(demo / record['media'])),
             'Disk 7': 'W' + str(selected_work(demo, local, work)),
         })
+    for item in record.get('additional_media',[]):
+        if item.get('access')=='readonly':
+            key=f"Disk {item['drive']-1}"
+            if json.dumps(key) in mounted:
+                raise ValueError('Companion disk conflicts with SYS/WORK: '+item['name'])
+            set_values(settings,mounted.name,{key:'R'+str(require_file(demo/item['name']))})
     boot = require_file(demo / record['boot_image'])
     mode = '--run'
     if cart:

@@ -10,7 +10,7 @@ from desktop_menu_check import Menus
 from desktop_mouse import schedule
 from filesystem_audit import Audit
 from native_program import ROOT, require, sha256
-from qed_demo import SAMPLE
+from qed_demo import SAMPLE, mount_editor
 from prime_observer import process_record
 from test_demo import run
 
@@ -28,7 +28,7 @@ class QedPreview:
             s.b._cmd_ok('MOUSE AT 2000 0 0 0'); s.frames(50)
         s.saved['desktop_menu'] = {}
         menus = Menus(s, click, move)
-        menus.select('Shell'); baseline = s.ledger()
+        menus.select('Shell'); mount_editor(s); baseline = s.ledger()
         shared = json.loads((s.p['output'] / 'bitmap-console/c-image.json').read_text())['symbols']
         from generate_aes_server import layout, expected_layout
         owner_offset = layout()['Request']['fields']['owner']
@@ -37,7 +37,7 @@ class QedPreview:
         job = s.at('job')
         def launch():
             print('QED preview: normal RUN', flush=True)
-            old = s.begin('RUN C:QED.APP WORK:SAMPLE.TXT'); s.ready(old); s.result()
+            old = s.begin('RUN QED:QED.APP WORK:SAMPLE.TXT'); s.ready(old); s.result()
             identity = s.number(job)
             row = process_record(s.far, s.p, identity)
             s.frames(100)

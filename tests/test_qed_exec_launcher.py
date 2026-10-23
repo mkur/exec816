@@ -19,10 +19,10 @@ class QedExecSetupTests(unittest.TestCase):
             out=Path(temp).resolve()/'QED preview';(out/'of816').mkdir(parents=True)
             (out/'demo-manifest.json').write_text(json.dumps(dict(bitmap=True,
                 pin={'machine':{'video':'PAL','high_banks':63,'clock_multiplier':8}},
-                media='system.atr',boot_image='of816/Exec-of816.xex')))
+                media='system.atr',additional_media=[dict(name='qed.atr',drive=2,access='readonly')],boot_image='of816/Exec-of816.xex')))
             (out/'of816/of816.json').write_text(json.dumps(dict(
                 rom={'name':'altirraos-816.rom'},boot_config={'system_drive':1})))
-            for name in ('system.atr','work.atr','of816/altirraos-816.rom','of816/Exec-of816.xex'):
+            for name in ('system.atr','work.atr','qed.atr','of816/altirraos-816.rom','of816/Exec-of816.xex'):
                 (out/name).write_bytes(name.encode())
             launcher(out)
             command=[str(out/'launch-qed.command'),'--altirra','/usr/bin/true','--prepare-only']
@@ -35,6 +35,7 @@ class QedExecSetupTests(unittest.TestCase):
             self.assertEqual([d['tag'] for d in json.loads(json.loads(base['"Devices"']))],['vbxe'])
             images=settings[PROFILES+r'\00000000\Mounted Images']
             self.assertEqual(json.loads(images['"Disk 0"']),'R'+str(out/'system.atr'))
+            self.assertEqual(json.loads(images['"Disk 1"']),'R'+str(out/'qed.atr'))
             work=Path(json.loads(images['"Disk 7"'])[1:]);work.write_bytes(b'saved document')
             (out/'work.atr').write_bytes(b'new clean template')
             launcher(out)

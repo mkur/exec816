@@ -11,7 +11,9 @@ Add VBXE FX 1.26 at D6xx with private 512K VRAM, and ST Mouse on port 1.
 Disable keyboard joystick maps, SIO patches, burst I/O and fast boot.
 Remove IDE Plus, U1MB and Rapidus.
 
-Mount system.atr read-only in D1 with Generic + 57600 baud emulation.
+Mount system.atr read-only in D1 and qed.atr read-only in D2, both with
+Generic + 57600 baud emulation. QED is entirely on its separate application
+disk; the main system boots without it.
 Copy work.atr to a private location and mount that copy writable in D8.
 Keep disks mounted when loading an XEX. Boot Exec-of816.xex and allow the
 five-second countdown to finish. A key during countdown enters OF816;
@@ -19,8 +21,9 @@ EXEC816 resumes startup. Capture/release the mouse with F12 or Capture Mouse.
 
 OPEN AND EDIT
 
-Click the Shell and enter RUN C:QED.APP WORK:SAMPLE.TXT
-Use RUN C:QED.APP for a new document. Alternatively, open C: on the desktop
+Click the Shell and enter MOUNT QED: DRIVE 2 FORMAT SPARTA
+Then enter RUN QED:QED.APP WORK:SAMPLE.TXT
+Use RUN QED:QED.APP for a new document. Alternatively, open QED: on the desktop
 and double-click QED.APP. Keep one QED instance; close it before another.
 Ctrl+O opens, Ctrl+N creates, Ctrl+S saves, Ctrl+M selects Save As.
 Ctrl+A selects all; Ctrl+C/X/V copies/cuts/pastes; Ctrl+Z toggles Undo.
@@ -33,7 +36,7 @@ Close the editor before EXIT in the Shell returns to the OS.
 
 SAVE YOUR WORK
 
-SYS: in D1 is read-only. WORK: in D8 is writable. RAM: disappears on reboot.
+SYS: in D1 and QED: in D2 are read-only. WORK: in D8 is writable. RAM: disappears on reboot.
 Save As accepts WORK: (the committed title can show its physical name D8:).
 Replacing a document and replacing an older backup require separate consent;
 Cancel is the default. The previous document is retained as .BAK.
@@ -58,6 +61,9 @@ QED-PROVENANCE.txt describes this adaptation. QED-COPYING.LIB.txt and
 QED-APACHE-2.0.txt retain library terms. EXEC816-GPL-3.0.txt, EXEC816-MIT.txt,
 EXEC816-LICENSING.md and the GEM, calculator, G4BENCH, OF816-LICENSE.txt
 and ALTIRRAOS-LICENSE.txt notices cover the other included components.
-SHA256SUMS covers every packaged boot file, guide and notice.
+The QED disk also retains its notices as NOTICE.TXT, TERMS.TXT, COPYING.LIB,
+APACHE.TXT, PORT.TXT and MIT.TXT. QED.RSC is loaded from QED:, independently
+of the document directory. Unmount QED: before swapping its disk.
+SHA256SUMS covers every packaged boot file, disk, guide and notice.
 Matching source/relink materials and QED-DELIVERY-SHA256SUMS accompany this
 boot ZIP separately. Keep them together when redistributing the port.

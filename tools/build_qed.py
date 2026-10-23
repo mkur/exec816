@@ -85,6 +85,9 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
         (['--char-is-unsigned'] if '/source/qed/' in str(p) or p.parent==native else [])
         for p in sources}
     if fixture is not None:
+        # Isolated fixtures keep their resource on their own test SYS disk.
+        for source in sources:
+            if source.name=='rsc.c':definitions[str(source)].append('-DQED_RESOURCE_PATH="SYS:QED.RSC"')
         # Development-only failing acquisition calls; no alternate editor body.
         replacements=dict(appl_init='QedFailAES',v_opnvwk='QedFailVDI',
             rsrc_load='QedFailResource',menu_bar='QedFailMenu',

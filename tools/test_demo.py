@@ -21,7 +21,7 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None,diagnostic_media_sha256=None):
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None,diagnostic_media_sha256=None,companion_overrides=None,omit_media=()):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
     require(disk_failure in (None,'missing','missing-work','wrong'),'Unknown disk failure')
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
@@ -144,16 +144,27 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         mounted=None if ide_only else (ROOT/'tests/fixtures/mydos/mydos450-128.atr' if disk_failure=='wrong' else None if disk_failure=='missing' else media_path)
         mounted_hash=sha256(mounted) if mounted else None
         if mounted:b.mount(system_drive-1,str(mounted))
-        work_media=[]
+        work_media=[];readonly_media=[];overrides=companion_overrides or {}
+        known={item["name"] for item in manifest.get("additional_media",[])}
+        require(set(overrides)<=known and set(omit_media)<=known,"Unknown companion override/omission")
         for item in manifest.get('additional_media', []):
             target=out/(Path(item['name']).stem+'-walkthrough.atr')
             source=(distribution_root or out)/item['name']
-            require(sha256(source)==item['sha256'],'Changed extracted writable media')
+            require(sha256(source)==item['sha256'],'Changed extracted companion media')
+            if item['name'] in omit_media:
+                require(item.get('access')=='readonly','Only optional read-only media may be omitted')
+                continue
+            expected=item['sha256']
+            if item['name'] in overrides:
+                change=overrides[item['name']];source=Path(change['path']);expected=change['sha256']
+                require(sha256(source)==expected,'Changed diagnostic companion')
             shutil.copyfile(source,target)
-            if integration is not None and hasattr(integration,'prepare_work'):
-                integration.prepare_work(target,item)
-            if disk_failure!='missing-work':b.mount(item['drive']-1,str(target))
-            work_media.append((item,target))
+            if item.get('access','readwrite')=='readwrite':
+                if integration is not None and hasattr(integration,'prepare_work'):
+                    integration.prepare_work(target,item)
+                work_media.append((item,target))
+            else:readonly_media.append((item,target,expected))
+            if disk_failure!='missing-work' or item.get('access')=='readonly':b.mount(item['drive']-1,str(target))
         machine=verify_machine(b,rom,pin)
         def far(address,length):
             return b.memdump(address,length)
@@ -1079,6 +1090,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             saved['ide_work_files']={name:dict(bytes=len(payload),sha256=__import__('hashlib').sha256(payload).hexdigest())
                                      for name,payload in audit.files.items()}
         if mounted:require(sha256(mounted)==mounted_hash,'Initially mounted media changed')
+        for item,target,expected in readonly_media:
+            b._cmd_ok(f'EJECT drive={item["drive"]-1}')
+            require(sha256(target)==expected,'Read-only companion changed')
         saved['work_media']=[]
         if work_media:
             from filesystem_audit import Audit
@@ -1115,7 +1129,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                             'Packaged writable commands did not persist expected bytes')
                     require(audit.directories==1,'Packaged writable commands retained a directory')
                 saved['work_media'].append(dict(name=target.name,sha256=sha256(target),allocation=allocation))
-    return dict(status='pass',tier='development',bundle_manifest_sha256=sha256(out/'demo-manifest.json'),
+    return dict(status='pass',tier='development',companion_overrides=companion_overrides,omitted_media=list(omit_media),bundle_manifest_sha256=sha256(out/'demo-manifest.json'),
         xex_sha256=sha256(out/'program.xex'),media_sha256=sha256(media_path),screenshot_sha256=sha256(out/'boot-smoke.png') if boot_smoke else None if stock_smoke or loading_smoke or cache_smoke else sha256(out/'walkthrough.png'),
         runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
         measurement_media_override=measurement_media_sha256 is not None,

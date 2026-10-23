@@ -24,12 +24,13 @@ class FinalWorkflow(Workflow):
 
     def files(self):
         s=self.s
-        e=self.launch('RUN C:QED.APP');self.focus(e);e.loaded('final-empty',[b''])
+        s.command('CD WORK:REL')
+        e=self.launch('RUN QED:QED.APP');self.focus(e);e.loaded('final-empty',[b''])
         e.key('X');e.key('N',ctrl=True);e.form_open();e.alert(2);e.loaded('final-discard',[b''])
         e.key('A');e.save_as('FINAL.TXT','WORK');e.saved('final-save-as',[b'a'],b'WORK:FINAL.TXT',x=1)
         e.key('B');e.key('S',ctrl=True);e.consents();e.saved('final-save-backup',[b'ab'],b'WORK:FINAL.TXT',x=2)
         e.choose('FINAL.TXT','WORK');e.loaded('final-shell-reopen',[b'ab'],path=b'WORK:FINAL.TXT')
-        self.retire(e);self.report['cases']+=['discard','shell-save-as-backup-reopen']
+        self.retire(e);s.command('CD SYS:');self.report['cases']+=['discard','shell-save-as-backup-reopen']
         directory=s.p['output']/'bitmap-console'
         resident=json.loads((directory/'c-image.json').read_text())['symbols']
         desk=symbols(s.b,s.p,directory,'desktop',s.number(resident['GEMDesktopChildren']))['GEMDesk']
@@ -73,5 +74,5 @@ def check(output,bundle,layout_from):
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--bundle',type=Path,required=True)
-    p.add_argument('--layout-from',type=Path,default=ROOT/'build/qed-coexist/qc3-caption/app')
+    p.add_argument('--layout-from',type=Path,default=ROOT/'build/qed-separate-disk/layout-fixture')
     a=p.parse_args();check(a.output.resolve(),a.bundle.resolve(),a.layout_from.resolve())

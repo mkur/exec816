@@ -269,3 +269,25 @@ Development checks pass; this does not qualify the hosted system, a release,
 cartridge boot or physical hardware. Full applicable matrices, matching old/new
 Atarimax CAR and raw BIN images, cartridge boots and publication are a separate
 release follow-up.
+
+
+## Separate application disk revision
+
+The subsequent delivery requirement moves QED off the main system disk.
+The current builder stages APP, resource and notices on optional read-only
+`qed.atr` in D2. Main SYS in D1 keeps the ordinary system files; WORK in D8
+remains independently persistent. Public `MOUNT QED: DRIVE 2 FORMAT SPARTA`
+admits the application volume on demand, followed by `RUN QED:QED.APP`.
+The main system has no QED mount or startup dependency.
+
+The ordered source patch selects `QED:QED.RSC` for production resource discovery;
+isolated test fixtures explicitly select their own SYS resource location.
+The native ABI, worker count, Task pools and 2,560-byte admission are unchanged.
+Reserved bank-zero growth: **0 fixed / 0 per-public-Task / 0 private idle bytes**,
+including guards, alignment and unused capacity. Dynamic application-volume
+ownership remains ordinary upper-memory DOS state.
+
+The new disk placement supersedes the earlier QD1–QD7 layout. Those records keep
+their original hashes and cases. Host checks and fresh emitted package checks
+for this media revision are recorded below when completed; earlier evidence
+alone does not validate the new disk/APP/resource path.

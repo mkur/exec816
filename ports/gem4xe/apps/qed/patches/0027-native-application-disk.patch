@@ -1,0 +1,8 @@
+--- a/qed/src/rsc.c
++++ b/qed/src/rsc.c
+@@ -62,1 +62,4 @@
+-    rsc_init=rsrc_load("SYS:QED.RSC");
++#ifndef QED_RESOURCE_PATH
++#define QED_RESOURCE_PATH "QED:QED.RSC"
++#endif
++    rsc_init=rsrc_load(QED_RESOURCE_PATH);

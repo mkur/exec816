@@ -50,14 +50,14 @@ def passed_execution(path,bundle,app_sha):
         result.get('production_app_sha256')==app_sha and
         result.get('boot_xex_sha256')==sha256(bundle/'of816/Exec-of816.xex') and
         result.get('media_sha256')==sha256(bundle/'system.atr') and
-        not result.get('diagnostic_media_sha256'),'Final execution differs from the healthy candidate')
+        not result.get('diagnostic_media_sha256') and not result.get('companion_overrides') and not result.get('omitted_media'),'Final execution differs from the healthy candidate')
     require(result.get('observer_inputs'),'Missing final QED observer inputs')
     for name,digest in result['observer_inputs'].items():checked(ROOT/name,digest)
     return result
 
 
 def archive(bundle):
-    expected={'Exec-of816.xex','system.atr','work.atr','altirraos-816.rom','ALTIRRAOS-LICENSE.txt',
+    expected={'Exec-of816.xex','system.atr','work.atr','qed.atr','altirraos-816.rom','ALTIRRAOS-LICENSE.txt',
         'OF816-LICENSE.txt','README.txt','SHA256SUMS',*LICENSE_FILES,*GEM_NOTICES,
         *CALCULATOR_NOTICES,*G4BENCH_NOTICES,*QED_NOTICES}
     with zipfile.ZipFile(bundle/'exec816-demo.zip') as packed:
@@ -72,7 +72,7 @@ def archive(bundle):
             require(hashlib.sha256(packed.read('exec816-demo/'+name)).hexdigest()==digest,'Changed QED ZIP member: '+name)
         for name,source in LICENSE_FILES.items():
             require(packed.read('exec816-demo/'+name)==(ROOT/source).read_bytes(),'Stale packaged licence: '+name)
-        for name in ('system.atr','work.atr'):
+        for name in ('system.atr','work.atr','qed.atr'):
             require(packed.read('exec816-demo/'+name)==(bundle/name).read_bytes(),'Stale packaged media: '+name)
         require(packed.read('exec816-demo/Exec-of816.xex')==(bundle/'of816/Exec-of816.xex').read_bytes(),
                 'Stale packaged OF816 XEX')

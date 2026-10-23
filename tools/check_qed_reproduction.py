@@ -9,7 +9,7 @@ from pathlib import Path
 from native_program import require, sha256
 from package_demo import GEM_NOTICES, CALCULATOR_NOTICES, G4BENCH_NOTICES, QED_NOTICES
 
-RUNTIME=('program.xex','of816/Exec-of816.xex','system.atr','work.atr','README.md','exec816-demo.zip',
+RUNTIME=('program.xex','of816/Exec-of816.xex','system.atr','work.atr','qed.atr','README.md','exec816-demo.zip',
          'of816/altirraos-816.rom','of816/ALTIRRAOS-LICENSE.txt','of816/OF816-LICENSE.txt',
          'qed-production/program.app','qed-production/inputs/resource/QED.RSC',
          *GEM_NOTICES,*CALCULATOR_NOTICES,*G4BENCH_NOTICES,*QED_NOTICES)

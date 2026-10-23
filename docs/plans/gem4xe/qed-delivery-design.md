@@ -30,7 +30,7 @@ runtime dependencies of this delivery.
 | --- | --- |
 | Machine | The QC4 AltirraSDL configuration: Atari 800XL, PAL, plain 65C816 at 8x, 64 KiB base RAM plus 63 high banks, VBXE FX 1.26 at D6xx with private 512 KiB VRAM, and ST Mouse on port 1. |
 | OS and emulator | The exact ROM, emulator and configuration identities recorded by the candidate. Start from QC4 and the [GUI pin](../../../toolchain/altirra-gem-vdi.json); do not substitute another AltirraOS ROM or emulator and inherit its compatibility claims. |
-| Boot and system media | OF816 with the standard five-second autoboot into the shell/desktop, read-only SDFS SYS in D1, and a separate writable WORK template in D8. Retain the normal shell/prime demo; QED starts on request. |
+| Boot and system media | OF816 with the standard five-second autoboot into the shell/desktop, read-only SDFS SYS in D1, optional read-only QED application disk in D2, and writable WORK in D8. Retain the normal shell/prime demo; QED starts on request. |
 | Application | One ordinary loaded QED Process and one document, the adapted English resource, fixed font, existing editing/clipboard/Undo, literal Find/Find Next and checked saving/modified-document decisions. |
 | Document storage | Writable RAM, MyDOS and SpartaDOS mounts remain in scope. SDFS system media is the delivered boot configuration; it does not narrow the supported document filesystems. |
 | Capacity | Eight public Task slots and the current window/AES limits. QED may coexist with Counter or foreground shell checksum activity in the separately admitted QC4 cohorts. |
@@ -98,8 +98,8 @@ emulator as boot-package dependencies.
 
 | Location | Content and purpose |
 | --- | --- |
-| SYS:C/QED.APP | The uninstrumented production APP; the normal C: assignment makes C:QED.APP available. |
-| SYS:QED.RSC | The matching adapted English resource. Preserve the current explicit SYS: lookup, independent of the document's directory. |
+| QED:QED.APP | The uninstrumented production APP; the normal C: assignment makes C:QED.APP available. |
+| QED:QED.RSC | The matching adapted English resource. Preserve the current explicit SYS: lookup, independent of the document's directory. |
 | SYS:README.TXT | Current desktop/QED usage and limits, consistent with the extracted package guide. |
 | WORK:SAMPLE.TXT | A small disposable sample in the clean writable-media template. |
 | Extracted package README.txt | Manual boot/mount instructions, Files and shell launch, controls, save/backup/recovery behavior, supported limits and notices. |
@@ -265,3 +265,10 @@ When preparing a release or making a qualification claim, freeze the candidate
 and run the applicable full qualification matrices, including the required
 release boot forms. A design note, a local ZIP or the focused development
 checks alone cannot mark that release qualified or published.
+
+
+The delivery media revision requested after QD7 separates QED from the main
+system: `qed.atr` carries APP/resource/notices, SYS stays generic, and WORK stays
+private. The user mounts QED through the public MOUNT command; it is not a
+required boot volume. The current guide and subsequent delivery history record
+this revision; earlier QD1–QD7 hashes retain their original media layout.

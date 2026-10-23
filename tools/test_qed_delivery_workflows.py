@@ -16,7 +16,7 @@ from gem_applications import symbols
 from make_data_disk import make
 from native_program import ROOT, require, sha256
 from qed_coexist_observe import ProductionEditor, emitted_offsets, heap_checkpoint
-from qed_demo import verify, SAMPLE
+from qed_demo import verify, SAMPLE, mount_editor
 from test_demo import run
 from test_shell_core import KEYS
 
@@ -41,7 +41,7 @@ class Workflow:
         (source/'REL').mkdir()
         (source/'REL/REL.TXT').write_bytes(b'relative\n')
         if self.case == 'files':
-            (source/'DESKTOP.CFG').write_bytes(b'EXEC816_DESKTOP 1\nFOLDER 120 16 432 220 1 1 SYS:\nASSOC TXT C:QED.APP\n')
+            (source/'DESKTOP.CFG').write_bytes(b'EXEC816_DESKTOP 1\nFOLDER 120 16 432 220 1 1 SYS:\nASSOC TXT QED:QED.APP\n')
         make(target, source, binary_names=set(FORMATS), filesystem='sdfs', sector_bytes=256,
              sectors=2880, label='WORK')
 
@@ -58,11 +58,11 @@ class Workflow:
             s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(50)
         self.move,self.click = move,click
         s.saved['desktop_menu'] = {};self.menus = Menus(s,click,move)
-        self.menus.select('Shell');self.baseline = s.ledger()
+        self.menus.select('Shell');mount_editor(s);self.baseline = s.ledger()
         if self.case == 'files':self.files()
         elif self.case == 'shell':self.shell()
         elif self.case == 'reopen':
-            e=self.launch('RUN C:QED.APP WORK:SAMPLE.TXT')
+            e=self.launch('RUN QED:QED.APP WORK:SAMPLE.TXT')
             self.focus(e);e.loaded('persistent-reopen',(b'cab'+SAMPLE).split(b'\n'),path=b'WORK:SAMPLE.TXT')
             self.retire(e);self.report['cases'].append('persistent-reopen')
         else:self.storage()
@@ -101,20 +101,20 @@ class Workflow:
             self.s.rendezvous('(dw($%x)=0)&(dw($%x)=0)'%(desktop,desktop+2));self.s.frames(80)
 
     def shell(self):
-        e=self.launch('RUN C:QED.APP');self.focus(e);e.loaded('no-argument',[b'']);self.retire(e)
+        e=self.launch('RUN QED:QED.APP');self.focus(e);e.loaded('no-argument',[b'']);self.retire(e)
         self.report['cases'].append('shell-no-argument')
-        e=self.launch('RUN C:QED.APP "WORK:SAMPLE.TXT"',len(SAMPLE));self.focus(e)
+        e=self.launch('RUN QED:QED.APP "WORK:SAMPLE.TXT"',len(SAMPLE));self.focus(e)
         e.loaded('quoted-argument',SAMPLE.split(b'\n'),path=b'WORK:SAMPLE.TXT');self.retire(e)
         self.report['cases'].append('shell-quoted-path')
         self.s.command('CD WORK:REL')
-        e=self.launch('RUN C:QED.APP REL.TXT',9);self.focus(e)
+        e=self.launch('RUN QED:QED.APP REL.TXT',9);self.focus(e)
         e.loaded('relative-argument',[b'relative',b''],path=b'WORK:REL/REL.TXT');self.retire(e)
         self.s.command('CD SYS:');self.report['cases'].append('inherited-relative-path')
         for argument in ('WORK:ABSENT.TXT','WORK:NUL.TXT','WORK:SAMPLE.TXT WORK:LF.TXT'):
-            e=self.launch('RUN C:QED.APP '+argument);e.form_open();e.form_pixels('rejected-launch')
+            e=self.launch('RUN QED:QED.APP '+argument);e.form_open();e.form_pixels('rejected-launch')
             e.alert(1);self.focus(e);e.loaded('rejected-argument',[b'']);self.retire(e)
             self.report['cases'].append('rejected:'+argument)
-        self.menus.select('Shell');old=self.s.begin('RUN C:QED.APP "WORK:SAMPLE.TXT')
+        self.menus.select('Shell');old=self.s.begin('RUN QED:QED.APP "WORK:SAMPLE.TXT')
         self.s.ready(old);self.s.result(error=115)
         require(self.s.ledger()==self.baseline,'Rejected shell syntax retained ownership')
         self.report['cases'].append('shell-rejected-malformed-syntax')
@@ -140,7 +140,7 @@ class Workflow:
         base=s.number(desk+D['folders']);require(base,'No initial Files folder')
         require(s.number(desk+D['settingsLoaded'],2)==1,'Association settings not loaded')
         children=desk+D['children']
-        self.menus.select('SYS:');self.folder_path(base,'SYS:C')
+        self.menus.select('SYS:');self.folder_path(base,'QED:')
         for activation in ('keyboard','double-click'):
             select(s,base,'QED.APP',self.click)
             if activation=='keyboard':self.menus.key('RETURN')
@@ -152,7 +152,7 @@ class Workflow:
             s.rendezvous('(dw($%x)!=0)|(dw($%x)!=0)'%(children,children+2))
             identity=s.number(children);e=self.editor(identity);self.focus(e);e.loaded('files-empty',[b''])
             self.retire(e,children);self.report['cases'].append('files-app-'+activation)
-            self.menus.select('SYS:C')
+            self.menus.select('QED:')
         self.folder_path(base,'WORK:');select(s,base,'SAMPLE.TXT',self.click);self.menus.key('RETURN')
         s.rendezvous('(dw($%x)!=0)|(dw($%x)!=0)'%(children,children+2))
         identity=s.number(children);e=self.editor(identity,len(SAMPLE));self.focus(e)
@@ -185,7 +185,7 @@ class Workflow:
 
     def storage(self):
         from qed_coexist_load import cksum
-        e=self.launch('RUN C:QED.APP');self.focus(e);e.loaded('storage-new',[b''])
+        e=self.launch('RUN QED:QED.APP');self.focus(e);e.loaded('storage-new',[b''])
         for key in ('A','B','SPACE','A','B'):e.key(key)
         lines=[b'ab ab'];e.selection('grouped-typing',lines,None,5,0)
         e.key('Z',ctrl=True);e.selection('grouped-undo',[b''],None,0,0)
@@ -220,13 +220,13 @@ class Workflow:
         media=self.s.p['output']/'documents-mydos.atr'
         make(media,source,filesystem='mydos',sector_bytes=256,sectors=2880,label='MD')
         self.s.b.mount(6,str(media));self.s.command('MOUNT MD: DRIVE 7 FORMAT MYDOS READWRITE')
-        e=self.launch('RUN C:QED.APP');self.focus(e)
+        e=self.launch('RUN QED:QED.APP');self.focus(e)
         for key in ('M','D'):e.key(key)
         e.save_as('MD.TXT','MD');e.saved('mydos-save-as',[b'md'],b'MD:MD.TXT',x=2)
         e.key('X');e.key('S',ctrl=True);e.consents();e.saved('mydos-save-backup',[b'mdx'],b'MD:MD.TXT',x=3)
         e.choose('MD.TXT','MD');e.loaded('mydos-reopen',[b'mdx'],path=b'MD:MD.TXT');self.retire(e)
         self.s.command('UNMOUNT MD:');self.report['cases'].append('mydos-save-backup-reopen')
-        e=self.launch('RUN C:QED.APP');self.focus(e)
+        e=self.launch('RUN QED:QED.APP');self.focus(e)
         for name in ('LF.TXT','CRLF.TXT','TABS.TXT','EMPTY.TXT','NOEND.TXT','BOUND.TXT'):
             print('Delivery format:',name,flush=True)
             e.choose(name,'WORK');raw=FORMATS[name];ending=0 if b'\r\n' in raw else 1
@@ -280,6 +280,6 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--bundle',type=Path,required=True)
     p.add_argument('--case',choices=('shell','files','storage','reopen'),required=True)
-    p.add_argument('--layout-from',type=Path,default=ROOT/'build/qed-coexist/qc3-caption/app')
+    p.add_argument('--layout-from',type=Path,default=ROOT/'build/qed-separate-disk/layout-fixture')
     p.add_argument('--work-from',type=Path)
     a=p.parse_args();check(a.output.resolve(),a.bundle.resolve(),a.case,a.layout_from.resolve(),a.work_from)
