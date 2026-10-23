@@ -95,3 +95,36 @@ input and completion waits were corrected while developing these checks.
 
 Bank-zero growth: **0 fixed / 0 per-public-Task / 0 private idle bytes**, including
 guards, alignment and unused capacity. The public Task pool remains eight.
+
+## QD5 Editor, storage and matched evidence
+
+The [QD5 record](../development/qed-delivery-qd5.json) closes all nine functional
+scope rows. Seventeen fresh checks span three ordinary loaded lifetimes:
+selection/Copy/Cut/Paste, grouped Undo/redo, Find/Find Next, RAM Save As/named
+Save/backup, a read-only Save As failure preserving live dirty state and identity,
+New Save/Discard/Cancel, MyDOS save/backup/reopen, six unchanged-byte format round
+trips and four non-destructive input rejections. The formats include uniform
+LF/CRLF, tabs, empty text, no final newline and the 1,023-byte line boundary;
+over-bound, mixed, CR-only and NUL input are rejected.
+
+Independent closed-image audits check SpartaDOS and MyDOS data, backups and
+allocation. Native CKSUM independently checks RAM document/backup bytes after
+QED collection. Text/form pixels, guards, native ownership and normal OS return
+pass. The stored executed observer and the maintained runner preserve the same
+storage sequence; later changes add startup/source-binding checks.
+
+QC4 reuse is explicit: production APP, resource, provider, platform/configuration,
+segment geometry and native bytes match, except twelve generated build-string
+bytes. The original response, peer/checksum progress, Stop/Cancel, lifetime,
+allocation-refusal and conditional stack evidence retains its original scope.
+QW failure/continuation reuse additionally matches twelve native implementation
+modules, 99 DOS/Exec/I/O inputs, ABI 26, provider, resource, compiler and runtime.
+Current rendering and positive storage run freshly; no older ABI result closes
+a current requirement by itself.
+
+The conditional source-frame bound remains 584 bytes with an 824-byte admission
+margin. The record includes actual selected pool observations and the complete
+reservation table. Bank-zero growth: **0 fixed / 0 per-public-Task / 0 private
+idle bytes**, including guards, alignment and unused capacity. The Task pool
+remains eight and QED admission 2,560 bytes. Functional completion does not close
+the outstanding distribution grant or establish hosted/release qualification.

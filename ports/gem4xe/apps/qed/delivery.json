@@ -13,75 +13,86 @@
   "requirements": {
     "launch": {
       "scope_row": "Launch and exit",
-      "status": "delivery-check-pending",
+      "status": "pass",
       "implementation": "ports/gem4xe/apps/qed/README.md",
       "evidence": [
-        "docs/development/qed-coexistence-qc4.json"
-      ]
+        "docs/development/qed-delivery-qd4.json",
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
     },
     "document": {
       "scope_row": "Document ownership",
-      "status": "delivery-check-pending",
+      "status": "pass",
       "implementation": "ports/gem4xe/apps/qed/README.md",
       "evidence": [
-        "docs/development/qed-coexistence-qc4.json"
-      ]
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
     },
     "text": {
       "scope_row": "Text",
-      "status": "delivery-check-pending",
+      "status": "pass",
       "implementation": "ports/gem4xe/apps/qed/README.md",
       "evidence": [
-        "docs/development/qed-coexistence-qc4.json"
-      ]
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
     },
     "editing": {
       "scope_row": "Editing",
-      "status": "delivery-check-pending",
+      "status": "pass",
       "implementation": "ports/gem4xe/apps/qed/README.md",
       "evidence": [
-        "docs/development/qed-coexistence-qc4.json"
-      ]
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
     },
     "search": {
       "scope_row": "Search",
-      "status": "delivery-check-pending",
+      "status": "pass",
       "implementation": "ports/gem4xe/apps/qed/README.md",
       "evidence": [
-        "docs/development/qed-coexistence-qc4.json"
-      ]
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
     },
     "files": {
       "scope_row": "Files",
-      "status": "delivery-check-pending",
+      "status": "pass",
       "implementation": "ports/gem4xe/apps/qed/README.md",
       "evidence": [
-        "docs/development/qed-coexistence-qc4.json"
-      ]
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
     },
     "appearance": {
       "scope_row": "Appearance and dialogs",
-      "status": "delivery-check-pending",
+      "status": "pass",
       "implementation": "ports/gem4xe/apps/qed/README.md",
       "evidence": [
-        "docs/development/qed-coexistence-qc4.json"
-      ]
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
     },
     "settings": {
       "scope_row": "Settings",
-      "status": "delivery-check-pending",
+      "status": "pass",
       "implementation": "ports/gem4xe/apps/qed/README.md",
       "evidence": [
-        "docs/development/qed-coexistence-qc4.json"
-      ]
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
     },
     "coexistence": {
       "scope_row": "Coexistence",
-      "status": "delivery-check-pending",
+      "status": "pass",
       "implementation": "ports/gem4xe/apps/qed/README.md",
       "evidence": [
+        "docs/development/qed-delivery-qd5.json",
         "docs/development/qed-coexistence-qc4.json"
-      ]
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
     }
   },
   "limits": {

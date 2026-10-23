@@ -184,13 +184,55 @@ class Workflow:
         self.report['cases'].append('association-child-survives-folder-close')
 
     def storage(self):
+        from qed_coexist_load import cksum
         e=self.launch('RUN C:QED.APP');self.focus(e);e.loaded('storage-new',[b''])
+        for key in ('A','B','SPACE','A','B'):e.key(key)
+        lines=[b'ab ab'];e.selection('grouped-typing',lines,None,5,0)
+        e.key('Z',ctrl=True);e.selection('grouped-undo',[b''],None,0,0)
+        e.key('Z',ctrl=True);e.selection('grouped-redo',lines,None,5,0)
+        span=(0,1,0,2);e.select('copy-range',lines,e.cell(1,0),e.cell(2,0),span,(2,0))
+        e.key('C',ctrl=True);e.clipboard([b'b'])
+        e.key('X',ctrl=True);e.selection('cut',[b'a ab'],None,1,0)
+        e.key('Z',ctrl=True);e.selection('undo-cut',lines,span,2,0)
+        e.key('Z',ctrl=True);e.selection('redo-cut',[b'a ab'],None,1,0)
+        e.key('V',ctrl=True);e.selection('paste',lines,None,2,0)
+        e.click(*e.cell(0,0));e.key('F',ctrl=True);e.form_open();e.form_pixels('find')
+        e.form_key('B');e.accept_find();e.command_idle();e.selection('find',lines,(0,1,0,2),2,0)
+        e.key('G',ctrl=True);e.command_idle();e.selection('find-next',lines,(0,4,0,5),5,0)
+        e.key('ESC');e.expected_range=None;e.click(*e.cell(5,0))
+        e.save_as('EDIT.TXT','RAM');e.saved('ram-save-as',lines,b'RAM:EDIT.TXT',x=5)
+        e.key('C');e.key('S',ctrl=True);e.consents();e.saved('ram-named-save',[b'ab abc'],b'RAM:EDIT.TXT',x=6)
+        e.key('D');e.key('M',ctrl=True);e.choose_path('FORBID.TXT','SYS');e.report(details=False)
+        require(e.text()['dirty'] and e.name()==b'RAM:EDIT.TXT','Read-only failure committed identity')
+        e.text_pixels('read-only-retains-document',[b'ab abcd'])
+        e.key('N',ctrl=True);e.form_open();e.form_pixels('new-default-cancel');e.alert(3);e.command_idle()
+        e.text_pixels('new-cancel-retains-document',[b'ab abcd'])
+        e.key('N',ctrl=True);e.form_open();e.alert(2);e.loaded('new-discard',[b''])
+        for key in ('N','E','W'):e.key(key)
+        e.key('N',ctrl=True);e.form_open();e.alert(1);e.choose_path('DECIDE.TXT','WORK');e.loaded('new-save-continuation',[b''])
+        self.retire(e)
+        for path,raw in (('RAM:EDIT.TXT',b'ab abc'),('RAM:EDIT.BAK',b'ab ab')):
+            self.s.command('CKSUM '+path,('%d %d'%(cksum(raw),len(raw))).encode())
+        self.report['cases'] += ['selection-copy-cut-paste','grouped-undo-redo','find-find-next',
+            'ram-save-as-named-save-backup','read-only-failure-preserves-state','new-save-discard-cancel']
+        # Mount a separate disposable MyDOS document disk through the public shell.
+        source=self.s.p['output']/'mydos-source';source.mkdir()
+        media=self.s.p['output']/'documents-mydos.atr'
+        make(media,source,filesystem='mydos',sector_bytes=256,sectors=2880,label='MD')
+        self.s.b.mount(6,str(media));self.s.command('MOUNT MD: DRIVE 7 FORMAT MYDOS READWRITE')
+        e=self.launch('RUN C:QED.APP');self.focus(e)
+        for key in ('M','D'):e.key(key)
+        e.save_as('MD.TXT','MD');e.saved('mydos-save-as',[b'md'],b'MD:MD.TXT',x=2)
+        e.key('X');e.key('S',ctrl=True);e.consents();e.saved('mydos-save-backup',[b'mdx'],b'MD:MD.TXT',x=3)
+        e.choose('MD.TXT','MD');e.loaded('mydos-reopen',[b'mdx'],path=b'MD:MD.TXT');self.retire(e)
+        self.s.command('UNMOUNT MD:');self.report['cases'].append('mydos-save-backup-reopen')
+        e=self.launch('RUN C:QED.APP');self.focus(e)
         for name in ('LF.TXT','CRLF.TXT','TABS.TXT','EMPTY.TXT','NOEND.TXT','BOUND.TXT'):
+            print('Delivery format:',name,flush=True)
             e.choose(name,'WORK');raw=FORMATS[name];ending=0 if b'\r\n' in raw else 1
             lines=raw.replace(b'\r\n',b'\n').split(b'\n')
             e.loaded('format-'+name,lines,ending=ending,path=('WORK:'+name).encode())
-            e.key('S',ctrl=True);e.consents();e.command_idle()
-            require(not e.text()['dirty'],'Round trip did not commit')
+            e.save_as('R'+name,'WORK');require(not e.text()['dirty'],'Round trip did not commit')
             self.report['cases'].append('roundtrip:'+name)
         e.choose('LF.TXT','WORK');e.loaded('rejection-baseline',[b'one',b'last',b''],path=b'WORK:LF.TXT')
         for name in ('OVER.TXT','MIXED.TXT','CR.TXT','NUL.TXT'):
@@ -214,6 +256,8 @@ def check(output,bundle,case,layout_from,work_from=None):
             digest,name=line.split('  ',1)
             require(hashlib.sha256(archive.read('exec816-demo/'+name)).hexdigest()==digest,'Changed ZIP member')
         archive.extractall(output/'extracted')
+    inputs={str(p.relative_to(ROOT)):sha256(p) for p in (Path(__file__),ROOT/'tools/test_demo.py',
+        ROOT/'tools/qed_coexist_observe.py',ROOT/'tools/qed_saving_observe.py')}
     observer=Workflow(production,offsets,case,work_from)
     result=run(output,boot_smoke=True,distribution_root=output/'extracted/exec816-demo',
                integration=observer,profile_commands=False)
@@ -221,11 +265,14 @@ def check(output,bundle,case,layout_from,work_from=None):
     if case=='storage':
         for name in FORMATS:
             require(disk.files[name]==FORMATS[name],'Roundtrip/rejection changed bytes: '+name)
-        for name in ('LF','CRLF','TABS','EMPTY','NOEND','BOUND'):
-            require(disk.files[name+'.BAK']==FORMATS[name+'.TXT'],'Roundtrip backup differs: '+name)
+        for name in ('LF.TXT','CRLF.TXT','TABS.TXT','EMPTY.TXT','NOEND.TXT','BOUND.TXT'):
+            require(disk.files['R'+name]==FORMATS[name],'Roundtrip bytes differ: '+name)
+        require(disk.files['DECIDE.TXT']==b'new','New Save continuation bytes differ')
+        md=Audit((output/'documents-mydos.atr').read_bytes());md.mydos()
+        require(md.files['MD.TXT']==b'mdx' and md.files['MD.BAK']==b'md','MyDOS document/backup differ')
     result.update(qualification=False,scope='QED delivery '+case,allocation=allocation,
         zip_sha256=sha256(bundle/'exec816-demo.zip'),production_app_sha256=record['qed']['app_sha256'],
-        observer_inputs={str(Path(__file__).relative_to(ROOT)):sha256(Path(__file__))})
+        observer_inputs=inputs)
     (output/'delivery-results.json').write_text(json.dumps(result,indent=2)+'\n')
     return result
 
