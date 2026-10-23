@@ -2,6 +2,7 @@
 import json
 from native_program import ROOT,require
 from colour_desktop_model import FIELDS as DESKTOP_FIELDS
+from program_image_layout import LAYOUT as IMAGE_LAYOUT,FIELDS as IMAGE_FIELDS
 
 MODELS={'desktop':('GEMDesk',DESKTOP_FIELDS['ready'],DESKTOP_FIELDS['work']),'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22),'dialog':('GEMDialog',8,40),'text':('GEMText',8,32),'g4bench':('g4b_ready',0,0),'g4clock':('g4p_ready',0,0)}
 MODELS['basic']=('Basic',8,166)
@@ -17,12 +18,15 @@ def instances(bridge,program,directory):
         row=raw[offset:offset+abi['record_bytes']]
         at=int.from_bytes(row[offsets['image']:offsets['image']+3],'little')
         if not row[offsets['state']] or not at:continue
-        image=bridge.memdump(at,42)
-        if image[:4]!=b'IMG1' or image[10]!=1:continue
+        image=bridge.memdump(at,IMAGE_LAYOUT['size'])
+        if image[:4]!=b'IMG1' or image[IMAGE_FIELDS['kind']]!=1:continue
         # Private PROGRAMIMAGE layout, used only by this development observer.
-        base=int.from_bytes(image[36:39],'little')
-        span=int.from_bytes(image[24:28],'little')
-        entry=int.from_bytes(image[39:42],'little')-base
+        def value(name):
+            field=IMAGE_LAYOUT['fields'][name];at=field['offset']
+            return int.from_bytes(image[at:at+field['size']],'little')
+        base=value('text')
+        span=value('textBytes')
+        entry=value('entry')-base
         matches=[name for name,app in apps.items() if app['span']==span and app['entry']==entry]
         require(len(matches)<=1,'Ambiguous application observer profile')
         if not matches:continue

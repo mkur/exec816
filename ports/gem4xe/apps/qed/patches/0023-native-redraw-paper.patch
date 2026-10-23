@@ -1,0 +1,92 @@
+--- a/qed/src/ausgabe.c
++++ b/qed/src/ausgabe.c
+@@ -125,7 +125,7 @@
+     if(!t->block || row<t->z1 || row>t->z2)return FALSE;
+     return (row>t->z1 || byte>=t->x1) && (row<t->z2 || byte<t->x2);
+ }
+-void line_out(WINDOWP w,TEXTP t,short row)
++static void output_line(WINDOWP w,TEXTP t,short row,bool cleared)
+ {
+     long absolute=w->doc.y+row,column=0;
+     LINEP line=visible_line(t,absolute);
+@@ -135,7 +135,7 @@
+     char ch;
+     bool mark,plain;
+     if(!line){
+-        fill_area(w->work.g_x,y,w->work.g_w,font_hcell,bg_color);
++        if(!cleared)fill_area(w->work.g_x,y,w->work.g_w,font_hcell,bg_color);
+         vswr_mode(vdi_handle,MD_REPLACE);return;
+     }
+     if(limit>80)limit=80;
+@@ -162,11 +162,15 @@
+     plain=bg_color==0;
+     for(first=0;plain && first<limit;first++)if(marked[first])plain=FALSE;
+     if(plain){
+-        cells[limit]=0;vswr_mode(vdi_handle,MD_REPLACE);
+-        vst_color(vdi_handle,fg_color);
+-        v_gtext(vdi_handle,w->work.g_x,y+EXEC_VDI_FONT_TOP,cells);
++        count=limit;
++        if(cleared)while(count>0 && cells[count-1]==' ')--count;
++        if(count){
++            cells[count]=0;vswr_mode(vdi_handle,MD_REPLACE);
++            vst_color(vdi_handle,fg_color);
++            v_gtext(vdi_handle,w->work.g_x,y+EXEC_VDI_FONT_TOP,cells);
++        }
+     }else{
+-    fill_area(w->work.g_x,y,w->work.g_w,font_hcell,bg_color);
++    if(!cleared)fill_area(w->work.g_x,y,w->work.g_w,font_hcell,bg_color);
+     vswr_mode(vdi_handle,MD_TRANS);
+     for(first=0;first<limit;first=last){
+         for(last=first+1;last<limit && marked[last]==marked[first];last++);
+@@ -189,6 +193,24 @@
+                 w->work.g_x+w->work.g_w-(short)x),font_hcell,fg_color);
+     }
+ }
++
++void line_out(WINDOWP w,TEXTP t,short row)
++{
++    output_line(w,t,row,FALSE);
++}
++
++/* A clipped multi-row redraw clears its paper once. Text runs can then omit
++ * trailing spaces, avoiding padded glyph work while retaining row edit paints. */
++void lines_out(WINDOWP w,TEXTP t,short first,short last)
++{
++    short row;
++    if(first>last)return;
++    if(first==last){line_out(w,t,first);return;}
++    fill_area(w->work.g_x,w->work.g_y+first*font_hcell,w->work.g_w,
++        (last-first+1)*font_hcell,bg_color);
++    for(row=first;row<=last;row++)output_line(w,t,row,TRUE);
++}
++
+ 
+ void bild_out(WINDOWP w,TEXTP t)
+ {
+--- a/qed/src/ausgabe.h
++++ b/qed/src/ausgabe.h
+@@ -16,6 +16,7 @@
+ 
+ extern void		head_out			(WINDOWP window, TEXTP t_ptr);
+ extern void		line_out			(WINDOWP window, TEXTP t_ptr, short wy);
++extern void lines_out(WINDOWP window,TEXTP text,short first,short last);
+ extern void		bild_out			(WINDOWP window, TEXTP t_ptr);
+ extern void		bild_blkout		(WINDOWP window, TEXTP t_ptr, long z1, long z2);
+ extern long		cursor_xpos		(TEXTP t_ptr, short pos, bool *cursor_italic );
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -553,12 +553,12 @@
+ static void wi_draw(WINDOWP w,GRECT *area)
+ {
+     TEXTP t=get_text(w->handle);
+-    short row,first=(area->g_y-w->work.g_y)/font_hcell;
++    short first=(area->g_y-w->work.g_y)/font_hcell;
+     short last=(area->g_y+area->g_h-1-w->work.g_y)/font_hcell;
+     set_clip(TRUE,area);
+     if(first<0)first=0;
+     if(last>=w->w_height)last=w->w_height-1;
+-    for(row=first;row<=last;row++)line_out(w,t,row);
++    lines_out(w,t,first,last);
+ }
+ 
+ 

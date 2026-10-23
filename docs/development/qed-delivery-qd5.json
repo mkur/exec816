@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "execution": {
+    "path": "build/qed-delivery/storage-v2/delivery-results.json",
+    "sha256": "c8153e41f5de3ff03a76f8d043cd72575fcd806d2562b5a219850b758c8c6d93",
+    "cases": [
+      "selection-copy-cut-paste",
+      "grouped-undo-redo",
+      "find-find-next",
+      "ram-save-as-named-save-backup",
+      "read-only-failure-preserves-state",
+      "new-save-discard-cancel",
+      "mydos-save-backup-reopen",
+      "roundtrip:LF.TXT",
+      "roundtrip:CRLF.TXT",
+      "roundtrip:TABS.TXT",
+      "roundtrip:EMPTY.TXT",
+      "roundtrip:NOEND.TXT",
+      "roundtrip:BOUND.TXT",
+      "non-destructive-reject:OVER.TXT",
+      "non-destructive-reject:MIXED.TXT",
+      "non-destructive-reject:CR.TXT",
+      "non-destructive-reject:NUL.TXT"
+    ],
+    "lifetimes": 3
+  },
+  "production_app_sha256": "2c516eaa36c4fd2f3fc60661070790f671cea9633225ff66b30f8f91ca65c1a7",
+  "provider_identity": "5408e60ed7efd8cdccb791d753b508a16afd9fa65371cdc7461ad5d95f6f2d1e",
+  "new_storage": {
+    "work": {
+      "sectors": 2880,
+      "sector_bytes": 256,
+      "allocated": 57,
+      "free": 2823,
+      "files": 20,
+      "directories": 2
+    },
+    "mydos": {
+      "sectors": 2880,
+      "sector_bytes": 256,
+      "allocated": 15,
+      "free": 2865,
+      "files": 2,
+      "directories": 1
+    },
+    "ram": "Independent foreground CKSUM of document and backup after QED collection"
+  },
+  "saved_bytes": {
+    "RBOUND.TXT": {
+      "bytes": 1023,
+      "sha256": "97c9d367e67d0cff2f99f4c97ddff45250552d880b0d2c57caf78b1483da8c56"
+    },
+    "RNOEND.TXT": {
+      "bytes": 4,
+      "sha256": "3547cb112ac4489af2310c0626cdba6f3097a2ad5a3b42ddd3b59c76c7a079a3"
+    },
+    "REMPTY.TXT": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "RTABS.TXT": {
+      "bytes": 8,
+      "sha256": "088828bb7c54e8b2919f9732df3ae5d9ccc5cb8eb2b5093fc1afea95d4f579b6"
+    },
+    "RCRLF.TXT": {
+      "bytes": 9,
+      "sha256": "a9ee35a85a1b5fb1ede1cd3142affefe20280871c08ff3247fa942589b5993af"
+    },
+    "RLF.TXT": {
+      "bytes": 9,
+      "sha256": "8324ce562c3683d9d264e479d92d20ce8a7c1b8ff86d9ab77d8d81856964d96f"
+    },
+    "DECIDE.TXT": {
+      "bytes": 3,
+      "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437"
+    },
+    "TABS.TXT": {
+      "bytes": 8,
+      "sha256": "088828bb7c54e8b2919f9732df3ae5d9ccc5cb8eb2b5093fc1afea95d4f579b6"
+    },
+    "SAMPLE.TXT": {
+      "bytes": 72,
+      "sha256": "cfcad6040ec0411c5bddb10043deb67c67c8406b3ac0d4922b0a6b4904c7e205"
+    },
+    "REL/REL.TXT": {
+      "bytes": 9,
+      "sha256": "9ac9d2fa6f7f0c19ed203ab36446c58aed9ef02dc3a55f02972227aecf979c40"
+    },
+    "README.TXT": {
+      "bytes": 89,
+      "sha256": "f8385a89d91846a3924f8a72c5a3ace993f6224c7227d7a8c1a743ee5c6173cd"
+    },
+    "OVER.TXT": {
+      "bytes": 1024,
+      "sha256": "49abd65bbf7f7e40c7055093ed2e3fd75f2f602f2c5fcf955c213e3135eb03f7"
+    },
+    "NUL.TXT": {
+      "bytes": 3,
+      "sha256": "59b271ae1bbcb1d31d41929817f4b16fb439eb4f31520b5ad1d5ce98920a7138"
+    },
+    "NOEND.TXT": {
+      "bytes": 4,
+      "sha256": "3547cb112ac4489af2310c0626cdba6f3097a2ad5a3b42ddd3b59c76c7a079a3"
+    },
+    "MIXED.TXT": {
+      "bytes": 5,
+      "sha256": "09908e5976ef56a1d49699e026f6925c1435ea0a07e73002d0f1e5abe78e8634"
+    },
+    "LF.TXT": {
+      "bytes": 9,
+      "sha256": "8324ce562c3683d9d264e479d92d20ce8a7c1b8ff86d9ab77d8d81856964d96f"
+    },
+    "EMPTY.TXT": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "CRLF.TXT": {
+      "bytes": 9,
+      "sha256": "a9ee35a85a1b5fb1ede1cd3142affefe20280871c08ff3247fa942589b5993af"
+    },
+    "CR.TXT": {
+      "bytes": 3,
+      "sha256": "af9081672dd5ef3247a30c2db5b0dafcc9bcf981a26aefb3c55d210d43fcc14e"
+    },
+    "BOUND.TXT": {
+      "bytes": 1023,
+      "sha256": "97c9d367e67d0cff2f99f4c97ddff45250552d880b0d2c57caf78b1483da8c56"
+    }
+  },
+  "reused_coexistence": {
+    "path": "docs/development/qed-coexistence-qc4.json",
+    "sha256": "3c992880231f0047c1b4a94362304fb291d1aaa1b76af445dd803bf779e3d59a",
+    "app_identical": true,
+    "provider_identical": true,
+    "resource_identical": true,
+    "native_byte_differences": [
+      139758,
+      139759,
+      139760,
+      139761,
+      139763,
+      139764,
+      139845,
+      139846,
+      139847,
+      139848,
+      139850,
+      139851
+    ],
+    "only_generated_build_strings": true,
+    "platform_and_configuration_identical": true,
+    "scope": "Original QC4 production response, peer/checksum progress, Stop/Cancel, repeated use, allocation refusals and guard/source-stack scope; no restamping"
+  },
+  "reused_operational_failures": {
+    "path": "docs/development/qed-saving-qw8.json",
+    "sha256": "153a777509419b38e1337bc7304403974f8d8322b2738887fca42a3c07df4383",
+    "matched_native_inputs": {
+      "ports/gem4xe/apps/qed/native/allocation.c": "b2cde3cb979224cdc9c97c73f3644a7840c415e5ebdb488c05004f1edb8ad808",
+      "ports/gem4xe/apps/qed/native/entry.c": "1a61a8a58e77eb7e027e0bb56401a413810e29d6b259aa728cbb880a7d7106f9",
+      "ports/gem4xe/apps/qed/native/files.c": "2123e398311bf2efe93fe5f1b7859e54942c42f8a186ae83f8dbb72615efe891",
+      "ports/gem4xe/apps/qed/native/library.c": "eacf019064da620040bae21243d0699396d5bb1bc572366a6c119bb70360eed0",
+      "ports/gem4xe/apps/qed/native/support.c": "f8ba6c9f42bac34cb60a3db532f167a0f6e9b98a7723d493c5e60c3ad88157cb",
+      "ports/gem4xe/apps/qed/native/gem-helpers.c": "6c8fd0a090850f250d3cb3fc31d979118a6bad88dd35ea0d38c4f6665d2b0f93",
+      "ports/gem4xe/apps/qed/native/commands.c": "0d3d89b193e0bfa1ac17f188e8dadfa090f9810b20ac54f3a30819cc1d52c7e0",
+      "ports/gem4xe/apps/qed/native/document.c": "a49345856cda7a3f853cad13de9fd7dabe4da97c497ea321d6758e5bacd4cc6d",
+      "ports/gem4xe/apps/qed/native/path.c": "14993978df01a1810d58ce09d1df931153b7a8c4cc8692a1a70bce5c76f0923d",
+      "ports/gem4xe/apps/qed/native/stage.c": "8b7504c0b77d3ba624a4e0ca87ff3371ba44dad9d5acea4e5d3e9002b939554d",
+      "ports/gem4xe/apps/qed/native/save.c": "57fb0ec89ec2ac1f5d53d9b8ae28504b4ef9584a4d88a4521c2ed34dd96b5e88",
+      "ports/gem4xe/apps/qed/native/saving.c": "7025f96ac28bb940830065c4ced838f9f6c6301a5254d0d05c9294e1a6b7419b"
+    },
+    "matched_dos_exec_io_inputs": 99,
+    "abi": 26,
+    "provider_identical": true,
+    "runtime_and_compiler_identical": true,
+    "resource_identical": true,
+    "scope": "Original QW operational failure, recovery and continuation cases for unchanged storage/runtime modules; current painting and positive storage verified freshly"
+  },
+  "source_frames": 584,
+  "selected_pool_observations": [
+    {
+      "slot": 6,
+      "reserved_bytes": 2560,
+      "touched_bytes": 836,
+      "untouched_above_floor": 1468
+    },
+    {
+      "slot": 7,
+      "reserved_bytes": 2560,
+      "touched_bytes": 1016,
+      "untouched_above_floor": 1288
+    }
+  ],
+  "native_bank_zero_reservations": {
+    "fixed_runtime": 10528,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "idle": 800,
+    "runtime_excluding_os": 26848,
+    "loading_excluding_os": 20368,
+    "runtime_including_os": 58080,
+    "loading_including_os": 51600
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  }
+}

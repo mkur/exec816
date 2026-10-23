@@ -1,0 +1,1055 @@
+--- a/qed/src/block.c
++++ b/qed/src/block.c
+@@ -14,33 +14,6 @@
+ static void	block_demark	(TEXTP t_ptr);
+ static bool	tab_ok			(LINEP a, bool tab, short tabsize);
+ static void	block_setzen	(TEXTP t_ptr);
+-static bool	block_delete	(TEXTP t_ptr, RINGP t);
+-static bool	block_einsetzen(TEXTP t_ptr, RINGP t);
+-
+-/* lokale Variablen ********************************************************/
+-
+-static short	undo_anf_x, undo_end_x;
+-static long	undo_anf_y, undo_end_y;
+-static RING	trash_text;
+-static bool	trash_init = FALSE;
+-
+-/*
+- * Trash: Puffer fr selektierte Bl”cke, die berschrieben wurden. 
+-*/
+-static void trash_takes_text(RINGP r)
+-{
+-	if (!trash_init)
+-	{
+-		init_textring(&trash_text);
+-		trash_init = TRUE;
+-	}
+-
+-	kill_textring(&trash_text);
+-	trash_text = *r;
+-	FIRST(r)->prev = &trash_text.head;
+-	LAST(r)->next = &trash_text.tail;
+-}
+-
+ /***************************************************************************/
+ 
+ void blk_mark_all(TEXTP t_ptr)
+@@ -316,147 +289,27 @@
+ }
+ 
+ 
+-void blk_copy(TEXTP t_ptr)
+-/* Kopiert Block aus einem Text auf das Clipbrd */
+-{
+-	RING t;
+-
+-	if (!t_ptr->block)
+-		return;
+-	if (!ist_mem_frei())
+-		return;
+-	block_copy(t_ptr,&t);
+-	if (shift_pressed())
+-		clip_add_text(&t);
+-	else
+-		clip_takes_text(&t);
+-}
+-
+-void line_copy(TEXTP t_ptr)
+-/* Kopiert aktuelle Zeile auf das Clipboard */
+-{
+-	LINEP	col = t_ptr->cursor_line;
+-	short	old_x;
+-
+-	old_x = t_ptr->xpos;
+-	t_ptr->xpos = 0;
+-	blk_mark(t_ptr,0);
+-	if (IS_LAST(col))
+-	{
+-		t_ptr->xpos = col->len;
+-		blk_mark(t_ptr,1);
+-		t_ptr->xpos = old_x;
+-	}
+-	else
+-	{
+-		NEXT(col);
+-		t_ptr->cursor_line = col;
+-		blk_mark(t_ptr,1);
+-		PREV(col);
+-		t_ptr->cursor_line = col;
+-		t_ptr->xpos = old_x;
+-	}
+-	blk_copy(t_ptr);
+-	blk_demark(t_ptr);
+-}
+-
+-void blk_paste(TEXTP t_ptr, RINGP t)
+-/* Setzt den Text t im Text an Cursorposition ein */
+-/* Der Cursor steht anschliežend dahinter */
+-/* Ist ein Block da, wird er gel”scht */
+-{
+-	if (!ist_mem_frei())
+-		return;
+-	blk_delete(t_ptr);
+-	block_einsetzen(t_ptr, t);
+-	t_ptr->moved++;
+-	add_undo(BLK_PASTE);
+-}
+-
+-void blk_delete(TEXTP t_ptr)
+-{
+-	RING t;
+-
+-	if(!t_ptr->block)
+-		return;
+-	if (!ist_mem_frei())
+-		return;
+-	if (!block_delete(t_ptr, &t))
+-		return;
+-	trash_takes_text(&t);
+-	t_ptr->moved++;
+-	add_undo(BLK_DEL);
+-}
+-
+-void blk_cut(TEXTP t_ptr)
+-{
+-	RING t, t2;
+-
+-	if (!t_ptr->block)
+-		return;
+-	if (!ist_mem_frei())
+-		return;
+-	if (!block_delete(t_ptr, &t))
+-		return;
+-	init_textring(&t2);
+-	if (doppeln(&t,&t2))
+-	{
+-		if (shift_pressed())
+-			clip_add_text(&t2);
+-		else
+-			clip_takes_text(&t2);
+-	}
+-	undo_takes_text(&t);
+-	t_ptr->moved++;
+-	add_undo(BLK_CUT);
+-}
+-
+-void blk_undo(TEXTP t_ptr, short undo)
+-{
+-	RING	t;
+-
+-	if (!ist_mem_frei())
+-		return;
+-	if (undo==BLK_PASTE || undo==BLK_PASTE_TRASH)
+-	/* Block muž wieder gel”scht werden */
+-	{
+-		blk_demark(t_ptr);
+-		t_ptr->p1 = get_line(&t_ptr->text,undo_anf_y);
+-		t_ptr->z1 = undo_anf_y;
+-		t_ptr->x1 = undo_anf_x;
+-		t_ptr->p2 = get_line(&t_ptr->text,undo_end_y);
+-		t_ptr->z2 = undo_end_y;
+-		t_ptr->x2 = undo_end_x;
+-		block_setzen(t_ptr);
+-		block_delete(t_ptr, &t);		/* Block ausschneiden und als Undotext */
+-		if (undo==BLK_PASTE)
+-		{
+-			undo_takes_text(&t);
+-			add_undo(BLK_CUT);
+-		}
+-		else
+-		{
+-			trash_takes_text(&t);
+-			add_undo(BLK_DEL);
+-		}
+-		t_ptr->moved++;
+-	}
+-	if (undo == BLK_CUT)				/* Block muž wieder eingefgt werden */
+-	{
+-		RINGP tp;
+-
+-		t_ptr->xpos = undo_anf_x;
+-		tp = get_undo_text();
+-		block_einsetzen(t_ptr, tp);
+-		add_undo(BLK_PASTE);
+-	}
+-	if (undo==BLK_DEL)							/* Text aus Papierkorb wieder einsetzten */
+-	{
+-
+-		t_ptr->xpos = undo_anf_x;
+-		block_einsetzen(t_ptr, &trash_text);
+-		add_undo(BLK_PASTE_TRASH);
+-	}
++void blk_copy(TEXTP t)
++{
++    RING candidate;
++    if(t->block && block_copy(t,&candidate))clip_takes_text(&candidate);
++}
++void blk_cut(TEXTP t)
++{
++    RING candidate;
++    if(!t->block || !block_copy(t,&candidate))return;
++    if(qed_replace(t,t->z1,t->x1,t->z2,t->x2,NULL,FALSE))clip_takes_text(&candidate);
++    else kill_textring(&candidate);
++}
++void blk_delete(TEXTP t)
++{
++    if(t->block)qed_replace(t,t->z1,t->x1,t->z2,t->x2,NULL,FALSE);
++}
++void blk_paste(TEXTP t,RINGP input)
++{
++    if(ist_leer(input))return;
++    qed_replace(t,t->block?t->z1:t->ypos,t->block?t->x1:t->xpos,
++                  t->block?t->z2:t->ypos,t->block?t->x2:t->xpos,input,FALSE);
+ }
+ 
+ void blk_right(TEXTP t_ptr)
+@@ -766,220 +619,18 @@
+ 	t_ptr->cursor = FALSE;
+ }
+ 
+-static bool block_delete(TEXTP t_ptr, RINGP t)
+-{
+-	LINEP	b_anf_col, b_end_col;
+-	long	lines;
+-
+-	b_anf_col = t_ptr->p1;
+-	b_end_col = t_ptr->p2;
+-	if (b_end_col->len-t_ptr->x2+t_ptr->x1>MAX_LINE_LEN)
+-	{
+-		inote(1, 0, TOOLONG, MAX_LINE_LEN);
+-		return(FALSE);
+-	}
+-
+-	/* Cursor an den Blockanfang bringen */
+-	t_ptr->ypos = t_ptr->z1;
+-	t_ptr->xpos = t_ptr->x1;
+-
+-	undo_anf_y = t_ptr->z1;
+-	undo_anf_x = t_ptr->x1;
+-	undo_y = t_ptr->ypos;				/* globale Merkvariable */
+-
+-	lines = t_ptr->z2-t_ptr->z1+1;
+-	if (lines==1)					/* ganz ohne Zeilenumbruch */
+-	{
+-		short len = t_ptr->x2-t_ptr->x1;
+-		LINEP	b;
+-
+-		init_textring(t);
+-		b = FIRST(t);
+-		INSERT(&b, 0, len, TEXT(b_anf_col)+t_ptr->x1);
+-		REALLOC(&b_anf_col, t_ptr->x1, -len);
+-		t_ptr->cursor_line = b_anf_col;
+-		hl_update( t_ptr );
+-	}
+-	else
+-	{
+-		col_split(&t_ptr->text, &b_end_col,t_ptr->x2);
+-		NEXT(b_end_col);
+-		col_split(&t_ptr->text, &b_anf_col,t_ptr->x1);
+-
+-		hl_remove_block( &t_ptr->text, b_anf_col->next, b_end_col->prev );
+-
+-
+-		/* Block ausschneiden */
+-		FIRST(t) = b_anf_col->next;
+-		b_anf_col->next->prev = &t->head;
+-		LAST(t) = b_end_col->prev;
+-		b_end_col->prev->next = &t->tail;
+-		t->lines = lines;
+-
+-		/* Kette wieder schliežen */
+-		b_anf_col->next = b_end_col;
+-		b_end_col->prev = b_anf_col;
+-		col_concate(&t_ptr->text,&b_anf_col);
+-		t_ptr->cursor_line = b_anf_col;
+-	}
+-#if 0
+-Problem: Wenn ein Block markiert war, muž eventuell gescrollt werden
+-         und es kommt zu Redraw-Fehlern, da doch mehr Zeilen betroffen sind!
+-
+-	if (lines==1)
+-	{
+-		make_chg(t_ptr->link,POS_CHANGE, 0);
+-		make_chg(t_ptr->link,LINE_CHANGE, undo_y);
+-	}
+-	else if (lines==2)
+-	{
+-		make_chg(t_ptr->link,POS_CHANGE, 0);
+-		make_chg(t_ptr->link,LINE_CHANGE, undo_y);
+-		make_chg(t_ptr->link,SCROLL_UP, undo_y+1);
+-	}
+-	else
+-#endif
+-	{
+-		make_chg(t_ptr->link,POS_CHANGE, 0);
+-		make_chg(t_ptr->link,TOTAL_CHANGE,t_ptr->z1);
+-	}
+-	t_ptr->block = FALSE;
+-	t_ptr->cursor = TRUE;
+-	t_ptr->text.lines -= (lines-1);
+-	t->ending = t_ptr->text.ending;
+-	t->max_line_len = t_ptr->text.max_line_len;
+-	t_ptr->max_line = NULL;
+-	if( t_ptr->cursor_line->prev && t_ptr->cursor_line->prev->hl_handle )
+-	hl_update_zeile( &t_ptr->text, t_ptr->cursor_line->prev );
+-	hl_update( t_ptr );
+-	return TRUE;
+-}
+-
+-void block_copy(TEXTP t_ptr, RINGP t)
+-{
+-	LINEP a, line;
+-
+-	init_textring(t);
+-	a = FIRST(t);					/* erste Zeile */
+-	line = t_ptr->p1;				/* Blockstart */
+-	if (line == t_ptr->p2)				/* nur eine Zeile */
+-	{
+-		INSERT(&a, 0, t_ptr->x2-t_ptr->x1, TEXT(line)+t_ptr->x1);
+-		a->info |= ABSATZ;
+-	}
+-	else
+-	{
+-		LINEP new, ende;
+-
+-		/* erste Zeile teilweise */
+-		INSERT(&a, 0, line->len-t_ptr->x1, TEXT(line)+t_ptr->x1);
+-		if (IS_ABSATZ(line)) 
+-			a->info |= ABSATZ;
+-		else 
+-			a->info &= (~ABSATZ);
+-		ende = t_ptr->p2;
+-		NEXT(line);
+-		NEXT(a);				/* TAIL im neuen Text */
+-		while (line != ende)
+-		{
+-			new = new_col(TEXT(line), line->len);
+-			if (IS_ABSATZ(line)) 
+-				new->info |= ABSATZ;
+-			col_insert(NULL,a->prev, new);
+-			t->lines++;
+-			NEXT(line);
+-		}
+-		new = new_col(TEXT(line),t_ptr->x2);	/* letzte Zeile teilweise */
+-		new->info |= ABSATZ;
+-		col_insert(NULL,a->prev, new);
+-		t->lines++;
+-	}
+-	t->ending = t_ptr->text.ending;
+-	t->max_line_len = t_ptr->text.max_line_len;
+-}
+-
+-/* Der Cursor von t_ptr steht anschliežend hinter der Einfgung */
+-static bool block_einsetzen(TEXTP t_ptr, RINGP in)
+-{
+-	RING	t;
+-	LINEP	a,b,
+-			col = t_ptr->cursor_line;
+-	long	len;
+-
+-	a = FIRST(in);
+-	b = LAST(in);
+-	if ((a!=b &&
+-		  (t_ptr->xpos+a->len>MAX_LINE_LEN ||
+-			b->len+(col->len-t_ptr->xpos)>MAX_LINE_LEN)) ||
+-		 (a==b &&
+-		  col->len+a->len>MAX_LINE_LEN))
+-	{
+-		inote(1, 0, TOOLONG, MAX_LINE_LEN);
+-		return(FALSE);
+-	}
+-
+-	init_textring(&t);
+-	t.hl_anchor = t_ptr->text.hl_anchor;
+-	doppeln(in, &t);
+-	a = FIRST(&t);
+-	b = LAST(&t);
+-
+-#if 0
+-Problem: Wenn ein Block markiert war, muž eventuell gescrollt werden
+-         und es kommt zu Redraw-Fehlern, da doch mehr Zeilen betroffen sind!
+-         
+-	if (t.lines==1)			/* Ganz ohne Zeilenver„nderung */
+-		make_chg(t_ptr->link,LINE_CHANGE,t_ptr->ypos);
+-	else if(t.lines==2)		/* Einen Zeilenumbruch */
+-	{
+-		make_chg(t_ptr->link,SCROLL_DOWN,t_ptr->ypos+1);
+-		make_chg(t_ptr->link,LINE_CHANGE,t_ptr->ypos);
+-		make_chg(t_ptr->link,LINE_CHANGE,t_ptr->ypos+1);
+-	}
+-	else
+-#endif
+-		make_chg(t_ptr->link,TOTAL_CHANGE,t_ptr->ypos);
+-
+-	len = t.lines-1;
+-	t_ptr->text.lines += len;
+-
+-	undo_anf_y = t_ptr->ypos;
+-	undo_anf_x = t_ptr->xpos;
+-	undo_end_y = undo_anf_y+len;
+-	undo_end_x = b->len;
+-	undo_y = t_ptr->ypos;					/* globale Merkvariable */
+-	if (len==0)
+-	{
+-		INSERT(&col, t_ptr->xpos, a->len, TEXT(a));
+-		undo_end_x += t_ptr->xpos;
+-		kill_textring(&t);
+-		t_ptr->cursor_line = get_line(&t_ptr->text,undo_end_y);
+-		hl_update( t_ptr );
+-	}
+-	else
+-	{
+-		hl_remove(&t_ptr->text,col);
+-		col_split(NULL,&col,t_ptr->xpos);	/* Textzeile splitten   */
+-
+-		col->next->prev = b;				/* Block einfgen unten */
+-		b->next = col->next;
+-		col_concate(NULL,&b);			/* Untere letzte Zeile	*/
+-
+-		col->next = a;					/* Block einfgen oben */
+-		a->prev = col;
+-		col_concate(NULL, &col);
+-		hl_insert_block( &t_ptr->text, col, b );
+-		t_ptr->cursor_line = get_line(&t_ptr->text,undo_end_y);
+-	}
+-	/* Cursor hinter Einfgung */
+-	t_ptr->ypos = undo_end_y;
+-	t_ptr->xpos = undo_end_x;
+-	t_ptr->moved++;
+-	make_chg(t_ptr->link, POS_CHANGE, 0);
+-	t_ptr->max_line = NULL;
+-	return TRUE;
+-}
+-
++bool block_copy(TEXTP t,RINGP out)
++{
++    LINEP line=t->p1,copy;long row;
++    qed_ring_empty(out);
++    for(row=t->z1;row<=t->z2;row++){
++        short start=row==t->z1?t->x1:0,end=row==t->z2?t->x2:line->len;
++        copy=new_col(TEXT(line)+start,end-start);
++        if(!copy){kill_textring(out);return qed_edit_error();}
++        col_append(out,copy);line=line->next;
++    }
++    out->ending=t->text.ending;return TRUE;
++}
+ 
+ /*
+  * Dialog(e)
+--- a/qed/src/block.h
++++ b/qed/src/block.h
+@@ -15,7 +15,7 @@
+ extern void	blk_copy			(TEXTP t_ptr);
+ extern void	blk_paste		(TEXTP t_ptr, RINGP t);
+ 
+-extern void	block_copy		(TEXTP t_ptr, RINGP t);	/* for blk_print */
++extern bool	block_copy		(TEXTP t_ptr, RINGP t);	/* for blk_print */
+ 
+ extern void	line_copy		(TEXTP t_ptr);
+ 
+--- a/qed/src/clipbrd.c
++++ b/qed/src/clipbrd.c
+@@ -1,213 +1,146 @@
++/* Private native ownership repair for the donor clipboard and Undo rings. */
+ #include "global.h"
+-#include "comm.h"
++#include "memory.h"
++#include "clipbrd.h"
+ #include "edit.h"
+-#include "file.h"
+-#include "icon.h"
+-#include "memory.h"
+ #include "options.h"
+-#include "rsc.h"
+-#include "text.h"
+-#include "clipbrd.h"
+ 
+-/* exportierte Variablen ***************************************************/
+-RING	clip_text;
+-PATH	clip_dir;
++RING clip_text;
++PATH clip_dir;
++static RING undo_text;
++static long undo_row,undo_live;
++static short undo_kind;
++static bool undo_valid,undo_toggled;
++static char replace_bytes[MAX_LINE_LEN+1];
++typedef struct {
++    long row,first,last;
++    short x,start,end;
++    bool block,backward;
++} UNDO_VIEW;
++static UNDO_VIEW undo_view;
+ 
+-/****** DEFINES ************************************************************/
+-
+-#define MAX_UNDO	5
+-#define END_UNDO	-1
+-
+-/* loake Variablen *********************************************************/
+-static bool	clip_dirty;
+-static PATH	clip_name;
+-
+-static short	undo[MAX_UNDO];
+-static short	undo_anz;
+-static RING	undo_text;
+-static short	undo_ptr;
+-
+-static char	save_col[MAX_LINE_LEN];		/* Gerettete Zeile fr Undo */
+-static short	save_len;
+-static short	save_xpos;
+-
+-static bool	last_was_bin = FALSE;
+-static long	clip_timestamp = 0;
+-
+-/*******************************************************************************/
+-
++void qed_ring_empty(RINGP r)
++{
++    memset(r,0,sizeof(*r));r->head.info=HEAD;r->tail.info=TAIL;
++    FIRST(r)=&r->tail;LAST(r)=&r->head;
++    r->ending=lns_unix;r->max_line_len=MAX_LINE_LEN;
++}
++void qed_ring_take(RINGP destination,RINGP source)
++{
++    *destination=*source;
++    if(source->lines){FIRST(destination)->prev=&destination->head;LAST(destination)->next=&destination->tail;}
++    else{FIRST(destination)=&destination->tail;LAST(destination)=&destination->head;}
++    qed_ring_empty(source);
++}
++static void save_view(TEXTP t,UNDO_VIEW *v)
++{
++    v->row=t->ypos;v->x=t->xpos;v->block=t->block;v->backward=t->block_dir;
++    v->first=t->z1;v->last=t->z2;v->start=t->x1;v->end=t->x2;
++}
++static void restore_view(TEXTP t,UNDO_VIEW *v)
++{
++    t->ypos=v->row;t->xpos=v->x;t->cursor_line=get_line(&t->text,t->ypos);
++    t->block=v->block;t->block_dir=v->backward;t->cursor=!v->block;
++    t->z1=v->first;t->z2=v->last;t->x1=v->start;t->x2=v->end;
++    t->p1=v->block?get_line(&t->text,v->first):NULL;
++    t->p2=v->block?get_line(&t->text,v->last):NULL;
++}
++static void exchange_span(TEXTP t,long row,long count,RINGP replacement)
++{
++    LINEP first=get_line(&t->text,row),last=first,before,after;
++    RING removed;
++    long i;
++    for(i=1;i<count;i++)last=last->next;
++    before=first->prev;after=last->next;
++    qed_ring_empty(&removed);removed.lines=count;
++    FIRST(&removed)=first;LAST(&removed)=last;
++    before->next=FIRST(replacement);FIRST(replacement)->prev=before;
++    after->prev=LAST(replacement);LAST(replacement)->next=after;
++    t->text.lines+=replacement->lines-count;
++    first->prev=&removed.head;last->next=&removed.tail;
++    qed_ring_take(replacement,&removed);
++}
++static bool append_parts(RINGP out,const char *a,short na,const char *b,short nb,
++                         const char *c,short nc)
++{
++    LINEP line;short size=na+nb+nc;
++    if(size>MAX_LINE_LEN)return FALSE;
++    if(na)memcpy(replace_bytes,a,na);
++    if(nb)memcpy(replace_bytes+na,b,nb);
++    if(nc)memcpy(replace_bytes+na+nb,c,nc);
++    line=new_col(replace_bytes,size);
++    if(!line)return FALSE;
++    col_append(out,line);return TRUE;
++}
++bool qed_edit_error(void)
++{
++    form_alert(1,"[1][The edit could not be completed.][OK]");return FALSE;
++}
+ void clr_undo(void)
+ {
+-	undo_ptr = -1;
+-	undo_anz = 0;
++    if(undo_valid)kill_textring(&undo_text);
++    qed_ring_empty(&undo_text);undo_valid=FALSE;undo_kind=0;undo_toggled=FALSE;
+ }
++bool any_undo(void){return undo_valid;}
++void end_undo_seq(void){}
+ 
+-bool any_undo(void)
++/* All fallible work precedes changes to document, selection or previous Undo. */
++bool qed_replace(TEXTP t,long y1,short x1,long y2,short x2,RINGP input,bool typing)
+ {
+-	if (undo_anz && undo[undo_anz-1]==END_UNDO)
+-		return TRUE;
+-	return FALSE;
++    RING prepared;
++    LINEP first=get_line(&t->text,y1),last=get_line(&t->text,y2),line;
++    long inserted=input?input->lines:1,removed=y2-y1+1,i;
++    short suffix=last->len-x2,endx=0;
++    bool coalesce;
++    if(inserted<1 || inserted-1>0x7fffffffL-(t->text.lines-(y2-y1)))return qed_edit_error();
++    if((input && inserted>1 && (x1+FIRST(input)->len>MAX_LINE_LEN ||
++            LAST(input)->len+suffix>MAX_LINE_LEN)) ||
++       (inserted==1 && x1+(input?FIRST(input)->len:0)+suffix>MAX_LINE_LEN))return qed_edit_error();
++    qed_ring_empty(&prepared);
++    if(!input){
++        if(!append_parts(&prepared,TEXT(first),x1,NULL,0,TEXT(last)+x2,suffix))goto failed;
++        endx=x1;
++    }else{
++        line=FIRST(input);
++        for(i=0;i<inserted;i++){
++            if(!append_parts(&prepared,TEXT(first),i==0?x1:0,TEXT(line),line->len,
++                             TEXT(last)+x2,i==inserted-1?suffix:0))goto failed;
++            endx=line->len+(inserted==1?x1:0);line=line->next;
++        }
++    }
++    coalesce=typing && undo_valid && !undo_toggled && undo_kind==1 &&
++        undo_row==y1 && undo_live==1 && removed==1 && inserted==1;
++    if(!coalesce){clr_undo();save_view(t,&undo_view);}
++    exchange_span(t,y1,removed,&prepared);
++    if(coalesce)kill_textring(&prepared);
++    else{qed_ring_take(&undo_text,&prepared);undo_row=y1;undo_live=inserted;
++         undo_valid=TRUE;undo_kind=typing?1:2;undo_y=y1;}
++    t->ypos=y1+inserted-1;t->xpos=endx;t->cursor_line=get_line(&t->text,t->ypos);
++    t->p1=t->p2=NULL;t->z1=t->z2=-1;t->block=FALSE;t->cursor=TRUE;
++    t->up_down=FALSE;t->blk_mark_mode=FALSE;t->max_line=NULL;t->moved=1;
++    make_chg(t->link,TOTAL_CHANGE,y1);make_chg(t->link,POS_CHANGE,0);
++    return TRUE;
++failed:
++    kill_textring(&prepared);return qed_edit_error();
+ }
+-
+-bool test_col_anders(void)
++void qed_undo(TEXTP t)
+ {
+-	short i;
+-
+-	if (undo_anz == 0)
+-		return FALSE;
+-	if (undo[undo_anz-1] == COL_ANDERS)
+-		return TRUE;
+-	if (undo[undo_anz-1] != END_UNDO)
+-		return FALSE;
+-	for (i = 0; i < undo_anz; i++)
+-		if (undo[i]==END_UNDO)
+-			break;
+-	if (i > 0 && i < undo_anz)
+-		return (undo[i-1] == COL_ANDERS);
+-	return FALSE;
++    UNDO_VIEW current;long count;
++    if(!undo_valid)return;
++    save_view(t,&current);count=undo_text.lines;
++    exchange_span(t,undo_row,undo_live,&undo_text);undo_live=count;
++    restore_view(t,&undo_view);undo_view=current;undo_toggled=TRUE;
++    t->max_line=NULL;t->up_down=FALSE;t->moved=1;
++    make_chg(t->link,TOTAL_CHANGE,undo_row);make_chg(t->link,POS_CHANGE,0);
+ }
+-
+-void end_undo_seq(void)
+-{
+-	short	i;
+-
+-	undo_ptr = -1;
+-	if (undo_anz==0 || undo[undo_anz-1]==END_UNDO)
+-		return;
+-	for (i=0; i<undo_anz; i++)
+-		if (undo[i]==END_UNDO)
+-		{
+-			i++;
+-			undo_anz -= i;
+-			memcpy(undo, undo+i, (short) sizeof(short) * undo_anz);
+-			break;
+-		}
+-	add_undo(END_UNDO);
+-}
+-
+-void add_undo(short undo_op)
+-{
+-	if (undo_anz<MAX_UNDO && (undo_anz==0 || undo[undo_anz-1]!=undo_op))
+-		undo[undo_anz++] = undo_op;
+-}
+-
+-short get_undo(void)
+-{
+-	short i;
+-
+-	if (undo_anz==0)
+-		return NO_UNDO;
+-	if (undo_ptr<0)
+-	{
+-		for (i=0; i<undo_anz; i++)
+-			if (undo[i]==END_UNDO) break;
+-		if (i==undo_anz) return NO_UNDO;
+-		undo_ptr = i;
+-	}
+-	undo_ptr--;
+-	if (undo_ptr<0)
+-		return NO_UNDO;
+-	return undo[undo_ptr];
+-}
+-
+-void undo_takes_text(RINGP r)
+-{
+-	kill_textring(&undo_text);
+-	undo_text = *r;
+-	FIRST(r)->prev = &undo_text.head;
+-	LAST(r)->next = &undo_text.tail;
+-}
+-
+-RINGP get_undo_text(void)
+-{
+-	return &undo_text;
+-}
+-
+-/*
+- * UNDO fr eine Zeile
+-*/
+-void get_undo_col(TEXTP t_ptr)
+-{
+-	if (!test_col_anders() || t_ptr->ypos!=undo_y)
+-	{
+-		undo_y = t_ptr->ypos;
+-		save_len = t_ptr->cursor_line->len;
+-		memcpy(save_col, TEXT(t_ptr->cursor_line), save_len);
+-		save_xpos = t_ptr->xpos;
+-	}
+-	add_undo(COL_ANDERS);
+-}
+-
+-void do_undo_col(TEXTP t_ptr, short undo_type)
+-{
+-	LINEP	undo_col;
+-	static char		help[MAX_LINE_LEN];
+-	char	 	*str;
+-	short		length;
+-
+-	if (undo_type == COL_ANDERS)
+-	{
+-		undo_col = get_line(&t_ptr->text,undo_y);
+-		length = undo_col->len;
+-		memcpy(help, TEXT(undo_col), length);
+-
+-		str = REALLOC(&undo_col,0,save_len-length);
+-		memcpy(str, save_col, save_len);
+-
+-		memcpy(save_col, help, length);
+-		save_len = length;
+-
+-		t_ptr->moved++;
+-		make_chg(t_ptr->link,LINE_CHANGE,undo_y);
+-		make_chg(t_ptr->link,POS_CHANGE,0); 			/* wg. moved */
+-		t_ptr->xpos = save_xpos;
+-		t_ptr->cursor_line = undo_col;
+-		add_undo(COL_ANDERS);
+-	}
+-}
+-
+-
+-/*******************************************************************************/
+-
+-/* Native initial scope: save_clip is deferred. */
+-
+-
+-/* Native initial scope: load_clip is deferred. */
+-
+-
+ 
+ void clip_takes_text(RINGP r)
+ {
+-	kill_textring(&clip_text);
+-	clip_text = *r;
+-	last_was_bin = (r->ending == lns_binmode);
+-	FIRST(r)->prev = &clip_text.head;
+-	LAST(r)->next = &clip_text.tail;
+-	clip_dirty = TRUE;
++    kill_textring(&clip_text);qed_ring_take(&clip_text,r);
+ }
+-
+-void clip_add_text(RINGP r)
+-{
+-	LINEP	col;
+-
+-	col = LAST(&clip_text);			/* letzte Zeile */
+-	col->next = FIRST(r);
+-	FIRST(r)->prev = col;
+-	LAST(r)->next = &clip_text.tail;
+-	LAST(&clip_text) = LAST(r);
+-	clip_text.lines += r->lines;
+-	col_concate(r, &col);
+-	clip_text.lines--;
+-	clip_dirty = TRUE;
+-}
+-
+-/* Native initial scope: get_first_drive is deferred. */
+-
+-
+ bool init_clipbrd(void)
+ {
+-    clip_dir[0]=EOS;clip_on_disk=FALSE;clip_dirty=FALSE;
+-    if(!init_textring(&clip_text))return FALSE;
+-    if(!init_textring(&undo_text)){kill_textring(&clip_text);return FALSE;}
+-    clr_undo();return TRUE;
++    clip_dir[0]=EOS;clip_on_disk=FALSE;
++    qed_ring_empty(&undo_text);undo_valid=FALSE;
++    return init_textring(&clip_text);
+ }
+--- a/qed/src/clipbrd.h
++++ b/qed/src/clipbrd.h
+@@ -21,6 +21,13 @@
+ extern void		do_undo_col			(TEXTP t_ptr, short undo);
+ 
+ 
++/* Atomic affected-line operations; input rings are borrowed until return. */
++extern void qed_ring_empty(RINGP r);
++extern void qed_ring_take(RINGP destination,RINGP source);
++extern bool qed_edit_error(void);
++extern bool qed_replace(TEXTP t,long y1,short x1,long y2,short x2,RINGP input,bool typing);
++extern void qed_undo(TEXTP t);
++
+ /* Klemmbrett */
+ extern RING		clip_text;
+ extern PATH		clip_dir;
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -245,39 +245,7 @@
+ 
+ static void make_undo(TEXTP t_ptr)
+ {
+-	short undo;
+-
+-	undo = get_undo();
+-	if (undo == NO_UNDO) 
+-		return;
+-
+-	/*
+-	 * Vorher an undo_pos springen
+-	 * Weil sonst u.U. restore zu schwierig
+-	 * Wird auch von do_undo_col vorausgesetzt
+-	*/
+-	t_ptr->cursor_line = get_line(&t_ptr->text,undo_y);
+-	t_ptr->ypos = undo_y;
+-	t_ptr->xpos = 0;
+-	make_chg(t_ptr->link,POS_CHANGE,0);
+-	restore_edit();
+-
+-	do
+-	{
+-		if (undo == COL_ANDERS)
+-		{
+-			do_undo_col(t_ptr,undo);
+-			hl_update(t_ptr);
+-			restore_edit();
+-		}
+-		else
+-		{
+-			blk_undo(t_ptr,undo);
+-			restore_edit();
+-		}
+-		undo = get_undo();
+-	}
+-	while (undo != NO_UNDO);
++    qed_undo(t_ptr);restore_edit();
+ }
+ 
+ /***************************************************************************/
+@@ -783,7 +751,7 @@
+ 	}
+ 	else
+ 	{
+-		setincl(actions, DO_LINECOPY);
++		/* Copy requires a nonempty selection. */
+ 		((void)0);
+ 	}
+ 	if (t_ptr->loc_opt->tab)
+@@ -798,7 +766,7 @@
+ 	if (window->flags & WI_OPEN)
+ 		setincl(actions, DO_CLOSE);
+ 	setincl(actions, DO_DELETE);
+-	setincl(actions, DO_PASTE);
++	if(!ist_leer(&clip_text))setincl(actions, DO_PASTE);
+ 	setincl(actions, DO_SELALL);
+ 	setincl(actions, DO_OPEN);
+ 	((void)0);
+@@ -850,11 +818,11 @@
+ 			break;
+ 		case DO_LINECOPY:
+ 
+-			erg = !(t_ptr->block);
++			erg = FALSE;
+ 			break;
+ 		case DO_PASTE	:
+ 
+-			erg = TRUE;
++			erg = !ist_leer(&clip_text);
+ 			break;
+ 		case DO_SELALL :
+ 
+@@ -935,7 +903,6 @@
+ 		case DO_UNDO	:
+ 
+ 			t_ptr->blk_mark_mode = FALSE;
+-			blk_demark(t_ptr);
+ 			make_undo(t_ptr);
+ 			erg = 1;
+ 			break;
+@@ -955,7 +922,7 @@
+ 			break;
+ 		case DO_LINECOPY:
+ 
+-			line_copy(t_ptr);
++			return -1;
+ 			restore_edit();
+ 			erg = 1;
+ 			break;
+--- a/qed/src/menu.c
++++ b/qed/src/menu.c
+@@ -153,15 +153,10 @@
+     for(i=0;i<sizeof(menu_actions)/sizeof(menu_actions[0]);i++)
+         set_menu(menu_actions[i][0],setin(actions,menu_actions[i][1]));
+     set_menu(MCLOSE,w!=NULL);
+-    if(setin(actions,DO_LINECOPY) || setin(actions,DO_COPY)){
+-        fillup_menu(MCOPY,setin(actions,DO_LINECOPY)?rsc_string(LCOPYSTR):rsc_string(COPYSTR),2);
+-        set_menu(MCOPY,TRUE);
+-    }
+     /* Commands become available only with their executable slice. */
+     set_menu(MABOUT,FALSE);set_menu(MNEWTEXT,FALSE);set_menu(MOPEN,FALSE);
+     set_menu(MSAVE,FALSE);set_menu(MSAVENEW,FALSE);
+-    set_menu(MUNDO,FALSE);set_menu(MCUT,FALSE);set_menu(MCOPY,FALSE);
+-    set_menu(MPASTE,FALSE);/* Select All follows the current document actions. */
++    /* Select All follows the current document actions. */
+     set_menu(MFIND,FALSE);set_menu(MFNDGOON,FALSE);
+     mark_menu(MOEINF,!overwrite);
+     mark_menu(MOOVERW,overwrite);
+@@ -331,17 +326,8 @@
+ 				action = DO_CUT;
+ 				break;
+ 
+-			case MCOPY	 :
+-
+-				if (w!=NULL && w->class==CLASS_EDIT)
+-				{
+-					TEXTP t_ptr = get_text(w->handle);
+-					if (t_ptr->block)
+-						action = DO_COPY;
+-					else
+-						action = DO_LINECOPY;
+-				}
+-				break;
++            case MCOPY:
++                action=DO_COPY;break;
+ 
+ 			case MPASTE :
+ 
+--- a/qed/src/tasten.c
++++ b/qed/src/tasten.c
+@@ -321,48 +321,26 @@
+ /*
+  * Text hinzufgen
+ */
+-/* Prepare replacement lines before publishing any ring change. */
+-static char edit_bytes[MAX_LINE_LEN+1];
+-static void changed_line(TEXTP t,LINEP old,LINEP first,LINEP last,long delta)
+-{
+-    first->prev=old->prev;old->prev->next=first;
+-    last->next=old->next;old->next->prev=last;
+-    free_col(&t->text,old);
+-    t->cursor_line=last;t->text.lines+=delta;t->max_line=NULL;
+-    t->moved=1;t->up_down=FALSE;
+-    make_chg(t->link,delta?TOTAL_CHANGE:LINE_CHANGE,t->ypos);make_chg(t->link,POS_CHANGE,0);
+-}
+-static bool edit_error(void)
+-{
+-    form_alert(1,"[1][The edit could not be completed.][OK]");
+-    return FALSE;
+-}
+-
++/* Borrowed one-byte/line-break input; the transaction allocates the result. */
++static struct {LINE line;char bytes[2];} typed[2];
++static RING typed_ring;
++static RINGP typed_input(char c)
++{
++    qed_ring_empty(&typed_ring);memset(typed,0,sizeof(typed));
++    typed[0].line.len=c=='\n'?0:1;typed[0].bytes[0]=c;
++    col_append(&typed_ring,&typed[0].line);
++    if(c=='\n')col_append(&typed_ring,&typed[1].line);
++    return &typed_ring;
++}
++static bool edit_error(void){return qed_edit_error();}
+ void char_cr(TEXTP t)
+ {
+-    LINEP old=t->cursor_line,a,b;
+-    if(t->text.lines==0x7fffffffL){edit_error();return;}
+-    a=new_col(TEXT(old),t->xpos);
+-    if(!a){edit_error();return;}
+-    b=new_col(TEXT(old)+t->xpos,old->len-t->xpos);
+-    if(!b){free_col(&t->text,a);edit_error();return;}
+-    a->next=b;b->prev=a;
+-    clr_undo();changed_line(t,old,a,b,1);t->ypos++;t->xpos=0;
+-}
+-
++    qed_replace(t,t->ypos,t->xpos,t->ypos,t->xpos,typed_input('\n'),FALSE);
++}
+ void char_insert(TEXTP t,char c)
+ {
+-    LINEP old=t->cursor_line,n;
+-    short size=old->len;
+-    bool replace=overwrite && t->xpos<size;
+-    if(!c)return;
+-    if(!replace && size==MAX_LINE_LEN){edit_error();return;}
+-    memcpy(edit_bytes,TEXT(old),size);
+-    if(!replace){memmove(edit_bytes+t->xpos+1,edit_bytes+t->xpos,size-t->xpos);size++;}
+-    edit_bytes[t->xpos]=c;
+-    n=new_col(edit_bytes,size);
+-    if(!n){edit_error();return;}
+-    get_undo_col(t);changed_line(t,old,n,n,0);t->xpos++;
++    short end=t->xpos+(overwrite && t->xpos<t->cursor_line->len);
++    if(c)qed_replace(t,t->ypos,t->xpos,t->ypos,end,typed_input(c),TRUE);
+ }
+ 
+ static void tabulator(TEXTP t_ptr)
+@@ -423,33 +401,13 @@
+ */
+ void char_bs(TEXTP t)
+ {
+-    short x=t->xpos;long y=t->ypos,lines=t->text.lines;
+-    LINEP old=t->cursor_line,before;
+-    if(!x && !y)return;
+-    char_left(t);before=t->cursor_line;char_delete(t);
+-    if(t->cursor_line==before && t->text.lines==lines){
+-        t->cursor_line=old;t->ypos=y;t->xpos=x;
+-    }
+-}
+-
++    if(t->xpos)qed_replace(t,t->ypos,t->xpos-1,t->ypos,t->xpos,NULL,TRUE);
++    else if(t->ypos)qed_replace(t,t->ypos-1,t->cursor_line->prev->len,t->ypos,0,NULL,FALSE);
++}
+ static void char_delete(TEXTP t)
+ {
+-    LINEP old=t->cursor_line,n,next=old->next;
+-    short len=old->len;
+-    if(t->xpos<len){
+-        memcpy(edit_bytes,TEXT(old),t->xpos);
+-        memcpy(edit_bytes+t->xpos,TEXT(old)+t->xpos+1,len-t->xpos-1);
+-        n=new_col(edit_bytes,len-1);
+-        if(!n){edit_error();return;}
+-        get_undo_col(t);changed_line(t,old,n,n,0);
+-    }else if(!IS_LAST(old)){
+-        if(len+next->len>MAX_LINE_LEN){edit_error();return;}
+-        memcpy(edit_bytes,TEXT(old),len);memcpy(edit_bytes+len,TEXT(next),next->len);
+-        n=new_col(edit_bytes,len+next->len);
+-        if(!n){edit_error();return;}
+-        clr_undo();old->next=next->next;next->next->prev=old;
+-        free_col(&t->text,next);changed_line(t,old,n,n,-1);
+-    }
++    if(t->xpos<t->cursor_line->len)qed_replace(t,t->ypos,t->xpos,t->ypos,t->xpos+1,NULL,TRUE);
++    else if(!IS_LAST(t->cursor_line))qed_replace(t,t->ypos,t->xpos,t->ypos+1,0,NULL,FALSE);
+ }
+ 
+ static void word_bs(TEXTP t_ptr)
+@@ -693,7 +651,9 @@
+     if(scan!=0x53 && (qualifiers&K_CTRL))return FALSE;
+     if(ch==27){blk_demark(t);return TRUE;}
+     if(t->block && (scan==0x53 || ch==8 || ch==13 || ch==9 || ch>=32)){
+-        form_alert(1,"[1][Selection editing is not available.][OK]");return TRUE;
++        RINGP input=(ch==13)?typed_input('\n'):
++            ((scan==0x53 || ch==8)?NULL:typed_input(ch));
++        qed_replace(t,t->z1,t->x1,t->z2,t->x2,input,FALSE);return TRUE;
+     }
+     if(scan==0x53){char_delete(t);return TRUE;}
+     if(ch==8){char_bs(t);return TRUE;}

@@ -135,8 +135,8 @@ PROCESSSTATE.Entry POINTER FUNC ProcessReserve(TaskControl POINTER caller
   selected=0
   best=$ffff
   FOR id=1 TO T_CAPACITY-1 DO
-    IF poolSize(id)>=admission.minimumStack AND poolSize(id)<best
-        AND SlotFree(id)<>0 THEN
+    IF poolSize(id)>=admission.minimumStack AND poolSize(id)>=($120+2)
+        AND poolSize(id)<best AND SlotFree(id)<>0 THEN
       selected=id
       best=poolSize(id)
     FI

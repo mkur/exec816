@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "reports": {
+    "launch-shell-v3": {
+      "path": "build/qed-delivery/launch-shell-v3/delivery-results.json",
+      "sha256": "750a2c00bbe91506fdbc00fa17fb94a50ba741bf630d58e622e134acfc9fc628",
+      "cases": [
+        "shell-no-argument",
+        "shell-quoted-path",
+        "inherited-relative-path",
+        "rejected:WORK:ABSENT.TXT",
+        "rejected:WORK:NUL.TXT",
+        "rejected:WORK:SAMPLE.TXT WORK:LF.TXT",
+        "shell-rejected-malformed-syntax"
+      ],
+      "startup_failures": null,
+      "guards": "intact",
+      "allocation": {
+        "sectors": 2880,
+        "sector_bytes": 256,
+        "allocated": 41,
+        "free": 2839,
+        "files": 13,
+        "directories": 2
+      },
+      "zip_sha256": "95815980684091c0e6e62ecb21a8f920285190df2b02455f9a37c182ae7acce9",
+      "normal_os_return": true
+    },
+    "launch-files-v5": {
+      "path": "build/qed-delivery/launch-files-v5/delivery-results.json",
+      "sha256": "445ce36b5e58688fb39df4f8f989e7e9243a5b98e95719bafbf0943bf0d5b191",
+      "cases": [
+        "files-app-keyboard",
+        "files-app-double-click",
+        "full-capacity-launch-refused-and-unwound",
+        "association-child-survives-folder-close"
+      ],
+      "startup_failures": null,
+      "guards": "intact",
+      "allocation": {
+        "sectors": 2880,
+        "sector_bytes": 256,
+        "allocated": 43,
+        "free": 2837,
+        "files": 14,
+        "directories": 2
+      },
+      "zip_sha256": "95815980684091c0e6e62ecb21a8f920285190df2b02455f9a37c182ae7acce9",
+      "normal_os_return": true
+    },
+    "missing-resource-v2": {
+      "path": "build/qed-delivery/missing-resource-v2/startup-results.json",
+      "sha256": "6693c99ad0a02341143a54b3e448d49c57a7b70f1423a44970cee32bd3ce6dfd",
+      "cases": null,
+      "startup_failures": [
+        {
+          "identity": 3,
+          "result": 20,
+          "normal_collection": true
+        },
+        {
+          "identity": 4,
+          "result": 20,
+          "normal_collection": true
+        }
+      ],
+      "guards": "intact",
+      "allocation": {
+        "sectors": 2880,
+        "sector_bytes": 256,
+        "allocated": 11,
+        "free": 2869,
+        "files": 2,
+        "directories": 1
+      },
+      "zip_sha256": "95815980684091c0e6e62ecb21a8f920285190df2b02455f9a37c182ae7acce9",
+      "normal_os_return": true
+    },
+    "malformed-resource": {
+      "path": "build/qed-delivery/malformed-resource/startup-results.json",
+      "sha256": "f7525a12990b767a836974411d64ebb805eac0d09185f4f7b751b5b10bf9b460",
+      "cases": null,
+      "startup_failures": [
+        {
+          "identity": 3,
+          "result": 20,
+          "normal_collection": true
+        },
+        {
+          "identity": 4,
+          "result": 20,
+          "normal_collection": true
+        }
+      ],
+      "guards": "intact",
+      "allocation": {
+        "sectors": 2880,
+        "sector_bytes": 256,
+        "allocated": 11,
+        "free": 2869,
+        "files": 2,
+        "directories": 1
+      },
+      "zip_sha256": "95815980684091c0e6e62ecb21a8f920285190df2b02455f9a37c182ae7acce9",
+      "normal_os_return": true
+    }
+  },
+  "production_app_sha256": "2c516eaa36c4fd2f3fc60661070790f671cea9633225ff66b30f8f91ca65c1a7",
+  "source_inputs": {
+    "tools/test_qed_delivery_workflows.py": "632d7f728c73ba5f883bdf161eb831bff2f4c8badc2bc2caa0e502f39403b86c",
+    "tools/test_qed_delivery_startup.py": "017507be8d86f400fdd9a00df72d86e0455b3d8152a32f7d255d382ff984d246",
+    "tools/test_demo.py": "103f87714bdff2376df990e73d4148f7936987795a8bb416a81850c9dd3433a5"
+  },
+  "default_association": "Unchanged C:TEXT.APP default; the clean template contains no DESKTOP.CFG. QED association used only on disposable test WORK.",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  },
+  "host_checks": {
+    "path": "build/qed-delivery/qd4-host.log",
+    "sha256": "09ee8bdf884114069c12b92dedefa097f007b38b9f59ba2534d7e7ffef54c765",
+    "tests": 577,
+    "skipped": 4,
+    "status": "pass"
+  }
+}

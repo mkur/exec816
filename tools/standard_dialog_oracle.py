@@ -3,7 +3,7 @@ import ast,struct
 from native_program import ROOT
 from generate_aes_server import expected_layout
 from control_panel_oracle import draw
-from file_selector_model import FORM_SELECTOR
+from file_selector_model import FORM_SELECTOR,FORM_ALERT
 from test_desktop_presentation import rectangle
 from gem_render_oracle import PENS
 
@@ -42,7 +42,7 @@ def paint(b,sy,r,bounds):
             cursor=number(c+layout['C context editIndex'])-start
             rectangle(r,(left+cursor*8,top+(height-8)//2,left+cursor*8+1,top+(height-8)//2+8),1)
     if session and len(objects)==10:
-        alert=number(session+311,4);icon=number(alert+508)
+        alert=number(session+FORM_ALERT,4);icon=number(alert+508)
         if icon:
             source=ast.parse((ROOT/'build/gem-vdi/upstream/tools/gemdata.py').read_text())
             masks=next(ast.literal_eval(n.value) for n in source.body if isinstance(n,ast.Assign)

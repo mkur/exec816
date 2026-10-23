@@ -295,6 +295,19 @@ PUBLIC PROC Sync()
   OD
 
   service.directory.topWindow=top
+  IF service.windowFocus<>desktop.focus THEN
+    FOR slot=0 TO AESTYPES.WINDOWS-1 DO
+      BEGIN
+        LET item=@service.windows(slot)
+        IF item.owner<>0 AND item.focusNotices<>0
+            AND (item.window.id=service.windowFocus
+              OR item.window.id=desktop.focus) THEN
+          AESGUI.Post(service,item,AESTYPES.GUI_FOCUS,
+              INT(item.window.id=desktop.focus),0,0,0)
+        FI
+      END
+    OD
+  FI
   service.windowRevision=desktop.scene.rebuilds
   service.windowFocus=desktop.focus
 

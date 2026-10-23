@@ -1,0 +1,274 @@
+{
+  "schema_version": 1,
+  "slice": "QE3",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "audit": {
+    "path": "build/qed-editing/qe3-baseline.json",
+    "sha256": "a7986d2c5d92d80232b2d466cb803e78bf38f8f7b23f1d88457871e21bf54710",
+    "auditor_sha256": "cff6d047bdfb64867d323e41886358aaae169fd14300faeafd78ea2f7ee37062",
+    "provider_identity": "f1f689ce4123b05bca96446919009bdc023e8abd5effbb4b9155622e1a632129"
+  },
+  "source_pins": {
+    "qed": {
+      "revision": "454beb35fccd72c15a8494431f6637cd0cb553c7",
+      "tree": "842d0ed962f431b98fbba1a7038020b5805338bc"
+    },
+    "cflib": {
+      "revision": "ce57817c3f68c7d346d1081768505e81acaee807",
+      "tree": "aa00256dc44096969025e2a1e1a03dcfa738547c"
+    }
+  },
+  "host_checks": {
+    "path": "build/qed-editing/qe3-resume-host.log",
+    "sha256": "58adf33fb9ea4e17787dfaa7957a8cb13db3ee7a18c7196bd3e45977e4ed727e",
+    "tests": 536,
+    "expected_skips": 4
+  },
+  "executable": {
+    "path": "build/qed-editing/qe3-production-final",
+    "sha256": "89df3cf2788c64046811000346da9fef2f6dc2b16d5b66867756f884296c629c",
+    "layout": {
+      "code_bytes": 124553,
+      "initialized_bytes": 1509,
+      "bss_bytes": 27553,
+      "import_thunk_bytes": 400,
+      "span_bytes": 190089,
+      "image_holes_bytes": 36474,
+      "serialized_bytes_if_executable": 140686,
+      "relocation_count": 3432,
+      "heap_alignment_backing_bytes": 255624,
+      "future_full_profile_backing_bytes": 393216,
+      "private_allowances": {
+        "code_bytes": 32768,
+        "data_bss_bytes": 16384
+      },
+      "container_metadata_allowance_bytes": 16384,
+      "resident_provider_allowances": {
+        "code_bytes": 16384,
+        "data_bss_bytes": 16384,
+        "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+        "table_bytes": 4096
+      }
+    },
+    "requested_image_backing_bytes": 255624,
+    "rounded_image_backing_bytes": 255624,
+    "backing_basis": "CAPP bank-alignment request, rounded to the public heap eight-byte allocation; historical layout field rounds to four bytes"
+  },
+  "frame_ledger": {
+    "source_chain_bytes": 893,
+    "continuation_cap_bytes": 768,
+    "interrupt_reserve_bytes": 256,
+    "required_headroom_bytes": 128,
+    "admission_bytes": 2560,
+    "margin_bytes": 515
+  },
+  "growth_from_QS5": {
+    "private": {
+      "code_bytes": -14073,
+      "data_bss_bytes": 1112,
+      "metadata_bytes": -576
+    },
+    "provider": {
+      "code_bytes": 221,
+      "table_bytes": 0,
+      "data_bss_bytes": 0
+    }
+  },
+  "provider_remaining_allowances": {
+    "code_bytes": 15183,
+    "table_bytes": 4096,
+    "data_bss_bytes": 16384
+  },
+  "executed": [
+    {
+      "path": "build/qed-editing/qe3-resolved",
+      "results_sha256": "7b00329d67dbe8b733fe30acb46bff5c65d231cdf9eb3592078bc1e2c4eec4d0",
+      "completed": [
+        4
+      ],
+      "checks": [
+        22047,
+        0
+      ],
+      "snapshots": [
+        "selection-empty",
+        "forward-range",
+        "backward-range",
+        "escape-clears",
+        "shift-right-unavailable",
+        "shift-click",
+        "select-all",
+        "collapse-start",
+        "fast-click",
+        "held-inside-release",
+        "geometry-cancels",
+        "focus-cancels",
+        "input-loss-cancels",
+        "selection-close-cancel",
+        "exposed-range",
+        "exposed-cleared",
+        "scroll-start",
+        "scroll-tabbed-line",
+        "scroll-left",
+        "scroll-right",
+        "before-tall-document",
+        "tall-document",
+        "scroll-down",
+        "scroll-up",
+        "clock-failure-retains-document",
+        "after-clock-failure",
+        "selection-empty",
+        "selection-empty",
+        "selection-empty",
+        "selection-stop-cancel"
+      ],
+      "minimum_headroom": 1382,
+      "peer_app_sha256": "5b04e6b450748599677fac0a56c1008a2efc160b3fdd93fbc6e78b2b43e96784"
+    },
+    {
+      "path": "build/qed-editing/qe3-logical-current",
+      "results_sha256": "f5fe14bb881aa30bbc41c624efbec2a42e4ed7400518a49c26b4115da21d5e36",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 808
+    },
+    {
+      "path": "build/qed-editing/qe3-logical-raw",
+      "results_sha256": "11ad30a0b9acfa4678324679c04e5e459580a4e8fabba5a96c7197e1db983cd7",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 804
+    },
+    {
+      "path": "build/qed-editing/qe3-shortcuts-opt-audited",
+      "results_sha256": "0929bcfdcef162954ae933f9cbcb2d356f16f33ecaec4ea19a63ce1ec4bc8d3a",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 705,
+      "stack_reanalysis": {
+        "results_path": "build/qed-editing/qe3-shortcuts-opt/results.json",
+        "results_sha256": "2d5da2442e14caf3ca7af74e708d17a68290973aef309d9f65c41dbfaa6f71bd",
+        "trace_sha256": "aa5bd46433f826e0cefc4b70132f5ffa334726f8d88b57faddfc06cd9b73855e",
+        "observer_sha256": "20d3300b334634821a2f86b878974681921885e3bae251f9ea35bd502191e8af",
+        "basis": "Same executed image and trace; corrected Process lifetime grouping retains emitted after-TCS and application samples. Original result remains unchanged."
+      }
+    },
+    {
+      "path": "build/qed-editing/qe3-shortcuts-raw-audited",
+      "results_sha256": "d21294e2954291497257c3e895fe7bb0b34fff667972ae5ca23c18d84e0c5df3",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 713,
+      "stack_reanalysis": {
+        "results_path": "build/qed-editing/qe3-shortcuts-raw/results.json",
+        "results_sha256": "cede2293b1c8110d6568095d160f880314dcb14339856a87909748cefd131559",
+        "trace_sha256": "17948812728b28caee73c6068ee7742dea567432d564e28d1cfe294ca8ba7c62",
+        "observer_sha256": "20d3300b334634821a2f86b878974681921885e3bae251f9ea35bd502191e8af",
+        "basis": "Same executed image and trace; corrected Process lifetime grouping retains emitted after-TCS and application samples. Original result remains unchanged."
+      }
+    }
+  ],
+  "supplemental": [],
+  "private_heap": {
+    "peak_backing_bytes": 53359,
+    "basis": "Private allocation headers included; underlying allocator rounding and native GUI owners charged separately"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Complete Task-pool and region maps equal QS5; guards, alignment and slack included"
+  },
+  "recorder_sha256": "a7d673b78c94bfaae422407a607dd1024afad6417757397e3f915cebf41df30f",
+  "selection": {
+    "inside_wait": {
+      "task_state": 4,
+      "interest": 7,
+      "update": 0,
+      "mctrl": 0,
+      "alarm_state": 0,
+      "peer_paints_before": 21,
+      "peer_paints_after": 22
+    },
+    "autoscroll": [
+      {
+        "axis": "x",
+        "direction": -1,
+        "origin_before": 64,
+        "origin_after": 63,
+        "first_progress_frames": 32,
+        "frames": 62,
+        "steps": 1
+      },
+      {
+        "axis": "x",
+        "direction": 1,
+        "origin_before": 20,
+        "origin_after": 21,
+        "first_progress_frames": 55,
+        "frames": 85,
+        "steps": 1
+      },
+      {
+        "axis": "y",
+        "direction": 1,
+        "origin_before": 12,
+        "origin_after": 13,
+        "first_progress_frames": 59,
+        "frames": 89,
+        "steps": 1
+      },
+      {
+        "axis": "y",
+        "direction": -1,
+        "origin_before": 13,
+        "origin_after": 12,
+        "first_progress_frames": 75,
+        "frames": 105,
+        "steps": 1
+      }
+    ]
+  },
+  "protocol_checks": [
+    {
+      "path": "build/qed-editing/qe3-pointer-focus",
+      "results_sha256": "b489356e6bde916c9c9852a6a271d242e57974f1bcf59f991bcff0f839ead18c",
+      "checks": 168,
+      "boundary_checks": 21,
+      "scope": "Separate emitted AES protocol fixture; no QED session or production-provider identity claim"
+    },
+    {
+      "path": "build/qed-editing/qe3-locks",
+      "results_sha256": "e96495b2385e6ca291b01511824106dfdbf279cec3c48b50877f9c682a630902",
+      "checks": 181,
+      "boundary_checks": 0,
+      "scope": "Separate emitted AES protocol fixture; no QED session or production-provider identity claim"
+    }
+  ],
+  "shortcut_checks": {
+    "path": "docs/development/qed-shortcuts.json",
+    "sha256": "ce813ae6217f7ca9f31a71ed4338f5d58bd6eb00cfca2a7b77b986415c5d9296"
+  }
+}

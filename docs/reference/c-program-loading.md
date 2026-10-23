@@ -32,7 +32,8 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-Import ABI 26 adds public `Wait`, `PutMsg` and `GetMsg` imports for persistent
+Import ABI 27 combines the current `SetIoErr`, `NameFromLock` and
+`graf_mkstate` bindings with public `Wait`, `PutMsg` and `GetMsg` imports for persistent
 message-driven services. It includes `ExecBasicAttach` for the
 [source interpreter](fastbasic.md#source-buffer-attachment), the current device/AES/file imports, `ExamineExact`,
 `MountVolume`, `UnmountVolume`, `ExNextBatch`, `Input`, `AvailMem`, the cooperative loader, retained
@@ -48,10 +49,21 @@ Loaded C applications also use the existing `CreateMsgPort`, `DeleteMsgPort`,
 functions. Device requests use the ordinary
 [device I/O contract](device-io.md); no new kernel operation or clock is added.
 The desktop provider and its applications must be rebuilt together.
+The current imports also expose `NameFromLock`, AvailMem and SetIoErr; the shared wrapper
+preserves the application's native secondary result across AES retirement.
+
+Use `--minimum-stack BYTES` to declare a total pool requirement, including
+its 256-byte interrupt reserve. The packer rounds up to 16 bytes, with a maximum
+encoding of 4,080 bytes. This is admission metadata, not a C stack-overflow check.
+The loader retains it in the upper-memory Image owner; all loaded Process starts
+select the smallest compatible free pool. No compatible pool means start returns
+zero with ERROR_NO_FREE_STORE (103), before child entry or identity publication.
+Image ownership rolls back and normal collection permits reuse. Existing pool
+sizes, guards and bank-zero reservations are unchanged.
 
 ## File layout
 
-All integers are little-endian. The 36-byte header is followed by segment
+All integers are little-endian. The 32-byte header is followed by segment
 records, import records, bank-fixup offsets and concatenated segment payloads.
 The header's file length must match exactly.
 
@@ -59,7 +71,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 26 |
+| 6 | 2 | Import ABI version, 27 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -67,10 +79,9 @@ The header's file length must match exactly.
 | 16 | 4 | Entry offset from aligned image base |
 | 20 | 4 | Number of bank-byte fixups |
 | 24 | 2 | Number of imports |
-| 26 | 2 | Compiler lower-DP workspace, 20 or 23 bytes |
-| 28 | 2 | Required reserved Task stack bytes, including interrupt headroom |
-| 30 | 2 | Reserved zero |
-| 32 | 4 | Complete file bytes |
+| 26 | 1 | Compiler lower-DP workspace, 20 or 23 bytes |
+| 27 | 1 | Minimum stack in 16-byte units; zero uses ordinary admission |
+| 28 | 4 | Complete file bytes |
 
 Each 16-byte segment has four 32-bit values: relative offset, serialized bytes,
 reserved bytes and flags (1 executable, 2 writable, 0 read-only data). Segments
@@ -80,18 +91,25 @@ offset of its thunk's three-byte operand. Each fixup is a 32-bit relative
 byte offset; fixups are strictly increasing. The loader adds the signed bank
 displacement modulo 256 to that byte.
 
-Limits are four segments, a 256 KiB file and a 192 KiB memory span. Admission
+Limits are six segments, a 256 KiB file and a 320 KiB memory span.
+The existing linker layout places code in relative banks 0, 2 and 4,
+initialized data/BSS in bank 1, and optional read-only tables in bank 3.
+ABI 23 admits the third code bank without changing this linker placement.
+The file staging limit stays 256 KiB. The loader's bounded segment array grows
+by 40 transient stack bytes; it adds no reserved bank-zero storage. Admission
 checks versions, file/segment bounds, executable entry, serialized fixup sites
 and available imports once. This does not verify arbitrary instruction streams
 or provide memory protection. Callers retain responsibility for valid API use.
 
-The packer defaults to a 2,560-byte stack requirement. `--minimum-stack` declares
-a different verified requirement, at least 1,312 bytes. Process admission selects
+The application builder defaults to a 2,560-byte stack requirement.
+`--minimum-stack` declares a different verified requirement; zero leaves pool
+selection to ordinary admission. Nonzero values round up to 16-byte units.
+Process admission selects
 the smallest free existing pool satisfying the image and caller requirements.
 It returns 103 if none fits, including when smaller slots remain free. Panel and
 Counter and the workbench declare 1,312 bytes. This selects existing
-pools and adds no reserved bank-zero storage. Image metadata requests 74 upper
-bytes, rounded to 80, eight more rounded bytes than the preceding layout.
+pools and adds no reserved bank-zero storage. Image metadata requests 76 upper
+bytes, rounded to 80.
 
 ## Storage and entry bridge
 
@@ -176,7 +194,7 @@ and directory handles are borrowed during Start and cloned into child ownership;
 parent selections remain usable. A nonzero console must be a caller-owned CON
 handle; the child binds an independent console/input/BREAK lifetime before entry.
 See the [Process contract](process.md#explicit-child-contexts) for setup failure,
-completion signals and ownership. Rebuild the provider and all APPs for ABI 26.
+completion signals and ownership. Rebuild the provider and all APPs for ABI 27.
 
 `ExecLoadProgram(name)` returns one owned mutable Image. `ExecStartLoaded(image,
 spec)` retains execution ownership until collection; only one execution of that

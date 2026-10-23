@@ -1,0 +1,447 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "QC3 targeted optimized lifetime and refusal fixture with ordinary peer; its final Stop lifecycle is separate from the QC2 normal Counter/shell Stop check",
+  "command": "python3 tools/test_qed_coexist_lifetime.py --output build/qed-coexist/qc3-final",
+  "result": {
+    "path": "build/qed-coexist/qc3-final/results.json",
+    "sha256": "bd875f1fc6e60af33d654646bac452dd1b64d384056fde67061faacfa61412a0"
+  },
+  "trace": {
+    "path": "build/qed-coexist/qc3-final/emulator.log",
+    "sha256": "fe67563d9bdabbd86713285fb6878aeef233779ac5c43612422039e429680db6"
+  },
+  "app": {
+    "path": "build/qed-coexist/qc3-final/app/program.app",
+    "sha256": "1d676eee596e3f252b7d952c2754c651b60a333cb1e141e0851ee0fe3109affa"
+  },
+  "layout": {
+    "path": "build/qed-coexist/qc3-final/app/layout.json",
+    "sha256": "a12c27d8d143d5a2685a8a266e43e0ebf5cf02ef2cca3901f47a8b3ba50e1267"
+  },
+  "sources": {
+    "path": "build/qed-coexist/qc3-final/app/inputs/sources.json",
+    "sha256": "4069a0889a4058dc91c3adcb859da8b410b5268c6a252359635770fd16a48221"
+  },
+  "completed": [
+    4
+  ],
+  "checks": [
+    25222,
+    0
+  ],
+  "lifetime": {
+    "document_bytes": 65154,
+    "repeated_edits": 12,
+    "line_refusals": 1,
+    "form_refusals": 1,
+    "peer_paints": 381,
+    "exact_heap_restoration": true
+  },
+  "minimum_selected_headroom_bytes": 1277,
+  "guards": "intact",
+  "runtime_status": 0,
+  "private_peak_backing_bytes": 163355,
+  "largest_document_heap": {
+    "name": "document-clipboard-undo",
+    "free_bytes": 1771096,
+    "largest_bytes": 1591024,
+    "free_extents": 7,
+    "regions": [
+      [
+        196608,
+        786432,
+        180072
+      ],
+      [
+        2162688,
+        4128768,
+        1591024
+      ]
+    ],
+    "extents": [
+      [
+        302896,
+        24
+      ],
+      [
+        318040,
+        9640
+      ],
+      [
+        380104,
+        49848
+      ],
+      [
+        561024,
+        28800
+      ],
+      [
+        642248,
+        13112
+      ],
+      [
+        707784,
+        78648
+      ],
+      [
+        2537744,
+        1591024
+      ]
+    ]
+  },
+  "warm_heap": {
+    "name": "reuse-0",
+    "free_bytes": 1771096,
+    "largest_bytes": 1591024,
+    "free_extents": 7,
+    "regions": [
+      [
+        196608,
+        786432,
+        180072
+      ],
+      [
+        2162688,
+        4128768,
+        1591024
+      ]
+    ],
+    "extents": [
+      [
+        302896,
+        24
+      ],
+      [
+        318040,
+        9640
+      ],
+      [
+        380104,
+        49848
+      ],
+      [
+        561024,
+        28800
+      ],
+      [
+        642248,
+        13112
+      ],
+      [
+        707784,
+        78648
+      ],
+      [
+        2537744,
+        1591024
+      ]
+    ]
+  },
+  "last_heap": {
+    "name": "reuse-11",
+    "free_bytes": 1771096,
+    "largest_bytes": 1591024,
+    "free_extents": 7,
+    "regions": [
+      [
+        196608,
+        786432,
+        180072
+      ],
+      [
+        2162688,
+        4128768,
+        1591024
+      ]
+    ],
+    "extents": [
+      [
+        302896,
+        24
+      ],
+      [
+        318040,
+        9640
+      ],
+      [
+        380104,
+        49848
+      ],
+      [
+        561024,
+        28800
+      ],
+      [
+        642248,
+        13112
+      ],
+      [
+        707784,
+        78648
+      ],
+      [
+        2537744,
+        1591024
+      ]
+    ]
+  },
+  "limits": "Sampled private peak; instrumented ordinary Process and native parent. Production latency is measured separately without the fixture. The native parent also checks total heap return after all four collections.",
+  "damage_probe": {
+    "command": "python3 tools/test_qed_damage.py --output build/qed-coexist/damage-core-final",
+    "result": {
+      "path": "build/qed-coexist/damage-core-final/results.json",
+      "sha256": "93476691e534c68881750dca4de13b931cc972aa28e12cca9f41d52c6dcd6f06"
+    },
+    "trace": {
+      "path": "build/qed-coexist/damage-core-final/emulator.log",
+      "sha256": "70e0b42abb5d49153ee7dd2fdbf50e66126d02c09f62d8c5ebea082c7dfa48ae"
+    },
+    "app": {
+      "path": "build/qed-coexist/damage-core-final/app/program.app",
+      "sha256": "7bc2cf996081228f47fb24599d051175dc2569110dfa43f5dc41364dafca205f"
+    },
+    "source": {
+      "path": "tests/programs/qed_damage_core.c",
+      "sha256": "36bb28af160c4878a34ac03e29c804deaf4437677d583f828172fae8203fcceb"
+    },
+    "completed": [
+      2
+    ],
+    "guards": "intact",
+    "cases": [
+      "same-row damage",
+      "horizontal clamp requires whole viewport",
+      "unchanged horizontal origin retains row damage",
+      "vertical clamp requires whole viewport",
+      "explicit whole-viewport damage"
+    ],
+    "scope": "Actual restore_edit and make_chg execute in emitted code. Test drawing callbacks observe the requested rectangle; production pixel checks remain separate."
+  },
+  "inputs": {
+    "tools/test_qed_coexist_lifetime.py": "40d6e7ac5500f0d0f686072c0b41104f90a2b2fa5608bef77d544675077aba20",
+    "tools/test_qed_damage.py": "73211bbdf7b2b643352325799aa6832cbbce46cfc26a77f2203f812ec3b8b2cf",
+    "tools/qed_coexist_observe.py": "8aab487496318a24c45045ae0eeb3613df90371c53440cedbbe37b6dc7c517bc",
+    "tests/programs/qed_damage_core.c": "36bb28af160c4878a34ac03e29c804deaf4437677d583f828172fae8203fcceb",
+    "tests/programs/qed_cleanup_stop.act": "fdc873719c586d90093b513f268acc3e4c3d670b94ac943f7055be5b0c9fd8d5",
+    "tests/programs/qed_editing_faults.c": "11b32de0eeace7e5ddbb688e4853337bab7f1e72288c7ae81473c4bd580dcf81",
+    "tests/programs/qed_saving_faults.c": "5256b08e77677d6e98b488ff815271375d5b299c76155e98697db572d125ed33",
+    "tests/programs/qed_cursor_faults.c": "d98e64759d1163ac4cd8dc8fdac5115c2ae7cf2b4b206d78e762ab7bc3f9eeb9"
+  },
+  "execution": {
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+        "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+        "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ],
+      "startup_configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "disk_workload": {
+        "format": "SDFS",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "exec_profile": 4,
+        "nominal_baud": 57600
+      },
+      "mouse_input": {
+        "model": "ST mouse",
+        "port": 1,
+        "internal_port": 0,
+        "map": "Mouse -> ST Mouse (port 1)",
+        "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+        "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+        "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+        "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+        "commands": [
+          "MOUSE ST",
+          "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+          "MOUSE CLEAR"
+        ],
+        "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+        "tooling": {
+          "binary": "build/mouse-bridge/AltirraBridgeServer",
+          "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+          "patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "source_sha256": {
+            "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+            "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+          }
+        },
+        "initial_acceptance": {
+          "transitions_per_second_per_axis": 1000,
+          "minimum_transition_spacing_us": 1000,
+          "minimum_button_level_us": 10000,
+          "required_max_sample_gap_us_exclusive": 1000,
+          "visible_response_pal_ticks": 12
+        },
+        "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+      }
+    },
+    "drive": 0,
+    "unit": 49,
+    "sectors": 2880,
+    "expected_status": 0
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Reuse of the current native parent/provider, Task pools and complete stack/DP/guard/alignment/slack reservations; only disk-loaded C sources and host observers change"
+  }
+}

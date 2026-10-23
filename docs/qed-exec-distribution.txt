@@ -1,0 +1,69 @@
+Native Exec816 QED -- development delivery
+=========================================
+
+START IN ALTIRRASDL
+
+Extract this ZIP into a new folder. Requires AltirraSDL with the 65C816
+high-memory extension used by Exec816. Select Atari 800XL, PAL, BASIC off,
+plain 65C816 at 8x (14.28 MHz), shadow ROMs enabled, 64K base RAM and 63 high
+banks (4 MiB total). Select the included altirraos-816.rom as XL/XE OS.
+Add VBXE FX 1.26 at D6xx with private 512K VRAM, and ST Mouse on port 1.
+Disable keyboard joystick maps, SIO patches, burst I/O and fast boot.
+Remove IDE Plus, U1MB and Rapidus.
+
+Mount system.atr read-only in D1 and qed.atr read-only in D2, both with
+Generic + 57600 baud emulation. QED is entirely on its separate application
+disk; the main system boots without it.
+Copy work.atr to a private location and mount that copy writable in D8.
+Keep disks mounted when loading an XEX. Boot Exec-of816.xex and allow the
+five-second countdown to finish. A key during countdown enters OF816;
+EXEC816 resumes startup. Capture/release the mouse with F12 or Capture Mouse.
+
+OPEN AND EDIT
+
+Click the Shell and enter MOUNT QED: DRIVE 2 FORMAT SPARTA
+Then enter RUN QED:QED.APP WORK:SAMPLE.TXT
+Use RUN QED:QED.APP for a new document. Alternatively, open QED: on the desktop
+and double-click QED.APP. Keep one QED instance; close it before another.
+Ctrl+O opens, Ctrl+N creates, Ctrl+S saves, Ctrl+M selects Save As.
+Ctrl+A selects all; Ctrl+C/X/V copies/cuts/pastes; Ctrl+Z toggles Undo.
+The Search menu provides Find and Find Next. Ctrl+Q quits.
+One Counter may coexist with QED; close Counter before foreground CKSUM.
+The shell admits one RUN job. JOBS collects a finished shell-owned QED.
+Close the editor before EXIT in the Shell returns to the OS.
+
+@POINTER_DESCRIPTION@
+
+SAVE YOUR WORK
+
+SYS: in D1 and QED: in D2 are read-only. WORK: in D8 is writable. RAM: disappears on reboot.
+Save As accepts WORK: (the committed title can show its physical name D8:).
+Replacing a document and replacing an older backup require separate consent;
+Cancel is the default. The previous document is retained as .BAK.
+Modified New/Open/Close/Quit offer Save, Discard and Cancel.
+Preserve your private WORK disk when replacing the package or clean template.
+Close the emulator before another instance mounts the same writable disk.
+
+The editor accepts uniform LF or CRLF, tabs, empty text and no final newline.
+Lines are limited to 1,023 bytes. Native paths allow 255 bytes; the selector
+has path[128] and leaf[13]. NUL, mixed endings and CR-only input are rejected.
+Document size depends on available memory; no fixed maximum is promised.
+Preferences, autosave, printing, external clipboard, multiple documents,
+pattern/replace search, external fonts and donor interprocess protocols are
+outside this port. Power-loss atomicity, concurrent writers to one target,
+automatic repair and general hosted/hardware qualification are not claimed.
+
+SOURCE AND NOTICES
+
+This is the supported development port. QED may be given away but must not
+be sold. QED-NOTICE.txt and QED-TERMS.txt retain upstream notices;
+QED-PROVENANCE.txt describes this adaptation. QED-COPYING.LIB.txt and
+QED-APACHE-2.0.txt retain library terms. EXEC816-GPL-3.0.txt, EXEC816-MIT.txt,
+EXEC816-LICENSING.md and the GEM, calculator, G4BENCH, OF816-LICENSE.txt
+and ALTIRRAOS-LICENSE.txt notices cover the other included components.
+The QED disk also retains its notices as NOTICE.TXT, TERMS.TXT, COPYING.LIB,
+APACHE.TXT, PORT.TXT and MIT.TXT. QED.RSC is loaded from QED:, independently
+of the document directory. Unmount QED: before swapping its disk.
+SHA256SUMS covers every packaged boot file, disk, guide and notice.
+Matching source/relink materials and QED-DELIVERY-SHA256SUMS accompany this
+boot ZIP separately. Keep them together when redistributing the port.

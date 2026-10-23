@@ -558,6 +558,58 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [QED supported delivery design](gem4xe/qed-delivery-design.md) and
+  [QD1–QD7 implementation plan](gem4xe/qed-delivery-implementation-plan.md):
+  strategy step 7; reproducible normal demo builds, Files/shell launch,
+  persistent WORK, source/notices and reconciliation of the agreed port scope.
+  Implementation and delivery checks remain pending.
+
+- [QED coexistence design](gem4xe/qed-coexistence-design.md) and
+  [QC1–QC4 implementation plan](gem4xe/qed-coexistence-implementation-plan.md):
+  strategy step 6; production response under GUI/shell load, Task admission,
+  memory fragmentation and repeated lifetime/failure checks. The
+  [selected development gate](../history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff)
+  passes; supported delivery remains step 7.
+
+- [QED saving design](gem4xe/qed-saving-design.md) and
+  [QW1–QW8 implementation plan](gem4xe/qed-saving-implementation-plan.md):
+  strategy step 5; canonical names, exact staging, checked backup/publication,
+  recovery and Save/Discard/Cancel. See the [saving evidence](../history/qed-saving.md).
+
+- [QED editing design](gem4xe/qed-editing-design.md) and
+  [QE1–QE7 implementation plan](gem4xe/qed-editing-implementation-plan.md):
+  strategy step 4; native editing/selection, long-line redraw,
+  clipboard/Undo, cancellable dialogs/Find and staged single-document Open/New.
+  QE1–QE7 pass [development checks](../history/qed-editing.md).
+  Reliable saving remains step 5.
+
+- [QED startup design](gem4xe/qed-startup-design.md) and
+  [QS1–QS5 implementation plan](gem4xe/qed-startup-implementation-plan.md):
+  strategy step 3 complete; adapted resources, fixed-font source, real loaded
+  editor startup, Close/Quit/Stop, rollback, reuse and stack development checks.
+  [Evidence and limits](../history/qed-startup.md); editing/saving remain later gates.
+
+- [QED native feasibility design](gem4xe/qed-native-feasibility-design.md) and
+  [QF1–QF6 implementation plan](gem4xe/qed-native-feasibility-implementation-plan.md):
+  strategy step 2; native ABI and owned runtime, real file/text-storage probes,
+  whole-QED layout, measured image/stack decisions and Process admission.
+  QF1–QF6 implemented and reconciled; GUI startup follows in step 3.
+
+- [QED initial scope and source dependencies](gem4xe/qed-scope-and-dependencies.md):
+  strategy step 1 fixed; English single-document scope, pinned QED/cflib sources,
+  required dependency paths and explicit deferrals. Source checks only; native
+  compilation and execution follow in step 2.
+
+- [QED port strategy](gem4xe/qed-port-strategy.md): high-level order from
+  verified dependencies and native feasibility through startup, editing,
+  reliable saving, coexistence and delivery; defines outcomes before the
+  later design notes and executable implementation plans.
+
+- [QED gap analysis](gem4xe/qed-gap-analysis.md): source study of the existing
+  65816 port against Exec's resource/menu, VDI, event/dialog, runtime/filesystem
+  and image/stack contracts; proposes a native port through editing, reliable
+  saving and concurrent use. Later startup evidence records actual Exec execution.
+
 - [Control Panel session settings](gem4xe/control-panel-settings-plan.md): runtime
   Off/Mild acceleration, staged Apply/Cancel and focused redraw/lifetime checks.
   CP1–CP3 implemented; [development record](../history/control-panel-settings.md).

@@ -14,7 +14,7 @@ The current source profile in [gem.h](../../c/include/gem.h) implements
 `evnt_mesag`, `evnt_timer`,
 `evnt_multi`, `evnt_multi_moblk`, `wind_update`, `wind_create`, `wind_open`,
 `wind_close`, `wind_delete`, `wind_get`, `wind_set`, `wind_set_str`, `wind_calc`,
-`graf_handle`
+`graf_handle`, `graf_mkstate`
 and the corresponding `aes_call(AESPB *)` operations.
 Other opcodes return zero with `ExecAESDiagnostic() == AES_UNSUPPORTED`.
 This is a rebuilt Calypsi source interface, not a GEM binary ABI or a complete
@@ -22,6 +22,14 @@ AES implementation. The object/form, resource and menu subsets are described
 below. Selected
 [private VDI workstation calls](gem-vdi.md#resident-application-workstations)
 execute directly in the caller.
+
+`graf_mkstate(&x,&y,&buttons,&qualifiers)` and AESPB opcode 79 (0 input words,
+5 output words, no addresses) return the context's latest published pointer
+sample. A short Task guard makes the four values coherent; raw IRQ capture
+does not mutate this AES storage. The query consumes no queued key/button
+record, changes no wait interest and performs no timer wait or RPC. It succeeds
+for a registered context even when its current window is ineligible for input.
+These are the latest presenter-published values, rather than a hardware read.
 
 Startup retains the endpoint returned by `AESBOOT.Port()` until every C Task
 has detached. Each application wrapper calls `ExecAESAttach(endpoint)` before
@@ -132,7 +140,7 @@ use this same implementation. Key/button opcodes are 20 (0/1/0/0) and 21
 ### Combined GUI and Exec wait
 
 `ExecAESWait(struct ExecAESWaitSpec *)` is a caller-local extension in C
-application ABI 26. The [generated record](../../abi/aes-wait.json) is 58 bytes:
+application ABI 27. The [generated record](../../abi/aes-wait.json) is 58 bytes:
 GUI flags/button/M1 inputs at 0–16, milliseconds at 18, caller-owned signalMask
 at 22, received bits at 26, eight message words at 30 and six ordinary mouse/key
 outputs at 46–56. Include `<exec816/aes.h>`. GUI flags have the same supported
@@ -209,6 +217,21 @@ if unavailable. A normal contended BEGIN waits in arrival order among eligible
 callers; an existing mouse owner can upgrade without waiting behind a dependent
 peer. Exit releases every owned hold. Message and timer service continue.
 
+A work-area pointer capture retains its input recipient through release while
+other clients may acquire short UPDATE sections and paint. Their implicit
+mouse hold does not replace that recipient. Explicit MCTRL remains unavailable
+to a competing capture owner until release; native frame gestures and pending
+window transactions retain their existing admission rules.
+
+`wind_set(window,WF_EXEC_FOCUS,enabled,0,0,0)` opts an owned window into native
+`WM_ONTOP`/`WM_UNTOPPED` focus notices. The default is disabled. Enabling an open
+window publishes its current focus level; subsequent focus changes use the
+existing GUI message delivery and require `MU_MESAG`, without polling. Pending
+focus changes coalesce to the latest level per window. Disabling prevents new
+notices; an already delivered notice remains consumable. Closing retires
+pending notices with the window epoch. These report accepted focus changes;
+`WM_TOPPED` remains a request for the application to raise its window.
+
 BEGIN/END UPDATE use the same native policy in either the caller or presenter.
 At a safe presenter boundary, the binding claims a private metadata gate and
 performs bounded acquisition/release synchronously. It releases that gate before
@@ -230,8 +253,8 @@ it with `wind_update(END_UPDATE)`. The caller must restrict drawing/model change
 to that window. Nested calls keep the outer scope, including nested ordinary
 `BEG_UPDATE`; an ordinary outer BEGIN still covers every owned window. Empty or
 hidden scoped updates invalidate their target, while untouched siblings remain
-eligible for caching. The helper uses the current wire version 17's UPDATE_WINDOW
-flag and C program import version 26; rebuild programs and their matching host.
+eligible for caching. The helper uses the current wire version 18's UPDATE_WINDOW
+flag and C program import version 27; rebuild programs and their matching host.
 
 Update ownership also excludes native console painting/scrolling, widget
 feedback, background repair and cache capture. Mouse ownership defers native
@@ -419,7 +442,7 @@ UPDATE requests still wait for MCTRL release, and a queued lock may pause native
 painting. This is a bounded Exec extension, not GEM's synchronous drag-box API.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 17 has a 226-byte request and permits init, exit, update,
+profile: version 18 has a 226-byte request and permits init, exit, update,
 window mutations, cold display delegation, menu publication, session mouse
 preferences, `wind_find` and application outline admission on the RPC endpoint.
 `ExecAESConsole` uses the current `WF_EXEC_CONSOLE` window selector for
@@ -505,7 +528,7 @@ includes the optional `--aes-input` OF816 build. The application object/form and
 `G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT`, `G_BOXTEXT`, `G_FTEXT`,
 `G_FBOXTEXT`, `G_ICON` and `G_CICON`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/EDITABLE/
 RBUTTON/LASTOB/HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
-with at most 32 objects, eight levels and 63 characters per label (12 for
+with at most 64 objects, eight levels and 63 characters per label (12 for
 `G_CICON`). Coordinates
 are pixels. Box specs use a signed border-thickness byte; centering and drawing
 include outward borders. Unsupported object types, indirect specs and user callbacks are
@@ -567,6 +590,9 @@ traverses fields. A press previews selection; an inside release commits and an
 outside release or Escape cancels it. Entry/loss waits for release before a new
 press. No motion/hover feedback is promised. Return activates DEFAULT; Space
 activates a focused button. Accepted EXIT returns its index with SELECTED set.
+When no mouse button is held, Escape dismisses either a borrowed or temporary
+form with **-1 / AES_OK**. It does not select an EXIT object. Alert dismissal
+therefore returns zero, preserving the rule that cancellation is never consent.
 
 A direct call creates and finishes an implicit session. START permits repeated
 calls on the same tree until FINISH. Temporary windows accept movement and
@@ -673,7 +699,8 @@ Painting uses existing visible rectangles and short UPDATE sections.
 
 Per active selector, upper-heap storage is 3,242 live / 3,248 reserved bytes
 (including the 512-byte filtered index), a 28,672-byte entry allocation, and
-the existing 320-byte form allocation. Existing host/workstation resources are
+the current 383-live / 384-reserved-byte form allocation (including the
+64-byte saved-state growth for 64-object resources). Existing host/workstation resources are
 borrowed or owned by that form. The selector adds no fixed bank-zero or VRAM
 storage. The packaged consumer required 32 more bytes per ordinary stack
 (slots 1–5), adding 160 reserved bank-zero bytes in total.
@@ -681,18 +708,29 @@ See the [development record](../history/file-selector.md).
 
 ## Resources and popup menus
 
-`rsrc_load`, `rsrc_free`, `rsrc_gaddr(R_TREE, index, &tree)` and `rsrc_obfix`
+`rsrc_load`, `rsrc_free`, `rsrc_gaddr` and `rsrc_obfix`
 provide named and AESPB bindings (110/111/112/114). Load accepts classic
 big-endian version-zero RSC files and version-four colour-icon extensions,
-at most 65,535 bytes in total, 256 objects and eight
+at most 65,535 bytes in total, 256 objects and sixteen
 trees, using the object/string subset above. Each tree ends with LASTOB within
-32 objects. Up to 256 TEDINFO records support the text types above. Templates
+64 objects. The menu service retains its independent 33-object ceiling.
+Up to 256 TEDINFO records support the text types above. Templates
 and validation strings are NUL-terminated, at most 63 characters. Load fixes full
 upper-memory addresses. Noneditable records normalize text/template lengths to
 string length plus NUL, including files with zero length fields. EDITABLE records
 preserve their declared 1–128-byte text capacity; the complete writable extent
 and its initial NUL must be present in the file. Shared TEDINFO records are fixed
 once. Text remains writable within the resource's supplied buffer.
+`rsrc_gaddr(R_TREE,index,&tree)` returns a relocated tree. A free-string table
+has at most 256 entries, with strings terminated within 255 characters.
+`R_STRING` returns its selected char pointer; `R_FRSTR` returns the address of
+the relocated pointer slot. These full addresses belong to the resource until
+replacement/free. Failed loading, including terminal Close failure, preserves
+the prior resource. Free-table extents and termination are checked at admission.
+The resource owner uses 22 upper-memory bytes plus the file. The 64-object
+saved-state capacity adds 64 upper-memory bytes to each form/popup owner;
+reserved bank-zero growth is zero. The separate hosted widget packet keeps its
+32-object ceiling.
 The shipped `CALC.RSC` uses this contract for its twelve-byte numeric display
 buffer. `CALC.APP` keeps the loaded tree private to each Process instance.
 G_ICON resources contain standard 34-byte ICONBLKs and monochrome mask/data
@@ -788,7 +826,9 @@ headings switches menus. Disabled/hidden entries cannot activate. Outside click,
 Escape, BREAK and input loss cancel without passing the click to a window.
 Ctrl+Shift+Escape enters the application menu; Left/Right changes titles,
 Up/Down or Tab/Shift+Tab selects entries, and Return activates. Ctrl+Escape opens
-Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching.
+Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching. The window selector
+uses registered, shown window lifetimes independently of keyboard/pointer wait
+interest. Iconified windows remain in the menu and cycling skips them.
 
 The private C context is 368 bytes. Rebuild bindings and applications with
 the current C component ABI (14).

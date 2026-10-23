@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from build_of816 import boot_layout, xex_segments
+from build_of816 import boot_layout, xex_segments, prepare_source, PIN
 from native_program import xex_segment
 from boot_config import ABI as BOOT_ABI
 from banked_image import split_setup
@@ -31,6 +31,22 @@ class OF816PackageTests(unittest.TestCase):
                 regions={'kernel-stack':[0x2c20,0x3240],'boot-state':[0x0b00,0x0c00]},
                 boot_config=dict(abi=BOOT_ABI,address=0x0b80,cache_blocks=512,system_slot=255,system_drive=0,allowed_drives=0),
                 constants=dict(TABLE_BYTES=16,STAGE=0x5df0,OLD_MEMLO=0x0b08),usable_banks=[1,2,3])))
+
+    def test_prepared_source_replaces_only_informational_timestamp(self):
+        source=self.folder/'upstream';(source/'asm').mkdir(parents=True)
+        (source/'forth.s').write_text('.include "asm/forth-dictionary.s"\n')
+        original='; donor notice\nONLIT .time\nONLIT UDOT\n'
+        (source/'asm/forth-dictionary.s').write_text(original)
+        result=prepare_source(self.folder,source)
+        self.assertEqual((self.folder/'forth-dictionary.s').read_text(),
+                         original.replace('.time',str(PIN['build_timestamp'])))
+        self.assertEqual((source/'asm/forth-dictionary.s').read_text(),original)
+        self.assertEqual(result,prepare_source(self.folder,source))
+
+    def test_prepared_source_rejects_changed_timestamp_site(self):
+        source=self.folder/'upstream';(source/'asm').mkdir(parents=True)
+        (source/'asm/forth-dictionary.s').write_text('ONLIT 123\n')
+        with self.assertRaisesRegex(RuntimeError,'timestamp site changed'):prepare_source(self.folder,source)
 
     def test_boot_uses_free_banks_and_preserves_manifest(self):
         before = (self.folder/'manifest.bin').read_bytes()

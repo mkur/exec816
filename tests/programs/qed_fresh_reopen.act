@@ -1,0 +1,246 @@
+; Ordinary loaded QED, observed through the existing Process and AES owners.
+MODULE CPROCESSTEST
+USE EXEC
+USE DOS
+USE PROGRAMFILE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROCESS
+USE AESSTATE
+USE AESCORE
+USE AESTYPES
+USE TIMER
+USE HEAPCORE
+USE CSTRING.IMPL AS STR
+
+LONGCARD checks
+CARD completed,phase,cycle,menuObjects,control,stopCount
+INT windowX,windowY,windowW,windowH
+LONGCARD baseline
+LONGINT lastPrimary,lastSecondary
+BYTE ARRAY deepPath(256)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort(CARD($fb00+checks))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC WindowReady()
+  CARD attempt
+  BYTE index,shown
+  AESSTATE.Client POINTER client
+
+  LET port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  LET clock=TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(port,
+      SIZEOF(TIMER.TimerClockRequest)))
+  Require(clock<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"timer.device"),TIMER.UNIT_VBLANK,
+      @clock.tc_Request,0)=0)
+  LET service=AESSTATE.Get()
+  FOR attempt=0 TO 999 DO
+    EXEC.Forbid()
+    shown=0
+    FOR index=0 TO AESTYPES.WINDOWS-1 DO
+      BEGIN
+        LET view=service.windows(index).view
+        IF view<>NULL AND view.shown<>0 THEN
+          shown=1
+          windowX=view.bounds.left
+          windowY=view.bounds.top
+          windowW=view.bounds.right-view.bounds.left
+          windowH=view.bounds.bottom-view.bounds.top
+          client=AESSTATE.Find(service,service.windows(index).owner)
+          IF client<>NULL AND client.menu<>NULL THEN
+            menuObjects=client.menu.count
+          FI
+
+          EXIT
+        FI
+      END
+    OD
+
+    EXEC.Permit()
+    IF shown<>0 THEN
+      EXIT
+    FI
+
+    clock.tc_Request.io_Command=TIMER.TD_READCLOCK
+    Require(EXEC.DoIO(@clock.tc_Request)=0)
+    Require(TIMER.Deadline(clock,0)<>0)
+    clock.tc_Request.io_Command=TIMER.TD_WAITUNTIL
+    Require(EXEC.DoIO(@clock.tc_Request)=0)
+  OD
+
+  phase=cycle+1
+  FOR attempt=0 TO 19999 DO
+    IF control=phase THEN
+      EXIT
+    FI
+
+    clock.tc_Request.io_Command=TIMER.TD_READCLOCK
+    Require(EXEC.DoIO(@clock.tc_Request)=0)
+    Require(TIMER.Deadline(clock,0)<>0)
+    clock.tc_Request.io_Command=TIMER.TD_WAITUNTIL
+    Require(EXEC.DoIO(@clock.tc_Request)=0)
+  OD
+
+  Require(control=phase)
+  EXEC.CloseDevice(@clock.tc_Request)
+  EXEC.DeleteIORequest(@clock.tc_Request)
+  EXEC.DeleteMsgPort(port)
+  Require(shown<>0 AND menuObjects=30)
+
+RETURN
+
+PROC CopyInput(BYTE POINTER source,target)
+  LONGINT count
+  LONGCARD total
+
+  LET buffer=EXEC.AllocMem(4096,EXEC.MEMF_UPPER)
+  Require(buffer<>NULL)
+  LET input=DOS.Open(source,DOS.MODE_OLDFILE)
+  LET output=DOS.Open(target,DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  total=0
+  DO
+    count=DOS.Read(input,buffer,4096)
+    Require(count>=0)
+    IF count=0 THEN
+      EXIT
+    FI
+
+    Require(DOS.Write(output,buffer,count)=count)
+    total==+LONGCARD(count)
+  OD
+
+  Require(total>0)
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  EXEC.FreeMem(buffer,4096)
+
+RETURN
+
+; Wait for both ordinary GEM clients to publish their windows.
+PROC PeerReady()
+  CARD attempt
+  BYTE index,shown
+
+  LET port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  LET clock=TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(port,
+      SIZEOF(TIMER.TimerClockRequest)))
+  Require(clock<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"timer.device"),TIMER.UNIT_VBLANK,
+      @clock.tc_Request,0)=0)
+  LET service=AESSTATE.Get()
+  FOR attempt=0 TO 999 DO
+    EXEC.Forbid()
+    shown=0
+    FOR index=0 TO AESTYPES.WINDOWS-1 DO
+      BEGIN
+        LET view=service.windows(index).view
+        IF view<>NULL AND view.shown<>0 THEN
+          shown==+1
+        FI
+      END
+    OD
+
+    EXEC.Permit()
+    IF shown=2 THEN
+      EXIT
+    FI
+
+    clock.tc_Request.io_Command=TIMER.TD_READCLOCK
+    Require(EXEC.DoIO(@clock.tc_Request)=0)
+    Require(TIMER.Deadline(clock,0)<>0)
+    clock.tc_Request.io_Command=TIMER.TD_WAITUNTIL
+    Require(EXEC.DoIO(@clock.tc_Request)=0)
+  OD
+
+  Require(shown=2)
+  EXEC.CloseDevice(@clock.tc_Request)
+  EXEC.DeleteIORequest(@clock.tc_Request)
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+; Coordinate physical input with the supervising Task without polling the app.
+PROC WaitControl(CARD value)
+  CARD attempt
+
+  LET port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  LET clock=TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(port,
+      SIZEOF(TIMER.TimerClockRequest)))
+  Require(clock<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"timer.device"),TIMER.UNIT_VBLANK,
+      @clock.tc_Request,0)=0)
+  FOR attempt=0 TO 19999 DO
+    IF control=value THEN
+      EXIT
+    FI
+
+    clock.tc_Request.io_Command=TIMER.TD_READCLOCK
+    Require(EXEC.DoIO(@clock.tc_Request)=0)
+    Require(TIMER.Deadline(clock,0)<>0)
+    clock.tc_Request.io_Command=TIMER.TD_WAITUNTIL
+    Require(EXEC.DoIO(@clock.tc_Request)=0)
+  OD
+
+  Require(control=value)
+  EXEC.CloseDevice(@clock.tc_Request)
+  EXEC.DeleteIORequest(@clock.tc_Request)
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+PROC PrepareDeep(BYTE unused)
+  BYTE level
+
+  STR.strlcpy(deepPath,c"D1:",SIZEOF(deepPath))
+  FOR level=0 TO 15 DO
+    BEGIN
+      STR.strlcat(deepPath,c"LONGNAME.LNG",SIZEOF(deepPath))
+      LET directory=DOS.CreateDir(deepPath)
+      Require(directory<>NULL)
+      DOS.UnLock(directory)
+      STR.strlcat(deepPath,c"/",SIZEOF(deepPath))
+    END
+  OD
+
+  STR.strlcat(deepPath,c"DEEP.TXT",SIZEOF(deepPath))
+  LET file=DOS.Open(deepPath,DOS.MODE_CREATE_EXCLUSIVE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,BYTE POINTER(c"deep"),4)=4)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Main()
+  PROCESS.Result result
+
+  cycle=0
+  LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:PROBE.APP"))
+  Require(image<>NULL)
+  LET arguments=BYTE POINTER(c"D1:FRESH.TXT")
+  LET child=PROCESS.StartLoaded(BYTE POINTER(image),arguments,
+      CARD(STR.strlen(CSTRING(arguments))),0)
+  Require(child<>0)
+  WindowReady()
+  Require(PROCESS.Wait(child,@result)<>0)
+  lastPrimary=result.primary
+  lastSecondary=result.secondary
+  Require(result.primary=0 AND result.secondary=0)
+  completed=1
+  Require(image.running=0 AND image.references=1)
+  PROGRAM.Unload(image)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

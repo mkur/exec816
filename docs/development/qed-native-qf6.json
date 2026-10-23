@@ -1,0 +1,468 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "tier": "development",
+  "qualification": false,
+  "scope": "QED strategy step 2 foundation; full editor/GEM startup/editing/saving are later gates",
+  "source_pins": {
+    "qed": {
+      "revision": "454beb35fccd72c15a8494431f6637cd0cb553c7",
+      "tree": "842d0ed962f431b98fbba1a7038020b5805338bc"
+    },
+    "cflib": {
+      "revision": "ce57817c3f68c7d346d1081768505e81acaee807",
+      "tree": "aa00256dc44096969025e2a1e1a03dcfa738547c"
+    }
+  },
+  "native_baseline_commit": "d4c6a803",
+  "c_program_abi": 24,
+  "process_abi": 8,
+  "baseline_audit": {
+    "path": "build/qed-native/qf6-baseline.json",
+    "sha256": "e7d362ca71ebdb5c0532b55ce019ed8cd4621484d434db74f48cd9f323ec7b9c",
+    "tool_sha256": "02f4f3309c84c17d6d9c5a60a76a419195de1a475fef80f8f66258a6d28a3c12",
+    "verified_inputs": 304,
+    "scope": "All retained layout sources, actual compiled fixture sources mapped to the final prepared tree, native input hashes, current providers, tools/runtime archive, stack reinterpretation and packaged callers/checksums"
+  },
+  "cohorts": [
+    {
+      "reanalysis_sha256": "a22903c573901b73f6de6bbe9f4ef45afbd2d4c7018d5c25aa5251b08238755c",
+      "path": "build/qed-native/qf5-admission",
+      "results_sha256": "d94abd7b055958647a067d3796a5ab27eaaf954b379958f3ebe1c0b067b54fa3",
+      "app_sha256": "5144a7aa09847e7e10e78df792bfea114c338294a05900eea9c4acbb5fc77755",
+      "completed": [
+        3
+      ],
+      "checks": [
+        33
+      ],
+      "filesystem": "sdfs",
+      "stack_window": null,
+      "minimum_headroom": 531,
+      "trace_sha256": "b4acd79dc45905d372b545498aa97454138482749d3401cf154c69c260d4a32f"
+    },
+    {
+      "reanalysis_sha256": "a22903c573901b73f6de6bbe9f4ef45afbd2d4c7018d5c25aa5251b08238755c",
+      "path": "build/qed-native/qf5-runtime",
+      "results_sha256": "c1f638dfe58f6ff54a6093e3a9da6779f38dace7ab091ee8eef7531d6e771208",
+      "app_sha256": "6a0f4c5bc02f5ff16608ec7e08c1915808e1001a70e2ec154391b1c1d5607de3",
+      "completed": [
+        12
+      ],
+      "checks": [
+        96
+      ],
+      "filesystem": "sdfs",
+      "stack_window": {
+        "slot": 3,
+        "identity": 1,
+        "image": 295736,
+        "record": 135906,
+        "image_base": 327680,
+        "app_entry": 340293,
+        "scope": "One owned C Process from PREPARING through retirement; loader and following starts excluded"
+      },
+      "minimum_headroom": 509,
+      "trace_sha256": "5c3906a41159bd51c7bbe7de8789980d18b4f0641c38e0021abd52445097b1fd"
+    },
+    {
+      "reanalysis_sha256": "a22903c573901b73f6de6bbe9f4ef45afbd2d4c7018d5c25aa5251b08238755c",
+      "path": "build/qed-native/qf5-files",
+      "results_sha256": "297be24f96bf9afc6f1fce035ac27829eff52f6247b6309e73f51d7c8692a866",
+      "app_sha256": "374b274bfa99ccd0ebbff9dcae93cc6194343eb24ef0a89788dbbfbddadb11e9",
+      "completed": [
+        3
+      ],
+      "checks": [
+        26
+      ],
+      "filesystem": "sdfs",
+      "stack_window": {
+        "slot": 3,
+        "identity": 1,
+        "image": 298280,
+        "record": 135906,
+        "image_base": 327680,
+        "app_entry": 341774,
+        "scope": "One owned C Process from PREPARING through retirement; loader and following starts excluded"
+      },
+      "minimum_headroom": 433,
+      "trace_sha256": "f6dcc31f2a4fd84b81b9e954216059e2f36452c0e57118d456d6c38a8e9d7a80"
+    },
+    {
+      "reanalysis_sha256": "a22903c573901b73f6de6bbe9f4ef45afbd2d4c7018d5c25aa5251b08238755c",
+      "path": "build/qed-native/qf5-layout-raw",
+      "results_sha256": "8f485dfcc9ed224cb7a926d28414fc99b0116ef4e409f883721d93cc37ad3e8a",
+      "app_sha256": "ce6138b5119800d10206797480126f280448fab1eb3460cedc336d24b87e2a9c",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "filesystem": "sdfs",
+      "stack_window": {
+        "slot": 3,
+        "identity": 1,
+        "image": 295704,
+        "record": 135906,
+        "image_base": 458752,
+        "app_entry": 721554,
+        "scope": "One owned C Process from PREPARING through retirement; loader and following starts excluded"
+      },
+      "minimum_headroom": 784,
+      "trace_sha256": "d670fbe980843bd0af6a3a9f685d75f80de5a24d3488901d023c636cbd6b327d"
+    },
+    {
+      "reanalysis_sha256": "a22903c573901b73f6de6bbe9f4ef45afbd2d4c7018d5c25aa5251b08238755c",
+      "path": "build/qed-native/qf5-masks",
+      "results_sha256": "02b32026e47b2ed79a7a04c095895cc3bd78fdff71b18a3245ced7e3d73bf940",
+      "app_sha256": "3b2bab3bfe034db7509b1ab841eef2de33a7bed9c86254440cea3bec35c90b32",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "filesystem": "sdfs",
+      "stack_window": null,
+      "minimum_headroom": 857,
+      "trace_sha256": "a332e63923801561c898c1b1c5dfdf7c25c304435555c75cc2d35037bf99e6b5"
+    },
+    {
+      "reanalysis_sha256": "a22903c573901b73f6de6bbe9f4ef45afbd2d4c7018d5c25aa5251b08238755c",
+      "path": "build/qed-native/qf5-stop",
+      "results_sha256": "39ba9adeea5de521f85f47040c2f992a417ad8e78802eb5e7815a8c126b607eb",
+      "app_sha256": "6a0f4c5bc02f5ff16608ec7e08c1915808e1001a70e2ec154391b1c1d5607de3",
+      "completed": [
+        2
+      ],
+      "checks": [
+        134
+      ],
+      "filesystem": "sdfs",
+      "stack_window": {
+        "slot": 3,
+        "identity": 2,
+        "image": 295704,
+        "record": 135906,
+        "image_base": 327680,
+        "app_entry": 340293,
+        "scope": "One owned C Process from PREPARING through retirement; loader and following starts excluded"
+      },
+      "minimum_headroom": 737,
+      "trace_sha256": "2e3d76a0ad1c74ed9c6f2a84109db1c38eac5974c486dfaf4e46a959e9664ff0"
+    },
+    {
+      "reanalysis_sha256": "a22903c573901b73f6de6bbe9f4ef45afbd2d4c7018d5c25aa5251b08238755c",
+      "path": "build/qed-native/qf6-files-mydos",
+      "results_sha256": "4554a9d0b8377ba7eb9fde6e14c31d568e42e3c39c78fbedad2c44433b0ed6de",
+      "app_sha256": "374b274bfa99ccd0ebbff9dcae93cc6194343eb24ef0a89788dbbfbddadb11e9",
+      "completed": [
+        3
+      ],
+      "checks": [
+        26
+      ],
+      "filesystem": "mydos",
+      "stack_window": {
+        "slot": 3,
+        "identity": 1,
+        "image": 298288,
+        "record": 135906,
+        "image_base": 327680,
+        "app_entry": 341774,
+        "clock_start": 50436854,
+        "clock_end": 59536600,
+        "scope": "Selected owned C Process from PREPARING through retirement. Analysis selects its physical slot and first observed lifetime; later history samples are excluded."
+      },
+      "minimum_headroom": 433,
+      "trace_sha256": "2fcea9e91c05ce460c3350dd60342da78d7c26c89d5c4d0db1460fe016947451"
+    }
+  ],
+  "process_cycles": 27,
+  "layout": {
+    "code_bytes": 148788,
+    "initialized_bytes": 1367,
+    "bss_bytes": 26587,
+    "import_thunk_bytes": 396,
+    "span_bytes": 279860,
+    "image_holes_bytes": 103118,
+    "serialized_bytes_if_executable": 166551,
+    "relocation_count": 3873,
+    "heap_alignment_backing_bytes": 345396,
+    "future_full_profile_backing_bytes": 393216,
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "container_metadata_allowance_bytes": 16384,
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "source_frames": {
+    "source_chain_bytes": 1375,
+    "continuation_cap_bytes": 768,
+    "interrupt_reserve_bytes": 256,
+    "required_headroom_bytes": 128,
+    "admission_bytes": 2560,
+    "margin_bytes": 33,
+    "chain": [
+      "main",
+      "QedRuntimeRun",
+      "editor_body",
+      "main_loop",
+      "key_global",
+      "handle_menu",
+      "select_multi",
+      "select_file",
+      "open_multi",
+      "prepare_quit",
+      "icon_test",
+      "e_icon_test",
+      "delete_edit",
+      "do_icon(Save)",
+      "e_icon_edit(Save)",
+      "save",
+      "save_datei",
+      "save_to_fd",
+      "do_aktion",
+      "handle_msg(redraw-only)",
+      "size_window",
+      "redraw_window",
+      "wi_draw",
+      "bild_out",
+      "str_out",
+      "output_text",
+      "fill_area_italic",
+      "fill_area",
+      "set_fill_color"
+    ],
+    "limit": "Source-frame bound only. The continuation cap includes bridge and library/native/GEM work below an application call; future implemented GUI paths must establish that cap and sample full chains before editor execution is qualified. Current runtime samples are separate execution evidence, not a bound on missing GEM."
+  },
+  "frame_ledger": {
+    "path": "build/qed-native/qf6-stack-frames.json",
+    "sha256": "d241161d4bd2f031e8ade8c40d7122b079ae1a799ddcd39bf58e81d9877d7f31",
+    "change": "Keep all editor-action branches while bounding nested Save; conservative bound unchanged"
+  },
+  "image_costs": {
+    "owner_bytes": 76,
+    "measured_analysis_image_backing": 345396,
+    "maximum_profile_backing": 393216,
+    "maximum_file_staging": 262144,
+    "maximum_loading_overlap_before_other_owners": 655436,
+    "runtime_allocation_header": 12,
+    "maximum_bank_contained_payload": 65524
+  },
+  "packages": [
+    {
+      "path": "build/qed-native/qf6-demo-standard",
+      "zip_sha256": "d35133836ba10b188dbe4459f870d2c1629c1f6e2a128a97c58b8c888a09f187",
+      "files": [
+        "exec816-demo/ALTIRRAOS-LICENSE.txt",
+        "exec816-demo/EXEC816-GPL-3.0.txt",
+        "exec816-demo/EXEC816-LICENSING.md",
+        "exec816-demo/EXEC816-MIT.txt",
+        "exec816-demo/Exec-of816.xex",
+        "exec816-demo/OF816-LICENSE.txt",
+        "exec816-demo/README.txt",
+        "exec816-demo/SHA256SUMS",
+        "exec816-demo/altirraos-816.rom",
+        "exec816-demo/system.atr",
+        "exec816-demo/work.atr"
+      ]
+    },
+    {
+      "path": "build/qed-native/qf6-demo-gem",
+      "zip_sha256": "c4c71bcd9b9654c5b36e14ca266ac4fd3a960b6c7bc09e365e9b9e7a9b0ba330",
+      "files": [
+        "exec816-demo/ALTIRRAOS-LICENSE.txt",
+        "exec816-demo/CALCULATOR-COPYING.LIB.txt",
+        "exec816-demo/CALCULATOR-COPYING.txt",
+        "exec816-demo/CALCULATOR-LICENSING.md",
+        "exec816-demo/CALCULATOR-PROVENANCE.txt",
+        "exec816-demo/EXEC816-GPL-3.0.txt",
+        "exec816-demo/EXEC816-LICENSING.md",
+        "exec816-demo/EXEC816-MIT.txt",
+        "exec816-demo/Exec-of816.xex",
+        "exec816-demo/G4BENCH-COPYING.LIB.txt",
+        "exec816-demo/G4BENCH-COPYING.txt",
+        "exec816-demo/G4BENCH-LICENSING.md",
+        "exec816-demo/G4BENCH-PROVENANCE.txt",
+        "exec816-demo/GEM-COPYING.LIB.txt",
+        "exec816-demo/GEM-COPYING.txt",
+        "exec816-demo/GEM-FONT-NOTICE.txt",
+        "exec816-demo/GEM-LICENSING.md",
+        "exec816-demo/OF816-LICENSE.txt",
+        "exec816-demo/README.txt",
+        "exec816-demo/SHA256SUMS",
+        "exec816-demo/altirraos-816.rom",
+        "exec816-demo/system.atr",
+        "exec816-demo/work.atr"
+      ],
+      "provider_sha256": "8983ed6c56b48fdae24fe1c2833763eb709454facc7a11d8d8ab238de61f2251",
+      "provider_code_bytes": 178056,
+      "provider_table_bytes": 40145,
+      "provider_data_bss_bytes": 25739,
+      "apps": [
+        "C/TEXT.APP",
+        "C/PANEL.APP",
+        "C/G4BENCH.APP",
+        "C/FILES.APP",
+        "C/DIALOG.APP",
+        "C/COUNTER.APP",
+        "C/CALC.APP"
+      ],
+      "rebuilt_callers": [
+        "panel",
+        "desktop",
+        "calc",
+        "dialog",
+        "g4bench",
+        "files",
+        "text",
+        "counter"
+      ]
+    }
+  ],
+  "package_smokes": [
+    {
+      "profile": "standard",
+      "status": "pass",
+      "artifact": "build/qed-native/qf6-demo-standard/demo-results.json",
+      "sha256": "460153a9e4afb7f6641deca57320b3db490a5ddf7b414b9c4ff4c571229a2f01",
+      "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+      "autoboot_frames": 249,
+      "integration": null,
+      "boot_xex_sha256": "c8bfc41f78cfc0ace32fe076255099f2cd55ade4788c992450a6cc5183f53f87",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$d9a2f4b0699ad1de",
+        "actual_kernel_id": "$d9a2f4b0699ad1de",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "native_irq_count": 42102,
+      "native_nmi_count": 4177,
+      "guards": "intact"
+    },
+    {
+      "profile": "gem",
+      "status": "pass",
+      "artifact": "build/qed-native/qf6-demo-gem/gem-desktop-results.json",
+      "sha256": "7268d1b0c89f23f89abbd2ca00390c2fccb02c5a704322959373cc4b3d96ba3f",
+      "scope": "Extracted OF816 colour desktop: shared-window ownership, persistent background, on-demand launches and orderly EXIT",
+      "autoboot_frames": 249,
+      "integration": {
+        "profile": "ram-desktop-smoke",
+        "desktop_from_ram": true,
+        "resource_from_ram": true,
+        "about": true,
+        "panel_from_disk": true,
+        "panel_title": true
+      },
+      "boot_xex_sha256": "c5e3f0c1131776f31935edba3b7d159a2f4a1f9d12c081f22711827d7762ef81",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$fd312c52296135c6",
+        "actual_kernel_id": "$fd312c52296135c6",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "native_irq_count": 54720,
+      "native_nmi_count": 3959,
+      "guards": "intact"
+    }
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  },
+  "bank_zero_scope": "From QF5; no reservation changes, including guards, reserve, alignment and unused capacity",
+  "observer_tools": {
+    "tools/program_image_layout.py": "2b4a0232b3e26e078f1575b282ed437dce4adaad735aa6a743013f93edf5c22e",
+    "tools/gem_applications.py": "87ca5606e94eb09f02b6659a09498611c5baff2200f7352aab9f7b0db542ffb0",
+    "tools/prime_observer.py": "9320f635b9dceeb54f257f6a2b19356515df2075a58f7e10c1413f026acd849a",
+    "tools/measure_desktop_copy.py": "4d809bfe56eee62262dd4f27dd42f12f4a3515b52413988d530f60f6f910ce27",
+    "tools/qed_stack_observer.py": "a22903c573901b73f6de6bbe9f4ef45afbd2d4c7018d5c25aa5251b08238755c"
+  },
+  "observer_migration": "Derive native Image offsets from PROGRAMIMAGE.Image for GEM, PRIMES, COPY and QED observers; package bytes unchanged by this host-only migration",
+  "host_checks": {
+    "status": "pass",
+    "tests": 528,
+    "skipped": 4,
+    "scope": "Host suite, affected generators, content/local-link checks, current emitted cohorts and exact-package development smoke"
+  },
+  "handoff": [
+    "Design the selected English resource/menu: original 682 objects and 32 trees, menu 126 objects; current resource limits 256/8 and object/menu capacities 32/33",
+    "Implement free-string resource access, supported decoration/flags and the linked 14 of 17 explicit later-GEM bindings; no essential runtime helper remains unresolved",
+    "Keep one owned CFLIB workstation, borrowed by QED; execute fixed-font metrics/drawing, empty-window startup, failure unwind and repeat close",
+    "Preserve private code/data/container caps 32768/16384/16384 and resident code/table/data caps 16384/4096/16384; remeasure before exceeding them",
+    "Measure full GUI chains against the declared continuation cap and 128-byte headroom target; reopen stack design if exceeded",
+    "Editing, NUL conversion, Save/Save As, backup collisions and terminal Close decisions remain strategy steps 4/5",
+    "Analysis images and proof fixtures remain outside user packages; QED delivery remains step 7"
+  ]
+}

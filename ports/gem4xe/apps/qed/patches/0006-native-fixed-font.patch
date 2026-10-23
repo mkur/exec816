@@ -1,0 +1,1674 @@
+--- a/cflib/apphidem.c
++++ b/cflib/apphidem.c
+@@ -31,6 +31,6 @@
+ void hide_mouse(void)
+ {
+ 	if (!__app_hidden)
+-		graf_mouse(M_OFF, NULL);
++		(void)0; /* Native presenter owns the pointer. */
+ 	__app_hidden++;
+ }
+--- a/cflib/appshowm.c
++++ b/cflib/appshowm.c
+@@ -34,6 +34,6 @@
+ 	{
+ 		__app_hidden--;
+ 		if (!__app_hidden)
+-			graf_mouse (M_ON, NULL);
++			(void)0; /* Native presenter owns the pointer. */
+ 	}
+ }
+--- a/cflib/fdsimple.c
++++ b/cflib/fdsimple.c
+@@ -42,13 +42,13 @@
+ 	_WORD exit_obj;
+ 	GRECT r;
+ 
+-	graf_mouse(ARROW, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 	wind_update(BEG_UPDATE);
+ 	form_center_grect(tree, &r);
+ 	form_dial_grect(FMD_START, &r, &r);
+-	graf_mouse(M_OFF, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 	objc_draw_grect(tree, ROOT, MAX_DEPTH, &r);
+-	graf_mouse(M_ON, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 	exit_obj = cf_form_do(tree, &start_edit) & 0x7FFF;
+ 	form_dial_grect(FMD_FINISH, &r, &r);
+ 	wind_update(END_UPDATE);
+--- a/cflib/mdsimple.c
++++ b/cflib/mdsimple.c
+@@ -32,7 +32,7 @@
+ 	MDIAL *dial;
+ 	_WORD ret = -1;
+ 
+-	graf_mouse(ARROW, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 	dial = open_mdial(tree, edit_start);
+ 	if (dial)
+ 	{
+--- a/cflib/obgframe.c
++++ b/cflib/obgframe.c
+@@ -122,16 +122,6 @@
+ 		r->g_h += outline;
+ 	}
+ 
+-	if (appl_xgetinfo(13, &d, &i, &d, &d) &&
+-		i == 1 &&
+-		(tree[obj].ob_flags & OF_FL3DACT))
+-	{
+-		_WORD hinc = 0, vinc = 0;
++	/* Native resources have already flattened 3D decoration. */
+ 
+-		objc_sysvar(0, 6, 0, 0, &hinc, &vinc);
+-		r->g_x -= hinc;
+-		r->g_y -= vinc;
+-		r->g_w += 2 * hinc;
+-		r->g_h += 2 * vinc;
+-	}
+ }
+--- a/cflib/ppmenu.c
++++ b/cflib/ppmenu.c
+@@ -36,119 +36,8 @@
+  * offset gibt den Offset zwischen Root und dem ersten Popup-String an (i.d.R.
+  * ist offset 0, bei einem Farb-Popup aber z.B. nicht).
+  */
+-_WORD cf_menu_popup(MENU *m1, _WORD x, _WORD y, MENU *m2, _WORD button, _WORD offset)
++_WORD cf_menu_popup(MENU *input,_WORD x,_WORD y,MENU *output,_WORD button,_WORD offset)
+ {
+-	_WORD i, d;
+-
+-	if ((button == 0) && appl_xgetinfo(9, &d, &i, &d, &d) && (i == 1))	/* gibts menu_popup? */
+-		return menu_popup(m1, x, y, m2);
+-
+-	{
+-		OBJECT *tree;
+-		_WORD root, m_x, m_y, event, item, msg[8], olditem, kstate, mask, clicks;
+-		GRECT box, r;
+-		MFDB save;
+-
+-		tree = (OBJECT *)(ULONG)m1->mn_tree;
+-		root = m1->mn_menu;
+-		item = m1->mn_item;
+-
+-		tree[root].ob_x = x;
+-		tree[root].ob_y = y - ((item - offset - root - 1) * tree[item].ob_height);
+-
+-		/* bei RSM liegt der das Popup enthaltende Dialog nicht unbedingt bei (0,0)!! */
+-		if (root != 0 && tree[0].ob_x > 0)
+-			tree[0].ob_x = 0;
+-		if (root != 0 && tree[0].ob_y > 0)
+-			tree[0].ob_y = 0;
+-
+-		box.g_x = tree[root].ob_x - 1;
+-		box.g_y = tree[root].ob_y - 1;
+-		box.g_w = tree[root].ob_width + 4;
+-		box.g_h = tree[root].ob_height + 4;
+-
+-		wind_update(BEG_MCTRL);
+-		save_background(&box, &save);
+-		graf_mouse(ARROW, NULL);
+-
+-		if (button == 0)
+-			button = 1;
+-
+-		graf_mkstate(&m_x, &m_y, &i, &d);
+-
+-		if (i & button)		/* Taste immer noch gedrÅckt? */
+-		{
+-			clicks = 1;		/* -> evnt_multi wartet auf Loslassen /der/ Taste */
+-			mask = button;
+-		}
+-		else
+-		{
+-			clicks = 0x101;	/* -> evnt_multi wartet auf DrÅcken /einer/ Taste */
+-			mask = 3;
+-		}
+-
+-		objc_draw_grect(tree, root, MAX_DEPTH, &box);
+-
+-		olditem = -1;
+-		do
+-		{
+-			item = objc_find(tree, root, MAX_DEPTH, m_x, m_y);
+-			if ((item == root) || !popup_valid_item(tree, item))
+-				item = -1;
+-
+-			if (item != olditem)
+-			{
+-				if (olditem != -1)
+-					objc_change_grect(tree, olditem, 0, &box, tree[olditem].ob_state & ~OS_SELECTED, TRUE);
+-
+-				if (item != -1)
+-					objc_change_grect(tree, item, 0, &box, tree[item].ob_state | OS_SELECTED, TRUE);
+-			}
+-			if (item != -1)
+-			{
+-				objc_offset(tree, item, &r.g_x, &r.g_y);
+-				r.g_w = tree[item].ob_width;
+-				r.g_h = tree[item].ob_height;
+-			}
+-			else
+-			{
+-				r.g_x = m_x;
+-				r.g_y = m_y;
+-				r.g_w = 1;
+-				r.g_h = 1;
+-			}
+-
+-			d = 0;
+-			event = evnt_multi(MU_BUTTON | MU_M1,
+-				clicks, mask, 0,
+-				1, r.g_x, r.g_y, r.g_w, r.g_h,
+-				0, 0, 0, 0, 0,
+-				msg,
+-#if defined(__PUREC__) && !defined(_GEMLIB_COMPATIBLE)
+-				0, 0,
+-#else
+-				0,
+-#endif
+-				&m_x, &m_y, &d, &kstate, &d, &d);
+-
+-			olditem = item;
+-		} while (!(event & MU_BUTTON));
+-
+-		restore_background(&box, &save);
+-		wind_update(END_MCTRL);
+-
+-		if (item == -1)
+-			item = 0;
+-		else
+-			tree[item].ob_state &= ~OS_SELECTED;
+-
+-		if (m2 != NULL)
+-		{
+-			if (m1 != m2)
+-				memcpy(m2, m1, sizeof(MENU));
+-			m2->mn_item = item;
+-			m2->mn_keystate = kstate;
+-		}
+-		return (item != 0);
+-	}
++    (void)button;(void)offset;
++    return menu_popup(input,x,y,output);
+ }
+--- a/cflib/wddraw.c
++++ b/cflib/wddraw.c
+@@ -46,7 +46,7 @@
+ 		tree = wd->tree;
+ 
+ 	wind_update(BEG_UPDATE);
+-	graf_mouse(M_OFF, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 	wind_get_grect(wd->win_handle, WF_FIRSTXYWH, &r1);
+ 	while (r1.g_w != 0 && r1.g_h != 0)
+ 	{
+@@ -54,6 +54,6 @@
+ 			objc_draw_grect(tree, obj, depth, &r1);
+ 		wind_get_grect(wd->win_handle, WF_NEXTXYWH, &r1);
+ 	}
+-	graf_mouse(M_ON, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 	wind_update(END_UPDATE);
+ }
+--- a/qed/src/ausgabe.c
++++ b/qed/src/ausgabe.c
+@@ -1,75 +1,15 @@
+-#include <support.h>
+-
++/* Native fixed-font adaptation of QED's original output module.
++ * Original editor source and its upstream redistribution notices apply.
++ * Text, clipping and UPDATE ownership use the ordinary public GEM interface.
++ */
+ #include "global.h"
+ #include "ausgabe.h"
+-#include "hl.h"
+ #include "memory.h"
+ #include "options.h"
+ #include "rsc.h"
+ #include "window.h"
+-
+-#define BLKANF  1
+-#define BLKEND  2
+-#define BLKFULL 4
+-
+-/* lokale Variablen ********************************************************/
+-static char *text = NULL;
+-static short    text_len = 0;
+-#define MIN_TEXT_LEN    ((MAX_LINE_LEN+1) / 4)  /* StartlÑnge: 256 Bytes */
+-#define INSERT_CURSOR_WIDTH 3
+-
+-/*!! Muessen am Anfang jeder Routine gesetzt werden !!*/
+-static bool 	tab;
+-static short    tab_size;
+-static bool 	umbrechen;
+-static bool 	show_end;
+-static short    draw_mode;
+-
+-/* Statische Variablen fÅr str_out(); werden am Anfang von str_out()
+- * initialisiert und dann von den Unterfunktionen aktualisiert
+- */
+-static bool last_italic;  /* letzte Ausgabe war kursiv, initialisieren mit FALSE */
+-static bool line_start;   /* Ausgabe am Zeilenbeginn, init. mit TRUE */
+-
+-
+-void set_drawmode(void)
+-{
+-	draw_mode = MD_TRANS;
+-    vswr_mode(vdi_handle, draw_mode);
+-}
+-
+-
+-static void set_fill_color(short new)
+-{
+-    if (new != fill_color)
+-    {
+-        vsf_color(vdi_handle, new);
+-        fill_color = new;
+-    }
+-}
+-
+-/*
+- * Dynamischer Zeilenpuffer fÅr die expandierte Zeile. MAX_LINE_LEN reicht
+- * nicht aus, wenn eine Zeile echte TABs enthÑlt!
+- * Der angeforderte Puffer wird von line_to_str() benutzt.
+-*/
+-static void adjust_text(TEXTP t_ptr)
+-{
+-    short   need;
+-
+-    if (t_ptr->max_line == NULL)
+-        need = -1;
+-    else
+-        need = t_ptr->max_line->exp_len;
+-    if (text == NULL || need > text_len)
+-    {
+-        text_len = max(need, MIN_TEXT_LEN);
+-        text = realloc(text, text_len + 1);
+-    }
+-}
+-
+-
+-/* Liefert die interne Position */
++#include <exec816/vdi-unit.h>
++
+ short inter_pos(short x, LINEP a, bool tabflag, short tabsize)
+ {
+     short   len  = 0,
+@@ -134,796 +74,105 @@
+ /*----------------------------------------------------------------------------
+  * Cursor-Handling
+ */
+-short cursor_xpos(TEXTP t_ptr, short position, bool *isitalicp)
+-{
+-	char *textptr;
+-	HL_LINE cacheline;
+-	HL_ELEM flags = 0;
+-	HL_ELEM len;
+-	short tabwidth;
+-	short i;
+-	_WORD pxy[8];
+-	short x = 0;
+-	char *line, *start_line;
+-	short done_expanded = 0;
+-
+-    if (isitalicp)
+-        *isitalicp = FALSE;
+-        
+-    if (!position)
+-        return 0;
+-
+-    /* bei nichtprop. Font wird der Syntax-Cache nicht ausgewertet, sondern
+-       es wird die Breite aus der Zeichenzellbreite berechnet */
+-    if (!font_prop)
+-    {
+-        if (isitalicp)
+-        {
+-            short tpos = position;
+-            cacheline = hl_get_zeile(t_ptr->cursor_line);
+-            while (!(*cacheline & HL_CACHEEND))
+-            {
+-                flags = *(cacheline++);    /* Hole LÑnge und Attribute aus dem Syntax-Cache */
+-                len = *(cacheline++);
+-                if (flags & HL_COLOR)     /* Farbinformationen sind irrelevant */
+-                    cacheline++;
+-                if (flags & HL_SELCOLOR)
+-                    cacheline++;
+-                if ((tpos -= (short) len) <= 0)
+-                    break;
+-            }
+-            *isitalicp = flags & HL_ITALIC;
+-        }
+-        return bild_pos(position, t_ptr->cursor_line, t_ptr->loc_opt->tab, t_ptr->loc_opt->tabsize) * font_wcell;
+-    }
+-
+-    adjust_text(t_ptr);
+-    cacheline = hl_get_zeile(t_ptr->cursor_line);
+-    start_line = line = TEXT(t_ptr->cursor_line);
+-    tabwidth = t_ptr->loc_opt->tab ? t_ptr->loc_opt->tabsize : 1;
+-
+-	while (!(*cacheline & HL_CACHEEND) && (short)(line - start_line) < position)
+-	{
+-		flags = *(cacheline++);    /* Hole LÑnge und Attribute aus dem Syntax-Cache */
+-		len = *(cacheline++);
+-		if (flags & HL_COLOR)     /* Farbinformationen sind irrelevant */
+-			cacheline++;
+-		if (flags & HL_SELCOLOR)
+-			cacheline++;
+-	
+-		for (textptr = text; len && (short)(line - start_line) < position; line++, len--)
+-		{
+-			if (*line == '\t') /* Tabs werden innerhalb der Kopierschleife expandiert */
+-			{
+-				for (i = ((short)(textptr - text) + done_expanded) % tabwidth; i < tabwidth; i++)
+-					*(textptr++) = ' ';
+-			}
+-			else
+-				*(textptr++) = *line;
+-		}
+-		done_expanded += (short)(textptr-text);
+-		*textptr = EOS;
+-		vst_effects(vdi_handle, flags & (HL_BOLD | HL_LIGHT));
+-		vqt_extent(vdi_handle, text, pxy);
+-		x += pxy[2] - pxy[0];
+-	}
+-
+-	if (isitalicp)
+-		*isitalicp = flags & HL_ITALIC;
+-
+-	return x;
+-
+-}
+-
+-
+-static void _cursor(GRECT *r)
+-{
+-    _WORD pxy[4];
+-
+-    pxy[0] = r->g_x;
+-    pxy[1] = r->g_y;
+-    pxy[2] = r->g_x + r->g_w - 1;
+-    pxy[3] = r->g_y + r->g_h - 1;
+-    set_fill_color(fg_color);
+-    vswr_mode(vdi_handle, MD_XOR);
+-    vr_recfl (vdi_handle, pxy);
+-    vswr_mode(vdi_handle, draw_mode);
+-}
+-
+-/* schrÑger Cursor; in r werden die normalen Cursormaûe wie in _cursor()
+-   Åbergeben, die von _cursor_italic() dann schrÑg gesetzt werden */
+-static void _cursor_italic(GRECT *r)
+-{
+-    /* kleine & schrÑge Breiten bei v_fillarea werden im XOR-Modus absolut unbrauchbar
+-       dargestellt, daher Zeichnen des Cursors mit v_pline :-(*/
+-    _WORD pxy[4];
+-    short i;
+-    
+-    pxy[0] = r->g_x + font_right_italicoffset;
+-    pxy[1] = r->g_y;
+-    pxy[2] = r->g_x - font_left_italicoffset;
+-    pxy[3] = r->g_y + r->g_h - 1;
+-    
+-    set_fill_color(fg_color);
+-    vswr_mode(vdi_handle, MD_XOR);
+-    for (i=0; i < r->g_w; i++)
+-    {
+-        v_pline(vdi_handle, 2, pxy);
+-        pxy[0]++;
+-        pxy[2]++;
+-    }
+-    vswr_mode(vdi_handle, draw_mode);
+-}
+-
+-void cursor(WINDOWP w, TEXTP t_ptr)
+-{
+-    _WORD       pxy[8];
+-    char        c[2];
+-    GRECT       curs_rect, clip, clip_curs_rect;
+-    long        zeile;
+-    bool        hidden;
+-    bool isitalic;
+-
+-    /* Position ermitteln */
+-    curs_rect.g_x = cursor_xpos(t_ptr, t_ptr->xpos, &isitalic) - ((short) w->doc.x * font_wcell) + w->work.g_x;
+-
+-    zeile = t_ptr->ypos - w->doc.y;
+-    curs_rect.g_y = (short) zeile * font_hcell + w->work.g_y;
+-
+-    /* Cursor Åberhaupt sichtbar? */
+-    if (curs_rect.g_x < w->work.g_x || curs_rect.g_x > (w->work.g_x + w->work.g_w - 1) ||
+-         curs_rect.g_y < w->work.g_y || curs_rect.g_y > (w->work.g_y + w->work.g_h - 1) ||
+-         (w->flags & WI_ICONIFIED))
+-        return;
+-
+-    /* Breite und Hîhe ermitteln */
+-    if (overwrite)
+-    {
+-        if (font_prop)
+-        {
+-            c[0] = TEXT(t_ptr->cursor_line)[t_ptr->xpos];
+-            c[1] = EOS;
+-            vqt_extent(vdi_handle, c, pxy);
+-            curs_rect.g_w = pxy[2] - pxy[0];
+-            if (curs_rect.g_w == 0)
+-                curs_rect.g_w = 1;
+-            curs_rect.g_h = pxy[7] - pxy[1];
+-        }
+-        else
+-        {
+-            curs_rect.g_w = font_wcell;
+-            curs_rect.g_h = font_hcell;
+-        }
+-    }
+-    else
+-    {
+-        curs_rect.g_w = INSERT_CURSOR_WIDTH;
+-        curs_rect.g_h = font_hcell;
+-    }
+-
+-    /*
+-     * Am Rand (oben/unten) darf der Cursor nicht Åberstehen, ansonsten
+-     * 2 Pixel oben/unten.
+-     */
+-    if (zeile > 0)
+-    {
+-        curs_rect.g_y -= 2;
+-        curs_rect.g_h += 2;
+-    }
+-    if (zeile < w->w_height-1)
+-        curs_rect.g_h += 2;
+-
+-    wind_update(BEG_UPDATE);
+-    hidden = hide_mouse_if_needed(&curs_rect);
+-
+-    clip_curs_rect = curs_rect;
+-    if (isitalic)
+-    {
+-        clip_curs_rect.g_x -= font_left_italicoffset;
+-        clip_curs_rect.g_w += font_left_italicoffset + font_right_italicoffset;
+-    }
+-    if (rc_first(w->handle, &clip_curs_rect, &clip))
+-    {
+-        do
+-        {
+-            set_clip(TRUE, &clip);
+-            if (isitalic)
+-                _cursor_italic(&curs_rect);
+-            else
+-                _cursor(&curs_rect);
+-        }
+-        while (rc_next(w->handle, &clip));
+-    }
+-    if (hidden)
+-        show_mouse();
++
++void set_drawmode(void) { vswr_mode(vdi_handle,MD_REPLACE); }
++
++short cursor_xpos(TEXTP t,short position,bool *italic)
++{
++    if(italic)*italic=FALSE;
++    return bild_pos(position,t->cursor_line,t->loc_opt->tab,t->loc_opt->tabsize)*font_wcell;
++}
++
++void fill_area(short x,short y,short w,short h,short color)
++{
++    WORD xy[4];
++    if(w<=0 || h<=0)return;
++    xy[0]=x;xy[1]=y;xy[2]=x+w-1;xy[3]=y+h-1;
++    vsf_color(vdi_handle,color);v_bar(vdi_handle,xy);
++}
++
++short out_s(short x,short y,short w,char *s)
++{
++    short width=min((short)strlen(s)*font_wcell,w);
++    vst_color(vdi_handle,fg_color);
++    v_gtext(vdi_handle,x,y+EXEC_VDI_FONT_TOP,s);
++    return width;
++}
++short out_sb(short x,short y,short w,char *s)
++{
++    short width=min((short)strlen(s)*font_wcell,w);
++    fill_area(x,y,width,font_hcell,bg_block_color);
++    vst_color(vdi_handle,fg_block_color);
++    v_gtext(vdi_handle,x,y+EXEC_VDI_FONT_TOP,s);
++    return width;
++}
++
++static LINEP visible_line(TEXTP t,long y)
++{
++    LINEP line=t->cursor_line;
++    long at=t->ypos;
++    if(y<0 || y>=t->text.lines)return NULL;
++    while(at>y){PREV(line);--at;}
++    while(at<y){NEXT(line);++at;}
++    return line;
++}
++
++/* Bounded visible cells belong to this private image, never bank zero. */
++static char cells[81];
++void line_out(WINDOWP w,TEXTP t,short row)
++{
++    LINEP line=visible_line(t,w->doc.y+row);
++    const char *source;
++    short index=0,repeat=0,count=0,limit=(w->work.g_w+7)/8;
++    long column=0;
++    short y=w->work.g_y+row*font_hcell;
++    fill_area(w->work.g_x,y,w->work.g_w,font_hcell,bg_color);
++    if(!line)return;
++    if(limit>80)limit=80;
++    source=TEXT(line);
++    while(index<line->len && count<limit){
++        char ch=source[index++];
++        repeat=ch=='\t' && t->loc_opt->tab ? t->loc_opt->tabsize-column%t->loc_opt->tabsize:1;
++        if(ch=='\t')ch=' ';
++        while(repeat-- && count<limit){
++            if(column>=w->doc.x)cells[count++]=ch;
++            ++column;
++        }
++    }
++    cells[count]=0;
++    vst_color(vdi_handle,fg_color);
++    if(count)v_gtext(vdi_handle,w->work.g_x,y+EXEC_VDI_FONT_TOP,cells);
++}
++
++void bild_out(WINDOWP w,TEXTP t)
++{
++    short row,rows=(w->work.g_h+font_hcell-1)/font_hcell;
++    head_out(w,t);
++    for(row=0;row<rows;row++)line_out(w,t,row);
++}
++void bild_blkout(WINDOWP w,TEXTP t,long first,long last)
++{
++    short row;
++    if(first>last){long swap=first;first=last;last=swap;}
++    for(row=0;row<w->w_height;row++)
++        if(w->doc.y+row>=first && w->doc.y+row<=last)line_out(w,t,row);
++}
++
++/* Redraw the cursor row before painting its current visible state. The event
++ * owner publishes blink first; no XOR framebuffer assumption survives. */
++void cursor(WINDOWP w,TEXTP t)
++{
++    short row=(short)(t->ypos-w->doc.y);
++    short x=w->work.g_x+cursor_xpos(t,t->xpos,NULL)-(short)w->doc.x*font_wcell;
++    GRECT clip,area={w->work.g_x,w->work.g_y+row*font_hcell,w->work.g_w,font_hcell};
++    if(row<0 || row>=w->w_height || !wind_update(BEG_UPDATE))return;
++    if(rc_first(w->handle,&area,&clip))do{
++        set_clip(TRUE,&clip);line_out(w,t,row);
++        if(!t->blink && x>=w->work.g_x && x<w->work.g_x+w->work.g_w)
++            fill_area(x,area.g_y,overwrite?font_wcell:2,font_hcell,fg_color);
++    }while(rc_next(w->handle,&clip));
+     wind_update(END_UPDATE);
+ }
+-
+-static LINEP get_wline(TEXTP t_ptr, long y)
+-{
+-    LINEP  line;
+-    long        i;
+-
+-    if (y < 0 || y >= t_ptr->text.lines)
+-        return NULL;
+-    i = t_ptr->ypos;
+-    line = t_ptr->cursor_line;
+-    if (i > y)
+-    {
+-        i -= y;
+-        while (TRUE)
+-        {
+-            PREV(line);
+-            if ((--i)==0)
+-                break;
+-        }
+-    }
+-    else if (i < y)
+-    {
+-        y -= i;
+-        while (TRUE)
+-        {
+-            NEXT(line);
+-            if ((--y)==0)
+-                break;
+-        }
+-    }
+-    return (line);
+-}
+-
+-/*-----------------------------------------------------------------------------
+- * FlÑche fÅllen.
+- *
+- * x ist Pixel-Koordinate
+- * y ist Pixel-Koordinate
+- * w ist die Breite in Pixel, die abgedeckt werden soll
+-*/
+-void fill_area(short x, short y, short w, short h, short color)
+-{
+-    _WORD   pxy[4];
+-
+-    if (w <= 0)
+-        return;
+-    pxy[0] = x;
+-    pxy[1] = y;
+-    pxy[2] = x + w - 1;
+-    pxy[3] = y + h - 1;
+-    set_fill_color(color);
+-    vswr_mode(vdi_handle, MD_REPLACE);
+-    vr_recfl(vdi_handle, pxy);
+-    vswr_mode(vdi_handle, draw_mode);
+-}
+-
+-/* FlÑche fÅllen mit BerÅcksichtigung kursiver Schrift;
+- * mit isitalic wird festgelegt,
+- * ob die FlÑche links im Duktus
+- * der Schrift nach rechts geneigt sein soll. Rechts wird immer eine gerade
+- * Kante gezeichnet.
+- */
+-static void fill_area_italic(short x, short y, short w, short h, short color, bool isitalic)
+-{
+-    _WORD   pxy[8];
+-
+-    if (line_start) /* Zeilenbeginn? */
+-    {
+-        isitalic = FALSE; /* ab jetzt kein Zeilenbeginn mehr */
+-        line_start = FALSE;  /* nie kursiv am Zeilenbeginn */
+-    }
+-
+-    if (!isitalic) /* wenn nicht kursiv gezeichnet werden soll, wird das schnellere fill_area() benutzt */
+-    {
+-        fill_area(x,y, w+font_right_italicoffset, h, color);
+-        return;
+-    }
+-    if (w <= 0)
+-        return;
+-    pxy[0] = x + (isitalic ? font_right_italicoffset : 0);
+-    pxy[1] = y;
+-    pxy[2] = x + w - 1 + font_right_italicoffset;
+-    pxy[3] = y;
+-    pxy[4] = x + w - 1 + font_right_italicoffset;
+-    pxy[5] = y + h - 1;
+-    pxy[6] = x - (isitalic ? font_left_italicoffset : 0);
+-    pxy[7] = y + h - 1;
+-    
+-    set_fill_color(color);
+-    vswr_mode(vdi_handle, MD_REPLACE);
+-    v_fillarea(vdi_handle, 4, pxy);
+-    vswr_mode(vdi_handle, draw_mode);
+-}
+-
+-/*
+- * String mit v_gtext() ausgeben.
+- *
+- * x ist Pixel-Koordinate
+- * y ist Pixel-Koordinate
+- * w ist die Breite in Pixel, die abgedeckt werden soll
+- * return ende der Textausgabe
+-*/
+-short out_s(short x, short y, short w, char *str)
+-{
+-    _WORD   pxy[8], len;
+-    
+-    vst_color(vdi_handle, fg_color);
+-	vst_effects(vdi_handle, 0);
+-
+-    if (w <= 0)
+-        return x;
+-
+-    fill_area(x, y, w, font_hcell, bg_color);
+-
+-    v_gtext(vdi_handle, x, y, str);
+-    if (font_prop)
+-    {
+-        vqt_extent(vdi_handle, str, pxy);
+-        len = pxy[2]-pxy[0];
+-    }
+-    else
+-        len = (short) strlen(str) * font_wcell;
+-
+-    if (len < w)
+-        return x + len;
+-
+-    return x + w;
+-}
+-
+-/*
+- * String invers mit v_gtext ausgeben.
+- *
+- * x ist Pixel-Koordinate
+- * y ist Pixel-Koordinate
+- * w ist die Breite in Pixel, die abgedeckt werden soll
+- * return ende der Textausgabe
+-*/
+-short out_sb(short x, short y, short w, char *str)
+-{
+-    _WORD   pxy[8], len;
+-
+-    if (w <= 0)
+-        return x;
+-
+-    /* Hintergrund mit fg_block_color fÅllen und Text mit fg_block_color drÅbermalen */
+-    fill_area(x, y, w, font_hcell, bg_block_color);
+-
+-    vst_color(vdi_handle, fg_block_color);
+-	vst_effects(vdi_handle, 0);
+-
+-    v_gtext(vdi_handle, x, y, str);
+-
+-    if (font_prop)
+-    {
+-        vqt_extent(vdi_handle, str, pxy);
+-        len = pxy[2] - pxy[0];
+-    }
+-    else
+-        len = (short) strlen(str) * font_wcell;
+-    if (len > w)
+-        return x + w;
+-    return x + len;
+-}
+-
+-/*
+- * Absatzmarke zeichnen.
+-*/
+-static void draw_cr(short x, short y, bool inv)
+-{
+-    _WORD pxy[6], h, b;
+-
+-    if (inv)
+-        vsl_color (vdi_handle, fg_block_color);
+-    else
+-        vsl_color (vdi_handle, fg_color);
+-    b = min(font_wcell, font_hcell);
+-    h = b >> 1;
+-    y += (font_hcell >> 1);
+-    pxy[0] = x + b - 1;         /* oben rechts */
+-    pxy[1] = y - h;
+-    pxy[2] = x + b - 1;         /* mitte rechst */
+-    pxy[3] = y;
+-    pxy[4] = x;                     /* mitte links */
+-    pxy[5] = y;
+-    v_pline (vdi_handle, 3, pxy);
+-    h = h >> 1;
+-    pxy[0] = x + h;             /* schrÑg oben */
+-    pxy[1] = y - h;
+-    pxy[2] = x;                     /* mitte links */
+-    pxy[3] = y;
+-    pxy[4] = x + h;             /* schrÑg unten */
+-    pxy[5] = y + h;
+-    v_pline (vdi_handle, 3, pxy);
+-    if (inv)
+-        vsl_color(vdi_handle, fg_color);
+-    else
+-        vsl_color(vdi_handle, fg_block_color);
+-}
+-
+-/* Ausgabe von Text mit und ohne Effekte, Aufruf von str_out()
+- * Aufgrund von starken Darstellungsungenauigkeiten bzw. verschiedener
+- * Behandlung verschiedener Fonttypen im VDI mÅssen teilweise
+- * die Fonttypen (proportional/nichtproportional, Bitmap/Vektor) und
+- * Effekte (insbes. fett und kursiv) umstÑndlich und teilweise sehr
+- * zeitaufwendig getrennt behandelt werden.
+- * In der statischen Var. last_italic wird jeweils der Wert gehalten, ob die letzte Ausgabe kursiv war; vor
+- * dem ersten Aufruf von output_text in einer Zeile muû der Wert auf false gesetzt werden.
+- * Vorder-und Hintergrundfarbe werden gesetzt, wenn sie jeweils != -1 sind; kursive
+- * Blockmarkierungen werden bearbeitet.
+- */
+-static void output_text(short x, short y, short *width,
+-                        short vdiattr,
+-
+-                        char *buffer,
+-                        short fgcolor, short bgcolor)
+-{
+-    _WORD pxy[8];
+-    bool isitalic = vdiattr & HL_ITALIC;
+-
+-    if (fgcolor != -1)
+-        vst_color(vdi_handle, fgcolor);
+-        
+-    /* Proportionalfonts */
+-    if (font_prop)
+-    {
+-        vst_effects(vdi_handle, vdiattr & ~HL_ITALIC);
+-        vqt_extent(vdi_handle, buffer, pxy);
+-        *width = pxy[2] - pxy[0];
+-        if (bgcolor != -1)
+-            fill_area_italic(x, y, *width, font_hcell, bgcolor, isitalic || last_italic);
+-        vst_effects(vdi_handle, vdiattr);
+-        v_gtext(vdi_handle, x,y, buffer);
+-        last_italic = isitalic;
+-        return;
+-    }
+-
+-    /* Kursiv, nichtproportional, Bitmapfont */
+-    if (isitalic && !font_vector)
+-    {
+-        if (bgcolor != -1)
+-            fill_area_italic(x, y,
+-                              *width, font_hcell, bgcolor,
+-                              TRUE);
+-        last_italic = TRUE;
+-        v_gtext(vdi_handle, x,y, buffer);
+-
+-        return;
+-    }
+-
+-    /* Fett , nichtproportional, Vektorfont: hier muû sehr umstÑndlich
+-       und zeitaufwendig Zeichen fÅr Zeichen ausgegeben werden,
+-       da sonst die AbstÑnde (auch mit v_justified()) nicht stimmen
+-       und die Schrift "schwabbelt". Dummerweise wird dieser Schrifttyp sehr
+-       hÑufig in QED benutzt werden. */
+-    if ( (vdiattr & HL_BOLD) && font_vector  )
+-    {
+-        char cbuf[2];
+-        cbuf[1] = '\0';
+-        
+-        if (bgcolor != -1)
+-            fill_area_italic(x, y, *width, font_hcell, bgcolor, isitalic || last_italic);
+-            
+-        while (*buffer)
+-        {
+-            cbuf[0] = *(buffer++);
+-            v_gtext(vdi_handle, x,y, cbuf);
+-            x += font_wcell;
+-        }
+-        last_italic = isitalic;
+-        return;
+-    }
+-
+-    /* sonstige Effekte, nichtproportional, alle Fonts */
+-    if (vdiattr)
+-    {
+-        if (bgcolor != -1)
+-            fill_area_italic(x, y, *width, font_hcell, bgcolor, isitalic || last_italic);
+-        v_justified(vdi_handle, x,y, buffer, *width, TRUE, TRUE);
+-        last_italic = isitalic;
+-        return;
+-    }
+-
+-    /* keine Effekte, nichtproportional, alle Fonts */
+-    if (bgcolor != -1)
+-        fill_area_italic(x, y, *width, font_hcell, bgcolor, last_italic);
+-    v_gtext(vdi_handle, x,y, buffer);
+-    last_italic = FALSE;
+-}
+-
+-/* Ausgabe eines nicht expandierten Strings; Ersatz fÅr die alten Funktionen
+- * str_out() und str_out_b(). String wird inline expandiert.
+- * x,y,w legen Koordinaten fest, offset ist Zeichenoffset (nicht expandiert),
+- * zp die auszugebende Zeile, block_start und block_end legen die Blockmarkierungen fest:
+- * block_start == -1: kein Block, sonst: Blockbeginn
+- * block_end == -1: kein Block oder Block bis Zeilenende (je nach block_start), sonst: Blockende
+- */
+-   
+-static void str_out( short x, short y, short w, short offset, LINEP zp, short block_start, short block_end )
+-{
+-    char *curr_text;   /* derzeitige Zeichenposition im globalen Puffer text (fÅr kopieren/tab-Expansion) */
+-    char *curr_line;   /* aktuelle Zeichenposition in der nicht expandierten Zeile */
+-    HL_LINE cacheline; /* aktuelle Syntax-Cache-Zeile */
+-    HL_ELEM flags;     /* aktuelle Syntax-Cache-Flags */
+-    HL_ELEM len;       /* aktuelle TextlÑnge aus Syntax-Cache */
+-
+-    short fgcolor;       /* aktuelle Vordergrund-(Text-)Farbe */
+-    short bgcolor;       /* aktuelle Hintergrundfarbe */
+-    short hlcolor;       /* Vordergrund-Farbe aus Syntax-Cache */
+-    short hlselcolor;    /* selektierte Vordergrund-Farbe aus Syntax-Cache */
+-    short vdiattr;       /* VDI-Attribute */
+-    short width;         /* aktuelle Breite des expandierten Strings in Pixeln */
+-    short chars_done = 0;/* bereits bearbeitete expandierte Zeichen (fÅr Offset-Berechnung) */
+-    bool isblock = block_start >= 0 || block_end > 0;    /* Ist ein Block in dieser Zeile? */
+-    bool blockmode = block_start == 0 && block_end != 0; /* Blockmodus ein? */
+-    
+-    /* Var. init. */
+-    curr_line = TEXT(zp);
+-    cacheline = hl_get_zeile(zp);
+-    line_start = TRUE;
+-    last_italic = FALSE;
+-            
+-    /* Vorder/Hintergrundfarbe zu Beginn setzen */
+-    if (blockmode)
+-    {
+-        bgcolor = bg_block_color;
+-        vst_color(vdi_handle, fg_block_color);
+-    }
+-    else
+-    {
+-        vst_color(vdi_handle, fg_color);
+-        if (isblock)
+-            bgcolor = bg_color;
+-        else
+-        {
+-            /* wenn kein Block in dieser Zeile, Hintergrund komplett durchfÑrben */
+-            fill_area(x, y, w, font_hcell, bg_color);
+-            bgcolor = -1;
+-        }
+-    }
+-    vswr_mode(vdi_handle, MD_TRANS);
+-
+-    offset *= font_wcell;
+-    x -= offset;
+-    w += offset;
+-
+-    while (!(*cacheline & HL_CACHEEND))
+-    {
+-        width = 0;
+-        curr_text = text; /* Pufferzeiger auf Pufferanfang */
+-
+-        /* Syntax-Cache auswerten, Vorder/Hintergrundfarbe und Effekte setzen */
+-        flags = *(cacheline++);
+-        len = *(cacheline++);
+-        hlcolor = flags & HL_COLOR ? *(cacheline++) : -1;
+-        hlselcolor = flags & HL_SELCOLOR ? *(cacheline++) : -1;
+-        vdiattr = flags & (HL_ITALIC | HL_BOLD | HL_LIGHT);
+-        if (blockmode)
+-            fgcolor = (hlselcolor == -1 ? fg_block_color : hlselcolor);
+-        else
+-            fgcolor = (hlcolor == -1 ? fg_color : hlcolor);
+-        vst_effects(vdi_handle, vdiattr);
+-        vst_color(vdi_handle, fgcolor);
+-
+-        while (len)
+-        {
+-            /* Zeichen in text-Puffer Åbertragen */
+-            if (tab && *curr_line == '\t') /* TABs werden inline expandiert */
+-            {
+-                short i;
+-                for (i= ((short)(curr_text-text)+chars_done) % tab_size; i<tab_size; i++)
+-                {
+-                    *(curr_text++) = ' ';
+-                    width += font_wcell;
+-                }
+-            }
+-            else if (*curr_line < min_ascii || *curr_line > max_ascii) /* nicht darstellbare Zeichen ersetzen */
+-            {
+-                *(curr_text++) = ' ';
+-                width += font_wcell;
+-            }
+-            else
+-            {
+-                *(curr_text++) = *curr_line;
+-                width += font_wcell;
+-            }
+-            curr_line++;
+-            len--;
+-            /* Bei Blockbeginn/Blockende Farbdarstellung umschalten */
+-            if (curr_line - TEXT(zp) == block_start)
+-            {
+-                vswr_mode(vdi_handle, MD_TRANS);
+-                blockmode = TRUE;
+-                chars_done += (short)(curr_text-text);
+-                *curr_text = EOS;
+-                output_text(x,y, &width, vdiattr, text, fgcolor, bgcolor);
+-                curr_text = text;
+-                fgcolor = hlselcolor == -1 ? fg_block_color : hlselcolor;
+-                bgcolor = bg_block_color;
+-                x += width;
+-                width = 0;
+-                if (!len)
+-                    goto outer_loop;
+-            }
+-            else if (curr_line - TEXT(zp) == block_end)
+-            {
+-                blockmode = FALSE;
+-                chars_done += (short)(curr_text-text);
+-                *curr_text = EOS;
+-                output_text(x,y, &width, vdiattr, text, fgcolor, bg_block_color);
+-                curr_text = text;
+-                fgcolor = (hlcolor == -1 ? fg_color : hlcolor);
+-                bgcolor = bg_color;
+-                x += width;
+-                width = 0;
+-                if (!len)
+-                    goto outer_loop;
+-            }
+-        }
+-        chars_done += (short)(curr_text-text);
+-        *curr_text = EOS;
+-        output_text(x,y, &width, vdiattr, text, fgcolor, bgcolor);
+-                    
+-outer_loop:;
+-
+-        x += width;
+-    }
+-    
+-    /* Rest der Zeile fÑrben und Umbruchmarke */
+-    if (isblock)
+-        fill_area_italic(x, y, w, font_hcell, bgcolor, last_italic);
+-    if (IS_OVERLEN(zp) || (umbrechen && IS_ABSATZ(zp) && show_end))
+-        draw_cr(x, y, blockmode);
+-    
+-}
+-
+-
+-/* =========================================================== */
+-
+-void line_out(WINDOWP window, TEXTP t_ptr, short wy)
+-{
+-    short       y;
+-    LINEP  col;
+-
+-    adjust_text(t_ptr);                 /* Zeilenpuffer an exp_len anpassen */
+-    tab = t_ptr->loc_opt->tab;
+-    tab_size = t_ptr->loc_opt->tabsize;
+-    umbrechen = t_ptr->loc_opt->umbrechen;
+-    show_end = t_ptr->loc_opt->show_end;
+-    y = window->work.g_y+wy*font_hcell;
+-    col = get_wline(t_ptr, window->doc.y+wy);
+-    if (col != NULL)                                                /* Kommt vor */
+-    {
+-        if (t_ptr->block)
+-        {
+-            wy += (short) window->doc.y;
+-            if (wy<t_ptr->z1 || wy>t_ptr->z2)
+-                str_out(window->work.g_x, y, window->work.g_w, (short)window->doc.x, col, -1, -1);
+-            else
+-                str_out(window->work.g_x, y, window->work.g_w, (short)window->doc.x, col,
+-                        (wy == t_ptr->z1) ? t_ptr->x1 : 0,
+-                        (wy == t_ptr->z2) ? t_ptr->x2 : -1);
+-        }
+-        else
+-            str_out(window->work.g_x, y, window->work.g_w, (short) window->doc.x, col, -1, -1);
+-    }
+-    else
+-        fill_area(window->work.g_x, y, window->work.g_w, font_hcell, bg_color);
+-}
+-
+-void bild_out(WINDOWP window, TEXTP t_ptr)
+-{
+-    short       x, y, w;
+-    LINEP  line;
+-    short       min_col, max_col, max_y;
+-    GRECT       c;
+-
+-    adjust_text(t_ptr);                 /* Zeilenpuffer an exp_len anpassen */
+-    tab = t_ptr->loc_opt->tab;
+-    tab_size = t_ptr->loc_opt->tabsize;
+-    umbrechen = t_ptr->loc_opt->umbrechen;
+-    show_end = t_ptr->loc_opt->show_end;
+-    x = window->work.g_x;
+-    y = window->work.g_y;
+-    w = window->work.g_w;
+-
+-    if (window->class == CLASS_EDIT)                        /* Kopf ausgeben */
+-        head_out(window, t_ptr);
+-
+-    min_col = 0;
+-    max_col = (short) min(window->w_height - 1, t_ptr->text.lines - window->doc.y-1);
+-    max_y   = y + window->work.g_h-1;
+-    if (get_clip(&c))                   /* nicht alles malen */
+-    {
+-        short y2 = c.g_y - y;
+-
+-        min_col = max(min_col, y2/font_hcell);
+-        max_col = min(max_col, (c.g_y + c.g_h - 1) / font_hcell);
+-        max_y = min(max_y, c.g_y + c.g_h - 1);
+-    }
+-    y += (min_col * font_hcell);
+-    line = get_wline(t_ptr, window->doc.y + min_col);
+-    if (line != NULL)
+-    {
+-        short   xoffset, i;
+-
+-        xoffset = (short) window->doc.x;
+-        if (t_ptr->block)
+-        {
+-            long    y_r;
+-
+-            y_r = window->doc.y + min_col;
+-            for (i = min_col ; i <= max_col; y_r++, y += font_hcell, NEXT(line), i++)
+-            {
+-                /* Block nicht sichtbar */
+-                if (y_r < t_ptr->z1 || y_r > t_ptr->z2)
+-                    str_out(x, y, w, xoffset, line, -1, -1);
+-                else
+-                    str_out(x, y, w, xoffset, line,
+-                            (y_r == t_ptr->z1) ? t_ptr->x1 : 0,
+-                            (y_r == t_ptr->z2) ? t_ptr->x2 : -1);
+-            }
+-        }
+-        else
+-        {
+-            for (i=min_col ; i<=max_col; y+=font_hcell,NEXT(line),i++)
+-                str_out(x,y,w,xoffset,line, -1, -1);
+-        }
+-    }
+-
+-    /* Fenster hîher als Text lang ist -> Rest lîschen */
+-    if (y < max_y)
+-        fill_area(x, y, w, (max_y - y + 1), bg_color);
+-}
+-
+-void bild_blkout(WINDOWP window, TEXTP t_ptr, long z1, long z2)
+-/* Alle Textzeilen zwischen z1 und z2 werden neu ausgegeben */
+-{
+-    short       i, x, y, w, xoffset;
+-    LINEP  line;
+-    short       max_col;
+-    long        lines, y_r;
+-
+-    adjust_text(t_ptr);                 /* Zeilenpuffer an exp_len anpassen */
+-    tab = t_ptr->loc_opt->tab;
+-    tab_size = t_ptr->loc_opt->tabsize;
+-    umbrechen = t_ptr->loc_opt->umbrechen;
+-    show_end = t_ptr->loc_opt->show_end;
+-    if (z1>z2)
+-    {
+-        lines = z1;
+-        z1 = z2;
+-        z2 = lines;
+-    }
+-    x         = window->work.g_x;
+-    y         = window->work.g_y;
+-    w         = window->work.g_w;
+-    xoffset = (short) window->doc.x;
+-    max_col = (short) min(window->w_height-1, t_ptr->text.lines-window->doc.y-1);
+-    y_r   = window->doc.y;
+-    line = get_wline(t_ptr, y_r);
+-
+-    if (t_ptr->block)
+-        for (i=0; i<=max_col; i++,y+=font_hcell,y_r++)
+-        {
+-            if (y_r>=z1 && y_r<=z2)
+-            {
+-                if (y_r<t_ptr->z1 || y_r>t_ptr->z2)
+-                    str_out(x,y,w,xoffset,line, -1, -1);
+-                else
+-                    str_out(x, y, w, xoffset, line,
+-                            (y_r == t_ptr->z1) ? t_ptr->x1 : 0,
+-                            (y_r == t_ptr->z2) ? t_ptr->x2 : -1);
+-            }
+-            NEXT(line);
+-        }
+-    else
+-        for (i=0; i<=max_col; i++,y+=font_hcell,y_r++)
+-        {
+-            if (y_r>=z1 && y_r<=z2)
+-                str_out(x,y,w,xoffset,line, -1, -1);
+-            NEXT(line);
+-        }
+-}
+-
+-
+-/***************************************************************************/
+ 
+ void head_out(WINDOWP window, TEXTP t_ptr)
+ {
+@@ -961,7 +210,7 @@
+ 
+             ltoa(t_ptr->ypos+1, head_str + 8, 10);
+             head_str[strlen(head_str)] = ' ';
+-            ltoa(bild_pos(t_ptr->xpos,t_ptr->cursor_line,tab,tab_size)+1,head_str+18,10); /* STan: itoa -> ltoa */
++            ltoa(bild_pos(t_ptr->xpos,t_ptr->cursor_line,t_ptr->loc_opt->tab,t_ptr->loc_opt->tabsize)+1,head_str+18,10); /* STan: itoa -> ltoa */
+             head_str[strlen(head_str)] = ' ';
+         }
+         else
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -137,7 +137,7 @@
+ 	short	x, i, tabsize;
+ 	static char	str[MAX_LINE_LEN + 1];
+ 
+-	graf_mouse(HOURGLASS, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 	tabsize = t_ptr->loc_opt->tabsize;
+ 	x = bild_pos(t_ptr->xpos,t_ptr->cursor_line,TRUE,tabsize);
+ 	line = FIRST(&t_ptr->text);
+@@ -156,7 +156,7 @@
+ 	t_ptr->xpos = inter_pos(x,t_ptr->cursor_line,TRUE,tabsize);
+ 	make_chg(t_ptr->link,POS_CHANGE,0); 	/* immer: Damit Infozeile einen '*' bekommt */
+ 	restore_edit();
+-	graf_mouse(ARROW, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ }
+ 
+ static short col_tab2lz(LINEP col, char *t, short tab_size)
+@@ -204,7 +204,7 @@
+ 	short	i, x, tabsize;
+ 	static char	str[MAX_LINE_LEN + 1];
+ 
+-	graf_mouse(HOURGLASS, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 	tabsize = t_ptr->loc_opt->tabsize;
+ 	x = bild_pos(t_ptr->xpos,t_ptr->cursor_line,TRUE,tabsize);
+ 	line = FIRST(&t_ptr->text);
+@@ -223,7 +223,7 @@
+ 	t_ptr->xpos = inter_pos(x,t_ptr->cursor_line,TRUE,tabsize);
+ 	make_chg(t_ptr->link,POS_CHANGE,0); 	/* immer: Damit Infozeile einen '*' bekommt */
+ 	restore_edit();
+-	graf_mouse(ARROW, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ }
+ 
+ static void goto_line(TEXTP t_ptr, short x, long y)
+@@ -735,84 +735,10 @@
+ 		{
+ 			graf_mkstate(&m_x, &m_y, &bstate, &kstate);
+ 
+-			if (click_in_blk(window, m_x, m_y) && bstate & 1)
+-			{
+-				short		win_id;
+-				WINDOWP	qed_win;
+-				RING		t;
+-				short		x, y, w, h, d;
+-				GRECT		r;
+-				
+-				/* Rahmen ermitteln */
+-				r = window->work;
+-				if (t_ptr->z1 == t_ptr->z2)	/* Spezialfall: nur eine Zeile */
+-				{
+-					x = cursor_xpos(t_ptr, t_ptr->x1, NULL);
+-					w = cursor_xpos(t_ptr, t_ptr->x2, NULL) - x;
+-					x += r.g_x;
+-				}
+-				else
+-				{
+-					x = r.g_x;
+-					w = r.g_w;
+-				}
+-				y = (short)((t_ptr->z1 - window->doc.y) * font_hcell) + r.g_y;
+-				if (t_ptr->x2 == 0)
+-					h = ((short)(t_ptr->z2 - t_ptr->z1)) * font_hcell;
+-				else
+-					h = ((short)(t_ptr->z2 - t_ptr->z1) + 1) * font_hcell;
+-				
+-				/* Clipping auf Fenstergrîûe */
+-				if (y < r.g_y)
+-				{
+-					h -= (r.g_y - y); 
+-					y = r.g_y;
+-				}
+-				if (y + h > (r.g_y + r.g_h - 1))
+-					h = (r.g_y + r.g_h - 1) - y;
+-				
+-				/* Box verschieben */
+-				graf_mouse(TEXT_CRSR/*FLAT_HAND*/, NULL);
+-				graf_dragbox(w, h, x, y, gl_desk.g_x, gl_desk.g_y, gl_desk.g_w, gl_desk.g_h, &d, &d);
+-				graf_mouse(ARROW, NULL);
+-				graf_mkstate(&m_x, &m_y, &bstate, &kstate);
+-
+-				/* markierten Text merken */
+-				init_textring(&t);
+-				block_copy(t_ptr, &t);
+-
+-				/* wohin wurde gezogen? */
+-				win_id = wind_find(m_x, m_y);
+-				qed_win = get_window(win_id);
+-
+-				if (qed_win)											/* eigenes Fenster */
+-				{
+-					/* Ziel muû Textfenster sein */
+-					if (qed_win->class == CLASS_EDIT)
+-					{
+-						if (qed_win != window)						/* ein anderes */
+-						{
+-							t_ptr = get_text(qed_win->handle);
+-							blk_paste(t_ptr, &t);
+-						}
+-						else												/* das selbe */
+-						{
+-							((void)0) /* optional audible bell */;
+-#if 0
+-							blk_delete(t_ptr);
+-							set_cursor(window, m_x, m_y);
+-							blk_paste(t_ptr, &t);
+-#endif
+-						}
+-						restore_edit();
+-					}
+-					else
+-						((void)0) /* optional audible bell */;
+-				}
+-				else														/* fremdes Fenster */
+-					((void)0);				
+-				kill_textring(&t);
++			if(click_in_blk(window,m_x,m_y) && (bstate&1)){
++			    /* Block drag/drop is deferred; preserve the selection. */
+ 			}
++
+ 			else
+ 			{
+ 				blk_demark(t_ptr);
+@@ -826,7 +752,7 @@
+ 	graf_mkstate(&m_x, &m_y, &bstate, &kstate);
+ 	if (bstate & 1)													/* immernoch gedrÅckt */
+ 	{
+-		graf_mouse(POINT_HAND, NULL);
++		(void)0; /* Native presenter owns the pointer. */
+ 		wind_update(BEG_MCTRL);
+ 		while(TRUE)
+ 		{
+@@ -889,7 +815,7 @@
+ 			}
+ 		}
+ 		wind_update(END_MCTRL);
+-		graf_mouse(ARROW, NULL);
++		(void)0; /* Native presenter owns the pointer. */
+ 	}
+ }
+ 
+@@ -1366,8 +1292,8 @@
+ 		t_ptr = get_text(window->handle);
+ 		if (t_ptr->cursor)
+ 		{
++			t_ptr->blink = FALSE;
+ 			cursor(window,t_ptr);
+-			t_ptr->blink = FALSE;
+ 		}
+ 	}
+ }
+@@ -1383,6 +1309,7 @@
+ 		t_ptr = get_text(window->handle);
+ 		if (t_ptr->cursor && !t_ptr->blink)
+ 		{
++			t_ptr->blink=TRUE;
+ 			cursor(window,t_ptr);
+ 		}
+ 	}
+@@ -1581,30 +1508,9 @@
+ 				break;
+ 
+ 			case SCROLL_UP:
+-				y_screen = (short) (c->y - window->doc.y);
+-				if (y_screen < window->w_height-1)
+-				{
+-					help = window->yfac*(y_screen+1);
+-					a = window->work;
+-					a.g_h -= help;
+-					a.g_y += help;
+-					scroll_vertical (&a, window->yfac);
+-				}
+-				if (y_screen < window->w_height)
+-					line_out(window, t_ptr, window->w_height-1);
+-				break;
+-
+ 			case SCROLL_DOWN:
+-				y_screen = (short) (c->y - window->doc.y);
+-				if (y_screen < window->w_height-1)
+-				{
+-					a = window->work;
+-					a.g_h -= window->yfac * (y_screen + 1);
+-					a.g_y += window->yfac * y_screen;
+-					scroll_vertical (&a, -window->yfac);
+-				}
+-				/* Die neue Zeile wird mit LINE_CHANGE gezeichnet */
+-				break;
++			    bild_out(window,t_ptr);
++			    break;
+ 
+ 			case MOVE_UP:
+ 				arrow_window(window, WA_DNLINE, c->y);
+--- a/qed/src/file.c
++++ b/qed/src/file.c
+@@ -86,7 +86,7 @@
+ 	}				
+ 
+ 	nb = FALSE;
+-	graf_mouse(HOURGLASS, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 
+ 	/* Progress-Bar */
+ 	verbose = verbose && ((size >> 10) >= transfer_size);
+@@ -249,7 +249,7 @@
+ 			NEXT(next);
+ 			free_col(t,start);
+ 		}
+-		graf_mouse(ARROW, NULL);
++		(void)0; /* Native presenter owns the pointer. */
+ 		note(1, 0, NOMEMORY);
+ 		antw = -ENOMEM;
+ 	}
+@@ -260,7 +260,7 @@
+ 	if (verbose)
+ 		end_aktion();
+ 
+-	graf_mouse(ARROW, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 
+ 	if (null_byte != NULL)
+ 		*null_byte = nb;
+@@ -365,13 +365,13 @@
+ 
+ 	if (t_ptr->loc_opt->backup)
+ 	{
+-		graf_mouse(HOURGLASS, NULL);
++		(void)0; /* Native presenter owns the pointer. */
+ 		strcpy(new, t_ptr->filename);
+ 		backup_name(new, t_ptr->loc_opt->backup_ext);
+ 		if (file_exists(new))			/* Alte DUP-Datei lîschen */
+ 			Fdelete(new);
+ 		(void)Frename(0, t_ptr->filename, new);
+-		graf_mouse(ARROW, NULL);
++		(void)0; /* Native presenter owns the pointer. */
+ 	}
+ }
+ 
+@@ -393,7 +393,7 @@
+ 		return -ENOMEM;
+ 	}				
+ 
+-	graf_mouse(HOURGLASS, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 
+ 	/* Progress-Bar */
+ 	text_size = textring_bytes(t);
+@@ -518,7 +518,7 @@
+ 	if (verbose)
+ 		end_aktion();
+ 
+-	graf_mouse(ARROW, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 
+ 	return antw;
+ }
+--- a/qed/src/find.c
++++ b/qed/src/find.c
+@@ -476,10 +476,10 @@
+ 	short	len, erg;
+ 
+ 	last_op = 1;
+-	graf_mouse(HOURGLASS, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 	init_suche(t_ptr, modus);			/* Suchzeiger an den Start bringen */
+ 	erg = suchen(t_ptr,&len);
+-	graf_mouse(ARROW, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 	if (erg == 1 && !quiet)
+ 	{
+ 		blk_demark(t_ptr);
+--- a/qed/src/global.c
++++ b/qed/src/global.c
+@@ -13,6 +13,7 @@
+ #include "rsc.h"
+ #include "set.h"
+ #include "window.h"
++#include "winlist.h"
+ 
+ 
+ /*
+@@ -76,30 +77,9 @@
+ /* Ausgabe recht oben im MenÅ */
+ void print_headline(char *str)
+ {
+-	GRECT	c;
+-		
+-	if (gl_desk.g_y != 1)		/* gl_desk.g_y = 1: MenÅ unsichtbar unter N.AES */
+-	{
+-		if (str[0] == EOS)		/* lîschen */
+-			menu_bar(menu, 1);
+-		else
+-		{
+-			_WORD 	d;
+-			_WORD	pxy[8];
+-			
+-			get_clip(&c);
+-			set_clip(FALSE, NULL);
+-			vst_font(vdi_handle, sys_big_id);
+-			vst_height(vdi_handle, sys_big_height, &d, &d, &d, &d);
+-			vqt_extent(vdi_handle, str, pxy);
+-			vswr_mode(vdi_handle, MD_TRANS);
+-			v_gtext(vdi_handle, gl_desk.g_x + gl_desk.g_w - (pxy[2] - pxy[0]) - 20, 0, str);
+-			vswr_mode(vdi_handle, MD_REPLACE);
+-			vst_font(vdi_handle, font_id);
+-			vst_point(vdi_handle, font_pts, &d, &d, &d, &d);
+-			set_clip(TRUE, &c);
+-		}
+-	}
++    WINDOWP w=winlist_top();
++    /* Progress belongs to an owned window's INFO line, never the menu surface. */
++    if(w)set_winfo(w,str);
+ }
+ 
+ /*****************************************************************************/
+@@ -292,11 +272,9 @@
+ /***************************************************************************/
+ /* Initialisieren des Moduls																*/
+ /***************************************************************************/
+-void init_global (void)
+-{
+-    _WORD ret;
++void init_global(void)
++{
+     done=FALSE;clip_flag=TRUE;vdi_handle=cf_vdi_handle;
+-    vst_alignment(vdi_handle,TA_LEFT,TA_TOP,&ret,&ret);
+ }
+ 
+ /************************************************************************/
+--- a/qed/src/umbruch.c
++++ b/qed/src/umbruch.c
+@@ -423,7 +423,7 @@
+ 	tab_size = t_ptr->loc_opt->tabsize;
+ 	lineal_len = t_ptr->loc_opt->lineal_len;
+ 	change = FALSE;
+-	graf_mouse(HOURGLASS, NULL);
++	(void)0; /* Native presenter owns the pointer. */
+ 	line = FIRST(&t_ptr->text);
+ 	y = 0;
+ 	while (!IS_TAIL(line))
+@@ -454,5 +454,5 @@
+ 		make_chg(t_ptr->link,TOTAL_CHANGE,0);
+ 		clr_undo();
+ 	}
+-	graf_mouse(ARROW, NULL);
+-}
++	(void)0; /* Native presenter owns the pointer. */
++}
+--- a/qed/src/window.c
++++ b/qed/src/window.c
+@@ -262,7 +262,7 @@
+ 		vsf_color(vdi_handle,G_WHITE);
+ 		fill_color = G_WHITE;
+ 	}
+-	vr_recfl(vdi_handle, xy);								/* Bereich lîschen */
++	v_bar(vdi_handle, xy);								/* Bereich lîschen */
+ }
+ 
+ bool free_for_draw(WINDOWP w)
+@@ -643,104 +643,13 @@
+ /*
+  * Scrollt den Inhalt des Fensters.
+ */
+-static void scroll_window(WINDOWP w, short dir, long delta)
+-{
+-	MFDB		s, d;
+-	short		xy[8];
+-	GRECT		r;
+-	bool	draw;
+-
+-	draw = FALSE;
+-	wind_get_grect(w->handle, WF_FIRSTXYWH, &r);
+-	if (r.g_w != w->work.g_w || r.g_h != w->work.g_h)
+-		draw = TRUE;
+-
+-	r = w->work;
+-	if (!rc_intersect(&gl_desk, &r))
+-		return;
+-
+-	if (dir & HORIZONTAL)
+-	{
+-		delta *= w->xfac;
+-		if (labs(delta) >= r.g_w)
+-			draw = TRUE;
+-	}
+-	else
+-	{
+-		delta *= w->yfac;
+-		if (labs(delta) >= r.g_h)
+-			draw = TRUE;
+-	}
+-
+-	if (!draw)
+-	{
+-		grect_to_array(&r, xy);						/* Quelle fÅr vro_cpyfm */
+-		xy[4] = xy[0];									/* Ziel fÅr vro_cpyfm */
+-		xy[5] = xy[1];
+-		xy[6] = xy[2];
+-		xy[7] = xy[3];
+-
+-		if (dir & HORIZONTAL)						/* Horizontales Scrolling */
+-		{
+-			if (delta > 0)								/* Links Scrolling */
+-			{
+-				xy[0] += (short) delta;
+-				xy[6] -= (short) delta;
+-
+-				r.g_x += r.g_w - (short)delta;	/* Rechter Bereich nicht gescrollt, */
+-				r.g_w  = (short)delta;				/* muû neu gezeichnet werden */
+-			}
+-			else											/* Rechts Scrolling */
+-			{
+-				xy[2] += (short)delta;
+-				xy[4] -= (short)delta;
+-
+-				r.g_w = (short)(-delta);			/* Linken Bereich noch neu zeichnen */
+-			}
+-		}
+-		else												/* Vertikales Scrolling */
+-		{
+-			if (delta > 0)								/* AufwÑrts Scrolling */
+-			{
+-				xy[1] += (short)delta;				/* Werte fÅr vro_cpyfm */
+-				xy[7] -= (short)delta;
+-
+-				r.g_y += r.g_h - (short)delta;	/* Unterer Bereich nicht gescrollt, */
+-				r.g_h  = (short) delta;				/* muû neu gezeichnet werden */
+-			}
+-			else											/* AbwÑrts Scrolling */
+-			{
+-				xy[3] += (short)delta;				/* Werte fÅr vro_cpyfm */
+-				xy[5] -= (short)delta;
+-
+-				r.g_h = (short)(-delta);			/* Oberen Bereich noch neu zeichnen */
+-			}
+-		}
+-		s.fd_addr = d.fd_addr = NULL;				/* Erzwinge Bildschirmadresse */
+-		set_clip(TRUE, &w->work);
+-		hide_mouse();
+-		vro_cpyfm(vdi_handle, S_ONLY, xy, &s, &d);
+-		show_mouse();
+-		redraw_window(w, &r);
+-	}
+-	else
+-		redraw_window(w, &r);						/* Fenster zeichnen */
+-}
+-
+-void scroll_vertical(GRECT *area, short delta)
+-{
+-	MFDB	s, d;
+-	short	xy[8];
+-
+-	grect_to_array(area, xy);
+-	xy[4] = xy[0];
+-	xy[5] = xy[1]-delta;
+-	xy[6] = xy[2];
+-	xy[7] = xy[3]-delta;
+-
+-	s.fd_addr = d.fd_addr = NULL;							/* Erzwinge Bildschirmadresse */
+-	vro_cpyfm (vdi_handle, S_ONLY, xy, &s, &d);		/* Eigentliches Scrolling */
+-}
++static void scroll_window(WINDOWP w,short dir,long delta)
++{
++    (void)dir;(void)delta;
++    redraw_window(w,&w->work);
++}
++
++/* No retained caller uses raster scrolling. */
+ 
+ /*
+  * Auswertung der Scroll-Pfeile.

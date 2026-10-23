@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 17,
+  "version": 18,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -38,7 +38,7 @@
     "ENDPOINT_RETIRED": 3,
     "RPC_INTIN_WORDS": 6,
     "RPC_INTOUT_WORDS": 5,
-    "GUI_KINDS": 9,
+    "GUI_KINDS": 10,
     "GUI_REDRAW": 0,
     "GUI_TOPPED": 1,
     "GUI_MOVED": 2,
@@ -119,7 +119,12 @@
     "OP_DRAG_OUTLINE": 203,
     "PAINT_REPORTS": 8,
     "UPDATE_WINDOW": 512,
-    "WF_EXEC_CONSOLE": 24578
+    "WF_EXEC_CONSOLE": 24578,
+    "OP_GRAF_MKSTATE": 79,
+    "GUI_FOCUS": 9,
+    "WM_UNTOPPED": 30,
+    "WM_ONTOP": 31,
+    "WF_EXEC_FOCUS": 24579
   },
   "records": {
     "MenuObject": [
@@ -721,6 +726,9 @@
     "FULLER",
     "INFO",
     "WF_INFO",
-    "WM_FULLED"
+    "WM_FULLED",
+    "WM_UNTOPPED",
+    "WM_ONTOP",
+    "WF_EXEC_FOCUS"
   ]
 }

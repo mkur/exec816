@@ -9,6 +9,9 @@
 - [FujiNet split-disk boot](fujinet-split-boot.md): XEX on D1, SYS on D2 and
   writable WORK on D8, including CONFIG's OPTION → Boot path.
 - [Bootable system ATR](bootable-system-atr.md): one writable D1 disk containing OF816, Exec and system/workspace files.
+- [Native Exec QED in Altirra](qed-exec.md): supported development port,
+  private emulator settings, persistent WORK and source/relink instructions.
+
 - [Demo](demo.md): build artifacts, machine setup and a walkthrough.
 - [Bitmap console preview](bitmap-console.md): optional 80×30 VBXE shell, setup and measured limits.
 - [IDE Plus development setup](ideplus.md): optional APT disk, native ATA driver and writable admission.
@@ -18,6 +21,11 @@
 - [OF816 boot monitor](boot-monitor.md): interrupt autoboot and choose boot settings.
 
 - [Optional interactive GEM/VDI demo](gem-vdi.md): ST mouse and keyboard controls during disk I/O, with VBXE graphics.
+
+## Upstream application references
+
+- [GEM4XE/QED reference](gem4xe-qed-reference.md): reproducible two-disk
+  Altirra setup, pinned original application and verified editing/save workflow.
 
 ## Writing programs
 

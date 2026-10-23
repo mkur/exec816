@@ -120,6 +120,14 @@ The shell's state-changing built-ins remain local. Exact-path disk commands use
 reading the next prompt. A resident foreground caller uses `StartForeground`
 followed by `Wait`.
 
+Loaded Images may declare `minimumStack`, including the interrupt reserve.
+All loaded start and prepare variants use it in the ordinary reservation path.
+Admission takes the smallest compatible free pool; zero retains ordinary
+selection. If no pool fits, start/prepare returns zero and sets error 103 before
+publishing an identity. The Image execution reference rolls back; arguments,
+signals and DOS state have not been acquired. The private ABI 8 reserve packet
+adds a CARD requirement; Process rows remain 128 bytes and pools do not grow.
+
 ## Background cancellation
 
 Background starts retain the ordinary Input, Output and directory snapshots,

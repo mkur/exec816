@@ -169,12 +169,14 @@ def physical(b,p,foreign,report):
     phase(7);key('TAB');key('SPACE')
     phase(8)
     t=tree();click(get(t+16),get(t+18)-8)
+    phase(9);key('ESC')
+    phase(10);key('ESC')
     phase(90)
     require(get(sy['AESFormPhase']+2)==1,'Peer form was changed by another caller')
     click(*xy(5,1))
     reach('dw($%x)=90'%(sy['AESFormPhase']+2))
     report['physical_forms']=dict(two_callers=True,ordinary_stacks=True,
         editing=True,radio=True,disabled=True,outside_release=True,escape_cancel=True,
-        temporary_move=[8,8],repeated_form_do=True,aespb=True,
+        temporary_move=[8,8],repeated_form_do=True,aespb=True,idle_escape_dismisses_both_hosts=True,
         borrowed_move='interrupted and preserved',borrowed_close='interrupted and preserved')
     b.bp_clear_all()

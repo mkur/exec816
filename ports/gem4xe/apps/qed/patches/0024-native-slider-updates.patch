@@ -1,0 +1,69 @@
+--- a/qed/src/window.h
++++ b/qed/src/window.h
+@@ -64,6 +64,8 @@
+ 
+ #define SLPOS			0x01	/* Fr Schieber setzen */
+ #define SLSIZE			0x02
++/* Caller has changed the model position: publish it without a readback. */
++#define SLPOS_KNOWN 0x04
+ 
+ /*
+  * exportierte Variablen
+--- a/qed/src/window.c
++++ b/qed/src/window.c
+@@ -663,7 +663,7 @@
+ 			w->doc.y += delta;						/* Neue Position */
+ 		if (w->flags & WI_OPEN)
+ 		{
+-			set_sliders(w, dir, SLPOS);			/* Schieber setzen */
++			set_sliders(w, dir, SLPOS|SLPOS_KNOWN);			/* Schieber setzen */
+ 			scroll_window(w, dir, delta);
+ 		}
+ 	}
+@@ -794,7 +794,8 @@
+ 				else
+ 					newval = (short)((1000L * w->doc.x) / max_doc);
+ 
+-				wind_get (w->handle, WF_HSLIDE, &oldval, &d, &d, &d);
++				oldval=-1;
++				if(!(mode&SLPOS_KNOWN))wind_get (w->handle, WF_HSLIDE, &oldval, &d, &d, &d);
+ 				if (newval != oldval)
+ 					wind_set(w->handle, WF_HSLIDE, newval, 0, 0, 0);
+ 			}
+@@ -821,7 +822,8 @@
+ 					newval = 0;
+ 				else
+ 					newval = (short)((1000L * w->doc.y) / max_doc);
+-				wind_get(w->handle, WF_VSLIDE, &oldval, &d, &d, &d);
++				oldval=-1;
++				if(!(mode&SLPOS_KNOWN))wind_get(w->handle, WF_VSLIDE, &oldval, &d, &d, &d);
+ 				if (newval != oldval)
+ 					wind_set(w->handle, WF_VSLIDE, newval, 0, 0, 0);
+ 			}
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -1100,7 +1100,7 @@
+ void restore_edit(void)
+ {
+     long oldx,oldy,first,last;
+-    bool clamped,painted;
++    bool clamped,painted,resized;
+     short i,link;
+     WINDOWP w;
+     TEXTP t;
+@@ -1109,11 +1109,14 @@
+         if(!setin(chg_links,link))continue;
+         w=get_window(link);if(!w)continue;
+         t=get_text(link);oldx=w->doc.x;oldy=w->doc.y;
++        resized=w->doc.h!=t->text.lines;
++        for(i=0;i<chg_anz;i++)
++            if(chg[i].link==link && chg[i].c==TOTAL_CHANGE)resized=TRUE;
+         w->doc.h=t->text.lines;w->doc.w=get_longestline(t);
+         if(w->doc.x>w->doc.w-w->w_width)w->doc.x=max(0L,w->doc.w-w->w_width);
+         if(w->doc.y>w->doc.h-w->w_height)w->doc.y=max(0L,w->doc.h-w->w_height);
+         clamped=w->doc.x!=oldx || w->doc.y!=oldy;
+-        set_sliders(w,VERTICAL,SLPOS+SLSIZE);
++        if(resized || w->doc.y!=oldy)set_sliders(w,VERTICAL,SLPOS+SLSIZE);
+         /* Caption RPCs precede visible-rectangle enumeration and painting. */
+         head_out(w,t);change_window(w,t->filename,t->moved!=0);
+         if(pointer_state!=1)cursor_visible(w,t);

@@ -1,15 +1,15 @@
 {
   "abi": "exec816.vdi-client",
-  "version": 1,
-  "constants": {"PHYSICAL": 1, "VIRTUAL": 2, "WIDTH": 640, "HEIGHT": 240, "FONT_WIDTH": 8, "FONT_HEIGHT": 8, "FONT_TOP": 6, "TEXT_CHUNK": 80, "STRIP_ROWS": 16},
+  "version": 2,
+  "constants": {"PHYSICAL": 1, "VIRTUAL": 2, "WIDTH": 640, "HEIGHT": 240, "FONT_WIDTH": 8, "FONT_HEIGHT": 8, "FONT_TOP": 6, "TEXT_CHUNK": 80, "STRIP_ROWS": 16, "REPLACE": 1, "TRANS": 2},
   "unit": [
-    ["operation", "UWORD"], ["textColor", "UWORD"], ["fillColor", "UWORD"],
+    ["operation", "UWORD"], ["textColor", "UWORD"], ["fillColor", "UWORD"], ["writeMode", "UWORD"],
     ["left", "UWORD"], ["top", "UWORD"], ["right", "UWORD"], ["bottom", "UWORD"],
     ["x", "WORD"], ["y", "WORD"], ["count", "UWORD"], ["glyphs", "const WORD *"]
   ],
   "workstation": [
     ["grant", "struct DisplayGrant"], ["signal", "BYTE"], ["clipped", "UBYTE"],
-    ["handle", "WORD"], ["fillColor", "WORD"], ["textColor", "WORD"],
+    ["handle", "WORD"], ["fillColor", "WORD"], ["textColor", "WORD"], ["writeMode", "WORD"],
     ["clip", "WORD", 4], ["control", "WORD", 12], ["intin", "WORD", 80],
     ["ptsin", "WORD", 4], ["intout", "WORD", 45], ["ptsout", "WORD", 12],
     ["unit", "struct ExecVDIUnit"]

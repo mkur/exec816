@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "kind": "Former analysis bindings and their native startup dispositions",
+  "bindings": [
+    {
+      "name": "appl_xgetinfo",
+      "declaration": "WORD appl_xgetinfo(WORD ap_gtype, WORD *ap_gout1, WORD *ap_gout2, WORD *ap_gout3, WORD *ap_gout4);",
+      "resolution": "Flat resource frame calculations and direct native menu_popup; donor capability fallback removed",
+      "status": "adapted"
+    },
+    {
+      "name": "graf_dragbox",
+      "declaration": "WORD graf_dragbox(WORD w, WORD h, WORD sx, WORD sy, WORD bx, WORD by, WORD bw, WORD bh, WORD *px, WORD *py);",
+      "resolution": "Block drag/drop removed from the single-document scope",
+      "status": "adapted"
+    },
+    {
+      "name": "graf_mkstate",
+      "declaration": "WORD graf_mkstate(WORD *mx, WORD *my, WORD *mb, WORD *ks);",
+      "resolution": "General public named/AESPB snapshot; no queued event consumption",
+      "status": "implemented"
+    },
+    {
+      "name": "graf_mouse",
+      "declaration": "WORD graf_mouse(WORD mode, const WORD *form);",
+      "resolution": "Native presenter owns the visible pointer; donor shape/hide requests removed",
+      "status": "adapted"
+    },
+    {
+      "name": "objc_sysvar",
+      "declaration": "WORD objc_sysvar(WORD mode, WORD which, WORD in1, WORD in2, WORD *out1, WORD *out2);",
+      "resolution": "3D resource decoration flattened at preparation",
+      "status": "adapted"
+    },
+    {
+      "name": "v_fillarea",
+      "declaration": "void v_fillarea(WORD handle, WORD count, const WORD *pxy);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    },
+    {
+      "name": "v_justified",
+      "declaration": "void v_justified(WORD handle, WORD x, WORD y, const char *s, WORD length, WORD word_space, WORD char_space);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    },
+    {
+      "name": "v_pline",
+      "declaration": "void v_pline(WORD handle, WORD count, WORD *pxy);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    },
+    {
+      "name": "vqt_extent",
+      "declaration": "void vqt_extent(WORD handle, const char *s, WORD *extent);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    },
+    {
+      "name": "vr_recfl",
+      "declaration": "void vr_recfl(WORD handle, WORD *pxy);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    },
+    {
+      "name": "vro_cpyfm",
+      "declaration": "void vro_cpyfm(WORD handle, WORD mode, const WORD *pxy, const MFDB *src, const MFDB *dst);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    },
+    {
+      "name": "vsl_color",
+      "declaration": "WORD vsl_color(WORD handle, WORD color);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    },
+    {
+      "name": "vst_alignment",
+      "declaration": "void vst_alignment(WORD handle, WORD hin, WORD vin, WORD *hout, WORD *vout);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    },
+    {
+      "name": "vst_effects",
+      "declaration": "WORD vst_effects(WORD handle, WORD effects);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    },
+    {
+      "name": "vst_font",
+      "declaration": "WORD vst_font(WORD handle, WORD font);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    },
+    {
+      "name": "vst_height",
+      "declaration": "void vst_height(WORD handle, WORD height, WORD *char_width, WORD *char_height, WORD *cell_width, WORD *cell_height);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    },
+    {
+      "name": "vst_point",
+      "declaration": "WORD vst_point(WORD handle, WORD point, WORD *char_width, WORD *char_height, WORD *cell_width, WORD *cell_height);",
+      "resolution": "Fixed-font renderer and redraw scrolling use public clipped v_bar/v_gtext; proportional, italic, XOR and raster paths removed",
+      "status": "adapted"
+    }
+  ]
+}

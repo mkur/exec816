@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Separate optional QED application disk; fresh core-only, shell/Files editing and resource-failure checks",
+  "source_revision": "96c98edacb4cf6b34838f43020bbfe9de079b6a9",
+  "bundle": "build/qed-delivery/separate-disk",
+  "zip_sha256": "785a203a12420a19312db3374c9289c553feee25815751a2ef64da428d64893f",
+  "qed_atr_sha256": "e1aff807975be036b6d8a6a70ebdc54f73909eed4ce137f240948059ec73575b",
+  "app_sha256": "471bb04e7f6a066a93a46ed303664247d69f747cde76a98de973cefae07c66b6",
+  "resource_sha256": "9095194c1b2055ecbd31b6bcde7604a47dd6da6d4796e0b4b1a52993588d08e7",
+  "provider_identity": "5408e60ed7efd8cdccb791d753b508a16afd9fa65371cdc7461ad5d95f6f2d1e",
+  "layout": {
+    "system": {
+      "drive": 1,
+      "access": "readonly",
+      "qed_payload": false
+    },
+    "application": {
+      "drive": 2,
+      "alias": "QED",
+      "access": "readonly",
+      "boot_required": false
+    },
+    "work": {
+      "drive": 8,
+      "access": "readwrite",
+      "private": true
+    }
+  },
+  "fresh_execution": {
+    "final": {
+      "path": "build/qed-separate-disk/final/delivery-final-results.json",
+      "sha256": "498cc679e7d8721cec77142aa7762e0dfde30feb44ed4bc2dd7d36d5c0f68c95"
+    },
+    "core_only": {
+      "path": "build/qed-separate-disk/core-only/core-only-results.json",
+      "sha256": "4313260ca31cbe1faba28062e000b5a2d86b2e2ee50b71f0e3ad35e982f7a0b4"
+    },
+    "missing_resource": {
+      "path": "build/qed-separate-disk/missing-resource/startup-results.json",
+      "sha256": "d8c7e2159c7421dda7af3de1ee79c725e76ae3ec245cbfe624f6175069385a2d"
+    }
+  },
+  "final_cases": {
+    "cases": [
+      "discard",
+      "shell-save-as-backup-reopen",
+      "files-document-launch",
+      "quit-cancel-keeps-document",
+      "quit-save-continuation",
+      "normal-parent-collection"
+    ],
+    "lifetimes": 3,
+    "parents": [
+      "shell",
+      "desktop"
+    ],
+    "normal_collection": true
+  },
+  "core_cases": "Default core desktop/folder/HELLO/EXIT smoke; optional disk physically absent",
+  "missing_resource_lifetimes": [
+    {
+      "identity": 3,
+      "result": 20,
+      "normal_collection": true
+    },
+    {
+      "identity": 4,
+      "result": 20,
+      "normal_collection": true
+    }
+  ],
+  "media_audit": {
+    "path": "build/qed-separate-disk/media-audit.json",
+    "sha256": "cbf7bd2d48505ec6ba39fe11bb8d7fc815695f28144cec53c68c22ad29e0486b"
+  },
+  "allocation": {
+    "system.atr": {
+      "sectors": 2880,
+      "sector_bytes": 256,
+      "allocated": 1218,
+      "free": 1662,
+      "files": 51,
+      "directories": 6
+    },
+    "qed.atr": {
+      "sectors": 2880,
+      "sector_bytes": 256,
+      "allocated": 782,
+      "free": 2098,
+      "files": 9,
+      "directories": 1
+    },
+    "work.atr": {
+      "sectors": 2880,
+      "sector_bytes": 256,
+      "allocated": 11,
+      "free": 2869,
+      "files": 2,
+      "directories": 1
+    }
+  },
+  "runtime_delta": {
+    "app_bytes": 3,
+    "only_resource_prefix": true,
+    "native_only_build_identifiers": true,
+    "geometry_unchanged": true
+  },
+  "previous_delivery": {
+    "record": {
+      "path": "docs/development/qed-delivery-qd7.json",
+      "sha256": "cf7fac07b0f5006f05cca9181f3502136129c1999002bd8abf3b8ac35a7cca43"
+    },
+    "scope": "Original QD1\u2013QD7 cases remain historical; editor code/data otherwise byte-identical, provider/resource unchanged. No new full release or responsiveness qualification claim"
+  },
+  "host": {
+    "count": 587,
+    "skipped": 4,
+    "status": "pass",
+    "report": {
+      "path": "build/qed-separate-disk/host.log",
+      "sha256": "9cf153e5291fc0d7adbe01714cb471a549c24d909148edd3d62b6fba871e575c"
+    }
+  },
+  "launcher": {
+    "path": "build/qed-separate-disk/launcher.json",
+    "sha256": "98dd372aca73a8eafc8f10319b390e55af763af6df72b428d73152815d41cefe"
+  },
+  "source_companion": {
+    "status": "prepared",
+    "tier": "development",
+    "qualification": false,
+    "unresolved": [],
+    "archive": "/Users/michalkurcewicz/action/exec816-public/build/qed-separate-disk/source/exec816-qed-96c98edacb4c-source-relink.tar.gz",
+    "sha256": "17c373c424945354719a7800c1875180fb50943bfbc963906d5e4755a080799d",
+    "source_material_sha256": "172f20039be9a0d4d94f2a91d53d9ea5278bce8f6fa42855ae9e6d621bdb7ba2",
+    "source_revision": "96c98edacb4cf6b34838f43020bbfe9de079b6a9",
+    "zip_sha256": "785a203a12420a19312db3374c9289c553feee25815751a2ef64da428d64893f",
+    "audit": {
+      "sha256": "17c373c424945354719a7800c1875180fb50943bfbc963906d5e4755a080799d",
+      "source_revision": "96c98edacb4cf6b34838f43020bbfe9de079b6a9",
+      "files": 4021
+    }
+  },
+  "source_checksums": {
+    "path": "build/qed-separate-disk/source/QED-DELIVERY-SHA256SUMS",
+    "sha256": "4f33341fff7f0596e3058b3df6c9818ab02343a840621ba50e1955968bd715a3"
+  },
+  "relink": {
+    "path": "build/qed-separate-disk/relink/relink-results.json",
+    "sha256": "523be586e4e92447060409a91e00178e793889395185bd9c9da05eddd17b13a4"
+  },
+  "native_bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "idle": 800,
+    "runtime_excluding_os": 26848,
+    "loading_excluding_os": 20368,
+    "runtime_including_os": 58080,
+    "loading_including_os": 51600
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  },
+  "upper_layout": {
+    "code_bytes": 116776,
+    "initialized_bytes": 2774,
+    "bss_bytes": 24628,
+    "import_thunk_bytes": 404,
+    "span_bytes": 182312,
+    "image_holes_bytes": 38134,
+    "serialized_bytes_if_executable": 134502,
+    "relocation_count": 3512,
+    "heap_alignment_backing_bytes": 247848,
+    "future_full_profile_backing_bytes": 393216,
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "container_metadata_allowance_bytes": 16384,
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "source_frames": 584,
+  "qed_admission_bytes": 2560,
+  "observers": {
+    "tools/test_qed_delivery_final.py": "e211d108edf6cd6d30e38774e60eab83ccdc9f5d560a460d4492aab95356454b",
+    "tools/test_qed_delivery_workflows.py": "833899f287d95da8ad48f0c880d36582e27123db71474739e8775b6ad5d6552e",
+    "tools/test_qed_delivery_startup.py": "61cce7eb873e423e9694b3f85d62d6d312aa42d69a3cb9fc03a66a3c3e0a22f5",
+    "tools/test_demo.py": "262440e7cd23bd917e3c8040825e36e7f10252f1c7591bd1226b5d9739a9dc6d"
+  }
+}

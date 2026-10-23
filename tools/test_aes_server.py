@@ -252,7 +252,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             renderer=instrument(out)
         if suite=='alerts':
             extra_probes.append((ROOT/'tests/programs/aes_form_layout.c',[
-                ('Form size',319),('Form focus',209),('Form alert',311),
+                ('Form size',383),('Form focus',209),('Form alert',375),
                 ('Alert size',514),('Alert icon',508)]))
         if suite=='resources':
             from test_icon_resources import LAYOUT

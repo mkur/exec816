@@ -1,0 +1,49 @@
+--- a/qed/src/ausgabe.c
++++ b/qed/src/ausgabe.c
+@@ -183,19 +183,38 @@
+         if(w->doc.y+row>=first && w->doc.y+row<=last)line_out(w,t,row);
+ }
+ 
+-/* Redraw the cursor row before painting its current visible state. The event
+- * owner publishes blink first; no XOR framebuffer assumption survives. */
++/* Blink touches only the caret band. Restore its underlying glyph when hidden;
++ * repainting the complete row exposes its clear before text reaches scanout. */
+ void cursor(WINDOWP w,TEXTP t)
+ {
+     long row=t->ypos-w->doc.y;
+     long x=(long)w->work.g_x+cursor_xpos(t,t->xpos,NULL)-w->doc.x*font_wcell;
+-    GRECT clip,area={w->work.g_x,w->work.g_y,w->work.g_w,font_hcell};
+-    if(row<0 || row>=w->w_height || !wind_update(BEG_UPDATE))return;
+-    area.g_y+=(short)row*font_hcell;
++    GRECT clip,area;
++    char glyph[2];
++    bool mark;
++    if(row<0 || row>=w->w_height || x<w->work.g_x ||
++       x>=(long)w->work.g_x+w->work.g_w)return;
++    area.g_x=(short)x;area.g_y=w->work.g_y+(short)row*font_hcell;
++    area.g_w=min(overwrite?font_wcell:2,w->work.g_x+w->work.g_w-(short)x);
++    area.g_h=font_hcell;
++    glyph[0]=t->xpos<t->cursor_line->len?TEXT(t->cursor_line)[t->xpos]:' ';
++    if(glyph[0]=='\t')glyph[0]=' ';
++    glyph[1]=0;
++    mark=selected_byte(t,t->ypos,t->xpos) &&
++        (t->xpos<t->cursor_line->len || !IS_LAST(t->cursor_line));
++    if(!wind_update(BEG_UPDATE))return;
+     if(rc_first(w->handle,&area,&clip))do{
+-        set_clip(TRUE,&clip);line_out(w,t,row);
+-        if(!t->blink && x>=w->work.g_x && x<w->work.g_x+w->work.g_w)
+-            fill_area((short)x,area.g_y,overwrite?font_wcell:2,font_hcell,fg_color);
++        set_clip(TRUE,&clip);vswr_mode(vdi_handle,MD_REPLACE);
++        if(!t->blink)fill_area(area.g_x,area.g_y,area.g_w,area.g_h,fg_color);
++        else{
++            fill_area(area.g_x,area.g_y,area.g_w,area.g_h,mark?bg_block_color:bg_color);
++            if(glyph[0]!=' '){
++                vswr_mode(vdi_handle,MD_TRANS);
++                vst_color(vdi_handle,mark?fg_block_color:fg_color);
++                v_gtext(vdi_handle,area.g_x,area.g_y+EXEC_VDI_FONT_TOP,glyph);
++                vswr_mode(vdi_handle,MD_REPLACE);
++            }
++        }
+     }while(rc_next(w->handle,&clip));
+     wind_update(END_UPDATE);
+ }

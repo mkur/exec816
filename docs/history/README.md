@@ -25,6 +25,28 @@
 - [FastBasic integer delivery](fastbasic-integer.md): source-built 6502 runtime,
   on-machine FBCI, native files/console, two-guest coexistence and packaged
   EDX → compile → run workflows; zero added bank-zero reservations.
+- [QED supported delivery](qed-delivery.md): component inventory, current
+  requirements, reproducible boot/source artifacts and the passing QD1–QD7
+  supported development-delivery gate and separate optional application disk.
+
+- [QED practical coexistence](qed-coexistence.md): measured production response,
+  bounded drawing, window selection and the passing step 6 workload/resource
+  development gate; supported delivery passes separately in QD1–QD7.
+
+- [QED reliable saving](qed-saving.md): QW1–QW8 canonical paths/current C ABI,
+  checked staging/publication, loaded-editor saving, modified continuations,
+  operational failures and the reconciled step 5 development gate.
+
+- [QED editing](qed-editing.md): incremental QE1–QE7 editing, document
+  replacement, failure, stack and package development evidence; QE1–QE7 pass
+  the step 4 editing gate; saving has its own step 5 record.
+
+- [QED application startup](qed-startup.md): QS1–QS5 resource, real editor
+  startup, lifecycle and GUI-stack development evidence.
+
+- [QED native feasibility](qed-native-feasibility.md): source preparation and
+  focused ABI, owned-runtime, native-file, complete-layout and stack/admission
+  evidence reconciled for step 2, with conditional budgets and the step 3 handoff.
 
 - [Multiple shell sessions](shell-sessions.md): incremental SS1–SS8 evidence,
   explicit per-session state, native layout and concurrency checks, resource

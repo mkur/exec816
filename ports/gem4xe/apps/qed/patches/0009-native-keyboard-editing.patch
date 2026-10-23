@@ -1,0 +1,1246 @@
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -343,6 +343,7 @@
+         SetIoErr(cause);
+ 		icon = -3;
+ 	}
++	if(icon>0)head_out(get_window(icon),t_ptr);
+ 	return icon;
+ } /* new_edit */
+ 
+@@ -487,32 +488,10 @@
+ }
+ 
+ 
+-static bool delete_edit(short icon, TEXTP t_ptr)
+-{
+-	short	 antw;
+-	static FILENAME name;
+-
+-	if (t_ptr->moved != 0)
+-	{
+-		if (quick_close)
+-			antw = 1;
+-		else
+-		{
+-			if (t_ptr->namenlos)
+-				strcpy(name, t_ptr->filename);
+-			else
+-				file_name(t_ptr->filename, name, FALSE);
+-			antw = snote(1, 3, MOVED, name);
+-		}
+-		if (antw == 1)
+-		{
+-			if (do_icon(icon,DO_SAVE) < 0)
+-				return (FALSE);
+-		}
+-		if (antw == 3)
+-			return(FALSE);
+-	}
+-	return (TRUE);
++static bool delete_edit(short icon,TEXTP t)
++{
++    (void)icon;
++    return !t->moved || form_alert(2,"[2][Discard unsaved changes?][Discard|Cancel]")==1;
+ }
+ 
+ /***************************************************************************/
+@@ -667,169 +646,20 @@
+ #define KEY_MODE		3
+ #define BRACE_MODE	4
+ 
+-static void wi_click(WINDOWP window, short m_x, short m_y, short bstate, short kstate, short breturn)
+-{
+-	short	event, mode, kreturn;
+-	TEXTP 	t_ptr = get_text(window->handle);
+-	GRECT	*s = &window->work;
+-	
++static void wi_click(WINDOWP w,short x,short y,short buttons,short keys,short count)
++{
++    /* Pointer placement/selection is enabled with the event-driven slice. */
++    (void)w;(void)x;(void)y;(void)buttons;(void)keys;(void)count;
++}
++
++
++static bool wi_key (WINDOWP window, short kstate, short kreturn)
++{
++	TEXTP t_ptr = get_text(window->handle);
++
+ 	/* Infomeldung l”schen */
+ 	clear_info(t_ptr);
+ 
+-	if (bstate & 2) 											/* Rechtsclick */
+-	{
+-		if (FALSE)
+-		{
+-			blk_demark(t_ptr);
+-			set_cursor(window, m_x, m_y);
+-			restore_edit();
+-			((void)0);
+-		}
+-		return;													/* und wech... */
+-	}
+-
+-	if (!inside(m_x, m_y, s))
+-		return;
+-	t_ptr->blk_mark_mode = FALSE;
+-	unclick_window();
+-	if (breturn == 2)											/* Doppelklick */
+-	{
+-		blk_demark(t_ptr);
+-		set_cursor(window, m_x, m_y);
+-		restore_edit();
+-		if (kstate & (K_RSHIFT|K_LSHIFT) ||				/* Ganze Zeile markieren */
+-			 t_ptr->xpos==t_ptr->cursor_line->len)
+-		{
+-			t_ptr->xpos = 0;
+-			blk_mark(t_ptr, 0);
+-			if (IS_LAST(t_ptr->cursor_line))
+-				t_ptr->xpos = t_ptr->cursor_line->len;
+-			else
+-			{
+-				NEXT(t_ptr->cursor_line);
+-				t_ptr->ypos++;
+-			}
+-			blk_mark(t_ptr, 1);
+-			restore_edit();
+-			mode = LINE_MODE;
+-		}
+-		else if (blk_mark_brace(t_ptr))					/* Klammer-Selektion */
+-		{
+-			restore_edit();
+-			mode = BRACE_MODE;
+-		}
+-		else														/* wortweise */
+-		{
+-			blk_mark_word(t_ptr);
+-			mode = WORD_MODE;
+-		}
+-	}
+-	else															/* Einfachklick */
+-	{
+-		if (kstate & (K_RSHIFT|K_LSHIFT))
+-		{
+-			if (!t_ptr->block)
+-				blk_mark(t_ptr,0);							/* Anfang = alte Cursorpos */
+-			set_cursor(window, m_x, m_y);
+-			blk_mark(t_ptr, 1);
+-			restore_edit();
+-		}
+-		else														/* Zieh-Aktion auf Block?  */
+-		{
+-			graf_mkstate(&m_x, &m_y, &bstate, &kstate);
+-
+-			if(click_in_blk(window,m_x,m_y) && (bstate&1)){
+-			    /* Block drag/drop is deferred; preserve the selection. */
+-			}
+-
+-			else
+-			{
+-				blk_demark(t_ptr);
+-				set_cursor(window, m_x, m_y);
+-				blk_mark(t_ptr, 0);
+-				restore_edit();
+-			}
+-		}
+-		mode = KEY_MODE;
+-	}
+-	graf_mkstate(&m_x, &m_y, &bstate, &kstate);
+-	if (bstate & 1)													/* immernoch gedrckt */
+-	{
+-		(void)0; /* Native presenter owns the pointer. */
+-		wind_update(BEG_MCTRL);
+-		while(TRUE)
+-		{
+-			event = evnt_multi((MU_BUTTON | MU_M1 | MU_M2),
+-									  1, 0x01, 0x00,
+-									  TRUE, m_x, m_y, 1, 1,
+-									  TRUE, s->g_x, s->g_y, s->g_w, s->g_h,
+-									  NULL, 0,
+-									  &m_x, &m_y, &bstate, &kstate, &kreturn, &breturn);
+-
+-			if (event & MU_BUTTON) 
+-				break;
+-			if (event & (MU_M1 | MU_M2))
+-			{
+-				set_cursor(window, m_x, m_y);
+-				if (mode == WORD_MODE)
+-				{
+-					long	y;
+-					short	x, xpos,len;
+-					char	*str;
+-
+-					xpos = t_ptr->xpos;
+-					str = TEXT(t_ptr->cursor_line) + xpos;
+-					len = t_ptr->cursor_line->len;
+-					get_blk_mark(t_ptr, &y, &x);
+-					if (t_ptr->ypos > y || t_ptr->xpos > x) 		/* nach rechts */
+-					{
+-						while(xpos<=len && setin(t_ptr->loc_opt->wort_set,*str))
+-						{
+-							xpos++;
+-							str++;
+-						}
+-					}
+-					else														/* nach links */
+-					{
+-						while(xpos>=0 && setin(t_ptr->loc_opt->wort_set,*str))
+-						{
+-							xpos--;
+-							str--;
+-						}
+-						str++; xpos++;
+-					}
+-					t_ptr->xpos = xpos;
+-				}
+-				else if (mode == LINE_MODE)
+-				{
+-					long	y;
+-					short	x;
+-
+-					get_blk_mark(t_ptr, &y, &x);
+-					t_ptr->xpos = 0;
+-					if (y == t_ptr->ypos && !IS_LAST(t_ptr->cursor_line))
+-					{
+-						NEXT(t_ptr->cursor_line);
+-						t_ptr->ypos++;
+-					}
+-				}
+-				blk_mark(t_ptr, 1);
+-				restore_edit();
+-			}
+-		}
+-		wind_update(END_MCTRL);
+-		(void)0; /* Native presenter owns the pointer. */
+-	}
+-}
+-
+-
+-static bool wi_key (WINDOWP window, short kstate, short kreturn)
+-{
+-	TEXTP t_ptr = get_text(window->handle);
+-
+-	/* Infomeldung l”schen */
+-	clear_info(t_ptr);
+-
+ 	if (edit_key(t_ptr, window, kstate, kreturn))
+ 	{
+ 		restore_edit();
+@@ -839,29 +669,15 @@
+ }
+ 
+ 
+-static void wi_draw(WINDOWP window, GRECT *d)
+-{
+-	TEXTP t_ptr = get_text(window->handle);
+-
+-	set_clip(TRUE, d);
+-	if (d->g_x == window->work.g_x && d->g_w == window->work.g_w)
+-	{
+-		if (d->g_y == window->work.g_y + window->work.g_h - window->yfac &&
+-			 d->g_h == window->yfac)
+-		{
+-			/* Letzte Zeile */
+-			line_out(window, t_ptr, window->w_height - 1);
+-		}
+-		else if (d->g_y == window->work.g_y && d->g_h == window->yfac)
+-		{
+-			/* Erste Zeile */
+-			line_out(window, t_ptr, 0);
+-		}
+-		else
+-			bild_out(window, t_ptr);
+-	}
+-	else
+-		bild_out(window,t_ptr);
++static void wi_draw(WINDOWP w,GRECT *area)
++{
++    TEXTP t=get_text(w->handle);
++    short row,first=(area->g_y-w->work.g_y)/font_hcell;
++    short last=(area->g_y+area->g_h-1-w->work.g_y)/font_hcell;
++    set_clip(TRUE,area);
++    if(first<0)first=0;
++    if(last>=w->w_height)last=w->w_height-1;
++    for(row=first;row<=last;row++)line_out(w,t,row);
+ }
+ 
+ 
+@@ -966,6 +782,8 @@
+ 
+ static bool e_icon_test(short icon, short action)
+ {
++    if(action==DO_SAVE || action==DO_SAVENEW)return FALSE;
++
+ 	bool	 erg;
+ 	TEXTP 	 t_ptr = get_text(icon);
+ 	static FILENAME name;
+@@ -1052,6 +870,8 @@
+ 
+ static short e_icon_edit(short icon, short action)
+ {
++    if(action==DO_SAVE || action==DO_SAVENEW)return -1;
++
+ 	static PATH	name;
+     memset(name,0,sizeof(name));
+ 	TEXTP	t_ptr = get_text(icon);
+@@ -1535,58 +1355,32 @@
+ 
+ void restore_edit(void)
+ {
+-	WINDOWP	window;
+-	TEXTP 	t_ptr;
+-	short	i, c_anz, link, max;
+-	static TCHANGE c[MAX_CHG];
+-    TCHANGE *c_ptr;
+-	
+-	if (!chg_anz) 
+-		return;
+-
+-	hide_mouse();
+-	max = setmax(chg_links);
+-	for (link = setmin(chg_links); link <= max; link++) 
+-	{
+-		if(setin(chg_links,link))
+-		{
+-			window = get_window(link);
+-			if (window == NULL) 
+-				continue;								/* Kommt vor (Prj_Text mit 10001) */
+-			c_anz = 0;
+-			c_ptr = chg;
+-			for (i=chg_anz; (--i)>=0; c_ptr++)
+-				if (c_ptr->link==link && c_ptr->c!=NOP_CHANGE)
+-					c[c_anz++] = *c_ptr;
+-	
+-			t_ptr = get_text(window->handle);
+-
+-			/* Slider anpassen */
+-			if (window->doc.h != t_ptr->text.lines)
+-			{
+-				window->doc.h = t_ptr->text.lines;
+-				set_sliders(window, VERTICAL, SLPOS+SLSIZE);
+-			}
+-
+-			get_longestline(t_ptr);
+-			if (window->doc.w != t_ptr->max_line->exp_len)
+-			{
+-				window->doc.w = t_ptr->max_line->exp_len;
+-				set_sliders(window, HORIZONTAL, SLPOS+SLSIZE);
+-			}	
+-
+-			if ((window->flags & WI_OPEN) || (window->flags & WI_ICONIFIED))
+-			{
+-				if (free_for_draw(window))
+-					restore_indesk(window, c, c_anz, t_ptr);
+-				else
+-					restore_offdesk(window, c, c_anz, t_ptr);
+-			}
+-		}
+-	}
+-	show_mouse();
+-	chg_anz = 0;			/* Keine Žnderungen mehr */
+-	setclr(chg_links);
++    short i,link;
++    WINDOWP w;
++    TEXTP t;
++    GRECT area;
++    for(link=setmin(chg_links);link<=setmax(chg_links);link++){
++        if(!setin(chg_links,link))continue;
++        w=get_window(link);if(!w)continue;
++        t=get_text(link);
++        w->doc.h=t->text.lines;w->doc.w=get_longestline(t)+1;
++        set_sliders(w,VERTICAL,SLPOS+SLSIZE);
++        /* Caption RPCs precede visible-rectangle enumeration and painting. */
++        head_out(w,t);change_window(w,t->filename,t->moved!=0);
++        cursor_visible(w,t);
++        for(i=0;i<chg_anz;i++){
++            if(chg[i].link!=link)continue;
++            if(chg[i].c==POS_CHANGE || chg[i].c==WT_CHANGE || chg[i].c==NOP_CHANGE)continue;
++            area=w->work;
++            if(chg[i].c==LINE_CHANGE){
++                long row=chg[i].y-w->doc.y;
++                if(row<0 || row>=w->w_height)continue;
++                area.g_y+=(short)row*font_hcell;area.g_h=font_hcell;
++            }
++            redraw_window(w,&area);
++        }
++    }
++    chg_anz=0;setclr(chg_links);
+ }
+ 
+ /***************************************************************************/
+@@ -1694,7 +1488,7 @@
+ 	window->w_width		= initw/font_wcell;
+ 	window->w_height	= inith/font_hcell;
+ 	window->draw		= wi_draw;
+-	window->click		= wi_click;
++	window->click		= NULL;
+ 	window->key 		= wi_key;
+ 	window->top		= wi_top;
+ 	window->ontop		= wi_top;
+--- a/qed/src/main.c
++++ b/qed/src/main.c
+@@ -71,8 +71,12 @@
+         init_file();init_window();init_icon();init_memory();
+         init_edit();init_default_var();font_change();color_change();
+         if(init_clipbrd()){
+-            short document=argc==2?load_edit(argv[1],FALSE):new_edit(FALSE);
+-            if(document>0){ready=1;QedStarting=0;main_loop();}
++            short document=new_edit(FALSE);
++            if(document>0){
++                ready=1;QedStarting=0;
++                if(argc>1)form_alert(1,"[1][Document arguments are not available.][OK]");
++                main_loop();
++            }
+         }
+         if(!ready || return_code){cause=IoErr();if(!cause)cause=ERROR_NO_FREE_STORE;}
+         term_file();term_window();kill_memory();
+--- a/qed/src/memory.c
++++ b/qed/src/memory.c
+@@ -536,7 +536,7 @@
+ 	FIRST(r) = a;
+ 	r->head.prev = NULL;
+ 	r->lines = 1;
+-	r->ending = lns_tos;
++	r->ending = lns_unix;
+ 	r->max_line_len = MAX_LINE_LEN;
+ 	r->hl_anchor = NULL;
+ 	return TRUE;
+--- a/qed/src/menu.c
++++ b/qed/src/menu.c
+@@ -157,6 +157,12 @@
+         fillup_menu(MCOPY,setin(actions,DO_LINECOPY)?rsc_string(LCOPYSTR):rsc_string(COPYSTR),2);
+         set_menu(MCOPY,TRUE);
+     }
++    /* Commands become available only with their executable slice. */
++    set_menu(MABOUT,FALSE);set_menu(MNEWTEXT,FALSE);set_menu(MOPEN,FALSE);
++    set_menu(MSAVE,FALSE);set_menu(MSAVENEW,FALSE);
++    set_menu(MUNDO,FALSE);set_menu(MCUT,FALSE);set_menu(MCOPY,FALSE);
++    set_menu(MPASTE,FALSE);set_menu(MSELALL,FALSE);
++    set_menu(MFIND,FALSE);set_menu(MFNDGOON,FALSE);
+     mark_menu(MOEINF,!overwrite);
+     mark_menu(MOOVERW,overwrite);
+ }
+@@ -251,51 +257,17 @@
+ /*
+  * Globale Tasten auswerten, die bergeordnete Funktionen ausl”sen.
+ */
+-bool	key_global(short kstate, short kreturn)
+-{
+-	short	scan;
+-	
+-	scan = kreturn >> 8;
+-	
+-	wake_mouse();
+-
+-	if (scan == 0x62)			/* HELP */
+-	{
+-		do_action(DO_HELP);
+-		return TRUE;
+-	}
+-
+-	else if (scan == 0x52)	/* INS: Overwrite toggln, da doppelter Men-Shortcut */
+-	{
+-		set_overwrite(!overwrite);
+-		return TRUE;
+-	}
+-									/* Alt+Funktionstasten => Programmende mit Returncode */
+-	else if ((kstate & K_ALT) && (scan >= 0x3B && scan <= 0x44))
+-	{
+-		return_code = (scan - 0x3B) + 1;
+-		quick_close = TRUE;
+-		if (prepare_quit())
+-			do_quit();
+-		else
+-			return_code = 0;
+-		return TRUE;
+-	}
+-	
+-	/* F1-F20: Makro */
+-	else if ((scan >= 0x3B && scan <= 0x44) || (scan >= 0x54 && scan <= 0x5D))
+-	{
+-		/* Makro abspielen */
+-		if (!start_play(kreturn, 1) && f_to_desk)
+-			send_avkey(kstate, kreturn);
+-		return TRUE;
+-	}
+-	return (menu_key(kstate, kreturn));
++bool key_global(short state,short key)
++{
++    if(((unsigned short)key>>8)==0x52){set_overwrite(!overwrite);return TRUE;}
++    return menu_key(state,key);
+ }
+ 
+ 
+ void handle_menu(short title, short item, bool ctrl)
+ {
++    if(menu[item].ob_state & OS_DISABLED)return;
++
+ 	WINDOWP	w;
+ 	short		action, antw, anz;
+ 	char 		str[10];
+--- a/qed/src/options.c
++++ b/qed/src/options.c
+@@ -207,7 +207,7 @@
+ 	strcpy(local_options[0].muster, "*");
+ 	local_options[0].tab        = TRUE;
+ 	local_options[0].tabsize    = 8;
+-	local_options[0].einruecken = TRUE;
++	local_options[0].einruecken = FALSE;
+ 	strcpy(local_options[0].umbruch_str,"- \t");
+ 	str2set(local_options[0].umbruch_str,local_options[0].umbruch_set);
+ 	local_options[0].lineal_len = 70;
+--- a/qed/src/tasten.c
++++ b/qed/src/tasten.c
+@@ -321,75 +321,48 @@
+ /*
+  * Text hinzufgen
+ */
+-void char_cr(TEXTP t_ptr) 				/* -> kurzel.c */
+-{
+-	t_ptr->blk_mark_mode = FALSE;
+-	t_ptr->up_down = FALSE;
+-	clr_undo();
+-	if (t_ptr->block)
+-		blk_delete(t_ptr);
+-	t_ptr->moved++;
+-	col_split(&t_ptr->text, &t_ptr->cursor_line,t_ptr->xpos);
+-	t_ptr->cursor_line->info |= ABSATZ;
+-	t_ptr->text.lines++;
+-	NEXT(t_ptr->cursor_line);
+-	t_ptr->ypos++;
+-	if (t_ptr->loc_opt->einruecken)
+-	{
+-		t_ptr->xpos = col_einrucken(&t_ptr->text,&t_ptr->cursor_line);
+-		hl_update( t_ptr );
+-	}
+-	else
+-		t_ptr->xpos = 0;
+-
+-/*
+-Problem: Wenn ein Block markiert war, muž eventuell gescrollt werden
+-         und es kommt zu Redraw-Fehlern, da doch mehr Zeilen betroffen sind!
+-
+-	make_chg(t_ptr->link,SCROLL_DOWN,t_ptr->ypos);
+-	make_chg(t_ptr->link,LINE_CHANGE,t_ptr->ypos-1);
+-	make_chg(t_ptr->link,LINE_CHANGE,t_ptr->ypos);
+-*/
+-	make_chg(t_ptr->link,TOTAL_CHANGE,0);
+-	make_chg(t_ptr->link,POS_CHANGE,0);
+-	if (t_ptr->loc_opt->umbrechen)
+-		umbruch(t_ptr);
+-	t_ptr->max_line = NULL;
+-}
+-
+-void char_insert(TEXTP t_ptr, char c)
+-{
+-	t_ptr->up_down = FALSE;
+-
+-	/* Null nur in Bin„r erlaubt! */
+-	if (c == 0 && t_ptr->text.ending != lns_binmode)
+-	{
+-		((void)0) /* optional audible bell */;
+-		return;
+-	}
+-	
+-	if (t_ptr->block)
+-		blk_delete(t_ptr);
+-	get_undo_col(t_ptr);
+-	if (overwrite && t_ptr->xpos < t_ptr->cursor_line->len)
+-	{
+-		TEXT(t_ptr->cursor_line)[t_ptr->xpos] = c;
+-	}
+-	else
+-	{
+-		if (t_ptr->cursor_line->len == MAX_LINE_LEN)
+-		{
+-			inote(1, 0, TOOLONG, MAX_LINE_LEN);
+-			return;
+-		}
+-		*(REALLOC(&t_ptr->cursor_line,t_ptr->xpos,1)) = c;
+-	}
+-	t_ptr->xpos++;
+-	t_ptr->moved++;
+-	make_chg(t_ptr->link,LINE_CHANGE,t_ptr->ypos);
+-	make_chg(t_ptr->link,POS_CHANGE,0);
+-	if (t_ptr->loc_opt->umbrechen)
+-		umbruch(t_ptr);
++/* Prepare replacement lines before publishing any ring change. */
++static char edit_bytes[MAX_LINE_LEN+1];
++static void changed_line(TEXTP t,LINEP old,LINEP first,LINEP last,long delta)
++{
++    first->prev=old->prev;old->prev->next=first;
++    last->next=old->next;old->next->prev=last;
++    free_col(&t->text,old);
++    t->cursor_line=last;t->text.lines+=delta;t->max_line=NULL;
++    t->moved=1;t->up_down=FALSE;
++    make_chg(t->link,delta?TOTAL_CHANGE:LINE_CHANGE,t->ypos);make_chg(t->link,POS_CHANGE,0);
++}
++static bool edit_error(void)
++{
++    form_alert(1,"[1][The edit could not be completed.][OK]");
++    return FALSE;
++}
++
++void char_cr(TEXTP t)
++{
++    LINEP old=t->cursor_line,a,b;
++    if(t->text.lines==0x7fffffffL){edit_error();return;}
++    a=new_col(TEXT(old),t->xpos);
++    if(!a){edit_error();return;}
++    b=new_col(TEXT(old)+t->xpos,old->len-t->xpos);
++    if(!b){free_col(&t->text,a);edit_error();return;}
++    a->next=b;b->prev=a;
++    clr_undo();changed_line(t,old,a,b,1);t->ypos++;t->xpos=0;
++}
++
++void char_insert(TEXTP t,char c)
++{
++    LINEP old=t->cursor_line,n;
++    short size=old->len;
++    bool replace=overwrite && t->xpos<size;
++    if(!c)return;
++    if(!replace && size==MAX_LINE_LEN){edit_error();return;}
++    memcpy(edit_bytes,TEXT(old),size);
++    if(!replace){memmove(edit_bytes+t->xpos+1,edit_bytes+t->xpos,size-t->xpos);size++;}
++    edit_bytes[t->xpos]=c;
++    n=new_col(edit_bytes,size);
++    if(!n){edit_error();return;}
++    get_undo_col(t);changed_line(t,old,n,n,0);t->xpos++;
+ }
+ 
+ static void tabulator(TEXTP t_ptr)
+@@ -448,51 +421,35 @@
+ /*
+  * Text enfernen
+ */
+-void char_bs(TEXTP t_ptr) 			/* -> kurzel.c */
+-{
+-	if (IS_FIRST(t_ptr->cursor_line) && t_ptr->xpos == 0)
+-	{
+-		end_play(); 			/* Makro beenden */
+-	}
+-	else
+-	{
+-		char_left(t_ptr);
+-		char_delete(t_ptr);
+-	}
+-}
+-
+-static void char_delete(TEXTP t_ptr)
+-{
+-	LINEP col = t_ptr->cursor_line;
+-
+-	if (t_ptr->xpos < col->len)
+-	{
+-		get_undo_col(t_ptr);
+-		t_ptr->moved++;
+-		REALLOC(&t_ptr->cursor_line,t_ptr->xpos,-1);
+-		make_chg(t_ptr->link,LINE_CHANGE,t_ptr->ypos);
+-		make_chg(t_ptr->link,POS_CHANGE,0); 					/* wg. moved */
+-	}
+-	else if (!IS_LAST(col))
+-	{
+-		if (col->len + col->next->len > MAX_LINE_LEN)
+-		{
+-			inote(1, 0, TOOLONG, MAX_LINE_LEN);
+-			return;
+-		}
+-		clr_undo();
+-		t_ptr->moved++;
+-		col_concate(&t_ptr->text, &t_ptr->cursor_line);
+-		t_ptr->text.lines--;
+-		make_chg(t_ptr->link, SCROLL_UP, t_ptr->ypos + 1);
+-		make_chg(t_ptr->link, LINE_CHANGE, t_ptr->ypos);
+-		make_chg(t_ptr->link, POS_CHANGE, 0);
+-	}
+-	else
+-		end_play(); 			/* Makro beenden */
+-	
+-	if (t_ptr->loc_opt->umbrechen)
+-		umbruch(t_ptr);
++void char_bs(TEXTP t)
++{
++    short x=t->xpos;long y=t->ypos,lines=t->text.lines;
++    LINEP old=t->cursor_line,before;
++    if(!x && !y)return;
++    char_left(t);before=t->cursor_line;char_delete(t);
++    if(t->cursor_line==before && t->text.lines==lines){
++        t->cursor_line=old;t->ypos=y;t->xpos=x;
++    }
++}
++
++static void char_delete(TEXTP t)
++{
++    LINEP old=t->cursor_line,n,next=old->next;
++    short len=old->len;
++    if(t->xpos<len){
++        memcpy(edit_bytes,TEXT(old),t->xpos);
++        memcpy(edit_bytes+t->xpos,TEXT(old)+t->xpos+1,len-t->xpos-1);
++        n=new_col(edit_bytes,len-1);
++        if(!n){edit_error();return;}
++        get_undo_col(t);changed_line(t,old,n,n,0);
++    }else if(!IS_LAST(old)){
++        if(len+next->len>MAX_LINE_LEN){edit_error();return;}
++        memcpy(edit_bytes,TEXT(old),len);memcpy(edit_bytes+len,TEXT(next),next->len);
++        n=new_col(edit_bytes,len+next->len);
++        if(!n){edit_error();return;}
++        clr_undo();old->next=next->next;next->next->prev=old;
++        free_col(&t->text,next);changed_line(t,old,n,n,-1);
++    }
+ }
+ 
+ static void word_bs(TEXTP t_ptr)
+@@ -705,519 +662,26 @@
+ }
+ 
+ 
+-bool edit_key(TEXTP t_ptr, WINDOWP window, short kstate, short kreturn)
+-{
+-	unsigned short	nkey;
+-	unsigned char	ascii_code;
+-	bool		shift, ctrl, alt;
+-	
+-	/* Key konvertieren */	
+-	nkey = gem_to_norm(kstate, kreturn);
+-	nkey &= ~(NKF_RESVD|NKF_SHIFT|NKF_CTRL|NKF_CAPS);
+-	ascii_code = nkey & 0x00FF;
+-	shift = (kstate & (K_RSHIFT|K_LSHIFT)) != 0;
+-	ctrl = (kstate & K_CTRL) != 0;
+-	alt = (kstate & K_ALT) != 0;
+-
+-	/* Sonderbehandlung fr ^Y */
+-	if (ascii_code == 'Y' && ctrl)
+-	{
+-		cursor_visible(window, t_ptr);
+-		t_ptr->blk_mark_mode = FALSE;
+-		ctrl_y(t_ptr);
+-		t_ptr->up_down = FALSE;
+-		return TRUE;
+-	}
+-
+-	if (alt_cnt != -1 && !(nkey & NKF_FUNC))
+-		alt_cnt = -1;
+-
+-	if (nkey & NKF_FUNC)
+-	{
+-		nkey &= ~NKF_FUNC;
+-		if (shift && ctrl)										/* Shift-Ctrl */
+-		{
+-			switch (nkey)
+-			{
+-				case NK_UP :
+-					if (ctrl_mark_mode)
+-					{
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						set_block(t_ptr);
+-						page_up(t_ptr);
+-						blk_mark(t_ptr,1);
+-					}
+-					break;
+-				case NK_DOWN :
+-					if (ctrl_mark_mode)
+-					{
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						set_block(t_ptr);
+-						page_down(t_ptr);
+-						blk_mark(t_ptr,1);
+-					}
+-					break;
+-				case NK_LEFT :
+-					if (ctrl_mark_mode)
+-					{
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						set_block(t_ptr);
+-						word_left(t_ptr);
+-						blk_mark(t_ptr,1);
+-					}
+-					break;
+-				case NK_RIGHT :
+-					if (ctrl_mark_mode)
+-					{
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						set_block(t_ptr);
+-						word_right(t_ptr);
+-						blk_mark(t_ptr,1);
+-					}
+-					break;
+-				default:
+-					return FALSE;
+-			}
+-		}
+-		else if (shift)												/* alle Shift-Codes */
+-		{
+-			switch (nkey)
+-			{
+-				case NK_CLRHOME:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-						unset_block(t_ptr);
+-					else if (!t_ptr->blk_mark_mode)
+-						blk_demark(t_ptr);
+-					text_end(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_UP:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-						unset_block(t_ptr);
+-					else if (!t_ptr->blk_mark_mode)
+-						blk_demark(t_ptr);
+-					page_up(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_DOWN:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-						unset_block(t_ptr);
+-					else if (!t_ptr->blk_mark_mode)
+-						blk_demark(t_ptr);
+-					page_down(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_LEFT:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-						unset_block(t_ptr);
+-					else if (!t_ptr->blk_mark_mode && t_ptr->block)
+-						blk_demark(t_ptr);
+-					line_start(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_RIGHT:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-						unset_block(t_ptr);
+-					else if (!t_ptr->blk_mark_mode && t_ptr->block)
+-						blk_demark(t_ptr);
+-					line_end(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_BS:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					word_bs(t_ptr);
+-					break;
+-				case NK_DEL:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					word_delete(t_ptr);
+-					break;
+-				case NK_RET :
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					word_left(t_ptr);
+-					char_cr(t_ptr);
+-					break;
+-				default:
+-					return FALSE;
+-			} /* switch shift */
+-		} /* if shift */
+-		else if (ctrl) 											/* alle Control-Codes */
+-		{
+-			switch (nkey)
+-			{
+-				case NK_UP:
+-					if (ctrl_mark_mode)
+-					{
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						set_block(t_ptr);
+-						line_up(t_ptr);
+-						blk_mark(t_ptr,1);
+-					}
+-					else 	/* seitenweise Bl„ttern, fr PC-Tastaturen PgUp/Down */
+-					{
+-						arrow_window(window, WA_UPLINE, 1);
+-					#if 0
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						if (!t_ptr->blk_mark_mode && t_ptr->block)
+-							deselect_block(t_ptr, UP);
+-						else
+-						{
+-							page_up(t_ptr);
+-							if (t_ptr->blk_mark_mode)
+-								blk_mark(t_ptr,1);
+-						}
+-					#endif
+-					}
+-					break;
+-				case NK_DOWN:
+-					if (ctrl_mark_mode)
+-					{
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						set_block(t_ptr);
+-						line_down(t_ptr);
+-						blk_mark(t_ptr,1);
+-					}
+-					else
+-					{
+-						arrow_window(window, WA_DNLINE, 1);
+-					#if 0
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						if (!t_ptr->blk_mark_mode && t_ptr->block)
+-							deselect_block(t_ptr, DOWN);
+-						else
+-						{
+-							page_down(t_ptr);
+-							if (t_ptr->blk_mark_mode)
+-								blk_mark(t_ptr,1);
+-						}
+-					#endif
+-					}
+-					break;
+-				case NK_LEFT:
+-					if (ctrl_mark_mode)
+-					{
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						set_block(t_ptr);
+-						t_ptr->up_down = FALSE;
+-						char_left(t_ptr);
+-						blk_mark(t_ptr,1);
+-					}
+-					else
+-					{
+-					#if 0
+-						arrow_window(window, WA_LFLINE, 1);
+-					#else
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						if (!t_ptr->blk_mark_mode && t_ptr->block)
+-							deselect_block(t_ptr, LEFT);
+-						else
+-						{
+-							word_left(t_ptr);
+-							if (t_ptr->blk_mark_mode)
+-								blk_mark(t_ptr,1);
+-						}
+-					#endif
+-					}
+-					break;
+-				case NK_RIGHT:
+-					if (ctrl_mark_mode)
+-					{
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						set_block(t_ptr);
+-						t_ptr->up_down = FALSE;
+-						char_right(t_ptr);
+-						blk_mark(t_ptr,1);
+-					}
+-					else
+-					{
+-					#if 0
+-						arrow_window(window, WA_RTLINE, 1);
+-					#else
+-						if (!t_ptr->block)
+-							cursor_visible(window, t_ptr);
+-						if (!t_ptr->blk_mark_mode && t_ptr->block)
+-							deselect_block(t_ptr, RIGHT);
+-						else
+-						{
+-							word_right(t_ptr);
+-							if (t_ptr->blk_mark_mode)
+-								blk_mark(t_ptr,1);
+-						}
+-					#endif
+-					}
+-					break;
+-				case NK_TAB:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (!ctrl_mark_mode)
+-						t_ptr->blk_mark_mode = FALSE;
+-					t_ptr->up_down = FALSE;
+-					if (!blk_mark_brace(t_ptr))
+-						blk_mark_word(t_ptr);
+-					hl_update( t_ptr );
+-					break;
+-				case NK_DEL :
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-					{
+-						t_ptr->up_down = FALSE;
+-						do_icon(t_ptr->link, DO_CUT);
+-					}
+-					else
+-						ctrl_word_delete(t_ptr);
+-					hl_update( t_ptr );
+-					break;
+-				case NK_INS:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-					{
+-						t_ptr->up_down = FALSE;
+-						do_icon(t_ptr->link, DO_PASTE);
+-					}
+-					hl_update( t_ptr );
+-					break;
+-				case NK_CLRHOME:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-					{
+-						t_ptr->up_down = FALSE;
+-						if (t_ptr->block)
+-							do_icon(t_ptr->link, DO_COPY);
+-						else
+-							do_icon(t_ptr->link, DO_LINECOPY);
+-					}
+-					break;
+-				case NK_BS:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					ctrl_word_bs(t_ptr);
+-					hl_update(t_ptr);
+-					break;
+-
+-				default:
+-					return FALSE;
+-			}
+-		} /* if ctrl */
+-		else if (alt)												/* alle Alt-Codes */
+-		{
+-			char	c;
+-			short	i;
+-			
+-			c = (char)nkey;
+-			if ((nkey & NKF_NUM) && c >= '0' && c <= '9')
+-			{
+-				if (!t_ptr->block)
+-					cursor_visible(window, t_ptr);
+-				if (alt_cnt < 2)
+-				{
+-					alt_cnt++;
+-					alt_str[alt_cnt] = c;
+-				}
+-				if (alt_cnt == 2)
+-				{
+-					alt_cnt = -1;
+-					alt_str[3] = EOS;
+-					i = atoi(alt_str);
+-					if (i < 256)
+-						char_insert(t_ptr, i);
+-				}
+-				return TRUE;
+-			}
+-			else			
+-				return FALSE;
+-		} /* if alt */
+-		else										/* alles restliche Funktionscodes */
+-		{
+-			switch (nkey)
+-			{
+-				case NK_ESC :
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					expand_kurzel(t_ptr);
+-					break;
+-				case NK_TAB:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					tabulator(t_ptr);
+-					hl_update( t_ptr );
+-					break;
+-				case NK_RET:
+-				case (NK_ENTER|NKF_NUM) :
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					char_cr(t_ptr);
+-					break;
+-				case NK_CLRHOME:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-						unset_block(t_ptr);
+-					else if (!t_ptr->blk_mark_mode)
+-						blk_demark(t_ptr);
+-					text_start(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_UNDO:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					icon_edit(t_ptr->link, DO_UNDO);
+-					break;
+-				case NK_UP:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if ((ctrl_mark_mode || !t_ptr->blk_mark_mode) && t_ptr->block)
+-					{
+-						deselect_block(t_ptr, UP);
+-						break;
+-					}
+-					line_up(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_DOWN:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if ((ctrl_mark_mode || !t_ptr->blk_mark_mode) && t_ptr->block)
+-					{
+-						deselect_block(t_ptr, DOWN);
+-						break;
+-					}
+-					line_down(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_LEFT:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					t_ptr->up_down = FALSE;
+-					if ((ctrl_mark_mode || !t_ptr->blk_mark_mode) && t_ptr->block)
+-					{
+-						deselect_block(t_ptr, LEFT);
+-						break;
+-					}
+-					char_left(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_RIGHT:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					t_ptr->up_down = FALSE;
+-					if ((ctrl_mark_mode || !t_ptr->blk_mark_mode) && t_ptr->block)
+-					{
+-						deselect_block(t_ptr, RIGHT);
+-						break;
+-					}
+-					char_right(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_BS:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					t_ptr->blk_mark_mode = FALSE;
+-					t_ptr->up_down = FALSE;
+-					if (t_ptr->block)
+-						blk_delete(t_ptr);
+-					else
+-						char_bs(t_ptr);
+-					hl_update( t_ptr );
+-					break;
+-				case NK_DEL:
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					t_ptr->blk_mark_mode = FALSE;
+-					t_ptr->up_down = FALSE;
+-					if (t_ptr->block)
+-						blk_delete(t_ptr);
+-					else
+-						char_delete(t_ptr);
+-					hl_update( t_ptr );
+-					break;
+-				case NK_M_PGUP:				/* Mac: page up -> shift-up */
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-						unset_block(t_ptr);
+-					else if (!t_ptr->blk_mark_mode)
+-						blk_demark(t_ptr);
+-					page_up(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_M_PGDOWN: 			/* Mac: page down -> shift-down */
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-						unset_block(t_ptr);
+-					else if (!t_ptr->blk_mark_mode)
+-						blk_demark(t_ptr);
+-					page_down(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				case NK_M_END: 				/* Mac: end -> shift-home */
+-					if (!t_ptr->block)
+-						cursor_visible(window, t_ptr);
+-					if (ctrl_mark_mode)
+-						unset_block(t_ptr);
+-					else if (!t_ptr->blk_mark_mode)
+-						blk_demark(t_ptr);
+-					text_end(t_ptr);
+-					if (!ctrl_mark_mode && t_ptr->blk_mark_mode)
+-						blk_mark(t_ptr,1);
+-					break;
+-				default:
+-					return FALSE;
+-			}
+-		}
+-	} /* if NKF_FUNC */
+-	else													/* keine Funktionstaste */
+-	{
+-		if (!t_ptr->block)
+-			cursor_visible(window, t_ptr);
+-		if (ascii_code)
+-		{
+-			t_ptr->blk_mark_mode = FALSE;
+-			char_insert(t_ptr, ascii_code);
+-			if (FALSE)
+-				do_kurzel(t_ptr, TRUE);
+-			hl_update( t_ptr );
+-		}
+-		else
+-			return FALSE;
+-	}
+-	return TRUE;
+-}
++bool edit_key(TEXTP t,WINDOWP w,short qualifiers,short key)
++{
++    unsigned char scan=(unsigned short)key>>8,ch=key;
++    /* Atari cursor chords carry Control; special scans take precedence. */
++    cursor_visible(w,t);
++    switch(scan){
++    case 0x48:line_up(t);return TRUE;
++    case 0x50:line_down(t);return TRUE;
++    case 0x4b:char_left(t);t->up_down=FALSE;return TRUE;
++    case 0x4d:char_right(t);t->up_down=FALSE;return TRUE;
++    case 0x47:if(qualifiers&K_CTRL)text_start(t);else line_start(t);return TRUE;
++    case 0x4f:if(qualifiers&K_CTRL){text_end(t);line_end(t);}else line_end(t);return TRUE;
++    case 0x49:page_up(t);return TRUE;
++    case 0x51:page_down(t);return TRUE;
++    case 0x53:char_delete(t);return TRUE;
++    }
++    if(qualifiers&K_CTRL)return FALSE;
++    if(ch==27){blk_demark(t);return TRUE;}
++    if(ch==8){char_bs(t);return TRUE;}
++    if(ch==13){char_cr(t);return TRUE;}
++    if(ch==9 || ch>=32){char_insert(t,ch);return TRUE;}
++    return FALSE;
++}
+--- a/qed/src/window.c
++++ b/qed/src/window.c
+@@ -284,7 +284,7 @@
+ 	if (w == NULL)
+ 		return;
+ 
+-	wind_update(BEG_UPDATE);
++	if(!wind_update(BEG_UPDATE))return;
+ 	
+ 	if (w->flags & WI_NOTDRAWED)
+ 		w->flags &= (~WI_NOTDRAWED);

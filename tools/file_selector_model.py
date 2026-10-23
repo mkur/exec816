@@ -6,7 +6,8 @@ FIELDS=dict(tree=0,ted=744,entries=1304,scan=1308,info=1328,indices=1588,
 for name in FIELDS:
     if FIELDS[name]>FIELDS['scan']: FIELDS[name]+=18
 SIZE=3260
-FORM_SELECTOR=315
-LAYOUT=[('Selector size',SIZE),('Form size',319),('Form selector',FORM_SELECTOR)]+[
+FORM_SELECTOR=379
+FORM_ALERT=FORM_SELECTOR-4
+LAYOUT=[('Selector size',SIZE),('Form size',383),('Form selector',FORM_SELECTOR)]+[
     ('Selector '+name,offset) for name,offset in FIELDS.items()]+[
     ('FSEL_CANCEL',0),('FSEL_OK',1),('fsel_input pointer',4),('fsel_exinput pointer',4)]

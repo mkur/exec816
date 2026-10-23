@@ -1,0 +1,9305 @@
+{
+  "schema_version": 1,
+  "slice": "QW6",
+  "tier": "development",
+  "qualification": false,
+  "abi": 26,
+  "compiler_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act"
+  },
+  "host_log": {
+    "path": "build/qw6-host-caller-update.log",
+    "sha256": "9a734be4cbfa9f2a3356b735668267164b0abd8b89b2b0b342d9e20b2bcfd927"
+  },
+  "cohorts": [
+    {
+      "result": {
+        "path": "build/qed-saving/qw6-sdfs-final/results.json",
+        "sha256": "954369fa32a62c59df5e6c0125e58a7859beb16f58b114669aea148670ea988a"
+      },
+      "completed": [
+        4
+      ],
+      "checks": [
+        44101,
+        0
+      ],
+      "trace": {
+        "path": "build/qed-saving/qw6-sdfs-final/emulator.log",
+        "sha256": "2065faad038d979bb14e099e26326394aeae7dc4e19c0fa668ddf811a6d06ff3"
+      },
+      "native": {
+        "path": "build/qed-saving/qw6-sdfs-final/program/program.xex",
+        "sha256": "d06e2b855f31449af530676efb4d0b9462fe3646e8efc49d462293d5c5bbfe29"
+      },
+      "app": {
+        "path": "build/qed-saving/qw6-sdfs-final/app/program.app",
+        "sha256": "a0969dad496f0a88b792cd2938891e2f6e4d87a00261b32cbf6b5a3028a7ea98"
+      },
+      "minimum_headroom": 1324
+    },
+    {
+      "result": {
+        "path": "build/qed-saving/qw6-mydos/results.json",
+        "sha256": "609d6cc969121fc35be74518e6674d0f29ea3499ba980e4d8dd303fc0d590a9f"
+      },
+      "completed": [
+        4
+      ],
+      "checks": [
+        48568,
+        0
+      ],
+      "trace": {
+        "path": "build/qed-saving/qw6-mydos/emulator.log",
+        "sha256": "e52a20a4e0cb985df690a9f98e435c13d488770c05e736a53b0626df827b88dd"
+      },
+      "native": {
+        "path": "build/qed-saving/qw6-mydos/program/program.xex",
+        "sha256": "0d216114352978204a144d5959937ab7a5c487fea1147299c53dbf237d045778"
+      },
+      "app": {
+        "path": "build/qed-saving/qw6-mydos/app/program.app",
+        "sha256": "a0969dad496f0a88b792cd2938891e2f6e4d87a00261b32cbf6b5a3028a7ea98"
+      },
+      "minimum_headroom": 1324
+    }
+  ],
+  "packages": [],
+  "layout": {
+    "code_bytes": 110152,
+    "initialized_bytes": 2770,
+    "bss_bytes": 22212,
+    "import_thunk_bytes": 404,
+    "span_bytes": 175688,
+    "image_holes_bytes": 40554,
+    "serialized_bytes_if_executable": 127210,
+    "relocation_count": 3346,
+    "heap_alignment_backing_bytes": 241224,
+    "future_full_profile_backing_bytes": 393216,
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "container_metadata_allowance_bytes": 16384,
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "resident_provider": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/qed-saving/qw5-editor-buttons/c-image.json",
+    "sha256": "0004b5d9e3857a614ca7f91536a39414c665fc984c83e0da12b70192eed3b72d",
+    "code_bytes": 179308,
+    "table_bytes": 40145,
+    "data_bss_bytes": 25743,
+    "allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "executable": {
+    "path": "build/qed-saving/qw6-final/program.app",
+    "sha256": "76fbf949f03ea9e77e678cc9d6bd3a0c7fd71c478ce2265aafdba953c9dbecfd"
+  },
+  "layout_record": {
+    "path": "build/qed-saving/qw6-final/layout.json",
+    "sha256": "1be0a71edd2192641b828f0fb2f378696cdba4d98644c1e961eeca7b0155cd17"
+  },
+  "frames": {
+    "status": "conditional-source-bound",
+    "source_chain_bytes": 503,
+    "chain": [
+      "main",
+      "QedRuntimeRun",
+      "editor_body",
+      "main_loop",
+      "handle_keybd",
+      "key_global",
+      "menu_key",
+      "handle_menu",
+      "do_action",
+      "do_icon",
+      "e_icon_edit",
+      "blk_cut",
+      "qed_replace",
+      "clr_undo",
+      "kill_textring",
+      "free_textring",
+      "REALLOC",
+      "MALLOC",
+      "new_block",
+      "Malloc",
+      "malloc"
+    ],
+    "continuation_cap_bytes": 768,
+    "interrupt_reserve_bytes": 256,
+    "required_headroom_bytes": 128,
+    "admission_bytes": 2560,
+    "margin_bytes": 905,
+    "method": "For each retained emitted source section, sum immediate TSC/SBC/TCS reservations and all static push sites at 16-bit width, plus three bytes at each call/tail edge. This overcounts disjoint branches. Compiler-balanced loops reuse their stack. Cross-call and cross-function tail sharing are disabled. Typed callbacks and finite action contexts are audited below; new indirect sites or cycles reject the report.",
+    "limit": "Source-frame bound only. The continuation cap includes bridge and library/native/GEM work below an application call; executed startup/lifecycle chains check that cap separately. Editing/dialog/file paths must establish it when implemented; current samples are not a bound on those future paths.",
+    "callbacks": {
+      "QedRuntimeRun": [
+        "editor_body"
+      ],
+      "do_icon": [
+        "e_icon_test",
+        "e_icon_edit"
+      ],
+      "icon_edit": [
+        "e_icon_edit"
+      ],
+      "icon_exist": [
+        "e_icon_exist"
+      ],
+      "do_all_window": [
+        "do_color_change"
+      ],
+      "snap_window": [],
+      "redraw_window": [
+        "wi_draw"
+      ],
+      "uniconify_window": [
+        "wi_uniconify"
+      ],
+      "ontop_window": [
+        "wi_top"
+      ],
+      "untop_window": [],
+      "top_window": [
+        "wi_top"
+      ],
+      "create_window": [
+        "crt_edit"
+      ],
+      "close_window": [],
+      "click_window": [
+        "wi_click"
+      ],
+      "unclick_window": [],
+      "key_window": [
+        "wi_key"
+      ]
+    },
+    "contexts": [
+      "Nested action/dialog messages: REDRAW/MOVED/SIZED only",
+      "Legacy path/Save selector callers pass NULL; the multi-file callback is retired",
+      "Native deletion follows the outer asynchronous decision; saving borrows a frozen ring",
+      "Linked new_edit/restore_edit use Open or unchecked Delete",
+      "wi_top invokes disabled Update, whose test returns false"
+    ],
+    "source_nodes": [
+      {
+        "name": "redraw",
+        "weight": 32,
+        "reserves": 20,
+        "pushes": 12,
+        "edges": [
+          [
+            27,
+            2
+          ],
+          [
+            29,
+            2
+          ],
+          [
+            126,
+            4
+          ],
+          [
+            126,
+            8
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "0-aktion.lst",
+        "key": [
+          0,
+          7
+        ]
+      },
+      {
+        "name": "redraw_aktion",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            0,
+            7
+          ],
+          [
+            68,
+            2
+          ]
+        ],
+        "source": "0-aktion.lst",
+        "key": [
+          0,
+          12
+        ]
+      },
+      {
+        "name": "inter_pos",
+        "weight": 18,
+        "reserves": 14,
+        "pushes": 4,
+        "edges": [],
+        "source": "1-ausgabe.lst",
+        "key": [
+          1,
+          2
+        ]
+      },
+      {
+        "name": "bild_len",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            1,
+            4
+          ]
+        ],
+        "source": "1-ausgabe.lst",
+        "key": [
+          1,
+          3
+        ]
+      },
+      {
+        "name": "bild_pos",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [],
+        "source": "1-ausgabe.lst",
+        "key": [
+          1,
+          4
+        ]
+      },
+      {
+        "name": "set_drawmode",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "1-ausgabe.lst",
+        "key": [
+          1,
+          5
+        ]
+      },
+      {
+        "name": "cursor_xpos",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            1,
+            4
+          ],
+          [
+            157,
+            3
+          ]
+        ],
+        "source": "1-ausgabe.lst",
+        "key": [
+          1,
+          6
+        ]
+      },
+      {
+        "name": "fill_area",
+        "weight": 12,
+        "reserves": 12,
+        "pushes": 0,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "1-ausgabe.lst",
+        "key": [
+          1,
+          7
+        ]
+      },
+      {
+        "name": "visible_line",
+        "weight": 16,
+        "reserves": 12,
+        "pushes": 4,
+        "edges": [],
+        "source": "1-ausgabe.lst",
+        "key": [
+          1,
+          10
+        ]
+      },
+      {
+        "name": "selected_byte",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [],
+        "source": "1-ausgabe.lst",
+        "key": [
+          1,
+          11
+        ]
+      },
+      {
+        "name": "line_out",
+        "weight": 88,
+        "reserves": 40,
+        "pushes": 48,
+        "edges": [
+          [
+            1,
+            7
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            156,
+            2
+          ],
+          [
+            157,
+            2
+          ],
+          [
+            157,
+            7
+          ],
+          [
+            167,
+            2
+          ]
+        ],
+        "source": "1-ausgabe.lst",
+        "key": [
+          1,
+          12
+        ]
+      },
+      {
+        "name": "cursor",
+        "weight": 52,
+        "reserves": 32,
+        "pushes": 20,
+        "edges": [
+          [
+            1,
+            6
+          ],
+          [
+            1,
+            7
+          ],
+          [
+            1,
+            12
+          ],
+          [
+            8,
+            35
+          ],
+          [
+            21,
+            16
+          ],
+          [
+            21,
+            17
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            157,
+            2
+          ],
+          [
+            157,
+            3
+          ]
+        ],
+        "source": "1-ausgabe.lst",
+        "key": [
+          1,
+          15
+        ]
+      },
+      {
+        "name": "head_out",
+        "weight": 28,
+        "reserves": 12,
+        "pushes": 16,
+        "edges": [
+          [
+            1,
+            4
+          ],
+          [
+            21,
+            41
+          ],
+          [
+            71,
+            2
+          ],
+          [
+            125,
+            7
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            157,
+            3
+          ],
+          [
+            157,
+            7
+          ],
+          [
+            171,
+            2
+          ],
+          [
+            177,
+            2
+          ]
+        ],
+        "source": "1-ausgabe.lst",
+        "key": [
+          1,
+          16
+        ]
+      },
+      {
+        "name": "blk_mark_all",
+        "weight": 20,
+        "reserves": 0,
+        "pushes": 20,
+        "edges": [
+          [
+            2,
+            19
+          ],
+          [
+            2,
+            21
+          ],
+          [
+            4,
+            55
+          ]
+        ],
+        "source": "2-block.lst",
+        "key": [
+          2,
+          2
+        ]
+      },
+      {
+        "name": "blk_mark",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            19
+          ],
+          [
+            2,
+            21
+          ],
+          [
+            4,
+            55
+          ]
+        ],
+        "source": "2-block.lst",
+        "key": [
+          2,
+          8
+        ]
+      },
+      {
+        "name": "blk_demark",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            2,
+            19
+          ],
+          [
+            4,
+            55
+          ]
+        ],
+        "source": "2-block.lst",
+        "key": [
+          2,
+          9
+        ]
+      },
+      {
+        "name": "blk_copy",
+        "weight": 50,
+        "reserves": 50,
+        "pushes": 0,
+        "edges": [
+          [
+            2,
+            22
+          ],
+          [
+            3,
+            26
+          ]
+        ],
+        "source": "2-block.lst",
+        "key": [
+          2,
+          10
+        ]
+      },
+      {
+        "name": "blk_cut",
+        "weight": 66,
+        "reserves": 50,
+        "pushes": 16,
+        "edges": [
+          [
+            2,
+            22
+          ],
+          [
+            3,
+            24
+          ],
+          [
+            3,
+            26
+          ],
+          [
+            11,
+            24
+          ]
+        ],
+        "source": "2-block.lst",
+        "key": [
+          2,
+          11
+        ]
+      },
+      {
+        "name": "blk_paste",
+        "weight": 30,
+        "reserves": 10,
+        "pushes": 20,
+        "edges": [
+          [
+            3,
+            24
+          ],
+          [
+            11,
+            26
+          ]
+        ],
+        "source": "2-block.lst",
+        "key": [
+          2,
+          13
+        ]
+      },
+      {
+        "name": "block_demark",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "2-block.lst",
+        "key": [
+          2,
+          19
+        ]
+      },
+      {
+        "name": "block_setzen",
+        "weight": 18,
+        "reserves": 0,
+        "pushes": 18,
+        "edges": [],
+        "source": "2-block.lst",
+        "key": [
+          2,
+          21
+        ]
+      },
+      {
+        "name": "block_copy",
+        "weight": 28,
+        "reserves": 18,
+        "pushes": 10,
+        "edges": [
+          [
+            3,
+            13
+          ],
+          [
+            3,
+            19
+          ],
+          [
+            11,
+            11
+          ],
+          [
+            11,
+            14
+          ],
+          [
+            11,
+            24
+          ]
+        ],
+        "source": "2-block.lst",
+        "key": [
+          2,
+          22
+        ]
+      },
+      {
+        "name": "qed_ring_empty",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            156,
+            2
+          ]
+        ],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          13
+        ]
+      },
+      {
+        "name": "qed_ring_take",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            3,
+            13
+          ],
+          [
+            168,
+            4
+          ]
+        ],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          14
+        ]
+      },
+      {
+        "name": "save_view",
+        "weight": 18,
+        "reserves": 0,
+        "pushes": 18,
+        "edges": [],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          15
+        ]
+      },
+      {
+        "name": "restore_view",
+        "weight": 24,
+        "reserves": 0,
+        "pushes": 24,
+        "edges": [
+          [
+            11,
+            20
+          ]
+        ],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          16
+        ]
+      },
+      {
+        "name": "exchange_span",
+        "weight": 82,
+        "reserves": 74,
+        "pushes": 8,
+        "edges": [
+          [
+            3,
+            13
+          ],
+          [
+            3,
+            14
+          ],
+          [
+            11,
+            20
+          ]
+        ],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          17
+        ]
+      },
+      {
+        "name": "append_parts",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            11,
+            11
+          ],
+          [
+            11,
+            14
+          ],
+          [
+            167,
+            2
+          ]
+        ],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          18
+        ]
+      },
+      {
+        "name": "qed_edit_error",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          19
+        ]
+      },
+      {
+        "name": "clr_undo",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            3,
+            13
+          ],
+          [
+            11,
+            24
+          ]
+        ],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          20
+        ]
+      },
+      {
+        "name": "any_undo",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          21
+        ]
+      },
+      {
+        "name": "end_undo_seq",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          22
+        ]
+      },
+      {
+        "name": "qed_undo_boundary",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          23
+        ]
+      },
+      {
+        "name": "qed_replace",
+        "weight": 132,
+        "reserves": 88,
+        "pushes": 44,
+        "edges": [
+          [
+            3,
+            13
+          ],
+          [
+            3,
+            14
+          ],
+          [
+            3,
+            15
+          ],
+          [
+            3,
+            17
+          ],
+          [
+            3,
+            18
+          ],
+          [
+            3,
+            19
+          ],
+          [
+            3,
+            20
+          ],
+          [
+            4,
+            55
+          ],
+          [
+            11,
+            20
+          ],
+          [
+            11,
+            24
+          ]
+        ],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          24
+        ]
+      },
+      {
+        "name": "qed_undo",
+        "weight": 34,
+        "reserves": 22,
+        "pushes": 12,
+        "edges": [
+          [
+            3,
+            15
+          ],
+          [
+            3,
+            16
+          ],
+          [
+            3,
+            17
+          ],
+          [
+            4,
+            55
+          ],
+          [
+            168,
+            4
+          ]
+        ],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          25
+        ]
+      },
+      {
+        "name": "clip_takes_text",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            3,
+            14
+          ],
+          [
+            11,
+            24
+          ]
+        ],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          26
+        ]
+      },
+      {
+        "name": "init_clipbrd",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            3,
+            13
+          ],
+          [
+            11,
+            21
+          ]
+        ],
+        "source": "3-clipbrd.lst",
+        "key": [
+          3,
+          27
+        ]
+      },
+      {
+        "name": "make_undo",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            3,
+            25
+          ],
+          [
+            4,
+            57
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          26
+        ]
+      },
+      {
+        "name": "new_edit",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            1,
+            16
+          ],
+          [
+            4,
+            59
+          ],
+          [
+            8,
+            37
+          ],
+          [
+            999,
+            1007
+          ],
+          [
+            999,
+            1009
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            20,
+            8
+          ],
+          [
+            21,
+            8
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          29
+        ]
+      },
+      {
+        "name": "delete_edit",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          30
+        ]
+      },
+      {
+        "name": "get_ypos",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            19,
+            7
+          ],
+          [
+            157,
+            13
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          31
+        ]
+      },
+      {
+        "name": "get_xpos",
+        "weight": 40,
+        "reserves": 18,
+        "pushes": 22,
+        "edges": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            11,
+            20
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            157,
+            13
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          32
+        ]
+      },
+      {
+        "name": "set_cursor",
+        "weight": 22,
+        "reserves": 12,
+        "pushes": 10,
+        "edges": [
+          [
+            4,
+            31
+          ],
+          [
+            4,
+            32
+          ],
+          [
+            4,
+            55
+          ],
+          [
+            11,
+            20
+          ],
+          [
+            19,
+            7
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          33
+        ]
+      },
+      {
+        "name": "pointer_clock_close",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          34
+        ]
+      },
+      {
+        "name": "pointer_clock_read",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            4,
+            34
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          35
+        ]
+      },
+      {
+        "name": "pointer_clock_arm",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            157,
+            11
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          36
+        ]
+      },
+      {
+        "name": "pointer_clock_due",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          37
+        ]
+      },
+      {
+        "name": "QedPointerDelay",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            4,
+            35
+          ],
+          [
+            4,
+            36
+          ],
+          [
+            4,
+            37
+          ],
+          [
+            157,
+            3
+          ],
+          [
+            157,
+            11
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          38
+        ]
+      },
+      {
+        "name": "QedPointerState",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          39
+        ]
+      },
+      {
+        "name": "QedPointerOutside",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          40
+        ]
+      },
+      {
+        "name": "QedPointerCancel",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            4,
+            34
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          41
+        ]
+      },
+      {
+        "name": "QedPointerEvent",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            2,
+            8
+          ],
+          [
+            4,
+            33
+          ],
+          [
+            4,
+            34
+          ],
+          [
+            4,
+            35
+          ],
+          [
+            4,
+            36
+          ],
+          [
+            4,
+            40
+          ],
+          [
+            4,
+            41
+          ],
+          [
+            4,
+            57
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            21,
+            36
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          42
+        ]
+      },
+      {
+        "name": "wi_click",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            2,
+            8
+          ],
+          [
+            4,
+            33
+          ],
+          [
+            4,
+            57
+          ],
+          [
+            19,
+            7
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          43
+        ]
+      },
+      {
+        "name": "wi_key",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            4,
+            57
+          ],
+          [
+            4,
+            67
+          ],
+          [
+            18,
+            23
+          ],
+          [
+            19,
+            7
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          44
+        ]
+      },
+      {
+        "name": "wi_draw",
+        "weight": 24,
+        "reserves": 0,
+        "pushes": 24,
+        "edges": [
+          [
+            1,
+            12
+          ],
+          [
+            8,
+            35
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            157,
+            7
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          45
+        ]
+      },
+      {
+        "name": "wi_top",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            999,
+            1004
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          46
+        ]
+      },
+      {
+        "name": "wi_iconify",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            19,
+            7
+          ],
+          [
+            21,
+            40
+          ],
+          [
+            51,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          47
+        ]
+      },
+      {
+        "name": "wi_uniconify",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            19,
+            7
+          ],
+          [
+            21,
+            40
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          48
+        ]
+      },
+      {
+        "name": "e_icon_exist",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            3,
+            21
+          ],
+          [
+            11,
+            26
+          ],
+          [
+            16,
+            7
+          ],
+          [
+            16,
+            12
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            21,
+            8
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          49
+        ]
+      },
+      {
+        "name": "e_icon_test",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            3,
+            21
+          ],
+          [
+            4,
+            30
+          ],
+          [
+            11,
+            26
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            132,
+            20
+          ],
+          [
+            170,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          50
+        ]
+      },
+      {
+        "name": "e_icon_edit",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            2,
+            13
+          ],
+          [
+            4,
+            26
+          ],
+          [
+            4,
+            57
+          ],
+          [
+            4,
+            58
+          ],
+          [
+            4,
+            61
+          ],
+          [
+            8,
+            32
+          ],
+          [
+            11,
+            26
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            20,
+            14
+          ],
+          [
+            21,
+            8
+          ],
+          [
+            127,
+            26
+          ],
+          [
+            127,
+            28
+          ],
+          [
+            156,
+            2
+          ],
+          [
+            170,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          51
+        ]
+      },
+      {
+        "name": "blink_edit",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            1,
+            15
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            21,
+            10
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          52
+        ]
+      },
+      {
+        "name": "onblink_edit",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            1,
+            15
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            21,
+            10
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          53
+        ]
+      },
+      {
+        "name": "offblink_edit",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            1,
+            15
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            21,
+            10
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          54
+        ]
+      },
+      {
+        "name": "make_chg",
+        "weight": 50,
+        "reserves": 0,
+        "pushes": 50,
+        "edges": [
+          [
+            8,
+            38
+          ],
+          [
+            16,
+            12
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          55
+        ]
+      },
+      {
+        "name": "cursor_visible",
+        "weight": 32,
+        "reserves": 12,
+        "pushes": 20,
+        "edges": [
+          [
+            1,
+            6
+          ],
+          [
+            21,
+            36
+          ],
+          [
+            157,
+            3
+          ],
+          [
+            157,
+            7
+          ],
+          [
+            157,
+            13
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          56
+        ]
+      },
+      {
+        "name": "restore_edit",
+        "weight": 40,
+        "reserves": 16,
+        "pushes": 24,
+        "edges": [
+          [
+            1,
+            16
+          ],
+          [
+            4,
+            56
+          ],
+          [
+            16,
+            3
+          ],
+          [
+            16,
+            4
+          ],
+          [
+            16,
+            7
+          ],
+          [
+            16,
+            15
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            19,
+            14
+          ],
+          [
+            21,
+            8
+          ],
+          [
+            21,
+            20
+          ],
+          [
+            21,
+            39
+          ],
+          [
+            21,
+            42
+          ],
+          [
+            157,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          57
+        ]
+      },
+      {
+        "name": "destruct",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            3,
+            20
+          ],
+          [
+            9,
+            15
+          ],
+          [
+            16,
+            13
+          ],
+          [
+            19,
+            6
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            21,
+            8
+          ],
+          [
+            21,
+            45
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          58
+        ]
+      },
+      {
+        "name": "crt_new_text",
+        "weight": 18,
+        "reserves": 10,
+        "pushes": 8,
+        "edges": [
+          [
+            9,
+            14
+          ],
+          [
+            9,
+            15
+          ],
+          [
+            16,
+            12
+          ],
+          [
+            19,
+            5
+          ],
+          [
+            19,
+            11
+          ],
+          [
+            21,
+            40
+          ],
+          [
+            21,
+            41
+          ],
+          [
+            21,
+            43
+          ],
+          [
+            71,
+            2
+          ],
+          [
+            124,
+            4
+          ],
+          [
+            171,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          59
+        ]
+      },
+      {
+        "name": "crt_edit",
+        "weight": 18,
+        "reserves": 0,
+        "pushes": 18,
+        "edges": [
+          [
+            157,
+            2
+          ],
+          [
+            157,
+            7
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          60
+        ]
+      },
+      {
+        "name": "open_edit",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            4,
+            56
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            21,
+            8
+          ],
+          [
+            21,
+            24
+          ],
+          [
+            21,
+            30
+          ],
+          [
+            21,
+            33
+          ],
+          [
+            21,
+            44
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          61
+        ]
+      },
+      {
+        "name": "init_edit",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            9,
+            13
+          ],
+          [
+            16,
+            7
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          63
+        ]
+      },
+      {
+        "name": "clear_info",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            171,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          67
+        ]
+      },
+      {
+        "name": "do_color_change",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            21,
+            20
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          68
+        ]
+      },
+      {
+        "name": "color_change",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            1,
+            5
+          ],
+          [
+            21,
+            9
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          4,
+          69
+        ]
+      },
+      {
+        "name": "QedEvntMulti",
+        "weight": 58,
+        "reserves": 0,
+        "pushes": 58,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "5-event.lst",
+        "key": [
+          5,
+          10
+        ]
+      },
+      {
+        "name": "is_event",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "5-event.lst",
+        "key": [
+          5,
+          11
+        ]
+      },
+      {
+        "name": "QedEventsPending",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            5,
+            11
+          ]
+        ],
+        "source": "5-event.lst",
+        "key": [
+          5,
+          12
+        ]
+      },
+      {
+        "name": "get_event",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            168,
+            4
+          ]
+        ],
+        "source": "5-event.lst",
+        "key": [
+          5,
+          15
+        ]
+      },
+      {
+        "name": "next_action",
+        "weight": 68,
+        "reserves": 0,
+        "pushes": 68,
+        "edges": [
+          [
+            4,
+            38
+          ],
+          [
+            4,
+            39
+          ],
+          [
+            4,
+            40
+          ],
+          [
+            4,
+            41
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            15
+          ],
+          [
+            8,
+            28
+          ],
+          [
+            21,
+            10
+          ],
+          [
+            127,
+            22
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "5-event.lst",
+        "key": [
+          5,
+          17
+        ]
+      },
+      {
+        "name": "handle_keybd",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            4,
+            41
+          ],
+          [
+            8,
+            29
+          ],
+          [
+            12,
+            12
+          ],
+          [
+            21,
+            10
+          ],
+          [
+            21,
+            49
+          ]
+        ],
+        "source": "5-event.lst",
+        "key": [
+          5,
+          18
+        ]
+      },
+      {
+        "name": "handle_button",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            8,
+            30
+          ],
+          [
+            21,
+            8
+          ],
+          [
+            21,
+            47
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "5-event.lst",
+        "key": [
+          5,
+          19
+        ]
+      },
+      {
+        "name": "handle_msg",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            0,
+            12
+          ],
+          [
+            4,
+            41
+          ],
+          [
+            8,
+            30
+          ],
+          [
+            12,
+            13
+          ],
+          [
+            21,
+            8
+          ],
+          [
+            21,
+            20
+          ],
+          [
+            21,
+            21
+          ],
+          [
+            21,
+            22
+          ],
+          [
+            21,
+            26
+          ],
+          [
+            21,
+            27
+          ],
+          [
+            21,
+            28
+          ],
+          [
+            21,
+            29
+          ],
+          [
+            21,
+            30
+          ],
+          [
+            21,
+            36
+          ],
+          [
+            21,
+            37
+          ],
+          [
+            21,
+            38
+          ],
+          [
+            127,
+            27
+          ],
+          [
+            170,
+            2
+          ]
+        ],
+        "source": "5-event.lst",
+        "key": [
+          5,
+          21
+        ]
+      },
+      {
+        "name": "main_loop",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            3,
+            22
+          ],
+          [
+            4,
+            39
+          ],
+          [
+            4,
+            41
+          ],
+          [
+            4,
+            42
+          ],
+          [
+            4,
+            52
+          ],
+          [
+            4,
+            53
+          ],
+          [
+            4,
+            54
+          ],
+          [
+            4,
+            57
+          ],
+          [
+            5,
+            17
+          ],
+          [
+            5,
+            18
+          ],
+          [
+            5,
+            19
+          ],
+          [
+            5,
+            21
+          ],
+          [
+            8,
+            30
+          ],
+          [
+            12,
+            9
+          ],
+          [
+            127,
+            20
+          ],
+          [
+            127,
+            30
+          ],
+          [
+            127,
+            32
+          ],
+          [
+            132,
+            20
+          ],
+          [
+            132,
+            22
+          ],
+          [
+            132,
+            30
+          ],
+          [
+            132,
+            31
+          ],
+          [
+            132,
+            40
+          ]
+        ],
+        "source": "5-event.lst",
+        "key": [
+          5,
+          22
+        ]
+      },
+      {
+        "name": "init_file",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            47,
+            2
+          ]
+        ],
+        "source": "6-file.lst",
+        "key": [
+          6,
+          6
+        ]
+      },
+      {
+        "name": "term_file",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "6-file.lst",
+        "key": [
+          6,
+          7
+        ]
+      },
+      {
+        "name": "filematch",
+        "weight": 18,
+        "reserves": 12,
+        "pushes": 6,
+        "edges": [
+          [
+            65,
+            3
+          ]
+        ],
+        "source": "7-find.lst",
+        "key": [
+          7,
+          2
+        ]
+      },
+      {
+        "name": "mouse_sleeps",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "8-global.lst",
+        "key": [
+          8,
+          28
+        ]
+      },
+      {
+        "name": "sleep_mouse",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            26,
+            2
+          ]
+        ],
+        "source": "8-global.lst",
+        "key": [
+          8,
+          29
+        ]
+      },
+      {
+        "name": "wake_mouse",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            29,
+            2
+          ]
+        ],
+        "source": "8-global.lst",
+        "key": [
+          8,
+          30
+        ]
+      },
+      {
+        "name": "shift_pressed",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "8-global.lst",
+        "key": [
+          8,
+          32
+        ]
+      },
+      {
+        "name": "set_clip",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "8-global.lst",
+        "key": [
+          8,
+          35
+        ]
+      },
+      {
+        "name": "do_note",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            8,
+            30
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "8-global.lst",
+        "key": [
+          8,
+          36
+        ]
+      },
+      {
+        "name": "note",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            8,
+            36
+          ]
+        ],
+        "source": "8-global.lst",
+        "key": [
+          8,
+          37
+        ]
+      },
+      {
+        "name": "inote",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            8,
+            36
+          ],
+          [
+            175,
+            2
+          ]
+        ],
+        "source": "8-global.lst",
+        "key": [
+          8,
+          38
+        ]
+      },
+      {
+        "name": "font_change",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            21,
+            9
+          ]
+        ],
+        "source": "8-global.lst",
+        "key": [
+          8,
+          47
+        ]
+      },
+      {
+        "name": "init_global",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "8-global.lst",
+        "key": [
+          8,
+          48
+        ]
+      },
+      {
+        "name": "term_global",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "8-global.lst",
+        "key": [
+          8,
+          49
+        ]
+      },
+      {
+        "name": "search_type",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [],
+        "source": "9-icon.lst",
+        "key": [
+          9,
+          5
+        ]
+      },
+      {
+        "name": "do_icon",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            9,
+            5
+          ],
+          [
+            155,
+            3
+          ],
+          [
+            4,
+            50
+          ],
+          [
+            4,
+            51
+          ]
+        ],
+        "source": "9-icon.lst",
+        "key": [
+          9,
+          7
+        ]
+      },
+      {
+        "name": "icon_edit",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            9,
+            5
+          ],
+          [
+            155,
+            3
+          ],
+          [
+            4,
+            51
+          ]
+        ],
+        "source": "9-icon.lst",
+        "key": [
+          9,
+          10
+        ]
+      },
+      {
+        "name": "icon_exist",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            9,
+            5
+          ],
+          [
+            16,
+            7
+          ],
+          [
+            155,
+            3
+          ],
+          [
+            4,
+            49
+          ]
+        ],
+        "source": "9-icon.lst",
+        "key": [
+          9,
+          11
+        ]
+      },
+      {
+        "name": "decl_icon_type",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            8,
+            38
+          ]
+        ],
+        "source": "9-icon.lst",
+        "key": [
+          9,
+          13
+        ]
+      },
+      {
+        "name": "add_icon",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [],
+        "source": "9-icon.lst",
+        "key": [
+          9,
+          14
+        ]
+      },
+      {
+        "name": "del_icon",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            8,
+            38
+          ]
+        ],
+        "source": "9-icon.lst",
+        "key": [
+          9,
+          15
+        ]
+      },
+      {
+        "name": "init_icon",
+        "weight": 2,
+        "reserves": 0,
+        "pushes": 2,
+        "edges": [],
+        "source": "9-icon.lst",
+        "key": [
+          9,
+          17
+        ]
+      },
+      {
+        "name": "editor_body",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            3,
+            27
+          ],
+          [
+            4,
+            29
+          ],
+          [
+            4,
+            63
+          ],
+          [
+            4,
+            69
+          ],
+          [
+            5,
+            22
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            8,
+            47
+          ],
+          [
+            8,
+            48
+          ],
+          [
+            8,
+            49
+          ],
+          [
+            9,
+            17
+          ],
+          [
+            11,
+            27
+          ],
+          [
+            11,
+            29
+          ],
+          [
+            13,
+            41
+          ],
+          [
+            15,
+            34
+          ],
+          [
+            15,
+            35
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            21,
+            50
+          ],
+          [
+            21,
+            51
+          ],
+          [
+            24,
+            2
+          ],
+          [
+            28,
+            3
+          ],
+          [
+            119,
+            3
+          ],
+          [
+            127,
+            23
+          ],
+          [
+            127,
+            24
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "10-main.lst",
+        "key": [
+          10,
+          3
+        ]
+      },
+      {
+        "name": "main",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            122,
+            3
+          ]
+        ],
+        "source": "10-main.lst",
+        "key": [
+          10,
+          4
+        ]
+      },
+      {
+        "name": "new_block",
+        "weight": 20,
+        "reserves": 12,
+        "pushes": 8,
+        "edges": [
+          [
+            121,
+            8
+          ],
+          [
+            157,
+            3
+          ],
+          [
+            157,
+            13
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          6
+        ]
+      },
+      {
+        "name": "MALLOC",
+        "weight": 18,
+        "reserves": 0,
+        "pushes": 18,
+        "edges": [
+          [
+            8,
+            37
+          ],
+          [
+            11,
+            6
+          ],
+          [
+            38,
+            2
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          7
+        ]
+      },
+      {
+        "name": "FREE",
+        "weight": 22,
+        "reserves": 0,
+        "pushes": 22,
+        "edges": [],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          8
+        ]
+      },
+      {
+        "name": "INSERT",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            11,
+            10
+          ],
+          [
+            167,
+            2
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          9
+        ]
+      },
+      {
+        "name": "REALLOC",
+        "weight": 62,
+        "reserves": 14,
+        "pushes": 48,
+        "edges": [
+          [
+            8,
+            37
+          ],
+          [
+            11,
+            7
+          ],
+          [
+            11,
+            8
+          ],
+          [
+            38,
+            2
+          ],
+          [
+            166,
+            2
+          ],
+          [
+            167,
+            2
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          10
+        ]
+      },
+      {
+        "name": "new_col",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            11,
+            7
+          ],
+          [
+            167,
+            2
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          11
+        ]
+      },
+      {
+        "name": "col_insert",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          13
+        ]
+      },
+      {
+        "name": "col_append",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          14
+        ]
+      },
+      {
+        "name": "col_concate",
+        "weight": 28,
+        "reserves": 16,
+        "pushes": 12,
+        "edges": [
+          [
+            11,
+            8
+          ],
+          [
+            11,
+            9
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          16
+        ]
+      },
+      {
+        "name": "col_split",
+        "weight": 36,
+        "reserves": 14,
+        "pushes": 22,
+        "edges": [
+          [
+            11,
+            10
+          ],
+          [
+            11,
+            11
+          ],
+          [
+            11,
+            13
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          17
+        ]
+      },
+      {
+        "name": "col_offset",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          18
+        ]
+      },
+      {
+        "name": "col_einrucken",
+        "weight": 18,
+        "reserves": 0,
+        "pushes": 18,
+        "edges": [
+          [
+            8,
+            38
+          ],
+          [
+            11,
+            9
+          ],
+          [
+            11,
+            18
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          19
+        ]
+      },
+      {
+        "name": "get_line",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          20
+        ]
+      },
+      {
+        "name": "init_textring",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            11,
+            11
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          21
+        ]
+      },
+      {
+        "name": "free_textring",
+        "weight": 24,
+        "reserves": 12,
+        "pushes": 12,
+        "edges": [
+          [
+            11,
+            8
+          ],
+          [
+            11,
+            10
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          23
+        ]
+      },
+      {
+        "name": "kill_textring",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            11,
+            8
+          ],
+          [
+            11,
+            23
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          24
+        ]
+      },
+      {
+        "name": "ist_leer",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          26
+        ]
+      },
+      {
+        "name": "kill_memory",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            121,
+            9
+          ]
+        ],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          27
+        ]
+      },
+      {
+        "name": "init_memory",
+        "weight": 2,
+        "reserves": 0,
+        "pushes": 2,
+        "edges": [],
+        "source": "11-memory.lst",
+        "key": [
+          11,
+          29
+        ]
+      },
+      {
+        "name": "info_dial",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            127,
+            29
+          ]
+        ],
+        "source": "12-menu.lst",
+        "key": [
+          12,
+          3
+        ]
+      },
+      {
+        "name": "set_overwrite",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "12-menu.lst",
+        "key": [
+          12,
+          4
+        ]
+      },
+      {
+        "name": "do_quit",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "12-menu.lst",
+        "key": [
+          12,
+          5
+        ]
+      },
+      {
+        "name": "set_menu",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "12-menu.lst",
+        "key": [
+          12,
+          6
+        ]
+      },
+      {
+        "name": "mark_menu",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "12-menu.lst",
+        "key": [
+          12,
+          7
+        ]
+      },
+      {
+        "name": "update_menu",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            9,
+            11
+          ],
+          [
+            12,
+            6
+          ],
+          [
+            12,
+            7
+          ],
+          [
+            16,
+            7
+          ],
+          [
+            16,
+            15
+          ],
+          [
+            21,
+            10
+          ],
+          [
+            132,
+            20
+          ]
+        ],
+        "source": "12-menu.lst",
+        "key": [
+          12,
+          9
+        ]
+      },
+      {
+        "name": "do_action",
+        "weight": 2,
+        "reserves": 0,
+        "pushes": 2,
+        "edges": [
+          [
+            8,
+            37
+          ],
+          [
+            9,
+            7
+          ],
+          [
+            21,
+            10
+          ]
+        ],
+        "source": "12-menu.lst",
+        "key": [
+          12,
+          10
+        ]
+      },
+      {
+        "name": "menu_key",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            12,
+            9
+          ],
+          [
+            12,
+            13
+          ],
+          [
+            62,
+            3
+          ]
+        ],
+        "source": "12-menu.lst",
+        "key": [
+          12,
+          11
+        ]
+      },
+      {
+        "name": "key_global",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            12,
+            4
+          ],
+          [
+            12,
+            11
+          ]
+        ],
+        "source": "12-menu.lst",
+        "key": [
+          12,
+          12
+        ]
+      },
+      {
+        "name": "handle_menu",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            12,
+            3
+          ],
+          [
+            12,
+            4
+          ],
+          [
+            12,
+            10
+          ],
+          [
+            19,
+            8
+          ],
+          [
+            21,
+            10
+          ],
+          [
+            127,
+            24
+          ],
+          [
+            127,
+            25
+          ],
+          [
+            127,
+            27
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "12-menu.lst",
+        "key": [
+          12,
+          13
+        ]
+      },
+      {
+        "name": "null_locopt",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            16,
+            18
+          ],
+          [
+            171,
+            2
+          ]
+        ],
+        "source": "13-options.lst",
+        "key": [
+          13,
+          40
+        ]
+      },
+      {
+        "name": "init_default_var",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            13,
+            40
+          ],
+          [
+            16,
+            18
+          ],
+          [
+            71,
+            2
+          ],
+          [
+            157,
+            3
+          ],
+          [
+            171,
+            2
+          ],
+          [
+            198,
+            3
+          ]
+        ],
+        "source": "13-options.lst",
+        "key": [
+          13,
+          41
+        ]
+      },
+      {
+        "name": "resource_failed",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            15,
+            35
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "15-rsc.lst",
+        "key": [
+          15,
+          33
+        ]
+      },
+      {
+        "name": "init_resource",
+        "weight": 52,
+        "reserves": 46,
+        "pushes": 6,
+        "edges": [
+          [
+            15,
+            33
+          ],
+          [
+            60,
+            2
+          ],
+          [
+            73,
+            2
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            173,
+            2
+          ]
+        ],
+        "source": "15-rsc.lst",
+        "key": [
+          15,
+          34
+        ]
+      },
+      {
+        "name": "term_resource",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            61,
+            2
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "15-rsc.lst",
+        "key": [
+          15,
+          35
+        ]
+      },
+      {
+        "name": "setmax",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [],
+        "source": "16-set.lst",
+        "key": [
+          16,
+          3
+        ]
+      },
+      {
+        "name": "setmin",
+        "weight": 2,
+        "reserves": 0,
+        "pushes": 2,
+        "edges": [],
+        "source": "16-set.lst",
+        "key": [
+          16,
+          4
+        ]
+      },
+      {
+        "name": "setcpy",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            167,
+            2
+          ]
+        ],
+        "source": "16-set.lst",
+        "key": [
+          16,
+          5
+        ]
+      },
+      {
+        "name": "setclr",
+        "weight": 2,
+        "reserves": 0,
+        "pushes": 2,
+        "edges": [],
+        "source": "16-set.lst",
+        "key": [
+          16,
+          7
+        ]
+      },
+      {
+        "name": "setincl",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [],
+        "source": "16-set.lst",
+        "key": [
+          16,
+          12
+        ]
+      },
+      {
+        "name": "setexcl",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [],
+        "source": "16-set.lst",
+        "key": [
+          16,
+          13
+        ]
+      },
+      {
+        "name": "setin",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [],
+        "source": "16-set.lst",
+        "key": [
+          16,
+          15
+        ]
+      },
+      {
+        "name": "str2set",
+        "weight": 22,
+        "reserves": 0,
+        "pushes": 22,
+        "edges": [
+          [
+            16,
+            7
+          ],
+          [
+            16,
+            12
+          ]
+        ],
+        "source": "16-set.lst",
+        "key": [
+          16,
+          18
+        ]
+      },
+      {
+        "name": "pos_move",
+        "weight": 24,
+        "reserves": 0,
+        "pushes": 24,
+        "edges": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            4
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          6
+        ]
+      },
+      {
+        "name": "text_start",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            4,
+            55
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          7
+        ]
+      },
+      {
+        "name": "text_end",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            4,
+            55
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          8
+        ]
+      },
+      {
+        "name": "page_up",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            4,
+            55
+          ],
+          [
+            18,
+            6
+          ],
+          [
+            21,
+            8
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          9
+        ]
+      },
+      {
+        "name": "line_up",
+        "weight": 24,
+        "reserves": 0,
+        "pushes": 24,
+        "edges": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            4,
+            55
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          10
+        ]
+      },
+      {
+        "name": "page_down",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            4,
+            55
+          ],
+          [
+            18,
+            6
+          ],
+          [
+            21,
+            8
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          11
+        ]
+      },
+      {
+        "name": "line_down",
+        "weight": 24,
+        "reserves": 0,
+        "pushes": 24,
+        "edges": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            4,
+            55
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          12
+        ]
+      },
+      {
+        "name": "line_start",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            4,
+            55
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          13
+        ]
+      },
+      {
+        "name": "line_end",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            4,
+            55
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          14
+        ]
+      },
+      {
+        "name": "char_left",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            4,
+            55
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          15
+        ]
+      },
+      {
+        "name": "char_right",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            4,
+            55
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          16
+        ]
+      },
+      {
+        "name": "typed_input",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            3,
+            13
+          ],
+          [
+            11,
+            14
+          ],
+          [
+            156,
+            2
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          17
+        ]
+      },
+      {
+        "name": "char_cr",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            3,
+            24
+          ],
+          [
+            18,
+            17
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          18
+        ]
+      },
+      {
+        "name": "char_insert",
+        "weight": 22,
+        "reserves": 0,
+        "pushes": 22,
+        "edges": [
+          [
+            3,
+            24
+          ],
+          [
+            18,
+            17
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          19
+        ]
+      },
+      {
+        "name": "char_bs",
+        "weight": 28,
+        "reserves": 0,
+        "pushes": 28,
+        "edges": [
+          [
+            3,
+            24
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          21
+        ]
+      },
+      {
+        "name": "char_delete",
+        "weight": 28,
+        "reserves": 0,
+        "pushes": 28,
+        "edges": [
+          [
+            3,
+            24
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          22
+        ]
+      },
+      {
+        "name": "edit_key",
+        "weight": 30,
+        "reserves": 0,
+        "pushes": 30,
+        "edges": [
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            24
+          ],
+          [
+            4,
+            55
+          ],
+          [
+            4,
+            56
+          ],
+          [
+            18,
+            7
+          ],
+          [
+            18,
+            8
+          ],
+          [
+            18,
+            9
+          ],
+          [
+            18,
+            10
+          ],
+          [
+            18,
+            11
+          ],
+          [
+            18,
+            12
+          ],
+          [
+            18,
+            13
+          ],
+          [
+            18,
+            14
+          ],
+          [
+            18,
+            15
+          ],
+          [
+            18,
+            16
+          ],
+          [
+            18,
+            17
+          ],
+          [
+            18,
+            18
+          ],
+          [
+            18,
+            19
+          ],
+          [
+            18,
+            21
+          ],
+          [
+            18,
+            22
+          ]
+        ],
+        "source": "18-tasten.lst",
+        "key": [
+          18,
+          23
+        ]
+      },
+      {
+        "name": "nullen",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [],
+        "source": "19-text.lst",
+        "key": [
+          19,
+          3
+        ]
+      },
+      {
+        "name": "new_text",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            8,
+            37
+          ],
+          [
+            8,
+            38
+          ],
+          [
+            11,
+            21
+          ],
+          [
+            19,
+            3
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            121,
+            4
+          ],
+          [
+            121,
+            5
+          ]
+        ],
+        "source": "19-text.lst",
+        "key": [
+          19,
+          5
+        ]
+      },
+      {
+        "name": "destruct_text",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            11,
+            24
+          ],
+          [
+            121,
+            5
+          ]
+        ],
+        "source": "19-text.lst",
+        "key": [
+          19,
+          6
+        ]
+      },
+      {
+        "name": "get_text",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "19-text.lst",
+        "key": [
+          19,
+          7
+        ]
+      },
+      {
+        "name": "get_top_text",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            19,
+            7
+          ],
+          [
+            21,
+            11
+          ]
+        ],
+        "source": "19-text.lst",
+        "key": [
+          19,
+          8
+        ]
+      },
+      {
+        "name": "get_locopt",
+        "weight": 24,
+        "reserves": 14,
+        "pushes": 10,
+        "edges": [
+          [
+            7,
+            2
+          ],
+          [
+            157,
+            3
+          ],
+          [
+            171,
+            2
+          ],
+          [
+            179,
+            2
+          ]
+        ],
+        "source": "19-text.lst",
+        "key": [
+          19,
+          10
+        ]
+      },
+      {
+        "name": "set_text_name",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            19,
+            10
+          ],
+          [
+            45,
+            2
+          ],
+          [
+            171,
+            2
+          ]
+        ],
+        "source": "19-text.lst",
+        "key": [
+          19,
+          11
+        ]
+      },
+      {
+        "name": "get_longestline",
+        "weight": 24,
+        "reserves": 0,
+        "pushes": 24,
+        "edges": [
+          [
+            1,
+            4
+          ]
+        ],
+        "source": "19-text.lst",
+        "key": [
+          19,
+          14
+        ]
+      },
+      {
+        "name": "Absatz",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            16,
+            15
+          ]
+        ],
+        "source": "20-umbruch.lst",
+        "key": [
+          20,
+          7
+        ]
+      },
+      {
+        "name": "make_absatz",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            16,
+            5
+          ],
+          [
+            16,
+            12
+          ],
+          [
+            20,
+            7
+          ]
+        ],
+        "source": "20-umbruch.lst",
+        "key": [
+          20,
+          8
+        ]
+      },
+      {
+        "name": "long_brk",
+        "weight": 22,
+        "reserves": 0,
+        "pushes": 22,
+        "edges": [
+          [
+            1,
+            2
+          ],
+          [
+            11,
+            18
+          ],
+          [
+            16,
+            15
+          ]
+        ],
+        "source": "20-umbruch.lst",
+        "key": [
+          20,
+          9
+        ]
+      },
+      {
+        "name": "short_brk",
+        "weight": 22,
+        "reserves": 12,
+        "pushes": 10,
+        "edges": [
+          [
+            11,
+            18
+          ],
+          [
+            16,
+            15
+          ],
+          [
+            157,
+            8
+          ]
+        ],
+        "source": "20-umbruch.lst",
+        "key": [
+          20,
+          10
+        ]
+      },
+      {
+        "name": "too_long",
+        "weight": 58,
+        "reserves": 30,
+        "pushes": 28,
+        "edges": [
+          [
+            1,
+            3
+          ],
+          [
+            11,
+            9
+          ],
+          [
+            11,
+            10
+          ],
+          [
+            11,
+            17
+          ],
+          [
+            11,
+            18
+          ],
+          [
+            11,
+            19
+          ],
+          [
+            20,
+            9
+          ],
+          [
+            20,
+            12
+          ]
+        ],
+        "source": "20-umbruch.lst",
+        "key": [
+          20,
+          11
+        ]
+      },
+      {
+        "name": "too_int",
+        "weight": 52,
+        "reserves": 24,
+        "pushes": 28,
+        "edges": [
+          [
+            1,
+            3
+          ],
+          [
+            11,
+            9
+          ],
+          [
+            11,
+            10
+          ],
+          [
+            11,
+            16
+          ],
+          [
+            11,
+            18
+          ],
+          [
+            20,
+            10
+          ]
+        ],
+        "source": "20-umbruch.lst",
+        "key": [
+          20,
+          12
+        ]
+      },
+      {
+        "name": "format",
+        "weight": 30,
+        "reserves": 14,
+        "pushes": 16,
+        "edges": [
+          [
+            3,
+            20
+          ],
+          [
+            4,
+            55
+          ],
+          [
+            11,
+            20
+          ],
+          [
+            16,
+            5
+          ],
+          [
+            16,
+            12
+          ],
+          [
+            20,
+            11
+          ],
+          [
+            20,
+            12
+          ]
+        ],
+        "source": "20-umbruch.lst",
+        "key": [
+          20,
+          14
+        ]
+      },
+      {
+        "name": "get_window",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          8
+        ]
+      },
+      {
+        "name": "do_all_window",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            155,
+            3
+          ],
+          [
+            4,
+            68
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          9
+        ]
+      },
+      {
+        "name": "winlist_top",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          10
+        ]
+      },
+      {
+        "name": "winlist_classtop",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          11
+        ]
+      },
+      {
+        "name": "get_realtop",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          12
+        ]
+      },
+      {
+        "name": "snap_window",
+        "weight": 24,
+        "reserves": 0,
+        "pushes": 24,
+        "edges": [
+          [
+            155,
+            3
+          ],
+          [
+            157,
+            8
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          14
+        ]
+      },
+      {
+        "name": "get_work",
+        "weight": 48,
+        "reserves": 0,
+        "pushes": 48,
+        "edges": [
+          [
+            21,
+            14
+          ],
+          [
+            21,
+            39
+          ],
+          [
+            126,
+            9
+          ],
+          [
+            126,
+            10
+          ],
+          [
+            157,
+            7
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          15
+        ]
+      },
+      {
+        "name": "rc_first",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            126,
+            4
+          ],
+          [
+            126,
+            8
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          16
+        ]
+      },
+      {
+        "name": "rc_next",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            126,
+            4
+          ],
+          [
+            126,
+            8
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          17
+        ]
+      },
+      {
+        "name": "redraw_window",
+        "weight": 38,
+        "reserves": 14,
+        "pushes": 24,
+        "edges": [
+          [
+            21,
+            16
+          ],
+          [
+            21,
+            17
+          ],
+          [
+            26,
+            2
+          ],
+          [
+            29,
+            2
+          ],
+          [
+            126,
+            4
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            155,
+            3
+          ],
+          [
+            172,
+            4
+          ],
+          [
+            4,
+            45
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          20
+        ]
+      },
+      {
+        "name": "size_window",
+        "weight": 18,
+        "reserves": 10,
+        "pushes": 8,
+        "edges": [
+          [
+            21,
+            15
+          ],
+          [
+            21,
+            20
+          ],
+          [
+            21,
+            27
+          ],
+          [
+            126,
+            10
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          21
+        ]
+      },
+      {
+        "name": "full_window",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            21,
+            15
+          ],
+          [
+            21,
+            20
+          ],
+          [
+            126,
+            8
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          22
+        ]
+      },
+      {
+        "name": "uniconify_window",
+        "weight": 26,
+        "reserves": 14,
+        "pushes": 12,
+        "edges": [
+          [
+            21,
+            30
+          ],
+          [
+            126,
+            9
+          ],
+          [
+            126,
+            10
+          ],
+          [
+            155,
+            3
+          ],
+          [
+            4,
+            48
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          24
+        ]
+      },
+      {
+        "name": "all_uniconify",
+        "weight": 22,
+        "reserves": 10,
+        "pushes": 12,
+        "edges": [
+          [
+            21,
+            24
+          ],
+          [
+            63,
+            4
+          ],
+          [
+            126,
+            7
+          ],
+          [
+            126,
+            10
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          26
+        ]
+      },
+      {
+        "name": "move_window",
+        "weight": 36,
+        "reserves": 16,
+        "pushes": 20,
+        "edges": [
+          [
+            21,
+            15
+          ],
+          [
+            126,
+            9
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          27
+        ]
+      },
+      {
+        "name": "ontop_window",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            155,
+            3
+          ],
+          [
+            4,
+            46
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          28
+        ]
+      },
+      {
+        "name": "untop_window",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            155,
+            3
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          29
+        ]
+      },
+      {
+        "name": "top_window",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            3,
+            20
+          ],
+          [
+            21,
+            48
+          ],
+          [
+            22,
+            9
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            155,
+            3
+          ],
+          [
+            4,
+            46
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          30
+        ]
+      },
+      {
+        "name": "shade_window",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            21,
+            30
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          33
+        ]
+      },
+      {
+        "name": "scroll_window",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            21,
+            20
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          34
+        ]
+      },
+      {
+        "name": "do_arrow",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            21,
+            34
+          ],
+          [
+            21,
+            39
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          35
+        ]
+      },
+      {
+        "name": "arrow_window",
+        "weight": 34,
+        "reserves": 24,
+        "pushes": 10,
+        "edges": [
+          [
+            21,
+            35
+          ],
+          [
+            157,
+            3
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          36
+        ]
+      },
+      {
+        "name": "h_slider",
+        "weight": 18,
+        "reserves": 10,
+        "pushes": 8,
+        "edges": [
+          [
+            21,
+            35
+          ],
+          [
+            157,
+            3
+          ],
+          [
+            157,
+            13
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          37
+        ]
+      },
+      {
+        "name": "v_slider",
+        "weight": 18,
+        "reserves": 10,
+        "pushes": 8,
+        "edges": [
+          [
+            21,
+            35
+          ],
+          [
+            157,
+            3
+          ],
+          [
+            157,
+            13
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          38
+        ]
+      },
+      {
+        "name": "set_sliders",
+        "weight": 94,
+        "reserves": 14,
+        "pushes": 80,
+        "edges": [
+          [
+            134,
+            2
+          ],
+          [
+            157,
+            3
+          ],
+          [
+            157,
+            13
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          39
+        ]
+      },
+      {
+        "name": "set_wtitle",
+        "weight": 30,
+        "reserves": 0,
+        "pushes": 30,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          40
+        ]
+      },
+      {
+        "name": "set_winfo",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            134,
+            2
+          ],
+          [
+            177,
+            2
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          41
+        ]
+      },
+      {
+        "name": "change_window",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            21,
+            40
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          42
+        ]
+      },
+      {
+        "name": "create_window",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            21,
+            21
+          ],
+          [
+            22,
+            14
+          ],
+          [
+            22,
+            15
+          ],
+          [
+            126,
+            6
+          ],
+          [
+            155,
+            3
+          ],
+          [
+            4,
+            60
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          43
+        ]
+      },
+      {
+        "name": "open_window",
+        "weight": 28,
+        "reserves": 10,
+        "pushes": 18,
+        "edges": [
+          [
+            3,
+            20
+          ],
+          [
+            21,
+            20
+          ],
+          [
+            21,
+            39
+          ],
+          [
+            21,
+            48
+          ],
+          [
+            22,
+            9
+          ],
+          [
+            126,
+            7
+          ],
+          [
+            126,
+            10
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          44
+        ]
+      },
+      {
+        "name": "close_window",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            3,
+            20
+          ],
+          [
+            8,
+            30
+          ],
+          [
+            21,
+            12
+          ],
+          [
+            21,
+            48
+          ],
+          [
+            22,
+            15
+          ],
+          [
+            124,
+            7
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            155,
+            3
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          45
+        ]
+      },
+      {
+        "name": "do_font_change",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            21,
+            20
+          ],
+          [
+            21,
+            21
+          ],
+          [
+            157,
+            2
+          ],
+          [
+            157,
+            7
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          46
+        ]
+      },
+      {
+        "name": "click_window",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            21,
+            48
+          ],
+          [
+            155,
+            3
+          ],
+          [
+            4,
+            43
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          47
+        ]
+      },
+      {
+        "name": "unclick_window",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            16,
+            7
+          ],
+          [
+            155,
+            3
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          48
+        ]
+      },
+      {
+        "name": "key_window",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            155,
+            3
+          ],
+          [
+            4,
+            44
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          49
+        ]
+      },
+      {
+        "name": "init_window",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            16,
+            7
+          ],
+          [
+            22,
+            16
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          50
+        ]
+      },
+      {
+        "name": "term_window",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            21,
+            45
+          ],
+          [
+            22,
+            17
+          ]
+        ],
+        "source": "21-window.lst",
+        "key": [
+          21,
+          51
+        ]
+      },
+      {
+        "name": "new_list_elem",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            8,
+            37
+          ],
+          [
+            121,
+            6
+          ]
+        ],
+        "source": "22-winlist.lst",
+        "key": [
+          22,
+          5
+        ]
+      },
+      {
+        "name": "unlink_elem",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [],
+        "source": "22-winlist.lst",
+        "key": [
+          22,
+          6
+        ]
+      },
+      {
+        "name": "free_to_used",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            22,
+            6
+          ]
+        ],
+        "source": "22-winlist.lst",
+        "key": [
+          22,
+          7
+        ]
+      },
+      {
+        "name": "used_to_free",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            22,
+            6
+          ]
+        ],
+        "source": "22-winlist.lst",
+        "key": [
+          22,
+          8
+        ]
+      },
+      {
+        "name": "move_to_top",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [],
+        "source": "22-winlist.lst",
+        "key": [
+          22,
+          9
+        ]
+      },
+      {
+        "name": "get_new_window",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            22,
+            5
+          ],
+          [
+            22,
+            7
+          ]
+        ],
+        "source": "22-winlist.lst",
+        "key": [
+          22,
+          14
+        ]
+      },
+      {
+        "name": "free_window",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            22,
+            8
+          ]
+        ],
+        "source": "22-winlist.lst",
+        "key": [
+          22,
+          15
+        ]
+      },
+      {
+        "name": "init_winlist",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "22-winlist.lst",
+        "key": [
+          22,
+          16
+        ]
+      },
+      {
+        "name": "term_winlist",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "22-winlist.lst",
+        "key": [
+          22,
+          17
+        ]
+      },
+      {
+        "name": "exit_app",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            25,
+            2
+          ]
+        ],
+        "source": "24-appexit.lst",
+        "key": [
+          24,
+          2
+        ]
+      },
+      {
+        "name": "exit_gem",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "25-appexitg.lst",
+        "key": [
+          25,
+          2
+        ]
+      },
+      {
+        "name": "hide_mouse",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "26-apphidem.lst",
+        "key": [
+          26,
+          2
+        ]
+      },
+      {
+        "name": "hide_mouse_if_needed",
+        "weight": 28,
+        "reserves": 16,
+        "pushes": 12,
+        "edges": [
+          [
+            26,
+            2
+          ],
+          [
+            126,
+            4
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            157,
+            7
+          ]
+        ],
+        "source": "27-apphiden.lst",
+        "key": [
+          27,
+          2
+        ]
+      },
+      {
+        "name": "init_app",
+        "weight": 122,
+        "reserves": 114,
+        "pushes": 8,
+        "edges": [
+          [
+            98,
+            2
+          ],
+          [
+            126,
+            8
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "28-appinit.lst",
+        "key": [
+          28,
+          3
+        ]
+      },
+      {
+        "name": "show_mouse",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "29-appshowm.lst",
+        "key": [
+          29,
+          2
+        ]
+      },
+      {
+        "name": "debug",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            158,
+            2
+          ]
+        ],
+        "source": "38-debug.lst",
+        "key": [
+          38,
+          2
+        ]
+      },
+      {
+        "name": "fs_case_sens",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "45-fscase.lst",
+        "key": [
+          45,
+          2
+        ]
+      },
+      {
+        "name": "get_path",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "47-fsgetpth.lst",
+        "key": [
+          47,
+          2
+        ]
+      },
+      {
+        "name": "make_shortpath",
+        "weight": 20,
+        "reserves": 0,
+        "pushes": 20,
+        "edges": [
+          [
+            53,
+            2
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            166,
+            2
+          ],
+          [
+            171,
+            2
+          ],
+          [
+            186,
+            2
+          ],
+          [
+            188,
+            2
+          ]
+        ],
+        "source": "51-fsshort.lst",
+        "key": [
+          51,
+          2
+        ]
+      },
+      {
+        "name": "split_filename",
+        "weight": 18,
+        "reserves": 14,
+        "pushes": 4,
+        "edges": [
+          [
+            166,
+            2
+          ],
+          [
+            171,
+            2
+          ],
+          [
+            188,
+            2
+          ]
+        ],
+        "source": "53-fssplitf.lst",
+        "key": [
+          53,
+          2
+        ]
+      },
+      {
+        "name": "create_menu",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "60-menucre.lst",
+        "key": [
+          60,
+          2
+        ]
+      },
+      {
+        "name": "delete_menu",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            124,
+            7
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "61-menudel.lst",
+        "key": [
+          61,
+          2
+        ]
+      },
+      {
+        "name": "check_item_key",
+        "weight": 110,
+        "reserves": 64,
+        "pushes": 46,
+        "edges": [
+          [
+            65,
+            4
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            171,
+            2
+          ],
+          [
+            173,
+            2
+          ],
+          [
+            174,
+            14
+          ]
+        ],
+        "source": "62-menuisk.lst",
+        "key": [
+          62,
+          2
+        ]
+      },
+      {
+        "name": "is_menu_key",
+        "weight": 82,
+        "reserves": 74,
+        "pushes": 8,
+        "edges": [
+          [
+            62,
+            2
+          ],
+          [
+            73,
+            2
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "62-menuisk.lst",
+        "key": [
+          62,
+          3
+        ]
+      },
+      {
+        "name": "toggle_menu",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            80,
+            2
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "63-menutogg.lst",
+        "key": [
+          63,
+          2
+        ]
+      },
+      {
+        "name": "enable_menu",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            63,
+            2
+          ]
+        ],
+        "source": "63-menutogg.lst",
+        "key": [
+          63,
+          4
+        ]
+      },
+      {
+        "name": "nkc_toupper",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "65-nkccuppr.lst",
+        "key": [
+          65,
+          3
+        ]
+      },
+      {
+        "name": "str_toupper",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            65,
+            3
+          ]
+        ],
+        "source": "65-nkccuppr.lst",
+        "key": [
+          65,
+          4
+        ]
+      },
+      {
+        "name": "get_objframe",
+        "weight": 30,
+        "reserves": 10,
+        "pushes": 20,
+        "edges": [
+          [
+            74,
+            2
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "68-obgframe.lst",
+        "key": [
+          68,
+          2
+        ]
+      },
+      {
+        "name": "get_obspec",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            74,
+            2
+          ]
+        ],
+        "source": "71-obgspec.lst",
+        "key": [
+          71,
+          2
+        ]
+      },
+      {
+        "name": "get_string",
+        "weight": 124,
+        "reserves": 108,
+        "pushes": 16,
+        "edges": [
+          [
+            71,
+            2
+          ],
+          [
+            74,
+            2
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            171,
+            2
+          ],
+          [
+            175,
+            2
+          ]
+        ],
+        "source": "73-obgstr.lst",
+        "key": [
+          73,
+          2
+        ]
+      },
+      {
+        "name": "get_obtype",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [],
+        "source": "74-obgtype.lst",
+        "key": [
+          74,
+          2
+        ]
+      },
+      {
+        "name": "set_state",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [],
+        "source": "80-obsstate.lst",
+        "key": [
+          80,
+          2
+        ]
+      },
+      {
+        "name": "set_string",
+        "weight": 124,
+        "reserves": 108,
+        "pushes": 16,
+        "edges": [
+          [
+            71,
+            2
+          ],
+          [
+            74,
+            2
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            171,
+            2
+          ],
+          [
+            175,
+            2
+          ]
+        ],
+        "source": "81-obsstr.lst",
+        "key": [
+          81,
+          2
+        ]
+      },
+      {
+        "name": "open_vwork",
+        "weight": 34,
+        "reserves": 26,
+        "pushes": 8,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "98-vopnvwk.lst",
+        "key": [
+          98,
+          2
+        ]
+      },
+      {
+        "name": "nkc_init",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "119-nkccinit.lst",
+        "key": [
+          119,
+          3
+        ]
+      },
+      {
+        "name": "malloc",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "121-allocation.lst",
+        "key": [
+          121,
+          4
+        ]
+      },
+      {
+        "name": "free",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "121-allocation.lst",
+        "key": [
+          121,
+          5
+        ]
+      },
+      {
+        "name": "calloc",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            121,
+            4
+          ],
+          [
+            156,
+            2
+          ],
+          [
+            157,
+            2
+          ],
+          [
+            157,
+            6
+          ]
+        ],
+        "source": "121-allocation.lst",
+        "key": [
+          121,
+          6
+        ]
+      },
+      {
+        "name": "Malloc",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            121,
+            4
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "121-allocation.lst",
+        "key": [
+          121,
+          8
+        ]
+      },
+      {
+        "name": "Mfree",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            121,
+            5
+          ]
+        ],
+        "source": "121-allocation.lst",
+        "key": [
+          121,
+          9
+        ]
+      },
+      {
+        "name": "QedHeapCleanup",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            121,
+            5
+          ]
+        ],
+        "source": "121-allocation.lst",
+        "key": [
+          121,
+          11
+        ]
+      },
+      {
+        "name": "QedArguments",
+        "weight": 30,
+        "reserves": 20,
+        "pushes": 10,
+        "edges": [
+          [
+            121,
+            4
+          ],
+          [
+            121,
+            5
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            167,
+            2
+          ]
+        ],
+        "source": "122-entry.lst",
+        "key": [
+          122,
+          2
+        ]
+      },
+      {
+        "name": "QedRuntimeRun",
+        "weight": 24,
+        "reserves": 0,
+        "pushes": 24,
+        "edges": [
+          [
+            121,
+            11
+          ],
+          [
+            122,
+            2
+          ],
+          [
+            123,
+            35
+          ],
+          [
+            123,
+            36
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            155,
+            3
+          ],
+          [
+            10,
+            3
+          ]
+        ],
+        "source": "122-entry.lst",
+        "key": [
+          122,
+          3
+        ]
+      },
+      {
+        "name": "error_code",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            143,
+            2
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          7
+        ]
+      },
+      {
+        "name": "fail",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            123,
+            7
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          8
+        ]
+      },
+      {
+        "name": "gem_error",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            123,
+            7
+          ],
+          [
+            170,
+            2
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          9
+        ]
+      },
+      {
+        "name": "handle",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          10
+        ]
+      },
+      {
+        "name": "opened",
+        "weight": 20,
+        "reserves": 0,
+        "pushes": 20,
+        "edges": [
+          [
+            123,
+            8
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          11
+        ]
+      },
+      {
+        "name": "_Stub_close",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            123,
+            8
+          ],
+          [
+            123,
+            10
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          13
+        ]
+      },
+      {
+        "name": "_Stub_lseek",
+        "weight": 30,
+        "reserves": 0,
+        "pushes": 30,
+        "edges": [
+          [
+            123,
+            8
+          ],
+          [
+            123,
+            10
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          14
+        ]
+      },
+      {
+        "name": "read_native",
+        "weight": 18,
+        "reserves": 0,
+        "pushes": 18,
+        "edges": [
+          [
+            123,
+            8
+          ],
+          [
+            123,
+            10
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          17
+        ]
+      },
+      {
+        "name": "write_native",
+        "weight": 26,
+        "reserves": 10,
+        "pushes": 16,
+        "edges": [
+          [
+            123,
+            7
+          ],
+          [
+            123,
+            8
+          ],
+          [
+            123,
+            10
+          ],
+          [
+            123,
+            14
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          18
+        ]
+      },
+      {
+        "name": "_Stub_write",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            123,
+            18
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          20
+        ]
+      },
+      {
+        "name": "Fopen",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            123,
+            8
+          ],
+          [
+            123,
+            9
+          ],
+          [
+            123,
+            11
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          23
+        ]
+      },
+      {
+        "name": "QedFileExclusive",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            123,
+            9
+          ],
+          [
+            123,
+            11
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          25
+        ]
+      },
+      {
+        "name": "QedFileCloseError",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          26
+        ]
+      },
+      {
+        "name": "Fclose",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            123,
+            9
+          ],
+          [
+            123,
+            13
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          27
+        ]
+      },
+      {
+        "name": "Fread",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            123,
+            8
+          ],
+          [
+            123,
+            9
+          ],
+          [
+            123,
+            17
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          28
+        ]
+      },
+      {
+        "name": "Fwrite",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            123,
+            8
+          ],
+          [
+            123,
+            9
+          ],
+          [
+            123,
+            18
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          29
+        ]
+      },
+      {
+        "name": "QedFilesBegin",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            124,
+            2
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          35
+        ]
+      },
+      {
+        "name": "QedFilesCleanup",
+        "weight": 2,
+        "reserves": 0,
+        "pushes": 2,
+        "edges": [
+          [
+            123,
+            13
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            151,
+            3
+          ],
+          [
+            152,
+            2
+          ]
+        ],
+        "source": "123-files.lst",
+        "key": [
+          123,
+          36
+        ]
+      },
+      {
+        "name": "__call_initialize_global_streams",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            149,
+            8
+          ]
+        ],
+        "source": "124-library.lst",
+        "key": [
+          124,
+          2
+        ]
+      },
+      {
+        "name": "_Stub_environ",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "124-library.lst",
+        "key": [
+          124,
+          3
+        ]
+      },
+      {
+        "name": "time",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [],
+        "source": "124-library.lst",
+        "key": [
+          124,
+          4
+        ]
+      },
+      {
+        "name": "QedRetirementFault",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            134,
+            2
+          ],
+          [
+            138,
+            2
+          ]
+        ],
+        "source": "124-library.lst",
+        "key": [
+          124,
+          7
+        ]
+      },
+      {
+        "name": "ultoa",
+        "weight": 52,
+        "reserves": 44,
+        "pushes": 8,
+        "edges": [
+          [
+            157,
+            11
+          ]
+        ],
+        "source": "125-support.lst",
+        "key": [
+          125,
+          6
+        ]
+      },
+      {
+        "name": "ltoa",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            125,
+            6
+          ]
+        ],
+        "source": "125-support.lst",
+        "key": [
+          125,
+          7
+        ]
+      },
+      {
+        "name": "rc_intersect",
+        "weight": 26,
+        "reserves": 10,
+        "pushes": 16,
+        "edges": [],
+        "source": "126-gem-helpers.lst",
+        "key": [
+          126,
+          4
+        ]
+      },
+      {
+        "name": "wind_create_grect",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "126-gem-helpers.lst",
+        "key": [
+          126,
+          6
+        ]
+      },
+      {
+        "name": "wind_open_grect",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "126-gem-helpers.lst",
+        "key": [
+          126,
+          7
+        ]
+      },
+      {
+        "name": "wind_get_grect",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "126-gem-helpers.lst",
+        "key": [
+          126,
+          8
+        ]
+      },
+      {
+        "name": "wind_set_grect",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "126-gem-helpers.lst",
+        "key": [
+          126,
+          9
+        ]
+      },
+      {
+        "name": "wind_calc_grect",
+        "weight": 28,
+        "reserves": 0,
+        "pushes": 28,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "126-gem-helpers.lst",
+        "key": [
+          126,
+          10
+        ]
+      },
+      {
+        "name": "bad_path",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          17
+        ]
+      },
+      {
+        "name": "QedNativeForm",
+        "weight": 28,
+        "reserves": 10,
+        "pushes": 18,
+        "edges": [
+          [
+            80,
+            2
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          18
+        ]
+      },
+      {
+        "name": "QedChooseFile",
+        "weight": 30,
+        "reserves": 14,
+        "pushes": 16,
+        "edges": [
+          [
+            127,
+            17
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            167,
+            2
+          ],
+          [
+            171,
+            2
+          ],
+          [
+            179,
+            2
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          19
+        ]
+      },
+      {
+        "name": "QedCommandsCancel",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            128,
+            18
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          20
+        ]
+      },
+      {
+        "name": "QedCommandsSearching",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          21
+        ]
+      },
+      {
+        "name": "QedCommandsWorking",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            127,
+            21
+          ],
+          [
+            132,
+            20
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          22
+        ]
+      },
+      {
+        "name": "QedArgumentsError",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            127,
+            20
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          23
+        ]
+      },
+      {
+        "name": "QedOpenStart",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            127,
+            20
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            171,
+            2
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          24
+        ]
+      },
+      {
+        "name": "QedNewStart",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            127,
+            20
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          25
+        ]
+      },
+      {
+        "name": "QedSaveCommand",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            127,
+            20
+          ],
+          [
+            132,
+            29
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          26
+        ]
+      },
+      {
+        "name": "QedExitStart",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            19,
+            8
+          ],
+          [
+            127,
+            20
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          27
+        ]
+      },
+      {
+        "name": "QedFindStart",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            127,
+            20
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            171,
+            2
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          28
+        ]
+      },
+      {
+        "name": "QedAboutStart",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            127,
+            20
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          29
+        ]
+      },
+      {
+        "name": "QedCommandsMessage",
+        "weight": 2,
+        "reserves": 0,
+        "pushes": 2,
+        "edges": [
+          [
+            127,
+            20
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          30
+        ]
+      },
+      {
+        "name": "find_step",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            2,
+            8
+          ],
+          [
+            4,
+            55
+          ],
+          [
+            127,
+            20
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            178,
+            2
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          31
+        ]
+      },
+      {
+        "name": "QedCommandsStep",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            4,
+            55
+          ],
+          [
+            12,
+            5
+          ],
+          [
+            19,
+            8
+          ],
+          [
+            73,
+            2
+          ],
+          [
+            81,
+            2
+          ],
+          [
+            127,
+            18
+          ],
+          [
+            127,
+            19
+          ],
+          [
+            127,
+            20
+          ],
+          [
+            127,
+            27
+          ],
+          [
+            127,
+            28
+          ],
+          [
+            127,
+            31
+          ],
+          [
+            128,
+            14
+          ],
+          [
+            128,
+            15
+          ],
+          [
+            128,
+            21
+          ],
+          [
+            128,
+            22
+          ],
+          [
+            128,
+            23
+          ],
+          [
+            128,
+            24
+          ],
+          [
+            132,
+            20
+          ],
+          [
+            132,
+            21
+          ],
+          [
+            132,
+            23
+          ],
+          [
+            132,
+            24
+          ],
+          [
+            132,
+            25
+          ],
+          [
+            132,
+            29
+          ],
+          [
+            132,
+            39
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            171,
+            2
+          ]
+        ],
+        "source": "127-commands.lst",
+        "key": [
+          127,
+          32
+        ]
+      },
+      {
+        "name": "QedDocumentError",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "128-document.lst",
+        "key": [
+          128,
+          14
+        ]
+      },
+      {
+        "name": "QedDocumentName",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "128-document.lst",
+        "key": [
+          128,
+          15
+        ]
+      },
+      {
+        "name": "buffers_free",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            121,
+            5
+          ]
+        ],
+        "source": "128-document.lst",
+        "key": [
+          128,
+          17
+        ]
+      },
+      {
+        "name": "QedDocumentCancel",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            3,
+            13
+          ],
+          [
+            11,
+            24
+          ],
+          [
+            123,
+            27
+          ],
+          [
+            128,
+            17
+          ],
+          [
+            129,
+            4
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "128-document.lst",
+        "key": [
+          128,
+          18
+        ]
+      },
+      {
+        "name": "failed",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            128,
+            18
+          ]
+        ],
+        "source": "128-document.lst",
+        "key": [
+          128,
+          19
+        ]
+      },
+      {
+        "name": "append_line",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            11,
+            11
+          ],
+          [
+            11,
+            14
+          ],
+          [
+            128,
+            19
+          ]
+        ],
+        "source": "128-document.lst",
+        "key": [
+          128,
+          20
+        ]
+      },
+      {
+        "name": "QedDocumentBegin",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            11,
+            11
+          ],
+          [
+            11,
+            14
+          ],
+          [
+            71,
+            2
+          ],
+          [
+            121,
+            4
+          ],
+          [
+            123,
+            23
+          ],
+          [
+            128,
+            18
+          ],
+          [
+            128,
+            19
+          ],
+          [
+            129,
+            8
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            171,
+            2
+          ]
+        ],
+        "source": "128-document.lst",
+        "key": [
+          128,
+          21
+        ]
+      },
+      {
+        "name": "QedDocumentReread",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            3,
+            13
+          ],
+          [
+            11,
+            24
+          ],
+          [
+            121,
+            4
+          ],
+          [
+            123,
+            23
+          ],
+          [
+            128,
+            17
+          ],
+          [
+            128,
+            19
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "128-document.lst",
+        "key": [
+          128,
+          22
+        ]
+      },
+      {
+        "name": "QedDocumentPoll",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            123,
+            27
+          ],
+          [
+            123,
+            28
+          ],
+          [
+            128,
+            17
+          ],
+          [
+            128,
+            19
+          ],
+          [
+            128,
+            20
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "128-document.lst",
+        "key": [
+          128,
+          23
+        ]
+      },
+      {
+        "name": "QedDocumentCommit",
+        "weight": 68,
+        "reserves": 50,
+        "pushes": 18,
+        "edges": [
+          [
+            3,
+            13
+          ],
+          [
+            3,
+            14
+          ],
+          [
+            3,
+            20
+          ],
+          [
+            4,
+            41
+          ],
+          [
+            4,
+            55
+          ],
+          [
+            11,
+            24
+          ],
+          [
+            19,
+            11
+          ],
+          [
+            21,
+            8
+          ],
+          [
+            21,
+            40
+          ],
+          [
+            129,
+            4
+          ]
+        ],
+        "source": "128-document.lst",
+        "key": [
+          128,
+          24
+        ]
+      },
+      {
+        "name": "fold",
+        "weight": 2,
+        "reserves": 0,
+        "pushes": 2,
+        "edges": [],
+        "source": "129-path.lst",
+        "key": [
+          129,
+          2
+        ]
+      },
+      {
+        "name": "QedPathEqual",
+        "weight": 14,
+        "reserves": 0,
+        "pushes": 14,
+        "edges": [
+          [
+            129,
+            2
+          ]
+        ],
+        "source": "129-path.lst",
+        "key": [
+          129,
+          3
+        ]
+      },
+      {
+        "name": "QedPathRelease",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "129-path.lst",
+        "key": [
+          129,
+          4
+        ]
+      },
+      {
+        "name": "QedPathInfo",
+        "weight": 24,
+        "reserves": 0,
+        "pushes": 24,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "129-path.lst",
+        "key": [
+          129,
+          5
+        ]
+      },
+      {
+        "name": "QedPathSibling",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            134,
+            2
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            167,
+            2
+          ],
+          [
+            171,
+            2
+          ]
+        ],
+        "source": "129-path.lst",
+        "key": [
+          129,
+          6
+        ]
+      },
+      {
+        "name": "valid_leaf",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [],
+        "source": "129-path.lst",
+        "key": [
+          129,
+          7
+        ]
+      },
+      {
+        "name": "QedPathPrepare",
+        "weight": 54,
+        "reserves": 32,
+        "pushes": 22,
+        "edges": [
+          [
+            121,
+            4
+          ],
+          [
+            121,
+            5
+          ],
+          [
+            129,
+            2
+          ],
+          [
+            129,
+            4
+          ],
+          [
+            129,
+            7
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            167,
+            2
+          ]
+        ],
+        "source": "129-path.lst",
+        "key": [
+          129,
+          8
+        ]
+      },
+      {
+        "name": "QedSaveLogicalError",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            143,
+            2
+          ]
+        ],
+        "source": "130-stage.lst",
+        "key": [
+          130,
+          3
+        ]
+      },
+      {
+        "name": "QedTemporaryName",
+        "weight": 34,
+        "reserves": 28,
+        "pushes": 6,
+        "edges": [
+          [
+            129,
+            6
+          ],
+          [
+            167,
+            2
+          ]
+        ],
+        "source": "130-stage.lst",
+        "key": [
+          130,
+          4
+        ]
+      },
+      {
+        "name": "fail",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [],
+        "source": "130-stage.lst",
+        "key": [
+          130,
+          5
+        ]
+      },
+      {
+        "name": "cursor",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [],
+        "source": "130-stage.lst",
+        "key": [
+          130,
+          6
+        ]
+      },
+      {
+        "name": "QedStageBegin",
+        "weight": 12,
+        "reserves": 0,
+        "pushes": 12,
+        "edges": [
+          [
+            121,
+            4
+          ],
+          [
+            130,
+            5
+          ],
+          [
+            130,
+            6
+          ],
+          [
+            156,
+            2
+          ]
+        ],
+        "source": "130-stage.lst",
+        "key": [
+          130,
+          7
+        ]
+      },
+      {
+        "name": "fill",
+        "weight": 26,
+        "reserves": 10,
+        "pushes": 16,
+        "edges": [
+          [
+            130,
+            5
+          ],
+          [
+            167,
+            2
+          ]
+        ],
+        "source": "130-stage.lst",
+        "key": [
+          130,
+          8
+        ]
+      },
+      {
+        "name": "QedStageCancel",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "130-stage.lst",
+        "key": [
+          130,
+          9
+        ]
+      },
+      {
+        "name": "QedStageDispose",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            121,
+            5
+          ]
+        ],
+        "source": "130-stage.lst",
+        "key": [
+          130,
+          10
+        ]
+      },
+      {
+        "name": "QedStagePoll",
+        "weight": 30,
+        "reserves": 10,
+        "pushes": 20,
+        "edges": [
+          [
+            123,
+            25
+          ],
+          [
+            123,
+            26
+          ],
+          [
+            123,
+            27
+          ],
+          [
+            123,
+            29
+          ],
+          [
+            129,
+            3
+          ],
+          [
+            130,
+            3
+          ],
+          [
+            130,
+            4
+          ],
+          [
+            130,
+            5
+          ],
+          [
+            130,
+            6
+          ],
+          [
+            130,
+            8
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "130-stage.lst",
+        "key": [
+          130,
+          11
+        ]
+      },
+      {
+        "name": "finish",
+        "weight": 2,
+        "reserves": 0,
+        "pushes": 2,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "131-save.lst",
+        "key": [
+          131,
+          2
+        ]
+      },
+      {
+        "name": "QedSaveDispose",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            121,
+            5
+          ],
+          [
+            129,
+            4
+          ],
+          [
+            130,
+            10
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "131-save.lst",
+        "key": [
+          131,
+          3
+        ]
+      },
+      {
+        "name": "admitted",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "131-save.lst",
+        "key": [
+          131,
+          4
+        ]
+      },
+      {
+        "name": "QedSavePrepare",
+        "weight": 40,
+        "reserves": 24,
+        "pushes": 16,
+        "edges": [
+          [
+            121,
+            6
+          ],
+          [
+            129,
+            5
+          ],
+          [
+            129,
+            6
+          ],
+          [
+            129,
+            8
+          ],
+          [
+            131,
+            3
+          ],
+          [
+            131,
+            4
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            167,
+            2
+          ],
+          [
+            171,
+            2
+          ],
+          [
+            173,
+            2
+          ],
+          [
+            186,
+            2
+          ]
+        ],
+        "source": "131-save.lst",
+        "key": [
+          131,
+          5
+        ]
+      },
+      {
+        "name": "QedSaveStart",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            130,
+            7
+          ],
+          [
+            131,
+            2
+          ]
+        ],
+        "source": "131-save.lst",
+        "key": [
+          131,
+          6
+        ]
+      },
+      {
+        "name": "QedSaveCanCancel",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "131-save.lst",
+        "key": [
+          131,
+          7
+        ]
+      },
+      {
+        "name": "QedSaveCancel",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            130,
+            9
+          ],
+          [
+            131,
+            2
+          ],
+          [
+            131,
+            7
+          ]
+        ],
+        "source": "131-save.lst",
+        "key": [
+          131,
+          8
+        ]
+      },
+      {
+        "name": "forward_failed",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            130,
+            3
+          ],
+          [
+            131,
+            2
+          ]
+        ],
+        "source": "131-save.lst",
+        "key": [
+          131,
+          9
+        ]
+      },
+      {
+        "name": "recovery_failed",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            130,
+            3
+          ],
+          [
+            131,
+            2
+          ]
+        ],
+        "source": "131-save.lst",
+        "key": [
+          131,
+          10
+        ]
+      },
+      {
+        "name": "QedSavePoll",
+        "weight": 38,
+        "reserves": 0,
+        "pushes": 38,
+        "edges": [
+          [
+            129,
+            3
+          ],
+          [
+            130,
+            4
+          ],
+          [
+            130,
+            9
+          ],
+          [
+            130,
+            10
+          ],
+          [
+            130,
+            11
+          ],
+          [
+            131,
+            2
+          ],
+          [
+            131,
+            9
+          ],
+          [
+            131,
+            10
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "131-save.lst",
+        "key": [
+          131,
+          11
+        ]
+      },
+      {
+        "name": "QedSavingBusy",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          20
+        ]
+      },
+      {
+        "name": "QedSavingAttention",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          21
+        ]
+      },
+      {
+        "name": "QedSavingObserved",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          22
+        ]
+      },
+      {
+        "name": "QedSavingTakeResult",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          23
+        ]
+      },
+      {
+        "name": "QedSavingExitPending",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            132,
+            20
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          24
+        ]
+      },
+      {
+        "name": "QedSavingForget",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            131,
+            3
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          25
+        ]
+      },
+      {
+        "name": "needs_recovery",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          26
+        ]
+      },
+      {
+        "name": "drain",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          27
+        ]
+      },
+      {
+        "name": "status",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            21,
+            8
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          28
+        ]
+      },
+      {
+        "name": "QedSavingStart",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            4,
+            41
+          ],
+          [
+            132,
+            20
+          ],
+          [
+            171,
+            2
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          29
+        ]
+      },
+      {
+        "name": "QedSavingMessage",
+        "weight": 6,
+        "reserves": 0,
+        "pushes": 6,
+        "edges": [
+          [
+            131,
+            7
+          ],
+          [
+            131,
+            8
+          ],
+          [
+            132,
+            20
+          ],
+          [
+            132,
+            27
+          ],
+          [
+            134,
+            2
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          30
+        ]
+      },
+      {
+        "name": "QedSavingKey",
+        "weight": 16,
+        "reserves": 16,
+        "pushes": 0,
+        "edges": [
+          [
+            131,
+            7
+          ],
+          [
+            131,
+            8
+          ],
+          [
+            132,
+            27
+          ],
+          [
+            132,
+            30
+          ],
+          [
+            168,
+            4
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          31
+        ]
+      },
+      {
+        "name": "path_page",
+        "weight": 36,
+        "reserves": 20,
+        "pushes": 16,
+        "edges": [
+          [
+            134,
+            2
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            167,
+            2
+          ],
+          [
+            171,
+            2
+          ],
+          [
+            175,
+            2
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          32
+        ]
+      },
+      {
+        "name": "error_name",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            143,
+            2
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          33
+        ]
+      },
+      {
+        "name": "phase_name",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          34
+        ]
+      },
+      {
+        "name": "stage_name",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          35
+        ]
+      },
+      {
+        "name": "report_start",
+        "weight": 4,
+        "reserves": 0,
+        "pushes": 4,
+        "edges": [
+          [
+            4,
+            55
+          ],
+          [
+            21,
+            8
+          ],
+          [
+            21,
+            40
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          36
+        ]
+      },
+      {
+        "name": "report_done",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            132,
+            27
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          37
+        ]
+      },
+      {
+        "name": "report_step",
+        "weight": 72,
+        "reserves": 26,
+        "pushes": 46,
+        "edges": [
+          [
+            132,
+            28
+          ],
+          [
+            132,
+            32
+          ],
+          [
+            132,
+            33
+          ],
+          [
+            132,
+            34
+          ],
+          [
+            132,
+            35
+          ],
+          [
+            132,
+            37
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            154,
+            2
+          ],
+          [
+            184,
+            2
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          38
+        ]
+      },
+      {
+        "name": "QedSavingStep",
+        "weight": 28,
+        "reserves": 0,
+        "pushes": 28,
+        "edges": [
+          [
+            3,
+            23
+          ],
+          [
+            4,
+            55
+          ],
+          [
+            5,
+            12
+          ],
+          [
+            19,
+            11
+          ],
+          [
+            21,
+            8
+          ],
+          [
+            21,
+            40
+          ],
+          [
+            127,
+            19
+          ],
+          [
+            131,
+            3
+          ],
+          [
+            131,
+            5
+          ],
+          [
+            131,
+            6
+          ],
+          [
+            131,
+            8
+          ],
+          [
+            131,
+            11
+          ],
+          [
+            132,
+            25
+          ],
+          [
+            132,
+            26
+          ],
+          [
+            132,
+            27
+          ],
+          [
+            132,
+            28
+          ],
+          [
+            132,
+            32
+          ],
+          [
+            132,
+            36
+          ],
+          [
+            132,
+            38
+          ],
+          [
+            134,
+            2
+          ],
+          [
+            154,
+            2
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          39
+        ]
+      },
+      {
+        "name": "QedSavingShutdown",
+        "weight": 0,
+        "reserves": 0,
+        "pushes": 0,
+        "edges": [
+          [
+            131,
+            3
+          ],
+          [
+            132,
+            25
+          ]
+        ],
+        "source": "132-saving.lst",
+        "key": [
+          132,
+          40
+        ]
+      },
+      {
+        "name": "handle_msg(redraw-only)",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            21,
+            20
+          ],
+          [
+            21,
+            27
+          ],
+          [
+            21,
+            21
+          ]
+        ],
+        "source": "5-event.lst",
+        "key": [
+          999,
+          0
+        ]
+      },
+      {
+        "name": "e_icon_edit(Save)",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            2,
+            13
+          ],
+          [
+            4,
+            26
+          ],
+          [
+            4,
+            57
+          ],
+          [
+            4,
+            58
+          ],
+          [
+            4,
+            61
+          ],
+          [
+            8,
+            32
+          ],
+          [
+            11,
+            26
+          ],
+          [
+            19,
+            7
+          ],
+          [
+            20,
+            14
+          ],
+          [
+            21,
+            8
+          ],
+          [
+            127,
+            26
+          ],
+          [
+            127,
+            28
+          ],
+          [
+            156,
+            2
+          ],
+          [
+            170,
+            2
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          999,
+          1001
+        ]
+      },
+      {
+        "name": "e_icon_test(Save)",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [],
+        "source": "4-edit.lst",
+        "key": [
+          999,
+          1002
+        ]
+      },
+      {
+        "name": "do_icon(Save)",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            999,
+            1001
+          ],
+          [
+            999,
+            1002
+          ]
+        ],
+        "source": "9-icon.lst",
+        "key": [
+          999,
+          1003
+        ]
+      },
+      {
+        "name": "do_icon(Update): disabled",
+        "weight": 27,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [],
+        "source": "9-icon.lst",
+        "key": [
+          999,
+          1004
+        ]
+      },
+      {
+        "name": "e_icon_edit(Open)",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            4,
+            61
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          999,
+          1005
+        ]
+      },
+      {
+        "name": "e_icon_test(Open)",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [],
+        "source": "4-edit.lst",
+        "key": [
+          999,
+          1006
+        ]
+      },
+      {
+        "name": "do_icon(Open)",
+        "weight": 16,
+        "reserves": 0,
+        "pushes": 16,
+        "edges": [
+          [
+            999,
+            1005
+          ],
+          [
+            999,
+            1006
+          ]
+        ],
+        "source": "9-icon.lst",
+        "key": [
+          999,
+          1007
+        ]
+      },
+      {
+        "name": "e_icon_edit(Delete)",
+        "weight": 10,
+        "reserves": 0,
+        "pushes": 10,
+        "edges": [
+          [
+            4,
+            58
+          ]
+        ],
+        "source": "4-edit.lst",
+        "key": [
+          999,
+          1008
+        ]
+      },
+      {
+        "name": "icon_edit(Delete)",
+        "weight": 8,
+        "reserves": 0,
+        "pushes": 8,
+        "edges": [
+          [
+            999,
+            1008
+          ]
+        ],
+        "source": "9-icon.lst",
+        "key": [
+          999,
+          1009
+        ]
+      }
+    ],
+    "analysis_sha256": "1be0a71edd2192641b828f0fb2f378696cdba4d98644c1e961eeca7b0155cd17",
+    "listings": {
+      "0-aktion.lst": "92d7c81bc905dd9728314f15c9f55201b7a9a3240d6ae95bf7a07cb20f44bfa7",
+      "1-ausgabe.lst": "5c6e8316d3e559f050b15e43ff337bf97b1e5bbe4f167ba5f883532e2ebec7b8",
+      "2-block.lst": "b996778a8ed9fae7f8d329542eb7c802c0e83c5b31c8ff25b9c0c099bf55aedc",
+      "3-clipbrd.lst": "a1fa0fa9fd51920aa551ded264391a73b3c4ac0d921184222819306f3237fa60",
+      "4-edit.lst": "b496f234313fc680ab250a0725a5c86d4593fd9e0caee60f882e6c30169ea9e0",
+      "5-event.lst": "fb0c039d5896b465c3ffde1ac808558dd9fbaec13a84cac9d98c8c6819811878",
+      "6-file.lst": "6d3a97b455549b060d4f5c6723cc80921f583626f651af8b8b868290f1c3548d",
+      "7-find.lst": "80898bace3f3f0de620cc965804bb84bd47488500ec20450f6fc557de18957e7",
+      "8-global.lst": "3890b8eb35ebbebcfbb0eb701c0e45a8ecd513be940f8c77d8c1cb9a91d63cb8",
+      "9-icon.lst": "fb53779a1fc88d5f446a8bba3c80ccc8d7e740c014b3f03a2aa301773547f3b3",
+      "10-main.lst": "e6e00ffb9ee712ed6bdacbecc737e9bb35de205bb434e5a252dc5a42106e138f",
+      "11-memory.lst": "8ac29d6ad7e7d07aa92b7faa5b812ed468982fedf35b343865a2f706f3e8300d",
+      "12-menu.lst": "9cdd29eba74db636d5d04a92cdfeff23a3922a99d4d651989b33deee6bbe011d",
+      "13-options.lst": "3c0989802e332a84c923b6238744fddbf364f6245638fb898ef6b49a0ec08f74",
+      "14-poslist.lst": "4674b3583513f646c329f40e6e884604cf915c220cee5350231ec98905df4b4d",
+      "15-rsc.lst": "020d4a7623e6717d7190cc532e554f70f1590eb9f194061a549bb487a3faf0f8",
+      "16-set.lst": "c129c73d834c77ee6d8d6573af187e3b1a89de382aa1f1a8e69066d7fec69b8d",
+      "17-sort.lst": "e7f660188b781337c07d900827bf7c8657ca247967d2d620c97a6bac90f77c14",
+      "18-tasten.lst": "724908dc3f618be4a1a543b22e69bc4f6860dd2f8f27244fadd3ca0473eef127",
+      "19-text.lst": "3a74b68f494c2dfec9816766ebdef69c714b7cc03a1ff7659e094423d98bcc35",
+      "20-umbruch.lst": "7ca71385ef5eb1f031ab2a13934474226544986c22a94a9c9571668f636c380e",
+      "21-window.lst": "c7dea30a2331b3baa007c2c1ca00847003ed075510e289deff493b0abc96f8fd",
+      "22-winlist.lst": "432123c7e0b106a332fd8679bffc474528a10e4825832a648773135fc9e7dd4c",
+      "23-app.lst": "9ea3603d0c98ef72d9614c1f3ff0cba4c62c2e4e85767fb9cb10216177872c4a",
+      "24-appexit.lst": "e7f9fbe321ef27984ad43ca41e6feeb152758e794fbae567bc4c877b2c7758bf",
+      "25-appexitg.lst": "fad2899ba4dd0133a8d68da096740feaf6f919fc7c7927e1820acb01d1ab0e39",
+      "26-apphidem.lst": "fbc9fb27cbc9a44fca69be57945c83c6ae231b9ca8754e9b932da2da4c7f92cb",
+      "27-apphiden.lst": "070405a45b592c305e224bcfc12513ee61e9ce6bb10c37c27191619686fdf6fa",
+      "28-appinit.lst": "9722eb4c27f6eedf3dd9f7dae647193cd6b53f5a3ab78dcf43a719519252b2bc",
+      "29-appshowm.lst": "d6ec8983a97ff6897fc2294a23b1c117d21d77263b945965095be8f96e0d62aa",
+      "30-backgrd.lst": "26ac6509bf5e5dac4b2ed731ff08fe330abfe727077d4353e06c117afac57083",
+      "31-cfformdo.lst": "330ade2017cba4a845ede9f70dd19c4ef3094f0937f06b91693f10ef8ab8991f",
+      "32-cfformkb.lst": "56f387e86cffa0ab767ee276b67dacf526ff7fda67f571e7885c2bc6eb36e9ad",
+      "33-cfmalloc.lst": "53f281ae34e818b14d4c7a915e120d06c8c659811260319dd74fd770db243cbf",
+      "34-cfobjced.lst": "253b8041b486cb761047e1928c814daae5def3a73486cafede54d473f86e4969",
+      "35-cfobjcfd.lst": "a5c9c88cfbe4ca767f9ece147af01d32fbf980c99e8a69c19eae69890792e0a3",
+      "36-ddrtry.lst": "70d1efd22fc6da9cdcde1389643185630919a5935e058461e6ec7442528144b9",
+      "37-ddstry.lst": "667547e81fdbd5ddd6e6d4b8aaad1e237919b124b3520073af76d452783c99d2",
+      "38-debug.lst": "af220340eb6a9180be0e57f3ae07538617d4320aeac9c10ef2415e0b97397476",
+      "39-dragdrop.lst": "10c327174a17d5408c94466ab5497834dbcd343cc8ed396f7b9a4cbb9eaf0dd3",
+      "40-fdeditva.lst": "2c3fc3425181ca3c324054d6d6676821e5ee0f4a384bd64a9f436a32cda87c18",
+      "41-fdfinded.lst": "2e42c7088a79056081bf52ac8ad1131867c12c0a524b59203f73db1bdb602241",
+      "42-fdfindsc.lst": "b38fc5eb8cc62ca585236bd1aaf73ea57a2df7e0ab68df73cc74f626e1a11d6d",
+      "43-fdsimple.lst": "930740cf3307fe8f77b92be7edac872a8168441b8a3777879746bb413697cf65",
+      "44-fexists.lst": "5bb35d0a448feb770431da8f6e45146dc5a639cd835d5956073973d38e32f347",
+      "45-fscase.lst": "5f810a825c34b204ea77705f897c404b339223e257f6f8f0f2ede28becc8f274",
+      "46-fsexists.lst": "a63ee30d0de902c4b1c9be41186c414c8f74fffaf58fffd92d517006258dc5d9",
+      "47-fsgetpth.lst": "e5c38d8359212a4628c87decaff8f571627954bd25e47820bbd905b28a13c48a",
+      "48-fslong.lst": "577c96c95b5dce94c2ece228558d30680c1c3a0cb9e560070d5d714d8f62512e",
+      "49-fsnorm.lst": "218aa812120f876af6fc1b956ae96365ba0a7a528d41d1040c39c4743e7e6d42",
+      "50-fssetext.lst": "d7a3ac281a28871ace29a52192e194667d27238eabb9aa24ee9e99cf29fe7e88",
+      "51-fsshort.lst": "04e2903cd4a35a9a474498ec579e92aca50e45744b0263a4b60d0d59fec9d067",
+      "52-fssplite.lst": "525e1d239e7e17e8945a26489f50d17710fda03b40b4419a60d650289209cdd7",
+      "53-fssplitf.lst": "08ce04ee365743ab04028d5a9fae160a789f6dbe0e153b9239213a1a32261172",
+      "54-globals.lst": "7a9c5e0175bc054d9a6cef7c9ef1c2f39767c911022b4bcb8f5ccd65bcbf3af8",
+      "55-magxobj.lst": "39e695f370802b80c8bfffb3fb6400c818ec6ca3e6966b77f0e0a0b5aa1e2daa",
+      "56-magxsc.lst": "1c667cd9e423869a94be3e3824f2cbb17b50a843dc321fa1f21b26845966a67a",
+      "57-magxver.lst": "fc5a55e79151070343962631da0aac1147573b8095cdcb81fc1762c6f12e7cdd",
+      "58-mallocg.lst": "3367a1e782c2bac3c77f273be5e1a25c0108ad26b08ae4679dee414e93a00487",
+      "59-menu.lst": "3286444c0e4871bd9b54bef709997f7f98c328b50c95d9c615d522027083c18f",
+      "60-menucre.lst": "341974f6241d1631f10410088bfea1ef43c8d5601996203f82b669d9880767c3",
+      "61-menudel.lst": "2868a7ffac7d94ed8ad1321d74a143e81f23a58aa03fdba72410fe187c13b432",
+      "62-menuisk.lst": "cc97452934aeb956d2d3c8cc1391776a3d3ea44de71f45a84c4ec9014f93f2a5",
+      "63-menutogg.lst": "0aa1549df4c2a09520f93f892dc39d4f9d663a5eac0b44f22e2b421a8ef74b74",
+      "64-nkcclowr.lst": "9a9a9c67f7185ea28aa450a6a24dbf515f62944ae6f7c0ab770ff5096f99b0af",
+      "65-nkccuppr.lst": "64a07f41636592564c3136069acf68aa8141276996d2cb1476b676c3bca60899",
+      "66-obfindfl.lst": "b0649a1cf2b7cbf5ea6a633b37650cfa2c358f0ca650b1825f8858c81724149c",
+      "67-obgflag.lst": "3b7e939092013ea6e53ad8850dc0a63e8473b5a7bca81a7126dcc2ff20618ca3",
+      "68-obgframe.lst": "47f2441a938ef8846c84e7596790b00c7bba7b4e00d60cc12a76d44442d290f1",
+      "69-obglong.lst": "939816e2200d67b13da0e92478b005f7f63c3f8b1b44e355e32519f2a22e5c2f",
+      "70-obgshort.lst": "3dc785fcd99dd9ad2b406c8d7f29bea7832f12bb7c3f714deb6a51cb4d9daea5",
+      "71-obgspec.lst": "a230b879627e0a44516ee05c595d416d588ec78886dce2472e5fbca44dc7d4fa",
+      "72-obgstate.lst": "8b29d8ecc9e6cd353116423f4d86caf571f2033ae8d904fdd5b9b4b36c79cd20",
+      "73-obgstr.lst": "a806b2dbe49a7e3735b0528ae9e35048f20de58ae98e82d4a33579f8664de50e",
+      "74-obgtype.lst": "d964fbab0267b04f1aacc376d31116c0bfb6503132f848fa86c0d1be4404f402",
+      "75-obredraw.lst": "60fac90c99d0a571b2a67063fdcd3b0b3155699d2df7cef9854d272d839fff6a",
+      "76-obsflag.lst": "0c099612960fdccb98921f02781f78fbc5737d5802f3962e63cb3174a60a6d13",
+      "77-obslong.lst": "1be0cb369a2490283c7b4ec9fc785840f4653e044589ee322a59f6131f987312",
+      "78-obsshort.lst": "deec8033fced2225867b9c6156a4e0688b593c183b18412fd2c16e8b595b12ca",
+      "79-obsspec.lst": "ff9f47e25f520732eca0ac8d2ff464a9e469a977ecc2d8074a7ed5e3490f8fbc",
+      "80-obsstate.lst": "e1917943843f8cf6fb99b92808cf9124673e466d3ab6a283624fed14c28fd79e",
+      "81-obsstr.lst": "999458a452eb052cf016998c976ba30155f22c5d4ec8ac7daf088ce3e7f66193",
+      "82-obsulong.lst": "145c0548e369c24ffaee1f218535ee3ed5e3799de913d781e3eeb132247b4bc3",
+      "83-obtstate.lst": "be46fc188fdf3a6500278421e4afc592911dad86083d4926d5fbdc1aa45652ac",
+      "84-ol2ts.lst": "37d95f2523b71f914b07646fff00a6779bc38882201c09d92e6466bd89fb2853",
+      "85-patchlev.lst": "7d203d1f642b1f0787e893576030989c608d8d204db0c72169db28eb142c7079",
+      "86-ppappend.lst": "a503ef57698caad16139079f3c77b2abdfb61c85005b27c570d3b089f9cd8c19",
+      "87-ppcreate.lst": "edf93af887bbc24aea62dbcc8032965c26491da28bfca2f86223d9f25d3b2975",
+      "88-ppdo.lst": "651934926bd6468142c501c56a20da6b12b75e82bd66ac4be9a555baa8f13a69",
+      "89-ppfree.lst": "052f8181c044fc5914016e437258c6e90f02f3ab91b01155374660a3495dd402",
+      "90-pphandle.lst": "c830ab969eae7210c014f877b623f5fe9d51112d85730f8bd4e45584b31f716a",
+      "91-ppmenu.lst": "a71761a19551a6e2427a09d2ee18d612e6e1d8066b55766da80e41d9f38390ba",
+      "92-ppvalid.lst": "a41ed663a26cd049f2c27355568afa676d3e738a40614f17e116ad1fef9f0c8e",
+      "93-rpl_stat.lst": "a255426004782ec4cf5dec35a969cd44d7ae36660dafce2101adff5376009cd9",
+      "94-sendstrt.lst": "8fb5d00c87336c6779266b69420dab16f2b267050d6e4f318bde3e84a082cf43",
+      "95-ts2ol.lst": "47a7ba3bfbcf9b5ec0a65dac467a8e26bf616a03241aa54b6d4062e680aab6c5",
+      "96-vclip.lst": "4e9b3b077a955ed71ca1a9dbfa540d68eae6825ea1618db7be92e9d92273d233",
+      "97-vheight.lst": "dc3a8c513dcd96fa5417f0bdba73b344986b5ed8c50c572f60ba98af5f1534a2",
+      "98-vopnvwk.lst": "4118216ab2193e5e27f12db329a4cc6f60a035c1f3c0dd6b17359ccca02571ee",
+      "99-vqtrext.lst": "e93523eb95b0fd65e467171e9207903b33672f305923f9164f671a94f00aef0e",
+      "100-vstr2a.lst": "47ee9e53934ee7ff7be4f491a835e166c6ed175384b176e1d78da11a7468a733",
+      "101-wdcallcb.lst": "c4df28f6deb67983b75630dcf5f8457981553c30b462646cebaa566bc64d2471",
+      "102-wdchange.lst": "50c8a68d5f3bd3962d0f49bb12e18edc37be3e66d80b218d8f4b7fd106b44e21",
+      "103-wdclick.lst": "1304c36150842b10aa40c39052a7dc8fcf56d84062b093a05cbd5a8588b5ca74",
+      "104-wdclose.lst": "31d955d5992c5917ca12d5055b421e3b0f4113fad6cca18221fc3a3930d664fd",
+      "105-wdcreate.lst": "269b7f0c4e121739cf78bbfe605841ee7a063921a5b35046c1a21dcdc5532131",
+      "106-wddelete.lst": "cdda7a2b616297e29febedbcc16c06e370a4d731de14db06663a160037d76e41",
+      "107-wddraw.lst": "aaacbe4b8e0fa6de6b871f80b31114bb19af41749a4072dc2fa19caeb373a796",
+      "108-wddrawcr.lst": "9aa6e2a2ff710570a2708143a82768fcb578ba04e30e994f70c381a93d2d7b94",
+      "109-wdget.lst": "407801ca8a452fd7c857b856fa958f83bcd01d0fe49e592c23fd5a8627bbd079",
+      "110-wdial.lst": "67bd73d529f621c428c97ef90f0228fa25cdc6fc19eafe45ea6f1fb800b5e02c",
+      "111-wdiconif.lst": "97e5a3aa2517f8b7eba4936b54f801a974aa98df1839f379535ea4adda46db9f",
+      "112-wdkey.lst": "df10e493c9fa9e4fe0f9e2ac9ad6dcf293be893d0736f7761995e06cd7dc214d",
+      "113-wdmesag.lst": "696890c54ce7ca38b0e1440045c2377c85451889d73fd563e4b508288bdfb5a0",
+      "114-wdopen.lst": "8bba290a8000fe9d67402f870612235c0bb64fb8ec7903754ad9391350977f41",
+      "115-wdredri.lst": "db733b4aea77e846f8b80ab89d05119373d7fb77cbb1bf8344550b29a72f5dfd",
+      "116-wdredro.lst": "ad320c02ee8d6300890999cc6ef9ef195c813b5c0d296004853a28a37e289074",
+      "117-wdunico.lst": "1164bdfe8057bc9d8fa693e0aa235cbb12cebc19cfb554a3cae8d15add33f990",
+      "118-xgetinfo.lst": "f6bb54749b7bf2c5917ad0b702ef0c71e4a3dcbbc070eaf33ede3de45c02a884",
+      "119-nkccinit.lst": "a404615f47e0612e3f63cb06b9a4256e38593b93b84f97bb68eb255917102abf",
+      "120-nkccgton.lst": "6e63e656f040b76c8606d70fee38530c77381ec859077f2d0af113425395c062",
+      "121-allocation.lst": "3db9c400bebaf6ebd841b14741cb0560fa41316df6d6e09fa5ebd270a6e1c5ef",
+      "122-entry.lst": "7bec08f9b074dd5a88feb7898060a50245538b716ab5bc2c1d492ae5b0e08464",
+      "123-files.lst": "1373d8de4d6e5637a90271335be1c0e52cbc706277b81bbb751afe0c25ecbd3a",
+      "124-library.lst": "cf89eb1755b08d11f6d2bce901af66e294831f33cf7ca4bb07336b1ae6de6607",
+      "125-support.lst": "0874453145c2efea3d674dabe0f94e98f0d54703239a44ba6b0a5cb62e5d1713",
+      "126-gem-helpers.lst": "625731fcc00adfb1f9822f487e0208650836d4134296a024d012c31a0b361667",
+      "127-commands.lst": "75ab0be27015c54a23638a799f6d213c78beb6868d5036893c354072f6873415",
+      "128-document.lst": "8869bce7c92f6065ae27656e82f3c5301e74425fcc2f80f09a127660a5830a28",
+      "129-path.lst": "d2f46ebe9d5585d6b7ad3d1edb2b6c9e24c64509f25562be97df4d902bcdb3e1",
+      "130-stage.lst": "415d4dfbc2779bd9e6f27c6cf4be01f16afbb687cff123fd414536417fb04d20",
+      "131-save.lst": "6708a163da2e91061922b58038094a0d3a01f6874bd2758394f2aae4f4a5ab88",
+      "132-saving.lst": "af70a425da78a17b7ec34e1c8f900827fe94d434cd0c07755f9e8cb23d33264e",
+      "133-__fs_fdopen.lst": "27d4b1f1d47c899cdf5b7510ddc7d2bf876ac47a4049f03b1f8e22be596cb924"
+    },
+    "compiler_options": [
+      "--no-cross-call",
+      "--no-interprocedural-cross-jump",
+      "--no-inline"
+    ]
+  },
+  "frame_record": {
+    "path": "build/qed-saving/qw6-final/stack-frames.json",
+    "sha256": "49f285490359ea6a380518257ccce35182d54c5e9d9f52d6f98f6c7ce8c08d66"
+  },
+  "supplements": [
+    {
+      "path": "build/qed-saving/qw6-sdfs-final/continuation-audit.json",
+      "sha256": "2d517bf69f3f66fa4d0cb86fcff379dc11e1a50fbe6c1562b5986bae1d825fc0"
+    },
+    {
+      "path": "build/qed-saving/qw6-mydos/continuation-audit.json",
+      "sha256": "1a9495bb43fbb04334d9adcebee210e11cfade80ab42025337d96665ff514c07"
+    }
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Complete regions and task_pools equal the retained QS4 map, including guards/alignment/slack"
+  }
+}

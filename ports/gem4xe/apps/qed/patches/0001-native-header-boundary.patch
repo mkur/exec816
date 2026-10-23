@@ -1,0 +1,21 @@
+--- a/qed/src/global.h
++++ b/qed/src/global.h
+@@ -1,6 +1,7 @@
+ #ifndef _qed_global_h_
+ #define _qed_global_h_
+ 
++#include "qed-native.h"
+ #include <cflib.h>
+ #include <macros.h>
+ #include <mintbind.h>
+--- a/cflib/cflib.h
++++ b/cflib/cflib.h
+@@ -35,7 +35,7 @@
+ #include <aes.h>
+ #include <vdi.h>
+ #else
+-#include <gem.h>
++#include "qed-native.h"
+ #endif
+ 
+ #ifndef _WORD

@@ -20,6 +20,7 @@ WORD ExecAESWindowCalc(struct ExecAESContext *c, WORD type, WORD kind, WORD x, W
                WORD *ox, WORD *oy, WORD *ow, WORD *oh);
 WORD ExecAESDraw(struct ExecAESContext *c, OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h);
 WORD ExecAESGrafHandle(struct ExecAESContext *c, WORD *cw,WORD *ch,WORD *bw,WORD *bh);
+WORD ExecAESMouseState(struct ExecAESContext *,WORD *,WORD *,WORD *,WORD *);
 BOOL ExecAESMenus(struct ExecAESContext *,AESPB *);
 BOOL ExecAESObjects(struct ExecAESContext *,AESPB *);
 BOOL ExecAESForms(struct ExecAESContext *,AESPB *);

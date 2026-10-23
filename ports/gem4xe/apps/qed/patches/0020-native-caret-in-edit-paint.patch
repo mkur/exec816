@@ -1,0 +1,65 @@
+--- a/qed/src/ausgabe.c
++++ b/qed/src/ausgabe.c
+@@ -168,6 +168,13 @@
+         }
+     }
+     vswr_mode(vdi_handle,MD_REPLACE);
++    /* Character editing repaints the old caret and the new one in this update. */
++    if(t->cursor && !t->blink && absolute==t->ypos){
++        long x=(long)w->work.g_x+cursor_xpos(t,t->xpos,NULL)-w->doc.x*font_wcell;
++        if(x>=w->work.g_x && x<(long)w->work.g_x+w->work.g_w)
++            fill_area((short)x,y,min(overwrite?font_wcell:2,
++                w->work.g_x+w->work.g_w-(short)x),font_hcell,fg_color);
++    }
+ }
+ 
+ void bild_out(WINDOWP w,TEXTP t)
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -857,7 +857,7 @@
+ 	if (window!=NULL && window->class==CLASS_EDIT)
+ 	{
+ 		t_ptr = get_text(window->handle);
+-		if (t_ptr->cursor)
++		if (t_ptr->cursor && t_ptr->blink)
+ 		{
+ 			t_ptr->blink = FALSE;
+ 			cursor(window,t_ptr);
+--- a/qed/src/event.c
++++ b/qed/src/event.c
+@@ -237,6 +237,19 @@
+ /* Ereignis-Verarbeitung																										 */
+ /*****************************************************************************/
+ 
++/* A character edit will repaint this row, including the old/new caret.
++ * A failed/no-op edit still needs that row to restore the visible caret. */
++static void prepare_key_caret(short kstate,short key)
++{
++    WINDOWP w=winlist_top();
++    unsigned char ch=(unsigned char)key;
++    if(w && w->class==CLASS_EDIT && !(kstate&K_CTRL) &&
++       (ch>=32 || ch==8 || ch==9 || ch==13)){
++        TEXTP t=get_text(w->handle);
++        t->blink=FALSE;make_chg(t->link,LINE_CHANGE,t->ypos);
++    }else offblink_edit();
++}
++
+ static void handle_keybd(short kstate,short kreturn)
+ {
+     WINDOWP window;
+@@ -416,9 +429,12 @@
+             if(done)break;
+         }
+         if(ev.which&MU_KEYBD){
+-            offblink_edit();
+-            if(QedSavingBusy())QedSavingKey(ev.kstate,ev.kreturn);
+-            else{QedCommandsCancel();handle_keybd(ev.kstate,ev.kreturn);}
++            if(QedSavingBusy()){
++                offblink_edit();QedSavingKey(ev.kstate,ev.kreturn);
++            }else{
++                prepare_key_caret(ev.kstate,ev.kreturn);
++                QedCommandsCancel();handle_keybd(ev.kstate,ev.kreturn);
++            }
+             if(done)break;
+         }
+         state=QedPointerState();

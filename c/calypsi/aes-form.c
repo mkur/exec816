@@ -338,6 +338,8 @@ WORD ExecAESFormRun(struct ExecAESContext *c,WORD start)
         if (events&MU_KEYBD) {
             if (f->down) {
                 if ((f->key&255)==27) ExecAESFormCancelPress(f);
+            } else if ((f->key&255)==27) {
+                result=-1; break;
             } else if (f->focus!=NIL) {
                 next=f->focus;
                 if (f->key==0x4800 || f->key==0x5000) {

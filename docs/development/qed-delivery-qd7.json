@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "distribution_ready": true,
+  "unresolved": [],
+  "requirements": {
+    "launch": {
+      "scope_row": "Launch and exit",
+      "status": "pass",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-delivery-qd4.json",
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
+    },
+    "document": {
+      "scope_row": "Document ownership",
+      "status": "pass",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
+    },
+    "text": {
+      "scope_row": "Text",
+      "status": "pass",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
+    },
+    "editing": {
+      "scope_row": "Editing",
+      "status": "pass",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
+    },
+    "search": {
+      "scope_row": "Search",
+      "status": "pass",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
+    },
+    "files": {
+      "scope_row": "Files",
+      "status": "pass",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
+    },
+    "appearance": {
+      "scope_row": "Appearance and dialogs",
+      "status": "pass",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
+    },
+    "settings": {
+      "scope_row": "Settings",
+      "status": "pass",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-delivery-qd5.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
+    },
+    "coexistence": {
+      "scope_row": "Coexistence",
+      "status": "pass",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-delivery-qd5.json",
+        "docs/development/qed-coexistence-qc4.json"
+      ],
+      "contract": "docs/plans/gem4xe/qed-scope-and-dependencies.md"
+    }
+  },
+  "deferrals": [
+    "multiple documents/instances",
+    "replace/pattern search",
+    "external clipboard",
+    "printing/external fonts",
+    "QED preferences/autosave",
+    "AV/OLGA/SE/MiNT integration",
+    "power-loss atomicity",
+    "same-target concurrent writers",
+    "automatic disk repair"
+  ],
+  "bundle": "/Users/michalkurcewicz/action/exec816-public/build/qed-delivery/final-v2",
+  "zip_sha256": "284529af5acd646d5c67870409d2ccec6a45891d20078ec35c53682bd234a2a6",
+  "members": [
+    "ALTIRRAOS-LICENSE.txt",
+    "CALCULATOR-COPYING.LIB.txt",
+    "CALCULATOR-COPYING.txt",
+    "CALCULATOR-LICENSING.md",
+    "CALCULATOR-PROVENANCE.txt",
+    "EXEC816-GPL-3.0.txt",
+    "EXEC816-LICENSING.md",
+    "EXEC816-MIT.txt",
+    "Exec-of816.xex",
+    "G4BENCH-COPYING.LIB.txt",
+    "G4BENCH-COPYING.txt",
+    "G4BENCH-LICENSING.md",
+    "G4BENCH-PROVENANCE.txt",
+    "GEM-COPYING.LIB.txt",
+    "GEM-COPYING.txt",
+    "GEM-FONT-NOTICE.txt",
+    "GEM-LICENSING.md",
+    "OF816-LICENSE.txt",
+    "QED-APACHE-2.0.txt",
+    "QED-COPYING.LIB.txt",
+    "QED-NOTICE.txt",
+    "QED-PROVENANCE.txt",
+    "QED-TERMS.txt",
+    "README.txt",
+    "SHA256SUMS",
+    "altirraos-816.rom",
+    "system.atr",
+    "work.atr"
+  ],
+  "app_sha256": "2c516eaa36c4fd2f3fc60661070790f671cea9633225ff66b30f8f91ca65c1a7",
+  "resource_sha256": "9095194c1b2055ecbd31b6bcde7604a47dd6da6d4796e0b4b1a52993588d08e7",
+  "provider_identity": "5408e60ed7efd8cdccb791d753b508a16afd9fa65371cdc7461ad5d95f6f2d1e",
+  "gates": {
+    "qd1": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/docs/development/qed-delivery-qd1.json",
+      "sha256": "0deed995316d1ee381eeb5233bdd717f6e08ac6bf63222e448fe97f4a2170bbe"
+    },
+    "qd2": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/docs/development/qed-delivery-qd2.json",
+      "sha256": "ce511383b7c1cd134136c151f59465b314228f1a0ea467e0d37f37c38cb55e44"
+    },
+    "qd3": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/docs/development/qed-delivery-qd3.json",
+      "sha256": "a85b1bfeda159ff5d6a42716cbaf6cd5c0c965d14bf07182302477eb67fd68f5"
+    },
+    "qd4": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/docs/development/qed-delivery-qd4.json",
+      "sha256": "64a39802a4da54033a635cf88eb21ed02561b4dd1cdf4ff16d2ae4430ef35be2"
+    },
+    "qd5": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/docs/development/qed-delivery-qd5.json",
+      "sha256": "3d1292ab8c5e68df16f0c205f0023b2e50a5c904564acdfdaadc8a7f4279f3ee"
+    },
+    "qd6": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/docs/development/qed-delivery-qd6.json",
+      "sha256": "cd0d1e87039dbdcede3719059855c7afdd89d4a76a324aac35f81b3867f4a22f"
+    }
+  },
+  "final_execution": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/qed-delivery/final-v2-execution/delivery-final-results.json",
+    "sha256": "afdc9de44fd60946c1d5bde8826b497c1ab76a0707159a946c1a22ebcad3de17"
+  },
+  "source_companion": {
+    "sha256": "b0201ce1ec17cec18ea2f3d24fc48f7fcf40bd9c76e14eae9860c6dd5383433d",
+    "source_revision": "5d901b5f4efce8d1bbff6b7cd20dd3c83adfa7b0",
+    "files": 4015
+  },
+  "reproducibility": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/qed-delivery/final-v2-repro-results.json",
+    "sha256": "7c8480ecd79e8fc478c84a4ff513d24072ac90963734d1bc48c3864daeea477c"
+  },
+  "allocation": {
+    "sectors": 2880,
+    "sector_bytes": 256,
+    "allocated": 47,
+    "free": 2833,
+    "files": 16,
+    "directories": 2
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  },
+  "recorder_sha256": "25e637efe7a6b59e691a3cd9bcffe33a019945c35f21d962186189a29c12d95a",
+  "release": "Separate full qualification, matching cartridges and publication remain"
+}

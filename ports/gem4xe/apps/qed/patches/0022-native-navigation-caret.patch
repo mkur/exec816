@@ -1,0 +1,55 @@
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -1100,7 +1100,7 @@
+ void restore_edit(void)
+ {
+     long oldx,oldy,first,last;
+-    bool clamped;
++    bool clamped,painted;
+     short i,link;
+     WINDOWP w;
+     TEXTP t;
+@@ -1121,6 +1121,9 @@
+         if(clamped){
+             area=w->work;redraw_window(w,&area);continue;
+         }
++        /* Cursor revelation's scroll owner has already painted this viewport. */
++        if(w->doc.x!=oldx || w->doc.y!=oldy)continue;
++        painted=FALSE;
+         for(i=0;i<chg_anz;i++){
+             if(chg[i].link!=link)continue;
+             if(chg[i].c==POS_CHANGE || chg[i].c==WT_CHANGE || chg[i].c==NOP_CHANGE)continue;
+@@ -1139,6 +1142,16 @@
+                 area.g_y+=(short)first*font_hcell;
+                 area.g_h=(short)(last-first+1)*font_hcell;
+             }
++            first=t->ypos-w->doc.y;
++            if(first>=0 && first<w->w_height &&
++               area.g_y<=w->work.g_y+first*font_hcell &&
++               area.g_y+area.g_h>w->work.g_y+first*font_hcell)painted=TRUE;
++            redraw_window(w,&area);
++        }
++        /* Navigation can move the caret to a row outside the text damage. */
++        first=t->ypos-w->doc.y;
++        if(!painted && t->cursor && !t->blink && first>=0 && first<w->w_height){
++            area=w->work;area.g_y+=(short)first*font_hcell;area.g_h=font_hcell;
+             redraw_window(w,&area);
+         }
+     }
+--- a/qed/src/event.c
++++ b/qed/src/event.c
+@@ -242,9 +242,11 @@
+ static void prepare_key_caret(short kstate,short key)
+ {
+     WINDOWP w=winlist_top();
+-    unsigned char ch=(unsigned char)key;
+-    if(w && w->class==CLASS_EDIT && !(kstate&K_CTRL) &&
+-       (ch>=32 || ch==8 || ch==9 || ch==13)){
++    unsigned char ch=(unsigned char)key,scan=(unsigned short)key>>8;
++    bool navigation=scan==0x48 || scan==0x50 || scan==0x4b || scan==0x4d ||
++        scan==0x47 || scan==0x4f || scan==0x49 || scan==0x51;
++    if(w && w->class==CLASS_EDIT && (navigation || (!(kstate&K_CTRL) &&
++       (ch>=32 || ch==8 || ch==9 || ch==13)))){
+         TEXTP t=get_text(w->handle);
+         t->blink=FALSE;make_chg(t->link,LINE_CHANGE,t->ypos);
+     }else offblink_edit();

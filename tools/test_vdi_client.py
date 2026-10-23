@@ -4,7 +4,7 @@ from native_program import require,sha256
 from os_boundary import run_to
 from desktop_mouse import schedule
 from gem_render_oracle import Raster,font_bytes
-from test_desktop_presentation import rectangle,frame,desktop,text,menu_bar
+from test_desktop_presentation import rectangle,frame,desktop,text,menu_bar,shell_tabs
 from test_gem_cursor import overlay
 from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
@@ -32,7 +32,8 @@ def extract_with_preemption(folder):
 
 def expected(font, covered=False):
     r=Raster(font);desktop(r)
-    frame(r,(32,29,560,202),b'Shell',False)
+    frame(r,(32,29,560,218),b'Shell',False)
+    shell_tabs(r,(32,29,560,218))
     long_text=bytes(65+i%26 for i in range(192))
     for who,(x,y) in enumerate(((32,17),(32,17) if covered else (200,65))):
         frame(r,(x,y,x+400,y+140),b'VDI B' if who else b'VDI A',bool(who),close=True)
@@ -76,6 +77,29 @@ def clipped_scene(font):
         r.text=0 if i>=10 else 6
         r.apply(8,(-5 if i==9 else l+x,t+i*9+6),bank_text if i==9 else b'A W09 BC DEF')
     r.clip=(0,0,639,239)
+    return r
+
+
+def mode_scene(font):
+    r=clipped_scene(font)
+    def ink(x,y,value):
+        for i,ch in enumerate(value):
+            for yy in range(8):
+                for xx in range(8):
+                    if font[yy*256+ch]&(128>>xx):r.pixel(x+i*8+xx,y-6+yy,r.text)
+    original=r.pixel
+    for who,(l,t) in enumerate(((40,28),(208,76))):
+        r.pixel=lambda x,y,pen: original(x,y,pen) if who or not (200<=x<600 and 65<=y<205) else None
+        r.clip=(l,t,l+383,t+126);r.fill=5;r.apply(11,(l,t,l+383,t+44))
+        r.text=0;ink(l+1,t+6,b'A W09 BC')
+        r.clip=(l+14,t+11,l+103,t+14);r.text=6;ink(l+11,t+15,b'A W09 BC DEF')
+        r.clip=(l,t,l+383,t+126);ink(l+3,t+24,b'still transparent')
+        r.apply(8,(l+1,t+33),b'replace paper')
+        r.fill=4;r.apply(11,(l,t+36,l+31,t+39));r.apply(11,(l+32,t+36,l+63,t+39))
+        r.fill=3;r.apply(11,(l,t+48,l+127,t+55));r.text=1
+        if who:ink(l+1,t+54,b'Own mode')
+        else:r.apply(8,(l+1,t+54),b'Own mode')
+    r.pixel=original
     return r
 
 
@@ -126,4 +150,6 @@ def physical(b,p,foreign,report):
     report['clip_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
     position=schedule(b,p,position,(620,232));frames(80)
     report['clip_cursor_restored_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
-    b.poke16(sy['VDIGo'],6);b.bp_clear_all()
+    b.poke16(sy['VDIGo'],6);phase(7);frames(40)
+    report['mode_pixels']=pixels(b,out,overlay(mode_scene(model.font),position),palette=DESKTOP_PALETTE)
+    b.poke16(sy['VDIGo'],7);b.bp_clear_all()

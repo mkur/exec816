@@ -1,0 +1,42 @@
+--- a/qed/src/ausgabe.c
++++ b/qed/src/ausgabe.c
+@@ -133,9 +133,11 @@
+     short tab=t->loc_opt->tabsize,remaining=tab;
+     short y=w->work.g_y+row*font_hcell;
+     char ch;
+-    bool mark;
+-    fill_area(w->work.g_x,y,w->work.g_w,font_hcell,bg_color);
+-    if(!line){vswr_mode(vdi_handle,MD_REPLACE);return;}
++    bool mark,plain;
++    if(!line){
++        fill_area(w->work.g_x,y,w->work.g_w,font_hcell,bg_color);
++        vswr_mode(vdi_handle,MD_REPLACE);return;
++    }
+     if(limit>80)limit=80;
+     memset(cells,' ',limit);memset(marked,0,limit);
+     while(index<line->len && column<w->doc.x+limit){
+@@ -155,6 +157,16 @@
+     if(index==line->len && !IS_LAST(line) && column>=w->doc.x &&
+        column<w->doc.x+limit && selected_byte(t,absolute,line->len))
+         marked[(short)(column-w->doc.x)]=1;
++    /* Native replace-mode text supplies paper colour zero. One opaque run
++     * paints the complete ordinary row without a separate physical bar unit. */
++    plain=bg_color==0;
++    for(first=0;plain && first<limit;first++)if(marked[first])plain=FALSE;
++    if(plain){
++        cells[limit]=0;vswr_mode(vdi_handle,MD_REPLACE);
++        vst_color(vdi_handle,fg_color);
++        v_gtext(vdi_handle,w->work.g_x,y+EXEC_VDI_FONT_TOP,cells);
++    }else{
++    fill_area(w->work.g_x,y,w->work.g_w,font_hcell,bg_color);
+     vswr_mode(vdi_handle,MD_TRANS);
+     for(first=0;first<limit;first=last){
+         for(last=first+1;last<limit && marked[last]==marked[first];last++);
+@@ -166,6 +178,7 @@
+             vst_color(vdi_handle,marked[first]?fg_block_color:fg_color);
+             v_gtext(vdi_handle,w->work.g_x+first*font_wcell,y+EXEC_VDI_FONT_TOP,run);
+         }
++    }
+     }
+     vswr_mode(vdi_handle,MD_REPLACE);
+     /* Character editing repaints the old caret and the new one in this update. */

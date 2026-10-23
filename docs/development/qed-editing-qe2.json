@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "slice": "QE2",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "audit": {
+    "path": "build/qed-editing/qe2-baseline.json",
+    "sha256": "c4382cb1adb8f4fa4754c07429b8457cfacdb6a622bc3bb1c33ed72ee7933325",
+    "auditor_sha256": "cff6d047bdfb64867d323e41886358aaae169fd14300faeafd78ea2f7ee37062",
+    "provider_identity": "f1f689ce4123b05bca96446919009bdc023e8abd5effbb4b9155622e1a632129"
+  },
+  "source_pins": {
+    "qed": {
+      "revision": "454beb35fccd72c15a8494431f6637cd0cb553c7",
+      "tree": "842d0ed962f431b98fbba1a7038020b5805338bc"
+    },
+    "cflib": {
+      "revision": "ce57817c3f68c7d346d1081768505e81acaee807",
+      "tree": "aa00256dc44096969025e2a1e1a03dcfa738547c"
+    }
+  },
+  "host_checks": {
+    "path": "build/qed-editing/qe2-host.log",
+    "sha256": "4f55b1712e78ac0b2e926a19c9332a0d39740b48fd0344648da5bbb9db7678b9",
+    "tests": 529,
+    "expected_skips": 4
+  },
+  "executable": {
+    "path": "build/qed-editing/qe2-app",
+    "sha256": "49dd6e25b784f9f42fb032143f17921a8ab23d041ec0ea49064371f97c5ab1c6",
+    "layout": {
+      "code_bytes": 119564,
+      "initialized_bytes": 1399,
+      "bss_bytes": 27525,
+      "import_thunk_bytes": 400,
+      "span_bytes": 185100,
+      "image_holes_bytes": 36612,
+      "serialized_bytes_if_executable": 134847,
+      "relocation_count": 3247,
+      "heap_alignment_backing_bytes": 250636,
+      "future_full_profile_backing_bytes": 393216,
+      "private_allowances": {
+        "code_bytes": 32768,
+        "data_bss_bytes": 16384
+      },
+      "container_metadata_allowance_bytes": 16384,
+      "resident_provider_allowances": {
+        "code_bytes": 16384,
+        "data_bss_bytes": 16384,
+        "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+        "table_bytes": 4096
+      }
+    },
+    "requested_image_backing_bytes": 250635,
+    "rounded_image_backing_bytes": 250640,
+    "backing_basis": "CAPP bank-alignment request, rounded to the public heap eight-byte allocation; historical layout field rounds to four bytes"
+  },
+  "frame_ledger": {
+    "source_chain_bytes": 1064,
+    "continuation_cap_bytes": 768,
+    "interrupt_reserve_bytes": 256,
+    "required_headroom_bytes": 128,
+    "admission_bytes": 2560,
+    "margin_bytes": 344
+  },
+  "growth_from_QS5": {
+    "private": {
+      "code_bytes": -19062,
+      "data_bss_bytes": 974,
+      "metadata_bytes": -1316
+    },
+    "provider": {
+      "code_bytes": 221,
+      "table_bytes": 0,
+      "data_bss_bytes": 0
+    }
+  },
+  "provider_remaining_allowances": {
+    "code_bytes": 15183,
+    "table_bytes": 4096,
+    "data_bss_bytes": 16384
+  },
+  "executed": [
+    {
+      "path": "build/qed-editing/qe2",
+      "results_sha256": "2e83d49a313330e5be65c2b49a77ee745731b6348e531439deebf43ce4e8309e",
+      "completed": [
+        4
+      ],
+      "checks": [
+        13310
+      ],
+      "snapshots": [
+        "viewport-empty",
+        "short-line-end",
+        "short-up",
+        "short-desired-column",
+        "short-line-start",
+        "covered-document",
+        "moved-document",
+        "covered-after-move",
+        "exposed-document",
+        "full-document",
+        "restored-document",
+        "resized-document",
+        "vertical-end",
+        "vertical-up",
+        "vertical-down",
+        "vertical-page-up",
+        "vertical-page-down",
+        "vertical-thumb-top",
+        "cursor-revealed",
+        "viewport-empty",
+        "viewport-empty",
+        "viewport-empty"
+      ],
+      "minimum_headroom": 1334,
+      "peer_app_sha256": "585cde3986f44435674fd369e276ddde8cc63549d9bea7f2707a3e7102bf8904"
+    },
+    {
+      "path": "build/qed-editing/qe2-long",
+      "results_sha256": "b694ad2e8e355814d48c34ca174fc9c01c93be56e0ed53a440753717330fa85c",
+      "completed": [
+        4
+      ],
+      "checks": [
+        1675
+      ],
+      "snapshots": [
+        "viewport-empty",
+        "wide-line-end",
+        "wide-up",
+        "wide-desired-column",
+        "wide-line-start",
+        "covered-document",
+        "moved-document",
+        "covered-after-move",
+        "exposed-document",
+        "full-document",
+        "restored-document",
+        "resized-document",
+        "vertical-end",
+        "vertical-up",
+        "vertical-down",
+        "vertical-page-up",
+        "vertical-page-down",
+        "vertical-thumb-top",
+        "cursor-revealed",
+        "viewport-empty",
+        "viewport-empty",
+        "viewport-empty"
+      ],
+      "minimum_headroom": 1334,
+      "peer_app_sha256": "585cde3986f44435674fd369e276ddde8cc63549d9bea7f2707a3e7102bf8904"
+    },
+    {
+      "path": "build/qed-editing/qe2-modes-opt",
+      "results_sha256": "1701433c25b412500ce2b816ac9ac78fd0278cfd8c2d9ea2fd16348c35084a0b",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 599
+    },
+    {
+      "path": "build/qed-editing/qe2-modes-raw",
+      "results_sha256": "5f78563d31eaca8623f4fa8dec15c506ad84ef4fb356c19b30d9af04d3204c05",
+      "completed": [
+        2
+      ],
+      "checks": [
+        14
+      ],
+      "snapshots": [],
+      "minimum_headroom": 599
+    }
+  ],
+  "supplemental": [
+    {
+      "path": "build/qed-editing/qe2-vdi",
+      "results_sha256": "a4184b6ea96068c91808cdab07356eb5047a3feb2d325e5f4028d11b99a3e56d",
+      "provider_sha256": "96fff1a8becc18339cfb8b679cee9d8a2dbcbe9a9bd4f4c9d5558020bb6044d1",
+      "checks": 463,
+      "mode_pixels": "6ad7b2cf7a4ff4710e0570accd6fdf64c0f0fb9f2c3a141dab399e830e7f4630",
+      "scope": "Instrumented general VDI provider; separate from production provider identity"
+    }
+  ],
+  "private_heap": {
+    "peak_backing_bytes": 53359,
+    "basis": "Private allocation headers included; underlying allocator rounding and native GUI owners charged separately"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Complete Task-pool and region maps equal QS5; guards, alignment and slack included"
+  },
+  "recorder_sha256": "ca739c6466df14594fbe20e9bb4b3361b695d361d52c4026de5ae9ea7e5349d1"
+}

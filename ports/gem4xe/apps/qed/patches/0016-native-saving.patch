@@ -1,0 +1,856 @@
+--- a/qed/src/event.h
++++ b/qed/src/event.h
+@@ -2,6 +2,7 @@
+ #define _qed_event_h_
+ 
+ extern bool		abort_prog;
++extern bool QedEventsPending(void);
+ 
+ extern bool		check_for_abbruch	(void);
+ extern void		main_loop			(void);
+--- a/qed/src/event.c
++++ b/qed/src/event.c
+@@ -8,6 +8,7 @@
+ #include "file.h"
+ #include "find.h"
+ #include "qed-commands.h"
++#include "qed-saving.h"
+ #include "icon.h"
+ #include "menu.h"
+ #include "makro.h"
+@@ -80,6 +81,8 @@
+ {
+ 	return (msg_head != msg_tail);
+ }
++
++bool QedEventsPending(void){return is_event();}
+ 
+ static bool full_event(void)
+ {
+@@ -338,7 +341,7 @@
+ 			break;
+ 		case WM_CLOSED  :
+ 
+-			if(prepare_quit())do_quit();
++			QedExitStart();
+ 			break;
+ 		case WM_FULLED  :
+ 
+@@ -390,8 +393,7 @@
+ 			if (all_iconified)
+ 				all_uniconify(NULL, NULL);
+ 			quick_close = FALSE;
+-			if (prepare_quit())
+-				do_quit();
++			QedExitStart();
+ 			break;
+         /* Other donor actions are outside the initial native scope. */
+ 
+@@ -407,24 +409,28 @@
+     while(!done){
+         next_action(&ev);
+         if(!ev.which)continue;
++        QedSavingObserved(ev.which);
+         if(ev.which&MU_MESAG){
+-            offblink_edit();QedCommandsMessage(ev.msg);handle_msg(ev.msg);
++            offblink_edit();
++            if(!QedSavingMessage(ev.msg)){QedCommandsMessage(ev.msg);handle_msg(ev.msg);}
+             if(done)break;
+         }
+         if(ev.which&MU_KEYBD){
+-            offblink_edit();QedCommandsCancel();handle_keybd(ev.kstate,ev.kreturn);
++            offblink_edit();
++            if(QedSavingBusy())QedSavingKey(ev.kstate,ev.kreturn);
++            else{QedCommandsCancel();handle_keybd(ev.kstate,ev.kreturn);}
+             if(done)break;
+         }
+         state=QedPointerState();
+-        if(state && (ev.which&(MU_BUTTON|MU_M1|MU_TIMER))){
++        if(!QedSavingBusy() && state && (ev.which&(MU_BUTTON|MU_M1|MU_TIMER))){
+             offblink_edit();
+             QedPointerEvent(ev.m_x,ev.m_y,ev.bstate,(ev.which&MU_TIMER)!=0);
+-        }else if((ev.which&MU_BUTTON) && (ev.bstate&1)){
++        }else if(!QedSavingBusy() && (ev.which&MU_BUTTON) && (ev.bstate&1)){
+             offblink_edit();QedCommandsCancel();handle_button(ev.m_x,ev.m_y,ev.bstate,ev.kstate,ev.breturn);
+         }else if(ev.which==MU_TIMER && blinking_cursor)blink_edit();
+         if(ev.which&MU_M1)wake_mouse();
+         restore_edit();QedCommandsStep();restore_edit();update_menu();end_undo_seq();
+         if(ev.which!=MU_TIMER)onblink_edit();
+     }
+-    QedCommandsCancel();QedPointerCancel();
+-}
++    QedCommandsCancel();QedPointerCancel();QedSavingShutdown();
++}
+--- a/qed/src/menu.c
++++ b/qed/src/menu.c
+@@ -9,6 +9,7 @@
+ #include "file.h"
+ #include "find.h"
+ #include "qed-commands.h"
++#include "qed-saving.h"
+ #include "icon.h"
+ #include "kurzel.h"
+ #include "makro.h"
+@@ -56,47 +57,8 @@
+ }
+ 
+ /***************************************************************************/
+-bool prepare_quit(void)
+-{
+-	short	anz, i;
+-	short	ic, icp[MAX_ICON_ANZ];
+-	static SET	actions;
+-
+-	if (makro_rec)
+-		return FALSE;
+-
+-	/* Erst alle testen, dann alle killen */
+-	anz = all_icons(icp);
+-	i = anz;
+-	while ((--i)>=0)
+-	{
+-		ic = icp[i];
+-		if (ic!=0)
+-		{
+-			icon_exist(ic, actions);
+-			if (setin(actions, DO_DELETE))
+-				if (!icon_test(ic, DO_DELETE))
+-					return FALSE;
+-		}
+-	}
+-	i = anz;
+-	while ((--i)>=0)
+-	{
+-		ic = icp[i];
+-		if (ic!=0)
+-		{
+-			icon_exist(ic, actions);
+-			if (setin(actions, DO_DELETE))
+-				icon_edit(ic, DO_DELETE);
+-		}
+-	}
+-debug("before quit\n");
+-	return TRUE;
+-}
+-
+ void do_quit(void)
+ {
+-	kill_memory();
+ 	done = TRUE;
+ }
+ 
+@@ -149,7 +111,11 @@
+     set_menu(MCLOSE,w!=NULL);
+     /* Commands become available only with their executable slice. */
+     set_menu(MABOUT,TRUE);set_menu(MNEWTEXT,w!=NULL);set_menu(MOPEN,w!=NULL);
+-    set_menu(MSAVE,FALSE);set_menu(MSAVENEW,FALSE);
++    set_menu(MSAVE,w!=NULL && !QedSavingBusy());set_menu(MSAVENEW,w!=NULL && !QedSavingBusy());
++    if(QedSavingBusy()){
++        for(i=0;i<sizeof(menu_actions)/sizeof(menu_actions[0]);i++)set_menu(menu_actions[i][0],FALSE);
++        set_menu(MNEWTEXT,FALSE);set_menu(MOPEN,FALSE);
++    }
+     /* Select All follows the current document actions. */
+     mark_menu(MOEINF,!overwrite);
+     mark_menu(MOOVERW,overwrite);
+@@ -297,13 +263,7 @@
+         /* Other donor actions are outside the initial native scope. */
+ 
+         case MQUIT:
+-
+-				if (prepare_quit())
+-				{
+-					menu_tnormal(menu, title, TRUE);
+-					do_quit();
+-				}
+-				break;
++            QedExitStart();break;
+ 
+ /* Bearbeiten */
+ 			case MUNDO	 :
+@@ -333,7 +293,7 @@
+ 
+         case MCLOSE:
+ 
+-				if(prepare_quit())do_quit();
++				QedExitStart();
+ 				break;
+         /* Other donor actions are outside the initial native scope. */
+ 
+--- a/qed/src/menu.h
++++ b/qed/src/menu.h
+@@ -17,7 +17,6 @@
+ /*
+  * Programmende vorbereiten und durchfhren.
+ */
+-extern bool 	prepare_quit	(void);
+ extern void 	do_quit			(void);
+ 
+ #endif
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -9,6 +9,7 @@
+ #include "av.h"
+ #include "block.h"
+ #include "qed-commands.h"
++#include "qed-saving.h"
+ #include "clipbrd.h"
+ #include "comm.h"
+ #include "dd.h"
+@@ -324,49 +325,10 @@
+  /* print_edit */
+ 
+ 
+-void close_edit(char *mask, short flag)
+-{
+-	short i, min;
+-	
+-	min = setmin(used_info);
+-	for (i = setmax(used_info); i >= min; i--)
+-	{
+-		if (setin(used_info, i))
+-		{
+-			TEXTP t_ptr = get_text(i);
+-
+-			if (filematch(t_ptr->filename, mask, t_ptr->filesys))
+-			{
+-				switch (flag)
+-				{
+-					case 0 :							/* sichern ohne schliežen */
+-						if (t_ptr->moved)			/* nur wenn n”tig! */
+-							do_icon(i, DO_SAVE);
+-						break;
+-
+-					case 1 :							/* sichern und schliežen */
+-						do_icon(i, DO_DELETE);
+-						break;
+-
+-					case 2 :							/* schliežen ohne sichern */
+-						t_ptr->moved = 0;
+-						do_icon(i, DO_DELETE);
+-						break;
+-
+-					default:
+-						debug("close_edit: Unknown SE_CLOSE Flag %d\n", flag);
+-						break;
+-				}
+-			}
+-		}
+-	}
+-}
+-
+-
++/* Destructive policy belongs to the outer native command controller. */
+ static bool delete_edit(short icon,TEXTP t)
+ {
+-    (void)icon;
+-    return !t->moved || form_alert(2,"[2][Discard unsaved changes?][Discard|Cancel]")==1;
++    (void)icon;(void)t;return TRUE;
+ }
+ 
+ /***************************************************************************/
+@@ -701,7 +663,7 @@
+ 
+ static bool e_icon_test(short icon, short action)
+ {
+-    if(action==DO_SAVE || action==DO_SAVENEW)return FALSE;
++    if(action==DO_SAVE || action==DO_SAVENEW)return !QedSavingBusy();
+ 
+ 	bool	 erg;
+ 	TEXTP 	 t_ptr = get_text(icon);
+@@ -769,7 +731,6 @@
+ 
+ static short e_icon_edit(short icon, short action)
+ {
+-    if(action==DO_SAVE || action==DO_SAVENEW)return -1;
+ 
+ 	static PATH	name;
+     memset(name,0,sizeof(name));
+@@ -848,86 +809,8 @@
+ 			break;
+         /* Other donor actions are outside the initial native scope. */
+ 
+-        case DO_SAVE:
+-
+-			if (!t_ptr->namenlos)
+-			{
+-				t_ptr->blk_mark_mode = FALSE;
+-				if (t_ptr->loc_opt->umbrechen)
+-					save_absatz(t_ptr);					/* Zeilenende korrigieren */
+-				if (save(t_ptr)<0)
+-					erg = -1;
+-				else
+-					erg = 1;
+-
+-				make_chg(icon, WT_CHANGE, 0);			/* nur Fenstertitel schreiben */
+-				restore_edit();
+-				break;
+-			}
+-			/* Bei Namenlos zu DO_SAVENEW */
+-		case DO_SAVENEW:
+-
+-			t_ptr->blk_mark_mode = FALSE;
+-			if (t_ptr->block)
+-			{
+-				strcpy(name, "");
+-				if (save_new(name, "", rsc_string(SAVEBLKSTR)))
+-				{
+-					TEXTP temp_ptr;
+-
+-					temp_ptr = new_text(TEMP_LINK);
+-					if (t_ptr->loc_opt->umbrechen)	/* Zeilenende korrigieren */
+-						save_absatz(t_ptr);
+-					block_copy(t_ptr,&temp_ptr->text);	/* Block rauskopieren */
+-					temp_ptr->cursor_line = FIRST(&t_ptr->text);
+-					temp_ptr->loc_opt = t_ptr->loc_opt;
+-					erg = save_as(temp_ptr,name);
+-					destruct_text(temp_ptr);
+-					if (erg==0)
+-						erg = 1;
+-				}
+-				else
+-					erg = -1;
+-			}
+-			else
+-			{
+-				strcpy(name, t_ptr->filename);
+-				if (save_new(name, "", rsc_string(SAVEASSTR)))
+-				{
+-					bool umb_old = t_ptr->loc_opt->umbrechen;
+-					
+-					if (t_ptr->loc_opt->umbrechen)	/* Zeilenende korrigieren */
+-						save_absatz(t_ptr);
+-					if (save_as(t_ptr, name) == 0)
+-					{
+-						if (t_ptr->namenlos || note(1, 2, GETNAME) == 1)
+-						{
+-							/* OLGA informieren */
+-							do_olga(OLGA_RENAME, t_ptr->filename, name);
+-							do_olga(OLGA_UPDATE, name, NULL);
+-							set_text_name(t_ptr, name, FALSE);
+-							hl_init_text(t_ptr);
+-								
+-							chg_edit_name(icon);
+-							t_ptr->moved = 0;
+-							t_ptr->file_date_time = file_time(name,NULL,NULL);
+-							t_ptr->readonly = file_readonly(name);
+-						}
+-						make_chg(icon, TOTAL_CHANGE, 0); /* ggf. neue lok. Optionen! */
+-						make_chg(icon, WT_CHANGE, 0);		/* Headline schreiben */
+-						ch_kurzel(t_ptr->loc_opt->kurzel, FALSE);
+-						if (umb_old != t_ptr->loc_opt->umbrechen)
+-							make_absatz(t_ptr);
+-						restore_edit();
+-						erg = 1;
+-					}
+-					else
+-						erg = -1;
+-				}
+-				else
+-					erg = -1;
+-			}
+-			break;
++        case DO_SAVE:case DO_SAVENEW:
++            QedSaveCommand(t_ptr,action==DO_SAVENEW);erg=1;break;
+         case DO_FIND:QedFindStart(t_ptr,TRUE);erg=1;break;
+         case DO_FINDNEXT:QedFindStart(t_ptr,FALSE);erg=1;break;
+         /* Other donor actions are outside the initial native scope. */
+--- a/qed/src/edit.h
++++ b/qed/src/edit.h
+@@ -12,7 +12,6 @@
+ extern void		onblink_edit	(void);
+ extern short		new_edit			(bool report_error);
+ extern short		load_edit		(char *filename, bool bin);
+-extern void		close_edit		(char *filename, short flag);
+ 
+ extern bool		info_edit		(short icon);
+ 
+--- a/qed/src/file.c
++++ b/qed/src/file.c
+@@ -44,414 +44,7 @@
+ 
+ /* Native reading is owned by the detached document controller. */
+ 
+-static void backup_name(char *name, char *ext)
+-{
+-	static PATH		new;
+-	static FILENAME	new_name;
+-	
+-	strcpy(new, name);
+-	strcat(new, ".");
+-	strcat(new, ext);
+-	file_name(new, new_name, FALSE);
+-	if (fs_long_name(new) >= strlen(new_name))
+-		strcpy(name, new);
+-	else
+-		set_extension(name, ext);
+-}
+-
+-static void restore_back_up(TEXTP t_ptr)
+-{
+-	if (t_ptr->loc_opt->backup)
+-	{
+-		static PATH old;
+-
+-		if (file_exists(t_ptr->filename))
+-			Fdelete(t_ptr->filename);
+-		strcpy(old, t_ptr->filename);
+-		backup_name(old, t_ptr->loc_opt->backup_ext);
+-		(void)Frename(0, old, t_ptr->filename);
+-	}
+-}
+-
+-
+-static void back_up(TEXTP t_ptr)
+-{
+-	static PATH new;
+-
+-	if (t_ptr->loc_opt->backup)
+-	{
+-		(void)0; /* Native presenter owns the pointer. */
+-		strcpy(new, t_ptr->filename);
+-		backup_name(new, t_ptr->loc_opt->backup_ext);
+-		if (file_exists(new))			/* Alte DUP-Datei l”schen */
+-			Fdelete(new);
+-		(void)Frename(0, t_ptr->filename, new);
+-		(void)0; /* Native presenter owns the pointer. */
+-	}
+-}
+-
+-short save_to_fd(short fd, char *name, RINGP t, bool verbose)
+-{
+-	char	end_str[3], *zeile, *buffer, *ptr;
+-	short	e_len, z_len, antw;
+-	long	bytes = 0L;
+-	long	ret, b, rest, text_size;
+-	LINEP	line;
+-
+-	/* Puffer anfordern */
+-	buffer = (char *)malloc(BUFFERSIZE);
+-	zeile = (char *)malloc(MAX_LINE_LEN + 2);
+-
+-	if (buffer == NULL || zeile == NULL)
+-	{
+-		note(1, 0, NOMEMORY);
+-		return -ENOMEM;
+-	}				
+-
+-	(void)0; /* Native presenter owns the pointer. */
+-
+-	/* Progress-Bar */
+-	text_size = textring_bytes(t);
+-	verbose = verbose && ((text_size >> 10) >= transfer_size);
+-	if (verbose)
+-	{
+-		char	str[40];
+-		static FILENAME	file;
+-
+-		strcpy(str, rsc_string(SAVESTR));
+-		file_name(name, file, FALSE);
+-		strcat(str,file);
+-		start_aktion(str, FALSE, text_size);
+-	}
+-
+-	/* String mit Zeilenende erzeugen */
+-	switch (t->ending)
+-	{
+-		case lns_tos :
+-			strcpy(end_str, "\r\n");
+-			e_len = 2;
+-			break;
+-		case lns_unix :
+-			strcpy(end_str, "\n");
+-			e_len = 1;
+-			break;
+-		case lns_apple :
+-			strcpy(end_str, "\r");
+-			e_len = 1;
+-			break;
+-		default:
+-			strcpy(end_str, "");
+-			e_len = 0;
+-			break;
+-	}
+-	
+-	line = FIRST(t);
+-	if (line != NULL)
+-	{
+-		b = 0L;
+-		ret = 1;
+-		ptr = buffer;
+-		rest = BUFFERSIZE;
+-		while ((!IS_TAIL(line)) && (ret > 0))
+-		{
+-			/* Zeile aus Text und Zeilenende zusammen setzen */
+-			memcpy(zeile, TEXT(line), line->len);
+-			z_len = line->len;
+-
+-			/*
+-			 * Das Zeilenende wird nur dann angeh„ngt, wenn lauf nicht letzte
+-			 * Zeile ist. Gab es beim Laden der Datei in der letzten Zeile
+-			 * ein ZE, gibt es die Dummyzeile. Gab es das ZE nicht, wird auch
+-			 * kein ZE angeh„ngt!
+-			 */
+-			if (!IS_LAST(line) && (e_len > 0) && !IS_OVERLEN(line))
+-			{
+-				memcpy(zeile + line->len, end_str, e_len);
+-				z_len += e_len;
+-			}
+-			
+-			/* Passt die Zeile noch in den Puffer? */
+-			if (z_len < rest)
+-			{
+-				/* komplett in den Puffer */
+-				memcpy(ptr, zeile, z_len);
+-				ptr += z_len;
+-				b += z_len;
+-				rest -= z_len;
+-			}
+-			else
+-			{
+-				/* nur soviel kopieren, wie noch passt */
+-				memcpy(ptr, zeile, rest);
+-				ptr += rest;
+-				
+-				/* wegschreiben */
+-				ret = Fwrite(fd, BUFFERSIZE, buffer);
+-				if (verbose)
+-				{
+-					bytes += BUFFERSIZE;
+-					do_aktion("", bytes);
+-				}
+-
+-				if (ret != BUFFERSIZE)
+-					ret = -ENOSPC;
+-
+-				/* und den Rest in den Puffer */
+-				b = z_len - rest;
+-				ptr = buffer;
+-				memcpy(ptr, zeile + rest, b);
+-				ptr += b;
+-				
+-				rest = BUFFERSIZE - b;
+-			}
+-			NEXT(line);
+-		}
+-
+-		/* Befindet sich noch etwas im Puffer und ist kein Fehler aufgetreten? */
+-		if ((b > 0L) && (ret > 0))
+-		{
+-			ret = Fwrite(fd, b, buffer);
+-			if (verbose)
+-			{
+-				bytes += b;
+-				do_aktion("", bytes);
+-			}
+-			if (ret != b)
+-				ret = -ENOSPC;
+-		}
+-		if (ret < 0)
+-			antw = (short)ret;
+-		else
+-			antw = 0;
+-	}
+-	else
+-		antw = 1;
+-
+-	free(buffer);
+-	free(zeile);
+-
+-	if (verbose)
+-		end_aktion();
+-
+-	(void)0; /* Native presenter owns the pointer. */
+-
+-	return antw;
+-}
+-
+-short save_datei(char *name, RINGP t, bool verbose)
+-{
+-	short	fd, antw;
+-
+-	fd = (short) Fcreate(name, 0);
+-	if (fd > 0)
+-	{
+-		antw = save_to_fd(fd, name, t, verbose);
+-		Fclose(fd);
+-		if (antw == -ENOSPC)
+-			Fdelete(name);
+-	}
+-	else
+-		antw = fd;
+-
+-	{
+-		static char path[ MAX_PATH_LEN+1 ];
+-		split_filename( name, path, NULL );
+-		send_avpathupdate( path );
+-	}
+-
+-	return antw;
+-}
+-
+-
+-short save(TEXTP t_ptr)
+-{
+-	short		antw;
+-	struct QedFileInfo st;
+-	bool		not_exists;
+-
+-	if (file_exists(t_ptr->filename))
+-	{
+-		if (file_readonly(t_ptr->filename))
+-		{
+-			static FILENAME	file;
+-
+-			t_ptr->readonly = TRUE;
+-			file_name(t_ptr->filename, file, FALSE);
+-			snote(1, 0, READONLY, file);
+-			return -EACCES;
+-		}
+-		else
+-			t_ptr->readonly = FALSE;
+-		if (t_ptr->file_date_time != -1L)
+-		{
+-			long date_time = file_time(t_ptr->filename, NULL, NULL);
+-
+-			if (date_time != t_ptr->file_date_time)
+-			{
+-				static FILENAME	name;
+-
+-				file_name(t_ptr->filename, name, FALSE);
+-				if (snote(1, 2, MOVED2, name) == 2)
+-					return -1;
+-			}
+-		}
+-	}
+-	
+-	not_exists = (QedFileInfo(t_ptr->filename, &st) != 0);
+-	
+-	back_up(t_ptr);
+-	antw = save_datei(t_ptr->filename, &t_ptr->text, TRUE);
+-	if (antw != 0)
+-	{
+-		if (antw == -ENOSPC)
+-		{
+-			char	tmp[20];
+-
+-			make_shortpath(t_ptr->filename, tmp, 19);
+-			snote(1, 0, NOSPACE, tmp);
+-		}
+-		else
+-			note(1, 0, WRITEERR);
+-		restore_back_up(t_ptr);
+-		t_ptr->file_date_time = -1L;
+-		return antw;
+-	}
+-
+-	t_ptr->moved = 0;
+-	t_ptr->file_date_time = file_time(t_ptr->filename, NULL, NULL);
+-	t_ptr->asave = time(NULL);
+-
+-	/* OLGA informieren */
+-	do_olga(OLGA_UPDATE, t_ptr->filename, NULL);
+-
+-	/* Attribute wieder herstellen */
+-	/* Native metadata preservation is part of the later save design. */
+-
+-	return antw;
+-}
+-
+-
+-short save_as(TEXTP t_ptr, char *name)
+-{
+-	short	antw;
+-
+-	if (file_exists(name))
+-	{
+-		if (file_readonly(name))
+-		{
+-			static FILENAME	file;
+-
+-			file_name(t_ptr->filename, file, FALSE);
+-			snote(1, 0, READONLY, file);
+-			return -EACCES;
+-		}
+-	}
+-	antw = save_datei(name, &t_ptr->text, TRUE);
+-	if (antw != 0)
+-	{
+-		if (antw == -ENOSPC)
+-		{
+-			char	tmp[20];
+-
+-			make_shortpath(t_ptr->filename, tmp, 19);
+-			snote(1, 0, NOSPACE, tmp);
+-		}
+-		else
+-			note(1, 0, WRITEERR);
+-		restore_back_up(t_ptr);
+-	}
+-	return(antw);
+-}
+-
+-
+-bool	save_new(char *name, char *mask, char *title)
+-{
+-	static PATH	new;
+-	bool	ok = FALSE;
+-	
+-	if ((name[0] == EOS) || (strcmp(name, rsc_string(NAMENLOS)) == 0))
+-		strcpy(new, last_path);
+-	else
+-		strcpy(new, name);
+-	if (select_single(new, mask, title))
+-	{
+-		if (strcmp(name, new) != 0)		/* wirklich neuer Name? */
+-		{
+-			if (file_exists(new) && (note(1, 2, EXIST) == 2))
+-				ok = FALSE;
+-			else
+-			{
+-				strcpy(name, new);
+-				ok = TRUE;
+-			}
+-		}
+-		else
+-			ok = FALSE;
+-	}
+-	return ok;
+-}
+-
+-
+-/*****************************************************************************/
+-/* Dateiauswahl																				  */
+-/*****************************************************************************/
+-static bool	multi_bin = FALSE;
+-
+-void store_path(char *path)
+-{
+-	static PATH	p;
+-
+-	split_filename(path, p, NULL);
+-	if (strcmp(last_path, p) != 0)		/* neuer Pfad? */
+-	{
+-		if (path_exists(p))
+-			strcpy(last_path, p);
+-	}
+-}
+-
+-bool select_single(char *filename, char *mask, char *title)
+-{
+-	static PATH		path;
+-    memset(path,0,sizeof(path));
+-	FILENAME	name = "";
+-	bool		ok;
+-	
+-	if (filename[0] != EOS)
+-		split_filename(filename, path, name);
+-	else
+-		strcpy(path, last_path);
+-
+-	ok = select_file(path, name, mask, title, FSCB_NULL);
+-	if (ok && name[0] != EOS)			/* fr den Fall, daž nur ein Verzeichnis kommt */
+-	{
+-		strcpy(filename, path);
+-		strcat(filename, name);
+-		store_path(path);
+-	}
+-	return ok;
+-}
+-
+-
+-bool select_path(char *pathname, char *title)
+-{
+-	static PATH		path;
+-    memset(path,0,sizeof(path));
+-	FILENAME	name = "";
+-	bool		ok;
+-	
+-	if (pathname[0] != EOS)
+-		split_filename(pathname, path, NULL);
+-	else
+-		strcpy(path, last_path);
+-
+-	ok = select_file(path, name, "", title, FSCB_NULL);
+-	if (ok)							/* fr den Fall, daž nur ein Verzeichnis kommt */
+-	{
+-		strcpy(pathname, path);
+-		store_path(path);
+-	}
+-	return ok;
+-}
++/* Native document and saving owners replace donor file dialogs/writes. */
+ 
+ void init_file(void)
+ {
+--- a/qed/src/file.h
++++ b/qed/src/file.h
+@@ -1,26 +1,5 @@
+ #ifndef _qed_file_h_
+ #define _qed_file_h_
+-
+-extern void 	open_error		(char *filename, short error_code);
+-
+-extern short 		load_from_fd	(short fd, char *name, RINGP t, bool verbose, bool *null_byte, long size);
+-extern short 		load_datei		(char *name, RINGP t, bool verbose, bool *null_byte);
+-extern short		load				(TEXTP t_ptr, bool verbose);
+-extern short		infoload			(char *name, long *bytes, long *lines);
+-
+-extern short 		save_to_fd		(short fd, char *name, RINGP t, bool verbose);
+-extern short		save_datei		(char *name, RINGP t, bool verbose);
+-extern short		save				(TEXTP t_ptr);
+-extern short		save_as			(TEXTP t_ptr, char *name);
+-extern bool		save_new			(char *name, char *mask, char *title);
+-
+-extern bool		select_single 	(char *filename, char *mask, char *title);
+-extern bool		select_path 	(char *pathname, char *title);
+-extern void 	select_multi	(bool binary);
+-
+-extern void 	store_path		(char *path);
+-
+-extern void		init_file		(void);
+-extern void		term_file		(void);
+-
++extern void init_file(void);
++extern void term_file(void);
+ #endif
+--- a/qed/src/clipbrd.c
++++ b/qed/src/clipbrd.c
+@@ -10,6 +10,7 @@
+ static RING undo_text;
+ static long undo_row,undo_live;
+ static short undo_kind;
++static bool save_boundary;
+ static bool undo_valid,undo_toggled;
+ static char replace_bytes[MAX_LINE_LEN+1];
+ typedef struct {
+@@ -83,6 +84,7 @@
+ }
+ bool any_undo(void){return undo_valid;}
+ void end_undo_seq(void){}
++void qed_undo_boundary(void){save_boundary=TRUE;}
+ 
+ /* All fallible work precedes changes to document, selection or previous Undo. */
+ bool qed_replace(TEXTP t,long y1,short x1,long y2,short x2,RINGP input,bool typing)
+@@ -108,10 +110,10 @@
+             endx=line->len+(inserted==1?x1:0);line=line->next;
+         }
+     }
+-    coalesce=typing && undo_valid && !undo_toggled && undo_kind==1 &&
++    coalesce=typing && !save_boundary && undo_valid && !undo_toggled && undo_kind==1 &&
+         undo_row==y1 && undo_live==1 && removed==1 && inserted==1;
+     if(!coalesce){clr_undo();save_view(t,&undo_view);}
+-    exchange_span(t,y1,removed,&prepared);
++    save_boundary=FALSE;exchange_span(t,y1,removed,&prepared);
+     if(coalesce)kill_textring(&prepared);
+     else{qed_ring_take(&undo_text,&prepared);undo_row=y1;undo_live=inserted;
+          undo_valid=TRUE;undo_kind=typing?1:2;undo_y=y1;}
+--- a/qed/src/clipbrd.h
++++ b/qed/src/clipbrd.h
+@@ -22,6 +22,7 @@
+ 
+ 
+ /* Atomic affected-line operations; input rings are borrowed until return. */
++extern void qed_undo_boundary(void);
+ extern void qed_ring_empty(RINGP r);
+ extern void qed_ring_take(RINGP destination,RINGP source);
+ extern bool qed_edit_error(void);

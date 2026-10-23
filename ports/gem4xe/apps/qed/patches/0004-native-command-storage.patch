@@ -1,0 +1,522 @@
+--- a/cflib/fsshort.c
++++ b/cflib/fsshort.c
+@@ -30,7 +30,7 @@
+ 
+ void make_shortpath(char *path, char *shortpath, int maxlen)
+ {
+-	char help[256];
++	static char help[256];
+ 	int path_len;
+ 	char *p1, *p2;
+ 
+--- a/qed/src/ausgabe.c
++++ b/qed/src/ausgabe.c
+@@ -927,7 +927,7 @@
+ 
+ void head_out(WINDOWP window, TEXTP t_ptr)
+ {
+-    char    head_str[WINSTRLEN+1];
++    static char    head_str[WINSTRLEN+1];
+     short   len, head_len;
+ 
+     if (t_ptr->info_str[0] != EOS)
+--- a/qed/src/clipbrd.c
++++ b/qed/src/clipbrd.c
+@@ -141,7 +141,7 @@
+ void do_undo_col(TEXTP t_ptr, short undo_type)
+ {
+ 	LINEP	undo_col;
+-	char		help[MAX_LINE_LEN];
++	static char		help[MAX_LINE_LEN];
+ 	char	 	*str;
+ 	short		length;
+ 
+--- a/qed/src/edit.c
++++ b/qed/src/edit.c
+@@ -135,7 +135,7 @@
+ {
+ 	LINEP 	line;
+ 	short	x, i, tabsize;
+-	char	str[MAX_LINE_LEN + 1];
++	static char	str[MAX_LINE_LEN + 1];
+ 
+ 	graf_mouse(HOURGLASS, NULL);
+ 	tabsize = t_ptr->loc_opt->tabsize;
+@@ -202,7 +202,7 @@
+ {
+ 	LINEP 	line;
+ 	short	i, x, tabsize;
+-	char	str[MAX_LINE_LEN + 1];
++	static char	str[MAX_LINE_LEN + 1];
+ 
+ 	graf_mouse(HOURGLASS, NULL);
+ 	tabsize = t_ptr->loc_opt->tabsize;
+@@ -352,8 +352,8 @@
+ {
+ 	WINDOWP 	window;
+ 	TEXTP 		t_ptr;
+-	FILENAME	datei;
+-	PATH		path;
++	static FILENAME	datei;
++	static PATH		path;
+ 	short		err, icon;
+ 
+ 	store_path(name);
+@@ -487,7 +487,7 @@
+ static bool delete_edit(short icon, TEXTP t_ptr)
+ {
+ 	short	 antw;
+-	FILENAME name;
++	static FILENAME name;
+ 
+ 	if (t_ptr->moved != 0)
+ 	{
+@@ -945,7 +945,7 @@
+ static	void wi_iconify(WINDOWP window)
+ {
+ 	TEXTP 		t_ptr = get_text(window->handle);
+-	FILENAME	short_name;
++	static FILENAME	short_name;
+ 
+ 	make_shortpath(t_ptr->filename, short_name, 8);
+ 	set_wtitle(window, short_name);
+@@ -1039,7 +1039,7 @@
+ {
+ 	bool	 erg;
+ 	TEXTP 	 t_ptr = get_text(icon);
+-	FILENAME name;
++	static FILENAME name;
+ 
+ 	switch(action)
+ 	{
+@@ -1123,7 +1123,8 @@
+ 
+ static short e_icon_edit(short icon, short action)
+ {
+-	PATH	name = "";
++	static PATH	name;
++    memset(name,0,sizeof(name));
+ 	TEXTP	t_ptr = get_text(icon);
+ 	RING	r;
+ 	WINDOWP	window;
+@@ -1628,7 +1629,8 @@
+ 	WINDOWP	window;
+ 	TEXTP 	t_ptr;
+ 	short	i, c_anz, link, max;
+-	TCHANGE	c[MAX_CHG], *c_ptr;
++	static TCHANGE c[MAX_CHG];
++    TCHANGE *c_ptr;
+ 	
+ 	if (!chg_anz) 
+ 		return;
+@@ -1703,7 +1705,7 @@
+ {
+ 	TEXTP 		t_ptr;
+ 	WINDOWP		win;
+-	PATH			name;
++	static PATH			name;
+ 	bool		namenlos;
+ 
+ 	if (filename[0] == EOS)
+--- a/qed/src/event.c
++++ b/qed/src/event.c
+@@ -452,7 +452,7 @@
+ /*****************************************************************************/
+ void main_loop(void)
+ {
+-	QEDEVENT	ev;
++	static QEDEVENT ev;
+ 	bool	menu_chg;
+ 	long	as_timer = 0, t;
+ 	
+--- a/qed/src/file.c
++++ b/qed/src/file.c
+@@ -30,8 +30,8 @@
+ 
+ void open_error(char *filename, short error)
+ {
+-	FILENAME	datei;
+-	PATH		path;
++	static FILENAME	datei;
++	static PATH		path;
+ 
+ 	split_filename(filename, path, datei);
+ 	if (error == -ENOENT && path_exists(path))	/* file not found und Pfad existiert */
+@@ -93,7 +93,7 @@
+ 	if (verbose)
+ 	{
+ 		char		str[40];
+-		FILENAME	file;
++		static FILENAME	file;
+ 
+ 		strcpy(str, rsc_string(LOADSTR));
+ 		file_name(name, file, FALSE);
+@@ -331,8 +331,8 @@
+ 
+ static void backup_name(char *name, char *ext)
+ {
+-	PATH		new;
+-	FILENAME	new_name;
++	static PATH		new;
++	static FILENAME	new_name;
+ 	
+ 	strcpy(new, name);
+ 	strcat(new, ".");
+@@ -348,7 +348,7 @@
+ {
+ 	if (t_ptr->loc_opt->backup)
+ 	{
+-		PATH old;
++		static PATH old;
+ 
+ 		if (file_exists(t_ptr->filename))
+ 			Fdelete(t_ptr->filename);
+@@ -361,7 +361,7 @@
+ 
+ static void back_up(TEXTP t_ptr)
+ {
+-	PATH new;
++	static PATH new;
+ 
+ 	if (t_ptr->loc_opt->backup)
+ 	{
+@@ -401,7 +401,7 @@
+ 	if (verbose)
+ 	{
+ 		char	str[40];
+-		FILENAME	file;
++		static FILENAME	file;
+ 
+ 		strcpy(str, rsc_string(SAVESTR));
+ 		file_name(name, file, FALSE);
+@@ -539,7 +539,7 @@
+ 		antw = fd;
+ 
+ 	{
+-		char path[ MAX_PATH_LEN+1 ];
++		static char path[ MAX_PATH_LEN+1 ];
+ 		split_filename( name, path, NULL );
+ 		send_avpathupdate( path );
+ 	}
+@@ -558,7 +558,7 @@
+ 	{
+ 		if (file_readonly(t_ptr->filename))
+ 		{
+-			FILENAME	file;
++			static FILENAME	file;
+ 
+ 			t_ptr->readonly = TRUE;
+ 			file_name(t_ptr->filename, file, FALSE);
+@@ -573,7 +573,7 @@
+ 
+ 			if (date_time != t_ptr->file_date_time)
+ 			{
+-				FILENAME	name;
++				static FILENAME	name;
+ 
+ 				file_name(t_ptr->filename, name, FALSE);
+ 				if (snote(1, 2, MOVED2, name) == 2)
+@@ -624,7 +624,7 @@
+ 	{
+ 		if (file_readonly(name))
+ 		{
+-			FILENAME	file;
++			static FILENAME	file;
+ 
+ 			file_name(t_ptr->filename, file, FALSE);
+ 			snote(1, 0, READONLY, file);
+@@ -651,7 +651,7 @@
+ 
+ bool	save_new(char *name, char *mask, char *title)
+ {
+-	PATH	new;
++	static PATH	new;
+ 	bool	ok = FALSE;
+ 	
+ 	if ((name[0] == EOS) || (strcmp(name, rsc_string(NAMENLOS)) == 0))
+@@ -684,7 +684,7 @@
+ 
+ void store_path(char *path)
+ {
+-	PATH	p;
++	static PATH	p;
+ 
+ 	split_filename(path, p, NULL);
+ 	if (strcmp(last_path, p) != 0)		/* neuer Pfad? */
+@@ -696,7 +696,8 @@
+ 
+ bool select_single(char *filename, char *mask, char *title)
+ {
+-	PATH		path = "";
++	static PATH		path;
++    memset(path,0,sizeof(path));
+ 	FILENAME	name = "";
+ 	bool		ok;
+ 	
+@@ -718,7 +719,8 @@
+ 
+ bool select_path(char *pathname, char *title)
+ {
+-	PATH		path = "";
++	static PATH		path;
++    memset(path,0,sizeof(path));
+ 	FILENAME	name = "";
+ 	bool		ok;
+ 	
+@@ -738,7 +740,7 @@
+ 
+ static int open_multi(char *path, char *name)
+ {
+-    PATH filename;
++    static PATH filename;
+     if(!name[0])return FALSE;
+     strcpy(filename,path);strcat(filename,name);
+     if(!prepare_quit())return FALSE;
+@@ -747,7 +749,7 @@
+ 
+ void select_multi(bool binary)
+ {
+-	PATH		path;
++	static PATH		path;
+ 	FILENAME	name = "";
+ 	char		*title;
+ 
+--- a/qed/src/find.c
++++ b/qed/src/find.c
+@@ -256,97 +256,8 @@
+ 	return(NULL);
+ }
+ 
+-static char *STRSTR2(char *str_anf, short str_len, char *mstr_anf, short *found_len)
+-/* Suche mit Quantoren (rekursiv) */
+-{
+-	char *str, *mstr, s;
+-	unsigned char m;
+-	short	len, anz;
+-
+-	if (line_start)										/* Muster am Anfang finden */
+-		anz = 1;
+-	else
+-		anz = str_len+1;									/* Anzahl der Tests */
+-	while ((--anz)>=0)									/* auch len=0 kann Treffer sein */
+-	{
+-		mstr = mstr_anf;									/* Muster reset */
+-		str = str_anf; 									/* String reset */
+-		len = str_len;
+-		while (TRUE)
+-		{
+-			m = *mstr++;									/* neue Zeichen holen */
+-			s = *str;
+-			if (m==EOS) 									/* Muster komplett gefunden */
+-			{
+-				*found_len = (short)(str - str_anf);
+-				return str_anf;
+-			}
+-			if (len==0)
+-				s = EOS;
+-
+-			if (m=='*')
+-			{
+-				bool tmp = line_start;
+-
+-				line_start = FALSE;
+-				str = STRSTR2(str, len, mstr, found_len);
+-				line_start = tmp;
+-				if (str==NULL)
+-					return NULL;
+-				*found_len += (short)(str - str_anf);
+-				return str_anf;
+-			}
+-			if (!grkl)
+-			{
+-/*
+-				if (s>='a' && s<='z') s-=32;
+-				else if (s=='”') s = '™';
+-				else if (s=='') s = 'š';
+-				else if (s=='„') s = 'Ž';
+-*/
+-				s = nkc_toupper(s);
+-			}
+-			if (m=='[')
+-			{
+-				m = *mstr++;								/* nach '[' folgt ein Infozeichen */
+-				if (m==0xFF)							/* echtes '[' */
+-				{
+-					if (s!='[') break;
+-				}
+-				else if (m==0xFE) 							/* Wortende (letztes in Muster) */
+-				{
+-					if (len==0 || !setin(wort_set,s))
+-					{
+-						*found_len = (short)(str - str_anf);
+-						return str_anf;
+-					}
+-					break;
+-				}
+-				else if (m==0xFC) 						/* Zeilenende */
+-				{
+-					if (len==0)
+-					{
+-						*found_len = (short)(str - str_anf);
+-						return str_anf;
+-					}
+-					break;
+-				}
+-				else											/* Wildcard */
+-				{
+-					if (!setin(group[m-1],s)) break;
+-				}
+-			}
+-			else												/* normale Zeichen und '?' */
+-				if (m!=s && m!='?') break;
+-
+-			if (len==0) break;
+-			str++; len--;									/* n„chstes Zeichen */
+-		}
+-		str_anf++;											/* String ein Zeichen weiter */
+-		str_len--;
+-	}
+-	return NULL;
+-}
++/* Recursive pattern matching is outside the native literal-Find scope. */
++
+ 
+ /* rein : start, text_x, text_len, text_y */
+ /* raus : start, text_x, text_len, text_y */
+@@ -365,7 +276,7 @@
+ 	if (muster_len==0) return 0;
+ 	step = 70;
+ 	if (quantor)
+-		call = STRSTR2;
++		call = STRSTR;
+ 	else if (grkl)
+ 		call = STRSTR;
+ 	else
+@@ -708,37 +619,15 @@
+ 
+ bool filematch(char *str, char *m, short fs_typ)
+ {
+-	char 	*where, mustertxt[HIST_LEN+1];
+-	short	i;
+-	bool	gk = FALSE, old_flg[2];
+-
+-	if ((str[0] == EOS) || (m[0] == EOS))
+-		return FALSE;
+-	
+-	if ((m[0] == '*') && (m[1] == '.'))		/* Ist m eine Extension? */
+-		gk = FALSE;									/* dann Grož == klein! */
+-	else
+-	{
+-		if (fs_typ == -1)
+-			fs_typ = fs_case_sens((char *)str);
+-		/* Echter GRkl-Unterscheidung nur bei Minix */
+-		gk = (fs_typ == FULL_CASE);
+-	}
+-
+-	old_flg[0] = (modus != M_CURSOR);
+-	old_flg[1] = g_round;
+-
+-	sprintf(mustertxt, "^%s$", m);
+-	set_suchmode(mustertxt, "", gk, TRUE, TRUE, FALSE, FALSE, FALSE);
+-	where = STRSTR2(str, (short) strlen(str), muster_txt, &i);
+-
+-	/* 
+-	 * Fr den Fall, das ein Projekt durchsucht wird, wird filematch() fr
+-	 * die Zuordnung der lokalen Optionen fr jede durchsuchte Datei einmal
+-	 * aufgerufen. Damit danach die eigentlichen Such-Parameter wieder stimmen,
+-	 * der folgende Befehl!
+-	*/
+-	set_suchmode(s_str, r_str, s_grkl, s_quant, s_vorw, s_wort, old_flg[0], old_flg[1]);
+-
+-	return (where==str);
+-}
++    /* Iterative wildcard matcher for private local-option masks; bounded storage. */
++    const char *star=NULL,*retry=NULL;
++    (void)fs_typ;
++    while(*str){
++        if(*m=='?' || nkc_toupper((unsigned char)*m)==nkc_toupper((unsigned char)*str)){str++;m++;}
++        else if(*m=='*'){star=m++;retry=str;}
++        else if(star){m=(char *)star+1;str=(char *)++retry;}
++        else return FALSE;
++    }
++    while(*m=='*')m++;
++    return !*m;
++}
+--- a/qed/src/global.c
++++ b/qed/src/global.c
+@@ -167,7 +167,7 @@
+ 
+ short inote(short def, short undo, short idx, short val)
+ {
+-	char	buf[128];
++	static char	buf[128];
+ 	
+ 	sprintf(buf, (char *)alertmsg[idx], val);
+ 	return do_note(def, undo, buf);
+@@ -175,7 +175,7 @@
+ 
+ short snote(short def, short undo, short idx, char *val)
+ {
+-	char	buf[128];
++	static char	buf[128];
+ 	
+ 	sprintf(buf, (char *)alertmsg[idx], val);
+ 	return do_note(def, undo, buf);
+@@ -183,7 +183,7 @@
+ 
+ short sinote(short def, short undo, short idx, char *sval, short val )
+ 	{
+-	char	buf[128];
++	static char	buf[128];
+ 
+ 	sprintf(buf, (char *)alertmsg[idx], sval, val);
+ 	return do_note(def, undo, buf);
+--- a/qed/src/menu.c
++++ b/qed/src/menu.c
+@@ -67,7 +67,7 @@
+ {
+ 	short	anz, i;
+ 	short	ic, icp[MAX_ICON_ANZ];
+-	SET	actions;
++	static SET	actions;
+ 
+ 	if (makro_rec)
+ 		return FALSE;
+@@ -147,7 +147,7 @@
+ void update_menu (void)
+ {
+ 	WINDOWP	window;
+-	SET		all_actions;
++	static SET		all_actions;
+ 	short		i, nr;
+ 
+ 	setclr(all_actions);
+@@ -224,7 +224,7 @@
+ static void multitest_action(SET icons, SET action)
+ {
+ 	short	icp[MAX_ICON_ANZ], ic;
+-	SET	help;
++	static SET	help;
+ 	short	i;
+ 
+ 	i = all_icons(icp);
+@@ -244,7 +244,7 @@
+ static void do_multi_action(short action)
+ {
+ 	short	icp[MAX_ICON_ANZ], ic;
+-	SET	sel_icons;
++	static SET	sel_icons;
+ 	short	i, anz;
+ 
+ 	anz = all_icons(icp);
+--- a/qed/src/poslist.c
++++ b/qed/src/poslist.c
+@@ -17,7 +17,7 @@
+ void insert_poslist(POSENTRY **list, char *n1, short x, long y)
+ {
+ 	POSENTRY	*new, *p;
+-	PATH		name;
++	static PATH		name;
+ 	
+ #ifdef __MINT__
+ 	if (strchr(n1, '/') != NULL)				/* UNIX-Pfad -> nach TOS wandeln */

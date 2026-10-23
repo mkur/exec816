@@ -24,6 +24,7 @@ repository root; directory entries include all files below them.
 | --- | --- |
 | `abi/` | Machine-readable interface definitions |
 | `lib/dos/fbabi.act`, `lib/dos/fbinterpabi.act`, `ports/fastbasic/target/helpers.asm`, `ports/fastbasic/target/callbacks.asm`, `ports/fastbasic/target/fp_snapshot.asm`, `ports/fastbasic/target/fastbasic.inc`, `ports/fastbasic/target/source-run.asm`, `ports/fastbasic/target/source-run.inc` | Exec-authored FastBasic runtime bindings, source bootstrap and generated constants |
+| `ports/gem4xe/apps/qed/native/*.c` and `*.h`, except `qed-gem-extra.h` | Exec-authored QED native adapters; the generated GEM header retains LGPL-2.1-or-later |
 | `c/` | Public C headers, Calypsi bindings, startup support and C examples |
 | `examples/`, except `examples/shell/` | Standalone examples, disk commands and sample data |
 | `lib/exec/exec.act`, `lib/exec/execos.act`, `lib/exec/execproducer.act` | Action! interface declarations |
@@ -85,12 +86,21 @@ emulators or patches to upstream projects.
   Exec816 build code; it does not change the imported source's licence.
 - The AltirraOS ROM retains Avery Lee's file-specific redistribution notice.
   Demo ZIPs include `ALTIRRAOS-LICENSE.txt`.
+- Calypsi runtime sources and the correction selected by
+  `toolchain/calypsi-runtime.json` retain their original Calypsi, Apache and
+  NuttX notices. Preparation preserves those notices beside the adapted source;
+  the Exec MIT interface grant does not relicense that material.
 - actionc and its runtime material retain their own licences. This includes
   `lib/exec/a816abi.act`, generated from the compiler's ABI, and the historical
   compiler Git bundle under `toolchain/`.
 - Emulator patches under `toolchain/patches/` remain subject to the licences
   of the upstream files they modify. They are not covered by the MIT interface
   grant.
+- QED and CF-Lib inputs in `ports/gem4xe/apps/qed/inputs.json` and their
+  ordered patches retain donor notices. QED distribution must be free of
+  charge; CF-Lib retains LGPL-2.1-or-later. The generated
+  `native/qed-gem-extra.h` retains its GEM LGPL notice. The native adapter MIT
+  exception above covers only Exec-authored code.
 - GEM4XE source selected by `ports/gem4xe/selection.json` and
   `ports/gem4xe/aes/selection.json`, calculator sources pinned by
   `ports/gem4xe/apps/calculator/inputs.json`, benchmark sources pinned by

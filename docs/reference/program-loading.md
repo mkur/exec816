@@ -159,7 +159,7 @@ The provider manifest uses 1,881 of 1,888 reserved upper-RAM bytes. This adds
 32 bytes of reserved table capacity; the 160-byte pointer-input state moves
 from upper Task-bank offset `$4740` to `$4760`, consuming the existing 32-byte
 gap before its `$4800` capture reservation. The full upper bank and all
-bank-zero reservations are unchanged. The matching C program ABI is version 26.
+bank-zero reservations are unchanged. The matching C program ABI is version 27.
 See [user mounts](dos.md#user-sio-mounts).
 
 

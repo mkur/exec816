@@ -36,11 +36,14 @@ def record_cartridge_capacity(output):
     return capacity
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=False,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False,bootable_atr=False,system_drive=1,boot_sio='auto'):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=False,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False,bootable_atr=False,system_drive=1,boot_sio='auto',qed=False):
     if basic_workbench:
         fastbasic=gem_desktop=True
     if fastbasic:
         sdx,sdx_drive_a,sdx_car_root=True,'WORK:','SYS:C/'
+    require(not qed or (gem_desktop and filesystem=='sdfs' and sector_bytes==256 and system_kib==720 and
+            not (bootable_atr or ide_only or ideplus or gem_vdi or bitmap_console or aes_counters or aes_input or text_shell_only) and system_drive==1),
+            'QED requires a split D1 SYS/D2 QED/D8 WORK desktop with SDFS, 720 KiB and 256-byte sectors')
     require(sum((aes_counters,aes_input,gem_desktop))<=1, 'Select one resident GEM application profile')
     if aes_counters or aes_input or gem_desktop:
         desktop=True
@@ -152,6 +155,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'VIEW.TXT').write_bytes((ROOT/'examples/gem-text/VIEW.TXT').read_bytes())
     (workspace/'README.TXT').write_text('Disposable Exec816 WORK: disk.\n'
         'Copy this ATR before experimenting. Mount it in drive D8.\n',encoding='ascii')
+    if qed:
+        from qed_demo import SAMPLE
+        (workspace/'SAMPLE.TXT').write_bytes(SAMPLE)
     work_binaries=set()
     if fastbasic:
         for example in sorted((ROOT/'examples/fastbasic').glob('*.BAS')):
@@ -256,6 +262,17 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'Solid bars replace vr_recfl; text uses replace mode; dialog omits OUTLINED.\n'
             'Source, pinned inputs and patches: ports/gem4xe/apps/g4bench/ in Exec816.\n'
             'Application licence: GPL-2.0-or-later.\n')
+    qed_entry=None
+    if qed:
+        from build_qed import build as build_editor
+        from measure_qed_frames import measure
+        from qed_demo import stage, guide as qed_guide
+        editor=output/'qed-production'
+        provider=output/'bitmap-console/c-image.json'
+        build_editor(editor,provider,executable=True)
+        measure(editor)
+        qed_entry=stage(output,editor,provider)
+        # QED is an optional application disk; leave the core SYS files intact.
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources}|({'VIEW.TXT'} if gem_desktop else set()),'Unexpected stale file in demo media directory')
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
                    sector_bytes=sector_bytes,sectors=system_sectors,label='SYS')
@@ -312,6 +329,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if gem_desktop:
         guide=(ROOT/'docs/gem-desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
+    if qed:
+        guide=qed_guide(program['build']['exec_build']['version'],program['build']['desktop_mouse']['profile'])
     if ide_only:
         guide=ide_only_guide(bitmap_shell_only)
     if bootable_atr:
@@ -419,6 +438,16 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             ROOT/'tools/build_g4bench.py',ROOT/'tools/prepare_g4bench.py',
             *(p for p in (ROOT/'ports/gem4xe/apps/g4bench').rglob('*') if p.is_file()),
             *(p for p in (ROOT/'ports/gem4xe/apps/calculator').rglob('*') if p.is_file()))})
+    if qed:
+        from package_demo import QED_NOTICES
+        record['qed']=qed_entry
+        record['additional_media'].append(dict(name='qed.atr',sha256=qed_entry['media_sha256'],
+            drive=2,alias='QED',access='readonly',filesystem='sdfs',sectors=2880,sector_bytes=256))
+        record['artifacts']['qed.atr']=qed_entry['media_sha256']
+        record['artifacts'].update({name:sha256(output/name) for name in QED_NOTICES})
+        record['source_inputs'].update({str(p.relative_to(ROOT)):sha256(p) for p in (
+            ROOT/'tools/qed_demo.py',ROOT/'tools/qed_delivery.py',ROOT/'tools/build_qed.py',
+            ROOT/'tools/measure_qed_frames.py',ROOT/'docs/qed-exec-distribution.txt')})
     # The controller adds one Task to every former one-shell peak.
     required = record['expected_peak_tasks'] + 1 + int(ideplus and not ide_only)
     record['requested_peak_tasks'] = required
@@ -464,7 +493,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     package(output/'of816',output/record['distribution'],graphics,bitmap,
             bitmap_shell=output if bitmap_shell_only else None,
             text_shell=output if text_shell_only else None)
-    write_launcher(output)
+    write_launcher(output,qed=bool(record.get('qed')))
     return record
 
 
@@ -510,7 +539,7 @@ def refresh_boot_disk(output):
     package(output/'of816',output/record['distribution'],
         bitmap_shell=output if record.get('bitmap') else None,
         text_shell=output if record.get('shell_only') and not record.get('bitmap') else None)
-    write_launcher(output)
+    write_launcher(output,qed=bool(record.get('qed')))
     return record
 
 
@@ -632,7 +661,7 @@ def refresh_boot_guide(output,program,record):
             ROOT/'LICENSE',ROOT/'LICENSE-MIT',ROOT/'LICENSING.md']
     drive=program['build']['memory']['boot_config']['system_drive']
     if record.get('shell_only'):
-        guide=ROOT/('docs/gem-desktop-distribution.txt' if record.get('gem_desktop') else 'docs/aes-input-distribution.txt' if record.get('aes_input') else
+        guide=ROOT/('docs/qed-exec-distribution.txt' if record.get('qed') else 'docs/gem-desktop-distribution.txt' if record.get('gem_desktop') else 'docs/aes-input-distribution.txt' if record.get('aes_input') else
                     'docs/aes-counter-distribution.txt' if record.get('aes_counters') else
                     'docs/desktop-distribution.txt' if record.get('desktop') else
                     'docs/bitmap-shell-distribution.txt' if record.get('bitmap') else
@@ -705,8 +734,11 @@ def refresh_monitor(output):
                 bitmap_shell=output if record.get('bitmap') else None,
                 text_shell=output if not record.get('bitmap') else None)
         add_ide_carts(output)
-        write_launcher(output)
+        write_launcher(output,qed=bool(record.get('qed')))
         return record
+    if record.get('qed'):
+        from qed_demo import verify
+        verify(record,output)
     guides=refresh_boot_guide(output,program,record)
     record['monitor_refresh']=dict(native_xex_sha256=sha256(output/'program.xex'),
         native_build_sha256=sha256(output/'build.json'),
@@ -721,7 +753,7 @@ def refresh_monitor(output):
             output/'bitmap-console' if record.get('bitmap_console') else None,
             bitmap_shell=output if record.get('shell_only') and record.get('bitmap') else None,
             text_shell=output if record.get('shell_only') and not record.get('bitmap') else None)
-    write_launcher(output)
+    write_launcher(output,qed=bool(record.get('qed')))
     return record
 
 
@@ -759,7 +791,7 @@ def refresh_boot_sio(output,policy):
     package(output/'of816',output/record['distribution'],
             bitmap_shell=output if record.get('shell_only') and record.get('bitmap') else None,
             text_shell=output if record.get('shell_only') and not record.get('bitmap') else None)
-    write_launcher(output)
+    write_launcher(output,qed=bool(record.get('qed')))
     return record
 
 
@@ -836,6 +868,7 @@ if __name__=='__main__':
                         help='Nominal system disk capacity; WORK is always 720 KiB with 256-byte sectors')
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
+    parser.add_argument('--qed',action='store_true',help='Add a separate production QED application disk to the GEM desktop package')
     parser.add_argument('--gem-desktop',action='store_true',help='GEM Control Panel and counter beside the shell')
     parser.add_argument('--aes-input',action='store_true',help='Autoboot two interactive GEM input apps beside the native shell')
     parser.add_argument('--aes-counters',action='store_true',help='Autoboot the optional two-counter GEM desktop beside the native shell')
@@ -886,7 +919,7 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic,basic_workbench=args.basic_workbench,bootable_atr=args.bootable_atr,system_drive=args.system_drive,boot_sio=args.boot_sio)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic,basic_workbench=args.basic_workbench,bootable_atr=args.bootable_atr,system_drive=args.system_drive,boot_sio=args.boot_sio,qed=args.qed)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')
     if not args.cartridge_from:
         print(f'Local Altirra launcher: {args.output}/launch-altirra.command')

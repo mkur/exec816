@@ -366,6 +366,15 @@
         0,
         0
       ]
+    },
+    "graf_mkstate": {
+      "opcode": 79,
+      "control_counts": [
+        0,
+        5,
+        0,
+        0
+      ]
     }
   },
   "words": "WORD signed16, UWORD unsigned16, LONG signed32. Timer low/high reassembled unsigned32. C huge pointers 32bits, native pointers 24bits checked before conversion.",
@@ -376,7 +385,7 @@
     "10": "4: selected VBXE packed 4bpp display",
     "others": "zero; resources are per-context and obtained with rsrc_gaddr, no GEM system pointers exposed"
   },
-  "unsupported": "Unlisted opcodes, unsupported window fields/kinds and off-screen windows fail explicitly. evnt_multi supports MU_KEYBD/MU_BUTTON/MU_M1/MU_MESAG/MU_TIMER; MU_M2 is unsupported. Left button mask=1, state=0/1, clicks=1/2/0x0101. Application VDI uses the visible work area under BEG_UPDATE; fixed font, solid fill and replace mode only.",
+  "unsupported": "Unlisted opcodes, unsupported window fields/kinds and off-screen windows fail explicitly. evnt_multi supports MU_KEYBD/MU_BUTTON/MU_M1/MU_MESAG/MU_TIMER; MU_M2 is unsupported. Left button mask=1, state=0/1, clicks=1/2/0x0101. Application VDI uses the visible work area under BEG_UPDATE; fixed font, solid fill and replace/transparent text modes (1/2). Unsupported writing modes preserve the previous mode.",
   "vdi_calls": {
     "v_opnvwk": {
       "opcode": 100,
@@ -442,5 +451,15 @@
       "intout": 0,
       "ptsout_pairs": 0
     }
+  },
+  "resource_limits": {
+    "file_bytes": 65535,
+    "objects": 256,
+    "trees": 16,
+    "objects_per_tree": 64,
+    "depth": 8,
+    "free_strings": 256,
+    "free_string_characters": 255,
+    "menu_objects": 33
   }
 }

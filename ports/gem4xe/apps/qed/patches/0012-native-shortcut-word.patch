@@ -1,0 +1,12 @@
+--- a/cflib/menuisk.c
++++ b/cflib/menuisk.c
+@@ -38,7 +38,8 @@
+ 	_WORD found = FALSE;
+ 	_WORD i, r, ks;
+ 	short len;
+-	char s[50], ascii;
++	char s[50];
++	_WORD ascii; /* Keep normalized native key arithmetic word-wide. */
+ 	unsigned char scan;
+ 
+ 	/* do not make shift keys differences */

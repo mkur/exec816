@@ -188,6 +188,17 @@ void AESClientTwo(void)
         CHECK(form_do(m->tree,0)==-1 && ExecAESDiagnostic()==AES_OK);
         CHECK(!c->form && !c->view && !c->workstation);
 
+        AESFormPhase[0]=9;
+        CHECK(form_do(m->tree,0)==-1 && ExecAESDiagnostic()==AES_OK);
+        CHECK(!c->form && !c->view && !c->workstation && !c->editTree);
+        window=wind_create(NAME|CLOSER|MOVER,304,32,288,192); CHECK(window>0);
+        CHECK(wind_open(window,304,32,288,192));
+        CHECK(form_center(m->tree,&x,&y,&w,&h));
+        AESFormPhase[0]=10;
+        CHECK(form_do(m->tree,0)==-1 && ExecAESDiagnostic()==AES_OK);
+        CHECK(c->view && c->view->shown && !c->form && !c->editTree);
+        CHECK(wind_close(window)); CHECK(wind_delete(window));
+
     }
     CHECK(ExecAESDetach());
     AESFormPhase[who]=90;

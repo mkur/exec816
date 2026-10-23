@@ -56,7 +56,7 @@ typedef struct { ICONBLK monoblk; ULONG mainlist; } CICONBLK;
 #define ROOT 0
 #define NIL (-1)
 #define MAX_DEPTH 8
-#define GEM_OBJECT_LIMIT 32
+#define GEM_OBJECT_LIMIT 64
 WORD objc_draw(OBJECT *,WORD,WORD,WORD,WORD,WORD,WORD);
 WORD objc_find(OBJECT *,WORD,WORD,WORD,WORD);
 WORD objc_offset(OBJECT *,WORD,WORD *,WORD *);
@@ -83,6 +83,8 @@ WORD form_center(OBJECT *,WORD *,WORD *,WORD *,WORD *);
 WORD form_button(OBJECT *,WORD,WORD,WORD *);
 WORD form_keybd(OBJECT *,WORD,WORD,WORD,WORD *,WORD *);
 #define R_TREE 0
+#define R_STRING 5
+#define R_FRSTR 15
 WORD rsrc_load(const char *);
 WORD rsrc_free(void);
 WORD rsrc_gaddr(WORD,WORD,void **);

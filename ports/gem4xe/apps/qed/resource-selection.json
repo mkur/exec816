@@ -1,0 +1,127 @@
+{
+  "trees": [
+    "VERSION",
+    "MENUTREE",
+    "ABOUT",
+    "ABOUT2",
+    "TEXTINFO",
+    "BLOCKINFO",
+    "REPLACE",
+    "REPASK",
+    "STRINGS",
+    "WINICON"
+  ],
+  "menu": [
+    [
+      "TDESK",
+      " QED ",
+      [
+        [
+          "MABOUT",
+          "About QED..."
+        ]
+      ]
+    ],
+    [
+      "TFILE",
+      " File ",
+      [
+        [
+          "MNEWTEXT",
+          "New          ^N"
+        ],
+        [
+          "MOPEN",
+          "Open...      ^O"
+        ],
+        [
+          "MSAVE",
+          "Save         ^S"
+        ],
+        [
+          "MSAVENEW",
+          "Save As...   ^M"
+        ],
+        [
+          "MCLOSE",
+          "Close        ^U"
+        ],
+        [
+          "MQUIT",
+          "Quit         ^Q"
+        ]
+      ]
+    ],
+    [
+      "TEDIT",
+      " Edit ",
+      [
+        [
+          "MUNDO",
+          "Undo         ^Z"
+        ],
+        [
+          "MCUT",
+          "Cut          ^X"
+        ],
+        [
+          "MCOPY",
+          "Copy         ^C"
+        ],
+        [
+          "MPASTE",
+          "Paste        ^V"
+        ],
+        [
+          "MSELALL",
+          "Select All   ^A"
+        ]
+      ]
+    ],
+    [
+      "TSEARCH",
+      " Search ",
+      [
+        [
+          "MFIND",
+          "Find...      ^F"
+        ],
+        [
+          "MFNDGOON",
+          "Find Next    ^G"
+        ]
+      ]
+    ],
+    [
+      "TOPTIONS",
+      " Mode ",
+      [
+        [
+          "MOEINF",
+          "Insert"
+        ],
+        [
+          "MOOVERW",
+          "Overwrite"
+        ]
+      ]
+    ]
+  ],
+  "decorations": "Flatten 3D, outlined, shadowed and extended states; omit image decoration, use ordinary character buttons and release-based EXIT. Retain non-menu local indices.",
+  "find": "50-byte literal, case-sensitive, forward without wrap; Find/Cancel only, donor local IDs retained.",
+  "text_overrides": {
+    "ABOUT": {
+      "6": "GPL-3.0-only",
+      "AVERSION": "Exec816",
+      "ADATUM": "native port"
+    },
+    "ABOUT2": {
+      "2": "Calypsi C / 65816",
+      "3": "Platform:",
+      "AMINT": "Exec816 / AltirraOS",
+      "5": "GEM:",
+      "AGEM": "native AES / VDI",
+      "ACF": "pinned donor sources"
+    }
+  }
+}

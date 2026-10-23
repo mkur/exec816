@@ -74,7 +74,7 @@ static void open_virtual(struct ExecAESContext *c,VDIPB *pb)
         c->request.displayGrant=NULL;
         FreeSignal(w->signal); FreeMem(w,sizeof(*w)); return;
     }
-    w->handle=EXEC_VDI_VIRTUAL;
+    w->handle=EXEC_VDI_VIRTUAL; w->writeMode=MD_REPLACE;
     w->textColor=pb->intin[6]; w->fillColor=pb->intin[9];
     w->unit.glyphs=w->intin;
     c->workstation=w;
@@ -122,7 +122,7 @@ static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bo
      * Report covered content before looking for any physical drawing work. */
     if (reportChange) ExecAESChanged(c,left,top,right,bottom);
     if (left>=right || top>=bottom) return;
-    u->textColor=w->textColor; u->fillColor=w->fillColor;
+    u->textColor=w->textColor; u->fillColor=w->fillColor; u->writeMode=w->writeMode;
     for (i=0;i<v->visibleCount;++i) {
         l=left>v->visible[i].left ? left:v->visible[i].left;
         t=top>v->visible[i].top ? top:v->visible[i].top;
@@ -237,10 +237,11 @@ static void dispatch(struct ExecAESContext *c,VDIPB *pb)
         w->clipped=value; break;
     default:
         value=pb->intin[0];
-        if ((op==23 || op==32) ? value!=1 : (UWORD)value>15) {
+        if (op==32 ? (value!=MD_REPLACE && value!=MD_TRANS) : op==23 ? value!=1 : (UWORD)value>15) {
             c->diagnostic=AES_UNSUPPORTED; break;
         }
         if (op==22) w->textColor=value;
+        if (op==32) w->writeMode=value;
         pb->intout[0]=w->intout[0]=value; pb->contrl[4]=1;
     }
 }

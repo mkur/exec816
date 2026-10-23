@@ -1,13 +1,13 @@
 {
   "abi": "exec816.c-program",
-  "version": 26,
+  "version": 27,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
   "file_limit": 262144,
-  "span_limit": 196608,
-  "segment_limit": 4,
-  "header_bytes": 36,
+  "span_limit": 327680,
+  "segment_limit": 6,
+  "header_bytes": 32,
   "segment_bytes": 16,
   "import_bytes": 8,
   "imports": [
@@ -108,11 +108,14 @@
     "MountVolume",
     "UnmountVolume",
     "ExNextBatch",
+    "AvailMem",
+    "SetIoErr",
+    "graf_mkstate",
+    "NameFromLock",
     "ExecLoadProgram",
     "ExecReleaseProgram",
     "ExecStartLoaded",
     "Input",
-    "AvailMem",
     "ExecAESWait",
     "ExecConsoleCreate",
     "ExecConsoleDestroy",
@@ -128,8 +131,158 @@
     "PutMsg",
     "GetMsg"
   ],
-  "minimum_stack_offset": 28,
-  "file_bytes_offset": 32,
-  "default_stack_bytes": 2560,
-  "stack_floor_bytes": 1312
+  "stack_requirement": {
+    "workspace_mask": 255,
+    "shift": 8,
+    "unit_bytes": 16,
+    "maximum_bytes": 4080
+  },
+  "dos_entries": [
+    {
+      "name": "Output",
+      "native": "DOS.Output"
+    },
+    {
+      "name": "Write",
+      "native": "CWrite"
+    },
+    {
+      "name": "Open",
+      "native": "COpen"
+    },
+    {
+      "name": "Close",
+      "native": "CClose"
+    },
+    {
+      "name": "Read",
+      "native": "CRead"
+    },
+    {
+      "name": "Lock",
+      "native": "CLock"
+    },
+    {
+      "name": "UnLock",
+      "native": "CUnLock"
+    },
+    {
+      "name": "Examine",
+      "native": "CExamine"
+    },
+    {
+      "name": "ExNext",
+      "native": "CExNext"
+    },
+    {
+      "name": "IoErr",
+      "native": "DOS.IoErr"
+    },
+    {
+      "name": "Seek",
+      "native": "CSeek"
+    },
+    {
+      "name": "ExecDOSDetach",
+      "native": "DOS.ReleaseContext"
+    },
+    {
+      "name": "ExecStartProgram",
+      "native": "CStartProgram"
+    },
+    {
+      "name": "ExecCollectProgram",
+      "native": "CCollectProgram"
+    },
+    {
+      "name": "ExecBreakProgram",
+      "native": "CBreakProgram"
+    },
+    {
+      "name": "ExecWaitProgram",
+      "native": "CWaitProgram"
+    },
+    {
+      "name": "ExecGetArgStr",
+      "native": "CGetArgStr"
+    },
+    {
+      "name": "ExecProgramMask",
+      "native": "CProgramMask"
+    },
+    {
+      "name": "CreateDir",
+      "native": "CCreateDir"
+    },
+    {
+      "name": "Rename",
+      "native": "CRename"
+    },
+    {
+      "name": "DeleteFile",
+      "native": "CDeleteFile"
+    },
+    {
+      "name": "ExamineExact",
+      "native": "CExamineExact"
+    },
+    {
+      "name": "MountVolume",
+      "native": "CMountVolume"
+    },
+    {
+      "name": "UnmountVolume",
+      "native": "CUnmountVolume"
+    },
+    {
+      "name": "ExNextBatch",
+      "native": "CExNextBatch"
+    },
+    {
+      "name": "SetIoErr",
+      "native": "CSetIoErr"
+    },
+    {
+      "name": "NameFromLock",
+      "native": "CNameFromLock"
+    },
+    {
+      "name": "ExecLoadProgram",
+      "native": "CLoadProgram"
+    },
+    {
+      "name": "ExecReleaseProgram",
+      "native": "CReleaseProgram"
+    },
+    {
+      "name": "ExecStartLoaded",
+      "native": "CStartLoaded"
+    },
+    {
+      "name": "Input",
+      "native": "DOS.Input"
+    },
+    {
+      "name": "ExecLoadBegin",
+      "native": "CLoadBegin"
+    },
+    {
+      "name": "ExecLoadStep",
+      "native": "CLoadStep"
+    },
+    {
+      "name": "ExecLoadTake",
+      "native": "CLoadTake"
+    },
+    {
+      "name": "ExecLoadCancel",
+      "native": "CLoadCancel"
+    },
+    {
+      "name": "ExecBasicAttach",
+      "native": "CBasicAttach"
+    }
+  ],
+  "stack_floor_bytes": 1312,
+  "default_stack_bytes": 2560
 }

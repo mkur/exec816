@@ -42,7 +42,10 @@ RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
 BYTE FUNC Eligible(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code BYTE ready)
 
-  IF AESMOUSE.LockReady(client.id)=0 THEN
+  ; Work capture routes input until release. Another client may paint while
+  ; that recipient waits; explicit MCTRL must still respect the capture.
+  IF (code=AESTYPES.BEG_MCTRL AND AESMOUSE.LockReady(client.id)=0)
+      OR (code=AESTYPES.BEG_UPDATE AND AESMOUSE.UpdateReady(client.id)=0) THEN
     RETURN(0)
   FI
 

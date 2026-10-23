@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "host_checks": "8 QED launcher/selection and 5 generic launcher checks pass",
+  "selection_before": "build/qed-delivery/qd3-prepare-before.log",
+  "selection_after": "build/qed-delivery/qd3-prepare-after.log",
+  "refreshed_bundle": "build/qed-delivery/refreshed",
+  "refreshed_manifest_sha256": "8ebf1fe52bb12b3d6b911d3863eb5fcff6f19f5f3b21c2b7094e7bb9266c2c13",
+  "zip_sha256": "fa87b97cda0d9dc8b05616cccfe6712d2c15dffdc489c43331cb1f6cb9080276",
+  "saved_work_sha256": "2ecfbdf422ae4c4feebc9497c8dce5fb9f067b17dd80ed47a4da8422ade0573e",
+  "exact_reopen": {
+    "path": "build/qed-delivery/work-reopen/delivery-results.json",
+    "sha256": "d8baa527fc144c7e60690f7cdd8f73558199dfe92c61130e30d499520e33d904"
+  },
+  "observer": {
+    "tracked": "tools/test_qed_delivery_workflows.py",
+    "executed": "build/qed-delivery/workflows-draft.py",
+    "sha256": "9c9b4b45b2e1a099d64d118dc45a04785eb82a58f4279518f435df17464b8045"
+  },
+  "allocation": {
+    "sectors": 2880,
+    "sector_bytes": 256,
+    "allocated": 13,
+    "free": 2867,
+    "files": 3,
+    "directories": 1
+  },
+  "sample_sha256": "c538c11e3b8b721deffe54276280a6e5930a50428448bd8f249f9f0a9a4be0e9",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  }
+}

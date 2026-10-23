@@ -9,6 +9,7 @@ PUBLIC CONST NAME_CAPACITY=24
 PUBLIC TYPE Image=[
   LONGCARD magic,references
   BYTE ownerHeld,running,kind
+  CARD minimumStack
   BYTE POINTER backing,data,bss
   LONGCARD backingBytes,textBytes,dataBytes,bssBytes
   ADDRESS text
@@ -16,7 +17,6 @@ PUBLIC TYPE Image=[
   BYTE POINTER extension
   PROC POINTER release(BYTE POINTER extension)
   BYTE ARRAY name(NAME_CAPACITY)
-  CARD minimumStack
 ]
 
 ; Release all segment allocations belonging to an unloaded program image.

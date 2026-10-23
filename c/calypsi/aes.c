@@ -442,13 +442,15 @@ void EXEC_CALL aes_call(AESPB *pb)
     if (op == AES_OP_SET) inputs = 6;
     if (op == AES_OP_CALC) { inputs = 6; outputs = 5; }
     if (op == AES_OP_GRAF_HANDLE) outputs = 5;
+    if (op == AES_OP_GRAF_MKSTATE) outputs = 5;
     if (op == AES_OP_INIT || op == AES_OP_CREATE) result = -1;
     if (op != AES_OP_INIT && op != AES_OP_EXIT && op != AES_OP_WRITE &&
         op != AES_OP_MESAG && op != AES_OP_KEYBD && op != AES_OP_BUTTON &&
         op != AES_OP_TIMER && op != AES_OP_MULTI &&
         op != AES_OP_UPDATE && op != AES_OP_CREATE && op != AES_OP_OPEN &&
         op != AES_OP_CLOSE && op != AES_OP_DELETE && op != AES_OP_GET &&
-        op != AES_OP_SET && op != AES_OP_CALC && op != AES_OP_FIND && op != AES_OP_GRAF_HANDLE) {
+        op != AES_OP_SET && op != AES_OP_CALC && op != AES_OP_FIND &&
+        op != AES_OP_GRAF_HANDLE && op != AES_OP_GRAF_MKSTATE) {
         c->diagnostic = AES_UNSUPPORTED; pb->int_out[0] = 0; return;
     }
     if (pb->control[1] != inputs || pb->control[2] != outputs ||
@@ -464,6 +466,9 @@ void EXEC_CALL aes_call(AESPB *pb)
     case AES_OP_GRAF_HANDLE:
         result = ExecAESGrafHandle(c, &pb->int_out[1], &pb->int_out[2],
                              &pb->int_out[3], &pb->int_out[4]); break;
+    case AES_OP_GRAF_MKSTATE:
+        result = ExecAESMouseState(c,&pb->int_out[1],&pb->int_out[2],
+            &pb->int_out[3],&pb->int_out[4]); break;
     case AES_OP_WRITE:
         result = write_message(c, pb->int_in[0], pb->int_in[1], (WORD *)(ULONG)pb->addr_in[0]); break;
     case AES_OP_MESAG: result = (ExecAESEvents(c,MU_MESAG,0,(WORD *)(ULONG)pb->addr_in[0]) != 0); break;

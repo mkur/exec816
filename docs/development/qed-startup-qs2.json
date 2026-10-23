@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "qualification": false,
+  "slice": "QS2",
+  "status": "pass",
+  "cohorts": [
+    {
+      "path": "build/qed-startup/qs2-binding-opt",
+      "results_sha256": "4f78f2bf86fbd9934c1488db32abc5615bd934cb82d569e489d59a4e2fcf5264",
+      "app_sha256": "b3840324bdcb73bfe1fe002b0a7b4b9313ebdcdba382fe80a2d3dd2092bdd203",
+      "completed": [
+        2
+      ],
+      "minimum_headroom": 795
+    },
+    {
+      "path": "build/qed-startup/qs2-binding-raw",
+      "results_sha256": "e57cc6d7fc868e450bb3f0b2ce006ba4a4ac5d3636d7e66e7ec1c158ddaeb96c",
+      "app_sha256": "72eb1c12c2644d1b9c665cd6f3ac8bb505cccfe28208d8aff785f4f1e2f28271",
+      "completed": [
+        2
+      ],
+      "minimum_headroom": 795
+    },
+    {
+      "path": "build/qed-startup/qs2-drawing",
+      "results_sha256": "870a8d60813e5705ddff6cbf14dfe9f21668c40406ca52fb663960851b0a15ec",
+      "app_sha256": "c8d8ecb7458c07ce08ace2ad66429cca5d1564c52c970bf1dc77ce01d0e28fdc",
+      "completed": [
+        2
+      ],
+      "minimum_headroom": 842
+    },
+    {
+      "path": "build/qed-startup/qs2-input",
+      "results_sha256": "bcbdc4e1a23c2e1f607b92428a41c7d8102f4b88e37f1080149b463e6f02e1d6",
+      "scope": "Controlled named/AESPB snapshot and preserved queued events; optimized input suite"
+    }
+  ],
+  "host_tests": {
+    "tests": 529,
+    "expected_skips": 4
+  },
+  "c_app_abi": 25,
+  "analysis_layout": {
+    "path": "build/qed-startup/qs2-analysis/layout.json",
+    "sha256": "af478aaf8a45ef105385859e3d73a65f6409a080227610925d9f1ffed41d89df",
+    "code_bytes": 138409,
+    "initialized_bytes": 1329,
+    "bss_bytes": 26648,
+    "import_thunk_bytes": 400,
+    "span_bytes": 269481,
+    "image_holes_bytes": 103095,
+    "serialized_bytes_if_executable": 154878,
+    "relocation_count": 3557,
+    "heap_alignment_backing_bytes": 335016,
+    "future_full_profile_backing_bytes": 393216,
+    "private_allowances": {
+      "code_bytes": 32768,
+      "data_bss_bytes": 16384
+    },
+    "container_metadata_allowance_bytes": 16384,
+    "resident_provider_allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "resident_provider": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/qed-startup/qs2-binding-opt/c-image.json",
+    "sha256": "3d852174741f8090044f9a67aede2653dc4fb1b0639758783248a957d4a67a81",
+    "code_bytes": 179036,
+    "table_bytes": 40145,
+    "data_bss_bytes": 25739,
+    "allowances": {
+      "code_bytes": 16384,
+      "data_bss_bytes": 16384,
+      "basis": "Reserved planning caps for step 3; remeasure and redesign before exceeding either cap",
+      "table_bytes": 4096
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Task pools and region reservations exactly match QS1"
+  },
+  "binding_dispositions_sha256": "b7bcc8423c903540fc05e2c96572f8b7579c0bed5fdabc083e9e6061cbe0a548"
+}

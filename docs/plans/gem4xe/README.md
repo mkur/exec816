@@ -8,6 +8,75 @@ before the integrated workflow can be delivered.
 The [WB0–WB14 plan](../fastbasic-workbench-implementation-plan.md) makes those
 interfaces executable before IDE integration and separates editor/Run,
 debugger, graphics and final-package acceptance.
+The separate [upstream GEM4XE/QED setup](../../guides/gem4xe-qed-reference.md)
+preserves a working reference for behavior comparisons during the port.
+
+The [QED supported delivery design](qed-delivery-design.md) and
+[QD1–QD7 implementation plan](qed-delivery-implementation-plan.md) define
+strategy step 7: normal reproducible demo builds, extracted-package Files/shell
+launch, persistent WORK, source/notices and scope reconciliation. The
+[QD1–QD7 delivery gate](../../history/qed-delivery.md#qd7-supported-development-delivery)
+now passes at the supported development tier. Full release qualification and publication
+remain separate.
+
+The [QED coexistence design](qed-coexistence-design.md) and
+[QC1–QC4 implementation plan](qed-coexistence-implementation-plan.md) define
+strategy step 6: measured production responsiveness beside a GUI peer or shell
+checksum job, admitted Task counts, memory fragmentation and repeated lifetimes.
+The [reconciled development gate](../../history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff)
+passes; [step 7 delivery](../../history/qed-delivery.md#qd7-supported-development-delivery) now passes separately.
+
+The [QED saving design](qed-saving-design.md) and
+[QW1–QW8 implementation plan](qed-saving-implementation-plan.md) define strategy
+step 5: checked serialization and terminal Close, sibling-file publication with
+one retained backup, explicit recovery outcomes and Save/Discard/Cancel
+continuations.
+QW1–QW8 implement the public C binding/current ABI, canonical paths, staging,
+publication, loaded-editor Save/Save As, modified continuations and selected
+deeper failures. The reconciled saving development gate passes. See the
+[saving implementation record](../../history/qed-saving.md).
+
+The [QED editing design](qed-editing-design.md) and
+[QE1–QE7 implementation plan](qed-editing-implementation-plan.md) implement
+strategy step 4: native keyboard/selection, redraw and long-line navigation,
+internal clipboard/Undo, cancellable Find/dialogs and checked single-document
+Open/New. The [editing gate](../../history/qed-editing.md#qe7-editing-gate-and-saving-handoff)
+passes its development checks, including the combined session and package
+reconciliation. Reliable saving and the full Save/Discard/Cancel workflow now
+pass step 5; practical coexistence now passes step 6. Supported QED delivery
+now passes step 7 at the development tier.
+
+The [QED startup design](qed-startup-design.md) and
+[QS1–QS5 implementation plan](qed-startup-implementation-plan.md) define
+strategy step 3: adapt resources/menus and fixed-font drawing, execute the real
+editor startup/close, and establish rollback, reuse and GUI stack evidence.
+QS1–QS5 are complete with [development evidence](../../history/qed-startup.md);
+step 4 editing is now implemented; reliable Save remains strategy step 5.
+
+The [QED native feasibility design](qed-native-feasibility-design.md) and
+[QF1–QF6 plan](qed-native-feasibility-implementation-plan.md) define strategy
+step 2: prove a private native runtime and text-storage/file paths, measure
+the complete QED layout, and settle stack/admission requirements before GEM
+expansion. [QF1–QF6 source, runtime, layout and admission checks](../../history/qed-native-feasibility.md)
+are implemented and reconciled. Step 3 records actual application startup.
+Analysis-only links cannot be packaged or used as executable evidence.
+
+The [QED initial scope and source dependencies](qed-scope-and-dependencies.md)
+fix strategy step 1: an English single-document editor, explicit source pins,
+required dependency paths and deferred startup behavior. Source checks pass;
+the native build and runtime foundation is recorded in step 2.
+
+The [QED port strategy](qed-port-strategy.md) orders the work from verified
+dependencies and native runtime/memory feasibility through real QED startup,
+editing, reliable saving, measured coexistence and delivery. It sets the
+high-level sequence; design notes and executable implementation plans follow.
+
+The [QED gap analysis](qed-gap-analysis.md) recommends rebuilding the existing
+GEM4XE editor port as a native Exec application. It identifies resource/menu
+capacity, VDI, event/dialog, runtime/filesystem and image/stack gaps, with a
+proposed sequence through editing, reliable saving and concurrent use. This is
+a historical source study; the later startup record identifies actual native
+builds and executions.
 
 The [native drag/UPDATE plan](native-drag-update-plan.md) fixes periodic clients
 hiding a held window outline: queued acquisitions must let an already captured

@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "status": "partial-gate",
+  "tier": "development",
+  "qualification": false,
+  "scope": "QC2c redundant slider queries removed with full-reset synchronization; cold/warm desktop ownership measured. Baseline, Counter, lifetime, idle and damage gates pass; checksum navigation still fails the unchanged 1000 ms limit.",
+  "production": {
+    "app": {
+      "path": "build/qed-coexist/sync-production/program.app",
+      "sha256": "5e24daa438c2a6d2351251386c84b4198037c9aaa1394b9ed144c79b090928aa"
+    },
+    "layout": {
+      "path": "build/qed-coexist/sync-production/layout.json",
+      "sha256": "91e7ff9583f0e27ba150027f511b17e8da35479fc394eaf324ced1536d2ac4fb"
+    },
+    "sources": {
+      "path": "build/qed-coexist/sync-production/inputs/sources.json",
+      "sha256": "17e8e27122f4f6a3bdb7633dd47ef62bd759dc1670e156169fd5e4d1134fb1b3"
+    },
+    "frames": {
+      "path": "build/qed-coexist/sync-production/stack-frames.json",
+      "sha256": "5c51127513a088f17a97554047b4e8675f17194123b4707f3617023a75b179f8"
+    }
+  },
+  "cases": {
+    "baseline": {
+      "path": "build/qed-coexist/qc1-sync/coexist-results.json",
+      "sha256": "60610345033ffe58382360189be3d5593ec1862c7cdfde1cca57d8c0370097fb"
+    },
+    "peer": {
+      "path": "build/qed-coexist/qc2-peer-warm/coexist-results.json",
+      "sha256": "86c890102b6ccbed09e8b242470238b35c806d65d6a5d3eb081ae942ffa9b781"
+    },
+    "lifetime": {
+      "path": "build/qed-coexist/qc3-sync/results.json",
+      "sha256": "189947e24f5e245083d4dd290cea8e64bbe79f06c28a188f01430e1e9e5324f6"
+    },
+    "idle": {
+      "path": "build/qed-coexist/blink-sync/results.json",
+      "sha256": "50128603219f55a7cded192b18791668b4e0c9a236fa74f7d51e72ed16bef580"
+    },
+    "damage": {
+      "path": "build/qed-coexist/damage-sync/results.json",
+      "sha256": "3f348d055ff22fc34f8a25ddbc965ea0d924ff6b37bc463b9ec8d56e8556c0a8"
+    }
+  },
+  "traces": {
+    "baseline": {
+      "path": "build/qed-coexist/qc1-sync/emulator.log",
+      "sha256": "7316adb60b19bf7a8c651b148b8ccd8260093477019f97bab05dc88c0eacc030"
+    },
+    "peer": {
+      "path": "build/qed-coexist/qc2-peer-warm/emulator.log",
+      "sha256": "a2873983c867732adf7af7ca891014b67d44516038105c54b32841cfb54ae48e"
+    },
+    "lifetime": {
+      "path": "build/qed-coexist/qc3-sync/emulator.log",
+      "sha256": "f43ffb92ef1dd01a8249039a99d10b2427e5cfbb01e1eeb5a56571e8554f28ca"
+    },
+    "idle": {
+      "path": "build/qed-coexist/blink-sync/emulator.log",
+      "sha256": "f72d51fec65557e9c639a3bb38318721ed010f0ee2ded9dff91c33568c068799"
+    },
+    "damage": {
+      "path": "build/qed-coexist/damage-sync/emulator.log",
+      "sha256": "7be91df89cb8e557b80fb48be3fef5b33622b03700c235f29deaeb6ba26e3c7d"
+    }
+  },
+  "damage_cases": 16,
+  "desktop_warmup": {
+    "path": "build/qed-coexist/qc2-peer-warm/desktop-warmup.json",
+    "sha256": "85d6ca72e35b78c68ed220edfbb33f58bbff2aa871d1172d98c64062c8c19aa7"
+  },
+  "retained_desktop_upper_bytes": 368,
+  "retained_path_bytes": 256,
+  "retained_timer_backing_bytes": 112,
+  "accumulating_bytes": 0,
+  "remaining_failure": {
+    "cohort": "checksum",
+    "endpoint": "navigate-30",
+    "elapsed_ms": 1022.8,
+    "limit_ms": 1000,
+    "observer_log": {
+      "path": "build/qed-coexist-qc2-checksum-warm.log",
+      "sha256": "b2580f77c3e5ca20a4c27f351c510142ce71a0a1ed7c4bf1b790e17929108331"
+    },
+    "trace": {
+      "path": "build/qed-coexist/qc2-checksum-warm/emulator.log",
+      "sha256": "6146f0d39e0b34fd33bb8e2b0ad208676559d00a1f252a65f30b04abd25a9860"
+    }
+  },
+  "host": {
+    "result": {
+      "path": "build/qed-coexist-sync-host.log",
+      "sha256": "d11984007a2d2c28bf14c33cd428cf5402125f78b3e6c52048f183d5a58fb47b"
+    },
+    "tests": 552,
+    "skipped": 4
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Same native desktop/provider and complete stack/DP/guard/alignment/slack reservations"
+  }
+}

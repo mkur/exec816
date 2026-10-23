@@ -147,6 +147,26 @@ void AESClientOne(void)
     CHECK(appl_init() > 0);
     CHECK(wind_create(AES_WINDOW_KIND,16,24,200,120)>0);
     produce(1); snapshot(101, 111, 0, 0);
+    {
+        WORD control[5]={79,0,5,0,0},global[15],out[5];
+        AESPB pb={control,global,NULL,out,NULL,NULL};
+        struct AESInputInbox *in=ExecAESContext()->endpoint->input;
+        UBYTE kh,kt,bh,bt;
+        UWORD interest;
+        input(AES_INPUT_KEY,21,31,0,4);
+        input(AES_INPUT_BUTTON,22,32,1,2);
+        snapshot(123,111,0,1);
+        kh=in->keyHead;kt=in->keyTail;bh=in->buttonHead;bt=in->buttonTail;
+        interest=in->interest;
+        CHECK(graf_mkstate(&x,&y,&buttons,&modifiers));
+        CHECK(x==123 && y==111 && !buttons && !modifiers);
+        aes_call(&pb);
+        CHECK(out[0]==1 && out[1]==123 && out[2]==111 && !out[3] && !out[4]);
+        CHECK(in->keyHead==kh && in->keyTail==kt && in->buttonHead==bh &&
+              in->buttonTail==bt && in->interest==interest);
+        CHECK(event(MU_KEYBD|MU_BUTTON|MU_TIMER,1,1,1,0)==(MU_KEYBD|MU_BUTTON|MU_TIMER));
+        CHECK(x==22 && key==0x1e61 && buttons==1);
+    }
     for (i = 0; i < 8; ++i) {
         input(AES_INPUT_KEY, 21, 31, 0, 4);
         input(AES_INPUT_BUTTON, 22, 32, 1, 2);

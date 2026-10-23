@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "QC1 production baseline only; Counter/checksum and lifetime acceptance remain QC2/QC3",
+  "command": "python3 tools/test_qed_coexist.py --output build/qed-coexist/qc1-final",
+  "result": {
+    "path": "build/qed-coexist/qc1-final/coexist-results.json",
+    "sha256": "61ddec9ba55cecc37a2c86b27cbd1634d0ab9f4feb4bc554a33c38e4a855cf8a"
+  },
+  "trace": {
+    "path": "build/qed-coexist/qc1-final/emulator.log",
+    "sha256": "b93d7f0771afb3ad3039dfdfb02d29ecc9527440dcfad1ecb049dab97dbb245e"
+  },
+  "package": {
+    "zip": {
+      "path": "build/qed-coexist/preview/exec816-demo.zip",
+      "sha256": "aa3c685070de3ab9241fa4614d30d57776b8470a225fd3bfd769dbdf2ed9703d"
+    },
+    "manifest": {
+      "path": "build/qed-coexist/preview/demo-manifest.json",
+      "sha256": "3e696eaa10b8fe704652c8053c22cb5310f8e57895f0fe1d58bd17952524d5df"
+    },
+    "preview": {
+      "path": "build/qed-coexist/preview/qed-preview.json",
+      "sha256": "8b1201649b30f5441d29ee5159b4885b91c7d9180bd55009d5febda28bc5dc1e"
+    },
+    "native_xex": {
+      "path": "build/qed-coexist/preview/program.xex",
+      "sha256": "d1f88715f9ee4a683487d469a983564bf542ddc4789a8976e048a904b5ef312b"
+    },
+    "boot_xex": {
+      "path": "build/qed-coexist/preview/of816/Exec-of816.xex",
+      "sha256": "8f84e1e5cd97740ba239979fcac4c8c8a5100d7903ac46d42b9e51849bf9c622"
+    },
+    "rom": {
+      "path": "build/qed-coexist/preview/of816/altirraos-816.rom",
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7"
+    }
+  },
+  "production_app": {
+    "path": "build/qed-coexist/production-final/program.app",
+    "sha256": "cf349b78e061b30521b94eee44dc99e7dafe7019bcb2fba2beb30f4af9099a44"
+  },
+  "layout_fixture": {
+    "path": "build/qed-coexist/qc3-final/app/app.json",
+    "sha256": "84da893ed2e4076e796008411ee96a3c4b8f95ead7562ae0867d419d7667c1d9"
+  },
+  "fixture_bytes": {
+    "document": 816,
+    "checksum_input": 524288
+  },
+  "latency": {
+    "insert": {
+      "samples": 6,
+      "median_ms": 210.5864425081656,
+      "maximum_ms": 381.06118168144246
+    },
+    "navigate": {
+      "samples": 6,
+      "median_ms": 691.9268825268298,
+      "maximum_ms": 742.0659478219682
+    },
+    "find": {
+      "samples": 3,
+      "median_ms": 822.2893544917456,
+      "maximum_ms": 1243.462803381549
+    }
+  },
+  "quit_ms": 701.954808360552,
+  "autoboot_frames": 249,
+  "heap_initial": {
+    "free_bytes": 1796640,
+    "largest_bytes": 1638400,
+    "free_extents": 9
+  },
+  "heap_final": {
+    "free_bytes": 1796640,
+    "largest_bytes": 1638400,
+    "free_extents": 9
+  },
+  "checkpoints": [
+    {
+      "name": "loaded",
+      "heap": {
+        "free_bytes": 1486624,
+        "largest_bytes": 1268168,
+        "free_extents": 12
+      },
+      "qed_private": [
+        4,
+        53325,
+        53373,
+        58517
+      ],
+      "live_tasks": 7
+    },
+    {
+      "name": "undo-and-viewport",
+      "heap": {
+        "free_bytes": 1486624,
+        "largest_bytes": 1268168,
+        "free_extents": 12
+      },
+      "qed_private": [
+        4,
+        53325,
+        53373,
+        58517
+      ],
+      "live_tasks": 7
+    },
+    {
+      "name": "saved",
+      "heap": {
+        "free_bytes": 1486624,
+        "largest_bytes": 1268168,
+        "free_extents": 12
+      },
+      "qed_private": [
+        4,
+        53325,
+        53373,
+        58891
+      ],
+      "live_tasks": 7
+    }
+  ],
+  "private_labels": [
+    "blocks",
+    "payload",
+    "backing",
+    "peak_backing"
+  ],
+  "persisted_allocation": {
+    "sectors": 2880,
+    "sector_bytes": 256,
+    "allocated": 2086,
+    "free": 794,
+    "files": 5,
+    "directories": 1
+  },
+  "normal_collection": true,
+  "guards": "intact",
+  "runtime_status": 0,
+  "observer_inputs": {
+    "tools/test_qed_coexist.py": "e6b9288584dacfa848410f34df2ffb540885d1765e0957841123cabe368d3eed",
+    "tools/qed_coexist_observe.py": "8aab487496318a24c45045ae0eeb3613df90371c53440cedbbe37b6dc7c517bc"
+  },
+  "heap_oracle_host_tests": {
+    "tests": 7,
+    "status": "pass"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "basis": "Native XEX/provider byte-identical to the interactive cursor-paint preview, including Task/DP/guards/alignment/slack"
+  }
+}

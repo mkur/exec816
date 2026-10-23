@@ -1,0 +1,113 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "observed_on": "2026-10-21",
+  "scope": "GEM4XE/QED reference setup; no Exec implementation or qualification change",
+  "emulator": {
+    "source": "https://github.com/ilmenit/AltirraSDL",
+    "platform": "macOS arm64",
+    "sha256": "a6b463819ae1064e98bd4d797427f47855879d7a2e2ad263eed5c1bcd348d5ca"
+  },
+  "media": {
+    "GEM4XE.car": "127dbeb704aa5cd5f5f6a3317e31fd1578a0c0b0c3a1ac5c6d1060c6ec08f5ff",
+    "mydos-boot.atr": "0c13eb9175975636e231be335341eb91fd143dc19e090efa995c09374ff313a1",
+    "qed.atr": "75d7db0831aef46e9601844e5f6d3b33e8e92bfb77f5c44a6a2b378dfba3da60",
+    "firmware/altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7"
+  },
+  "configuration": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "1088K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "u1mb": false,
+    "u1mbrom_id": "$0000000000000008",
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "on",
+    "burstio": false,
+    "accuratedisk": false,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": true,
+    "randdelay": false,
+    "diskemu": "generic",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$cb1d2639eb5f93b5",
+    "actual_kernel_id": "$cb1d2639eb5f93b5",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": false,
+    "history": false
+  },
+  "executed": [
+    "MyDOS boot and D2 QED launch",
+    "New with visible document geometry",
+    "Typing hello world",
+    "Select All",
+    "Copy/Cut/Paste",
+    "Undo and toggle back",
+    "Save CHECK.TXT to D2",
+    "Close and reopen CHECK.TXT"
+  ],
+  "saved_bytes": {
+    "CHECK.TXT": "hello world",
+    "length": 11,
+    "verified_by": "Independent MyDOS allocation audit and extraction after emulator shutdown"
+  },
+  "screenshots": {
+    "new": "d1c008079a04ab4dc001f1a128dbff0714677c58d76d8e54ac83d7e723c4d4ec",
+    "typed": "214f9cb49b15e4a03578315bb6f15e59dff2c62a20f60ef7a68a494b3e36f17b",
+    "selected": "9bfc0d9faa1aee2202d18dee3ed354f946667a56bb9d3fa7a14d6ac1622d9f42",
+    "cut": "65581bf28f13dc435c3d11ffd5537b31d06a91e9b535d1197e47d785335b463a",
+    "pasted": "912d94741a04c46ffef9ce41f2b9ae11935bb386fed3e139c568d6149b93580d",
+    "undo": "65581bf28f13dc435c3d11ffd5537b31d06a91e9b535d1197e47d785335b463a",
+    "undo-toggle": "912d94741a04c46ffef9ce41f2b9ae11935bb386fed3e139c568d6149b93580d",
+    "saved": "3632522dd69a55ee1fa871c3c5a0c6bfc1eb4674f816496c92393bb1beac9a7a",
+    "reopened": "3632522dd69a55ee1fa871c3c5a0c6bfc1eb4674f816496c92393bb1beac9a7a"
+  },
+  "evidence_directory": "build/gem4xe-qed-diagnosis/gui-verification",
+  "original_report": "build/gem4xe-qed-diagnosis/results.json",
+  "note": "Recorded from the completed GUI walkthrough before the reproducible builder was introduced. Rebuilding identical media is a host development check, not a new GUI run.",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "package_reproduction": {
+    "tier": "development",
+    "checks": {
+      "static_files": 21,
+      "runtime_excluded": true,
+      "relocated_prepare_only": true,
+      "saved_disk_survives_build": true,
+      "repeated_zip_identical": true,
+      "all_media_equal_to_working_reference": true,
+      "clean_input_downloads": true,
+      "gui_repeated": false
+    },
+    "archive_sha256": "7a8046e392dd5968ea15a879a2aca1a682646486c68bbcc5748e4c6433a133c4",
+    "builder_sha256": "ae1f380cac6104ac83173d7dbd6c6280b3895f26dfa2085e0155f00059b2b218",
+    "pin_sha256": "412fd4d859d14c31d6339cd3a8f7ea15234e08e036e4e7e2355783c5c65a77dd",
+    "report": "build/gem4xe-altirra-build.json",
+    "host_suite": {
+      "tests": 535,
+      "skipped": 4,
+      "status": "pass",
+      "log": "build/gem4xe-reference-host-tests.log"
+    },
+    "existing_runtime_disks_preserved": 2
+  }
+}

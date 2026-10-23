@@ -36,7 +36,7 @@ def paint(b,context,r):
     if focus!=65535 and not objects[focus].ob_flags&8:
         o=objects[focus]
         for xx in range(root.ob_x+o.ob_x+3,root.ob_x+o.ob_x+o.ob_width-3):
-            device.dev.plot_xor(xx,root.ob_y+o.ob_y+o.ob_height-3)
+            device.dev.plot(xx,root.ob_y+o.ob_y+o.ob_height-3,0 if o.ob_state&1 else 1)
     if caret:
         i,index=caret;o=objects[i];x=root.ob_x+o.ob_x+index*8;y=root.ob_y+o.ob_y+(o.ob_height-8)//2
         for yy in range(y,y+8):device.dev.plot(x,yy,1)
