@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "command": "python3 tools/build_demo.py --output build/qed-delivery/normal --gem-desktop --qed --format sdfs --sector-bytes 256 --system-kib 720 --mouse-profile mild --release-compiler",
+  "bundle": "build/qed-delivery/normal",
+  "zip_sha256": "95815980684091c0e6e62ecb21a8f920285190df2b02455f9a37c182ae7acce9",
+  "manifest_sha256": "5021122cfa08defca6bedb097570c9be628566cdd7fe9b481623aa6d49cb7ffa",
+  "qed": {
+    "abi": 26,
+    "app_sha256": "2c516eaa36c4fd2f3fc60661070790f671cea9633225ff66b30f8f91ca65c1a7",
+    "resource_sha256": "9095194c1b2055ecbd31b6bcde7604a47dd6da6d4796e0b4b1a52993588d08e7",
+    "provider_identity": "5408e60ed7efd8cdccb791d753b508a16afd9fa65371cdc7461ad5d95f6f2d1e",
+    "production_layout": "/Users/michalkurcewicz/action/exec816-public/build/qed-delivery/normal/qed-production/layout.json",
+    "production_layout_sha256": "74033dfd5fdcff13d3664354135f4cdd808665a32f921b36932ea52fe700052b",
+    "frames_sha256": "22dc71d470e74a787bd9309fb89a5507fc2fb5d961c8bd8192cc743967476d86",
+    "scope": "Development delivery candidate; full release qualification is separate"
+  },
+  "system_allocation": {
+    "sectors": 2880,
+    "sector_bytes": 256,
+    "allocated": 1769,
+    "free": 1111,
+    "files": 53,
+    "directories": 6
+  },
+  "work_allocation": {
+    "sectors": 2880,
+    "sector_bytes": 256,
+    "allocated": 11,
+    "free": 2869,
+    "files": 2,
+    "directories": 1
+  },
+  "exact_zip_execution": {
+    "path": "build/qed-delivery/normal/qed-setup-results.json",
+    "sha256": "a6146cbf02cb4ce3df1671773959ae8ab91638b25608f66e4d9defcbb040a2a6",
+    "scope": "Exact OF816 ZIP: production QED, normal RUN, two launches, three saves, reopen, backup rotation, ownership and EXIT",
+    "integration": {
+      "production_app": true,
+      "normal_shell_launch": true,
+      "lifetimes": 2,
+      "saves": 3,
+      "backup_rotation": true,
+      "reopen": true,
+      "native_ownership_return": true
+    }
+  },
+  "cartridge_capacity": {
+    "program.xex": {
+      "bytes": 566522,
+      "headroom": 465669,
+      "fits_uncompressed": true
+    },
+    "of816/Exec-of816.xex": {
+      "bytes": 591604,
+      "headroom": 440587,
+      "fits_uncompressed": true
+    }
+  },
+  "host": {
+    "full_suite": "559 tests, four skipped, pass",
+    "focused_inventory": "9 tests, pass"
+  },
+  "qc4_comparison": {
+    "app_identical": true,
+    "resource_and_provider_identical": true,
+    "native_runtime_diff": "12 bytes, all within generated Exec build identification strings; remaining segments and bytes identical"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  },
+  "source_inputs": {
+    "tools/build_demo.py": "1645a36e92cfea199399f19349c1a3cb404dedc2de939d6aa74275b9577adc18",
+    "tools/build_qed.py": "94722a8b0cc81fa68631f4ac975a8b4a0f8ef84249a941227a8a1b7af9cea89a",
+    "tools/qed_demo.py": "664a88e5155bf977e420287c8bf3aaf43694f2f669fb22cf38cfbe68d4f4b721",
+    "tools/package_demo.py": "834e86ce671a39b24f622a8980001d5271460e221e9908a58c9490a682a4e936",
+    "tools/test_qed_exec_setup.py": "dae5a493d39090c5524041dbeb8589ab18bfef5eb3fb966799d9f1b0585800ce"
+  }
+}

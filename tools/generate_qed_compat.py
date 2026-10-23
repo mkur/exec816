@@ -55,7 +55,7 @@ def generate(source):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--reference',type=Path,default=ROOT/'build/gem-vdi/upstream/src/app/gem.h')
+    p.add_argument('--reference',type=Path,default=ROOT/'build/qed-sources/gem-reference/gem.h')
     p.add_argument('--check',action='store_true');a=p.parse_args();content=generate(a.reference)
     if a.check:require(TARGET.read_text()==content,'Stale QED GEM declarations')
     else:TARGET.write_text(content)

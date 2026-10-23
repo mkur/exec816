@@ -22,3 +22,28 @@ no new target execution or hosted qualification. Bank-zero reservation growth:
 **0 fixed / 0 per-public-Task / 0 private idle bytes**, including guards,
 alignment and unused capacity. The eight Task slots and 2,560-byte QED
 admission remain unchanged.
+
+## QD2 Normal production build and package
+
+The [QD2 record](../development/qed-delivery-qd2.json) binds the new ordinary
+`build_demo.py --gem-desktop --qed` build, matching resource/provider, source
+frame ledger and exact extracted ZIP. Historical overlay defaults and the
+preview manifest marker are retired. Refresh/package reject stale executable
+inputs. The disk and ZIP share the QED guide; development files stay outside.
+
+The exact ZIP cold-booted through the five-second OF816 countdown, ran two
+ordinary shell-owned QED lifetimes, performed three saves with backup rotation,
+reopened the saved document, collected through JOBS and returned normally to
+the OS with guards intact. Closed-image bytes and allocation pass independently.
+The production APP/resource/provider match QC4. The rebuilt native image differs
+in twelve generated build-identification string bytes; all other runtime bytes
+and segment geometry match. This observation permits scoped reuse, not a new
+qualification claim.
+
+Development validation: 559 host tests (four skipped), nine focused delivery
+checks and the exact-package walkthrough. SYS uses 1,769 of 2,880 sectors; WORK
+uses 11. Both XEX images pass capacity checks, without a cartridge boot claim.
+Source frame bound: 584 bytes; conditional admission margin: 824 bytes.
+Bank-zero reservation growth: **0 fixed / 0 per-public-Task / 0 private idle
+bytes**, including guards, alignment and unused capacity. Eight Task slots and
+2,560-byte QED admission are unchanged. The grant question remains open.

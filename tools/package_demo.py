@@ -98,7 +98,10 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
             raise ValueError('Expected a shell-only bitmap build')
         if demo['artifacts']['program.xex'] != record['exec_xex_sha256']:
             raise ValueError('OF816 does not wrap this bitmap shell')
-        for name in GEM_NOTICES + (CALCULATOR_NOTICES+G4BENCH_NOTICES if demo.get('gem_desktop') else ()) + (QED_NOTICES if demo.get('qed_preview') else ()):
+        if demo.get('qed'):
+            from qed_demo import verify
+            verify(demo,bitmap_shell)
+        for name in GEM_NOTICES + (CALCULATOR_NOTICES+G4BENCH_NOTICES if demo.get('gem_desktop') else ()) + (QED_NOTICES if demo.get('qed') else ()):
             content = (bitmap_shell/name).read_bytes()
             if hashlib.sha256(content).hexdigest() != demo['artifacts'][name]:
                 raise ValueError(f'Changed bitmap shell notice: {name}')
@@ -108,7 +111,7 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
                        'docs/aes-counter-distribution.txt' if demo.get('aes_counters') else
                        'docs/desktop-distribution.txt' if demo.get('desktop') else
                        'docs/bitmap-shell-distribution.txt')).read_text()
-        if demo.get('qed_preview'):
+        if demo.get('qed'):
             guide = (ROOT/'docs/qed-exec-distribution.txt').read_text()
         if demo.get('desktop'):
             guide = guide.replace('@POINTER_DESCRIPTION@', pointer_description(demo['kernel']['desktop_mouse']['profile']))

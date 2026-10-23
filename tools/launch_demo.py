@@ -16,7 +16,7 @@ PROFILES = r'User\AltirraSDL\Profiles'
 FIRMWARE = r'User\AltirraSDL\Firmware'
 
 
-def write_launcher(output):
+def write_launcher(output, qed=False):
     """Keep the developer launcher beside the build, outside the boot ZIP."""
     path = output / 'launch-altirra.command'
     path.write_text('#!/bin/sh\n'
@@ -24,7 +24,31 @@ def write_launcher(output):
         f'exec python3 {shlex.quote(str(ROOT / "tools/launch_demo.py"))} '
         '--demo "$demo_dir" "$@"\n')
     path.chmod(0o755)
+    if qed:
+        write_qed_launcher(output)
     return path
+
+
+def write_qed_launcher(output):
+    """Start from a private, deterministic profile rather than user settings."""
+    settings = configparser.ConfigParser(interpolation=None, delimiters=('=',))
+    settings.optionxform = str
+    set_values(settings, PROFILES, {'Defaults inited': 1, 'Current profile': 0})
+    set_values(settings, PROFILES + r'\00000000', {
+        'Input: Active map names': 'Mouse -> ST Mouse (port 1)',
+        'Input: Quick map names': '', 'Devices': '[]',
+        'CPU: Stop on BRK': 0, 'Debugger: Break on EXE run': 0,
+        'Memory: Randomize on EXE load': 0,
+    })
+    with (output / 'launcher-seed.ini').open('w') as stream:
+        settings.write(stream)
+    path = output / 'launch-qed.command'
+    path.write_text('#!/bin/sh\n'
+        'demo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd) || exit 1\n'
+        'exec python3 ' + shlex.quote(str(ROOT / 'tools/launch_demo.py')) +
+        ' --demo "$demo_dir" --config "$demo_dir/launcher-seed.ini" "$@"\n')
+    path.chmod(0o755)
+
 
 
 def read_settings(path):

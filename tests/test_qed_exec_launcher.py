@@ -8,7 +8,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
-from prepare_qed_exec import launcher
+from launch_demo import write_qed_launcher as launcher
 from launch_demo import read_settings, PROFILES
 
 

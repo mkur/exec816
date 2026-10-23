@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cold boot the exact preview ZIP and run production QED from the normal shell."""
+"""Cold boot the exact delivery ZIP and run production QED from the normal shell."""
 import argparse
 import hashlib
 import json
@@ -10,7 +10,7 @@ from desktop_menu_check import Menus
 from desktop_mouse import schedule
 from filesystem_audit import Audit
 from native_program import ROOT, require, sha256
-from prepare_qed_exec import SAMPLE
+from qed_demo import SAMPLE
 from prime_observer import process_record
 from test_demo import run
 

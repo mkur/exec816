@@ -169,7 +169,7 @@ def check(output, bundle, production, layout_from, cohort, profile=False, factor
     offsets = emitted_offsets(production, layout_from)
     manifest = json.loads((bundle/'demo-manifest.json').read_text())
     app = json.loads((production/'app.json').read_text())
-    require(manifest['qed_preview']['app_sha256'] == sha256(production/'program.app') == app['sha256'],
+    require(manifest['qed']['app_sha256'] == sha256(production/'program.app') == app['sha256'],
             'Production APP differs from the packaged APP')
     for name, digest in manifest['source_inputs'].items():
         require(sha256(ROOT/name) == digest, 'Changed native package source: '+name)

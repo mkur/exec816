@@ -1,63 +1,61 @@
-Native Exec816 QED -- interactive development setup
-==================================================
+Native Exec816 QED -- development delivery
+=========================================
 
-QED runs as an ordinary native Exec Process on the GEM desktop. This is the
-Exec port, with editing, Find, clipboard/Undo, Save/Save As and backups.
+START IN ALTIRRASDL
 
-START ON THIS MAC
+Extract this ZIP into a new folder. Requires AltirraSDL with the 65C816
+high-memory extension used by Exec816. Select Atari 800XL, PAL, BASIC off,
+plain 65C816 at 8x (14.28 MHz), shadow ROMs enabled, 64K base RAM and 63 high
+banks (4 MiB total). Select the included altirraos-816.rom as XL/XE OS.
+Add VBXE FX 1.26 at D6xx with private 512K VRAM, and ST Mouse on port 1.
+Disable keyboard joystick maps, SIO patches, burst I/O and fast boot.
+Remove IDE Plus, U1MB and Rapidus.
 
-Double-click launch-qed.command beside the development build. Allow OF816's
-five-second countdown to finish, then wait for the desktop and shell.
-Capture/release the mouse with F12 (possibly Fn+F12), or Input > Capture Mouse.
+Mount system.atr read-only in D1 with Generic + 57600 baud emulation.
+Copy work.atr to a private location and mount that copy writable in D8.
+Keep disks mounted when loading an XEX. Boot Exec-of816.xex and allow the
+five-second countdown to finish. A key during countdown enters OF816;
+EXEC816 resumes startup. Capture/release the mouse with F12 or Capture Mouse.
 
-Click the Shell window and enter:
+OPEN AND EDIT
 
-  RUN C:QED.APP
-
-Alternatively, open C: on the desktop and double-click QED.APP. Close QED before
-starting another copy. Leave the other GUI applications closed for this preview.
-QED opens an empty document. Ctrl+O opens a file; choose WORK:SAMPLE.TXT.
-Use Ctrl+N for New, Ctrl+S for Save and Ctrl+M for Save As.
+Click the Shell and enter RUN C:QED.APP WORK:SAMPLE.TXT
+Use RUN C:QED.APP for a new document. Alternatively, open C: on the desktop
+and double-click QED.APP. Keep one QED instance; close it before another.
+Ctrl+O opens, Ctrl+N creates, Ctrl+S saves, Ctrl+M selects Save As.
 Ctrl+A selects all; Ctrl+C/X/V copies/cuts/pastes; Ctrl+Z toggles Undo.
-Use the Search menu for Find and Find Next. Ctrl+Q quits QED.
+The Search menu provides Find and Find Next. Ctrl+Q quits.
+One Counter may coexist with QED; close Counter before foreground CKSUM.
+The shell admits one RUN job. JOBS collects a finished shell-owned QED.
+Close the editor before EXIT in the Shell returns to the OS.
+
+@POINTER_DESCRIPTION@
 
 SAVE YOUR WORK
 
-SYS: in D1 contains QED and its resource and is read-only. WORK: in D8 is
-writable; use it for documents. RAM: is temporary and disappears on reboot.
-Save As accepts WORK: (the committed title may show its physical name D8:).
+SYS: in D1 is read-only. WORK: in D8 is writable. RAM: disappears on reboot.
+Save As accepts WORK: (the committed title can show its physical name D8:).
 Replacing a document and replacing an older backup require separate consent;
 Cancel is the default. The previous document is retained as .BAK.
 Modified New/Open/Close/Quit offer Save, Discard and Cancel.
+Preserve your private WORK disk when replacing the package or clean template.
+Close the emulator before another instance mounts the same writable disk.
 
-The local launcher copies work.atr into the build's altirra/ directory on first
-use and reuses that writable copy on later launches. Keep the entire altirra/
-directory when moving saved work. The packaged work.atr stays a clean template.
-Close this emulator instance before launching another with the same WORK disk.
-EXIT in the shell closes the Exec desktop after QED has quit.
+The editor accepts uniform LF or CRLF, tabs, empty text and no final newline.
+Lines are limited to 1,023 bytes. Native paths allow 255 bytes; the selector
+has path[128] and leaf[13]. NUL, mixed endings and CR-only input are rejected.
+Document size depends on available memory; no fixed maximum is promised.
+Preferences, autosave, printing, external clipboard, multiple documents,
+pattern/replace search, external fonts and donor interprocess protocols are
+outside this port. Power-loss atomicity, concurrent writers to one target,
+automatic repair and general hosted/hardware qualification are not claimed.
 
-MANUAL ALTIRRASDL SETUP (INCLUDING AN EXTRACTED ZIP)
+SOURCE AND NOTICES
 
-Requires AltirraSDL with the 65C816 high-memory extension used by Exec816.
-Select Atari 800XL, PAL, BASIC off, plain 65C816 at 8x (14.28 MHz), shadow ROMs
-enabled, 64K base RAM and 63 high banks (4 MiB total). Use the included
-altirraos-816.rom as XL/XE OS. Add VBXE FX 1.26 at D6xx with private 512K VRAM.
-Select ST Mouse on port 1 and disable keyboard joystick maps. Remove IDE Plus,
-U1MB and Rapidus. Disable SIO patches, burst I/O and fast boot.
-Mount system.atr read-only in D1 with Generic + 57600 baud emulation, and a
-private copy of work.atr writable in D8. Keep disks mounted when loading an XEX.
-Boot Exec-of816.xex and let the five-second countdown finish.
-Pressing a key during the countdown enters OF816; EXEC816 resumes startup.
-
-SCOPE AND NOTICES
-
-This is a local development preview. Practical workload measurements and
-supported release delivery remain separate work. It does not promise power-loss
-atomicity, concurrent writers to one target, autosave or automatic disk repair.
-Use a copy of any document you wish to try.
-
-QED may be given away but must not be sold. QED-NOTICE.txt and QED-TERMS.txt
-retain upstream notices; QED-PROVENANCE.txt describes this native adaptation.
-QED-COPYING.LIB.txt and QED-APACHE-2.0.txt retain library terms.
-The EXEC816, GEM, calculator, G4BENCH, OF816 and AltirraOS notices cover the
-other included components. SHA256SUMS covers every packaged boot/guide file.
+This is a development delivery candidate. QED may be given away but must not
+be sold. QED-NOTICE.txt and QED-TERMS.txt retain upstream notices;
+QED-PROVENANCE.txt describes this adaptation. QED-COPYING.LIB.txt and
+QED-APACHE-2.0.txt retain library terms. EXEC816-GPL-3.0.txt, EXEC816-MIT.txt,
+EXEC816-LICENSING.md and the GEM, calculator, G4BENCH, OF816-LICENSE.txt
+and ALTIRRAOS-LICENSE.txt notices cover the other included components.
+SHA256SUMS covers every packaged boot file, guide and notice.
