@@ -12,7 +12,7 @@ donor comparisons.
 From the repository root:
 
 ```sh
-build/qed-delivery/final/launch-qed.command
+build/qed-delivery/final-v2/launch-qed.command
 ```
 
 Allow the five-second OF816 countdown and desktop startup to complete. Capture
@@ -31,14 +31,14 @@ keyboard controls, limits, notices and manual emulator settings.
 The launcher finds local AltirraSDL or accepts an explicit app/executable:
 
 ```sh
-build/qed-delivery/final/launch-qed.command --altirra /path/to/AltirraSDL.app
-build/qed-delivery/final/launch-qed.command --prepare-only
+build/qed-delivery/final-v2/launch-qed.command --altirra /path/to/AltirraSDL.app
+build/qed-delivery/final-v2/launch-qed.command --prepare-only
 ```
 
 It generates private settings from a dedicated seed, using a 65C816 at 8x,
 63 high banks, VBXE and ST Mouse on port 1. It does not edit ordinary emulator
 settings. SYS: in D1 is read-only. WORK: in D8 uses a persistent writable copy
-selected in `build/qed-delivery/final/altirra/workspace.json`. A new workspace
+selected in `build/qed-delivery/final-v2/altirra/workspace.json`. A new workspace
 creates `altirra/work.atr`; keep that directory with saved work. The selection
 survives replacement of the clean template and setup refreshes. To select an
 existing private disk explicitly, pass `--work /path/to/saved.atr`. Local
@@ -57,10 +57,10 @@ The ordinary builder prepares the provider, pinned QED/cflib sources, ordered
 patches, resource and conditional source-frame ledger before packaging:
 
 ```sh
-python3 tools/build_demo.py --output build/qed-delivery/final \
+python3 tools/build_demo.py --output build/qed-delivery/final-v2 \
   --gem-desktop --qed --format sdfs --sector-bytes 256 --system-kib 720 \
   --mouse-profile mild --release-compiler
-python3 tools/test_qed_exec_setup.py --bundle build/qed-delivery/final
+python3 tools/test_qed_exec_setup.py --bundle build/qed-delivery/final-v2
 ```
 
 Install the pinned actionc, Calypsi 5.18, Altirra bridge/ROM and OF816 build

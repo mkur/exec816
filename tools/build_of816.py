@@ -17,6 +17,20 @@ ROM_PIN = json.loads((ROOT/'toolchain/altirra.json').read_text())['rom']
 PORT = ROOT/'platform/of816'
 
 
+def prepare_source(output, upstream):
+    """Replace OF816's informational wall-clock literal before assembly."""
+    dictionary = (upstream/'asm/forth-dictionary.s').read_text()
+    require(dictionary.count('ONLIT .time') == 1, 'OF816 timestamp site changed')
+    (output/'forth-dictionary.s').write_text(dictionary.replace(
+        'ONLIT .time', 'ONLIT '+str(PIN['build_timestamp'])))
+    source = (upstream/'forth.s').read_text()
+    include = '.include "asm/forth-dictionary.s"'
+    require(source.count(include) == 1, 'OF816 dictionary include changed')
+    (output/'forth.s').write_text(source.replace(include, '.include "forth-dictionary.s"'))
+    return dict(timestamp=PIN['build_timestamp'], sources={name:sha256(output/name)
+                for name in ('forth.s','forth-dictionary.s')})
+
+
 def xex_segments(raw):
     require(raw[:2] == b'\xff\xff', 'Expected XEX executable')
     offset = 2
@@ -148,8 +162,9 @@ def build(output, exec_build, upstream):
     config = (upstream/'inc/config.inc').read_text()
     require(config.count('.define include_fcode 1') == 1, 'OF816 configuration changed')
     (output/'config.inc').write_text(config.replace('.define include_fcode 1', '.define include_fcode 0'))
-    command(['ca65', '-I', output, '-I', PORT, '-I', upstream/'inc',
-             '-l', output/'forth.lst', '-o', output/'forth.o', upstream/'forth.s'])
+    prepared = prepare_source(output, upstream)
+    command(['ca65', '-I', output, '-I', PORT, '-I', upstream/'inc', '-I', upstream,
+             '-l', output/'forth.lst', '-o', output/'forth.o', output/'forth.s'])
     command(['ca65', '-I', output, '-l', output/'boot.lst', '-o', output/'boot.o', PORT/'boot.s'])
     (output/'boot.cfg').write_text(f'''MEMORY {{
     LOW: start=${layout['OF_ADAPTER']:x}, size=$4f0, file="{output/'boot.bin'}";
@@ -194,7 +209,7 @@ SEGMENTS {{
               ROOT/'toolchain/altirra.json', ROOT/'tools/boot_config.py', ROOT/'abi/boot-v1.json']
     kernel_low,kernel_high = program['build']['memory']['regions']['kernel-stack']
     borrowed_bytes = 256+program['build']['memory']['task_pools'][0]['stack_bytes']+32+kernel_high-kernel_low
-    record = dict(format='exec816-of816-boot-v1', of816=PIN, exec_build=str(program['output']),
+    record = dict(format='exec816-of816-boot-v1', of816=PIN, prepared_source=prepared, exec_build=str(program['output']),
                   exec_xex_sha256=program['build']['xex_sha256'], xex_sha256=sha256(xex),
                   rom=dict(name=rom.name,bytes=ROM_PIN['bytes'],sha256=sha256(output/rom.name),
                            license=notice.name,license_sha256=sha256(output/notice.name)),

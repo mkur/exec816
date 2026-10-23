@@ -57,6 +57,12 @@ The media verification report records the producer hash. Clean-checkout QED
 reproduction may share these verified tool/source caches; it must not import a
 previous QED APP, provider or disk. See the [QED build guide](../guides/qed-exec.md).
 
+The OF816 pin also records `build_timestamp`, the pinned upstream commit's
+Unix timestamp. Preparation replaces its informational `.time` literal before
+assembly, preserving the upstream checkout. `.VERSION` therefore identifies
+that fixed input rather than the host wall clock. Native/media/monitor builds
+can be reproduced across different assembly times and checkout paths.
+
 ## Build the demo
 
 The 0.2 release package contains the GEM desktop, including the windowed Shell:

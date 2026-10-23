@@ -151,3 +151,14 @@ keeping generated upper-data extents stable across a freeze. A clean image uses
 0 per-public-Task / 0 private idle reserved bank-zero bytes** added, including
 guards, alignment and unused capacity. The final build must confirm unchanged
 segment geometry and identify every runtime-byte difference before reusing QC4.
+
+
+The first final freeze exposed an actual reproducibility difference: upstream
+OF816's `.VERSION` embeds ca65's current `.time`. The two builds matched 26 of
+28 runtime files, but one timestamp byte differed in OF816 XEX and changed the
+ZIP. Preparation now substitutes the explicit pinned upstream commit timestamp
+before assembly, preserving the upstream tree and notices. Two independent
+monitor assemblies match exactly; the complete final build and exact-ZIP gates
+must use the subsequent freeze. This changes only four informational upper-code
+literal bytes, with **0 fixed / 0 per-public-Task / 0 private idle bank-zero
+bytes** added, including guards, alignment and unused capacity.
