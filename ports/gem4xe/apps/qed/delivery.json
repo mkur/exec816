@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "grants": {
+    "qed": "Donor QED terms, including no-fee redistribution",
+    "cflib": "LGPL-2.1-or-later",
+    "native": "GPL-3.0-only; compatibility with donor terms unresolved",
+    "bindings": "MIT",
+    "runtime": "Calypsi/Apache/NuttX file-specific terms"
+  },
+  "unresolved": [
+    "native-adapter-grant"
+  ],
+  "requirements": {
+    "launch": {
+      "scope_row": "Launch and exit",
+      "status": "delivery-check-pending",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-coexistence-qc4.json"
+      ]
+    },
+    "document": {
+      "scope_row": "Document ownership",
+      "status": "delivery-check-pending",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-coexistence-qc4.json"
+      ]
+    },
+    "text": {
+      "scope_row": "Text",
+      "status": "delivery-check-pending",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-coexistence-qc4.json"
+      ]
+    },
+    "editing": {
+      "scope_row": "Editing",
+      "status": "delivery-check-pending",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-coexistence-qc4.json"
+      ]
+    },
+    "search": {
+      "scope_row": "Search",
+      "status": "delivery-check-pending",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-coexistence-qc4.json"
+      ]
+    },
+    "files": {
+      "scope_row": "Files",
+      "status": "delivery-check-pending",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-coexistence-qc4.json"
+      ]
+    },
+    "appearance": {
+      "scope_row": "Appearance and dialogs",
+      "status": "delivery-check-pending",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-coexistence-qc4.json"
+      ]
+    },
+    "settings": {
+      "scope_row": "Settings",
+      "status": "delivery-check-pending",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-coexistence-qc4.json"
+      ]
+    },
+    "coexistence": {
+      "scope_row": "Coexistence",
+      "status": "delivery-check-pending",
+      "implementation": "ports/gem4xe/apps/qed/README.md",
+      "evidence": [
+        "docs/development/qed-coexistence-qc4.json"
+      ]
+    }
+  },
+  "limits": {
+    "line_bytes": 1023,
+    "native_path_bytes": 255,
+    "selector_path_capacity": 128,
+    "selector_leaf_capacity": 13,
+    "minimum_stack_bytes": 2560,
+    "public_tasks": 8
+  },
+  "deferrals": [
+    "multiple documents/instances",
+    "replace/pattern search",
+    "external clipboard",
+    "printing/external fonts",
+    "QED preferences/autosave",
+    "AV/OLGA/SE/MiNT integration",
+    "power-loss atomicity",
+    "same-target concurrent writers",
+    "automatic disk repair"
+  ]
+}

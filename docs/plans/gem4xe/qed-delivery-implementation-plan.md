@@ -9,8 +9,9 @@ supported package through the normal demo pipeline, preserve saved WORK, and
 reconcile the agreed scope against current evidence. Each slice has a reviewable
 result and commits after its selected development checks.
 
-Status: QD1–QD7 are planned. The design and this plan do not establish delivery
-completion. Full release qualification and publication are a separate phase.
+Status: [QD1 inventory passes](../../history/qed-delivery.md#qd1-component-and-scope-inventory);
+QD2–QD7 remain. The native adapter grant is unresolved. Full release
+qualification and publication are a separate phase.
 
 | Slice | Completion result | Dependencies |
 | --- | --- | --- |

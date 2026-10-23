@@ -1,5 +1,8 @@
 # Historical records
 
+- [QED supported delivery](qed-delivery.md): component inventory, current
+  requirements and incremental normal-package delivery evidence.
+
 - [QED practical coexistence](qed-coexistence.md): measured production response,
   bounded drawing, window selection and the passing step 6 workload/resource
   development gate; supported delivery remains step 7.
