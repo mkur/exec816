@@ -219,6 +219,13 @@ failure, cancellation and cooperative close must leave the desktop usable.
 
 ### Deliver and close the agreed scope
 
+The [delivery design](qed-delivery-design.md) fixes the supported package,
+normal build/launch paths, persistent workspace policy, source/notices and
+scope-reconciliation gate. The
+[QD1–QD7 implementation plan](qed-delivery-implementation-plan.md) orders the
+inventory, normal build, workspace, launch, functional, reproduction/source
+and final reconciliation slices.
+
 Package QED, its resource and required configuration with the normal native
 launch path and upstream notices. Use the standard OF816 demo builder for
 demo refreshes, preserving the five-second shell/prime autoboot. Validate the
@@ -232,11 +239,13 @@ separate activity for a release or an explicit qualification request.
 
 ## Work to begin next
 
-Prepare the step 7 delivery design and implementation plan from the
+Begin QD1 of the [delivery implementation plan](qed-delivery-implementation-plan.md)
+from the [step 7 design](qed-delivery-design.md) and
 [reconciled coexistence gate](../../history/qed-coexistence.md#qc4-reconciled-gate-and-delivery-handoff).
-Reconcile the agreed single-document scope and explicit deferrals, then validate
-what users receive through Files and shell launch paths. Preserve the measured
-native configuration, current ABI, source/license provenance and saved WORK.
+Inventory the actual components and distribution questions, and map the agreed
+single-document scope to current evidence. Then implement the normal build,
+workspace preservation and delivered launch/editor checks in dependency order.
+Preserve the measured configuration, current ABI, source provenance and saved WORK.
 Supported packaging and any requested release qualification/publication remain
 separate from step 6's development checks; publication must include matching
 old/new Atarimax CAR and raw BIN images through the standard demo builder.

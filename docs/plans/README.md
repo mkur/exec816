@@ -512,6 +512,12 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [QED supported delivery design](gem4xe/qed-delivery-design.md) and
+  [QD1–QD7 implementation plan](gem4xe/qed-delivery-implementation-plan.md):
+  strategy step 7; reproducible normal demo builds, Files/shell launch,
+  persistent WORK, source/notices and reconciliation of the agreed port scope.
+  Implementation and delivery checks remain pending.
+
 - [QED coexistence design](gem4xe/qed-coexistence-design.md) and
   [QC1–QC4 implementation plan](gem4xe/qed-coexistence-implementation-plan.md):
   strategy step 6; production response under GUI/shell load, Task admission,

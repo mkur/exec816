@@ -3,6 +3,12 @@
 The separate [upstream GEM4XE/QED setup](../../guides/gem4xe-qed-reference.md)
 preserves a working reference for behavior comparisons during the port.
 
+The [QED supported delivery design](qed-delivery-design.md) and
+[QD1–QD7 implementation plan](qed-delivery-implementation-plan.md) define
+strategy step 7: normal reproducible demo builds, extracted-package Files/shell
+launch, persistent WORK, source/notices and scope reconciliation. Implementation
+and delivery evidence remain pending.
+
 The [QED coexistence design](qed-coexistence-design.md) and
 [QC1–QC4 implementation plan](qed-coexistence-implementation-plan.md) define
 strategy step 6: measured production responsiveness beside a GUI peer or shell
