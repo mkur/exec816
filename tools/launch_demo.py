@@ -116,7 +116,57 @@ def writable_copy(source, local):
     return target
 
 
-def prepare(demo, config, ide_firmware, cart=None):
+def selected_work(demo, local, explicit=None):
+    """Keep the selected writable disk independent of the shipped template hash."""
+    if not local.stat().st_mode & 0o222 or not os.access(local,os.W_OK):
+        raise ValueError('WORK workspace is not writable: '+str(local))
+    state = local/'workspace.json'
+    previous = local/'config/altirra/settings.ini'
+    if explicit is not None:
+        target = Path(os.path.abspath(explicit.expanduser()))
+    elif state.exists():
+        selection = json.loads(state.read_text())
+        if selection.get('schema_version') != 1:
+            raise ValueError('Unsupported WORK selection record: '+str(state))
+        target = Path(selection['path'])
+        if not target.is_absolute(): target = local/target
+    elif previous.exists():
+        settings = read_settings(previous)
+        images = profile_owner(settings, 'mountedimages')+r'\Mounted Images'
+        value = json.loads(settings.get(images, '"Disk 7"', fallback='""'))
+        if not value.startswith('W'):
+            raise ValueError('Previous settings do not identify writable WORK; select --work explicitly')
+        target = Path(value[1:])
+        if not target.is_absolute():
+            raise ValueError('Previous WORK mount is relative; select --work explicitly')
+    else:
+        legacy = list(local.glob('work*.atr'))
+        if legacy:
+            raise ValueError('Existing WORK images have no selection; select --work explicitly')
+        target = local/'work.atr'
+        # Exclusive creation preserves any disk, including a racing first launch.
+        source = require_file(demo/'work.atr')
+        try:
+            with target.open('xb') as destination:
+                with source.open('rb') as initial: shutil.copyfileobj(initial,destination)
+        except FileExistsError:
+            raise ValueError('WORK destination already exists; select --work explicitly')
+    require_file(target)
+    if target.resolve() == (demo/'work.atr').resolve():
+        raise ValueError('WORK must be a private disk, not the shipped template')
+    if not target.stat().st_mode & 0o222 or not os.access(target, os.W_OK):
+        raise ValueError('Selected WORK is not writable: '+str(target))
+    # Keep local selections movable with their workspace; external paths stay explicit.
+    path = str(target.relative_to(local)) if target.is_relative_to(local) else str(target)
+    selection = dict(schema_version=1, path=path)
+    if not state.exists() or json.loads(state.read_text()) != selection:
+        temporary=local/'workspace.json.tmp'
+        with temporary.open('w') as stream: json.dump(selection, stream, indent=2);stream.write('\n')
+        temporary.replace(state)
+    return target
+
+
+def prepare(demo, config, ide_firmware, cart=None, work=None):
     demo = demo.resolve()
     record = json.loads(require_file(demo / 'demo-manifest.json').read_text())
     monitor = json.loads(require_file(demo / 'of816/of816.json').read_text())
@@ -176,7 +226,7 @@ def prepare(demo, config, ide_firmware, cart=None):
         drive = monitor['boot_config']['system_drive']
         set_values(settings, mounted.name, {
             f'Disk {drive - 1}': 'R' + str(require_file(demo / record['media'])),
-            'Disk 7': 'W' + str(writable_copy(demo / 'work.atr', local)),
+            'Disk 7': 'W' + str(selected_work(demo, local, work)),
         })
     boot = require_file(demo / record['boot_image'])
     mode = '--run'
@@ -221,12 +271,18 @@ def main():
     parser.add_argument('--altirra', help='AltirraSDL executable or macOS .app; also accepts ALTIRRA')
     parser.add_argument('--ide-firmware', type=Path, default=ROOT / 'build/firmware/ideplus-bios-2.1.rom')
     parser.add_argument('--cart', choices=('old', 'new'), help='Boot a cartridge instead of the combined OF816 XEX')
+    parser.add_argument('--work', type=Path, help='Select an existing private writable WORK disk; persist it for later launches')
     parser.add_argument('--prepare-only', action='store_true', help='Write demo settings and print the launch command')
     args = parser.parse_args()
     try:
         binary = find_altirra(args.altirra)
-        config_home, media_args = prepare(args.demo, args.config.expanduser(), args.ide_firmware.expanduser(), args.cart)
+        config_home, media_args = prepare(args.demo, args.config.expanduser(), args.ide_firmware.expanduser(), args.cart, args.work)
         command = [str(binary), *media_args]
+        state=args.demo.resolve()/'altirra/workspace.json'
+        if state.exists():
+            selected=Path(json.loads(state.read_text())['path'])
+            if not selected.is_absolute(): selected=state.parent/selected
+            print(f'WORK disk: {selected}', flush=True)
         print(f'Demo settings: {config_home / "altirra/settings.ini"}', flush=True)
         print(shlex.join(command), flush=True)
         if not args.prepare_only:

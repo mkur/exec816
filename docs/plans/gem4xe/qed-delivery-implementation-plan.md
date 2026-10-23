@@ -11,7 +11,8 @@ result and commits after its selected development checks.
 
 Status: [QD1 inventory passes](../../history/qed-delivery.md#qd1-component-and-scope-inventory);
 [QD2 normal package passes](../../history/qed-delivery.md#qd2-normal-production-build-and-package);
-QD3–QD7 remain. The native adapter grant is unresolved. Full release
+[QD3 persistent WORK passes](../../history/qed-delivery.md#qd3-persistent-work-selection);
+QD4–QD7 remain. The native adapter grant is unresolved. Full release
 qualification and publication are a separate phase.
 
 | Slice | Completion result | Dependencies |

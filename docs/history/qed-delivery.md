@@ -47,3 +47,24 @@ Source frame bound: 584 bytes; conditional admission margin: 824 bytes.
 Bank-zero reservation growth: **0 fixed / 0 per-public-Task / 0 private idle
 bytes**, including guards, alignment and unused capacity. Eight Task slots and
 2,560-byte QED admission are unchanged. The grant question remains open.
+
+## QD3 Persistent WORK selection
+
+The [QD3 record](../development/qed-delivery-qd3.json) binds explicit/private
+WORK selection, a persisted workspace record, template-change and relocation
+checks, missing/ambiguous/unwritable failures, and adoption through an explicit
+selection or known prior private mount. A selected disk is preserved independently
+of the template digest; a broken selection cannot silently create a new disk.
+
+On disposable media the QD2 saved document was selected, the setup prepared,
+OF816/package refreshed, and the same bytes reopened through ordinary QED in a
+second cold boot. Independent closed-image inspection matches the selected disk.
+The refreshed development manifest is preserved separately; QD2's recorded
+bundle remains unchanged. The executed observer copy and tracked source have
+identical hashes. No personal WORK or ordinary Altirra settings were used.
+
+Development checks: eight QED launcher/workspace cases, five generic launcher
+cases, physical reopen/pixel comparison, normal JOBS collection, guards and OS
+return. Bank-zero reservation growth: **0 fixed / 0 per-public-Task / 0 private
+idle bytes**, including guards, alignment and unused capacity. QD4 launch/storage
+cases in the shared observer await their own gates.

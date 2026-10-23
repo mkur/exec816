@@ -38,9 +38,13 @@ build/qed-delivery/normal/launch-qed.command --prepare-only
 It generates private settings from a dedicated seed, using a 65C816 at 8x,
 63 high banks, VBXE and ST Mouse on port 1. It does not edit ordinary emulator
 settings. SYS: in D1 is read-only. WORK: in D8 uses a persistent writable copy
-under `build/qed-delivery/normal/altirra/`; keep that directory with
-your saved work.
-Repeated launches and setup refreshes preserve that copy. Close the emulator
+selected in `build/qed-delivery/normal/altirra/workspace.json`. A new workspace
+creates `altirra/work.atr`; keep that directory with saved work. The selection
+survives replacement of the clean template and setup refreshes. To select an
+existing private disk explicitly, pass `--work /path/to/saved.atr`. Local
+selections move with the workspace; explicitly external disks retain their path.
+A broken selection fails without creating a blank replacement. Old hash-named
+disks need an explicit selection or a recorded prior private mount. Close the emulator
 before opening another instance against the same writable disk.
 
 The refresh retains the idle-cursor fix and adds bounded edit/scroll painting
