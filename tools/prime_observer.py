@@ -6,7 +6,7 @@ from native_program import require
 
 def process_record(read, program, identity):
     base = program['build']['memory']['process_storage']['BASE']
-    for slot in range(1, 8):
+    for slot in range(1, program['build']['task_storage']['CAPACITY']):
         row = base+128*slot
         if int.from_bytes(read(row+82, 4), 'little') == identity:
             return row

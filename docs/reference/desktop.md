@@ -230,7 +230,7 @@ before publication; newly repainted pixels cannot become a scroll-copy source.
 No per-frame polling is added. Existing
 reset-required hardware faults cannot return to free referenced storage.
 
-The presenter acquires the ST mouse source on joystick port 1 with the existing
+The presenter acquires the ST mouse source on joystick port 2 with the existing
 Timer 1 sampler and left button. A separate owned signal and route wake bounded
 input draining; idle turns do not call Take just to discover an empty queue.
 The presenter acquires timed relative motion and applies the desktop profile
@@ -439,7 +439,7 @@ order. An unquiesced blitter fault retains referenced storage until reset.
 Build the default mild preview with `tools/build_demo.py --desktop`. To compare
 fixed 2× motion, use `tools/build_demo.py --desktop --mouse-profile off --output build/desktop-off`. Both builds include OF816 and matching media;
 without `--desktop`, the standard shell/prime demo remains selected. The
-[distribution guide](../desktop-distribution.txt) describes ST/port 1 setup,
+[distribution guide](../desktop-distribution.txt) describes ST/port 2 setup,
 interaction and the outstanding timing limits.
 
 `DESKAPP` owns an ordinary 1,312-byte-stack Task and one 176×120 widget client.

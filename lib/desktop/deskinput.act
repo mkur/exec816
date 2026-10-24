@@ -52,7 +52,7 @@ PUBLIC BYTE FUNC Start()
   config.source=INPUT.SOURCE_POINTER
   config.wakeMask=wakeMask
   config.pointerProtocol=INPUT.POINTER_ST
-  config.pointerPort=1
+  config.pointerPort=INPUT.POINTER_PORT
   config.flags=INPUT.POINTER_RELATIVE
   status=INPUT.Acquire(@lease,@config)
   IF status=INPUT.OK THEN

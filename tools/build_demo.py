@@ -36,14 +36,21 @@ def record_cartridge_capacity(output):
     return capacity
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=False,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False,bootable_atr=False,system_drive=1,boot_sio='auto',qed=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=None,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False,bootable_atr=None,system_drive=1,boot_sio='auto',qed=False):
+    standalone_sio=not (ide_only or ideplus or gem_vdi or bitmap_console)
+    if bootable_atr is None:
+        bootable_atr=standalone_sio and filesystem=='sdfs' and sector_bytes==256 and system_drive==1
+    if sdx is None:
+        sdx=standalone_sio
+    if sdx and sdx_drive_a=='RAM:' and sdx_car_root=='RAM:':
+        sdx_drive_a,sdx_car_root='WORK:','SYS:C/'
     if basic_workbench:
         fastbasic=gem_desktop=True
     if fastbasic:
         sdx,sdx_drive_a,sdx_car_root=True,'WORK:','SYS:C/'
-    require(not qed or (gem_desktop and filesystem=='sdfs' and sector_bytes==256 and system_kib==720 and
-            not (bootable_atr or ide_only or ideplus or gem_vdi or bitmap_console or aes_counters or aes_input or text_shell_only) and system_drive==1),
-            'QED requires a split D1 SYS/D2 QED/D8 WORK desktop with SDFS, 720 KiB and 256-byte sectors')
+    require(not qed or (gem_desktop and filesystem=='sdfs' and sector_bytes==256 and (bootable_atr or system_kib==720) and
+            not (ide_only or ideplus or gem_vdi or bitmap_console or aes_counters or aes_input or text_shell_only) and system_drive==1),
+            'QED requires a D1 SDFS/256 GEM desktop; its optional application ATR uses D2')
     require(sum((aes_counters,aes_input,gem_desktop))<=1, 'Select one resident GEM application profile')
     if aes_counters or aes_input or gem_desktop:
         desktop=True
@@ -95,15 +102,16 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (command_dir/(name+'.profile.json')).rename(output/(name+'.profile.json'))
     binary_names={f'C/{name}' for name in commands}
     fastbasic_record=None
-    if fastbasic:
-        from build_fastbasic import build as build_basic
+    if sdx:
         from make_sdx_utils import build as build_utilities
-        _,fastbasic_record=build_basic(ROOT/'build/fastbasic')
         build_utilities(output/'utilities',ROOT/'build/sdx-inputs')
         for path in (output/'utilities/source').glob('*'):
-            if path.suffix in ('.COM','.OVL'):
+            if path.suffix in ('.COM','.OVL','.MAN'):
                 shutil.copyfile(path,command_dir/path.name)
                 binary_names.add('C/'+path.name)
+    if fastbasic:
+        from build_fastbasic import build as build_basic
+        _,fastbasic_record=build_basic(ROOT/'build/fastbasic')
         for name in ('FBCI.COM','FBC.COM','FB.COM','FBI.COM'):
             shutil.copyfile(ROOT/'build/fastbasic'/name,command_dir/name)
             binary_names.add('C/'+name)
@@ -123,9 +131,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'BREAK identity stops it. PRIMES PASSES 1 runs one foreground pass.\n'
             'EXIT returns to the OS.\n',encoding='ascii')
     if desktop:
-        (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 1, left button.\nPointer profile: @POINTER_PROFILE@.\nDrag titles; Escape cancels a drag.\nControl Panel: Toggle, Small/Large, Apply and Cancel.\nTab/Shift-Tab: focus; Space: activate; Return: Apply.\nEscape/BREAK: cancel. Locked is disabled.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. SYS: is read-only; WORK: in D8 is writable.\n'.replace('@POINTER_PROFILE@', __import__('generate_mouse_acceleration').metadata(mouse_profile)['profile']),encoding='ascii')
+        (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 2, left button.\nPointer profile: @POINTER_PROFILE@.\nDrag titles; Escape cancels a drag.\nControl Panel: Toggle, Small/Large, Apply and Cancel.\nTab/Shift-Tab: focus; Space: activate; Return: Apply.\nEscape/BREAK: cancel. Locked is disabled.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. SYS: is read-only; WORK: in D8 is writable.\n'.replace('@POINTER_PROFILE@', __import__('generate_mouse_acceleration').metadata(mouse_profile)['profile']),encoding='ascii')
     if aes_counters:
-        (media/'README.TXT').write_text('Exec816 GEM counters\n\nTwo independent counter windows beside the shell.\nST mouse, port 1; drag titles, click a window to top it.\nCounters update once per second, including while covered.\nX closes one counter. Click the shell to type.\nTry TASKS, CAT STORY.TXT | WC, or CAT LONG.TXT.\nBREAK cancels a command; EXIT closes the desktop.\nSYS: is read-only; mount WORK: in D8 for writes.\n',encoding='ascii')
+        (media/'README.TXT').write_text('Exec816 GEM counters\n\nTwo independent counter windows beside the shell.\nST mouse, port 2; drag titles, click a window to top it.\nCounters update once per second, including while covered.\nX closes one counter. Click the shell to type.\nTry TASKS, CAT STORY.TXT | WC, or CAT LONG.TXT.\nBREAK cancels a command; EXIT closes the desktop.\nSYS: is read-only; mount WORK: in D8 for writes.\n',encoding='ascii')
     if aes_input:
         (media/'README.TXT').write_text('Exec816 GEM input apps\n\nTwo independent GEM windows beside the shell.\nClick a window to focus it, then press Activate.\nRelease inside to count; outside to cancel.\nKeys display GEM scan/ASCII in hexadecimal.\nEscape/BREAK cancels a held button; X closes the app.\nTick blinks after one second without another event.\nClick the shell to type; EXIT closes the desktop.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
     if gem_desktop:
@@ -159,6 +167,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         from qed_demo import SAMPLE
         (workspace/'SAMPLE.TXT').write_bytes(SAMPLE)
     work_binaries=set()
+    if sdx:
+        for name in ('ABC.TXT','BINARY.BIN','EDIT.TXT','CHECK.MD5','SAMPLE.ARC'):
+            shutil.copyfile(output/'utilities/source'/name,workspace/name)
+            work_binaries.add(name)
     if fastbasic:
         for example in sorted((ROOT/'examples/fastbasic').glob('*.BAS')):
             (workspace/example.name).write_bytes(example.read_bytes().replace(b'\r\n',b'\n').replace(b'\n',b'\x9b'))
@@ -271,7 +283,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         provider=output/'bitmap-console/c-image.json'
         build_editor(editor,provider,executable=True)
         measure(editor)
-        qed_entry=stage(output,editor,provider)
+        qed_entry=stage(output,editor,provider,system_media=disk_name)
         # QED is an optional application disk; leave the core SYS files intact.
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources}|({'VIEW.TXT'} if gem_desktop else set()),'Unexpected stale file in demo media directory')
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
@@ -383,7 +395,12 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['source_inputs']['docs/fujinet-split-distribution.txt']=sha256(ROOT/'docs/fujinet-split-distribution.txt')
     if sdx:
         record['sdx']=dict(enabled=True,drive_a=sdx_drive_a,car_root=sdx_car_root,
-                           fixed_bank_zero_bytes=544,per_task_bank_zero_bytes=0)
+                           fixed_bank_zero_bytes=544,per_task_bank_zero_bytes=0,
+                           bundled=True,utilities=['MD5.COM','ARC.COM','EDX.COM'],
+                           inputs=json.loads((output/'utilities/utils-manifest.json').read_text())['files'])
+        record['source_inputs'].update({str(p.relative_to(ROOT)):sha256(p) for p in (
+            ROOT/'tools/make_sdx_utils.py',ROOT/'ports/fastbasic/SDX-NOTICE.txt',
+            *sorted((ROOT/'compat/sdx').glob('*.json')))})
     if fastbasic:
         record['fastbasic']=fastbasic_metadata(fastbasic_record)
     if text_shell_only:
@@ -511,12 +528,25 @@ def finalize_bootable_media(output,record):
         data=(output/'boot-media/disk-boot-reader.bin' if name=='BOOT.LDR'
               else canonical).read_bytes()
         record['files'][name]=dict(bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
-    record.update(bootable_atr=report,boot_image='of816/'+record['media'],additional_media=[])
+    record.update(bootable_atr=report,boot_image='of816/'+record['media'])
     record['artifacts'][record['media']]=sha256(image)
     record['artifacts'][image.with_suffix('.verification.json').name]=sha256(image.with_suffix('.verification.json'))
     record['source_inputs'].update(report['inputs'])
     (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
+    finalize_cartridges(output,record)
     finalize_media(output/'of816',output)
+
+
+def finalize_cartridges(output,record):
+    """The cart supplies the matching executable; every boot uses the same ATR."""
+    from build_cartridge import build as cartridge
+    record['cartridge']=cartridge(output/'of816/Exec-of816.xex',output/'cartridge')
+    record['artifacts'].update({'cartridge/'+name:digest
+                              for name,digest in record['cartridge']['files'].items()})
+    record['source_inputs'].update({name:sha256(ROOT/name) for name in (
+        'tools/build_cartridge.py','platform/altirraos/cartridge.s',
+        'platform/altirraos/boot-platform.inc','docs/cartridge-distribution.txt')})
+    (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
 
 
 def refresh_boot_disk(output):
@@ -604,6 +634,13 @@ def refresh_fastbasic(output):
     # and binary fixtures. Executable-directory membership is insufficient.
     binary_names={name for name,info in record['files'].items() if 'lines' not in info}
     binary_names.update('C/'+name for name in ('FB.COM','FBI.COM'))
+    if record.get('bootable_atr'):
+        for example in sorted((ROOT/'examples/fastbasic').glob('*.BAS')):
+            raw=example.read_bytes().replace(b'\r\n',b'\n').replace(b'\n',b'\x9b')
+            (output/'workspace-source'/example.name).write_bytes(raw)
+            (output/'media/WORK'/example.name).write_bytes(raw)
+            binary_names.add('WORK/'+example.name)
+            record['source_inputs'][str(example.relative_to(ROOT))]=sha256(example)
     files=make(output/record['media'],output/'media',binary_names=binary_names,
                filesystem=record['filesystem'],sector_bytes=record['sector_bytes'],
                sectors=record['system_sectors'],label='SYS')
@@ -630,7 +667,9 @@ def refresh_workbench(output):
     require(record['fastbasic'].get('native_inputs')=={
         name:sha256(ROOT/name) for name in FASTBASIC_NATIVE_INPUTS},
         'Native ABI/backend changed; rebuild the full workbench demo')
-    allowed={'tools/build_demo.py','docs/basic-workbench-distribution.txt'}
+    # These inputs affect disk/package delivery, not the frozen native system.
+    allowed={'tools/build_demo.py','docs/basic-workbench-distribution.txt',
+             'tools/package_demo.py','tools/build_cartridge.py','docs/guides/demo.md'}
     for name,digest in record['source_inputs'].items():
         if name.startswith('examples/gem-basic/') or name in allowed:continue
         require(sha256(ROOT/name)==digest,'Changed native demo input: '+name)
@@ -852,10 +891,11 @@ if __name__=='__main__':
     parser.add_argument('--output',type=Path,default=ROOT/'build/demo')
     parser.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
     parser.add_argument('--release-compiler',action='store_true',help='Optimized host compiler for a text/bitmap shell or GEM desktop')
-    parser.add_argument('--sdx',action='store_true',help='Enable the pinned MD5/ARC/EDX development personality in a text or bitmap SIO demo')
+    parser.add_argument('--sdx',action=argparse.BooleanOptionalAction,default=None,help='Include pinned MD5/ARC/EDX and overlays (default for standalone SIO demos)')
     parser.add_argument('--fastbasic',action='store_true',help='Include the integer FastBasic compiler, examples and SDX tools; maps guest A: to WORK: and CAR: to SYS:C/')
     parser.add_argument('--basic-workbench',action='store_true',help='Include BASIC.APP in the GEM desktop with FastBasic compilers')
-    parser.add_argument('--bootable-atr',action='store_true',help='Boot one writable 2 MiB SDFS ATR on D1, including kernel and WORK directory')
+    parser.add_argument('--bootable-atr',action='store_true',default=None,help='Boot one writable 2 MiB SDFS ATR on D1 (the default SIO distribution)')
+    parser.add_argument('--split-disks',dest='bootable_atr',action='store_false',help='Development profile with separate SYS and WORK disks')
     parser.add_argument('--system-drive',type=int,choices=range(1,8),default=1,
                         help='Default SYS drive for split SIO media; use 2 with FujiNet XEX in D1 (WORK stays D8)')
     parser.add_argument('--sdx-drive-a',default='RAM:',help='Immutable native root for SDX guest A: (requires --sdx)')

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""M3: standalone simultaneous keyboard and real ST/port-1 pointer leases."""
+"""M3: standalone simultaneous keyboard and real ST/port-2 pointer leases."""
 import argparse
 import json
 import os
@@ -27,8 +27,8 @@ def run(out, mode, unobserved=False, relative=False):
                 '  Require(INPUT.PublishRoute(@mouse,tag)=INPUT.OK)\n')
             for field in ('initialX', 'initialY', 'maxX', 'maxY'):
                 text = re.sub(r'  mouseConfig\.'+field+r'=\d+\n', '', text)
-            text = text.replace('  mouseConfig.pointerPort=1',
-                                '  mouseConfig.pointerPort=1\n  mouseConfig.flags=INPUT.POINTER_RELATIVE')
+            text = text.replace('  mouseConfig.pointerPort=INPUT.POINTER_PORT',
+                                '  mouseConfig.pointerPort=INPUT.POINTER_PORT\n  mouseConfig.flags=INPUT.POINTER_RELATIVE')
             source = out/'relative-capture.act'
             source.write_text(text)
         p = build(compiler(ROOT/'build/actionc'), source,
@@ -74,6 +74,18 @@ def run(out, mode, unobserved=False, relative=False):
                 b._cmd_ok('MOUSE ST')
                 reach(f'db(${at("stage"):x})=1')
                 reach(f'dw(${at("received"):x})>=1')
+                # Drive the other physical connector: it must remain available
+                # without producing motion or button events for the port-2 lease.
+                baseline=b.peek16(at('received'))
+                b._cmd_ok('JOY 0 right fire')
+                reach(f'@frame>={b.eval_expr("@frame")+4}')
+                require(b.peek16(at('received'))==baseline and
+                        b.memdump(0xd010,1)==b'\0' and b.memdump(0xd300,1)[0]&15!=15,
+                        'Port-1 joystick affected the port-2 pointer')
+                b._cmd_ok('JOY 0 centre release')
+                reach(f'@frame>={b.eval_expr("@frame")+4}')
+                require(b.peek16(at('received'))==baseline,'Port-1 release became a pointer event')
+                report['other_port_isolation']=True
                 b._cmd_ok('KEY SHIFT down')
                 movements = [(16,0)]*8+[(-16,0)]*8+[(0,16)]*8+[(0,-16)]*8
                 for i,(dx,dy) in enumerate(movements):

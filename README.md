@@ -13,7 +13,8 @@ Version 0.2 boots through [OF816](https://github.com/mgcaret/of816) into a
 Panel, Calculator, Text and Counter launch on demand. The desktop includes
 menus, window switching and iconification, file copying and drag-and-drop.
 The Shell provides disk-loaded commands and two-command pipes. `SYS:` is
-read-only, `WORK:` is a writable disk, and `RAM:` is temporary storage.
+writable on the combined system disk, `WORK:` names its WORK directory, and
+`RAM:` is temporary storage. MD5, ARC and EDX are included in SYS:C.
 
 ## Installation
 
@@ -27,10 +28,12 @@ Its `exec816-demo/` folder contains:
 | File | Purpose |
 | --- | --- |
 | `Exec-of816.xex` | Exec816 and the OF816 boot monitor |
-| `system.atr` | System disk with commands and sample files |
-| `work.atr` | Disposable writable disk for D8: |
+| `exec816.atr` | Preferred boot disk, writable SYS and WORK, commands and applications |
+| `qed.atr` | Optional separate QED application disk in D2: |
+| `cartridge/*.car`, `*.bin` | Matching Atarimax boot images using the same system ATR |
 | `altirraos-816.rom` | Matching AltirraOS 3.44 ROM for 65C816 |
-| `README.txt`, license notices and `SHA256SUMS` | Boot instructions, licenses and checksums |
+| `README.txt`, `SHA256SUMS` | Boot instructions and checksums |
+| `licenses/` | Licenses and third-party notices |
 
 Use [AltirraSDL](https://github.com/ilmenit/AltirraSDL) with these settings.
 Upstream Altirra will not run this build. The exact tested emulator build is
@@ -66,16 +69,17 @@ it **Exec816 AltirraOS**, set **Type** to **XL/XE OS**, and click **OK**. Close 
 Firmware Manager, then select **Exec816 AltirraOS** in **Operating system**.
 
 1. Close the settings window. Open **File → Disk Drives…** and click the **…**
-   button on the **D1:** row to select the extracted `system.atr`. Mount a
-   disposable copy of `work.atr` in **D8:** with writes enabled.
+   button on the **D1:** row to mount a private writable copy of `exec816.atr`.
+   No D8 disk is required. Optional `qed.atr` goes read-only in D2.
 2. In the same **Disk drives** window, set **Emulation level** to
    **Generic + 57600 baud**. This setting applies to all drives.
-3. Choose **File → Boot Image…** and select `Exec-of816.xex`. The ATR is the
-   data disk; the XEX starts the system.
+3. Cold-boot the ATR. XEX and Atarimax boot are alternatives; keep the same
+   writable system ATR mounted. See the [boot guide](docs/guides/bootable-system-atr.md)
+   for FujiNet virtual-XEX drive selection.
 4. Wait five seconds for OF816 to start Exec816. To enter the Forth monitor,
    press a key during the countdown; type `EXEC816` to continue booting.
 
-Wait for the desktop and `SYS: -> D1: ready, read-only` in the Shell.
+Wait for the desktop and `SYS: -> D1: ready, read-write` in the Shell.
 Double-click a volume icon to browse files. Use Desk to launch applications,
 and Windows or Ctrl-Tab to switch between them. Click the Shell before typing:
 

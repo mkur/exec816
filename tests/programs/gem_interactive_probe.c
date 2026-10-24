@@ -162,7 +162,7 @@ void UiProbe(UWORD point)
             occupiedConfig.version=INPUT_VERSION;
             occupiedConfig.source=variant==34 ? INPUT_SOURCE_POINTER : INPUT_SOURCE_KEYBOARD;
             occupiedConfig.wakeMask=boot.rootMask;
-            if (variant==34) { occupiedConfig.pointerProtocol=INPUT_POINTER_ST; occupiedConfig.pointerPort=1; }
+            if (variant==34) { occupiedConfig.pointerProtocol=INPUT_POINTER_ST; occupiedConfig.pointerPort=INPUT_POINTER_PORT; }
             check(InputAcquire(&occupiedInput,&occupiedConfig)==INPUT_OK);
         }
         if (variant==6) check(VbxeOpen(&occupiedDisplay)==DISPLAY_OK);

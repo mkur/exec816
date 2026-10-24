@@ -79,7 +79,7 @@ UWORD main(void)
     pointerConfig.source = INPUT_SOURCE_POINTER;
     pointerConfig.wakeMask = 0x10000UL;
     pointerConfig.pointerProtocol = INPUT_POINTER_ST;
-    pointerConfig.pointerPort = 1;
+    pointerConfig.pointerPort = INPUT_POINTER_PORT;
     pointerConfig.initialX = 320; pointerConfig.initialY = 120;
     pointerConfig.maxX = 639; pointerConfig.maxY = 239;
     check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
@@ -89,9 +89,9 @@ UWORD main(void)
     check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
     pointerConfig.reserved2 = 0; pointerConfig.pointerProtocol = 2;
     check(InputAcquire(&lease, &pointerConfig) == INPUT_UNSUPPORTED);
-    pointerConfig.pointerProtocol = INPUT_POINTER_ST; pointerConfig.pointerPort = 2;
+    pointerConfig.pointerProtocol = INPUT_POINTER_ST; pointerConfig.pointerPort = 1;
     check(InputAcquire(&lease, &pointerConfig) == INPUT_UNSUPPORTED);
-    pointerConfig.pointerPort = 1; pointerConfig.flags = INPUT_CAPTURE_BREAK;
+    pointerConfig.pointerPort = INPUT_POINTER_PORT; pointerConfig.flags = INPUT_CAPTURE_BREAK;
     check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
     pointerConfig.flags = 0; pointerConfig.initialX = 640;
     check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
@@ -100,7 +100,7 @@ UWORD main(void)
     pointerConfig.initialY = 120; pointerConfig.maxX = -1;
     check(InputAcquire(&lease, &pointerConfig) == INPUT_BAD_ARGUMENT);
     pointerConfig.maxX = 639;
-    config.pointerPort = 1;
+    config.pointerPort = INPUT_POINTER_PORT;
     check(InputAcquire(&lease, &config) == INPUT_BAD_ARGUMENT);
     config.pointerPort = 0;
     bank = AllocMem(65536UL, MEMF_PUBLIC|MEMF_CLEAR);

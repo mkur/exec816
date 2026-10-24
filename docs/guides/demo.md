@@ -1,5 +1,10 @@
 # Exec816 text-console demo
 
+Standalone SIO builds now default to the [combined system ATR](bootable-system-atr.md),
+with writable SYS/WORK and MD5, ARC and EDX included. ATR, XEX and Atarimax
+boot share that image; QED is a separate optional ATR. The split SYS/WORK
+walkthrough below describes the explicit `--split-disks` development profile.
+
 An interactive shell occupies the upper 18 rows of the 40×24 screen. The lower
 six rows show an independent prime search. Commands load from disk; two external
 commands can exchange bytes through an anonymous pipe.
@@ -288,7 +293,7 @@ python3 tools/build_demo.py
 
 The file to share is `build/demo/exec816-demo.zip`. It contains one
 `exec816-demo/` folder with the boot XEX, system and work disks, ROM, a short boot guide,
-license notices and `SHA256SUMS`. Build intermediates and test output stay
+the `licenses/` folder and `SHA256SUMS`. Build intermediates and test output stay
 in the development directory. The [distribution guide](../demo-distribution.txt)
 has self-contained boot instructions; its disk and drive names are filled in
 when packaging.

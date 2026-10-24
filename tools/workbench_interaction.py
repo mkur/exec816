@@ -6,7 +6,7 @@ from native_program import ROOT,build,compiler,require,sha256,read_build,verify_
 
 FIELDS=dict(ready=8,work=166,document=178,caret=224,anchor=228,first=232,left=234,
             rows=236,columns=238,dirty=244,edits=1576,paintTurns=1580)
-LAYOUT=[('BasicApp size',178),('BasicDocument size',46),('BasicEditor size',1664)]+[
+LAYOUT=[('BasicApp size',178),('BasicDocument size',46),('BasicEditor size',6784)]+[
     ('Basic '+n,FIELDS[n]) for n in ('ready','work','document','caret','anchor','first','left','rows','columns','dirty','edits','paintTurns')]
 
 
@@ -75,7 +75,9 @@ def exercise(out):
                 current=[number(cursor(n)) for n in ('cursorX','cursorY')]
                 x,y=schedule(b,p,current,(x,y))
                 reach('(dw($%x)=%d)&(dw($%x)=%d)'%(cursor('cursorX'),x,cursor('cursorY'),y));frames(2)
-            def edge(value):b._cmd_ok('MOUSE AT 2000 0 0 '+str(value));frames(5)
+            def edge(value):
+                b._cmd_ok('MOUSE AT 2000 0 0 '+str(value))
+                reach('dw($%x)=%d'%(cursor('buttons'),value));frames(5)
             def click(x,y):move(x,y);edge(1);edge(0)
             def key(name,ctrl=False,shift=False):
                 if ctrl:b._cmd_ok('KEY CTRL down')
@@ -209,14 +211,17 @@ def exercise(out):
                         key('ASTERISK',ctrl=True)
                         report['maximum_navigation']=dict(caret=number(base+FIELDS['caret'],4),focus=menus.focus(),windows=menus.windows(),status=b.memdump(base+FIELDS['edits']-81,81).split(b'\0')[0].decode('ascii','replace'))
                         require(number(base+FIELDS['caret'],4)==1,'Physical cursor-right did not reach byte one')
+                        b.state_save(str(out/'before-maximum-edit.altstate2'))
+                        (out/'maximum-refresh-before.bin').write_bytes(b.memdump(base+1664,5112))
                         peer=number(at('peerProgress'),4);start=b.eval_expr('@frame')
                         prior=number(base+FIELDS['edits'],4)
                         key('BACKSPACE');reach('dw($%x)>%d'%(base+FIELDS['edits'],prior))
                         picture('maximum-gap-delete',b'a'*254+b'\n'+(b'a'*255+b'\n')*126+b'a'*255)
                         elapsed=b.eval_expr('@frame')-start;progress=number(at('peerProgress'),4)-peer
-                        require(elapsed<=120 and progress>0,'Maximum edit exceeded 120 PAL frames or starved peer')
                         report['latencies'].append(dict(name='32767-byte document, one-byte gap moved 32766 bytes, delete to scanout',
                             frames=elapsed,milliseconds=elapsed*20,budget_frames=120,peer_progress=progress))
+                        (out/'maximum-refresh-after.bin').write_bytes(b.memdump(base+1664,5112))
+                        require(elapsed<=120 and progress>0,'Maximum edit exceeded 120 PAL frames or starved peer: '+repr(report['latencies'][-1]))
                         key('X');picture('maximum-size-restored',b'x'+b'a'*254+b'\n'+(b'a'*255+b'\n')*126+b'a'*255)
                     x,y,w,h=[number(base+FIELDS['work']+i*2) for i in range(4)]
                     changed=number(base+FIELDS['document']+32,4)!=number(base+FIELDS['document']+36,4)

@@ -15,6 +15,7 @@ inspection rather than relaunch an Image. Graphics remains a public native
 service used by both source and standalone execution.
 
 [Implementation plan](fastbasic-workbench-implementation-plan.md) ·
+[Editor repaint design](fastbasic-editor-refresh-design.md) ·
 [Plan index](README.md) · [GEM integration](gem4xe/README.md) ·
 [Migration plan](fastbasic-6502-migration-plan.md) ·
 [Floating point delivery](../history/fastbasic-floating-point.md) ·

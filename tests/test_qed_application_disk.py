@@ -27,6 +27,13 @@ class ApplicationDiskTests(unittest.TestCase):
 
     def test_separate_payload(self):self.audit()
 
+    def test_combined_system_image_keeps_qed_on_its_application_disk(self):
+        import json
+        (self.root/'exec816.atr').write_bytes(b'combined SYS and WORK')
+        (self.root/'system.atr').unlink()
+        (self.root/'demo-manifest.json').write_text(json.dumps(dict(media='exec816.atr')))
+        self.audit()
+
     def test_core_payload_is_rejected_in_any_directory(self):
         for path in ('QED.APP','C/QED.APP','QED.RSC'):
             self.system.files={path:b'payload'}

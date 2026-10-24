@@ -14,8 +14,9 @@ def check_archive(bundle):
     require(manifest.get('bitmap') and manifest.get('shell_only') and not manifest.get('desktop'),
             'Use the bitmap shell-only preview')
     expected={'Exec-of816.xex',manifest['media'],'altirraos-816.rom',
-            'ALTIRRAOS-LICENSE.txt','OF816-LICENSE.txt','README.txt','SHA256SUMS',
-            *GEM_NOTICES,*LICENSE_FILES,*(m['name'] for m in manifest['additional_media'])}
+            'README.txt','SHA256SUMS',*(m['name'] for m in manifest['additional_media'])}
+    expected.update('licenses/'+name for name in
+                    ('ALTIRRAOS-LICENSE.txt','OF816-LICENSE.txt',*GEM_NOTICES,*LICENSE_FILES))
     with zipfile.ZipFile(bundle/'exec816-demo.zip') as archive:
         require(len(archive.namelist())==len(expected) and set(archive.namelist())==
                 {'exec816-demo/'+name for name in expected},'Unexpected preview ZIP contents')

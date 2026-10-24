@@ -34,7 +34,7 @@ def wait_at(b, target, failures=(), timeout=900,condition=None):
 
 
 class DiskBoot:
-    def __init__(self,bundle,manual=False,peer=False,native_snapshot=None):
+    def __init__(self,bundle,manual=False,peer=False,native_snapshot=None,basic_enabled=False):
         self.bundle,self.manual=bundle,manual
         self.monitor=json.loads((bundle/'of816/of816.json').read_text())
         self.reader=json.loads((bundle/'boot-media/boot-atr.json').read_text())
@@ -42,6 +42,7 @@ class DiskBoot:
         self.snapshots=bundle/('fuji-boot' if peer else 'disk-boot')
         self.snapshots.mkdir(exist_ok=True)
         self.native_snapshot=native_snapshot
+        self.basic_enabled=basic_enabled
 
     def __call__(self,b,p):
         mon=self.monitor;labels=mon['labels']
@@ -55,12 +56,21 @@ class DiskBoot:
             self.verify_native(p,self.native_snapshot)
             wait_at(b,p['labels']['start'],(),30);b.bp_clear_all()
             return
+        if self.basic_enabled:
+            b.config('basic','true')
+            self.report['basic_enabled_at_cold_boot']=True
         b.cold_reset()
         wait_at(b,reader['reader_start'],failures,90)
         self.report['first_stage_rom_boot']=True
         self.report['memlo']=b.peek16(0x2e7)
+        self.report['initial_memtop']=b.peek16(0x2e5)
+        self.report['initial_basicf']=b.peek(0x3f8)[0]
         require(self.report['memlo']<=0xa00,'Disk reader concealed firmware reservations')
         wait_at(b,labels['of_start'],failures,180)
+        self.report['prepared_memtop']=b.peek16(0x2e5)
+        self.report['prepared_basicf']=b.peek(0x3f8)[0]
+        require(self.report['prepared_memtop']>=0xbc00 and self.report['prepared_basicf']==2,
+                'Boot did not prepare BASIC and high-RAM screen ownership')
         settings=check_loading_paused(b,mon,p)
         self.report['firmware_to_of_frame']=b.eval_expr('@frame')
         vectors=b.memdump(0x256,9);iocb=b.memdump(0x340,32)
@@ -115,8 +125,8 @@ class DiskBoot:
 class Workspace:
     interrupt_marker='native_nmi'
 
-    def __init__(self,restore=False):
-        self.restore=restore
+    def __init__(self,restore=False,smoke=False):
+        self.restore,self.smoke=restore,smoke
 
     def exercise(self,s):
         s.saved.setdefault('desktop_menu',{})
@@ -146,7 +156,24 @@ class Workspace:
         mounts=s.command('MOUNT',b'D1:')
         require(b'D8:' not in mounts,'Unexpected required second disk')
         s.command('HELLO',b'Hello from disk!')
-        if self.restore:
+        if json.loads((s.p['output']/'demo-manifest.json').read_text()).get('sdx',{}).get('bundled'):
+            s.command('CD WORK:')
+            s.command('MD5 ABC.TXT',b'900150983CD24FB0D6963F7D28E17F72')
+            s.command('ARC',b'filename is given.')
+            s.command('ARC L SAMPLE.ARC',b'EXTRACT.TXT')
+            previous=s.begin('EDX EDIT.TXT')
+            s.rendezvous(f'(db(${s.saved["top"]+s.console["INSTANCE_CAPS"]:x})&$e0)=$e0')
+            s.rendezvous(f'db(${s.saved["top"]+s.console["INSTANCE_READREADY"]:x})=2')
+            s.frames(12)
+            from console_model import read_cells
+            require(b'HELLO' in bytes(c&127 for c in read_cells(s.far,s.saved['top'])),
+                    'Bundled EDX did not open the workspace file')
+            s.b._cmd_ok('KEY ESC down');s.frames(4)
+            s.b._cmd_ok('KEY ESC up');s.ready(previous);s.result()
+        if self.smoke:
+            s.command('ECHO boot-route-write >WORK:ROUTE.TXT')
+            s.command('CAT WORK:ROUTE.TXT',b'boot-route-write')
+        elif self.restore:
             s.command('CAT WORK:BOOT.BAS',b'PRINT 42')
             s.command('FB WORK:BOOT.BAS',b'42')
             s.command('CAT WORK:PERSIST.TXT',b'persisted')
@@ -175,7 +202,7 @@ class Workspace:
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()
 
 
-def check(bundle,manual=False,restore=False,firmware=None,native_snapshot=None):
+def check(bundle,manual=False,restore=False,firmware=None,native_snapshot=None,basic_enabled=False):
     extracted=bundle/'atr-extracted'
     with zipfile.ZipFile(bundle/'exec816-demo.zip') as archive:
         for line in archive.read('exec816-demo/SHA256SUMS').decode().splitlines():
@@ -187,7 +214,7 @@ def check(bundle,manual=False,restore=False,firmware=None,native_snapshot=None):
     media=bundle/('atr-fujinet.atr' if firmware else 'atr-walkthrough.atr')
     if not restore:shutil.copyfile(extracted/'exec816-demo/exec816.atr',media)
     initial_sha256=sha256(media)
-    boot=DiskBoot(bundle,manual,bool(firmware),native_snapshot)
+    boot=DiskBoot(bundle,manual,bool(firmware),native_snapshot,basic_enabled)
     if firmware:
         from fujinet_pc_peer import FujiNetPC
         with FujiNetPC(bundle/'fujinet-peer',media,firmware) as peer:
@@ -232,4 +259,5 @@ if __name__=='__main__':
     parser.add_argument('--restore',action='store_true')
     parser.add_argument('--fujinet-pc',type=Path,help='Real local FujiNet-PC executable, isolated config and NetSIO peer')
     parser.add_argument('--native-snapshot',type=Path,help='Development-only replay of a verified pre-native snapshot; not a cold-boot claim')
-    args=parser.parse_args();check(args.bundle.resolve(),args.manual,args.restore,args.fujinet_pc,args.native_snapshot)
+    parser.add_argument('--basic-enabled',action='store_true',help='Cold boot with BASIC enabled and verify boot preparation')
+    args=parser.parse_args();check(args.bundle.resolve(),args.manual,args.restore,args.fujinet_pc,args.native_snapshot,args.basic_enabled)

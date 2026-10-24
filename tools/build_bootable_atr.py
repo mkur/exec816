@@ -199,7 +199,7 @@ def build(image, source, xex, output, monitor=None,boot_sio="standard"):
         boot_sio=boot_sio,reader_used_bytes=records[SOURCES[1]]['labels']['reader_end']-ABI['reader_address']+ABI['guard_bytes'],
         free_sectors=int.from_bytes(volume.image.sector(1)[13:15],'little'),
         inputs={str(p.relative_to(ROOT)):digest(p) for p in
-                (ABI_PATH,ROOT/'abi/boot-sio.json',Path(__file__),*(ROOT/'platform/altirraos'/n for n in (*SOURCES,'boot-xex.inc','boot-sio.inc','boot-sio-policy.inc','boot-takeover.inc')))},
+                (ABI_PATH,ROOT/'abi/boot-sio.json',Path(__file__),*(ROOT/'platform/altirraos'/n for n in (*SOURCES,'boot-xex.inc','boot-sio.inc','boot-sio-policy.inc','boot-takeover.inc','boot-platform.inc')))},
         reserved_bank_zero_delta=dict(fixed=0,root=0,kernel=0,per_task=0,idle=0),
         boot_phase_budget=phase_budget(monitor),
         boot_only_claims=[dict(address=ABI['boot_address'],bytes=ABI['boot_bytes'],

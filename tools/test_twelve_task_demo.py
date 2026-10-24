@@ -169,7 +169,7 @@ class TwelveTasks(Sessions):
         b._cmd_ok('KEY RETURN down');b.bp_clear_all()
 
 
-def check(bundle,session_class=TwelveTasks):
+def check(bundle,session_class=TwelveTasks,bootstrap=None):
     session=session_class(bundle/'twelve-task',bundle)
     require(json.loads((bundle/'demo-manifest.json').read_text())['task_capacity']==12,
             'Select a twelve-Task demo')
@@ -186,10 +186,11 @@ def check(bundle,session_class=TwelveTasks):
             require(hashlib.sha256(archive.read(member)).hexdigest()==digest,'ZIP checksum: '+name)
             verified.add(member)
         require(verified==set(names),'ZIP checksum coverage differs')
-        require(not any(name.lower().endswith(('.car','.bin')) for name in names),
-                'Current package contains unsupported cartridge artifacts')
+        require(all('/cartridge/' in name for name in names
+                    if name.lower().endswith(('.car','.bin'))),
+                'Cartridge artifacts must use the distribution cartridge directory')
         archive.extractall(extracted)
-    result=run(bundle,boot_smoke=True,distribution_root=extracted/'exec816-demo',integration=session)
+    result=run(bundle,boot_smoke=True,distribution_root=extracted/'exec816-demo',integration=session,bootstrap=bootstrap)
     record=dict(status='pass',tier='development',result=result,
                 zip_sha256=sha256(bundle/'exec816-demo.zip'),runner_sha256=sha256(Path(__file__)))
     (bundle/'twelve-task-results.json').write_text(json.dumps(record,indent=2)+'\n')

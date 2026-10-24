@@ -63,7 +63,7 @@ PROC Main()
   config.source=INPUT.SOURCE_POINTER
   config.wakeMask=$20000
   config.pointerProtocol=INPUT.POINTER_ST
-  config.pointerPort=1
+  config.pointerPort=INPUT.POINTER_PORT
   config.flags=INPUT.POINTER_RELATIVE
   config.maxX=639
   Require(INPUT.CheckConfig(@config)=INPUT.BAD_ARGUMENT)

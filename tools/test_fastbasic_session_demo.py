@@ -17,7 +17,13 @@ class PersistentInterpreter(SourceInterpreter):
 if __name__=='__main__':
     physical_keys()
     a=argparse.ArgumentParser(description=__doc__);a.add_argument('--bundle',type=Path,required=True)
+    a.add_argument('--native-snapshot',type=Path,help='Replay a verified pre-native boot checkpoint')
     args=a.parse_args();bundle=args.bundle.resolve()
-    result=check(bundle,PersistentInterpreter)
+    bootstrap=None
+    if args.native_snapshot:
+        from test_bootable_atr import DiskBoot
+        bootstrap=DiskBoot(bundle,native_snapshot=args.native_snapshot.resolve())
+    result=check(bundle,PersistentInterpreter,bootstrap)
     result.update(feature='persistent-interpreter',runner_sha256=sha256(Path(__file__)))
+    if args.native_snapshot:result['replay_snapshot_sha256']=sha256(args.native_snapshot)
     (bundle/'persistent-interpreter-results.json').write_text(json.dumps(result,indent=2)+'\n')

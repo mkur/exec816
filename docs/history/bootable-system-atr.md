@@ -116,3 +116,43 @@ it is excluded from the record's self-hash chain.
 Supported boot media is the packaged SDFS 2.1/256 root-file layout. Arbitrary
 DOS environments, IDE power-on boot, cartridge launching, boot acceleration
 and physical-hardware qualification remain outside this delivery.
+
+
+## Combined distribution, BASIC preparation and cartridge return
+
+The 2026-10-23 distribution uses one writable `exec816.atr` by default for
+standalone SIO builds. ATR, external XEX and Atarimax boot share SYS and its
+WORK directory. QED stays on a separate optional `qed.atr` in D2. MD5, ARC,
+EDX, manuals and ARC overlays are in SYS:C; workspace fixtures are in WORK.
+Explicit split disks remain a development selection.
+
+Boot preparation turns internal BASIC off. For the pinned ROM's BASIC/cart
+mode-0 allocation (`RAMTOP=$A0`, `MEMTOP=$9C1F`), it reopens E: through CIO with
+RAMTOP restored to $C0. The ROM derives MEMTOP=$BC1F and screen $BC40; the
+routine preserves IOCB0 and caller flags, and leaves unrelated low bounds for
+normal admission to reject. An unknown mapped cartridge is not disabled.
+Atarimax switches its mapper off around callbacks; its initial and subsequent
+mapped reads mask IRQ/NMI, and its RAM reader retires at RUNAD.
+
+Development checks passed: 643 host tests; emitted ROM screen/IOCB/bound probes;
+cold ATR boot with BASIC initially enabled, a 250-frame OF816 countdown and
+1,747,969 initialized/zero-fill native bytes verified; XEX and both Atarimax
+routes with the same system image, MD5, argument-free ARC help, ARC listing,
+EDX, workspace writes, guards and EXIT. The final initial cartridge masking
+change also passed a focused 40-callback, bank-crossing check on both mappers.
+System file operations, protected boot files and FastBasic source execution
+passed from the verified native-entry snapshot. Production QED passed two
+normal launches, three saves, backup rotation, reopen and ownership cleanup
+from a separate disk using the same verified native-entry replay. Its observer
+now searches the build's actual Task capacity, including the twelfth slot.
+
+This is development evidence, not full release or physical timing qualification.
+See the [machine-readable record](../development/combined-distribution.json).
+
+Reserved bank-zero growth over the existing SDX-enabled profile is zero fixed,
+root/kernel, per public Task and idle bytes, including guards, alignment and
+unused capacity. Selecting SDX by default adds its existing 544 fixed bytes to
+a previously SDX-disabled distribution, with zero per-Task/root/kernel/idle
+change. The cartridge borrows 1,024 additional bytes only while loading, before
+those high-RAM Task pools become live. The shared boot reader keeps its existing
+8,192-byte reservation.

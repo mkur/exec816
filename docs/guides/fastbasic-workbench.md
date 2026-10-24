@@ -36,6 +36,9 @@ toggles the current procedure's fold. Folds affect display only; editing clears
 them. Check compiles the unsaved buffer and selects a compiler error, unfolding its line.
 
 Tabs occupy eight-column stops. Long lines pan to keep the caret visible.
+Typing redraws changed cells; the status strip updates when its message or
+saved-state marker changes. Exposed and resized areas repair in bounded pieces
+while input remains available.
 Capacity errors leave the previous source intact. Undo includes selection
 replacement and has a fixed 16 KiB budget; very large replacements are refused.
 

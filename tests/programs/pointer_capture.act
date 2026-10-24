@@ -108,7 +108,7 @@ PROC Main()
   mouseConfig.source=INPUT.SOURCE_POINTER
   mouseConfig.wakeMask=$20000
   mouseConfig.pointerProtocol=INPUT.POINTER_ST
-  mouseConfig.pointerPort=1
+  mouseConfig.pointerPort=INPUT.POINTER_PORT
   mouseConfig.initialX=100
   mouseConfig.initialY=100
   mouseConfig.maxX=200

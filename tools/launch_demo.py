@@ -26,6 +26,16 @@ def write_launcher(output, qed=False):
     path.chmod(0o755)
     if qed:
         write_qed_launcher(output)
+    manifest=output/'demo-manifest.json'
+    if manifest.exists() and json.loads(manifest.read_text()).get('bootable_atr'):
+        for name,options in (('launch-xex.command','--boot-mode xex'),
+                             ('launch-cart-new.command','--cart new'),
+                             ('launch-cart-old.command','--cart old')):
+            launcher=output/name
+            launcher.write_text('#!/bin/sh\n'
+                'demo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd) || exit 1\n'
+                'exec "$demo_dir/launch-altirra.command" '+options+' "$@"\n')
+            launcher.chmod(0o755)
     return path
 
 
@@ -35,7 +45,7 @@ def write_qed_launcher(output):
     settings.optionxform = str
     set_values(settings, PROFILES, {'Defaults inited': 1, 'Current profile': 0})
     set_values(settings, PROFILES + r'\00000000', {
-        'Input: Active map names': 'Mouse -> ST Mouse (port 1)',
+        'Input: Active map names': 'Mouse -> ST Mouse (port 2)',
         'Input: Quick map names': '', 'Devices': '[]',
         'CPU: Stop on BRK': 0, 'Debugger: Break on EXE run': 0,
         'Memory: Randomize on EXE load': 0,
@@ -166,10 +176,16 @@ def selected_work(demo, local, explicit=None):
     return target
 
 
-def prepare(demo, config, ide_firmware, cart=None, disks=(), work=None):
+def prepare(demo, config, ide_firmware, cart=None, disks=(), work=None, boot_mode=None):
     demo = demo.resolve()
     record = json.loads(require_file(demo / 'demo-manifest.json').read_text())
     monitor = json.loads(require_file(demo / 'of816/of816.json').read_text())
+    if boot_mode=='atr' and not record.get('bootable_atr'):
+        raise ValueError('ATR boot requires a combined system disk')
+    if cart and boot_mode is not None:
+        raise ValueError('Select cartridge or ATR/XEX boot')
+    if work is not None and record.get('bootable_atr'):
+        raise ValueError('Combined disks keep WORK in the system ATR; --work selects a separate disk only')
     settings = read_settings(require_file(config))
     local = demo / 'altirra'
     local.mkdir(exist_ok=True)
@@ -184,6 +200,11 @@ def prepare(demo, config, ide_firmware, cart=None, disks=(), work=None):
         'CPU: Shadow ROMs': int(machine.get('shadow_rom', True)),
         'CPU: Shadow cartridges': 0,
     })
+    if record.get('bitmap') or record.get('desktop'):
+        set_values(settings, profile_owner(settings, 'input'), {
+            'Input: Active map names': 'Mouse -> ST Mouse (port 2)',
+            'Input: Quick map names': '',
+        })
     rom = require_file(demo / 'of816' / monitor['rom']['name'])
     register_firmware(settings, rom, 'kernelxl')
     set_values(settings, profile_owner(settings, 'firmware'),
@@ -249,6 +270,8 @@ def prepare(demo, config, ide_firmware, cart=None, disks=(), work=None):
     boot = require_file(demo / record['boot_image'])
     if record.get('bootable_atr'):
         boot=writable_copy(demo/record['media'],local)
+    if boot_mode=='xex':
+        boot=require_file(demo/'of816/Exec-of816.xex')
     mode = '--run'
     if cart:
         name = f'exec816-demo/cartridge/Exec-of816-atarimax-8mbit-{cart}.car'
@@ -291,6 +314,7 @@ def main():
     parser.add_argument('--altirra', help='AltirraSDL executable or macOS .app; also accepts ALTIRRA')
     parser.add_argument('--ide-firmware', type=Path, default=ROOT / 'build/firmware/ideplus-bios-2.1.rom')
     parser.add_argument('--cart', choices=('old', 'new'), help='Boot a cartridge instead of the combined OF816 XEX')
+    parser.add_argument('--boot-mode',choices=('atr','xex'),help='Default is the combined ATR; XEX retains the same mounted system disk')
     parser.add_argument('--disk', nargs=2, action='append', default=[], metavar=('DRIVE', 'IMAGE'),
                         help='Attach a persistent writable copy of an additional disk, e.g. --disk 2 utils.atr')
     parser.add_argument('--work', type=Path, help='Select an existing private writable WORK disk; persist it for later launches')
@@ -299,7 +323,7 @@ def main():
     try:
         binary = find_altirra(args.altirra)
         disks = [(int(drive), Path(image).expanduser()) for drive, image in args.disk]
-        config_home, media_args = prepare(args.demo, args.config.expanduser(), args.ide_firmware.expanduser(), args.cart, disks, work=args.work)
+        config_home, media_args = prepare(args.demo, args.config.expanduser(), args.ide_firmware.expanduser(), args.cart, disks, work=args.work,boot_mode=args.boot_mode)
         command = [str(binary), *media_args]
         state=args.demo.resolve()/'altirra/workspace.json'
         if state.exists():

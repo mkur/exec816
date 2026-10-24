@@ -3,13 +3,15 @@
 [Guides](README.md) · [OF816](boot-monitor.md) ·
 [Boot contract](../reference/boot-loading.md#bootable-system-atr)
 
-The `--bootable-atr` profile packages `exec816.atr` with the disk reader,
+The default standalone SIO profile (`--bootable-atr`) packages `exec816.atr` with the disk reader,
 OF816/kernel XEX, system files and writable workspace. Mount it writable in
 FujiNet's D1 slot, then cold-boot. D2 and D8 are not required. Keep a backup of
 the ATR because it also contains your saved programs and desktop preferences.
 
 Use the included pinned AltirraOS 65816 ROM and the current 4 MiB AltirraSDL
-configuration, with BASIC disabled and no cartridge. Graphical builds retain
+configuration. Boot transport disables BASIC and reopens the ROM text screen
+when its allocation would overlap the high-RAM Task pools. Remove external
+cartridges unless booting the supplied Atarimax image. Graphical builds retain
 their VBXE/ST mouse requirements. Disable SIO Patch, D: burst I/O and fast boot;
 select Generic + 57600 baud disk emulation for direct emulator disk boot.
 The [demo guide](demo.md) describes the rest of the machine setup.
@@ -50,8 +52,12 @@ build/demo-basic-disk/launch-altirra.command
 
 The local launcher maintains a writable copy in the build's altirra directory.
 It reuses that copy across launches and keeps package inputs intact. A changed
-distribution image receives a new copy. The user ZIP contains one ATR, the
-matching external recovery XEX, pinned ROM, guide, notices and checksums.
+distribution image receives a new copy. The user ZIP contains the system ATR, matching XEX and Atarimax CAR/BIN,
+pinned ROM, guide, notices and checksums. Add `--qed` to a GEM desktop build
+for a separate optional `qed.atr` in D2. `launch-xex.command` and the two
+`launch-cart-*.command` scripts retain the same writable system ATR as the
+default ATR launcher. MD5, ARC, EDX, manuals and overlays live in SYS:C,
+with sample files in WORK. No separate utility disk is required.
 
 To update the reader and disk packaging around an unchanged, verified
 native/OF816 executable:
@@ -69,9 +75,8 @@ for failure codes and the [fast-boot record](../history/boot-only-fast-sio.md)
 for measurements. `--refresh-boot-disk` only rebuilds ATR packaging/readers;
 `--refresh-boot-sio` also updates the external recovery XEX prefix.
 
-`--refresh-monitor` deliberately recomposes OF816 as well. OF816's upstream
-`.VERSION` embeds assembly time, so a recomposed XEX can have a different hash
-even when its source is unchanged. Freeze the final XEX before persistence
+`--refresh-monitor` deliberately recomposes OF816 as well. The build pins OF816's informational
+`.VERSION` timestamp for repeatable bytes. Freeze the final XEX before persistence
 tests or copying a matching distribution to FujiNet.
 
 Development checks distinguish direct ROM/ATR boot, real FujiNet-PC through the

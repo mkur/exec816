@@ -59,9 +59,9 @@ class DemoLauncherTests(unittest.TestCase):
         self.firmware = self.root / 'ide.rom'
         self.firmware.write_bytes(b'IDE BIOS')
 
-    def prepare(self, cart=None):
+    def prepare(self, cart=None, boot_mode=None):
         (self.demo / 'demo-manifest.json').write_text(json.dumps(self.record))
-        home, args = launch_demo.prepare(self.demo, self.config, self.firmware, cart)
+        home, args = launch_demo.prepare(self.demo, self.config, self.firmware, cart,boot_mode=boot_mode)
         self.assertEqual(self.config.read_bytes(), self.original_bytes)
         self.assertEqual((self.demo / 'work.atr').read_bytes(), b'work.atr')
         settings = launch_demo.read_settings(home / 'altirra/settings.ini')
@@ -88,6 +88,21 @@ class DemoLauncherTests(unittest.TestCase):
         self.assertEqual(repeated['"Disk 7"'], mounted['"Disk 7"'])
         self.assertEqual(work.read_bytes(), b'my saved work')
         self.assertEqual(args, ['--run', str(self.demo / 'of816/Exec-of816.xex')])
+
+    def test_graphical_input_uses_port_two_in_the_inherited_profile(self):
+        self.record['bitmap'] = True
+        with self.config.open('a') as source:
+            source.write('[User\\AltirraSDL\\Profiles\\00000002]\n'
+                '"_Category Mask" = "devices,mountedimages,input"\n'
+                '"_Saved Category Mask" = "devices,mountedimages,input"\n'
+                '"Input: Active map names" = "Mouse -> ST Mouse (port 1)"\n'
+                '"Input: Quick map names" = "Arrow Keys -> Joystick (port 1)"\n')
+        self.original_bytes = self.config.read_bytes()
+        settings, _, _, _ = self.prepare()
+        profile = settings[launch_demo.profile_owner(settings, 'input')]
+        self.assertEqual(json.loads(profile['"Input: Active map names"']),
+                         'Mouse -> ST Mouse (port 2)')
+        self.assertEqual(json.loads(profile['"Input: Quick map names"']), '')
 
     def test_mixed_ide_uses_readonly_fixture_and_sio(self):
         self.record['ideplus'] = {'access': 'readonly'}
@@ -130,6 +145,27 @@ class DemoLauncherTests(unittest.TestCase):
         (self.demo / 'system.atr').unlink()
         with self.assertRaisesRegex(ValueError, 'Missing demo input'):
             self.prepare()
+
+    def test_combined_atr_xex_and_cart_share_one_writable_disk_with_qed_separate(self):
+        self.record.update(bootable_atr=True,media='exec816.atr',boot_image='of816/exec816.atr',
+            additional_media=[dict(name='qed.atr',drive=2,access='readonly')])
+        for name in ('exec816.atr','of816/exec816.atr','qed.atr'):
+            (self.demo/name).write_bytes(name.encode())
+        with zipfile.ZipFile(self.demo/'exec816-demo.zip','w') as archive:
+            archive.writestr('exec816-demo/cartridge/Exec-of816-atarimax-8mbit-new.car',b'cart')
+        selected=None
+        for mode,cart in ((None,None),('xex',None),(None,'new')):
+            _,_,mounted,args=self.prepare(cart,mode)
+            self.assertEqual(set(mounted),{'"Disk 0"','"Disk 1"'})
+            disk=Path(json.loads(mounted['"Disk 0"'])[1:])
+            self.assertEqual(json.loads(mounted['"Disk 1"']),'R'+str(self.demo/'qed.atr'))
+            if selected is None:
+                selected=disk;selected.write_bytes(b'saved WORK directory')
+            self.assertEqual(disk,selected)
+            self.assertEqual(disk.read_bytes(),b'saved WORK directory')
+            if mode=='xex':self.assertEqual(Path(args[1]),self.demo/'of816/Exec-of816.xex')
+            elif cart:self.assertEqual(args[0],'--cart')
+            else:self.assertEqual(Path(args[1]),disk)
 
     def test_wrapper_handles_paths_and_forwards_arguments(self):
         tools = self.root / 'checkout with spaces/tools'

@@ -94,7 +94,7 @@ unsupported. A validated request never silently succeeds as an omitted service.
 The interactive application consumes native [keyboard input](input.md) separately
 and can request the fixed renderer-owned cursor. Diagnostic injected pointer
 events establish button semantics. The application also admits the reusable
-ST/port 1 motion and left-button source; see [input](input.md) and the
+ST/port 2 motion and left-button source; see [input](input.md) and the
 [demo guide](../guides/gem-vdi.md).
 
 ## Service protocol

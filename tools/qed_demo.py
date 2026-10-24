@@ -14,14 +14,17 @@ MOUNT_COMMAND = 'MOUNT QED: DRIVE 2 FORMAT SPARTA'
 SAMPLE = b'QED running natively on Exec816.\nEdit this file, then save it on WORK:.\n'
 
 
-def guide(version, profile):
+def guide(version, profile, system_media='system.atr'):
     from package_demo import pointer_description
+    if system_media=='exec816.atr':
+        from package_demo import bootable_guide
+        return bootable_guide(True).replace('@VERSION@',version)
     return (ROOT/'docs/qed-exec-distribution.txt').read_text().replace(
         '@VERSION@', version).replace('@SYSTEM_DISK@', 'system.atr').replace(
         '@POINTER_DESCRIPTION@', pointer_description(profile))
 
 
-def stage(output, directory, provider):
+def stage(output, directory, provider, system_media='system.atr'):
     layout, identity = production(directory, provider)
     frames = read(directory/'stack-frames.json')
     require(frames['analysis_sha256'] == sha256(directory/'layout.json') and
@@ -51,7 +54,7 @@ def stage(output, directory, provider):
         'Generated GEM declarations, CF-Lib and Calypsi runtime keep their terms.\n'
         'Matching source/relink materials accompany the boot ZIP separately.\n')
     from make_data_disk import make
-    (disk/'README.TXT').write_text(guide((ROOT/'VERSION').read_text().strip(), 'mild'))
+    (disk/'README.TXT').write_text(guide((ROOT/'VERSION').read_text().strip(), 'mild',system_media))
     for name,short in zip(QED_NOTICES,('NOTICE.TXT','TERMS.TXT','COPYING.LIB','APACHE.TXT','PORT.TXT')):
         shutil.copyfile(output/name,disk/short)
     shutil.copyfile(ROOT/'LICENSE-MIT',disk/'MIT.TXT')
@@ -91,12 +94,15 @@ def verify(record, output):
             checked(ROOT/name, digest)
 
 
-def media(entry,output):
+def media(entry,output,system_media=None):
     """Audit closed disks independently; no QED payload may be on SYS."""
     from filesystem_audit import Audit
     require(entry.get('media')==MEDIA,'Missing separate QED disk')
     checked(output/MEDIA,entry['media_sha256'])
-    system=Audit((output/'system.atr').read_bytes());system.sdfs()
+    if system_media is None:
+        manifest=output/'demo-manifest.json'
+        system_media=read(manifest)['media'] if manifest.exists() else 'system.atr'
+    system=Audit((output/system_media).read_bytes());system.sdfs()
     require(not any(Path(n).name.upper() in ('QED.APP','QED.RSC') for n in system.files),
             'QED payload must not be on the main system disk')
     editor=Audit((output/MEDIA).read_bytes());allocation=editor.sdfs()

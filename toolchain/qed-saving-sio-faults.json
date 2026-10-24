@@ -11,14 +11,16 @@
   "emulator": {
     "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
     "platform": "macOS arm64",
-    "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+    "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
     "source_patch": "toolchain/patches/altirra-console-probe.patch",
     "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
     "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
     "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
     "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
     "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
-    "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+    "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+    "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
   },
   "machine": {
     "model": "800XL",
@@ -71,7 +73,7 @@
     "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
   },
   "observer": {
-    "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+    "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
     "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
   },
   "keyboard_input": {
@@ -128,9 +130,9 @@
   },
   "mouse_input": {
     "model": "ST mouse",
-    "port": 1,
-    "internal_port": 0,
-    "map": "Mouse -> ST Mouse (port 1)",
+    "port": 2,
+    "internal_port": 1,
+    "map": "Mouse -> ST Mouse (port 2)",
     "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
     "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
     "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
@@ -143,13 +145,13 @@
     "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
     "tooling": {
       "binary": "build/mouse-bridge/AltirraBridgeServer",
-      "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
       "patch": "toolchain/patches/altirra-mouse-observer.patch",
-      "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+      "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
       "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
       "source_sha256": {
         "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
-        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
         "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
         "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
       }
@@ -165,11 +167,11 @@
   },
   "base_pin": {
     "path": "toolchain/altirra-gem-vdi.json",
-    "sha256": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431"
+    "sha256": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9"
   },
   "fault_responder": {
     "binary": "build/mouse-bridge/AltirraBridgeServer",
-    "binary_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
     "patch": "toolchain/patches/altirra-sio-fault-responder.patch",
     "patch_sha256": "47cb3ca5fb473cd7561010dd8634a8295980204a1fc9c0facf65ab05029fa160",
     "sector_patch": "toolchain/patches/altirra-sio-sector-faults.patch",

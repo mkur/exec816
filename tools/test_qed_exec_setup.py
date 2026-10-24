@@ -85,7 +85,7 @@ class QedPreview:
         s.b._cmd_ok('KEY RETURN down'); s.b.bp_clear_all()
 
 
-def check(bundle):
+def check(bundle,native_snapshot=None):
     with zipfile.ZipFile(bundle / 'exec816-demo.zip') as archive:
         sums = archive.read('exec816-demo/SHA256SUMS').decode().splitlines()
         require(set(archive.namelist()) == {'exec816-demo/SHA256SUMS'} |
@@ -94,14 +94,27 @@ def check(bundle):
             digest, name = line.split('  ', 1)
             require(hashlib.sha256(archive.read('exec816-demo/' + name)).hexdigest() == digest, 'ZIP checksum: ' + name)
         archive.extractall(bundle / 'extracted')
+    manifest=json.loads((bundle/'demo-manifest.json').read_text())
+    combined=bool(manifest.get('bootable_atr'))
+    options={}
+    if combined:
+        import shutil
+        from test_bootable_atr import DiskBoot
+        private=bundle/'qed-system-walkthrough.atr'
+        shutil.copyfile(bundle/'extracted/exec816-demo'/manifest['media'],private)
+        boot=DiskBoot(bundle,native_snapshot=native_snapshot)
+        options.update(media_path=private,bootstrap=boot)
     result = run(bundle, boot_smoke=True, distribution_root=bundle / 'extracted/exec816-demo',
-                 integration=QedPreview(), profile_commands=False)
-    disk = Audit((bundle / 'work-walkthrough.atr').read_bytes()); allocation = disk.sdfs()
-    require(disk.files['SAMPLE.TXT'] == b'cab' + SAMPLE and disk.files['SAMPLE.BAK'] == b'ab' + SAMPLE,
+                 integration=QedPreview(), profile_commands=False,**options)
+    disk = Audit((private if combined else bundle/'work-walkthrough.atr').read_bytes()); allocation = disk.sdfs()
+    prefix='WORK/' if combined else ''
+    require(disk.files[prefix+'SAMPLE.TXT'] == b'cab' + SAMPLE and disk.files[prefix+'SAMPLE.BAK'] == b'ab' + SAMPLE,
             'Production save/reopen/backup bytes differ')
     result.update(qualification=False, scope='Exact OF816 ZIP: production QED, normal RUN, two launches, three saves, reopen, backup rotation, ownership and EXIT',
                   zip_sha256=sha256(bundle / 'exec816-demo.zip'), allocation=allocation,
-                  saved_sha256=hashlib.sha256(disk.files['SAMPLE.TXT']).hexdigest())
+                  saved_sha256=hashlib.sha256(disk.files[prefix+'SAMPLE.TXT']).hexdigest())
+    if combined:result['atr_boot']=boot.report
+    if native_snapshot:result['scope']='Verified native-entry snapshot replay: QED launch, save, reopen, backup, ownership and EXIT'
     (bundle / 'qed-setup-results.json').write_text(json.dumps(result, indent=2) + '\n')
     return result
 
@@ -109,5 +122,6 @@ def check(bundle):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bundle', type=Path, required=True)
-    args = parser.parse_args(); check(args.bundle.resolve())
+    parser.add_argument('--native-snapshot',type=Path,help='Verified development replay; does not claim a new cold boot')
+    args = parser.parse_args(); check(args.bundle.resolve(),args.native_snapshot)
     print('Packaged production QED setup passed')

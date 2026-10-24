@@ -61,7 +61,7 @@ PUBLIC CARD FUNC CheckConfig(Config POINTER config)
       RETURN(BAD_ARGUMENT)
     FI
 
-    IF config.pointerProtocol<>POINTER_ST OR config.pointerPort<>1 THEN
+    IF config.pointerProtocol<>POINTER_ST OR config.pointerPort<>POINTER_PORT THEN
       RETURN(UNSUPPORTED)
     FI
 

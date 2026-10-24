@@ -26,8 +26,7 @@ static char scratchRecovery[3][17];
 
 static void status(struct BasicEditor *e,const char *text)
 {
-    UWORD n=strlen(text);if (n>80) n=80;
-    memcpy(e->status,text,n);e->status[n]=0;BasicEditorDamage(e,0,BASIC_LINES);
+    BasicEditorStatus(e,text);
 }
 static char *decimal(char *out,LONG number)
 {

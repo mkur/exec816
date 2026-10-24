@@ -11,6 +11,7 @@
     pld
     phk
     plb
+    jsr boot_platform_prepare
     stz take_selected
     ldx #11
 @save_dcb:

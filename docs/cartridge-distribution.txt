@@ -1,91 +1,26 @@
 Exec816 Atarimax boot images
 ===========================
 
-These images contain the exact matching XEX from this ZIP. OF816 still offers
-its five-second countdown before starting the selected Exec816 demo described
-in ../README.txt. Attach the matching storage before booting; the cartridge
-contains the boot executable, while system and work files stay on disk.
+These images contain the exact matching Exec-of816.xex from this package.
+OF816 retains its five-second countdown. Mount a private writable copy of the
+same exec816.atr in D1 before booting; it contains SYS and the WORK directory.
+No separate D8 disk is required. Optional QED remains on qed.atr in D2.
+Follow ../README.txt for the ROM, CPU, memory, VBXE and disk requirements.
 
-For SIO builds, mount system.atr in D1 and a disposable writable copy of
-work.atr in D8. WORK: has 2,880 sectors of 256 bytes (720 KiB nominal capacity).
-For IDE-only builds, attach a disposable writable copy of ideplus.img as ATA
-master on IDE Plus 2.0. It contains SYS and WORK partitions with 512-byte
-sectors. Leave the floppy slots empty and follow ../README.txt for setup.
+Use an Atarimax Maxflash 8 Mbit (1 MiB) cartridge. Files:
+  *-new.car  CAR type 75, bank 0 at power-on
+  *-old.car  CAR type 42, bank 127 at power-on
+  *.bin      Raw 1 MiB programming image, both power-on variants
+The CAR headers select the emulator mapper. Program physical flash from BIN,
+without the 16-byte CAR header. The 128 KiB model is too small.
 
-Use an Atarimax Maxflash 8 Mbit (1 MiB) cartridge. The 1 Mbit (128 KiB) model
-is too small for this boot image.
+Cold-boot the CAR instead of the ATR or XEX. The loader disables internal
+BASIC, switches its cartridge off for every INITAD callback and RUNAD, and
+reopens the pinned ROM screen above the high-RAM Task pools. Its RAM reader
+retires at RUNAD before native Task initialization. Exec runs entirely in RAM.
+Other cartridge mappers and physical accelerator/cartridge timing are outside
+these development checks. Warm reset is not a cartridge reload; cold-reset or
+power-cycle. The same persistent system ATR is used by ATR, XEX and cart boot.
 
-Files
------
-
-*-new.car   Atarimax 8 Mbit, bank 0 at power-on (CAR type 75)
-*-old.car   Atarimax 8 Mbit, bank 127 at power-on (CAR type 42)
-*.bin       Raw 1 MiB programming image, supporting both power-on variants
-
-Both CAR files contain identical ROM data. Their 16-byte headers tell an
-emulator which hardware variant to emulate. Do not program the CAR header
-into a physical cartridge: use the BIN image in Maxflash Studio's Cartridge
--> Program -> 8mbit cartridge workflow.
-
-Booting
--------
-
-Use the OS ROM, CPU, memory and disk settings described in ../README.txt.
-In AltirraSDL, boot the appropriate CAR instead of Exec-of816.xex. Keep the
-matching storage attached and BASIC disabled. A cold boot is required.
-
-For SIO cartridge builds, remove IDE Plus 2.0 from the emulator's devices before
-cold booting. An existing IDE Plus configuration can cause a blue-screen
-BOOT ERROR before the OF816 banner. IDE-only packages require their separate
-IDE Plus setup described in ../README.txt.
-
-The loader switches the cartridge off before every XEX initialization call.
-OF816 runs inside one of those calls, before the main kernel payload loads.
-EXEC816 or countdown expiry returns to the reader; it resumes copying from
-the cartridge with progress dots, preserving settings entered in Forth.
-OF816 appends its banner without clearing earlier boot messages.
-Exec runs from RAM. This is a new boot medium for
-the existing native-65C816 AltirraOS build, not a stock 6502 XL/XE build.
-Physical Atarimax/accelerator hardware has not been qualified. Warm reset
-does not reload the cartridge; power cycle or perform an emulator cold reset.
-
-The original XEX, disk, ROM and original boot guide remain in this ZIP.
-SHA256SUMS in its parent directory covers all files.
-
-Experimental XLOS boot
-----------------------
-
-The following XLOS checks and drive instructions concern SIO builds.
-
-Development checks also exercised Drac's XLOS 2.48 (December 2025), using the
-same CPU, memory, VBXE and disk settings. The bundled AltirraOS remains the
-supported ROM; these checks do not qualify all XLOS services or physical hardware.
-The cartridge interlock now follows the hardware value when the loader switches
-the cartridge off, avoiding XLOS's cartridge-removal halt. With these updated
-CAR images, keep SYS on D1 and WORK on D8 and use the normal countdown.
-
-For the XEX under XLOS, Altirra's default program loader fails before Exec starts.
-Use this checked alternative in AltirraSDL:
-
-1. Computer -> Boot -> Program load mode: Disk Boot.
-2. Disk Drives: set D1 to Off, mount system.atr read-only on D2, and mount a
-   disposable writable copy of work.atr on D8. Use Generic + 57600 baud.
-3. Boot Exec-of816.xex and press a key during the countdown to enter Forth.
-4. Enter these three lines:
-
-   decimal
-   2 SYSTEM-DRIVE!
-   EXEC816
-
-Startup should report SYS: -> D2: ready, read-only. Keep both disks mounted.
-Use D2 for this route; attaching SYS on D1 after XEX loading failed disk startup
-in the earlier development checks. Those original results predate the
-OF816-first loading sequence.
-
-References
-----------
-
-Atarimax programming documentation:
-https://www.atarimax.com/flashcart/documentation/chapter6.html
-CAR format and power-on variants:
-https://github.com/atari800/atari800/blob/master/DOC/cart.txt
+SHA256SUMS in the package root covers every artifact. Build intermediates,
+local launchers and reports are intentionally outside the ZIP.

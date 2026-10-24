@@ -31,6 +31,8 @@ WORD fsel_exinput(char *path,char *file,WORD *button,const char *title)
 UWORD ExecAESDiagnostic(void) { return diagnostic; }
 void BasicEditorDamage(struct BasicEditor *e,UWORD first,UWORD end)
 { (void)first;(void)end;e->dirty=1; }
+void BasicEditorStatus(struct BasicEditor *e,const char *text)
+{ strncpy(e->status,text,80);e->status[80]=0;e->dirty=1; }
 static WORD run(void)
 { UWORD steps=0;while (BasicFilesWork() && ++steps<100) if (BasicFilesStep(&editor)==1) return 1;return steps<100 ? 0:-1; }
 LONG EXEC_CALL BasicUIProbe(ULONG unused)

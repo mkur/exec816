@@ -35,7 +35,16 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
     output.mkdir(parents=True, exist_ok=True)
     case_build = output/'demo'
     shutil.copytree(demo_build, case_build, dirs_exist_ok=True)
+    media_path=(distribution_root or demo_build/'of816')/boot['media']['name']
+    if demo.get('bootable_atr'):
+        private=case_build/'cart-system-walkthrough.atr'
+        shutil.copyfile(media_path,private)
+        media_path=private
     labels = boot['labels']
+    from build_cartridge import segments
+    records=segments((demo_build/'of816/Exec-of816.xex').read_bytes())
+    monitor_segment=next(i+1 for i,(address,data) in enumerate(records)
+                         if address==0x2e2 and int.from_bytes(data,'little')==labels['of_start'])
     case = dict(status='running', tier='development', variant=variant,
                 route='forth-command' if manual else 'autoboot', cartridge=cart,
                 cartridge_sha256=sha256(image), observer_sha256=sha256(Path(__file__)),
@@ -56,7 +65,7 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
         b.bp_set(cart['labels']['cart_failed'])
         run_to(b, labels['of_start'], 4000, 90)
         b.bp_clear_all()
-        require(b.peek16(cart['labels']['cart_segments']) == boot['loading']['monitor_init_segment']+1,
+        require(b.peek16(cart['labels']['cart_segments']) == monitor_segment,
                 'Cartridge did not pause at the monitor callback')
         require(b.memdump(cart['labels']['cart_remaining'],3) != bytes(3),
                 'Cartridge payload was consumed before the monitor')
@@ -119,7 +128,7 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
         case['shell'] = test_demo.run(case_build, showcase=not shell_only,
                                      boot_smoke=shell_only, bootstrap=bootstrap,
                                      expected_cache=128 if manual else None,
-                                     media_path=(distribution_root or demo_build/'of816')/boot['media']['name'],
+                                     media_path=media_path,
                                      rom_override=rom_override, integration=integration,
                                      distribution_root=distribution_root)
         case['status'] = 'pass'

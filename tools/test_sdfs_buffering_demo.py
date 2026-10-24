@@ -51,13 +51,14 @@ def archive(bundle, package, output):
     require(manifest.get('shell_only') and not manifest.get('desktop'),
             'Use a standard or VBXE shell-only build')
     expected={'Exec-of816.xex',manifest['media'],'altirraos-816.rom',
-        'ALTIRRAOS-LICENSE.txt','OF816-LICENSE.txt','README.txt','SHA256SUMS',
-        *LICENSE_FILES,*(m['name'] for m in manifest['additional_media']),
+        'README.txt','SHA256SUMS',*(m['name'] for m in manifest['additional_media']),
         'cartridge/README.txt',
         'cartridge/Exec-of816-atarimax-8mbit.bin',
         'cartridge/Exec-of816-atarimax-8mbit-old.car',
         'cartridge/Exec-of816-atarimax-8mbit-new.car'}
-    if manifest.get('bitmap'):expected.update(GEM_NOTICES)
+    expected.update('licenses/'+name for name in
+                    ('ALTIRRAOS-LICENSE.txt','OF816-LICENSE.txt',*LICENSE_FILES))
+    if manifest.get('bitmap'):expected.update('licenses/'+name for name in GEM_NOTICES)
     extracted=output/'extracted'
     extracted.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(package) as z:

@@ -73,7 +73,7 @@ SEGMENTS {
     STUB: load=ROM, type=ro;
 }
 ''')
-    subprocess.run(['ca65', '-I', str(output), '-o', 'cartridge.o',
+    subprocess.run(['ca65', '-I', str(output), '-I', str(SOURCE.parent), '-o', 'cartridge.o',
                     '-l', 'cartridge.lst', str(SOURCE)], cwd=output, check=True)
     subprocess.run(['ld65', '-C', 'cartridge.cfg', '-Ln', 'cartridge.lbl',
                     '-m', 'cartridge.map', 'cartridge.o'], cwd=output, check=True)
@@ -99,6 +99,7 @@ SEGMENTS {
                   segments=len(records), init_callbacks=sum(a == 0x02e2 for a, _ in records),
                   cartridge_bytes=ROM_BYTES, types={'old':42, 'new':75},
                   labels=labels, source_sha256=digest(SOURCE.read_bytes()),
+                  platform_prepare_sha256=digest((SOURCE.parent/'boot-platform.inc').read_bytes()),
                   builder_sha256=digest(Path(__file__).read_bytes()),
                   files={n:digest(d) for n,d in files.items()},
                   bank_zero_delta=dict(fixed_runtime=0, per_public_task=0, idle=0),
@@ -150,7 +151,8 @@ def augment_demo(source, output, expected_sha256):
     files['cartridge/README.txt'] = (ROOT/'docs/cartridge-distribution.txt').read_bytes()
     for name, path in (('EXEC816-GPL-3.0.txt','LICENSE'), ('EXEC816-MIT.txt','LICENSE-MIT'),
                        ('EXEC816-LICENSING.md','LICENSING.md')):
-        files.setdefault(name, (ROOT/path).read_bytes())
+        if name not in files:
+            files.setdefault('licenses/'+name, (ROOT/path).read_bytes())
     files['SHA256SUMS'] = ''.join(f'{digest(data)}  {name}\n'
                                 for name,data in sorted(files.items())
                                 if name != 'SHA256SUMS').encode('ascii')

@@ -11,12 +11,14 @@
   "emulator": {
     "revision": "4029341ac382c88d5836cb21f3bb7c6468ce9674",
     "platform": "macOS arm64",
-    "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
     "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
     "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
     "build_record": "toolchain/altirra-build.json",
     "additional_patch": "toolchain/patches/altirra-headless-mount.patch",
-    "additional_patch_sha256": "3ba17abf8b5037383457f85306bb3eaad973151701a3fa4221469c87ccefd1bd"
+    "additional_patch_sha256": "3ba17abf8b5037383457f85306bb3eaad973151701a3fa4221469c87ccefd1bd",
+    "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+    "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
   },
   "machine": {
     "model": "800XL",

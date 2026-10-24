@@ -1,5 +1,14 @@
 # Historical records
 
+- [Mouse on port 2](mouse-port2.md): fixed backend and launcher selection,
+  electrical/unused-port checks, unchanged reservations and refreshed delivery.
+
+- [FastBasic editor refresh](fastbasic-editor-refresh.md): retained cells,
+  independent caret/status damage, bounded exposure repair and measured
+  development delivery.
+
+- [Combined distribution](bootable-system-atr.md#combined-distribution-basic-preparation-and-cartridge-return): shared ATR/XEX/Atarimax system disk, separate QED, bundled SDX tools and BASIC screen preparation.
+
 - [Boot-only fast SIO](boot-only-fast-sio.md): shared split/ATR reader, bounded speed recovery, OF816/native ownership, measured boot time and development evidence.
 
 - [Persistent FastBasic interpreter](fastbasic-session.md): retained Process/state, explicit restart and current development evidence.

@@ -66,8 +66,8 @@ def run(output,mode,cases=None,replay=False,production=False,unobserved=False):
                             [('mask',16,1),('skctl',0x232,1),('timer_vector',0x210,2),('key_vector',0x208,2),
                              ('break_vector',0x236,2),('display',0x22f,3),('memac',0xd65e,2)]}
                     pia=b.pia()
-                    port2=int(pia.pop('PORTA').lstrip('$'),16)&0xf0
-                    values.update(pia=pia,port2=port2,gractl=b.gtia()['GRACTL'])
+                    port1=int(pia.pop('PORTA').lstrip('$'),16)&0x0f
+                    values.update(pia=pia,port1=port1,gractl=b.gtia()['GRACTL'])
                     return values
                 def observe(kind):
                     value=dict(kind=kind,tick=b.peek16(adapter.VBI_COUNT),frame=b.eval_expr('@frame'),

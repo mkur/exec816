@@ -115,27 +115,27 @@ and GEM notices. See the [bitmap shell package guide](../bitmap-shell-distributi
 for VBXE configuration and commands. Reserved bank-zero memory is unchanged,
 both fixed and per Task; the prime Task is never started.
 
-For the opt-in SDX MD5/ARC development personality on the standard text demo:
+Standalone text and bitmap/desktop SIO distributions include MD5, ARC and EDX
+by default. Prepare their pinned original binaries first, using a built
+`nomarch` extractor:
 
 ```sh
-python3 tools/build_demo.py --sdx --sdx-drive-a D2: --sdx-car-root D2: \
-  --release-compiler --output build/demo-sdx
+python3 tools/prepare_sdx_inputs.py --nomarch /path/to/nomarch
+python3 tools/build_demo.py --release-compiler --output build/demo-sdx
 ```
 
-Add `--gem-desktop` for the graphical desktop with the same SDX personality.
-The text profile keeps OF816's five-second shell/prime autoboot; the desktop
-profile keeps the five-second desktop autoboot without starting prime.
-Supply the pinned MD5.COM, ARC.COM and ARCLST/ARCEXT/ARCADD.OVL on a separate
-SDFS utility disk in D2.
-Attach the disk and run `MOUNT D2: FORMAT SPARTA READWRITE`, then
-`D2:MD5.COM ABC.TXT` or `D2:ARC.COM L SAMPLE.ARC` with suitable sample files.
-Guest A: and bare guest filenames select D2: independently of native CD; CAR:
-also selects D2: for overlays. The roots are immutable build settings.
+The system disk contains the COM files, manuals and ARC overlays in SYS:C,
+with small checksum/archive/editor fixtures in WORK. No utility disk is needed.
+Add `--gem-desktop` for the graphical desktop; both retain OF816's five-second
+countdown. Guest A: uses WORK: and CAR: uses SYS:C/ independently of native CD.
+Those roots can be changed explicitly with the development `--sdx-drive-a` and
+`--sdx-car-root` options. `--no-sdx` omits this personality from a development
+build; FastBasic requires it.
+
 The [SDX service contract](../reference/sdx-services.md) lists supported operations.
 The profile reserves 12 KiB of upper static storage and the existing 544 fixed
 bank-zero bytes, including DP alignment and outer guards; per-Task growth is zero.
-Text and bitmap/desktop SIO builds can enable the personality. The default demo
-keeps SDX disabled.
+
 
 To refresh OF816 assembly, boot guides and the ZIP around an existing matching
 native build, use:
@@ -164,15 +164,23 @@ distribution ZIP. Rebuild the whole demo for kernel/runtime ABI changes.
 See the [boot-loading contract](../reference/boot-loading.md) for encoding,
 context and memory limits.
 
-Current packages boot from XEX through OF816 with BASIC disabled and no
-cartridge. The twelve-Task map uses RAM that the historical cartridge loader
-borrowed, so CAR/BIN launching is unsupported. Distribute `exec816-demo.zip`
-with its matching system/work disks, ROM, guide, license notices and checksums;
-do not augment it with cartridge images.
+Standalone SIO distributions default to one writable `exec816.atr`, including
+OF816, Exec, system applications, MD5/ARC/EDX and WORK. ATR, external XEX and
+Atarimax CAR boot share that same disk. QED remains on an optional separate
+`qed.atr`; add `--qed` to a GEM desktop build. For example:
 
-Historical cartridge tools and records require the source and memory map of
-that older release. They do not qualify the current layout. See the
-[high-RAM audit](../history/high-bank-zero-audit.md) for the address conflict.
+```sh
+python3 tools/build_demo.py --basic-workbench --qed --release-compiler \
+  --output build/system-distribution
+```
+
+Use `launch-altirra.command` for ATR boot, `launch-xex.command` for XEX, or
+`launch-cart-new.command` / `launch-cart-old.command` for Atarimax. All retain
+one private writable system disk. The cartridge reader disables its mapper
+before callbacks and retires before high-RAM pool initialization. Boot transport
+disables BASIC before native admission; arbitrary mapped cartridges remain
+unsupported. `--split-disks` selects separate SYS/WORK development media.
+Distribute `exec816-demo.zip` with boot media, ROM, guide, notices and checksums.
 
 ## Firmware diagnostics
 

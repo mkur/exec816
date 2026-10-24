@@ -38,6 +38,13 @@ requirements. Historical raw/optimized results retain their recorded scope.
 
 ## Development checks
 
+For FastBasic editor drawing, use `tools/test_fastbasic_editor.py --paint --output DIR`
+for emitted pixel, damage, publication, clipping and failure checks.
+`tools/measure_fastbasic_editor.py --bundle DIR --output DIR` measures physical
+key-to-completed-scanout latency on an extracted demo. Compare frozen application
+inputs using the same observer; see the [refresh record](../history/fastbasic-editor-refresh.md)
+for the executed scope and limits.
+
 Run the host suite for code changes:
 
 ```sh

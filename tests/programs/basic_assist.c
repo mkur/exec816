@@ -105,6 +105,9 @@ LONG EXEC_CALL BasicAssistProbe(ULONG unused)
     CHECK(a.count==256 && !a.overflow && BasicFold(&a,255) && BasicHidden(&a,511));
     CHECK(!BasicReplace(&d,d.bytes,0,(const UBYTE *)"PROC EXTRA\nENDPROC\n",19));
     while (!BasicAssistStep(&a,&d)) {} CHECK(a.count==256 && a.overflow);
+    CHECK(!set("PROC Q\nENDPROC\n"));while (!BasicAssistStep(&a,&d)) {}
+    CHECK(a.count==1 && !a.overflow && BasicProcedureNamed(&a,"Q")==0 && BasicProcedureNamed(&a,"EXTRA")==-1);
+    CHECK(a.procedures[0].name[1]==0 && !BasicHidden(&a,511));
     BasicDocumentDispose(&d);CHECK(AvailMem(MEMF_UPPER)==before);return 0;
 }
 int main(void) { return 0; }

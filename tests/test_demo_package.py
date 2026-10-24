@@ -55,16 +55,19 @@ class DemoPackageTests(unittest.TestCase):
         with zipfile.ZipFile(self.archive) as archive:
             files = {name.removeprefix('exec816-demo/'): archive.read(name)
                      for name in archive.namelist()}
-        self.assertEqual(set(files), set(self.boot_files) | {
-            'README.txt', 'SHA256SUMS', 'EXEC816-GPL-3.0.txt',
-            'EXEC816-MIT.txt', 'EXEC816-LICENSING.md'})
+        self.assertEqual(set(files), {
+            'Exec-of816.xex', 'system.atr', 'altirraos-816.rom', 'README.txt', 'SHA256SUMS',
+            'licenses/ALTIRRAOS-LICENSE.txt', 'licenses/OF816-LICENSE.txt',
+            'licenses/EXEC816-GPL-3.0.txt', 'licenses/EXEC816-MIT.txt',
+            'licenses/EXEC816-LICENSING.md'})
         for name, content in self.boot_files.items():
-            self.assertEqual(files[name], content)
+            destination = 'licenses/'+name if name.endswith('-LICENSE.txt') else name
+            self.assertEqual(files[destination], content)
         for name, source in (('EXEC816-GPL-3.0.txt', 'LICENSE'),
                              ('EXEC816-MIT.txt', 'LICENSE-MIT'),
                              ('EXEC816-LICENSING.md', 'LICENSING.md')):
-            self.assertEqual(files[name], (ROOT/source).read_bytes())
-            self.assertIn(name.encode(), files['README.txt'])
+            self.assertEqual(files['licenses/'+name], (ROOT/source).read_bytes())
+            self.assertIn(('licenses/'+name).encode(), files['README.txt'])
         checksums = dict(line.split('  ', 1)[::-1]
                          for line in files['SHA256SUMS'].decode('ascii').splitlines())
         self.assertEqual(set(checksums), set(files) - {'SHA256SUMS'})
@@ -206,14 +209,17 @@ class DemoPackageTests(unittest.TestCase):
             package_demo.package(self.bundle,self.archive,text_shell=source)
         with zipfile.ZipFile(self.archive) as archive:
             files={name.removeprefix('exec816-demo/'):archive.read(name) for name in archive.namelist()}
-        self.assertEqual(set(files),set(self.boot_files)|set(package_demo.LICENSE_FILES)|
-                         {'README.txt','SHA256SUMS'})
+        self.assertEqual(set(files),
+                         {'Exec-of816.xex','system.atr','altirraos-816.rom','README.txt','SHA256SUMS'} |
+                         {'licenses/'+name for name in ('ALTIRRAOS-LICENSE.txt','OF816-LICENSE.txt',
+                                                       *package_demo.LICENSE_FILES)})
         self.assertIn(b'40 by 24',files['README.txt'])
         self.assertIn(b'No prime task is started',files['README.txt'])
         self.assertIn(b'RUN PRIMES',files['README.txt'])
         self.assertNotIn(b'@SYSTEM_',files['README.txt'])
         for name,content in self.boot_files.items():
-            self.assertEqual(files[name],content)
+            destination='licenses/'+name if name.endswith('-LICENSE.txt') else name
+            self.assertEqual(files[destination],content)
         sums=dict(line.split('  ',1)[::-1] for line in files['SHA256SUMS'].decode().splitlines())
         self.assertEqual(set(sums),set(files)-{'SHA256SUMS'})
         for name,digest in sums.items():
@@ -246,8 +252,10 @@ class DemoPackageTests(unittest.TestCase):
             package_demo.package(self.bundle,self.archive,bitmap_shell=source)
         with zipfile.ZipFile(self.archive) as archive:
             files={name.removeprefix('exec816-demo/'):archive.read(name) for name in archive.namelist()}
-        self.assertEqual(set(files),set(self.boot_files)|set(package_demo.LICENSE_FILES)|
-                         set(package_demo.GEM_NOTICES)|{'README.txt','SHA256SUMS'})
+        self.assertEqual(set(files),
+                         {'Exec-of816.xex','system.atr','altirraos-816.rom','README.txt','SHA256SUMS'} |
+                         {'licenses/'+name for name in ('ALTIRRAOS-LICENSE.txt','OF816-LICENSE.txt',
+                                                       *package_demo.LICENSE_FILES,*package_demo.GEM_NOTICES)})
         self.assertIn(b'No prime task is started',files['README.txt'])
         self.assertNotIn(b'@SYSTEM_',files['README.txt'])
         sums=dict(line.split('  ',1)[::-1] for line in files['SHA256SUMS'].decode().splitlines())
@@ -280,7 +288,8 @@ class DemoPackageTests(unittest.TestCase):
                 guide=archive.read('exec816-demo/README.txt')
                 self.assertIn(b'RUN QED:QED.APP',guide);self.assertIn(b'WORK:SAMPLE.TXT',guide)
                 for name in package_demo.QED_NOTICES:
-                    self.assertEqual(archive.read('exec816-demo/'+name),(source/name).read_bytes())
+                    self.assertEqual(archive.read('exec816-demo/licenses/'+name),(source/name).read_bytes())
+                    self.assertIn(('licenses/'+name).encode(),guide)
             (source/package_demo.QED_NOTICES[0]).write_text('changed')
             with self.assertRaisesRegex(ValueError,'Changed bitmap shell notice'):
                 package_demo.package(self.bundle,self.archive,bitmap_shell=source)
@@ -313,7 +322,7 @@ class DemoPackageTests(unittest.TestCase):
                 self.assertIn(b'G4BENCH.APP',text);self.assertIn(b'WORK:G4BENCH.TXT',text)
                 self.assertNotIn(b'@POINTER_',text)
                 for name in package_demo.CALCULATOR_NOTICES+package_demo.G4BENCH_NOTICES:
-                    self.assertEqual(archive.read('exec816-demo/'+name),(source/name).read_bytes())
+                    self.assertEqual(archive.read('exec816-demo/licenses/'+name),(source/name).read_bytes())
             (source/package_demo.CALCULATOR_NOTICES[0]).write_text('changed')
             with self.assertRaisesRegex(ValueError,'Changed bitmap shell notice'):
                 package_demo.package(self.bundle,self.archive,bitmap_shell=source)

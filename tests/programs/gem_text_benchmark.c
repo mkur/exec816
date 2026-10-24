@@ -67,7 +67,7 @@ UWORD main(void)
             memset(&config,0,sizeof(config));
             config.version=INPUT_VERSION; config.source=INPUT_SOURCE_POINTER;
             config.wakeMask=1UL<<bit; config.pointerProtocol=INPUT_POINTER_ST;
-            config.pointerPort=1; config.initialX=320; config.initialY=120;
+            config.pointerPort=INPUT_POINTER_PORT; config.initialX=320; config.initialY=120;
             config.maxX=639; config.maxY=239;
             check(InputAcquire(&mouse,&config)==INPUT_OK);
         }

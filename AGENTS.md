@@ -61,11 +61,14 @@
   with upstream license notices in the demo's `of816/` directory.
   Keep the five-second autoboot into the standard shell/prime demo.
 - Distribute the generated `exec816-demo.zip`, containing only boot files,
-  a short user guide, license notices and checksums. Keep build intermediates,
+  a short user guide, license notices under `licenses/` and checksums. Keep build intermediates,
   manifests and test output in the development directory.
-- The current platform boots from XEX/OF816 with BASIC disabled and no cartridge.
-  Cartridge launching is unsupported; its historical loader conflicts with the
-  high bank-zero Task pools. Do not add CAR/BIN images to current demo packages.
+- Prefer the combined writable system ATR for SIO distributions. ATR, XEX and
+  Atarimax boot use that same disk and its WORK directory; QED is a separate ATR.
+  Include the ported MD5, ARC and EDX tools, overlays and notices on SYS.
+  Boot transport disables BASIC before native admission. The Atarimax reader
+  must disable its mapper for every INITAD and retire before high-RAM Task
+  initialization; arbitrary cartridges remain unsupported.
 - Follow the [code style guide](docs/contributing/style.md) for handwritten Action!
   code. Apply it to new code and routines being changed; keep unrelated
   formatting separate and edit generated code through its generator.

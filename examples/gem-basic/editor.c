@@ -55,9 +55,7 @@ void BasicEditorDamage(struct BasicEditor *e,UWORD first,UWORD end)
 {
     WORD a=BasicAssistanceRow(e,first),b=end>=BASIC_LINES ? e->rows:BasicAssistanceRow(e,end);
     if (a>=b) return;
-    if (!e->dirty) { e->damageFirst=a;e->damageEnd=b; }
-    else { e->damageFirst=min(a,e->damageFirst);e->damageEnd=max(b,e->damageEnd); }
-    e->dirty=e->publish=1;
+    BasicEditorRows(e,a,b);
 }
 
 static WORD viewport(struct BasicEditor *e)
@@ -112,7 +110,8 @@ WORD BasicEditorKey(struct BasicEditor *e,WORD key,WORD mods)
 {
     struct BasicDocument *d=&e->document;UBYTE c=key&255;
     ULONG before=e->caret,at=e->caret,lo=e->anchor<at ? e->anchor:at,hi=e->anchor>at ? e->anchor:at;
-    UWORD line=BasicLine(d,at),editFirst=BasicLine(d,lo),oldLines=d->lines;
+    UWORD line=BasicLine(d,at),editFirst=lo==at ? line:BasicLine(d,lo);
+    UWORD editLast=hi==at ? line:BasicLine(d,hi),oldLines=d->lines;
     WORD result=0,scan=(UWORD)key>>8;
     if (c==1 || ((mods&4) && (c=='a' || c=='A'))) { e->anchor=0;e->caret=d->bytes;goto selected; }
     if (c==26 || c==25 || ((mods&4) && (c=='z' || c=='Z' || c=='y' || c=='Y'))) {
@@ -143,13 +142,15 @@ WORD BasicEditorKey(struct BasicEditor *e,WORD key,WORD mods)
 selected:
     if (lo!=hi) BasicEditorDamage(e,BasicLine(d,lo),BasicLine(d,hi)+1);
     BasicEditorDamage(e,BasicLine(d,before),BasicLine(d,before)+1);
-    if (e->anchor!=e->caret) BasicEditorDamage(e,0,BASIC_LINES);
+    if (e->anchor!=e->caret) BasicEditorDamage(e,
+        BasicLine(d,e->anchor<e->caret ? e->anchor:e->caret),
+        BasicLine(d,e->anchor>e->caret ? e->anchor:e->caret)+1);
     BasicEditorReveal(e);return BASIC_OK;
 edited:
     ++e->edits;
     line=editFirst;
-    if (oldLines!=d->lines || lo!=hi) BasicEditorDamage(e,line,e->first+e->rows);
-    else BasicEditorDamage(e,line,line+1);
+    if (oldLines!=d->lines) BasicEditorDamage(e,line,e->first+e->rows);
+    else BasicEditorDamage(e,line,editLast+1);
     BasicEditorReveal(e);return BASIC_OK;
 }
 
@@ -168,7 +169,7 @@ WORD BasicEditorRun(struct BasicEditor *e)
     memcpy(e->menu,menu,sizeof(menu));if (!menu_bar(e->menu,1)) goto finish;
     e->sliderSize=e->sliderPosition=-1;
     if (!viewport(e)) goto finish;
-    strcpy(e->status,"Ctrl+O Open  Ctrl+S Save");
+    BasicEditorStatus(e,"Ctrl+O Open  Ctrl+S Save");
     BasicEditorDamage(e,0,BASIC_LINES);result=0;
     while (!quit && !result) {
         memset(&wait,0,sizeof(wait));
@@ -202,7 +203,7 @@ WORD BasicEditorRun(struct BasicEditor *e)
             case WM_MOVED:
                 if (!wind_set(a->window,WF_CXYWH,m[4],m[5],m[6],m[7]) || !viewport(e)) result=20;
                 BasicEditorReveal(e);BasicEditorDamage(e,0,BASIC_LINES);break;
-            case WM_REDRAW:BasicEditorDamage(e,0,BASIC_LINES);break;
+            case WM_REDRAW:BasicEditorExpose(e,m[4],m[5],m[6],m[7]);break;
             case WM_ARROWED:
                 i=m[4];action=i==WA_UPPAGE || i==WA_DNPAGE ? e->rows:1;
                 while (action--) e->first=i==WA_UPLINE || i==WA_UPPAGE ?
@@ -263,8 +264,7 @@ WORD BasicEditorRun(struct BasicEditor *e)
                 if (i==BASIC_UNDO_CAPACITY) message="Edit exceeds the undo budget";
                 if (i==BASIC_POSITION) message="Caret outside source";
                 if (i==BASIC_GENERATION) message="Edit identity exhausted";
-                strcpy(e->status,message);
-                BasicEditorDamage(e,0,BASIC_LINES);
+                BasicEditorStatus(e,message);
                 if (!form_alert(1,"[1][Edit exceeds limits][OK]") &&
                     ExecAESDiagnostic()!=AES_PENDING)
                     wind_set_str(a->window,WF_NAME,"FastBasic - edit rejected");
@@ -273,11 +273,20 @@ WORD BasicEditorRun(struct BasicEditor *e)
             if (!viewport(e)) result=20;
         }
         if ((events&MU_BUTTON) && buttons && ExecAESInputWindow(MU_BUTTON)==a->window) {
+            BasicEditorDamage(e,BasicLine(&e->document,e->anchor<e->caret ? e->anchor:e->caret),
+                BasicLine(&e->document,e->anchor>e->caret ? e->anchor:e->caret)+1);
             e->caret=BasicEditorPosition(e,mx,my);if (!(mods&3)) e->anchor=e->caret;e->dragging=1;
-            BasicEditorReveal(e);BasicEditorDamage(e,0,BASIC_LINES);
+            BasicEditorDamage(e,BasicLine(&e->document,e->anchor<e->caret ? e->anchor:e->caret),
+                BasicLine(&e->document,e->anchor>e->caret ? e->anchor:e->caret)+1);
+            BasicEditorReveal(e);
         }
         if ((events&MU_M1) && e->dragging) {
-            e->caret=BasicEditorPosition(e,mx,my);BasicEditorReveal(e);BasicEditorDamage(e,0,BASIC_LINES);
+            BasicEditorDamage(e,BasicLine(&e->document,e->anchor<e->caret ? e->anchor:e->caret),
+                BasicLine(&e->document,e->anchor>e->caret ? e->anchor:e->caret)+1);
+            e->caret=BasicEditorPosition(e,mx,my);
+            BasicEditorDamage(e,BasicLine(&e->document,e->anchor<e->caret ? e->anchor:e->caret),
+                BasicLine(&e->document,e->anchor>e->caret ? e->anchor:e->caret)+1);
+            BasicEditorReveal(e);
         }
         if ((events&MU_BUTTON) && !buttons) e->dragging=0;
         BasicBuildStep(e);
@@ -289,10 +298,6 @@ WORD BasicEditorRun(struct BasicEditor *e)
         if (BasicAssistanceWork(e)) {
             i=BasicAssistanceStep(e);if (i==2) continue;
             if (i==1 && !viewport(e)) result=20;
-        }
-        if (e->publish) {
-            if (!ExecAESBeginUpdate(a->window) || !wind_update(END_UPDATE)) { result=20;break; }
-            e->publish=0;
         }
         if (e->dirty && !BasicEditorPaint(e)) result=20;
     }

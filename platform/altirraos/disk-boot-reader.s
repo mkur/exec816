@@ -31,6 +31,7 @@ reader_guard_low: .res GUARD_BYTES,$a5
 reader_start:
 .if BOOT_BACKEND=0
     cld
+    jsr boot_platform_prepare
 .if BOOT_FAST
     jsr boot_select_speed
 .endif
@@ -122,6 +123,8 @@ find_file:
 .include "boot-takeover.inc"
 .endif
 .include "boot-xex.inc"
+
+.include "boot-platform.inc"
 
 ; Sequential SDFS stream. A zero map cursor advances the map, with backlink
 ; validation and a sector-count bound. The buffered byte cursor survives calls.

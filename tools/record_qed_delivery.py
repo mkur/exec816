@@ -57,9 +57,10 @@ def passed_execution(path,bundle,app_sha):
 
 
 def archive(bundle):
-    expected={'Exec-of816.xex','system.atr','work.atr','qed.atr','altirraos-816.rom','ALTIRRAOS-LICENSE.txt',
-        'OF816-LICENSE.txt','README.txt','SHA256SUMS',*LICENSE_FILES,*GEM_NOTICES,
-        *CALCULATOR_NOTICES,*G4BENCH_NOTICES,*QED_NOTICES}
+    expected={'Exec-of816.xex','system.atr','work.atr','qed.atr','altirraos-816.rom','README.txt','SHA256SUMS'}
+    expected.update('licenses/'+name for name in
+        ('ALTIRRAOS-LICENSE.txt','OF816-LICENSE.txt',*LICENSE_FILES,*GEM_NOTICES,
+         *CALCULATOR_NOTICES,*G4BENCH_NOTICES,*QED_NOTICES))
     with zipfile.ZipFile(bundle/'exec816-demo.zip') as packed:
         names=packed.namelist()
         require(len(names)==len(set(names)) and set(names)=={'exec816-demo/'+n for n in expected},
@@ -71,7 +72,7 @@ def archive(bundle):
         for digest,name in rows:
             require(hashlib.sha256(packed.read('exec816-demo/'+name)).hexdigest()==digest,'Changed QED ZIP member: '+name)
         for name,source in LICENSE_FILES.items():
-            require(packed.read('exec816-demo/'+name)==(ROOT/source).read_bytes(),'Stale packaged licence: '+name)
+            require(packed.read('exec816-demo/licenses/'+name)==(ROOT/source).read_bytes(),'Stale packaged licence: '+name)
         for name in ('system.atr','work.atr','qed.atr'):
             require(packed.read('exec816-demo/'+name)==(bundle/name).read_bytes(),'Stale packaged media: '+name)
         require(packed.read('exec816-demo/Exec-of816.xex')==(bundle/'of816/Exec-of816.xex').read_bytes(),

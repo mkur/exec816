@@ -5,9 +5,86 @@
 #include <exec816/aes.h>
 #include <string.h>
 
+enum { CANDIDATE=1,VALID=2,BASE_DIRTY=4,SELECTED_CELL=16,CARET_CELL=32,CELL_BUDGET=96,ROW_BUDGET=4 };
 static WORD min(WORD a,WORD b) { return a<b ? a:b; }
 static WORD max(WORD a,WORD b) { return a>b ? a:b; }
 
+static struct BasicRefresh *state(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=&e->refresh.state;UWORD row;
+    if (!r->initialized) {
+        memset(r,0,sizeof(*r));
+        for (row=0;row<BASIC_VIEW_ROWS;++row) r->first[row]=r->forceFirst[row]=BASIC_VIEW_COLUMNS;
+        r->statusFirst=r->statusForceFirst=BASIC_VIEW_COLUMNS;r->initialized=1;
+    }
+    return r;
+}
+static void changed(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);
+    if (!++r->generation) ++r->generation;
+    e->dirty=e->publish=1;
+}
+void BasicEditorRows(struct BasicEditor *e,UWORD first,UWORD end)
+{
+    struct BasicRefresh *r=state(e);UWORD row;
+    end=min(end,e->rows);if (first>=end) return;
+    if (!e->dirty) { e->damageFirst=first;e->damageEnd=end; }
+    else { e->damageFirst=min(first,e->damageFirst);e->damageEnd=max(end,e->damageEnd); }
+    for (row=first;row<end;++row) {
+        /* A whole-viewport nomination also covers fold-map changes, which
+         * do not advance the source document generation. */
+        if (!first && end==e->rows) r->valid[row]|=CANDIDATE|BASE_DIRTY;
+        else r->valid[row]|=CANDIDATE;
+    }
+    changed(e);
+}
+void BasicEditorStatus(struct BasicEditor *e,const char *text)
+{
+    UWORD n=strlen(text);if (n>BASIC_VIEW_COLUMNS) n=BASIC_VIEW_COLUMNS;
+    if (e->status!=text) { memcpy(e->status,text,n);e->status[n]=0; }
+    state(e)->statusState|=CANDIDATE;
+    changed(e); /* The saved-generation marker may have changed too. */
+}
+static void interval(UBYTE *first,UBYTE *end,UWORD a,UWORD b)
+{
+    if (a>=b) return;
+    if (a<*first) *first=a;if (b>*end) *end=b;
+}
+static void force_all(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);UWORD row;
+    for (row=0;row<e->rows;++row) { r->forceFirst[row]=0;r->forceEnd[row]=e->columns; }
+    r->statusForceFirst=0;r->statusForceEnd=e->columns;r->padding=15;r->paddingVisit=0;e->dirty=1;
+}
+void BasicEditorExpose(struct BasicEditor *e,WORD x,WORD y,WORD w,WORD h)
+{
+    struct BasicRefresh *r=state(e);WORD row,a,b,top,left=e->app.work[0]+4;
+    r->hidden=0;
+    a=max(0,(x-left)/e->app.cellw);b=min(e->columns,(x+w-left+e->app.cellw-1)/e->app.cellw);
+    for (row=0;row<e->rows;++row) {
+        top=e->app.work[1]+row*e->app.cellh;
+        if (a<b && y<top+e->app.cellh && y+h>top)
+            interval(&r->forceFirst[row],&r->forceEnd[row],a,b);
+    }
+    top=e->app.work[1]+e->rows*e->app.cellh+4;
+    if (a<b && y<top+8 && y+h>top) interval(&r->statusForceFirst,&r->statusForceEnd,a,b);
+    if (x<left || x+w>left+e->columns*e->app.cellw || y+h>top-4) { r->padding=15;r->paddingVisit=0; }
+    e->dirty=1;
+}
+static void geometry(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);UWORD row;
+    if (r->document==e->document.data && r->top==e->first && r->left==e->left &&
+        r->rows==e->rows && r->columns==e->columns && !memcmp(r->work,e->app.work,sizeof(r->work))) return;
+    r->document=e->document.data;r->top=e->first;r->left=e->left;r->rows=e->rows;r->columns=e->columns;
+    memcpy(r->work,e->app.work,sizeof(r->work));r->hidden=0;
+    for (row=0;row<BASIC_VIEW_ROWS;++row) {
+        r->first[row]=r->forceFirst[row]=BASIC_VIEW_COLUMNS;r->end[row]=r->forceEnd[row]=0;
+        r->valid[row]=row<e->rows ? CANDIDATE:0;
+    }
+    r->statusFirst=0;r->statusEnd=e->columns;r->statusState=CANDIDATE;force_all(e);changed(e);
+}
 static void row_text(struct BasicEditor *e,UWORD line)
 {
     ULONG at,col=0,next;UWORD i=0;UBYTE c;
@@ -20,76 +97,258 @@ static void row_text(struct BasicEditor *e,UWORD line)
         while (col<next) { if (col>=e->left) e->row[i++]=c==9 ? ' ':c;++col;if (i==e->columns) break; }
     }
 }
-
+static void compose(struct BasicEditor *e,UWORD row)
+{
+    struct BasicRefresh *r=state(e);UWORD line=BasicAssistanceLine(e,row),i;
+    UBYTE *text=r->text[row],*attributes=r->attributes[row];
+    WORD source=!(r->valid[row]&VALID) || (r->valid[row]&BASE_DIRTY) || r->documentGeneration!=e->document.generation;
+    ULONG lo=e->anchor<e->caret ? e->anchor:e->caret,hi=e->anchor>e->caret ? e->anchor:e->caret;
+    ULONG at,start,finish;WORD first,last;
+    if (source) { row_text(e,line);BasicAssistanceColors(e,line,e->colors); }
+    else for (i=0;i<e->columns;++i) e->colors[i]=attributes[i]&15;
+    if (line<e->document.lines) {
+        if (lo<hi && lo<e->document.line[line+1] && hi>e->document.line[line]) {
+            at=lo>e->document.line[line] ? lo:e->document.line[line];start=BasicColumn(&e->document,at);
+            at=hi<e->document.line[line+1] ? hi:e->document.line[line+1];
+            if (at>e->document.line[line] && at<=e->document.bytes && BasicByte(&e->document,at-1)==10) --at;
+            finish=BasicColumn(&e->document,at);if (hi>at) ++finish;
+            first=max(0,(WORD)start-e->left);last=min(e->columns,(WORD)finish-e->left);
+            if (first<last) for (i=first;i<last;++i) e->colors[i]|=SELECTED_CELL;
+        }
+        if (line==BasicLine(&e->document,e->caret)) {
+            start=BasicColumn(&e->document,e->caret);
+            if (start>=e->left && start<e->left+e->columns) e->colors[start-e->left]|=CARET_CELL;
+        }
+    }
+    for (i=0;i<e->columns;++i) {
+        if (!(r->valid[row]&VALID) || (source && text[i]!=(UBYTE)e->row[i]) || attributes[i]!=e->colors[i])
+            interval(&r->first[row],&r->end[row],i,i+1);
+        if (source) text[i]=e->row[i];attributes[i]=e->colors[i];
+    }
+    r->valid[row]=VALID;
+}
+static void compose_status(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);UWORD n,i;
+    memset(e->row,' ',e->columns);e->row[0]=BasicDirty(&e->document) ? '*':' ';
+    if (e->columns>2) { n=strlen(e->status);if (n>e->columns-2) n=e->columns-2;memcpy(e->row+2,e->status,n); }
+    for (i=0;i<e->columns;++i) {
+        if (r->status[i]!=(UBYTE)e->row[i]) interval(&r->statusFirst,&r->statusEnd,i,i+1);
+        r->status[i]=e->row[i];
+    }
+    r->statusState=VALID;
+}
+static WORD candidates(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);UWORD row;
+    for (row=0;row<e->rows;++row) if (r->valid[row]&CANDIDATE) return 1;
+    return 0;
+}
+static WORD pending(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);UWORD row;
+    if (r->padding || r->statusEnd || r->statusForceEnd) return 1;
+    for (row=0;row<e->rows;++row) if (r->end[row] || r->forceEnd[row]) return 1;
+    return 0;
+}
+static void bounds(struct BasicEditor *e,UWORD row,UWORD first,UWORD end,WORD *rect)
+{
+    rect[0]=e->app.work[0]+4+first*e->app.cellw;
+    rect[1]=e->app.work[1]+(row==e->rows ? e->rows*e->app.cellh+4:row*e->app.cellh);
+    rect[2]=e->app.work[0]+4+end*e->app.cellw;rect[3]=rect[1]+8;
+}
+static WORD intersection(const WORD *a,const WORD *b,WORD *out)
+{
+    out[0]=max(a[0],b[0]);out[1]=max(a[1],b[1]);
+    out[2]=min(a[2],b[0]+b[2]);out[3]=min(a[3],b[1]+b[3]);
+    return out[0]<out[2] && out[1]<out[3];
+}
+static WORD visible(struct BasicEditor *e,UWORD index,WORD *rect)
+{
+    UWORD i;
+    if (!wind_get(e->app.window,WF_FIRSTXYWH,&rect[0],&rect[1],&rect[2],&rect[3])) return 0;
+    for (i=0;i<index && rect[2] && rect[3];++i)
+        if (!wind_get(e->app.window,WF_NEXTXYWH,&rect[0],&rect[1],&rect[2],&rect[3])) return 0;
+    return 1;
+}
+static WORD complete(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);UWORD row,first,end,cells=0,rows=0,reports=0;
+    WORD rect[4],clip[4],view[4];ULONG area;
+    if (candidates(e) || r->padding) return 0;
+    for (row=0;row<=e->rows;++row) {
+        first=row==e->rows ? min(r->statusFirst,r->statusForceFirst):min(r->first[row],r->forceFirst[row]);
+        end=row==e->rows ? max(r->statusEnd,r->statusForceEnd):max(r->end[row],r->forceEnd[row]);
+        if (first>=end) continue;
+        if (++rows>ROW_BUDGET) return 0;
+        bounds(e,row,first,end,rect);area=0;
+        if (!visible(e,0,view)) return -1;
+        while (view[2] && view[3]) {
+            if (intersection(rect,view,clip)) {
+                area+=(ULONG)(clip[2]-clip[0])*(clip[3]-clip[1]);
+                cells+=(clip[2]-rect[0]+7)/8-(clip[0]-rect[0])/8;
+                if (++reports>AES_PAINT_REPORTS || cells>CELL_BUDGET) return 0;
+            }
+            if (!wind_get(e->app.window,WF_NEXTXYWH,&view[0],&view[1],&view[2],&view[3])) return -1;
+        }
+        if (area!=(ULONG)(rect[2]-rect[0])*8) return 0;
+    }
+    return 1;
+}
+struct Paint {
+    struct BasicEditor *e;
+    UWORD cells,rows,reports,visibleCount,paddingVisit,fills;
+    WORD okay,drawn,locked;
+};
+static WORD begin(struct Paint *p)
+{
+    WORD view[4];
+    if (!ExecAESBeginUpdate(p->e->app.window)) return 0;
+    p->locked=1;p->reports=p->visibleCount=0;
+    if (!visible(p->e,0,view)) return 0;
+    while (view[2] && view[3]) {
+        ++p->visibleCount;
+        if (!wind_get(p->e->app.window,WF_NEXTXYWH,&view[0],&view[1],&view[2],&view[3])) return 0;
+    }
+    return 1;
+}
+static WORD report(struct Paint *p,const WORD *clip)
+{
+    ++p->reports;
+    return ExecAESPainted(p->e->app.window,clip[0],clip[1],clip[2]-clip[0],clip[3]-clip[1]);
+}
+static WORD room(struct Paint *p)
+{
+    if (p->reports<AES_PAINT_REPORTS) return 1;
+    p->locked=0;
+    if (!wind_update(END_UPDATE)) { p->okay=0;return 0; }
+    if (!begin(p)) { p->okay=0;return 0; }
+    return 1;
+}
+static void text_fragment(struct Paint *p,UWORD row,UWORD first,UWORD end,WORD *clip)
+{
+    struct BasicEditor *e=p->e;struct BasicRefresh *r=state(e);UWORD col,stop,i;WORD box[4],top;
+    UBYTE *text=row==e->rows ? r->status:r->text[row];UBYTE pen;char saved;
+    vs_clip(e->app.vdi,1,clip);memcpy(e->row,text,e->columns);e->row[e->columns]=0;
+    top=e->app.work[1]+(row==e->rows ? e->rows*e->app.cellh+4:row*e->app.cellh);
+    col=first;
+    while (col<end) {
+        pen=row==e->rows ? 1:r->attributes[row][col]&15;stop=col+1;
+        while (stop<end && (row==e->rows || (r->attributes[row][stop]&15)==pen)) ++stop;
+        saved=e->row[stop];e->row[stop]=0;vst_color(e->app.vdi,pen);
+        v_gtext(e->app.vdi,e->app.work[0]+4+col*e->app.cellw,top+6,e->row+col);
+        e->row[stop]=saved;col=stop;
+    }
+    if (row<e->rows) for (i=first;i<end;++i) {
+        box[0]=e->app.work[0]+4+i*e->app.cellw;box[2]=box[0]+e->app.cellw-1;
+        if (r->attributes[row][i]&SELECTED_CELL) {
+            box[1]=box[3]=top+7;vsf_color(e->app.vdi,3);v_bar(e->app.vdi,box);
+        }
+        if (r->attributes[row][i]&CARET_CELL) {
+            box[2]=box[0];box[1]=top;box[3]=top+7;vsf_color(e->app.vdi,1);v_bar(e->app.vdi,box);
+        }
+    }
+    p->okay=ExecAESDiagnostic()==AES_OK;
+}
+static WORD span(struct Paint *p,UWORD row,UWORD first,UWORD end)
+{
+    struct BasicEditor *e=p->e;struct BasicRefresh *r=state(e);UWORD i,cost;WORD rect[4],clip[4],inclusive[4],view[4];
+    bounds(e,row,first,end,rect);
+    for (i=0;p->okay && i<p->visibleCount;++i) {
+        if (!visible(e,i,view)) { p->okay=0;return 0; }
+        if (!intersection(rect,view,clip)) continue;
+        if (!room(p)) return 0;
+        /* Re-read this fragment after a journal rollover obtains a fresh view. */
+        if (!visible(e,i,view)) { p->okay=0;return 0; }
+        if (!intersection(rect,view,clip)) continue;
+        cost=(clip[2]-rect[0]+7)/8-(clip[0]-rect[0])/8;
+        if (cost>p->cells) return 0; /* Visibility may grow at a journal rollover. */
+        inclusive[0]=clip[0];inclusive[1]=clip[1];inclusive[2]=clip[2]-1;inclusive[3]=clip[3]-1;
+        text_fragment(p,row,first,end,inclusive);
+        if (p->okay) p->okay=report(p,clip);
+        if (!p->okay) return 0;
+        p->cells-=cost;r->glyphs+=cost;if (row==e->rows) r->statusGlyphs+=cost;p->drawn=1;
+    }
+    return p->okay;
+}
+static void margins(struct Paint *p)
+{
+    struct BasicEditor *e=p->e;struct BasicRefresh *r=state(e);WORD boxes[4][4],clip[4],inclusive[4],view[4];UWORD i,j;
+    WORD x=e->app.work[0],y=e->app.work[1],right=x+e->app.work[2],bottom=y+e->app.work[3];
+    WORD grid=x+4+e->columns*e->app.cellw,status=y+e->rows*e->app.cellh;
+    boxes[0][0]=x;boxes[0][1]=y;boxes[0][2]=x+4;boxes[0][3]=bottom;
+    boxes[1][0]=grid;boxes[1][1]=y;boxes[1][2]=right;boxes[1][3]=bottom;
+    boxes[2][0]=x+4;boxes[2][1]=status;boxes[2][2]=grid;boxes[2][3]=status+4;
+    boxes[3][0]=x+4;boxes[3][1]=status+12;boxes[3][2]=grid;boxes[3][3]=bottom;
+    for (i=p->paddingVisit/AES_VISIBLE_RECTS;i<4 && p->okay;++i) if (r->padding&(1<<i)) {
+        for (j=p->paddingVisit%AES_VISIBLE_RECTS;j<p->visibleCount && p->okay;++j) {
+            if (!visible(e,j,view)) { p->okay=0;return; }
+            if (!intersection(boxes[i],view,clip)) continue;
+            if (p->fills==8) { p->paddingVisit=i*AES_VISIBLE_RECTS+j;return; }
+            if (!room(p)) return;
+            if (!visible(e,j,view)) { p->okay=0;return; }
+            if (!intersection(boxes[i],view,clip)) continue;
+            inclusive[0]=clip[0];inclusive[1]=clip[1];inclusive[2]=clip[2]-1;inclusive[3]=clip[3]-1;
+            vs_clip(e->app.vdi,1,inclusive);vsf_color(e->app.vdi,0);v_bar(e->app.vdi,inclusive);
+            p->okay=ExecAESDiagnostic()==AES_OK;
+            if (p->okay) p->okay=report(p,clip);p->drawn=1;
+            ++p->fills;
+        }
+        if (p->okay) { r->paddingAdvance|=1<<i;p->paddingVisit=(i+1)*AES_VISIBLE_RECTS; }
+    }
+}
+static void acknowledge(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);UWORD row,end;
+    for (row=0;row<e->rows;++row) if ((end=r->advance[row])!=0) {
+        if (end>=r->end[row]) { r->first[row]=BASIC_VIEW_COLUMNS;r->end[row]=0; }else r->first[row]=max(r->first[row],end);
+        if (end>=r->forceEnd[row]) { r->forceFirst[row]=BASIC_VIEW_COLUMNS;r->forceEnd[row]=0; }else r->forceFirst[row]=max(r->forceFirst[row],end);
+    }
+    if ((end=r->advance[e->rows])!=0) {
+        if (end>=r->statusEnd) { r->statusFirst=BASIC_VIEW_COLUMNS;r->statusEnd=0; }else r->statusFirst=max(r->statusFirst,end);
+        if (end>=r->statusForceEnd) { r->statusForceFirst=BASIC_VIEW_COLUMNS;r->statusForceEnd=0; }else r->statusForceFirst=max(r->statusForceFirst,end);
+    }
+    r->padding&=~r->paddingAdvance;
+}
 WORD BasicEditorPaint(struct BasicEditor *e)
 {
-    struct BasicApp *a=&e->app;WORD r[4],clip[4],bar[4],i,y,end,okay=1;
-    ULONG lo=e->anchor<e->caret ? e->anchor:e->caret,hi=e->anchor>e->caret ? e->anchor:e->caret;
-    ULONG start,finish,at;UWORD line;
-    end=min(e->damageEnd,e->damageFirst+4);
-    if (end==e->damageEnd && end-e->damageFirst==4) --end;
-    y=a->work[1]+e->damageFirst*a->cellh;
-    if (!ExecAESBeginUpdate(a->window)) return 0;
-    if (!wind_get(a->window,WF_FIRSTXYWH,&r[0],&r[1],&r[2],&r[3])) okay=0;
-    while (okay && r[2] && r[3]) {
-        clip[0]=max(a->work[0],r[0]);clip[1]=max(y,r[1]);
-        clip[2]=min(a->work[0]+a->work[2],r[0]+r[2])-1;
-        clip[3]=min(a->work[1]+end*a->cellh,r[1]+r[3])-1;
-        if (clip[0]<=clip[2] && clip[1]<=clip[3]) {
-            vs_clip(a->vdi,1,clip);vsf_color(a->vdi,0);v_bar(a->vdi,clip);vst_color(a->vdi,1);
-            for (i=e->damageFirst;i<end;++i) {
-                line=BasicAssistanceLine(e,i);row_text(e,line);
-                BasicAssistanceColors(e,line,e->colors);
-                {
-                    UWORD column=0,stop;char saved;
-                    while (column<e->columns) {
-                        stop=column+1;while (stop<e->columns && e->colors[stop]==e->colors[column]) ++stop;
-                        saved=e->row[stop];e->row[stop]=0;vst_color(a->vdi,e->colors[column]);
-                        v_gtext(a->vdi,a->work[0]+4+column*a->cellw,a->work[1]+i*a->cellh+6,e->row+column);
-                        e->row[stop]=saved;column=stop;
-                    }
-                }
-                if (line<e->document.lines && lo<hi && lo<e->document.line[line+1] && hi>e->document.line[line]) {
-                    at=lo>e->document.line[line] ? lo:e->document.line[line];start=BasicColumn(&e->document,at);
-                    at=hi<e->document.line[line+1] ? hi:e->document.line[line+1];
-                    if (at>e->document.line[line] && at<=e->document.bytes && BasicByte(&e->document,at-1)==10) --at;
-                    finish=BasicColumn(&e->document,at);if (hi>at) ++finish;
-                    bar[0]=a->work[0]+4+max(0,(WORD)start-e->left)*a->cellw;
-                    bar[2]=a->work[0]+3+min(e->columns,(WORD)finish-e->left)*a->cellw;
-                    bar[1]=a->work[1]+i*a->cellh+7;bar[3]=bar[1];
-                    if (bar[0]<=bar[2]) { vsf_color(a->vdi,3);v_bar(a->vdi,bar); }
-                }
-                if (line==BasicLine(&e->document,e->caret)) {
-                    start=BasicColumn(&e->document,e->caret);
-                    if (start>=e->left && start<e->left+e->columns) {
-                        bar[0]=bar[2]=a->work[0]+4+(start-e->left)*a->cellw;
-                        bar[1]=a->work[1]+i*a->cellh;bar[3]=bar[1]+a->cellh-1;
-                        vsf_color(a->vdi,1);v_bar(a->vdi,bar);
-                    }
-                }
-            }
-            okay=ExecAESDiagnostic()==AES_OK;
-        }
-        if (end==e->damageEnd) {
-            clip[0]=max(a->work[0],r[0]);clip[1]=max(a->work[1]+e->rows*a->cellh,r[1]);
-            clip[2]=min(a->work[0]+a->work[2],r[0]+r[2])-1;
-            clip[3]=min(a->work[1]+a->work[3],r[1]+r[3])-1;
-            if (clip[0]<=clip[2] && clip[1]<=clip[3]) {
-                vs_clip(a->vdi,1,clip);vsf_color(a->vdi,0);v_bar(a->vdi,clip);vst_color(a->vdi,1);
-                memset(e->row,' ',e->columns);e->row[e->columns]=0;
-                e->row[0]=BasicDirty(&e->document) ? '*':' ';
-                if (e->columns>2) {
-                    UWORD n=strlen(e->status);if (n>e->columns-2) n=e->columns-2;
-                    memcpy(e->row+2,e->status,n);
-                }
-                v_gtext(a->vdi,a->work[0]+4,a->work[1]+e->rows*a->cellh+10,e->row);
-                if (!ExecAESPainted(a->window,clip[0],clip[1],clip[2]-clip[0]+1,clip[3]-clip[1]+1)) okay=0;
-            }
-        }
-        if (!wind_get(a->window,WF_NEXTXYWH,&r[0],&r[1],&r[2],&r[3])) okay=0;
+    struct BasicRefresh *r=state(e);struct Paint p;UWORD row,first,end,count=0,limit;WORD fast;
+    geometry(e);
+    for (row=0;row<e->rows && count<ROW_BUDGET;++row) if (r->valid[row]&CANDIDATE) { compose(e,row);++count; }
+    if (!candidates(e)) r->documentGeneration=e->document.generation;
+    if (r->statusState!=VALID || r->status[0]!=(BasicDirty(&e->document) ? '*':' ')) compose_status(e);
+    if (!pending(e) && !candidates(e)) { e->dirty=e->publish=0;return 1; }
+    if (r->hidden && !e->publish) {
+        for (row=0;row<e->rows;++row) { r->first[row]=r->forceFirst[row]=BASIC_VIEW_COLUMNS;r->end[row]=r->forceEnd[row]=0; }
+        r->statusFirst=r->statusForceFirst=BASIC_VIEW_COLUMNS;r->statusEnd=r->statusForceEnd=r->padding=0;
+        e->dirty=candidates(e);return 1;
     }
-    if (okay) okay=ExecAESPainted(a->window,a->work[0],y,a->work[2],(end-e->damageFirst)*a->cellh);
-    if (!wind_update(END_UPDATE)) okay=0;
-    if (okay) { e->damageFirst=end;e->dirty=end<e->damageEnd;++e->paintTurns; }
-    return okay;
+    memset(&p,0,sizeof(p));p.e=e;p.okay=1;p.cells=CELL_BUDGET;
+    if (!begin(&p)) { if (p.locked) wind_update(END_UPDATE);return 0; }
+    fast=complete(e);
+    if (fast<0) { wind_update(END_UPDATE);return 0; }
+    if (e->publish && !fast) {
+        force_all(e);p.okay=wind_update(END_UPDATE);
+        if (p.okay) { ++r->publications;e->publish=0;r->hidden=p.visibleCount==0; }
+        return p.okay;
+    }
+    memset(r->advance,0,sizeof(r->advance));r->paddingAdvance=0;
+    p.paddingVisit=r->paddingVisit;
+    if (r->padding) margins(&p);
+    for (row=0;row<=e->rows && p.okay && p.rows<ROW_BUDGET && p.cells;++row) {
+        if (row<e->rows && r->valid[row]!=VALID) continue;
+        first=row==e->rows ? min(r->statusFirst,r->statusForceFirst):min(r->first[row],r->forceFirst[row]);
+        end=row==e->rows ? max(r->statusEnd,r->statusForceEnd):max(r->end[row],r->forceEnd[row]);
+        if (first>=end) continue;
+        limit=fast ? end-first:p.cells/max(1,p.visibleCount);if (!limit) break;
+        if (end-first>limit) end=first+limit;
+        if (span(&p,row,first,end)) r->advance[row]=end;else p.cells=0;
+        ++p.rows;
+    }
+    if (p.okay && fast) p.okay=ExecAESPaintedChanges(e->app.window);
+    if (p.locked && !wind_update(END_UPDATE)) p.okay=0;
+    if (!p.okay) return 0;
+    acknowledge(e);r->paddingVisit=r->padding ? p.paddingVisit:0;
+    e->publish=0;e->dirty=pending(e) || candidates(e);++e->paintTurns;
+    return 1;
 }

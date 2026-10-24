@@ -14,6 +14,15 @@
   [development record](../history/bootable-system-atr.md) covers final-package
   cold boot/save/reboot and temporary versus runtime reservations.
 
+- [FastBasic editor incremental repaint design](fastbasic-editor-refresh-design.md):
+  implemented retained character/attribute cells, independent row spans, caret and
+  status repair, bounded drawing and correct AES publication/exposure handling.
+  Reuses the console refresh model with a 5 KiB application reservation and
+  zero additional reserved bank-zero bytes. The
+  [ER0–ER4 implementation plan](fastbasic-editor-refresh-implementation-plan.md)
+  orders the baseline, retained appearance, painter, interaction and delivery;
+  [development evidence](../history/fastbasic-editor-refresh.md) records the results.
+
 - [FastBasic source interpreter design](fastbasic-interpreter-design.md) and
   [FI0–FI7 implementation plan](fastbasic-interpreter-implementation-plan.md):
   implemented delivery, starting with FB/FBI source execution in one guest

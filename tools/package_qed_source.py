@@ -15,7 +15,7 @@ from qed_delivery import read, PORT, inventory
 from relink_qed import material, COMPONENTS
 
 
-def build(bundle,output,revision,compiler_dir=None):
+def build(bundle,output,revision,compiler_dir=None,working_tree=False):
     bundle,output=bundle.resolve(),output.resolve()
     require(not output.exists(),'Use a fresh source-material output')
     demo=read(bundle/'demo-manifest.json');verify(demo,bundle)
@@ -23,11 +23,22 @@ def build(bundle,output,revision,compiler_dir=None):
     layout=read(production/'layout.json');app=read(production/'app.json')
     provenance=layout['image']['provenance'];output.mkdir(parents=True)
     tree=output/'material';tree.mkdir()
-    # Git supplies corresponding Exec source; runtime inputs must match this tree.
+    # Runtime inputs must match the supplied source, including uncommitted work
+    # when explicitly selected. Keep the caller's index and branch untouched.
     revision=subprocess.check_output(['git','-C',str(ROOT),'rev-parse',revision],text=True).strip()
-    archive=subprocess.check_output(['git','-C',str(ROOT),'archive','--format=tar',revision])
     exec_source=tree/'exec816';exec_source.mkdir()
-    with tarfile.open(fileobj=io.BytesIO(archive)) as source:source.extractall(exec_source,filter='data')
+    if working_tree:
+        names=subprocess.check_output(['git','-C',str(ROOT),'ls-files','--cached',
+            '--others','--exclude-standard','-z']).split(b'\0')
+        for raw in names:
+            if not raw or raw==b'exec816-demo.zip':continue
+            name=raw.decode();source=ROOT/name
+            if not source.is_file():continue
+            target=exec_source/name;target.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copy2(source,target)
+    else:
+        archive=subprocess.check_output(['git','-C',str(ROOT),'archive','--format=tar',revision])
+        with tarfile.open(fileobj=io.BytesIO(archive)) as source:source.extractall(exec_source,filter='data')
     for group in ('platform_inputs','task_inputs','console_inputs','banked_inputs'):
         for name,digest in demo['kernel'].get(group,{}).items():
             require(sha256(exec_source/name)==digest,'Source revision differs from runtime input: '+name)
@@ -106,9 +117,10 @@ def build(bundle,output,revision,compiler_dir=None):
         component_sources={c:[n for n in files if n.startswith(prefix) and Path(n).suffix in ('.c','.h','.s','.act','.inc')]
                            for c,prefix in COMPONENTS.items()},
         grants=policy['grants'],application_sources=application_sources,
-        native_source_identity=demo['kernel']['exec_build'],compiler_source_revision=compiler_revision,files=files)
+        native_source_identity=demo['kernel']['exec_build'],compiler_source_revision=compiler_revision,
+        working_tree=working_tree,files=files)
     (tree/'source-material.json').write_text(json.dumps(record,indent=2)+'\n');material(tree)
-    destination=output/('exec816-qed-'+revision[:12]+'-source-relink.tar.gz')
+    destination=output/('exec816-qed-'+revision[:12]+('-working' if working_tree else '')+'-source-relink.tar.gz')
     with destination.open('wb') as stream,gzip.GzipFile(filename='',fileobj=stream,mode='wb',mtime=0) as compressed:
         with tarfile.open(fileobj=compressed,mode='w') as archive:
             for path in sorted(tree.rglob('*')):
@@ -120,7 +132,7 @@ def build(bundle,output,revision,compiler_dir=None):
         sha256(bundle/'exec816-demo.zip')+'  exec816-demo.zip\n'+sha256(destination)+'  '+destination.name+'\n')
     result=dict(status='prepared',tier='development',qualification=False,unresolved=policy['unresolved'],
         archive=str(destination),sha256=sha256(destination),source_material_sha256=sha256(tree/'source-material.json'),
-        source_revision=revision,zip_sha256=record['zip_sha256'])
+        source_revision=revision,working_tree=working_tree,zip_sha256=record['zip_sha256'])
     (output/'source-results.json').write_text(json.dumps(result,indent=2)+'\n');return result
 
 if __name__=='__main__':
@@ -128,4 +140,5 @@ if __name__=='__main__':
     p.add_argument('--bundle',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
     p.add_argument('--revision',required=True)
     p.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
-    a=p.parse_args();build(a.bundle,a.output,a.revision,a.compiler_dir)
+    p.add_argument('--working-tree',action='store_true',help='Supply current sources and verify them against the native runtime inputs')
+    a=p.parse_args();build(a.bundle,a.output,a.revision,a.compiler_dir,a.working_tree)

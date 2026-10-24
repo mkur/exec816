@@ -39,8 +39,9 @@ def record():
     with zipfile.ZipFile(archive) as z:
         require(z.testzip() is None,'ZIP CRC failed')
         files={name.removeprefix('exec816-demo/'):z.read(name) for name in z.namelist()}
-    expected={'Exec-of816.xex','system.atr','altirraos-816.rom','ALTIRRAOS-LICENSE.txt',
-        'OF816-LICENSE.txt','EXEC816-GPL-3.0.txt','EXEC816-MIT.txt','EXEC816-LICENSING.md','README.txt','SHA256SUMS'}
+    expected={'Exec-of816.xex','system.atr','altirraos-816.rom','README.txt','SHA256SUMS'}
+    expected.update('licenses/'+name for name in
+        ('ALTIRRAOS-LICENSE.txt','OF816-LICENSE.txt','EXEC816-GPL-3.0.txt','EXEC816-MIT.txt','EXEC816-LICENSING.md'))
     expected.update('gem-vdi/'+name for name in GEM_FILES)
     require(set(files)==expected,'Unexpected distribution members')
     hashes=dict(line.split('  ',1)[::-1] for line in files['SHA256SUMS'].decode().splitlines())

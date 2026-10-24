@@ -38,6 +38,7 @@
     "RAW_SLOTS": 64,
     "SOURCE_POINTER": 3,
     "POINTER_ST": 1,
+    "POINTER_PORT": 2,
     "POINTER_RAW_SLOTS": 64,
     "POINTER_RELATIVE": 2,
     "RELATIVE": 4,

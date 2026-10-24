@@ -7,7 +7,7 @@ Extract this ZIP into a new folder. Requires AltirraSDL with the 65C816
 high-memory extension used by Exec816. Select Atari 800XL, PAL, BASIC off,
 plain 65C816 at 8x (14.28 MHz), shadow ROMs enabled, 64K base RAM and 63 high
 banks (4 MiB total). Select the included altirraos-816.rom as XL/XE OS.
-Add VBXE FX 1.26 at D6xx with private 512K VRAM, and ST Mouse on port 1.
+Add VBXE FX 1.26 at D6xx with private 512K VRAM, and ST Mouse on port 2.
 Disable keyboard joystick maps, SIO patches, burst I/O and fast boot.
 Remove IDE Plus, U1MB and Rapidus.
 

@@ -1,4 +1,4 @@
-; ST quadrature capture. IRQ owns phase/counters/head; Tasks own tail and
+; ST quadrature capture on joystick port 2 (PORTA high nibble, TRIG1). IRQ owns phase/counters/head; Tasks own tail and
 ; normalization. Every native transaction saves I and masks IRQ. A nested NMI
 ; preserves interrupted I and cannot schedule across IRQ_DEPTH/Forbid. No PIA,
 ; paddle, trigger-latch or SKCTL writes are made by this backend.
@@ -81,9 +81,12 @@ pointer_claim:
     sep #$20
     jsr pointer_history_reset
     lda f:$d300
-    and #15
+    lsr
+    lsr
+    lsr
+    lsr
     sta f:PI+62
-    lda f:$d010
+    lda f:$d011
     and #1
     eor #1
     sta f:PI+63
@@ -181,9 +184,12 @@ pointer_sample:
 :
 pointer_port_read:
     lda f:$d300
-    and #15
+    lsr
+    lsr
+    lsr
+    lsr
     sta f:PI_NEW_PHASE
-    lda f:$d010
+    lda f:$d011
     and #1
     eor #1
     sta f:PI_NEW_BUTTONS

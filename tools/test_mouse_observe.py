@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""M0: emitted read-only observation of the existing ST/port 1 model."""
+"""M0: emitted read-only observation of the existing ST/port 2 model."""
 import argparse
 import json
 import os

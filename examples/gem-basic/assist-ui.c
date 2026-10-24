@@ -27,7 +27,7 @@ static const OBJECT dialog[]={
 static WORD current(const struct BasicEditor *e)
 { return ui.data==e->document.data && ui.index.generation==e->document.generation; }
 static void status(struct BasicEditor *e,const char *text)
-{ strncpy(e->status,text,80);e->status[80]=0;BasicEditorDamage(e,0,BASIC_LINES); }
+{ BasicEditorStatus(e,text); }
 static void count_visible(const struct BasicEditor *e)
 {
     UWORD i;ui.visible=ui.sourceLines=e->document.lines;

@@ -8,8 +8,9 @@ from package_demo import BITMAP_FILES,GEM_FILES,LICENSE_FILES
 
 def extract(bundle,out):
     archive=bundle/'exec816-demo.zip'
-    expected={'Exec-of816.xex','system.atr','altirraos-816.rom','ALTIRRAOS-LICENSE.txt',
-        'OF816-LICENSE.txt','README.txt','SHA256SUMS',*LICENSE_FILES}
+    expected={'Exec-of816.xex','system.atr','altirraos-816.rom','README.txt','SHA256SUMS'}
+    expected.update('licenses/'+name for name in
+                    ('ALTIRRAOS-LICENSE.txt','OF816-LICENSE.txt',*LICENSE_FILES))
     expected.update('bitmap-console/'+name for name in BITMAP_FILES)
     if 'graphics' in json.loads((bundle/'demo-manifest.json').read_text()):
         expected.update('gem-vdi/'+name for name in GEM_FILES)
@@ -49,7 +50,8 @@ def run(bundle,out,case):
         monitor=out/'of816';monitor.mkdir(exist_ok=True)
         record=json.loads((bundle/'of816/of816.json').read_text())
         for name in ('Exec-of816.xex','system.atr','altirraos-816.rom','ALTIRRAOS-LICENSE.txt','OF816-LICENSE.txt'):
-            shutil.copyfile(extracted/name,monitor/name)
+            source=extracted/('licenses/'+name if name.endswith('-LICENSE.txt') else name)
+            shutil.copyfile(source,monitor/name)
         record['exec_build']=str(program)
         record['media']['manifest_sha256']=sha256(program/'demo-manifest.json')
         (monitor/'of816.json').write_text(json.dumps(record,indent=2)+'\n')

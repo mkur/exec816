@@ -135,7 +135,7 @@ PROC Main()
   mouseConfig.source=INPUT.SOURCE_POINTER
   mouseConfig.wakeMask=$10000
   mouseConfig.pointerProtocol=INPUT.POINTER_ST
-  mouseConfig.pointerPort=1
+  mouseConfig.pointerPort=INPUT.POINTER_PORT
   mouseConfig.maxX=200
   mouseConfig.maxY=200
   Require(INPUT.Acquire(@mouse,@mouseConfig)=INPUT.OK)

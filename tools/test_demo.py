@@ -21,7 +21,7 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None,diagnostic_media_sha256=None,companion_overrides=None,omit_media=(),boot_verbose=False,sio_peer=None,emulator_output=None):
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None,diagnostic_media_sha256=None,companion_overrides=None,omit_media=(),boot_verbose=False,sio_peer=None,emulator_output=None,boot_route=None):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
     require(disk_failure in (None,'missing','missing-work','wrong'),'Unknown disk failure')
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
@@ -57,8 +57,13 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     shell_cells=width*(height if shell_only else height-6)
     screenshots=[];commands=[]
     boot_image=None
+    require(boot_route in (None,'atr','xex'),'Unknown boot route')
+    require(boot_route!='atr' or manifest.get('bootable_atr'),'ATR boot requires a combined disk')
+    if bootstrap is None and manifest.get('bootable_atr') and boot_route!='xex':
+        from test_bootable_atr import DiskBoot
+        bootstrap=DiskBoot(out)
     if bootstrap is None and (disk_boot or showcase or editing or ((boot_smoke or disk_failure) and (shell_only or distribution_root is not None))):
-        boot_image=distribution_root/'Exec-of816.xex' if distribution_root is not None else out/manifest['boot_image']
+        boot_image=distribution_root/'Exec-of816.xex' if distribution_root is not None else out/'of816/Exec-of816.xex'
         boot=json.loads((out/manifest['boot_manifest']).read_text())
         require(sha256(boot_image)==boot['xex_sha256'] and
                 sha256(out/'program.xex')==boot['exec_xex_sha256'],'Changed OF816 demo image')
@@ -1190,6 +1195,7 @@ if __name__=='__main__':
     parser.add_argument('--distribution-root',type=Path,help='Use boot image, ROM and disks extracted from the distribution ZIP')
     parser.add_argument('--rom-override',type=Path,help='Explicit diagnostic firmware override; does not qualify a platform')
     parser.add_argument('--disk-boot',action='store_true',help='Use Altirra Disk Boot for the XEX (requires SYS on D2-D7)')
+    parser.add_argument('--boot-route',choices=('atr','xex'),help='Select combined ATR boot or the matching external XEX')
     parser.add_argument('--system-drive',type=int,choices=range(1,8),default=1,help='SYS companion drive (default D1)')
     smoke=parser.add_mutually_exclusive_group()
     smoke.add_argument('--stock-smoke',action='store_true')
@@ -1198,6 +1204,6 @@ if __name__=='__main__':
     smoke.add_argument('--editing',action='store_true',help='OF816 boot, physical editing/history, inherited CON, BREAK and EOF')
     smoke.add_argument('--disk-failure',choices=('missing','missing-work','wrong'),help='Check offline console and matching-disk recovery')
     smoke.add_argument('--screenshots',action='store_true',help='Capture boot/TASKS and the documented walkthrough through OF816 autoboot')
-    args=parser.parse_args();out=args.bundle.resolve();record=run(out,args.stock_smoke,args.loading_smoke,boot_smoke=args.boot_smoke,showcase=args.screenshots,editing=args.editing,disk_failure=args.disk_failure,distribution_root=args.distribution_root,rom_override=args.rom_override,disk_boot=args.disk_boot,system_drive=args.system_drive)
+    args=parser.parse_args();out=args.bundle.resolve();record=run(out,args.stock_smoke,args.loading_smoke,boot_smoke=args.boot_smoke,showcase=args.screenshots,editing=args.editing,disk_failure=args.disk_failure,distribution_root=args.distribution_root,rom_override=args.rom_override,disk_boot=args.disk_boot,system_drive=args.system_drive,boot_route=args.boot_route)
     (out/(args.disk_failure+'-disk-results.json' if args.disk_failure else 'editing-results.json' if args.editing else 'screenshots-results.json' if args.screenshots else 'stock810-results.json' if args.stock_smoke else 'loading-results.json' if args.loading_smoke else 'demo-results.json')).write_text(json.dumps(record,indent=2)+'\n')
     print('Packaged demo walkthrough passed')

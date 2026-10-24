@@ -87,7 +87,8 @@ class CartridgePackageTests(unittest.TestCase):
 
     def test_demo_preserves_all_released_files_and_whitelists_outputs(self):
         original = {'Exec-of816.xex':self.raw, 'system.atr':b'unchanged disk',
-                    'altirraos-816.rom':b'unchanged firmware', 'README.txt':b'original guide'}
+                    'altirraos-816.rom':b'unchanged firmware', 'README.txt':b'original guide',
+                    'licenses/EXEC816-GPL-3.0.txt':b'original licence'}
         sums = ''.join(f'{cart.digest(data)}  {name}\n' for name,data in original.items()).encode()
         source = self.root/'source.zip'
         with zipfile.ZipFile(source,'w') as z:
@@ -98,6 +99,9 @@ class CartridgePackageTests(unittest.TestCase):
         with zipfile.ZipFile(out/'exec816-demo.zip') as z:
             files = {n.removeprefix('exec816-demo/'):z.read(n) for n in z.namelist()}
         for name,data in original.items():self.assertEqual(files[name],data)
+        for name in ('EXEC816-GPL-3.0.txt','EXEC816-MIT.txt','EXEC816-LICENSING.md'):
+            self.assertIn('licenses/'+name,files)
+            self.assertNotIn(name,files)
         self.assertFalse(any(n.endswith(('.o','.lst','.json','.map')) for n in files))
         for line in files['SHA256SUMS'].decode().splitlines():
             sha,name = line.split('  ',1)

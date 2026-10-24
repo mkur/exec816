@@ -40,7 +40,7 @@ def build_abi(output, optimize, input_diagnostics=False):
                               for name in ('main', 'stage', 'config', 'event', 'lease', 'ExecInputEntries')))
     source = output/'launcher.act'
     source.write_text(read_source(ROOT/'tests/programs/input_abi_launcher.act', {'c-image.inc': include}))
-    program = build(compiler(ROOT/'build/actionc'), source, output/'program',
+    program = build(compiler(ROOT/'build/actionc',release=True), source, output/'program',
                     optimize=optimize, tasks=True, task_capacity=8, console=False,
                     foreign_image=foreign, input_diagnostics=input_diagnostics)
     return program, foreign
@@ -63,6 +63,8 @@ def run(output, mode, case='abi', replay=False, input_diagnostics=False):
         require(program['build']['optimize'] == (mode == 'opt'), 'Wrong compiler mode')
         memory = program['build']['memory']
         baseline = current_task_memory()
+        from task_capacity import configure
+        configure(baseline,memory['task_capacity'])
         for key in ('bank_zero_budget', 'task_pools', 'runtime_reservations', 'phase_reservations'):
             require(memory[key] == baseline[key], 'Input changed '+key)
         report.update(build=program['build'], pin=PIN, harness_sha256=sha256(Path(__file__)),

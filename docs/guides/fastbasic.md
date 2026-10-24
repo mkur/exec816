@@ -67,6 +67,11 @@ FBC CALC.BAS CALC.COM
 CALC
 ```
 
+The [SINE.BAS sample](../../examples/fastbasic/SINE.BAS) draws a text-mode sine
+wave using floating-point math, loops and strings. Run `FB WORK:SINE.BAS`, or
+open it in the workbench with floating-point mode selected and press Ctrl+Return.
+Demo builds include it in WORK: alongside the other examples.
+
 The supplied CALC prints 3.75, 9 and 1. Compile DECIMAL.BAS with FBC to try
 decimal INPUT. Bare FBC prompts for source/output names, like FBCI. The smaller
 FBCI compiler accepts integer/string programs; FBC adds six-byte Atari numbers,

@@ -25,6 +25,10 @@ G4BENCH_NOTICES = ('G4BENCH-COPYING.txt','G4BENCH-COPYING.LIB.txt',
                   'G4BENCH-LICENSING.md','G4BENCH-PROVENANCE.txt')
 QED_NOTICES = ('QED-NOTICE.txt','QED-TERMS.txt','QED-COPYING.LIB.txt',
                'QED-APACHE-2.0.txt','QED-PROVENANCE.txt')
+ROOT_NOTICES = {*LICENSE_FILES, *GEM_NOTICES, *CALCULATOR_NOTICES,
+                *G4BENCH_NOTICES, *QED_NOTICES, 'OF816-LICENSE.txt',
+                'FASTBASIC-COPYING.txt', 'FASTBASIC-NOTICES.txt',
+                'SDX-UTILITIES-NOTICE.txt'}
 
 
 def ide_only_guide(bitmap=False):
@@ -40,14 +44,14 @@ def ide_only_guide(bitmap=False):
 def bootable_guide(bitmap=False):
     return (ROOT/'docs/bootable-atr-distribution.txt').read_text().replace('@DISPLAY_REQUIREMENTS@',
         'Graphical builds require a VBXE FX core at $D600 with private 512K VRAM\n'
-        'and an ST mouse on joystick port 1.'
+        'and an ST mouse on joystick port 2.'
         if bitmap else 'This build uses the standard Atari text display.')
 
 
 def split_guide(drive,bitmap=False):
     return (ROOT/'docs/fujinet-split-distribution.txt').read_text().replace('@SYSTEM_DRIVE@',str(drive)).replace('@DISPLAY_REQUIREMENTS@',
         'Graphical builds require VBXE FX at $D600 with private 512K VRAM and\n'
-        'an ST mouse on joystick port 1.' if bitmap else 'This build uses the standard Atari text display.')
+        'an ST mouse on joystick port 2.' if bitmap else 'This build uses the standard Atari text display.')
 
 
 def pointer_description(profile):
@@ -90,10 +94,21 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
     manifest_path=bundle.parent/'demo-manifest.json'
     demo_manifest=json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     demo=demo_manifest
+    if demo.get('cartridge'):
+        cart=demo['cartridge']
+        if cart['input_xex_sha256']!=record['xex_sha256']:
+            raise ValueError('Cartridge does not match the packaged XEX')
+        for name,digest in cart['files'].items():
+            content=(bundle.parent/'cartridge'/name).read_bytes()
+            if hashlib.sha256(content).hexdigest()!=digest:
+                raise ValueError('Changed cartridge image: '+name)
+            files['cartridge/'+name]=content
+        files['cartridge/README.txt']=(ROOT/'docs/cartridge-distribution.txt').read_bytes()
     if demo_manifest.get('fastbasic'):
         upstream=ROOT/'build/fastbasic/source'
         files['FASTBASIC-COPYING.txt']=(upstream/'LICENSE').read_bytes()
         files['FASTBASIC-NOTICES.txt']=(ROOT/'ports/fastbasic/NOTICE.txt').read_bytes()
+    if demo_manifest.get('sdx',{}).get('enabled'):
         files['SDX-UTILITIES-NOTICE.txt']=(ROOT/'ports/fastbasic/SDX-NOTICE.txt').read_bytes()
     for name, source in LICENSE_FILES.items():
         files[name] = (ROOT/source).read_bytes()
@@ -144,10 +159,11 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
         guide=split_guide(record['boot_config']['system_drive'],demo_manifest.get('bitmap',False))
         if demo_manifest.get('basic_workbench'):
             guide+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
-    if (text_shell is not None or bitmap_shell is not None) and demo.get('sdx',{}).get('enabled'):
+    if demo.get('sdx',{}).get('enabled'):
         config=demo['sdx']
-        guide += ('\nSDX utility support: pinned MD5, ARC and EDX.\n'
-                  'The utility disk is supplied separately from this boot ZIP.\n'
+        guide += ('\nSDX utility support: pinned MD5, ARC and EDX.\n'+
+                  ('MD5, ARC, EDX, their manuals and ARC overlays are in SYS:C/.\n'
+                   if config.get('bundled') else 'The utility disk is supplied separately from this boot ZIP.\n')+
                   f'Guest A: files use {config["drive_a"]}; ARC overlays use {config["car_root"]}.\n'
                   'EDX accepts a filename or opens a blank document. Ctrl-S saves;\n'
                   'Return confirms the name; Escape exits. Bell and live resize\n'
@@ -184,6 +200,13 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
                 raise ValueError(f'Changed bitmap artifact: {name}')
             files['bitmap-console/'+name] = content
         guide += '\nOptional bitmap shell preview: see bitmap-console/README.txt.\n'
+    # Keep upstream notice bytes together, including their relative references.
+    # Optional previews retain the notices beside their own README and binaries.
+    for name in sorted(({rom['license']} | ROOT_NOTICES) & files.keys()):
+        destination = 'licenses/'+name
+        files[destination] = files.pop(name)
+        guide = guide.replace(name, destination)
+    guide += '\nLicenses and third-party notices are in licenses/.\n'
     files['README.txt'] = guide.encode('utf-8')
     files['SHA256SUMS'] = ''.join(
         f'{hashlib.sha256(content).hexdigest()}  {name}\n'

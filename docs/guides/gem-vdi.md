@@ -28,7 +28,7 @@ VBXE IRQ. Mount **`gem-vdi/graphics.atr`** as drive 1 and load
 burst and random delay disabled and accurate sector timing enabled. The exact
 emulator/ROM hashes and settings are in the [platform pin](../../toolchain/altirra-gem-vdi.json).
 
-Enable **Mouse → ST Mouse (port 1)** in Altirra's input maps and disable other
+Enable **Mouse → ST Mouse (port 2)** in Altirra's input maps and disable other
 maps that drive that port. Use **Capture Mouse** (F12 in the pinned SDL build) to
 send host motion; Right Alt / Right Option releases capture. Opening a menu or
 losing window focus also releases it. The driver uses one pixel per electrical

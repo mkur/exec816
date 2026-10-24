@@ -1,0 +1,651 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-24",
+  "base_revision": "bae53eaebec2c8601ec82e14e7f0c6b6130f69ef",
+  "working_tree": true,
+  "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "compiler_override": false,
+  "source_inputs": {
+    "examples/gem-basic/assist-ui.c": "3688e3b3d6a4b326dc754453e15e56c7f4a7e2ea1d2a1759db8f1c65e61838a4",
+    "examples/gem-basic/assist-ui.h": "5b1e8601009baba24112980814a5d21cda162efd356cb7bd257f110eee9667dd",
+    "examples/gem-basic/assist.c": "a043bd11752d50d767a047532a1d3bf717c6133c9b9d1e66305e9dfd1cf45c76",
+    "examples/gem-basic/assist.h": "1023ee67fea2c63064f878a3ad8e57444baad1a0036590f2490b7825b7e5376d",
+    "examples/gem-basic/basic.c": "3b030474850a73de291994041e1a93ec8937ef90419f023feeaa5f10a8acf8ce",
+    "examples/gem-basic/basic.h": "711e3af6f644898a82139d503577ea8fa73eb40de9c7b8abaf2ebdbae3c73a8d",
+    "examples/gem-basic/build-job.h": "eac2726254e1cb3d8628d57c2fa44ed9f66ea6ab519ef66122a341cb89fd3fde",
+    "examples/gem-basic/build.c": "74a7645f0eff64f5cb0a930c1bacd5b42c19646e36cffe56a91efa8750b83787",
+    "examples/gem-basic/build.h": "930f28c56a3723a4e20ecd07bae8570a2cde454a7be35adb3e29bde5bb952a9a",
+    "examples/gem-basic/document.c": "3db298950e73b396f0437c724cf9759cbf2fe21646f49e5c21f0fdff50393b24",
+    "examples/gem-basic/document.h": "e264a4d133e06fc14d152e8b5aa3ab7d761af4d95f18f2324eb97447e87454a9",
+    "examples/gem-basic/editor-paint.c": "60c302bec9a36c0d1035ce72e6b06569e307afcc2692f68e6dce84d77bfcb14e",
+    "examples/gem-basic/editor.c": "609efd11c75d0df9156c9ac0a7ea32ef91607f0f1d0f4a32b2255c246e1d2ec9",
+    "examples/gem-basic/editor.h": "af1de3522bb25da2df8024a14548826b62cd2bdcec7c6b580c78f32f6e4bf581",
+    "examples/gem-basic/file-ui.c": "5a4e444edec9dd67562a2d5f151f26558dd06d200bd5c24c94f1c01e7e2fe51c",
+    "examples/gem-basic/file-ui.h": "bc6799f4308d45be421a8674d1d04eebe207fec70f38d60e92461a7bc7275ff0",
+    "examples/gem-basic/files.c": "ebd3c9c889f2718870be867f82fa2640a15813557feed15463ebfa3ee5552222",
+    "examples/gem-basic/files.h": "e41524b615180b493dd2145c0c489c5db7bbb60f84c7faa3a8d92eb0464bd23f",
+    "examples/gem-basic/main.c": "3b4747371db396da959505b0daa3906c3eed8eb18a4c3fa1ce0fb319efb9f982",
+    "tests/programs/basic_paint.c": "86b90e5bfc100ac845587b6df8f728fb46981e531b4eabf9cd936248b3fa6bd9",
+    "tests/programs/basic_assist.c": "5bb36f7e5b733b62f9eaa660b030b7ad1ce9c83f1a78acb5c55d1167e6a40b3f",
+    "tests/programs/basic_file_ui.c": "ade37088b8a3d59ecad226e1afdd62ad7bdabc143d7f9b4c7b47fc1333e62fcb",
+    "tools/measure_fastbasic_editor.py": "020873ddcef6acda9671fb037ae5efda894aa6759e333ce6c1e4de9f7eadf305",
+    "tools/test_fastbasic_editor.py": "f2c7ec06f139fc08984966153a592d0609ba43e60671888a5dbd94d8a5747c0f",
+    "tools/test_fastbasic_session_demo.py": "afcb52f1204cd3489b0c40d41030670195798181ab3a5913b5582ca963b685db",
+    "tools/test_twelve_task_demo.py": "907172a83320f54e3f9e332b4af10224c0c64a36cb95cf89c7a25c6991416003",
+    "tools/workbench_interaction.py": "27ad16ae977541f456b31dc294449b66c33aab73a6c8b5284b031a7105c6b926",
+    "tools/build_demo.py": "c3fba2c017b28b321ef37b9e62715a79e38d2ed0f7d99f603c9f1d0935a7d8b8",
+    "examples/fastbasic/SINE.BAS": "f804942a2170961737e5f3f743a9bf2b8abc567e66595fee634e93c86b6f5fce"
+  },
+  "pins": {
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-shell-paced.json": "36b2595acbe19175fddfface675fadfc1bdd52c7ea1ff60ee903d19143c2d087",
+    "abi/c-program.json": "b35b5a687582531b935f3bebe856a7e8122fe5ac24bfb696723c7304dea98997",
+    "ports/fastbasic/upstream.json": "3d68f368e7715cabcd979d55823c6b9fa0a1e9665838158a24e27507e16ec82e"
+  },
+  "checks": {
+    "painter": {
+      "path": "build/fastbasic-refresh/painter-final-damage/results.json",
+      "sha256": "f2c1b678bfe73572ee3d7e96b6a3ddbb67ec4c4ab812c7802ccafa4f807184bd",
+      "status": "pass",
+      "assertions": 66
+    },
+    "logical": {
+      "path": "build/fastbasic-refresh/logical-final/results.json",
+      "sha256": "29f252e436a778a6c38c236ed1d66ff8a70ce0d327a628de0960467852fd1338",
+      "status": "pass",
+      "assertions": 30
+    },
+    "file_controller": {
+      "path": "build/fastbasic-refresh/file-ui/results.json",
+      "sha256": "115b493eb384af1ed041293477bee967d95d7c3364617729caae4dc230297164",
+      "status": "pass",
+      "assertions": 103
+    },
+    "assistance": {
+      "path": "build/fastbasic-refresh/assist-final/results.json",
+      "sha256": "37552c6442cbde5d7b41ee390dc8034fd848cb2c9eb426e7c9d401cb7ad179f0",
+      "status": "pass",
+      "assertions": 512
+    },
+    "physical": {
+      "path": "build/fastbasic-refresh/interaction/physical/results.json",
+      "sha256": "dea81f17c8f572fd3e141e4557f65a362a5f8632b9128641e1c51afdc30d2eed",
+      "status": "pass",
+      "assertions": [
+        28
+      ],
+      "pixel_cases": 11
+    },
+    "baseline": {
+      "path": "build/fastbasic-refresh/baseline-final/results.json",
+      "sha256": "b306deb3f9c4866acd3b473f6619e1fd8f7d95c48346ef46334c0a6f7708b11e",
+      "status": "pass"
+    },
+    "latency": {
+      "path": "build/fastbasic-refresh/final-latency/results.json",
+      "sha256": "a5dacb6e0553ae748d1e8209ef76bcc1bcbf15af4ea422f35ea5e7f1bfe70300",
+      "status": "pass"
+    },
+    "loaded_session": {
+      "path": "build/fastbasic-refresh/session-package/persistent-interpreter-results.json",
+      "sha256": "88b992a4969e4d6e9fa8883028530e7c061fe390790c85793a5e96b472e8f0d2",
+      "status": "pass"
+    },
+    "package": {
+      "path": "build/fastbasic-refresh/package-audit-final/results.json",
+      "sha256": "a0f304e509509c966fde9842c551a00e44b024cd6e09193c4c6d35d92ed6ecb2",
+      "status": "pass"
+    },
+    "installation": {
+      "path": "build/fastbasic-refresh/delivery.json",
+      "sha256": "c745fd34f009c9aa1f6651475f09102f913475e4d317ce6e7741bfb19be81634",
+      "status": "pass"
+    }
+  },
+  "host_tests": {
+    "count": 643,
+    "path": "build/fastbasic-refresh/host-complete.log",
+    "sha256": "4c8b5d653a7e1d4f2959c9065be3d8ec8e84f2e0c33cf0c94d194e3d4d341944"
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$e2377dfc02a23f99",
+    "actual_kernel_id": "$e2377dfc02a23f99",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "memory": {
+    "additional_upper_image_bytes": 5120,
+    "private_state_bytes": 5112,
+    "private_reservation_bytes": 5120,
+    "previous_editor_bytes": 1664,
+    "editor_bytes": 6784,
+    "previous_span": 91133,
+    "span": 96253,
+    "previous_rounded_allocation": 91136,
+    "rounded_allocation": 96256,
+    "minimum_stack_bytes": 1312,
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "physical_stack_usage": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 531,
+        "remaining_above_floor": 749
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 167,
+        "remaining_above_floor": 889
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 163,
+        "remaining_above_floor": 893
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 338,
+        "remaining_above_floor": 718
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 166,
+        "remaining_above_floor": 890
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 694,
+        "remaining_above_floor": 362
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 871,
+        "remaining_above_floor": 1433
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 891,
+        "remaining_above_floor": 1413
+      },
+      "8": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 24,
+        "remaining_above_floor": 232
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 295,
+        "remaining_above_floor": 985
+      }
+    },
+    "loaded_stack_usage": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 609,
+        "remaining_above_floor": 671
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 319,
+        "remaining_above_floor": 737
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 149,
+        "remaining_above_floor": 907
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 659,
+        "remaining_above_floor": 397
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 865,
+        "remaining_above_floor": 191
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 607,
+        "remaining_above_floor": 449
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 872,
+        "remaining_above_floor": 1432
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 788,
+        "remaining_above_floor": 1516
+      },
+      "8": {
+        "base": 37904,
+        "bytes": 1312,
+        "peak": 552,
+        "remaining_above_floor": 504
+      },
+      "9": {
+        "base": 39248,
+        "bytes": 1312,
+        "peak": 448,
+        "remaining_above_floor": 608
+      },
+      "10": {
+        "base": 40592,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "11": {
+        "base": 41936,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "12": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 68,
+        "remaining_above_floor": 188
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 301,
+        "remaining_above_floor": 979
+      }
+    }
+  },
+  "performance": {
+    "observer_sha256": "020873ddcef6acda9671fb037ae5efda894aa6759e333ce6c1e4de9f7eadf305",
+    "replay_snapshot_sha256": "ea443ab27dc11e779f8601ee596797e3601e1e45d334c73051a997173c069039",
+    "scope": "Physical key offer to first matching completed scanout; PAL-frame polling gives upper bounds",
+    "baseline": {
+      "append": {
+        "count": 12,
+        "median": 160.44681333955475,
+        "p95": 160.44737721302718,
+        "maximum": 160.44737721302718
+      },
+      "caret": {
+        "count": 12,
+        "median": 120.33511000466605,
+        "p95": 140.39152554558282,
+        "maximum": 140.39152554558282
+      },
+      "pointer_delivery_ms": 441.22873668377554
+    },
+    "updated": {
+      "append": {
+        "count": 12,
+        "median": 80.22368860651359,
+        "p95": 100.27982221069414,
+        "maximum": 100.27982221069414
+      },
+      "caret": {
+        "count": 12,
+        "median": 100.2792583372217,
+        "p95": 100.27982221069414,
+        "maximum": 100.27982221069414
+      },
+      "pointer_delivery_ms": 441.22873668377554,
+      "idle_draws": 0
+    },
+    "cache_samples": [
+      {
+        "operation": "append",
+        "index": 0,
+        "cache": {
+          "glyphs": 3,
+          "status": 1,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "append",
+        "index": 1,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "append",
+        "index": 2,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "append",
+        "index": 3,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "append",
+        "index": 4,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "append",
+        "index": 5,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "append",
+        "index": 6,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "append",
+        "index": 7,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "append",
+        "index": 8,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "append",
+        "index": 9,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "append",
+        "index": 10,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "append",
+        "index": 11,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 0,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 1,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 2,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 3,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 4,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 5,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 6,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 7,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 8,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 9,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 10,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      },
+      {
+        "operation": "caret",
+        "index": 11,
+        "cache": {
+          "glyphs": 2,
+          "status": 0,
+          "publications": 0
+        }
+      }
+    ],
+    "physical_latency": [
+      {
+        "name": "five-character edit to scanout",
+        "frames": 41
+      },
+      {
+        "name": "32767-byte document, one-byte gap moved 32766 bytes, delete to scanout",
+        "frames": 33,
+        "milliseconds": 660,
+        "budget_frames": 120,
+        "peer_progress": 63
+      }
+    ],
+    "baseline_app_sha256": "756c8ee695b484b9af358b0d2d92641df1ca810d4a423d2d50ce3b1278c3661d"
+  },
+  "delivery": {
+    "bundle": "build/fastbasic-refresh/demo-final",
+    "zip_sha256": "514e21f2728673fc050e66bc0580130d7e769309d7c38e6a715d952baae3ca49",
+    "basic_sha256": "ed012e63b3a77b35b5697acaaa157fbd91e10e928c7deb2789ca6504000e13f6",
+    "basic_bytes": 78393,
+    "application_record_sha256": "8cf9171bc7022f04e04ac854f86f84dd9ca06a0d2a57583012b83ca7832380b2",
+    "native_xex_sha256": "6fe58e796f42351d6d4a6a414cada0f7f7f7ce21d405a6222dc7d16a4b844508",
+    "wrapped_xex_sha256": "898fd65df617eb4bb8aa878486467d797d4f0f6fbbea19dcd28bb05415133487",
+    "core_xex_sha256": "2f86a813c6c8d3ab536d4a0b6d99fb52536911d4d7add8d055dd7ec15fdbef94",
+    "atr_sha256": "9dc32f0364c219fc49ab73749f6053b57aec1ca7757b1a45efce7ff61aa49010",
+    "qed_atr_sha256": "950fb236b8a6c00a7efe53e9725aeef28e3ec6b0ccf4c5f4429ada7afd010a26",
+    "unchanged": {
+      "program.xex": true,
+      "of816/Exec-of816.xex": true,
+      "of816/Exec-core.xex": true,
+      "qed.atr": true
+    },
+    "fujinet_installation": "/Users/michalkurcewicz/atari/fujinet-firmware/build/SD/EXEC816",
+    "fastbasic_source": "build/fastbasic-refresh/exec816-fastbasic-source.zip",
+    "fastbasic_source_checksum": "build/fastbasic-refresh/exec816-fastbasic-source.zip.sha256",
+    "qed_source": {
+      "status": "prepared",
+      "tier": "development",
+      "qualification": false,
+      "unresolved": [],
+      "archive": "/Users/michalkurcewicz/action/exec816-commands/build/fastbasic-refresh/qed-source-final/exec816-qed-bae53eaebec2-source-relink.tar.gz",
+      "sha256": "226042fa366d2860800a331d7673079bb8b44290907938eb1d9ef2fa8a413b6f",
+      "source_material_sha256": "fa2c95dc1ee92da409d1b138f5787477bbc9c655b08f648b2137689d07dd434e",
+      "source_revision": "bae53eaebec2c8601ec82e14e7f0c6b6130f69ef",
+      "zip_sha256": "514e21f2728673fc050e66bc0580130d7e769309d7c38e6a715d952baae3ca49"
+    }
+  },
+  "limitations": [
+    "Development checks only; full release matrices were not rerun.",
+    "Pinned AltirraOS 3.44 65816 emulator configuration and 8x8 face only; no physical FujiNet qualification.",
+    "12 samples per operation; PAL-frame polling gives upper bounds.",
+    "Pointer comparison includes scripted idle motion and settling; no busy-pointer percentile.",
+    "Observed stack peaks are not worst-case proofs."
+  ],
+  "investigation": {
+    "broad_backspace_log": "build/fastbasic-refresh/interaction-diagnostic.log",
+    "log_sha256": "25548497780d263ea0a36bd2af5362c88e93311e7461852000ac57bb1a85bbea",
+    "previous_maximum_frames": 140,
+    "previous_reconstructed_cells": 1120,
+    "corrected_maximum_frames": 33,
+    "corrected_peer_advances": 63,
+    "unchanged_maximum_budget_frames": 120
+  },
+  "documentation_check": {
+    "path": "build/fastbasic-refresh/docs-links.json",
+    "sha256": "8197f2df0b88786ec4bda8fa76cd2dfee77a46cc855cbf7102e2f5719d9adab9",
+    "pages": 10,
+    "links": 770,
+    "status": "pass"
+  }
+}

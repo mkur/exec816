@@ -1,0 +1,310 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-24",
+  "base_revision": "bae53eaebec2c8601ec82e14e7f0c6b6130f69ef",
+  "working_tree": true,
+  "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "compiler_override": false,
+  "source_inputs": {
+    "abi/input.json": "f00dc0ffde616b4b8f9e46fba2155ccc88f02e214b49f3e3ce598f5e1affd614",
+    "c/include/exec/input.h": "5bab6fd151ad3fd189d4ae30d2fe58ebdfd510a7cafdde13f4f1737185a0d9bd",
+    "lib/input/input-types.inc": "cc5263cac981d1e1a530e21b85da22ffe5df9974d014005f01ce99822522f9d1",
+    "platform/altirraos/input.inc": "7be51a735ac59939152aa669f56a22e0bcc1d9170e5ede7563b863048e741fac",
+    "platform/altirraos/pointer.s": "235909a4f6edd50923bcf48f41a239b26cf1f6b36aa2e815381359f4c06e8625",
+    "lib/input/input.act": "e23ee45f7521dfdc0fac432b1e4c2102e41147641b4ac944dc0c64f4f8aab84b",
+    "lib/desktop/deskinput.act": "c66fe5b1d34320c4176091b1edf626f6fb52b27958fd1acc0610f6b03e15c0ee",
+    "tools/launch_demo.py": "f249f7f90ed0246395183bdd26770d2f59b91f2cb894e598eacb334a234f3783",
+    "tools/package_demo.py": "22f44bc238e8eeb89c0491fd84c0a71a9b0a7372edf69e22e36c1821e203a5e7",
+    "tools/build_demo.py": "4110e5c37a99c779cc4e054e2a96df5b88b6b70ffc443455f16d37e84c057a2d",
+    "tools/package_qed_source.py": "b6fa8a84c0721bac96502b738091b18e3ceeaedfff06311d68930035e9a7b359",
+    "tools/test_input.py": "37a20676048645779a4b70e0c579f33c7536125f12d56925724528699592e334",
+    "tools/test_mouse_observe.py": "63c819d42c32f1202823b568e8f6723d4004d90ce6bb486b3b8442c29de7cb99",
+    "tools/test_pointer_capture.py": "0496f3bc6190b4029b3083b4fcf309655acffeb87fddd844d0d6bab82ed75ad2",
+    "tools/test_gem_mouse.py": "c068b1563b7476167a65a91f4c4f495b234a9f3ba519d3b0a07f5c868475117a",
+    "tests/programs/mouse_observe.act": "d2b8c611fae62882c84f73d9350e392057b7bb4cda82c06c5f3606e471a04f0e",
+    "tests/programs/pointer_capture.act": "104a9909cfc0218ea6b12fddfa196308d45dd0998f6fe5f86a96829b4aa4e207",
+    "tests/programs/input_abi.c": "33d1b81a189efe6b4ea4ed64c637524264c63fa8a4599667b64e4971c58082ec",
+    "tests/test_demo_launcher.py": "d90d79688c69d9176d17288316db4cb9d0423bf20f0a74b12709bcf46ab0f344",
+    "tests/test_qed_exec_launcher.py": "ea721b68979719b3d64795aa612963155f40a4ecbec64508f1b888fd26ab5cfc",
+    "toolchain/patches/altirra-mouse-observer.patch": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+  },
+  "pins": {
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "toolchain/altirra-shell-paced.json": "c3c18ce0ea70d7e83c4850c8c33e9bfcb05c85ea316dd5b21ee5853a8aa41c36",
+    "toolchain/altirra-ideplus.json": "36e8d204b0caf7f9e9127caf595a2a47e03334e0e1872ac706d3a5ce36ec2123",
+    "toolchain/qed-saving-sio-faults.json": "8d0a6e9c4bcff8d6d3c42d6134caf14ec0bacea9378b0196b9814da03cff4700",
+    "ports/gem4xe/inputs.json": "ae3cea7c132a9e846c8cbfd015368ec4e1c0f3c3db28585317022ea8f3ef6bf0"
+  },
+  "hardware": {
+    "protocol": "ST",
+    "public_port": 2,
+    "internal_port": 1,
+    "phase_register": "PORTA $D300 bits 4..7",
+    "left_button": "TRIG1 $D011 bit 0 active low",
+    "unsupported_pointer_port": 1,
+    "other_port_isolation": true
+  },
+  "checks": {
+    "electrical": {
+      "path": "build/mouse-port2/electrical/results.json",
+      "sha256": "6a4c62e2114091a451b5038e19bb72edb0c66de28c91e718cdb0603f6271aed0",
+      "status": "pass"
+    },
+    "capture": {
+      "path": "build/mouse-port2/capture/results.json",
+      "sha256": "9f608c9fecbdd3980ba9e31efab5a94fe6e6c1d40c2f6514157aa493f9a76b0c",
+      "status": "pass",
+      "assertions": 117
+    },
+    "abi_raw": {
+      "path": "build/mouse-port2/abi-raw-final/results.json",
+      "sha256": "bd4fcee3e59f58444b19b8717f44b8da960848b2eb908d19b193fada1937c71b",
+      "status": "pass",
+      "assertions": 105
+    },
+    "abi_opt": {
+      "path": "build/mouse-port2/abi-opt-final/results.json",
+      "sha256": "5c054a8f3a1e6432072a9cbaad1c0cbd36bf4afb9d513f3a51169ca4acd9007c",
+      "status": "pass",
+      "assertions": 105
+    },
+    "desktop": {
+      "path": "build/mouse-port2/desktop/results.json",
+      "sha256": "977e91772f78db4976d48c8fe2f98dbf7c27899cd5f3055b7d06308c14f868ac",
+      "status": "pass"
+    },
+    "memory": {
+      "path": "build/mouse-port2/memory-comparison.json",
+      "sha256": "ca23a4c1758f61a08f1b9082ee4edd9cab0afe28a44c9c3bef9162862287461a",
+      "status": "pass"
+    },
+    "package": {
+      "path": "build/mouse-port2/package-audit/results.json",
+      "sha256": "68fdc844de6c2bee1b6da4af7b872a81470561516fa2e855aa27de1c28962bdc",
+      "status": "pass"
+    },
+    "installation": {
+      "path": "build/mouse-port2/delivery.json",
+      "sha256": "d3fb5d2790e037654eca0d2d670bf466a97f91d3c2a415cf81000b800ae2da73",
+      "status": "pass"
+    }
+  },
+  "host_tests": {
+    "count": 644,
+    "path": "build/mouse-port2/host-final.log",
+    "sha256": "83db4314535cb886ad52298bc6bed3f05dbc67994180a3eec8afacccabc16e24"
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$a6db39d286f63fb5",
+    "actual_kernel_id": "$a6db39d286f63fb5",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "bridge": {
+    "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "previous_binaries": [
+      "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8"
+    ],
+    "changed_pins": [
+      "toolchain/altirra-gem-vdi.json",
+      "toolchain/altirra-shell-paced.json",
+      "toolchain/altirra-ideplus.json",
+      "toolchain/qed-saving-sio-faults.json"
+    ],
+    "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+  },
+  "memory": {
+    "status": "pass",
+    "comparison": {
+      "bank_zero_budget": true,
+      "task_pools": true,
+      "runtime_reservations": true,
+      "phase_reservations": true
+    },
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    }
+  },
+  "desktop": {
+    "scope": "Cold extracted combined ATR boot, OF816 five-second autoboot, real relative mouse motion/clicks, app launch/edit/Discard, independent scanout, memory/ownership and normal EXIT",
+    "append_samples": 4,
+    "caret_samples": 4,
+    "guards": "intact",
+    "snapshot_replay": false,
+    "application_sha256": "ed012e63b3a77b35b5697acaaa157fbd91e10e928c7deb2789ca6504000e13f6",
+    "stacks": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 617,
+        "remaining_above_floor": 663
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 318,
+        "remaining_above_floor": 738
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 149,
+        "remaining_above_floor": 907
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 663,
+        "remaining_above_floor": 393
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 860,
+        "remaining_above_floor": 196
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 865,
+        "remaining_above_floor": 1439
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 786,
+        "remaining_above_floor": 1518
+      },
+      "8": {
+        "base": 37904,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "9": {
+        "base": 39248,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "10": {
+        "base": 40592,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "11": {
+        "base": 41936,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "12": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 66,
+        "remaining_above_floor": 190
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 295,
+        "remaining_above_floor": 985
+      }
+    }
+  },
+  "delivery": {
+    "bundle": "build/mouse-port2/demo",
+    "zip_sha256": "10732a45020a86f6f0346fde3a58939f7122ffad2f7d8c0f52ddeff26c1499e0",
+    "native_xex_sha256": "33fbc6153d2a1c82c238e876338a0a5aee1bc9bf5ae0b8909591a2bfcebf2d62",
+    "wrapped_xex_sha256": "1314405b0c4e3966d9abdab96a10718effca8043be3564f5f15d797bcb742b06",
+    "core_xex_sha256": "33d8c288805ff0589e0dd1e45c43769085427be22b252430d7df45557e7d7a14",
+    "atr_sha256": "8ed6486142c3311600bfaafd594bb579de40f51e2ba311053292b1c58c8c655c",
+    "qed_atr_sha256": "df0da99c9cdc6c7294fa02400b36a3d55e959438c6489c25695f2ff7c61cbaa2",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "fujinet_installation": "/Users/michalkurcewicz/atari/fujinet-firmware/build/SD/EXEC816",
+    "fastbasic_source": "build/mouse-port2/exec816-fastbasic-source.zip",
+    "fastbasic_source_checksum": "build/mouse-port2/exec816-fastbasic-source.zip.sha256",
+    "qed_source": {
+      "status": "prepared",
+      "tier": "development",
+      "qualification": false,
+      "unresolved": [],
+      "archive": "/Users/michalkurcewicz/action/exec816-commands/build/mouse-port2/qed-source/exec816-qed-bae53eaebec2-working-source-relink.tar.gz",
+      "sha256": "c72ed8a5830c70b95e8ba64e93bd26ec9daedcf8e438a12e80c9da7f5e6e503c",
+      "source_material_sha256": "f75ec9c7d25c17f0b0bc0e50365d8c1f3ca7a0289a17cb93e7a48460514c58fb",
+      "source_revision": "bae53eaebec2c8601ec82e14e7f0c6b6130f69ef",
+      "working_tree": true,
+      "zip_sha256": "10732a45020a86f6f0346fde3a58939f7122ffad2f7d8c0f52ddeff26c1499e0"
+    }
+  },
+  "limitations": [
+    "Development tier only; full release and fault matrices were not rerun.",
+    "Pinned AltirraOS 65816 emulator configuration; no physical hardware qualification.",
+    "The eight desktop samples are an interaction smoke test, not a new performance comparison.",
+    "The unmodified GEM4XE reference retains its donor port-1 setup."
+  ],
+  "documentation_check": {
+    "path": "build/mouse-port2/docs-links.json",
+    "sha256": "a299f6b459fef1079f5fc0d014a2b492d1bead16b61f888a84add36b6809bb3f",
+    "pages": 9,
+    "links": 380,
+    "status": "pass"
+  }
+}

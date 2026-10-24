@@ -107,8 +107,8 @@ def check(layout_directory,cohort_directories,demo_directories,frames_path=None,
         with zipfile.ZipFile(path) as archive:
             names=archive.namelist()
             require((directory/'of816/Exec-of816.xex').is_file() and
-                    all('exec816-demo/'+n in names for n in ['Exec-of816.xex','OF816-LICENSE.txt',
-                        'altirraos-816.rom','ALTIRRAOS-LICENSE.txt','SHA256SUMS']),
+                    all('exec816-demo/'+n in names for n in ['Exec-of816.xex','licenses/OF816-LICENSE.txt',
+                        'altirraos-816.rom','licenses/ALTIRRAOS-LICENSE.txt','SHA256SUMS']),
                     'Demo omitted OF816, matching ROM or notices')
             require(not any(n.lower().endswith(('.elf','.json','.lst','.o','.log')) for n in names),
                     'Development artifacts escaped into distribution')

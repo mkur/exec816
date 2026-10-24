@@ -66,7 +66,7 @@ class BuildSelectionTests(unittest.TestCase):
         from build_demo import bundle
         for selection in ({}, dict(gem_desktop=True, filesystem='mydos'),
                           dict(gem_desktop=True, sector_bytes=128),
-                          dict(gem_desktop=True, system_kib=360)):
+                          dict(gem_desktop=True, system_kib=360, bootable_atr=False)):
             with self.subTest(selection=selection), patch('build_demo.compiler') as compiler:
                 with self.assertRaisesRegex(RuntimeError, 'QED requires'):
                     bundle(Path('/unused'), Path('/unused'), qed=True, **selection)

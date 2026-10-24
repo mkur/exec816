@@ -50,8 +50,10 @@ def distribution(folder, run):
         require(z.testzip() is None, 'ZIP CRC failure')
         files = {n.removeprefix('exec816-demo/'): z.read(n) for n in z.namelist()}
     expected = {'Exec-of816.xex', 'system.atr', 'altirraos-816.rom',
-                'ALTIRRAOS-LICENSE.txt', 'OF816-LICENSE.txt', 'EXEC816-GPL-3.0.txt',
-                'EXEC816-MIT.txt', 'EXEC816-LICENSING.md', 'README.txt', 'SHA256SUMS'}
+                'README.txt', 'SHA256SUMS'}
+    expected.update('licenses/'+name for name in
+                    ('ALTIRRAOS-LICENSE.txt', 'OF816-LICENSE.txt', 'EXEC816-GPL-3.0.txt',
+                     'EXEC816-MIT.txt', 'EXEC816-LICENSING.md'))
     expected.update('gem-vdi/'+name for name in GEM_FILES)
     require(set(files) == expected, 'Wrong ZIP members')
     hashes = dict(line.split('  ', 1)[::-1] for line in files['SHA256SUMS'].decode().splitlines())
@@ -66,9 +68,9 @@ def distribution(folder, run):
     require(hashes['Exec-of816.xex'] == boot['xex_sha256'] and
             hashes['system.atr'] == boot['media']['sha256'] and
             hashes['altirraos-816.rom'] == boot['rom']['sha256'], 'Mismatched OF816 bundle')
-    notices={'EXEC816-GPL-3.0.txt':ROOT/'LICENSE','EXEC816-MIT.txt':ROOT/'LICENSE-MIT',
-             'EXEC816-LICENSING.md':ROOT/'LICENSING.md','OF816-LICENSE.txt':folder/'of816/OF816-LICENSE.txt',
-             'ALTIRRAOS-LICENSE.txt':folder/'of816/ALTIRRAOS-LICENSE.txt',
+    notices={'licenses/EXEC816-GPL-3.0.txt':ROOT/'LICENSE','licenses/EXEC816-MIT.txt':ROOT/'LICENSE-MIT',
+             'licenses/EXEC816-LICENSING.md':ROOT/'LICENSING.md','licenses/OF816-LICENSE.txt':folder/'of816/OF816-LICENSE.txt',
+             'licenses/ALTIRRAOS-LICENSE.txt':folder/'of816/ALTIRRAOS-LICENSE.txt',
              'gem-vdi/GEM-COPYING.txt':folder/'gem-vdi/selected/COPYING',
              'gem-vdi/GEM-COPYING.LIB.txt':folder/'gem-vdi/selected/COPYING.LIB',
              'gem-vdi/GEM-LICENSING.md':folder/'gem-vdi/selected/docs/licence.md'}

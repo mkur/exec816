@@ -4,11 +4,11 @@
 
 This setup runs the native Exec QED on the normal GEM desktop. It includes the
 production APP and English resource on a separate `qed.atr`, plus the main
-system, OF816 and the pinned 65C816 ROM. `system.atr` contains no QED payload.
+system, OF816 and the pinned 65C816 ROM. The preferred `exec816.atr` contains
+SYS and WORK, with no QED payload.
 The separate [GEM4XE reference](gem4xe-qed-reference.md) remains available for
-donor comparisons. This profile uses D1 for SYS, D2 for QED and D8 for WORK.
-Combining `--qed` with `--bootable-atr` or a different `--system-drive` is
-unsupported.
+donor comparisons. This profile uses D1 for the combined system and workspace,
+and D2 for optional QED. ATR, XEX and Atarimax boot share that system image.
 
 ## Launch
 
@@ -41,21 +41,14 @@ build/qed-delivery/separate-disk/launch-qed.command --prepare-only
 ```
 
 It generates private settings from a dedicated seed, using a 65C816 at 8x,
-63 high banks, VBXE and ST Mouse on port 1. It does not edit ordinary emulator
-settings. SYS: in D1 and the optional QED disk in D2 are read-only.
-The main system boots without QED; mount its volume explicitly when needed. WORK: in D8 uses a persistent writable copy
-selected in `build/qed-delivery/separate-disk/altirra/workspace.json`. A new workspace
-creates `altirra/work.atr`; keep that directory with saved work. The selection
-survives replacement of the clean template and setup refreshes. To select an
-existing private disk explicitly, pass `--work /path/to/saved.atr`. Local
-selections move with the workspace; explicitly external disks retain their path.
-A broken selection fails without creating a blank replacement. Old hash-named
-disks need an explicit selection or a recorded prior private mount. Close the emulator
-before opening another instance against the same writable disk.
-
-Keep an existing setup and its saved WORK until you explicitly select that disk
-with `--work`. Earlier caption-preview launch directories keep their original
-selection; building the supported setup does not migrate or modify them.
+63 high banks, VBXE and ST Mouse on port 2. It does not edit ordinary emulator
+settings. The combined system disk in D1 is writable; QED in D2 is read-only.
+The main system boots without QED. WORK: names SYS:WORK on the same disk;
+there is no required D8 disk. The launcher keeps a private writable copy shared
+by ATR, XEX and cartridge launch. Preserve it when updating the distribution,
+and copy saved files into the new system image. The explicit `--split-disks`
+development profile retains a separate D8 WORK disk and its `--work` selector.
+Close the emulator before opening another instance against the same writable disk.
 
 ## Rebuild and verify
 
@@ -83,7 +76,8 @@ follow README.txt's manual setup. The current
 [delivery record](../history/qed-delivery.md) distinguishes new package checks
 from [step 6 coexistence evidence](../development/qed-coexistence-qc4.json).
 Full release qualification remains separate from these development checks.
-Cartridge launching is unsupported by the current twelve-Task memory layout.
+The Atarimax reader retires before the twelve-Task pools are initialized.
+Other cartridge mappers and physical hardware remain outside these checks.
 
 The merged provider and APPs use C ABI 27 and AES wire ABI 18; rebuild them
 together. The console and FastBasic bindings consume 4 KiB of the earlier

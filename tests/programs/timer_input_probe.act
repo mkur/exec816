@@ -24,7 +24,7 @@ PUBLIC BYTE FUNC Start()
   config.source=INPUT.SOURCE_POINTER
   config.wakeMask=$40000000
   config.pointerProtocol=INPUT.POINTER_ST
-  config.pointerPort=1
+  config.pointerPort=INPUT.POINTER_PORT
   config.initialX=100
   config.initialY=100
   config.maxX=639

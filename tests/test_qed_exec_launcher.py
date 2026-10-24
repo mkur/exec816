@@ -29,7 +29,7 @@ class QedExecSetupTests(unittest.TestCase):
             subprocess.run(command,check=True,capture_output=True)
             settings=read_settings(out/'altirra/config/altirra/settings.ini')
             base=settings[PROFILES+r'\00000000']
-            self.assertEqual(json.loads(base['"Input: Active map names"']),'Mouse -> ST Mouse (port 1)')
+            self.assertEqual(json.loads(base['"Input: Active map names"']),'Mouse -> ST Mouse (port 2)')
             self.assertEqual(base['"CPU: Clock multiplier"'],'8')
             self.assertEqual(base['"Memory: High banks"'],'63')
             self.assertEqual([d['tag'] for d in json.loads(json.loads(base['"Devices"']))],['vbxe'])

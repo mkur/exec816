@@ -7,7 +7,7 @@
 .macpack longbranch
 .include "cartridge.inc"
 .export cart_start, cart_init, cart_loader, cart_loaded, cart_failed
-.export cart_calls, cart_segments, cart_remaining, cart_bank, cart_loader_end
+.export cart_calls, cart_segments, cart_remaining, cart_bank, cart_loader_end, cart_bank_mapped
 
 RUNAD = $02e0
 INITAD = $02e2
@@ -46,10 +46,17 @@ copy_stub:
 
 .segment "LOADER"
 cart_loader:
+    jsr disable_cart
+    jsr boot_platform_prepare
+    sei
+    lda #0
+    sta NMIEN
+    sta GINTLK
     lda #1
     sta cart_bank
     ldx cart_bank
     sta $d500,x
+cart_bank_mapped:
     lda #0
     sta RUNAD
     sta RUNAD+1
@@ -191,4 +198,5 @@ cart_bank: .byte 1
 cart_calls: .word 0
 cart_segments: .word 0
 cart_remaining: .faraddr XEX_BYTES
+.include "boot-platform.inc"
 cart_loader_end:

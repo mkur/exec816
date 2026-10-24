@@ -76,7 +76,7 @@ PROC Source(CARD source)
   config.pointerPort=0
   IF source=INPUT.SOURCE_POINTER THEN
     config.pointerProtocol=INPUT.POINTER_ST
-    config.pointerPort=1
+    config.pointerPort=INPUT.POINTER_PORT
   FI
 
   Require(INPUT.Acquire(@lease,@config)=INPUT.OK)

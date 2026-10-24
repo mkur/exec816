@@ -17,9 +17,7 @@ static struct {
 
 static void status(struct BasicEditor *e,const char *text)
 {
-    UWORD n=strlen(text);if (n>80) n=80;
-    memcpy(e->status,text,n);e->status[n]=0;
-    BasicEditorDamage(e,e->first,e->first+e->rows);
+    BasicEditorStatus(e,text);
 }
 static char *decimal(char *p,ULONG value)
 {

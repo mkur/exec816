@@ -11,7 +11,7 @@ a desktop or an AES application environment.
    no shared RAM and no VBXE IRQ. Other cores/bases are unsupported.
 3. Mount gem-vdi/graphics.atr as drive 1. Select physical generic56k disk emulation:
    SIO patch OFF, burst OFF, random delay OFF and accurate sector timing ON.
-4. Enable Mouse -> ST Mouse (port 1); disable conflicting maps for that port.
+4. Enable Mouse -> ST Mouse (port 2); disable conflicting maps for that port.
    Use Capture Mouse (F12 in the pinned SDL build). Right Alt / Right Option
    releases capture; menus and window focus loss also release it.
 5. Load gem-vdi/Exec-gem-vdi.xex directly, not as a shell command. The application
@@ -35,7 +35,7 @@ system.atr and boot the main Exec-of816.xex.
 
 Supported drawing: 640x240, sixteen colors, built-in 8x8 text, polylines, solid
 bars, clipping, clear/update, basic color setters, solid fill and replace mode.
-Native keyboard and ST/port 1 mouse motion/left-button input are supported.
+Native keyboard and ST/port 2 mouse motion/left-button input are supported.
 Motion is one pixel per electrical transition without acceleration. Release and
 press again after input loss. Fast host bursts can lose distance: quadrature
 cannot expose every missed cycle. Supported phases are at least 1 ms apart and

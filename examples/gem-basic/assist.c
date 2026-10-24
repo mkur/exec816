@@ -165,7 +165,12 @@ void BasicLexLine(const struct BasicDocument *d,UWORD line,UBYTE *colors)
     }
 }
 void BasicAssistBegin(struct BasicAssist *a,const struct BasicDocument *d)
-{ memset(a,0,sizeof(*a));a->generation=d->generation;a->open=0xffff; }
+{
+    /* Entries beyond count are inaccessible. New entries initialize their
+     * bounds and terminated name before use; only fold bits need clearing. */
+    a->generation=d->generation;a->scan=a->count=a->overflow=0;a->open=0xffff;
+    memset(a->hidden,0,sizeof(a->hidden));
+}
 WORD BasicAssistStep(struct BasicAssist *a,const struct BasicDocument *d)
 {
     UWORD units=4,line,n;ULONG at,end,start;

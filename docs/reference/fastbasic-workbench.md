@@ -2,6 +2,7 @@
 
 [Reference index](README.md) · [Controls](../guides/fastbasic-workbench.md) ·
 [Development evidence](../history/fastbasic-workbench.md) ·
+[Editor refresh evidence](../history/fastbasic-editor-refresh.md) ·
 [Source Run evidence](../history/fastbasic-interpreter.md) ·
 [Implementation plan](../plans/fastbasic-workbench-implementation-plan.md)
 
@@ -27,9 +28,18 @@ menu storage belong to each application image and survive until AES detach.
 The minimum client area is 288×128 pixels so dirty-document choices fit.
 The editor obtains cell metrics and work geometry from GEM, preserves logical
 caret/selection during geometry and focus changes, pans horizontally to reveal
-the caret and supports a vertical slider. Painting holds UPDATE for at most
-four text rows, releases it and obtains fresh visible rectangles for the next
-unit. Input loss cancels pointer selection. Large gap moves yield in units
+the caret and supports a vertical slider. The editor retains character, syntax,
+selection and caret appearance in a 5,120-byte private upper-RAM reservation.
+Ordinary edits replace changed cell spans without clearing their source row;
+unchanged status text needs no drawing. A paint turn composes at most four source
+rows and reconstructs at most 96 glyph cells across visible fragments, plus
+eight margin-fill fragments. It releases UPDATE and obtains fresh visibility
+for subsequent work. Exposure forces reconstruction even when logical appearance
+is unchanged. Deferred and hidden changes publish once before waiting; hidden
+pixels do not keep the editor polling. Completion reports cover successfully
+drawn pixels, with the public conditional completion shortcut for a wholly
+completed edit. No new Task, timer, public ABI or bank-zero reservation is added.
+Input loss cancels pointer selection. Large gap moves yield in units
 of at most 1 KiB without exposing partial logical text.
 
 The twelve-Task demo starts six public Tasks. BASIC.APP and one interpreter

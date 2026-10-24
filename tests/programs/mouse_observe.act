@@ -7,7 +7,7 @@ TYPE Sample=[
 ]
 
 VOLATILE BYTE porta=$d300
-VOLATILE BYTE trig0=$d010
+VOLATILE BYTE trig1=$d011
 VOLATILE BYTE vcount=$d40b
 VOLATILE BYTE clock=$14
 VOLATILE BYTE stop,stage
@@ -22,8 +22,8 @@ PROC Main()
   previousTrigger=$ff
   stage=1
   WHILE stop=0 DO
-    port=porta & 15
-    trigger=trig0 & 1
+    port=porta RSH 4
+    trigger=trig1 & 1
     IF port<>previousPort OR trigger<>previousTrigger THEN
       IF count=256 THEN
         HEAPCORE.Abort($fb01)

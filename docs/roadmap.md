@@ -33,6 +33,9 @@ has delivered the native GEM editor and Check/Run/Stop/Build controller through
 WB9, completing FB7. The [workbench record](history/fastbasic-workbench.md) retains
 its development evidence and packaged walkthroughs. Source debugging and native
 graphics remain open, with separate acceptance gates.
+The [editor refresh record](history/fastbasic-editor-refresh.md) implements
+retained cells, separate caret/status damage and bounded AES updates, with
+physical key-to-scanout development measurements and exposure/hidden repair checks.
 The [FastBasic source interpreter](plans/fastbasic-interpreter-design.md) now
 runs `.BAS` through FB/FBI in one guest Process. BASIC.APP Run attaches its
 unsaved buffer to the same engine. Translation stays in memory, with no

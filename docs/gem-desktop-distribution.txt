@@ -23,7 +23,7 @@ Extract this ZIP into one folder. In System > Configure System, select:
   Firmware: included altirraos-816.rom, registered as XL/XE OS.
   Internal BASIC disabled.
   VBXE FX 1.26 at $D600, with private 512K VRAM.
-  Input: ST mouse on joystick port 1; left button.
+  Input: ST mouse on joystick port 2; left button.
   SIO Patch and D: burst I/O disabled.
   "Unload disks when booting new image" disabled.
 

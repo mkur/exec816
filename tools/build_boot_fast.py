@@ -11,7 +11,7 @@ ABI=json.loads((ROOT/'abi/boot-sio.json').read_text())
 INPUTS=('abi/boot-sio.json','tools/build_boot_fast.py','tools/build_bootable_atr.py',
         'platform/altirraos/disk-boot-reader.s','platform/altirraos/boot-xex.inc',
         'platform/altirraos/boot-takeover.inc','platform/altirraos/boot-sio.inc',
-        'platform/altirraos/boot-sio-policy.inc')
+        'platform/altirraos/boot-sio-policy.inc','platform/altirraos/boot-platform.inc')
 
 
 def segment(address,data):

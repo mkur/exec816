@@ -86,7 +86,7 @@ metadata. System-drive selection is described below and in the
 ## Try it
 
 Download `exec816-demo.zip` from [Releases](https://github.com/mkur/exec816/releases)
-and extract it. Current builds include OF816, Exec816, system and work disks,
+and extract it. Current builds include OF816, Exec816, a combined system/workspace ATR,
 and the matching ROM. Older release archives have their own enclosed instructions.
 See the [installation guide](../../README.md#installation).
 
@@ -97,13 +97,16 @@ The [pinned machine configuration](../../toolchain/altirra-shell-paced.json) use
 plus 4,032 KiB of native high memory, or 63 banks)**, BASIC disabled, VBI enabled
 and DLI disabled. Upstream Altirra will not run this build.
 
-In **System → Configure System… → Computer → Boot**, uncheck **Unload disks
-when booting new image**. Open **File → Disk Drives…**, use the **…** button on
-the **D1:** row to select `system.atr`, and set **Emulation level** to
-**Generic + 57600 baud**. Mount a disposable copy of `work.atr` in **D8:** with
-writes enabled; both disks must remain present. Under **Computer → Acceleration** in the settings
-window, uncheck **SIO Patch** and **D: burst I/O**. Finally, choose
-**File → Boot Image…** and select `Exec-of816.xex`. The ATR is a data disk.
+Mount a private writable `exec816.atr` in D1 and cold-boot. This is the
+preferred FujiNet route. Optional QED uses its own read-only ATR in D2.
+No D8 disk is required. Use Generic + 57600 baud and disable SIO Patch and
+D: burst I/O. Boot preparation turns internal BASIC off and relocates the
+pinned ROM's BASIC/cart screen before native memory admission.
+
+External `Exec-of816.xex` and the supplied Atarimax CAR files use the same
+system ATR. Uncheck **Unload disks when booting new image** for those routes.
+See the [combined disk guide](bootable-system-atr.md) for launch scripts and
+FujiNet virtual-XEX drive selection.
 
 Leave the keyboard alone to boot automatically. To use the monitor, press a
 normal keyboard key (or BREAK) during the countdown and release it. The cancel
@@ -122,7 +125,7 @@ exec816
 
 The first two calculations print `42` and `81`. The last word starts the shell
 in the upper 18 rows and the independent prime search in the lower six rows.
-Wait for `SYS: -> D1: ready, read-only` and the `>` prompt. Try `HELLO` and
+Wait for `SYS: -> D1: ready, read-write` and the `>` prompt. Try `HELLO` and
 `CAT STORY.TXT | WC`; the latter prints `108 518 3171`. See the
 [standard image guide](demo.md) for other commands and pipes.
 
@@ -136,9 +139,11 @@ EXEC816
 ```
 
 Use the same Generic + 57600 baud profile. D1 can be empty. Startup reports
-`SYS: -> D2: ready, read-only`; C: points to D2:C. Try `C:HELLO` or
+`SYS: -> D2: ready, read-write`; C: points to D2:C. Try `C:HELLO` or
 `C:CAT SYS:STORY.TXT | C:WC`. The old D1 name is not retained.
-WORK: stays on D8, so select D1–D7 for SYS: in this build.
+WORK: follows SYS:WORK on the selected combined disk. Move optional QED to
+another free drive if SYS uses D2. Explicit split-disk development builds keep
+their separate D8 WORK mount.
 The setter validates the full cell and rejects zero, values outside 1..8,
 missing system selection and conflicts with other mounts. Rejection leaves the
 previous request unchanged. The getter reports a request, not mount success.

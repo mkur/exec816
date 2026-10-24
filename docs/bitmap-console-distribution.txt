@@ -43,7 +43,7 @@ The console remains usable in that state, but EXIT parks for reset.
 
 The console uses a steady underline caret. Cooked editing keeps a 36-character
 visible tail, even on this wider display; command history is not implemented.
-A configured ST mouse on port 1 is allowed, but this console draws no pointer.
+A configured ST mouse on port 2 is allowed, but this console draws no pointer.
 Single-buffer drawing can show intermediate updates. An unquiesced hardware
 fault requires reset.
 

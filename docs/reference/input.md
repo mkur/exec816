@@ -2,9 +2,9 @@
 
 [Reference index](README.md) · [Signals and producers](signals.md) ·
 [Console](console.md) · [Keyboard evidence](../history/gem-input.md) ·
-[Mouse evidence](../history/gem-mouse.md)
+[Mouse evidence](../history/gem-mouse.md) · [Port-2 migration](../history/mouse-port2.md)
 
-`INPUT` provides reusable, exclusive keyboard and ST/port 1 pointer sources.
+`INPUT` provides reusable, exclusive keyboard and ST/port 2 pointer sources.
 The console and interactive GEM application use the same implementation. It owns hardware capture
 and route identities; consumers own text translation, focus and interaction.
 It adds no Task, private kernel service or COP signature. The public C surface is
@@ -38,7 +38,7 @@ older configurations are not accepted. `motionInfo` is zero for keyboard
 and absolute-pointer events.
 
 `SOURCE_KEYBOARD=2` and `SOURCE_POINTER=3` admit independent consumers. The
-pointer backend decodes an ST mouse on joystick port 1, including its left
+pointer backend decodes an ST mouse on joystick port 2, including its left
 button. Supply a
 nonzero wake mask whose bits are already allocated to the current Task. Acquire
 copies configuration, retains the consumer and its signal binding, and activates
@@ -58,7 +58,7 @@ routes; it never translates characters or invokes application callbacks.
 
 Keyboard configurations require bytes 16–31 to be zero. Pointer configurations
 require the keyboard filter fields and reserved word to be zero, `pointerProtocol=POINTER_ST=1`
-at offset 16 and `pointerPort=1` at 18. Signed 16-bit `initialX`, `initialY`,
+at offset 16 and `pointerPort=POINTER_PORT` (2) at 18. Signed 16-bit `initialX`, `initialY`,
 `maxX`, `maxY` occupy offsets 20, 22, 24 and 26. Bounds are inclusive, start at
 zero, and must contain the initial position; negative values are malformed.
 The reserved u32 at offset 28 is zero for both sources. Unknown source, protocol
@@ -167,7 +167,7 @@ The console maps generic tags to its focus/foreground records in Task context.
 
 ## ST mouse capture
 
-Timer 1 samples PORTA's low nibble and TRIG0 through the shared platform timer.
+Timer 1 samples PORTA's high nibble (bits 4–7) and TRIG1 ($D011) through the shared platform timer.
 Normal capture is about 3,958.6 Hz on the pinned PAL machine (AUDF1 = 15).
 Short SIO COMMAND and write-turnaround phases use AUDF1 = 7 for their fine
 alarms, with pointer capture on alternate edges. Ordinary disk data transfer
@@ -247,7 +247,7 @@ Loss, cancellation or release elsewhere disarms it. Diagnostic pointer producers
 copy validated records and stop before application storage retires; production
 ships without those producers or injection entry points.
 
-The GEM scene now acquires keyboard and ST/port 1 leases independently. It
+The GEM scene now acquires keyboard and ST/port 2 leases independently. It
 validates the full mouse acquisition/route and current session before forwarding
 records into its private queue. Each turn drains up to eight records from each
 source. Mouse admission failure leaves keyboard controls usable and displays

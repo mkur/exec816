@@ -12,7 +12,8 @@ Other ROMs remain outside this platform contract. The
 [firmware diagnostics](../contributing/building.md#firmware-diagnostics) record
 bounded XLOS boot checks and their setup without extending platform qualification.
 
-The opt-in [SDX Process development profile](../development/sdx-loader.md)
+The [SDX Process development profile](../development/sdx-loader.md), selected
+by default for standalone SIO distributions,
 adds **544 fixed reserved bank-zero bytes** after bootstrap retirement: two
 aligned guest direct pages and two 16-byte outer guards, with no extra padding.
 It adds **0 bytes per native Task, root, kernel or idle**. The loading map and
@@ -112,7 +113,12 @@ and places the 256-byte adapter state at `$0A00–$0AFF`. Both loader and hosted
 entry require the original `MEMLO <= $0A00`; hosted entry checks before writing
 that page. `MEMTOP` must be at least `$BC00`; the loader and hosted entry publish
 `MEMLO=$BC00` until shutdown restores its original value. BASIC must be disabled
-and no cartridge may be mapped. State fields are generated from
+and no cartridge may be mapped at native entry. Boot transport disables BASIC;
+the Atarimax loader switches its cartridge off for INITAD callbacks and RUNAD.
+When the pinned ROM has the BASIC/cart mode-0 allocation at `$9C40`, boot
+preparation reopens E: through CIO with `RAMTOP=$C0`, yielding the real
+`MEMTOP=$BC1F` and screen at `$BC40`. Other inadequate bounds remain errors.
+State fields are generated from
 the profile base and ABI offsets. Larger resident Atari DOS layouts remain
 unsupported; Exec's own DOS/file services are independent of that restriction.
 This boundary does not itself qualify a particular third-party loader.
@@ -511,7 +517,7 @@ timer ownership outside this protocol is incompatible. SIO release restores its
 serial resources while preserving surviving sampling/watchdog demand; last timer release
 restores its vector and silent baseline. Task-side transitions use SWITCHING and
 local IRQ masking, covering asynchronous NMI entry as well as IRQ. The fixed
-ST/port 1 pointer backend uses this clock for public INPUT capture; diagnostic
+ST/port 2 pointer backend uses this clock for public INPUT capture; diagnostic
 sampling counters and test entry points are excluded from production. See
 [mouse development](../history/gem-mouse.md) and the
 [4 kHz development record](../history/mouse-performance.md).

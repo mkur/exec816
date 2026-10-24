@@ -7,8 +7,11 @@ then calls setup through INITAD. OF816 runs next, before the upper-RAM kernel
 payload. Its five-second autoboot or `EXEC816` returns to the reader with RTS.
 Subsequent INITAD callbacks expand the kernel into its final addresses; the
 guarded RUNAD enters it only after every extent is complete. Current builds
-require BASIC disabled and no cartridge; the historical Atarimax wrapper
-conflicts with the high bank-zero Task pools and is unsupported.
+require BASIC disabled and the cartridge unmapped at native entry. The ATR,
+external XEX reader and Atarimax wrapper prepare that state before admission.
+On the pinned ROM, the BASIC/cart mode-0 screen is reopened through CIO above
+the Task pools; arbitrary low memory limits are not increased. The cartridge's
+1 KiB RAM reader at `$9000` retires at RUNAD, before Task pool initialization.
 
 The bootstrap and OF816 remain uncompressed. The host packages kernel copy/code
 extents as independent raw LZ4 blocks, using HC level 12 and up to 65,535 bytes
@@ -141,7 +144,7 @@ timings and development scope are recorded in the
 
 ## Bootable system ATR
 
-The SIO `--bootable-atr` profile cold-boots one 8,192-sector SDFS 2.1 ATR with
+The default standalone SIO profile (`--bootable-atr`) cold-boots one 8,192-sector SDFS 2.1 ATR with
 256-byte data sectors and three short boot sectors. Its first stage loads the
 ordinary, contiguous BOOT.LDR file from a generated locator. That reader follows
 the root EXEC816.XEX file's maps and exact 24-bit length, including fragmentation,
@@ -172,7 +175,15 @@ final progress write finishes before native display snapshot/ownership.
 Native EXIT restores the OS display and parks rather than returning into
 retired reader storage. The boot header's DOSINI selects ROM cold start.
 
-The combined disk mounts once as writable SYS/D1. WORK: is a directory assign;
+The combined disk mounts once as writable SYS/D1. XEX and Atarimax boot use
+that same image and workspace, while QED stays on an optional separate ATR.
+MD5, ARC, EDX, manuals and ARC overlays are included in SYS:C; sample files
+live in WORK. The cartridge reader borrows an additional 1,024 bytes only
+during loading and retires before native initialization; its fixed and per-Task
+runtime reservation deltas are zero. Boot preparation fits the existing reader
+reservations. Enabling SDX by default adds its existing 544 fixed bank-zero bytes
+to a previously SDX-disabled distribution, with zero per-Task/root/kernel/idle
+change. Existing SDX-enabled builds add no runtime reservation. WORK: is a directory assign;
 see [SYS](sys-volume.md). The [guide](../guides/bootable-system-atr.md) covers
 launching, saved data and error messages. Development evidence and transport
 limits are in the [record](../history/bootable-system-atr.md).

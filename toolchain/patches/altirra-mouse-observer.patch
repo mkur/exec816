@@ -117,11 +117,11 @@
 +		for (uint32 i = 0; i < input->GetPresetInputMapCount(); ++i) {
 +			vdrefptr<ATInputMap> map;
 +			if (input->GetPresetInputMapByIndex(i, ~map) &&
-+				!wcscmp(map->GetName(), L"Mouse -> ST Mouse (port 1)")) {
++				!wcscmp(map->GetName(), L"Mouse -> ST Mouse (port 2)")) {
 +				input->AddInputMap(map);
 +				input->ActivateInputMap(map, true);
 +				g_mouse.enabled = true;
-+				return JsonOk("\"map\":\"Mouse -> ST Mouse (port 1)\"");
++				return JsonOk("\"map\":\"Mouse -> ST Mouse (port 2)\"");
 +			}
 +		}
 +		g_mouse.enabled = false;

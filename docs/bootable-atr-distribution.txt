@@ -1,41 +1,67 @@
-Exec816 @VERSION@ bootable system disk
-====================================
+Exec816 @VERSION@ system distribution
+==================================
 
-Mount exec816.atr writable in D1 and cold-boot. No other disk is required.
-The ATR contains the OF816 monitor, kernel, commands, applications and WORK
-directory. Keep a backup: saved programs and settings modify this disk.
+Preferred FujiNet boot: mount exec816.atr writable in D1 and boot it.
+The same ATR contains OF816, the kernel, commands, applications and WORK.
+No D8 disk is required. Keep a backup: saved programs and settings modify it.
+QED, when supplied, lives on a separate optional qed.atr, read-only in D2.
 
-Use the pinned AltirraOS 65816 ROM included here and AltirraSDL, Atari 800XL PAL,
-65C816 at 14.28 MHz, shadow ROMs enabled, 64K base RAM plus 4032K high RAM.
-Disable internal BASIC and remove cartridges. Disable SIO Patch, D: burst I/O
-and fast boot. Use Generic + 57600 baud disk emulation.
+Use the included AltirraOS 65816 ROM, Atari 800XL PAL, 65C816 at 14.28 MHz,
+shadow ROMs enabled, 64K base RAM plus 4032K high RAM. Disable SIO Patch,
+D: burst I/O and fast boot. Use Generic + 57600 baud disk emulation.
 @DISPLAY_REQUIREMENTS@
 
-Leave the keyboard alone for the five-second OF816 countdown, or press a key
-to enter Forth and type EXEC816 when ready. Keep the disk attached throughout
-Forth: loading resumes afterwards. No SYSTEM-DRIVE! override is needed.
+Boot transport disables internal BASIC and reopens the pinned ROM's text
+screen above Exec's Task pools when necessary. Holding OPTION to keep BASIC
+off is unnecessary once the disk reader starts. Arbitrary external cartridges
+cannot be disabled generically; remove them unless booting the supplied
+Atarimax image. That loader switches its own cartridge off before Exec entry.
 
-SYS: and D1: name the same writable volume. C: contains commands, S: contains
-startup scripts, and WORK: names SYS:WORK. RAM: is temporary and disappears on
-reboot. DIR, MOUNT, ASSIGN and HELP show the system. Try:
+All three launch choices use the same writable exec816.atr and WORK directory:
+  ATR: mount it in D1 and cold-boot (preferred on FujiNet).
+  XEX: load Exec-of816.xex with exec816.atr still mounted in D1.
+  Cart: cold-boot the supplied Atarimax CAR with exec816.atr in D1.
+The local launch-altirra.command, launch-xex.command and launch-cart-new.command
+select these routes and reuse the same private writable disk copy.
 
-  HELLO
-  ECHO saved >WORK:TEST.TXT
-  CAT WORK:TEST.TXT
+FujiNet virtual-XEX boot uses its D1 slot for the XEX transport. For that route,
+put exec816.atr writable in D2, interrupt the OF816 countdown, then enter:
+  decimal
+  2 SYSTEM-DRIVE!
+  EXEC816
+The ATR contents are unchanged. If also using QED, put qed.atr in D3 and use
+MOUNT QED: DRIVE 3 FORMAT SPARTA. Ordinary ATR/cart boots use D1 and QED in D2.
 
-WORK files and desktop preferences survive cold boot. EXIT closes the selected
-shell; the final EXIT stops Exec and restores the OS display. Cold-reset to boot
-again. BOOT.LDR and EXEC816.XEX are protected boot files; replace the whole image
-when updating the system, and copy your WORK files into the new image.
+Leave the keyboard alone for OF816's five-second countdown, or press a key
+to enter Forth and type EXEC816 when ready. Keep the disks attached in Forth.
+SYS: and D1: name the same writable volume on the default route. C: contains
+commands, S: startup scripts, and WORK: names SYS:WORK. RAM: is temporary.
 
-With FujiNet, select the ATR from SD in drive slot 1, writable, then boot.
-The matching external Exec-of816.xex is supplied for recovery/development;
-normal startup uses the ATR. The ROM/memory/display requirements still apply.
-Development results and qualification scope are recorded separately.
+Ported SpartaDOS X tools MD5, ARC and EDX, their manuals and ARC overlays are
+installed in SYS:C. Command names work with or without .COM. Try:
+  CD WORK:
+  MD5 ABC.TXT
+  MD5 /C CHECK.MD5
+  ARC
+  ARC L SAMPLE.ARC
+  EDX EDIT.TXT
+EDX: Ctrl-S saves; Return confirms the name; Escape exits. EDX bell and live
+resize are unsupported. The supplied MD5/ARC fixtures and editor text are in
+WORK. Only the pinned ported binaries are supported; see the utility notice.
+
+For the optional QED disk in D2:
+  MOUNT QED: DRIVE 2 FORMAT SPARTA
+  RUN QED:QED.APP WORK:SAMPLE.TXT
+Save documents in WORK:. QED is not required for boot.
+
+WORK files and desktop preferences survive cold boot. Final EXIT restores the
+OS display; cold-reset to start again. BOOT.LDR and EXEC816.XEX are protected.
+When updating, keep your old writable ATR and copy its WORK files into the new
+image. Package refreshes do not migrate user files automatically.
 
 Boot loading negotiates 57600 baud with FujiNet after the small standard-speed
-reader. Interactive Forth gets standard-speed ROM I/O; loading resumes fast
-when you enter EXEC816. Keep FujiNet's HSIO index at 8 for native disk access.
-A failed transfer parks with an error and requires reset. Rebuild with
---boot-sio standard for a standard-speed boot comparison/recovery image;
-this does not change the native 57600 baud disk profile.
+reader. Interactive Forth gets standard-speed ROM I/O; EXEC816 resumes fast
+loading. Keep FujiNet's HSIO index at 8 for native disk access. A failed transfer
+parks with an error and requires reset. --boot-sio standard selects a slower
+boot comparison/recovery reader; it does not change native storage's profile.
+Development checks and physical hardware qualification are separate.
