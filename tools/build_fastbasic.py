@@ -99,8 +99,9 @@ def prepare(output):
     verify_files(original, originals)
     patch = PORT/'patches/exec6502.patch'
     session_patch = PORT/'patches/session.patch'
+    stack_patch = PORT/'patches/resident-stack.patch'
     identities = {str(p.relative_to(ROOT)): sha256(p) for p in
-                  [Path(__file__), ROOT/'tools/generate_fastbasic_math.py', ROOT/'tools/generate_fastbasic_interpreter.py', PORT/'upstream.json', ROOT/'abi/fastbasic.json', ROOT/'abi/fastbasic-interpreter.json', patch, session_patch,
+                  [Path(__file__), ROOT/'tools/generate_fastbasic_math.py', ROOT/'tools/generate_fastbasic_interpreter.py', PORT/'upstream.json', ROOT/'abi/fastbasic.json', ROOT/'abi/fastbasic-interpreter.json', patch, session_patch, stack_patch,
                    *sorted((PORT/'target').glob('*'))] if p.is_file()}
     stamp = output/'port-inputs.json'
     source_stamp = output/'port-source.json'
@@ -122,6 +123,8 @@ def prepare(output):
                 command(['git', 'apply', patch], staging, log)
                 command(['git', 'apply', '--check', session_patch], staging, log)
                 command(['git', 'apply', session_patch], staging, log)
+                command(['git', 'apply', '--check', stack_patch], staging, log)
+                command(['git', 'apply', stack_patch], staging, log)
             shutil.move(staging, source)
         # Only the bootstrap compiler may emit calls to port-owned assembly.
         shutil.copy2(source/'src/syntax/basic.syn', source/'src/syntax/basic-internal.syn')

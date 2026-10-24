@@ -1,5 +1,9 @@
 # MD5 on the SDX personality
 
+The current [resident guest contract](../reference/sdx-runtime.md) and
+[execution record](../history/sdx-resident-stack.md) supersede the earlier
+concurrent-guest execution policy below.
+
 M1/M2 pass development checks with the pinned 6502 SDX 4.50 `MD5.COM` running
 as an ordinary Exec Process. [Manifest](../../compat/sdx/md5-450.json),
 [instruction audit](sdx-md5-audit.json), [M1 record](sdx-md5-m1.json),

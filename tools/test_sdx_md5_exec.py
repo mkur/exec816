@@ -198,8 +198,9 @@ def main():
                 runtime,_=execute(b,program,timeout=240,frame_limit=12000)
             except Exception:
                 print({k:data(b,program['image'],k) for k in ('checks','currentCase','primary','secondary','reason','guestBank','actual')},flush=True)
-                context=b.memdump(0x287a00,512)
-                print('Frame:',context[0xb0:0xf0].hex(),'guest S',context[0x104:0x106].hex(),flush=True)
+                abi=json.loads((ROOT/'abi/sdx.json').read_text())['runtime']
+                context=b.memdump(abi['context_base'],abi['context_bytes'])
+                print('Frame:',b.memdump(int.from_bytes(context[abi['fields']['guest_s']:abi['fields']['guest_s']+2],'little')+1,13).hex(),'guest S',context[abi['fields']['guest_s']:abi['fields']['guest_s']+2].hex(),flush=True)
                 print('DP:',b.memdump(program['build']['memory']['sdx_storage']['dp_base'],256).hex(),flush=True)
                 raise
             ownership(b,program,out)

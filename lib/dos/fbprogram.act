@@ -94,7 +94,7 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
   IF image<>NULL THEN
     state=FBSTATE.Session POINTER(O65MEMORY.Allocate(SIZEOF(FBSTATE.Session)))
     IF state<>NULL THEN
-      state.guest.slot=SDXABI.SLOTS
+      state.guest.slot=SDXABI.IMAGE_SLOTS
       image.extension=BYTE POINTER(state)
       image.release=FBSTATE.Release
       IF capability<>0 THEN
@@ -108,7 +108,7 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
         state.interpreter.capability=capability
       FI
       slot=SDXSTATE.Claim()
-      IF slot<SDXABI.SLOTS THEN
+      IF slot<SDXABI.IMAGE_SLOTS THEN
         state.guest.slot=BYTE(slot)
         state.guest.profile=FBABI.PROFILE
         state.guest.entry=entry

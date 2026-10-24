@@ -1,0 +1,110 @@
+; Exercise retained cells and public counted-write failures at maximum geometry.
+MODULE SDXSCREENTEST
+USE EXEC
+USE DOS
+USE SDXABI
+USE SDXSTATE
+USE SDXSCREEN
+USE SCREENPROBE
+USE HEAPCORE
+
+CARD checks
+BYTE ARRAY frame(14),dp(256),bank(768)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Put(SDXSTATE.Session POINTER state BYTE row,column,value)
+
+  dp($54)=row
+  dp($55)=column
+  frame(SDXABI.FRAME_A)=value
+  Require(SDXSCREEN.Call(state,@frame,4)=0)
+
+RETURN
+
+PROC Main()
+  CARD index,row
+
+  LET state=SDXSTATE.Session POINTER(EXEC.AllocMem(SIZEOF(SDXSTATE.Session),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Require(state<>NULL)
+  state.screen=EXEC.AllocMem(2400,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  Require(state.screen<>NULL)
+  state.screenWidth=80
+  state.screenHeight=30
+  state.screenOpen=1
+  state.dp=@dp
+  state.bank=@bank
+  Require(SDXSCREEN.Call(state,@frame,2)=0)
+  Require(SDXSCREEN.Flush(state)=0)
+  Require(SCREENPROBE.calls=30 AND SCREENPROBE.count=80)
+  FOR index=0 TO 2399 DO
+    Require(state.screen(index)=32)
+  OD
+  SCREENPROBE.calls=0
+  Put(state,29,79,$c1)
+  Put(state,29,79,$c1)
+  Require(SDXSCREEN.Call(state,@frame,3)=0)
+  Require(frame(SDXABI.FRAME_A)=$c1)
+  Require(state.screenFirst(29)=79 AND state.screenEnd(29)=80)
+  SCREENPROBE.failure=1
+  Require(SDXSCREEN.Flush(state)<>0)
+  Require(state.screenFirst(29)=79 AND state.screenEnd(29)=80)
+  SCREENPROBE.failure=2
+  Require(SDXSCREEN.Flush(state)<>0)
+  Require(state.screenFirst(29)=79 AND state.screenEnd(29)=80)
+  SCREENPROBE.failure=0
+  Require(SDXSCREEN.Flush(state)=0)
+  Require(SCREENPROBE.offset=$1d004f AND SCREENPROBE.count=1)
+  Require(state.screenFirst(29)=80 AND state.screenEnd(29)=0)
+  SCREENPROBE.calls=0
+  Require(SDXSCREEN.Flush(state)=0)
+  Put(state,29,79,$c1)
+  Require(SDXSCREEN.Flush(state)=0)
+  Require(SCREENPROBE.calls=0)
+  Put(state,3,5,65)
+  Put(state,3,70,66)
+  Require(state.screenFirst(3)=5 AND state.screenEnd(3)=71)
+  Require(SDXSCREEN.Flush(state)=0)
+  Require(SCREENPROBE.offset=$30005 AND SCREENPROBE.count=66)
+  dp($22)=117
+  dp($2b)=3
+  Require(SDXSCREEN.Call(state,@frame,5)=0)
+  Require(state.screen(244)=65 AND state.screen(309)=66)
+  Require(state.screen(319)=32)
+  Require(state.screenFirst(3)=0 AND state.screenEnd(3)=80)
+  Require(SDXSCREEN.Flush(state)=0)
+  dp($22)=118
+  Require(SDXSCREEN.Call(state,@frame,5)=0)
+  Require(state.screen(245)=65 AND state.screen(310)=66)
+  dp($22)=97
+  dp($2b)=2
+  bank($2bf)=4
+  Require(SDXSCREEN.Call(state,@frame,5)=0)
+  Require(state.screen(165)=65 AND state.screen(230)=66)
+  FOR index=240 TO 319 DO
+    Require(state.screen(index)=32)
+  OD
+  dp($22)=98
+  Require(SDXSCREEN.Call(state,@frame,5)=0)
+  Require(state.screen(245)=65 AND state.screen(310)=66)
+  FOR index=160 TO 239 DO
+    Require(state.screen(index)=32)
+  OD
+  Require(SDXSCREEN.Flush(state)=0)
+  FOR row=0 TO 29 DO
+    Require(state.screenFirst(row)=80 AND state.screenEnd(row)=0)
+  OD
+  EXEC.FreeMem(state.screen,2400)
+  EXEC.FreeMem(BYTE POINTER(state),SIZEOF(SDXSTATE.Session))
+
+RETURN
+
+ENDMODULE

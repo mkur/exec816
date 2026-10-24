@@ -1,6 +1,7 @@
 MODULE SDXTRAPS
 USE SDXABI
 USE SDXSTATE
+USE SDXRUNTIME
 
 PUBLIC BYTE FUNC Install(SDXSTATE.Session POINTER state BYTE POINTER frame)
   CARD handler
@@ -29,25 +30,19 @@ RETURN(0)
 ; Only called after the native service returns and its I/O has settled.
 ; Move the complete frame upwards before selecting the saved caller's stack.
 PUBLIC BYTE FUNC Deliver(SDXSTATE.Session POINTER state BYTE error)
-  BYTE POINTER old,new
-  CARD stack,index
+  BYTE POINTER new
+  CARD stack
 
   IF state.trapCount=0 THEN
     RETURN(0)
   FI
-  old=SDXSTATE.GetFrame(state)
   state.trapCount==-1
   stack=state.traps(state.trapCount).stack-13
-  new=state.context+stack-$100
-  index=13
-  WHILE index<>0 DO
-    new(index)=old(index)
-    index==-1
-  OD
+  SDXRUNTIME.MoveFrame(CARD(state.slot),stack)
+  new=SDXSTATE.GetFrame(state)
   new(SDXABI.FRAME_A)=error
   new(SDXABI.FRAME_P)=new(SDXABI.FRAME_P) OR $80
   SDXSTATE.Word(new,SDXABI.FRAME_PC,state.traps(state.trapCount).handler)
-  SDXSTATE.Word(state.context,SDXABI.FIELDS_GUEST_S,stack)
 
 RETURN(1)
 

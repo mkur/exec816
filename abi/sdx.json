@@ -52,20 +52,21 @@
     "contract": "Native E=0, M=X=0, decimal clear. A=byte count (0..65535); D+$80..82=far source pointer; D+$84..87=internal CRC, initially FFFFFFFF. Updates pointer and CRC, preserves Y/D/DBR/S, clobbers A/X/P. Long return. No IRQ masking. Caller owns scratch and input; split calls are permitted, including across a bank boundary. Final result is state XOR FFFFFFFF."
   },
   "runtime": {
-    "slots": 2,
     "resident_bank": 40,
     "resident_reserved_bytes": 65536,
     "code_offset": 32768,
     "dp_bytes": 256,
     "dp_guard_bytes": 16,
     "context_base": 2652672,
-    "context_bytes": 512,
+    "context_bytes": 16,
     "fields": {
-      "native_s": 256,
-      "native_d": 258,
-      "guest_s": 260,
-      "event": 262,
-      "bank": 264
+      "native_s": 0,
+      "native_d": 2,
+      "guest_s": 4,
+      "event": 6,
+      "bank": 8,
+      "entry": 10,
+      "dp": 12
     },
     "frame": {
       "dbr": 1,
@@ -97,7 +98,30 @@
     "kernel_event": 37,
     "rawcon_event": 40,
     "rawcon_base": 62976,
-    "rawcon_count": 6
+    "rawcon_count": 6,
+    "state": {
+      "lease": 2652194,
+      "anchor": 2652196,
+      "phase": 2652198,
+      "rom_depth": 2652200,
+      "gate": 2652202,
+      "rom_nmis": 2652204
+    },
+    "phases": {
+      "free": 0,
+      "entering": 1,
+      "guest": 2,
+      "service": 3,
+      "retiring": 4
+    },
+    "stack_floor": 272,
+    "rom_reserve": 128,
+    "image_slots": 2,
+    "active_contexts": 1,
+    "arc_stack_pc": 63168,
+    "arc_stack_event": 46,
+    "arc_stack_minimum_s": 416,
+    "arc_stack_store_offset": 3772
   },
   "guest_services": {
     "COMTAB": {

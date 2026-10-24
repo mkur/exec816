@@ -39,12 +39,14 @@ PUBLIC BYTE FUNC DirectPage(CARD site BYTE overlay)
 RETURN(site=SDXABI.GUEST_START+$2d1)
 
 PUBLIC CARD FUNC Patch(SDXFILE.Layout POINTER plan)
-  SDXPATCH.Patch ARRAY patches(2)
+  SDXPATCH.Patch ARRAY patches(3)
   SDXFILE.Block POINTER block,target
   BYTE ARRAY before0=[$99 $ab $00]
   BYTE ARRAY after0=[$bb $95 $ab]
   BYTE ARRAY before1=[$20 $02 $00]
   BYTE ARRAY after1=[$20 $80 $f5]
+  BYTE ARRAY before2=[$8d $bc $0e]
+  BYTE ARRAY after2=[$20 $c0 $f6]
 
   block=SDXFILE.Find(plan,1)
   IF block=NULL THEN
@@ -63,7 +65,20 @@ PUBLIC CARD FUNC Patch(SDXFILE.Layout POINTER plan)
   patches(1).length=3
   patches(1).expected=@before1
   patches(1).replacement=@after1
+  block=SDXFILE.Find(plan,1)
+  IF block=NULL THEN
+    RETURN(1)
+  FI
+  target=SDXFILE.Find(plan,2)
+  IF target=NULL THEN
+    RETURN(1)
+  FI
+  SDXSTATE.Word(@before2,1,SDXSTATE.ReadWord(@before2,1)+target.placed-target.origin)
+  patches(2).offset=block.placed+3096
+  patches(2).length=3
+  patches(2).expected=@before2
+  patches(2).replacement=@after2
 
-RETURN(SDXPATCH.Apply(plan.bank,@patches,2))
+RETURN(SDXPATCH.Apply(plan.bank,@patches,3))
 
 ENDMODULE

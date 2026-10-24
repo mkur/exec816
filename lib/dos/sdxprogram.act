@@ -52,6 +52,7 @@ PUBLIC PROC Gates(BYTE POINTER bank)
   SDXSTATE.Word(bank,$74f,SDXABI.RAWCON_BASE+128)
   SDXSTATE.Word(bank,$751,SDXABI.RAWCON_BASE+160)
   Veneer(bank,SDXABI.ARC_MULTIPLY_PC,SDXABI.ARC_MULTIPLY_EVENT)
+  Veneer(bank,SDXABI.ARC_STACK_PC,SDXABI.ARC_STACK_EVENT)
   Veneer(bank,SDXABI.KERNEL_PC,SDXABI.KERNEL_EVENT)
   bank($703)=$4c
   SDXSTATE.Word(bank,$704,SDXABI.KERNEL_PC)
@@ -93,7 +94,7 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
       state.slot=$ff
       state.profile=profile
       slot=SDXSTATE.Claim()
-      IF slot<SDXABI.SLOTS THEN
+      IF slot<SDXABI.IMAGE_SLOTS THEN
         state.slot=BYTE(slot)
         image.backingBytes=131071
         image.backing=O65MEMORY.Storage(SIZE(image.backingBytes))

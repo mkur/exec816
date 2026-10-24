@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A4: concurrent MD5/ARC, native peer and SDFS, BREAK, ownership and shell."""
+"""A4: sequential resident MD5/ARC with busy rejection, native peer and SDFS, BREAK, ownership and shell."""
 import argparse,hashlib,json,time
 from pathlib import Path
 from native_program import ROOT,build,compiler,verify_machine,read_build
@@ -30,7 +30,7 @@ def run(out,reuse=False):
     source,payload,original=fixture(out)
     profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=16384
     (out/'memory.json').write_text(json.dumps(profile,indent=2)+'\n')
-    program=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),source,out,tasks=True,task_capacity=8,console=True,console_test=True,sdx=True,sdx_drive_a='D1:',image_data=payload,memory_profile=out/'memory.json',dos_mounts=[dict(alias='RAM',format=3),dict(alias='D1',device='sio.device',unit=49,sectors=1024,sector_bytes=256,format=2,access='readwrite',profile=4)])
+    program=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),source,out,tasks=True,task_capacity=12,console=True,console_test=True,sdx=True,sdx_drive_a='D1:',image_data=payload,memory_profile=out/'memory.json',dos_mounts=[dict(alias='RAM',format=3),dict(alias='D1',device='sio.device',unit=49,sectors=1024,sector_bytes=256,format=2,access='readwrite',profile=4)])
     directory=out/'source';directory.mkdir(exist_ok=True)
     a=bytes((i*37+i//251)&255 for i in range(4096));bb=bytes((i*53+i//113)&255 for i in range(8192))
     for name,raw in {'A.BIN':a,'B.BIN':bb,'FAIL.ARC':original,'SHARE.ARC':original}.items():(directory/name).write_bytes(raw)
@@ -44,7 +44,7 @@ def run(out,reuse=False):
             print({k:data(b,program['image'],k) for k in ['checks','currentCase','primary','secondary','reason','breakTicks','elapsed','peerProgress']},flush=True);raise
         ownership(b,program,out)
         observed={k:int.from_bytes(bytes(data(b,program['image'],k)),'little') for k in ['checks','breakTicks','sessionBytes']}
-        for name,stride in [('elapsed',2),('guestUntouched',2),('peerProgress',4)]:
+        for name,stride in [('elapsed',2),('guestGuardBytes',2),('peerProgress',4)]:
             values=bytes(data(b,program['image'],name));observed[name]=[int.from_bytes(values[i:i+stride],'little') for i in range(0,len(values),stride)]
         for name,count in [('hashOutput','hashBytes'),('shellOutput','shellBytes')]:
             n=int.from_bytes(bytes(data(b,program['image'],count)),'little');observed[name]=bytes(data(b,program['image'],name))[:n].hex()

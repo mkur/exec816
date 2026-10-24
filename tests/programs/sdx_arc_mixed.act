@@ -5,6 +5,7 @@ USE PROCESS
 USE PROGRAM
 USE PROGRAMFILE
 USE PROGRAMIMAGE
+USE SDXRUNTIME
 USE SDXSTATE
 USE SDXABI
 USE HEAPCORE
@@ -19,7 +20,7 @@ INCLUDE "SHELL_INCLUDE"
 ShellContext context
 
 CARD checks,currentCase,breakTicks,sessionBytes
-CARD ARRAY elapsed(4),guestUntouched(8)
+CARD ARRAY elapsed(4),guestGuardBytes(8)
 LONGCARD ARRAY peerProgress(4)
 LONGINT primary,secondary,reason
 VOLATILE LONGCARD peer
@@ -77,17 +78,16 @@ PROC Retired(SDXSTATE.Session POINTER state CARD sample)
   OD
   Require(state.trapCount=0 AND state.enumeration=NULL AND state.writeSlot=0)
   Require(state.overlayActive=0 AND state.tempOwned=0 AND state.backupOwned=0)
-  index=0
-  WHILE index<256 AND state.context(index)=$a5 DO
-    index==+1
+  LET guard=BYTE POINTER(ADDRESS($100))
+  FOR index=0 TO 15 DO
+    Require(guard(index)=$a5)
   OD
-  guestUntouched(sample)=index
-  Require(index>=32)
+  guestGuardBytes(sample)=16
   SDXSTATE.Guards()
 
 RETURN
 
-; Each pair owns distinct images, output streams and retained parent bindings.
+; Retain two private Images, execute sequentially, and reject a busy attempt.
 PROC Pair(CARD number BYTE POINTER firstArgs,secondName,secondArgs BYTE mode)
   PROGRAMIMAGE.Image POINTER first,second
   SDXSTATE.Session POINTER one,two
@@ -116,21 +116,18 @@ PROC Pair(CARD number BYTE POINTER firstArgs,secondName,secondArgs BYTE mode)
   before=peer
   started=Clock()
   peerId=PROCESS.StartBackground(@PeerEntry,NULL,0)
+  IF mode=3 THEN
+    Require(SDXRUNTIME.Acquire(CARD(one.slot))=1)
+    DOS.SelectOutput(output2)
+    secondId=PROCESS.StartBackgroundLoaded(BYTE POINTER(second),secondArgs,ShellLength(secondArgs))
+    Require(secondId<>0)
+    Require(PROCESS.Wait(secondId,@result)<>0)
+    Require(result.primary=20 AND result.secondary=202)
+    SDXRUNTIME.Release()
+    DOS.SelectOutput(output1)
+  FI
   firstId=PROCESS.StartBackgroundLoaded(BYTE POINTER(first),firstArgs,ShellLength(firstArgs))
   Require(peerId<>0 AND firstId<>0)
-  IF mode=3 THEN
-    ready=0
-    attempt=0
-    WHILE ready=0 AND attempt<LONGCARD(500000) DO
-      EXEC.Yield()
-      ready=one.archiveExists<>0
-      attempt==+1
-    OD
-    Require(ready<>0)
-  FI
-  DOS.SelectOutput(output2)
-  secondId=PROCESS.StartBackgroundLoaded(BYTE POINTER(second),secondArgs,ShellLength(secondArgs))
-  Require(secondId<>0)
   DOS.SelectOutput(previous)
   IF mode=2 THEN
     ready=0
@@ -159,12 +156,14 @@ PROC Pair(CARD number BYTE POINTER firstArgs,secondName,secondArgs BYTE mode)
   ELSE
     Require(primary=0 AND secondary=0)
   FI
-  Require(PROCESS.Wait(secondId,@result)<>0)
-  primary=result.primary
-  secondary=result.secondary
-  IF mode=3 THEN
-    Require(primary=20 AND secondary=202)
-  ELSE
+  IF mode<>3 THEN
+    DOS.SelectOutput(output2)
+    secondId=PROCESS.StartBackgroundLoaded(BYTE POINTER(second),secondArgs,ShellLength(secondArgs))
+    DOS.SelectOutput(previous)
+    Require(secondId<>0)
+    Require(PROCESS.Wait(secondId,@result)<>0)
+    primary=result.primary
+    secondary=result.secondary
     Require(primary=0 AND secondary=0)
   FI
   elapsed(number)=Clock()-started

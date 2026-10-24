@@ -136,10 +136,11 @@ def native(out,extraction=False):
         try:runtime,_=execute(b,program,timeout=180,frame_limit=9000)
         except Exception:
             print({k:data(b,program['image'],k) for k in ['checks','currentCase','primary','secondary','reason','guestBank']},flush=True)
-            context=b.memdump(0x287a00,512);bank=context[0x108]*65536
+            abi=json.loads((ROOT/'abi/sdx.json').read_text())['runtime']
+            context=b.memdump(abi['context_base'],abi['context_bytes']);bank=context[abi['fields']['bank']]*65536
             (out/'guest-context.bin').write_bytes(context)
             (out/'guest-bank.bin').write_bytes(b.memdump(bank,65536))
-            print('event',int.from_bytes(context[0x106:0x108],'little'),'guestS',hex(int.from_bytes(context[0x104:0x106],'little')),flush=True)
+            print('event',int.from_bytes(context[abi['fields']['event']:abi['fields']['event']+2],'little'),'guestS',hex(int.from_bytes(context[abi['fields']['guest_s']:abi['fields']['guest_s']+2],'little')),flush=True)
             raise
         ownership(b,program,out)
         counts=bytes(data(b,program['image'],'counts'));raw=bytes(data(b,program['image'],'actual'))

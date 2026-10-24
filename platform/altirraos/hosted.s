@@ -40,6 +40,8 @@
     pla
 .endmacro
 
+.include "sdx-stack.inc"
+
 ; Test builds wait for a real hardware interrupt at one selected transition.
 ; WAI changes no caller register or flags; production PROBE_NMI=0 emits nothing.
 .macro checkpoint number
@@ -355,11 +357,7 @@ return_fault:
     cld
     tsc
     tax
-    and #$ff00
-    cmp #$0100
-    beq already_os
-    lda #OS_STACK_TOP
-    tcs
+    os_stack_enter
 already_os:
     phx                          ; interrupted saved_s, private to this activation
     lda #0
@@ -386,6 +384,7 @@ os_return:
     .endif
     pla                          ; saved_s; no live OS frame remains below it
     tcs
+    os_stack_leave
     .if PREEMPTIVE
         jmp interrupt_schedule
     .endif
@@ -582,8 +581,7 @@ copy_rom_buffer:
     tsc
     tax
     checkpoint 2
-    lda #OS_STACK_TOP
-    tcs
+    os_stack_enter
     checkpoint 3
     phx                          ; saved_s for this serialized call
     lda #0
@@ -612,6 +610,7 @@ copy_rom_buffer:
         adc #256                 ; discard this call's ROM staging buffer
     .endif
     tcs
+    os_stack_leave
     checkpoint 7
     tya
     sta 8,s                      ; replace saved A with function result

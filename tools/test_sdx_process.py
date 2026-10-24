@@ -25,6 +25,7 @@ USE PROGRAM
 USE PROGRAMFILE
 USE PROGRAMIMAGE
 USE SDXSTATE
+USE SDXRUNTIME
 USE HEAPCORE
 USE FSBOOT
 
@@ -75,18 +76,29 @@ PROC Main()
     ; Invalid arguments must roll back Attach without making the Image busy.
     Require(PROCESS.StartLoaded(BYTE POINTER(first),NULL,1,0)=0)
     Require(first.running=0 AND first.references=1)
+    ; A held lease makes native child startup succeed but guest entry fail.
+    Require(SDXRUNTIME.Acquire(CARD(one.slot))=1)
     firstId=PROCESS.StartLoaded(BYTE POINTER(first),NULL,0,0)
     Require(firstId<>0)
     secondId=PROCESS.StartLoaded(BYTE POINTER(second),NULL,0,0)
     Require(secondId<>0)
     Require(PROCESS.StartLoaded(BYTE POINTER(first),NULL,0,0)=0)
+    Require(PROCESS.Wait(firstId,@result)<>0)
+    Require(result.primary=20 AND result.secondary=202)
+    Require(PROCESS.Wait(secondId,@result)<>0)
+    Require(result.primary=20 AND result.secondary=202)
+    SDXRUNTIME.Release()
+    firstId=PROCESS.StartLoaded(BYTE POINTER(first),NULL,0,0)
+    Require(firstId<>0)
     PROGRAM.Unload(first)
-    PROGRAM.Unload(second)
-    ; Dropping the owner cannot release either live Process's private slot.
+    ; The live child and the other loaded Image retain both private DP slots.
     Require(PROGRAM.Load(bytes,MODULE_BYTES)=NULL)
     peer==+1
     Require(PROCESS.Wait(firstId,@result)<>0)
     Require(result.primary=7 AND result.secondary=0)
+    secondId=PROCESS.StartLoaded(BYTE POINTER(second),NULL,0,0)
+    Require(secondId<>0)
+    PROGRAM.Unload(second)
     Require(PROCESS.Wait(secondId,@result)<>0)
     Require(result.primary=7 AND result.secondary=0)
     third=PROGRAM.Load(bytes,MODULE_BYTES)

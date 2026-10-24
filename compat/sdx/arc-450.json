@@ -2,7 +2,7 @@
   "schema_version": 1,
   "personality_abi": 1,
   "id": "arc-450",
-  "revision": 4,
+  "revision": 5,
   "execution_status": "A1-A4-development",
   "audit": "../../docs/development/sdx-arc.md",
   "modules": [
@@ -136,6 +136,27 @@
           "regressions": [
             "arc-a3-create-mutate",
             "arc-library-partial-multiply"
+          ]
+        },
+        {
+          "id": "arc-huffman-stack-entry",
+          "block": 1,
+          "offset": 3096,
+          "expected": "8dbc0e",
+          "replacement": "20c0f6",
+          "intersections": [
+            {
+              "base": 2,
+              "offset": 3097
+            }
+          ],
+          "fixups": [],
+          "reason": "Check resident page-one headroom at every recursive Huffman entry before storing the node low byte.",
+          "contract": "The native gate preserves A/X/Y/P and performs the replaced STA overlayBase+$0EBC on success. Saved frame S below $01A0 returns SDX 158 through ordinary terminal mutation cleanup. Consecutive recursive entries consume at most four guest bytes; no unsafe ROM borrow precedes the check.",
+          "regressions": [
+            "arc-huffman-stack-entry",
+            "arc-create-roundtrip",
+            "arc-mutation-rollback"
           ]
         }
       ],

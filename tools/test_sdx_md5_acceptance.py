@@ -107,7 +107,7 @@ def fixture(out, cancellation=False, metadata=False):
             from sdx_attribute_fixture import attributes
             flags=attributes(out/'input.atr',{'PROT.BIN':1,'HIDDEN.BIN':2,'ARCH.BIN':4,'BOTH.BIN':5})
             (out/'attributes.json').write_text(json.dumps(flags,indent=2)+'\n')
-            source.write_text(source.read_text().replace('  Concurrent()\n',''))
+            source.write_text(source.read_text().replace('  Sequential()\n',''))
     (out/'cases.json').write_text(json.dumps([dict(arguments=a,expected=e.hex(),primary=p,secondary=s)
         for a,e,p,s in cases],indent=2)+'\n')
     return source,[(0x300000,bytes(payload))]

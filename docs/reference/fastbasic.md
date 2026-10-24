@@ -124,8 +124,21 @@ shell and standalone programs retain their dynamic workspace arrangement.
 
 An idle session blocks on its request port while retaining one public Task,
 one of the two shared SDX/FastBasic slots and their existing memory reservations.
+It releases the single page-one execution lease. Other guests and Check/Build
+can execute while BASIC data survives. A live invocation, including INPUT or
+PAUSE, retains the lease through native waits. A second activation returns
+primary 20/cause 202 before parsing or changing BASIC data. RESET and QUIT while
+parked operate only on private resources and do not touch another guest's stack.
 It does not poll or add a kernel operation. Reserved bank-zero changes are zero:
 fixed, root/kernel, every public Task and idle, including guards and padding.
+
+Grammar backtracking uses a 256-byte private-bank buffer with three bytes of
+bookkeeping, bounded to 63 live states. The parser checks CPU state at `$01A4`
+and machine actions at `$01A7` after three temporary saves; excessive syntax nesting
+reports `too long` through the existing parse error result (306). Error reporting
+retires the parser continuation before printing. This protects
+the complete interrupt frame and the pinned ROM borrowing budget. See the
+[resident guest contract](sdx-runtime.md) for headroom and ownership.
 
 ## Supported language and services
 

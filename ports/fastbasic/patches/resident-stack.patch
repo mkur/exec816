@@ -1,0 +1,253 @@
+--- a/src/parse.asm
++++ b/src/parse.asm
+@@ -18,6 +18,8 @@
+ 
+ ; Parser state machine interpreter
+ ; --------------------------------
++
++        .include "fastbasic.inc"
+ 
+         .export parser_resume
+         .exportzp zp_clear_start, zp_clear_end
+@@ -52,6 +54,13 @@
+         .bss
+         .export COMP_DIAG_ERROR
+ COMP_DIAG_ERROR: .res 1
++
++; Grammar backtracking belongs to the parser, not the physical CPU stack.
++; Four bytes per state, at most 63 live states; no page-one continuation.
++parser_state_sp: .res 1
++parser_parent_high: .res 1
++parser_parent_low: .res 1
++parser_states: .res 256
+ 
+         .zeropage
+ buf_ptr:.res 2
+@@ -181,6 +190,10 @@
+ 
+ .proc parser_error
+         sty     COMP_DIAG_ERROR
++        ; No parser continuation survives an error. Retire it before output,
++        ; whose native service may borrow page one for ROM VBI processing.
++        ldx     saved_cpu_stack
++        txs
+         ; Prints error message in Y
+         ; Message is stored shifted, and bit 0 set for the last byte
+ ploop:  lda     error_msg_list, y
+@@ -208,6 +221,8 @@
+         bpl     zp_clear
+ 
+ parser_resume:
++        lda     #0
++        sta     parser_state_sp
+         tsx
+         stx saved_cpu_stack
+ parse_line:
+@@ -277,24 +292,44 @@
+ 
+         ; Parser sub
+ parser_sub:
+-        pha
++        sta     parser_parent_high
+         lda     pptr
+-        pha
++        sta     parser_parent_low
+         stx     pptr
+         sty     pptr+1
++        ldx     parser_state_sp
++        cpx     #252
++        bcc     parser_state_room
++        jmp     too_long
++parser_state_room:
++        lda     parser_parent_high
++        sta     parser_states,x
++        inx
++        lda     parser_parent_low
++        sta     parser_states,x
++        inx
++        stx     parser_state_sp
+         tsx
+-        cpx     #16
+-        bcc     too_long
++        ; Parser-state work has a smaller bound than a machine action.
++        ; Action entry below performs its own complete leaf/interrupt check.
++        cpx     #FB_CPU_STACK_FLOOR
++        bcs     parser_cpu_room
++        jmp     too_long
++parser_cpu_room:
+         ; Always skip WS at start of new token
+         jsr     parser_skipws
+ 
+         ; Process one line of the parser definition
+ ploop_line:
+         ; Store input and output position
++        ldx     parser_state_sp
+         lda     bpos
+-        pha
++        sta     parser_states,x
++        inx
+         lda     opos
+-        pha
++        sta     parser_states,x
++        inx
++        stx     parser_state_sp
+ 
+         ; Parser loop
+ ploop:
+@@ -307,7 +342,9 @@
+         tax
+         bcs     match_char
+         .assert SM_EXIT = 0, error, "SM_EXIT must be 0"
+-        beq     pexit_err
++        bne     parser_operation
++        jmp     pexit_err
++parser_operation:
+         dex
+         .assert SM_RET  = 1, error, "SM_RET must be 1"
+         beq     pexit_ok
+@@ -333,7 +370,9 @@
+         eor     #32 ; To uppercase
+ match:
+         cmp     (bptr),y
+-        bne     ploop_nextline
++        beq     parser_matched
++        jmp     ploop_nextline
++parser_matched:
+         inc     bpos
+         bne     ploop
+ 
+@@ -347,19 +386,26 @@
+ 
+         tay
+         lda     pptr+1
+-        bcs     parser_sub      ; Jump always
++        jmp     parser_sub
+ 
+ pemit_ret:
+         jsr     emit_sub
+ 
+ pexit_ok:
+-        pla
+-        pla
+-        pla
++        ldx     parser_state_sp
++        dex
++        dex
++        dex
++        lda     parser_states,x
+         sta     pptr
+-        pla
++        dex
++        lda     parser_states,x
+         sta     pptr+1
+-        bne     ploop
++        stx     parser_state_sp
++        lda     pptr+1
++        beq     parser_root_ok
++        jmp     ploop
++parser_root_ok:
+ 
+         ; Parser returned, alloc program space
+         jsr     alloc_prog
+@@ -369,7 +415,9 @@
+         inc     bpos
+         lda     (bptr), y
+         eor     #':'            ; Colon: continue parsing line
+-        beq     parse_start     ; jump with A=0
++        bne     parser_line_done
++        jmp     parse_start
++parser_line_done:
+ 
+         ; Current syntax file always checks for EOL at the end of parsing,
+         ; no need to check here
+@@ -382,9 +430,31 @@
+         ; Calls a machine-language subroutine
+         ; NOTE: we always call ML subs with carry clear (C=0)
+ pcall_ml:
++        ; Preserve the target and original C=0 while checking the larger
++        ; action envelope. Three temporary bytes are included in the bound.
++        php
++        pha
++        txa
++        pha
++        tsx
++        cpx     #FB_CPU_STACK_ACTION_FLOOR
++        bcc     action_too_deep
++        pla
++        tax
++        pla
++        plp
+         jsr     call_ax1
+-        bcc     ploop
+-        bcs     ploop_nextline
++        bcs     parser_action_failed
++        jmp     ploop
++parser_action_failed:
++        jmp     ploop_nextline
++
++action_too_deep:
++        pla
++        tax
++        pla
++        plp
++        jmp     too_long
+ 
+         ; Matched a dot (abbreviated statement), skips over all remaining chars
+ matched_dot:
+@@ -392,10 +462,14 @@
+         sty     bpos
+ skip_chars:
+         jsr     parser_fetch
+-        bmi     ploop_nofetch
++        bpl     parser_skip_emit
++        jmp     ploop_nofetch
++parser_skip_emit:
+         cmp     #SM_EMIT_N
+         bcs     skip_chars
+-        bcc     ploop_tax
++        bcs     parser_skip_state
++        jmp     ploop_tax
++parser_skip_state:
+ 
+ call_ax1:
+         pha
+@@ -404,13 +478,16 @@
+         rts
+ 
+ pexit_err:
+-        pla
+-        ; sta     opos  ; // Ignored
+-        pla
+-        ; sta     bpos  ; // Ignored
+-        pla
++        ldx     parser_state_sp
++        dex
++        dex
++        dex
++        lda     parser_states,x
+         sta     pptr
+-        pla
++        dex
++        lda     parser_states,x
++        stx     parser_state_sp
++        cmp     #0
+         beq     set_parse_error
+         sta     pptr+1
+         ; fall through
+@@ -422,10 +499,14 @@
+         bcc     :+
+         sty     bmax
+ :
+-        pla
++        ldx     parser_state_sp
++        dex
++        lda     parser_states,x
+         sta     opos
+-        pla
++        dex
++        lda     parser_states,x
+         sta     bpos
++        stx     parser_state_sp
+ 
+         ldy     #0
+ 

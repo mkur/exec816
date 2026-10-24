@@ -17,6 +17,7 @@ rebuild programs when the ABI changes.
 | Console | [Device](console.md), [instances and windows](console-windows.md), [cooked input](cooked-console.md), [foreground BREAK](foreground-break.md) |
 | Graphics | [Desktop client service](desktop.md), [AES applications](aes.md), [AES widgets](widgets.md), [Layers and regions](layers.md), [minimal GEM/VDI hosting](gem-vdi.md) |
 | Programs | [Processes](process.md), [native loading](program-loading.md), [C image profile](c-program-loading.md), [arguments](command-arguments.md), [C strings](cstrings.md), [SDX development subset](sdx-services.md), [FastBasic source target](fastbasic.md) |
+| Guest execution | [Resident page one, admission and BASIC parking](sdx-runtime.md) |
 | Filesystem internals | [Block adapter](block-io.md) |
 | Machine boundary | [Platform contract](platform.md), [bank-zero memory map](platform.md#bank-zero-memory-budget), [boot loading](boot-loading.md), [display ownership](display.md) |
 

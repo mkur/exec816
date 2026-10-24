@@ -35,3 +35,19 @@ Recovery paths displays build paths in output. RAM: contents vanish on reboot.
 This first workbench delivery includes editing, Check, Run, Stop and Build.
 Source debugging and native graphics are pending. FBC/FBCI remain available
 from the shell, including the EDX edit/compile/run workflow.
+Resident SDX and BASIC execution
+-------------------------------
+
+MD5, ARC and EDX are installed on SYS:C/. Their names work without .COM.
+One SDX or BASIC guest can execute at a time. EDX keeps that ownership while
+waiting for a key. A second guest reports error 202 (object in use).
+
+An idle FastBasic interpreter releases execution ownership while keeping its
+Process, variables, arrays, strings and open channels. MD5, ARC, EDX and
+Check/Build can run between BASIC runs. A busy Run preserves BASIC state.
+Restart interpreter explicitly clears that state. INPUT, PAUSE and a running
+loop retain execution ownership until completion or Stop.
+
+Very deeply nested BASIC syntax reports "too long". ARC compression reports
+resource error 158 if its recursive tree walk reaches the stack limit; owned
+archive cleanup then preserves the original archive.

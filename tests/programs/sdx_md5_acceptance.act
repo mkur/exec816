@@ -116,7 +116,7 @@ PUBLIC LONGINT FUNC PeerEntry()
 
 RETURN(0)
 
-PROC Concurrent()
+PROC Sequential()
   PROGRAMIMAGE.Image POINTER first,second
   SDXSTATE.Session POINTER one,two
   DOS.FileHandle POINTER output1,output2,previous
@@ -135,16 +135,16 @@ PROC Concurrent()
   output2=DOS.Open(BYTE POINTER(c"RAM:SECOND"),DOS.MODE_NEWFILE)
   Require(output1<>NULL AND output2<>NULL)
   previous=DOS.SelectOutput(output1)
-  EXEC.Forbid()
   peerId=PROCESS.StartBackground(@PeerEntry,NULL,0)
   before=peer
   firstId=PROCESS.StartLoaded(BYTE POINTER(first),BYTE POINTER(c"/C BIG.MD5"),10,0)
-  DOS.SelectOutput(output2)
-  secondId=PROCESS.StartLoaded(BYTE POINTER(second),BYTE POINTER(c"BIG.BIN"),7,0)
-  EXEC.Permit()
-  Require(peerId<>0 AND firstId<>0 AND secondId<>0)
+  Require(peerId<>0 AND firstId<>0)
   DOS.SelectOutput(previous)
   Require(PROCESS.Wait(firstId,@result)<>0 AND result.primary=0 AND result.secondary=0)
+  DOS.SelectOutput(output2)
+  secondId=PROCESS.StartLoaded(BYTE POINTER(second),BYTE POINTER(c"BIG.BIN"),7,0)
+  DOS.SelectOutput(previous)
+  Require(secondId<>0)
   Require(PROCESS.Wait(secondId,@result)<>0 AND result.primary=0 AND result.secondary=0)
   Require(peer>before)
   stopPeer=1
@@ -168,7 +168,7 @@ PROC Main()
 SETUP_FILES
   Require(ShellStart(@context,BYTE POINTER(c"RAM:"))<>0)
 RUN_CASES
-  Concurrent()
+  Sequential()
   Require(ShellFinish(@context)=0 AND context.shell=NULL)
   Require(DOS.ReleaseContext()<>0)
   Require(FSBOOT.Stop()<>0)

@@ -22,6 +22,14 @@ catalog, [MD5 subset](../development/sdx-md5.md) and
 [ARC listing/extraction subset](../development/sdx-arc.md) are admitted for development;
 these checks do not qualify a release profile.
 
+The [resident guest contract](sdx-runtime.md) distinguishes the two retained
+Image/private-DP slots from one active page-one lease. Guest frames remain in
+physical page one across native waits; ordinary native Task switches copy no
+page-one image. Runtime ROM entry borrows below a complete frame with a
+128-byte budget and minimum anchor `$0190`. Idle BASIC parks without losing
+its Process or data. This refactor adds zero reserved bank-zero bytes, including
+fixed, root/kernel, each public Task and idle guards/alignment/spare capacity.
+
 ## Compiler and memory contract
 
 Use the revision and generated ABI selected by [actionc.json](../../toolchain/actionc.json):

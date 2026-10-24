@@ -10,6 +10,8 @@ USE FBSTATE
 USE FBPORTFAIL
 USE FBINTERPABI
 USE SDXSTATE
+USE SDXRUNTIME
+USE SDXABI
 USE HEAPCORE
 USE FSBOOT
 
@@ -24,6 +26,8 @@ FBINTERPABI.Request request
 FBINTERPABI.Source attachment
 FBINTERPABI.Result report
 BYTE ARRAY actual(1024)
+PROGRAMIMAGE.Image POINTER otherImage
+BYTE ARRAY otherFrame(13)
 
 PROC Require(BYTE okay)
 
@@ -86,6 +90,57 @@ PROC Run(BYTE POINTER source CARD count LONGINT expected)
   Reply()
   Require(secondary=expected)
   Require(primary=IF expected=0 THEN LONGINT(0) ELSE LONGINT(20) FI)
+
+RETURN
+
+; Real tools execute between Runs while the same BASIC Process remains alive.
+PROC Tool(BYTE POINTER name,arguments CARD count)
+  PROCESS.Result result
+
+  LET output=DOS.Open(BYTE POINTER(c"RAM:TOOL.OUT"),DOS.MODE_NEWFILE)
+  Require(output<>NULL)
+  LET previous=DOS.SelectOutput(output)
+  LET guest=PROGRAMFILE.Load(name)
+  Require(guest<>NULL)
+  LET child=PROCESS.StartLoaded(BYTE POINTER(guest),arguments,count,0)
+  Require(child<>0)
+  Require(PROCESS.Wait(child,@result)<>0)
+  Require(result.primary=0 AND result.secondary=0)
+  PROGRAM.Unload(guest)
+  DOS.SelectOutput(previous)
+  Require(DOS.Close(output)<>0)
+  Require(image.running=1)
+
+RETURN
+
+; A native wait with a complete guest frame retains the execution lease.
+PROC HoldFrame(BYTE ignored)
+  CARD index
+
+  otherImage=PROGRAMFILE.Load(BYTE POINTER(c"RAM:MD5.COM"))
+  Require(otherImage<>NULL)
+  LET other=SDXSTATE.Session POINTER(otherImage.extension)
+  Require(other.slot<>state.guest.slot)
+  Require(SDXRUNTIME.Acquire(CARD(other.slot))=1)
+  SDXSTATE.Enter(other)
+  LET frame=SDXSTATE.GetFrame(other)
+  FOR index=0 TO 12 DO
+    otherFrame(index)=frame(index+1)
+  OD
+
+RETURN
+
+PROC ReleaseFrame(BYTE ignored)
+  CARD index
+
+  LET other=SDXSTATE.Session POINTER(otherImage.extension)
+  LET frame=SDXSTATE.GetFrame(other)
+  FOR index=0 TO 12 DO
+    Require(frame(index+1)=otherFrame(index))
+  OD
+  SDXRUNTIME.Release()
+  PROGRAM.Unload(otherImage)
+  otherImage=NULL
 
 RETURN
 

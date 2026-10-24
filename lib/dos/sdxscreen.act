@@ -21,21 +21,24 @@ RETURN(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_MODE,0,@value,1)=1)
 
 ; Complete counted copies before lending the guest another key.
 PUBLIC BYTE FUNC Flush(SDXSTATE.Session POINTER state)
-  CARD row
+  CARD row,first,count
   LONGINT sent
 
   IF state.screenOpen=0 THEN
     RETURN(0)
   FI
   FOR row=0 TO state.screenHeight-1 DO
-    IF state.screenDirty(row)<>0 THEN
+    first=state.screenFirst(row)
+    IF first<state.screenEnd(row) THEN
+      count=CARD(state.screenEnd(row))-first
       sent=DOS.ConsoleIO(state.outputHandle,CONSOLETYPES.CONCMD_WRITE_CELLS,
-          LONGCARD(row) LSH 16,state.screen+SIZE(row*state.screenWidth),
-          LONGINT(state.screenWidth))
-      IF sent<>LONGINT(state.screenWidth) THEN
+          (LONGCARD(row) LSH 16) OR LONGCARD(first),
+          state.screen+SIZE(row*state.screenWidth+first),LONGINT(count))
+      IF sent<>LONGINT(count) THEN
         RETURN(SDXFILES.MapError(state))
       FI
-      state.screenDirty(row)=0
+      state.screenFirst(row)=BYTE(state.screenWidth)
+      state.screenEnd(row)=0
     FI
   OD
 
@@ -101,7 +104,8 @@ PROC Clear(SDXSTATE.Session POINTER state)
 
   A816MEMORY.Fill(state.screen,32,SIZE(state.screenWidth*state.screenHeight))
   FOR row=0 TO state.screenHeight-1 DO
-    state.screenDirty(row)=1
+    state.screenFirst(row)=0
+    state.screenEnd(row)=BYTE(state.screenWidth)
   OD
 
 RETURN
@@ -131,7 +135,8 @@ BYTE FUNC Scroll(SDXSTATE.Session POINTER state)
       ELSE
         A816MEMORY.Fill(state.screen+SIZE(row*width),fill,SIZE(width))
       FI
-      state.screenDirty(row)=1
+      state.screenFirst(row)=0
+      state.screenEnd(row)=BYTE(state.screenWidth)
     OD
   ELSEIF operation=98 THEN
     row=last
@@ -143,7 +148,8 @@ BYTE FUNC Scroll(SDXSTATE.Session POINTER state)
       ELSE
         A816MEMORY.Fill(state.screen+SIZE(row*width),fill,SIZE(width))
       FI
-      state.screenDirty(row)=1
+      state.screenFirst(row)=0
+      state.screenEnd(row)=BYTE(state.screenWidth)
     OD
   ELSEIF operation=117 OR operation=118 THEN
     ; Column scrolls name one row in ICAX2Z, independently of BOTSCR.
@@ -161,19 +167,55 @@ BYTE FUNC Scroll(SDXSTATE.Session POINTER state)
       OD
       state.screen(row*width)=fill
     FI
-    state.screenDirty(row)=1
+    state.screenFirst(row)=0
+    state.screenEnd(row)=BYTE(state.screenWidth)
   ELSE
     RETURN(156)
   FI
 
 RETURN(0)
 
-; Dispatch the six table entries without exposing native model pointers.
-PUBLIC BYTE FUNC Call(SDXSTATE.Session POINTER state BYTE POINTER frame
+; The hot get/put path is nonblocking and touches only caller-owned cells.
+PUBLIC BYTE FUNC Cell(SDXSTATE.Session POINTER state BYTE POINTER frame
     CARD operation)
   CARD column,row,at
+
+  IF state.screenOpen=0 THEN
+    RETURN(156)
+  FI
+  column=state.dp($55)
+  row=state.dp($54)
+  IF column>=state.screenWidth OR row>=state.screenHeight THEN
+    RETURN(156)
+  FI
+  at=row*state.screenWidth+column
+  IF operation=3 THEN
+    frame(SDXABI.FRAME_A)=state.screen(at)
+    SDXCOMMAND.NZ(frame,frame(SDXABI.FRAME_A))
+  ELSEIF operation=4 THEN
+    IF state.screen(at)<>frame(SDXABI.FRAME_A) THEN
+      state.screen(at)=frame(SDXABI.FRAME_A)
+      IF column<CARD(state.screenFirst(row)) THEN
+        state.screenFirst(row)=BYTE(column)
+      FI
+      IF column+1>CARD(state.screenEnd(row)) THEN
+        state.screenEnd(row)=BYTE(column+1)
+      FI
+    FI
+  ELSE
+    RETURN(156)
+  FI
+
+RETURN(0)
+
+; Dispatch the remaining table entries without exposing native model pointers.
+PUBLIC BYTE FUNC Call(SDXSTATE.Session POINTER state BYTE POINTER frame
+    CARD operation)
   BYTE error
 
+  IF operation=3 OR operation=4 THEN
+    RETURN(Cell(state,frame,operation))
+  FI
   IF operation=0 THEN
     error=Open(state)
     IF error=0 THEN
@@ -195,25 +237,8 @@ PUBLIC BYTE FUNC Call(SDXSTATE.Session POINTER state BYTE POINTER frame
   IF operation=5 THEN
     RETURN(Scroll(state))
   FI
-  column=state.dp($55)
-  row=state.dp($54)
-  IF column>=state.screenWidth OR row>=state.screenHeight THEN
-    RETURN(156)
-  FI
-  at=row*state.screenWidth+column
-  IF operation=3 THEN
-    frame(SDXABI.FRAME_A)=state.screen(at)
-    SDXCOMMAND.NZ(frame,frame(SDXABI.FRAME_A))
-  ELSEIF operation=4 THEN
-    IF state.screen(at)<>frame(SDXABI.FRAME_A) THEN
-      state.screen(at)=frame(SDXABI.FRAME_A)
-      state.screenDirty(row)=1
-    FI
-  ELSE
-    RETURN(156)
-  FI
 
-RETURN(0)
+RETURN(156)
 
 ; The guest supplies bounded storage for the retained native failure cause.
 PUBLIC BYTE FUNC ErrorText(SDXSTATE.Session POINTER state BYTE POINTER frame)

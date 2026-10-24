@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import re
 from decimal import Decimal
 from pathlib import Path
 
@@ -16,7 +17,11 @@ from test_sdx_md5 import PIN
 
 def fixture(out,group):
     files={name+'.COM':(ROOT/'build/fastbasic'/ (name+'.COM')).read_bytes() for name in ('FB','FBI')}
-    if group=='attach':files['FBCI.COM']=(ROOT/'build/fastbasic/FBCI.COM').read_bytes()
+    if group in ('attach','session'):files['FBCI.COM']=(ROOT/'build/fastbasic/FBCI.COM').read_bytes()
+    if group=='session':
+        files['MD5.COM']=(ROOT/'build/sdx-inputs/md5/MD5.COM').read_bytes()
+        files['ABC.TXT']=b'abc'
+        files['SMALL.BAS']=b'? 42\n'
     calls=[];expected=b'';cases=[]
     def case(engine,name,raw,answer=b'',cause=0,location=None):
         nonlocal expected
@@ -44,11 +49,21 @@ def fixture(out,group):
                 cases.append(dict(engine=engine,name='session-'+str(number)))
                 files[f'R{number}.BAS']=raw
                 calls.append(f'  currentCase={number}\n  Run(BYTE POINTER({address}),{len(raw)},{error})')
-                expected+=b'parse error' if error==306 else answer
+                expected+=(answer or b'parse error') if error==306 else answer
             retained(b'A=7\nS$="saved"\nDIM V(2) WORD\nV(1)=42\n')
             retained(b'DIM V(2) WORD\n? A:? S$:? V(1)\nA=A+1\n',b'7\x9bsaved\x9b42\x9b')
             retained(b'B=99:? A:? B\n',b'8\x9b99\x9b')
+            retained(b'DIM V(2) WORD:PRINT S$:PRINT \"ARRAY\";V(1)\n',b'saved\x9bARRAY42\x9b')
             retained(b'A=1: ???\n',error=306)
+            retained(b'A='+b'('*64+b'1'+b')'*64+b'\n',b'too long',error=306)
+            retained(b'? A:? S$:? V(1)\n',b'8\x9bsaved\x9b42\x9b')
+            calls.append('  Tool(BYTE POINTER(c"RAM:MD5.COM"),BYTE POINTER(c"ABC.TXT"),7)')
+            arguments='RAM:SMALL.BAS RAM:SMALL.COM'
+            calls.append(f'  Tool(BYTE POINTER(c"RAM:FBCI.COM"),BYTE POINTER(c"{arguments}"),{len(arguments)})')
+            calls.append('  Tool(BYTE POINTER(c"RAM:SMALL.COM"),NULL,0)')
+            calls.append('  HoldFrame(0)')
+            retained(b'A=999\n',error=202)
+            calls.append('  ReleaseFrame(0)')
             retained(b'? A:? S$:? V(1)\n',b'8\x9bsaved\x9b42\x9b')
             retained(b'DIM V(3) WORD\n',error=115)
             retained(b'DIM H(20000) BYTE\n',error=103)
@@ -72,15 +87,17 @@ def fixture(out,group):
   Require(secondary=304)''')
             retained(b'? A:? S$:? V(1)\nOPEN #1,8,0,"RAM:RESET.TXT"\n',b'10\x9bsaved\x9b42\x9b')
             calls.append('  Require(state.guest.handles(1)<>NULL)')
-            calls.append('''  Submit(FBINTERPABI.COMMAND_RESET,NULL,0)
+            calls.append('''  HoldFrame(0)
+  Submit(FBINTERPABI.COMMAND_RESET,NULL,0)
   Reply()
   Require(secondary=0)
   Require(state.interpreter.symbolBytes=0)
   Require(state.interpreter.prepared=0)
-  Require(state.guest.handles(1)=NULL)''')
+  Require(state.guest.handles(1)=NULL)
+  ReleaseFrame(0)''')
             retained(b'? A\n',error=306)
             retained(b'A=3:? A\n',b'3\x9b')
-            calls.append('  Close()')
+            calls.append('  HoldFrame(0)\n  Close()\n  ReleaseFrame(0)')
     elif group=='core':
         for engine,names in [('FBI',('hello','values','files','clock')),('FB',('fp_math','fp_values','fp_clock'))]:
             for name in names:
@@ -94,7 +111,12 @@ def fixture(out,group):
         case('FBI','integer',b'? 6*7',b'42\x9b')
         case('FB','float',b'? 1.25*2.0',b'2.5\x9b')
     elif group=='capacity':
-        for engine,maximum in (('FBI',39164),('FB',35580)):
+        for engine,stem in (('FBI','fbirun'),('FB','fbrun')):
+            labels=(ROOT/f'build/fastbasic/source/build/bin/{stem}.lbl').read_text()
+            heap=int(re.search(r'al ([0-9A-Fa-f]+) \.__HEAP_RUN__',labels)[1],16)
+            # The tiny program occupies the heap page; variables start on
+            # the next page, with two variable bytes and the array boundary.
+            maximum=0xe000-(heap+0x100)-4
             source=f'DIM A(${maximum:X}) BYTE\nA(${maximum:X})=123\n? A(${maximum:X})\n'.encode()
             case(engine,'largest-array',source,b'123\x9b')
             source=f'DIM A(${maximum+1:X}) BYTE\n? "SHOULD NOT RUN"\n'.encode()

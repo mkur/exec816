@@ -5,6 +5,8 @@ USE HEAPCORE
 USE SDXSTATE
 USE SDXABI
 USE SDXTRAPS
+USE SDXRUNTIME
+USE SDXCONFIG
 
 CARD checks,sessionBytes
 
@@ -24,19 +26,35 @@ PROC Main()
   CARD index
 
   baseline=EXEC.AvailMem(0)
+  ; Every byte remains covered by the word-at-a-time native boundary check.
+  Require(SDXRUNTIME.Guards()=1)
+  FOR index=0 TO SDXABI.DP_GUARD_BYTES-1 DO
+    bytes=BYTE POINTER(ADDRESS(SDXCONFIG.DP_BASE-SDXABI.DP_GUARD_BYTES))
+    bytes(index)=$a4
+    Require(SDXRUNTIME.Guards()=0)
+    bytes(index)=$a5
+    bytes=BYTE POINTER(ADDRESS(SDXCONFIG.DP_BASE+SDXABI.IMAGE_SLOTS*256))
+    bytes(index)=$a4
+    Require(SDXRUNTIME.Guards()=0)
+    bytes(index)=$a5
+    Require(SDXRUNTIME.Guards()=1)
+  OD
   sessionBytes=SIZEOF(SDXSTATE.Session)
-  Require(sessionBytes=2290)
+  Require(sessionBytes=2320)
   state=SDXSTATE.Session POINTER(EXEC.AllocMem(sessionBytes,EXEC.MEMF_CLEAR))
   Require(state<>NULL)
-  state.context=EXEC.AllocMem(512,EXEC.MEMF_CLEAR)
-  Require(state.context<>NULL)
+  state.context=BYTE POINTER(ADDRESS(SDXABI.CONTEXT_BASE))
+  Require(SDXRUNTIME.Acquire(0)=1)
+  Require(SDXRUNTIME.Acquire(1)=0)
+  SDXSTATE.Enter(state)
   bytes=BYTE POINTER(state)
   state.handles(0)=DOS.FileHandle POINTER(ADDRESS($123456))
   state.handles(1)=DOS.FileHandle POINTER(ADDRESS($789abc))
   Require(bytes(13)=$56 AND bytes(14)=$34 AND bytes(15)=$12)
   Require(bytes(16)=$bc AND bytes(17)=$9a AND bytes(18)=$78)
-  SDXSTATE.Word(state.context,SDXABI.FIELDS_GUEST_S,$1d0)
+  SDXRUNTIME.MoveFrame(0,$1d0)
   frame=SDXSTATE.GetFrame(state)
+  Require(frame=BYTE POINTER(ADDRESS($1d0)))
   frame(SDXABI.FRAME_A)=$46
   frame(SDXABI.FRAME_X)=$30
   Require(SDXTRAPS.Install(state,frame)=0)
@@ -44,7 +62,7 @@ PROC Main()
       AND state.traps(0).stack=$1dd)
   Require(bytes(26)=$46 AND bytes(27)=$30 AND bytes(28)=$dd AND bytes(29)=1)
   ; Deliver from a deeper guest stack and verify the complete suspended frame.
-  SDXSTATE.Word(state.context,SDXABI.FIELDS_GUEST_S,$1b0)
+  SDXRUNTIME.MoveFrame(0,$1b0)
   frame=SDXSTATE.GetFrame(state)
   FOR index=1 TO 13 DO
     frame(index)=BYTE($20+index)
@@ -72,7 +90,7 @@ PROC Main()
   OD
   Require(state.trapCount=0 AND state.handles(0)=DOS.FileHandle POINTER(ADDRESS($123456))
       AND state.handles(1)=DOS.FileHandle POINTER(ADDRESS($789abc)))
-  EXEC.FreeMem(state.context,512)
+  SDXRUNTIME.Release()
   EXEC.FreeMem(BYTE POINTER(state),sessionBytes)
   Require(EXEC.AvailMem(0)=baseline)
   SDXSTATE.Guards()

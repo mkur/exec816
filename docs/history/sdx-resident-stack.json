@@ -1,0 +1,1354 @@
+{
+  "status": "functional-development-passed-latency-open",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-24",
+  "source_base": "3d25e1fb6c7e5fb4012592cdf6814b05de30717c",
+  "uncommitted_implementation": true,
+  "compiler_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act"
+  },
+  "compiler_override": null,
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$82ca20642d640f57",
+    "actual_kernel_id": "$82ca20642d640f57",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "rom": {
+    "path": "/Users/michalkurcewicz/action/exec816-commands/build/sdx-resident/final-measurement/extracted/exec816-demo/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "override": false
+  },
+  "gates": {
+    "functional": "pass",
+    "latency": "open",
+    "p95_target_ms": 100
+  },
+  "host_suite": {
+    "tests": 649,
+    "status": "pass",
+    "log_sha256": "d2e5cf42e2b359fd26bf3e02b5c5730b6763614d211e09330d84600e39948652"
+  },
+  "stack_bound_record": {
+    "path": "docs/history/sdx-resident-stack-bounds.json",
+    "sha256": "d8a1d4ec1b80cc463e9c40d7bf64f8c627ec1fe502dc84efcf6ecc8ab64d17d3"
+  },
+  "evidence": {
+    "frame_raw": {
+      "path": "build/sdx-resident/final-shape-raw/results.json",
+      "sha256": "6a83f8d7cbbcacb04e79fd621b9ef7233b4a24c72b7de5da05ca86552a2fb8c9",
+      "status": "pass",
+      "tier": "development",
+      "checks": 95
+    },
+    "frame_opt": {
+      "path": "build/sdx-resident/final-shape-opt/results.json",
+      "sha256": "522d1440551fae878dffad3fa9834233320592ef0f3dbed21d03d4a8a906fd30",
+      "status": "pass",
+      "tier": "development",
+      "checks": 95
+    },
+    "rom_minimum_deep": {
+      "path": "build/sdx-resident/final-rom-deep/results.json",
+      "sha256": "6b29f9cda8357550b4449e3e609facd159c380a03b967fef340369bae5034731",
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "checks": 113,
+      "anchor": 400,
+      "rom_nmis": 0
+    },
+    "rom_transitions": {
+      "path": "build/sdx-resident/final-rom-transitions/results.json",
+      "sha256": "56ba9d0a76e21cc4dde883561e97f61527736fb4fdb8db2a3a3b51b13697f117",
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "cases": [
+        {
+          "status": "pass",
+          "anchor": 464,
+          "checks": 49,
+          "phase": 1,
+          "rom_nmis": 5
+        },
+        {
+          "status": "pass",
+          "anchor": 464,
+          "checks": 49,
+          "phase": 2,
+          "rom_nmis": 5
+        },
+        {
+          "status": "pass",
+          "anchor": 464,
+          "checks": 49,
+          "phase": 3,
+          "rom_nmis": 5
+        },
+        {
+          "status": "pass",
+          "anchor": 464,
+          "checks": 49,
+          "phase": 4,
+          "rom_nmis": 5
+        }
+      ]
+    },
+    "rom_rejection": {
+      "path": "build/sdx-resident/final-rom-bounds/results.json",
+      "sha256": "645e4f27fc80ff22c01814d54b9d8b5caf9c11cbe5610a8d6363e5547ebefe58",
+      "status": "pass",
+      "tier": "development",
+      "qualification": false
+    },
+    "lease_transitions": {
+      "path": "build/sdx-resident/rs4-lease-transitions/results.json",
+      "sha256": "d57d0d4ccf0dcc6cf6db2c2608c38339b57ed726a2ae466687f2fa4b1d36ec0b",
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "cases": [
+        {
+          "status": "pass",
+          "anchor": 464,
+          "checks": 27,
+          "phase": 5,
+          "rom_nmis": 1
+        },
+        {
+          "status": "pass",
+          "anchor": 464,
+          "checks": 27,
+          "phase": 6,
+          "rom_nmis": 1
+        },
+        {
+          "status": "pass",
+          "anchor": 464,
+          "checks": 27,
+          "phase": 7,
+          "rom_nmis": 2
+        }
+      ]
+    },
+    "early_entry": {
+      "path": "build/sdx-resident/final-early-entry/result.json",
+      "sha256": "b1c8fa94810dc97ede4e4010bd66df2380d3b1f6484bef0e97a5317a68cdf674",
+      "status": "pass",
+      "tier": "development",
+      "checks": 552,
+      "profile": "stock810"
+    },
+    "return_transitions": {
+      "path": "build/sdx-resident/final-returns/results.json",
+      "sha256": "3afdfd651d487ae4c4770b6a3d1136e54d9ab0b7fb0c27e7c8d826ccbca24076",
+      "status": "pass",
+      "tier": "development",
+      "cases": [
+        {
+          "phase": 1,
+          "status": "pass",
+          "checks": 549
+        },
+        {
+          "phase": 2,
+          "status": "pass",
+          "checks": 549
+        },
+        {
+          "phase": 3,
+          "status": "pass",
+          "checks": 549
+        },
+        {
+          "phase": 4,
+          "status": "pass",
+          "checks": 549
+        },
+        {
+          "phase": 5,
+          "status": "pass",
+          "checks": 549
+        },
+        {
+          "phase": 6,
+          "status": "pass",
+          "checks": 549
+        },
+        {
+          "phase": 7,
+          "status": "pass",
+          "checks": 549
+        },
+        {
+          "phase": 8,
+          "status": "pass",
+          "checks": 549
+        },
+        {
+          "phase": 9,
+          "status": "pass",
+          "checks": 549
+        },
+        {
+          "phase": 10,
+          "status": "pass",
+          "checks": 549
+        },
+        {
+          "phase": 11,
+          "status": "pass",
+          "checks": 549
+        }
+      ]
+    },
+    "stock810": {
+      "path": "build/sdx-resident/rs4-devices/result.json",
+      "sha256": "36b7ab987bc43176222fa42c61fef91fda051cb9877f167f9b30436581d22f8c",
+      "status": "pass",
+      "tier": "development",
+      "checks": 1722,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 1179,
+          "min_us": 5.638734724315211,
+          "mean_us": 26.143833330785977,
+          "max_us": 82.32552697500208
+        },
+        "tx_refill": {
+          "count": 36,
+          "min_us": 6.2026081967467315,
+          "mean_us": 22.695907265368724,
+          "max_us": 62.02608196746733
+        },
+        "command_setup": {
+          "count": 9,
+          "min_us": 1065.720862895575,
+          "mean_us": 1100.1797973219457,
+          "max_us": 1117.5972223592748
+        },
+        "command_hold": {
+          "count": 9,
+          "min_us": 747.696224444197,
+          "mean_us": 819.9346815234796,
+          "max_us": 862.1625393477958
+        },
+        "masked_max_us": 10031.591011292976,
+        "byte_deadline_us": 530.0410640856298,
+        "observations_sha256": "ac1d166ef7d5b29e0c633bec4492f963971be9821086da8fdee66277fbec1583"
+      }
+    },
+    "generic56k": {
+      "path": "build/sdx-resident/final-generic56k/result.json",
+      "sha256": "d5a8875425212c5f2d6da0912ebe848be8b8e6d2e2b595d1bfa9cffacaa88927",
+      "status": "pass",
+      "tier": "development",
+      "checks": 3803,
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 3275,
+          "min_us": 5.638734724315211,
+          "mean_us": 27.055423995241767,
+          "max_us": 78.94228614041295
+        },
+        "tx_refill": {
+          "count": 100,
+          "min_us": 6.2026081967467315,
+          "mean_us": 20.976093174452586,
+          "max_us": 66.5370697469195
+        },
+        "command_setup": {
+          "count": 25,
+          "min_us": 1061.7737485885543,
+          "mean_us": 1078.2388539835547,
+          "max_us": 1129.438565280337
+        },
+        "command_hold": {
+          "count": 25,
+          "min_us": 766.3040490344372,
+          "mean_us": 780.6941000508896,
+          "max_us": 842.4269678126925
+        },
+        "masked_max_us": 9856.296845550825,
+        "byte_deadline_us": 169.16204172945635,
+        "observations_sha256": "db02294b586eb59ef1745c55843ab8889b31d63b9c296a0d833e76a0531937ed"
+      },
+      "profile": "generic56k"
+    },
+    "md5_break": {
+      "path": "build/sdx-resident/rs4-md5-breaks/results.json",
+      "sha256": "a0acd2a740b2dac53fe3bafabaa50baccc201561379444636227f6cd17e5cccc",
+      "status": "pass",
+      "tier": "development",
+      "checks": 306
+    },
+    "arc_mixed": {
+      "path": "build/sdx-resident/rs4-arc-mixed/results.json",
+      "sha256": "44b073cc7b5611b15f6ec39a246e0d42b72ca2c999762cc85860226416796cab",
+      "status": "pass",
+      "tier": "development",
+      "observed": {
+        "checks": 276,
+        "breakTicks": 94,
+        "sessionBytes": 2320,
+        "elapsed": [
+          689,
+          1341,
+          878,
+          692
+        ],
+        "guestGuardBytes": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "peerProgress": [
+          1071801,
+          2146781,
+          1297034,
+          1068330
+        ],
+        "hashOutput": "4d44352028412e42494e29203d2039303044443031303645373032443041413042363033413346374646323744319b",
+        "shellOutput": "9b46696c656e616d6520202020204c656e67746820202044617465202020202054696d659b3d3d3d3d3d3d3d3d3d3d3d3d203d3d3d3d3d3d3d3d203d3d3d3d3d3d3d3d203d3d3d3d3d3d9b412e42494e202020202020202020202020343039362032352d30392d32362020303a3030209b4f4c442e42494e20202020202020202020202020332031382d31302d32362031343a3332209b20202020202020203d3d3d3d203d3d3d3d3d3d3d3d9b546f74616c202020202020322020202020343039399b"
+      }
+    },
+    "arc_extraction": {
+      "path": "build/sdx-resident/final-arc-extract/results.json",
+      "sha256": "8d0b8f35898a6c4dbae6c811d24fbed602b632b58ec040dd59c1222972c96034",
+      "status": "pass",
+      "tier": "development",
+      "checks": 525
+    },
+    "arc_recursion_failure": {
+      "path": "build/sdx-resident/rs0-arc-stack/results.json",
+      "sha256": "6e1588f5f10873782720983586b044a795df17a10c7d333cb92726c7b4776355",
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "checks": 39,
+      "injection": {
+        "threshold": 511,
+        "production_threshold": 416,
+        "source_sha256": "9845dab5589928275796a6aacf5d648e66ba33721242d8e08e3b69a872f1c088"
+      }
+    },
+    "edx": {
+      "path": "build/sdx-resident/rs6-edx/results.json",
+      "sha256": "18f95728f8fdd34073c18e697976739990234a08c193f94aaae079d549dff92b",
+      "status": "pass",
+      "tier": "development",
+      "checks": 57
+    },
+    "screen_spans": {
+      "path": "build/sdx-resident/rs5-spans/results.json",
+      "sha256": "0c84f20913c35803823d669921fd2a4dab84fca8855af1611c4d0d985e43883f",
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "checks": 2628,
+      "injected_boundary": "Synchronous public WRITE_CELLS: complete, error and short write"
+    },
+    "basic_session": {
+      "path": "build/sdx-resident/parser-session-final/results.json",
+      "sha256": "4060bed51260c55a43572fb1e63d653d84a633b1f92bcfb38558ce8155579d63",
+      "status": "pass",
+      "tier": "development",
+      "checks": 631,
+      "group": "session"
+    },
+    "basic_capacity": {
+      "path": "build/sdx-resident/final-basic-capacity/results.json",
+      "sha256": "9d9e98335008e2d250a73246c9cbb2e0fc6f8edc797b0b98db4f8fbe253a1487",
+      "status": "pass",
+      "tier": "development",
+      "checks": 71,
+      "group": "capacity"
+    },
+    "basic_core": {
+      "path": "build/sdx-resident/final-basic-core/results.json",
+      "sha256": "412a78da879409a780914f65d81efdb8900e860dfd77d09e7e6306d88c7d7f92",
+      "status": "pass",
+      "tier": "development",
+      "checks": 78,
+      "group": "core"
+    },
+    "cart": {
+      "path": "build/sdx-resident/final-cart/results.json",
+      "sha256": "1963e583f23b4f4f185ba61d325fb5c80d21021c676611524579bb11875445bb",
+      "status": "pass",
+      "tier": "development",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "native_nmi_count": 1978,
+        "native_irq_count": 26001
+      },
+      "integration": {
+        "samples": [
+          {
+            "operation": "setup",
+            "index": 0,
+            "key": "Z",
+            "control": true,
+            "start": 99096340,
+            "end": 99309748,
+            "input_ready_ms": 120.33511000466605,
+            "scanout_ms": 120.33511000466605,
+            "polls": 4,
+            "changed_cells": 6,
+            "scanout_sha256": "8036e26f9015a9343f9297bad9a6c912ef544b0445cdfd4e995defbfb81606e4"
+          },
+          {
+            "operation": "insert",
+            "index": 0,
+            "key": "A",
+            "control": false,
+            "start": 99309748,
+            "end": 99558724,
+            "input_ready_ms": 140.3909616721104,
+            "scanout_ms": 140.3909616721104,
+            "polls": 5,
+            "changed_cells": 3,
+            "scanout_sha256": "4f8b0b2a1897dd4c0d566ab8f817f8dbf3154c90ed4f6831e4adb5d435da7811"
+          },
+          {
+            "operation": "horizontal",
+            "index": 0,
+            "key": "A",
+            "control": true,
+            "start": 99558724,
+            "end": 99772132,
+            "input_ready_ms": 120.33511000466605,
+            "scanout_ms": 120.33511000466605,
+            "polls": 4,
+            "changed_cells": 6,
+            "scanout_sha256": "a2caf1fb0c7575bc1f4442941b0c9367743c719d0e9d22c4ce8984653711f29c"
+          },
+          {
+            "operation": "vertical",
+            "index": 0,
+            "key": "EQUALS",
+            "control": true,
+            "start": 99772132,
+            "end": 100056676,
+            "input_ready_ms": 160.44681333955475,
+            "scanout_ms": 160.44681333955475,
+            "polls": 6,
+            "changed_cells": 7,
+            "scanout_sha256": "76989f1152f11daa7ce3b1bf07fbd0f64cf8fa7155eb212fd33731780f5cc8d3"
+          }
+        ],
+        "cancelled": true,
+        "ownership_restored": true
+      }
+    },
+    "cart_old": {
+      "path": "build/sdx-resident/final-cart-old/results.json",
+      "sha256": "72970b463155fa2a341f5257f66316e10dbb1c40b5f0a56b90624b8370c2f4a9",
+      "status": "pass",
+      "tier": "development"
+    },
+    "cold_atr": {
+      "path": "build/sdx-resident/demo/atr-boot-results.json",
+      "sha256": "e78b8aa2d02623af98ba5e6cc2eee28f1bbd092f46e185ca8ba518736fb30afd",
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "atr_boot": {
+        "first_stage_rom_boot": true,
+        "memlo": 1792,
+        "initial_memtop": 48159,
+        "initial_basicf": 2,
+        "prepared_memtop": 48159,
+        "prepared_basicf": 2,
+        "firmware_to_of_frame": 1527,
+        "countdown_frames": 250,
+        "native_handoff_frame": 23526,
+        "callbacks": 782,
+        "reads": 2623,
+        "source_bytes": 665209,
+        "reader_guards": "intact",
+        "firmware_context_restored": true,
+        "native_bytes_verified": 1750849
+      },
+      "runner_sha256": "715827da56d28794af06996c59511d3fb896038f516261300a2b3757b6af42d7",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "native_nmi_count": 9530,
+        "native_irq_count": 29202
+      },
+      "integration": null
+    },
+    "gui_parking": {
+      "path": "build/sdx-resident/demo/resident-demo-results.json",
+      "sha256": "95a74445d1866706bfda3d4fd79d565af822434a149f9f1c520545a4a1717b65",
+      "status": "pass",
+      "tier": "development",
+      "runner_sha256": "21ada22b117156d5e256ff68bdffa4f1c3afe8bcc192e936c11092dcab182ed6",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "native_nmi_count": 25693,
+        "native_irq_count": 42472
+      },
+      "integration": {
+        "twelve_tasks": true,
+        "pipeline_peak": 10,
+        "execution_peak": 9,
+        "run_stop": true,
+        "two_shells": true
+      },
+      "asserted_workflow": [
+        "retained Process and BASIC state",
+        "parked MD5/ARC/FBCI/compiled command",
+        "busy Run during EDX wait returns 202",
+        "EDX physical frame intact",
+        "resumed BASIC prints PARK3",
+        "Quit and final cleanup"
+      ]
+    }
+  },
+  "measurements": {
+    "baseline": {
+      "status": "pass",
+      "summaries": {
+        "insert": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 320.8936266791095,
+            "p95": 320.8941905525819,
+            "maximum": 320.8941905525819
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 340.9489144730814,
+            "p95": 340.95004222002626,
+            "maximum": 340.95004222002626
+          }
+        },
+        "horizontal": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 140.3909616721104,
+            "p95": 140.39152554558282,
+            "maximum": 140.39152554558282
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 160.44681333955475,
+            "p95": 160.44737721302718,
+            "maximum": 160.44737721302718
+          }
+        },
+        "vertical": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 200.5585166744434,
+            "p95": 200.55908054791584,
+            "maximum": 220.6149322153602
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 200.5585166744434,
+            "p95": 200.55908054791584,
+            "maximum": 220.6149322153602
+          }
+        }
+      },
+      "zip_sha256": "10732a45020a86f6f0346fde3a58939f7122ffad2f7d8c0f52ddeff26c1499e0",
+      "observer_sha256": "d2ede5b1f498fcb53cdeee9253273667785cbf26207dd3b0fe125a800c340435",
+      "key_hold_frames": 3,
+      "scope": "Physical keys; frame-quantized upper bounds to raw-input readiness and independent ATASCII client scanout; three-frame key hold",
+      "path": "build/sdx-resident/baseline/results.json",
+      "sha256": "b6fe1a8c58ed1dd53d46a2cded963c21fdae3b5c876c6ac53fd49217f1e38989",
+      "sample_sha256": "6865bbae2db902fc6590d312ad22b840523f334037e1d9bca576c835673deb61"
+    },
+    "stack_only": {
+      "status": "pass",
+      "summaries": {
+        "insert": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 200.5585166744434,
+            "p95": 200.55964442138827,
+            "maximum": 200.55964442138827
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 200.5585166744434,
+            "p95": 200.55964442138827,
+            "maximum": 200.55964442138827
+          }
+        },
+        "horizontal": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 140.3909616721104,
+            "p95": 140.39152554558282,
+            "maximum": 140.39152554558282
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 140.3909616721104,
+            "p95": 140.39152554558282,
+            "maximum": 140.39152554558282
+          }
+        },
+        "vertical": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 180.50266500699908,
+            "p95": 180.5032288804715,
+            "maximum": 180.50379275394394
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 180.50266500699908,
+            "p95": 180.5032288804715,
+            "maximum": 180.50379275394394
+          }
+        }
+      },
+      "zip_sha256": "71260ce4ac8d200b1497f2839b59128362e74c39896cc1de8a6bb523a51a58cb",
+      "observer_sha256": "d2ede5b1f498fcb53cdeee9253273667785cbf26207dd3b0fe125a800c340435",
+      "key_hold_frames": 3,
+      "scope": "Physical keys; frame-quantized upper bounds to raw-input readiness and independent ATASCII client scanout; three-frame key hold",
+      "path": "build/sdx-resident/stack-measure/results.json",
+      "sha256": "9676c78b8e0081653129294302257ca6867aae920359fa463c9840b55a8ebb14",
+      "sample_sha256": "a40d28aac90d854bf804277be077c8c673ff9f601a936dbebdfc92bc4c2f7a00"
+    },
+    "spans": {
+      "status": "pass",
+      "summaries": {
+        "insert": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 200.5585166744434,
+            "p95": 200.55908054791584,
+            "maximum": 200.55908054791584
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 200.5585166744434,
+            "p95": 200.55908054791584,
+            "maximum": 200.55908054791584
+          }
+        },
+        "horizontal": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33567387813848,
+            "maximum": 120.33567387813848
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 140.39039779863796,
+            "p95": 140.3909616721104,
+            "maximum": 140.3909616721104
+          }
+        },
+        "vertical": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 160.44681333955475,
+            "p95": 160.44737721302718,
+            "maximum": 180.50266500699908
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 160.44681333955475,
+            "p95": 180.50266500699908,
+            "maximum": 180.50266500699908
+          }
+        }
+      },
+      "zip_sha256": "507b3e930afd54756be9e627ebfa46dd073112c7c5a4a8aa23b0040605c13d55",
+      "observer_sha256": "3c002df32e0f5c6a897b047a5d199497cbda1becfa57ae7af1e4b9efd7b32a93",
+      "key_hold_frames": 3,
+      "scope": "Physical keys; frame-quantized upper bounds to raw-input readiness and independent ATASCII client scanout; three-frame key hold",
+      "path": "build/sdx-resident/span-measure/results.json",
+      "sha256": "2b7e14f03892f0dfac85ce0763b3730746f007fe6856b67f0cc3980ecbe54ce4",
+      "sample_sha256": "dfa12e1f78df367447a97c13c15fc0b7bd88fd0ebdaf7d8ddb2a4bb634d19ea3"
+    },
+    "final": {
+      "status": "pass",
+      "summaries": {
+        "insert": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 140.3909616721104,
+            "p95": 140.3909616721104,
+            "maximum": 140.3909616721104
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 140.3909616721104,
+            "p95": 140.3909616721104,
+            "maximum": 140.3909616721104
+          }
+        },
+        "horizontal": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33511000466605,
+            "maximum": 120.33511000466605
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33511000466605,
+            "maximum": 120.33511000466605
+          }
+        },
+        "vertical": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 160.44681333955475,
+            "p95": 160.44681333955475,
+            "maximum": 160.44681333955475
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 160.44681333955475,
+            "p95": 160.44681333955475,
+            "maximum": 160.44681333955475
+          }
+        }
+      },
+      "zip_sha256": "2c10b2ca25638315dc803e7f70a525535e1ca76e8366b9c51c30266ee67c68ff",
+      "observer_sha256": "e0ad7762cee3168d8b08a61137f7891cb85ab3243b63cf2be52cbd8763bbf3b0",
+      "key_hold_frames": 3,
+      "scope": "Physical keys; frame-quantized upper bounds to raw-input readiness and independent ATASCII client scanout; three-frame key hold",
+      "path": "build/sdx-resident/final-measurement/results.json",
+      "sha256": "e212aeb1c9e69d5467ff3495e445514b3db8c1f33f54e7e0386131f29debae96",
+      "sample_sha256": "28571940db0315ba38976b0789e656602f3f28d8d27ce6398de82b37d9635306",
+      "representative_insert_routines": {
+        "flush": {
+          "calls": 1,
+          "elapsed_ms": 55.97628348174953
+        },
+        "guards": {
+          "calls": 75,
+          "elapsed_ms": 2.0933097822179683
+        },
+        "console_io": {
+          "calls": 2,
+          "elapsed_ms": 55.24395280942909
+        }
+      },
+      "physical_input_cases": 60
+    }
+  },
+  "measured_remaining_cost": "Two public console requests account for about 55 ms in an ordinary insertion; guest/native dispatch, scheduling and presentation account for the remainder of the 140 ms frame-quantized interval. Measurements retain all guards and IRQ deadlines.",
+  "memory": {
+    "reserved_bank_zero_delta_per_slice": {
+      "RS0": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "RS1": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "RS2": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "RS3": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "RS4": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "RS5": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "RS6": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "RS7": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      }
+    },
+    "stages": {
+      "stack_only": {
+        "path": "build/sdx-resident/stack-demo/memory.json",
+        "sha256": "0d0e1a460bf154b8fb4d739c1a01cf1a94373988f48adac93fe6d96ed30281aa",
+        "bank_zero_budget": {
+          "fixed_runtime": 11072,
+          "idle": 800,
+          "loading_excluding_os": 20368,
+          "loading_including_os": 40336,
+          "public": [
+            1824,
+            1600,
+            1600,
+            1600,
+            1600,
+            1600,
+            2848,
+            2848,
+            1600,
+            1600,
+            1600,
+            2848
+          ],
+          "runtime_excluding_os": 35040,
+          "runtime_including_os": 55008
+        },
+        "sdx_storage": {
+          "car_root": "SYS:C/",
+          "dp_base": 25344,
+          "dp_reservation": {
+            "address": 25328,
+            "name": "sdx-direct-pages",
+            "size": 544
+          },
+          "drive_a": "WORK:",
+          "fixed_bank_zero_bytes": 544,
+          "per_task_bank_zero_bytes": 0,
+          "resident_base": 2621440,
+          "resident_reserved_bytes": 65536
+        },
+        "sdx_assembled_payload_bytes": 1949,
+        "stub_used_bytes": 427,
+        "native_segment_payload_bytes": 1724592
+      },
+      "spans": {
+        "path": "build/sdx-resident/span-demo/memory.json",
+        "sha256": "0d0e1a460bf154b8fb4d739c1a01cf1a94373988f48adac93fe6d96ed30281aa",
+        "bank_zero_budget": {
+          "fixed_runtime": 11072,
+          "idle": 800,
+          "loading_excluding_os": 20368,
+          "loading_including_os": 40336,
+          "public": [
+            1824,
+            1600,
+            1600,
+            1600,
+            1600,
+            1600,
+            2848,
+            2848,
+            1600,
+            1600,
+            1600,
+            2848
+          ],
+          "runtime_excluding_os": 35040,
+          "runtime_including_os": 55008
+        },
+        "sdx_storage": {
+          "car_root": "SYS:C/",
+          "dp_base": 25344,
+          "dp_reservation": {
+            "address": 25328,
+            "name": "sdx-direct-pages",
+            "size": 544
+          },
+          "drive_a": "WORK:",
+          "fixed_bank_zero_bytes": 544,
+          "per_task_bank_zero_bytes": 0,
+          "resident_base": 2621440,
+          "resident_reserved_bytes": 65536
+        },
+        "sdx_assembled_payload_bytes": 1949,
+        "stub_used_bytes": 427,
+        "native_segment_payload_bytes": 1725116
+      },
+      "final": {
+        "path": "build/sdx-resident/demo/memory.json",
+        "sha256": "0d0e1a460bf154b8fb4d739c1a01cf1a94373988f48adac93fe6d96ed30281aa",
+        "bank_zero_budget": {
+          "fixed_runtime": 11072,
+          "idle": 800,
+          "loading_excluding_os": 20368,
+          "loading_including_os": 40336,
+          "public": [
+            1824,
+            1600,
+            1600,
+            1600,
+            1600,
+            1600,
+            2848,
+            2848,
+            1600,
+            1600,
+            1600,
+            2848
+          ],
+          "runtime_excluding_os": 35040,
+          "runtime_including_os": 55008
+        },
+        "sdx_storage": {
+          "car_root": "SYS:C/",
+          "dp_base": 25344,
+          "dp_reservation": {
+            "address": 25328,
+            "name": "sdx-direct-pages",
+            "size": 544
+          },
+          "drive_a": "WORK:",
+          "fixed_bank_zero_bytes": 544,
+          "per_task_bank_zero_bytes": 0,
+          "resident_base": 2621440,
+          "resident_reserved_bytes": 65536
+        },
+        "sdx_assembled_payload_bytes": 2395,
+        "stub_used_bytes": 449,
+        "native_segment_payload_bytes": 1727382
+      }
+    },
+    "upper_bridge_reserved_bytes": 65536,
+    "dp_pool_reserved_bytes": 544,
+    "sdx_session": {
+      "before_bytes": 2290,
+      "after_bytes": 2320,
+      "before_allocation": 2296,
+      "after_allocation": 2320
+    },
+    "basic_session": {
+      "before_bytes": 2314,
+      "after_bytes": 2344,
+      "before_allocation": 2320,
+      "after_allocation": 2344
+    },
+    "parser_private_bank_bss_added": 259,
+    "parser_states": 63,
+    "basic_heap_starts": {
+      "FBI": 18688,
+      "FB": 22016
+    }
+  },
+  "artifacts": {
+    "zip": {
+      "path": "build/sdx-resident/demo/exec816-demo.zip",
+      "sha256": "2c10b2ca25638315dc803e7f70a525535e1ca76e8366b9c51c30266ee67c68ff"
+    },
+    "files": {
+      "program.xex": "dc6d87b48068dc2f434fea735ef0260abf51e74155474efbea3da8e4bdf80eb1",
+      "exec816.atr": "38e218da7f0a3abe1dca3673b910e179d2c9c1646d500dbd4cae587db3e2ca0d",
+      "README.md": "9c3c7b44e071a4a4b692ad2c00af2ccf2dda37a127b82a2aacd53f5bf0ed3234",
+      "exec816.verification.json": "4cd26aba3a0d520a63967afc6743f14d4fb4205b38e4578bc1c962df4cc44ab7",
+      "GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+      "CALCULATOR-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "CALCULATOR-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "CALCULATOR-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "CALCULATOR-PROVENANCE.txt": "3f90b2f47985b07a6908cea27104089d7ffffdd0d1f9c2da4cbcade56ba4415e",
+      "G4BENCH-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "G4BENCH-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "G4BENCH-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "G4BENCH-PROVENANCE.txt": "7dfc2f08d87a16f77653f6f5173fbb185b22b6b269909c26d359e01762b36a9e",
+      "qed.atr": "df0da99c9cdc6c7294fa02400b36a3d55e959438c6489c25695f2ff7c61cbaa2",
+      "QED-NOTICE.txt": "e4a48f363451f342c2e5e3b02c355420be5c045842c4e42f17cf7b51d0b0720b",
+      "QED-TERMS.txt": "c084b9c6551836b13c3f777cd7d23a6ee532c59797ea1239c314be8a380ebd8a",
+      "QED-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "QED-APACHE-2.0.txt": "c323ee701fe73572b1f8294e8c2f297a1e5e1e7315716585638756d2c7ad9502",
+      "QED-PROVENANCE.txt": "ab52509db2d90c19d11a61d2f2f7c7aef0f4889d500f30caea3d52819556e685",
+      "cartridge/Exec-of816-atarimax-8mbit.bin": "77398fc74da957ea660fe80deaa45da389426df13bf91ad563a9ecc40bb568c2",
+      "cartridge/Exec-of816-atarimax-8mbit-old.car": "00c96f926e3fe290f5de66d151bbe29a44708c903a2ce10de4ce38745d5f6694",
+      "cartridge/Exec-of816-atarimax-8mbit-new.car": "c70ed451afd0b6c47de74640d7bfe8008bab9434db05013534fe710ea6583212"
+    },
+    "fastbasic": {
+      "compiler_sha256": "986da95f95ec9f8b24b47f57f1d6749a4c78b244ab45762b54be7e2f253bf5ec",
+      "compilers": {
+        "FBCI": {
+          "profile": {
+            "load": 12288,
+            "end": 18943,
+            "entry": 12602,
+            "limit": 57344,
+            "bytes": 6671
+          },
+          "sha256": "986da95f95ec9f8b24b47f57f1d6749a4c78b244ab45762b54be7e2f253bf5ec"
+        },
+        "FBC": {
+          "profile": {
+            "load": 12288,
+            "end": 22404,
+            "entry": 14727,
+            "limit": 57344,
+            "bytes": 10132
+          },
+          "sha256": "b052c6c3ad05eb4c9981cdbcbc4e0f73e35321884276318f9147b0c7def08b60"
+        }
+      },
+      "engines": {
+        "FB": {
+          "profile": {
+            "load": 12288,
+            "end": 21633,
+            "entry": 21351,
+            "limit": 57344,
+            "bytes": 9361
+          },
+          "sha256": "9857060368fc7f0042f493bb50442050e0aa72ac158030d5027fed3a1186788a"
+        },
+        "FBI": {
+          "profile": {
+            "load": 12288,
+            "end": 18172,
+            "entry": 17890,
+            "limit": 57344,
+            "bytes": 5900
+          },
+          "sha256": "222293aeee494dd10f703199fd7535d65478139e9665dc7c68c8ec8b705eb2dd"
+        }
+      },
+      "target": 18181,
+      "upstream": {
+        "format": "exec816-fastbasic-inputs-v1",
+        "repository": "https://github.com/dmsc/fastbasic",
+        "revision": "55dc52f74fcfcf3e8afd29bb5b984ee1dc9b6a6f",
+        "release": "v4.7",
+        "archive": {
+          "url": "https://codeload.github.com/dmsc/fastbasic/tar.gz/55dc52f74fcfcf3e8afd29bb5b984ee1dc9b6a6f",
+          "sha256": "9b01e3c96dca8fc1c48e9eb8cdb760f97dbadccf3fc2cc6455ece9820bb51493"
+        },
+        "mini65": {
+          "revision": "30b85d1ee940b546ca7b5737be371ff6c7f99ed1",
+          "url": "https://codeload.github.com/dmsc/mini65-sim/tar.gz/30b85d1ee940b546ca7b5737be371ff6c7f99ed1",
+          "sha256": "b10f9a3f39213dacabf76d1604147ba16804da69d047d68589dd2166107d0f27"
+        },
+        "selection": [
+          "src/",
+          "cc65/",
+          "compiler/",
+          "Makefile",
+          "rules.mak",
+          "deps.mak",
+          "tests.mak",
+          "testsuite/src/",
+          "testsuite/tests/",
+          "LICENSE",
+          "README.md",
+          "version.mk"
+        ],
+        "license": "GPL-2.0-or-later; retain file-specific runtime linking exception"
+      },
+      "inputs": {
+        "tools/build_fastbasic.py": "a3b0292e8992ee06e0de5fe4169e1597ba4f26ff6cf03bfe7eef1829c01f499c",
+        "tools/generate_fastbasic_math.py": "d4adb286af0e738b6adab680b3c3c7720c5d79d454afcec93979a4314177ec38",
+        "tools/generate_fastbasic_interpreter.py": "44d8f9a5286a6f44e219ba73ba72a93422389329c94af34d5bb0a67ddfc2069f",
+        "ports/fastbasic/upstream.json": "3d68f368e7715cabcd979d55823c6b9fa0a1e9665838158a24e27507e16ec82e",
+        "abi/fastbasic.json": "21c9ffb5756acfb94591e98224cf66fafabca5a2cc34f63d71cc23e8f5d0a80f",
+        "abi/fastbasic-interpreter.json": "69c5af66a78c58665e6d6e1442092af8e100889314c15d4db8ad086811d8b7ce",
+        "ports/fastbasic/patches/exec6502.patch": "48e4d1f84e85068e306c017a0f2c4f593d455f0b165287b58af1dbfedc373de3",
+        "ports/fastbasic/patches/session.patch": "99fd08ecd6405b78e08b33a51126b92db63b87aa530b1c757188f6e76f7d54eb",
+        "ports/fastbasic/patches/resident-stack.patch": "10b1f6a05f53fd0f282e06689267918bbb083eec7c9b65ffa4e65157fbb631c2",
+        "ports/fastbasic/target/atari-fp-compiler.tgt": "589de98523bdaaa21c499c9876b78e53136a858c701e941dcf69c2b6f4a1e9af",
+        "ports/fastbasic/target/atari-int-compiler.tgt": "dbf93799084ea671d19f9dfdb5e0c49d4978f1de6d74ebec1e52e7e44c8dda44",
+        "ports/fastbasic/target/callbacks.asm": "84f867d37cfb98e5caac584cc82c0a2d52df290afbea8d8ab450184e13aa8c21",
+        "ports/fastbasic/target/cmdline.bas": "85008fdbfad22969e56c0b21e0645c71ce7b2c812258f7c81ae51b2dfc4a5fc0",
+        "ports/fastbasic/target/exec.cfg": "98d1a1e18d38db0212b94535d34f56b6388a614c1e916f4a77e9eb39e74d29ce",
+        "ports/fastbasic/target/fastbasic.inc": "cdf8b4f754d2b4c4ab806ef3a220126e84b3a3e9e04ac175016e87148e9ff9c9",
+        "ports/fastbasic/target/fp_snapshot.asm": "17c0253e0d3f849dfa7727cf29e23f319a725f5182bd9957a3a967b26d3f6f1a",
+        "ports/fastbasic/target/header.asm": "d00993f10f1c53c543639a66ef15c82eb49a4adb050abfc38ce9b7597aa5dc5d",
+        "ports/fastbasic/target/helpers.asm": "efd931da9b869871d6c0305d3cdaa5b38edb3a45b4406518be76f4cc22c943e0",
+        "ports/fastbasic/target/mathpack.asm": "6be67a404772ce896ef3c3b0ca516151bfa6adfa5c6c0f791bbfae93f4e912f3",
+        "ports/fastbasic/target/source-run.asm": "e7a0fb112fc4e744613eb7e69a0cf7243b175b86b48ecb5b3dea51c7dacaac62",
+        "ports/fastbasic/target/source-run.inc": "c0da50f863316d9e79c22a431180e68ee30af3a0e6253aec9679876dc2a3a927",
+        "ports/fastbasic/target/source-run.mak": "9cc2296bfc9fe74bda0f64b471715fb3fd49fd1e18488f00fa62988d1874a6dd"
+      },
+      "native_inputs": {
+        "abi/fastbasic.json": "21c9ffb5756acfb94591e98224cf66fafabca5a2cc34f63d71cc23e8f5d0a80f",
+        "lib/dos/fbabi.act": "fb7f3a7c545ed34789eca50d34cc189822e4117066d7ba993aee8dccc1d5ec01",
+        "lib/dos/fbprogram.act": "cd4c957dee76d41b1fdd44ab463a0a6a250f8c0f2699b2d108441645bb17c28e",
+        "lib/dos/fbservice.act": "ff9e5449833e374e168e3a2ae18cb695bf8809ab481d74c76c1f1e3c548217f9",
+        "lib/dos/fbstate.act": "72479d5a6cf77c87b4d931f6a80832c5ace34c2b8b5e474d12c7961355235270",
+        "lib/dos/fbfiles.act": "2af7f2254e1d628d19441d72b4f2f89f92aab30a82afbe4119a034b06c7c31ef",
+        "abi/fastbasic-diagnostics.json": "8a0c4447d253cc81384972da8cdb0f04ff1b9b9094dee737316a0a3618181274",
+        "lib/dos/fbdiagabi.act": "4ed36425d4d05fd10006a61ee8acec63380d3e8c6ec260323d63960eca87f1dd",
+        "lib/dos/fbdiagnostic.act": "0ba6b3dec08287c514d478c72852cf95395a6c30cbae37d572fbb4efd2c850ce",
+        "abi/c-program.json": "b35b5a687582531b935f3bebe856a7e8122fe5ac24bfb696723c7304dea98997",
+        "lib/dos/c-program-abi.inc": "4913a13dd37701bbe352c00611059f3c5d9f729d65cbf1d296b44a0983436625",
+        "lib/dos/programload.act": "56f056e2ae267b97733916aadf41b98cf93e50e53094404456e1d37cbff03cbf",
+        "lib/dos/programfile.act": "2b06210fd34122e50e370de1a08912e8e289a5016d06538d6c84431e9893bffd",
+        "abi/fastbasic-interpreter.json": "69c5af66a78c58665e6d6e1442092af8e100889314c15d4db8ad086811d8b7ce",
+        "lib/dos/fbinterpabi.act": "1c8f751d128c6e768fa7c06c246db941bb5b732ebe82e6a95dcc999e9f46e83f",
+        "lib/dos/fbsource.act": "f87fa5c1d37ebefd8a9e021c47e726d01db9912d009cf29dde35348e91bb2d4d",
+        "lib/dos/fbresult.act": "87a7c96a08e09305054fcc9441441f5715c453bec50c181032820eae04dc7dfc",
+        "lib/dos/fbsession.act": "9658275e2b5ea00436d95bae4e453a2cd2c21962d3a14f7ac40fdcbaa970ff5a",
+        "lib/dos/fbbind.act": "e593441d52a7743a8d0d37393058a3a56865a33a5c08816d99127cdd630f45fd",
+        "lib/dos/program.act": "5f0554c21624c0e9ccad41c9cbd6b0f4d0c0d6b8e628cfcfff71879202a02474",
+        "lib/dos/programapi.act": "f90ba55bd16d797306ff4e0323261307fdb88e4ba32df9a989505203ff66cb5e",
+        "abi/program.json": "ed110ace4893dbfd5e22e877e544d3cacdfa6dba94d85923e6e5ecb7e7bbe568",
+        "c/calypsi/dos.c": "f539b77da208f6645817b7edec7d28c3368653819c2e0593091a224def98b7b2",
+        "c/calypsi/dos-bridge.inc": "f4eb20c45369b62c9d2d18029c68a3533447f5e034d03d7635b36e84c0e72f29"
+      }
+    },
+    "native_build": {
+      "path": "build/sdx-resident/demo/build.json",
+      "sha256": "1206315716ea5b51aa52ee24264dedc218d32399b7b2841efb0af83ccb5106eb"
+    },
+    "fresh_native_build": true,
+    "post_build_input_changes": {
+      "tools/generate_sdx.py": {
+        "native_build_sha256": "3031140705274db18a18d4bacdd05dfe01327f0eb9d55cd56c3327b8a4026c5a",
+        "current_sha256": "8de95b6947ef9b7bd45d441379caa95301add3a7c62ad5104920feebab1e04a2",
+        "reason": "Post-build documentation-only change in service_reference; all generated executable inputs match the native build."
+      },
+      "ports/fastbasic/patches/resident-stack.patch": {
+        "native_build_sha256": "11c6513d5188ac4bfd99cac253319cc12ed7a06ceb5aacd9af1d202d45e10192",
+        "current_sha256": "10b1f6a05f53fd0f282e06689267918bbb083eec7c9b65ffa4e65157fbb631c2",
+        "reason": "Guest parser refreshed through build_demo.py --refresh-fastbasic with unchanged native ABI/artifact checks."
+      }
+    },
+    "guest_parser_refresh": "Verified unchanged native artifacts and FASTBASIC_NATIVE_INPUTS; rebuilt only guest parser after the fresh ABI build"
+  },
+  "source_sha256": {
+    "abi/fastbasic.json": "21c9ffb5756acfb94591e98224cf66fafabca5a2cc34f63d71cc23e8f5d0a80f",
+    "abi/sdx.json": "a2361f446aa971e043f5cca1ad94cf328751a342e6ff97e4ad86042bd3e236c8",
+    "compat/sdx/arc-450.json": "da2667a28c13a08cffdb14789d1b2a5da404794ad0f3704d9936a9ab33fdd802",
+    "docs/basic-workbench-distribution.txt": "0194904b2e493e4d79fd9f3c62fee7e02b068d044786301c728e2494da1c3c16",
+    "docs/development/sdx-arc.md": "fd3944318ddce876c8d6e2d38a6ee26e3df53a1603cc26cdd71babfa2239c01a",
+    "docs/development/sdx-md5.md": "11143a1a7bfd5b561205aa7838b22581b47a3cb69a26de6ea8e7fcc8da9b9749",
+    "docs/development/sdx-runtime.md": "de08f53ef90f6a15a9d17604986093ba9b742c4085c7a9a1babae7f785ad4df3",
+    "docs/plans/README.md": "95d1686cfe5d23f3d16a82de7e999bff3df81c56d4e891d0d7b76a8d15af63f1",
+    "docs/plans/sdx-resident-stack-design.md": "2ee572218333bb7961efb0cc9e36329302459dd161c8644af9caf87e1104a2c5",
+    "docs/plans/sdx-resident-stack-implementation-plan.md": "8bf215de60cdf3c67222c554833a7fce2be746c7bd4ceaf08d84bcdc68bef7d3",
+    "docs/reference/README.md": "c165031f657f7ddbbad464a6fc1b2ca72e1664fbe2cc20ad44e0239ba2b855c8",
+    "docs/reference/fastbasic.md": "2772a8f5d8f645ecef90f4edc9a058bbdc9af616ec8aab9a02d887ef6cb85440",
+    "docs/reference/platform.md": "b2fb465ceeb09fa2e5cb5389ad831685e938973e48352715c0b1c652138c61dc",
+    "docs/reference/sdx-runtime.md": "fe8cc9bd7962ef04dd37d8888b593479fa64a6f2b5dc3af6344de8cb4517b1f6",
+    "docs/reference/sdx-services.md": "ba38d68290dad274ea0d16d7d21f6a948c7866b46d4edf646dac7195ea8276ff",
+    "docs/roadmap.md": "5564a80031ddade986fc8b1aacd70fca9aff794aeadb9284ba1f5b94e525bdf4",
+    "lib/dos/fbabi.act": "fb7f3a7c545ed34789eca50d34cc189822e4117066d7ba993aee8dccc1d5ec01",
+    "lib/dos/fbprogram.act": "cd4c957dee76d41b1fdd44ab463a0a6a250f8c0f2699b2d108441645bb17c28e",
+    "lib/dos/fbservice.act": "ff9e5449833e374e168e3a2ae18cb695bf8809ab481d74c76c1f1e3c548217f9",
+    "lib/dos/sdxabi.act": "f59b3f3297753a7bb761961fb773e26b336e013ffadda8eb065fbc1469cf565c",
+    "lib/dos/sdxarcadd.act": "2f00f848335a6feb7240ad6959acdd69cb44ce2587dbf77013a1ba98e85b0b2f",
+    "lib/dos/sdxoverlay.act": "b07b7403c1a9081a30881b48a252da97d3963b4fba31e44bdb8f90f9e609b414",
+    "lib/dos/sdxprogram.act": "84a894f6f930ef8c916329688a2a5442e4f3e0b0bead71cd4a49c36e9473936c",
+    "lib/dos/sdxruntime.act": "d1b27ccac49badda101313acbf035bb8c185cb7aabfdeed60e376a0196ddd6da",
+    "lib/dos/sdxscreen.act": "a68fa04313863d35b559b822685829c91293c52dbf50b22173421b02fa763901",
+    "lib/dos/sdxservice.act": "3131a6f212ca911f57e1fd8f9e00d66062606526cc144a008392cfbb176866fd",
+    "lib/dos/sdxstate.act": "92a5506941b6e23c4bd7c01359e6b01ac47372890f8803ce3040d3ae8f035b1b",
+    "lib/dos/sdxtraps.act": "2459f65c54c13417b2e83e6061ff5d28736a1dc01ef9d801670f7f7f06d8d82e",
+    "platform/altirraos/generated/sdx.inc": "a3745f251f8e51e4e29e41c11784005eaea099c0d6b4912fb88c33173a660a61",
+    "platform/altirraos/hosted.s": "ec8fa150db9b51f90f18c723a1a7181797ff3ac611ab8552d802fb51aa3eecbd",
+    "platform/altirraos/sdx-runtime-probe.s": "42b58c73423b6664012d0730f4f1ba87de377f464922c667be891178ec5f8d90",
+    "platform/altirraos/sdx-stack.inc": "7baccb6f7754201737179505c4307f656a620fb529d29b704f13a37ac95c5ba1",
+    "ports/fastbasic/patches/resident-stack.patch": "10b1f6a05f53fd0f282e06689267918bbb083eec7c9b65ffa4e65157fbb631c2",
+    "ports/fastbasic/target/fastbasic.inc": "cdf8b4f754d2b4c4ab806ef3a220126e84b3a3e9e04ac175016e87148e9ff9c9",
+    "tests/programs/fbisession.act": "21fddff1089c5a4ee170cba71f1c85b0b7cce9ac2c6880dc9cfd7a958e0b6f34",
+    "tests/programs/sdx_arc_mixed.act": "ecbd20ecf25a0835d2306c3d90a49fb269cacd586f964c6dde98709ab33fa01a",
+    "tests/programs/sdx_md5_acceptance.act": "5e1e537303bcd88ca23ac495d27af49267e64adc1753fcda44f46cbc5628663a",
+    "tests/programs/sdx_screen.act": "d1e3ce106eb7af1f26bf298bd8e10ec1c149d02c0461f022c90e84eff681793c",
+    "tests/programs/sdx_service_shape.act": "6904aecec8052535673185aee295eeca7268054ad0edb590ed9395a8a3dbb112",
+    "tests/test_sdx_stack_audit.py": "3426b36464c182d661735b1783bb5ba35bcb6e6123e1ff8a6c98c5ca26ba456f",
+    "tools/audit_sdx_stack.py": "7dddc14e1077d3cbcbd3a12bdf962b6dcb1e5c35e042cd130d3ee3ac2cb4be8b",
+    "tools/build_fastbasic.py": "a3b0292e8992ee06e0de5fe4169e1597ba4f26ff6cf03bfe7eef1829c01f499c",
+    "tools/generate_sdx.py": "8de95b6947ef9b7bd45d441379caa95301add3a7c62ad5104920feebab1e04a2",
+    "tools/measure_sdx_editor.py": "e0ad7762cee3168d8b08a61137f7891cb85ab3243b63cf2be52cbd8763bbf3b0",
+    "tools/native_program.py": "d618ee64b10eefecd595b067ae24e2ab01a6c5c83f62754aa8eb091e1ab3ebd9",
+    "tools/sdx_build.py": "df011dd9ab0277964426dad5d595c4e139a95997a02579d52e76eec04f6d2a6d",
+    "tools/test_fastbasic_interpreter.py": "2dd4a642e7ecdfcf3f1fdeac34051c2e0308d4ffa8cac3b148dfc3cb0e66bfba",
+    "tools/test_sdx_arc.py": "30b3ecbf645c4eadce367e6a51dd63caa26026e6823ffd41c49f08d4f46756f8",
+    "tools/test_sdx_arc_mixed.py": "be9d612e3606676d1658913ecbb20cf909390351acae4c994622478605ed388d",
+    "tools/test_sdx_arc_mutate.py": "a54ef048ab424ae203095ad66464a56108e6e18ed13ded184d6c3be6f0a08878",
+    "tools/test_sdx_arc_stack.py": "20948a3c5bc7d23efe72187c1741436d82879b81994d2db2267e229b0abd6027",
+    "tools/test_sdx_md5_acceptance.py": "1085945b071c2068a8dbe4f065872f03621e65a0842cfcf6ec1c160d8db13c5a",
+    "tools/test_sdx_md5_exec.py": "2456c3e2eab3c8a33dee3b8f282135bb51738ffec038ae707229ea9709836860",
+    "tools/test_sdx_process.py": "b342388dcd09d3108c7e51f1ea2158abb296d2e08799fd740af1e9001d28f5b0",
+    "tools/test_sdx_resident_demo.py": "21ada22b117156d5e256ff68bdffa4f1c3afe8bcc192e936c11092dcab182ed6",
+    "tools/test_sdx_resident_stack.py": "6e6644000d8f261029e35d2e6c8039478bddd8368816fda5a60f74891ff7dfb8",
+    "tools/test_sdx_screen.py": "ddea84d851a226d1e5e3caafc7dc929abac33c3868ac55c6d00befc04cb41588",
+    "tools/test_sdx_services.py": "91680211a92088f477f2a52a55e9cceb0304c1d759bdf5676fa8adcf599a00fc",
+    "tools/test_sdx_tasks.py": "c76f38b55cbb595db6679a756d88cf46ec2f2a99356b0e93b55d31b513854846"
+  },
+  "limits": [
+    "100 ms p95 insertion/caret goal remains open",
+    "Selected development coverage does not qualify the hosted system",
+    "Pinned admitted binaries/ROM interrupt chain only",
+    "GUI uses a fully verified native checkpoint; cold ATR is separately tested",
+    "No writable FujiNet user disk overwritten"
+  ]
+}

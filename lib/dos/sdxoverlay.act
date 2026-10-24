@@ -6,6 +6,7 @@ USE A816MEMORY
 USE SDXABI
 USE SDXCONFIG
 USE SDXSTATE
+USE SDXRUNTIME
 USE SDXFILE
 USE SDXFILES
 USE SDXIDENTIFY
@@ -14,7 +15,7 @@ USE SDXARCADD
 ; ARC main loads one overlay synchronously. It cannot publish arbitrary code
 ; through CAR:; both the requested name and complete input identity are checked.
 PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
-  BYTE POINTER staged,root,next
+  BYTE POINTER staged,root
   DOS.FileHandle POINTER file
   SDXFILE.Layout POINTER plan
   CARD name,index,used,stack,length
@@ -115,12 +116,8 @@ PUBLIC BYTE FUNC Load(SDXSTATE.Session POINTER state BYTE POINTER frame)
   state.overlayTraps=state.trapCount
   A816MEMORY.Move(@state.overlayFrame,frame+1,13)
   ; Insert an ordinary guest RTS destination above the relocated saved frame.
-  next=frame-2
-  FOR index=1 TO 13 DO
-    next(index)=frame(index)
-  OD
+  SDXRUNTIME.MoveFrame(CARD(state.slot),stack-2)
   SDXSTATE.Word(frame,12,SDXABI.OVERLAY_RETURN_PC-1)
-  SDXSTATE.Word(state.context,SDXABI.FIELDS_GUEST_S,stack-2)
   frame=SDXSTATE.GetFrame(state)
   SDXSTATE.Word(frame,SDXABI.FRAME_PC,state.overlayBase)
   state.overlayActive=1

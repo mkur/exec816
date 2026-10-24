@@ -1,5 +1,13 @@
 # Historical records
 
+- [Resident SDX/FastBasic stack](sdx-resident-stack.md): one active guest,
+  parked BASIC, audited ROM borrowing, asynchronous-entry development checks,
+  RAWCON spans, final distribution and the open 100 ms latency goal.
+
+- [EDX interaction baseline](edx-interaction-baseline.json): five physical-key
+  development samples of the unchanged packaged editor, pinned inputs and
+  retained-model/input-ready timing limits for the proposed resident-stack work.
+
 - [Mouse on port 2](mouse-port2.md): fixed backend and launcher selection,
   electrical/unused-port checks, unchanged reservations and refreshed delivery.
 

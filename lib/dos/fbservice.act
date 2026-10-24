@@ -230,13 +230,18 @@ LONGINT FUNC Invocation(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   BYTE mode
 
   state=FBSTATE.Session POINTER(image.extension)
+  IF SDXRUNTIME.Acquire(CARD(state.guest.slot))=0 THEN
+    FBSOURCE.Begin(state)
+    FBRESULT.Complete(state,DOS.ERROR_OBJECT_IN_USE)
+    DOSCLIENT.SetError(DOS.ERROR_OBJECT_IN_USE)
+    RETURN(FBABI.RESULT_FAILURE)
+  FI
   IF state.interpreter=NULL THEN
     Initialize(image,state)
   ELSEIF state.interpreter.channel=NULL THEN
     Initialize(image,state)
-  ELSE
-    SDXSTATE.Enter(@state.guest)
   FI
+  SDXSTATE.Enter(@state.guest)
   state.arguments=arguments
   state.diagnostic=0
   state.diagnosticJob=0
@@ -411,6 +416,7 @@ LONGINT FUNC Invocation(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   FI
   cause=FBDIAGNOSTIC.Complete(state,state.diagnostic,state.diagnosticJob,cause)
   FBRESULT.Complete(state,cause)
+  SDXRUNTIME.Release()
   IF cause<>0 THEN
     result=FBABI.RESULT_FAILURE
   FI

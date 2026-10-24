@@ -4,6 +4,8 @@
 
 [Reference index](README.md) · [Machine-readable ABI](../../abi/sdx.json) · [Development evidence](../development/sdx-services.md)
 
+[Resident execution and BASIC parking](sdx-runtime.md) define the current one-active-guest lifetime, ROM stack borrowing and busy result 20/202. Two retained Images do not imply two active guest stacks.
+
 Opt-in development personality for the exact pinned 6502 MD5.COM, ARC.COM with ARCLST.OVL/ARCEXT.OVL/ARCADD.OVL, and EDX.COM. MD5 hashing/verification, ARC no-argument help, L/V, X/E, A/D/U/F with N/W/B flags, and interactive EDX are admitted. Other ARC operations and arbitrary modules remain unsupported.
 
 E=1, M=X=1, private aligned D, PBR=DBR=guest bank. Calls use JSR to the imported veneer. AX denotes low A and low X, little endian.

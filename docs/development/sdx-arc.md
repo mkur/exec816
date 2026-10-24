@@ -1,5 +1,9 @@
 # ARC on the SDX personality
 
+The current [resident guest contract](../reference/sdx-runtime.md) and
+[execution record](../history/sdx-resident-stack.md) supersede the earlier
+concurrent-guest checks below and document the recursive compressor stack bound.
+
 A1–A4 admit the pinned 6502 SDX 4.50 `ARC.COM` and its three overlays for listing, extraction and archive mutation as
 ordinary Exec Processes. [Manifest](../../compat/sdx/arc-450.json),
 [plan](../plans/spartados-personality-implementation-plan.md),

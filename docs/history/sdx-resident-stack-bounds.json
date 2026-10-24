@@ -1,0 +1,312 @@
+{
+  "status": "scoped-source-bound-established",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Pinned admitted profiles and reviewed ROM chains; not arbitrary guest code or third-party interrupt handlers",
+  "guest_walks": {
+    "MD5": {
+      "cpu_bytes": 10,
+      "service_frame_bytes": 21,
+      "states": 43053,
+      "peak_path": [
+        "0x0",
+        "0xb8",
+        "0x1a0",
+        "0xce",
+        "0xc1c0"
+      ]
+    },
+    "EDX": {
+      "cpu_bytes": 16,
+      "service_frame_bytes": 27,
+      "states": 1555882,
+      "peak_path": [
+        "0x0",
+        "0x3d",
+        "0xa20",
+        "0x4d6",
+        "0x1c6",
+        "0x1d0",
+        "0x1db",
+        "0x10c"
+      ]
+    },
+    "ARC.COM": {
+      "cpu_bytes": 8,
+      "service_frame_bytes": 19,
+      "states": 1049982,
+      "peak_path": [
+        "0x97a",
+        "0x4c1",
+        "0x4e8",
+        "0xc360"
+      ]
+    },
+    "ARCLST.OVL": {
+      "cpu_bytes": 9,
+      "service_frame_bytes": 21,
+      "states": 2406,
+      "peak_path": [
+        "0x1a6c",
+        "0x1d6b",
+        "0x2bb",
+        "0x3db",
+        "0xc300"
+      ]
+    },
+    "ARCEXT.OVL": {
+      "cpu_bytes": 20,
+      "service_frame_bytes": 31,
+      "states": 34654,
+      "peak_path": [
+        "0x1a6c",
+        "0x1a83",
+        "0x1b78",
+        "0x1c25",
+        "0x1de2",
+        "0x1efd",
+        "0x1c62",
+        "0x41a",
+        "0x459",
+        "0xc180"
+      ]
+    },
+    "ARCADD.OVL": {
+      "cpu_bytes": 22,
+      "service_frame_bytes": 33,
+      "states": 169311,
+      "peak_path": [
+        "0x1a6c",
+        "0x1adc",
+        "0x1c0e",
+        "0x2204",
+        "0x2897",
+        "0x284b",
+        "0x2266",
+        "0x22ba",
+        "0x41a",
+        "0x459",
+        "0xc180"
+      ]
+    }
+  },
+  "basic_leaf_walks": {
+    "FB": {
+      "cpu_bytes": 13,
+      "service_frame_bytes": 24,
+      "states": 39701,
+      "peak_path": [
+        "0x1758",
+        "0x175a",
+        "0x1712",
+        "0x2448",
+        "0xe19",
+        "0x983",
+        "0xc280"
+      ]
+    },
+    "FBI": {
+      "cpu_bytes": 13,
+      "service_frame_bytes": 24,
+      "states": 6806,
+      "peak_path": [
+        "0xb4e",
+        "0xb50",
+        "0xb08",
+        "0x16c3",
+        "0x5c2",
+        "0x136",
+        "0xc280"
+      ]
+    },
+    "FBC": {
+      "cpu_bytes": 13,
+      "service_frame_bytes": 24,
+      "states": 39701,
+      "peak_path": [
+        "0x1ad3",
+        "0x1ad5",
+        "0x1a8d",
+        "0x274b",
+        "0xe19",
+        "0x983",
+        "0xc280"
+      ]
+    },
+    "FBCI": {
+      "cpu_bytes": 13,
+      "service_frame_bytes": 24,
+      "states": 6806,
+      "peak_path": [
+        "0xec9",
+        "0xecb",
+        "0xe83",
+        "0x19c6",
+        "0x5c2",
+        "0x136",
+        "0xc280"
+      ]
+    }
+  },
+  "huffman_body": {
+    "cpu_bytes": 5,
+    "service_frame_bytes": 19,
+    "states": 106,
+    "peak_path": [
+      "0x2684",
+      "0x268a",
+      "0x241f"
+    ]
+  },
+  "minimum_complete_s": {
+    "MD5": 462,
+    "EDX": 450,
+    "ARC": 412,
+    "FastBasic": 400
+  },
+  "stack_floor": 272,
+  "rom_reserve": 128,
+  "minimum_borrow_anchor": 400,
+  "rom": {
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "editor": {
+      "body_bytes": 13,
+      "states": 4024,
+      "path": [
+        {
+          "address": "0xfae1",
+          "symbol": null
+        },
+        {
+          "address": "0xfc46",
+          "symbol": null
+        },
+        {
+          "address": "0xfcfa",
+          "symbol": null
+        },
+        {
+          "address": "0xf977",
+          "symbol": "SCREENCOMPUTETOADDRX0.WITH_X"
+        },
+        {
+          "address": "0xf95f",
+          "symbol": "SCREENCOMPUTEADDR"
+        },
+        {
+          "address": "0xf97f",
+          "symbol": "SCREENCOMPUTERANGESIZE"
+        }
+      ]
+    },
+    "components": {
+      "cio_wrapper_cop_and_body": 33,
+      "nested_emulation_vbi": 22,
+      "owned_or_rom_irq_envelope": 48,
+      "acknowledge_only_nmi": 13,
+      "retired_vbi_return_tail": 6
+    },
+    "peak_bytes": 122
+  },
+  "assumptions": [
+    "Both branch arms are traversed unless abstract register/flag state or a reviewed invariant fixes the branch. Unknown control transfers fail closed.",
+    "EDX JMP ($87) selects only its current mode table. $34C0/$3C81 see a nonzero high byte of a live document pointer; $3FB4 sees a nonnegative row index at admitted height <=30.",
+    "ARC inline-six is the checked no-push helper, with one nested JSR and a six-byte return adjustment. Printer summaries include an extra two-byte wrapper allowance.",
+    "ARCADD $5163..$5171 executes the initialized three-byte compare loop exactly three times. Recursive edges $56F7/$5713 are summarized compositionally against the real native entry check at $5684.",
+    "ARCADD entry frame >=$01A0 permits the next four-byte descent; a failing entry remains >=$019C and returns SDX 158 before deeper execution. Rooted overlay continuations compose with the bounded main region.",
+    "BASIC token/action leaf roots terminate at next_instruction or EXE_END. Arbitrary USR is excluded by public syntax. Bootstrap USR has one word and only the fixed argument/error/diagnostic/parser callbacks.",
+    "BASIC E_ELSEIF patches a live nonzero bytecode address. Grammar records use 256 private-bank bytes plus three bookkeeping bytes, bounded to 63 live states; they do not accumulate CPU frames. Pure parser states check $01A4 (conservative 19-byte envelope). Action entry checks $01A7 after three temporary saves, then restores them before its 26-byte leaf/interrupt envelope. Parser errors restore saved_cpu_stack before output; pinned callers provide S >=$01D0.",
+    "ROM CIO is IOCB0 PUT CHARACTERS to the standard E: handler. ScreenOpenGr0 can retry only once after selecting mode zero. Native VBI/clock hooks, owned IRQ handlers and no third-party vectors form the reviewed interrupt chain.",
+    "One nested CIO VBI uses the direct emulation dispatcher. Deeper NMIs only acknowledge. The six-byte return tail retires within one PAL VBI interval under the selected IRQ budget; no Task switch occurs across ROM."
+  ],
+  "entry_inventory": [
+    {
+      "path": "platform/altirraos/blitter.s",
+      "lines": [
+        392
+      ],
+      "lifetime": "test-only emulation import"
+    },
+    {
+      "path": "platform/altirraos/boot-diagnostics.s",
+      "lines": [
+        267
+      ],
+      "lifetime": "terminal fault, no resumable guest"
+    },
+    {
+      "path": "platform/altirraos/hosted.s",
+      "lines": [
+        78,
+        728,
+        776
+      ],
+      "lifetime": "boot/final-return"
+    },
+    {
+      "path": "platform/altirraos/sdx-runtime-probe.s",
+      "lines": [
+        240
+      ],
+      "lifetime": "runtime shared selector, no resident anchor"
+    },
+    {
+      "path": "platform/altirraos/sdx-stack.inc",
+      "lines": [
+        24
+      ],
+      "lifetime": "non-SDX runtime selector"
+    },
+    {
+      "path": "platform/altirraos/sio.s",
+      "lines": [
+        1273
+      ],
+      "lifetime": "test-only emulation import"
+    }
+  ],
+  "source_sha256": {
+    "tools/audit_sdx_stack.py": "7dddc14e1077d3cbcbd3a12bdf962b6dcb1e5c35e042cd130d3ee3ac2cb4be8b",
+    "abi/sdx.json": "a2361f446aa971e043f5cca1ad94cf328751a342e6ff97e4ad86042bd3e236c8",
+    "abi/fastbasic.json": "21c9ffb5756acfb94591e98224cf66fafabca5a2cc34f63d71cc23e8f5d0a80f",
+    "compat/sdx/arc-450.json": "da2667a28c13a08cffdb14789d1b2a5da404794ad0f3704d9936a9ab33fdd802",
+    "ports/fastbasic/patches/resident-stack.patch": "10b1f6a05f53fd0f282e06689267918bbb083eec7c9b65ffa4e65157fbb631c2",
+    "platform/altirraos/sdx-runtime-probe.s": "42b58c73423b6664012d0730f4f1ba87de377f464922c667be891178ec5f8d90",
+    "platform/altirraos/sdx-stack.inc": "7baccb6f7754201737179505c4307f656a620fb529d29b704f13a37ac95c5ba1",
+    "platform/altirraos/hosted.s": "ec8fa150db9b51f90f18c723a1a7181797ff3ac611ab8552d802fb51aa3eecbd",
+    "platform/altirraos/signal-irq.s": "8eb6ba37d828640a599c416d445298881a9dd8337589dde0b1fd872ddffacdee",
+    "platform/altirraos/sio.s": "a105b8007a375ce24e3aa2173c8a22078368c7a6e87a9893cbb31089b829f2f9",
+    "platform/altirraos/input.s": "b85a0a5e57fdc590bdf2a91f5b2e041c0b2405ad20194efc4388f2c8e8fe484a"
+  },
+  "binary_sha256": {
+    "build/sdx-inputs/md5/MD5.COM": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+    "build/sdx-inputs/edx/EDX.COM": "1f9b1082bc6ad53f8b7cbac15044f434454c942a3b13f7f6b428e7b8b0ba8f69",
+    "build/sdx-inputs/arc/ARC.COM": "2107dcc06b29cf6ba5a26ad8aaf167f59f5211d2d93c08253594507a7d2217dd",
+    "build/sdx-inputs/arc/ARCLST.OVL": "ea0b1f04ffa1c93d8b3fc69baafbb86854651665093c9ab3a091401c2946b7cd",
+    "build/sdx-inputs/arc/ARCEXT.OVL": "b1dd56ac4bb133bfc55150c1c17e401f74903d79a8459c6997ec0105290ad5ba",
+    "build/sdx-inputs/arc/ARCADD.OVL": "f0aa3ef786bc58567bd97a5b6dca58eadf1cdf8bac8bb0e6a3447a4d955d7408",
+    "build/fastbasic/FB.COM": "9857060368fc7f0042f493bb50442050e0aa72ac158030d5027fed3a1186788a",
+    "build/fastbasic/FBI.COM": "222293aeee494dd10f703199fd7535d65478139e9665dc7c68c8ec8b705eb2dd",
+    "build/fastbasic/FBC.COM": "b052c6c3ad05eb4c9981cdbcbc4e0f73e35321884276318f9147b0c7def08b60",
+    "build/fastbasic/FBCI.COM": "986da95f95ec9f8b24b47f57f1d6749a4c78b244ab45762b54be7e2f253bf5ec"
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  }
+}

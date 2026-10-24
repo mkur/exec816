@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-24",
+  "tier": "development",
+  "qualification": false,
+  "purpose": "Pre-refactor EDX typing and cursor baseline; no resident-stack implementation was exercised.",
+  "exec_revision": "3d25e1fb6c7e5fb4012592cdf6814b05de30717c",
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "override": false,
+    "optimize": true
+  },
+  "rom": {
+    "name": "AltirraOS 3.44 for 65C816",
+    "bytes": 16384,
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7"
+  },
+  "emulator": {
+    "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+    "platform": "macOS arm64",
+    "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338"
+  },
+  "machine": {
+    "model": "800XL",
+    "cpu": "65C816",
+    "clock_multiplier": 8,
+    "memory": "64K",
+    "high_banks": 63,
+    "video": "PAL",
+    "basic": false,
+    "dli": false,
+    "shadow_rom": true,
+    "addons": "custom"
+  },
+  "transport": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "pointer": {
+    "model": "ST mouse",
+    "port": 2
+  },
+  "artifacts": {
+    "source_results": {
+      "path": "build/edx-performance/results.json",
+      "sha256": "f453cb310f10732f8e1672b2a4e31608682b24506714046a962e492a2b02e97d"
+    },
+    "observer": {
+      "path": "build/edx-performance/measure.py",
+      "sha256": "0d7eb6a29982b842009cc0440754115841b39e1182f90c1f42575d0a5dacfb31"
+    },
+    "distribution": {
+      "path": "exec816-demo.zip",
+      "sha256": "10732a45020a86f6f0346fde3a58939f7122ffad2f7d8c0f52ddeff26c1499e0"
+    },
+    "native_entry_snapshot": {
+      "path": "build/mouse-port2/demo/disk-boot/before-native.altstate2",
+      "sha256": "f00943f45a679306d6ed8e944b1c0d4ab27a8881b852b0d6a7db70582436f045"
+    },
+    "xex": {
+      "path": "build/edx-performance/bundle/program.xex",
+      "sha256": "33fbc6153d2a1c82c238e876338a0a5aee1bc9bf5ae0b8909591a2bfcebf2d62"
+    }
+  },
+  "method": {
+    "scope": "Unchanged packaged EDX, native-entry snapshot replay, physical keys; routine elapsed times include preemption",
+    "command": "EDX EDIT.TXT",
+    "fixture_hex": "48454c4c4f9b5345434f4e44204c494e459b",
+    "key_hold_pal_frames": 3,
+    "completion": "Native NMI observation with raw input ready and console dirty rows cleared.",
+    "total_ms": "Frame-quantized upper bound from physical key offer to completion; includes key-hold time.",
+    "routine_elapsed_ms": "Inclusive wall time in passive entry/return traces, including preemption; nested values must not be added.",
+    "service_ids": {
+      "43": "RAWCON get cell",
+      "44": "RAWCON put cell",
+      "34": "RAWCON key input"
+    }
+  },
+  "samples": [
+    {
+      "name": "end",
+      "start": 67570991,
+      "end": 67855535,
+      "total_ms": 160.44681333955475,
+      "input_ms": 18.463050076193404,
+      "edit_ms": 35.79877611262808,
+      "routines": {
+        "screen_call": {
+          "calls": 10,
+          "elapsed_ms": 1.0319589387337376
+        },
+        "flush": {
+          "calls": 1,
+          "elapsed_ms": 86.0163607888026
+        },
+        "guards": {
+          "calls": 11,
+          "elapsed_ms": 2.1190365093976564
+        },
+        "console_io": {
+          "calls": 2,
+          "elapsed_ms": 64.58705431088318
+        },
+        "positioned": {
+          "calls": 2,
+          "elapsed_ms": 0.8663211062069782
+        }
+      },
+      "services": {
+        "43": 2,
+        "44": 8,
+        "34": 1
+      }
+    },
+    {
+      "name": "insert-1",
+      "start": 67855535,
+      "end": 68424623,
+      "total_ms": 320.8936266791095,
+      "input_ms": 18.449164691934776,
+      "edit_ms": 213.62297164139338,
+      "routines": {
+        "screen_call": {
+          "calls": 74,
+          "elapsed_ms": 7.272205689765274
+        },
+        "flush": {
+          "calls": 1,
+          "elapsed_ms": 63.6260024613077
+        },
+        "guards": {
+          "calls": 75,
+          "elapsed_ms": 14.438826071817745
+        },
+        "console_io": {
+          "calls": 2,
+          "elapsed_ms": 63.200489442174074
+        },
+        "positioned": {
+          "calls": 2,
+          "elapsed_ms": 0.8658982011026546
+        }
+      },
+      "services": {
+        "43": 2,
+        "44": 72,
+        "34": 1
+      }
+    },
+    {
+      "name": "insert-2",
+      "start": 68424623,
+      "end": 68993710,
+      "total_ms": 320.89306280563704,
+      "input_ms": 27.092640182469456,
+      "edit_ms": 200.5518206769583,
+      "routines": {
+        "screen_call": {
+          "calls": 74,
+          "elapsed_ms": 7.211941712399155
+        },
+        "flush": {
+          "calls": 1,
+          "elapsed_ms": 62.652827332074956
+        },
+        "guards": {
+          "calls": 75,
+          "elapsed_ms": 14.843546256655468
+        },
+        "console_io": {
+          "calls": 2,
+          "elapsed_ms": 62.1769886055268
+        },
+        "positioned": {
+          "calls": 2,
+          "elapsed_ms": 0.9163648768852757
+        }
+      },
+      "services": {
+        "43": 2,
+        "44": 72,
+        "34": 1
+      }
+    },
+    {
+      "name": "down",
+      "start": 68993710,
+      "end": 69384959,
+      "total_ms": 220.6149322153602,
+      "input_ms": 17.956832666318004,
+      "edit_ms": 55.362930112112146,
+      "routines": {
+        "screen_call": {
+          "calls": 18,
+          "elapsed_ms": 2.0729398530263796
+        },
+        "flush": {
+          "calls": 1,
+          "elapsed_ms": 105.13773314405981
+        },
+        "guards": {
+          "calls": 19,
+          "elapsed_ms": 3.817211955809236
+        },
+        "console_io": {
+          "calls": 3,
+          "elapsed_ms": 104.58534859362908
+        },
+        "positioned": {
+          "calls": 3,
+          "elapsed_ms": 1.3898071411755917
+        }
+      },
+      "services": {
+        "43": 2,
+        "44": 16,
+        "34": 1
+      }
+    },
+    {
+      "name": "up",
+      "start": 69384959,
+      "end": 69740639,
+      "total_ms": 200.5585166744434,
+      "input_ms": 15.34518219456736,
+      "edit_ms": 41.988979092981324,
+      "routines": {
+        "screen_call": {
+          "calls": 13,
+          "elapsed_ms": 1.3161511688392242
+        },
+        "flush": {
+          "calls": 1,
+          "elapsed_ms": 106.43619278270148
+        },
+        "guards": {
+          "calls": 14,
+          "elapsed_ms": 2.7345748887407155
+        },
+        "console_io": {
+          "calls": 3,
+          "elapsed_ms": 105.93258328763609
+        },
+        "positioned": {
+          "calls": 3,
+          "elapsed_ms": 1.390441498832077
+        }
+      },
+      "services": {
+        "43": 2,
+        "44": 11,
+        "34": 1
+      }
+    }
+  ],
+  "checks": {
+    "cell_model_changed_for_each_key": true,
+    "cancelled": true,
+    "ownership_restored": true,
+    "guards": "intact",
+    "return_status": 0,
+    "live_tasks_after_shutdown": 0
+  },
+  "limits": [
+    "Five samples, including only two insertions; no p95 or workload-population claim.",
+    "Native-entry snapshot replay; this measurement does not validate cold boot.",
+    "Editor load and file I/O latency are excluded.",
+    "Retained console cells and dirty/input state were observed; no independent physical scanout oracle was used.",
+    "The four page-copy loops were source-audited, not timed independently; editing time is not a measurement of copy CPU cost.",
+    "Artifacts under build/ and the generated ZIP are development outputs and are not retained by this JSON summary."
+  ]
+}

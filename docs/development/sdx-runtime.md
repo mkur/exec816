@@ -1,5 +1,10 @@
 # SDX guest runtime development slice
 
+This page preserves the earlier two-guest P2 experiment. The current
+[resident guest contract](../reference/sdx-runtime.md) admits one active guest
+and parks idle BASIC; [current evidence](../history/sdx-resident-stack.md)
+supersedes its execution and stack-copy policy.
+
 Status: partial P2 implementation, 18 October 2026.
 [Plan](../plans/spartados-personality-implementation-plan.md) ·
 [Patch infrastructure](sdx-patches.md) · [Execution record](sdx-runtime.json)

@@ -20,7 +20,7 @@ def configure(output, memory, drive_a='RAM:', car_root='RAM:'):
     memory['profile']['image_data_bytes']=max(memory['profile']['image_data_bytes'],4096)
     require(runtime['resident_bank'] in memory['usable_banks'], 'SDX resident bank is unavailable')
     require(memory['task_capacity']>=8, 'SDX requires at least eight Tasks')
-    guard, count = runtime['dp_guard_bytes'], runtime['slots']
+    guard, count = runtime['dp_guard_bytes'], runtime['image_slots']
     size = count*256+guard*2
     # Allocate from the generated post-adoption map, excluding diagnostic
     # scratch. The bootstrap may occupy these bytes only before adoption.

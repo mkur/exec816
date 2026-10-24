@@ -1,6 +1,8 @@
 MODULE SDXSERVICE
 USE DOS
 USE DOSCLIENT
+USE DOSBREAK
+USE DOSBREAKTYPES
 USE PROGRAMIMAGE
 USE SDXABI
 USE SDXSTATE
@@ -34,6 +36,19 @@ BYTE FUNC Dispatch(SDXSTATE.Session POINTER state BYTE POINTER frame CARD event)
     RETURN(SDXSCREEN.ErrorText(state,frame))
   WHEN SDXABI.ARC_MULTIPLY_EVENT THEN
     RETURN(SDXARCCOMMAND.MultiplyEight(state,frame))
+  WHEN SDXABI.ARC_STACK_EVENT THEN
+    ; ARCADD's recursive tree walk checks before the next four-byte descent.
+    ; The gate also performs the replaced STA without changing guest flags.
+    IF state.profile<>32 OR state.overlayModule<>5 THEN
+      RETURN(156)
+    FI
+    IF SDXSTATE.ReadWord(state.context,SDXABI.FIELDS_GUEST_S)<
+        SDXABI.ARC_STACK_MINIMUM_S THEN
+      RETURN(158)
+    FI
+    state.bank(state.overlayBase+SDXABI.ARC_STACK_STORE_OFFSET)=
+        frame(SDXABI.FRAME_A)
+    RETURN(0)
   WHEN SDXABI.KERNEL_EVENT THEN
     RETURN(SDXFILES.Kernel(state,frame))
   WHEN SDXABI.CALL_REMOVE THEN
@@ -138,13 +153,22 @@ RETURN(156)
 
 PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   SDXSTATE.Session POINTER state
+  DOSBREAKTYPES.Scope POINTER breakScope
   BYTE POINTER frame
   CARD event
-  BYTE error,closeError,pendingError,cancelled,cleanupCalls,cleanup
+  BYTE error,closeError,pendingError,cancelled,cleanupCalls,cleanup,breakPending
   LONGINT result,cause,pendingCause,cleanupCause
 
   state=SDXSTATE.Session POINTER(image.extension)
+  IF SDXRUNTIME.Acquire(CARD(state.slot))=0 THEN
+    DOSCLIENT.SetError(DOS.ERROR_OBJECT_IN_USE)
+    RETURN(20)
+  FI
+  ; The Process owns this foreground scope until Run returns. Observe its
+  ; pending byte at every boundary without finding the same DOS Task again.
+  breakScope=DOSBREAK.Current()
   SDXSTATE.Prepare(state)
+  SDXSTATE.Enter(state)
   state.trapCount=0
   state.operation=0
   state.tempOwned=0
@@ -190,7 +214,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   pendingError=0
   cancelled=0
   cleanupCalls=0
-  IF DOS.BreakPending()<>0 THEN
+  IF breakScope<>NULL AND breakScope.pending<>0 THEN
     error=128
     state.nativeError=304
   FI
@@ -198,21 +222,26 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
     event=SDXRUNTIME.Run(state.slot)
     SDXSTATE.Guards()
     frame=SDXSTATE.GetFrame(state)
-    cleanup=event=SDXABI.CALL_FCLOSE OR event=SDXABI.CALL_FCLOSEAL OR
-        event=SDXABI.CALL_U_XFAIL OR event=SDXABI.CALL_U_FAIL
     state.nativeError=0
+    breakPending=0
+    IF breakScope<>NULL THEN
+      breakPending=breakScope.pending
+    FI
     IF cancelled<>0 THEN
+      cleanup=event=SDXABI.CALL_FCLOSE OR event=SDXABI.CALL_FCLOSEAL OR
+          event=SDXABI.CALL_U_XFAIL OR event=SDXABI.CALL_U_FAIL
       cleanupCalls==+1
       IF cleanup=0 OR cleanupCalls>SDXABI.HANDLE_LIMIT+SDXABI.TRAP_LIMIT+2 THEN
         error=128
         state.nativeError=304
         EXIT
       FI
-    ELSEIF DOS.BreakPending()<>0 THEN
+    ELSEIF breakPending<>0 THEN
       error=128
       state.nativeError=304
     FI
-    IF error=0 AND event<>SDXABI.CALL_PRINTF AND event<>SDXABI.CALL_PUTC
+    IF error=0 AND state.outputUsed<>0 AND
+        event<>SDXABI.CALL_PRINTF AND event<>SDXABI.CALL_PUTC
         AND event<>SDXABI.CALL_VPRINTF THEN
       error=SDXPRINT.Flush(state)
     FI
@@ -230,7 +259,12 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
           event=SDXABI.CALL_U_PERROR THEN
         state.nativeError=pendingCause
       FI
-      error=Dispatch(state,frame,event)
+      IF state.profile=64 AND (event=SDXABI.RAWCON_EVENT+3 OR
+          event=SDXABI.RAWCON_EVENT+4) THEN
+        error=SDXSCREEN.Cell(state,frame,event-SDXABI.RAWCON_EVENT)
+      ELSE
+        error=Dispatch(state,frame,event)
+      FI
       IF error<>0 AND cancelled<>0 THEN
         error=128
         state.nativeError=304
@@ -293,6 +327,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
   state.trapCount=0
   state.overlayActive=0
   state.overlayModule=0
+  SDXRUNTIME.Release()
   DOSCLIENT.SetError(cause)
 
 RETURN(result)

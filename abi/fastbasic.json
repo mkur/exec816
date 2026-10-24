@@ -17,6 +17,7 @@
   "limit": 57344,
   "channels": 4,
   "guest_layout": {
+    "CPU_STACK_FLOOR": 164,
     "PROFILE": 128,
     "IOCB_BASE": 832,
     "IOCB_BYTES": 16,
@@ -37,7 +38,8 @@
     "FP_STACK_BYTES": 48,
     "NUMBER_BYTES": 6,
     "SNAPSHOT": 1792,
-    "SNAPSHOT_BYTES": 4
+    "SNAPSHOT_BYTES": 4,
+    "CPU_STACK_ACTION_FLOOR": 167
   },
   "cio": {
     "OK": 1,

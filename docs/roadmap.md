@@ -69,6 +69,19 @@ verification, masks/P/H/A attributes, shell redirection, cancellation and
 concurrent Processes. [A1–A4 ARC](development/sdx-arc.md) adds loading, listing, extraction, mutation and mixed-use/shell acceptance.
 Complete hosted-system qualification remains open.
 
+The [resident page-one design](plans/sdx-resident-stack-design.md) replaces
+dual guest execution and stack copying with one active SDX/FastBasic
+context. Idle BASIC parks without losing its Process or state, permitting EDX
+and Check/Build between runs. Selected ROM headroom, IRQ/NMI and application
+development checks pass. RAWCON spans and bounded dispatch improve EDX response;
+the 100 ms p95 interaction target remains open.
+It retains the existing two private direct pages and adds no bank-zero reservation.
+The [RS0–RS7 plan](plans/sdx-resident-stack-implementation-plan.md) defines
+executable preparation/cutover slices, targeted asynchronous-entry checks,
+matched EDX latency acceptance and the combined-disk delivery.
+The [execution record](history/sdx-resident-stack.md) separates passing
+functional checks from that remaining performance goal.
+
 Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved
 bank-zero costs for each slice before moving to the next.

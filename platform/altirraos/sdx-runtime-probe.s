@@ -22,26 +22,12 @@ SR_FORCED = $287818
 SR_LEAK = $28781a
 SR_SERIAL_IRQS = $28781c
 SR_WORK = $28781e
-SR_COPY_IRQS = $287820
-SR_HOST = $287900
-SR_CONTEXT = SDX_CONTEXT_BASE             ; two 512-byte records, first 256 = page one
-SR_NATIVE_S = SR_CONTEXT+$100
-SR_NATIVE_D = SR_CONTEXT+$102
-SR_GUEST_S = SR_CONTEXT+$104
+SR_CONTEXT = SDX_CONTEXT_BASE
+SR_NATIVE_S = SR_CONTEXT+SDX_FIELDS_NATIVE_S
+SR_NATIVE_D = SR_CONTEXT+SDX_FIELDS_NATIVE_D
+SR_GUEST_S = SR_CONTEXT+SDX_FIELDS_GUEST_S
 SR_EVENT = SR_CONTEXT+SDX_FIELDS_EVENT
 SR_BANK = SR_CONTEXT+SDX_FIELDS_BANK
-
-; Page-one transfers run on the native Task stack. Service owned byte/timer
-; edges between at most sixteen words, without admitting ROM or scheduling.
-; X indexes an aligned image/record. A is dead at each copy checkpoint.
-.macro sr_copy_checkpoint
-    .local done
-    txa
-    and #$1f
-    bne done
-    jsr sr_copy_irq
-done:
-.endmacro
 
 ; Diagnostic WAI sites force a real VBI at one return boundary. The NMI
 ; replaces the selected WAI with NOP once per guest, before normal handling.
@@ -184,6 +170,22 @@ sdx_probe_emulation_return:
     xce
     plp
     rti
+; A nested CIO VBI already owns page one and a complete saved context. Enter
+; the ROM's emulation dispatcher directly, avoiding a second native wrapper.
+sdx_probe_nested_vbi:
+    sec
+    xce
+    jml $00c17b
+sdx_probe_nested_emulation_return:
+    clc
+    xce
+    rep #$30
+    jml sr_rom_emulation_return
+sdx_probe_nested_native_return:
+    clc
+    xce
+    rep #$30
+    jml sr_rom_native_return
 sdx_probe_stubs_end:
 sdx_probe_installed:
     rtl                         ; bank-zero observation point for the pinned bridge
@@ -203,6 +205,243 @@ sdx_probe_installed:
 .export sdx_probe_native_nmi, sdx_probe_resume, sdx_probe_service_return
 .a16
 .i16
+; All hosted callers are bank zero and supply X=their saved native S. Keep the
+; shared selector in upper RAM. Its three-byte return is reconstructed below
+; the selected S; the caller clears GATE only after RTL has retired it.
+sdx_os_stack_enter:
+    lda #1
+    sta f:SDX_STATE_GATE
+    .if SDX_STACK_PROBE = 1
+        wai
+    .endif
+    lda 1,s
+    tay
+    lda f:SDX_STATE_ROM_DEPTH
+    bne sr_os_nested
+    lda f:SDX_STATE_LEASE
+    beq sr_os_normal
+    lda f:SDX_STATE_ANCHOR
+    beq sr_os_normal            ; lease acquired, no physical frame constructed
+    cmp #SDX_STACK_FLOOR+SDX_ROM_RESERVE
+    bcc sr_os_failed
+    lda #1
+    sta f:SDX_STATE_ROM_DEPTH
+    lda f:SDX_STATE_ANCHOR
+    bra sr_os_selected
+sr_os_nested:
+    inc a
+    sta f:SDX_STATE_ROM_DEPTH
+    bra sr_os_current
+sr_os_normal:
+    txa
+    and #$ff00
+    cmp #$0100
+    beq sr_os_current
+    lda #OS_STACK_TOP
+    bra sr_os_selected
+sr_os_current:
+    txa
+sr_os_selected:
+    tcs
+    .if SDX_STACK_PROBE = 2
+        wai
+    .endif
+    sep #$20
+    lda #0
+    pha
+    rep #$20
+    phy
+    rtl
+sr_os_failed:
+    lda #SDX_ROM_RESERVE
+    jml stack_overflow
+
+.export sdx_probe_acquire, sdx_probe_release, sdx_probe_enter, sdx_probe_moveframe
+.export sdx_probe_acquire_end, sdx_probe_release_end
+.export sdx_probe_enter_end, sdx_probe_moveframe_end
+; Lease admission is a normal operational failure. IRQ masking excludes Task
+; dispatch; NMI may run ROM because no frame exists yet and ANCHOR remains zero.
+sdx_probe_acquire:
+    signal_stack_check 8
+    php
+    sei
+    lda f:SDX_STATE_LEASE
+    bne sr_lease_busy
+    lda 5,s
+    inc a
+    sta f:SDX_STATE_LEASE
+    lda #1
+    plp
+    rtl
+sr_lease_busy:
+    lda #0
+    plp
+    rtl
+sdx_probe_acquire_end:
+
+; Construct the small physical frame with IRQs masked only for these stores.
+; Private bank/DP initialization has already completed on the native stack.
+sdx_probe_enter:
+    signal_stack_check 8
+    php
+    sei
+    lda #1
+    sta f:SDX_STATE_GATE
+    lda 5,s
+    asl a
+    asl a
+    asl a
+    asl a
+    tax
+    lda #SDX_INITIAL_S
+    sta f:SR_GUEST_S,x
+    sta f:SDX_STATE_ANCHOR
+    sep #$20
+    lda f:SR_BANK,x
+    sta f:SDX_INITIAL_S+SDX_FRAME_DBR
+    rep #$20
+    lda f:SR_CONTEXT+SDX_FIELDS_DP,x
+    sta f:SDX_INITIAL_S+SDX_FRAME_D
+    .if SDX_STACK_PROBE = 5
+        wai
+    .endif
+    lda #0
+    sta f:SDX_INITIAL_S+SDX_FRAME_Y
+    sta f:SDX_INITIAL_S+SDX_FRAME_X
+    sta f:SDX_INITIAL_S+SDX_FRAME_A
+    lda #$2020
+    sta f:SDX_INITIAL_S+SDX_FRAME_VENEER_P
+    lda f:SR_CONTEXT+SDX_FIELDS_ENTRY,x
+    sta f:SDX_INITIAL_S+SDX_FRAME_PC
+    lda #SDX_EXIT_PC-1
+    sta f:$0001ee
+    lda #SDX_PHASES_SERVICE
+    sta f:SDX_STATE_PHASE
+    lda #0
+    sta f:SDX_STATE_GATE
+    plp
+    rtl
+sdx_probe_enter_end:
+
+; Relocate one complete frame under the same IRQ/NMI gate. Slot and target
+; are caller-owned; only physical stack-domain bounds are checked here.
+sdx_probe_moveframe:
+    signal_stack_check 8
+    php
+    sei
+    phb
+    lda #1
+    sta f:SDX_STATE_GATE
+    lda 6,s
+    asl a
+    asl a
+    asl a
+    asl a
+    tax
+    lda f:SR_GUEST_S,x
+    phx
+    tax
+    lda 10,s
+    tay
+    cpy #SDX_MINIMUM_S
+    jcc sr_frame_bad
+    cpy #$1f0
+    jcs sr_frame_bad
+    pea 0
+    plb
+    plb
+    tya
+    phx
+    cmp 1,s
+    plx
+    bcc sr_frame_down
+    sep #$20
+    .repeat 13, byte
+        lda a:13-byte,x
+        sta a:13-byte,y
+    .endrepeat
+    bra sr_frame_moved
+sr_frame_down:
+    sep #$20
+    .repeat 13, byte
+        lda a:1+byte,x
+        sta a:1+byte,y
+        .if SDX_STACK_PROBE = 6 .and byte = 6
+            wai
+        .endif
+    .endrepeat
+sr_frame_moved:
+    rep #$20
+    plx
+    tya
+    sta f:SR_GUEST_S,x
+    sta f:SDX_STATE_ANCHOR
+    lda #0
+    sta f:SDX_STATE_GATE
+    plb
+    plp
+    rtl
+sr_frame_bad:
+    tsc
+    tax
+    lda #13
+    jml stack_overflow
+sdx_probe_moveframe_end:
+
+; All native I/O and guest continuations have retired before this call.
+sdx_probe_release:
+    signal_stack_check 96
+    php
+    sei
+    lda #1
+    sta f:SDX_STATE_GATE
+    lda #0
+    sta f:SR_OWNER
+    sta f:SDX_STATE_ANCHOR
+    .if SDX_STACK_PROBE = 7
+        wai
+    .endif
+    sta f:SDX_STATE_PHASE
+    sta f:SDX_STATE_LEASE
+    sta f:SDX_STATE_GATE
+    lda f:SR_PENDING
+    beq sr_release_return
+    lda #0
+    sta f:SR_PENDING
+    phk
+    pea .loword(sr_release_return)
+    sep #$20
+    lda #0
+    pha
+    rep #$30
+    jml native_nmi
+sr_release_return:
+    plp
+    rtl
+sdx_probe_release_end:
+
+.if SDX_ENABLED
+.export sdx_probe_guards, sdx_probe_guards_end
+; Check the same 32 fixed DP-guard bytes on every boundary. Word loads remove
+; the interpreter/compiler loop overhead without reducing guard coverage.
+sdx_probe_guards:
+    signal_stack_check 8
+    .repeat SDX_DP_GUARD_BYTES/2, word
+        lda f:SDX_DP_BASE-SDX_DP_GUARD_BYTES+word*2
+        cmp #$a5a5
+        jne sr_guards_bad
+        lda f:SDX_DP_BASE+SDX_DP_SLOTS*256+word*2
+        cmp #$a5a5
+        jne sr_guards_bad
+    .endrepeat
+    lda #1
+    rtl
+sr_guards_bad:
+    lda #0
+    rtl
+sdx_probe_guards_end:
+.endif
+
 sdx_probe_install:
     signal_stack_check 96
     php
@@ -274,7 +513,9 @@ sdx_probe_run:
     phb
     phd
     lda 8,s
-    xba
+    asl a
+    asl a
+    asl a
     asl a
     tax
     tsc
@@ -289,7 +530,9 @@ sdx_probe_resume:
     inc a
     sta f:SR_OWNER              ; native NMI can now only acknowledge/latch
     pla
-    xba
+    asl a
+    asl a
+    asl a
     asl a
     tax
     txa
@@ -308,41 +551,10 @@ sdx_probe_resume:
     pea 0
     plb
     plb
-    ldx #$fe
-sr_save_host:
-    lda a:$0100,x
-    sta f:SR_HOST,x
-    dex
-    dex
-    sr_copy_checkpoint
-    txa
-    bpl sr_save_host
-    lda f:SR_INDEX
-    tax
-    ldy #$00fe
-    txa
-    clc
-    adc #$fe
-    tax
-sr_acquire:
-    ; X indexes the selected guest record; Y indexes physical page one.
-    lda f:SR_CONTEXT,x
-    sta a:$0100,y
-    dex
-    dex
-    dey
-    dey
-    sr_copy_checkpoint
-    tya
-    bpl sr_acquire
-    ; A copy poll can have queued a completion without another IRQ edge.
-    jsl native_work_pending
-    jcs sr_irq_work
-    lda f:T_WAKE_PENDING
-    and #$ff
-    jne sr_irq_work
-    lda f:SR_INDEX
-    tax
+    lda f:SR_GUEST_S,x
+    sta f:SDX_STATE_ANCHOR
+    lda #SDX_PHASES_GUEST
+    sta f:SDX_STATE_PHASE
     lda f:SR_GUEST_S,x
     tcs
 sr_restore:
@@ -379,6 +591,42 @@ sdx_probe_run_end:
 sdx_probe_emulation_nmi:
     save_full
     cld
+    lda f:SDX_STATE_GATE
+    jne sr_rom_emulation_nmi
+    lda f:SDX_STATE_ROM_DEPTH
+    beq sr_emulation_not_rom
+    cmp #1
+    jne sr_rom_emulation_nmi
+    lda f:OS_BUSY
+    and #$ff
+    jeq sr_rom_emulation_nmi
+    tsc
+    and #$ff00
+    cmp #$0100
+    jne sr_rom_emulation_nmi
+    ; CIO may wait for RTCLOK during fine scrolling. Run one ordinary VBI on
+    ; this activation's current page-one S; OS_BUSY excludes Task dispatch.
+    ; A deeper VBI only acknowledges/latches, bounding recursive ROM entry.
+    lda #2
+    sta f:SDX_STATE_ROM_DEPTH
+    lda #0
+    tcd
+    pea 0
+    plb
+    plb
+    pea sdx_probe_nested_emulation_return
+    sep #$20
+    lda #0
+    pha
+    jml sdx_probe_nested_vbi
+sr_rom_emulation_return:
+    restore_full
+    pha
+    lda #1
+    sta f:SDX_STATE_ROM_DEPTH
+    pla
+    jml sdx_probe_emulation_return
+sr_emulation_not_rom:
     lda f:SR_OWNER
     jeq sr_chain_emulation_nmi
     sr_test_guest_pause 12
@@ -416,6 +664,17 @@ sr_guest_nmi:
     jmp sr_capture
 sr_chain_emulation_nmi:
     jml sdx_probe_chain_nmi
+sr_rom_emulation_nmi:
+    lda f:SDX_STATE_ROM_NMIS
+    inc a
+    sta f:SDX_STATE_ROM_NMIS
+    lda #1
+    sta f:SR_PENDING
+    sep #$20
+    lda #0
+    sta f:$00d40f
+    restore_full
+    jml sdx_probe_emulation_return
 
 .a16
 .i16
@@ -517,32 +776,12 @@ sr_detach:
     pea 0
     plb
     plb
-    ldy #$fe
-    txa
-    clc
-    adc #$fe
-    tax
-sr_release:
-    lda a:$0100,y
-    sta f:SR_CONTEXT,x
-    dex
-    dex
-    dey
-    dey
-    sr_copy_checkpoint
-    tya
-    bpl sr_release
-    ldx #$fe
-sr_restore_host:
-    lda f:SR_HOST,x
-    sta a:$0100,x
-    dex
-    dex
-    sr_copy_checkpoint
-    txa
-    bpl sr_restore_host
+    lda f:SR_GUEST_S,x
+    sta f:SDX_STATE_ANCHOR
+    lda #SDX_PHASES_SERVICE
+    sta f:SDX_STATE_PHASE
     lda #0
-    sta f:SR_OWNER              ; OS/page-one work may now run normally
+    sta f:SR_OWNER              ; native Tasks/ROM may borrow below ANCHOR
     lda f:SR_INDEX
     tax
     lda f:SR_EVENT,x
@@ -612,7 +851,9 @@ sr_deliver_event:
 sdx_probe_service_return:
     ; Recover slot from this Task's private continuation after any scheduling.
     lda 8,s
-    xba
+    asl a
+    asl a
+    asl a
     asl a
     tax
     lda f:SR_EVENT,x
@@ -624,6 +865,39 @@ sdx_probe_service_return:
 sdx_probe_native_nmi:
     save_full
     cld
+    lda f:SDX_STATE_GATE
+    jne sr_rom_native_nmi
+    lda f:SDX_STATE_ROM_DEPTH
+    beq sr_native_not_rom
+    cmp #1
+    jne sr_rom_native_nmi
+    lda f:OS_BUSY
+    and #$ff
+    jeq sr_rom_native_nmi
+    tsc
+    and #$ff00
+    cmp #$0100
+    jne sr_rom_native_nmi
+    lda #2
+    sta f:SDX_STATE_ROM_DEPTH
+    lda #0
+    tcd
+    pea 0
+    plb
+    plb
+    pea sdx_probe_nested_native_return
+    sep #$20
+    lda #0
+    pha
+    jml sdx_probe_nested_vbi
+sr_rom_native_return:
+    restore_full
+    pha
+    lda #1
+    sta f:SDX_STATE_ROM_DEPTH
+    pla
+    rti
+sr_native_not_rom:
     lda f:SR_OWNER
     jeq sr_chain_native_nmi
     lda #1
@@ -789,46 +1063,17 @@ sr_rebuild_done:
 sr_native_nmi_return:
     restore_full
     rti
+sr_rom_native_nmi:
+    lda f:SDX_STATE_ROM_NMIS
+    inc a
+    sta f:SDX_STATE_ROM_NMIS
+    lda #1
+    sta f:SR_PENDING
+    sep #$20
+    lda #0
+    sta f:$00d40f
+    restore_full
+    rti
 sr_chain_native_nmi:
     restore_full
     jml native_nmi
-
-.a16
-.i16
-sr_copy_irq:
-    sep #$20
-.a8
-    lda f:$00d20e
-    eor #$ff
-    and f:$000010
-    beq sr_copy_quiet
-    phx
-    phy
-    phd
-    phb
-    rep #$20
-.a16
-    lda #0
-    tcd
-    pea 0
-    plb
-    plb
-    lda f:SR_COPY_IRQS
-    inc a
-    sta f:SR_COPY_IRQS
-    sep #$20
-.a8
-    jsl signal_route             ; raw handler only, with ownership still held
-    rep #$30
-.a16
-.i16
-    plb
-    pld
-    ply
-    plx
-    rts
-.a8
-sr_copy_quiet:
-    rep #$20
-.a16
-    rts

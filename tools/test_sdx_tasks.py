@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Two synthetic emulation guests on ordinary Exec Tasks (P2 development)."""
+"""One resident guest lease, two retained contexts and ordinary native peers."""
 import argparse
 import hashlib
 import json
@@ -39,10 +39,13 @@ def payload(service, phase=0):
     return bytes(bank)
 
 
-def fixture(out, smoke, phase=0, sio=False):
+def fixture(out, smoke, phase=0, sio=False, profile="stock810"):
     (out/'sdxprobe.act').write_text('''MODULE SDXPROBE
 PUBLIC EXTERNAL CARD FUNC Install()
 PUBLIC EXTERNAL CARD FUNC Remove()
+PUBLIC EXTERNAL CARD FUNC Acquire(CARD slot)
+PUBLIC EXTERNAL PROC Enter(CARD slot)
+PUBLIC EXTERNAL PROC Release()
 PUBLIC EXTERNAL CARD FUNC Run(CARD slot)
 ENDMODULE
 ''')
@@ -54,6 +57,7 @@ USE EXECLISTS
 USE TASKSTACKS
 USE HEAPCORE
 USE SDXPROBE
+USE SDXABI
 USE INPUT
 USE EXECOS
 
@@ -65,6 +69,8 @@ VOLATILE CARD ARRAY progress(2)
 VOLATILE LONGCARD peer
 BYTE ARRAY message=[83 68 88 155]
 CARD checks
+BYTE ARRAY snapshots(26)
+CARD busySeen,romPeer
 
 PROC Require(BYTE okay)
 
@@ -76,16 +82,39 @@ PROC Require(BYTE okay)
 RETURN
 
 PROC Guest(CARD slot)
-  CARD event,status
+  CARD event,status,index
+
+  IF slot=1 THEN
+    Require(SDXPROBE.Acquire(slot)=0)
+    busySeen==+1
+  FI
+  WHILE SDXPROBE.Acquire(slot)=0 DO
+    EXEC.Yield()
+  OD
+  SDXPROBE.Enter(slot)
+  LET frame=BYTE POINTER(ADDRESS(SDXABI.INITIAL_S))
+  frame(SDXABI.FRAME_Y)=$a6
+  frame(SDXABI.FRAME_X)=$5a
+  frame(SDXABI.FRAME_A+1)=$ab
 
   event=SDXPROBE.Run(slot)
   Require(event=1)
+  FOR index=1 TO 13 DO
+    snapshots(slot*13+index-1)=frame(index)
+  OD
   progress(slot)=1
   Require(EXECOS.Write(@message,4)=1)
   status=EXECTASKS.Sleep(4+slot*3)
   Require(status=0)
+  FOR index=1 TO 13 DO
+    Require(frame(index)=snapshots(slot*13+index-1))
+  OD
   event=SDXPROBE.Run(slot)
   Require(event=2)
+  FOR index=1 TO 13 DO
+    snapshots(slot*13+index-1)=frame(index)
+  OD
+  SDXPROBE.Release()
   progress(slot)=2
 
 RETURN
@@ -150,8 +179,13 @@ PROC Main()
   WHILE workers(0).tc_State<>EXEC.TS_REMOVED
       OR workers(1).tc_State<>EXEC.TS_REMOVED DO
     peer==+1
+    IF progress(0)=1 AND romPeer=0 THEN
+      Require(EXECOS.Write(@message,4)=1)
+      romPeer=1
+    FI
   OD
   Require(progress(0)=2 AND progress(1)=2)
+  Require(busySeen=1)
   Require(peer>0)
   FOR index=0 TO 255 DO
     IF index<$20 OR index>$23 THEN
@@ -214,11 +248,23 @@ RETURN
         text = source.read_text()
         start = text.index('  Require(EXEC.AllocSignal(16)=16)')
         end = text.index('  Require(SDXPROBE.Remove()=0)', start)
-        text = text[:start]+'''  Require(SDXPROBE.Run(0)=1)
+        text = text[:start]+'''  Require(SDXPROBE.Acquire(0)=1)
+  SDXPROBE.Enter(0)
+  LET frame=BYTE POINTER(ADDRESS(SDXABI.INITIAL_S))
+  frame(SDXABI.FRAME_Y)=$a6
+  frame(SDXABI.FRAME_X)=$5a
+  frame(SDXABI.FRAME_A+1)=$ab
+  Require(SDXPROBE.Run(0)=1)
+  FOR index=1 TO 13 DO
+    snapshots(index-1)=frame(index)
+  OD
+  SDXPROBE.Release()
   Require(firstDp($20)=0 AND firstDp($21)=0 AND firstDp($22)=4)
   progress(0)=1
 '''+text[end:]
         source.write_text(text)
+    if profile=="generic56k":
+        source.write_text(source.read_text().replace("SIO_PROFILE_STOCK810","SIO_PROFILE_GENERIC57600"))
     return source
 
 
@@ -227,20 +273,17 @@ def image_data(service, early=False, phase=0):
     state[:0x4000] = ROM.read_bytes()
     state[0x7812] = int(early)
     for slot in range(2):
-        base = 0x7a00+slot*512
-        state[base:base+256] = bytes([0xa5+slot*0x1e])*256
-        state[base+0xe1:base+0xea] = bytes([0x30+slot])+struct.pack('<4H', 0x7e00+slot*256, 0xa6, 0x5a, 0xab00)
-        state[base+0xea:base+0xee] = b'\x20\x20\xe0\x2f'
-        state[base+0x104:base+0x106] = b'\xe0\x01'
+        base = 0x7a00+slot*16
+        state[base+4:base+14] = struct.pack('<5H',0x1e0,0,0x30+slot,0x2fe0,0x7e00+slot*256)
     return [(0x280000, bytes(state)), (0x300000, payload(service, phase)), (0x310000, payload(service, phase))]
 
 
-def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None):
+def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None, profile="stock810"):
     out.mkdir(parents=True, exist_ok=True)
     if program is None:
-        source = fixture(out, mode == 'raw', phase, sio)
+        source = fixture(out, mode == 'raw', phase, sio, profile)
         toolchain = compiler(ROOT/'build/actionc', release=True)
-        options = dict(optimize=mode == 'opt', tasks=True, task_capacity=8, console=False,
+        options = dict(optimize=mode == 'opt', tasks=True, task_capacity=12, console=False,
                        sdx_runtime_probe=True, sdx_return_probe=phase)
         preliminary = build(toolchain, source, out/'bind', image_data=image_data(0, early, phase), **options)
         service = preliminary['labels']['sdx_probe_service']
@@ -288,7 +331,7 @@ def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None):
         for key, value in PIN['configuration'].items():
             b.config(key, str(value).lower() if isinstance(value, bool) else value)
         if sio:
-            b.config('diskemu', '810')
+            b.config('diskemu', 'generic56k' if profile=='generic56k' else '810')
         machine = verify_machine(b, ROM, PIN)
         try:
             runtime, _ = execute(b, program, timeout=45, frame_limit=2000, before_run=installed)
@@ -303,7 +346,9 @@ def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None):
         peer = int.from_bytes(bytes(data(b, program['image'], 'peer')), 'little')
         checks = int.from_bytes(bytes(data(b, program['image'], 'checks')), 'little')
         state = b.memdump(0x287800, 34)
-        contexts = b.memdump(0x287a00, 1024)
+        contexts = b.memdump(0x287a00, 32)
+        busy_seen=data(b,program['image'],'busySeen',True)[0]
+        frames=bytes(data(b,program['image'],'snapshots'))
         (out/'contexts.bin').write_bytes(contexts)
         require(progress == ([1, 0] if mode == 'raw' else [2, 2]), 'Guest progress differs')
         if mode == 'opt':
@@ -311,12 +356,11 @@ def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None):
             if not phase:
                 require(int.from_bytes(state[12:14], 'little') > 1000, 'Owned pointer IRQ path was not exercised')
         for slot in range(1 if mode == 'raw' else 2):
-            at = slot*512
+            at = slot*16
             expected = bytes([0x30+slot])+struct.pack('<4H', 0x7e00+slot*256, 0xa6, 0x5a, 0xab04)
             expected += bytes.fromhex('3733')+struct.pack('<H', 0x3013 if mode == 'raw' else 0x302c)
-            require(contexts[at:at+0xc0] == bytes([0xa5+slot*0x1e])*0xc0, 'Private guest page-one sentinel changed')
-            require(contexts[at+0xe1:at+0xee] == expected, 'Guest register/status/JSR frame differs')
-            require(contexts[at+0x104:at+0x106] == bytes.fromhex('e001'), 'Guest stack drifted')
+            require(frames[slot*13:(slot+1)*13] == expected, 'Guest register/status/JSR frame differs')
+            require(contexts[at+4:at+6] == bytes.fromhex('e001'), 'Guest stack drifted')
         require(runtime['vbi_dispatches'] > 0, 'No ordinary VBI scheduling occurred')
         require(not early or state[16:18] == bytes([1, 0]), 'Forced E=1 entry NMI did not run')
         sectors_read = data(b, program['image'], 'sectorsRead', True)[0] if sio else 0
@@ -338,10 +382,10 @@ def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None):
                 guest_nmis=int.from_bytes(state[10:12], 'little'),
                 owned_irqs=int.from_bytes(state[12:14], 'little'),
                 deferred_native_nmis=int.from_bytes(state[14:16], 'little'),
-                early_entry_injection=early, return_boundary=phase, sio=sio, sectors_read=sectors_read,
+                early_entry_injection=early, return_boundary=phase, sio=sio, profile=profile, sectors_read=sectors_read,
                 guest_serial_irqs=int.from_bytes(state[28:30], 'little'),
                 owned_work_handoffs=int.from_bytes(state[30:32], 'little'),
-                copy_irq_polls=int.from_bytes(state[32:34], 'little'),
+                busy_rejections=busy_seen,
                 forced_return_nmis=int.from_bytes(state[24:26], 'little'),
                 intercepted_returns=int.from_bytes(state[20:22], 'little'),
                 transition_pc_reservation=list(reserved),
@@ -352,24 +396,24 @@ def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None):
                 build=program['build'], production_bank_zero_delta=dict(fixed=0, per_task=0),
                 fixture_bank_zero_borrowed_bytes=512,
                 scope=('Focused native Run ABI and guest service return' if mode == 'raw' else
-                       'Two synthetic guests with real stock-810 reads and pointer IRQs' if sio else
-                       'Two synthetic guests, native peer and forced VBI return boundary' if phase else
-                       'Two synthetic guests, blocking native services, native peer and pointer IRQs')
+                       'Sequential resident guests with real stock-810 reads and pointer IRQs' if sio else
+                       'Sequential resident guests, native peer and forced VBI return boundary' if phase else
+                       'Single guest lease, blocked service, busy rejection, native peer and pointer IRQs')
                        +'; no SDX binary or production slot allocator')
 
     if trace:
         from sio_adapter_trace import analyze
         from sio_transaction_trace import read_events
-        timing = analyze(machineout/'emulator.log', marks, divisor=40)
+        timing = analyze(machineout/'emulator.log', marks, divisor=8 if profile=="generic56k" else 40)
         events = read_events(machineout/'emulator.log')
         timing['observations_sha256'] = hashlib.sha256(
             '\n'.join(' '.join(e) for _, e in events).encode()).hexdigest()
         (out/'timing.json').write_text(json.dumps(timing, indent=2)+'\n')
         require(timing['verdict'] == 'pass', 'SIO timing failed: '+str(timing['violations']))
-        replay = run(out, mode, early, phase, sio, program=program)
+        replay = run(out, mode, early, phase, sio, program=program,profile=profile)
         fields = ('checks', 'runtime', 'progress', 'peer_iterations', 'guest_nmis',
                   'owned_irqs', 'deferred_native_nmis', 'guest_serial_irqs',
-                  'owned_work_handoffs', 'copy_irq_polls', 'intercepted_returns', 'sectors_read')
+                  'owned_work_handoffs', 'busy_rejections', 'intercepted_returns', 'sectors_read')
         for key in fields:
             require(result[key] == replay[key], 'Observer changed '+key)
         result['timing'] = {k: v for k, v in timing.items() if k not in ('tx_frames', 'rx_bytes')}
@@ -381,6 +425,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=ROOT/'build/sdx-tasks')
     parser.add_argument('--early-entry', action='store_true')
+    parser.add_argument('--profile',choices=('stock810','generic56k'),default='stock810')
     parser.add_argument('--sio', action='store_true')
     parser.add_argument('--trace', action='store_true')
     parser.add_argument('--return-boundary', type=int, choices=range(1, 12), default=0)
@@ -395,7 +440,7 @@ def main():
     result = dict(status='running')
     started = time.monotonic()
     try:
-        result = run(out, args.case, args.early_entry, args.return_boundary, args.sio, args.trace)
+        result = run(out, args.case, args.early_entry, args.return_boundary, args.sio, args.trace,profile=args.profile)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise

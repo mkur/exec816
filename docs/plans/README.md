@@ -69,6 +69,16 @@
   interrupt/lifetime gates and hosted-system qualification remain open.
   Commander follows later.
 
+- [SDX resident page-one stack](sdx-resident-stack-design.md): implemented shared
+  SDX/FastBasic refactor with one active guest, no whole-page stack copies and
+  idle BASIC parking that preserves interpreter state. Keeps two private DP
+  slots and adds zero reserved bank-zero bytes. Defines ROM stack borrowing,
+  audited headroom/IRQ/NMI transitions and RAWCON changed-column spans.
+  The [RS0–RS7 implementation plan](sdx-resident-stack-implementation-plan.md)
+  records the coordinated runtime/parking cutover and selected development
+  checks. The 100 ms p95 interaction target remains open; see the
+  [development record](../history/sdx-resident-stack.md).
+
 - [Batched directory enumeration design](directory-batching-design.md) and
   [EB1–EB3 plan](directory-batching-implementation-plan.md): EB1–EB2 implement the
   public ExNextBatch operation with compact caller-owned results, existing
