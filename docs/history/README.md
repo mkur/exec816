@@ -1,8 +1,15 @@
 # Historical records
 
+- [RAWCON cells and console vectors](rawcon-latency.md): bridge-local get/put,
+  one public span request, measured interrupt bounds and rebuilt delivery.
+  Input readiness reaches about 80 ms p95; the 120 ms full scanout keeps the
+  100 ms visual goal open.
+
 - [Resident SDX/FastBasic stack](sdx-resident-stack.md): one active guest,
   parked BASIC, audited ROM borrowing, asynchronous-entry development checks,
   RAWCON spans, final distribution and the open 100 ms latency goal.
+  The [follow-up EDX latency diagnostic](edx-key-latency.json) separates
+  console-request elapsed time from drawing and checks earlier scanout frames.
 
 - [EDX interaction baseline](edx-interaction-baseline.json): five physical-key
   development samples of the unchanged packaged editor, pinned inputs and

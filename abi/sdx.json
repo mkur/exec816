@@ -112,7 +112,8 @@
       "entering": 1,
       "guest": 2,
       "service": 3,
-      "retiring": 4
+      "retiring": 4,
+      "fast_cell": 5
     },
     "stack_floor": 272,
     "rom_reserve": 128,
@@ -121,7 +122,27 @@
     "arc_stack_pc": 63168,
     "arc_stack_event": 46,
     "arc_stack_minimum_s": 416,
-    "arc_stack_store_offset": 3772
+    "arc_stack_store_offset": 3772,
+    "binding": {
+      "base": 2652224,
+      "bytes": 96,
+      "owner": 0,
+      "width": 2,
+      "height": 4,
+      "screen": 6,
+      "first": 10,
+      "end": 14,
+      "pending": 18,
+      "rows": 32,
+      "row_count": 30,
+      "zero": 22
+    },
+    "cell_scratch": {
+      "dp": 0,
+      "bytes": 4,
+      "saved_bytes": 4,
+      "ack_nmi_bytes": 13
+    }
   },
   "guest_services": {
     "COMTAB": {

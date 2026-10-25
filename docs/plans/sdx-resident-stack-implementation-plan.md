@@ -5,6 +5,8 @@ their selected development checks. RS6 dispatch changes are implemented, but
 the p95 ≤100 ms interaction target remains open. RS7 delivers the rebuilt
 package and current contracts; this does not close the latency gate or qualify
 the hosted system. See the [execution record](../history/sdx-resident-stack.md).
+The [RC0–RC6 follow-up plan](rawcon-latency-implementation-plan.md) orders
+the remaining latency work through bridge-local cells and public span batching.
 
 The BASIC parser needed an additional admission change: its grammar records
 now use a bounded private-bank buffer instead of recursive CPU-stack storage.

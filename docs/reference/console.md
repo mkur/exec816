@@ -53,10 +53,35 @@ readers; the snapshot does not reserve the byte. Bytes are translated normally,
 or raw scans in RAW_KEYS mode. Stream WRITE preserves all 256 byte values in
 ATASCII mode; native mode continues to replace unsupported high bytes with `?`.
 
+`CONCMD_WRITE_CELL_SPANS=15` writes 0–30 positioned cell spans through the same
+output FIFO. Offset is zero; Length and Actual count **descriptor bytes**.
+Each generated `CellSpan` is ten bytes: column CARD at 0, row CARD at 2,
+three-byte data pointer at 4, padding at 7, length CARD at 8. Length is a multiple
+of ten, at most 300. Each nonempty span stays in one admitted row and contains
+at most 80 exact cell bytes. Descriptors apply in order; later overlapping cells
+win. The stream cursor and mode do not change. The worker checks the entire
+vector's structure and geometry before its first model edit. Callers retain
+live descriptors and nested buffers until exact terminal completion collection.
+
+A vector consumes at most 64 source cells per worker quantum, with normal
+input, control and instance-rotation opportunities between quanta. Actual advances
+by ten only when a complete span is accepted. A cancelled or failed request can
+have edited a prefix of the next span without counting that span in Actual.
+Accepted cells are retained; there is one terminal reply and no caller pointer
+survives it. Later writes and mode operations cannot pass the vector; resizing
+rejects an active positioned request. Hide and retirement preserve the existing
+presentation-borrow protocol. Completion is model acceptance with retired caller
+storage and bounded presentation, rather than a full-scanout fence.
+
 `DOS.ConsoleIO(file,command,offset,buffer,length)` submits these requests through
 a caller-owned CON/RAW/pane FileHandle without opening another device binding.
 It keeps normal request lifetime, byte-count/error and cancellation semantics.
 MODE can restore the console while foreground cancellation is pending.
+For vectors, a successful DOS return equals the descriptor-byte Length. BREAK
+can return a nonnegative completed prefix with IoErr set; other errors return
+-1 and hide Actual. Preserve IoErr even when a late error accompanies a full
+count. A positioned writer can safely retry retained damage after a hidden
+prefix; it must not inspect the DOS adapter's private request to recover it.
 
 A successful open owns the instance's device binding; arbitrary multiple device
 opens on it are rejected. The DOS stream adapter shares its own binding among

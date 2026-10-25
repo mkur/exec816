@@ -30,8 +30,9 @@ def distribution(values):
 class Measurement:
     interrupt_marker='native_nmi'
 
-    def __init__(self, output, count, trace=False):
+    def __init__(self, output, count, trace=False, early_scanout=False):
         self.output,self.count,self.trace=output,count,trace
+        self.early_scanout=early_scanout
         self.samples=[]
 
     def exercise(self,s):
@@ -96,17 +97,32 @@ class Measurement:
 
         def key(operation,index,name,ctrl=False):
             previous=read_cells(s.far,top)
+            observations=[]
+            first_change=None
+            def observe_early():
+                nonlocal first_change
+                tick=clock()
+                if first_change is None and read_cells(s.far,top)!=previous:
+                    first_change=tick
+                observations.append((tick,capture()))
             if ctrl:b._cmd_ok('KEY CTRL down')
             started=clock();require(b._cmd_ok('KEY '+name+' down')['raw_scan'],'Physical matrix key required')
-            s.frames(3);b._cmd_ok('KEY '+name+' up')
+            if self.early_scanout:
+                for _ in range(3):
+                    s.frames(1);observe_early()
+            else:
+                s.frames(3)
+            b._cmd_ok('KEY '+name+' up')
             if ctrl:b._cmd_ok('KEY CTRL up')
             completed=None;want=None;cells=None
             for polls in range(120):
                 now=clock();current=read_cells(s.far,top)
+                if self.early_scanout:
+                    observe_early()
                 if completed is None and current!=previous and input_ready() and s.number(dirty,1)==0:
                     completed=now;cells=current;want=expected(cells)
                 if completed is not None:
-                    actual=capture()
+                    actual=observations[-1][1] if self.early_scanout else capture()
                     if actual==want:break
                 s.frames(1)
             else:
@@ -120,6 +136,13 @@ class Measurement:
                      scanout_ms=((ended-started)&0xffffffff)*1000/BASE_HZ,
                      polls=polls+1,changed_cells=sum(a!=c for a,c in zip(previous,cells)),
                      scanout_sha256=hashlib.sha256(actual).hexdigest())
+            if self.early_scanout:
+                first_visible=next(tick for tick,pixels in observations if pixels==want)
+                row.update(first_model_change_ms=((first_change-started)&0xffffffff)*1000/BASE_HZ,
+                           target_scanout_ms=((first_visible-started)&0xffffffff)*1000/BASE_HZ,
+                           scanout_observations=[dict(ms=((tick-started)&0xffffffff)*1000/BASE_HZ,
+                                                     sha256=hashlib.sha256(pixels).hexdigest())
+                                                 for tick,pixels in observations])
             self.samples.append(row)
             (self.output/'samples.json').write_text(json.dumps(self.samples,indent=2)+'\n')
             print(operation,index,round(row['input_ready_ms'],3),round(row['scanout_ms'],3),'ms',flush=True)
@@ -142,17 +165,41 @@ class Measurement:
         b._cmd_ok('KEY RETURN down');b.bp_clear_all()
 
 
-def measure(bundle,output,count,snapshot=None,trace=False):
+def measure(bundle,output,count,snapshot=None,trace=False,early_scanout=False):
     output.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(bundle/'exec816-demo.zip') as archive:archive.extractall(output/'extracted')
     program=read_build(bundle)
-    markers=native_markers(program,[('SDXSCREEN_CALL','screen_call'),('SDXSCREEN_FLUSH','flush'),
-                          ('SDXSTATE_GUARDS','guards'),('DOSCALLS_CONSOLEIO','console_io')])
+    markers=native_markers(program,[('SDXSCREEN_CALL','screen_call'),('SDXSCREEN_CELL','cell'),
+                          ('SDXSCREEN_FLUSH','flush'),('SDXSERVICE_DISPATCH','dispatch'),
+                          ('SDXSTATE_GUARDS','guards'),('DOSCALLS_CONSOLEIO','console_io'),
+                          ('DOSRAW_PREPARE','request_prepare'),('DOSRAW_COMPLETE','request_complete'),
+                          ('DOSCANCEL_TRANSFER','transfer'),
+                          ('CONSOLEDRIVER_BEGINIO','publish'),
+                          ('CONSOLEDRIVER_CLAIMWRITE','claim_write'),
+                          ('CONSOLEDRIVER_SPANSWRITE','spans_write'),
+                          ('CONSOLEDRIVER_FINISHREAD','finish_read'),
+                          ('CONSOLEDRIVER_READQUANTUM','read_quantum'),
+                          ('CONSOLEDRIVER_COMPLETE','reply'),
+                          ('CONSOLEDRIVER_POSITIONEDWRITE','positioned_write'),
+                          ('CONSOLEDRIVER_FINISHWRITE','finish_write'),
+                          ('CONSOLECORE_WRITEAT','model_write'),
+                          ('CONSOLEDISPLAY_PRESENT','present')])
+    markers['guest_and_bridge']=dict(entry=program['labels']['sdx_probe_run'],
+                                    returns=[program['labels']['sdx_probe_service_return']])
+    # Assembly observation points are entry counts. D changes during the leaf,
+    # so a native-routine D-keyed interval would invent an unmatched lifetime.
+    for label, name in [('sdx_probe_cell_get', 'cell_get'),
+                        ('sdx_probe_cell_put', 'cell_put'),
+                        ('sdx_probe_cell_committed', 'cell_committed'),
+                        ('sdx_probe_detach', 'detach'),
+                        ('sdx_probe_guest_restore', 'guest_restore')]:
+        if label in program['labels']:
+            markers[name] = dict(entry=program['labels'][label], returns=[])
     import os
     pcs={pc for m in markers.values() for pc in [m['entry'],*m['returns']]}
     os.environ['EXEC816_LATENCY_TRACE']='1'
     os.environ['EXEC816_LATENCY_PCS']=','.join(f'{pc:x}' for pc in sorted(pcs))
-    observer=Measurement(output,count,trace);bootstrap=None
+    observer=Measurement(output,count,trace,early_scanout);bootstrap=None
     # Capture only after the unchanged OF816 checker accepts its handoff.
     # Other GUI tests independently verify every native byte before replay.
     import test_of816
@@ -178,8 +225,11 @@ def measure(bundle,output,count,snapshot=None,trace=False):
                 rom=result['rom'],zip_sha256=sha256(bundle/'exec816-demo.zip'),
                 observer_sha256=sha256(Path(__file__)),key_hold_frames=3,
                 native_snapshot_sha256=sha256(snapshot) if snapshot else None,
+                early_scanout=early_scanout,
                 summaries={op:{kind:distribution([s[kind] for s in observer.samples if s['operation']==op])
-                           for kind in ('input_ready_ms','scanout_ms')} for op in ('insert','horizontal','vertical')})
+                           for kind in (('input_ready_ms','scanout_ms','target_scanout_ms','first_model_change_ms')
+                                        if early_scanout else ('input_ready_ms','scanout_ms'))}
+                           for op in ('insert','horizontal','vertical')})
     (output/'results.json').write_text(json.dumps(record,indent=2)+'\n')
     return record
 
@@ -190,7 +240,9 @@ if __name__=='__main__':
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--trace',action='store_true',help='Enable passive routine observations through CPU history')
     parser.add_argument('--samples',type=int,default=20)
+    parser.add_argument('--early-scanout',action='store_true',
+                        help='Also observe every held-key frame and find final target pixels before input readiness')
     parser.add_argument('--native-snapshot',type=Path)
     args=parser.parse_args()
     require(args.samples>=1,'Positive sample count required')
-    measure(args.bundle.resolve(),args.output.resolve(),args.samples,args.native_snapshot,args.trace)
+    measure(args.bundle.resolve(),args.output.resolve(),args.samples,args.native_snapshot,args.trace,args.early_scanout)

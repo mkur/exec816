@@ -162,6 +162,7 @@ BYTE FUNC Immediate(EXEC.IOStdReq POINTER request)
   IF request.io_Command<>EXEC.CMD_READ AND request.io_Command<>EXEC.CMD_WRITE
       AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_AT
       AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_CELLS
+      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_CELL_SPANS
       AND request.io_Command<>CONSOLETYPES.CONCMD_MODE
       AND request.io_Command<>CONSOLETYPES.CONCMD_GET_MODE
       AND request.io_Command<>CONSOLETYPES.CONCMD_PEEK_INPUT
@@ -292,6 +293,8 @@ EXEC.IOStdReq POINTER FUNC ClaimWrite(CONSOLETYPES.Instance POINTER instance)
       @instance.writes)))
   instance.write=BYTE POINTER(request)
   instance.writeCancel=0
+  instance.vectorIndex=0
+  instance.vectorOffset=0
   EXEC.Permit()
 
 RETURN(request)
@@ -312,6 +315,8 @@ PROC FinishWrite(CONSOLETYPES.Instance POINTER instance EXEC.IOStdReq
 
   instance.write=NULL
   instance.writeCancel=0
+  instance.vectorIndex=0
+  instance.vectorOffset=0
   Complete(EXEC.IORequest POINTER(request))
   EXEC.Permit()
 
@@ -356,7 +361,7 @@ PROC Arrival(CONSOLETYPES.Service POINTER service)
     CASE request.io_Command OF
     WHEN EXEC.CMD_READ,CONSOLETYPES.CONCMD_READ_KEYS THEN
       instance.readReady=1
-    WHEN EXEC.CMD_WRITE,CONSOLETYPES.CONCMD_WRITE_AT,CONSOLETYPES.CONCMD_WRITE_CELLS,CONSOLETYPES.CONCMD_MODE THEN
+    WHEN EXEC.CMD_WRITE,CONSOLETYPES.CONCMD_WRITE_AT,CONSOLETYPES.CONCMD_WRITE_CELLS,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,CONSOLETYPES.CONCMD_MODE THEN
       EXECLISTS.AddTail(EXECLISTS.List POINTER(@instance.writes),
           @request.io_Message.mn_Node)
       IF request.io_Message.mn_Length>=EXEC.IOSTDREQ_SIZE

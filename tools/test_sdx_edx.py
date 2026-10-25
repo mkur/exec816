@@ -21,7 +21,10 @@ def fixture(out):
     setup+=f'  Put(BYTE POINTER(c"RAM:EDIT.TXT"),BYTE POINTER(ADDRESS($302000)),{len(initial)})'
     source.write_text((ROOT/'tests/programs/sdx_edx.act').read_text().replace('SETUP_FILES',setup))
     # Observe the production read boundary; do not replace the keyboard or I/O.
-    screen=(ROOT/'lib/dos/sdxscreen.act').read_text().replace('USE A816MEMORY\n','USE A816MEMORY\nPUBLIC CARD keyCalls\nPUBLIC BYTE ARRAY returnedKeys(64),returnedModifiers(64)\n',1)
+    screen=(ROOT/'lib/dos/sdxscreen.act').read_text()
+    boundary='; Build an unpublished binding'
+    require(screen.count(boundary)==1,'Changed RAWCON module declarations')
+    screen=screen.replace(boundary,'PUBLIC CARD keyCalls\nPUBLIC BYTE ARRAY returnedKeys(64),returnedModifiers(64)\n\n'+boundary,1)
     needle='  DO\n    got=DOS.ConsoleIO('
     require(screen.count(needle)==1,'Changed EDX key boundary')
     screen=screen.replace(needle,'  keyCalls==+1\n'+needle)

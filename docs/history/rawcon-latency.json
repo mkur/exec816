@@ -1,0 +1,2581 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-25",
+  "status": "development-delivered-visual-goal-open",
+  "tier": "development",
+  "qualification": false,
+  "source_base": "2db747778cc779c60cd2d43c3433d285ef4cff6d",
+  "source_manifest": {
+    "abi/console.json": "3497d688450954fc6707dab776f03c7d279f3d8603081c00fd24788bc00141e3",
+    "abi/sdx.json": "4342ca91a77090c2082e914cd666a5f678732f91cfdac0ece344132259ead8a6",
+    "lib/console/console-requests.inc": "937445e47ff2519964f2bd4908a5dcc2112525e9d1c869d34a1fe3b8a6dfda5b",
+    "lib/console/consoledriver.act": "3d5f2207ca273d8fae123f5253ed80e600a8510d3ffa493fb8c27737053cb7dd",
+    "lib/console/consoletiling.act": "4992bd031d008c50ad7b1e010f0f8cfa6f18050f06caf843209dd913558af042",
+    "lib/console/consoletypes.act": "41afaba251f8ec40d958d0031fb74e2ce7ae03aeff0b32e75101dc65902337ea",
+    "lib/dos/sdxabi.act": "05fac2c6604af305ec5d1bf9d2a0d054fd14e28e3954a05d9a8cacfa446d2e14",
+    "lib/dos/sdxruntime.act": "f15ae97961bfbe0ee88d544930d60d65eb3da157ef68f8d3fa2da67037e653e5",
+    "lib/dos/sdxscreen.act": "25344a308cc33c7370edaa10d9d7dd32b30b443e2fa92a3d00ba7e733a21f94b",
+    "lib/dos/sdxservice.act": "3f354c459ebb6c1c3b4e7275ec4741deb51e753b9ba9fe3ce15a5e1904c236fc",
+    "lib/dos/sdxstate.act": "a5fc0bd6e479b00bfac5cded82e212fae4753830bc0fa32c7445d88d2fc9fa76",
+    "platform/altirraos/console-layout.inc": "254c58dd7be91cdd260a89adaa20a0a25cbedf4da6d6b13f8ae339b51f2b1c8f",
+    "platform/altirraos/generated/sdx.inc": "9f611a64a361e51ccf467ac7d46a407cf6aa84b22d5f62786722745dbd06c6d3",
+    "platform/altirraos/sdx-runtime-probe.s": "2e63dd1919422b8c699fb8939bd569db16c62fd6b10a1719498c0e60cc5bb45f",
+    "tests/programs/console_pane.act": "2ab19491af72207f8dd24f0788371bb475da351d8317b5d7e144ec21b287ef11",
+    "tests/programs/sdx_screen.act": "4e19b1e483b3fdf81fd174bbdede6a20a27beed7cb8402b6f4652cd13f0818a3",
+    "tests/programs/sdx_service_shape.act": "e9d5b07bd0e059c918b6156c0c8337d12e412d6188d9b96428563281dc78657c",
+    "tests/test_console_layout.py": "0b949289c0cdcd4b94b7a927a5508418c72c9b144cd5fcba7668dac03918fd43",
+    "tools/audit_sdx_stack.py": "a844b3ea51629355ccacbc3dcbea7b17c9f3a018b37b09c78f7dfcc414f02a91",
+    "tools/generate_sdx.py": "ef9990104630cad44ba3537c10e02bd2931db9ba28ff1fb80135cfb58d2964d6",
+    "tools/measure_sdx_editor.py": "743a48f2e2a0e49525d35f6c6e11fe03864b0ec2dbcd4958b531c43553a4177c",
+    "tools/native_program.py": "87d04f6ab18b0f5702e1af9ab4314fb9944489289c0bb147148bbd260df8f741",
+    "tools/test_console_fairness.py": "35d8cb641de23251f86899775f488b952611337be39d7b78c5b4d25a0b1966bc",
+    "tools/test_sdx_edx.py": "3f2f55f0bdb278e425df43f55d653ffc6da83ffd886c3ca53c1cfc185fdf9ceb",
+    "tools/test_sdx_screen.py": "32591c763d7184dbb39e4045f99ec7a9946d61be6447515cf6a780c7e879dada",
+    "tools/test_sdx_tasks.py": "bf2cb31f31a615fa0d8685e2e571cd5f0a6026bc32be74aded2fc38d9947962d",
+    "lib/console/console-spans.inc": "03da413ccc9586a69a81cdf4ac822a496d1c55f2947197f27bba0f2b7ee9ef03",
+    "tests/programs/console_span_fault.act": "0ab4cdd6192be5dca6d8e43e1e5e9689038b210a99a3d78abd9df26598dbd7f1",
+    "tests/programs/console_spans.act": "c6823038b883b3c80bcca56f5ca018f11e5f9d2662ad685813e215e31b0ba9a7",
+    "tests/programs/sdx_rawcon.act": "4f83bc7c39b54121a160ff1bad6263216c7e5acc52182a1b19ce064b63f46b3c",
+    "tools/audit_sdx_rawcon.py": "145bd5d4bc7873eda906cc828eaf6c57e2e1df908e5732f6aaa66feae739f171",
+    "tools/test_console_span_fault.py": "311d0719a69c60fa3fdb1177f726773525fa7ae5d5eb5aa402860d6393b5fa96",
+    "tools/test_console_spans.py": "6cd46f0fd8d6e40ce5768b4d301168926b9f21b4a386ee08f2c9bc5056f44155",
+    "tools/test_sdx_rawcon.py": "0009523f0b13c16f34983836f7239da5cf33b18ae65a86283b76c94e584c11de",
+    "tools/test_sdx_rawcon_failures.py": "abdd1eb1137943eb27000f0af8fc9c443acfcc184eb32f5e82e2fafc59a0f1bc"
+  },
+  "baseline_freeze": {
+    "status": "frozen",
+    "base": "2db747778cc779c60cd2d43c3433d285ef4cff6d",
+    "worktree": " M docs/history/README.md\n M docs/history/sdx-resident-stack.md\n M docs/plans/README.md\n M docs/plans/sdx-resident-stack-implementation-plan.md\n M docs/roadmap.md\n M tools/measure_sdx_editor.py\n?? docs/history/edx-key-latency.json\n?? docs/plans/rawcon-latency-implementation-plan.md\n",
+    "sha256": {
+      "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+      "toolchain/altirra.json": "5ad56ae12ca012928cd322bc884bc77b1edab59313a16cd1133388d8dbfe4db6",
+      "tools/measure_sdx_editor.py": "62d4b18ee5e79369513b8821c328ac82520238ca8c774f1dae287c8da36ef625",
+      "docs/history/edx-key-latency.json": "f819a89a122a2c1887673f52fada909466eaf46ea18da3ee8acec24f92301424",
+      "docs/plans/rawcon-latency-implementation-plan.md": "a2154fc846fdf42ebaca6944472e947ec9b56703f2694d52b5b255c6221bc9c7"
+    },
+    "baseline": "docs/history/edx-key-latency.json"
+  },
+  "acceptance": {
+    "limit_ms": 100,
+    "input_ready_pass": true,
+    "complete_scanout_pass": false,
+    "key_hold_frames": 3,
+    "samples_per_cohort": 20,
+    "observation": "Every PAL frame, including held-key frames; independent full client pixels",
+    "open": "Backing-to-screen presentation after source completion"
+  },
+  "slices": {
+    "RC0": "implemented",
+    "RC1": "implemented",
+    "RC2": "implemented",
+    "RC3": "implemented",
+    "RC4": "implemented",
+    "RC5": "functional checks pass; visual latency acceptance open",
+    "RC6": "development distribution delivered with open visual gate"
+  },
+  "measurements": {
+    "baseline": {
+      "zip_sha256": "2c10b2ca25638315dc803e7f70a525535e1ca76e8366b9c51c30266ee67c68ff",
+      "observer_sha256": "62d4b18ee5e79369513b8821c328ac82520238ca8c774f1dae287c8da36ef625",
+      "summaries": {
+        "insert": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 140.3909616721104,
+            "p95": 140.3909616721104,
+            "maximum": 140.3909616721104
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 140.3909616721104,
+            "p95": 140.3909616721104,
+            "maximum": 140.3909616721104
+          },
+          "target_scanout_ms": {
+            "count": 20,
+            "median": 140.3909616721104,
+            "p95": 140.3909616721104,
+            "maximum": 140.3909616721104
+          },
+          "first_model_change_ms": {
+            "count": 20,
+            "median": 60.167555002333025,
+            "p95": 60.167555002333025,
+            "maximum": 60.167555002333025
+          }
+        },
+        "horizontal": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33567387813848,
+            "maximum": 120.33623775161091
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33567387813848,
+            "maximum": 120.33623775161091
+          },
+          "target_scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33567387813848,
+            "maximum": 120.33623775161091
+          },
+          "first_model_change_ms": {
+            "count": 20,
+            "median": 40.11170333488869,
+            "p95": 40.11226720836112,
+            "maximum": 40.11226720836112
+          }
+        },
+        "vertical": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 160.44681333955475,
+            "p95": 160.44681333955475,
+            "maximum": 160.44681333955475
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 160.44681333955475,
+            "p95": 160.44681333955475,
+            "maximum": 160.44681333955475
+          },
+          "target_scanout_ms": {
+            "count": 20,
+            "median": 160.44681333955475,
+            "p95": 160.44681333955475,
+            "maximum": 160.44681333955475
+          },
+          "first_model_change_ms": {
+            "count": 20,
+            "median": 40.11170333488869,
+            "p95": 40.11226720836112,
+            "maximum": 60.167555002333025
+          }
+        }
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c6e041040f9624db",
+        "actual_kernel_id": "$c6e041040f9624db",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-commands/build/sdx-key-latency/diagnostic/extracted/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      }
+    },
+    "cell_only": {
+      "zip_sha256": "4fed81e58f7dec9f0a77ef5f9801459f472cf5e2916cf90f2549c1cd29ba5a9c",
+      "observer_sha256": "743a48f2e2a0e49525d35f6c6e11fe03864b0ec2dbcd4958b531c43553a4177c",
+      "summaries": {
+        "insert": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33511000466605,
+            "maximum": 120.33567387813848
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33511000466605,
+            "maximum": 120.33567387813848
+          },
+          "target_scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33511000466605,
+            "maximum": 120.33567387813848
+          },
+          "first_model_change_ms": {
+            "count": 20,
+            "median": 40.11170333488869,
+            "p95": 40.11226720836112,
+            "maximum": 40.11226720836112
+          }
+        },
+        "horizontal": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33567387813848,
+            "maximum": 120.33567387813848
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33567387813848,
+            "maximum": 120.33567387813848
+          },
+          "target_scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33567387813848,
+            "maximum": 120.33567387813848
+          },
+          "first_model_change_ms": {
+            "count": 20,
+            "median": 40.11170333488869,
+            "p95": 40.11226720836112,
+            "maximum": 40.11226720836112
+          }
+        },
+        "vertical": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 160.44681333955475,
+            "p95": 160.44737721302718,
+            "maximum": 160.44737721302718
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 160.44681333955475,
+            "p95": 160.44737721302718,
+            "maximum": 160.44737721302718
+          },
+          "target_scanout_ms": {
+            "count": 20,
+            "median": 160.44681333955475,
+            "p95": 160.44737721302718,
+            "maximum": 160.44737721302718
+          },
+          "first_model_change_ms": {
+            "count": 20,
+            "median": 40.11170333488869,
+            "p95": 40.11226720836112,
+            "maximum": 40.11226720836112
+          }
+        }
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c0f4e373dd6b0858",
+        "actual_kernel_id": "$c0f4e373dd6b0858",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-commands/build/rawcon-latency/cell-v3-measure/extracted/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "samples": [
+        {
+          "operation": "insert",
+          "index": 0,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "4f8b0b2a1897dd4c0d566ab8f817f8dbf3154c90ed4f6831e4adb5d435da7811"
+        },
+        {
+          "operation": "insert",
+          "index": 1,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "620bc09393823e15810af38d3ef6caacbfe890fbc8ce0c052dff2997078ea526"
+        },
+        {
+          "operation": "insert",
+          "index": 2,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "808bd6d21937e837e7992e6e47c7ac162018aec2087c3f24be519dd859c23280"
+        },
+        {
+          "operation": "insert",
+          "index": 3,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 4,
+          "scanout_sha256": "2a700b4bd1caac92a02cbead3915537b240b1ad3714f2134d1488b0d3c9bbb99"
+        },
+        {
+          "operation": "insert",
+          "index": 4,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "09718ea604f0b72a33c3347db32642202cdd93a4cc0bacae26438ec935b3ddbf"
+        },
+        {
+          "operation": "insert",
+          "index": 5,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "4b63a213ed08f75290cd6f26e88ed1742f888d13f922d11b130d7ea694da60b0"
+        },
+        {
+          "operation": "insert",
+          "index": 6,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "83dd58f992330e8a1969646eb6b327ef6bd2ba072d0b9eec1061b13f3f5c9ab8"
+        },
+        {
+          "operation": "insert",
+          "index": 7,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "44fb149df29d1b9a1b00c8e37df75a879cf71377d4bb6abadc7dc353312992f3"
+        },
+        {
+          "operation": "insert",
+          "index": 8,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "d1cbeb8e35d111813725ebdb340308913f1eb25f27540f24e2bde9bbf8a88b8b"
+        },
+        {
+          "operation": "insert",
+          "index": 9,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "9d67ccea32ee76cf0a18d3ab890e713dc307e9def2389fe15a12743518c1d86b"
+        },
+        {
+          "operation": "insert",
+          "index": 10,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "c8bb4ac5168afcaf5ae9061462ed92866a0dc325e0aea7f0dcf23503c6ef7b57"
+        },
+        {
+          "operation": "insert",
+          "index": 11,
+          "input_ready_ms": 120.33567387813848,
+          "scanout_ms": 120.33567387813848,
+          "target_scanout_ms": 120.33567387813848,
+          "changed_cells": 3,
+          "scanout_sha256": "5f404d9f2778569c0a7c1bdc7458ee6102d07c145bbcd07f8e957324be8d72af"
+        },
+        {
+          "operation": "insert",
+          "index": 12,
+          "input_ready_ms": 120.33454613119362,
+          "scanout_ms": 120.33454613119362,
+          "target_scanout_ms": 120.33454613119362,
+          "changed_cells": 3,
+          "scanout_sha256": "e614e6bc70795deff3c3755b81b8240d0ef462d0934aabeab1cce788a8e20517"
+        },
+        {
+          "operation": "insert",
+          "index": 13,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 4,
+          "scanout_sha256": "9fcf18b5b3bce20b33407511612473fa4605f5f1bb89790ab0447a9fd32f160f"
+        },
+        {
+          "operation": "insert",
+          "index": 14,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "5dbcab4bedfa33ef70496a7d582f2c0020fb4b78fb8b996ed409785a81c179d3"
+        },
+        {
+          "operation": "insert",
+          "index": 15,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "d5131282429356ab4ec00d3ad019bc96bb7b6bc4faea01225202f192b0cfd1e3"
+        },
+        {
+          "operation": "insert",
+          "index": 16,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "137e2c9e95bbb9430a69986d4476de21ff967f48d108d0124400da1aa34ae42f"
+        },
+        {
+          "operation": "insert",
+          "index": 17,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "3a9860211a2b8f2e935daba2d2f7ad75703c0c9c0754055c85a07a31a8742680"
+        },
+        {
+          "operation": "insert",
+          "index": 18,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "6b2ad4beebe7817c7b7dc6e67db481f1d5df038bc316be9c8f2e3c7087a40fcf"
+        },
+        {
+          "operation": "insert",
+          "index": 19,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 0,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 1,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 2,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 3,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 4,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 5,
+          "input_ready_ms": 120.33567387813848,
+          "scanout_ms": 120.33567387813848,
+          "target_scanout_ms": 120.33567387813848,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 6,
+          "input_ready_ms": 120.33454613119362,
+          "scanout_ms": 120.33454613119362,
+          "target_scanout_ms": 120.33454613119362,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 7,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 8,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 9,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 10,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 11,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 12,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 13,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 14,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 15,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 16,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 17,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 18,
+          "input_ready_ms": 120.33511000466605,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 19,
+          "input_ready_ms": 120.33567387813848,
+          "scanout_ms": 120.33567387813848,
+          "target_scanout_ms": 120.33567387813848,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "vertical",
+          "index": 0,
+          "input_ready_ms": 160.4462494660823,
+          "scanout_ms": 160.4462494660823,
+          "target_scanout_ms": 160.4462494660823,
+          "changed_cells": 9,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 1,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 2,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 3,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 4,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 5,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 6,
+          "input_ready_ms": 160.44737721302718,
+          "scanout_ms": 160.44737721302718,
+          "target_scanout_ms": 160.44737721302718,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 7,
+          "input_ready_ms": 160.4462494660823,
+          "scanout_ms": 160.4462494660823,
+          "target_scanout_ms": 160.4462494660823,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 8,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 9,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 10,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 11,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 12,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 13,
+          "input_ready_ms": 160.44737721302718,
+          "scanout_ms": 160.44737721302718,
+          "target_scanout_ms": 160.44737721302718,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 14,
+          "input_ready_ms": 160.4462494660823,
+          "scanout_ms": 160.4462494660823,
+          "target_scanout_ms": 160.4462494660823,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 15,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 16,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 17,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 18,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 19,
+          "input_ready_ms": 160.44681333955475,
+          "scanout_ms": 160.44681333955475,
+          "target_scanout_ms": 160.44681333955475,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        }
+      ],
+      "result_sha256": "8b85593b2dcf4e9e98ad6bb4ffcd255594858dcb8fe283ed19406a50967af41b",
+      "native_snapshot_sha256": null
+    },
+    "combined": {
+      "zip_sha256": "79786f1fa07d2beace8649715f1a45dc8a4a90f10503c36e84fc34e55dc670ce",
+      "observer_sha256": "743a48f2e2a0e49525d35f6c6e11fe03864b0ec2dbcd4958b531c43553a4177c",
+      "summaries": {
+        "insert": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 80.22340666977738,
+            "p95": 80.22340666977738,
+            "maximum": 80.22453441672224
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33511000466605,
+            "maximum": 120.33511000466605
+          },
+          "target_scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33511000466605,
+            "maximum": 120.33511000466605
+          },
+          "first_model_change_ms": {
+            "count": 20,
+            "median": 40.11170333488869,
+            "p95": 60.167555002333025,
+            "maximum": 60.167555002333025
+          }
+        },
+        "horizontal": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 80.22340666977738,
+            "p95": 80.22340666977738,
+            "maximum": 80.22340666977738
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33511000466605,
+            "maximum": 120.33511000466605
+          },
+          "target_scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33511000466605,
+            "maximum": 120.33511000466605
+          },
+          "first_model_change_ms": {
+            "count": 20,
+            "median": 40.11170333488869,
+            "p95": 40.11170333488869,
+            "maximum": 40.11170333488869
+          }
+        },
+        "vertical": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 80.22340666977738,
+            "p95": 80.22340666977738,
+            "maximum": 80.22340666977738
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33511000466605,
+            "maximum": 120.33511000466605
+          },
+          "target_scanout_ms": {
+            "count": 20,
+            "median": 120.33511000466605,
+            "p95": 120.33511000466605,
+            "maximum": 120.33511000466605
+          },
+          "first_model_change_ms": {
+            "count": 20,
+            "median": 40.11170333488869,
+            "p95": 40.11170333488869,
+            "maximum": 40.11170333488869
+          }
+        }
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$ea1485ac3e9051d7",
+        "actual_kernel_id": "$ea1485ac3e9051d7",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-commands/build/rawcon-latency/measure/extracted/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "samples": [
+        {
+          "operation": "insert",
+          "index": 0,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "4f8b0b2a1897dd4c0d566ab8f817f8dbf3154c90ed4f6831e4adb5d435da7811"
+        },
+        {
+          "operation": "insert",
+          "index": 1,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "620bc09393823e15810af38d3ef6caacbfe890fbc8ce0c052dff2997078ea526"
+        },
+        {
+          "operation": "insert",
+          "index": 2,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "808bd6d21937e837e7992e6e47c7ac162018aec2087c3f24be519dd859c23280"
+        },
+        {
+          "operation": "insert",
+          "index": 3,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 4,
+          "scanout_sha256": "2a700b4bd1caac92a02cbead3915537b240b1ad3714f2134d1488b0d3c9bbb99"
+        },
+        {
+          "operation": "insert",
+          "index": 4,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "09718ea604f0b72a33c3347db32642202cdd93a4cc0bacae26438ec935b3ddbf"
+        },
+        {
+          "operation": "insert",
+          "index": 5,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "4b63a213ed08f75290cd6f26e88ed1742f888d13f922d11b130d7ea694da60b0"
+        },
+        {
+          "operation": "insert",
+          "index": 6,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "83dd58f992330e8a1969646eb6b327ef6bd2ba072d0b9eec1061b13f3f5c9ab8"
+        },
+        {
+          "operation": "insert",
+          "index": 7,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "44fb149df29d1b9a1b00c8e37df75a879cf71377d4bb6abadc7dc353312992f3"
+        },
+        {
+          "operation": "insert",
+          "index": 8,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "d1cbeb8e35d111813725ebdb340308913f1eb25f27540f24e2bde9bbf8a88b8b"
+        },
+        {
+          "operation": "insert",
+          "index": 9,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "9d67ccea32ee76cf0a18d3ab890e713dc307e9def2389fe15a12743518c1d86b"
+        },
+        {
+          "operation": "insert",
+          "index": 10,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "c8bb4ac5168afcaf5ae9061462ed92866a0dc325e0aea7f0dcf23503c6ef7b57"
+        },
+        {
+          "operation": "insert",
+          "index": 11,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "5f404d9f2778569c0a7c1bdc7458ee6102d07c145bbcd07f8e957324be8d72af"
+        },
+        {
+          "operation": "insert",
+          "index": 12,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "e614e6bc70795deff3c3755b81b8240d0ef462d0934aabeab1cce788a8e20517"
+        },
+        {
+          "operation": "insert",
+          "index": 13,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 4,
+          "scanout_sha256": "9fcf18b5b3bce20b33407511612473fa4605f5f1bb89790ab0447a9fd32f160f"
+        },
+        {
+          "operation": "insert",
+          "index": 14,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "5dbcab4bedfa33ef70496a7d582f2c0020fb4b78fb8b996ed409785a81c179d3"
+        },
+        {
+          "operation": "insert",
+          "index": 15,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "d5131282429356ab4ec00d3ad019bc96bb7b6bc4faea01225202f192b0cfd1e3"
+        },
+        {
+          "operation": "insert",
+          "index": 16,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "137e2c9e95bbb9430a69986d4476de21ff967f48d108d0124400da1aa34ae42f"
+        },
+        {
+          "operation": "insert",
+          "index": 17,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "3a9860211a2b8f2e935daba2d2f7ad75703c0c9c0754055c85a07a31a8742680"
+        },
+        {
+          "operation": "insert",
+          "index": 18,
+          "input_ready_ms": 80.22453441672224,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "6b2ad4beebe7817c7b7dc6e67db481f1d5df038bc316be9c8f2e3c7087a40fcf"
+        },
+        {
+          "operation": "insert",
+          "index": 19,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 3,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 0,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 1,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 2,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 3,
+          "input_ready_ms": 60.167555002333025,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 4,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 5,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 6,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 7,
+          "input_ready_ms": 60.167555002333025,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 8,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 9,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 10,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 11,
+          "input_ready_ms": 60.167555002333025,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 12,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 13,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 14,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 15,
+          "input_ready_ms": 60.167555002333025,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 16,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 17,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "horizontal",
+          "index": 18,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "2fd888a0d579dfebcaa0a0a43af4f5f0863e93ee90d9dca17a2cf679707cf981"
+        },
+        {
+          "operation": "horizontal",
+          "index": 19,
+          "input_ready_ms": 60.167555002333025,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 7,
+          "scanout_sha256": "cf2b6f882a7a4c4b44291217e2041c4c15936af52361407513fa12893ebf21b9"
+        },
+        {
+          "operation": "vertical",
+          "index": 0,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 9,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 1,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 2,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 3,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 4,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 5,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 6,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 7,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 8,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 9,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 10,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 11,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 12,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 13,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 14,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 15,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 16,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 17,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        },
+        {
+          "operation": "vertical",
+          "index": 18,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "ea1414a584c514dbb574055110079122fcc8b3171764bbdfbad6264c100b27b8"
+        },
+        {
+          "operation": "vertical",
+          "index": 19,
+          "input_ready_ms": 80.22340666977738,
+          "scanout_ms": 120.33511000466605,
+          "target_scanout_ms": 120.33511000466605,
+          "changed_cells": 6,
+          "scanout_sha256": "397960af9cbbb07949d6edaf939f3f161862761b1704449fae38b5934a15c7bd"
+        }
+      ],
+      "result_sha256": "d61771a37bd8f8e822fa723d210c657ffec95218f50c1cc2e90cdc9134e1f1b3",
+      "native_snapshot_sha256": null
+    }
+  },
+  "bridge_binary_sha256": "2afa0091bd9ac496486e956117965da069979a34f3b08efcf47400f0808e345f",
+  "cell_only_combined_bridge_identical": true,
+  "representative_insert": {
+    "before": {},
+    "after": {
+      "flush": {
+        "calls": 1,
+        "elapsed_ms": 19.599043670590756
+      },
+      "guards": {
+        "calls": 1,
+        "elapsed_ms": 0.023048328185638425
+      },
+      "console_io": {
+        "calls": 1,
+        "elapsed_ms": 18.10005652831561
+      },
+      "request_prepare": {
+        "calls": 2,
+        "elapsed_ms": 1.0050339804251325
+      },
+      "request_complete": {
+        "calls": 2,
+        "elapsed_ms": 1.6740698554651323
+      },
+      "transfer": {
+        "calls": 1,
+        "elapsed_ms": 16.172032157704134
+      },
+      "publish": {
+        "calls": 2,
+        "elapsed_ms": 2.4146471773198814
+      },
+      "claim_write": {
+        "calls": 4,
+        "elapsed_ms": 0.7012471471526504
+      },
+      "spans_write": {
+        "calls": 1,
+        "elapsed_ms": 0.762991292383902
+      },
+      "finish_read": {
+        "calls": 1,
+        "elapsed_ms": 6.813001230653853
+      },
+      "read_quantum": {
+        "calls": 4,
+        "elapsed_ms": 7.463147344367397
+      },
+      "reply": {
+        "calls": 2,
+        "elapsed_ms": 2.0516536294420895
+      },
+      "finish_write": {
+        "calls": 1,
+        "elapsed_ms": 8.631422695061456
+      },
+      "model_write": {
+        "calls": 2,
+        "elapsed_ms": 0.5802258031320352
+      },
+      "present": {
+        "calls": 4,
+        "elapsed_ms": 5.2149838097829235
+      },
+      "guest_and_bridge": {
+        "calls": 1,
+        "elapsed_ms": 10.20949309184512
+      },
+      "cell_get": {
+        "calls": 2,
+        "elapsed_ms": 0
+      },
+      "cell_put": {
+        "calls": 72,
+        "elapsed_ms": 0
+      },
+      "cell_committed": {
+        "calls": 74,
+        "elapsed_ms": 0
+      },
+      "detach": {
+        "calls": 2,
+        "elapsed_ms": 0
+      },
+      "guest_restore": {
+        "calls": 94,
+        "elapsed_ms": 0
+      }
+    },
+    "accounting": "Inclusive elapsed spans overlap and include preemption; entry-only counters have zero recorded duration"
+  },
+  "presentation_diagnostic": {
+    "result_sha256": "4f713381ed0d8a244158b14ab28f2f08bb408903827726867ebd9bde6b16a358",
+    "observer_sha256": "6c4d92b623d2b0cd597fb9b4dd83765198d56c14611aa5dc05c59a0a1c3dcb76",
+    "native_snapshot_sha256": "0232d440a1fdb89be8379b7ff61ebfc76fa46abf31399b788070568fafe82c7a",
+    "source_of_remaining_latency": "Backing completion, Layers paint admission, two asynchronous backing-to-screen copies and paint retirement",
+    "timing_ms": {
+      "first_backing": [
+        43.12,
+        44.3
+      ],
+      "second_backing": [
+        60.97,
+        62.18
+      ],
+      "begin_paint": [
+        73.85,
+        74.55
+      ],
+      "first_copy_launch": [
+        76.88,
+        79.37
+      ],
+      "second_copy_launch": [
+        98.63,
+        101.22
+      ],
+      "finish_paint": [
+        112.47,
+        112.73
+      ],
+      "full_target": 120.33511000466605
+    }
+  },
+  "interrupts": {
+    "generic56k": {
+      "status": "pass",
+      "checks": 18233,
+      "trace_replay": {
+        "status": "identical",
+        "xex_sha256": "26c5cf312d4b505624f30b83713f88f6faaaf09ae0e3b4d6c2889f01a4faa33f"
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 17816,
+          "min_us": 5.638734724315211,
+          "mean_us": 32.91525940762675,
+          "max_us": 124.05216393493465
+        },
+        "tx_refill": {
+          "count": 544,
+          "min_us": 6.2026081967467315,
+          "mean_us": 21.292442777000563,
+          "max_us": 66.5370697469195
+        },
+        "command_setup": {
+          "count": 136,
+          "min_us": 1061.7737485885543,
+          "mean_us": 1078.5738611642346,
+          "max_us": 1129.438565280337
+        },
+        "command_hold": {
+          "count": 136,
+          "min_us": 726.2690324917992,
+          "mean_us": 785.9981592848028,
+          "max_us": 864.4180332375219
+        },
+        "masked_max_us": 219.06484403964595,
+        "byte_deadline_us": 169.16204172945635,
+        "cells": {
+          "get": {
+            "count": 32768,
+            "uninterrupted": {
+              "count": 32654,
+              "min_us": 41.16276348750104,
+              "mean_us": 43.055648261063055,
+              "max_us": 47.083434948032014
+            },
+            "interrupted": {
+              "count": 114,
+              "min_us": 102.97739290280654,
+              "mean_us": 3266.778086086316,
+              "max_us": 19894.79530688109
+            }
+          },
+          "put": {
+            "count": 32768,
+            "uninterrupted": {
+              "count": 32663,
+              "min_us": 40.81034256723134,
+              "mean_us": 44.45079251763779,
+              "max_us": 48.42263444505687
+            },
+            "interrupted": {
+              "count": 105,
+              "min_us": 105.79676026496415,
+              "mean_us": 4575.317687321285,
+              "max_us": 19980.010685402303
+            }
+          }
+        },
+        "cell_masked_max_us": 48.42263444505687,
+        "pointer_sample_gaps": {
+          "count": 59808,
+          "min_us": 48.35215026100293,
+          "mean_us": 252.4341531001451,
+          "max_us": 533.6357574723808
+        },
+        "observations_sha256": "1caf8796f1b12f5febfa3a0ce497b397899f2c4aea491caef462282db701aff9"
+      },
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338"
+    },
+    "stock810": {
+      "status": "pass",
+      "checks": 5623,
+      "trace_replay": {
+        "status": "identical",
+        "xex_sha256": "926b42d13d4cec2a7fea5dfdb9ebc4d377b96dac1d985f9dc57bb61059ca1161"
+      },
+      "timing": {
+        "verdict": "pass",
+        "violations": [],
+        "rx_service": {
+          "count": 5109,
+          "min_us": 5.638734724315211,
+          "mean_us": 33.51697472204916,
+          "max_us": 112.77469448630421
+        },
+        "tx_refill": {
+          "count": 156,
+          "min_us": 6.2026081967467315,
+          "mean_us": 20.628371199786482,
+          "max_us": 52.440232936131466
+        },
+        "command_setup": {
+          "count": 39,
+          "min_us": 1064.593115950712,
+          "mean_us": 1093.3940379272142,
+          "max_us": 1118.7249693041379
+        },
+        "command_hold": {
+          "count": 39,
+          "min_us": 713.8638160983057,
+          "mean_us": 792.0398126479784,
+          "max_us": 903.3253028352968
+        },
+        "masked_max_us": 282.00722039981446,
+        "byte_deadline_us": 530.0410640856298,
+        "cells": {
+          "get": {
+            "count": 32768,
+            "uninterrupted": {
+              "count": 32662,
+              "min_us": 41.16276348750104,
+              "mean_us": 43.03823364028257,
+              "max_us": 47.083434948032014
+            },
+            "interrupted": {
+              "count": 106,
+              "min_us": 99.87608880443317,
+              "mean_us": 1637.4101004154923,
+              "max_us": 19790.831135401528
+            }
+          },
+          "put": {
+            "count": 32768,
+            "uninterrupted": {
+              "count": 32642,
+              "min_us": 42.64293135263379,
+              "mean_us": 44.46386418480043,
+              "max_us": 48.42263444505687
+            },
+            "interrupted": {
+              "count": 126,
+              "min_us": 101.28577248551197,
+              "mean_us": 1119.5444877933364,
+              "max_us": 19726.33810699217
+            }
+          }
+        },
+        "cell_masked_max_us": 48.42263444505687,
+        "pointer_sample_gaps": {
+          "count": 48895,
+          "min_us": 65.97319627448798,
+          "mean_us": 252.60978157052844,
+          "max_us": 530.7459059261693
+        },
+        "observations_sha256": "442067558216082fe52ae79b5d68b01438bff28791a4da7c3f1a23887043fdbf"
+      },
+      "input_rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338"
+    }
+  },
+  "stack_bound": {
+    "status": "scoped-source-bound-established",
+    "tier": "development",
+    "qualification": false,
+    "scope": "Pinned admitted profiles and reviewed ROM chains; not arbitrary guest code or third-party interrupt handlers",
+    "guest_walks": {
+      "MD5": {
+        "cpu_bytes": 10,
+        "service_frame_bytes": 21,
+        "states": 43053,
+        "peak_path": [
+          "0x0",
+          "0xb8",
+          "0x1a0",
+          "0xce",
+          "0xc1c0"
+        ]
+      },
+      "EDX": {
+        "cpu_bytes": 16,
+        "service_frame_bytes": 27,
+        "states": 1555882,
+        "peak_path": [
+          "0x0",
+          "0x3d",
+          "0xa20",
+          "0x4d6",
+          "0x1c6",
+          "0x1d0",
+          "0x1db",
+          "0x10c"
+        ]
+      },
+      "ARC.COM": {
+        "cpu_bytes": 8,
+        "service_frame_bytes": 19,
+        "states": 1049982,
+        "peak_path": [
+          "0x97a",
+          "0x4c1",
+          "0x4e8",
+          "0xc360"
+        ]
+      },
+      "ARCLST.OVL": {
+        "cpu_bytes": 9,
+        "service_frame_bytes": 21,
+        "states": 2406,
+        "peak_path": [
+          "0x1a6c",
+          "0x1d6b",
+          "0x2bb",
+          "0x3db",
+          "0xc300"
+        ]
+      },
+      "ARCEXT.OVL": {
+        "cpu_bytes": 20,
+        "service_frame_bytes": 31,
+        "states": 34654,
+        "peak_path": [
+          "0x1a6c",
+          "0x1a83",
+          "0x1b78",
+          "0x1c25",
+          "0x1de2",
+          "0x1efd",
+          "0x1c62",
+          "0x41a",
+          "0x459",
+          "0xc180"
+        ]
+      },
+      "ARCADD.OVL": {
+        "cpu_bytes": 22,
+        "service_frame_bytes": 33,
+        "states": 169311,
+        "peak_path": [
+          "0x1a6c",
+          "0x1adc",
+          "0x1c0e",
+          "0x2204",
+          "0x2897",
+          "0x284b",
+          "0x2266",
+          "0x22ba",
+          "0x41a",
+          "0x459",
+          "0xc180"
+        ]
+      }
+    },
+    "basic_leaf_walks": {
+      "FB": {
+        "cpu_bytes": 13,
+        "service_frame_bytes": 24,
+        "states": 39701,
+        "peak_path": [
+          "0x1758",
+          "0x175a",
+          "0x1712",
+          "0x2448",
+          "0xe19",
+          "0x983",
+          "0xc280"
+        ]
+      },
+      "FBI": {
+        "cpu_bytes": 13,
+        "service_frame_bytes": 24,
+        "states": 6806,
+        "peak_path": [
+          "0xb4e",
+          "0xb50",
+          "0xb08",
+          "0x16c3",
+          "0x5c2",
+          "0x136",
+          "0xc280"
+        ]
+      },
+      "FBC": {
+        "cpu_bytes": 13,
+        "service_frame_bytes": 24,
+        "states": 39701,
+        "peak_path": [
+          "0x1ad3",
+          "0x1ad5",
+          "0x1a8d",
+          "0x274b",
+          "0xe19",
+          "0x983",
+          "0xc280"
+        ]
+      },
+      "FBCI": {
+        "cpu_bytes": 13,
+        "service_frame_bytes": 24,
+        "states": 6806,
+        "peak_path": [
+          "0xec9",
+          "0xecb",
+          "0xe83",
+          "0x19c6",
+          "0x5c2",
+          "0x136",
+          "0xc280"
+        ]
+      }
+    },
+    "huffman_body": {
+      "cpu_bytes": 5,
+      "service_frame_bytes": 19,
+      "states": 106,
+      "peak_path": [
+        "0x2684",
+        "0x268a",
+        "0x241f"
+      ]
+    },
+    "minimum_complete_s": {
+      "MD5": 462,
+      "EDX": 450,
+      "ARC": 412,
+      "FastBasic": 400
+    },
+    "stack_floor": 272,
+    "rom_reserve": 128,
+    "minimum_borrow_anchor": 400,
+    "rom": {
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "editor": {
+        "body_bytes": 13,
+        "states": 4024,
+        "path": [
+          {
+            "address": "0xfae1",
+            "symbol": null
+          },
+          {
+            "address": "0xfc46",
+            "symbol": null
+          },
+          {
+            "address": "0xfcfa",
+            "symbol": null
+          },
+          {
+            "address": "0xf977",
+            "symbol": "SCREENCOMPUTETOADDRX0.WITH_X"
+          },
+          {
+            "address": "0xf95f",
+            "symbol": "SCREENCOMPUTEADDR"
+          },
+          {
+            "address": "0xf97f",
+            "symbol": "SCREENCOMPUTERANGESIZE"
+          }
+        ]
+      },
+      "components": {
+        "cio_wrapper_cop_and_body": 33,
+        "nested_emulation_vbi": 22,
+        "owned_or_rom_irq_envelope": 48,
+        "acknowledge_only_nmi": 13,
+        "retired_vbi_return_tail": 6
+      },
+      "peak_bytes": 122
+    },
+    "fast_cell": {
+      "temporary_bytes": 4,
+      "acknowledge_nmi_bytes": 13,
+      "peak_below_complete_frame": 17,
+      "minimum_transient_s": 335,
+      "new_reserved_bank_zero_bytes": 0
+    },
+    "assumptions": [
+      "Both branch arms are traversed unless abstract register/flag state or a reviewed invariant fixes the branch. Unknown control transfers fail closed.",
+      "EDX JMP ($87) selects only its current mode table. $34C0/$3C81 see a nonzero high byte of a live document pointer; $3FB4 sees a nonnegative row index at admitted height <=30.",
+      "ARC inline-six is the checked no-push helper, with one nested JSR and a six-byte return adjustment. Printer summaries include an extra two-byte wrapper allowance.",
+      "ARCADD $5163..$5171 executes the initialized three-byte compare loop exactly three times. Recursive edges $56F7/$5713 are summarized compositionally against the real native entry check at $5684.",
+      "ARCADD entry frame >=$01A0 permits the next four-byte descent; a failing entry remains >=$019C and returns SDX 158 before deeper execution. Rooted overlay continuations compose with the bounded main region.",
+      "BASIC token/action leaf roots terminate at next_instruction or EXE_END. Arbitrary USR is excluded by public syntax. Bootstrap USR has one word and only the fixed argument/error/diagnostic/parser callbacks.",
+      "BASIC E_ELSEIF patches a live nonzero bytecode address. Grammar records use 256 private-bank bytes plus three bookkeeping bytes, bounded to 63 live states; they do not accumulate CPU frames. Pure parser states check $01A4 (conservative 19-byte envelope). Action entry checks $01A7 after three temporary saves, then restores them before its 26-byte leaf/interrupt envelope. Parser errors restore saved_cpu_stack before output; pinned callers provide S >=$01D0.",
+      "ROM CIO is IOCB0 PUT CHARACTERS to the standard E: handler. ScreenOpenGr0 can retry only once after selecting mode zero. Native VBI/clock hooks, owned IRQ handlers and no third-party vectors form the reviewed interrupt chain.",
+      "One nested CIO VBI uses the direct emulation dispatcher. Deeper NMIs only acknowledge. The six-byte return tail retires within one PAL VBI interval under the selected IRQ budget; no Task switch occurs across ROM."
+    ],
+    "entry_inventory": [
+      {
+        "path": "platform/altirraos/blitter.s",
+        "lines": [
+          392
+        ],
+        "lifetime": "test-only emulation import"
+      },
+      {
+        "path": "platform/altirraos/boot-diagnostics.s",
+        "lines": [
+          267
+        ],
+        "lifetime": "terminal fault, no resumable guest"
+      },
+      {
+        "path": "platform/altirraos/hosted.s",
+        "lines": [
+          78,
+          728,
+          776
+        ],
+        "lifetime": "boot/final-return"
+      },
+      {
+        "path": "platform/altirraos/sdx-runtime-probe.s",
+        "lines": [
+          246
+        ],
+        "lifetime": "runtime shared selector, no resident anchor"
+      },
+      {
+        "path": "platform/altirraos/sdx-stack.inc",
+        "lines": [
+          24
+        ],
+        "lifetime": "non-SDX runtime selector"
+      },
+      {
+        "path": "platform/altirraos/sio.s",
+        "lines": [
+          1273
+        ],
+        "lifetime": "test-only emulation import"
+      }
+    ],
+    "source_sha256": {
+      "tools/audit_sdx_stack.py": "a844b3ea51629355ccacbc3dcbea7b17c9f3a018b37b09c78f7dfcc414f02a91",
+      "abi/sdx.json": "4342ca91a77090c2082e914cd666a5f678732f91cfdac0ece344132259ead8a6",
+      "abi/fastbasic.json": "21c9ffb5756acfb94591e98224cf66fafabca5a2cc34f63d71cc23e8f5d0a80f",
+      "compat/sdx/arc-450.json": "da2667a28c13a08cffdb14789d1b2a5da404794ad0f3704d9936a9ab33fdd802",
+      "ports/fastbasic/patches/resident-stack.patch": "10b1f6a05f53fd0f282e06689267918bbb083eec7c9b65ffa4e65157fbb631c2",
+      "platform/altirraos/sdx-runtime-probe.s": "2e63dd1919422b8c699fb8939bd569db16c62fd6b10a1719498c0e60cc5bb45f",
+      "platform/altirraos/sdx-stack.inc": "7baccb6f7754201737179505c4307f656a620fb529d29b704f13a37ac95c5ba1",
+      "platform/altirraos/hosted.s": "ec8fa150db9b51f90f18c723a1a7181797ff3ac611ab8552d802fb51aa3eecbd",
+      "platform/altirraos/signal-irq.s": "8eb6ba37d828640a599c416d445298881a9dd8337589dde0b1fd872ddffacdee",
+      "platform/altirraos/sio.s": "a105b8007a375ce24e3aa2173c8a22078368c7a6e87a9893cbb31089b829f2f9",
+      "platform/altirraos/input.s": "b85a0a5e57fdc590bdf2a91f5b2e041c0b2405ad20194efc4388f2c8e8fe484a"
+    },
+    "binary_sha256": {
+      "build/sdx-inputs/md5/MD5.COM": "833706e1cab61f52e50e3d8446b53f696d7bd22e8184a64cb1bc350038fd6f79",
+      "build/sdx-inputs/edx/EDX.COM": "1f9b1082bc6ad53f8b7cbac15044f434454c942a3b13f7f6b428e7b8b0ba8f69",
+      "build/sdx-inputs/arc/ARC.COM": "2107dcc06b29cf6ba5a26ad8aaf167f59f5211d2d93c08253594507a7d2217dd",
+      "build/sdx-inputs/arc/ARCLST.OVL": "ea0b1f04ffa1c93d8b3fc69baafbb86854651665093c9ab3a091401c2946b7cd",
+      "build/sdx-inputs/arc/ARCEXT.OVL": "b1dd56ac4bb133bfc55150c1c17e401f74903d79a8459c6997ec0105290ad5ba",
+      "build/sdx-inputs/arc/ARCADD.OVL": "f0aa3ef786bc58567bd97a5b6dca58eadf1cdf8bac8bb0e6a3447a4d955d7408",
+      "build/fastbasic/FB.COM": "9857060368fc7f0042f493bb50442050e0aa72ac158030d5027fed3a1186788a",
+      "build/fastbasic/FBI.COM": "222293aeee494dd10f703199fd7535d65478139e9665dc7c68c8ec8b705eb2dd",
+      "build/fastbasic/FBC.COM": "b052c6c3ad05eb4c9981cdbcbc4e0f73e35321884276318f9147b0c7def08b60",
+      "build/fastbasic/FBCI.COM": "986da95f95ec9f8b24b47f57f1d6749a4c78b244ab45762b54be7e2f253bf5ec"
+    },
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    }
+  },
+  "instruction_bound": {
+    "status": "bounded",
+    "tier": "development",
+    "qualification": false,
+    "maximum_instructions": 170,
+    "maximum_temporary_bytes": 4,
+    "complete_frame_bytes": 13,
+    "acknowledge_nmi_bytes": 13,
+    "scope": "Uninterrupted successful get/put; pending-work detachment and failures excluded; both conditional successors otherwise traversed",
+    "states": 222,
+    "image_sha256": "4e8e87d4ca30f8b8c2f9ba8f4f9889f8316f57167e33d1552e526b746c968e96"
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "binding_in_existing_upper_bank": 96,
+    "guest_dp_reserved": 544,
+    "bridge_bank_reserved": 65536,
+    "console_static_reserved": 896,
+    "console_instance_payload": [
+      202,
+      206
+    ],
+    "console_instance_allocation": [
+      208,
+      208
+    ],
+    "sdx_session_payload": [
+      2320,
+      2324
+    ],
+    "sdx_session_allocation": [
+      2320,
+      2328
+    ],
+    "basic_session_payload": [
+      2344,
+      2348
+    ],
+    "basic_session_allocation": [
+      2344,
+      2352
+    ],
+    "screen_packet_payload": 300,
+    "screen_packet_allocation": 304
+  },
+  "development_checks": [
+    {
+      "path": "build/rawcon-latency/binding-final-raw/results.json",
+      "sha256": "0dc8b71de927b84060fffa142ea8583f0dd397e072d387306547f5926b53127c",
+      "status": "pass",
+      "checks": 102,
+      "case": "raw",
+      "group": "binding",
+      "qualification": false,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/binding-final-opt/results.json",
+      "sha256": "46aeeeb4a5e9e81597532d52d123696984f2920efa866e3040aed1534d46508c",
+      "status": "pass",
+      "checks": 102,
+      "case": "opt",
+      "group": "binding",
+      "qualification": false,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/cells-final-raw/results.json",
+      "sha256": "d4034d2e30b0e09ca54a86080e6bf33d32fba0f74c346d06f155d3ccf98b5944",
+      "status": "pass",
+      "checks": 131,
+      "case": "raw",
+      "group": "cells",
+      "qualification": false,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/cells-opt-v3/results.json",
+      "sha256": "12a5f70c3872f08235dee0d1748ee7228e1c9f22cd8818a20042473c5cb7ed97",
+      "status": "pass",
+      "checks": 2859,
+      "case": "opt",
+      "group": "cells",
+      "qualification": false,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/transitions-v3/results.json",
+      "sha256": "a1a47669931f3a166b47facfeab6e8c264ab714e8c83cb7fbfc0a13a2331d60f",
+      "status": "pass",
+      "qualification": false,
+      "cases": [
+        {
+          "phase": 8,
+          "checks": 131,
+          "rom_nmis": 0,
+          "deferred_nmis": 0
+        },
+        {
+          "phase": 9,
+          "checks": 131,
+          "rom_nmis": 0,
+          "deferred_nmis": 74
+        },
+        {
+          "phase": 10,
+          "checks": 131,
+          "rom_nmis": 26,
+          "deferred_nmis": 0
+        },
+        {
+          "phase": 11,
+          "checks": 131,
+          "rom_nmis": 8,
+          "deferred_nmis": 0
+        },
+        {
+          "phase": 12,
+          "checks": 131,
+          "rom_nmis": 24,
+          "deferred_nmis": 0
+        },
+        {
+          "phase": 13,
+          "checks": 131,
+          "rom_nmis": 0,
+          "deferred_nmis": 24
+        }
+      ]
+    },
+    {
+      "path": "build/rawcon-latency/guards-v3/results.json",
+      "sha256": "6861a4d0749394e7061c4ff583325bb74cf8d3edefb29bb483be6d19aa676a8e",
+      "status": "pass",
+      "checks": 161,
+      "group": "guards",
+      "qualification": false,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/packet-failure/results.json",
+      "sha256": "cf31c4cbc199f8d10cf1bb4cca9391eb158d5fd71968839d79608acf161693a7",
+      "status": "pass",
+      "checks": 22,
+      "group": "allocation",
+      "qualification": false,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/spans-local-raw/results.json",
+      "sha256": "3979b7b82258fb1cc41833c326a5cd9ac152c0954d54de1d7fe1e92b77519dd6",
+      "status": "pass",
+      "checks": 92,
+      "case": "raw",
+      "qualification": false,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/spans-local-opt/results.json",
+      "sha256": "ed80cce12249fe9a694f5018de574e7f4049a3cdb79b3f0cde6661d080c8aeaf",
+      "status": "pass",
+      "checks": 2225,
+      "case": "opt",
+      "qualification": false,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/span-fault/results.json",
+      "sha256": "f16b841c1ef188bf69b91a54ce040dd059646d63ce31c6ba25174968f4c8e295",
+      "status": "pass",
+      "qualification": false,
+      "cases": [
+        {
+          "mode": 5,
+          "variant": 0,
+          "checks": 90
+        },
+        {
+          "mode": 5,
+          "variant": 1,
+          "checks": 90
+        },
+        {
+          "mode": 6,
+          "variant": 0,
+          "checks": 3
+        },
+        {
+          "mode": 6,
+          "variant": 1,
+          "checks": 3
+        }
+      ]
+    },
+    {
+      "path": "build/rawcon-latency/screen/results.json",
+      "sha256": "5017430a3a8e29115723b2823b59f08d7c50ca0f6018dd6c9ebbc8bd4d2b7a0e",
+      "status": "pass",
+      "checks": 5051,
+      "qualification": false,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/edx-text/results.json",
+      "sha256": "af155d7b35b504a46b292251ce5e63f133865746682652ea13b7401930a85222",
+      "status": "pass",
+      "checks": 57,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/edx-bitmap/results.json",
+      "sha256": "2c1e2bad6a640f85b04344b046334773cb669edc04506115db50d8b08c3dfc5c",
+      "status": "pass",
+      "checks": 57,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/basic-session/results.json",
+      "sha256": "1da460f3ee80e367c6df4a494935df5f5e22a81f3ded7a29bf2e0f4fa9712ead",
+      "status": "pass",
+      "checks": 631,
+      "group": "session",
+      "cases": [
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {}
+      ],
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/md5/results.json",
+      "sha256": "568fa0a6d1c59c348760eef7e2bc332f4479479b7480ec96de2c9c08e6c01afa",
+      "status": "pass",
+      "checks": 306,
+      "cases": [
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {}
+      ],
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/arc/results.json",
+      "sha256": "2d977bab420242f32157c5843543db0054e553abfb6141e2926706f9a6a4a256",
+      "status": "pass",
+      "checks": 525,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/rom-minimum/results.json",
+      "sha256": "2ea5efd67fe2dae76702a1dfffd9b0e0474b63cbf6f8fe81b4eca50cfab60390",
+      "status": "pass",
+      "checks": 113,
+      "case": "opt",
+      "qualification": false,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/return-6/result.json",
+      "sha256": "43e2fad7434d8b89eaf72d1c91b9566da554aed9cc3262e2206d0e0d7adb738c",
+      "status": "pass",
+      "checks": 549,
+      "mode": "opt",
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/legacy-cells/results.json",
+      "sha256": "412baa12b39346d460d6d6bd4f5f41937ca441acfb028e16c0eadcff8125c7e9",
+      "status": "pass",
+      "checks": 316,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/fairness/results.json",
+      "sha256": "f15ae43ab41d0f44ceb32974afdcd48137c69ca249f40c7f3705c96839459e90",
+      "status": "pass",
+      "mode": "opt",
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/demo/atr-boot-results.json",
+      "sha256": "2de5df90d237bda54bf69fc3fbcf9e1298d6ac2af54da3e1d996d9689b56299f",
+      "status": "pass",
+      "qualification": false,
+      "runtime_status": 0
+    },
+    {
+      "path": "build/rawcon-latency/gui-final/resident-demo-results.json",
+      "sha256": "251e3c6d5e815fa044d146208310a3dc3c36b6d167f79136f8bb59ecf611cfec",
+      "status": "pass"
+    },
+    {
+      "path": "build/rawcon-latency/cart-new/results.json",
+      "sha256": "2cd4314ceac2caca683788df6b6ec845b82def98bf715e46810dc55e3b6ba2af",
+      "status": "pass"
+    },
+    {
+      "path": "build/rawcon-latency/cart-old/results.json",
+      "sha256": "1dd89d0a37986997914604d2bca7694d80c54fd8a0ace3ab8e9cf433ee74a247",
+      "status": "pass"
+    }
+  ],
+  "host_checks": {
+    "path": "build/rawcon-latency/host-final.log",
+    "sha256": "6f9bc71f32107899690e87b14fec5949b0fc8cf563be66ca9464f91b3475fffa",
+    "tests": 649,
+    "status": "pass"
+  },
+  "distribution": {
+    "zip_sha256": "79786f1fa07d2beace8649715f1a45dc8a4a90f10503c36e84fc34e55dc670ce",
+    "zip_bytes": 3149127,
+    "entries": {
+      "Exec-of816.xex": "26b251405b6d3dee4c229edb4b460533a2e920ec799a361cac2f07b083c7d4c1",
+      "README.txt": "bf6c4d976ba4e0204d09c76cbc024ed133616f317010f43dadc333a6c3c252f4",
+      "altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "cartridge/Exec-of816-atarimax-8mbit-new.car": "484001b1e30cd982eec329e9af68648478f6f0fb33afe5a39e61a50d758e0f25",
+      "cartridge/Exec-of816-atarimax-8mbit-old.car": "fcf6c4a64a822d85392b65f7b172659d635704ef74274ee484ac1994201f1e7e",
+      "cartridge/Exec-of816-atarimax-8mbit.bin": "99415cfb05c9ce813c21d4d2519875f19e01c4c960f2ad67d3f7550c391c4e32",
+      "cartridge/README.txt": "4f0ebdccc1188b5ca135074c5dbb583a97f46f3a84c61843e44566837c2e1712",
+      "exec816.atr": "1665c8f12db7040f3e069f511f8a675329bb3710a175577182bf483c9dcea106",
+      "licenses/ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "licenses/CALCULATOR-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/CALCULATOR-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "licenses/CALCULATOR-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "licenses/CALCULATOR-PROVENANCE.txt": "3f90b2f47985b07a6908cea27104089d7ffffdd0d1f9c2da4cbcade56ba4415e",
+      "licenses/EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "licenses/EXEC816-LICENSING.md": "40d1f32976825873444828e102c2c6eac90c4c1003855c6305f49bce922cc885",
+      "licenses/EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "licenses/FASTBASIC-COPYING.txt": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+      "licenses/FASTBASIC-NOTICES.txt": "4a37cc11a1ffdb5744f133add768a9aeafeee7f94e702b547e844a2ed8457cd1",
+      "licenses/G4BENCH-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/G4BENCH-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "licenses/G4BENCH-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "licenses/G4BENCH-PROVENANCE.txt": "7dfc2f08d87a16f77653f6f5173fbb185b22b6b269909c26d359e01762b36a9e",
+      "licenses/GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "licenses/GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+      "licenses/GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "licenses/OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "licenses/QED-APACHE-2.0.txt": "c323ee701fe73572b1f8294e8c2f297a1e5e1e7315716585638756d2c7ad9502",
+      "licenses/QED-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/QED-NOTICE.txt": "e4a48f363451f342c2e5e3b02c355420be5c045842c4e42f17cf7b51d0b0720b",
+      "licenses/QED-PROVENANCE.txt": "ab52509db2d90c19d11a61d2f2f7c7aef0f4889d500f30caea3d52819556e685",
+      "licenses/QED-TERMS.txt": "c084b9c6551836b13c3f777cd7d23a6ee532c59797ea1239c314be8a380ebd8a",
+      "licenses/SDX-UTILITIES-NOTICE.txt": "a1e4d9afd2a6ac478c13ba6a85d0a0b0444f9ebeba915d381de90995a14d94a1",
+      "qed.atr": "df0da99c9cdc6c7294fa02400b36a3d55e959438c6489c25695f2ff7c61cbaa2"
+    },
+    "checksum_verification": "All archived SHA256SUMS entries verified",
+    "native_checkpoint_replay": "Packaged resident workflow uses matching pre-native checkpoint; cold ATR separately observed",
+    "user_written_disks_overwritten": false,
+    "of816_autoboot_frames": 250,
+    "preferred_boot": "combined D1 ATR; same image for XEX/cartridges; separate QED ATR",
+    "mouse_port": 2
+  }
+}

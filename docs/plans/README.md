@@ -79,6 +79,13 @@
   checks. The 100 ms p95 interaction target remains open; see the
   [development record](../history/sdx-resident-stack.md).
 
+- [RAWCON cell access and console batching](rawcon-latency-implementation-plan.md):
+  implemented bridge-local get/put, a public cell-span vector and rebuilt
+  combined-disk delivery, with frame/IRQ/NMI, cancellation and FIFO checks.
+  Input readiness meets the ≤100 ms gate; full scanout remains about 120 ms.
+  Adds no reserved bank-zero bytes; see the
+  [development record](../history/rawcon-latency.md).
+
 - [Batched directory enumeration design](directory-batching-design.md) and
   [EB1–EB3 plan](directory-batching-implementation-plan.md): EB1–EB2 implement the
   public ExNextBatch operation with compact caller-owned results, existing

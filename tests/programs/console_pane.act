@@ -60,7 +60,7 @@ PROC Core()
     Require(cells(0)=$a5 AND cells(25)=$a5)
   OD
 
-  Require(SIZEOF(CONSOLETYPES.Instance)=202)
+  Require(SIZEOF(CONSOLETYPES.Instance)=206)
   Require(SIZEOF(CONSOLETYPES.Windows)=CONSOLETYPES.WINDOWS_SIZE)
 
 RETURN

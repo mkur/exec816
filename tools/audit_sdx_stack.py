@@ -440,6 +440,20 @@ def audit():
                         acknowledge_only_nmi=13,
                         retired_vbi_return_tail=6)
     rom_peak=sum(rom_components.values())
+    # Production leaf borrows four lower native-DP bytes and pushes exactly
+    # two A16 words. GATE makes nested native NMI acknowledge-only (13 bytes).
+    bridge=root_path('platform/altirraos/sdx-runtime-probe.s').read_text()
+    cell=bridge.split('sr_cell_candidate:',1)[1].split('sr_cell_failed:',1)[0]
+    pushes=re.findall(r'^\s*(pha|phx|phy|php|phb|phd|pea)\b',cell,re.M)
+    if pushes!=['pea','pha','pha']:raise RuntimeError('Unreviewed fast-cell temporary stack')
+    if 'pea 0\n    plb\n    plb' not in cell:
+        raise RuntimeError('DBR setup must retire before borrowing DP scratch')
+    scratch=abi['cell_scratch']
+    if (scratch['bytes'],scratch['saved_bytes'],scratch['ack_nmi_bytes'])!=(4,4,13):
+        raise RuntimeError('Changed fast-cell scratch envelope')
+    cell_peak=scratch['saved_bytes']+scratch['ack_nmi_bytes']
+    if abi['minimum_s']-cell_peak<abi['stack_floor']:
+        raise RuntimeError('Insufficient fast-cell headroom')
     if rom_peak>abi['rom_reserve']:raise RuntimeError('ROM reserve below reviewed envelope')
     for name,stack in minimum.items():
         if stack-abi['rom_reserve']<abi['stack_floor']:
@@ -461,6 +475,10 @@ def audit():
         minimum_complete_s=minimum,stack_floor=abi['stack_floor'],rom_reserve=abi['rom_reserve'],
         minimum_borrow_anchor=abi['stack_floor']+abi['rom_reserve'],
         rom=dict(sha256=digest(rom),editor=editor,components=rom_components,peak_bytes=rom_peak),
+        fast_cell=dict(temporary_bytes=4,acknowledge_nmi_bytes=13,
+                       peak_below_complete_frame=cell_peak,
+                       minimum_transient_s=abi['minimum_s']-cell_peak,
+                       new_reserved_bank_zero_bytes=0),
         assumptions=[
             'Both branch arms are traversed unless abstract register/flag state or a reviewed invariant fixes the branch. Unknown control transfers fail closed.',
             'EDX JMP ($87) selects only its current mode table. $34C0/$3C81 see a nonzero high byte of a live document pointer; $3FB4 sees a nonnegative row index at admitted height <=30.',

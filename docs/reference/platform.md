@@ -30,6 +30,12 @@ page-one image. Runtime ROM entry borrows below a complete frame with a
 its Process or data. This refactor adds zero reserved bank-zero bytes, including
 fixed, root/kernel, each public Task and idle guards/alignment/spare capacity.
 
+The [RAWCON cell/vector delivery](../history/rawcon-latency.md) also adds zero
+reserved bank-zero bytes. Its 96-byte binding fits inside the existing bridge
+bank; four lower native Task DP bytes are borrowed and restored. The console's
+896-byte upper reservation stays fixed, and per-Instance allocations still
+round to 208 bytes. Session and screen-packet growth uses upper heap storage.
+
 ## Compiler and memory contract
 
 Use the revision and generated ABI selected by [actionc.json](../../toolchain/actionc.json):

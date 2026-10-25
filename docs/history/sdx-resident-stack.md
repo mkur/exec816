@@ -18,6 +18,11 @@ RS0–RS5 and the RS6 dispatch changes are implemented. Selected development
 checks pass. The **100 ms p95 interaction target remains open**, so the complete
 plan's acceptance gate is not closed. Full hosted qualification is separate.
 
+The [RAWCON follow-up](rawcon-latency.md) implements bridge-local cells and a
+public vector write. Its later matched measurements reach about 80 ms p95 input
+readiness and 120 ms full scanout; the visual target remains open. The results
+below retain the earlier resident-stack inputs and distribution identity.
+
 ## Stack derivation and transitions
 
 The scoped instruction/control-flow audit in
@@ -82,9 +87,35 @@ Final artifact identities, median/p95 values, routine timing and sample hashes
 are in the delivery record. Idle waits produce no damage. Complete rendering,
 inverse caret, scroll, short-write/error damage retention, cancellation and
 resource ownership have separate emitted checks. Console requests continue
-through public synchronous `WRITE_CELLS`. Their measured rendering cost and
+through public synchronous `WRITE_CELLS`. Their elapsed request cost and
 remaining service/guest work keep the 100 ms goal open; guards and transport
 deadlines were not relaxed.
+
+### Follow-up latency diagnosis
+
+The [25 October diagnostic](edx-key-latency.json) repeats all three 20-sample
+cohorts with passive native routine markers and captures scanout during the
+three held-key frames too. Earlier captures still put the complete visible
+insertion target at 140 ms. The readiness gate did not conceal an earlier
+complete update in these samples. The first changed logical cell is observed
+at about 60 ms; this does not establish when the typed glyph first appears.
+
+In one representative insertion, the input result is collected at about 18 ms,
+RAWCON Flush starts at 48 ms and returns at 104 ms, and complete scanout/input
+readiness is observed at 140 ms. Two sequential console requests consume about
+55 ms elapsed, including about 52 ms in transfer/wait. Presenter spans total
+about 8 ms; model copies total about 0.53 ms. These are inclusive intervals with
+preemption and possible overlap between Tasks, not additive CPU accounting.
+The remaining final interval includes read rearming and scanout.
+
+An insertion still uses 74 native cell calls and 75 guest/bridge returns.
+The next candidates are one public console transaction containing the dirty
+text/caret/status spans and a bounded RAWCON cell path that avoids the full
+native service loop per cell. FIFO, cancellation, IRQ/NMI handling and guard
+checks remain requirements. This diagnosis changes the observer only; no new
+runtime operation or performance improvement is claimed.
+The [RC0–RC6 implementation plan](../plans/rawcon-latency-implementation-plan.md)
+defines those changes and their acceptance gates.
 
 ## Executed development scope
 

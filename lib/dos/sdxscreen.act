@@ -9,6 +9,45 @@ USE SDXFILES
 USE SDXCOMMAND
 USE CONSOLETYPES
 USE A816MEMORY
+USE SDXRUNTIME
+USE DOSBREAK
+USE DOSBREAKTYPES
+
+; Build an unpublished binding in the existing upper bridge bank. The caller
+; owns the guest lease and keeps these buffers alive until Unbind.
+PROC StorePointer(BYTE POINTER binding CARD at BYTE POINTER value)
+  LONGCARD location
+
+  location=LONGCARD(ADDRESS(value))
+  SDXSTATE.Word(binding,at,CARD(location))
+  binding(at+2)=BYTE(location RSH 16)
+  binding(at+3)=0
+
+RETURN
+
+PUBLIC BYTE FUNC Bind(SDXSTATE.Session POINTER state)
+  CARD row
+  BYTE POINTER binding
+  DOSBREAKTYPES.Scope POINTER scope
+
+  SDXRUNTIME.Unbind(CARD(state.slot))
+  binding=BYTE POINTER(ADDRESS(SDXABI.BINDING_BASE))
+  SDXSTATE.Word(binding,SDXABI.BINDING_WIDTH,state.screenWidth)
+  SDXSTATE.Word(binding,SDXABI.BINDING_HEIGHT,state.screenHeight)
+  StorePointer(binding,SDXABI.BINDING_SCREEN,state.screen)
+  StorePointer(binding,SDXABI.BINDING_FIRST,@state.screenFirst)
+  StorePointer(binding,SDXABI.BINDING_END,@state.screenEnd)
+  scope=DOSBREAK.Current()
+  IF scope=NULL THEN
+    StorePointer(binding,SDXABI.BINDING_PENDING,NULL)
+  ELSE
+    StorePointer(binding,SDXABI.BINDING_PENDING,@scope.pending)
+  FI
+  FOR row=0 TO SDXABI.BINDING_ROW_COUNT-1 DO
+    SDXSTATE.Word(binding,SDXABI.BINDING_ROWS+row*2,row*state.screenWidth)
+  OD
+
+RETURN(BYTE(SDXRUNTIME.Bind(CARD(state.slot))))
 
 ; Native operations never expose the console worker's retained model.
 ; Borrow the stream binding, including bounded mode restoration after BREAK.
@@ -19,28 +58,53 @@ BYTE FUNC SetMode(DOS.FileHandle POINTER file BYTE flags)
 
 RETURN(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_MODE,0,@value,1)=1)
 
-; Complete counted copies before lending the guest another key.
+; Lend all current damage through one public request. The guest cannot run or
+; mutate these cells until collection; only acknowledged whole spans retire.
 PUBLIC BYTE FUNC Flush(SDXSTATE.Session POINTER state)
-  CARD row,first,count
-  LONGINT sent
+  CARD row,first,count,offset,accepted
+  LONGINT sent,cause
+  CONSOLETYPES.CellSpan POINTER span
 
   IF state.screenOpen=0 THEN
     RETURN(0)
   FI
+  offset=0
   FOR row=0 TO state.screenHeight-1 DO
     first=state.screenFirst(row)
-    IF first<state.screenEnd(row) THEN
-      count=CARD(state.screenEnd(row))-first
-      sent=DOS.ConsoleIO(state.outputHandle,CONSOLETYPES.CONCMD_WRITE_CELLS,
-          (LONGCARD(row) LSH 16) OR LONGCARD(first),
-          state.screen+SIZE(row*state.screenWidth+first),LONGINT(count))
-      IF sent<>LONGINT(count) THEN
-        RETURN(SDXFILES.MapError(state))
-      FI
-      state.screenFirst(row)=BYTE(state.screenWidth)
-      state.screenEnd(row)=0
+    IF first<CARD(state.screenEnd(row)) THEN
+      span=CONSOLETYPES.CellSpan POINTER(state.screenSpans+SIZE(offset))
+      span.column=first
+      span.row=row
+      span.data=state.screen+SIZE(row*state.screenWidth+first)
+      span.length=CARD(state.screenEnd(row))-first
+      offset==+CONSOLETYPES.CELLSPAN_SIZE
     FI
   OD
+  IF offset=0 THEN
+    RETURN(0)
+  FI
+  sent=DOS.ConsoleIO(state.outputHandle,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,
+      0,state.screenSpans,LONGINT(offset))
+  cause=DOS.IoErr()
+  accepted=0
+  IF sent>=0 AND sent<=LONGINT(offset) AND
+      (sent MOD LONGINT(CONSOLETYPES.CELLSPAN_SIZE))=0 THEN
+    accepted=CARD(sent)
+  FI
+  count=0
+  WHILE count<accepted DO
+    span=CONSOLETYPES.CellSpan POINTER(state.screenSpans+SIZE(count))
+    state.screenFirst(span.row)=BYTE(state.screenWidth)
+    state.screenEnd(span.row)=0
+    count==+CONSOLETYPES.CELLSPAN_SIZE
+  OD
+  IF cause<>0 OR sent<>LONGINT(offset) THEN
+    IF cause=0 THEN
+      cause=DOS.ERROR_BAD_NUMBER
+    FI
+    DOS.SetIoErr(cause)
+    RETURN(SDXFILES.MapError(state))
+  FI
 
 RETURN(0)
 
@@ -49,6 +113,7 @@ PUBLIC PROC Retire(SDXSTATE.Session POINTER state)
   BYTE clear
   LONGINT ignored,cause
 
+  SDXRUNTIME.Unbind(CARD(state.slot))
   IF state.screen=NULL THEN
     RETURN
   FI
@@ -60,6 +125,10 @@ PUBLIC PROC Retire(SDXSTATE.Session POINTER state)
   state.screenOpen=0
   EXEC.FreeMem(state.screen,SIZE(state.screenWidth*state.screenHeight))
   state.screen=NULL
+  IF state.screenSpans<>NULL THEN
+    EXEC.FreeMem(state.screenSpans,300)
+    state.screenSpans=NULL
+  FI
   DOS.SetIoErr(cause)
 
 RETURN
@@ -68,6 +137,10 @@ RETURN
 BYTE FUNC Open(SDXSTATE.Session POINTER state)
   CARD ARRAY geometry(2)
   BYTE mode
+
+  IF state.screen<>NULL THEN
+    Retire(state)
+  FI
 
   IF DOS.IsInteractive(DOS.Input())=0 OR
       DOS.IsInteractive(state.outputHandle)=0 THEN
@@ -85,6 +158,13 @@ BYTE FUNC Open(SDXSTATE.Session POINTER state)
   IF state.screen=NULL THEN
     RETURN(158)
   FI
+  state.screenSpans=EXEC.AllocMem(300,EXEC.MEMF_UPPER)
+  IF state.screenSpans=NULL THEN
+    EXEC.FreeMem(state.screen,SIZE(geometry(0)*geometry(1)))
+    state.screen=NULL
+    state.nativeError=DOS.ERROR_NO_FREE_STORE
+    RETURN(158)
+  FI
   mode=CONSOLETYPES.MODE_RAW_KEYS OR CONSOLETYPES.MODE_ATASCII
       OR CONSOLETYPES.MODE_NO_CARET
   IF SetMode(DOS.Input(),mode)=0 OR SetMode(state.outputHandle,mode)=0 THEN
@@ -95,6 +175,10 @@ BYTE FUNC Open(SDXSTATE.Session POINTER state)
   state.dp($2c)=BYTE(geometry(0))
   state.dp($2e)=BYTE(geometry(1))
   state.bank($2bf)=BYTE(geometry(1))
+  IF Bind(state)=0 THEN
+    Retire(state)
+    RETURN(156)
+  FI
 
 RETURN(0)
 
@@ -175,47 +259,11 @@ BYTE FUNC Scroll(SDXSTATE.Session POINTER state)
 
 RETURN(0)
 
-; The hot get/put path is nonblocking and touches only caller-owned cells.
-PUBLIC BYTE FUNC Cell(SDXSTATE.Session POINTER state BYTE POINTER frame
-    CARD operation)
-  CARD column,row,at
-
-  IF state.screenOpen=0 THEN
-    RETURN(156)
-  FI
-  column=state.dp($55)
-  row=state.dp($54)
-  IF column>=state.screenWidth OR row>=state.screenHeight THEN
-    RETURN(156)
-  FI
-  at=row*state.screenWidth+column
-  IF operation=3 THEN
-    frame(SDXABI.FRAME_A)=state.screen(at)
-    SDXCOMMAND.NZ(frame,frame(SDXABI.FRAME_A))
-  ELSEIF operation=4 THEN
-    IF state.screen(at)<>frame(SDXABI.FRAME_A) THEN
-      state.screen(at)=frame(SDXABI.FRAME_A)
-      IF column<CARD(state.screenFirst(row)) THEN
-        state.screenFirst(row)=BYTE(column)
-      FI
-      IF column+1>CARD(state.screenEnd(row)) THEN
-        state.screenEnd(row)=BYTE(column+1)
-      FI
-    FI
-  ELSE
-    RETURN(156)
-  FI
-
-RETURN(0)
-
 ; Dispatch the remaining table entries without exposing native model pointers.
 PUBLIC BYTE FUNC Call(SDXSTATE.Session POINTER state BYTE POINTER frame
     CARD operation)
   BYTE error
 
-  IF operation=3 OR operation=4 THEN
-    RETURN(Cell(state,frame,operation))
-  FI
   IF operation=0 THEN
     error=Open(state)
     IF error=0 THEN

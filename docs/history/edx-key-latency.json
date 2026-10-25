@@ -1,0 +1,339 @@
+{
+  "status": "measured-latency-remains-open",
+  "date": "2026-10-25",
+  "tier": "development",
+  "qualification": false,
+  "source_base": "2db747778cc779c60cd2d43c3433d285ef4cff6d",
+  "observer_sha256": "62d4b18ee5e79369513b8821c328ac82520238ca8c774f1dae287c8da36ef625",
+  "zip_sha256": "2c10b2ca25638315dc803e7f70a525535e1ca76e8366b9c51c30266ee67c68ff",
+  "source_result": {
+    "path": "build/sdx-key-latency/diagnostic/results.json",
+    "sha256": "2270af06e19685375c9bf6691c9ffbc9a04e08c0842fb2104bc3341ce1c32965"
+  },
+  "protocol": "Same 64x20 desktop, pinned 8x PAL platform, three-frame physical key hold, twenty samples per operation; also capture during held-key frames and compare earlier independent scanout against the final complete target.",
+  "summaries": {
+    "insert": {
+      "input_ready_ms": {
+        "count": 20,
+        "median": 140.3909616721104,
+        "p95": 140.3909616721104,
+        "maximum": 140.3909616721104
+      },
+      "scanout_ms": {
+        "count": 20,
+        "median": 140.3909616721104,
+        "p95": 140.3909616721104,
+        "maximum": 140.3909616721104
+      },
+      "target_scanout_ms": {
+        "count": 20,
+        "median": 140.3909616721104,
+        "p95": 140.3909616721104,
+        "maximum": 140.3909616721104
+      },
+      "first_model_change_ms": {
+        "count": 20,
+        "median": 60.167555002333025,
+        "p95": 60.167555002333025,
+        "maximum": 60.167555002333025
+      }
+    },
+    "horizontal": {
+      "input_ready_ms": {
+        "count": 20,
+        "median": 120.33511000466605,
+        "p95": 120.33567387813848,
+        "maximum": 120.33623775161091
+      },
+      "scanout_ms": {
+        "count": 20,
+        "median": 120.33511000466605,
+        "p95": 120.33567387813848,
+        "maximum": 120.33623775161091
+      },
+      "target_scanout_ms": {
+        "count": 20,
+        "median": 120.33511000466605,
+        "p95": 120.33567387813848,
+        "maximum": 120.33623775161091
+      },
+      "first_model_change_ms": {
+        "count": 20,
+        "median": 40.11170333488869,
+        "p95": 40.11226720836112,
+        "maximum": 40.11226720836112
+      }
+    },
+    "vertical": {
+      "input_ready_ms": {
+        "count": 20,
+        "median": 160.44681333955475,
+        "p95": 160.44681333955475,
+        "maximum": 160.44681333955475
+      },
+      "scanout_ms": {
+        "count": 20,
+        "median": 160.44681333955475,
+        "p95": 160.44681333955475,
+        "maximum": 160.44681333955475
+      },
+      "target_scanout_ms": {
+        "count": 20,
+        "median": 160.44681333955475,
+        "p95": 160.44681333955475,
+        "maximum": 160.44681333955475
+      },
+      "first_model_change_ms": {
+        "count": 20,
+        "median": 40.11170333488869,
+        "p95": 40.11226720836112,
+        "maximum": 60.167555002333025
+      }
+    }
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c6e041040f9624db",
+    "actual_kernel_id": "$c6e041040f9624db",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "rom": {
+    "path": "/Users/michalkurcewicz/action/exec816-commands/build/sdx-key-latency/diagnostic/extracted/exec816-demo/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "override": false
+  },
+  "representative_routines": {
+    "insert": {
+      "cell": {
+        "calls": 74,
+        "elapsed_ms": 7.021281994533246
+      },
+      "flush": {
+        "calls": 1,
+        "elapsed_ms": 56.00539344976381
+      },
+      "guards": {
+        "calls": 75,
+        "elapsed_ms": 2.1907189245805134
+      },
+      "console_io": {
+        "calls": 2,
+        "elapsed_ms": 55.42143198487692
+      },
+      "request_prepare": {
+        "calls": 3,
+        "elapsed_ms": 1.3372964240554062
+      },
+      "request_complete": {
+        "calls": 3,
+        "elapsed_ms": 2.5344702902115794
+      },
+      "transfer": {
+        "calls": 2,
+        "elapsed_ms": 51.56770922172773
+      },
+      "positioned_write": {
+        "calls": 2,
+        "elapsed_ms": 0.7338813243696247
+      },
+      "finish_write": {
+        "calls": 2,
+        "elapsed_ms": 15.97037690712581
+      },
+      "model_write": {
+        "calls": 2,
+        "elapsed_ms": 0.533283336552111
+      },
+      "present": {
+        "calls": 4,
+        "elapsed_ms": 8.210138726971055
+      },
+      "guest_and_bridge": {
+        "calls": 75,
+        "elapsed_ms": 9.124811983439036
+      }
+    },
+    "horizontal": {
+      "cell": {
+        "calls": 10,
+        "elapsed_ms": 1.2366450092263797
+      },
+      "flush": {
+        "calls": 1,
+        "elapsed_ms": 57.37828438676645
+      },
+      "guards": {
+        "calls": 11,
+        "elapsed_ms": 0.4068347103593425
+      },
+      "console_io": {
+        "calls": 2,
+        "elapsed_ms": 56.743221888440445
+      },
+      "request_prepare": {
+        "calls": 3,
+        "elapsed_ms": 1.2884508845060259
+      },
+      "request_complete": {
+        "calls": 3,
+        "elapsed_ms": 2.4838626460608504
+      },
+      "transfer": {
+        "calls": 2,
+        "elapsed_ms": 52.889922030395596
+      },
+      "positioned_write": {
+        "calls": 2,
+        "elapsed_ms": 0.7655287230098438
+      },
+      "finish_write": {
+        "calls": 2,
+        "elapsed_ms": 17.140484846605272
+      },
+      "model_write": {
+        "calls": 2,
+        "elapsed_ms": 0.5653536402966538
+      },
+      "present": {
+        "calls": 4,
+        "elapsed_ms": 7.849471157167043
+      },
+      "guest_and_bridge": {
+        "calls": 11,
+        "elapsed_ms": 0.5043848210899956
+      }
+    },
+    "vertical": {
+      "cell": {
+        "calls": 18,
+        "elapsed_ms": 2.0915476776166195
+      },
+      "flush": {
+        "calls": 1,
+        "elapsed_ms": 96.44541211397573
+      },
+      "guards": {
+        "calls": 19,
+        "elapsed_ms": 0.5418119228226378
+      },
+      "console_io": {
+        "calls": 3,
+        "elapsed_ms": 95.62257974933004
+      },
+      "request_prepare": {
+        "calls": 4,
+        "elapsed_ms": 1.6729421085202691
+      },
+      "request_complete": {
+        "calls": 4,
+        "elapsed_ms": 3.2453737705796195
+      },
+      "transfer": {
+        "calls": 3,
+        "elapsed_ms": 89.99265554802159
+      },
+      "positioned_write": {
+        "calls": 3,
+        "elapsed_ms": 2.9109968014277277
+      },
+      "finish_write": {
+        "calls": 3,
+        "elapsed_ms": 22.301125350482607
+      },
+      "model_write": {
+        "calls": 3,
+        "elapsed_ms": 0.9260212101006655
+      },
+      "present": {
+        "calls": 5,
+        "elapsed_ms": 12.232459658377257
+      },
+      "guest_and_bridge": {
+        "calls": 19,
+        "elapsed_ms": 1.1486102633430084
+      }
+    }
+  },
+  "representative_insertion_timeline_ms": {
+    "key_down": 0,
+    "input_result_collected": 18.227703385637298,
+    "flush_started": 48.374846168268306,
+    "flush_returned": 104.3802396180321,
+    "complete_target_scanout": 140.3909616721104,
+    "input_ready": 140.3909616721104
+  },
+  "interpretation": [
+    "Earlier completed-target scanout remains 140 ms for insertion; the previous readiness gate did not hide an earlier complete update in these samples.",
+    "The first changed logical cell appears around 60 ms. This is not a claim that the typed glyph is already visible.",
+    "Two sequential public console requests consume about 55 ms elapsed. Their transfer/wait portions consume about 52 ms.",
+    "Presenter spans total about 8 ms elapsed. Model-copy spans total about 0.53 ms. Request elapsed time cannot be equated with glyph drawing cost.",
+    "An insertion uses 74 native cell calls and 75 guest/bridge returns. Their call counts still justify a bounded cell path improvement.",
+    "Inclusive routine intervals include preemption, can overlap across Tasks, and must not be summed as exclusive CPU costs.",
+    "The last interval includes read rearming and final scanout; this trace does not isolate that interval further."
+  ],
+  "proposed_next_changes": [
+    "A public console operation submitting the dirty text/caret/status spans as one request, with FIFO, cancellation and bounded presentation retained.",
+    "A bounded RAWCON cell path that avoids a full native service-loop round trip for each get/put while preserving guards, context and BREAK."
+  ],
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "live_tasks": 0
+  },
+  "runtime_changed": false,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "limitations": [
+    "Development measurements, not hosted qualification",
+    "No runtime optimization or new console ABI implemented in this diagnostic",
+    "Whole-client completed-target latency, not time to first glyph; frame-quantized upper bounds"
+  ]
+}

@@ -1,0 +1,134 @@
+; Production resident bridge cells, including exact hidden B and status.
+MODULE SDXRAWCONTEST
+USE EXEC
+USE DOS
+USE HEAPCORE
+USE SDXSTATE
+USE SDXABI
+USE SDXRUNTIME
+USE SDXSCREEN
+USE SDXPROGRAM
+USE A816MEMORY
+
+CARD checks
+BYTE pending
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  SDXSTATE.Session POINTER state
+  BYTE POINTER backing,frame,binding
+  CARD value,row,column,index
+  LONGCARD baseline,location
+  BYTE flags
+  BYTE ARRAY code=[$20 $80 $f6 $20 $80 $f2 $20 $60 $f6
+      $20 $80 $f2 $4c $00 $30]
+
+  baseline=EXEC.AvailMem(0)
+  state=SDXSTATE.Session POINTER(EXEC.AllocMem(SIZEOF(SDXSTATE.Session),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  backing=EXEC.AllocMem(131071,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  Require(state<>NULL AND backing<>NULL)
+  location=(LONGCARD(ADDRESS(backing))+$ffff) & LONGCARD($ffff0000)
+  state.bank=BYTE POINTER(ADDRESS(location))
+  state.entry=$3000
+  state.profile=64
+  state.screenWidth=80
+  state.screenHeight=30
+  state.screen=EXEC.AllocMem(2400,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  Require(state.screen<>NULL)
+  state.screenOpen=1
+  Require(SDXRUNTIME.Acquire(0)=1)
+  SDXSTATE.Prepare(state)
+  SDXPROGRAM.Gates(state.bank)
+  A816MEMORY.Move(state.bank+$3000,@code,15)
+  SDXSTATE.Enter(state)
+  Require(SDXSCREEN.Bind(state)=1)
+  binding=BYTE POINTER(ADDRESS(SDXABI.BINDING_BASE))
+  Require(SDXSTATE.ReadWord(binding,SDXABI.BINDING_OWNER)=1)
+  FOR row=0 TO 29 DO
+    Require(SDXSTATE.ReadWord(binding,SDXABI.BINDING_ROWS+row*2)=row*80)
+  OD
+  SDXRUNTIME.Unbind(1)
+  Require(SDXSTATE.ReadWord(binding,SDXABI.BINDING_OWNER)=1)
+  FOR value=0 TO 255 DO
+    frame=SDXSTATE.GetFrame(state)
+    SDXSTATE.Word(frame,SDXABI.FRAME_PC,$3000)
+    frame(SDXABI.FRAME_A)=BYTE(value)
+    frame(SDXABI.FRAME_A+1)=$ab
+    frame(SDXABI.FRAME_X)=$5a
+    frame(SDXABI.FRAME_Y)=$a6
+    frame(SDXABI.FRAME_P)=$79
+    row=value MOD 30
+    column=value MOD 80
+    state.dp($54)=BYTE(row)
+    state.dp($55)=BYTE(column)
+    state.screenFirst(row)=80
+    state.screenEnd(row)=0
+    state.screen(row*80+column)=BYTE(value XOR 1)
+    Require(SDXRUNTIME.Run(0)=SDXABI.CHECKPOINT_EVENT)
+    frame=SDXSTATE.GetFrame(state)
+    Require(frame(SDXABI.FRAME_A)=BYTE(value)
+        AND frame(SDXABI.FRAME_A+1)=$ab)
+    Require(frame(SDXABI.FRAME_P)=$79)
+    Require(frame(SDXABI.FRAME_X)=$5a AND frame(SDXABI.FRAME_Y)=$a6)
+    Require(state.screen(row*80+column)=BYTE(value))
+    Require(state.screenFirst(row)=BYTE(column)
+        AND state.screenEnd(row)=BYTE(column+1))
+    frame(SDXABI.FRAME_A)=BYTE(value XOR $ff)
+    Require(SDXRUNTIME.Run(0)=SDXABI.CHECKPOINT_EVENT)
+    frame=SDXSTATE.GetFrame(state)
+    flags=$79
+    IF value=0 THEN
+      flags=flags OR 2
+    ELSEIF value>=128 THEN
+      flags=flags OR $80
+    FI
+    Require(frame(SDXABI.FRAME_A)=BYTE(value)
+        AND frame(SDXABI.FRAME_A+1)=$ab AND frame(SDXABI.FRAME_P)=flags)
+    Require(frame(SDXABI.FRAME_X)=$5a AND frame(SDXABI.FRAME_Y)=$a6)
+    ; An unchanged put consumes its event without introducing damage.
+    state.screenFirst(row)=80
+    state.screenEnd(row)=0
+    SDXSTATE.Word(frame,SDXABI.FRAME_PC,$3000)
+    Require(SDXRUNTIME.Run(0)=SDXABI.CHECKPOINT_EVENT)
+    Require(state.screenFirst(row)=80 AND state.screenEnd(row)=0)
+  OD
+  frame=SDXSTATE.GetFrame(state)
+  SDXSTATE.Word(frame,SDXABI.FRAME_PC,$3000)
+  state.dp($54)=30
+  Require(SDXRUNTIME.Run(0)=SDXABI.RAWCON_EVENT+4)
+  Require(SDXSCREEN.Call(state,SDXSTATE.GetFrame(state),4)=156)
+  ; BREAK is observed before any write. The service loop owns cancellation.
+  pending=1
+  location=LONGCARD(ADDRESS(@pending))
+  SDXSTATE.Word(binding,SDXABI.BINDING_PENDING,CARD(location))
+  binding(SDXABI.BINDING_PENDING+2)=BYTE(location RSH 16)
+  Require(SDXRUNTIME.Bind(0)=1)
+  frame=SDXSTATE.GetFrame(state)
+  SDXSTATE.Word(frame,SDXABI.FRAME_PC,$3000)
+  frame(SDXABI.FRAME_A)=123
+  state.dp($54)=29
+  state.dp($55)=79
+  state.screen(2399)=77
+  Require(SDXRUNTIME.Run(0)=SDXABI.RAWCON_EVENT+4)
+  Require(state.screen(2399)=77)
+  SDXRUNTIME.Unbind(0)
+  Require(SDXSTATE.ReadWord(binding,SDXABI.BINDING_OWNER)=0)
+  SDXRUNTIME.Release()
+  SDXSTATE.Guards()
+  EXEC.FreeMem(state.screen,2400)
+  EXEC.FreeMem(backing,131071)
+  EXEC.FreeMem(BYTE POINTER(state),SIZEOF(SDXSTATE.Session))
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+ENDMODULE

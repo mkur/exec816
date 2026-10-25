@@ -1,0 +1,219 @@
+; A native caller exercises the same public vector operation used by RAWCON.
+MODULE CONSOLESPANSTEST
+USE EXEC
+USE DOS
+USE DOSRAW
+USE DOSSTREAMS
+USE CONSOLEDRIVER
+USE CONSOLECORE
+USE CONSOLETYPES
+USE CONSOLE
+USE HEAPCORE
+
+CARD checks,spanBytes,instanceBytes
+CONSOLETYPES.CellSpan ARRAY spans(30)
+BYTE ARRAY cells(256)
+BYTE ARRAY snapshot(960)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+; Exercise real request ownership, a partial span and FIFO mode ordering.
+PROC Async()
+  EXEC.MsgPort POINTER port
+  EXEC.IOStdReq POINTER owner,later
+  CARD index
+  BYTE mode
+  LONGCARD actual
+
+  port=EXEC.CreateMsgPort()
+  owner=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  later=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(port<>NULL AND owner<>NULL AND later<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"console.device"),0,
+      EXEC.IORequest POINTER(owner),0)=0)
+  LET instance=CONSOLETYPES.Instance POINTER(owner.io_Unit)
+  mode=$e0
+  owner.io_Command=CONSOLETYPES.CONCMD_MODE
+  owner.io_Data=@mode
+  owner.io_Length=1
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(owner))=0)
+  Require(CONSOLE.Hide(0)<>0)
+  FOR index=0 TO 29 DO
+    spans(index).column=0
+    spans(index).row=index MOD 24
+    spans(index).data=@cells
+    spans(index).length=40
+  OD
+  owner.io_Command=CONSOLETYPES.CONCMD_WRITE_CELL_SPANS
+  owner.io_Data=BYTE POINTER(@spans)
+  owner.io_Length=300
+  later.io_Device=owner.io_Device
+  later.io_Unit=owner.io_Unit
+  later.io_Command=CONSOLETYPES.CONCMD_MODE
+  mode=0
+  later.io_Data=@mode
+  later.io_Length=1
+  EXEC.Forbid()
+  EXEC.SendIO(EXEC.IORequest POINTER(owner))
+  EXEC.SendIO(EXEC.IORequest POINTER(later))
+  EXEC.Permit()
+  WHILE instance.vectorOffset=0 DO
+    Require(EXEC.CheckIO(EXEC.IORequest POINTER(owner))=NULL)
+    EXEC.Yield()
+  OD
+  Require(owner.io_Actual>0 AND owner.io_Actual<300
+      AND (owner.io_Actual MOD 10)=0)
+  Require(EXEC.CheckIO(EXEC.IORequest POINTER(later))=NULL AND (instance.caps & $e0)=$e0)
+  Require(CONSOLE.ResizeHeight(0,20)=0)
+  Require(CONSOLEDRIVER.Stop()=0)
+  EXEC.AbortIO(EXEC.IORequest POINTER(owner))
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(owner))=EXEC.IOERR_ABORTED)
+  actual=owner.io_Actual
+  Require(actual>0 AND actual<300 AND (actual MOD 10)=0)
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(later))=0 AND later.io_Actual=1)
+  Require(instance.vectorOffset=0 AND instance.vectorIndex=0 AND instance.write=NULL)
+  Require(EXEC.GetMsg(port)=NULL AND (instance.caps & $e0)=0)
+  FOR index=0 TO 959 DO
+    snapshot(index)=instance.cells(CONSOLECORE.CellOffset(instance,index))
+  OD
+  FOR index=0 TO 255 DO
+    cells(index)=$ff
+  OD
+  EXEC.Yield()
+  FOR index=0 TO 959 DO
+    Require(snapshot(index)=instance.cells(CONSOLECORE.CellOffset(instance,index)))
+  OD
+  EXEC.AbortIO(EXEC.IORequest POINTER(owner))
+  Require(owner.io_Actual=actual AND EXEC.GetMsg(port)=NULL)
+  Require(CONSOLE.Show(0,0,0)<>0)
+  later.io_Device=NULL
+  later.io_Unit=NULL
+  EXEC.CloseDevice(EXEC.IORequest POINTER(owner))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(later))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(owner))
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+PROC Main()
+  CARD index,row,column
+  BYTE mode,localCell
+  CONSOLETYPES.CellSpan localSpan
+
+  LET baseline=EXEC.AvailMem(0)
+  LET file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  LET instance=CONSOLEDRIVER.GetInstance()
+  spanBytes=SIZEOF(CONSOLETYPES.CellSpan)
+  instanceBytes=SIZEOF(CONSOLETYPES.Instance)
+  Require(spanBytes=10 AND instanceBytes=206)
+  mode=$e0
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_MODE,0,@mode,1)=1)
+  FOR index=0 TO 255 DO
+    cells(index)=BYTE(index)
+  OD
+  ; Both descriptor and nested source can live on the waiting native stack.
+  localCell=$ff
+  localSpan.column=39
+  localSpan.row=23
+  localSpan.data=@localCell
+  localSpan.length=1
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,
+      BYTE POINTER(@localSpan),10)=10)
+  Require(instance.cells(CONSOLECORE.CellOffset(instance,959))=$ff)
+  FOR row=0 TO 23 DO
+    spans(row).column=0
+    spans(row).row=row
+    spans(row).data=@cells+SIZE(row*7)
+    spans(row).length=40
+  OD
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,NULL,0)=0)
+  row=instance.row
+  column=instance.column
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,
+      BYTE POINTER(@spans),240)=240)
+  Require(instance.row=row AND instance.column=column AND (instance.caps & $e0)=$e0)
+  FOR row=0 TO 23 DO
+    FOR column=0 TO 39 DO
+      Require(instance.cells(CONSOLECORE.CellOffset(instance,row*40+column))
+          =cells(row*7+column))
+    OD
+  OD
+  ; All 256 values travel unchanged, including the final partial source row.
+  FOR row=0 TO 6 DO
+    spans(row).row=row
+    spans(row).column=0
+    spans(row).data=@cells+SIZE(row*40)
+    spans(row).length=40
+    IF row=6 THEN
+      spans(row).length=16
+    FI
+  OD
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,
+      BYTE POINTER(@spans),70)=70)
+  FOR index=0 TO 255 DO
+    Require(instance.cells(CONSOLECORE.CellOffset(instance,index))=BYTE(index))
+  OD
+  FOR index=0 TO 29 DO
+    spans(index).row=index MOD 24
+    spans(index).column=0
+    spans(index).data=@cells
+    spans(index).length=1
+  OD
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,
+      BYTE POINTER(@spans),300)=300)
+  ; Later overlapping descriptors win without changing the stream cursor.
+  spans(0).row=2
+  spans(0).column=5
+  spans(0).data=@cells
+  spans(0).length=20
+  spans(1).row=2
+  spans(1).column=10
+  spans(1).data=@cells+128
+  spans(1).length=10
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,
+      BYTE POINTER(@spans),20)=20)
+  FOR index=0 TO 9 DO
+    Require(instance.cells(CONSOLECORE.CellOffset(instance,90+index))=BYTE(128+index))
+  OD
+  ; Validate the entire descriptor list before touching even its first span.
+  spans(0).data=@cells+64
+  spans(1).column=40
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,
+      BYTE POINTER(@spans),20)=-1)
+  Require(instance.cells(CONSOLECORE.CellOffset(instance,85))=0)
+  spans(1).column=39
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,
+      BYTE POINTER(@spans),20)=-1)
+  spans(1).column=0
+  spans(1).row=24
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,
+      BYTE POINTER(@spans),20)=-1)
+  spans(1).row=0
+  spans(1).length=0
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,
+      BYTE POINTER(@spans),20)=-1)
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,
+      BYTE POINTER(@spans),19)=-1)
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,0,
+      BYTE POINTER(@spans),301)=-1)
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,1,
+      BYTE POINTER(@spans),10)=-1)
+  Require(instance.vectorIndex=0 AND instance.vectorOffset=0 AND instance.write=NULL)
+  mode=0
+  Require(DOS.ConsoleIO(file,CONSOLETYPES.CONCMD_MODE,0,@mode,1)=1)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Async()
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+ENDMODULE

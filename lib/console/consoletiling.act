@@ -116,7 +116,9 @@ PUBLIC BYTE FUNC CanResize(CONSOLETYPES.Window POINTER entry CARD height)
   IF instance.write<>NULL THEN
     BEGIN
       LET request=EXEC.IOStdReq POINTER(instance.write)
-      IF request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT THEN
+      IF request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT OR
+          request.io_Command=CONSOLETYPES.CONCMD_WRITE_CELLS OR
+          request.io_Command=CONSOLETYPES.CONCMD_WRITE_CELL_SPANS THEN
         RETURN(0)
       FI
     END

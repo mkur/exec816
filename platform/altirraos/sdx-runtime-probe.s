@@ -187,8 +187,6 @@ sdx_probe_nested_native_return:
     rep #$30
     jml sr_rom_native_return
 sdx_probe_stubs_end:
-sdx_probe_installed:
-    rtl                         ; bank-zero observation point for the pinned bridge
 ; E=1 does not stack PBR. All guest images must exclude this PC interval:
 ; a nested NMI here belongs to bank zero, even while SR_OWNER names a guest.
 ; Fixed synthetic images are checked by the test packager. A production
@@ -205,6 +203,14 @@ sdx_probe_installed:
 .export sdx_probe_native_nmi, sdx_probe_resume, sdx_probe_service_return
 .a16
 .i16
+.segment "CONSOLE"
+sdx_probe_installed:
+    rtl                         ; bank-zero rendezvous in existing console padding
+.if SDX_ENABLED
+    .segment "SDX_WORK"
+.else
+    .segment "NATIVE_WORK"
+.endif
 ; All hosted callers are bank zero and supply X=their saved native S. Keep the
 ; shared selector in upper RAM. Its three-byte return is reconstructed below
 ; the selected S; the caller clears GATE only after RTL has retired it.
@@ -259,6 +265,103 @@ sr_os_failed:
 .export sdx_probe_acquire, sdx_probe_release, sdx_probe_enter, sdx_probe_moveframe
 .export sdx_probe_acquire_end, sdx_probe_release_end
 .export sdx_probe_enter_end, sdx_probe_moveframe_end
+.export sdx_probe_bind, sdx_probe_bind_end, sdx_probe_unbind, sdx_probe_unbind_end
+; Caller has filled the unpublished upper record. Publish ownership last.
+sdx_probe_bind:
+    signal_stack_check 8
+    php
+    sei
+    lda 5,s
+    inc a
+    cmp f:SDX_STATE_LEASE
+    jne sr_bind_failed
+    lda #0
+    sta f:SDX_BINDING_BASE+SDX_BINDING_OWNER
+.if SDX_ENABLED
+    sta f:SDX_BINDING_BASE+SDX_BINDING_ZERO
+    lda f:SDX_BINDING_BASE+SDX_BINDING_SCREEN
+    sta f:sr_cell_read+1
+    sta f:sr_cell_compare+1
+    sta f:sr_cell_write+1
+    sep #$20
+    lda f:SDX_BINDING_BASE+SDX_BINDING_SCREEN+2
+    sta f:sr_cell_read+3
+    sta f:sr_cell_compare+3
+    sta f:sr_cell_write+3
+    rep #$20
+    lda f:SDX_BINDING_BASE+SDX_BINDING_FIRST
+    sta f:sr_cell_first_compare+1
+    sta f:sr_cell_first_write+1
+    sep #$20
+    lda f:SDX_BINDING_BASE+SDX_BINDING_FIRST+2
+    sta f:sr_cell_first_compare+3
+    sta f:sr_cell_first_write+3
+    rep #$20
+    lda f:SDX_BINDING_BASE+SDX_BINDING_END
+    sta f:sr_cell_end_compare+1
+    sta f:sr_cell_end_write+1
+    sep #$20
+    lda f:SDX_BINDING_BASE+SDX_BINDING_END+2
+    sta f:sr_cell_end_compare+3
+    sta f:sr_cell_end_write+3
+    rep #$20
+    lda f:SDX_BINDING_BASE+SDX_BINDING_PENDING
+    sta f:sr_cell_break+1
+    sep #$20
+    lda f:SDX_BINDING_BASE+SDX_BINDING_PENDING+2
+    sta f:sr_cell_break+3
+    rep #$20
+    lda f:SDX_BINDING_BASE+SDX_BINDING_PENDING
+    ora f:SDX_BINDING_BASE+SDX_BINDING_PENDING+1
+    bne :+
+    lda #.loword(SDX_BINDING_BASE+SDX_BINDING_ZERO)
+    sta f:sr_cell_break+1
+    sep #$20
+    lda #^SDX_BINDING_BASE
+    sta f:sr_cell_break+3
+    rep #$20
+:
+    lda 5,s
+    asl a
+    asl a
+    asl a
+    asl a
+    clc
+    adc #.loword(SR_EVENT)
+    sta f:sr_cell_event+1
+    sta f:sr_cell_event_clear+1
+    .if SDX_STACK_PROBE = 8
+        wai
+    .endif
+.endif
+    lda 5,s
+    inc a
+    sta f:SDX_BINDING_BASE+SDX_BINDING_OWNER
+    lda #1
+    plp
+    rtl
+sr_bind_failed:
+    lda #0
+    plp
+    rtl
+sdx_probe_bind_end:
+
+; A parked interpreter must not unpublish another Image's live screen.
+sdx_probe_unbind:
+    signal_stack_check 8
+    php
+    sei
+    lda 5,s
+    inc a
+    cmp f:SDX_BINDING_BASE+SDX_BINDING_OWNER
+    bne sr_unbind_done
+    lda #0
+    sta f:SDX_BINDING_BASE+SDX_BINDING_OWNER
+sr_unbind_done:
+    plp
+    rtl
+sdx_probe_unbind_end:
+
 ; Lease admission is a normal operational failure. IRQ masking excludes Task
 ; dispatch; NMI may run ROM because no frame exists yet and ANCHOR remains zero.
 sdx_probe_acquire:
@@ -397,6 +500,7 @@ sdx_probe_release:
     sta f:SDX_STATE_GATE
     lda #0
     sta f:SR_OWNER
+    sta f:SDX_BINDING_BASE+SDX_BINDING_OWNER
     sta f:SDX_STATE_ANCHOR
     .if SDX_STACK_PROBE = 7
         wai
@@ -558,6 +662,8 @@ sdx_probe_resume:
     lda f:SR_GUEST_S,x
     tcs
 sr_restore:
+.export sdx_probe_guest_restore
+sdx_probe_guest_restore:
     ; The NMI interceptor owns the interval from this last pending check
     ; through the final native XCE. It can rebuild any partially popped frame.
     lda f:SR_PENDING
@@ -583,7 +689,10 @@ sr_restore_end:
 sr_restore_pending:
     lda #0
     sta f:SR_ROUTE
-    jmp sr_capture
+sr_capture:
+    lda f:SR_INDEX
+    tax
+    jmp sr_capture_context
 
 sdx_probe_run_end:
 .a8
@@ -751,22 +860,195 @@ sr_chain_emulation_irq:
 ; It enters E=0 before the cross-bank jump, and keeps the JSR return in page one.
 sdx_probe_service:
     cld
-    pha
+    tay
     lda f:SR_INDEX
     tax
-    pla
+    tya
     sta f:SR_EVENT,x
-    tsc
-    tax
-    lda f:$00000c,x             ; JSR saved PC needs the increment RTI omits
+    lda SDX_FRAME_PC,s          ; JSR saved PC needs the increment RTI omits
     inc a
-    sta f:$00000c,x
-sr_capture:
-    lda f:SR_INDEX
-    tax
+    sta SDX_FRAME_PC,s
+sr_capture_context:
     tsc
     sta f:SR_GUEST_S,x
+.if SDX_ENABLED
+    .if SDX_STACK_PROBE = 9
+        wai
+    .endif
+    ; Complete frame and corrected PC are now stable. Successful bound cells
+    ; never return to the Action! service loop. All failures detach normally.
+    lda f:SR_EVENT,x
+    cmp #SDX_RAWCON_EVENT+3
+    beq sr_cell_candidate
+    cmp #SDX_RAWCON_EVENT+4
+    jne sr_detach
+sr_cell_candidate:
+    lda f:SDX_BINDING_BASE+SDX_BINDING_OWNER
+    jeq sr_detach
+    cmp f:SR_OWNER
+    jne sr_detach
+    tsc
+    cmp #SDX_MINIMUM_S
+    jcc sr_detach
+    cmp #$1f0
+    jcs sr_detach
+    ; Only native detachment publishes a ROM-borrowable anchor. OWNER/GATE
+    ; exclude borrowing throughout this leaf and the common guest restore.
+    lda #1
+    sta f:SDX_STATE_GATE
+    lda #SDX_PHASES_FAST_CELL
+    sta f:SDX_STATE_PHASE
+    pea 0
+    plb
+    plb
+    ; No Task stack checker is legal with S in page one. This leaf has only
+    ; four saved DP bytes plus the 13-byte acknowledge-only native NMI frame.
+    .repeat SDX_DP_GUARD_BYTES/4, word
+        lda a:SDX_DP_BASE-SDX_DP_GUARD_BYTES+word*2
+        cmp #$a5a5
+        bne sr_cell_guard_failed
+        lda a:SDX_DP_BASE+SDX_DP_SLOTS*256+word*2
+        cmp #$a5a5
+        bne sr_cell_guard_failed
+    .endrepeat
+    bra sr_cell_guard_tail
+sr_cell_guard_failed:
+    jmp sr_cell_detach
+sr_cell_guard_tail:
+    .repeat SDX_DP_GUARD_BYTES/4, word
+        lda a:SDX_DP_BASE-SDX_DP_GUARD_BYTES+SDX_DP_GUARD_BYTES/2+word*2
+        cmp #$a5a5
+        bne sr_cell_guard_failed
+        lda a:SDX_DP_BASE+SDX_DP_SLOTS*256+SDX_DP_GUARD_BYTES/2+word*2
+        cmp #$a5a5
+        bne sr_cell_guard_failed
+    .endrepeat
+    lda f:SR_NATIVE_D,x
+    tcd
+    lda SDX_CELL_SCRATCH_DP
+    pha
+    lda SDX_CELL_SCRATCH_DP+2
+    pha
+    .if SDX_STACK_PROBE = 10
+        wai
+    .endif
+    ; Bind patched these operands before publishing owner. A NULL foreground
+    ; pointer selects the binding's immutable zero word. There is no repeated
+    ; pointer assembly or lookup while the physical stack is active.
+sr_cell_break:
+    lda f:$000000
+    and #$ff
+    jne sr_cell_failed
+sr_cell_coordinates:
+    lda f:SR_CONTEXT+SDX_FIELDS_DP,x
+    tax
+    lda a:$0054,x               ; row low, column high in private guest DP
+    tay
+    and #$ff
+    cmp f:SDX_BINDING_BASE+SDX_BINDING_HEIGHT
+    jcs sr_cell_failed
+    sta SDX_CELL_SCRATCH_DP      ; CARD row
+    asl a
+    tax
+    tya
+    xba
+    and #$ff
+    cmp f:SDX_BINDING_BASE+SDX_BINDING_WIDTH
+    jcs sr_cell_failed
+    sta SDX_CELL_SCRATCH_DP+2    ; CARD column
+    clc
+    adc f:SDX_BINDING_BASE+SDX_BINDING_ROWS,x
+    tax
+sr_cell_event:
+    lda f:SR_EVENT              ; operand names this binding's context slot
+    lsr a                      ; only admitted events 43 (get) / 44 (put)
+    bcs sr_cell_get
+.export sdx_probe_cell_put
+sdx_probe_cell_put:
+    sep #$20
+    lda SDX_FRAME_A+SDX_CELL_SCRATCH_SAVED_BYTES,s
+sr_cell_compare:
+    cmp f:$000000,x
+    jeq sr_cell_done8
+sr_cell_write:
+    sta f:$000000,x
+    .if SDX_STACK_PROBE = 11
+        wai
+    .endif
+    ldx SDX_CELL_SCRATCH_DP
+    lda SDX_CELL_SCRATCH_DP+2
+sr_cell_first_compare:
+    cmp f:$000000,x
+    bcs :+
+sr_cell_first_write:
+    sta f:$000000,x
+:
+    inc a
+sr_cell_end_compare:
+    cmp f:$000000,x
+    bcc sr_cell_done8
+sr_cell_end_write:
+    sta f:$000000,x
+    bra sr_cell_done8
+sr_cell_get:
+.export sdx_probe_cell_get
+sdx_probe_cell_get:
+    sep #$20
+sr_cell_read:
+    lda f:$000000,x
+    sta SDX_FRAME_A+SDX_CELL_SCRATCH_SAVED_BYTES,s
+    ; Only low A and its emulation N/Z change; hidden B and every other flag
+    ; come from the original complete frame.
+    cmp #0
+    beq sr_cell_zero
+    and #$80
+    bra sr_cell_flags
+sr_cell_zero:
+    lda #2
+sr_cell_flags:
+    sta SDX_CELL_SCRATCH_DP
+    lda SDX_FRAME_P+SDX_CELL_SCRATCH_SAVED_BYTES,s
+    and #$7d
+    ora SDX_CELL_SCRATCH_DP
+    sta SDX_FRAME_P+SDX_CELL_SCRATCH_SAVED_BYTES,s
+sr_cell_done8:
+.export sdx_probe_cell_committed
+sdx_probe_cell_committed:
+    rep #$20
+    lda #0
+sr_cell_event_clear:
+    sta f:SR_EVENT            ; consumed exactly once, even if VBI is pending
+    pla
+    sta SDX_CELL_SCRATCH_DP+2
+    pla
+    sta SDX_CELL_SCRATCH_DP
+    .if SDX_STACK_PROBE = 12
+        wai
+    .endif
+    lda #SDX_PHASES_GUEST
+    sta f:SDX_STATE_PHASE
+    lda #0
+    sta f:SDX_STATE_GATE
+    .if SDX_STACK_PROBE = 13
+        wai
+    .endif
+    ; The physical complete S is restored; sr_restore drains pending VBI via
+    ; sr_capture/sr_detach before the next guest instruction. Never enter the
+    ; native-call prologue at sdx_probe_resume from this physical S.
+    jmp sr_restore
+sr_cell_failed:
+    rep #$20
+    pla
+    sta SDX_CELL_SCRATCH_DP+2
+    pla
+    sta SDX_CELL_SCRATCH_DP
+sr_cell_detach:
+    lda #0
+    sta f:SDX_STATE_GATE
+.endif
 sr_detach:
+.export sdx_probe_detach
+sdx_probe_detach:
     lda f:SR_INDEX
     tax
     lda f:SR_NATIVE_S,x

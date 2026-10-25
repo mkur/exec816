@@ -81,6 +81,11 @@ executable preparation/cutover slices, targeted asynchronous-entry checks,
 matched EDX latency acceptance and the combined-disk delivery.
 The [execution record](history/sdx-resident-stack.md) separates passing
 functional checks from that remaining performance goal.
+The [RAWCON latency plan](plans/rawcon-latency-implementation-plan.md) now has
+bridge-local cell get/put and one public request for changed spans. Matched
+development measurements reach about 80 ms p95 input readiness and 120 ms complete
+scanout. The [execution record](history/rawcon-latency.md) identifies the remaining
+backing-to-screen presentation interval; the ≤100 ms visual acceptance stays open.
 
 Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved

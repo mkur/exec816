@@ -16,7 +16,9 @@ class ConsoleLayoutTests(unittest.TestCase):
         native=generate_input_native.definitions()[0]
         self.assertEqual((native['RAWEVENT_SIZE'],native['RAWEVENT_ROUTE'],native['CAPTURE_SIZE']), (8,4,560))
         self.assertEqual((c['ROUTE_SIZE'],c['ROUTES_SIZE']), (16,264))
-        self.assertEqual((c['INSTANCE_CELLORIGIN'],c['INSTANCE_SIZE']), (198,202))
+        self.assertEqual((c['INSTANCE_CELLORIGIN'],c['INSTANCE_SIZE']), (198,206))
+        self.assertEqual((c['CELLSPAN_SIZE'],c['CELLSPAN_DATA'],c['CELLSPAN_LENGTH']), (10,4,8))
+        self.assertEqual(c['CONCMD_WRITE_CELL_SPANS'],15)
         self.assertEqual(c['BATCH_SIZE'],44)
         self.assertLessEqual(console.ABI['storage']['instance_offset']+c['INSTANCE_SIZE'],
                              console.ABI['storage']['presentation_offset'])
@@ -63,7 +65,7 @@ class ConsoleLayoutTests(unittest.TestCase):
             console.reserve_metadata(m)
             self.assertEqual(m['console_storage']['BASE']>>16,bank)
             self.assertEqual(m['console_storage']['CAPTURE'],generate_tasks.storage(m)['BASE']+0xc00)
-            self.assertEqual(m['console_storage']['ROUTES'],m['console_storage']['BASE']+416)
+            self.assertEqual(m['console_storage']['ROUTES'],m['console_storage']['BASE']+420)
             self.assertEqual(m['console_storage']['BYTES'],896)
             self.assertEqual(m['console_storage']['BITMAP'],m['console_storage']['BASE']+888)
             self.assertEqual(m['console_storage']['KEYMAP']+128,generate_tasks.storage(m)['BASE']+0xf30)

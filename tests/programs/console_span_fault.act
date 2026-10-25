@@ -1,0 +1,111 @@
+; The new public operation retains descriptor-byte prefixes through draw faults.
+MODULE CONSOLESPANFAULT
+USE EXEC
+USE CONSOLE
+USE CONSOLEDRIVER
+USE CONSOLECORE
+USE CONSOLETYPES
+USE HEAPCORE
+
+CARD checks,checkpoint,gate
+BYTE variant
+EXEC.MsgPort POINTER port
+EXEC.IOStdReq POINTER owner,reader,writer
+CONSOLETYPES.CellSpan ARRAY spans(2)
+BYTE ARRAY source(80),input(1)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f780+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  CARD index,prefix,partial
+  BYTE mode
+
+  port=EXEC.CreateMsgPort()
+  owner=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  reader=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  writer=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(port<>NULL AND owner<>NULL AND reader<>NULL AND writer<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"console.device"),0,
+      EXEC.IORequest POINTER(owner),0)=0)
+  LET instance=CONSOLETYPES.Instance POINTER(owner.io_Unit)
+  mode=$e0
+  owner.io_Command=CONSOLETYPES.CONCMD_MODE
+  owner.io_Data=@mode
+  owner.io_Length=1
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(owner))=0)
+  WHILE instance.dirtyRows<>0 DO
+    EXEC.Yield()
+  OD
+  reader.io_Device=owner.io_Device
+  reader.io_Unit=owner.io_Unit
+  reader.io_Command=CONSOLETYPES.CONCMD_READ_KEYS
+  reader.io_Data=@input
+  reader.io_Length=1
+  EXEC.SendIO(EXEC.IORequest POINTER(reader))
+  WHILE instance.readReady<>2 DO
+    EXEC.Yield()
+  OD
+  FOR index=0 TO 79 DO
+    source(index)=BYTE(65+(index & 15))
+  OD
+  spans(0).column=0
+  spans(0).row=0
+  spans(0).data=@source
+  spans(0).length=80
+  spans(1).column=0
+  spans(1).row=1
+  spans(1).data=@source
+  spans(1).length=80
+  prefix=0
+  partial=64
+  IF variant<>0 THEN
+    spans(0).length=1
+    prefix=10
+    partial=63
+  FI
+  checkpoint=1
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+  writer.io_Device=owner.io_Device
+  writer.io_Unit=owner.io_Unit
+  writer.io_Command=CONSOLETYPES.CONCMD_WRITE_CELL_SPANS
+  writer.io_Data=BYTE POINTER(@spans)
+  writer.io_Length=LONGCARD(prefix+10)
+  EXEC.SendIO(EXEC.IORequest POINTER(writer))
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(reader))=EXEC.IOERR_SELFTEST)
+  Require(EXEC.WaitIO(EXEC.IORequest POINTER(writer))=EXEC.IOERR_SELFTEST)
+  Require(writer.io_Actual=LONGCARD(prefix) AND reader.io_Actual=0)
+  Require(instance.write=NULL AND instance.vectorIndex=0 AND instance.vectorOffset=0)
+  Require(EXEC.GetMsg(port)=NULL)
+  FOR index=0 TO 79 DO
+    IF index<partial THEN
+      Require(instance.cells(CONSOLECORE.CellOffset(instance,
+          CARD(variant)*80+index))=source(index))
+    ELSE
+      Require(instance.cells(CONSOLECORE.CellOffset(instance,
+          CARD(variant)*80+index))=32)
+    FI
+  OD
+  Require(CONSOLE.ScreenWidth()=0 AND CONSOLEDRIVER.Start()=0)
+  Require(CONSOLE.Hide(0)<>0 AND CONSOLEDRIVER.Stop()=0)
+  reader.io_Device=NULL
+  reader.io_Unit=NULL
+  writer.io_Device=NULL
+  writer.io_Unit=NULL
+  EXEC.CloseDevice(EXEC.IORequest POINTER(owner))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(reader))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(writer))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(owner))
+  EXEC.DeleteMsgPort(port)
+
+RETURN
+
+ENDMODULE

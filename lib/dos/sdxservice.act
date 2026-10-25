@@ -259,12 +259,7 @@ PUBLIC LONGINT FUNC Run(PROGRAMIMAGE.Image POINTER image BYTE POINTER arguments)
           event=SDXABI.CALL_U_PERROR THEN
         state.nativeError=pendingCause
       FI
-      IF state.profile=64 AND (event=SDXABI.RAWCON_EVENT+3 OR
-          event=SDXABI.RAWCON_EVENT+4) THEN
-        error=SDXSCREEN.Cell(state,frame,event-SDXABI.RAWCON_EVENT)
-      ELSE
-        error=Dispatch(state,frame,event)
-      FI
+      error=Dispatch(state,frame,event)
       IF error<>0 AND cancelled<>0 THEN
         error=128
         state.nativeError=304

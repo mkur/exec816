@@ -58,12 +58,22 @@ def run(out,mode,from_build=None,bitmap=False,pointer=False,observe=True,pointer
         text=text.replace('    Require(DOS.Seek(handle,0,DOS.OFFSET_BEGINNING)>=0)', '    fileOffset=(fileOffset+1024) & 3072\n    Require(DOS.Seek(handle,LONGINT(fileOffset),DOS.OFFSET_BEGINNING)>=0)')
         text=text.replace('  Setup()','  Require(TIMERPROBE.Start()<>0)\n  Setup()' if pointer else '  Setup()')
         text=text.replace('  Cleanup()','  Cleanup()\n  TIMERPROBE.Stop()' if pointer else '  Cleanup()')
+        # These helpers are ordinary calls, not scheduler entry points.
+        for name in ('Sleep','Setup','Interaction','Cleanup'):
+            text=text.replace(f'PROC {name}()',f'PROC {name}(BYTE unused)')
+            text=text.replace(f'{name}()',f'{name}(0)')
         source.write_text(text)
         probe=(ROOT/'tests/programs/timer_input_probe.act').read_text()
         probe=probe.replace('PUBLIC CARD samples,losses','PUBLIC CARD samples,losses\nPUBLIC INT lastX,lastY')
         probe=probe.replace('      samples==+1','      IF status=INPUT.OK AND event.kind=INPUT.EVENT_POINTER THEN\n        lastX=event.x\n        lastY=event.y\n      FI\n\n      samples==+1')
         (out/'timerprobe.act').write_text(probe)
-        p=build_bitmap(source,out,optimize=mode=='opt',dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2)])
+        profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+        profile['image_data_bytes']=4096
+        memory=out/'fixture-memory.json'
+        memory.write_text(json.dumps(profile,indent=2)+'\n')
+        p=build_bitmap(source,out,optimize=mode=='opt',release_compiler=True,
+                       memory_profile=memory,
+                       dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2)])
     else:
         p=read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc'),source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=1)])
     if bitmap:

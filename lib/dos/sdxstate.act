@@ -47,6 +47,7 @@ PUBLIC TYPE Session=[
   BYTE ARRAY screenFirst(30),screenEnd(30)
   LONGINT archiveCause
   BYTE ARRAY archivePath(256),tempPath(256),backupPath(256)
+  BYTE POINTER screenSpans
 ]
 
 BYTE occupied

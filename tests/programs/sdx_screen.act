@@ -7,9 +7,11 @@ USE SDXSTATE
 USE SDXSCREEN
 USE SCREENPROBE
 USE HEAPCORE
+USE SDXRUNTIME
+USE SDXPROGRAM
 
 CARD checks
-BYTE ARRAY frame(14),dp(256),bank(768)
+BYTE POINTER frame,dp,bank,backing
 
 PROC Require(BYTE okay)
 
@@ -25,12 +27,15 @@ PROC Put(SDXSTATE.Session POINTER state BYTE row,column,value)
   dp($54)=row
   dp($55)=column
   frame(SDXABI.FRAME_A)=value
-  Require(SDXSCREEN.Call(state,@frame,4)=0)
+  SDXSTATE.Word(frame,SDXABI.FRAME_PC,$3000)
+  Require(SDXRUNTIME.Run(CARD(state.slot))=SDXABI.CHECKPOINT_EVENT)
 
 RETURN
 
 PROC Main()
   CARD index,row
+  LONGCARD location
+  BYTE ARRAY code=[$20 $80 $f6 $20 $80 $f2 $20 $60 $f6 $20 $80 $f2 $4c $00 $30]
 
   LET state=SDXSTATE.Session POINTER(EXEC.AllocMem(SIZEOF(SDXSTATE.Session),
       EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
@@ -40,18 +45,66 @@ PROC Main()
   state.screenWidth=80
   state.screenHeight=30
   state.screenOpen=1
-  state.dp=@dp
-  state.bank=@bank
-  Require(SDXSCREEN.Call(state,@frame,2)=0)
+  backing=EXEC.AllocMem(131071,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  Require(backing<>NULL)
+  location=(LONGCARD(ADDRESS(backing))+$ffff) & LONGCARD($ffff0000)
+  state.bank=BYTE POINTER(ADDRESS(location))
+  state.entry=$3000
+  state.profile=64
+  Require(SDXRUNTIME.Acquire(0)=1)
+  SDXSTATE.Prepare(state)
+  SDXPROGRAM.Gates(state.bank)
+  FOR index=0 TO 14 DO
+    state.bank($3000+index)=code(index)
+  OD
+  SDXSTATE.Enter(state)
+  frame=SDXSTATE.GetFrame(state)
+  dp=state.dp
+  bank=state.bank
+  Require(SDXSCREEN.Bind(state)=1)
+  state.screenSpans=EXEC.AllocMem(300,EXEC.MEMF_UPPER)
+  Require(state.screenSpans<>NULL)
+  Require(SDXSCREEN.Call(state,frame,2)=0)
   Require(SDXSCREEN.Flush(state)=0)
-  Require(SCREENPROBE.calls=30 AND SCREENPROBE.count=80)
+  Require(SCREENPROBE.calls=1 AND SCREENPROBE.count=300)
   FOR index=0 TO 2399 DO
     Require(state.screen(index)=32)
+    Require(SCREENPROBE.model(index)=32)
   OD
+  ; A negative DOS result hides device Actual: retain every submitted span.
+  Put(state,0,0,65)
+  Put(state,1,0,66)
+  Put(state,2,0,67)
+  Put(state,2,3,68)
+  SCREENPROBE.failure=1
+  Require(SDXSCREEN.Flush(state)<>0 AND state.nativeError=205)
+  Require(state.screenEnd(0)=1 AND state.screenEnd(1)=1
+      AND state.screenEnd(2)=4)
+  Require(SCREENPROBE.model(0)=65 AND SCREENPROBE.model(80)=66
+      AND SCREENPROBE.model(160)=67 AND SCREENPROBE.model(163)=32)
+  SCREENPROBE.failure=0
+  Require(SDXSCREEN.Flush(state)=0 AND SCREENPROBE.model(163)=68)
+  Put(state,0,0,69)
+  Put(state,1,0,70)
+  Put(state,2,0,71)
+  Put(state,2,3,72)
+  SCREENPROBE.failure=2
+  Require(SDXSCREEN.Flush(state)<>0 AND state.nativeError=304)
+  Require(state.screenEnd(0)=0 AND state.screenEnd(1)=0
+      AND state.screenFirst(2)=0 AND state.screenEnd(2)=4)
+  Require(SCREENPROBE.model(160)=71 AND SCREENPROBE.model(163)=68)
+  SCREENPROBE.failure=0
+  Require(SDXSCREEN.Flush(state)=0 AND SCREENPROBE.model(163)=72)
+  Put(state,9,2,73)
+  SCREENPROBE.failure=3
+  Require(SDXSCREEN.Flush(state)<>0 AND state.nativeError=205)
+  Require(state.screenEnd(9)=0 AND SCREENPROBE.model(722)=73)
+  SCREENPROBE.failure=0
   SCREENPROBE.calls=0
   Put(state,29,79,$c1)
   Put(state,29,79,$c1)
-  Require(SDXSCREEN.Call(state,@frame,3)=0)
+  SDXSTATE.Word(frame,SDXABI.FRAME_PC,$3006)
+  Require(SDXRUNTIME.Run(0)=SDXABI.CHECKPOINT_EVENT)
   Require(frame(SDXABI.FRAME_A)=$c1)
   Require(state.screenFirst(29)=79 AND state.screenEnd(29)=80)
   SCREENPROBE.failure=1
@@ -62,7 +115,7 @@ PROC Main()
   Require(state.screenFirst(29)=79 AND state.screenEnd(29)=80)
   SCREENPROBE.failure=0
   Require(SDXSCREEN.Flush(state)=0)
-  Require(SCREENPROBE.offset=$1d004f AND SCREENPROBE.count=1)
+  Require(SCREENPROBE.offset=$1d004f AND SCREENPROBE.count=10)
   Require(state.screenFirst(29)=80 AND state.screenEnd(29)=0)
   SCREENPROBE.calls=0
   Require(SDXSCREEN.Flush(state)=0)
@@ -73,27 +126,27 @@ PROC Main()
   Put(state,3,70,66)
   Require(state.screenFirst(3)=5 AND state.screenEnd(3)=71)
   Require(SDXSCREEN.Flush(state)=0)
-  Require(SCREENPROBE.offset=$30005 AND SCREENPROBE.count=66)
+  Require(SCREENPROBE.offset=$30005 AND SCREENPROBE.count=10)
   dp($22)=117
   dp($2b)=3
-  Require(SDXSCREEN.Call(state,@frame,5)=0)
+  Require(SDXSCREEN.Call(state,frame,5)=0)
   Require(state.screen(244)=65 AND state.screen(309)=66)
   Require(state.screen(319)=32)
   Require(state.screenFirst(3)=0 AND state.screenEnd(3)=80)
   Require(SDXSCREEN.Flush(state)=0)
   dp($22)=118
-  Require(SDXSCREEN.Call(state,@frame,5)=0)
+  Require(SDXSCREEN.Call(state,frame,5)=0)
   Require(state.screen(245)=65 AND state.screen(310)=66)
   dp($22)=97
   dp($2b)=2
   bank($2bf)=4
-  Require(SDXSCREEN.Call(state,@frame,5)=0)
+  Require(SDXSCREEN.Call(state,frame,5)=0)
   Require(state.screen(165)=65 AND state.screen(230)=66)
   FOR index=240 TO 319 DO
     Require(state.screen(index)=32)
   OD
   dp($22)=98
-  Require(SDXSCREEN.Call(state,@frame,5)=0)
+  Require(SDXSCREEN.Call(state,frame,5)=0)
   Require(state.screen(245)=65 AND state.screen(310)=66)
   FOR index=160 TO 239 DO
     Require(state.screen(index)=32)
@@ -102,6 +155,10 @@ PROC Main()
   FOR row=0 TO 29 DO
     Require(state.screenFirst(row)=80 AND state.screenEnd(row)=0)
   OD
+  SDXRUNTIME.Unbind(0)
+  SDXRUNTIME.Release()
+  EXEC.FreeMem(state.screenSpans,300)
+  EXEC.FreeMem(backing,131071)
   EXEC.FreeMem(state.screen,2400)
   EXEC.FreeMem(BYTE POINTER(state),SIZEOF(SDXSTATE.Session))
 

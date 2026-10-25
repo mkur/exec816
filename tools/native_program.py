@@ -276,9 +276,9 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     require(type(sdx_return_probe) is int and 0 <= sdx_return_probe <= 11
             and (sdx_return_probe == 0 or sdx_runtime_probe or sdx),
             'SDX return injection requires the runtime probe and a boundary in 1..11')
-    require(type(sdx_stack_probe) is int and 0 <= sdx_stack_probe <= 7
+    require(type(sdx_stack_probe) is int and 0 <= sdx_stack_probe <= 13
             and (sdx_stack_probe == 0 or sdx) and not (sdx_stack_probe and sdx_return_probe),
-            'SDX stack injection requires the personality and one boundary in 1..7')
+            'SDX stack injection requires the personality and one boundary in 1..13')
     require(type(sdx_patches) is bool and (not sdx_patches or tasks),
             'SDX patch support requires native Tasks')
     require(type(input_diagnostics) is bool, 'Input diagnostics option must be boolean')
@@ -471,15 +471,15 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         elif tasks and (name.startswith('SDXPROBE.') or name.startswith('SDXRUNTIME.')):
             require(sdx_runtime_probe or sdx, 'SDX runtime is not enabled')
             operation = name.split('.')[1]
-            require(operation in ('Install', 'Remove', 'Run', 'Acquire', 'Enter', 'MoveFrame', 'Release', 'Guards'), 'Unknown SDX probe operation')
+            require(operation in ('Install', 'Remove', 'Run', 'Acquire', 'Enter', 'MoveFrame', 'Release', 'Guards', 'Bind', 'Unbind'), 'Unknown SDX probe operation')
             label = 'sdx_probe_'+operation.lower()
-            if operation in ('Run','Acquire','Enter','MoveFrame'):
+            if operation in ('Run','Acquire','Enter','MoveFrame','Bind','Unbind'):
                 arguments = [dict(alignment=2, offset=0, size=2)]
                 outgoing = 3
             if operation=='MoveFrame':
                 arguments.append(dict(alignment=2,offset=2,size=2))
                 outgoing=5
-            if operation in ('Enter','MoveFrame','Release'):
+            if operation in ('Enter','MoveFrame','Release','Unbind'):
                 result='None'
             peak = 96
         elif tasks and name == 'SDXCRC32.Update':
@@ -1156,7 +1156,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         provenance['console_enabled']=console_enabled
         provenance['console_start']=console_start
         provenance['console_inputs']={name:sha256(ROOT/name) for name in ('abi/console.json','abi/console-bitmap.json','tools/generate_console.py','tools/generate_console_bitmap.py','lib/console/consolebitmap.act','lib/console/consolebatch.act','lib/console/console-bitmap-types.inc','lib/console/console-bitmap-display.inc','lib/console/console-batch-display.inc',
-            'lib/console/console.act','lib/console/consolekeys.act','lib/console/consolewindows.act','lib/console/consoletiling.act','lib/console/consoleforeground.act','lib/dos/dosbreaktypes.act','lib/console/consoledisplay.act','lib/console/consoletypes.act','lib/console/consolecore.act','lib/console/consoledriver.act','lib/console/console-requests.inc','lib/console/console-lifetime.inc','lib/console/consolecapture.act','lib/console/consoleinput.act','lib/console/task-console.inc',
+            'lib/console/console.act','lib/console/consolekeys.act','lib/console/consolewindows.act','lib/console/consoletiling.act','lib/console/consoleforeground.act','lib/dos/dosbreaktypes.act','lib/console/consoledisplay.act','lib/console/consoletypes.act','lib/console/consolecore.act','lib/console/consoledriver.act','lib/console/console-requests.inc','lib/console/console-spans.inc','lib/console/console-lifetime.inc','lib/console/consolecapture.act','lib/console/consoleinput.act','lib/console/task-console.inc',
             'platform/altirraos/console-layout.inc','platform/altirraos/console.s')}
         provenance['task_generated'].update({name:sha256(output/name) for name in ('console-storage.inc','console-storage-action.inc','console-action.inc','console-tables.bin','task-kernel/consoleforeground.act','task-kernel/consoledriver.act','task-kernel/consoleinput.act','task-kernel/consolekeys.act','task-kernel/consoledisplay.act','task-kernel/consolebitmap.act')})
     if tasks and (dos_test or dos_system):provenance['task_generated']['task-kernel/dos.act']=sha256(output/'task-kernel/dos.act')

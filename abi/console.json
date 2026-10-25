@@ -60,23 +60,50 @@
     "MODE_ATASCII": 64,
     "MODE_NO_CARET": 32,
     "CONCMD_PEEK_INPUT": 13,
-    "CONCMD_GET_MODE": 14
+    "CONCMD_GET_MODE": 14,
+    "CONCMD_WRITE_CELL_SPANS": 15
   },
   "storage": {
     "service_offset": 0,
     "instance_offset": 160,
-    "presentation_offset": 362,
+    "presentation_offset": 366,
     "reserved_bytes": 896,
     "capture_offset": 3072,
     "glyph_offset": 3632,
     "keymap_offset": 3760,
-    "routes_offset": 416,
+    "routes_offset": 420,
     "windows_offset": 688,
     "bitmap_offset": 888
   },
   "records": {
+    "CellSpan": {
+      "size": 10,
+      "alignment": 2,
+      "fields": [
+        [
+          "column",
+          "CARD",
+          0
+        ],
+        [
+          "row",
+          "CARD",
+          2
+        ],
+        [
+          "data",
+          "BYTE POINTER",
+          4
+        ],
+        [
+          "length",
+          "CARD",
+          8
+        ]
+      ]
+    },
     "Instance": {
-      "size": 202,
+      "size": 206,
       "alignment": 2,
       "fields": [
         [
@@ -248,6 +275,16 @@
           "capacity",
           "CARD",
           200
+        ],
+        [
+          "vectorIndex",
+          "CARD",
+          202
+        ],
+        [
+          "vectorOffset",
+          "CARD",
+          204
         ]
       ]
     },

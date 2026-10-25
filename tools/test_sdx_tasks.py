@@ -16,11 +16,16 @@ from test_sdx_runtime import PIN, ROM, BRIDGE
 from sector_images import disk_image
 
 
-def payload(service, phase=0):
+def payload(service, phase=0, rawcon=False):
     # Only synthetic 6502 code, plus admitted guest-local mode veneers.
     # Four 16-bit counter wraps per phase ensure non-yielding computation.
     code = bytes.fromhex('e620d002e621d002e622a522c904d0f02020f0e623a9008522'
                          'e620d002e621d002e622a522c904d0f02040f04c3030')
+    if rawcon:
+        # Every 32 counter steps execute a changing put and a get. Keep the
+        # ordinary loop/return invariants, including private DP and flags.
+        code=(b'\x20\x00\xf7'+code[:25].replace(b'\xd0\xf0',b'\xd0\xed')+
+              b'\x20\x00\xf7'+code[25:].replace(b'\xd0\xf0',b'\xd0\xed'))
     # Offset of the second loop is $3019; absolute final loop is immaterial.
     bank = bytearray(65536)
     bank[0x3000:0x3000+len(code)] = code
@@ -34,12 +39,20 @@ def payload(service, phase=0):
     prefix = bytes.fromhex('0848af0478280f1a78288f1a782868284c0030')
     bank[0x2fe0:0x2fe0+len(prefix)] = prefix
     bank[0xf080:0xf088] = bytes.fromhex('ea38eafbea28ea40')
+    if rawcon:
+        helper=bytes.fromhex('0848a520291fd01a a55448a55548a90085548555a520'
+                             '2080f62060f6688555688554682860'.replace(' ',''))
+        bank[0xf700:0xf700+len(helper)]=helper
+        for at,event in ((0xf660,43),(0xf680,44)):
+            veneer=bytes.fromhex('08780818fbc23048da5a0b8b')+b'\xa9'+struct.pack('<H',event)
+            veneer+=b'\x5c'+service.to_bytes(3,'little')
+            bank[at:at+len(veneer)]=veneer
     if phase >= 8:
         bank[0xf080+(phase-8)*2] = 0xcb  # one-shot WAI, retired by the NMI hook
     return bytes(bank)
 
 
-def fixture(out, smoke, phase=0, sio=False, profile="stock810"):
+def fixture(out, smoke, phase=0, sio=False, profile="stock810", rawcon=False):
     (out/'sdxprobe.act').write_text('''MODULE SDXPROBE
 PUBLIC EXTERNAL CARD FUNC Install()
 PUBLIC EXTERNAL CARD FUNC Remove()
@@ -47,6 +60,7 @@ PUBLIC EXTERNAL CARD FUNC Acquire(CARD slot)
 PUBLIC EXTERNAL PROC Enter(CARD slot)
 PUBLIC EXTERNAL PROC Release()
 PUBLIC EXTERNAL CARD FUNC Run(CARD slot)
+PUBLIC EXTERNAL CARD FUNC Bind(CARD slot)
 ENDMODULE
 ''')
     source = out/'probe.act'
@@ -265,29 +279,73 @@ RETURN
         source.write_text(text)
     if profile=="generic56k":
         source.write_text(source.read_text().replace("SIO_PROFILE_STOCK810","SIO_PROFILE_GENERIC57600"))
+    if rawcon:
+        text=source.read_text()
+        at=text.index('PROC Guest(CARD slot)')
+        text=text[:at]+'''PROC Word(BYTE POINTER bytes CARD offset,value)
+
+  bytes(offset)=BYTE(value)
+  bytes(offset+1)=BYTE(value RSH 8)
+
+RETURN
+
+PROC BindCells(CARD slot)
+  CARD row
+
+  LET binding=BYTE POINTER(ADDRESS(SDXABI.BINDING_BASE))
+  Word(binding,SDXABI.BINDING_WIDTH,80)
+  Word(binding,SDXABI.BINDING_HEIGHT,30)
+  Word(binding,SDXABI.BINDING_SCREEN,$d000)
+  binding(SDXABI.BINDING_SCREEN+2)=BYTE($30+slot)
+  Word(binding,SDXABI.BINDING_FIRST,$e000)
+  binding(SDXABI.BINDING_FIRST+2)=BYTE($30+slot)
+  Word(binding,SDXABI.BINDING_END,$e020)
+  binding(SDXABI.BINDING_END+2)=BYTE($30+slot)
+  Word(binding,SDXABI.BINDING_PENDING,0)
+  binding(SDXABI.BINDING_PENDING+2)=0
+  FOR row=0 TO 29 DO
+    Word(binding,SDXABI.BINDING_ROWS+row*2,row*80)
+  OD
+  Require(SDXPROBE.Bind(slot)=1)
+
+RETURN
+
+'''+text[at:]
+        text=text.replace('  SDXPROBE.Enter(slot)', '  SDXPROBE.Enter(slot)\n  BindCells(slot)')
+        text=text.replace('  Require(SDXPROBE.Install()=0)', '''  FOR index=0 TO 1 DO
+    BEGIN
+      LET context=BYTE POINTER(ADDRESS(SDXABI.CONTEXT_BASE+LONGCARD(index)*16))
+      Word(context,SDXABI.FIELDS_BANK,$30+index)
+      Word(context,SDXABI.FIELDS_ENTRY,$2fe0)
+      Word(context,SDXABI.FIELDS_DP,$7e00+index*256)
+    END
+  OD''')
+        text=text.replace('  Require(SDXPROBE.Remove()=0)', '')
+        source.write_text(text)
     return source
 
 
-def image_data(service, early=False, phase=0):
+def image_data(service, early=False, phase=0, rawcon=False):
     state = bytearray(0x8000)
     state[:0x4000] = ROM.read_bytes()
     state[0x7812] = int(early)
     for slot in range(2):
         base = 0x7a00+slot*16
         state[base+4:base+14] = struct.pack('<5H',0x1e0,0,0x30+slot,0x2fe0,0x7e00+slot*256)
-    return [(0x280000, bytes(state)), (0x300000, payload(service, phase)), (0x310000, payload(service, phase))]
+    return ([] if rawcon else [(0x280000, bytes(state))])+[
+        (0x300000, payload(service, phase,rawcon)), (0x310000, payload(service, phase,rawcon))]
 
 
-def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None, profile="stock810"):
+def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None, profile="stock810", rawcon=False):
     out.mkdir(parents=True, exist_ok=True)
     if program is None:
-        source = fixture(out, mode == 'raw', phase, sio, profile)
+        source = fixture(out, mode == 'raw', phase, sio, profile,rawcon)
         toolchain = compiler(ROOT/'build/actionc', release=True)
         options = dict(optimize=mode == 'opt', tasks=True, task_capacity=12, console=False,
-                       sdx_runtime_probe=True, sdx_return_probe=phase)
-        preliminary = build(toolchain, source, out/'bind', image_data=image_data(0, early, phase), **options)
+                       sdx_runtime_probe=not rawcon,sdx=rawcon, sdx_return_probe=phase)
+        preliminary = build(toolchain, source, out/'bind', image_data=image_data(0, early, phase,rawcon), **options)
         service = preliminary['labels']['sdx_probe_service']
-        program = build(toolchain, source, out, image_data=image_data(service, early, phase), **options)
+        program = build(toolchain, source, out, image_data=image_data(service, early, phase,rawcon), **options)
         require(program['labels']['sdx_probe_service'] == service, 'Unstable service binding')
     reserved = (program['labels']['sdx_probe_nmi_stub'], program['labels']['sdx_probe_stubs_end'])
     # E=1 nested-entry classification needs unambiguous PC offsets.
@@ -310,7 +368,7 @@ def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None, p
             b.mount(0, str(out/'sectors.atr'))
         at = program['labels']['sdx_probe_installed']
         condition = f'@xpc=${at:x}'
-        b.bp_set(at, condition=condition)
+        b.bp_set(at & 65535, condition=condition)
         run_to(b, at & 65535, frame_limit=120, timeout=10, condition=condition)
         require(b.memdump(0xc000, 0x1000) == effective[:0x1000], 'Task low ROM shadow differs')
         require(b.memdump(0xd800, 0x2800) == effective[0x1800:], 'Task high ROM shadow differs')
@@ -323,6 +381,13 @@ def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None, p
     if trace:
         marks = {k: v for k, v in program['labels'].items()
                  if k.startswith(('sio_', 'native_', 'sdx_', 'signal_route'))}
+        if rawcon:
+            for name in ('pointer_port_read','pointer_sample','pointer_sample_return',
+                         'timer_tick','timer_sample'):
+                marks[name]=program['labels'][name]
+            for bank in (0x30,0x31):
+                for pc in (0xf661,0xf681,0xf087):
+                    marks[f'cell_{bank:x}_{pc:x}']=bank*65536+pc
         os.environ.update(EXEC816_LATENCY_TRACE='1', EXEC816_MASK_TRACE='1',
                           EXEC816_LATENCY_PCS=','.join(f'{v:x}' for v in marks.values()))
     machineout = out/('trace' if trace else 'replay')
@@ -358,7 +423,7 @@ def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None, p
         for slot in range(1 if mode == 'raw' else 2):
             at = slot*16
             expected = bytes([0x30+slot])+struct.pack('<4H', 0x7e00+slot*256, 0xa6, 0x5a, 0xab04)
-            expected += bytes.fromhex('3733')+struct.pack('<H', 0x3013 if mode == 'raw' else 0x302c)
+            expected += bytes.fromhex('3733')+struct.pack('<H', 0x3013 if mode == 'raw' else 0x3032 if rawcon else 0x302c)
             require(frames[slot*13:(slot+1)*13] == expected, 'Guest register/status/JSR frame differs')
             require(contexts[at+4:at+6] == bytes.fromhex('e001'), 'Guest stack drifted')
         require(runtime['vbi_dispatches'] > 0, 'No ordinary VBI scheduling occurred')
@@ -382,7 +447,7 @@ def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None, p
                 guest_nmis=int.from_bytes(state[10:12], 'little'),
                 owned_irqs=int.from_bytes(state[12:14], 'little'),
                 deferred_native_nmis=int.from_bytes(state[14:16], 'little'),
-                early_entry_injection=early, return_boundary=phase, sio=sio, profile=profile, sectors_read=sectors_read,
+                early_entry_injection=early, return_boundary=phase, sio=sio, profile=profile, rawcon=rawcon, sectors_read=sectors_read,
                 guest_serial_irqs=int.from_bytes(state[28:30], 'little'),
                 owned_work_handoffs=int.from_bytes(state[30:32], 'little'),
                 busy_rejections=busy_seen,
@@ -406,11 +471,54 @@ def run(out, mode, early=False, phase=0, sio=False, trace=False, program=None, p
         from sio_transaction_trace import read_events
         timing = analyze(machineout/'emulator.log', marks, divisor=8 if profile=="generic56k" else 40)
         events = read_events(machineout/'emulator.log')
+        if rawcon:
+            from sio_transaction_trace import BASE_HZ,stats
+            pending={};intervals=[];service_bank=None
+            interrupts=[t for t,e in events if e[0]=='cpu' and int(e[4],16) in
+                        tuple(marks[n] for n in ('native_nmi','sdx_probe_native_nmi',
+                              'sdx_probe_nmi_stub','native_irq','sdx_probe_irq_stub'))]
+            from bisect import bisect_left
+            for tick,event in events:
+                if event[0]!='cpu':continue
+                pc=int(event[4],16);bank=pc>>16;low=pc&65535
+                if pc==marks['sdx_probe_service']:
+                    service_bank=0x30+(int(event[9],16)-0x7e00)//256
+                if pc==marks['sdx_probe_cell_committed'] and service_bank in pending:
+                    pending[service_bank][2]=True
+                if bank not in (0x30,0x31):continue
+                if low in (0xf661,0xf681):
+                    # An IRQ sampled before SEI can return to that same PC.
+                    # Its intermediate trampoline is not cell completion.
+                    if bank not in pending:
+                        pending[bank]=[tick,'get' if low==0xf661 else 'put',False]
+                elif low==0xf087 and bank in pending and pending[bank][2]:
+                    begin,kind,_=pending.pop(bank)
+                    i=bisect_left(interrupts,begin)
+                    interrupted=i<len(interrupts) and interrupts[i]<=tick
+                    # Include the emulation RTI after its observation point.
+                    intervals.append(dict(kind=kind,clocks=tick-begin+6/8,
+                                          interrupted=interrupted))
+            require(not pending and len(intervals)>1000,'Missing production cell observations')
+            timing['cells']={kind:dict(count=sum(v['kind']==kind for v in intervals),
+                uninterrupted=stats([v['clocks'] for v in intervals
+                                     if v['kind']==kind and not v['interrupted']]),
+                interrupted=stats([v['clocks'] for v in intervals
+                                   if v['kind']==kind and v['interrupted']]))
+                            for kind in ('get','put')}
+            maximum=max(v['clocks']/BASE_HZ*1e6 for v in intervals if not v['interrupted'])
+            timing['cell_masked_max_us']=maximum
+            require(maximum<=50,'Fast-cell masked transition exceeds 50 us: '+str(maximum))
+            reads=[t for t,e in events if e[0]=='cpu'
+                   and int(e[4],16)==marks['pointer_port_read']]
+            gaps=[b-a for a,b in zip(reads,reads[1:])]
+            require(gaps and max(gaps)/BASE_HZ<.001,
+                    'Pointer sampling gap exceeds 1 ms: '+str(stats(gaps)))
+            timing['pointer_sample_gaps']=stats(gaps)
         timing['observations_sha256'] = hashlib.sha256(
             '\n'.join(' '.join(e) for _, e in events).encode()).hexdigest()
         (out/'timing.json').write_text(json.dumps(timing, indent=2)+'\n')
         require(timing['verdict'] == 'pass', 'SIO timing failed: '+str(timing['violations']))
-        replay = run(out, mode, early, phase, sio, program=program,profile=profile)
+        replay = run(out, mode, early, phase, sio, program=program,profile=profile,rawcon=rawcon)
         fields = ('checks', 'runtime', 'progress', 'peer_iterations', 'guest_nmis',
                   'owned_irqs', 'deferred_native_nmis', 'guest_serial_irqs',
                   'owned_work_handoffs', 'busy_rejections', 'intercepted_returns', 'sectors_read')
@@ -428,6 +536,7 @@ def main():
     parser.add_argument('--profile',choices=('stock810','generic56k'),default='stock810')
     parser.add_argument('--sio', action='store_true')
     parser.add_argument('--trace', action='store_true')
+    parser.add_argument('--rawcon', action='store_true',help='Exercise production bound cells alongside real SIO/pointer IRQs')
     parser.add_argument('--return-boundary', type=int, choices=range(1, 12), default=0)
     parser.add_argument('--case', choices=('opt', 'raw'), default='opt')
     args = parser.parse_args()
@@ -436,11 +545,12 @@ def main():
     require(not args.sio or (args.case == 'opt' and not args.return_boundary and not args.early_entry),
             'Storage checks require ordinary optimized guests')
     require(not args.trace or args.sio, 'Wire tracing requires --sio')
+    require(not args.rawcon or (args.sio and args.case=='opt'), 'RAWCON IRQ checks require optimized --sio')
     out = args.output.resolve()
     result = dict(status='running')
     started = time.monotonic()
     try:
-        result = run(out, args.case, args.early_entry, args.return_boundary, args.sio, args.trace,profile=args.profile)
+        result = run(out, args.case, args.early_entry, args.return_boundary, args.sio, args.trace,profile=args.profile,rawcon=args.rawcon)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise

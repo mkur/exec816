@@ -86,3 +86,47 @@ bytes. Each retained BASIC Session embeds that guest state and grows by 30 bytes
 The parser adds 259 bytes of private guest BSS. Heap alignment and changed code
 also affect BASIC's available program storage; the emitted engine map supplies
 the actual heap start. No parser storage is added to bank zero.
+
+## RAWCON cells and damage delivery
+
+An open EDX screen binds one 96-byte record in the existing upper bridge bank.
+It contains its lease owner, far screen/damage/BREAK pointers, geometry and
+thirty precomputed row offsets. Binding prepares the leaf's far instruction
+operands while no guest can execute, then publishes ownership last. Unbind
+clears only the matching owner; idle BASIC retirement cannot clear EDX's binding.
+Close unbinds before restoring console modes or freeing storage. Lease release
+also clears ownership.
+
+Bound get/put calls retain the common complete thirteen-byte frame and corrected
+JSR PC. They check the physical stack domain, all thirty-two outer DP guard
+bytes and foreground BREAK before mutation. Get changes low A and N/Z; put
+preserves the saved context and damages only changed cells. Invalid coordinates
+detach to ordinary error 156 handling. Guard/domain failures and BREAK retain
+their native fatal/cancellation paths. There is one successful cell implementation
+in the resident bridge.
+
+The leaf masks IRQs, publishes FAST_CELL with GATE, temporarily selects DBR zero
+and borrows four bytes of the suspended native Task's lower DP. A two-byte DBR
+setup retires before the four saved scratch bytes; maximum temporary depth is
+four bytes, plus a thirteen-byte acknowledge-only NMI frame. NMI acknowledges
+and latches throughout the gated interval. Scratch and the complete S are
+restored before the common guest restore drains pending work. Only native
+detachment publishes a ROM-borrowable anchor; a transient scratch S never does.
+No native call arguments are read from the physical guest stack.
+
+Screen Open allocates one 300-byte span array (304 bytes after heap rounding).
+Flush submits all nonempty row damage through the public
+[`CONCMD_WRITE_CELL_SPANS`](console.md) operation and waits for collection before
+the guest can edit its buffers. Idle Flush sends no request. A successful count
+or positive BREAK prefix clears only acknowledged whole spans. A negative DOS
+return retains all submitted damage because that interface hides device Actual;
+replaying positioned cells is safe. A nonzero IoErr remains an error even with
+a full count. Retirement frees the packet only after synchronous I/O settles.
+
+These changes add zero reserved bank-zero bytes: fixed, root/kernel, each of
+twelve public Tasks and idle, including guards, alignment and unused capacity.
+The existing 544-byte guest DP pool and 65,536-byte bridge bank remain fixed.
+Console metadata stays 896 bytes; four bytes of spare padding hold vector
+progress. Dynamic console Instances still round to 208 bytes. Session payload
+grows 2,320→2,324 bytes (allocation 2,320→2,328); embedded BASIC Session grows
+2,344→2,348 bytes (allocation 2,344→2,352).
