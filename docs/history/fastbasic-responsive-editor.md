@@ -34,7 +34,7 @@ twelve public Tasks and idle, including guards, alignment and unused capacity.
 | RE1 | Explicit invalidation and bounded source/status/margin publication implemented; development checks pass. |
 | RE2 | Implemented; 22 independent graphics pixel scenes and ownership checks pass. |
 | RE3 | Settled identity and bounded translation preparation implemented; development checks pass. |
-| RE4 | Pending |
+| RE4 | Four-direction movement implemented; 96 painter and 24 motion/failure checks pass. Loaded physical pilot running. |
 | RE5 | Pending |
 | RE6 | Pending |
 | RE7 | Pending |
@@ -121,3 +121,41 @@ trace, without changing physical input or cadence. Top Return/join scanout p95
 is 1,604/1,625 ms; scrolling p95 is 1,584–1,645 ms across the four directions.
 The single far-gap sample is 401 ms scanout / 415 ms readiness, and does not
 establish a distribution. All baseline timing gates remain as specified.
+
+## RE4 Four-direction viewport movement
+
+Eligible movements now copy text pixels and shift retained character/attribute
+cells together. An old text caret is removed before copying; selection travels
+with text and is compared at its new position. Copied pixels stay in one pending
+presentation transaction through exposed-strip/overlay repair, with epoch and
+visibility checked at each UPDATE. Only then can the grid be acknowledged.
+New input, exposure or geometry changes retire the incomplete transaction and
+retain bounded reconstruction. No-overlap/covered fallbacks keep status and
+margins independent. Selection dragging shares the same four-direction path;
+an active outside-edge gesture steps every 80 ms after the preceding repair.
+
+The six-row/16-column emitted fixture draws 16–17 source cells per vertical
+scroll and 6–7 per horizontal scroll, with one copy and no status drawing. The
+horizontal fixture completes in two bounded paint turns; vertical scrolling in
+one. The separate motion probe passes 24 assertions covering selection edge movement,
+newer input, reversal during repair, stale/covered sources, copy and END failures,
+final independent pixels and resource retirement. The painter passes 96 checks.
+The raw/optimized snapshot-interface probes each pass 26 checks, and all 653
+host tests pass. The unchanged per-operation drain bound is retained; the larger
+independent case set runs in separate bounded probes. Loaded application checks
+are in progress, and timing acceptance remains open.
+
+The motion payload is 260 bytes within its 512-byte reservation, leaving 252
+reserved spare bytes. The model remains 7,296 bytes; the actual APP span is
+96,765 bytes, exactly 512 more than the frozen baseline. C import ABI 30 adds a
+read-only window snapshot helper instead of exposing mutable binding internals.
+All fixed/root/kernel/per-public-Task/idle bank-zero reservation deltas remain
+zero, including guards, alignment and spare. QED consumes another 4 KiB of its
+existing provider-code growth allowance, leaving 8 KiB inside the same three
+provider code banks; no pool or bank is enlarged.
+
+An optimized integration check caught Calypsi 5.18 reusing an uninitialized
+local rectangle edge during dependent bounds arithmetic. Reusing the existing
+independently computed bounds helper eliminates that form; emitted independent
+pixel probes cover the resulting geometry. The pinned Action! compiler is
+unchanged. This development record makes no platform qualification claim.

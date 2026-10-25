@@ -55,7 +55,7 @@ packet.data=status
 SIO-enabled builds publish the current native program imports. SIO-disabled builds
 retain the library interface and return Open failure without touching serial
 hardware. The native program ABI is version 20; rebuild commands and providers
-together. The current C program ABI is version 29; a C SIO convenience library
+together. The current C program ABI is version 30; a C SIO convenience library
 is not part of this interface.
 
 The [FUJI command](../guides/shell.md#fujinet-control) uses two sessions to hold

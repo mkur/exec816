@@ -18,6 +18,12 @@ struct AESWindowView *ExecAESFindView(struct ExecAESContext *c, WORD handle)
     return NULL;
 }
 
+const struct AESWindowView *ExecAESWindowView(WORD window)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    return c ? ExecAESFindView(c,window):NULL;
+}
+
 BOOL ExecAESWindowEpoch(struct ExecAESContext *c, WORD handle, ULONG epoch)
 {
     struct AESWindowView *v=ExecAESFindView(c,handle);

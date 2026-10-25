@@ -18,6 +18,7 @@ LONG EXEC_CALL DamageProbe(ULONG unused)
     context.view=&view;context.views[0]=&view;
     view.handle=1;view.updates=1;view.paintEpoch=7;view.pixelsReady=1;
     view.work.left=10;view.work.top=20;view.work.right=90;view.work.bottom=100;
+    CHECK(ExecAESWindowView(1)==&view && ExecAESWindowView(2)==NULL);
     CHECK(ExecAESInvalidate(1,0,0,0,0));
     CHECK(view.changed==AES_CHANGE_DECLARED && !context.request.invalidationCount);
     CHECK(ExecAESInvalidate(1,12,22,10,8));

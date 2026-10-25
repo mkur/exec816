@@ -64,6 +64,9 @@ WORD ExecAESPaintedChanges(WORD window);
 /* Declare logical damage before drawing, independently of visible/user clips.
  * Empty dimensions explicitly declare no additional damage in this UPDATE. */
 WORD ExecAESInvalidate(WORD window,WORD x,WORD y,WORD width,WORD height);
+/* Borrow the owning window's read-only presentation snapshot. Fresh within
+ * UPDATE, with final epoch/completeness published by END. Retired at delete. */
+const struct AESWindowView *ExecAESWindowView(WORD window);
 /* Session preference: AES_MOUSE_QUERY, AES_MOUSE_OFF or AES_MOUSE_MILD.
  * Returns the chosen profile, or -1 on failure. Held gestures finish first. */
 WORD ExecAESMouseProfile(WORD profile);

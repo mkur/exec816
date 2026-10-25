@@ -254,7 +254,7 @@ to that window. Nested calls keep the outer scope, including nested ordinary
 `BEG_UPDATE`; an ordinary outer BEGIN still covers every owned window. Empty or
 hidden scoped updates invalidate their target, while untouched siblings remain
 eligible for caching. The helper uses the current wire version 19's UPDATE_WINDOW
-flag and C program import version 29; rebuild programs and their matching host.
+flag and C program import version 30; rebuild programs and their matching host.
 
 `ExecAESInvalidate(window,x,y,width,height)` declares logical damage inside the
 caller's UPDATE scope. Coordinates are screen coordinates clipped to the work
@@ -1109,3 +1109,10 @@ use window-specific updates and invalidate borrowed content at dismissal before
 requesting the owner's repair. Temporary dialog windows retain the default
 policy. Ordinary GEM callers need no changes and keep conventional exposure
 notifications, including after a successful menu-background restore.
+
+`ExecAESWindowView(window)` returns the owning application's read-only window
+snapshot, borrowed until window deletion. UPDATE establishes fresh geometry,
+visible rectangles and pixel completeness; END publishes its final paint epoch
+and completeness before replying. Applications may retain the identity for
+later comparison but must reacquire UPDATE before reusing screen pixels. No RPC
+or allocation is needed to read the borrowed view. This is part of C import ABI 30.

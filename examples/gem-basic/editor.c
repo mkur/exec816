@@ -106,6 +106,32 @@ ULONG BasicEditorPosition(const struct BasicEditor *e,WORD x,WORD y)
     return at_column(&e->document,line,col);
 }
 
+static WORD drag_edge(const struct BasicEditor *e,WORD x,WORD y)
+{
+    return x<e->app.work[0]+4 || x>=e->app.work[0]+4+e->columns*8 ||
+        y<e->app.work[1] || y>=e->app.work[1]+e->rows*8;
+}
+
+/* One selection step at an edge. The same viewport translation is used by
+ * keys, gadgets and this captured gesture; no separate mouse paint path. */
+void BasicEditorDrag(struct BasicEditor *e,WORD x,WORD y)
+{
+    WORD left=e->app.work[0]+4,top=e->app.work[1];
+    UWORD first=e->first,column=e->left;
+    BasicEditorDamage(e,BasicLine(&e->document,e->anchor<e->caret ? e->anchor:e->caret),
+        BasicLine(&e->document,e->anchor>e->caret ? e->anchor:e->caret)+1);
+    if (y<top) e->first=BasicAssistancePrevious(e,e->first);
+    else if (y>=top+e->rows*8 && e->first<BasicAssistanceTop(e)) e->first=BasicAssistanceNext(e,e->first);
+    if (x<left && e->left) --e->left;
+    else if (x>=left+e->columns*8 && e->left<BASIC_COLUMNS*8) ++e->left;
+    e->caret=BasicEditorPosition(e,min(max(x,left),left+e->columns*8-1),
+        min(max(y,top),top+e->rows*8-1));
+    BasicEditorDamage(e,BasicLine(&e->document,e->anchor<e->caret ? e->anchor:e->caret),
+        BasicLine(&e->document,e->anchor>e->caret ? e->anchor:e->caret)+1);
+    BasicEditorReveal(e);
+    if (first!=e->first || column!=e->left) BasicEditorRows(e,0,e->rows);
+}
+
 WORD BasicEditorKey(struct BasicEditor *e,WORD key,WORD mods)
 {
     struct BasicDocument *d=&e->document;UBYTE c=key&255;
@@ -174,7 +200,9 @@ WORD BasicEditorRun(struct BasicEditor *e)
     while (!quit && !result) {
         memset(&wait,0,sizeof(wait));
         wait.flags=MU_KEYBD|MU_BUTTON|MU_MESAG|(e->dragging ? MU_M1:0)|
-            ((e->dirty || BasicFilesWork() || BasicAssistanceWork(e) || BasicBuildWork()) ? MU_TIMER:0);
+            ((e->dirty || BasicFilesWork() || BasicAssistanceWork(e) || BasicBuildWork() ||
+                (e->dragging && drag_edge(e,mx,my))) ? MU_TIMER:0);
+        if (e->dragging && !e->dirty && drag_edge(e,mx,my)) wait.milliseconds=80;
         wait.buttonClicks=1;wait.buttonMask=1;wait.buttonState=e->dragging ? 0:1;
         wait.m1Flags=1;wait.m1X=mx;wait.m1Y=my;wait.m1Width=wait.m1Height=1;
         wait.signalMask=BasicBuildMask();
@@ -280,13 +308,9 @@ WORD BasicEditorRun(struct BasicEditor *e)
                 BasicLine(&e->document,e->anchor>e->caret ? e->anchor:e->caret)+1);
             BasicEditorReveal(e);
         }
-        if ((events&MU_M1) && e->dragging) {
-            BasicEditorDamage(e,BasicLine(&e->document,e->anchor<e->caret ? e->anchor:e->caret),
-                BasicLine(&e->document,e->anchor>e->caret ? e->anchor:e->caret)+1);
-            e->caret=BasicEditorPosition(e,mx,my);
-            BasicEditorDamage(e,BasicLine(&e->document,e->anchor<e->caret ? e->anchor:e->caret),
-                BasicLine(&e->document,e->anchor>e->caret ? e->anchor:e->caret)+1);
-            BasicEditorReveal(e);
+        if (e->dragging && ((events&MU_M1) || ((events&MU_TIMER) && !e->dirty && drag_edge(e,mx,my)))) {
+            BasicEditorDrag(e,mx,my);
+            if (!viewport(e)) result=20;
         }
         if ((events&MU_BUTTON) && !buttons) e->dragging=0;
         BasicBuildStep(e);

@@ -97,7 +97,7 @@ The workstation adds 512 upper bytes: a 32-byte descriptor and 480-byte packed
 edge staging area, allocated at open. It reuses the adapter's transient CICON
 scratch within physical access. No pending DMA outlives return, and no new
 persistent VRAM, bank-zero storage, stack pool or Task is reserved. C programs
-must rebuild for import ABI version 29. See the
+must rebuild for import ABI version 30. See the
 [responsive-editor record](../history/fastbasic-responsive-editor.md).
 
 ## Supervised packet workload

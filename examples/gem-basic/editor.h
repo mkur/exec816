@@ -36,6 +36,7 @@ struct BasicMotion {
     WORD sourceRow,targetRow,sourceColumn,targetColumn,copyRows,copyColumns;
     UBYTE settled,linear,prepared,applied;
     ULONG copies,copyPixels,fallbacks;
+    ULONG caret,anchor;
     ULONG editBefore,editAfter;
     UWORD editFirst,editLast;
     WORD lineDelta;
@@ -68,4 +69,5 @@ void BasicEditorExpose(struct BasicEditor *,WORD,WORD,WORD,WORD);
 /* Internal preparation only. The fresh UPDATE view admits actual pixel reuse. */
 WORD BasicEditorTranslation(struct BasicEditor *);
 ULONG BasicEditorPosition(const struct BasicEditor *,WORD,WORD);
+void BasicEditorDrag(struct BasicEditor *,WORD,WORD);
 #endif

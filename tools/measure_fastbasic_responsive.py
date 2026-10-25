@@ -90,6 +90,7 @@ class ResponsiveMeasurement:
         app=next(i for i in instances(b,s.p,self.bundle/'bitmap-console') if i['name']=='basic')
         base,task=app['symbols']['Basic'],app['task']
         foreign=json.loads((self.bundle/'bitmap-console/c-image.json').read_text())['symbols']
+        current_copy='ExecAESWindowView' in foreign
         rf=layout()['Request']['fields']
         context=next(c for c in (n(foreign['contexts']+4*i,4) for i in range(4)) if c and n(c+rf['owner'],3)==task)
         inbox=n(context+rf['receiving'],3);mask=1<<n(inbox+12,1)
@@ -179,6 +180,10 @@ class ResponsiveMeasurement:
                 line+=-1 if movement=='up' else 1
                 caret=sum(len(q)+1 for q in lines[:line])+min(col,len(lines[line]))
             wanted=None;model=readiness=visible=None;before=n(base+FIELDS['paintTurns'],4)
+            attribution=dict(glyphs=n(base+1664+5065,4),status=n(base+1664+5069,4),
+                publications=n(base+1664+5073,4),gap=n(base+FIELDS['document']+12,4))
+            if current_copy:
+                attribution.update(copies=n(base+6784+224,4),copy_pixels=n(base+6784+228,4))
             if ctrl:b._cmd_ok('KEY CTRL down')
             if shift:b._cmd_ok('KEY SHIFT down')
             started=clock();b._cmd_ok('KEY '+name+' down')
@@ -216,6 +221,13 @@ class ResponsiveMeasurement:
                 require(sample[field+'_after']-sample[field+'_before']==sign,'Scroll did not move one cell: '+str(sample))
             settled()
             sample['dispatch_observation_end_clock']=clock()
+            sample['gap_distance_before']=abs(attribution['gap']-previous_caret)
+            sample['glyphs']=n(base+1664+5065,4)-attribution['glyphs']
+            sample['status_glyphs']=n(base+1664+5069,4)-attribution['status']
+            sample['publications']=n(base+1664+5073,4)-attribution['publications']
+            if current_copy:
+                sample['copies']=n(base+6784+224,4)-attribution['copies']
+                sample['copied_pixels']=n(base+6784+228,4)-attribution['copy_pixels']
             if measure:
                 self.record['samples'].append(sample)
                 (self.output/'samples.json').write_text(json.dumps(self.record,indent=2)+'\n')
@@ -287,8 +299,15 @@ def measure(bundle,output,count=20,snapshot=None,observer_pin=None):
         path=source/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
     (source/'WORK/AAA.BAS').write_bytes(fixture_source())
     media=output/'measurement.atr'
-    make(media,source,binary_names={p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file()},
-         filesystem='sdfs',sector_bytes=256,sectors=manifest['mounts'][0]['sectors'])
+    if snapshot:
+        make(media,source,binary_names={p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file()},
+             filesystem='sdfs',sector_bytes=256,sectors=manifest['mounts'][0]['sectors'])
+    else:
+        # File allocation changes the first-stage reader locator. Preserve the
+        # real boot path by rebuilding it, rather than creating plain SDFS media.
+        from build_bootable_atr import build as boot_disk
+        monitor=json.loads((bundle/'of816/of816.json').read_text())
+        boot_disk(media,source,source/'EXEC816.XEX',output/'boot-media',monitor,boot_sio=manifest.get('boot_sio','auto'))
     observer=ResponsiveMeasurement(bundle,output,count)
     bootstrap=DiskBoot(bundle,native_snapshot=snapshot) if snapshot else None
     wait=json.loads((bundle/'bitmap-console/c-image.json').read_text())['symbols']['ExecAESWait']

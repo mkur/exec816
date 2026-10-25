@@ -14,6 +14,7 @@
 #define ExecAESPainted Peer_ExecAESPainted
 #define ExecAESPaintedChanges Peer_ExecAESPaintedChanges
 #define ExecAESInvalidate Peer_ExecAESInvalidate
+#define ExecAESWindowView Peer_ExecAESWindowView
 #define ExecAESDesktop Peer_ExecAESDesktop
 #define ExecAESInputWindow Peer_ExecAESInputWindow
 #define ExecAESWindowCall Peer_ExecAESWindowCall

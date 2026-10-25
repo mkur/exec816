@@ -3,6 +3,7 @@
 #include "assist-ui.h"
 #include "assist.h"
 #include <exec816/aes.h>
+#include <exec816/vdi.h>
 #include <string.h>
 
 enum { CANDIDATE=1,VALID=2,BASE_DIRTY=4,SELECTED_CELL=16,CARET_CELL=32,CELL_BUDGET=96,ROW_BUDGET=4 };
@@ -57,9 +58,17 @@ static void force_all(struct BasicEditor *e)
     for (row=0;row<e->rows;++row) { r->forceFirst[row]=0;r->forceEnd[row]=e->columns; }
     r->statusForceFirst=0;r->statusForceEnd=e->columns;r->padding=15;r->paddingVisit=0;e->dirty=1;
 }
+static void force_text(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);UWORD row;
+    for (row=0;row<e->rows;++row) { r->forceFirst[row]=0;r->forceEnd[row]=e->columns; }
+    e->motion.state.applied=e->motion.state.settled=e->motion.state.prepared=0;
+    e->dirty=e->publish=1;
+}
 void BasicEditorExpose(struct BasicEditor *e,WORD x,WORD y,WORD w,WORD h)
 {
     struct BasicRefresh *r=state(e);WORD row,a,b,top,left=e->app.work[0]+4;
+    if (e->motion.state.applied) force_text(e);
     r->hidden=0;e->motion.state.settled=e->motion.state.prepared=0;
     a=max(0,(x-left)/e->app.cellw);b=min(e->columns,(x+w-left+e->app.cellw-1)/e->app.cellw);
     for (row=0;row<e->rows;++row) {
@@ -76,11 +85,12 @@ void BasicEditorExpose(struct BasicEditor *e,WORD x,WORD y,WORD w,WORD h)
 static void remember(struct BasicEditor *e)
 {
     struct BasicMotion *m=&e->motion.state;UWORD row,line;
-    struct ExecAESContext *c=ExecAESContext();
+    const struct AESWindowView *view=ExecAESWindowView(e->app.window);
     m->document=e->document.data;m->generation=e->document.generation;
+    m->caret=e->caret;m->anchor=e->anchor;
     m->top=e->first;m->left=e->left;m->rows=e->rows;m->columns=e->columns;
     memcpy(m->work,e->app.work,sizeof(m->work));
-    m->epoch=c && c->view ? c->view->paintEpoch:0;
+    m->epoch=view ? view->paintEpoch:0;
     m->linear=1;
     for (row=0;row<e->rows;++row) {
         line=BasicAssistanceLine(e,row);m->line[row]=line;
@@ -116,7 +126,13 @@ static void geometry(struct BasicEditor *e)
     struct BasicRefresh *r=state(e);UWORD row;
     if (r->document==e->document.data && r->top==e->first && r->left==e->left &&
         r->rows==e->rows && r->columns==e->columns && !memcmp(r->work,e->app.work,sizeof(r->work))) return;
-    e->motion.state.settled=e->motion.state.prepared=0;
+    if (r->document==e->document.data && r->rows==e->rows && r->columns==e->columns &&
+        !memcmp(r->work,e->app.work,sizeof(r->work))) {
+        r->top=e->first;r->left=e->left;
+        for (row=0;row<e->rows;++row) r->valid[row]=CANDIDATE|BASE_DIRTY;
+        force_text(e);changed(e);return;
+    }
+    e->motion.state.applied=e->motion.state.settled=e->motion.state.prepared=0;
     r->document=e->document.data;r->top=e->first;r->left=e->left;r->rows=e->rows;r->columns=e->columns;
     memcpy(r->work,e->app.work,sizeof(r->work));r->hidden=0;
     for (row=0;row<BASIC_VIEW_ROWS;++row) {
@@ -313,6 +329,83 @@ static WORD span(struct Paint *p,UWORD row,UWORD first,UWORD end)
     }
     return p->okay;
 }
+
+/* A completed copy remains a presentation transaction until the strips and
+ * overlays are repaired. Every reacquisition checks its epoch and visibility. */
+static WORD copy_view(struct BasicEditor *e,WORD settled)
+{
+    const struct AESWindowView *v=ExecAESWindowView(e->app.window);
+    struct BasicMotion *m=&e->motion.state;
+    WORD x=e->app.work[0]+4,y=e->app.work[1];
+    if (!v || v->paintEpoch!=m->epoch || (settled && !v->pixelsReady) || v->visibleCount!=1) return 0;
+    return v->visible[0].left<=x && v->visible[0].top<=y &&
+        v->visible[0].right>=x+e->columns*8 && v->visible[0].bottom>=y+e->rows*8;
+}
+
+static void shift_cells(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);struct BasicMotion *m=&e->motion.state;
+    WORD i,src,dst,row;UWORD caretRow=BasicAssistanceRow(e,BasicLine(&e->document,e->caret));
+    WORD overlays=m->anchor!=m->caret || e->anchor!=e->caret;
+    for (i=0;i<m->copyRows;++i) {
+        row=m->targetRow>m->sourceRow ? m->copyRows-1-i:i;
+        src=m->sourceRow+row;dst=m->targetRow+row;
+        memmove(r->text[dst]+m->targetColumn,r->text[src]+m->sourceColumn,m->copyColumns);
+        memmove(r->attributes[dst]+m->targetColumn,r->attributes[src]+m->sourceColumn,m->copyColumns);
+    }
+    for (row=0;row<e->rows;++row) {
+        r->first[row]=r->forceFirst[row]=BASIC_VIEW_COLUMNS;r->end[row]=r->forceEnd[row]=0;
+        if (row<m->targetRow || row>=m->targetRow+m->copyRows) {
+            r->valid[row]=CANDIDATE|BASE_DIRTY;r->forceFirst[row]=0;r->forceEnd[row]=e->columns;
+        } else {
+            r->valid[row]=VALID;
+            if (m->copyColumns!=e->columns) {
+                r->valid[row]|=CANDIDATE|BASE_DIRTY;
+                if (m->targetColumn) interval(&r->forceFirst[row],&r->forceEnd[row],0,m->targetColumn);
+                else interval(&r->forceFirst[row],&r->forceEnd[row],m->copyColumns,e->columns);
+            }
+            if (overlays || row==caretRow) r->valid[row]|=CANDIDATE;
+        }
+    }
+    r->documentGeneration=e->document.generation;
+    r->top=e->first;r->left=e->left;r->hidden=0;
+    m->top=e->first;m->left=e->left;m->generation=e->document.generation;
+    m->caret=e->caret;m->anchor=e->anchor;
+    m->applied=1;m->settled=m->prepared=0;e->publish=0;
+}
+
+static WORD move_pixels(struct Paint *p)
+{
+    struct BasicEditor *e=p->e;struct BasicMotion *m=&e->motion.state;
+    struct BasicRefresh *r=state(e);WORD box[4],inclusive[4],result;UWORD row,col;
+    if (!copy_view(e,1)) { ++m->fallbacks;return EXEC_VDI_COPY_REDRAW; }
+    bounds(e,0,0,e->columns,box);box[3]=e->app.work[1]+e->rows*8;
+    if (!ExecAESInvalidate(e->app.window,box[0],box[1],box[2]-box[0],box[3]-box[1])) return EXEC_VDI_COPY_ERROR;
+    /* The text caret is an application overlay. Erase its old source pixel
+     * before translation; selection travels with text and is compared later. */
+    for (row=0;row<e->rows;++row) for (col=0;col<e->columns;++col)
+        if (r->attributes[row][col]&CARET_CELL) {
+            r->attributes[row][col]&=~CARET_CELL;
+            if (!span(p,row,col,col+1)) return EXEC_VDI_COPY_ERROR;
+            ++p->rows;
+        }
+    inclusive[0]=box[0];inclusive[1]=box[1];inclusive[2]=box[2]-1;inclusive[3]=box[3]-1;
+    vs_clip(e->app.vdi,1,inclusive);
+    result=ExecVDICopyRect(e->app.vdi,box[0]+m->sourceColumn*8,box[1]+m->sourceRow*8,
+        m->copyColumns*8,m->copyRows*8,(m->targetColumn-m->sourceColumn)*8,(m->targetRow-m->sourceRow)*8);
+    if (result!=EXEC_VDI_COPY_DONE) { force_text(e);return result; }
+    ++m->copies;m->copyPixels+=(ULONG)m->copyColumns*m->copyRows*64;
+    ++r->publications;p->drawn=1;shift_cells(e);return result;
+}
+
+static WORD will_finish(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);UWORD row;
+    if (candidates(e) || (r->padding&~r->paddingAdvance)) return 0;
+    for (row=0;row<e->rows;++row)
+        if (max(r->end[row],r->forceEnd[row])>r->advance[row]) return 0;
+    return max(r->statusEnd,r->statusForceEnd)<=r->advance[e->rows];
+}
 static void margin_bounds(struct BasicEditor *e,UWORD i,WORD *box)
 {
     WORD x=e->app.work[0],y=e->app.work[1],right=x+e->app.work[2],bottom=y+e->app.work[3];
@@ -332,7 +425,7 @@ static WORD deferred(struct BasicEditor *e)
 {
     struct BasicRefresh *r=state(e);UWORD row,a=e->rows,b=0,first=e->columns,end=0,i;
     WORD box[4];
-    for (row=0;row<e->rows;++row) {
+    for (row=0;row<e->rows && !e->motion.state.applied;++row) {
         if (r->valid[row]&CANDIDATE) { r->forceFirst[row]=0;r->forceEnd[row]=e->columns; }
         if (r->end[row] || r->forceEnd[row]) {
             a=min(a,row);b=row+1;
@@ -392,7 +485,21 @@ static void acknowledge(struct BasicEditor *e)
 }
 WORD BasicEditorPaint(struct BasicEditor *e)
 {
-    struct BasicRefresh *r=state(e);struct Paint p;UWORD row,first,end,count=0,limit;WORD fast;
+    struct BasicRefresh *r=state(e);struct BasicMotion *m=&e->motion.state;
+    struct Paint p;UWORD row,first,end,count=0,limit;WORD fast,result;
+    memset(&p,0,sizeof(p));p.e=e;p.okay=1;p.cells=CELL_BUDGET;
+    if (m->applied && (m->document!=e->document.data || m->generation!=e->document.generation ||
+        m->top!=e->first || m->left!=e->left || m->rows!=e->rows || m->columns!=e->columns ||
+        m->caret!=e->caret || m->anchor!=e->anchor ||
+        memcmp(m->work,e->app.work,sizeof(m->work)))) force_text(e);
+    if (BasicEditorTranslation(e)) {
+        if (!begin(&p)) { if (p.locked) wind_update(END_UPDATE);return 0; }
+        result=move_pixels(&p);
+        if (result!=EXEC_VDI_COPY_DONE) {
+            if (!wind_update(END_UPDATE) || result==EXEC_VDI_COPY_ERROR) { force_text(e);return 0; }
+            p.locked=0;
+        }
+    }
     geometry(e);
     e->motion.state.settled=e->motion.state.prepared=0;
     for (row=0;row<e->rows && count<ROW_BUDGET;++row) if (r->valid[row]&CANDIDATE) { compose(e,row);++count; }
@@ -404,8 +511,8 @@ WORD BasicEditorPaint(struct BasicEditor *e)
         r->statusFirst=r->statusForceFirst=BASIC_VIEW_COLUMNS;r->statusEnd=r->statusForceEnd=r->padding=0;
         e->dirty=candidates(e);return 1;
     }
-    memset(&p,0,sizeof(p));p.e=e;p.okay=1;p.cells=CELL_BUDGET;
-    if (!begin(&p)) { if (p.locked) wind_update(END_UPDATE);return 0; }
+    if (!p.locked && !begin(&p)) { if (p.locked) wind_update(END_UPDATE);return 0; }
+    if (m->applied && !copy_view(e,0)) force_text(e);
     fast=complete(e);
     if (fast<0) { wind_update(END_UPDATE);return 0; }
     if (e->publish && !fast) {
@@ -427,11 +534,14 @@ WORD BasicEditorPaint(struct BasicEditor *e)
         if (span(&p,row,first,end)) r->advance[row]=end;else p.cells=0;
         ++p.rows;
     }
-    if (p.okay && fast) p.okay=ExecAESPaintedChanges(e->app.window);
+    if (p.okay && m->applied && will_finish(e))
+        p.okay=ExecAESPainted(e->app.window,e->app.work[0]+4,e->app.work[1],e->columns*8,e->rows*8);
+    else if (p.okay && fast) p.okay=ExecAESPaintedChanges(e->app.window);
     if (p.locked && !wind_update(END_UPDATE)) p.okay=0;
-    if (!p.okay) return 0;
+    if (!p.okay) { if (m->applied) force_text(e);return 0; }
     acknowledge(e);r->paddingVisit=r->padding ? p.paddingVisit:0;
     e->publish=0;e->dirty=pending(e) || candidates(e);++e->paintTurns;
+    if (m->applied) m->epoch=ExecAESWindowView(e->app.window)->paintEpoch;
     if (!e->dirty) remember(e);
     return 1;
 }

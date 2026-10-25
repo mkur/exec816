@@ -29,7 +29,8 @@ The minimum client area is 288×128 pixels so dirty-document choices fit.
 The editor obtains cell metrics and work geometry from GEM, preserves logical
 caret/selection during geometry and focus changes, pans horizontally to reveal
 the caret and supports a vertical slider. The editor retains character, syntax,
-selection and caret appearance in a 5,120-byte private upper-RAM reservation.
+selection and caret appearance in a 5,120-byte private upper-RAM reservation,
+plus 512 reserved bytes for presentation identity and translation.
 Ordinary edits replace changed cell spans without clearing their source row;
 unchanged status text needs no drawing. A paint turn composes at most four source
 rows and reconstructs at most 96 glyph cells across visible fragments, plus
@@ -40,7 +41,16 @@ pixels do not keep the editor polling. Completion reports cover successfully
 drawn pixels, with the public conditional completion shortcut for a wholly
 completed edit. Deferred changes declare source, status and margin damage
 separately through `ExecAESInvalidate`; an empty suffix nominates only rows
-whose appearance can change. No new Task, timer or bank-zero reservation is added.
+whose appearance can change. Four-direction viewport movements preserve settled
+text pixels with `ExecVDICopyRect`, shift their retained cells, and repair exposed
+strips plus changed overlays. Copy transactions are acknowledged only after all
+required repairs finish. Fresh epoch, geometry and visibility checks reject stale
+or covered source pixels. New input during repair falls back to bounded
+reconstruction; no-overlap jumps reconstruct source cells without repainting
+unchanged status text or margins. Captured selection uses the same path at all
+four edges, with an 80 ms step while held outside a settled grid. Settled/hidden
+editors do not poll for invisible repairs. No new Task, timer object or bank-zero
+reservation is added. See [current evidence](../history/fastbasic-responsive-editor.md).
 Input loss cancels pointer selection. Large gap moves yield in units
 of at most 1 KiB without exposing partial logical text.
 

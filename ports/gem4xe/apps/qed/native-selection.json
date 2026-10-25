@@ -814,9 +814,9 @@
     "data_bss_bytes": 16384
   },
   "resident_provider_allowances": {
-    "code_bytes": 12288,
+    "code_bytes": 8192,
     "data_bss_bytes": 16384,
-    "basis": "Merged console/FastBasic bindings consume 4 KiB of the former 16 KiB code growth allowance; retain 12 KiB code, 4 KiB tables and 16 KiB data/BSS inside the existing provider banks",
+    "basis": "Merged console/FastBasic bindings consumed 4 KiB of the former 16 KiB code growth allowance; responsive-editor copy/snapshot bindings consume another 4 KiB. Retain 8 KiB code, 4 KiB tables and 16 KiB data/BSS inside the existing provider banks.",
     "table_bytes": 4096
   },
   "bank_zero_delta": {
