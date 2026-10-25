@@ -41,6 +41,9 @@ struct BasicMotion {
     UWORD editFirst,editLast;
     WORD lineDelta;
     UBYTE editReady,wholeLine;
+    UWORD sourceLine,targetLine,prefixRows,sourceLines;
+    LONG byteDelta;
+    ULONG sourceBytes;
 };
 typedef char BasicMotionFits[(sizeof(struct BasicMotion)<=BASIC_MOTION_BYTES) ? 1:-1];
 struct BasicEditor {

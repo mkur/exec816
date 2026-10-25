@@ -35,7 +35,7 @@ twelve public Tasks and idle, including guards, alignment and unused capacity.
 | RE2 | Implemented; 22 independent graphics pixel scenes and ownership checks pass. |
 | RE3 | Settled identity and bounded translation preparation implemented; development checks pass. |
 | RE4 | Four-direction movement implemented; 96 painter and 24 motion/failure checks pass. Loaded physical pilot running. |
-| RE5 | Pending |
+| RE5 | Structural suffix/prefix mapping implemented; 100 painter, 44 structural and 30 key checks plus loaded pilot pass. |
 | RE6 | Pending |
 | RE7 | Pending |
 | RE8 | Pending |
@@ -159,3 +159,32 @@ local rectangle edge during dependent bounds arithmetic. Reusing the existing
 independently computed bounds helper eliminates that form; emitted independent
 pixel probes cover the resulting geometry. The pinned Action! compiler is
 unchanged. This development record makes no platform qualification claim.
+
+## RE5 Structural edits
+
+Return, newline Backspace/Delete and complete-line range deletion/replacement
+retain an explicit old/new line and byte-offset mapping. Each reused row is
+checked against that mapping; equal newline counts do not imply reuse. An
+unchanged prefix stays in place, the suffix moves, and the changed boundary
+compares its old physical appearance. Empty trailing suffixes need no copy.
+Undo/Redo, complex selections/folds and superseding input retain reconstruction.
+
+The emitted painter passes 100 checks. Top and middle splits/joins each copy
+once and draw eight source cells in the small fixture, with one changed saved
+marker on insertion and no status drawing on join. The separate structural
+probe passes 44 checks for middle splits, indentation/tabs, syntax, complete-line
+ranges, trailing empty lines, panning, Undo/Redo, equal-count replacement and
+new input before presentation. Thirty logical editing checks pass.
+
+A loaded current-system pilot passes fifteen physical operations, independent
+whole-client pixels, copy counts, heap/guard checks and OS restoration. On its
+19-row/56-column viewport, top Return/join draw 8/55 source cells and complete
+scanout in approximately 321/341 ms. Vertical scrolling is approximately
+281–301 ms; horizontal scrolling still takes approximately one second. These
+single samples establish correctness and guide RE6; none closes a timing gate.
+The final matched twenty-sample distributions remain RE7.
+
+Motion payload is 276 of 512 reserved bytes (236 spare), with no new reservation
+relative to RE3. Model size remains 7,296 bytes. Fixed, root/kernel, each public
+Task and idle bank-zero reservation deltas remain zero including guards,
+alignment and unused capacity. The native system and import ABI remain unchanged.

@@ -11,7 +11,7 @@
     "RE2": "implemented; development checks pass",
     "RE3": "implemented; 91 painter/presentation and live AES checks pass",
     "RE4": "implemented; 96 painter and 24 motion/failure checks pass; cold loaded physical checks in progress",
-    "RE5": "pending",
+    "RE5": "implemented; 100 painter, 44 structural and 30 key checks pass; loaded physical pilot passes",
     "RE6": "pending",
     "RE7": "pending",
     "RE8": "pending"
@@ -23,8 +23,8 @@
     "c/calypsi/aes-windows.c": "9e628af234a64c4d50d1ef626dc3aa6843c66bb24e09dc524458d1f3a3efc1eb",
     "c/include/exec816/aes-wire.h": "5ec4234916f57a4e3749f5ea518536e175ba2c1528d24f35c8d3a097c04b9d87",
     "c/include/exec816/aes.h": "d767c3d848b7e1cf2691c6211abb18758e1b80e02963e20e86e9967e7cf866a5",
-    "examples/gem-basic/editor-paint.c": "e2b427e0130caf9df656e052181d23a6f23ccc9baa838dcfdf458d6429edc5ea",
-    "examples/gem-basic/editor.c": "b045427889310081abd418ef395219a3c11a455806d30ffd737e004c33cc1047",
+    "examples/gem-basic/editor-paint.c": "43a111fc153560df12aa9c2a8665634221867bfbf9afe22e062b92a7a1a2657e",
+    "examples/gem-basic/editor.c": "ce3c2878d311f49587a794b03ecd0e3b9321d6be2c6de8ec03043a152dcf6b7e",
     "lib/aes/aestypes.act": "42c3d0e62c7aa2307d940c70cd911fb17a0f245bba08b615301ddf6284d1d51f",
     "lib/aes/aeswindowstate.act": "a79ccb8f3238bfb998387a78dd1413ca917799afb202d618024f836c1d6e24c2",
     "lib/desktop/deskcache.act": "c939cddaa8ca321f5ab6d8057b892e8ab764622f7138573b03132f97a5185ae2",
@@ -32,7 +32,7 @@
     "lib/dos/c-program-abi.inc": "673f63edb0a5323bc0d82f3bbb2ddb59eee51f5e542143315869551528ad2b05",
     "tests/programs/aes_bindings.c": "a3590bfc413a77ea08eafa07ba18fc11ac88674c5c4a4a932592d402ba4ae553",
     "tests/programs/aes_peer_binding.c": "d32285225844dc93c0b980e9494cba93479abf323813748ae2db666c79c0c1e3",
-    "tests/programs/basic_paint.c": "c249b1e490dd6fe992c03634837cb23273366e4994051e392a8dd2ba3e374ede",
+    "tests/programs/basic_paint.c": "206c0281c1b17e1abc94ff1d7dd4c637f12194f35bc0bfad8bdd4465f85c8366",
     "tests/test_desktop_contract.py": "373da9be138f3f2a6274031be76dc1ed715d0a92398fd545a1fbccab8f8d4920",
     "tests/programs/aes_damage.c": "01c810969883a61bd21135bda4b644f86367b2cbc5b66ce09583825dca88df3e",
     "tools/test_aes_damage.py": "acb6b28f767c9b8788310095fc84bb1b2e522d44864a2665aa84814dac7874cb",
@@ -46,11 +46,13 @@
     "tools/test_vdi_client.py": "641baedac1f29b4c232a7d4dc40e97a2a42037cf8b44e5b707c7098cc52dbab9",
     "tests/programs/vdi_copy_abi.c": "5d35530e3aded4e9a1f18d8bbe13a91f6cafe537693b6b1227d77219c4fb68b7",
     "tools/test_vdi_copy_abi.py": "e85ce3469505bb9b732ac4803bb8ead00155af53c756818a990c62361f2d0185",
-    "examples/gem-basic/editor.h": "26b32029328ba8a253bd098307b7418548a4a50365197ec83b679ad83e321a5d",
+    "examples/gem-basic/editor.h": "91fcf4fa30adcc4f364cc2867078cb28aefbb0d94a548dac419f5f52cbd48340",
     "tools/workbench_interaction.py": "28db4d4378ae409851cef828ff3e1127164ff8234600e489420a197e7eee5b24",
     "tools/measure_fastbasic_responsive.py": "f44227789f5d800b3cc347a301e67a2d0e138ac755134c59eca30d3af7769b3c",
-    "tools/test_fastbasic_editor.py": "b7920cb935c2e2195f629730dc8defe0af6be666ef789f762cb1c901888906c3",
-    "ports/gem4xe/apps/qed/native-selection.json": "e0d5074b7ab2ce470b5295fc09124f2705cd436e73bfe9d36dbe767e6cf97cd1"
+    "tools/test_fastbasic_editor.py": "7cc28535682c2466f32afa34b6c73d28f38f39bd1b3a41a71d6cd31889c645aa",
+    "ports/gem4xe/apps/qed/native-selection.json": "e0d5074b7ab2ce470b5295fc09124f2705cd436e73bfe9d36dbe767e6cf97cd1",
+    "tests/programs/basic_structure.c": "2f88f53613ea1ab40b926fc2270e38ff0381554486c57d172c7ad0495a86ab6d",
+    "tools/test_demo.py": "5543c1469a558981683b6782cb1ee545940754e4c2e72e21b21750f5f96da048"
   },
   "development_checks": [
     {
@@ -151,6 +153,34 @@
       "sha256": "0ccc456dc4db505e081912089f7eeea18dbca660fbbc8091d0579cfea2c3b4ac",
       "status": "pass",
       "checks": 26
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re5-painter-v2/results.json",
+      "sha256": "8b1da33ebc4417491140ada79c6f13b502c6d79d6dd415929e66c23766b33362",
+      "status": "pass",
+      "checks": 100,
+      "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re5-structure-v2/results.json",
+      "sha256": "cc8f2d4048e9f5eb4c690dc03b4c81655a753b7a915846bb6bd43f0c53479c0f",
+      "status": "pass",
+      "checks": 44,
+      "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re5-keys/results.json",
+      "sha256": "83794f63cad747d70f177ce44e64bcd572f5158520b9a80859a8965445d8373b",
+      "status": "pass",
+      "checks": 30,
+      "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re5-physical/results.json",
+      "sha256": "daf29b7b63f04cd8d47f7430d4c62d72d925e4b1c568382486c493d98db2b145",
+      "status": "pass",
+      "checks": null,
+      "scope": "focused emitted development"
     }
   ],
   "host_checks": {
@@ -210,8 +240,8 @@
     ],
     "editor_refresh_reserved": 5632,
     "editor_motion_reserved": 512,
-    "editor_motion_payload": 260,
-    "editor_motion_reserved_spare": 252,
+    "editor_motion_payload": 276,
+    "editor_motion_reserved_spare": 236,
     "editor_app_span": 96765,
     "editor_app_span_rounded": 96768,
     "editor_app_bytes": 89123,
@@ -265,52 +295,52 @@
   },
   "drawing_work": {
     "top_newline": {
-      "source_glyphs": 96,
-      "status_glyphs": 1,
-      "updates": 3,
-      "empty_updates": 1,
-      "paint_turns": 2,
-      "total_glyphs": 97,
-      "text_calls": 7,
-      "full_row_clears": 0,
-      "copies": 0,
-      "copied_pixels": 0
-    },
-    "top_join": {
-      "source_glyphs": 96,
-      "status_glyphs": 0,
-      "updates": 3,
-      "empty_updates": 1,
-      "paint_turns": 2,
-      "total_glyphs": 96,
-      "text_calls": 6,
-      "full_row_clears": 0,
-      "copies": 0,
-      "copied_pixels": 0
-    },
-    "middle_newline": {
-      "source_glyphs": 18,
+      "source_glyphs": 8,
       "status_glyphs": 1,
       "updates": 1,
       "empty_updates": 0,
       "paint_turns": 1,
-      "total_glyphs": 19,
+      "total_glyphs": 9,
       "text_calls": 4,
       "full_row_clears": 0,
-      "copies": 0,
-      "copied_pixels": 0
+      "copies": 1,
+      "copied_pixels": 5120
     },
-    "middle_join": {
-      "source_glyphs": 18,
+    "top_join": {
+      "source_glyphs": 8,
       "status_glyphs": 0,
       "updates": 1,
       "empty_updates": 0,
       "paint_turns": 1,
-      "total_glyphs": 18,
+      "total_glyphs": 8,
       "text_calls": 3,
       "full_row_clears": 0,
-      "copies": 0,
-      "copied_pixels": 0
+      "copies": 1,
+      "copied_pixels": 5120
+    },
+    "middle_newline": {
+      "source_glyphs": 8,
+      "status_glyphs": 1,
+      "updates": 1,
+      "empty_updates": 0,
+      "paint_turns": 1,
+      "total_glyphs": 9,
+      "text_calls": 4,
+      "full_row_clears": 0,
+      "copies": 1,
+      "copied_pixels": 2048
+    },
+    "middle_join": {
+      "source_glyphs": 8,
+      "status_glyphs": 0,
+      "updates": 1,
+      "empty_updates": 0,
+      "paint_turns": 1,
+      "total_glyphs": 8,
+      "text_calls": 3,
+      "full_row_clears": 0,
+      "copies": 1,
+      "copied_pixels": 2048
     },
     "single_character": {
       "source_glyphs": 7,
@@ -390,6 +420,16 @@
     "basic_sha256": "0a7e94fa1cc6d7d4ab64432223099f215cf15969e5d0729b078c79fd07ddfef9",
     "path": "build/fastbasic-responsive-editor/re4-demo",
     "c_import_abi": 30,
-    "scope": "Built matching distribution; physical pilot in progress. Not installed."
+    "scope": "Built matching distribution; physical pilot in progress. Not installed.",
+    "note": "Path reused for authorized matching workbench refresh; historical RE4 hashes retained here, final delivery recorded separately."
+  },
+  "loaded_pilot": {
+    "path": "build/fastbasic-responsive-editor/re5-physical/results.json",
+    "sha256": "daf29b7b63f04cd8d47f7430d4c62d72d925e4b1c568382486c493d98db2b145",
+    "samples": 15,
+    "ordinary_cohort_samples": 1,
+    "status": "pass",
+    "performance_acceptance": "open; one-sample pilot is not a distribution",
+    "scope": "Frozen current-system pre-native replay; emitted native bytes verified, loaded APP, full independent pixels, copy counts, cleanup, heap/guards and OS restoration. Cold reader reached native in RE4 diagnostic-media pilot; final original-media cold boot remains RE8."
   }
 }

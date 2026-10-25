@@ -135,10 +135,14 @@ void BasicEditorDrag(struct BasicEditor *e,WORD x,WORD y)
 WORD BasicEditorKey(struct BasicEditor *e,WORD key,WORD mods)
 {
     struct BasicDocument *d=&e->document;UBYTE c=key&255;
+    struct BasicMotion *m=&e->motion.state;
     ULONG before=e->caret,at=e->caret,lo=e->anchor<at ? e->anchor:at,hi=e->anchor>at ? e->anchor:at;
+    ULONG oldGeneration=d->generation,oldBytes=d->bytes;
     UWORD line=BasicLine(d,at),editFirst=lo==at ? line:BasicLine(d,lo);
     UWORD editLast=hi==at ? line:BasicLine(d,hi),oldLines=d->lines;
-    WORD result=0,scan=(UWORD)key>>8;
+    WORD result=0,scan=(UWORD)key>>8,unselected=lo==hi,whole=0,map=0;
+    UWORD sourceLine=0,targetLine=0;
+    m->editReady=0;
     if (c==1 || ((mods&4) && (c=='a' || c=='A'))) { e->anchor=0;e->caret=d->bytes;goto selected; }
     if (c==26 || c==25 || ((mods&4) && (c=='z' || c=='Z' || c=='y' || c=='Y'))) {
         if (c==25 || c=='y' || c=='Y') result=BasicRedo(d);else result=BasicUndo(d);
@@ -154,10 +158,18 @@ WORD BasicEditorKey(struct BasicEditor *e,WORD key,WORD mods)
     else if (c==8 || c==127) {
         if (lo==hi) { if (c==8 && lo) --lo;else if (c==127 && hi<d->bytes) ++hi; }
         editFirst=BasicLine(d,lo);
+        editLast=BasicLine(d,hi);
+        whole=lo<hi && lo==d->line[editFirst] && hi==d->line[editLast];
+        sourceLine=whole ? editLast:editLast+1;targetLine=whole ? editFirst:editFirst+1;
+        map=unselected || whole;
         result=BasicReplace(d,lo,hi-lo,0,0);if (result) return result;
         e->caret=e->anchor=lo;goto edited;
     } else if (c==9 || c==13 || (c>=32 && c<=126 && !(mods&12))) {
         if (c==13) {
+            whole=lo==d->line[editFirst] && hi==d->line[editLast];
+            sourceLine=whole ? editLast:editLast+1;targetLine=editFirst+2;
+            if (whole) targetLine=editFirst+1;
+            map=unselected || whole;
             result=BasicAssistanceIndent(e,lo,hi-lo,&at);if (result) return result;
             e->caret=e->anchor=at;goto edited;
         }
@@ -174,6 +186,15 @@ selected:
     BasicEditorReveal(e);return BASIC_OK;
 edited:
     ++e->edits;
+    if (map && oldLines!=d->lines && m->settled && m->linear &&
+        m->document==d->data && m->generation==oldGeneration &&
+        m->caret==before && (unselected || whole)) {
+        m->editBefore=oldGeneration;m->editAfter=d->generation;
+        m->editFirst=editFirst;m->editLast=editLast;m->wholeLine=whole;
+        m->sourceLine=sourceLine;m->targetLine=targetLine;
+        m->lineDelta=(WORD)d->lines-(WORD)oldLines;
+        m->byteDelta=(LONG)d->bytes-(LONG)oldBytes;m->editReady=1;
+    }
     line=editFirst;
     if (oldLines!=d->lines) BasicEditorDamage(e,line,min(e->first+e->rows,max(oldLines,d->lines)));
     else BasicEditorDamage(e,line,editLast+1);

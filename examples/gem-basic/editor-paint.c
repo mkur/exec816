@@ -89,6 +89,8 @@ static void remember(struct BasicEditor *e)
     m->document=e->document.data;m->generation=e->document.generation;
     m->caret=e->caret;m->anchor=e->anchor;
     m->top=e->first;m->left=e->left;m->rows=e->rows;m->columns=e->columns;
+    m->sourceLines=e->document.lines;
+    m->sourceBytes=e->document.bytes;
     memcpy(m->work,e->app.work,sizeof(m->work));
     m->epoch=view ? view->paintEpoch:0;
     m->linear=1;
@@ -105,19 +107,41 @@ static void remember(struct BasicEditor *e)
  * complete screen. A partial paint/exposure retires it before any later copy. */
 WORD BasicEditorTranslation(struct BasicEditor *e)
 {
-    struct BasicMotion *m=&e->motion.state;WORD rows,columns;UWORD row;
+    struct BasicMotion *m=&e->motion.state;WORD rows,columns,structural;UWORD row,line,source;
+    ULONG offset;
     m->prepared=0;
+    structural=m->editReady && m->editBefore==m->generation && m->editAfter==e->document.generation;
     if (!m->settled || !m->linear || m->document!=e->document.data ||
-        m->generation!=e->document.generation || m->rows!=e->rows ||
+        (!structural && m->generation!=e->document.generation) || m->rows!=e->rows ||
         m->columns!=e->columns || memcmp(m->work,e->app.work,sizeof(m->work))) return 0;
-    if (m->top==e->first && m->left==e->left) return 0;
+    if (!structural && m->top==e->first && m->left==e->left) return 0;
     for (row=0;row<e->rows;++row) if (BasicAssistanceLine(e,row)!=e->first+row) return 0;
     rows=(WORD)m->top-(WORD)e->first;columns=(WORD)m->left-(WORD)e->left;
+    if (structural) rows+=m->lineDelta;
     m->sourceRow=max(0,-rows);m->targetRow=max(0,rows);
+    if (structural && (WORD)m->sourceLine-(WORD)m->top>m->sourceRow) {
+        m->sourceRow=(WORD)m->sourceLine-(WORD)m->top;
+        m->targetRow=m->sourceRow+rows;
+    }
     m->sourceColumn=max(0,-columns);m->targetColumn=max(0,columns);
     m->copyRows=e->rows-max(m->sourceRow,m->targetRow);
     m->copyColumns=e->columns-max(m->sourceColumn,m->targetColumn);
     if (m->copyRows<=0 || m->copyColumns<=0) return 0;
+    m->prefixRows=0;
+    if (structural) {
+        if ((WORD)m->targetLine-(WORD)m->sourceLine!=m->lineDelta ||
+            m->offset[m->sourceRow]>=m->sourceBytes) return 0;
+        if (m->top==e->first && m->left==e->left)
+            m->prefixRows=min(e->rows,max(0,(WORD)m->editFirst-(WORD)e->first));
+        /* Line count alone is insufficient: verify every reused row against
+         * the explicit old/new line and byte-offset mapping. */
+        for (row=0;row<m->copyRows;++row) {
+            source=m->sourceRow+row;line=e->first+m->targetRow+row;
+            offset=line<e->document.lines ? e->document.line[line]:e->document.bytes;
+            if ((WORD)m->line[source]+m->lineDelta!=(WORD)line ||
+                (LONG)m->offset[source]+m->byteDelta!=(LONG)offset) return 0;
+        }
+    }
     m->prepared=1;return 1;
 }
 
@@ -356,7 +380,14 @@ static void shift_cells(struct BasicEditor *e)
     for (row=0;row<e->rows;++row) {
         r->first[row]=r->forceFirst[row]=BASIC_VIEW_COLUMNS;r->end[row]=r->forceEnd[row]=0;
         if (row<m->targetRow || row>=m->targetRow+m->copyRows) {
-            r->valid[row]=CANDIDATE|BASE_DIRTY;r->forceFirst[row]=0;r->forceEnd[row]=e->columns;
+            if (m->editReady) {
+                /* Outside the destination, old cache cells still describe
+                 * untouched physical pixels. Compare only the new boundary. */
+                r->valid[row]=row<m->prefixRows ? VALID:VALID|CANDIDATE|BASE_DIRTY;
+                if (overlays || row==caretRow) r->valid[row]|=CANDIDATE;
+            } else {
+                r->valid[row]=CANDIDATE|BASE_DIRTY;r->forceFirst[row]=0;r->forceEnd[row]=e->columns;
+            }
         } else {
             r->valid[row]=VALID;
             if (m->copyColumns!=e->columns) {

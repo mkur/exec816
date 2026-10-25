@@ -676,6 +676,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                         cells=read_cells(far,saved['top']).decode('ascii',errors='replace'))
                     (out/'integration-failure.json').write_text(json.dumps(diagnostic,indent=2)+'\n')
                     raise
+                if boot_smoke:save_screen(out/'boot-smoke.png')
                 return
             if input_apps:input_interaction()
             elif counters:counter_interaction()

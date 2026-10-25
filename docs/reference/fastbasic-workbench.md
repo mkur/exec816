@@ -43,7 +43,9 @@ completed edit. Deferred changes declare source, status and margin damage
 separately through `ExecAESInvalidate`; an empty suffix nominates only rows
 whose appearance can change. Four-direction viewport movements preserve settled
 text pixels with `ExecVDICopyRect`, shift their retained cells, and repair exposed
-strips plus changed overlays. Copy transactions are acknowledged only after all
+strips plus changed overlays. Ordinary line splits/joins and complete-line
+range edits map and preserve an unchanged prefix/suffix; complex folded or
+selected changes reconstruct. Copy transactions are acknowledged only after all
 required repairs finish. Fresh epoch, geometry and visibility checks reject stale
 or covered source pixels. New input during repair falls back to bounded
 reconstruction; no-overlap jumps reconstruct source cells without repainting
