@@ -973,5 +973,14 @@
       "sha256": "7abfb5191369aa219b6804772f986b466b962432ee585fe1cda211ba588c460f",
       "tests": 649
     }
+  },
+  "physical_observer": {
+    "runner": "tools/measure_fastbasic_responsive.py",
+    "samples_per_cohort": 20,
+    "key_hold_frames": 3,
+    "status": "matched baseline running",
+    "source_tree": "build/fastbasic-responsive-editor/baseline-source",
+    "emulator_override": "build/fastbasic-responsive-editor/bridge/observer.json",
+    "scope": "Independent whole client pixels; physical file selector and keyboard; event-dispatch trace and frame-observed scanout"
   }
 }

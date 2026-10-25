@@ -21,7 +21,7 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None,diagnostic_media_sha256=None,companion_overrides=None,omit_media=(),boot_verbose=False,sio_peer=None,emulator_output=None,boot_route=None):
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None,diagnostic_media_sha256=None,companion_overrides=None,omit_media=(),boot_verbose=False,sio_peer=None,emulator_output=None,boot_route=None,emulator_override=None):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
     require(disk_failure in (None,'missing','missing-work','wrong'),'Unknown disk failure')
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
@@ -131,6 +131,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         rom=Path(rom_override).resolve()
         require(len(rom.read_bytes())==pin['rom']['bytes'],'Diagnostic ROM size differs from platform ROM')
     emulator_hash=pin['mouse_input']['tooling']['sha256'] if bitmap and not ide_only else pin['emulator']['sha256']
+    if emulator_override is not None:
+        require(boot_smoke and integration is not None,'Observer override requires a focused integration run')
+        binary=Path(emulator_override['binary']).resolve()
+        emulator_hash=emulator_override['sha256']
+        saved['emulator_override']=emulator_override
     require(sha256(binary)==emulator_hash,'Unpinned demo emulator')
     require(rom_override is not None or sha256(rom)==pin['rom']['sha256'],'Unpinned demo ROM')
     def at(name):return shell_address(p['image'],name,"SHELLAPP" if shell_only else "DEMO")
