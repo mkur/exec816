@@ -131,38 +131,59 @@ static WORD word(const struct BasicDocument *d,ULONG at,UWORD n,const char *valu
     for (i=0;i<n;++i) if (upper(BasicByte(d,at+i))!=(UBYTE)value[i]) return 0;
     return 1;
 }
-void BasicLexLine(const struct BasicDocument *d,UWORD line,UBYTE *colors)
+/* Determine each token before replacing its bytes, permitting in-place use. */
+UBYTE BasicLexBytes(const UBYTE *text,UWORD count,UBYTE *colors)
 {
     static const char keywords[]=" AND BYTE DATA DIM DO ELSE ELSEIF END ENDIF ENDPROC EXEC EXIT FOR IF INPUT INT NEXT NOT OR PAUSE PEEK POKE PRINT PROC PUT RAND REPEAT RETURN STEP THEN TIME TO UNTIL VAL WEND WHILE XOR ";
-    ULONG at,end,start;UWORD i=0,n,j;UBYTE c;WORD found;
-    if (line>=d->lines) return;
-    at=d->line[line];end=d->line[line+1];
-    while (at<end && i<BASIC_COLUMNS) {
-        c=BasicByte(d,at);
-        if (c==10) break;
-        if (c=='\'') { while (at++<end && i<BASIC_COLUMNS) colors[i++]=BASIC_LEX_COMMENT;break; }
+    UWORD at=0,start,n,j,k,first;UBYTE c,common=255,pen;WORD found;
+    while (at<count) {
+        c=text[at];
+        if (c=='\'') {
+            pen=(common==255 || common==BASIC_LEX_COMMENT) && !memchr(text+at,9,count-at) ? BASIC_LEX_COMMENT:0;
+            memset(colors+at,BASIC_LEX_COMMENT,count-at);
+            return pen;
+        }
         if (c=='"') {
-            colors[i++]=BASIC_LEX_STRING;++at;
-            while (at<end && i<BASIC_COLUMNS) {
-                c=BasicByte(d,at++);colors[i++]=BASIC_LEX_STRING;if (c=='"') break;
+            if (common==255) common=BASIC_LEX_STRING;else if (common!=BASIC_LEX_STRING) common=0;
+            colors[at++]=BASIC_LEX_STRING;
+            while (at<count) {
+                c=text[at];colors[at++]=BASIC_LEX_STRING;
+                if (c==9) common=0;if (c=='"') break;
             }
         } else if (identifier(c)) {
-            start=at;while (at<end && identifier(BasicByte(d,at))) ++at;
+            start=at;while (at<count && identifier(text[at])) ++at;
             n=at-start;found=0;
-            if (word(d,start,n,"REM")) {
-                while (i<BASIC_COLUMNS && start++<end) colors[i++]=BASIC_LEX_COMMENT;break;
+            if (n==3 && upper(text[start])=='R' && upper(text[start+1])=='E' && upper(text[start+2])=='M') {
+                pen=(common==255 || common==BASIC_LEX_COMMENT) && !memchr(text+start,9,count-start) ? BASIC_LEX_COMMENT:0;
+                memset(colors+start,BASIC_LEX_COMMENT,count-start);
+                return pen;
             }
             for (j=1;keywords[j];) {
-                UWORD first=j;while (keywords[j] && keywords[j]!=' ') ++j;
+                first=j;while (keywords[j] && keywords[j]!=' ') ++j;
                 if (j-first==n) {
-                    UWORD k;for (k=0;k<n && upper(BasicByte(d,start+k))==(UBYTE)keywords[first+k];++k) {}
+                    for (k=0;k<n && upper(text[start+k])==(UBYTE)keywords[first+k];++k) {}
                     if (k==n) found=1;
                 }
                 if (keywords[j]) ++j;
             }
-            while (n-- && i<BASIC_COLUMNS) colors[i++]=found ? BASIC_LEX_KEYWORD:BASIC_LEX_TEXT;
-        } else { colors[i++]=BASIC_LEX_TEXT;++at; }
+            pen=found ? BASIC_LEX_KEYWORD:BASIC_LEX_TEXT;
+            if (common==255) common=pen;else if (common!=pen) common=0;
+            memset(colors+start,pen,n);
+        } else {
+            colors[at++]=BASIC_LEX_TEXT;
+            if (c==9) common=0;
+            if (common==255) common=BASIC_LEX_TEXT;else if (common!=BASIC_LEX_TEXT) common=0;
+        }
     }
+    return common==255 ? BASIC_LEX_TEXT:common;
+}
+void BasicLexLine(const struct BasicDocument *d,UWORD line,UBYTE *colors)
+{
+    ULONG start,end;UWORD count;
+    if (line>=d->lines) return;
+    start=d->line[line];end=d->line[line+1];
+    if (end>start && BasicByte(d,end-1)==10) --end;
+    count=end-start;BasicCopy(d,start,colors,count);BasicLexBytes(colors,count,colors);
 }
 void BasicAssistBegin(struct BasicAssist *a,const struct BasicDocument *d)
 {

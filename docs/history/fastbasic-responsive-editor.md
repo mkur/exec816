@@ -188,3 +188,38 @@ Motion payload is 276 of 512 reserved bytes (236 spare), with no new reservation
 relative to RE3. Model size remains 7,296 bytes. Fixed, root/kernel, each public
 Task and idle bank-zero reservation deltas remain zero including guards,
 alignment and unused capacity. The native system and import ABI remain unchanged.
+
+## RE6 Bounded document and composition work
+
+Gap movement retains its 1,024-byte work quantum and yields only when more
+movement remains. Zero-width gaps move logically without copying, and an edit
+with unchanged newline count avoids a redundant index memmove. Offset adjustment
+uses a pointer walk. The document, undo and saved-generation contracts remain.
+
+Composition reads each line once, using the existing scratch storage for bytes
+and then colours. Eligible uniform, tab-free rows reuse retained syntax and
+compose only incoming horizontal bytes. Mixed syntax or any tab keeps the full
+composition path. Independent pixels cover tabs inside strings/comments, offscreen
+tabs, syntax, reversal, odd geometry and a copy whose exposed pixels already
+match: that transaction still publishes its final acknowledgement.
+
+Twenty isolated native component samples give p95 tiny movement/edit 3.38 ms
+(previously 13.88), index work 2.18 ms (12.05), and 19-row full composition
+260.27 ms (273.09). A real 32 KiB gap move/edit still costs 256.64 ms, with
+253.68 ms in movement; its 200 ms target remains OPEN. These are attribution
+measurements, separate from loaded physical input/scanout.
+
+Optimized emitted checks pass: painter 100, motion 24, structural edits 44,
+edge cases 24, assistance 512, document 130, mock file controller 45,346 and
+SDFS file controller 45,245. The motion payload is 374 of 512 reserved bytes,
+leaving 138 spare. Total refresh reservation remains 5,632 bytes, with 146
+spare, inside the unchanged 7,296-byte model. No persistent VRAM is added.
+
+The compiled application crosses a code-bank boundary: its loaded span is
+133,294 bytes, rounded allocation 133,296, including a 34,311-byte address-space
+hole, code, data and zero-fill. This is 36,528 reserved upper bytes more than
+RE5 and 37,040 more than baseline, despite no model reservation increase. File
+size is 92,812 bytes. Bank-zero reservation deltas remain zero for fixed,
+root/kernel, each of twelve public Tasks and idle, including guards, alignment
+and unused capacity. The final loaded run touches 997 of BASIC's 1,312 stack
+bytes, leaving 59 above its 256-byte observation floor; guards remain intact.

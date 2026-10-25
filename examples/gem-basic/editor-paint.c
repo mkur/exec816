@@ -165,17 +165,27 @@ static void geometry(struct BasicEditor *e)
     }
     r->statusFirst=0;r->statusEnd=e->columns;r->statusState=CANDIDATE;force_all(e);changed(e);
 }
-static void row_text(struct BasicEditor *e,UWORD line)
+/* With settled uniform syntax and no tabs, incoming columns need only their
+ * source bytes. Copied text/colours and untouched edge cells remain known. */
+static WORD compose_strip(struct BasicEditor *e,UWORD row,UWORD line)
 {
-    ULONG at,col=0,next;UWORD i=0;UBYTE c;
-    memset(e->row,' ',e->columns);e->row[e->columns]=0;
-    if (line>=e->document.lines) return;
-    at=e->document.line[line];
-    while (at<e->document.bytes && i<e->columns) {
-        c=BasicByte(&e->document,at++);if (c==10) break;
-        next=c==9 ? (col+8)&~7UL:col+1;
-        while (col<next) { if (col>=e->left) e->row[i++]=c==9 ? ' ':c;++col;if (i==e->columns) break; }
+    struct BasicMotion *m=&e->motion.state;struct BasicRefresh *r=state(e);
+    UWORD first,end,col,at;ULONG source;
+    if (!m->applied || !m->uniform[row] || m->copyColumns==e->columns ||
+        row<m->targetRow || row>=m->targetRow+m->copyRows) return 0;
+    first=m->targetColumn ? 0:m->copyColumns;end=m->targetColumn ? m->targetColumn:e->columns;
+    memcpy(e->row,r->text[row],e->columns);
+    for (col=0;col<e->columns;++col) e->colors[col]=r->attributes[row][col]&15;
+    source=line<e->document.lines ? e->document.line[line]:e->document.bytes;
+    for (col=first;col<end;++col) {
+        at=e->left+col;
+        e->row[col]=at<m->length[row] ? BasicByte(&e->document,source+at):' ';
+        e->colors[col]=at<m->length[row] ? m->uniform[row]:BASIC_LEX_TEXT;
     }
+    /* The outside edge was untouched by the copy. Equality with its retained
+     * appearance proves that an identical incoming cell needs no new glyph. */
+    r->forceFirst[row]=BASIC_VIEW_COLUMNS;r->forceEnd[row]=0;
+    ++m->stripRows;return 1;
 }
 static void compose(struct BasicEditor *e,UWORD row)
 {
@@ -184,7 +194,12 @@ static void compose(struct BasicEditor *e,UWORD row)
     WORD source=!(r->valid[row]&VALID) || (r->valid[row]&BASE_DIRTY) || r->documentGeneration!=e->document.generation;
     ULONG lo=e->anchor<e->caret ? e->anchor:e->caret,hi=e->anchor>e->caret ? e->anchor:e->caret;
     ULONG at,start,finish;WORD first,last;
-    if (source) { row_text(e,line);BasicAssistanceColors(e,line,e->colors); }
+    if (source) {
+        if (!compose_strip(e,row,line)) {
+            e->motion.state.uniform[row]=BasicAssistanceCompose(e,line);
+            e->motion.state.length[row]=e->motion.state.composedLength;
+        }
+    }
     else for (i=0;i<e->columns;++i) e->colors[i]=attributes[i]&15;
     if (line<e->document.lines) {
         if (lo<hi && lo<e->document.line[line+1] && hi>e->document.line[line]) {
@@ -376,6 +391,7 @@ static void shift_cells(struct BasicEditor *e)
         src=m->sourceRow+row;dst=m->targetRow+row;
         memmove(r->text[dst]+m->targetColumn,r->text[src]+m->sourceColumn,m->copyColumns);
         memmove(r->attributes[dst]+m->targetColumn,r->attributes[src]+m->sourceColumn,m->copyColumns);
+        m->uniform[dst]=m->uniform[src];m->length[dst]=m->length[src];
     }
     for (row=0;row<e->rows;++row) {
         r->first[row]=r->forceFirst[row]=BASIC_VIEW_COLUMNS;r->end[row]=r->forceEnd[row]=0;
@@ -536,7 +552,7 @@ WORD BasicEditorPaint(struct BasicEditor *e)
     for (row=0;row<e->rows && count<ROW_BUDGET;++row) if (r->valid[row]&CANDIDATE) { compose(e,row);++count; }
     if (!candidates(e)) r->documentGeneration=e->document.generation;
     if (r->statusState!=VALID || r->status[0]!=(BasicDirty(&e->document) ? '*':' ')) compose_status(e);
-    if (!pending(e) && !candidates(e)) { e->dirty=e->publish=0;remember(e);return 1; }
+    if (!pending(e) && !candidates(e) && !m->applied) { e->dirty=e->publish=0;remember(e);return 1; }
     if (r->hidden && !e->publish) {
         for (row=0;row<e->rows;++row) { r->first[row]=r->forceFirst[row]=BASIC_VIEW_COLUMNS;r->end[row]=r->forceEnd[row]=0; }
         r->statusFirst=r->statusForceFirst=BASIC_VIEW_COLUMNS;r->statusEnd=r->statusForceEnd=r->padding=0;

@@ -44,6 +44,10 @@ struct BasicMotion {
     UWORD sourceLine,targetLine,prefixRows,sourceLines;
     LONG byteDelta;
     ULONG sourceBytes;
+    UBYTE tabs[32]; /* Temporary byte-to-visual-column map during composition. */
+    UBYTE uniform[BASIC_VIEW_ROWS],length[BASIC_VIEW_ROWS];
+    UWORD composedLength;
+    ULONG stripRows;
 };
 typedef char BasicMotionFits[(sizeof(struct BasicMotion)<=BASIC_MOTION_BYTES) ? 1:-1];
 struct BasicEditor {

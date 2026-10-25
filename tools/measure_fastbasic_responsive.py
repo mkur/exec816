@@ -183,7 +183,7 @@ class ResponsiveMeasurement:
             attribution=dict(glyphs=n(base+1664+5065,4),status=n(base+1664+5069,4),
                 publications=n(base+1664+5073,4),gap=n(base+FIELDS['document']+12,4))
             if current_copy:
-                attribution.update(copies=n(base+6784+224,4),copy_pixels=n(base+6784+228,4))
+                attribution.update(copies=n(base+6784+224,4),copy_pixels=n(base+6784+228,4),strip_rows=n(base+6784+370,4))
             if ctrl:b._cmd_ok('KEY CTRL down')
             if shift:b._cmd_ok('KEY SHIFT down')
             started=clock();b._cmd_ok('KEY '+name+' down')
@@ -228,6 +228,7 @@ class ResponsiveMeasurement:
             if current_copy:
                 sample['copies']=n(base+6784+224,4)-attribution['copies']
                 sample['copied_pixels']=n(base+6784+228,4)-attribution['copy_pixels']
+                sample['strip_rows']=n(base+6784+370,4)-attribution['strip_rows']
             if measure:
                 self.record['samples'].append(sample)
                 (self.output/'samples.json').write_text(json.dumps(self.record,indent=2)+'\n')

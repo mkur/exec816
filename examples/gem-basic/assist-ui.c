@@ -106,17 +106,31 @@ void BasicAssistanceSelect(struct BasicEditor *e,ULONG at,ULONG length)
     BasicAssistanceReveal(e,BasicLine(&e->document,at));
     BasicEditorReveal(e);BasicEditorDamage(e,0,BASIC_LINES);
 }
-void BasicAssistanceColors(const struct BasicEditor *e,UWORD line,UBYTE *colors)
+/* Read the line once. Retain only its tab positions while the same scratch
+ * bytes become lexical colours; source text is already in the retained row. */
+UBYTE BasicAssistanceCompose(struct BasicEditor *e,UWORD line)
 {
-    ULONG at,col=0,next;UWORD i=0,byte=0;UBYTE c;
-    memset(colors,BASIC_LEX_TEXT,e->columns);if (line>=e->document.lines) return;
-    BasicLexLine(&e->document,line,ui.lexical);at=e->document.line[line];
-    while (at<e->document.bytes && i<e->columns && byte<255) {
-        c=BasicByte(&e->document,at++);if (c==10) break;
-        next=c==9 ? (col+8)&~7UL:col+1;
-        while (col<next) { if (col>=e->left) colors[i++]=ui.lexical[byte];++col;if (i==e->columns) break; }
-        ++byte;
+    ULONG start,end;UWORD byte,count,col=0,next,i=0;UBYTE c,uniform,*tabs=e->motion.state.tabs;
+    memset(e->row,' ',e->columns);e->row[e->columns]=0;
+    memset(e->colors,BASIC_LEX_TEXT,e->columns);
+    e->motion.state.composedLength=0;
+    if (line>=e->document.lines) return BASIC_LEX_TEXT;
+    start=e->document.line[line];end=e->document.line[line+1];
+    if (end>start && BasicByte(&e->document,end-1)==10) --end;
+    count=end-start;BasicCopy(&e->document,start,ui.lexical,count);memset(tabs,0,32);
+    e->motion.state.composedLength=count;
+    for (byte=0;byte<count && i<e->columns;++byte) {
+        c=ui.lexical[byte];
+        if (c==9) tabs[byte>>3]|=1U<<(byte&7);
+        next=c==9 ? (col+8)&~7U:col+1;
+        while (col<next) { if (col>=e->left) e->row[i++]=c==9 ? ' ':c;++col;if (i==e->columns) break; }
     }
+    uniform=BasicLexBytes(ui.lexical,count,ui.lexical);col=i=0;
+    for (byte=0;byte<count && i<e->columns;++byte) {
+        next=(tabs[byte>>3]&(1U<<(byte&7))) ? (col+8)&~7U:col+1;
+        while (col<next) { if (col>=e->left) e->colors[i++]=ui.lexical[byte];++col;if (i==e->columns) break; }
+    }
+    return uniform;
 }
 static WORD choose(struct BasicEditor *e)
 {

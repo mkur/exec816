@@ -12,7 +12,7 @@
     "RE3": "implemented; 91 painter/presentation and live AES checks pass",
     "RE4": "implemented; 96 painter and 24 motion/failure checks pass; cold loaded physical checks in progress",
     "RE5": "implemented; 100 painter, 44 structural and 30 key checks pass; loaded physical pilot passes",
-    "RE6": "pending",
+    "RE6": "implemented; focused emitted checks pass; component costs recorded; far-gap target OPEN",
     "RE7": "pending",
     "RE8": "pending"
   },
@@ -23,7 +23,7 @@
     "c/calypsi/aes-windows.c": "9e628af234a64c4d50d1ef626dc3aa6843c66bb24e09dc524458d1f3a3efc1eb",
     "c/include/exec816/aes-wire.h": "5ec4234916f57a4e3749f5ea518536e175ba2c1528d24f35c8d3a097c04b9d87",
     "c/include/exec816/aes.h": "d767c3d848b7e1cf2691c6211abb18758e1b80e02963e20e86e9967e7cf866a5",
-    "examples/gem-basic/editor-paint.c": "43a111fc153560df12aa9c2a8665634221867bfbf9afe22e062b92a7a1a2657e",
+    "examples/gem-basic/editor-paint.c": "fb6609827aee5fd3cf85861b4f08be3729ce23519f1d5069f720917d1e05c214",
     "examples/gem-basic/editor.c": "ce3c2878d311f49587a794b03ecd0e3b9321d6be2c6de8ec03043a152dcf6b7e",
     "lib/aes/aestypes.act": "42c3d0e62c7aa2307d940c70cd911fb17a0f245bba08b615301ddf6284d1d51f",
     "lib/aes/aeswindowstate.act": "a79ccb8f3238bfb998387a78dd1413ca917799afb202d618024f836c1d6e24c2",
@@ -46,13 +46,32 @@
     "tools/test_vdi_client.py": "641baedac1f29b4c232a7d4dc40e97a2a42037cf8b44e5b707c7098cc52dbab9",
     "tests/programs/vdi_copy_abi.c": "5d35530e3aded4e9a1f18d8bbe13a91f6cafe537693b6b1227d77219c4fb68b7",
     "tools/test_vdi_copy_abi.py": "e85ce3469505bb9b732ac4803bb8ead00155af53c756818a990c62361f2d0185",
-    "examples/gem-basic/editor.h": "91fcf4fa30adcc4f364cc2867078cb28aefbb0d94a548dac419f5f52cbd48340",
+    "examples/gem-basic/editor.h": "4f0d8ac5a599e6d0bd89da4fae34347c5400c78c53395ad17b550c11300d7948",
     "tools/workbench_interaction.py": "28db4d4378ae409851cef828ff3e1127164ff8234600e489420a197e7eee5b24",
-    "tools/measure_fastbasic_responsive.py": "f44227789f5d800b3cc347a301e67a2d0e138ac755134c59eca30d3af7769b3c",
-    "tools/test_fastbasic_editor.py": "7cc28535682c2466f32afa34b6c73d28f38f39bd1b3a41a71d6cd31889c645aa",
+    "tools/measure_fastbasic_responsive.py": "0159f1845f674ddf59a2bf417ef1e33c1617efafb9c9a06526fe468c9de089ae",
+    "tools/test_fastbasic_editor.py": "111cf52e03fd8402d6c33035d6cdc5911e2901a7ce416f602a5afe647d7479e8",
     "ports/gem4xe/apps/qed/native-selection.json": "e0d5074b7ab2ce470b5295fc09124f2705cd436e73bfe9d36dbe767e6cf97cd1",
     "tests/programs/basic_structure.c": "2f88f53613ea1ab40b926fc2270e38ff0381554486c57d172c7ad0495a86ab6d",
-    "tools/test_demo.py": "5543c1469a558981683b6782cb1ee545940754e4c2e72e21b21750f5f96da048"
+    "tools/test_demo.py": "5543c1469a558981683b6782cb1ee545940754e4c2e72e21b21750f5f96da048",
+    "examples/gem-basic/basic.c": "3b030474850a73de291994041e1a93ec8937ef90419f023feeaa5f10a8acf8ce",
+    "examples/gem-basic/assist.h": "6bc45d90946d6c47b0997b45c0b75234260c681357348d5f39648b4ddb0af9a8",
+    "examples/gem-basic/document.c": "61b482f7814022ba3dd4bb97860202dc51bc0d508b2f1ccb30cf7065d7ed9af6",
+    "examples/gem-basic/build.h": "930f28c56a3723a4e20ecd07bae8570a2cde454a7be35adb3e29bde5bb952a9a",
+    "examples/gem-basic/files.c": "ebd3c9c889f2718870be867f82fa2640a15813557feed15463ebfa3ee5552222",
+    "examples/gem-basic/assist-ui.h": "ed3d9519106f22749717821d93c2c3b10c3b583078d387b9410086314726ec2b",
+    "examples/gem-basic/file-ui.c": "5a4e444edec9dd67562a2d5f151f26558dd06d200bd5c24c94f1c01e7e2fe51c",
+    "examples/gem-basic/basic.h": "711e3af6f644898a82139d503577ea8fa73eb40de9c7b8abaf2ebdbae3c73a8d",
+    "examples/gem-basic/build-job.h": "eac2726254e1cb3d8628d57c2fa44ed9f66ea6ab519ef66122a341cb89fd3fde",
+    "examples/gem-basic/main.c": "3b4747371db396da959505b0daa3906c3eed8eb18a4c3fa1ce0fb319efb9f982",
+    "examples/gem-basic/build.c": "74a7645f0eff64f5cb0a930c1bacd5b42c19646e36cffe56a91efa8750b83787",
+    "examples/gem-basic/document.h": "e264a4d133e06fc14d152e8b5aa3ab7d761af4d95f18f2324eb97447e87454a9",
+    "examples/gem-basic/assist.c": "430f2fc191cb3a0c72c82f8ea734aa36a77d4609d3b6987c3cfe64d0c5698ced",
+    "examples/gem-basic/files.h": "e41524b615180b493dd2145c0c489c5db7bbb60f84c7faa3a8d92eb0464bd23f",
+    "examples/gem-basic/file-ui.h": "bc6799f4308d45be421a8674d1d04eebe207fec70f38d60e92461a7bc7275ff0",
+    "examples/gem-basic/assist-ui.c": "1e896bb8050d69ae769ac0c8132292563cdba98895c4290af46984550b136f4e",
+    "tools/measure_fastbasic_components.py": "5fcfad6c0a3357e02d20332e5baad8cd3a158883377f673609901c346444da5d",
+    "tests/programs/basic_components.c": "0af4a501f894fd008026a86119d0adb8db46041fcd6829802e8fc50dcaa39117",
+    "tests/programs/basic_edges.c": "cb5e3a38fc98b0c820afc767cf2273f82cb9effa50df4830dfccabcde53df46b"
   },
   "development_checks": [
     {
@@ -181,6 +200,69 @@
       "status": "pass",
       "checks": null,
       "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re6-final-painter/results.json",
+      "sha256": "0af5e3beb1e832172961fa93067a009d41e8a2b4d7ced6f5b36536f960ccab41",
+      "checks": 100,
+      "status": "pass",
+      "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re6-final-motion/results.json",
+      "sha256": "440e671db231fa315cf716d1fd71c3e71e7be3f7d680bf39a1a6073c7a52d252",
+      "checks": 24,
+      "status": "pass",
+      "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re6-final-structure/results.json",
+      "sha256": "9c7586c66df9faad4561979f659878b4197a48c54f477fc109719b0c45a86f17",
+      "checks": 44,
+      "status": "pass",
+      "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re6-final-assist/results.json",
+      "sha256": "8d6ec283fa24a3c564b81f09d81486bae3c20e296c151ee5d673028803a71e61",
+      "checks": 512,
+      "status": "pass",
+      "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re6-edges/results.json",
+      "sha256": "7e84bdfb6d0bb0df3fc10175cfb28aaa9eb5be36d00809e36569669f6b63e316",
+      "checks": 24,
+      "status": "pass",
+      "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re6-document-final/results.json",
+      "sha256": "87051b4b05d0a5b004912f49e58569cf54039f817bf57c0c880480ae9525a2f3",
+      "checks": 130,
+      "status": "pass",
+      "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re6-files-mock/results.json",
+      "sha256": "04513e9240c71901dc1871b07843c7066203eb66f5558e34dba99a64dba93c4e",
+      "checks": 45346,
+      "status": "pass",
+      "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re6-final-components/results.json",
+      "sha256": "6b1b4d742e80cc41862358c150478c441f79b9acc73ed2d79355d5427beab9cb",
+      "checks": 102,
+      "status": "pass",
+      "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-current-files-sdfs/results.json",
+      "sha256": "679b95de1e7cdaa2fc920fe7c82a49f159063da3f25a9efe3eff3f4024c57f61",
+      "checks": 45245,
+      "status": "pass",
+      "scope": "focused emitted development"
     }
   ],
   "host_checks": {
@@ -240,13 +322,18 @@
     ],
     "editor_refresh_reserved": 5632,
     "editor_motion_reserved": 512,
-    "editor_motion_payload": 276,
-    "editor_motion_reserved_spare": 236,
-    "editor_app_span": 96765,
-    "editor_app_span_rounded": 96768,
-    "editor_app_bytes": 89123,
+    "editor_motion_payload": 374,
+    "editor_motion_reserved_spare": 138,
+    "editor_app_span": 133294,
+    "editor_app_span_rounded": 133296,
+    "editor_app_bytes": 92812,
     "provider_executable_bytes": 187604,
-    "provider_code_remaining_growth_allowance": 8192
+    "provider_code_remaining_growth_allowance": 8192,
+    "editor_refresh_payload": 5486,
+    "editor_refresh_reserved_spare": 146,
+    "editor_app_reserved_delta_from_baseline": 37040,
+    "editor_app_reserved_delta_from_re5": 36528,
+    "editor_app_note": "Extra code bank with a 34311-byte address-space hole; includes code, data, zero-fill, alignment and hole. No model/refresh reservation increase in RE6."
   },
   "performance": {
     "status": "pending matched candidate; no latency acceptance claimed",
@@ -431,5 +518,80 @@
     "status": "pass",
     "performance_acceptance": "open; one-sample pilot is not a distribution",
     "scope": "Frozen current-system pre-native replay; emitted native bytes verified, loaded APP, full independent pixels, copy counts, cleanup, heap/guards and OS restoration. Cold reader reached native in RE4 diagnostic-media pilot; final original-media cold boot remains RE8."
+  },
+  "re6_components": {
+    "before": {
+      "path": "build/fastbasic-responsive-editor/re6-components-matched-before/results.json",
+      "sha256": "b9eb5323cfc6ac98ef78ca36e80f0ad9bad9333994ba75c592b39c282e691297",
+      "milliseconds": {
+        "Color": {
+          "count": 20,
+          "median": 272.83183601431676,
+          "p95": 273.0938609685373,
+          "maximum": 273.0993587348935
+        },
+        "Far": {
+          "count": 20,
+          "median": 264.17355884513074,
+          "p95": 264.5216449880811,
+          "maximum": 264.58007637666185
+        },
+        "Tiny": {
+          "count": 20,
+          "median": 13.60711269998125,
+          "p95": 13.880168429006215,
+          "maximum": 13.973348520325525
+        },
+        "Move": {
+          "count": 40,
+          "median": 125.7120312273129,
+          "p95": 251.4165911311161,
+          "maximum": 251.55558594207045
+        },
+        "Index": {
+          "count": 40,
+          "median": 11.788162604193246,
+          "p95": 12.053500315064303,
+          "maximum": 12.102698275533953
+        }
+      }
+    },
+    "after": {
+      "path": "build/fastbasic-responsive-editor/re6-final-components/results.json",
+      "sha256": "6b1b4d742e80cc41862358c150478c441f79b9acc73ed2d79355d5427beab9cb",
+      "milliseconds": {
+        "Color": {
+          "count": 20,
+          "median": 260.21633005769837,
+          "p95": 260.2701094901315,
+          "maximum": 260.31507839955793
+        },
+        "Far": {
+          "count": 20,
+          "median": 256.4524041450339,
+          "p95": 256.6398215904333,
+          "maximum": 256.6545527849006
+        },
+        "Tiny": {
+          "count": 20,
+          "median": 2.938344664840656,
+          "p95": 3.3761219319996787,
+          "maximum": 3.4200335786652833
+        },
+        "Move": {
+          "count": 40,
+          "median": 126.49764794277812,
+          "p95": 253.67871053414325,
+          "maximum": 253.76498317542527
+        },
+        "Index": {
+          "count": 40,
+          "median": 1.708501379375482,
+          "p95": 2.1769040245059412,
+          "maximum": 2.18761762048214
+        }
+      }
+    },
+    "scope": "20 isolated native CPU samples per edit/composition case; excludes real desktop display/peer contention. Far gap remains open."
   }
 }

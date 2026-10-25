@@ -51,6 +51,9 @@ static ULONG record_bytes(const struct Edit *e)
 static void move_gap(struct BasicDocument *d,ULONG at)
 {
     ULONG n;
+    /* A full buffer has no physical gap to move. Its logical bytes already
+     * occupy their final addresses, including for an accepted deletion. */
+    if (d->gap==d->end) { d->gap=d->end=at;return; }
     while (d->gap!=at) {
         if (at<d->gap) {
             n=d->gap-at;if (n>1024) n=1024;
@@ -61,7 +64,7 @@ static void move_gap(struct BasicDocument *d,ULONG at)
             memmove(d->data+d->gap,d->data+d->end,n);
             d->gap+=n;d->end+=n;
         }
-        ExecYield();
+        if (d->gap!=at) ExecYield();
     }
 }
 
@@ -91,15 +94,18 @@ static WORD admit(const struct BasicDocument *d,ULONG at,ULONG old,
 
 static void apply(struct BasicDocument *d,ULONG at,ULONG old,const UBYTE *text,ULONG bytes)
 {
-    UWORD first=BasicLine(d,at),last=BasicLine(d,at+old),added=0,line;
-    ULONG i;
+    UWORD first=BasicLine(d,at),last=BasicLine(d,at+old),added=0,line,remaining;
+    ULONG i,*entry;LONG delta=(LONG)bytes-(LONG)old;
     for (i=0;i<bytes;++i) if (text[i]==10) ++added;
     move_gap(d,at);d->end+=old;
     if (bytes) memcpy(d->data+d->gap,text,bytes);
     d->gap+=bytes;d->bytes=d->bytes-old+bytes;
-    memmove(d->line+first+1+added,d->line+last+1,(ULONG)(d->lines-last)*sizeof(ULONG));
+    /* Maintain source-line offsets after the text mutation. */
+    if (added!=last-first)
+        memmove(d->line+first+1+added,d->line+last+1,(ULONG)(d->lines-last)*sizeof(ULONG));
     d->lines=d->lines-(last-first)+added;
-    for (line=first+1+added;line<=d->lines;++line) d->line[line]=d->line[line]-old+bytes;
+    entry=d->line+first+1+added;remaining=d->lines-first-added;
+    if (delta) while (remaining--) { *entry+=delta;++entry; }
     line=first;
     for (i=0;i<bytes;++i) if (text[i]==10) d->line[++line]=at+i+1;
 }

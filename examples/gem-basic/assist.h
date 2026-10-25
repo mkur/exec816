@@ -35,6 +35,9 @@ WORD BasicReplaceMatches(struct BasicDocument *,const UBYTE *,UWORD,const UBYTE 
 /* Caller owns BASIC_COLUMNS+1 scratch bytes through the edit. */
 WORD BasicIndent(struct BasicDocument *,ULONG,ULONG,ULONG *,UBYTE *);
 void BasicLexLine(const struct BasicDocument *,UWORD,UBYTE *);
+/* Counted source without LF. Input/output are identical or disjoint ranges. */
+/* Returns a common colour for a line without tabs, or zero otherwise. */
+UBYTE BasicLexBytes(const UBYTE *,UWORD,UBYTE *);
 void BasicAssistBegin(struct BasicAssist *,const struct BasicDocument *);
 WORD BasicAssistStep(struct BasicAssist *,const struct BasicDocument *);
 WORD BasicProcedureNamed(const struct BasicAssist *,const char *);

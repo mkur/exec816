@@ -19,5 +19,6 @@ UWORD BasicAssistanceTop(const struct BasicEditor *);
 UWORD BasicAssistanceCount(const struct BasicEditor *);
 void BasicAssistanceReveal(struct BasicEditor *,UWORD);
 void BasicAssistanceSelect(struct BasicEditor *,ULONG,ULONG);
-void BasicAssistanceColors(const struct BasicEditor *,UWORD,UBYTE *);
+/* Returns a common source colour only for a whole line without tabs. */
+UBYTE BasicAssistanceCompose(struct BasicEditor *,UWORD);
 #endif
