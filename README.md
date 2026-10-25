@@ -8,20 +8,22 @@ on those services.
 You can try Exec816 in the AltirraSDL emulator. The demo download and setup
 instructions are below.
 
-Version 0.2 boots through [OF816](https://github.com/mgcaret/of816) into a
+Version 0.2.1 boots through [OF816](https://github.com/mgcaret/of816) into a
 640×240 colour GEM desktop with folder windows and a windowed Shell. Control
 Panel, Calculator, Text and Counter launch on demand. The desktop includes
 menus, window switching and iconification, file copying and drag-and-drop.
 The Shell provides disk-loaded commands and two-command pipes. `SYS:` is
 writable on the combined system disk, `WORK:` names its WORK directory, and
 `RAM:` is temporary storage. MD5, ARC and EDX are included in SYS:C.
+The FastBasic workbench provides editing, Run, Stop, Check and standalone Build,
+with integer and floating-point interpreters that retain BASIC state between runs.
 
 ## Installation
 
 Download `exec816-demo.zip` from the
 [Releases page](https://github.com/mkur/exec816/releases) and extract it.
 Published previews can predate the current desktop; follow the README inside
-their archive. The instructions below describe the 0.2 GEM desktop build,
+their archive. The instructions below describe the 0.2.1 GEM desktop build,
 available through the [build guide](docs/contributing/building.md).
 Its `exec816-demo/` folder contains:
 
@@ -58,7 +60,7 @@ Select the CPU before setting high memory.
 | Computer → Firmware | Operating system | The included `altirraos-816.rom`; import it as described below |
 | Computer → Firmware | Enable internal BASIC (boot without Option pressed) | Unchecked |
 | Devices | VBXE | FX 1.26 at `$D600`, with 512 KiB private VRAM |
-| Input | Controller on port 1 | ST mouse |
+| Input | Controller on port 2 | ST mouse |
 | Computer → Acceleration | SIO Patch | Unchecked |
 | Computer → Acceleration | D: burst I/O | Unchecked |
 | Computer → Boot | Unload disks when booting new image | **Unchecked**, so booting the XEX keeps the system disk mounted |
@@ -100,9 +102,9 @@ version, source commit and compiler pin.
 
 `HELLO | WC` prints `1 3 17`: lines, words and bytes. Press **BREAK** to cancel
 a running command, or enter `EXIT` to stop the demo and restore the OS screen.
-SYS: is read-only and WORK: is writable. Try `ECHO saved >WORK:OUT.TXT` followed
+SYS: and WORK: are writable. Try `ECHO saved >WORK:OUT.TXT` followed
 by `CAT WORK:OUT.TXT`. Redirection creates or truncates its target when opened.
-Keep both disks mounted until shutdown; if startup fails, check D1, D8 and their
+Keep the system disk mounted until shutdown; if startup fails, check D1 and its
 SIO settings, then cold-boot again.
 
 See the [GEM desktop guide](docs/gem-desktop-distribution.txt) for desktop controls and the
@@ -157,7 +159,7 @@ emulator bridge and ROM described in [Build from source](docs/contributing/build
 Then run from the repository root:
 
 ```sh
-python3 tools/build_demo.py --gem-desktop --release-compiler --output build/demo
+python3 tools/build_demo.py --basic-workbench --qed --release-compiler --output build/demo
 ```
 
 This produces `build/demo/exec816-demo.zip`. Follow the [installation steps](#installation)

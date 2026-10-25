@@ -65,10 +65,11 @@ can be reproduced across different assembly times and checkout paths.
 
 ## Build the demo
 
-The 0.2 release package contains the GEM desktop, including the windowed Shell:
+The 0.2.1 release package contains the GEM desktop, windowed Shell, FastBasic
+workbench and separate optional QED disk:
 
 ```sh
-python3 tools/build_demo.py --gem-desktop --release-compiler --output build/demo
+python3 tools/build_demo.py --basic-workbench --qed --release-compiler --output build/demo
 ```
 
 The build always includes OF816 and produces `build/demo/exec816-demo.zip` with

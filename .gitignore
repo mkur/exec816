@@ -1,5 +1,6 @@
 .DS_Store
 /build/
+/exec816-demo/
 /target/
 __pycache__/
 *.py[cod]
