@@ -249,9 +249,11 @@ static void load_turn(struct BasicEditor *e)
     b.phase=COMPILER;status(e,"Compiling - Ctrl+K Stop");
 }
 
+static void transfer_step(struct BasicEditor *e);
+
 void BasicBuildStep(struct BasicEditor *e)
 {
-    LONG result,count,error;UWORD i,n;WORD selected;const char *name;
+    WORD selected;
     resident_poll();
     if (resident.child) {
         struct ExecProgramResult ended;
@@ -300,6 +302,28 @@ void BasicBuildStep(struct BasicEditor *e)
         if (*publication.temporary || *publication.backup) b.recovery=1;
         retire();return;
     }
+    /* A modal selector must not retain the transfer state machine's wider
+     * frame while entering GEM/DOS. Each image still has one owning Task. */
+    if (b.phase==CHOOSE) {
+        if (!*b.pattern) strcpy(b.pattern,"WORK:*.COM");
+        selected=0;
+        if (!fsel_exinput(b.pattern,b.leaf,&selected,"Build standalone command")) {
+            if (ExecAESDiagnostic()==AES_PENDING) return;
+            cause(ERROR_BAD_STREAM_NAME);retire();return;
+        }
+        if (selected!=FSEL_OK) { b.stop=1;retire();return; }
+        if (!FileSplit(b.pattern,b.project,b.mask) ||
+            !FileJoin(b.target,sizeof(b.target),b.project,b.leaf)) {
+            cause(ERROR_BAD_STREAM_NAME);retire();return;
+        }
+        b.phase=RESERVE;return;
+    }
+    transfer_step(e);
+}
+
+static void transfer_step(struct BasicEditor *e)
+{
+    LONG result,count,error;UWORD i,n;const char *name;
     switch (b.phase) {
     case WAIT_INTERPRETER:
         if (!resident.ready) break;
@@ -311,19 +335,6 @@ void BasicBuildStep(struct BasicEditor *e)
         b.snapshot=AllocMem(BASIC_BYTES,MEMF_UPPER);
         if (!b.snapshot) { cause(ERROR_NO_FREE_STORE);retire();break; }
         b.phase=SNAPSHOT;break;
-    case CHOOSE:
-        if (!*b.pattern) strcpy(b.pattern,"WORK:*.COM");
-        selected=0;
-        if (!fsel_exinput(b.pattern,b.leaf,&selected,"Build standalone command")) {
-            if (ExecAESDiagnostic()==AES_PENDING) return;
-            cause(ERROR_BAD_STREAM_NAME);retire();break;
-        }
-        if (selected!=FSEL_OK) { b.stop=1;retire();break; }
-        if (!FileSplit(b.pattern,b.project,b.mask) ||
-            !FileJoin(b.target,sizeof(b.target),b.project,b.leaf)) {
-            cause(ERROR_BAD_STREAM_NAME);retire();break;
-        }
-        b.phase=RESERVE;break;
     case RESERVE:
         if (!b.job) {
             if (b.serial==0xffffffffUL) { cause(ERROR_BAD_NUMBER);retire();break; }

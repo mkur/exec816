@@ -34,8 +34,8 @@ def prepare(out,provider,app_only=False,fixture=None,extra_media=None,minimum_st
  return p,app
 
 if __name__=='__main__':
- a=argparse.ArgumentParser(description=__doc__);a.add_argument('--output',type=Path,required=True);a.add_argument('--provider',type=Path,default=ROOT/'build/fastbasic-workbench/wb9-provider/c-image.json');a.add_argument('--from-build',action='store_true');a.add_argument('--build-only',action='store_true');a.add_argument('--app-only',action='store_true');args=a.parse_args();out=args.output.resolve()
+ a=argparse.ArgumentParser(description=__doc__);a.add_argument('--output',type=Path,required=True);a.add_argument('--provider',type=Path,default=ROOT/'build/fastbasic-workbench/wb9-provider/c-image.json');a.add_argument('--from-build',action='store_true');a.add_argument('--build-only',action='store_true');a.add_argument('--app-only',action='store_true');a.add_argument('--scenario',choices=('complete','release'),default='complete');args=a.parse_args();out=args.output.resolve()
  if not args.from_build:prepare(out,args.provider.resolve(),args.app_only)
  if not args.build_only:
-  from workbench_build_interaction import exercise
-  exercise(out)
+  from workbench_build_interaction import exercise,release_build
+  exercise(out,release_build if args.scenario=='release' else None)

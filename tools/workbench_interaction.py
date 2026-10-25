@@ -187,7 +187,7 @@ def exercise(out):
                         key('ESC',ctrl=True,shift=True);key('ASTERISK',ctrl=True)
                         key('EQUALS',ctrl=True);key('RETURN');frames(30)
                         picture('keyboard-menu-undo',b'hello\tworld\nsecond')
-                        key('Y',ctrl=True)
+                        key('Y',ctrl=True);settled()
                         saved=[number(base+FIELDS[n],4) for n in ('caret','anchor')]
                         peer=number(cb+14,4);menus.select('Counter');frames(30)
                         require(number(cb+14,4)>peer,'Covered editor stopped Counter')
@@ -204,6 +204,14 @@ def exercise(out):
                         move(x+w+8,y+h+5);edge(1);move(x+40,y+40);edge(0);frames(30)
                         require(number(base+FIELDS['work']+4)>=288 and number(base+FIELDS['work']+6)>=128,'Editor minimum work area')
                         picture('minimum-size',b'1234567890'*8)
+                        # Move against the top/left bounds, then stretch to the
+                        # opposite desktop corner through ordinary gadgets.
+                        x,y,w,h=[number(base+FIELDS['work']+i*2) for i in range(4)]
+                        move(x+100,y-6);edge(1);move(108,18);edge(0);frames(30)
+                        x,y,w,h=[number(base+FIELDS['work']+i*2) for i in range(4)]
+                        move(x+w+8,y+h+5);edge(1);move(638,238);edge(0);frames(30)
+                        picture('maximum-desktop-size',b'1234567890'*8)
+                        report['maximum_work_area']=[number(base+FIELDS['work']+i*2) for i in range(4)]
                     elif round==1:
                         start=b.eval_expr('@frame');type_text('again');picture('fresh-relaunch',b'again')
                         report['latencies'].append(dict(name='five-character edit to scanout',frames=b.eval_expr('@frame')-start))

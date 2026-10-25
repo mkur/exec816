@@ -13,7 +13,8 @@ def instrument(out):
 extern void DisplayNativeBegin(void);
 extern void DisplayDMAStart(void);
 extern void DisplayBorrowBegin(struct DisplayGrant *);
-extern void DisplayBorrowEnd(struct DisplayGrant *);''')
+extern void DisplayBorrowEnd(struct DisplayGrant *);
+extern void DisplayCopyStep(void);''')
     source = source.replace('    return DisplayOwnerEnter();', '''    UWORD status=DisplayOwnerEnter();
     if (status==DISPLAY_OK) DisplayNativeBegin();
     return status;''')
@@ -25,6 +26,15 @@ extern void DisplayBorrowEnd(struct DisplayGrant *);''')
     body = source[start:].replace('    if (!fault) {', '    DisplayBorrowBegin(grant);\n    if (!fault) {', 1)
     body = body.replace('    DisplayLeave(grant);', '    DisplayBorrowEnd(grant);\n    DisplayLeave(grant);')
     source = source[:start]+body
+    start=source.index('UWORD GemDrawingCopyBorrow(')
+    body=source[start:]
+    needle='        if (status!=DISPLAY_OK) return status;\n        pointer_erase('
+    require(body.count(needle)==2,'Copy admission hooks changed')
+    body=body.replace(needle,'        if (status!=DISPLAY_OK) return status;\n        DisplayBorrowBegin(grant);\n        pointer_erase(')
+    needle='            latch(VbxeOwnerCopyRect(&display,copy));'
+    require(body.count(needle)==1,'Copy completion hook changed')
+    body=body.replace(needle,needle+'\n            DisplayCopyStep();')
+    source=source[:start]+body
     target = out/'gem-vbxe.c'; target.write_text(source)
     return target
 
@@ -184,7 +194,7 @@ def trace_result(out, config):
     return result
 
 
-def faults(out):
+def faults(out,copy=False):
     import json
     from native_program import read_build, verify_machine
     from test_dos_stack import execute, ownership
@@ -193,21 +203,25 @@ def faults(out):
     from generate_mouse_acceleration import metadata
     p=read_build(out/'program'); p['build']['desktop_mouse']=metadata(None)
     foreign=json.loads((out/'c-image.json').read_text()); sy=foreign['symbols']
-    report=dict(status='running',tier='development',qualification=False,cases=[])
+    report=dict(status='running',tier='development',qualification=False,copy_after_mutation=copy,cases=[])
     try:
         for variant in (1,2):
             folder=out/f'borrow-fault-{variant}'
             with emulator(BRIDGE,ROM,folder,pin=PIN) as b:
                 machine=verify_machine(b,ROM,PIN)
                 get=lambda n:int.from_bytes(b.memdump(sy[n],2),'little')
+                def before(b):
+                    if copy: b.poke16(sy['DisplayCopyProbe'],1)
+                    physical(b,p,foreign,{},variant)
                 try:
-                    runtime,_=execute(b,p,before_run=lambda b:physical(b,p,foreign,{},variant),
+                    runtime,_=execute(b,p,before_run=before,
                                       expected_status=0 if variant==1 else 0xff93,timeout=120,frame_limit=8000)
                 except Exception:
                     report['failure_state']={n:get(n) for n in ('DisplayPhase','DisplayGo','DisplayActive','DisplayBorrows','AESChecks','AESFailures','AESFirstFailure','AESDone','ConsoleFaultMode','ConsoleStopCount')}
                     report['display_state']={d['name']:list(b.memdump(d['address'],d['size'])) for d in p['image']['data'] if '_DISPLAY_' in d['name']}
                     raise
                 require(get('ConsoleStopCount')==1,'Missing bounded STOP')
+                if copy: require(get('DisplayCopySteps')==1,'Missing completed copy before fault')
                 if variant==1:
                     ownership(b,p,p['output'])
                     require(get('AESFailures')==0 and get('AESDone')==2,'Quiescent borrower cleanup failed')
@@ -218,7 +232,7 @@ def faults(out):
         report['status']='pass'
     except Exception as error:
         report.update(status='fail',error=str(error));raise
-    finally:(out/'borrow-faults.json').write_text(json.dumps(report,indent=2)+'\n')
+    finally:(out/('copy-faults.json' if copy else 'borrow-faults.json')).write_text(json.dumps(report,indent=2)+'\n')
     return report
 
 
@@ -231,3 +245,4 @@ if __name__ == '__main__':
     args=parser.parse_args(); output=args.output.resolve()
     applications(output,'display',replay=args.replay)
     faults(output)
+    faults(output,copy=True)

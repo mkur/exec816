@@ -6,14 +6,14 @@
   "qualification": false,
   "source_baseline": "de7dfce9",
   "slices": {
-    "RE0": "frozen package; 281 physical samples and full-client pixels captured; matched candidate pending",
+    "RE0": "frozen package; 281 baseline and 281 candidate physical samples, with 20 per ordinary cohort; independent complete-client pixels",
     "RE1": "implemented; development checks pass",
     "RE2": "implemented; development checks pass",
     "RE3": "implemented; 91 painter/presentation and live AES checks pass",
-    "RE4": "implemented; 96 painter and 24 motion/failure checks pass; cold loaded physical checks in progress",
+    "RE4": "implemented; focused motion/failure and loaded four-direction independent pixel checks pass",
     "RE5": "implemented; 100 painter, 44 structural and 30 key checks pass; loaded physical pilot passes",
     "RE6": "implemented; focused emitted checks pass; component costs recorded; far-gap target OPEN",
-    "RE7": "pending",
+    "RE7": "implemented; 281 final physical samples, 29 serial/pointer stress samples, loaded interaction, retained interpreter and standalone Build, copy fault injections and development checks pass; missed timing gates OPEN",
     "RE8": "pending"
   },
   "source_manifest": {
@@ -47,8 +47,8 @@
     "tests/programs/vdi_copy_abi.c": "5d35530e3aded4e9a1f18d8bbe13a91f6cafe537693b6b1227d77219c4fb68b7",
     "tools/test_vdi_copy_abi.py": "e85ce3469505bb9b732ac4803bb8ead00155af53c756818a990c62361f2d0185",
     "examples/gem-basic/editor.h": "4f0d8ac5a599e6d0bd89da4fae34347c5400c78c53395ad17b550c11300d7948",
-    "tools/workbench_interaction.py": "28db4d4378ae409851cef828ff3e1127164ff8234600e489420a197e7eee5b24",
-    "tools/measure_fastbasic_responsive.py": "0159f1845f674ddf59a2bf417ef1e33c1617efafb9c9a06526fe468c9de089ae",
+    "tools/workbench_interaction.py": "a2fd7cd46352c49b74ac0382a3c36509afc1d0a24030e8bcc7d0e68109723dc8",
+    "tools/measure_fastbasic_responsive.py": "06b9c91349a3af4bb9f906a025664341344d0e169a4ebd513d540b0c7f775f8d",
     "tools/test_fastbasic_editor.py": "111cf52e03fd8402d6c33035d6cdc5911e2901a7ce416f602a5afe647d7479e8",
     "ports/gem4xe/apps/qed/native-selection.json": "e0d5074b7ab2ce470b5295fc09124f2705cd436e73bfe9d36dbe767e6cf97cd1",
     "tests/programs/basic_structure.c": "2f88f53613ea1ab40b926fc2270e38ff0381554486c57d172c7ad0495a86ab6d",
@@ -63,7 +63,7 @@
     "examples/gem-basic/basic.h": "711e3af6f644898a82139d503577ea8fa73eb40de9c7b8abaf2ebdbae3c73a8d",
     "examples/gem-basic/build-job.h": "eac2726254e1cb3d8628d57c2fa44ed9f66ea6ab519ef66122a341cb89fd3fde",
     "examples/gem-basic/main.c": "3b4747371db396da959505b0daa3906c3eed8eb18a4c3fa1ce0fb319efb9f982",
-    "examples/gem-basic/build.c": "74a7645f0eff64f5cb0a930c1bacd5b42c19646e36cffe56a91efa8750b83787",
+    "examples/gem-basic/build.c": "4af7991d518bec8c8a12841ed421e2b4f7b22e36aa9c1de4b867f81bc97ed41b",
     "examples/gem-basic/document.h": "e264a4d133e06fc14d152e8b5aa3ab7d761af4d95f18f2324eb97447e87454a9",
     "examples/gem-basic/assist.c": "430f2fc191cb3a0c72c82f8ea734aa36a77d4609d3b6987c3cfe64d0c5698ced",
     "examples/gem-basic/files.h": "e41524b615180b493dd2145c0c489c5db7bbb60f84c7faa3a8d92eb0464bd23f",
@@ -71,7 +71,12 @@
     "examples/gem-basic/assist-ui.c": "1e896bb8050d69ae769ac0c8132292563cdba98895c4290af46984550b136f4e",
     "tools/measure_fastbasic_components.py": "5fcfad6c0a3357e02d20332e5baad8cd3a158883377f673609901c346444da5d",
     "tests/programs/basic_components.c": "0af4a501f894fd008026a86119d0adb8db46041fcd6829802e8fc50dcaa39117",
-    "tests/programs/basic_edges.c": "cb5e3a38fc98b0c820afc767cf2273f82cb9effa50df4830dfccabcde53df46b"
+    "tests/programs/basic_edges.c": "cb5e3a38fc98b0c820afc767cf2273f82cb9effa50df4830dfccabcde53df46b",
+    "tests/programs/display_borrow.c": "ec37b4392590e4125f2c0bbb8dbe2b3f71cad16fef2753ea3f31869f65b1a585",
+    "tools/test_display_borrow.py": "ca37c3c2d475a946ab73c4ed25edcb2f487e58e7de04409d233f1d4c2c7f022c",
+    "tools/desktop_menu_check.py": "c4022fe77c4a6cc675543bb2f1086574764dcda75716ed9e3db668e4659412c6",
+    "tools/workbench_build_interaction.py": "57116e0bd674644a9867c883da200306020282096bc4b775b1d3b7583c9820e1",
+    "tools/test_fastbasic_build.py": "ebc848850f709fc8c156e115ce749df4923b6690da6b2602c9fcca041f389725"
   },
   "development_checks": [
     {
@@ -263,11 +268,107 @@
       "checks": 45245,
       "status": "pass",
       "scope": "focused emitted development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-final-physical/results.json",
+      "sha256": "4a5da3d64b17b508c81942bf317bb99eb7b5f142e87002bd18bc324cf65c9ab2",
+      "status": "pass",
+      "checks": null,
+      "scope": "optimized emitted/loaded development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-gui/results.json",
+      "sha256": "8beb5032a46a801188f54c9a3880fc44200828b85d3d3cb39e1a37220ce1bf61",
+      "status": "pass",
+      "checks": [
+        28
+      ],
+      "scope": "optimized emitted/loaded development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-files-gui/results.json",
+      "sha256": "97bed483088800dd4719070b372d5753b7a79c3306042a0cdb18f9311ab882e3",
+      "status": "pass",
+      "checks": [
+        43
+      ],
+      "scope": "optimized emitted/loaded development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-edx/results.json",
+      "sha256": "fd166c3e8f893c8d079a8ad7427181629b32f8697f2d7958fbcc4fdf7b7d2952",
+      "status": "pass",
+      "checks": null,
+      "scope": "optimized emitted/loaded development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-cache/results.json",
+      "sha256": "16375716b8907569f414c60f32729ee8796ca15844de102dfa1df57a174aa638",
+      "status": "pass",
+      "checks": 224,
+      "scope": "optimized emitted/loaded development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-display-final/results.json",
+      "sha256": "61de5fdd79690d25c27e7b83b31b5eb3eebcdd18d077958f7e3ad66a67e3b734",
+      "status": "pass",
+      "checks": 196,
+      "scope": "optimized emitted/loaded development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-display-final/borrow-faults.json",
+      "sha256": "d628b3a867f98168002d5a660a202346212cd7ee47d7cc099312957bc30bd0b5",
+      "status": "pass",
+      "checks": null,
+      "scope": "optimized emitted/loaded development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-display-final/copy-faults.json",
+      "sha256": "a0d52b3d20ffcbaabdf09fad78b8a8c150b64a595b21b1f38c120305c9cf7e51",
+      "status": "pass",
+      "checks": null,
+      "scope": "optimized emitted/loaded development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/demo/persistent-interpreter-results.json",
+      "sha256": "7a517a94d4b3dada0c2e3f6686098a091d324c31bf90b051c2712d5f02ca4190",
+      "status": "pass",
+      "checks": null,
+      "scope": "optimized emitted/loaded development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-final-coexistence/results.json",
+      "sha256": "271ff62f781bbf72fd705eb65a593e9abfe6d379468e186b72fcfcff8fa10576",
+      "status": "pass",
+      "scope": "optimized emitted/loaded development",
+      "checks": null
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-build/results.json",
+      "sha256": "a4cedaeb468be0f4d080dce2d908132817b9c774f012ffb9910ba7ddc38040ba",
+      "status": "pass",
+      "scope": "optimized emitted/loaded development",
+      "checks": [
+        67
+      ]
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-delivery-physical/results.json",
+      "sha256": "f8ef9e5866691f456e1ca8afafb64d47df6e0f91d1a03bea3fb6d79b8ce7a9df",
+      "status": "pass",
+      "scope": "optimized emitted/loaded development",
+      "checks": null
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re7-idle.json",
+      "sha256": "d795c9b5b5dd7c921c0e72f48dec4eac1eef9145bd33164d7923539b3d03436c",
+      "status": "pass",
+      "scope": "passive loaded idle observation"
     }
   ],
   "host_checks": {
-    "path": "build/fastbasic-responsive-editor/re4-host.log",
-    "sha256": "689daf012d85cf9d7a7a8ed139a7e878aa278bcdcf0a2ddfe5f35e9edb3858c1",
+    "path": "build/fastbasic-responsive-editor/re7-delivery-host.log",
+    "sha256": "9a0af309b4b8241540aa1e61a0aedd35c5e47aa82e2b75b18619af7cf56cea39",
     "status": "pass",
     "tests": 653
   },
@@ -324,22 +425,512 @@
     "editor_motion_reserved": 512,
     "editor_motion_payload": 374,
     "editor_motion_reserved_spare": 138,
-    "editor_app_span": 133294,
-    "editor_app_span_rounded": 133296,
-    "editor_app_bytes": 92812,
+    "editor_app_span": 133216,
+    "editor_app_span_rounded": 133216,
+    "editor_app_bytes": 92858,
     "provider_executable_bytes": 187604,
     "provider_code_remaining_growth_allowance": 8192,
     "editor_refresh_payload": 5486,
     "editor_refresh_reserved_spare": 146,
-    "editor_app_reserved_delta_from_baseline": 37040,
-    "editor_app_reserved_delta_from_re5": 36528,
+    "editor_app_reserved_delta_from_baseline": 36960,
+    "editor_app_reserved_delta_from_re5": 36448,
     "editor_app_note": "Extra code bank with a 34311-byte address-space hole; includes code, data, zero-fill, alignment and hole. No model/refresh reservation increase in RE6."
   },
   "performance": {
-    "status": "pending matched candidate; no latency acceptance claimed",
-    "baseline": "docs/development/fastbasic-responsive-editor-baseline.json"
+    "status": "OPEN; functional pixel checks pass, missed frozen latency gates remain",
+    "baseline": "docs/development/fastbasic-responsive-editor-baseline.json",
+    "candidate": {
+      "path": "build/fastbasic-responsive-editor/re7-delivery-physical/results.json",
+      "sha256": "f8ef9e5866691f456e1ca8afafb64d47df6e0f91d1a03bea3fb6d79b8ce7a9df",
+      "app_sha256": "057b82bc2f8df83474b38588ac91459a88ac446c9b52237e49978ab480600796",
+      "native_sha256": "c58c808869e17c3a5cb3016d1ede63d912b3ca4cdd58f533a01d3bb9b6bf2767",
+      "zip_sha256": "7ab584c1aab160717f2ef59ce50d8a7ccb12001a033515433c6097274151c01b"
+    },
+    "cohorts": {
+      "append": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 110.71377218665904,
+            "p95": 111.31383928760225,
+            "maximum": 130.81801124645642
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 100.2792583372217,
+            "p95": 100.28038608416658,
+            "maximum": 120.33511000466605
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 102.77732354636943,
+            "p95": 102.79568467631549,
+            "maximum": 122.43892193030806
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 100.2792583372217,
+            "p95": 100.2792583372217,
+            "maximum": 120.33511000466605
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      },
+      "backspace": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 110.72938443342699,
+            "p95": 110.76335781014099,
+            "maximum": 110.7644150729018
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 100.2792583372217,
+            "p95": 100.2792583372217,
+            "maximum": 100.2792583372217
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 102.77672443080498,
+            "p95": 103.2737084125693,
+            "maximum": 103.2737084125693
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 100.2792583372217,
+            "p95": 100.27982221069414,
+            "maximum": 100.27982221069414
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      },
+      "caret_left": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 90.71370875089339,
+            "p95": 91.19680734839909,
+            "maximum": 91.19680734839909
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 80.22340666977738,
+            "p95": 80.22340666977738,
+            "maximum": 80.22453441672224
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 77.48657628714693,
+            "p95": 78.52790962235984,
+            "maximum": 78.52790962235984
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 80.22340666977738,
+            "p95": 80.22340666977738,
+            "maximum": 80.22340666977738
+          }
+        },
+        "gate_ms": 100,
+        "status": "pass"
+      },
+      "caret_right": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 90.68114505786046,
+            "p95": 91.19582056982233,
+            "maximum": 91.24734450836577
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 80.22340666977738,
+            "p95": 80.22340666977738,
+            "maximum": 80.22340666977738
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 77.12449903366183,
+            "p95": 79.9019987904914,
+            "maximum": 79.9019987904914
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 80.22340666977738,
+            "p95": 80.22340666977738,
+            "maximum": 80.22340666977738
+          }
+        },
+        "gate_ms": 100,
+        "status": "pass"
+      },
+      "delete": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 110.72103205761658,
+            "p95": 110.76307587340477,
+            "maximum": 110.76335781014099
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 100.2792583372217,
+            "p95": 100.2792583372217,
+            "maximum": 100.2792583372217
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 102.79448644518656,
+            "p95": 102.79448644518656,
+            "maximum": 102.79448644518656
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 100.2792583372217,
+            "p95": 100.2792583372217,
+            "maximum": 100.2792583372217
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      },
+      "far_gap": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 1,
+            "median": 411.57441931604967,
+            "p95": 411.57441931604967,
+            "maximum": 411.57441931604967
+          },
+          "scanout_ms": {
+            "count": 1,
+            "median": 401.1170333488868,
+            "p95": 401.1170333488868,
+            "maximum": 401.1170333488868
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 1,
+            "median": 415.4715603365761,
+            "p95": 415.4715603365761,
+            "maximum": 415.4715603365761
+          },
+          "scanout_ms": {
+            "count": 1,
+            "median": 401.1170333488868,
+            "p95": 401.1170333488868,
+            "maximum": 401.1170333488868
+          }
+        },
+        "gate_ms": 200,
+        "status": "open"
+      },
+      "insert": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 110.73171041150076,
+            "p95": 110.7644150729018,
+            "maximum": 110.7644150729018
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 100.2792583372217,
+            "p95": 100.27982221069414,
+            "maximum": 100.28038608416658
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 101.66427255388163,
+            "p95": 102.77721782009336,
+            "maximum": 102.77764072519767
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 100.2792583372217,
+            "p95": 100.2792583372217,
+            "maximum": 100.2792583372217
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      },
+      "middle_join": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 361.8298892411532,
+            "p95": 362.6391534003685,
+            "maximum": 362.6563515412777
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 320.8936266791095,
+            "p95": 320.8941905525819,
+            "maximum": 320.89475442605436
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 222.27095811970753,
+            "p95": 226.45482880096534,
+            "maximum": 226.45482880096534
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 1484.1330233908814,
+            "p95": 1484.1335872643538,
+            "maximum": 1504.1888750583257
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      },
+      "middle_newline": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 300.4196980739492,
+            "p95": 339.5987899275282,
+            "maximum": 339.62106292968923
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 280.7819233442208,
+            "p95": 300.83777501166514,
+            "maximum": 300.83890275861
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 202.10349474681377,
+            "p95": 205.1219446868317,
+            "maximum": 205.82107730846275
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 1464.077171723437,
+            "p95": 1464.0777355969094,
+            "maximum": 1484.1330233908814
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      },
+      "scroll_down": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 312.24303228598535,
+            "p95": 312.30999226083657,
+            "maximum": 321.9766866512823
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 300.83777501166514,
+            "p95": 300.83777501166514,
+            "maximum": 300.83777501166514
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 202.31300898391407,
+            "p95": 207.1907259729989,
+            "maximum": 208.1994956151789
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 1604.4681333955473,
+            "p95": 1624.5239850629916,
+            "maximum": 1644.579836730436
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      },
+      "scroll_left": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 281.1412869566198,
+            "p95": 282.20739548252766,
+            "maximum": 282.46698873239836
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 782.1782150303294,
+            "p95": 782.1782150303294,
+            "maximum": 782.1793427772742
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 128.1797177531334,
+            "p95": 135.06799609235685,
+            "maximum": 135.25865581022273
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 1564.3564300606588,
+            "p95": 1584.412281728103,
+            "maximum": 1604.4681333955473
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      },
+      "scroll_right": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 260.38869912980226,
+            "p95": 261.9225407010921,
+            "maximum": 262.43185941506584
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 762.122363362885,
+            "p95": 782.1782150303294,
+            "maximum": 782.1782150303294
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 125.6175471785886,
+            "p95": 130.24053432650248,
+            "maximum": 130.85240752827474
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 1544.3005783932144,
+            "p95": 1604.4681333955473,
+            "maximum": 1604.4681333955473
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      },
+      "scroll_up": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 332.33028465742575,
+            "p95": 372.6179517578051,
+            "maximum": 373.19500577265467
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 300.83777501166514,
+            "p95": 340.9494783465538,
+            "maximum": 361.00533001399816
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 235.51803760754126,
+            "p95": 238.0773183305398,
+            "maximum": 238.13398761451919
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 1644.579836730436,
+            "p95": 1644.5804006039084,
+            "maximum": 1684.6915400653247
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      },
+      "top_join": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 372.4180586118281,
+            "p95": 372.46789092995425,
+            "maximum": 372.89558895879355
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 340.9494783465538,
+            "p95": 340.9494783465538,
+            "maximum": 340.9494783465538
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 212.02699826186,
+            "p95": 213.27640090840018,
+            "maximum": 213.29437437533392
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 1624.5239850629916,
+            "p95": 1624.5239850629916,
+            "maximum": 1644.579836730436
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      },
+      "top_newline": {
+        "candidate": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 292.2100879783585,
+            "p95": 348.11038950969794,
+            "maximum": 348.6445186564587
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 260.7260716767764,
+            "p95": 320.8941905525819,
+            "maximum": 320.89475442605436
+          }
+        },
+        "baseline": {
+          "input_ready_ms": {
+            "count": 20,
+            "median": 192.1708282878405,
+            "p95": 192.86030457625614,
+            "maximum": 194.04246531120882
+          },
+          "scanout_ms": {
+            "count": 20,
+            "median": 1604.4681333955473,
+            "p95": 1604.46869726902,
+            "maximum": 1604.46869726902
+          }
+        },
+        "gate_ms": 100,
+        "status": "open"
+      }
+    },
+    "far_gap_note": "One loaded physical sample is attribution only; isolated component test has 20 accepted far edits, p95 256.640 ms. Neither closes the physical 200 ms gate."
   },
-  "graphics_scope": "22 emitted full-scene independent pixel checks, all four directions, diagonal/odd/tiny/overlap, pointer in source and moved away; cleanup and guards pass. Operational admission/error probes raw+opt; 4608 host pixel/failure cases. Full reset-required copy injection remains for RE7.",
+  "graphics_scope": "22 emitted full-scene independent pixel checks, all four directions, diagonal/odd/tiny/overlap, pointer in source and moved away; cleanup and guards pass. Operational admission/error probes raw+opt; 4608 host pixel/failure cases. RE7 copy-after-mutation quiescent and reset-required injections pass, including retained unsafe ownership.",
   "graphics_stack": {
     "0": {
       "base": 9744,
@@ -593,5 +1184,193 @@
       }
     },
     "scope": "20 isolated native CPU samples per edit/composition case; excludes real desktop display/peer contention. Far gap remains open."
+  },
+  "physical_stack": [
+    {
+      "slot": 0,
+      "reserved_bytes": 1536,
+      "touched_bytes": 610,
+      "untouched_above_floor": 670
+    },
+    {
+      "slot": 1,
+      "reserved_bytes": 1312,
+      "touched_bytes": 315,
+      "untouched_above_floor": 741
+    },
+    {
+      "slot": 2,
+      "reserved_bytes": 1312,
+      "touched_bytes": 149,
+      "untouched_above_floor": 907
+    },
+    {
+      "slot": 3,
+      "reserved_bytes": 1312,
+      "touched_bytes": 661,
+      "untouched_above_floor": 395
+    },
+    {
+      "slot": 4,
+      "reserved_bytes": 1312,
+      "touched_bytes": 977,
+      "untouched_above_floor": 79
+    },
+    {
+      "slot": 5,
+      "reserved_bytes": 1312,
+      "touched_bytes": 18,
+      "untouched_above_floor": 1038
+    },
+    {
+      "slot": 6,
+      "reserved_bytes": 2560,
+      "touched_bytes": 868,
+      "untouched_above_floor": 1436
+    },
+    {
+      "slot": 7,
+      "reserved_bytes": 2560,
+      "touched_bytes": 786,
+      "untouched_above_floor": 1518
+    },
+    {
+      "slot": 8,
+      "reserved_bytes": 1312,
+      "touched_bytes": 18,
+      "untouched_above_floor": 1038
+    },
+    {
+      "slot": 9,
+      "reserved_bytes": 1312,
+      "touched_bytes": 18,
+      "untouched_above_floor": 1038
+    },
+    {
+      "slot": 10,
+      "reserved_bytes": 1312,
+      "touched_bytes": 18,
+      "untouched_above_floor": 1038
+    },
+    {
+      "slot": 11,
+      "reserved_bytes": 2560,
+      "touched_bytes": 18,
+      "untouched_above_floor": 2286
+    },
+    {
+      "slot": 12,
+      "reserved_bytes": 512,
+      "touched_bytes": 68,
+      "untouched_above_floor": 188
+    }
+  ],
+  "physical_kernel_stack": {
+    "reserved_bytes": 1536,
+    "touched_bytes": 299,
+    "untouched_from_base": 1237,
+    "interrupt_reserve_bytes_touched": 0
+  },
+  "interaction_geometry": {
+    "minimum_client": [
+      288,
+      128
+    ],
+    "maximum_client": [
+      8,
+      24,
+      616,
+      205
+    ],
+    "maximum_document": {
+      "name": "32767-byte document, one-byte gap moved 32766 bytes, delete to scanout",
+      "frames": 31,
+      "milliseconds": 620,
+      "budget_frames": 120,
+      "peer_progress": 65
+    },
+    "independent_pixel_cases": 12
+  },
+  "build_stack": {
+    "0": {
+      "base": 9744,
+      "bytes": 1536,
+      "peak": 476,
+      "remaining_above_floor": 804
+    },
+    "1": {
+      "base": 12880,
+      "bytes": 1312,
+      "peak": 154,
+      "remaining_above_floor": 902
+    },
+    "2": {
+      "base": 14224,
+      "bytes": 1312,
+      "peak": 319,
+      "remaining_above_floor": 737
+    },
+    "3": {
+      "base": 15568,
+      "bytes": 1312,
+      "peak": 164,
+      "remaining_above_floor": 892
+    },
+    "4": {
+      "base": 16912,
+      "bytes": 1312,
+      "peak": 1020,
+      "remaining_above_floor": 36
+    },
+    "5": {
+      "base": 18256,
+      "bytes": 1312,
+      "peak": 462,
+      "remaining_above_floor": 594
+    },
+    "6": {
+      "base": 19600,
+      "bytes": 2560,
+      "peak": 868,
+      "remaining_above_floor": 1436
+    },
+    "7": {
+      "base": 22192,
+      "bytes": 2560,
+      "peak": 18,
+      "remaining_above_floor": 2286
+    },
+    "8": {
+      "base": 24784,
+      "bytes": 512,
+      "peak": 24,
+      "remaining_above_floor": 232
+    },
+    "kernel": {
+      "base": 11312,
+      "bytes": 1536,
+      "peak": 287,
+      "remaining_above_floor": 993
+    }
+  },
+  "coexistence": {
+    "path": "build/fastbasic-responsive-editor/re7-final-coexistence/results.json",
+    "sha256": "271ff62f781bbf72fd705eb65a593e9abfe6d379468e186b72fcfcff8fa10576",
+    "serial_bytes_during_input": 22335,
+    "receive_service_max_ms": 0.10544433934469444,
+    "pointer_capture_max_gap_ms": 0.5135477650170078,
+    "pointer_delivery_ms": {
+      "count": 29,
+      "median": 100.2792583372217,
+      "p95": 140.3909616721104,
+      "maximum": 140.3909616721104
+    },
+    "scope": "Separate stress cohort; concurrent 128 KiB serial read, native CAT completion and independent read-only verification of every RAM output byte, pointer moves offered during every repair",
+    "serial_copy": {
+      "node": 364792,
+      "data": 3076896,
+      "bytes": 131072,
+      "sha256": "2e6a4c5b7154ce3ac8705090aa774e29518f970764489a401792caf400283fc7"
+    }
   }
 }

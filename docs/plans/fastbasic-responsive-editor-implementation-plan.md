@@ -1,8 +1,8 @@
 # FastBasic responsive editor implementation plan
 
 Status: implementation in progress, 25 October 2026. RE0 has a frozen physical
-baseline. RE1–RE6 pass focused development checks, including a loaded physical pilot.
-RE7–RE8 remain. Performance acceptance is separate and open. See the
+baseline. RE1–RE7 pass focused development checks and final matched physical observations.
+RE8 delivery checks remain. Performance acceptance is separate and open. See the
 [development record](../history/fastbasic-responsive-editor.md).
 
 [Plan index](README.md) · [Workbench contract](../reference/fastbasic-workbench.md) ·

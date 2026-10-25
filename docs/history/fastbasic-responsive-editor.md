@@ -223,3 +223,85 @@ size is 92,812 bytes. Bank-zero reservation deltas remain zero for fixed,
 root/kernel, each of twelve public Tasks and idle, including guards, alignment
 and unused capacity. The final loaded run touches 997 of BASIC's 1,312 stack
 bytes, leaving 59 above its 256-byte observation floor; guards remain intact.
+
+## RE7 Loaded interaction and remaining timing gates
+
+The frozen baseline and final candidate each have 281 physical samples: twenty
+per ordinary cohort and one separate far-gap sample. Both use the same pinned
+ROM, 19-row/56-column viewport, document, three-frame key hold and per-frame
+whole-client independent pixel comparison. The final APP hash is
+`057b82bc2f8df83474b38588ac91459a88ac446c9b52237e49978ab480600796`.
+All target pixels match. The candidate's p95 results are:
+
+| Operation | Input ready (ms) | Complete scanout (ms) | Frozen gate |
+| --- | ---: | ---: | --- |
+| Append / Backspace / insertion / deletion | 110.8–111.3 | 100.28 | OPEN, 100 ms |
+| Horizontal caret movement | 91.2 | 80.22 | Pass, 100 ms |
+| Top Return / join | 348.1 / 372.5 | 320.9 / 340.9 | OPEN, 100 ms |
+| Middle Return / join | 339.6 / 362.6 | 300.8 / 320.9 | OPEN, 100 ms |
+| Content up / down | 372.6 / 312.3 | 340.9 / 300.8 | OPEN, 100 ms |
+| Content left / right | 282.2 / 261.9 | 782.2 / 782.2 | OPEN, 100 ms |
+
+Top Return/join scanout improves from baseline p95 1,604/1,625 ms; baseline
+four-direction scrolling is 1,584–1,645 ms. Five PAL frames are still 100.28 ms
+and fail the 100 ms target. The physical far-gap sample remains 411.6 ms ready /
+401.1 ms scanout; one sample is not a p95 distribution. The separate twenty-edit
+component attribution also misses 200 ms. No threshold, key hold, budget, Task
+priority or ordinary measurement geometry was relaxed. Functional delivery and
+performance acceptance remain separate; vertical caret-only latency is not
+independently distributed by this observer.
+
+Loaded pixels pass for selection replacement, Undo/Redo, menu actions, focus and
+coverage/exposure, long panning, partial-row resize, minimum 288×128 client and
+maximum desktop client 616×205 at (8,24). The maximum-document accepted deletion
+completes in 31 PAL frames while the native peer advances 65 times, preserving
+the existing 120-frame bound. New input and reversal during partial repair,
+odd positions, stale/hidden pixels and drawing failures have their focused emitted
+independent-pixel probes. Passive CPU traces show no repeated BASIC dispatch
+in twenty settled idle frames, independently of diagnostic paint counters.
+
+The loaded file/assistance cohort passes 23 cases. AES cache/snapshot ownership,
+EDX physical typing and both cursor directions pass. The two-sample EDX smoke
+check is functional evidence, not a new latency distribution. The actual packaged
+persistent-interpreter test passes integer/float state, arrays, parse failure,
+Stop, Restart within the same Process, mode replacement, output-close cancellation,
+Check beside parked BASIC and canceled Quit.
+
+The renderer-borrower regression and both original fault cases pass. New copy
+injections complete a real packed-edge screen strip before forcing BUSY. Both
+quiescent and reset-required cases pass: STOP occurs once, quiescent grants retire,
+and unsafe ownership remains retained through reset-required recovery. No fixture
+hook enters production. These are development checks, not platform qualification.
+
+Check/Build exposed a stack-budget regression before delivery: the modal Build
+selector retained the transfer state machine's 86-byte local frame, touching
+30 bytes of the 256-byte interrupt observation floor. Separating modal admission
+from transfer work reduces that live frame to fourteen bytes. The same two-run
+fixture now passes all 67 native assertions, executes the standalone commands
+after editor exit, and reclaims equal heaps. Its peak is 1,020 of 1,312 bytes,
+leaving 36 above the floor. Stack pools, guards and bank-zero reservations do
+not grow. The final APP span is 133,216 bytes (rounded allocation 133,216),
+36,960 more than baseline, including the unchanged 34,311-byte placement hole.
+File size is 92,858 bytes; model and refresh reservations remain unchanged.
+
+The selected release cohort explicitly exercises Save As twice, Check, Build,
+quit, execution without the IDE and cleanup across two application loads.
+Persistent Run has its separate current-system regression; the earlier broad
+compiler-era relative-directory transcript expectation is not used to claim
+interpreter-session qualification. Physical selector helpers now wait for
+directory-scan completion and focus changes before typing into the next field.
+
+The final serial/pointer stress cohort uses the delivered APP and a concurrent
+128 KiB native CAT read while offering physical pointer motion during every
+repair. All 29 key targets match independent whole-client pixels; every RAM output
+byte matches the host fixture after CAT retires. During input/repair, 22,335 real
+SIO receive bytes are serviced without overwrite or a missed byte deadline;
+maximum service delay is 0.1055 ms. Maximum pointer capture gap is 0.5136 ms,
+below its existing 1 ms envelope. GUI pointer delivery p95 is 140.4 ms; that
+separate value is not presented as a new latency pass. Pointer observation
+continues through delivery even when target text pixels complete sooner.
+
+All 653 host tests and affected generated definitions pass. The final package
+also passes two-shell/pipeline coexistence, unsaved floating-point Run, Stop,
+finite Run, editor quit and resource retirement. This is selected development
+validation; no full hosted-system qualification is claimed.

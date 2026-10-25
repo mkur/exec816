@@ -33,6 +33,39 @@ def fixture_source():
     return b'\n'.join(lines)[:32767]
 
 
+def verify_ram_copy(bridge,output):
+    """Read-only observation of the retired native CAT's complete RAM file.
+
+    Private Action! layouts are checked by test_ram_filesystem: Entry=42 and
+    Node=52, with name at 18, data at 45 and capacity at 48. Locate the unique
+    live file record without introducing guest helper calls or SDX path rules.
+    The independent comparison covers every byte, across bank boundaries.
+    """
+    wanted=(b'ABCDEFGHIJKLMNOPQRSTUVWXYZ'*5042)[:131072];found=[]
+    # The pinned bridge's far debugger reads issue one RPC per word. A paused
+    # save-state provides the same RAM in bulk without executing guest helpers.
+    # Keep the potentially large passive history out of the RPC response.
+    path=output/'serial-copy.altstate2';timeout=bridge._sock.gettimeout()
+    bridge._sock.settimeout(30)
+    try:bridge.state_save(str(path))
+    finally:bridge._sock.settimeout(timeout)
+    with zipfile.ZipFile(path) as state:
+        raw=state.read('high-memory.bin')
+    require(len(raw)==63*65536,'Unexpected linear RAM snapshot extent')
+    offset=0
+    while (offset:=raw.find(b'SCROLL  BIN',offset))>=0:
+        node=offset-18;entry=raw[node:node+52];offset+=1
+        length=int.from_bytes(entry[8:12],'little');data=int.from_bytes(entry[45:48],'little')
+        capacity=int.from_bytes(entry[48:52],'little')
+        if length!=len(wanted) or entry[13]!=1 or not 65536<=data<0x400000 or capacity<len(wanted):continue
+        actual=raw[data-65536:data-65536+length]
+        if actual==wanted:
+            require(actual[:16]==bridge.memdump(data,16) and actual[-16:]==bridge.memdump(data+length-16,16),'Snapshot address mapping differs')
+            found.append(dict(node=node+65536,data=data,bytes=length,sha256=hashlib.sha256(actual).hexdigest()))
+    require(len(found)==1,'Native CAT RAM file bytes differ or its live node is ambiguous')
+    return found[0]
+
+
 KEYWORDS=set(b'AND BYTE DATA DIM DO ELSE ELSEIF END ENDIF ENDPROC EXEC EXIT FOR IF INPUT INT NEXT NOT OR PAUSE PEEK POKE PRINT PROC PUT RAND REPEAT RETURN STEP THEN TIME TO UNTIL VAL WEND WHILE XOR'.split())
 
 
@@ -58,8 +91,9 @@ def lexical(line):
 class ResponsiveMeasurement:
     interrupt_marker='native_nmi'
 
-    def __init__(self,bundle,output,count):
+    def __init__(self,bundle,output,count,stress=False):
         self.bundle,self.output,self.count=bundle,output,count
+        self.stress=stress
         self.record=dict(samples=[],key_hold_frames=3,
             scope='Physical input to independently matching complete client pixels; frame observations are upper bounds')
 
@@ -187,8 +221,15 @@ class ResponsiveMeasurement:
             if ctrl:b._cmd_ok('KEY CTRL down')
             if shift:b._cmd_ok('KEY SHIFT down')
             started=clock();b._cmd_ok('KEY '+name+' down')
+            pointer_start=pointer_end=None;pointer_target=None
             for poll in range(240):
+                if self.stress and poll==0:
+                    current=[n(address(k),2) for k in ('cursorX','cursorY')]
+                    pointer_target=schedule(b,s.p,current,(632 if current[0]==630 else 630,230))
+                    s.saved['pointer']=pointer_target;pointer_start=clock()
                 frames(1);now=clock()
+                if pointer_target and pointer_end is None and tuple(n(address(k),2) for k in ('cursorX','cursorY'))==tuple(pointer_target):
+                    pointer_end=now
                 if poll==2:
                     b._cmd_ok('KEY '+name+' up')
                     if shift:b._cmd_ok('KEY SHIFT up')
@@ -201,7 +242,7 @@ class ResponsiveMeasurement:
                     if readiness is None and ready():readiness=now
                     actual=capture()
                     if visible is None and actual==wanted:visible=now
-                if poll>=2 and visible is not None:break
+                if poll>=2 and visible is not None and (not self.stress or pointer_end is not None):break
             else:
                 (self.output/'expected.bgr').write_bytes(wanted or b'')
                 (self.output/'actual.bgr').write_bytes(capture())
@@ -221,6 +262,9 @@ class ResponsiveMeasurement:
                 require(sample[field+'_after']-sample[field+'_before']==sign,'Scroll did not move one cell: '+str(sample))
             settled()
             sample['dispatch_observation_end_clock']=clock()
+            if self.stress:
+                require(pointer_end is not None,'Pointer did not progress during editor repair')
+                sample['pointer_delivery_ms']=((pointer_end-pointer_start)&0xffffffff)*1000/BASE_HZ
             sample['gap_distance_before']=abs(attribution['gap']-previous_caret)
             sample['glyphs']=n(base+1664+5065,4)-attribution['glyphs']
             sample['status_glyphs']=n(base+1664+5069,4)-attribution['status']
@@ -234,6 +278,11 @@ class ResponsiveMeasurement:
                 (self.output/'samples.json').write_text(json.dumps(self.record,indent=2)+'\n')
                 print(operation,index,round(sample['scanout_ms'],2),'ms scanout',flush=True)
         load()
+        if self.stress:
+            # BASIC occupies this shell's one background-job slot. A foreground
+            # native CAT can read concurrently while the editor owns GUI focus.
+            menus.select('Shell');serial_job=s.begin('CAT <WORK:IO.BIN >RAM:SCROLL.BIN')
+            menus.select('FastBasic');settled();move(630,230)
         key('far_gap',0,'Q',edit='insert')
         key('warm',0,'BACKSPACE',edit='backspace',measure=False)
         for index in range(self.count):
@@ -265,7 +314,11 @@ class ResponsiveMeasurement:
         require(n(base+FIELDS['paintTurns'],4)==before,'Idle editor repainted')
         physical('Q',ctrl=True);f=active_form();click(*xy(n(f,4),8))
         reach('db($%x)=%d'%(s.p['build']['task_storage']['LIVE'],live))
+        if self.stress:s.ready(serial_job);s.result()
         menus.select('Shell');s.command('MEM');frames(20);require(s.ledger()==owners,'Editor leaked resources')
+        if self.stress:
+            self.record['serial_copy']=verify_ram_copy(b,self.output)
+            self.record['serial_copy_verified']=True
         s.saved['integration']=self.record
         for char in 'EXIT':s.press(char)
         b._cmd_ok('KEY RETURN down');b.bp_clear_all()
@@ -290,7 +343,7 @@ def readiness(record,events,wait):
     return record
 
 
-def measure(bundle,output,count=20,snapshot=None,observer_pin=None):
+def measure(bundle,output,count=20,snapshot=None,observer_pin=None,stress=False):
     output.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(bundle/'exec816-demo.zip') as archive:archive.extractall(output/'extracted')
     manifest=json.loads((bundle/'demo-manifest.json').read_text())
@@ -299,6 +352,7 @@ def measure(bundle,output,count=20,snapshot=None,observer_pin=None):
     for name,data in original.files.items():
         path=source/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
     (source/'WORK/AAA.BAS').write_bytes(fixture_source())
+    if stress:(source/'WORK/IO.BIN').write_bytes((b'ABCDEFGHIJKLMNOPQRSTUVWXYZ'*5042)[:131072])
     media=output/'measurement.atr'
     if snapshot:
         make(media,source,binary_names={p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file()},
@@ -309,14 +363,43 @@ def measure(bundle,output,count=20,snapshot=None,observer_pin=None):
         from build_bootable_atr import build as boot_disk
         monitor=json.loads((bundle/'of816/of816.json').read_text())
         boot_disk(media,source,source/'EXEC816.XEX',output/'boot-media',monitor,boot_sio=manifest.get('boot_sio','auto'))
-    observer=ResponsiveMeasurement(bundle,output,count)
+    observer=ResponsiveMeasurement(bundle,output,count,stress)
     bootstrap=DiskBoot(bundle,native_snapshot=snapshot) if snapshot else None
     wait=json.loads((bundle/'bitmap-console/c-image.json').read_text())['symbols']['ExecAESWait']
-    with patch.dict(os.environ,EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=f'{wait:x}',EXEC816_EDITOR_HISTORY='1'):
+    from native_program import read_build
+    program=read_build(bundle)
+    points=[wait]+([program['labels']['timer_sample']] if stress else [])
+    with patch.dict(os.environ,EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{v:x}' for v in points),EXEC816_EDITOR_HISTORY='1'):
         result=run(bundle,boot_smoke=True,distribution_root=output/'extracted/exec816-demo',
             integration=observer,profile_commands=False,bootstrap=bootstrap,media_path=media,
             diagnostic_media_sha256=sha256(media),emulator_output=output,emulator_override=observer_pin)
     readiness(observer.record,read_events(output/'emulator.log',kinds={'cpu'}),wait)
+    if stress:
+        from bisect import bisect_left,bisect_right
+        events=read_events(output/'emulator.log');samples=observer.record['samples']
+        intervals=[(v['started_clock'],v['dispatch_observation_end_clock']) for v in samples]
+        def during(t):return any(((t-a)%(1<<32))<=((z-a)%(1<<32)) for a,z in intervals)
+        receives=[(t,e) for t,e in events if e[0]=='receive' and during(t)]
+        reads=[(t,e) for t,e in events if e[0]=='read'];read_times=[t for t,e in reads]
+        receive_times=[t for t,e in events if e[0]=='receive']
+        starts=[(t,int(e[3])*10) for t,e in events if e[0]=='rxstart'];start_times=[t for t,p in starts]
+        require(receives,'No real SIO receive overlapped editor input/repair')
+        receive_delays=[]
+        for t,e in receives:
+            index=bisect_left(read_times,t);target=reads[index] if index<len(reads) else None
+            require(target and target[1][2]==e[2],'Serial byte mismatch during scrolling')
+            index=bisect_right(receive_times,t);following=receive_times[index] if index<len(receive_times) else None
+            require(following is None or target[0]<following,'SERIN overwritten during scrolling')
+            period=starts[bisect_right(start_times,t)-1][1]
+            require(target[0]-t<period,'Serial read exceeded its byte deadline')
+            receive_delays.append((target[0]-t)*1000/BASE_HZ)
+        captures=[t for t,e in events if e[0]=='cpu' and int(e[4],16)==program['labels']['timer_sample']]
+        gaps=[(z-a)*1000/BASE_HZ for a,z in zip(captures,captures[1:]) if during(a) and during(z)]
+        require(gaps and max(gaps)<1,'Pointer sampling exceeded its 1 ms envelope')
+        observer.record['coexistence']=dict(serial_bytes_during_input=len(receives),
+            receive_service_max_ms=max(receive_delays),pointer_capture_max_gap_ms=max(gaps),
+            pointer_delivery_ms=distribution([v['pointer_delivery_ms'] for v in samples]),
+            scope='Separate stress cohort; concurrent 128 KiB serial read, native CAT completion and independent read-only verification of every RAM output byte, pointer moves offered during every repair')
     record=dict(status='pass',tier='development',qualification=False,measurement=observer.record,
         machine=result['machine'],runtime=result['runtime'],zip_sha256=sha256(bundle/'exec816-demo.zip'),
         observer_sha256=sha256(Path(__file__)),media_sha256=sha256(media),
@@ -331,7 +414,8 @@ if __name__=='__main__':
     parser.add_argument('--bundle',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--samples',type=int,default=20);parser.add_argument('--native-snapshot',type=Path)
     parser.add_argument('--observer-pin',type=Path)
+    parser.add_argument('--stress',action='store_true',help='Separate serial/pointer coexistence cohort; excluded from the frozen default comparison')
     args=parser.parse_args()
     observer=json.loads(args.observer_pin.read_text()) if args.observer_pin else None
     require(observer is not None,'Four-direction physical input requires the separately recorded PLUS observer')
-    measure(args.bundle.resolve(),args.output.resolve(),args.samples,args.native_snapshot,observer)
+    measure(args.bundle.resolve(),args.output.resolve(),args.samples,args.native_snapshot,observer,args.stress)

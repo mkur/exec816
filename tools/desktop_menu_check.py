@@ -55,6 +55,10 @@ class Menus:
         row = next(i for i, window in enumerate(windows) if title in window['title'])
         target = windows[row]['id']
         self.click(600, 8)
+        # Physical clicks may queue behind a bounded drawing quantum. Observe
+        # completion at the usual bounded rendezvous, rather than assuming the
+        # menu is already open at the end of the button-release hold.
+        self.s.rendezvous('db($%x)=2' % self.at('DESKMENU', 'menu'))
         require(self.s.number(self.at('DESKMENU', 'menu'), 1) == 2, 'Windows menu did not open')
         self.click(472, 16+row*11)
         self.s.rendezvous('dw($%x)=%d' % (self.focus_address, target))

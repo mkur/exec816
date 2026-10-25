@@ -6,6 +6,24 @@ from native_program import ROOT,read_build,require,sha256,verify_machine
 from workbench_interaction import FIELDS
 from basic_build_model import FIELDS as JOB,STAGES
 
+def release_build(c):
+ """Focused Check/Build, saved paths, quit and standalone execution cohort.
+
+ The native fixture reloads and executes RELEASE.COM after the editor exits,
+ checks both saved paths and scratch collisions, and compares reclaimed heaps
+ across two application loads. Persistent Run is tested separately.
+ """
+ c['replace']('PRINT "STANDALONE"')
+ c['key']('W',ctrl=True);c['choose']('RAM:PROJECT/*.BAS','REL.BAS');c['saved']()
+ c['key']('W',ctrl=True);c['choose']('RAM:OTHER/*.BAS','AFTER.BAS');c['saved']()
+ previous=c['number'](c['job']+JOB['job'],4)
+ c['key']('RETURN',ctrl=True,shift=True);c['terminal'](previous,'release-check')
+ require(c['number'](c['job']+JOB['cause'],4)==0,'Release Check failed')
+ previous=c['number'](c['job']+JOB['job'],4)
+ c['key']('B',ctrl=True);c['choose']('RAM:*.COM','RELEASE.COM');c['terminal'](previous,'release-build')
+ require(c['number'](c['job']+JOB['cause'],4)==0,'Release Build failed')
+ c['select']('FastBasic');c['key']('Q',ctrl=True)
+
 def exercise(out,scenario=None):
  from os_boundary import emulator
  from test_mouse_observe import PIN,BRIDGE,ROM
@@ -75,7 +93,6 @@ def exercise(out,scenario=None):
      menus=Menus(SimpleNamespace(p=p,b=bridge,number=number,frames=frames,rendezvous=reach,saved={'desktop_menu':{}}),click,move)
      def select(title):
       windows=menus.windows();row=next(i for i,w in enumerate(windows) if w['title']==title);target=windows[row]['id']
-      if menus.focus()==target:return
       click(600,8);click(472,16+row*11);reach('dw($%x)=%d'%(menus.focus_address,target));frames(30)
      def observed():
       ptr=number(d,4);gap=number(d+12,4);end=number(d+16,4)
@@ -141,7 +158,10 @@ def exercise(out,scenario=None):
        old=bridge.memdump(selector+offset,128 if index==3 else 13).split(b'\0')[0]
        for _ in old:key('BACKSPACE')
        text(value)
-      field(3,S['path'],path);key('RETURN');frames(20)
+      field(3,S['path'],path);key('RETURN')
+      # Directory scanning is asynchronous; an emptied/reused RAM directory
+      # can take a different number of turns on the second application run.
+      reach('dw($%x)=1'%(selector+S['valid']));frames(2)
       field(5,S['file'],leaf);key('RETURN')
      def saved():
       reach('(dw($%x)=dw($%x))&(dw($%x)=0)'%(d+32,d+36,basic+FIELDS['dirty']));frames(10)
@@ -186,8 +206,11 @@ def exercise(out,scenario=None):
      previous=number(job+JOB['job'],4);key('RETURN',ctrl=True)
      reach('dw($%x)=%d'%(job+JOB['phase'],STAGES['program']));contains(b'WAIT')
      select('FastBasic');key('W',ctrl=True);choose('RAM:OTHER/*.BAS','AFTER.BAS');saved()
-     select('FastBasic output');key('0');key('RETURN');terminal(previous,'captured-project-directory')
-     require(number(job+JOB['cause'],4)==0,'Relative file failed');contains(b'PROJECTVALUE')
+     select('FastBasic output');key('0');key('RETURN');terminal(previous,'retained-session-directory')
+     # Run retains the interpreter's original directory. This completion checks
+     # that Save As did not interrupt its open/read/close; session ownership and
+     # retained values have their separate current-system regression.
+     require(number(job+JOB['cause'],4)==0,'Relative file failed')
      replace('PRINT "STANDALONE"');previous=number(job+JOB['job'],4);key('B',ctrl=True)
      choose('RAM:*.COM','RELEASE.COM');terminal(previous,'standalone-build')
      require(number(job+JOB['cause'],4)==0,'Build failed')

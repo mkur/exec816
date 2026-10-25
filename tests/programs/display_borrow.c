@@ -13,6 +13,9 @@ volatile UWORD DisplayCommand, DisplayStatus, DisplayPhase, DisplayGo;
 volatile UWORD DisplayActive, DisplayBorrows, DisplayNative, DisplayOverlap, DisplayCopies;
 volatile UWORD DisplayIterations[2];
 volatile UWORD DisplayFaultVariant;
+volatile UWORD DisplayCopyProbe,DisplayCopySteps;
+static struct VbxeCopy copy;
+static UBYTE copyEdges[480];
 static struct DisplayGrant grants[2];
 static struct Task *peers[2];
 static volatile UWORD released;
@@ -50,6 +53,15 @@ void DisplayDMAStart(void)
     if (DisplayGo == 1 && released < 2) ++DisplayCopies;
 }
 
+/* Inject BUSY only after one real screen strip has completed. The next fence
+ * must recover an operational error after mutation, retaining unsafe access
+ * until quiescence or reset. This is a test hook, outside production sources. */
+void DisplayCopyStep(void)
+{
+    if (DisplayCopyProbe && !DisplayCopySteps++)
+        ConsoleFaultMode=DisplayFaultVariant;
+}
+
 static void paint(void *context)
 {
     UWORD who = *(UWORD *)context;
@@ -79,8 +91,19 @@ static void worker(UWORD who)
         if (i == 0) Forbid();
         nesting = FindTask(NULL)->tc_TDNestCnt;
         if (!who) {
-            if (DisplayFaultVariant) ConsoleFaultMode=DisplayFaultVariant;
-            status=GemDrawingSolidBorrow(&grants[who],563,181,597,231,4);
+            if (DisplayCopyProbe) {
+                copy.source.offset=copy.destination.offset=0;
+                copy.source.pitch=copy.destination.pitch=320;
+                copy.source.width=copy.destination.width=640;
+                copy.source.height=copy.destination.height=240;
+                copy.sourceX=563; copy.sourceY=181;
+                copy.destinationX=565; copy.destinationY=183;
+                copy.width=33; copy.height=48;
+                status=GemDrawingCopyBorrow(&grants[who],&copy,copyEdges);
+            } else {
+                if (DisplayFaultVariant) ConsoleFaultMode=DisplayFaultVariant;
+                status=GemDrawingSolidBorrow(&grants[who],563,181,597,231,4);
+            }
         } else status=GemDrawingBorrow(&grants[who],603,181,637,213,paint,&who);
         CHECK(status==(DisplayFaultVariant ? DISPLAY_DEVICE_FAULT : DISPLAY_OK));
         CHECK(FindTask(NULL)->tc_TDNestCnt == nesting);
