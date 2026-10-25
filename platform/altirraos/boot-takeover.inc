@@ -19,6 +19,8 @@
     sta take_dcb,x
     dex
     bpl @save_dcb
+    lda $d013
+    jne take_return              ; the mapped cartridge owns this XEX stream
     ldx #3
 @magic:
     lda take_descriptor,x

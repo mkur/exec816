@@ -31,7 +31,6 @@ Its `exec816-demo/` folder contains:
 | --- | --- |
 | `Exec-of816.xex` | Exec816 and the OF816 boot monitor |
 | `exec816.atr` | Preferred boot disk, writable SYS and WORK, commands and applications |
-| `qed.atr` | Optional separate QED application disk in D2: |
 | `cartridge/*.car`, `*.bin` | Matching Atarimax boot images using the same system ATR |
 | `altirraos-816.rom` | Matching AltirraOS 3.44 ROM for 65C816 |
 | `README.txt`, `SHA256SUMS` | Boot instructions and checksums |
@@ -72,7 +71,7 @@ Firmware Manager, then select **Exec816 AltirraOS** in **Operating system**.
 
 1. Close the settings window. Open **File → Disk Drives…** and click the **…**
    button on the **D1:** row to mount a private writable copy of `exec816.atr`.
-   No D8 disk is required. Optional `qed.atr` goes read-only in D2.
+   No D8 disk is required. QED is supplied separately from this package.
 2. In the same **Disk drives** window, set **Emulation level** to
    **Generic + 57600 baud**. This setting applies to all drives.
 3. Cold-boot the ATR. XEX and Atarimax boot are alternatives; keep the same

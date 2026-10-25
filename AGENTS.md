@@ -67,8 +67,9 @@
   Atarimax boot use that same disk and its WORK directory; QED is a separate ATR.
   Include the ported MD5, ARC and EDX tools, overlays and notices on SYS.
   Boot transport disables BASIC before native admission. The Atarimax reader
-  must disable its mapper for every INITAD and retire before high-RAM Task
-  initialization; arbitrary cartridges remain unsupported.
+  keeps its mapper and low OS screen active through INITAD, then disables it
+  and prepares high RAM before native admission and Task initialization.
+  Arbitrary cartridges remain unsupported.
 - Follow the [code style guide](docs/contributing/style.md) for handwritten Action!
   code. Apply it to new code and routines being changed; keep unrelated
   formatting separate and edit generated code through its generator.

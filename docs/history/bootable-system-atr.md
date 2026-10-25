@@ -156,3 +156,51 @@ a previously SDX-disabled distribution, with zero per-Task/root/kernel/idle
 change. The cartridge borrows 1,024 additional bytes only while loading, before
 those high-RAM Task pools become live. The shared boot reader keeps its existing
 8,192-byte reservation.
+
+## Cartridge display lifetime correction
+
+The 2026-10-25 cartridge change supersedes the callback mapping order described
+above. Disabling the mapper before opening E: moved the pinned ROM's display
+list and screen to `$BC20/$BC40`. Re-enabling the cartridge for the next read
+then made ANTIC fetch cartridge bytes at those addresses. Masking CPU IRQ/NMI
+did not stop display DMA.
+
+The reader now retains its mapper through every INITAD, including interactive
+OF816. E: keeps the original `$9C20/$9C40` display below the cartridge window.
+After the final read, the reader disables the mapper, synchronizes GINTLK with
+TRIG3 and reopens E: before RUNAD/native admission. Truncated input retains the
+mapped cartridge and working low display on its failure path.
+
+Loading admission now uses the generated end of the low loading arenas,
+`$9000`; the cartridge's existing reader additionally needs room through `$9400`.
+The shared loader claims `min(MEMTOP,$BC00)` during loading and checks the full
+native `$BC00` bound after all payload extents complete, before kernel entry.
+The FujiNet takeover prefix returns immediately for a mapped cartridge-owned
+stream. See the current [boot-loading contract](../reference/boot-loading.md).
+
+Development checks cover forty bank-crossing callbacks and a truncated-stream
+failure on each mapper, six loading/native memory boundaries, and cold boots
+of both complete CAR files. The new mapper passes the five-second autoboot;
+the old mapper passes final-second cancellation, Forth arithmetic, retained
+settings and `EXEC816` resume. Both reach the desktop, execute disk HELLO and
+exit with guards, ownership and OS context intact. The refreshed ZIP's XEX
+route also passes its countdown, desktop, disk command and normal exit. A
+separate emitted observer verifies all 1,760,560 native copy/zero-fill bytes.
+The host suite passes all 653 tests. Detailed inputs, outcomes and remaining
+limits are in the [development record](../development/cartridge-display.json).
+
+The additional caller-context probes pass autoboot at two synthetic page-one
+depths and with the caller's IRQ mask set, preserving the live frame and full
+context through real VBI. The interactive `$01B0` probe fails after its arithmetic
+newline at `$04C8` on both the unchanged release candidate and this refresh.
+That existing synthetic-context failure remains open; the return suite is not
+reported as passing. Its observers now use the actual unused loader tail,
+preserving the reservation and restoring all borrowed snapshot storage.
+
+Reserved bank-zero growth is **zero bytes**: fixed, root/kernel, each public
+Task and idle, including guards, alignment and spare capacity. Phase and runtime
+reservation maps are unchanged. Loader code uses 3,211 of its existing 3,328
+bytes; the cartridge retains its existing 1,024-byte boot-only reservation.
+The optimized native payload is reused byte-for-byte through
+`build_demo.py --refresh-loader`; it is not recompiled. These development checks
+do not qualify physical cartridges, another ROM or the complete release matrix.

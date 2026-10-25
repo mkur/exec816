@@ -9,9 +9,20 @@ Subsequent INITAD callbacks expand the kernel into its final addresses; the
 guarded RUNAD enters it only after every extent is complete. Current builds
 require BASIC disabled and the cartridge unmapped at native entry. The ATR,
 external XEX reader and Atarimax wrapper prepare that state before admission.
-On the pinned ROM, the BASIC/cart mode-0 screen is reopened through CIO above
-the Task pools; arbitrary low memory limits are not increased. The cartridge's
-1 KiB RAM reader at `$9000` retires at RUNAD, before Task pool initialization.
+The cartridge keeps its mapper active during INITAD, OF816 and upper payload
+loading. The pinned ROM's mode-0 display list/screen remain at `$9C20/$9C40`,
+below the ROM window. Only after the last read does the wrapper disable its
+mapper and reopen E: through CIO above the high Task pools. Its 1 KiB RAM
+reader at `$9000` retires at RUNAD, before Task pool initialization.
+
+Loading requires the generated `MEMTOP_LOADING_REQUIRED` boundary (`$9000`),
+covering the live low loading arenas. The cartridge separately requires room
+through `$9400` for its reader. The loader claims `MEMLO=min(MEMTOP,$BC00)`
+during loading, preserving a real cartridge-era `MEMTOP=$9C1F`. RUNAD and the
+native adapter require the full `$BC00` bound before any high Task pool is
+initialized; successful RUNAD publishes `MEMLO=$BC00`. Arbitrary inadequate
+native bounds remain errors. The optional FujiNet XEX takeover prefix returns
+immediately when a mapped cartridge already owns the stream.
 
 The bootstrap and OF816 remain uncompressed. The host packages kernel copy/code
 extents as independent raw LZ4 blocks, using HC level 12 and up to 65,535 bytes

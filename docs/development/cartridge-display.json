@@ -1,0 +1,314 @@
+{
+  "format": "exec816-cartridge-display-development-v1",
+  "date": "2026-10-25",
+  "tier": "development",
+  "cart_boot_status": "pass",
+  "qualification": false,
+  "native_recompiled": false,
+  "native_image_unchanged": true,
+  "native_build": {
+    "native_image_sha256": "03f5fdbcca77ac4a7073fd35392235c2b9022609dbd9f77e44101b2bf8757e81",
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "native_recompiled": false,
+    "source_inputs": {
+      "tools/build_demo.py": "75ae27b069426ae99f1067a567717142b6088091edd83c58411a1a7f4f791231",
+      "tools/banked_image.py": "8d33f291be87571b5a23b44af69df3d3ddcc9114877d64cd6f8ba6a22d227522",
+      "tools/lz4_block.py": "8e5dee1d46ead94a366a6835e5b83edb4c517274172c91e8bfe319d4158d8ddf",
+      "platform/altirraos/loader.s": "0af9240ed11598f14118349f4f57a2c725debceb47194ada109aa0a5b0813cb0",
+      "platform/altirraos/lz4.s": "58f683a456bd71482fdf4cf22bab115dad89576e10ffb8cfc5a21a51d2aa6f0c",
+      "abi/memory-v1.json": "d61ab01fe1c7ef48ca3d29f6283f9beadcbc90fe68ba5f840d36911e22936d9f"
+    }
+  },
+  "pins": {
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    }
+  },
+  "inputs": {
+    "platform/altirraos/cartridge.s": "771b7b2200c2d94acf92fc4beb2d77e7e5e9235d55c0284d990133aeff548abb",
+    "platform/altirraos/loader.s": "0af9240ed11598f14118349f4f57a2c725debceb47194ada109aa0a5b0813cb0",
+    "platform/altirraos/boot-platform.inc": "4c973d2b25e47a1db26f880e5d483a55a2b547cbd2a2924fbca8f0ad14a64a53",
+    "platform/altirraos/boot-takeover.inc": "89ac4eb5b6a79b9169849b5c557f1a74d2660b66056d31bce4d85ee889fcb77d",
+    "tools/generate_memory.py": "597d6a00bea1fc3de86ca86fd7f31ca5d945ca72d7d6d9899dfd52f5a54a4c46",
+    "tools/build_demo.py": "ead6d2307d85be1c8f17fac8e0357e18b022dd28b74c34281234590686648850",
+    "tools/test_cartridge_context.py": "21b0f4916eef9abdf518ce2c052962de38506cb6c3d054a651597048c4f2b1a8",
+    "tools/test_cartridge.py": "6fe8dc2461d3bdecb7699d848c09285721eb2a80f4ea011e7089d05bf975aed4",
+    "tools/test_of816_loading.py": "09d6e0944c6b1b02e7d111f905f9b9fd37028b33d36a1869f9e577adaf1ea381"
+  },
+  "artifacts": {
+    "exec816-demo.zip": "b47e4b60d8cef9ca5dd64d5d9f0be7b60ab5e858a183dddb69d41758719dbb4f",
+    "of816/Exec-of816.xex": "9ff4d35e32b39c1225efc25e64d634961e734a276934a476d4adefb61bf4e8a8",
+    "cartridge/Exec-of816-atarimax-8mbit-new.car": "b63fbdd8184b713db36b21008896909524e9941eb39ad1cf69b5b49a700e2b55",
+    "cartridge/Exec-of816-atarimax-8mbit-old.car": "593e4c50ca9f0455f505ee632561e3399ac15c10fe34bc23a66c2d96a7c99023",
+    "exec816.atr": "cc82b058d1e1c7164356ad6b6b4e0a848e0ed1c5930dc64402f62ab0bd5c1012",
+    "program.a816.json": "03f5fdbcca77ac4a7073fd35392235c2b9022609dbd9f77e44101b2bf8757e81",
+    "loader.bin": "9fac83a28ae26a07987e12deb6c0b988e49d937783ed581f30bcf291f213f082"
+  },
+  "memory": {
+    "loading_memtop_required": 36864,
+    "native_memtop_required": 48128,
+    "loader_used": 3211,
+    "loader_reserved": 3328,
+    "cartridge_reader_reserved": 1024,
+    "phase_reservations_unchanged": true,
+    "runtime_reservations_unchanged": true,
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": 0,
+      "idle": 0,
+      "including_guards_alignment_spare": true
+    }
+  },
+  "checks": [
+    {
+      "report": "build/cart-display/mapped/results.json",
+      "sha256": "74cc5eac4146db97ec2d559bdc30ce9718c2182cbc3f736a30d2d639a4958ee9",
+      "status": "pass",
+      "cases": [
+        {
+          "variant": "new",
+          "status": "pass",
+          "callbacks": 40
+        },
+        {
+          "variant": "new",
+          "status": "pass",
+          "failure": "truncated stream"
+        },
+        {
+          "variant": "old",
+          "status": "pass",
+          "callbacks": 40
+        },
+        {
+          "variant": "old",
+          "status": "pass",
+          "failure": "truncated stream"
+        }
+      ]
+    },
+    {
+      "report": "build/cart-display/phase-bounds-complete/results.json",
+      "sha256": "e57db8bfeeb13087fa7a951b5422fc2767b518a1eb828e3d6705efa4e2c7cb33",
+      "status": "pass",
+      "cases": [
+        {
+          "case": "loading-memory",
+          "status": "pass",
+          "bytes": 1,
+          "rejected": "loading-top"
+        },
+        {
+          "case": "loading-boundary",
+          "status": "pass",
+          "bytes": 1,
+          "rejected": "native-top"
+        },
+        {
+          "case": "native-memory",
+          "status": "pass",
+          "bytes": 1,
+          "rejected": "native-top"
+        },
+        {
+          "case": "native-below-boundary",
+          "status": "pass",
+          "bytes": 1,
+          "rejected": "native-top"
+        },
+        {
+          "case": "native-boundary",
+          "status": "pass",
+          "bytes": 1,
+          "rejected": null
+        },
+        {
+          "case": "deferred-native-memory",
+          "status": "pass",
+          "bytes": 1,
+          "rejected": null
+        }
+      ]
+    },
+    {
+      "report": "build/cart-display/full-new/results.json",
+      "sha256": "217985e3454223044559c4d9c236d2cfb5d27e827155e8049d485b6d399ed571",
+      "status": "pass",
+      "variant": "new",
+      "route": "autoboot",
+      "monitor_display": {
+        "display_list": 39968,
+        "screen": 40000,
+        "memtop": 39967,
+        "cartridge_mapped": true
+      },
+      "loader_callbacks": 783,
+      "os_restored_at_handoff": true,
+      "guards": "intact",
+      "live_tasks": 0,
+      "exit_status": 0
+    },
+    {
+      "report": "build/cart-display/full-old/results.json",
+      "sha256": "5feec53f714de7c4c44cb6712ffd4e2ce5d6c6fdbb38b2478f6ad84f1b695233",
+      "status": "pass",
+      "variant": "old",
+      "route": "forth-command",
+      "monitor_display": {
+        "display_list": 39968,
+        "screen": 40000,
+        "memtop": 39967,
+        "cartridge_mapped": true
+      },
+      "loader_callbacks": 783,
+      "os_restored_at_handoff": true,
+      "guards": "intact",
+      "live_tasks": 0,
+      "exit_status": 0
+    },
+    {
+      "report": "build/cart-display/return/results.json",
+      "sha256": "9bb137bc5b0c971482bbf338ea36430df2a9b1b89bff2dee11f57f0f18a27b9d",
+      "status": "fail",
+      "cases": [
+        {
+          "case": "return-d0-auto",
+          "status": "pass",
+          "caller_frame": "intact",
+          "vbi": true,
+          "diagnostic_scratch": {
+            "loader_bytes": 93,
+            "extra_reservations": 0
+          }
+        },
+        {
+          "case": "return-b0-auto",
+          "status": "pass",
+          "caller_frame": "intact",
+          "vbi": true,
+          "diagnostic_scratch": {
+            "loader_bytes": 93,
+            "extra_reservations": 0
+          }
+        }
+      ],
+      "error": "No breakpoint at $2f26 within 3000 frames; {'ok': True, 'PC': '$04c8', 'A': '$80', 'X': '$08', 'Y': '$04', 'S': '$fb', 'P': '$01', 'flags': '-------C', 'cycles': 88846040, 'clock_multiplier': 8, 'shadow_rom': True, 'mode': '65C816'}"
+    },
+    {
+      "report": "build/cart-display/return-masked/results.json",
+      "sha256": "068d45360a177866edb2255556acab094a0f162d69531ed5d156545e1a5c2e42",
+      "status": "pass",
+      "cases": [
+        {
+          "case": "return-d0-masked",
+          "status": "pass",
+          "caller_frame": "intact",
+          "vbi": true,
+          "diagnostic_scratch": {
+            "loader_bytes": 93,
+            "extra_reservations": 0
+          }
+        }
+      ]
+    },
+    {
+      "report": "build/cart-display/payload/results.json",
+      "sha256": "c535f3ac900211fbd96ae8b62b9a4d1140bbb98d7ea14ce637660524244dcf78",
+      "status": "pass",
+      "cases": [
+        {
+          "case": "native-payload",
+          "status": "pass",
+          "bytes": 1760560,
+          "diagnostic_scratch": {
+            "loader_bytes": 117,
+            "staging_bytes": 1024,
+            "restored": true,
+            "extra_reservations": 0
+          }
+        }
+      ]
+    },
+    {
+      "report": "build/cart-display/xex/clean-boot-results.json",
+      "sha256": "114f429abd3e8f52c0eb5a5c362a93986c18ae4445e7827f0284cffa59f87fee",
+      "status": "pass",
+      "scope": "Packaged XEX, OF816 countdown, VER, disk HELLO, EXIT, guards and OS restoration"
+    }
+  ],
+  "host": {
+    "status": "pass",
+    "tests": 653,
+    "report": "build/cart-display-host-tests-final.log",
+    "sha256": "4eb1d7086ef0647a4e9a1bba920acece1a635b1783e5a2bd270d4a9d46df204b"
+  },
+  "additional_diagnostic": {
+    "status": "pre-existing-failure",
+    "case": "return-b0-manual",
+    "scope": "Synthetic caller with S=$01B0, D=$1234, DBR=$AB and decimal mode",
+    "baseline_bundle": "build/release-0.2.1/demo",
+    "baseline_log": "build/cart-display-return-baseline.log",
+    "baseline_log_sha256": "7bd257ac8347281e4903637b06c4d9e427c95d5ff647217d6b169774369c5898",
+    "observation": "Both unchanged and refreshed loader stop at PC=$04C8 after the Forth arithmetic newline; neither returns to of_wait_key. Production cartridge manual interaction passes.",
+    "not_qualified": true
+  },
+  "limits": [
+    "Development checks only; complete release qualification remains pending.",
+    "Physical cartridges and accelerator timing are unqualified.",
+    "The changed cartridge handoff has not been replayed on XLOS."
+  ],
+  "generated_definitions": {
+    "status": "pass",
+    "generator": "tools/generate_memory.py",
+    "output": "build/cart-display/generated-memory",
+    "check": true
+  },
+  "documentation": {
+    "local_links_checked": 348,
+    "status": "pass"
+  },
+  "archive_checksums": {
+    "status": "pass",
+    "files": 28
+  },
+  "packaging_refresh": {
+    "scope": "Remove QED disk and its notices; update guide and checksums",
+    "previous_zip_sha256": "60caecd4db8826be55fc3210b65f7abfeb87efe18470f39e6cd90fb692b1c41c",
+    "zip_sha256": "b47e4b60d8cef9ca5dd64d5d9f0be7b60ab5e858a183dddb69d41758719dbb4f",
+    "boot_disk_rom_cartridge_bytes_unchanged": true,
+    "tests_run": false,
+    "reason": "User requested packaging change without tests",
+    "source_inputs": {
+      "tools/package_demo.py": "42718fed5209d821cbd039aa60dec0c73feeac63cf0d20cf60ece77691cdd4c4",
+      "tools/build_demo.py": "ead6d2307d85be1c8f17fac8e0357e18b022dd28b74c34281234590686648850",
+      "docs/cartridge-distribution.txt": "376f3c7f227d7b87265b476bafefbb5edeb61d600b93f810b52212bc64c8fe97",
+      "docs/bootable-atr-distribution.txt": "b51800774323f4ce0474f437477b46a019e06aff37937cd1f36edda94cfc970f"
+    }
+  }
+}

@@ -65,11 +65,11 @@ can be reproduced across different assembly times and checkout paths.
 
 ## Build the demo
 
-The 0.2.1 release package contains the GEM desktop, windowed Shell, FastBasic
-workbench and separate optional QED disk:
+The 0.2.1 release package contains the GEM desktop, windowed Shell and FastBasic
+workbench. QED is supplied separately:
 
 ```sh
-python3 tools/build_demo.py --basic-workbench --qed --release-compiler --output build/demo
+python3 tools/build_demo.py --basic-workbench --release-compiler --output build/demo
 ```
 
 The build always includes OF816 and produces `build/demo/exec816-demo.zip` with
@@ -168,7 +168,7 @@ context and memory limits.
 Standalone SIO distributions default to one writable `exec816.atr`, including
 OF816, Exec, system applications, MD5/ARC/EDX and WORK. ATR, external XEX and
 Atarimax CAR boot share that same disk. QED remains on an optional separate
-`qed.atr`; add `--qed` to a GEM desktop build. For example:
+`qed.atr` outside the demo ZIP; add `--qed` to build that disk locally. For example:
 
 ```sh
 python3 tools/build_demo.py --basic-workbench --qed --release-compiler \
@@ -177,8 +177,9 @@ python3 tools/build_demo.py --basic-workbench --qed --release-compiler \
 
 Use `launch-altirra.command` for ATR boot, `launch-xex.command` for XEX, or
 `launch-cart-new.command` / `launch-cart-old.command` for Atarimax. All retain
-one private writable system disk. The cartridge reader disables its mapper
-before callbacks and retires before high-RAM pool initialization. Boot transport
+one private writable system disk. The cartridge reader keeps its mapper and
+low OS screen through INITAD, then disables it and reopens E: before final
+native admission and high-RAM pool initialization. Boot transport
 disables BASIC before native admission; arbitrary mapped cartridges remain
 unsupported. `--split-disks` selects separate SYS/WORK development media.
 Distribute `exec816-demo.zip` with boot media, ROM, guide, notices and checksums.
@@ -193,11 +194,14 @@ remain in place. Passing development checks does not qualify another firmware.
 
 The [XLOS boot record](../development/xlos-boot.json) uses Drac's XLOS 2.48
 `XLOS816A.ROM` and `XLOS816F.ROM` from the December 2025 archive. The cartridge
-loader now copies TRIG3 into GINTLK when disabling the cartridge, before enabling
-interrupts. A constant `1` incorrectly advertised that the cartridge remained
-present and triggered XLOS's cartridge-removal halt during INITAD callbacks.
-The loader grows by one byte inside its existing 1 KiB boot reservation; fixed,
-public-Task and idle runtime bank-zero reservation changes are all **0 bytes**.
+loader change recorded there copied TRIG3 into GINTLK before enabling interrupts.
+A constant `1` had incorrectly advertised a disabled cartridge as present and
+triggered XLOS's cartridge-removal halt during INITAD callbacks. The current
+[cartridge handoff](../reference/boot-loading.md) retains the mapper through
+INITAD and keeps the interlock synchronized at final unmapping. That newer
+ordering has development coverage on the pinned AltirraOS ROM; the earlier
+XLOS record does not qualify it. Fixed, public-Task and idle runtime bank-zero
+reservation changes are all **0 bytes**.
 
 Altirra's default XEX loader fails before Exec's INITAD under XLOS, including
 for a minimal executable with no Exec code. The checked XEX route uses **Computer

@@ -42,10 +42,29 @@ loader_start:
     bne incomplete
     lda lz4_active
     bne incomplete
+    ; Native pools extend above the cartridge-era OS screen. Loading used
+    ; only the low arenas; the transport must now expose all native RAM.
+    lda $02e6
+    cmp #>M_MEMTOP_REQUIRED
+    bcc runtime_bounds
+    bne runtime_ready
+    lda $02e5
+    cmp #<M_MEMTOP_REQUIRED
+    bcc runtime_bounds
+runtime_ready:
+    lda #<M_MEMTOP_REQUIRED
+    sta $02e7
+    lda #>M_MEMTOP_REQUIRED
+    sta $02e8
     lda #1
     sta M_ENTERED
     jsr loader_progress_finish
     jmp HOST_START
+runtime_bounds:
+    lda #M_BOOT_ERROR_BOUNDS
+    sta loader_error
+    sta M_ERROR
+    bra load_failed
 incomplete:
     lda #M_BOOT_ERROR_INCOMPLETE
     sta loader_error
@@ -112,11 +131,11 @@ setup:
     jne bounds_error
 memlo_ok:
     lda $02e6
-    cmp #>M_MEMTOP_REQUIRED
+    cmp #>M_MEMTOP_LOADING_REQUIRED
     jcc bounds_error
     bne bounds_ok
     lda $02e5
-    cmp #<M_MEMTOP_REQUIRED
+    cmp #<M_MEMTOP_LOADING_REQUIRED
     jcc bounds_error
 bounds_ok:
     ldx #0
@@ -157,7 +176,7 @@ manifest_read:
     lda f:M_MANIFEST
 manifest_expected:
     cmp f:expected_manifest
-    bne manifest_error
+    jne manifest_error
     increment manifest_read
     increment manifest_expected
     jsr decrement_left
@@ -182,10 +201,27 @@ copy_identity:
     sta M_ID,x
     dex
     bpl copy_identity
+    ; Claim only available low RAM during loading. With a mapped cartridge
+    ; MEMTOP is below $A000; native admission will publish the full claim.
+    lda $02e6
+    cmp #>M_MEMTOP_REQUIRED
+    bcc loading_claim_top
+    bne loading_claim_native
+    lda $02e5
+    cmp #<M_MEMTOP_REQUIRED
+    bcc loading_claim_top
+loading_claim_native:
     lda #<M_MEMTOP_REQUIRED
     sta $02e7
     lda #>M_MEMTOP_REQUIRED
     sta $02e8
+    bra loading_claimed
+loading_claim_top:
+    lda $02e5
+    sta $02e7
+    lda $02e6
+    sta $02e8
+loading_claimed:
     lda #1
     sta M_READY
     sta loader_initialized

@@ -79,6 +79,8 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
     }
     for item in record.get('additional_media', []):
         name = item['name']
+        if name == 'qed.atr':
+            continue             # QED is delivered separately from the demo ZIP.
         if name in expected or Path(name).name != name:
             raise ValueError('Invalid companion disk name')
         expected[name] = item['sha256']
@@ -137,7 +139,7 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
         if demo.get('qed'):
             from qed_demo import verify
             verify(demo,bitmap_shell)
-        for name in GEM_NOTICES + (CALCULATOR_NOTICES+G4BENCH_NOTICES if demo.get('gem_desktop') else ()) + (QED_NOTICES if demo.get('qed') else ()):
+        for name in GEM_NOTICES + (CALCULATOR_NOTICES+G4BENCH_NOTICES if demo.get('gem_desktop') else ()):
             content = (bitmap_shell/name).read_bytes()
             if hashlib.sha256(content).hexdigest() != demo['artifacts'][name]:
                 raise ValueError(f'Changed bitmap shell notice: {name}')
@@ -147,8 +149,6 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
                        'docs/aes-counter-distribution.txt' if demo.get('aes_counters') else
                        'docs/desktop-distribution.txt' if demo.get('desktop') else
                        'docs/bitmap-shell-distribution.txt')).read_text()
-        if demo.get('qed'):
-            guide = (ROOT/'docs/qed-exec-distribution.txt').read_text()
         if demo.get('desktop'):
             guide = guide.replace('@POINTER_DESCRIPTION@', pointer_description(demo['kernel']['desktop_mouse']['profile']))
     if demo_manifest.get('bootable_atr'):

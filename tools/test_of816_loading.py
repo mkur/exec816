@@ -92,7 +92,7 @@ def check_return(out,record,program,depth,manual=False,masked=False):
     folder=out/f'return-{depth:02x}-{"manual" if manual else "masked" if masked else "auto"}'
     folder.mkdir(parents=True,exist_ok=True)
     c=program['build']['memory']['constants']
-    base=c['LOADER']+c['LOADER_BYTES']-512
+    base=c['LOADER']+len((program['output']/'loader.bin').read_bytes())
     labels=return_probe(folder,record,depth,base,masked)
     probe=(folder/'probe.bin').read_bytes()
     require(c['LOADER']+len((program['output']/'loader.bin').read_bytes())<=base and
@@ -139,10 +139,10 @@ def snapshot_image(b,program,folder):
     The entire staging range and the unused loader scratch are restored.
     """
     c=program['build']['memory']['constants'];pc=program['labels']['loader_start']
-    base=c['LOADER']+c['LOADER_BYTES']-512
-    require(c['LOADER']+len((program['output']/'loader.bin').read_bytes())<=base,
-            'Snapshot scratch overlaps loader')
-    original=b.memdump(pc,3);scratch=b.memdump(base,512);staging=b.memdump(c['STAGE'],1024)
+    base=c['LOADER']+len((program['output']/'loader.bin').read_bytes())
+    scratch_bytes=c['LOADER']+c['LOADER_BYTES']-base
+    require(scratch_bytes>0,'No unused loader scratch')
+    original=b.memdump(pc,3);scratch=b.memdump(base,scratch_bytes);staging=b.memdump(c['STAGE'],1024)
     nmien=int(b.antic()['NMIEN'].lstrip('$'),16)
     spans=extents(program['image'],program['build']['memory']);checks=[];copies={}
     b.hwpoke(0xd40e,0)
@@ -195,6 +195,7 @@ done:
                     labels=assemble_probe(location,code,base)
                     copies[key]=(labels,(location/'probe.bin').read_bytes())
                 labels,copy=copies[key]
+                require(len(copy)<=scratch_bytes,'Snapshot probe exceeds unused loader scratch')
                 b.memload(base,copy)
                 b.memload(labels['source']+1,struct.pack('<H',at&65535))
                 b.memload(pc,b'\x4c'+struct.pack('<H',base))
@@ -210,7 +211,7 @@ done:
         b.memload(pc,original);b.memload(base,scratch);b.memload(c['STAGE'],staging)
         b.hwpoke(0xd40e,nmien);b.bp_clear_all()
     return dict(extents=checks,bytes=sum(s['bytes'] for s in checks),
-                diagnostic_scratch=dict(loader_bytes=512,staging_bytes=1024,restored=True,
+                diagnostic_scratch=dict(loader_bytes=scratch_bytes,staging_bytes=1024,restored=True,
                                         extra_reservations=0))
 
 
@@ -236,7 +237,8 @@ def check_image(out,record,program):
     return dict(case='native-payload',status='pass',screen_preserved=True,**report)
 
 
-def check_feedback(out,record,program,name,size,zero=False,failure=None,prefix=0):
+def check_feedback(out,record,program,name,size,zero=False,failure=None,prefix=0,
+                   loading_top=None,promote=False):
     """Small real record streams cover rounding, zero-fill and guarded failure."""
     folder=out/name;folder.mkdir(parents=True,exist_ok=True)
     memory=program['build']['memory'];c=memory['constants']
@@ -282,11 +284,22 @@ start: jmp start
     pin,binary,rom=boot_environment(record)
     with emulator(binary,rom,folder,pin=pin) as b:
         b.boot(str(path))
-        if failure=='bounds':
+        if failure=='bounds' or loading_top is not None:
             b.bp_set(labels['loader_init']);run_to(b,labels['loader_init'],1000,30)
-            b.poke16(0x2e7,c['MEMLO_LIMIT']+1);b.bp_clear_all()
+            if failure=='bounds':b.poke16(0x2e7,c['MEMLO_LIMIT']+1)
+            if loading_top is not None:b.poke16(0x2e5,loading_top)
+            b.bp_clear_all()
         target=labels['loader_done'] if failure else finish
         b.bp_set(labels['loader_start']);run_to(b,labels['loader_start'],3000,90)
+        if loading_top is not None and loading_top>=c['MEMTOP_LOADING_REQUIRED']:
+            require(b.peek(labels['loader_initialized'])==b'\1' and
+                    b.peek(labels['loader_error'])==b'\0' and b.peek(c['ENTERED'])==b'\0',
+                    'Low-memory loading did not complete before native admission')
+            require(b.peek16(0x2e7)==min(loading_top,c['MEMTOP_REQUIRED']),
+                    'Loading claimed native-only high RAM')
+            require(b.peek16(c['NEXT'])==len(extents(image,memory)),
+                    'Native memory rejection happened before payload completion')
+        if promote:b.poke16(0x2e5,0xbc1f)
         b.bp_clear_all()
         b.bp_set(target);run_to(b,target,3000,90)
         text=screen_text(b.memdump(b.peek16(88),960))
@@ -294,8 +307,16 @@ start: jmp start
             require(b.peek(labels['loader_error'])!=b'\0' and b.peek(c['ENTERED'])==b'\0',
                     'Failed stream entered the kernel')
             require(text.count('Exec816 load failed')==1,'Missing/repeated load failure message')
+            if failure in ('loading-top','native-top'):
+                require(b.peek(labels['loader_error'])==bytes([c['BOOT_ERROR_BOUNDS']]),
+                        'Memory admission returned the wrong error')
+            if failure=='loading-top':
+                require(b.peek(labels['loader_initialized'])==b'\0',
+                        'Insufficient loading memory was admitted')
             dots=0
         else:
+            require(b.peek16(0x2e7)==c['MEMTOP_REQUIRED'],
+                    'Native entry did not claim the complete runtime layout')
             expected='Loading Exec816 '+'.'*((size+16383)//16384)
             require(expected in text and expected+'.' not in text,'Incorrect progress rounding: '+text)
             require(text.count('Exec816 boot')==1,'Boot banner repeated')
@@ -308,7 +329,8 @@ start: jmp start
                             labels={**labels,'loader_start':finish})
                 snapshot_image(b,sample,folder)
     return dict(case=name,status='pass',bytes=size,dots=dots,zero_fill=zero,prefix_bytes=prefix,
-                rejected=failure,xex_sha256=sha256(path))
+                rejected=failure,loading_memtop=loading_top,promoted_before_native=promote,
+                xex_sha256=sha256(path))
 
 
 def run(bundle,out,case='all'):
@@ -333,6 +355,17 @@ def run(bundle,out,case='all'):
                     ('zero',16384,True,None,0),('bad-record',1024,False,'record',0),
                     ('incomplete',2048,False,'incomplete',0),('bounds',1,False,'bounds',0)]:
                 report['cases'].append(check_feedback(out,record,program,name,size,zero,failure,prefix))
+        if case in ('all','feedback','bounds'):
+            c=program['build']['memory']['constants']
+            for name,top,failure,promote in (
+                    ('loading-memory',c['MEMTOP_LOADING_REQUIRED']-1,'loading-top',False),
+                    ('loading-boundary',c['MEMTOP_LOADING_REQUIRED'],'native-top',False),
+                    ('native-memory',0x9c1f,'native-top',False),
+                    ('native-below-boundary',c['MEMTOP_REQUIRED']-1,'native-top',False),
+                    ('native-boundary',c['MEMTOP_REQUIRED'],None,False),
+                    ('deferred-native-memory',0x9c1f,None,True)):
+                report['cases'].append(check_feedback(out,record,program,name,1,
+                    failure=failure,loading_top=top,promote=promote))
         report['status']='pass'
     except Exception as error:
         report.update(status='fail',error=str(error))
@@ -346,7 +379,7 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bundle',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--case',choices=('all','return','payload','feedback'),default='all')
+    parser.add_argument('--case',choices=('all','return','payload','feedback','bounds'),default='all')
     args=parser.parse_args()
     run(args.bundle.resolve(),args.output.resolve(),args.case)
     print('OF816 caller frames, context, screen and native payload passed')

@@ -59,6 +59,7 @@ class CapacityPackaging(unittest.TestCase):
         self.assertEqual((c['CAPACITY'],c['IDLE'],c['METADATA_BYTES']),(12,12,1792))
         self.assertEqual(m['regions']['os-high'],[0xbc00,0x10000])
         self.assertEqual(m['constants']['MEMTOP_REQUIRED'],0xbc00)
+        self.assertEqual(m['constants']['MEMTOP_LOADING_REQUIRED'],0x9000)
         self.assertEqual(m['bank_zero_budget']['runtime_including_os'],54464)
         self.assertEqual(m['runtime_free_ranges'],[
             dict(address=0x62e0,size=7456),dict(address=0xade0,size=3616)])

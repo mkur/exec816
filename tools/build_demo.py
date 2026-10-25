@@ -837,7 +837,7 @@ def refresh_boot_sio(output,policy):
 def refresh_loader(output):
     """Repack an unchanged native image with the current bootstrap and OF816."""
     from banked_image import emit
-    from generate_memory import ABI, generate
+    from generate_memory import ABI, generate, loading_memtop
     output=output.resolve()
     program=read_build(output)
     record=json.loads((output/'demo-manifest.json').read_text())
@@ -857,6 +857,7 @@ def refresh_loader(output):
                 if key not in ('record','compression')), 'Rebuild for changed runtime memory ABI')
     memory['abi']=abi
     c=memory['constants']
+    c['MEMTOP_LOADING_REQUIRED']=loading_memtop(memory)
     c.pop('RECORD_RESERVED',None)
     c['RECORD_ENCODING']=abi['record']['encoding']
     c.update(LZ4_BLOCK_BYTES=abi['compression']['block_bytes'],
@@ -908,7 +909,7 @@ if __name__=='__main__':
                         help='Nominal system disk capacity; WORK is always 720 KiB with 256-byte sectors')
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
-    parser.add_argument('--qed',action='store_true',help='Add a separate production QED application disk to the GEM desktop package')
+    parser.add_argument('--qed',action='store_true',help='Build a separate production QED application disk outside the demo ZIP')
     parser.add_argument('--gem-desktop',action='store_true',help='GEM Control Panel and counter beside the shell')
     parser.add_argument('--aes-input',action='store_true',help='Autoboot two interactive GEM input apps beside the native shell')
     parser.add_argument('--aes-counters',action='store_true',help='Autoboot the optional two-counter GEM desktop beside the native shell')

@@ -2,12 +2,14 @@
 ; Both power-on banks contain the same ROM stub. The reader runs in RAM,
 ; outside the Exec loading arenas and below the cartridge-era E: screen.
 ; No direct-page storage is borrowed. IRQ and NMI are masked while the cart
-; is mapped; INITAD callbacks run with it disabled and the OS interlock set.
+; is being read. INITAD keeps the cart mapped and its low OS screen intact.
+; Only final RUNAD disables the mapper and prepares the native RAM layout.
 .setcpu "6502"
 .macpack longbranch
 .include "cartridge.inc"
 .export cart_start, cart_init, cart_loader, cart_loaded, cart_failed
 .export cart_calls, cart_segments, cart_remaining, cart_bank, cart_loader_end, cart_bank_mapped
+.export cart_failed_park, cart_kernel_ready
 
 RUNAD = $02e0
 INITAD = $02e2
@@ -46,17 +48,17 @@ copy_stub:
 
 .segment "LOADER"
 cart_loader:
-    jsr disable_cart
     jsr boot_platform_prepare
     sei
     lda #0
     sta NMIEN
-    sta GINTLK
     lda #1
     sta cart_bank
     ldx cart_bank
     sta $d500,x
 cart_bank_mapped:
+    lda TRIG3
+    sta GINTLK
     lda #0
     sta RUNAD
     sta RUNAD+1
@@ -109,7 +111,7 @@ write_byte:
     lda INITAD
     ora INITAD+1
     beq next_segment
-    jsr disable_cart
+    jsr resume_os
     inc cart_calls
     bne :+
     inc cart_calls+1
@@ -118,23 +120,24 @@ write_byte:
     sei
     lda #0
     sta NMIEN
-    sta GINTLK
     ldx cart_bank
     sta $d500,x
     jmp next_segment
 
 cart_failed:
-    jsr disable_cart
+    jsr resume_os
     lda #$34
     sta $02c8                    ; visible failure, no partial program entry
-@park:
-    jmp @park
+cart_failed_park:
+    jmp cart_failed_park
 
 cart_loaded:
-    jsr disable_cart
     lda RUNAD
     ora RUNAD+1
     beq cart_failed
+    jsr disable_cart
+    jsr boot_platform_prepare      ; move E: only after the last cartridge read
+cart_kernel_ready:
     jmp (RUNAD)
 
 call_init:
@@ -142,7 +145,8 @@ call_init:
 
 disable_cart:
     sta $d580                    ; writes work on hardware and the pinned emulator
-    lda TRIG3                    ; OS interlock must match the disabled cartridge
+resume_os:
+    lda TRIG3                    ; OS interlock follows the current cartridge line
     sta GINTLK
     lda #$40
     sta NMIEN

@@ -125,10 +125,15 @@ unsupported; a cold boot reloads the manifest.
 The launch profile reserves `$0000–$09FF` for the OS or a small binary loader
 and places the 256-byte adapter state at `$0A00–$0AFF`. Both loader and hosted
 entry require the original `MEMLO <= $0A00`; hosted entry checks before writing
-that page. `MEMTOP` must be at least `$BC00`; the loader and hosted entry publish
-`MEMLO=$BC00` until shutdown restores its original value. BASIC must be disabled
+that page. Loading uses only the low arenas and requires `MEMTOP >= $9000`;
+the cartridge reader separately requires `$9400`. The loader publishes
+`MEMLO=min(MEMTOP,$BC00)` while loading. At RUNAD/native entry, `MEMTOP` must
+be at least `$BC00`, and `MEMLO=$BC00` remains claimed until shutdown restores
+its original value. BASIC must be disabled
 and no cartridge may be mapped at native entry. Boot transport disables BASIC;
-the Atarimax loader switches its cartridge off for INITAD callbacks and RUNAD.
+the Atarimax loader keeps its cartridge mapped during INITAD and OF816, then
+switches it off before RUNAD. The cartridge-era screen stays at `$9C40` below
+the ROM window until all reads finish.
 When the pinned ROM has the BASIC/cart mode-0 allocation at `$9C40`, boot
 preparation reopens E: through CIO with `RAMTOP=$C0`, yielding the real
 `MEMTOP=$BC1F` and screen at `$BC40`. Other inadequate bounds remain errors.

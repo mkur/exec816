@@ -22,6 +22,12 @@ def integer(value, low, high, name):
     return value
 
 
+def loading_memtop(memory):
+    """Highest live low loading arena; native-only high Task pools are idle."""
+    return max(r['address']+r['size'] for r in memory['phase_reservations']['loading']
+               if r['name'] != 'os-high')
+
+
 def reservation_maps(memory, loading=None, initialization=None, runtime=None):
     """Publish checked phase ownership, including full reserved table capacity."""
     if runtime is None:
@@ -172,6 +178,7 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
     memory['startup_retirement'] = dict(address=c['RETIRED'], value=1,
         boundary='startup_complete', ranges=['manifest'])
     reservation_maps(memory)
+    c['MEMTOP_LOADING_REQUIRED'] = loading_memtop(memory)
     require(adapter.diagnostic_addresses(platform) == adapter.diagnostic_addresses(),
             'Diagnostic placement differs from generated hosted bindings')
     return memory

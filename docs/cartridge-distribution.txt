@@ -4,7 +4,7 @@ Exec816 Atarimax boot images
 These images contain the exact matching Exec-of816.xex from this package.
 OF816 retains its five-second countdown. Mount a private writable copy of the
 same exec816.atr in D1 before booting; it contains SYS and the WORK directory.
-No separate D8 disk is required. Optional QED remains on qed.atr in D2.
+No separate D8 disk is required. QED is supplied separately from this package.
 Follow ../README.txt for the ROM, CPU, memory, VBXE and disk requirements.
 
 Use an Atarimax Maxflash 8 Mbit (1 MiB) cartridge. Files:
@@ -15,8 +15,10 @@ The CAR headers select the emulator mapper. Program physical flash from BIN,
 without the 16-byte CAR header. The 128 KiB model is too small.
 
 Cold-boot the CAR instead of the ATR or XEX. The loader disables internal
-BASIC, switches its cartridge off for every INITAD callback and RUNAD, and
-reopens the pinned ROM screen above the high-RAM Task pools. Its RAM reader
+BASIC and keeps the cartridge mapped through INITAD and OF816. The pinned ROM
+keeps its display list and screen at $9C20/$9C40, below the cartridge window.
+After the final cartridge read, the loader switches the mapper off and reopens
+E: above the high-RAM Task pools before RUNAD/native admission. Its RAM reader
 retires at RUNAD before native Task initialization. Exec runs entirely in RAM.
 Other cartridge mappers and physical accelerator/cartridge timing are outside
 these development checks. Warm reset is not a cartridge reload; cold-reset or

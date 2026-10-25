@@ -70,16 +70,15 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
         require(b.memdump(cart['labels']['cart_remaining'],3) != bytes(3),
                 'Cartridge payload was consumed before the monitor')
         check_loading_paused(b,boot,program)
-        require(b.peek(0x3fa) == b.peek(0xd013), 'Cartridge interlock differs from TRIG3')
-        # Writes at the former ROM window must now reach RAM.
-        saved_window = b.memdump(0xa000,16)
-        probe = bytes((i*29+7)&255 for i in range(16))
-        b.memload(0xa000,probe)
-        actual = b.memdump(0xa000,16)
-        require(actual == probe, 'Cartridge is still mapped: '+str(dict(
-            before=saved_window.hex(),after=actual.hex(),portb=b.peek(0xd301).hex(),
-            trig3=b.peek(0xd013).hex(),configuration=b.config())))
-        b.memload(0xa000,saved_window)
+        require(b.peek(0x3fa) == b'\1' and b.peek(0xd013) == b'\1',
+                'Cartridge was disabled before the monitor')
+        require(b.peek16(0x230)==0x9c20 and b.peek16(0x58)==0x9c40 and
+                b.peek16(0x2e5)==0x9c1f and b.peek16(0x2e7)==0x9c1f,
+                'Monitor lost its cartridge-era OS layout')
+        require(int(b.antic()['DMACTL'].lstrip('$'),16)==0x22,
+                'Monitor display DMA was blanked')
+        case['monitor_display']=dict(display_list=0x9c20,screen=0x9c40,
+                                     memtop=0x9c1f,cartridge_mapped=True)
         saved = dict(vectors=b.memdump(0x256,9), iocb=b.memdump(0x340,32))
         screen = b.peek16(0x58)
         b._cmd_ok('KEY ALL up')
@@ -98,6 +97,7 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
         else:
             b.bp_set(labels['of_autoboot'])
             run_to(b,labels['of_autoboot'],1000,30)
+            b.screenshot(str(output/'of816.png'))
             b.bp_clear_all()
             begin = b.eval_expr('@frame')
             b.bp_set(labels['of_handoff'])
@@ -111,6 +111,9 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
         b.bp_set(program['labels']['loader_start'])
         run_to(b,program['labels']['loader_start'],3000,60)
         check_loading_complete(b,boot,program,settings)
+        require(b.peek(0xd013)==b'\0' and b.peek(0x3fa)==b'\0' and
+                b.peek16(0x230)==0xbc20 and b.peek16(0x58)==0xbc40 and
+                b.peek16(0x2e5)==0xbc1f,'Native entry did not expose high RAM')
         b.bp_clear_all()
         b.bp_set(program['labels']['start'])
         run_to(b,program['labels']['start'],1000,30)
@@ -118,6 +121,12 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
         require(b.peek16(cart['labels']['cart_calls']) == cart['init_callbacks'], 'Lost INITAD call')
         require(b.memdump(cart['labels']['cart_remaining'],3) == bytes(3), 'Unread XEX bytes')
         require(b.peek(0x3fa)==b.peek(0xd013),'Resumed cartridge interlock differs from TRIG3')
+        # Native admission has now claimed high RAM; the mapper must be gone.
+        saved_window = b.memdump(0xa000,16)
+        probe = bytes((i*29+7)&255 for i in range(16))
+        b.memload(0xa000,probe)
+        require(b.memdump(0xa000,16)==probe,'Native RAM remains hidden by cartridge ROM')
+        b.memload(0xa000,saved_window)
         b.bp_clear_all()
         require(b.memdump(0x256,9) == saved['vectors'] and
                 b.memdump(0x340,32) == saved['iocb'], 'OF816 handoff changed OS context')

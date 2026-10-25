@@ -4,7 +4,7 @@ Exec816 @VERSION@ system distribution
 Preferred FujiNet boot: mount exec816.atr writable in D1 and boot it.
 The same ATR contains OF816, the kernel, commands, applications and WORK.
 No D8 disk is required. Keep a backup: saved programs and settings modify it.
-QED, when supplied, lives on a separate optional qed.atr, read-only in D2.
+QED is supplied separately from this package.
 
 Use the included AltirraOS 65816 ROM, Atari 800XL PAL, 65C816 at 14.28 MHz,
 shadow ROMs enabled, 64K base RAM plus 4032K high RAM. Disable SIO Patch,
@@ -29,8 +29,7 @@ put exec816.atr writable in D2, interrupt the OF816 countdown, then enter:
   decimal
   2 SYSTEM-DRIVE!
   EXEC816
-The ATR contents are unchanged. If also using QED, put qed.atr in D3 and use
-MOUNT QED: DRIVE 3 FORMAT SPARTA. Ordinary ATR/cart boots use D1 and QED in D2.
+The ATR contents are unchanged.
 
 Leave the keyboard alone for OF816's five-second countdown, or press a key
 to enter Forth and type EXEC816 when ready. Keep the disks attached in Forth.
@@ -48,11 +47,6 @@ installed in SYS:C. Command names work with or without .COM. Try:
 EDX: Ctrl-S saves; Return confirms the name; Escape exits. EDX bell and live
 resize are unsupported. The supplied MD5/ARC fixtures and editor text are in
 WORK. Only the pinned ported binaries are supported; see the utility notice.
-
-For the optional QED disk in D2:
-  MOUNT QED: DRIVE 2 FORMAT SPARTA
-  RUN QED:QED.APP WORK:SAMPLE.TXT
-Save documents in WORK:. QED is not required for boot.
 
 WORK files and desktop preferences survive cold boot. Final EXIT restores the
 OS display; cold-reset to start again. BOOT.LDR and EXEC816.XEX are protected.

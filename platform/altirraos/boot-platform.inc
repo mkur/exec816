@@ -2,6 +2,7 @@
 ; Disable internal BASIC before borrowing high RAM. A BASIC/cart cold start
 ; leaves the mode-0 screen at $9C40; reopen E: through CIO so the ROM moves
 ; its real display list/screen to $BC20/$BC40 and derives MEMTOP itself.
+; A mapped cartridge retains the low display until the final reader handoff.
 ; Do not raise arbitrary memory limits or turn off an unknown cartridge.
 ; Caller owns bank zero and A8/X8; registers are scratch, P and IOCB0 survive.
 .export boot_platform_prepare
