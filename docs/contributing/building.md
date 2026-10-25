@@ -78,6 +78,9 @@ if absent. Build reports and intermediate files remain outside the ZIP.
 The release version comes from [VERSION](../../VERSION); the Shell banner and
 `VER` retain the exact source commit as well. `--release-compiler` selects the
 optimized host compiler; target code is optimized in every demo build.
+On a clean checkout tagged exactly `v<VERSION>`, the startup banner and `VER`
+show that release tag. Other builds show their commit and clean/dirty status;
+the full source revision remains in the build record.
 See the [GEM desktop guide](../gem-desktop-distribution.txt) for machine setup and
 desktop controls, the [console demo guide](../guides/demo.md) for other source-build profiles,
 and the [boot monitor guide](../guides/boot-monitor.md) for

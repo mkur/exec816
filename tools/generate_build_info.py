@@ -9,24 +9,31 @@ ROOT = Path(__file__).resolve().parents[1]
 PROFILE_NAMES = {1: '125k', 2: '19.2k', 3: '19.2k', 4: '57.6k'}
 
 
-def identity(root=ROOT):
+def identity(root=ROOT, release_tag=None):
     def git(*args):
         return subprocess.check_output(['git', '-C', str(root), *args], text=True,
                                        stderr=subprocess.DEVNULL).strip()
     try:
         revision = git('rev-parse', 'HEAD')
         dirty = bool(git('status', '--porcelain', '--untracked-files=normal'))
-        return dict(revision=revision, dirty=dirty,
+        tag = None
+        if release_tag and not dirty:
+            try:
+                tag = git('describe', '--tags', '--exact-match', '--match', release_tag, 'HEAD')
+            except subprocess.CalledProcessError:
+                pass
+        return dict(revision=revision, dirty=dirty, tag=tag,
                     # Keep upper-image string extents stable when freezing a
                     # development build into a clean reproducible candidate.
-                    display=revision[:7] + ('-dirty' if dirty else '-clean'))
+                    display=tag or revision[:7] + ('-dirty' if dirty else '-clean'))
     except (OSError, subprocess.CalledProcessError):
         return dict(revision=None, dirty=False, display='unknown')
 
 
 def generate(output, mounts, task_capacity, stack_checks=True, system_mount=None):
-    build = identity()
-    build['version'] = (ROOT/'VERSION').read_text().strip()
+    version = (ROOT/'VERSION').read_text().strip()
+    build = identity(release_tag='v'+version)
+    build['version'] = version
     compiler = json.loads((ROOT/'toolchain/actionc.json').read_text())['revision']
     build.update(actionc_pin=compiler, task_capacity=task_capacity, stack_checks=stack_checks)
     mount = next((m for m in mounts if system_mount is not None and m['alias'].upper() == system_mount.upper()), None)
