@@ -54,7 +54,18 @@ four edges, with an 80 ms step while held outside a settled grid. Settled/hidden
 editors do not poll for invisible repairs. No new Task, timer object or bank-zero
 reservation is added. See [current evidence](../history/fastbasic-responsive-editor.md).
 Input loss cancels pointer selection. Large gap moves yield in units
-of at most 1 KiB without exposing partial logical text.
+of at most 1 KiB without exposing partial logical text. A completed tiny move
+does not yield again. Newline-preserving edits update offsets without moving
+the line table. Composition shares its raw-byte and lexical scratch; horizontal
+strips can reuse a uniform row's syntax only when the complete line has no tabs.
+Mixed colours and tabbed lines retain the bounded full-composition path.
+
+The refresh reservation totals 5,632 bytes, including spare capacity, within
+the 7,296-byte model. This is separate from the loaded APP extent: code-bank
+placement and its holes can increase that extent even when model storage stays
+fixed. The current [measurement record](../history/fastbasic-responsive-editor.md)
+records both. Pixel reuse is implemented; the 100 ms scroll/structural-edit and
+200 ms far-gap acceptance targets remain open.
 
 The twelve-Task demo starts six public Tasks. BASIC.APP and one interpreter
 child use eight; a second shell brings that to nine. Other applications can
@@ -154,8 +165,9 @@ same Process. It leaves the source document and output contents in place.
 Changing Integer mode shuts down the old session and selects a fresh engine for
 the next Run. New/Open do not implicitly reset the interpreter. Quit keeps the
 session through a canceled unsaved-document query; final application teardown
-sends QUIT and collects it. Idle state retains a Task and one shared guest slot.
-Check/Build can use the other guest slot. Their complete argument list and NIL
+sends QUIT and collects it. Idle state retains a Task and parks its BASIC state,
+releasing ownership of the single active guest bridge. Check/Build can then
+use that bridge. Their complete argument list and NIL
 input let them compile without taking the idle interpreter's console keyboard. See the
 [session contract](fastbasic.md#persistent-interpreter-sessions) for workspace,
 DIM and type-change rules.

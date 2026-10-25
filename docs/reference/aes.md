@@ -1116,3 +1116,7 @@ visible rectangles and pixel completeness; END publishes its final paint epoch
 and completeness before replying. Applications may retain the identity for
 later comparison but must reacquire UPDATE before reusing screen pixels. No RPC
 or allocation is needed to read the borrowed view. This is part of C import ABI 30.
+An application committing a copied presentation must finish END_UPDATE even
+when its exposed cells already match and require no glyph drawing. Only that
+publication establishes the final epoch and pixel completeness; cache equality
+alone cannot satisfy an outstanding paint obligation.

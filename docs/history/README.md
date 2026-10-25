@@ -1,8 +1,8 @@
 # Historical records
 
-- [FastBasic responsive editor](fastbasic-responsive-editor.md): frozen source
-  and package baseline, permanent four-direction painter probes, and RE0–RE8
-  development progress.
+- [FastBasic responsive editor](fastbasic-responsive-editor.md): four-direction
+  pixel reuse, structural edits, bounded invalidation, RE0–RE8 delivery and
+  matched physical measurements; strict responsiveness targets remain open.
 
 - [RAWCON cells and console vectors](rawcon-latency.md): bridge-local get/put,
   one public span request, measured interrupt bounds and rebuilt delivery.

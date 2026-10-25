@@ -305,3 +305,40 @@ All 653 host tests and affected generated definitions pass. The final package
 also passes two-shell/pipeline coexistence, unsaved floating-point Run, Stop,
 finite Run, editor quit and resource retirement. This is selected development
 validation; no full hosted-system qualification is claimed.
+
+## RE8 Matching distribution and corresponding source
+
+The final `exec816-demo.zip` is generated with `tools/build_demo.py`, retaining
+OF816's five-second autoboot, the matching pinned ROM, XEX and Atarimax cartridges,
+writable combined D1 SYS/WORK, port-2 mouse, separate QED ATR, and MD5/ARC/EDX
+with ARC overlays and notices. Only boot files, the guide, checksums and license
+notices appear in the ZIP. Corresponding source has its own archive; development
+intermediates and observations stay under `build/fastbasic-responsive-editor/`.
+
+The delivered APP is the exact 281-sample candidate and 29-sample coexistence
+candidate. Original-package cold ATR boot/save checks and the final-package cold
+smoke are recorded separately from pre-native checkpoint replay. Packaged editor
+Run/Stop and native peer/guard/ownership/OS-return checks pass. Source delivery
+uses the clean offline rebuild checker, comparing the rebuilt BASIC.APP, four
+FastBasic tools and a compiled sample byte for byte. Artifact receipts in the
+execution record follow the archived source snapshot; they do not change its
+production source. These are development checks, not release qualification.
+
+The FujiNet installation uses a fresh versioned directory. Hash comparison
+found the user's existing `SD/EXEC816/exec816.atr` modified from its template;
+that installation and its work are preserved in place. The final directory and
+all installed checksums are recorded in the execution record. The repository's
+`exec816-demo.zip` contains the same final distribution.
+
+Refresh reservation is 5,632 bytes within the 7,296-byte model; copy storage is
+512 bytes per VDI workstation and AES metadata grows 112 rounded bytes per
+client, with no new shared metadata reservation. Final APP allocation is 133,216
+upper bytes including alignment, zero-fill and the 34,311-byte placement hole.
+Fixed, root/kernel, each of twelve public Tasks and idle reserve zero additional
+bank-zero bytes, including guards and unused capacity. No persistent VRAM grows.
+The recorded stack peaks retain their existing interrupt floors.
+
+Functional RE0–RE8 delivery is complete. The 100 ms local edit, scroll and
+structural-edit targets and physical 200 ms far-gap target remain OPEN. Horizontal
+caret movement meets its matched 100 ms gate; broader vertical-caret-only and
+far-gap distributions and hardware/platform qualification remain separate.

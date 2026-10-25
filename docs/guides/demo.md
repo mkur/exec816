@@ -211,6 +211,10 @@ This is a development play image, with focused raw/optimized slice checks and
 an optimized integration walkthrough. General compiler qualification and the
 full release matrices remain separate. The [console refactor record](../history/console-refactor-implementation.md)
 describes the implemented scrolling work and its focused checks.
+The FastBasic editor now preserves rows and columns during scrolling and line
+splits/joins. Large edits and horizontal scrolling can still pause; the
+[editor measurements](../history/fastbasic-responsive-editor.md) record the
+remaining responsiveness targets.
 
 ## Commands for the work disk
 

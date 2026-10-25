@@ -92,6 +92,10 @@ strip retains physical access through its fence and overlay restoration, then
 releases it before the next strip. The copy records destination damage; the
 caller acknowledges only after repairing dependent overlays and exposed strips.
 An operational failure marks the UPDATE failed and follows normal display recovery.
+That includes a failure after a completed strip has already changed pixels:
+it returns ERROR, retains the repair obligation, and cannot become REDRAW.
+Quiescent recovery retires access normally; reset-required recovery retains
+unsafe ownership and cannot return cleanly to the OS.
 
 The workstation adds 512 upper bytes: a 32-byte descriptor and 480-byte packed
 edge staging area, allocated at open. It reuses the adapter's transient CICON

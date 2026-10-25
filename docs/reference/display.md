@@ -201,6 +201,14 @@ queue or asynchronous cursor lifetime; pending scroll work retains the arena.
 ## Bitmap rectangle copies
 
 `VbxeCopyRect(display, copy)` is an ordinary synchronous C driver operation.
+The GEM adapter's `GemDrawingCopyBorrow` uses this driver under a delegated
+display grant. It stages all packed source edges before writes and divides
+the translation into overlap-safe strips of at most sixteen rows and the
+existing 8,192-work-unit limit. Each strip fences and restores overlays before
+releasing physical access. Its caller retains the descriptor and 480-byte
+upper edge buffer until completion or proven quiescence; reset-required faults
+retain unsafe ownership through the existing display failure path. Scratch at
+`$36000` is borrowed only within physical access, with no new persistent VRAM.
 The generated [descriptor](../../abi/bitmap.json) contains two 10-byte surfaces
 and six 16-bit coordinates/dimensions (32 bytes total). Surface offsets and row
 pitches are VRAM bytes; coordinates, widths and heights are pixels. Rows contain

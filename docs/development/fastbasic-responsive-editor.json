@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "date": "2026-10-25",
-  "status": "implementation-in-progress",
+  "status": "functional-complete-performance-open",
   "tier": "development",
   "qualification": false,
   "source_baseline": "de7dfce9",
@@ -14,7 +14,7 @@
     "RE5": "implemented; 100 painter, 44 structural and 30 key checks pass; loaded physical pilot passes",
     "RE6": "implemented; focused emitted checks pass; component costs recorded; far-gap target OPEN",
     "RE7": "implemented; 281 final physical samples, 29 serial/pointer stress samples, loaded interaction, retained interpreter and standalone Build, copy fault injections and development checks pass; missed timing gates OPEN",
-    "RE8": "pending"
+    "RE8": "delivered; final ZIP/checksums, exact cold ATR and loaded edit/Run checks, clean offline corresponding-source rebuild and preserved-media FujiNet installation pass"
   },
   "source_manifest": {
     "abi/aes-server.json": "13584855f629aa1c701216a2c6339cd018a4d1c5299844a136b25ef30cd67c5b",
@@ -76,7 +76,18 @@
     "tools/test_display_borrow.py": "ca37c3c2d475a946ab73c4ed25edcb2f487e58e7de04409d233f1d4c2c7f022c",
     "tools/desktop_menu_check.py": "c4022fe77c4a6cc675543bb2f1086574764dcda75716ed9e3db668e4659412c6",
     "tools/workbench_build_interaction.py": "57116e0bd674644a9867c883da200306020282096bc4b775b1d3b7583c9820e1",
-    "tools/test_fastbasic_build.py": "ebc848850f709fc8c156e115ce749df4923b6690da6b2602c9fcca041f389725"
+    "tools/test_fastbasic_build.py": "ebc848850f709fc8c156e115ce749df4923b6690da6b2602c9fcca041f389725",
+    "docs/basic-workbench-distribution.txt": "d589da7174a393b8a74b8c41efb6edf694e8c559c29b7a25c361d2ff032bc06c",
+    "docs/guides/demo.md": "7136fa6c7e40fa7ec977e36606021c1361261dd82d63f2fe7a29e74a46a1ac0a",
+    "docs/history/README.md": "c2701394cb2c77960f2bffb09861bf567b38b4b8544dec3b15c6daa8e50e8087",
+    "docs/history/fastbasic-responsive-editor.md": "f35c18b74265b870db4bacb597936b02afe00a990b17118e59450051a9fde04f",
+    "docs/plans/README.md": "4f9f37353b3f87ad8ed043b96259fd8755d6623d94749bfe9a2eda77c0c4e057",
+    "docs/plans/fastbasic-responsive-editor-implementation-plan.md": "b2e739e093a069b31db9f29062246efbb4345039c87775957493081bca900fe5",
+    "docs/reference/aes.md": "0490a37f2888938f34ca57e282756eb8728e9eedcb16f5a1756823c8b8ef3c63",
+    "docs/reference/display.md": "dd3e1c4c1c55bc9438fe3c3235b2cae3b55ba2d1bfbefc437d0bd3b387800e25",
+    "docs/reference/fastbasic-workbench.md": "fc40ff6ae1d701ff6440f8b635eba33f2b69317b80b95e5277862dc3ae5eb738",
+    "docs/reference/gem-vdi.md": "b8655ab64a9b5a1fa962601ed2eb2671f47d3a39d38c2e1cb46558d5e610601b",
+    "docs/roadmap.md": "5b11460ca0f376e80867230b2ac8dbfc66261f47e2a74a5df36d88005e350138"
   },
   "development_checks": [
     {
@@ -364,6 +375,30 @@
       "sha256": "d795c9b5b5dd7c921c0e72f48dec4eac1eef9145bd33164d7923539b3d03436c",
       "status": "pass",
       "scope": "passive loaded idle observation"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re8-final-package-check.json",
+      "sha256": "c02b2acf39e80fdc4dd025614a5e18d4c21d191cd34877bfd30c05bd2ac32f30",
+      "status": "pass",
+      "scope": "selected final-package development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re8-clean-source/results.json",
+      "sha256": "e8ec133cc941ec1ec22c4c4314e6fbaeb3264c5e284e21bf8e7329d736f2cec6",
+      "status": "pass",
+      "scope": "selected final-package development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/distribution/twelve-task-results.json",
+      "sha256": "181143f7a66b46051557942b77fe995fc780ad9270d047374fa2b4c5add846b5",
+      "status": "pass",
+      "scope": "selected final-package development"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re8-final-cold/results.json",
+      "sha256": "5a739aed39af92ec269bdb409d0e757b3a9cedb61dd6a586f948e68f30a1a7d9",
+      "status": "pass",
+      "scope": "Original final-package ATR, true cold boot, OF816 autoboot, SYS/WORK assignment, MD5/ARC/EDX smoke and writable WORK, native guards/ownership/OS return"
     }
   ],
   "host_checks": {
@@ -434,7 +469,8 @@
     "editor_refresh_reserved_spare": 146,
     "editor_app_reserved_delta_from_baseline": 36960,
     "editor_app_reserved_delta_from_re5": 36448,
-    "editor_app_note": "Extra code bank with a 34311-byte address-space hole; includes code, data, zero-fill, alignment and hole. No model/refresh reservation increase in RE6."
+    "editor_app_note": "Extra code bank with a 34311-byte address-space hole; includes code, data, zero-fill, alignment and hole. No model/refresh reservation increase in RE6.",
+    "reserved_bank_zero_scope": "All fixed/root/kernel, twelve public Tasks individually and idle; includes guards, alignment and unused reserved capacity. No pool enlargement."
   },
   "performance": {
     "status": "OPEN; functional pixel checks pass, missed frozen latency gates remain",
@@ -1372,5 +1408,65 @@
       "bytes": 131072,
       "sha256": "2e6a4c5b7154ce3ac8705090aa774e29518f970764489a401792caf400283fc7"
     }
-  }
+  },
+  "delivery": {
+    "zip": {
+      "path": "exec816-demo.zip",
+      "sha256": "7ab584c1aab160717f2ef59ce50d8a7ccb12001a033515433c6097274151c01b"
+    },
+    "source": {
+      "path": "build/fastbasic-responsive-editor/exec816-fastbasic-source.zip",
+      "sha256": "f46611d0d961890dd8959fc538c6b613bdd7d46aeef91b186adf381d58b58473",
+      "verification": "build/fastbasic-responsive-editor/re8-clean-source/results.json",
+      "note": "Working-source snapshot at a3cc6ba0 plus delivery documentation; subsequent execution receipts change no production source."
+    },
+    "install": {
+      "status": "pass",
+      "destination": "/Users/michalkurcewicz/atari/fujinet-firmware/build/SD/EXEC816-RE-20261025-2",
+      "zip_sha256": "7ab584c1aab160717f2ef59ce50d8a7ccb12001a033515433c6097274151c01b",
+      "installed_checksums": true,
+      "previous_media_preserved": {
+        "/Users/michalkurcewicz/atari/fujinet-firmware/build/SD/EXEC816/exec816.atr": "87840850ff08e50de84cb82d7c1a6c7f668ea02b3c14cec6977a84e06472c543",
+        "/Users/michalkurcewicz/atari/fujinet-firmware/build/SD/EXEC816-RE-20261025/exec816.atr": "46204dac98b9de095bd11540314206acf28b3dd5063edc2b988e2a1112eec06e"
+      },
+      "original_template_audit": "build/fastbasic-responsive-editor/sd-before.json"
+    },
+    "c_import_abi": 30,
+    "wire_abi": 19,
+    "default_boot": "combined D1 SYS/WORK, OF816 five-second autoboot",
+    "qualification": false,
+    "cold_boot_status": "pass; exact final-package ATR, true cold boot through ROM and OF816, ported tools, writable WORK, native guards/ownership/OS return",
+    "cold_boot": {
+      "path": "build/fastbasic-responsive-editor/re8-final-cold/results.json",
+      "sha256": "5a739aed39af92ec269bdb409d0e757b3a9cedb61dd6a586f948e68f30a1a7d9",
+      "atr_boot": {
+        "first_stage_rom_boot": true,
+        "memlo": 1792,
+        "initial_memtop": 48159,
+        "initial_basicf": 2,
+        "prepared_memtop": 48159,
+        "prepared_basicf": 2,
+        "firmware_to_of_frame": 1532,
+        "countdown_frames": 250,
+        "native_handoff_frame": 23662,
+        "callbacks": 782,
+        "reads": 2638,
+        "source_bytes": 669134,
+        "reader_guards": "intact",
+        "firmware_context_restored": true,
+        "native_bytes_verified": 1760556
+      }
+    }
+  },
+  "completed_slices": [
+    "RE0",
+    "RE1",
+    "RE2",
+    "RE3",
+    "RE4",
+    "RE5",
+    "RE6",
+    "RE7",
+    "RE8"
+  ]
 }

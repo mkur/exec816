@@ -19,7 +19,8 @@ Run keeps the interpreter Process and BASIC state between runs. Try
 A=A+1:PRINT A twice: it prints 1, then 2. Program > Restart interpreter clears
 BASIC state while keeping the source. Changing Integer mode also resets it.
 Repeated DIM keeps arrays of the same type and size; Restart before changing
-those declarations. An idle interpreter continues to occupy a Task/guest slot.
+those declarations. An idle interpreter keeps its Task and parks its BASIC state,
+allowing another guest command to run.
 Source edits are frozen during a job; Save and Save As remain available.
 
 From Shell, FB WORK:CALC.BAS and FBI WORK:HELLO.BAS run source directly.
@@ -35,6 +36,8 @@ Recovery paths displays build paths in output. RAM: contents vanish on reboot.
 This first workbench delivery includes editing, Check, Run, Stop and Build.
 Source debugging and native graphics are pending. FBC/FBCI remain available
 from the shell, including the EDX edit/compile/run workflow.
+Scrolling and line splits/joins preserve existing rows and columns. Horizontal
+scrolling and large edits can still pause; responsiveness work remains open.
 Resident SDX and BASIC execution
 -------------------------------
 
