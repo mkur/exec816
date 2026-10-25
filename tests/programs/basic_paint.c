@@ -77,6 +77,12 @@ WORD ExecAESPainted(WORD window,WORD x,WORD y,WORD width,WORD height)
     return !diagnostic;
 }
 WORD ExecAESPaintedChanges(WORD window) { (void)window;return !diagnostic; }
+WORD ExecAESInvalidate(WORD window,WORD x,WORD y,WORD width,WORD height)
+{
+    (void)window;(void)x;(void)y;
+    if (!locked || width<0 || height<0) { invalid=1;return 0; }
+    return 1;
+}
 void vs_clip(WORD vdi,WORD enabled,const WORD *p)
 { (void)vdi;(void)enabled;memcpy(clip,p,sizeof(clip)); }
 WORD vst_color(WORD vdi,WORD value) { (void)vdi;pen=value;return value; }

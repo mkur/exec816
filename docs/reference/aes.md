@@ -253,8 +253,25 @@ it with `wind_update(END_UPDATE)`. The caller must restrict drawing/model change
 to that window. Nested calls keep the outer scope, including nested ordinary
 `BEG_UPDATE`; an ordinary outer BEGIN still covers every owned window. Empty or
 hidden scoped updates invalidate their target, while untouched siblings remain
-eligible for caching. The helper uses the current wire version 18's UPDATE_WINDOW
-flag and C program import version 27; rebuild programs and their matching host.
+eligible for caching. The helper uses the current wire version 19's UPDATE_WINDOW
+flag and C program import version 28; rebuild programs and their matching host.
+
+`ExecAESInvalidate(window,x,y,width,height)` declares logical damage inside the
+caller's UPDATE scope. Coordinates are screen coordinates clipped to the work
+area, independent of visibility and the VDI user clip. Negative dimensions fail;
+an empty declaration explicitly reports no additional damage. Up to eight
+nonempty rectangles belong to a separate invalidation journal. Overflow fails
+before changing that journal; callers may end the current scope and reacquire.
+Declarations report no painted pixels and invalidate earlier overlapping paint
+completion reports in the same scope. Declare damage before drawing it.
+
+END_UPDATE retains declared obligations across partial repairs and applies
+actual drawing changes outside the declared rectangles conservatively. An
+explicitly declared scope avoids implicit whole-client damage when no drawing
+occurs. Paint completion keeps its separate eight-entry journal and epoch
+checks. A completed empty update preserves a valid saved image; it never clears
+older unsatisfied damage. This uses existing local/presenter ownership and adds
+114 payload bytes to the request/context, with no new bank-zero reservation.
 
 Update ownership also excludes native console painting/scrolling, widget
 feedback, background repair and cache capture. Mouse ownership defers native
@@ -442,14 +459,14 @@ UPDATE requests still wait for MCTRL release, and a queued lock may pause native
 painting. This is a bounded Exec extension, not GEM's synchronous drag-box API.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 18 has a 226-byte request and permits init, exit, update,
+profile: version 19 has a 340-byte request and permits init, exit, update,
 window mutations, cold display delegation, menu publication, session mouse
 preferences, `wind_find` and application outline admission on the RPC endpoint.
 `ExecAESConsole` uses the current `WF_EXEC_CONSOLE` window selector for
 [application-owned console content](console-windows.md#application-owned-gem-console).
 Other window queries and rectangle conversion remain local. The input inbox is
 754 bytes, including 20 bytes of frozen M1 pointer scratch; each registration
-uses 1,306 bytes before heap rounding. Public GEM arrays remain private to each caller. Rebuild
+uses 1,420 bytes before heap rounding. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).

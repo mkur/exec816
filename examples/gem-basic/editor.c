@@ -149,7 +149,7 @@ selected:
 edited:
     ++e->edits;
     line=editFirst;
-    if (oldLines!=d->lines) BasicEditorDamage(e,line,e->first+e->rows);
+    if (oldLines!=d->lines) BasicEditorDamage(e,line,min(e->first+e->rows,max(oldLines,d->lines)));
     else BasicEditorDamage(e,line,editLast+1);
     BasicEditorReveal(e);return BASIC_OK;
 }

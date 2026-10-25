@@ -149,10 +149,14 @@ PUBLIC PROC EndChange(DESKTYPES.Service POINTER service
   complete=(complete<>0 AND LAYERS.PixelsReady(layer,@client)<>0)
   ; Packed pixels share bytes. Include a complete neighbouring pixel at an
   ; odd edit edge; Patch still requires the expanded source to be visible.
-  REGIONS.Assign(@local,(changed.left-layer.bounds.left) & $fffe,
-      changed.top-layer.bounds.top,
-      (changed.right-layer.bounds.left+1) & $fffe,
-      changed.bottom-layer.bounds.top)
+  IF REGIONS.Empty(changed)<>0 THEN
+    REGIONS.Assign(@local,0,0,0,0)
+  ELSE
+    REGIONS.Assign(@local,(changed.left-layer.bounds.left) & $fffe,
+        changed.top-layer.bounds.top,
+        (changed.right-layer.bounds.left+1) & $fffe,
+        changed.bottom-layer.bounds.top)
+  FI
   FOR index=0 TO 1 DO
     IF service.cache.slots(index).identity=window.id THEN
       LAYERCACHE.EndChange(@service.cache.slots(index),

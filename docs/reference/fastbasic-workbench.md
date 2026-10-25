@@ -38,7 +38,9 @@ for subsequent work. Exposure forces reconstruction even when logical appearance
 is unchanged. Deferred and hidden changes publish once before waiting; hidden
 pixels do not keep the editor polling. Completion reports cover successfully
 drawn pixels, with the public conditional completion shortcut for a wholly
-completed edit. No new Task, timer, public ABI or bank-zero reservation is added.
+completed edit. Deferred changes declare source, status and margin damage
+separately through `ExecAESInvalidate`; an empty suffix nominates only rows
+whose appearance can change. No new Task, timer or bank-zero reservation is added.
 Input loss cancels pointer selection. Large gap moves yield in units
 of at most 1 KiB without exposing partial logical text.
 

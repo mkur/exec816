@@ -205,6 +205,7 @@ static WORD begin(struct Paint *p)
     WORD view[4];
     if (!ExecAESBeginUpdate(p->e->app.window)) return 0;
     p->locked=1;p->reports=p->visibleCount=0;
+    if (!ExecAESInvalidate(p->e->app.window,0,0,0,0)) return 0;
     if (!visible(p->e,0,view)) return 0;
     while (view[2] && view[3]) {
         ++p->visibleCount;
@@ -264,6 +265,7 @@ static WORD span(struct Paint *p,UWORD row,UWORD first,UWORD end)
         cost=(clip[2]-rect[0]+7)/8-(clip[0]-rect[0])/8;
         if (cost>p->cells) return 0; /* Visibility may grow at a journal rollover. */
         inclusive[0]=clip[0];inclusive[1]=clip[1];inclusive[2]=clip[2]-1;inclusive[3]=clip[3]-1;
+        if (!ExecAESInvalidate(e->app.window,clip[0],clip[1],clip[2]-clip[0],clip[3]-clip[1])) { p->okay=0;return 0; }
         text_fragment(p,row,first,end,inclusive);
         if (p->okay) p->okay=report(p,clip);
         if (!p->okay) return 0;
@@ -271,24 +273,62 @@ static WORD span(struct Paint *p,UWORD row,UWORD first,UWORD end)
     }
     return p->okay;
 }
-static void margins(struct Paint *p)
+static void margin_bounds(struct BasicEditor *e,UWORD i,WORD *box)
 {
-    struct BasicEditor *e=p->e;struct BasicRefresh *r=state(e);WORD boxes[4][4],clip[4],inclusive[4],view[4];UWORD i,j;
     WORD x=e->app.work[0],y=e->app.work[1],right=x+e->app.work[2],bottom=y+e->app.work[3];
     WORD grid=x+4+e->columns*e->app.cellw,status=y+e->rows*e->app.cellh;
-    boxes[0][0]=x;boxes[0][1]=y;boxes[0][2]=x+4;boxes[0][3]=bottom;
-    boxes[1][0]=grid;boxes[1][1]=y;boxes[1][2]=right;boxes[1][3]=bottom;
-    boxes[2][0]=x+4;boxes[2][1]=status;boxes[2][2]=grid;boxes[2][3]=status+4;
-    boxes[3][0]=x+4;boxes[3][1]=status+12;boxes[3][2]=grid;boxes[3][3]=bottom;
+    box[0]=i==0 ? x:i==1 ? grid:x+4;
+    box[1]=i<2 ? y:i==2 ? status:status+12;
+    box[2]=i==0 ? x+4:i==1 ? right:grid;
+    box[3]=i<2 ? bottom:i==2 ? status+4:bottom;
+}
+static WORD invalidate(struct BasicEditor *e,const WORD *box)
+{
+    return ExecAESInvalidate(e->app.window,box[0],box[1],box[2]-box[0],box[3]-box[1]);
+}
+/* Publish logical obligations without including unrelated status or margins.
+ * Candidate rows not composed yet retain a bounded conservative text repair. */
+static WORD deferred(struct BasicEditor *e)
+{
+    struct BasicRefresh *r=state(e);UWORD row,a=e->rows,b=0,first=e->columns,end=0,i;
+    WORD box[4];
+    for (row=0;row<e->rows;++row) {
+        if (r->valid[row]&CANDIDATE) { r->forceFirst[row]=0;r->forceEnd[row]=e->columns; }
+        if (r->end[row] || r->forceEnd[row]) {
+            a=min(a,row);b=row+1;
+            first=min(first,min(r->first[row],r->forceFirst[row]));
+            end=max(end,max(r->end[row],r->forceEnd[row]));
+        }
+    }
+    if (a<b) {
+        for (row=a;row<b;++row) interval(&r->forceFirst[row],&r->forceEnd[row],first,end);
+        bounds(e,a,first,end,box);box[3]=e->app.work[1]+b*e->app.cellh;
+        if (!invalidate(e,box)) return 0;
+    }
+    first=min(r->statusFirst,r->statusForceFirst);end=max(r->statusEnd,r->statusForceEnd);
+    if (first<end) {
+        interval(&r->statusForceFirst,&r->statusForceEnd,first,end);
+        bounds(e,e->rows,first,end,box);if (!invalidate(e,box)) return 0;
+    }
+    for (i=0;i<4;++i) if (r->padding&(1<<i)) {
+        margin_bounds(e,i,box);if (!invalidate(e,box)) return 0;
+    }
+    return 1;
+}
+static void margins(struct Paint *p)
+{
+    struct BasicEditor *e=p->e;struct BasicRefresh *r=state(e);WORD box[4],clip[4],inclusive[4],view[4];UWORD i,j;
     for (i=p->paddingVisit/AES_VISIBLE_RECTS;i<4 && p->okay;++i) if (r->padding&(1<<i)) {
+        margin_bounds(e,i,box);
         for (j=p->paddingVisit%AES_VISIBLE_RECTS;j<p->visibleCount && p->okay;++j) {
             if (!visible(e,j,view)) { p->okay=0;return; }
-            if (!intersection(boxes[i],view,clip)) continue;
+            if (!intersection(box,view,clip)) continue;
             if (p->fills==8) { p->paddingVisit=i*AES_VISIBLE_RECTS+j;return; }
             if (!room(p)) return;
             if (!visible(e,j,view)) { p->okay=0;return; }
-            if (!intersection(boxes[i],view,clip)) continue;
+            if (!intersection(box,view,clip)) continue;
             inclusive[0]=clip[0];inclusive[1]=clip[1];inclusive[2]=clip[2]-1;inclusive[3]=clip[3]-1;
+            if (!invalidate(e,clip)) { p->okay=0;return; }
             vs_clip(e->app.vdi,1,inclusive);vsf_color(e->app.vdi,0);v_bar(e->app.vdi,inclusive);
             p->okay=ExecAESDiagnostic()==AES_OK;
             if (p->okay) p->okay=report(p,clip);p->drawn=1;
@@ -328,7 +368,8 @@ WORD BasicEditorPaint(struct BasicEditor *e)
     fast=complete(e);
     if (fast<0) { wind_update(END_UPDATE);return 0; }
     if (e->publish && !fast) {
-        force_all(e);p.okay=wind_update(END_UPDATE);
+        p.okay=deferred(e);
+        if (!wind_update(END_UPDATE)) p.okay=0;
         if (p.okay) { ++r->publications;e->publish=0;r->hidden=p.visibleCount==0; }
         return p.okay;
     }

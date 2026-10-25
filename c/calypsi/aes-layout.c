@@ -144,6 +144,8 @@ const UWORD AESLayout[] = {
     offsetof(struct AESRequest, paintCount),
     offsetof(struct AESRequest, paintFailed),
     offsetof(struct AESRequest, paints),
+    offsetof(struct AESRequest, invalidationCount),
+    offsetof(struct AESRequest, invalidations),
     sizeof(struct ExecAESContext),
     offsetof(struct ExecAESContext, request),
     offsetof(struct ExecAESContext, menuTree),

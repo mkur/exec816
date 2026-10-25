@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-25",
+  "status": "implementation-in-progress",
+  "tier": "development",
+  "qualification": false,
+  "source_baseline": "de7dfce9",
+  "slices": {
+    "RE0": "frozen source/package and observers; matched physical baseline running",
+    "RE1": "implemented; development checks pass",
+    "RE2": "pending",
+    "RE3": "pending",
+    "RE4": "pending",
+    "RE5": "pending",
+    "RE6": "pending",
+    "RE7": "pending",
+    "RE8": "pending"
+  },
+  "source_manifest": {
+    "abi/aes-server.json": "13584855f629aa1c701216a2c6339cd018a4d1c5299844a136b25ef30cd67c5b",
+    "abi/c-program.json": "1be61a533dc1effce287f704c5c65f810c41fe13426f48f585e2fb9a631170f8",
+    "c/calypsi/aes-layout.c": "51c8b7303ea79fa2e4e42087363ce416daa83ced8f58df198c7e74b7c92a85cf",
+    "c/calypsi/aes-windows.c": "a186170176bb405ace58023fab0af5ef91b214063ec92fa0a2b74d2aab6bac41",
+    "c/include/exec816/aes-wire.h": "5ec4234916f57a4e3749f5ea518536e175ba2c1528d24f35c8d3a097c04b9d87",
+    "c/include/exec816/aes.h": "817233fdb705481a246d50cd19988c4d991fa11f17c862b9b7e972e69a8e1772",
+    "examples/gem-basic/editor-paint.c": "2fd953d28e2ee0e07af49c68db3392de380be2663910b27793e0cc868062effc",
+    "examples/gem-basic/editor.c": "087f728a5f2e35afba6a440e02dbeb8474b7c6eaccbc37e52872793c1d3684aa",
+    "lib/aes/aestypes.act": "42c3d0e62c7aa2307d940c70cd911fb17a0f245bba08b615301ddf6284d1d51f",
+    "lib/aes/aeswindowstate.act": "acc524bf091d36c86a43aa217e432c67951b1083922a0e1b5ba85654008aabab",
+    "lib/desktop/deskcache.act": "c939cddaa8ca321f5ab6d8057b892e8ab764622f7138573b03132f97a5185ae2",
+    "lib/display/layercache.act": "04b296e5ea7c309525f9e569fe1ef2afd164d40d9a1605aa6ba1eaadf819b70c",
+    "lib/dos/c-program-abi.inc": "137eb420da5ef227f9a7c84b8b3f1f0a2481a64370cea20095e988da82c964fb",
+    "tests/programs/aes_bindings.c": "425162f327dc58336596ac5dbf2e7c0f80f4f4e6d0b28632192d3997907c6159",
+    "tests/programs/aes_peer_binding.c": "d32285225844dc93c0b980e9494cba93479abf323813748ae2db666c79c0c1e3",
+    "tests/programs/basic_paint.c": "b442bb93e7327a20beed475117e75e1149a50dc540d9463917f25be34fcbeb88",
+    "tests/test_desktop_contract.py": "373da9be138f3f2a6274031be76dc1ed715d0a92398fd545a1fbccab8f8d4920",
+    "tests/programs/aes_damage.c": "01c810969883a61bd21135bda4b644f86367b2cbc5b66ce09583825dca88df3e",
+    "tools/test_aes_damage.py": "acb6b28f767c9b8788310095fc84bb1b2e522d44864a2665aa84814dac7874cb"
+  },
+  "development_checks": [
+    {
+      "path": "build/fastbasic-responsive-editor/re1-painter/results.json",
+      "sha256": "2cdb6bfb1b9993a37546a94d7c2b3ebdcee544bfda92f6b6d15f7c7034677cab",
+      "checks": 83,
+      "status": "pass"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re1-damage-opt/results.json",
+      "sha256": "9bbbdfabfab765cb238b59dca132971c5d47a6150deacd324392f415be5b8807",
+      "checks": 25,
+      "status": "pass"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re1-damage-raw/results.json",
+      "sha256": "74d7810c0a42feed3e27815c40b0679a070557970ca2ad47b635d85cee9570cb",
+      "checks": 25,
+      "status": "pass"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re1-bindings-final/results.json",
+      "sha256": "689e5b52c55a4d4b8c10db1ba48554b67992a69f0a893d5be48789b9d6b5e987",
+      "checks": 357,
+      "status": "pass"
+    }
+  ],
+  "host_checks": {
+    "path": "build/fastbasic-responsive-editor/re1-host.log",
+    "sha256": "dc445d3859c2aa51bff3fac6f240349b41d1a31c15bcbdbf356cd22ba009ab97",
+    "tests": 651,
+    "status": "pass"
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "aes_request_payload": [
+      226,
+      340
+    ],
+    "aes_context_payload": [
+      482,
+      596
+    ],
+    "aes_context_rounded": [
+      488,
+      600
+    ],
+    "editor_reserved_delta": 0,
+    "vdi_reserved_delta": 0,
+    "persistent_vram_delta": 0
+  },
+  "performance": {
+    "status": "pending matched candidate; no latency acceptance claimed",
+    "baseline": "docs/development/fastbasic-responsive-editor-baseline.json"
+  }
+}

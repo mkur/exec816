@@ -147,6 +147,7 @@ PUBLIC PROC BeginUpdate(AESSTATE.Client POINTER client)
   LET desktop=DESKSTATE.Get()
   client.binding.paintCount=0
   client.binding.paintFailed=0
+  client.binding.invalidationCount=0
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
     IF service.windows(index).owner=client.id
         AND (service.updateWindow=0
@@ -180,10 +181,25 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
         LET view=item.view
         LET layer=LAYERS.Find(@desktop.scene,item.window.layer)
         same=(view.paintEpoch=layer.paintEpoch)
-        IF view.changed<>0 THEN
+        IF (view.changed & AESTYPES.CHANGE_DECLARED)<>0 THEN
+          report=0
+          WHILE report<request.invalidationCount DO
+            BEGIN
+              LET damage=@request.invalidations(report)
+              IF damage.handle=view.handle AND damage.epoch=view.paintEpoch THEN
+                LAYERS.RequirePaint(@desktop.scene,layer.id,
+                    LAYERTYPES.Rect POINTER(@damage.rect))
+              FI
+            END
+            report==+1
+          OD
+        FI
+        IF (view.changed & AESTYPES.CHANGE_UNDECLARED)<>0 OR
+            ((view.changed & AESTYPES.CHANGE_DECLARED)=0 AND
+              (view.changed & AESTYPES.CHANGE_RECT)<>0) THEN
           LAYERS.RequirePaint(@desktop.scene,layer.id,
               LAYERTYPES.Rect POINTER(@view.change))
-        ELSE
+        ELSEIF (view.changed & AESTYPES.CHANGE_DECLARED)=0 THEN
           ; An unreported model change must not become a new idle capture of
           ; the old pixels. Explicit completion reports may still retire it.
           LAYERS.RequirePaint(@desktop.scene,layer.id,
@@ -200,7 +216,7 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
               accepted=LAYERS.Painted(@desktop.scene,layer.id,layer.paintEpoch,
                   LAYERTYPES.Rect POINTER(@paint.rect))
               painted=painted OR accepted
-              IF accepted<>0 AND view.changed<>0
+              IF accepted<>0 AND (view.changed & AESTYPES.CHANGE_RECT)<>0
                   AND REGIONS.Contains(LAYERTYPES.Rect POINTER(@paint.rect),
                       LAYERTYPES.Rect POINTER(@view.change))<>0 THEN
                 complete=1
@@ -209,6 +225,11 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
           END
           report==+1
         OD
+        IF (view.changed & AESTYPES.CHANGE_RECT)=0 THEN
+          REGIONS.Assign(LAYERTYPES.Rect POINTER(@view.change),
+              view.work.left,view.work.top,view.work.left,view.work.top)
+        FI
+        complete=(same<>0 AND request.paintFailed=0)
         DESKCACHE.EndChange(desktop,item.window,
             LAYERTYPES.Rect POINTER(@view.change),complete)
         IF painted<>0 THEN
@@ -220,6 +241,7 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
     FI
   OD
   request.paintCount=0
+  request.invalidationCount=0
 
 RETURN
 

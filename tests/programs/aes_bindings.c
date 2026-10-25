@@ -97,6 +97,24 @@ UWORD AESRun(void)
     CHECK(menu_bar(menu,1));
     peer=CreateTask("AES binding peer",0,(APTR)AESClientOne,1024UL);CHECK(peer!=0);
     while (peer && !AESReady) Wait(wake);
+    {
+        WORD full[4]={work[0],work[1],work[0]+work[2]-1,work[1]+work[3]-1};
+        WORD part[4]={work[0]+4,work[1]+4,work[0]+11,work[1]+11};
+        CHECK(ExecAESBeginUpdate(window));v_bar(handle,full);
+        CHECK(ExecAESPainted(window,work[0],work[1],work[2],work[3]));CHECK(wind_update(END_UPDATE));
+        CHECK(ExecAESBeginUpdate(window));CHECK(c->view->pixelsReady);
+        CHECK(ExecAESInvalidate(window,0,0,0,0));CHECK(wind_update(END_UPDATE));
+        CHECK(ExecAESBeginUpdate(window));CHECK(c->view->pixelsReady);
+        CHECK(ExecAESInvalidate(window,part[0],part[1],8,8));CHECK(wind_update(END_UPDATE));
+        CHECK(ExecAESBeginUpdate(window));CHECK(!c->view->pixelsReady);
+        CHECK(ExecAESInvalidate(window,part[0],part[1],8,8));v_bar(handle,part);
+        CHECK(ExecAESPainted(window,part[0],part[1],8,8));CHECK(wind_update(END_UPDATE));
+        CHECK(ExecAESBeginUpdate(window));CHECK(c->view->pixelsReady);
+        CHECK(wind_update(END_UPDATE));
+        CHECK(ExecAESBeginUpdate(window));CHECK(!c->view->pixelsReady);
+        v_bar(handle,full);CHECK(ExecAESPainted(window,work[0],work[1],work[2],work[3]));
+        CHECK(wind_update(END_UPDATE));
+    }
     for (kind=0;kind<8;++kind) {
         if (kind>=6) CHECK(ExecAESBeginUpdate(window));
         for (i=0;i<8;++i) CHECK(AESBindingProbe(kind));

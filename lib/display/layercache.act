@@ -126,6 +126,15 @@ PUBLIC PROC EndChange(LAYERTYPES.CacheSlot POINTER slot
     repair.state=0
     RETURN
   FI
+  IF REGIONS.Empty(changed)<>0 THEN
+    IF REGIONS.Empty(@repair.bounds)<>0 THEN
+      slot.valid=1
+      repair.state=0
+    ELSE
+      repair.state=LAYERTYPES.CACHE_CHANGE_READY
+    FI
+    RETURN
+  FI
   IF REGIONS.Empty(@repair.bounds)<>0 THEN
     REGIONS.Copy(changed,@repair.bounds)
   ELSE

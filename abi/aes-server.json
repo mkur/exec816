@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 18,
+  "version": 19,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -124,7 +124,11 @@
     "GUI_FOCUS": 9,
     "WM_UNTOPPED": 30,
     "WM_ONTOP": 31,
-    "WF_EXEC_FOCUS": 24579
+    "WF_EXEC_FOCUS": 24579,
+    "CHANGE_RECT": 1,
+    "CHANGE_DECLARED": 2,
+    "CHANGE_UNDECLARED": 4,
+    "INVALIDATION_REPORTS": 8
   },
   "records": {
     "MenuObject": [
@@ -667,6 +671,15 @@
         "paints",
         "PaintReport",
         "PAINT_REPORTS"
+      ],
+      [
+        "invalidationCount",
+        "CARD"
+      ],
+      [
+        "invalidations",
+        "PaintReport",
+        "INVALIDATION_REPORTS"
       ]
     ]
   },

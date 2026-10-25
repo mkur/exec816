@@ -30,7 +30,7 @@ void ExecAESChanged(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG 
     struct AESWindowView *v=c->view;
     struct AESRect *r=&v->change;
     struct AESRequest *q=&c->request;
-    UWORD i=0;
+    UWORD i=0,covered=0;
     if (left<v->work.left) left=v->work.left;
     if (top<v->work.top) top=v->work.top;
     if (right>v->work.right) right=v->work.right;
@@ -43,14 +43,66 @@ void ExecAESChanged(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG 
             *p=q->paints[--q->paintCount];
         else ++i;
     }
-    if (!v->changed) {
-        r->left=left;r->top=top;r->right=right;r->bottom=bottom;v->changed=1;
+    if (v->changed&AES_CHANGE_DECLARED) for (i=0;i<q->invalidationCount;++i) {
+        struct AESPaintReport *p=&q->invalidations[i];
+        if (p->handle==v->handle && p->epoch==v->paintEpoch &&
+            left>=p->rect.left && top>=p->rect.top && right<=p->rect.right && bottom<=p->rect.bottom) {
+            covered=1;break;
+        }
+    }
+    if (!covered) v->changed|=AES_CHANGE_UNDECLARED;
+    if (!(v->changed&AES_CHANGE_RECT)) {
+        r->left=left;r->top=top;r->right=right;r->bottom=bottom;v->changed|=AES_CHANGE_RECT;
     } else {
         if (left<r->left) r->left=left;
         if (top<r->top) r->top=top;
         if (right>r->right) r->right=right;
         if (bottom>r->bottom) r->bottom=bottom;
     }
+}
+
+WORD ExecAESInvalidate(WORD window,WORD x,WORD y,WORD width,WORD height)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    struct AESWindowView *v;
+    struct AESPaintReport *p;
+    struct AESRect *r;
+    UWORD i;
+    LONG left=x,top=y,right=(LONG)x+width,bottom=(LONG)y+height;
+    if (!c || !(v=ExecAESFindView(c,window)) || !v->updates) return 0;
+    if (width<0 || height<0) { c->diagnostic=AES_MALFORMED;return 0; }
+    if (left<v->work.left) left=v->work.left;
+    if (top<v->work.top) top=v->work.top;
+    if (right>v->work.right) right=v->work.right;
+    if (bottom>v->work.bottom) bottom=v->work.bottom;
+    if (!width || !height || left>=right || top>=bottom) {
+        v->changed|=AES_CHANGE_DECLARED;return 1;
+    }
+    if (c->request.invalidationCount==AES_INVALIDATION_REPORTS) {
+        c->diagnostic=AES_OVERFLOW;return 0;
+    }
+    p=&c->request.invalidations[c->request.invalidationCount++];
+    p->handle=window;p->epoch=v->paintEpoch;
+    p->rect.left=left;p->rect.top=top;p->rect.right=right;p->rect.bottom=bottom;
+    i=0;
+    while (i<c->request.paintCount) {
+        struct AESPaintReport *paint=&c->request.paints[i];
+        if (paint->handle==window && left<paint->rect.right && right>paint->rect.left &&
+            top<paint->rect.bottom && bottom>paint->rect.top)
+            *paint=c->request.paints[--c->request.paintCount];
+        else ++i;
+    }
+    r=&v->change;
+    if (!(v->changed&AES_CHANGE_RECT)) {
+        r->left=left;r->top=top;r->right=right;r->bottom=bottom;
+    } else {
+        if (left<r->left) r->left=left;
+        if (top<r->top) r->top=top;
+        if (right>r->right) r->right=right;
+        if (bottom>r->bottom) r->bottom=bottom;
+    }
+    v->changed|=AES_CHANGE_DECLARED|AES_CHANGE_RECT;
+    return 1;
 }
 
 /* The caller promises complete pixels inside this clip. A journal miss only
@@ -92,7 +144,7 @@ WORD ExecAESPaintedChanges(WORD window)
     struct ExecAESContext *c=ExecAESContext();
     struct AESWindowView *v;
     if (!c || !(v=ExecAESFindView(c,window)) || !v->updates) return 0;
-    if (!v->pixelsReady || !v->changed) return 1;
+    if (!v->pixelsReady || !(v->changed&AES_CHANGE_RECT)) return 1;
     return painted(c,v,v->change.left,v->change.top,
         v->change.right-v->change.left,v->change.bottom-v->change.top);
 }

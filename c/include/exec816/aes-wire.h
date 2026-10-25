@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 18
+#define AES_VERSION 19
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -126,6 +126,10 @@
 #define AES_WM_UNTOPPED 30
 #define AES_WM_ONTOP 31
 #define AES_WF_EXEC_FOCUS 24579
+#define AES_CHANGE_RECT 1
+#define AES_CHANGE_DECLARED 2
+#define AES_CHANGE_UNDECLARED 4
+#define AES_INVALIDATION_REPORTS 8
 struct AESMenuObject {
     WORD next;
     WORD head;
@@ -387,8 +391,10 @@ struct AESRequest {
     UBYTE paintCount;
     UBYTE paintFailed;
     struct AESPaintReport paints[AES_PAINT_REPORTS];
+    UWORD invalidationCount;
+    struct AESPaintReport invalidations[AES_INVALIDATION_REPORTS];
 };
-#define AES_REQUEST_SIZE 226
+#define AES_REQUEST_SIZE 340
 #define AES_REQUEST_OFFSET_MESSAGE 0
 #define AES_REQUEST_OFFSET_VERSION 16
 #define AES_REQUEST_OFFSET_BYTES 18
@@ -416,5 +422,7 @@ struct AESRequest {
 #define AES_REQUEST_OFFSET_PAINTCOUNT 112
 #define AES_REQUEST_OFFSET_PAINTFAILED 113
 #define AES_REQUEST_OFFSET_PAINTS 114
+#define AES_REQUEST_OFFSET_INVALIDATIONCOUNT 226
+#define AES_REQUEST_OFFSET_INVALIDATIONS 228
 #define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_UPDATE || (op)==AES_OP_CREATE || (op)==AES_OP_OPEN || (op)==AES_OP_CLOSE || (op)==AES_OP_DELETE || (op)==AES_OP_SET || (op)==AES_OP_DISPLAY || (op)==AES_OP_MOUSE_PROFILE || (op)==AES_OP_MENU || (op)==AES_OP_FIND || (op)==AES_OP_DRAG_OUTLINE)
 #endif
