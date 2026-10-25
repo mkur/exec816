@@ -102,13 +102,16 @@ UWORD AESRun(void)
         WORD part[4]={work[0]+4,work[1]+4,work[0]+11,work[1]+11};
         CHECK(ExecAESBeginUpdate(window));v_bar(handle,full);
         CHECK(ExecAESPainted(window,work[0],work[1],work[2],work[3]));CHECK(wind_update(END_UPDATE));
+        CHECK(c->view->pixelsReady && c->view->paintEpoch!=0);
         CHECK(ExecAESBeginUpdate(window));CHECK(c->view->pixelsReady);
         CHECK(ExecAESInvalidate(window,0,0,0,0));CHECK(wind_update(END_UPDATE));
         CHECK(ExecAESBeginUpdate(window));CHECK(c->view->pixelsReady);
         CHECK(ExecAESInvalidate(window,part[0],part[1],8,8));CHECK(wind_update(END_UPDATE));
+        CHECK(!c->view->pixelsReady);
         CHECK(ExecAESBeginUpdate(window));CHECK(!c->view->pixelsReady);
         CHECK(ExecAESInvalidate(window,part[0],part[1],8,8));v_bar(handle,part);
         CHECK(ExecAESPainted(window,part[0],part[1],8,8));CHECK(wind_update(END_UPDATE));
+        CHECK(c->view->pixelsReady);
         CHECK(ExecAESBeginUpdate(window));CHECK(c->view->pixelsReady);
         CHECK(wind_update(END_UPDATE));
         CHECK(ExecAESBeginUpdate(window));CHECK(!c->view->pixelsReady);

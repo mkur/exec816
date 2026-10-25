@@ -14,6 +14,9 @@ volatile ULONG BasicPaintStats[80];
 volatile UWORD BasicPaintSizes[]={sizeof(struct BasicRefresh),BASIC_REFRESH_BYTES,
                                 sizeof(((struct BasicEditor *)0)->refresh)};
 static struct BasicEditor e;
+static struct ExecAESContext context;
+static struct AESWindowView view;
+struct ExecAESContext *ExecAESContext(void) { return &context; }
 static UBYTE pixels[WIDTH*HEIGHT],expected[WIDTH*HEIGHT],visited[WIDTH*HEIGHT],lexical[256];
 static UBYTE *target=pixels;
 static WORD rectangles[12][4],count=1,index,clip[4],pen=1,fill,locked,diagnostic;
@@ -163,7 +166,7 @@ static WORD seed(const char *text)
 {
     if (BasicReplace(&e.document,0,e.document.bytes,(const UBYTE *)text,strlen(text))) return 0;
     e.caret=e.anchor=e.first=e.left=0;e.document.saved=e.document.generation;
-    memset(&e.refresh,0,sizeof(e.refresh));memset(pixels,0xcc,sizeof(pixels));
+    memset(&e.refresh,0,sizeof(e.refresh));memset(&e.motion,0,sizeof(e.motion));memset(pixels,0xcc,sizeof(pixels));
     strcpy(e.status,"Ready");BasicAssistanceInit(&e);full_visibility();BasicEditorDamage(&e,0,BASIC_LINES);
     return drain() && picture();
 }
@@ -182,6 +185,17 @@ LONG EXEC_CALL BasicPaintProbe(ULONG unused)
     CHECK(!BasicDocumentInit(&e.document));e.rows=6;e.columns=16;e.app.cellw=e.app.cellh=8;
     e.app.work[0]=8;e.app.work[1]=4;e.app.work[2]=136;e.app.work[3]=64;
     CHECK(seed("alpha1\nbeta22\ngamma3\ndelta4\nepsil5\nzeta66"));
+    context.view=&view;view.paintEpoch=7;
+    CHECK(BasicEditorPaint(&e) && e.motion.state.settled && e.motion.state.epoch==7);
+    CHECK(e.motion.state.line[1]==1 && e.motion.state.offset[1]==e.document.line[1]);
+    e.first=1;CHECK(BasicEditorTranslation(&e) && e.motion.state.sourceRow==1 &&
+        e.motion.state.targetRow==0 && e.motion.state.copyRows==5);
+    e.first=0;e.left=1;CHECK(BasicEditorTranslation(&e) && e.motion.state.sourceColumn==1 &&
+        e.motion.state.targetColumn==0 && e.motion.state.copyColumns==15);
+    e.left=0;e.first=6;CHECK(!BasicEditorTranslation(&e));e.first=0;
+    ++e.app.work[0];CHECK(!BasicEditorTranslation(&e));--e.app.work[0];
+    BasicEditorExpose(&e,8,4,136,64);e.first=1;CHECK(!BasicEditorTranslation(&e));e.first=0;
+    CHECK(drain() && picture());
     turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();
     CHECK(!BasicEditorKey(&e,13,0) && drain() && picture());sample(0,turns,glyphs);
     turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();

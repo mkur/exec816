@@ -60,7 +60,7 @@ static void force_all(struct BasicEditor *e)
 void BasicEditorExpose(struct BasicEditor *e,WORD x,WORD y,WORD w,WORD h)
 {
     struct BasicRefresh *r=state(e);WORD row,a,b,top,left=e->app.work[0]+4;
-    r->hidden=0;
+    r->hidden=0;e->motion.state.settled=e->motion.state.prepared=0;
     a=max(0,(x-left)/e->app.cellw);b=min(e->columns,(x+w-left+e->app.cellw-1)/e->app.cellw);
     for (row=0;row<e->rows;++row) {
         top=e->app.work[1]+row*e->app.cellh;
@@ -72,11 +72,51 @@ void BasicEditorExpose(struct BasicEditor *e,WORD x,WORD y,WORD w,WORD h)
     if (x<left || x+w>left+e->columns*e->app.cellw || y+h>top-4) { r->padding=15;r->paddingVisit=0; }
     e->dirty=1;
 }
+
+static void remember(struct BasicEditor *e)
+{
+    struct BasicMotion *m=&e->motion.state;UWORD row,line;
+    struct ExecAESContext *c=ExecAESContext();
+    m->document=e->document.data;m->generation=e->document.generation;
+    m->top=e->first;m->left=e->left;m->rows=e->rows;m->columns=e->columns;
+    memcpy(m->work,e->app.work,sizeof(m->work));
+    m->epoch=c && c->view ? c->view->paintEpoch:0;
+    m->linear=1;
+    for (row=0;row<e->rows;++row) {
+        line=BasicAssistanceLine(e,row);m->line[row]=line;
+        m->offset[row]=line<e->document.lines ? e->document.line[line]:e->document.bytes;
+        if (line!=e->first+row) m->linear=0;
+    }
+    m->settled=!e->refresh.state.hidden;
+    m->prepared=m->applied=m->editReady=0;
+}
+
+/* Nominations describe a newer model, while this identity describes the last
+ * complete screen. A partial paint/exposure retires it before any later copy. */
+WORD BasicEditorTranslation(struct BasicEditor *e)
+{
+    struct BasicMotion *m=&e->motion.state;WORD rows,columns;UWORD row;
+    m->prepared=0;
+    if (!m->settled || !m->linear || m->document!=e->document.data ||
+        m->generation!=e->document.generation || m->rows!=e->rows ||
+        m->columns!=e->columns || memcmp(m->work,e->app.work,sizeof(m->work))) return 0;
+    if (m->top==e->first && m->left==e->left) return 0;
+    for (row=0;row<e->rows;++row) if (BasicAssistanceLine(e,row)!=e->first+row) return 0;
+    rows=(WORD)m->top-(WORD)e->first;columns=(WORD)m->left-(WORD)e->left;
+    m->sourceRow=max(0,-rows);m->targetRow=max(0,rows);
+    m->sourceColumn=max(0,-columns);m->targetColumn=max(0,columns);
+    m->copyRows=e->rows-max(m->sourceRow,m->targetRow);
+    m->copyColumns=e->columns-max(m->sourceColumn,m->targetColumn);
+    if (m->copyRows<=0 || m->copyColumns<=0) return 0;
+    m->prepared=1;return 1;
+}
+
 static void geometry(struct BasicEditor *e)
 {
     struct BasicRefresh *r=state(e);UWORD row;
     if (r->document==e->document.data && r->top==e->first && r->left==e->left &&
         r->rows==e->rows && r->columns==e->columns && !memcmp(r->work,e->app.work,sizeof(r->work))) return;
+    e->motion.state.settled=e->motion.state.prepared=0;
     r->document=e->document.data;r->top=e->first;r->left=e->left;r->rows=e->rows;r->columns=e->columns;
     memcpy(r->work,e->app.work,sizeof(r->work));r->hidden=0;
     for (row=0;row<BASIC_VIEW_ROWS;++row) {
@@ -354,10 +394,11 @@ WORD BasicEditorPaint(struct BasicEditor *e)
 {
     struct BasicRefresh *r=state(e);struct Paint p;UWORD row,first,end,count=0,limit;WORD fast;
     geometry(e);
+    e->motion.state.settled=e->motion.state.prepared=0;
     for (row=0;row<e->rows && count<ROW_BUDGET;++row) if (r->valid[row]&CANDIDATE) { compose(e,row);++count; }
     if (!candidates(e)) r->documentGeneration=e->document.generation;
     if (r->statusState!=VALID || r->status[0]!=(BasicDirty(&e->document) ? '*':' ')) compose_status(e);
-    if (!pending(e) && !candidates(e)) { e->dirty=e->publish=0;return 1; }
+    if (!pending(e) && !candidates(e)) { e->dirty=e->publish=0;remember(e);return 1; }
     if (r->hidden && !e->publish) {
         for (row=0;row<e->rows;++row) { r->first[row]=r->forceFirst[row]=BASIC_VIEW_COLUMNS;r->end[row]=r->forceEnd[row]=0; }
         r->statusFirst=r->statusForceFirst=BASIC_VIEW_COLUMNS;r->statusEnd=r->statusForceEnd=r->padding=0;
@@ -391,5 +432,6 @@ WORD BasicEditorPaint(struct BasicEditor *e)
     if (!p.okay) return 0;
     acknowledge(e);r->paddingVisit=r->padding ? p.paddingVisit:0;
     e->publish=0;e->dirty=pending(e) || candidates(e);++e->paintTurns;
+    if (!e->dirty) remember(e);
     return 1;
 }

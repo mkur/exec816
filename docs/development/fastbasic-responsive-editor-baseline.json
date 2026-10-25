@@ -982,5 +982,75 @@
     "source_tree": "build/fastbasic-responsive-editor/baseline-source",
     "emulator_override": "build/fastbasic-responsive-editor/bridge/observer.json",
     "scope": "Independent whole client pixels; physical file selector and keyboard; event-dispatch trace and frame-observed scanout"
+  },
+  "physical_measurement": {
+    "path": "build/fastbasic-responsive-editor/baseline-v5/results.json",
+    "sha256": "53de33d8344dc4d8727dced1f8309d71de87312658b7cd406eaff82e8a9eab5f",
+    "samples": 281,
+    "ordinary_cohort_samples": 20,
+    "far_gap_samples": 1,
+    "scope": "Frozen source/package; matching physical observer and independent full-client pixels, no cold boot qualification. Analysis readiness-window truncation repaired from retained passive CPU events."
+  },
+  "physical_p95_ms": {
+    "append": {
+      "input_ready_ms": 102.79568467631549,
+      "scanout_ms": 100.2792583372217
+    },
+    "backspace": {
+      "input_ready_ms": 103.2737084125693,
+      "scanout_ms": 100.27982221069414
+    },
+    "caret_left": {
+      "input_ready_ms": 78.52790962235984,
+      "scanout_ms": 80.22340666977738
+    },
+    "caret_right": {
+      "input_ready_ms": 79.9019987904914,
+      "scanout_ms": 80.22340666977738
+    },
+    "delete": {
+      "input_ready_ms": 102.79448644518656,
+      "scanout_ms": 100.2792583372217
+    },
+    "far_gap": {
+      "input_ready_ms": 415.4715603365761,
+      "scanout_ms": 401.1170333488868
+    },
+    "insert": {
+      "input_ready_ms": 102.77721782009336,
+      "scanout_ms": 100.2792583372217
+    },
+    "middle_join": {
+      "input_ready_ms": 226.45482880096534,
+      "scanout_ms": 1484.1335872643538
+    },
+    "middle_newline": {
+      "input_ready_ms": 205.1219446868317,
+      "scanout_ms": 1464.0777355969094
+    },
+    "scroll_down": {
+      "input_ready_ms": 207.1907259729989,
+      "scanout_ms": 1624.5239850629916
+    },
+    "scroll_left": {
+      "input_ready_ms": 135.06799609235685,
+      "scanout_ms": 1584.412281728103
+    },
+    "scroll_right": {
+      "input_ready_ms": 130.24053432650248,
+      "scanout_ms": 1604.4681333955473
+    },
+    "scroll_up": {
+      "input_ready_ms": 238.0773183305398,
+      "scanout_ms": 1644.5804006039084
+    },
+    "top_join": {
+      "input_ready_ms": 213.27640090840018,
+      "scanout_ms": 1624.5239850629916
+    },
+    "top_newline": {
+      "input_ready_ms": 192.86030457625614,
+      "scanout_ms": 1604.46869726902
+    }
   }
 }

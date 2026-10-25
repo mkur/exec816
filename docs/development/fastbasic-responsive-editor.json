@@ -6,10 +6,10 @@
   "qualification": false,
   "source_baseline": "de7dfce9",
   "slices": {
-    "RE0": "frozen source/package and observers; matched physical baseline running",
+    "RE0": "frozen package; 281 physical samples and full-client pixels captured; matched candidate pending",
     "RE1": "implemented; development checks pass",
     "RE2": "implemented; development checks pass",
-    "RE3": "pending",
+    "RE3": "implemented; 91 painter/presentation and live AES checks pass",
     "RE4": "pending",
     "RE5": "pending",
     "RE6": "pending",
@@ -23,16 +23,16 @@
     "c/calypsi/aes-windows.c": "a186170176bb405ace58023fab0af5ef91b214063ec92fa0a2b74d2aab6bac41",
     "c/include/exec816/aes-wire.h": "5ec4234916f57a4e3749f5ea518536e175ba2c1528d24f35c8d3a097c04b9d87",
     "c/include/exec816/aes.h": "817233fdb705481a246d50cd19988c4d991fa11f17c862b9b7e972e69a8e1772",
-    "examples/gem-basic/editor-paint.c": "2fd953d28e2ee0e07af49c68db3392de380be2663910b27793e0cc868062effc",
+    "examples/gem-basic/editor-paint.c": "97d1ec0f979c954255fdb3596181195baa130ffb077511c8c3e7ee7eed60d9bd",
     "examples/gem-basic/editor.c": "087f728a5f2e35afba6a440e02dbeb8474b7c6eaccbc37e52872793c1d3684aa",
     "lib/aes/aestypes.act": "42c3d0e62c7aa2307d940c70cd911fb17a0f245bba08b615301ddf6284d1d51f",
-    "lib/aes/aeswindowstate.act": "acc524bf091d36c86a43aa217e432c67951b1083922a0e1b5ba85654008aabab",
+    "lib/aes/aeswindowstate.act": "a79ccb8f3238bfb998387a78dd1413ca917799afb202d618024f836c1d6e24c2",
     "lib/desktop/deskcache.act": "c939cddaa8ca321f5ab6d8057b892e8ab764622f7138573b03132f97a5185ae2",
     "lib/display/layercache.act": "04b296e5ea7c309525f9e569fe1ef2afd164d40d9a1605aa6ba1eaadf819b70c",
     "lib/dos/c-program-abi.inc": "137eb420da5ef227f9a7c84b8b3f1f0a2481a64370cea20095e988da82c964fb",
-    "tests/programs/aes_bindings.c": "425162f327dc58336596ac5dbf2e7c0f80f4f4e6d0b28632192d3997907c6159",
+    "tests/programs/aes_bindings.c": "a3590bfc413a77ea08eafa07ba18fc11ac88674c5c4a4a932592d402ba4ae553",
     "tests/programs/aes_peer_binding.c": "d32285225844dc93c0b980e9494cba93479abf323813748ae2db666c79c0c1e3",
-    "tests/programs/basic_paint.c": "b442bb93e7327a20beed475117e75e1149a50dc540d9463917f25be34fcbeb88",
+    "tests/programs/basic_paint.c": "3f2e0b006c30a7e76b60cce9e42eb9059ebdbf76169f02919f4975f73c93a53c",
     "tests/test_desktop_contract.py": "373da9be138f3f2a6274031be76dc1ed715d0a92398fd545a1fbccab8f8d4920",
     "tests/programs/aes_damage.c": "01c810969883a61bd21135bda4b644f86367b2cbc5b66ce09583825dca88df3e",
     "tools/test_aes_damage.py": "acb6b28f767c9b8788310095fc84bb1b2e522d44864a2665aa84814dac7874cb",
@@ -45,7 +45,10 @@
     "tests/programs/aes_vdi.c": "992a414cab460a7920195f88a1ef9b45f0cd1877cb8a54283e139bf5c6d724cf",
     "tools/test_vdi_client.py": "641baedac1f29b4c232a7d4dc40e97a2a42037cf8b44e5b707c7098cc52dbab9",
     "tests/programs/vdi_copy_abi.c": "5d35530e3aded4e9a1f18d8bbe13a91f6cafe537693b6b1227d77219c4fb68b7",
-    "tools/test_vdi_copy_abi.py": "e85ce3469505bb9b732ac4803bb8ead00155af53c756818a990c62361f2d0185"
+    "tools/test_vdi_copy_abi.py": "e85ce3469505bb9b732ac4803bb8ead00155af53c756818a990c62361f2d0185",
+    "examples/gem-basic/editor.h": "8c1a1441e169fd1a83c032037dccde867afc1e51d5fcc6260787525c7998b588",
+    "tools/workbench_interaction.py": "28db4d4378ae409851cef828ff3e1127164ff8234600e489420a197e7eee5b24",
+    "tools/measure_fastbasic_responsive.py": "c65ff1e852e4bc7c909aaad67b4b1d56a716abfbef2f1839ee10afb53c9e2053"
   },
   "development_checks": [
     {
@@ -110,6 +113,18 @@
       "status": "pass",
       "checks": 705,
       "copy_pixel_scenes": 22
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re3-painter/results.json",
+      "sha256": "69d5ab326bf3f323443962fd96c649ace4bbafc9f0b32498865481cd5603ddb9",
+      "status": "pass",
+      "checks": 91
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re3-bindings/results.json",
+      "sha256": "16027d6ef3ff94b547becf19b9373073e0f85d2b7e2093e4ac7c20f761c3bc75",
+      "status": "pass",
+      "checks": 362
     }
   ],
   "host_checks": {
@@ -150,7 +165,7 @@
       488,
       600
     ],
-    "editor_reserved_delta": 0,
+    "editor_reserved_delta": 512,
     "vdi_reserved_delta": 512,
     "persistent_vram_delta": 0,
     "vdi_payload": [
@@ -162,7 +177,13 @@
       896
     ],
     "vdi_copy_descriptor": 32,
-    "vdi_edge_staging": 480
+    "vdi_edge_staging": 480,
+    "editor_model": [
+      6784,
+      7296
+    ],
+    "editor_refresh_reserved": 5632,
+    "editor_motion_reserved": 512
   },
   "performance": {
     "status": "pending matched candidate; no latency acceptance claimed",
@@ -200,5 +221,13 @@
       "peak": 285,
       "remaining_above_floor": 995
     }
+  },
+  "physical_baseline": {
+    "path": "build/fastbasic-responsive-editor/baseline-v5/results.json",
+    "sha256": "53de33d8344dc4d8727dced1f8309d71de87312658b7cd406eaff82e8a9eab5f",
+    "samples": 281,
+    "ordinary_cohort_samples": 20,
+    "far_gap_samples": 1,
+    "scope": "Frozen source/package; matching physical observer and independent full-client pixels, no cold boot qualification. Analysis readiness-window truncation repaired from retained passive CPU events."
   }
 }

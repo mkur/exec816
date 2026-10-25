@@ -33,7 +33,7 @@ twelve public Tasks and idle, including guards, alignment and unused capacity.
 | RE0 | Source/package frozen and permanent drawing-work probes pass; physical observer and matched cohorts in progress. |
 | RE1 | Explicit invalidation and bounded source/status/margin publication implemented; development checks pass. |
 | RE2 | Implemented; 22 independent graphics pixel scenes and ownership checks pass. |
-| RE3 | Pending |
+| RE3 | Settled identity and bounded translation preparation implemented; development checks pass. |
 | RE4 | Pending |
 | RE5 | Pending |
 | RE6 | Pending |
@@ -94,3 +94,30 @@ leaving 124 bytes above its 256-byte floor; its 2,560-byte caller touches 722
 bytes. Kernel peak is 285 of 1,536 bytes. Pools and floors are unchanged.
 These are development checks; reset-required fault injection and coexistence
 measurement remain in RE7.
+
+## RE3 Presentation identity
+
+The editor reserves 512 additional upper bytes for one translation, settled
+source identity and per-visible-row source offsets/line mapping. Its full model
+is 7,296 bytes; combined refresh reservations are 5,632 bytes including spare.
+Compile-time bounds enforce the motion reservation. Existing model field offsets
+remain unchanged. There are no per-key allocations, Tasks, signals or new VRAM.
+Bank-zero reservation deltas remain zero fixed, root/kernel, each public Task
+and idle, including guards, alignment and spare capacity.
+
+Exposure, incomplete painting and changed source/geometry prevent reuse.
+Preparation computes overlapping rows/columns while keeping old/new origins
+separate. AES END_UPDATE now publishes the final paint epoch and PixelsReady,
+so an application can retain the completed presentation identity. The optimized
+painter passes 91 assertions; the live binding fixture checks the returned
+identity after complete, deferred and repaired updates. Actual pixel movement
+is connected in RE4.
+
+The frozen physical baseline contains 281 samples with independent whole-client
+pixels: twenty per ordinary cohort and one separate far-gap observation. Readiness
+is separately derived from passive Task-owned event-dispatch entries. A parser
+bug that truncated readiness at complete scanout was repaired using the retained
+trace, without changing physical input or cadence. Top Return/join scanout p95
+is 1,604/1,625 ms; scrolling p95 is 1,584–1,645 ms across the four directions.
+The single far-gap sample is 401 ms scanout / 415 ms readiness, and does not
+establish a distribution. All baseline timing gates remain as specified.

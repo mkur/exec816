@@ -214,11 +214,12 @@ class ResponsiveMeasurement:
                 field='first' if operation in ('scroll_up','scroll_down') else 'left'
                 sign=1 if operation in ('scroll_up','scroll_left') else -1
                 require(sample[field+'_after']-sample[field+'_before']==sign,'Scroll did not move one cell: '+str(sample))
+            settled()
+            sample['dispatch_observation_end_clock']=clock()
             if measure:
                 self.record['samples'].append(sample)
                 (self.output/'samples.json').write_text(json.dumps(self.record,indent=2)+'\n')
                 print(operation,index,round(sample['scanout_ms'],2),'ms scanout',flush=True)
-            settled()
         load()
         key('far_gap',0,'Q',edit='insert')
         key('warm',0,'BACKSPACE',edit='backspace',measure=False)
@@ -257,6 +258,25 @@ class ResponsiveMeasurement:
         b._cmd_ok('KEY RETURN down');b.bp_clear_all()
 
 
+def readiness(record,events,wait):
+    waits=[t for t,e in events if int(e[4],16)==wait and int(e[9],16)==record['task_dp']]
+    for index,sample in enumerate(record['samples']):
+        start=sample['started_clock'];model=(sample['model_clock']-start)&0xffffffff
+        # Old frozen captures ended the scanout observation before waiting for
+        # dispatch. That following settled() still guarantees a dispatch before
+        # another input; retain its original 240-frame observation bound.
+        end=(sample['dispatch_observation_end_clock']-start)&0xffffffff if 'dispatch_observation_end_clock' in sample else 240*312*114
+        entries=[(t-start)%(1<<32) for t in waits if model<=(t-start)%(1<<32)<=end]
+        candidates=[min(entries)*1000/BASE_HZ] if entries else []
+        if sample['input_ready_ms'] is not None:candidates.append(sample['input_ready_ms'])
+        require(candidates,'No event-dispatch readiness evidence: '+str(sample))
+        sample['input_ready_ms']=min(candidates)
+    record['readiness_observer']='First Task-owned ExecAESWait entry after model observation, or earlier observed waiting state; includes frame-observation upper bounds and can follow scanout'
+    record['summaries']={op:{key:distribution([v[key] for v in record['samples'] if v['operation']==op])
+        for key in ('input_ready_ms','scanout_ms')} for op in sorted({v['operation'] for v in record['samples']})}
+    return record
+
+
 def measure(bundle,output,count=20,snapshot=None,observer_pin=None):
     output.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(bundle/'exec816-demo.zip') as archive:archive.extractall(output/'extracted')
@@ -276,19 +296,7 @@ def measure(bundle,output,count=20,snapshot=None,observer_pin=None):
         result=run(bundle,boot_smoke=True,distribution_root=output/'extracted/exec816-demo',
             integration=observer,profile_commands=False,bootstrap=bootstrap,media_path=media,
             diagnostic_media_sha256=sha256(media),emulator_output=output,emulator_override=observer_pin)
-    waits=[t for t,e in read_events(output/'emulator.log',kinds={'cpu'})
-           if int(e[4],16)==wait and int(e[9],16)==observer.record['task_dp']]
-    for sample in observer.record['samples']:
-        start=sample['started_clock'];model=(sample['model_clock']-start)&0xffffffff
-        end=(sample['observation_end_clock']-start)&0xffffffff
-        entries=[(t-start)%(1<<32) for t in waits if model<=(t-start)%(1<<32)<=end]
-        candidates=[min(entries)*1000/BASE_HZ] if entries else []
-        if sample['input_ready_ms'] is not None:candidates.append(sample['input_ready_ms'])
-        require(candidates,'No event-dispatch readiness evidence: '+str(sample))
-        sample['input_ready_ms']=min(candidates)
-    observer.record['readiness_observer']='First Task-owned ExecAESWait entry after model observation, or earlier observed waiting state; includes frame-observation upper bounds'
-    observer.record['summaries']={op:{key:distribution([v[key] for v in observer.record['samples'] if v['operation']==op])
-        for key in ('input_ready_ms','scanout_ms')} for op in sorted({v['operation'] for v in observer.record['samples']})}
+    readiness(observer.record,read_events(output/'emulator.log',kinds={'cpu'}),wait)
     record=dict(status='pass',tier='development',qualification=False,measurement=observer.record,
         machine=result['machine'],runtime=result['runtime'],zip_sha256=sha256(bundle/'exec816-demo.zip'),
         observer_sha256=sha256(Path(__file__)),media_sha256=sha256(media),

@@ -6,7 +6,7 @@ from native_program import ROOT,build,compiler,require,sha256,read_build,verify_
 
 FIELDS=dict(ready=8,work=166,document=178,caret=224,anchor=228,first=232,left=234,
             rows=236,columns=238,dirty=244,edits=1576,paintTurns=1580)
-LAYOUT=[('BasicApp size',178),('BasicDocument size',46),('BasicEditor size',6784)]+[
+LAYOUT=[('BasicApp size',178),('BasicDocument size',46),('BasicEditor size',7296)]+[
     ('Basic '+n,FIELDS[n]) for n in ('ready','work','document','caret','anchor','first','left','rows','columns','dirty','edits','paintTurns')]
 
 

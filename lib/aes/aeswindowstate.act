@@ -237,6 +237,11 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
           DESKCACHE.ConsiderSlot(index)
         FI
         view.changed=0
+        ; END's reply publishes the identity of the completed presentation.
+        ; RequirePaint advanced the epoch while consuming this journal.
+        view.paintEpoch=layer.paintEpoch
+        view.pixelsReady=LAYERS.PixelsReady(layer,
+            LAYERTYPES.Rect POINTER(@view.work))
       END
     FI
   OD
