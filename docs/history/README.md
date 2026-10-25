@@ -1,5 +1,9 @@
 # Historical records
 
+- [FastBasic responsive editor](fastbasic-responsive-editor.md): frozen source
+  and package baseline, permanent four-direction painter probes, and RE0–RE8
+  development progress.
+
 - [RAWCON cells and console vectors](rawcon-latency.md): bridge-local get/put,
   one public span request, measured interrupt bounds and rebuilt delivery.
   Input readiness reaches about 80 ms p95; the 120 ms full scanout keeps the

@@ -18,7 +18,7 @@ def logical(out,reuse=False,paint=False):
         # Keep unused GUI entry points discardable in this key-only probe;
         # production painting/event behavior is covered by the loadable APP.
         f=emit(out/'c',sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/image-info.s'],(),True,
-            roots=[probe_name+'Probe',probe_name+'Checks'],
+            roots=[probe_name+'Probe',probe_name+'Checks',*(['BasicPaintStats'] if paint else [])],
             definitions={name:['--no-interprocedural-cross-jump'] for name in ('editor.c','editor-paint.c','assist-ui.c')})
         (out/'c-image.json').write_text(json.dumps(f,indent=2)+'\n')
         source=out/'probe.act'
@@ -39,6 +39,15 @@ def logical(out,reuse=False,paint=False):
             require(observed==[0,0],'Editor assertion line: '+str(observed))
             ownership(b,p,p['output'])
             report.update(status='pass',runtime=runtime,checks=b.peek16(f['symbols'][probe_name+'Checks']))
+            if paint:
+                names=('top_newline','top_join','middle_newline','middle_join','single_character',
+                       'scroll_up','scroll_down','scroll_left','scroll_right','blank_newline')
+                fields=('source_glyphs','status_glyphs','updates','empty_updates','paint_turns',
+                        'total_glyphs','text_calls','full_row_clears')
+                raw=bytes(b.memdump(f['symbols']['BasicPaintStats'],len(names)*len(fields)*4))
+                values=[int.from_bytes(raw[i:i+4],'little') for i in range(0,len(raw),4)]
+                report['drawing_work']={name:dict(zip(fields,values[i*8:(i+1)*8]))
+                                        for i,name in enumerate(names)}
     except Exception as error:
         report.update(status='fail',error=str(error));raise
     finally:(out/'results.json').write_text(json.dumps(report,indent=2)+'\n')

@@ -14,6 +14,12 @@
   [development record](../history/bootable-system-atr.md) covers final-package
   cold boot/save/reboot and temporary versus runtime reservations.
 
+- [FastBasic responsive editor](fastbasic-responsive-editor-implementation-plan.md):
+  proposed RE0 through RE8 slices for reusable four-direction pixel copies,
+  precise AES invalidation, retained row/column movement, fast line splits/joins,
+  bounded large-document editing and matched readiness/scanout acceptance.
+  Preserves the existing paint limits and adds no reserved bank-zero bytes.
+
 - [FastBasic editor incremental repaint design](fastbasic-editor-refresh-design.md):
   implemented retained character/attribute cells, independent row spans, caret and
   status repair, bounded drawing and correct AES publication/exposure handling.

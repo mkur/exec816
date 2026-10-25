@@ -36,6 +36,10 @@ graphics remain open, with separate acceptance gates.
 The [editor refresh record](history/fastbasic-editor-refresh.md) implements
 retained cells, separate caret/status damage and bounded AES updates, with
 physical key-to-scanout development measurements and exposure/hidden repair checks.
+The [responsive editor plan](plans/fastbasic-responsive-editor-implementation-plan.md)
+adds four-direction pixel copying, preserved rows after line insertion/deletion,
+precise deferred invalidation and bounded large-document work. RE0 through RE8
+remain pending, with separate input-ready and complete-scanout acceptance gates.
 The [FastBasic source interpreter](plans/fastbasic-interpreter-design.md) now
 runs `.BAS` through FB/FBI in one guest Process. BASIC.APP Run attaches its
 unsaved buffer to the same engine. Translation stays in memory, with no

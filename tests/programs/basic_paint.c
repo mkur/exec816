@@ -10,6 +10,7 @@
 #define HEIGHT 80
 #define CHECK(x) do { if (!(x)) return __LINE__; ++BasicPaintChecks; } while (0)
 volatile UWORD BasicPaintChecks;
+volatile ULONG BasicPaintStats[80];
 volatile UWORD BasicPaintSizes[]={sizeof(struct BasicRefresh),BASIC_REFRESH_BYTES,
                                 sizeof(((struct BasicEditor *)0)->refresh)};
 static struct BasicEditor e;
@@ -17,7 +18,7 @@ static UBYTE pixels[WIDTH*HEIGHT],expected[WIDTH*HEIGHT],visited[WIDTH*HEIGHT],l
 static UBYTE *target=pixels;
 static WORD rectangles[12][4],count=1,index,clip[4],pen=1,fill,locked,diagnostic;
 static WORD invalid,failDraw,failEnd,failVisible,recording=1,reportCount;
-static ULONG clears,textCells,statusCells,updates,empty,painted;
+static ULONG clears,textCells,statusCells,updates,empty,painted,textCalls;
 static WORD max(WORD a,WORD b) { return a>b ? a:b; }
 static WORD min(WORD a,WORD b) { return a<b ? a:b; }
 static WORD visible_pixel(WORD x,WORD y)
@@ -89,6 +90,7 @@ void v_bar(WORD vdi,const WORD *p)
 void v_gtext(WORD vdi,WORD x,WORD y,const char *text)
 {
     (void)vdi;
+    if (recording) ++textCalls;
     if (failDraw) { failDraw=0;diagnostic=AES_DISPLAY_ERROR;return; }
     while (*text) {
         glyph(x,y-6,*text++,pen);
@@ -110,7 +112,7 @@ static WORD drain(void)
     }
     return !e.dirty && !locked && !invalid;
 }
-static void reset_counts(void) { clears=textCells=statusCells=updates=empty=0; }
+static void reset_counts(void) { clears=textCells=statusCells=updates=empty=textCalls=0; }
 /* Rebuild the complete viewport from source offsets, independent of the cache. */
 static WORD picture(void)
 {
@@ -159,12 +161,47 @@ static WORD seed(const char *text)
     strcpy(e.status,"Ready");BasicAssistanceInit(&e);full_visibility();BasicEditorDamage(&e,0,BASIC_LINES);
     return drain() && picture();
 }
+static void sample(UWORD index,ULONG turns,ULONG glyphs)
+{
+    volatile ULONG *v=BasicPaintStats+index*8;
+    v[0]=textCells-statusCells;v[1]=statusCells;v[2]=updates;v[3]=empty;
+    v[4]=e.paintTurns-turns;v[5]=e.refresh.state.glyphs-glyphs;
+    v[6]=textCalls;v[7]=clears;
+}
+
 LONG EXEC_CALL BasicPaintProbe(ULONG unused)
 {
-    ULONG baseline=AvailMem(MEMF_UPPER),before;UWORD i,row;UBYTE saved;
+    ULONG baseline=AvailMem(MEMF_UPPER),before,turns,glyphs;UWORD i,row;UBYTE saved;
     (void)unused;CHECK(BasicPaintSizes[2]==5120);CHECK(BasicPaintSizes[0]<=BasicPaintSizes[1]);
     CHECK(!BasicDocumentInit(&e.document));e.rows=6;e.columns=16;e.app.cellw=e.app.cellh=8;
     e.app.work[0]=8;e.app.work[1]=4;e.app.work[2]=136;e.app.work[3]=64;
+    CHECK(seed("alpha1\nbeta22\ngamma3\ndelta4\nepsil5\nzeta66"));
+    turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();
+    CHECK(!BasicEditorKey(&e,13,0) && drain() && picture());sample(0,turns,glyphs);
+    turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();
+    CHECK(!BasicEditorKey(&e,8,0) && drain() && picture());sample(1,turns,glyphs);
+    CHECK(seed("alpha1\nbeta22\ngamma3\ndelta4\nepsil5\nzeta66"));
+    e.caret=e.anchor=e.document.line[3];BasicEditorReveal(&e);BasicEditorRows(&e,0,1);
+    CHECK(drain() && picture());
+    turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();
+    CHECK(!BasicEditorKey(&e,13,0) && drain() && picture());sample(2,turns,glyphs);
+    turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();
+    CHECK(!BasicEditorKey(&e,8,0) && drain() && picture());sample(3,turns,glyphs);
+    CHECK(seed("alpha1\nbeta22\ngamma3\ndelta4\nepsil5\nzeta66"));
+    turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();
+    CHECK(!BasicEditorKey(&e,'q',0) && drain() && picture());sample(4,turns,glyphs);
+    CHECK(seed("alpha1\nbeta22\ngamma3\ndelta4\nepsil5\nzeta66"));
+    turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();
+    e.first=1;BasicEditorDamage(&e,0,BASIC_LINES);CHECK(drain() && picture());sample(5,turns,glyphs);
+    turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();
+    e.first=0;BasicEditorDamage(&e,0,BASIC_LINES);CHECK(drain() && picture());sample(6,turns,glyphs);
+    CHECK(seed("abcdefghijklmnopqrstuvwx\nabcdefghijklmnopqrstuvwx\nabcdefghijklmnopqrstuvwx"));
+    turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();
+    e.left=1;BasicEditorDamage(&e,0,BASIC_LINES);CHECK(drain() && picture());sample(7,turns,glyphs);
+    turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();
+    e.left=0;BasicEditorDamage(&e,0,BASIC_LINES);CHECK(drain() && picture());sample(8,turns,glyphs);
+    CHECK(seed(""));turns=e.paintTurns;glyphs=e.refresh.state.glyphs;reset_counts();
+    CHECK(!BasicEditorKey(&e,13,0) && drain() && picture());sample(9,turns,glyphs);
     CHECK(seed(""));reset_counts();
     CHECK(!BasicEditorKey(&e,'a',0) && drain() && picture());
     CHECK(!clears && textCells==3 && statusCells==1 && updates==1 && !empty);
