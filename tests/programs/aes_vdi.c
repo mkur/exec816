@@ -253,6 +253,59 @@ static void draw(UWORD who,WORD handle,WORD window)
     CHECK(c->request.paintCount==0);
 }
 
+/* Source patterns deliberately vary within bytes, rows and glyphs. */
+static void copy_pattern(WORD handle,WORD window)
+{
+    WORD x,y,w,h,p[4],row;
+    CHECK(ExecAESBeginUpdate(window));
+    CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
+    vs_clip(handle,0,p);vswr_mode(handle,MD_REPLACE);
+    for (row=0;row<h;row+=8) {
+        p[0]=x;p[1]=y+row;p[2]=x+w-1;p[3]=y+row+7;
+        vsf_color(handle,(row/8)%16);v_bar(handle,p);
+        vst_color(handle,15-(row/8)%16);
+        v_gtext(handle,x+1,y+row+6,"ABc09xy! QTuvwxyz013579! ABCDEFGHIJKLMNOPQRSTUVWX");
+    }
+    CHECK(ExecAESPainted(window,x,y,w,h));
+    CHECK(wind_update(END_UPDATE));
+}
+
+/* Screen coordinates are local to the top window; host expectations perform
+ * a separate snapshot-and-translate operation on independent source pixels. */
+static const WORD copyCases[][6]={
+    {16,16,240,80,0,-8},{16,16,240,80,0,8},
+    {16,16,240,80,-8,0},{16,16,240,80,8,0},
+    {17,16,240,80,0,-8},{17,16,240,80,0,8},
+    {17,16,240,80,-8,0},{17,16,240,80,8,0},
+    {17,16,239,80,-8,8},{16,16,239,80,8,-8},
+    {17,16,241,80,8,8},{16,16,240,80,-8,-8},
+    {17,16,1,80,8,0},{16,16,1,80,-8,0},
+    {17,16,240,1,8,0},{16,16,240,80,1,0},
+    {-1,16,240,80,8,0},{32767,16,240,80,8,0},
+    {16,16,0,80,8,0},{16,16,240,0,8,0},
+    {16,16,240,80,0,0},{16,16,240,80,8,0}
+};
+static void copy_case(WORD handle,WORD window,UWORD index)
+{
+    WORD x,y,w,h,p[4],result,expected=EXEC_VDI_COPY_DONE;
+    const WORD *c=copyCases[index];
+    copy_pattern(handle,window);
+    CHECK(ExecAESBeginUpdate(window));
+    CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
+    CHECK(ExecAESContext()->view->pixelsReady);
+    CHECK(ExecAESInvalidate(window,0,0,0,0));
+    if (index>=15 && index<=17) expected=EXEC_VDI_COPY_REDRAW;
+    if (index==21) {
+        p[0]=x+20;p[1]=y;p[2]=x+w-1;p[3]=y+h-1;
+        vs_clip(handle,1,p);expected=EXEC_VDI_COPY_REDRAW;
+    }
+    result=ExecVDICopyRect(handle,(WORD)(x+c[0]),y+c[1],c[2],c[3],c[4],c[5]);
+    CHECK(result==expected && ExecAESDiagnostic()==AES_OK);
+    CHECK(ExecAESPaintedChanges(window));
+    CHECK(wind_update(END_UPDATE));
+    vs_clip(handle,0,p);
+}
+
 static void worker(UWORD who)
 {
     BYTE bit=AllocSignal(-1),reserved[32],used=0,next;
@@ -321,6 +374,7 @@ static void worker(UWORD who)
         else if (command==7) draw_modes(who,handle,window);
         else if (command==8) draw_private_mode(who,handle,window);
         else if (command==9) break;
+        else if (who && command>=10) copy_case(handle,window,command-10);
         Forbid(); VDIStage[who]=command; Signal(root,wake); Permit();
     }
     if (!who) { v_clsvwk(handle); CHECK(ExecAESDiagnostic()==AES_OK); }
@@ -385,6 +439,11 @@ UWORD AESRun(void)
     CHECK(VDIModeUnits[0]>0 && VDIModeUnits[1]>0);
     VDIPhase=7;
     while (VDIGo<7) ExecYield();
+    for (i=0;i<sizeof(copyCases)/sizeof(copyCases[0]);++i) {
+        issue(1,10+i);while (VDIStage[1]!=10+i) Wait(wake);
+        VDIPhase=8+i;
+        while (VDIGo<8+i) ExecYield();
+    }
     issue(0,9); issue(1,9);
     while (AESDone!=2) Wait(wake);
     FreeMem(textAllocation,65700UL);

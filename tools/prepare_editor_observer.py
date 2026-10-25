@@ -22,6 +22,9 @@ def prepare(output,checkout,build_dir):
     reference=checkout/'src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp'
     require(b"{ '+', 0x06 }" in reference.read_bytes(),'PLUS is not the pinned physical scan code')
     changed=original.replace(needle,b'{ "PLUS", 0x06 }, '+needle)
+    entry=b'std::string CmdKey(ATSimulator& sim, const std::vector<std::string>& tokens) {'
+    require(changed.count(entry)==1,'Changed physical key command entry')
+    changed=changed.replace(entry,entry+b'\n\tif (std::getenv("EXEC816_EDITOR_HISTORY")) sim.GetCPU().SetHistoryEnabled(true);')
     try:
         path.write_bytes(changed)
         subprocess.run(['cmake','--build',str(build_dir),'--target','AltirraBridgeServer','-j','4'],check=True)
@@ -33,7 +36,7 @@ def prepare(output,checkout,build_dir):
     sdk=output/'sdk'
     if not sdk.exists():sdk.symlink_to((ROOT/'build/mouse-bridge/sdk').resolve(),target_is_directory=True)
     record=dict(binary=str((output/'AltirraBridgeServer').resolve()),sha256=sha256(output/'AltirraBridgeServer'),
-        scope='Additive PLUS key name maps to existing Atari matrix scan $06; CPU/peripheral timing unchanged',
+        scope='Additive PLUS scan $06 alias; opt-in instruction history enables existing passive PC trace; CPU/peripheral timing unchanged',
         base=pin['mouse_input']['tooling'],source_override={str(path.relative_to(checkout)):hashlib.sha256(changed).hexdigest()},
         restored_source_sha256=sha256(path),keymap_sha256=sha256(reference))
     (output/'observer.json').write_text(json.dumps(record,indent=2)+'\n');return record

@@ -9,7 +9,7 @@ ABI=json.loads((ROOT/'abi/vdi-client.json').read_text())
 
 def records():
     assert next(f[2] for f in ABI['workstation'] if f[0]=='intin')==ABI['constants']['TEXT_CHUNK']
-    sizes={'UWORD':2,'WORD':2,'BYTE':1,'UBYTE':1,'const WORD *':4,'struct DisplayGrant':32}
+    sizes={'UWORD':2,'WORD':2,'BYTE':1,'UBYTE':1,'const WORD *':4,'struct DisplayGrant':32,'struct VbxeCopy':32}
     result={}
     for name,fields in [('ExecVDIUnit',ABI['unit']),('ExecVDIWorkstation',ABI['workstation'])]:
         cursor=0;offsets={}
@@ -35,7 +35,9 @@ def files():
     unit_types={'WORD':'int16_t','UWORD':'uint16_t','const WORD *':'const int16_t *'}
     unit+=''.join(f'    {unit_types[k]} {n};\n' for n,k in ABI['unit'])
     unit+='};\nvoid GemVdiPaint(void *context);\n#endif\n'
-    private=prefix+'#ifndef EXEC816_VDI_PRIVATE_H\n#define EXEC816_VDI_PRIVATE_H\n#include <exec816/aes.h>\n#include <exec/display.h>\n#include <exec816/vdi-unit.h>\nstruct ExecVDIWorkstation {\n'
+    public=prefix+'#ifndef EXEC816_VDI_H\n#define EXEC816_VDI_H\n#include <exec/types.h>\n#include <exec816/vdi-unit.h>\n'
+    public+='\n'.join(ABI['public_calls'])+'\n#endif\n'
+    private=prefix+'#ifndef EXEC816_VDI_PRIVATE_H\n#define EXEC816_VDI_PRIVATE_H\n#include <exec816/aes.h>\n#include <exec/display.h>\n#include <hardware/vbxe-copy.h>\n#include <exec816/vdi.h>\nstruct ExecVDIWorkstation {\n'
     private+=''.join(f'    {k} {n}'+(f'[{c[0]}]' if c else '')+';\n' for n,k,*c in ABI['workstation'])
     private+='};\nBOOL ExecVDIClose(struct ExecAESContext *context);\n#endif\n'
     probe=prefix+'#include "vdi-private.h"\n__attribute__((section("exec_layout")))\nconst UWORD VDILayout[] = {\n'
@@ -43,7 +45,7 @@ def files():
     inquiry=prefix+'static const WORD workoutInts[45] = {'+','.join(map(str,ABI['workout_ints']))+'};\n'
     inquiry+='static const WORD workoutPoints[12] = {'+','.join(map(str,ABI['workout_points']))+'};\n'
     assert len(ABI['workout_ints'])==45 and len(ABI['workout_points'])==12
-    return {ROOT/'c/include/exec816/vdi-unit.h':unit,ROOT/'c/calypsi/vdi-private.h':private,
+    return {ROOT/'c/include/exec816/vdi.h':public,ROOT/'c/include/exec816/vdi-unit.h':unit,ROOT/'c/calypsi/vdi-private.h':private,
             ROOT/'c/calypsi/vdi-layout.c':probe,ROOT/'c/calypsi/vdi-inquiry.inc':inquiry}
 
 

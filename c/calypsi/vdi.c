@@ -105,6 +105,59 @@ static void changed(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG 
     ExecAESChanged(c,left,top,right,bottom);
 }
 
+/* Admission precedes all mutation. A single current visible rectangle must
+ * contain both ends; character-cache equality cannot establish pixel validity. */
+static WORD copy_rect(struct ExecAESContext *c,WORD h,WORD x,WORD y,
+    WORD width,WORD height,WORD dx,WORD dy)
+{
+    struct ExecVDIWorkstation *w=c->workstation;
+    struct AESWindowView *v=c->view;
+    struct VbxeCopy *copy;
+    LONG l=x,t=y,r=(LONG)x+width,b=(LONG)y+height;
+    LONG dl=(LONG)x+dx,dt=(LONG)y+dy,dr=r+dx,db=b+dy;
+    LONG left=l<dl ? l:dl,top=t<dt ? t:dt;
+    LONG right=r>dr ? r:dr,bottom=b>db ? b:db;
+    UWORD i,status;
+    if (!w || w->handle!=h) { c->diagnostic=AES_IDENTITY; return EXEC_VDI_COPY_ERROR; }
+    if (!drawing(c)) return EXEC_VDI_COPY_ERROR;
+    if (width<0 || height<0) { c->diagnostic=AES_MALFORMED; return EXEC_VDI_COPY_ERROR; }
+    if (!width || !height || (!dx && !dy)) return EXEC_VDI_COPY_DONE;
+    if ((dx&1) || !v->pixelsReady) return EXEC_VDI_COPY_REDRAW;
+    if (left<v->work.left || top<v->work.top || right>v->work.right || bottom>v->work.bottom)
+        return EXEC_VDI_COPY_REDRAW;
+    if (w->clipped && (left<w->clip[0] || top<w->clip[1] ||
+        right>(LONG)w->clip[2]+1 || bottom>(LONG)w->clip[3]+1)) return EXEC_VDI_COPY_REDRAW;
+    for (i=0;i<v->visibleCount;++i)
+        if (left>=v->visible[i].left && top>=v->visible[i].top &&
+            right<=v->visible[i].right && bottom<=v->visible[i].bottom) break;
+    if (i==v->visibleCount) return EXEC_VDI_COPY_REDRAW;
+    copy=&w->copy;
+    copy->source.offset=copy->destination.offset=0;
+    copy->source.pitch=copy->destination.pitch=320;
+    copy->source.width=copy->destination.width=640;
+    copy->source.height=copy->destination.height=240;
+    copy->sourceX=x; copy->sourceY=y;
+    copy->destinationX=dl; copy->destinationY=dt;
+    copy->width=width; copy->height=height;
+    status=GemDrawingCopyBorrow(&w->grant,copy,w->copyEdges);
+    ExecAESChanged(c,dl,dt,dr,db);
+    if (status!=DISPLAY_OK) {
+        c->request.paintFailed=1; c->diagnostic=AES_DISPLAY_ERROR;
+        return EXEC_VDI_COPY_ERROR;
+    }
+    return EXEC_VDI_COPY_DONE;
+}
+
+WORD ExecVDICopyRect(WORD h,WORD x,WORD y,WORD width,WORD height,WORD dx,WORD dy)
+{
+    WORD result;
+    struct ExecAESContext *c=ExecAESContext();
+    if (!enter(c)) return EXEC_VDI_COPY_ERROR;
+    result=copy_rect(c,h,x,y,width,height,dx,dy);
+    c->busy=0;
+    return result;
+}
+
 static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bottom,BOOL reportChange)
 {
     struct ExecVDIWorkstation *w=c->workstation;

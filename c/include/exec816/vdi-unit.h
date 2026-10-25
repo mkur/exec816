@@ -13,6 +13,9 @@
 #define EXEC_VDI_STRIP_ROWS 16
 #define EXEC_VDI_REPLACE 1
 #define EXEC_VDI_TRANS 2
+#define EXEC_VDI_COPY_DONE 1
+#define EXEC_VDI_COPY_REDRAW 0
+#define EXEC_VDI_COPY_ERROR -1
 struct ExecVDIUnit {
     uint16_t operation;
     uint16_t textColor;

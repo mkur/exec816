@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 28,
+  "version": 29,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -130,7 +130,8 @@
     "Wait",
     "PutMsg",
     "GetMsg",
-    "ExecAESInvalidate"
+    "ExecAESInvalidate",
+    "ExecVDICopyRect"
   ],
   "stack_requirement": {
     "workspace_mask": 255,

@@ -32,7 +32,7 @@ twelve public Tasks and idle, including guards, alignment and unused capacity.
 | --- | --- |
 | RE0 | Source/package frozen and permanent drawing-work probes pass; physical observer and matched cohorts in progress. |
 | RE1 | Explicit invalidation and bounded source/status/margin publication implemented; development checks pass. |
-| RE2 | Pending |
+| RE2 | Implemented; 22 independent graphics pixel scenes and ownership checks pass. |
 | RE3 | Pending |
 | RE4 | Pending |
 | RE5 | Pending |
@@ -66,3 +66,31 @@ payload bytes, or 488 to 600 allocated bytes, within the per-client allowance.
 C application import version is 28. Editor, VDI, fixed upper metadata and VRAM
 reservations do not grow. Additional bank-zero reservations remain zero fixed,
 root/kernel, per each public Task and idle, including guards/alignment/spare.
+
+## RE2 Owned graphics copies
+
+The public copy helper uses existing delegated display access, fresh visibility
+and settled-pixel admission. It supports even horizontal displacements at both
+packed-pixel parities, four directions and diagonal overlap. Parity-changing
+horizontal displacement returns reconstruction-required before mutation.
+
+All source edge bytes are captured before any interior or edge write. Copies
+then run in overlap-safe strips, each fenced and with pointer/outline restoration
+before physical access is released. The 32-byte descriptor and 480-byte edge
+staging area add exactly 512 upper workstation bytes (894 payload / 896 allocated).
+Existing transient CICON scratch is reused; no persistent VRAM or bank-zero
+reservation changes. The C import ABI is 29, the private VDI layout version 3.
+
+The packed-edge host oracle exercises thousands of overlapping translations,
+one-pixel edges, screen-height moves and transfer failures. Small raw/optimized
+loaded probes cover generated layouts and public-call preservation. The live graphics fixture passes 705 assertions and 22 independent whole-screen
+pixel comparisons. It includes pointer pixels in the source and then moves the
+pointer away, proving overlay removal/restoration. All guards, ownership and
+cleanup checks pass. Small copy admission/error probes pass 23 checks in each
+raw/optimized mode; current host suite passes 652 tests.
+
+The live fixture touches 932 bytes in each 1,312-byte renderer caller pool,
+leaving 124 bytes above its 256-byte floor; its 2,560-byte caller touches 722
+bytes. Kernel peak is 285 of 1,536 bytes. Pools and floors are unchanged.
+These are development checks; reset-required fault injection and coexistence
+measurement remain in RE7.

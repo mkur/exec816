@@ -254,7 +254,7 @@ to that window. Nested calls keep the outer scope, including nested ordinary
 `BEG_UPDATE`; an ordinary outer BEGIN still covers every owned window. Empty or
 hidden scoped updates invalidate their target, while untouched siblings remain
 eligible for caching. The helper uses the current wire version 19's UPDATE_WINDOW
-flag and C program import version 28; rebuild programs and their matching host.
+flag and C program import version 29; rebuild programs and their matching host.
 
 `ExecAESInvalidate(window,x,y,width,height)` declares logical damage inside the
 caller's UPDATE scope. Coordinates are screen coordinates clipped to the work

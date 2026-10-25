@@ -65,7 +65,6 @@ class ResponsiveMeasurement:
 
     def exercise(self,s):
         b,n,frames,reach=s.b,s.number,s.frames,s.rendezvous
-        b.profile_start()
         clock=lambda:b.eval_expr('@clk')&0xffffffff
         def address(name):
             return next(d['address'] for d in s.p['image']['data'] if '_DESKINPUT_'+name.upper()+'_' in d['name'])
@@ -254,7 +253,6 @@ class ResponsiveMeasurement:
         reach('db($%x)=%d'%(s.p['build']['task_storage']['LIVE'],live))
         menus.select('Shell');s.command('MEM');frames(20);require(s.ledger()==owners,'Editor leaked resources')
         s.saved['integration']=self.record
-        b.profile_stop()
         for char in 'EXIT':s.press(char)
         b._cmd_ok('KEY RETURN down');b.bp_clear_all()
 
@@ -274,7 +272,7 @@ def measure(bundle,output,count=20,snapshot=None,observer_pin=None):
     observer=ResponsiveMeasurement(bundle,output,count)
     bootstrap=DiskBoot(bundle,native_snapshot=snapshot) if snapshot else None
     wait=json.loads((bundle/'bitmap-console/c-image.json').read_text())['symbols']['ExecAESWait']
-    with patch.dict(os.environ,EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=f'{wait:x}'):
+    with patch.dict(os.environ,EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=f'{wait:x}',EXEC816_EDITOR_HISTORY='1'):
         result=run(bundle,boot_smoke=True,distribution_root=output/'extracted/exec816-demo',
             integration=observer,profile_commands=False,bootstrap=bootstrap,media_path=media,
             diagnostic_media_sha256=sha256(media),emulator_output=output,emulator_override=observer_pin)

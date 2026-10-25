@@ -30,4 +30,6 @@ const UWORD VDILayout[] = {
     offsetof(struct ExecVDIWorkstation, intout),
     offsetof(struct ExecVDIWorkstation, ptsout),
     offsetof(struct ExecVDIWorkstation, unit),
+    offsetof(struct ExecVDIWorkstation, copy),
+    offsetof(struct ExecVDIWorkstation, copyEdges),
 };

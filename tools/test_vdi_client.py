@@ -152,4 +152,34 @@ def physical(b,p,foreign,report):
     report['clip_cursor_restored_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
     b.poke16(sy['VDIGo'],6);phase(7);frames(40)
     report['mode_pixels']=pixels(b,out,overlay(mode_scene(model.font),position),palette=DESKTOP_PALETTE)
-    b.poke16(sy['VDIGo'],7);b.bp_clear_all()
+    cases=((16,16,240,80,0,-8),(16,16,240,80,0,8),
+        (16,16,240,80,-8,0),(16,16,240,80,8,0),
+        (17,16,240,80,0,-8),(17,16,240,80,0,8),
+        (17,16,240,80,-8,0),(17,16,240,80,8,0),
+        (17,16,239,80,-8,8),(16,16,239,80,8,-8),
+        (17,16,241,80,8,8),(16,16,240,80,-8,-8),
+        (17,16,1,80,8,0),(16,16,1,80,-8,0),
+        (17,16,240,1,8,0),(16,16,240,80,1,0),
+        (-1,16,240,80,8,0),(32767,16,240,80,8,0),
+        (16,16,0,80,8,0),(16,16,240,0,8,0),
+        (16,16,240,80,0,0),(16,16,240,80,8,0))
+    report['copy_pixels']=[]
+    for index,(x,y,w,h,dx,dy) in enumerate(cases):
+        # First copy keeps the pointer inside the source; later move it away
+        # to prove that no pointer pixels travelled with the copied content.
+        if index==0:position=schedule(b,p,position,(240,100));frames(8)
+        if index==1:position=schedule(b,p,position,(620,232));frames(8)
+        b.poke16(sy['VDIGo'],7+index);phase(8+index);frames(4)
+        r=mode_scene(model.font);l,t=208,76
+        r.clip=(l,t,l+383,t+126)
+        for row in range(0,127,8):
+            r.fill=(row//8)%16;r.apply(11,(l,t+row,l+383,t+row+7))
+            r.text=15-(row//8)%16
+            r.apply(8,(l+1,t+row+6),b'ABc09xy! QTuvwxyz013579! ABCDEFGHIJKLMNOPQRSTUVWX')
+        if index not in (15,16,17,21) and w and h and (dx or dy):
+            before=bytes(r.pixels)
+            for yy in range(h):
+                for xx in range(w):
+                    r.pixels[(t+y+dy+yy)*640+l+x+dx+xx]=before[(t+y+yy)*640+l+x+xx]
+        report['copy_pixels'].append(pixels(b,out,overlay(r,position),palette=DESKTOP_PALETTE))
+    b.poke16(sy['VDIGo'],7+len(cases));b.bp_clear_all()

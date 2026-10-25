@@ -3,7 +3,8 @@
 #define EXEC816_VDI_PRIVATE_H
 #include <exec816/aes.h>
 #include <exec/display.h>
-#include <exec816/vdi-unit.h>
+#include <hardware/vbxe-copy.h>
+#include <exec816/vdi.h>
 struct ExecVDIWorkstation {
     struct DisplayGrant grant;
     BYTE signal;
@@ -19,6 +20,8 @@ struct ExecVDIWorkstation {
     WORD intout[45];
     WORD ptsout[12];
     struct ExecVDIUnit unit;
+    struct VbxeCopy copy;
+    UBYTE copyEdges[480];
 };
 BOOL ExecVDIClose(struct ExecAESContext *context);
 #endif

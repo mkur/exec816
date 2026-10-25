@@ -61,9 +61,9 @@ are application responsibilities. Closing releases only the virtual grant,
 signal and storage. `appl_exit` also closes an omitted workstation before
 retiring the registration. Failure to release ownership prevents disposal.
 
-Private storage is 382 live / 384 heap-reserved upper bytes per workstation,
+Private storage is 894 live / 896 heap-reserved upper bytes per workstation,
 including its grant and parameter arrays. The current shared AES context is
-482 live / 488 reserved bytes. Transparent text adds four logical workstation
+596 live / 600 reserved bytes. Transparent text adds four logical workstation
 bytes without increasing its rounded allocation. No Task, DP, stack pool,
 bank-zero reservation, staging page or VRAM extent is added. See
 [QE2 evidence](../history/qed-editing.md#qe2-viewport-and-transparent-text) for
@@ -74,6 +74,31 @@ exercises this interface beside native shell/disk work using existing 1 KiB
 caller stacks. The [WA6 record](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
 separates logical update waits, physical access and repaint completion; these
 are development results.
+
+## Settled screen copies
+
+`ExecVDICopyRect(workstation,x,y,width,height,deltaX,deltaY)` translates a screen
+rectangle in its owning window's UPDATE. The source and destination must fit
+inside the work area, user clip and one fresh visible rectangle, and AES must
+report settled pixels. Applications also retain their matching source generation.
+The generated results are `EXEC_VDI_COPY_DONE`, `EXEC_VDI_COPY_REDRAW` (before
+mutation), and `EXEC_VDI_COPY_ERROR`. Empty/identical areas complete without DMA;
+negative dimensions are errors. A horizontal displacement that changes packed
+pixel parity currently requires reconstruction.
+
+Even horizontal displacements work at either X parity. Overlapping copies use
+safe row/byte order, with all source edge bytes captured before any write. Each
+strip retains physical access through its fence and overlay restoration, then
+releases it before the next strip. The copy records destination damage; the
+caller acknowledges only after repairing dependent overlays and exposed strips.
+An operational failure marks the UPDATE failed and follows normal display recovery.
+
+The workstation adds 512 upper bytes: a 32-byte descriptor and 480-byte packed
+edge staging area, allocated at open. It reuses the adapter's transient CICON
+scratch within physical access. No pending DMA outlives return, and no new
+persistent VRAM, bank-zero storage, stack pool or Task is reserved. C programs
+must rebuild for import ABI version 29. See the
+[responsive-editor record](../history/fastbasic-responsive-editor.md).
 
 ## Supervised packet workload
 

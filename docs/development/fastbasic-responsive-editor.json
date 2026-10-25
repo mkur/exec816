@@ -8,7 +8,7 @@
   "slices": {
     "RE0": "frozen source/package and observers; matched physical baseline running",
     "RE1": "implemented; development checks pass",
-    "RE2": "pending",
+    "RE2": "implemented; development checks pass",
     "RE3": "pending",
     "RE4": "pending",
     "RE5": "pending",
@@ -18,7 +18,7 @@
   },
   "source_manifest": {
     "abi/aes-server.json": "13584855f629aa1c701216a2c6339cd018a4d1c5299844a136b25ef30cd67c5b",
-    "abi/c-program.json": "1be61a533dc1effce287f704c5c65f810c41fe13426f48f585e2fb9a631170f8",
+    "abi/c-program.json": "05741c201371accf77c2808035a0fb700279195ad749bbcf7258e772f26bf4b5",
     "c/calypsi/aes-layout.c": "51c8b7303ea79fa2e4e42087363ce416daa83ced8f58df198c7e74b7c92a85cf",
     "c/calypsi/aes-windows.c": "a186170176bb405ace58023fab0af5ef91b214063ec92fa0a2b74d2aab6bac41",
     "c/include/exec816/aes-wire.h": "5ec4234916f57a4e3749f5ea518536e175ba2c1528d24f35c8d3a097c04b9d87",
@@ -35,7 +35,17 @@
     "tests/programs/basic_paint.c": "b442bb93e7327a20beed475117e75e1149a50dc540d9463917f25be34fcbeb88",
     "tests/test_desktop_contract.py": "373da9be138f3f2a6274031be76dc1ed715d0a92398fd545a1fbccab8f8d4920",
     "tests/programs/aes_damage.c": "01c810969883a61bd21135bda4b644f86367b2cbc5b66ce09583825dca88df3e",
-    "tools/test_aes_damage.py": "acb6b28f767c9b8788310095fc84bb1b2e522d44864a2665aa84814dac7874cb"
+    "tools/test_aes_damage.py": "acb6b28f767c9b8788310095fc84bb1b2e522d44864a2665aa84814dac7874cb",
+    "abi/vdi-client.json": "23b2133e1f7e75d5ddaf01413397b231b0c99ed56f65d9011a50e85842f92e71",
+    "c/calypsi/vdi.c": "1a6ee0b470e457d774f78b5424a421f8bb68d615ccd87df3de58fbb13540f3b8",
+    "c/calypsi/vdi-private.h": "0fb18f388ef6dc16b710bf845597bacc845230980decd85c6ed876393801baf7",
+    "ports/gem4xe/adapter/gem-vbxe.c": "9a730941e89017ad75196abfbdd42f894a08facdb8be887e22539a3d502dcc2c",
+    "tools/generate_vdi_client.py": "fcd1794085aeecb9971549f58ad61bc5b79b80e290fc85edebdcdd16bb685487",
+    "c/include/exec816/vdi.h": "69b0eeb09e96143ab882ea668bac9b78fe00ec3f8d34481e9facb4cf786d4de1",
+    "tests/programs/aes_vdi.c": "992a414cab460a7920195f88a1ef9b45f0cd1877cb8a54283e139bf5c6d724cf",
+    "tools/test_vdi_client.py": "641baedac1f29b4c232a7d4dc40e97a2a42037cf8b44e5b707c7098cc52dbab9",
+    "tests/programs/vdi_copy_abi.c": "5d35530e3aded4e9a1f18d8bbe13a91f6cafe537693b6b1227d77219c4fb68b7",
+    "tools/test_vdi_copy_abi.py": "e85ce3469505bb9b732ac4803bb8ead00155af53c756818a990c62361f2d0185"
   },
   "development_checks": [
     {
@@ -61,12 +71,51 @@
       "sha256": "689e5b52c55a4d4b8c10db1ba48554b67992a69f0a893d5be48789b9d6b5e987",
       "checks": 357,
       "status": "pass"
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re2-copy-opt/results.json",
+      "sha256": "e57f5007b031a42ecf94f4062fb23b9719d9b98ff419f1560568053ee1430ac3",
+      "status": "pass",
+      "checks": 23,
+      "copy_pixel_scenes": 0
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re2-copy-raw/results.json",
+      "sha256": "4db527894efc3f800d71139f38402f494c809bd97ce71df74172caa25f9d33de",
+      "status": "pass",
+      "checks": 23,
+      "copy_pixel_scenes": 0
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re2-abi-opt/results.json",
+      "sha256": "d4c133488404e0c8bdb7dd2ee9744a566c8f640a2dd47dee516248ae5dba7305",
+      "status": "pass",
+      "checks": [
+        14
+      ],
+      "copy_pixel_scenes": 0
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re2-abi-raw/results.json",
+      "sha256": "a6157b1284d5eb05fe054e2be5113df5a0250e5451a48264f8a106a25c9a6c13",
+      "status": "pass",
+      "checks": [
+        14
+      ],
+      "copy_pixel_scenes": 0
+    },
+    {
+      "path": "build/fastbasic-responsive-editor/re2-vdi/results.json",
+      "sha256": "5b791770ade830aeaf4fd1e066b037eaea14c70c4b03007da833a6f1bbfe1288",
+      "status": "pass",
+      "checks": 705,
+      "copy_pixel_scenes": 22
     }
   ],
   "host_checks": {
-    "path": "build/fastbasic-responsive-editor/re1-host.log",
-    "sha256": "dc445d3859c2aa51bff3fac6f240349b41d1a31c15bcbdbf356cd22ba009ab97",
-    "tests": 651,
+    "path": "build/fastbasic-responsive-editor/re2-host.log",
+    "sha256": "675a1e0ff215a442c386b6d3a1ac9b61a5667bbd389448d2fc036b456dac4740",
+    "tests": 652,
     "status": "pass"
   },
   "memory": {
@@ -102,11 +151,54 @@
       600
     ],
     "editor_reserved_delta": 0,
-    "vdi_reserved_delta": 0,
-    "persistent_vram_delta": 0
+    "vdi_reserved_delta": 512,
+    "persistent_vram_delta": 0,
+    "vdi_payload": [
+      382,
+      894
+    ],
+    "vdi_rounded": [
+      384,
+      896
+    ],
+    "vdi_copy_descriptor": 32,
+    "vdi_edge_staging": 480
   },
   "performance": {
     "status": "pending matched candidate; no latency acceptance claimed",
     "baseline": "docs/development/fastbasic-responsive-editor-baseline.json"
+  },
+  "graphics_scope": "22 emitted full-scene independent pixel checks, all four directions, diagonal/odd/tiny/overlap, pointer in source and moved away; cleanup and guards pass. Operational admission/error probes raw+opt; 4608 host pixel/failure cases. Full reset-required copy injection remains for RE7.",
+  "graphics_stack": {
+    "0": {
+      "base": 9744,
+      "bytes": 1536,
+      "peak": 162,
+      "remaining_above_floor": 1118
+    },
+    "1": {
+      "base": 12880,
+      "bytes": 1312,
+      "peak": 932,
+      "remaining_above_floor": 124
+    },
+    "2": {
+      "base": 14224,
+      "bytes": 1312,
+      "peak": 932,
+      "remaining_above_floor": 124
+    },
+    "6": {
+      "base": 19600,
+      "bytes": 2560,
+      "peak": 722,
+      "remaining_above_floor": 1582
+    },
+    "kernel": {
+      "base": 11312,
+      "bytes": 1536,
+      "peak": 285,
+      "remaining_above_floor": 995
+    }
   }
 }

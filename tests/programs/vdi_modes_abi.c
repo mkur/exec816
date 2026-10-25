@@ -2,6 +2,7 @@
 #include <gem.h>
 #include <exec816/aes.h>
 #include <exec816/vdi-unit.h>
+#include <exec816/vdi.h>
 static volatile struct ExecVDIUnit unit;
 static WORD glyphs[2]={'A',' '};
 int main(void)
@@ -21,6 +22,8 @@ int main(void)
     mode=3;reply=0x7777;vdi_call(&pb);
     if(reply!=0x7777 || control[4] || ExecAESDiagnostic()!=AES_UNSUPPORTED)return 105;
     if(vswr_mode(handle,0) || ExecAESDiagnostic()!=AES_UNSUPPORTED)return 106;
+    if(ExecVDICopyRect(handle,0,0,0,0,0,0)!=EXEC_VDI_COPY_ERROR ||
+       ExecAESDiagnostic()!=AES_IDENTITY)return 109;
     mode=MD_REPLACE;vdi_call(&pb);
     if(reply!=1 || control[4]!=1 || ExecAESDiagnostic()!=AES_OK)return 107;
     v_clsvwk(handle);

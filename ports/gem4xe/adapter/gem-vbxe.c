@@ -6,6 +6,7 @@
  */
 #include "gem-drawing.h"
 #include <hardware/vbxe-snapshots.h>
+#include <exec816/vdi-unit.h>
 #ifndef GEM_DRAWING_ONLY
 #include "gem-vbxe.h"
 #endif
@@ -1237,6 +1238,92 @@ UWORD GemDrawingSolidBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
 {
     /* Private VDI caller already clipped and bounded this fixed operation. */
     return drawing_borrow(grant,left,top,right,bottom,0,&pen);
+}
+
+/* Restore overlays and retire every queued list before handing off physical
+ * access. A reset-required fault retains the driver's unsafe ownership state. */
+static UWORD copy_leave(struct DisplayGrant *grant)
+{
+    UWORD status=fence_owner();
+    if (!fault && outlineVisible && !outlineDrawn) {
+        outline_toggle();
+        if (!fault) outlineDrawn=1;
+    }
+    cursor_show();
+    if (!fault) status=fence_owner();
+    if (fault) status=DISPLAY_DEVICE_FAULT;
+    DisplayLeave(grant);
+    return status;
+}
+
+UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
+    UBYTE *edges)
+{
+    const ULONG scratch=0x36000UL; /* Existing transient CICON scratch. */
+    UWORD sx=copy->sourceX,sy=copy->sourceY,dx=copy->destinationX,dy=copy->destinationY;
+    UWORD width=copy->width,height=copy->height,first=0,remaining=height,n,limit,status;
+    UWORD leftEdge=sx&1,rightEdge=(sx+width)&1,interior=width-leftEdge-rightEdge;
+    ULONG source,destination;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+
+    /* Stage ALL source edge bytes before interior or edge writes. Horizontal
+     * overlap could otherwise destroy a later source edge. Scratch is private
+     * only during this grant; the upper-RAM copy survives intervening owners. */
+    if (leftEdge || rightEdge) {
+        status=DisplayEnter(grant);
+        if (status!=DISPLAY_OK) return status;
+        pointer_erase(sx,sy,sx+width,sy+height);
+        if (!fault) {
+            source=GemScreenRows[sy]+(sx>>1);
+            if (leftEdge) blit_mask(source,320,scratch,2,1,height,255,0,0);
+            if (rightEdge) blit_mask(GemScreenRows[sy]+((sx+width)>>1),320,
+                scratch+1,2,1,height,255,0,0);
+            if (fence_owner()==DISPLAY_OK)
+                latch(VbxeOwnerRead(&display,scratch,edges,height*2));
+        }
+        status=copy_leave(grant);
+        if (status!=DISPLAY_OK) return status;
+    }
+
+    /* Each admission is a bounded synchronous strip. Downward moves start at
+     * the bottom; the device chooses the horizontal overlap direction. */
+    limit=(UWORD)VBXE_LIST_WORK/(width+(leftEdge+rightEdge)*6);
+    if (limit>EXEC_VDI_STRIP_ROWS) limit=EXEC_VDI_STRIP_ROWS;
+    while (remaining) {
+        n=remaining<limit ? remaining:limit;
+        first=dy>sy ? remaining-n:height-remaining;
+        status=DisplayEnter(grant);
+        if (status!=DISPLAY_OK) return status;
+        pointer_erase(sx,sy+first,sx+width,sy+first+n);
+        pointer_erase(dx,dy+first,dx+width,dy+first+n);
+        status=fence_owner();
+        if (status==DISPLAY_OK && (leftEdge || rightEdge))
+            latch(VbxeOwnerWrite(&display,scratch,edges+first*2,n*2));
+        if (!fault && interior) {
+            copy->sourceX=sx+leftEdge; copy->destinationX=dx+leftEdge;
+            copy->sourceY=sy+first; copy->destinationY=dy+first;
+            copy->width=interior; copy->height=n;
+            latch(VbxeOwnerCopyRect(&display,copy));
+        }
+        if (!fault) {
+            destination=GemScreenRows[dy+first]+(dx>>1);
+            if (leftEdge) {
+                blit_and(destination,320,1,n,0xf0);
+                blit_mask(scratch,2,destination,320,1,n,0x0f,0,3);
+            }
+            if (rightEdge) {
+                destination=GemScreenRows[dy+first]+((dx+width)>>1);
+                blit_and(destination,320,1,n,0x0f);
+                blit_mask(scratch+1,2,destination,320,1,n,0xf0,0,3);
+            }
+        }
+        status=copy_leave(grant);
+        if (status!=DISPLAY_OK) return status;
+        remaining-=n;
+    }
+    copy->sourceX=sx; copy->sourceY=sy; copy->destinationX=dx; copy->destinationY=dy;
+    copy->width=width; copy->height=height;
+    return DISPLAY_OK;
 }
 
 NATIVE_UNIT(FrameBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD (*draw)(void)),(left,top,right,bottom,draw))
