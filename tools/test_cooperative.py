@@ -35,8 +35,11 @@ def check(bridge, program, fixture, result, screen):
         lines = [bytes([letter-32, digit-32]) for digit in range(48, 52) for letter in (65, 66)]
         positions = [screen.find(line) for line in lines]
         require(all(p >= 0 for p in positions) and positions == sorted(positions), "Console order differs")
-        require(result["switches"] >= 33 and result["os_calls"] == result["forwarded_cops"] == 8,
-                "Missing switches or forwarded OS calls")
+        require(result["switches"] >= 33 and result["os_calls"] == 8,
+                "Missing switches or OS console calls")
+        forwarded = 8 if program['build']['forward_signature'] else 0
+        require(result['forwarded_cops'] == forwarded,
+                'Unexpected COP forwarding count for the selected console path')
         require(result["native_nmi_count"] > 0 and result["clock_start"] != result["clock_end"],
                 "OS VBI did not advance")
         require((result["return_s"], result["return_d"]) == (adapter.TASK1_STACK_TOP, adapter.TASK1_DP), "Last task return mismatch")
@@ -72,11 +75,12 @@ def main():
     parser.add_argument("--bridge-dir", type=Path, required=True)
     parser.add_argument("--rom", type=Path, default=ROOT / "build/firmware/altirraos-816.rom")
     parser.add_argument("--case", help="Run one named case")
+    parser.add_argument("--output", type=Path, default=ROOT / "build/cooperative-tests")
     args = parser.parse_args()
     toolchain = compiler(args.compiler_dir)
     bridge_dir, rom = args.bridge_dir.resolve(), args.rom.resolve()
     platform_files(bridge_dir, rom)
-    output = ROOT / "build/cooperative-tests"
+    output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     cases = []
     for optimize in (False, True):
