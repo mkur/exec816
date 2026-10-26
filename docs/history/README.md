@@ -412,6 +412,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Platform and boot
 
+- [0.2.2 patch preparation](release-0.2.2.md): clean tagged packages, frozen
+  firmware/stack and hosted/scheduling matrices, nine final boot walks and
+  remaining preview qualification gates.
 - [XLOS816F SDX support](xlos-sdx-support.md): shared live-ROM admission,
   original interrupt destinations, firmware stack bounds and current
   application/combined-disk development checks.
