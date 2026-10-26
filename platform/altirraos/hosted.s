@@ -509,9 +509,9 @@ stack_ok:
 :
     clc
     adc 18,s
-    bcs invalid_pointer
+    jcs invalid_pointer
     cmp #APP_LIMIT+1
-    bcs invalid_pointer
+    jcs invalid_pointer
     .endif
     sep #$20
     .if GENERAL_TASKS
