@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise the actual source engines through emitted Exec Processes."""
 import argparse
+from sdx_test_firmware import select as select_firmware, configure as configure_firmware
 import hashlib
 import json
 import re
@@ -340,7 +341,7 @@ PROC Main()''')
     return source,profile,bytes(payload),expected,cases
 
 
-def run(out,group='core',raw=False,replay=False,reuse=False):
+def run(out,group='core',raw=False,replay=False,reuse=False,rom=None):
     out.mkdir(parents=True,exist_ok=True)
     previous=(out/'probe.act').read_text() if reuse else None
     source,profile,payload,expected,cases=fixture(out,group)
@@ -437,8 +438,10 @@ ENDMODULE
     if reuse:
         from fastbasic_test_support import guest_inputs
         stimulus=guest_inputs(p,previous,source.read_text(),[(0x300000,payload)])
-    with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
-        result['machine']=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
+    firmware,pin=select_firmware(rom,PIN)
+    with emulator(ROOT/'build/shell-paced-bridge',firmware,out,pin=pin) as b:
+        configure_firmware(b,firmware)
+        result['machine']=verify_machine(b,firmware,pin)
         try:result['runtime'],_=execute(b,p,timeout=240,frame_limit=12000,before_run=stimulus)
         except Exception:
             print({n:data(b,p['image'],n,True) for n in ('checks','currentCase','primary','secondary','reason')},flush=True)
@@ -478,8 +481,9 @@ ENDMODULE
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--output',type=Path,required=True)
     a.add_argument('--group',choices=('core','admission','entry','attach','text','faults','transitions','capacity','profile','session'),default='core');a.add_argument('--raw',action='store_true');a.add_argument('--replay',action='store_true');a.add_argument('--reuse-native',action='store_true')
+    a.add_argument('--rom',type=Path)
     args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r={'status':'running'}
-    try:r=run(out,args.group,args.raw,args.replay,args.reuse_native)
+    try:r=run(out,args.group,args.raw,args.replay,args.reuse_native,args.rom)
     except Exception as e:r.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     print('Source interpreter:',r['checks'],'checks; guards intact')

@@ -22,6 +22,7 @@ SDX_ROM_IMAGE = $050000
 SDX_ROM_BACKUP = $054000
 SDX_ROM_STATE = $057800
 SDX_ROM_NMI = emulation_nmi
+SDX_ROM_CHAIN_NMI = emulation_nmi_chain_target+1
 SDX_ROM_IRQ = emulation_irq
 GUEST_PAGE = $057900
 HOST_PAGE = $057a00
@@ -163,18 +164,60 @@ seed_high:
     lda f:SDX_ROM_IMAGE+$0123
     eor #1
     sta f:SDX_ROM_IMAGE+$0123
-    jsl sdx_rom_install
+    jsl sdx_rom_identify
     cmp #2
     jne failed
     lda f:SDX_ROM_IMAGE+$0123
     eor #1
     sta f:SDX_ROM_IMAGE+$0123
+    ; An unknown fingerprint must fail the actual install before mapping.
+    .repeat 3, profile
+        lda f:sdx_rom_profiles+2+profile*10
+        eor #1
+        sta f:sdx_rom_profiles+2+profile*10
+    .endrepeat
+    jsl sdx_rom_install
+    cmp #2
+    jne failed
+    lda f:SDX_ROM_STATE
+    and #$ff
+    jne failed
+    sep #$20
+.a8
+    lda $d301
+    cmp PORT_SAVE
+    jne failed
+    rep #$20
+.a16
+    .repeat 3, profile
+        lda f:sdx_rom_profiles+2+profile*10
+        eor #1
+        sta f:sdx_rom_profiles+2+profile*10
+    .endrepeat
     jsl sdx_rom_install
     cmp #0
     jne failed
     jsl sdx_rom_install
     cmp #3
     jne failed
+    ; Foreign PORTB ownership: refuse removal, then restore the owned mapping.
+    sep #$20
+.a8
+    lda $d301
+    eor #2
+    sta $d301
+    rep #$20
+.a16
+    jsl sdx_rom_remove
+    cmp #1
+    jne failed
+    sep #$20
+.a8
+    lda $d301
+    eor #2
+    sta $d301
+    rep #$20
+.a16
 installed:
     lda #native_nmi
     sta $0259
@@ -331,7 +374,8 @@ emulation_nmi_chain:
 .a8
 .i8
     plp
-    jml $00c17b
+emulation_nmi_chain_target:
+    jml $000000
 
 emulation_irq:
     php

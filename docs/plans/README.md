@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [XLOS SDX firmware adapter](xlos-sdx-implementation-plan.md): XF0–XF4 refactor
+  for explicit firmware admission, captured ROM/original-vector chaining,
+  firmware stack bounds and current tool/demo development checks.
+
 - [Boot-only fast SIO reader](boot-only-fast-sio-implementation-plan.md): implemented
   BF0–BF8 slices for an Exec-owned split-XEX takeover, shared ATR/XEX execution,
   nominal 57,600-baud negotiation, OF816 suspension, native SIO handoff and

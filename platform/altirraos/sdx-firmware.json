@@ -1,0 +1,71 @@
+{
+  "format": "exec816.sdx-firmware.v1",
+  "visible_ranges": [
+    [
+      49152,
+      4096
+    ],
+    [
+      55296,
+      10240
+    ]
+  ],
+  "snapshot_bytes": 16384,
+  "scratch_offset": 4096,
+  "profiles": [
+    {
+      "id": 1,
+      "name": "altirraos-3.44-816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "visible_crc32": "687583a4",
+      "emulation_nmi": 49531,
+      "emulation_irq": 49633,
+      "stack": {
+        "console_entry": 4,
+        "cio_dispatch": 13,
+        "editor_body": 13,
+        "nested_emulation_vbi": 22,
+        "owned_or_rom_irq": 48,
+        "acknowledge_only_nmi": 13,
+        "retiring_vbi_tail": 6
+      }
+    },
+    {
+      "id": 2,
+      "name": "xlos-2.48-f",
+      "bytes": 16384,
+      "sha256": "2899b04db54bbdef833ce8a203b3cd55c83c8ed78c1feaa158bf7dc13d4f9da5",
+      "visible_crc32": "fa947133",
+      "emulation_nmi": 49176,
+      "emulation_irq": 51846,
+      "stack": {
+        "console_entry": 4,
+        "cio_dispatch": 13,
+        "editor_body": 15,
+        "nested_emulation_vbi": 22,
+        "owned_or_rom_irq": 48,
+        "acknowledge_only_nmi": 13,
+        "retiring_vbi_tail": 6
+      }
+    },
+    {
+      "id": 3,
+      "name": "xlos-2.49-f",
+      "bytes": 16384,
+      "sha256": "d539c4acaec2350d0b9d42f73c242446712ffcbd8b636dce587cd00679f7b097",
+      "visible_crc32": "0a383964",
+      "emulation_nmi": 49176,
+      "emulation_irq": 51835,
+      "stack": {
+        "console_entry": 4,
+        "cio_dispatch": 13,
+        "editor_body": 15,
+        "nested_emulation_vbi": 22,
+        "owned_or_rom_irq": 48,
+        "acknowledge_only_nmi": 13,
+        "retiring_vbi_tail": 6
+      }
+    }
+  ]
+}

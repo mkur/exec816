@@ -434,7 +434,7 @@ def audit():
                  FastBasic=basic_min)
     editor=rom_editor()
     if editor['body_bytes']!=13:raise RuntimeError('Changed ROM editor body envelope')
-    rom_components=dict(cio_wrapper_cop_and_body=16+4+editor['body_bytes'],
+    rom_components=dict(cio_wrapper_entry_and_body=4+13+editor['body_bytes'],
                         nested_emulation_vbi=13+3+3+3,
                         owned_or_rom_irq_envelope=48,
                         acknowledge_only_nmi=13,
@@ -455,6 +455,18 @@ def audit():
     if abi['minimum_s']-cell_peak<abi['stack_floor']:
         raise RuntimeError('Insufficient fast-cell headroom')
     if rom_peak>abi['rom_reserve']:raise RuntimeError('ROM reserve below reviewed envelope')
+    from generate_sdx_firmware import catalog
+    firmware_bounds={}
+    for profile in catalog()['profiles']:
+        parts=profile['stack']
+        total=sum(parts.values())
+        if total>abi['rom_reserve']:
+            raise RuntimeError('Firmware exceeds ROM reserve: '+profile['name'])
+        firmware_bounds[profile['name']]=dict(peak_bytes=total,components=parts)
+    hosted=root_path('platform/altirraos/hosted.s').read_text()
+    direct=hosted.split('.if FORWARD_SIGNATURE = 0',1)[1].split('.else\n        ; Diagnostic stimulus',1)[0]
+    if not re.search(r'sep #\$30\s+sec\s+xce',direct) or 'jsr CIOV' not in direct or 'cop ' in direct:
+        raise RuntimeError('Unreviewed production CIO entry frame')
     for name,stack in minimum.items():
         if stack-abi['rom_reserve']<abi['stack_floor']:
             raise RuntimeError('Insufficient admitted headroom: '+name)
@@ -475,6 +487,7 @@ def audit():
         minimum_complete_s=minimum,stack_floor=abi['stack_floor'],rom_reserve=abi['rom_reserve'],
         minimum_borrow_anchor=abi['stack_floor']+abi['rom_reserve'],
         rom=dict(sha256=digest(rom),editor=editor,components=rom_components,peak_bytes=rom_peak),
+        firmware_bounds=firmware_bounds,
         fast_cell=dict(temporary_bytes=4,acknowledge_nmi_bytes=13,
                        peak_below_complete_frame=cell_peak,
                        minimum_transient_s=abi['minimum_s']-cell_peak,

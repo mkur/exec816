@@ -16,8 +16,9 @@ def configure(output, memory, drive_a='RAM:', car_root='RAM:'):
             and re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*:(?:[A-Za-z0-9_.]+/)*',car_root),
             'SDX CAR: mapping must name a native volume/directory root')
     runtime = ABI['runtime']
-    # Resident loader/provider strings and console state exceed the default 2 KiB.
-    memory['profile']['image_data_bytes']=max(memory['profile']['image_data_bytes'],4096)
+    # Resident loader/provider strings and console state need 17 pages; the
+    # minimal current personality exceeds 4 KiB. This is upper image storage.
+    memory['profile']['image_data_bytes']=max(memory['profile']['image_data_bytes'],4352)
     require(runtime['resident_bank'] in memory['usable_banks'], 'SDX resident bank is unavailable')
     require(memory['task_capacity']>=8, 'SDX requires at least eight Tasks')
     guard, count = runtime['dp_guard_bytes'], runtime['image_slots']
@@ -113,14 +114,8 @@ def bindings(output, labels):
 
 
 def image(output):
-    PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
-    ROM=ROOT/'build/firmware/altirraos-816.rom'
-    import hashlib
-    require(hashlib.sha256(ROM.read_bytes()).hexdigest()==PIN['rom']['sha256'],
-            'SDX ROM shadow requires the pinned ROM')
     runtime=ABI['runtime']
     state=bytearray(runtime['code_offset'])
-    state[:0x4000]=ROM.read_bytes()
     base=runtime['resident_bank']*65536
     return [dict(address=base,bytes=list(state),writable=True,executable=False),
             dict(address=base+runtime['code_offset'],

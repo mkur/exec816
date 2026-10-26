@@ -412,6 +412,12 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Platform and boot
 
+- [XLOS816F SDX support](xlos-sdx-support.md): shared live-ROM admission,
+  original interrupt destinations, firmware stack bounds and current
+  application/combined-disk development checks.
+- [XLOS816F SDX audit](xlos-sdx-audit.md): reproduced ROM admission failure,
+  2.48/2.49 firmware entry differences, emitted interrupt/stack checks and the
+  adapter work needed before production support.
 - [FujiNet split XEX boot](fujinet-xex-boot.md): matched D1/D2/D8 package,
   CONFIG/OPTION handoff, concrete loader errors and transport evidence.
 - [Bootable system ATR](bootable-system-atr.md): one writable D1 with OF816,

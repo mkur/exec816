@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Bounded emitted probes for shared physical guest/ROM stack ownership."""
 import argparse
+from sdx_test_firmware import select as select_firmware, configure as configure_firmware
 import json
 from pathlib import Path
 
@@ -93,14 +94,16 @@ ENDMODULE
     return source
 
 
-def probe(out, mode, anchor, expected=0, phase=0, deep=False, lease_case=False):
+def probe(out, mode, anchor, expected=0, phase=0, deep=False, lease_case=False, rom=None):
     out.mkdir(parents=True,exist_ok=True)
     source=fixture(out,anchor,deep,lease_case)
     p=build(compiler(ROOT/'build/actionc',release=True),source,out,
             optimize=mode=='opt',tasks=True,task_capacity=12,console=False,
             sio_enabled=False,sdx=True,sdx_stack_probe=phase)
-    with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
-        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
+    firmware,pin=select_firmware(rom,PIN)
+    with emulator(ROOT/'build/shell-paced-bridge',firmware,out,pin=pin) as b:
+        configure_firmware(b,firmware)
+        machine=verify_machine(b,firmware,pin)
         try:
             runtime,_=execute(b,p,expected_status=expected,timeout=180,frame_limit=9000)
         except Exception:
@@ -124,6 +127,7 @@ def probe(out, mode, anchor, expected=0, phase=0, deep=False, lease_case=False):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--group',choices=('rom','bounds','transition','lease'),required=True)
+    parser.add_argument('--rom',type=Path)
     parser.add_argument('--deep',action='store_true',help='ROM fine scroll with real nested VBI at minimum borrow anchor')
     parser.add_argument('--phase',type=int,choices=range(1,8),default=0)
     parser.add_argument('--case',choices=('raw','opt'),default='opt')
@@ -132,21 +136,21 @@ def main():
     result=dict(status='running',tier='development',qualification=False)
     try:
         if args.group=='rom':
-            result=probe(out,args.case,0x190 if args.deep else 0x1d0,deep=args.deep)
+            result=probe(out,args.case,0x190 if args.deep else 0x1d0,deep=args.deep,rom=args.rom)
         elif args.group=='bounds':
             abi=json.loads((ROOT/'abi/sdx.json').read_text())['runtime']
             boundary=abi['stack_floor']+abi['rom_reserve']
             result=dict(status='pass',tier='development',qualification=False,
-                        accepted=probe(out/'accepted',args.case,boundary),
-                        rejected=probe(out/'rejected',args.case,boundary-1,1))
+                        accepted=probe(out/'accepted',args.case,boundary,rom=args.rom),
+                        rejected=probe(out/'rejected',args.case,boundary-1,1,rom=args.rom))
         elif args.group=='lease':
             phases=[args.phase] if args.phase else range(5,8)
             result=dict(status='pass',tier='development',qualification=False,
-                        cases=[probe(out/str(phase),args.case,0x1d0,phase=phase,lease_case=True) for phase in phases])
+                        cases=[probe(out/str(phase),args.case,0x1d0,phase=phase,lease_case=True,rom=args.rom) for phase in phases])
         else:
             phases=[args.phase] if args.phase else range(1,5)
             result=dict(status='pass',tier='development',qualification=False,
-                        cases=[probe(out/str(phase),args.case,0x1d0,phase=phase) for phase in phases])
+                        cases=[probe(out/str(phase),args.case,0x1d0,phase=phase,rom=args.rom) for phase in phases])
     except Exception as error:
         result.update(status='fail',error=str(error));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')

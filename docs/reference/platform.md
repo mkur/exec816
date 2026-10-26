@@ -8,9 +8,11 @@ adapter controls OS entry, hardware ownership and context transitions. Compiler
 semantics and ABI primitives belong to actionc; emulator correctness belongs to
 actionc-vm. Platform tests must qualify the hosted combination.
 
-Other ROMs remain outside this platform contract. The
-[firmware diagnostics](../contributing/building.md#firmware-diagnostics) record
-bounded XLOS boot checks and their setup without extending platform qualification.
+The [SDX firmware adapter](sdx-firmware.md) also admits pinned XLOS816F 2.48
+and 2.49 at the development tier. These share the current guest/runtime
+implementation and memory map. Other ROMs and third-party native/PBI extensions
+remain unsupported; bounded firmware checks do not extend full platform
+qualification.
 
 The [SDX Process development profile](../development/sdx-loader.md), selected
 by default for standalone SIO distributions,

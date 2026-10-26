@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Pinned ARC original controls and emitted native personality checks."""
 import argparse
+from sdx_test_firmware import select as select_firmware, configure as configure_firmware
 import hashlib
 import json
 from pathlib import Path
@@ -40,7 +41,7 @@ LIST_CASES=[('LIST.OUT','L SAMPLE.ARC'),('VERBOSE.OUT','V SAMPLE.ARC'),
             ('MASK.OUT','L SAMPLE.ARC A*.BIN'),('EMPTY.OUT','V SAMPLE.ARC EMPTY.BIN')]
 
 
-def reference(out,extraction=False,creation=False,store=False):
+def reference(out,extraction=False,creation=False,store=False,rom=None):
     source=out/'source';source.mkdir(parents=True,exist_ok=True)
     (source/'SAMPLE.ARC').write_bytes(archive(corpus()))
     commands=[f'ARC {args} >>{name}' for name,args in LIST_CASES]+['STOP.COM']
@@ -59,9 +60,11 @@ def reference(out,extraction=False,creation=False,store=False):
     (source/'CONFIG.SYS').write_bytes(b'USE OSRAM\x9bDEVICE SPARTA\x9bDEVICE SIO\x9b')
     (source/'STOP.COM').write_bytes(struct.pack('<HHH',65535,0x6000,0x6002)+b'\x4c\x00\x60'+struct.pack('<HHH',0x2e0,0x2e1,0x6000))
     make(out/'input.atr',source,1024,256,'ARCREF')
-    with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
-        for k,v in PIN['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
-        b.config('diskemu','fastest');machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
+    firmware,pin=select_firmware(rom,PIN)
+    with emulator(ROOT/'build/shell-paced-bridge',firmware,out,pin=pin) as b:
+        configure_firmware(b,firmware)
+        for k,v in pin['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
+        b.config('diskemu','fastest');machine=verify_machine(b,firmware,pin)
         b.mount(0,str(out/'input.atr'));b.bp_set(0x6000)
         b.boot(str(ROOT/'build/sdx-inputs/md5/SDX450_maxflash1.car'));b.resume()
         deadline=time.monotonic()+120
@@ -77,21 +80,21 @@ def reference(out,extraction=False,creation=False,store=False):
         assert not (out/'readback/NEW.ARC').exists()
         assert (out/'readback/NEW.XAR').exists()
         for name,value in expected.items():assert (out/'readback'/name).read_bytes()==value
-        return dict(status='pass',tier='development',scope='Reproduced original S failure; no successful creation claimed',commands=commands,outputs=outputs,machine=machine,pin=PIN)
+        return dict(status='pass',tier='development',scope='Reproduced original S failure; no successful creation claimed',commands=commands,outputs=outputs,machine=machine,pin=pin)
     if creation:
         from arc_archive import read
         files,entries=read((out/'readback/NEW.ARC').read_bytes())
         assert files==expected
-        return dict(status='pass',tier='development',commands=commands,outputs=outputs,machine=machine,pin=PIN,entries=entries)
+        return dict(status='pass',tier='development',commands=commands,outputs=outputs,machine=machine,pin=pin,entries=entries)
     if extraction:
         for name,value in expected.items():assert (out/'readback'/name).read_bytes()==value,name
-        return dict(status='pass',tier='development',commands=commands,outputs=outputs,machine=machine,pin=PIN,files={k:hashlib.sha256(v).hexdigest() for k,v in expected.items()})
+        return dict(status='pass',tier='development',commands=commands,outputs=outputs,machine=machine,pin=pin,files={k:hashlib.sha256(v).hexdigest() for k,v in expected.items()})
     assert set(outputs)=={name for name,_ in LIST_CASES}
     for name in ['LIST.OUT','VERBOSE.OUT']:
         value=outputs[name]
         raw=bytes.fromhex(value)
         assert all(name.encode() in raw for name in corpus()),raw
-    return dict(status='pass',tier='development',scope='Original SDX output; exit codes not captured',commands=commands,outputs=outputs,machine=machine,pin=PIN)
+    return dict(status='pass',tier='development',scope='Original SDX output; exit codes not captured',commands=commands,outputs=outputs,machine=machine,pin=pin)
 
 
 def fixture(out,extraction=False):
@@ -125,14 +128,16 @@ def fixture(out,extraction=False):
     return source,[(0x300000,bytes(payload))]
 
 
-def native(out,extraction=False):
+def native(out,extraction=False,rom=None):
     source,payload=fixture(out,extraction)
     profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=16384
     (out/'memory-profile.json').write_text(json.dumps(profile,indent=2)+'\n')
     program=build(compiler(ROOT/'build/actionc',release=True),source,out,tasks=True,task_capacity=8,console=False,console_test=True,sdx=True,image_data=payload,dos_mounts=[dict(alias='RAM',format=3)],memory_profile=out/'memory-profile.json')
-    with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
-        for k,v in PIN['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
-        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
+    firmware,pin=select_firmware(rom,PIN)
+    with emulator(ROOT/'build/shell-paced-bridge',firmware,out,pin=pin) as b:
+        configure_firmware(b,firmware)
+        for k,v in pin['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
+        machine=verify_machine(b,firmware,pin)
         try:runtime,_=execute(b,program,timeout=180,frame_limit=9000)
         except Exception:
             print({k:data(b,program['image'],k) for k in ['checks','currentCase','primary','secondary','reason','guestBank']},flush=True)
@@ -169,10 +174,11 @@ def native(out,extraction=False):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--group',choices=['reference','reference-extract','reference-create','reference-store','a1','a2'],required=True)
+    parser.add_argument('--rom',type=Path)
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
     result=dict(status='running');started=time.monotonic()
-    try:result=reference(out,args.group=='reference-extract',args.group in ('reference-create','reference-store'),args.group=='reference-store') if args.group.startswith('reference') else native(out,args.group=='a2')
+    try:result=reference(out,args.group=='reference-extract',args.group in ('reference-create','reference-store'),args.group=='reference-store',args.rom) if args.group.startswith('reference') else native(out,args.group=='a2',args.rom)
     except Exception as e:result.update(status='fail',error=str(e));raise
     finally:
         result['seconds']=round(time.monotonic()-started,3)

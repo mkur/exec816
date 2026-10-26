@@ -267,7 +267,7 @@ class DemoPackageTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'Changed bitmap shell notice'):
                 package_demo.package(self.bundle,self.archive,bitmap_shell=source)
 
-    def test_qed_notices_are_required_and_packaged(self):
+    def test_qed_is_delivered_separately_from_demo(self):
         source=self.root/'qed';source.mkdir()
         for guide in ('gem-desktop-distribution.txt','qed-exec-distribution.txt'):
             (self.root/'docs'/guide).write_bytes((ROOT/'docs'/guide).read_bytes())
@@ -277,7 +277,8 @@ class DemoPackageTests(unittest.TestCase):
             artifacts[name]=hashlib.sha256(payload).hexdigest()
         manifest=source/'demo-manifest.json'
         manifest.write_text(json.dumps(dict(bitmap=True,shell_only=True,desktop=True,gem_desktop=True,
-            qed={'abi':26},kernel={'desktop_mouse':{'profile':'mild'}},artifacts=artifacts)))
+            qed={'abi':26},kernel={'desktop_mouse':{'profile':'mild'},
+                                    'exec_build':{'version':'0.2.1'}},artifacts=artifacts)))
         path=self.bundle/'of816.json';record=json.loads(path.read_text())
         record['exec_xex_sha256']=artifacts['program.xex']
         record['media']['manifest_sha256']=hashlib.sha256(manifest.read_bytes()).hexdigest()
@@ -286,13 +287,13 @@ class DemoPackageTests(unittest.TestCase):
             package_demo.package(self.bundle,self.archive,bitmap_shell=source)
             with zipfile.ZipFile(self.archive) as archive:
                 guide=archive.read('exec816-demo/README.txt')
-                self.assertIn(b'RUN QED:QED.APP',guide);self.assertIn(b'WORK:SAMPLE.TXT',guide)
+                self.assertNotIn(b'RUN QED:QED.APP',guide)
                 for name in package_demo.QED_NOTICES:
-                    self.assertEqual(archive.read('exec816-demo/licenses/'+name),(source/name).read_bytes())
-                    self.assertIn(('licenses/'+name).encode(),guide)
+                    self.assertNotIn('exec816-demo/licenses/'+name,archive.namelist())
+                self.assertNotIn('exec816-demo/qed.atr',archive.namelist())
+            # Unshipped optional notices do not participate in this ZIP's inputs.
             (source/package_demo.QED_NOTICES[0]).write_text('changed')
-            with self.assertRaisesRegex(ValueError,'Changed bitmap shell notice'):
-                package_demo.package(self.bundle,self.archive,bitmap_shell=source)
+            package_demo.package(self.bundle,self.archive,bitmap_shell=source)
 
     def test_calculator_notices_and_desktop_guide(self):
         source=self.root/'desktop';source.mkdir()

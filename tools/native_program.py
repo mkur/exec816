@@ -358,6 +358,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         memory['sdx_patches']=sdx_patches
         if sdx_patches:
             command(["python3", ROOT / "tools/generate_sdx.py", "--check"])
+            command(["python3", ROOT / "tools/generate_sdx_firmware.py", "--check"])
             command(["python3", ROOT / "tools/generate_fastbasic.py", "--check"])
             command(["python3", ROOT / "tools/generate_fastbasic_interpreter.py", "--check"])
         if upper_table:
@@ -1127,6 +1128,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         if sdx_runtime_probe or sdx:
             provenance['sdx_runtime_probe_inputs']={name:sha256(ROOT/name) for name in (
                 'platform/altirraos/sdx-runtime-probe.s', 'platform/altirraos/sdx-rom-shadow.s',
+                'platform/altirraos/sdx-firmware.json', 'platform/altirraos/generated/sdx-firmware.inc',
                 'platform/altirraos/sdx-stack.inc')}
         provenance['sdx_patches']=sdx_patches
         if sdx_patches:

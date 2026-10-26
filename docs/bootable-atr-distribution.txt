@@ -59,3 +59,11 @@ loading. Keep FujiNet's HSIO index at 8 for native disk access. A failed transfe
 parks with an error and requires reset. --boot-sio standard selects a slower
 boot comparison/recovery reader; it does not change native storage's profile.
 Development checks and physical hardware qualification are separate.
+
+Firmware compatibility
+----------------------
+
+This image also admits stock XLOS816F 2.48 and 2.49 at the development tier.
+Use your own XLOS ROM; it is not included. CPU, RAM and VBXE requirements
+remain the same. Modified ROMs and third-party native/PBI extensions are not
+covered. These checks do not qualify physical accelerator hardware.

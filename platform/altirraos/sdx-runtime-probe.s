@@ -7,6 +7,9 @@ SDX_ROM_BACKUP = $284000
 SDX_ROM_STATE = $287800
 SDX_ROM_NMI = sdx_probe_nmi_stub
 SDX_ROM_IRQ = sdx_probe_irq_stub
+SDX_ROM_CHAIN_NMI = sdx_probe_chain_nmi_target+1
+SDX_ROM_CHAIN_NESTED = sdx_probe_nested_vbi_target+1
+SDX_ROM_CHAIN_IRQ = sdx_probe_chain_irq_target+1
 SR_OWNER = $287802
 SR_PENDING = $287804
 SR_INDEX = $287806
@@ -158,13 +161,15 @@ sdx_probe_chain_nmi:
     sec
     xce
     plp
-    jml $00c17b
+sdx_probe_chain_nmi_target:
+    jml $000000                 ; initialized from admitted original ROM vector
 sdx_probe_chain_irq:
     restore_full
     sec
     xce
     plp
-    jml $00c1e1
+sdx_probe_chain_irq_target:
+    jml $000000
 sdx_probe_emulation_return:
     sec
     xce
@@ -175,7 +180,8 @@ sdx_probe_emulation_return:
 sdx_probe_nested_vbi:
     sec
     xce
-    jml $00c17b
+sdx_probe_nested_vbi_target:
+    jml $000000
 sdx_probe_nested_emulation_return:
     clc
     xce

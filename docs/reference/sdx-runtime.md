@@ -33,8 +33,11 @@ emulation-stub bank classification. No Task dispatch crosses a live ROM activati
 
 Runtime ROM entry uses the complete anchor when a guest is suspended. Already
 nested ROM work preserves its current page-one S. With no frame, the controlled
-OS top applies. The pinned ROM's COP `$00` and VBI paths enter emulation mode;
-passing a native Task stack through unchanged is unsupported.
+OS top applies. Bank-zero console output enters emulation mode and calls the
+public CIO entry directly, avoiding the firmware's extra COP trampoline frame.
+The native OS COP `$00` service remains available through the saved vector.
+Native interrupt mode differs by [firmware profile](sdx-firmware.md); passing
+a native Task stack through unchanged remains unsupported.
 
 Require `anchor - 128 >= $0110` before borrowing, hence anchor at least `$0190`.
 The `$0100–$010F` lower guard remains reserved. The budget includes the wrapper,
@@ -43,7 +46,8 @@ entry and acknowledge-only NMI. Nested CIO VBI uses a small emulation frame and
 only enters while S is in page one; deeper or transitional NMIs defer. It keeps
 ROM clock-dependent scrolling working. Native SIO continues to exclude ROM
 serial service while it owns the hardware. Another ROM or third-party interrupt
-chain requires a new audit.
+chain requires a new audit. The reviewed bounds are 119 bytes for AltirraOS and
+121 for the admitted XLOS F images, within the unchanged 128-byte reservation.
 
 The pinned BASIC parser stores grammar backtracking records in a 256-byte
 private-bank buffer, with three bytes of bookkeeping and at most 63 live states.

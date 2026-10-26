@@ -590,16 +590,32 @@ copy_rom_buffer:
     plb
     checkpoint 4
     ldx #0
-    .if PROBE_NMI = 18
-        pea os_vbi_probe
+    .if FORWARD_SIGNATURE = 0
+        ; This adapter is bank zero, D=DBR=0, on the leased OS stack. Enter
+        ; the public legacy CIO API directly. Avoid an additional firmware
+        ; COP trampoline/frame below a suspended guest's complete frame.
+        cli
+        checkpoint 5
+        sep #$30
+        sec
+        xce
+        .if PROBE_NMI = 18
+            jsr os_vbi_probe
+        .else
+            jsr CIOV
+        .endif
+        clc
+        xce
+        rep #$30
     .else
+        ; Diagnostic stimulus for nonzero COP forwarding, not a ROM I/O path.
         pea CIOV
+        cli
+        checkpoint 5
+        cop FORWARD_SIGNATURE
+        rep #$30
+        pla
     .endif
-    cli                          ; hardware IRQs remain available to the OS
-    checkpoint 5
-    cop FORWARD_SIGNATURE        ; production=$00; other low signatures in tests
-    rep #$30
-    pla                          ; discard COP0 target word
     tya
     and #$00ff                   ; unsigned CIO status
     tay

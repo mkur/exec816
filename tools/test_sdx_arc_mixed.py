@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """A4: sequential resident MD5/ARC with busy rejection, native peer and SDFS, BREAK, ownership and shell."""
 import argparse,hashlib,json,time
+from sdx_test_firmware import select as select_firmware, configure as configure_firmware
 from pathlib import Path
 from native_program import ROOT,build,compiler,verify_machine,read_build
 from os_boundary import emulator
@@ -26,19 +27,23 @@ def fixture(out):
     return out/'probe.act',[(0x300000,bytes(payload))],original
 
 
-def run(out,reuse=False):
+def run(out,reuse=False,rom=None):
     source,payload,original=fixture(out)
+    # Keep physical D1 free for XLOS Disk Boot. The native volume alias D1
+    # remains stable while its test medium uses physical SIO unit 2.
     profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=16384
     (out/'memory.json').write_text(json.dumps(profile,indent=2)+'\n')
-    program=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),source,out,tasks=True,task_capacity=12,console=True,console_test=True,sdx=True,sdx_drive_a='D1:',image_data=payload,memory_profile=out/'memory.json',dos_mounts=[dict(alias='RAM',format=3),dict(alias='D1',device='sio.device',unit=49,sectors=1024,sector_bytes=256,format=2,access='readwrite',profile=4)])
+    program=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),source,out,tasks=True,task_capacity=12,console=True,console_test=True,sdx=True,sdx_drive_a='D1:',image_data=payload,memory_profile=out/'memory.json',dos_mounts=[dict(alias='RAM',format=3),dict(alias='D1',device='sio.device',unit=50,sectors=1024,sector_bytes=256,format=2,access='readwrite',profile=4)])
     directory=out/'source';directory.mkdir(exist_ok=True)
     a=bytes((i*37+i//251)&255 for i in range(4096));bb=bytes((i*53+i//113)&255 for i in range(8192))
     for name,raw in {'A.BIN':a,'B.BIN':bb,'FAIL.ARC':original,'SHARE.ARC':original}.items():(directory/name).write_bytes(raw)
     make(out/'volume.atr',directory,1024,256,'ARCMIX')
-    with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
-        for k,v in PIN['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
-        b.config('diskemu','generic56k');machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
-        b.mount(0,str(out/'volume.atr'))
+    firmware,pin=select_firmware(rom,PIN)
+    with emulator(ROOT/'build/shell-paced-bridge',firmware,out,pin=pin) as b:
+        configure_firmware(b,firmware)
+        for k,v in pin['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
+        b.config('diskemu','generic56k');machine=verify_machine(b,firmware,pin)
+        b.mount(1,str(out/'volume.atr'))
         try:runtime,_=execute(b,program,timeout=480,frame_limit=24000)
         except Exception:
             print({k:data(b,program['image'],k) for k in ['checks','currentCase','primary','secondary','reason','breakTicks','elapsed','peerProgress']},flush=True);raise
@@ -61,8 +66,8 @@ def run(out,reuse=False):
     return dict(status='pass',tier='development',observed=observed,entries=entries,runtime=runtime,machine=machine,build=program['build'])
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--reuse',action='store_true');a=p.parse_args();out=a.output.resolve();out.mkdir(parents=True,exist_ok=True);result=dict(status='running')
-    try:result=run(out,a.reuse)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--reuse',action='store_true');p.add_argument('--rom',type=Path);a=p.parse_args();out=a.output.resolve();out.mkdir(parents=True,exist_ok=True);result=dict(status='running')
+    try:result=run(out,a.reuse,a.rom)
     except Exception as e:result.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('ARC mixed',result['status'],result['observed'],flush=True)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Pinned 6502 MD5 through native DOS, Images and ordinary Processes."""
 import argparse
+from sdx_test_firmware import select as select_firmware, configure as configure_firmware
 import hashlib
 import json
 from pathlib import Path
@@ -164,6 +165,7 @@ ENDMODULE
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--rom',type=Path)
     parser.add_argument('--quick',action='store_true')
     parser.add_argument('--replay',action='store_true')
     parser.add_argument('--disk',action='store_true')
@@ -178,7 +180,8 @@ def main():
             source,payload,cases=fixture(out,args.quick,args.disk,args.shell)
         mounts=[dict(alias='RAM',format=3)]
         if args.disk:
-            mounts.append(dict(alias='DATA',unit=49,sectors=1024,sector_bytes=256,profile=4,format=2))
+            # Physical D1 is the emulator's XLOS XEX Disk Boot transport.
+            mounts.append(dict(alias='DATA',unit=50,sectors=1024,sector_bytes=256,profile=4,format=2))
         profile=None
         if args.shell:
             memory=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
@@ -188,12 +191,14 @@ def main():
             tasks=True,task_capacity=8,console=args.shell,console_test=True,sdx=True,
             image_data=payload,dos_mounts=mounts,memory_profile=profile,
             sdx_drive_a='DATA:' if args.disk else 'RAM:')
-        with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
-            for key,value in PIN['configuration'].items():
+        firmware,pin=select_firmware(args.rom,PIN)
+        with emulator(ROOT/'build/shell-paced-bridge',firmware,out,pin=pin) as b:
+            configure_firmware(b,firmware)
+            for key,value in pin['configuration'].items():
                 b.config(key,str(value).lower() if isinstance(value,bool) else value)
             if args.disk:b.config('diskemu','generic56k')
-            machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
-            if args.disk:b.mount(0,str(out/'input.atr'))
+            machine=verify_machine(b,firmware,pin)
+            if args.disk:b.mount(1,str(out/'input.atr'))
             try:
                 runtime,_=execute(b,program,timeout=240,frame_limit=12000)
             except Exception:

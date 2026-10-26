@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the pinned EDX editor through native console I/O and physical keys."""
 import argparse
+from sdx_test_firmware import select as select_firmware, configure as configure_firmware
 import json
 from pathlib import Path
 
@@ -33,7 +34,7 @@ def fixture(out):
     return source,[(0x300000,raw),(0x302000,initial)]
 
 
-def run(out,bitmap=False,replay=False):
+def run(out,bitmap=False,replay=False,rom=None):
     out.mkdir(parents=True,exist_ok=True)
     if replay:
         p=read_build(out/'program' if bitmap else out)
@@ -53,10 +54,12 @@ def run(out,bitmap=False,replay=False):
     bridge=ROOT/'build/shell-paced-bridge'
     if bitmap:
         from test_mouse_observe import PIN as pin,BRIDGE as bridge
+    firmware,pin=select_firmware(rom,pin)
     result=dict(status='running',tier='development',bitmap=bitmap,build=p['build'],pin=pin,keys=[])
-    with emulator(bridge,ROOT/'build/firmware/altirraos-816.rom',out,pin=pin) as b:
+    with emulator(bridge,firmware,out,pin=pin) as b:
+        configure_firmware(b,firmware)
         for k,v in pin['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
-        result['machine']=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',pin)
+        result['machine']=verify_machine(b,firmware,pin)
         keyCalls=next(d['address'] for d in p['image']['data'] if '_SDXSCREEN_KEYCALLS_' in d['name'])
         instance=p['build']['memory']['console_storage']['INSTANCE']
         ready=instance+constants()['INSTANCE_READREADY']
@@ -147,11 +150,12 @@ def run(out,bitmap=False,replay=False):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--rom',type=Path)
     parser.add_argument('--bitmap',action='store_true')
     parser.add_argument('--replay',action='store_true')
     args=parser.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
     result=dict(status='running')
-    try:result=run(out,args.bitmap,args.replay)
+    try:result=run(out,args.bitmap,args.replay,args.rom)
     except Exception as error:result.update(status='fail',error=str(error));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('EDX passed',result['checks'],flush=True)

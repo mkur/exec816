@@ -1,0 +1,1183 @@
+{
+  "format": "exec816-xlos-sdx-audit-v1",
+  "date": "2026-10-26",
+  "status": "audit-complete-adapter-required",
+  "tier": "development",
+  "qualification": false,
+  "source_base_revision": "66009ca246cbb4017dccfcdcc7c2dc123b5a24be",
+  "scope": "Native ROM boundaries, standalone P2 routing, optional diagnostic startup; no SDX application qualification",
+  "machine": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "pin_sha256": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "model": "800XL",
+    "cpu": "65C816",
+    "clock_multiplier": 8,
+    "video": "PAL",
+    "base_ram_kib": 64,
+    "high_banks": 63,
+    "shadow_rom": true,
+    "vbxe": "FX 1.26, D600, private 512 KiB VRAM",
+    "siopatch": false,
+    "burstio": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "production_changed": false,
+  "rom_redistributed": false,
+  "full_results": {
+    "path": "build/xlos-sdx-audit-final/results.json",
+    "sha256": "adcc683ac94d1f6415fa9244f68e8b944982b5f06e26f5a90dfad515f25fb1ea"
+  },
+  "inputs": {
+    "tools/audit_xlos_sdx.py": "0a0a23c79cd6b900556cc45a50ca74abaa659f1d5c46cca245eb21186b9c1c0e",
+    "probes/xlos-sdx/boundary.s": "a3f90cd2c36bf6770b4da7d8f1b9a62b4d8c22416cd85a1e9c35144a775e174b",
+    "probes/os-boundary/probe.cfg": "c86cb62d38298e10830b0232175acc29a00b4cecc5ecc45e5940c6fce36c8103",
+    "probes/sdx-runtime/probe.s": "89f0731d602ef12fcff4be79d82202691e178e1b2da21e06d3f48f35459e327e",
+    "probes/sdx-runtime/probe.cfg": "7aaf70d4042f8d3864b4b246d43d388db2721289862cde93338bd8868c862046",
+    "tools/test_sdx_runtime.py": "99e62ad5cba90283f09660b22c1108099f4f2918a65d4ef5d80b6391951c68cc",
+    "platform/altirraos/sdx-rom-shadow.s": "2b80e5456152884410d940f4df52647e482b0bb4da6d7ab0665ef069093e56d8"
+  },
+  "firmware": [
+    {
+      "version": "2.48 F",
+      "url": "https://drac030.krap.pl/xlos-20251207.arc",
+      "archive_sha256": "d345b665778790a1569fd957e2e21808520b0e877ae112790f4532a0f1d5970a",
+      "rom_sha256": "2899b04db54bbdef833ce8a203b3cd55c83c8ed78c1feaa158bf7dc13d4f9da5",
+      "bytes": 16384
+    },
+    {
+      "version": "2.49 F",
+      "url": "https://drac030.krap.pl/xlos-20261007.arc",
+      "archive_sha256": "a5fdd7a35b55e58f81ef00e974bea549baef69c3d45a5b882d098f84598a3257",
+      "rom_sha256": "d539c4acaec2350d0b9d42f73c242446712ffcbd8b636dce587cd00679f7b097",
+      "bytes": 16384
+    }
+  ],
+  "findings": {
+    "current_failure": "Stock XLOS images reach kernel RAM/Task/VBXE initialization, then sdx_rom_install returns 2 for expected-ROM mismatch, halting startup before SDX admission.",
+    "first_compared_mismatch": "$C000",
+    "production_chain_sites": {
+      "nmi": 2,
+      "irq": 1,
+      "altirraos_nmi": "$C17B",
+      "altirraos_irq": "$C1E1"
+    },
+    "public_abi": "CIOV/COP $00/native RAM vector layout matches; retain Exec COP $50 and saved OS forwarding.",
+    "interrupt_difference": "XLOS native IRQ/NMI retain E=0; COP $00 enters emulation for its legacy target. Recompute firmware stack envelopes.",
+    "decision": "Small explicit firmware adapter is feasible; do not relax identity checks alone."
+  },
+  "roms": [
+    {
+      "version": "2.48 F",
+      "sha256": "2899b04db54bbdef833ce8a203b3cd55c83c8ed78c1feaa158bf7dc13d4f9da5",
+      "original_entries": {
+        "emulation_nmi": "$C018",
+        "emulation_irq": "$CA86",
+        "native_nmi": "$CAA3",
+        "native_irq": "$CA73",
+        "native_cop": "$CAE2"
+      },
+      "native": [
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 203,
+          "state": {
+            "a": 43981,
+            "x": 4660,
+            "y": 22136,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 203,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 22,
+          "clock_after": 23,
+          "guards_intact": true,
+          "xex_sha256": "5e713f889b457a8ae9d7a2b9c47f9111ff9d3712b302e1a6fc388d87d2956485"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 207,
+          "state": {
+            "a": 43981,
+            "x": 4660,
+            "y": 22136,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 207,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 22,
+          "clock_after": 23,
+          "guards_intact": true,
+          "xex_sha256": "80f173f7d8e984e0be19d3d1bbe5eb17b94702b92d4fab5d9782303a19f804bb"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 219,
+          "state": {
+            "a": 43981,
+            "x": 52,
+            "y": 120,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 219,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 22,
+          "clock_after": 23,
+          "guards_intact": true,
+          "xex_sha256": "9624fae1e83d6e69e68421471d671f4853d1a7983c96409ae46d95d64e34abbf"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 223,
+          "state": {
+            "a": 43981,
+            "x": 52,
+            "y": 120,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 223,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 22,
+          "clock_after": 23,
+          "guards_intact": true,
+          "xex_sha256": "209a3601b65814ed97df5fbdb8117841b1aef0fb2144f428d6bdaebd93c32b2c"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 235,
+          "state": {
+            "a": 43981,
+            "x": 4660,
+            "y": 22136,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 235,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 22,
+          "clock_after": 23,
+          "guards_intact": true,
+          "xex_sha256": "0a9c1cfaf3ac6f6f3fe6fe5c7f48493ec93a4753b8cb8a76099a2b7b81493116"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 239,
+          "state": {
+            "a": 43981,
+            "x": 4660,
+            "y": 22136,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 239,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 22,
+          "clock_after": 23,
+          "guards_intact": true,
+          "xex_sha256": "eb18b0ae81f19c9de775e3be89e34fad601b892e988178135cd30c6c83d43fa9"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 251,
+          "state": {
+            "a": 43981,
+            "x": 52,
+            "y": 120,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 251,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 22,
+          "clock_after": 23,
+          "guards_intact": true,
+          "xex_sha256": "e7ad363c83bb500e37f872cf7ded5520e6840d8d275c7d5d33017d3db3fbda8c"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 255,
+          "state": {
+            "a": 43981,
+            "x": 52,
+            "y": 120,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 255,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 22,
+          "clock_after": 23,
+          "guards_intact": true,
+          "xex_sha256": "d9633e0fa33c978dd8e94c5745313db3d1bdaff2cb382ef5b2bd71dafd15d5ce"
+        },
+        {
+          "status": "pass",
+          "case": "cop0",
+          "flags": 0,
+          "state": {
+            "a": 12440,
+            "x": 52,
+            "y": 120,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 5,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 22,
+          "clock_after": 22,
+          "guards_intact": true,
+          "xex_sha256": "a87e88b93e2c0655bcbd6ba0ee08f6627209e0e53399ccaa1504cf51a89692f6"
+        }
+      ],
+      "component": [
+        {
+          "status": "pass",
+          "guest_bank": 2,
+          "guest_dp": 8704,
+          "flags": 233,
+          "accumulator": 43981,
+          "phase": 0,
+          "vbis": 32,
+          "timer_irqs": 2430,
+          "deferred_native_nmis": 1,
+          "os_clock_ticks": 32,
+          "steady_guest_frames": 32,
+          "rom_and_underlay_restored": true,
+          "effective_rom_sha256": "ced76d27627bef1dac44d24359a0fa78a57f3237646afc397377d3dcd167d6b7",
+          "vector_patches": [
+            {
+              "address": 65530,
+              "expected": "18c0",
+              "replacement": "e831"
+            },
+            {
+              "address": 65534,
+              "expected": "86ca",
+              "replacement": "5c32"
+            }
+          ],
+          "shadow_code_bytes": 269,
+          "xex_sha256": "b0bfcace25ca2e4808059f59cc91dc4c31b508b4d184b2a2981843a7ea93faf7"
+        },
+        {
+          "status": "pass",
+          "guest_bank": 2,
+          "guest_dp": 8704,
+          "flags": 233,
+          "accumulator": 43981,
+          "phase": 1,
+          "vbis": 32,
+          "timer_irqs": 2403,
+          "deferred_native_nmis": 2,
+          "os_clock_ticks": 32,
+          "steady_guest_frames": 32,
+          "rom_and_underlay_restored": true,
+          "effective_rom_sha256": "ced76d27627bef1dac44d24359a0fa78a57f3237646afc397377d3dcd167d6b7",
+          "vector_patches": [
+            {
+              "address": 65530,
+              "expected": "18c0",
+              "replacement": "e831"
+            },
+            {
+              "address": 65534,
+              "expected": "86ca",
+              "replacement": "5c32"
+            }
+          ],
+          "shadow_code_bytes": 269,
+          "xex_sha256": "937d11d766b33ad6475dd82ea0d6147091bebfa680ba494b0953a761e913e9cb"
+        },
+        {
+          "status": "pass",
+          "guest_bank": 2,
+          "guest_dp": 8704,
+          "flags": 233,
+          "accumulator": 43981,
+          "phase": 2,
+          "vbis": 32,
+          "timer_irqs": 2404,
+          "deferred_native_nmis": 3,
+          "os_clock_ticks": 32,
+          "steady_guest_frames": 32,
+          "rom_and_underlay_restored": true,
+          "effective_rom_sha256": "ced76d27627bef1dac44d24359a0fa78a57f3237646afc397377d3dcd167d6b7",
+          "vector_patches": [
+            {
+              "address": 65530,
+              "expected": "18c0",
+              "replacement": "e831"
+            },
+            {
+              "address": 65534,
+              "expected": "86ca",
+              "replacement": "5c32"
+            }
+          ],
+          "shadow_code_bytes": 269,
+          "xex_sha256": "9c208134156475fd413e06adfbe0b64ec1c1f01079ec3ec0a6db3c09091c8c35"
+        },
+        {
+          "status": "pass",
+          "guest_bank": 2,
+          "guest_dp": 8704,
+          "flags": 233,
+          "accumulator": 43981,
+          "phase": 3,
+          "vbis": 32,
+          "timer_irqs": 2429,
+          "deferred_native_nmis": 2,
+          "os_clock_ticks": 32,
+          "steady_guest_frames": 32,
+          "rom_and_underlay_restored": true,
+          "effective_rom_sha256": "ced76d27627bef1dac44d24359a0fa78a57f3237646afc397377d3dcd167d6b7",
+          "vector_patches": [
+            {
+              "address": 65530,
+              "expected": "18c0",
+              "replacement": "e831"
+            },
+            {
+              "address": 65534,
+              "expected": "86ca",
+              "replacement": "5c32"
+            }
+          ],
+          "shadow_code_bytes": 269,
+          "xex_sha256": "cfa9ef469680a4dac44954b02b734ddc2a2daaca289926ebaa1bf65d18102cf7"
+        },
+        {
+          "status": "pass",
+          "guest_bank": 2,
+          "guest_dp": 8704,
+          "flags": 233,
+          "accumulator": 43981,
+          "phase": 4,
+          "vbis": 32,
+          "timer_irqs": 2404,
+          "deferred_native_nmis": 2,
+          "os_clock_ticks": 32,
+          "steady_guest_frames": 32,
+          "rom_and_underlay_restored": true,
+          "effective_rom_sha256": "ced76d27627bef1dac44d24359a0fa78a57f3237646afc397377d3dcd167d6b7",
+          "vector_patches": [
+            {
+              "address": 65530,
+              "expected": "18c0",
+              "replacement": "e831"
+            },
+            {
+              "address": 65534,
+              "expected": "86ca",
+              "replacement": "5c32"
+            }
+          ],
+          "shadow_code_bytes": 269,
+          "xex_sha256": "b0f344b3ae0f397480c89ffea4c85d4d641fcd77dd6713a06951e3513b648e89"
+        }
+      ],
+      "hosted": [
+        {
+          "adapted": false,
+          "cart_sha256": "74c21f995553874c0a59e668d351aa69a5a08b8cdeb4a13c191e6089c1967ce7",
+          "xex_sha256": "3d1404a993cdec14b47ef75a18e3714af3d45dd66877599c0cc21a3c20ed8a1f",
+          "patches": [],
+          "native_init_reached": true,
+          "install_result": 2,
+          "diagnostics": " .\nBOOT MEMLO    =$0700\nMEMTOP        =$BC1F\nKERNEL BANK   =$0002\nTABLE BANK    =$0002\nSKIP RAM BANK =$0001\nKERNEL DP     =$0C00\nKERNEL STACK  =$322D\nRAM ADOPT     =OK\nTASK/HEAP INIT=OK\nVBXE BASE     =$D600\nVBXE ID/REV   =$1026\nVBXE rev      =1.26a\nKERNEL READY  =$0000\n\n\n\n\n\n\n\n\n\nSystem halted: $0002",
+          "status": "pass"
+        },
+        {
+          "adapted": true,
+          "cart_sha256": "74c21f995553874c0a59e668d351aa69a5a08b8cdeb4a13c191e6089c1967ce7",
+          "xex_sha256": "3d1404a993cdec14b47ef75a18e3714af3d45dd66877599c0cc21a3c20ed8a1f",
+          "patches": [
+            {
+              "address": 2621440,
+              "bytes": 16384,
+              "role": "expected ROM image"
+            },
+            {
+              "address": 8597,
+              "old": "5c7bc100",
+              "new": "5c18c000"
+            },
+            {
+              "address": 8621,
+              "old": "5c7bc100",
+              "new": "5c18c000"
+            },
+            {
+              "address": 8611,
+              "old": "5ce1c100",
+              "new": "5c86ca00"
+            }
+          ],
+          "native_init_reached": true,
+          "install_result": 0,
+          "live_tasks": 2,
+          "observed_vbi_intervals": 120,
+          "status": "pass"
+        }
+      ],
+      "resident": {
+        "xex_sha256": "1d883fdcc03347467f108234ed033266f0466409c4866210be0de4c8ad8c8330",
+        "fixture_sha256": "d28b29953d8ba46240b398500bda45defc9283c03f16a466f451f86a031f999a",
+        "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "exec_build": {
+          "revision": "3d25e1fb6c7e5fb4012592cdf6814b05de30717c",
+          "dirty": true,
+          "display": "3d25e1f-dirty",
+          "version": "0.2",
+          "actionc_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+          "task_capacity": 12,
+          "stack_checks": true,
+          "mount": null,
+          "strings": {
+            "banner": "Exec816 0.2 (3d25e1f-dirty)\n\n",
+            "slots": "exec: 12 task slots\n",
+            "stackChecks": "exec: stack checks enabled\n",
+            "version": "Exec816 0.2 (3d25e1f-dirty)\nactionc pin: 05c01f3\n",
+            "sioReady": "",
+            "mountStart": "SYS: no system volume configured\n",
+            "otherMountsReady": "",
+            "systemReady": "SYS: -> D",
+            "mountFailure": "Filesystem startup failed; check configured disks\nUse CD SYS: to retry; cold-boot after SIO failure"
+          }
+        },
+        "patches": [
+          {
+            "address": 2621440,
+            "bytes": 16384,
+            "role": "expected ROM image"
+          },
+          {
+            "address": 8597,
+            "old": "5c7bc100",
+            "new": "5c18c000"
+          },
+          {
+            "address": 8621,
+            "old": "5c7bc100",
+            "new": "5c18c000"
+          },
+          {
+            "address": 8611,
+            "old": "5ce1c100",
+            "new": "5c86ca00"
+          }
+        ],
+        "checks": [
+          113
+        ],
+        "status": "pass",
+        "anchor": 400,
+        "rom_reserve": 128,
+        "scope": "Earlier optimized emitted fixture: fine scroll, real nested ROM VBI, 113 assertions, physical frame and guards, native/vector/MEMLO restoration",
+        "runtime": {
+          "status": 0,
+          "native_nmi_count": 4,
+          "native_irq_count": 0,
+          "os_busy": 0,
+          "return_s": 11278,
+          "return_d": 3328,
+          "return_p": 0,
+          "return_dbr": 0,
+          "return_e": 0
+        }
+      }
+    },
+    {
+      "version": "2.49 F",
+      "sha256": "d539c4acaec2350d0b9d42f73c242446712ffcbd8b636dce587cd00679f7b097",
+      "original_entries": {
+        "emulation_nmi": "$C018",
+        "emulation_irq": "$CA7B",
+        "native_nmi": "$CA98",
+        "native_irq": "$CA68",
+        "native_cop": "$CAD7"
+      },
+      "native": [
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 203,
+          "state": {
+            "a": 43981,
+            "x": 4660,
+            "y": 22136,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 203,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 21,
+          "clock_after": 22,
+          "guards_intact": true,
+          "xex_sha256": "5e713f889b457a8ae9d7a2b9c47f9111ff9d3712b302e1a6fc388d87d2956485"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 207,
+          "state": {
+            "a": 43981,
+            "x": 4660,
+            "y": 22136,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 207,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 21,
+          "clock_after": 22,
+          "guards_intact": true,
+          "xex_sha256": "80f173f7d8e984e0be19d3d1bbe5eb17b94702b92d4fab5d9782303a19f804bb"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 219,
+          "state": {
+            "a": 43981,
+            "x": 52,
+            "y": 120,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 219,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 21,
+          "clock_after": 22,
+          "guards_intact": true,
+          "xex_sha256": "9624fae1e83d6e69e68421471d671f4853d1a7983c96409ae46d95d64e34abbf"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 223,
+          "state": {
+            "a": 43981,
+            "x": 52,
+            "y": 120,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 223,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 21,
+          "clock_after": 22,
+          "guards_intact": true,
+          "xex_sha256": "209a3601b65814ed97df5fbdb8117841b1aef0fb2144f428d6bdaebd93c32b2c"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 235,
+          "state": {
+            "a": 43981,
+            "x": 4660,
+            "y": 22136,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 235,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 21,
+          "clock_after": 22,
+          "guards_intact": true,
+          "xex_sha256": "0a9c1cfaf3ac6f6f3fe6fe5c7f48493ec93a4753b8cb8a76099a2b7b81493116"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 239,
+          "state": {
+            "a": 43981,
+            "x": 4660,
+            "y": 22136,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 239,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 21,
+          "clock_after": 22,
+          "guards_intact": true,
+          "xex_sha256": "eb18b0ae81f19c9de775e3be89e34fad601b892e988178135cd30c6c83d43fa9"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 251,
+          "state": {
+            "a": 43981,
+            "x": 52,
+            "y": 120,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 251,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 21,
+          "clock_after": 22,
+          "guards_intact": true,
+          "xex_sha256": "e7ad363c83bb500e37f872cf7ded5520e6840d8d275c7d5d33017d3db3fbda8c"
+        },
+        {
+          "status": "pass",
+          "case": "vbi",
+          "flags": 255,
+          "state": {
+            "a": 43981,
+            "x": 52,
+            "y": 120,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 255,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 21,
+          "clock_after": 22,
+          "guards_intact": true,
+          "xex_sha256": "d9633e0fa33c978dd8e94c5745313db3d1bdaff2cb382ef5b2bd71dafd15d5ce"
+        },
+        {
+          "status": "pass",
+          "case": "cop0",
+          "flags": 0,
+          "state": {
+            "a": 12440,
+            "x": 52,
+            "y": 120,
+            "s": 18415,
+            "d": 8704,
+            "dbr": 18,
+            "p": 5,
+            "e": 0,
+            "os_s": 0,
+            "os_d": 0,
+            "os_dbr": 0,
+            "os_e": 0,
+            "vbi_count": 0,
+            "cop_route": 0,
+            "cio_status": 0,
+            "clock_before": 0,
+            "clock_after": 0,
+            "completion": 255
+          },
+          "clock_before": 21,
+          "clock_after": 21,
+          "guards_intact": true,
+          "xex_sha256": "a87e88b93e2c0655bcbd6ba0ee08f6627209e0e53399ccaa1504cf51a89692f6"
+        }
+      ],
+      "component": [
+        {
+          "status": "pass",
+          "guest_bank": 2,
+          "guest_dp": 8704,
+          "flags": 233,
+          "accumulator": 43981,
+          "phase": 0,
+          "vbis": 32,
+          "timer_irqs": 2430,
+          "deferred_native_nmis": 2,
+          "os_clock_ticks": 32,
+          "steady_guest_frames": 32,
+          "rom_and_underlay_restored": true,
+          "effective_rom_sha256": "58ecf883ae5f2bc164cb03bc119dbe5b03f5e935cc31751d52bc43e23dbdeb02",
+          "vector_patches": [
+            {
+              "address": 65530,
+              "expected": "18c0",
+              "replacement": "e831"
+            },
+            {
+              "address": 65534,
+              "expected": "7bca",
+              "replacement": "5c32"
+            }
+          ],
+          "shadow_code_bytes": 269,
+          "xex_sha256": "7f7255256bfd7eb55938493c3ca5c62b378321ff80e79bbd74bb999bad96f5f7"
+        },
+        {
+          "status": "pass",
+          "guest_bank": 2,
+          "guest_dp": 8704,
+          "flags": 233,
+          "accumulator": 43981,
+          "phase": 1,
+          "vbis": 32,
+          "timer_irqs": 2404,
+          "deferred_native_nmis": 3,
+          "os_clock_ticks": 32,
+          "steady_guest_frames": 32,
+          "rom_and_underlay_restored": true,
+          "effective_rom_sha256": "58ecf883ae5f2bc164cb03bc119dbe5b03f5e935cc31751d52bc43e23dbdeb02",
+          "vector_patches": [
+            {
+              "address": 65530,
+              "expected": "18c0",
+              "replacement": "e831"
+            },
+            {
+              "address": 65534,
+              "expected": "7bca",
+              "replacement": "5c32"
+            }
+          ],
+          "shadow_code_bytes": 269,
+          "xex_sha256": "c490ab856d81ebb3728ef2fc57acf3c8b3e180d58c28406a40ddbdc0d3475cbe"
+        },
+        {
+          "status": "pass",
+          "guest_bank": 2,
+          "guest_dp": 8704,
+          "flags": 233,
+          "accumulator": 43981,
+          "phase": 2,
+          "vbis": 32,
+          "timer_irqs": 2405,
+          "deferred_native_nmis": 3,
+          "os_clock_ticks": 32,
+          "steady_guest_frames": 32,
+          "rom_and_underlay_restored": true,
+          "effective_rom_sha256": "58ecf883ae5f2bc164cb03bc119dbe5b03f5e935cc31751d52bc43e23dbdeb02",
+          "vector_patches": [
+            {
+              "address": 65530,
+              "expected": "18c0",
+              "replacement": "e831"
+            },
+            {
+              "address": 65534,
+              "expected": "7bca",
+              "replacement": "5c32"
+            }
+          ],
+          "shadow_code_bytes": 269,
+          "xex_sha256": "cf6368b666a77fee55c0a5fc8fd4cda1e828c103d992bd58e9206eddbc9c04fb"
+        },
+        {
+          "status": "pass",
+          "guest_bank": 2,
+          "guest_dp": 8704,
+          "flags": 233,
+          "accumulator": 43981,
+          "phase": 3,
+          "vbis": 32,
+          "timer_irqs": 2430,
+          "deferred_native_nmis": 3,
+          "os_clock_ticks": 32,
+          "steady_guest_frames": 32,
+          "rom_and_underlay_restored": true,
+          "effective_rom_sha256": "58ecf883ae5f2bc164cb03bc119dbe5b03f5e935cc31751d52bc43e23dbdeb02",
+          "vector_patches": [
+            {
+              "address": 65530,
+              "expected": "18c0",
+              "replacement": "e831"
+            },
+            {
+              "address": 65534,
+              "expected": "7bca",
+              "replacement": "5c32"
+            }
+          ],
+          "shadow_code_bytes": 269,
+          "xex_sha256": "cf606c0d3d397eeee2c4004bc0a50e7cf1dc6366e19962ef576f46225dbd5bfe"
+        },
+        {
+          "status": "pass",
+          "guest_bank": 2,
+          "guest_dp": 8704,
+          "flags": 233,
+          "accumulator": 43981,
+          "phase": 4,
+          "vbis": 32,
+          "timer_irqs": 2405,
+          "deferred_native_nmis": 3,
+          "os_clock_ticks": 32,
+          "steady_guest_frames": 32,
+          "rom_and_underlay_restored": true,
+          "effective_rom_sha256": "58ecf883ae5f2bc164cb03bc119dbe5b03f5e935cc31751d52bc43e23dbdeb02",
+          "vector_patches": [
+            {
+              "address": 65530,
+              "expected": "18c0",
+              "replacement": "e831"
+            },
+            {
+              "address": 65534,
+              "expected": "7bca",
+              "replacement": "5c32"
+            }
+          ],
+          "shadow_code_bytes": 269,
+          "xex_sha256": "07a5e70f6afee875505778cde5fb1809617b8e211ba2927425852a29e431e5b1"
+        }
+      ],
+      "hosted": [
+        {
+          "adapted": false,
+          "cart_sha256": "74c21f995553874c0a59e668d351aa69a5a08b8cdeb4a13c191e6089c1967ce7",
+          "xex_sha256": "3d1404a993cdec14b47ef75a18e3714af3d45dd66877599c0cc21a3c20ed8a1f",
+          "patches": [],
+          "native_init_reached": true,
+          "install_result": 2,
+          "diagnostics": " .\nBOOT MEMLO    =$0700\nMEMTOP        =$BC1F\nKERNEL BANK   =$0002\nTABLE BANK    =$0002\nSKIP RAM BANK =$0001\nKERNEL DP     =$0C00\nKERNEL STACK  =$322D\nRAM ADOPT     =OK\nTASK/HEAP INIT=OK\nVBXE BASE     =$D600\nVBXE ID/REV   =$1026\nVBXE rev      =1.26a\nKERNEL READY  =$0000\n\n\n\n\n\n\n\n\n\nSystem halted: $0002",
+          "status": "pass"
+        },
+        {
+          "adapted": true,
+          "cart_sha256": "74c21f995553874c0a59e668d351aa69a5a08b8cdeb4a13c191e6089c1967ce7",
+          "xex_sha256": "3d1404a993cdec14b47ef75a18e3714af3d45dd66877599c0cc21a3c20ed8a1f",
+          "patches": [
+            {
+              "address": 2621440,
+              "bytes": 16384,
+              "role": "expected ROM image"
+            },
+            {
+              "address": 8597,
+              "old": "5c7bc100",
+              "new": "5c18c000"
+            },
+            {
+              "address": 8621,
+              "old": "5c7bc100",
+              "new": "5c18c000"
+            },
+            {
+              "address": 8611,
+              "old": "5ce1c100",
+              "new": "5c7bca00"
+            }
+          ],
+          "native_init_reached": true,
+          "install_result": 0,
+          "live_tasks": 2,
+          "observed_vbi_intervals": 120,
+          "status": "pass"
+        }
+      ],
+      "resident": {
+        "xex_sha256": "1d883fdcc03347467f108234ed033266f0466409c4866210be0de4c8ad8c8330",
+        "fixture_sha256": "d28b29953d8ba46240b398500bda45defc9283c03f16a466f451f86a031f999a",
+        "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "exec_build": {
+          "revision": "3d25e1fb6c7e5fb4012592cdf6814b05de30717c",
+          "dirty": true,
+          "display": "3d25e1f-dirty",
+          "version": "0.2",
+          "actionc_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+          "task_capacity": 12,
+          "stack_checks": true,
+          "mount": null,
+          "strings": {
+            "banner": "Exec816 0.2 (3d25e1f-dirty)\n\n",
+            "slots": "exec: 12 task slots\n",
+            "stackChecks": "exec: stack checks enabled\n",
+            "version": "Exec816 0.2 (3d25e1f-dirty)\nactionc pin: 05c01f3\n",
+            "sioReady": "",
+            "mountStart": "SYS: no system volume configured\n",
+            "otherMountsReady": "",
+            "systemReady": "SYS: -> D",
+            "mountFailure": "Filesystem startup failed; check configured disks\nUse CD SYS: to retry; cold-boot after SIO failure"
+          }
+        },
+        "patches": [
+          {
+            "address": 2621440,
+            "bytes": 16384,
+            "role": "expected ROM image"
+          },
+          {
+            "address": 8597,
+            "old": "5c7bc100",
+            "new": "5c18c000"
+          },
+          {
+            "address": 8621,
+            "old": "5c7bc100",
+            "new": "5c18c000"
+          },
+          {
+            "address": 8611,
+            "old": "5ce1c100",
+            "new": "5c7bca00"
+          }
+        ],
+        "checks": [
+          113
+        ],
+        "status": "pass",
+        "anchor": 400,
+        "rom_reserve": 128,
+        "scope": "Earlier optimized emitted fixture: fine scroll, real nested ROM VBI, 113 assertions, physical frame and guards, native/vector/MEMLO restoration",
+        "runtime": {
+          "status": 0,
+          "native_nmi_count": 4,
+          "native_irq_count": 0,
+          "os_busy": 0,
+          "return_s": 11278,
+          "return_d": 3328,
+          "return_p": 0,
+          "return_dbr": 0,
+          "return_e": 0
+        }
+      }
+    }
+  ],
+  "case_counts": {
+    "native_vbi": 16,
+    "native_cop0": 2,
+    "standalone_component": 10,
+    "release_startup": 4,
+    "resident_stack": 2,
+    "total": 34
+  },
+  "host_suite": {
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "ran": 653,
+    "passed": 652,
+    "errors": 1,
+    "error_test": "test_demo_package.DemoPackageTests.test_qed_notices_are_required_and_packaged",
+    "error": "KeyError: 'exec_build' in tools/package_demo.py:178",
+    "affected_files_identical_to_HEAD": true
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "open_support_work": [
+    "Explicit ROM identity/shadow/entry profile in the production adapter",
+    "Conservative XLOS ROM/IRQ/NMI stack proof for the 128-byte reserve",
+    "Current MD5/ARC/EDX and persistent FastBasic workflows, native SIO coexistence and shutdown",
+    "Complete combined ATR/FujiNet boot and real accelerator hardware validation"
+  ],
+  "exclusions": [
+    "No release/full hosted qualification",
+    "No ready desktop or current SDX application claimed by the 120-VBI startup observation",
+    "No FujiNet/hardware run; exploratory full-release ATR/XEX loading was not completed under its initial bounds",
+    "No arbitrary ROMs, third-party PBI/native extensions, or arbitrary firmware kmem allocations",
+    "No compiler/code generation change; existing resident fixture is optimized, compiler-pinned and from the identified earlier Exec build"
+  ]
+}

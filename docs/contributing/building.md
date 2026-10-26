@@ -189,39 +189,39 @@ Distribute `exec816-demo.zip` with boot media, ROM, guide, notices and checksums
 
 ## Firmware diagnostics
 
-The supported ROM remains the bundled AltirraOS 65816 build. For a diagnostic
-run with another locally installed 16 KiB ROM, add `--rom-override path/to/ROM`
-to `test_cartridge.py` or `test_demo.py`. Results record the actual ROM hash and
-the override separately from the platform pin; the emulator and machine checks
-remain in place. Passing development checks does not qualify another firmware.
+AltirraOS 3.44/65816 remains the bundled platform ROM. The current SDX adapter
+also admits the exact stock **XLOS816F 2.48 and 2.49** images in the
+[firmware catalog](../../platform/altirraos/sdx-firmware.json). The
+[adapter contract](../reference/sdx-firmware.md) defines identification, original
+vector chaining, stack limits and unsupported extensions. Supply your own XLOS
+ROM; it is neither embedded nor redistributed. Other variants, including A,
+require their own reviewed profile.
 
-The [XLOS boot record](../development/xlos-boot.json) uses Drac's XLOS 2.48
-`XLOS816A.ROM` and `XLOS816F.ROM` from the December 2025 archive. The cartridge
-loader change recorded there copied TRIG3 into GINTLK before enabling interrupts.
-A constant `1` had incorrectly advertised a disabled cartridge as present and
-triggered XLOS's cartridge-removal halt during INITAD callbacks. The current
-[cartridge handoff](../reference/boot-loading.md) retains the mapper through
-INITAD and keeps the interlock synchronized at final unmapping. That newer
-ordering has development coverage on the pinned AltirraOS ROM; the earlier
-XLOS record does not qualify it. Fixed, public-Task and idle runtime bank-zero
-reservation changes are all **0 bytes**.
-
-Altirra's default XEX loader fails before Exec's INITAD under XLOS, including
-for a minimal executable with no Exec code. The checked XEX route uses **Computer
-→ Boot → Program load mode: Disk Boot**, with D1 set to **Off**, SYS media already
-on D2 and writable WORK media on D8. Cancel the OF816 countdown and enter
-`decimal`, `2 SYSTEM-DRIVE!`, then `EXEC816`. Keep the disk and CPU settings from
-the demo guide. Attaching SYS on D1 after loading did not pass filesystem startup;
-use D2 for this route. The equivalent automated check is:
+Validate a local image and boot the current combined-ATR demo with it:
 
 ```sh
-python3 tools/test_demo.py --bundle build/demo-bitmap-shell --boot-smoke \
-  --rom-override path/to/XLOS816A.ROM --disk-boot --system-drive 2
+python3 tools/generate_sdx_firmware.py --check --rom path/to/XLOS816F.ROM
+python3 tools/test_sdx_firmware_demo.py --bundle build/system-distribution \
+  --rom path/to/XLOS816F.ROM --output build/xlos-atr --route atr
 ```
 
-Cartridges can keep SYS on D1 from cold start and use the normal countdown.
-These are bounded development checks of boot, shell, disk commands and cleanup;
-physical hardware and the rest of XLOS's services are outside their scope.
+Use `--route cart` for the new Atarimax image with the same writable combined
+disk on D1. Both routes retain OF816's five-second countdown. The runner records
+the actual ROM hash, tool commands, WORK write/read, guards and native cleanup.
+Selected application and resident-stack runners also accept `--rom`; all keep
+their pinned emulator/machine settings. See the
+[implementation evidence](../history/xlos-sdx-support.md) for executed cases.
+Development checks do not qualify physical accelerator/FujiNet hardware or all
+XLOS services.
+
+Altirra's default XEX loader fails before Exec's INITAD under XLOS, including
+for a minimal executable with no Exec code. Standalone XEX fixtures select
+**Computer → Boot → Program load mode: Disk Boot**. That loader borrows D1,
+so fixture data disks use another physical unit. Prefer actual ATR or cartridge
+boot for the distribution. The older split-D2/D8 experiment and cartridge
+interlock diagnosis remain in the [historical boot record](../development/xlos-boot.json);
+they do not define the current single-disk layout. Released v0.2.1 still has the
+old AltirraOS-only admission described by the [original audit](../history/xlos-sdx-audit.md).
 
 ## Build an individual program
 
