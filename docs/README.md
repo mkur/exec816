@@ -22,6 +22,7 @@ Start with the [GEM desktop guide](gem-desktop-distribution.txt) to run Exec816,
 - [Architecture](architecture/README.md): the main parts, ownership and execution.
 - [Reference](reference/README.md): supported interfaces, limits and contracts.
 - [Contributing](contributing/README.md): building, coding and validation.
+- [Release notes](releases/README.md): user-visible changes and update instructions.
 - [Roadmap](roadmap.md): remaining work, without the completed milestone log.
 - [Plans](plans/README.md): bounded implementation plans, including completed ones.
 - [History](history/README.md): earlier designs, implementation reports and measurements.

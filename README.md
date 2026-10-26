@@ -8,7 +8,7 @@ on those services.
 You can try Exec816 in the AltirraSDL emulator. The demo download and setup
 instructions are below.
 
-Version 0.2.1 boots through [OF816](https://github.com/mgcaret/of816) into a
+Version 0.2.2 boots through [OF816](https://github.com/mgcaret/of816) into a
 640×240 colour GEM desktop with folder windows and a windowed Shell. Control
 Panel, Calculator, Text and Counter launch on demand. The desktop includes
 menus, window switching and iconification, file copying and drag-and-drop.
@@ -18,12 +18,17 @@ writable on the combined system disk, `WORK:` names its WORK directory, and
 The FastBasic workbench provides editing, Run, Stop, Check and standalone Build,
 with integer and floating-point interpreters that retain BASIC state between runs.
 
+The [0.2.2 patch](docs/releases/0.2.2.md) fixes startup with stock XLOS816F
+2.48 and 2.49. The bundled AltirraOS ROM remains the default; supply your own
+XLOS image to use that firmware. These profiles have emulator development
+coverage, with physical hardware qualification still pending.
+
 ## Installation
 
 Download `exec816-demo.zip` from the
 [Releases page](https://github.com/mkur/exec816/releases) and extract it.
 Published previews can predate the current desktop; follow the README inside
-their archive. The instructions below describe the 0.2.1 GEM desktop build,
+their archive. The instructions below describe the 0.2.2 GEM desktop build,
 available through the [build guide](docs/contributing/building.md).
 Its `exec816-demo/` folder contains:
 
