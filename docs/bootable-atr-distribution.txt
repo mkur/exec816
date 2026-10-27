@@ -56,8 +56,9 @@ OS display; cold-reset to start again. BOOT.LDR and EXEC816.XEX are protected.
 When updating, keep your old writable ATR and copy its WORK files into the new
 image. Package refreshes do not migrate user files automatically.
 
-Boot loading negotiates 57600 baud with FujiNet after the small standard-speed
-reader. Interactive Forth gets standard-speed ROM I/O; EXEC816 resumes fast
+The ROM loads the small reader at its own speed. The reader then synchronizes
+with FujiNet and negotiates 57600 baud, including when XLOS booted it at high
+speed. Interactive Forth gets standard-speed ROM I/O; EXEC816 resumes fast
 loading. Keep FujiNet's HSIO index at 8 for native disk access. A failed transfer
 parks with an error and requires reset. --boot-sio standard selects a slower
 boot comparison/recovery reader; it does not change native storage's profile.

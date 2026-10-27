@@ -125,3 +125,53 @@ this arena, so sharing the engine adds **zero further loading bytes** there.
 Initialization remains 57,056 bytes and runtime 55,008. Reserved bank-zero
 changes are **0 fixed, 0 root, 0 kernel, 0 per-public-Task and 0 idle bytes**.
 No bank-$01 scratch, new Task, enlarged pool or public kernel operation is added.
+
+## XLOS speed handover correction
+
+The 27 October 2026 follow-up fixes the reader's assumption that the peripheral
+starts at standard speed. The first automatic `$3F` query used divisor 40 even
+when XLOS had already selected high speed. On failure the reader synchronized
+at standard speed and returned without retrying negotiation, leaving bulk
+loading slow. A small emitted ATR regression reproduced that outcome against
+the real FujiNet-PC firmware: initial 57,600 baud selected divisor 40.
+
+The shared policy now confirms standard-rate STATUS communication before its
+initial policy selection. Automatic selection then queries the HSIO index and
+confirms fast communication as before. Explicit standard policy also starts
+from a confirmed state. Resume already synchronizes before source verification
+and enters policy selection directly, avoiding a duplicate STATUS transaction.
+Lost/corrupt replies still fall back through the same bounded recovery path;
+the fix adds no unbounded retry or assumption about ROM-private speed variables.
+
+Seven emitted handover cases pass on pinned AltirraOS 3.44/816 and stock XLOS
+2.48/2.49, using real firmware and independently observed endpoint rates. Both
+XLOS ROMs naturally leave the peripheral at 57,600 baud before reader takeover;
+the fixed reader's bulk reads stay at that rate. Controlled standard/fast
+initial states and explicit standard policy pass too. The preparation fixture
+uses an actual target-side query when a different initial state is needed;
+it does not forge peripheral speed. Payload bytes, reader guards, serial vector/
+mask/CRITIC restoration and ROM VBI progress are checked.
+
+Six focused split-reader cases pass: disabled/unsupported HSIO, lost/corrupt
+query replies, incompatible native speed and BREAK. A real-NMI publication
+checkpoint with two local callbacks also passes. All 659 host checks pass.
+The [follow-up evidence](../development/boot-sio-handoff.json) records exact
+inputs, the failing baseline, packet rates and refreshed matching demo media.
+These remain development checks, with no physical UART qualification claim.
+
+The exact refreshed combined ATR also boots stock XLOS 2.49 through isolated
+FujiNet-PC firmware. All 2,596 reader-owned sector reads run at 57,600 baud,
+OF816 counts down for 249 PAL frames and native handoff occurs at frame 7,528.
+The native image/context check, VER, MD5, ARC help/listing, WORK write/read,
+guards and orderly EXIT pass on that package.
+
+Reserved bank-zero growth is **0 fixed/root/kernel, 0 per each of twelve public
+Tasks and 0 idle bytes**, including guards, alignment and unused capacity.
+The initial synchronization call uses two additional transient page-one stack
+bytes; no reservation grows. Two fewer instruction bytes are absorbed by the
+existing buffer alignment, so occupied reader sizes remain 3,088 bytes for ATR
+and 3,600 for the split prefix, both within the unchanged 8,192-byte arena.
+IRQ/NMI handling and native runtime code are unchanged. The demo refresh uses
+`tools/build_demo.py --refresh-boot-sio --boot-sio auto`, retaining the exact
+canonical OF816/native image, five-second countdown, combined writable ATR,
+cartridge/XEX routes, FastBasic and MD5/ARC/EDX.

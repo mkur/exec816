@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-27",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "base_revision": "2fb04995",
+  "working_tree": true,
+  "problem": "Initial high-speed peripheral plus reader divisor 40 falls back to standard bulk loading",
+  "correction": "Confirm standard STATUS before initial policy selection; resume reuses its confirmed state",
+  "source_inputs": {
+    "platform/altirraos/boot-sio-policy.inc": "6d5de8e61901c6b0521bcb087f900ac4f6be4e6cdcdcabddf7e0bfc31ab25e43",
+    "platform/altirraos/boot-sio.inc": "ca753f74938db95bb33362b19408d4f537ef65b142f23cfef1b2bc16dca47f9b",
+    "platform/altirraos/disk-boot-reader.s": "42c0cc18b73e48fe140a7bb6a330a0492a89d7feb28db51600e873343684ff16",
+    "platform/altirraos/boot-takeover.inc": "89ac4eb5b6a79b9169849b5c557f1a74d2660b66056d31bce4d85ee889fcb77d",
+    "tools/test_boot_sio_handoff.py": "b95e32f1de24c0c2f7afcf1cce8afb7baac67202b5920e89a2fdc698b0e27733",
+    "tools/test_boot_fast.py": "1b2ee3b1f1884e13b6265dcd2dd3cfc979519ce2840b75e3aeec7c14229c60e9",
+    "tools/test_boot_fast_errors.py": "cbf0433cb43bb1d62fcef32534fd4e51dc9103957699438ae46492ef5c66c555",
+    "abi/boot-sio.json": "928ddd1b62654e086f70adff89db77d7a5855ad5d6567bd0cdbf6d58a1191936"
+  },
+  "reproduction": {
+    "path": "build/boot-sio-handoff/before/results.json",
+    "sha256": "1d30545d230c8c6250b39ce0f6c075d10cef6adb3499b5b1eb33cc3845b9acc2",
+    "expected_failure": true,
+    "initial_baud": 57600,
+    "selected_divisor": 40,
+    "note": "Partial record is running because the pre-fix assertion raises; failing log retained",
+    "log": {
+      "path": "build/boot-sio-handoff/before.log",
+      "sha256": "bb1879a37ebd33a86a1b21e45cd1daa17db4e98b6405b37a8165f3c38875ffe8"
+    }
+  },
+  "checks": {
+    "after-first": {
+      "path": "build/boot-sio-handoff/after-first/results.json",
+      "sha256": "191508446d6e821e02bf8633d381110e6ff12998a96a9df74148c781ad73472b",
+      "status": "pass"
+    },
+    "altirra": {
+      "path": "build/boot-sio-handoff/altirra/results.json",
+      "sha256": "df09dc49d3e5b7b7372aeaec929e7d93c38a8c323a2ad517976246b4c34de0be",
+      "status": "pass"
+    },
+    "xlos": {
+      "path": "build/boot-sio-handoff/xlos/results.json",
+      "sha256": "f14ccecd0148cd96cd8cbaa766cabfb841ef619b654892b0637ff1b7b5e8a9b3",
+      "status": "pass"
+    },
+    "recovery": {
+      "path": "build/boot-sio-handoff/errors/results.json",
+      "sha256": "c7231a1e6a1314b6df4e47036ae23271dc0af61cf7b34eb80aabcbb8235f4c07",
+      "status": "pass"
+    },
+    "nmi": {
+      "path": "build/boot-sio-handoff/nmi/results.json",
+      "sha256": "809dffe512af0ff75b6a22cc5fda26788e697a3241d72d4740fe9f817ba11afd",
+      "status": "pass"
+    },
+    "packaged_xlos249": {
+      "path": "build/boot-sio-handoff/packaged-xlos249/results.json",
+      "sha256": "dffaa40f15c732dc2464923b01e5dce2968809f74870a9bce1a0e1d7aaf976fe",
+      "status": "pass"
+    }
+  },
+  "handover_cases": [
+    {
+      "name": "altirra-fast",
+      "rom_handoff_baud": 19200,
+      "initial_baud": 57600,
+      "policy": "auto",
+      "selected_divisor": 8,
+      "bulk_reads": 21,
+      "bulk_baud": 57600,
+      "preparation_query": true,
+      "guards": "intact"
+    },
+    {
+      "name": "altirra-standard",
+      "rom_handoff_baud": 19200,
+      "initial_baud": 19200,
+      "policy": "auto",
+      "selected_divisor": 8,
+      "bulk_reads": 21,
+      "bulk_baud": 57600,
+      "preparation_query": false,
+      "guards": "intact"
+    },
+    {
+      "name": "standard-policy-fast",
+      "rom_handoff_baud": 19200,
+      "initial_baud": 57600,
+      "policy": "standard",
+      "selected_divisor": 40,
+      "bulk_reads": 21,
+      "bulk_baud": 19200,
+      "preparation_query": true,
+      "guards": "intact"
+    },
+    {
+      "name": "xlos248-natural",
+      "rom_handoff_baud": 57600,
+      "initial_baud": 57600,
+      "policy": "auto",
+      "selected_divisor": 8,
+      "bulk_reads": 21,
+      "bulk_baud": 57600,
+      "preparation_query": false,
+      "guards": "intact"
+    },
+    {
+      "name": "xlos249-natural",
+      "rom_handoff_baud": 57600,
+      "initial_baud": 57600,
+      "policy": "auto",
+      "selected_divisor": 8,
+      "bulk_reads": 21,
+      "bulk_baud": 57600,
+      "preparation_query": false,
+      "guards": "intact"
+    },
+    {
+      "name": "xlos249-standard",
+      "rom_handoff_baud": 57600,
+      "initial_baud": 19200,
+      "policy": "auto",
+      "selected_divisor": 8,
+      "bulk_reads": 21,
+      "bulk_baud": 57600,
+      "preparation_query": true,
+      "guards": "intact"
+    },
+    {
+      "name": "xlos249-fast",
+      "rom_handoff_baud": 57600,
+      "initial_baud": 57600,
+      "policy": "auto",
+      "selected_divisor": 8,
+      "bulk_reads": 21,
+      "bulk_baud": 57600,
+      "preparation_query": false,
+      "guards": "intact"
+    }
+  ],
+  "recovery_cases": [
+    {
+      "case": "disabled",
+      "status": "pass",
+      "cause": 0,
+      "frame": 575,
+      "guards": "intact"
+    },
+    {
+      "case": "unsupported",
+      "status": "pass",
+      "cause": 0,
+      "frame": 1173,
+      "guards": "intact"
+    },
+    {
+      "case": "query-lost",
+      "status": "pass",
+      "cause": 0,
+      "frame": 869,
+      "guards": "intact"
+    },
+    {
+      "case": "query-checksum",
+      "status": "pass",
+      "cause": 0,
+      "frame": 770,
+      "guards": "intact"
+    },
+    {
+      "case": "native-incompatible",
+      "status": "pass",
+      "cause": 204,
+      "frame": 575,
+      "guards": "intact"
+    },
+    {
+      "case": "break",
+      "status": "pass",
+      "cause": 200,
+      "frame": 371,
+      "guards": "intact"
+    }
+  ],
+  "host_tests": {
+    "path": "build/boot-sio-handoff/host-tests.log",
+    "sha256": "bdbde86cdec118a9eda14081285eec44083b96a791d32e3b1fa605026157a784",
+    "status": "pass",
+    "count": 659
+  },
+  "packaged_execution": {
+    "boot": {
+      "rom_handoff_baud": 57600,
+      "owned_begin": 38,
+      "first_stage_rom_boot": true,
+      "memlo": 1792,
+      "initial_memtop": 48159,
+      "initial_basicf": 1,
+      "prepared_memtop": 48159,
+      "prepared_basicf": 2,
+      "firmware_to_of_frame": 643,
+      "countdown_frames": 249,
+      "owned_end": 2644,
+      "native_handoff_baud": 57600,
+      "native_handoff_frame": 7528,
+      "callbacks": 772,
+      "reads": 2596,
+      "source_bytes": 658395,
+      "reader_guards": "intact",
+      "firmware_context_restored": true,
+      "native_bytes_verified": 1762799,
+      "owned_bulk_reads": 2596,
+      "owned_bulk_baud": 57600
+    },
+    "observer": {
+      "path": "build/boot-sio-handoff/packaged_fuji.py",
+      "sha256": "4caea03dc492195a8c54f7f5e83747fbbacfdf6d33bee3d08f3f783f8dddea10"
+    },
+    "firmware_sha256": "d1a2173bf116f75021eedbd2261fde2f3adeeea9a4bac7537e792f311743bef3",
+    "rom_sha256": "d539c4acaec2350d0b9d42f73c242446712ffcbd8b636dce587cd00679f7b097",
+    "scope": "Exact extracted ATR, real isolated FujiNet-PC/raw SIO, stock XLOS 2.49, VER/MD5/ARC/WORK/EXIT and guards; no physical UART qualification"
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "reader_reserved_bytes": 8192,
+    "reader_used_bytes": 3088,
+    "split_used_bytes": 3600,
+    "initial_transient_stack_delta": 2,
+    "instruction_delta": -2,
+    "alignment_delta": 2,
+    "native_runtime_unchanged": true
+  },
+  "delivery": {
+    "zip": {
+      "path": "build/boot-sio-handoff/demo/exec816-demo.zip",
+      "sha256": "e73979ede3db5c8b718ecbad8940c48ef1f5b77d0b4b2f182a8df96ab3368460"
+    },
+    "entries": 29,
+    "system_files_verified": 77,
+    "allocation": {
+      "sectors": 8192,
+      "sector_bytes": 256,
+      "allocated": 4484,
+      "free": 3708,
+      "files": 77,
+      "directories": 6
+    },
+    "manifest": {
+      "path": "build/boot-sio-handoff/demo/demo-manifest.json",
+      "sha256": "65faaf8699efbde846eb41bb423a4e0f1edf5cbafd0923f2407c93eefbfbb2ee"
+    },
+    "native": {
+      "path": "build/boot-sio-handoff/demo/program.xex",
+      "sha256": "606047a36705984db63afc91d70991d3edb16a869ed7f2ca50f9d9b1ebbbf632"
+    },
+    "native_build": {
+      "path": "build/boot-sio-handoff/demo/build.json",
+      "sha256": "6159d6833b090a298f3743e01490e576777513d4b847ddd06646c32a9a813cad"
+    },
+    "canonical": {
+      "path": "build/boot-sio-handoff/demo/of816/Exec-core.xex",
+      "sha256": "008ed863b85c7586619c9387d15630a80244491d4b21d84394f51d3609326d48"
+    },
+    "frozen_native_and_canonical_unchanged": true,
+    "published_tag_or_assets_changed": false
+  }
+}

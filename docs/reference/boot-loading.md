@@ -98,8 +98,10 @@ See the [split boot guide](../guides/fujinet-split-boot.md).
 
 ## Boot-only SIO reader
 
-SIO demo builds use `--boot-sio auto` by default. The small initial reader loads
-at standard speed, then requests FujiNet's `$3F` HSIO index. Index 8 selects the
+SIO demo builds use `--boot-sio auto` by default. The ROM loads the small initial
+reader at its own speed; XLOS can already use high speed here. On takeover the
+reader confirms standard-rate STATUS communication before requesting FujiNet's
+`$3F` HSIO index. Index 8 selects the
 nominal 57,600 baud profile after a checked STATUS reply. `--boot-sio standard`
 keeps bulk loading at divisor 40. Both policies explicitly establish the native
 driver's divisor-8 profile before native entry; standard boot does not change
@@ -136,6 +138,10 @@ that transition: up to three standard-rate STATUS attempts exercise the pinned
 firmware's two-bad-frame reset. Loading continues only after a verified reply;
 uncertain speed stops with `$CB`. A device unable to meet the native profile
 stops with `$CC`. Corrupt frames are not silently retried as payload.
+Initial synchronization applies to both boot policies, so inherited high speed
+does not turn an automatic boot into standard-speed bulk loading. Callback
+resumption already synchronizes before source verification and reuses that
+confirmed state without another synchronization transaction.
 
 Generated local loader/OF816-copy callbacks retain fast ownership. Other
 callbacks, including interactive OF816, receive a confirmed standard-speed bus

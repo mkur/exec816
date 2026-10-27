@@ -33,7 +33,7 @@
 - [Combined distribution](bootable-system-atr.md#combined-distribution-basic-preparation-and-cartridge-return): shared ATR/XEX/Atarimax system disk, separate QED, bundled SDX tools and BASIC screen preparation.
 - [Cartridge display lifetime](bootable-system-atr.md#cartridge-display-lifetime-correction): retain the low ROM screen through OF816 and defer full-memory admission until final unmapping.
 
-- [Boot-only fast SIO](boot-only-fast-sio.md): shared split/ATR reader, bounded speed recovery, OF816/native ownership, measured boot time and development evidence.
+- [Boot-only fast SIO](boot-only-fast-sio.md): shared split/ATR reader, bounded speed recovery, OF816/native ownership, measured boot time and development evidence, including the [XLOS handover correction](boot-only-fast-sio.md#xlos-speed-handover-correction).
 
 - [Persistent FastBasic interpreter](fastbasic-session.md): retained Process/state, explicit restart and current development evidence.
 

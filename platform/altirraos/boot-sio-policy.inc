@@ -46,14 +46,17 @@ boot_sync_standard:
 @ok:
     rts
 boot_select_speed:
+    ; ROM boot may leave the peripheral fast while this image starts at 40.
+    ; Confirm both ends at standard speed before the speed-changing query;
+    ; otherwise its first failure silently commits auto policy to slow bulk I/O.
+    jsr boot_sync_standard
+boot_select_policy:
 .if BOOT_BACKEND=1
     lda take_descriptor+BS_DESC_POLICY
 .else
     lda #BOOT_POLICY
 .endif
     bne boot_select_fast
-    lda #40
-    sta bo_divisor
     rts
 boot_select_fast:
     lda #$3f
@@ -85,7 +88,7 @@ boot_resume:
 .if BOOT_BACKEND=1
     jsr take_verify_source
 .endif
-    jmp boot_select_speed
+    jmp boot_select_policy       ; resume already confirmed standard for probing
 boot_before_callback:
     stz boot_suspended
     ldx #0
