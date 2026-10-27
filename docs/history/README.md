@@ -416,6 +416,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Platform and boot
 
+- [0.2.3 patch preparation](release-0.2.3.md): clean tagged packages, early ROM
+  diagnostics and assumed-XLOS continuation, real FujiNet speed handover,
+  frozen native matrices and eleven final-package boot walks.
 - [0.2.2 patch preparation](release-0.2.2.md): clean tagged packages, frozen
   firmware/stack and hosted/scheduling matrices, nine final boot walks and
   remaining preview qualification gates.
