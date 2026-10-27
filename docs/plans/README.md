@@ -1,5 +1,10 @@
 # Implementation plans
 
+- [Kernel identity and ROM diagnostics](kernel-identity-rom-diagnostics-plan.md):
+  KD0–KD3 implemented: early version/source identity, captured ROM CRC-32/profile,
+  assumed-XLOS continuation, explicit installation failures and matching demo
+  delivery. [Execution record](../history/kernel-rom-diagnostics.md).
+
 - [XLOS SDX firmware adapter](xlos-sdx-implementation-plan.md): XF0–XF4 refactor
   for explicit firmware admission, captured ROM/original-vector chaining,
   firmware stack bounds and current tool/demo development checks.

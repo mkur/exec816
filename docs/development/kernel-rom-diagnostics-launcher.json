@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-27",
+  "cause": "ATR passed to --run, which forces kATImageType_Program before kernel entry",
+  "correction": [
+    "--bootrw",
+    "--disk"
+  ],
+  "source_inputs": {
+    "tools/launch_demo.py": "10f3d52331bcf51ce5056eee3aa89ac0997a91f712addf62a3964d723d728062",
+    "tests/test_demo_launcher.py": "5c3656caf941f42ea311726628e5a0ab33d473d7cdc4aef454bfced3eb86df08"
+  },
+  "frontend": {
+    "path": "/Users/michalkurcewicz/atari/AltirraSDL/build/macos-release/src/AltirraSDL/AltirraSDL.app/Contents/MacOS/AltirraSDL",
+    "sha256": "a6b463819ae1064e98bd4d797427f47855879d7a2e2ad263eed5c1bcd348d5ca",
+    "command_line_source": {
+      "path": "/Users/michalkurcewicz/atari/AltirraSDL/src/AltirraSDL/source/app/commandline_sdl3.cpp",
+      "sha256": "034aece6e1ad301d3db51b2170e0cafa46092d11946c40fb5aba78f18af9b415"
+    }
+  },
+  "before": {
+    "path": "build/rom-diagnostics/launcher-crash/inherited/results.json",
+    "sha256": "0e6e18633ac1368afbd0d224a8b58b1364937eaf47a125126b268b054f01989e",
+    "native_seen": false
+  },
+  "without_netsio": {
+    "path": "build/rom-diagnostics/launcher-crash/without-custom/results.json",
+    "sha256": "64ac0f316ed15369275f36d1e9ffddccc7d03d81fbb8135cac305381b34f5e8f",
+    "native_seen": false
+  },
+  "after": {
+    "path": "build/rom-diagnostics/launcher-crash/fixed-inherited/results.json",
+    "sha256": "1f6eb8979dc2b7c6089bcff7d5fe8cf9012e8e255f81d05eb37e40626a65a507",
+    "native_seen": true,
+    "desktop_screenshot": {
+      "path": "build/rom-diagnostics/launcher-crash/fixed-inherited/desktop.png",
+      "sha256": "eeaced3514c0b170a76c3c5384fa2b0cef411ed59ebfa83eecf6a953d3ede3ea"
+    },
+    "scope": "Installed GUI, stock AltirraOS, inherited device set, private disposable D1; debugger observation with unlimited pacing and inactive pause disabled"
+  },
+  "host_tests": {
+    "path": "build/rom-diagnostics/launcher-crash/launcher-tests.log",
+    "sha256": "9c41f81ad1ff72a3973e30dc3c80cf70fefb7973dff8e5c772705940d742902d",
+    "status": "pass",
+    "count": 15
+  },
+  "launchers": {
+    "path": "build/rom-diagnostics/launchers.json",
+    "sha256": "93f93dbbc4dba1017689da57d655b9f6d242e69e1b56a5114db112b3b949476e"
+  },
+  "pinned_atr_smoke": {
+    "path": "build/rom-diagnostics/launcher-crash/pinned-atr-altirra/results.json",
+    "sha256": "3c65c06c402845891910f71cf42941ed427704722ae792c658af4870e3bb1a16",
+    "status": "pass",
+    "checks": [
+      "OF816 countdown",
+      "early identity and ROM CRC",
+      "VER",
+      "MD5",
+      "ARC help",
+      "ARC listing",
+      "WORK write/read",
+      "EXIT",
+      "guards"
+    ]
+  },
+  "package": {
+    "path": "build/rom-diagnostics/demo/exec816-demo.zip",
+    "sha256": "d530089a057cf1cfb5ea8546d0e3f87c42b526de964458703c31c2b68cbbd867",
+    "unchanged": true
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  }
+}

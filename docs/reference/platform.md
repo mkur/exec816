@@ -10,9 +10,10 @@ actionc-vm. Platform tests must qualify the hosted combination.
 
 The [SDX firmware adapter](sdx-firmware.md) also admits pinned XLOS816F 2.48
 and 2.49 at the development tier. These share the current guest/runtime
-implementation and memory map. Other ROMs and third-party native/PBI extensions
-remain unsupported; bounded firmware checks do not extend full platform
-qualification.
+implementation and memory map. A ROM outside the exact catalog is classified
+as XLOS (assumed), using its captured actual interrupt vectors. Executed
+firmware evidence remains specific to the recorded images; third-party native/
+PBI extensions and full platform qualification require separate checks.
 
 The [SDX Process development profile](../development/sdx-loader.md), selected
 by default for standalone SIO distributions,
@@ -349,14 +350,22 @@ system-drive byte and a flags byte. Bit 0 enables technical kernel boot output;
 other flag bits must be zero. Verbose output defaults on. OF816's
 `BOOT-VERBOSE@` and `BOOT-VERBOSE!` inspect/change this flag before handoff.
 
-Kernel diagnostics use CIO on the existing OS screen before console ownership.
+Kernel initialization first prints its version/source identity, before memory
+adoption and Task/heap initialization, including in quiet mode. It comes from
+the same generated build record as the shell banner and `VER`.
+Kernel inventory diagnostics use CIO on the existing OS screen before console ownership.
 They report memory bounds, kernel/table banks, skipped firmware bank, DP/stack
 placement, memory adoption, Task/heap initialization and detected VBXE hardware.
 Memory adoption and Task/heap initialization each print a single `OK` or `FAILED`
 result. `VBI/IRQ       =OK` follows vector/state installation and interrupt enable;
 `CONSOLE WORKER=OK` follows worker signal/endpoint setup, before display claim.
-Console admission already blocks ROM entry, so this one line appends directly
-to the OS text screen with cursor updates under IRQ/NMI exclusion.
+Console admission already blocks ROM entry, so this line appends directly
+to the OS text screen with cursor updates under IRQ/NMI exclusion. The
+[firmware diagnostic block](sdx-firmware.md#startup-diagnostics) also uses that
+writer: captured ROM CRC-32, exact or assumed profile, install result, and
+section CRCs/original vectors for assumed XLOS. It keeps NMI disabled throughout
+the block and makes no ROM calls. Mapping/state failures always print their
+reason and do not read stale checksum data.
 Both automatic text startup and deferred bitmap startup activate the startup
 phase and OS-screen snapshot before Task initialization.
 These messages report completed initialization, not interrupt qualification.
@@ -380,7 +389,7 @@ DMA/bus ownership and storage; this is reporting, not device recovery.
 Loader/unclaimed-state rejection retains its separate pre-kernel path. Ordinary
 command errors after shell launch do not produce this fatal-startup message.
 
-OS success reports retain the existing private stack buffer and OS_BUSY protocol,
+OS success reports use a bounded 40-byte private native-stack buffer and the existing OS_BUSY protocol,
 preserving native context and IOCB0. Startup phase, first cause and OS display
 snapshot occupy spare bytes in the existing adapter state page. Two further
 spare bytes retain the text console's incoming character/priority shadows for

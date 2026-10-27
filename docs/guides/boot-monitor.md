@@ -29,6 +29,8 @@ the final partial block also prints a dot. The monitor appends its banner and
 countdown without clearing earlier text. The bitmap console starts later when
 the selected Exec application opens it. Remote image loading is not provided.
 
+Kernel initialization starts with its Exec version and release tag or source
+commit, before memory/Task setup. This identity remains visible in quiet mode.
 Technical kernel boot output defaults on. It shows hexadecimal memory bounds,
 kernel/table banks, DP/stack placement and initialization results.
 RAM ADOPT and TASK/HEAP INIT each print one OK or FAILED line
@@ -48,7 +50,13 @@ BOOT-VERBOSE@ .       \ 1: enabled, 0: quiet
 EXEC816
 ```
 
-Quiet mode keeps the normal loader progress and always prints boot failures.
+Quiet mode keeps the normal loader progress, early Exec identity and boot failures.
+SDX startup reports the live ROM CRC-32 and profile. An image outside the exact
+catalog continues as `XLOS (assumed)` and prints its CRC, original vectors and
+section checksums even in quiet mode. A checksum difference alone no longer
+halts the kernel. See [firmware diagnostics](../reference/sdx-firmware.md#startup-diagnostics)
+for mapping/state failures and the exact checksum ranges. Include that block,
+the early Exec identity and the actual ATR/CAR/XEX used when reporting a boot fault.
 Exec leaves `$010000–$01FFFF` available to platform firmware and starts its
 default kernel in bank `$02`.
 

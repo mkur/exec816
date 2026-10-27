@@ -1,0 +1,580 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-27",
+  "base_revision": "306cab65549edd2828083cf2a5b37776b2db9945",
+  "working_tree": true,
+  "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "compiler_override": false,
+  "identity": {
+    "revision": "306cab65549edd2828083cf2a5b37776b2db9945",
+    "dirty": true,
+    "tag": null,
+    "display": "306cab6-dirty",
+    "version": "0.2.2",
+    "actionc_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "task_capacity": 12,
+    "stack_checks": true,
+    "mount": {
+      "profile": 4,
+      "boot": 1,
+      "format": 2,
+      "access": "readwrite",
+      "alias": "D1",
+      "unit": 49,
+      "sectors": 8192,
+      "sector_bytes": 256,
+      "device": "sio.device"
+    },
+    "strings": {
+      "banner": "Exec816 0.2.2 (306cab6-dirty)\n\n",
+      "slots": "exec: 12 task slots\n",
+      "stackChecks": "exec: stack checks enabled\n",
+      "version": "Exec816 0.2.2 (306cab6-dirty)\nactionc pin: 05c01f3\n",
+      "sioReady": " ready, 57.6k profile\n",
+      "mountStart": "Filesystems: mounting...\n",
+      "otherMountsReady": "\nRAM: ready, read-write (volatile)",
+      "systemReady": "SYS: -> D",
+      "mountFailure": "Filesystem startup failed; check configured disks\nUse CD SYS: to retry; cold-boot after SIO failure"
+    }
+  },
+  "source_inputs": {
+    "abi/boot-diagnostics.json": "d1e4b5b395fd2c94ec0b7ba56cc28949a0cd5a1c77a1284a9959b0be1641f99e",
+    "tools/generate_build_info.py": "3b07c92d86ac917660da39fd389d1b9245ad27af9b85d45fff3e15d4f007bbb2",
+    "tools/generate_boot_diagnostics.py": "0dc0cf1792cc7b74a5f3dccbb63b3e1c6801f0e5e9df3ba8982875554fd81865",
+    "platform/altirraos/hosted.s": "c7558a755eb922db952df4ebee3126a09f0d4db757ef957fdb3054a099fc315e",
+    "platform/altirraos/boot-diagnostics.s": "0f57bd9a8da641aecedb260be3a007b12f2123c030bd7d20fb71ce50431e5391",
+    "platform/altirraos/boot-worker.s": "3646c0add659129f8a52b466d12805aa279fb85df2e28d8fa13917c5bb592bb1",
+    "platform/altirraos/boot-rom-diagnostics.s": "5537050278cc465bd5da147d2fbbdc188b980efeef8827d64e18c0128ad15b99",
+    "platform/altirraos/boot-diagnostics.inc": "7b937c221769d2c0cbf0b442fddc7bc7e5db86c1421f223903628e7556122be2",
+    "platform/altirraos/boot-labels.inc": "93258da15d0d5976085a8621b78563d95de210f6c77a7bb3e57681082de79002",
+    "platform/altirraos/sdx-firmware.json": "a20b2ec7a999fae66ff1fb12aa212b8e4181e0224095d5a83fdad01ef67bdb57",
+    "platform/altirraos/sdx-rom-shadow.s": "25714cfde5be35b78e4d69c9920e33f025bf26ca8073044f0b7988ac179b2a5a",
+    "platform/altirraos/generated/sdx-firmware.inc": "b04f2fe0760bfab1d91508975bc2fc1c464156606a08a96447a89257296586d0",
+    "platform/altirraos/generated/sdx-firmware-labels.inc": "0ff59cefc8c70e151bf00367f1d66edf9eb48b988ee5259d9d0d10e986751c6f",
+    "tools/generate_sdx_firmware.py": "f74586b997c085089e54931f3e9b0d17fc3ed7a326dc69efa4be5bc3f999cece",
+    "probes/sdx-runtime/probe.s": "87379615beba8bcf7cb4ecdca17039641b8d483842c51e164b7f271010e8c574",
+    "tools/native_program.py": "04a0b41cce300a81108f489bae0539c4f25935619479c535e68e4d4cc1b972a9",
+    "tools/test_demo.py": "5f78d2306454ef75814dba2787bc25f6e2d6a1fb1bf1fac683411a21b54934d8",
+    "lib/exec/boot-diagnostics-action.inc": "b211326a444ed94c8a8d48184ca3b1f1bdec3dbbcaedfaadc79775a9544ab71d",
+    "c/include/hardware/boot-diagnostics.h": "65e15c66e58de5656f5d87738b0abae9a648842467fc702e530b574d782b3a7b",
+    "tests/test_sdx_firmware.py": "ec87e57fca6138b5c100759dc5c562a90dae1c6f9fcee16c6fb61f5158245521",
+    "tests/test_boot_identity.py": "5d2e3078c8d133cd00c4463dbc46b65fe7e6aac7ccadd392525398dc6cbadf21",
+    "lib/exec/bootdiag.act": "4f48a7303b5e87dc18761f1679626149ed17eca4d658cc75b319e29c5a194459",
+    "tests/programs/boot_rom_diagnostics.act": "64bd2e2eec7ab93119a245a89459fc1ebcb0f1f59f4206c9c6ce598c227068b3",
+    "tools/test_rom_diagnostics.py": "7479b7ab6f9ca55a5aff1d34328f4ec2a9d5b89835ed0508f3f1e11dd610b194",
+    "tools/test_rom_diagnostics_demo.py": "1b5bf94813cb6ddf314208e5c5e48f248ab244fb3f8605c8b1506894c30c360c"
+  },
+  "machine_pin": {
+    "path": "toolchain/altirra-gem-vdi.json",
+    "sha256": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "configuration": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    }
+  },
+  "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+  "roms": [
+    {
+      "id": 1,
+      "name": "altirraos-3.44-816",
+      "display_name": "AltirraOS 3.44/816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "visible_crc32": "687583a4",
+      "emulation_nmi": 49531,
+      "emulation_irq": 49633,
+      "stack": {
+        "console_entry": 4,
+        "cio_dispatch": 13,
+        "editor_body": 13,
+        "nested_emulation_vbi": 22,
+        "owned_or_rom_irq": 48,
+        "acknowledge_only_nmi": 13,
+        "retiring_vbi_tail": 6
+      }
+    },
+    {
+      "id": 2,
+      "name": "xlos-2.48-f",
+      "display_name": "XLOS816F 2.48",
+      "bytes": 16384,
+      "sha256": "2899b04db54bbdef833ce8a203b3cd55c83c8ed78c1feaa158bf7dc13d4f9da5",
+      "visible_crc32": "fa947133",
+      "emulation_nmi": 49176,
+      "emulation_irq": 51846,
+      "stack": {
+        "console_entry": 4,
+        "cio_dispatch": 13,
+        "editor_body": 15,
+        "nested_emulation_vbi": 22,
+        "owned_or_rom_irq": 48,
+        "acknowledge_only_nmi": 13,
+        "retiring_vbi_tail": 6
+      }
+    },
+    {
+      "id": 3,
+      "name": "xlos-2.49-f",
+      "display_name": "XLOS816F 2.49",
+      "bytes": 16384,
+      "sha256": "d539c4acaec2350d0b9d42f73c242446712ffcbd8b636dce587cd00679f7b097",
+      "visible_crc32": "0a383964",
+      "emulation_nmi": 49176,
+      "emulation_irq": 51835,
+      "stack": {
+        "console_entry": 4,
+        "cio_dispatch": 13,
+        "editor_body": 15,
+        "nested_emulation_vbi": 22,
+        "owned_or_rom_irq": 48,
+        "acknowledge_only_nmi": 13,
+        "retiring_vbi_tail": 6
+      }
+    }
+  ],
+  "rom_checksum": {
+    "algorithm": "CRC-32/ISO-HDLC",
+    "ranges": [
+      [
+        49152,
+        53247
+      ],
+      [
+        55296,
+        65535
+      ]
+    ],
+    "excluded": "D000-D7FF registers and inaccessible ROM-file/self-test bytes",
+    "fallback": "XLOS (assumed), actual captured vectors, return 0"
+  },
+  "host_tests": {
+    "path": "build/rom-diagnostics/final-host-tests.log",
+    "sha256": "69b7b3e2509c0db23d40c73f768d8101182069459c7ef23670a46d55d8353818",
+    "count": 659,
+    "status": "pass"
+  },
+  "checks": {
+    "native": {
+      "path": "build/rom-diagnostics/native-results.json",
+      "sha256": "1a7480142fe8e36cd9813e3b067d63b906fd6ce429026d6d90900811ce37649e",
+      "status": "pass",
+      "cases": [
+        "altirra",
+        "248",
+        "249",
+        "quiet",
+        "fallback",
+        "fallback-quiet",
+        "vector-mismatch",
+        "bottom",
+        "mapping",
+        "state",
+        "fault"
+      ]
+    },
+    "terminal_scanout": {
+      "path": "build/rom-diagnostics/results.json",
+      "sha256": "2a0b9470984e88024f3aeb88d34eeb6ae7b2f328036b857d46e907616e461234",
+      "status": "pass",
+      "cases": [
+        "mapping",
+        "state",
+        "fault"
+      ]
+    },
+    "bindings_raw": {
+      "path": "build/rom-diagnostics/bindings-raw/results.json",
+      "sha256": "dbdcd04926f8ed1ce43630d11d5a85b7ae2743b93966cedfe16c61d7751377df",
+      "status": "pass"
+    },
+    "bindings_optimized": {
+      "path": "build/rom-diagnostics/bindings-opt/results.json",
+      "sha256": "696e5e21df81bb2e1925b5448989e056284bde49a887333e2fcb9d57c5dc6151",
+      "status": "pass"
+    },
+    "firmware_components": {
+      "path": "build/rom-diagnostics/components/results.json",
+      "sha256": "fe10df622d1a2bb84b434bed3a4f6fc7854252f5306511fc8625e9b44f8b816e",
+      "status": "pass",
+      "phases": 15
+    },
+    "packaged_boots": {
+      "final-atr-249": {
+        "path": "build/rom-diagnostics/final-atr-249/results.json",
+        "sha256": "dec8873562299fe6ccee66051023be90b69951b521c23d138e8af84582193aab",
+        "status": "pass",
+        "route": "atr",
+        "firmware": "xlos-2.49-f",
+        "diagnostics": {
+          "identity": "Exec816 0.2.2 (306cab6-dirty)",
+          "crc32": "0a383964",
+          "screen": " Press a key for Forth.\n Exec816 in: 5 4 3 2 1\n Loading Exec816 .......................\n .......................................\n .......................................\n .......\nExec816 0.2.2 (306cab6-dirty)\nBOOT MEMLO    =$0700\nMEMTOP        =$BC1F\nKERNEL BANK   =$0002\nTABLE BANK    =$0002\nSKIP RAM BANK =$0001\nKERNEL DP     =$0C00\nKERNEL STACK  =$322D\nRAM ADOPT     =OK\nTASK/HEAP INIT=OK\nVBXE BASE     =$D600\nVBXE ID/REV   =$1026\nVBXE rev      =1.26a\nKERNEL READY  =$0000\nROM CRC32     =$0A383964\nROM PROFILE   =XLOS816F 2.49\nSDX ROM       =OK\n",
+          "screenshot": "kernel-diagnostics.png"
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$d240777ed11b2925",
+          "actual_kernel_id": "$d240777ed11b2925",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "final-cart-248": {
+        "path": "build/rom-diagnostics/final-cart-248/results.json",
+        "sha256": "f9d066e77dd9129028776e9eb61f68b86d4103c89fe60dc90de84b2e035001f2",
+        "status": "pass",
+        "route": "cart",
+        "firmware": "xlos-2.48-f",
+        "diagnostics": {
+          "identity": "Exec816 0.2.2 (306cab6-dirty)",
+          "crc32": "fa947133",
+          "screen": " .\nExec816 0.2.2 (306cab6-dirty)\nBOOT MEMLO    =$0700\nMEMTOP        =$BC1F\nKERNEL BANK   =$0002\nTABLE BANK    =$0002\nSKIP RAM BANK =$0001\nKERNEL DP     =$0C00\nKERNEL STACK  =$322D\nRAM ADOPT     =OK\nTASK/HEAP INIT=OK\nVBXE BASE     =$D600\nVBXE ID/REV   =$1026\nVBXE rev      =1.26a\nKERNEL READY  =$0000\nROM CRC32     =$FA947133\nROM PROFILE   =XLOS816F 2.48\nSDX ROM       =OK\n\n\n\n\n\n",
+          "screenshot": "kernel-diagnostics.png"
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$a1399ec96998819c",
+          "actual_kernel_id": "$a1399ec96998819c",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "final-xex-altirra": {
+        "path": "build/rom-diagnostics/final-xex-altirra/results.json",
+        "sha256": "4fc836e65d4e5cb0547f48183a56b8a39bf6d6dbe26495646d6a62ec18eebd80",
+        "status": "pass",
+        "route": "xex",
+        "firmware": "altirraos-3.44-816",
+        "diagnostics": {
+          "identity": "Exec816 0.2.2 (306cab6-dirty)",
+          "crc32": "687583a4",
+          "screen": "  Press a key for Forth.\n  Exec816 in: 5 4 3 2 1\n  Loading Exec816 ......................\n  ......................................\n  ......................................\n  ..........\nExec816 0.2.2 (306cab6-dirty)\nBOOT MEMLO    =$0700\nMEMTOP        =$BC1F\nKERNEL BANK   =$0002\nTABLE BANK    =$0002\nSKIP RAM BANK =$0001\nKERNEL DP     =$0C00\nKERNEL STACK  =$322D\nRAM ADOPT     =OK\nTASK/HEAP INIT=OK\nVBXE BASE     =$D600\nVBXE ID/REV   =$1026\nVBXE rev      =1.26a\nKERNEL READY  =$0000\nROM CRC32     =$687583A4\nROM PROFILE   =AltirraOS 3.44/816\nSDX ROM       =OK\n",
+          "screenshot": "kernel-diagnostics.png"
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$eeca81434d995c35",
+          "actual_kernel_id": "$eeca81434d995c35",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "final-cart-fallback": {
+        "path": "build/rom-diagnostics/final-cart-fallback/results.json",
+        "sha256": "1b4afc71aa066c3fe9084a01f88f0886b131850e9e05a31f22079fce108a2ff4",
+        "status": "pass",
+        "route": "cart",
+        "firmware": "xlos-2.49-f",
+        "diagnostics": {
+          "injection": "Private catalog CRC mismatch; stock ROM/package unchanged",
+          "identity": "Exec816 0.2.2 (306cab6-dirty)",
+          "crc32": "0a383964",
+          "screen": " .\nExec816 0.2.2 (306cab6-dirty)\nBOOT MEMLO    =$0700\nMEMTOP        =$BC1F\nKERNEL BANK   =$0002\nTABLE BANK    =$0002\nSKIP RAM BANK =$0001\nKERNEL DP     =$0C00\nKERNEL STACK  =$322D\nRAM ADOPT     =OK\nTASK/HEAP INIT=OK\nVBXE BASE     =$D600\nVBXE ID/REV   =$1026\nVBXE rev      =1.26a\nKERNEL READY  =$0000\nROM CRC32     =$0A383964\nROM PROFILE   =XLOS (assumed)\nSDX ROM       =OK\nROM NMI       =$C018\nROM IRQ       =$CA7B\nROM C000-CFFF =$0D14FE75\nROM D800-DFFF =$D54388A0\nROM E000-FFFF =$B7BBC757\n",
+          "screenshot": "kernel-diagnostics.png"
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$d240777ed11b2925",
+          "actual_kernel_id": "$d240777ed11b2925",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "scanout-cart-fallback": {
+        "path": "build/rom-diagnostics/scanout-cart-fallback/results.json",
+        "sha256": "25866f9aa1f1e0c6f5c0e20a6b7d016368cb28cb204a14a0246e374521d06c37",
+        "status": "pass",
+        "route": "cart",
+        "firmware": "xlos-2.49-f",
+        "diagnostics": {
+          "injection": "Private catalog CRC mismatch; stock ROM/package unchanged",
+          "identity": "Exec816 0.2.2 (306cab6-dirty)",
+          "crc32": "0a383964",
+          "screen": " .\nExec816 0.2.2 (306cab6-dirty)\nBOOT MEMLO    =$0700\nMEMTOP        =$BC1F\nKERNEL BANK   =$0002\nTABLE BANK    =$0002\nSKIP RAM BANK =$0001\nKERNEL DP     =$0C00\nKERNEL STACK  =$322D\nRAM ADOPT     =OK\nTASK/HEAP INIT=OK\nVBXE BASE     =$D600\nVBXE ID/REV   =$1026\nVBXE rev      =1.26a\nKERNEL READY  =$0000\nROM CRC32     =$0A383964\nROM PROFILE   =XLOS (assumed)\nSDX ROM       =OK\nROM NMI       =$C018\nROM IRQ       =$CA7B\nROM C000-CFFF =$0D14FE75\nROM D800-DFFF =$D54388A0\nROM E000-FFFF =$B7BBC757\n",
+          "screenshot": "kernel-diagnostics.png",
+          "scanout_hold": "Test-only BRA for three ANTIC frames; restored before continuation"
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$d240777ed11b2925",
+          "actual_kernel_id": "$d240777ed11b2925",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      }
+    },
+    "package": {
+      "path": "build/rom-diagnostics/package-audit.json",
+      "sha256": "062f0b9b705df8d710d935ffca2c8411b5e6942ddc2476195febd974755fd46b",
+      "status": "pass"
+    }
+  },
+  "memory": {
+    "baseline": {
+      "path": "build/release-0.2.2/tagged-demo/build.json",
+      "sha256": "9080dada30ade2402178e4267a68d3dffed765b838feabc25867b8e538b57f68"
+    },
+    "current": {
+      "path": "build/rom-diagnostics/demo/build.json",
+      "sha256": "6159d6833b090a298f3743e01490e576777513d4b847ddd06646c32a9a813cad"
+    },
+    "memory_map_equal": true,
+    "task_storage_equal": true,
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "format_buffer": {
+      "before": 24,
+      "after": 40,
+      "transient_stack_delta": 16,
+      "reservation_delta": 0
+    },
+    "emitted": {
+      "hosted.bin": {
+        "before": 4096,
+        "after": 4096,
+        "delta": 0,
+        "capacity": 4096,
+        "sha256": "f7833c1e9ac5204b8992570d6c78680d27063fa261e3007a45214105c44cf774"
+      },
+      "hosted.bin.blitter": {
+        "before": 1688,
+        "after": 1562,
+        "delta": -126,
+        "capacity": 2048,
+        "sha256": "de8802137eb9c9dfdc78b18183240d9ddb52cd6bb6b51c3eb22fea76e4d9a471"
+      },
+      "hosted.bin.native": {
+        "before": 6584,
+        "after": 7367,
+        "delta": 783,
+        "capacity": 8192,
+        "sha256": "9948f59d5aa4032ffce3c11495e2659a6f5faa512954fd93b2132492e4adb052"
+      },
+      "hosted.bin.signals": {
+        "before": 11224,
+        "after": 11223,
+        "delta": -1,
+        "capacity": 12288,
+        "sha256": "f94e1fae7dc60c701a963ec4aa8bdb9334d9d1bdccccffc9b2f3a18ea8b93ef2"
+      },
+      "hosted.bin.sdx": {
+        "before": 4324,
+        "after": 4649,
+        "delta": 325,
+        "capacity": 32768,
+        "sha256": "a20ec591b6ef5b3c8072d8f99e057a4abfd39152cc91e9be00c7bada02b188a9"
+      }
+    },
+    "upper_emitted_delta": 981
+  },
+  "delivery": {
+    "path": "build/rom-diagnostics/demo/exec816-demo.zip",
+    "sha256": "d530089a057cf1cfb5ea8546d0e3f87c42b526de964458703c31c2b68cbbd867",
+    "entries": 29,
+    "checksums": "all pass",
+    "system_files_verified": 77,
+    "filesystem": {
+      "sectors": 8192,
+      "sector_bytes": 256,
+      "allocated": 4484,
+      "free": 3708,
+      "files": 77,
+      "directories": 6
+    },
+    "tools": [
+      "MD5.COM",
+      "ARC.COM",
+      "EDX.COM"
+    ],
+    "guide_refresh_changed_entries": [
+      "exec816-demo/README.txt",
+      "exec816-demo/SHA256SUMS",
+      "exec816-demo/exec816.atr"
+    ],
+    "executable_transports_unchanged": true,
+    "build_record": {
+      "path": "build/rom-diagnostics/demo/build.json",
+      "sha256": "6159d6833b090a298f3743e01490e576777513d4b847ddd06646c32a9a813cad"
+    },
+    "manifest": {
+      "path": "build/rom-diagnostics/demo/demo-manifest.json",
+      "sha256": "35cf5b114a317b812e2b3b5f3e25e94b8bb008463cb7ae7ba2ce298547c4a095"
+    },
+    "published_assets_changed": false,
+    "existing_tag": "3881c641ae8c37f7c2eccf36f3a1535f33ce2258"
+  },
+  "scope": "Focused host/emitted development checks and exact extracted boot/tool walks; no physical hardware or full hosted-system qualification."
+}

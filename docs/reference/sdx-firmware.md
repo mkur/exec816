@@ -2,8 +2,10 @@
 
 [Reference index](README.md) · [Resident runtime](sdx-runtime.md)
 
-One adapter and boot image admit AltirraOS 3.44/65816 and stock XLOS816F 2.48
-and 2.49. Exact file hashes and CPU-visible checksums are maintained in the
+The dedicated 65816 platform assumes two firmware families: AltirraOS and XLOS.
+One adapter recognizes AltirraOS 3.44/65816 and names the exact stock XLOS816F
+2.48 and 2.49 profiles. Other ROM bytes select **XLOS (assumed)** and continue
+startup. Exact file hashes and CPU-visible checksums are maintained in the
 [firmware catalog](../../platform/altirraos/sdx-firmware.json). Native Tasks,
 guest patches, BASIC parking and the COP `$50` gateway have one implementation.
 The OS's COP `$00` vector remains preserved and forwarded.
@@ -16,19 +18,48 @@ caller owns exclusion until vector publication is complete.
 
 The adapter captures `$C000–$CFFF` and `$D800–$FFFF` into its existing 16 KiB
 upper snapshot. It identifies all 14,336 bytes with CRC-32/ISO-HDLC in address
-order, then checks the original emulation NMI/IRQ vector destinations against
-the selected profile. The inaccessible I/O interval is excluded. Host fixtures
-also verify the complete ROM file SHA-256. Runtime CRC is accidental-change
-identification, not cryptographic authentication. Customized visible ROM bytes
-and arbitrary files named `XLOS816F.ROM` are unsupported.
+order, then checks the original emulation NMI/IRQ vector destinations to select
+an exact version label. If no complete match exists, it selects the XLOS
+fallback. Both paths chain the actual captured vectors. The inaccessible I/O
+interval, including the ROM file's self-test slot, is excluded. Host fixtures
+also record the complete ROM file SHA-256. CRC identifies the visible bytes;
+it is not an executable-compatibility test or an authentication check.
 
 The snapshot's unused `$1000–$17FF` interval contains installation-only profile
 and checksum scratch. It is never copied into bank zero. No XLOS ROM payload is
 embedded in the kernel or redistributed in the demo.
 
-Unknown firmware returns status 2 before mapping or underlying RAM changes.
-Installation retains status 1 for mapping mismatch and 3 for state mismatch.
-An already installed owner cannot install again.
+Installation returns 0 for exact profiles and assumed XLOS, 1 for mapping
+mismatch and 3 for state mismatch. A different checksum no longer returns 2.
+An already installed owner cannot install again. Executed firmware/stack
+evidence covers the pinned stock images; the fallback is the platform's family
+assumption, not qualification of every modification or expansion mapping.
+
+## Startup diagnostics
+
+Admitted kernel initialization always prints the same version/source identity
+as shell `VER`, before `BOOT MEMLO`, RAM adoption and Task/heap initialization.
+It uses the captured build record, including a clean release tag or commit and
+dirty state. Quiet mode retains this identity.
+
+After `KERNEL READY`, verbose startup prints `ROM CRC32`, `ROM PROFILE` and
+`SDX ROM=OK`. Assumed XLOS prints this block even in quiet mode, together with
+the original emulation NMI/IRQ destinations and individual CRC-32 values for
+`$C000–$CFFF`, `$D800–$DFFF` and `$E000–$FFFF`. These identify a localized math
+pack or PBI overlay without changing the captured ROM or device selection.
+`VBI/IRQ=OK` follows successful installation and reporting.
+
+Mapping failure prints `$0001 MAPPING`, PBCTL/PORTB and unavailable checksum/
+profile fields. Repeated installation prints `$0003 ALREADY INSTALLED` and
+unavailable fields rather than values from the earlier attempt. Failure detail
+is unconditional. Terminal reporting retains the original cause even if
+cleanup then requires a reset.
+
+ROM diagnostic lines use the existing direct screen writer, preserve registers,
+IOCB0 and margins, and call no firmware. IRQ/NMI exclusion covers the whole
+block; success resumes normal VBI, while failure proceeds to terminal cleanup
+with NMI disabled. Formatting uses a bounded 40-byte buffer on the existing
+native stack. No snapshot, bank-zero or per-Task reservation grows.
 
 ## Publication and removal
 

@@ -163,9 +163,9 @@ class DemoLauncherTests(unittest.TestCase):
                 selected=disk;selected.write_bytes(b'saved WORK directory')
             self.assertEqual(disk,selected)
             self.assertEqual(disk.read_bytes(),b'saved WORK directory')
-            if mode=='xex':self.assertEqual(Path(args[1]),self.demo/'of816/Exec-of816.xex')
+            if mode=='xex':self.assertEqual(args,['--run',str(self.demo/'of816/Exec-of816.xex')])
             elif cart:self.assertEqual(args[0],'--cart')
-            else:self.assertEqual(Path(args[1]),disk)
+            else:self.assertEqual(args,['--bootrw','--disk',str(disk)])
 
     def test_wrapper_handles_paths_and_forwards_arguments(self):
         tools = self.root / 'checkout with spaces/tools'

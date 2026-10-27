@@ -7,7 +7,8 @@
 ; no live ROM activation, and code/stack outside the ROM windows. The caller
 ; owns interrupt exclusion for the entire operation. No DP scratch is used.
 ; Preserve D/DBR/S; clobber A/X/Y/P. RTL with A=0 success, 1 mapping mismatch,
-; 2 unsupported ROM, 3 already installed (or not installed on Remove).
+; 3 already installed (or not installed on Remove). Unrecognized ROM bytes
+; select the XLOS fallback on this dedicated 65816 platform.
 ;
 ; Only $C000-CFFF and $D800-FFFF are copied: $D000-D7FF is hardware, not RAM.
 ; Original underlying RAM is restored before re-enabling ROM. The ROM file
@@ -118,9 +119,6 @@ sdx_rom_install_mapping_error:
 sdx_rom_mapping_error:
     lda #1
     rtl
-sdx_rom_image_error:
-    lda #2
-    rtl
 sdx_rom_state_error:
     lda #3
     rtl
@@ -169,7 +167,7 @@ sdx_rom_remove_mapping_error:
     rep #$20
 .a16
     bra sdx_rom_mapping_error
-; Pure staged-image identification, also used by the negative fixture.
+; Pure staged-image classification, also used by diagnostic fixtures.
 ; No DP or bank-zero scratch. CRC-32 identifies accidental modifications;
 ; host tooling additionally pins the full ROM file SHA-256.
 sdx_rom_identify:
@@ -237,7 +235,12 @@ sdx_rom_profile_skip:
     tax
     cpx #SDX_ROM_PROFILE_COUNT*SDX_ROM_PROFILE_STRIDE
     bcc sdx_rom_profile_next
-    lda #2
+    ; Only AltirraOS and XLOS are platform firmware choices. Exact profiles
+    ; retain their version labels; every other image takes the XLOS path.
+    ; Always chain the captured actual vectors, including in this fallback.
+    lda #SDX_ROM_FALLBACK_PROFILE
+    sta f:SDX_ROM_PROFILE
+    lda #0
     rtl
 .include "generated/sdx-firmware.inc"
 sdx_rom_end:

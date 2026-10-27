@@ -160,27 +160,37 @@ seed_high:
     sta $d301
     rep #$20
 .a16
-    ; Corrupt expected image: fail before changing mapping or taking ownership.
+    ; A changed staged image selects the assumed XLOS profile.
     lda f:SDX_ROM_IMAGE+$0123
     eor #1
     sta f:SDX_ROM_IMAGE+$0123
     jsl sdx_rom_identify
-    cmp #2
+    cmp #0
+    jne failed
+    lda f:SDX_ROM_PROFILE
+    cmp #SDX_ROM_FALLBACK_PROFILE
     jne failed
     lda f:SDX_ROM_IMAGE+$0123
     eor #1
     sta f:SDX_ROM_IMAGE+$0123
-    ; An unknown fingerprint must fail the actual install before mapping.
+    ; Unknown fingerprints install using the captured actual ROM/vectors.
     .repeat 3, profile
         lda f:sdx_rom_profiles+2+profile*10
         eor #1
         sta f:sdx_rom_profiles+2+profile*10
     .endrepeat
     jsl sdx_rom_install
-    cmp #2
+    cmp #0
+    jne failed
+    lda f:SDX_ROM_PROFILE
+    cmp #SDX_ROM_FALLBACK_PROFILE
     jne failed
     lda f:SDX_ROM_STATE
     and #$ff
+    cmp #1
+    jne failed
+    jsl sdx_rom_remove
+    cmp #0
     jne failed
     sep #$20
 .a8

@@ -176,7 +176,7 @@ def selected_work(demo, local, explicit=None):
     return target
 
 
-def prepare(demo, config, ide_firmware, cart=None, disks=(), work=None, boot_mode=None):
+def prepare(demo, config, ide_firmware, cart=None, disks=(), work=None, boot_mode=None, rom=None):
     demo = demo.resolve()
     record = json.loads(require_file(demo / 'demo-manifest.json').read_text())
     monitor = json.loads(require_file(demo / 'of816/of816.json').read_text())
@@ -205,7 +205,9 @@ def prepare(demo, config, ide_firmware, cart=None, disks=(), work=None, boot_mod
             'Input: Active map names': 'Mouse -> ST Mouse (port 2)',
             'Input: Quick map names': '',
         })
-    rom = require_file(demo / 'of816' / monitor['rom']['name'])
+    rom_override = rom is not None
+    rom = require_file(rom.expanduser().resolve() if rom_override else
+                       demo / 'of816' / monitor['rom']['name'])
     register_firmware(settings, rom, 'kernelxl')
     set_values(settings, profile_owner(settings, 'firmware'),
                {'Kernel path': str(rom), 'Kernel type': 'kernelxl'})
@@ -217,11 +219,13 @@ def prepare(demo, config, ide_firmware, cart=None, disks=(), work=None, boot_mod
         'Devices: SIO patch enabled': 0, 'Devices: SIO burst transfers enabled': 0,
         'Devices: Accelerate with SIO patch': 0, 'Devices: Accelerate with PBI patch': 0,
         'Devices: CIO burst transfers enabled': 0, 'Kernel: Fast boot enabled': 0,
+        'Kernel: Floating-point patch enabled': 0,
     })
     # Loading the XEX/cart must retain the disks already mounted from settings.
     set_values(settings, profile_owner(settings, 'boot'),
                {'Unload on boot types': 6, 'Unload on boot mask': 7,
-                'ExeLoader: Randomize launch delay': 0})
+                'ExeLoader: Randomize launch delay': 0,
+                'ExeLoader: Mode': 'diskboot' if rom_override else 'default'})
 
     device_profile = profile_owner(settings, 'devices')
     devices = json.loads(json.loads(settings.get(device_profile, '"Devices"', fallback='"[]"')))
@@ -272,13 +276,18 @@ def prepare(demo, config, ide_firmware, cart=None, disks=(), work=None, boot_mod
         boot=writable_copy(demo/record['media'],local)
     if boot_mode=='xex':
         boot=require_file(demo/'of816/Exec-of816.xex')
-    mode = '--run'
+    # --run forces Program decoding in AltirraSDL, even for an ATR filename.
+    # Explicit disk loading also needs RW mode for the combined WORK directory.
+    if record.get('bootable_atr') and boot_mode!='xex':
+        media_args = ['--bootrw', '--disk', str(boot)]
+    else:
+        media_args = ['--run', str(boot)]
     if cart:
         name = f'exec816-demo/cartridge/Exec-of816-atarimax-8mbit-{cart}.car'
         boot = local / f'boot-{cart}.car'
         with zipfile.ZipFile(require_file(demo / record['distribution'])) as archive:
             boot.write_bytes(archive.read(name))
-        mode = '--cart'
+        media_args = ['--cart', str(boot)]
     config_home = local / 'config'
     destination = config_home / 'altirra/settings.ini'
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -286,7 +295,7 @@ def prepare(demo, config, ide_firmware, cart=None, disks=(), work=None, boot_mod
         raise ValueError('Select the normal Altirra settings, not the generated demo copy')
     with destination.open('w', encoding='utf-8') as output:
         settings.write(output)
-    return config_home, [mode, str(boot)]
+    return config_home, media_args
 
 
 def find_altirra(value=None):
@@ -312,6 +321,7 @@ def main():
     parser.add_argument('--config', type=Path,
                         default=Path(os.environ.get('XDG_CONFIG_HOME') or Path.home() / '.config') / 'altirra/settings.ini')
     parser.add_argument('--altirra', help='AltirraSDL executable or macOS .app; also accepts ALTIRRA')
+    parser.add_argument('--rom', type=Path, help='Use a local 65816 OS ROM instead of bundled AltirraOS; XEX uses Disk Boot')
     parser.add_argument('--ide-firmware', type=Path, default=ROOT / 'build/firmware/ideplus-bios-2.1.rom')
     parser.add_argument('--cart', choices=('old', 'new'), help='Boot a cartridge instead of the combined OF816 XEX')
     parser.add_argument('--boot-mode',choices=('atr','xex'),help='Default is the combined ATR; XEX retains the same mounted system disk')
@@ -323,7 +333,7 @@ def main():
     try:
         binary = find_altirra(args.altirra)
         disks = [(int(drive), Path(image).expanduser()) for drive, image in args.disk]
-        config_home, media_args = prepare(args.demo, args.config.expanduser(), args.ide_firmware.expanduser(), args.cart, disks, work=args.work,boot_mode=args.boot_mode)
+        config_home, media_args = prepare(args.demo, args.config.expanduser(), args.ide_firmware.expanduser(), args.cart, disks, work=args.work,boot_mode=args.boot_mode,rom=args.rom)
         command = [str(binary), *media_args]
         state=args.demo.resolve()/'altirra/workspace.json'
         if state.exists():

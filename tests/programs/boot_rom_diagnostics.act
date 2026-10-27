@@ -1,0 +1,11 @@
+MODULE BOOTROMDIAGNOSTICS
+USE BOOTDIAG
+
+; Startup has exercised the native reporter before this ordinary root return.
+PROC Main()
+
+  BOOTDIAG.Complete()
+
+RETURN
+
+ENDMODULE

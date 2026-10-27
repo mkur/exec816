@@ -180,7 +180,8 @@ python3 tools/build_demo.py --basic-workbench --qed --release-compiler \
 
 Use `launch-altirra.command` for ATR boot, `launch-xex.command` for XEX, or
 `launch-cart-new.command` / `launch-cart-old.command` for Atarimax. All retain
-one private writable system disk. The cartridge reader keeps its mapper and
+one private writable system disk. ATR launch selects read-write disk loading;
+XEX launch selects executable loading. The cartridge reader keeps its mapper and
 low OS screen through INITAD, then disables it and reopens E: before final
 native admission and high-RAM pool initialization. Boot transport
 disables BASIC before native admission; arbitrary mapped cartridges remain
@@ -190,23 +191,48 @@ Distribute `exec816-demo.zip` with boot media, ROM, guide, notices and checksums
 ## Firmware diagnostics
 
 AltirraOS 3.44/65816 remains the bundled platform ROM. The current SDX adapter
-also admits the exact stock **XLOS816F 2.48 and 2.49** images in the
+also identifies the exact stock **XLOS816F 2.48 and 2.49** images in the
 [firmware catalog](../../platform/altirraos/sdx-firmware.json). The
 [adapter contract](../reference/sdx-firmware.md) defines identification, original
 vector chaining, stack limits and unsupported extensions. Supply your own XLOS
-ROM; it is neither embedded nor redistributed. Other variants, including A,
-require their own reviewed profile.
+ROM; it is neither embedded nor redistributed. Other images continue as
+`XLOS (assumed)` and report their actual CRC/vectors. Firmware and stack
+qualification remains specific to the recorded images. The host classifier
+uses the same visible ranges as runtime and records the actual full-file SHA-256
+separately, including a difference confined to the hidden self-test slot.
 
 Validate a local image and boot the current combined-ATR demo with it:
 
 ```sh
 python3 tools/generate_sdx_firmware.py --check --rom path/to/XLOS816F.ROM
+build/system-distribution/launch-altirra.command --rom path/to/XLOS816F.ROM
+```
+
+The launcher selects that ROM in its private settings and reuses the private
+writable D1 image. SIO, FP and fast-boot patches are disabled; external XEX
+loading with a ROM override uses Disk Boot, so stock XLOS needs no loader hook.
+For an automated boot/tool check:
+
+```sh
 python3 tools/test_sdx_firmware_demo.py --bundle build/system-distribution \
   --rom path/to/XLOS816F.ROM --output build/xlos-atr --route atr
 ```
 
-Use `--route cart` for the new Atarimax image with the same writable combined
-disk on D1. Both routes retain OF816's five-second countdown. The runner records
+For the early identity/ROM output, mapping/state failure and first-cause cases:
+
+```sh
+python3 tools/test_rom_diagnostics.py --output build/rom-diagnostics
+python3 tools/test_rom_diagnostics_demo.py --bundle build/system-distribution \
+  --rom path/to/XLOS816F.ROM --route atr --output build/rom-diagnostics-atr
+```
+
+The second runner verifies extracted ZIP checksums, captured startup screen text,
+matching `VER`, MD5, ARC help/listing, writable WORK, guards and EXIT. Select
+`--route cart` for the new Atarimax image, or `--route xex` with AltirraOS.
+Use `--assume-xlos` to mismatch only the private comparison catalog and exercise
+the fallback with the original ROM and unmodified packaged boot files.
+All routes use the same writable combined disk on D1 and retain OF816's
+five-second countdown. The runner records
 the actual ROM hash, tool commands, WORK write/read, guards and native cleanup.
 Selected application and resident-stack runners also accept `--rom`; all keep
 their pinned emulator/machine settings. See the

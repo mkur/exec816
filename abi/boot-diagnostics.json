@@ -27,6 +27,17 @@
     ["KERNEL_FAILED", "KERNEL FAILED="],
     ["HALTED", "System halted: "],
     ["VBI_IRQ", "VBI/IRQ="],
-    ["WORKER", "CONSOLE WORKER="]
+    ["WORKER", "CONSOLE WORKER="],
+    ["IDENTITY", ""],
+    ["ROM_CRC", "ROM CRC32="],
+    ["ROM_PROFILE", "ROM PROFILE="],
+    ["SDX_ROM", "SDX ROM="],
+    ["ROM_NMI", "ROM NMI="],
+    ["ROM_IRQ", "ROM IRQ="],
+    ["ROM_LOW", "ROM C000-CFFF="],
+    ["ROM_MATH", "ROM D800-DFFF="],
+    ["ROM_HIGH", "ROM E000-FFFF="],
+    ["ROM_PBCTL", "PIA PBCTL="],
+    ["ROM_PORTB", "PIA PORTB="]
   ]
 }

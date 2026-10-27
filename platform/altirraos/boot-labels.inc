@@ -46,3 +46,25 @@ boot_labels:
     .res 0,0
     .byte "CONSOLE WORKER=",0
     .res 0,0
+    .byte "",0
+    .res 15,0
+    .byte "ROM CRC32     =",0
+    .res 0,0
+    .byte "ROM PROFILE   =",0
+    .res 0,0
+    .byte "SDX ROM       =",0
+    .res 0,0
+    .byte "ROM NMI       =",0
+    .res 0,0
+    .byte "ROM IRQ       =",0
+    .res 0,0
+    .byte "ROM C000-CFFF =",0
+    .res 0,0
+    .byte "ROM D800-DFFF =",0
+    .res 0,0
+    .byte "ROM E000-FFFF =",0
+    .res 0,0
+    .byte "PIA PBCTL     =",0
+    .res 0,0
+    .byte "PIA PORTB     =",0
+    .res 0,0

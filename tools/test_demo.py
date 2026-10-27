@@ -641,6 +641,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             saved['top']=pointer(row+console['WINDOW_INSTANCE'])
             saved['topView']=pointer(row+console['WINDOW_VIEW'])
             rendezvous(f'db(${saved["top"]+51:x})=2')
+            # Early identity/inventory output legitimately changes the OS text
+            # during native startup. Preserve the backing screen as it stands
+            # after console admission, then require it unchanged across EXIT.
+            saved['screenBytes']=b.memdump(saved['screen'],960)
             if 'exec_start_frame' in saved:
                 saved['startup_frames']=b.eval_expr('@frame')-saved['exec_start_frame']
             if not shell_only and not disk_failure:

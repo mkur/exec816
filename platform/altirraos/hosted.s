@@ -189,6 +189,7 @@ clear_dp:
         sta 1,s
         rep #$20
         .if GENERAL_TASKS
+            jsl boot_identity
             ldx a:M_OLD_MEMLO
             lda #DIAG_MEMLO
             jsl boot_report
@@ -284,6 +285,9 @@ sdx_initialize_dp:
     .if SDX_ENABLED
         ; Install before Task/device activity: ROM shadow copying masks IRQs.
         jsl sdx_probe_install
+        .if BOOT_STARTUP
+            jsl boot_rom_diagnostics
+        .endif
         cmp #0
         beq :+
         jmp finish

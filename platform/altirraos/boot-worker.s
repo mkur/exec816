@@ -2,8 +2,8 @@
 ; not begun. Append the worker milestone directly to the ROM text screen, and
 ; update the cursor that Claim/Adopt will consume. No gateway-policy exception.
 ; boot_report owns IRQ masking, the private text buffer [$80], and its length
-; at $84. This bounded copy masks NMI across screen/cursor updates; normal boot
-; has enabled VBI ($40). No Task switch, allocation or ROM service is involved.
+; at $84. X is the NMI enable to restore: $40 for the worker, zero across the
+; ROM diagnostic block. No Task switch, allocation or ROM service is involved.
 .segment "SIGNAL_CODE"
 .a16
 .i16
@@ -112,7 +112,7 @@ boot_worker_line:
     eor #$80
     sta [$86]
 :
-    lda #$40
+    txa
     sta f:NMIEN
 @done:
     rep #$30

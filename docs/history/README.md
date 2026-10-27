@@ -1,5 +1,9 @@
 # Historical records
 
+- [Kernel identity and ROM diagnostics](kernel-rom-diagnostics.md): early build
+  identity, full and section ROM CRCs, assumed-XLOS continuation, distinct
+  installation failures and development checks on matching boot media.
+
 - [FastBasic responsive editor](fastbasic-responsive-editor.md): four-direction
   pixel reuse, structural edits, bounded invalidation, RE0–RE8 delivery and
   matched physical measurements; strict responsiveness targets remain open.
