@@ -65,7 +65,7 @@ can be reproduced across different assembly times and checkout paths.
 
 ## Build the demo
 
-The 0.2.2 release package contains the GEM desktop, windowed Shell and FastBasic
+The 0.2.3 release package contains the GEM desktop, windowed Shell and FastBasic
 workbench. QED is supplied separately:
 
 ```sh
