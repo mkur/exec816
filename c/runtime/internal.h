@@ -12,4 +12,10 @@ struct ExecCRuntimeOps {
 };
 LONG ExecCRuntimePhase(struct ExecCRuntimeState *,struct ExecCRuntimeCall *,
                       const struct ExecCRuntimeOps *);
+
+struct ExecCRuntimeHeapStats { ULONG blocks,payload,backing,peakBacking; };
+void ExecCRuntimeHeapBegin(void);
+void ExecCRuntimeHeapRelease(void);
+void ExecCRuntimeHeapSnapshot(struct ExecCRuntimeHeapStats *);
+int ExecCRuntimeArguments(const char *,const char *,int *,char ***);
 #endif

@@ -18,4 +18,6 @@ const UWORD ExecCRuntimeLayout[]={
     offsetof(struct ExecCRuntimeAllocation,next),
     offsetof(struct ExecCRuntimeAllocation,bytes),
     offsetof(struct ExecCRuntimeAllocation,reserved),
+    sizeof(size_t),
+    sizeof(ExecCRuntimeEntry),
 };

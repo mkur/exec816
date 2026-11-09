@@ -11,7 +11,7 @@ ABI=json.loads((ROOT/'abi/c-runtime.json').read_text())
 def expected_layout():
     return [(name+' size',record['bytes']) for name,record in ABI['records'].items()]+[
         (name+' '+field,offset) for name,record in ABI['records'].items()
-        for field,kind,offset in record['fields']]
+        for field,kind,offset in record['fields']]+[('size_t bytes',2),('entry bytes',4)]
 
 
 def files():
@@ -39,7 +39,7 @@ def files():
     layout += [f'    sizeof(struct ExecCRuntime{name}),' for name in ABI['records']]
     layout += [f'    offsetof(struct ExecCRuntime{name},{field}),'
                for name,record in ABI['records'].items() for field,kind,offset in record['fields']]
-    layout += ['};','']
+    layout += ['    sizeof(size_t),','    sizeof(ExecCRuntimeEntry),','};','']
     return {ROOT/'c/include/exec816/c-runtime.h':'\n'.join(lines),
             ROOT/'lib/dos/c-runtime-abi.inc':'\n'.join(native)+'\n',
             ROOT/'c/runtime/layout.c':'\n'.join(layout)}
