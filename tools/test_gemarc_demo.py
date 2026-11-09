@@ -2,7 +2,6 @@
 """Physical GemARC and BASIC walks on the exact extracted demo ZIP."""
 import argparse,hashlib,json,shutil,subprocess,zipfile
 from pathlib import Path
-from types import SimpleNamespace
 from native_program import ROOT,require,sha256
 from test_demo import run
 from test_workbench_demo import Workbench
@@ -116,16 +115,25 @@ def check(bundle):
    require(hashlib.sha256(z.read(member)).hexdigest()==digest,'Changed packaged file: '+name);expected.add(member)
   require(expected==set(z.namelist()),'Incomplete package checksum list');z.extractall(extracted)
  session=Archives(bundle/'gemarc-walk',bundle)
- result=run(bundle,boot_smoke=True,distribution_root=extracted/'exec816-demo',integration=session)
- audit=Audit((bundle/'work-walkthrough.atr').read_bytes());allocation=audit.sdfs()
- require(audit.files['EXTRACT.TXT']==b'ARC extraction works through Exec816 SDX.\n','Extracted bytes differ')
- require(audit.files['EMPTY.TXT']==b'','Empty extraction differs')
+ manifest=json.loads((bundle/'demo-manifest.json').read_text());combined=bool(manifest.get('bootable_atr'))
+ options={};boot=None
+ if combined:
+  from test_bootable_atr import DiskBoot
+  boot=DiskBoot(bundle);options['bootstrap']=boot
+ result=run(bundle,boot_smoke=True,distribution_root=extracted/'exec816-demo',integration=session,**options)
+ media=extracted/'exec816-demo'/manifest['media'] if combined else bundle/'work-walkthrough.atr'
+ audit=Audit(media.read_bytes());allocation=audit.sdfs()
+ files={name.removeprefix('WORK/'):payload for name,payload in audit.files.items() if not combined or name.startswith('WORK/')}
+ require(files['DEMO.BAS']==b'PRINT "PACKAGED": PRINT 7*6','BASIC saved source differs')
+ require(hashlib.md5(files['ABC.TXT']).hexdigest() in session.md5.lower(),'MD5 persisted-byte oracle differs')
+ require(files['EXTRACT.TXT']==b'ARC extraction works through Exec816 SDX.\n','Extracted bytes differ')
+ require(files['EMPTY.TXT']==b'','Empty extraction differs')
  target=bundle/'gemarc-readback';target.mkdir(exist_ok=True)
- (target/'PORT.ARC').write_bytes(audit.files['PORT.ARC'])
+ (target/'PORT.ARC').write_bytes(files['PORT.ARC'])
  subprocess.run([shutil.which('unar'),'-q','-f','-o',str(target),str(target/'PORT.ARC')],check=True)
  members=list(target.rglob('PORT.TXT'));require(len(members)==1 and members[0].read_bytes()==b'archive-replacement\n','Independent new-archive bytes differ')
  result.update(qualification=False,tier='development',zip_sha256=sha256(archive),
-     gemarc=session.s.saved['gemarc'],allocation=allocation,
+     gemarc=session.s.saved['gemarc'],allocation=allocation,atr_boot=boot.report if boot else None,
      scope='Exact extracted ZIP: physical GemARC, BASIC save/run, MD5/ARC, OF816 cold boot and clean EXIT')
  (bundle/'gemarc-demo-results.json').write_text(json.dumps(result,indent=2)+'\n');return result
 
