@@ -1,0 +1,19 @@
+{
+  "abi": "exec816.c-runtime",
+  "version": 1,
+  "entry": "__exec_c_runtime_entry",
+  "phases": {"INIT": 1, "RUN": 2, "FINISH": 3, "RELEASE": 4},
+  "states": {"EMPTY": 0, "INITIALIZING": 1, "READY": 2, "RUNNING": 3, "RETURNED": 4, "FINISHED": 5, "RELEASED": 6},
+  "flags": {"ABNORMAL": 1, "EARLY_STOP": 2},
+  "limits": {"ALLOCATION_PREFIX": 16, "ALIGNMENT": 8, "MAX_ALLOCATION": 65520, "FILE_SLOTS": 16, "STANDARD_FILES": 3, "ATEXIT_SLOTS": 32, "ARGUMENT_BYTES": 255},
+  "records": {
+    "Call": {
+      "bytes": 32,
+      "fields": [["version", "UWORD", 0], ["phase", "UWORD", 2], ["flags", "ULONG", 4], ["primary", "LONG", 8], ["secondary", "LONG", 12], ["name", "CONST_STRPTR", 16], ["arguments", "CONST_STRPTR", 20], ["reserved0", "ULONG", 24], ["reserved1", "ULONG", 28]]
+    },
+    "Allocation": {
+      "bytes": 16,
+      "fields": [["previous", "APTR", 0], ["next", "APTR", 4], ["bytes", "ULONG", 8], ["reserved", "ULONG", 12]]
+    }
+  }
+}

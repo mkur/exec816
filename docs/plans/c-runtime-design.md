@@ -1,11 +1,14 @@
 # Shared C runtime for Exec816
 
-[Plan index](README.md) · [C application contract](../reference/c-program-loading.md) ·
+[Plan index](README.md) · [Implementation plan](c-runtime-implementation-plan.md) ·
+[C application contract](../reference/c-program-loading.md) ·
 [Memory contract](../reference/memory.md)
 
 Status: proposed, 2026-11-09. This note selects a common runtime design; it does
 not add supported interfaces or change the current C application ABI. Implement
 and document each executable slice before advertising its capabilities.
+The implementation baseline is Exec816 0.2.3, including packaging commit
+`8deec045`; the implementation plan records its exact source and cutover order.
 
 ## Problem and decision
 
@@ -294,13 +297,15 @@ headless provider can follow without defining another allocator or stdio ABI.
 | CR0: freeze contracts | Inventory QED/vendor dependencies; add generated runtime layouts and a minimal phased-entry probe. Check both main signatures, partial INIT rollback, direct-page use, target type sizes and the existing native/C bridge. |
 | CR1: shared allocation | Move allocation into common support with aligned headers and per-execution reset/release. Exercise calloc overflow, failed realloc preservation, maximum bank-contained blocks and two simultaneous images. |
 | CR2: files and stdio | Move descriptor/error/library hooks and pinned FILE preparation. Cover standard streams, multiple files, supported modes, confirmed-prefix errors, EOF distinction, append/seek and failed terminal Close. |
-| CR3: lifecycle and termination | Integrate INIT/RUN/FINISH/RELEASE with the resident runner. Qualify exit's C-only unwind, atexit ordering, abnormal termination without flushing, early stop, GUI retirement failure and native result preservation. |
-| CR4: coordinated migration | Rebuild all shipped C APPs with the current entry ABI. Move QED onto common services, retaining only its compatibility/document adapters. Compare editing/saving, failure cleanup, image size and stack observations; remove duplicate runtime code. |
+| CR3: lifecycle and coordinated cutover | Integrate INIT/RUN/FINISH/RELEASE, update the current APP ABI and rebuild all providers/APPs together, including QED's common runtime ownership. Qualify exit's C-only unwind, atexit ordering, abnormal termination, stop, GUI retirement and results. |
+| CR4: QED consumer acceptance | Complete QED's compatibility/document adaptation on the common implementation. Compare editing/saving, failure cleanup, image size and stack observations; update current runtime documentation. |
 | CR5: second consumer and delivery | Port GemARC against the same runtime, initially as a listing/extraction consumer, then add its checked mutation path. Cover repeated launches and coexistence. Refresh the demo only through build_demo.py, preserving OF816, autoboot, notices and the small distribution ZIP. |
 
-Allocation extraction can start before every termination API is available, but
-each slice must leave a runnable current profile. New exit interfaces remain
-unavailable until CR3 passes; changes to entry ABI and callers land together.
+Allocation extraction can start in component fixtures before every termination
+API is available, but each slice must leave a runnable current profile. New exit
+interfaces remain unavailable until CR3 passes; entry ABI and all callers land
+together in that slice. CR4 accepts the migrated consumer without retaining an
+older startup or allocation implementation alongside it.
 GemARC's archive codecs and its file-publication fixes require their own focused
 tests; runtime completion does not establish archive correctness.
 

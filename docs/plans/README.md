@@ -595,10 +595,12 @@ assuming work is pending. Current behavior belongs in the
 
 ## Compiler and ABI
 
-- [Shared C runtime design](c-runtime-design.md): proposed common allocation,
-  arguments, errno, descriptors, stdio and phased application cleanup, starting
-  from QED and shared with GemARC. Defines CR0–CR5 migration/acceptance slices
-  and a zero-growth reserved bank-zero target; implementation remains pending.
+- [Shared C runtime design](c-runtime-design.md) and
+  [CR0–CR5 implementation plan](c-runtime-implementation-plan.md): proposed common
+  allocation, arguments, errno, descriptors, stdio and phased application cleanup
+  from the 0.2.3 baseline. Orders component probes, one coordinated APP ABI
+  cutover, QED acceptance and GemARC delivery with a zero-growth reserved
+  bank-zero target; implementation remains pending.
 - [Native pointer loops: implementation plan](compiler-pointer-loops-plan.md)
 - [Direct-page partition implementation plan](direct-page-partition-implementation-plan.md)
 
