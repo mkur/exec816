@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Exercise GemARC against an actually exhausted writable SDFS disk."""
-import argparse,json
+import argparse,json,subprocess
 from pathlib import Path
 from native_program import ROOT,require
 from prepare_gemarc import prepare,PORT
@@ -15,18 +15,25 @@ def run(out,reuse=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True);prepare(out/'prepared')
     source=out/'prepared/source/src/apps'
     seeded={}
+    (out/'media/FILL.DAT').unlink(missing_ok=True)
     def nearly_full(path,filesystem):
-        media=out/'media';size=200000//256*256
-        for _ in range(12):
+        media=out/'media';low,high=0,1440;best=None
+        while low<=high:
+            blocks=(low+high)//2;size=blocks*256
             (media/'FILL.DAT').write_bytes(bytes(size))
-            make(path,media,binary_names={p.name for p in media.iterdir()},
-                filesystem='sdfs',sector_bytes=256,sectors=1440)
+            try:
+                make(path,media,binary_names={p.name for p in media.iterdir()},
+                    filesystem='sdfs',sector_bytes=256,sectors=1440)
+            except subprocess.CalledProcessError:
+                high=blocks-1;continue
             image=Image(path.read_bytes());free=word(image.sector(1),13)
-            if free==3:
-                Audit(path.read_bytes()).sdfs()
-                seeded.update(payload_bytes=size,initial_free_sectors=free);return
-            size+=(free-3)*256
-        raise RuntimeError('Could not seed valid nearly-full SDFS media')
+            if free>=3:
+                best=(bytes(image.data),size,free);low=blocks+1
+            else:high=blocks-1
+        require(best is not None and 3<=best[2]<=4,'Could not seed nearly-full SDFS')
+        path.write_bytes(best[0]);(media/'FILL.DAT').write_bytes(bytes(best[1]))
+        Audit(path.read_bytes()).sdfs()
+        seeded.update(payload_bytes=best[1],initial_free_sectors=best[2])
     result=process_run(out,True,reuse=reuse,rebuild_app=reuse,app_sources=[ROOT/'tests/programs/gemarc_disk_full.c',
         source/'arcfile.c',source/'arccodec.c',PORT/'native/io.c',PORT/'native/metadata.c'],
         app_options=dict(includes=[source,PORT/'native'],minimum_stack=2560),
