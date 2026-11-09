@@ -5,6 +5,7 @@ from colour_desktop_model import FIELDS as DESKTOP_FIELDS
 from program_image_layout import LAYOUT as IMAGE_LAYOUT,FIELDS as IMAGE_FIELDS
 
 MODELS={'desktop':('GEMDesk',DESKTOP_FIELDS['ready'],DESKTOP_FIELDS['work']),'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22),'dialog':('GEMDialog',8,40),'text':('GEMText',8,32),'g4bench':('g4b_ready',0,0),'g4clock':('g4p_ready',0,0)}
+MODELS['gemarc']=('nlist',0,0)
 MODELS['basic']=('Basic',8,166)
 
 def instances(bridge,program,directory):

@@ -3,7 +3,7 @@
 [Design](../../docs/plans/c-runtime-design.md) ·
 [Implementation plan](../../docs/plans/c-runtime-implementation-plan.md)
 
-Current APP ABI 31 links this runtime and enters its synchronous phases.
+Current APP ABI 32 links this runtime and enters its synchronous phases.
 See the [current contract](../../docs/reference/c-runtime.md). Earlier component
 records preserve the pre-cutover checks; failure injection remains fixture-only.
 

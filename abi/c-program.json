@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 31,
+  "version": 32,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -132,7 +132,8 @@
     "GetMsg",
     "ExecAESInvalidate",
     "ExecVDICopyRect",
-    "ExecAESWindowView"
+    "ExecAESWindowView",
+    "SetFileDate"
   ],
   "stack_requirement": {
     "workspace_mask": 255,
@@ -284,6 +285,10 @@
     {
       "name": "ExecBasicAttach",
       "native": "CBasicAttach"
+    },
+    {
+      "name": "SetFileDate",
+      "native": "CSetFileDate"
     }
   ],
   "stack_floor_bytes": 1312,

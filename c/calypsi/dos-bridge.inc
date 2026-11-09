@@ -246,6 +246,16 @@ LONGINT FUNC CNameFromLock(LONGCARD lock,buffer LONGINT length)
 RETURN(DOS.NameFromLock(DOS.FileLock POINTER(ADDRESS(lock)),
     BYTE POINTER(ADDRESS(buffer)),length))
 
+LONGINT FUNC CSetFileDate(LONGCARD name,date,unused)
+
+  IF name>$ffffff OR date>$ffffff THEN
+    DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(DOS.SetFileDate(BYTE POINTER(ADDRESS(name)),
+    DOS.DateStamp POINTER(ADDRESS(date))))
+
 ; Bind once; each operation still uses the current Task's DOS context.
 PROC BindDos(BYTE unused)
 

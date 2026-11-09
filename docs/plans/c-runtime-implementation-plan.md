@@ -7,7 +7,7 @@
 Status: in progress, 2026-11-09. CR0–CR4 pass development checks
 ([CR0](../development/c-runtime-cr0.json), [CR1](../development/c-runtime-cr1.json),
 [CR2](../development/c-runtime-cr2.json), [CR3](../development/c-runtime-cr3.json),
-[CR4](../development/c-runtime-cr4.md)); CR5 remains pending. Complete each slice's
+[CR4](../development/c-runtime-cr4.md)); CR5 has a native GemARC implementation; final distribution acceptance remains pending. Complete each slice's
 selected development checks before committing it or starting dependent work.
 New source, generator and fixture paths below are deliverables, not existing
 commands or supported APIs.

@@ -9,7 +9,7 @@ from pathlib import Path
 from build_command import compile_command
 from build_of816 import build as build_monitor
 from make_data_disk import make
-from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,G4BENCH_NOTICES,pointer_description,ide_only_guide,bootable_guide
+from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,G4BENCH_NOTICES,GEMARC_NOTICES,pointer_description,ide_only_guide,bootable_guide
 from library_paths import read_source
 from launch_demo import write_launcher
 from native_program import ROOT, build, compiler, read_build, require, sha256
@@ -249,7 +249,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only,
                       sdx=sdx,sdx_drive_a=sdx_drive_a,sdx_car_root=sdx_car_root)
     if gem_desktop:
-        for name in ('panel','counter','files','calc','dialog','text','g4bench')+(('basic',) if basic_workbench else ()):
+        for name in ('panel','counter','files','calc','dialog','text','g4bench','gemarc')+(('basic',) if basic_workbench else ()):
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
             binary_names.add('C/'+name.upper()+'.APP')
         calculator=output/'bitmap-console/apps/calc'
@@ -273,6 +273,17 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'Adaptations: five drawing rows, Exec windows/I/O, VBI batch timing.\n'
             'Solid bars replace vr_recfl; text uses replace mode; dialog omits OUTLINED.\n'
             'Source, pinned inputs and patches: ports/gem4xe/apps/g4bench/ in Exec816.\n'
+            'Application licence: GPL-2.0-or-later.\n')
+        archive=output/'bitmap-console/apps/gemarc'
+        shutil.copyfile(archive/'GEMARC.RSC',media/'GEMARC.RSC');binary_names.add('GEMARC.RSC')
+        for name,source in zip(GEMARC_NOTICES,('COPYING','COPYING.LIB','docs/licence.md')):
+            shutil.copyfile(archive/'source'/source,output/name)
+        archive_provenance=json.loads((archive/'gemarc.json').read_text())
+        (output/'GEMARC-PROVENANCE.txt').write_text(
+            'GEM4XE GemARC for Exec816\nSource: https://github.com/slaapliedje/gem4xe\n'
+            'Revision: '+archive_provenance['revision']+'\n'
+            'Adaptations: native GUI, checked archive transactions, common C runtime.\n'
+            'Corresponding source and patches: ports/gem4xe/apps/gemarc/ in Exec816.\n'
             'Application licence: GPL-2.0-or-later.\n')
     qed_entry=None
     if qed:
@@ -440,9 +451,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             record['source_inputs'].update({str(p.relative_to(ROOT)):sha256(p)
                 for p in [ROOT/'examples/gem-basic'/name for name in
                     ('main.c','basic.c','basic.h','editor.c','editor-paint.c','editor.h','document.c','document.h','files.c','files.h','file-ui.c','file-ui.h','assist.c','assist.h','assist-ui.c','assist-ui.h','build.c','build.h','build-job.h')]})
-        record['artifacts'].update({name:sha256(output/name) for name in CALCULATOR_NOTICES+G4BENCH_NOTICES})
+        record['artifacts'].update({name:sha256(output/name) for name in CALCULATOR_NOTICES+G4BENCH_NOTICES+GEMARC_NOTICES})
         record['calculator']=provenance
         record['g4bench']=benchmark_provenance
+        record['gemarc']=archive_provenance
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             ROOT/'docs/gem-desktop-distribution.txt',ROOT/'tools/build_gem_desktop.py',
             *sorted((ROOT/'examples/gem-panel').glob('*')),
@@ -453,6 +465,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             *sorted((ROOT/'examples/gem-browser').glob('*')),ROOT/'tools/build_gem_resource.py',
             ROOT/'tools/build_calculator.py',ROOT/'tools/prepare_calculator.py',
             ROOT/'tools/build_g4bench.py',ROOT/'tools/prepare_g4bench.py',
+            ROOT/'tools/build_gemarc.py',ROOT/'tools/prepare_gemarc.py',
+            *(p for p in (ROOT/'ports/gem4xe/apps/gemarc').rglob('*') if p.is_file()),
             *(p for p in (ROOT/'ports/gem4xe/apps/g4bench').rglob('*') if p.is_file()),
             *(p for p in (ROOT/'ports/gem4xe/apps/calculator').rglob('*') if p.is_file()))})
     if qed:

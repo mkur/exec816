@@ -669,5 +669,7 @@ static const char *desktop_association(struct Desktop *d,const char *name)
             if ((name[n-3+j]|32)!=(d->associations[i].extension[j]|32)) break;
         if (j==3 && d->associations[i].program[0]) return d->associations[i].program;
     }
+    /* Explicit user associations take precedence over the bundled default. */
+    if ((name[n-3]|32)=='a' && (name[n-2]|32)=='r' && (name[n-1]|32)=='c') return "C:GEMARC.APP";
     return NULL;
 }

@@ -9,7 +9,7 @@ from test_c_process import run as process_run
 def run(out,applications):
     out.mkdir(parents=True,exist_ok=True)
     records={name:json.loads((applications/'apps'/name/'app.json').read_text())
-             for name in ('panel','counter','files','desktop','dialog','calc','g4bench','text','basic')}
+             for name in ('panel','counter','files','desktop','dialog','calc','g4bench','text','basic','gemarc')}
     media={}
     for name,app in records.items():
         path=applications/'apps'/name/'program.app'
@@ -18,6 +18,7 @@ def run(out,applications):
             require(sha256(Path(source))==digest,'Changed shipped APP source: '+source)
         media[name.upper()+'.APP']=path.read_bytes()
     media['CALC.RSC']=(applications/'apps/calc/CALC.RSC').read_bytes()
+    media['GEMARC.RSC']=(applications/'apps/gemarc/GEMARC.RSC').read_bytes()
     old=bytearray(media['PANEL.APP']);struct.pack_into('<H',old,6,ABI['version']-1)
     media['OLD.APP']=old
     prefix=(ROOT/'tests/programs/c_process.act').read_text().split('\nPROC Main()')[0]
@@ -97,7 +98,7 @@ ENDMODULE
         shutil.copyfile(applications/'apps/panel/program.app',target/'program.app')
         return records['panel']
     result=process_run(out,True,app_builder=application,fixture_source=fixture,
-        expected_completed=10,native_optimize=True,release_compiler=True,
+        expected_completed=1+len(records),task_capacity=12,native_optimize=True,release_compiler=True,
         loader_failures=False,media_files=media,ram=True)
     result['shipped_applications']={name:dict(sha256=app['sha256'],minimum_stack=app['minimum_stack'])
                                    for name,app in records.items()}

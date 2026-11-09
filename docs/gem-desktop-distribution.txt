@@ -125,6 +125,7 @@ IDE-only builds replace the SIO worker and keep the same total.
 Desk > Save Settings writes WORK:DESKTOP.CFG. Keep the writable disk to restore
 folder paths/sizes, view/sort, mouse preference and file associations next boot.
 There is no autosave. The default association is TXT -> C:TEXT.APP.
+ARC files open in C:GEMARC.APP unless a saved association overrides ARC.
 
 Shell examples
 --------------
@@ -140,6 +141,14 @@ Return is equals. Keep SYS:CALC.RSC on the system disk.
 RUN C:DIALOG.APP demonstrates editable forms, alerts and the standard selector.
 RUN C:G4BENCH.APP runs the adapted drawing benchmark: Return starts, Escape
 stops/closes. Keep it uncovered. Results go to WORK:G4BENCH.TXT.
+RUN C:GEMARC.APP "WORK:SAMPLE.ARC" opens the archive window. Click to select;
+Ctrl-A selects all, Ctrl-E extracts, Ctrl-I adds files, Ctrl-N creates,
+Ctrl-O opens, Ctrl-U closes the archive and Ctrl-Q quits. Keep SYS:GEMARC.RSC.
+Up/Down and the slider scroll. Escape cancels work. Limits: 512 members,
+64 files per Add; methods 5-7 cannot be extracted. Output names use native 8.3.
+Writes use Gxxxxxxx.TMP and replacement backups Gxxxxxxx.OLD in the same
+directory. If an error names recovery files, preserve both before retrying.
+These provide recovery copies; writes are not atomic or power-loss durable.
 
 This package contains the GEM desktop and its windowed Shell.
 Desktop icon rearrangement, recursive file operations, trash, horizontal scrolling

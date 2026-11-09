@@ -38,6 +38,7 @@
 - [DOS stream example](streams-example.md): standard streams and ownership.
 - [Calypsi C](calypsi-c.md): the standalone C binding and its limits.
 - [GEM applications](aes-applications.md): AES event loops, startup, retirement, interactive apps and the GEM panel/Files desktop.
+- [GemARC](gemarc.md): open, extract and update ARC archives, including recovery files and limits.
 - [AES latency diagnostics](aes-latency-diagnostics.md): caller CPU categories,
   presenter scheduling delay and equal offered load alongside HY4 acceptance.
 

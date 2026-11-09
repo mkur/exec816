@@ -17,6 +17,8 @@ LONG EXEC_CALL ExamineExact(BPTR lock,struct FileInfoBlock *info);
 LONG EXEC_CALL ExNext(BPTR lock,struct FileInfoBlock *info);
 LONG EXEC_CALL ExNextBatch(BPTR lock,struct FileInfoBlock *info,struct DirBatch *batch);
 LONG EXEC_CALL NameFromLock(BPTR lock,STRPTR buffer,LONG length);
+/* Closed-object native metadata; RAM/SDFS support it, MyDOS reports unsupported. */
+LONG EXEC_CALL SetFileDate(CONST_STRPTR name,const struct DateStamp *date);
 LONG EXEC_CALL IoErr(void);
 LONG EXEC_CALL SetIoErr(LONG error);
 BPTR EXEC_CALL CreateDir(CONST_STRPTR name);

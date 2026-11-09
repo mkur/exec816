@@ -53,7 +53,7 @@ def build(bundle,output,revision,compiler_dir=None,working_tree=False):
     third=tree/'third-party';third.mkdir()
     for name in ('selected','aes-selected'):
         shutil.copytree(bundle/'bitmap-console'/name,third/('gem-'+name))
-    for name in ('calc','g4bench'):
+    for name in ('calc','g4bench','gemarc'):
         shutil.copytree(bundle/'bitmap-console/apps'/name/'source',third/name)
     # Only linked target support and its notices; no compiler/SDK executables.
     compiler_directory=(compiler_dir or ROOT/'build/actionc').resolve()

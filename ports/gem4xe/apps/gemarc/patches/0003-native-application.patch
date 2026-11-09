@@ -1,0 +1,621 @@
+--- a/src/apps/gemarc.c
++++ b/src/apps/gemarc.c
+@@ -8,12 +8,9 @@
+  * is the GEM program around them and the GEMDOS they read and write
+  * through.
+  *
+- * Built --data-model=large: the tables (55 KB) and the member list come
+- * from Malloc, the resource goes far, and the only things in bank $00
+- * are the file selector's two buffers, which must be (src/app/gem.h) --
+- * they are on the stack, in fsel_ask.  Every word a person reads is in
+- * GEMARC.RSC (tools/gemarcrsc.py). */
+-#include "gem.h"
++ * The Exec port uses the shared C runtime, upper-memory tables and native
++ * file selectors. Resources live in SYS:GEMARC.RSC. */
++#include "platform.h"
+ #include "arcfile.h"
+ #include "gemarcrsc.h"
+ 
+@@ -35,11 +32,11 @@
+ static char info[100];
+ static char line[100];
+ static char msg[300];
+-static DTA dta;
++static WORD working, app_quit, app_result;
+ /* Paths being built.  FAR, not on the stack: the stack is bank $00's and
+  * small, and nothing these are handed to wants bank $00 -- GEMDOS takes
+  * far names.  Only fsel_ask's and main's own buffers must be near. */
+-static char xpath[PATHLEN], xdir[PATHLEN], xspec[PATHLEN], xtemp[PATHLEN];
++static char xpath[PATHLEN], xdir[PATHLEN], xspec[PATHLEN];
+ 
+ static WORD work_in[11] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 };
+ static WORD work_out[57];
+@@ -126,78 +123,11 @@
+     uint16_t k, cut = 0;
+ 
+     for (k = 0; path[k]; k++)
+-        if (path[k] == '\\' || path[k] == ':')
++        if (path[k] == '/' || path[k] == '\\' || path[k] == ':')
+             cut = (uint16_t)(k + 1);
+     for (k = 0; k < cut; k++)
+         dir[k] = path[k];
+     dir[cut] = 0;
+-}
+-
+-/* -- the platform under arcfile.c: GEMDOS ----------------------------------- */
+-
+-int pf_open(const char FAR *name)
+-{
+-    LONG h = Fopen(name, 0);
+-    return h < 0 ? -1 : (int)h;
+-}
+-
+-int pf_create(const char FAR *name)
+-{
+-    LONG h = Fcreate(name, 0);
+-    return h < 0 ? -1 : (int)h;
+-}
+-
+-long pf_read(int h, uint8_t FAR *buf, long n)
+-{
+-    return Fread((WORD)h, n, buf);
+-}
+-
+-long pf_write(int h, const uint8_t FAR *buf, long n)
+-{
+-    return Fwrite((WORD)h, n, buf);
+-}
+-
+-long pf_seek(int h, long offset)
+-{
+-    return Fseek(offset, (WORD)h, 0);
+-}
+-
+-void pf_close(int h)
+-{
+-    Fclose((WORD)h);
+-}
+-
+-int pf_delete(const char FAR *name)
+-{
+-    return Fdelete(name) < 0 ? -1 : 0;
+-}
+-
+-int pf_rename(const char FAR *from, const char FAR *to)
+-{
+-    return Frename(from, to) < 0 ? -1 : 0;
+-}
+-
+-void pf_stamp(const char FAR *name, uint16_t *date, uint16_t *time)
+-{
+-    Fsetdta(&dta);
+-    if (Fsfirst(name, 0) == 0) {
+-        *date = dta.d_date;
+-        *time = dta.d_time;
+-    } else {
+-        *date = (uint16_t)Tgetdate();
+-        *time = (uint16_t)Tgettime();
+-    }
+-}
+-
+-void pf_setstamp(int h, uint16_t date, uint16_t time)
+-{
+-    WORD t[2];
+-
+-    if (!date)
+-        return;
+-    t[0] = (WORD)time;
+-    t[1] = (WORD)date;
+-    Fdatime(t, (WORD)h, 1);             /* a DOS that cannot, cannot */
+ }
+ 
+ static WORD progress_text;
+@@ -305,16 +235,18 @@
+     pxy[1] = wy;
+     pxy[2] = (WORD)(wx + ww - 1);
+     pxy[3] = (WORD)(wy + whh - 1);
+-    vr_recfl(vh, pxy);
++    v_bar(vh, pxy);
+     vst_color(vh, 1);
+     if (!archive[0])
+         return;
+     scpy(line, str(ST_HEAD), sizeof line);
+-    v_gtext(vh, (WORD)(wx + 4), wy, line);
++    v_gtext(vh, (WORD)(wx + 4), (WORD)(wy + EXEC_VDI_FONT_TOP), line);
+     pxy[0] = wx;
+     pxy[2] = (WORD)(wx + ww - 1);
+     pxy[1] = pxy[3] = (WORD)(wy + hchar - 1);
+-    v_pline(vh, 2, pxy);
++    vsf_color(vh, 1);
++    v_bar(vh, pxy);
++    vsf_color(vh, 0);
+     y = (WORD)(wy + hchar);
+     for (i = top; i < nlist && i < top + r; i++, y = (WORD)(y + hchar)) {
+         member_line(i);
+@@ -324,23 +256,22 @@
+             pxy[1] = y;
+             pxy[2] = (WORD)(wx + ww - 1);
+             pxy[3] = (WORD)(y + hchar - 1);
+-            vr_recfl(vh, pxy);
++            v_bar(vh, pxy);
+             vst_color(vh, 0);
+-            v_gtext(vh, (WORD)(wx + 4), y, line);
++            v_gtext(vh, (WORD)(wx + 4), (WORD)(y + EXEC_VDI_FONT_TOP), line);
+             vst_color(vh, 1);
+             vsf_color(vh, 0);
+         } else {
+-            v_gtext(vh, (WORD)(wx + 4), y, line);
++            v_gtext(vh, (WORD)(wx + 4), (WORD)(y + EXEC_VDI_FONT_TOP), line);
+         }
+     }
+ }
+ 
+ static void redraw(WORD x, WORD y, WORD w, WORD h)
+ {
+-    WORD rx, ry, rw, rh, pxy[4];
+-
+-    graf_mouse(M_OFF, 0);
+-    wind_update(BEG_UPDATE);
++    WORD rx, ry, rw, rh, pxy[4] = {0};
++
++    if (!ExecAESBeginUpdate(wh)) return;
+     wind_get(wh, WF_FIRSTXYWH, &rx, &ry, &rw, &rh);
+     while (rw && rh) {
+         WORD ax = rx > x ? rx : x, ay = ry > y ? ry : y;
+@@ -358,8 +289,46 @@
+         wind_get(wh, WF_NEXTXYWH, &rx, &ry, &rw, &rh);
+     }
+     vs_clip(vh, 0, pxy);
++    ExecAESPainted(wh, x, y, w, h);
+     wind_update(END_UPDATE);
+-    graf_mouse(M_ON, 0);
++}
++
++/* Work is synchronous but polls after bounded I/O chunks. Menu commands
++ * cannot recursively enter the archive engine. Close/ESC request cancellation. */
++int GemArcPoll(void)
++{
++    WORD message[8], mx, my, mb, ks, key, clicks, events;
++    ExecYield();
++    if (!working || wh < 0) return app_quit;
++    events = evnt_multi(MU_MESAG|MU_KEYBD|MU_TIMER, 0,0,0,
++        0,0,0,0,0,0,0,0,0,0,message,0,0,&mx,&my,&mb,&ks,&key,&clicks);
++    if (events & MU_MESAG) {
++        if (message[0] == MN_SELECTED) menu_tnormal(menu,message[3],1);
++        else if (message[3] == wh) {
++            if (message[0] == WM_CLOSED) app_quit = 1;
++            else if (message[0] == WM_REDRAW)
++                redraw(message[4],message[5],message[6],message[7]);
++            else if (message[0] == WM_TOPPED) wind_set(wh,WF_TOP,0,0,0,0);
++        }
++    }
++    return app_quit || ((events & MU_KEYBD) && (key & 255) == 27);
++}
++
++static void operation_error(int result, WORD alert_string)
++{
++    const struct ARC_RECOVERY *retained = arc_recovery();
++    const char *copy = retained->original_moved && retained->backup[0] ?
++        retained->backup : retained->temp;
++    if (app_quit) {
++        if (result != ARC_E_CANCEL && result != ARC_OK) app_result = 20;
++        return;
++    }
++    if (result == ARC_E_CANCEL) return;
++    alert(alert_string==ST_BAD ? ST_OPERATION:alert_string,0);
++    if (*copy) {
++        fill(msg,sizeof msg,ST_RECOVERY,0,copy);
++        form_alert(1,msg);
++    }
+ }
+ 
+ static void refresh(void)
+@@ -402,27 +371,14 @@
+  * fsel wants bank $00. */
+ static WORD fsel_ask(WORD label, const char *mask, char *path, char *sel_out)
+ {
+-    char p[PATHLEN], s[16];
++    char p[128], leaf[13];
+     WORD button = 0;
+-    uint16_t k, j;
+-
+-    scpy(p, lastdir, PATHLEN - 16);
+-    k = slen(p);
+-    for (j = 0; mask[j]; j++)
+-        p[k++] = mask[j];
+-    p[k] = 0;
+-    s[0] = 0;
+-    fsel_exinput(p, s, &button, str(label));
+-    if (button != 1)
+-        return FALSE;
+-    dir_of(p, lastdir);
+-    scpy(path, lastdir, PATHLEN);
+-    k = slen(path);
+-    for (j = 0; s[j] && k < PATHLEN - 1; j++)
+-        path[k++] = s[j];
+-    path[k] = 0;
+-    if (sel_out)
+-        scpy(sel_out, s, 16);
++    if (slen(lastdir)+slen(mask) >= sizeof p) strcpy(lastdir,"SYS:");
++    strcpy(p,lastdir);strcat(p,mask);leaf[0]=0;
++    if (!fsel_exinput(p,leaf,&button,str(label)) || button != 1) return FALSE;
++    dir_of(p,lastdir);
++    if (!GemArcJoin(path,lastdir,leaf)) return FALSE;
++    if (sel_out) strcpy(sel_out,leaf);
+     return TRUE;
+ }
+ 
+@@ -446,9 +402,10 @@
+ 
+     nlist = 0;
+     top = 0;
+-    graf_mouse(BUSYBEE, 0);
++    working = 1;
+     r = arc_list(archive, list, MAXLIST, &nlist);
+-    graf_mouse(ARROW, 0);
++    working = 0;
++    if (app_quit) return;
+     if (r == ARC_E_FULL) {
+         alert(ST_FULL, MAXLIST);
+     } else if (r != ARC_OK) {
+@@ -478,22 +435,14 @@
+ 
+ static void do_new(void)
+ {
+-    char *path = xpath, sel[16];
+-    WORD h;
+-    uint8_t end[2];
+-
+-    if (!fsel_ask(ST_TNEW, "*.ARC", path, sel) || !sel[0] || wild(sel))
+-        return;
+-    h = (WORD)Fcreate(path, 0);
+-    if (h < 0) {
+-        alert(ST_NOOPEN, 0);
+-        return;
+-    }
+-    end[0] = ARC_MARK;
+-    end[1] = 0;
+-    Fwrite(h, 2L, end);
+-    Fclose(h);
+-    open_archive(path);
++    char leaf[13];
++    int exists, result;
++    if (!fsel_ask(ST_TNEW,"*.ARC",xpath,leaf) || !leaf[0] || wild(leaf)) return;
++    exists = GemArcExists(xpath);
++    if (exists < 0 || (exists && form_alert(3,str(ST_EXISTS)) != 1)) return;
++    working = 1;result = arc_new(xpath);working = 0;
++    if (result != ARC_OK) operation_error(result,ST_NOOPEN);
++    else open_archive(xpath);
+ }
+ 
+ static void do_close(void)
+@@ -512,81 +461,48 @@
+  * -- an archive made elsewhere can carry a space ("ZMAG.40 ") or worse. */
+ static void file_name(const char FAR *member, char *to)
+ {
+-    uint16_t k, n = 0;
+-    char c;
+-
+-    for (k = 0; k < ARC_NAMELEN - 1 && (c = member[k]) != 0; k++) {
+-        if (c >= 'a' && c <= 'z')
+-            c = (char)(c - 32);
+-        if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_'
+-            || c == '.')
+-            to[n++] = c;
+-    }
+-    to[n] = 0;
++    char cleaned[ARC_NAMELEN];
++    uint16_t used = 0;
++    char byte;
++    while ((byte = *member++) != 0 && used < ARC_NAMELEN-1) {
++        if (byte >= 'a' && byte <= 'z') byte -= 32;
++        if ((byte >= 'A' && byte <= 'Z') || (byte >= '0' && byte <= '9') || byte == '_' || byte == '.')
++            cleaned[used++] = byte;
++    }
++    cleaned[used] = 0;arc_member_name(cleaned,to);
+ }
+ 
+ static void do_extract(WORD all)
+ {
+-    char *path = xpath, *dir = xdir, fname[ARC_NAMELEN];
+-    uint16_t i, k, j, want = 0;
+-    uint32_t ok = 0, bad = 0;
+-    WORD replace = 0;                   /* 0 not asked, 1 replace, 2 skip */
+-    int r;
+-
+-    for (i = 0; i < nlist; i++)
+-        if (all || list[i].sel)
+-            want++;
+-    if (!want) {
+-        alert(ST_NOSEL, 0);
+-        return;
+-    }
+-    if (!fsel_ask(ST_TOUT, "*.*", path, 0))
+-        return;
+-    dir_of(path, dir);
+-    for (i = 0; i < nlist; i++)
+-        if ((all || list[i].sel) && list[i].method <= ARC_SQUASHED) {
+-            file_name(list[i].name, fname);
+-            scpy(path, dir, PATHLEN);
+-            k = slen(path);
+-            for (j = 0; fname[j]; j++)
+-                path[k++] = fname[j];
+-            path[k] = 0;
+-            Fsetdta(&dta);
+-            if (Fsfirst(path, 0) == 0) {
+-                WORD b = form_alert(1, str(ST_EXISTS));
+-                if (b == 3)
+-                    return;                 /* Cancel: nothing taken out */
+-                replace = b;
+-                break;                      /* asked once, for all of them */
+-            }
+-        }
+-    progress_text = ST_OUTING;
+-    graf_mouse(BUSYBEE, 0);
+-    for (i = 0; i < nlist; i++) {
+-        if (!all && !list[i].sel)
+-            continue;
+-        file_name(list[i].name, fname);
+-        scpy(path, dir, PATHLEN);
+-        k = slen(path);
+-        for (j = 0; fname[j]; j++)
+-            path[k++] = fname[j];
+-        path[k] = 0;
+-        if (replace == 2) {
+-            Fsetdta(&dta);
+-            if (Fsfirst(path, 0) == 0)
+-                continue;
+-        }
+-        r = arc_extract(archive, &list[i], path);
+-        if (r == ARC_OK)
+-            ok++;
+-        else
+-            bad++;
+-    }
+-    graf_mouse(ARROW, 0);
++    char leaf[ARC_NAMELEN];
++    uint16_t i, wanted = 0;
++    uint32_t done = 0, failed = 0;
++    int result, exists;
++    for (i=0;i<nlist;++i) if (all || list[i].sel) ++wanted;
++    if (!wanted) { alert(ST_NOSEL,0);return; }
++    if (!fsel_ask(ST_TOUT,"*.*",xpath,0)) return;
++    dir_of(xpath,xdir);progress_text=ST_OUTING;
++    for (i=0;i<nlist && !app_quit;++i) {
++        if (!all && !list[i].sel) continue;
++        file_name(list[i].name,leaf);
++        if (!*leaf || !GemArcJoin(xpath,xdir,leaf)) { ++failed;continue; }
++        exists=GemArcExists(xpath);
++        if (exists<0) { ++failed;continue; }
++        if (exists) {
++            WORD consent=form_alert(3,str(ST_EXISTS));
++            if (consent==3) break;
++            if (consent!=1) continue;
++        }
++        working=1;result=arc_extract(archive,&list[i],xpath);working=0;
++        if (result==ARC_OK) ++done;
++        else {
++            if (result!=ARC_E_CANCEL) ++failed;
++            operation_error(result,ST_BAD);
++            if (result==ARC_E_CANCEL || app_quit) break;
++        }
++    }
+     set_info();
+-    if (bad)
+-        alert(ST_BAD, bad);
+-    alert(ST_DONE, ok);
++    if (!app_quit) { if (failed) alert(ST_BAD,failed);alert(ST_DONE,done); }
+ }
+ 
+ static WORD same_name(const char FAR *a, const char FAR *b)
+@@ -610,62 +526,22 @@
+ 
+ static void do_add(void)
+ {
+-    char *path = xpath, *dir = xdir, *spec = xspec, *temp = xtemp;
+-    char sel[16], arcname[ARC_NAMELEN];
+-    uint16_t n = 0, k, j;
+-    LONG e;
+-    int r;
+-    const char FAR *t;
+-
+-    if (!fsel_ask(ST_TADD, "*.*", path, sel))
++    char selection[13];
++    int count, result;
++    if (!fsel_ask(ST_TADD,"*.*",xpath,selection)) return;
++    dir_of(xpath,xdir);
++    working=1;
++    count=GemArcCollect(xdir,*selection ? selection : "*.*",names,ARC_ADD_MAX,archive);
++    working=0;
++    if (count<0) {
++        if (!app_quit && count!=-ARC_E_CANCEL) alert(count==-ARC_E_FULL ? ST_TOOMANY:ST_ADDFAIL,ARC_ADD_MAX);
+         return;
+-    dir_of(path, dir);
+-    dir_of(archive, temp);              /* the archive's own name, to skip */
+-    file_name(archive + slen(temp), arcname);
+-    scpy(spec, dir, PATHLEN);
+-    k = slen(spec);
+-    if (wild(sel)) {
+-        const char *m = sel[0] ? sel : "*.*";
+-        for (j = 0; m[j]; j++)
+-            spec[k++] = m[j];
+-        spec[k] = 0;
+-        Fsetdta(&dta);
+-        for (e = Fsfirst(spec, 0); e == 0; e = Fsnext()) {
+-            if (dta.d_attrib & (FA_SUBDIR | FA_VOLUME))
+-                continue;
+-            if (same_name(dta.d_fname, arcname)
+-                || same_name(dta.d_fname, str(ST_TEMP)))
+-                continue;
+-            if (n == ARC_ADD_MAX) {
+-                alert(ST_TOOMANY, ARC_ADD_MAX);
+-                return;
+-            }
+-            scpy(names[n], dta.d_fname, ARC_NAMELEN);
+-            n++;
+-        }
+-    } else {
+-        scpy(names[n], sel, ARC_NAMELEN);
+-        n++;
+-    }
+-    if (!n) {
+-        alert(ST_NOFILES, 0);
+-        return;
+-    }
+-    dir_of(archive, temp);
+-    k = slen(temp);
+-    t = str(ST_TEMP);
+-    for (j = 0; t[j]; j++)
+-        temp[k++] = t[j];
+-    temp[k] = 0;
+-    progress_text = ST_ADDING;
+-    graf_mouse(BUSYBEE, 0);
+-    r = arc_add(archive, temp, dir, names, n, list, MAXLIST);
+-    graf_mouse(ARROW, 0);
+-    if (r != ARC_OK)
+-        alert(ST_ADDFAIL, 0);
+-    load();
+-    if (r == ARC_OK)
+-        alert(ST_ADDED, n);
++    }
++    if (!count) { if (!app_quit) alert(ST_NOFILES,0);return; }
++    progress_text=ST_ADDING;
++    working=1;result=arc_add(archive,xdir,names,(uint16_t)count,list,MAXLIST);working=0;
++    if (result!=ARC_OK) operation_error(result,ST_ADDFAIL);
++    if (!app_quit) { load();if (result==ARC_OK) alert(ST_ADDED,count); }
+ }
+ 
+ static void select_all(void)
+@@ -775,15 +651,13 @@
+     }
+ }
+ 
+-static void *get(LONG n)
+-{
+-    LONG a = Malloc(n);
+-    return a > 0 ? (void *)(uint32_t)a : 0;
+-}
+-
+-int main(void)
+-{
+-    char cmd[130], tail[132];
++static void *get(LONG bytes)
++{
++    return malloc((size_t)bytes);
++}
++
++int main(int argc,char **argv)
++{
+     WORD wbox, hbox, dx, dy, dw, dh, a, b;
+     WORD msgb[8], mx, my, mb, ks, kr, br, ev, done = FALSE, n;
+     uint16_t FAR *prefix;
+@@ -791,13 +665,13 @@
+     uint32_t FAR *hash;
+     uint16_t FAR *codes;
+ 
+-    cmd[0] = 0;
+-    tail[0] = 0;
+-    appl_init();
+-    shel_read(cmd, tail);
+-    if (!rsrc_load("GEMARC.RSC")) {
++    wh=-1;vh=0;menu=0;nlist=top=0;archive[0]=0;
++    working=app_quit=app_result=0;GemArcIOBegin();
++    if (argc>2) { SetIoErr(ERROR_BAD_ARGUMENTS);return 20; }
++    if (appl_init()<0) return 20;
++    if (!rsrc_load("SYS:GEMARC.RSC")) {
+         appl_exit();
+-        return 1;
++        return 20;
+     }
+     prefix = (uint16_t FAR *)get(2L * ARC_LZW_ENTRIES);
+     suffix = (uint8_t FAR *)get(ARC_LZW_ENTRIES);
+@@ -813,14 +687,14 @@
+         form_alert(1, str(ST_NOMEM));
+         rsrc_free();
+         appl_exit();
+-        return 1;
++        SetIoErr(ERROR_NO_FREE_STORE);
++        return 20;
+     }
+     arc_tables(prefix, suffix, stack, hash, codes);
+     arc_buffers(ib, ob, BUFSIZE);
+ 
+     vh = graf_handle(&wchar, &hchar, &wbox, &hbox);
+     v_opnvwk(work_in, &vh, work_out);
+-    vst_alignment(vh, 0, 5, &a, &b);    /* text hangs from its top */
+     rsrc_gaddr(R_TREE, ADMENU, (void **)&menu);
+     menu_bar(menu, 1);
+ 
+@@ -832,41 +706,24 @@
+         v_clsvwk(vh);
+         rsrc_free();
+         appl_exit();
+-        return 1;
++        return 20;
+     }
+     scpy(title, str(ST_TITLE), sizeof title);
+     wind_set_str(wh, WF_NAME, title);
+     wind_open(wh, dx, dy, dw, dh);
+     wind_get(wh, WF_WORKXYWH, &wx, &wy, &ww, &whh);
+-    Dgetpath(lastdir + 2, 0);
+-    lastdir[0] = (char)('A' + Dgetdrv());
+-    lastdir[1] = ':';
+-    n = (WORD)slen(lastdir);
+-    if (n < 3 || lastdir[n - 1] != '\\') {
+-        lastdir[n++] = '\\';
+-        lastdir[n] = 0;
+-    }
++    strcpy(lastdir,"SYS:");
+     set_info();
+     menu_state();
+ 
+-    /* A file handed over in the command tail -- dropped on GEMARC.PRG, or
+-     * an .ARC opened from the desktop. */
+-    n = (WORD)(uint8_t)tail[0];
+-    if (n > 0 && n < 128) {
+-        WORD i = 1, k = 0;
+-        while (i <= n && tail[i] == ' ')
+-            i++;
+-        while (i <= n && tail[i] && tail[i] != ' ' && tail[i] != '\r'
+-               && k < PATHLEN - 1)
+-            xpath[k++] = tail[i++];
+-        xpath[k] = 0;
+-        if (k)
+-            open_archive(xpath);
+-    }
+-
+-    while (!done) {
+-        ev = evnt_multi_moblk(MU_MESAG | MU_KEYBD | MU_BUTTON, 1, 1, 1, 0, 0,
+-                              msgb, 0, 0, &mx, &my, &mb, &ks, &kr, &br);
++    if (argc==2) {
++        if (strlen(argv[1])>=sizeof xpath) { app_result=20;app_quit=1; }
++        else { strcpy(xpath,argv[1]);open_archive(xpath); }
++    }
++
++    while (!done && !app_quit) {
++        ev = evnt_multi(MU_MESAG | MU_KEYBD | MU_BUTTON, 1, 1, 1,
++            0,0,0,0,0,0,0,0,0,0,msgb,0,0,&mx,&my,&mb,&ks,&kr,&br);
+         if (ev & MU_MESAG) {
+             switch (msgb[0]) {
+             case MN_SELECTED:
+@@ -882,10 +739,7 @@
+                 break;
+             case WM_CLOSED:
+                 if (msgb[3] == wh) {
+-                    if (archive[0])
+-                        do_close();
+-                    else
+-                        done = TRUE;
++                    done = TRUE;
+                 }
+                 break;
+             case WM_MOVED:
+@@ -917,5 +771,6 @@
+     v_clsvwk(vh);
+     rsrc_free();
+     appl_exit();
+-    return 0;
+-}
++    if (app_result) SetIoErr(GemArcCause());
++    return app_result;
++}

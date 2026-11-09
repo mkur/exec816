@@ -317,7 +317,12 @@ launch returns, adds its own NUL, and retains that copy until collection.
 The caller may reuse or free its buffer after successful launch. Embedded NUL
 and invalid lengths are rejected by the existing Process admission boundary.
 The call returns a parent-owned Process identity, or zero on failure with IoErr.
-Use the current APP ABI 31 and rebuild the provider and all APPs together.
+`SetFileDate(name, &stamp)` updates a closed object using the native DOS
+operation. RAM and SDFS support it; MyDOS reports `ERROR_ACTION_NOT_KNOWN`.
+Both pointers retain all 24 address bits through the C bridge. The native
+DateStamp is three signed 32-bit fields; it does not establish a wall clock.
+
+Use the current APP ABI 32 and rebuild the provider and all APPs together.
 Start acknowledges child resource and console setup. `Input()`/`Output()` expose
 the child's cloned selections; a supplied CON console has independent BREAK
 routing while the parent's event loop and DOS context remain usable.

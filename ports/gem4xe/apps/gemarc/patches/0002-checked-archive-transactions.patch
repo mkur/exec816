@@ -1,0 +1,741 @@
+--- a/src/apps/arcfile.h
++++ b/src/apps/arcfile.h
+@@ -24,7 +24,20 @@
+ #define ARC_E_SOURCE  12            /* a file to add would not open */
+ #define ARC_E_CREATE  13            /* a file to write would not be made */
+ #define ARC_E_MEMORY  14
++#define ARC_E_READ    16
++#define ARC_E_CLOSE   17
++#define ARC_E_RENAME  18
++#define ARC_E_CANCEL  19
++#define ARC_E_NAME    20
++#define ARC_E_CLEANUP 21
+ #define ARC_E_FULL    15            /* more members than the list holds */
++
++struct ARC_RECOVERY {
++    char temp[256], backup[256];
++    uint8_t original_moved, published, uncertain_close;
++};
++const struct ARC_RECOVERY *arc_recovery(void);
++int arc_new(const char FAR *archive);
+ 
+ /* -- the platform's ----------------------------------------------------- */
+ int  pf_open(const char FAR *name);         /* a handle, or <0 */
+@@ -32,13 +45,19 @@
+ long pf_read(int h, uint8_t FAR *buf, long n);
+ long pf_write(int h, const uint8_t FAR *buf, long n);
+ long pf_seek(int h, long offset);           /* from the start */
+-void pf_close(int h);
++int  pf_close(int h);              /* consumed on either outcome */
++long pf_length(int h);
++int  pf_exists(const char FAR *name); /* 1 file, 0 absent, -1 error */
++int  pf_missing(void);
++int  pf_collision(void);
++int  pf_cancelled(void);
++void pf_reset(void);
+ int  pf_delete(const char FAR *name);
+ int  pf_rename(const char FAR *from, const char FAR *to);
+ /* A file's date and time, MS-DOS's words, for a member made of it; and
+  * set on a file being written, if the DOS can (0s are left alone). */
+ void pf_stamp(const char FAR *name, uint16_t *date, uint16_t *time);
+-void pf_setstamp(int h, uint16_t date, uint16_t time);
++int pf_setstamp(const char FAR *name, uint16_t date, uint16_t time);
+ /* Told each member's name as it is taken out or put in. */
+ void arc_progress(const char FAR *name);
+ 
+@@ -62,8 +81,7 @@
+  * name is replaced, the rest kept, the members in name order as ARC keeps
+  * them.  Written to `temp` and renamed over `archive` when it is whole,
+  * so a failure leaves the old one as it was.  `archive` need not exist. */
+-int arc_add(const char FAR *archive, const char FAR *temp,
+-            const char FAR *dir, char FAR (*names)[ARC_NAMELEN],
++int arc_add(const char FAR *archive, const char FAR *dir, char FAR (*names)[ARC_NAMELEN],
+             uint16_t count, ARC_ENTRY FAR *list, uint16_t max);
+ #define ARC_ADD_MAX 64                  /* files in one arc_add */
+ 
+--- a/src/apps/arcfile.c
++++ b/src/apps/arcfile.c
+@@ -2,6 +2,7 @@
+  * and put in, over the platform's pf_ functions.  Portable C; the
+  * Atari's int is 16 bits, so sizes are uint32_t throughout. */
+ #include "arcfile.h"
++#include <string.h>
+ 
+ /* -- the streams the codecs read and write --------------------------------- */
+ 
+@@ -18,7 +19,10 @@
+ 
+ static int ih;
+ static uint32_t iremain;
+-static uint8_t ilimited, ieof;
++static uint8_t ilimited, ieof, ierror;
++static uint32_t icount;
++static uint16_t icrc;
++static uint8_t ofail;
+ static uint16_t ipos, ilen;
+ 
+ /* Input from handle h: `limit` bytes of it, or to its end if 0 == limited. */
+@@ -27,7 +31,9 @@
+     ih = h;
+     iremain = limit;
+     ilimited = limited;
+-    ieof = 0;
++    ieof = ierror = 0;
++    icount = 0;
++    icrc = 0;
+     ipos = ilen = 0;
+ }
+ 
+@@ -37,6 +43,7 @@
+     long n;
+     uint32_t ask;
+ 
++    if (ofail) return -1;
+     if (ilimited && iremain == 0)
+         return -1;
+     if (ipos >= ilen) {
+@@ -47,6 +54,7 @@
+             ask = iremain;
+         n = pf_read(ih, ibuf, (long)ask);
+         if (n <= 0) {
++            ierror = n < 0 || (ilimited && iremain != 0);
+             ieof = 1;
+             return -1;
+         }
+@@ -57,19 +65,21 @@
+         iremain--;
+     c = ibuf[ipos];
+     ipos++;
++    ++icount;
++    icrc = arc_crc(icrc, c);
+     return c;
+ }
+ 
+ static int oh;
+ static uint16_t opos;
+-static uint8_t ofail;
+-static uint32_t ocount;
++static uint8_t limit_failed, output_limited;
++static uint32_t ocount, output_limit;
+ 
+ static void out_start(int h)
+ {
+     oh = h;
+     opos = 0;
+-    ofail = 0;
++    ofail = limit_failed = output_limited = 0;
+     ocount = 0;
+ }
+ 
+@@ -82,6 +92,11 @@
+ 
+ void arc_out(uint8_t c)
+ {
++    if (ofail) return;
++    if (output_limited && ocount == output_limit) {
++        ofail = limit_failed = 1;
++        return;
++    }
+     obuf[opos] = c;
+     opos++;
+     ocount++;
+@@ -115,24 +130,18 @@
+ 
+ void arc_member_name(const char FAR *from, char *to)
+ {
+-    uint16_t k = 0, n = 0, ext = 0;
++    uint16_t base = 0, extension = 0, used = 0;
++    uint8_t dot = 0;
+     char c;
+-
+-    for (; (c = from[k]) != 0 && n < ARC_NAMELEN - 1; k++) {
++    while ((c = *from++) != 0) {
+         if (c == '.') {
+-            if (ext)
+-                continue;
+-            ext = 1;
+-            to[n++] = '.';
+-            continue;
++            if (!dot) { dot = 1; to[used++] = '.'; }
++        } else if ((!dot && base < 8) || (dot && extension < 3)) {
++            to[used++] = upper(c);
++            if (dot) ++extension; else ++base;
+         }
+-        if (!ext && n >= 8)
+-            continue;
+-        if (ext && n >= ARC_NAMELEN - 1)
+-            break;
+-        to[n++] = upper(c);
+-    }
+-    to[n] = 0;
++    }
++    to[used] = 0;
+ }
+ 
+ /* Two member names compared as ARC orders them: by their letters, case
+@@ -169,37 +178,31 @@
+  * that just stops), -1 for something that is not a header. */
+ static int header_at(int h, uint32_t pos, ARC_ENTRY *e, uint16_t *len)
+ {
+-    uint8_t hb[ARC_HDR];
+-    long got;
++    uint8_t hb[ARC_HDR], m;
++    long got, size = pf_length(h);
+     uint16_t k, hl;
+-    uint8_t m;
+-
+-    if (pf_seek(h, (long)pos) < 0)
+-        return 0;
+-    got = pf_read(h, hb, (long)ARC_HDR);
+-    if (got <= 0)
+-        return 0;
+-    if (hb[0] != ARC_MARK)
+-        return -1;
+-    if (got < 2)
+-        return 0;
++    if (size < 0) return -ARC_E_READ;
++    if (pos > (uint32_t)size || (uint32_t)size - pos < 2)
++        return -ARC_E_DATA;
++    if (pf_seek(h, (long)pos) < 0) return -ARC_E_READ;
++    got = pf_read(h, hb, ARC_HDR);
++    if (got < 0) return -ARC_E_READ;
++    if (got < 2) return -ARC_E_DATA;
++    if (hb[0] != ARC_MARK) return -ARC_E_NOTARC;
+     m = hb[1];
+-    if (m == 0)
+-        return 0;
+-    hl = (m == ARC_STORED1) ? ARC_HDR_OLD : ARC_HDR;
+-    if (got < (long)hl)
+-        return -1;
+-    for (k = 0; k < ARC_NAMELEN - 1; k++)
+-        e->name[k] = (char)hb[2 + k];
+-    e->name[ARC_NAMELEN - 1] = 0;
+-    e->method = m;
+-    e->sel = 0;
+-    e->csize = le32(hb + 15);
+-    e->date = le16(hb + 19);
+-    e->time = le16(hb + 21);
+-    e->crc = le16(hb + 23);
+-    e->osize = (m == ARC_STORED1) ? e->csize : le32(hb + 25);
++    if (!m) return 0;
++    hl = m == ARC_STORED1 ? ARC_HDR_OLD : ARC_HDR;
++    if (got < hl) return -ARC_E_DATA;
++    for (k = 0; k < ARC_NAMELEN - 1; ++k) e->name[k] = hb[2+k];
++    e->name[ARC_NAMELEN-1] = 0;
++    if (!e->name[0]) return -ARC_E_NAME;
++    e->method = m; e->sel = 0;
++    e->csize = le32(hb+15); e->date = le16(hb+19);
++    e->time = le16(hb+21); e->crc = le16(hb+23);
++    e->osize = m == ARC_STORED1 ? e->csize : le32(hb+25);
+     e->data = pos + hl;
++    if (e->data > (uint32_t)size || e->csize > (uint32_t)size-e->data)
++        return -ARC_E_DATA;
+     *len = hl;
+     return 1;
+ }
+@@ -223,240 +226,253 @@
+     to->data = e->data;
+ }
+ 
++/* Names are exclusive and remain in the target's own directory. */
++static struct ARC_RECOVERY recovery;
++static uint32_t serial;
++static char source_path[256];
++
++const struct ARC_RECOVERY *arc_recovery(void) { return &recovery; }
++
++static void begin_operation(void)
++{
++    memset(&recovery, 0, sizeof recovery);
++    ofail = 0;
++    pf_reset();
++}
++
++static int close_result(int h, int result)
++{
++    int closed = pf_close(h);
++    return (result == ARC_OK || result == ARC_E_CANCEL) && closed < 0 ? ARC_E_CLOSE : result;
++}
++
++static int temporary(const char FAR *target, const char *suffix, char *path)
++{
++    static const char hex[] = "0123456789ABCDEF";
++    uint16_t cut = 0, i, attempt;
++    int handle;
++    for (i = 0; target[i]; ++i) {
++        if (i >= 255) return -1;
++        if (target[i] == '/' || target[i] == '\\' || target[i] == ':') cut = i+1;
++    }
++    if (cut > 243) return -1;
++    memcpy(path, target, cut);
++    for (attempt = 0; attempt < 4096; ++attempt) {
++        ++serial;
++        path[cut] = 'G';
++        for (i = 0; i < 7; ++i) path[cut+1+i] = hex[(serial >> (4*(6-i))) & 15];
++        path[cut+8] = '.';
++        memcpy(path+cut+9, suffix, 4);
++        handle = pf_create(path);
++        if (handle >= 0) return handle;
++        if (!pf_collision()) return -1;
++        pf_reset();
++    }
++    return -1;
++}
++
++/* An uncertain terminal Close retains the possible temporary. */
++static int finish_temporary(int handle, int result)
++{
++    if (pf_close(handle) < 0) {
++        recovery.uncertain_close = 1;
++        if (result == ARC_OK || result == ARC_E_CANCEL) result = ARC_E_CLOSE;
++    } else if (result != ARC_OK) {
++        if (!pf_delete(recovery.temp)) recovery.temp[0] = 0;
++    }
++    return result;
++}
++
++/* Confirmed logical moves only. A failed publication retains both copies;
++ * this deliberately makes no atomic-replace or transport-durability claim. */
++static int publish(const char FAR *target)
++{
++    int exists = pf_exists(target), handle;
++    if (exists < 0) return ARC_E_CREATE;
++    if (exists) {
++        handle = temporary(target, "OLD", recovery.backup);
++        if (handle < 0) return ARC_E_CREATE;
++        if (pf_close(handle) < 0) { recovery.uncertain_close = 1; return ARC_E_CLOSE; }
++        if (pf_delete(recovery.backup) < 0) return ARC_E_CLEANUP;
++        if (pf_rename(target, recovery.backup) < 0) return ARC_E_RENAME;
++        recovery.original_moved = 1;
++    }
++    if (pf_rename(recovery.temp, target) < 0) return ARC_E_RENAME;
++    recovery.published = 1;
++    recovery.temp[0] = 0;
++    if (exists && pf_delete(recovery.backup) < 0) return ARC_E_CLEANUP;
++    recovery.backup[0] = 0;
++    return ARC_OK;
++}
++
+ static int list_open(int h, ARC_ENTRY FAR *list, uint16_t max, uint16_t *n)
+ {
+-    ARC_ENTRY e;
++    ARC_ENTRY entry;
+     uint32_t pos = 0;
+-    uint16_t hl, count = 0;
+-    int r;
+-
++    uint16_t length, count = 0;
++    int result;
++    *n = 0;
+     for (;;) {
+-        r = header_at(h, pos, &e, &hl);
+-        if (r < 0) {
+-            if (count == 0)
+-                return ARC_E_NOTARC;
+-            break;                      /* what follows is not ours */
+-        }
+-        if (r == 0)
+-            break;
+-        if (count < max)
+-            entry_put(&list[count], &e);
+-        count++;
+-        pos = e.data + e.csize;
+-    }
+-    if (count == 0) {                   /* the end mark alone, or nothing */
+-        uint8_t two[2];
+-        if (pf_seek(h, 0) < 0 || pf_read(h, two, 2) != 2 || two[0] != ARC_MARK)
+-            return ARC_E_NOTARC;
+-    }
+-    *n = (count < max) ? count : max;
+-    return (count > max) ? ARC_E_FULL : ARC_OK;
+-}
+-
+-int arc_list(const char FAR *path, ARC_ENTRY FAR *list, uint16_t max,
+-             uint16_t *n)
+-{
+-    int h, r;
+-
+-    *n = 0;
+-    h = pf_open(path);
+-    if (h < 0)
+-        return ARC_E_OPEN;
+-    r = list_open(h, list, max, n);
+-    pf_close(h);
+-    return r;
+-}
+-
+-/* -- taking out ----------------------------------------------------------- */
+-
+-int arc_extract(const char FAR *archive, const ARC_ENTRY FAR *e,
+-                const char FAR *out)
+-{
+-    int h, o, r;
++        if (pf_cancelled()) return ARC_E_CANCEL;
++        result = header_at(h, pos, &entry, &length);
++        if (pf_cancelled()) return ARC_E_CANCEL;
++        if (result < 0) return -result;
++        if (!result) { *n = count; return ARC_OK; }
++        if (count == max) { *n = count; return ARC_E_FULL; }
++        entry_put(&list[count++], &entry);
++        pos = entry.data + entry.csize;
++    }
++}
++
++int arc_list(const char FAR *path, ARC_ENTRY FAR *list, uint16_t max, uint16_t *n)
++{
++    int handle, result;
++    begin_operation(); *n = 0;
++    handle = pf_open(path);
++    if (handle < 0) return ARC_E_OPEN;
++    result = list_open(handle, list, max, n);
++    return close_result(handle, result);
++}
++
++int arc_new(const char FAR *archive)
++{
++    int handle, result;
++    begin_operation();
++    handle = temporary(archive, "TMP", recovery.temp);
++    if (handle < 0) return ARC_E_CREATE;
++    out_start(handle); arc_out(ARC_MARK); arc_out(0); out_flush();
++    result = finish_temporary(handle, ofail ? ARC_E_WRITE : ARC_OK);
++    return result == ARC_OK ? publish(archive) : result;
++}
++
++int arc_extract(const char FAR *archive, const ARC_ENTRY FAR *entry, const char FAR *out)
++{
++    int input, output, result;
+     uint16_t crc;
+-    uint32_t data = e->data, csize = e->csize, osize = e->osize;
+-    uint16_t want = e->crc, date = e->date, time = e->time;
+-    uint8_t method = e->method;
+-
+-    arc_progress(e->name);
+-    h = pf_open(archive);
+-    if (h < 0)
+-        return ARC_E_OPEN;
+-    if (pf_seek(h, (long)data) < 0) {
+-        pf_close(h);
+-        return ARC_E_NOTARC;
+-    }
+-    o = pf_create(out);
+-    if (o < 0) {
+-        pf_close(h);
+-        return ARC_E_CREATE;
+-    }
+-    in_start(h, csize, 1);
+-    out_start(o);
+-    r = arc_decode(method, &crc);
++    begin_operation();
++    if (entry->method < 1 || entry->method > 9 ||
++            (entry->method >= 5 && entry->method <= 7)) return ARC_E_METHOD;
++    input = pf_open(archive);
++    if (input < 0) return ARC_E_OPEN;
++    if (pf_seek(input, (long)entry->data) < 0) return close_result(input, ARC_E_READ);
++    output = temporary(out, "TMP", recovery.temp);
++    if (output < 0) return close_result(input, ARC_E_CREATE);
++    in_start(input, entry->csize, 1); out_start(output);
++    output_limited = 1; output_limit = entry->osize;
++    result = arc_decode(entry->method, &crc);
+     out_flush();
+-    if (r == ARC_OK && ofail)
+-        r = ARC_E_WRITE;
+-    if (r == ARC_OK && (crc != want || ocount != osize))
+-        r = ARC_E_CRC;
+-    if (r == ARC_OK)
+-        pf_setstamp(o, date, time);
+-    pf_close(o);
+-    pf_close(h);
+-    if (r != ARC_OK)
+-        pf_delete(out);                 /* nothing half made is left */
+-    return r;
+-}
+-
+-/* -- putting in ------------------------------------------------------------ */
+-
+-/* An old member, header and data, byte for byte into the output. */
+-static int copy_member(int a, const ARC_ENTRY FAR *e)
+-{
+-    uint8_t m = e->method;
+-    uint32_t hl = (m == ARC_STORED1) ? ARC_HDR_OLD : ARC_HDR;
+-    int c;
+-
+-    if (pf_seek(a, (long)(e->data - hl)) < 0)
+-        return ARC_E_NOTARC;
+-    in_start(a, hl + e->csize, 1);
+-    while ((c = arc_in()) >= 0)
+-        arc_out((uint8_t)c);
+-    return ofail ? ARC_E_WRITE : ARC_OK;
+-}
+-
+-static char path[160];                  /* not on the Atari's small stack */
++    if (limit_failed) result = ARC_E_DATA;
++    else if (pf_cancelled()) result = ARC_E_CANCEL;
++    else if (ierror) result = ARC_E_READ;
++    else if (ofail) result = ARC_E_WRITE;
++    else if (result == ARC_OK && (crc != entry->crc || ocount != entry->osize)) result = ARC_E_CRC;
++    result = close_result(input, result);
++    result = finish_temporary(output, result);
++    if (result != ARC_OK) return result;
++    if (pf_setstamp(recovery.temp, entry->date, entry->time) < 0) return ARC_E_CREATE;
++    return publish(out);
++}
++
++static int copy_member(int archive, const ARC_ENTRY FAR *entry)
++{
++    uint32_t length = entry->method == ARC_STORED1 ? ARC_HDR_OLD : ARC_HDR;
++    int byte;
++    if (pf_seek(archive, (long)(entry->data-length)) < 0) return ARC_E_READ;
++    in_start(archive, length+entry->csize, 1);
++    while ((byte = arc_in()) >= 0) arc_out((uint8_t)byte);
++    if (pf_cancelled()) return ARC_E_CANCEL;
++    return ofail ? ARC_E_WRITE : ierror ? ARC_E_READ : ARC_OK;
++}
+ 
+ static int add_file(const char FAR *dir, const char FAR *name)
+ {
+-    char mname[ARC_NAMELEN];
+-    uint16_t k = 0, j, date = 0, time = 0;
+-    int s;
+-    char c;
+-    ARC_SIZES sz;
+-    uint32_t csize, start;
+-    uint8_t m;
+-
+-    while ((c = dir[k]) != 0 && k < sizeof path - ARC_NAMELEN - 1)
+-        path[k++] = c;
+-    for (j = 0; (c = name[j]) != 0 && j < ARC_NAMELEN - 1; j++)
+-        path[k++] = c;
+-    path[k] = 0;
+-    arc_member_name(name, mname);
+-    s = pf_open(path);
+-    if (s < 0)
+-        return ARC_E_SOURCE;
+-    arc_progress(mname);
+-    in_start(s, 0, 0);
+-    arc_measure(&sz);
+-    m = arc_choose(&sz, &csize);
+-    pf_stamp(path, &date, &time);
+-
+-    arc_out(ARC_MARK);
+-    arc_out(m);
+-    for (k = 0, j = 0; k < ARC_NAMELEN; k++) {
+-        c = j ? 0 : mname[k];          /* the name, then NULs to 13 */
+-        if (!c)
+-            j = 1;
+-        arc_out((uint8_t)c);
+-    }
+-    out32(csize);
+-    out16(date);
+-    out16(time);
+-    out16(sz.crc);
+-    out32(sz.size);
+-
++    char member[ARC_NAMELEN];
++    uint16_t k, ended = 0, date = 0, time = 0;
++    uint32_t compressed, start, source_count;
++    uint16_t source_crc;
++    uint8_t method;
++    ARC_SIZES measured;
++    int source, result = ARC_OK;
++    if (strlen(dir)+strlen(name) >= sizeof source_path) return ARC_E_NAME;
++    strcpy(source_path, dir); strcat(source_path, name);
++    arc_member_name(name, member);
++    source = pf_open(source_path);
++    if (source < 0) return ARC_E_SOURCE;
++    arc_progress(member);
++    in_start(source, 0, 0); arc_measure(&measured);
++    if (pf_cancelled()) return close_result(source, ARC_E_CANCEL);
++    if (ierror) return close_result(source, ARC_E_READ);
++    method = arc_choose(&measured, &compressed);
++    pf_stamp(source_path, &date, &time);
++    arc_out(ARC_MARK); arc_out(method);
++    for (k = 0; k < ARC_NAMELEN; ++k) {
++        char byte = ended ? 0 : member[k];
++        if (!byte) ended = 1;
++        arc_out((uint8_t)byte);
++    }
++    out32(compressed); out16(date); out16(time); out16(measured.crc); out32(measured.size);
+     start = ocount;
+-    if (pf_seek(s, 0) < 0) {
+-        pf_close(s);
+-        return ARC_E_SOURCE;
+-    }
+-    in_start(s, 0, 0);
+-    arc_encode(m);
+-    pf_close(s);
+-    if (ofail)
+-        return ARC_E_WRITE;
+-    if (ocount - start != csize)
+-        return ARC_E_DATA;              /* the two passes disagree */
+-    return ARC_OK;
+-}
+-
+-int arc_add(const char FAR *archive, const char FAR *temp,
+-            const char FAR *dir, char FAR (*names)[ARC_NAMELEN],
+-            uint16_t count, ARC_ENTRY FAR *list, uint16_t max)
+-{
+-    uint16_t n = 0, i = 0, j = 0, a1, b1;
+-    uint16_t order[ARC_ADD_MAX];
+-    int a = -1, t, r;
+-    char FAR *x;
+-    char FAR *y;
+-
+-    if (count > ARC_ADD_MAX)
+-        return ARC_E_FULL;
+-    r = arc_list(archive, list, max, &n);
+-    if (r == ARC_E_NOTARC || r == ARC_E_FULL)
+-        return r;
+-    if (r == ARC_OK) {
+-        a = pf_open(archive);
+-        if (a < 0)
+-            return ARC_E_OPEN;
++    if (pf_seek(source, 0) < 0) return close_result(source, ARC_E_READ);
++    in_start(source, 0, 0); arc_encode(method);
++    source_count = icount; source_crc = icrc;
++    if (pf_cancelled()) result = ARC_E_CANCEL;
++    else if (ofail) result = ARC_E_WRITE;
++    else if (ierror) result = ARC_E_READ;
++    else if (ocount-start != compressed || source_count != measured.size || source_crc != measured.crc)
++        result = ARC_E_DATA;
++    return close_result(source, result);
++}
++
++int arc_add(const char FAR *archive, const char FAR *dir,
++            char FAR (*names)[ARC_NAMELEN], uint16_t count, ARC_ENTRY FAR *list, uint16_t max)
++{
++    uint16_t n = 0, i, j, next, order[ARC_ADD_MAX];
++    int original = -1, output, result;
++    char member[ARC_NAMELEN], previous[ARC_NAMELEN];
++    begin_operation();
++    if (count > ARC_ADD_MAX) return ARC_E_FULL;
++    original = pf_open(archive);
++    if (original < 0) {
++        if (!pf_missing()) return ARC_E_OPEN;
++        pf_reset();
+     } else {
+-        n = 0;                          /* a new archive */
+-    }
+-    /* the new names in order: a few, so an insertion sort */
+-    for (i = 0; i < count; i++) {
+-        for (j = i; j > 0; j--) {
+-            a1 = order[j - 1];
+-            x = names[a1];
+-            y = names[i];
+-            if (name_cmp(x, y) <= 0)
+-                break;
+-            order[j] = a1;
++        result = list_open(original, list, max, &n);
++        if (result != ARC_OK) return close_result(original, result);
++    }
++    for (i = 0; i < count; ++i) {
++        for (j = i; j > 0; --j) {
++            arc_member_name(names[i], member);
++            arc_member_name(names[order[j-1]], previous);
++            if (name_cmp(previous, member) <= 0) break;
++            order[j] = order[j-1];
+         }
+         order[j] = i;
+     }
+-    t = pf_create(temp);
+-    if (t < 0) {
+-        if (a >= 0)
+-            pf_close(a);
+-        return ARC_E_CREATE;
+-    }
+-    out_start(t);
+-    r = ARC_OK;
+-    i = j = 0;
+-    while (r == ARC_OK && (i < n || j < count)) {
++    for (i = 1; i < count; ++i) {
++        char other[ARC_NAMELEN];
++        arc_member_name(names[order[i-1]], member); arc_member_name(names[order[i]], other);
++        if (!name_cmp(member, other)) return original < 0 ? ARC_E_NAME : close_result(original, ARC_E_NAME);
++    }
++    output = temporary(archive, "TMP", recovery.temp);
++    if (output < 0) return original < 0 ? ARC_E_CREATE : close_result(original, ARC_E_CREATE);
++    out_start(output); result = ARC_OK; i = j = 0; next = 0;
++    while (result == ARC_OK && (i < n || j < count)) {
++        if (pf_cancelled()) { result = ARC_E_CANCEL; break; }
++        if (++next > max) { result = ARC_E_FULL; break; }
+         if (j < count) {
+-            b1 = order[j];
+-            y = names[b1];
+-            if (i >= n || name_cmp(y, list[i].name) <= 0) {
+-                char mname[ARC_NAMELEN];
+-                arc_member_name(y, mname);
+-                if (i < n && name_cmp(mname, list[i].name) == 0)
+-                    i++;                /* replaced */
+-                r = add_file(dir, y);
+-                j++;
++            arc_member_name(names[order[j]], member);
++            if (i >= n || name_cmp(member, list[i].name) <= 0) {
++                if (i < n && !name_cmp(member, list[i].name)) ++i;
++                result = add_file(dir, names[order[j++]]);
+                 continue;
+             }
+         }
+-        r = copy_member(a, &list[i]);
+-        i++;
+-    }
+-    if (r == ARC_OK) {
+-        arc_out(ARC_MARK);
+-        arc_out(0);
+-    }
++        result = copy_member(original, &list[i++]);
++    }
++    if (result == ARC_OK) { arc_out(ARC_MARK); arc_out(0); }
+     out_flush();
+-    if (r == ARC_OK && ofail)
+-        r = ARC_E_WRITE;
+-    pf_close(t);
+-    if (a >= 0)
+-        pf_close(a);
+-    if (r != ARC_OK) {
+-        pf_delete(temp);
+-        return r;
+-    }
+-    pf_delete(archive);
+-    if (pf_rename(temp, archive) < 0)
+-        return ARC_E_CREATE;
+-    return ARC_OK;
+-}
++    if (result == ARC_OK && ofail) result = ARC_E_WRITE;
++    if (original >= 0) result = close_result(original, result);
++    result = finish_temporary(output, result);
++    return result == ARC_OK ? publish(archive) : result;
++}
+--- a/src/apps/arccodec.c
++++ b/src/apps/arccodec.c
+@@ -215,7 +215,7 @@
+ static int unsqueeze(void)
+ {
+     int lo, hi, n, i, b;
+-    uint16_t k, v;
++    uint16_t k, v, depth;
+     uint8_t cur = 0, left = 0;
+ 
+     lo = arc_in();
+@@ -236,11 +236,13 @@
+         return ARC_OK;
+     for (;;) {
+         i = 0;
++        depth = 0;
+         do {
++            if (++depth > (uint16_t)n) return ARC_E_DATA;
+             if (left == 0) {
+                 b = arc_in();
+                 if (b < 0)
+-                    return ARC_OK;      /* no end mark: the CRC will say */
++                    return ARC_E_DATA;     /* squeezed members require their EOF symbol */
+                 cur = (uint8_t)b;
+                 left = 8;
+             }
+@@ -300,6 +302,7 @@
+         r = ARC_E_METHOD;
+         break;
+     }
++    if (r == ARC_OK && rle_state) r = ARC_E_DATA;
+     while (arc_in() >= 0)               /* what the decoder did not want */
+         ;
+     *crc = dcrc;

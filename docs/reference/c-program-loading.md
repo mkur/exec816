@@ -34,7 +34,7 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-APP ABI 31 adds the phased [C runtime](c-runtime.md) entry. Its current import table combines the current `SetIoErr`, `NameFromLock` and
+APP ABI 32 adds the reusable `SetFileDate` binding to the phased [C runtime](c-runtime.md) entry introduced in ABI 31. Its current import table combines the current `SetIoErr`, `NameFromLock` and
 `graf_mkstate` bindings with public `Wait`, `PutMsg` and `GetMsg` imports for persistent
 message-driven services. It includes `ExecBasicAttach` for the
 [source interpreter](fastbasic.md#source-buffer-attachment), the current device/AES/file imports, `ExamineExact`,
@@ -73,7 +73,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | APP ABI version, 31 |
+| 6 | 2 | APP ABI version, 32 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |

@@ -1,0 +1,34 @@
+--- a/tools/gemarcrsc.py
++++ b/tools/gemarcrsc.py
+@@ -115,7 +115,7 @@
+ 
+ 
+ def about_tree(r):
+-    objs = [(NIL, 1, ABOK, G_BOX, NONE, OUTLINED, 0x00021100,
++    objs = [(NIL, 1, ABOK, G_BOX, NONE, NORMAL, 0x00021100,
+              ch(0), ch(0), ch(ABOUT_W), ch(ABOUT_H))]
+     for i, (text, x, y) in enumerate(ABOUT):
+         objs.append((i + 2, NIL, NIL, G_STRING, NONE, NORMAL, r.string(text),
+@@ -137,7 +137,7 @@
+     ("ST_DONE", "[1][# files taken out.][ OK ]"),
+     ("ST_BAD", "[3][# files could not be taken|out: damaged, a method|GemARC does not know, or|no room on the disk.][ OK ]"),
+     ("ST_ADDED", "[1][# files put in.][ OK ]"),
+-    ("ST_ADDFAIL", "[3][The files could not be put|in: a file would not open,|or no room on the disk.|The archive is as it was.][ OK ]"),
++    ("ST_ADDFAIL", "[3][The files could not be put|in: a file would not open,|or no room on the disk.|Keep any recovery copies.][ OK ]"),
+     ("ST_TOOMANY", "[1][Up to # files can be put|in at a time.][ OK ]"),
+     ("ST_NOFILES", "[1][There are no files there|to put in.][ OK ]"),
+     ("ST_TOPEN", "Open an archive"),
+@@ -155,9 +155,11 @@
+     ("ST_TITLE", "GemARC"),
+     ("ST_TEMP", "GEMARC.TMP"),
+     ("ST_M1", "Stored"), ("ST_M2", "Stored"), ("ST_M3", "Packed"),
+-    ("ST_M4", "Squeezed"), ("ST_M5", "Crunched"), ("ST_M6", "Crunched"),
+-    ("ST_M7", "Crunched"), ("ST_M8", "Crunched"), ("ST_M9", "Squashed"),
++    ("ST_M4", "Squeezed"), ("ST_M5", "Method 5"), ("ST_M6", "Method 6"),
++    ("ST_M7", "Method 7"), ("ST_M8", "Crunched"), ("ST_M9", "Squashed"),
+     ("ST_MX", "Method #"),
++    ("ST_RECOVERY", "[1][Recovery copy retained:|@|Keep it until both copies are verified.][ OK ]"),
++    ("ST_OPERATION", "[3][The archive operation failed.][ OK ]"),
+ ]
+ 
+ 

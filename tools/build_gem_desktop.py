@@ -27,6 +27,8 @@ def build_apps(out,basic_workbench=False):
         ROOT/'examples/gem-text'/name for name in ('main.c','text.c','document.c')]+
         [ROOT/'c/calypsi/file-list.c'],probes=[
             (ROOT/'tests/programs/gem_text_layout.c',__import__('text_model').LAYOUT)])
+    from build_gemarc import build as gemarc
+    applications['gemarc']=gemarc(out/'apps/gemarc')
     if basic_workbench:
         applications['basic']=application(out/'apps/basic',[
             ROOT/'examples/gem-basic'/name for name in ('main.c','basic.c','editor.c','editor-paint.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c','build.c')]+[ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/fastbasic-diagnostic.c'],minimum_stack=ABI['stack_floor_bytes'],probes=[
@@ -58,9 +60,10 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
         for name in disk_apps:
             (media/'C'/(name.upper()+'.APP')).write_bytes((out/'apps'/name/'program.app').read_bytes())
         if not files:(media/'DESKTOP.RSC').write_bytes(desktop_resource)
+        (media/'GEMARC.RSC').write_bytes((out/'apps/gemarc/GEMARC.RSC').read_bytes())
         (media/'CALC.RSC').write_bytes((out/'apps/calc/CALC.RSC').read_bytes())
         make(out/'system.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,
-             binary_names={*(f'C/{name.upper()}.APP' for name in disk_apps),'CALC.RSC'}|
+             binary_names={*(f'C/{name.upper()}.APP' for name in disk_apps),'CALC.RSC','GEMARC.RSC'}|
                           (set() if files else {'DESKTOP.RSC'}))
         options.update(system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,
                        sector_bytes=256,profile=4,format=2)])
