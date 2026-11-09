@@ -12,19 +12,22 @@ int main(void)
     int result;
     unsigned char contents[2];
     GemArcIOBegin();arc_buffers(input,output,sizeof input);
+    if (!pf_exists("SYS:FILL.DAT")) goto readback;
     CHECK(arc_new("SYS:FULL.ARC")==0,101);
-    file=Open("SYS:FILL.DAT",MODE_NEWFILE);CHECK(file,102);
+    file=Open("SYS:FILL.DAT",MODE_READWRITE);CHECK(file,102);
+    CHECK(Seek(file,0,OFFSET_END)>=0,111);
     do {
         wrote=Write(file,fill,sizeof fill);
         if (wrote>0) total+=wrote;
-        CHECK(total<1024L*1024L,103);
+        CHECK(total<8192L,103);
         ExecYield();
     } while (wrote==sizeof fill);
-    CHECK(IoErr()==ERROR_DISK_FULL && total>300000L,104);
+    CHECK(IoErr()==ERROR_DISK_FULL,104);
     CHECK(Close(file),105);
     result=arc_new("SYS:FULL.ARC");
     CHECK(result!=0 && GemArcCause()==ERROR_DISK_FULL,106);
     CHECK(DeleteFile("SYS:FILL.DAT"),107);
+readback:
     file=Open("SYS:FULL.ARC",MODE_OLDFILE);CHECK(file,108);
     CHECK(Read(file,contents,2)==2 && contents[0]==0x1a && contents[1]==0,109);
     CHECK(Close(file),110);

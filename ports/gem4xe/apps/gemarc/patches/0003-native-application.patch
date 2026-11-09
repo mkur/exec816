@@ -486,7 +486,27 @@
  }
  
  static void select_all(void)
-@@ -775,15 +651,13 @@
+@@ -738,6 +614,8 @@
+     WORD c = (WORD)(kr & 0xFF), scan = (WORD)((kr >> 8) & 0xFF);
+     WORD on = archive[0] != 0;
+ 
++    if (scan == 0x48) { scroll_to((long)top - 1);return FALSE; }
++    if (scan == 0x50) { scroll_to((long)top + 1);return FALSE; }
+     if (ks & K_CTRL) {
+         if (c >= 1 && c <= 26)
+             c = (WORD)(c + 'A' - 1);
+@@ -755,10 +633,6 @@
+         }
+         return FALSE;
+     }
+-    if (scan == 0x48)
+-        scroll_to((long)top - 1);
+-    else if (scan == 0x50)
+-        scroll_to((long)top + 1);
+     return FALSE;
+ }
+ 
+@@ -775,15 +649,13 @@
      }
  }
  
@@ -509,7 +529,7 @@
      WORD wbox, hbox, dx, dy, dw, dh, a, b;
      WORD msgb[8], mx, my, mb, ks, kr, br, ev, done = FALSE, n;
      uint16_t FAR *prefix;
-@@ -791,13 +665,13 @@
+@@ -791,13 +663,13 @@
      uint32_t FAR *hash;
      uint16_t FAR *codes;
  
@@ -529,7 +549,7 @@
      }
      prefix = (uint16_t FAR *)get(2L * ARC_LZW_ENTRIES);
      suffix = (uint8_t FAR *)get(ARC_LZW_ENTRIES);
-@@ -813,14 +687,14 @@
+@@ -813,14 +685,14 @@
          form_alert(1, str(ST_NOMEM));
          rsrc_free();
          appl_exit();
@@ -546,7 +566,7 @@
      rsrc_gaddr(R_TREE, ADMENU, (void **)&menu);
      menu_bar(menu, 1);
  
-@@ -832,41 +706,24 @@
+@@ -832,41 +704,24 @@
          v_clsvwk(vh);
          rsrc_free();
          appl_exit();
@@ -598,7 +618,7 @@
          if (ev & MU_MESAG) {
              switch (msgb[0]) {
              case MN_SELECTED:
-@@ -882,10 +739,7 @@
+@@ -882,10 +737,7 @@
                  break;
              case WM_CLOSED:
                  if (msgb[3] == wh) {
@@ -610,7 +630,7 @@
                  }
                  break;
              case WM_MOVED:
-@@ -917,5 +771,6 @@
+@@ -917,5 +769,6 @@
      v_clsvwk(vh);
      rsrc_free();
      appl_exit();

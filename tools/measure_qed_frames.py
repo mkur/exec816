@@ -106,12 +106,23 @@ def measure(out,destination=None):
     # sites and changed contracts in functions still linked remain errors.
     callbacks = {name: [target for target in targets if target in sym]
                  for name, targets in callbacks.items() if name in sym}
+    runtime_targets={}
+    if 'ExecCRuntimePhase' in sym:
+        # Resolve private Ops targets by their actual object sections: QED's
+        # save adapter also has a private function named finish.
+        runtime_targets={v['name']:k for k,v in graph.items() if v['source'].endswith('-scope.lst')}
+        require(all(name in runtime_targets for name in ('initialize','run','finish','release')),
+                'Missing common runtime phase target')
+        require('atexit' not in sym,'Classify registered QED exit handlers before measuring')
+        callbacks.update(ExecCRuntimePhase=['initialize','run','finish','release'],finish=[])
     indirect = {v['name'] for v in graph.values() if any((addresses[e][2] == '_JmpIndLong' for e in v['edges']))}
     require(indirect == set(callbacks), 'Unclassified or stale indirect callback contract: ' + str(indirect ^ set(callbacks)))
     for v in graph.values():
         if any((addresses[e][2] == '_JmpIndLong' for e in v['edges'])):
             for n in callbacks[v['name']]:
-                if n in sym:
+                if v['name']=='ExecCRuntimePhase':
+                    v['edges'].append(runtime_targets[n])
+                elif n in sym:
                     v['edges'].append(targetaddr(sym[n]))
     redraw = targetaddr(sym['handle_msg'])
     fake = (999, 0)
@@ -157,12 +168,15 @@ def measure(out,destination=None):
     visiting = []
     done = {}
     cycles = set()
-    source_bytes, chain = bound(targetaddr(sym['main']))
+    entry='__exec_c_runtime_entry' if runtime_targets else 'main'
+    source_bytes, chain = bound(targetaddr(sym[entry]))
     require(not cycles, 'Unbounded source call cycle: ' + str(cycles))
     continuation_cap = 768
     required = source_bytes + continuation_cap + 256 + 128
     require(required <= report['selection']['minimum_stack_bytes'], 'Conditional stack budget exceeds admission')
     result = dict(status='conditional-source-bound', source_chain_bytes=source_bytes, chain=chain, continuation_cap_bytes=continuation_cap, interrupt_reserve_bytes=256, required_headroom_bytes=128, admission_bytes=report['selection']['minimum_stack_bytes'], margin_bytes=report['selection']['minimum_stack_bytes'] - required, method='For each retained emitted source section, sum immediate TSC/SBC/TCS reservations and all static push sites at 16-bit width, plus three bytes at each call/tail edge. This overcounts disjoint branches. Compiler-balanced loops reuse their stack. Cross-call and cross-function tail sharing are disabled. Typed callbacks and finite action contexts are audited below; new indirect sites or cycles reject the report.', limit='Source-frame bound only. The continuation cap includes bridge and library/native/GEM work below an application call; executed startup/lifecycle chains check that cap separately. Editing/dialog/file paths must establish it when implemented; current samples are not a bound on those future paths.', callbacks=callbacks, contexts=['Nested action/dialog messages: REDRAW/MOVED/SIZED only', ('select_single/select_path pass NULL; only select_multi invokes open_multi' if 'open_multi' in sym else 'Legacy path/Save selector callers pass NULL; the multi-file callback is retired'), ('Native deletion follows the outer asynchronous decision; saving borrows a frozen ring' if 'QedSavingStep' in sym else 'Native delete_edit uses Discard/Cancel; Save remains disabled'), 'Linked new_edit/restore_edit use Open or unchecked Delete', 'wi_top invokes disabled Update, whose test returns false'], source_nodes=[{**v, 'key': k} for k, v in graph.items()], analysis_sha256=sha256(out / 'layout.json'), listings={p.name: sha256(p) for p in listings}, compiler_options=report['selection']['compiler_options'])
+    result['entry_symbol']=entry
+    if runtime_targets:result['contexts'].append('Fixed common runtime Ops; QED registers no atexit handlers')
     (destination or out / 'stack-frames.json').write_text(json.dumps(result, indent=2) + '\n')
     return result
 if __name__ == '__main__':

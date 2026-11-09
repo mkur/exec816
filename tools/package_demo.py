@@ -43,11 +43,13 @@ def ide_only_guide(bitmap=False):
     ).replace('@CONSOLE_NAME@', '80 by 30 VBXE bitmap shell' if bitmap else 'standard shell')
 
 
-def bootable_guide(bitmap=False):
-    return (ROOT/'docs/bootable-atr-distribution.txt').read_text().replace('@DISPLAY_REQUIREMENTS@',
+def bootable_guide(bitmap=False,gemarc=False):
+    guide=(ROOT/'docs/bootable-atr-distribution.txt').read_text().replace('@DISPLAY_REQUIREMENTS@',
         'Graphical builds require a VBXE FX core at $D600 with private 512K VRAM\n'
         'and an ST mouse on joystick port 2.'
         if bitmap else 'This build uses the standard Atari text display.')
+    if gemarc:guide+='\n'+(ROOT/'docs/gemarc-distribution.txt').read_text()
+    return guide
 
 
 def split_guide(drive,bitmap=False):
@@ -154,7 +156,7 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
         if demo.get('desktop'):
             guide = guide.replace('@POINTER_DESCRIPTION@', pointer_description(demo['kernel']['desktop_mouse']['profile']))
     if demo_manifest.get('bootable_atr'):
-        guide=bootable_guide(demo_manifest.get('bitmap',False))
+        guide=bootable_guide(demo_manifest.get('bitmap',False),bool(demo_manifest.get('gemarc')))
         if demo_manifest.get('basic_workbench'):
             guide+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
     elif record['boot_config']['system_drive'] not in (0,1):

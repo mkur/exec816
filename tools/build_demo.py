@@ -357,7 +357,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if ide_only:
         guide=ide_only_guide(bitmap_shell_only)
     if bootable_atr:
-        guide=bootable_guide(bitmap_shell_only)
+        guide=bootable_guide(bitmap_shell_only,gem_desktop)
     if system_drive!=1:
         from package_demo import split_guide
         guide=split_guide(system_drive,bitmap_shell_only)
@@ -456,7 +456,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['g4bench']=benchmark_provenance
         record['gemarc']=archive_provenance
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
-            ROOT/'docs/gem-desktop-distribution.txt',ROOT/'tools/build_gem_desktop.py',
+            ROOT/'docs/gem-desktop-distribution.txt',ROOT/'docs/gemarc-distribution.txt',ROOT/'tools/build_gem_desktop.py',
             *sorted((ROOT/'examples/gem-panel').glob('*')),
             *sorted((ROOT/'examples/gem-counter').glob('*')),
             *sorted((ROOT/'examples/gem-desktop').glob('*')),
@@ -570,7 +570,7 @@ def refresh_boot_disk(output):
     require(record.get('bootable_atr'),'Boot-disk refresh requires a bootable ATR build')
     require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
             'Changed native demo artifacts')
-    content=bootable_guide(record.get('bitmap',False))
+    content=bootable_guide(record.get('bitmap',False),bool(record.get('gemarc')))
     if record.get('basic_workbench'):
         content+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
     content=content.replace('@VERSION@',record['kernel']['exec_build']['version'])
@@ -721,7 +721,7 @@ def refresh_boot_guide(output,program,record):
                     'docs/text-shell-distribution.txt')
         content=guide.read_text().replace('@SYSTEM_DISK@',record['media']).replace('@SYSTEM_DRIVE@',str(drive))
         if record.get('bootable_atr'):
-            content=bootable_guide(record.get('bitmap',False))
+            content=bootable_guide(record.get('bitmap',False),bool(record.get('gemarc')))
             guide=ROOT/'docs/bootable-atr-distribution.txt'
         elif drive!=1:
             from package_demo import split_guide

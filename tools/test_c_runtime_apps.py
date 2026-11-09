@@ -6,7 +6,7 @@ from c_program import ABI
 from test_c_process import run as process_run
 
 
-def run(out,applications):
+def run(out,applications,reuse=False):
     out.mkdir(parents=True,exist_ok=True)
     records={name:json.loads((applications/'apps'/name/'app.json').read_text())
              for name in ('panel','counter','files','desktop','dialog','calc','g4bench','text','basic','gemarc')}
@@ -97,7 +97,7 @@ ENDMODULE
         target.mkdir(exist_ok=True)
         shutil.copyfile(applications/'apps/panel/program.app',target/'program.app')
         return records['panel']
-    result=process_run(out,True,app_builder=application,fixture_source=fixture,
+    result=process_run(out,True,reuse=reuse,rebuild_app=reuse,app_builder=application,fixture_source=fixture,
         expected_completed=1+len(records),task_capacity=12,native_optimize=True,release_compiler=True,
         loader_failures=False,media_files=media,ram=True)
     result['shipped_applications']={name:dict(sha256=app['sha256'],minimum_stack=app['minimum_stack'])
@@ -112,4 +112,5 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--applications',type=Path,required=True)
-    args=parser.parse_args();run(args.output.resolve(),args.applications.resolve())
+    parser.add_argument('--from-build',action='store_true')
+    args=parser.parse_args();run(args.output.resolve(),args.applications.resolve(),args.from_build)
