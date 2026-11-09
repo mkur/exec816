@@ -4,9 +4,9 @@
 [Testing policy](../contributing/testing.md) ·
 [Current C application contract](../reference/c-program-loading.md)
 
-Status: in progress, 2026-11-09. CR0 and CR1 pass development checks
-([CR0](../development/c-runtime-cr0.json), [CR1](../development/c-runtime-cr1.json));
-CR2–CR5 remain pending. Complete each slice's
+Status: in progress, 2026-11-09. CR0–CR2 pass development checks
+([CR0](../development/c-runtime-cr0.json), [CR1](../development/c-runtime-cr1.json),
+[CR2](../development/c-runtime-cr2.json)); CR3–CR5 remain pending. Complete each slice's
 selected development checks before committing it or starting dependent work.
 New source, generator and fixture paths below are deliverables, not existing
 commands or supported APIs.

@@ -1,0 +1,11 @@
+--- a/lib_fopen.c
++++ b/lib_fopen.c
+@@ -299,7 +299,7 @@
+ 
+           /* Open for exclusive access ("{r|w|a|b|+}x") */
+ 
+-          case 'X' :
++          case 'x' :
+             if ((state & MODE_MASK) != MODE_NONE)
+               {
+                 /* The file is opened in exclusive mode */

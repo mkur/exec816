@@ -18,4 +18,20 @@ void ExecCRuntimeHeapBegin(void);
 void ExecCRuntimeHeapRelease(void);
 void ExecCRuntimeHeapSnapshot(struct ExecCRuntimeHeapStats *);
 int ExecCRuntimeArguments(const char *,const char *,int *,char ***);
+
+int ExecCRuntimeErrorCode(LONG);
+LONG ExecCRuntimeFail(LONG);
+LONG ExecCRuntimeFileError(void);
+LONG ExecCRuntimeCloseError(void);
+UWORD ExecCRuntimeFileCount(void);
+void ExecCRuntimeFilesBegin(void);
+void ExecCRuntimeAcknowledge(int);
+LONG ExecCRuntimeRead(int,void *,LONG);
+LONG ExecCRuntimeWrite(int,const void *,LONG);
+void ExecCRuntimeFilesCleaning(void);
+LONG ExecCRuntimeFilesFinish(void);
+void ExecCRuntimeStdioBegin(void);
+void ExecCRuntimeStreamError(int);
+LONG ExecCRuntimeStdioFinish(int);
+void ExecCRuntimeLibraryBegin(void);
 #endif

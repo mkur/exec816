@@ -1,0 +1,241 @@
+--- a/lib_libfread.c
++++ b/lib_libfread.c
+@@ -174,19 +174,7 @@
+                     {
+                       bytes_read = _Stub_read(stream->fs_fd, dest, remaining);
+                       if (bytes_read < 0)
+-                        {
+-                          if (count - remaining > 0)
+-                            {
+-                              goto shortread;
+-                            }
+-                          else
+-                            {
+-                              /* An error occurred on the read. */
+-
+-                              __set_errno(-bytes_read);
+-                              goto errout_with_errno;
+-                            }
+-                        }
++                        { goto read_error; }
+                       else if (bytes_read == 0)
+                         {
+                           /* We are at the end of the file.  But we may
+@@ -219,21 +207,7 @@
+ 					      stream->fs_bufread,
+ 					      buffer_available);
+                       if (bytes_read < 0)
+-                        {
+-                          if (count - remaining > 0)
+-                            {
+-                              goto shortread;
+-                            }
+-                          else
+-                            {
+-                              /* An error occurred on the read.  The error
+-                               * code is in the 'errno' variable.
+-                               */
+-
+-                              __set_errno(-bytes_read);
+-                              goto errout_with_errno;
+-                            }
+-                        }
++                        { goto read_error; }
+                       else if (bytes_read == 0)
+                         {
+                           /* We are at the end of the file.  But we may
+@@ -262,21 +236,7 @@
+             {
+               bytes_read = _Stub_read(stream->fs_fd, dest, remaining);
+               if (bytes_read < 0)
+-                {
+-                  if (count - remaining > 0)
+-                    {
+-                      break;
+-                    }
+-                  else
+-                    {
+-                      /* An error occurred on the read.  The error code is
+-                       * in the 'errno' variable.
+-                       */
+-
+-                      __set_errno(-bytes_read);
+-                      goto errout_with_errno;
+-                    }
+-                }
++                { goto read_error; }
+               else if (bytes_read == 0)
+                 {
+                   /* We are at the end of the file.  But we may already
+@@ -322,6 +282,12 @@
+     }
+ 
+   /* Error exits */
++
++read_error:
++  /* A confirmed prefix remains readable, but an I/O error is never EOF. */
++  __set_errno(-bytes_read);
++  stream->fs_flags = (stream->fs_flags | __FS_FLAG_ERROR) & ~__FS_FLAG_EOF;
++  return count != remaining ? count - remaining : ERROR;
+ 
+ errout_with_errno:
+   stream->fs_flags |= __FS_FLAG_ERROR;
+--- a/lib_libfflush.c
++++ b/lib_libfflush.c
+@@ -127,19 +127,21 @@
+ 
+       /* Try to write that amount */
+ 
++      ret = 0;
+       src = stream->fs_bufstart;
+       do
+         {
+           /* Perform the write */
+ 
+           bytes_written = _Stub_write(stream->fs_fd, src, nbuffer);
+-          if (bytes_written < 0)
++          if (bytes_written <= 0)
+             {
+-              /* Write failed. */
+-	      __set_errno(-bytes_written);
++              /* Preserve the real errno and compact only the unwritten tail. */
++              if (bytes_written == 0) bytes_written = -EIO;
++              __set_errno(-bytes_written);
+               stream->fs_flags |= __FS_FLAG_ERROR;
+-              ret = EOF;
+-              goto errout_with_sem;
++              ret = bytes_written;
++              goto compact_buffer;
+             }
+ 
+           /* Handle partial writes.  fflush() must either return with
+@@ -152,6 +154,7 @@
+         }
+       while (bforce && nbuffer > 0);
+ 
++compact_buffer:
+       /* Reset the buffer position to the beginning of the buffer */
+ 
+       stream->fs_bufpos = stream->fs_bufstart;
+@@ -166,6 +169,7 @@
+           *stream->fs_bufpos++ = *src++;
+           --nbuffer;
+         }
++      if (ret < 0) goto errout_with_sem;
+     }
+ 
+   /* Restore normal access to the stream and return the number of bytes
+--- a/lib_fread.c
++++ b/lib_fread.c
+@@ -45,6 +45,8 @@
+ #include <calypsi/config.h>
+ 
+ #include <stdio.h>
++#include <errno.h>
++#include <stdint.h>
+ 
+ #include "libc.h"
+ 
+@@ -58,19 +60,22 @@
+ 
+ size_t fread(void *ptr, size_t size, size_t n_items, FILE *stream)
+ {
+-  size_t  full_size = n_items * (size_t)size;
+-  __ssize_t bytes_read;
+-  size_t  items_read = 0;
+-
+-  /* Write the data into the stream buffer */
+-
+-  bytes_read = __lib_fread(ptr, full_size, stream);
+-  if (bytes_read > 0)
+-    {
+-      /* Return the number of full items read */
+-
+-      items_read = bytes_read / size;
+-    }
+-
+-  return items_read;
++  size_t remaining,done=0;
++  unsigned char *cursor=ptr;
++  if (!size || !n_items) return 0;
++  if (n_items > SIZE_MAX / size) {
++    stream->fs_flags |= __FS_FLAG_ERROR;
++    __set_errno(EOVERFLOW);
++    return 0;
++  }
++  remaining=n_items*size;
++  /* The low-level signed transfer count is 16 bits in this data model. */
++  while (remaining) {
++    size_t chunk=remaining>32767U ? 32767U:remaining;
++    __ssize_t transferred=__lib_fread(cursor,chunk,stream);
++    if (transferred<=0) break;
++    cursor+=transferred;done+=transferred;remaining-=transferred;
++    if ((size_t)transferred<chunk) break;
++  }
++  return done/size;
+ }
+--- a/lib_fwrite.c
++++ b/lib_fwrite.c
+@@ -45,6 +45,8 @@
+ #include <calypsi/config.h>
+ 
+ #include <stdio.h>
++#include <errno.h>
++#include <stdint.h>
+ 
+ #include "libc.h"
+ 
+@@ -59,19 +61,22 @@
+ size_t fwrite(const void *ptr, size_t size, size_t n_items,
+               FILE *stream)
+ {
+-  size_t  full_size = n_items * (size_t)size;
+-  __ssize_t bytes_written;
+-  size_t  items_written = 0;
+-
+-  /* Write the data into the stream buffer */
+-
+-  bytes_written = __lib_fwrite(ptr, full_size, stream);
+-  if (bytes_written > 0)
+-    {
+-      /* Return the number of full items written */
+-
+-      items_written = bytes_written / size;
+-    }
+-
+-  return items_written;
++  size_t remaining,done=0;
++  const unsigned char *cursor=ptr;
++  if (!size || !n_items) return 0;
++  if (n_items > SIZE_MAX / size) {
++    stream->fs_flags |= __FS_FLAG_ERROR;
++    __set_errno(EOVERFLOW);
++    return 0;
++  }
++  remaining=n_items*size;
++  /* The low-level signed transfer count is 16 bits in this data model. */
++  while (remaining) {
++    size_t chunk=remaining>32767U ? 32767U:remaining;
++    __ssize_t transferred=__lib_fwrite(cursor,chunk,stream);
++    if (transferred<=0) break;
++    cursor+=transferred;done+=transferred;remaining-=transferred;
++    if ((size_t)transferred<chunk) break;
++  }
++  return done/size;
+ }
+--- a/lib_libfwrite.c
++++ b/lib_libfwrite.c
+@@ -168,6 +168,13 @@
+   ret = (uintptr_t)src - (uintptr_t)start;
+ 
+ errout_with_semaphore:
++  /* Bytes already accepted into the buffer remain owned by this stream.
++   * Report that confirmed prefix so a caller retries only its remaining tail. */
++  if (ret < 0 && src != start)
++    {
++      stream->fs_flags |= __FS_FLAG_ERROR;
++      ret = (uintptr_t)src - (uintptr_t)start;
++    }
+   /* lib_give_semaphore(stream); */
+ 
+ errout:

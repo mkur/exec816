@@ -21,7 +21,7 @@ its injected initialization failure is fixture-only.
 | Calypsi lib_strtok.c | Contains a retained static cursor. Use an execution-resettable common wrapper over the pinned reentrant helper when selected. |
 | Calypsi rand.c / rand48 | Contains mutable generator state. Reset to the selected documented initial seed at INIT when selected. |
 | Calypsi setjmp.s / setjmp.h | Pinned C-only termination candidate. The huge-data implementation saves S, virtual frame pointer and return address/bank. D/DBR/mode and interrupt assumptions require emitted native-context checks before exposing exit. |
-| Calypsi FILE initialization | Keep the explicit checked source correction from toolchain/calypsi-runtime.json. Audit partial-read error and partial-flush handling before accepting the common stdio path. |
+| Calypsi FILE initialization | Keep the explicit checked source correction from toolchain/calypsi-runtime.json. CR2 pins corrections for partial-read errors, unwritten flush tails, signed transfer counts and rand range. |
 | Default heap initialization / board CRT | Excluded: backing is public AllocMem/FreeMem and native Process lifetime. No separate vendor heap or board exit may be selected. |
 | Arithmetic, string/memory, integer formatter | Select the actual pinned helper closure; record source/options and independent relocation evidence. Stateful helpers stay image-private. |
 
@@ -53,3 +53,42 @@ this parser.
 These components reserve zero new bank-zero bytes: fixed, root/kernel,
 each public Task and idle, including guards, alignment and spare capacity.
 They do not alter AllocMem/AllocVec ownership or introduce a service Task.
+
+## Descriptors and stdio (CR2 components)
+
+`files.c` keeps sixteen owned descriptor slots, with int indices 3–18 and
+full native BPTR identities. Descriptors 0–2 borrow Input()/Output(); stdout
+and stderr share the selected output destination. Closing these wrappers does
+not close the native selection. A missing selection reports EBADF on transfer.
+Slots are admitted before Open, including create/truncate. Native terminal
+Close consumes its slot on success or failure and is never retried.
+
+The hooks support read, write, existing update, create/update, append and
+exclusive create as admitted by native DOS. Files support `r+`, `w+` and `a+`;
+stream devices retain their native mode/seek limits. Seek returns a new position.
+Binary, ATASCII and line-ending bytes pass through unchanged. Each hook returns
+an errno value negated on failure, including the vendor's unsigned size_t
+encoding for read/write. Ordinary successes preserve errno.
+
+A transfer with a cause returns its confirmed prefix and records the cause
+for the library's next transfer. It sets the FILE error indicator immediately;
+`ferror` acknowledges that cause without clearing the indicator, and `clearerr`
+also clears it. EOF remains distinct from an I/O failure. Cleanup reports the
+first failure encountered during cleanup, rather than promoting an already
+handled error. Explicit Close errors consume the descriptor too.
+
+`stdio.c` resets the complete pinned 25-byte standard FILE objects and
+20-byte stream list for each execution. The source corrections in
+`toolchain/calypsi-runtime.json` initialize dynamic FILEs, preserve read errors,
+compact only unwritten flush tails, report accepted buffered-write prefixes,
+split stdio requests at 32,767 bytes, and admit standard lowercase exclusive `x`. A dynamic FILE requests 25+16 bytes
+and its default 64-byte buffer requests 64+16: 128 bytes after heap rounding.
+The sixteen-slot table plus standard entries and its error/cleanup state use
+204 image-local bytes. The selected formatter is `printf=nofloat`, including
+long integers; its attribute is preserved by the independent relocation links.
+
+`library.c` supplies empty environment, unavailable UTC time, a resettable
+strtok cursor and the initial srand(1) state. The pinned rand correction masks
+its result to RAND_MAX on the target's 16-bit int. Pure vendor helpers stay
+linked privately into each Image. Installed Calypsi files are never modified.
+CR2 adds zero reserved bank-zero bytes, including all guards and spare capacity.

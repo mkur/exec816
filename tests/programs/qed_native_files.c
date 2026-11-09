@@ -113,7 +113,7 @@ static int failures(void)
         if (descriptors[n]<3) return 216;
     }
     before=closes;
-    if (_Stub_open("NIL:",O_WRONLY|O_CREAT|O_TRUNC)!=-EMFILE || closes!=before+1) return 217;
+    if (_Stub_open("NIL:",O_WRONLY|O_CREAT|O_TRUNC)!=-EMFILE || closes!=before) return 217;
     for (n=0;n<QED_FILE_SLOTS;++n) if (_Stub_close(descriptors[n])) return 218;
     before=closes;
     if ((int)_Stub_read(-1,buffer,1)!=-EBADF || Fread(-1,1,buffer)!=-37 ||

@@ -1,0 +1,16 @@
+--- a/rand.c
++++ b/rand.c
+@@ -18,10 +18,11 @@
+  *
+  ****************************************************************************/
+ 
+-#include "rand48.h"
++#include "stdlib/rand48.h"
++#include <stdlib.h>
+ 
+ int rand(void) {
+-  return (int)__lrand48();
++  return (int)(__lrand48() & RAND_MAX);
+ }
+ 
+ void srand(unsigned int __s) {
