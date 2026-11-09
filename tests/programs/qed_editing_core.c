@@ -61,4 +61,4 @@ static int body(int argc,char **argv)
     if(text.cursor_line!=old || text.xpos!=512 || text.moved || errors!=before+1)return 107;
     refuse=0;kill_textring(&text.text);kill_memory();return -321;
 }
-int main(void){return QedRuntimeRun(body);}
+int main(int argc,char **argv){return body(argc,argv);}

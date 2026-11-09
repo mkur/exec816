@@ -16,6 +16,7 @@ LONG ExecCRuntimePhase(struct ExecCRuntimeState *,struct ExecCRuntimeCall *,
 struct ExecCRuntimeHeapStats { ULONG blocks,payload,backing,peakBacking; };
 void ExecCRuntimeHeapBegin(void);
 void ExecCRuntimeHeapRelease(void);
+void ExecCRuntimeHeapDefer(void);
 void ExecCRuntimeHeapSnapshot(struct ExecCRuntimeHeapStats *);
 int ExecCRuntimeArguments(const char *,const char *,int *,char ***);
 

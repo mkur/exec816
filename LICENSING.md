@@ -25,7 +25,7 @@ repository root; directory entries include all files below them.
 | `abi/` | Machine-readable interface definitions |
 | `lib/dos/fbabi.act`, `lib/dos/fbinterpabi.act`, `ports/fastbasic/target/helpers.asm`, `ports/fastbasic/target/callbacks.asm`, `ports/fastbasic/target/fp_snapshot.asm`, `ports/fastbasic/target/fastbasic.inc`, `ports/fastbasic/target/source-run.asm`, `ports/fastbasic/target/source-run.inc` | Exec-authored FastBasic runtime bindings, source bootstrap and generated constants |
 | `ports/gem4xe/apps/qed/native/*.c` and `*.h`, except `qed-gem-extra.h` | Exec-authored QED native adapters; the generated GEM header retains LGPL-2.1-or-later |
-| `c/` | Public C headers, Calypsi bindings, startup support and C examples |
+| `c/`, except `c/include/setjmp.h` | Public C headers, Calypsi bindings, startup support and C examples |
 | `examples/`, except `examples/shell/` | Standalone examples, disk commands and sample data |
 | `lib/exec/exec.act`, `lib/exec/execos.act`, `lib/exec/execproducer.act` | Action! interface declarations |
 | `lib/exec/execlists.act` | Public list types and application-side list helpers |
@@ -86,7 +86,7 @@ emulators or patches to upstream projects.
   Exec816 build code; it does not change the imported source's licence.
 - The AltirraOS ROM retains Avery Lee's file-specific redistribution notice.
   Demo ZIPs include `ALTIRRAOS-LICENSE.txt`.
-- Calypsi runtime sources and the correction selected by
+- Calypsi runtime sources, the adapted `c/include/setjmp.h`, and corrections selected by
   `toolchain/calypsi-runtime.json` retain their original Calypsi, Apache and
   NuttX notices. Preparation preserves those notices beside the adapted source;
   the Exec MIT interface grant does not relicense that material.

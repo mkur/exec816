@@ -44,7 +44,7 @@ def build_editor(target,provider,reuse_app=False,selection=False,saving=False,lo
         calls['document.c']['Fopen']='QedSaveDocumentOpen'
         calls['saving.c']={'form_alert':'QedSaveAlert'}
         calls['stage.c']={'Fwrite':'QedSaveFaultWrite'}
-        calls['files.c']={'Close':'QedSaveFaultClose'}
+        calls['c/runtime/files.c']={'Close':'QedSaveFaultClose'}
         calls['save.c']={'Rename':'QedSaveFaultRename','DeleteFile':'QedSaveFaultDelete'}
     build(target,provider,executable=True,
           fixture=ROOT/'tests/programs'/('qed_cursor_faults.c' if caret else 'qed_saving_cleanup_faults.c' if long_cleanup else
@@ -77,12 +77,12 @@ def core(out,reuse=False,native_from=None):
     prepare(out/'inputs')
     qed=out/'inputs/source/qed/src';native=PORT/'native'
     sources=[ROOT/'tests/programs/qed_editing_core.c',qed/'tasten.c',qed/'memory.c',qed/'clipbrd.c']
-    sources += [native/name for name in ('entry.c','allocation.c','files.c','library.c')]
+    sources += [native/name for name in ('allocation.c','files.c','library.c')]
     definitions={str(p):['--char-is-unsigned','-DQED_BANKED_MALLOC=1',
         *selected()['compiler_options']] for p in sources}
     definitions[str(qed/'tasten.c')].append('-Dform_alert=QedRecordAlert')
     definitions[str(qed/'clipbrd.c')].append('-Dform_alert=QedRecordAlert')
-    definitions[str(native/'allocation.c')].append('-DAllocMem=QedFixtureAlloc')
+    definitions[str(ROOT/'c/runtime/allocation.c')]=['-DAllocMem=QedFixtureAlloc']
     fixture=out/'core.act'
     prefix=(ROOT/'tests/programs/c_process.act').read_text().split('\nPROC Main()')[0]
     fixture.write_text(prefix+'''
@@ -109,7 +109,7 @@ RETURN
 ENDMODULE
 ''')
     return process_run(out,True,reuse=reuse,rebuild_app=reuse,app_sources=sources,
-        app_options=dict(includes=[native,qed,out/'inputs/source/cflib'],definitions=definitions,
+        app_options=dict(main_signature='args',includes=[native,ROOT/'c/runtime',qed,out/'inputs/source/cflib'],definitions=definitions,
                          runtime_attributes={'printf':'nofloat'}),
         fixture_source=fixture,expected_completed=2,native_optimize=True,
         release_compiler=True,loader_failures=False)

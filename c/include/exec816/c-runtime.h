@@ -42,4 +42,5 @@ struct ExecCRuntimeAllocation {
     ULONG reserved;
 };
 typedef LONG (*ExecCRuntimeEntry)(struct ExecCRuntimeCall *);
+LONG __exec_c_runtime_entry(struct ExecCRuntimeCall *);
 #endif

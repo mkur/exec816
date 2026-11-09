@@ -18,10 +18,11 @@ extern APTR ExecCRTTestAllocMem(ULONG,ULONG);
 
 static struct ExecCRuntimeAllocation *owned;
 static struct ExecCRuntimeHeapStats totals;
+static UWORD deferred;
 
 void ExecCRuntimeHeapBegin(void)
 {
-    owned=NULL;
+    owned=NULL;deferred=0;
     memset(&totals,0,sizeof(totals));
     errno=0;
 }
@@ -49,7 +50,7 @@ void free(void *pointer)
 {
     struct ExecCRuntimeAllocation *block;
     ULONG bytes;
-    if (!pointer) return;
+    if (!pointer || deferred) return;
     block=(struct ExecCRuntimeAllocation *)pointer-1;bytes=block->bytes;
     if (block->previous)
         ((struct ExecCRuntimeAllocation *)block->previous)->next=block->next;
@@ -87,7 +88,9 @@ void *realloc(void *pointer,size_t bytes)
 }
 
 void ExecCRuntimeHeapSnapshot(struct ExecCRuntimeHeapStats *stats) { *stats=totals; }
+void ExecCRuntimeHeapDefer(void) { deferred=1; }
 void ExecCRuntimeHeapRelease(void)
 {
+    deferred=0;
     while (owned) free(owned+1);
 }

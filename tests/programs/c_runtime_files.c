@@ -61,9 +61,6 @@ LONG ExecCRTTestWrite(BPTR fd,const void *data,LONG count)
     }
     return Write(fd,data,count);
 }
-void _Stub_exit(int status) { (void)status;for (;;) ExecYield(); }
-void _Stub_assert(const char *file,int line) { (void)file;(void)line;_Stub_exit(20); }
-
 static int roundtrip(const char *path)
 {
     FILE *stream,*other;
@@ -198,8 +195,11 @@ int main(void)
     struct ExecCRuntimeHeapStats stats;
     ++executions;
     ExecCRuntimeHeapSnapshot(&stats);
-    if (stats.blocks || __global_streams.sl_head) return 101;
-    ExecCRuntimeHeapBegin();ExecCRuntimeFilesBegin();ExecCRuntimeStdioBegin();ExecCRuntimeLibraryBegin();
+    if (stats.blocks!=1 || errno || __global_streams.sl_head) return 101;
+    ExecCRuntimeHeapRelease();
+    ExecCRuntimeHeapBegin();ExecCRuntimeFilesBegin();
+    memset(stdin,0xa5,sizeof(FILE));memset(stdout,0xa5,sizeof(FILE));memset(stderr,0xa5,sizeof(FILE));
+    ExecCRuntimeStdioBegin();ExecCRuntimeLibraryBegin();
     n=rand();
     if (executions==1) firstRand=n;
     if (errno || n!=firstRand || strtok(NULL,",") || ferror(stdout) || feof(stdin)) return 102;
@@ -228,7 +228,6 @@ int main(void)
         __global_streams.sl_head || __global_streams.sl_tail) return 184;
     ExecCRuntimeHeapRelease();ExecCRuntimeHeapSnapshot(&stats);
     if (stats.blocks || stats.payload || stats.backing) return 185;
-    memset(stdin,0xa5,sizeof(FILE));memset(stdout,0xa5,sizeof(FILE));memset(stderr,0xa5,sizeof(FILE));
     errno=ERANGE;
     return -320-executions;
 }

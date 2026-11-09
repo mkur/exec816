@@ -25,7 +25,21 @@ def check_layout(path, expected):
     return dict(expected)
 
 
-def read_image(path, task_entries=(), base_bank=12):
+def object_symbols(path):
+    raw=path.read_bytes();header=struct.unpack_from('<HHIIIIIHHHHHH',raw,16)
+    rows=[struct.unpack_from('<IIIIIIIIII',raw,header[5]+i*header[10]) for i in range(header[11])]
+    result={}
+    for row in rows:
+        if row[1]!=2:continue
+        strings=rows[row[6]];names=raw[strings[4]:strings[4]+strings[5]]
+        for at in range(row[4],row[4]+row[5],16):
+            name,value,size,info,other,section=struct.unpack_from('<IIIBBH',raw,at)
+            if name:result[names[name:].split(b'\0',1)[0].decode()]=dict(
+                section=section,binding=info>>4,kind=info&15,size=size)
+    return result
+
+
+def read_image(path, task_entries=(), base_bank=12, entry_name='main'):
     path = Path(path)
     raw = path.read_bytes()
     require(1 <= base_bank <= 251, 'Invalid C link bank')
@@ -67,7 +81,7 @@ def read_image(path, task_entries=(), base_bank=12):
             symbols[name] = value
             if info & 15 == 2:
                 functions.add(name)
-    require(symbols.get('main') == entry and 'main' in functions, 'C entry must be main')
+    require(symbols.get(entry_name) == entry and entry_name in functions, 'C entry must be '+entry_name)
     require(symbols.get('_Dp') == 0 and symbols.get('_Vfp') == 16 and
             symbols.get('_DirectPageStart') == 0 and symbols.get('_NearBaseAddress') == 0,
             'C runtime must use task-relative lower DP and DBR zero')
@@ -107,13 +121,13 @@ def read_image(path, task_entries=(), base_bank=12):
     extents.sort()
     require(all(a[1] <= b[0] for a, b in zip(extents, extents[1:])),
             'Overlapping C storage')
-    for name in ('main', *task_entries):
+    for name in (entry_name, *task_entries):
         require(name in functions and any(s['executable'] and s['address'] <= symbols[name] < s['address']+len(s['bytes']) for s in segments),
                 'C Task entry is not a linked function: ' + name)
     require(len(set(task_entries)) == len(task_entries), 'Duplicate C Task entry')
     return dict(segments=segments, zero_fill=zero_fill,
                 task_entries=[symbols[name] for name in task_entries], symbols=symbols,
                 provenance=dict(format='calypsi65816-standalone-v1', elf_sha256=sha256(path),
-                    entry=entry, task_entries=list(task_entries), dp_workspace_bytes=workspace,
+                    entry=entry, entry_symbol=entry_name, task_entries=list(task_entries), dp_workspace_bytes=workspace,
                     readonly_table_banks=[base_bank+3] if any(s['address']==table_base for s in segments) else [],
                     stack_checks=False, bank_zero_delta=dict(fixed=0, per_task=0)))

@@ -27,7 +27,7 @@ static void select_case(UWORD value)
     default:initialized+=7;break;
     }
 }
-LONG EXEC_CALL main(ULONG argument)
+LONG EXEC_CALL CRelocationProbe(ULONG argument)
 {
     UWORD i;
     ULONG previous=cleared;

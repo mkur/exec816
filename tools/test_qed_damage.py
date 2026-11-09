@@ -18,8 +18,8 @@ if __name__ == '__main__':
     variant(a.native_from.resolve(), out, 'sdfs'); prepare(out/'inputs')
     qed = out/'inputs/source/qed/src'; native = PORT/'native'
     sources = [ROOT/'tests/programs/qed_damage_core.c', qed/'edit.c', qed/'set.c']
-    sources += [native/name for name in ('entry.c', 'allocation.c', 'files.c', 'library.c')]
-    options = dict(includes=[native, qed, out/'inputs/source/cflib'],
+    sources += [native/name for name in ( 'allocation.c', 'files.c', 'library.c')]
+    options = dict(main_signature='args',includes=[native, ROOT/'c/runtime', qed, out/'inputs/source/cflib'],
         definitions={str(source): ['--char-is-unsigned', '-DQED_BANKED_MALLOC=1',
                                   *selected()['compiler_options']] for source in sources})
     fixture = a.native_from.resolve()/'logical.act'

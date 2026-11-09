@@ -782,7 +782,6 @@
   ],
   "native_sources": [
     "allocation.c",
-    "entry.c",
     "files.c",
     "library.c",
     "support.c",

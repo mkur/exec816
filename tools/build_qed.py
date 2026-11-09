@@ -7,6 +7,8 @@ from analysis_artifact import MARKER
 from build_c_program import verify_relocations
 from c_program import ABI,import_assembly,pack,shape
 from calypsi_build import emit
+from calypsi_image import object_symbols
+from c_runtime_build import prepare as runtime_sources,audit as audit_runtime,COMPILER_OPTIONS
 from generate_qed_compat import generate,TARGET
 from native_program import ROOT,require,sha256
 from prepare_qed import PORT,prepare
@@ -23,20 +25,6 @@ def selected():
     require(len(actual)==len(set(actual)) and set(actual)==expected,
             'QED selection must account for every pinned source exactly once')
     return selection
-
-
-def object_symbols(path):
-    raw=path.read_bytes();header=struct.unpack_from('<HHIIIIIHHHHHH',raw,16)
-    rows=[struct.unpack_from('<IIIIIIIIII',raw,header[5]+i*header[10]) for i in range(header[11])]
-    result={}
-    for row in rows:
-        if row[1]!=2:continue
-        strings=rows[row[6]];names=raw[strings[4]:strings[4]+strings[5]]
-        for at in range(row[4],row[4]+row[5],16):
-            name,value,size,info,other,section=struct.unpack_from('<IIIBBH',raw,at)
-            if name:result[names[name:].split(b'\0',1)[0].decode()]=dict(
-                section=section,binding=info>>4,kind=info&15,size=size)
-    return result
 
 
 def units_from_listing(path):
@@ -99,14 +87,22 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
                 definitions[str(source)]+=['-DAllocMem=QedFixtureAlloc']
         sources.append(Path(fixture).resolve())
         definitions[str(sources[-1])]=['--char-is-unsigned',*selection['compiler_options']]
+    sources,runtime=runtime_sources(output,sources,'args')
+    if fixture is not None and fixture_calls is not None:
+        for source in sources:
+            if source.is_relative_to(ROOT/'c/runtime'):
+                calls=fixture_calls.get(source.relative_to(ROOT).as_posix(),{})
+                definitions[str(source)]=['-D'+a+'='+b for a,b in calls.items()]
+    if fixture is not None and fixture_calls is None:
+        definitions[str(ROOT/'c/runtime/allocation.c')]=['-DAllocMem=QedFixtureAlloc']
     imports=output/'imports.s';imports.write_text(import_assembly())
     roots=list(fixture_roots)+([] if executable else ['__exec_analysis_only'])
     image=emit(output,sources,[imports,ROOT/'c/calypsi/image-info.s'],(),roots=roots,
-        includes=[native,output/'inputs/source/qed/src',output/'inputs/source/cflib'],
-        definitions=definitions,runtime_attributes={'printf':'nofloat'})
+        includes=[native,ROOT/'c/runtime',output/'inputs/source/qed/src',output/'inputs/source/cflib'],
+        definitions=definitions,runtime_attributes={'printf':'nofloat'},
+        compiler_options=COMPILER_OPTIONS,entry_name=ABI['entry'])
     # A complete real link is mandatory. Essential runtime helpers cannot enter the catalog.
-    require(not {'exit','_Stub_exit','_Stub_assert','_Exit'} & set(image['symbols']),
-            'Retained QED closure contains a board termination dependency')
+    runtime['owners']=audit_runtime(output,image,sources)
     image['provenance']['analysis_only']=not executable
     require(not any(b['name'] in image['symbols'] for b in catalog if b.get('status')=='adapted'),
             'An adapted donor GEM dependency is still linked')
@@ -132,7 +128,7 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
         payload,app=pack(image,relocations,selection['minimum_stack_bytes'])
         (output/'program.app').write_bytes(payload)
         app.update(abi=ABI,bytes=len(payload),sha256=sha256(output/'program.app'),
-            verified_banks=banks,image=image,inputs={str(p):sha256(p) for p in sources})
+            verified_banks=banks,image=image,c_runtime=runtime,inputs={str(p):sha256(p) for p in sources})
         (output/'app.json').write_text(json.dumps(app,indent=2)+'\n')
     else:
         try:pack(image,relocations)
@@ -145,7 +141,7 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
     record=dict(schema_version=1,status='executable-development' if executable else 'analysis-only',tier='development',inputs=inputs,
         selection=selection,bindings=bindings,analysis_bindings=[b['name'] for b in pending],abi=ABI,verified_banks=banks,
         complete_link=True,unresolved_essential_helpers=[],
-        image=image,link_units=linked_units,link_summary_reconciled_bytes=accounted,
+        image=image,c_runtime=runtime,link_units=linked_units,link_summary_reconciled_bytes=accounted,
         layout=dict(code_bytes=code,initialized_bytes=initialized,bss_bytes=bss,
             import_thunk_bytes=4*imports_count,span_bytes=span,
             image_holes_bytes=span-code-initialized-bss,

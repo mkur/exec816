@@ -90,7 +90,7 @@ def core(out,native_from,filesystem='sdfs',group='stage'):
         calls={'stage.c':dict(malloc='QedStageAllocate',QedFileExclusive='QedStageExclusive',
             DeleteFile='QedStageDelete'),
             **({'path.c':dict(malloc='QedStageAllocate')} if group=='transaction-edges' else {}),
-            'files.c':dict(Write='QedStageNativeWrite',Close='QedStageNativeClose'),
+            'c/runtime/files.c':dict(Write='QedStageNativeWrite',Close='QedStageNativeClose'),
             **({'save.c':dict(Rename='QedTxnRename',DeleteFile='QedTxnDelete',**({'calloc':'QedTxnAllocate'} if group=='transaction-edges' else {}))} if transaction else {})})
     if group=='stage':audit_stage(out,filesystem)
     if group=='transaction':audit_transaction(out,filesystem)

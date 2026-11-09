@@ -42,7 +42,7 @@ def verify(original, linked, bank, relocations):
         predicted=bytes(v+bank-ABI['link_bank'] if a['offset']+i in changes else v
                         for i,v in enumerate(a['payload']))
         require(predicted==b['payload'],'Bank relocation does not reproduce independently linked C bytes')
-    require(original['symbols']['main']-BASE==linked['symbols']['main']-(bank<<16),
+    require(original['symbols'][ABI['entry']]-BASE==linked['symbols'][ABI['entry']]-(bank<<16),
             'Relinking changed the entry')
     for name,address in original['symbols'].items():
         if any(s['offset']<=address-BASE<=s['offset']+s['size'] for s in before):
@@ -81,10 +81,10 @@ def pack(image, relocations, minimum_stack=0):
     body+=b''.join(struct.pack('<I',at) for at in relocations)
     body+=b''.join(s['payload'] for s in segments)
     header=struct.pack('<4sHHBBHIIIHHI',ABI['magic'].encode(),1,ABI['version'],ABI['link_bank'],
-        ABI['max_banks'],len(segments),span,image['symbols']['main']-BASE,len(relocations),
+        ABI['max_banks'],len(segments),span,image['symbols'][ABI['entry']]-BASE,len(relocations),
         len(imports),requirements,ABI['header_bytes']+len(body))
     require(len(header)+len(body)<=ABI['file_limit'],'C application file too large')
-    return header+body,dict(span=span,entry=image['symbols']['main']-BASE,relocations=relocations,
+    return header+body,dict(span=span,entry=image['symbols'][ABI['entry']]-BASE,relocations=relocations,
                             imports=imports,minimum_stack=units*stack['unit_bytes'],segments=[{k:v for k,v in s.items() if k!='payload'} for s in segments])
 
 
@@ -149,5 +149,5 @@ ENDMODULE
 '''
     path=Path(output)/'cprogrambind.act';path.write_text(source)
     image['provenance']['c_program_provider']=dict(abi=ABI['version'],imports=ABI['imports'],
-        runner=symbols['ExecProgramRun'])
+        runner=symbols['ExecProgramRun'],entry=ABI['entry'],runtime_version=ABI['runtime_version'])
     return path

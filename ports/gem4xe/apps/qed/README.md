@@ -78,8 +78,8 @@ python3 tools/test_qed_native.py --group stop --case opt --output build/qed-nati
 ```
 
 These link the actual patched QED text allocator. Notification and highlighting
-callbacks belong only to the fixture. The allocation implementation keeps a
-12-byte owned header in upper memory, returns bank-contained blocks and uses
+callbacks belong only to the fixture. The common runtime keeps a
+16-byte prefix in upper memory, returns eight-byte-aligned bank-contained blocks and uses
 the public `AvailMem` import for `Malloc(-1)`. The current loaded C ABI is in
 [abi/c-program.json](../../../../abi/c-program.json); rebuild the matched
 provider and applications after changes to it.
@@ -92,7 +92,9 @@ inputs. `--focused-abi` selects two ABI/return cycles in either compiler mode.
 See the [native runtime contract](native/README.md) for descriptor ownership,
 errors, stdio bounds and explicit calendar limitations.
 
-The body passed to `QedRuntimeRun` must retire GUI borrowers before returning.
+QED main receives the common argc/argv and enforces one document. Its
+controller retires GUI borrowers before returning; common FINISH/RELEASE
+then complete stdio and heap ownership after resident GUI retirement.
 The Stop fixture exercises a borrowed allocated title, cooperative native
 `RequestStop`, window retirement, heap cleanup and ordinary collection; no
 private Task exit or donor board termination is used.

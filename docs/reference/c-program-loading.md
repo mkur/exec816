@@ -15,7 +15,9 @@ operations to retain ownership through execution.
 
 `tools/build_c_program.py --source file.c --output build/application` produces
 `program.app` and a development-only `app.json`. Add `--source` for another C
-translation unit or `--raw` for unoptimized C. The target needs only the APP.
+translation unit or `--raw` for unoptimized C. The target needs only the APP. Use `--main-signature args` for
+`int main(int argc,char **argv)`; the default selects `int main(void)`. The
+builder links the common runtime and packs `__exec_c_runtime_entry`.
 
 Code starts in relative bank zero; initialized data, constants and BSS retain
 the linker's relative placement. The packer links the same objects at banks
@@ -32,7 +34,7 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-Import ABI 27 combines the current `SetIoErr`, `NameFromLock` and
+APP ABI 31 adds the phased [C runtime](c-runtime.md) entry. Its current import table combines the current `SetIoErr`, `NameFromLock` and
 `graf_mkstate` bindings with public `Wait`, `PutMsg` and `GetMsg` imports for persistent
 message-driven services. It includes `ExecBasicAttach` for the
 [source interpreter](fastbasic.md#source-buffer-attachment), the current device/AES/file imports, `ExamineExact`,
@@ -71,7 +73,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 27 |
+| 6 | 2 | APP ABI version, 31 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |

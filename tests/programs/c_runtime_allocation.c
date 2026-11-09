@@ -52,7 +52,8 @@ int main(void)
     ++executions;
     if (executions>2) return 101;
     ExecCRuntimeHeapSnapshot(&stats);
-    if (stats.blocks || stats.backing) return 102;
+    if (stats.blocks!=1 || !stats.backing || errno) return 102;
+    ExecCRuntimeHeapRelease();
     ExecCRuntimeHeapBegin();
     ExecCRuntimeHeapSnapshot(&stats);
     if (errno || stats.peakBacking) return 103;

@@ -21,12 +21,11 @@ LONG ExecCRTTestClose(BPTR fd)
     if (failClose) { failClose=0;SetIoErr(0x0000c219L);return 0; }
     return result;
 }
-void _Stub_exit(int status) { (void)status;for (;;) ExecYield(); }
-void _Stub_assert(const char *file,int line) { (void)file;(void)line;_Stub_exit(20); }
 int main(void)
 {
     int fd;
     char byte;
+    ExecCRuntimeHeapRelease();
     ExecCRuntimeHeapBegin();ExecCRuntimeFilesBegin();ExecCRuntimeStdioBegin();ExecCRuntimeLibraryBegin();
     if ((int)_Stub_read(-1,&byte,1)!=-EBADF || (int)_Stub_write(-1,&byte,1)!=-EBADF) return 1;
     fd=_Stub_open("NIL:",O_WRONLY|O_CREAT|O_TRUNC);

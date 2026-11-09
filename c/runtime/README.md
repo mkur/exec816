@@ -3,10 +3,9 @@
 [Design](../../docs/plans/c-runtime-design.md) ·
 [Implementation plan](../../docs/plans/c-runtime-implementation-plan.md)
 
-The generated `exec816/c-runtime.h` and lifecycle component start CR0. Production
-APP entry remains unchanged until the coordinated CR3 cutover. The component
-probe calls the same synchronous phase implementation under the current loader;
-its injected initialization failure is fixture-only.
+Current APP ABI 31 links this runtime and enters its synchronous phases.
+See the [current contract](../../docs/reference/c-runtime.md). Earlier component
+records preserve the pre-cutover checks; failure injection remains fixture-only.
 
 ## Dependency disposition
 
@@ -20,7 +19,7 @@ its injected initialization failure is fixture-only.
 | Calypsi streamlist.c | Private FILE globals and standard stream state; reset the complete standard FILE objects and dynamic list at INIT, with no live predecessor execution. |
 | Calypsi lib_strtok.c | Contains a retained static cursor. Use an execution-resettable common wrapper over the pinned reentrant helper when selected. |
 | Calypsi rand.c / rand48 | Contains mutable generator state. Reset to the selected documented initial seed at INIT when selected. |
-| Calypsi setjmp.s / setjmp.h | Pinned C-only termination candidate. The huge-data implementation saves S, virtual frame pointer and return address/bank. D/DBR/mode and interrupt assumptions require emitted native-context checks before exposing exit. |
+| Calypsi setjmp.s / setjmp.h | Pinned C-only termination primitive, corrected to save DP8–15 as well as S, virtual frame pointer and return PC/bank; longjmp(env,0) returns 1. Raw/optimized emitted checks cover the context with IRQ/NMI entry. APPs disable cross-call and interprocedural cross-jump optimization. |
 | Calypsi FILE initialization | Keep the explicit checked source correction from toolchain/calypsi-runtime.json. CR2 pins corrections for partial-read errors, unwritten flush tails, signed transfer counts and rand range. |
 | Default heap initialization / board CRT | Excluded: backing is public AllocMem/FreeMem and native Process lifetime. No separate vendor heap or board exit may be selected. |
 | Arithmetic, string/memory, integer formatter | Select the actual pinned helper closure; record source/options and independent relocation evidence. Stateful helpers stay image-private. |
@@ -37,7 +36,7 @@ prefix is 16 bytes; every payload is eight-byte aligned. A request has at most
 65,520 payload bytes and each backing stays within one bank. The heap rounds
 backing storage to eight bytes (zero through seven extra bytes per block).
 `realloc(p,0)` frees and returns NULL. Failure preserves the original allocation.
-The private owner pointer and four ULONG counters occupy 20 image-local bytes;
+The private owner pointer and four ULONG counters occupy 20 image-local bytes; the FINISH deferral flag adds two bytes;
 counters report requested backing including prefixes, before heap rounding.
 Reset requires the previous execution's RELEASE to have completed.
 

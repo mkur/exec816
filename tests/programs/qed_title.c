@@ -26,4 +26,4 @@ static int body(int argc,char **argv)
     if(bad || calls!=3 || strcmp(view.title," SYS:A.TXT "))return 104;
     return -321;
 }
-int main(void){return QedRuntimeRun(body);}
+int main(int argc,char **argv){return body(argc,argv);}

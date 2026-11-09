@@ -61,4 +61,4 @@ static int body(int argc,char **argv)
     QedHeapSnapshot(&stats);CHECK(stats.blocks==warm.blocks && stats.backing==warm.backing,124);
     return -321;
 }
-int main(void){return QedRuntimeRun(body);}
+int main(int argc,char **argv){return body(argc,argv);}

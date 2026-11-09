@@ -15,10 +15,15 @@ def run_probe(out,fixture,native_units=(),qed_units=(),calls=None,native_from=No
     prepare(out/'inputs')
     native=PORT/'native';qed=out/'inputs/source/qed/src'
     sources=[ROOT/'tests/programs'/fixture]
-    sources += [native/name for name in ('entry.c','allocation.c','files.c','library.c',*native_units)]
+    sources += [native/name for name in ('allocation.c','files.c','library.c',*native_units)]
     sources += [qed/name for name in qed_units]
     definitions={str(p):['--char-is-unsigned','-DQED_BANKED_MALLOC=1','-DQED_INITIAL_SCOPE=1',
         *selected()['compiler_options'],*[f'-D{a}={b}' for a,b in (calls or {}).get(p.name,{}).items()]] for p in sources}
+    for name,mapping in (calls or {}).items():
+        if name.startswith('c/runtime/'):
+            definitions[str(ROOT/name)]=[f'-D{a}={b}' for a,b in mapping.items()]
+        if name=='allocation.c' and 'AllocMem' in mapping:
+            definitions[str(ROOT/'c/runtime/allocation.c')]=['-DAllocMem='+mapping['AllocMem']]
     supervisor=out/'probe.act'
     prefix=(ROOT/'tests/programs/c_process.act').read_text().split('\nPROC Main()')[0]
     supervisor.write_text(prefix+'''
@@ -47,7 +52,7 @@ ENDMODULE
     if lifetimes!=2:
         supervisor.write_text(supervisor.read_text().replace('FOR cycle=0 TO 1 DO','FOR cycle=0 TO '+str(lifetimes-1)+' DO'))
     return process_run(out,True,reuse=reuse,rebuild_app=reuse,app_sources=sources,
-        app_options=dict(includes=[native,qed,out/'inputs/source/cflib'],definitions=definitions,
+        app_options=dict(main_signature='args',includes=[native,ROOT/'c/runtime',qed,out/'inputs/source/cflib'],definitions=definitions,
                          extra_inputs=extra_inputs,
                          runtime_attributes={'printf':'nofloat'},minimum_stack=minimum_stack,
                          probes=[(ROOT/'tests/programs'/name,layout) for name,layout in probes]),

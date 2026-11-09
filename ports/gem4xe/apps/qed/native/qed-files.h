@@ -3,14 +3,13 @@
 #define QED_FILES_H
 #include "qed-runtime.h"
 #include <proto/dos.h>
-#define QED_FILE_SLOTS 4
+#include <exec816/c-runtime.h>
+#define QED_FILE_SLOTS EXEC_CRT_FILE_SLOTS
 struct QedFileInfo {
     LONG size,protection,kind;
     struct DateStamp date;
     UWORD sizeKnown,dateKnown;
 };
-void QedFilesBegin(void);
-LONG QedFilesCleanup(LONG cause);
 LONG QedFileError(void);
 UWORD QedFileCount(void);
 int QedFileInfo(const char *path,struct QedFileInfo *info);

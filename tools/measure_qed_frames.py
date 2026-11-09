@@ -101,7 +101,7 @@ def measure(out,destination=None):
         res = (v['weight'] + value + 3, [v['name']] + path)
         done[k] = res
         return res
-    callbacks = {'QedRuntimeRun': ['editor_body'], 'do_icon': ['e_icon_test', 'e_icon_edit'], 'icon_test': ['e_icon_test'], 'icon_edit': ['e_icon_edit'], 'icon_exist': ['e_icon_exist'], 'do_all_window': ['do_absatz', 'do_color_change'], 'snap_window': [], 'redraw_window': ['wi_draw'], 'uniconify_window': ['wi_uniconify'], 'ontop_window': ['wi_top'], 'untop_window': [], 'top_window': ['wi_top'], 'create_window': ['crt_edit'], 'close_window': [], 'click_window': ['wi_click'], 'unclick_window': [], 'key_window': ['wi_key'], 'select_file': ['open_multi'], 'cf_form_keybd': [], 'handle_mdial_msg': ['handle_msg'], 'suche1': ['STRSTR', 'STRSTR1']}
+    callbacks = {'do_icon': ['e_icon_test', 'e_icon_edit'], 'icon_test': ['e_icon_test'], 'icon_edit': ['e_icon_edit'], 'icon_exist': ['e_icon_exist'], 'do_all_window': ['do_absatz', 'do_color_change'], 'snap_window': [], 'redraw_window': ['wi_draw'], 'uniconify_window': ['wi_uniconify'], 'ontop_window': ['wi_top'], 'untop_window': [], 'top_window': ['wi_top'], 'create_window': ['crt_edit'], 'close_window': [], 'click_window': ['wi_click'], 'unclick_window': [], 'key_window': ['wi_key'], 'select_file': ['open_multi'], 'cf_form_keybd': [], 'handle_mdial_msg': ['handle_msg'], 'suche1': ['STRSTR', 'STRSTR1']}
     # Retired donor helpers are absent from later images. Unknown indirect
     # sites and changed contracts in functions still linked remain errors.
     callbacks = {name: [target for target in targets if target in sym]

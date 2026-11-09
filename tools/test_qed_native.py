@@ -44,7 +44,7 @@ def abi(out,optimize,focused=False,reuse=False,layout=False,masks=False):
         prepare(out/'inputs')
         native=PORT/'native';qed=out/'inputs/source/qed/src';cflib=out/'inputs/source/cflib'
         sources=[ROOT/'tests/programs/qed_native_masks.c',qed/'find.c',cflib/'nkccinit.c',cflib/'nkccuppr.c']
-        options.update(includes=[native,qed,cflib],definitions={str(path):[
+        options.update(includes=[native,ROOT/'c/runtime',qed,cflib],definitions={str(path):[
             '--char-is-unsigned','-DQED_INITIAL_SCOPE=1','--no-cross-call',
             '--no-interprocedural-cross-jump'] for path in sources})
         focused=True
@@ -90,8 +90,8 @@ def runtime(out,optimize,reuse=False,stop=False):
     qed=out/'inputs/source/qed/src';cflib=out/'inputs/source/cflib'
     source=ROOT/'tests/programs/qed_native_runtime.c'
     native=PORT/'native'
-    sources=[source,native/'allocation.c',native/'entry.c',native/'files.c',native/'library.c',qed/'memory.c']
-    options=dict(includes=[native,qed,cflib],runtime_attributes={'printf':'nofloat'},definitions={
+    sources=[source,native/'allocation.c',native/'files.c',native/'library.c',qed/'memory.c']
+    options=dict(main_signature='args',minimum_stack=1312,includes=[native,ROOT/'c/runtime',qed,cflib],runtime_attributes={'printf':'nofloat'},definitions={
         path.name:['--char-is-unsigned','-DQED_BANKED_MALLOC=1',
                    '-Werror=implicit-function-declaration','--no-cross-call','--no-interprocedural-cross-jump']+
                   (['-DAllocMem=QedFixtureAlloc'] if path.name=='allocation.c' else [])
@@ -176,8 +176,8 @@ def files(out,optimize,reuse=False,filesystem='sdfs'):
     require(optimize,'File/runtime behavior uses optimized C')
     out.mkdir(parents=True,exist_ok=True)
     native=PORT/'native';source=ROOT/'tests/programs/qed_native_files.c'
-    sources=[source,native/'allocation.c',native/'entry.c',native/'files.c',native/'library.c']
-    options=dict(includes=[native],runtime_attributes={'printf':'nofloat'},probes=[(source,[('size_t',2),('fpos_t',4),('time_t',8),('BPTR',4)])],
+    sources=[source,native/'allocation.c',native/'files.c',native/'library.c']
+    options=dict(main_signature='args',includes=[native,ROOT/'c/runtime'],runtime_attributes={'printf':'nofloat'},probes=[(source,[('size_t',2),('fpos_t',4),('time_t',8),('BPTR',4)])],
         definitions={path.name:['--char-is-unsigned','-Werror=implicit-function-declaration','--no-cross-call','--no-interprocedural-cross-jump']+
             (['-DAllocMem=QedFixtureAlloc'] if path.name=='allocation.c' else [])+
             (['-DClose=QedFixtureClose','-DWrite=QedFixtureWrite'] if path.name=='files.c' else [])

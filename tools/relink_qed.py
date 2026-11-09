@@ -74,12 +74,14 @@ def relink(directory,output,replace=None):
         require(sha256(replacement)!=record['files'][object_name],'Replacement object did not change')
         objects[record['objects'].index(object_name)]=replacement
     layout=directory/'exec816/c/calypsi/layout.scm'
-    command([tools['ln65816']['path'],'--hosted','--program-root','main','--program-start','main',
-        '--root-symbol','__exec_image_info','--rtattr','printf=nofloat','--no-data-init-table-section',
+    overrides=[part for name in record.get('runtime_symbol_overrides',[]) for part in ('--override',name)]
+    command([tools['ln65816']['path'],'--hosted','--program-root',ABI['entry'],'--program-start',ABI['entry'],
+        '--root-symbol','__exec_image_info','--rtattr','printf=nofloat',*overrides,'--no-data-init-table-section',
         '--no-automatic-placement-rules','--list-file',output/'link.lst','-o',output/'program.elf',*objects,layout])
-    image=read_image(output/'program.elf')
+    image=read_image(output/'program.elf',entry_name=ABI['entry'])
     image['provenance'].update(tools=tools,runtime_attributes={'printf':'nofloat'},
-        link_objects=[str(p) for p in objects],analysis_only=False)
+        link_objects=[str(p) for p in objects],analysis_only=False,
+        runtime_source_overrides=dict(symbol_overrides=record.get('runtime_symbol_overrides',[])))
     # This script lives in the supplied Exec tree; its standard relocation verifier
     # uses that same linker layout and exhausts all permitted application banks.
     relocations,banks=verify_relocations(output,image)

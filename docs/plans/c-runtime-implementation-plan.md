@@ -4,9 +4,10 @@
 [Testing policy](../contributing/testing.md) ·
 [Current C application contract](../reference/c-program-loading.md)
 
-Status: in progress, 2026-11-09. CR0–CR2 pass development checks
+Status: in progress, 2026-11-09. CR0–CR3 pass development checks
 ([CR0](../development/c-runtime-cr0.json), [CR1](../development/c-runtime-cr1.json),
-[CR2](../development/c-runtime-cr2.json)); CR3–CR5 remain pending. Complete each slice's
+[CR2](../development/c-runtime-cr2.json), [CR3](../development/c-runtime-cr3.json));
+CR4–CR5 remain pending. Complete each slice's
 selected development checks before committing it or starting dependent work.
 New source, generator and fixture paths below are deliverables, not existing
 commands or supported APIs.
@@ -63,7 +64,7 @@ Do not keep compatibility profiles or obsolete implementations.
 ## CR0 — Inventory dependencies and freeze the generated contract
 
 Audit [QED allocation](../../ports/gem4xe/apps/qed/native/allocation.c),
-[entry](../../ports/gem4xe/apps/qed/native/entry.c),
+[entry](../../ports/gem4xe/apps/qed/native/README.md),
 [files](../../ports/gem4xe/apps/qed/native/files.c) and
 [library hooks](../../ports/gem4xe/apps/qed/native/library.c). Classify each
 symbol as common runtime, GEMDOS compatibility, editor policy, pure vendor

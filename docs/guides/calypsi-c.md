@@ -44,8 +44,8 @@ function addresses are not automatically admitted as Task entries.
 
 ## Supported interface
 
-For an independently loadable GEM application, provide ordinary `int main(void)`
-and use the existing GEM/Exec headers. Build its translation units together:
+For an independently loadable GEM application, provide `int main(void)`, or `int main(int argc,char **argv)`
+with `--main-signature args`, and use the existing GEM/Exec headers. Build its translation units together:
 
 ```sh
 python3 tools/build_c_program.py --source examples/gem-panel/main.c \
@@ -60,9 +60,10 @@ automatically. The shared GUI stays in the compressed boot image. Close the init
 `RUN C:FILES.APP` to load another instance. Files itself can launch native commands
 and APPs, with one owned child at a time.
 
-The shared wrapper registers AES before `main` and completes AES/resource cleanup
-on return. The wrapper captures the application's IoErr before shared GUI
-teardown and restores it for ordinary Process secondary-result collection.
+The shared [C runtime](../reference/c-runtime.md) initializes allocation, argv,
+errno and stdio, then the resident runner registers AES before main. Normal
+return/exit runs exit handlers and closes C streams. Heap backing stays owned
+through GUI retirement, then native Process cleanup and collection follow.
 `SetIoErr` returns the previous full LONG value. Handle `WM_CLOSED`, collect owned children, and return from `main`;
 do not force-remove the Task or call `ExecDOSDetach` from a loaded application.
 Imports bind once at loading, so normal AES/VDI calls retain caller-local execution.
@@ -214,10 +215,12 @@ The Calypsi linker selects referenced shim/runtime routines for this executable.
 ## Current limits and development checks
 
 This binding does not provide C disk commands/o65, the full DOS API,
-`stdio`, `malloc`, arbitrary CRT initialization or
-general Action!/C callbacks.
+arbitrary board CRT initialization or general Action!/C callbacks.
+Loaded APPs provide the documented [C runtime subset](../reference/c-runtime.md),
+including aligned malloc/free, stdio, argv and termination. Raw Tasks and the
+standalone message example use the explicit Exec interfaces.
 Initialized globals and BSS are handled by the hosted loader. Pure compiler
-arithmetic helpers can be linked; a general-purpose C library port is separate.
+arithmetic helpers can be linked; facilities outside the documented APP runtime subset remain unsupported.
 User-defined tiny/near storage is not part of this target's linker layout.
 
 Calypsi 5.18 omitted implicit zero filling for the local partial array
@@ -314,7 +317,7 @@ launch returns, adds its own NUL, and retains that copy until collection.
 The caller may reuse or free its buffer after successful launch. Embedded NUL
 and invalid lengths are rejected by the existing Process admission boundary.
 The call returns a parent-owned Process identity, or zero on failure with IoErr.
-Use the current C import ABI 27 and rebuild the provider and all APPs together.
+Use the current APP ABI 31 and rebuild the provider and all APPs together.
 Start acknowledges child resource and console setup. `Input()`/`Output()` expose
 the child's cloned selections; a supplied CON console has independent BREAK
 routing while the parent's event loop and DOS context remain usable.

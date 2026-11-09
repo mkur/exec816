@@ -193,4 +193,4 @@ static int body(int argc,char **argv)
 }
 static int checked_body(int argc,char **argv)
 {int result=body(argc,argv);QedProbeReturned=result;return result;}
-int main(void){return QedRuntimeRun(checked_body);}
+int main(int argc,char **argv){return checked_body(argc,argv);}

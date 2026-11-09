@@ -34,7 +34,7 @@ headless builds and C commands in the native o65 format are separate work.
 | Component | Current source and reuse |
 | --- | --- |
 | Allocation and ownership | [QED allocation.c](../../ports/gem4xe/apps/qed/native/allocation.c): allocation headers, an ownership list, calloc and realloc. Generalize the implementation and fix alignment as described below. |
-| Arguments and cleanup | [QED entry.c](../../ports/gem4xe/apps/qed/native/entry.c): bounded argument storage and cleanup. Replace its single-document argument rule with the common parser and runner lifecycle. |
+| Arguments and cleanup | [baseline QED entry adapter](../../ports/gem4xe/apps/qed/native/README.md): bounded argument storage and cleanup. Replace its single-document argument rule with the common parser and runner lifecycle. |
 | Descriptors and stdio hooks | [QED files.c](../../ports/gem4xe/apps/qed/native/files.c): full native handles, error translation, new-position seeking and terminal Close. Separate generic hooks from GEMDOS and editor metadata helpers. |
 | Library preparation | [Runtime pin](../../toolchain/calypsi-runtime.json) and [preparation](../../tools/calypsi_runtime.py): checked library sources/headers and the explicit FILE initialization correction. |
 | C entry and native retirement | [Shared C runner](../../c/calypsi/program.c) and [Process implementation](../../lib/dos/process.act): caller-context execution, GUI detach, native DOS cleanup and acknowledged Task retirement. |

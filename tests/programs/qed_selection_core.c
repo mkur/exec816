@@ -55,4 +55,4 @@ static int body(int argc,char **argv)
        memcmp(TEXT(last),"efgh",4))return 116;
     kill_textring(&text.text);kill_memory();return -321;
 }
-int main(void){return QedRuntimeRun(body);}
+int main(int argc,char **argv){return body(argc,argv);}

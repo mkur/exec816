@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 30,
+  "version": 31,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -287,5 +287,7 @@
     }
   ],
   "stack_floor_bytes": 1312,
-  "default_stack_bytes": 2560
+  "default_stack_bytes": 2560,
+  "entry": "__exec_c_runtime_entry",
+  "runtime_version": 1
 }

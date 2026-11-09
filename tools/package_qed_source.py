@@ -79,6 +79,10 @@ def build(bundle,output,revision,compiler_dir=None,working_tree=False):
     for name,digest in app['inputs'].items():
         if '/inputs/source/' in name:target='source/'+name.split('/inputs/source/',1)[1]
         elif '/apps/qed/native/' in name:target='native/'+Path(name).name
+        elif Path(name)==production/'runtime-main.c':
+            target='generated/runtime-main.c'
+            (tree/'generated').mkdir(exist_ok=True)
+            shutil.copyfile(name,tree/target)
         else:target='exec816/'+Path(name).relative_to(ROOT).as_posix()
         require(sha256(tree/target)==digest,'Prepared corresponding source differs: '+target)
         application_sources[target]=digest
@@ -111,7 +115,9 @@ def build(bundle,output,revision,compiler_dir=None,working_tree=False):
         app_sha256=demo['qed']['app_sha256'],zip_sha256=sha256(bundle/'exec816-demo.zip'),
         minimum_stack_bytes=layout['selection']['minimum_stack_bytes'],
         tools=provenance['tools'],runtime_sha256=provenance['runtime']['sha256'],
-        compiler_options=layout['selection']['compiler_options'],objects=objects,cflib_objects=mapping,
+        compiler_options=layout['selection']['compiler_options'],
+        runtime_symbol_overrides=provenance['runtime_source_overrides'].get('symbol_overrides',[]),
+        objects=objects,cflib_objects=mapping,
         unresolved=policy['unresolved'],distribution_ready=False,
         components=list(COMPONENTS),
         component_sources={c:[n for n in files if n.startswith(prefix) and Path(n).suffix in ('.c','.h','.s','.act','.inc')]

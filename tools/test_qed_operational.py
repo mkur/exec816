@@ -126,7 +126,7 @@ def run(out,native_from,filesystem,group,fault='device',point=1):
         media_files={'DEST.TXT':b'old','DEST.BAK':b'older','KEEP.BIN':bytes(range(256))},
         extra_inputs=[ROOT/'tests/programs/qed_stage.c',*support],
         calls={'stage.c':dict(Fwrite='QedOperationalWrite',DeleteFile='QedOperationalDelete'),
-               'files.c':dict(Close='QedOperationalClose'),
+               'c/runtime/files.c':dict(Close='QedOperationalClose'),
                'save.c':dict(Rename='QedOperationalRename',DeleteFile='QedOperationalDelete')})
     if mode:require(r['last_secondary'][0]==r['operational'][0]['result'][1],
                     'Process finalization lost the original save cause')

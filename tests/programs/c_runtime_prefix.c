@@ -10,6 +10,7 @@ int main(void)
     struct ExecCRuntimeAllocation *prefix;
     char *p,**argv;
     int argc;
+    ExecCRuntimeHeapRelease();
     ExecCRuntimeHeapBegin();
     p=malloc(13);
     if (!p || ((ULONG)p&7)) return 1;

@@ -55,7 +55,7 @@ RETURN
 
 ENDMODULE
 '''
-    if group=='files':
+    if group!='abi':
         body=body.replace('  first=Load()', '  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)\n  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)\n  Require(input<>NULL AND output<>NULL)\n  LET oldInput=DOS.SelectInput(input)\n  LET oldOutput=DOS.SelectOutput(output)\n  first=Load()',1)
         body=body.replace('  Require(DOS.ReleaseContext()<>0)', '  DOS.SelectInput(oldInput)\n  DOS.SelectOutput(oldOutput)\n  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)\n  Require(DOS.ReleaseContext()<>0)')
     path.write_text(prefix+body)
@@ -63,26 +63,38 @@ ENDMODULE
 
 
 def _run(out,group,mode,reuse=False,filesystem="sdfs"):
+    if group=='retirement-failure':
+        from test_c_runtime_retirement import run as retirement
+        require(mode=='opt','Retirement failure is an optimized lifecycle check')
+        return retirement(out,reuse)
+    if group=='lifecycle':
+        from test_c_runtime_process import run as lifecycle
+        return lifecycle(out,mode,reuse)
     abi=group=='abi'
     source=ROOT/('tests/programs/c_runtime_abi.c' if abi else
         'tests/programs/c_runtime_prefix.c' if mode=='raw' else 'tests/programs/c_runtime_allocation.c')
-    components=['lifecycle.c'] if abi else ['allocation.c','arguments.c']
+
     if group=='files':
         source=ROOT/('tests/programs/c_runtime_io_abi.c' if mode=='raw' else 'tests/programs/c_runtime_files.c')
-        components=['allocation.c','files.c','stdio.c','library.c']
+    if group=='unwind':
+        source=ROOT/'tests/programs/c_runtime_unwind.c'
+    if group=='relocation':source=ROOT/'tests/programs/c_program_app.c'
     probes=[(ROOT/'c/runtime/layout.c',expected_layout())]
     if group=='files':
         probes.append((ROOT/'c/runtime/stdio-layout.c',[
             ('size_t',2),('fpos_t',4),('FILE',25),('stream list',20),
             ('FILE fd',4),('FILE oflags',22),('FILE flags',24)]))
+    if group=='unwind':probes.append((source,[('jmp_buf',16)]))
     record=process_run(out,mode=='opt',reuse=reuse,rebuild_app=reuse,
-        app_sources=[source,*[ROOT/'c/runtime'/name for name in components]],
+        app_sources=[source]+([ROOT/'tests/programs/c_program.c'] if group=='relocation' else []),
         app_options=dict(minimum_stack=ABI['stack_floor_bytes'],includes=[ROOT/'c/runtime'],probes=probes,
-            definitions={name:['-DEXEC_CRT_TEST'] for name in ('allocation.c','files.c')},
-            runtime_attributes={'printf':'nofloat'}),
+            definitions={} if abi or group in ('unwind','relocation') else {name:['-DEXEC_CRT_TEST'] for name in
+                (('allocation.c','files.c') if group=='files' else ('allocation.c',))},
+            runtime_attributes={'printf':'nofloat'},
+            extra_assembly=[ROOT/'tests/programs/c_runtime_unwind_registers.s'] if group=='unwind' else []),
         fixture_source=fixture(out,group),expected_completed=2 if abi else 4,native_optimize=True,
         release_compiler=True,loader_failures=False,observe_stacks=not abi,
-        filesystem=filesystem,writable=group=='files',ram=group=='files')
+        filesystem=filesystem,writable=not abi,ram=not abi)
     if group=='files' and mode=='opt':
         from filesystem_audit import Audit
         audit=Audit((out/'system.atr').read_bytes())
@@ -114,7 +126,7 @@ def run(out,group,mode,reuse=False,filesystem="sdfs"):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--group',choices=['abi','allocation','arguments','files'],required=True)
+    parser.add_argument('--group',choices=['abi','allocation','arguments','files','unwind','lifecycle','retirement-failure','relocation'],required=True)
     parser.add_argument('--case',choices=['raw','opt'],default='opt')
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--filesystem',choices=['sdfs','mydos'],default='sdfs')

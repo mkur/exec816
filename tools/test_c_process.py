@@ -149,6 +149,11 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                     record['last_primary']=data(b,p['image'],'lastPrimary',True)
                 if any(d['name'].startswith('M_CPROCESSTEST_LASTSECONDARY_') for d in p['image']['data']):
                     record['last_secondary']=data(b,p['image'],'lastSecondary',True)
+                if any(d['name'].startswith('M_CPROCESSTEST_EXPECTEDSECONDARY_') for d in p['image']['data']):
+                    record['expected_secondary']=data(b,p['image'],'expectedSecondary',True)
+                    record['expected_primary']=data(b,p['image'],'expectedPrimary',True)
+                if any(d['name'].startswith('M_CPROCESSTEST_CURRENTAPP_') for d in p['image']['data']):
+                    record['current_app']=data(b,p['image'],'currentApp',True)
                 table=next(d for d in p['image']['data'] if d['name']=='M_PROCESSSTATE_TABLE')
                 layout=json.loads((ROOT/'abi/process.json').read_text())
                 offsets={name:offset for name,kind,offset in layout['record']}
