@@ -13,10 +13,10 @@ from test_filesystem_write_edges import entry
 def run(out,mode):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     source=ROOT/'tests/programs/c_file_date.c'
-    # The two-cycle ABI fixture creates fresh Images and uses the same native
-    # optimized bridge in either C mode.
-    result=process_run(out,mode=='opt',app_sources=[source],fixture_source=fixture(out,'abi'),
-        expected_completed=2,native_optimize=True,release_compiler=True,loader_failures=False,writable=True)
+    # Two fresh Images: raw C, optimized C/native, or optimized C with raw
+    # native NIR for the bridge and its supporting kernel.
+    result=process_run(out,mode!='raw',app_sources=[source],fixture_source=fixture(out,'abi'),
+        expected_completed=2,native_optimize=mode!='native-raw',release_compiler=True,loader_failures=False,writable=True)
     audit=Audit((out/'system.atr').read_bytes());audit.sdfs()
     require(audit.files.get('DATE.DAT')==b'date','Persisted file bytes differ')
     image=Image((out/'system.atr').read_bytes())
@@ -30,4 +30,4 @@ def run(out,mode):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--case',choices=['raw','opt'],default='opt');args=parser.parse_args();run(args.output,args.case)
+    parser.add_argument('--case',choices=['raw','opt','native-raw'],default='opt');args=parser.parse_args();run(args.output,args.case)

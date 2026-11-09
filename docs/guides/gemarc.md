@@ -4,6 +4,9 @@
 
 GemARC opens ARC archives in a GEM window. Launch `RUN C:GEMARC.APP` or pass one
 quoted native filename, for example `RUN C:GEMARC.APP "WORK:SAMPLE.ARC"`.
+The standard desktop admits one GemARC or QED instance at a time; close it
+before opening another instance of either application.
+
 Opening an ARC document in Files uses GemARC unless a saved user association
 overrides ARC. Keep `SYS:GEMARC.RSC` on the matching system disk.
 

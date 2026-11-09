@@ -599,8 +599,9 @@ assuming work is pending. Current behavior belongs in the
   [CR0–CR5 implementation plan](c-runtime-implementation-plan.md): CR0–CR3 implement
   common allocation, arguments, errno, descriptors, stdio and phased cleanup,
   including the coordinated APP ABI 31 cutover and QED migration. CR4's
-  [QED acceptance](../development/c-runtime-cr4.md) passes. GemARC now uses the common runtime and APP ABI 32;
-  its final distribution acceptance remains pending. The
+  [QED acceptance](../development/c-runtime-cr4.md) passes. [CR5 GemARC and delivery acceptance](../development/c-runtime-cr5.md)
+  completes the plan on APP ABI 32, with matching source/relink materials and
+  selected exact-package walks. The
   [current contract](../reference/c-runtime.md) records zero added reserved
   bank-zero bytes; [development evidence](../development/c-runtime-cr3.json).
 - [Native pointer loops: implementation plan](compiler-pointer-loops-plan.md)

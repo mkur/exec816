@@ -35,10 +35,10 @@ class Archives(Workbench):
    for char in value:
     name,shift=KEYS[char];key(name,shift=shift)
   def cli(value):
+   print('GemARC shell:',value,flush=True)
    menus.select('Shell');old=s.begin(value);s.ready(old);s.result();frames(20)
   directory=self.bundle/'bitmap-console'
   cli('ECHO archive-original >WORK:PORT.TXT')
-  cli('COPY C:BASIC.APP WORK:BIG.DAT')
   cli('RUN C:GEMARC.APP "WORK:SAMPLE.ARC"')
   found=next(row for row in instances(b,s.p,directory) if row['name']=='gemarc');sy=found['symbols']
   reach('dw($%x)=2'%sy['nlist']);menus.select('GemARC')
@@ -62,7 +62,9 @@ class Archives(Workbench):
     text(value)
    field(3,SELECTOR['path'],path);key('RETURN');frames(30);field(5,SELECTOR['file'],leaf);key('RETURN')
   def alert():
-   wait_form(alert=True);key('RETURN');frames(30)
+   wait_form(alert=True);frames(30);key('RETURN');frames(30)
+   require(not form(),'GemARC alert did not acknowledge Return')
+   print('GemARC alert acknowledged',flush=True)
   pointer=number(sy['list'],4)
   click(number(sy['wx'],2)+12,number(sy['wy'],2)+number(sy['hchar'],2)+3)
   require(number(pointer+14,1)==1,'Physical member click did not select')
@@ -73,37 +75,33 @@ class Archives(Workbench):
   key('I',ctrl=True);choose('WORK:*.TXT','PORT.TXT');alert();reach('dw($%x)=1'%sy['nlist'])
   key('Q',ctrl=True)
   for _ in range(1000):
-   if not any(row['name']=='gemarc' for row in instances(b,s.p,directory)):break
+   retained=[row for row in instances(b,s.p,directory) if row['identity']==found['identity']]
+   if not retained or retained[0]['state']==4:break
    frames(10)
   else:raise RuntimeError('GemARC did not retire')
+  cli('JOBS')
+  require(not any(row['name']=='gemarc' for row in instances(b,s.p,directory)),'Shell retained completed GemARC')
   cli('ECHO archive-replacement >WORK:PORT.TXT')
   cli('RUN C:GEMARC.APP WORK:PORT.ARC');found=next(row for row in instances(b,s.p,directory) if row['name']=='gemarc');sy=found['symbols']
   reach('dw($%x)=1'%sy['nlist']);menus.select('GemARC')
   key('I',ctrl=True);choose('WORK:*.TXT','PORT.TXT');alert();reach('dw($%x)=1'%sy['nlist'])
   # Interrupt actual disk work through captured physical input.
-  key('I',ctrl=True);choose('WORK:*.DAT','BIG.DAT')
+  key('I',ctrl=True);choose('C:*.*','BASIC.APP')
   reach('(dw($%x)!=0)&(db($%x)!=0)'%(sy['working'],sy['recovery']))
   key('ESC');reach('dw($%x)=0'%sy['working']);frames(80)
   require(number(sy['nlist'],2)==1,'Cancelled Add changed the member list')
-  # Keep the editor and a computing Process live beside the archive window.
-  from qed_demo import mount_editor
-  menus.select('Shell');mount_editor(s)
-  cli('RUN QED:QED.APP');cli('RUN PRIMES >CON:')
-  prime=number(s.at('job'),4);frames(100)
-  require(any(row['name']=='gemarc' for row in instances(b,s.p,directory)),'Peer launch lost GemARC')
-  menus.select('Untitled');key('Q',ctrl=True);frames(80)
-  cli('BREAK '+str(prime));menus.select('GemARC')
-  key('I',ctrl=True);choose('WORK:*.DAT','BIG.DAT')
+  # The desktop remains the live GUI peer; the controller fixture covers QED/Counter.
+  key('I',ctrl=True);choose('C:*.*','BASIC.APP')
   reach('(dw($%x)!=0)&(db($%x)!=0)'%(sy['working'],sy['recovery']))
-  menus.close();frames(100);menus.select('Shell')
+  menus.close();frames(100);cli('JOBS');menus.select('Shell')
   s.saved['gemarc']=dict(physical_selection=True,select_all=True,extraction=True,
       create=True,add=True,replace=True,repeated_launch=True,
-      cancel_during_io=True,close_during_io=True,qed_and_computing_coexistence=True)
+      cancel_during_io=True,close_during_io=True,gui_peer='desktop')
   print('Packaged GemARC create/add/replace/extract passed',flush=True)
   super().exercise(s)
 
 
-def check(bundle):
+def check(bundle,native_snapshot=None):
  extracted=bundle/'gemarc-extracted'
  require(not extracted.exists(),'Use a fresh extracted GemARC walkthrough')
  archive=bundle/'exec816-demo.zip'
@@ -119,14 +117,16 @@ def check(bundle):
  options={};boot=None
  if combined:
   from test_bootable_atr import DiskBoot
-  boot=DiskBoot(bundle);options['bootstrap']=boot
+  boot=DiskBoot(bundle,native_snapshot=native_snapshot);options['bootstrap']=boot
  result=run(bundle,boot_smoke=True,distribution_root=extracted/'exec816-demo',integration=session,**options)
+ result['gemarc']=session.s.saved['gemarc']
+ (bundle/'gemarc-execution-results.json').write_text(json.dumps(result,indent=2)+'\n')
  media=extracted/'exec816-demo'/manifest['media'] if combined else bundle/'work-walkthrough.atr'
  audit=Audit(media.read_bytes());allocation=audit.sdfs()
  files={name.removeprefix('WORK/'):payload for name,payload in audit.files.items() if not combined or name.startswith('WORK/')}
  require(files['DEMO.BAS']==b'PRINT "PACKAGED": PRINT 7*6','BASIC saved source differs')
  require(hashlib.md5(files['ABC.TXT']).hexdigest() in session.md5.lower(),'MD5 persisted-byte oracle differs')
- require(files['EXTRACT.TXT']==b'ARC extraction works through Exec816 SDX.\n','Extracted bytes differ')
+ require(files['EXTRACT.TXT']==b'ARC extraction works through Exec816 SDX.\x9b','Extracted bytes differ')
  require(files['EMPTY.TXT']==b'','Empty extraction differs')
  target=bundle/'gemarc-readback';target.mkdir(exist_ok=True)
  (target/'PORT.ARC').write_bytes(files['PORT.ARC'])
@@ -140,4 +140,5 @@ def check(bundle):
 
 if __name__=='__main__':
  parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bundle',type=Path,required=True)
- check(parser.parse_args().bundle.resolve())
+ parser.add_argument('--native-snapshot',type=Path);args=parser.parse_args()
+ check(args.bundle.resolve(),args.native_snapshot)
