@@ -138,6 +138,7 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
     accounted=sum(sum(u['sections'].values()) for u in linked_units)
     require(accounted==code+initialized+bss+16+image['provenance']['dp_workspace_bytes'],
             'Link summary does not account for all loaded and virtual bytes')
+    heap_alignment=json.loads((ROOT/'abi/heap-v1.json').read_text())['alignment']
     record=dict(schema_version=1,status='executable-development' if executable else 'analysis-only',tier='development',inputs=inputs,
         selection=selection,bindings=bindings,analysis_bindings=[b['name'] for b in pending],abi=ABI,verified_banks=banks,
         complete_link=True,unresolved_essential_helpers=[],
@@ -146,8 +147,9 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
             import_thunk_bytes=4*imports_count,span_bytes=span,
             image_holes_bytes=span-code-initialized-bss,
             serialized_bytes_if_executable=serialized,relocation_count=len(relocations),
-            heap_alignment_backing_bytes=(span+65535+3)//4*4,
-            future_full_profile_backing_bytes=(ABI['span_limit']+65535+3)//4*4,
+            heap_alignment_bytes=heap_alignment,
+            heap_alignment_backing_bytes=(span+65535+heap_alignment-1)//heap_alignment*heap_alignment,
+            future_full_profile_backing_bytes=(ABI['span_limit']+65535+heap_alignment-1)//heap_alignment*heap_alignment,
             private_allowances=allowance,container_metadata_allowance_bytes=selection['container_metadata_allowance_bytes'],
             resident_provider_allowances=selection['resident_provider_allowances']),
         resident_provider=dict(path=str(provider),sha256=sha256(provider),code_bytes=provider_code,

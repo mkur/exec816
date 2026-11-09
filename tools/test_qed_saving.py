@@ -98,7 +98,7 @@ def core(out,native_from,filesystem='sdfs',group='stage'):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True)
-    p.add_argument('--native-from',type=Path,required=True)
+    p.add_argument('--native-from',type=Path)
     p.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs')
     p.add_argument('--group',choices=('stage','edges','transaction','transaction-edges'),default='stage');a=p.parse_args()
     r=core(a.output,a.native_from,a.filesystem,a.group);print(r['status'],r['completed'])

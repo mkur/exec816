@@ -58,34 +58,33 @@ unsupported operation.
 Metadata uses `ExamineExact`, checks its size flag and copies the native
 DateStamp. An all-zero or invalid DateStamp is explicitly unavailable; it is
 not a valid zero calendar date. The native timer clock is not UTC. Standard
-`time()` returns -1 with ENOSYS, and the environment is an empty list. Optional
-calendar/autosave callers must be removed or adapted in the retained-source
-slice. Standard termination uses the common C-only boundary. QedRetirementFault
+`time()` returns -1 with ENOSYS, and the environment is an empty list.
+Calendar/autosave support is outside the current port. Standard termination
+uses the common C-only boundary. QedRetirementFault
 retains the Task/Image/backing if an editor borrower cannot retire safely.
 
-The build prepares the explicit [Calypsi source correction](../../../../../toolchain/calypsi-runtime.json)
-in a separate work copy. It initializes FILE list/unget state, preserving the
-original library notices and archive. The emitted file fixture poisons malloc
-backing and exercises multiple streams, allocation rollback, buffering and
-terminal fclose failure. These checks do not qualify QED's Save/backup workflow.
+The build prepares the pinned [Calypsi source corrections](../../../../../toolchain/calypsi-runtime.json)
+in a separate work copy, preserving notices and the installed archive. Common
+runtime checks cover FILE initialization, transfers, buffering and termination;
+QED saving and recovery checks exercise the editor's own transaction policy.
 
 A failed common allocator backing acquisition records ERROR_NO_FREE_STORE in
 IoErr so startup can return its causal failure after GUI/runtime cleanup.
 Startup failure uses the Process result before ordinary editor alerts become
 available. See [startup ownership](../../../../../docs/history/qed-startup.md).
 
-QW2 prepares canonical physical paths with `path.c` before reading a document.
+`path.c` prepares canonical physical paths before reading a document.
 A candidate retains its ordinary directory lock through commit or cancellation;
 selected-file metadata queries release their locks immediately. No current-directory
-mutation or private lock layout is used. Save commands remain disabled.
+mutation or private lock layout is used.
 
-QW3's `stage.c` owns exact bounded serialization and a closed exclusive T.
+`stage.c` owns exact bounded serialization and a closed exclusive temporary T.
 It never publishes D or changes B. The descriptor adapter admits slots before
 creation and exposes terminal Close's own cause separately. Stage readiness
-is private core state; the real menu remains disabled until QW5.
+is private core state; publication belongs to `save.c`.
 
-QW4's `save.c` owns the D/T/B/E transaction and persistent recovery facts. Its
+`save.c` owns the D/T/B/E transaction and persistent recovery facts. Its
 core caller supplies explicit authorization; it does not simulate GUI consent.
 Only confirmed logical moves are reversed, and post-publication errors retain
-new D. Unknown outcomes perform no speculative filesystem cleanup. Menu Save
-and Save As remain disabled until QW5.
+new D. Unknown outcomes perform no speculative filesystem cleanup. `saving.c`
+connects Save/Save As to the Cancel-default consent and recovery dialogs.

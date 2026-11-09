@@ -7,7 +7,7 @@ from test_c_process import run as process_run
 from c_program import ABI
 
 
-def fixture(out,raw=False):
+def fixture(out,raw=False,coexistence=False):
     prefix=(ROOT/'tests/programs/c_process.act').read_text().split('\nPROC Main()')[0]
     prefix=prefix.replace('LONGINT lastPrimary','LONGINT lastPrimary,lastSecondary,expectedPrimary,expectedSecondary')
     body='''
@@ -56,6 +56,29 @@ PROC Main()
   image=Load()
   held=EXEC.AvailMem(0)
 '''
+    paired='''  second=Load()
+  one=Start(image,BYTE POINTER(c"R"))
+  two=Start(second,BYTE POINTER(c"H"))
+  Waited(image,one,0,0,3,321,1,1,1)
+  Waited(second,two,0,0,32,0,1,1,1)
+  PROGRAM.Unload(image)
+  PROGRAM.Unload(second)
+  Require(EXEC.AvailMem(0)=baseline)
+'''
+    cleanup='''  LET service=AESSTATE.Get()
+  Require(service.count=0 AND AESCORE.Idle(service)<>0)
+  DOS.SelectInput(oldInput)
+  DOS.SelectOutput(oldOutput)
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE
+'''
+    if coexistence:
+        path=out/'lifecycle.act';path.write_text(prefix+body+paired+cleanup)
+        return path,3
     cases=[('R',0,0,3,321,1,1),('N',-321,0,3,321,1,1),('X',7,0,0,0,0,1)]
     if not raw:cases += [('A',20,304,0,0,0,1),('T',20,311,0,0,0,1),
         ('H',0,0,32,0,1,1),('F',20,0xc219,3,321,1,1),
@@ -81,33 +104,15 @@ PROC Main()
   Require(EXEC.AvailMem(0)=baseline)
 '''
     if not raw:
-        body+='''  image=Load()
-  second=Load()
-  one=Start(image,BYTE POINTER(c"R"))
-  two=Start(second,BYTE POINTER(c"H"))
-  Waited(image,one,0,0,3,321,1,1,1)
-  Waited(second,two,0,0,32,0,1,1,1)
-  PROGRAM.Unload(image)
-  PROGRAM.Unload(second)
-  Require(EXEC.AvailMem(0)=baseline)
-'''
-    body+='''  LET service=AESSTATE.Get()
-  Require(service.count=0 AND AESCORE.Idle(service)<>0)
-  DOS.SelectInput(oldInput)
-  DOS.SelectOutput(oldOutput)
-  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
-  Require(DOS.ReleaseContext()<>0)
-
-RETURN
-
-ENDMODULE
-'''
+        body+='  image=Load()\n'+paired
+    body+=cleanup
     body=body.replace('LONGCARD held','BYTE ARRAY quote=[34 0]\nLONGCARD held')
     path=out/'lifecycle.act';path.write_text(prefix+body)
     return path,1+len(cases)+4+(0 if raw else 2)
 
 
-def run(out,mode,reuse=False):
+def run(out,mode,reuse=False,coexistence=False):
+    require(not coexistence or mode=='opt','Coexistence uses optimized C')
     source=ROOT/'tests/programs/c_runtime_lifecycle.c'
     def build(destination):
         app=application(destination,[source],mode=='opt',main_signature='args',
@@ -117,12 +122,13 @@ def run(out,mode,reuse=False):
         offset=app['image']['symbols']['report']-(ABI['link_bank']<<16)
         (out/'runtime-observe.inc').write_text('PUBLIC CONST REPORT_OFFSET=LONGCARD($'+format(offset,'x')+')\n')
         return app
-    path,completed=fixture(out,mode=='raw')
+    path,completed=fixture(out,mode=='raw',coexistence)
     record=process_run(out,mode=='opt',reuse=reuse,rebuild_app=reuse,app_builder=build,
         fixture_source=path,expected_completed=completed,native_optimize=True,
-        release_compiler=True,loader_failures=False,observe_stacks=True)
+        release_compiler=True,loader_failures=False,observe_stacks=True,
+        stack_observation_index=1 if coexistence else 0)
     require(record['runtime']['native_irq_count']>0 and record['runtime']['native_nmi_count']>0,
             'Missing asynchronous context evidence')
-    record['c_runtime_lifecycle']=dict(mode=mode,actual_entry=ABI['entry'],completed=completed)
+    record['c_runtime_lifecycle']=dict(mode=mode,actual_entry=ABI['entry'],completed=completed,coexistence=coexistence)
     (out/'results.json').write_text(json.dumps(record,indent=2)+'\n')
     return record

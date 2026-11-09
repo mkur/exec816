@@ -79,11 +79,17 @@ Full release qualification remains separate from these development checks.
 The Atarimax reader retires before the twelve-Task pools are initialized.
 Other cartridge mappers and physical hardware remain outside these checks.
 
-The merged provider and APPs use C ABI 27 and AES wire ABI 18; rebuild them
-together. The console and FastBasic bindings consume 4 KiB of the earlier
-provider code growth allowance, leaving 12 KiB for future code, 4 KiB for
-tables and 16 KiB for data/BSS within the existing provider banks. These are
-build-time bounds, with no additional fixed or per-Task bank-zero reservation.
+QED uses the [shared C runtime](../reference/c-runtime.md), including standard
+argc/argv, allocation, descriptors, stdio and termination. Rebuild the provider
+and all APPs together after changes to the [C image ABI](../reference/c-program-loading.md)
+or [AES wire ABI](../../abi/aes-server.json). The
+[native selection](../../ports/gem4xe/apps/qed/native-selection.json) records
+compiler options, the 2,560-byte Task stack and provider growth allowances.
+These are build-time bounds, with no additional fixed or per-Task bank-zero
+reservation.
+
+The [common-runtime acceptance record](../development/c-runtime-cr4.md) covers
+the migrated editor's files, saving/recovery, Stop, reuse and peer coexistence.
 
 ## Source and relinking
 

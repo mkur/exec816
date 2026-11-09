@@ -119,7 +119,8 @@ dialogs and an independent text/pixel observer; its allocation wrapper refuses
 selected acquisitions and forwards every successful call to the actual allocator.
 The supervisor checks normal collection, unload and exact heap reuse.
 See the [editing record](../../../../docs/history/qed-editing.md) for the
-implemented slice, evidence and remaining commands. Save/Save As remain disabled.
+implemented slice and historical evidence. The current guide lists Save/Save As
+and the other delivered commands.
 
 QE3 enables event-driven pointer/Shift selection, Select All, release rearming
 and bounded outside-work autoscroll. The loaded-editor runner verifies ranges
@@ -506,7 +507,9 @@ keep both when redistributing QED, which must remain free of charge.
 
 The native adapters use the copyright holder's authorized MIT grant; generated
 GEM declarations retain LGPL, and donor/runtime material retains its own terms.
-The delivered APP/resource/provider match the measured QC4 production editor.
+Historical delivery records retain their original APP/resource/provider identities.
+Current builds use the [shared C runtime](../../../../docs/reference/c-runtime.md)
+and rebuild the matched provider and APP.
 Fresh exact-ZIP checks cover both ordinary launch parents and persisted saves;
 the complete original gap/scope reconciliation and limits are in the delivery record.
 Full release/hosted/hardware qualification and cartridge publication remain separate.

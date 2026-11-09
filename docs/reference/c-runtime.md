@@ -126,4 +126,6 @@ actual program. Development checks are not full hosted-system qualification.
 The [CR3 record](../development/c-runtime-cr3.json) covers raw/optimized entry
 and unwind, 9 raw/17 optimized lifecycle executions, failed retirement retention,
 all nine rebuilt APPs starting/stopping, obsolete-ABI rejection and an ordinary
-resident C main. QED consumer acceptance and GemARC delivery follow separately.
+resident C main. [QED consumer acceptance](../development/c-runtime-cr4.md)
+covers editing, saving/recovery, Stop and repeated lifetimes beside a peer.
+GemARC delivery remains in progress.

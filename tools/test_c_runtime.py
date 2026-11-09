@@ -67,9 +67,9 @@ def _run(out,group,mode,reuse=False,filesystem="sdfs"):
         from test_c_runtime_retirement import run as retirement
         require(mode=='opt','Retirement failure is an optimized lifecycle check')
         return retirement(out,reuse)
-    if group=='lifecycle':
+    if group in ('lifecycle','coexistence'):
         from test_c_runtime_process import run as lifecycle
-        return lifecycle(out,mode,reuse)
+        return lifecycle(out,mode,reuse,coexistence=group=='coexistence')
     abi=group=='abi'
     source=ROOT/('tests/programs/c_runtime_abi.c' if abi else
         'tests/programs/c_runtime_prefix.c' if mode=='raw' else 'tests/programs/c_runtime_allocation.c')
@@ -126,7 +126,7 @@ def run(out,group,mode,reuse=False,filesystem="sdfs"):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--group',choices=['abi','allocation','arguments','files','unwind','lifecycle','retirement-failure','relocation'],required=True)
+    parser.add_argument('--group',choices=['abi','allocation','arguments','files','unwind','lifecycle','coexistence','retirement-failure','relocation'],required=True)
     parser.add_argument('--case',choices=['raw','opt'],default='opt')
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--filesystem',choices=['sdfs','mydos'],default='sdfs')
