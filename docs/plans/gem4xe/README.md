@@ -1,5 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
+The [UPDATE snapshot reuse design](update-snapshot-reuse-design.md) separates
+geometry/visibility freshness from content and paint state. It starts with
+BEGIN/snapshot/END profiling, then defines reuse, invalidation, ownership and
+matched development gates before choosing a cache mechanism.
+
 The [incremental object traversal plan](object-tree-traversal-plan.md) uses
 caller-local parent origins to remove repeated coordinate lookup while
 preserving GEM drawing behavior. It orders focused traversal regressions,

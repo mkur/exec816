@@ -609,6 +609,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [UPDATE snapshot reuse design](gem4xe/update-snapshot-reuse-design.md): profile
+  BEGIN/snapshot/END, establish geometry and visibility freshness rules, and
+  preserve paint epochs, ownership and conventional GEM behavior during reuse.
+
 - [Incremental object traversal](gem4xe/object-tree-traversal-plan.md): bounded
   caller-local coordinates, traversal/pixel regressions and matched optimized
   measurement against the captured AES baseline. OT1–OT3 pass at the development
