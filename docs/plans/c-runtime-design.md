@@ -4,7 +4,12 @@
 [C application contract](../reference/c-program-loading.md) ·
 [Memory contract](../reference/memory.md)
 
-Status: proposed, 2026-11-09. This note selects a common runtime design; it does
+Implementation status: CR0–CR5 pass development acceptance; see the
+[current runtime contract](../reference/c-runtime.md) and
+[delivery record](../development/c-runtime-cr5.md). The closing validation
+statement below describes the original design-only edit.
+
+Original design status: proposed, 2026-11-09. This note selects a common runtime design; it does
 not add supported interfaces or change the current C application ABI. Implement
 and document each executable slice before advertising its capabilities.
 The implementation baseline is Exec816 0.2.3, including packaging commit
@@ -348,4 +353,4 @@ headroom and relocation span for QED and GemARC before expanding any reservation
 
 This design-note edit changes **zero** executable bytes and **zero** reserved
 bank-zero bytes. Its validation is content and local-link checking only; all
-CR0–CR5 implementation and executable acceptance remain pending.
+CR0–CR5 implementation and executable acceptance were pending at that design-only checkpoint.

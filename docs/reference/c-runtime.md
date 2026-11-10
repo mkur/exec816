@@ -129,3 +129,10 @@ all nine rebuilt APPs starting/stopping, obsolete-ABI rejection and an ordinary
 resident C main. [QED consumer acceptance](../development/c-runtime-cr4.md)
 covers editing, saving/recovery, Stop and repeated lifetimes beside a peer.
 GemARC delivery remains in progress.
+
+[CR5 acceptance](../development/c-runtime-cr5.md) adds GemARC, the generic
+`SetFileDate` C binding, matched APP ABI 32 artifacts and selected distribution
+walks. The [GemARC guide](../guides/gemarc.md) records archive recovery, supported
+methods, timestamps and production admission limits. The additional reserved
+bank-zero cost remains zero for fixed state, root/kernel, each public Task and
+idle; application code, tables and owned allocations are charged in upper RAM.

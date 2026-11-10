@@ -25,6 +25,7 @@ repository root; directory entries include all files below them.
 | `abi/` | Machine-readable interface definitions |
 | `lib/dos/fbabi.act`, `lib/dos/fbinterpabi.act`, `ports/fastbasic/target/helpers.asm`, `ports/fastbasic/target/callbacks.asm`, `ports/fastbasic/target/fp_snapshot.asm`, `ports/fastbasic/target/fastbasic.inc`, `ports/fastbasic/target/source-run.asm`, `ports/fastbasic/target/source-run.inc` | Exec-authored FastBasic runtime bindings, source bootstrap and generated constants |
 | `ports/gem4xe/apps/qed/native/*.c` and `*.h`, except `qed-gem-extra.h` | Exec-authored QED native adapters; the generated GEM header retains LGPL-2.1-or-later |
+| `ports/gem4xe/apps/gemarc/native/` | Exec-authored GemARC file, path and timestamp adapters |
 | `c/`, except `c/include/setjmp.h` | Public C headers, Calypsi bindings, startup support and C examples |
 | `examples/`, except `examples/shell/` | Standalone examples, disk commands and sample data |
 | `lib/exec/exec.act`, `lib/exec/execos.act`, `lib/exec/execproducer.act` | Action! interface declarations |
@@ -104,7 +105,8 @@ emulators or patches to upstream projects.
 - GEM4XE source selected by `ports/gem4xe/selection.json` and
   `ports/gem4xe/aes/selection.json`, calculator sources pinned by
   `ports/gem4xe/apps/calculator/inputs.json`, benchmark sources pinned by
-  `ports/gem4xe/apps/g4bench/inputs.json`, and patches to them, retain
+  `ports/gem4xe/apps/g4bench/inputs.json`, archive sources pinned by
+  `ports/gem4xe/apps/gemarc/inputs.json`, and patches to them, retain
   the donor notices. Reproducible extraction copies `COPYING`, `COPYING.LIB`, the
   upstream licence note and font provenance beside the selected sources. The
   Exec MIT interface grant does not relicense this material.

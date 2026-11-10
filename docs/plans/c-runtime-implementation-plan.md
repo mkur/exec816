@@ -4,13 +4,10 @@
 [Testing policy](../contributing/testing.md) ·
 [Current C application contract](../reference/c-program-loading.md)
 
-Status: in progress, 2026-11-09. CR0–CR4 pass development checks
-([CR0](../development/c-runtime-cr0.json), [CR1](../development/c-runtime-cr1.json),
-[CR2](../development/c-runtime-cr2.json), [CR3](../development/c-runtime-cr3.json),
-[CR4](../development/c-runtime-cr4.md)); CR5 remains pending. Complete each slice's
-selected development checks before committing it or starting dependent work.
-New source, generator and fixture paths below are deliverables, not existing
-commands or supported APIs.
+Status: implemented and accepted at the development tier, 2026-11-09.
+CR0–CR5 pass their selected gates; see the [CR5 reconciliation](../development/c-runtime-cr5.md)
+and the linked earlier records. The current APP ABI is 32 and runtime contract
+1. This is not full hosted-system qualification.
 
 ## Baseline and scope
 
@@ -381,6 +378,6 @@ correctness from malloc tests, or claim hosted-system qualification from
 compiler tests. Full release qualification runs on frozen inputs for an actual
 release or an explicit request, following the existing two-tier policy.
 
-This plan-only change adds **0 executable bytes and 0 reserved bank-zero bytes**.
+The original plan-only change added **0 executable bytes and 0 reserved bank-zero bytes**.
 Its checks are documentation content, local links/anchors and whitespace;
 all implementation and emitted-code gates remain pending.

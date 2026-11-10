@@ -1,0 +1,17 @@
+GemARC archive window
+--------------------
+
+RUN C:GEMARC.APP "WORK:SAMPLE.ARC" opens the supplied archive. Keep
+SYS:GEMARC.RSC on the matching system disk. Files opens ARC documents in
+GemARC unless a saved association overrides ARC.
+Click a member to select; Ctrl-A selects all. Ctrl-E extracts to the selected
+directory, Ctrl-I adds a filename or wildcard, Ctrl-N creates, Ctrl-O opens,
+Ctrl-U closes the archive and Ctrl-Q quits. Cursor keys and the slider scroll.
+Escape cancels work; close/Stop cancels and quits. Limits: 512 archive members,
+64 files per Add. Methods 5-7 cannot be extracted. Output names use native 8.3.
+Writes use exclusive Gxxxxxxx.TMP files and Gxxxxxxx.OLD replacement backups
+in the same directory. Preserve recovery files named by an error before retrying:
+.OLD holds the original and .TMP holds the replacement. A failed Close can leave
+uncertain temporary contents. This is recovery, without atomic replacement or
+power-loss durability. Source materials and build instructions are delivered
+separately from this small boot ZIP.

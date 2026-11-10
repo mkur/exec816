@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/slaapliedje/gem4xe.git",
+  "revision": "0692b5519112dcde1f29f061ebcebe7a095aaf60",
+  "files": {
+    "src/apps/gemarc.c": "79ae4e1cbf9c5faed9032e8c79b20f0cfae09ec3cd7aab479d98b49f25fd389c",
+    "src/apps/arcfile.c": "676360e3562ee4dfdb06ae8f6fa717bc1bdf3ede6d132cce50bcbc9de1c08664",
+    "src/apps/arcfile.h": "c224871c333feb9db0711ae7a86731d41a0ef7de683bb0df89855fe031f7b670",
+    "src/apps/arccodec.c": "73115dee4ec6b5864070774521d267b98db8c04c47481b74baa4887b9a4931f7",
+    "src/apps/arccodec.h": "4d1751e6ac50f4f8bd17fbb7aafe710d54d02feff52be0b47cf6d57b5e6b4536",
+    "tools/gemarcrsc.py": "ef3d7e375881b266b9fb7bde4c78a1028becf3f0cc416a90ad07ae493a5949bf",
+    "tools/rsc.py": "06ce646a65b874dd4dc8c3beb890ea39f5040a61532c4806c5bfa6f64fbd940b",
+    "tools/aesref.py": "5d57e86feb70ca0b4aa9e72eadb264a356f137e966faf046fbd7a0a5379c05ba",
+    "tools/vdiref.py": "887ae50e1196a9d180ae81734c86f979ac4b20d749a85c659271d625770e075c",
+    "tools/fontref.py": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+    "tools/devref.py": "96725bfb1cb6389a3a200cade3b201d23fd543d63f82063200d058194ebe0ab6",
+    "tools/gemdata.py": "408f051d865d07b88cede092d8b4fbf39e0da154c1954085ae3a18d410f0eb87",
+    "tools/vbxeref.py": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+    "tools/anticref.py": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+    "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+    "src/vdi/font6x6.c": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+    "src/vdi/sintbl.c": "4d990d00f911037464b9eac35bcf2cc85bc176807a2b49dc800aaa20001b6244",
+    "src/vdi/fillpat.c": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+    "src/vbxe/vbxe.h": "7b484e3a1aa645ac98c59aaa7f5d41149c62d87f828fa3d51170c9592932e838",
+    "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+    "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+    "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+    "VERSION": "342a2d9e91ecb95d736e0a0cd7540c7b4637173ebc0f3a12a09839873b863e56",
+    "src/app/gem.h": "a5a7d8f2a4856887b80118014aa3f853129a8b0ad92b3123f1ebf1fcacf812d3"
+  }
+}

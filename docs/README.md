@@ -67,3 +67,9 @@ The [EDX development port](development/sdx-edx.md) adds pinned admission,
 public console operations, qualified scan input and a bell patch. See the
 [utility guide](guides/sdx-utilities.md) for builds and editor commands.
 Development evidence does not qualify the general hosted system.
+
+The [shared C runtime](reference/c-runtime.md) now serves QED and
+[GemARC](guides/gemarc.md). [CR0–CR5 development acceptance](development/c-runtime-cr5.md)
+records APP ABI 32, standard allocation/stdio/lifecycle behavior, matched source
+materials and selected distribution walks, with zero added reserved bank-zero
+bytes. This is development evidence, not full hosted-system qualification.
