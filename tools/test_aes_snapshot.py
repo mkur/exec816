@@ -77,7 +77,9 @@ def run(out,from_build=None,epochs=False):
         compiler(ROOT/'build/actionc',release=True),source,
         out/'program',tasks=True,task_capacity=8,optimize=True,console=False,console_deferred=True,
         memory_profile=memory)
-    names='AESSNAPSHOTPROBE_SAMPLE AESWINDOWSTATE_BEGINUPDATE AESWINDOWSTATE_SNAPSHOTALL AESWINDOWSTATE_PUBLISH AESWINDOWSTATE_ENDUPDATE REGIONS_CLIP'.split()
+    names='AESSNAPSHOTPROBE_SAMPLE AESWINDOWSTATE_BEGINUPDATE AESWINDOWSTATE_SNAPSHOTALL AESWINDOWSTATE_PUBLISH AESWINDOWSTATE_ENDUPDATE REGIONS_CLIP DESKCACHE_ENDCHANGE DESKCACHE_CLIENTBOUNDS LAYERS_PIXELSREADY LAYERCACHE_ENDCHANGE'.split()
+    completion_name='AESSNAPSHOTPROBE_COMPLETIONSAMPLE'
+    names+=[completion_name]
     if epochs:names+=['AESSNAPSHOTPROBE_ZEROEPOCHSAMPLES']
     marks=native_markers(p,[(n,n) for n in names])
     require(set(marks)==set(names),'Missing metadata marker')
@@ -87,17 +89,25 @@ def run(out,from_build=None,epochs=False):
     pcs=set(points.values())|{pc for m in marks.values() for pc in [m['entry'],*m['returns']]}
     environment=dict(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in sorted(pcs)),EXEC816_MASK_TRACE='0')
     report=dict(status='running',tier='development',qualification=False,build=p['build'],
-        harness_sha256=sha256(Path(__file__)),fixture_sha256=sha256(source),epochs=epochs)
+        harness_sha256=sha256(Path(__file__)),fixture_sha256=sha256(source),epochs=epochs,
+        fixture_inputs={str(p.relative_to(ROOT)):sha256(p) for p in (
+            ROOT/'tests/programs/aes_snapshot.act',ROOT/'tests/programs/aes-snapshot-checks.inc',
+            ROOT/'tests/programs/aes-cache-completion-checks.inc')})
     try:
         with patch.dict(os.environ,environment),emulator(BRIDGE,ROM,out,pin=PIN) as b:
             report['machine']=verify_machine(b,ROM,PIN)
             try:report['runtime'],_=execute(b,p,before_run=lambda b:b.profile_start(),timeout=120,frame_limit=6000)
+            except Exception:
+                report['failure_state']={name:data(b,p['image'],name,words) for name,words in (
+                    ('checks',True),('completionCase',False),('completionIteration',False))}
+                raise
             finally:b.profile_stop()
             ownership(b,p,p['output'])
             report['checks']=data(b,p['image'],'checks',True)[0]
             observed=next(d['address'] for d in p['image']['data'] if '_AESSNAPSHOTPROBE_OBSERVATIONS_' in d['name'])
             count=data(b,p['image'],'observationCount',True)[0]
             report['observations']=check_observations(b.memdump(observed,count*320))
+            report['completion_states']=data(b,p['image'],'completionStates')
         events=read_events(out/'emulator.log',kinds={'cpu'})
         profile=analyze_events(events,definition,include_segments=True)
         spans=native_calls(events,marks)
@@ -120,6 +130,24 @@ def run(out,from_build=None,epochs=False):
                 helpers[n]=dict(calls=summary([len(r) for r in rows]),
                     caller_cpu_ms=summary([sum(clock.measure(s['start'],s['end'])['charged_cpu_ms'] for s in r) for r in rows]))
             groups[name]=dict(caller_cpu_ms=summary([clock.measure(s['start'],s['end'])['charged_cpu_ms'] for s in selected]),helpers=helpers)
+        completion=sorted((s for s in spans if s['kind']==completion_name),key=lambda s:s['start'])
+        # Cases 8 and 14 include one untimed setup completion per iteration.
+        cohorts={}
+        offset=0
+        for i,name in enumerate(('empty','unrelated_valid','unrelated_invalid','unrelated_pinned',
+                'slot_0','slot_1','both_slots','empty_change','ready','valid_no_repair',
+                'pinned_match','discarded_hold','partial','failed','merged_repair')):
+            stride=2 if i in (8,14) else 1
+            selected=completion[offset+stride*2+stride-1:offset+stride*10:stride]
+            require(len(selected)==8,'Incomplete completion cohort '+name)
+            offset+=stride*10
+            helpers={}
+            for n in ('DESKCACHE_CLIENTBOUNDS','LAYERS_PIXELSREADY','LAYERCACHE_ENDCHANGE'):
+                rows=[[s for s in spans if s['kind']==n and w['start']<=s['start']<s['end']<=w['end']] for w in selected]
+                helpers[n]=dict(calls=summary([len(r) for r in rows]))
+            cohorts[name]=dict(caller_cpu_ms=summary([clock.measure(s['start'],s['end'])['charged_cpu_ms'] for s in selected]),helpers=helpers)
+        require(len(completion)==offset,'Unexpected completion sample count')
+        report['completion_groups']=cohorts
         report.update(status='pass',groups=groups,marks=marks,definition=definition)
     except Exception as error:
         report.update(status='fail',error=str(error));raise

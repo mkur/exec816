@@ -283,6 +283,16 @@ def run(out, from_build=None):
                 digest=pixels(b,directory,expected,palette=DESKTOP_PALETTE)
                 row=dict(phase=n,work=list(work),count=count,sha256=digest,
                     pixel_count=640*240,pending=pending())
+                # Observe only at untimed, settled checkpoints. Native
+                # LAYERCACHE.EndChange entries count matches inside UPDATE.
+                dt=desktop_layout();lt=layers_layout()
+                service=get(at('DESKSTATE','service'),3)
+                cache=service+dt['Service']['fields']['cache']
+                repairs=service+dt['Service']['fields']['repairs']
+                row['cache_slots']=[dict(
+                    slot=list(b.memdump(cache+i*lt['CacheSlot']['size'],lt['CacheSlot']['size'])),
+                    repair=list(b.memdump(repairs+i*lt['CacheRepair']['size'],lt['CacheRepair']['size'])))
+                    for i in range(2)]
                 if n in (5,6):
                     require(row['pending']['visible_count']>1,'Missing fragmented visibility')
                 report['checkpoints'].append(row)

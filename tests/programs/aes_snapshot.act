@@ -7,6 +7,8 @@ USE AESTYPES
 USE AESWINDOWSTATE
 USE DESKSTATE
 USE DESKTYPES
+USE DESKCACHE
+USE LAYERCACHE
 USE LAYERS
 USE LAYERTYPES
 USE REGIONS
@@ -29,6 +31,7 @@ PROC Require(BYTE okay)
 RETURN
 
 INCLUDE "aes-snapshot-checks.inc"
+INCLUDE "aes-cache-completion-checks.inc"
 
 PUBLIC PROC Sample()
 
@@ -98,6 +101,7 @@ PROC Main()
     OD
   OD
   FreshnessChecks()
+  CompletionChecks()
   FOR index=0 TO 6 DO
     Require(LAYERS.Delete(@desktop.scene,handles(index))=LAYERTYPES.OK)
   OD

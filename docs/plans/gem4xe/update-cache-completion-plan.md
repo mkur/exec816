@@ -4,8 +4,10 @@
 [GEM plans](README.md) · [Completed snapshot work](../../history/update-snapshot-reuse.md) ·
 [UPDATE contract](../../reference/aes.md) · [Testing policy](../../contributing/testing.md)
 
-Status: proposed; implementation has not started. Runtime baseline `34f1a1a1`
-contains geometry reuse and the corrected exposure-coverage observer.
+Status: EC0 passes; EC1–EC2 remain. Runtime baseline `34f1a1a1`
+contains geometry reuse and the corrected exposure-coverage observer. See the
+[execution record](../../history/update-cache-completion.md) and
+[EC0 evidence](../../development/update-cache-completion-ec0.json).
 Execute EC0–EC2 in order and commit each slice after its selected checks pass.
 Keep the completed US0–US3 evidence and its original hashes intact.
 
