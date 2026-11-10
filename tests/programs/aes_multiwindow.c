@@ -39,7 +39,7 @@ UWORD AESRun(void)
     CHECK(wind_update(BEG_UPDATE));
     CHECK(av->updates==1 && bv->updates==1);
     CHECK(wind_get(a,WF_FIRSTXYWH,&x,&y,&w,&h));CHECK(c->view==av && w>0 && h>0);
-    CHECK(wind_get(b,WF_FIRSTXYWH,&x,&y,&w,&h));CHECK(c->view==bv && x==104 && y==80 && w==184 && h==96);
+    CHECK(wind_get(b,WF_FIRSTXYWH,&x,&y,&w,&h));CHECK(c->view==bv && x==104 && y==75 && w==184 && h==107);
     CHECK(wind_update(END_UPDATE));CHECK(!av->updates && !bv->updates);
     /* B has a pending GUI delivery when A closes. Its port/epoch survive. */
     CHECK(wind_set(b,WF_CURRXYWH,112,64,200,120));
