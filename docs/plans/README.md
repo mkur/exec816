@@ -613,6 +613,8 @@ assuming work is pending. Current behavior belongs in the
   graphical windows, shared caller-context window operations, an AES system Task,
   distinct UPDATE/display ownership and existing Exec I/O. Defines the native
   two-Counter/disk baseline, terminal migration and Task/memory acceptance.
+  The [GF0–GF15 plan](gem4xe/gem-first-gui-implementation-plan.md) assigns
+  executable slices and a commit per passing slice; implementation has not started.
 
 - [END_UPDATE cache-completion addendum](gem4xe/update-snapshot-reuse-design.md#end_update-cache-completion-addendum)
   and [EC0–EC2 plan](gem4xe/update-cache-completion-plan.md): proposed identity-only

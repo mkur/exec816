@@ -8,7 +8,8 @@ Status: proposed design, 2026-11-10. This note records the agreed direction afte
 the [two-Counter MagiC demo](../../guides/atari-st-reference.md#two-counter-applications).
 It describes a target architecture; the current reference contracts remain
 authoritative until executable migration slices replace their implementations.
-A separate implementation plan will assign executable slices.
+The [implementation plan](gem-first-gui-implementation-plan.md) assigns GF0–GF15
+executable slices, beginning with native I/O coexistence and resource accounting.
 
 ## Decision and scope
 

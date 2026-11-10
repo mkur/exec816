@@ -5,6 +5,9 @@ graphical window model, with caller-context operations, an AES system Task and
 separate logical/physical ownership over normal Exec preemption and I/O. It
 starts migration with two native Counters beside sustained disk work; current
 contracts and open latency gates remain unchanged until executable slices land.
+The [GF0–GF15 implementation plan](gem-first-gui-implementation-plan.md) orders
+the baseline, shared/caller-side window policy, console/terminal separation,
+native API retirement, measured rendering changes and OF816 package acceptance.
 
 The [Atari ST reference](../../guides/atari-st-reference.md) runs the native
 baseline's unchanged object-tree routines under EmuTOS and MagiC in Hatari.

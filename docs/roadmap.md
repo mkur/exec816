@@ -237,6 +237,9 @@ the native/GEM graphical interface split with one AES window model. It retains
 Exec Tasks and device I/O, distinguishes UPDATE from physical drawing ownership
 and starts the subsequent implementation plan with two native Counters beside
 disk work. Existing contracts remain authoritative during incremental migration.
+The [GF0–GF15 plan](plans/gem4xe/gem-first-gui-implementation-plan.md) starts
+with the native baseline and current twelve-Task/four-application budget, then
+migrates window policy, the AES system role and terminal before renderer tuning.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)
 prioritizes ordinary AES/VDI application bodies and fewer platform edits.
