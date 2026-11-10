@@ -609,7 +609,8 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
-- [UPDATE snapshot reuse design](gem4xe/update-snapshot-reuse-design.md): profile
+- [UPDATE snapshot reuse design](gem4xe/update-snapshot-reuse-design.md) and
+  [US0–US3 plan](gem4xe/update-snapshot-reuse-plan.md): profile
   BEGIN/snapshot/END, establish geometry and visibility freshness rules, and
   preserve paint epochs, ownership and conventional GEM behavior during reuse.
 
