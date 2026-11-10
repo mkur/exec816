@@ -4,11 +4,12 @@
 [Caller-local UPDATE](caller-local-update-plan.md) ·
 [Latest measurements](../../history/object-tree-traversal.md)
 
-Status: design inspected against `ac33f02b`; profiling is complete in the
-[US0–US3 implementation plan](update-snapshot-reuse-plan.md). Its
-[US0 evidence](../../development/update-snapshot-us0.json) selects a
-non-wrapping Layers layout epoch and private AES tags. Production work is
-pending; the design's public AES behavior is unchanged.
+Status: US0–US3 complete at the development tier. The
+[implementation plan](update-snapshot-reuse-plan.md) and
+[execution record](../../history/update-snapshot-reuse.md) record a
+non-wrapping Layers layout epoch, private AES tags and 6.7% less fragmented
+Counter tick CPU. The starting design was inspected against `ac33f02b`;
+public AES behavior is unchanged.
 
 ## Purpose and measured opportunity
 
@@ -31,7 +32,7 @@ does not isolate visibility cost. The exposure control also took different
 local/RPC UPDATE paths between captures. Measure bookkeeping separately from
 admission, waiting and work moved between caller and presenter.
 
-## Existing work and distinct lifetimes
+## Starting work and distinct lifetimes
 
 [`AESLOCKS`](../../../lib/aes/aeslocks.act) owns the common local/RPC policy.
 On outer BEGIN, [`AESWINDOWSTATE.BeginUpdate`](../../../lib/aes/aeswindowstate.act)
@@ -39,7 +40,7 @@ resets the paint/invalidation journals and failure state, clears scoped change
 tracking, calls `LAYERS.Touch` and `DESKCACHE.BeginChange`, then snapshots every
 owned window. Nested transitions update depth without repeating outer BEGIN.
 
-`Publish` derives work geometry, clips the layer's visible region to it, checks
+Baseline `Publish` derives work geometry, clips the layer's visible region to it, checks
 pixel readiness and publishes the view. Owner mutations also call this path;
 `Moved` preserves the special handling of a completed copied move. Final END
 consumes the journals, retains repaint obligations, completes cache accounting
@@ -81,7 +82,7 @@ failure behavior. An owner mutation during UPDATE must still invalidate an
 outstanding NEXT walk; callers restart with FIRST. Equal final bounds do not
 erase an intervening mutation.
 
-The measurement slice must choose among these bounded approaches:
+The candidate mechanisms considered before measurement were:
 
 - An existing scene-layout stamp plus window identity and local geometry inputs.
   `Scene.rebuilds` is a conservative candidate, not yet a proven cache key:

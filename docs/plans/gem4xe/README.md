@@ -3,9 +3,12 @@
 The [UPDATE snapshot reuse design](update-snapshot-reuse-design.md) separates
 geometry/visibility freshness from content and paint state. It starts with
 BEGIN/snapshot/END profiling, then defines reuse, invalidation, ownership and
-matched development gates before choosing a cache mechanism. The
+matched development gates. The
 [US0–US3 implementation plan](update-snapshot-reuse-plan.md) orders profiling,
 regressions, the measured reduction and matched evidence, with a commit per slice.
+US0–US3 pass at the development tier; the
+[execution record](../../history/update-snapshot-reuse.md) reports 6.7% less
+fragmented Counter tick CPU with matching full-frame pixels.
 
 The [incremental object traversal plan](object-tree-traversal-plan.md) uses
 caller-local parent origins to remove repeated coordinate lookup while

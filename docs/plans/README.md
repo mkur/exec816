@@ -613,6 +613,8 @@ assuming work is pending. Current behavior belongs in the
   [US0–US3 plan](gem4xe/update-snapshot-reuse-plan.md): profile
   BEGIN/snapshot/END, establish geometry and visibility freshness rules, and
   preserve paint epochs, ownership and conventional GEM behavior during reuse.
+  US0–US3 pass at the development tier with 6.7% less fragmented Counter tick CPU;
+  [implementation record](../history/update-snapshot-reuse.md).
 
 - [Incremental object traversal](gem4xe/object-tree-traversal-plan.md): bounded
   caller-local coordinates, traversal/pixel regressions and matched optimized

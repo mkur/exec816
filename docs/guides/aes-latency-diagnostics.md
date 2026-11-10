@@ -211,9 +211,14 @@ counters; the native desktop and distributed demo are unchanged.
 The first matched optimization is recorded in
 [incremental object traversal](../history/object-tree-traversal.md), with
 unchanged drawing pixels, fewer coordinate lookups and measured CPU/stack costs.
+The follow-up [UPDATE snapshot reuse](../history/update-snapshot-reuse.md)
+separates BEGIN/END and native helpers and compares the same guest workload.
+Exposure validation checks bounded geometry and complete coverage because
+delivery timing may coalesce the three exposed areas into fewer messages;
+record repair area and operation counts alongside timing.
 
 The [MagiC-inspired optimization baseline](../development/magic-aes-baseline.json)
-records the current object traversal, visibility clipping, redraw delivery,
+records the original object traversal, visibility clipping, redraw delivery,
 pending-paint moves and immediate timer behavior. Capture a new development
 baseline before changing those paths:
 

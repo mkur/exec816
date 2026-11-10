@@ -4,8 +4,10 @@
 [UPDATE contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: US0–US2 complete; US3 pending. Started from `00266e28`;
+Status: US0–US3 complete at the development tier. Started from `00266e28`;
 runtime baseline `ac33f02b`.
+See the [implementation record](../../history/update-snapshot-reuse.md) and
+[matched evidence](../../development/update-snapshot-us3.json).
 Commit this plan first, then commit each executable slice below after its
 selected checks pass. Update completion and evidence links with each slice.
 
@@ -123,7 +125,7 @@ Commit: production reduction, focused hit/miss/lifetime checks and US2 evidence.
 
 ## US3 Match measurements and close the gate
 
-In progress: the original minimum-two-redraw guard rejected a valid single
+Completed: the original minimum-two-redraw guard rejected a valid single
 bounding exposure message. An unprofiled replay passes all eleven exact
 frames; the [diagnostic record](../../development/update-snapshot-us3-diagnostic.json)
 records all delivered rectangles. A bounded geometry/coverage oracle now
@@ -134,9 +136,19 @@ area and helper counts separately rather than attributing changed coalescing
 to direct snapshot savings. The ABI probe now also checks the new field's
 exact offset (127 checks in each mode).
 
-The legacy 349-file manifest omits native GUI modules. Supplement it with a
-Git-recovered baseline production inventory and archive the current inputs;
-do not use the legacy manifest alone to claim a complete source comparison.
+The legacy 349-file manifest omits native GUI modules. The final audit adds
+863 Git-recovered production inputs and freezes current sources; exactly eight
+native/layout files differ. Observer changes are recorded separately.
+
+The final capture passes all eleven exact frames, 505 fixture assertions,
+67 measured operations and normal cleanup. Fragmented Counter tick caller CPU
+falls 39.306 → 36.686 ms (6.7%); BEGIN falls 9.590 → 6.938 ms with unchanged
+local admission, meeting the 5% target. The controlled target passes at 19.0%.
+Changed-layout overhead is 2.6%; other controls have no unexplained material
+regression. Exposure repair area differs with legal coalescing and is not a
+direct per-rectangle speedup. The final host suite passes 668 tests, four skipped.
+Complete bank-zero maps match, with zero additional reservations in all shared
+categories. The development gate is complete; full qualification remains open.
 
 Repeat the controlled workload and unchanged AES baseline corpus on the final
 implementation with the same compiler, ROM, emulator and machine pins.

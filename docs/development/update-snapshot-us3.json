@@ -1,0 +1,3660 @@
+{
+  "format": "exec816.update-snapshot-us3.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "implementation_commit": "7dbf8184",
+  "observer_commit": "ec5bec79",
+  "baseline_runtime": "ac33f02b",
+  "scope": "Unchanged matched optimized guest workload; snapshot reuse, passive native breakdown and conservative exposure-coverage oracle.",
+  "command": "python3 tools/measure_aes_update.py --from-build build/update-snapshot-reuse/us3 --output build/update-snapshot-reuse/us3-final",
+  "production_source_comparison": {
+    "baseline_commit": "ac33f02b407ce6a9ed94e2419fdfd07d5beffeeb",
+    "implementation_commit": "7dbf8184b9cc7112253b2c4fc8dd2fbf79651c0c",
+    "files": 863,
+    "scope": "Tracked production roots abi,c,config,lib,platform,ports,toolchain plus build/extract/generate tools and native/C build helpers. Baseline inventory recovered from Git; current sources archived separately.",
+    "changed": [
+      {
+        "path": "abi/desktop.json",
+        "before_sha256": "540b1d99b6bdc79606fe192c93751b76f41f0b76c7d06b5758bb468e400ccecd",
+        "after_sha256": "ae5519dfaf65625d440973b993b4ad6f7bc996cc96e7a86f80e5abb402327453"
+      },
+      {
+        "path": "abi/layers.json",
+        "before_sha256": "fd711adb3e703a02756cf7536d6ff8e17240f5788647bbc026ba90605cb3244a",
+        "after_sha256": "62d44a36912d718f3a7ca6cf9e7a02504b4388ce08b2f9c0963f55c069c36080"
+      },
+      {
+        "path": "lib/aes/aesstate.act",
+        "before_sha256": "f7517af3e43df01d10b2ca8fde5169457b128208319770333d2e742636f7d50a",
+        "after_sha256": "330072e071897c4629f169f9f827b80b8b72fd162e2467106eeafe9e0250c7dc"
+      },
+      {
+        "path": "lib/aes/aeswindow.act",
+        "before_sha256": "1625fc8f2e1a86beccbcb19eeb1fd2fec3f591efc096b67f1c8f33f2e4b9e0a9",
+        "after_sha256": "08052659b1b942248e0cdf2bc780c788fae30d1407f87a584d693737fd71d68c"
+      },
+      {
+        "path": "lib/aes/aeswindowstate.act",
+        "before_sha256": "a79ccb8f3238bfb998387a78dd1413ca917799afb202d618024f836c1d6e24c2",
+        "after_sha256": "804e9d15c6c20e2bbbc86fb42cac8608c3e4e84d03dd27f54d7a2518fd26f604"
+      },
+      {
+        "path": "lib/desktop/desktypes.act",
+        "before_sha256": "902a850c3d9e54648a938898b64c997766375d2220f99c1acabeb52283ad33ed",
+        "after_sha256": "2fbe201b9d063969cc81e49a2c64a0597464d18378e2278f9d894920e6140d25"
+      },
+      {
+        "path": "lib/display/layers.act",
+        "before_sha256": "9a8f6b8f75afba589bcd15f3cbbe968e6246d5706ea28047bad35baafaec9ef5",
+        "after_sha256": "77a8f6cd743412edd283b26c05e78a31589554761a12a07ce7f62ff0c976fc4e"
+      },
+      {
+        "path": "lib/display/layertypes.act",
+        "before_sha256": "d0cca8f71c45a95e01f8ad99191b7375324e52f0b72ca7f509aae74f68afff55",
+        "after_sha256": "50f52d1bd66865f37ed9199efdc1c0d5feeec21a14839227767a9f70a271572f"
+      }
+    ],
+    "legacy_manifest_limit": "The older 349-file build manifest omits native GUI modules; it is not the complete source comparison for this change."
+  },
+  "production_archive": "build/update-snapshot-reuse/us3-final/production-inputs",
+  "observer_inputs": {
+    "tools/measure_magic_aes.py": "55f70919b695f4c70d4966817d638347854bc57239216f8557a36687cc19618b",
+    "tools/g4bench_trace.py": "fc6a65b82b45f658a3809c2d9cff115a96140da3a458ea9f6e1e01559b70d915",
+    "tools/console_turn_profile.py": "e5a3e8d16fa38d6af4a50717e25f67abfaf8dc13c854caa890085c45bf79ed37",
+    "tools/aes_exposure_oracle.py": "bdacc3b87e9a8a0ca9c733e466b2a1d2ca4b7b195f38dc235e6a3e3818486cc0",
+    "tools/desktop_oracle.py": "b1abd3109a483c2cfef7e894b9be7a7ede80dd9c1f267690c7916c626adfb91d",
+    "tests/programs/magic_aes_baseline.c": "a3270a5236631f197bb9c96996cea9f7a38d4ef603321ab013f30a80d3a0aa52",
+    "examples/gem-counter/counter.c": "92780c5aaba74befb37bc7755830e5ec461e56cd8d5cc355000bc517c868ccf3",
+    "examples/gem-counter/counter.h": "faaa3c8858e79ed30193846857b83e9767ef532671ddc1ac8e9b87558f2030c8",
+    "tools/measure_aes_update.py": "7f7830095123f050ce96026d0e95b6cd7725cdd6ddc5a010eb2da6b461c4027b",
+    "tools/bitmap_console_performance.py": "1a6cb89860f528ef51bb79a97873ac89b64ede150bae316b48d9399181ad055b",
+    "tools/sio_transaction_trace.py": "311c88a962da6274b81282070aa5e5fd45e06dc789e10f72889f8ed5baeeb8c4",
+    "tools/os_boundary.py": "af91c3be33757c1ece2ee2f587d1c67816e4e7308e619f5b311dbdcb90076c00"
+  },
+  "observer_archive": "build/update-snapshot-reuse/us3-final/observer-inputs",
+  "observer_delta": "Exposure validation accepts bounded conservative coalescing with complete coverage. All baseline exposure records also pass. Guest workload unchanged; original observer is archived.",
+  "toolchain": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "profile": "release",
+    "override": false,
+    "calypsi": {
+      "cc65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "platform": {
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+        "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+        "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+        "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+      },
+      "observer": {
+        "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ],
+      "startup_configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "disk_workload": {
+        "format": "SDFS",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "exec_profile": 4,
+        "nominal_baud": 57600
+      },
+      "mouse_input": {
+        "model": "ST mouse",
+        "port": 2,
+        "internal_port": 1,
+        "map": "Mouse -> ST Mouse (port 2)",
+        "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+        "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+        "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+        "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+        "commands": [
+          "MOUSE ST",
+          "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+          "MOUSE CLEAR"
+        ],
+        "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+        "tooling": {
+          "binary": "build/mouse-bridge/AltirraBridgeServer",
+          "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+          "patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "source_sha256": {
+            "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+            "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+          }
+        },
+        "initial_acceptance": {
+          "transitions_per_second_per_axis": 1000,
+          "minimum_transition_spacing_us": 1000,
+          "minimum_button_level_us": 10000,
+          "required_max_sample_gap_us_exclusive": 1000,
+          "visible_response_pal_ticks": 12
+        },
+        "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+      }
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338"
+  },
+  "measurements": {
+    "cases": [
+      {
+        "case": "objects_5",
+        "count": 8,
+        "warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 43.712246908916114,
+          "after_median": 43.615754060946266,
+          "change_percent": -0.22074556856094274
+        },
+        "elapsed_ms": {
+          "before_median": 57.02942291779148,
+          "after_median": 55.99002789764005,
+          "change_percent": -1.822559245689248
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.4980299670556922,
+          "after_median": 2.498100451239746,
+          "change_percent": 0.0028215908128848
+        },
+        "display_calls": {
+          "DisplayEnter": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "GemDrawingSolidBorrow": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 16,
+              "median": 16.0,
+              "max": 16
+            },
+            "after": {
+              "min": 16,
+              "median": 16.0,
+              "max": 16
+            }
+          }
+        },
+        "update": {
+          "begin": {
+            "caller_cpu_ms": {
+              "before_median": 3.8165071139686964,
+              "after_median": 3.423170124855684
+            },
+            "elapsed_ms": {
+              "before_median": 5.310278426623849,
+              "after_median": 4.166179151060293
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.0369633158015672,
+                  "after": 0.6327012781601936
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.6431977828495063,
+                  "after": 1.2452440796809603
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.27143459279172344,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.11224606310589966,
+                  "after": 0.1152768830202191
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.04722440331613989,
+                  "after": 0.04711867704005898
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          },
+          "end": {
+            "caller_cpu_ms": {
+              "before_median": 5.233732602741271,
+              "after_median": 5.24176779972342
+            },
+            "elapsed_ms": {
+              "before_median": 9.703874797534182,
+              "after_median": 9.696015811012167
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.7949502311176395,
+                  "after": 1.7984039561362826
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 2.0,
+                  "after": 2.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.23027182930422244,
+                  "after": 0.2302718293042224
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.5614417680816601,
+                  "after": 0.5617941890019298
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "case": "objects_33_siblings",
+        "count": 8,
+        "warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 105.92895335215731,
+          "after_median": 105.77727138807322,
+          "change_percent": -0.14319216728200246
+        },
+        "elapsed_ms": {
+          "before_median": 131.58953112511085,
+          "after_median": 131.3729332275131,
+          "change_percent": -0.16460116222453136
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.4971136726629912,
+          "after_median": 3.002309061869607,
+          "change_percent": 20.231173083436826
+        },
+        "display_calls": {
+          "DisplayEnter": {
+            "before": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            },
+            "after": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            },
+            "after": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            },
+            "after": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            }
+          },
+          "GemDrawingSolidBorrow": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 46,
+              "median": 46.0,
+              "max": 46
+            },
+            "after": {
+              "min": 46,
+              "median": 46.0,
+              "max": 46
+            }
+          }
+        },
+        "update": {
+          "begin": {
+            "caller_cpu_ms": {
+              "before_median": 3.817211955809236,
+              "after_median": 3.422923430211495
+            },
+            "elapsed_ms": {
+              "before_median": 4.974632742158986,
+              "after_median": 4.169950054907179
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.0371395262617022,
+                  "after": 0.6322431309638431
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.6430920565734253,
+                  "after": 1.2430590699752884
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.2714698348837504,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.11249275775008846,
+                  "after": 0.1122108210138727
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.04722440331613989,
+                  "after": 0.047153919132085956
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          },
+          "end": {
+            "caller_cpu_ms": {
+              "before_median": 5.2393360953735595,
+              "after_median": 5.24130965252707
+            },
+            "elapsed_ms": {
+              "before_median": 9.339401081791255,
+              "after_median": 9.344194006306925
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.795478862498044,
+                  "after": 1.7975229038356084
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 2.0,
+                  "after": 2.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.233126438758407,
+                  "after": 0.233126438758407
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.5613712838976063,
+                  "after": 0.5611950734374713
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "case": "objects_9_nested",
+        "count": 8,
+        "warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 167.42333787721373,
+          "after_median": 167.15588564082105,
+          "change_percent": -0.15974609023075015
+        },
+        "elapsed_ms": {
+          "before_median": 206.06276757558373,
+          "after_median": 206.12909319277847,
+          "change_percent": 0.032187094240798686
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.497078430570964,
+          "after_median": 2.49736036730718,
+          "change_percent": 0.01129066403218193
+        },
+        "display_calls": {
+          "DisplayEnter": {
+            "before": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            },
+            "after": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            },
+            "after": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            },
+            "after": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            }
+          },
+          "GemDrawingSolidBorrow": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 90,
+              "median": 90.0,
+              "max": 90
+            },
+            "after": {
+              "min": 90,
+              "median": 90.0,
+              "max": 90
+            }
+          }
+        },
+        "update": {
+          "begin": {
+            "caller_cpu_ms": {
+              "before_median": 3.8175643767295053,
+              "after_median": 3.4259542501258142
+            },
+            "elapsed_ms": {
+              "before_median": 4.883003302888865,
+              "after_median": 4.144787201199923
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.0380558206544035,
+                  "after": 0.6322783730558701
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.6440788351501807,
+                  "after": 1.2453498059570411
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.27161080325185827,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.11242227356603451,
+                  "after": 0.11245751565806149
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.04736537168424777,
+                  "after": 0.04747109796032868
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          },
+          "end": {
+            "caller_cpu_ms": {
+              "before_median": 5.236375759643293,
+              "after_median": 5.241344894619097
+            },
+            "elapsed_ms": {
+              "before_median": 9.338907692502879,
+              "after_median": 9.35099573006813
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.7946330522893967,
+                  "after": 1.7980162931239858
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 2.0,
+                  "after": 2.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.22752294612611876,
+                  "after": 0.2304480397643573
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.5613360418055793,
+                  "after": 0.5613360418055793
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "case": "counter_uncovered",
+        "count": 8,
+        "warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 40.97072932804608,
+          "after_median": 40.71589376059906,
+          "change_percent": -0.6219942178880888
+        },
+        "elapsed_ms": {
+          "before_median": 53.28470394528172,
+          "after_median": 52.37013641508982,
+          "change_percent": -1.7163791153481434
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.497571819859342,
+          "after_median": 2.497289883123126,
+          "change_percent": -0.011288433588740876
+        },
+        "display_calls": {
+          "DisplayEnter": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "GemDrawingSolidBorrow": {
+            "before": {
+              "min": 11,
+              "median": 11.0,
+              "max": 11
+            },
+            "after": {
+              "min": 11,
+              "median": 11.0,
+              "max": 11
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 13,
+              "median": 13.0,
+              "max": 13
+            },
+            "after": {
+              "min": 13,
+              "median": 13.0,
+              "max": 13
+            }
+          }
+        },
+        "update": {
+          "begin": {
+            "caller_cpu_ms": {
+              "before_median": 3.8167538086128854,
+              "after_median": 3.4235930299600073
+            },
+            "elapsed_ms": {
+              "before_median": 4.623656747662392,
+              "after_median": 4.118849021468073
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.0370337999856214,
+                  "after": 0.6329832148964094
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.6431625407574795,
+                  "after": 1.2461603740736618
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.27164604534388526,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.11235178938198058,
+                  "after": 0.11799052410629579
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.047506340052355656,
+                  "after": 0.047435855868301714
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          },
+          "end": {
+            "caller_cpu_ms": {
+              "before_median": 5.176428961105417,
+              "after_median": 5.183865042523108
+            },
+            "elapsed_ms": {
+              "before_median": 9.282802281995941,
+              "after_median": 9.292529099395388
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.7363073899847614,
+                  "after": 1.740360230567863
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 2.0,
+                  "after": 2.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.23594580612056462,
+                  "after": 0.22762867240219967
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.5618294310939569,
+                  "after": 0.5615827364497681
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "case": "counter_fragmented",
+        "count": 8,
+        "warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 96.66849455650646,
+          "after_median": 93.92077436743969,
+          "change_percent": -2.842415413287125
+        },
+        "elapsed_ms": {
+          "before_median": 120.36933007602426,
+          "after_median": 117.66978582675833,
+          "change_percent": -2.242717681955131
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.4971136726629912,
+          "after_median": 2.4979242407796116,
+          "change_percent": 0.03246020097098512
+        },
+        "display_calls": {
+          "DisplayEnter": {
+            "before": {
+              "min": 15,
+              "median": 15.0,
+              "max": 15
+            },
+            "after": {
+              "min": 15,
+              "median": 15.0,
+              "max": 15
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 15,
+              "median": 15.0,
+              "max": 15
+            },
+            "after": {
+              "min": 15,
+              "median": 15.0,
+              "max": 15
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 2,
+              "median": 2.0,
+              "max": 2
+            },
+            "after": {
+              "min": 2,
+              "median": 2.0,
+              "max": 2
+            }
+          },
+          "GemDrawingSolidBorrow": {
+            "before": {
+              "min": 13,
+              "median": 13.0,
+              "max": 13
+            },
+            "after": {
+              "min": 13,
+              "median": 13.0,
+              "max": 13
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 17,
+              "median": 17.0,
+              "max": 17
+            },
+            "after": {
+              "min": 17,
+              "median": 17.0,
+              "max": 17
+            }
+          }
+        },
+        "update": {
+          "begin": {
+            "caller_cpu_ms": {
+              "before_median": 9.367806207964996,
+              "after_median": 6.934515963962847
+            },
+            "elapsed_ms": {
+              "before_median": 11.325574904247237,
+              "after_median": 8.717483883791317
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 5.203600614058212,
+                  "after": 2.7545923970120345
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 7.08510542319409,
+                  "after": 4.645859265639383
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.9244649193167547,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.4610722899888494,
+                  "after": 0.4608960795287146
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.189567213013072,
+                  "after": 0.189602455105099
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          },
+          "end": {
+            "caller_cpu_ms": {
+              "before_median": 10.762829178760576,
+              "after_median": 11.236377169326975
+            },
+            "elapsed_ms": {
+              "before_median": 16.001284221833462,
+              "after_median": 16.68001167218088
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 7.215148742773609,
+                  "after": 7.451446969814443
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 8.0,
+                  "after": 8.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.9223207904378337,
+                  "after": 0.9345497963711923
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 2.3745064345011624,
+                  "after": 2.3693610890652246
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "case": "counter_tick_fragmented",
+        "count": 8,
+        "warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 39.30642153207242,
+          "after_median": 36.68617198986719,
+          "change_percent": -6.66621238992009
+        },
+        "elapsed_ms": {
+          "before_median": 50.78248016927482,
+          "after_median": 47.493829109686075,
+          "change_percent": -6.475955976601733
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.497043188478937,
+          "after_median": 2.4968669780188026,
+          "change_percent": -0.007056764614543631
+        },
+        "display_calls": {
+          "DisplayEnter": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "GemDrawingSolidBorrow": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          }
+        },
+        "update": {
+          "begin": {
+            "caller_cpu_ms": {
+              "before_median": 9.590395261207338,
+              "after_median": 6.937546783877165
+            },
+            "elapsed_ms": {
+              "before_median": 11.603775978708137,
+              "after_median": 8.395371162664809
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 5.204375940082805,
+                  "after": 2.754698123288115
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 7.08637413850706,
+                  "after": 4.645929749823437
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 1.9242534667645927,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.46128374254101123,
+                  "after": 0.46406786781114184
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.1894262446449641,
+                  "after": 0.18977866556523382
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          },
+          "end": {
+            "caller_cpu_ms": {
+              "before_median": 11.27366330269151,
+              "after_median": 11.302209397233355
+            },
+            "elapsed_ms": {
+              "before_median": 16.782354707427203,
+              "after_median": 16.739077418418077
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 7.508997306094486,
+                  "after": 7.511746189272589
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 8.0,
+                  "after": 8.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.9221445799776988,
+                  "after": 0.9217569169654021
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 2.376127570734403,
+                  "after": 2.374823613329405
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "case": "separated_exposure",
+        "count": 3,
+        "warmups": 0,
+        "charged_cpu_ms": {
+          "before_median": 80.44176667197647,
+          "after_median": 44.741456964471745,
+          "change_percent": -44.38031533181338
+        },
+        "elapsed_ms": {
+          "before_median": 118.42470668006806,
+          "after_median": 57.360663340752964,
+          "change_percent": -51.56360108561089
+        },
+        "presenter_cpu_ms": {
+          "before_median": 14.840656405109257,
+          "after_median": 2.4980299670556922,
+          "change_percent": -83.16765849928521
+        },
+        "display_calls": {
+          "DisplayEnter": {
+            "before": {
+              "min": 3,
+              "median": 3,
+              "max": 5
+            },
+            "after": {
+              "min": 4,
+              "median": 4,
+              "max": 5
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 3,
+              "median": 3,
+              "max": 5
+            },
+            "after": {
+              "min": 4,
+              "median": 4,
+              "max": 5
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 1,
+              "median": 1,
+              "max": 2
+            },
+            "after": {
+              "min": 1,
+              "median": 1,
+              "max": 2
+            }
+          },
+          "GemDrawingSolidBorrow": {
+            "before": {
+              "min": 2,
+              "median": 2,
+              "max": 3
+            },
+            "after": {
+              "min": 3,
+              "median": 3,
+              "max": 3
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 2,
+              "median": 2,
+              "max": 3
+            },
+            "after": {
+              "min": 3,
+              "median": 3,
+              "max": 3
+            }
+          }
+        },
+        "update": {
+          "begin": {
+            "caller_cpu_ms": {
+              "before_median": 16.381158731792173,
+              "after_median": 7.945259163296348
+            },
+            "elapsed_ms": {
+              "before_median": 20.27259053341021,
+              "after_median": 9.594307133422332
+            },
+            "rpc_calls": {
+              "before_median": 0,
+              "after_median": 0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 8,
+                  "after": 4
+                },
+                "caller_cpu_ms": {
+                  "before": 8.190967028908384,
+                  "after": 3.82623393136814
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 2,
+                  "after": 1
+                },
+                "caller_cpu_ms": {
+                  "before": 11.954751973204733,
+                  "after": 5.723174776811831
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 0,
+                  "after": 0
+                },
+                "caller_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 8,
+                  "after": 3
+                },
+                "caller_cpu_ms": {
+                  "before": 1.1894206059102397,
+                  "after": 0.4974068868686556
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 8,
+                  "after": 4
+                },
+                "caller_cpu_ms": {
+                  "before": 0.9050169232525914,
+                  "after": 0.44087857125739555
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 8,
+                  "after": 4
+                },
+                "caller_cpu_ms": {
+                  "before": 0.384984613302621,
+                  "after": 0.20038653526535183
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 0,
+                  "after": 0
+                },
+                "caller_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              }
+            }
+          },
+          "end": {
+            "caller_cpu_ms": {
+              "before_median": 21.935453403610765,
+              "after_median": 10.7431288493175
+            },
+            "elapsed_ms": {
+              "before_median": 32.685066797861225,
+              "after_median": 15.979821787789037
+            },
+            "rpc_calls": {
+              "before_median": 0,
+              "after_median": 0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 0,
+                  "after": 0
+                },
+                "caller_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 0,
+                  "after": 0
+                },
+                "caller_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 2,
+                  "after": 1
+                },
+                "caller_cpu_ms": {
+                  "before": 14.975704101756607,
+                  "after": 7.26177403052529
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 0,
+                  "after": 0
+                },
+                "caller_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 16,
+                  "after": 8
+                },
+                "caller_cpu_ms": {
+                  "before": 1.7855053504544114,
+                  "after": 0.9146732564679811
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 0,
+                  "after": 0
+                },
+                "caller_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 8,
+                  "after": 4
+                },
+                "caller_cpu_ms": {
+                  "before": 4.720889679564802,
+                  "after": 2.3666474479791484
+                },
+                "other_task_cpu_ms": {
+                  "before": 0,
+                  "after": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "case": "move_pending_redraw",
+        "count": 8,
+        "warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 49.05202296656653,
+          "after_median": 49.35492874753834,
+          "change_percent": 0.6175194470129375
+        },
+        "elapsed_ms": {
+          "before_median": 251.04401173420698,
+          "after_median": 240.60967409522976,
+          "change_percent": -4.156377826699398
+        },
+        "presenter_cpu_ms": {
+          "before_median": 157.36281310836662,
+          "after_median": 147.9890862289411,
+          "change_percent": -5.956761126893683
+        },
+        "display_calls": {
+          "DisplayEnter": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "GemDrawingSolidBorrow": {
+            "before": {
+              "min": 11,
+              "median": 11.0,
+              "max": 11
+            },
+            "after": {
+              "min": 11,
+              "median": 11.0,
+              "max": 11
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 13,
+              "median": 13.0,
+              "max": 13
+            },
+            "after": {
+              "min": 13,
+              "median": 13.0,
+              "max": 13
+            }
+          }
+        },
+        "update": {
+          "begin": {
+            "caller_cpu_ms": {
+              "before_median": 2.7439492852198897,
+              "after_median": 2.7435968642996196
+            },
+            "elapsed_ms": {
+              "before_median": 49.484231983185296,
+              "after_median": 49.654063624663266
+            },
+            "rpc_calls": {
+              "before_median": 1.0,
+              "after_median": 1.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 3.8627447387080815,
+                  "after": 3.907643163950441
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 5.747668030770575,
+                  "after": 5.8020818208602165
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 5.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.8726646827718327,
+                  "after": 0.5920671460530972
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.4490899786996796,
+                  "after": 0.4524379774422417
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.18974342347320686,
+                  "after": 0.18942624464496413
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          },
+          "end": {
+            "caller_cpu_ms": {
+              "before_median": 11.131109040442414,
+              "after_median": 11.137346890731187
+            },
+            "elapsed_ms": {
+              "before_median": 22.3908869588753,
+              "after_median": 24.822908487564476
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 1.0,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 7.202003442447549,
+                  "after": 7.426777505395564
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 0.5,
+                  "after": 1.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.13568205430383476,
+                  "after": 0.27139935069969645
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 8.0,
+                  "after": 8.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.8866910353985669,
+                  "after": 0.8909905706258572
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 4.0,
+                  "after": 4.0
+                },
+                "caller_cpu_ms": {
+                  "before": 2.3587884614571335,
+                  "after": 2.3591761244694305
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "case": "zero_timer",
+        "count": 8,
+        "warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 2.1930801447463204,
+          "after_median": 2.190190293200109,
+          "change_percent": -0.131771360619648
+        },
+        "elapsed_ms": {
+          "before_median": 2.670716217987846,
+          "after_median": 2.646998290053695,
+          "change_percent": -0.8880736850439552
+        },
+        "presenter_cpu_ms": {
+          "before_median": 0.0,
+          "after_median": 0.0,
+          "change_percent": null
+        },
+        "display_calls": {
+          "DisplayEnter": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "GemDrawingSolidBorrow": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          }
+        },
+        "update": {
+          "begin": {
+            "caller_cpu_ms": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "elapsed_ms": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          },
+          "end": {
+            "caller_cpu_ms": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "elapsed_ms": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "rpc_calls": {
+              "before_median": 0.0,
+              "after_median": 0.0
+            },
+            "helpers": {
+              "AESWINDOWSTATE_PUBLISH": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_BEGINUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "AESWINDOWSTATE_ENDUPDATE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "REGIONS_CLIP": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "LAYERS_PIXELSREADY": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_BEGINCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              },
+              "DESKCACHE_ENDCHANGE": {
+                "calls": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "caller_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                },
+                "other_task_cpu_ms": {
+                  "before": 0.0,
+                  "after": 0.0
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "measured_samples": 67,
+    "fixture_assertions": 505,
+    "matching_full_frame_checks": 11,
+    "frame_digests": [
+      {
+        "phase": 1,
+        "sha256": "a3e81a0d04a3b5991886ae7b61d1c78fc89c364962ed577600defe5f01dd9eb9"
+      },
+      {
+        "phase": 2,
+        "sha256": "e5762b901273478cd416fa607ba2a3089ba2083639a72e55df95b4a1a29d9ab6"
+      },
+      {
+        "phase": 3,
+        "sha256": "97b755d17b3ba05adf0fb858692fcea0da34407697be0274db46884a005db824"
+      },
+      {
+        "phase": 4,
+        "sha256": "76e07133e868a1eb2f9c9d7b9af1e0592907ec6de165b205ad8583aec9ecd2bc"
+      },
+      {
+        "phase": 5,
+        "sha256": "bda3d34b7a054aa088eda153e1feea56e2b0efe06787a74d810e1d13b6476989"
+      },
+      {
+        "phase": 6,
+        "sha256": "bda3d34b7a054aa088eda153e1feea56e2b0efe06787a74d810e1d13b6476989"
+      },
+      {
+        "phase": 80,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be"
+      },
+      {
+        "phase": 81,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be"
+      },
+      {
+        "phase": 82,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be"
+      },
+      {
+        "phase": 8,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be"
+      },
+      {
+        "phase": 9,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be"
+      }
+    ],
+    "exposure_before": [
+      {
+        "iteration": 0,
+        "pending_before": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        },
+        "delivered_rectangles": [
+          [
+            72,
+            43,
+            32,
+            48
+          ],
+          [
+            120,
+            43,
+            304,
+            48
+          ]
+        ],
+        "requested_pixel_area": 16128,
+        "newly_exposed_pixels": 4608
+      },
+      {
+        "iteration": 1,
+        "pending_before": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        },
+        "delivered_rectangles": [
+          [
+            72,
+            43,
+            80,
+            48
+          ],
+          [
+            392,
+            43,
+            32,
+            48
+          ]
+        ],
+        "requested_pixel_area": 5376,
+        "newly_exposed_pixels": 4608
+      },
+      {
+        "iteration": 2,
+        "pending_before": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        },
+        "delivered_rectangles": [
+          [
+            72,
+            43,
+            80,
+            48
+          ],
+          [
+            392,
+            43,
+            32,
+            48
+          ]
+        ],
+        "requested_pixel_area": 5376,
+        "newly_exposed_pixels": 4608
+      }
+    ],
+    "exposure_after": [
+      {
+        "iteration": 0,
+        "pending_before": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        },
+        "delivered_rectangles": [
+          [
+            72,
+            43,
+            32,
+            48
+          ],
+          [
+            120,
+            43,
+            304,
+            48
+          ]
+        ],
+        "requested_pixel_area": 16128,
+        "newly_exposed_pixels": 4608
+      },
+      {
+        "iteration": 1,
+        "pending_before": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        },
+        "delivered_rectangles": [
+          [
+            72,
+            43,
+            352,
+            48
+          ]
+        ],
+        "requested_pixel_area": 16896,
+        "newly_exposed_pixels": 4608
+      },
+      {
+        "iteration": 2,
+        "pending_before": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        },
+        "delivered_rectangles": [
+          [
+            72,
+            43,
+            352,
+            48
+          ]
+        ],
+        "requested_pixel_area": 16896,
+        "newly_exposed_pixels": 4608
+      }
+    ],
+    "exposure_limit": "Different delivery/coalescing paths change repair area and drawing/UPDATE counts; exposure timings are not a matched per-rectangle speedup."
+  },
+  "gates": {
+    "controlled_target_percent": 10,
+    "controlled_actual_reduction": 18.982710686853643,
+    "counter_tick_target_percent": 5,
+    "counter_tick_actual_reduction": 6.66621238992009,
+    "changed_layout_overhead_percent": 2.5821189399901856
+  },
+  "resources": {
+    "upper_RAM_scene_delta": 4,
+    "upper_RAM_AES_table_delta": 48,
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "identical_maps": [
+      "bank_zero_budget",
+      "task_pools",
+      "runtime_reservations",
+      "phase_reservations"
+    ],
+    "native_code": {
+      "before": {
+        "executable_bytes": 1194825,
+        "routines": {
+          "AESWINDOWSTATE_PUBLISH": {
+            "size": 2271,
+            "fixed_frame": 36,
+            "local_stack_peak": 50
+          },
+          "LAYERS_REBUILD": {
+            "size": 1778,
+            "fixed_frame": 22,
+            "local_stack_peak": 34
+          },
+          "AESSTATE_BIND": {
+            "size": 17,
+            "fixed_frame": 0,
+            "local_stack_peak": 0
+          }
+        }
+      },
+      "after": {
+        "executable_bytes": 1195148,
+        "routines": {
+          "AESWINDOWSTATE_PUBLISH": {
+            "size": 2226,
+            "fixed_frame": 40,
+            "local_stack_peak": 54
+          },
+          "LAYERS_REBUILD": {
+            "size": 1858,
+            "fixed_frame": 22,
+            "local_stack_peak": 34
+          },
+          "AESSTATE_BIND": {
+            "size": 172,
+            "fixed_frame": 6,
+            "local_stack_peak": 6
+          }
+        }
+      }
+    },
+    "c_image_bytes_unchanged": true,
+    "before_stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 742,
+        "untouched_above_floor": 538
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 712,
+        "untouched_above_floor": 1592
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 33,
+        "untouched_above_floor": 223
+      }
+    ],
+    "after_stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 740,
+        "untouched_above_floor": 540
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 726,
+        "untouched_above_floor": 1578
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 48,
+        "untouched_above_floor": 208
+      }
+    ],
+    "before_kernel_stack": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 285,
+      "untouched_from_base": 1251,
+      "interrupt_reserve_bytes_touched": 0
+    },
+    "after_kernel_stack": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 287,
+      "untouched_from_base": 1249,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "validation": {
+    "guards": "intact",
+    "ownership_restored": true,
+    "heap_restored": true,
+    "host_tests": {
+      "run": 668,
+      "passed": 664,
+      "skipped": 4
+    },
+    "ABI_probe": [
+      {
+        "mode": "raw",
+        "checks": 127
+      },
+      {
+        "mode": "opt",
+        "checks": 127
+      }
+    ]
+  },
+  "artifacts": {
+    "build/update-snapshot-reuse/us3-final/results.json": {
+      "sha256": "b030856f424b2eb0c4d42571113ca91ce5a3b047a4f361f08385579752530604",
+      "bytes": 447145
+    },
+    "build/update-snapshot-reuse/us3-final/timings.json": {
+      "sha256": "7279cf0a832c116904fb606247e36199452dc1b4827954b37d2736a0e18e81ba",
+      "bytes": 259025
+    },
+    "build/update-snapshot-reuse/us3-final/update-profile.json": {
+      "sha256": "ad87cf2eb0419a4b0ae95849d8967bfddbdb884b8b744c118b779a4a0f946651",
+      "bytes": 637221
+    },
+    "build/update-snapshot-reuse/us3-final/trace-definition.json": {
+      "sha256": "13f340977e8c9467d3dee596f2e17790988cab5803a397ffe1a27ea5cb94532b",
+      "bytes": 76343
+    },
+    "build/update-snapshot-reuse/us3-final/emulator.log": {
+      "sha256": "2ef4fa2142795be08d599e640e53b08c478202de27be30a15c812fd1837d8cb4",
+      "bytes": 153661752
+    },
+    "build/update-snapshot-reuse/us3-final/observer-inputs.json": {
+      "sha256": "080da95283da03fbf40a135b8719fc9aff8f8cb1e8e1a54cf507b7b7c30abe3a",
+      "bytes": 1226
+    },
+    "build/update-snapshot-reuse/us3-final/production-before.json": {
+      "sha256": "1f7d6d40a81d81a724ba60269127f024562fb1c1b1972329a9821b350b3c1d9a",
+      "bytes": 88609
+    },
+    "build/update-snapshot-reuse/us3-final/production-after.json": {
+      "sha256": "7b0dbeade127d74baabf1b86075d9f59131e859dd8882e1ace336248a0c78e18",
+      "bytes": 88609
+    },
+    "build/update-snapshot-reuse/us3-final/production-comparison.json": {
+      "sha256": "cb40c66a58da6bf7ba743c24a0a47c8891292d0e99cd9fc289afbdca373e03f7",
+      "bytes": 2400
+    },
+    "build/update-snapshot-reuse/us3/program/program.xex": {
+      "sha256": "c77c2f8da4600444357670eb2ed0dfa258aa3494690d4b41090435aaf6ef8b78",
+      "bytes": 449851
+    },
+    "build/update-snapshot-reuse/us3/program/build.json": {
+      "sha256": "9c211d7ca13ce075d63d0156e4567a907b3c7cfc8b4295de6d594e0bb1ae1730",
+      "bytes": 127191
+    },
+    "build/update-snapshot-reuse/us3/c-image.json": {
+      "sha256": "755e93872c10bd220c49d3a444ee5725a07d4f01729c77f1978a449b540240ce",
+      "bytes": 2238911
+    },
+    "build/update-snapshot-reuse/us0/results.json": {
+      "sha256": "48e628e7751d13311b1f959160424d15a405401ea0998ce2d5145715a53b584e",
+      "bytes": 455247
+    },
+    "build/update-snapshot-reuse/us0/update-profile.json": {
+      "sha256": "8da539c1831e4d035d7f1823d81e2b08675a83c7396a2deb715d44ead8aed185",
+      "bytes": 640355
+    },
+    "build/update-snapshot-reuse/us3-layout/results.json": {
+      "sha256": "cec12195c60251f26453f7d5ee2b64392b958f1c5fbce21d087904bc0e6fe6eb",
+      "bytes": 175656
+    },
+    "build/update-snapshot-reuse/us3-host-final-2.log": {
+      "sha256": "bc64f99792d9a259e25c42629a2cac0026d11a98025c20bed686f83dc9359955",
+      "bytes": 780
+    },
+    "build/update-snapshot-reuse/record-us3.py": {
+      "sha256": "3699201b049313bce9ddc3a1c30564a07eee913aaa33eb22d99cdf525f28a579",
+      "bytes": 9333
+    },
+    "docs/development/update-snapshot-us0.json": {
+      "sha256": "d5ca0bfcf1236109bdb474bb27cee4e18e81dea42036464ce570e809b31abb2c",
+      "bytes": 60516
+    },
+    "docs/development/update-snapshot-us1.json": {
+      "sha256": "377c3123c4461298e3d74a25ca478dd6509541e9ac8ef7e1be612d9e5be7a219",
+      "bytes": 13355
+    },
+    "docs/development/update-snapshot-us2.json": {
+      "sha256": "0ef89f57d42f75b83ba88f459b67659dd1401cf3f5277840d1e396ec5f933392",
+      "bytes": 8172
+    },
+    "docs/development/update-snapshot-us3-diagnostic.json": {
+      "sha256": "04693f4ed9b7ca7dd11068906f3d84d97a50f13b67b2462a32e0bbbbd52aabd6",
+      "bytes": 5594
+    }
+  },
+  "limits": [
+    "Development checks; no full hosted/hardware qualification or demo refresh.",
+    "Inclusive helper costs overlap; small cohorts do not establish tail latency.",
+    "Production inventory baseline is reconstructed from Git; the historical 349-file manifest omits native GUI sources.",
+    "Geometry reuse does not skip paint/cache/iterator metadata publication."
+  ]
+}

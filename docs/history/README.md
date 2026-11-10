@@ -1,5 +1,9 @@
 # Historical records
 
+- [UPDATE snapshot reuse](update-snapshot-reuse.md): bounded geometry freshness,
+  preserved paint/ownership semantics and 6.7% less fragmented Counter tick CPU,
+  with matching frames and zero added bank-zero reservations.
+
 - [Incremental AES object traversal](object-tree-traversal.md): caller-local
   parent origins, matching drawing/cleanup checks and 14.6% less wide-tree
   caller CPU against the captured baseline, with unchanged bank-zero reservations.
