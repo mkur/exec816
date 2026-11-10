@@ -50,7 +50,8 @@ Add a passive observer for native BEGIN, SnapshotAll/Publish, geometry/clipping,
 pixel readiness, END and cache work, alongside public BEGIN/END and local/RPC
 admission. Reuse the frozen optimized object-traversal image for the initial
 capture; verify its guest hash, pins, normal completion and exact frames.
-Keep the original measurement tool and archived records intact.
+Keep the guest workload and archived records intact. Preserve prior observer
+versions; explain and independently check any observer correction.
 
 Add a small controlled emitted workload for one/multiple owned windows,
 repeated fixed layout and layout changes. Hold window counts equal when
@@ -121,6 +122,21 @@ the owning compiler repository rather than adding routine-specific workarounds.
 Commit: production reduction, focused hit/miss/lifetime checks and US2 evidence.
 
 ## US3 Match measurements and close the gate
+
+In progress: the original minimum-two-redraw guard rejected a valid single
+bounding exposure message. An unprofiled replay passes all eleven exact
+frames; the [diagnostic record](../../development/update-snapshot-us3-diagnostic.json)
+records all delivered rectangles. A bounded geometry/coverage oracle now
+accepts legal coalescing while rejecting missing, duplicate and unexpected
+damage. The guest is unchanged, the old observer remains archived and the
+new oracle accepts every recorded baseline exposure. Compare exposure repair
+area and helper counts separately rather than attributing changed coalescing
+to direct snapshot savings. The ABI probe now also checks the new field's
+exact offset (127 checks in each mode).
+
+The legacy 349-file manifest omits native GUI modules. Supplement it with a
+Git-recovered baseline production inventory and archive the current inputs;
+do not use the legacy manifest alone to claim a complete source comparison.
 
 Repeat the controlled workload and unchanged AES baseline corpus on the final
 implementation with the same compiler, ROM, emulator and machine pins.

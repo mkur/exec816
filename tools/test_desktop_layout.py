@@ -36,6 +36,7 @@ PROC Main()
   Require(memory<>NULL)
 '''+ '\n'.join(checks)+'''
   Require(SIZEOF(LAYERTYPES.Scene)=LAYERTYPES.SCENE_SIZE)
+  Require(ADDRESS(@rService.scene.layoutEpoch)-ADDRESS(@rService.scene)=LAYERTYPES.SCENE_LAYOUTEPOCH)
   rService.scene.layoutEpoch=$12345678
   Require(rService.scene.layoutEpoch=$12345678)
   rService.windows(0).normalBounds.left=104
@@ -57,7 +58,7 @@ ENDMODULE
             machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
             runtime,_=execute(b,p,timeout=120,frame_limit=3000)
             count=data(b,p['image'],'checks',True)[0]
-            require(count==len(checks)-len(ABI['records'])+7,'Missing layout/access checks')
+            require(count==len(checks)-len(ABI['records'])+8,'Missing layout/access checks')
             result['cases'].append(dict(mode=mode,checks=count,build=p['build'],runtime=runtime,machine=machine))
     result['status']='pass'
     (out/'results.json').write_text(json.dumps(result,indent=2)+'\n')

@@ -1,0 +1,245 @@
+{
+  "format": "exec816.update-snapshot-us3-diagnostic.v1",
+  "tier": "development",
+  "qualification": false,
+  "status": "pass",
+  "scope": "Observer correction and unprofiled functional replay; full matched timing still pending.",
+  "failed_capture": "build/update-snapshot-reuse/us3",
+  "reason": "Exposure did not retain separated redraw work",
+  "diagnostic_guest_sha256": "c77c2f8da4600444357670eb2ed0dfa258aa3494690d4b41090435aaf6ef8b78",
+  "matching_frames": 11,
+  "diagnostic_assertions": 505,
+  "exposure_before": [
+    {
+      "iteration": 0,
+      "pending_before": {
+        "count": 1,
+        "visible_count": 1,
+        "rectangles": [
+          [
+            40,
+            35,
+            504,
+            206
+          ]
+        ]
+      },
+      "delivered_rectangles": [
+        [
+          72,
+          43,
+          32,
+          48
+        ],
+        [
+          120,
+          43,
+          304,
+          48
+        ]
+      ],
+      "requested_pixel_area": 16128,
+      "newly_exposed_pixels": 4608
+    },
+    {
+      "iteration": 1,
+      "pending_before": {
+        "count": 1,
+        "visible_count": 1,
+        "rectangles": [
+          [
+            40,
+            35,
+            504,
+            206
+          ]
+        ]
+      },
+      "delivered_rectangles": [
+        [
+          72,
+          43,
+          80,
+          48
+        ],
+        [
+          392,
+          43,
+          32,
+          48
+        ]
+      ],
+      "requested_pixel_area": 5376,
+      "newly_exposed_pixels": 4608
+    },
+    {
+      "iteration": 2,
+      "pending_before": {
+        "count": 1,
+        "visible_count": 1,
+        "rectangles": [
+          [
+            40,
+            35,
+            504,
+            206
+          ]
+        ]
+      },
+      "delivered_rectangles": [
+        [
+          72,
+          43,
+          80,
+          48
+        ],
+        [
+          392,
+          43,
+          32,
+          48
+        ]
+      ],
+      "requested_pixel_area": 5376,
+      "newly_exposed_pixels": 4608
+    }
+  ],
+  "exposure_after": [
+    {
+      "iteration": 0,
+      "pending_before": {
+        "count": 1,
+        "visible_count": 1,
+        "rectangles": [
+          [
+            40,
+            35,
+            504,
+            206
+          ]
+        ]
+      },
+      "delivered_rectangles": [
+        [
+          72,
+          43,
+          32,
+          48
+        ],
+        [
+          120,
+          43,
+          304,
+          48
+        ]
+      ],
+      "requested_pixel_area": 16128,
+      "newly_exposed_pixels": 4608
+    },
+    {
+      "iteration": 1,
+      "pending_before": {
+        "count": 1,
+        "visible_count": 1,
+        "rectangles": [
+          [
+            40,
+            35,
+            504,
+            206
+          ]
+        ]
+      },
+      "delivered_rectangles": [
+        [
+          72,
+          43,
+          352,
+          48
+        ]
+      ],
+      "requested_pixel_area": 16896,
+      "newly_exposed_pixels": 4608
+    },
+    {
+      "iteration": 2,
+      "pending_before": {
+        "count": 1,
+        "visible_count": 1,
+        "rectangles": [
+          [
+            40,
+            35,
+            504,
+            206
+          ]
+        ]
+      },
+      "delivered_rectangles": [
+        [
+          72,
+          43,
+          352,
+          48
+        ]
+      ],
+      "requested_pixel_area": 16896,
+      "newly_exposed_pixels": 4608
+    }
+  ],
+  "conclusion": "A single legal bounding redraw covers all three exposures; no notification coverage is lost. The former minimum-two-message guard depended on delivery phase.",
+  "observer_change": "Require 1..3 distinct bounded redraws made from actual exposure boundaries, covering all three newly exposed areas. Reject missing coverage, unexpected extent and duplicate/unbounded messages. Guest workload unchanged.",
+  "layout_checks": [
+    {
+      "mode": "raw",
+      "checks": 127
+    },
+    {
+      "mode": "opt",
+      "checks": 127
+    }
+  ],
+  "artifacts": {
+    "build/update-snapshot-reuse/us3/results.json": {
+      "sha256": "082100c403b4d75ae9ce8601f984275ad411860be3bc23f96373754268944e94",
+      "bytes": 153747
+    },
+    "build/update-snapshot-reuse/us3-exposure-diagnostic/results.json": {
+      "sha256": "ad585c00ca832b168f3ad87cacccdbc3a492d27cf1299ff59f06a59f956d62e0",
+      "bytes": 165718
+    },
+    "build/update-snapshot-reuse/us3-exposure-diagnostic/delivered.json": {
+      "sha256": "6ef3250696b12226c9ccae350b5a73648e5fd5f442c2b2d3ae50659c5adb7cbf",
+      "bytes": 473
+    },
+    "build/update-snapshot-reuse/us3/tick-diagnostic.json": {
+      "sha256": "eccb9286e23f1ab9daa605f23902a8a48355afbdc1aa1eaa6f07ca33ae1432ca",
+      "bytes": 410
+    },
+    "build/update-snapshot-reuse/us3-layout/results.json": {
+      "sha256": "cec12195c60251f26453f7d5ee2b64392b958f1c5fbce21d087904bc0e6fe6eb",
+      "bytes": 175656
+    },
+    "tools/aes_exposure_oracle.py": {
+      "sha256": "bdacc3b87e9a8a0ca9c733e466b2a1d2ca4b7b195f38dc235e6a3e3818486cc0",
+      "bytes": 795
+    },
+    "tools/measure_magic_aes.py": {
+      "sha256": "55f70919b695f4c70d4966817d638347854bc57239216f8557a36687cc19618b",
+      "bytes": 18125
+    },
+    "tests/test_aes_exposure_oracle.py": {
+      "sha256": "744fd103e7080f30aa786d40ec885b5ae80a7d593b263f9720915609a5c11479",
+      "bytes": 1182
+    },
+    "build/update-snapshot-reuse/us3-host-final-2.log": {
+      "sha256": "bc64f99792d9a259e25c42629a2cac0026d11a98025c20bed686f83dc9359955",
+      "bytes": 780
+    }
+  },
+  "host_tests": {
+    "run": 668,
+    "passed": 664,
+    "skipped": 4
+  }
+}

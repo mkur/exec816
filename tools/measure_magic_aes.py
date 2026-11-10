@@ -17,6 +17,7 @@ import sys
 from unittest.mock import patch
 
 import adapter_state as adapter
+from aes_exposure_oracle import check_exposure_rectangles
 from bitmap_console_oracle import Terminal
 from bitmap_console_performance import native_markers
 from build_bitmap_console import drawing, prepare
@@ -192,6 +193,7 @@ def run(out, from_build=None):
         reserved_bank_zero_delta=dict(fixed=0,root=0,kernel=0,per_public_task=[0]*8,idle=0),
         observer_inputs={str(x.relative_to(ROOT)):sha256(x) for x in (
             Path(__file__), ROOT/'tools/g4bench_trace.py', ROOT/'tools/console_turn_profile.py',
+            ROOT/'tools/aes_exposure_oracle.py',
             ROOT/'tools/desktop_oracle.py', ROOT/'tests/programs/magic_aes_baseline.c',
             ROOT/'examples/gem-counter/counter.c', ROOT/'examples/gem-counter/counter.h')})
     report['source_inputs']['examples/gem-counter/counter.c']=sha256(ROOT/'examples/gem-counter/counter.c')
@@ -297,7 +299,7 @@ def run(out, from_build=None):
                     phase(80+i);checkpoint(80+i)
                     count=get(sy['MagicExposureCount'])
                     rects=[list(struct.unpack('<4h',b.memdump(sy['MagicExposureRects']+j*8,8))) for j in range(count)]
-                    require(count>=2,'Exposure did not retain separated redraw work')
+                    check_exposure_rectangles(rects,struct.unpack('<4h',b.memdump(sy['MagicCounter']+38,8)))
                     report['exposure_bursts'][-1].update(delivered_rectangles=rects,
                         requested_pixel_area=sum(r[2]*r[3] for r in rects),
                         newly_exposed_pixels=3*32*48)
