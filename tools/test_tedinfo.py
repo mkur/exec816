@@ -55,6 +55,8 @@ def physical(b,p,foreign,report):
         b.poke16(sy['EditGo'],phase)
     from test_object_units import physical as object_units
     object_units(b,p,foreign,report,reach)
+    from test_object_tree import physical as object_tree
+    object_tree(b,p,foreign,report,reach)
     b.bp_clear_all()
 
 

@@ -1,0 +1,2234 @@
+{
+  "format": "exec816.object-tree-traversal.v1",
+  "date": "2026-11-10",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "plan_commit": "308632e4",
+  "source_revision": "308632e41000c1bff36289018a64c4b170c24b80",
+  "dirty_source": true,
+  "scope": "Application object traversal; optimized emitted object regression and unchanged matched native AES workload. No kernel, ABI, renderer policy or compiler changes.",
+  "baseline": {
+    "record": "docs/development/magic-aes-baseline.json",
+    "sha256": "bfe6c1ccf7f6540baeb8036ff03783d6e16d0d166c22dac910c8d970fc2efe07",
+    "commit": "e44a7384",
+    "source_archive_manifest": "build/magic-aes-baseline/final/source-inputs.json",
+    "preserved": true
+  },
+  "source_comparison": {
+    "compared_inputs": 349,
+    "changed": [
+      {
+        "path": "c/calypsi/aes-objects.c",
+        "before_sha256": "b7ae0e15ff4fc85b4ac1a77878f876a78c5951fb426e3c450b1b823dd58b4450",
+        "after_sha256": "9b00b7af8bb149522aa9846cf1d87889ae861f4b427d2be8ab468acd7fe18f37"
+      }
+    ],
+    "archive": "build/object-tree-traversal/measurement/inputs",
+    "manifest": "build/object-tree-traversal/measurement/source-inputs.json",
+    "observer_inputs_unchanged": true,
+    "observer_inputs": {
+      "tools/measure_magic_aes.py": "8cc30dfb0306f7c1c84f14f6acf72b627fca4ca2c22d7e0dbf9bf3ee9f876cac",
+      "tools/g4bench_trace.py": "fc6a65b82b45f658a3809c2d9cff115a96140da3a458ea9f6e1e01559b70d915",
+      "tools/console_turn_profile.py": "e5a3e8d16fa38d6af4a50717e25f67abfaf8dc13c854caa890085c45bf79ed37",
+      "tools/desktop_oracle.py": "b1abd3109a483c2cfef7e894b9be7a7ede80dd9c1f267690c7916c626adfb91d",
+      "tests/programs/magic_aes_baseline.c": "a3270a5236631f197bb9c96996cea9f7a38d4ef603321ab013f30a80d3a0aa52",
+      "examples/gem-counter/counter.c": "92780c5aaba74befb37bc7755830e5ec461e56cd8d5cc355000bc517c868ccf3",
+      "examples/gem-counter/counter.h": "faaa3c8858e79ed30193846857b83e9767ef532671ddc1ac8e9b87558f2030c8"
+    },
+    "oracle_inputs": {
+      "build/gem-vdi/upstream/tools/aesref.py": "17159134e05640b514708cd780004e1a59698927e3cb17ac3628ed57eb1f6266",
+      "build/gem-vdi/upstream/tools/vdiref.py": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+      "build/gem-vdi/upstream/tools/fontref.py": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+      "build/gem-vdi/upstream/tools/devref.py": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+      "build/gem-vdi/upstream/tools/gemdata.py": "408f051d865d07b88cede092d8b4fbf39e0da154c1954085ae3a18d410f0eb87",
+      "build/gem-vdi/upstream/tools/vbxeref.py": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+      "build/gem-vdi/upstream/tools/anticref.py": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df"
+    },
+    "oracle_archive": "build/object-tree-traversal/measurement/oracles"
+  },
+  "toolchain": {
+    "actionc_pin": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_build_profile": "release",
+    "calypsi": {
+      "cc65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    },
+    "calypsi_flags": [
+      "--code-model=large",
+      "--data-model=huge",
+      "-O2"
+    ],
+    "runtime_pin_sha256": "221bb3d29714e510c0ba3d3812b7c2ab493a6f817ca2698dc3bbb7c0d3b09f2f"
+  },
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "pin_sha256": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "preemptive": true,
+    "stack_checks": true
+  },
+  "correctness": {
+    "commands": [
+      "python3 tools/test_aes_server.py --suite objects --output build/object-tree-traversal/before",
+      "python3 tools/test_aes_server.py --suite objects --output build/object-tree-traversal/after"
+    ],
+    "fixture_inputs": {
+      "tests/programs/aes_objects.c": "135722c1b89d60b363c0576b83f87b8f3968479b03a11ca1e895e9444416e996",
+      "tests/programs/aes-tree-probe.h": "40720025a48ce9c26ba584f5bc4330fee2a6abfef001dc733cde0f5ba7040d17",
+      "tools/test_object_tree.py": "ef705ee4382b4848a80bf81edb9d591a3c4054b83db30ae1f2c7c09db2f2e24f",
+      "tools/test_object_units.py": "0b193ca6e864c8ca845bffe93cacd9f75481af31b1d4d6541eb4faafb045d583",
+      "tools/test_tedinfo.py": "98ead46b2908e50dd585f9b618a84686e6c6a1080e33744827aef8e39a41322a",
+      "tools/test_aes_server.py": "7f707426196b98be032e0963321f11e8e2b8a1537dc889a991aff46107cd2219"
+    },
+    "requests": 23,
+    "identical_states_damage_and_borrow_counts": true,
+    "matching_work_area_digests": 22,
+    "matching_two_caller_full_frame_digest": "a46d42d88611bc8316b748d35e7030876e25bbbfa0bd0ebdcb716778e7b523bf",
+    "before_assertions": 1315,
+    "after_assertions": 1315,
+    "native_assertions": 4,
+    "before_two_caller": {
+      "main_draws": 32,
+      "peer_draws": 32,
+      "pixels": "a46d42d88611bc8316b748d35e7030876e25bbbfa0bd0ebdcb716778e7b523bf"
+    },
+    "after_two_caller": {
+      "main_draws": 32,
+      "peer_draws": 32,
+      "pixels": "a46d42d88611bc8316b748d35e7030876e25bbbfa0bd0ebdcb716778e7b523bf"
+    },
+    "cases": [
+      {
+        "case": "single_leaf",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          1,
+          0,
+          0
+        ],
+        "expected_damage": [
+          57,
+          81,
+          81,
+          93
+        ],
+        "borrows": 1,
+        "pixel_sha256": "ecbea82af2c253b480001a4dc9a7c956acdb2221808022b798a1738a1feb4b7e"
+      },
+      {
+        "case": "wide_siblings",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          40,
+          0,
+          0
+        ],
+        "expected_damage": [
+          48,
+          56,
+          368,
+          184
+        ],
+        "borrows": 40,
+        "pixel_sha256": "a34d85f36e9bec350b73d272b6e3a47ceb581794cc9288191256653d9b45cb3d"
+      },
+      {
+        "case": "cousins",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          17,
+          0,
+          0
+        ],
+        "expected_damage": [
+          57,
+          81,
+          277,
+          181
+        ],
+        "borrows": 17,
+        "pixel_sha256": "db80f8217b618eddd12f2ec19f9c9b983a581bdd11dfb6e44bf7cd9cde50a66c"
+      },
+      {
+        "case": "maximum_relative_depth",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          65,
+          0,
+          0
+        ],
+        "expected_damage": [
+          64,
+          60,
+          244,
+          200
+        ],
+        "borrows": 65,
+        "pixel_sha256": "e1e9f8b9a798c7f8ec6950d13d1a74317a1c55e61bb8e95e61f249f75335d24b"
+      },
+      {
+        "case": "depth_zero",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          7,
+          0,
+          0
+        ],
+        "expected_damage": [
+          57,
+          81,
+          277,
+          181
+        ],
+        "borrows": 7,
+        "pixel_sha256": "ccb8f1a5acf6f2ffbeb2cfb1c5ea3f4e00e4cd01460fdc0e157320a3c0c43efa"
+      },
+      {
+        "case": "depth_negative",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          7,
+          0,
+          0
+        ],
+        "expected_damage": [
+          57,
+          81,
+          277,
+          181
+        ],
+        "borrows": 7,
+        "pixel_sha256": "ccb8f1a5acf6f2ffbeb2cfb1c5ea3f4e00e4cd01460fdc0e157320a3c0c43efa"
+      },
+      {
+        "case": "depth_clamped",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          76,
+          0,
+          0
+        ],
+        "expected_damage": [
+          48,
+          44,
+          228,
+          184
+        ],
+        "borrows": 76,
+        "pixel_sha256": "576bf2ed3f7587341a2950af28c6141c7c135328cc82b4a746aa303464673bfa"
+      },
+      {
+        "case": "nonroot_leaf",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          1,
+          0,
+          0
+        ],
+        "expected_damage": [
+          103,
+          99,
+          127,
+          111
+        ],
+        "borrows": 1,
+        "pixel_sha256": "126260bfdee2a06344594e6fd73e43dcbe3a5a2900e782f34120c06439467c79"
+      },
+      {
+        "case": "nonroot_subtree",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          5,
+          0,
+          0
+        ],
+        "expected_damage": [
+          177,
+          89,
+          257,
+          137
+        ],
+        "borrows": 5,
+        "pixel_sha256": "295b0cb9f00115bf579af41c626b528bfffa92b358347df6c6746fe4a4758855"
+      },
+      {
+        "case": "nonroot_relative_limit",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          63,
+          0,
+          0
+        ],
+        "expected_damage": [
+          64,
+          68,
+          220,
+          184
+        ],
+        "borrows": 63,
+        "pixel_sha256": "5e97789a91bd986ff237ef941303157aabb3de67dd11006f9fd51b7a3e6eaeb4"
+      },
+      {
+        "case": "hidden_root",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "expected_damage": null,
+        "borrows": 0,
+        "pixel_sha256": "04be9b5b1a0a847c3e8e85d68e3197c35d51eb09c573b702c1d45f0fe163c0cc"
+      },
+      {
+        "case": "hidden_branch",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          12,
+          0,
+          0
+        ],
+        "expected_damage": [
+          57,
+          81,
+          277,
+          181
+        ],
+        "borrows": 12,
+        "pixel_sha256": "468faf2e457763e416d167f4b35fece48d4ab3017927ff48aa9514c013a217d4"
+      },
+      {
+        "case": "hidden_leaf",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          16,
+          0,
+          0
+        ],
+        "expected_damage": [
+          57,
+          81,
+          277,
+          181
+        ],
+        "borrows": 16,
+        "pixel_sha256": "b8b74bf35fdaed254dd17e177f69ff9c6e233905d411495497b508d34d86d13c"
+      },
+      {
+        "case": "child_outside_clipped_parent",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          1,
+          0,
+          0
+        ],
+        "expected_damage": [
+          140,
+          90,
+          240,
+          110
+        ],
+        "borrows": 1,
+        "pixel_sha256": "88e6c538d9cc0e6b0885c501ddcb1cee5482946543a4e810b4c01adff6da032d"
+      },
+      {
+        "case": "negative_origin",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          12,
+          0,
+          0
+        ],
+        "expected_damage": [
+          8,
+          35,
+          200,
+          160
+        ],
+        "borrows": 12,
+        "pixel_sha256": "47e06e10808474a1e01c49b5052104287736c28bf6dc0088c5d1eb84ff0ae3e9"
+      },
+      {
+        "case": "partial_damage_outward_border",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          1,
+          0,
+          0
+        ],
+        "expected_damage": [
+          75,
+          80,
+          115,
+          83
+        ],
+        "borrows": 1,
+        "pixel_sha256": "679f0ac9d043731c1a2c980c5b69a00384fe2990c2fbf736665ee563b5a8ee12"
+      },
+      {
+        "case": "empty_width",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "expected_damage": null,
+        "borrows": 0,
+        "pixel_sha256": "04be9b5b1a0a847c3e8e85d68e3197c35d51eb09c573b702c1d45f0fe163c0cc"
+      },
+      {
+        "case": "disjoint_visibility",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          52,
+          0,
+          0
+        ],
+        "expected_damage": [
+          48,
+          56,
+          368,
+          184
+        ],
+        "borrows": 52,
+        "pixel_sha256": "41ba3819b04c49cf0b4ffdde1ee4d3584eb9274eb5863d29ae747b5ba09729e8"
+      },
+      {
+        "case": "covered_owner",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          0,
+          0,
+          0
+        ],
+        "expected_damage": [
+          57,
+          81,
+          277,
+          181
+        ],
+        "borrows": 0,
+        "pixel_sha256": "04be9b5b1a0a847c3e8e85d68e3197c35d51eb09c573b702c1d45f0fe163c0cc"
+      },
+      {
+        "case": "borrow_failure_after_descent",
+        "state": [
+          0,
+          9,
+          0,
+          1,
+          5,
+          3,
+          0,
+          0
+        ],
+        "expected_damage": [
+          57,
+          81,
+          137,
+          109
+        ],
+        "borrows": 3
+      },
+      {
+        "case": "recovery_after_failure",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          3,
+          0,
+          0
+        ],
+        "expected_damage": [
+          57,
+          81,
+          137,
+          109
+        ],
+        "borrows": 3,
+        "pixel_sha256": "5fb6b4c45edd0c12d0f1f3791ff45da785797c083212aa5239d23f17b4b06450"
+      },
+      {
+        "case": "changed_positions_next_call",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          5,
+          17,
+          0,
+          0
+        ],
+        "expected_damage": [
+          171,
+          50,
+          431,
+          150
+        ],
+        "borrows": 17,
+        "pixel_sha256": "312b00a4d779c005c931d37a64eaf9dde811570a561c8f07006c2c728f9b9c22"
+      },
+      {
+        "case": "empty_height",
+        "state": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "expected_damage": null,
+        "borrows": 0,
+        "pixel_sha256": "04be9b5b1a0a847c3e8e85d68e3197c35d51eb09c573b702c1d45f0fe163c0cc"
+      }
+    ],
+    "before_stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 1035,
+        "untouched_above_floor": 245
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 708,
+        "untouched_above_floor": 1596
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 634,
+        "untouched_above_floor": 1670
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 33,
+        "untouched_above_floor": 223
+      }
+    ],
+    "after_stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 1090,
+        "untouched_above_floor": 190
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 712,
+        "untouched_above_floor": 1592
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 665,
+        "untouched_above_floor": 1639
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 39,
+        "untouched_above_floor": 217
+      }
+    ],
+    "before_kernel_stack": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 283,
+      "untouched_from_base": 1253,
+      "interrupt_reserve_bytes_touched": 0
+    },
+    "after_kernel_stack": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 287,
+      "untouched_from_base": 1249,
+      "interrupt_reserve_bytes_touched": 0
+    },
+    "guards_intact": true,
+    "ownership_restored": true,
+    "heap_restored": true
+  },
+  "measurements": {
+    "command": "python3 tools/measure_magic_aes.py --output build/object-tree-traversal/measurement",
+    "measured_samples": 67,
+    "assertions": 511,
+    "cases": [
+      {
+        "case": "objects_5",
+        "measured_samples": 8,
+        "discarded_warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 44.524013256665334,
+          "after_median": 43.712246908916114,
+          "change_percent": -1.8232101923734367
+        },
+        "elapsed_ms": {
+          "before_median": 57.30565043509887,
+          "after_median": 57.02942291779148,
+          "change_percent": -0.48202492286555376
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.4974308514912336,
+          "after_median": 2.4980299670556922,
+          "change_percent": 0.02398927538278528
+        },
+        "calls_per_sample": {
+          "App_ob_offset": {
+            "before": {
+              "min": 5,
+              "median": 5.0,
+              "max": 5
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "ExecAESDraw": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "DisplayEnter": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 16,
+              "median": 16.0,
+              "max": 16
+            },
+            "after": {
+              "min": 16,
+              "median": 16.0,
+              "max": 16
+            }
+          },
+          "DoIO": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      {
+        "case": "objects_33_siblings",
+        "measured_samples": 8,
+        "discarded_warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 123.99704530300446,
+          "after_median": 105.92895335215731,
+          "change_percent": -14.571389105841348
+        },
+        "elapsed_ms": {
+          "before_median": 154.16794125566165,
+          "after_median": 131.58953112511085,
+          "change_percent": -14.645334137989352
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.497853756595558,
+          "after_median": 2.4971136726629912,
+          "change_percent": -0.029628793543756693
+        },
+        "calls_per_sample": {
+          "App_ob_offset": {
+            "before": {
+              "min": 33,
+              "median": 33.0,
+              "max": 33
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "ExecAESDraw": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "DisplayEnter": {
+            "before": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            },
+            "after": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            },
+            "after": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            },
+            "after": {
+              "min": 40,
+              "median": 40.0,
+              "max": 40
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 46,
+              "median": 46.0,
+              "max": 46
+            },
+            "after": {
+              "min": 46,
+              "median": 46.0,
+              "max": 46
+            }
+          },
+          "DoIO": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      {
+        "case": "objects_9_nested",
+        "measured_samples": 8,
+        "discarded_warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 171.26708712831928,
+          "after_median": 167.42333787721373,
+          "change_percent": -2.244301176340835
+        },
+        "elapsed_ms": {
+          "before_median": 211.25611274086208,
+          "after_median": 206.06276757558373,
+          "change_percent": -2.458317109928443
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.497607061951369,
+          "after_median": 2.497078430570964,
+          "change_percent": -0.021165514322007972
+        },
+        "calls_per_sample": {
+          "App_ob_offset": {
+            "before": {
+              "min": 9,
+              "median": 9.0,
+              "max": 9
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "ExecAESDraw": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "DisplayEnter": {
+            "before": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            },
+            "after": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            },
+            "after": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            },
+            "after": {
+              "min": 56,
+              "median": 56.0,
+              "max": 56
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 90,
+              "median": 90.0,
+              "max": 90
+            },
+            "after": {
+              "min": 90,
+              "median": 90.0,
+              "max": 90
+            }
+          },
+          "DoIO": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      {
+        "case": "counter_uncovered",
+        "measured_samples": 8,
+        "discarded_warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 40.90665920474105,
+          "after_median": 40.97072932804608,
+          "change_percent": 0.15662516702807938
+        },
+        "elapsed_ms": {
+          "before_median": 53.431416774389994,
+          "after_median": 53.28470394528172,
+          "change_percent": -0.274581581333988
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.678857141246076,
+          "after_median": 2.497571819859342,
+          "change_percent": -6.767263494402275
+        },
+        "calls_per_sample": {
+          "App_ob_offset": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "ExecAESDraw": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "DisplayEnter": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 13,
+              "median": 13.0,
+              "max": 13
+            },
+            "after": {
+              "min": 13,
+              "median": 13.0,
+              "max": 13
+            }
+          },
+          "DoIO": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      {
+        "case": "counter_fragmented",
+        "measured_samples": 8,
+        "discarded_warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 96.62690888791465,
+          "after_median": 96.66849455650646,
+          "change_percent": 0.04303735788551144
+        },
+        "elapsed_ms": {
+          "before_median": 120.30444938460258,
+          "after_median": 120.36933007602426,
+          "change_percent": 0.053930417165415356
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.4974308514912336,
+          "after_median": 2.4971136726629912,
+          "change_percent": -0.01270020461439092
+        },
+        "calls_per_sample": {
+          "App_ob_offset": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "ExecAESDraw": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "DisplayEnter": {
+            "before": {
+              "min": 15,
+              "median": 15.0,
+              "max": 15
+            },
+            "after": {
+              "min": 15,
+              "median": 15.0,
+              "max": 15
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 15,
+              "median": 15.0,
+              "max": 15
+            },
+            "after": {
+              "min": 15,
+              "median": 15.0,
+              "max": 15
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 2,
+              "median": 2.0,
+              "max": 2
+            },
+            "after": {
+              "min": 2,
+              "median": 2.0,
+              "max": 2
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 17,
+              "median": 17.0,
+              "max": 17
+            },
+            "after": {
+              "min": 17,
+              "median": 17.0,
+              "max": 17
+            }
+          },
+          "DoIO": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      {
+        "case": "counter_tick_fragmented",
+        "measured_samples": 8,
+        "discarded_warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 39.12002610734177,
+          "after_median": 39.30642153207242,
+          "change_percent": 0.476470604133028
+        },
+        "elapsed_ms": {
+          "before_median": 50.82674423686069,
+          "after_median": 50.78248016927482,
+          "change_percent": -0.08708814276907617
+        },
+        "presenter_cpu_ms": {
+          "before_median": 2.4971136726629917,
+          "after_median": 2.497043188478937,
+          "change_percent": -0.002822626171417042
+        },
+        "calls_per_sample": {
+          "App_ob_offset": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "ExecAESDraw": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "DisplayEnter": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "DoIO": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      {
+        "case": "separated_exposure",
+        "measured_samples": 3,
+        "discarded_warmups": 0,
+        "charged_cpu_ms": {
+          "before_median": 75.31524051318125,
+          "after_median": 80.44176667197647,
+          "change_percent": 6.806757999926982
+        },
+        "elapsed_ms": {
+          "before_median": 126.82205139988639,
+          "after_median": 118.42470668006806,
+          "change_percent": -6.6213601082199975
+        },
+        "presenter_cpu_ms": {
+          "before_median": 29.108769783148357,
+          "after_median": 14.840656405109257,
+          "change_percent": -49.01654547523747
+        },
+        "calls_per_sample": {
+          "App_ob_offset": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "ExecAESDraw": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "DisplayEnter": {
+            "before": {
+              "min": 3,
+              "median": 3,
+              "max": 5
+            },
+            "after": {
+              "min": 3,
+              "median": 3,
+              "max": 5
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 3,
+              "median": 3,
+              "max": 5
+            },
+            "after": {
+              "min": 3,
+              "median": 3,
+              "max": 5
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 1,
+              "median": 1,
+              "max": 2
+            },
+            "after": {
+              "min": 1,
+              "median": 1,
+              "max": 2
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 2,
+              "median": 2,
+              "max": 3
+            },
+            "after": {
+              "min": 2,
+              "median": 2,
+              "max": 3
+            }
+          },
+          "DoIO": {
+            "before": {
+              "min": 3,
+              "median": 3,
+              "max": 3
+            },
+            "after": {
+              "min": 3,
+              "median": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "case": "move_pending_redraw",
+        "measured_samples": 8,
+        "discarded_warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 49.59182609014363,
+          "after_median": 49.05202296656653,
+          "change_percent": -1.0884921289163407
+        },
+        "elapsed_ms": {
+          "before_median": 250.76189878753104,
+          "after_median": 251.04401173420698,
+          "change_percent": 0.11250231715422832
+        },
+        "presenter_cpu_ms": {
+          "before_median": 157.82920695425153,
+          "after_median": 157.36281310836662,
+          "change_percent": -0.29550541049103707
+        },
+        "calls_per_sample": {
+          "App_ob_offset": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "ExecAESDraw": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "DisplayEnter": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            },
+            "after": {
+              "min": 12,
+              "median": 12.0,
+              "max": 12
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 13,
+              "median": 13.0,
+              "max": 13
+            },
+            "after": {
+              "min": 13,
+              "median": 13.0,
+              "max": 13
+            }
+          },
+          "DoIO": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      {
+        "case": "zero_timer",
+        "measured_samples": 8,
+        "discarded_warmups": 2,
+        "charged_cpu_ms": {
+          "before_median": 2.1906131983044324,
+          "after_median": 2.1930801447463204,
+          "change_percent": 0.1126144242989735
+        },
+        "elapsed_ms": {
+          "before_median": 2.647808858170315,
+          "after_median": 2.670716217987846,
+          "change_percent": 0.8651440132034338
+        },
+        "presenter_cpu_ms": {
+          "before_median": 0.0,
+          "after_median": 0.0,
+          "change_percent": null
+        },
+        "calls_per_sample": {
+          "App_ob_offset": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "ExecAESDraw": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "DisplayEnter": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "DisplayLeave": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "GemDrawingBorrow": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "before": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            },
+            "after": {
+              "min": 0,
+              "median": 0,
+              "max": 0
+            }
+          },
+          "DoIO": {
+            "before": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            },
+            "after": {
+              "min": 1,
+              "median": 1.0,
+              "max": 1
+            }
+          }
+        }
+      }
+    ],
+    "matched_full_frame_checks": 11,
+    "frame_digests": [
+      {
+        "phase": 1,
+        "sha256": "a3e81a0d04a3b5991886ae7b61d1c78fc89c364962ed577600defe5f01dd9eb9"
+      },
+      {
+        "phase": 2,
+        "sha256": "e5762b901273478cd416fa607ba2a3089ba2083639a72e55df95b4a1a29d9ab6"
+      },
+      {
+        "phase": 3,
+        "sha256": "97b755d17b3ba05adf0fb858692fcea0da34407697be0274db46884a005db824"
+      },
+      {
+        "phase": 4,
+        "sha256": "76e07133e868a1eb2f9c9d7b9af1e0592907ec6de165b205ad8583aec9ecd2bc"
+      },
+      {
+        "phase": 5,
+        "sha256": "bda3d34b7a054aa088eda153e1feea56e2b0efe06787a74d810e1d13b6476989"
+      },
+      {
+        "phase": 6,
+        "sha256": "bda3d34b7a054aa088eda153e1feea56e2b0efe06787a74d810e1d13b6476989"
+      },
+      {
+        "phase": 80,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be"
+      },
+      {
+        "phase": 81,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be"
+      },
+      {
+        "phase": 82,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be"
+      },
+      {
+        "phase": 8,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be"
+      },
+      {
+        "phase": 9,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be"
+      }
+    ],
+    "exposure_bursts": [
+      {
+        "iteration": 0,
+        "pending_before": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        },
+        "delivered_rectangles": [
+          [
+            72,
+            43,
+            32,
+            48
+          ],
+          [
+            120,
+            43,
+            304,
+            48
+          ]
+        ],
+        "requested_pixel_area": 16128,
+        "newly_exposed_pixels": 4608
+      },
+      {
+        "iteration": 1,
+        "pending_before": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        },
+        "delivered_rectangles": [
+          [
+            72,
+            43,
+            80,
+            48
+          ],
+          [
+            392,
+            43,
+            32,
+            48
+          ]
+        ],
+        "requested_pixel_area": 5376,
+        "newly_exposed_pixels": 4608
+      },
+      {
+        "iteration": 2,
+        "pending_before": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        },
+        "delivered_rectangles": [
+          [
+            72,
+            43,
+            80,
+            48
+          ],
+          [
+            392,
+            43,
+            32,
+            48
+          ]
+        ],
+        "requested_pixel_area": 5376,
+        "newly_exposed_pixels": 4608
+      }
+    ],
+    "exposure_control_attribution": {
+      "conclusion": "UPDATE admission ran locally in two new samples; all baseline samples submitted an RPC. Work shifted between caller and presenter. This control does not execute object traversal.",
+      "inference": "Earlier object operations changed execution phase at the unchanged UPDATE gate.",
+      "trace_check": [
+        {
+          "capture": "build/magic-aes-baseline/final",
+          "iteration": 0,
+          "UPDATE_RPC_count": 1,
+          "UPDATE_count": 4,
+          "all_RPC_inside_UPDATE": true
+        },
+        {
+          "capture": "build/magic-aes-baseline/final",
+          "iteration": 1,
+          "UPDATE_RPC_count": 1,
+          "UPDATE_count": 4,
+          "all_RPC_inside_UPDATE": true
+        },
+        {
+          "capture": "build/magic-aes-baseline/final",
+          "iteration": 2,
+          "UPDATE_RPC_count": 1,
+          "UPDATE_count": 4,
+          "all_RPC_inside_UPDATE": true
+        },
+        {
+          "capture": "build/object-tree-traversal/measurement",
+          "iteration": 0,
+          "UPDATE_RPC_count": 0,
+          "UPDATE_count": 4,
+          "all_RPC_inside_UPDATE": true
+        },
+        {
+          "capture": "build/object-tree-traversal/measurement",
+          "iteration": 1,
+          "UPDATE_RPC_count": 0,
+          "UPDATE_count": 4,
+          "all_RPC_inside_UPDATE": true
+        },
+        {
+          "capture": "build/object-tree-traversal/measurement",
+          "iteration": 2,
+          "UPDATE_RPC_count": 1,
+          "UPDATE_count": 4,
+          "all_RPC_inside_UPDATE": true
+        }
+      ],
+      "before_rpc_counts": [
+        1,
+        1,
+        1
+      ],
+      "after_rpc_counts": [
+        0,
+        0,
+        1
+      ],
+      "before_presenter_collect_counts": [
+        4,
+        4,
+        4
+      ],
+      "after_presenter_collect_counts": [
+        3,
+        3,
+        4
+      ],
+      "before_UPDATE_inclusive_cpu_median": 32.64467936039832,
+      "after_UPDATE_inclusive_cpu_median": 38.31153727415106,
+      "damage_and_display_counts_unchanged": true
+    },
+    "guards_intact": true,
+    "ownership_restored": true,
+    "heap_restored": true
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "identical_maps": [
+      "bank_zero_budget",
+      "task_pools",
+      "runtime_reservations",
+      "phase_reservations"
+    ],
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 26848,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 46816,
+      "loading_including_os": 40336
+    },
+    "before_code": {
+      "ExecAESDraw_code_bytes": 2137,
+      "ExecAESDraw_local_frame_bytes": 72,
+      "saved_direct_page_bytes": 8,
+      "executable_c_bytes": 130897,
+      "initialized_c_data_bytes": 43935,
+      "zero_filled_c_data_bytes": 21915
+    },
+    "after_code": {
+      "ExecAESDraw_code_bytes": 2559,
+      "ExecAESDraw_local_frame_bytes": 104,
+      "saved_direct_page_bytes": 8,
+      "executable_c_bytes": 131324,
+      "initialized_c_data_bytes": 43935,
+      "zero_filled_c_data_bytes": 21915
+    },
+    "before_stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 731,
+        "untouched_above_floor": 549
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 726,
+        "untouched_above_floor": 1578
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 52,
+        "untouched_above_floor": 204
+      }
+    ],
+    "after_stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 742,
+        "untouched_above_floor": 538
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 712,
+        "untouched_above_floor": 1592
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 33,
+        "untouched_above_floor": 223
+      }
+    ],
+    "before_kernel_stack": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 287,
+      "untouched_from_base": 1249,
+      "interrupt_reserve_bytes_touched": 0
+    },
+    "after_kernel_stack": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 285,
+      "untouched_from_base": 1251,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "host_tests": {
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "run": 665,
+    "passed": 661,
+    "skipped": 4
+  },
+  "artifacts": {
+    "docs/development/magic-aes-baseline.json": {
+      "sha256": "bfe6c1ccf7f6540baeb8036ff03783d6e16d0d166c22dac910c8d970fc2efe07",
+      "bytes": 41904
+    },
+    "build/magic-aes-baseline/final/results.json": {
+      "sha256": "f09e0e26ea5bad30a43554c7fdee3d8e29730735c4fe0a7ad2fa1f11c99df06d",
+      "bytes": 340445
+    },
+    "build/magic-aes-baseline/final/timings.json": {
+      "sha256": "8302306b76cf03738524c409cd7e7587813c56a590e24356464df852baa4455c",
+      "bytes": 162285
+    },
+    "build/object-tree-traversal/measurement/results.json": {
+      "sha256": "fcc5652ae753494af824469c6d60d02f5346c105a01a9515180df9ad94a806e3",
+      "bytes": 338125
+    },
+    "build/object-tree-traversal/measurement/timings.json": {
+      "sha256": "b4f0f3c9087c3bf052727e1035cb503ffc8403b4250edc164ff15d8e191cd973",
+      "bytes": 159628
+    },
+    "build/object-tree-traversal/measurement/source-inputs.json": {
+      "sha256": "62f1008a804903083f9ace19673fffd4306e4d3fdab673782472f65e2db88b50",
+      "bytes": 34735
+    },
+    "build/object-tree-traversal/measurement/working-tree.patch": {
+      "sha256": "73922f5fd5451f0bead10bd1605e1ce3db8dd50b491cac7af7ccc942061d0a86",
+      "bytes": 5801
+    },
+    "build/object-tree-traversal/measurement/trace-definition.json": {
+      "sha256": "cbd3b107b8122054caea9189569bd121bc4114865d37f8d1f7460c81e8a14381",
+      "bytes": 73490
+    },
+    "build/object-tree-traversal/measurement/emulator.log": {
+      "sha256": "5694eddac26ae0a1d2289776c5cd3df8a4b4ec096ca8e1ecd578986b6d7bde87",
+      "bytes": 153271306
+    },
+    "build/object-tree-traversal/measurement/program/program.xex": {
+      "sha256": "99e1ce9fbc01abaf30a4e6384a2fe5b42c3e0e72b05a4a519e57c9e79e735607",
+      "bytes": 449611
+    },
+    "build/object-tree-traversal/measurement/program/build.json": {
+      "sha256": "19a938f0a8d5ce83caae39af834bd86905b4734fcb966a42206f7bebfceb70da",
+      "bytes": 127830
+    },
+    "build/object-tree-traversal/measurement/c-image.json": {
+      "sha256": "0ccd3dd997c92c17fe6a224e678714358ee6308cb31c74139c45a228fd1c1441",
+      "bytes": 2239551
+    },
+    "build/object-tree-traversal/measurement/drawing/link.lst": {
+      "sha256": "d3fbe3a3af0d734de081823c0aa99c9ecc18dfdd6a4ae92ac0c366e2b47ed440",
+      "bytes": 666496
+    },
+    "build/object-tree-traversal/measurement/drawing/34-aes-objects.lst": {
+      "sha256": "ab948f8ffb11b7a204faf96a0a1dd0f789b5db174e55e7cfb2d480acb730de17",
+      "bytes": 204746
+    },
+    "build/object-tree-traversal/before/results.json": {
+      "sha256": "2af715b8670eed7d54ef28e052e114bd96d7a75bbe2a0251ece70b1de35f7ba3",
+      "bytes": 158818
+    },
+    "build/object-tree-traversal/before/program/program.xex": {
+      "sha256": "9fdc65c5a35772e9ea709da07802c56802a05fd60d5c6762e3f0aa0c47c2d6e9",
+      "bytes": 481342
+    },
+    "build/object-tree-traversal/after/results.json": {
+      "sha256": "2ec76a4232dffdb231b523f5c8f0db774fc07c496d6503028f1f2acf8ef9b875",
+      "bytes": 158737
+    },
+    "build/object-tree-traversal/after/program/program.xex": {
+      "sha256": "05d794186fcd01beccd2084617ac95a9c95ec82f1e7054245fe69f3475a314b7",
+      "bytes": 481430
+    },
+    "build/object-tree-traversal/fixture-inputs.json": {
+      "sha256": "4a916171bd255683cdabb6b297d3668331b8048425a7abcb5a9d8a5c3bc95589",
+      "bytes": 602
+    },
+    "build/object-tree-traversal/exposure-control.json": {
+      "sha256": "c3484b36d0a6619c8418209f2c503647dc15aef8b7ca743a50efa063545920ef",
+      "bytes": 1002
+    },
+    "build/object-tree-traversal/record.py": {
+      "sha256": "10332b4403d1fe2368b3f385e3e403ebddcab241b7020c079bea731a7cd34c7b",
+      "bytes": 11291
+    },
+    "build/object-tree-traversal-before.log": {
+      "sha256": "f15b9099eef928e0d492771db3e6be3d2f23facd60eb7c9c7deb13ffd517eaa9",
+      "bytes": 857
+    },
+    "build/object-tree-traversal-after.log": {
+      "sha256": "2293791212e9274a53836e5105f58b13d8d98196d0e05cbcb1aafdadcb8b7cf7",
+      "bytes": 857
+    },
+    "build/object-tree-traversal-measurement.log": {
+      "sha256": "4a160a28f88691e2f01071c82e5211524923797df36e6de21ecb7a18f715c2e0",
+      "bytes": 806
+    },
+    "build/object-tree-traversal-host-tests.log": {
+      "sha256": "850598f69eb8a6ba2d39a719078eccac482ee0dcf94659a4848ea23a3719a44e",
+      "bytes": 777
+    }
+  },
+  "limits": [
+    "Development checks only; no full hosted qualification or physical hardware claim.",
+    "Matched guest CPU timing, not loaded-application/input-to-scanout or tail-latency evidence.",
+    "Counter, exposure, move and timer cases are controls; changes are not traversal gains.",
+    "Stack watermarks are observed values, not worst-case bounds.",
+    "Deep non-root requests characterize existing behavior without expanding the public tree contract."
+  ]
+}

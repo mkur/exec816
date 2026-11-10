@@ -208,6 +208,10 @@ counters; the native desktop and distributed demo are unchanged.
 
 ## AES drawing and redraw baseline
 
+The first matched optimization is recorded in
+[incremental object traversal](../history/object-tree-traversal.md), with
+unchanged drawing pixels, fewer coordinate lookups and measured CPU/stack costs.
+
 The [MagiC-inspired optimization baseline](../development/magic-aes-baseline.json)
 records the current object traversal, visibility clipping, redraw delivery,
 pending-paint moves and immediate timer behavior. Capture a new development

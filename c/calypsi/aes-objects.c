@@ -86,6 +86,7 @@ WORD ExecAESDraw(struct ExecAESContext *c, OBJECT *tree,WORD start,WORD depth,WO
 {
     struct ObjectPaint p;
     struct AESWindowView *v;
+    WORD parentX[MAX_DEPTH],parentY[MAX_DEPTH];
     WORD obj=start,level=0,next,border,l,t,r,b,row,rows,vl,vt,vr,vb;
     WORD changed=0,left=0,top=0,right=0,bottom=0,okay=1;
     UWORD i;
@@ -97,10 +98,14 @@ WORD ExecAESDraw(struct ExecAESContext *c, OBJECT *tree,WORD start,WORD depth,WO
      * has no visible rectangles, so traversal records damage without drawing. */
     v=c->view; p.tree=tree; p.context=c;
     if (depth>MAX_DEPTH) depth=MAX_DEPTH;
-    if (w<=0 || h<=0) { c->busy=0; return 1; }
+    if (w<=0 || h<=0 || (tree[start].ob_flags&HIDETREE)) { c->busy=0; return 1; }
+    /* Keep the current absolute origin in the callback record. Saved origins
+     * are private to this call and indexed relative to the requested start. */
+    if (start==ROOT) { p.x=tree[start].ob_x;p.y=tree[start].ob_y; }
+    else ob_offset(tree,start,&p.x,&p.y);
     for (;;) {
         if (!(tree[obj].ob_flags&HIDETREE)) {
-            p.object=obj; ob_offset(tree,obj,&p.x,&p.y);
+            p.object=obj;
             border=tree[obj].ob_type==G_BUTTON ?
                 1+!!(tree[obj].ob_flags&EXIT)+!!(tree[obj].ob_flags&DEFAULT):0;
             if (tree[obj].ob_type==G_BOXTEXT || tree[obj].ob_type==G_TEXT ||
@@ -147,16 +152,22 @@ WORD ExecAESDraw(struct ExecAESContext *c, OBJECT *tree,WORD start,WORD depth,WO
                 }
             }
             if (level<depth && tree[obj].ob_head!=NIL) {
-                obj=tree[obj].ob_head; ++level; continue;
+                parentX[level]=p.x;parentY[level]=p.y;
+                obj=tree[obj].ob_head; ++level;
+                p.x+=tree[obj].ob_x;p.y+=tree[obj].ob_y;
+                continue;
             }
         }
         while (obj!=start) {
             next=tree[obj].ob_next;
             if (tree[next].ob_tail!=obj) break;
             obj=next; --level;
+            p.x=parentX[level];p.y=parentY[level];
         }
         if (obj==start) break;
         obj=tree[obj].ob_next;
+        p.x=parentX[level-1];p.y=parentY[level-1];
+        p.x+=tree[obj].ob_x;p.y+=tree[obj].ob_y;
     }
 finished:
     if (changed) ExecAESChanged(c,left,top,right,bottom);

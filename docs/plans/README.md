@@ -611,7 +611,8 @@ assuming work is pending. Current behavior belongs in the
 
 - [Incremental object traversal](gem4xe/object-tree-traversal-plan.md): bounded
   caller-local coordinates, traversal/pixel regressions and matched optimized
-  measurement against the captured AES baseline.
+  measurement against the captured AES baseline. OT1–OT3 pass at the development
+  tier; the wide tree uses 14.6% less caller CPU with matching pixels.
 
 - [GEM source compatibility](gem4xe/gem-source-compatibility-plan.md): conventional
   Counter redraws, shared-source reference builds, event/resource comparisons

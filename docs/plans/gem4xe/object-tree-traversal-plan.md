@@ -4,8 +4,10 @@
 [Captured baseline](../../development/magic-aes-baseline.json) ·
 [AES application contract](../../reference/aes.md)
 
-Status: ready for implementation. Complete the correctness, implementation and
-matched-measurement slices below before marking the work complete.
+Status: OT1–OT3 complete at the development tier on 2026-11-10. See the
+[implementation and measurements](../../history/object-tree-traversal.md) and
+[evidence record](../../development/object-tree-traversal.json). The matched
+wide-tree caller CPU median falls 14.6%; all eleven frame digests match.
 
 Replace repeated absolute-coordinate lookup in the application `objc_draw`
 walker with incremental coordinates. Ordinary GEM application source, object
@@ -67,6 +69,9 @@ cost of maintaining coordinates and must be measured.
 
 ### OT1 Establish traversal regression coverage
 
+Completed: 23 requests, unchanged drawing checks and the two-caller proof pass
+on both walkers, including failure recovery and normal retirement.
+
 Extend the existing emitted AES object fixture and its host pixel oracle with
 focused trees and draw requests. Keep case setup outside measured workloads.
 Check root and non-root starts, a single leaf, broad siblings, cousin/ascent
@@ -93,6 +98,10 @@ explicitly instead of silently changing the expected traversal.
 
 ### OT2 Carry coordinates in the production walker
 
+Completed: the caller-local paint record carries the current origin, with
+32 bytes of parent origins. Emitted local frame growth is exactly 32 bytes;
+root benchmark draws make zero coordinate lookups.
+
 Implement the algorithm in `ExecAESDraw` and run OT1 again. Keep the existing
 paint loop and common failure/changed-region exit together. Inspect emitted
 code and measure the local frame. Root-start traversal should make no
@@ -103,6 +112,12 @@ drawing-unit bounds. No new allocation or persistent state. All existing
 display/update/epoch and pointer-lifetime contracts remain authoritative.
 
 ### OT3 Compare the matched optimized baseline
+
+Completed: 67 measured operations, 511 fixture assertions and eleven matching
+full-frame checks. The wide target passes, small/nested CPU improves and the
+exposure control's changed UPDATE admission path is recorded separately.
+Host checks pass with four historical-source skips. Bank-zero reservation
+growth is zero in every category below.
 
 Run `tools/measure_magic_aes.py` with the same workload, toolchain, ROM,
 emulator and machine settings. Preserve eight measured calls after two warmups

@@ -6,10 +6,12 @@ from native_program import ROOT, require
 def instrument(out):
     source=(ROOT/'ports/gem4xe/adapter/gem-vbxe.c').read_text()
     source=source.replace('#include "gem-drawing.h"', '#include "gem-drawing.h"\n'
-        'extern void ObjectBorrowProbe(UWORD);\nextern void ObjectListProbe(const UBYTE *,UWORD);')
-    needle='    status=DisplayEnter(grant);'
+        'extern void ObjectBorrowProbe(UWORD);\nextern void ObjectListProbe(const UBYTE *,UWORD);\n'
+        'extern UWORD ObjectBorrowFailed(void);')
+    needle='\n    status=DisplayEnter(grant);'
     require(source.count(needle)==1,'Borrow admission changed')
-    source=source.replace(needle,'    ObjectBorrowProbe(bottom-top);\n'+needle)
+    source=source.replace(needle,'\n    ObjectBorrowProbe(bottom-top);\n'
+        '    if (ObjectBorrowFailed()) return DISPLAY_DEVICE_FAULT;\n'+needle)
     needle='    if (commandCount && !fault) latch(VbxeOwnerSubmit(&display,commands,commandCount));'
     require(source.count(needle)==1,'Builder publication changed')
     source=source.replace(needle,'    if (commandCount && !fault) ObjectListProbe(commands,commandCount);\n'+needle)

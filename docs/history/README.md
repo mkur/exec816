@@ -1,5 +1,9 @@
 # Historical records
 
+- [Incremental AES object traversal](object-tree-traversal.md): caller-local
+  parent origins, matching drawing/cleanup checks and 14.6% less wide-tree
+  caller CPU against the captured baseline, with unchanged bank-zero reservations.
+
 - [Kernel identity and ROM diagnostics](kernel-rom-diagnostics.md): early build
   identity, full and section ROM CRCs, assumed-XLOS continuation, distinct
   installation failures and development checks on matching boot media.

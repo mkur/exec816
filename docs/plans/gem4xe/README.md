@@ -4,6 +4,9 @@ The [incremental object traversal plan](object-tree-traversal-plan.md) uses
 caller-local parent origins to remove repeated coordinate lookup while
 preserving GEM drawing behavior. It orders focused traversal regressions,
 the production walker change and comparison with the captured AES baseline.
+OT1–OT3 pass at the development tier; the
+[implementation record](../../history/object-tree-traversal.md) reports 14.6%
+less caller CPU on the wide tree with matching pixels.
 
 The [GEM source compatibility plan](gem-source-compatibility-plan.md) makes
 conventional AES/VDI sufficient for application bodies, beginning with Counter,

@@ -2,14 +2,17 @@
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
+#include <proto/exec.h>
 #include <string.h>
 #include <stddef.h>
 
 ULONG AESService;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure;
 static void check(WORD okay) {
+    Forbid();
     ++AESChecks;
     if (!okay) { ++AESFailures; if (!AESFirstFailure) AESFirstFailure=AESChecks; }
+    Permit();
 }
 #define CHECK(x) check((x)!=0)
 volatile UWORD ObjectPhase,ObjectGo,ObjectProbe,ObjectBorrows,ObjectRows[4],ObjectLists;
@@ -214,7 +217,9 @@ static void edit_probe(void)
     CHECK(form_keybd(editTree,3,3,9,&next,&key)==1 && next==2);
     for (i=0;i<16;++i) editText[i]=0;
 }
-void AESClientOne(void) { }
+void AESClientOne(void);
+#include "aes-tree-probe.h"
+void AESClientOne(void) { tree_peer(); }
 void AESClientTwo(void) { }
 UWORD AESRun(void)
 {
@@ -248,7 +253,7 @@ UWORD AESRun(void)
     CHECK(objc_draw(tree,0,8,45,48,100,31));
     CHECK(objc_change(tree,2,0,0,0,640,240,0,1));
     CHECK(wind_update(END_UPDATE));
-    text_probe();edit_probe();window=unit_probe(window);box_probe();
+    text_probe();edit_probe();window=unit_probe(window);box_probe();tree_probe(window);
     CHECK(wind_close(window)); CHECK(wind_delete(window));
     v_clsvwk(handle); CHECK(appl_exit()); CHECK(ExecAESDetach());
     CHECK(AvailMem(0)==available);
