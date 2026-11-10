@@ -38,11 +38,20 @@ def elf_image():
 
 
 class CalypsiImageTests(unittest.TestCase):
-    def parse(self, blob, entries=('Receiver',)):
+    def parse(self, blob, entries=('Receiver',), entry_name='main'):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder)/'c.elf'
             path.write_bytes(blob)
-            return read_image(path, entries)
+            return read_image(path, entries, entry_name=entry_name)
+
+    def test_application_entry_is_explicit_and_checked(self):
+        blob=elf_image()
+        struct.pack_into('<I',blob,24,0xc0001)
+        image=self.parse(blob,entries=(),entry_name='Receiver')
+        self.assertEqual(image['provenance']['entry'],0xc0001)
+        self.assertEqual(image['provenance']['entry_symbol'],'Receiver')
+        with self.assertRaises(RuntimeError):
+            self.parse(blob,entries=())
 
     def test_only_real_storage_is_loaded(self):
         image = self.parse(elf_image())

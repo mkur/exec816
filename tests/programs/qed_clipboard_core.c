@@ -142,4 +142,4 @@ static int body(int argc,char **argv)
     (void)AvailMem(MEMF_UPPER);
     clr_undo();kill_textring(&clip_text);kill_textring(&text.text);kill_memory();return -321;
 }
-int main(void){return QedRuntimeRun(body);}
+int main(int argc,char **argv){return body(argc,argv);}

@@ -1,6 +1,7 @@
 /* Real native ownership and upstream text-store code; UI notifications below
  * belong only to this fixture. No donor startup/termination code is linked. */
 #include "qed-runtime.h"
+#include <exec816/c-runtime.h>
 #include "global.h"
 #include "memory.h"
 #include <stdlib.h>
@@ -10,7 +11,6 @@
 static int acquisitionBudget=-1;
 static UWORD notifications;
 static const char growth[900]={0};
-static char argumentLimit[257];
 APTR EXEC_CALL QedFixtureAlloc(ULONG bytes,ULONG attributes)
 {
     if (!acquisitionBudget) return NULL;
@@ -43,7 +43,8 @@ static int text(void)
     extra=new_col("beta",4);
     if (!extra) return 106;
     col_append(ring,extra);
-    if (ring->lines!=2 || textring_bytes(ring)!=11) return 107;
+    if (ring->lines!=2 || textring_bytes(ring)!=10 ||
+        strcmp(TEXT(FIRST(ring)),"alpha") || strcmp(TEXT(LAST(ring)),"beta")) return 107;
     /* Fill the current donor block, then refuse every new backing acquisition. */
     acquisitionBudget=0;
     for (n=0;n<128;++n) {
@@ -66,42 +67,15 @@ static int text(void)
 
 static int body(int argc,char **argv)
 {
-    unsigned char *block,*larger;
+    unsigned char *block;
     LONG largest;
-    char **parsed;
-    int count,result;
-    unsigned int n;
+    int result;
     if (argc!=2 || strcmp(argv[0],"PROBE.APP") || strcmp(argv[1],ExecGetArgStr()) || argv[2]) return 111;
-    if (malloc(0) || calloc(0,7) || calloc((size_t)-1,2) || malloc(65529UL)) return 112;
-    block=calloc(8,17);
-    if (!block) return 113;
-    for (n=0;n<136;++n) if (block[n]) return 114;
-    memset(block,0xa7,136);acquisitionBudget=0;
-    if (realloc(block,200)) return 115;
-    for (n=0;n<136;++n) if (block[n]!=0xa7) return 116;
-    acquisitionBudget=-1;larger=realloc(block,240);
-    if (!larger) return 117;
-    for (n=0;n<136;++n) if (larger[n]!=0xa7) return 118;
-    if (realloc(larger,0)) return 119;
     largest=Malloc(-1L);block=(void *)Malloc(largest);
-    if (!block) return 120;
-    if (largest<=52408L) return 127;
-    if (((ULONG)block>>16)!=(((ULONG)block+largest-1)>>16)) return 128;
+    if (!block || largest<=52408L || ((ULONG)block&7) ||
+        ((ULONG)block>>16)!=(((ULONG)block+largest-1)>>16)) return 120;
     Mfree(block);
-    if (!QedArguments("  \"RAM:space name\" \t","qed",&count,&parsed) || count!=2 ||
-        strcmp(parsed[0],"qed") || strcmp(parsed[1],"RAM:space name") || parsed[2]) return 121;
-    free(parsed);
-    if (!QedArguments(" \t","qed",&count,&parsed) || count!=1 || parsed[1]) return 122;
-    free(parsed);
-    if (QedArguments("a b","qed",&count,&parsed) || parsed || count ||
-        QedArguments("\"unfinished","qed",&count,&parsed)) return 123;
-    memset(argumentLimit,'p',255);argumentLimit[255]=0;
-    if (!QedArguments(argumentLimit,"qed",&count,&parsed) || count!=2 ||
-        strlen(parsed[1])!=255) return 133;
-    free(parsed);argumentLimit[255]='p';argumentLimit[256]=0;
-    if (QedArguments(argumentLimit,"qed",&count,&parsed) || parsed || count) return 134;
     result=text();
-    /* Leave owned objects for the ordinary entry cleanup, including realloc. */
     if (!malloc(37) || !calloc(3,21)) return 124;
     if (result) return result;
     if (argv[1][0]=='S') {
@@ -114,8 +88,6 @@ static int body(int argc,char **argv)
             !wind_open(window,32,32,128,64)) return 130;
         do { if (!evnt_mesag(message)) return 131; } while (message[0]!=WM_CLOSED);
         if (!wind_close(window) || !wind_delete(window)) return 132;
-        /* The borrowed title is reachable until the window retires. Entry
-         * cleanup now owns its release; shared AES teardown follows return. */
     }
     return 0;
 }
@@ -123,17 +95,18 @@ static int body(int argc,char **argv)
 #define main QedProcessScenario
 #include "c_process.c"
 #undef main
-int main(void)
+int main(int argc,char **argv)
 {
-    struct QedHeapStats stats;
+    struct QedHeapStats initial,stats;
     int result;
-    acquisitionBudget=0;
-    if (QedRuntimeRun(body)!=20) return 125;
-    acquisitionBudget=-1;
-    result=QedRuntimeRun(body);
-    QedHeapSnapshot(&stats);
+    QedHeapSnapshot(&initial);
+    result=body(argc,argv);
     if (result) return result;
-    if (stats.blocks || stats.payload || stats.backing || stats.peakBacking!=65572UL) return 126;
+    QedHeapSnapshot(&stats);
+    if (stats.blocks!=initial.blocks+(argv[1][0]=='S' ? 3:2) ||
+        stats.payload!=initial.payload+(argv[1][0]=='S' ? 137:100) ||
+        stats.backing!=initial.backing+(argv[1][0]=='S' ? 137+3*EXEC_CRT_ALLOCATION_PREFIX:100+2*EXEC_CRT_ALLOCATION_PREFIX) ||
+        stats.peakBacking!=initial.backing+EXEC_CRT_MAX_ALLOCATION+EXEC_CRT_ALLOCATION_PREFIX) return 126;
     if (ExecGetArgStr()[0]=='S') return -124;
     return QedProcessScenario();
 }

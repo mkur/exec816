@@ -1,0 +1,1511 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "CR2 common descriptors, stdio, errno and library reset under APP ABI 30",
+  "host_tests": 663,
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "public_task": 0,
+    "idle": 0
+  },
+  "upper_memory": {
+    "descriptor_and_error_state": 204,
+    "standard_file_and_list_state": 99,
+    "dynamic_FILE_payload": 25,
+    "default_buffer_payload": 64,
+    "rounded_FILE_and_buffer": 128
+  },
+  "cases": {
+    "sdfs": {
+      "status": "pass",
+      "record_sha256": "998bf28e1f0e4a7961b34d2d70a4e583027f2a99f9005d3763358fc7fd6224ec",
+      "app_sha256": "b8251ebb4413ed6b887e672a2da9a8234162fc7a9b29ebcce5c855c33864c00f",
+      "app_bytes": 28193,
+      "span": 66787,
+      "segments": [
+        {
+          "offset": 0,
+          "size": 22613,
+          "flags": 1
+        },
+        {
+          "offset": 65536,
+          "size": 168,
+          "flags": 2
+        },
+        {
+          "offset": 65704,
+          "size": 1083,
+          "flags": 2
+        }
+      ],
+      "inputs": {
+        "/Users/michalkurcewicz/action/exec816-commands/tests/programs/c_runtime_files.c": "6ec67a738d54ededbb977751991b702ce51ec9d19aec68f1b1c3b1de3c722371",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/allocation.c": "a1b9ac16cd9ff8d4dbc5265be170482dfdb620bb6078e5ad0c56140333b34cda",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/files.c": "8a35117d8e3801110bf276941a9a0e9429b823ebde03fcd6020426a169ab7ad1",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663"
+      },
+      "runtime_inputs": {
+        "manifest_sha256": "347153040ad03433b19c59ba7561459b1a439ab0207b4147f76f8d7836a3107c",
+        "original_sources": {
+          "src/lib/stdio/__fs_fdopen.c": "17271cd147850dc6b0c57c1555573c2b2a193e9ca27b67d97d3389bc861f05b6",
+          "src/lib/stdio/lib_libfread.c": "9e65b063ca371b30155e611c40b32b9d5106fbade0399aa96150095ba719abed",
+          "src/lib/stdio/lib_libfflush.c": "a29c705c7488ac2d178c1e6e0cdee556dd9dd9329b23022c28d3cc2b7e59fa5a",
+          "src/lib/stdio/lib_fread.c": "2d8cfd85b9aaff1b637b4805293d3c68929b55b38d20e34b07ea8e697d1b0ba3",
+          "src/lib/stdio/lib_fwrite.c": "9ec865bc8579777c73c96d428f0d623f52629c4e2896ac4137fd689b696e7d82",
+          "src/lib/stdio/lib_libfwrite.c": "fa224124912415201d225df578871ac04826e8fd1f00656ddaf48b4aec009fce",
+          "src/lib/stdlib/rand.c": "0721d3abfaaee288e86b069ba937c6a280beab70bcd9f8434bbcc4e0e89d0631",
+          "src/lib/stdio/lib_fopen.c": "5a88776746126b8b92ee1b9a30c0e9d31c6309a27d860f72a2c900dba1014c5f"
+        },
+        "headers": {
+          "src/lib/b2c.h": "11cb37a566cc595df245dd3c7c45b34c8a2d538a1d08119804896d8835f8f8a1",
+          "src/lib/clock.h": "2edc5c522dfcb89e726aec2d38f55a4cf4731ab9c13d56c500da627f844ac180",
+          "src/lib/file.h": "96102fe58f0bfb2bb38460498d15b836aea2eba087d2cf3cc594b139272a8cf1",
+          "src/lib/libc.h": "ac2fb6b15024eb467aef383ac07504b716c440eea24dbda79e0b6bb1ae78014c",
+          "src/lib/streams.h": "4e6d2fba6591dfea0eacc48a5f492217ac5eceddb0d58c15cfcec09a61f0143d",
+          "include/calypsi/config.h": "d4e4a79546243bf40c9a3dd12f7f83f4f3eb9f68a7c331c9669cd8a1548e26b5",
+          "include/calypsi/stubs.h": "b1ff27927c72cd48249aa15b1f1baee6d46bedecb405008381f3b5057dffff20",
+          "include/stddef.h": "8a54f72e1ff0d3aaa6a54c1561f6d7a28b52bf7c4cf1c03503dbacfd8d4d09f5",
+          "include/stdint.h": "ee5d78bfc94868efe01434dd4fb444c37c7fd5c727216be26eb472d01730d89b",
+          "include/stdarg.h": "b7a736c79ee7f7e1e6d01faf03d53823431740aaa43deb9d43d60276a3b03873",
+          "include/stdio.h": "5040cba1a60be297cb9e1953dace7f9b4bd430b8caee49ddd4af47bffcf0361d",
+          "include/stdlib.h": "78fff9bf63d3bfcee4b702d89fefb8033aa6afc7d3e96f5deabf7f2d7c94e02a",
+          "include/string.h": "4aa2f879c5148c348396f4220f6011a5c49b433f6e1e00928c2f850126c9bb19",
+          "include/errno.h": "57316a2afcb5b4d770dee9033c09824e7f914b6cc486a6b5798973b9dd181d31",
+          "include/fcntl.h": "48c6045bd7b69791a23e85b86a646eea9623a5798fbb9e3ea5bdc360dad53d8f",
+          "include/limits.h": "16a1735b0d4bc5738b7a60b664e4e37fbba7ffca7115ca66b09cb8af7ca5966c",
+          "include/time.h": "727d90c8a85044b5bebd667d130a884379c5e711d42a276c5370920dffb40b01"
+        },
+        "audit_sources": {
+          "src/lib/errno/errno.c": "117e6d6b611ac8eb24406ea52007961e65c3ee23a3a5fad61379f96316ff90c0",
+          "src/lib/stdio/streamlist.c": "829df201dc4a26137045a565c1772542ec0beade979ce41df92b89a2624b9680",
+          "src/lib/stdlib/rand.c": "0721d3abfaaee288e86b069ba937c6a280beab70bcd9f8434bbcc4e0e89d0631",
+          "src/lib/stdlib/rand48.h": "8c81c46462865654d55df79d9c540c935a36c755e464570c1c2760a85a18d7da",
+          "src/lib/stdlib/srand48.c": "95b8edc6c5e0908a052cfb34642bbd10437dcc559135d18267574b68b15eb5f9",
+          "src/lib/lowlevel/setjmp.s": "e29741a16daa735e235a565c1ca0169ac94ee0d329b8dd119c34e16a29d9f732",
+          "include/setjmp.h": "bae4472c61f7706c678410fe61c7444123ebc921c88253141645fa8e307e9336"
+        },
+        "patches": {
+          "toolchain/patches/calypsi-5.18-stream-initialization.patch": "f69553836c9668d670b868a7b5ad29106e0bf74673533d90faa381d6f18f8a21",
+          "toolchain/patches/calypsi-5.18-stdio-transfers.patch": "6deba4352fc64a19d8679bf9db96821858525a67ad30a6f5887dc4880702cdf8",
+          "toolchain/patches/calypsi-5.18-rand-range.patch": "74cbdf3ee7d38744b78e324c00d6c575152e6b7c82261de75b09dd1556e42c97",
+          "toolchain/patches/calypsi-5.18-fopen-exclusive.patch": "b39e65f3164fb6935dffbda7047bf5f5aee12de0b70b92f72244071df3e4e9f1"
+        },
+        "prepared_sources": {
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-stdio/app/runtime-source/__fs_fdopen.c": "18a100ba07106a60ec7a173a7639f88f8f4093cad735f39c6621292b9d9f854f",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-stdio/app/runtime-source/lib_libfread.c": "489f8c7265c9b9d83b202fd8ad72dfd5801491d6be92d709fabf0833defa960d",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-stdio/app/runtime-source/lib_libfflush.c": "31923bc7203cb236e95c72af664f269815c894aec8e5f8a2d5e7b9bf706797d6",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-stdio/app/runtime-source/lib_fread.c": "df8e0e3fa65d173f55369b7516cf125b4280563de5776412d289a085ae0749d3",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-stdio/app/runtime-source/lib_fwrite.c": "22bafbc12b23bc717f92d917aa0bbeacc2f5acb4f788ebc03a2f0f431caac12d",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-stdio/app/runtime-source/lib_libfwrite.c": "3ed2d739419ca69fd34cb2f7d0ee0e8c4a8b8ca287d1823e914aa73b26681a4c",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-stdio/app/runtime-source/rand.c": "7047789034090041dfe9d75c1d10c6c3808e10dde6b3b9edf7b082783ab81893",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-stdio/app/runtime-source/lib_fopen.c": "2d7400781311bac6fd121572de45ad1ce9a9410d551c04e8861b115ccad153da"
+        }
+      },
+      "checks": [
+        25
+      ],
+      "completed": [
+        4
+      ],
+      "native_irq_count": 16674,
+      "native_nmi_count": 5461,
+      "switches": 9188,
+      "stacks": {
+        "scope": "Actual captured APP image bases and native/provider sites; per-pool Process ordinals, DP and guards remain checked. Broad candidate-only sites are excluded. Selected-PC observations, not a watermark.",
+        "lifetimes": [
+          {
+            "slot": 3,
+            "ordinal": 1,
+            "dp": 4096,
+            "clock": 54664506,
+            "app_entry": 331525,
+            "identity": 1
+          }
+        ],
+        "minima": [
+          {
+            "slot": 3,
+            "lifetime": 1,
+            "kind": "ordinary-sample",
+            "minimum_s": 16336,
+            "dp": 4096,
+            "pool_bytes": 1312,
+            "expected_dp": 4096,
+            "headroom": 513,
+            "pc": 1735018,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 55330040
+          },
+          {
+            "slot": 3,
+            "lifetime": 1,
+            "kind": "frame-reservation",
+            "minimum_s": 16314,
+            "dp": 4096,
+            "pool_bytes": 1312,
+            "expected_dp": 4096,
+            "headroom": 491,
+            "pc": 1735046,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836:after-tcs",
+            "clock": 55330044
+          },
+          {
+            "slot": 3,
+            "lifetime": 1,
+            "kind": "async",
+            "minimum_s": 16270,
+            "dp": 16277,
+            "pool_bytes": 1312,
+            "expected_dp": 4096,
+            "headroom": 447,
+            "pc": 6656,
+            "marker": "native_nmi",
+            "clock": 81063353
+          }
+        ]
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "execution": {
+        "pin": {
+          "schema_version": 1,
+          "rom": {
+            "name": "AltirraOS 3.44 for 65C816",
+            "bytes": 16384,
+            "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+            "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+            "cop0_after_xce": 50931
+          },
+          "emulator": {
+            "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+            "platform": "macOS arm64",
+            "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "source_patch": "toolchain/patches/altirra-console-probe.patch",
+            "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+            "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+            "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+            "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+            "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+          },
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true,
+            "addons": "custom"
+          },
+          "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+          "peripherals": [
+            {
+              "name": "fastest-125k",
+              "diskemu": "fastest",
+              "divisor": 0,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "stock-810",
+              "diskemu": "810",
+              "divisor": 40,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "happy-none",
+              "diskemu": "happy1050",
+              "divisor": 40,
+              "source": "src/Altirra/source/disk.cpp",
+              "firmware": "built-in high-level model; quiet command only"
+            }
+          ],
+          "configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true
+          },
+          "source_sha256": {
+            "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+            "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+            "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+            "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+            "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+          },
+          "observer": {
+            "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+          },
+          "keyboard_input": {
+            "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+            "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+            "initialization": "KEY ALL up enables scan mode before modifier changes",
+            "added_keys": {
+              "ASTERISK": 7,
+              "LESS": 54,
+              "GREATER": 55
+            },
+            "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+            "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+          },
+          "serial_regression_pins": [
+            "toolchain/altirra-sio-queued.json",
+            "toolchain/altirra-sio-sectors.json"
+          ],
+          "devices": [
+            {
+              "tag": "vbxe",
+              "settings": {
+                "version": 126,
+                "alt_page": false,
+                "shared_mem": false
+              },
+              "readback": [
+                {
+                  "address": 54848,
+                  "bytes": [
+                    16,
+                    38
+                  ]
+                }
+              ],
+              "vram_bytes": 524288,
+              "register_base": 54784
+            }
+          ],
+          "startup_configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true,
+            "diskemu": "generic56k"
+          },
+          "disk_workload": {
+            "format": "SDFS",
+            "unit": 49,
+            "sectors": 720,
+            "sector_bytes": 128,
+            "exec_profile": 4,
+            "nominal_baud": 57600
+          },
+          "mouse_input": {
+            "model": "ST mouse",
+            "port": 2,
+            "internal_port": 1,
+            "map": "Mouse -> ST Mouse (port 2)",
+            "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+            "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+            "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+            "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+            "commands": [
+              "MOUSE ST",
+              "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+              "MOUSE CLEAR"
+            ],
+            "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+            "tooling": {
+              "binary": "build/mouse-bridge/AltirraBridgeServer",
+              "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+              "patch": "toolchain/patches/altirra-mouse-observer.patch",
+              "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+              "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+              "source_sha256": {
+                "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+                "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+              }
+            },
+            "initial_acceptance": {
+              "transitions_per_second_per_axis": 1000,
+              "minimum_transition_spacing_us": 1000,
+              "minimum_button_level_us": 10000,
+              "required_max_sample_gap_us_exclusive": 1000,
+              "visible_response_pal_ticks": 12
+            },
+            "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+          }
+        },
+        "drive": 0,
+        "unit": 49,
+        "sectors": 2880,
+        "expected_status": 0
+      },
+      "persisted_files": {
+        "names": [
+          "CRT06.DAT",
+          "CRT09.DAT"
+        ],
+        "bytes_each": 10,
+        "audit": {
+          "sectors": 2880,
+          "sector_bytes": 256,
+          "allocated": 159,
+          "free": 2721,
+          "files": 5,
+          "directories": 1
+        }
+      }
+    },
+    "mydos": {
+      "status": "pass",
+      "record_sha256": "1a37de3534e757ac49fc8a36fb20b991590e3a55f2c23acb8f624d658d8166a6",
+      "app_sha256": "b8251ebb4413ed6b887e672a2da9a8234162fc7a9b29ebcce5c855c33864c00f",
+      "app_bytes": 28193,
+      "span": 66787,
+      "segments": [
+        {
+          "offset": 0,
+          "size": 22613,
+          "flags": 1
+        },
+        {
+          "offset": 65536,
+          "size": 168,
+          "flags": 2
+        },
+        {
+          "offset": 65704,
+          "size": 1083,
+          "flags": 2
+        }
+      ],
+      "inputs": {
+        "/Users/michalkurcewicz/action/exec816-commands/tests/programs/c_runtime_files.c": "6ec67a738d54ededbb977751991b702ce51ec9d19aec68f1b1c3b1de3c722371",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/allocation.c": "a1b9ac16cd9ff8d4dbc5265be170482dfdb620bb6078e5ad0c56140333b34cda",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/files.c": "8a35117d8e3801110bf276941a9a0e9429b823ebde03fcd6020426a169ab7ad1",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663"
+      },
+      "runtime_inputs": {
+        "manifest_sha256": "347153040ad03433b19c59ba7561459b1a439ab0207b4147f76f8d7836a3107c",
+        "original_sources": {
+          "src/lib/stdio/__fs_fdopen.c": "17271cd147850dc6b0c57c1555573c2b2a193e9ca27b67d97d3389bc861f05b6",
+          "src/lib/stdio/lib_libfread.c": "9e65b063ca371b30155e611c40b32b9d5106fbade0399aa96150095ba719abed",
+          "src/lib/stdio/lib_libfflush.c": "a29c705c7488ac2d178c1e6e0cdee556dd9dd9329b23022c28d3cc2b7e59fa5a",
+          "src/lib/stdio/lib_fread.c": "2d8cfd85b9aaff1b637b4805293d3c68929b55b38d20e34b07ea8e697d1b0ba3",
+          "src/lib/stdio/lib_fwrite.c": "9ec865bc8579777c73c96d428f0d623f52629c4e2896ac4137fd689b696e7d82",
+          "src/lib/stdio/lib_libfwrite.c": "fa224124912415201d225df578871ac04826e8fd1f00656ddaf48b4aec009fce",
+          "src/lib/stdlib/rand.c": "0721d3abfaaee288e86b069ba937c6a280beab70bcd9f8434bbcc4e0e89d0631",
+          "src/lib/stdio/lib_fopen.c": "5a88776746126b8b92ee1b9a30c0e9d31c6309a27d860f72a2c900dba1014c5f"
+        },
+        "headers": {
+          "src/lib/b2c.h": "11cb37a566cc595df245dd3c7c45b34c8a2d538a1d08119804896d8835f8f8a1",
+          "src/lib/clock.h": "2edc5c522dfcb89e726aec2d38f55a4cf4731ab9c13d56c500da627f844ac180",
+          "src/lib/file.h": "96102fe58f0bfb2bb38460498d15b836aea2eba087d2cf3cc594b139272a8cf1",
+          "src/lib/libc.h": "ac2fb6b15024eb467aef383ac07504b716c440eea24dbda79e0b6bb1ae78014c",
+          "src/lib/streams.h": "4e6d2fba6591dfea0eacc48a5f492217ac5eceddb0d58c15cfcec09a61f0143d",
+          "include/calypsi/config.h": "d4e4a79546243bf40c9a3dd12f7f83f4f3eb9f68a7c331c9669cd8a1548e26b5",
+          "include/calypsi/stubs.h": "b1ff27927c72cd48249aa15b1f1baee6d46bedecb405008381f3b5057dffff20",
+          "include/stddef.h": "8a54f72e1ff0d3aaa6a54c1561f6d7a28b52bf7c4cf1c03503dbacfd8d4d09f5",
+          "include/stdint.h": "ee5d78bfc94868efe01434dd4fb444c37c7fd5c727216be26eb472d01730d89b",
+          "include/stdarg.h": "b7a736c79ee7f7e1e6d01faf03d53823431740aaa43deb9d43d60276a3b03873",
+          "include/stdio.h": "5040cba1a60be297cb9e1953dace7f9b4bd430b8caee49ddd4af47bffcf0361d",
+          "include/stdlib.h": "78fff9bf63d3bfcee4b702d89fefb8033aa6afc7d3e96f5deabf7f2d7c94e02a",
+          "include/string.h": "4aa2f879c5148c348396f4220f6011a5c49b433f6e1e00928c2f850126c9bb19",
+          "include/errno.h": "57316a2afcb5b4d770dee9033c09824e7f914b6cc486a6b5798973b9dd181d31",
+          "include/fcntl.h": "48c6045bd7b69791a23e85b86a646eea9623a5798fbb9e3ea5bdc360dad53d8f",
+          "include/limits.h": "16a1735b0d4bc5738b7a60b664e4e37fbba7ffca7115ca66b09cb8af7ca5966c",
+          "include/time.h": "727d90c8a85044b5bebd667d130a884379c5e711d42a276c5370920dffb40b01"
+        },
+        "audit_sources": {
+          "src/lib/errno/errno.c": "117e6d6b611ac8eb24406ea52007961e65c3ee23a3a5fad61379f96316ff90c0",
+          "src/lib/stdio/streamlist.c": "829df201dc4a26137045a565c1772542ec0beade979ce41df92b89a2624b9680",
+          "src/lib/stdlib/rand.c": "0721d3abfaaee288e86b069ba937c6a280beab70bcd9f8434bbcc4e0e89d0631",
+          "src/lib/stdlib/rand48.h": "8c81c46462865654d55df79d9c540c935a36c755e464570c1c2760a85a18d7da",
+          "src/lib/stdlib/srand48.c": "95b8edc6c5e0908a052cfb34642bbd10437dcc559135d18267574b68b15eb5f9",
+          "src/lib/lowlevel/setjmp.s": "e29741a16daa735e235a565c1ca0169ac94ee0d329b8dd119c34e16a29d9f732",
+          "include/setjmp.h": "bae4472c61f7706c678410fe61c7444123ebc921c88253141645fa8e307e9336"
+        },
+        "patches": {
+          "toolchain/patches/calypsi-5.18-stream-initialization.patch": "f69553836c9668d670b868a7b5ad29106e0bf74673533d90faa381d6f18f8a21",
+          "toolchain/patches/calypsi-5.18-stdio-transfers.patch": "6deba4352fc64a19d8679bf9db96821858525a67ad30a6f5887dc4880702cdf8",
+          "toolchain/patches/calypsi-5.18-rand-range.patch": "74cbdf3ee7d38744b78e324c00d6c575152e6b7c82261de75b09dd1556e42c97",
+          "toolchain/patches/calypsi-5.18-fopen-exclusive.patch": "b39e65f3164fb6935dffbda7047bf5f5aee12de0b70b92f72244071df3e4e9f1"
+        },
+        "prepared_sources": {
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-mydos-stdio/app/runtime-source/__fs_fdopen.c": "18a100ba07106a60ec7a173a7639f88f8f4093cad735f39c6621292b9d9f854f",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-mydos-stdio/app/runtime-source/lib_libfread.c": "489f8c7265c9b9d83b202fd8ad72dfd5801491d6be92d709fabf0833defa960d",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-mydos-stdio/app/runtime-source/lib_libfflush.c": "31923bc7203cb236e95c72af664f269815c894aec8e5f8a2d5e7b9bf706797d6",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-mydos-stdio/app/runtime-source/lib_fread.c": "df8e0e3fa65d173f55369b7516cf125b4280563de5776412d289a085ae0749d3",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-mydos-stdio/app/runtime-source/lib_fwrite.c": "22bafbc12b23bc717f92d917aa0bbeacc2f5acb4f788ebc03a2f0f431caac12d",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-mydos-stdio/app/runtime-source/lib_libfwrite.c": "3ed2d739419ca69fd34cb2f7d0ee0e8c4a8b8ca287d1823e914aa73b26681a4c",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-mydos-stdio/app/runtime-source/rand.c": "7047789034090041dfe9d75c1d10c6c3808e10dde6b3b9edf7b082783ab81893",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-mydos-stdio/app/runtime-source/lib_fopen.c": "2d7400781311bac6fd121572de45ad1ce9a9410d551c04e8861b115ccad153da"
+        }
+      },
+      "checks": [
+        25
+      ],
+      "completed": [
+        4
+      ],
+      "native_irq_count": 13232,
+      "native_nmi_count": 4767,
+      "switches": 8545,
+      "stacks": {
+        "scope": "Actual captured APP image bases and native/provider sites; per-pool Process ordinals, DP and guards remain checked. Broad candidate-only sites are excluded. Selected-PC observations, not a watermark.",
+        "lifetimes": [
+          {
+            "slot": 3,
+            "ordinal": 1,
+            "dp": 4096,
+            "clock": 55588142,
+            "app_entry": 331525,
+            "identity": 1
+          }
+        ],
+        "minima": [
+          {
+            "slot": 3,
+            "lifetime": 1,
+            "kind": "ordinary-sample",
+            "minimum_s": 16336,
+            "dp": 4096,
+            "pool_bytes": 1312,
+            "expected_dp": 4096,
+            "headroom": 513,
+            "pc": 1735018,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 56253514
+          },
+          {
+            "slot": 3,
+            "lifetime": 1,
+            "kind": "frame-reservation",
+            "minimum_s": 16314,
+            "dp": 4096,
+            "pool_bytes": 1312,
+            "expected_dp": 4096,
+            "headroom": 491,
+            "pc": 1735046,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836:after-tcs",
+            "clock": 56253518
+          },
+          {
+            "slot": 3,
+            "lifetime": 1,
+            "kind": "async",
+            "minimum_s": 16270,
+            "dp": 16277,
+            "pool_bytes": 1312,
+            "expected_dp": 4096,
+            "headroom": 447,
+            "pc": 6656,
+            "marker": "native_nmi",
+            "clock": 70037273
+          }
+        ]
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "execution": {
+        "pin": {
+          "schema_version": 1,
+          "rom": {
+            "name": "AltirraOS 3.44 for 65C816",
+            "bytes": 16384,
+            "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+            "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+            "cop0_after_xce": 50931
+          },
+          "emulator": {
+            "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+            "platform": "macOS arm64",
+            "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "source_patch": "toolchain/patches/altirra-console-probe.patch",
+            "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+            "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+            "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+            "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+            "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+          },
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true,
+            "addons": "custom"
+          },
+          "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+          "peripherals": [
+            {
+              "name": "fastest-125k",
+              "diskemu": "fastest",
+              "divisor": 0,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "stock-810",
+              "diskemu": "810",
+              "divisor": 40,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "happy-none",
+              "diskemu": "happy1050",
+              "divisor": 40,
+              "source": "src/Altirra/source/disk.cpp",
+              "firmware": "built-in high-level model; quiet command only"
+            }
+          ],
+          "configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true
+          },
+          "source_sha256": {
+            "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+            "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+            "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+            "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+            "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+          },
+          "observer": {
+            "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+          },
+          "keyboard_input": {
+            "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+            "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+            "initialization": "KEY ALL up enables scan mode before modifier changes",
+            "added_keys": {
+              "ASTERISK": 7,
+              "LESS": 54,
+              "GREATER": 55
+            },
+            "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+            "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+          },
+          "serial_regression_pins": [
+            "toolchain/altirra-sio-queued.json",
+            "toolchain/altirra-sio-sectors.json"
+          ],
+          "devices": [
+            {
+              "tag": "vbxe",
+              "settings": {
+                "version": 126,
+                "alt_page": false,
+                "shared_mem": false
+              },
+              "readback": [
+                {
+                  "address": 54848,
+                  "bytes": [
+                    16,
+                    38
+                  ]
+                }
+              ],
+              "vram_bytes": 524288,
+              "register_base": 54784
+            }
+          ],
+          "startup_configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true,
+            "diskemu": "generic56k"
+          },
+          "disk_workload": {
+            "format": "SDFS",
+            "unit": 49,
+            "sectors": 720,
+            "sector_bytes": 128,
+            "exec_profile": 4,
+            "nominal_baud": 57600
+          },
+          "mouse_input": {
+            "model": "ST mouse",
+            "port": 2,
+            "internal_port": 1,
+            "map": "Mouse -> ST Mouse (port 2)",
+            "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+            "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+            "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+            "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+            "commands": [
+              "MOUSE ST",
+              "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+              "MOUSE CLEAR"
+            ],
+            "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+            "tooling": {
+              "binary": "build/mouse-bridge/AltirraBridgeServer",
+              "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+              "patch": "toolchain/patches/altirra-mouse-observer.patch",
+              "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+              "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+              "source_sha256": {
+                "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+                "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+              }
+            },
+            "initial_acceptance": {
+              "transitions_per_second_per_axis": 1000,
+              "minimum_transition_spacing_us": 1000,
+              "minimum_button_level_us": 10000,
+              "required_max_sample_gap_us_exclusive": 1000,
+              "visible_response_pal_ticks": 12
+            },
+            "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+          }
+        },
+        "drive": 0,
+        "unit": 49,
+        "sectors": 2880,
+        "expected_status": 0
+      },
+      "persisted_files": {
+        "names": [
+          "CRT06.DAT",
+          "CRT09.DAT"
+        ],
+        "bytes_each": 10,
+        "audit": {
+          "sectors": 2880,
+          "sector_bytes": 256,
+          "allocated": 162,
+          "free": 2718,
+          "files": 5,
+          "directories": 1
+        }
+      }
+    },
+    "raw-hooks": {
+      "status": "pass",
+      "record_sha256": "76c96596e6025736925f3178b5e252cb97a07d0b5ae920ef25300a19e8d90be7",
+      "app_sha256": "ae22e05ea7cbeae7c7c73eb362936937891c9e724d2ffcb47fc060c5fe309540",
+      "app_bytes": 8861,
+      "span": 65896,
+      "segments": [
+        {
+          "offset": 0,
+          "size": 6750,
+          "flags": 1
+        },
+        {
+          "offset": 65536,
+          "size": 19,
+          "flags": 2
+        },
+        {
+          "offset": 65555,
+          "size": 341,
+          "flags": 2
+        }
+      ],
+      "inputs": {
+        "/Users/michalkurcewicz/action/exec816-commands/tests/programs/c_runtime_io_abi.c": "0c5755cbd27a048f92a40c2465c027b9db9a4d4abc63f5d8585e0c9d5f59db83",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/allocation.c": "a1b9ac16cd9ff8d4dbc5265be170482dfdb620bb6078e5ad0c56140333b34cda",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/files.c": "8a35117d8e3801110bf276941a9a0e9429b823ebde03fcd6020426a169ab7ad1",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+        "/Users/michalkurcewicz/action/exec816-commands/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663"
+      },
+      "runtime_inputs": {
+        "manifest_sha256": "347153040ad03433b19c59ba7561459b1a439ab0207b4147f76f8d7836a3107c",
+        "original_sources": {
+          "src/lib/stdio/__fs_fdopen.c": "17271cd147850dc6b0c57c1555573c2b2a193e9ca27b67d97d3389bc861f05b6",
+          "src/lib/stdio/lib_libfread.c": "9e65b063ca371b30155e611c40b32b9d5106fbade0399aa96150095ba719abed",
+          "src/lib/stdio/lib_libfflush.c": "a29c705c7488ac2d178c1e6e0cdee556dd9dd9329b23022c28d3cc2b7e59fa5a",
+          "src/lib/stdio/lib_fread.c": "2d8cfd85b9aaff1b637b4805293d3c68929b55b38d20e34b07ea8e697d1b0ba3",
+          "src/lib/stdio/lib_fwrite.c": "9ec865bc8579777c73c96d428f0d623f52629c4e2896ac4137fd689b696e7d82",
+          "src/lib/stdio/lib_libfwrite.c": "fa224124912415201d225df578871ac04826e8fd1f00656ddaf48b4aec009fce",
+          "src/lib/stdlib/rand.c": "0721d3abfaaee288e86b069ba937c6a280beab70bcd9f8434bbcc4e0e89d0631",
+          "src/lib/stdio/lib_fopen.c": "5a88776746126b8b92ee1b9a30c0e9d31c6309a27d860f72a2c900dba1014c5f"
+        },
+        "headers": {
+          "src/lib/b2c.h": "11cb37a566cc595df245dd3c7c45b34c8a2d538a1d08119804896d8835f8f8a1",
+          "src/lib/clock.h": "2edc5c522dfcb89e726aec2d38f55a4cf4731ab9c13d56c500da627f844ac180",
+          "src/lib/file.h": "96102fe58f0bfb2bb38460498d15b836aea2eba087d2cf3cc594b139272a8cf1",
+          "src/lib/libc.h": "ac2fb6b15024eb467aef383ac07504b716c440eea24dbda79e0b6bb1ae78014c",
+          "src/lib/streams.h": "4e6d2fba6591dfea0eacc48a5f492217ac5eceddb0d58c15cfcec09a61f0143d",
+          "include/calypsi/config.h": "d4e4a79546243bf40c9a3dd12f7f83f4f3eb9f68a7c331c9669cd8a1548e26b5",
+          "include/calypsi/stubs.h": "b1ff27927c72cd48249aa15b1f1baee6d46bedecb405008381f3b5057dffff20",
+          "include/stddef.h": "8a54f72e1ff0d3aaa6a54c1561f6d7a28b52bf7c4cf1c03503dbacfd8d4d09f5",
+          "include/stdint.h": "ee5d78bfc94868efe01434dd4fb444c37c7fd5c727216be26eb472d01730d89b",
+          "include/stdarg.h": "b7a736c79ee7f7e1e6d01faf03d53823431740aaa43deb9d43d60276a3b03873",
+          "include/stdio.h": "5040cba1a60be297cb9e1953dace7f9b4bd430b8caee49ddd4af47bffcf0361d",
+          "include/stdlib.h": "78fff9bf63d3bfcee4b702d89fefb8033aa6afc7d3e96f5deabf7f2d7c94e02a",
+          "include/string.h": "4aa2f879c5148c348396f4220f6011a5c49b433f6e1e00928c2f850126c9bb19",
+          "include/errno.h": "57316a2afcb5b4d770dee9033c09824e7f914b6cc486a6b5798973b9dd181d31",
+          "include/fcntl.h": "48c6045bd7b69791a23e85b86a646eea9623a5798fbb9e3ea5bdc360dad53d8f",
+          "include/limits.h": "16a1735b0d4bc5738b7a60b664e4e37fbba7ffca7115ca66b09cb8af7ca5966c",
+          "include/time.h": "727d90c8a85044b5bebd667d130a884379c5e711d42a276c5370920dffb40b01"
+        },
+        "audit_sources": {
+          "src/lib/errno/errno.c": "117e6d6b611ac8eb24406ea52007961e65c3ee23a3a5fad61379f96316ff90c0",
+          "src/lib/stdio/streamlist.c": "829df201dc4a26137045a565c1772542ec0beade979ce41df92b89a2624b9680",
+          "src/lib/stdlib/rand.c": "0721d3abfaaee288e86b069ba937c6a280beab70bcd9f8434bbcc4e0e89d0631",
+          "src/lib/stdlib/rand48.h": "8c81c46462865654d55df79d9c540c935a36c755e464570c1c2760a85a18d7da",
+          "src/lib/stdlib/srand48.c": "95b8edc6c5e0908a052cfb34642bbd10437dcc559135d18267574b68b15eb5f9",
+          "src/lib/lowlevel/setjmp.s": "e29741a16daa735e235a565c1ca0169ac94ee0d329b8dd119c34e16a29d9f732",
+          "include/setjmp.h": "bae4472c61f7706c678410fe61c7444123ebc921c88253141645fa8e307e9336"
+        },
+        "patches": {
+          "toolchain/patches/calypsi-5.18-stream-initialization.patch": "f69553836c9668d670b868a7b5ad29106e0bf74673533d90faa381d6f18f8a21",
+          "toolchain/patches/calypsi-5.18-stdio-transfers.patch": "6deba4352fc64a19d8679bf9db96821858525a67ad30a6f5887dc4880702cdf8",
+          "toolchain/patches/calypsi-5.18-rand-range.patch": "74cbdf3ee7d38744b78e324c00d6c575152e6b7c82261de75b09dd1556e42c97",
+          "toolchain/patches/calypsi-5.18-fopen-exclusive.patch": "b39e65f3164fb6935dffbda7047bf5f5aee12de0b70b92f72244071df3e4e9f1"
+        },
+        "prepared_sources": {
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-raw/app/runtime-source/__fs_fdopen.c": "18a100ba07106a60ec7a173a7639f88f8f4093cad735f39c6621292b9d9f854f",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-raw/app/runtime-source/lib_libfread.c": "489f8c7265c9b9d83b202fd8ad72dfd5801491d6be92d709fabf0833defa960d",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-raw/app/runtime-source/lib_libfflush.c": "31923bc7203cb236e95c72af664f269815c894aec8e5f8a2d5e7b9bf706797d6",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-raw/app/runtime-source/lib_fread.c": "df8e0e3fa65d173f55369b7516cf125b4280563de5776412d289a085ae0749d3",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-raw/app/runtime-source/lib_fwrite.c": "22bafbc12b23bc717f92d917aa0bbeacc2f5acb4f788ebc03a2f0f431caac12d",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-raw/app/runtime-source/lib_libfwrite.c": "3ed2d739419ca69fd34cb2f7d0ee0e8c4a8b8ca287d1823e914aa73b26681a4c",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-raw/app/runtime-source/rand.c": "7047789034090041dfe9d75c1d10c6c3808e10dde6b3b9edf7b082783ab81893",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-raw/app/runtime-source/lib_fopen.c": "2d7400781311bac6fd121572de45ad1ce9a9410d551c04e8861b115ccad153da"
+        }
+      },
+      "checks": [
+        25
+      ],
+      "completed": [
+        4
+      ],
+      "native_irq_count": 46533,
+      "native_nmi_count": 627,
+      "switches": 499,
+      "stacks": {
+        "scope": "Actual captured APP image bases and native/provider sites; per-pool Process ordinals, DP and guards remain checked. Broad candidate-only sites are excluded. Selected-PC observations, not a watermark.",
+        "lifetimes": [
+          {
+            "slot": 3,
+            "ordinal": 1,
+            "dp": 4096,
+            "clock": 30650926,
+            "app_entry": 331427,
+            "identity": 1
+          }
+        ],
+        "minima": [
+          {
+            "slot": 3,
+            "lifetime": 1,
+            "kind": "ordinary-sample",
+            "minimum_s": 16550,
+            "dp": 4096,
+            "pool_bytes": 1312,
+            "expected_dp": 4096,
+            "headroom": 727,
+            "pc": 2034525,
+            "marker": "M_DOSCALLS_ASSIGNINDEX_01EA43CB",
+            "clock": 30788487
+          },
+          {
+            "slot": 3,
+            "lifetime": 1,
+            "kind": "frame-reservation",
+            "minimum_s": 16538,
+            "dp": 4096,
+            "pool_bytes": 1312,
+            "expected_dp": 4096,
+            "headroom": 715,
+            "pc": 2034553,
+            "marker": "M_DOSCALLS_ASSIGNINDEX_01EA43CB:after-tcs",
+            "clock": 30788491
+          },
+          {
+            "slot": 3,
+            "lifetime": 1,
+            "kind": "async",
+            "minimum_s": 16539,
+            "dp": 3072,
+            "pool_bytes": 1312,
+            "expected_dp": 4096,
+            "headroom": 716,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 30790618
+          }
+        ]
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "execution": {
+        "pin": {
+          "schema_version": 1,
+          "rom": {
+            "name": "AltirraOS 3.44 for 65C816",
+            "bytes": 16384,
+            "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+            "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+            "cop0_after_xce": 50931
+          },
+          "emulator": {
+            "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+            "platform": "macOS arm64",
+            "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "source_patch": "toolchain/patches/altirra-console-probe.patch",
+            "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+            "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+            "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+            "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+            "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+          },
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true,
+            "addons": "custom"
+          },
+          "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+          "peripherals": [
+            {
+              "name": "fastest-125k",
+              "diskemu": "fastest",
+              "divisor": 0,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "stock-810",
+              "diskemu": "810",
+              "divisor": 40,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "happy-none",
+              "diskemu": "happy1050",
+              "divisor": 40,
+              "source": "src/Altirra/source/disk.cpp",
+              "firmware": "built-in high-level model; quiet command only"
+            }
+          ],
+          "configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true
+          },
+          "source_sha256": {
+            "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+            "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+            "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+            "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+            "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+          },
+          "observer": {
+            "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+          },
+          "keyboard_input": {
+            "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+            "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+            "initialization": "KEY ALL up enables scan mode before modifier changes",
+            "added_keys": {
+              "ASTERISK": 7,
+              "LESS": 54,
+              "GREATER": 55
+            },
+            "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+            "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+          },
+          "serial_regression_pins": [
+            "toolchain/altirra-sio-queued.json",
+            "toolchain/altirra-sio-sectors.json"
+          ],
+          "devices": [
+            {
+              "tag": "vbxe",
+              "settings": {
+                "version": 126,
+                "alt_page": false,
+                "shared_mem": false
+              },
+              "readback": [
+                {
+                  "address": 54848,
+                  "bytes": [
+                    16,
+                    38
+                  ]
+                }
+              ],
+              "vram_bytes": 524288,
+              "register_base": 54784
+            }
+          ],
+          "startup_configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true,
+            "diskemu": "generic56k"
+          },
+          "disk_workload": {
+            "format": "SDFS",
+            "unit": 49,
+            "sectors": 720,
+            "sector_bytes": 128,
+            "exec_profile": 4,
+            "nominal_baud": 57600
+          },
+          "mouse_input": {
+            "model": "ST mouse",
+            "port": 2,
+            "internal_port": 1,
+            "map": "Mouse -> ST Mouse (port 2)",
+            "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+            "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+            "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+            "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+            "commands": [
+              "MOUSE ST",
+              "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+              "MOUSE CLEAR"
+            ],
+            "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+            "tooling": {
+              "binary": "build/mouse-bridge/AltirraBridgeServer",
+              "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+              "patch": "toolchain/patches/altirra-mouse-observer.patch",
+              "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+              "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+              "source_sha256": {
+                "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+                "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+              }
+            },
+            "initial_acceptance": {
+              "transitions_per_second_per_axis": 1000,
+              "minimum_transition_spacing_us": 1000,
+              "minimum_button_level_us": 10000,
+              "required_max_sample_gap_us_exclusive": 1000,
+              "visible_response_pal_ticks": 12
+            },
+            "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+          }
+        },
+        "drive": 0,
+        "unit": 49,
+        "sectors": 2880,
+        "expected_status": 0
+      }
+    },
+    "qed-compatibility": {
+      "status": "pass",
+      "record_sha256": "a092deabe46b3b65556bde7882f6f0701f0e785211d2c77594c1870f4ab0093b",
+      "app_sha256": "785528248b9ff2f6b4d5b51ac041e36061cfb94b017d63303e1e43b66cfbff9d",
+      "app_bytes": 27524,
+      "span": 65998,
+      "segments": [
+        {
+          "offset": 0,
+          "size": 23028,
+          "flags": 1
+        },
+        {
+          "offset": 65536,
+          "size": 248,
+          "flags": 2
+        },
+        {
+          "offset": 65784,
+          "size": 214,
+          "flags": 2
+        }
+      ],
+      "inputs": {
+        "/Users/michalkurcewicz/action/exec816-commands/tests/programs/qed_native_files.c": "044814cc8e932fae1f1dfad57aaa65ee6f7194e4a5b9dad585175454bbbf06eb",
+        "/Users/michalkurcewicz/action/exec816-commands/ports/gem4xe/apps/qed/native/allocation.c": "01e3fd776afcef5c8d82b1509b4539c74f10915b55cb1ce621b4dc5171f4c6a7",
+        "/Users/michalkurcewicz/action/exec816-commands/ports/gem4xe/apps/qed/native/entry.c": "664d8c3b43079e50e0acf010b1a4ad42f23d5e5487da75aa8bc3cdb8b639ebb7",
+        "/Users/michalkurcewicz/action/exec816-commands/ports/gem4xe/apps/qed/native/files.c": "08110cab0405dabe3f8638c477db6a6b308fc9cc9ee794eff446c42a29cc733f",
+        "/Users/michalkurcewicz/action/exec816-commands/ports/gem4xe/apps/qed/native/library.c": "33f6d60789368096775e13bc346a77d3577b10518a8ae08e38da4744ea446147"
+      },
+      "runtime_inputs": {
+        "manifest_sha256": "85caa2fe196a358527eb366c9ceb8016c4536ce896b9fea6b866bc330208dbd3",
+        "original_sources": {
+          "src/lib/stdio/__fs_fdopen.c": "17271cd147850dc6b0c57c1555573c2b2a193e9ca27b67d97d3389bc861f05b6",
+          "src/lib/stdio/lib_libfread.c": "9e65b063ca371b30155e611c40b32b9d5106fbade0399aa96150095ba719abed",
+          "src/lib/stdio/lib_libfflush.c": "a29c705c7488ac2d178c1e6e0cdee556dd9dd9329b23022c28d3cc2b7e59fa5a",
+          "src/lib/stdio/lib_fread.c": "2d8cfd85b9aaff1b637b4805293d3c68929b55b38d20e34b07ea8e697d1b0ba3",
+          "src/lib/stdio/lib_fwrite.c": "9ec865bc8579777c73c96d428f0d623f52629c4e2896ac4137fd689b696e7d82",
+          "src/lib/stdio/lib_libfwrite.c": "fa224124912415201d225df578871ac04826e8fd1f00656ddaf48b4aec009fce",
+          "src/lib/stdlib/rand.c": "0721d3abfaaee288e86b069ba937c6a280beab70bcd9f8434bbcc4e0e89d0631"
+        },
+        "headers": {
+          "src/lib/b2c.h": "11cb37a566cc595df245dd3c7c45b34c8a2d538a1d08119804896d8835f8f8a1",
+          "src/lib/clock.h": "2edc5c522dfcb89e726aec2d38f55a4cf4731ab9c13d56c500da627f844ac180",
+          "src/lib/file.h": "96102fe58f0bfb2bb38460498d15b836aea2eba087d2cf3cc594b139272a8cf1",
+          "src/lib/libc.h": "ac2fb6b15024eb467aef383ac07504b716c440eea24dbda79e0b6bb1ae78014c",
+          "src/lib/streams.h": "4e6d2fba6591dfea0eacc48a5f492217ac5eceddb0d58c15cfcec09a61f0143d",
+          "include/calypsi/config.h": "d4e4a79546243bf40c9a3dd12f7f83f4f3eb9f68a7c331c9669cd8a1548e26b5",
+          "include/calypsi/stubs.h": "b1ff27927c72cd48249aa15b1f1baee6d46bedecb405008381f3b5057dffff20",
+          "include/stddef.h": "8a54f72e1ff0d3aaa6a54c1561f6d7a28b52bf7c4cf1c03503dbacfd8d4d09f5",
+          "include/stdint.h": "ee5d78bfc94868efe01434dd4fb444c37c7fd5c727216be26eb472d01730d89b",
+          "include/stdarg.h": "b7a736c79ee7f7e1e6d01faf03d53823431740aaa43deb9d43d60276a3b03873",
+          "include/stdio.h": "5040cba1a60be297cb9e1953dace7f9b4bd430b8caee49ddd4af47bffcf0361d",
+          "include/stdlib.h": "78fff9bf63d3bfcee4b702d89fefb8033aa6afc7d3e96f5deabf7f2d7c94e02a",
+          "include/string.h": "4aa2f879c5148c348396f4220f6011a5c49b433f6e1e00928c2f850126c9bb19",
+          "include/errno.h": "57316a2afcb5b4d770dee9033c09824e7f914b6cc486a6b5798973b9dd181d31",
+          "include/fcntl.h": "48c6045bd7b69791a23e85b86a646eea9623a5798fbb9e3ea5bdc360dad53d8f",
+          "include/limits.h": "16a1735b0d4bc5738b7a60b664e4e37fbba7ffca7115ca66b09cb8af7ca5966c",
+          "include/time.h": "727d90c8a85044b5bebd667d130a884379c5e711d42a276c5370920dffb40b01"
+        },
+        "audit_sources": {
+          "src/lib/errno/errno.c": "117e6d6b611ac8eb24406ea52007961e65c3ee23a3a5fad61379f96316ff90c0",
+          "src/lib/stdio/streamlist.c": "829df201dc4a26137045a565c1772542ec0beade979ce41df92b89a2624b9680",
+          "src/lib/stdlib/rand.c": "0721d3abfaaee288e86b069ba937c6a280beab70bcd9f8434bbcc4e0e89d0631",
+          "src/lib/stdlib/rand48.h": "8c81c46462865654d55df79d9c540c935a36c755e464570c1c2760a85a18d7da",
+          "src/lib/stdlib/srand48.c": "95b8edc6c5e0908a052cfb34642bbd10437dcc559135d18267574b68b15eb5f9",
+          "src/lib/lowlevel/setjmp.s": "e29741a16daa735e235a565c1ca0169ac94ee0d329b8dd119c34e16a29d9f732",
+          "include/setjmp.h": "bae4472c61f7706c678410fe61c7444123ebc921c88253141645fa8e307e9336"
+        },
+        "patches": {
+          "toolchain/patches/calypsi-5.18-stream-initialization.patch": "f69553836c9668d670b868a7b5ad29106e0bf74673533d90faa381d6f18f8a21",
+          "toolchain/patches/calypsi-5.18-stdio-transfers.patch": "6deba4352fc64a19d8679bf9db96821858525a67ad30a6f5887dc4880702cdf8",
+          "toolchain/patches/calypsi-5.18-rand-range.patch": "74cbdf3ee7d38744b78e324c00d6c575152e6b7c82261de75b09dd1556e42c97"
+        },
+        "prepared_sources": {
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-qed/app/runtime-source/__fs_fdopen.c": "18a100ba07106a60ec7a173a7639f88f8f4093cad735f39c6621292b9d9f854f",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-qed/app/runtime-source/lib_libfread.c": "489f8c7265c9b9d83b202fd8ad72dfd5801491d6be92d709fabf0833defa960d",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-qed/app/runtime-source/lib_libfflush.c": "31923bc7203cb236e95c72af664f269815c894aec8e5f8a2d5e7b9bf706797d6",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-qed/app/runtime-source/lib_fread.c": "df8e0e3fa65d173f55369b7516cf125b4280563de5776412d289a085ae0749d3",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-qed/app/runtime-source/lib_fwrite.c": "22bafbc12b23bc717f92d917aa0bbeacc2f5acb4f788ebc03a2f0f431caac12d",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-qed/app/runtime-source/lib_libfwrite.c": "3ed2d739419ca69fd34cb2f7d0ee0e8c4a8b8ca287d1823e914aa73b26681a4c",
+          "/Users/michalkurcewicz/action/exec816-commands/build/c-runtime/cr2-qed/app/runtime-source/rand.c": "7047789034090041dfe9d75c1d10c6c3808e10dde6b3b9edf7b082783ab81893"
+        }
+      },
+      "checks": [
+        26
+      ],
+      "completed": [
+        3
+      ],
+      "native_irq_count": 39829,
+      "native_nmi_count": 2699,
+      "switches": 1957,
+      "stacks": {
+        "scope": "Actual captured APP image bases and native/provider sites; per-pool Process ordinals, DP and guards remain checked. Broad candidate-only sites are excluded. Selected-PC observations, not a watermark.",
+        "lifetimes": [
+          {
+            "slot": 7,
+            "ordinal": 1,
+            "dp": 5120,
+            "clock": 54115941,
+            "app_entry": 342023,
+            "identity": 1
+          }
+        ],
+        "minima": [
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "ordinary-sample",
+            "minimum_s": 24130,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1683,
+            "pc": 1734910,
+            "marker": "M_DOSCLIENT_SETERROR_F2B11A26",
+            "clock": 75219312
+          },
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "frame-reservation",
+            "minimum_s": 24122,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1675,
+            "pc": 1734938,
+            "marker": "M_DOSCLIENT_SETERROR_F2B11A26:after-tcs",
+            "clock": 75219316
+          },
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "async",
+            "minimum_s": 24101,
+            "dp": 3072,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1654,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 75228509
+          }
+        ]
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "execution": {
+        "pin": {
+          "schema_version": 1,
+          "rom": {
+            "name": "AltirraOS 3.44 for 65C816",
+            "bytes": 16384,
+            "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+            "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+            "cop0_after_xce": 50931
+          },
+          "emulator": {
+            "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+            "platform": "macOS arm64",
+            "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "source_patch": "toolchain/patches/altirra-console-probe.patch",
+            "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+            "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+            "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+            "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+            "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+          },
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true,
+            "addons": "custom"
+          },
+          "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+          "peripherals": [
+            {
+              "name": "fastest-125k",
+              "diskemu": "fastest",
+              "divisor": 0,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "stock-810",
+              "diskemu": "810",
+              "divisor": 40,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "happy-none",
+              "diskemu": "happy1050",
+              "divisor": 40,
+              "source": "src/Altirra/source/disk.cpp",
+              "firmware": "built-in high-level model; quiet command only"
+            }
+          ],
+          "configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true
+          },
+          "source_sha256": {
+            "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+            "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+            "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+            "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+            "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+          },
+          "observer": {
+            "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+          },
+          "keyboard_input": {
+            "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+            "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+            "initialization": "KEY ALL up enables scan mode before modifier changes",
+            "added_keys": {
+              "ASTERISK": 7,
+              "LESS": 54,
+              "GREATER": 55
+            },
+            "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+            "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+          },
+          "serial_regression_pins": [
+            "toolchain/altirra-sio-queued.json",
+            "toolchain/altirra-sio-sectors.json"
+          ],
+          "devices": [
+            {
+              "tag": "vbxe",
+              "settings": {
+                "version": 126,
+                "alt_page": false,
+                "shared_mem": false
+              },
+              "readback": [
+                {
+                  "address": 54848,
+                  "bytes": [
+                    16,
+                    38
+                  ]
+                }
+              ],
+              "vram_bytes": 524288,
+              "register_base": 54784
+            }
+          ],
+          "startup_configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true,
+            "diskemu": "generic56k"
+          },
+          "disk_workload": {
+            "format": "SDFS",
+            "unit": 49,
+            "sectors": 720,
+            "sector_bytes": 128,
+            "exec_profile": 4,
+            "nominal_baud": 57600
+          },
+          "mouse_input": {
+            "model": "ST mouse",
+            "port": 2,
+            "internal_port": 1,
+            "map": "Mouse -> ST Mouse (port 2)",
+            "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+            "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+            "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+            "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+            "commands": [
+              "MOUSE ST",
+              "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+              "MOUSE CLEAR"
+            ],
+            "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+            "tooling": {
+              "binary": "build/mouse-bridge/AltirraBridgeServer",
+              "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+              "patch": "toolchain/patches/altirra-mouse-observer.patch",
+              "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+              "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+              "source_sha256": {
+                "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+                "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+              }
+            },
+            "initial_acceptance": {
+              "transitions_per_second_per_axis": 1000,
+              "minimum_transition_spacing_us": 1000,
+              "minimum_button_level_us": 10000,
+              "required_max_sample_gap_us_exclusive": 1000,
+              "visible_response_pal_ticks": 12
+            },
+            "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+          }
+        },
+        "drive": 0,
+        "unit": 49,
+        "sectors": 2880,
+        "expected_status": 0
+      },
+      "persisted_file": {
+        "name": "SAVED.BIN",
+        "bytes": 9,
+        "audit": {
+          "sectors": 2880,
+          "sector_bytes": 256,
+          "allocated": 809,
+          "free": 2071,
+          "files": 10,
+          "directories": 1
+        }
+      }
+    }
+  },
+  "compiler_observation": {
+    "tool": "Calypsi 5.18",
+    "expression": "return saved=Open(path,mode);",
+    "outcome": "internal error: labeling failed in a focused ordinary C reproducer",
+    "fixture": "Records the call result and returns it in separate statements; production gateway/ABI code is unchanged"
+  }
+}

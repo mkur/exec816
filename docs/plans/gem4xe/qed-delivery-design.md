@@ -183,7 +183,7 @@ describes the donor binary: native provenance must identify the replaced
 GEM4XE startup kit, adapted cflib and actual linked Calypsi/runtime components.
 
 There is a concrete licensing question before supported distribution can close.
-The [native QED adapter files](../../../ports/gem4xe/apps/qed/native/entry.c)
+The [native QED adapter files](../../../ports/gem4xe/apps/qed/native/README.md)
 currently carry GPL-3.0-only notices, while the donor material retains its
 no-fee terms. The [Exec application permission](../../../LICENSING.md#application-permission)
 distinguishes independent applications using public interfaces from applications

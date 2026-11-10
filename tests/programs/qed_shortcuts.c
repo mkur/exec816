@@ -40,4 +40,4 @@ static int body(int argc,char **argv)
     if(is_menu_key(0x1e1a,K_CTRL,&title,&item) || normalized!=52)return 401;
     return -321;
 }
-int main(void){return QedRuntimeRun(body);}
+int main(int argc,char **argv){return body(argc,argv);}

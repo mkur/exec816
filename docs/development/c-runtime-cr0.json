@@ -1,0 +1,463 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "CR0 component ABI; production APP ABI remains 30",
+  "host_tests": 662,
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "public_task": 0,
+    "idle": 0
+  },
+  "cases": {
+    "raw": {
+      "status": "pass",
+      "record_sha256": "d1b790f858519ba0c0d07d402cc57c37a477836f8c02206f92b1b005a37cc46c",
+      "app_sha256": "607a3b6590cae50865cfe74e1605d308a85fc4ef7c7e08241885fcd3823a67e9",
+      "checks": [
+        13
+      ],
+      "completed": [
+        2
+      ],
+      "native_irq_count": 17632,
+      "native_nmi_count": 323,
+      "switches": 248,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "execution": {
+        "pin": {
+          "schema_version": 1,
+          "rom": {
+            "name": "AltirraOS 3.44 for 65C816",
+            "bytes": 16384,
+            "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+            "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+            "cop0_after_xce": 50931
+          },
+          "emulator": {
+            "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+            "platform": "macOS arm64",
+            "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "source_patch": "toolchain/patches/altirra-console-probe.patch",
+            "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+            "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+            "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+            "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+            "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+          },
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true,
+            "addons": "custom"
+          },
+          "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+          "peripherals": [
+            {
+              "name": "fastest-125k",
+              "diskemu": "fastest",
+              "divisor": 0,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "stock-810",
+              "diskemu": "810",
+              "divisor": 40,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "happy-none",
+              "diskemu": "happy1050",
+              "divisor": 40,
+              "source": "src/Altirra/source/disk.cpp",
+              "firmware": "built-in high-level model; quiet command only"
+            }
+          ],
+          "configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true
+          },
+          "source_sha256": {
+            "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+            "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+            "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+            "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+            "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+          },
+          "observer": {
+            "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+          },
+          "keyboard_input": {
+            "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+            "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+            "initialization": "KEY ALL up enables scan mode before modifier changes",
+            "added_keys": {
+              "ASTERISK": 7,
+              "LESS": 54,
+              "GREATER": 55
+            },
+            "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+            "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+          },
+          "serial_regression_pins": [
+            "toolchain/altirra-sio-queued.json",
+            "toolchain/altirra-sio-sectors.json"
+          ],
+          "devices": [
+            {
+              "tag": "vbxe",
+              "settings": {
+                "version": 126,
+                "alt_page": false,
+                "shared_mem": false
+              },
+              "readback": [
+                {
+                  "address": 54848,
+                  "bytes": [
+                    16,
+                    38
+                  ]
+                }
+              ],
+              "vram_bytes": 524288,
+              "register_base": 54784
+            }
+          ],
+          "startup_configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true,
+            "diskemu": "generic56k"
+          },
+          "disk_workload": {
+            "format": "SDFS",
+            "unit": 49,
+            "sectors": 720,
+            "sector_bytes": 128,
+            "exec_profile": 4,
+            "nominal_baud": 57600
+          },
+          "mouse_input": {
+            "model": "ST mouse",
+            "port": 2,
+            "internal_port": 1,
+            "map": "Mouse -> ST Mouse (port 2)",
+            "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+            "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+            "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+            "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+            "commands": [
+              "MOUSE ST",
+              "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+              "MOUSE CLEAR"
+            ],
+            "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+            "tooling": {
+              "binary": "build/mouse-bridge/AltirraBridgeServer",
+              "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+              "patch": "toolchain/patches/altirra-mouse-observer.patch",
+              "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+              "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+              "source_sha256": {
+                "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+                "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+              }
+            },
+            "initial_acceptance": {
+              "transitions_per_second_per_axis": 1000,
+              "minimum_transition_spacing_us": 1000,
+              "minimum_button_level_us": 10000,
+              "required_max_sample_gap_us_exclusive": 1000,
+              "visible_response_pal_ticks": 12
+            },
+            "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+          }
+        },
+        "drive": 0,
+        "unit": 49,
+        "sectors": 2880,
+        "expected_status": 0
+      }
+    },
+    "opt": {
+      "status": "pass",
+      "record_sha256": "604b3ac087583a64ca728bf4f03a1105c718d9386a79afe937fa06b3feabd41c",
+      "app_sha256": "42d4df76717eb8cf0a427d0d1b181fca0c85d9866ab00be438f4a8bf1532258f",
+      "checks": [
+        13
+      ],
+      "completed": [
+        2
+      ],
+      "native_irq_count": 15866,
+      "native_nmi_count": 306,
+      "switches": 241,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "execution": {
+        "pin": {
+          "schema_version": 1,
+          "rom": {
+            "name": "AltirraOS 3.44 for 65C816",
+            "bytes": 16384,
+            "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+            "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+            "cop0_after_xce": 50931
+          },
+          "emulator": {
+            "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+            "platform": "macOS arm64",
+            "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "source_patch": "toolchain/patches/altirra-console-probe.patch",
+            "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+            "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+            "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+            "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+            "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+          },
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true,
+            "addons": "custom"
+          },
+          "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+          "peripherals": [
+            {
+              "name": "fastest-125k",
+              "diskemu": "fastest",
+              "divisor": 0,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "stock-810",
+              "diskemu": "810",
+              "divisor": 40,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "happy-none",
+              "diskemu": "happy1050",
+              "divisor": 40,
+              "source": "src/Altirra/source/disk.cpp",
+              "firmware": "built-in high-level model; quiet command only"
+            }
+          ],
+          "configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true
+          },
+          "source_sha256": {
+            "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+            "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+            "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+            "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+            "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+          },
+          "observer": {
+            "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+          },
+          "keyboard_input": {
+            "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+            "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+            "initialization": "KEY ALL up enables scan mode before modifier changes",
+            "added_keys": {
+              "ASTERISK": 7,
+              "LESS": 54,
+              "GREATER": 55
+            },
+            "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+            "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+          },
+          "serial_regression_pins": [
+            "toolchain/altirra-sio-queued.json",
+            "toolchain/altirra-sio-sectors.json"
+          ],
+          "devices": [
+            {
+              "tag": "vbxe",
+              "settings": {
+                "version": 126,
+                "alt_page": false,
+                "shared_mem": false
+              },
+              "readback": [
+                {
+                  "address": 54848,
+                  "bytes": [
+                    16,
+                    38
+                  ]
+                }
+              ],
+              "vram_bytes": 524288,
+              "register_base": 54784
+            }
+          ],
+          "startup_configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true,
+            "diskemu": "generic56k"
+          },
+          "disk_workload": {
+            "format": "SDFS",
+            "unit": 49,
+            "sectors": 720,
+            "sector_bytes": 128,
+            "exec_profile": 4,
+            "nominal_baud": 57600
+          },
+          "mouse_input": {
+            "model": "ST mouse",
+            "port": 2,
+            "internal_port": 1,
+            "map": "Mouse -> ST Mouse (port 2)",
+            "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+            "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+            "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+            "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+            "commands": [
+              "MOUSE ST",
+              "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+              "MOUSE CLEAR"
+            ],
+            "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+            "tooling": {
+              "binary": "build/mouse-bridge/AltirraBridgeServer",
+              "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+              "patch": "toolchain/patches/altirra-mouse-observer.patch",
+              "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+              "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+              "source_sha256": {
+                "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+                "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+              }
+            },
+            "initial_acceptance": {
+              "transitions_per_second_per_axis": 1000,
+              "minimum_transition_spacing_us": 1000,
+              "minimum_button_level_us": 10000,
+              "required_max_sample_gap_us_exclusive": 1000,
+              "visible_response_pal_ticks": 12
+            },
+            "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+          }
+        },
+        "drive": 0,
+        "unit": 49,
+        "sectors": 2880,
+        "expected_status": 0
+      }
+    }
+  }
+}

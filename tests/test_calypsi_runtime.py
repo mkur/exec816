@@ -31,4 +31,20 @@ class CalypsiRuntime(unittest.TestCase):
             with patch.object(calypsi_runtime,'PIN',pin),patch.object(calypsi_runtime,'ROOT',root),self.assertRaisesRegex(RuntimeError,'Changed Calypsi runtime source/header'):
                 calypsi_runtime.prepare(root/'out',root/'installed')
 
+    def test_changed_audited_state_primitive_is_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);source,header,pin=self.fixture(root)
+            audited=source.parent.parent/'state.c'
+            audited.write_bytes(b'/* original state primitive */\n')
+            manifest=json.loads(pin.read_text())
+            manifest['audit_sources']={'src/lib/state.c':hashlib.sha256(audited.read_bytes()).hexdigest()}
+            pin.write_text(json.dumps(manifest))
+            with patch.object(calypsi_runtime,'PIN',pin),patch.object(calypsi_runtime,'ROOT',root):
+                sources,_,record=calypsi_runtime.prepare(root/'out',root/'installed')
+                self.assertEqual(len(sources),1)
+                self.assertEqual(record['audit_sources'],manifest['audit_sources'])
+                audited.write_bytes(b'changed state primitive')
+                with self.assertRaisesRegex(RuntimeError,'Changed Calypsi runtime source/header'):
+                    calypsi_runtime.prepare(root/'out',root/'installed')
+
 if __name__=='__main__':unittest.main()

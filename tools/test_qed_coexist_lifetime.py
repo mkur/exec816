@@ -89,9 +89,11 @@ def interact(b, p, app, record, owner):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--native-from', type=Path, default=ROOT/'build/qed-cursor/editor')
+    parser.add_argument('--native-from', type=Path)
+    parser.add_argument('--provider-from', type=Path)
     args = parser.parse_args(); files = fixtures(); files['LONG.TXT'] = LARGE
     result = run(args.output, native_from=args.native_from,
+        provider_from=args.provider_from,
         fixture_source=ROOT/'tests/programs/qed_cleanup_stop.act', media_files=files,
         saving=True, caret=True, writable=True, interaction=interact,
         profile_all=False, stack_observation_index=0, stack_observation_count=4)

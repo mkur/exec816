@@ -1,0 +1,78 @@
+--- a/setjmp.s
++++ b/setjmp.s
+@@ -80,6 +80,18 @@
+               iny
+               iny
+               sta     [.tiny _Dp],y
++              ldy     ##8
++              lda     dp:.tiny(_Dp+8)
++              sta     [.tiny _Dp],y
++              ldy     ##10
++              lda     dp:.tiny(_Dp+10)
++              sta     [.tiny _Dp],y
++              ldy     ##12
++              lda     dp:.tiny(_Dp+12)
++              sta     [.tiny _Dp],y
++              ldy     ##14
++              lda     dp:.tiny(_Dp+14)
++              sta     [.tiny _Dp],y
+               lda     ##0           ; return 0
+               rtl
+ #endif
+@@ -105,10 +117,17 @@
+               lda     abs:4,y
+               sta     1,s           ; use correct return address
+               lda     dp:.tiny _Dp  ; A= return value
++              bne     longjmp_nonzero
++              inc     a
++longjmp_nonzero:
+               rts
+ #else
+ ;;; small/compact code, 24-bit data pointers
+-longjmp:      tax                   ; X= return value
++longjmp:      cmp     ##0            ; C requires longjmp(env,0) to return 1
++              bne     longjmp_nonzero
++              inc     a
++longjmp_nonzero:
++              tax                   ; X= return value
+               lda     [.tiny _Dp]
+               tcs                   ; restore stack pointer
+               ldy     ##2
+@@ -138,10 +157,17 @@
+               lda     abs:4,y
+               sta     1,s
+               lda     dp:.tiny _Dp  ; A= return value
++              bne     longjmp_nonzero
++              inc     a
++longjmp_nonzero:
+               rtl
+ #else
+ ;;; large code, 24-bit data pointers
+-longjmp:      tax                   ; X= return value
++longjmp:      cmp     ##0            ; C requires longjmp(env,0) to return 1
++              bne     longjmp_nonzero
++              inc     a
++longjmp_nonzero:
++              tax                   ; X= return value
+               lda     [.tiny _Dp]
+               tcs                   ; restore stack pointer
+               ldy     ##6           ; use correct return address
+@@ -157,6 +183,18 @@
+               dey
+               lda     [.tiny _Dp],y
+               sta     dp:.tiny(_Vfp) ; restore virtual frame pointer
++              ldy     ##8
++              lda     [.tiny _Dp],y
++              sta     dp:.tiny(_Dp+8)
++              ldy     ##10
++              lda     [.tiny _Dp],y
++              sta     dp:.tiny(_Dp+10)
++              ldy     ##12
++              lda     [.tiny _Dp],y
++              sta     dp:.tiny(_Dp+12)
++              ldy     ##14
++              lda     [.tiny _Dp],y
++              sta     dp:.tiny(_Dp+14)
+               txa                   ; A= return value
+               rtl
+ #endif

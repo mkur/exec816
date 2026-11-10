@@ -78,8 +78,8 @@ python3 tools/test_qed_native.py --group stop --case opt --output build/qed-nati
 ```
 
 These link the actual patched QED text allocator. Notification and highlighting
-callbacks belong only to the fixture. The allocation implementation keeps a
-12-byte owned header in upper memory, returns bank-contained blocks and uses
+callbacks belong only to the fixture. The common runtime keeps a
+16-byte prefix in upper memory, returns eight-byte-aligned bank-contained blocks and uses
 the public `AvailMem` import for `Malloc(-1)`. The current loaded C ABI is in
 [abi/c-program.json](../../../../abi/c-program.json); rebuild the matched
 provider and applications after changes to it.
@@ -92,7 +92,9 @@ inputs. `--focused-abi` selects two ABI/return cycles in either compiler mode.
 See the [native runtime contract](native/README.md) for descriptor ownership,
 errors, stdio bounds and explicit calendar limitations.
 
-The body passed to `QedRuntimeRun` must retire GUI borrowers before returning.
+QED main receives the common argc/argv and enforces one document. Its
+controller retires GUI borrowers before returning; common FINISH/RELEASE
+then complete stdio and heap ownership after resident GUI retirement.
 The Stop fixture exercises a borrowed allocated title, cooperative native
 `RequestStop`, window retirement, heap cleanup and ordinary collection; no
 private Task exit or donor board termination is used.
@@ -117,7 +119,8 @@ dialogs and an independent text/pixel observer; its allocation wrapper refuses
 selected acquisitions and forwards every successful call to the actual allocator.
 The supervisor checks normal collection, unload and exact heap reuse.
 See the [editing record](../../../../docs/history/qed-editing.md) for the
-implemented slice, evidence and remaining commands. Save/Save As remain disabled.
+implemented slice and historical evidence. The current guide lists Save/Save As
+and the other delivered commands.
 
 QE3 enables event-driven pointer/Shift selection, Select All, release rearming
 and bounded outside-work autoscroll. The loaded-editor runner verifies ranges
@@ -504,7 +507,9 @@ keep both when redistributing QED, which must remain free of charge.
 
 The native adapters use the copyright holder's authorized MIT grant; generated
 GEM declarations retain LGPL, and donor/runtime material retains its own terms.
-The delivered APP/resource/provider match the measured QC4 production editor.
+Historical delivery records retain their original APP/resource/provider identities.
+Current builds use the [shared C runtime](../../../../docs/reference/c-runtime.md)
+and rebuild the matched provider and APP.
 Fresh exact-ZIP checks cover both ordinary launch parents and persisted saves;
 the complete original gap/scope reconciliation and limits are in the delivery record.
 Full release/hosted/hardware qualification and cartridge publication remain separate.

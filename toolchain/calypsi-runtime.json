@@ -1,9 +1,17 @@
 {
   "schema_version": 1,
   "version": "5.18",
-  "purpose": "Correct initialization of malloc-backed FILE list/unget state; standard stdio and native owned malloc",
+  "purpose": "Initialize malloc-backed FILE state; preserve transfer errors and unwritten flush tails; bound signed stdio transfers",
   "sources": {
-    "src/lib/stdio/__fs_fdopen.c": "17271cd147850dc6b0c57c1555573c2b2a193e9ca27b67d97d3389bc861f05b6"
+    "src/lib/stdio/__fs_fdopen.c": "17271cd147850dc6b0c57c1555573c2b2a193e9ca27b67d97d3389bc861f05b6",
+    "src/lib/stdio/lib_libfread.c": "9e65b063ca371b30155e611c40b32b9d5106fbade0399aa96150095ba719abed",
+    "src/lib/stdio/lib_libfflush.c": "a29c705c7488ac2d178c1e6e0cdee556dd9dd9329b23022c28d3cc2b7e59fa5a",
+    "src/lib/stdio/lib_fread.c": "2d8cfd85b9aaff1b637b4805293d3c68929b55b38d20e34b07ea8e697d1b0ba3",
+    "src/lib/stdio/lib_fwrite.c": "9ec865bc8579777c73c96d428f0d623f52629c4e2896ac4137fd689b696e7d82",
+    "src/lib/stdio/lib_libfwrite.c": "fa224124912415201d225df578871ac04826e8fd1f00656ddaf48b4aec009fce",
+    "src/lib/stdlib/rand.c": "0721d3abfaaee288e86b069ba937c6a280beab70bcd9f8434bbcc4e0e89d0631",
+    "src/lib/stdio/lib_fopen.c": "5a88776746126b8b92ee1b9a30c0e9d31c6309a27d860f72a2c900dba1014c5f",
+    "src/lib/lowlevel/setjmp.s": "e29741a16daa735e235a565c1ca0169ac94ee0d329b8dd119c34e16a29d9f732"
   },
   "headers": {
     "src/lib/b2c.h": "11cb37a566cc595df245dd3c7c45b34c8a2d538a1d08119804896d8835f8f8a1",
@@ -22,10 +30,31 @@
     "include/errno.h": "57316a2afcb5b4d770dee9033c09824e7f914b6cc486a6b5798973b9dd181d31",
     "include/fcntl.h": "48c6045bd7b69791a23e85b86a646eea9623a5798fbb9e3ea5bdc360dad53d8f",
     "include/limits.h": "16a1735b0d4bc5738b7a60b664e4e37fbba7ffca7115ca66b09cb8af7ca5966c",
-    "include/time.h": "727d90c8a85044b5bebd667d130a884379c5e711d42a276c5370920dffb40b01"
+    "include/time.h": "727d90c8a85044b5bebd667d130a884379c5e711d42a276c5370920dffb40b01",
+    "src/lib/lowlevel/macros.h": "c462d6dca87a7a45f470e980868f348fe17a692641922bccc7d382a692a0df79"
   },
   "patches": {
-    "toolchain/patches/calypsi-5.18-stream-initialization.patch": "f69553836c9668d670b868a7b5ad29106e0bf74673533d90faa381d6f18f8a21"
+    "toolchain/patches/calypsi-5.18-stream-initialization.patch": "f69553836c9668d670b868a7b5ad29106e0bf74673533d90faa381d6f18f8a21",
+    "toolchain/patches/calypsi-5.18-stdio-transfers.patch": "6deba4352fc64a19d8679bf9db96821858525a67ad30a6f5887dc4880702cdf8",
+    "toolchain/patches/calypsi-5.18-rand-range.patch": "74cbdf3ee7d38744b78e324c00d6c575152e6b7c82261de75b09dd1556e42c97",
+    "toolchain/patches/calypsi-5.18-fopen-exclusive.patch": "b39e65f3164fb6935dffbda7047bf5f5aee12de0b70b92f72244071df3e4e9f1",
+    "toolchain/patches/calypsi-5.18-jump-context.patch": "baf7f74016dddb6850d540accc08a87ef1cb644ce19507f42984a1a534c1f2e7"
   },
-  "notice": "Original Calypsi/Apache/NuttX notices remain in the prepared source; no compiler or archive replacement"
+  "notice": "Original Calypsi/Apache/NuttX notices remain in the prepared source; no compiler or archive replacement",
+  "audit_sources": {
+    "src/lib/errno/errno.c": "117e6d6b611ac8eb24406ea52007961e65c3ee23a3a5fad61379f96316ff90c0",
+    "src/lib/stdio/streamlist.c": "829df201dc4a26137045a565c1772542ec0beade979ce41df92b89a2624b9680",
+    "src/lib/stdlib/rand.c": "0721d3abfaaee288e86b069ba937c6a280beab70bcd9f8434bbcc4e0e89d0631",
+    "src/lib/stdlib/rand48.h": "8c81c46462865654d55df79d9c540c935a36c755e464570c1c2760a85a18d7da",
+    "src/lib/stdlib/srand48.c": "95b8edc6c5e0908a052cfb34642bbd10437dcc559135d18267574b68b15eb5f9",
+    "src/lib/lowlevel/setjmp.s": "e29741a16daa735e235a565c1ca0169ac94ee0d329b8dd119c34e16a29d9f732",
+    "include/setjmp.h": "bae4472c61f7706c678410fe61c7444123ebc921c88253141645fa8e307e9336"
+  },
+  "symbol_overrides": [
+    "setjmp",
+    "longjmp"
+  ],
+  "interface_overrides": {
+    "c/include/setjmp.h": "f38ad92cb98cd43a79e9f74a4dcbb5a57796de7cb49e54a2075f0e11d187477d"
+  }
 }

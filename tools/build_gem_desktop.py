@@ -8,6 +8,35 @@ from generate_memory import PROFILE
 from native_program import ROOT,build,compiler,require
 
 
+def build_apps(out,basic_workbench=False):
+    from c_program import ABI
+    from build_c_program import build as application
+    applications={}
+    for name,folder in ([('panel','gem-panel'),('counter','gem-counter'),('files','gem-browser'),('desktop','gem-browser'),('dialog','gem-dialog')]):
+        body='browser' if name in ('files','desktop') else name
+        applications[name]=application(out/'apps'/name,[ROOT/'examples'/folder/('desktop-main.c' if name=='desktop' else 'main.c'),
+                                                       ROOT/'examples'/folder/(body+'.c'),
+                                                       *([ROOT/'c/calypsi/file-list.c'] if name in ('files','desktop') else [])],
+            probes=[(ROOT/'tests/programs/gem_colour_desktop_layout.c',__import__('colour_desktop_model').LAYOUT)] if name=='desktop' else [],
+            minimum_stack=ABI['stack_floor_bytes'] if name in ('panel','counter') else None)
+    from build_calculator import build as calculator
+    applications['calc']=calculator(out/'apps/calc')
+    from build_g4bench import build as g4bench
+    applications['g4bench']=g4bench(out/'apps/g4bench')
+    applications['text']=application(out/'apps/text',[
+        ROOT/'examples/gem-text'/name for name in ('main.c','text.c','document.c')]+
+        [ROOT/'c/calypsi/file-list.c'],probes=[
+            (ROOT/'tests/programs/gem_text_layout.c',__import__('text_model').LAYOUT)])
+    if basic_workbench:
+        applications['basic']=application(out/'apps/basic',[
+            ROOT/'examples/gem-basic'/name for name in ('main.c','basic.c','editor.c','editor-paint.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c','build.c')]+[ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/fastbasic-diagnostic.c'],minimum_stack=ABI['stack_floor_bytes'],probes=[
+                (ROOT/'tests/programs/basic_build_layout.c',__import__('basic_build_model').LAYOUT),
+                (ROOT/'tests/programs/fastbasic_interpreter_layout.c',[
+                    ('Source bytes',28),('Result bytes',128),('Source pointer',4),('Result pointer',20),
+                    ('Result job',4),('Result phase',12),('Result cause',20),('Result message',32)])])
+    return applications
+
+
 def build_desktop(out,source=None,program_output=None,files=False,basic_workbench=False,build_applications=True,**options):
     from library_paths import read_source
     from c_program import ABI,binding
@@ -16,30 +45,7 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
     options.pop('desktop',None)
     require(build_applications or (not files and 'dos_mounts' in options),
             'Provider-only fixtures must supply their own disk media')
-    applications={}
-    for name,folder in ([('panel','gem-panel'),('counter','gem-counter'),('files','gem-browser'),('desktop','gem-browser'),('dialog','gem-dialog')] if build_applications else []):
-        body='browser' if name in ('files','desktop') else name
-        applications[name]=application(out/'apps'/name,[ROOT/'examples'/folder/('desktop-main.c' if name=='desktop' else 'main.c'),
-                                                       ROOT/'examples'/folder/(body+'.c'),
-                                                       *([ROOT/'c/calypsi/file-list.c'] if name in ('files','desktop') else [])],
-            probes=[(ROOT/'tests/programs/gem_colour_desktop_layout.c',__import__('colour_desktop_model').LAYOUT)] if name=='desktop' else [],
-            minimum_stack=ABI['stack_floor_bytes'] if name in ('panel','counter') else None)
-    if build_applications:
-        from build_calculator import build as calculator
-        applications['calc']=calculator(out/'apps/calc')
-        from build_g4bench import build as g4bench
-        applications['g4bench']=g4bench(out/'apps/g4bench')
-        applications['text']=application(out/'apps/text',[
-            ROOT/'examples/gem-text'/name for name in ('main.c','text.c','document.c')]+
-            [ROOT/'c/calypsi/file-list.c'],probes=[
-                (ROOT/'tests/programs/gem_text_layout.c',__import__('text_model').LAYOUT)])
-        if basic_workbench:
-            applications['basic']=application(out/'apps/basic',[
-                ROOT/'examples/gem-basic'/name for name in ('main.c','basic.c','editor.c','editor-paint.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c','build.c')]+[ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/fastbasic-diagnostic.c'],minimum_stack=ABI['stack_floor_bytes'],probes=[
-                    (ROOT/'tests/programs/basic_build_layout.c',__import__('basic_build_model').LAYOUT),
-                    (ROOT/'tests/programs/fastbasic_interpreter_layout.c',[
-                        ('Source bytes',28),('Result bytes',128),('Source pointer',4),('Result pointer',20),
-                        ('Result job',4),('Result phase',12),('Result cause',20),('Result message',32)])])
+    applications=build_apps(out,basic_workbench) if build_applications else {}
     from build_gem_resource import resource
     desktop_resource=resource()
     if 'dos_mounts' not in options:
@@ -60,7 +66,8 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
                        sector_bytes=256,profile=4,format=2)])
     foreign=drawing(out,True,widgets=True,client_sources=[
         ROOT/'c/calypsi/aes.c',ROOT/'c/calypsi/aes-messages.c',ROOT/'c/calypsi/aes-events.c',
-        ROOT/'c/calypsi/program.c',ROOT/'examples/gem-desktop/resident.c'],
+        ROOT/'c/calypsi/program.c',ROOT/'examples/gem-desktop/resident.c',
+        *options.pop('provider_sources',())],client_definitions=options.pop('provider_definitions',None),
         client_roots=['GEMDesktopStart','GEMDesktopStop','GEMDesktopCollect','GEMDesktopChildren',
                       'GEMDesktopDone','GEMDesktopFailure','ExecProgramRun',*ABI['imports']],
         client_probes=[(ROOT/'c/calypsi/aes-layout.c',expected_layout()),

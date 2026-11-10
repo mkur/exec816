@@ -20,7 +20,7 @@ class RelinkedSetup(QedPreview):
         session.saved['integration'].update(production_app=False,changed_library_diagnostic=True)
 
 
-def check(output,bundle,relinked):
+def check(output,bundle,relinked,native_snapshot=None):
     require(not output.exists(),'Use a fresh relink boot directory')
     demo=json.loads((bundle/'demo-manifest.json').read_text());verify(demo,bundle)
     replacement=json.loads((relinked/'relink-results.json').read_text())
@@ -38,10 +38,15 @@ def check(output,bundle,relinked):
     make(media,source,binary_names={p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file()},
          filesystem='sdfs',sector_bytes=256,sectors=2880,label='QED')
     inputs={str(p.relative_to(ROOT)):sha256(p) for p in (Path(__file__),ROOT/'tools/test_qed_exec_setup.py',ROOT/'tools/test_demo.py')}
+    combined=bool(demo.get('bootable_atr'));options={}
+    if native_snapshot:
+        from test_bootable_atr import DiskBoot
+        options['bootstrap']=DiskBoot(output,native_snapshot=native_snapshot)
     result=run(output,boot_smoke=True,distribution_root=output/'extracted/exec816-demo',
-        companion_overrides={'qed.atr':dict(path=str(media),sha256=sha256(media))},integration=RelinkedSetup(),profile_commands=False)
-    work=Audit((output/'work-walkthrough.atr').read_bytes());allocation=work.sdfs()
-    require(work.files['SAMPLE.TXT']==b'cab'+SAMPLE and work.files['SAMPLE.BAK']==b'ab'+SAMPLE,
+        companion_overrides={'qed.atr':dict(path=str(media),sha256=sha256(media))},integration=RelinkedSetup(),profile_commands=False,**options)
+    disk=output/'extracted/exec816-demo'/demo['media'] if combined else output/'work-walkthrough.atr'
+    work=Audit(disk.read_bytes());allocation=work.sdfs();prefix='WORK/' if combined else ''
+    require(work.files[prefix+'SAMPLE.TXT']==b'cab'+SAMPLE and work.files[prefix+'SAMPLE.BAK']==b'ab'+SAMPLE,
             'Relinked editor saved/backup bytes differ')
     result.update(qualification=False,scope='Changed retained CF-Lib routine: relink, diagnostic boot, edit/save/reopen and normal return',
         relink_results_sha256=sha256(relinked/'relink-results.json'),modified_app_sha256=replacement['app_sha256'],
@@ -52,4 +57,5 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--bundle',type=Path,required=True)
     p.add_argument('--relinked',type=Path,required=True)
-    a=p.parse_args();check(a.output.resolve(),a.bundle.resolve(),a.relinked.resolve())
+    p.add_argument('--native-snapshot',type=Path)
+    a=p.parse_args();check(a.output.resolve(),a.bundle.resolve(),a.relinked.resolve(),a.native_snapshot)

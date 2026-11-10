@@ -49,7 +49,7 @@ def variant(base,out,filesystem,unit=None,sectors=None):
          filesystem=filesystem,sector_bytes=256,sectors=mounts[0]['sectors'])
 
 def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=None,
-        fixture_source=None,expected_completed=12,native_optimize=None,
+        fixture_source=None,expected_completed=12,native_optimize=None,task_capacity=None,
         release_compiler=False,rebuild_app=False,writable=False,ram=False,boundary_limits=False,observe_stacks=False,stack_media=False,stack_observation_index=0,media_files=None,app_builder=None,interaction=None,loader_failures=True,retirement_timeout=600,profile_all=False,prepare_media=None,execution=None,stack_observation_count=None):
     out.mkdir(parents=True,exist_ok=True)
     execution=execution or {}
@@ -65,6 +65,8 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
     if not reuse or rebuild_app:
         if reuse:
             provider=p['build']['foreign_image']['c_program_provider']
+            require(task_capacity is None or p['build']['memory']['task_capacity']==task_capacity,
+                    'Rebuild the fixture for changed Task capacity')
             require(provider['abi']==ABI['version'] and
                     provider['imports']==ABI['imports'],
                     'Rebuild the provider after a C application ABI change')
@@ -118,7 +120,7 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
             p=build_desktop(out,source=fixture_source or ROOT/'tests/programs/c_process.act',program_output=out/'program',
                 optimize=optimize if native_optimize is None else native_optimize,
                 release_compiler=release_compiler,
-                build_applications=False,
+                build_applications=False,**({'task_capacity':task_capacity} if task_capacity else {}),
                 system_mount=execution.get('system_mount','D1'),dos_mounts=mounts)
     if prepare_media:prepare_media(out/'system.atr',filesystem)
     record=dict(initial_media_sha256=sha256(out/'system.atr'),status='running',tier='development',qualification=False,filesystem=filesystem,
@@ -149,6 +151,11 @@ def run(out,optimize,reuse=False,filesystem='sdfs',app_sources=None,app_options=
                     record['last_primary']=data(b,p['image'],'lastPrimary',True)
                 if any(d['name'].startswith('M_CPROCESSTEST_LASTSECONDARY_') for d in p['image']['data']):
                     record['last_secondary']=data(b,p['image'],'lastSecondary',True)
+                if any(d['name'].startswith('M_CPROCESSTEST_EXPECTEDSECONDARY_') for d in p['image']['data']):
+                    record['expected_secondary']=data(b,p['image'],'expectedSecondary',True)
+                    record['expected_primary']=data(b,p['image'],'expectedPrimary',True)
+                if any(d['name'].startswith('M_CPROCESSTEST_CURRENTAPP_') for d in p['image']['data']):
+                    record['current_app']=data(b,p['image'],'currentApp',True)
                 table=next(d for d in p['image']['data'] if d['name']=='M_PROCESSSTATE_TABLE')
                 layout=json.loads((ROOT/'abi/process.json').read_text())
                 offsets={name:offset for name,kind,offset in layout['record']}

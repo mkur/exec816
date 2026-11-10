@@ -11,7 +11,7 @@ from native_program import ROOT,build,compiler,require,sha256
 
 def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=False,
             client_sources=(),client_entries=(),client_roots=(),client_probes=(),
-            client_optimization=None,renderer_source=None):
+            client_optimization=None,renderer_source=None,client_definitions=None):
     for path,content in files().items():require(path.read_text()==content,'Stale console packet: '+str(path))
     extraction=extract(out/'selected');src=out/'selected/src';ad=PORT/'adapter'
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',ROOT/'platform/altirraos/vbxe.c',
@@ -104,7 +104,8 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     foreign=emit(out/'drawing',sources,assembly,client_entries,
         optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe','ConsoleProbeClobber'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
-            'gem-vbxe.c':['-DGEM_DRAWING_ONLY']+(['-DEXEC_DESKTOP_STYLE'] if widgets else [])},
+            'gem-vbxe.c':['-DGEM_DRAWING_ONLY']+(['-DEXEC_DESKTOP_STYLE'] if widgets else []),
+            **(client_definitions or {})},
         probes=[(ROOT/'c/calypsi/console-bitmap-layout.c',expected_layout())]+extra_probes+list(client_probes),
         source_optimization=client_optimization)
     for name in ('GemServiceWorker','GemClientInit','GemVbxeBackend'):

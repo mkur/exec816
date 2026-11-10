@@ -74,7 +74,10 @@ def inventory(directory, provider, policy=None):
         if row['archive']:
             component, source = 'runtime', row['archive']+':'+name
         elif name.endswith('-asm.o'):
-            component, source = 'bindings', 'c/calypsi/image-info.s or generated import assembly'
+            override=next((p for p in overrides if Path(p).suffix=='.s' and
+                           name.endswith('-'+Path(p).stem+'-asm.o')),None)
+            component, source = ('runtime',override) if override else (
+                'bindings','c/calypsi/image-info.s or generated import assembly')
         else:
             require(match is not None and int(match[1]) < len(compiled), 'Unclassified QED link unit: '+name)
             source = compiled[int(match[1])]

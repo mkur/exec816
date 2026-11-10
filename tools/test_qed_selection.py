@@ -45,7 +45,7 @@ def logical(out,reuse=False,native_from=None,optimize=True,shortcuts=False,clipb
     else:
         sources=[ROOT/'tests/programs'/('qed_clipboard_core.c' if clipboard else 'qed_selection_core.c')]
         sources += [qed/name for name in ('tasten.c','memory.c','clipbrd.c','ausgabe.c','block.c')]
-    sources += [native/name for name in ('entry.c','allocation.c','files.c','library.c')]
+    sources += [native/name for name in ('allocation.c','files.c','library.c')]
     definitions={str(p):([] if '/source/cflib/' in str(p) else ['--char-is-unsigned'])+
         ['-DQED_BANKED_MALLOC=1',
         *selected()['compiler_options']] for p in sources}
@@ -82,7 +82,7 @@ RETURN
 ENDMODULE
 """)
     return process_run(out,optimize,reuse=reuse,rebuild_app=reuse,app_sources=sources,
-        app_options=dict(includes=[native,qed,out/'inputs/source/cflib'],definitions=definitions,
+        app_options=dict(main_signature='args',includes=[native,ROOT/'c/runtime',qed,out/'inputs/source/cflib'],definitions=definitions,
                          runtime_attributes={'printf':'nofloat'}),
         fixture_source=fixture,expected_completed=2,native_optimize=True,
         release_compiler=True,loader_failures=False,interaction=interaction)

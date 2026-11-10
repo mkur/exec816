@@ -85,4 +85,4 @@ static int body(int argc,char **argv)
     if(ordering_bad || captions!=1)return 167;
     return -321;
 }
-int main(void){return QedRuntimeRun(body);}
+int main(int argc,char **argv){return body(argc,argv);}

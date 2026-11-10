@@ -35,3 +35,4 @@
   entries(33)=ADDRESS(@CLoadTake)
   entries(34)=ADDRESS(@CLoadCancel)
   entries(35)=ADDRESS(@CBasicAttach)
+  entries(36)=ADDRESS(@CSetFileDate)

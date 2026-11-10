@@ -30,4 +30,4 @@ static int body(int argc,char **argv)
     CHECK(wind_close(window) && wind_delete(window) && appl_exit(),109);
     return -321;
 }
-int main(void){return QedRuntimeRun(body);}
+int main(int argc,char **argv){return body(argc,argv);}

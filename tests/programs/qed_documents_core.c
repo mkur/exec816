@@ -89,10 +89,6 @@ static bool reject(const char *name)
 static int body(int argc,char **argv)
 {
     RINGP ring;LINEP line;short i;struct QedHeapStats warm,after;
-    int count;char **parsed;
-    CHECK(!QedArguments("a b","qed",&count,&parsed) && IoErr()==ERROR_BAD_ARGUMENTS,100);
-    CHECK(QedArguments("  \"SYS:SMALL.TXT\" ","qed",&count,&parsed) && count==2 &&
-        !strcmp(parsed[1],"SYS:SMALL.TXT"),101);free(parsed);
     init_memory();CHECK(init_clipbrd() && init_textring(&text.text),102);
     kill_textring(&text.text);qed_ring_empty(&text.text);
     line=new_col("keep",4);CHECK(line!=NULL,103);col_append(&text.text,line);
@@ -154,4 +150,4 @@ static int body(int argc,char **argv)
     clr_undo();kill_textring(&clip_text);kill_textring(&text.text);kill_memory();
     return -321;
 }
-int main(void){return QedRuntimeRun(body);}
+int main(int argc,char **argv){return body(argc,argv);}

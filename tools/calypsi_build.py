@@ -8,7 +8,7 @@ from native_program import ROOT, command, require, sha256
 
 
 def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
-         includes=(), definitions=None, probes=(), source_optimization=None, runtime_attributes=None):
+         includes=(), definitions=None, probes=(), source_optimization=None, runtime_attributes=None, compiler_options=(),entry_name='main'):
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     tools = {}
@@ -26,7 +26,7 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
     from calypsi_runtime import prepare as runtime_sources
     overrides,runtime_include,runtime_record=runtime_sources(output,
         Path(tools['cc65816']['path']).parent.parent)
-    flags = ['--code-model=large', '--data-model=huge', '-O2' if optimize else '-O0']
+    flags = ['--code-model=large', '--data-model=huge', *compiler_options, '-O2' if optimize else '-O0']
     include_args = [part for path in (ROOT/'c/include', ROOT/'platform/altirraos', output, *includes, runtime_include) for part in ('-I', path)]
     if ROOT/'platform/altirraos/vbxe-map.s' in assembly:
         probes=(*probes,(ROOT/'c/calypsi/vbxe-upload-layout.c',[
@@ -43,27 +43,31 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
         command([tools['cc65816']['path'], *flags, '-c', *include_args, '-o', obj, source])
         checked.update(check_layout(obj, expected))
     objects = []
-    for number, source in enumerate((*sources,*overrides)):
+    for number, source in enumerate((*sources,*[p for p in overrides if p.suffix=='.c'])):
         obj = output/f'{number}-{source.stem}.o'
-        extra = (definitions or {}).get(str(source), (definitions or {}).get(source.name, ()))
+        extra = [option for option in (definitions or {}).get(str(source), (definitions or {}).get(source.name, ()))
+                 if option not in compiler_options]
         source_flags = [*flags[:-1], '-O2' if (source_optimization or {}).get(source.name, optimize) else '-O0']
         command([tools['cc65816']['path'], *source_flags, *extra, '-c', *include_args,
                  '--list-file', obj.with_suffix('.lst'), '-o', obj, source])
         objects.append(obj)
-    for number, source in enumerate(assembly):
+    runtime_assembly=[p for p in overrides if p.suffix=='.s']
+    for number, source in enumerate((*assembly,*runtime_assembly)):
         obj = output/f'{number}-{source.stem}-asm.o'
-        command([tools['as65816']['path'], '-I', ROOT/'c/calypsi', '-o', obj, source])
+        runtime_args=['--code-model=large','--data-model=huge','-I',runtime_include/'lowlevel'] if source in runtime_assembly else []
+        command([tools['as65816']['path'],*runtime_args,'-I',ROOT/'c/calypsi','-o',obj,source])
         objects.append(obj)
     runtime_attributes=runtime_attributes or {}
     attributes=[part for name,value in runtime_attributes.items()
                 for part in ('--rtattr',name+'='+value)]
+    override_args=[part for name in runtime_record.get('symbol_overrides',[]) for part in ('--override',name)]
     elf = output/'program.elf'
     root_args = [part for name in (*task_entries, '__exec_image_info', *roots)
                  for part in ('--root-symbol', name)]
-    command([tools['ln65816']['path'], '--hosted', '--program-root', 'main', '--program-start', 'main',
-             *root_args, *attributes, '--no-data-init-table-section', '--no-automatic-placement-rules',
+    command([tools['ln65816']['path'], '--hosted', '--program-root', entry_name, '--program-start', entry_name,
+             *root_args, *attributes, *override_args, '--no-data-init-table-section', '--no-automatic-placement-rules',
              '--list-file', output/'link.lst', '-o', elf, *objects, ROOT/'c/calypsi/layout.scm'])
-    foreign = read_image(elf, task_entries)
+    foreign = read_image(elf, task_entries,entry_name=entry_name)
     foreign['provenance']['platform_internal_inputs'] = {
         'platform/altirraos/vbxe-internal.h': sha256(ROOT/'platform/altirraos/vbxe-internal.h')}
     foreign['provenance'].update(tools=tools, linker_layout_sha256=sha256(ROOT/'c/calypsi/layout.scm'), runtime=dict(path=str(runtime), sha256=sha256(runtime)),

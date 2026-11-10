@@ -56,6 +56,9 @@ LONG EXEC_CALL SetIoErr(LONG error) { return call(C_DOS_SETIOERR,(ULONG)error,0,
 LONG EXEC_CALL NameFromLock(BPTR lock,STRPTR buffer,LONG length)
 { return call(C_DOS_NAMEFROMLOCK,lock,(ULONG)buffer,length); }
 
+LONG EXEC_CALL SetFileDate(CONST_STRPTR name,const struct DateStamp *date)
+{ return call(C_DOS_SETFILEDATE,(ULONG)name,(ULONG)date,0); }
+
 BPTR EXEC_CALL Input(void) { return call(C_DOS_INPUT,0,0,0); }
 APTR EXEC_CALL ExecLoadProgram(CONST_STRPTR name) { return (APTR)call(C_DOS_EXECLOADPROGRAM,(ULONG)name,0,0); }
 void EXEC_CALL ExecReleaseProgram(APTR image) { call(C_DOS_EXECRELEASEPROGRAM,(ULONG)image,0,0); }

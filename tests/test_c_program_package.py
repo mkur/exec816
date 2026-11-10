@@ -13,7 +13,7 @@ def image(bank):
                               executable=True,writable=False),
                           dict(address=base+65536,bytes=[0,0,bank,0],executable=False,writable=True)],
                 zero_fill=[dict(address=base+65540,size=4,writable=True)],
-                symbols=dict(main=base,ExecYield=base+4,privateData=base+65536),
+                symbols={ABI['entry']:base,'ExecYield':base+4,'privateData':base+65536},
                 provenance=dict(dp_workspace_bytes=20))
 
 

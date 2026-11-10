@@ -167,7 +167,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         known={item["name"] for item in manifest.get("additional_media",[])}
         require(set(overrides)<=known and set(omit_media)<=known,"Unknown companion override/omission")
         for item in manifest.get('additional_media', []):
-            source=(distribution_root or out)/item['name']
+            # QED is a separately delivered disk, deliberately outside the ZIP.
+            source=(out if item['name']=='qed.atr' else distribution_root or out)/item['name']
             require(sha256(source)==item['sha256'],'Changed extracted companion media')
             if item['name'] in omit_media:
                 require(item.get('access')=='readonly','Only optional read-only media may be omitted')

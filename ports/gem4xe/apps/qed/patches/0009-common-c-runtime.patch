@@ -1,0 +1,13 @@
+--- a/qed/src/main.c
++++ b/qed/src/main.c
+@@ -87,4 +87,9 @@
+     if(!ready || return_code)SetIoErr(cause);
+     return ready?return_code:20;
+ }
+-int main(void){return QedRuntimeRun(editor_body);}
++int main(int argc,char **argv)
++{
++    QedStarting=1;
++    if(argc>2){SetIoErr(ERROR_BAD_ARGUMENTS);return 20;}
++    return editor_body(argc,argv);
++}
