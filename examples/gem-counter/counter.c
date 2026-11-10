@@ -1,10 +1,9 @@
 /* SPDX-License-Identifier: MIT */
 #include "counter.h"
-#include <exec816/aes.h>
 
 static void label(struct Counter *app)
 {
-    ULONG value=app->count;
+    uint32_t value=app->count;
     WORD i;
     const char *prefix="Count: ";
     for (i=0;i<7;++i) app->label[i]=prefix[i];
@@ -20,10 +19,10 @@ static void label(struct Counter *app)
  * rectangles use x/y/w/h; only the VDI boundary uses inclusive corners. */
 static WORD redraw(struct Counter *app,const WORD *damage)
 {
-    WORD x,y,w,h,l,t,r,b,clip[4],digits[4],tick=damage==NULL,okay=1;
+    WORD x,y,w,h,l,t,r,b,clip[4]={0,0,0,0},digits[4],tick=damage==NULL,okay=1;
     const struct CounterConfig *config=app->config;
-    if (!ExecAESBeginUpdate(app->window)) return 0;
-    if (!wind_get(app->window,WF_WXYWH,&app->work[0],&app->work[1],
+    if (!wind_update(BEG_UPDATE)) return 0;
+    if (!wind_get(app->window,WF_WORKXYWH,&app->work[0],&app->work[1],
                   &app->work[2],&app->work[3])) okay=0;
     if (tick) {
         digits[0]=app->work[0]+64; digits[1]=app->work[1]+8;
@@ -32,15 +31,18 @@ static WORD redraw(struct Counter *app,const WORD *damage)
     }
     label(app);
     if (okay) okay=wind_get(app->window,WF_FIRSTXYWH,&x,&y,&w,&h);
-    /* VDI clips to the visible region itself. Give it the whole logical
-     * change, so covered digits cannot remain valid in a saved image. An
-     * iconified tick is a model-only update with no completion claim. */
-    if (okay && w>0 && h>0) {
+    /* GEM applications clip each draw to the intersection of the damage,
+     * work area and one rectangle from the window's visible list. */
+    while (okay && w>0 && h>0) {
         l=app->work[0]>damage[0] ? app->work[0]:damage[0];
         t=app->work[1]>damage[1] ? app->work[1]:damage[1];
         r=app->work[0]+app->work[2]; b=app->work[1]+app->work[3];
         if (r>damage[0]+damage[2]) r=damage[0]+damage[2];
         if (b>damage[1]+damage[3]) b=damage[1]+damage[3];
+        if (l<x) l=x;
+        if (t<y) t=y;
+        if (r>x+w) r=x+w;
+        if (b>y+h) b=y+h;
         if (l<r && t<b) {
             clip[0]=l; clip[1]=t; clip[2]=r-1; clip[3]=b-1;
             vs_clip(app->vdi,1,clip);
@@ -54,9 +56,9 @@ static WORD redraw(struct Counter *app,const WORD *damage)
                 v_gtext(app->vdi,app->work[0]+8,app->work[1]+14,app->label);
             }
         }
-        okay=ExecAESDiagnostic()==AES_OK;
+        okay=wind_get(app->window,WF_NEXTXYWH,&x,&y,&w,&h);
     }
-    if (okay) okay=ExecAESPainted(app->window,damage[0],damage[1],damage[2],damage[3]);
+    vs_clip(app->vdi,0,clip);
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) ++app->paints;
     return okay;
@@ -77,7 +79,6 @@ WORD CounterRun(struct Counter *app)
     app->window=wind_create(NAME|CLOSER|MOVER,0,0,config->width,config->height);
     if (app->window<0) goto finish;
     if (!wind_set_str(app->window,WF_NAME,config->title)) goto finish;
-    if (!wind_set(app->window,AES_WF_EXEC_PRESERVE,1,0,0,0)) goto finish;
     if (!wind_open(app->window,config->x,config->y,config->width,config->height)) goto finish;
     app->opened=1; app->ready=1;
     result=0;
@@ -96,7 +97,7 @@ WORD CounterRun(struct Counter *app)
                 if (!wind_set(app->window,WF_TOP,0,0,0,0)) result=2;
                 break;
             case WM_MOVED:
-                if (!wind_set(app->window,WF_CXYWH,app->message[4],app->message[5],
+                if (!wind_set(app->window,WF_CURRXYWH,app->message[4],app->message[5],
                               app->message[6],app->message[7])) result=2;
                 break;
             case WM_REDRAW:

@@ -1071,7 +1071,7 @@ The flag is a snapshot, not a promise of a cached image or a live readiness poll
 Only the outer END publishes the journal. Layers subtracts matching-generation
 claims from pending external repaint; neither ending UPDATE nor exhausting
 `WF_NEXTXYWH` implies completion. Existing GEM callers can omit this port helper
-and continue receiving ordinary exposure redraws. Counter, Files, desktop,
+and continue receiving ordinary exposure redraws. Files, desktop,
 Text, Panel, Calculator and shared dialogs use it in complete redraw paths.
 It adds no per-draw RPC or kernel call. An UPDATE without drawing reports
 leaves a full client repaint obligation, preventing idle recapture of old pixels
@@ -1104,7 +1104,7 @@ delivered messages are not cancelled. This flag does not allocate a bitmap or
 make incomplete pixels cacheable. Failing to report a change is a caller bug;
 AES does not inspect the application's model.
 
-Files/Desktop, Counter, Control Panel, Calculator and Text opt in. Shared forms
+Files/Desktop, Control Panel, Calculator and Text opt in. Shared forms
 use window-specific updates and invalidate borrowed content at dismissal before
 requesting the owner's repair. Temporary dialog windows retain the default
 policy. Ordinary GEM callers need no changes and keep conventional exposure

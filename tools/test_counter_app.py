@@ -46,7 +46,7 @@ class CounterApp:
         sy=found[0]['symbols'];app=sy['GEMCounter']
         s.rendezvous('dw($%x)=1'%(app+12));s.frames(100)
         work=lambda:[s.number(app+38+i*2,2) for i in range(4)]
-        require(work()==[200,48,128,24],'Counter window is not 144x48')
+        require(work()==[200,43,128,35],'Counter window is not 144x48 with the current frame')
         shot('counter-compact')
 
         # No guest code or state is patched. Passive shared-VDI call markers
@@ -72,18 +72,18 @@ class CounterApp:
         after_cache=cache_counts()
         require(after_cache['captures']==before_cache['captures'],
                 'Counter recaptured whole client during quiet digit updates')
-        require(after_cache['patches']-before_cache['patches']==len(ticks) and
-                after_cache['patchedBytes']-before_cache['patchedBytes']==len(ticks)*192,
-                'Counter did not patch exactly its 48 by 8 digit area')
+        require(after_cache['patches']==before_cache['patches'] and
+                after_cache['patchedBytes']==before_cache['patchedBytes'],
+                'Ordinary GEM Counter unexpectedly opted into client-image preservation')
         require(any(t['before']==9 and t['after']==10 for t in ticks),'Decimal carry not observed')
         shot('counter-carry')
 
-        # Odd-X movement keeps the small digit update on the native text path.
+        # An odd requested displacement follows the documented even-X geometry.
         x,y,w,h=work();move(x+64,y-8)
         b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
-        move(x+65,y-8);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(100)
-        require(work()==[x+1,y,w,h],'Counter did not move to odd X')
-        shot('counter-odd-x')
+        move(x+67,y-8);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(100)
+        require(work()==[x+2,y,w,h],'Counter did not retain even-X window placement')
+        shot('counter-even-x')
 
         # Place SYS:'s left edge inside a digit cell to exercise clipping.
         menus.select('SYS:')
@@ -114,7 +114,7 @@ class CounterApp:
         shot('counter-closed')
         self.report=dict(window=[144,48],tick_area=[48,8],ticks=ticks,
             cache_maintenance={n:after_cache[n]-before_cache[n] for n in after_cache},
-            odd_x=True,partial_cover=True,full_cover=True,exposure=True,close=True,
+            even_x_placement=True,partial_cover=True,full_cover=True,exposure=True,close=True,
             stacks=stack_usage(b,s.p['build']['memory']))
         s.saved['integration']=self.report
         menus.select('Shell');s.command('HELLO',b'Hello from disk!')

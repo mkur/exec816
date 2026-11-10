@@ -2,6 +2,7 @@
 #ifndef GEM_COUNTER_H
 #define GEM_COUNTER_H
 #include <gem.h>
+#include <stdint.h>
 
 struct CounterConfig {
     const char *title;
@@ -13,7 +14,7 @@ struct Counter {
     const struct CounterConfig *config;
     WORD id,vdi,window,opened;
     volatile WORD ready;
-    volatile ULONG count,paints;
+    volatile uint32_t count,paints;
     WORD message[8],work[4];
     char label[14];
     WORD input[11],output[57];

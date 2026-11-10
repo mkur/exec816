@@ -8,27 +8,33 @@ from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
 from test_mouse_observe import BRIDGE,ROM,PIN
 from desktop_mouse import schedule
-from gem_render_oracle import Raster,font_bytes
-from test_desktop_presentation import desktop, rectangle,frame
+from gem_render_oracle import font_bytes
+from bitmap_console_oracle import Terminal
+from desktop_oracle import compose
 from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
-from test_gem_cursor import overlay
-from generate_aes_server import ABI
+from generate_aes_server import ABI,expected_layout
 
 
-def run(out,program):
+def run(out,program,measure=True):
     out.mkdir(parents=True,exist_ok=True)
     p=read_build(program);f=json.loads((p['output'].parent/'c-image.json').read_text());sy=f['symbols']
     at=lambda mod,n:next(d['address'] for d in p['image']['data'] if '_'+mod+'_'+n.upper()+'_' in d['name'])
     report=dict(status='running',slice='WA5',tier='development',qualification=False,build=p['build'],cases=[])
     from counter_timing import setup,restore,result
-    timing=setup(p,f)
+    timing=setup(p,f) if measure else None
+    report['timing_enabled']=measure
     try:
         with emulator(BRIDGE,ROM,out,pin=PIN) as b:
             report['machine']=verify_machine(b,ROM,PIN)
             def get(a,n=2):return int.from_bytes(b.memdump(a,n),'little')
             def c(n,i=0):return get(sy[n]+i*2)
             def app(i,field):return sy['GEMCounters']+196*i+dict(id=4,window=8,ready=12,count=14,paints=18,work=38)[field]
+            layout=dict(expected_layout())
+            def top_window():
+                context=get(sy['contexts'],4)
+                directory=get(context+layout['Request directory'],4)
+                return get(directory+layout['Directory topWindow'])
             def reach(condition):
                 b.bp_clear_all();b.bp_set(p['labels']['native_irq'],condition=condition)
                 b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
@@ -59,47 +65,48 @@ def run(out,program):
                 b.poke16(sy['CounterPostCommand'],i+1)
                 until(sy['CounterPostDone'],old,'>')
                 require(c('CounterPostStatus')==1,'Message publication failed')
-            def snapshot(name,focused=True):
+            def snapshot(name):
                 frames(60)
-                contexts=get(sy['contexts'],4);directory=get(contexts+128,4);top=get(directory+10)
-                ids=[get(app(i,'window')) for i in range(2)]
-                order=[1,0] if top==ids[0] else [0,1]
-                r=Raster(font_bytes(p['output'].parent/'selected/src/vdi/font8x8.c'))
-                desktop(r);frame(r,(32,24,560,208),b'Shell',focused and top==0)
+                top=top_window()
                 states=[]
-                for i in order:
+                for i in range(2):
                     if not get(app(i,'ready')):continue
                     x,y,w,h=struct.unpack('<4h',b.memdump(app(i,'work'),8));count=get(app(i,'count'),4)
-                    frame(r,(x-8,y-16,x+w+8,y+h+8),b'Counter B' if i else b'Counter A',focused and top==ids[i],close=True)
-                    r.clip=(x,y,x+w-1,y+h-1);r.text=2 if i else 4
-                    r.apply(8,(x+8,y+14),('Count: %06d'%count).encode())
-                    r.clip=(0,0,639,239)
                     states.append(dict(instance=i,work=[x,y,w,h],count=count,paints=get(app(i,'paints'),4)))
-                digest=pixels(b,out,overlay(r,position),palette=DESKTOP_PALETTE)
+                def counter(r,title,bounds):
+                    require(title in (b'Counter A',b'Counter B'),'Unexpected external window')
+                    i=int(title==b'Counter B');left,top,right,bottom=bounds
+                    r.clip=(left+8,top+11,right-9,bottom-3);r.text=2 if i else 4
+                    r.apply(8,(left+16,top+25),('Count: %06d'%get(app(i,'count'),4)).encode())
+                    r.clip=(0,0,639,239)
+                expected=compose(b,p,font_bytes(p['output'].parent/'selected/src/vdi/font8x8.c'),
+                                 Terminal(64,20),position,counter,menu_contexts=sy['contexts'])
+                digest=pixels(b,out,expected,palette=DESKTOP_PALETTE)
                 report['cases'].append(dict(name=name,states=states,top=top,pixels=digest))
                 print(name,'pixels pass',flush=True)
             def before(b):
-                b.profile_start()
+                if timing:b.profile_start()
                 b._cmd_ok('MOUSE ST');b._cmd_ok('KEY ALL up')
                 until(at('COUNTERTEST','ready'));frames(150)
                 pause(0);pause(1);move(620,232);snapshot('initial-timers')
                 require(c('GEMCountersFailure')==0,'Counter startup failed')
                 require(all(get(app(i,'count'),4)>0 for i in range(2)),'Timers did not advance')
                 # Top request is deferred while the owner is outside its event loop.
-                top_before=get(get(get(sy['contexts'],4)+128,4)+10)
+                top_before=top_window()
                 inactive=0 if top_before==get(app(1,'window')) else 1
                 x,y,_,_=struct.unpack('<4h',b.memdump(app(inactive,'work'),8))
                 old=c('CounterMessages',inactive*4+1)
                 move(x+96,y-10);edge(1);edge(0);frames(20)
-                require(get(get(get(sy['contexts'],4)+128,4)+10)==top_before,'Top committed before application acknowledgment')
+                require(top_window()==top_before,'Top committed before application acknowledgment')
                 resume(inactive);until(sy['CounterMessages']+inactive*8+2,old,'>');frames(60);pause(inactive)
                 move(620,232);snapshot('acknowledged-top')
-                # A physical pixel-position title drag must reach the same body.
+                # A physical title drag reaches the body and retains even-X placement.
                 resume(inactive);old=c('CounterMessages',inactive*4+2)
                 move(x+96,y-10);edge(1);move(x+113,y+1);edge(0)
                 until(sy['CounterMessages']+inactive*8+4,old,'>');frames(80);pause(inactive)
                 work=struct.unpack('<4h',b.memdump(app(inactive,'work'),8))
-                require(work[:2]==(x+17,y+11),'Counter drag changed pixel coordinates: '+str(work))
+                require(work[:2]==((x+17)&~1,y+11),
+                        'Counter drag violated even-X window placement: '+str(work))
                 resume(1-inactive);frames(100);pause(1-inactive)
                 move(620,232);snapshot('physical-move')
                 # Cover A exactly with B, keep A's model ticking without pixels.
@@ -125,7 +132,7 @@ def run(out,program):
                 # Close B with its physical closer while A remains live.
                 resume(1);move(241+8,97+6);edge(1);edge(0)
                 until(sy['GEMCountersDone'],1,'>=');move(620,232);resume(0);frames(100);pause(0)
-                snapshot('physical-close',focused=False)
+                snapshot('physical-close')
                 for iteration in range(2):
                     resume(0);resume(1);b.poke16(at('COUNTERTEST','mode'),1)
                     until(at('COUNTERTEST','restarts'),iteration+1);frames(120)
@@ -137,16 +144,17 @@ def run(out,program):
             ownership(b,p,p['output'])
             report['native_checks']=get(at('COUNTERTEST','checks'))
             require(c('GEMCountersFailure')==0,'Counter failed')
-            b.profile_stop()
+            if timing:b.profile_stop()
             report['status']='pass'
-        report['timing']=result(out,timing)
+        if timing:report['timing']=result(out,timing)
     except Exception as e:report.update(status='fail',error=str(e));raise
     finally:
-        restore(timing)
+        if timing:restore(timing)
         (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
     return report
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--program',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
-    args=parser.parse_args();run(args.output.resolve(),args.program.resolve())
+    parser.add_argument('--no-timing',action='store_true',help='Run pixel, event and lifetime checks without timing markers')
+    args=parser.parse_args();run(args.output.resolve(),args.program.resolve(),not args.no_timing)

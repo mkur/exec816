@@ -232,6 +232,13 @@ extension.
 
 ## Colour GEM desktop roadmap
 
+The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)
+prioritizes ordinary AES/VDI application bodies and fewer platform edits.
+Counter starts the work with conventional UPDATE and visible-rectangle redraws;
+shared-source Atari ST/GEM4XE execution, event/resource comparisons and reusable
+application runtime services remain follow-ups. Exec's preemptive Processes and
+ownership rules remain the platform foundation.
+
 The target is a classic colour GEM desktop adapted to Exec816: **640×240,
 sixteen colours and the existing 8×8 font**, with flat frames, patterned active
 titles, compact scrollbars, coloured icons and Desk / File / View / Options

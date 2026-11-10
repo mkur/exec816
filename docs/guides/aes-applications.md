@@ -5,8 +5,8 @@
 Exec816 supplies a small GEM source interface in `<gem.h>`. Application code
 uses ordinary GEM calls and private parameter blocks. The Exec816 startup
 wrapper supplies the retained service endpoint and owns Task termination.
-This profile supports registration, copied messages, timers, GUI locks and
-fixed-size GEM windows, keyboard/left-button input and private VDI drawing. Open with `graf_handle` and
+This profile supports registration, copied messages, timers, GUI locks,
+GEM windows, keyboard/left-button input and private VDI drawing. Open with `graf_handle` and
 `v_opnvwk`; use `BEG_UPDATE` around visible-rectangle enumeration, user clipping
 and bar/text painting, then release with `END_UPDATE` before the event wait.
 See the [workstation profile](../reference/gem-vdi.md#resident-application-workstations)
@@ -15,18 +15,27 @@ See the [window contract](../reference/aes.md) for supported kinds and fields.
 
 ## Counter example
 
-The [counter body](../../examples/gem-counter/counter.c) uses only `<gem.h>`
-through its [model header](../../examples/gem-counter/counter.h). It opens a
+The [counter body](../../examples/gem-counter/counter.c) uses `<gem.h>` and
+standard fixed-width C integer types through its
+[model header](../../examples/gem-counter/counter.h). It opens a
 fixed 144×48 window, updates six decimal digits on a one-second timer, accepts
 top/move/close requests and reconstructs exposed pixels from its current model.
 It handles both bits when `evnt_multi` returns a message and timer together.
 The window contains one `Count: 000000` line. Timer updates replace only the
 48×8 digit area without a separate background clear; exposure redraws restore
-the background and complete label. Both paths use visible-region clipping and
-ordinary VDI text. This adds no fixed or per-Task bank-zero reservation.
+the background and complete label. Both paths use `wind_update(BEG_UPDATE)`,
+`WF_FIRSTXYWH`/`WF_NEXTXYWH` and explicit VDI clipping. The body uses no native
+repaint or preservation extensions; exposed content is reconstructed from its
+current count. Startup and Task retirement remain in the native wrapper.
+This adds no fixed or per-Task bank-zero reservation. The
+[source compatibility plan](../plans/gem4xe/gem-source-compatibility-plan.md)
+separates native execution and independent-header compilation from the remaining
+Atari ST/GEM4XE runtime checks.
+The [GC0 development record](../development/gem-source-compatibility-gc0.json)
+contains the executed checks, source/header hashes and unchanged memory budget.
 
 For a packaged colour desktop, `python3 tools/test_counter_app.py --bundle DIR`
-checks the loaded Counter's pixels, decimal carry, odd-X movement, partial/full
+checks the loaded Counter's pixels, decimal carry, even-X placement, partial/full
 cover, exposure and close. Passive VDI call markers check that a quiet timer
 update uses one text call and no background fill. It also checks shell/EXIT and
 guards; this is development coverage, not full platform qualification.
@@ -43,10 +52,11 @@ Build and exercise the focused counter proof:
 ```sh
 CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_aes_desktop.py \
   --counters --output build/aes-windows/counters
-python3 tools/test_gem_counter.py --program build/aes-windows/counters/program \
+python3 tools/test_gem_counter.py --no-timing --program build/aes-windows/counters/program \
   --output build/aes-windows/counters-test
 ```
 
+The command selects functional checks; timing measurements are separate.
 The proof adds development-only pause and timing hooks outside rendering
 ownership. It compares full framebuffers after timers, physical top/drag/close,
 full cover/exposure, simultaneous readiness and repeated restart. Closing the
@@ -86,7 +96,10 @@ heartbeat without needing a window. To request `MU_KEYBD` or `MU_BUTTON`, first
 open an application window. Wait for down with `(clicks,mask,state)=(1,1,1)`,
 then release with `(1,1,0)`; use returned screen coordinates to distinguish an
 inside activation from an outside cancellation. `evnt_keybd` returns a GEM
-scan/ASCII word. Rectangle and multiple-click events remain unsupported.
+scan/ASCII word. `MU_M1` and bounded double-click handling are supported;
+`MU_M2`, other mouse buttons and broader button predicates remain unsupported.
+The [event contract](../reference/aes.md) records the exact supported arguments
+and the deliberate difference from GEM's delayed click aggregation.
 
 ```c
 #include <gem.h>

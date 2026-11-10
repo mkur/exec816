@@ -1,5 +1,11 @@
 # GEM as a client of an Exec-like kernel
 
+The [GEM source compatibility plan](gem-source-compatibility-plan.md) makes
+conventional AES/VDI sufficient for application bodies, beginning with Counter,
+then shared-source reference builds, behavioral comparisons and reusable runtime
+services. Native preservation remains optional; preemptive Exec ownership stays
+below the application interface.
+
 The [FastBasic GEM workbench design](../fastbasic-workbench-design.md) proposes
 a loadable native editor and Run controller using hosted AES/VDI, with owned
 compiler/program Processes, source debugging and native graphics. It identifies

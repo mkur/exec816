@@ -8,7 +8,7 @@ from build_desktop_input import fixture as input_fixture
 from build_bitmap_console import drawing, prepare
 from generate_aes_server import expected_layout
 from generate_memory import PROFILE
-from native_program import ROOT, build, compiler
+from native_program import ROOT, build, compiler, require
 
 
 def build_proof(out, load=False, pointer=False, mouse_profile=None):
@@ -80,7 +80,9 @@ def counter_image(out, instrument=False):
         events=ROOT/'c/calypsi/aes-events.c'
         text=events.read_text().replace('#include "aes-private.h"',
             '#include "'+str(ROOT/'c/calypsi/aes-private.h')+'"\nextern void CounterEventWait(struct ExecAESContext *);')
-        text=text.replace('        Wait(mask);','        CounterEventWait(c);\n        Wait(mask);')
+        wait='        seen|=Wait(mask)&externalMask;'
+        require(text.count(wait)==1,'Counter event-wait hook no longer matches the AES wait')
+        text=text.replace(wait,'        CounterEventWait(c);\n'+wait)
         altered=out/'aes-events.c';altered.write_text(text)
         sources[sources.index(events)]=altered
     sources.append(body)

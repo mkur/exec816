@@ -1,0 +1,303 @@
+{
+  "format": "exec816.gem-source-compatibility.v1",
+  "slice": "GC0",
+  "date": "2026-11-09",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Conventional Counter AES/VDI body, native optimized execution and independent GEM4XE header compilation; not Atari ST/GEM4XE runtime qualification",
+  "baseline_revision": "8deec0452d8ce5b86f7b42eebd564073d2f514b1",
+  "source_inputs": {
+    "examples/gem-counter/counter.c": "92780c5aaba74befb37bc7755830e5ec461e56cd8d5cc355000bc517c868ccf3",
+    "examples/gem-counter/counter.h": "faaa3c8858e79ed30193846857b83e9767ef532671ddc1ac8e9b87558f2030c8",
+    "tools/build_aes_desktop.py": "fd3fcdb7e340cfab57b3975d1e52f09181f6f6658947e15887f1e6852be9cdc7",
+    "tools/test_gem_counter.py": "30ee6e46724a17233c680d80c3c5f55c6b31d4d9db00666ea658b38df057228e",
+    "tools/test_counter_app.py": "3862443254e1547ad145469df12801fcb009cb7165380efc60f735fad8c74d4b"
+  },
+  "compiler_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act"
+  },
+  "calypsi_tools": {
+    "cc65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "as65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+      "version": "Calypsi assembler for 65816 version 5.18",
+      "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+    },
+    "ln65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+      "version": "Calypsi linker for 65816 version 5.18",
+      "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+    }
+  },
+  "host_tests": {
+    "tests": 659,
+    "skipped": 4,
+    "status": "pass",
+    "path": "build/gem-source-compatibility/host-tests.log",
+    "sha256": "336ac919f6b962bfc4801d62af47fe170058c2effc2115bb325246e27cdddd03"
+  },
+  "checks": {
+    "pixels": {
+      "path": "build/gem-source-compatibility/counters-verified/results.json",
+      "sha256": "fd6108ca518c37f260c659fab3e7b92b92a784e200312b51c5860ddd9ff43069",
+      "status": "pass"
+    },
+    "loaded": {
+      "path": "build/gem-source-compatibility/loadable/results.json",
+      "sha256": "a79947b09b0b558cb2bd86de27da915cd3da0eed52a4afe902ee0d45e1d51734",
+      "status": "pass"
+    },
+    "headers": {
+      "path": "build/gem-source-compatibility/gem4xe-header-check/results.json",
+      "sha256": "0cb0828a3343375271a7842bd42a3534dcc088c882aec823f07ded2d045e72cd",
+      "status": "pass"
+    },
+    "layout": {
+      "path": "build/gem-source-compatibility/layout/results.json",
+      "sha256": "b73caecad90534e76ca1cf6dbdfc0bd14ce2aa4ceb11b3818fc55571db1c7bd4",
+      "status": "pass"
+    }
+  },
+  "native_pixels": {
+    "cases": [
+      "initial-timers",
+      "acknowledged-top",
+      "physical-move",
+      "fully-covered-model",
+      "latest-model-exposed",
+      "simultaneous-message-timer",
+      "repeated-redraw",
+      "physical-close",
+      "restart-1",
+      "restart-2"
+    ],
+    "both_ready": [
+      1,
+      0
+    ],
+    "native_checks": 39674,
+    "timing_enabled": false
+  },
+  "loaded_lifetime": {
+    "checks": [
+      29
+    ],
+    "phases": [
+      {
+        "phase": 1,
+        "bases": [
+          327680,
+          458752
+        ],
+        "counts": [
+          2,
+          2
+        ]
+      },
+      {
+        "phase": 2,
+        "bases": [
+          327680,
+          458752
+        ],
+        "counts": [
+          2,
+          2
+        ]
+      }
+    ]
+  },
+  "gem4xe_headers": {
+    "status": "pass",
+    "tier": "development",
+    "qualification": false,
+    "scope": "Compile the production Counter body against independent pinned GEM4XE application headers; no linking or GEM4XE execution",
+    "revision": "0692b5519112dcde1f29f061ebcebe7a095aaf60",
+    "inputs": {
+      "src/app/gem.h": "a5a7d8f2a4856887b80118014aa3f853129a8b0ad92b3123f1ebf1fcacf812d3",
+      "src/portab.h": "60d5cc880e02d7a980dd483e1a0b44263cbcfe34bffae9cd19c00d3342fd245a",
+      "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509"
+    },
+    "command": [
+      "cc65816",
+      "--code-model=large",
+      "--data-model=huge",
+      "-O2",
+      "-Werror=implicit-function-declaration",
+      "-I",
+      "build/gem-source-compatibility/gem4xe-header-check/include",
+      "-c",
+      "examples/gem-counter/counter.c",
+      "-o",
+      "build/gem-source-compatibility/gem4xe-header-check/counter.o"
+    ],
+    "returncode": 0,
+    "source_inputs": {
+      "examples/gem-counter/counter.c": "92780c5aaba74befb37bc7755830e5ec461e56cd8d5cc355000bc517c868ccf3",
+      "examples/gem-counter/counter.h": "faaa3c8858e79ed30193846857b83e9767ef532671ddc1ac8e9b87558f2030c8"
+    },
+    "object_sha256": "e5608aff71f58c4b08941306ca468509086a150465cde77b9bb9d2de6aad3278",
+    "undefined_symbols": [
+      "_Dp",
+      "_UDivMod32",
+      "_ValueSwitch16",
+      "_Vfp",
+      "appl_exit",
+      "appl_init",
+      "evnt_multi",
+      "graf_handle",
+      "v_bar",
+      "v_clsvwk",
+      "v_gtext",
+      "v_opnvwk",
+      "vs_clip",
+      "vsf_color",
+      "vst_color",
+      "wind_close",
+      "wind_create",
+      "wind_delete",
+      "wind_get",
+      "wind_open",
+      "wind_set",
+      "wind_set_str",
+      "wind_update"
+    ],
+    "compiler_version": "Calypsi ISO C compiler for 65816 version 5.18"
+  },
+  "counter_layout": {
+    "status": "pass",
+    "scope": "Emitted Counter layout constants; native execution is a separate optimized fixture",
+    "cases": [
+      {
+        "mode": "raw",
+        "fields": {
+          "Counter size": 196,
+          "Counter ready": 12,
+          "Counter count": 14,
+          "Counter paints": 18,
+          "Counter message": 22,
+          "Counter work": 38,
+          "Counter label": 46
+        },
+        "status": "pass"
+      },
+      {
+        "mode": "opt",
+        "fields": {
+          "Counter size": 196,
+          "Counter ready": 12,
+          "Counter count": 14,
+          "Counter paints": 18,
+          "Counter message": 22,
+          "Counter work": 38,
+          "Counter label": 46
+        },
+        "status": "pass"
+      }
+    ]
+  },
+  "application_comparison": {
+    "old_bytes": 5155,
+    "new_bytes": 5149,
+    "delta_bytes": -6,
+    "old_dp_workspace_bytes": 20,
+    "new_dp_workspace_bytes": 20,
+    "verified_load_banks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62
+    ],
+    "old_app_sha256": "5afc1e655b30de068632356e698dd5b480a4211b53e0a733992b23f6d5d6b2a9",
+    "new_app_sha256": "f1c4da73384ff7cfdb336ebf7dce0b993f34d3cbad340a83968263907ddf3f58"
+  },
+  "reserved_bank_zero_delta": {
+    "fixed_root_kernel": 0,
+    "per_public_task": 0,
+    "idle": 0,
+    "includes_guards_alignment_and_unused_capacity": true
+  },
+  "validation_notes": [
+    "Optimized native pixel/event/lifecycle scenarios; raw and optimized emitted layout constants only.",
+    "Functional Counter checks use the current desktop oracle and generated AES directory offsets. The timer coincidence hook is required to match the current combined wait.",
+    "Legacy timing instrumentation was disabled; no latency comparison is claimed.",
+    "Build attempts and obsolete-fixture diagnostics remain in build/gem-source-compatibility; earlier qualification records are unchanged."
+  ],
+  "remaining_gates": [
+    "Separately linked Counter execution on Atari ST and standalone GEM4XE, including font/layout selection.",
+    "Broader event/resource/runtime compatibility in GC1-GC5.",
+    "Fresh packaged-demo walkthrough and full release/hardware qualification."
+  ]
+}
