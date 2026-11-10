@@ -232,6 +232,12 @@ extension.
 
 ## Colour GEM desktop roadmap
 
+The proposed [GEM-first GUI design](plans/gem4xe/gem-first-gui-design.md) replaces
+the native/GEM graphical interface split with one AES window model. It retains
+Exec Tasks and device I/O, distinguishes UPDATE from physical drawing ownership
+and starts the subsequent implementation plan with two native Counters beside
+disk work. Existing contracts remain authoritative during incremental migration.
+
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)
 prioritizes ordinary AES/VDI application bodies and fewer platform edits.
 Counter starts the work with conventional UPDATE and visible-rectangle redraws;

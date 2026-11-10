@@ -609,6 +609,11 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [GEM-first GUI design](gem4xe/gem-first-gui-design.md): proposed AES-only
+  graphical windows, shared caller-context window operations, an AES system Task,
+  distinct UPDATE/display ownership and existing Exec I/O. Defines the native
+  two-Counter/disk baseline, terminal migration and Task/memory acceptance.
+
 - [END_UPDATE cache-completion addendum](gem4xe/update-snapshot-reuse-design.md#end_update-cache-completion-addendum)
   and [EC0–EC2 plan](gem4xe/update-cache-completion-plan.md): proposed identity-only
   miss return, matching-slot/paint safeguards and committed development slices.

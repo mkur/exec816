@@ -1,5 +1,11 @@
 # GEM as a client of an Exec-like kernel
 
+The proposed [GEM-first GUI design](gem-first-gui-design.md) makes AES the sole
+graphical window model, with caller-context operations, an AES system Task and
+separate logical/physical ownership over normal Exec preemption and I/O. It
+starts migration with two native Counters beside sustained disk work; current
+contracts and open latency gates remain unchanged until executable slices land.
+
 The [Atari ST reference](../../guides/atari-st-reference.md) runs the native
 baseline's unchanged object-tree routines under EmuTOS and MagiC in Hatari.
 The [comparison record](../../history/atari-st-reference.md) relates direct
