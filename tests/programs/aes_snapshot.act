@@ -10,6 +10,7 @@ USE DESKTYPES
 USE LAYERS
 USE LAYERTYPES
 USE REGIONS
+USE A816MEMORY
 
 CARD checks
 AESSTATE.Service POINTER service
@@ -26,6 +27,8 @@ PROC Require(BYTE okay)
   checks==+1
 
 RETURN
+
+INCLUDE "aes-snapshot-checks.inc"
 
 PUBLIC PROC Sample()
 
@@ -58,6 +61,7 @@ PROC Main()
       Require(LAYERS.Create(@desktop.scene,@bounds,@handles(index))=LAYERTYPES.OK)
       IF index<4 THEN
         BEGIN
+          Require(LAYERS.SetExternal(@desktop.scene,handles(index))=LAYERTYPES.OK)
           LET item=@service.windows(index)
           LET window=@desktop.windows(index)
           item.owner=1
@@ -93,6 +97,7 @@ PROC Main()
       Sample()
     OD
   OD
+  FreshnessChecks()
   FOR index=0 TO 6 DO
     Require(LAYERS.Delete(@desktop.scene,handles(index))=LAYERTYPES.OK)
   OD

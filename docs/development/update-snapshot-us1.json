@@ -1,0 +1,689 @@
+{
+  "format": "exec816.update-snapshot-us1.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "revision": "96752e04",
+  "production_unchanged": true,
+  "native": {
+    "checks": 137,
+    "observations": [
+      {
+        "bounds": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "work": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            40,
+            32,
+            64,
+            180
+          ]
+        ],
+        "revision": 41,
+        "paint_epoch": 43,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "work": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            40,
+            32,
+            64,
+            180
+          ]
+        ],
+        "revision": 42,
+        "paint_epoch": 43,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "work": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            40,
+            32,
+            64,
+            180
+          ]
+        ],
+        "revision": 43,
+        "paint_epoch": 44,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "work": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            40,
+            32,
+            64,
+            180
+          ]
+        ],
+        "revision": 44,
+        "paint_epoch": 45,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "work": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            40,
+            32,
+            64,
+            180
+          ]
+        ],
+        "revision": 45,
+        "paint_epoch": 45,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "work": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            40,
+            32,
+            240,
+            180
+          ]
+        ],
+        "revision": 46,
+        "paint_epoch": 45,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          40,
+          268,
+          190
+        ],
+        "work": [
+          48,
+          40,
+          268,
+          190
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            48,
+            40,
+            268,
+            190
+          ]
+        ],
+        "revision": 47,
+        "paint_epoch": 46,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          40,
+          268,
+          190
+        ],
+        "work": [
+          48,
+          40,
+          268,
+          190
+        ],
+        "shown": 1,
+        "rectangles": [],
+        "revision": 48,
+        "paint_epoch": 46,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          40,
+          268,
+          190
+        ],
+        "work": [
+          48,
+          40,
+          268,
+          190
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            48,
+            40,
+            268,
+            190
+          ]
+        ],
+        "revision": 49,
+        "paint_epoch": 46,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          40,
+          268,
+          190
+        ],
+        "work": [
+          48,
+          40,
+          268,
+          190
+        ],
+        "shown": 0,
+        "rectangles": [],
+        "revision": 50,
+        "paint_epoch": 46,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          64,
+          48,
+          264,
+          168
+        ],
+        "work": [
+          64,
+          48,
+          264,
+          168
+        ],
+        "shown": 0,
+        "rectangles": [],
+        "revision": 51,
+        "paint_epoch": 47,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          64,
+          48,
+          264,
+          168
+        ],
+        "work": [
+          64,
+          48,
+          264,
+          168
+        ],
+        "shown": 0,
+        "rectangles": [],
+        "revision": 52,
+        "paint_epoch": 47,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "work": [
+          40,
+          32,
+          240,
+          180
+        ],
+        "shown": 0,
+        "rectangles": [],
+        "revision": 53,
+        "paint_epoch": 48,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "work": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "shown": 0,
+        "rectangles": [],
+        "revision": 54,
+        "paint_epoch": 48,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "work": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            48,
+            36,
+            260,
+            190
+          ]
+        ],
+        "revision": 55,
+        "paint_epoch": 48,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "work": [
+          56,
+          57,
+          252,
+          188
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            56,
+            57,
+            252,
+            188
+          ]
+        ],
+        "revision": 56,
+        "paint_epoch": 48,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "work": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            48,
+            36,
+            260,
+            190
+          ]
+        ],
+        "revision": 57,
+        "paint_epoch": 48,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "work": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            48,
+            36,
+            260,
+            190
+          ]
+        ],
+        "revision": 58,
+        "paint_epoch": 48,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "work": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            48,
+            36,
+            260,
+            190
+          ]
+        ],
+        "revision": 59,
+        "paint_epoch": 48,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "work": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            48,
+            36,
+            260,
+            190
+          ]
+        ],
+        "revision": 60,
+        "paint_epoch": 48,
+        "pixels_ready": 0
+      },
+      {
+        "bounds": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "work": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            48,
+            36,
+            260,
+            190
+          ]
+        ],
+        "revision": 61,
+        "paint_epoch": 48,
+        "pixels_ready": 1
+      },
+      {
+        "bounds": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "work": [
+          48,
+          36,
+          260,
+          190
+        ],
+        "shown": 1,
+        "rectangles": [
+          [
+            48,
+            36,
+            260,
+            190
+          ]
+        ],
+        "revision": 62,
+        "paint_epoch": 48,
+        "pixels_ready": 1
+      }
+    ],
+    "scope": "Independent retained-geometry cell-set oracle; repeated publication, owner/peer geometry/order, covered/hidden/iconified/frame changes, stale/partial/failed/full paint reports, service rebinding.",
+    "stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 283,
+        "untouched_above_floor": 997
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 24,
+        "untouched_above_floor": 232
+      }
+    ]
+  },
+  "clients": {
+    "cache": {
+      "checks": 224,
+      "failures": 0,
+      "guards": "intact",
+      "scope": "32 cache/pixel phases; scoped/nested UPDATE, blocker Task, hidden model changes, exposure, moves, reopen and slot reuse."
+    },
+    "locks": {
+      "checks": 181,
+      "failures": 0,
+      "guards": "intact",
+      "scope": "Local/RPC BEGIN/END combinations, three scheduled clients, TRY, waiter order, recursion, maximum owned-window count and retirement."
+    },
+    "windows": {
+      "checks": 285,
+      "failures": 0,
+      "guards": "intact",
+      "scope": "Physical owner/peer control, move/resize/iconify/restore, FIRST/NEXT invalidation, exact geometry/frame pixels and lifetimes."
+    }
+  },
+  "paint_semantics": "Completion establishes current-work readiness; older pending obligations outside current work can remain. No geometry optimization may silently discard them.",
+  "host_tests": {
+    "run": 665,
+    "passed": 661,
+    "skipped": 4
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "artifacts": {
+    "build/update-snapshot-reuse/us1-cache/results.json": {
+      "sha256": "e1fae988482c31fdf13ac45574a93d81d12ca4677224168d51eb141dc0783168",
+      "bytes": 162707
+    },
+    "build/update-snapshot-reuse/us1-locks/results.json": {
+      "sha256": "60dbbb8cf7b9614e3be7774ad4a50835510e2920cb2d85ead7d3b56fcbc01607",
+      "bytes": 146859
+    },
+    "build/update-snapshot-reuse/us1-windows/results.json": {
+      "sha256": "5749d7bf178a745617bfd9c9d2737b64babc40d40a2f96c28c0e5f2021d86b7f",
+      "bytes": 147926
+    },
+    "build/update-snapshot-reuse/us1-native-final/results.json": {
+      "sha256": "a27684ac17007da002c6044f8acdd68294356a83ec9930e11320fb7f7b85d638",
+      "bytes": 106788
+    },
+    "build/update-snapshot-reuse/us1-native-final/emulator.log": {
+      "sha256": "987208c6a6182602a9f891a4c526b32e5c2471aaf961905e096dd114dcc27458",
+      "bytes": 423824
+    },
+    "build/update-snapshot-reuse/us1-native-final/program/program.xex": {
+      "sha256": "e14f1abf3e42fd9bac54d45a92e2269ee85b187f6785aa517de52734066ab3c3",
+      "bytes": 204742
+    },
+    "tests/programs/aes_snapshot.act": {
+      "sha256": "52f3e1dd65b18bde5c8dfa60ab8bbcb8d9d5b2179bfcae0747a585f8c05ee9cf",
+      "bytes": 3624
+    },
+    "tests/programs/aes-snapshot-checks.inc": {
+      "sha256": "c6d4f6090f2f4d2837fb3e5a6e15fcc45e7674c23d062c0b63c5a3d8480a8689",
+      "bytes": 4599
+    },
+    "tools/test_aes_snapshot.py": {
+      "sha256": "4043166518023641efd82fc03dbe404bc76398e45e0a7603f5e0bf67fded4a70",
+      "bytes": 6669
+    },
+    "build/update-snapshot-reuse/us1-host.log": {
+      "sha256": "621c02126e723969a91a0a7de6e9d6104e3ecb4cd7e503d1476e9e40e3ea9cb1",
+      "bytes": 777
+    }
+  },
+  "failed_development_attempts": [
+    "us1-native: Action identifiers are case-insensitive; constant/array name collision.",
+    "us1-native-2: corrected fixture initialization to mark owned layers external.",
+    "us1-native-3: corrected assertion from empty pending list to current-work readiness."
+  ]
+}

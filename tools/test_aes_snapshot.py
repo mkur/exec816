@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import struct
 from pathlib import Path
 from unittest.mock import patch
 from bitmap_console_performance import native_markers
@@ -17,11 +18,51 @@ from test_dos_stack import execute, ownership
 from test_mouse_observe import BRIDGE, ROM, PIN
 
 
+def check_observations(raw):
+    from generate_desktop import ABI
+    c=ABI['constants'];rows=[]
+    for offset in range(0,len(raw),320):
+        u=struct.unpack_from('<160H',raw,offset)
+        s=struct.unpack_from('<160h',raw,offset)
+        count,icon,kind,shown=u[:4]
+        bounds=[tuple(s[76+i*4:80+i*4]) for i in range(7)]
+        source=tuple(s[118:122]) if icon else bounds[0]
+        l,t,r,b=source
+        work=source if kind&c['FRAME_BORDERLESS'] else (
+            l+c['WORK_LEFT'],t+c['WORK_TOP']+(c['FRAME_INFO_HEIGHT'] if kind&c['FRAME_INFO'] else 0)
+            +(c['FRAME_TAB_HEIGHT'] if kind&c['FRAME_SHELL_TABS'] else 0),
+            r-(c['FRAME_GADGET_WIDTH'] if kind&c['FRAME_VERTICAL'] else c['WORK_RIGHT']),
+            b-(c['FRAME_GADGET_HEIGHT'] if kind&c['FRAME_SIZER'] else c['WORK_BOTTOM']))
+        require(tuple(s[4:8])==source and tuple(s[8:12])==work,'Snapshot work/bounds differs')
+        require(shown==(0 if icon else u[104]),'Snapshot shown differs')
+        cells=lambda q:{(x,y) for y in range(q[1],q[3]) for x in range(q[0],q[2])}
+        want=set() if icon or not shown else cells(work)&cells(bounds[0])
+        order=u[111:118]
+        for slot in order[:order.index(0)]:
+            if u[104+slot]:want-=cells(bounds[slot])
+        actual=set()
+        require(count<=16,'Unbounded observed visibility')
+        rects=[]
+        for i in range(count):
+            rect=tuple(s[12+i*4:16+i*4]);part=cells(rect)
+            require(not actual&part,'Overlapping visible rectangles')
+            actual|=part;rects.append(rect)
+        require(actual==want,'Snapshot visibility differs at observation '+str(len(rows)))
+        rows.append(dict(bounds=source,work=work,shown=shown,rectangles=rects,
+            revision=u[122]+(u[123]<<16),paint_epoch=u[124]+(u[125]<<16),pixels_ready=u[126]))
+    require(len(rows)==22,'Incomplete freshness corpus: '+str(len(rows)))
+    return rows
+
+
 def run(out,from_build=None):
     out.mkdir(parents=True,exist_ok=True)
+    from generate_memory import PROFILE
+    profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=16384
+    memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
     p=read_build(from_build/'program') if from_build else build(
         compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/aes_snapshot.act',
-        out/'program',tasks=True,task_capacity=8,optimize=True,console=False,console_deferred=True)
+        out/'program',tasks=True,task_capacity=8,optimize=True,console=False,console_deferred=True,
+        memory_profile=memory)
     names='AESSNAPSHOTPROBE_SAMPLE AESWINDOWSTATE_BEGINUPDATE AESWINDOWSTATE_SNAPSHOTALL AESWINDOWSTATE_PUBLISH AESWINDOWSTATE_ENDUPDATE REGIONS_CLIP'.split()
     marks=native_markers(p,[(n,n) for n in names])
     require(set(marks)==set(names),'Missing metadata marker')
@@ -39,6 +80,9 @@ def run(out,from_build=None):
             finally:b.profile_stop()
             ownership(b,p,p['output'])
             report['checks']=data(b,p['image'],'checks',True)[0]
+            observed=next(d['address'] for d in p['image']['data'] if '_AESSNAPSHOTPROBE_OBSERVATIONS_' in d['name'])
+            count=data(b,p['image'],'observationCount',True)[0]
+            report['observations']=check_observations(b.memdump(observed,count*320))
         events=read_events(out/'emulator.log',kinds={'cpu'})
         profile=analyze_events(events,definition,include_segments=True)
         spans=native_calls(events,marks)

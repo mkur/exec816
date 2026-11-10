@@ -4,7 +4,8 @@
 [UPDATE contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: US0 complete; US1–US3 pending. Started from `00266e28`; runtime baseline `ac33f02b`.
+Status: US0–US1 complete; US2–US3 pending. Started from `00266e28`;
+runtime baseline `ac33f02b`.
 Commit this plan first, then commit each executable slice below after its
 selected checks pass. Update completion and evidence links with each slice.
 
@@ -65,6 +66,14 @@ the measured bounded bookkeeping reduction allowed by the design instead.
 Commit: profiling tools, controlled fixture and US0 evidence/decision.
 
 ## US1 Establish freshness and paint regressions
+
+Completed on the original runtime: 137 native checks with 22 independent
+visible-set observations; real cache (224), locks (181) and window (285)
+assertions pass, including physical frame/geometry checks and cleanup.
+[US1 evidence](../../development/update-snapshot-us1.json). Host checks pass
+665 tests with four historical-source skips. Reserved bank-zero growth is
+zero in every shared category. Older pending damage outside current work is
+explicitly retained by the paint-readiness checks.
 
 Extend focused emitted coverage on the original implementation. Use independent
 visible-set expectations and existing pixel oracles rather than reproducing
