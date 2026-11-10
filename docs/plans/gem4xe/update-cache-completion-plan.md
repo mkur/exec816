@@ -4,12 +4,15 @@
 [GEM plans](README.md) · [Completed snapshot work](../../history/update-snapshot-reuse.md) ·
 [UPDATE contract](../../reference/aes.md) · [Testing policy](../../contributing/testing.md)
 
-Status: EC0–EC1 pass; EC2 remains. Runtime baseline `34f1a1a1`
+Status: EC0–EC2 pass at the development tier. Runtime baseline `34f1a1a1`
 contains geometry reuse and the corrected exposure-coverage observer. See the
 [execution record](../../history/update-cache-completion.md) and
 [EC0 evidence](../../development/update-cache-completion-ec0.json).
 The [EC1 evidence](../../development/update-cache-completion-ec1.json) records
 the guard, identical state and reduced miss cost.
+The [EC2 evidence](../../development/update-cache-completion-ec2.json) records
+6.2% lower matched Counter tick CPU, eleven identical frames and zero added
+bank-zero reservations.
 Execute EC0–EC2 in order and commit each slice after its selected checks pass.
 Keep the completed US0–US3 evidence and its original hashes intact.
 
@@ -119,9 +122,9 @@ not qualify the whole hosted system or physical hardware.
 
 ## Resource and execution budget
 
-This documentation change reserves **0 fixed/root/kernel bank-zero bytes,
+These slices add **0 fixed/root/kernel bank-zero bytes,
 0 bytes per public Task and 0 idle bytes**, including guards, alignment and
-unused capacity. Implementation targets the same zero growth, with no added
+unused capacity. Implementation achieves zero growth, with no added
 upper-RAM record storage or allocation. Report actual emitted local-frame and
 observed stack use separately from reservations.
 

@@ -4,8 +4,9 @@ The [END_UPDATE cache-completion addendum](update-snapshot-reuse-design.md#end_u
 and [EC0–EC2 plan](update-cache-completion-plan.md) propose an identity-only
 miss return before cache-specific geometry/readiness work. They preserve all
 matching-slot processing and ordinary END paint/journal publication, with
-before/after regressions and matched cost checks. EC0–EC1 pass with 738 native
-assertions, identical state and 91% less controlled miss CPU; EC2 remains. See the
+before/after regressions and matched cost checks. EC0–EC2 pass with 738 native
+assertions, eleven identical frames, 6.2% less matched Counter tick CPU and
+zero added bank-zero reservations. See the
 [execution record](../../history/update-cache-completion.md).
 
 The [UPDATE snapshot reuse design](update-snapshot-reuse-design.md) separates

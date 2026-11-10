@@ -51,6 +51,7 @@ hardware qualification. No demo is refreshed.
 
 EC0 reserves **0 additional fixed/root/kernel bank-zero bytes, 0 per public
 Task and 0 idle bytes**, including guards, alignment and unused capacity.
+
 Its added records and comparison buffer belong only to the test fixture.
 
 ## EC1 Identity-only miss return
@@ -83,3 +84,81 @@ added**, no persistent data, allocation or ABI change. The helper's emitted
 34-byte fixed frame and 50-byte local stack peak are unchanged. All complete
 bank-zero maps match, with **0 additional fixed/root/kernel bytes, 0 per public
 Task and 0 idle bytes**, including guards, alignment and unused capacity.
+
+## EC2 Matched development gate
+
+The [EC2 evidence](../development/update-cache-completion-ec2.json) passes both
+gates: lower controlled no-slot END cost and lower fragmented Counter tick CPU.
+The repeated controlled fixture reproduces EC1 exactly. Four-window fragmented
+native END falls from 5.954 to 4.160 ms (30.1% less).
+
+The unchanged guest runs 67 measured operations after 16 warmups, including
+three exposure bursts. It passes 505 assertions and all eleven full-frame
+digests match EC0 and US3. All settled slot/repair bytes and pending damage
+match. All twelve observed drawing/ownership call-count distributions match
+across all nine cohorts. Both sides use the same observer, actionc binary,
+Calypsi 5.18, pinned ROM, emulator and machine settings.
+
+Fragmented Counter tick medians:
+
+| Measurement | EC0 | EC2 |
+| --- | ---: | ---: |
+| Caller CPU | 36.686 ms | 34.426 ms |
+| Elapsed | 47.494 ms | 44.812 ms |
+| Public END caller CPU | 11.302 ms | 8.773 ms |
+| Native END caller CPU | 7.512 ms | 4.992 ms |
+| Four cache-completion calls | 2.375 ms | 0.080 ms |
+| Presenter CPU | 2.497 ms | 2.497 ms |
+
+Caller CPU improves **6.2%** and elapsed time **5.6%**. Inclusive helper costs
+overlap and cannot be added. BEGIN changes from 6.938 to 7.168 ms (+3.3%),
+which offsets some END savings in the net result. The four cache bounds calls
+disappear and END readiness calls fall from eight to four; the final four
+publication checks remain. All measured END calls are local. Counter tick
+BEGIN is also local; other cohorts have occasional BEGIN RPC fallback, whose
+ranges and caller/presenter costs are recorded separately. No RPC speedup is
+claimed.
+
+No caller or elapsed control regresses by more than 5%; zero timer changes
+by +0.1% CPU and +0.9% elapsed. The small-object presenter median rises 9.3%
+(2.498 to 2.730 ms) as background work overlaps different sample windows.
+Its eight samples range from zero to about 188 ms; their total changes from
+248.639 to 248.679 ms, only +0.016%. Matching drawing counts, frames and this
+aggregate support a scheduling-phase explanation. The evidence retains every
+sample; these small cohorts do not establish tail latency.
+
+Exposure delivery also matches exactly: two rectangles in the first burst,
+then one in each later burst, with four UPDATE scopes and requested areas
+16,128, 16,896 and 16,896 pixels. Each burst exposes 4,608 new pixels.
+Burst CPU falls from 44.741 to 41.652 ms; this is not a per-rectangle claim.
+Future coalescing changes must still be compared by area and scope count.
+
+The source audit finds only the bounded `deskcache.act` change among 863
+production inputs. Native code grows by 129 bytes; data remains 53,013 bytes
+and zero-fill 23,451 bytes. C code/data bytes, public layouts and complete
+reservation maps match. There is **0 fixed/root/kernel, 0 per public Task and
+0 idle bank-zero reservation growth**, including guards, alignment and spare
+capacity, and no added upper-RAM record or allocation.
+
+The helper retains its 34-byte fixed frame and 50-byte local stack peak.
+The observed matched root stack watermark changes from 740 to 750 bytes in
+its existing 1,536-byte reservation, leaving 530 bytes above the 256-byte
+interrupt floor. Kernel touched bytes change from 287 to 285; its interrupt
+reserve remains untouched. Guards pass and bank ownership restores after
+shutdown; the native fixture additionally checks exact `AvailMem` equality.
+Watermarks are observations, not worst-case stack proofs.
+
+Raw captures, frozen inputs and evidence recorders are archived under
+`build/update-cache-completion/`. EC0 and the earlier US0–US3 records remain
+unchanged. EC0–EC2 are complete at the development tier; no full hosted-system
+qualification, hardware claim, compiler migration or demo refresh is made.
+
+Fresh functional and measurement commands:
+
+```sh
+python3 tools/test_aes_snapshot.py --output build/checks/aes-update
+python3 tools/test_aes_server.py --suite cache --output build/checks/aes-cache
+python3 tools/test_aes_server.py --suite locks --output build/checks/aes-locks
+python3 -m unittest discover -s tests -p 'test_*.py'
+python3 tools/measure_aes_update.py --output build/checks/aes-matched
+```

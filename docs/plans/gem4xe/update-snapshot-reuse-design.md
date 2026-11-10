@@ -158,15 +158,20 @@ uses `tools/build_demo.py` with OF816 and the existing packaging contract.
 
 ## END_UPDATE cache-completion addendum
 
-Proposed follow-up, inspected against `34f1a1a1`. The
+EC0–EC2 pass at the development tier; the
+[execution record](../../history/update-cache-completion.md) and
+[matched results](../../development/update-cache-completion-ec2.json) retain the
+state, timing and resource checks. The design was inspected against `34f1a1a1`.
+The
 [matched evidence](../../development/update-snapshot-us3.json) records a
 fragmented Counter tick at 36.686 ms caller CPU, including 11.302 ms in END
 and 2.375 ms across four `DESKCACHE.EndChange` calls. Inclusive costs overlap;
 the helper's full cost is a budget to investigate, not a promised saving.
 
-[`DESKCACHE.EndChange`](../../../lib/desktop/deskcache.act) currently resolves
-the layer, derives client geometry/readiness and converts the changed rectangle
-before scanning the two cache slots. Its shared-state writes occur only through
+At that baseline, [`DESKCACHE.EndChange`](../../../lib/desktop/deskcache.act)
+resolved the layer, derived client geometry/readiness and converted the changed
+rectangle before scanning the two cache slots. Its shared-state writes occur
+only through
 `LAYERCACHE.EndChange` for slots whose identity matches the live window.
 
 Move an identity-only miss decision ahead of that preparation. If neither
@@ -203,4 +208,4 @@ Use the [EC0–EC2 plan](update-cache-completion-plan.md) for execution and evid
 The design adds no state, allocation or public ABI. Target reserved bank-zero
 growth is **0 fixed/root/kernel bytes, 0 per public Task and 0 idle bytes**,
 including guards, alignment and unused capacity. Measure emitted code and
-transient stack changes; this is a proposed development slice, not qualification.
+transient stack changes; this is a development optimization, not qualification.

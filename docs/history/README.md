@@ -1,7 +1,8 @@
 # Historical records
 
 - [END_UPDATE cache completion](update-cache-completion.md): identity-miss
-  regressions, slot/repair observations and matched development measurements.
+  return, preserved slot/repair state and 6.2% lower matched Counter tick CPU,
+  with eleven identical frames and zero added bank-zero reservations.
 
 - [UPDATE snapshot reuse](update-snapshot-reuse.md): bounded geometry freshness,
   preserved paint/ownership semantics and 6.7% less fragmented Counter tick CPU,
