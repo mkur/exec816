@@ -1,0 +1,105 @@
+MODULE GEMFIRST
+USE EXEC
+USE DOS
+USE CALYPSICALL
+USE HEAPCORE
+USE AESSTATE
+USE AESCORE
+USE AESBOOT
+USE DOSCLIENT
+USE PROCESS
+
+CONST BUFFER_BYTES=16384
+CONST PASS_COUNT=4
+
+CARD ready,command,variant,phase,passes,checks
+LONGCARD heartbeat
+BYTE stopHeartbeat
+EXEC.Task POINTER heartbeatTask
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+; A public Task demonstrates scheduling progress independently of GUI locks.
+PROC HeartbeatRun()
+
+  WHILE stopHeartbeat=0 DO
+    heartbeat==+1
+    EXEC.Yield()
+  OD
+  EXEC.Forbid()
+  heartbeatTask=NULL
+  EXEC.RemTask(NULL)
+
+RETURN
+
+; Use the public filesystem path and finalize each write before comparison.
+PROC DiskWork()
+  DOS.FileHandle POINTER file
+  CARD index
+
+  LET buffer=EXEC.AllocMem(BUFFER_BYTES,EXEC.MEMF_UPPER)
+  Require(buffer<>NULL)
+  FOR passes=0 TO PASS_COUNT-1 DO
+    file=DOS.Open(BYTE POINTER(c"D1:LOAD.BIN"),DOS.MODE_OLDFILE)
+    Require(file<>NULL)
+    phase=2
+    Require(DOS.Read(file,buffer,BUFFER_BYTES)=BUFFER_BYTES)
+    Require(DOS.Close(file)<>0)
+    FOR index=0 TO BUFFER_BYTES-1 DO
+      IF buffer(index)<>(BYTE(index) XOR BYTE(index RSH 8) XOR $5a) THEN
+        Require(0)
+      FI
+    OD
+    file=DOS.Open(BYTE POINTER(c"D1:RESULT.BIN"),DOS.MODE_NEWFILE)
+    Require(file<>NULL)
+    phase=3
+    Require(DOS.Write(file,buffer,BUFFER_BYTES)=BUFFER_BYTES)
+    Require(DOS.Close(file)<>0)
+  OD
+  EXEC.FreeMem(buffer,BUFFER_BYTES)
+  phase=4
+
+RETURN
+
+PROC Main()
+  LONGCARD POINTER children
+
+  Require(CALYPSICALL.Invoke(ADDRESS($GFSTART),LONGCARD(variant))<>0)
+  heartbeatTask=EXEC.CreateTask(c"GF heartbeat",0,@HeartbeatRun,1312)
+  Require(heartbeatTask<>NULL)
+  ready=1
+  WHILE command=0 DO
+    EXEC.Yield()
+  OD
+  IF variant=1 THEN
+    DiskWork()
+  FI
+  WHILE command<>9 DO
+    IF command=2 THEN
+      ; GEM Stop queues WM_CLOSED. Explicit Process BREAK cancels DOS I/O.
+      children=LONGCARD POINTER($GFCHILDREN)
+      Require(PROCESS.RequestBreak(children(1))<>0)
+      command=3
+    FI
+    EXEC.Yield()
+  OD
+  Require(CALYPSICALL.Invoke(ADDRESS($GFSTOP),0)<>0)
+  stopHeartbeat=1
+  WHILE heartbeatTask<>NULL DO
+    EXEC.Yield()
+  OD
+  Require(DOS.ReleaseContext()<>0)
+  LET service=AESSTATE.Get()
+  Require(service.count=0)
+  Require(AESCORE.Idle(service)<>0)
+  ready=2
+
+RETURN
+ENDMODULE

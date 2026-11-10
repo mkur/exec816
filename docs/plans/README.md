@@ -614,7 +614,8 @@ assuming work is pending. Current behavior belongs in the
   distinct UPDATE/display ownership and existing Exec I/O. Defines the native
   two-Counter/disk baseline, terminal migration and Task/memory acceptance.
   The [GF0–GF15 plan](gem4xe/gem-first-gui-implementation-plan.md) assigns
-  executable slices and a commit per passing slice; implementation has not started.
+  executable slices and a commit per passing slice. The
+  [GF0 baseline](../history/gem-first-gui.md) passes; GF1–GF15 remain open.
 
 - [END_UPDATE cache-completion addendum](gem4xe/update-snapshot-reuse-design.md#end_update-cache-completion-addendum)
   and [EC0–EC2 plan](gem4xe/update-cache-completion-plan.md): proposed identity-only

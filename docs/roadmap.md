@@ -240,6 +240,9 @@ disk work. Existing contracts remain authoritative during incremental migration.
 The [GF0–GF15 plan](plans/gem4xe/gem-first-gui-implementation-plan.md) starts
 with the native baseline and current twelve-Task/four-application budget, then
 migrates window policy, the AES system role and terminal before renderer tuning.
+The [GF0 baseline](history/gem-first-gui.md) passes native Counter/disk,
+blocking/UPDATE-held read and cancellation checks. Later migration slices remain
+open; baseline observations do not close existing latency gates.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)
 prioritizes ordinary AES/VDI application bodies and fewer platform edits.

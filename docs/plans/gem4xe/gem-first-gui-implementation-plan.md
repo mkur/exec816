@@ -4,7 +4,10 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: proposed, 2026-11-10. GF0–GF15 have not started. The design is committed
+Status: GF0 passes at the development tier; GF1–GF15 remain open. The
+[baseline record](../../history/gem-first-gui.md) retains native I/O/GUI
+coexistence, scoped observations and the current resource inventory.
+The design is committed
 as `633b45fe` on `gem-first-gui`, following the two-Counter MagiC reference at
 `39e774ef`. Those references establish the direction and reference behavior;
 they do not qualify the redesigned native system.

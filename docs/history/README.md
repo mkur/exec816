@@ -1,5 +1,9 @@
 # Historical records
 
+- [GEM-first GUI execution](gem-first-gui.md): native two-Counter/disk baseline,
+  blocking and UPDATE-held I/O, explicit cancellation, scoped CPU observations
+  and measured Task/stack use before policy migration.
+
 - [Shared-source Atari ST comparison](atari-st-reference.md): Hatari with
   EmuTOS/MagiC, unchanged object routines, bounded execution and drawing-path
   observations alongside the frozen native Exec capture.
