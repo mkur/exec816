@@ -144,6 +144,12 @@ PUBLIC PROC EndChange(DESKTYPES.Service POINTER service
   LAYERTYPES.Rect client,local
   BYTE index
 
+  ; Completion belongs to identities even when their pixels cannot be reused.
+  IF service.cache.slots(0).identity<>window.id
+      AND service.cache.slots(1).identity<>window.id THEN
+    RETURN
+  FI
+
   LET layer=LAYERS.Find(@service.scene,window.layer)
   ClientBounds(window,layer,@client)
   complete=(complete<>0 AND LAYERS.PixelsReady(layer,@client)<>0)

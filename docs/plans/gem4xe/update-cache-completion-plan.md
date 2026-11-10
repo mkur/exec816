@@ -4,10 +4,12 @@
 [GEM plans](README.md) · [Completed snapshot work](../../history/update-snapshot-reuse.md) ·
 [UPDATE contract](../../reference/aes.md) · [Testing policy](../../contributing/testing.md)
 
-Status: EC0 passes; EC1–EC2 remain. Runtime baseline `34f1a1a1`
+Status: EC0–EC1 pass; EC2 remains. Runtime baseline `34f1a1a1`
 contains geometry reuse and the corrected exposure-coverage observer. See the
 [execution record](../../history/update-cache-completion.md) and
 [EC0 evidence](../../development/update-cache-completion-ec0.json).
+The [EC1 evidence](../../development/update-cache-completion-ec1.json) records
+the guard, identical state and reduced miss cost.
 Execute EC0–EC2 in order and commit each slice after its selected checks pass.
 Keep the completed US0–US3 evidence and its original hashes intact.
 

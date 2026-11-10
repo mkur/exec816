@@ -1,0 +1,1696 @@
+{
+  "format": "exec816.cache-completion-ec1.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "baseline_commit": "c227f931",
+  "production_changes": {
+    "lib/desktop/deskcache.act": {
+      "before": "c939cddaa8ca321f5ab6d8057b892e8ab764622f7138573b03132f97a5185ae2",
+      "after": "0b456ec28b7e74cdd486b4a517c26695e216f5a77dc7a021f781954860c465de"
+    }
+  },
+  "controlled": {
+    "assertions": 738,
+    "identical_slot_repair_bytes": true,
+    "identical_geometry_observations": 22,
+    "cohorts": {
+      "empty": {
+        "before_ms": 0.43686097276632097,
+        "after_ms": 0.0389777537818289,
+        "change_percent": -91.07776702161988,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      "unrelated_valid": {
+        "before_ms": 0.4360151625576737,
+        "after_ms": 0.039189206333990714,
+        "change_percent": -91.01196249595861,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      "unrelated_invalid": {
+        "before_ms": 0.43640282556997034,
+        "after_ms": 0.038731059137640106,
+        "change_percent": -91.12492933860938,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      "unrelated_pinned": {
+        "before_ms": 0.4365437939380782,
+        "after_ms": 0.039894048174530114,
+        "change_percent": -90.86138693791878,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      "slot_0": {
+        "before_ms": 0.5501642986330297,
+        "after_ms": 0.5608426525172017,
+        "change_percent": 1.940939081416948,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        }
+      },
+      "slot_1": {
+        "before_ms": 0.551151077209785,
+        "after_ms": 0.5702170489963758,
+        "change_percent": 3.4593004667817784,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        }
+      },
+      "both_slots": {
+        "before_ms": 0.6662517497698692,
+        "after_ms": 0.6750270306845847,
+        "change_percent": 1.3171118751652777,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 2,
+              "median": 2.0,
+              "mean": 2,
+              "max": 2
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 2,
+              "median": 2.0,
+              "mean": 2,
+              "max": 2
+            }
+          }
+        }
+      },
+      "empty_change": {
+        "before_ms": 0.49032322637123454,
+        "after_ms": 0.5001910121387861,
+        "change_percent": 2.012506289082139,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        }
+      },
+      "ready": {
+        "before_ms": 0.46008551141209425,
+        "after_ms": 0.47492243215544866,
+        "change_percent": 3.224818077364988,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        }
+      },
+      "valid_no_repair": {
+        "before_ms": 0.4675568349218119,
+        "after_ms": 0.47728365232125564,
+        "change_percent": 2.0803497399562776,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        }
+      },
+      "pinned_match": {
+        "before_ms": 0.4622352790257394,
+        "after_ms": 0.4657594882284364,
+        "change_percent": 0.7624275693808968,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        }
+      },
+      "discarded_hold": {
+        "before_ms": 0.49360074092974277,
+        "after_ms": 0.494552277414471,
+        "change_percent": 0.19277452520349847,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        }
+      },
+      "partial": {
+        "before_ms": 0.598023059605655,
+        "after_ms": 0.6071507614406404,
+        "change_percent": 1.526312687842557,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        }
+      },
+      "failed": {
+        "before_ms": 0.49303686745731123,
+        "after_ms": 0.503961915985672,
+        "change_percent": 2.2158684774839177,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        }
+      },
+      "merged_repair": {
+        "before_ms": 0.5526312450749176,
+        "after_ms": 0.548613646583843,
+        "change_percent": -0.7269944518844329,
+        "before_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        },
+        "after_helpers": {
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            }
+          }
+        }
+      }
+    },
+    "full_END_groups": {
+      "one_fixed": {
+        "caller_cpu_ms": {
+          "min": 2.2600048775055366,
+          "median": 2.3755989393539982,
+          "mean": 2.3907970915406294,
+          "max": 2.72696259686289
+        },
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 0.9888931022767802,
+              "median": 1.038584452034808,
+              "mean": 1.0228136158527388,
+              "max": 1.039641714795617
+            }
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 0.629846668706009,
+              "median": 0.6607892255056889,
+              "mean": 0.6502342189436112,
+              "max": 0.6639610137881161
+            }
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 0.5005081909670289,
+              "median": 0.5261644339626632,
+              "mean": 0.5170279216046711,
+              "max": 0.5273626650915801
+            }
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 0.9789548323251744,
+              "median": 1.0293862660157687,
+              "mean": 1.066399273167094,
+              "max": 1.4261769801474247
+            }
+          },
+          "REGIONS_CLIP": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 0.01987653990321112,
+              "median": 0.021110013124155072,
+              "mean": 0.02103952894010113,
+              "max": 0.022695907265368725
+            }
+          },
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 2,
+              "median": 2.0,
+              "mean": 2,
+              "max": 2
+            },
+            "caller_cpu_ms": {
+              "min": 0.21920581240775383,
+              "median": 0.22988416629192576,
+              "mean": 0.28185744150869985,
+              "max": 0.6663574760459501
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "AESSNAPSHOTPROBE_COMPLETIONSAMPLE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      "four_fixed": {
+        "caller_cpu_ms": {
+          "min": 8.102932283025012,
+          "median": 8.361256817582703,
+          "mean": 8.366340489357594,
+          "max": 8.702682205139988
+        },
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 3.6272570797838677,
+              "median": 3.7940931434395435,
+              "mean": 3.7822518005184818,
+              "max": 4.07433825923801
+            }
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 2.4011142139815247,
+              "median": 2.5050783854610863,
+              "mean": 2.524285325615785,
+              "max": 2.848054425067559
+            }
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": {
+              "min": 4,
+              "median": 4.0,
+              "mean": 4,
+              "max": 4
+            },
+            "caller_cpu_ms": {
+              "min": 2.217080009416687,
+              "median": 2.3132204364662616,
+              "mean": 2.335396522874232,
+              "max": 2.6649365148954227
+            }
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 3.9941272577846254,
+              "median": 4.15923645893098,
+              "mean": 4.203430042332801,
+              "max": 4.508027443721903
+            }
+          },
+          "REGIONS_CLIP": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 4,
+              "median": 4.0,
+              "mean": 4,
+              "max": 4
+            },
+            "caller_cpu_ms": {
+              "min": 0.07999954890122206,
+              "median": 0.08401714739229664,
+              "mean": 0.0835325686269258,
+              "max": 0.08620215709796879
+            }
+          },
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 8,
+              "median": 8.0,
+              "mean": 8,
+              "max": 8
+            },
+            "caller_cpu_ms": {
+              "min": 0.8799950379134426,
+              "median": 0.9040653867678632,
+              "mean": 0.9033693554503305,
+              "max": 0.920664412112566
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "AESSNAPSHOTPROBE_COMPLETIONSAMPLE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      "four_fragmented": {
+        "caller_cpu_ms": {
+          "min": 8.121540107615251,
+          "median": 8.362173111975403,
+          "mean": 8.392648711055726,
+          "max": 8.683792443813532
+        },
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 3.6272570797838677,
+              "median": 3.812700968029784,
+              "mean": 3.8081371171122913,
+              "max": 4.100417407337967
+            }
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 2.4011142139815247,
+              "median": 2.523263304947003,
+              "mean": 2.5388403096229237,
+              "max": 2.8481953934356667
+            }
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": {
+              "min": 4,
+              "median": 4.0,
+              "mean": 4,
+              "max": 4
+            },
+            "caller_cpu_ms": {
+              "min": 2.2175029145210106,
+              "median": 2.3300661564551532,
+              "mean": 2.3489735388276225,
+              "max": 2.664513609791099
+            }
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 3.963889542825485,
+              "median": 4.159729848219358,
+              "mean": 4.201491727271318,
+              "max": 4.490124460972202
+            }
+          },
+          "REGIONS_CLIP": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 4,
+              "median": 4.0,
+              "mean": 4,
+              "max": 4
+            },
+            "caller_cpu_ms": {
+              "min": 0.080070033085276,
+              "median": 0.08373521065608089,
+              "mean": 0.08315371613763588,
+              "max": 0.08542683107337544
+            }
+          },
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 8,
+              "median": 8.0,
+              "mean": 8,
+              "max": 8
+            },
+            "caller_cpu_ms": {
+              "min": 0.8809818164901978,
+              "median": 0.910127026596502,
+              "mean": 0.9073076592343444,
+              "max": 0.9253163682601261
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "AESSNAPSHOTPROBE_COMPLETIONSAMPLE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        }
+      },
+      "four_changed": {
+        "caller_cpu_ms": {
+          "min": 10.672574181079508,
+          "median": 10.893365887628477,
+          "mean": 10.89184166714831,
+          "max": 11.173434792966805
+        },
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 6.12528704683956,
+              "median": 6.359858411371072,
+              "mean": 6.344369511925219,
+              "max": 6.650887607329791
+            }
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 4.899214665221271,
+              "median": 5.101398547179999,
+              "mean": 5.086605679051678,
+              "max": 5.360815586590525
+            }
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": {
+              "min": 4,
+              "median": 4.0,
+              "mean": 4,
+              "max": 4
+            },
+            "caller_cpu_ms": {
+              "min": 4.711867704005898,
+              "median": 4.908800514252607,
+              "mean": 4.897144192314686,
+              "max": 5.175019277424338
+            }
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "caller_cpu_ms": {
+              "min": 4.004417948656501,
+              "median": 4.1594479114831415,
+              "mean": 4.164223214952797,
+              "max": 4.403428914585856
+            }
+          },
+          "REGIONS_CLIP": {
+            "calls": {
+              "min": 4,
+              "median": 4.0,
+              "mean": 4,
+              "max": 4
+            },
+            "caller_cpu_ms": {
+              "min": 1.8806589989272307,
+              "median": 1.9563237705091354,
+              "mean": 1.9326146530979913,
+              "max": 1.9667906718411456
+            }
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 4,
+              "median": 4.0,
+              "mean": 4,
+              "max": 4
+            },
+            "caller_cpu_ms": {
+              "min": 0.0807748749258154,
+              "median": 0.08355900019594603,
+              "mean": 0.083594242287973,
+              "max": 0.08592022036175302
+            }
+          },
+          "DESKCACHE_CLIENTBOUNDS": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": {
+              "min": 8,
+              "median": 8.0,
+              "mean": 8,
+              "max": 8
+            },
+            "caller_cpu_ms": {
+              "min": 0.8852813517174881,
+              "median": 0.9070962066821826,
+              "mean": 0.9076424591086006,
+              "max": 0.9273604095976904
+            }
+          },
+          "LAYERCACHE_ENDCHANGE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "AESSNAPSHOTPROBE_COMPLETIONSAMPLE": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "caller_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "validation": {
+    "cache": {
+      "C_assertions": 224,
+      "native_assertions": 4,
+      "guards": "intact"
+    },
+    "locks": {
+      "C_assertions": 181,
+      "native_assertions": 4,
+      "guards": "intact"
+    },
+    "host": {
+      "run": 668,
+      "passed": 664,
+      "skipped": 4
+    },
+    "heap_restored": true,
+    "ownership_restored": true,
+    "guards": "intact"
+  },
+  "resources": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "upper_RAM_record_delta": 0,
+    "identical_maps": [
+      "bank_zero_budget",
+      "task_pools",
+      "runtime_reservations",
+      "phase_reservations"
+    ],
+    "helper": {
+      "before": {
+        "size": 1136,
+        "fixed_frame": 34,
+        "local_stack_peak": 50
+      },
+      "after": {
+        "size": 1265,
+        "fixed_frame": 34,
+        "local_stack_peak": 50
+      }
+    },
+    "before_stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 287,
+        "untouched_above_floor": 993
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 24,
+        "untouched_above_floor": 232
+      }
+    ],
+    "after_stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 287,
+        "untouched_above_floor": 993
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 24,
+        "untouched_above_floor": 232
+      }
+    ]
+  },
+  "artifacts": {
+    "build/update-cache-completion/ec1-native/results.json": {
+      "sha256": "baa757dfa1f07c2014e0a9c0c2efe35db3dfbd436ea57807aeb60f999773fd90",
+      "bytes": 130845
+    },
+    "build/update-cache-completion/ec1-cache/results.json": {
+      "sha256": "f32a9eb880205c9629ab299ec6701e2829d90cbd15d65ee9a490b9c34fd95f8a",
+      "bytes": 162867
+    },
+    "build/update-cache-completion/ec1-locks/results.json": {
+      "sha256": "958ed1ab1e1cea546388ed7821153b02891f83684edc4e65b213ad0b26810b29",
+      "bytes": 147019
+    },
+    "build/update-cache-completion/ec1-host.log": {
+      "sha256": "b586e3dc2331048cfcf76e20c93cfe0b0d5ab7951578326d83f77ac03674f42e",
+      "bytes": 780
+    },
+    "build/update-cache-completion/ec1-native/program/program.xex": {
+      "sha256": "492216aff4c04d33a2c762f8bc2b1c40501cf90c9265bd5c5d51d0913b095e35",
+      "bytes": 207122
+    },
+    "build/update-cache-completion/ec1-native/program/build.json": {
+      "sha256": "8a8c474f31a5f8ef7dbf0537fc8a4e3b5e25ec95044f3e88ab91aedf7fc93df1",
+      "bytes": 74570
+    },
+    "build/update-cache-completion/ec1-native/emulator.log": {
+      "sha256": "63e6b58759c8a3602e072d746b61f8618408eb41e79599871f4c2f5ac0ca988a",
+      "bytes": 1238037
+    },
+    "build/update-cache-completion/ec1/production-after.json": {
+      "sha256": "cf54d29a3aff5fb1e7051dc9304bfac032c6b3b0acf01bbfb6eaeceb9963ac3b",
+      "bytes": 88609
+    },
+    "build/update-cache-completion/record-ec1.py": {
+      "sha256": "12761e3e105a81fcf91de051d77f020b6cb49f184a5246321651392041159136",
+      "bytes": 4754
+    },
+    "build/update-cache-completion/ec1/end-change-before.s": {
+      "sha256": "99bce8ddc70a690b864788c10fe1a929c5b65683786fcc0677d07029f4d3d538",
+      "bytes": 16921
+    },
+    "build/update-cache-completion/ec1/end-change-after.s": {
+      "sha256": "3a01f09fbde8ac8f172b36547068b7d843ec7fc6dcb9b1866750c1443d786795",
+      "bytes": 18795
+    }
+  },
+  "limits": [
+    "Development checks, no full qualification. Matched application comparison belongs to EC2.",
+    "Inclusive helper costs overlap. Controlled fixture has no renderer and retires simulated frame damage outside timed calls."
+  ]
+}
