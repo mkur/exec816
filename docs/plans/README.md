@@ -609,6 +609,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [END_UPDATE cache-completion addendum](gem4xe/update-snapshot-reuse-design.md#end_update-cache-completion-addendum)
+  and [EC0–EC2 plan](gem4xe/update-cache-completion-plan.md): proposed identity-only
+  miss return, matching-slot/paint safeguards and committed development slices.
+
 - [UPDATE snapshot reuse design](gem4xe/update-snapshot-reuse-design.md) and
   [US0–US3 plan](gem4xe/update-snapshot-reuse-plan.md): profile
   BEGIN/snapshot/END, establish geometry and visibility freshness rules, and

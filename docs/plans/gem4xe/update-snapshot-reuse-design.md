@@ -11,6 +11,10 @@ non-wrapping Layers layout epoch, private AES tags and 6.7% less fragmented
 Counter tick CPU. The starting design was inspected against `ac33f02b`;
 public AES behavior is unchanged.
 
+The proposed [END_UPDATE cache-completion addendum](#end_update-cache-completion-addendum)
+and [EC0–EC2 implementation plan](update-cache-completion-plan.md) define the
+next bounded reduction; their implementation has not started.
+
 ## Purpose and measured opportunity
 
 Reduce repeated geometry and visibility work inside conventional
@@ -151,3 +155,52 @@ unused capacity. Implementation targets the same zero reservation growth;
 measure transient stack use and any bounded upper-RAM metadata separately.
 No demo refresh is required for the profiling/design slices. Any later refresh
 uses `tools/build_demo.py` with OF816 and the existing packaging contract.
+
+## END_UPDATE cache-completion addendum
+
+Proposed follow-up, inspected against `34f1a1a1`. The
+[matched evidence](../../development/update-snapshot-us3.json) records a
+fragmented Counter tick at 36.686 ms caller CPU, including 11.302 ms in END
+and 2.375 ms across four `DESKCACHE.EndChange` calls. Inclusive costs overlap;
+the helper's full cost is a budget to investigate, not a promised saving.
+
+[`DESKCACHE.EndChange`](../../../lib/desktop/deskcache.act) currently resolves
+the layer, derives client geometry/readiness and converts the changed rectangle
+before scanning the two cache slots. Its shared-state writes occur only through
+`LAYERCACHE.EndChange` for slots whose identity matches the live window.
+
+Move an identity-only miss decision ahead of that preparation. If neither
+slot's `identity` equals `window.id`, return from this cache helper. Leave both
+slots, their repair records, pending damage and all other shared state unchanged.
+Use the existing two-slot storage; add no cached eligibility flag or index.
+
+If either identity matches, retain the existing preparation and process every
+matching slot. A matching invalid, pinned, zero-revision or held/ready-repair
+slot still reaches the existing completion logic. Do not use
+`DESKCACHE.Lookup` / `LAYERCACHE.Lookup` as the guard: those also test validity,
+pinning, revision and dimensions. They answer whether pixels can be reused,
+not whether completion bookkeeping belongs to this window.
+
+Keep the decision and completion body under the existing exclusive AES policy
+ownership, for both local and presenter admission. Slot identities remain
+stable across this synchronous call. Add no wait, callback, display borrow or
+Forbid region, and no validation of already admitted window pointers.
+
+The return belongs inside `DESKCACHE.EndChange`. Preserve
+[`AESWINDOWSTATE.EndUpdate`](../../../lib/aes/aeswindowstate.act) journal
+consumption, declared/implicit repaint obligations, failed/stale completion
+handling, candidate hints, changed-state reset, final epoch/readiness publication
+and the policy's release/wake behavior. Ordinary/scoped and nested UPDATE keep
+their current semantics; hidden model changes still require accounting.
+
+Prove behavior on the old implementation first: miss cases leave shared state
+unchanged; match cases retain slot/repair transitions, odd-pixel expansion and
+failure behavior. Cover either slot, both identities matching, invalid/pinned
+matches, eviction/replacement and normal retirement. Then require a measured
+net miss-path improvement with no unexplained material match-path regression.
+Use the [EC0–EC2 plan](update-cache-completion-plan.md) for execution and evidence.
+
+The design adds no state, allocation or public ABI. Target reserved bank-zero
+growth is **0 fixed/root/kernel bytes, 0 per public Task and 0 idle bytes**,
+including guards, alignment and unused capacity. Measure emitted code and
+transient stack changes; this is a proposed development slice, not qualification.

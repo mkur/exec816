@@ -1,5 +1,11 @@
 # GEM as a client of an Exec-like kernel
 
+The [END_UPDATE cache-completion addendum](update-snapshot-reuse-design.md#end_update-cache-completion-addendum)
+and [EC0–EC2 plan](update-cache-completion-plan.md) propose an identity-only
+miss return before cache-specific geometry/readiness work. They preserve all
+matching-slot processing and ordinary END paint/journal publication, with
+before/after regressions and matched cost checks. Implementation is pending.
+
 The [UPDATE snapshot reuse design](update-snapshot-reuse-design.md) separates
 geometry/visibility freshness from content and paint state. It starts with
 BEGIN/snapshot/END profiling, then defines reuse, invalidation, ownership and
