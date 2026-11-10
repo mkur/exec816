@@ -1,5 +1,11 @@
 # GEM as a client of an Exec-like kernel
 
+The [Atari ST reference](../../guides/atari-st-reference.md) runs the native
+baseline's unchanged object-tree routines under EmuTOS and MagiC in Hatari.
+The [comparison record](../../history/atari-st-reference.md) relates direct
+MagiC drawing to Exec's bounded ownership callbacks and records the limits of
+cross-machine timing comparisons.
+
 The [object drawing profile](../../history/aes-drawing-profile.md) separates
 callback setup, graphics-state calls, primitive rendering, command construction,
 upload, submission and ownership using the unchanged EC2 guest. Exclusive

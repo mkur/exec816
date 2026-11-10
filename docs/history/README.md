@@ -1,5 +1,9 @@
 # Historical records
 
+- [Shared-source Atari ST comparison](atari-st-reference.md): Hatari with
+  EmuTOS/MagiC, unchanged object routines, bounded execution and drawing-path
+  observations alongside the frozen native Exec capture.
+
 - [AES object drawing profile](aes-drawing-profile.md): passive rendering,
   graphics-state, ownership, command and submission accounting on the EC2 image.
 

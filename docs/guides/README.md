@@ -24,6 +24,9 @@
 
 ## Upstream application references
 
+- [Shared Atari ST GEM reference](atari-st-reference.md): Hatari, EmuTOS and
+  MagiC running the native AES baseline's unchanged object-tree routines.
+
 - [GEM4XE/QED reference](gem4xe-qed-reference.md): reproducible two-disk
   Altirra setup, pinned original application and verified editing/save workflow.
 

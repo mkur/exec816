@@ -1,0 +1,38 @@
+{
+  "hatari_version": "2.6.1",
+  "rom": {
+    "name": "EmuTOS 1.4, bundled with Hatari 2.6.1",
+    "sha256": "154803e3ff4851f3dc358b91b16d6b6110d187a81d8132ecb665af49878939d5"
+  },
+  "magic": {
+    "repository": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources",
+    "revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+    "release": "Atari-MagiC-2026-11-04.zip",
+    "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FReleases%2FAtari-MagiC-2026-11-04.zip/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+    "sha256": "30586de6b1357c15f53298abe0dacd06042bc8baee355def63590a232a5cc75e",
+    "license": {
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/LICENSE/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "9345c46fe7db23b87ee000c2eda5b2ab7d95602784cef50604f2648aeb0cf0f1"
+    },
+    "object_source": {
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESOBJ.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "abbda7614a2a9339894c87ca65666cc9581624ea631889dae2e070e2f3e66bd3"
+    }
+  },
+  "toslibc": {
+    "repository": "https://github.com/frno7/toslibc.git",
+    "revision": "162a2fb429879654e55dedd5b3abd14cece32e11"
+  },
+  "machine": {
+    "model": "st",
+    "cpu": "68000",
+    "cpu_mhz": 8,
+    "ram_mib": 4,
+    "monitor": "mono",
+    "screen": [
+      640,
+      400
+    ],
+    "colours": 2
+  }
+}
