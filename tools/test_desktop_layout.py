@@ -23,6 +23,7 @@ def run(out):
 USE EXEC
 USE HEAPCORE
 USE DESKTYPES
+USE LAYERTYPES
 CARD checks
 PROC Require(BYTE okay)
   IF okay=0 THEN
@@ -34,6 +35,9 @@ PROC Main()
   LET memory=EXEC.AllocMem(LONGCARD(DESKTYPES.SERVICE_SIZE),EXEC.MEMF_CLEAR)
   Require(memory<>NULL)
 '''+ '\n'.join(checks)+'''
+  Require(SIZEOF(LAYERTYPES.Scene)=LAYERTYPES.SCENE_SIZE)
+  rService.scene.layoutEpoch=$12345678
+  Require(rService.scene.layoutEpoch=$12345678)
   rService.windows(0).normalBounds.left=104
   rService.windows(0).iconified=1
   rService.windows(1).normalBounds.left=192
@@ -53,7 +57,7 @@ ENDMODULE
             machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
             runtime,_=execute(b,p,timeout=120,frame_limit=3000)
             count=data(b,p['image'],'checks',True)[0]
-            require(count==len(checks)-len(ABI['records'])+5,'Missing layout/access checks')
+            require(count==len(checks)-len(ABI['records'])+7,'Missing layout/access checks')
             result['cases'].append(dict(mode=mode,checks=count,build=p['build'],runtime=runtime,machine=machine))
     result['status']='pass'
     (out/'results.json').write_text(json.dumps(result,indent=2)+'\n')

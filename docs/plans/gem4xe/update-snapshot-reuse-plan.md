@@ -4,7 +4,7 @@
 [UPDATE contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: US0–US1 complete; US2–US3 pending. Started from `00266e28`;
+Status: US0–US2 complete; US3 pending. Started from `00266e28`;
 runtime baseline `ac33f02b`.
 Commit this plan first, then commit each executable slice below after its
 selected checks pass. Update completion and evidence links with each slice.
@@ -92,6 +92,19 @@ normal heap/ownership retirement. Retain before outputs for comparison.
 Commit: regressions and US1 evidence, with production still unchanged.
 
 ## US2 Implement the selected reduction
+
+Completed: [US2 evidence](../../development/update-snapshot-us2.json).
+All 22 geometry/paint/revision observations match; 137 normal and 174 epoch
+checks pass. Failure, exhaustion, recovery and scene/service lifetimes are
+covered. The cache, lock and physical window fixtures pass, as do 8,924 optimized
+Layers checks, 126 layout/access checks in each raw/optimized mode, and the
+665-test host suite (four historical-source skips).
+
+Controlled fragmented metadata CPU falls 19.0%; changed-layout cost grows 2.6%.
+Layers Scene v14 and Desktop v17 add four upper-RAM bytes per desktop Scene;
+the private AES table adds 48 bytes. Publish's emitted fixed frame grows four
+bytes (36 to 40), while its body shrinks 45 bytes. Complete bank-zero maps
+match the previous builds: zero reservation growth in every category.
 
 Implement the US0 decision in small routines at the existing publication
 boundary. Preserve all required paint/cache and iterator metadata on a hit;

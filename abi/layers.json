@@ -1,5 +1,5 @@
 {
-  "version": 13,
+  "version": 14,
   "constants": {
     "MAX_LAYERS": 8,
     "MAX_RECTS": 96,
@@ -225,6 +225,10 @@
       {
         "name": "visibleDamage",
         "type": "CARD"
+      },
+      {
+        "name": "layoutEpoch",
+        "type": "LONGCARD"
       }
     ],
     "CacheRepair": [

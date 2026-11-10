@@ -75,6 +75,19 @@ cannot authorize drawing through another layer. Geometry and content mutation
 calls return BUSY while a drawing transaction is active, including otherwise
 harmless no-ops. Find, Hit and PaintRegion may inspect stable state during it.
 
+`Scene.layoutEpoch` is a non-wrapping visibility freshness marker. Init
+establishes a nonzero value; reconstruction advances it before doing work,
+including a reconstruction that fails and clears visibility. Zero means
+exhaustion and disables reuse until a new unpublished scene lifetime. The
+successful-rebuild statistic `Scene.rebuilds` retains its existing behavior.
+
+A consumer reusing derived geometry must also retain the live scene/layer
+identity and compare current bounds and its own clipping inputs. Hidden bounds
+can change without visibility reconstruction. The marker certifies neither
+paint completion nor pixel readiness. Reinitialization is permitted only at
+the documented unpublished lifetime boundary; retire dependent reuse state
+before binding a new scene lifetime.
+
 ## Painting and copying
 
 `scene.visibleDamage` is a read-only 16-bit summary of manager damage intersecting
@@ -175,7 +188,7 @@ each with at most seven free intervals. The resulting subdivision has at most
 | Region with 96 rectangle slots | 770 |
 | Eight-entry Damage record | 66 |
 | Layer including visibility, manager damage and external repaint | 926 |
-| Scene with eight layers, background, scratch/cache/transaction state and visible-damage summary | 9,186 |
+| Scene with eight layers, background, scratch/cache/transaction state, visible-damage summary and layout epoch | 9,190 |
 
 All large arrays belong in upper RAM. Local rectangle temporaries use the
 caller's existing native stack. The library adds zero reserved bank-zero bytes:

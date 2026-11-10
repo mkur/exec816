@@ -1,0 +1,282 @@
+{
+  "format": "exec816.update-snapshot-us2.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "source_revision": "51ce0675",
+  "dirty_source": true,
+  "source_inputs": {
+    "abi/layers.json": "62d44a36912d718f3a7ca6cf9e7a02504b4388ce08b2f9c0963f55c069c36080",
+    "abi/desktop.json": "ae5519dfaf65625d440973b993b4ad6f7bc996cc96e7a86f80e5abb402327453",
+    "lib/display/layertypes.act": "50f52d1bd66865f37ed9199efdc1c0d5feeec21a14839227767a9f70a271572f",
+    "lib/desktop/desktypes.act": "2fbe201b9d063969cc81e49a2c64a0597464d18378e2278f9d894920e6140d25",
+    "lib/display/layers.act": "77a8f6cd743412edd283b26c05e78a31589554761a12a07ce7f62ff0c976fc4e",
+    "lib/aes/aesstate.act": "330072e071897c4629f169f9f827b80b8b72fd162e2467106eeafe9e0250c7dc",
+    "lib/aes/aeswindow.act": "08052659b1b942248e0cdf2bc780c788fae30d1407f87a584d693737fd71d68c",
+    "lib/aes/aeswindowstate.act": "804e9d15c6c20e2bbbc86fb42cac8608c3e4e84d03dd27f54d7a2518fd26f604"
+  },
+  "native": {
+    "checks": 137,
+    "matching_independent_observations": 22,
+    "epoch_checks": 174,
+    "zero_epoch_clips": 8,
+    "epoch_scope": "Injected failed subtraction, failure epoch retirement, fail-closed visibility, recovery, exhaustion disabling reuse, service binding and fresh scene lifetime.",
+    "controlled": {
+      "one_fixed": {
+        "before_median_ms": 3.0808284429056965,
+        "after_median_ms": 2.7242137136847866,
+        "change_percent": -11.575286836957632,
+        "after_clip_calls": 0.0
+      },
+      "four_fixed": {
+        "before_median_ms": 11.487406590835082,
+        "after_median_ms": 10.050269320067269,
+        "change_percent": -12.510545869547219,
+        "after_clip_calls": 0.0
+      },
+      "four_fragmented": {
+        "before_median_ms": 12.397392649063477,
+        "after_median_ms": 10.044031469778496,
+        "change_percent": -18.982710686853643,
+        "after_clip_calls": 0.0
+      },
+      "four_changed": {
+        "before_median_ms": 12.403771467720357,
+        "after_median_ms": 12.724051600061463,
+        "change_percent": 2.5821189399901856,
+        "after_clip_calls": 4.0
+      }
+    }
+  },
+  "clients": {
+    "cache": {
+      "checks": 224,
+      "failures": 0,
+      "native_checks": 4,
+      "guards": "intact"
+    },
+    "locks": {
+      "checks": 181,
+      "failures": 0,
+      "native_checks": 4,
+      "guards": "intact"
+    },
+    "windows": {
+      "checks": 285,
+      "failures": 0,
+      "native_checks": 4,
+      "guards": "intact"
+    }
+  },
+  "layouts": {
+    "layers_version": 14,
+    "scene_bytes": 9190,
+    "scene_delta": 4,
+    "desktop_version": 17,
+    "desktop_service_bytes": 18776,
+    "desktop_service_delta": 4,
+    "private_AES_Window_delta": 8,
+    "private_AES_service_delta": 48,
+    "public_AES_wire_and_view_unchanged": true,
+    "checks": [
+      {
+        "mode": "raw",
+        "checks": 126
+      },
+      {
+        "mode": "opt",
+        "checks": 126
+      }
+    ]
+  },
+  "resources": {
+    "upper_RAM_scene_growth": 4,
+    "upper_RAM_AES_service_growth": 48,
+    "per_window_aligned_growth": 8,
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "identical_maps": [
+      "bank_zero_budget",
+      "task_pools",
+      "runtime_reservations",
+      "phase_reservations"
+    ],
+    "routines": {
+      "before": {
+        "AESWINDOWSTATE_PUBLISH": {
+          "size": 2271,
+          "fixed_frame": 36,
+          "local_stack_peak": 50
+        },
+        "LAYERS_REBUILD": {
+          "size": 1778,
+          "fixed_frame": 22,
+          "local_stack_peak": 34
+        },
+        "AESSTATE_BIND": {
+          "size": 17,
+          "fixed_frame": 0,
+          "local_stack_peak": 0
+        }
+      },
+      "after": {
+        "AESWINDOWSTATE_PUBLISH": {
+          "size": 2226,
+          "fixed_frame": 40,
+          "local_stack_peak": 54
+        },
+        "LAYERS_REBUILD": {
+          "size": 1858,
+          "fixed_frame": 22,
+          "local_stack_peak": 34
+        },
+        "AESSTATE_BIND": {
+          "size": 172,
+          "fixed_frame": 6,
+          "local_stack_peak": 6
+        }
+      }
+    },
+    "stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 287,
+        "untouched_above_floor": 993
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 21,
+        "untouched_above_floor": 235
+      }
+    ],
+    "kernel_stack": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 258,
+      "untouched_from_base": 1278,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "layers_fixture": {
+    "mode": "opt",
+    "checks": 8924,
+    "status": "pass"
+  },
+  "host_tests": {
+    "run": 665,
+    "passed": 661,
+    "skipped": 4
+  },
+  "artifacts": {
+    "build/update-snapshot-reuse/us2-cache/results.json": {
+      "sha256": "838a6778f87e834c4e29001f623bec18e92e91e1b8f6ff44ca8da10345008d76",
+      "bytes": 162707
+    },
+    "build/update-snapshot-reuse/us2-locks/results.json": {
+      "sha256": "ecae14a96ae36b6cb5e64b1a78fc474f593e1bbd5c31ab5c765a1e4da9a2847a",
+      "bytes": 146859
+    },
+    "build/update-snapshot-reuse/us2-windows/results.json": {
+      "sha256": "412a0825bf5c5054425c1febf6870a4ccfc6ec21385bfeaf934ba5eb90db2721",
+      "bytes": 147926
+    },
+    "build/update-snapshot-reuse/us2-epochs/results.json": {
+      "sha256": "d07937fb00ac7c6bcfd92afe9d6d6298eee43878f1254b0fa1ad8686f1e913b0",
+      "bytes": 108075
+    },
+    "build/update-snapshot-reuse/us2-layout/results.json": {
+      "sha256": "e4ad95ef7bfa9c4a3add9961d500035c858e0a372827ab7ec1d2890bb4662e8e",
+      "bytes": 175656
+    },
+    "build/update-snapshot-reuse/us2-layers/results.json": {
+      "sha256": "9aa1b1f4335db1a0f258f7f5017466157c5d27a07e014e233ca687951b0c7ad7",
+      "bytes": 91176
+    },
+    "build/update-snapshot-reuse/us2-native-final/results.json": {
+      "sha256": "cc894bb4ee79299e32687c69120a9128e9b8b123ee324142e08a2ba01b8cb026",
+      "bytes": 106612
+    },
+    "build/update-snapshot-reuse/us2-native/program/program.a816.json": {
+      "sha256": "0d647ba3028d7876e41f8ebc05f95bea04ed893fde6d580be6916d6dd92fb40b",
+      "bytes": 11779035
+    },
+    "build/update-snapshot-reuse/us1-native-final/program/program.a816.json": {
+      "sha256": "1cada62e9698d1ee19efefdbe45dd5bb0cf10594cad723444c4b0f0f562fa967",
+      "bytes": 11771201
+    },
+    "build/update-snapshot-reuse/us2-epochs/layers.act": {
+      "sha256": "20196cdd4717982bbcf6b997ee7761d5966582da6f730566e3610724306269ec",
+      "bytes": 15355
+    },
+    "build/update-snapshot-reuse/us2-epochs/probe.act": {
+      "sha256": "2582a87fc5a0cb69e4355c3509fb7bf7d7e88ed9b13cb352983b98060bf3fa46",
+      "bytes": 3820
+    },
+    "build/update-snapshot-reuse/us2-host.log": {
+      "sha256": "0d0fc7d226e7f05aede5619da0095723c8c00e2384d7b47f573dca716836f9d4",
+      "bytes": 778
+    }
+  },
+  "limits": [
+    "Development checks; full hosted qualification not run.",
+    "Matched full AES performance corpus remains US3.",
+    "Stack watermarks are not worst-case bounds."
+  ]
+}

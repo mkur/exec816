@@ -57,8 +57,9 @@ RETURN(AESSTATE.Find(AESSTATE.Get(),item.owner))
 ; The owning client is in this call or awaiting RPC; region construction needs
 ; no long Forbid section.
 PROC Publish(AESSTATE.Window POINTER client BYTE copied)
-  LAYERTYPES.Rect work
-  BYTE status
+  LAYERTYPES.Rect nextWork
+  LAYERTYPES.Rect POINTER bounds,work
+  BYTE status,refresh
 
   IF client.window=NULL THEN
     RETURN
@@ -67,47 +68,62 @@ PROC Publish(AESSTATE.Window POINTER client BYTE copied)
   LET desktop=DESKSTATE.Get()
   LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
   LET view=client.view
+  bounds=@layer.bounds
   IF client.window.iconified<>0 THEN
-    DESKGEOMETRY.Work(client.window.frameKind,
-        @client.window.normalBounds,@work)
-    EXEC.Forbid()
-    A816MEMORY.Move(BYTE POINTER(@view.bounds),
-        BYTE POINTER(@client.window.normalBounds),8)
-    A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(@work),8)
-    view.visibleCount=0
-    view.shown=0
-    view.pixelsReady=0
-    view.paintEpoch=layer.paintEpoch
-    view.revision==+1
-    EXEC.Permit()
-    RETURN
+    bounds=@client.window.normalBounds
   FI
-  DESKGEOMETRY.Work(client.window.frameKind,@layer.bounds,@work)
-  IF REGIONS.Equal(@layer.bounds,
-      LAYERTYPES.Rect POINTER(@view.bounds))=0 THEN
-    IF layer.bounds.right-layer.bounds.left<>view.bounds.right-view.bounds.left
-        OR layer.bounds.bottom-layer.bounds.top<>view.bounds.bottom-view.bounds.top THEN
-      DESKCACHE.Changed(desktop,client.window)
+
+  LET moved=(REGIONS.Equal(bounds,LAYERTYPES.Rect POINTER(@view.bounds))=0)
+  refresh=(client.geometryEpoch=0
+      OR client.geometryEpoch<>desktop.scene.layoutEpoch
+      OR client.geometryKind<>client.window.frameKind
+      OR client.geometryIconified<>client.window.iconified OR moved<>0)
+  work=LAYERTYPES.Rect POINTER(@view.work)
+  IF refresh<>0 THEN
+    work=@nextWork
+    DESKGEOMETRY.Work(client.window.frameKind,bounds,work)
+    IF client.window.iconified=0 THEN
+      IF moved<>0 THEN
+        IF layer.bounds.right-layer.bounds.left<>
+            view.bounds.right-view.bounds.left
+            OR layer.bounds.bottom-layer.bounds.top<>
+            view.bounds.bottom-view.bounds.top THEN
+          DESKCACHE.Changed(desktop,client.window)
+        FI
+        IF copied=0 AND client.window.console=0 THEN
+          LAYERS.ExternalArea(@desktop.scene,layer.id,work)
+        FI
+      FI
+      status=REGIONS.Clip(@layer.visible,work,
+          LAYERTYPES.Region POINTER(@view.visibleCount))
+      IF status<>LAYERTYPES.OK THEN
+        HEAPCORE.Abort($fcb3)
+      FI
     FI
-    IF copied=0 AND client.window.console=0 THEN
-      LAYERS.ExternalArea(@desktop.scene,layer.id,@work)
-    FI
   FI
-  status=REGIONS.Clip(@layer.visible,@work,
-      LAYERTYPES.Region POINTER(@view.visibleCount))
-  IF status<>LAYERTYPES.OK THEN
-    HEAPCORE.Abort($fcb3)
+
+  ; Paint state remains current even when geometry needs no reconstruction.
+  status=0
+  IF client.window.iconified=0 THEN
+    status=LAYERS.PixelsReady(layer,work)
   FI
-  status=LAYERS.PixelsReady(layer,@work)
 
   EXEC.Forbid()
-  A816MEMORY.Move(BYTE POINTER(@view.bounds),BYTE POINTER(@layer.bounds),8)
-  A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(@work),8)
-  view.shown=layer.shown
+  IF refresh<>0 THEN
+    A816MEMORY.Move(BYTE POINTER(@view.bounds),BYTE POINTER(bounds),8)
+    A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(work),8)
+  FI
+  view.shown=IF client.window.iconified<>0 THEN CARD(0) ELSE CARD(layer.shown) FI
+  IF client.window.iconified<>0 THEN
+    view.visibleCount=0
+  FI
   view.pixelsReady=status
   view.paintEpoch=layer.paintEpoch
   view.revision==+1
   EXEC.Permit()
+  client.geometryKind=client.window.frameKind
+  client.geometryIconified=client.window.iconified
+  client.geometryEpoch=desktop.scene.layoutEpoch
 
 RETURN
 

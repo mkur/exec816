@@ -328,7 +328,8 @@ size, initially 0 and 1000. Frame pixels are cached at mutation; minimum thumb
 height is eight pixels. Horizontal scrollbars are unsupported.
 
 `WF_FIRSTXYWH`/`WF_NEXTXYWH` enumerate visible work rectangles locally while the
-caller owns `BEG_UPDATE`. The presenter publishes every owned window snapshot on acquisition;
+caller owns `BEG_UPDATE`. Acquisition publishes a current snapshot for every owned window;
+unchanged geometry may be reused while paint identity and readiness remain fresh.
 no client reads Layers or retains a scene token. A zero-width/height result ends
 the enumeration, including a completely covered or hidden window. An owner
 mutation invalidates a previous iterator; restart with FIRST. Geometry uses

@@ -208,6 +208,11 @@ BYTE FUNC Rebuild(LAYERTYPES.Scene POINTER scene)
   LAYERTYPES.Layer POINTER layer,above
   BYTE index,rank,status,clear
 
+  ; Zero permanently disables geometry reuse for this scene lifetime. Advance
+  ; before construction so even a failed rebuild retires the previous result.
+  IF scene.layoutEpoch<>0 THEN
+    scene.layoutEpoch==+1
+  FI
   scene.visibleDamage=0
   FOR index=0 TO LAYERTYPES.SLOT_COUNT-1 DO
     layer=@scene.items(index)
@@ -266,6 +271,7 @@ PUBLIC BYTE FUNC Init(LAYERTYPES.Scene POINTER scene INT width,height)
   REGIONS.Assign(@scene.screen,0,0,width,height)
   scene.nextId=1
   scene.nextToken=1
+  scene.layoutEpoch=1
   LET background=@scene.items(LAYERTYPES.BACKGROUND_SLOT)
   REGIONS.Copy(@scene.screen,@background.bounds)
   background.shown=1

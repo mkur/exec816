@@ -108,6 +108,7 @@ CARD FUNC Create(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
         FI
 
         item.owner=client.id
+        item.geometryEpoch=0
         item.preserve=0
         item.focusNotices=0
         window.id=desktop.nextWindow
@@ -204,6 +205,7 @@ PROC Delete(AESSTATE.Window POINTER item)
   item.view.visibleCount=0
   item.view.shown=0
   item.owner=0
+  item.geometryEpoch=0
   item.preserve=0
   item.focusNotices=0
   item.window=NULL

@@ -54,16 +54,31 @@ def check_observations(raw):
     return rows
 
 
-def run(out,from_build=None):
+def run(out,from_build=None,epochs=False):
     out.mkdir(parents=True,exist_ok=True)
     from generate_memory import PROFILE
     profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=16384
     memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
+    source=ROOT/'tests/programs/aes_snapshot.act'
+    if epochs:
+        from library_paths import read_source
+        (out/'snapshotfaults.act').write_text('MODULE SNAPSHOTFAULTS\nPUBLIC BYTE fail\nENDMODULE\n')
+        layers=read_source(ROOT/'lib/display/layers.act').replace('USE LAYERTYPES','USE LAYERTYPES\nUSE SNAPSHOTFAULTS',1)
+        needle='          status=REGIONS.Subtract(@layer.visible,@above.bounds,@scene.work)'
+        require(layers.count(needle)==1,'Visibility fault boundary changed')
+        layers=layers.replace(needle,needle+'\n          IF SNAPSHOTFAULTS.fail<>0 THEN\n            status=LAYERTYPES.FULL\n          FI')
+        (out/'layers.act').write_text(layers)
+        fixture=read_source(source).replace('USE REGIONS','USE REGIONS\nUSE SNAPSHOTFAULTS',1)
+        fixture=fixture.replace('PUBLIC PROC Sample()',
+            'INCLUDE "'+str(ROOT/'tests/programs/aes-snapshot-epoch-checks.inc')+'"\n\nPUBLIC PROC Sample()',1)
+        fixture=fixture.replace('  FreshnessChecks()\n','  FreshnessChecks()\n  EpochChecks()\n',1)
+        source=out/'probe.act';source.write_text(fixture)
     p=read_build(from_build/'program') if from_build else build(
-        compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/aes_snapshot.act',
+        compiler(ROOT/'build/actionc',release=True),source,
         out/'program',tasks=True,task_capacity=8,optimize=True,console=False,console_deferred=True,
         memory_profile=memory)
     names='AESSNAPSHOTPROBE_SAMPLE AESWINDOWSTATE_BEGINUPDATE AESWINDOWSTATE_SNAPSHOTALL AESWINDOWSTATE_PUBLISH AESWINDOWSTATE_ENDUPDATE REGIONS_CLIP'.split()
+    if epochs:names+=['AESSNAPSHOTPROBE_ZEROEPOCHSAMPLES']
     marks=native_markers(p,[(n,n) for n in names])
     require(set(marks)==set(names),'Missing metadata marker')
     points={n:p['labels'][n] for n in ('native_irq','native_nmi','interrupt_schedule')}
@@ -72,7 +87,7 @@ def run(out,from_build=None):
     pcs=set(points.values())|{pc for m in marks.values() for pc in [m['entry'],*m['returns']]}
     environment=dict(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in sorted(pcs)),EXEC816_MASK_TRACE='0')
     report=dict(status='running',tier='development',qualification=False,build=p['build'],
-        harness_sha256=sha256(Path(__file__)),fixture_sha256=sha256(ROOT/'tests/programs/aes_snapshot.act'))
+        harness_sha256=sha256(Path(__file__)),fixture_sha256=sha256(source),epochs=epochs)
     try:
         with patch.dict(os.environ,environment),emulator(BRIDGE,ROM,out,pin=PIN) as b:
             report['machine']=verify_machine(b,ROM,PIN)
@@ -86,6 +101,13 @@ def run(out,from_build=None):
         events=read_events(out/'emulator.log',kinds={'cpu'})
         profile=analyze_events(events,definition,include_segments=True)
         spans=native_calls(events,marks)
+        if epochs:
+            zero=[s for s in spans if s['kind']=='AESSNAPSHOTPROBE_ZEROEPOCHSAMPLES']
+            require(len(zero)==1,'Missing zero-epoch probe')
+            clips=[s for s in spans if s['kind']=='REGIONS_CLIP' and
+                   zero[0]['start']<=s['start']<s['end']<=zero[0]['end']]
+            require(len(clips)==8,'Exhausted epoch must reconstruct every view')
+            report['zero_epoch_clip_calls']=len(clips)
         clock=Timeline(profile['segments'],profile['worker_dp'])
         samples=sorted((s for s in spans if s['kind']==names[0]),key=lambda s:s['start'])
         require(len(samples)==40,'Wrong controlled workload count')
@@ -111,5 +133,6 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--from-build',type=Path)
+    parser.add_argument('--epochs',action='store_true')
     args=parser.parse_args()
-    run(args.output.resolve(),args.from_build.resolve() if args.from_build else None)
+    run(args.output.resolve(),args.from_build.resolve() if args.from_build else None,args.epochs)
