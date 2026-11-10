@@ -250,3 +250,26 @@ pins, stack observations and complete bank-zero reservation comparison. No
 production drawing policy, compiler pin, Task or bank-zero reservation changes.
 This baseline does not qualify input-to-scanout latency, Atari ST compatibility,
 physical hardware or the full hosted system.
+
+## Object drawing costs
+
+Use the [drawing profiler](../../tools/measure_aes_drawing.py) to separate
+object callback setup, graphics-state calls, primitive rendering, command
+construction, upload, submission/fencing, polling and display ownership:
+
+```sh
+python3 tools/measure_aes_drawing.py --output build/aes-drawing-profile/new
+```
+
+`--from-build DIR` reuses a frozen corpus build; `--analyze-only` reprocesses
+an existing drawing capture. The guest remains the original AES corpus,
+including its Counter, exposure, move and timer controls. The detailed report
+covers the five-object, 33-sibling and nine-nested-object cases.
+
+`drawing-profile.json` contains exclusive per-call CPU buckets, inclusive
+routine costs and physical-unit intervals. Bucket means reconcile to total
+drawing CPU; their separate medians are not additive. Known-held intervals
+exclude acquisition/release and report preemption separately. Polling CPU does
+not measure exact hardware BUSY time. See the
+[execution record](../history/aes-drawing-profile.md) for results, inputs and
+the exercised scope.

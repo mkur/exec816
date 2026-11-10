@@ -1,0 +1,5292 @@
+{
+  "format": "exec816.aes-drawing-profile-baseline.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "baseline_commit": "cf56592a",
+  "scope": "Passive host-only object-drawing profiling. Frozen EC2 executable, unchanged guest and all nine original workload cohorts.",
+  "command": "python3 tools/measure_aes_drawing.py --from-build build/update-cache-completion/ec2-build --output build/aes-drawing-profile/capture",
+  "production": {
+    "input_count": 863,
+    "unchanged": true,
+    "manifest_sha256": "cf54d29a3aff5fb1e7051dc9304bfac032c6b3b0acf01bbfb6eaeceb9963ac3b",
+    "archive": "build/aes-drawing-profile/production-inputs"
+  },
+  "observer_inputs": {
+    "tools/measure_aes_drawing.py": "d275ab82c0c19707f4983838842c78accad66fe57290d1cc12333e215c454744",
+    "tools/aes_drawing_profile.py": "d91177ded9c54e5c3901fb79e2df3d9915a91c195efe16f0f170a33f7afda8d8",
+    "tools/measure_magic_aes.py": "f8c5184672284233867e651d77a0c297c2b00502d30d76445da7dde801aa39cf",
+    "tools/g4bench_trace.py": "fc6a65b82b45f658a3809c2d9cff115a96140da3a458ea9f6e1e01559b70d915",
+    "tools/console_turn_profile.py": "e5a3e8d16fa38d6af4a50717e25f67abfaf8dc13c854caa890085c45bf79ed37",
+    "tools/bitmap_console_performance.py": "1a6cb89860f528ef51bb79a97873ac89b64ede150bae316b48d9399181ad055b",
+    "tools/sio_transaction_trace.py": "311c88a962da6274b81282070aa5e5fd45e06dc789e10f72889f8ed5baeeb8c4",
+    "tools/os_boundary.py": "af91c3be33757c1ece2ee2f587d1c67816e4e7308e619f5b311dbdcb90076c00"
+  },
+  "observer_archive": "build/aes-drawing-profile/capture-inputs",
+  "toolchain": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "build_profile": "release",
+    "override": false,
+    "calypsi": {
+      "cc65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "platform": {
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+        "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+        "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+        "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+      },
+      "observer": {
+        "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ],
+      "startup_configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "disk_workload": {
+        "format": "SDFS",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "exec_profile": 4,
+        "nominal_baud": 57600
+      },
+      "mouse_input": {
+        "model": "ST mouse",
+        "port": 2,
+        "internal_port": 1,
+        "map": "Mouse -> ST Mouse (port 2)",
+        "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+        "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+        "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+        "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+        "commands": [
+          "MOUSE ST",
+          "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+          "MOUSE CLEAR"
+        ],
+        "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+        "tooling": {
+          "binary": "build/mouse-bridge/AltirraBridgeServer",
+          "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+          "patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "source_sha256": {
+            "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+            "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+          }
+        },
+        "initial_acceptance": {
+          "transitions_per_second_per_axis": 1000,
+          "minimum_transition_spacing_us": 1000,
+          "minimum_button_level_us": 10000,
+          "required_max_sample_gap_us_exclusive": 1000,
+          "visible_response_pal_ticks": 12
+        },
+        "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+      }
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338"
+  },
+  "measurements": {
+    "groups": {
+      "objects_5": {
+        "count": 8,
+        "discarded_warmups": 2,
+        "operation": {
+          "elapsed_ms": {
+            "min": 52.4517923423163,
+            "median": 55.55256780930927,
+            "mean": 90.28913845772146,
+            "max": 278.66225247716665
+          },
+          "charged_cpu_ms": {
+            "min": 42.14143638309,
+            "median": 43.141747923183516,
+            "mean": 43.254399270347726,
+            "max": 44.4911676268962
+          },
+          "off_cpu_ms": {
+            "min": 0.0,
+            "median": 3.345672764488376,
+            "mean": 37.73739073189367,
+            "max": 227.5320385858617
+          },
+          "interrupt_ms": {
+            "min": 8.988777508214932,
+            "median": 9.294044509352547,
+            "mean": 9.297348455480076,
+            "max": 9.621443544283098
+          }
+        },
+        "drawing": {
+          "elapsed_ms": {
+            "min": 34.085094145724646,
+            "median": 34.8141825455786,
+            "mean": 37.80231547593036,
+            "max": 48.65459789477839
+          },
+          "charged_cpu_ms": {
+            "min": 28.116563924221044,
+            "median": 28.60794441335309,
+            "mean": 28.882832731163454,
+            "max": 30.128746410592925
+          },
+          "off_cpu_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "mean": 2.7232357456310377,
+            "max": 12.098680677042879
+          },
+          "interrupt_ms": {
+            "min": 5.904812519118836,
+            "median": 6.20623813222551,
+            "mean": 6.196246999135864,
+            "max": 6.472421653305214
+          }
+        },
+        "presenter_cpu_ms": {
+          "min": 0.0,
+          "median": 2.72964099585694,
+          "mean": 31.084864367284627,
+          "max": 187.383683475265
+        },
+        "exclusive_cpu_ms": {
+          "aes_draw_other": {
+            "min": 3.0508374225907446,
+            "median": 3.069727183917201,
+            "mean": 3.1240793003457954,
+            "max": 3.531680526206725
+          },
+          "borrow_glue": {
+            "min": 0.6801018919364687,
+            "median": 0.6964542226369825,
+            "mean": 0.7542953061762471,
+            "max": 1.1502313995762488
+          },
+          "command_build": {
+            "min": 2.2789651230160466,
+            "median": 2.290383560832785,
+            "mean": 2.4173431973599446,
+            "max": 2.8887237992666828
+          },
+          "completion_poll": {
+            "min": 2.2698021790890337,
+            "median": 2.41302604108664,
+            "mean": 2.524884441180243,
+            "max": 2.9088822759061097
+          },
+          "cursor_overlay": {
+            "min": 1.599920493840387,
+            "median": 1.6110569949209097,
+            "mean": 1.6656734270397064,
+            "max": 2.0626491621545044
+          },
+          "display_ownership": {
+            "min": 4.45734931538712,
+            "median": 4.476309560897631,
+            "mean": 4.810554372204422,
+            "max": 5.833693977408409
+          },
+          "graphics_state": {
+            "min": 0.030660620063463952,
+            "median": 0.030766346339544864,
+            "mean": 0.03149761974910449,
+            "max": 0.036722259892102815
+          },
+          "object_callback_setup": {
+            "min": 8.013417369276508,
+            "median": 8.028183805835809,
+            "mean": 8.19400665934571,
+            "max": 8.486295760094396
+          },
+          "primitive_renderer": {
+            "min": 0.925880241732558,
+            "median": 0.9417039410526674,
+            "mean": 0.9966287414767003,
+            "max": 1.4020009050169233
+          },
+          "submission_fence": {
+            "min": 3.3368622414816267,
+            "median": 3.359240969918754,
+            "mean": 3.414993959505421,
+            "max": 3.831802181908394
+          },
+          "upload": {
+            "min": 0.8756250185020983,
+            "median": 0.8856690147297849,
+            "mean": 0.9488757067801555,
+            "max": 1.384027438083168
+          }
+        },
+        "calls": {
+          "App_WidgetFill": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "App_bb_fill": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "App_gr_crack": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "App_gr_inside": {
+            "min": 24,
+            "median": 24.0,
+            "mean": 24,
+            "max": 24
+          },
+          "App_gr_rect": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "App_gsx_attr": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "App_gsx_chkclip": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "App_gsx_fcolor": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "App_just_draw": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "App_ob_relxywh": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "App_r_set": {
+            "min": 24,
+            "median": 24.0,
+            "mean": 24,
+            "max": 24
+          },
+          "DisplayEnter": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "DisplayLeave": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "ExecAESDraw": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "GemDrawingBorrow": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "GemSolidFill": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "GemWidgetFill": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "VbxeOwnerFence": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "VbxeOwnerSubmit": {
+            "min": 16,
+            "median": 16.0,
+            "mean": 16,
+            "max": 16
+          },
+          "_VbxeUpload": {
+            "min": 16,
+            "median": 16.0,
+            "mean": 16,
+            "max": 16
+          },
+          "cursor_hide": {
+            "min": 2,
+            "median": 2.0,
+            "mean": 2,
+            "max": 2
+          },
+          "cursor_render": {
+            "min": 14,
+            "median": 14.0,
+            "mean": 14,
+            "max": 14
+          },
+          "cursor_show": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "drain": {
+            "min": 28,
+            "median": 28.0,
+            "mean": 28,
+            "max": 28
+          },
+          "draw": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "drawing_borrow": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "fence_owner": {
+            "min": 24,
+            "median": 24.0,
+            "mean": 24,
+            "max": 24
+          },
+          "flush": {
+            "min": 28,
+            "median": 28.0,
+            "mean": 28,
+            "max": 28
+          },
+          "idle": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "objc_draw": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "pointer_erase": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "solid_record": {
+            "min": 12,
+            "median": 12.0,
+            "mean": 12,
+            "max": 12
+          },
+          "start": {
+            "min": 16,
+            "median": 16.0,
+            "mean": 16,
+            "max": 16
+          }
+        },
+        "routines": {
+          "App_WidgetFill": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 2.85827463175538,
+              "median": 2.869023469823606,
+              "mean": 3.0576831989669837,
+              "max": 3.4843151545224766
+            }
+          },
+          "App_WidgetText": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_bb_fill": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 3.2134444352031846,
+              "median": 3.2260611041488403,
+              "mean": 3.4139719388366445,
+              "max": 3.83821624265731
+            }
+          },
+          "App_expand_string": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gr_box": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gr_crack": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.15774360391271802,
+              "median": 0.16288894934865566,
+              "mean": 0.16310040190081748,
+              "max": 0.16845719988891691
+            }
+          },
+          "App_gr_inside": {
+            "calls": {
+              "min": 24,
+              "median": 24.0,
+              "mean": 24,
+              "max": 24
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.551045350933704,
+              "median": 0.5637325040634131,
+              "mean": 0.6206925353020036,
+              "max": 1.0376681576421067
+            }
+          },
+          "App_gr_just": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gr_rect": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 3.5212488669667414,
+              "median": 3.538235555323741,
+              "mean": 3.726833610806071,
+              "max": 4.149544883623564
+            }
+          },
+          "App_gsx_attr": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.02558575881158027,
+              "median": 0.02558575881158027,
+              "mean": 0.02635227431316687,
+              "max": 0.03157691445616518
+            }
+          },
+          "App_gsx_box": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gsx_chkclip": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.27615703312333745,
+              "median": 0.28553142960251143,
+              "mean": 0.28619221882801715,
+              "max": 0.2948353418976316
+            }
+          },
+          "App_gsx_fcolor": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.00507486125188369,
+              "median": 0.00514534543593763,
+              "mean": 0.00514534543593763,
+              "max": 0.00521582961999157
+            }
+          },
+          "App_gsx_tblt": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_just_draw": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 9.432545931018538,
+              "median": 9.909195225683309,
+              "mean": 9.81642041842231,
+              "max": 10.380840143280249
+            }
+          },
+          "App_ob_offset": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_ob_relxywh": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.9618271756000671,
+              "median": 0.9810693578467927,
+              "mean": 1.0354214742753873,
+              "max": 1.4439389945290177
+            }
+          },
+          "App_r_set": {
+            "calls": {
+              "min": 24,
+              "median": 24.0,
+              "mean": 24,
+              "max": 24
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.2823596413200842,
+              "median": 0.2879631339523724,
+              "mean": 0.2885974916088579,
+              "max": 0.29377807913682247
+            }
+          },
+          "DisplayEnter": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 2.2005867103480647,
+              "median": 2.21820775636155,
+              "mean": 2.2157408099196623,
+              "max": 2.2258200482393757
+            }
+          },
+          "DisplayLeave": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 2.2507714493944704,
+              "median": 2.2590533410208087,
+              "mean": 2.594813562284759,
+              "max": 3.6104113597949756
+            }
+          },
+          "ExecAESDraw": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "inclusive_cpu_ms": {
+              "min": 27.39071779683357,
+              "median": 27.88047714973237,
+              "mean": 28.156634182855708,
+              "max": 29.404732871990856
+            }
+          },
+          "ExecAESDrawEdit": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemDrawingBorrow": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 24.88077600267276,
+              "median": 25.405284058310155,
+              "mean": 25.613741032649685,
+              "max": 26.90790113606408
+            }
+          },
+          "GemDrawingPrepare": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemSolidFill": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 2.2789651230160466,
+              "median": 2.290383560832785,
+              "mean": 2.4173431973599446,
+              "max": 2.8887237992666828
+            }
+          },
+          "GemVdiDispatch": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemVdiPaint": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemVdiReset": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemVdiValidate": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemWidgetFill": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 2.4009732456134167,
+              "median": 2.407810211466649,
+              "mean": 2.538752204392856,
+              "max": 3.0172869509810694
+            }
+          },
+          "GemWidgetStipple": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemWidgetText": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerFence": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 2.9464503460068596,
+              "median": 3.084669830936636,
+              "mean": 3.190537075385654,
+              "max": 3.5661472922091013
+            }
+          },
+          "VbxeOwnerRead": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "calls": {
+              "min": 16,
+              "median": 16.0,
+              "mean": 16,
+              "max": 16
+            },
+            "inclusive_cpu_ms": {
+              "min": 5.565219720346951,
+              "median": 6.054732378601566,
+              "mean": 5.92905907843339,
+              "max": 6.19809720896728
+            }
+          },
+          "VbxeOwnerWrite": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "_VbxeTextUpload": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "_VbxeUpload": {
+            "calls": {
+              "min": 16,
+              "median": 16.0,
+              "mean": 16,
+              "max": 16
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.8756250185020983,
+              "median": 0.8856690147297848,
+              "mean": 0.9488757067801556,
+              "max": 1.3840274380831685
+            }
+          },
+          "blit_and": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_fill": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_glyph": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_glyph_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_mask": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_or": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_xor": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "cursor_hide": {
+            "calls": {
+              "min": 2,
+              "median": 2.0,
+              "mean": 2,
+              "max": 2
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.8246649534310996,
+              "median": 0.8592374457095573,
+              "mean": 0.9100653529354548,
+              "max": 1.3241863658213733
+            }
+          },
+          "cursor_render": {
+            "calls": {
+              "min": 14,
+              "median": 14.0,
+              "mean": 14,
+              "max": 14
+            },
+            "inclusive_cpu_ms": {
+              "min": 2.6674034613373103,
+              "median": 2.70764993043211,
+              "mean": 2.864168871646891,
+              "max": 3.166008579334883
+            }
+          },
+          "cursor_show": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 1.8856633759950605,
+              "median": 1.8920421946519421,
+              "mean": 1.998631901987513,
+              "max": 2.3478986550207996
+            }
+          },
+          "drain": {
+            "calls": {
+              "min": 28,
+              "median": 28.0,
+              "mean": 28,
+              "max": 28
+            },
+            "inclusive_cpu_ms": {
+              "min": 4.545947934742923,
+              "median": 4.711832461913872,
+              "mean": 4.806739415742502,
+              "max": 5.175865087632986
+            }
+          },
+          "draw": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 11.116976961539601,
+              "median": 11.591617456958833,
+              "mean": 11.494463819763483,
+              "max": 12.05131530535863
+            }
+          },
+          "draw_line": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "drawing_borrow": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 24.64909448968746,
+              "median": 25.1622898337842,
+              "mean": 25.380103583556885,
+              "max": 26.682422231275524
+            }
+          },
+          "fence_owner": {
+            "calls": {
+              "min": 24,
+              "median": 24.0,
+              "mean": 24,
+              "max": 24
+            },
+            "inclusive_cpu_ms": {
+              "min": 5.241485862987204,
+              "median": 5.421220532324751,
+              "mean": 5.505299353378096,
+              "max": 5.862310556134309
+            }
+          },
+          "flush": {
+            "calls": {
+              "min": 28,
+              "median": 28.0,
+              "mean": 28,
+              "max": 28
+            },
+            "inclusive_cpu_ms": {
+              "min": 4.610018058047954,
+              "median": 4.775585406390659,
+              "mean": 4.870562844403344,
+              "max": 5.239512305833694
+            }
+          },
+          "glyph_record": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "gsx_attr": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "gsx_fcolor": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "idle": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 2.269802179089034,
+              "median": 2.4130260410866406,
+              "mean": 2.5248844411802436,
+              "max": 2.9088822759061097
+            }
+          },
+          "just_draw": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "ob_sst": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "objc_draw": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "inclusive_cpu_ms": {
+              "min": 28.116563924221044,
+              "median": 28.60794441335309,
+              "mean": 28.882832731163454,
+              "max": 30.128746410592925
+            }
+          },
+          "outline_toggle": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "pointer_erase": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.9602765235508804,
+              "median": 1.0014392870383815,
+              "mean": 1.0504962791399237,
+              "max": 1.4600798726773698
+            }
+          },
+          "solid_record": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 1.1070245947511839,
+              "median": 1.1224958731510237,
+              "mean": 1.1231566623765294,
+              "max": 1.1414208765695066
+            }
+          },
+          "start": {
+            "calls": {
+              "min": 16,
+              "median": 16.0,
+              "mean": 16,
+              "max": 16
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.753546411720674,
+              "median": 0.7650705758134932,
+              "mean": 0.7637930499775155,
+              "max": 0.7715903628384827
+            }
+          },
+          "text_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_fill_rect": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_flush": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_glyph": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_line_diag": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_text_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_widget_text_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        },
+        "native": {
+          "DISPLAY_ENTER": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 1.777752090208478,
+              "median": 1.8009061446701975,
+              "mean": 1.797434798605541,
+              "max": 1.8141219291803112
+            }
+          },
+          "DISPLAY_LEAVE": {
+            "calls": {
+              "min": 12,
+              "median": 12.0,
+              "mean": 12,
+              "max": 12
+            },
+            "inclusive_cpu_ms": {
+              "min": 1.8329412063227133,
+              "median": 1.8411526137649974,
+              "mean": 2.176595656200705,
+              "max": 3.1924401483551104
+            }
+          },
+          "DISPLAY_CHECK": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "DISPLAY_VALID": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "DISPLAY_DELEGATED": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        },
+        "physical_units": {
+          "count": 96,
+          "transaction": {
+            "elapsed_ms": {
+              "min": 1.9421916916063204,
+              "median": 2.2863659623417103,
+              "mean": 2.777307393743918,
+              "max": 16.675218747665213
+            },
+            "charged_cpu_ms": {
+              "min": 1.6385458267019464,
+              "median": 1.896799877075583,
+              "mean": 2.100244398034525,
+              "max": 3.798110741930618
+            },
+            "off_cpu_ms": {
+              "min": 0.0,
+              "median": 0.0,
+              "mean": 0.22693631213591983,
+              "max": 12.098680677042879
+            },
+            "interrupt_ms": {
+              "min": 0.301390371014648,
+              "median": 0.38836785413721014,
+              "mean": 0.45012668357347296,
+              "max": 0.8928936435953136
+            }
+          },
+          "owned_core": {
+            "elapsed_ms": {
+              "min": 1.5276037210010447,
+              "median": 1.8261042404694812,
+              "mean": 2.1577719737967995,
+              "max": 8.048659461303478
+            },
+            "charged_cpu_ms": {
+              "min": 1.270336449204163,
+              "median": 1.5229165227614576,
+              "mean": 1.69936486701749,
+              "max": 3.2620785222004036
+            },
+            "off_cpu_ms": {
+              "min": 0.0,
+              "median": 0.0,
+              "mean": 0.08879245086195109,
+              "max": 5.549008358014546
+            },
+            "interrupt_ms": {
+              "min": 0.2550117779071554,
+              "median": 0.30420973837680565,
+              "mean": 0.3696146559173587,
+              "max": 0.8040130875032951
+            }
+          },
+          "callback": {
+            "elapsed_ms": {
+              "min": 1.0895445171058065,
+              "median": 1.1053329743338893,
+              "mean": 1.19730015031927,
+              "max": 4.981328739644111
+            },
+            "charged_cpu_ms": {
+              "min": 0.9177745605663545,
+              "median": 0.9274661358737712,
+              "mean": 0.9578719849802902,
+              "max": 1.5493128496896582
+            },
+            "off_cpu_ms": {
+              "min": 0.0,
+              "median": 0.0,
+              "mean": 0.030990280465966243,
+              "max": 2.9750669247327592
+            },
+            "interrupt_ms": {
+              "min": 0.16916204172945634,
+              "median": 0.17836022774849553,
+              "mean": 0.20843788487301335,
+              "max": 0.4569489652216939
+            }
+          }
+        }
+      },
+      "objects_33_siblings": {
+        "count": 8,
+        "discarded_warmups": 2,
+        "operation": {
+          "elapsed_ms": {
+            "min": 129.406213039856,
+            "median": 130.3659961741185,
+            "mean": 135.30137803628244,
+            "max": 151.3405386965219
+          },
+          "charged_cpu_ms": {
+            "min": 104.39856550588614,
+            "median": 105.0291522585247,
+            "mean": 105.32153827502647,
+            "max": 106.83964425222624
+          },
+          "off_cpu_ms": {
+            "min": 1.8311791017213648,
+            "median": 3.0167230775086376,
+            "mean": 7.455076905293221,
+            "max": 21.601922244667517
+          },
+          "interrupt_ms": {
+            "min": 22.271240056443737,
+            "median": 22.47585564275232,
+            "mean": 22.524762855962752,
+            "max": 22.898972199628126
+          }
+        },
+        "drawing": {
+          "elapsed_ms": {
+            "min": 109.31490782783251,
+            "median": 110.35638213141354,
+            "mean": 113.71579050126942,
+            "max": 124.5613416805403
+          },
+          "charged_cpu_ms": {
+            "min": 90.0484790217923,
+            "median": 90.87621003722974,
+            "mean": 91.23155605113769,
+            "max": 92.94523801804114
+          },
+          "off_cpu_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "mean": 2.933851298107218,
+            "max": 11.761766277265044
+          },
+          "interrupt_ms": {
+            "min": 19.266428806040214,
+            "median": 19.48545840798783,
+            "mean": 19.550383152024516,
+            "max": 19.934618870871564
+          }
+        },
+        "presenter_cpu_ms": {
+          "min": 1.4265998852517483,
+          "median": 2.4969727042948833,
+          "mean": 6.116908239460148,
+          "max": 17.859000618851137
+        },
+        "exclusive_cpu_ms": {
+          "aes_draw_other": {
+            "min": 14.390967310845122,
+            "median": 14.891651712272285,
+            "mean": 14.937034716280017,
+            "max": 15.349058824690335
+          },
+          "borrow_glue": {
+            "min": 2.2921456654341266,
+            "median": 2.342577099124721,
+            "mean": 2.44346639807493,
+            "max": 2.8301514423178555
+          },
+          "command_build": {
+            "min": 7.473719971975489,
+            "median": 7.723762614906841,
+            "mean": 7.864114246404251,
+            "max": 8.608938240348252
+          },
+          "completion_poll": {
+            "min": 3.2844220085454996,
+            "median": 3.464156677883052,
+            "mean": 3.6089311919298424,
+            "max": 4.200434464510509
+          },
+          "cursor_overlay": {
+            "min": 3.053868242505067,
+            "median": 3.084493620476503,
+            "mean": 3.0791280119653974,
+            "max": 3.106660896361468
+          },
+          "display_ownership": {
+            "min": 14.89253276457296,
+            "median": 15.770765697885055,
+            "mean": 16.043962395278122,
+            "max": 17.87690360160083
+          },
+          "graphics_state": {
+            "min": 0.10220206687821305,
+            "median": 0.10502143424037069,
+            "mean": 0.10516240260847856,
+            "max": 0.10833419089090587
+          },
+          "object_callback_setup": {
+            "min": 27.17968814977601,
+            "median": 27.64999386787594,
+            "mean": 27.544056139242862,
+            "max": 27.687103790780345
+          },
+          "primitive_renderer": {
+            "min": 3.030326525031051,
+            "median": 3.0656743433340994,
+            "mean": 3.1376563162991866,
+            "max": 3.682728132634321
+          },
+          "submission_fence": {
+            "min": 9.893653463099453,
+            "median": 9.951062831011395,
+            "mean": 10.100947448402101,
+            "max": 10.401562493392166
+          },
+          "upload": {
+            "min": 2.334154239130281,
+            "median": 2.3658368798625276,
+            "mean": 2.3670967846524915,
+            "max": 2.4118278099577233
+          }
+        },
+        "calls": {
+          "App_WidgetFill": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "App_bb_fill": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "App_gr_crack": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "App_gr_inside": {
+            "min": 80,
+            "median": 80.0,
+            "mean": 80,
+            "max": 80
+          },
+          "App_gr_rect": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "App_gsx_attr": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "App_gsx_chkclip": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "App_gsx_fcolor": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "App_just_draw": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "App_ob_relxywh": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "App_r_set": {
+            "min": 80,
+            "median": 80.0,
+            "mean": 80,
+            "max": 80
+          },
+          "DisplayEnter": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "DisplayLeave": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "ExecAESDraw": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "GemDrawingBorrow": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "GemSolidFill": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "GemWidgetFill": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "VbxeOwnerFence": {
+            "min": 172,
+            "median": 172.0,
+            "mean": 172,
+            "max": 172
+          },
+          "VbxeOwnerSubmit": {
+            "min": 46,
+            "median": 46.0,
+            "mean": 46,
+            "max": 46
+          },
+          "_VbxeUpload": {
+            "min": 46,
+            "median": 46.0,
+            "mean": 46,
+            "max": 46
+          },
+          "cursor_hide": {
+            "min": 3,
+            "median": 3.0,
+            "mean": 3,
+            "max": 3
+          },
+          "cursor_render": {
+            "min": 43,
+            "median": 43.0,
+            "mean": 43,
+            "max": 43
+          },
+          "cursor_show": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "drain": {
+            "min": 86,
+            "median": 86.0,
+            "mean": 86,
+            "max": 86
+          },
+          "draw": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "drawing_borrow": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "fence_owner": {
+            "min": 80,
+            "median": 80.0,
+            "mean": 80,
+            "max": 80
+          },
+          "flush": {
+            "min": 86,
+            "median": 86.0,
+            "mean": 86,
+            "max": 86
+          },
+          "idle": {
+            "min": 172,
+            "median": 172.0,
+            "mean": 172,
+            "max": 172
+          },
+          "objc_draw": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "pointer_erase": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "solid_record": {
+            "min": 40,
+            "median": 40.0,
+            "mean": 40,
+            "max": 40
+          },
+          "start": {
+            "min": 46,
+            "median": 46.0,
+            "mean": 46,
+            "max": 46
+          }
+        },
+        "routines": {
+          "App_WidgetFill": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 9.35388558161434,
+              "median": 9.827010667076415,
+              "mean": 9.807856590059757,
+              "max": 10.464363901384168
+            }
+          },
+          "App_WidgetText": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_bb_fill": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 10.541614567107287,
+              "median": 11.029188910300418,
+              "mean": 11.001770562703435,
+              "max": 11.651458529220628
+            }
+          },
+          "App_expand_string": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gr_box": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gr_crack": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.5247547502815842,
+              "median": 0.5348692306933247,
+              "mean": 0.5360938933912619,
+              "max": 0.5469572682585755
+            }
+          },
+          "App_gr_inside": {
+            "calls": {
+              "min": 80,
+              "median": 80.0,
+              "mean": 80,
+              "max": 80
+            },
+            "inclusive_cpu_ms": {
+              "min": 1.8562009870605134,
+              "median": 1.8697691924908968,
+              "mean": 1.9294604858615776,
+              "max": 2.326894368172726
+            }
+          },
+          "App_gr_just": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gr_rect": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 11.576674809939398,
+              "median": 12.082716009354662,
+              "mean": 12.100944981455612,
+              "max": 12.709919521158648
+            }
+          },
+          "App_gsx_attr": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.08514489433715967,
+              "median": 0.08532110479729453,
+              "mean": 0.08739157770387902,
+              "max": 0.09120653416579853
+            }
+          },
+          "App_gsx_box": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gsx_chkclip": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.9272899254136364,
+              "median": 0.9543206099983225,
+              "mean": 0.9553073885750776,
+              "max": 0.997139751811091
+            }
+          },
+          "App_gsx_fcolor": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.016916204172945634,
+              "median": 0.017021930449026543,
+              "mean": 0.017770824904599657,
+              "max": 0.022977844001584483
+            }
+          },
+          "App_gsx_tblt": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_just_draw": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 31.806129022708593,
+              "median": 32.28651397912822,
+              "mean": 32.358073046988984,
+              "max": 32.85112753549231
+            }
+          },
+          "App_ob_offset": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_ob_relxywh": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 3.1856031825018785,
+              "median": 3.2316998388731553,
+              "mean": 3.235056648138724,
+              "max": 3.315435049529236
+            }
+          },
+          "App_r_set": {
+            "calls": {
+              "min": 80,
+              "median": 80.0,
+              "mean": 80,
+              "max": 80
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.9446290346909058,
+              "median": 0.9754658652145045,
+              "mean": 0.9728050872664683,
+              "max": 0.9861442190986764
+            }
+          },
+          "DisplayEnter": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 7.376804218901321,
+              "median": 7.634036248606176,
+              "mean": 7.757665507436786,
+              "max": 8.233187055156693
+            }
+          },
+          "DisplayLeave": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 7.510512716051645,
+              "median": 7.960800925880242,
+              "mean": 8.286296887841337,
+              "max": 9.723011253504826
+            }
+          },
+          "ExecAESDraw": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "inclusive_cpu_ms": {
+              "min": 89.28703838145759,
+              "median": 89.91935199660549,
+              "mean": 90.33147302076887,
+              "max": 92.22002624831015
+            }
+          },
+          "ExecAESDrawEdit": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemDrawingBorrow": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 74.21096480160817,
+              "median": 75.50720418845215,
+              "mean": 75.80707033898663,
+              "max": 78.05108411723494
+            }
+          },
+          "GemDrawingPrepare": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemSolidFill": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 7.4737199719754885,
+              "median": 7.723762614906841,
+              "mean": 7.864114246404249,
+              "max": 8.608938240348248
+            }
+          },
+          "GemVdiDispatch": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemVdiPaint": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemVdiReset": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemVdiValidate": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemWidgetFill": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 7.875197884346731,
+              "median": 8.121963012719576,
+              "mean": 8.26294900187347,
+              "max": 8.998504325614375
+            }
+          },
+          "GemWidgetStipple": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemWidgetText": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerFence": {
+            "calls": {
+              "min": 172,
+              "median": 172.0,
+              "mean": 172,
+              "max": 172
+            },
+            "inclusive_cpu_ms": {
+              "min": 5.333467723177596,
+              "median": 5.514682560380276,
+              "mean": 5.6583205169592,
+              "max": 6.247929527093415
+            }
+          },
+          "VbxeOwnerRead": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "calls": {
+              "min": 46,
+              "median": 46.0,
+              "mean": 46,
+              "max": 46
+            },
+            "inclusive_cpu_ms": {
+              "min": 12.413885948132098,
+              "median": 12.758906029076135,
+              "mean": 12.912270803054502,
+              "max": 13.775146994765844
+            }
+          },
+          "VbxeOwnerWrite": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "_VbxeTextUpload": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "_VbxeUpload": {
+            "calls": {
+              "min": 46,
+              "median": 46.0,
+              "mean": 46,
+              "max": 46
+            },
+            "inclusive_cpu_ms": {
+              "min": 2.3341542391302816,
+              "median": 2.3658368798625276,
+              "mean": 2.367096784652492,
+              "max": 2.4118278099577237
+            }
+          },
+          "blit_and": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_fill": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_glyph": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_glyph_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_mask": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_or": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_xor": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "cursor_hide": {
+            "calls": {
+              "min": 3,
+              "median": 3.0,
+              "mean": 3,
+              "max": 3
+            },
+            "inclusive_cpu_ms": {
+              "min": 1.1877994696769991,
+              "median": 1.2565567912216178,
+              "mean": 1.2565567912216178,
+              "max": 1.2972614075127682
+            }
+          },
+          "cursor_render": {
+            "calls": {
+              "min": 43,
+              "median": 43.0,
+              "mean": 43,
+              "max": 43
+            },
+            "inclusive_cpu_ms": {
+              "min": 4.331323594298675,
+              "median": 4.398001632413703,
+              "mean": 4.404054461719335,
+              "max": 4.4652435440011615
+            }
+          },
+          "cursor_show": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 3.222325442393981,
+              "median": 3.2888625121409003,
+              "mean": 3.2884572280825903,
+              "max": 3.340174998132169
+            }
+          },
+          "drain": {
+            "calls": {
+              "min": 86,
+              "median": 86.0,
+              "mean": 86,
+              "max": 86
+            },
+            "inclusive_cpu_ms": {
+              "min": 11.328359029517367,
+              "median": 11.707422971359456,
+              "mean": 11.805739597591696,
+              "max": 12.575365213799676
+            }
+          },
+          "draw": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 37.81976912200671,
+              "median": 38.30966944327362,
+              "mean": 38.163538108683795,
+              "max": 38.44862901213597
+            }
+          },
+          "draw_line": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "drawing_borrow": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 73.43570926119888,
+              "median": 74.73765786695124,
+              "mean": 75.02318929655375,
+              "max": 77.24643667207515
+            }
+          },
+          "fence_owner": {
+            "calls": {
+              "min": 80,
+              "median": 80.0,
+              "mean": 80,
+              "max": 80
+            },
+            "inclusive_cpu_ms": {
+              "min": 13.684081428968154,
+              "median": 14.100713440910994,
+              "mean": 14.187144671607138,
+              "max": 14.977889111462279
+            }
+          },
+          "flush": {
+            "calls": {
+              "min": 86,
+              "median": 86.0,
+              "mean": 86,
+              "max": 86
+            },
+            "inclusive_cpu_ms": {
+              "min": 11.523741187714888,
+              "median": 11.912003315576019,
+              "mean": 12.00787942693539,
+              "max": 12.782377262366097
+            }
+          },
+          "glyph_record": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "gsx_attr": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "gsx_fcolor": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "idle": {
+            "calls": {
+              "min": 172,
+              "median": 172.0,
+              "mean": 172,
+              "max": 172
+            },
+            "inclusive_cpu_ms": {
+              "min": 3.2844220085455023,
+              "median": 3.46415667788305,
+              "mean": 3.608931191929843,
+              "max": 4.200434464510509
+            }
+          },
+          "just_draw": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "ob_sst": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "objc_draw": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "inclusive_cpu_ms": {
+              "min": 90.0484790217923,
+              "median": 90.87621003722974,
+              "mean": 91.23155605113769,
+              "max": 92.94523801804114
+            }
+          },
+          "outline_toggle": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "pointer_erase": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 1.6260701261243988,
+              "median": 1.6833385256682254,
+              "mean": 1.6805015372600542,
+              "max": 1.7105806628050733
+            }
+          },
+          "solid_record": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 3.7353093339385577,
+              "median": 3.7759434660456543,
+              "mean": 4.08291089812357,
+              "max": 4.927337854658793
+            }
+          },
+          "start": {
+            "calls": {
+              "min": 46,
+              "median": 46.0,
+              "mean": 46,
+              "max": 46
+            },
+            "inclusive_cpu_ms": {
+              "min": 2.157238937154892,
+              "median": 2.1730626364750014,
+              "mean": 2.171705815931963,
+              "max": 2.1870537470097084
+            }
+          },
+          "text_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_fill_rect": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_flush": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_glyph": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_line_diag": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_text_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_widget_text_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        },
+        "native": {
+          "DISPLAY_ENTER": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 5.973252661835211,
+              "median": 6.2423260344611275,
+              "mean": 6.346378311170756,
+              "max": 6.803556349990625
+            }
+          },
+          "DISPLAY_LEAVE": {
+            "calls": {
+              "min": 40,
+              "median": 40.0,
+              "mean": 40,
+              "max": 40
+            },
+            "inclusive_cpu_ms": {
+              "min": 6.102027266101759,
+              "median": 6.548685540451578,
+              "mean": 6.876859901406723,
+              "max": 8.326790051580327
+            }
+          },
+          "DISPLAY_CHECK": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "DISPLAY_VALID": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "DISPLAY_DELEGATED": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        },
+        "physical_units": {
+          "count": 320,
+          "transaction": {
+            "elapsed_ms": {
+              "min": 1.939160871692001,
+              "median": 2.011336676163236,
+              "mean": 2.331286193628512,
+              "max": 16.500981844683874
+            },
+            "charged_cpu_ms": {
+              "min": 1.638827763438162,
+              "median": 1.6643430380656885,
+              "mean": 1.8609419294904417,
+              "max": 3.903061691986935
+            },
+            "off_cpu_ms": {
+              "min": 0.0,
+              "median": 0.0,
+              "mean": 0.07334628245268043,
+              "max": 11.761766277265044
+            },
+            "interrupt_ms": {
+              "min": 0.29828906691627466,
+              "median": 0.3499187317357858,
+              "mean": 0.39699798168538963,
+              "max": 0.9264441152049891
+            }
+          },
+          "owned_core": {
+            "elapsed_ms": {
+              "min": 1.528167594473476,
+              "median": 1.5652070331938215,
+              "mean": 1.8063878318219175,
+              "max": 7.8755503052670015
+            },
+            "charged_cpu_ms": {
+              "min": 1.2697725757317315,
+              "median": 1.280063266603607,
+              "mean": 1.4598428696084886,
+              "max": 2.8195083305257134
+            },
+            "off_cpu_ms": {
+              "min": 0.0,
+              "median": 0.0,
+              "mean": 0.032396293095792235,
+              "max": 5.2087107174021225
+            },
+            "interrupt_ms": {
+              "min": 0.25416596769850813,
+              "median": 0.2651262583188958,
+              "mean": 0.31414866911763667,
+              "max": 0.6101815813549597
+            }
+          },
+          "callback": {
+            "elapsed_ms": {
+              "min": 1.088980643633375,
+              "median": 1.098496008480657,
+              "mean": 1.189516420347938,
+              "max": 7.152312092689521
+            },
+            "charged_cpu_ms": {
+              "min": 0.9177745605663545,
+              "median": 0.9235542636587776,
+              "mean": 0.9540884527170949,
+              "max": 1.5787047544401511
+            },
+            "off_cpu_ms": {
+              "min": 0.0,
+              "median": 0.0,
+              "mean": 0.032396293095792235,
+              "max": 5.2087107174021225
+            },
+            "interrupt_ms": {
+              "min": 0.1690915575454024,
+              "median": 0.17726772289565945,
+              "mean": 0.20303167453505108,
+              "max": 0.4155042649979771
+            }
+          }
+        }
+      },
+      "objects_9_nested": {
+        "count": 8,
+        "discarded_warmups": 2,
+        "operation": {
+          "elapsed_ms": {
+            "min": 204.94594567924904,
+            "median": 205.67158035408434,
+            "mean": 208.29067571777568,
+            "max": 226.26966684945566
+          },
+          "charged_cpu_ms": {
+            "min": 166.33210173969061,
+            "median": 167.12089024343828,
+            "mean": 167.1891541756945,
+            "max": 168.25603802762697
+          },
+          "off_cpu_ms": {
+            "min": 2.1893797250834885,
+            "median": 3.0174984035332315,
+            "mean": 5.254675215928298,
+            "max": 21.792229541613157
+          },
+          "interrupt_ms": {
+            "min": 35.565543947593596,
+            "median": 35.80543686802119,
+            "mean": 35.84684632615287,
+            "max": 36.221399280215515
+          }
+        },
+        "drawing": {
+          "elapsed_ms": {
+            "min": 184.92202334718112,
+            "median": 185.24783648797046,
+            "mean": 187.11435459747187,
+            "max": 199.43647894848877
+          },
+          "charged_cpu_ms": {
+            "min": 152.28284175313902,
+            "median": 152.51536907633295,
+            "mean": 152.88682953682024,
+            "max": 154.52846785709752
+          },
+          "off_cpu_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "mean": 1.468969690391173,
+            "max": 11.751757523129385
+          },
+          "interrupt_ms": {
+            "min": 32.630089134299155,
+            "median": 32.725454235324136,
+            "mean": 32.75855537026047,
+            "max": 33.15625356826182
+          }
+        },
+        "presenter_cpu_ms": {
+          "min": 1.7005014244853598,
+          "median": 2.4976423040433957,
+          "mean": 4.342416042764165,
+          "max": 18.058400375539733
+        },
+        "exclusive_cpu_ms": {
+          "aes_draw_other": {
+            "min": 5.745870684077199,
+            "median": 5.76796747577811,
+            "mean": 5.87926200239928,
+            "max": 6.233832690282624
+          },
+          "borrow_glue": {
+            "min": 3.192158211618889,
+            "median": 3.2330390383701757,
+            "mean": 3.2296205554435593,
+            "max": 3.261091743623643
+          },
+          "command_build": {
+            "min": 21.602768054876183,
+            "median": 22.50757352557659,
+            "mean": 22.287389745115096,
+            "max": 22.541758354842752
+          },
+          "completion_poll": {
+            "min": 14.42092308906804,
+            "median": 14.697996416584076,
+            "mean": 14.804691850195727,
+            "max": 15.895240766924305
+          },
+          "cursor_overlay": {
+            "min": 12.282221492319334,
+            "median": 12.740580141222106,
+            "mean": 12.698131041375623,
+            "max": 13.65969390128549
+          },
+          "display_ownership": {
+            "min": 20.880939525979766,
+            "median": 21.537781637178433,
+            "mean": 21.81200035524029,
+            "max": 23.130160323325043
+          },
+          "graphics_state": {
+            "min": 0.14315337781355217,
+            "median": 0.1460432293597637,
+            "mean": 0.14769079716202455,
+            "max": 0.16112684474730685
+          },
+          "object_callback_setup": {
+            "min": 37.38516364313009,
+            "median": 38.43164232377893,
+            "mean": 38.5359853477478,
+            "max": 39.71410205264039
+          },
+          "primitive_renderer": {
+            "min": 4.37664492464536,
+            "median": 4.416785667464076,
+            "mean": 4.473525435627498,
+            "max": 4.9324127159106705
+          },
+          "submission_fence": {
+            "min": 18.221218840704406,
+            "median": 19.116332736097377,
+            "mean": 19.027557906281434,
+            "max": 19.565563683165163
+          },
+          "upload": {
+            "min": 9.755081557249373,
+            "median": 9.984859997265211,
+            "mean": 9.990974500231893,
+            "max": 10.245792446632898
+          }
+        },
+        "calls": {
+          "App_WidgetFill": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "App_bb_fill": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "App_gr_crack": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "App_gr_inside": {
+            "min": 112,
+            "median": 112.0,
+            "mean": 112,
+            "max": 112
+          },
+          "App_gr_rect": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "App_gsx_attr": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "App_gsx_chkclip": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "App_gsx_fcolor": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "App_just_draw": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "App_ob_relxywh": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "App_r_set": {
+            "min": 112,
+            "median": 112.0,
+            "mean": 112,
+            "max": 112
+          },
+          "DisplayEnter": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "DisplayLeave": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "ExecAESDraw": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "GemDrawingBorrow": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "GemSolidFill": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "GemWidgetFill": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "VbxeOwnerFence": {
+            "min": 292,
+            "median": 292.0,
+            "mean": 292,
+            "max": 292
+          },
+          "VbxeOwnerSubmit": {
+            "min": 90,
+            "median": 90.0,
+            "mean": 90,
+            "max": 90
+          },
+          "_VbxeUpload": {
+            "min": 90,
+            "median": 90.0,
+            "mean": 90,
+            "max": 90
+          },
+          "cursor_hide": {
+            "min": 17,
+            "median": 17.0,
+            "mean": 17,
+            "max": 17
+          },
+          "cursor_render": {
+            "min": 73,
+            "median": 73.0,
+            "mean": 73,
+            "max": 73
+          },
+          "cursor_show": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "drain": {
+            "min": 146,
+            "median": 146.0,
+            "mean": 146,
+            "max": 146
+          },
+          "draw": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "drawing_borrow": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "fence_owner": {
+            "min": 112,
+            "median": 112.0,
+            "mean": 112,
+            "max": 112
+          },
+          "flush": {
+            "min": 146,
+            "median": 146.0,
+            "mean": 146,
+            "max": 146
+          },
+          "idle": {
+            "min": 292,
+            "median": 292.0,
+            "mean": 292,
+            "max": 292
+          },
+          "objc_draw": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "pointer_erase": {
+            "min": 56,
+            "median": 56.0,
+            "mean": 56,
+            "max": 56
+          },
+          "solid_record": {
+            "min": 160,
+            "median": 160.0,
+            "mean": 160,
+            "max": 160
+          },
+          "start": {
+            "min": 90,
+            "median": 90.0,
+            "mean": 90,
+            "max": 90
+          }
+        },
+        "routines": {
+          "App_WidgetFill": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 24.31993335015556,
+              "median": 25.232456839009895,
+              "mean": 25.024184885653508,
+              "max": 25.29811285645614
+            }
+          },
+          "App_WidgetText": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_bb_fill": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 25.99202964846718,
+              "median": 26.930878980065664,
+              "mean": 26.760915180742593,
+              "max": 27.43977478893511
+            }
+          },
+          "App_expand_string": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gr_box": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gr_crack": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.733528903449355,
+              "median": 0.7469561405116305,
+              "mean": 0.8099161379178126,
+              "max": 1.255182349632566
+            }
+          },
+          "App_gr_inside": {
+            "calls": {
+              "min": 112,
+              "median": 112.0,
+              "mean": 112,
+              "max": 112
+            },
+            "inclusive_cpu_ms": {
+              "min": 2.5931836155285115,
+              "median": 2.624971982536839,
+              "mean": 2.699931912278204,
+              "max": 3.2434706976101633
+            }
+          },
+          "App_gr_just": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gr_rect": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 27.894045355162756,
+              "median": 28.401425754075042,
+              "mean": 28.287012302309485,
+              "max": 28.89576657893735
+            }
+          },
+          "App_gsx_attr": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.1192592394192667,
+              "median": 0.11947069197142852,
+              "mean": 0.1230741958811862,
+              "max": 0.13723270635302143
+            }
+          },
+          "App_gsx_box": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_gsx_chkclip": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 1.3029001422370834,
+              "median": 1.3218251456555663,
+              "mean": 1.3232965029976924,
+              "max": 1.3451906526694475
+            }
+          },
+          "App_gsx_fcolor": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 0.023753170026177828,
+              "median": 0.023894138394285707,
+              "mean": 0.024616601280838594,
+              "max": 0.029814809854816677
+            }
+          },
+          "App_gsx_tblt": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_just_draw": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 56.013005741641635,
+              "median": 56.75615573621435,
+              "mean": 56.82261351125421,
+              "max": 57.77933939403337
+            }
+          },
+          "App_ob_offset": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "App_ob_relxywh": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 4.516485545808376,
+              "median": 4.557436856743715,
+              "mean": 4.724625341319661,
+              "max": 5.521660494601616
+            }
+          },
+          "App_r_set": {
+            "calls": {
+              "min": 112,
+              "median": 112.0,
+              "mean": 112,
+              "max": 112
+            },
+            "inclusive_cpu_ms": {
+              "min": 1.3369440031351365,
+              "median": 1.3567500588542938,
+              "mean": 1.3589791211749995,
+              "max": 1.3926265085377492
+            }
+          },
+          "DisplayEnter": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 10.322761175619803,
+              "median": 10.354232363799888,
+              "mean": 10.55897129743057,
+              "max": 11.220800164651054
+            }
+          },
+          "DisplayLeave": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 10.540698272714586,
+              "median": 11.205505096711349,
+              "mean": 11.253029057809718,
+              "max": 12.229781259383207
+            }
+          },
+          "ExecAESDraw": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "inclusive_cpu_ms": {
+              "min": 151.21409007032912,
+              "median": 151.78761987597602,
+              "mean": 152.1027458523582,
+              "max": 153.80445431849546
+            }
+          },
+          "ExecAESDrawEdit": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemDrawingBorrow": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 145.49754080681836,
+              "median": 146.07156400175364,
+              "mean": 146.33340393499103,
+              "max": 147.63032173210652
+            }
+          },
+          "GemDrawingPrepare": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemSolidFill": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 21.602768054876165,
+              "median": 22.507573525576596,
+              "mean": 22.287389745115092,
+              "max": 22.541758354842756
+            }
+          },
+          "GemVdiDispatch": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemVdiPaint": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemVdiReset": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemVdiValidate": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemWidgetFill": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 22.160368434926887,
+              "median": 23.072433776584873,
+              "mean": 22.851994490956173,
+              "max": 23.105772795642384
+            }
+          },
+          "GemWidgetStipple": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "GemWidgetText": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerFence": {
+            "calls": {
+              "min": 292,
+              "median": 292.0,
+              "mean": 292,
+              "max": 292
+            },
+            "inclusive_cpu_ms": {
+              "min": 17.9397050095929,
+              "median": 18.30016112684475,
+              "mean": 18.544344771976615,
+              "max": 19.36137100196087
+            }
+          },
+          "VbxeOwnerRead": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "VbxeOwnerSubmit": {
+            "calls": {
+              "min": 90,
+              "median": 90.0,
+              "mean": 90,
+              "max": 90
+            },
+            "inclusive_cpu_ms": {
+              "min": 38.66501545718156,
+              "median": 38.94779800360597,
+              "mean": 38.93743682855004,
+              "max": 39.242139956215226
+            }
+          },
+          "VbxeOwnerWrite": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "_VbxeTextUpload": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "_VbxeUpload": {
+            "calls": {
+              "min": 90,
+              "median": 90.0,
+              "mean": 90,
+              "max": 90
+            },
+            "inclusive_cpu_ms": {
+              "min": 9.755081557249369,
+              "median": 9.984859997265215,
+              "mean": 9.990974500231893,
+              "max": 10.2457924466329
+            }
+          },
+          "blit_and": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_fill": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_glyph": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_glyph_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_mask": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_or": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "blit_xor": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "cursor_hide": {
+            "calls": {
+              "min": 17,
+              "median": 17.0,
+              "mean": 17,
+              "max": 17
+            },
+            "inclusive_cpu_ms": {
+              "min": 7.090849884194485,
+              "median": 7.64584234943521,
+              "mean": 7.631965775699591,
+              "max": 8.102861798840959
+            }
+          },
+          "cursor_render": {
+            "calls": {
+              "min": 73,
+              "median": 73.0,
+              "mean": 73,
+              "max": 73
+            },
+            "inclusive_cpu_ms": {
+              "min": 22.4628865528864,
+              "median": 22.859219119821702,
+              "mean": 22.960716344859378,
+              "max": 23.89188290039598
+            }
+          },
+          "cursor_show": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 15.08417926101562,
+              "median": 15.455666153071913,
+              "mean": 15.560661155743263,
+              "max": 16.39737009412458
+            }
+          },
+          "drain": {
+            "calls": {
+              "min": 146,
+              "median": 146.0,
+              "mean": 146,
+              "max": 146
+            },
+            "inclusive_cpu_ms": {
+              "min": 28.655415511313418,
+              "median": 29.039483830223336,
+              "mean": 29.13162427982785,
+              "max": 29.86365539436606
+            }
+          },
+          "draw": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 63.83019514251197,
+              "median": 64.75868329905452,
+              "mean": 64.77042772622251,
+              "max": 65.6072423908799
+            }
+          },
+          "draw_line": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "drawing_borrow": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 144.42152925305092,
+              "median": 145.00231892965536,
+              "mean": 145.25778885475887,
+              "max": 146.56586958452394
+            }
+          },
+          "fence_owner": {
+            "calls": {
+              "min": 112,
+              "median": 112.0,
+              "mean": 112,
+              "max": 112
+            },
+            "inclusive_cpu_ms": {
+              "min": 31.961194227627264,
+              "median": 32.4184603716772,
+              "mean": 32.54737594431186,
+              "max": 33.537643488177686
+            }
+          },
+          "flush": {
+            "calls": {
+              "min": 146,
+              "median": 146.0,
+              "mean": 146,
+              "max": 146
+            },
+            "inclusive_cpu_ms": {
+              "min": 28.993246205483953,
+              "median": 29.381120670332784,
+              "mean": 29.470283163161017,
+              "max": 30.208464022757934
+            }
+          },
+          "glyph_record": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "gsx_attr": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "gsx_fcolor": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "idle": {
+            "calls": {
+              "min": 292,
+              "median": 292.0,
+              "mean": 292,
+              "max": 292
+            },
+            "inclusive_cpu_ms": {
+              "min": 14.420923089068044,
+              "median": 14.697996416584083,
+              "mean": 14.804691850195734,
+              "max": 15.89524076692431
+            }
+          },
+          "just_draw": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "ob_sst": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "objc_draw": {
+            "calls": {
+              "min": 1,
+              "median": 1.0,
+              "mean": 1,
+              "max": 1
+            },
+            "inclusive_cpu_ms": {
+              "min": 152.28284175313902,
+              "median": 152.51536907633295,
+              "mean": 152.88682953682024,
+              "max": 154.52846785709752
+            }
+          },
+          "outline_toggle": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "pointer_erase": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 7.8292421963435626,
+              "median": 8.368481446448232,
+              "mean": 8.413318198029543,
+              "max": 9.271701023007447
+            }
+          },
+          "solid_record": {
+            "calls": {
+              "min": 160,
+              "median": 160.0,
+              "mean": 160,
+              "max": 160
+            },
+            "inclusive_cpu_ms": {
+              "min": 14.981624773217138,
+              "median": 15.470749768459456,
+              "mean": 15.424133291230781,
+              "max": 15.99899348585171
+            }
+          },
+          "start": {
+            "calls": {
+              "min": 90,
+              "median": 90.0,
+              "mean": 90,
+              "max": 90
+            },
+            "inclusive_cpu_ms": {
+              "min": 4.240328512685038,
+              "median": 4.2808216764240274,
+              "mean": 4.498062742201277,
+              "max": 5.194472912223226
+            }
+          },
+          "text_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_fill_rect": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_flush": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_glyph": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_line_diag": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_text_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "vbxe_widget_text_run": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        },
+        "native": {
+          "DISPLAY_ENTER": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 8.347230464955969,
+              "median": 8.38687781848631,
+              "mean": 8.584365691682443,
+              "max": 9.240335561103445
+            }
+          },
+          "DISPLAY_LEAVE": {
+            "calls": {
+              "min": 56,
+              "median": 56.0,
+              "mean": 56,
+              "max": 56
+            },
+            "inclusive_cpu_ms": {
+              "min": 8.543176496625922,
+              "median": 9.237551435833314,
+              "mean": 9.285692133542154,
+              "max": 10.28568649480743
+            }
+          },
+          "DISPLAY_CHECK": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "DISPLAY_VALID": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          },
+          "DISPLAY_DELEGATED": {
+            "calls": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            },
+            "inclusive_cpu_ms": {
+              "min": 0,
+              "median": 0.0,
+              "mean": 0,
+              "max": 0
+            }
+          }
+        },
+        "physical_units": {
+          "count": 448,
+          "transaction": {
+            "elapsed_ms": {
+              "min": 2.1004991689914703,
+              "median": 2.9651991389652075,
+              "mean": 3.1603920282488525,
+              "max": 16.55462030874892
+            },
+            "charged_cpu_ms": {
+              "min": 1.7572411926487816,
+              "median": 2.4446029555428055,
+              "mean": 2.5791319326481332,
+              "max": 4.4861773466651815
+            },
+            "off_cpu_ms": {
+              "min": 0.0,
+              "median": 0.0,
+              "mean": 0.026231601614128092,
+              "max": 11.751757523129385
+            },
+            "interrupt_ms": {
+              "min": 0.34205974521377147,
+              "median": 0.5205609413303749,
+              "mean": 0.5550284939865915,
+              "max": 1.0600116439872058
+            }
+          },
+          "owned_core": {
+            "elapsed_ms": {
+              "min": 1.6384048583338384,
+              "median": 2.505466048473383,
+              "mean": 2.6732402754985096,
+              "max": 7.934686535688257
+            },
+            "charged_cpu_ms": {
+              "min": 1.3827587227701976,
+              "median": 2.0703319382163836,
+              "mean": 2.1896319263045565,
+              "max": 3.8540046998853925
+            },
+            "off_cpu_ms": {
+              "min": 0.0,
+              "median": 0.0,
+              "mean": 0.011611797330582705,
+              "max": 5.202085204101052
+            },
+            "interrupt_ms": {
+              "min": 0.2550117779071554,
+              "median": 0.43457023678456785,
+              "mean": 0.47199655186337025,
+              "max": 0.9259507259166115
+            }
+          },
+          "callback": {
+            "elapsed_ms": {
+              "min": 1.0948308309098522,
+              "median": 1.156187313128807,
+              "mean": 1.4174202642633305,
+              "max": 7.205034262361869
+            },
+            "charged_cpu_ms": {
+              "min": 0.9227789376341843,
+              "median": 0.9366995639848374,
+              "mean": 1.156614780825402,
+              "max": 1.8376636466543272
+            },
+            "off_cpu_ms": {
+              "min": 0.0,
+              "median": 0.0,
+              "mean": 0.011611797330582705,
+              "max": 5.202085204101052
+            },
+            "interrupt_ms": {
+              "min": 0.16944397846567208,
+              "median": 0.2229767162546396,
+              "mean": 0.2491936861073458,
+              "max": 0.5433625748718246
+            }
+          }
+        }
+      }
+    },
+    "capture_comparison": {
+      "objects_5": {
+        "charged_cpu_ms": {
+          "before": 43.142170828287846,
+          "profiled": 43.142170828287846,
+          "delta": 0.0
+        },
+        "elapsed_ms": {
+          "before": 55.552990714413596,
+          "profiled": 55.552990714413596,
+          "delta": 0.0
+        },
+        "presenter_cpu_ms": {
+          "before": 2.72964099585694,
+          "profiled": 2.72964099585694,
+          "delta": 0.0
+        }
+      },
+      "objects_33_siblings": {
+        "charged_cpu_ms": {
+          "before": 105.02957516362903,
+          "profiled": 105.02957516362903,
+          "delta": 0.0
+        },
+        "elapsed_ms": {
+          "before": 130.3664190792228,
+          "profiled": 130.3664190792228,
+          "delta": 0.0
+        },
+        "presenter_cpu_ms": {
+          "before": 2.4969727042948833,
+          "profiled": 2.4969727042948833,
+          "delta": 0.0
+        }
+      },
+      "objects_9_nested": {
+        "charged_cpu_ms": {
+          "before": 167.1213131485426,
+          "profiled": 167.1213131485426,
+          "delta": 0.0
+        },
+        "elapsed_ms": {
+          "before": 205.67200325918867,
+          "profiled": 205.67200325918867,
+          "delta": 0.0
+        },
+        "presenter_cpu_ms": {
+          "before": 2.4976423040433957,
+          "profiled": 2.4976423040433957,
+          "delta": 0.0
+        }
+      },
+      "counter_uncovered": {
+        "charged_cpu_ms": {
+          "before": 40.052461378191346,
+          "profiled": 40.052461378191346,
+          "delta": 0.0
+        },
+        "elapsed_ms": {
+          "before": 51.652536937236654,
+          "profiled": 51.652536937236654,
+          "delta": 0.0
+        },
+        "presenter_cpu_ms": {
+          "before": 2.4969374622028564,
+          "profiled": 2.4969374622028564,
+          "delta": 0.0
+        }
+      },
+      "counter_fragmented": {
+        "charged_cpu_ms": {
+          "before": 91.90101483128201,
+          "profiled": 91.90101483128201,
+          "delta": 0.0
+        },
+        "elapsed_ms": {
+          "before": 115.13267237964473,
+          "profiled": 115.13267237964473,
+          "delta": 0.0
+        },
+        "presenter_cpu_ms": {
+          "before": 2.4975013356752878,
+          "profiled": 2.4975013356752878,
+          "delta": 0.0
+        }
+      },
+      "counter_tick_fragmented": {
+        "charged_cpu_ms": {
+          "before": 34.425603238889224,
+          "profiled": 34.425603238889224,
+          "delta": 0.0
+        },
+        "elapsed_ms": {
+          "before": 44.81222308526189,
+          "profiled": 44.81222308526189,
+          "delta": 0.0
+        },
+        "presenter_cpu_ms": {
+          "before": 2.4971136726629917,
+          "profiled": 2.4971136726629917,
+          "delta": 0.0
+        }
+      },
+      "separated_exposure": {
+        "charged_cpu_ms": {
+          "before": 41.65227614575565,
+          "profiled": 41.65227614575565,
+          "delta": 0.0
+        },
+        "elapsed_ms": {
+          "before": 53.56861423865099,
+          "profiled": 53.56861423865099,
+          "delta": 0.0
+        },
+        "presenter_cpu_ms": {
+          "before": 2.4969727042948833,
+          "profiled": 2.4969727042948833,
+          "delta": 0.0
+        }
+      },
+      "move_pending_redraw": {
+        "charged_cpu_ms": {
+          "before": 46.99980546365201,
+          "profiled": 46.99980546365201,
+          "delta": 0.0
+        },
+        "elapsed_ms": {
+          "before": 230.6017305276869,
+          "profiled": 230.6017305276869,
+          "delta": 0.0
+        },
+        "presenter_cpu_ms": {
+          "before": 143.1443205959015,
+          "profiled": 143.1443205959015,
+          "delta": 0.0
+        }
+      },
+      "zero_timer": {
+        "charged_cpu_ms": {
+          "before": 2.1926572396419965,
+          "profiled": 2.1926572396419965,
+          "delta": 0.0
+        },
+        "elapsed_ms": {
+          "before": 2.6699761340552794,
+          "profiled": 2.6699761340552794,
+          "delta": 0.0
+        },
+        "presenter_cpu_ms": {
+          "before": 0.0,
+          "profiled": 0.0,
+          "delta": 0.0
+        }
+      }
+    },
+    "observed_C_functions": [
+      "App_WidgetFill",
+      "App_WidgetText",
+      "App_bb_fill",
+      "App_expand_string",
+      "App_gr_box",
+      "App_gr_crack",
+      "App_gr_inside",
+      "App_gr_just",
+      "App_gr_rect",
+      "App_gsx_attr",
+      "App_gsx_box",
+      "App_gsx_chkclip",
+      "App_gsx_fcolor",
+      "App_gsx_tblt",
+      "App_just_draw",
+      "App_ob_offset",
+      "App_ob_relxywh",
+      "App_r_set",
+      "DisplayEnter",
+      "DisplayLeave",
+      "ExecAESDraw",
+      "ExecAESDrawEdit",
+      "GemDrawingBorrow",
+      "GemDrawingPrepare",
+      "GemSolidFill",
+      "GemVdiDispatch",
+      "GemVdiPaint",
+      "GemVdiReset",
+      "GemVdiValidate",
+      "GemWidgetFill",
+      "GemWidgetStipple",
+      "GemWidgetText",
+      "VbxeOwnerFence",
+      "VbxeOwnerRead",
+      "VbxeOwnerSubmit",
+      "VbxeOwnerWrite",
+      "_VbxeTextUpload",
+      "_VbxeUpload",
+      "blit_and",
+      "blit_fill",
+      "blit_glyph",
+      "blit_glyph_run",
+      "blit_mask",
+      "blit_or",
+      "blit_xor",
+      "cursor_hide",
+      "cursor_render",
+      "cursor_show",
+      "drain",
+      "draw",
+      "draw_line",
+      "drawing_borrow",
+      "fence_owner",
+      "flush",
+      "glyph_record",
+      "gsx_attr",
+      "gsx_fcolor",
+      "idle",
+      "just_draw",
+      "ob_sst",
+      "objc_draw",
+      "outline_toggle",
+      "pointer_erase",
+      "solid_record",
+      "start",
+      "text_run",
+      "vbxe_fill_rect",
+      "vbxe_flush",
+      "vbxe_glyph",
+      "vbxe_line_diag",
+      "vbxe_text_run",
+      "vbxe_widget_text_run"
+    ],
+    "absent_or_inlined": [],
+    "categories": {
+      "display_ownership": [
+        "DisplayEnter",
+        "DisplayLeave"
+      ],
+      "completion_poll": [
+        "idle"
+      ],
+      "upload": [
+        "_VbxeTextUpload",
+        "_VbxeUpload"
+      ],
+      "submission_fence": [
+        "VbxeOwnerFence",
+        "VbxeOwnerRead",
+        "VbxeOwnerSubmit",
+        "VbxeOwnerWrite",
+        "drain",
+        "fence_owner",
+        "flush",
+        "start"
+      ],
+      "command_build": [
+        "GemSolidFill",
+        "blit_and",
+        "blit_fill",
+        "blit_glyph",
+        "blit_glyph_run",
+        "blit_mask",
+        "blit_or",
+        "blit_xor",
+        "glyph_record",
+        "solid_record",
+        "text_run"
+      ],
+      "graphics_state": [
+        "App_gsx_attr",
+        "App_gsx_fcolor",
+        "GemVdiReset",
+        "gsx_attr",
+        "gsx_fcolor"
+      ],
+      "primitive_renderer": [
+        "App_WidgetFill",
+        "App_WidgetText",
+        "App_bb_fill",
+        "App_gsx_box",
+        "App_gsx_tblt",
+        "GemWidgetFill",
+        "GemWidgetStipple",
+        "GemWidgetText",
+        "draw_line",
+        "vbxe_fill_rect",
+        "vbxe_glyph",
+        "vbxe_line_diag",
+        "vbxe_text_run",
+        "vbxe_widget_text_run"
+      ],
+      "object_callback_setup": [
+        "App_expand_string",
+        "App_gr_crack",
+        "App_gr_inside",
+        "App_gr_just",
+        "App_gsx_chkclip",
+        "App_just_draw",
+        "App_ob_relxywh",
+        "App_r_set",
+        "ExecAESDrawEdit",
+        "draw",
+        "just_draw"
+      ],
+      "cursor_overlay": [
+        "cursor_hide",
+        "cursor_render",
+        "cursor_show",
+        "outline_toggle",
+        "pointer_erase"
+      ],
+      "borrow_glue": [
+        "GemDrawingBorrow",
+        "drawing_borrow"
+      ],
+      "aes_draw_other": [
+        "ExecAESDraw",
+        "objc_draw"
+      ]
+    },
+    "measured_object_calls": 24,
+    "object_warmups": 6,
+    "whole_corpus_measured_calls": 67,
+    "whole_corpus_warmups": 16,
+    "fixture_assertions": 505,
+    "identical_frames": 11,
+    "identical_checkpoint_slots_repairs_pending_damage": true,
+    "identical_exposure_delivery": true
+  },
+  "resources": {
+    "guest_image_sha256": "3193fe6a427ec54ee56f2beba47514764ebbc12d469b5aeb35dd3f9c5adbe862",
+    "guest_bytes_unchanged": true,
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "upper_RAM_VRAM_and_stack_reservations_unchanged": true,
+    "identical_maps": [
+      "bank_zero_budget",
+      "task_pools",
+      "runtime_reservations",
+      "phase_reservations"
+    ],
+    "before_stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 750,
+        "untouched_above_floor": 530
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 721,
+        "untouched_above_floor": 1583
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 48,
+        "untouched_above_floor": 208
+      }
+    ],
+    "after_stacks": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 750,
+        "untouched_above_floor": 530
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 721,
+        "untouched_above_floor": 1583
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 48,
+        "untouched_above_floor": 208
+      }
+    ],
+    "kernel_stack": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 285,
+      "untouched_from_base": 1251,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "validation": {
+    "host": {
+      "run": 675,
+      "passed": 671,
+      "skipped": 4
+    },
+    "focused_accounting_tests": 7,
+    "test_source_sha256": "697e086e62abe0f456dbe4e6ed419a5bc5f7451a9fea4142783d28b1e6641a79",
+    "guards": "intact",
+    "ownership_restored": true,
+    "heap_restored": true
+  },
+  "artifacts": {
+    "build/aes-drawing-profile/capture/results.json": {
+      "sha256": "0fc217dc1d69203757c8a5dc1af3607958488920ec81dee62afafad78ee111f1",
+      "bytes": 742349
+    },
+    "build/aes-drawing-profile/capture/timings.json": {
+      "sha256": "1368524262d8af2d98baa6224ce4ff8f856a6c265ab7bcb4203e2979e3592b50",
+      "bytes": 524089
+    },
+    "build/aes-drawing-profile/capture/drawing-profile.json": {
+      "sha256": "02bfed2f32e4e0bc919a22db2fd821ae9010a1533e98864ff47e6f1f85cff68a",
+      "bytes": 2414155
+    },
+    "build/aes-drawing-profile/capture/trace-definition.json": {
+      "sha256": "514b6702f128148f0f04480c2ddca235570c593d3dcd946c2fdaa43bb79cc5d9",
+      "bytes": 128093
+    },
+    "build/aes-drawing-profile/capture/emulator.log": {
+      "sha256": "6245180f3dffd6e3300e4b8240a3c42dac9fcda32233e72c4bc9bac00eeac223",
+      "bytes": 228685216
+    },
+    "build/aes-drawing-profile/host.log": {
+      "sha256": "3d6872c2aed991d178db9498b97c6d2e0060c835a1a9b41218da9c856aeb5f13",
+      "bytes": 787
+    },
+    "build/aes-drawing-profile/unit.log": {
+      "sha256": "83166b089fbcb82fac63f22522fa6ae99bb5e46368cd35d756277fd463dd6346",
+      "bytes": 105
+    },
+    "build/aes-drawing-profile/production-inputs.json": {
+      "sha256": "cf54d29a3aff5fb1e7051dc9304bfac032c6b3b0acf01bbfb6eaeceb9963ac3b",
+      "bytes": 88609
+    },
+    "build/aes-drawing-profile/capture-inputs.json": {
+      "sha256": "a0b61bf319ec46c3755e6ad8d9ac5db1ba99521671cdd5c3e82741bdc3404651",
+      "bytes": 813
+    },
+    "build/aes-drawing-profile/record.py": {
+      "sha256": "4136042280247dd3741cbdd4db6e951ca54d0252e6977a6e85ca5e1a58ea9a4d",
+      "bytes": 5728
+    },
+    "build/update-cache-completion/ec2-build/program/program.xex": {
+      "sha256": "3193fe6a427ec54ee56f2beba47514764ebbc12d469b5aeb35dd3f9c5adbe862",
+      "bytes": 449879
+    },
+    "build/update-cache-completion/ec2-build/program/build.json": {
+      "sha256": "8d67e7b30e60565910d443fca52845d717437d578751e862500741881b478fdf",
+      "bytes": 127830
+    },
+    "build/update-cache-completion/ec2-build/c-image.json": {
+      "sha256": "18b94542c0b72b1d9a32ee5650a7c755bad664c727ca4ce40b0b536f6b9b7a46",
+      "bytes": 2239551
+    },
+    "docs/development/update-cache-completion-ec2.json": {
+      "sha256": "e4a0862b27e52669eadc94cde40acbb119b6edbe484ef041f73d1f7258aeda9e",
+      "bytes": 213092
+    }
+  },
+  "limits": [
+    "Exclusive CPU buckets reconcile per sample; add means, not medians.",
+    "Routine costs are inclusive and overlap the exclusive buckets.",
+    "Buckets describe observed call scopes; unobserved/inlined helpers stay in their parent scope.",
+    "Polling CPU is not exact hardware BUSY duration.",
+    "Owned core is Enter-return to Leave-entry, a lower bound on ownership.",
+    "No new batching, scheduling, runtime storage or guest instructions. Small samples do not establish tails.",
+    "Detailed C spans end at observed RTL boundaries when available, excluding execution of the final RTL; corpus comparisons retain caller-successor boundaries.",
+    "Object cohorts are G_BOX workloads; text/edit/icon performance and moving-pointer responsiveness are not established.",
+    "No production optimization, changed drawing bounds, new synchronization, compiler migration, demo refresh or full hosted/hardware qualification."
+  ]
+}

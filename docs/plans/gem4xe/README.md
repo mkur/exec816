@@ -1,5 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
+The [object drawing profile](../../history/aes-drawing-profile.md) separates
+callback setup, graphics-state calls, primitive rendering, command construction,
+upload, submission and ownership using the unchanged EC2 guest. Exclusive
+caller costs reconcile and per-unit observations separate CPU from preemption.
+
 The [END_UPDATE cache-completion addendum](update-snapshot-reuse-design.md#end_update-cache-completion-addendum)
 and [EC0–EC2 plan](update-cache-completion-plan.md) propose an identity-only
 miss return before cache-specific geometry/readiness work. They preserve all

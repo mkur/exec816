@@ -1,5 +1,8 @@
 # Historical records
 
+- [AES object drawing profile](aes-drawing-profile.md): passive rendering,
+  graphics-state, ownership, command and submission accounting on the EC2 image.
+
 - [END_UPDATE cache completion](update-cache-completion.md): identity-miss
   return, preserved slot/repair state and 6.2% lower matched Counter tick CPU,
   with eleven identical frames and zero added bank-zero reservations.
