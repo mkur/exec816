@@ -1,0 +1,1578 @@
+{
+  "format": "exec816.magic-aes-baseline.v1",
+  "date": "2026-11-10",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "revision": "7b2161f8fe069123dc46cfba83ac37b6bd21e013",
+  "dirty_source": true,
+  "scope": "Optimized native algorithm fixture, one AES application in the root Task beside the production presenter; unchanged production Counter redraw body, controlled object trees, occlusion, exposure and requested geometry. No loaded-application or input-to-scanout performance claim.",
+  "capture_command": "python3 tools/measure_magic_aes.py --output build/magic-aes-baseline/final",
+  "reproduce_command": "python3 tools/measure_magic_aes.py --output build/magic-aes-baseline/new",
+  "source_archive": {
+    "path": "build/magic-aes-baseline/final/inputs",
+    "files": 349,
+    "manifest": "build/magic-aes-baseline/final/source-inputs.json",
+    "manifest_sha256": "091c39eb63d6d92c517eb4bd38f24f9f3d3af17d2c6fe2274298271c5d9ce04c",
+    "working_patch": "build/magic-aes-baseline/final/working-tree.patch",
+    "working_patch_sha256": "1b9785bc01a04deedd39d9480043be66198098b7ccbcd958b501efba322564c8"
+  },
+  "sources": {
+    "c/calypsi/aes.c": "11dc7c6a428b6674945d0c3b4c825e974f90ea90ab552c1af4a74cfbb40c85de",
+    "c/calypsi/aes-messages.c": "7b4a97dc975b00aa9786f3d9528cd184061ba46db54f2cd2ba19b241a148ca23",
+    "c/calypsi/aes-events.c": "a0f219441b817575a00796061623b3e8eddb90c403f90109aa5a7260943e15a8",
+    "tests/programs/magic_aes_baseline.c": "a3270a5236631f197bb9c96996cea9f7a38d4ef603321ab013f30a80d3a0aa52",
+    "c/calypsi/aes-update.c": "da4e4dbed152700c98954607f855b7df7f10bfef7ada81742443e7a088d79330",
+    "c/calypsi/aes-windows.c": "9e628af234a64c4d50d1ef626dc3aa6843c66bb24e09dc524458d1f3a3efc1eb",
+    "c/calypsi/aes-input.c": "9177bfff20fd30c461f7b74bc62881861a58168609107ac131338d990eb993d9",
+    "c/calypsi/vdi.c": "1a6ee0b470e457d774f78b5424a421f8bb68d615ccd87df3de58fbb13540f3b8",
+    "c/calypsi/aes-objects.c": "b7ae0e15ff4fc85b4ac1a77878f876a78c5951fb426e3c450b1b823dd58b4450",
+    "c/calypsi/aes-edit.c": "17b7b076e3f85c61db3a1c351a3750da99c1c9767acc0b3f26a36f93269e9ae2",
+    "c/calypsi/aes-form.c": "19eae0ed8fe54f339645d53673fe4eb463ab92df71664d1fcab9903880ff483f",
+    "c/calypsi/aes-alert.c": "72b2178529d3a183c48fb0acd228a1c709b44c2fcc8432d6ced1ee5774eedf27",
+    "c/calypsi/aes-fsel.c": "0855c6a47a3d705638f6e7ea7f64b5a7776a486e45d574a5107d3d0b19bd55df",
+    "c/calypsi/aes-resource.c": "89c29b04ada221ce70e36dc44ae1ab870abc1ac20d1fbe1329dd0d9a81e7d09b",
+    "c/calypsi/aes-menu.c": "fb3de6ce801d4853359d721bbec255cbfcd32f2c75d072615086db4dfd05f226",
+    "c/calypsi/aes-update.s": "2ba14b5d9dc20779dd80c6d5c6ff52af4bcb4d4b1cfb97986d3d338efdcdad88",
+    "tools/measure_magic_aes.py": "8cc30dfb0306f7c1c84f14f6acf72b627fca4ca2c22d7e0dbf9bf3ee9f876cac",
+    "examples/gem-counter/counter.c": "92780c5aaba74befb37bc7755830e5ec461e56cd8d5cc355000bc517c868ccf3",
+    "examples/gem-counter/counter.h": "faaa3c8858e79ed30193846857b83e9767ef532671ddc1ac8e9b87558f2030c8"
+  },
+  "toolchain": {
+    "actionc_pin": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_build_profile": "release",
+    "calypsi": {
+      "cc65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    },
+    "calypsi_flags": [
+      "--code-model=large",
+      "--data-model=huge",
+      "-O2"
+    ],
+    "runtime_pin_sha256": "221bb3d29714e510c0ba3d3812b7c2ab493a6f817ca2698dc3bbb7c0d3b09f2f"
+  },
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "pin_sha256": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "preemptive": true,
+    "stack_checks": true
+  },
+  "measurements": {
+    "objects_5": {
+      "count": 8,
+      "discarded_warmups": 2,
+      "charged_cpu_ms": {
+        "min": 43.53293514468289,
+        "median": 44.524013256665334,
+        "mean": 44.47759061094281,
+        "max": 45.010213158269416
+      },
+      "presenter_cpu_ms": {
+        "min": 1.2076055253961564,
+        "median": 2.4974308514912336,
+        "mean": 33.94698919759395,
+        "max": 185.27486717255513
+      },
+      "elapsed_ms": {
+        "min": 55.05822698444696,
+        "median": 57.30565043509887,
+        "mean": 95.24823824781957,
+        "max": 277.7942397505424
+      },
+      "off_cpu_ms": {
+        "min": 1.611973289313611,
+        "median": 3.022291328048899,
+        "mean": 41.23544149178366,
+        "max": 224.92743653251645
+      },
+      "interrupt_ms": {
+        "min": 9.333868073343023,
+        "median": 9.576545119040738,
+        "mean": 9.535206145093102,
+        "max": 9.690306592103797
+      },
+      "calls_per_sample": {
+        "App_ob_offset": {
+          "min": 5,
+          "median": 5.0,
+          "mean": 5,
+          "max": 5
+        },
+        "DisplayEnter": {
+          "min": 12,
+          "median": 12.0,
+          "mean": 12,
+          "max": 12
+        },
+        "ExecAESSubmit": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0.375,
+          "max": 1
+        },
+        "VbxeOwnerSubmit": {
+          "min": 16,
+          "median": 16.0,
+          "mean": 16,
+          "max": 16
+        },
+        "wind_update": {
+          "min": 2,
+          "median": 2.0,
+          "mean": 2,
+          "max": 2
+        }
+      },
+      "inclusive_cpu_ms": {
+        "App_ob_offset": {
+          "min": 0.7962598272573618,
+          "median": 0.8024271933620815,
+          "mean": 0.8029734457884995,
+          "max": 0.8082421385465315
+        },
+        "ExecAESDraw": {
+          "min": 27.982573490334502,
+          "median": 28.426306671046085,
+          "mean": 28.771106488914953,
+          "max": 30.506682605490155
+        },
+        "GemDrawingBorrow": {
+          "min": 24.93977126472591,
+          "median": 25.37744280560885,
+          "mean": 25.664445592553488,
+          "max": 26.98092275074396
+        },
+        "GemDrawingSolidBorrow": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "wind_update": {
+          "min": 7.970492501187659,
+          "median": 9.05055689553821,
+          "mean": 8.876663602954133,
+          "max": 9.518607119748399
+        },
+        "DoIO": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        }
+      }
+    },
+    "objects_33_siblings": {
+      "count": 8,
+      "discarded_warmups": 2,
+      "charged_cpu_ms": {
+        "min": 123.4369074923278,
+        "median": 123.99704530300446,
+        "mean": 124.01301878121568,
+        "max": 124.494311221505
+      },
+      "presenter_cpu_ms": {
+        "min": 2.491404453754622,
+        "median": 2.497853756595558,
+        "mean": 2.616293617375197,
+        "max": 2.9878950462305762
+      },
+      "elapsed_ms": {
+        "min": 152.89957836361097,
+        "median": 154.16794125566165,
+        "mean": 153.80577589694647,
+        "max": 154.31863644116896
+      },
+      "off_cpu_ms": {
+        "min": 2.975419345653029,
+        "median": 3.0180622770056624,
+        "mean": 3.1837882147624894,
+        "max": 3.7389040273253085
+      },
+      "interrupt_ms": {
+        "min": 26.44341036314861,
+        "median": 26.55220270123587,
+        "mean": 26.60896890096831,
+        "max": 26.805840037553974
+      },
+      "calls_per_sample": {
+        "App_ob_offset": {
+          "min": 33,
+          "median": 33.0,
+          "mean": 33,
+          "max": 33
+        },
+        "DisplayEnter": {
+          "min": 40,
+          "median": 40.0,
+          "mean": 40,
+          "max": 40
+        },
+        "VbxeOwnerSubmit": {
+          "min": 46,
+          "median": 46.0,
+          "mean": 46,
+          "max": 46
+        },
+        "wind_update": {
+          "min": 2,
+          "median": 2.0,
+          "mean": 2,
+          "max": 2
+        }
+      },
+      "inclusive_cpu_ms": {
+        "App_ob_offset": {
+          "min": 19.095222722973194,
+          "median": 19.58910540063915,
+          "mean": 19.48004874686169,
+          "max": 20.08460921453835
+        },
+        "ExecAESDraw": {
+          "min": 107.82170038864979,
+          "median": 108.11579564661486,
+          "mean": 108.14057083730981,
+          "max": 108.43822554656961
+        },
+        "GemDrawingBorrow": {
+          "min": 75.01434353145498,
+          "median": 75.67079797964135,
+          "mean": 75.66112402537995,
+          "max": 76.11354438177618
+        },
+        "GemDrawingSolidBorrow": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "wind_update": {
+          "min": 9.048759548844835,
+          "median": 9.058627334612387,
+          "mean": 9.226027271740495,
+          "max": 9.523188591711907
+        },
+        "DoIO": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        }
+      }
+    },
+    "objects_9_nested": {
+      "count": 8,
+      "discarded_warmups": 2,
+      "charged_cpu_ms": {
+        "min": 170.24686380623052,
+        "median": 171.26708712831928,
+        "mean": 171.12934341163185,
+        "max": 171.8668722925263
+      },
+      "presenter_cpu_ms": {
+        "min": 0.7768061924584743,
+        "median": 2.497607061951369,
+        "mean": 6.108555863649756,
+        "max": 17.813326867584184
+      },
+      "elapsed_ms": {
+        "min": 207.8827396920405,
+        "median": 211.25611274086208,
+        "mean": 215.23615197235893,
+        "max": 230.23137138257547
+      },
+      "off_cpu_ms": {
+        "min": 0.9795187057976061,
+        "median": 3.0205997076316047,
+        "mean": 7.404548555849553,
+        "max": 21.511843457446584
+      },
+      "interrupt_ms": {
+        "min": 36.521661904285295,
+        "median": 36.681343823259496,
+        "mean": 36.7022600048775,
+        "max": 36.885289809819575
+      },
+      "calls_per_sample": {
+        "App_ob_offset": {
+          "min": 9,
+          "median": 9.0,
+          "mean": 9,
+          "max": 9
+        },
+        "DisplayEnter": {
+          "min": 56,
+          "median": 56.0,
+          "mean": 56,
+          "max": 56
+        },
+        "ExecAESSubmit": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0.25,
+          "max": 1
+        },
+        "VbxeOwnerSubmit": {
+          "min": 90,
+          "median": 90.0,
+          "mean": 90,
+          "max": 90
+        },
+        "wind_update": {
+          "min": 2,
+          "median": 2.0,
+          "mean": 2,
+          "max": 2
+        }
+      },
+      "inclusive_cpu_ms": {
+        "App_ob_offset": {
+          "min": 3.3478577741940487,
+          "median": 3.3570559602130876,
+          "mean": 3.355848918561164,
+          "max": 3.365196883471318
+        },
+        "ExecAESDraw": {
+          "min": 154.21396742784887,
+          "median": 155.03877334964807,
+          "mean": 155.2631597495838,
+          "max": 156.90004919796047
+        },
+        "GemDrawingBorrow": {
+          "min": 145.40746201959743,
+          "median": 146.33242596693728,
+          "mean": 146.59977247705388,
+          "max": 148.39972708523933
+        },
+        "GemDrawingSolidBorrow": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "wind_update": {
+          "min": 7.975708330807649,
+          "median": 9.05298859988807,
+          "mean": 8.945359250837704,
+          "max": 9.520580676901911
+        },
+        "DoIO": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        }
+      }
+    },
+    "counter_uncovered": {
+      "count": 8,
+      "discarded_warmups": 2,
+      "charged_cpu_ms": {
+        "min": 40.40879417067604,
+        "median": 40.90665920474105,
+        "mean": 40.98435920713751,
+        "max": 41.653544861068625
+      },
+      "presenter_cpu_ms": {
+        "min": 1.2075350412121024,
+        "median": 2.678857141246076,
+        "mean": 5.423202900001269,
+        "max": 15.129571075546359
+      },
+      "elapsed_ms": {
+        "min": 51.08256658288447,
+        "median": 53.431416774389994,
+        "mean": 56.348307815709234,
+        "max": 67.53949581253462
+      },
+      "off_cpu_ms": {
+        "min": 1.5630572655801764,
+        "median": 3.272404455164306,
+        "mean": 6.589936409169146,
+        "max": 18.254769312314007
+      },
+      "interrupt_ms": {
+        "min": 8.715651295005914,
+        "median": 8.740496969884928,
+        "mean": 8.774012199402577,
+        "max": 8.931403382395025
+      },
+      "calls_per_sample": {
+        "DisplayEnter": {
+          "min": 12,
+          "median": 12.0,
+          "mean": 12,
+          "max": 12
+        },
+        "ExecAESSubmit": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0.25,
+          "max": 1
+        },
+        "VbxeOwnerSubmit": {
+          "min": 13,
+          "median": 13.0,
+          "mean": 13,
+          "max": 13
+        },
+        "wind_update": {
+          "min": 2,
+          "median": 2.0,
+          "mean": 2,
+          "max": 2
+        }
+      },
+      "inclusive_cpu_ms": {
+        "App_ob_offset": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "ExecAESDraw": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "GemDrawingBorrow": {
+          "min": 1.6203609072160299,
+          "median": 1.659127208445697,
+          "mean": 1.7432148400220475,
+          "max": 2.4395280942909223
+        },
+        "GemDrawingSolidBorrow": {
+          "min": 15.231068300584031,
+          "median": 15.358257010709366,
+          "mean": 15.40476776166196,
+          "max": 15.732986175232138
+        },
+        "wind_update": {
+          "min": 8.377397695731055,
+          "median": 8.992830348798034,
+          "mean": 9.005182702053485,
+          "max": 10.312611453116036
+        },
+        "DoIO": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        }
+      }
+    },
+    "counter_fragmented": {
+      "count": 8,
+      "discarded_warmups": 2,
+      "charged_cpu_ms": {
+        "min": 96.07396046401148,
+        "median": 96.62690888791465,
+        "mean": 96.71377183423812,
+        "max": 98.1690323508308
+      },
+      "presenter_cpu_ms": {
+        "min": 2.4964793150065057,
+        "median": 2.4974308514912336,
+        "mean": 2.497316314692146,
+        "max": 2.498100451239746
+      },
+      "elapsed_ms": {
+        "min": 119.73994155451457,
+        "median": 120.30444938460258,
+        "mean": 120.47984927662081,
+        "max": 122.26799778397725
+      },
+      "off_cpu_ms": {
+        "min": 3.0159477514840445,
+        "median": 3.0186261504780942,
+        "mean": 3.0189961924443773,
+        "max": 3.022573264785115
+      },
+      "interrupt_ms": {
+        "min": 20.646015740527982,
+        "median": 20.71304619956328,
+        "mean": 20.747081249938326,
+        "max": 21.08153751379728
+      },
+      "calls_per_sample": {
+        "DisplayEnter": {
+          "min": 15,
+          "median": 15.0,
+          "mean": 15,
+          "max": 15
+        },
+        "VbxeOwnerSubmit": {
+          "min": 17,
+          "median": 17.0,
+          "mean": 17,
+          "max": 17
+        },
+        "wind_update": {
+          "min": 2,
+          "median": 2.0,
+          "mean": 2,
+          "max": 2
+        }
+      },
+      "inclusive_cpu_ms": {
+        "App_ob_offset": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "ExecAESDraw": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "GemDrawingBorrow": {
+          "min": 2.1651331657689328,
+          "median": 2.200093321059687,
+          "mean": 2.197432543111651,
+          "max": 2.240692211074757
+        },
+        "GemDrawingSolidBorrow": {
+          "min": 18.1311400534834,
+          "median": 18.668546714802666,
+          "mean": 18.6276923196204,
+          "max": 18.99048322546904
+        },
+        "wind_update": {
+          "min": 21.048057526371657,
+          "median": 21.052286577414897,
+          "mean": 21.106621072797473,
+          "max": 21.44995834384722
+        },
+        "DoIO": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        }
+      }
+    },
+    "counter_tick_fragmented": {
+      "count": 8,
+      "discarded_warmups": 2,
+      "charged_cpu_ms": {
+        "min": 33.10050057867515,
+        "median": 39.12002610734177,
+        "mean": 38.61416111838665,
+        "max": 39.94754567022706
+      },
+      "presenter_cpu_ms": {
+        "min": 1.6830918310240366,
+        "median": 2.4971136726629917,
+        "mean": 4.628960682512451,
+        "max": 19.882742511407866
+      },
+      "elapsed_ms": {
+        "min": 49.62685672961844,
+        "median": 50.82674423686069,
+        "mean": 52.52488444118024,
+        "max": 64.36136395354245
+      },
+      "off_cpu_ms": {
+        "min": 2.174719014800269,
+        "median": 3.02158648620836,
+        "mean": 5.632699516055593,
+        "max": 24.04997892522897
+      },
+      "interrupt_ms": {
+        "min": 7.210884449638345,
+        "median": 8.370913150798092,
+        "mean": 8.278023806738005,
+        "max": 8.563757878369673
+      },
+      "calls_per_sample": {
+        "DisplayEnter": {
+          "min": 1,
+          "median": 1.0,
+          "mean": 1,
+          "max": 1
+        },
+        "ExecAESSubmit": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0.125,
+          "max": 1
+        },
+        "wind_update": {
+          "min": 2,
+          "median": 2.0,
+          "mean": 2,
+          "max": 2
+        }
+      },
+      "inclusive_cpu_ms": {
+        "App_ob_offset": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "ExecAESDraw": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "GemDrawingBorrow": {
+          "min": 1.0607869700117991,
+          "median": 1.0636415794659837,
+          "mean": 1.0673772412208424,
+          "max": 1.0945488941736365
+        },
+        "GemDrawingSolidBorrow": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "wind_update": {
+          "min": 14.03875784312758,
+          "median": 20.844992592112256,
+          "mean": 19.98136750594534,
+          "max": 21.11783686858506
+        },
+        "DoIO": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        }
+      }
+    },
+    "separated_exposure": {
+      "count": 3,
+      "discarded_warmups": 0,
+      "charged_cpu_ms": {
+        "min": 74.94075804330267,
+        "median": 75.31524051318125,
+        "mean": 75.92932221938719,
+        "max": 77.53196810167766
+      },
+      "presenter_cpu_ms": {
+        "min": 29.10538654231377,
+        "median": 29.108769783148357,
+        "mean": 29.11306931837565,
+        "max": 29.12505162966482
+      },
+      "elapsed_ms": {
+        "min": 126.38018605005222,
+        "median": 126.82205139988639,
+        "mean": 127.54895479003467,
+        "max": 129.4446269201654
+      },
+      "off_cpu_ms": {
+        "min": 35.24406558412358,
+        "median": 35.27958961288676,
+        "mean": 35.27268216284948,
+        "max": 35.29439129153809
+      },
+      "interrupt_ms": {
+        "min": 16.145036715211475,
+        "median": 16.22722127381837,
+        "mean": 16.346950407797994,
+        "max": 16.668593234364142
+      },
+      "calls_per_sample": {
+        "DisplayEnter": {
+          "min": 3,
+          "median": 3,
+          "mean": 3.6666666666666665,
+          "max": 5
+        },
+        "DoIO": {
+          "min": 3,
+          "median": 3,
+          "mean": 3,
+          "max": 3
+        },
+        "ExecAESSubmit": {
+          "min": 1,
+          "median": 1,
+          "mean": 1,
+          "max": 1
+        },
+        "VbxeOwnerSubmit": {
+          "min": 2,
+          "median": 2,
+          "mean": 2.3333333333333335,
+          "max": 3
+        },
+        "wind_update": {
+          "min": 4,
+          "median": 4,
+          "mean": 4,
+          "max": 4
+        }
+      },
+      "inclusive_cpu_ms": {
+        "App_ob_offset": {
+          "min": 0,
+          "median": 0,
+          "mean": 0,
+          "max": 0
+        },
+        "ExecAESDraw": {
+          "min": 0,
+          "median": 0,
+          "mean": 0,
+          "max": 0
+        },
+        "GemDrawingBorrow": {
+          "min": 1.5288724363140154,
+          "median": 1.5323966455167124,
+          "mean": 1.8199956111848061,
+          "max": 2.398717751723691
+        },
+        "GemDrawingSolidBorrow": {
+          "min": 2.0594773738720766,
+          "median": 2.0670191815658483,
+          "mean": 2.554511293210916,
+          "max": 3.537037324194824
+        },
+        "wind_update": {
+          "min": 32.63311995421348,
+          "median": 32.64467936039832,
+          "mean": 32.64529022332679,
+          "max": 32.65807135536857
+        },
+        "DoIO": {
+          "min": 1.0958880936706612,
+          "median": 1.1005400498182212,
+          "mean": 1.2546419708881524,
+          "max": 1.5674977691755747
+        }
+      }
+    },
+    "move_pending_redraw": {
+      "count": 8,
+      "discarded_warmups": 2,
+      "charged_cpu_ms": {
+        "min": 48.23338441087204,
+        "median": 49.59182609014363,
+        "mean": 49.34423277260815,
+        "max": 50.433195795195516
+      },
+      "presenter_cpu_ms": {
+        "min": 133.38293070417927,
+        "median": 157.82920695425153,
+        "mean": 179.80130332304734,
+        "max": 247.71370452184235
+      },
+      "elapsed_ms": {
+        "min": 220.51724113626142,
+        "median": 250.76189878753104,
+        "mean": 278.268052056799,
+        "max": 360.9984930481449
+      },
+      "off_cpu_ms": {
+        "min": 162.02742116696433,
+        "median": 191.62873442828163,
+        "mean": 218.35940308354208,
+        "max": 300.90233852425854
+      },
+      "interrupt_ms": {
+        "min": 10.256435558425045,
+        "median": 10.53844277882486,
+        "mean": 10.564416200648736,
+        "max": 11.021400407962458
+      },
+      "calls_per_sample": {
+        "DisplayEnter": {
+          "min": 12,
+          "median": 12.0,
+          "mean": 12,
+          "max": 12
+        },
+        "ExecAESSubmit": {
+          "min": 2,
+          "median": 2.0,
+          "mean": 2,
+          "max": 2
+        },
+        "VbxeOwnerSubmit": {
+          "min": 13,
+          "median": 13.0,
+          "mean": 13,
+          "max": 13
+        },
+        "wind_update": {
+          "min": 2,
+          "median": 2.0,
+          "mean": 2,
+          "max": 2
+        }
+      },
+      "inclusive_cpu_ms": {
+        "App_ob_offset": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "ExecAESDraw": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "GemDrawingBorrow": {
+          "min": 1.658986240077589,
+          "median": 1.66141794442745,
+          "mean": 1.714968303262431,
+          "max": 2.0916181618006737
+        },
+        "GemDrawingSolidBorrow": {
+          "min": 15.368089554384891,
+          "median": 16.46880581466325,
+          "mean": 16.35136154298337,
+          "max": 17.253330025275627
+        },
+        "wind_update": {
+          "min": 13.413774583121292,
+          "median": 13.884432722141478,
+          "mean": 13.858397626656554,
+          "max": 14.459618906113658
+        },
+        "DoIO": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        }
+      }
+    },
+    "zero_timer": {
+      "count": 8,
+      "discarded_warmups": 2,
+      "charged_cpu_ms": {
+        "min": 2.186771810273493,
+        "median": 2.1906131983044324,
+        "mean": 2.2451855778081957,
+        "max": 2.6311745907335853
+      },
+      "presenter_cpu_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "elapsed_ms": {
+        "min": 2.6199676054690086,
+        "median": 2.647808858170315,
+        "mean": 2.7104869188402816,
+        "max": 3.1805988054340486
+      },
+      "off_cpu_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "interrupt_ms": {
+        "min": 0.43234998498686883,
+        "median": 0.45733662823399057,
+        "mean": 0.4653013410320858,
+        "max": 0.5494242147004633
+      },
+      "calls_per_sample": {
+        "DoIO": {
+          "min": 1,
+          "median": 1.0,
+          "mean": 1,
+          "max": 1
+        }
+      },
+      "inclusive_cpu_ms": {
+        "App_ob_offset": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "ExecAESDraw": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "GemDrawingBorrow": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "GemDrawingSolidBorrow": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "wind_update": {
+          "min": 0,
+          "median": 0.0,
+          "mean": 0,
+          "max": 0
+        },
+        "DoIO": {
+          "min": 0.36066756980401166,
+          "median": 0.3665177570804887,
+          "mean": 0.3647732735251537,
+          "max": 0.3677159882094057
+        }
+      }
+    }
+  },
+  "exposure_bursts": [
+    {
+      "iteration": 0,
+      "pending_before": {
+        "count": 1,
+        "visible_count": 1,
+        "rectangles": [
+          [
+            40,
+            35,
+            504,
+            206
+          ]
+        ]
+      },
+      "delivered_rectangles": [
+        [
+          72,
+          43,
+          32,
+          48
+        ],
+        [
+          120,
+          43,
+          304,
+          48
+        ]
+      ],
+      "requested_pixel_area": 16128,
+      "newly_exposed_pixels": 4608
+    },
+    {
+      "iteration": 1,
+      "pending_before": {
+        "count": 1,
+        "visible_count": 1,
+        "rectangles": [
+          [
+            40,
+            35,
+            504,
+            206
+          ]
+        ]
+      },
+      "delivered_rectangles": [
+        [
+          72,
+          43,
+          80,
+          48
+        ],
+        [
+          392,
+          43,
+          32,
+          48
+        ]
+      ],
+      "requested_pixel_area": 5376,
+      "newly_exposed_pixels": 4608
+    },
+    {
+      "iteration": 2,
+      "pending_before": {
+        "count": 1,
+        "visible_count": 1,
+        "rectangles": [
+          [
+            40,
+            35,
+            504,
+            206
+          ]
+        ]
+      },
+      "delivered_rectangles": [
+        [
+          72,
+          43,
+          80,
+          48
+        ],
+        [
+          392,
+          43,
+          32,
+          48
+        ]
+      ],
+      "requested_pixel_area": 5376,
+      "newly_exposed_pixels": 4608
+    }
+  ],
+  "move_evidence": {
+    "measured_calls": 8,
+    "begin_move_returns": [
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5
+    ],
+    "redraw_status": 5,
+    "screen_copy_starts": 0,
+    "pending_before_moves": {
+      "count": 1,
+      "visible_count": 1,
+      "rectangles": [
+        [
+          40,
+          35,
+          504,
+          206
+        ]
+      ]
+    }
+  },
+  "pixels": {
+    "full_frames": 11,
+    "pixels_per_frame": 153600,
+    "checkpoints": [
+      {
+        "phase": 1,
+        "work": [
+          40,
+          35,
+          464,
+          171
+        ],
+        "count": 123456,
+        "sha256": "a3e81a0d04a3b5991886ae7b61d1c78fc89c364962ed577600defe5f01dd9eb9",
+        "pixel_count": 153600,
+        "pending": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        }
+      },
+      {
+        "phase": 2,
+        "work": [
+          40,
+          35,
+          464,
+          171
+        ],
+        "count": 123456,
+        "sha256": "e5762b901273478cd416fa607ba2a3089ba2083639a72e55df95b4a1a29d9ab6",
+        "pixel_count": 153600,
+        "pending": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        }
+      },
+      {
+        "phase": 3,
+        "work": [
+          40,
+          35,
+          464,
+          171
+        ],
+        "count": 123456,
+        "sha256": "97b755d17b3ba05adf0fb858692fcea0da34407697be0274db46884a005db824",
+        "pixel_count": 153600,
+        "pending": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        }
+      },
+      {
+        "phase": 4,
+        "work": [
+          40,
+          35,
+          464,
+          171
+        ],
+        "count": 123456,
+        "sha256": "76e07133e868a1eb2f9c9d7b9af1e0592907ec6de165b205ad8583aec9ecd2bc",
+        "pixel_count": 153600,
+        "pending": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        }
+      },
+      {
+        "phase": 5,
+        "work": [
+          40,
+          35,
+          464,
+          171
+        ],
+        "count": 123456,
+        "sha256": "bda3d34b7a054aa088eda153e1feea56e2b0efe06787a74d810e1d13b6476989",
+        "pixel_count": 153600,
+        "pending": {
+          "count": 1,
+          "visible_count": 6,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        }
+      },
+      {
+        "phase": 6,
+        "work": [
+          40,
+          35,
+          464,
+          171
+        ],
+        "count": 123466,
+        "sha256": "bda3d34b7a054aa088eda153e1feea56e2b0efe06787a74d810e1d13b6476989",
+        "pixel_count": 153600,
+        "pending": {
+          "count": 1,
+          "visible_count": 6,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        }
+      },
+      {
+        "phase": 80,
+        "work": [
+          40,
+          35,
+          464,
+          171
+        ],
+        "count": 123466,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be",
+        "pixel_count": 153600,
+        "pending": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        }
+      },
+      {
+        "phase": 81,
+        "work": [
+          40,
+          35,
+          464,
+          171
+        ],
+        "count": 123466,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be",
+        "pixel_count": 153600,
+        "pending": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        }
+      },
+      {
+        "phase": 82,
+        "work": [
+          40,
+          35,
+          464,
+          171
+        ],
+        "count": 123466,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be",
+        "pixel_count": 153600,
+        "pending": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        }
+      },
+      {
+        "phase": 8,
+        "work": [
+          40,
+          35,
+          464,
+          171
+        ],
+        "count": 123466,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be",
+        "pixel_count": 153600,
+        "pending": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        }
+      },
+      {
+        "phase": 9,
+        "work": [
+          40,
+          35,
+          464,
+          171
+        ],
+        "count": 123466,
+        "sha256": "600b9f9b3e3e7816ad6317d5d9f0a3903e6364ffe96daf37f627d03f495ad8be",
+        "pixel_count": 153600,
+        "pending": {
+          "count": 1,
+          "visible_count": 1,
+          "rectangles": [
+            [
+              40,
+              35,
+              504,
+              206
+            ]
+          ]
+        }
+      }
+    ],
+    "oracles": [
+      "independent desktop recomposition",
+      "independent Counter text/fill painter",
+      "pinned unmodified GEM4XE Python object oracle"
+    ]
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "comparison_build": "build/gem-source-compatibility/counters/program/build.json",
+    "comparison_sha256": "a8497749e1a72f9fa4e96d3d3e26b5c96ceadafef07464f0d4d1e3fa2d7fdc50",
+    "identical_maps": [
+      "bank_zero_budget",
+      "task_pools",
+      "runtime_reservations",
+      "phase_reservations"
+    ],
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 26848,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 46816,
+      "loading_including_os": 40336
+    },
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 731,
+        "untouched_above_floor": 549
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 726,
+        "untouched_above_floor": 1578
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 52,
+        "untouched_above_floor": 204
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 287,
+      "untouched_from_base": 1249,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "validation": {
+    "fixture_assertions": 511,
+    "measured_samples": 67,
+    "warmup_samples": 16,
+    "heap_restored": true,
+    "ownership_restored": true,
+    "host_tests": {
+      "run": 665,
+      "passed": 661,
+      "skipped": 4,
+      "log": "build/magic-aes-baseline/host-tests-final.log",
+      "sha256": "64c8888cfec7be9380375a35abb61b46f28cd777d4fa2bf238e11121639a7ed1"
+    }
+  },
+  "artifacts": {
+    "build/magic-aes-baseline/final/results.json": {
+      "sha256": "f09e0e26ea5bad30a43554c7fdee3d8e29730735c4fe0a7ad2fa1f11c99df06d",
+      "bytes": 340445
+    },
+    "build/magic-aes-baseline/final/timings.json": {
+      "sha256": "8302306b76cf03738524c409cd7e7587813c56a590e24356464df852baa4455c",
+      "bytes": 162285
+    },
+    "build/magic-aes-baseline/final/trace-definition.json": {
+      "sha256": "888743e69932f716a306f222c32c2806cc2d2dc66b20c8aaa1b11c9bb01c6d1d",
+      "bytes": 73113
+    },
+    "build/magic-aes-baseline/final/emulator.log": {
+      "sha256": "50cd4067522851345a1e093ccb66bbbdb122a99c364cbef6a69e705da7bc75c7",
+      "bytes": 157628381
+    },
+    "build/magic-aes-baseline/final/program/program.xex": {
+      "sha256": "b4ccc5e2f148e630d48191a932c8d6ea3ce49a93e54306328ceb18e0fdf3b937",
+      "bytes": 449319
+    },
+    "build/magic-aes-baseline/final/program/build.json": {
+      "sha256": "d271e56511a94127ee2cfa675a292d735cd7fe67c66ae2793a2da15462311d74",
+      "bytes": 127109
+    },
+    "build/magic-aes-baseline/final/c-image.json": {
+      "sha256": "195c0abf469200286bfef7266014627c8760c0a272df765b1cc4477a67f010c9",
+      "bytes": 2234147
+    }
+  },
+  "limits": [
+    "Eight measured calls per ordinary case and three exposure samples do not establish tail percentiles.",
+    "Inclusive helper costs overlap and must not be summed.",
+    "Uncovered and fragmented Counter cases have different open-window counts; their difference does not isolate visibility clipping.",
+    "Moves accept explicit requested bounds and repaint; their elapsed time is not physical drag latency.",
+    "Coordinate-lookup cost is 0.802 ms for five objects, 19.589 ms for the 33-object sibling tree and 3.357 ms for the nested tree; traversal savings should not be extrapolated to total drawing costs.",
+    "Timer measurements use an already opened binding.",
+    "Stack watermarks are observations under this fixture and its host debugger, not worst-case bounds.",
+    "No runtime optimization, compiler migration, demo refresh, hardware qualification or full hosted qualification was performed."
+  ],
+  "development_attempts": [
+    {
+      "path": "build/magic-aes-baseline/initial",
+      "result": "host pixel-oracle setup failure",
+      "detail": "Corrected host donor-model background pen mapping; guest drawing policy was unchanged."
+    },
+    {
+      "path": "build/magic-aes-baseline/capture",
+      "result": "fixture move request rejected",
+      "detail": "The first local query/ternary-based move produced a rejected SET request before DESKMOVE. Emission suggests a Calypsi defect; no isolated compiler qualification claim. The final fixture supplies explicit requested bounds as a WM_MOVED handler does. Earlier sources, trace and failure results remain in that development directory."
+    }
+  ],
+  "oracle_inputs": {
+    "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+    "files": {
+      "build/gem-vdi/upstream/tools/aesref.py": "17159134e05640b514708cd780004e1a59698927e3cb17ac3628ed57eb1f6266",
+      "build/gem-vdi/upstream/tools/vdiref.py": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+      "build/gem-vdi/upstream/tools/fontref.py": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+      "build/gem-vdi/upstream/tools/devref.py": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+      "build/gem-vdi/upstream/tools/gemdata.py": "408f051d865d07b88cede092d8b4fbf39e0da154c1954085ae3a18d410f0eb87",
+      "build/gem-vdi/upstream/tools/vbxeref.py": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+      "build/gem-vdi/upstream/tools/anticref.py": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df"
+    },
+    "archive": "build/magic-aes-baseline/final/oracles"
+  }
+}

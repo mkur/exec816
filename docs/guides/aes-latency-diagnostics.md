@@ -205,3 +205,39 @@ Keep failed records and their traces in distinct output directories. These
 changes reserve **0 additional bank-zero bytes**, fixed or per Task, including
 guards and unused capacity. Only the optional test fixture adds upper-RAM
 counters; the native desktop and distributed demo are unchanged.
+
+## AES drawing and redraw baseline
+
+The [MagiC-inspired optimization baseline](../development/magic-aes-baseline.json)
+records the current object traversal, visibility clipping, redraw delivery,
+pending-paint moves and immediate timer behavior. Capture a new development
+baseline before changing those paths:
+
+```sh
+python3 tools/measure_magic_aes.py --output build/magic-aes-baseline/new
+```
+
+The optimized native fixture draws 5-object, 33-object sibling and 9-object
+nested trees. It includes the production Counter redraw routine unchanged and
+calls it with uncovered and fragmented visibility, then with a move request.
+Three exposure bursts close three disjoint 32x48 covering windows while the
+application is delayed. The host records delivered rectangles and checks the
+entire frame against independent desktop, Counter and pinned donor object
+oracles. This exercises the redraw routine rather than the Counter's complete
+event loop or its loaded application wrapper.
+
+Ordinary cases retain eight measured calls after two warmups; exposure has
+three samples. Passive emitted-code markers record caller CPU, presenter CPU,
+interrupts, off-caller time, function calls and inclusive helper costs. Inclusive
+costs overlap and must not be added. Move samples include accepting explicitly
+requested geometry and repainting the Counter; they are not physical drag
+latencies. Timer samples use a warmed binding. Uncovered and fragmented Counter
+cases have different open-window counts, so their difference does not isolate
+clipping cost. Compare each case with its matched future capture.
+
+Results, traces, pixel captures and build inputs remain in the development
+directory. The evidence records the dirty source state, compiler/ROM/emulator
+pins, stack observations and complete bank-zero reservation comparison. No
+production drawing policy, compiler pin, Task or bank-zero reservation changes.
+This baseline does not qualify input-to-scanout latency, Atari ST compatibility,
+physical hardware or the full hosted system.
