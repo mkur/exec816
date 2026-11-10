@@ -8,8 +8,9 @@ contracts and open latency gates remain unchanged until executable slices land.
 The [GF0–GF15 implementation plan](gem-first-gui-implementation-plan.md) orders
 the baseline, shared/caller-side window policy, console/terminal separation,
 native API retirement, measured rendering changes and OF816 package acceptance.
-GF0's [native baseline](../../history/gem-first-gui.md) passes five functional
-cohorts with unchanged bank-zero reservations; GF1–GF15 remain open.
+The [execution record](../../history/gem-first-gui.md) covers GF0's five native
+baseline cohorts and GF1's shared window policy checks and effect inventory.
+GF2–GF15 remain open.
 
 The [Atari ST reference](../../guides/atari-st-reference.md) runs the native
 baseline's unchanged object-tree routines under EmuTOS and MagiC in Hatari.

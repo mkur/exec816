@@ -84,3 +84,119 @@ frozen emitted-input files recorded in the evidence before implementing policy
 changes. The narrowest observed public-pool margin is 163 bytes above its
 protected floor; no pool enlargement was needed. Host checks run 687 tests:
 683 pass and four historical checks skip.
+
+## GF1 — Shared window policy
+
+`AESWINDOW.Request` decodes hidden create/delete and hit lookup before calling
+typed helpers. Explicit deletion and client retirement share the same record
+destruction. The presenter still executes the operations through the existing
+AES request and reply path. [Window policy](../../lib/aes/aeswindow.act)
+
+### Operation and effect inventory
+
+Window mutations currently pass `AESWINDOW.Ready`, which checks mouse
+ownership and presenter readiness. `AESLOCKS.NativeReady` consults the
+display grant, Layers transaction, bitmap completion, menu replacement, console
+batch, outline and tab gesture. The presenter retries pending requests from
+`AESCORE.Settle`. `FIND` reads the committed stack before this readiness check.
+[AES request dispatch](../../lib/aes/aescore.act) ·
+[Readiness and lock admission](../../lib/aes/aeslocks.act)
+
+| Operation | Scene and publication | Resource, input and physical effects |
+| --- | --- | --- |
+| `CREATE` | Claims a common AES/desktop slot and hidden external-paint layer, normalizes packed-pixel bounds and publishes the new handle, work geometry and initial slider/view. | The C binding allocates the upper-memory view and frees it if admission fails. The scene consumes fixed slots and distinct monotonic layer, desktop and GEM IDs. |
+| `DELETE` | Requires a hidden layer. Clears the special desktop role, cache candidate, layer and both records, withdraws the view handle and synchronizes the top/focus directory. Layers retires saved-area identity. | The shared destroy path releases an attached console, which can restore its cursor through the display path. It cancels the window's GUI/gesture lifetime. The C binding frees the view after success. |
+| `FIND` | Reads the topmost shown layer at a point and maps it to a GEM handle. A native window, icon tile, desktop or chrome yields zero. | Read-only, with no physical admission. |
+| `OPEN` | Validates normalized geometry, publishes a fresh window epoch, sets bounds and chrome order, shows and focuses the layer, refreshes slider/view and can post a pending close. | Allocates a keyboard route from the existing lease for an ordinary GEM window and retires it on GUI epoch exhaustion. Focus may restore a console caret, cancel a widget gesture and publish a new route. |
+| `CLOSE` | Withdraws the open epoch and pending GUI facts, closes the shared inbox/menu state after the last open sibling, restores focus, hides the layer, clears paint damage and restores normal bounds for an icon. | Cancels mouse capture, pumps captured keys and retries if the old route still has references. Focus can draw the outgoing caret. GUI epoch and focus can change before route retirement succeeds. |
+| `WF_EXEC_CONSOLE` | Converts a hidden external-paint layer to retained content and attaches the console unit and its presentation metadata. | Resolves the unit by owner and checks geometry, presentation, scene and display availability. Claims the view and dirties retained cells. The reciprocal release can draw. |
+| `WF_NAME`, `WF_INFO` | Copies bounded caller text and invalidates the corresponding strip. Title changes invalidate the Windows-menu revision. Info changes invalidate the cached body and advance the visual revision. | The presenter paints later. Unchanged strings return before any of these changes. |
+| `WF_EXEC_FOCUS`, `WF_EXEC_PRESERVE` | Sets focus-notice or exposure policy. Enabling focus notices posts the current focus fact. | Event publication uses the existing registration and its retained delivery record. |
+| `WF_EXEC_DESKTOP` | Marks a borderless window as the unique desktop layer and orders it to the back. | Later focus and hit lookup use this identity. |
+| `WF_TOP` | Requires a shown layer, restores normal bounds for a tile, raises within chrome ordering, focuses and updates the published window state. | Focus can touch caret pixels, widget capture, keyboard routes and mouse snapshots. |
+| `WF_CXYWH` | Validates bounds and console constraints. Iconified windows change normal bounds. Ordinary resize or move updates geometry, visibility, damage and the published view. | An equal-size move with no UPDATE owner can try `DESKMOVE.Application`. This path hides caret/outline, may hold a Layers token and retained request across a screen copy, and commits new geometry on successful completion. Refusal takes the damage/redraw path. Console moves also rebase presentation. |
+| `WF_VSLIDE`, `WF_VSLSIZE` | Validates frame support and range, changes the view and derived slider, invalidates the scrollbar strip and invalidates the cached body. | The presenter paints later. An unchanged value returns immediately. |
+| Client exit | Retires registration/menu state, then closes and destroys each owned window and synchronizes the directory. | Waits for endpoint holds, readiness and route retirement. `DESKMOVE.Forget` releases the retained reply identity only after the scene settles. Menu storage, endpoint and Task lease have their own retirement. |
+
+The effect boundaries for GF2 include `DESKCORE.Focus`, `RestoreFocus`,
+`Iconify` and `RestoreIcon`, which the native desktop also calls. The copied
+move keeps old geometry while `DESKMOVE` retains the token, source window and
+request. `DESKMOVE.Pump` finishes the transaction after bitmap completion and
+publishes copied geometry only on success. Route preparation and retirement
+use the existing keyboard lease. The close drain calls the presenter's
+`CONSOLEINPUT.Pump`, including its shared capture record and delivery path.
+[Native desktop policy](../../lib/desktop/deskcore.act) ·
+[Move continuation](../../lib/desktop/deskmove.act) ·
+[Console attachment](../../lib/desktop/desk-owned-console.inc) ·
+[Keyboard routes](../../lib/input/input.act) ·
+[Input drain](../../lib/console/consoleinput.act)
+
+### Scene access and scratch
+
+The console worker reclaims `AESGATE` before each turn. It offers admission for
+caller UPDATE after its last readiness check. `AESLOCAL.Update` claims that
+handoff and shares `AESLOCKS` and `AESWINDOWSTATE` with RPC. BEGIN touches
+Layers and cache identities and publishes views. END consumes the caller's
+invalidation and paint journal synchronously, updates pixel readiness and marks
+cache candidates. C-side `wind_get` uses the published view and directory.
+[Worker](../../lib/console/consoledriver.act) ·
+[Current gate](../../lib/aes/aesgate.act) ·
+[View publication and UPDATE](../../lib/aes/aeswindowstate.act) ·
+[C binding](../../c/calypsi/aes-windows.c)
+
+| Current path | Scene access to account for when changing serialization |
+| --- | --- |
+| Service lifetime and controls | `DESKBOOT` binds and allocates the scene before worker startup. `DESKHOST`, `DESKCORE`, `DESKSTATE`, `AESHOST`, `AESCORE`, `AESWINDOW`, `AESLOCKS` and `AESWINDOWSTATE` use scene state for admission, control dispatch, settlement, wake decisions, publication and teardown. The native Shell and preview submit controls to the worker. |
+| Input and gestures | `DESKINPUT`, `DESKDRAG`, `AESMOUSE`, `DESKAPPMENU`, `DESKMENU`, `DESKTABS` and `DESKWIDGETINPUT` read or change hit geometry, focus, chrome, widget state or gesture continuation. `DESKEVENTS` publishes native events and records loss. Input capture uses route tags and rings across interrupt entry. |
+| Frame, menu and cache work | `DESKPAINT`, `DESKWIDGETS`, `DESKHOST`, `DESKCACHE`, `DESKMENUCACHE` and `DESKMOVE` read layer damage, visibility and identities, start and finish Layers transactions, and schedule or retire display work. `DESKMENUPAINT` consumes a prepared layer strip. Runnable and cache-candidate queries read the scene even when no transfer starts. |
+| Console rendering and lifetime | `DESKCONSOLE` binds or releases presentations. `CONSOLEDISPLAY`, `CONSOLEBITMAP` and the console desktop drawing hooks use the selected scene layer for damage, text, scroll/copy admission and retirement. Caller-side `CONSOLE.Destroy` scans the window table for an attachment before freeing a unit. That scan and the console registry's selected-unit lookup also need an ownership audit. |
+
+`LAYERS` uses its scene-owned `work` region and active transaction fields.
+The active token preserves logical ownership of dependent geometry during a
+physical transfer. Module storage also retains cache candidates, menu
+save/restore, move and paint continuations, selected console and the shared
+bitmap packet. Renderer GSX state, command buffers, mapped VRAM scratch and
+their fences belong to physical display ownership. These are separate from the
+compiler's Task-local scratch. [Layers layout](../../lib/display/layertypes.act) ·
+[Bitmap binding](../../lib/console/consolebitmap.act) ·
+[Renderer storage](../../ports/gem4xe/adapter/README.md)
+
+The native helpers use stack locals and the running Task's direct page.
+Action! call-clobbered scratch is D-relative `$80–$BF`. `A816MEMORY`'s pinned
+runtime `Clear` and `Move` use the native ABI with no shared writable scratch.
+The existing C UPDATE bridge stages its argument in Task DP `$80–$83` and
+builds its aligned native argument frame on that Task's stack. Its global
+entry address is bound at startup. The C context and request belong to the
+registered caller. A future caller entry still needs scene admission and a
+bridge check for its own call signature and transitive effects.
+[Native DP contract](../reference/platform.md#compiler-and-memory-contract) ·
+[UPDATE bridge](../../c/calypsi/aes-update.s) ·
+[C context and UPDATE](../../c/calypsi/aes.c)
+
+### Development checks
+
+The optimized `windows` runs match the independent 10,952-pixel visibility
+oracle, physical window events and outline pixels. The optimized `cache` runs
+match all 32 checkpoint records and all 14 captured scanouts byte for byte.
+The `windows` assertion count includes the loop that drains redraw messages
+while waiting for each control event.
+
+The original `multiwindow` fixture fails on the parent and candidate at check
+25. It expects the pre-existing frame insets that produced `(104,80,184,96)`.
+The current 11-pixel top and 2-pixel bottom insets produce `(104,75,184,107)`.
+The fixture uses the current coordinates for the front window's unobscured work
+area. Both corrected runs pass all 67 C checks. All six passing runs return
+through the OS boundary with intact guards and zero live worker Tasks. The
+original failed runs are retained alongside the corrected runs.
+
+In the matched optimized `windows` image, `AESWINDOW` grows from 14,652 to
+14,874 emitted code bytes within the same code banks. The refactor adds zero
+upper-RAM data bytes, VRAM bytes, Tasks or signals. The reserved bank-zero
+delta is **0 fixed, 0 root/kernel, 0 per public Task and 0 idle bytes**, including
+guards, alignment and spare capacity. These focused AES fixtures use eight
+public slots. The production twelve-slot map is the one measured in GF0.
+
+Run the three optimized fixtures with `tools/test_aes_server.py --mode opt`,
+selecting `--suite windows`, `--suite multiwindow` or `--suite cache` and a
+separate `--output` directory for each. The host suite reports 683 passes and
+four skips. [GF1 execution record](../development/gem-first-gf1.json)

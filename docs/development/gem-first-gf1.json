@@ -1,0 +1,274 @@
+{
+  "slice": "GF1",
+  "tier": "development",
+  "status": "pass",
+  "qualification": false,
+  "parent_revision": "aa783faba79e90c873ab435d69a1392a6dff9979",
+  "scope": "Optimized emitted AES window, multiwindow and cache fixtures in the existing eight-slot test profile. No disk media. The production resource inventory is GF0.",
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ]
+  },
+  "sources": {
+    "parent_window_sha256": "08052659b1b942248e0cdf2bc780c788fae30d1407f87a584d693737fd71d68c",
+    "candidate_window_sha256": "4adf65e752b1f00a05bba6f9d9f25586525ccef5806aab54501b62db5a67ccee",
+    "fixtures_sha256": {
+      "windows": "a2082adc82a9f6eb444e1e4f5ce42bf6408000c6e1dd19f71ede2e4effe780e0",
+      "multiwindow": "7915803ce9c9f4ca47a354843fd90c97033c88263f29b74d1317c0e474bdb8a6",
+      "cache": "e82cd5c341e8623ade8e1a1257f9a02b686c688f326edd7ce1a929b4076558d8"
+    },
+    "runner_sha256": "7f707426196b98be032e0963321f11e8e2b8a1537dc889a991aff46107cd2219",
+    "cache_observer_sha256": "ded0a6c4298527935856cec83e34c9a5e9b8f3735fa7c3d23cda398d7499b3d2"
+  },
+  "host": {
+    "passed": 683,
+    "skipped": 4,
+    "log": "build/gem-first-gui/gf1/host-final.log",
+    "sha256": "6414a7ed5a6eb8ff6900b012d03818a190ecf5766653fa0543bb96404f3d8eab"
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": 0,
+    "idle": 0,
+    "includes": "guards, alignment and spare capacity"
+  },
+  "resource_delta": {
+    "aeswindow_emitted_code_bytes": 222,
+    "code_banks": 0,
+    "upper_ram_data_bytes": 0,
+    "vram_bytes": 0,
+    "tasks": 0,
+    "signals": 0
+  },
+  "cases": {
+    "windows": {
+      "parent": {
+        "build": "build/gem-first-gui/gf1/parent/windows/program",
+        "xex_sha256": "5203125a514bf1c00c8571d9f0ac601ea9da80fbecad57fa3680b2cb5737bdfb",
+        "image_manifest_sha256": "8125e00e53c5cdaa6885e72d1ce9f0451d607b6503a49e13005c100117b5bd84",
+        "foreign_elf_sha256": "f6fbae8e7bfc7671828f5784924b8eef2a40a948a563c1785fecb85936196ff5",
+        "result": "build/gem-first-gui/gf1/parent-replay/windows/results.json",
+        "result_sha256": "e3d421f08adcea26c3393e878c7ff4ee0ce5a756efb284c9060e3028b03dcfcc",
+        "aes_checks": 285,
+        "native_checks": 4,
+        "guards": "intact",
+        "live_tasks_after_exit": 0,
+        "root_stack_touched_bytes": 527,
+        "presenter_stack_touched_bytes": 714,
+        "kernel_stack_touched_bytes": 287,
+        "aeswindow_code_bytes": 14652
+      },
+      "candidate": {
+        "build": "build/gem-first-gui/gf1/candidate/windows/program",
+        "xex_sha256": "182b81c9b2aeff82790e5b1d16d6a055c178a049f4c489f3346f47eb221c1388",
+        "image_manifest_sha256": "2bd5b52f89e2e31b3c2ef0c3c9a8b2e777e58669d3de8a75305399a304804114",
+        "foreign_elf_sha256": "f6fbae8e7bfc7671828f5784924b8eef2a40a948a563c1785fecb85936196ff5",
+        "result": "build/gem-first-gui/gf1/candidate-replay/windows/results.json",
+        "result_sha256": "99964f887d43df951394c0f97d58eeec4dd842abcbb01ba1af948ce5025a06e6",
+        "aes_checks": 284,
+        "native_checks": 4,
+        "guards": "intact",
+        "live_tasks_after_exit": 0,
+        "root_stack_touched_bytes": 519,
+        "presenter_stack_touched_bytes": 712,
+        "kernel_stack_touched_bytes": 291,
+        "aeswindow_code_bytes": 14874
+      },
+      "physical_requests": {
+        "top": "deferred",
+        "move": [
+          24,
+          20,
+          200,
+          120
+        ],
+        "close": "deferred",
+        "scene_token": 0,
+        "outline_pixels": "exact",
+        "copied_title_bytes": 65
+      },
+      "visible_rectangles": [
+        [
+          16,
+          20,
+          184,
+          29
+        ],
+        [
+          16,
+          49,
+          72,
+          78
+        ]
+      ],
+      "visible_pixels": 10952,
+      "matching_capture_sha256": {
+        "outline-scan.bgra": "155c256b515ddf7c34676f8894a4c235b7a931a719d4482925ec5dabd964c714"
+      }
+    },
+    "multiwindow": {
+      "parent": {
+        "build": "build/gem-first-gui/gf1/parent-fixed/multiwindow/program",
+        "xex_sha256": "7193c4ea67ff3077c2202768ced2bb36fde93d7a6e5d4042f3d82851dcfa3c1b",
+        "image_manifest_sha256": "90cd26b9d10d3eaa8d417ecc2d1d02ea9c4124a100095a4f0d4c7099dfbb63ba",
+        "foreign_elf_sha256": "222def3fea3e0fc9c7f5116524fb61c35e8ac104cb10901b776aee35d0076e87",
+        "result": "build/gem-first-gui/gf1/parent-fixed/multiwindow/results.json",
+        "result_sha256": "a09c2bb52a170244565b715952a92bb9fb5bb22928790d00ce1523e220939f46",
+        "aes_checks": 67,
+        "native_checks": 4,
+        "guards": "intact",
+        "live_tasks_after_exit": 0,
+        "root_stack_touched_bytes": 359,
+        "presenter_stack_touched_bytes": 712,
+        "kernel_stack_touched_bytes": 285,
+        "aeswindow_code_bytes": 14652
+      },
+      "candidate": {
+        "build": "build/gem-first-gui/gf1/candidate-fixed/multiwindow/program",
+        "xex_sha256": "7dbb278568b827e442ee4325009624658e55cacb5f3428130f4705cd0d1a2908",
+        "image_manifest_sha256": "f4e6d23a5be035b1a6853371db7218766e27eebabff5e17632cf60f365a3d286",
+        "foreign_elf_sha256": "222def3fea3e0fc9c7f5116524fb61c35e8ac104cb10901b776aee35d0076e87",
+        "result": "build/gem-first-gui/gf1/candidate-fixed/multiwindow/results.json",
+        "result_sha256": "e7f2b05248315ede3a4d3b958cb82ed74b9e30b45ea0275172fae4790d74f848",
+        "aes_checks": 67,
+        "native_checks": 4,
+        "guards": "intact",
+        "live_tasks_after_exit": 0,
+        "root_stack_touched_bytes": 359,
+        "presenter_stack_touched_bytes": 708,
+        "kernel_stack_touched_bytes": 283,
+        "aeswindow_code_bytes": 14874
+      }
+    },
+    "cache": {
+      "parent": {
+        "build": "build/gem-first-gui/gf1/parent/cache/program",
+        "xex_sha256": "8087a48dc6c85c2992987950f56596862203e38d4f56d1f588dd1e0e74eeb49a",
+        "image_manifest_sha256": "60d936a748379543e42574d5479360f06b0c49fd26da9f9bdd22ef23ebe30408",
+        "foreign_elf_sha256": "f5e6a9c95b08d043bbf95042e13674ddd016dfc867d404c4de49e96f104e6836",
+        "result": "build/gem-first-gui/gf1/parent-replay/cache/results.json",
+        "result_sha256": "1163e7e28fedc8454499b2006812867edfd0b6f91c12fd81459dbfdb8444f1be",
+        "aes_checks": 224,
+        "native_checks": 4,
+        "guards": "intact",
+        "live_tasks_after_exit": 0,
+        "root_stack_touched_bytes": 678,
+        "presenter_stack_touched_bytes": 712,
+        "kernel_stack_touched_bytes": 287,
+        "aeswindow_code_bytes": 14652
+      },
+      "candidate": {
+        "build": "build/gem-first-gui/gf1/candidate/cache/program",
+        "xex_sha256": "8afb4b50d54474a9d051e1111a3062d4f055c7322ed9b24c2ec7d9cdd4fc65c0",
+        "image_manifest_sha256": "ce076ff7678314a0dee7a9de57dcdeee1d0d6cc398a409e281420c92f6577d24",
+        "foreign_elf_sha256": "f5e6a9c95b08d043bbf95042e13674ddd016dfc867d404c4de49e96f104e6836",
+        "result": "build/gem-first-gui/gf1/candidate-replay/cache/results.json",
+        "result_sha256": "b0a14a25ba9452de95531b7db9fed2142937ab366a4e46ecfe7b5b301df3f2de",
+        "aes_checks": 224,
+        "native_checks": 4,
+        "guards": "intact",
+        "live_tasks_after_exit": 0,
+        "root_stack_touched_bytes": 663,
+        "presenter_stack_touched_bytes": 712,
+        "kernel_stack_touched_bytes": 285,
+        "aeswindow_code_bytes": 14874
+      },
+      "matching_checkpoints": 32,
+      "matching_capture_sha256": {
+        "aes-cache-1.bgra": "a1e99f69851a01d78a43aca808e8842bc65be0c298a7ff140d381910eec11b36",
+        "aes-cache-10.bgra": "a0a69b197c2b27186e41a1cf6091efe8f01a435cfef99711a0c5dc62bcb2169f",
+        "aes-cache-11.bgra": "6cf17b7f98a992ca4c74fc54cf2ab9a4975ff164d5c3e5ef00e4999a9d0f13d6",
+        "aes-cache-12.bgra": "1802ec7c8d0ae718a7591a5e127cfc6a5316324b4fffce50c36988fce1745968",
+        "aes-cache-14.bgra": "9f607df4d92614b184c33049e828702a296a1a89d8fa0c7143834475cbdb7074",
+        "aes-cache-2.bgra": "7fa6df8f8d50903c3f5f120ea835b43a91a42741a08bd554d6daf0269dc4dfb6",
+        "aes-cache-26.bgra": "fc01abc65b6dba3b6eadf0c37cc3dc9d914182fef8076758af86d90d4ec50760",
+        "aes-cache-3.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+        "aes-cache-4.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+        "aes-cache-6.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+        "aes-cache-9.bgra": "a29a54675ac7314436fccaaae4e7ca522d7f508265685e65445972a9d15e62e1",
+        "aes-cache-frame-27.bgra": "9e34c76b23bc0ec1465483cdd30c9ca019d93e91f68c4470c3a27f6779f742d6",
+        "aes-cache-frame-29.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806",
+        "aes-cache-frame-31.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806"
+      }
+    }
+  },
+  "toolchain": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "actionc_override": false,
+    "calypsi": {
+      "cc65816": {
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "original_multiwindow_fixture": {
+    "outcome": "Both revisions fail the obsolete geometry assertion before the fixture correction.",
+    "fixture_sha256": "e9dbbbbeb76c96a40cbb1bde1895e43833023d0f5d35e64df34ba17c9b8fef5a",
+    "first_failed_assertion": 25,
+    "platform_status": "FF93",
+    "expected_before": [
+      104,
+      80,
+      184,
+      96
+    ],
+    "expected_after": [
+      104,
+      75,
+      184,
+      107
+    ],
+    "results_sha256": {
+      "build/gem-first-gui/gf1/candidate-replay/multiwindow/results.json": "39b003c8adf6357b861b9e1fc03b438fd37f13e79368cdc8274659a6a38ecb20",
+      "build/gem-first-gui/gf1/parent-replay/multiwindow/results.json": "7030591bc4a41b8e0307cd9e1003537d836ddfafb9f545031f4ad510776eb414"
+    }
+  },
+  "initial_emulator_attempt": "Sandbox denied the localhost listener before any guest execution. Logs are in parent/ and candidate/. The runs above used the pinned bridge with localhost access."
+}

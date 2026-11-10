@@ -72,18 +72,19 @@ BYTE FUNC ConsoleBounds(DESKTYPES.Window POINTER window
 RETURN(work.right-work.left=512 AND work.bottom-work.top=160
     AND ((work.left OR work.top) & 7)=0)
 
-CARD FUNC Create(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
-    AESTYPES.Request POINTER request)
+; The caller owns the scene and supplies the registered binding's window view.
+PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.WindowView POINTER view
+    INT kind,x,y,width,height)
   BYTE slot,status
   LAYERTYPES.Rect bounds
 
-  IF request.intin(0)<>0 AND (CARD(request.intin(0)) & AESTYPES.WINDOW_KIND)<>AESTYPES.WINDOW_KIND
-      OR (CARD(request.intin(0)) & AESTYPES.WINDOW_SUPPORTED)<>CARD(request.intin(0)) THEN
+  IF (kind<>0 AND (CARD(kind) & AESTYPES.WINDOW_KIND)<>AESTYPES.WINDOW_KIND)
+      OR (CARD(kind) & AESTYPES.WINDOW_SUPPORTED)<>CARD(kind) THEN
     RETURN(AESTYPES.UNSUPPORTED)
   FI
 
-  IF request.view=NULL OR ValidBounds(CARD(request.intin(0)),request.intin(1),request.intin(2),
-      request.intin(3),request.intin(4),@bounds)=0 THEN
+  IF view=NULL OR ValidBounds(CARD(kind),x,y,width,height,@bounds)=0 THEN
     RETURN(AESTYPES.MALFORMED)
   FI
 
@@ -114,10 +115,11 @@ CARD FUNC Create(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
         window.id=desktop.nextWindow
         desktop.nextWindow==+1
         window.kind=DESKTYPES.CONTENT_AES
-        window.frameKind=IF request.intin(0)=0 THEN CARD(DESKTYPES.FRAME_BORDERLESS) ELSE CARD(request.intin(0)) FI
+        window.frameKind=IF kind=0 THEN CARD(DESKTYPES.FRAME_BORDERLESS)
+            ELSE CARD(kind) FI
         window.visualRevision=1
         item.window=window
-        item.view=request.view
+        item.view=view
         item.gui.window=INT(service.nextWindow)
         IF service.nextWindow=$7fff THEN
           service.nextWindow=0
@@ -125,14 +127,14 @@ CARD FUNC Create(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
           service.nextWindow==+1
         FI
 
-        item.view.handle=item.gui.window
-        item.view.kind=request.intin(0)
-        item.view.vslide=0
-        item.view.vsize=1000
+        view.handle=item.gui.window
+        view.kind=kind
+        view.vslide=0
+        view.vsize=1000
         DESKGEOMETRY.Slider(window,@bounds,0,1000)
-        item.view.updates=IF service.updateOwner=client.id THEN service.updates ELSE CARD(0) FI
+        view.updates=IF service.updateOwner=client.id THEN service.updates
+            ELSE CARD(0) FI
         AESWINDOWSTATE.Snapshot(item)
-        request.intout(0)=item.gui.window
         RETURN(AESTYPES.OK)
       END
     FI
@@ -181,7 +183,8 @@ BYTE FUNC Close(AESSTATE.Window POINTER item)
 
 RETURN(1)
 
-PROC Delete(AESSTATE.Window POINTER item)
+; Called after hiding and route retirement, with the presenter settled.
+PROC Destroy(AESSTATE.Window POINTER item)
   BYTE status
 
   LET desktop=DESKSTATE.Get()
@@ -214,6 +217,19 @@ PROC Delete(AESSTATE.Window POINTER item)
 
 RETURN
 
+PUBLIC CARD FUNC DeleteHidden(AESSTATE.Window POINTER item)
+
+  LET desktop=DESKSTATE.Get()
+  LET layer=LAYERS.Find(@desktop.scene,item.window.layer)
+  IF layer.shown<>0 THEN
+    RETURN(AESTYPES.BUSY)
+  FI
+
+  Destroy(item)
+  AESWINDOWSTATE.Sync()
+
+RETURN(AESTYPES.OK)
+
 PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client)
   BYTE slot
@@ -229,36 +245,40 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
         IF Close(item)=0 THEN
           RETURN(0)
         FI
-        Delete(item)
+        Destroy(item)
       END
     FI
   OD
   AESWINDOWSTATE.Sync()
+
 RETURN(1)
+
+; A topmost native window, desktop, tile or chrome hit yields no GEM handle.
+INT FUNC FindAt(INT x,y)
+
+  LET desktop=DESKSTATE.Get()
+  LET layer=LAYERS.Hit(@desktop.scene,x,y)
+  LET hit=AESWINDOWSTATE.FindWindow(layer)
+  LET found=AESWINDOWSTATE.FindRecord(hit)
+  IF found<>NULL AND hit<>DESKSTATE.desktopWindow
+      AND found.window.iconified=0 THEN
+    RETURN(found.gui.window)
+  FI
+
+RETURN(0)
 
 PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   BYTE status
   BYTE POINTER title,current
-  CARD length,routeStatus,moveStatus,index
+  CARD length,routeStatus,moveStatus,index,result
   LONGCARD titleAddress
   LAYERTYPES.Rect bounds
 
   ; A presenter query observes one coherent stack without waiting for drawing
-  ; or mouse ownership. A native/topmost non-window hit never falls through.
+  ; or mouse ownership.
   IF request.operation=AESTYPES.OP_FIND THEN
-    BEGIN
-      LET desktop=DESKSTATE.Get()
-      LET hit=AESWINDOWSTATE.FindWindow(LAYERS.Hit(@desktop.scene,
-          request.intin(0),request.intin(1)))
-      LET found=AESWINDOWSTATE.FindRecord(hit)
-      request.intout(0)=0
-      IF found<>NULL AND hit<>DESKSTATE.desktopWindow
-          AND found.window.iconified=0 THEN
-        request.intout(0)=found.gui.window
-      FI
-    END
-
+    request.intout(0)=FindAt(request.intin(0),request.intin(1))
     RETURN(AESTYPES.OK)
   FI
 
@@ -267,12 +287,25 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   FI
 
   IF request.operation=AESTYPES.OP_CREATE THEN
-    RETURN(Create(service,client,request))
+    result=CreateHidden(service,client,request.view,request.intin(0),
+        request.intin(1),request.intin(2),request.intin(3),request.intin(4))
+    IF result=AESTYPES.OK THEN
+      request.intout(0)=request.view.handle
+    FI
+    RETURN(result)
   FI
 
   LET item=AESWINDOWSTATE.Handle(client,request.intin(0))
   IF item=NULL THEN
     RETURN(AESTYPES.IDENTITY)
+  FI
+
+  IF request.operation=AESTYPES.OP_DELETE THEN
+    result=DeleteHidden(item)
+    IF result=AESTYPES.OK THEN
+      request.intout(0)=1
+    FI
+    RETURN(result)
   FI
 
   LET desktop=DESKSTATE.Get()
@@ -321,12 +354,6 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     IF Close(item)=0 THEN
       RETURN(AESTYPES.PENDING)
     FI
-  ELSEIF request.operation=AESTYPES.OP_DELETE THEN
-    IF layer.shown<>0 THEN
-      RETURN(AESTYPES.BUSY)
-    FI
-
-    Delete(item)
   ELSEIF request.operation=AESTYPES.OP_SET THEN
     CASE request.intin(1) OF
     WHEN AESTYPES.WF_EXEC_CONSOLE THEN

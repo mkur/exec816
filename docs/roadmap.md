@@ -241,8 +241,9 @@ The [GF0–GF15 plan](plans/gem4xe/gem-first-gui-implementation-plan.md) starts
 with the native baseline and current twelve-Task/four-application budget, then
 migrates window policy, the AES system role and terminal before renderer tuning.
 The [GF0 baseline](history/gem-first-gui.md) passes native Counter/disk,
-blocking/UPDATE-held read and cancellation checks. Later migration slices remain
-open; baseline observations do not close existing latency gates.
+blocking/UPDATE-held read and cancellation checks. [GF1](history/gem-first-gui.md#gf1--shared-window-policy)
+extracts the hidden-window and hit-lookup helpers and inventories the effects
+that GF2 must separate from scene commits. Existing latency gates remain open.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)
 prioritizes ordinary AES/VDI application bodies and fewer platform edits.
