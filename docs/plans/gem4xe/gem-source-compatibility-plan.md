@@ -6,8 +6,11 @@
 Status: GC0 is implemented at the development tier. The
 [execution record](../../development/gem-source-compatibility-gc0.json) records
 ten native pixel/event scenarios, loaded application lifetimes, raw/optimized
-layout constants and compilation against pinned GEM4XE headers. Reference-target
-execution, latency comparisons and broader qualification remain open.
+layout constants and compilation against pinned GEM4XE headers. The
+[Hatari two-Counter demo](../../guides/atari-st-reference.md#two-counter-applications)
+now executes the unchanged Counter body in two independent MagiC processes.
+The complete GC1 three-target comparison, latency comparisons and broader
+qualification remain open.
 
 Make ordinary GEM application source usable on Exec816 with fewer platform
 edits. The application should express its windows, events, resources and drawing
