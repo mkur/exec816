@@ -609,6 +609,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [Incremental object traversal](gem4xe/object-tree-traversal-plan.md): bounded
+  caller-local coordinates, traversal/pixel regressions and matched optimized
+  measurement against the captured AES baseline.
+
 - [GEM source compatibility](gem4xe/gem-source-compatibility-plan.md): conventional
   Counter redraws, shared-source reference builds, event/resource comparisons
   and reusable application runtime services, with optional native optimizations.

@@ -1,5 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
+The [incremental object traversal plan](object-tree-traversal-plan.md) uses
+caller-local parent origins to remove repeated coordinate lookup while
+preserving GEM drawing behavior. It orders focused traversal regressions,
+the production walker change and comparison with the captured AES baseline.
+
 The [GEM source compatibility plan](gem-source-compatibility-plan.md) makes
 conventional AES/VDI sufficient for application bodies, beginning with Counter,
 then shared-source reference builds, behavioral comparisons and reusable runtime
