@@ -1,0 +1,111 @@
+; Controlled metadata workload: real publication and journals, no renderer.
+MODULE AESSNAPSHOTPROBE
+USE EXEC
+USE HEAPCORE
+USE AESSTATE
+USE AESTYPES
+USE AESWINDOWSTATE
+USE DESKSTATE
+USE DESKTYPES
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+
+CARD checks
+AESSTATE.Service POINTER service
+DESKTYPES.Service POINTER desktop
+AESTYPES.Request POINTER request
+LONGCARD ARRAY handles(7)
+BYTE case,index,iteration
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fd00+(checks & 255))
+  FI
+  checks==+1
+
+RETURN
+
+PUBLIC PROC Sample()
+
+  AESWINDOWSTATE.BeginUpdate(@service.clients(0))
+  AESWINDOWSTATE.Updates(@service.clients(0),1)
+  AESWINDOWSTATE.EndUpdate(@service.clients(0))
+  AESWINDOWSTATE.Updates(@service.clients(0),0)
+
+RETURN
+
+PROC Main()
+
+  LET available=EXEC.AvailMem(0)
+  service=AESSTATE.Service POINTER(EXEC.AllocMem(
+      LONGCARD(SIZEOF(AESSTATE.Service)),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  desktop=DESKTYPES.Service POINTER(EXEC.AllocMem(
+      LONGCARD(SIZEOF(DESKTYPES.Service)),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  request=AESTYPES.Request POINTER(EXEC.AllocMem(
+      LONGCARD(SIZEOF(AESTYPES.Request)),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Require(service<>NULL AND desktop<>NULL AND request<>NULL)
+  AESSTATE.Bind(service)
+  DESKSTATE.Bind(desktop)
+  Require(LAYERS.Init(@desktop.scene,640,240)=LAYERTYPES.OK)
+  service.clients(0).id=1
+  service.clients(0).binding=request
+  FOR index=0 TO 6 DO
+    BEGIN
+      LAYERTYPES.Rect bounds
+      REGIONS.Assign(@bounds,40+INT(index)*24,32,240+INT(index)*24,180)
+      Require(LAYERS.Create(@desktop.scene,@bounds,@handles(index))=LAYERTYPES.OK)
+      IF index<4 THEN
+        BEGIN
+          LET item=@service.windows(index)
+          LET window=@desktop.windows(index)
+          item.owner=1
+          item.window=window
+          item.gui.window=INT(index)+1
+          item.view=AESTYPES.WindowView POINTER(EXEC.AllocMem(
+              LONGCARD(AESTYPES.WINDOWVIEW_SIZE),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+          Require(item.view<>NULL)
+          item.view.handle=INT(index)+1
+          window.id=LONGCARD(index)+1
+          window.layer=handles(index)
+          window.frameKind=DESKTYPES.FRAME_BORDERLESS
+          window.visualRevision=1
+        END
+      FI
+    END
+  OD
+  FOR case=0 TO 3 DO
+    FOR index=0 TO 3 DO
+      service.windows(index).owner=IF case=0 AND index<>0 THEN LONGCARD(0) ELSE LONGCARD(1) FI
+      Require(LAYERS.Show(@desktop.scene,handles(index),case<>0 OR index=0)=LAYERTYPES.OK)
+    OD
+    FOR index=4 TO 6 DO
+      Require(LAYERS.Bounds(@desktop.scene,handles(index),
+          64+INT(index-4)*48,64,16,64)=LAYERTYPES.OK)
+      Require(LAYERS.Show(@desktop.scene,handles(index),case>=2)=LAYERTYPES.OK)
+    OD
+    FOR iteration=0 TO 9 DO
+      IF case=3 THEN
+        Require(LAYERS.Bounds(@desktop.scene,handles(4),
+            64+INT(iteration & 1)*8,64,16,64)=LAYERTYPES.OK)
+      FI
+      Sample()
+    OD
+  OD
+  FOR index=0 TO 6 DO
+    Require(LAYERS.Delete(@desktop.scene,handles(index))=LAYERTYPES.OK)
+  OD
+  FOR index=0 TO 3 DO
+    EXEC.FreeMem(BYTE POINTER(service.windows(index).view),
+        LONGCARD(AESTYPES.WINDOWVIEW_SIZE))
+  OD
+  AESSTATE.Bind(NULL)
+  DESKSTATE.Bind(NULL)
+  EXEC.FreeMem(BYTE POINTER(request),LONGCARD(SIZEOF(AESTYPES.Request)))
+  EXEC.FreeMem(BYTE POINTER(desktop),LONGCARD(SIZEOF(DESKTYPES.Service)))
+  EXEC.FreeMem(BYTE POINTER(service),LONGCARD(SIZEOF(AESSTATE.Service)))
+  Require(EXEC.AvailMem(0)=available)
+
+RETURN
+ENDMODULE

@@ -1,0 +1,1998 @@
+{
+  "format": "exec816.update-snapshot-us0.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "source_revision": "df256ce3",
+  "runtime_baseline": "ac33f02b",
+  "unchanged_guest_sha256": "99e1ce9fbc01abaf30a4e6384a2fe5b42c3e0e72b05a4a519e57c9e79e735607",
+  "matching_frames": 11,
+  "identical_matched_timing_groups": true,
+  "fixture_assertions": 511,
+  "controlled_assertions": 71,
+  "controlled_scope": "Direct native BEGIN/publication/END metadata, no renderer/admission; four cases of ten calls, two discarded warmups.",
+  "controlled_groups": {
+    "one_fixed": {
+      "caller_cpu_ms": {
+        "min": 2.9303094678585073,
+        "median": 3.0802998115252915,
+        "mean": 3.08822928223136,
+        "max": 3.3603334747715956
+      },
+      "helpers": {
+        "AESWINDOWSTATE_BEGINUPDATE": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 1.329331711257311,
+            "median": 1.397489917237471,
+            "mean": 1.4283355582840767,
+            "max": 1.7593557181703996
+          }
+        },
+        "AESWINDOWSTATE_SNAPSHOTALL": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 0.9735275501530212,
+            "median": 1.0235713208313189,
+            "mean": 1.0614389487142981,
+            "max": 1.4036925254342179
+          }
+        },
+        "AESWINDOWSTATE_PUBLISH": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 0.847713281616738,
+            "median": 0.8918716229265315,
+            "mean": 0.9314925448878526,
+            "max": 1.2777372885298266
+          }
+        },
+        "AESWINDOWSTATE_ENDUPDATE": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 1.3148119693421993,
+            "median": 1.3812080707210108,
+            "mean": 1.3634284352934045,
+            "max": 1.383463564610737
+          }
+        },
+        "REGIONS_CLIP": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 0.2654434371471386,
+            "median": 0.2769323591479308,
+            "mean": 0.272817844903782,
+            "max": 0.2774962326203623
+          }
+        }
+      }
+    },
+    "four_fixed": {
+      "caller_cpu_ms": {
+        "min": 11.192536006845424,
+        "median": 11.529450406623258,
+        "mean": 11.498816218128814,
+        "max": 11.783757342689874
+      },
+      "helpers": {
+        "AESWINDOWSTATE_BEGINUPDATE": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 5.0064915933513685,
+            "median": 5.26224345519109,
+            "mean": 5.279221333025083,
+            "max": 5.603563116472295
+          }
+        },
+        "AESWINDOWSTATE_SNAPSHOTALL": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 3.7858464939052325,
+            "median": 3.9801713893419453,
+            "mean": 4.015061060448646,
+            "max": 4.319129830457344
+          }
+        },
+        "AESWINDOWSTATE_PUBLISH": {
+          "calls": {
+            "min": 4,
+            "median": 4.0,
+            "mean": 4,
+            "max": 4
+          },
+          "caller_cpu_ms": {
+            "min": 3.6056184352793075,
+            "median": 3.7914147444454933,
+            "mean": 3.8296347932487427,
+            "max": 4.136293857021423
+          }
+        },
+        "AESWINDOWSTATE_ENDUPDATE": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 5.523070178282695,
+            "median": 5.8062403877194,
+            "mean": 5.790240477939156,
+            "max": 6.151648131675734
+          }
+        },
+        "REGIONS_CLIP": {
+          "calls": {
+            "min": 4,
+            "median": 4.0,
+            "mean": 4,
+            "max": 4
+          },
+          "caller_cpu_ms": {
+            "min": 1.061985201140716,
+            "median": 1.1093858149169908,
+            "mean": 1.1523018724828336,
+            "max": 1.5374010225845423
+          }
+        }
+      }
+    },
+    "four_fragmented": {
+      "caller_cpu_ms": {
+        "min": 12.021711948055975,
+        "median": 12.365216619042855,
+        "mean": 12.345692500059911,
+        "max": 12.656422025461707
+      },
+      "helpers": {
+        "AESWINDOWSTATE_BEGINUPDATE": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 5.836160923850297,
+            "median": 6.102732107942298,
+            "mean": 6.110282726159077,
+            "max": 6.376069773703478
+          }
+        },
+        "AESWINDOWSTATE_SNAPSHOTALL": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 4.615586308588216,
+            "median": 4.829364838823817,
+            "mean": 4.850483662470978,
+            "max": 5.094455855050685
+          }
+        },
+        "AESWINDOWSTATE_PUBLISH": {
+          "calls": {
+            "min": 4,
+            "median": 4.0,
+            "mean": 4,
+            "max": 4
+          },
+          "caller_cpu_ms": {
+            "min": 4.433243724440673,
+            "median": 4.638352700037638,
+            "mean": 4.6647754585348595,
+            "max": 4.912183755087196
+          }
+        },
+        "AESWINDOWSTATE_ENDUPDATE": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 5.606452968018506,
+            "median": 5.805746998431022,
+            "mean": 5.862204829858228,
+            "max": 6.173427744548401
+          }
+        },
+        "REGIONS_CLIP": {
+          "calls": {
+            "min": 4,
+            "median": 4.0,
+            "mean": 4,
+            "max": 4
+          },
+          "caller_cpu_ms": {
+            "min": 1.8731876754175132,
+            "median": 1.9633721889145295,
+            "mean": 1.9859799909498308,
+            "max": 2.3176609400616597
+          }
+        }
+      }
+    },
+    "four_changed": {
+      "caller_cpu_ms": {
+        "min": 12.016355150067875,
+        "median": 12.377057961963914,
+        "mean": 12.356599927542259,
+        "max": 12.64288906212335
+      },
+      "helpers": {
+        "AESWINDOWSTATE_BEGINUPDATE": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 5.830733641678144,
+            "median": 6.111648357225122,
+            "mean": 6.118687965107509,
+            "max": 6.431963731658253
+          }
+        },
+        "AESWINDOWSTATE_SNAPSHOTALL": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 4.61029999478417,
+            "median": 4.828201849786926,
+            "mean": 4.856527681253604,
+            "max": 5.149785939533028
+          }
+        },
+        "AESWINDOWSTATE_PUBLISH": {
+          "calls": {
+            "min": 4,
+            "median": 4.0,
+            "mean": 4,
+            "max": 4
+          },
+          "caller_cpu_ms": {
+            "min": 4.429155641765544,
+            "median": 4.641207309491824,
+            "mean": 4.671938413739341,
+            "max": 4.966668029360892
+          }
+        },
+        "AESWINDOWSTATE_ENDUPDATE": {
+          "calls": {
+            "min": 1,
+            "median": 1.0,
+            "mean": 1,
+            "max": 1
+          },
+          "caller_cpu_ms": {
+            "min": 5.574735085194233,
+            "median": 5.8068042611918305,
+            "mean": 5.864962523559338,
+            "max": 6.160247202130314
+          }
+        },
+        "REGIONS_CLIP": {
+          "calls": {
+            "min": 4,
+            "median": 4.0,
+            "mean": 4,
+            "max": 4
+          },
+          "caller_cpu_ms": {
+            "min": 1.8706502447915714,
+            "median": 1.9665439771969568,
+            "mean": 1.986957959003579,
+            "max": 2.359458061205646
+          }
+        }
+      }
+    }
+  },
+  "matched_update_groups": {
+    "objects_5": {
+      "begin": {
+        "caller_cpu_median_ms": 3.8165071139686964,
+        "elapsed_median_ms": 5.310278426623849,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.6431977828495063,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.16697139328906,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.0369633158015672,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.12095085983656127,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.08070439074176146,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.27143459279172344,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.11224606310589966,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.24250083523758104,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.04722440331613989,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 3.021093096919982,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.14851017580165188,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.4521800053286045,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.3289031674182628,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      },
+      "end": {
+        "caller_cpu_median_ms": 5.233732602741271,
+        "elapsed_median_ms": 9.703874797534182,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.7949502311176395,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.1238407113827728,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.08081011701784238,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 2.0,
+            "caller_cpu_ms": 0.23027182930422244,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.5614417680816601,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 4.432820819336349,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.14681855538435729,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.513571729639586,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.4854485402020643,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      }
+    },
+    "objects_33_siblings": {
+      "begin": {
+        "caller_cpu_median_ms": 3.817211955809236,
+        "elapsed_median_ms": 4.974632742158986,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.6430920565734253,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.1660903409883856,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.0371395262617022,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.12123279657277704,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.0804224540055457,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.2714698348837504,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.11249275775008846,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.2428884982498777,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.04722440331613989,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 3.0213750336561978,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.14674807120030336,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.454365015034276,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.329819461810964,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      },
+      "end": {
+        "caller_cpu_median_ms": 5.2393360953735595,
+        "elapsed_median_ms": 9.339401081791255,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.795478862498044,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.1269067733891192,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.08081011701784237,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 2.0,
+            "caller_cpu_ms": 0.233126438758407,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.5613712838976063,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 4.4422304579075504,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.149567438562461,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.5136774559156674,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.485695234846253,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      }
+    },
+    "objects_9_nested": {
+      "begin": {
+        "caller_cpu_median_ms": 3.8175643767295053,
+        "elapsed_median_ms": 4.883003302888865,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.6440788351501807,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.170178423663514,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.0380558206544035,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.12123279657277704,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.0804224540055457,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.27161080325185827,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.11242227356603451,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.24292374034190467,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.04736537168424777,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 3.0216569703924137,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.14949695437840702,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.4552813094269776,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.3302071248232608,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      },
+      "end": {
+        "caller_cpu_median_ms": 5.236375759643293,
+        "elapsed_median_ms": 9.338907692502879,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.7946330522893967,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.12701249966520015,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.0808806012018963,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 2.0,
+            "caller_cpu_ms": 0.22752294612611876,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.5613360418055793,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 4.433314208624727,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.149532196470434,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.51364221382364,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.4857657190303066,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      }
+    },
+    "counter_uncovered": {
+      "begin": {
+        "caller_cpu_median_ms": 3.8167538086128854,
+        "elapsed_median_ms": 4.623656747662392,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.6431625407574795,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.1639758154667676,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.0370337999856214,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.12123279657277704,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.08070439074176146,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.27164604534388526,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.11235178938198058,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.24264180360568893,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.047506340052355656,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 3.018802360938229,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.149567438562461,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.455105098966843,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.329255588338533,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      },
+      "end": {
+        "caller_cpu_median_ms": 5.176428961105417,
+        "elapsed_median_ms": 9.282802281995941,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 1.7363073899847614,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.1239816797508807,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.0807748749258154,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 2.0,
+            "caller_cpu_ms": 0.23594580612056462,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.5618294310939569,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 4.375164756780226,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.14660710283219547,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.4560918775435976,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 2.4283915932103994,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      }
+    },
+    "counter_fragmented": {
+      "begin": {
+        "caller_cpu_median_ms": 9.367806207964996,
+        "elapsed_median_ms": 11.325574904247237,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 7.08510542319409,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 1.0,
+            "caller_cpu_ms": 5.389643617868587,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 4.0,
+            "caller_cpu_ms": 5.203600614058212,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.16451008558189628,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.3335664010352717,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 4.0,
+            "caller_cpu_ms": 1.9244649193167547,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.4610722899888494,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 4.0,
+            "caller_cpu_ms": 1.1980196763648205,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.189567213013072,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 8.569396613093987,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.14949695437840702,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 8.000518763594638,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 7.880096535138481,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      },
+      "end": {
+        "caller_cpu_median_ms": 10.762829178760576,
+        "elapsed_median_ms": 16.001284221833462,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 7.215148742773609,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.16451008558189628,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.3334959168512177,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 8.0,
+            "caller_cpu_ms": 0.9223207904378337,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 4.0,
+            "caller_cpu_ms": 2.3745064345011624,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 9.9640671629693,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.14949695437840702,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 8.042844516119029,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 8.014615600405424,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      }
+    },
+    "counter_tick_fragmented": {
+      "begin": {
+        "caller_cpu_median_ms": 9.590395261207338,
+        "elapsed_median_ms": 11.603775978708137,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 7.08637413850706,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 1.0,
+            "caller_cpu_ms": 5.3900312808808835,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 4.0,
+            "caller_cpu_ms": 5.204375940082805,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.16440435930581537,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.33363688521932566,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 4.0,
+            "caller_cpu_ms": 1.9242534667645927,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.46128374254101123,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 4.0,
+            "caller_cpu_ms": 1.2029535692485962,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.1894262446449641,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 8.794734549514434,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.14963792274651494,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 8.001540784263419,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 7.881823397647802,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      },
+      "end": {
+        "caller_cpu_median_ms": 11.27366330269151,
+        "elapsed_median_ms": 16.782354707427203,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 7.508997306094486,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.16468629604203114,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.3341302745077032,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 8.0,
+            "caller_cpu_ms": 0.9221445799776988,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 4.0,
+            "caller_cpu_ms": 2.376127570734403,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 10.255801200768559,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.1496379227465149,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 8.336234932243553,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 8.308428921634274,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      }
+    },
+    "separated_exposure": {
+      "begin": {
+        "caller_cpu_median_ms": 16.381158731792173,
+        "elapsed_median_ms": 20.27259053341021,
+        "rpc_calls_median": 0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 2,
+            "caller_cpu_ms": 11.954751973204733,
+            "other_task_cpu_ms": 0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 2,
+            "caller_cpu_ms": 8.563264489081295,
+            "other_task_cpu_ms": 0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 8,
+            "caller_cpu_ms": 8.190967028908384,
+            "other_task_cpu_ms": 0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 0,
+            "caller_cpu_ms": 0,
+            "other_task_cpu_ms": 0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 2,
+            "caller_cpu_ms": 0.31753124916300035,
+            "other_task_cpu_ms": 0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 8,
+            "caller_cpu_ms": 0.6611416464259585,
+            "other_task_cpu_ms": 0
+          },
+          "REGIONS_CLIP": {
+            "calls": 8,
+            "caller_cpu_ms": 1.1894206059102397,
+            "other_task_cpu_ms": 0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 8,
+            "caller_cpu_ms": 0.9050169232525914,
+            "other_task_cpu_ms": 0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 8,
+            "caller_cpu_ms": 2.3834931679680396,
+            "other_task_cpu_ms": 0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 8,
+            "caller_cpu_ms": 0.384984613302621,
+            "other_task_cpu_ms": 0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 0,
+            "caller_cpu_ms": 0,
+            "other_task_cpu_ms": 0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 2,
+            "caller_cpu_ms": 14.785326320626915,
+            "other_task_cpu_ms": 0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 2,
+            "caller_cpu_ms": 0.29673841486708796,
+            "other_task_cpu_ms": 0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 2,
+            "caller_cpu_ms": 13.647570621628212,
+            "other_task_cpu_ms": 0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 2,
+            "caller_cpu_ms": 13.402144692752394,
+            "other_task_cpu_ms": 0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 0,
+            "caller_cpu_ms": 0,
+            "other_task_cpu_ms": 0
+          }
+        }
+      },
+      "end": {
+        "caller_cpu_median_ms": 21.935453403610765,
+        "elapsed_median_ms": 32.685066797861225,
+        "rpc_calls_median": 0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 0,
+            "caller_cpu_ms": 0,
+            "other_task_cpu_ms": 0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 0,
+            "caller_cpu_ms": 0,
+            "other_task_cpu_ms": 0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 0,
+            "caller_cpu_ms": 0,
+            "other_task_cpu_ms": 0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 2,
+            "caller_cpu_ms": 14.975704101756607,
+            "other_task_cpu_ms": 0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 2,
+            "caller_cpu_ms": 0.3292316237159544,
+            "other_task_cpu_ms": 0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 8,
+            "caller_cpu_ms": 0.6680490964632446,
+            "other_task_cpu_ms": 0
+          },
+          "REGIONS_CLIP": {
+            "calls": 0,
+            "caller_cpu_ms": 0,
+            "other_task_cpu_ms": 0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 16,
+            "caller_cpu_ms": 1.7855053504544114,
+            "other_task_cpu_ms": 0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 0,
+            "caller_cpu_ms": 0,
+            "other_task_cpu_ms": 0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 0,
+            "caller_cpu_ms": 0,
+            "other_task_cpu_ms": 0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 8,
+            "caller_cpu_ms": 4.720889679564802,
+            "other_task_cpu_ms": 0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 2,
+            "caller_cpu_ms": 20.333700320984974,
+            "other_task_cpu_ms": 0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 2,
+            "caller_cpu_ms": 0.299064392940868,
+            "other_task_cpu_ms": 0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 2,
+            "caller_cpu_ms": 16.49675279364064,
+            "other_task_cpu_ms": 0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 0,
+            "caller_cpu_ms": 0,
+            "other_task_cpu_ms": 0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 2,
+            "caller_cpu_ms": 16.441845614262615,
+            "other_task_cpu_ms": 0
+          }
+        }
+      }
+    },
+    "move_pending_redraw": {
+      "begin": {
+        "caller_cpu_median_ms": 2.7439492852198897,
+        "elapsed_median_ms": 49.484231983185296,
+        "rpc_calls_median": 1.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 5.747668030770575
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 4.049104921346699
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 3.8627447387080815
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.16158499194365777
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.3400157038762072
+          },
+          "REGIONS_CLIP": {
+            "calls": 5.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.8726646827718327
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.4490899786996796
+          },
+          "LAYERS_TOUCH": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 1.2014381592914365
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 4.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.18974342347320686
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.15559383629907286,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.14724146048868095,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 6.896736441309935
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 6.697689105541608
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      },
+      "end": {
+        "caller_cpu_median_ms": 11.131109040442414,
+        "elapsed_median_ms": 22.3908869588753,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 7.202003442447549,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.16443960139784233,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 5.0,
+            "caller_cpu_ms": 0.3394165883117487,
+            "other_task_cpu_ms": 0.0804224540055457
+          },
+          "REGIONS_CLIP": {
+            "calls": 0.5,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.13568205430383476
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 8.0,
+            "caller_cpu_ms": 0.8866910353985669,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 4.0,
+            "caller_cpu_ms": 2.3587884614571335,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 10.123008998010935,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 1.0,
+            "caller_cpu_ms": 0.1497436490225958,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 1.0,
+            "caller_cpu_ms": 7.957347200861599,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 1.0,
+            "caller_cpu_ms": 7.929505948160292,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      }
+    },
+    "zero_timer": {
+      "begin": {
+        "caller_cpu_median_ms": 0.0,
+        "elapsed_median_ms": 0.0,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      },
+      "end": {
+        "caller_cpu_median_ms": 0.0,
+        "elapsed_median_ms": 0.0,
+        "rpc_calls_median": 0.0,
+        "helpers": {
+          "AESWINDOWSTATE_BEGINUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_SNAPSHOTALL": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_PUBLISH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_ENDUPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESWINDOWSTATE_UPDATES": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKGEOMETRY_WORK": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "REGIONS_CLIP": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_PIXELSREADY": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "LAYERS_TOUCH": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_BEGINCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "DESKCACHE_ENDCHANGE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCAL_UPDATE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESGATE_CLAIM": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ATTEMPT": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_ACQUIRE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          },
+          "AESLOCKS_RELEASE": {
+            "calls": 0.0,
+            "caller_cpu_ms": 0.0,
+            "other_task_cpu_ms": 0.0
+          }
+        }
+      }
+    }
+  },
+  "decision": {
+    "mechanism": "Cache clipped work geometry at AES publication using a general non-wrapping Layers layout epoch, live identity, frame kind, iconified mode and current source bounds.",
+    "reason": "Publish costs 5.204 ms and clipping 1.924 ms per fragmented Counter tick; work geometry alone costs 0.334 ms. Retain paint/readiness work and END policy.",
+    "scene_stamp": "Append LONGCARD layoutEpoch to Scene; initialize nonzero, advance before every Rebuild, zero permanently disables reuse on exhaustion. Existing rebuild statistics remain unchanged. Hidden bounds changes are caught by source-bound comparison.",
+    "private_state": "One LONGCARD geometryEpoch, CARD geometryKind and BYTE geometryIconified per AES Window: eight aligned bytes, six windows = 48 upper-RAM bytes. Epoch zero is invalid. Scene storage grows four upper-RAM bytes. No extra region.",
+    "lifecycle": "Force invalid on Create/Delete and AESSTATE.Bind. A new Scene lifetime requires binding the fresh service before clients. No live reinitialization. On failed Rebuild the epoch already changes; existing visibility clearing/error behavior remains.",
+    "public_abi": "Keep AES wire/view/C imports unchanged. Regenerate and version ordinary-call Layers Scene layout; rebuild native programs.",
+    "targets": [
+      "At least 10% lower caller CPU in controlled four_fragmented fixed-layout metadata workload.",
+      "At least 5% lower total caller CPU for matched counter_tick_fragmented.",
+      "Investigate any changed-layout/control regression above 5%; compare admission and inclusive helper costs."
+    ]
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "artifacts": {
+    "tools/measure_aes_update.py": {
+      "sha256": "7f7830095123f050ce96026d0e95b6cd7725cdd6ddc5a010eb2da6b461c4027b",
+      "bytes": 5569
+    },
+    "tools/test_aes_snapshot.py": {
+      "sha256": "4cf262b88f8c34629fa512049b64d1ab6646254f49ccc988b3211f500f65f40e",
+      "bytes": 4223
+    },
+    "tests/programs/aes_snapshot.act": {
+      "sha256": "4885c3221776295f5532ca7f7e56b5f2fccd2761476a1a9878c56e95343cacb8",
+      "bytes": 3471
+    },
+    "build/update-snapshot-reuse/us0/results.json": {
+      "sha256": "48e628e7751d13311b1f959160424d15a405401ea0998ce2d5145715a53b584e",
+      "bytes": 455247
+    },
+    "build/update-snapshot-reuse/us0/update-profile.json": {
+      "sha256": "8da539c1831e4d035d7f1823d81e2b08675a83c7396a2deb715d44ead8aed185",
+      "bytes": 640355
+    },
+    "build/update-snapshot-reuse/us0/trace-definition.json": {
+      "sha256": "566d6c38a6879e69980d01039c44fd61767209831a1f0b735823885ccdaa73f9",
+      "bytes": 76343
+    },
+    "build/update-snapshot-reuse/us0/emulator.log": {
+      "sha256": "8f76b9b8bac3a61b320c1b275892c33db06705c135687dec35f1a34a9f2e76eb",
+      "bytes": 153943934
+    },
+    "build/update-snapshot-reuse/us0-controlled-final/results.json": {
+      "sha256": "6e8b69c8bff4c9fde43eb438efcedc572aea54770c8d4dee921140185047c99a",
+      "bytes": 99312
+    },
+    "build/update-snapshot-reuse/us0-controlled-final/emulator.log": {
+      "sha256": "437ec51f84d2b0cab18ed7d2924405e31e006cace5a52a6e462efeeb9da2e5b3",
+      "bytes": 319405
+    },
+    "build/update-snapshot-reuse/us0-controlled-3/program/program.xex": {
+      "sha256": "f32a8619f1bb2601ba58d615222f9370e3a1a2622e0febe114cdeaaf494a3886",
+      "bytes": 202097
+    }
+  },
+  "failed_development_attempts": [
+    "us0-controlled: missing generated console metadata before choosing deferred console build",
+    "us0-controlled-2: strict FreeMem pointer type diagnostics",
+    "us0-controlled-3: missing host profile_start; emitted guest itself completed normally"
+  ]
+}

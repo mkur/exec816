@@ -4,7 +4,7 @@
 [UPDATE contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: implementation starting from `00266e28`; runtime baseline `ac33f02b`.
+Status: US0 complete; US1–US3 pending. Started from `00266e28`; runtime baseline `ac33f02b`.
 Commit this plan first, then commit each executable slice below after its
 selected checks pass. Update completion and evidence links with each slice.
 
@@ -25,6 +25,25 @@ unused capacity: target **0 fixed/root/kernel bytes, 0 per public Task and
 0 idle bytes**. Report code, upper-RAM and transient stack costs separately.
 
 ## US0 Attribute and select
+
+Completed: the passive capture preserves the exact guest image, all eleven
+frames and timing groups. The direct metadata fixture passes 71 checks.
+[US0 evidence and decision](../../development/update-snapshot-us0.json).
+
+Selected: cache clipped work geometry using a new non-wrapping Layers
+`Scene.layoutEpoch`, live window identity, frame kind, iconified mode and
+source bounds. The existing rebuild counter can wrap and does not advance
+before a failed rebuild, so it is unsuitable by itself. Append four bytes to
+the ordinary-call Scene and regenerate/version that layout. Store eight
+aligned private bytes per AES window (48 bytes for six windows); invalidate on
+creation, deletion and service binding. A zero layout epoch disables reuse
+after exhaustion. Keep the AES wire/view/import ABI unchanged.
+
+Targets: at least 10% less caller CPU for the controlled fixed-layout
+four-window fragmented metadata case and at least 5% less total caller CPU
+for the matched fragmented Counter tick. Investigate changed-layout/control
+regressions above 5%, including local/RPC admission shifts. Actual reserved
+bank-zero growth in US0 is zero in every shared category.
 
 Add a passive observer for native BEGIN, SnapshotAll/Publish, geometry/clipping,
 pixel readiness, END and cache work, alongside public BEGIN/END and local/RPC

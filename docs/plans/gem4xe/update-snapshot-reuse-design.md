@@ -4,9 +4,11 @@
 [Caller-local UPDATE](caller-local-update-plan.md) ·
 [Latest measurements](../../history/object-tree-traversal.md)
 
-Status: proposed design, inspected against `ac33f02b`. Profiling is the first
-implementation slice; the reuse mechanism and its storage remain to be chosen.
-This note changes no implementation or public contract.
+Status: design inspected against `ac33f02b`; profiling is complete in the
+[US0–US3 implementation plan](update-snapshot-reuse-plan.md). Its
+[US0 evidence](../../development/update-snapshot-us0.json) selects a
+non-wrapping Layers layout epoch and private AES tags. Production work is
+pending; the design's public AES behavior is unchanged.
 
 ## Purpose and measured opportunity
 
