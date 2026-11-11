@@ -614,8 +614,8 @@ ENDMODULE
             if suite=='lifecycle':
                 require(report['lifecycle_phase']==10 and report['AESChecks']>=265,
                         'Incomplete hidden lifecycle scenarios')
-                require(report['lifecycle_stats'][6:]==[136,1982],
-                        'Caller lifecycle enlarged the private service records')
+                require(report['lifecycle_stats'][6:]==[137,1986],
+                        'Unexpected private waiter record layout')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller lifecycle exceeded its interrupt floor')
             if suite=='frame':

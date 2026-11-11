@@ -96,6 +96,7 @@ static void loop(UWORD who)
 {
     WORD words[8] = {765, 1, 2, 3, 4, 5, 6, 7}, id;
     WORD code = who == 1 ? BEG_MCTRL : BEG_UPDATE;
+    ULONG sequence;
     BYTE bit=AllocSignal(-1);
     CHECK(bit >= 0);
     starts[who]=1UL << bit;
@@ -110,7 +111,10 @@ static void loop(UWORD who)
     CHECK(wind_update(END_MCTRL) == 0 && ExecAESDiagnostic() == AES_IDENTITY);
     Forbid(); ++tried; Signal(controller, wake); Permit();
     Wait(starts[who]);
+    sequence=ExecAESContext()->sequence;
     CHECK(wind_update(code) == 1);
+    CHECK(ExecAESContext()->sequence==sequence);
+    CHECK(!ExecAESContext()->busy);
     Forbid(); order[orderCount++]=who; Permit();
     CHECK(evnt_timer(0, 0) == 1);
     CHECK(appl_write(id, 16, words) == 1);

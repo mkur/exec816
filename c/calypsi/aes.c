@@ -336,13 +336,11 @@ WORD ExecAESUpdate(struct ExecAESContext *c,WORD code,WORD window)
     if (!c->identity) { c->diagnostic = AES_IDENTITY; return 0; }
     c->request.intin[0] = code;
     c->request.intin[1] = window;
-    /* MCTRL retains RPC admission. A local miss changes no ownership and
-     * leaves the transport sequence untouched, including BEG_CHECK calls. */
-    if ((code & 2)==0) handled=ExecAESLocal(c,AES_OP_UPDATE);
+    handled=ExecAESLocal(c,AES_OP_UPDATE);
     if (handled) {
         c->diagnostic=c->request.status;
         if (c->diagnostic!=AES_OK || !c->request.intout[0]) return 0;
-    } else if (!ExecAESSubmit(c, AES_OP_UPDATE)) return 0;
+    } else { c->diagnostic=AES_UNSUPPORTED; return 0; }
     switch (code & ~(BEG_CHECK|AES_UPDATE_WINDOW)) {
     case BEG_UPDATE: ++c->updateDepth; break;
     case END_UPDATE: --c->updateDepth; break;

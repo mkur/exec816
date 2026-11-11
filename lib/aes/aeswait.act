@@ -5,6 +5,17 @@ USE EXECLISTS
 USE AESTYPES
 USE AESSTATE
 
+PUBLIC CONST RPC=0
+PUBLIC CONST CALLER=1
+PUBLIC CONST SYSTEM=2
+
+; Reuse the registration-owned private reply signal as a hint, never a reply.
+PUBLIC PROC Signal(AESSTATE.Client POINTER client)
+
+  EXEC.Signal(client.lease.task,LONGCARD(1) LSH client.replies.mp_SigBit)
+
+RETURN
+
 ; Windows retain the prefix of older lock waiters through queue compaction.
 PUBLIC PROC RemoveLock(AESSTATE.Service POINTER service BYTE position)
   BYTE slot

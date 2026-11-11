@@ -8,10 +8,10 @@ USE AESGATE
 USE AESLOCKS
 USE AESWINDOW
 
-; The admitted binding and registration remain live until this Task detaches.
-; Return zero for the original RPC path; handled TRY failure returns one.
+; One busy C context pins its descriptor, registration and native stack until
+; return. Waiter publication precedes scene release; signals are only hints.
 PUBLIC CARD FUNC Call(LONGCARD value)
-  BYTE queued,wake
+  BYTE queued,wake,waiting
   CARD status
 
   LET service=AESSTATE.Get()
@@ -33,42 +33,62 @@ PUBLIC CARD FUNC Call(LONGCARD value)
       AND AESWINDOW.GeometryField(request.intin(1))=0 THEN
     RETURN(0)
   FI
-  AESGATE.EnterTask(request.owner,
-      LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit)
-  IF request.operation=AESTYPES.OP_FIND THEN
-    request.status=AESWINDOW.Query(request)
-    AESGATE.Release(0)
-    RETURN(1)
-  FI
-  LET client=AESSTATE.Find(service,request.client)
-  ; Include older messages that have not reached the native waiter queue yet.
-  queued=AESWAIT.Queued(service)
-  wake=request.operation<>AESTYPES.OP_UPDATE
-      OR (request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1)
-  request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1)
-      ELSE INT(0) FI
-  IF request.operation=AESTYPES.OP_UPDATE THEN
-    status=AESLOCKS.Attempt(service,client,request,AESLOCKS.OWNER_READY,queued)
-  ELSEIF request.operation=AESTYPES.OP_OPEN OR request.operation=AESTYPES.OP_CLOSE THEN
-    status=AESWINDOW.Visibility(service,client,request,queued)
-  ELSEIF request.operation=AESTYPES.OP_SET THEN
-    IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
-      status=AESWINDOW.Frame(service,client,request,queued,@wake)
-    ELSE
-      status=AESWINDOW.Geometry(service,client,request,queued)
+  LET mask=LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit
+  waiting=0
+  DO
+    AESGATE.EnterTask(request.owner,mask)
+    IF request.operation=AESTYPES.OP_FIND THEN
+      request.status=AESWINDOW.Query(request)
+      AESGATE.Release(0)
+      RETURN(1)
     FI
-  ELSE
-    status=AESWINDOW.Lifecycle(service,client,request,queued)
-  FI
-  IF status=AESTYPES.PENDING THEN
-    AESGATE.Release(0)
-    RETURN(0)
-  FI
-
-  request.status=status
-  ; A local TRY can observe newly eligible older work without sending a
-  ; message. Preserve that admission opportunity when the presenter sleeps.
-  AESGATE.Release((wake OR queued) AND status=AESTYPES.OK)
+    BEGIN
+      LET client=AESSTATE.Find(service,request.client)
+      queued=AESWAIT.Queued(service)
+      wake=request.operation<>AESTYPES.OP_UPDATE
+          OR (request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1)
+      request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1)
+          ELSE INT(0) FI
+      IF request.operation=AESTYPES.OP_UPDATE THEN
+        IF waiting<>0 THEN
+          status=AESLOCKS.Continue(service,client)
+        ELSE
+          status=AESLOCKS.Attempt(service,client,request,
+              AESLOCKS.OWNER_READY,queued)
+        FI
+      ELSEIF request.operation=AESTYPES.OP_OPEN
+          OR request.operation=AESTYPES.OP_CLOSE THEN
+        status=AESWINDOW.Visibility(service,client,request,queued)
+      ELSEIF request.operation=AESTYPES.OP_SET THEN
+        IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
+          status=AESWINDOW.Frame(service,client,request,queued,@wake)
+        ELSE
+          status=AESWINDOW.Geometry(service,client,request,queued)
+        FI
+      ELSE
+        status=AESWINDOW.Lifecycle(service,client,request,queued)
+      FI
+      IF status=AESTYPES.PENDING AND request.operation<>AESTYPES.OP_UPDATE THEN
+        AESGATE.Release(0)
+        RETURN(0)
+      FI
+      IF status=AESTYPES.PENDING AND waiting=0 THEN
+        status=AESWAIT.Lock(service,client,request)
+        IF status=AESTYPES.PENDING THEN
+          client.waitMode=AESWAIT.CALLER
+        FI
+      FI
+      IF status<>AESTYPES.PENDING THEN
+        client.waitMode=AESWAIT.RPC
+        request.status=status
+        AESGATE.Release((wake OR queued) AND status=AESTYPES.OK)
+        RETURN(1)
+      FI
+    END
+    AESGATE.Release(waiting=0)
+    waiting=1
+    EXEC.Wait(mask)
+  OD
 
 RETURN(1)
 

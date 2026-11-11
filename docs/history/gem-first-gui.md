@@ -876,3 +876,23 @@ Reserved bank-zero delta is **0 fixed, 0 root, 0 kernel, 0 per public Task and
 0 idle bytes**, including guards, alignment and unused capacity. Private
 client/service payloads remain 136/1,982 bytes. This is not hosted-system
 qualification.
+
+
+### Caller UPDATE/MCTRL waits
+
+A pending lock now publishes its queue record before releasing the scene.
+The existing system Task signals the oldest currently eligible caller without
+acquiring its lock. That caller rechecks eligibility and commits its own BEGIN;
+recursive ownership, TRY, owner upgrades, synchronous snapshots and final END
+journals retain their existing policy. The private reply-port signal is reused
+as a wake hint, with no message/reply on this path. The busy C context and Task
+lease retain the request and registration until completion.
+
+Development checks: optimized emitted locks pass 193 C checks, including six
+new assertions that contended acquisitions preserve their RPC sequence and
+release C occupancy. The scene gate passes 61 checks each in raw and optimized
+builds; 689 host tests pass with four existing skips. One private waiter-mode
+byte per client changes the upper-heap client/service payloads to 137/1,986
+bytes. No Tasks or signals are added. Reserved bank-zero delta remains **0 fixed,
+0 root, 0 kernel, 0 per public Task and 0 idle bytes**, including guards, alignment
+and unused capacity. Window admission migration follows in the next slice.
