@@ -989,3 +989,33 @@ The [GF9 record](../development/gem-first-gf9.json) retains source/artifact hash
 reservation and footprint comparisons, cache equality and actual execution
 scope. No demo distribution or full qualification matrix was generated.
 Hardware and latency gates remain open. GF10 is next.
+
+
+## GF10: console backend and copied views
+
+### View contract and subscription lifetime
+
+The first GF10 slice defines machine-readable pointer-free snapshot/input
+records and generates their Action!/C declarations. A snapshot copies at most
+64 logical cells, plus unit/revision, geometry, cursor and mode. The private
+subscription core retains its consumer Task and owned signal mask. It detects
+model, cursor, mode and in-progress edit changes; revisions never wrap within
+one subscription. A stale acknowledgement rearms the hint without acknowledging
+newer pixels. Source retirement closes existing handles before source storage
+can be freed; consumers explicitly unsubscribe and can then bind a fresh unit.
+No mutable model/cell pointer is returned through the public record contract.
+
+Raw and optimized probes each pass 103 checks. They check target-emitted C
+layouts and C/Action! accesses through a bank boundary, a producer changing the
+model between snapshot chunks, stale acknowledgement, cursor-only changes,
+busy edits, resize, retirement/rebind and complete heap restoration. A local
+name initially shadowed the private record type in `SIZEOF` during unsubscribe;
+the heap check caught the short free and now passes. Host checks run 691 tests
+with four existing skips. The [view record](../development/gem-first-gf10-view.json)
+retains source/artifact hashes and actual scope.
+
+This slice does not switch production stream processing or presentation. It
+adds no production Task or signal. Reserved bank-zero growth is **0 fixed,
+0 root, 0 kernel, 0 per public Task and 0 idle bytes**, including guards,
+alignment and unused capacity. The next slice adds the backend worker and
+connects the public facade and temporary snapshot frontend.

@@ -1,0 +1,51 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GF10-view",
+  "sources": {
+    "abi/console-view.json": "95957bf9d71b5a0130cc85e3e57177de67ef7d9d4a22904c7760ab096525455b",
+    "c/include/exec816/console-view-types.h": "364efdc97114161300b5510932e27587fb578d97f367c835913bfef65e63a803",
+    "lib/console/consoleviewtypes.act": "76f427c7ecf1155fc012e0211f00b0e15a09242038c43cc8eac27adae639ca79",
+    "lib/console/consoleviewcore.act": "9011531e7253d09a75d84919a294519c19aef02a31f81912ab7dbbfff2143fd6",
+    "tools/generate_console_view.py": "586cfc86c00fe2cb7eb3cce8194d500a293091ef84aac31cd41049a9fb161668",
+    "tools/test_console_view.py": "5a40a151ccfbbb114f88353b05285772dbff1dc7078763a555c0564c3440e040",
+    "tests/programs/console_view.act": "ede9ebb677bf05ab051b9e19799f4b0c18677f5f5e827389945ca4fbd00f4b38",
+    "tests/test_console_view_contract.py": "987fb36550264c8b68c249accda85864056694c66c537425c435824d2f43d603",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9"
+  },
+  "artifacts": {
+    "raw": {
+      "path": "build/gem-first-gui/gf10/view-raw/results.json",
+      "sha256": "b2f39a7ba7eb4b44392ace08d46d49bc2db1e292e667f78aca7b6df9e405c03f",
+      "checks": 103
+    },
+    "opt": {
+      "path": "build/gem-first-gui/gf10/view-opt/results.json",
+      "sha256": "c5ca078ddce5abffe555908651ac4ba645b34a2fc7cc1f4b54906ecda50f2b4e",
+      "checks": 103
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "scope": "Generated pointer-free record ABI and private subscription core; public facade and worker integration follow. Both-mode C target-emitted layouts plus native bank-crossing accesses, concurrent generation change, stale acknowledgement, cursor-only change, busy edit, resize, retirement, rebind and heap restoration.",
+  "host_tests": {
+    "run": 691,
+    "skipped": 4
+  }
+}

@@ -1,0 +1,147 @@
+MODULE VIEWTEST
+USE EXEC
+USE CONSOLECORE
+USE CONSOLETYPES
+USE CONSOLEVIEWCORE AS VIEWS
+USE CONSOLEVIEWTYPES AS VIEW
+USE CALYPSICALL
+USE HEAPCORE
+CARD checks
+LONGINT probeResult
+LONGCARD beforeMemory,afterMemory
+EXEC.Task POINTER controller
+CONSOLETYPES.Instance POINTER model
+LONGCARD wake,writerWake
+BYTE writerReady,writerDone
+BYTE ARRAY resizeRow(80)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Writer()
+
+  LET bit=EXEC.AllocSignal(-1)
+  writerWake=LONGCARD(1) LSH bit
+  writerReady=1
+  EXEC.Signal(controller,wake)
+  EXEC.Wait(writerWake)
+  EXEC.Forbid()
+  CONSOLECORE.WriteAt(model,0,4,BYTE POINTER(c"changed"),7)
+  VIEWS.Publish(model)
+  EXEC.Permit()
+  EXEC.FreeSignal(bit)
+  EXEC.Forbid()
+  writerDone=1
+  EXEC.Signal(controller,wake)
+  EXEC.RemTask(NULL)
+
+RETURN
+
+PROC Main()
+  CARD index
+  LONGCARD handle,revision
+
+  beforeMemory=EXEC.AvailMem(0)
+  controller=EXEC.FindTask(NULL)
+  LET bit=EXEC.AllocSignal(-1)
+  Require(bit<>$ff)
+  wake=LONGCARD(1) LSH bit
+  model=CONSOLETYPES.Instance POINTER(EXEC.AllocMem(SIZEOF(CONSOLETYPES.Instance),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  LET cells=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC)
+  Require(model<>NULL AND cells<>NULL)
+  Require(CONSOLECORE.Init(model,cells,16,8,128)<>0)
+  WHILE model.operation<>CONSOLETYPES.OP_IDLE DO
+    CONSOLECORE.EditQuantum(model)
+  OD
+  FOR index=0 TO 127 DO
+    cells(index)=BYTE(index)
+  OD
+  Require(VIEWS.Subscribe(model,23,0)=0)
+  handle=VIEWS.Subscribe(model,23,wake)
+  Require(handle<>0 AND VIEWS.Active()<>0)
+  Require((EXEC.Wait(wake) & wake)<>0)
+
+  ; Force the ABI packet through a bank boundary in both Action! and C.
+  LET memory=EXEC.AllocMem(131072,EXEC.MEMF_LINEAR)
+  Require(memory<>NULL)
+  LET location=(LONGCARD(ADDRESS(memory)) & $ffff0000)+$ffc0
+  LET packet=VIEW.Snapshot POINTER(ADDRESS(location))
+  packet.first=0
+  Require(SIZEOF(VIEW.Snapshot)=88 AND SIZEOF(VIEW.Input)=72)
+  Require(ADDRESS(@packet.cells(0))-ADDRESS(packet)=24)
+  Require(VIEWS.Snapshot(handle,packet)=VIEW.OK)
+  Require(packet.unit=23 AND packet.count=64 AND packet.width=16)
+  FOR index=0 TO 63 DO
+    Require(packet.cells(index)=BYTE(index))
+  OD
+  revision=packet.revision
+  Require(VIEWS.Acknowledge(handle,revision)=VIEW.OK)
+  Require(VIEWS.Pending(handle)=0)
+  LET packetAddress=LONGCARD POINTER($VIEWPACKET)
+  packetAddress^=LONGCARD(ADDRESS(packet))
+  probeResult=CALYPSICALL.Invoke(ADDRESS($VIEWPROBE),0)
+  Require(probeResult=0)
+  Require(packet.first=64 AND packet.cells(63)=201)
+
+  ; A producer advances between chunks: mixing those revisions is detectable.
+  LET writer=EXEC.CreateTask(c"view producer",0,@Writer,1024)
+  Require(writer<>NULL)
+  WHILE writerReady=0 DO
+    EXEC.Wait(wake)
+  OD
+  EXEC.Signal(writer,writerWake)
+  WHILE writerDone=0 DO
+    EXEC.Wait(wake)
+  OD
+  Require(VIEWS.Snapshot(handle,packet)=VIEW.OK)
+  Require(packet.revision<>revision AND packet.cells(0)='c)
+  Require(VIEWS.Acknowledge(handle,revision)=VIEW.STALE)
+  Require((EXEC.Wait(wake) & wake)<>0)
+  Require(VIEWS.Pending(handle)<>0)
+  Require(VIEWS.Acknowledge(handle,packet.revision)=VIEW.OK)
+  Require(VIEWS.Pending(handle)=0)
+  revision=packet.revision
+  model.column=5
+  VIEWS.Publish(model)
+  Require(VIEWS.Pending(handle)<>0)
+  Require(VIEWS.Snapshot(handle,packet)=VIEW.OK)
+  Require(packet.column=5 AND packet.revision<>revision)
+  model.operation=CONSOLETYPES.OP_CLEAR
+  VIEWS.Publish(model)
+  Require(VIEWS.Snapshot(handle,packet)=VIEW.BUSY AND packet.count=0)
+  WHILE model.operation<>CONSOLETYPES.OP_IDLE DO
+    CONSOLECORE.EditQuantum(model)
+  OD
+  VIEWS.Publish(model)
+  Require(VIEWS.Snapshot(handle,packet)=VIEW.OK)
+  Require(packet.cells(0)=32)
+  packet.first=128
+  Require(VIEWS.Snapshot(handle,packet)=VIEW.BAD_LAYOUT)
+  Require(CONSOLECORE.Resize(model,4,resizeRow)<>0)
+  VIEWS.Publish(model)
+  packet.first=0
+  Require(VIEWS.Snapshot(handle,packet)=VIEW.OK AND packet.height=4)
+  VIEWS.Retire(model)
+  Require(VIEWS.Snapshot(handle,packet)=VIEW.CLOSED AND packet.count=0)
+  Require(VIEWS.Acknowledge(handle,packet.revision)=VIEW.CLOSED)
+  Require(VIEWS.Unsubscribe(handle)=VIEW.OK AND VIEWS.Active()=0)
+  handle=VIEWS.Subscribe(model,27,wake)
+  Require(handle<>0)
+  Require(VIEWS.Snapshot(handle,packet)=VIEW.OK AND packet.unit=27)
+  Require(VIEWS.Unsubscribe(handle)=VIEW.OK)
+  EXEC.FreeMem(memory,131072)
+  EXEC.FreeMem(cells,128)
+  EXEC.FreeMem(BYTE POINTER(model),SIZEOF(CONSOLETYPES.Instance))
+  EXEC.FreeSignal(bit)
+  afterMemory=EXEC.AvailMem(0)
+  Require(afterMemory=beforeMemory)
+
+RETURN
+ENDMODULE

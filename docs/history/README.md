@@ -19,6 +19,8 @@
   disk cohorts pass without new Tasks, signals or reserved bank-zero bytes.
   GF9 extracts the AES system loop, retaining the same Task and bounded console
   callbacks, with exact cache comparisons and input/menu/drag/disk integration.
+  GF10 starts with generated copied-view records and retained subscriptions;
+  backend/frontend integration remains in progress.
 
 - [Shared-source Atari ST comparison](atari-st-reference.md): Hatari with
   EmuTOS/MagiC, unchanged object routines, bounded execution and drawing-path

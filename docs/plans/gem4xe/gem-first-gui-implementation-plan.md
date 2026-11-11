@@ -428,6 +428,11 @@ Task, signal or reserved bank-zero storage; six private callback pointers add
 
 ### GF10 — Separate the console backend and publish a view interface
 
+In progress: the [view foundation](../../development/gem-first-gf10-view.json)
+passes its small raw/optimized ABI, snapshot and lifetime probes. Next connect
+the backend Task, public facade and temporary copied-view frontend, then test
+stream/input/cancellation and UPDATE-held producer completion.
+
 Move retained cells, cooked input, stream requests and cancellation into their
 console backend worker. Add a reusable console-view interface for bounded cell
 snapshots, geometry/cursor state, generation-tagged change notification and

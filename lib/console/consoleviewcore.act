@@ -1,0 +1,235 @@
+; Private retained subscription policy. Public views contain copied cells only.
+; The backend serializes bounded model edits with these Task-side guards.
+MODULE CONSOLEVIEWCORE
+USE EXEC
+USE A816MEMORY
+USE CONSOLETYPES
+USE CONSOLECORE
+USE CONSOLEVIEWTYPES AS VIEW
+USE HEAPCORE
+
+TYPE SubscriptionRecord=[
+  SubscriptionRecord POINTER next
+  EXEC.TaskLease owner
+  CONSOLETYPES.Instance POINTER source
+  LONGCARD unit,mask,revision,acknowledged,generation
+  CARD width,height,column,row,mode
+  BYTE operation,closed,exhausted
+]
+SubscriptionRecord POINTER subscribers
+
+PROC Wake(SubscriptionRecord POINTER subscription)
+
+  EXEC.Signal(subscription.owner.task,subscription.mask)
+
+RETURN
+
+; A revision never aliases within one retained subscription lifetime.
+PROC Advance(SubscriptionRecord POINTER subscription)
+
+  IF subscription.revision=$ffffffff THEN
+    subscription.exhausted=1
+  ELSE
+    subscription.revision==+1
+  FI
+  Wake(subscription)
+
+RETURN
+
+PROC Refresh(SubscriptionRecord POINTER subscription)
+
+  LET source=subscription.source
+  IF source=NULL THEN
+    RETURN
+  FI
+  IF subscription.generation<>source.generation
+      OR subscription.width<>source.width OR subscription.height<>source.height
+      OR subscription.column<>source.column OR subscription.row<>source.row
+      OR subscription.mode<>CARD(source.caps)
+      OR subscription.operation<>source.operation THEN
+    subscription.generation=source.generation
+    subscription.width=source.width
+    subscription.height=source.height
+    subscription.column=source.column
+    subscription.row=source.row
+    subscription.mode=CARD(source.caps)
+    subscription.operation=source.operation
+    Advance(subscription)
+  FI
+
+RETURN
+
+; Source admission belongs to the resident facade, before this allocation.
+PUBLIC LONGCARD FUNC Subscribe(CONSOLETYPES.Instance POINTER source
+    LONGCARD unit,mask)
+
+  LET owner=EXEC.FindTask(NULL)
+  IF mask=0 OR (owner.tc_SigAlloc & mask)<>mask THEN
+    RETURN(0)
+  FI
+  LET subscription=SubscriptionRecord POINTER(EXEC.AllocMem(SIZEOF(SubscriptionRecord),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  IF subscription=NULL THEN
+    RETURN(0)
+  FI
+  IF EXEC.RetainTask(owner,@subscription.owner)=0 THEN
+    EXEC.FreeMem(BYTE POINTER(subscription),SIZEOF(SubscriptionRecord))
+    RETURN(0)
+  FI
+  EXEC.Forbid()
+  subscription.source=source
+  subscription.unit=unit
+  subscription.mask=mask
+  subscription.next=subscribers
+  subscribers=subscription
+  Refresh(subscription)
+  EXEC.Permit()
+
+RETURN(LONGCARD(ADDRESS(subscription)))
+
+; Withdraw all publisher access before releasing the subscriber's Task lease.
+PUBLIC CARD FUNC Unsubscribe(LONGCARD handle)
+  SubscriptionRecord POINTER previous,current
+
+  LET subscription=SubscriptionRecord POINTER(ADDRESS(handle))
+  EXEC.Forbid()
+  previous=NULL
+  current=subscribers
+  WHILE current<>subscription DO
+    previous=current
+    current=current.next
+  OD
+  IF previous=NULL THEN
+    subscribers=subscription.next
+  ELSE
+    previous.next=subscription.next
+  FI
+  IF EXEC.ReleaseTask(@subscription.owner)=0 THEN
+    HEAPCORE.Abort($fcc0)
+  FI
+  EXEC.Permit()
+  EXEC.FreeMem(BYTE POINTER(subscription),SIZEOF(SubscriptionRecord))
+
+RETURN(VIEW.OK)
+
+; Called after a bounded edit, including cursor/mode-only changes.
+PUBLIC PROC Publish(CONSOLETYPES.Instance POINTER source)
+  SubscriptionRecord POINTER subscription
+
+  EXEC.Forbid()
+  subscription=subscribers
+  WHILE subscription<>NULL DO
+    IF subscription.source=source THEN
+      Refresh(subscription)
+    FI
+    subscription=subscription.next
+  OD
+  EXEC.Permit()
+
+RETURN
+
+; Unit retirement leaves a closed handle until its consumer unsubscribes.
+PUBLIC PROC Retire(CONSOLETYPES.Instance POINTER source)
+  SubscriptionRecord POINTER subscription
+
+  EXEC.Forbid()
+  subscription=subscribers
+  WHILE subscription<>NULL DO
+    IF subscription.source=source THEN
+      subscription.source=NULL
+      subscription.closed=1
+      Advance(subscription)
+    FI
+    subscription=subscription.next
+  OD
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC BYTE FUNC Active()
+
+RETURN(subscribers<>NULL)
+
+; Internal resident input access; never exported by the public view facade.
+PUBLIC CONSOLETYPES.Instance POINTER FUNC Source(LONGCARD handle)
+
+  LET subscription=SubscriptionRecord POINTER(ADDRESS(handle))
+
+RETURN(subscription.source)
+
+; At most 64 logical cells are copied in one coherent Task-side transaction.
+; A consumer assembling multiple chunks must match every returned revision.
+PUBLIC CARD FUNC Snapshot(LONGCARD handle VIEW.Snapshot POINTER target)
+  CARD index,count
+
+  LET subscription=SubscriptionRecord POINTER(ADDRESS(handle))
+  EXEC.Forbid()
+  Refresh(subscription)
+  target.unit=subscription.unit
+  target.revision=subscription.revision
+  target.width=subscription.width
+  target.height=subscription.height
+  target.column=subscription.column
+  target.row=subscription.row
+  target.mode=subscription.mode
+  target.count=0
+  target.state=IF subscription.closed<>0 THEN VIEW.CLOSED
+      ELSEIF subscription.exhausted<>0 THEN VIEW.OVERFLOW
+      ELSEIF subscription.operation<>CONSOLETYPES.OP_IDLE THEN VIEW.BUSY
+      ELSE VIEW.OK FI
+  IF target.state<>VIEW.OK THEN
+    EXEC.Permit()
+    RETURN(target.state)
+  FI
+  LET source=subscription.source
+  IF target.first>=source.count THEN
+    EXEC.Permit()
+    RETURN(VIEW.BAD_LAYOUT)
+  FI
+  count=source.count-target.first
+  IF count>VIEW.CELLS THEN
+    count=VIEW.CELLS
+  FI
+  FOR index=0 TO count-1 DO
+    target.cells(index)=source.cells(CONSOLECORE.CellOffset(source,target.first+index))
+  OD
+  target.count=count
+  EXEC.Permit()
+
+RETURN(VIEW.OK)
+
+; A stale acknowledgement rearms a consumed hint and never acknowledges pixels
+; from a later revision. Shared signal bits are never cleared by this service.
+PUBLIC CARD FUNC Acknowledge(LONGCARD handle,revision)
+  CARD status
+
+  LET subscription=SubscriptionRecord POINTER(ADDRESS(handle))
+  EXEC.Forbid()
+  Refresh(subscription)
+  status=VIEW.OK
+  IF subscription.closed<>0 THEN
+    status=VIEW.CLOSED
+  ELSEIF subscription.exhausted<>0 THEN
+    status=VIEW.OVERFLOW
+  ELSEIF subscription.revision<>revision THEN
+    status=VIEW.STALE
+    Wake(subscription)
+  ELSE
+    subscription.acknowledged=revision
+  FI
+  EXEC.Permit()
+
+RETURN(status)
+
+PUBLIC BYTE FUNC Pending(LONGCARD handle)
+
+  LET subscription=SubscriptionRecord POINTER(ADDRESS(handle))
+  EXEC.Forbid()
+  Refresh(subscription)
+  LET pending=subscription.acknowledged<>subscription.revision
+      OR subscription.closed<>0 OR subscription.exhausted<>0
+  EXEC.Permit()
+
+RETURN(pending)
+
+ENDMODULE

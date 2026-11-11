@@ -1,0 +1,92 @@
+{
+  "abi": "exec816.console-view",
+  "version": 1,
+  "constants": {
+    "CELLS": 64,
+    "OP_SUBSCRIBE": 1,
+    "OP_UNSUBSCRIBE": 2,
+    "OP_SNAPSHOT": 3,
+    "OP_ACKNOWLEDGE": 4,
+    "OP_INPUT": 5,
+    "OP_PENDING": 6,
+    "OK": 0,
+    "CLOSED": 1,
+    "STALE": 2,
+    "BUSY": 3,
+    "BAD_LAYOUT": 4,
+    "RESOURCE": 5,
+    "OVERFLOW": 6,
+    "INPUT_BYTES": 0,
+    "INPUT_RAW": 1,
+    "INPUT_LOSS": 2,
+    "INPUT_CANCEL": 3
+  },
+  "records": {
+    "Snapshot": [
+      [
+        "unit",
+        "LONGCARD"
+      ],
+      [
+        "revision",
+        "LONGCARD"
+      ],
+      [
+        "width",
+        "CARD"
+      ],
+      [
+        "height",
+        "CARD"
+      ],
+      [
+        "column",
+        "CARD"
+      ],
+      [
+        "row",
+        "CARD"
+      ],
+      [
+        "mode",
+        "CARD"
+      ],
+      [
+        "first",
+        "CARD"
+      ],
+      [
+        "count",
+        "CARD"
+      ],
+      [
+        "state",
+        "CARD"
+      ],
+      [
+        "cells",
+        "BYTE",
+        64
+      ]
+    ],
+    "Input": [
+      [
+        "kind",
+        "CARD"
+      ],
+      [
+        "count",
+        "CARD"
+      ],
+      [
+        "event",
+        "LONGCARD"
+      ],
+      [
+        "bytes",
+        "BYTE",
+        64
+      ]
+    ]
+  }
+}
