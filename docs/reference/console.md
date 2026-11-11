@@ -95,214 +95,51 @@ be enabled during system startup.
 READ waits for translated keyboard input, then returns an available prefix.
 WRITE consumes counted source bytes in bounded work quanta. Completion means
 source bytes were accepted into retained state; physical redraw may follow.
-A nonempty write of at most 64 bytes that finishes directly in the text-feed
-step gets one bounded presentation pass before its reply wakes the caller.
-It does not wait for all damage to clear or for a pending asynchronous scroll.
-Hidden views still complete. Normal preemption remains enabled, and cancellation
-during the pass is honored. A quiesced drawing failure before reply reports
-`IOERR_SELFTEST` with the accepted-byte count; unquiesced DMA retains the request
-for reset.
+A separate backend Task owns stream work and copied input. A producer holding
+AES UPDATE can wait for accepted output without waiting for painting. Cancellation
+reports the accepted prefix once. The renderer later consumes bounded copied
+[console views](console-views.md); it borrows no live backend cell pointer.
 CLEAR discards buffered input and its loss latch; it neither clears the screen
 nor cancels a pending Read. It ignores Data/Length and returns zero actual bytes.
 Cooked editing, EOF and foreground cancellation belong to the
 [DOS stream layer](streams.md), [cooked input](cooked-console.md) and
 [BREAK scopes](foreground-break.md).
 
-## Display, scrolling and input
+## Presentation and input
 
-At startup the default text instance adopts the current GRAPHICS 0 screen and
-cursor position. Shell output continues after the boot messages; startup does
-not clear them. Imported text uses the supported ROM glyphs; inverse attributes
-and graphics characters are not retained. Additional instances start empty.
-FF, including the shell's CLS and Ctrl-L, still explicitly clears the instance.
-This uses the existing cell buffer and adds no fixed or per-Task reserved
-bank-zero bytes.
+The system Task owns display and input capture. It routes captured events through
+a bounded copied ingress queue to the backend Task. Eight byte/raw packets may be
+queued; loss and cancellation have separate coalesced slots. A captured route
+remains retained through delivery or drop. Clearing, reopening or closing input
+invalidates copied bytes already withdrawn from capture. Scope handoff retires
+old route tags, so delayed cancellation cannot interrupt a later job.
 
-Text admission checks GRAPHICS 0 geometry, the display-list layout and disjoint
-OS-high screen/list extents. It ignores `ATRACT`, `COLRSH`, `DRKMSK`, `CHBAS`,
-`CHACT` and `GPRIOR`. The installed font remains selected, allowing international
-fonts. On display claim the text backend sets `CHACT`/`CHACTL` to 2 and
-`GPRIOR`/`PRIOR` to 0; release restores the incoming shadows and hardware modes.
-The existing VBI hook suppresses attract mode while the console owns the screen.
+The transitional renderer assembles bounded copied views into its own private
+cells. It never changes the model being edited by the backend. A multi-chunk
+pass can acknowledge only one matching revision after presentation completes;
+stale acknowledgements rearm the consumer hint. Drawing retains the existing
+physical display lease, clipping, bounded submissions and completion fences.
+UPDATE can delay drawing without delaying stream acceptance. Physical borrows
+freeze the renderer's private copy until completion.
 
-Verbose kernel startup prints worker readiness before display claim. After the
-shell opens its stream, console and shell readiness go through retained output.
-The [platform boot contract](platform.md#boot-service-settings) defines these
-milestones and the independent fatal-startup screen path.
-
-The retained model and presentation are separate. Hidden instances still accept
-output; showing them redraws retained cells. The worker rotates runnable instances
-and bounds output/redraw work so pending input and other Tasks can progress.
-[Window presentation](console-windows.md) defines tiling and focus limits.
-Damage is retained separately for each changed row, so distant edits do not
-force the rows between them to redraw. A bounded presentation cannot discard a
-newer edit when it acknowledges completed work.
-
-Bitmap presentation starts a segment of at most 32 glyphs from one dirty row.
-Desktop clipping resumes one visible fragment per pass, with at most 16 glyphs
-when the fragment cuts through the glyph height. The scene token freezes the
-model and geometry until all fragments of that segment retire; no borrowed
-view or source pointer survives a worker return. The dirty endpoint advances
-only after that segment completes; a batch keeps
-its paint phase and withholds the caret until all of its damage is repaired.
-Visible pending damage drains before further writes or scrolling can restart
-the repair. Cancellation and clear can abandon that repair. Ready segments
-resume on fresh worker turns, with input, control admission and instance
-rotation between them, without a voluntary Task handoff per segment. A short
-WRITE's presentation pass completes its active fragment sequence before reply.
-Cancellation preserves the accepted prefix; a quiesced drawing failure retires
-the token without acknowledging partially drawn damage. A queued AES update lock
-still permits the existing bound-console text continuation to finish and release
-its scene token. Other views cannot replace its frozen source. A scene exposure
-acknowledges all dirty console rows only if it repainted the full window;
-partial exposure preserves model damage outside the painted rectangle.
-
-The desktop Shell now has one persistent 512×160 backing bitmap. Dirty cell
-spans update that bitmap regardless of coverage; completed model generations
-and screen damage retire separately. Aligned visible exposure restores current
-client pixels by VRAM copy, with retained-cell drawing for unsupported clipped
-edges. The bitmap contains neither caret nor pointer. Position-only moves keep
-its pixels; invalidated in-flight batches rebuild from retained cells. This
-source must be current before a scene paint token freezes it. Screen exposure
-never acknowledges unfinished model-to-backing work. Native BIND_CONSOLE replaces
-the owner at a settled boundary and rebuilds from its retained cells. Hidden
-console sessions preserve their own model damage without writing this surface.
-
-The text backend uses the installed OS font with the standard Atari screen-code
-mapping, with `?` for unsupported terminal bytes.
-Bitmap output uses the shared GEM 8×8 font, black ink and an opaque white
-background. A synchronized visible instance scrolls with one asynchronous opaque
-rectangle copy followed by the exposed-strip fill in the same hardware list.
-A height-one tile submits only the fill. Hidden or invalidated presentation
-redraws retained damage; clear retains bounded fills.
-
-Long bitmap writes (more than 64 bytes) can accumulate several bottom-row
-scrolls before presentation. Admission requires a fully visible, synchronized
-view taller than one row. Each turn accepts at most 64 source bytes and recycles
-at most one character row. One shared 44-byte upper-RAM context tracks at most
-four scroll rows, 256 source bytes and four turns. A changed VBI tick, control
-byte, request end, cancellation or waiting short write also ends gathering.
-There is no extra source buffer and no wait for a subsequent WRITE.
-
-The resulting list copies the surviving rectangle and clears all exposed rows
-once. Completion preserves the accepted text's damage; bounded presentation
-then paints its final positions, including text above the exposed strip. Input
-and READ service continue between quanta and during DMA. Other model writes
-wait until this continuation settles. Hide or other presentation changes may
-discard the optimization and redraw the accepted model after DMA is quiescent.
-An aborted WRITE reports its accepted prefix exactly once; no continuation
-retains the request or source after reply.
-See the [batching measurements](../history/console-output-batching.md): cached
-CAT improves by 1.66× on the pinned demo; broader latency targets remain open.
-
-The worker owns console drawing and the physical display lifetime, with one
-list in flight. [Delegated VDI drawing](display.md#delegated-renderer-access)
-shares its renderer through the common physical arbiter. A retained VBXE
-completion signal wakes it; an independent sixteen-VBI-tick watchdog wakes it
-if that interrupt is lost. It queries completion on a notification, continues
-bounded input and READ service, and waits when no actionable work remains.
-Queued output or controls blocked by DMA do not keep it yielding. Further model writes and all
-hardware drawing, including caret and presentation controls, wait for completion.
-The logical scroll commits once, and cancellation preserves accepted bytes.
-The upper-RAM association holds only unit and view/model generations, never a
-borrowed instance pointer across a turn. Completion borrows only a matching live
-entry. A presenting entry defers adoption until publication; a retired entry
-cannot adopt it. The durable completion flag prevents an unrelated focus change
-from forcing an unchanged output tile to redraw. Invalidated views redraw
-from their retained cells. Hide, destruction and Stop settle DMA before releasing
-its storage or display ownership. Unquiesced recovery retains both.
-
-A steady focused underline caret restores its cell before copying and redraws
-after presentation settles. Completion makes that redraw runnable even if no
-WRITE remains. Clean cells and an unchanged caret cause no drawing submissions.
-An opaque bitmap text span also erases an old caret inside the cells it actually
-draws, avoiding a separate glyph restore. A caret outside that span still needs
-restoring, including cursor-only moves and cells deferred by clipping or the
-presentation budget.
-When the last dirty span completes full-screen bitmap presentation, the renderer can
-append the new caret to that text operation. This requires a focused, settled
-view and an old caret already absent or covered by the span. Text and caret
-then share one owner check and the final blitter list and fence. Cursor-only
-moves and incomplete presentations retain separate operations.
-Desktop presentation finishes every clipped text fragment before its separate
-caret operation.
-The native/C packet is version 13, 78 bytes, including the trailing fill and clipping geometry
-and driver-owned completion mask returned at open. Rebuild both sides together.
-The worker reserves its request/input/stop bits before display initialization
-allocates that signal.
-Output control bytes have these effects:
-
-| Byte | Effect |
-| --- | --- |
-| BS | Move left, clamped at column zero; do not erase. |
-| HT | Next eight-column tab stop, or the next line at the right edge. |
-| LF | Column zero of the next row, scrolling at the bottom. |
-| FF | Clear this instance and move its cursor to the top left. |
-| CR | Column zero of the current row. |
-| Other C0 controls and DEL | Consume without effect; BEL does not use POKEY. |
-| High-bit bytes | Render `?`; no implicit ATASCII or UTF-8 interpretation. |
-
-Printable output wraps at the instance bounds. `$9B` is not a newline; an ATASCII
-viewer must translate it. The cursor overlay does not change retained cells.
-
-Retained characters use a circular row origin within their original allocation.
-Scrolling clears the recycled physical row and advances the origin; it does not
-copy the other character rows. Cursor positions, damage and presentation indexes
-remain logical. Readers map a row or printable run once, preserving far-address
-carry across CPU banks. Full redraw visits the current logical row order.
-
-FF resets the origin when the clear edit commits, after cursor removal; parsing
-FF alone does not change it. CMD_CLEAR only clears captured input. Every scroll
-still dirties all logical rows for hidden, clipped or invalidated views. The
-physical text-screen move and VBXE rectangle copy/fill remain necessary. Pending
-DMA gates later model edits, and completion never rotates the origin again.
-This is a current-screen buffer, with no scrollback. See the
-[circular-buffer record](../history/console-circular-buffer.md) for measurements.
-
-Keyboard capture uses the shared [input lease and route API](input.md). The
-console maps captured generic route tags to retained instance/foreground state.
-Focus changes do not redirect already captured keys. Input loss is explicit;
-BREAK delivery has retained route state independent of the ordinary key FIFO.
-IRQs do not scan instance records or follow arbitrary application pointers.
-Each worker turn atomically collects input/stop/display notifications with `SetSignal`,
-merging the previous `Wait` result. A worker-local flag retains possible input
-until a bounded drain observes EMPTY; full batches keep it runnable. Output with
-no input notification or retained work does not call `INPUT.Pending` or `Take`.
-The worker never clears notifications after a drain or before sleeping, so an
-arrival after EMPTY still wakes it. Unexpected resident-lease errors terminate
-through the invariant-failure path. Public input validation remains unchanged.
-Stopping the console releases input ownership before its signal/storage and display retire;
-hiding a window does not release either ownership domain.
-[Idle-input development evidence](../development/console-idle-input-q3.json)
-records 9.7–10.0 ms for input checking across a full-screen bitmap scroll, down
-from 52 ms on that historical image. Subsequent validation and asynchronous
-scroll results are recorded in the
-[drawing implementation plan](../plans/drawing-validation-implementation-plan.md).
-Aligned bitmap text now uses the shared library's checked run generator, with
-up to 80 glyphs and one background fill per hardware list. The console's own
-32-glyph presentation step remains unchanged. The operation remains
-synchronous and retains the existing worker and ownership boundaries. See the
-[drawing adapter](../../ports/gem4xe/adapter/README.md) for its limits and the
-[responsiveness measurements](../history/console-responsiveness.md) for measured
-CPU and loaded input costs.
-The subsequent [blitter IRQ measurements](../history/blitter-completion-irqs.md)
-record less completion-checking CPU work, about 32.5 ms isolated scrolling and
-98–139 ms sampled loaded visible input on that image. Subsequent
-[circular-buffer measurements](../history/console-circular-buffer.md) reduce
-retained-edit CPU by 52–56% per call and isolated scrolling to about 30.5 ms.
-Loaded visible input remains 101–148 ms with mixed changes across phases; the
-broader latency targets remain open.
+The single framebuffer can expose intermediate updates. Scrollback, width
+reflow and escape-sequence emulation remain unsupported. Earlier batch and
+short-write painting behavior is preserved as
+[history](../history/console-presentation-before-gf10.md), rather than a current
+stream completion guarantee.
 
 ## Lifetime and limits
 
-The worker and console registry are resident system services. Instance owners,
+The backend, graphical system Task and console registry are resident services. Instance owners,
 open bindings and active presentation/worker borrows prevent premature removal
 or destruction. IRQs remain enabled during ordinary processing; asynchronous
 entry follows the [platform protocol](platform.md).
 
 The optional bitmap build defers automatic startup, binds its checked ordinary
-C call and display callbacks, then starts the existing worker in an available
-2,560-byte pool. It adds no bank-zero storage. The shared drawing image reserves
+C call and display callbacks, then starts the system Task in an existing
+2,560-byte pool and the backend in an existing 1,312-byte pool. Reserved
+bank-zero storage does not grow. Each additional small Task consumes 1,600
+previously reserved bytes: 1,312 stack, 256 direct page and 32 outer guards. The shared drawing image reserves
 upper banks `$0C/$0D`; the loader validates these alongside native reservations.
 The optional [bitmap shell preview](../guides/bitmap-console.md) uses queried
 80×24 shell and 80×6 prime tiles; the standard demo uses 40×18 and 40×6.
@@ -312,8 +149,8 @@ tracks the open responsiveness gate. Functional development checks do not promis
 intermediate updates between fences and scanout.
 
 A quiesced bitmap hardware fault restores the OS display and latches terminal
-backend failure. Waiting READ/WRITE requests receive `IOERR_SELFTEST` once;
-WRITE retains its accepted-byte count. New opens and requests are rejected.
+backend failure. Waiting READ requests receive `IOERR_SELFTEST`. Admitted output still completes
+model acceptance with its accepted-byte count; new opens and requests are rejected.
 Existing bindings can close, controls can retire, and Stop retains its usual
 live-instance/open-binding checks. Restart after a completed Stop retries
 acquisition. Unquiesced DMA retains ownership and requests in reset-required

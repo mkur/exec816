@@ -1,4 +1,5 @@
 MODULE DOSSTREAMLIFE
+USE CONSOLECOOKED
 USE EXEC
 USE CONSOLECORE
 USE EXECTASKS
@@ -271,7 +272,7 @@ PROC Inject(LONGCARD event)
 
   service=CONSOLEDRIVER.GetService()
   EXEC.Forbid()
-  CONSOLEINPUT.Deliver(instance,event)
+  CONSOLECOOKED.Deliver(instance,event)
   EXEC.Signal(@service.task,$40000000)
   EXEC.Permit()
 
@@ -314,7 +315,7 @@ PROC SaturationAndErrors(BYTE unused)
   Check(DOS.ReleaseContext()=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   endpoint.active=0
   EXEC.Forbid()
-  CONSOLEINPUT.Lose(instance)
+  CONSOLECOOKED.Lose(instance)
   EXEC.Permit()
   Check(DOS.Read(handle,buffer,8)=-1 AND DOS.IoErr()=DOS.ERROR_BUFFER_OVERFLOW)
   IdleRequest(client)

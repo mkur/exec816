@@ -12,11 +12,13 @@ TYPE SubscriptionRecord=[
   SubscriptionRecord POINTER next
   EXEC.TaskLease owner
   CONSOLETYPES.Instance POINTER source
-  LONGCARD unit,mask,revision,acknowledged,generation
+  LONGCARD unit,mask,revision,acknowledged,generation,route
   CARD width,height,column,row,mode
   BYTE operation,closed,exhausted
 ]
+CONST MAX_SUBSCRIPTIONS=8
 SubscriptionRecord POINTER subscribers
+BYTE subscriptionCount
 
 PROC Wake(SubscriptionRecord POINTER subscription)
 
@@ -77,6 +79,15 @@ PUBLIC LONGCARD FUNC Subscribe(CONSOLETYPES.Instance POINTER source
     RETURN(0)
   FI
   EXEC.Forbid()
+  IF subscriptionCount=MAX_SUBSCRIPTIONS THEN
+    IF EXEC.ReleaseTask(@subscription.owner)=0 THEN
+      HEAPCORE.Abort($fcc0)
+    FI
+    EXEC.Permit()
+    EXEC.FreeMem(BYTE POINTER(subscription),SIZEOF(SubscriptionRecord))
+    RETURN(0)
+  FI
+  subscriptionCount==+1
   subscription.source=source
   subscription.unit=unit
   subscription.mask=mask
@@ -104,6 +115,7 @@ PUBLIC CARD FUNC Unsubscribe(LONGCARD handle)
   ELSE
     previous.next=subscription.next
   FI
+  subscriptionCount==-1
   IF EXEC.ReleaseTask(@subscription.owner)=0 THEN
     HEAPCORE.Abort($fcc0)
   FI
@@ -125,6 +137,21 @@ PUBLIC PROC Publish(CONSOLETYPES.Instance POINTER source)
     subscription=subscription.next
   OD
   EXEC.Permit()
+
+RETURN
+
+; Foreground tags are scalar authority, copied with the generation being read.
+PUBLIC PROC Route(CONSOLETYPES.Instance POINTER source LONGCARD route)
+  SubscriptionRecord POINTER subscription
+
+  subscription=subscribers
+  WHILE subscription<>NULL DO
+    IF subscription.source=source AND subscription.route<>route THEN
+      subscription.route=route
+      Advance(subscription)
+    FI
+    subscription=subscription.next
+  OD
 
 RETURN
 
@@ -150,12 +177,30 @@ PUBLIC BYTE FUNC Active()
 
 RETURN(subscribers<>NULL)
 
-; Internal resident input access; never exported by the public view facade.
-PUBLIC CONSOLETYPES.Instance POINTER FUNC Source(LONGCARD handle)
+PUBLIC BYTE FUNC ActiveOutside(EXEC.Task POINTER owner)
+  SubscriptionRecord POINTER subscription
+
+  subscription=subscribers
+  WHILE subscription<>NULL DO
+    IF subscription.owner.task<>owner THEN
+      RETURN(1)
+    FI
+    subscription=subscription.next
+  OD
+
+RETURN(0)
+
+PUBLIC LONGCARD FUNC Unit(LONGCARD handle)
 
   LET subscription=SubscriptionRecord POINTER(ADDRESS(handle))
 
-RETURN(subscription.source)
+RETURN(subscription.unit)
+
+PUBLIC BYTE FUNC Closed(LONGCARD handle)
+
+  LET subscription=SubscriptionRecord POINTER(ADDRESS(handle))
+
+RETURN(subscription.closed)
 
 ; At most 64 logical cells are copied in one coherent Task-side transaction.
 ; A consumer assembling multiple chunks must match every returned revision.
@@ -171,6 +216,7 @@ PUBLIC CARD FUNC Snapshot(LONGCARD handle VIEW.Snapshot POINTER target)
   target.height=subscription.height
   target.column=subscription.column
   target.row=subscription.row
+  target.route=subscription.route
   target.mode=subscription.mode
   target.count=0
   target.state=IF subscription.closed<>0 THEN VIEW.CLOSED

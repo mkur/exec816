@@ -1,4 +1,5 @@
 MODULE FOREGROUNDBREAKTEST
+USE CONSOLECOOKED
 USE EXEC
 USE EXECTASKS
 USE EXECLISTS
@@ -82,7 +83,7 @@ PROC BoundChecks()
   LONGCARD bits
 
   EXEC.Forbid()
-  CONSOLEINPUT.Deliver(instance,$007b0100)
+  CONSOLECOOKED.Deliver(instance,$007b0100)
   Require(instance.inputCount=1)
   capture.events(0).key=0
   capture.events(0).kind=1
@@ -313,7 +314,7 @@ PROC Main()
   Acknowledge()
   Pause(3)
   EXEC.Forbid()
-  CONSOLEINPUT.Lose(instance)
+  CONSOLECOOKED.Lose(instance)
   gate=0
   phase=4
   WHILE gate=0 DO
@@ -326,7 +327,7 @@ PROC Main()
 
   Require(instance.inputLost<>0 AND instance.inputCount=0)
   Acknowledge()
-  CONSOLEINPUT.Clear(instance)
+  CONSOLECOOKED.Clear(instance)
   Pause(5)
   EXEC.Forbid()
   capture.tail=0
@@ -345,7 +346,7 @@ PROC Main()
 
   Require(instance.inputCount=0)
   Acknowledge()
-  CONSOLEINPUT.Clear(instance)
+  CONSOLECOOKED.Clear(instance)
   Pause(7)
   EXEC.Forbid()
   gate=0

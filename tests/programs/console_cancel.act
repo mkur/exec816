@@ -1,4 +1,5 @@
 MODULE CONSOLECANCELTEST
+USE CONSOLECOOKED
 USE EXEC
 USE EXECTASKS
 USE EXECLISTS
@@ -148,7 +149,7 @@ PROC CanceledReads()
 
   EXEC.Forbid()
   FOR index=0 TO 63 DO
-    CONSOLEINPUT.Deliver(instance,(LONGCARD(index+200) LSH 16) OR $3f)
+    CONSOLECOOKED.Deliver(instance,(LONGCARD(index+200) LSH 16) OR $3f)
   OD
 
   EXEC.Permit()

@@ -1,6 +1,10 @@
 MODULE CONSOLEWINDOWTEST
+USE CONSOLECOOKED
 USE EXEC
 USE CONSOLECORE
+USE CONSOLEVIEW
+USE CONSOLEVIEWCORE AS VIEWS
+USE CONSOLEVIEWTYPES AS VIEW
 USE EXECTASKS
 USE EXECLISTS
 USE TASKSTACKS
@@ -110,8 +114,8 @@ RETURN
 PROC PeerChecks()
 
   peer.tc_Node.ln_Type=EXEC.NT_TASK
-  peer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
-  peer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  peer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
+  peer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))
   peer.tc_SPReg=peer.tc_SPUpper-SIZE(2)
   EXECLISTS.NewList(@peer.tc_MemEntry)
   Require(EXEC.AddTask(@peer,@PeerEntry,absent)=@peer)
@@ -173,8 +177,8 @@ PROC DeviceChecks()
   FI
 
   EXEC.Forbid()
-  CONSOLEINPUT.Deliver(a,$0001003f)
-  CONSOLEINPUT.Deliver(b,$00020015)
+  CONSOLECOOKED.Deliver(a,$0001003f)
+  CONSOLECOOKED.Deliver(b,$00020015)
   EXEC.Signal(@service.task,$40000000)
   EXEC.Permit()
   Collect(one,0,1)
@@ -245,9 +249,9 @@ PROC DosChecks()
   entry=CONSOLEWINDOWS.Find(first)
   instance=CONSOLETYPES.Instance POINTER(entry.instance)
   EXEC.Forbid()
-  CONSOLEINPUT.Deliver(instance,$0064003f)
-  CONSOLEINPUT.Deliver(instance,$00650015)
-  CONSOLEINPUT.Deliver(instance,$0066000c)
+  CONSOLECOOKED.Deliver(instance,$0064003f)
+  CONSOLECOOKED.Deliver(instance,$00650015)
+  CONSOLECOOKED.Deliver(instance,$0066000c)
   EXEC.Permit()
   Require(DOS.Read(con,inputA,4)=3 AND inputA(0)=97 AND inputA(1)=98
       AND inputA(2)=10)
@@ -286,7 +290,7 @@ PROC FailureChecks()
   BYTE index
 
   available=EXEC.AvailMem(0)
-  FOR index=1 TO 4 DO
+  FOR index=1 TO 6 DO
     WINDOWPROBE.calls=0
     WINDOWPROBE.failAt=index
     Require(CONSOLE.Create(8,3)=0 AND EXEC.AvailMem(0)=available)
@@ -311,8 +315,8 @@ PROC NarrowCooked()
   LET entry=CONSOLEWINDOWS.Find(unit)
   LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
   EXEC.Forbid()
-  CONSOLEINPUT.Deliver(instance,$0200003f)
-  CONSOLEINPUT.Deliver(instance,$0201000c)
+  CONSOLECOOKED.Deliver(instance,$0200003f)
+  CONSOLECOOKED.Deliver(instance,$0201000c)
   EXEC.Permit()
   Require(DOS.Read(file,inputA,4)=2 AND inputA(0)=97 AND inputA(1)=10)
   Require(instance.row=0
@@ -322,6 +326,27 @@ PROC NarrowCooked()
       AND instance.cells(CONSOLECORE.CellOffset(instance,2))=32)
   Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
   Require(CONSOLE.Destroy(unit)<>0)
+
+RETURN
+
+; External copied views retain their own lifetime after source retirement.
+PROC ViewChecks()
+  VIEW.Snapshot packet
+
+  LET bit=EXEC.AllocSignal(-1)
+  Require(bit<>$ff)
+  LET mask=LONGCARD(1) LSH bit
+  LET unit=CONSOLE.Create(8,3)
+  Require(unit<>0)
+  LET handle=CONSOLEVIEW.Subscribe(unit,mask)
+  Require(handle<>0)
+  packet.first=0
+  Require(VIEWS.Snapshot(handle,@packet)=VIEW.OK AND packet.unit=unit)
+  Require(CONSOLE.Destroy(unit)<>0)
+  Require(VIEWS.Snapshot(handle,@packet)=VIEW.CLOSED)
+  Require(CONSOLEDRIVER.Stop()=0)
+  Require(VIEWS.Unsubscribe(handle)=VIEW.OK)
+  EXEC.FreeSignal(bit)
 
 RETURN
 
@@ -355,6 +380,7 @@ PROC Main()
   Require(CONSOLE.Destroy(first)<>0 AND CONSOLE.Destroy(second)<>0
       AND CONSOLE.Destroy(third)<>0)
   NarrowCooked()
+  ViewChecks()
   FOR index=0 TO 15 DO
     first=CONSOLE.Create(40,24)
     Require(first<>0 AND CONSOLE.Destroy(first)<>0)

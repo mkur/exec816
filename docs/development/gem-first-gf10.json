@@ -1,0 +1,513 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GF10-backend",
+  "parent": "56be270a540c0a4cf4400285f94187ece4226f4a",
+  "implementation_sources": {
+    "abi/c-program.json": "f0feb8c3efc15083a1df586fb6f8448fee8c999935b5fee2d3b8db866ee09a83",
+    "abi/console-view.json": "4c7705e9de346071a7b9c5fb26bffcb78884297919606c6200c2daf3c8b7edb8",
+    "abi/tasks.json": "a4585abc8e64466dc99c59b36e4f08a4f8c6902a4041d79aac68ff865b8d69d7",
+    "c/calypsi/console-bridge.inc": "8a4072597da4d1dd7b09b411de646c59a954f0dccf21442a43fe695097c1b02d",
+    "c/calypsi/console.c": "ba1622f5eefe68394d28e65573b8cfabd8fefb1e4d30e7cd9554ee3e9c995bb4",
+    "c/include/exec816/console-view-types.h": "68c92822a552ad8e833fd74568ccbbd7ddf27eefef1041f919432d5179ad2f6e",
+    "c/include/exec816/console-view.h": "c69a696195b1e062bea0fc1d606d2630579c9a2349034487e4bc221fcc3ece18",
+    "lib/console/console-lifetime.inc": "0ab894b0c88f8393091bf3b61e76b30303a7bbcee306479c44d71aa06204e7a7",
+    "lib/console/console-requests.inc": "c2ae8bb2a63c1a553412e2897c8c1adae0b67e8d1656a5551e22e3b1f809dcb1",
+    "lib/console/console.act": "87aea445173af479c4e638e2abe9a276317ac35acf9eaf946aa42a603988e524",
+    "lib/console/consolebackend.act": "8c73cb16d7323b47d0c821a3d9bbfbbe5c9cb8e11148f232fd2e02fcf8c0e597",
+    "lib/console/consolebitmap.act": "6e5162058cedc4b25f2e36493860ef1d60c9ab1f6a8722a67a8c791e00e1ce3b",
+    "lib/console/consolecapture.act": "bb78d3e68855b65f867d90616ffed04db4339f8776abf644374c720d9181927f",
+    "lib/console/consolecooked.act": "b424a04bbbb40ef0ccb55e5720ad8562831cf89a67f3a8d3599c38892b902960",
+    "lib/console/consoledriver.act": "5c80829a584b47357e5b529bdc397908d8ebd5f6496153e740d4d23e88abca62",
+    "lib/console/consoleforeground.act": "4582d7695648699d8aa7e086da1fd373af6b503197eb036f64bd572431e39d60",
+    "lib/console/consolefront.act": "fe08e255da9d67954c7ea2c5119d2bbfc2be7ba46c7b1da057e3d51989547f58",
+    "lib/console/consoleingress.act": "1b6068f3e301b860c822271b03ff903340a951efa86310e39fe2fd0a19d36922",
+    "lib/console/consoleinput.act": "71f32e9fcc635ebdb1da6a8801079b19ce7de5c978e2f9e65fa214bf98689b52",
+    "lib/console/consoleinputepoch.act": "4f469b8651491a39f7b4b9e30a92ec45bcc61d393603505f1a4918bdf447fc30",
+    "lib/console/consolemirror.act": "7b64a0c3bf7346c2a3ba00934ebc426d7e565fdb226b2e25cedf176c6d39f975",
+    "lib/console/consoletiling.act": "e575b2f13f92666bd00903b23951bb12405427caabe971f181cdb933f82a97ee",
+    "lib/console/consoleview.act": "63ab898aa3d81ff2596cbde2bc5e7cbc6571522388f65a5c8e15c87b39ce8b4a",
+    "lib/console/consoleviewcore.act": "72634e70f6313df88bf6ad173c50f63b75635bb599a9fcf4aa814f1d3f81efed",
+    "lib/console/consoleviewtypes.act": "d2a882c135d895592c4de6670b15e594ffaf33af3a96d6ddd5a6a0bff549865c",
+    "lib/console/consolewindows.act": "dc5bec824b26281f97dfbc65607abc1e29e09eb4ba42096430c1950849febfc7",
+    "lib/desktop/desk-owned-console.inc": "2208195478dfccc5a2c16c49225626e6a75bde41f424d00a106932480a5c3b49",
+    "lib/desktop/deskconsole.act": "9b276fa4ca6ff956ded681d85817fea8c3383bc39f05dab54a20c5ab31cc2c94",
+    "lib/desktop/deskmenucache.act": "036dec6e526168857cbf1ded65c2c960d0c5c0ac48c53e586cb2724131998096",
+    "lib/desktop/deskmove.act": "68f3c93d3c30996347e476e7c131cea1b9f6fbb310c8264f58333b06e50565a7",
+    "lib/desktop/deskpaint.act": "137e27c8d2bc221793d2dbc5100e278cd37f284a265f85bff66db1f2d5d83255",
+    "lib/dos/c-program-abi.inc": "60f8592c8be87c62096dcd974aad7e29d256ac81d615b24ea9aea529bf5c51f9",
+    "tests/programs/aes_locks.c": "0e4031c22cf0c407f490214a51065e56d388df56dc5f8fef59cce27a834c5168",
+    "tests/programs/bitmapcontrolprobe.act": "f1a9d7cbb4fec1c45ffa6f856fef4cd6c021f8371cdb533f7472e7ee27e8230e",
+    "tests/programs/console_bitmap.act": "eed0a3720066d0536b20c4f0a3f20bd91a111270ce7544f477815afa1a0f4cc0",
+    "tests/programs/console_bitmap_control.act": "14357df0fdee1a280e415f8cb839e59c1194dbd0e745f3db17ca93fc7374a817",
+    "tests/programs/console_cancel.act": "caad2acd90d6fb441f95772f01a327f2b4ddfaab610bb5b9846682408144042d",
+    "tests/programs/console_cell_io.act": "ae1f1f67da03168fb77204434cecaa4cfb93ab36518cec5b5f16ab50ed2114db",
+    "tests/programs/console_control.act": "338e0f1db245d58bb051fdba8bb2979925237d69781e88df9fbc63af43e8fd30",
+    "tests/programs/console_edit.act": "cce4d66a59fc79d1dd7a534a4ebeb5a370a6ffed2636339bfa4c0822e50473fa",
+    "tests/programs/console_input_checks.inc": "0703a4fe5b20cb5405de4cc5732c0260562098d07c4833b707f812b6cf11dbec",
+    "tests/programs/console_input_pump.act": "ff23a17c49dd9ed4ce05a5f11ec4ad3a1e8caeb2b7f490b02141dae14cb9abd6",
+    "tests/programs/console_view.act": "dccbbee6278459eaf0269a6d1907c19533d81bca00f68ce18ee6040cf348b34d",
+    "tests/programs/console_windows.act": "0b7927ef55d181491e28485db01f5215e9e51b7058620d6523b81c8ed98628cc",
+    "tests/programs/dos_cooked.act": "7cb001d16d1f0f0ebc07de11da7d8ab379c705c3740f36d7f46a1037e09f3f66",
+    "tests/programs/dos_streams_lifetime.act": "103041df23fe523f589306248fb2f4442b68f56e71d2d873312c14be491093b7",
+    "tests/programs/foreground_break.act": "566450092ede4e080cfa71374823a85d5a13c1c279c1d685523a1476ccc6f3b0",
+    "tests/programs/native_console_device.act": "3a83ae6b085c2d4bfced5e50b88cadfbdc9de899bab3175004940b97a74b5a7b",
+    "tests/programs/native_console_input.act": "4fec4d80e9dacb9cb8e6a69a5786893d015abc182c801dd4bab457baaaab36b7",
+    "tests/programs/process_inheritance.act": "042cf48af1f3816e72eef2dec5f84d932a81ed30980c576c44f95cc105ad9411",
+    "tests/programs/shell_contexts.act": "1b3e4c609accfe7f92019b7193fd5452395708d53de0f558165ce8c0828dc9fa",
+    "tests/programs/toolbox_console.act": "37c6cb25605c8ba12deafc88d8a4e10ef604c226340db124f6a93f99734f22cc",
+    "tests/programs/waitprobe.act": "2e6d37ab748660b06a5b5f7a831676d2cf5fdd76b1377a6fc2261de31e48f8aa",
+    "tests/programs/windowprobe.act": "0d82cfe2ea5a2a81797c42a302c685d32ce586254f081f72745cba1b05aab1d2",
+    "tests/test_console_view_contract.py": "8d42fff0ca2d329eb22ba6f63582b1a17deae75f6ba0e97f11269b6b62a2b1cb",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "tools/build_bitmap_console.py": "6673aad87b6373a68e4d92ba72f8cf6f758d288ab239fc345e3a5857205cf4e0",
+    "tools/generate_console_view.py": "586cfc86c00fe2cb7eb3cce8194d500a293091ef84aac31cd41049a9fb161668",
+    "tools/generate_tasks.py": "8b9344628b44ae2f2af802a87be1d717bfabdb3f75a135ca61aa25012693a346",
+    "tools/native_program.py": "de1bb00b6bd2d9653f482b3331a0ff5a030139d545f09d60e571f503492e6532",
+    "tools/test_aes_server.py": "69d6ba22802bde8762c21a53b1d932abd11bcbc943e832968a4c3805c9c122d2",
+    "tools/test_console_input_pump.py": "e789f3a3d691ad53bd54d536dd8dc7fdf8084f8fa0d18a46042f68abb85f4c91",
+    "tools/test_console_startup.py": "1fb8915661f8e5caf4200e8d1318bafc5bb5046d81582bba7b2273f7df8984eb",
+    "tools/test_console_view.py": "62df0cfc90340bae507457d49fbc7b9360c82bdc0b95c1eeaada92e7a3039241",
+    "tools/test_console_window.py": "93369b58da760abc84c8f6f8fafc938c26dd0cd94a989c25ed564c4601dee0c7",
+    "tools/test_console_windows.py": "89749082af903bd78d0d34cb77c729e388a6e3c2486d3c6a8d820e019e224aba"
+  },
+  "artifacts": {
+    "view_raw": {
+      "path": "build/gem-first-gui/gf10/view-final-raw/results.json",
+      "sha256": "c2cc17bd7f0f6da4bd12af06b1197404f3ca6e49151561e2a78bbf1227e05683",
+      "checks": 121
+    },
+    "view_opt": {
+      "path": "build/gem-first-gui/gf10/view-final-opt/results.json",
+      "sha256": "e2dfbcca19ebc5dbbe6bacaa8580c1bb84783a37ec79722287848c32b24c4313",
+      "checks": 121
+    },
+    "input": {
+      "path": "build/gem-first-gui/gf10/input/results.json",
+      "sha256": "beb7db6ea58a0820092128317591bda19f0279311083ea4378ebb7f44d17dc40",
+      "checks": null,
+      "cases": [
+        {
+          "case": 0,
+          "checks": [
+            27
+          ]
+        },
+        {
+          "case": 2,
+          "checks": [
+            5
+          ]
+        }
+      ]
+    },
+    "windows": {
+      "path": "build/gem-first-gui/gf10/windows-acquisition/results.json",
+      "sha256": "4edbb8b8ce7d77201439cc6138e7a939c1aa1c46de761226980b8f905997a749",
+      "checks": null,
+      "cases": [
+        {
+          "case": 0,
+          "checks": [
+            149
+          ]
+        },
+        {
+          "case": 1,
+          "checks": [
+            12
+          ]
+        },
+        {
+          "case": 2,
+          "checks": [
+            52
+          ]
+        }
+      ]
+    },
+    "startup": {
+      "path": "build/gem-first-gui/gf10/startup-resident/results.json",
+      "sha256": "54583227fbf9ffcdb396d9ea88a1ce9cb22939757017c57e8a748dddb6d2175d",
+      "checks": null
+    },
+    "locks": {
+      "path": "build/gem-first-gui/gf10/locks-resident/results.json",
+      "sha256": "20aae4279ab4df706078a38b2584f552d44bc1d6dda172e7a3081ce80e80a50e",
+      "checks": 226
+    },
+    "idle": {
+      "path": "build/gem-first-gui/gf10/loaded/idle/results.json",
+      "sha256": "8e69ca0b479675a68b0322bb06d59c3adfb7a0db450c9ceb074f224c37ae0c00",
+      "checks": 6
+    },
+    "update_held": {
+      "path": "build/gem-first-gui/gf10/loaded/update-held/results.json",
+      "sha256": "e758fba71171573a7242e9139e2eb453e7d4e11baf1da14b2207cd4459e090c0",
+      "checks": 6
+    },
+    "disk": {
+      "path": "build/gem-first-gui/gf10/loaded/disk/results.json",
+      "sha256": "ac620c834f758379a71c4bf36992c64d93514ed1205b656e42fbd2628d66c28d",
+      "checks": 31
+    }
+  },
+  "build_source_snapshot": {
+    "path": "build/gem-first-gui/gf10/loaded/source-snapshot.json",
+    "sha256": "aa704f67d3e71581ac9be40c8114a0129be40d05676289aa6e30bb505bb741e9"
+  },
+  "scope": "Independent resident backend, copied snapshot frontend, route-retained bounded input, lifecycle rollback and cancellation. C APP ABI 33; console-view ABI 2. Development checks only; no release or hardware qualification.",
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes": "guards, alignment and unused pool capacity"
+  },
+  "occupancy": {
+    "added_public_tasks": 1,
+    "task_stack_bytes": 1312,
+    "existing_pool_consumed_bytes": 1600,
+    "components": {
+      "stack": 1312,
+      "direct_page": 256,
+      "outer_guards": 32
+    },
+    "capacity": 12,
+    "new_backend_signal": 31,
+    "frontend_signal": "reuses existing bit 31"
+  },
+  "upper_storage": {
+    "mirror_per_unit": "206 model bytes plus cell capacity, without FIFO; allocated from upper heap",
+    "subscription_payload_bytes": 56,
+    "max_subscriptions": 8,
+    "matched_native_images": {
+      "gf9": {
+        "code": 1287129,
+        "initialized": 11327,
+        "zero": 25103
+      },
+      "gf10": {
+        "code": 1303410,
+        "initialized": 11330,
+        "zero": 25953
+      }
+    },
+    "delta": {
+      "code": 16281,
+      "initialized": 3,
+      "zero": 850
+    }
+  },
+  "cohorts": {
+    "idle": {
+      "checks": 6,
+      "sampled_live_tasks": [
+        8,
+        8
+      ],
+      "stacks": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 624,
+          "remaining_above_floor": 656
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 133,
+          "remaining_above_floor": 923
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 305,
+          "remaining_above_floor": 751
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 149,
+          "remaining_above_floor": 907
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 806,
+          "remaining_above_floor": 250
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 784,
+          "remaining_above_floor": 272
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 943,
+          "remaining_above_floor": 1361
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 37904,
+          "bytes": 1312,
+          "peak": 143,
+          "remaining_above_floor": 913
+        },
+        "9": {
+          "base": 39248,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "10": {
+          "base": 40592,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "11": {
+          "base": 41936,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "12": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 59,
+          "remaining_above_floor": 197
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      }
+    },
+    "update-held": {
+      "checks": 6,
+      "sampled_live_tasks": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "stacks": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 624,
+          "remaining_above_floor": 656
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 133,
+          "remaining_above_floor": 923
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 305,
+          "remaining_above_floor": 751
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 149,
+          "remaining_above_floor": 907
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 799,
+          "remaining_above_floor": 257
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 734,
+          "remaining_above_floor": 322
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 943,
+          "remaining_above_floor": 1361
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 37904,
+          "bytes": 1312,
+          "peak": 143,
+          "remaining_above_floor": 913
+        },
+        "9": {
+          "base": 39248,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "10": {
+          "base": 40592,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "11": {
+          "base": 41936,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "12": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 59,
+          "remaining_above_floor": 197
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      }
+    },
+    "disk": {
+      "checks": 31,
+      "sampled_live_tasks": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "stacks": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 624,
+          "remaining_above_floor": 656
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 133,
+          "remaining_above_floor": 923
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 662,
+          "remaining_above_floor": 394
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 229,
+          "remaining_above_floor": 827
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 810,
+          "remaining_above_floor": 246
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 810,
+          "remaining_above_floor": 246
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 943,
+          "remaining_above_floor": 1361
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 37904,
+          "bytes": 1312,
+          "peak": 153,
+          "remaining_above_floor": 903
+        },
+        "9": {
+          "base": 39248,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "10": {
+          "base": 40592,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "11": {
+          "base": 41936,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "12": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 59,
+          "remaining_above_floor": 197
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      }
+    }
+  },
+  "host_tests": {
+    "run": 691,
+    "skipped": 4
+  },
+  "limitations": [
+    "Temporary copied-view graphical adapter remains until GF11.",
+    "No full qualification or original latency-gate pass is claimed."
+  ]
+}

@@ -1,5 +1,6 @@
 MODULE TOOLBOXCONSOLE
 
+USE CONSOLECOOKED
 USE EXEC
 USE DOS
 USE HEAPCORE
@@ -60,7 +61,7 @@ PROC Main()
     LET window=CONSOLEWINDOWS.Find(unit)
     LET instance=CONSOLETYPES.Instance POINTER(window.instance)
     EXEC.Forbid()
-    CONSOLEINPUT.Deliver(instance,$0064003f)
+    CONSOLECOOKED.Deliver(instance,$0064003f)
     EXEC.Permit()
   END
 

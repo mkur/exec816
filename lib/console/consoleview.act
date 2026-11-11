@@ -1,0 +1,78 @@
+; Public console service facade; no renderer or mutable cells cross this API.
+MODULE CONSOLEVIEW
+USE EXEC
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+USE CONSOLEVIEWCORE AS VIEWS
+USE CONSOLEVIEWTYPES AS VIEW
+USE CONSOLEINGRESS
+INCLUDE "console-storage-action.inc"
+
+PUBLIC LONGCARD FUNC Subscribe(LONGCARD unit,mask)
+  LONGCARD handle
+
+  EXEC.Forbid()
+  LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
+  LET entry=CONSOLEWINDOWS.Find(unit)
+  IF entry=NULL OR service.stop<>0 OR
+      (service.state<>2 AND (service.state<>1
+        OR service.worker<>BYTE POINTER(EXEC.FindTask(NULL)))) THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+  handle=VIEWS.Subscribe(CONSOLETYPES.Instance POINTER(entry.instance),unit,mask)
+  IF handle<>0 THEN
+    VIEWS.Route(CONSOLETYPES.Instance POINTER(entry.instance),entry.route)
+  FI
+  EXEC.Permit()
+
+RETURN(handle)
+
+PUBLIC CARD FUNC Input(LONGCARD handle VIEW.Input POINTER packet)
+  CARD status
+
+  IF packet.kind>VIEW.INPUT_CANCEL OR
+      (packet.kind=VIEW.INPUT_BYTES AND (packet.count=0 OR packet.count>VIEW.CELLS)) THEN
+    RETURN(VIEW.BAD_LAYOUT)
+  FI
+  EXEC.Forbid()
+  IF VIEWS.Closed(handle)<>0 THEN
+    EXEC.Permit()
+    RETURN(VIEW.CLOSED)
+  FI
+  LET entry=CONSOLEWINDOWS.Find(VIEWS.Unit(handle))
+  IF entry=NULL THEN
+    EXEC.Permit()
+    RETURN(VIEW.CLOSED)
+  FI
+  IF packet.route<>entry.route THEN
+    EXEC.Permit()
+    RETURN(VIEW.STALE)
+  FI
+  status=CONSOLEINGRESS.Post(entry.unit,packet.route,packet.event,
+      packet.kind,packet.count,packet.bytes)
+  EXEC.Permit()
+
+RETURN(status)
+
+; Three full-width arguments use the existing console library C bridge.
+PUBLIC LONGCARD FUNC Call(LONGCARD operation,first,second)
+
+  CASE operation OF
+  WHEN VIEW.OP_SUBSCRIBE THEN
+    RETURN(Subscribe(first,second))
+  WHEN VIEW.OP_UNSUBSCRIBE THEN
+    RETURN(LONGCARD(VIEWS.Unsubscribe(first)))
+  WHEN VIEW.OP_SNAPSHOT THEN
+    RETURN(LONGCARD(VIEWS.Snapshot(first,VIEW.Snapshot POINTER(ADDRESS(second)))))
+  WHEN VIEW.OP_ACKNOWLEDGE THEN
+    RETURN(LONGCARD(VIEWS.Acknowledge(first,second)))
+  WHEN VIEW.OP_INPUT THEN
+    RETURN(LONGCARD(Input(first,VIEW.Input POINTER(ADDRESS(second)))))
+  WHEN VIEW.OP_PENDING THEN
+    RETURN(LONGCARD(VIEWS.Pending(first)))
+  ESAC
+
+RETURN(LONGCARD(VIEW.BAD_LAYOUT))
+
+ENDMODULE

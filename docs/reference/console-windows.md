@@ -5,8 +5,8 @@
 ## Instance identity and lifetime
 
 An enabled console service supports four instances: default unit zero plus up
-to three application-created instances. One resident worker services all of
-them. Each instance owns retained cells, dimensions, cursor, keyboard state,
+to three application-created instances. One backend Task services all of them independently of the graphical system
+Task. Each instance owns retained cells, dimensions, cursor, keyboard state,
 input FIFO, one pending read and its own FIFO write queue. Creating an instance
 allocates no Task, stack, direct page or physical screen.
 
@@ -45,8 +45,9 @@ with reference counts and an input lease independent of other instances.
 the resulting instance through `io_Unit`. The public I/O request ABI and
 READ/WRITE/CLEAR commands are unchanged. Pending operations on one instance
 do not prevent another idle instance from closing. Destruction cannot free
-buffers still borrowed by the worker, including a final redraw after a write
-reply; retirement waits for that bounded worker quantum to finish.
+buffers still borrowed by an active request or presentation. The renderer uses
+private copied cells; retirement closes retained view handles before freeing
+the source. Consumers explicitly unsubscribe their closed handles.
 
 Bare `CON:` and `RAW:` select unit zero. `CON:XXXXXXXX` and `RAW:XXXXXXXX`
 select an eight-digit hexadecimal unit; hexadecimal letters are case-insensitive.

@@ -62,8 +62,8 @@ PUBLIC PROC Collected(EXEC.IORequest POINTER request)
     ; fresh cooked line. This supplements the physical keys; it does not
     ; synthesize or replace the real foreground BREAK.
     EXEC.Forbid()
-    CONSOLEINPUT.Deliver(unit,$0123003f)
-    CONSOLEINPUT.Deliver(unit,$01240015)
+    CONSOLECOOKED.Deliver(unit,$0123003f)
+    CONSOLECOOKED.Deliver(unit,$01240015)
     EXEC.Permit()
   FI
 

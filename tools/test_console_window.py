@@ -37,8 +37,8 @@ def prepare(out,reuse_provider=False):
     else:
         raw=out/'console-raw.c'
         text=(ROOT/'c/calypsi/console.c').read_text().replace(
-            'void EXEC_PTR *ExecConsoleEntries[5];','extern void EXEC_PTR *ExecConsoleEntries[5];')
-        for name in ('Create','Destroy','Mode','GetMode'):text=text.replace('ExecConsole'+name,'ConsoleRaw'+name)
+            'void EXEC_PTR *ExecConsoleEntries[6];','extern void EXEC_PTR *ExecConsoleEntries[6];')
+        for name in ('Create','Destroy','Mode','GetMode','View'):text=text.replace('ExecConsole'+name,'ConsoleRaw'+name)
         raw.write_text(text)
         f=drawing(out,True,widgets=True,client_sources=[ROOT/'c/calypsi/aes.c',ROOT/'c/calypsi/aes-messages.c',
             ROOT/'c/calypsi/aes-events.c',ROOT/'c/calypsi/program.c',raw,ROOT/'tests/programs/console_calls.c'],

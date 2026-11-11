@@ -19,8 +19,10 @@
   disk cohorts pass without new Tasks, signals or reserved bank-zero bytes.
   GF9 extracts the AES system loop, retaining the same Task and bounded console
   callbacks, with exact cache comparisons and input/menu/drag/disk integration.
-  GF10 starts with generated copied-view records and retained subscriptions;
-  backend/frontend integration remains in progress.
+  GF10 separates a resident stream backend from the copied-view renderer, with
+  route-scoped input, UPDATE-held stream completion and guarded retirement.
+
+- [Console presentation before GF10](console-presentation-before-gf10.md): superseded stream/presentation coupling, batch and short-write behavior.
 
 - [Shared-source Atari ST comparison](atari-st-reference.md): Hatari with
   EmuTOS/MagiC, unchanged object routines, bounded execution and drawing-path

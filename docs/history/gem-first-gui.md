@@ -1019,3 +1019,44 @@ adds no production Task or signal. Reserved bank-zero growth is **0 fixed,
 0 root, 0 kernel, 0 per public Task and 0 idle bytes**, including guards,
 alignment and unused capacity. The next slice adds the backend worker and
 connects the public facade and temporary snapshot frontend.
+
+## GF10 console backend and copied views
+
+The [backend evidence](../development/gem-first-gf10.json) follows the frozen
+[view foundation](../development/gem-first-gf10-view.json). `CONSOLEBACKEND.Worker`
+handles bounded stream/model and cooked-input turns. The existing system Task
+keeps capture and physical drawing, consuming bounded copied snapshots into
+private cells. Accepted output completes while its caller owns UPDATE. No
+request or mutable cell pointer enters the view ABI.
+
+Version 2 view packets include foreground route authority. A delayed input or
+BREAK cannot target a later scope. Eight copied byte/raw packets backpressure
+view producers; separate coalesced loss/cancel slots survive saturation. Captured
+routes remain retained until backend delivery/drop. Clear/open/close invalidate
+copied input already withdrawn from capture. Snapshot revisions detect mixed
+chunks; stale acknowledgements rearm hints. Closed external handles retain their
+consumer until explicit unsubscribe and prevent service stop.
+
+The optimized AES check passes 226 assertions including held-UPDATE output,
+full input, loss, read cancellation and stale acknowledgements. Both raw and
+optimized view probes pass 121 assertions. Console lifetime cases pass 149,
+12 and 52 assertions, with injected failure at each of six creation allocations,
+closed-handle retirement and exact display restoration to the acquisition
+snapshot. The input pump passes ordinary and invalid-lease cases; normal
+resident startup/automatic shutdown also pass. A dormant backend originally
+counted as an application and prevented resident shutdown; it now registers as
+a resident and retires under its parent's explicit stop protocol.
+
+The added small Task consumes 1,600 bytes of the already reserved pool: 1,312
+stack, 256 direct page and 32 outer guards. It owns one signal. The system Task
+reuses its existing signal for view hints. **Reserved bank-zero delta is zero**
+for fixed/root/kernel, every public Task and idle, including guards, alignment
+and spare capacity. The matched loaded native image adds 16,281 code bytes,
+3 initialized bytes and 850 zero-fill bytes. The temporary mirror adds 206
+upper model bytes plus its cell capacity per instance; a subscription payload
+is 56 bytes. C applications rebuild for APP ABI 33.
+
+These are focused development checks. They do not qualify the hosted system,
+pass the original latency gates or replace the final GF15 package checks. The
+current [console](../reference/console.md) and [view contract](../reference/console-views.md)
+supersede the [coupled presentation record](console-presentation-before-gf10.md).

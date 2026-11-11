@@ -1,4 +1,6 @@
 #include <gem.h>
+#include <exec816/console-view.h>
+#include <string.h>
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
@@ -142,6 +144,57 @@ void AESClientTwo(void) { loop(1); }
 void AESClientThree(void) { loop(2); }
 static void (*const entries[3])(void) = {AESClientOne, AESClientTwo, AESClientThree};
 
+/* Stream replies and copied input progress while this producer owns UPDATE.
+ * The renderer must remain blocked until END, with no synchronous paint wait. */
+static void console_under_update(void)
+{
+    struct MsgPort *port=CreateMsgPort();
+    struct IOStdReq *io=(struct IOStdReq *)CreateIORequest(port,sizeof(*io));
+    static struct ExecConsoleViewSnapshot snapshot;
+    static struct ExecConsoleViewInput input;
+    static UBYTE text[192],result[4];
+    ULONG view,old;
+    UWORD i;
+    CHECK(port && io);
+    CHECK(OpenDevice("console.device",0,(struct IORequest *)io,0)==0);
+    view=ExecConsoleViewSubscribe(0,wake);
+    CHECK(view!=0);
+    snapshot.first=0;
+    CHECK(ExecConsoleViewSnapshot(view,&snapshot)==EXEC_CONSOLE_VIEW_OK);
+    input.route=snapshot.route;
+    old=snapshot.revision;
+    CHECK(wind_update(BEG_UPDATE));
+    memset(text,'Z',sizeof(text));
+    io->io_Command=CMD_WRITE;io->io_Data=text;io->io_Length=sizeof(text);
+    CHECK(DoIO((struct IORequest *)io)==0 && io->io_Actual==sizeof(text));
+    CHECK(UPDATES==1);
+    CHECK(ExecConsoleViewSnapshot(view,&snapshot)==EXEC_CONSOLE_VIEW_OK);
+    CHECK(snapshot.revision!=old);
+    CHECK(ExecConsoleViewAcknowledge(view,old)==EXEC_CONSOLE_VIEW_STALE);
+    /* A full queue backpressures copied bytes, retaining a durable loss hint. */
+    input.kind=EXEC_CONSOLE_VIEW_INPUT_BYTES;input.count=1;input.bytes[0]='q';
+    Forbid();
+    for (i=0;i<8;++i) CHECK(ExecConsoleViewInput(view,&input)==EXEC_CONSOLE_VIEW_OK);
+    CHECK(ExecConsoleViewInput(view,&input)==EXEC_CONSOLE_VIEW_RESOURCE);
+    input.kind=EXEC_CONSOLE_VIEW_INPUT_LOSS;
+    CHECK(ExecConsoleViewInput(view,&input)==EXEC_CONSOLE_VIEW_OK);
+    Permit();
+    io->io_Command=CMD_READ;io->io_Data=result;io->io_Length=sizeof(result);
+    CHECK(DoIO((struct IORequest *)io)==1 && io->io_Actual==0);
+    io->io_Command=CMD_CLEAR;io->io_Length=0;
+    CHECK(DoIO((struct IORequest *)io)==0);
+    input.kind=EXEC_CONSOLE_VIEW_INPUT_BYTES;input.count=1;input.bytes[0]='R';
+    CHECK(ExecConsoleViewInput(view,&input)==EXEC_CONSOLE_VIEW_OK);
+    io->io_Command=CMD_READ;io->io_Length=sizeof(result);
+    CHECK(DoIO((struct IORequest *)io)==0 && io->io_Actual==1 && result[0]=='R');
+    SendIO((struct IORequest *)io);AbortIO((struct IORequest *)io);
+    CHECK(WaitIO((struct IORequest *)io)==IOERR_ABORTED && io->io_Actual==0);
+    CHECK(wind_update(END_UPDATE));
+    CHECK(ExecConsoleViewUnsubscribe(view)==EXEC_CONSOLE_VIEW_OK);
+    CloseDevice((struct IORequest *)io);
+    DeleteIORequest((struct IORequest *)io);DeleteMsgPort(port);
+}
+
 UWORD AESRun(void)
 {
     UWORD i, position, round;
@@ -160,6 +213,7 @@ UWORD AESRun(void)
     CHECK(wind_update(4) == 0 && ExecAESDiagnostic() == AES_UNSUPPORTED);
     CHECK(wind_update(BEG_CHECK | END_UPDATE) == 0 && ExecAESDiagnostic() == AES_UNSUPPORTED);
     local_pairs();
+    console_under_update();
     /* Startup paint may still own a native token: wait before testing recurse. */
     CHECK(wind_update(BEG_UPDATE) == 1);
     CHECK(wind_update(BEG_CHECK | BEG_UPDATE) == 1);

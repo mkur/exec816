@@ -14,7 +14,7 @@ rebuild programs when the ABI changes.
 | Communication | [Messages and ports](ports.md), [device I/O and SIO](device-io.md), [SIO client](sio-client.md), [timer.device](timer.md), [resident drivers](resident-drivers.md) |
 | Input | [Ownership, routes and events](input.md) |
 | Files and streams | [DOS](dos.md), [console/NIL streams](streams.md), [pipes](pipes.md), [MyDOS](mydos.md), [SpartaDOS](spartados.md), [RAM:](ram-filesystem.md), [filesystem writes](filesystem-writes.md), [SYS:](sys-volume.md), [ASSIGN](assigns.md) |
-| Console | [Device](console.md), [instances and windows](console-windows.md), [cooked input](cooked-console.md), [foreground BREAK](foreground-break.md) |
+| Console | [Device](console.md), [copied views](console-views.md), [instances and windows](console-windows.md), [cooked input](cooked-console.md), [foreground BREAK](foreground-break.md) |
 | Graphics | [Desktop client service](desktop.md), [AES applications](aes.md), [AES widgets](widgets.md), [Layers and regions](layers.md), [minimal GEM/VDI hosting](gem-vdi.md) |
 | Programs | [Processes](process.md), [native loading](program-loading.md), [C image profile](c-program-loading.md), [C runtime](c-runtime.md), [arguments](command-arguments.md), [C strings](cstrings.md), [SDX development subset](sdx-services.md), [SDX firmware](sdx-firmware.md), [FastBasic source target](fastbasic.md) |
 | Guest execution | [Resident page one, admission and BASIC parking](sdx-runtime.md) |

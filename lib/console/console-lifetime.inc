@@ -183,7 +183,8 @@ BYTE FUNC AllIdle(CONSOLETYPES.Service POINTER service)
   BYTE index
   CONSOLETYPES.Instance POINTER instance
 
-  IF DESKHOST.Idle()=0 THEN
+  IF DESKHOST.Idle()=0 OR CONSOLEINGRESS.Pending()<>0
+      OR CONSOLEVIEWCORE.ActiveOutside(@service.task)<>0 THEN
     RETURN(0)
   FI
 

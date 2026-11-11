@@ -1,6 +1,6 @@
 {
   "abi": "exec816.console-view",
-  "version": 1,
+  "version": 2,
   "constants": {
     "CELLS": 64,
     "OP_SUBSCRIBE": 1,
@@ -67,6 +67,10 @@
         "cells",
         "BYTE",
         64
+      ],
+      [
+        "route",
+        "LONGCARD"
       ]
     ],
     "Input": [
@@ -86,6 +90,10 @@
         "bytes",
         "BYTE",
         64
+      ],
+      [
+        "route",
+        "LONGCARD"
       ]
     ]
   }

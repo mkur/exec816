@@ -1,6 +1,7 @@
 ; Immutable captured routes; IRQ never follows a Task or instance pointer.
 MODULE CONSOLEFOREGROUND
 USE EXEC
+USE CONSOLEVIEWCORE
 USE INPUT
 USE CONSOLETYPES
 USE CONSOLEWINDOWS
@@ -8,6 +9,7 @@ USE CONSOLECAPTURE
 USE DOSBREAKTYPES
 INCLUDE "console-storage-action.inc"
 LONGCARD freshTag
+BYTE ARRAY ingressHolds(16)
 
 PUBLIC CONSOLETYPES.Routes POINTER FUNC Registry()
 
@@ -30,7 +32,7 @@ PROC Reclaim(CONSOLETYPES.Routes POINTER routes)
       FI
     OD
 
-    IF keep=0 THEN
+    IF keep=0 AND ingressHolds(index)=0 THEN
       IF INPUT.RetireRoute(CONSOLECAPTURE.GetLease(),
           routes.items(index).tag)=INPUT.OK THEN
         routes.items(index).tag=0
@@ -73,6 +75,20 @@ LONGCARD FUNC Allocate(LONGCARD unit BYTE POINTER scope BYTE bound)
 
 RETURN(route.tag)
 
+; Copied ingress outlives INPUT.Take's kernel reference. Keep its route slot
+; until delivery/drop, without retaining a mutable scope pointer in that queue.
+PUBLIC PROC Hold(LONGCARD tag)
+
+  ingressHolds(BYTE(tag & 15))==+1
+
+RETURN
+
+PUBLIC PROC Drop(LONGCARD tag)
+
+  ingressHolds(BYTE(tag & 15))==-1
+
+RETURN
+
 ; Give a window a base input route before it accepts foreground commands.
 PUBLIC BYTE FUNC Register(CONSOLETYPES.Window POINTER entry)
   LONGCARD tag
@@ -83,6 +99,7 @@ PUBLIC BYTE FUNC Register(CONSOLETYPES.Window POINTER entry)
   FI
 
   entry.route=tag
+  CONSOLEVIEWCORE.Route(CONSOLETYPES.Instance POINTER(entry.instance),tag)
   entry.baseRoute=tag
 
 RETURN(1)
@@ -160,6 +177,7 @@ PUBLIC BYTE FUNC Begin(DOSBREAKTYPES.Scope POINTER scope)
   ignored=EXEC.SetSignal(0,scope.mask)
   entry.scope=BYTE POINTER(scope)
   entry.route=tag
+  CONSOLEVIEWCORE.Route(CONSOLETYPES.Instance POINTER(entry.instance),tag)
   windows=CONSOLEWINDOWS.Registry()
   IF windows.focusSlot=BYTE(scope.unit & 3) THEN
     CONSOLECAPTURE.Publish(tag)
@@ -182,6 +200,7 @@ PUBLIC PROC End(DOSBREAKTYPES.Scope POINTER scope)
     IF entry.scope=BYTE POINTER(scope) THEN
       entry.scope=BYTE POINTER(0)
       entry.route=entry.baseRoute
+      CONSOLEVIEWCORE.Route(CONSOLETYPES.Instance POINTER(entry.instance),entry.route)
       IF windows.focusSlot=BYTE(scope.unit & 3) THEN
         CONSOLECAPTURE.Publish(entry.route)
       FI
@@ -253,6 +272,7 @@ PUBLIC BYTE FUNC Handoff(DOSBREAKTYPES.Scope POINTER previous,target BYTE carry)
   target.active=1
   entry.scope=BYTE POINTER(target)
   entry.route=tag
+  CONSOLEVIEWCORE.Route(CONSOLETYPES.Instance POINTER(entry.instance),tag)
   windows=CONSOLEWINDOWS.Registry()
   IF windows.focusSlot=BYTE(target.unit & 3) THEN
     CONSOLECAPTURE.Publish(tag)

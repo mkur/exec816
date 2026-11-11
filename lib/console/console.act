@@ -11,8 +11,12 @@ USE CONSOLEWINDOWS
 USE CONSOLEFOREGROUND
 USE CONSOLECORE
 USE CONSOLEINPUT
+USE CONSOLECOOKED
 USE CONSOLEKEYS
 USE CONSOLEDRIVER
+USE CONSOLEMIRROR
+USE CONSOLEFRONT
+USE CONSOLEVIEWCORE
 USE CONSOLETILING
 
 PUBLIC CARD FUNC ScreenWidth()
@@ -58,6 +62,10 @@ PROC FreeInstance(CONSOLETYPES.Window POINTER entry)
 
   instance=CONSOLETYPES.Instance POINTER(entry.instance)
   IF instance<>CONSOLETYPES.Instance POINTER(0) THEN
+    EXEC.Forbid()
+    CONSOLEVIEWCORE.Retire(instance)
+    CONSOLEFRONT.Retire(entry.unit)
+    EXEC.Permit()
     IF instance.cells<>BYTE POINTER(0) THEN
       EXEC.FreeMem(instance.cells,LONGCARD(instance.capacity))
     FI
@@ -70,6 +78,7 @@ PROC FreeInstance(CONSOLETYPES.Window POINTER entry)
   FI
 
   IF entry.view<>BYTE POINTER(0) THEN
+    CONSOLEMIRROR.Free(CONSOLETYPES.Presentation POINTER(entry.view))
     EXEC.FreeMem(entry.view,CONSOLETYPES.PRESENTATION_SIZE)
   FI
 
@@ -143,15 +152,17 @@ PUBLIC LONGCARD FUNC Create(CARD width,height)
           EXEC.Yield()
         OD
 
-        CONSOLEINPUT.Init(instance,instance.fifo)
+        CONSOLECOOKED.Init(instance,instance.fifo)
         EXECLISTS.NewMinList(@instance.writes)
-        view.instance=BYTE POINTER(instance)
         view.width=width
         view.height=height
         view.index=$ffff
         view.previousCursor=$ffff
         EXEC.Forbid()
-        okay=CONSOLEFOREGROUND.Register(entry)
+        okay=CONSOLEMIRROR.Create(view,instance)
+        IF okay<>0 THEN
+          okay=CONSOLEFOREGROUND.Register(entry)
+        FI
         IF okay<>0 THEN
           entry.state=CONSOLETYPES.WIN_LIVE
           windows.liveCount==+1

@@ -1,4 +1,5 @@
 MODULE CONSOLECONTROLTEST
+USE CONSOLECOOKED
 USE EXEC
 USE EXECLISTS
 USE TASKSTACKS
@@ -49,7 +50,7 @@ PROC PeerEntry()
   LET entry=CONSOLEWINDOWS.Find(unit)
   LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
   EXEC.Forbid()
-  CONSOLEINPUT.Deliver(instance,$0001003f)
+  CONSOLECOOKED.Deliver(instance,$0001003f)
   EXEC.Permit()
   CONTROLPROBE.released=1
   peerDone=1

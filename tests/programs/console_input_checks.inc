@@ -2,23 +2,23 @@
 ; IRQ qualification runs afterward, with a separate waiting consumer.
 PROC TranslationChecks()
 
-  Require(CONSOLEINPUT.Decode(instance,$0001003f)=97)
-  Require(CONSOLEINPUT.Decode(instance,$0001003f)=$ffff)
-  Require(CONSOLEINPUT.Decode(instance,$0002003f)=97)
-  Require(CONSOLEINPUT.Decode(instance,$0003007f)=65)
-  Require(CONSOLEINPUT.Decode(instance,$000400bf)=1)
-  Require(CONSOLEINPUT.Decode(instance,$000501ff)=3)
-  Require(CONSOLEINPUT.Decode(instance,$0006003c)=$ffff)
-  Require(CONSOLEINPUT.Decode(instance,$0007003f)=65)
-  Require(CONSOLEINPUT.Decode(instance,$0008007f)=97)
-  Require(CONSOLEINPUT.Decode(instance,$0009003c)=$ffff)
-  Require(CONSOLEINPUT.Decode(instance,$000a000c)=10)
-  Require(CONSOLEINPUT.Decode(instance,$000b0034)=8)
-  Require(CONSOLEINPUT.Decode(instance,$000c002c)=9)
-  Require(CONSOLEINPUT.Decode(instance,$000d001c)=27)
-  Require(CONSOLEINPUT.Decode(instance,$000e00a1)=0)
-  Require(CONSOLEINPUT.Decode(instance,$ffff003f)=97)
-  Require(CONSOLEINPUT.Decode(instance,$0000003f)=97)
+  Require(CONSOLECOOKED.Decode(instance,$0001003f)=97)
+  Require(CONSOLECOOKED.Decode(instance,$0001003f)=$ffff)
+  Require(CONSOLECOOKED.Decode(instance,$0002003f)=97)
+  Require(CONSOLECOOKED.Decode(instance,$0003007f)=65)
+  Require(CONSOLECOOKED.Decode(instance,$000400bf)=1)
+  Require(CONSOLECOOKED.Decode(instance,$000501ff)=3)
+  Require(CONSOLECOOKED.Decode(instance,$0006003c)=$ffff)
+  Require(CONSOLECOOKED.Decode(instance,$0007003f)=65)
+  Require(CONSOLECOOKED.Decode(instance,$0008007f)=97)
+  Require(CONSOLECOOKED.Decode(instance,$0009003c)=$ffff)
+  Require(CONSOLECOOKED.Decode(instance,$000a000c)=10)
+  Require(CONSOLECOOKED.Decode(instance,$000b0034)=8)
+  Require(CONSOLECOOKED.Decode(instance,$000c002c)=9)
+  Require(CONSOLECOOKED.Decode(instance,$000d001c)=27)
+  Require(CONSOLECOOKED.Decode(instance,$000e00a1)=0)
+  Require(CONSOLECOOKED.Decode(instance,$ffff003f)=97)
+  Require(CONSOLECOOKED.Decode(instance,$0000003f)=97)
 
 RETURN
 
@@ -27,27 +27,27 @@ PROC FifoChecks()
   CARD index,count
 
   FOR index=1 TO 128 DO
-    CONSOLEINPUT.Deliver(instance,(LONGCARD(index) LSH 16) OR $3f)
+    CONSOLECOOKED.Deliver(instance,(LONGCARD(index) LSH 16) OR $3f)
   OD
 
   Require(instance.inputCount=128 AND instance.inputLost=0)
-  count=CONSOLEINPUT.Read(instance,translated,64)
+  count=CONSOLECOOKED.Read(instance,translated,64)
   Require(count=64)
   FOR index=0 TO 63 DO
     Require(translated(index)=97)
   OD
 
   FOR index=129 TO 192 DO
-    CONSOLEINPUT.Deliver(instance,(LONGCARD(index) LSH 16) OR $15)
+    CONSOLECOOKED.Deliver(instance,(LONGCARD(index) LSH 16) OR $15)
   OD
 
-  count=CONSOLEINPUT.Read(instance,translated,64)
+  count=CONSOLECOOKED.Read(instance,translated,64)
   Require(count=64)
   FOR index=0 TO 63 DO
     Require(translated(index)=97)
   OD
 
-  count=CONSOLEINPUT.Read(instance,translated,64)
+  count=CONSOLECOOKED.Read(instance,translated,64)
   Require(count=64)
   FOR index=0 TO 63 DO
     Require(translated(index)=98)
@@ -61,23 +61,23 @@ PROC LossChecks()
   CARD index,count
 
   FOR index=193 TO 321 DO
-    CONSOLEINPUT.Deliver(instance,(LONGCARD(index) LSH 16) OR $3f)
+    CONSOLECOOKED.Deliver(instance,(LONGCARD(index) LSH 16) OR $3f)
   OD
 
   Require(instance.inputCount=0 AND instance.inputLost=1)
-  count=CONSOLEINPUT.Read(instance,translated,0)
+  count=CONSOLECOOKED.Read(instance,translated,0)
   Require(count=0 AND instance.inputLost=1)
-  count=CONSOLEINPUT.Read(instance,translated,64)
+  count=CONSOLECOOKED.Read(instance,translated,64)
   Require(count=$ffff AND instance.inputLost=0)
-  count=CONSOLEINPUT.Read(instance,translated,64)
+  count=CONSOLECOOKED.Read(instance,translated,64)
   Require(count=0)
   instance.open=0
-  CONSOLEINPUT.Deliver(instance,$0142003f)
+  CONSOLECOOKED.Deliver(instance,$0142003f)
   Require(instance.inputCount=0)
   instance.open=1
-  CONSOLEINPUT.Deliver(instance,$0143003f)
+  CONSOLECOOKED.Deliver(instance,$0143003f)
   Require(instance.inputCount=1)
-  CONSOLEINPUT.Clear(instance)
+  CONSOLECOOKED.Clear(instance)
   Require(instance.inputCount=0)
 
 RETURN

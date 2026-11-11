@@ -1,5 +1,6 @@
 ; One presenter continuation owns copied geometry until the shared DMA retires.
 MODULE DESKMOVE
+USE CONSOLEMIRROR
 USE AESTYPES
 USE AESWINDOWSTATE
 USE DISPLAY
@@ -86,7 +87,7 @@ PROC Rebase(DESKTYPES.Window POINTER window
   LET view=CONSOLETYPES.Presentation POINTER(entry.view)
   IF copied=0 THEN
     BEGIN
-      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      LET instance=CONSOLEMIRROR.Model(entry)
       LET batch=CONSOLEBATCH.Get()
       IF CONSOLEDISPLAY.BackingEnabled(view)=0 OR view.scrollState<>0
           OR batch.phase<>CONSOLETYPES.BATCH_IDLE THEN
@@ -184,7 +185,7 @@ PUBLIC BYTE FUNC CopyEligible(DESKTYPES.Window POINTER window
   IF eligible<>0 AND DESKSTATE.IsConsole(window)<>0 THEN
     BEGIN
       LET entry=CONSOLEWINDOWS.Find(window.console)
-      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      LET instance=CONSOLEMIRROR.Model(entry)
       LET batch=CONSOLEBATCH.Get()
       eligible=(instance.dirtyRows=0 AND batch.phase=CONSOLETYPES.BATCH_IDLE)
     END

@@ -1,0 +1,102 @@
+; Stream execution has no scene, display lease or physical completion wait.
+; The existing console resident owns this additional Task through retirement.
+MODULE CONSOLEBACKEND
+USE EXEC
+USE HEAPCORE
+
+CONST WAKE_MASK=$80000000
+EXEC.TaskLease workerLease
+EXEC.Task POINTER controller
+BYTE state,stopping
+BYTE FUNC POINTER quantum()
+
+PUBLIC PROC Wake()
+
+  IF workerLease.task<>NULL THEN
+    EXEC.Signal(workerLease.task,WAKE_MASK)
+  FI
+
+RETURN
+
+PUBLIC PROC Worker()
+  BYTE registered
+
+  LET bit=EXEC.AllocSignal(31)
+  registered=0
+  IF bit=31 THEN
+    registered=EXEC.RegisterResident(WAKE_MASK)
+  FI
+  EXEC.Forbid()
+  state=IF registered<>0 THEN BYTE(2) ELSE BYTE(3) FI
+  EXEC.Signal(controller,WAKE_MASK)
+  EXEC.Permit()
+  IF registered<>0 THEN
+    WHILE stopping=0 DO
+      BEGIN
+        ; Source edits, input and snapshots use this same bounded Task guard.
+        EXEC.Forbid()
+        LET again=quantum()
+        EXEC.Permit()
+        IF again<>0 THEN
+          EXEC.Yield()
+        ELSE
+          EXEC.Wait(WAKE_MASK)
+        FI
+      END
+    OD
+    registered=EXEC.UnregisterResident()
+  FI
+  IF bit=31 THEN
+    EXEC.FreeSignal(bit)
+  FI
+  EXEC.Forbid()
+  state=0
+  EXEC.Signal(controller,WAKE_MASK)
+  IF EXEC.ReleaseTask(@workerLease)=0 THEN
+    HEAPCORE.Abort($fcc1)
+  FI
+  EXEC.RemTask(NULL)
+
+RETURN
+
+; Publication precedes scheduling; the existing frontend owns bit 31 already.
+PUBLIC BYTE FUNC Start(ADDRESS entry)
+
+  LET target=ADDRESS POINTER(@quantum)
+  target^=entry
+  controller=EXEC.FindTask(NULL)
+  stopping=0
+  EXEC.Forbid()
+  LET worker=EXEC.CreateTask(c"console backend",0,@Worker,1312)
+  IF worker=NULL THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+  IF EXEC.RetainTask(worker,@workerLease)=0 THEN
+    EXEC.RemTask(worker)
+    EXEC.Permit()
+    RETURN(0)
+  FI
+  state=1
+  EXEC.Permit()
+  WHILE state=1 DO
+    EXEC.Wait(WAKE_MASK)
+  OD
+
+RETURN(state=2)
+
+PUBLIC EXEC.Task POINTER FUNC Task()
+
+RETURN(workerLease.task)
+
+PUBLIC PROC Stop()
+
+  stopping=1
+  Wake()
+  WHILE state<>0 DO
+    EXEC.Wait(WAKE_MASK)
+  OD
+
+RETURN
+
+ENDMODULE

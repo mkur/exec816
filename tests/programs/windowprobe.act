@@ -1,6 +1,17 @@
 ; Inject one allocation failure into the test copy of CONSOLE.Create.
 MODULE WINDOWPROBE
 USE EXEC
+USE A816MEMORY
+USE CONSOLETYPES
+PUBLIC BYTE ARRAY baseline(960)
+
+; Capture the bytes actually saved by Claim, after the boot banner.
+PUBLIC PROC Claimed(CONSOLETYPES.Presentation POINTER view)
+
+  A816MEMORY.Move(baseline,view.snapshot,960)
+
+RETURN
+
 PUBLIC BYTE failAt,calls
 
 PUBLIC BYTE POINTER FUNC AllocMem(LONGCARD bytes,flags)

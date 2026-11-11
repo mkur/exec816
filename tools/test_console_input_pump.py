@@ -14,9 +14,12 @@ def run(out,mode,replay=False,input_diagnostics=False):
     (out/'program').mkdir(exist_ok=True)
     source=out/'program/console_input_pump.act'
     source.write_bytes((ROOT/'tests/programs/console_input_pump.act').read_bytes())
-    p=read_build(out/'program') if replay else build(compiler(ROOT/'build/actionc'),
+    from generate_memory import PROFILE
+    profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
+    memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile)+'\n')
+    p=read_build(out/'program') if replay else build(compiler(ROOT/'build/actionc',release=True),
         source,out/'program',optimize=mode=='opt',
-        tasks=True,task_capacity=8,console=False,console_test=True,input_diagnostics=input_diagnostics)
+        tasks=True,task_capacity=8,console=False,console_test=True,input_diagnostics=input_diagnostics,memory_profile=memory)
     require(p['build']['input_diagnostics']==input_diagnostics,'Wrong input diagnostics')
     require(p['build']['optimize']==(mode=='opt'),'Wrong pump fixture mode')
     require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned bridge')

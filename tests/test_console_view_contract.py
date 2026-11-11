@@ -10,6 +10,6 @@ class ConsoleViewTests(unittest.TestCase):
     def test_generated_contract(self):
         for path, content in files().items():
             self.assertEqual(path.read_text(), content)
-        self.assertEqual(layout()['Snapshot']['size'], 88)
+        self.assertEqual(layout()['Snapshot']['size'], 92)
         self.assertEqual(layout()['Snapshot']['fields']['cells'], 24)
-        self.assertEqual(layout()['Input']['size'], 72)
+        self.assertEqual(layout()['Input']['size'], 76)

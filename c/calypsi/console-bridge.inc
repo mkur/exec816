@@ -42,5 +42,6 @@ PROC BindConsole()
   entries(2)=ADDRESS(@CConsoleDestroy)
   entries(3)=ADDRESS(@CConsoleMode)
   entries(4)=ADDRESS(@CConsoleGetMode)
+  entries(5)=ADDRESS(@CONSOLEVIEW.Call)
 
 RETURN

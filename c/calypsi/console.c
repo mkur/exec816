@@ -2,7 +2,7 @@
 #include <exec816/console.h>
 
 /* Bound by the platform's console library, above the Exec gateway. */
-void EXEC_PTR *ExecConsoleEntries[5];
+void EXEC_PTR *ExecConsoleEntries[6];
 struct ConsoleArgs { ULONG a,b,c; };
 ULONG EXEC_CALL _ConsoleCall(UWORD,const struct ConsoleArgs *);
 
@@ -28,4 +28,10 @@ LONG EXEC_CALL ExecConsoleGetMode(BPTR console)
 {
     struct ConsoleArgs args={console,0,0};
     return _ConsoleCall(4*sizeof(ExecConsoleEntries[0]),&args);
+}
+
+ULONG EXEC_CALL ExecConsoleView(ULONG operation,ULONG first,ULONG second)
+{
+    struct ConsoleArgs args={operation,first,second};
+    return _ConsoleCall(5*sizeof(ExecConsoleEntries[0]),&args);
 }

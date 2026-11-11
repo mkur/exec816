@@ -1,4 +1,5 @@
 MODULE DOSCOOKEDTEST
+USE CONSOLECOOKED
 USE EXEC
 USE EXECTASKS
 USE EXECLISTS
@@ -188,7 +189,7 @@ PROC PeerEntry()
   OD
 
   EXEC.Forbid()
-  CONSOLEINPUT.Lose(instance)
+  CONSOLECOOKED.Lose(instance)
   EXEC.Permit()
   EXEC.Signal(EXEC.Task POINTER(@service.task),$40000000)
   injectLoss=2
@@ -268,14 +269,14 @@ RETURN
 ; Physical cursor chords and ordinary punctuation have separate translations.
 PROC CursorAliases()
 
-  Require(CONSOLEINPUT.Decode(instance,$10000086)=2)
-  Require(CONSOLEINPUT.Decode(instance,$10010087)=6)
-  Require(CONSOLEINPUT.Decode(instance,$1002008e)=16)
-  Require(CONSOLEINPUT.Decode(instance,$1003008f)=14)
-  Require(CONSOLEINPUT.Decode(instance,$10040006)=43)
-  Require(CONSOLEINPUT.Decode(instance,$10050007)=42)
-  Require(CONSOLEINPUT.Decode(instance,$1006000e)=45)
-  Require(CONSOLEINPUT.Decode(instance,$1007000f)=61)
+  Require(CONSOLECOOKED.Decode(instance,$10000086)=2)
+  Require(CONSOLECOOKED.Decode(instance,$10010087)=6)
+  Require(CONSOLECOOKED.Decode(instance,$1002008e)=16)
+  Require(CONSOLECOOKED.Decode(instance,$1003008f)=14)
+  Require(CONSOLECOOKED.Decode(instance,$10040006)=43)
+  Require(CONSOLECOOKED.Decode(instance,$10050007)=42)
+  Require(CONSOLECOOKED.Decode(instance,$1006000e)=45)
+  Require(CONSOLECOOKED.Decode(instance,$1007000f)=61)
   instance.lastValid=0
 
 RETURN

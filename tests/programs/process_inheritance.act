@@ -1,4 +1,5 @@
 MODULE PROCESSINHERITANCE
+USE CONSOLECOOKED
 USE EXEC
 USE EXECTASKS
 USE PROCESS
@@ -393,7 +394,7 @@ PROC Inheritance(BYTE unused)
       BYTE POINTER($d2400),4)=4)
   Require(DOS.Close(file)<>0)
   EXEC.Forbid()
-  CONSOLEINPUT.Deliver(instance,$1012f)
+  CONSOLECOOKED.Deliver(instance,$1012f)
   EXEC.Signal(@consoleService.task,$40000000)
   EXEC.Permit()
   Collect(4)

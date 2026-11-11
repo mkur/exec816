@@ -1,4 +1,5 @@
 MODULE BITMAPCONTROLPROBE
+USE CONSOLECOOKED
 USE EXEC
 USE CONSOLETYPES
 USE CONSOLEINPUT
@@ -33,7 +34,7 @@ PUBLIC PROC Launched(CONSOLETYPES.Instance POINTER instance)
 
   IF inject<>0 THEN
     inject=0
-    CONSOLEINPUT.Deliver(instance,$0001003f)
+    CONSOLECOOKED.Deliver(instance,$0001003f)
     EXEC.Signal(recipient,$40000000)
     serviceRead=1
   FI

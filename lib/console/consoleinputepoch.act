@@ -1,0 +1,14 @@
+; Clear/open/close invalidate copied input already withdrawn from capture.
+MODULE CONSOLEINPUTEPOCH
+LONGCARD ARRAY epochs(4)
+
+PUBLIC LONGCARD FUNC Get(LONGCARD unit)
+
+RETURN(epochs(BYTE(unit & 3)))
+
+PUBLIC PROC Clear(LONGCARD unit)
+
+  epochs(BYTE(unit & 3))==+1
+
+RETURN
+ENDMODULE

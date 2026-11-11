@@ -1,6 +1,7 @@
 ; Console owns translation and scope policy; INPUT owns the one capture lease.
 MODULE CONSOLECAPTURE
 USE EXEC
+USE CONSOLEINPUTEPOCH
 USE INPUT
 USE CONSOLETYPES
 USE HEAPCORE
@@ -56,6 +57,7 @@ PUBLIC PROC ClearUnit(LONGCARD unit)
   BYTE slot
   CARD ignored
 
+  CONSOLEINPUTEPOCH.Clear(unit)
   LET routes=CONSOLETYPES.Routes POINTER(ADDRESS(CS_ROUTES))
   FOR slot=0 TO 15 DO
     IF routes.items(slot).tag<>0 AND routes.items(slot).unit=unit THEN

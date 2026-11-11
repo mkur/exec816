@@ -1,6 +1,7 @@
 ; Private binding and packet producer for the shared ordinary-call C library.
 MODULE CONSOLEBITMAP
 USE EXEC
+USE CONSOLEBACKEND
 USE AESGATE
 USE DISPLAY
 USE CONSOLETYPES
@@ -101,6 +102,7 @@ PUBLIC BYTE FUNC Run(CARD operation)
     result=0
   ELSEIF status<>DISPLAY.OK THEN
     state.failed=1
+    CONSOLEBACKEND.Wake()
     result=0
   FI
   IF operation=OP_SCROLL OR operation=OP_COPY_START THEN
@@ -134,6 +136,7 @@ PUBLIC BYTE FUNC Open()
   IF completionMask=0 THEN
     ignored=Run(OP_CLOSE)
     state.failed=1
+    CONSOLEBACKEND.Wake()
     RETURN(0)
   FI
 
@@ -491,6 +494,7 @@ PUBLIC BYTE FUNC Drawn(CARD status)
     BEGIN
       LET state=GetBinding()
       state.failed=1
+      CONSOLEBACKEND.Wake()
     END
     RETURN(0)
   FI

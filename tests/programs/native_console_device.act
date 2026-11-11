@@ -1,4 +1,5 @@
 MODULE NATIVECONSOLEDEVICE
+USE CONSOLECOOKED
 USE EXEC
 USE CONSOLECORE
 USE EXECTASKS
@@ -256,7 +257,7 @@ PROC FillLoss(CARD firstTick)
 
   EXEC.Forbid()
   FOR index=firstTick TO firstTick+128 DO
-    CONSOLEINPUT.Deliver(instance,(LONGCARD(index) LSH 16) OR $3f)
+    CONSOLECOOKED.Deliver(instance,(LONGCARD(index) LSH 16) OR $3f)
   OD
 
   EXEC.Permit()
@@ -296,7 +297,7 @@ PROC ClearPending()
   Require(EXEC.CheckIO(EXEC.IORequest POINTER(first))=EXEC.IORequest POINTER(0))
   Require(instance.cells(CONSOLECORE.CellOffset(instance,0))=65)
   EXEC.Forbid()
-  CONSOLEINPUT.Deliver(instance,$02000015)
+  CONSOLECOOKED.Deliver(instance,$02000015)
   EXEC.Signal(@service.task,$40000000)
   EXEC.Permit()
   Collected(first,0,1)

@@ -773,7 +773,7 @@ def plain_console(out):
     # This unbound-hook fixture still links the resident GUI globals. Its old
     # 2 KiB image-data allowance overlaps code; keep the allowance fixture-local.
     from generate_memory import PROFILE
-    profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=4608
+    profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
     memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
     report=dict(status='running',tier='development',qualification=False)
     try:

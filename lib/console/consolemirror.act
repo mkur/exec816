@@ -1,0 +1,58 @@
+; Temporary frontend storage, private to rendering after source publication.
+; Creation runs before the source is admitted to the backend's live registry.
+MODULE CONSOLEMIRROR
+USE EXEC
+USE A816MEMORY
+USE CONSOLETYPES
+USE CONSOLECORE
+
+PUBLIC CONSOLETYPES.Instance POINTER FUNC Model(CONSOLETYPES.Window POINTER entry)
+
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+
+RETURN(CONSOLETYPES.Instance POINTER(view.instance))
+
+PUBLIC BYTE FUNC Create(CONSOLETYPES.Presentation POINTER view
+    CONSOLETYPES.Instance POINTER source)
+
+  LET mirror=CONSOLETYPES.Instance POINTER(EXEC.AllocMem(CONSOLETYPES.INSTANCE_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  IF mirror=NULL THEN
+    RETURN(0)
+  FI
+  LET cells=EXEC.AllocMem(LONGCARD(source.capacity),EXEC.MEMF_PUBLIC)
+  IF cells=NULL THEN
+    EXEC.FreeMem(BYTE POINTER(mirror),CONSOLETYPES.INSTANCE_SIZE)
+    RETURN(0)
+  FI
+  mirror.capacity=source.capacity
+  mirror.cells=cells
+  mirror.width=source.width
+  mirror.height=source.height
+  mirror.count=source.count
+  mirror.column=source.column
+  mirror.row=source.row
+  mirror.lineStart=source.lineStart
+  mirror.caps=source.caps
+  mirror.generation=1
+  mirror.operation=CONSOLETYPES.OP_IDLE
+  A816MEMORY.Move(cells,source.cells,SIZE(source.count))
+  CONSOLECORE.Clean(mirror)
+  CONSOLECORE.Dirty(mirror,0,mirror.count)
+  view.instance=BYTE POINTER(mirror)
+
+RETURN(1)
+
+; The caller has withdrawn presentation and drained every physical borrow.
+PUBLIC PROC Free(CONSOLETYPES.Presentation POINTER view)
+
+  LET mirror=CONSOLETYPES.Instance POINTER(view.instance)
+  IF mirror<>NULL THEN
+    EXEC.FreeMem(mirror.cells,LONGCARD(mirror.capacity))
+    EXEC.FreeMem(BYTE POINTER(mirror),CONSOLETYPES.INSTANCE_SIZE)
+    view.instance=NULL
+  FI
+
+RETURN
+
+ENDMODULE

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 32,
+  "version": 33,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -133,7 +133,8 @@
     "ExecAESInvalidate",
     "ExecVDICopyRect",
     "ExecAESWindowView",
-    "SetFileDate"
+    "SetFileDate",
+    "ExecConsoleView"
   ],
   "stack_requirement": {
     "workspace_mask": 255,

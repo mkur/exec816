@@ -258,7 +258,9 @@ and publisher-held exit lifetime. [GF8](history/gem-first-gui.md#gf8-shared-admi
 finishes contended window/lock library waits, preserving eligible order and
 physical system continuations without RPC. [GF9](history/gem-first-gui.md#gf9-extracted-aes-system-loop)
 extracts the graphical loop into `AESSYSTEM` on the same Task, behind an explicit
-console interface. GF10 next separates the console backend and view interface.
+console interface. [GF10](history/gem-first-gui.md#gf10-console-backend-and-copied-views)
+separates the resident stream backend from copied presentation and input. GF11
+next presents sessions in a GEM terminal.
 Existing latency gates remain open.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)

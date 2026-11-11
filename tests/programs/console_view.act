@@ -14,6 +14,7 @@ CONSOLETYPES.Instance POINTER model
 LONGCARD wake,writerWake
 BYTE writerReady,writerDone
 BYTE ARRAY resizeRow(80)
+LONGCARD ARRAY extra(7)
 
 PROC Require(BYTE okay)
 
@@ -74,7 +75,7 @@ PROC Main()
   LET location=(LONGCARD(ADDRESS(memory)) & $ffff0000)+$ffc0
   LET packet=VIEW.Snapshot POINTER(ADDRESS(location))
   packet.first=0
-  Require(SIZEOF(VIEW.Snapshot)=88 AND SIZEOF(VIEW.Input)=72)
+  Require(SIZEOF(VIEW.Snapshot)=92 AND SIZEOF(VIEW.Input)=76)
   Require(ADDRESS(@packet.cells(0))-ADDRESS(packet)=24)
   Require(VIEWS.Snapshot(handle,packet)=VIEW.OK)
   Require(packet.unit=23 AND packet.count=64 AND packet.width=16)
@@ -84,6 +85,20 @@ PROC Main()
   revision=packet.revision
   Require(VIEWS.Acknowledge(handle,revision)=VIEW.OK)
   Require(VIEWS.Pending(handle)=0)
+  EXEC.Forbid()
+  VIEWS.Route(model,17)
+  EXEC.Permit()
+  Require(VIEWS.Snapshot(handle,packet)=VIEW.OK AND packet.route=17)
+  Require(packet.revision<>revision)
+  Require(VIEWS.Acknowledge(handle,revision)=VIEW.STALE)
+  FOR index=0 TO 6 DO
+    extra(index)=VIEWS.Subscribe(model,23,wake)
+    Require(extra(index)<>0)
+  OD
+  Require(VIEWS.Subscribe(model,23,wake)=0)
+  FOR index=0 TO 6 DO
+    Require(VIEWS.Unsubscribe(extra(index))=VIEW.OK)
+  OD
   LET packetAddress=LONGCARD POINTER($VIEWPACKET)
   packetAddress^=LONGCARD(ADDRESS(packet))
   probeResult=CALYPSICALL.Invoke(ADDRESS($VIEWPROBE),0)

@@ -2,6 +2,7 @@
 MODULE DESKPAINT
 USE DISPLAY
 USE EXEC
+USE CONSOLEMIRROR
 USE DESKSTATE
 USE DESKTABS
 USE DESKTYPES
@@ -67,7 +68,7 @@ PROC SyncView(DESKTYPES.Window POINTER window)
   FI
 
   LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  LET instance=CONSOLEMIRROR.Model(entry)
   LET batch=CONSOLEBATCH.Get()
   LET layer=DESKCORE.Layer(service,window)
   left=CARD(layer.bounds.left+DESKTYPES.WORK_LEFT) RSH 3
@@ -364,7 +365,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
         RETURN(0)
       FI
 
-      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      LET instance=CONSOLEMIRROR.Model(entry)
       LET view=CONSOLETYPES.Presentation POINTER(entry.view)
       IF CONSOLEDISPLAY.BackingReady(view,instance)<>0
           AND ((area.left OR area.right) & 1)=0 THEN
@@ -609,7 +610,7 @@ BYTE FUNC SelectStrip(DESKTYPES.Window POINTER window
             LET entry=CONSOLEWINDOWS.Find(window.console)
             whole=CONSOLEDISPLAY.BackingReady(
                 CONSOLETYPES.Presentation POINTER(entry.view),
-                CONSOLETYPES.Instance POINTER(entry.instance))
+                CONSOLEMIRROR.Model(entry))
           END
         ELSE
           whole=(started=PAINT_CACHE OR window.kind=DESKTYPES.CONTENT_AES
@@ -697,7 +698,7 @@ PUBLIC BYTE FUNC Pump()
         BEGIN
           LET entry=CONSOLEWINDOWS.Find(window.console)
           LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-          LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+          LET instance=CONSOLEMIRROR.Model(entry)
           IF CONSOLEDISPLAY.BackingEnabled(view)<>0
               AND CONSOLEDISPLAY.BackingReady(view,instance)=0 THEN
             entry.busy=1
@@ -802,7 +803,7 @@ PUBLIC BYTE FUNC Pump()
       AND window.iconified=0 THEN
     BEGIN
       LET entry=CONSOLEWINDOWS.Find(window.console)
-      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      LET instance=CONSOLEMIRROR.Model(entry)
       LET view=CONSOLETYPES.Presentation POINTER(entry.view)
       IF fullConsole<>0 AND CONSOLEDISPLAY.BackingEnabled(view)=0 THEN
         CONSOLECORE.Clean(instance)

@@ -4,7 +4,7 @@ PROC CommitAttachment(DESKTYPES.Window POINTER window
     CONSOLETYPES.Window POINTER entry LAYERTYPES.Rect POINTER work)
 
   LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  LET instance=CONSOLEMIRROR.Model(entry)
   view.claimed=1
   view.visible=0
   view.focused=0
@@ -36,7 +36,7 @@ PUBLIC CARD FUNC Attach(DESKTYPES.Window POINTER window LONGCARD unit
   FI
 
   DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@work)
-  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  LET instance=CONSOLEMIRROR.Model(entry)
   IF work.right-work.left<>512 OR work.bottom-work.top<>160
       OR ((work.left OR work.top) & 7)<>0
       OR instance.width<>64 OR instance.height<>20 THEN

@@ -1,0 +1,169 @@
+; Bounded copied input between capture/view producers and the stream worker.
+; The caller holds Forbid. Durable loss/cancel slots survive a full byte queue.
+MODULE CONSOLEINGRESS
+USE EXEC
+USE CONSOLEINPUTEPOCH
+USE INPUT
+USE CONSOLETYPES
+USE CONSOLEVIEWTYPES AS VIEW
+USE CONSOLEWINDOWS
+USE CONSOLEFOREGROUND
+USE CONSOLECOOKED
+USE CONSOLEKEYS
+USE CONSOLEBACKEND
+
+CONST PACKET_SLOTS=8
+TYPE Packet=[
+  LONGCARD unit,route,event,epoch
+  CARD kind,count
+  BYTE ARRAY bytes(VIEW.CELLS)
+]
+Packet ARRAY packets(PACKET_SLOTS)
+LONGCARD ARRAY losses(4),cancels(4),cancelUnits(4)
+BYTE lossMask,cancelMask,head,tail,count
+
+PUBLIC BYTE FUNC Pending()
+
+RETURN(count<>0 OR lossMask<>0 OR cancelMask<>0)
+
+PUBLIC PROC Loss(LONGCARD unit)
+
+  LET slot=BYTE(unit & 3)
+  losses(slot)=unit
+  lossMask=lossMask OR (BYTE(1) LSH slot)
+  CONSOLEBACKEND.Wake()
+
+RETURN
+
+PUBLIC PROC Cancel(LONGCARD unit,route)
+
+  LET slot=BYTE(unit & 3)
+  IF (cancelMask & (BYTE(1) LSH slot))<>0 THEN
+    CONSOLEFOREGROUND.Drop(cancels(slot))
+  FI
+  CONSOLEFOREGROUND.Hold(route)
+  cancels(slot)=route
+  cancelUnits(slot)=unit
+  cancelMask=cancelMask OR (BYTE(1) LSH slot)
+  CONSOLEBACKEND.Wake()
+
+RETURN
+
+PUBLIC CARD FUNC Post(LONGCARD unit,route,event CARD kind,length
+    BYTE POINTER bytes)
+  CARD index
+
+  IF kind=VIEW.INPUT_LOSS THEN
+    Loss(unit)
+    RETURN(VIEW.OK)
+  ELSEIF kind=VIEW.INPUT_CANCEL THEN
+    Cancel(unit,route)
+    RETURN(VIEW.OK)
+  FI
+  IF count=PACKET_SLOTS THEN
+    RETURN(VIEW.RESOURCE)
+  FI
+  LET packet=@packets(tail)
+  packet.unit=unit
+  packet.route=route
+  packet.epoch=CONSOLEINPUTEPOCH.Get(unit)
+  packet.event=event
+  packet.kind=kind
+  packet.count=length
+  IF kind=VIEW.INPUT_BYTES THEN
+    FOR index=0 TO length-1 DO
+      packet.bytes(index)=bytes(index)
+    OD
+  FI
+  CONSOLEFOREGROUND.Hold(route)
+  tail=(tail+1) & (PACKET_SLOTS-1)
+  count==+1
+  CONSOLEBACKEND.Wake()
+
+RETURN(VIEW.OK)
+
+; Capture cannot backpressure the hardware FIFO; overflow is a durable loss.
+PUBLIC PROC Capture(LONGCARD unit INPUT.Event POINTER event)
+  CARD status,kind
+
+  kind=IF event.kind=INPUT.EVENT_LOSS THEN VIEW.INPUT_LOSS
+      ELSEIF event.kind=INPUT.EVENT_CANCEL THEN VIEW.INPUT_CANCEL
+      ELSE VIEW.INPUT_RAW FI
+  status=Post(unit,event.route,LONGCARD(BYTE(event.code))
+      OR (LONGCARD(event.tick) LSH 16),kind,0,NULL)
+  IF status=VIEW.RESOURCE THEN
+    Loss(unit)
+  FI
+
+RETURN
+
+; One packet per backend quantum. Requests are never kept in this queue.
+PUBLIC PROC Pump()
+  BYTE slot,bound
+  CARD index
+  INPUT.Event event
+
+  FOR slot=0 TO 3 DO
+    IF (lossMask & (BYTE(1) LSH slot))<>0 THEN
+      BEGIN
+        lossMask=lossMask & (BYTE(1) LSH slot XOR $ff)
+        LET entry=CONSOLEWINDOWS.Find(losses(slot))
+        IF entry<>NULL THEN
+          CONSOLECOOKED.Lose(CONSOLETYPES.Instance POINTER(entry.instance))
+        FI
+      END
+    FI
+    IF (cancelMask & (BYTE(1) LSH slot))<>0 THEN
+      BEGIN
+        cancelMask=cancelMask & (BYTE(1) LSH slot XOR $ff)
+        LET entry=CONSOLEWINDOWS.Find(cancelUnits(slot))
+        bound=CONSOLEFOREGROUND.Deliver(cancels(slot))
+        IF bound=0 AND entry<>NULL THEN
+          BEGIN
+            LET source=CONSOLETYPES.Instance POINTER(entry.instance)
+            source.lastValid=0
+            CONSOLECOOKED.Deliver(source,$100)
+          END
+        FI
+        CONSOLEFOREGROUND.Drop(cancels(slot))
+      END
+    FI
+  OD
+  IF count=0 THEN
+    RETURN
+  FI
+  LET packet=@packets(head)
+  LET entry=CONSOLEFOREGROUND.Resolve(packet.route)
+  IF entry<>NULL AND entry.unit=packet.unit
+      AND packet.epoch=CONSOLEINPUTEPOCH.Get(packet.unit) THEN
+    BEGIN
+      LET source=CONSOLETYPES.Instance POINTER(entry.instance)
+      IF packet.kind=VIEW.INPUT_RAW THEN
+        event.route=packet.route
+        event.kind=INPUT.EVENT_KEY
+        event.code=BYTE(packet.event)
+        event.qualifiers=(event.code RSH 6) & 3
+        event.tick=CARD(packet.event RSH 16)
+        IF CONSOLEKEYS.Deliver(entry,@event)=0 THEN
+          CONSOLECOOKED.Deliver(source,packet.event)
+        FI
+      ELSEIF source.open<>0 AND source.inputLost=0 THEN
+        IF packet.count>CONSOLETYPES.INPUT_BYTES-source.inputCount THEN
+          CONSOLECOOKED.Lose(source)
+        ELSE
+          FOR index=0 TO packet.count-1 DO
+            source.fifo(source.inputHead)=packet.bytes(index)
+            source.inputHead=(source.inputHead+1) & 127
+            source.inputCount==+1
+          OD
+        FI
+      FI
+    END
+  FI
+  CONSOLEFOREGROUND.Drop(packet.route)
+  head=(head+1) & (PACKET_SLOTS-1)
+  count==-1
+
+RETURN
+
+ENDMODULE

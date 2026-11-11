@@ -118,7 +118,7 @@ PUBLIC PROC Close(EXEC.IORequest POINTER request)
   CONSOLECAPTURE.ClearUnit(entry.unit)
   request.io_Device=NULL
   request.io_Unit=NULL
-  EXEC.Signal(@service.task,$80000000)
+  CONSOLEBACKEND.Wake()
 
 RETURN
 
@@ -281,7 +281,7 @@ PUBLIC PROC AbortIO(EXEC.IORequest POINTER request)
     RETURN
   FI
 
-  EXEC.Signal(@service.task,$80000000)
+  CONSOLEBACKEND.Wake()
 
 RETURN
 
@@ -364,15 +364,6 @@ PROC Arrival(CONSOLETYPES.Service POINTER service)
     WHEN EXEC.CMD_WRITE,CONSOLETYPES.CONCMD_WRITE_AT,CONSOLETYPES.CONCMD_WRITE_CELLS,CONSOLETYPES.CONCMD_WRITE_CELL_SPANS,CONSOLETYPES.CONCMD_MODE THEN
       EXECLISTS.AddTail(EXECLISTS.List POINTER(@instance.writes),
           @request.io_Message.mn_Node)
-      IF request.io_Message.mn_Length>=EXEC.IOSTDREQ_SIZE
-          AND request.io_Length<=LONGCARD(CONSOLETYPES.SOURCE_QUANTUM) THEN
-        BEGIN
-          LET batch=CONSOLEBATCH.Get()
-          IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
-            batch.reason=CONSOLETYPES.BATCH_FLUSH_SHORT
-          FI
-        END
-      FI
     ELSE
       service.arrival=BYTE POINTER(request)
       service.arrivalCancel=0
@@ -386,7 +377,7 @@ PROC Arrival(CONSOLETYPES.Service POINTER service)
   FI
 
   IF service.arrivalCancel=0 THEN
-    CONSOLEINPUT.Clear(instance)
+    CONSOLECOOKED.Clear(instance)
   FI
 
   EXEC.Forbid()
@@ -401,16 +392,13 @@ PROC Arrival(CONSOLETYPES.Service POINTER service)
 
 RETURN
 
-; Keep the worker awake while any admitted terminal still has useful work.
+; Model-only runnable policy. Physical ownership never delays stream work.
 BYTE FUNC Runnable(CONSOLETYPES.Service POINTER service BYTE inputPending)
   BYTE index
 
-  IF (inputPending<>0 AND DESKINPUT.KeyReady()<>0)
-      OR CONSOLEDISPLAY.CompletionReady()<>0
-      OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0 THEN
+  IF EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0 THEN
     RETURN(1)
   FI
-
   LET windows=CONSOLEWINDOWS.Registry()
   FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
     IF windows.items(index).state=CONSOLETYPES.WIN_LIVE THEN

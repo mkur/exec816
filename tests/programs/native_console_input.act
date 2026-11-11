@@ -1,4 +1,5 @@
 MODULE NATIVECONSOLEINPUT
+USE CONSOLECOOKED
 USE EXEC
 USE HEAPCORE
 USE EXECLISTS
@@ -53,7 +54,7 @@ PROC CollectKeys()
   CARD pumped,count,index
 
   pumped=CONSOLEINPUT.Pump(instance)
-  count=CONSOLEINPUT.Read(instance,translated,64)
+  count=CONSOLECOOKED.Read(instance,translated,64)
   IF count=$ffff THEN
     Require(mode=4 OR mode=5)
     losses==+1
@@ -156,7 +157,7 @@ PROC Setup()
       CONSOLETYPES.INSTANCE_SIZE,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
   fifo=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC)
   Require(instance<>CONSOLETYPES.Instance POINTER(0) AND fifo<>BYTE POINTER(0))
-  CONSOLEINPUT.Init(instance,fifo)
+  CONSOLECOOKED.Init(instance,fifo)
   instance.open=1
   ; This isolated adapter fixture has no resident console worker. Register
   ; its retained instance through the same route identities used by the worker.
@@ -165,7 +166,7 @@ PROC Setup()
   window.unit=0
   window.instance=BYTE POINTER(instance)
   window.state=CONSOLETYPES.WIN_CREATING
-  CONSOLEINPUT.Init(instance,fifo)
+  CONSOLECOOKED.Init(instance,fifo)
   IF order=0 THEN
     StartReader()
   FI

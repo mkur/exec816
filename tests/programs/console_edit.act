@@ -1,4 +1,5 @@
 MODULE CONSOLEEDITTEST
+USE CONSOLECOOKED
 USE EXEC
 USE EXECTASKS
 USE EXECLISTS
@@ -163,7 +164,7 @@ PROC Lifecycle()
   Pause(6)
   Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_COMPLETE)
   EXEC.Forbid()
-  CONSOLEINPUT.Lose(CONSOLETYPES.Instance POINTER(endpoint.owner.io_Unit))
+  CONSOLECOOKED.Lose(CONSOLETYPES.Instance POINTER(endpoint.owner.io_Unit))
   EXEC.Permit()
   STR.strlcpy(edit.buffer,c"GARBAGE",256)
   edit.length=7
@@ -232,7 +233,7 @@ PROC Lifecycle()
   Pause(19)
   Check(ReadEdit(DOS.CONEDIT_START)=DOS.CONEDIT_COMPLETE)
   EXEC.Forbid()
-  CONSOLEINPUT.Lose(CONSOLETYPES.Instance POINTER(endpoint.owner.io_Unit))
+  CONSOLECOOKED.Lose(CONSOLETYPES.Instance POINTER(endpoint.owner.io_Unit))
   EXEC.Permit()
   Check(ReadEdit(DOS.CONEDIT_CANCEL)=DOS.CONEDIT_CANCELLED)
   Idle()

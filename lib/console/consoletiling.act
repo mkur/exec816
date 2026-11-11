@@ -1,6 +1,8 @@
 ; One presentation transaction pauses worker borrows, with IRQs enabled.
 MODULE CONSOLETILING
 USE EXEC
+USE CONSOLEBACKEND
+USE CONSOLEVIEWCORE
 USE HEAPCORE
 USE CONSOLETYPES
 USE CONSOLEWINDOWS
@@ -89,6 +91,7 @@ PUBLIC PROC Unlock()
 
   windows.presenting=0
   EXEC.Signal(@service.task,$80000000)
+  CONSOLEBACKEND.Wake()
   EXEC.Permit()
 
 RETURN
@@ -137,10 +140,13 @@ PUBLIC PROC ResizeLocked(CONSOLETYPES.Window POINTER entry CARD height)
     FI
   FI
 
+  EXEC.Forbid()
   IF CONSOLECORE.Resize(instance,height,resizeRow)=0 THEN
     HEAPCORE.Abort(4)
   FI
 
+  CONSOLEVIEWCORE.Publish(instance)
+  EXEC.Permit()
   view.height=height
   view.scrollState=0
   view.index=$ffff
@@ -181,7 +187,7 @@ RETURN(view.left=0 AND view.top=0
 PROC Expose(CONSOLETYPES.Window POINTER entry BYTE visible)
 
   LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  LET instance=CONSOLETYPES.Instance POINTER(view.instance)
   view.visible=visible
   view.index=$ffff
   view.previousCursor=$ffff

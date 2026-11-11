@@ -4,7 +4,7 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-GF0–GF9 pass at the development tier. GF10–GF15 remain open. The
+GF0–GF10 pass at the development tier. GF11–GF15 remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
 coexistence, the current resource inventory, the shared window policy audit
 and the window effect/commit checks. GF3 separates scene ownership from physical
@@ -428,10 +428,13 @@ Task, signal or reserved bank-zero storage; six private callback pointers add
 
 ### GF10 — Separate the console backend and publish a view interface
 
-In progress: the [view foundation](../../development/gem-first-gf10-view.json)
-passes its small raw/optimized ABI, snapshot and lifetime probes. Next connect
-the backend Task, public facade and temporary copied-view frontend, then test
-stream/input/cancellation and UPDATE-held producer completion.
+Implemented. The [backend record](../../development/gem-first-gf10.json)
+includes resident startup/shutdown, copied views and input, allocation rollback,
+external closed handles, raw/optimized ABI probes and held-UPDATE stream replies.
+The [view foundation](../../development/gem-first-gf10-view.json) remains the
+historical first slice. The backend occupies one existing 1,312-byte Task pool;
+the twelve-Task reservation is unchanged. The temporary copied renderer remains
+until GF11.
 
 Move retained cells, cooked input, stream requests and cancellation into their
 console backend worker. Add a reusable console-view interface for bounded cell

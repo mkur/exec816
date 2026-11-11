@@ -1,8 +1,10 @@
 MODULE INPUTPUMP
+USE CONSOLECOOKED
 USE EXEC
 USE INPUT
 USE INPUTNATIVE
 USE CONSOLEINPUT
+USE CONSOLEINGRESS
 USE CONSOLECAPTURE
 USE CONSOLEWINDOWS
 USE CONSOLEFOREGROUND
@@ -33,7 +35,7 @@ PROC Seed(BYTE count CARD tick)
   LET capture=INPUTNATIVE.Capture POINTER(ADDRESS(IN_CAPTURE))
   LET windows=CONSOLEWINDOWS.Registry()
   LET window=@windows.items(0)
-  CONSOLEINPUT.Init(@instance,fifo)
+  CONSOLECOOKED.Init(@instance,fifo)
   instance.open=1
   capture.tail=0
   capture.head=0
@@ -49,6 +51,15 @@ PROC Seed(BYTE count CARD tick)
   OD
 
   capture.head=count
+
+RETURN
+
+; The fixture runs the backend policy explicitly while holding its source guard.
+PROC Drain()
+
+  WHILE CONSOLEINGRESS.Pending()<>0 DO
+    CONSOLEINGRESS.Pump()
+  OD
 
 RETURN
 
@@ -68,7 +79,7 @@ PROC Main()
   Require(CONSOLEFOREGROUND.Register(window)=1)
   window.state=CONSOLETYPES.WIN_LIVE
   windows.liveCount=1
-  CONSOLEINPUT.Init(@instance,fifo)
+  CONSOLECOOKED.Init(@instance,fifo)
   instance.open=1
   counts(0)=CONSOLEINPUT.Pump(@instance)
   Require(counts(0)=0)
@@ -88,22 +99,25 @@ PROC Main()
 
   Seed(7,100)
   counts(1)=CONSOLEINPUT.Pump(@instance)
+  Require(instance.inputCount=0)
+  Drain()
   Require(counts(1)=7 AND instance.inputCount=7)
-  Require(CONSOLEINPUT.Read(@instance,output,128)=7)
+  Require(CONSOLECOOKED.Read(@instance,output,128)=7)
   FOR index=0 TO 6 DO
     Require(output(index)=IF (index & 1)=0 THEN 97 ELSE 98 FI)
   OD
 
   Seed(63,200)
   counts(2)=CONSOLEINPUT.Pump(@instance)
-  Require(counts(2)=63 AND instance.inputCount=63)
+  Drain()
+  Require(counts(2)=63 AND instance.inputLost=1 AND instance.inputCount=0)
+  Require(CONSOLECOOKED.Read(@instance,output,128)=$ffff)
   Seed(64,300)
   counts(3)=CONSOLEINPUT.Pump(@instance)
   counts(4)=CONSOLEINPUT.Pump(@instance)
-  Require(counts(3)=64 AND counts(4)=0 AND instance.inputCount=64)
-  FOR index=0 TO 63 DO
-    Require(fifo(index)=IF (index & 1)=0 THEN 97 ELSE 98 FI)
-  OD
+  Drain()
+  Require(counts(3)=64 AND counts(4)=0 AND instance.inputLost=1)
+  Require(CONSOLECOOKED.Read(@instance,output,128)=$ffff)
 
   Seed(64,400)
   bit=CARD(1) LSH BYTE(window.route & 15)
@@ -115,10 +129,12 @@ PROC Main()
   state.lossCode(BYTE(window.route & 15))=INPUT.LOSS_RAW
   counts(5)=CONSOLEINPUT.Pump(@instance)
   Require(counts(5)=64 AND capture.tail=62)
+  Drain()
   Require(instance.inputLost=1 AND instance.inputCount=0)
   counts(6)=CONSOLEINPUT.Pump(@instance)
+  Drain()
   Require(counts(6)=2 AND capture.tail=64)
-  Require(CONSOLEINPUT.Read(@instance,output,128)=$ffff)
+  Require(CONSOLECOOKED.Read(@instance,output,128)=$ffff)
   Require(instance.inputCount=0 AND instance.inputLost=0)
 
   Seed(64,500)
@@ -131,6 +147,7 @@ PROC Main()
   OD
 
   counts(8)=CONSOLEINPUT.Pump(@instance)
+  Drain()
   Require(counts(8)=8 AND instance.inputCount=0)
   Seed(8,700)
   FOR index=0 TO 7 DO

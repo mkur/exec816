@@ -1,0 +1,218 @@
+; Transitional renderer consumes the same bounded copied views as applications.
+; No live backend cell pointer is retained or used by graphical work.
+MODULE CONSOLEFRONT
+USE EXEC
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+USE CONSOLEVIEW
+USE CONSOLEVIEWCORE AS VIEWS
+USE CONSOLEVIEWTYPES AS CV
+USE CONSOLEMIRROR
+USE CONSOLECORE
+USE CONSOLEDISPLAY
+USE CONSOLEBITMAP
+USE DISPLAY
+USE AESLOCKS
+USE DESKSTATE
+USE DESKHOST
+USE DESKMENUCACHE
+
+TYPE Frame=[LONGCARD handle,unit,revision CARD first BYTE complete]
+Frame ARRAY frames(4)
+BYTE nextSlot
+
+PROC Forget(Frame POINTER frame)
+
+  IF frame.handle<>0 THEN
+    VIEWS.Unsubscribe(frame.handle)
+  FI
+  frame.handle=0
+  frame.first=0
+  frame.complete=0
+
+RETURN
+
+; Presentation lock has drained this unit's renderer borrow before retirement.
+PUBLIC PROC Retire(LONGCARD unit)
+
+  LET frame=@frames(BYTE(unit & 3))
+  IF frame.handle<>0 AND frame.unit=unit THEN
+    Forget(frame)
+  FI
+
+RETURN
+
+; Acquire permanent-unit storage before the resident publishes readiness.
+PUBLIC BYTE FUNC Start()
+
+  frames(0).unit=0
+  frames(0).handle=CONSOLEVIEW.Subscribe(0,$80000000)
+
+RETURN(frames(0).handle<>0)
+
+PUBLIC PROC Stop()
+  BYTE slot
+
+  FOR slot=0 TO 3 DO
+    Forget(@frames(slot))
+  OD
+
+RETURN
+
+BYTE FUNC Ready(CONSOLETYPES.Window POINTER entry Frame POINTER frame)
+
+  IF frame.handle<>0 THEN
+    IF frame.unit<>entry.unit OR VIEWS.Closed(frame.handle)<>0 THEN
+      RETURN(1)
+    FI
+  FI
+  IF entry.state<>CONSOLETYPES.WIN_LIVE THEN
+    RETURN(0)
+  FI
+  IF frame.handle=0 OR VIEWS.Pending(frame.handle)<>0 THEN
+    RETURN(1)
+  FI
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  LET model=CONSOLEMIRROR.Model(entry)
+
+RETURN(view.visible<>0 AND (model.dirtyRows<>0
+    OR view.index<>model.lineStart+model.column OR view.scrollState<>0))
+
+PUBLIC BYTE FUNC Runnable()
+  BYTE slot
+
+  IF CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
+      OR AESLOCKS.PaintBlocked()<>0 THEN
+    RETURN(0)
+  FI
+  LET windows=CONSOLEWINDOWS.Registry()
+  EXEC.Forbid()
+  IF windows.presenting<>0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+  FOR slot=0 TO 3 DO
+    IF Ready(@windows.items(slot),@frames(slot))<>0 THEN
+      EXEC.Permit()
+      RETURN(1)
+    FI
+  OD
+  EXEC.Permit()
+
+RETURN(0)
+
+; One coherent chunk. Mixed passes may paint copied cells, but cannot ACK.
+PROC Copy(CONSOLETYPES.Window POINTER entry Frame POINTER frame)
+  CV.Snapshot packet
+  CARD index
+
+  IF frame.handle=0 THEN
+    frame.unit=entry.unit
+    frame.handle=CONSOLEVIEW.Subscribe(entry.unit,$80000000)
+    IF frame.handle=0 THEN
+      RETURN
+    FI
+  FI
+  packet.first=frame.first
+  IF VIEWS.Snapshot(frame.handle,@packet)<>CV.OK THEN
+    frame.first=0
+    frame.complete=0
+    RETURN
+  FI
+  LET model=CONSOLEMIRROR.Model(entry)
+  IF frame.first=0 THEN
+    frame.revision=packet.revision
+    frame.complete=1
+  ELSEIF frame.revision<>packet.revision THEN
+    frame.complete=0
+  FI
+  IF model.width<>packet.width OR model.height<>packet.height THEN
+    model.width=packet.width
+    model.height=packet.height
+    model.count=packet.width*packet.height
+    CONSOLECORE.Clean(model)
+    CONSOLECORE.Dirty(model,0,model.count)
+  FI
+  model.column=packet.column
+  model.row=packet.row
+  model.lineStart=packet.row*packet.width
+  model.caps=BYTE(packet.mode)
+  FOR index=0 TO packet.count-1 DO
+    IF model.cells(packet.first+index)<>packet.cells(index) THEN
+      model.cells(packet.first+index)=packet.cells(index)
+      CONSOLECORE.Dirty(model,packet.first+index,packet.first+index+1)
+    FI
+  OD
+  frame.first==+packet.count
+  IF frame.first=model.count THEN
+    frame.first=0
+    IF frame.complete<>0 THEN
+      frame.complete=2
+    FI
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC Turn(BYTE POINTER again)
+  BYTE slot,index,found
+  CONSOLETYPES.Window POINTER entry
+  Frame POINTER frame
+  CONSOLETYPES.Presentation POINTER view
+  CONSOLETYPES.Instance POINTER model
+
+  IF CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
+      OR AESLOCKS.PaintBlocked()<>0 THEN
+    RETURN(0)
+  FI
+  LET windows=CONSOLEWINDOWS.Registry()
+  IF windows.presenting<>0 THEN
+    RETURN(0)
+  FI
+  found=0
+  FOR index=0 TO 3 DO
+    slot=nextSlot
+    nextSlot=(nextSlot+1) & 3
+    entry=@windows.items(slot)
+    frame=@frames(slot)
+    entry.busy=1
+    IF frame.handle<>0 THEN
+      IF frame.unit<>entry.unit OR VIEWS.Closed(frame.handle)<>0 THEN
+        Forget(frame)
+      FI
+    FI
+    IF entry.state=CONSOLETYPES.WIN_LIVE AND
+        (CONSOLEBITMAP.TextPending()=0 OR entry.unit=DESKSTATE.ConsoleUnit()) THEN
+      IF Ready(entry,frame)<>0 OR CONSOLEBITMAP.TextPending()<>0 THEN
+        found=1
+        view=CONSOLETYPES.Presentation POINTER(entry.view)
+        model=CONSOLEMIRROR.Model(entry)
+        IF CONSOLEBITMAP.TextPending()=0 AND view.scrollState=0
+            AND (frame.first<>0 OR frame.complete<>2) THEN
+          Copy(entry,frame)
+        FI
+        IF DESKSTATE.Enabled()<>0 THEN
+          DESKSTATE.SelectConsoleUnit(entry.unit)
+        FI
+        IF entry.unit=DESKSTATE.ShellUnit() THEN
+          DESKMENUCACHE.ConsoleChanged(model,view)
+        FI
+        IF DESKHOST.PaintReady()<>0 OR CONSOLEBITMAP.TextPending()<>0 THEN
+          CONSOLEDISPLAY.Present(view,model)
+        FI
+        IF frame.handle<>0 AND frame.first=0 AND frame.complete=2
+            AND CONSOLEBITMAP.TextPending()=0 AND CONSOLEBITMAP.Pending()=0
+            AND (view.visible=0 OR model.dirtyRows=0) THEN
+          VIEWS.Acknowledge(frame.handle,frame.revision)
+          frame.complete=0
+        FI
+        entry.busy=0
+        EXIT
+      FI
+    FI
+    entry.busy=0
+  OD
+  again^=Runnable()
+
+RETURN(found)
+
+ENDMODULE

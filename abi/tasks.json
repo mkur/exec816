@@ -701,7 +701,8 @@
   "registered_entries": [
     "SIODRIVER.Worker",
     "CONSOLEDRIVER.Worker",
-    "IDEPLUSDRIVER.Worker"
+    "IDEPLUSDRIVER.Worker",
+    "CONSOLEBACKEND.Worker"
   ],
   "create_packet": {
     "size": 16,

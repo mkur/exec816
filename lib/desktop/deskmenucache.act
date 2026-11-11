@@ -1,5 +1,6 @@
 ; Presenter adapter for the Layers-owned menu save and chained popup copies.
 MODULE DESKMENUCACHE
+USE CONSOLEMIRROR
 USE DESKSTATE
 USE DISPLAY
 USE DESKTYPES
@@ -252,7 +253,7 @@ PROC ConsolePending()
 
   LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ShellUnit())
   IF entry<>NULL THEN
-    ConsoleChanged(CONSOLETYPES.Instance POINTER(entry.instance),
+    ConsoleChanged(CONSOLEMIRROR.Model(entry),
         CONSOLETYPES.Presentation POINTER(entry.view))
   FI
 

@@ -15,10 +15,16 @@ USE BOOTDIAG
 USE CONSOLETYPES
 USE CONSOLECORE
 USE CONSOLEBATCH
+USE CONSOLEBACKEND
+USE CONSOLEINGRESS
+USE CONSOLEFRONT
+USE CONSOLEMIRROR
+USE CONSOLEVIEWCORE
 USE CONSOLEWINDOWS
 USE CONSOLEFOREGROUND
 USE CONSOLECAPTURE
 USE CONSOLEINPUT
+USE CONSOLECOOKED
 USE CONSOLEDISPLAY
 USE CONSOLEBITMAP
 USE CONSOLECONTROL
@@ -187,72 +193,17 @@ BYTE FUNC PositionedWrite(CONSOLETYPES.Instance POINTER instance
 
 RETURN(request.io_Actual=request.io_Length)
 
-; Commit one bounded prefix, then publish a pointer-free display continuation
-; before replying. Cancellation never consumes another source byte.
-PROC BatchWrite(CONSOLETYPES.Instance POINTER instance
-    CONSOLETYPES.Presentation POINTER view EXEC.IOStdReq POINTER request)
-  CARD limit,consumed
-  BYTE reason
-
-  IF instance.writeCancel=0 AND request.io_Actual<request.io_Length
-      AND CONSOLEBATCH.Due(instance.changeTick)=0 THEN
-    BEGIN
-      LET remaining=request.io_Length-request.io_Actual
-      limit=CONSOLETYPES.SOURCE_QUANTUM
-      IF remaining<LONGCARD(limit) THEN
-        limit=CARD(remaining)
-      FI
-
-      consumed=CONSOLEBATCH.Feed(instance,
-          BYTE POINTER(ADDRESS(request.io_Data)+SIZE(request.io_Actual)),limit)
-      request.io_Actual==+LONGCARD(consumed)
-    END
-  FI
-
-  IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length
-      OR CONSOLEBATCH.Due(instance.changeTick)<>0 THEN
-    reason=CONSOLETYPES.BATCH_FLUSH_END
-    IF instance.writeCancel<>0 THEN
-      reason=CONSOLETYPES.BATCH_FLUSH_CANCEL
-    FI
-
-    CONSOLEDISPLAY.FlushBatch(view,instance,reason)
-    IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
-      FinishWrite(instance,request)
-    FI
-  FI
-
-RETURN
-
-; Advance one write by a bounded amount. Return 1 to complete a short write
-; after this turn's presentation, before yielding or taking another instance.
-BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
-    CONSOLETYPES.Presentation POINTER view LONGCARD unit)
+; Advance model ownership without depending on physical drawing or UPDATE.
+PROC WriteQuantum(CONSOLETYPES.Instance POINTER instance)
   EXEC.IOStdReq POINTER request
-  LONGCARD remaining
-  CARD consumed,limit
-  BYTE error,value
-
-  LET batch=CONSOLEBATCH.Get()
-  IF batch.phase<>CONSOLETYPES.BATCH_IDLE THEN
-    IF batch.unit<>unit OR batch.phase<>CONSOLETYPES.BATCH_GATHER THEN
-      RETURN(0)
-    FI
-
-    IF batch.viewGeneration<>view.generation
-        OR batch.modelGeneration<>instance.generation
-        OR view.visible=0 OR view.claimed=0 OR instance.write=NULL THEN
-      CONSOLEDISPLAY.DiscardBatch()
-    FI
-  FI
+  CARD limit,error
 
   request=EXEC.IOStdReq POINTER(instance.write)
   IF request=NULL THEN
     request=ClaimWrite(instance)
     IF request=NULL THEN
-      RETURN(0)
+      RETURN
     FI
-
     error=Validate(request)
     IF error=0 AND (request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT OR
         request.io_Command=CONSOLETYPES.CONCMD_WRITE_CELLS) THEN
@@ -262,116 +213,57 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
       error=SpansValid(instance,request)
     FI
     IF error<>0 THEN
-      request.io_Error=error
+      request.io_Error=BYTE(error)
       FinishWrite(instance,request)
-      RETURN(0)
+      RETURN
     FI
   FI
-
-  IF CONSOLEBITMAP.Failed()<>0 THEN
-    CONSOLEDISPLAY.DiscardBatch()
-    IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
-      CONSOLECORE.EditQuantum(instance)
-    FI
-
-    request.io_Error=BYTE(EXEC.IOERR_SELFTEST)
-    FinishWrite(instance,request)
-    RETURN(0)
-  FI
-
-  IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
-    BatchWrite(instance,view,request)
-    RETURN(0)
-  FI
-
-  ; Finish a visible dirty segment before a new scroll can move its prefix.
-  ; Present owns the single text step in this turn. Cancellation and clear
-  ; can abandon the old repair; neither waits for its pixels to catch up.
-  IF CONSOLEBITMAP.Enabled()<>0 AND view.claimed<>0 AND view.visible<>0
-      AND instance.dirtyRows<>0 AND instance.writeCancel=0
-      AND instance.operation<>CONSOLETYPES.OP_CLEAR
-      AND (instance.operation<>CONSOLETYPES.OP_IDLE
-      OR request.io_Actual<>request.io_Length) THEN
-    RETURN(0)
-  FI
-
   IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
-    CONSOLEDISPLAY.Edit(view,instance)
-    IF instance.operation=CONSOLETYPES.OP_IDLE THEN
-      IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
-        FinishWrite(instance,request)
-      FI
+    CONSOLECORE.EditQuantum(instance)
+    IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
+      RETURN
     FI
-
-    RETURN(0)
   FI
-
+  IF instance.writeCancel<>0 THEN
+    FinishWrite(instance,request)
+    RETURN
+  FI
   IF request.io_Command=CONSOLETYPES.CONCMD_MODE THEN
-    IF instance.writeCancel<>0 THEN
-      FinishWrite(instance,request)
-      RETURN(0)
-    FI
     IF request.io_Length<>1 OR (request.io_Data(0) & $1f)<>0 THEN
       request.io_Error=BYTE(EXEC.IOERR_BADLENGTH)
     ELSE
-      CONSOLEINPUT.Clear(instance)
+      CONSOLECOOKED.Clear(instance)
       instance.caps=(instance.caps & 1) OR request.io_Data(0)
       CONSOLECORE.Dirty(instance,0,instance.count)
       request.io_Actual=1
     FI
-    FinishWrite(instance,request)
-    RETURN(0)
-  FI
-
-  IF request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT OR
+  ELSEIF request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT OR
       request.io_Command=CONSOLETYPES.CONCMD_WRITE_CELLS THEN
-    RETURN(PositionedWrite(instance,request))
-  FI
-
-  IF request.io_Command=CONSOLETYPES.CONCMD_WRITE_CELL_SPANS THEN
-    RETURN(SpansWrite(instance,request))
-  FI
-
-  IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
-    FinishWrite(instance,request)
-    RETURN(0)
-  FI
-
-  remaining=request.io_Length-request.io_Actual
-  limit=CONSOLETYPES.SOURCE_QUANTUM
-  IF remaining<LONGCARD(limit) THEN
-    limit=CARD(remaining)
-  FI
-
-  IF request.io_Length>LONGCARD(CONSOLETYPES.SOURCE_QUANTUM)
-      AND CONSOLEBITMAP.Enabled()<>0 THEN
+    error=PositionedWrite(instance,request)
+    IF instance.write=NULL THEN
+      RETURN
+    FI
+  ELSEIF request.io_Command=CONSOLETYPES.CONCMD_WRITE_CELL_SPANS THEN
+    error=SpansWrite(instance,request)
+    IF instance.write=NULL THEN
+      RETURN
+    FI
+  ELSEIF request.io_Actual<request.io_Length THEN
     BEGIN
-      LET source=BYTE POINTER(ADDRESS(request.io_Data)+SIZE(request.io_Actual))
-      value=source^
-      IF value=ASCII.LF OR (value>=ASCII.SPACE AND value<>DELETE) THEN
-        IF CONSOLEDISPLAY.BeginBatch(view,instance,unit)<>0 THEN
-          BatchWrite(instance,view,request)
-          RETURN(0)
-        FI
+      LET remaining=request.io_Length-request.io_Actual
+      limit=CONSOLETYPES.SOURCE_QUANTUM
+      IF remaining<LONGCARD(limit) THEN
+        limit=CARD(remaining)
       FI
+      request.io_Actual==+LONGCARD(CONSOLECORE.Feed(instance,
+          request.io_Data+SIZE(request.io_Actual),limit))
     END
   FI
-
-  consumed=CONSOLECORE.Feed(instance,
-      BYTE POINTER(ADDRESS(request.io_Data)+SIZE(request.io_Actual)),limit)
-  request.io_Actual==+LONGCARD(consumed)
-  ; A short, settled write can present before its reply wakes the client.
-  ; Keep ownership until that one bounded pass; never await a full redraw.
-  IF request.io_Actual=request.io_Length
-      AND instance.operation=CONSOLETYPES.OP_IDLE THEN
-    IF request.io_Length<=LONGCARD(CONSOLETYPES.SOURCE_QUANTUM) THEN
-      RETURN(1)
-    FI
-
+  IF request.io_Actual=request.io_Length AND instance.operation=CONSOLETYPES.OP_IDLE THEN
     FinishWrite(instance,request)
   FI
 
-RETURN(0)
+RETURN
 
 ; Complete available input or cancellation without blocking the console
 ; worker.
@@ -409,7 +301,7 @@ PROC ReadQuantum(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
       limit=CARD(request.io_Length)
     FI
 
-    count=CONSOLEINPUT.Read(instance,request.io_Data,limit)
+    count=CONSOLECOOKED.Read(instance,request.io_Data,limit)
     IF count=$ffff THEN
       request.io_Error=CONSOLETYPES.CONERR_INPUTOVERFLOW
     ELSE
@@ -464,7 +356,7 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
     EXEC.Yield()
   OD
 
-  CONSOLEINPUT.Init(instance,fifo)
+  CONSOLECOOKED.Init(instance,fifo)
   view=CONSOLETYPES.Presentation POINTER(ADDRESS(CS_PRESENTATION))
   service.presentation=BYTE POINTER(view)
   service.snapshot=EXEC.AllocMem(960,EXEC.MEMF_PUBLIC)
@@ -477,6 +369,9 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
   FI
 
   CONSOLEDISPLAY.Adopt(view,instance)
+  IF CONSOLEMIRROR.Create(view,instance)=0 THEN
+    RETURN(0)
+  FI
   IF CONSOLECAPTURE.Acquire()=0 THEN
     RETURN(0)
   FI
@@ -513,9 +408,14 @@ PROC FreeStorage(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
   windows.liveCount=0
   entry.state=CONSOLETYPES.WIN_RETIRING
   CONSOLEFOREGROUND.Unregister(entry)
+  CONSOLEVIEWCORE.Retire(instance)
   EXEC.Permit()
   view=CONSOLETYPES.Presentation POINTER(ADDRESS(CS_PRESENTATION))
   CONSOLEDISPLAY.Release(view)
+  ; Failed startup may still have the original source binding.
+  IF view.instance<>BYTE POINTER(instance) THEN
+    CONSOLEMIRROR.Free(view)
+  FI
   IF service.snapshot<>BYTE POINTER(0) THEN
     EXEC.FreeMem(service.snapshot,960)
     service.snapshot=BYTE POINTER(0)
@@ -552,7 +452,8 @@ RETURN(CONSOLEINPUT.Service(GetInstance(),bits,pending))
 
 BYTE FUNC SystemRunnable(BYTE pending)
 
-RETURN(Runnable(GetService(),pending))
+RETURN((pending<>0 AND DESKINPUT.KeyReady()<>0)
+    OR CONSOLEDISPLAY.CompletionReady()<>0 OR CONSOLEFRONT.Runnable())
 
 BYTE FUNC SystemStopping()
 
@@ -569,97 +470,41 @@ BYTE FUNC SystemStop()
 
 RETURN(accepted)
 
-BYTE FUNC SystemTurn(BYTE deferred BYTE POINTER again,writing,handoff)
-  BYTE completeWrite
-  CONSOLETYPES.Instance POINTER instance
+BYTE FUNC BackendTurn()
+  BYTE index
   CONSOLETYPES.Window POINTER entry
 
   LET service=GetService()
-  LET batch=CONSOLEBATCH.Get()
+  IF service.state<>2 THEN
+    RETURN(0)
+  FI
   Arrival(service)
-  entry=CONSOLEWINDOWS.Take()
-  again^=0
-  writing^=0
-  IF entry<>NULL THEN
-    IF DESKSTATE.Enabled()<>0 THEN
-      DESKSTATE.SelectConsoleUnit(entry.unit)
+  CONSOLEINGRESS.Pump()
+  LET windows=CONSOLEWINDOWS.Registry()
+  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    entry=@windows.items(index)
+    IF entry.state=CONSOLETYPES.WIN_LIVE THEN
+      BEGIN
+        LET source=CONSOLETYPES.Instance POINTER(entry.instance)
+        ReadQuantum(service,source)
+        WriteQuantum(source)
+        CONSOLEVIEWCORE.Publish(source)
+      END
     FI
+  OD
 
-    instance=CONSOLETYPES.Instance POINTER(entry.instance)
-    instance.changeTick=DISPLAYADAPTER.Ticks()
-    ReadQuantum(service,instance)
-    BEGIN
-      LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-      IF deferred=0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0
-          AND (DESKHOST.PaintReady()<>0 OR CONSOLEBITMAP.TextPending()<>0) AND
-          (batch.phase=CONSOLETYPES.BATCH_IDLE OR batch.unit=entry.unit) THEN
-        handoff^=0
-        completeWrite=0
-        IF CONSOLEBITMAP.TextPending()<>0 THEN
-          ; A scene token freezes this model until the last text fragment.
-          ; Re-resolve the live request only to finish a held short reply.
-          IF instance.write<>NULL AND instance.operation=CONSOLETYPES.OP_IDLE THEN
-            BEGIN
-              LET request=EXEC.IOStdReq POINTER(instance.write)
-              completeWrite=request.io_Actual=request.io_Length
-            END
-          FI
-        ELSEIF view.scrollState<>0
-            AND view.scrollState<>CONSOLETYPES.SCROLL_GATHER THEN
-          CONSOLEDISPLAY.Advance(view,instance,entry.unit)
-        ELSE
-          IF entry.unit=DESKSTATE.ShellUnit() THEN
-            DESKMENUCACHE.ConsoleChanged(instance,view)
-          FI
-          completeWrite=WriteQuantum(instance,view,entry.unit)
-        FI
+RETURN(Runnable(service,0) OR CONSOLEINGRESS.Pending())
 
-        IF entry.unit=DESKSTATE.ShellUnit() THEN
-          DESKMENUCACHE.ConsoleChanged(instance,view)
-        FI
-        CONSOLEDISPLAY.Present(view,instance)
-        ; Resume repair on a fresh worker turn without a voluntary Task
-        ; round trip per segment. Controls, input and registry rotation keep
-        ; their ordinary opportunities; blocked paint never takes this path.
-        again^=CONSOLEBITMAP.Enabled()<>0 AND CONSOLEBITMAP.Failed()=0
-            AND view.claimed<>0 AND view.visible<>0 AND instance.dirtyRows<>0
-        IF completeWrite<>0 AND CONSOLEBITMAP.TextPending()=0 THEN
-          BEGIN
-            LET request=EXEC.IOStdReq POINTER(instance.write)
-            IF CONSOLEBITMAP.Failed()<>0 THEN
-              request.io_Error=BYTE(EXEC.IOERR_SELFTEST)
-            FI
+BYTE FUNC SystemTurn(BYTE deferred BYTE POINTER again,writing,handoff)
 
-            FinishWrite(instance,request)
-          END
-        FI
-      FI
-
-      ; Cancellation may finish a retained model edit while pixels are held.
-      IF AESLOCKS.PaintBlocked()<>0 AND CONSOLEBITMAP.Pending()=0
-          AND CONSOLEBITMAP.TextPending()=0
-          AND instance.write<>NULL AND instance.writeCancel<>0 THEN
-        CONSOLECORE.EditQuantum(instance)
-        IF entry.unit=DESKSTATE.ShellUnit() THEN
-          DESKMENUCACHE.ConsoleChanged(instance,view)
-        FI
-        IF instance.operation=CONSOLETYPES.OP_IDLE THEN
-          FinishWrite(instance,EXEC.IOStdReq POINTER(instance.write))
-        FI
-      FI
-
-      writing^=instance.write<>NULL AND ((AESLOCKS.PaintBlocked()=0 AND DISPLAY.Blocked()=0)
-          OR instance.writeCancel<>0)
-      again^=again^ OR (writing^<>0 AND instance.writeCancel<>0)
-          OR (view.scrollState<>0 AND AESLOCKS.PaintBlocked()=0 AND DISPLAY.Blocked()=0)
-      IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
-        again^=0
-      FI
-    END
-    entry.busy=0
+  writing^=0
+  handoff^=0
+  again^=0
+  IF deferred<>0 THEN
+    RETURN(0)
   FI
 
-RETURN(entry<>NULL)
+RETURN(CONSOLEFRONT.Turn(again))
 
 ; One bounded turn per borrowed instance. No request or instance pointer remains
 ; borrowed across Yield/Wait, and replies publish ownership exactly once.
@@ -720,6 +565,19 @@ PUBLIC PROC Worker()
     registered=0
   FI
 
+  IF registered<>0 AND CONSOLEBACKEND.Start(ADDRESS(@BackendTurn))=0 THEN
+    AESSYSTEM.Stop()
+    CONSOLECAPTURE.Release()
+    registered=0
+  FI
+
+  IF registered<>0 AND CONSOLEFRONT.Start()=0 THEN
+    CONSOLEBACKEND.Stop()
+    AESSYSTEM.Stop()
+    CONSOLECAPTURE.Release()
+    registered=0
+  FI
+
   IF registered=0 THEN
     FreeStorage(service,defaultInstance)
     registered=EXEC.UnregisterResident()
@@ -739,12 +597,16 @@ PUBLIC PROC Worker()
     service.state=3
   FI
 
+  service.port.mp_SigTask=CONSOLEBACKEND.Task()
   Notify(service)
+  CONSOLEBACKEND.Wake()
   EXEC.Permit()
 
   AESSYSTEM.Run()
 
+  CONSOLEFRONT.Stop()
   AESSYSTEM.Stop()
+  CONSOLEBACKEND.Stop()
   registered=EXEC.UnregisterResident()
   EXEC.FreeSignal(29)
   CONSOLECAPTURE.Release()

@@ -1,6 +1,7 @@
 ; Presenter-owned replacement of the one Shell view and backing bitmap.
 MODULE DESKCONSOLE
 USE EXEC
+USE CONSOLEMIRROR
 USE A816MEMORY
 USE DESKTABS
 USE INPUT
@@ -84,7 +85,7 @@ PUBLIC CARD FUNC Bind(DESKTYPES.Service POINTER service
   FI
 
   LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  LET instance=CONSOLEMIRROR.Model(entry)
   IF view.width<>64 OR view.height<>20
       OR instance.width<>64 OR instance.height<>20 THEN
     RETURN(DESKTYPES.BAD_ARGUMENT)
