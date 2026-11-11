@@ -140,11 +140,60 @@ PUBLIC PROC PrepareFocus(DESKTYPES.Service POINTER service LONGCARD id)
 
 RETURN
 
+; Publish only the focused input source. No cell/view attachment or drawing.
+PUBLIC PROC PublishInput(DESKTYPES.Service POINTER service)
+  LONGCARD route
+  CARD inputStatus
+
+  EXEC.Forbid()
+  IF service.keyboard<>NULL THEN
+    route=0
+    IF service.consoleFocus<>NULL THEN
+      service.consoleFocus^=255
+    FI
+
+    BEGIN
+      LET window=Find(service,service.focus)
+      IF window<>NULL THEN
+        IF DESKSTATE.IsConsole(window)<>0 THEN
+          BEGIN
+            LET entry=CONSOLEWINDOWS.Find(window.console)
+            route=entry.route
+            service.consoleFocus^=BYTE(window.console & 3)
+          END
+        ELSE
+          route=window.keyRoute
+          BEGIN
+            LET item=AESWINDOWSTATE.FindRecord(window.id)
+            IF item<>NULL AND item.inputBound<>0 THEN
+              BEGIN
+                LET entry=CONSOLEWINDOWS.Find(item.inputUnit)
+                IF entry<>NULL THEN
+                  route=entry.route
+                  service.consoleFocus^=BYTE(entry.unit & 3)
+                ELSE
+                  route=0
+                FI
+              END
+            FI
+          END
+        FI
+      FI
+    END
+
+    inputStatus=INPUT.PublishRoute(INPUT.Lease POINTER(service.keyboard),route)
+    IF inputStatus<>INPUT.OK THEN
+      HEAPCORE.Abort($fae8)
+    FI
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
 ; Publish focus, frame damage and the capture route as one scene operation.
 PUBLIC PROC CommitFocus(DESKTYPES.Service POINTER service LONGCARD id)
   BYTE index,status
-  CARD inputStatus
-  LONGCARD route
   LAYERTYPES.Rect frame
   DESKTYPES.ClientRecord POINTER client
 
@@ -187,34 +236,8 @@ PUBLIC PROC CommitFocus(DESKTYPES.Service POINTER service LONGCARD id)
   EXEC.Forbid()
   service.focus=id
   AESSTATE.mouseDirty=1
-  IF service.keyboard<>NULL THEN
-    route=0
-    IF service.consoleFocus<>NULL THEN
-      service.consoleFocus^=255
-    FI
-
-    BEGIN
-      LET window=Find(service,id)
-      IF window<>NULL THEN
-        IF DESKSTATE.IsConsole(window)<>0 THEN
-          BEGIN
-            LET entry=CONSOLEWINDOWS.Find(window.console)
-            route=entry.route
-            service.consoleFocus^=BYTE(window.console & 3)
-          END
-        ELSE
-          route=window.keyRoute
-        FI
-      FI
-    END
-
-    inputStatus=INPUT.PublishRoute(INPUT.Lease POINTER(service.keyboard),route)
-    IF inputStatus<>INPUT.OK THEN
-      HEAPCORE.Abort($fae8)
-    FI
-  FI
-
   EXEC.Permit()
+  PublishInput(service)
   AESMOUSE.Refresh()
   FOR index=0 TO DESKTYPES.CLIENTS-1 DO
     IF service.clients(index).id<>0 THEN

@@ -1,0 +1,44 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GF11-input-binding",
+  "sources": {
+    "abi/console-view.json": "ed2d85812704c98bb849ce7d7d84c47452152f974465d76287b4b34eb1a6e7ce",
+    "lib/aes/aesstate.act": "8b58ba1dba0881e2d28c3cde6834d3250b1c81ef59b7287a0ad812ca63952d2a",
+    "lib/aes/aeswindow.act": "8319f7ed37b0cc47d1cf962b36f7273462dc13e4e9a1be35ae1e5611d829cfad",
+    "lib/console/consoleview.act": "ca7dc143d9e28f5ac22b207616e3609d83f9203b17646c89ab5634ff0f9a0633",
+    "lib/console/consoleviewtypes.act": "01696dc282c9d6bd9770d7fca6c3f3861ef5c48d3a11ab80b3b8019ffdde7c8b",
+    "lib/desktop/deskcore.act": "0bc936c3702de9ec764616a4d7b3ae54ede0085f99b3d39ead57512d3da26bda",
+    "c/include/exec816/console-view.h": "25d252112fe08abb2c1e28056e1e1edcf82bf721de4b88a2c44c067f2c7007fc",
+    "c/include/exec816/console-view-types.h": "e132a6a3652df090b65ea8b41587a6c171085c506c9aad1e08116e0a31c49e8a",
+    "tests/programs/aes_locks.c": "4943db324ad54d27d4bb59fe4d623d7d333c634db694fd41016d767572644400"
+  },
+  "artifact": {
+    "path": "build/gem-first-gui/gf11/input-binding/results.json",
+    "sha256": "85446f56a0a44d25763afd3877baf17cd691adbd8046cf31a48e31da5f27d7eb",
+    "checks": 231
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "upper_window_metadata_added_bytes": 36,
+  "scope": "Public view input routing to an ordinary caller-owned AES window; no retained cell painting or native console attachment. Wrong-owner rejection, bind/unbind, close/retire and held-UPDATE stream/input checks. Terminal Process migration follows."
+}

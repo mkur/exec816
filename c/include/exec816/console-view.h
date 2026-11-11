@@ -31,4 +31,14 @@ static inline UWORD ExecConsoleViewPending(ULONG view)
 {
     return (UWORD)ExecConsoleView(EXEC_CONSOLE_VIEW_OP_PENDING,view,0);
 }
+/* Focused native keyboard input goes directly to this view's stream backend.
+ * This affects input routing only; the application still paints its AES work. */
+static inline UWORD ExecConsoleViewBindWindow(ULONG view,WORD window)
+{
+    return (UWORD)ExecConsoleView(EXEC_CONSOLE_VIEW_OP_BIND_WINDOW,view,(ULONG)window);
+}
+static inline UWORD ExecConsoleViewUnbindWindow(WORD window)
+{
+    return (UWORD)ExecConsoleView(EXEC_CONSOLE_VIEW_OP_UNBIND_WINDOW,0,(ULONG)window);
+}
 #endif

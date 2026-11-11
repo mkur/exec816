@@ -40,6 +40,8 @@ PUBLIC TYPE Menu=[
 ; Window lifetimes are independent of their application's port and menu.
 PUBLIC TYPE Window=[
   LONGCARD owner
+  LONGCARD inputUnit
+  BYTE inputBound
   GuiPending gui
   AESTYPES.WindowView POINTER view
   DESKTYPES.Window POINTER window

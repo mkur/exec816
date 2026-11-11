@@ -1,6 +1,12 @@
 ; Public console service facade; no renderer or mutable cells cross this API.
 MODULE CONSOLEVIEW
 USE EXEC
+USE AESSTATE
+USE AESTYPES
+USE AESWINDOWSTATE
+USE AESGATE
+USE DESKCORE
+USE DESKSTATE
 USE CONSOLETYPES
 USE CONSOLEWINDOWS
 USE CONSOLEVIEWCORE AS VIEWS
@@ -55,6 +61,55 @@ PUBLIC CARD FUNC Input(LONGCARD handle VIEW.Input POINTER packet)
 
 RETURN(status)
 
+; Bind capture routing to an ordinary owned GEM window. The window keeps its
+; external-paint kind and receives normal AES messages. A unit is a scalar;
+; source retirement is independent of this optional focus association.
+PUBLIC CARD FUNC InputWindow(LONGCARD handle INT window BYTE bound)
+  CARD status
+  BYTE slot
+  AESSTATE.Client POINTER client
+  AESSTATE.Window POINTER item
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN(VIEW.UNSUPPORTED)
+  FI
+  LET self=EXEC.FindTask(NULL)
+  LET bit=EXEC.AllocSignal(-1)
+  IF bit=$ff THEN
+    RETURN(VIEW.RESOURCE)
+  FI
+  AESGATE.EnterTask(self,LONGCARD(1) LSH bit)
+  client=NULL
+  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+    IF service.clients(slot).id<>0 AND service.clients(slot).lease.task=self THEN
+      client=@service.clients(slot)
+    FI
+  OD
+  status=VIEW.NOT_OWNER
+  item=NULL
+  IF client<>NULL THEN
+    item=AESWINDOWSTATE.Handle(client,window)
+  FI
+  IF item<>NULL THEN
+    status=VIEW.OK
+    IF bound<>0 AND VIEWS.Closed(handle)<>0 THEN
+      status=VIEW.CLOSED
+    ELSE
+      item.inputBound=bound
+      IF bound<>0 THEN
+        item.inputUnit=VIEWS.Unit(handle)
+      ELSE
+        item.inputUnit=0
+      FI
+      DESKCORE.PublishInput(DESKSTATE.Get())
+    FI
+  FI
+  AESGATE.Release(0)
+  EXEC.FreeSignal(bit)
+
+RETURN(status)
+
 ; Three full-width arguments use the existing console library C bridge.
 PUBLIC LONGCARD FUNC Call(LONGCARD operation,first,second)
 
@@ -71,6 +126,10 @@ PUBLIC LONGCARD FUNC Call(LONGCARD operation,first,second)
     RETURN(LONGCARD(Input(first,VIEW.Input POINTER(ADDRESS(second)))))
   WHEN VIEW.OP_PENDING THEN
     RETURN(LONGCARD(VIEWS.Pending(first)))
+  WHEN VIEW.OP_BIND_WINDOW THEN
+    RETURN(LONGCARD(InputWindow(first,INT(second),1)))
+  WHEN VIEW.OP_UNBIND_WINDOW THEN
+    RETURN(LONGCARD(InputWindow(0,INT(second),0)))
   ESAC
 
 RETURN(LONGCARD(VIEW.BAD_LAYOUT))

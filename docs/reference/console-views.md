@@ -6,7 +6,7 @@ The console service provides copied, bounded snapshots and input delivery above
 ordinary Exec stream I/O. It adds no kernel selector. Exact records and constants
 come from [console-view.json](../../abi/console-view.json); C declarations are in
 [console-view.h](../../c/include/exec816/console-view.h). Rebuild C applications
-for APP ABI 33 and console-view version 2.
+for the current APP ABI and console-view version 3.
 
 Subscribe with a live unit and a signal mask allocated by the calling Task.
 The opaque handle retains that Task until explicit unsubscribe. Up to eight
@@ -38,3 +38,13 @@ entry remains governed by the platform stack/domain protocol. No mutable cell,
 request or scope pointer appears in a public view packet. Unsubscribe before
 freeing the signal or exiting. Snapshots already copied into consumer storage
 remain ordinary consumer-owned bytes after retirement.
+
+A subscriber can bind its view as the input source of an ordinary owned AES
+window through `ExecConsoleViewBindWindow`. This associates capture focus with
+the backend's current foreground route. It neither attaches cells nor changes
+the window's painting policy. Focus changes publish that source route or the
+next window's normal AES route; captured old tags retain their original scope.
+`ExecConsoleViewUnbindWindow` restores ordinary AES keyboard delivery. Unbind
+before unsubscribing or deleting the window. Unsupported hosting and ownership
+failures are normal admission errors. The [input-binding slice](../development/gem-first-gf11-input.json)
+records its emitted development checks; terminal migration follows separately.

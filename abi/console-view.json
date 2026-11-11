@@ -1,6 +1,6 @@
 {
   "abi": "exec816.console-view",
-  "version": 2,
+  "version": 3,
   "constants": {
     "CELLS": 64,
     "OP_SUBSCRIBE": 1,
@@ -19,7 +19,11 @@
     "INPUT_BYTES": 0,
     "INPUT_RAW": 1,
     "INPUT_LOSS": 2,
-    "INPUT_CANCEL": 3
+    "INPUT_CANCEL": 3,
+    "OP_BIND_WINDOW": 7,
+    "OP_UNBIND_WINDOW": 8,
+    "NOT_OWNER": 7,
+    "UNSUPPORTED": 8
   },
   "records": {
     "Snapshot": [

@@ -155,10 +155,14 @@ static void console_under_update(void)
     static UBYTE text[192],result[4];
     ULONG view,old;
     UWORD i;
+    WORD target=wind_create(NAME|CLOSER|MOVER,64,64,128,64);
+    CHECK(target>0 && wind_open(target,64,64,128,64));
     CHECK(port && io);
     CHECK(OpenDevice("console.device",0,(struct IORequest *)io,0)==0);
     view=ExecConsoleViewSubscribe(0,wake);
     CHECK(view!=0);
+    CHECK(ExecConsoleViewBindWindow(view,-1)==EXEC_CONSOLE_VIEW_NOT_OWNER);
+    CHECK(ExecConsoleViewBindWindow(view,target)==EXEC_CONSOLE_VIEW_OK);
     snapshot.first=0;
     CHECK(ExecConsoleViewSnapshot(view,&snapshot)==EXEC_CONSOLE_VIEW_OK);
     input.route=snapshot.route;
@@ -190,6 +194,8 @@ static void console_under_update(void)
     SendIO((struct IORequest *)io);AbortIO((struct IORequest *)io);
     CHECK(WaitIO((struct IORequest *)io)==IOERR_ABORTED && io->io_Actual==0);
     CHECK(wind_update(END_UPDATE));
+    CHECK(ExecConsoleViewUnbindWindow(target)==EXEC_CONSOLE_VIEW_OK);
+    CHECK(wind_close(target) && wind_delete(target));
     CHECK(ExecConsoleViewUnsubscribe(view)==EXEC_CONSOLE_VIEW_OK);
     CloseDevice((struct IORequest *)io);
     DeleteIORequest((struct IORequest *)io);DeleteMsgPort(port);
