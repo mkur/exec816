@@ -646,7 +646,11 @@ PUBLIC PROC Worker()
   handoff=0
   ; Stop may be requested after the final write reply but before DMA retires.
   DO
-    AESGATE.OwnerEnter()
+    ; Admission never sleeps or grants scene access on failure. Until the
+    ; independent input/event phase is split out, defer this turn at its edge.
+    WHILE AESGATE.TryOwner()=0 DO
+      EXEC.Wait(aesMask)
+    OD
     IF service.stop<>0 AND CONSOLEBITMAP.Pending()=0
         AND batch.phase=CONSOLETYPES.BATCH_IDLE THEN
       EXIT

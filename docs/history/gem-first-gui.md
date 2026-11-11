@@ -276,3 +276,42 @@ same emitted image with `--reuse`. Also run `tools/test_console_window.py`,
 once with defaults and once with `--iconified --stale-completion`. Each runner
 requires a separate `--output` directory. This is development evidence; it
 does not qualify the hosted system or establish new latency results.
+
+## GF3 — Scene ownership
+
+GF3 is in progress. Its first step makes presenter admission nonblocking.
+`AESGATE.TryOwner` closes the handoff on success, or publishes the presenter's
+wake obligation and returns failure while the caller retains ownership. Both
+decisions use a short `Forbid` section. The console worker retries and waits at
+the turn boundary, before any scene access or readiness query. No gate helper
+sleeps. The existing caller UPDATE path still uses the same claim/release
+protocol; there is no new bridge or record layout.
+
+The focused optimized fixture passes 46 checks. It holds caller ownership
+across three natural VBI ticks, proves peer progress while the presenter sleeps,
+and preserves an unrelated pending input bit. It also forces release after
+failed admission but before the gate wait, two coalesced release hints, and
+release before any waiter is published. Successful retries close the gate,
+clear the wake obligation and preserve nested `Forbid` state. The initial
+fixture failed because it compared an unsigned nesting byte with `-1`; the
+correct stored value is `$ff`. That failed build/log is retained.
+
+The optimized lock and cache fixtures pass 181 and 224 checks. All 32 cache
+checkpoint records and 14 captured scanouts match GF2 exactly. All three
+returning fixtures have intact guards and zero live worker Tasks. Host checks
+pass 683 tests with four historical-source skips. Emitted-image hashes,
+results and resource comparison are in the
+[admission execution record](../development/gem-first-gf3-admission.json).
+The matched cache image adds nine native code bytes within the same code banks,
+with zero added data, zero-fill, VRAM, Tasks or signals.
+The reserved bank-zero delta is **0 fixed, 0 root, 0 kernel, 0 per public Task
+and 0 idle bytes**, including guards, alignment and unused capacity. The
+fixtures retain their existing eight public slots and private idle pool.
+
+Reproduce with `tools/test_aes_gate.py --output DIR` and
+`tools/test_aes_server.py --mode opt --suite locks --output DIR`, then the same
+AES runner with `--suite cache` in another directory. This is development
+evidence for the admission boundary. GF3 still needs the scene/input/display
+phase split, ownership across those phases, and release before physical
+admission, external waits and callbacks. The worker still waits for scene
+admission before servicing input/events in this preparatory step.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Focused emitted caller/presenter handoff, wake and preemption checks."""
+"""Focused emitted nonblocking scene admission, wake and preemption checks."""
 import argparse
 import json
 from pathlib import Path
@@ -20,7 +20,7 @@ def run(out):
         runtime, _ = execute(bridge, program, frame_limit=600, timeout=120)
         ownership(bridge, program, program['output'])
         checks = data(bridge, program['image'], 'checks', True)[0]
-        require(checks == 24, 'Incomplete gate fixture: '+str(checks))
+        require(checks == 46, 'Incomplete gate fixture: '+str(checks))
         require(runtime['native_nmi_count'] >= 3, 'Missing natural preemption')
     report = dict(status='pass', tier='development', qualification=False,
                   checks=checks, machine=machine, runtime=runtime,

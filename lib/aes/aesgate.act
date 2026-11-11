@@ -7,29 +7,26 @@ PUBLIC CONST CLOSED=0
 PUBLIC CONST AVAILABLE=1
 PUBLIC CONST CALLER=2
 
-; Reclaim before any presenter metadata access, including scheduling hints.
-PUBLIC PROC OwnerEnter()
+; Try before presenter metadata access, including scheduling hints. Publish the
+; waiter under the same guard as the check; a release before Wait stays pending.
+PUBLIC BYTE FUNC TryOwner()
 
   LET service=AESSTATE.Get()
   IF service=NULL THEN
-    RETURN
+    RETURN(1)
   FI
 
-  DO
-    EXEC.Forbid()
-    IF service.policyGate<>CALLER THEN
-      service.policyGate=CLOSED
-      EXEC.Permit()
-      RETURN
-    FI
-
-    service.policyWaiting=1
+  EXEC.Forbid()
+  IF service.policyGate<>CALLER THEN
+    service.policyGate=CLOSED
     EXEC.Permit()
-    ; Do not consume unrelated input/display bits or spin on pending work.
-    EXEC.Wait(service.mask)
-  OD
+    RETURN(1)
+  FI
 
-RETURN
+  service.policyWaiting=1
+  EXEC.Permit()
+
+RETURN(0)
 
 ; Readiness and scheduling decisions were computed while the gate was closed.
 PUBLIC PROC Offer(BYTE ready)

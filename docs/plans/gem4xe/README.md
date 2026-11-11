@@ -10,7 +10,8 @@ the baseline, shared/caller-side window policy, console/terminal separation,
 native API retirement, measured rendering changes and OF816 package acceptance.
 The [execution record](../../history/gem-first-gui.md) covers GF0's five native
 baseline cohorts, GF1's shared window policy audit and GF2's window effect/commit
-checks. GF0–GF2 pass at the development tier; GF3–GF15 remain open.
+checks. GF0–GF2 pass at the development tier. GF3 has started with nonblocking
+presenter admission; GF3–GF15 remain open.
 
 The [Atari ST reference](../../guides/atari-st-reference.md) runs the native
 baseline's unchanged object-tree routines under EmuTOS and MagiC in Hatari.

@@ -7,7 +7,8 @@
 GF0–GF2 pass at the development tier. GF3–GF15 remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
 coexistence, the current resource inventory, the shared window policy audit
-and the window effect/commit checks.
+and the window effect/commit checks. GF3 has started with nonblocking presenter
+admission; its scene/physical/input partition remains to be implemented.
 The design is committed
 as `633b45fe` on `gem-first-gui`, following the two-Counter MagiC reference at
 `39e774ef`. Those references establish the direction and reference behavior;
@@ -194,6 +195,12 @@ behavior stays runnable through the current transport.
 Commit: `refactor(aes): separate window effects from scene commits`.
 
 ### GF3 — Separate scene access from physical work and waits
+
+First step: presenter admission returns without waiting and publishes its wake
+obligation atomically. The worker owns the retry/wait boundary. See the
+[admission record](../../history/gem-first-gui.md#gf3--scene-ownership).
+The existing handoff and whole presenter turn remain; this step does not
+complete GF3 or admit independent input/event work during caller scene ownership.
 
 Evolve `AESGATE` into the single library-level scene serialization mechanism;
 update presenter, existing local UPDATE and deferred paths together. Protect
