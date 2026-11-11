@@ -128,7 +128,7 @@ ENDMODULE
     VISPROBE.Observe(client,request.operation)
   FI
 '''+source[at:]
-    start=source.index('BYTE FUNC Close(');at=source.index('\n\n',start)+2
+    start=source.index('CARD FUNC Close(');at=source.index('\n\n',start)+2
     source=source[:at]+'''  VISPROBE.Observe(AESSTATE.Find(AESSTATE.Get(),item.owner),
       AESTYPES.OP_CLOSE)
 '''+source[at:]
@@ -237,9 +237,9 @@ def physical(b,p,foreign,report):
                 b.poke(pointer('VisBusy'),0);b.poke16(sy['VisWake'],1)
         phase(number,3)
         operation=val('VisOperation')
-        direct=number not in (9,11,13,16) and (operation==101 or report['visibility_local']=='all')
+        direct=number not in (13,16,18) and (operation==101 or report['visibility_local']=='all')
         attempts=[get(pointer('VisNative')+2*i)-before[i] for i in range(8)]
-        require(val('VisSequence',4)==(0 if direct else 1),
+        require(val('VisSequence',4)==0,
                 f'Phase {number}: wrong transport; sequence={val("VisSequence",4)}, attempts={attempts}')
         slot=2*(operation==102)
         if direct and operation in (101,102):
@@ -250,9 +250,12 @@ def physical(b,p,foreign,report):
         view=val('VisView',4)
         state={n:get(view+vf[n],size) for n,size in [('handle',2),('shown',2),('epoch',4)]}
         state['bounds']=[get(view+vf['bounds']+2*i) for i in range(4)]
-        if number in (18,19,20):
-            require(state['shown']==state['epoch']==0 and retiring_tag()!=0,
-                    'Failed fallback lost the retained closing route or view')
+        if number==18:
+            require(state['shown']==state['epoch']==0 and retiring_tag()==0,
+                    'Local close depended on an available transport sequence')
+        if number in (19,20):
+            require(state['shown']!=0,
+                    'Reopen did not publish a fresh window after retirement')
         if number==21:require(retiring_tag()==0,'Close retry retained its retired route')
         report['visibility'].append(dict(phase=number,operation=operation,result=val('VisResult'),
             status=val('VisStatus'),sequence_delta=val('VisSequence',4),attempts=attempts,view=state))

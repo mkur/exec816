@@ -3,12 +3,15 @@
 /* Bound before clients start; separate from per-application C contexts. */
 void EXEC_PTR *ExecAESLocalEntry;
 
-/* The public binding has already admitted this Task's context. A miss leaves
- * the operation unapplied and the transport sequence available to RPC. */
+/* The binding has admitted this Task. Native waits retain busy until their
+ * caller or system continuation finishes; no descriptor is sent as a message. */
 UWORD ExecAESLocal(struct ExecAESContext *c, UWORD operation)
 {
     UWORD handled;
-    if (!ExecAESLocalEntry) return 0;
+    if (!ExecAESLocalEntry) {
+        c->request.status=AES_UNSUPPORTED;
+        return 1;
+    }
     c->request.operation=operation;
     c->request.client=c->identity;
     c->busy=1;

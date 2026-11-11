@@ -1,0 +1,761 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GF8",
+  "implementation_parent": "bf609062",
+  "sources": {
+    "abi/aes-server.json": "c0db1217c240db9595e977ce536461169b59a83a7878abef4e2653ef3601a8f5",
+    "c/calypsi/aes-local.c": "21591bc31ef54b9d0c13892782e0c8a660b7da0c5e4b97a4ab4f75827ae34d4e",
+    "c/calypsi/aes-windows.c": "169d0beaf49dec9065976773f6d894f9d883b0c2731ba1c9e78a127e238d6a94",
+    "c/include/exec816/aes-wire.h": "3edcfed8066c38cd656177a8fd8b8a78fa15938437f9326e2307afcc4663f239",
+    "lib/aes/aesboot.act": "68a40565715dc18eb218eae961c5955805085d72b6a4100797eba4c917d4feb3",
+    "lib/aes/aescore.act": "c48d9f1bd825a71d64ea011eb440e723b3dcc46cf4bf3d90937c1c186c90bf1d",
+    "lib/aes/aesdefer.act": "cf063f3699907eec02598ff46ce491c0a891597ac049d70a1d77aca515320640",
+    "lib/aes/aesgate.act": "2da743ea77da35f696b3f17302856760dec427d80311bf4bb1925364da99c6d3",
+    "lib/aes/aesgui.act": "b1c2c292a1d959701b46f7f0fd9234d2acaa4f88f3c236ba95ae7d2c2e65af66",
+    "lib/aes/aeshost.act": "7bc501fa2b65f12f63b320c7f3e34defe90de35ae23d7f96dd603befb2bc218a",
+    "lib/aes/aesinbox.act": "255fc63b36e2d707cf35c070b481757093db558f6d3004467efe50ac0452f5cd",
+    "lib/aes/aesinput.act": "477c6357fa0d733dcd099e297215c38b06bf19b1d0bb6f5df5bca223c5324ec9",
+    "lib/aes/aeskeys.act": "d654ba2d2ad45fae19a2a4db6d1a29c3d8585938c9401d980df45b76c26f88d0",
+    "lib/aes/aeslocal.act": "112ad117a991da0233f4a6dc8459c9c74cf94ba11102afa2bf32f3256d985031",
+    "lib/aes/aeslocks.act": "f3caa1c4a5e00e3a22d997658243df56daa1095e57795c077f63eec091693554",
+    "lib/aes/aesmenu.act": "5f6f9e36395d77ada8c7a63859940e679b6238ab9978d86c417847939f9097ad",
+    "lib/aes/aesmouse.act": "1bdb12b946712f4a3674b7b0c077ebac992be9d40ba46e36c21714035003aa97",
+    "lib/aes/aesprocess.act": "2f2535e460d1dae005d5c9ac64825951352f490883922c60e3be9d7534570a16",
+    "lib/aes/aesroutes.act": "1590f9f9951900c868471af6b39d9ab6dbc0ca23368c3ed5ab80355ef1b8508b",
+    "lib/aes/aessnapshot.act": "2ed10d9fe807579058ca772060db0add6415e9702c7b8a12ea86a61b94223512",
+    "lib/aes/aesstate.act": "31b915fd17199ebfbe9d67079aeb8350d7c720221acf2f76a1ac9c7979f73ab1",
+    "lib/aes/aestypes.act": "a308c03243cae15025b58fcf25b5cc45ced9562c019d650e22779126b1830314",
+    "lib/aes/aeswait.act": "9ad0a91494e8bbfd3dc1521f16b7d7b1b2fb6ab9b0b0e64fb7afedca2dba474e",
+    "lib/aes/aeswindow.act": "0429a6560c9fb4415f4370a6462d6aa2781b36f34b049d883b712a367e7630dc",
+    "lib/aes/aeswindowstate.act": "be71bb46bfa05bba52f3cd7b37668b984ddaaa537e3435df4b57fdccd2646ec2",
+    "tests/programs/aes_frame.c": "92d4d28743d3483131d73cb7c5f93cdeac1f39de8d35e581698055814cf4d599",
+    "tests/programs/aes_geometry.c": "abd3755984472feb0a0dc865ec7718764c033e04946c4fb948c6fbb09f6d354e",
+    "tests/programs/aes_lifecycle.c": "05b212a144ec6732bcbe716e7c6fc558b4ac40897006e28c04c616ff80016812",
+    "tests/programs/aes_locks.c": "a1c044770e39747030ea88db395d7cbcc2fbf4b70666459d92bc27c2c7bfea24",
+    "tests/programs/aes_visibility.c": "180ba6c121fe3096021c196bffd6dfef7b537e3eb1b22ccebeb9e4bf92f3de3a",
+    "tests/programs/aes_wait_queue.act": "c627ea9334a9646719ee93f7feb3e7ea8a175d1144f68df73e7b5131d92dd947",
+    "tests/test_desktop_contract.py": "7735f4419923bc802148e75c016d419b85e8912006aa9bd68ce20216ad8be016",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "tools/test_aes_frame.py": "d72e034394df31aec56040d6474fd9a88c20f71417b6e8a2d22c757eed4f143f",
+    "tools/test_aes_server.py": "e67117183a78faabdbeb4839e19c13226ef9a983ba80dadb2a7b879fee43be0c",
+    "tools/test_aes_visibility.py": "721a729fbc4746ddecdc7d25335bd3197a7d6e02b3c3cb9a6897ea450e6b6aa6",
+    "tools/test_aes_wait_queue.py": "f42cd8e342ef03e26e80bbc56409a5e97fd0a1c2502e1e6bd35fe8f8b60fdf92"
+  },
+  "artifacts": {
+    "queue/locks": {
+      "path": "build/gem-first-gui/gf8/queue/locks/results.json",
+      "sha256": "e91b99cb2308e893a8b10ef8bfbdef75a40ab5206b7124850f4386b8935887b4",
+      "AESChecks": 181,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 954,
+          "remaining_above_floor": 326
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 347,
+          "remaining_above_floor": 709
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 350,
+          "remaining_above_floor": 706
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 350,
+          "remaining_above_floor": 706
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "xex_sha256": "ad93ebbfddd1fc4bf544ca8945ae8b913eb06308ad5cb25450e9164ef5a1e2e1",
+      "native_code_bytes": 1275769
+    },
+    "locks": {
+      "path": "build/gem-first-gui/gf8/locks/results.json",
+      "sha256": "34de40be0c402165e1d4bc6b59fcc42b125882af5e1c59f7d7c559c3db6eb89c",
+      "AESChecks": 193,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 966,
+          "remaining_above_floor": 314
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 352,
+          "remaining_above_floor": 704
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 354,
+          "remaining_above_floor": 702
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 354,
+          "remaining_above_floor": 702
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 714,
+          "remaining_above_floor": 1590
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "xex_sha256": "5347b910310974feebdf8e937407f4cc34e5a2d8ccf3a07a91e910ccb77fb4e7",
+      "native_code_bytes": 1277380
+    },
+    "gate-raw": {
+      "path": "build/gem-first-gui/gf8/gate-raw/results.json",
+      "sha256": "031f56d23bc2a9dc89b4fb48957ae5cdfc7a272419f382ffb03c1acdfef730ce",
+      "checks": 61,
+      "xex_sha256": "f53b0d53b1c499096cbd7129c5e6f76d1b9fe8f9c81397847a6a9d7f6a37729c",
+      "native_code_bytes": 270794
+    },
+    "gate-opt": {
+      "path": "build/gem-first-gui/gf8/gate-opt/results.json",
+      "sha256": "95a474a67e6797bc3ea51080d2fddf85a338426dd702d3e70def20a2d681c914",
+      "checks": 61,
+      "xex_sha256": "f9b47594b7d5991752a89d48e0ba09d7a8d8da0e00f915b3b8b96efdfc8ab2ad",
+      "native_code_bytes": 247866
+    },
+    "queue-raw": {
+      "path": "build/gem-first-gui/gf8/queue-raw/results.json",
+      "sha256": "4a2c7ecda4cf862621e078b06b28db30ce0690bd6c575f5c94ca60a126ed172f",
+      "checks": 19,
+      "xex_sha256": "276f54bf7663d373037ee5b5c774b90b74d525949553054da60d37ba9244ddf6",
+      "native_code_bytes": 198469
+    },
+    "queue-opt": {
+      "path": "build/gem-first-gui/gf8/queue-opt/results.json",
+      "sha256": "22d3ca97fc0ffe012d7201200728ec466075bebf16f77fc1f6898383e8bb9585",
+      "checks": 19,
+      "xex_sha256": "b981471b7e68d89207dd1db262a69e015d115a30e36b9d11194959f1f0fe4eac",
+      "native_code_bytes": 179677
+    },
+    "windows/locks": {
+      "path": "build/gem-first-gui/gf8/windows/locks/results.json",
+      "sha256": "3f6ad367603452200757b92211c687b89b67b7b5174cd21351be139ceda3815a",
+      "AESChecks": 199,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 956,
+          "remaining_above_floor": 324
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 356,
+          "remaining_above_floor": 700
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 352,
+          "remaining_above_floor": 704
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 352,
+          "remaining_above_floor": 704
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 714,
+          "remaining_above_floor": 1590
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "xex_sha256": "dd43f04ca2a6ccd0064ae21c729456f48d42ef60d0cc963b32a8e7c38e65e536",
+      "native_code_bytes": 1277697
+    },
+    "windows/visibility": {
+      "path": "build/gem-first-gui/gf8/windows/visibility/results.json",
+      "sha256": "b514fc93a13cf21a92728a36767401885782857c9243fbcf436df6402a1eff73",
+      "AESChecks": 204,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 690,
+          "remaining_above_floor": 590
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 334,
+          "remaining_above_floor": 722
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "xex_sha256": "0e6f54a7df5e65ce15a910d88ef882fafba1ee4bcae129099c843d90a838a3c3",
+      "native_code_bytes": 1279854
+    },
+    "windows/lifecycle": {
+      "path": "build/gem-first-gui/gf8/windows/lifecycle/results.json",
+      "sha256": "1673c9b95b03e19545e3d92deea44e4365f5a8ceb2c48ff39380cc524b99668a",
+      "AESChecks": 265,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 561,
+          "remaining_above_floor": 719
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 512,
+          "remaining_above_floor": 544
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 714,
+          "remaining_above_floor": 1590
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "lifecycle_stats": [
+        18,
+        0,
+        15,
+        1,
+        34,
+        0,
+        138,
+        1990
+      ],
+      "xex_sha256": "3d1ba9c80d8a073b0a190b432bc70835c40e03588fd1c8f0283a9af4f12abd3a",
+      "native_code_bytes": 1281457
+    },
+    "windows/geometry": {
+      "path": "build/gem-first-gui/gf8/windows/geometry/results.json",
+      "sha256": "e2193a8cb5c2f5b041b2b8e6c4e89ada9e2be50f8163d58d11de9b3823049fe5",
+      "AESChecks": 84,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 603,
+          "remaining_above_floor": 677
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 537,
+          "remaining_above_floor": 519
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      },
+      "xex_sha256": "f248743f675305af1935dee04e34f906a7f038910a381e08ec2be87a1f2d4301",
+      "native_code_bytes": 1276568
+    },
+    "windows/frame": {
+      "path": "build/gem-first-gui/gf8/windows/frame/results.json",
+      "sha256": "26163c6e46557c8bcaea988d36bacdc9cf988f38c0d1bc9f96b15a7ef7d59aba",
+      "AESChecks": 185,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 588,
+          "remaining_above_floor": 692
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 470,
+          "remaining_above_floor": 586
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      },
+      "xex_sha256": "39aedf48d83b6860bae71631d0ed8fe052c16adf0f498daa23314d10f4bd4d36",
+      "native_code_bytes": 1276451
+    },
+    "windows/cache": {
+      "path": "build/gem-first-gui/gf8/windows/cache/results.json",
+      "sha256": "386754718c098668fe75bb84bcc4d94ef70f348466db8f0d153ea43c51f50079",
+      "AESChecks": 224,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 682,
+          "remaining_above_floor": 598
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 320,
+          "remaining_above_floor": 736
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 883,
+          "remaining_above_floor": 1421
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "xex_sha256": "04c4bf467f706667a681e608d50e4933e1e14ee01518f8ce08cfef803d6d503f",
+      "native_code_bytes": 1221797
+    },
+    "windows/windows": {
+      "path": "build/gem-first-gui/gf8/windows/windows/results.json",
+      "sha256": "f4f61bc8acd80fd901d10bda8f9f877ada91912772d86d8d38ae03947c50ffd5",
+      "AESChecks": 284,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 692,
+          "remaining_above_floor": 588
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 466,
+          "remaining_above_floor": 590
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 503,
+          "remaining_above_floor": 553
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 273,
+          "remaining_above_floor": 783
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 718,
+          "remaining_above_floor": 1586
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "xex_sha256": "c2f04ea58e266cbfc2fbe16dfbabde261b49a80b3e59b1531678ce72263ee84f",
+      "native_code_bytes": 1281078
+    },
+    "loaded": {
+      "path": "build/gem-first-gui/gf8/loaded/results.json",
+      "sha256": "4ad30322341e06da7168970b6f3670fc34cb293d3bef58e74d1bd52d2165ccaa",
+      "xex_sha256": "55861d58eaf86774b6621a9609184398ed64e18accff55b7a4f48f55c2be0bbe",
+      "native_code_bytes": 1284429
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "new_tasks": 0,
+  "new_signals": 0,
+  "private_heap": {
+    "client_bytes": 138,
+    "service_bytes": 1990,
+    "service_delta_bytes": 8,
+    "waiter_bytes": 4,
+    "alignment_bytes": 4,
+    "new_reservations": 0
+  },
+  "checks_scope": "Optimized focused window/lock/cache and loaded idle, UPDATE-held, disk; small gate/queue probes raw and optimized. No full qualification or demo refresh.",
+  "regression": {
+    "problem": "A failed caller waiter removed its barrier without waking deferred painting.",
+    "observed_checks": 59,
+    "fix": "Wake after removing any completed waiter, including failure.",
+    "final_target": "windows/windows",
+    "earlier_passing_cohorts": "Other window and loaded cohort images precede the failure-only wake fix; final window image exercises it. GF9 integration follows."
+  }
+}

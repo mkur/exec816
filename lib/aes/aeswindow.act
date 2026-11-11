@@ -206,7 +206,7 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   LET desktop=DESKSTATE.Get()
   LET window=item.window
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
-  ; A failed transport fallback can leave a hidden window still retiring.
+  ; A retained close keeps its hidden window until the old input tag retires.
   IF layer.shown<>0 OR window.keyRoute<>0 THEN
     RETURN(AESTYPES.BUSY)
   FI
@@ -219,16 +219,20 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   LET caller=AESGATE.SystemOwned()=0
   IF caller<>0 AND (window.console<>0
       OR DESKCORE.FocusMetadataReady(desktop,window.id)=0) THEN
-    RETURN(AESTYPES.PENDING)
+    RETURN(AESWAIT.SYSTEM_WORK)
   FI
 
   LET held=AESGATE.Leave()
   LET status=AESROUTES.Prepare(window,@route)
   AESGATE.Reenter(held,request)
-  IF caller<>0 AND (Eligible(service,client,AESWAIT.Queued(service))=0
-      OR DESKCORE.FocusMetadataReady(desktop,window.id)=0) THEN
-    DiscardRoute(request,route)
-    RETURN(AESTYPES.PENDING)
+  IF caller<>0 THEN
+    BEGIN
+      LET eligible=Eligible(service,client,AESWAIT.Older(service,client))
+      IF eligible=0 OR DESKCORE.FocusMetadataReady(desktop,window.id)=0 THEN
+        DiscardRoute(request,route)
+        RETURN(IF eligible=0 THEN CARD(AESTYPES.PENDING) ELSE CARD(AESWAIT.SYSTEM_WORK) FI)
+      FI
+    END
   FI
   IF status<>AESTYPES.OK THEN
     RETURN(status)
@@ -266,12 +270,12 @@ PROC CommitClose(DESKTYPES.Service POINTER desktop
 
 RETURN
 
-BYTE FUNC Close(AESSTATE.Window POINTER item AESTYPES.Request POINTER request)
+CARD FUNC Close(AESSTATE.Window POINTER item AESTYPES.Request POINTER request)
 
   LET desktop=DESKSTATE.Get()
   LET window=item.window
   IF window.console<>0 AND AESGATE.SystemOwned()=0 THEN
-    RETURN(0)
+    RETURN(AESWAIT.SYSTEM_WORK)
   FI
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
   IF layer.shown<>0 OR window.keyRoute=0 THEN
@@ -279,7 +283,7 @@ BYTE FUNC Close(AESSTATE.Window POINTER item AESTYPES.Request POINTER request)
       LET focus=DESKCORE.NextFocus(desktop,window.id)
       IF AESGATE.SystemOwned()=0
           AND DESKCORE.FocusMetadataReady(desktop,focus)=0 THEN
-        RETURN(0)
+        RETURN(AESWAIT.SYSTEM_WORK)
       FI
       DESKCORE.PrepareFocus(desktop,focus)
       CommitClose(desktop,item,focus)
@@ -287,7 +291,12 @@ BYTE FUNC Close(AESSTATE.Window POINTER item AESTYPES.Request POINTER request)
     END
   FI
 
-RETURN(AESROUTES.Retire(window,request))
+  IF AESROUTES.Retire(window,request)=0 THEN
+    RETURN(IF AESGATE.SystemOwned()<>0 THEN CARD(AESTYPES.PENDING)
+        ELSE CARD(AESWAIT.SYSTEM_WORK) FI)
+  FI
+
+RETURN(AESTYPES.OK)
 
 ; Both transports use the same admission and scene publication policy.
 PUBLIC CARD FUNC Visibility(AESSTATE.Service POINTER service
@@ -304,10 +313,7 @@ PUBLIC CARD FUNC Visibility(AESSTATE.Service POINTER service
   IF request.operation=AESTYPES.OP_OPEN THEN
     status=Open(service,client,item,request)
   ELSE
-    IF Close(item,request)=0 THEN
-      RETURN(AESTYPES.PENDING)
-    FI
-    status=AESTYPES.OK
+    status=Close(item,request)
   FI
   IF status=AESTYPES.OK THEN
     request.intout(0)=1
@@ -378,7 +384,7 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
     IF service.windows(slot).owner=client.id THEN
       BEGIN
         LET item=@service.windows(slot)
-        IF Close(item,request)=0 THEN
+        IF Close(item,request)<>AESTYPES.OK THEN
           RETURN(0)
         FI
         Destroy(item)
@@ -453,8 +459,8 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
         (bounds.left<>current.left OR bounds.top<>current.top)
         AND DESKMOVE.CopyEligible(window,layer,bounds.left)<>0 THEN
       ; The presenter retains copy identity, frozen pixels and its continuation.
-      ; Decline before BeginMove or physical preparation can change anything.
-      RETURN(AESTYPES.PENDING)
+      ; Retain an explicit system continuation before physical preparation.
+      RETURN(AESWAIT.SYSTEM_WORK)
     FI
   FI
 
@@ -466,6 +472,12 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
   AESWINDOWSTATE.Sync()
 
 RETURN(AESTYPES.OK)
+
+; The system only wakes metadata waiters. The caller rechecks and commits.
+PUBLIC BYTE FUNC WaitReady(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client)
+
+RETURN(Eligible(service,client,client.windowLocks<>0))
 
 ; Bounds and focus publication use one policy behind both transports.
 PUBLIC BYTE FUNC GeometryField(INT field)
@@ -485,7 +497,7 @@ PUBLIC CARD FUNC Geometry(AESSTATE.Service POINTER service
     RETURN(AESTYPES.IDENTITY)
   FI
   IF item.window.console<>0 AND AESGATE.SystemOwned()=0 THEN
-    RETURN(AESTYPES.PENDING)
+    RETURN(AESWAIT.SYSTEM_WORK)
   FI
 
   LET desktop=DESKSTATE.Get()
@@ -499,7 +511,7 @@ PUBLIC CARD FUNC Geometry(AESSTATE.Service POINTER service
     FI
     IF AESGATE.SystemOwned()=0
         AND DESKCORE.FocusMetadataReady(desktop,window.id)=0 THEN
-      RETURN(AESTYPES.PENDING)
+      RETURN(AESWAIT.SYSTEM_WORK)
     FI
     status=DESKCORE.Top(desktop,window)
     IF status<>LAYERTYPES.OK THEN
@@ -541,7 +553,7 @@ PUBLIC CARD FUNC Lifecycle(AESSTATE.Service POINTER service
   ; Console attachments still retire through the presenter: PrepareRelease
   ; can erase a physical caret and is outside the caller metadata subset.
   IF item.window.console<>0 AND AESGATE.SystemOwned()=0 THEN
-    RETURN(AESTYPES.PENDING)
+    RETURN(AESWAIT.SYSTEM_WORK)
   FI
   result=DeleteHidden(item)
   IF result=AESTYPES.OK THEN

@@ -170,7 +170,7 @@ UWORD AESRun(void)
     (*(volatile UBYTE *)GeoBusy)=1;finished=0;command=2;Signal(peer,peerWake);
     sequence=c->sequence;
     CHECK(wind_set(rootWindow,WF_CXYWH,48,40,256,176));
-    CHECK(c->sequence==sequence+1);
+    CHECK(c->sequence==sequence);
     while (finished!=2) Wait(wake);
     sequence=c->sequence;
     CHECK(!wind_set(peerWindow,WF_TOP,0,0,0,0));

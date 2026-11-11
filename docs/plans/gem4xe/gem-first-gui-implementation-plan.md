@@ -4,7 +4,7 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-GF0–GF7 pass at the development tier. GF8–GF15 remain open. The
+GF0–GF8 pass at the development tier. GF9–GF15 remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
 coexistence, the current resource inventory, the shared window policy audit
 and the window effect/commit checks. GF3 separates scene ownership from physical
@@ -23,8 +23,8 @@ paths with their last caller. This plan does not implement a second GUI mode.
 
 | Current code | Work to retain or change |
 | --- | --- |
-| [AES window dispatcher](../../../lib/aes/aeswindow.act) | Presenter-side create/open/close/delete/set/find; includes input routes, cache operations and copied moves that must be separated before caller execution. |
-| [Window publication](../../../lib/aes/aeswindowstate.act), [locks](../../../lib/aes/aeslocks.act), [policy gate](../../../lib/aes/aesgate.act) | Existing window views, UPDATE journals and eligible-waiter rules; caller UPDATE currently uses presenter handoffs and RPC fallback. |
+| [AES window dispatcher](../../../lib/aes/aeswindow.act) | Shared caller window policy; the system retains explicit physical continuations for route draining, focus and copied moves. |
+| [Window publication](../../../lib/aes/aeswindowstate.act), [locks](../../../lib/aes/aeslocks.act), [policy gate](../../../lib/aes/aesgate.act) | Existing window views, UPDATE journals and eligible-waiter rules; GF8 makes contended UPDATE/MCTRL and window waits caller-local with shared ordering. |
 | [Window route resources](../../../lib/aes/aesroutes.act) | GF7 separates unpublished route preparation/rollback and hidden-window retirement from scene publication. Callers use the same open/close policy; the presenter retains input consumption and busy retirement continuations. |
 | [C window binding](../../../c/calypsi/aes-windows.c), [local native entry](../../../lib/aes/aeslocal.act) | Per-Task context and caller-owned views; suitable locations for direct entry without repeated admission checks. |
 | [Desktop core](../../../lib/desktop/deskcore.act), [state](../../../lib/desktop/deskstate.act) | Existing common scene, focus and geometry machinery. Consolidate policy and records into AES rather than creating another scene. |
@@ -397,6 +397,13 @@ across sleep; system input/event work continues while mutations defer. Rerun
 the GF0 ordinary and UPDATE-held cases, guards and affected cache regressions.
 
 Commit: `feat(aes): wait for window and update ownership in callers`.
+
+Implemented in queue, lock-wait and window-wait slices. The
+[GF8 record](../../development/gem-first-gf8.json) retains focused emitted
+checks, raw/optimized queue/gate probes and loaded ordinary/UPDATE-held/disk
+cohorts. The private waiter byte plus alignment adds eight upper-heap bytes;
+Task, signal and reserved bank-zero deltas are zero. Physical continuations
+borrow the pinned descriptor and signal completion without window RPC.
 
 ### GF9 — Extract the AES system loop
 

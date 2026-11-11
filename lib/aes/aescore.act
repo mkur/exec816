@@ -353,11 +353,6 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
     request.intout(0)=client.gemId
     Globals(request,client.gemId)
     AESSTATE.Reply(request,AESTYPES.OK)
-  ELSEIF request.operation=AESTYPES.OP_UPDATE THEN
-    status=AESLOCKS.Request(service,client,request)
-    IF status<>AESTYPES.PENDING THEN
-      AESSTATE.Reply(request,status)
-    FI
   ELSEIF request.operation=AESTYPES.OP_MOUSE_PROFILE THEN
     request.intout(0)=DESKMOUSE.Profile(request.intin(0))
     AESSTATE.Reply(request,AESTYPES.OK)
@@ -383,15 +378,15 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
       request.intout(0)=INT(status=AESTYPES.OK)
       AESSTATE.Reply(request,status)
     END
-  ELSE
-    status=IF request.operation=AESTYPES.OP_MENU THEN AESMENU.Request(service,client,request)
-        ELSE AESWINDOW.Request(service,client,request,
-            service.lockCount<>0 OR service.windowPending<>0) FI
+  ELSEIF request.operation=AESTYPES.OP_MENU THEN
+    status=AESMENU.Request(service,client,request)
     IF status=AESTYPES.PENDING THEN
       AESWAIT.Window(service,client,request)
     ELSE
       AESSTATE.Reply(request,status)
     FI
+  ELSE
+    AESSTATE.Reply(request,AESTYPES.UNSUPPORTED)
   FI
 
 RETURN
@@ -413,13 +408,22 @@ PUBLIC PROC Settle(AESSTATE.Service POINTER service)
           LET request=client.pending
           IF request.operation=AESTYPES.OP_EXIT THEN
             Retire(service,client,request)
+          ELSEIF client.waitMode=AESWAIT.CALLER THEN
+            IF AESWINDOW.WaitReady(service,client)<>0 THEN
+              AESWAIT.Signal(client)
+            FI
           ELSE
             status=IF request.operation=AESTYPES.OP_MENU THEN AESMENU.Request(service,client,request)
                 ELSE AESWINDOW.Request(service,client,request,client.windowLocks<>0) FI
             IF status<>AESTYPES.PENDING THEN
               client.pending=NULL
               AESWAIT.RemoveWindow(service,client)
-              AESSTATE.Reply(request,status)
+              IF client.waitMode=AESWAIT.SYSTEM THEN
+                request.status=status
+                AESWAIT.Signal(client)
+              ELSE
+                AESSTATE.Reply(request,status)
+              FI
             FI
           FI
         END

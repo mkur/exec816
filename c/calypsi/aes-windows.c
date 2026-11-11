@@ -191,7 +191,7 @@ WORD ExecAESWindowCall(struct ExecAESContext *c,UWORD op, WORD a, WORD b, WORD d
          op==AES_OP_SET) && ExecAESLocal(c,op)) {
         c->diagnostic=c->request.status;
         result=c->diagnostic==AES_OK ? c->request.intout[0] : fail;
-    } else result=ExecAESSubmit(c,op);
+    } else { c->diagnostic=AES_UNSUPPORTED; result=fail; }
     if (op==AES_OP_CREATE) {
         if (result>0) c->views[slot]=view;
         else {
@@ -224,7 +224,8 @@ WORD ExecAESWindowFind(struct ExecAESContext *c, WORD x, WORD y)
         c->diagnostic=c->request.status;
         return c->diagnostic==AES_OK ? c->request.intout[0] : 0;
     }
-    return ExecAESSubmit(c,AES_OP_FIND);
+    c->diagnostic=AES_UNSUPPORTED;
+    return 0;
 }
 
 WORD wind_find(WORD x, WORD y)

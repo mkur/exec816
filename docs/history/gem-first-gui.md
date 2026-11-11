@@ -892,7 +892,42 @@ Development checks: optimized emitted locks pass 193 C checks, including six
 new assertions that contended acquisitions preserve their RPC sequence and
 release C occupancy. The scene gate passes 61 checks each in raw and optimized
 builds; 689 host tests pass with four existing skips. One private waiter-mode
-byte per client changes the upper-heap client/service payloads to 137/1,986
-bytes. No Tasks or signals are added. Reserved bank-zero delta remains **0 fixed,
+byte plus one alignment byte per client changes the upper-heap client/service
+payloads to 138/1,990 bytes (eight extra bytes in total). No Tasks or signals are added. Reserved bank-zero delta remains **0 fixed,
 0 root, 0 kernel, 0 per public Task and 0 idle bytes**, including guards, alignment
 and unused capacity. Window admission migration follows in the next slice.
+
+
+### Window waits and GF8 completion
+
+Window mutations now publish a scene-protected waiter and release all scene and
+physical ownership before waiting on the existing private reply-port signal.
+Ordinary metadata resumes in the caller using the retained older-lock prefix.
+Input-route draining, copied moves, caret/widget focus and console extensions
+retain explicit system continuations. Completion writes the pinned descriptor
+and signals its caller; it neither sends that descriptor nor replies to it.
+All window/UPDATE/MCTRL RPC admission and binding fallbacks are removed, and the
+machine-readable RPC operation list now describes the remaining message calls.
+
+A failed caller waiter must wake the system after removing its barrier too.
+The broader window fixture caught a missing wake at 59 checks: deferred painting
+remained asleep before the first redraw. The final window image passes all
+285 checks with this fixed, including its unchanged physical/pixel assertions.
+
+Development checks pass: visibility 204 (22 checkpoints), lifecycle 265, locks
+199, geometry 84, frame 185 and cache 224. The locks fixture injects spurious
+private hints plus unrelated signals; hints never grant ownership and the other
+signal bits survive. The small queue/layout probe passes 19 raw and 19 optimized
+checks; the gate retains 61 in each mode. The twelve-slot loaded Counters pass
+ordinary (six), UPDATE-held (six) and disk (31) checks, with orderly cleanup and
+persisted disk bytes checked. The other successful cohort images precede the
+failure-only wake correction; the final window image exercises that correction.
+The [GF8 record](../development/gem-first-gf8.json) records the exact artifacts,
+source hashes, reservation comparison and execution scope.
+
+Client/service payloads are 138/1,990 bytes, including one alignment byte beside
+each new waiter-mode byte: eight extra upper-heap bytes total. No Task, signal,
+arena or heap reservation grows. Reserved bank-zero delta is **0 fixed, 0 root,
+0 kernel, 0 per public Task and 0 idle bytes**, counting guards, alignment and
+unused capacity. Eight- and twelve-slot reservation checks retain their existing
+maps. No full qualification matrix or demo refresh was performed. GF9 follows.

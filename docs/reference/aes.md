@@ -4,10 +4,10 @@
 [Development record](../history/aes-server.md)
 
 The optional AES endpoint runs in the existing desktop presenter. Registration,
-exit, unmigrated window mutations and contended GUI locks use ordinary Exec RPC.
-Eligible hidden creation/deletion, open/close, frame/geometry/top setters and committed
-window lookup, uncontended BEGIN/END UPDATE, copied messaging and event/timer
-waits run in their callers.
+exit, menu association and platform service controls use ordinary Exec RPC.
+Window operations, UPDATE/MCTRL, copied messaging and event/timer waits use
+caller library entries. Eligible window metadata commits in the caller; physical
+window continuations run in the system Task and signal their waiting caller.
 This adds no Task or kernel gateway.
 The native desktop and retained Control Panel remain independent clients of
 their existing service.
@@ -235,15 +235,20 @@ notices; an already delivered notice remains consumable. Closing retires
 pending notices with the window epoch. These report accepted focus changes;
 `WM_TOPPED` remains a request for the application to raise its window.
 
-BEGIN/END UPDATE use the same native policy in either the caller or presenter.
-The binding enters a library scene gate and performs bounded acquisition/release
-synchronously. If another Task owns scene metadata, the caller sleeps on its
-existing reply signal and rechecks ownership after waking. It releases the gate
-before application drawing; ordinary preemption remains enabled. Logical UPDATE
-contention uses the original request/reply queue. MCTRL stays RPC.
-Local calls do not advance the transport sequence. An older unadmitted request
-also prevents a new BEGIN from bypassing pending work, with the same existing
-owner exception. TRY failure remains a completed zero result, not an error.
+BEGIN/END UPDATE and MCTRL enter a shared library scene gate. A contended
+BEGIN publishes its waiter before releasing the gate, then sleeps on its private
+reply-port signal. The system Task signals the oldest eligible caller; that
+caller rechecks ownership and acquires its own hold. Signals are hints and do
+not transfer ownership. The busy C context and registration lease pin the native
+frame and descriptor until return. No scene gate, display grant or Layers token
+is held across this wait. Unrelated input, message and timer signals remain
+pending.
+
+These calls do not send or reply to a message and do not advance the transport
+sequence. An older unadmitted request also prevents a new BEGIN from bypassing
+pending work, with the existing owner exception. Window waiters retain their
+older-lock prefix as grants compact the shared queue. TRY failure remains a
+completed zero result, not an error. New signals and Task slots are unnecessary.
 
 Final local END consumes the binding's paint journal before returning and
 signals the existing AES wake bit. While a caller owns scene metadata, the
@@ -336,17 +341,18 @@ text or bounded slider values, cache/menu changes, derived geometry, damage and
 view publication under scene ownership. Changed attributes wake frame work
 after release; unchanged values retain their existing publication and do not
 request a frame wake. Physical repaint remains deferred, including while the
-caller owns UPDATE. A readiness or older-work miss falls back before mutation.
-Other fields retain their established transport.
+caller owns UPDATE. A readiness or older-work miss publishes a waiter before mutation.
+The caller resumes and rechecks when eligible; physical extensions use the
+system continuation described below.
 
-Eligible `WF_CXYWH` and `WF_TOP` calls share a caller/RPC geometry helper.
+Eligible `WF_CXYWH` and `WF_TOP` calls share a caller/system geometry helper.
 Bounds changes inside the owner's UPDATE, ordinary resizes, hidden/iconified
 normal bounds and no-op geometry commit their values and published views before
 return. Effect-free stacking/focus changes use the caller too. Earlier waiters
 and peer ownership retain the same exclusion rule as other window mutations;
 changed geometry invalidates an existing visible-rectangle walk.
 
-An unheld move needing a screen copy falls back before reserving a move or
+An unheld move needing a screen copy defers to the system before reserving a move or
 changing geometry. Its existing presenter continuation retains the request and
 old committed bounds until copy completion. Caret restoration, widget focus
 cancellation and console-bound geometry also retain system admission before
@@ -357,18 +363,20 @@ ownership.
 Eligible ordinary/PB opens prepare an unpublished keyboard route outside the
 scene gate. Re-admission checks older work, ownership and physical/focus
 readiness before publishing a fresh open epoch. If admission changes, the
-caller retires its unused route before falling back to RPC. Route exhaustion
+caller retires its unused route before publishing a waiter. Route exhaustion
 and exhausted GUI epochs leave the hidden window and input tag pool intact.
 Console-bound windows and caret/widget focus effects retain system admission.
 
 Eligible ordinary/PB closes withdraw the open epoch, GUI facts and capture,
 hide the window and publish replacement focus before releasing the scene for
 route retirement. Only the presenter consumes input from its lease. A caller
-which finds referenced input retains the hidden window and tag for the existing
-RPC drain continuation; success is returned only after the route retires.
-If that fallback cannot be submitted, open/delete return `AES_BUSY` while the
-closing tag remains. Retry close or exit to finish retirement before deleting
-the view. Registration exit still uses RPC and shares these retirement helpers.
+which finds referenced input retains the hidden window and tag for a system
+drain continuation; success is returned only after the route retires. This
+continuation borrows the pinned local descriptor, completes its status and
+signals the caller without `PutMsg` or `ReplyMsg`. Copied moves and physical
+focus/console effects use the same mechanism. Transport-sequence exhaustion
+therefore cannot interrupt window retirement. Registration exit still uses RPC
+and shares these retirement helpers.
 
 Pointer-sample routing and window-capture cancellation use one bounded Task
 transaction. It contains no drawing or wait; IRQ/NMI capture uses separate
@@ -486,8 +494,8 @@ client opens fit within the device's eight-open limit; competing users can still
 exhaust capacity. The presenter has no timer binding. Setup failure releases every
 acquired resource and leaves message-only calls usable.
 
-The presenter handles registration, retirement, contended GUI locks and its own pending
-GUI delivery. Pending publishers retain an exit wake path; lock settlement and
+The presenter handles registration, retirement, physical window continuations,
+waiter wake hints and its own pending GUI delivery. Pending publishers retain an exit wake path; lock settlement and
 native input/drawing gates remain active. Application message matching and
 timer waits stay caller-local. There is no presenter application-message FIFO,
 event-wait scan, timer alarm or periodic AES wake.
@@ -536,7 +544,8 @@ painting. This is a bounded Exec extension, not GEM's synchronous drag-box API.
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
 profile: version 19 has a 340-byte request and permits init, exit, update,
 window mutations, cold display delegation, menu publication, session mouse
-preferences, `wind_find` and application outline admission on the RPC endpoint.
+preferences, application outline admission on the RPC endpoint. `wind_find` uses the caller
+scene query.
 `ExecAESConsole` uses the current `WF_EXEC_CONSOLE` window selector for
 [application-owned console content](console-windows.md#application-owned-gem-console).
 Other window queries and rectangle conversion remain local. The input inbox is

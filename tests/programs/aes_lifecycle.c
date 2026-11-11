@@ -143,7 +143,7 @@ static void bound_console(void)
     CHECK(ExecAESConsole(handle,unit));
     sequence=c->sequence;system=NATIVE(3);
     CHECK(wind_delete(handle));
-    CHECK(c->sequence==sequence+1 && NATIVE(3)==system+1);
+    CHECK(c->sequence==sequence && NATIVE(3)==system+1);
     release();CHECK(ExecConsoleDestroy(unit));
     CHECK(AvailMem(0)==available);
 }
@@ -172,7 +172,7 @@ UWORD AESRun(void)
     CHECK(wind_set_str(windows[0],WF_NAME,"Caller window"));
     CHECK(c->sequence==sequence); /* GF5 migrates bounded text. */
     CHECK(wind_set(windows[0],AES_WF_EXEC_PRESERVE,0,0,0,0));
-    CHECK(c->sequence==sequence+1); /* Nonmigrated operation stays RPC. */
+    CHECK(c->sequence==sequence); /* Physical extension uses a system continuation. */
     release();send(1);stable();LifePhase=2;
     CHECK(NATIVE(0)==6 && NATIVE(1)==0);
     sequence=c->sequence;creates=NATIVE(2);
@@ -209,19 +209,19 @@ UWORD AESRun(void)
     for (;;) { Forbid();if (GATE==1) break;Permit();ExecYield(); }
     release();sequence=c->sequence;system=NATIVE(1);
     last=wind_create(AES_WINDOW_KIND,32,24,128,64);
-    CHECK(last>reused && c->sequence==sequence+1 && NATIVE(1)==system+1);
+    CHECK(last>reused && c->sequence==sequence && NATIVE(1)==system);
     CHECK(controller->tc_TDNestCnt==0);Permit();
     while (done!=6) Wait(wake);
     stable();remove_hidden(last,0);release();
-    /* Forced readiness miss: one later RPC commit, with an unapplied view. */
+    /* Forced readiness miss: one later caller commit, with an unapplied view. */
     LifePhase=6;(*(volatile UBYTE *)LifeBusy)=1;
     done=0;command=2;Signal(peer,peerWake);
     sequence=c->sequence;system=NATIVE(1);
     last=wind_create(AES_WINDOW_KIND,32,24,128,64);
-    CHECK(last>reused && c->sequence==sequence+1 && NATIVE(1)==system+1);
+    CHECK(last>reused && c->sequence==sequence && NATIVE(1)==system);
     while (done!=2) Wait(wake);
     stable();remove_hidden(last,1);release();
-    /* An older message forces transport admission before this new operation. */
+    /* An older message defers caller admission before this new operation. */
     LifePhase=7;
     {
         struct MsgPort *reply=CreateMsgPort();CHECK(reply!=NULL);
@@ -231,7 +231,7 @@ UWORD AESRun(void)
         PutMsg(c->service,older);
         sequence=c->sequence;system=NATIVE(1);
         last=wind_create(AES_WINDOW_KIND,32,24,128,64);
-        CHECK(last>reused && c->sequence==sequence+1 && NATIVE(1)==system+1);
+        CHECK(last>reused && c->sequence==sequence && NATIVE(1)==system);
         CHECK(GetMsg(reply)==older);
         CHECK(controller->tc_TDNestCnt==0);Permit();DeleteMsgPort(reply);
         FreeMem(older,sizeof(*older));
@@ -243,11 +243,11 @@ UWORD AESRun(void)
     CHECK(!wind_delete(last) && ExecAESDiagnostic()==AES_BUSY);
     CHECK(c->sequence==sequence && c->view==saved && saved->shown && saved->epoch);
     CHECK(wind_close(last));remove_hidden(last,1);release();
-    /* Deletion's readiness miss also leaves its live view untouched until RPC. */
+    /* Deletion's readiness miss also leaves its live view untouched until its caller resumes. */
     stable();last=create(0);release();
     (*(volatile UBYTE *)LifeBusy)=1;done=0;command=2;Signal(peer,peerWake);
     sequence=c->sequence;system=NATIVE(3);CHECK(wind_delete(last));
-    CHECK(c->sequence==sequence+1 && NATIVE(3)==system+1);
+    CHECK(c->sequence==sequence && NATIVE(3)==system);
     while (done!=2) Wait(wake);
     stable();
     for (i=0;i<3;++i) remove_hidden(windows[i],i&1);

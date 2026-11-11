@@ -1,4 +1,4 @@
-/* GF7: caller visibility, route rollback and lifetime publication. */
+/* GF8: caller visibility, route rollback and lifetime publication. */
 #include <gem.h>
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
@@ -142,11 +142,11 @@ UWORD AESRun(void)
     {
         ULONG sequence=c->sequence;
         c->sequence=0xfffffffeUL;
-        call(18,AES_OP_CLOSE,0,0,0,0,0,0,AES_OVERFLOW);
+        call(18,AES_OP_CLOSE,0,0,0,0,0,1,AES_OK);
         c->sequence=sequence;
     }
     CHECK(!c->view->shown && !c->view->epoch);
-    call(19,AES_OP_OPEN,0,32,24,160,80,0,AES_BUSY);
+    call(19,AES_OP_OPEN,0,32,24,160,80,1,AES_OK);
     call(20,AES_OP_DELETE,0,0,0,0,0,0,AES_BUSY);
     call(21,AES_OP_CLOSE,0,0,0,0,0,1,AES_OK);
     call(22,AES_OP_OPEN,1,32,24,160,80,1,AES_OK);

@@ -148,13 +148,13 @@ UWORD AESRun(void)
     attribute(rootWindow,WF_INFO,0,"Feedback info",1,0,AES_OK);
     attribute(rootWindow,WF_VSLIDE,500,NULL,0,0,AES_OK);
     attribute(rootWindow,WF_VSLSIZE,600,NULL,1,0,AES_OK);
-    /* A readiness miss must leave publication untouched until the RPC retry. */
+    /* A readiness miss must leave publication untouched until the caller retry. */
     CHECK(wind_update(BEG_UPDATE));pendingView=c->view;
     pendingRevision=pendingView->revision;CHECK(wind_update(END_UPDATE));
     pendingRevision=pendingView->revision;
     (*(volatile UBYTE *)FrameBusy)=1;finished=0;command=4;Signal(peer,peerWake);
     sequence=c->sequence;CHECK(wind_set_str(rootWindow,WF_INFO,"After readiness"));
-    CHECK(c->sequence==sequence+1);
+    CHECK(c->sequence==sequence);
     while (finished!=4) Wait(wake);
     sequence=c->sequence;
     CHECK(!wind_set_str(peerWindow,WF_NAME,"Foreign"));

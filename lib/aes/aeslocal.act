@@ -28,11 +28,6 @@ PUBLIC CARD FUNC Call(LONGCARD value)
       AND request.operation<>AESTYPES.OP_SET THEN
     RETURN(0)
   FI
-  IF request.operation=AESTYPES.OP_SET
-      AND AESWINDOW.FrameField(request.intin(1))=0
-      AND AESWINDOW.GeometryField(request.intin(1))=0 THEN
-    RETURN(0)
-  FI
   LET mask=LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit
   waiting=0
   DO
@@ -44,50 +39,74 @@ PUBLIC CARD FUNC Call(LONGCARD value)
     FI
     BEGIN
       LET client=AESSTATE.Find(service,request.client)
-      queued=AESWAIT.Queued(service)
-      wake=request.operation<>AESTYPES.OP_UPDATE
-          OR (request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1)
-      request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1)
-          ELSE INT(0) FI
-      IF request.operation=AESTYPES.OP_UPDATE THEN
-        IF waiting<>0 THEN
-          status=AESLOCKS.Continue(service,client)
+      queued=AESWAIT.Older(service,client)
+      IF waiting<>0 AND client.waitMode=AESWAIT.SYSTEM THEN
+        IF client.pending<>NULL THEN
+          AESGATE.Release(0)
+          EXEC.Wait(mask)
         ELSE
-          status=AESLOCKS.Attempt(service,client,request,
-              AESLOCKS.OWNER_READY,queued)
-        FI
-      ELSEIF request.operation=AESTYPES.OP_OPEN
-          OR request.operation=AESTYPES.OP_CLOSE THEN
-        status=AESWINDOW.Visibility(service,client,request,queued)
-      ELSEIF request.operation=AESTYPES.OP_SET THEN
-        IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
-          status=AESWINDOW.Frame(service,client,request,queued,@wake)
-        ELSE
-          status=AESWINDOW.Geometry(service,client,request,queued)
+          client.waitMode=AESWAIT.RPC
+          AESGATE.Release(1)
+          RETURN(1)
         FI
       ELSE
-        status=AESWINDOW.Lifecycle(service,client,request,queued)
-      FI
-      IF status=AESTYPES.PENDING AND request.operation<>AESTYPES.OP_UPDATE THEN
-        AESGATE.Release(0)
-        RETURN(0)
-      FI
-      IF status=AESTYPES.PENDING AND waiting=0 THEN
-        status=AESWAIT.Lock(service,client,request)
-        IF status=AESTYPES.PENDING THEN
-          client.waitMode=AESWAIT.CALLER
+        wake=request.operation<>AESTYPES.OP_UPDATE
+            OR (request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1)
+        request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1)
+            ELSE INT(0) FI
+        IF request.operation=AESTYPES.OP_UPDATE THEN
+          IF waiting<>0 THEN
+            status=AESLOCKS.Continue(service,client)
+          ELSE
+            status=AESLOCKS.Attempt(service,client,request,
+                AESLOCKS.OWNER_READY,queued)
+          FI
+        ELSEIF request.operation=AESTYPES.OP_OPEN
+            OR request.operation=AESTYPES.OP_CLOSE THEN
+          status=AESWINDOW.Visibility(service,client,request,queued)
+        ELSEIF request.operation=AESTYPES.OP_SET THEN
+          IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
+            status=AESWINDOW.Frame(service,client,request,queued,@wake)
+          ELSEIF AESWINDOW.GeometryField(request.intin(1))<>0 THEN
+            status=AESWINDOW.Geometry(service,client,request,queued)
+          ELSE
+            status=AESWAIT.SYSTEM_WORK
+          FI
+        ELSE
+          status=AESWINDOW.Lifecycle(service,client,request,queued)
         FI
-      FI
-      IF status<>AESTYPES.PENDING THEN
-        client.waitMode=AESWAIT.RPC
-        request.status=status
-        AESGATE.Release((wake OR queued) AND status=AESTYPES.OK)
-        RETURN(1)
+        IF status=AESWAIT.SYSTEM_WORK THEN
+          AESWAIT.Window(service,client,request)
+          client.waitMode=AESWAIT.SYSTEM
+          request.status=AESTYPES.PENDING
+          status=AESTYPES.PENDING
+          ; A metadata retry can discover physical work after its first wake.
+          waiting=0
+        ELSEIF status=AESTYPES.PENDING AND waiting=0 THEN
+          IF request.operation=AESTYPES.OP_UPDATE THEN
+            status=AESWAIT.Lock(service,client,request)
+          ELSE
+            AESWAIT.Window(service,client,request)
+          FI
+          IF status=AESTYPES.PENDING THEN
+            client.waitMode=AESWAIT.CALLER
+            request.status=AESTYPES.PENDING
+          FI
+        FI
+        IF status<>AESTYPES.PENDING THEN
+          client.pending=NULL
+          AESWAIT.RemoveWindow(service,client)
+          client.waitMode=AESWAIT.RPC
+          request.status=status
+          ; Removing a failed waiter also unblocks deferred paint and peers.
+          AESGATE.Release(waiting<>0 OR ((wake OR queued) AND status=AESTYPES.OK))
+          RETURN(1)
+        FI
+        AESGATE.Release(waiting=0)
+        waiting=1
+        EXEC.Wait(mask)
       FI
     END
-    AESGATE.Release(waiting=0)
-    waiting=1
-    EXEC.Wait(mask)
   OD
 
 RETURN(1)

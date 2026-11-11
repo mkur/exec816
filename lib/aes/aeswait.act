@@ -8,6 +8,7 @@ USE AESSTATE
 PUBLIC CONST RPC=0
 PUBLIC CONST CALLER=1
 PUBLIC CONST SYSTEM=2
+PUBLIC CONST SYSTEM_WORK=256
 
 ; Reuse the registration-owned private reply signal as a hint, never a reply.
 PUBLIC PROC Signal(AESSTATE.Client POINTER client)
@@ -102,5 +103,15 @@ PUBLIC BYTE FUNC Queued(AESSTATE.Service POINTER service)
   EXEC.Permit()
 
 RETURN(queued)
+
+; A registered window waiter excludes itself and younger lock arrivals.
+PUBLIC BYTE FUNC Older(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client)
+
+  IF client.windowWaiting<>0 THEN
+    RETURN(client.windowLocks<>0)
+  FI
+
+RETURN(Queued(service))
 
 ENDMODULE

@@ -14,6 +14,9 @@
   disk coexistence and queued-UPDATE drag/pixel observations.
   GF7 adds caller open/close, route rollback/retry, queued-peer ordering and
   publisher-held exit lifetime, with matching physical window/cache pixels.
+  GF8 completes caller window/UPDATE/MCTRL waits with shared ordering, signal
+  hints and explicit physical continuations; loaded ordinary, UPDATE-held and
+  disk cohorts pass without new Tasks, signals or reserved bank-zero bytes.
 
 - [Shared-source Atari ST comparison](atari-st-reference.md): Hatari with
   EmuTOS/MagiC, unchanged object routines, bounded execution and drawing-path

@@ -686,16 +686,9 @@
   "rpc_operations": [
     "OP_INIT",
     "OP_EXIT",
-    "OP_UPDATE",
-    "OP_CREATE",
-    "OP_OPEN",
-    "OP_CLOSE",
-    "OP_DELETE",
-    "OP_SET",
     "OP_DISPLAY",
     "OP_MOUSE_PROFILE",
     "OP_MENU",
-    "OP_FIND",
     "OP_DRAG_OUTLINE"
   ],
   "public_constants": [

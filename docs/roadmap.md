@@ -254,8 +254,10 @@ attributes into callers with matching state and deferred pixels.
 caller geometry/top and committed lookup while preserving system effect
 continuations. [GF7](history/gem-first-gui.md#gf7--window-openclose-and-route-lifetime)
 adds caller open/close with route rollback/retry, guarded capture cancellation
-and publisher-held exit lifetime. GF8 next moves contended window/lock admission
-into library waits. Existing latency gates remain open.
+and publisher-held exit lifetime. [GF8](history/gem-first-gui.md#gf8-shared-admission-queue)
+finishes contended window/lock library waits, preserving eligible order and
+physical system continuations without RPC. GF9 next extracts the graphical
+system loop. Existing latency gates remain open.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)
 prioritizes ordinary AES/VDI application bodies and fewer platform edits.

@@ -160,7 +160,7 @@ def physical(b,p,foreign,report):
         field=value('FrameField');sequence=value('FrameSequence',4)
         direct=field in ((2,3) if report['frame_local']=='text' else
                          (2,3,9,16) if report['frame_local']=='all' else ())
-        require(sequence==(0 if direct else 1),f'Frame phase {phase}: unexpected RPC delta {sequence}')
+        require(sequence==0,f'Frame phase {phase}: unexpected RPC delta {sequence}')
         stats=[get(value('FrameNative',4)+2*i)-before_stats[i] for i in range(2)]
         if field in (2,3,9,16):
             require(stats[0]>0 if direct else stats[0]==0,f'Frame phase {phase}: wrong execution Task')

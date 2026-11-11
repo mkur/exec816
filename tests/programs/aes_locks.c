@@ -6,7 +6,7 @@
 ULONG AESService, AESUpdates, AESMouseHolds, AESLockCount, AESNativeBusy, AESPolicyGate, AESNativeReady;
 volatile UWORD AESChecks, AESFailures, AESFirstFailure, AESReady, AESDone;
 static struct Task *controller, *workers[3];
-static ULONG wake, starts[3];
+static ULONG wake, starts[3], hints[3];
 static volatile UWORD tried, orderCount, order[3];
 
 static void check(BOOL okay)
@@ -103,6 +103,7 @@ static void loop(UWORD who)
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     id=appl_init();
     CHECK(id > 0);
+    hints[who]=1UL<<ExecAESContext()->replies->mp_SigBit;
     Forbid(); ++AESReady; Signal(controller, wake); Permit();
     Wait(starts[who]);
     CHECK(wind_update(BEG_CHECK | BEG_UPDATE) == 0 && ExecAESDiagnostic() == AES_OK);
@@ -115,6 +116,7 @@ static void loop(UWORD who)
     CHECK(wind_update(code) == 1);
     CHECK(ExecAESContext()->sequence==sequence);
     CHECK(!ExecAESContext()->busy);
+    CHECK((SetSignal(0,starts[who]) & starts[who])!=0);
     Forbid(); order[orderCount++]=who; Permit();
     CHECK(evnt_timer(0, 0) == 1);
     CHECK(appl_write(id, 16, words) == 1);
@@ -196,6 +198,9 @@ UWORD AESRun(void)
             while (QUEUED < position+1) ExecYield();
         }
         CHECK(QUEUED == 3 && orderCount == 0);
+        /* A wake hint cannot grant ownership; unrelated signals must survive
+         * the private lock wait, even when both arrive before Wait itself. */
+        for (i=0;i<3;++i) Signal(workers[i],hints[i]|starts[i]);
         CHECK(evnt_timer(30, 0) == 1);
         CHECK(appl_write(id, 16, words) == 1);
         CHECK(evnt_mesag(words) == 1 && words[0] == 876);

@@ -195,17 +195,6 @@ PUBLIC CARD FUNC Attempt(AESSTATE.Service POINTER service
 
 RETURN(status)
 
-; Admission shares the same queue as caller-side waits.
-PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
-
-  LET status=Attempt(service,client,request,OWNER_READY,service.lockCount<>0)
-  IF status<>AESTYPES.PENDING THEN
-    RETURN(status)
-  FI
-
-RETURN(AESWAIT.Lock(service,client,request))
-
 ; Acquire only in the oldest currently eligible caller. The system Task wakes
 ; that caller without taking ownership or changing the BEGIN snapshot.
 PUBLIC CARD FUNC Continue(AESSTATE.Service POINTER service
@@ -240,32 +229,18 @@ RETURN(AESTYPES.PENDING)
 
 PUBLIC PROC Wake(AESSTATE.Service POINTER service)
   BYTE position
-  CARD code,status
 
   position=0
   WHILE position<service.lockCount DO
     BEGIN
       LET client=@service.clients(service.lockOrder(position))
-      LET request=client.pending
-      code=CARD(request.intin(0)) & $ff
-      IF Eligible(service,client,code,OWNER_READY,AESWAIT.BeforeWindows(service,position))<>0 THEN
-        IF client.waitMode=AESWAIT.CALLER THEN
-          AESWAIT.Signal(client)
-          RETURN
-        FI
-        status=Acquire(service,client,code,
-          IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
-            request.intin(1) ELSE INT(0) FI)
-        AESWAIT.RemoveLock(service,position)
-        client.pending=NULL
-        IF status=AESTYPES.OK THEN
-          request.intout(0)=1
-        FI
-
-        AESSTATE.Reply(request,status)
-      ELSE
-        position==+1
+      LET code=CARD(client.pending.intin(0)) & $ff
+      IF Eligible(service,client,code,OWNER_READY,
+          AESWAIT.BeforeWindows(service,position))<>0 THEN
+        AESWAIT.Signal(client)
+        RETURN
       FI
+      position==+1
     END
   OD
 
