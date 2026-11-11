@@ -338,12 +338,7 @@ WORD ExecAESUpdate(struct ExecAESContext *c,WORD code,WORD window)
     c->request.intin[1] = window;
     /* MCTRL retains RPC admission. A local miss changes no ownership and
      * leaves the transport sequence untouched, including BEG_CHECK calls. */
-    if ((code & 2)==0 && ExecAESUpdateEntry) {
-        c->request.client=c->identity;
-        c->busy=1;
-        handled=_AESUpdateCall(&c->request);
-        c->busy=0;
-    }
+    if ((code & 2)==0) handled=ExecAESLocal(c,AES_OP_UPDATE);
     if (handled) {
         c->diagnostic=c->request.status;
         if (c->diagnostic!=AES_OK || !c->request.intout[0]) return 0;

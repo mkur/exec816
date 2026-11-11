@@ -134,7 +134,7 @@ use the existing keyboard lease. The close drain calls the presenter's
 ### Scene access and scratch
 
 The console worker reclaims `AESGATE` before each turn. It offers admission for
-caller UPDATE after its last readiness check. `AESLOCAL.Update` claims that
+caller UPDATE after its last readiness check. `AESLOCAL.Call` claims that
 handoff and shares `AESLOCKS` and `AESWINDOWSTATE` with RPC. BEGIN touches
 Layers and cache identities and publishes views. END consumes the caller's
 invalidation and paint journal synchronously, updates pixel readiness and marks
@@ -170,7 +170,7 @@ entry address is bound at startup. The C context and request belong to the
 registered caller. A future caller entry still needs scene admission and a
 bridge check for its own call signature and transitive effects.
 [Native DP contract](../reference/platform.md#compiler-and-memory-contract) ·
-[UPDATE bridge](../../c/calypsi/aes-update.s) ·
+[UPDATE bridge](../../c/calypsi/aes-local.s) ·
 [C context and UPDATE](../../c/calypsi/aes.c)
 
 ### Development checks
@@ -420,3 +420,50 @@ use `tools/test_aes_gate.py --mode raw --output DIR` then `--mode opt` in separa
 directories for the native callback probe. The AES runner selects `locks`,
 `cache` and `pointer` for ordering, journals/pixels and input handback/loss.
 GF4 remains the next slice.
+
+## GF4 — Caller hidden-window lifecycle
+
+### Caller creation
+
+The first executable step routes hidden `wind_create` through the shared
+`AESWINDOW.Lifecycle` decoder and GF1 helper under the GF3 scene gate. Its
+caller frame avoids the remaining dispatcher's frame/string/effect scratch.
+The C binding allocates view storage before admission and frees rejected storage
+after scene release. Eligible calls leave both transport sequence counters
+unchanged. Deferred calls apply no window mutation before sending the same
+packet through RPC. Ordinary and parameter-block entries use this one path.
+
+The former UPDATE-only bridge is now the single private caller bridge,
+`ExecAESLocalEntry`/`_AESLocalCall`. UPDATE keeps its policy and MCTRL remains
+RPC. There is no new public C entry or wire layout; rebuilt resident images
+install the matching private entry. Native/C observation tools use its current
+name too.
+
+Window requests respect older lock waiters and unadmitted messages, while an
+existing logical owner can finish dependent mutations. Each pending window
+records the prefix of the lock queue that preceded it. Grants remove that
+predecessor from every affected prefix. Those older locks can pass the window
+barrier; newer locks wait behind it. This avoids a cycle where the window waits
+for an old UPDATE while its own pending flag prevents that UPDATE from running.
+The count uses one existing padding byte per private client record: client and
+service sizes remain 136 and 1,982 bytes.
+
+The optimized lifecycle fixture passes 149 checks. It covers two clients filling
+all six slots, ordinary/PB creation, bounded allocation/admission failures,
+slot reuse with new identities, sibling preservation, queued owner recursion,
+an older lock followed by a window request, an older unadmitted message, mixed
+transport numbering and identity exhaustion. Caller checks also require view
+allocation/free outside scene ownership. It observes 12 caller create attempts,
+three RPC creates and 12 RPC deletes; hidden deletion is still unmigrated in
+this step. Both clients exit with restored heap and intact guards. The peer uses
+its existing 1,312-byte pool with 540 bytes above the interrupt floor.
+
+Raw and optimized bridge probes pass both stack parities across natural VBI.
+The lock and window regressions pass 181 and 285 checks. Host results and exact
+artifacts are in the [creation record](../development/gem-first-gf4-create.json).
+The first fixture needed a completion wake when clearing its private readiness
+fault and an aligned synthetic message; those failures remain in development
+outputs. Reserved bank-zero growth is **0 fixed, 0 root, 0 kernel, 0 per public
+Task and 0 idle bytes**, including guards, alignment and unused capacity. No
+Task, signal, heap reservation or upper static arena is added. This is
+incremental development evidence; GF4 is not complete at this step.

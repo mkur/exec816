@@ -16,14 +16,14 @@ DRAWING = ('GemDrawingFrameBatch GemDrawingWidgetBatch GemDrawingBatch '
            'GemDrawingCopyStart GemDrawingPoll GemFrameGadget GemWidgetFill '
            'blit_mask solid_record VbxeOwnerSubmit VbxeOwnerFence '
            'VbxeOwnerWrite pointer_erase wind_update ExecAESBeginUpdate ExecAESUpdate '
-           'ExecAESSubmit _AESUpdateCall').split()
+           'ExecAESSubmit _AESLocalCall').split()
 
 
 def setup(out, bookkeeping=False):
     program = read_build(out)
     foreign = json.loads((out/'bitmap-console/c-image.json').read_text())
     spans = native_markers(program, [(n, n) for n in NATIVE])
-    optional = ('AESLOCAL_UPDATE AESGATE_CLAIM AESGATE_RELEASE AESGATE_OWNERENTER '
+    optional = ('AESLOCAL_CALL AESGATE_CLAIM AESGATE_RELEASE AESGATE_OWNERENTER '
                 'AESGATE_OFFER AESLOCKS_NATIVEREADY AESLOCKS_ATTEMPT AESLOCKS_ELIGIBLE').split()
     present = [n for n in optional if any(r['name'].startswith('M_'+n+'_')
                for r in program['image']['routines'])]

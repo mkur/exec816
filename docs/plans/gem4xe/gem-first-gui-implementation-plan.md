@@ -226,6 +226,9 @@ Commit: `refactor(aes): isolate scene ownership from drawing and waits`.
 
 ### GF4 — Execute hidden create/delete in the caller
 
+Status: in progress. Caller creation passes its selected development checks;
+hidden deletion remains on RPC. See the [execution history](../../history/gem-first-gui.md#gf4--caller-hidden-window-lifecycle).
+
 Bind hidden `wind_create`/`wind_delete` to the GF1 helpers through the GF3 gate.
 Allocate caller-owned view storage before entering scene work. Use the common
 logical eligibility policy, including older waiters and owner recursion.
@@ -455,7 +458,7 @@ instead of duplicating their implementation in host assertions:
 
 | Behavior | Existing starting checks |
 | --- | --- |
-| Scene gate, wake and context | [Gate fixture](../../../tools/test_aes_gate.py), [UPDATE bridge](../../../tools/test_aes_update_bridge.py) |
+| Scene gate, wake and context | [Gate fixture](../../../tools/test_aes_gate.py), [Caller bridge](../../../tools/test_aes_local_bridge.py) |
 | Windows, messages, locks, events, multiple windows | [AES service runner](../../../tools/test_aes_server.py), selecting `windows`, `multiwindow`, `gui`, `locks`, `events`, `timers` or `inbox` as affected |
 | Physical interaction and loaded GUI progress | [Desktop proof](../../../tools/test_aes_desktop.py), [drag checks](../../../tools/test_desktop_drag.py), GF0 combined runner |
 | Shared drawing and cache behavior | [Matched AES corpus](../../../tools/measure_magic_aes.py), [drawing observer](../../../tools/measure_aes_drawing.py), [UPDATE observer](../../../tools/measure_aes_update.py) |

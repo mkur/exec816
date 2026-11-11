@@ -41,7 +41,7 @@ RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
     AND DESKSTATE.outlineVisible=0 AND DESKTABS.Active()=0)
 
 BYTE FUNC Eligible(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client CARD code BYTE ready)
+    AESSTATE.Client POINTER client CARD code BYTE ready,beforeWindows)
 
   ; Work capture routes input until release. Another client may paint while
   ; that recipient waits; explicit MCTRL must still respect the capture.
@@ -67,7 +67,8 @@ BYTE FUNC Eligible(AESSTATE.Service POINTER service
 
   ; A window/exit waiter can itself depend on this mouse owner. Its UPDATE
   ; upgrade must remain eligible; otherwise both sides wait for one another.
-  IF service.windowPending<>0 AND service.mouseOwner<>client.id THEN
+  IF service.windowPending<>0 AND service.mouseOwner<>client.id
+      AND beforeWindows=0 THEN
     RETURN(0)
   FI
 
@@ -111,7 +112,16 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
 RETURN(AESTYPES.OK)
 
 PROC Remove(AESSTATE.Service POINTER service BYTE position)
+  BYTE slot
 
+  ; Each pending window remembers only the older prefix of this lock queue.
+  ; Removing a granted predecessor cannot turn a younger lock into an older one.
+  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+    IF service.clients(slot).windowWaiting<>0
+        AND position<service.clients(slot).windowLocks THEN
+      service.clients(slot).windowLocks==-1
+    FI
+  OD
   service.lockCount==-1
   WHILE position<service.lockCount DO
     service.lockOrder(position)=service.lockOrder(position+1)
@@ -177,7 +187,7 @@ PUBLIC CARD FUNC Attempt(AESSTATE.Service POINTER service
 
   IF (code & 1)<>0 THEN
     code=code & $ff
-    IF Eligible(service,client,code,ready)<>0 AND (queued=0
+    IF Eligible(service,client,code,ready,0)<>0 AND (queued=0
         OR service.mouseOwner=client.id) THEN
       status=Acquire(service,client,code,
           IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
@@ -228,6 +238,19 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
 
 RETURN(AESTYPES.IDENTITY)
 
+; A queued lock may precede a window barrier; a new BEGIN never does.
+BYTE FUNC BeforeWindows(AESSTATE.Service POINTER service BYTE position)
+  BYTE slot
+
+  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+    IF service.clients(slot).windowWaiting<>0
+        AND position>=service.clients(slot).windowLocks THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
 PUBLIC PROC Wake(AESSTATE.Service POINTER service)
   BYTE position
   CARD code,status
@@ -238,7 +261,7 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
       LET client=@service.clients(service.lockOrder(position))
       LET request=client.pending
       code=CARD(request.intin(0)) & $ff
-      IF Eligible(service,client,code,OWNER_READY)<>0 THEN
+      IF Eligible(service,client,code,OWNER_READY,BeforeWindows(service,position))<>0 THEN
         status=Acquire(service,client,code,
           IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
             request.intin(1) ELSE INT(0) FI)

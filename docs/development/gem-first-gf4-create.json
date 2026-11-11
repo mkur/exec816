@@ -1,0 +1,515 @@
+{
+  "slice": "GF4-create",
+  "plan_slice": "GF4",
+  "plan_slice_complete": false,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "parent_revision": "d4a93417715ac0970375529d170fac99d3f12240",
+  "scope": "Caller hidden creation and shared window/lock admission. Hidden deletion remains RPC in this executable step.",
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ]
+  },
+  "toolchain": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "actionc_override": false,
+    "compiler_profile": "release",
+    "native_mode": "optimized system fixtures; focused raw/optimized deferred native callback probe",
+    "calypsi": {
+      "cc65816": {
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "sources_sha256": {
+    "c/calypsi/aes-local.c": "515d17f12d62db718c881072be6c6df46a78199f723c4500acc46ff9ff2dfcd2",
+    "c/calypsi/aes-local.s": "382d1b832d499f65e57ac902b1f332ab2550b2c47a22f9fffe89f6c79a71899b",
+    "c/calypsi/aes-private.h": "1d85817d107db0d62eeb2cf5879f7c4829a647fecdc95fc68c31bd9a147db12e",
+    "c/calypsi/aes-windows.c": "1a13e27c804d60b53251fdb3d06d232b166170f074bcf09bfa36f70eb073641e",
+    "c/calypsi/aes.c": "3aa67d0918ba24e5e8c014fc3a0d094191f4545f4ce88f46c615a4cca49344e5",
+    "lib/aes/aescore.act": "165628a1f3ea9280480244adbe124d5a61e8b2af7eb323ee3e318cc79d707363",
+    "lib/aes/aeslocal.act": "44e1f6d525a089a92f4d2ddfb6aba1759517e2df4f31c89732c2b3d2a34685ef",
+    "lib/aes/aeslocks.act": "354e8a861eaa46182f9f9794d40421d31234d0e2e51d21f75da2904240f9cc93",
+    "lib/aes/aesstate.act": "0d7a7ff112ae0e483dd77d5114f3a6d8fe1da9a88fc595b2d746cdc45faa43ba",
+    "lib/aes/aeswindow.act": "046fc4365c62da37f7baf377d267fcf8b6bfa5eeb92e6f4933f5e7f62622184f",
+    "tests/programs/aes_lifecycle.c": "c14a0a905d3f66e4f7106842027a3079f0614ab117676e5aab83a9f3be736193",
+    "tools/build_bitmap_console.py": "3b4d27bdd90c002970c7e7862068c40b196ee7439a0b74b97ddc2b4341fd7880",
+    "tools/g4bench_trace.py": "eb0a612261582c12db236e22ea21803a644496e438afd4dc61a10535510ed280",
+    "tools/measure_aes_update.py": "a70ffe2cd016e86f9bbbc0dd06b2d2a207052543c40bef2ac62aaf0e396a3f0c",
+    "tools/test_aes_lifecycle.py": "f473368acd1ba2ef11ef9d40f68ab8f3eb995cbf846adf6aef0953ed6554b2bc",
+    "tools/test_aes_local_bridge.py": "3d079d57540343f53513fb4662365c878f535c423a35a3820019570d18af62d5",
+    "tools/test_aes_scene.py": "905366965a737363a67adbe8d712868590b6d155d9256ebb16404e64db6c8056",
+    "tools/test_aes_server.py": "607a06de5c8752db3accb64940b4b9edf41939dc531d0abc89ad857c7b12a138",
+    "tools/window_response_trace.py": "d24e9f61fa4f841a124b08c94676d9030670d4ce8a0bc6466cb92e0ee5c97673"
+  },
+  "host": {
+    "passed": 683,
+    "skipped": 4,
+    "path": "build/gem-first-gui/gf4/create/host-final.log",
+    "sha256": "144bfa4611831515e1e4743a0adca1c1c61473792ba7179ffba2166069b7a56a"
+  },
+  "checks": [
+    {
+      "name": "lifecycle",
+      "result": {
+        "path": "build/gem-first-gui/gf4/create/lifecycle-aligned/results.json",
+        "sha256": "7910f618c4d3d3a9054633c3d9c4ff8e84db1bd4e2db8d4c856ce89f741668ca"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf4/create/lifecycle-aligned/program/build.json",
+        "sha256": "00adf30486486beab0cd6fd0683075fe149089e7390053c88e899e386c9a057f"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf4/create/lifecycle-aligned/program/program.a816.json",
+        "sha256": "3f0a101f75c448ed55026f9d4cf86f3b25a5efdaa5ddc3b64f117635dd382399"
+      },
+      "AESChecks": 149,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "lifecycle_stats": [
+        12,
+        3,
+        0,
+        12,
+        27,
+        0,
+        136,
+        1982
+      ],
+      "lifecycle_phase": 10,
+      "lifecycle_admission": {
+        "LifeGate": 0,
+        "LifeWaiting": 0,
+        "LifeBusy": 0,
+        "LifeLocks": 0
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 577,
+          "remaining_above_floor": 703
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 516,
+          "remaining_above_floor": 540
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 701,
+          "remaining_above_floor": 1603
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 223,
+        "native_irq_count": 7761,
+        "os_busy": 0,
+        "fault_required": 0
+      }
+    },
+    {
+      "name": "locks",
+      "result": {
+        "path": "build/gem-first-gui/gf4/create/locks-ordered/results.json",
+        "sha256": "27458c929c2273ab27e4232bae5a7ec1fc7f9aac4537d165332ff63ec2a471a9"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf4/create/locks-ordered/program/build.json",
+        "sha256": "7b44cf9e3c731176e4c424e51e5a2265ad97c1bb1718f589bf22fe348af8a076"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf4/create/locks-ordered/program/program.a816.json",
+        "sha256": "0651f25e6ac73a29a57f19dcbbd8ea9226dd6b3982f27ef1bc133344ba359f84"
+      },
+      "AESChecks": 181,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 879,
+          "remaining_above_floor": 401
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 334,
+          "remaining_above_floor": 722
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 350,
+          "remaining_above_floor": 706
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 343,
+          "remaining_above_floor": 713
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 714,
+          "remaining_above_floor": 1590
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 424,
+        "native_irq_count": 23673,
+        "os_busy": 0,
+        "fault_required": 0
+      }
+    },
+    {
+      "name": "windows",
+      "result": {
+        "path": "build/gem-first-gui/gf4/create/windows/results.json",
+        "sha256": "0438f66bd480fcbfa8f6000027a3de68380ecc3587c2403d859fc524d01c922d"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf4/create/windows/program/build.json",
+        "sha256": "4e5fad25e2613b9d9ec4d3b53c13d00f1813ddbb7697aedc2a86299d256c0cd6"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf4/create/windows/program/program.a816.json",
+        "sha256": "4ea43484ba77ecf80fb99b52a2d2ff6ff75b9f4c14eca0ec1a041ddce3715f72"
+      },
+      "AESChecks": 285,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 607,
+          "remaining_above_floor": 673
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 392,
+          "remaining_above_floor": 664
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 387,
+          "remaining_above_floor": 669
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 215,
+          "remaining_above_floor": 841
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 904,
+          "remaining_above_floor": 1400
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 2940,
+        "native_irq_count": 26093,
+        "os_busy": 0,
+        "fault_required": 0
+      }
+    },
+    {
+      "name": "bridge-raw",
+      "result": {
+        "path": "build/gem-first-gui/gf4/create/bridge/raw/results.json",
+        "sha256": "b1c1932e4790fc5c6dd664ac7ecb2971daca16ecc210d132be10887cbfdb1410"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf4/create/bridge/raw/program/build.json",
+        "sha256": "8a8914e5ed6b5a55c637a069463205dda1ddf10e24b813d8efc95aabe9d8c8fa"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf4/create/bridge/raw/program/program.a816.json",
+        "sha256": "9da9e9ba3a0f49ab779052366c9d02bb8e7aa9074a33d98598f1329f326cbd54"
+      },
+      "words": [
+        23097,
+        11198,
+        11198,
+        3328,
+        3328,
+        0,
+        23048,
+        23050,
+        23052,
+        23054,
+        0,
+        0,
+        23097,
+        11197,
+        11197,
+        3328,
+        3328,
+        0,
+        23048,
+        23050,
+        23052,
+        23054,
+        0,
+        0
+      ],
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 4,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0
+      }
+    },
+    {
+      "name": "bridge-opt",
+      "result": {
+        "path": "build/gem-first-gui/gf4/create/bridge/opt/results.json",
+        "sha256": "e6e09dce37cc3c5f2629aec6cafbd1110a0bc95dc93effaee8d9004ef590752f"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf4/create/bridge/opt/program/build.json",
+        "sha256": "810984bde4d2cf98dd26184d564d9c5faf4f80edb68ae731702b5a427e6d6512"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf4/create/bridge/opt/program/program.a816.json",
+        "sha256": "ac4e10b51ff4569981f5b698eaa487dbfd043d668cf0e0e644e22d7eeb93a0f7"
+      },
+      "words": [
+        23097,
+        11208,
+        11208,
+        3328,
+        3328,
+        0,
+        23048,
+        23050,
+        23052,
+        23054,
+        0,
+        0,
+        23097,
+        11207,
+        11207,
+        3328,
+        3328,
+        0,
+        23048,
+        23050,
+        23052,
+        23054,
+        0,
+        0
+      ],
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 4,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "fault_required": 0
+      }
+    }
+  ],
+  "resources": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "per_public_task": 0,
+      "idle": 0,
+      "includes": "guards, alignment and unused capacity"
+    },
+    "unchanged_reservations": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations"
+    ],
+    "client_payload_bytes": 136,
+    "service_payload_bytes": 1982,
+    "window_lock_predecessors": "One previously unused padding byte per client; no record or heap growth.",
+    "tasks_added": 0,
+    "signals_added": 0,
+    "upper_static_arena_delta": 0
+  },
+  "failures_retained": [
+    {
+      "path": "build/gem-first-gui/gf4/create/lifecycle.log",
+      "reason": "Initial fixture used wind_set instead of the typed string binding."
+    },
+    {
+      "path": "build/gem-first-gui/gf4/create/lifecycle-checked",
+      "reason": "Private readiness fault clearance lacked its completion wake."
+    },
+    {
+      "path": "build/gem-first-gui/gf4/create/lifecycle-notified",
+      "reason": "Packed synthetic stack message did not meet the public two-byte alignment requirement; use an aligned allocated header."
+    }
+  ],
+  "limits": [
+    "Development tier only; no hosted-system, hardware or latency qualification.",
+    "Focused fixtures use eight public slots plus private idle; production twelve-slot budget is unchanged.",
+    "No public wire/C signature change. Matching resident images must rebuild the private caller entry.",
+    "GF4 hidden deletion and its final acceptance remain to be implemented."
+  ]
+}

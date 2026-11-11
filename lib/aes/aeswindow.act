@@ -1,4 +1,4 @@
-; GEM window mutation runs in the presenter. No application draws in this code.
+; Shared GEM window policy. No application draws in this code.
 MODULE AESWINDOW
 USE EXEC
 USE INPUT
@@ -403,22 +403,13 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
 
 RETURN(AESTYPES.OK)
 
-PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
-  BYTE status
-  BYTE POINTER title,current
-  CARD length,index,result
-  LONGCARD titleAddress
-  LAYERTYPES.Rect bounds
+; Both transports decode hidden lifetime operations here. Caller stacks avoid
+; the frame/string/effect scratch of the remaining window dispatcher.
+PUBLIC CARD FUNC Lifecycle(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request BYTE queued)
+  CARD result
 
-  ; A presenter query observes one coherent stack without waiting for drawing
-  ; or mouse ownership.
-  IF request.operation=AESTYPES.OP_FIND THEN
-    request.intout(0)=FindAt(request.intin(0),request.intin(1))
-    RETURN(AESTYPES.OK)
-  FI
-
-  IF Ready(service,client)=0 THEN
+  IF (queued<>0 AND service.mouseOwner<>client.id) OR Ready(service,client)=0 THEN
     RETURN(AESTYPES.PENDING)
   FI
 
@@ -435,11 +426,49 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   IF item=NULL THEN
     RETURN(AESTYPES.IDENTITY)
   FI
+  ; Console attachments still retire through the presenter: PrepareRelease
+  ; can erase a physical caret and is outside the caller metadata subset.
+  IF item.window.console<>0 AND AESGATE.SystemOwned()=0 THEN
+    RETURN(AESTYPES.PENDING)
+  FI
+  result=DeleteHidden(item)
+  IF result=AESTYPES.OK THEN
+    request.intout(0)=1
+  FI
+
+RETURN(result)
+
+PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request BYTE queued)
+  BYTE status
+  BYTE POINTER title,current
+  CARD length,index,result
+  LONGCARD titleAddress
+  LAYERTYPES.Rect bounds
+
+  ; A presenter query observes one coherent stack without waiting for drawing
+  ; or mouse ownership.
+  IF request.operation=AESTYPES.OP_FIND THEN
+    request.intout(0)=FindAt(request.intin(0),request.intin(1))
+    RETURN(AESTYPES.OK)
+  FI
+
+  IF request.operation=AESTYPES.OP_CREATE OR request.operation=AESTYPES.OP_DELETE THEN
+    RETURN(Lifecycle(service,client,request,queued))
+  FI
+
+  ; An existing owner may finish mutations before dependent older waiters.
+  IF (queued<>0 AND service.mouseOwner<>client.id) OR Ready(service,client)=0 THEN
+    RETURN(AESTYPES.PENDING)
+  FI
+
+  LET item=AESWINDOWSTATE.Handle(client,request.intin(0))
+  IF item=NULL THEN
+    RETURN(AESTYPES.IDENTITY)
+  FI
 
   IF request.operation<>AESTYPES.OP_SET THEN
     CASE request.operation OF
-    WHEN AESTYPES.OP_DELETE THEN
-      result=DeleteHidden(item)
     WHEN AESTYPES.OP_OPEN THEN
       result=Open(service,client,item,request.intin(1),request.intin(2),
           request.intin(3),request.intin(4))

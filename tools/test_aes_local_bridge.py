@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small raw/optimized C/Action UPDATE bridge ABI and preemption probe."""
+"""Small raw/optimized C/Action caller bridge ABI and preemption probe."""
 import argparse
 import json
 from pathlib import Path
@@ -23,7 +23,7 @@ int main(void) { AESBridgeProbe(); return 0; }
               .rtmodel codeModel,"large"
               .rtmodel dataModel,"huge"
               .rtmodel core,"65816"
-              .extern _AESUpdateCall,AESBridgeResults,_Dp,_Vfp
+              .extern _AESLocalCall,AESBridgeResults,_Dp,_Vfp
               .section farcode,text
               .public AESBridgeProbe
 AESBridgeProbe:
@@ -41,7 +41,7 @@ AESBridgeProbe:
               sta long:AESBridgeResults+{offset+6}
               lda ##0xffc0
               ldx ##0xab12
-              jsl _AESUpdateCall
+              jsl _AESLocalCall
               sta long:AESBridgeResults+{offset}
               php
               tsc
@@ -63,9 +63,9 @@ AESBridgeProbe:
     for dp in reversed(range(8,16,2)): asm += [f'              pla\n              sta dp:{dp}\n']
     asm += ['              rtl\n']
     assembly=out/'probe.s';assembly.write_text(''.join(asm))
-    foreign=emit(out/'c',[c,ROOT/'c/calypsi/aes-update.c'],
-                 [assembly,ROOT/'c/calypsi/aes-update.s',ROOT/'c/calypsi/image-info.s'],
-                 (),optimize,roots=['ExecAESUpdateEntry','AESBridgeResults'])
+    foreign=emit(out/'c',[c,ROOT/'c/calypsi/aes-local.c'],
+                 [assembly,ROOT/'c/calypsi/aes-local.s',ROOT/'c/calypsi/image-info.s'],
+                 (),optimize,roots=['ExecAESLocalEntry','AESBridgeResults'])
     sy=foreign['symbols']
     source=out/'probe.act'
     source.write_text('''MODULE AESBRIDGEPROBE
@@ -78,7 +78,7 @@ CARD calls
 LONGCARD observed
 LONGINT result
 
-CARD FUNC Update(LONGCARD value)
+CARD FUNC Local(LONGCARD value)
 
   observed=value
   IF value<>$ab12ffc0 THEN
@@ -95,12 +95,12 @@ RETURN($5a39)
 PROC Main()
 
   LET entry=ADDRESS POINTER($%x)
-  entry^=ADDRESS(@Update)
+  entry^=ADDRESS(@Local)
   result=CALYPSICALL.Invoke(ADDRESS($%x),0)
 
 RETURN
 ENDMODULE
-''' % (ROOT/'lib/exec/exec-abi.inc',sy['ExecAESUpdateEntry'],sy['main']))
+''' % (ROOT/'lib/exec/exec-abi.inc',sy['ExecAESLocalEntry'],sy['main']))
     program=build(compiler(ROOT/'build/actionc',release=True),source,out/'program',
                   tasks=True,task_capacity=8,optimize=optimize,foreign_image=foreign)
     with emulator(BRIDGE,ROM,out,pin=PIN) as bridge:
@@ -121,7 +121,7 @@ ENDMODULE
     (out/'results.json').write_text(json.dumps(dict(status='pass',tier='development',
         optimize=optimize,words=words,runtime=runtime,machine=machine,
         build=program['build']),indent=2)+'\n')
-    print('UPDATE bridge passed:', 'opt' if optimize else 'raw',flush=True)
+    print('AES caller bridge passed:', 'opt' if optimize else 'raw',flush=True)
 
 
 if __name__=='__main__':

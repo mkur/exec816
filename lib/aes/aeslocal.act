@@ -1,4 +1,4 @@
-; Caller-side entry to the same native UPDATE policy used by RPC admission.
+; Caller entry to the same native policy used by RPC admission.
 MODULE AESLOCAL
 USE EXEC
 USE EXECLISTS
@@ -6,10 +6,11 @@ USE AESTYPES
 USE AESSTATE
 USE AESGATE
 USE AESLOCKS
+USE AESWINDOW
 
 ; The admitted binding and registration remain live until this Task detaches.
 ; Return zero for the original RPC path; handled TRY failure returns one.
-PUBLIC CARD FUNC Update(LONGCARD value)
+PUBLIC CARD FUNC Call(LONGCARD value)
   BYTE queued,wake
 
   LET service=AESSTATE.Get()
@@ -17,16 +18,25 @@ PUBLIC CARD FUNC Update(LONGCARD value)
     RETURN(0)
   FI
   LET request=AESTYPES.Request POINTER(ADDRESS(value))
+  IF request.operation<>AESTYPES.OP_UPDATE
+      AND request.operation<>AESTYPES.OP_CREATE THEN
+    RETURN(0)
+  FI
   AESGATE.EnterTask(request.owner,
       LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit)
   LET client=AESSTATE.Find(service,request.client)
   ; Include older messages that have not reached the native waiter queue yet.
   EXEC.Forbid()
-  queued=service.lockCount<>0 OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0
+  queued=service.lockCount<>0 OR service.windowPending<>0
+      OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0
   EXEC.Permit()
-  wake=request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1
-  LET status=AESLOCKS.Attempt(service,client,request,
-      AESLOCKS.OWNER_READY,queued)
+  wake=request.operation<>AESTYPES.OP_UPDATE
+      OR (request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1)
+  request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1)
+      ELSE INT(0) FI
+  LET status=IF request.operation=AESTYPES.OP_UPDATE THEN
+      AESLOCKS.Attempt(service,client,request,AESLOCKS.OWNER_READY,queued)
+      ELSE AESWINDOW.Lifecycle(service,client,request,queued) FI
   IF status=AESTYPES.PENDING THEN
     AESGATE.Release(0)
     RETURN(0)

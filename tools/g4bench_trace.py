@@ -28,7 +28,7 @@ blit_glyph_run glyph_record blit_mask text_run VbxeOwnerFence idle
 VbxeOwnerSubmit VbxeOwnerRead VbxeOwnerWrite _VbxeUpload _VbxeTextUpload
 start fence_owner drain pointer_erase'''.split()
 # Optional boundaries let the same observer compare archived pre-fill images.
-FILL_NAMES='GemSolidRows GemSolidFill solid_record GemDrawingSolidBorrow drawing_borrow vdi_vr_recfl ExecAESSubmit ExecAESUpdate ExecAESBeginUpdate _AESUpdateCall PutMsg GetMsg Wait vsf_color'.split()
+FILL_NAMES='GemSolidRows GemSolidFill solid_record GemDrawingSolidBorrow drawing_borrow vdi_vr_recfl ExecAESSubmit ExecAESUpdate ExecAESBeginUpdate _AESLocalCall PutMsg GetMsg Wait vsf_color'.split()
 
 
 def listing_returns(image, directory, exits=False):
@@ -89,7 +89,7 @@ def definition(program, foreign, app, directory, app_names=APP_NAMES, app_direct
         'AESCORE_PUMP','AESCORE_SETTLE','AESCORE_DISPATCH','AESLOCKS_ELIGIBLE',
         'AESWINDOWSTATE_BEGINUPDATE','AESWINDOWSTATE_ENDUPDATE','AESWINDOWSTATE_UPDATES',
         'AESSTATE_REPLY','DESKCACHE_BEGINCHANGE','DESKCACHE_ENDCHANGE')])
-    optional = ('AESLOCAL_UPDATE', 'AESGATE_CLAIM', 'AESGATE_RELEASE',
+    optional = ('AESLOCAL_CALL', 'AESGATE_CLAIM', 'AESGATE_RELEASE',
                 'AESGATE_OWNERENTER', 'AESGATE_OFFER', 'AESLOCKS_NATIVEREADY',
                 'AESLOCKS_ATTEMPT', 'AESLOCKS_RELEASE', 'AESHOST_SETTLED')
     present = [n for n in optional if any(r['name'].startswith('M_'+n+'_')
@@ -298,7 +298,7 @@ def update_summary(calls_, native, timeline, dp, start, end):
         nested = [s for s in native[bisect_left(starts,call['start']):
                                     bisect_left(starts,call['end'])]
                   if s['dp']==dp and s['end']<=call['end']]
-        local = next((s for s in nested if s['kind']=='AESLOCAL_UPDATE'),None)
+        local = next((s for s in nested if s['kind']=='AESLOCAL_CALL'),None)
         handled = bool(local and local['return_a'])
         reason = None
         claim = next((s for s in nested if s['kind']=='AESGATE_CLAIM'),None)

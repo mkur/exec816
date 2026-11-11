@@ -234,6 +234,7 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   IF AESMENU.Retire(service,client)=0 OR AESWINDOW.Retire(service,client)=0 THEN
     client.pending=request
     IF client.windowWaiting=0 THEN
+      client.windowLocks=service.lockCount
       client.windowWaiting=1
       service.windowPending==+1
     FI
@@ -243,6 +244,7 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
 
   IF client.windowWaiting<>0 THEN
     client.windowWaiting=0
+    client.windowLocks=0
     service.windowPending==-1
   FI
 
@@ -390,9 +392,11 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
     END
   ELSE
     status=IF request.operation=AESTYPES.OP_MENU THEN AESMENU.Request(service,client,request)
-        ELSE AESWINDOW.Request(service,client,request) FI
+        ELSE AESWINDOW.Request(service,client,request,
+            service.lockCount<>0 OR service.windowPending<>0) FI
     IF status=AESTYPES.PENDING THEN
       client.pending=request
+      client.windowLocks=service.lockCount
       client.windowWaiting=1
       service.windowPending==+1
     ELSE
@@ -421,10 +425,11 @@ PUBLIC PROC Settle(AESSTATE.Service POINTER service)
             Retire(service,client,request)
           ELSE
             status=IF request.operation=AESTYPES.OP_MENU THEN AESMENU.Request(service,client,request)
-        ELSE AESWINDOW.Request(service,client,request) FI
+                ELSE AESWINDOW.Request(service,client,request,client.windowLocks<>0) FI
             IF status<>AESTYPES.PENDING THEN
               client.pending=NULL
               client.windowWaiting=0
+              client.windowLocks=0
               service.windowPending==-1
               AESSTATE.Reply(request,status)
             FI

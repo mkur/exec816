@@ -221,6 +221,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if suite=='cache':
             from test_aes_cache import instrument
             instrument(out)
+        if suite=='lifecycle':
+            from test_aes_lifecycle import instrument
+            instrument(out)
         if locks:
             (out/'aeslockprobe.act').write_text('MODULE AESLOCKPROBE\nPUBLIC BYTE busy,ready\nENDMODULE\n')
             policy = read_source(ROOT/'lib/aes/aeslocks.act').replace('USE AESTYPES', 'USE AESTYPES\nUSE AESLOCKPROBE')
@@ -277,6 +280,11 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         import build_bitmap_console as bitmap_builder
         original_extract=bitmap_builder.extract
         original_emit=bitmap_builder.emit
+        extra_roots=[]
+        if suite=='lifecycle':
+            from test_aes_lifecycle import emitter, ROOTS
+            bitmap_builder.emit=emitter(original_emit,out)
+            extra_roots=ROOTS
         if suite in ('forms','alerts','fsel'):
             from test_aes_forms import instrument
             instrument(out,alerts=suite=='alerts',file_selector=suite=='fsel')
@@ -287,7 +295,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             foreign = drawing(out, True, widgets=True, fault=borrowed, renderer_source=renderer,
                 client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if events or timers or input_events else ROOT/'c/calypsi/aes-events.c'), ROOT/('tests/programs/display_borrow.c' if borrowed else f'tests/programs/aes_{suite}.c')]+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else []),
                 client_entries=entries,
-                client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+(['AESPark'] if events or timers or suite == 'messages' else []),
+                client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+(['AESPark'] if events or timers or suite == 'messages' else [])+extra_roots,
                 client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())]+extra_probes,
                 client_optimization={n: mode == 'opt' for n in ('aes.c', 'aes-objects.c', 'aes-edit.c', 'aes-form.c', 'aes-resource.c', 'dos.c', f'aes_{suite}.c')})
         finally:
@@ -324,6 +332,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
   Require(run()=0)
 ''' if registration else ''
         setup = '  LET service=AESSTATE.Get()\n'
+        if suite=='lifecycle':
+            from test_aes_lifecycle import setup as lifecycle_setup
+            setup+=lifecycle_setup(sy)
         if suite == 'cache':
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESLockCount"]:x})\n    item^=LONGCARD(ADDRESS(@service.lockCount))\n  END\n'
         if suite == 'menus':
@@ -347,7 +358,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else ''}
+{'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else ''}
 CARD checks
 CARD FUNC POINTER run()
 
@@ -490,7 +501,7 @@ ENDMODULE
                 report['runtime'], _ = execute(bridge, program, before_run=before,
                                               timeout=120, frame_limit=6000)
             finally:
-                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache') else
+                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle') else
                              ('AESChecks', 'AESFailures', 'AESReady', 'AESDone')):
                     report[name] = int.from_bytes(bridge.memdump(foreign['symbols'][name], 2), 'little')
                 if 'AESFirstFailure' in foreign['symbols']:
@@ -505,14 +516,26 @@ ENDMODULE
                 report['native_checks'] = data(bridge, program['image'], 'checks', True)[0]
                 if pointer:
                     report['boundary_checks'] = data(bridge, program['image'], 'boundaryChecks', True)[0]
+                if suite=='lifecycle':
+                    address=int.from_bytes(bridge.memdump(foreign['symbols']['LifeNative'],4),'little')
+                    report['lifecycle_stats']=[int.from_bytes(bridge.memdump(address+2*i,2),'little') for i in range(8)]
+                    report['lifecycle_phase']=int.from_bytes(bridge.memdump(foreign['symbols']['LifePhase'],2),'little')
+                    report['lifecycle_admission']={name:int.from_bytes(bridge.memdump(
+                        int.from_bytes(bridge.memdump(foreign['symbols'][name],4),'little'),1),'little')
+                        for name in ('LifeGate','LifeWaiting','LifeBusy','LifeLocks')}
             ownership(bridge, program, program['output'])
             if borrowed: bridge.profile_stop()
             from stack_budget import stack_usage
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
                     'Incomplete application checks')
             if pointer:
                 require(report['boundary_checks']==25, 'Incomplete presenter input boundaries')
+            if suite=='lifecycle':
+                require(report['lifecycle_stats'][6:]==[136,1982],
+                        'Caller lifecycle enlarged the private service records')
+                require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
+                        'Caller lifecycle exceeded its interrupt floor')
             if windows:
                 count = int.from_bytes(bridge.memdump(foreign['symbols']['AESVisibleCount'], 2), 'little')
                 raw = bridge.memdump(foreign['symbols']['AESVisible'], count*8)
@@ -687,13 +710,13 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs',help='Resources fixture disk format')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
+    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None,args.filesystem)
     elif args.suite == 'console':

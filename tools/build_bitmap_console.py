@@ -77,8 +77,8 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     if ROOT/'c/calypsi/aes.c' in sources:
         sources.append(ROOT/'c/calypsi/console.c')
         assembly.append(ROOT/'c/calypsi/console.s')
-        sources.append(ROOT/'c/calypsi/aes-update.c')
-        assembly.append(ROOT/'c/calypsi/aes-update.s')
+        sources.append(ROOT/'c/calypsi/aes-local.c')
+        assembly.append(ROOT/'c/calypsi/aes-local.s')
         sources.append(ROOT/'c/calypsi/aes-windows.c')
         sources.append(ROOT/'c/calypsi/aes-input.c')
         sources.append(ROOT/'c/calypsi/vdi.c')
@@ -200,8 +200,8 @@ RETURN
         require(desktop, 'AES requires the existing desktop presenter')
         text=text.replace('USE EXEC\n', 'USE EXEC\nUSE AESBOOT\nUSE AESLOCAL\n', 1)
         binding=binding.replace('  BindDisplay()',
-            f'  LET updateEntry=ADDRESS POINTER(${sy["ExecAESUpdateEntry"]:x})\n'
-            '  updateEntry^=ADDRESS(@AESLOCAL.Update)\n  BindDisplay()',1)
+            f'  LET localEntry=ADDRESS POINTER(${sy["ExecAESLocalEntry"]:x})\n'
+            '  localEntry^=ADDRESS(@AESLOCAL.Call)\n  BindDisplay()',1)
         # Optional AES failure leaves the native desktop usable. Applications
         # test the retained endpoint after the presenter's readiness reply.
         binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN',

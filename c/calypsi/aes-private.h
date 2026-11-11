@@ -2,8 +2,9 @@
 #define EXEC816_AES_PRIVATE_H
 #include <exec816/aes.h>
 #include <gem.h>
-extern void EXEC_PTR *ExecAESUpdateEntry;
-UWORD EXEC_CALL _AESUpdateCall(struct AESRequest *);
+extern void EXEC_PTR *ExecAESLocalEntry;
+UWORD EXEC_CALL _AESLocalCall(struct AESRequest *);
+UWORD ExecAESLocal(struct ExecAESContext *, UWORD);
 struct AESWindowView *ExecAESFindView(struct ExecAESContext *, WORD);
 BOOL ExecAESWindowEpoch(struct ExecAESContext *, WORD, ULONG);
 void ExecAESChanged(struct ExecAESContext *,LONG,LONG,LONG,LONG);

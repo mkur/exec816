@@ -61,7 +61,7 @@ PUBLIC TYPE Client=[
   AESTYPES.Request POINTER pending
   Menu POINTER menu
   GuiPending gui
-  BYTE guiNext,windowWaiting,closeRequested
+  BYTE guiNext,windowWaiting,closeRequested,windowLocks
 ]
 
 PUBLIC TYPE Service=[
