@@ -1,0 +1,95 @@
+; Shared Task-side admission order, always protected by the scene gate.
+MODULE AESWAIT
+USE EXEC
+USE EXECLISTS
+USE AESTYPES
+USE AESSTATE
+
+; Windows retain the prefix of older lock waiters through queue compaction.
+PUBLIC PROC RemoveLock(AESSTATE.Service POINTER service BYTE position)
+  BYTE slot
+
+  ; Each pending window remembers only the older prefix of this lock queue.
+  ; Removing a granted predecessor cannot turn a younger lock into an older one.
+  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+    IF service.clients(slot).windowWaiting<>0
+        AND position<service.clients(slot).windowLocks THEN
+      service.clients(slot).windowLocks==-1
+    FI
+  OD
+  service.lockCount==-1
+  WHILE position<service.lockCount DO
+    service.lockOrder(position)=service.lockOrder(position+1)
+    position==+1
+  OD
+
+RETURN
+
+PUBLIC CARD FUNC Lock(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
+  BYTE index
+
+  IF service.lockCount=AESTYPES.CLIENTS THEN
+    RETURN(AESTYPES.RESOURCE)
+  FI
+
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    IF @service.clients(index)=client THEN
+      service.lockOrder(service.lockCount)=index
+      service.lockCount==+1
+      client.pending=request
+      RETURN(AESTYPES.PENDING)
+    FI
+  OD
+
+RETURN(AESTYPES.IDENTITY)
+
+; A queued lock may precede a window barrier; a new BEGIN never does.
+PUBLIC BYTE FUNC BeforeWindows(AESSTATE.Service POINTER service BYTE position)
+  BYTE slot
+
+  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+    IF service.clients(slot).windowWaiting<>0
+        AND position>=service.clients(slot).windowLocks THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+; Publish before releasing the scene, so a release cannot lose this waiter.
+PUBLIC PROC Window(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
+
+  client.pending=request
+  IF client.windowWaiting=0 THEN
+    client.windowLocks=service.lockCount
+    client.windowWaiting=1
+    service.windowPending==+1
+  FI
+
+RETURN
+
+PUBLIC PROC RemoveWindow(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client)
+
+  IF client.windowWaiting<>0 THEN
+    client.windowWaiting=0
+    client.windowLocks=0
+    service.windowPending==-1
+  FI
+
+RETURN
+
+; Include messages which have not yet entered the presenter's waiter queues.
+PUBLIC BYTE FUNC Queued(AESSTATE.Service POINTER service)
+  BYTE queued
+
+  EXEC.Forbid()
+  queued=service.lockCount<>0 OR service.windowPending<>0
+      OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0
+  EXEC.Permit()
+
+RETURN(queued)
+
+ENDMODULE

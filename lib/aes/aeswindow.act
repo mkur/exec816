@@ -1,7 +1,7 @@
 ; Shared GEM window policy. No application draws in this code.
 MODULE AESWINDOW
 USE EXEC
-USE EXECLISTS
+USE AESWAIT
 USE DESKCONSOLE
 USE A816MEMORY
 USE AESSTATE
@@ -36,17 +36,6 @@ BYTE FUNC Eligible(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client BYTE queued)
 
 RETURN((queued=0 OR service.mouseOwner=client.id) AND Ready(service,client)<>0)
-
-; Include messages which have not yet entered the presenter's waiter queues.
-PUBLIC BYTE FUNC Queued(AESSTATE.Service POINTER service)
-  BYTE queued
-
-  EXEC.Forbid()
-  queued=service.lockCount<>0 OR service.windowPending<>0
-      OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0
-  EXEC.Permit()
-
-RETURN(queued)
 
 BYTE FUNC ValidBounds(CARD kind INT x,y,width,height
     LAYERTYPES.Rect POINTER rect)
@@ -236,7 +225,7 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   LET held=AESGATE.Leave()
   LET status=AESROUTES.Prepare(window,@route)
   AESGATE.Reenter(held,request)
-  IF caller<>0 AND (Eligible(service,client,Queued(service))=0
+  IF caller<>0 AND (Eligible(service,client,AESWAIT.Queued(service))=0
       OR DESKCORE.FocusMetadataReady(desktop,window.id)=0) THEN
     DiscardRoute(request,route)
     RETURN(AESTYPES.PENDING)

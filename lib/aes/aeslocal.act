@@ -3,6 +3,7 @@ MODULE AESLOCAL
 USE EXEC
 USE AESTYPES
 USE AESSTATE
+USE AESWAIT
 USE AESGATE
 USE AESLOCKS
 USE AESWINDOW
@@ -41,7 +42,7 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   FI
   LET client=AESSTATE.Find(service,request.client)
   ; Include older messages that have not reached the native waiter queue yet.
-  queued=AESWINDOW.Queued(service)
+  queued=AESWAIT.Queued(service)
   wake=request.operation<>AESTYPES.OP_UPDATE
       OR (request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1)
   request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1)

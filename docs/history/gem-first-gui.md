@@ -861,3 +861,18 @@ fixture attempts. Native console attachments and physical caret/widget focus
 effects retain system admission; contended admission remains for GF8. No new
 demo distribution or full qualification matrix was produced for this slice.
 Hosted-system, hardware and latency qualification remain open. GF8 is next.
+
+
+## GF8: shared admission queue
+
+`AESWAIT` now owns lock insertion/removal, the older-lock prefix retained by
+window waiters, window admission/removal and queued-work inspection. Lock and
+window dispatch still use their existing execution paths in this first slice.
+The change establishes one ordering implementation for the caller-wait slices.
+
+Development checks: 689 host tests (four existing skips) and the optimized
+emitted lock fixture. No new fields, Tasks, signals or reservations are added.
+Reserved bank-zero delta is **0 fixed, 0 root, 0 kernel, 0 per public Task and
+0 idle bytes**, including guards, alignment and unused capacity. Private
+client/service payloads remain 136/1,982 bytes. This is not hosted-system
+qualification.

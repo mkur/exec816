@@ -3,6 +3,7 @@ MODULE AESLOCKS
 USE DISPLAY
 USE AESTYPES
 USE AESSTATE
+USE AESWAIT
 USE AESMOUSE
 USE AESWINDOWSTATE
 USE DESKSTATE
@@ -111,25 +112,6 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
 
 RETURN(AESTYPES.OK)
 
-PROC Remove(AESSTATE.Service POINTER service BYTE position)
-  BYTE slot
-
-  ; Each pending window remembers only the older prefix of this lock queue.
-  ; Removing a granted predecessor cannot turn a younger lock into an older one.
-  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
-    IF service.clients(slot).windowWaiting<>0
-        AND position<service.clients(slot).windowLocks THEN
-      service.clients(slot).windowLocks==-1
-    FI
-  OD
-  service.lockCount==-1
-  WHILE position<service.lockCount DO
-    service.lockOrder(position)=service.lockOrder(position+1)
-    position==+1
-  OD
-
-RETURN
-
 ; Complete a release synchronously, including the final paint journal.
 CARD FUNC Release(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code)
@@ -213,43 +195,16 @@ PUBLIC CARD FUNC Attempt(AESSTATE.Service POINTER service
 
 RETURN(status)
 
-; Only RPC admission manages pending requests and eligible-waiter order.
+; Admission shares the same queue as caller-side waits.
 PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
-  BYTE index
 
   LET status=Attempt(service,client,request,OWNER_READY,service.lockCount<>0)
   IF status<>AESTYPES.PENDING THEN
     RETURN(status)
   FI
 
-  IF service.lockCount=AESTYPES.CLIENTS THEN
-    RETURN(AESTYPES.RESOURCE)
-  FI
-
-  FOR index=0 TO AESTYPES.CLIENTS-1 DO
-    IF @service.clients(index)=client THEN
-      service.lockOrder(service.lockCount)=index
-      service.lockCount==+1
-      client.pending=request
-      RETURN(AESTYPES.PENDING)
-    FI
-  OD
-
-RETURN(AESTYPES.IDENTITY)
-
-; A queued lock may precede a window barrier; a new BEGIN never does.
-BYTE FUNC BeforeWindows(AESSTATE.Service POINTER service BYTE position)
-  BYTE slot
-
-  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
-    IF service.clients(slot).windowWaiting<>0
-        AND position>=service.clients(slot).windowLocks THEN
-      RETURN(0)
-    FI
-  OD
-
-RETURN(1)
+RETURN(AESWAIT.Lock(service,client,request))
 
 PUBLIC PROC Wake(AESSTATE.Service POINTER service)
   BYTE position
@@ -261,11 +216,11 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
       LET client=@service.clients(service.lockOrder(position))
       LET request=client.pending
       code=CARD(request.intin(0)) & $ff
-      IF Eligible(service,client,code,OWNER_READY,BeforeWindows(service,position))<>0 THEN
+      IF Eligible(service,client,code,OWNER_READY,AESWAIT.BeforeWindows(service,position))<>0 THEN
         status=Acquire(service,client,code,
           IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
             request.intin(1) ELSE INT(0) FI)
-        Remove(service,position)
+        AESWAIT.RemoveLock(service,position)
         client.pending=NULL
         IF status=AESTYPES.OK THEN
           request.intout(0)=1

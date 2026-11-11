@@ -11,6 +11,7 @@ USE TASKMEMORY
 USE A816MEMORY
 USE HEAPCORE
 USE AESLOCKS
+USE AESWAIT
 USE AESMOUSE
 USE AESGUI
 USE AESMENU
@@ -233,21 +234,12 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   EXEC.Permit()
   IF AESMENU.Retire(service,client)=0
       OR AESWINDOW.Retire(service,client,request)=0 THEN
-    client.pending=request
-    IF client.windowWaiting=0 THEN
-      client.windowLocks=service.lockCount
-      client.windowWaiting=1
-      service.windowPending==+1
-    FI
+    AESWAIT.Window(service,client,request)
 
     RETURN
   FI
 
-  IF client.windowWaiting<>0 THEN
-    client.windowWaiting=0
-    client.windowLocks=0
-    service.windowPending==-1
-  FI
+  AESWAIT.RemoveWindow(service,client)
 
   ; Admission is closed and every publisher has finished using the pool.
   WHILE EXEC.GetMsg(endpoint.port)<>NULL DO
@@ -396,10 +388,7 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
         ELSE AESWINDOW.Request(service,client,request,
             service.lockCount<>0 OR service.windowPending<>0) FI
     IF status=AESTYPES.PENDING THEN
-      client.pending=request
-      client.windowLocks=service.lockCount
-      client.windowWaiting=1
-      service.windowPending==+1
+      AESWAIT.Window(service,client,request)
     ELSE
       AESSTATE.Reply(request,status)
     FI
@@ -429,9 +418,7 @@ PUBLIC PROC Settle(AESSTATE.Service POINTER service)
                 ELSE AESWINDOW.Request(service,client,request,client.windowLocks<>0) FI
             IF status<>AESTYPES.PENDING THEN
               client.pending=NULL
-              client.windowWaiting=0
-              client.windowLocks=0
-              service.windowPending==-1
+              AESWAIT.RemoveWindow(service,client)
               AESSTATE.Reply(request,status)
             FI
           FI
