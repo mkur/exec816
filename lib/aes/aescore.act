@@ -231,7 +231,8 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   FI
 
   EXEC.Permit()
-  IF AESMENU.Retire(service,client)=0 OR AESWINDOW.Retire(service,client)=0 THEN
+  IF AESMENU.Retire(service,client)=0
+      OR AESWINDOW.Retire(service,client,request)=0 THEN
     client.pending=request
     IF client.windowWaiting=0 THEN
       client.windowLocks=service.lockCount

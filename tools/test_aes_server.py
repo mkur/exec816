@@ -606,7 +606,7 @@ ENDMODULE
             require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle','frame','geometry','visibility') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
                     'Incomplete application checks')
             if suite=='visibility':
-                require(len(report['visibility'])==14,'Incomplete visibility checkpoints')
+                require(len(report['visibility'])==22,'Incomplete visibility checkpoints')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Visibility exceeded its interrupt floor')
             if pointer:

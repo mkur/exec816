@@ -1,0 +1,2346 @@
+{
+  "slice": "GF7",
+  "plan_slice": "GF7",
+  "plan_slice_complete": true,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "base_revision": "b37785ef7571eb85dd711d2bae63546c12bad099",
+  "scope": "Caller open and close with shared exit retirement.",
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ]
+  },
+  "toolchain": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "actionc_override": false,
+    "compiler_profile": "release",
+    "native_mode": "Optimized development fixtures; unchanged C/Action entry ABI retains the focused raw/optimized GF4 bridge evidence.",
+    "calypsi": {
+      "cc65816": {
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "sources_sha256": {
+    "c/calypsi/aes-windows.c": "74af0b33ac7f1444dd8515ef95d1bf2cabe0d2413216be96a152742930428d83",
+    "lib/aes/aescore.act": "9982cff47bac92ec56443c26f1f1b214c1b5ac1856e85cff56e26401324d3ae6",
+    "lib/aes/aesgate.act": "2da743ea77da35f696b3f17302856760dec427d80311bf4bb1925364da99c6d3",
+    "lib/aes/aeslocal.act": "a943223c8cf48bad737ad830f22e833e9883e8ebe28dacaf9ea40c4c25287602",
+    "lib/aes/aesmouse.act": "1bdb12b946712f4a3674b7b0c077ebac992be9d40ba46e36c21714035003aa97",
+    "lib/aes/aesroutes.act": "1590f9f9951900c868471af6b39d9ab6dbc0ca23368c3ed5ab80355ef1b8508b",
+    "lib/aes/aeswindow.act": "7db25fca6b7942cee0f1b67b04dfb775b7979d97b026b5ad15ae1c207291ca85",
+    "lib/desktop/deskstate.act": "f87c7ec3478c7d4a94a9f3367e108ca8bc75713829557615056f986c72491258",
+    "tests/programs/aes_gate.act": "238f4e9bc337ee22cf761f055d2f40febb3e149863b572c6cfe8267bf8db798a",
+    "tests/programs/aes_visibility.c": "de70f5265ab3b10bfca44887f9ae9774db2bf33f340624852394b5b53de7d7b6",
+    "tools/test_aes_gate.py": "cae411be09634003a3d6c64d8fe2630850db6fde81a25d6e6d1a3486f52a44c4",
+    "tools/test_aes_scene.py": "4b5d071d451d7fe2f7547ff745e5e233b47cb03733e8494ec35646d9e2f06ec3",
+    "tools/test_aes_server.py": "65dd999a2b874c389a734b397534917245fc81c0871d5e07875778b24af9e618",
+    "tools/test_aes_visibility.py": "4034f8dc0cc4556806ee5154bdef8a7531482b134a3dd90decac7dd221500ade",
+    "tools/test_aes_window_effects.py": "3fb0b70e9dda3fd260f78eb910d2629ddf5d412d81e64086a7e0dc2291802dd8"
+  },
+  "checks": [
+    {
+      "name": "visibility",
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/visibility-final/results.json",
+        "sha256": "dc7df5b24ee157cbbd2a3f10e82bcba4575a36461770cf233655d1d288da06a5"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/complete/visibility-final/program/build.json",
+        "sha256": "69cf659b4b6c5a2de48203a41637c4dc49d9d90c69786e007746a05588def824"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/complete/visibility-final/program/program.a816.json",
+        "sha256": "1093a28ca8adcdfc0254635bb2c237553c16dc7f962a435144931005367032bc"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/complete/visibility-final/c-image.json",
+        "sha256": "914d04e3fc2e8cdffd1929c77ea71956a123e007ea76ab8b9e3d659ee16f4faa"
+      },
+      "AESChecks": 204,
+      "AESFailures": 0,
+      "native_checks": 5,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 672,
+          "remaining_above_floor": 608
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 330,
+          "remaining_above_floor": 726
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "visibility": [
+        {
+          "phase": 1,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            136,
+            1982
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 1,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 2,
+          "operation": 101,
+          "result": 0,
+          "status": 5,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 1,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 3,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 4,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 2,
+            "bounds": [
+              40,
+              32,
+              200,
+              112
+            ]
+          }
+        },
+        {
+          "phase": 5,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              40,
+              32,
+              200,
+              112
+            ]
+          }
+        },
+        {
+          "phase": 6,
+          "operation": 101,
+          "result": 0,
+          "status": 1,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              40,
+              32,
+              200,
+              112
+            ]
+          }
+        },
+        {
+          "phase": 7,
+          "operation": 101,
+          "result": 0,
+          "status": 3,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              40,
+              32,
+              200,
+              112
+            ]
+          }
+        },
+        {
+          "phase": 8,
+          "operation": 101,
+          "result": 0,
+          "status": 7,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              40,
+              32,
+              200,
+              112
+            ]
+          }
+        },
+        {
+          "phase": 9,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            1,
+            3,
+            0,
+            0,
+            2,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 3,
+            "bounds": [
+              48,
+              40,
+              208,
+              120
+            ]
+          }
+        },
+        {
+          "phase": 10,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              48,
+              40,
+              208,
+              120
+            ]
+          }
+        },
+        {
+          "phase": 11,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            1,
+            2,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 4,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 12,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 13,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            1,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 5,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 14,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 15,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 6,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 16,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 17,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 7,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 18,
+          "operation": 102,
+          "result": 0,
+          "status": 7,
+          "sequence_delta": 0,
+          "attempts": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 19,
+          "operation": 101,
+          "result": 0,
+          "status": 5,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 20,
+          "operation": 103,
+          "result": 0,
+          "status": 5,
+          "sequence_delta": 0,
+          "attempts": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 21,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 22,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 8,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        }
+      ],
+      "publisher_exit_wait": {
+        "view_deleted_before_exit": true,
+        "closing_endpoint": true,
+        "retained_publisher_holds": 1
+      },
+      "close_with_waiting_peer": true,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 385,
+        "native_irq_count": 20561
+      }
+    },
+    {
+      "name": "windows",
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/windows/results.json",
+        "sha256": "c1f2a65bdde12116886b362f3dac51aedfe233b611bd6e9681b7ab2f6d80fec7"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/complete/windows/program/build.json",
+        "sha256": "e9ef849d65973b26881e9a857a860dbe84407c98d19a92a0b7bc85ad3dc04b3b"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/complete/windows/program/program.a816.json",
+        "sha256": "cb03841754ecb6a08e79704829ff8a346fee71927231e88d10615e8aaa3e28be"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/complete/windows/c-image.json",
+        "sha256": "72943f759a638fe2d03fe29e4fb6cc9d5dab64bf3ea46f8d6b1d4da9833eee6f"
+      },
+      "AESChecks": 285,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 700,
+          "remaining_above_floor": 580
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 462,
+          "remaining_above_floor": 594
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 499,
+          "remaining_above_floor": 557
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 214,
+          "remaining_above_floor": 842
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 952,
+          "remaining_above_floor": 1352
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 2939,
+        "native_irq_count": 25928
+      }
+    },
+    {
+      "name": "effects",
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/effects/results.json",
+        "sha256": "91b17b9cbefc8b47d24692c07e2ef5a4fed7bb316d2dde62083f8702b78cbbc1"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/complete/effects/program/build.json",
+        "sha256": "ec548d1a6f479ea23685a7d2a8ead24cba07e018e9df7121bd95f808e0928fbe"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/complete/effects/program/program.a816.json",
+        "sha256": "1d08c6ee03984b4b9415bbdf3958ece27f6196b31fb1f034213d50742f3c0d44"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/complete/effects/c-image.json",
+        "sha256": "e90816b1c0d21f7e06b4121da7b3aed71b8e28a53058b5066b95cc761110339b"
+      },
+      "cases": [
+        {
+          "variant": 0,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 358460,
+              "peer_after": 371742,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            },
+            {
+              "stage": 2,
+              "frames": 4,
+              "peer_before": 374859,
+              "peer_after": 387087,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 1
+            }
+          ],
+          "close_before_drain": {
+            "shown": 0,
+            "epoch": 0,
+            "retained_route": true,
+            "committed_lookup": 0,
+            "query_completed": true
+          },
+          "checks": 30,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 3,
+          "stop_count": 0,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 3,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 358460,
+              "peer_after": 371742,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            },
+            {
+              "stage": 2,
+              "frames": 4,
+              "peer_before": 374895,
+              "peer_after": 386723,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 1
+            }
+          ],
+          "close_before_drain": {
+            "shown": 0,
+            "epoch": 0,
+            "retained_route": true,
+            "committed_lookup": 0,
+            "query_completed": true
+          },
+          "checks": 25,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 1,
+          "stop_count": 1,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 4,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 358460,
+              "peer_after": 371742,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            }
+          ],
+          "checks": 18,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 1,
+          "stop_count": 1,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 65427,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "gate-raw",
+      "result": {
+        "path": "build/gem-first-gui/gf7/open/gate-raw/results.json",
+        "sha256": "1fc80f6e30bebcf315fe8a07a850d8b751beb0f731e46eb23a6cf1034da20c09"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/open/gate-raw/program/build.json",
+        "sha256": "5c669059c8d8ccb3fcb5e6e8e894753b0da3e44fb93065815cac87d22a585001"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/open/gate-raw/program/program.a816.json",
+        "sha256": "edbadea88e4e77913b6c3290158012faf16fe48455bdc2b79e14cf626d5037f4"
+      },
+      "checks": 61,
+      "mode": "raw",
+      "service_bytes": 1982,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 7,
+        "native_irq_count": 0
+      }
+    },
+    {
+      "name": "gate-opt",
+      "result": {
+        "path": "build/gem-first-gui/gf7/open/gate-opt/results.json",
+        "sha256": "e6ff72f985326b9e9209b583de2ef07f3513f26a659c800a86cd3c4997ea624d"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/open/gate-opt/program/build.json",
+        "sha256": "a60952c1f477ffa4fc30e28a0b211c330933cc798d163ccb3b3e6ed2bb3d0399"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/open/gate-opt/program/program.a816.json",
+        "sha256": "05b61dcd5bbdf75705f7e7901fec6a7ee29975751b93c373d202cf8298ff80de"
+      },
+      "checks": 61,
+      "mode": "opt",
+      "service_bytes": 1982,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 5,
+        "native_irq_count": 0
+      }
+    },
+    {
+      "name": "scene",
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/scene/results.json",
+        "sha256": "55277a1c40a4c8354e2fb7d2f4c31fa7f33d76dc2d155ff22faaf9e965f56f34"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/complete/scene/program/build.json",
+        "sha256": "0c84b744a975f7008252913ab7315161122064e0a88d58c8e636c86e5ca04b17"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/complete/scene/program/program.a816.json",
+        "sha256": "f2776816517e037f03c7e348076f2f5b44758d8b699860f00ca8182b61820e73"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/complete/scene/c-image.json",
+        "sha256": "149128c76d6862a131dd7e271808980033f41b56bca02e79d2612556b00879b3"
+      },
+      "cases": [
+        {
+          "variant": 0,
+          "caller_waiting": true,
+          "delivered_event_bits": 51,
+          "presenter_waiting": true,
+          "peer_progress": 23235,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 680,
+              "remaining_above_floor": 600
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 149,
+              "remaining_above_floor": 907
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 322,
+              "remaining_above_floor": 734
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 761,
+              "remaining_above_floor": 1543
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 316,
+              "remaining_above_floor": 1988
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          },
+          "checks": 37,
+          "failures": 0,
+          "first_failure": 0,
+          "scene_checks": 1101,
+          "physical_checks": 190,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 1,
+          "caller_waiting": true,
+          "retained_token": 7,
+          "fence_retired_without_scene": true,
+          "presenter_waiting": true,
+          "peer_progress": 34787,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 618,
+              "remaining_above_floor": 662
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 149,
+              "remaining_above_floor": 907
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 322,
+              "remaining_above_floor": 734
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 832,
+              "remaining_above_floor": 1472
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 310,
+              "remaining_above_floor": 1994
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 21,
+              "remaining_above_floor": 235
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          },
+          "checks": 33,
+          "failures": 0,
+          "first_failure": 0,
+          "scene_checks": 1156,
+          "physical_checks": 213,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 2,
+          "caller_waiting": true,
+          "captured_pointer": [
+            140,
+            100
+          ],
+          "presenter_waiting": true,
+          "peer_progress": 155619,
+          "pointer_before_buttons": [
+            139,
+            100
+          ],
+          "cursor_redrawn_without_new_input": true,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 632,
+              "remaining_above_floor": 648
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 149,
+              "remaining_above_floor": 907
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 322,
+              "remaining_above_floor": 734
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 753,
+              "remaining_above_floor": 1551
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 308,
+              "remaining_above_floor": 1996
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 285,
+              "remaining_above_floor": 995
+            }
+          },
+          "checks": 30,
+          "failures": 0,
+          "first_failure": 0,
+          "scene_checks": 1085,
+          "physical_checks": 188,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "locks",
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/locks/results.json",
+        "sha256": "0c05176f6e058e5fa16f05f69498086cabebc1d0730d6c7e931c80aab22db7e2"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/complete/locks/program/build.json",
+        "sha256": "3c04fc3fb3e4e5b81a66ea4384042593e2bb4cd4f8ded0c4f65dd47e15fe166a"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/complete/locks/program/program.a816.json",
+        "sha256": "24e83b53907783ced330cfff0e7a4dca798b4746e6cbaecebde04316d39f9b05"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/complete/locks/c-image.json",
+        "sha256": "f924f3d75d884a9633c3854e70e2a43f7ad15729ccbd5f2c84ee972e001c2c6f"
+      },
+      "AESChecks": 181,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 948,
+          "remaining_above_floor": 332
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 347,
+          "remaining_above_floor": 709
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 350,
+          "remaining_above_floor": 706
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 344,
+          "remaining_above_floor": 712
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 720,
+          "remaining_above_floor": 1584
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 420,
+        "native_irq_count": 23316
+      }
+    },
+    {
+      "name": "lifecycle",
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/lifecycle/results.json",
+        "sha256": "c85d6c265dbd9707b70767e55ebb8ac16a17de4455958391ed8db008c3712b87"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/complete/lifecycle/program/build.json",
+        "sha256": "c7cdc5e1054a7d4cbaa599861df1015875e30bade1b2270b3af4107bb99d1a42"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/complete/lifecycle/program/program.a816.json",
+        "sha256": "83324a3891378d90142b69bf5c37f8d2cc6cd7f02c74b7afe0b16091064b8d3d"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/complete/lifecycle/c-image.json",
+        "sha256": "81b0fda2ecfd5f947c4de71c4b647c10809513ce4093a855863bdb3ad1da544d"
+      },
+      "AESChecks": 265,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 579,
+          "remaining_above_floor": 701
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 501,
+          "remaining_above_floor": 555
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 714,
+          "remaining_above_floor": 1590
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 280,
+        "native_irq_count": 12188
+      }
+    },
+    {
+      "name": "pointer",
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/pointer/results.json",
+        "sha256": "0774280212fc92ecc77e1eec81f39fec4a99645c20cb66df7a4ed11e548a34c1"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/complete/pointer/program/build.json",
+        "sha256": "cf2e9cc0200edeef7f1b05c4381e908eaf988fed411d8435c594324d9e6c00fc"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/complete/pointer/program/program.a816.json",
+        "sha256": "2f82c3ca5b277674510dff7c841ea046e1e41c6464dc3bf502af2a2e9edb5df3"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/complete/pointer/c-image.json",
+        "sha256": "2034bf765ee34fc4addaae4185f295296d04acea4417240ac552264341d35b72"
+      },
+      "AESChecks": 168,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 515,
+          "remaining_above_floor": 765
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 408,
+          "remaining_above_floor": 648
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 450,
+        "native_irq_count": 25708
+      }
+    },
+    {
+      "name": "multiwindow",
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/multiwindow/results.json",
+        "sha256": "aa6aaa3a9df0af3580d7bdc5450e1ca351db26699744469051d0a9fb3031fff8"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/complete/multiwindow/program/build.json",
+        "sha256": "3bed5eb2c468b1c112d587624a77bccc00260714e2dc2cbf2c39a4d78c406414"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/complete/multiwindow/program/program.a816.json",
+        "sha256": "0f0af62d32585728f3ce37b7f8a97a3be732d301a3478d7d8165a81112b29437"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/complete/multiwindow/c-image.json",
+        "sha256": "9446eb9486b6a0528261f88abeb8c1f4a33cc006db5db0f864247973110ce89f"
+      },
+      "AESChecks": 67,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 528,
+          "remaining_above_floor": 752
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 33,
+          "remaining_above_floor": 223
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 321,
+        "native_irq_count": 15599
+      }
+    },
+    {
+      "name": "cache",
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/cache/results.json",
+        "sha256": "3364864df4e532099018f166f9e04b4deb21930484e76b08ae69b2cf5b26b619"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/complete/cache/program/build.json",
+        "sha256": "b828d12c8786e187543795ecd3c9a5398020fe446e04b4f27673cb20f7832db9"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/complete/cache/program/program.a816.json",
+        "sha256": "88dc5dc16fbb22823c83d2ffe6616fe4876cc0f2b1af900fc4d1df0d080676fb"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/complete/cache/c-image.json",
+        "sha256": "85e5be741f06470afa13a6ca6b3c6ac58ee6992fadfca1426be5820e9da21651"
+      },
+      "AESChecks": 224,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 684,
+          "remaining_above_floor": 596
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 153,
+          "remaining_above_floor": 903
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 949,
+          "remaining_above_floor": 1355
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 3960,
+        "native_irq_count": 41126
+      }
+    },
+    {
+      "name": "menus",
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/menus/results.json",
+        "sha256": "7af0d90664290e6f4a3c3a64f769a8bb56071ec49258924f2789bbc043399727"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/complete/menus/program/build.json",
+        "sha256": "91e609142bb0102cb0ce2e998b13d209926ca5dc9ecd4d22567f5f591057c3cb"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/complete/menus/program/program.a816.json",
+        "sha256": "539696f0b1327cd1d86aca009ba03c2d49eba6d139a7434895291b46827b9093"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/complete/menus/c-image.json",
+        "sha256": "62fc7d197ac4bfdf4dd96759cc3e7488276d9c169cb998d0ce2cc3619f5dac1a"
+      },
+      "AESChecks": 321,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 587,
+          "remaining_above_floor": 693
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 305,
+          "remaining_above_floor": 751
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 149,
+          "remaining_above_floor": 907
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 481,
+          "remaining_above_floor": 575
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 958,
+          "remaining_above_floor": 1346
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 297,
+          "remaining_above_floor": 983
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 17998,
+        "native_irq_count": 39656
+      }
+    },
+    {
+      "name": "loaded-counters",
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/loaded-counters/results.json",
+        "sha256": "494e5c0e47c3b13777db425dbc0ad66ebd3592e4cfa60480099a11ddc1736acb"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/complete/loaded-counters/program/build.json",
+        "sha256": "8386b0be808980e3a1045447c879418e8058aa9f9b1102cbc567a521b6a4b172"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/complete/loaded-counters/program/program.a816.json",
+        "sha256": "ba1e5e61a2edece595affa0d1f9fc5cc48d02822ae65a2a2ab186cc12500b9ac"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/complete/loaded-counters/c-image.json",
+        "sha256": "6277d2f60c674cd52ef460abe50c134bafbfd9fb8124a34a49cf4cc088a81f0e"
+      },
+      "cases": [
+        {
+          "name": "idle",
+          "status": "pass",
+          "identities": [
+            1,
+            2
+          ],
+          "pointer": [
+            {
+              "label": "idle",
+              "target": [
+                328,
+                128
+              ],
+              "start": 42900891,
+              "captured": 43473428,
+              "presented": 43482390,
+              "capture_ms": 322.83842628552577,
+              "presentation_ms": 327.8918603454571,
+              "scanout_observed": 43511060
+            }
+          ],
+          "progress": [
+            {
+              "identity": 1,
+              "increments": 6,
+              "paints": 6
+            },
+            {
+              "identity": 2,
+              "increments": 5,
+              "paints": 6
+            }
+          ],
+          "window": [
+            42900885,
+            54181524
+          ],
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 624,
+              "remaining_above_floor": 656
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 310,
+              "remaining_above_floor": 746
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 149,
+              "remaining_above_floor": 907
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 809,
+              "remaining_above_floor": 247
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 809,
+              "remaining_above_floor": 247
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 143,
+              "remaining_above_floor": 913
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 952,
+              "remaining_above_floor": 1352
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 37904,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "9": {
+              "base": 39248,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "10": {
+              "base": 40592,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "11": {
+              "base": 41936,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "12": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 64,
+              "remaining_above_floor": 192
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          },
+          "checks": 6,
+          "filesystem": {
+            "sectors": 2880,
+            "sector_bytes": 256,
+            "allocated": 137,
+            "free": 2743,
+            "files": 2,
+            "directories": 2
+          },
+          "media_sha256": "e9d247483dca7bd2851707c68b9e5d1749ca06a68f6a894f07aeba8b81127c18",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        }
+      ]
+    }
+  ],
+  "host": {
+    "run": 689,
+    "passed": 685,
+    "skipped": 4,
+    "log": {
+      "path": "build/gem-first-gui/gf7/complete/host.log",
+      "sha256": "9188972655661fba684d3160bfaf19d1b8e75c2671acff1e36be68a4251f339b"
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "resources": {
+    "tasks_added": 0,
+    "signals_added": 0,
+    "upper_static_arena_delta": 0,
+    "heap_reservation_delta": 0,
+    "client_payload_bytes": 136,
+    "service_payload_bytes": 1982
+  },
+  "resource_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf7/routes/windows/program/build.json",
+      "sha256": "937cb7d1e1fc1a29579fff0760bf65cc7b1ce5a23381783ca63dfc4369cb0759"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf7/complete/windows/program/build.json",
+      "sha256": "e9ef849d65973b26881e9a857a860dbe84407c98d19a92a0b7bc85ad3dc04b3b"
+    },
+    "parent_bytes": {
+      "native": {
+        "code": 1067984,
+        "data": 11962,
+        "zero_fill": 25898
+      },
+      "c": {
+        "code": 189627,
+        "data": 45061,
+        "zero_fill": 21647
+      }
+    },
+    "candidate_bytes": {
+      "native": {
+        "code": 1070566,
+        "data": 11962,
+        "zero_fill": 25898
+      },
+      "c": {
+        "code": 189637,
+        "data": 45061,
+        "zero_fill": 21647
+      }
+    },
+    "delta": {
+      "native": {
+        "code": 2582,
+        "data": 0,
+        "zero_fill": 0
+      },
+      "c": {
+        "code": 10,
+        "data": 0,
+        "zero_fill": 0
+      }
+    },
+    "unchanged_reservations": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations",
+      "image_data",
+      "upper_reservations"
+    ]
+  },
+  "window_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf7/routes/windows/results.json",
+      "sha256": "6a5cd2919b27f1b002a745b784baadbb090716ac6e2732da121967d61b25af76"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf7/complete/windows/results.json",
+      "sha256": "c1f2a65bdde12116886b362f3dac51aedfe233b611bd6e9681b7ab2f6d80fec7"
+    },
+    "identical": [
+      "iconification",
+      "physical_requests",
+      "gadgets",
+      "visible_rectangles",
+      "visible_pixels"
+    ]
+  },
+  "limits": [
+    "Development tier only; no hosted-system, hardware or latency qualification.",
+    "Native console attachments and physical caret/widget focus effects retain their existing system admission.",
+    "Contended mutations retain RPC pending admission until GF8.",
+    "The wire/private C entry ABI is unchanged. The small raw/optimized gate probe validates the new continuation mode and request-owned signal interpretation.",
+    "The loaded Counter idle cohort was executed; no new demo package, disk cohort or full qualification matrix was run."
+  ],
+  "intermediate_failures": [
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf7/open/visibility-initial.log",
+        "sha256": "b815092b8b05d25092e20c0647df0ee1ffcee39e73888f83458dbd7b01fd414c"
+      },
+      "reason": "The first readiness probe shadow did not override the generated worker; corrected the fixture policy-module hook."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf7/open/visibility-cycle.log",
+        "sha256": "bd62ee17f23eb9e69885787cc28390ac35bbc8193a46e5dcfafd1e424edabd65"
+      },
+      "reason": "An attempted probe import introduced a fixture-only module cycle; replaced it with the generated-worker hook."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf7/open/visibility-frame-busy.log",
+        "sha256": "d371dc0d64f1fe41b262690cfcbccfb0b998c42099dee4ba902df8c8f8830b4b"
+      },
+      "reason": "Admission readiness was sampled before all frame work settled; the fixture now waits for a fresh settled turn."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf7/open/visibility-controller-stop.log",
+        "sha256": "3b2cd0a6476d552ac4204dda216ed419f006089fc6da5748799aa4ac3191c591"
+      },
+      "reason": "All 14 checkpoints and 168 C checks passed, but the new controller stopped with display DMA active. Added a scene-safe background/fence settlement barrier before teardown."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf7/complete/scene-stale-pointer.log",
+        "sha256": "ba8e4a7581fcfa3cfc60c9494d3b3a5c9d46aa100f6f66723a5e1286fc9ed5e5"
+      },
+      "result": {
+        "path": "build/gem-first-gui/gf7/complete/scene-stale-pointer-results.json",
+        "sha256": "5905f3e7fc3b9c332f41d09c90b2d7a9b02e81081e5c2d32d495b04f7029357d"
+      },
+      "reason": "The scene cursor oracle froze its target before button stimuli collected a final ST quadrature step (139 to 140). It now freezes the last captured position after the input-only dispatcher sleeps, then requires exact redraw within the original 100-frame bound with no further input. All three variants pass the rerun."
+    }
+  ],
+  "open_record": {
+    "path": "docs/development/gem-first-gf7-open.json",
+    "sha256": "c080f4c22a3e91129d37797f12686ec53b8bedafc821004a6515c0727c276cef"
+  },
+  "open_commit": "7159e92b",
+  "cache_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf6/complete/cache/results.json",
+      "sha256": "1e23b04f49623f39449f15aa047830f621400d4cb8f120b861863fdadc228bdf"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf7/complete/cache/results.json",
+      "sha256": "3364864df4e532099018f166f9e04b4deb21930484e76b08ae69b2cf5b26b619"
+    },
+    "checkpoints": 32,
+    "all_other_fields_identical": true,
+    "cumulative_restore_deltas": [
+      {
+        "phase": 26,
+        "parent": 3,
+        "candidate": 2
+      },
+      {
+        "phase": 27,
+        "parent": 3,
+        "candidate": 2
+      },
+      {
+        "phase": 28,
+        "parent": 3,
+        "candidate": 2
+      },
+      {
+        "phase": 29,
+        "parent": 3,
+        "candidate": 2
+      },
+      {
+        "phase": 30,
+        "parent": 3,
+        "candidate": 2
+      },
+      {
+        "phase": 31,
+        "parent": 4,
+        "candidate": 3
+      },
+      {
+        "phase": 32,
+        "parent": 4,
+        "candidate": 3
+      }
+    ],
+    "scanouts_identical": 14,
+    "scanout_sha256": {
+      "aes-cache-frame-29.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806",
+      "aes-cache-1.bgra": "a1e99f69851a01d78a43aca808e8842bc65be0c298a7ff140d381910eec11b36",
+      "aes-cache-12.bgra": "1802ec7c8d0ae718a7591a5e127cfc6a5316324b4fffce50c36988fce1745968",
+      "aes-cache-6.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+      "aes-cache-14.bgra": "9f607df4d92614b184c33049e828702a296a1a89d8fa0c7143834475cbdb7074",
+      "aes-cache-4.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+      "aes-cache-9.bgra": "a29a54675ac7314436fccaaae4e7ca522d7f508265685e65445972a9d15e62e1",
+      "aes-cache-11.bgra": "6cf17b7f98a992ca4c74fc54cf2ab9a4975ff164d5c3e5ef00e4999a9d0f13d6",
+      "aes-cache-2.bgra": "7fa6df8f8d50903c3f5f120ea835b43a91a42741a08bd554d6daf0269dc4dfb6",
+      "aes-cache-26.bgra": "fc01abc65b6dba3b6eadf0c37cc3dc9d914182fef8076758af86d90d4ec50760",
+      "aes-cache-frame-27.bgra": "9e34c76b23bc0ec1465483cdd30c9ca019d93e91f68c4470c3a27f6779f742d6",
+      "aes-cache-frame-31.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806",
+      "aes-cache-10.bgra": "a0a69b197c2b27186e41a1cf6091efe8f01a435cfef99711a0c5dc62bcb2169f",
+      "aes-cache-3.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775"
+    }
+  },
+  "production_reservations": {
+    "task_capacity": 12,
+    "unchanged": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations",
+      "image_data",
+      "upper_reservations"
+    ],
+    "parent": {
+      "path": "build/gem-first-gui/gf6/complete/disk/program/build.json",
+      "sha256": "5f3f9f99238f9b453f593504b3a65f6b47a6990888e5d3ecdedb45af7930cf4c"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf7/complete/loaded-counters/program/build.json",
+      "sha256": "8386b0be808980e3a1045447c879418e8058aa9f9b1102cbc567a521b6a4b172"
+    }
+  },
+  "visibility_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf7/open/visibility-scoped/results.json",
+      "sha256": "12adb5551cdae691bc40ceeada114236a7c7d0bcecd59410d6ed9993bca69b4c"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf7/complete/visibility-final/results.json",
+      "sha256": "dc7df5b24ee157cbbd2a3f10e82bcba4575a36461770cf233655d1d288da06a5"
+    },
+    "checkpoints": 14,
+    "identical": [
+      "phase",
+      "operation",
+      "result",
+      "status",
+      "view"
+    ]
+  }
+}

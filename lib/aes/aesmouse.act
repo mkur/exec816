@@ -1,4 +1,4 @@
-; Presenter-only physical gesture ownership, independent of display borrowing.
+; Presenter input routing; callers may cancel a withdrawn window's capture.
 MODULE AESMOUSE
 USE EXEC
 USE INPUT
@@ -87,6 +87,7 @@ RETURN
 
 PUBLIC PROC CancelWindow(LONGCARD epoch)
 
+  EXEC.Forbid()
   AESSTATE.mouseDirty=1
 
   IF epoch<>0 AND clickEpoch=epoch THEN
@@ -98,6 +99,8 @@ PUBLIC PROC CancelWindow(LONGCARD epoch)
     openEpoch=0
     needRelease=1
   FI
+  EXEC.Permit()
+
 RETURN
 
 PUBLIC BYTE FUNC NativeGesture()
@@ -344,9 +347,13 @@ RETURN(0)
 
 PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
 
+  ; One bounded sample cannot straddle caller cancellation. IRQ/NMI capture
+  ; uses separate resident state; none of these helpers waits or draws.
+  EXEC.Forbid()
   A816MEMORY.Clear(BYTE POINTER(@capturedRoute),SIZEOF(AESSNAPSHOT.WindowRoute))
   LET handled=RouteSample(sample)
   AESSNAPSHOT.Drop(capturedRoute.endpoint)
+  EXEC.Permit()
 
 RETURN(handled)
 ENDMODULE

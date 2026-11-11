@@ -155,7 +155,8 @@ ENDMODULE
 
     for name, routines in (
         ('aeswindowstate', ('Publish', 'BeginUpdate', 'EndUpdate', 'Sync')),
-        ('aeswindow', ('Request', 'Query', 'Geometry', 'Lifecycle', 'SetBounds')),
+        ('aeswindow', ('Request', 'Query', 'Geometry', 'Lifecycle', 'SetBounds',
+                       'Visibility', 'CommitOpen', 'CommitClose')),
         ('aeslocks', ('Attempt',)),
         ('aeshost', ('Settled', 'Settle')),
         ('deskhost', ('Controls', 'Runnable', 'Cache', 'Ready', 'PaintReady')),
@@ -358,6 +359,15 @@ def run(out, reuse=False, variants=(0, 1, 2)):
                             'Deferred presenter spins on pending work')
                     row['presenter_waiting'] = True
                     row['peer_progress'] = get(sy['ScenePeer'])-start
+                    if variant == 2:
+                        # Button edges can collect a final ST quadrature step.
+                        # Freeze the last captured position after all stimuli
+                        # and the input-only dispatcher have settled.
+                        row['pointer_before_buttons'] = target
+                        target = [get(at('DESKINPUT', v), 2) for v in ('cursorX', 'cursorY')]
+                        drawn = [get(at('SCENEPROBE', v), 2) for v in ('cursorX', 'cursorY')]
+                        require(target != drawn, 'Cursor was already redrawn without scene admission')
+                        row['captured_pointer'] = target
                     b.poke16(sy['SceneHoldGo'], 1)
                     if variant == 2:
                         reach(f'(dw(${at("SCENEPROBE", "cursorX"):x})={target[0]})&'

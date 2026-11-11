@@ -22,6 +22,7 @@ PUBLIC CARD FUNC Call(LONGCARD value)
       AND request.operation<>AESTYPES.OP_CREATE
       AND request.operation<>AESTYPES.OP_DELETE
       AND request.operation<>AESTYPES.OP_OPEN
+      AND request.operation<>AESTYPES.OP_CLOSE
       AND request.operation<>AESTYPES.OP_FIND
       AND request.operation<>AESTYPES.OP_SET THEN
     RETURN(0)
@@ -47,7 +48,7 @@ PUBLIC CARD FUNC Call(LONGCARD value)
       ELSE INT(0) FI
   IF request.operation=AESTYPES.OP_UPDATE THEN
     status=AESLOCKS.Attempt(service,client,request,AESLOCKS.OWNER_READY,queued)
-  ELSEIF request.operation=AESTYPES.OP_OPEN THEN
+  ELSEIF request.operation=AESTYPES.OP_OPEN OR request.operation=AESTYPES.OP_CLOSE THEN
     status=AESWINDOW.Visibility(service,client,request,queued)
   ELSEIF request.operation=AESTYPES.OP_SET THEN
     IF AESWINDOW.FrameField(request.intin(1))<>0 THEN

@@ -5,7 +5,7 @@
 
 The optional AES endpoint runs in the existing desktop presenter. Registration,
 exit, unmigrated window mutations and contended GUI locks use ordinary Exec RPC.
-Eligible hidden creation/deletion, open, frame/geometry/top setters and committed
+Eligible hidden creation/deletion, open/close, frame/geometry/top setters and committed
 window lookup, uncontended BEGIN/END UPDATE, copied messaging and event/timer
 waits run in their callers.
 This adds no Task or kernel gateway.
@@ -360,6 +360,21 @@ readiness before publishing a fresh open epoch. If admission changes, the
 caller retires its unused route before falling back to RPC. Route exhaustion
 and exhausted GUI epochs leave the hidden window and input tag pool intact.
 Console-bound windows and caret/widget focus effects retain system admission.
+
+Eligible ordinary/PB closes withdraw the open epoch, GUI facts and capture,
+hide the window and publish replacement focus before releasing the scene for
+route retirement. Only the presenter consumes input from its lease. A caller
+which finds referenced input retains the hidden window and tag for the existing
+RPC drain continuation; success is returned only after the route retires.
+If that fallback cannot be submitted, open/delete return `AES_BUSY` while the
+closing tag remains. Retry close or exit to finish retirement before deleting
+the view. Registration exit still uses RPC and shares these retirement helpers.
+
+Pointer-sample routing and window-capture cancellation use one bounded Task
+transaction. It contains no drawing or wait; IRQ/NMI capture uses separate
+resident state. Published input routes hold endpoints and copied values, so
+view deletion cannot free a live publisher's registration storage. Exit waits
+for those endpoint holds before replying and permitting caller storage release.
 
 A copied move keeps the old published geometry until display completion. Success
 publishes the new bounds; a quiescent display failure keeps the old bounds and

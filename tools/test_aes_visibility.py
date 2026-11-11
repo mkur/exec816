@@ -1,6 +1,7 @@
 """GF7 private visibility and resource-admission boundaries."""
 from generate_aes_server import layout
 from generate_input_native import definitions
+from generate_desktop import ABI as DESKTOP_ABI,layout as desktop_layout
 from library_paths import read_source
 from native_program import ROOT,require
 from os_boundary import run_to
@@ -9,7 +10,8 @@ import adapter_state as adapter
 ROOTS=['VisNative','VisBusy','VisFail','VisFocus','VisHold','VisHeld','VisRelease',
        'VisEpoch','VisWaiting','VisLocks','VisOwner','VisPhase','VisGo','VisPoint',
        'VisOperation','VisResult','VisStatus','VisSequence','VisView',
-       'VisPeerHeld','VisPeerRelease','VisWake','VisReady']
+       'VisPeerHeld','VisPeerRelease','VisWake','VisReady','VisRetireBusy',
+       'VisEndpoint','VisPublisherHeld','VisPublisherGo','VisExitPending','VisQueue']
 
 
 def instrument(out):
@@ -20,7 +22,7 @@ USE AESSTATE
 USE AESTYPES
 USE HEAPCORE
 PUBLIC CARD ARRAY stats(8)
-PUBLIC BYTE busy,failRoute,focusBusy,hold,held,release,ready
+PUBLIC BYTE busy,failRoute,focusBusy,hold,held,release,ready,retireBusy
 
 PUBLIC PROC Outside()
 
@@ -89,6 +91,30 @@ PUBLIC PROC Rollback()
   stats(5)==+1
 
 RETURN
+
+PUBLIC CARD FUNC Retire(INPUT.Lease POINTER lease LONGCARD tag BYTE mode)
+  CARD status
+
+  Outside()
+  IF mode=2 AND retireBusy<>0 THEN
+    BEGIN
+      retireBusy=0
+      EXEC.Forbid()
+      LET previous=lease.route
+      IF INPUT.PublishRoute(lease,tag)<>INPUT.OK THEN
+        HEAPCORE.Abort($fc6b)
+      FI
+      status=INPUT.RetireRoute(lease,tag)
+      IF INPUT.PublishRoute(lease,previous)<>INPUT.OK THEN
+        HEAPCORE.Abort($fc6b)
+      FI
+      EXEC.Permit()
+    END
+  ELSE
+    status=INPUT.RetireRoute(lease,tag)
+  FI
+
+RETURN(status)
 ENDMODULE
 ''')
     source=read_source(ROOT/'lib/aes/aeswindow.act').replace(
@@ -114,6 +140,9 @@ ENDMODULE
     routes=routes.replace(needle,'status=VISPROBE.Create(keyboard,INPUT.ROUTE_UNFILTERED,route)')
     start=routes.index('PUBLIC PROC Discard(');at=routes.index('\n\n',start)+2
     routes=routes[:at]+'  VISPROBE.Rollback()\n'+routes[at:]
+    needle='LET result=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),\n      window.keyRoute)'
+    if needle in routes:
+        routes=routes.replace(needle,'LET result=VISPROBE.Retire(INPUT.Lease POINTER(desktop.keyboard),\n      window.keyRoute,held)',1)
     (out/'aesroutes.act').write_text(routes)
     core=read_source(ROOT/'lib/desktop/deskcore.act').replace(
         'USE EXEC\n','USE EXEC\nUSE VISPROBE\n',1)
@@ -145,6 +174,7 @@ def setup(symbols):
             'VisFail':'@VISPROBE.failRoute','VisFocus':'@VISPROBE.focusBusy',
             'VisHold':'@VISPROBE.hold','VisHeld':'@VISPROBE.held',
             'VisRelease':'@VISPROBE.release','VisReady':'@VISPROBE.ready',
+            'VisRetireBusy':'@VISPROBE.retireBusy',
             'VisEpoch':'@service.nextGuiEpoch','VisWaiting':'@service.windowPending',
             'VisLocks':'@service.lockCount','VisOwner':'@service.sceneOwner'}
     text='  DESKBOOT.Detach()\n'
@@ -166,19 +196,34 @@ def physical(b,p,foreign,report):
     def phase(number,point):
         reach('(dw($%x)=%d)&(dw($%x)=%d)'%(sy['VisPhase'],number,sy['VisPoint'],point))
     tags=p['build']['memory']['input_storage']['STATE']+definitions()[0]['STATE_TAGS']
+    df=desktop_layout();wf=df['Window']['fields']
+    desktop_at=next(d['address'] for d in p['image']['data']
+                    if d['name'].startswith('M_DESKSTATE_SERVICE_'))
+    def retiring_tag():
+        desktop=get(desktop_at,3)
+        for slot in range(DESKTOP_ABI['constants']['WINDOWS']):
+            window=desktop+df['Service']['fields']['windows']+slot*df['Window']['size']
+            if get(window+wf['kind'],1)==DESKTOP_ABI['constants']['CONTENT_AES']:
+                return get(window+wf['keyRoute'],4)
+        raise RuntimeError('Missing retiring window')
     report['visibility']=[]
-    for number in range(1,15):
+    for number in range(1,23):
         print('Visibility phase',number,flush=True);phase(number,0)
         b.poke(pointer('VisReady'),0)
         b.poke16(sy['VisWake'],1)
         reach('db($%x)=1'%pointer('VisReady'))
         before=[get(pointer('VisNative')+2*i) for i in range(8)]
         old_tags=b.memdump(tags,64);epoch=get(pointer('VisEpoch'),4)
+        if number==3:
+            b.poke16(sy['VisQueue'],1)
+            reach('db($%x)>0'%pointer('VisLocks'))
+            report['close_with_waiting_peer']=True
         if number==7:b.poke(pointer('VisFail'),1)
         if number==8:b.memload(pointer('VisEpoch'),bytes(4))
         if number==9:b.poke(pointer('VisHold'),1)
         if number==11:b.poke(pointer('VisBusy'),1)
         if number==13:b.poke(pointer('VisFocus'),1)
+        if number in (16,18):b.poke(pointer('VisRetireBusy'),1)
         b.poke16(sy['VisGo'],number*2-1)
         if number==9:
             reach('dw($%x)=1'%sy['VisPeerHeld'])
@@ -192,19 +237,23 @@ def physical(b,p,foreign,report):
                 b.poke(pointer('VisBusy'),0);b.poke16(sy['VisWake'],1)
         phase(number,3)
         operation=val('VisOperation')
-        direct=number not in (9,11,13) and (operation==101 or report['visibility_local']=='all')
+        direct=number not in (9,11,13,16) and (operation==101 or report['visibility_local']=='all')
         attempts=[get(pointer('VisNative')+2*i)-before[i] for i in range(8)]
         require(val('VisSequence',4)==(0 if direct else 1),
                 f'Phase {number}: wrong transport; sequence={val("VisSequence",4)}, attempts={attempts}')
         slot=2*(operation==102)
-        if direct:
+        if direct and operation in (101,102):
             require(attempts[slot]>0 and attempts[slot+1]==0,f'Phase {number}: wrong Task')
-        else:
+        elif not direct:
             require(attempts[slot+1]>0,f'Phase {number}: no system continuation')
         if number in (7,8):require(b.memdump(tags,64)==old_tags,'Failed open leaked a route')
         view=val('VisView',4)
         state={n:get(view+vf[n],size) for n,size in [('handle',2),('shown',2),('epoch',4)]}
         state['bounds']=[get(view+vf['bounds']+2*i) for i in range(4)]
+        if number in (18,19,20):
+            require(state['shown']==state['epoch']==0 and retiring_tag()!=0,
+                    'Failed fallback lost the retained closing route or view')
+        if number==21:require(retiring_tag()==0,'Close retry retained its retired route')
         report['visibility'].append(dict(phase=number,operation=operation,result=val('VisResult'),
             status=val('VisStatus'),sequence_delta=val('VisSequence',4),attempts=attempts,view=state))
         if number==7:b.poke(pointer('VisFail'),0)
@@ -212,4 +261,10 @@ def physical(b,p,foreign,report):
         if number==9:b.poke(pointer('VisHold'),0)
         if number==13:b.poke(pointer('VisFocus'),0)
         b.poke16(sy['VisGo'],number*2)
+    reach('(dw($%x)=1)&(dw($%x)=1)'%(sy['VisPublisherHeld'],sy['VisExitPending']))
+    endpoint=val('VisEndpoint',4);ef=layout()['Endpoint']['fields']
+    reach('(db($%x)=2)&(dw($%x)=1)'%(endpoint+ef['state'],endpoint+ef['holds']))
+    report['publisher_exit_wait']=dict(view_deleted_before_exit=True,
+        closing_endpoint=True,retained_publisher_holds=1)
+    b.poke16(sy['VisPublisherGo'],1)
     b.bp_clear_all()

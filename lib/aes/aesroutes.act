@@ -8,7 +8,6 @@ USE AESTYPES
 USE AESGATE
 USE DESKTYPES
 USE DESKSTATE
-USE DESKROUTES
 USE HEAPCORE
 
 ; The operation keeps this unpublished tag across scene re-admission.
@@ -43,7 +42,10 @@ RETURN
 
 ; The scene has withdrawn the window and published its replacement focus.
 ; Retain the hidden window and tag across a busy input retirement retry.
-PUBLIC BYTE FUNC Retire(DESKTYPES.Window POINTER window)
+; Callers never consume from the presenter's lease; BUSY keeps its existing
+; RPC drain continuation, including the retained window/view lifetime.
+PUBLIC BYTE FUNC Retire(DESKTYPES.Window POINTER window
+    AESTYPES.Request POINTER request)
   CARD captured
 
   IF window.keyRoute=0 THEN
@@ -51,11 +53,13 @@ PUBLIC BYTE FUNC Retire(DESKTYPES.Window POINTER window)
   FI
 
   LET desktop=DESKSTATE.Get()
-  LET held=AESGATE.Suspend()
-  captured=CONSOLEINPUT.Pump(NULL)
-  LET result=DESKROUTES.Retire(INPUT.Lease POINTER(desktop.keyboard),
+  LET held=AESGATE.Leave()
+  IF held<>AESGATE.CALLER THEN
+    captured=CONSOLEINPUT.Pump(NULL)
+  FI
+  LET result=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),
       window.keyRoute)
-  AESGATE.Resume(held)
+  AESGATE.Reenter(held,request)
   IF result=INPUT.BUSY THEN
     RETURN(0)
   FI

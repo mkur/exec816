@@ -252,8 +252,10 @@ create/delete into the caller with ordered, unapplied fallback.
 attributes into callers with matching state and deferred pixels.
 [GF6](history/gem-first-gui.md#gf6--caller-geometry-and-lookup) adds eligible
 caller geometry/top and committed lookup while preserving system effect
-continuations. GF7 next moves open/close with safe route retirement. Existing
-latency gates remain open.
+continuations. [GF7](history/gem-first-gui.md#gf7--window-openclose-and-route-lifetime)
+adds caller open/close with route rollback/retry, guarded capture cancellation
+and publisher-held exit lifetime. GF8 next moves contended window/lock admission
+into library waits. Existing latency gates remain open.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)
 prioritizes ordinary AES/VDI application bodies and fewer platform edits.

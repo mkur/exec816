@@ -12,8 +12,8 @@
   state/frame/menu comparisons and inclusive deferred feedback observations.
   GF6 adds caller geometry/top and committed lookup, copied-move query boundaries,
   disk coexistence and queued-UPDATE drag/pixel observations.
-  GF7 begins with shared route resources and scene publication boundaries;
-  caller open/close remains open.
+  GF7 adds caller open/close, route rollback/retry, queued-peer ordering and
+  publisher-held exit lifetime, with matching physical window/cache pixels.
 
 - [Shared-source Atari ST comparison](atari-st-reference.md): Hatari with
   EmuTOS/MagiC, unchanged object routines, bounded execution and drawing-path

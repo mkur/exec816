@@ -48,9 +48,9 @@ ENDMODULE
     (out/'deskmove.act').write_text(move)
     routes = read_source(ROOT/'lib/aes/aesroutes.act')
     routes = routes.replace('USE AESTYPES\n', 'USE AESTYPES\nUSE WINDOWEFFECTPROBE\n', 1)
-    drain = '  captured=CONSOLEINPUT.Pump(NULL)'
-    require(routes.count(drain) == 1, 'Close route drain boundary changed')
-    routes = routes.replace(drain, '  WINDOWEFFECTPROBE.Pause(3)\n'+drain)
+    drain = '  LET held=AESGATE.Leave()'
+    require(routes.count(drain) == 1, 'Close route retirement boundary changed')
+    routes = routes.replace(drain, drain+'\n  WINDOWEFFECTPROBE.Pause(3)')
     (out/'aesroutes.act').write_text(routes)
     source = out/'window-effects.act'
     source.write_text('''MODULE WINDOWEFFECTS

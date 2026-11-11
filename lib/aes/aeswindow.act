@@ -217,7 +217,8 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   LET desktop=DESKSTATE.Get()
   LET window=item.window
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
-  IF layer.shown<>0 THEN
+  ; A failed transport fallback can leave a hidden window still retiring.
+  IF layer.shown<>0 OR window.keyRoute<>0 THEN
     RETURN(AESTYPES.BUSY)
   FI
 
@@ -276,25 +277,33 @@ PROC CommitClose(DESKTYPES.Service POINTER desktop
 
 RETURN
 
-BYTE FUNC Close(AESSTATE.Window POINTER item)
+BYTE FUNC Close(AESSTATE.Window POINTER item AESTYPES.Request POINTER request)
 
   LET desktop=DESKSTATE.Get()
   LET window=item.window
+  IF window.console<>0 AND AESGATE.SystemOwned()=0 THEN
+    RETURN(0)
+  FI
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
   IF layer.shown<>0 OR window.keyRoute=0 THEN
     BEGIN
       LET focus=DESKCORE.NextFocus(desktop,window.id)
+      IF AESGATE.SystemOwned()=0
+          AND DESKCORE.FocusMetadataReady(desktop,focus)=0 THEN
+        RETURN(0)
+      FI
       DESKCORE.PrepareFocus(desktop,focus)
       CommitClose(desktop,item,focus)
       AESSNAPSHOT.Publish()
     END
   FI
 
-RETURN(AESROUTES.Retire(window))
+RETURN(AESROUTES.Retire(window,request))
 
 ; Both transports use the same admission and scene publication policy.
 PUBLIC CARD FUNC Visibility(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request BYTE queued)
+  CARD status
 
   IF Eligible(service,client,queued)=0 THEN
     RETURN(AESTYPES.PENDING)
@@ -303,7 +312,14 @@ PUBLIC CARD FUNC Visibility(AESSTATE.Service POINTER service
   IF item=NULL THEN
     RETURN(AESTYPES.IDENTITY)
   FI
-  LET status=Open(service,client,item,request)
+  IF request.operation=AESTYPES.OP_OPEN THEN
+    status=Open(service,client,item,request)
+  ELSE
+    IF Close(item,request)=0 THEN
+      RETURN(AESTYPES.PENDING)
+    FI
+    status=AESTYPES.OK
+  FI
   IF status=AESTYPES.OK THEN
     request.intout(0)=1
   FI
@@ -351,7 +367,8 @@ PUBLIC CARD FUNC DeleteHidden(AESSTATE.Window POINTER item)
 
   LET desktop=DESKSTATE.Get()
   LET layer=LAYERS.Find(@desktop.scene,item.window.layer)
-  IF layer.shown<>0 THEN
+  ; Hidden alone does not authorize freeing a retained close continuation.
+  IF layer.shown<>0 OR item.window.keyRoute<>0 THEN
     RETURN(AESTYPES.BUSY)
   FI
 
@@ -361,7 +378,7 @@ PUBLIC CARD FUNC DeleteHidden(AESSTATE.Window POINTER item)
 RETURN(AESTYPES.OK)
 
 PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client)
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   BYTE slot
 
   IF Ready(service,client)=0 THEN
@@ -372,7 +389,7 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
     IF service.windows(slot).owner=client.id THEN
       BEGIN
         LET item=@service.windows(slot)
-        IF Close(item)=0 THEN
+        IF Close(item,request)=0 THEN
           RETURN(0)
         FI
         Destroy(item)
@@ -680,7 +697,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     RETURN(Geometry(service,client,request,queued))
   FI
 
-  IF request.operation=AESTYPES.OP_OPEN THEN
+  IF request.operation=AESTYPES.OP_OPEN OR request.operation=AESTYPES.OP_CLOSE THEN
     RETURN(Visibility(service,client,request,queued))
   FI
 
@@ -695,19 +712,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   FI
 
   IF request.operation<>AESTYPES.OP_SET THEN
-    CASE request.operation OF
-    WHEN AESTYPES.OP_CLOSE THEN
-      IF Close(item)=0 THEN
-        RETURN(AESTYPES.PENDING)
-      FI
-      result=AESTYPES.OK
-    ELSE
-      RETURN(AESTYPES.UNSUPPORTED)
-    ESAC
-    IF result=AESTYPES.OK THEN
-      request.intout(0)=1
-    FI
-    RETURN(result)
+    RETURN(AESTYPES.UNSUPPORTED)
   FI
 
   LET desktop=DESKSTATE.Get()

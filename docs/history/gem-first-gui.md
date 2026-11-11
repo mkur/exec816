@@ -712,6 +712,9 @@ hardware and latency qualification remain open. GF7 is next.
 
 ## GF7 — Window open/close and route lifetime
 
+GF7 passes at the development tier. The three slices below retain route
+extraction, caller open, and caller close/exit integration evidence.
+
 ### Shared route resources
 
 The first GF7 step extracts `AESROUTES.Prepare` and `AESROUTES.Retire` from
@@ -791,3 +794,70 @@ The [caller-open record](../development/gem-first-gf7-open.json) retains exact
 pins, code/data deltas, stack observations, source/artifact hashes and failed
 fixture attempts. GF7 close/exit integration remains next. These are development
 checks; hosted-system, hardware and latency qualification remain open.
+
+
+### Caller close and integration completion
+
+Eligible ordinary/PB closes now use the shared visibility policy in the caller.
+The scene commit cancels capture, withdraws the open epoch and GUI facts, hides
+the layer and publishes replacement focus. Route retirement runs after releasing
+the scene. The caller does not consume the presenter's input lease; referenced
+input keeps the hidden window/tag for the existing RPC drain continuation.
+Exit remains a registration RPC and reuses the same close/retirement helpers.
+A failed transport submission cannot authorize view reuse: open/delete report
+BUSY until close retry or exit finishes retirement. No extra closing record or
+per-Task reservation is introduced.
+
+One bounded Task guard serializes pointer-sample routing with window-capture
+cancellation. It includes no drawing or wait; IRQ/NMI capture remains separate.
+Published input routes retain endpoints and copied values. A publisher can
+therefore outlive a deleted view, while exit waits for the registration's last
+publication hold before replying and allowing its storage to be freed.
+
+Development checks pass:
+
+- Visibility: 204 C assertions, five native controller checks and 22 checkpoints.
+  Ordinary/PB open/close execute directly when eligible. The earlier fourteen
+  result/status/view checkpoints match the caller-open image. An older UPDATE
+  waiter remains queued while the existing owner closes; release then admits
+  it. Real input-route references force a close continuation. Exhausted RPC
+  submission preserves its hidden view/tag; open/delete reject reuse and a
+  later direct close retires it. A real reserved message producer is paused
+  across view deletion and replacement-window exit; cleanup waits for its hold.
+- Windows: 285 checks with matching route-step geometry, visibility, gadgets
+  and physical-request observations. Effects: 30/25/18 checks, including
+  copied-move failure/reset and withdrawn-window lookup before retirement.
+  Reset deliberately retains live resources at `$FF93`.
+- Scene: 37/33/30 checks for input/event delivery, fence retirement and pointer
+  redraw through caller contention. The pointer oracle now freezes its target
+  after button stimuli and the input-only dispatcher settle: a final ST
+  quadrature step changes the captured X from 139 to 140. The exact redraw
+  assertion retains its original 100-frame bound and sends no further input.
+- Locks: 181; lifecycle: 265; pointer/capture: 168; sibling windows: 67; menus:
+  321. Cache: 224 checks and fourteen byte-identical GF6 scanouts. All 32 cache
+  checkpoints match apart from one fewer cumulative restore at phases 26–32
+  after the close/reopen sequence; other fields are identical.
+- The production twelve-slot loaded Counter idle cohort passes six checks.
+  The two applications advance six/five counts and six/six paints, retain
+  247 bytes each above their checked stack floor, and retire cleanly. This run
+  does not repeat GF0's disk/blocking/UPDATE-held/cancellation cohorts.
+- The unchanged open-slice gate probe retains 61 raw and 61 optimized checks;
+  host checks run 689 tests, with 685 passing and four skipped. Documentation
+  links, source/artifact hashes and Python syntax pass final checks.
+
+The matched window fixture adds 2,582 native and ten C code bytes versus the
+route-extraction image, with unchanged data and zero-fill. That is 3,181 native
+and ten C code bytes over GF6 including route extraction. Private client/service
+payloads stay at 136/1,982 bytes. There are no new Tasks, signals, static arena
+or heap reservations. Reserved bank-zero growth is **0 fixed, 0 root, 0 kernel,
+0 per public Task and 0 idle bytes**, including guards, alignment and unused
+capacity. Both eight- and twelve-slot reservation maps match their parents.
+Window-suite stack margins are 580 bytes for root, 1,352 for the presenter,
+993 for kernel and 139 for idle; no guards or checked floors are changed.
+
+The [complete GF7 record](../development/gem-first-gf7.json) retains pins,
+source/artifact hashes, comparisons, stack observations and unsuccessful
+fixture attempts. Native console attachments and physical caret/widget focus
+effects retain system admission; contended admission remains for GF8. No new
+demo distribution or full qualification matrix was produced for this slice.
+Hosted-system, hardware and latency qualification remain open. GF8 is next.

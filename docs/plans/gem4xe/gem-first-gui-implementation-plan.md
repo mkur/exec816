@@ -4,7 +4,7 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-GF0–GF6 pass at the development tier. GF7–GF15 remain open. The
+GF0–GF7 pass at the development tier. GF8–GF15 remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
 coexistence, the current resource inventory, the shared window policy audit
 and the window effect/commit checks. GF3 separates scene ownership from physical
@@ -25,7 +25,7 @@ paths with their last caller. This plan does not implement a second GUI mode.
 | --- | --- |
 | [AES window dispatcher](../../../lib/aes/aeswindow.act) | Presenter-side create/open/close/delete/set/find; includes input routes, cache operations and copied moves that must be separated before caller execution. |
 | [Window publication](../../../lib/aes/aeswindowstate.act), [locks](../../../lib/aes/aeslocks.act), [policy gate](../../../lib/aes/aesgate.act) | Existing window views, UPDATE journals and eligible-waiter rules; caller UPDATE currently uses presenter handoffs and RPC fallback. |
-| [Window route resources](../../../lib/aes/aesroutes.act) | GF7 separates unpublished route preparation/rollback and hidden-window draining/retirement from scene publication. Caller open/close admission remains next. |
+| [Window route resources](../../../lib/aes/aesroutes.act) | GF7 separates unpublished route preparation/rollback and hidden-window retirement from scene publication. Callers use the same open/close policy; the presenter retains input consumption and busy retirement continuations. |
 | [C window binding](../../../c/calypsi/aes-windows.c), [local native entry](../../../lib/aes/aeslocal.act) | Per-Task context and caller-owned views; suitable locations for direct entry without repeated admission checks. |
 | [Desktop core](../../../lib/desktop/deskcore.act), [state](../../../lib/desktop/deskstate.act) | Existing common scene, focus and geometry machinery. Consolidate policy and records into AES rather than creating another scene. |
 | [Console worker](../../../lib/console/consoledriver.act), [AES hooks](../../../lib/aes/aeshost.act), [desktop hooks](../../../lib/desktop/deskhost.act) | Presently combine console/backend, GUI policy, input and presentation. Evolve the existing graphical worker into the AES system Task. |
@@ -342,10 +342,14 @@ Commit: `feat(aes): execute window geometry and lookup in callers`.
 
 ### GF7 — Execute open/close with safe input-route lifetime
 
-Status: in progress. The route-extraction step passes its selected development
-checks in the [route record](../../development/gem-first-gf7-routes.json).
-The [caller-open step](../../development/gem-first-gf7-open.json) also passes.
-Eligible ordinary/PB opens now execute in callers; close remains the next step.
+Status: complete at the development tier. The
+[route record](../../development/gem-first-gf7-routes.json),
+[caller-open record](../../development/gem-first-gf7-open.json) and
+[complete record](../../development/gem-first-gf7.json) retain the three slices.
+Eligible ordinary/PB open/close execute in callers. Referenced input retains a
+hidden-window RPC retirement continuation; close retry and exit share cleanup.
+Native console attachments and physical caret/widget focus effects retain
+system admission. Contended admission remains the next GF8 step.
 
 Move ordinary open/close into the common direct path. Separate route creation,
 input draining/retirement and scene publication so blocking work never holds
