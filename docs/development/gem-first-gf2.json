@@ -1,0 +1,688 @@
+{
+  "slice": "GF2",
+  "tier": "development",
+  "status": "pass",
+  "qualification": false,
+  "parent_revision": "37083a23517b94296295d9a4099dad8536d2caae",
+  "scope": "Selected optimized emitted window/effect, keyboard, GUI/inbox, native desktop and console lifetime/pixel fixtures on the pinned PAL platform. Eight public Task slots in these fixtures; GF0 retains the production twelve-slot inventory. No new performance or hosted-system qualification claim.",
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ]
+  },
+  "toolchain": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "actionc_override": false,
+    "compiler_profile": "release",
+    "native_mode": "opt",
+    "calypsi": {
+      "cc65816": {
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "sources_sha256": {
+    "lib/aes/aesgui.act": "4a122ca9274c3de83509d9c9050e470d2bd9ba99b528c7d509e933a26fcceaba",
+    "lib/aes/aeswindow.act": "a3d7749b1ef751a0dad651ae86fe447d20b7714aa7fa9682a29f54e295a2041c",
+    "lib/aes/aeswindowstate.act": "037561fcc37f73c489aebcd49d9dd0a4fab595e290933e5128c1a7177704fba2",
+    "lib/desktop/desk-owned-console.inc": "f1dc9f6b9f0f542498f1d4d66498677f10545365efc18e59a0a0e18887736b08",
+    "lib/desktop/deskconsole.act": "e539f9593a9b3af7a1ac660a171e8aba0ba4d5ed58531a08e6efeaa64851ab4e",
+    "lib/desktop/deskcore.act": "df91b7c8a06300db5c426526ce910a5f7827741c5e44af012126b3e6e2eb7e5b",
+    "lib/desktop/deskdrag.act": "314a070179392eed47bee21cf70e20d69f64f0d70674614ccd1ea9fc17a8592e",
+    "lib/desktop/deskinput.act": "7b02134df89121099177d3dde91e46dda79affef1a47d45ce75e17826efd8f92",
+    "lib/desktop/deskmenu.act": "4ba9d7f04644a8933bcffa9e4fd95e7b1bce2c5cd28d94094eb929a4515093c4",
+    "lib/desktop/deskmove.act": "046239f87f1d95cd67f7ff512dbc3562b40c2da19e5defbd87f012096851256a",
+    "tests/programs/desktop_console_bind.act": "bc107e75753dc560203a4a146582e1b7650c63308c1224a31fe359b55007e550",
+    "tests/programs/native_desktop.act": "73cd6a20191da1b4267fc6d8c969cf1a0c93b03c94138188ae686256a833bf06",
+    "tools/test_aes_gui.py": "98af13375e5e916e34e4adf6ac72a194b29d22372a13a6860f6cd648a3a9fcf5",
+    "tools/test_aes_inbox.py": "99f82c1756d59038666e2ceed18ab4547d26fa556103c5b6e96ff9faf2ba777b",
+    "tools/test_desktop.py": "a7d04e84d83c8acdb7ee6d82aa2a8b089b9f893f48fc7141d65168641287bc97",
+    "tests/programs/aes_window_effects.c": "34cd04aa4cf9d142c42b4b8a829a5f73e593cc9a2bcdcb43f1f11d107b8d1ca1",
+    "tools/test_aes_window_effects.py": "31d527527861ba2cda65930871e4d545edc65c95d495a921696a2b2c2762c6f2"
+  },
+  "host": {
+    "passed": 683,
+    "skipped": 4,
+    "path": "build/gem-first-gui/gf2/host-final.log",
+    "sha256": "b7096e184ec25d54244ed42f24d10d1e2b0334c28426bd076b6ad77e4022a425"
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": 0,
+    "idle": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "resource_comparison": {
+    "parent_build": {
+      "path": "build/gem-first-gui/gf1/candidate/windows/program/build.json",
+      "sha256": "87dcac5b4972f696a551c44eb2528072bd9434f89dd4a044a8b3245683973c91"
+    },
+    "candidate_build": {
+      "path": "build/gem-first-gui/gf2/checked/windows/program/build.json",
+      "sha256": "d80eb19bfb8da5d0619e16c15bf1d692b94daba8d4203658ae99114c26904c82"
+    },
+    "parent_native_image": {
+      "path": "build/gem-first-gui/gf1/candidate/windows/program/program.a816.json",
+      "sha256": "2bd5b52f89e2e31b3c2ef0c3c9a8b2e777e58669d3de8a75305399a304804114"
+    },
+    "candidate_native_image": {
+      "path": "build/gem-first-gui/gf2/checked/windows/program/program.a816.json",
+      "sha256": "5e27c6bd6fb33dd5d69edf9b74cf652b9384c4b34a0afac1e6861ebf2a869104"
+    },
+    "parent_bytes": {
+      "native_code": 1045391,
+      "native_data": 9248,
+      "zero_fill": 23185,
+      "routine_code_banks": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33
+      ]
+    },
+    "candidate_bytes": {
+      "native_code": 1046859,
+      "native_data": 9248,
+      "zero_fill": 23185,
+      "routine_code_banks": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33
+      ]
+    },
+    "native_code_delta_by_module": {
+      "AESWINDOW": 588,
+      "AESWINDOWSTATE": 3,
+      "AESGUI": -42,
+      "DESKMOVE": 26,
+      "DESKCORE": 813,
+      "DESKCONSOLE": 202,
+      "DESKDRAG": -22,
+      "DESKINPUT": -10,
+      "DESKMENU": -90
+    },
+    "upper_ram_data_delta": 0,
+    "vram_delta": 0,
+    "tasks_delta": 0,
+    "signals_delta": 0,
+    "identical_reservation_fields": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations"
+    ],
+    "eight_public_slot_bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 26848,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 46816,
+      "loading_including_os": 40336
+    },
+    "diagnostic_probe": "Private shadow modules pause before submit/commit/drain and publish the GUI epoch field address. Only test storage changes; no production reservation growth."
+  },
+  "cases": {
+    "windows": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/checked/windows/results.json",
+        "sha256": "c3fff592cef15a2fe1a8707424e4aa2755caf8e610cd4b953cecbe3543e84083"
+      },
+      "build": "build/gem-first-gui/gf2/checked/windows/program",
+      "xex_sha256": "a9b0ccf5f40d856233cdb49da1a83bd3248667edda6068ea209994f8703f283a",
+      "native_image_sha256": "5e27c6bd6fb33dd5d69edf9b74cf652b9384c4b34a0afac1e6861ebf2a869104",
+      "checks": 285,
+      "failures": 0,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 139,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 287,
+          "untouched_from_base": 1249,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "visible_pixels": 10952,
+      "physical_requests": {
+        "top": "deferred",
+        "move": [
+          24,
+          20,
+          200,
+          120
+        ],
+        "close": "deferred",
+        "scene_token": 0,
+        "outline_pixels": "exact",
+        "copied_title_bytes": 65
+      },
+      "iconification": {
+        "empty_visible_region": true,
+        "normal_geometry": true,
+        "hidden_move": true,
+        "wf_top_restore": true,
+        "close_reopen": true
+      }
+    },
+    "multiwindow": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/checked/multiwindow/results.json",
+        "sha256": "8b2ff2e26450e9eb38da592cf11d26833792260eaec76995b8a10563f1ee5d13"
+      },
+      "build": "build/gem-first-gui/gf2/checked/multiwindow/program",
+      "xex_sha256": "16d5628c821528ca92ad7c169ccb69e7226bca39b6b45abf3a61cf545d78e39b",
+      "native_image_sha256": "e04f6247982f3556fc7e4ebeb22dfa096ca9f40e49119a6610ccced2b382776f",
+      "checks": 67,
+      "failures": 0,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 232,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 285,
+          "untouched_from_base": 1251,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    "cache": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/checked/cache/results.json",
+        "sha256": "0c017cf50ff2820a668a7b79ddd9352c45950f32d377921f332c238297a9900a"
+      },
+      "build": "build/gem-first-gui/gf2/checked/cache/program",
+      "xex_sha256": "b7edfca63720babdf1b2f565ca0683d3edd9150252c62ab374110f8b9402fb92",
+      "native_image_sha256": "637fbd230fab662055d3785fb1e766a802488ebaa36846f3492f4fba9619c74d",
+      "checks": 224,
+      "failures": 0,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 232,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 287,
+          "untouched_from_base": 1249,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "cache_checkpoints": 32
+    },
+    "keyboard": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/keyboard/results.json",
+        "sha256": "e1b41bc44348e2a8eec93e1524fce28ee337b216212ec4cd82e359b9d8ca086a"
+      },
+      "build": "build/gem-first-gui/gf2/keyboard/program",
+      "xex_sha256": "bd17d5e602e2cf4bf1b096dc5363a7f2a06966146502ca1706e1acd398ebae1c",
+      "native_image_sha256": "a30ae8540a56913558f2bbacb3682b273a76ebdbdb6749596cc017b16c1c37d8",
+      "checks": 111,
+      "failures": 0,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 232,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 287,
+          "untouched_from_base": 1249,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    "owned_console": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/owned-console/results.json",
+        "sha256": "b722592f84f7de931a48bfb023d5425bfb1ccdcf9ff6b17521d7c58f74615217"
+      },
+      "build": "build/gem-first-gui/gf2/owned-console/program",
+      "xex_sha256": "e2e24ebdd3af29df2b3ccba2926bdeeeeb5677e4089cb5d3662729422ddf5871",
+      "native_image_sha256": "1765e4d8f0f703cce15bfa1bf52f4f8be0d1c6bc327d326cf1c7c614babc43f5",
+      "checks": [
+        19
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 223,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 295,
+          "untouched_from_base": 1241,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "observed_checks": [
+        176
+      ],
+      "pixel_checkpoints": 8,
+      "root_mode_preserved": true,
+      "root_cells_preserved": true
+    },
+    "effect_success": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/steps/effects-success-results.json",
+        "sha256": "7969772937c0af59e0b781a696e17b2c7dbc3fc3ac71c260dd97322f1972a0a7"
+      },
+      "build": "build/gem-first-gui/gf2/steps/effects-layout-checked/program",
+      "xex_sha256": "dba3f6447e20607eac5dc92ac3b25d69c2294b33489e85cb08805740b3ae1e23",
+      "native_image_sha256": "da2b8ffeeec5a0684ad4a0b5c2da79b887775bbbc21d1d5b278758f7f04cc225",
+      "variant": 0,
+      "boundaries": [
+        {
+          "stage": 1,
+          "frames": 4,
+          "peer_before": 417483,
+          "peer_after": 436115,
+          "scene_token": 7,
+          "copy_chunks": 0
+        },
+        {
+          "stage": 2,
+          "frames": 4,
+          "peer_before": 440282,
+          "peer_after": 458197,
+          "scene_token": 7,
+          "copy_chunks": 1
+        }
+      ],
+      "close_before_drain": {
+        "shown": 0,
+        "epoch": 0,
+        "retained_route": true
+      },
+      "checks": 29,
+      "failures": 0,
+      "first_failure": 0,
+      "copy_chunks": 3,
+      "stop_count": 0,
+      "move_copy_chunks": 1,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 232,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 283,
+          "untouched_from_base": 1253,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "reset_required": false
+    },
+    "effect_quiescent": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/steps/effects-quiescent-results.json",
+        "sha256": "65d8a9b19a76a68c25bddab475db5c2a03abe24f309ce47439ef732fc0590c08"
+      },
+      "build": "build/gem-first-gui/gf2/steps/effects-layout-checked/program",
+      "xex_sha256": "dba3f6447e20607eac5dc92ac3b25d69c2294b33489e85cb08805740b3ae1e23",
+      "native_image_sha256": "da2b8ffeeec5a0684ad4a0b5c2da79b887775bbbc21d1d5b278758f7f04cc225",
+      "variant": 3,
+      "boundaries": [
+        {
+          "stage": 1,
+          "frames": 4,
+          "peer_before": 417483,
+          "peer_after": 436115,
+          "scene_token": 7,
+          "copy_chunks": 0
+        },
+        {
+          "stage": 2,
+          "frames": 4,
+          "peer_before": 440282,
+          "peer_after": 457715,
+          "scene_token": 7,
+          "copy_chunks": 1
+        }
+      ],
+      "close_before_drain": {
+        "shown": 0,
+        "epoch": 0,
+        "retained_route": true
+      },
+      "checks": 24,
+      "failures": 0,
+      "first_failure": 0,
+      "copy_chunks": 1,
+      "stop_count": 1,
+      "move_copy_chunks": 1,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 232,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 283,
+          "untouched_from_base": 1253,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "reset_required": false
+    },
+    "effect_reset": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/steps/effects-reset-results.json",
+        "sha256": "120a63c6ed245dd89867cafcb35e02b5272c8da057f6191b9f4d829e2cbb160d"
+      },
+      "build": "build/gem-first-gui/gf2/steps/effects-layout-checked/program",
+      "xex_sha256": "dba3f6447e20607eac5dc92ac3b25d69c2294b33489e85cb08805740b3ae1e23",
+      "native_image_sha256": "da2b8ffeeec5a0684ad4a0b5c2da79b887775bbbc21d1d5b278758f7f04cc225",
+      "variant": 4,
+      "boundaries": [
+        {
+          "stage": 1,
+          "frames": 4,
+          "peer_before": 417483,
+          "peer_after": 436115,
+          "scene_token": 7,
+          "copy_chunks": 0
+        }
+      ],
+      "checks": 17,
+      "failures": 0,
+      "first_failure": 0,
+      "copy_chunks": 1,
+      "stop_count": 1,
+      "move_copy_chunks": 1,
+      "runtime": {
+        "status": 65427,
+        "guards": "intact",
+        "live_tasks": 3,
+        "minimum_observed_task_stack_margin": 238,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 283,
+          "untouched_from_base": 1253,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "reset_required": true
+    },
+    "native_desktop": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/steps/native-desktop-release/results.json",
+        "sha256": "0855ea70393e3fe15bb6ce27f32a1a35ae01bd0ffcb5df8519c7cec309a473ed"
+      },
+      "build": "build/gem-first-gui/gf2/steps/native-desktop-release/program",
+      "xex_sha256": "0be694a9bf2d4d9abefcb404c8c7a445c4cc43bc5a8fc7b1b4d335e811e0b59f",
+      "native_image_sha256": "1f77fbdd69e89c507cfb4a37634bda89e53ab177b219190f62282d0409c204db",
+      "checks": 376,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 232,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "held_removal": {
+        "status": 4,
+        "guards": "intact",
+        "live_tasks": 3,
+        "minimum_observed_task_stack_margin": 238,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    "console_bind": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/steps/console-bind-base-results.json",
+        "sha256": "289d9bbd3644b0dd20f5a00023bc30e91be655142b8a57140eed0890a035534a"
+      },
+      "build": "build/gem-first-gui/gf2/steps/console-bind-shell-unit/program",
+      "xex_sha256": "39f77dc9b3450f2013c731be783aeaeb5a005922dfe54b12635d2ef0a9dfda69",
+      "native_image_sha256": "b7c7611f294d2878e69f28c8f38af5ded9bda233c7011897c71c59eb1b4fb5f0",
+      "checks": 109,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 208,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 285,
+          "untouched_from_base": 1251,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "iconified": false,
+      "stale_completion": false,
+      "pixel_checkpoints": 9
+    },
+    "console_bind_iconified_stale": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/steps/console-bind-combined-results.json",
+        "sha256": "e8a455304ec6ada9ff020edd1b285a524133618fae1346b10e6d656e8f2fd2c9"
+      },
+      "build": "build/gem-first-gui/gf2/steps/console-bind-shell-unit/program",
+      "xex_sha256": "39f77dc9b3450f2013c731be783aeaeb5a005922dfe54b12635d2ef0a9dfda69",
+      "native_image_sha256": "b7c7611f294d2878e69f28c8f38af5ded9bda233c7011897c71c59eb1b4fb5f0",
+      "checks": 109,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 208,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 285,
+          "untouched_from_base": 1251,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "iconified": true,
+      "stale_completion": true,
+      "pixel_checkpoints": 9,
+      "iconified_pixels_sha256": "f83fd1b868fabfb8a4f21b80a1298cda5d11e598a87490665fb308dd28b95d8c"
+    },
+    "gui": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/steps/gui-final/results.json",
+        "sha256": "93d91bbef86c0bf80ef3b4bdf4bb429c35ae12f7788c9e5ecdb2c7c51259e6aa"
+      },
+      "build": "build/gem-first-gui/gf2/steps/gui-final/program",
+      "xex_sha256": "01c3d84857dbc0fe8701fa9311969fdf6e8be0cc88cfdef4c3fc6cf7393540e5",
+      "native_image_sha256": "380917de2e5d4188cf7086aaf65527144c16a10dc4ce1b57b6503ed925077730",
+      "checks": 102,
+      "failures": 0,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 235,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 285,
+          "untouched_from_base": 1251,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    "inbox": {
+      "result": {
+        "path": "build/gem-first-gui/gf2/steps/inbox-final/results.json",
+        "sha256": "488bd5b3215f58283a85b80eec2084efda0db0aeb755686802bc83f0bf06fac3"
+      },
+      "build": "build/gem-first-gui/gf2/steps/inbox-final/program",
+      "xex_sha256": "89f5a776749b2b1c7709ebe98ba605042ebdcc25dd0a4c6416697da1955ee4e9",
+      "native_image_sha256": "5fe32fac645cabaa36b10d9f96d5fe4629ae94397ac15360bcc6261aef6e21b6",
+      "checks": 254,
+      "failures": 0,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "minimum_observed_task_stack_margin": 232,
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 287,
+          "untouched_from_base": 1249,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    }
+  },
+  "failed_attempts": [
+    {
+      "explanation": "Native desktop debug compiler exceeded its 600-second build timeout; the runner now selects the pinned release compiler.",
+      "artifact": {
+        "path": "build/gem-first-gui/gf2/native-desktop/results.json",
+        "sha256": "6acf2c3bdc351f0543b2d5ae3546b58c252d722435f5448b6af1f637419ffb85"
+      }
+    },
+    {
+      "explanation": "Effect observer tried private compiler record layout as a wire layout; replaced by a compiler-published epoch address and desktop ABI window lookup.",
+      "artifact": {
+        "path": "build/gem-first-gui/gf2/checked/effects/results.json",
+        "sha256": "104749710f014d43c7422b1e7da6ea259462e141cee067c1fc8f8c18563ebd23"
+      }
+    },
+    {
+      "explanation": "Quiescent guest passed 24 checks; host minimum incorrectly required 25 and was corrected.",
+      "artifact": {
+        "path": "build/gem-first-gui/gf2/steps/effects-quiescent-threshold-failure.json",
+        "sha256": "51f803223b97f330df27f125cbd9cf15cc88b3dc8e5c233b890cbe0cdf8091b8"
+      }
+    },
+    {
+      "explanation": "Success copied the move once and later frame repair twice; host now measures move copies between its phase boundaries.",
+      "artifact": {
+        "path": "build/gem-first-gui/gf2/steps/effects-copy-count.log",
+        "sha256": "c41ece0496a52e6f4f186f24d99b8289a8186b4d4934741aafe535f78369988f"
+      }
+    },
+    {
+      "explanation": "Console-bind checkpoint 4 compared transient selected rendering unit with the committed shell unit. Fixture corrected to ShellUnit().",
+      "artifact": {
+        "path": "build/gem-first-gui/gf2/steps/console-bind-base-failure.json",
+        "sha256": "9270e7a15fd01ecd2b851ad531506a59fdab07a03c5f0566da3cf95991b2dcb2"
+      }
+    },
+    {
+      "explanation": "Same console-bind failure in combined iconified/stale-completion case before the fixture correction.",
+      "artifact": {
+        "path": "build/gem-first-gui/gf2/steps/console-bind-combined-failure.json",
+        "sha256": "12e1d1267ae1033e765076cae3624a3922dbcc36c778d27bb69e26b740ce7491"
+      }
+    }
+  ],
+  "console_bind_diagnosis": {
+    "artifact": {
+      "path": "build/gem-first-gui/gf2/steps/console-bind-first-failure/diagnosis.json",
+      "sha256": "9d3bd71af509ac2d50f7ab30cf06732739b61f84bc9f34915aea5915c5a462d4"
+    },
+    "completed_checks": 50,
+    "last_completed_checkpoint": 3,
+    "shell_unit": 0,
+    "window_console": 0,
+    "transient_selected_unit": 5,
+    "reason": "The raw reason field is not a qualified fault-code decode. Source and committed/transient unit values identify the failed assertion."
+  },
+  "limits": [
+    "Presenter transport and serialization remain in place; scene-gate separation is GF3.",
+    "The reset-required copy retains Tasks and operation storage; it does not return or claim cleanup.",
+    "Development checks do not qualify the hosted system; GF0 coexistence and historical qualification records retain their original scope."
+  ]
+}

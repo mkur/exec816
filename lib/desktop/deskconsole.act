@@ -21,14 +21,13 @@ USE DESKGEOMETRY
 
 INCLUDE "desk-owned-console.inc"
 
-; Caller holds the settled scene boundary. The old cells stay retained.
-PUBLIC PROC Detach(DESKTYPES.Service POINTER service)
+; Retire presentation metadata after the old caret has been removed.
+PROC Detach(DESKTYPES.Service POINTER service)
 
   LET entry=CONSOLEWINDOWS.Find(service.consoleUnit)
   IF entry<>NULL THEN
     BEGIN
       LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-      DESKMOVE.HideCaret()
       CONSOLEDISPLAY.DiscardBatch()
       view.visible=0
       view.focused=0

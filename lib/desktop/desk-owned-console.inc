@@ -1,5 +1,23 @@
 ; Ordinary application windows borrow a console until window deletion. The
 ; existing presenter owns every pixel; no application receives a cell pointer.
+PROC CommitAttachment(DESKTYPES.Window POINTER window
+    CONSOLETYPES.Window POINTER entry LAYERTYPES.Rect POINTER work)
+
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  view.claimed=1
+  view.visible=0
+  view.focused=0
+  view.left=CARD(work.left) RSH 3
+  view.top=CARD(work.top) RSH 3
+  view.index=$ffff
+  view.presentedGeneration=0
+  view.generation==+1
+  CONSOLECORE.Dirty(instance,0,instance.count)
+  window.console=entry.unit
+
+RETURN
+
 PUBLIC CARD FUNC Attach(DESKTYPES.Window POINTER window LONGCARD unit
     EXEC.Task POINTER owner)
   LAYERTYPES.Rect work
@@ -19,7 +37,6 @@ PUBLIC CARD FUNC Attach(DESKTYPES.Window POINTER window LONGCARD unit
 
   DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@work)
   LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
-  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
   IF work.right-work.left<>512 OR work.bottom-work.top<>160
       OR ((work.left OR work.top) & 7)<>0
       OR instance.width<>64 OR instance.height<>20 THEN
@@ -37,36 +54,35 @@ PUBLIC CARD FUNC Attach(DESKTYPES.Window POINTER window LONGCARD unit
     RETURN(DESKTYPES.BUSY)
   FI
 
-  window.console=unit
-  view.claimed=1
-  view.visible=0
-  view.focused=0
-  view.left=CARD(work.left) RSH 3
-  view.top=CARD(work.top) RSH 3
-  view.index=$ffff
-  view.presentedGeneration=0
-  view.generation==+1
-  CONSOLECORE.Dirty(instance,0,instance.count)
+  CommitAttachment(window,entry,@work)
 
 RETURN(DESKTYPES.OK)
 
-; Deletion already owns the settled scene boundary. Streams and the child's
-; scope can outlive hiding; the unit remains owned by its creating Task.
-PUBLIC PROC Release(DESKTYPES.Window POINTER window)
+; Restore any outstanding caret before withdrawing its presentation.
+PUBLIC CONSOLETYPES.Presentation POINTER FUNC PrepareRelease(LONGCARD unit)
 
-  LET entry=CONSOLEWINDOWS.Find(window.console)
-  IF entry<>NULL THEN
-    BEGIN
-      LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-      DESKSTATE.SelectConsoleUnit(entry.unit)
-      CONSOLEDISPLAY.RemoveCursor(view)
-      view.visible=0
-      view.focused=0
-      view.claimed=0
-      view.index=$ffff
-      view.generation==+1
-      view.presentedGeneration=0
-    END
+  LET entry=CONSOLEWINDOWS.Find(unit)
+  IF entry=NULL THEN
+    RETURN(NULL)
+  FI
+
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  DESKSTATE.SelectConsoleUnit(unit)
+  CONSOLEDISPLAY.RemoveCursor(view)
+
+RETURN(view)
+
+; Streams outlive the attachment. The creating Task still owns the unit.
+PUBLIC PROC Release(DESKTYPES.Window POINTER window
+    CONSOLETYPES.Presentation POINTER view)
+
+  IF view<>NULL THEN
+    view.visible=0
+    view.focused=0
+    view.claimed=0
+    view.index=$ffff
+    view.generation==+1
+    view.presentedGeneration=0
   FI
 
   IF DESKSTATE.ConsoleUnit()=window.console THEN

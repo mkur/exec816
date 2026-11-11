@@ -596,7 +596,7 @@ PROC Execute()
     DESKCORE.Iconify(service,window)
   ELSEIF action=ACT_TOP THEN
     IF window.iconified<>0 THEN
-      DESKCORE.RestoreIcon(service,window)
+      Check(DESKCORE.Top(service,window))
       RETURN
     FI
     IF service.focus=window.id THEN
@@ -605,9 +605,7 @@ PROC Execute()
     IF window.kind=DESKTYPES.CONTENT_AES THEN
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
     ELSE
-      Check(DESKSTATE.Raise(window.layer))
-      DESKCORE.Focus(service,window.id)
-      DESKSTATE.TopChrome()
+      Check(DESKCORE.Top(service,window))
     FI
   ELSEIF action=ACT_CLOSE AND window.id<>service.consoleWindow THEN
     IF window.kind=DESKTYPES.CONTENT_AES THEN

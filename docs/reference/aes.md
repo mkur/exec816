@@ -311,6 +311,12 @@ reject dimension changes. SIZER
 permits dimensions of at least 64 by 48; vertical gadgets require height 80.
 Off-screen bounds fail without mutation.
 
+A copied move keeps the old published geometry until display completion. Success
+publishes the new bounds; a quiescent display failure keeps the old bounds and
+reports `AES_DISPLAY_ERROR`. Copy refusal uses ordinary damage/redraw. Close
+withdraws the visible window and open epoch before draining captured input; its
+reply waits for the old input route to retire.
+
 `WF_NAME` and `WF_INFO` copy at most 64 characters plus terminator from the high-word,
 low-word packed address; `wind_set_str` performs that packing. `WF_CXYWH` moves
 or resizes the window and `WF_TOP` raises it. Work insets are left/right 8,

@@ -83,17 +83,11 @@ PROC Rebase(DESKTYPES.Window POINTER window
 
 RETURN
 
-PUBLIC PROC Pump()
-  BYTE status,completed
+; Both submission failure and completed DMA retire the same reservation.
+; A reset-required failure never returns from the display adapter.
+PROC CommitCopy(DESKTYPES.Service POINTER service BYTE completed)
 
-  IF moveToken=0 OR CONSOLEBITMAP.Pending()<>0 THEN
-    RETURN
-  FI
-
-  LET service=DESKSTATE.Get()
-  completed=(CONSOLEBITMAP.Failed()=0)
-  status=LAYERS.Finish(@service.scene,moveToken,completed)
-  IF status<>LAYERTYPES.OK THEN
+  IF LAYERS.Finish(@service.scene,moveToken,completed)<>LAYERTYPES.OK THEN
     HEAPCORE.Abort($faed)
   FI
 
@@ -101,28 +95,64 @@ PUBLIC PROC Pump()
     Rebase(moving,LAYERS.Find(@service.scene,moving.layer),1)
   FI
 
-  IF completed<>0 AND moving.kind=DESKTYPES.CONTENT_AES THEN
-    AESWINDOWSTATE.Moved(AESWINDOWSTATE.FindRecord(moving.id))
+  IF moving.kind=DESKTYPES.CONTENT_AES THEN
+    AESWINDOWSTATE.Geometry(AESWINDOWSTATE.FindRecord(moving.id),completed)
     AESWINDOWSTATE.Sync()
   FI
 
-  aesStatus=IF completed<>0 THEN DESKTYPES.OK ELSE DESKTYPES.DRAW_FAILED FI
   moveToken=0
   moving=NULL
+
+RETURN
+
+PUBLIC PROC Pump()
+
+  IF moveToken=0 OR CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN
+  FI
+
+  LET completed=(CONSOLEBITMAP.Failed()=0)
+  CommitCopy(DESKSTATE.Get(),completed)
+  aesStatus=IF completed<>0 THEN DESKTYPES.OK ELSE DESKTYPES.DRAW_FAILED FI
   IF reply<>NULL THEN
-    DESKEVENTS.Reply(reply,
-        IF completed<>0 THEN DESKTYPES.OK ELSE DESKTYPES.DRAW_FAILED FI)
-    reply=NULL
+    BEGIN
+      LET request=reply
+      reply=NULL
+      DESKEVENTS.Reply(request,aesStatus)
+    END
   FI
 
 RETURN
+
+; The Layers move token retains the source and target through submission
+; and completion. The effect only consumes these frozen coordinates.
+BYTE FUNC SubmitCopy(LAYERTYPES.Scene POINTER scene)
+
+  LET packet=CONSOLEBITMAP.GetPacket()
+  LET source=@scene.copySource
+  LET target=@scene.copyTarget
+  packet.copy.source.offset=0
+  packet.copy.source.pitch=320
+  packet.copy.source.width=640
+  packet.copy.source.height=240
+  packet.copy.destination.offset=0
+  packet.copy.destination.pitch=320
+  packet.copy.destination.width=640
+  packet.copy.destination.height=240
+  packet.copy.sourceX=CARD(source.left)
+  packet.copy.sourceY=CARD(source.top)
+  packet.copy.destinationX=CARD(target.left)
+  packet.copy.destinationY=CARD(target.top)
+  packet.copy.width=CARD(source.right-source.left)
+  packet.copy.height=CARD(source.bottom-source.top)
+
+RETURN(CONSOLEBITMAP.CopyStart())
 
 ; Unsupported placement and nonclean sources retain the ordinary redraw path.
 PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window INT left,top
     DESKTYPES.Request POINTER request)
-  BYTE status,drawn,eligible,changed
-  LONGCARD token
+  BYTE status,drawn,eligible
 
   IF window.iconified<>0 THEN
     BEGIN
@@ -154,49 +184,32 @@ PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
   FI
 
   IF eligible<>0 THEN
-    ; Removing the caret uses an ordinary paint transaction, before move admission.
+    ; Remove transient pixels while the old scene can still admit paint.
     HideCaret()
-
     drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
-    status=LAYERS.BeginMove(@service.scene,window.layer,left,top,@token)
+    IF drawn=0 THEN
+      RETURN(DESKTYPES.DRAW_FAILED)
+    FI
+
+    status=LAYERS.BeginMove(@service.scene,window.layer,left,top,@moveToken)
     IF status=LAYERTYPES.EMPTY THEN
       RETURN(DESKTYPES.OK)
     FI
 
     IF status=LAYERTYPES.OK THEN
-      BEGIN
-        LET packet=CONSOLEBITMAP.GetPacket()
-        packet.copy.source.offset=0
-        packet.copy.source.pitch=320
-        packet.copy.source.width=640
-        packet.copy.source.height=240
-        packet.copy.destination.offset=0
-        packet.copy.destination.pitch=320
-        packet.copy.destination.width=640
-        packet.copy.destination.height=240
-        packet.copy.sourceX=CARD(layer.bounds.left)
-        packet.copy.sourceY=CARD(layer.bounds.top)
-        packet.copy.destinationX=CARD(left)
-        packet.copy.destinationY=CARD(top)
-        packet.copy.width=CARD(layer.bounds.right-layer.bounds.left)
-        packet.copy.height=CARD(layer.bounds.bottom-layer.bounds.top)
-        IF CONSOLEBITMAP.CopyStart()=0 THEN
-          status=LAYERS.Finish(@service.scene,token,0)
-          RETURN(DESKTYPES.DRAW_FAILED)
-        FI
-      END
-
-      moveToken=token
       moving=window
       reply=request
+      IF SubmitCopy(@service.scene)=0 THEN
+        CommitCopy(service,0)
+        reply=NULL
+        RETURN(DESKTYPES.DRAW_FAILED)
+      FI
       RETURN(DESKTYPES.PENDING)
     FI
   FI
 
-  changed=layer.bounds.left<>left OR layer.bounds.top<>top
   status=LAYERS.Move(@service.scene,window.layer,left,top)
-  IF status=LAYERTYPES.OK AND changed<>0
-      AND DESKSTATE.IsConsole(window)<>0 THEN
+  IF status=LAYERTYPES.OK AND DESKSTATE.IsConsole(window)<>0 THEN
     Rebase(window,layer,0)
   FI
 
@@ -218,16 +231,14 @@ PUBLIC CARD FUNC Application(DESKTYPES.Service POINTER service
     RETURN(aesStatus)
   FI
 
+  aesReply=request
   status=Start(service,window,left,top,NULL)
-  IF status=DESKTYPES.PENDING THEN
-    aesReply=request
-  ELSEIF status=DESKTYPES.OK THEN
-    BEGIN
-      LET item=AESWINDOWSTATE.FindRecord(window.id)
-      AESWINDOWSTATE.Snapshot(item)
-      AESWINDOWSTATE.Moved(item)
+  IF status<>DESKTYPES.PENDING THEN
+    aesReply=NULL
+    IF status=DESKTYPES.OK THEN
+      AESWINDOWSTATE.Geometry(AESWINDOWSTATE.FindRecord(window.id),0)
       AESWINDOWSTATE.Sync()
-    END
+    FI
   FI
 
 RETURN(status)

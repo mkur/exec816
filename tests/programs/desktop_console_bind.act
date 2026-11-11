@@ -78,7 +78,7 @@ PROC Bind(LONGCARD unit)
   DESKTOP.Prepare(@request,DESKTYPES.BIND_CONSOLE)
   request.target=unit
   Send(DESKTYPES.BIND_CONSOLE,DESKBOOT.WindowId())
-  Require(DESKSTATE.ConsoleUnit()=unit)
+  Require(DESKSTATE.ShellUnit()=unit)
 
 RETURN
 
@@ -208,7 +208,7 @@ PROC Main()
   Require(Collect()=DESKTYPES.BAD_ID AND service.consoleUnit=0)
   Bind(second)
   DESKBOOT.Detach()
-  Require(DESKSTATE.ConsoleUnit()=0)
+  Require(DESKSTATE.ShellUnit()=0)
   Require(DOS.Close(other)<>0)
   Require(CONSOLE.Destroy(second)<>0)
   Require(DOS.Write(first,BYTE POINTER(c"z"),1)=1)

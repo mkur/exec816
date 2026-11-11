@@ -200,3 +200,79 @@ Run the three optimized fixtures with `tools/test_aes_server.py --mode opt`,
 selecting `--suite windows`, `--suite multiwindow` or `--suite cache` and a
 separate `--output` directory for each. The host suite reports 683 passes and
 four skips. [GF1 execution record](../development/gem-first-gf1.json)
+
+## GF2 — Window effects and scene commits
+
+GF2 passes at the development tier through the existing presenter transport.
+Copied moves now retain their Layers token, window and reply storage before
+submission. The physical copy consumes the reservation's frozen source and
+target. Completion retires that reservation before publishing geometry and
+replying. Both submission failure and quiescent completion failure use the
+same retirement path, preserve old bounds and invalidate dependent paint state.
+A reset-required failure retains the operation storage. Unsupported copies
+continue through ordinary damage/redraw.
+
+Focus changes prepare the outgoing caret before committing focus, frame damage,
+capture routing and notices. Native top/restore, hide, close and gesture callers
+use the same phases. Open owns a local input-route tag until admission succeeds;
+epoch exhaustion retires that unpublished tag. Close hides the window and
+retires its epoch before draining captured input, retaining the old route tag
+until retirement completes. Console attachment prepares the retained
+presentation before publishing its unit; release restores the caret before
+withdrawing that presentation. These boundaries prepare GF3's scene-gate work;
+GF2 retains the presenter's existing serialization.
+[Move continuation](../../lib/desktop/deskmove.act) ·
+[Window policy](../../lib/aes/aeswindow.act) ·
+[Focus policy](../../lib/desktop/deskcore.act) ·
+[Console attachment](../../lib/desktop/desk-owned-console.inc)
+
+### Development checks
+
+The optimized `windows`, `multiwindow`, `cache` and `keyboard` fixtures pass
+285, 67, 224 and 111 C checks respectively, including physical move/resize/top,
+iconify/restore, copy refusal, visibility, redraw and keyboard routing. Cache
+checks cover all 32 checkpoint records. The application-owned console fixture
+passes two FastBasic cycles with root mode/cells preserved and all eight pixel
+checkpoints matching.
+
+The focused effect fixture forces preemption before copy submission and before
+commit. A headless peer progresses during each four-frame pause while the
+Layers token, window and request remain retained and both layer and caller
+views retain old bounds. It also forces failed open admission and checks exact
+route rollback, then observes close hidden with epoch zero and its retirement
+tag still retained. Success passes 29 C checks. Quiescent watchdog failure
+passes 24 checks, preserves old bounds and cleans up. The nonquiescent case
+passes 17 checks before the expected `FF93` reset park, retaining three live
+Tasks and the operation storage. Every case submits one move copy and keeps
+stack/domain guards intact.
+
+The native desktop fixture passes 376 checks and its expected held-removal
+fault case. Both console-bind runs pass 109 checks and nine raster checkpoints;
+the combined case also checks iconified pixels and stale completion. The bind
+fixture now compares the committed `ShellUnit()`, since `ConsoleUnit()` selects
+the transient rendering target. Its earlier checkpoint-4 failures and the
+diagnostic snapshot remain under the development output directory. The desktop
+runner uses the pinned release compiler after the debug compiler exceeded its
+600-second build timeout. GUI/inbox synthetic producers use `AESGUI.Open`'s
+commit-only procedure contract; those optimized fixtures pass 102 and 254 C
+checks. All returning cases have intact guards and zero live worker Tasks;
+the held-removal and reset-park cases retain their expected Tasks. The host
+suite passes 683 tests with four historical-source skips.
+
+The matched optimized `windows` image adds 1,468 native code bytes within the
+same 17 code banks, with zero added native data, zero-fill or VRAM. It adds no
+Tasks or signals. The reserved bank-zero delta is **0 fixed, 0 root, 0 kernel,
+0 per public Task and 0 idle bytes**, including guards, alignment and unused
+reserved capacity. These fixtures use eight public slots; GF0 retains the
+production twelve-slot inventory. Build-specific sizes, hashes, final GUI/inbox
+results and host checks are in the [GF2 execution record](../development/gem-first-gf2.json).
+
+Reproduce the selected AES cases with `tools/test_aes_server.py --mode opt` and
+`--suite windows`, `multiwindow`, `cache`, `keyboard`, `gui` or `inbox`.
+Run `tools/test_aes_window_effects.py --variant 0`, `--variant 3` and
+`--variant 4` for isolated success, quiescent failure and reset park; reuse the
+same emitted image with `--reuse`. Also run `tools/test_console_window.py`,
+`tools/test_desktop.py` and `tools/test_desktop_console_bind.py`, the latter
+once with defaults and once with `--iconified --stale-completion`. Each runner
+requires a separate `--output` directory. This is development evidence; it
+does not qualify the hosted system or establish new latency results.

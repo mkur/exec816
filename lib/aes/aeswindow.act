@@ -72,6 +72,18 @@ BYTE FUNC ConsoleBounds(DESKTYPES.Window POINTER window
 RETURN(work.right-work.left=512 AND work.bottom-work.top=160
     AND ((work.left OR work.top) & 7)=0)
 
+BYTE FUNC SameSize(LAYERTYPES.Rect POINTER first,second)
+
+RETURN(first.right-first.left=second.right-second.left
+    AND first.bottom-first.top=second.bottom-second.top)
+
+BYTE FUNC FitBounds(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER current,bounds INT x,y,width,height)
+
+RETURN(ValidBounds(window.frameKind,x,y,width,height,bounds)<>0
+    AND ConsoleBounds(window,bounds)<>0
+    AND ((window.frameKind & AESTYPES.SIZER)<>0 OR SameSize(current,bounds)<>0))
+
 ; The caller owns the scene and supplies the registered binding's window view.
 PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.WindowView POINTER view
@@ -142,11 +154,61 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
 
 RETURN(AESTYPES.RESOURCE)
 
-BYTE FUNC Close(AESSTATE.Window POINTER item)
-  BYTE status
-  CARD captured,result
+; Route setup owns a local tag until the window is ready to be shown.
+CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
+    AESSTATE.Window POINTER item INT x,y,width,height)
+  LAYERTYPES.Rect bounds
+  LONGCARD route
 
   LET desktop=DESKSTATE.Get()
+  LET window=item.window
+  LET layer=LAYERS.Find(@desktop.scene,window.layer)
+  IF layer.shown<>0 THEN
+    RETURN(AESTYPES.BUSY)
+  FI
+
+  IF FitBounds(window,@layer.bounds,@bounds,x,y,width,height)=0 THEN
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  LET keyboard=INPUT.Lease POINTER(desktop.keyboard)
+  route=0
+  IF window.console=0 THEN
+    IF INPUT.CreateRoute(keyboard,INPUT.ROUTE_UNFILTERED,@route)<>INPUT.OK THEN
+      RETURN(AESTYPES.RESOURCE)
+    FI
+  FI
+  IF service.nextGuiEpoch=0 THEN
+    IF route<>0 AND INPUT.RetireRoute(keyboard,route)<>INPUT.OK THEN
+      HEAPCORE.Abort($fcc2)
+    FI
+    RETURN(AESTYPES.OVERFLOW)
+  FI
+
+  DESKCORE.PrepareFocus(desktop,window.id)
+  window.keyRoute=route
+  AESGUI.Open(service,client,item)
+  IF LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,
+      bounds.right-bounds.left,bounds.bottom-bounds.top)<>LAYERTYPES.OK
+      OR DESKSTATE.PrepareOpen(window.layer)<>LAYERTYPES.OK
+      OR LAYERS.Show(@desktop.scene,window.layer,1)<>LAYERTYPES.OK THEN
+    HEAPCORE.Abort($fcb5)
+  FI
+  DESKCORE.CommitFocus(desktop,window.id)
+  IF client.closeRequested<>0 THEN
+    AESGUI.Post(service,item,AESTYPES.GUI_CLOSED,0,0,0,0)
+  FI
+  AESWINDOWSTATE.Geometry(item,0)
+  AESWINDOWSTATE.Sync()
+
+RETURN(AESTYPES.OK)
+
+; Close withdraws the window and capture route before draining the old tag.
+; The hidden record retains that tag until the input service retires it.
+PROC CommitClose(DESKTYPES.Service POINTER desktop
+    AESSTATE.Window POINTER item LONGCARD focus)
+
+  LET window=item.window
   AESMOUSE.CancelWindow(item.view.epoch)
   AESGUI.Close(item)
   BEGIN
@@ -155,31 +217,45 @@ BYTE FUNC Close(AESSTATE.Window POINTER item)
       AESMENU.Close(AESSTATE.Get(),client)
     FI
   END
-  DESKCORE.RestoreFocus(desktop,item.window.id)
-
-  IF item.window.keyRoute<>0 THEN
-    captured=CONSOLEINPUT.Pump(NULL)
-    result=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),
-        item.window.keyRoute)
-    IF result=INPUT.BUSY THEN
-      RETURN(0)
-    FI
-
-    IF result<>INPUT.OK THEN
-      HEAPCORE.Abort($fcc2)
-    FI
-
-    item.window.keyRoute=0
-  FI
-
   item.paintDirty=0
-  status=LAYERS.Show(@desktop.scene,item.window.layer,0)
-  IF status<>LAYERTYPES.OK THEN
+  IF LAYERS.Show(@desktop.scene,window.layer,0)<>LAYERTYPES.OK THEN
     HEAPCORE.Abort($fcb5)
   FI
-
-  DESKCORE.ForgetIcon(desktop,item.window)
+  DESKCORE.ForgetIcon(desktop,window)
+  DESKCORE.CommitFocus(desktop,focus)
   AESWINDOWSTATE.Snapshot(item)
+  AESWINDOWSTATE.Sync()
+
+RETURN
+
+BYTE FUNC Close(AESSTATE.Window POINTER item)
+  CARD captured
+
+  LET desktop=DESKSTATE.Get()
+  LET window=item.window
+  LET layer=LAYERS.Find(@desktop.scene,window.layer)
+  IF layer.shown<>0 OR window.keyRoute=0 THEN
+    BEGIN
+      LET focus=DESKCORE.NextFocus(desktop,window.id)
+      DESKCORE.PrepareFocus(desktop,focus)
+      CommitClose(desktop,item,focus)
+    END
+  FI
+
+  IF window.keyRoute<>0 THEN
+    BEGIN
+      captured=CONSOLEINPUT.Pump(NULL)
+      LET result=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),
+          window.keyRoute)
+      IF result=INPUT.BUSY THEN
+        RETURN(0)
+      FI
+      IF result<>INPUT.OK THEN
+        HEAPCORE.Abort($fcc2)
+      FI
+      window.keyRoute=0
+    END
+  FI
 
 RETURN(1)
 
@@ -189,7 +265,10 @@ PROC Destroy(AESSTATE.Window POINTER item)
 
   LET desktop=DESKSTATE.Get()
   IF item.window.console<>0 THEN
-    DESKCONSOLE.Release(item.window)
+    BEGIN
+      LET view=DESKCONSOLE.PrepareRelease(item.window.console)
+      DESKCONSOLE.Release(item.window,view)
+    END
   FI
   AESMOUSE.CancelWindow(item.view.epoch)
   AESGUI.Close(item)
@@ -267,11 +346,60 @@ INT FUNC FindAt(INT x,y)
 
 RETURN(0)
 
+CARD FUNC SetBounds(AESSTATE.Service POINTER service
+    DESKTYPES.Service POINTER desktop AESSTATE.Window POINTER item
+    LAYERTYPES.Layer POINTER layer AESTYPES.Request POINTER request)
+  LAYERTYPES.Rect bounds
+  LAYERTYPES.Rect POINTER current
+
+  LET window=item.window
+  current=@layer.bounds
+  IF window.iconified<>0 THEN
+    current=@window.normalBounds
+  FI
+  IF FitBounds(window,current,@bounds,request.intin(2),request.intin(3),
+      request.intin(4),request.intin(5))=0 THEN
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  LET same=SameSize(current,@bounds)
+  IF window.iconified<>0 THEN
+    IF same=0 THEN
+      DESKCACHE.Changed(desktop,window)
+    FI
+    REGIONS.Copy(@bounds,current)
+    AESWINDOWSTATE.Snapshot(item)
+    RETURN(AESTYPES.OK)
+  FI
+
+  IF same<>0 AND service.updateOwner=0 THEN
+    BEGIN
+      LET status=DESKMOVE.Application(desktop,window,
+          bounds.left,bounds.top,request)
+      IF status=DESKTYPES.PENDING THEN
+        RETURN(AESTYPES.PENDING)
+      FI
+      IF status<>DESKTYPES.OK THEN
+        RETURN(AESTYPES.DISPLAY_ERROR)
+      FI
+      RETURN(AESTYPES.OK)
+    END
+  FI
+
+  IF LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,
+      bounds.right-bounds.left,bounds.bottom-bounds.top)<>LAYERTYPES.OK THEN
+    RETURN(AESTYPES.MALFORMED)
+  FI
+  AESWINDOWSTATE.Geometry(item,0)
+  AESWINDOWSTATE.Sync()
+
+RETURN(AESTYPES.OK)
+
 PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   BYTE status
   BYTE POINTER title,current
-  CARD length,routeStatus,moveStatus,index,result
+  CARD length,index,result
   LONGCARD titleAddress
   LAYERTYPES.Rect bounds
 
@@ -300,8 +428,21 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     RETURN(AESTYPES.IDENTITY)
   FI
 
-  IF request.operation=AESTYPES.OP_DELETE THEN
-    result=DeleteHidden(item)
+  IF request.operation<>AESTYPES.OP_SET THEN
+    CASE request.operation OF
+    WHEN AESTYPES.OP_DELETE THEN
+      result=DeleteHidden(item)
+    WHEN AESTYPES.OP_OPEN THEN
+      result=Open(service,client,item,request.intin(1),request.intin(2),
+          request.intin(3),request.intin(4))
+    WHEN AESTYPES.OP_CLOSE THEN
+      IF Close(item)=0 THEN
+        RETURN(AESTYPES.PENDING)
+      FI
+      result=AESTYPES.OK
+    ELSE
+      RETURN(AESTYPES.UNSUPPORTED)
+    ESAC
     IF result=AESTYPES.OK THEN
       request.intout(0)=1
     FI
@@ -312,223 +453,124 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   LET window=item.window
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
   status=LAYERTYPES.OK
-  IF request.operation=AESTYPES.OP_OPEN THEN
-    IF layer.shown<>0 THEN
-      RETURN(AESTYPES.BUSY)
-    FI
-
-    IF ValidBounds(window.frameKind,request.intin(1),request.intin(2),request.intin(3),
-        request.intin(4),@bounds)=0
-        OR ConsoleBounds(window,@bounds)=0
-        OR ((window.frameKind & AESTYPES.SIZER)=0
-        AND (bounds.right-bounds.left<>layer.bounds.right-layer.bounds.left
-        OR bounds.bottom-bounds.top<>layer.bounds.bottom-layer.bounds.top)) THEN
+  CASE request.intin(1) OF
+  WHEN AESTYPES.WF_EXEC_CONSOLE THEN
+    BEGIN
+      LET unit=(LONGCARD(CARD(request.intin(2))) LSH 16)
+          OR LONGCARD(CARD(request.intin(3)))
+      LET bound=DESKCONSOLE.Attach(window,unit,client.binding.owner)
+      IF bound=DESKTYPES.BUSY THEN
+        RETURN(AESTYPES.PENDING)
+      ELSEIF bound<>DESKTYPES.OK THEN
+        RETURN(AESTYPES.MALFORMED)
+      FI
+    END
+  WHEN AESTYPES.WF_NAME,AESTYPES.WF_INFO THEN
+    titleAddress=(LONGCARD(CARD(request.intin(2))) LSH 16)
+        OR LONGCARD(CARD(request.intin(3)))
+    IF titleAddress=0 OR titleAddress>$ffffff THEN
       RETURN(AESTYPES.MALFORMED)
     FI
 
-    IF window.console=0 THEN
-      routeStatus=INPUT.CreateRoute(INPUT.Lease POINTER(desktop.keyboard),
-          INPUT.ROUTE_UNFILTERED,@window.keyRoute)
-      IF routeStatus<>INPUT.OK THEN
-        RETURN(AESTYPES.RESOURCE)
-      FI
-    FI
-    IF AESGUI.Open(service,client,item)=0 THEN
-      IF window.keyRoute<>0 THEN
-        routeStatus=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),
-            window.keyRoute)
-        window.keyRoute=0
-      FI
-      RETURN(AESTYPES.OVERFLOW)
+    title=BYTE POINTER(ADDRESS(titleAddress))
+    length=0
+    WHILE length<DESKTYPES.TITLE_BYTES AND title(SIZE(length))<>0 DO
+      length==+1
+    OD
+
+    IF length=DESKTYPES.TITLE_BYTES THEN
+      RETURN(AESTYPES.MALFORMED)
     FI
 
-    status=LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,
-        bounds.right-bounds.left,bounds.bottom-bounds.top)
-    status=DESKSTATE.PrepareOpen(window.layer)
-    status=LAYERS.Show(@desktop.scene,window.layer,1)
-    DESKCORE.Focus(desktop,window.id)
-    IF client.closeRequested<>0 THEN
-      AESGUI.Post(service,item,AESTYPES.GUI_CLOSED,0,0,0,0)
+    current=@window.title(0)
+    IF request.intin(1)=AESTYPES.WF_INFO THEN
+      current=@window.info(0)
     FI
-  ELSEIF request.operation=AESTYPES.OP_CLOSE THEN
-    IF Close(item)=0 THEN
-      RETURN(AESTYPES.PENDING)
+    index=0
+    WHILE index<=length AND current(SIZE(index))=title(SIZE(index)) DO
+      index==+1
+    OD
+    IF index>length THEN
+      request.intout(0)=1
+      RETURN(AESTYPES.OK)
     FI
-  ELSEIF request.operation=AESTYPES.OP_SET THEN
-    CASE request.intin(1) OF
-    WHEN AESTYPES.WF_EXEC_CONSOLE THEN
-      BEGIN
-        LET unit=(LONGCARD(CARD(request.intin(2))) LSH 16)
-            OR LONGCARD(CARD(request.intin(3)))
-        LET bound=DESKCONSOLE.Attach(window,unit,client.binding.owner)
-        IF bound=DESKTYPES.BUSY THEN
-          RETURN(AESTYPES.PENDING)
-        ELSEIF bound<>DESKTYPES.OK THEN
-          RETURN(AESTYPES.MALFORMED)
-        FI
-      END
-    WHEN AESTYPES.WF_NAME,AESTYPES.WF_INFO THEN
-      titleAddress=(LONGCARD(CARD(request.intin(2))) LSH 16)
-          OR LONGCARD(CARD(request.intin(3)))
-      IF titleAddress=0 OR titleAddress>$ffffff THEN
-        RETURN(AESTYPES.MALFORMED)
-      FI
-
-      title=BYTE POINTER(ADDRESS(titleAddress))
-      length=0
-      WHILE length<DESKTYPES.TITLE_BYTES AND title(SIZE(length))<>0 DO
-        length==+1
-      OD
-
-      IF length=DESKTYPES.TITLE_BYTES THEN
-        RETURN(AESTYPES.MALFORMED)
-      FI
-
-      current=@window.title(0)
-      IF request.intin(1)=AESTYPES.WF_INFO THEN
-        current=@window.info(0)
-      FI
-      index=0
-      WHILE index<=length AND current(SIZE(index))=title(SIZE(index)) DO
-        index==+1
-      OD
-      IF index>length THEN
-        request.intout(0)=1
-        RETURN(AESTYPES.OK)
-      FI
-      REGIONS.Copy(@layer.bounds,@bounds)
-      IF request.intin(1)=AESTYPES.WF_NAME THEN
-        A816MEMORY.Move(@window.title(0),title,length+1)
-        DESKMENU.Renamed(window.id)
-        bounds.bottom=bounds.top+DESKTYPES.TITLE_HEIGHT
-      ELSE
-        DESKCACHE.Changed(desktop,window)
-        A816MEMORY.Move(@window.info(0),title,length+1)
-        bounds.top==+DESKTYPES.TITLE_HEIGHT
-        bounds.bottom=bounds.top+DESKTYPES.FRAME_INFO_HEIGHT
-      FI
-      status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
-    WHEN AESTYPES.WF_EXEC_FOCUS THEN
-      item.focusNotices=(request.intin(2)<>0)
-      IF item.focusNotices<>0 THEN
-        AESGUI.Post(service,item,AESTYPES.GUI_FOCUS,
-            INT(window.id=desktop.focus),0,0,0)
-      FI
-    WHEN AESTYPES.WF_EXEC_PRESERVE THEN
-      ; Set before opening. Reporting every content change is the caller's
-      ; promise; this changes exposure policy, not snapshot eligibility.
-      item.preserve=(request.intin(2)<>0)
-    WHEN AESTYPES.WF_EXEC_DESKTOP THEN
-      IF window.frameKind<>DESKTYPES.FRAME_BORDERLESS
-          OR (DESKSTATE.desktopWindow<>0 AND DESKSTATE.desktopWindow<>window.id) THEN
-        RETURN(AESTYPES.RESOURCE)
-      FI
-      DESKSTATE.desktopWindow=window.id
-      DESKSTATE.desktopLayer=window.layer
-      status=LAYERS.Order(@desktop.scene,window.layer,0)
-    WHEN AESTYPES.WF_TOP THEN
-      IF layer.shown=0 THEN
-        RETURN(AESTYPES.MALFORMED)
-      FI
-
-      IF window.iconified<>0 THEN
-        DESKCORE.RestoreIcon(desktop,window)
-      FI
-      status=DESKSTATE.Raise(window.layer)
-      DESKCORE.Focus(desktop,window.id)
-    WHEN AESTYPES.WF_CXYWH THEN
-      IF window.iconified<>0 THEN
-        IF ValidBounds(window.frameKind,request.intin(2),request.intin(3),
-            request.intin(4),request.intin(5),@bounds)=0
-            OR ConsoleBounds(window,@bounds)=0 THEN
-          RETURN(AESTYPES.MALFORMED)
-        FI
-        IF (window.frameKind & AESTYPES.SIZER)=0
-            AND (bounds.right-bounds.left<>
-              window.normalBounds.right-window.normalBounds.left
-            OR bounds.bottom-bounds.top<>
-              window.normalBounds.bottom-window.normalBounds.top) THEN
-          RETURN(AESTYPES.MALFORMED)
-        FI
-        IF bounds.right-bounds.left<>
-            window.normalBounds.right-window.normalBounds.left
-            OR bounds.bottom-bounds.top<>
-            window.normalBounds.bottom-window.normalBounds.top THEN
-          DESKCACHE.Changed(desktop,window)
-        FI
-        REGIONS.Copy(@bounds,@window.normalBounds)
-        AESWINDOWSTATE.Snapshot(item)
-        request.intout(0)=1
-        RETURN(AESTYPES.OK)
-      FI
-      IF ValidBounds(window.frameKind,request.intin(2),request.intin(3),request.intin(4),
-          request.intin(5),@bounds)=0
-          OR ConsoleBounds(window,@bounds)=0
-          OR ((window.frameKind & AESTYPES.SIZER)=0
-          AND (bounds.right-bounds.left<>layer.bounds.right-layer.bounds.left
-          OR bounds.bottom-bounds.top<>layer.bounds.bottom-layer.bounds.top)) THEN
-        RETURN(AESTYPES.MALFORMED)
-      FI
-
-      IF service.updateOwner=0
-          AND bounds.right-bounds.left=layer.bounds.right-layer.bounds.left
-          AND bounds.bottom-bounds.top=layer.bounds.bottom-layer.bounds.top THEN
-        moveStatus=DESKMOVE.Application(desktop,window,
-            bounds.left,bounds.top,request)
-        IF moveStatus=DESKTYPES.PENDING THEN
-          RETURN(AESTYPES.PENDING)
-        FI
-        IF moveStatus<>DESKTYPES.OK THEN
-          RETURN(AESTYPES.DISPLAY_ERROR)
-        FI
-        request.intout(0)=1
-        RETURN(AESTYPES.OK)
-      FI
-
-      status=LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,
-        bounds.right-bounds.left,bounds.bottom-bounds.top)
-    WHEN AESTYPES.WF_VSLIDE,AESTYPES.WF_VSLSIZE THEN
-      IF (window.frameKind & AESTYPES.VSLIDE)=0 THEN
-        RETURN(AESTYPES.UNSUPPORTED)
-      FI
-      IF request.intin(2)<0 OR request.intin(2)>1000 THEN
-        RETURN(AESTYPES.MALFORMED)
-      FI
-      IF (request.intin(1)=AESTYPES.WF_VSLIDE AND item.view.vslide=request.intin(2))
-          OR (request.intin(1)=AESTYPES.WF_VSLSIZE AND item.view.vsize=request.intin(2)) THEN
-        request.intout(0)=1
-        RETURN(AESTYPES.OK)
-      FI
-      DESKCACHE.Changed(desktop,window)
-      IF request.intin(1)=AESTYPES.WF_VSLIDE THEN
-        item.view.vslide=request.intin(2)
-      ELSE
-        item.view.vsize=request.intin(2)
-      FI
-      REGIONS.Assign(@bounds,layer.bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
-          layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
-          layer.bounds.bottom)
-      status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
+    REGIONS.Copy(@layer.bounds,@bounds)
+    IF request.intin(1)=AESTYPES.WF_NAME THEN
+      A816MEMORY.Move(@window.title(0),title,length+1)
+      DESKMENU.Renamed(window.id)
+      bounds.bottom=bounds.top+DESKTYPES.TITLE_HEIGHT
     ELSE
+      DESKCACHE.Changed(desktop,window)
+      A816MEMORY.Move(@window.info(0),title,length+1)
+      bounds.top==+DESKTYPES.TITLE_HEIGHT
+      bounds.bottom=bounds.top+DESKTYPES.FRAME_INFO_HEIGHT
+    FI
+    status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
+  WHEN AESTYPES.WF_EXEC_FOCUS THEN
+    item.focusNotices=(request.intin(2)<>0)
+    IF item.focusNotices<>0 THEN
+      AESGUI.Post(service,item,AESTYPES.GUI_FOCUS,
+          INT(window.id=desktop.focus),0,0,0)
+    FI
+  WHEN AESTYPES.WF_EXEC_PRESERVE THEN
+    ; Set before opening. Reporting every content change is the caller's
+    ; promise; this changes exposure policy, not snapshot eligibility.
+    item.preserve=(request.intin(2)<>0)
+  WHEN AESTYPES.WF_EXEC_DESKTOP THEN
+    IF window.frameKind<>DESKTYPES.FRAME_BORDERLESS
+        OR (DESKSTATE.desktopWindow<>0 AND DESKSTATE.desktopWindow<>window.id) THEN
+      RETURN(AESTYPES.RESOURCE)
+    FI
+    DESKSTATE.desktopWindow=window.id
+    DESKSTATE.desktopLayer=window.layer
+    status=LAYERS.Order(@desktop.scene,window.layer,0)
+  WHEN AESTYPES.WF_TOP THEN
+    IF layer.shown=0 THEN
+      RETURN(AESTYPES.MALFORMED)
+    FI
+    status=DESKCORE.Top(desktop,window)
+  WHEN AESTYPES.WF_CXYWH THEN
+    result=SetBounds(service,desktop,item,layer,request)
+    IF result=AESTYPES.OK THEN
+      request.intout(0)=1
+    FI
+    RETURN(result)
+  WHEN AESTYPES.WF_VSLIDE,AESTYPES.WF_VSLSIZE THEN
+    IF (window.frameKind & AESTYPES.VSLIDE)=0 THEN
       RETURN(AESTYPES.UNSUPPORTED)
-    ESAC
+    FI
+    IF request.intin(2)<0 OR request.intin(2)>1000 THEN
+      RETURN(AESTYPES.MALFORMED)
+    FI
+    IF (request.intin(1)=AESTYPES.WF_VSLIDE AND item.view.vslide=request.intin(2))
+        OR (request.intin(1)=AESTYPES.WF_VSLSIZE AND item.view.vsize=request.intin(2)) THEN
+      request.intout(0)=1
+      RETURN(AESTYPES.OK)
+    FI
+    DESKCACHE.Changed(desktop,window)
+    IF request.intin(1)=AESTYPES.WF_VSLIDE THEN
+      item.view.vslide=request.intin(2)
+    ELSE
+      item.view.vsize=request.intin(2)
+    FI
+    REGIONS.Assign(@bounds,layer.bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
+        layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
+        layer.bounds.bottom)
+    status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
   ELSE
     RETURN(AESTYPES.UNSUPPORTED)
-  FI
+  ESAC
 
   IF status<>LAYERTYPES.OK THEN
     RETURN(AESTYPES.MALFORMED)
   FI
 
-  IF request.operation=AESTYPES.OP_OPEN OR (request.operation=AESTYPES.OP_SET
-      AND (request.intin(1)=AESTYPES.WF_CXYWH
-      OR request.intin(1)=AESTYPES.WF_VSLIDE
-      OR request.intin(1)=AESTYPES.WF_VSLSIZE)) THEN
-    IF window.iconified=0 THEN
-      DESKGEOMETRY.Slider(window,@layer.bounds,item.view.vslide,item.view.vsize)
-    FI
+  IF window.iconified=0 AND (request.intin(1)=AESTYPES.WF_VSLIDE
+      OR request.intin(1)=AESTYPES.WF_VSLSIZE) THEN
+    AESWINDOWSTATE.Geometry(item,0)
+  ELSE
+    AESWINDOWSTATE.Snapshot(item)
   FI
-  AESWINDOWSTATE.Snapshot(item)
   AESWINDOWSTATE.Sync()
   request.intout(0)=1
 

@@ -3,7 +3,8 @@
 - [GEM-first GUI execution](gem-first-gui.md): native two-Counter/disk baseline,
   blocking and UPDATE-held I/O, explicit cancellation, scoped CPU observations
   and measured Task/stack use before policy migration. GF1 inventories window
-  effects and shared scene access.
+  effects and shared scene access; GF2 checks window effects, coherent commits,
+  route retirement and console attachment.
 
 - [Shared-source Atari ST comparison](atari-st-reference.md): Hatari with
   EmuTOS/MagiC, unchanged object routines, bounded execution and drawing-path

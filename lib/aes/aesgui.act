@@ -32,12 +32,10 @@ PUBLIC PROC Close(AESSTATE.Window POINTER item)
 
 RETURN
 
-PUBLIC BYTE FUNC Open(AESSTATE.Service POINTER service
+; The open operation has already admitted a fresh epoch and a keyboard route.
+PUBLIC PROC Open(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESSTATE.Window POINTER item)
 
-  IF service.nextGuiEpoch=0 THEN
-    RETURN(0)
-  FI
   EXEC.Forbid()
   item.gui.count=0
   item.view.epoch=service.nextGuiEpoch
@@ -48,7 +46,7 @@ PUBLIC BYTE FUNC Open(AESSTATE.Service POINTER service
   service.nextGuiEpoch==+1
   EXEC.Permit()
 
-RETURN(1)
+RETURN
 
 ; A round-robin cursor prevents a busy sibling's redraws starving this one.
 AESSTATE.GuiPending POINTER FUNC NextPending(AESSTATE.Service POINTER service

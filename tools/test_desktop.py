@@ -36,7 +36,7 @@ def run(out, mode, existing=None):
             from generate_memory import PROFILE
             profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
             memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
-            p=build(compiler(ROOT/'build/actionc'),source,out/'program',optimize=mode=='opt',memory_profile=memory,
+            p=build(compiler(ROOT/'build/actionc',release=True),source,out/'program',optimize=mode=='opt',memory_profile=memory,
                 tasks=True,task_capacity=8,console=False,console_deferred=True,foreign_image=foreign)
         report.update(build=p['build'], bank_zero_delta=bank_zero_delta(p['build']['memory']),
                       reserved_bank_zero_delta=desktop_delta(p['build']['memory']))

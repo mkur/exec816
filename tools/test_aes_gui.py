@@ -28,9 +28,10 @@ PUBLIC PROC Pump()
   FI
 
   IF command^=1 THEN
-    IF AESGUI.Open(service,client,item)=0 THEN
+    IF service.nextGuiEpoch=0 THEN
       HEAPCORE.Abort($fcb1)
     FI
+    AESGUI.Open(service,client,item)
   ELSEIF command^=2 THEN
     AESGUI.Post(service,item,AESTYPES.GUI_REDRAW,10,20,30,40)
     AESGUI.Post(service,item,AESTYPES.GUI_REDRAW,100,30,10,10)
@@ -42,9 +43,10 @@ PUBLIC PROC Pump()
   ELSEIF command^=3 THEN
     AESGUI.Post(service,item,AESTYPES.GUI_REDRAW,1,1,8,8)
     AESGUI.Close(item)
-    IF AESGUI.Open(service,client,item)=0 THEN
+    IF service.nextGuiEpoch=0 THEN
       HEAPCORE.Abort($fcb2)
     FI
+    AESGUI.Open(service,client,item)
 
     AESGUI.Post(service,item,AESTYPES.GUI_REDRAW,110,120,10,11)
   FI

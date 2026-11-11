@@ -419,10 +419,11 @@ PUBLIC PROC Advance()
           IF layer<>NULL AND layer.shown<>0 THEN
             IF tabFocus<>0 THEN
               BEGIN
-                LET ignored=DESKSTATE.Raise(window.layer)
+                LET ignored=DESKCORE.Top(service,window)
               END
+            ELSE
+              DESKCORE.Focus(service,window.id)
             FI
-            DESKCORE.Focus(service,window.id)
           FI
         END
       FI

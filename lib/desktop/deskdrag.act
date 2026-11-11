@@ -529,12 +529,11 @@ PUBLIC PROC Advance()
   FI
 
   IF focusWanted<>0 THEN
-    status=DESKSTATE.Raise(layer.id)
+    status=DESKCORE.Top(service,window)
     IF status<>LAYERTYPES.OK THEN
       HEAPCORE.Abort($faec)
     FI
 
-    DESKCORE.Focus(service,window.id)
     focusWanted=0
   FI
 
@@ -551,7 +550,9 @@ PUBLIC PROC Advance()
     ELSEIF gadget=8 THEN
       DESKCORE.Iconify(service,window)
     ELSEIF gadget=9 THEN
-      DESKCORE.RestoreIcon(service,window)
+      IF DESKCORE.Top(service,window)<>LAYERTYPES.OK THEN
+        HEAPCORE.Abort($faec)
+      FI
     ELSEIF gadget=7 THEN
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_FULLED,0,0,0,0)
     ELSE
@@ -574,7 +575,8 @@ PUBLIC PROC Advance()
     ELSE
       status=BYTE(DESKMOVE.Start(service,window,target.left,target.top,NULL))
     FI
-    IF status<>DESKTYPES.OK AND status<>DESKTYPES.PENDING THEN
+    IF status<>DESKTYPES.OK AND status<>DESKTYPES.PENDING
+        AND status<>DESKTYPES.DRAW_FAILED THEN
       HEAPCORE.Abort($faed)
     FI
 

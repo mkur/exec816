@@ -4,9 +4,10 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-GF0 and GF1 pass at the development tier. GF2–GF15 remain open. The
+GF0–GF2 pass at the development tier. GF3–GF15 remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
-coexistence, the current resource inventory and the shared window policy audit.
+coexistence, the current resource inventory, the shared window policy audit
+and the window effect/commit checks.
 The design is committed
 as `633b45fe` on `gem-first-gui`, following the two-Counter MagiC reference at
 `39e774ef`. Those references establish the direction and reference behavior;

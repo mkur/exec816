@@ -133,13 +133,13 @@ PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
 
 RETURN
 
-PUBLIC PROC Moved(AESSTATE.Window POINTER client)
+PUBLIC PROC Geometry(AESSTATE.Window POINTER client BYTE copied)
 
   LET desktop=DESKSTATE.Get()
   LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
   DESKGEOMETRY.Slider(client.window,@layer.bounds,
       client.view.vslide,client.view.vsize)
-  Publish(client,1)
+  Publish(client,copied)
 
 RETURN
 

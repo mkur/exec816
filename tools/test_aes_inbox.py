@@ -41,9 +41,10 @@ PUBLIC PROC Pump()
   sample.windowEpoch=item.view.epoch
   CASE command^ OF
   WHEN 1 THEN
-    IF AESGUI.Open(service,client,item)=0 THEN
+    IF service.nextGuiEpoch=0 THEN
       HEAPCORE.Abort($fcc1)
     FI
+    AESGUI.Open(service,client,item)
     sample.windowEpoch=item.view.epoch
 
   WHEN 2 THEN
