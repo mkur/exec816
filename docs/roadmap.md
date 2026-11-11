@@ -247,8 +247,10 @@ separates copied moves, focus, routes and console attachment effects from scene
 publication. [GF3](history/gem-first-gui.md#gf3--scene-ownership) separates scene
 serialization from physical work and waits while published input and physical
 completion continue during caller ownership. [GF4](history/gem-first-gui.md#gf4--caller-hidden-window-lifecycle) moves hidden
-create/delete into the caller with ordered, unapplied fallback. GF5 next moves
-bounded frame attributes. Existing latency gates remain open.
+create/delete into the caller with ordered, unapplied fallback.
+[GF5](history/gem-first-gui.md#gf5--caller-frame-attributes) moves bounded frame
+attributes into callers with matching state and deferred pixels. GF6 next moves
+geometry, stacking and window lookup. Existing latency gates remain open.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)
 prioritizes ordinary AES/VDI application bodies and fewer platform edits.

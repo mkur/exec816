@@ -513,6 +513,9 @@ qualification remain open.
 
 ## GF5 — Caller frame attributes
 
+GF5 passes at the development tier. The title/info step below is followed by
+completion of the supported slider setters.
+
 ### Title and info
 
 The first GF5 step extracts `AESWINDOW.Frame` for both RPC and the caller entry,
@@ -546,3 +549,55 @@ Host checks run 687 tests: 683 pass and four skip. The matched cache image adds
 1,302 native and five C code bytes; data and zero-fill sizes are unchanged.
 Reserved bank-zero growth is **0 fixed, 0 root, 0 kernel, 0 per public Task and
 0 idle bytes**, including guards, alignment and unused capacity.
+
+### Complete bounded frame setters
+
+`WF_VSLIDE` and `WF_VSLSIZE` now share the caller entry with `WF_NAME` and
+`WF_INFO`. RPC uses the same `AESWINDOW.Frame` policy. Supported values commit
+under the scene gate; changed fields schedule later frame work after release.
+Unchanged values preserve publication and cache behavior. Geometry/top,
+open/close and extension setters retain their established transport. Public C
+signatures and wire version 19 are unchanged.
+
+The complete optimized fixture passes 185 checks. All 34 view/native-state,
+frame-pixel and renamed-menu checkpoints match the GF4 parent. Thirty functional
+UPDATE-held checkpoints retain their old pixels until release. All 33 eligible
+bounded setters, including rejected values, avoid request/reply exchanges;
+the unsupported test field remains RPC. Two application owners, hidden/covered
+windows, ordinary/PB bindings, copied and rejected strings, slider bounds and
+readiness fallback retain their expected state and retirement behavior.
+
+Separate unheld observations include the full C call and deferred physical
+feedback, sampled once per PAL frame. These are inclusive measurements with
+debugger/sampling overhead, not percentile estimates:
+
+| Setter | GF4 call / feedback upper bound (ms) | GF5 call / feedback upper bound (ms) |
+| --- | ---: | ---: |
+| Title | 16.658 / 99.899 | 16.225 / 99.734 |
+| Info | 16.996 / 59.796 | 16.897 / 59.983 |
+| Slider position | 16.436 / 99.804 | 16.746 / 99.936 |
+| Slider size | 16.898 / 99.926 | 16.755 / 99.896 |
+
+The selected regressions pass: 284 window checks in the final image, 224 cache
+checks, and the earlier 181 lock and 265 lifecycle checks from the shared-helper
+step. All 32 cache records and 14 scanouts match GF4. The affected GF0 idle
+cohort loads both unchanged Counter bodies on the production twelve-slot map;
+both keep painting and close normally. Their existing 1,312-byte pools peak at
+806 bytes, leaving 250 bytes above the protected floor. The host suite runs 687
+tests: 683 pass and four historical checks skip. The existing focused GF4
+raw/optimized bridge probe remains applicable to the unchanged entry ABI.
+
+The matched cache image adds 1,318 native and five C code bytes within the same
+code banks. Native/C data and zero-fill, the 23-byte C DP workspace, private
+client/service payloads and upper static capacity are unchanged. Reserved
+bank-zero growth is **0 fixed, 0 root, 0 kernel, 0 per public Task and 0 idle
+bytes**, including guards, alignment and unused capacity. No production Task,
+signal or heap reservation is added. The fixture controller borrows one signal
+for scene-protected final background retirement and frees it before shutdown.
+
+The [complete GF5 record](../development/gem-first-gf5.json) retains pins,
+source/artifact hashes, actual execution stages, resource comparisons, stack
+results and unsuccessful fixture attempts. Frame/cache native rebuilds reuse
+the unchanged matching C images from the text step; window and loaded Counter
+fixtures build their C inputs afresh. This is development evidence; hosted,
+hardware and latency qualification remain open. GF6 is next.

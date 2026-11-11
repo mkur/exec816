@@ -25,8 +25,8 @@ PUBLIC CARD FUNC Call(LONGCARD value)
       AND request.operation<>AESTYPES.OP_SET THEN
     RETURN(0)
   FI
-  IF request.operation=AESTYPES.OP_SET AND request.intin(1)<>AESTYPES.WF_NAME
-      AND request.intin(1)<>AESTYPES.WF_INFO THEN
+  IF request.operation=AESTYPES.OP_SET
+      AND AESWINDOW.FrameField(request.intin(1))=0 THEN
     RETURN(0)
   FI
   AESGATE.EnterTask(request.owner,

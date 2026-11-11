@@ -8,7 +8,8 @@
   drawing and waits, with captured input delivery and physical fence retirement
   during caller scene ownership, plus release/wait race checks. GF4 implements
   caller hidden-window creation/deletion and ordered admission across window
-  and lock queues.
+  and lock queues. GF5 adds caller title/info/slider setters with exact
+  state/frame/menu comparisons and inclusive deferred feedback observations.
 
 - [Shared-source Atari ST comparison](atari-st-reference.md): Hatari with
   EmuTOS/MagiC, unchanged object routines, bounded execution and drawing-path

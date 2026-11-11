@@ -1,0 +1,1214 @@
+{
+  "slice": "GF5",
+  "plan_slice": "GF5",
+  "plan_slice_complete": true,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "base_revision": "75d5256ca75231fd0630ed27dec49a13e20aee2b",
+  "scope": "Caller bounded frame setters, shared policy, publication, exact frame/menu pixels and inclusive call/deferred feedback observations.",
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ]
+  },
+  "toolchain": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "actionc_override": false,
+    "compiler_profile": "release",
+    "native_mode": "Optimized development fixtures; unchanged C/Action entry ABI retains the focused raw/optimized GF4 bridge evidence.",
+    "calypsi": {
+      "cc65816": {
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "bridge_abi_evidence": {
+    "path": "docs/development/gem-first-gf4-create.json",
+    "sha256": "8a429f517cea23353e1582cf3fbf55c2ad0fd68d4342e4e34cdbd5aff11d9bb9"
+  },
+  "sources_sha256": {
+    "c/calypsi/aes-windows.c": "18d8e669e0accf7c83991c8cad7e6328fd234010059a73e9bd93f132c7038641",
+    "lib/aes/aeslocal.act": "ae1b4fdceb48b85c2cb6cb915dae7b13790a66c56b95ad5bfdfe9d10e0783116",
+    "lib/aes/aeswindow.act": "b6df8149828e840d241bcac9f727fb3b451f3973cfd1932c8225c36d418804b9",
+    "tests/programs/aes_frame.c": "153886a46e8aa858d632e1dbf2c4b34a07eab59d30162113f8d356658d14e140",
+    "tests/programs/aes_frame_markers.c": "6d8c3f8da36e655f491312181c8262ed8fbc74928b36c4b6d2cfbb26c98f4b9f",
+    "tests/programs/aes_lifecycle.c": "1849614b6cb5bb821d801b7f4c1180bf646e80b46fbf7bbb6803a82e0f202251",
+    "tools/test_aes_frame.py": "efe325eaedac4fba14d49be3a8b714fca6b24776117424333058b8ca233c79a4",
+    "tools/test_aes_server.py": "d5d984722ba8be8559e4f5f2a095ee093122b26dd94ffd64f9b130f6f5dd23de"
+  },
+  "checks": [
+    {
+      "name": "GF4-frame-parent",
+      "stage": "parent",
+      "result": {
+        "path": "build/gem-first-gui/gf5/parent/frame-final/results.json",
+        "sha256": "bf04584cb75c286ab5921b3e51478e6cbda4dccda954e59aeec98d1b85143496"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf5/parent/frame-final/program/build.json",
+        "sha256": "2fe3043dff20d0445e8d10f209fff823388df1394988a0ca360de0fe259fed10"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf5/parent/frame-final/program/program.a816.json",
+        "sha256": "b4e495c0379ba68192a27012f458a0a395a63e3fb80404a4156548e1ebd1546f"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf5/parent/frame-final/c-image.json",
+        "sha256": "694dc778bc25d5344c79cbd62a5172fb509d6fb6f08d9848e5ce9999924119a7"
+      },
+      "xex": {
+        "path": "build/gem-first-gui/gf5/parent/frame-final/program/program.xex",
+        "sha256": "e4aaf2ae7ed5f2709b4a58a57b2ecd13ee14ae78f37dcd675b0f70f27bca90b8"
+      },
+      "AESChecks": 185,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "native_checks": 5,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 571,
+          "remaining_above_floor": 709
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 456,
+          "remaining_above_floor": 600
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 1365,
+        "native_irq_count": 32482
+      },
+      "checkpoints": 34,
+      "unheld_feedback": [
+        {
+          "phase": 31,
+          "field": 2,
+          "call_ms": 16.65752721746767,
+          "feedback_ms_upper": 99.89871422751449,
+          "sequence_delta": 1
+        },
+        {
+          "phase": 32,
+          "field": 3,
+          "call_ms": 16.99592178511064,
+          "feedback_ms_upper": 59.796455773289026,
+          "sequence_delta": 1
+        },
+        {
+          "phase": 33,
+          "field": 9,
+          "call_ms": 16.4362068795383,
+          "feedback_ms_upper": 99.8042654208822,
+          "sequence_delta": 1
+        },
+        {
+          "phase": 34,
+          "field": 16,
+          "call_ms": 16.89808973764377,
+          "feedback_ms_upper": 99.92570967000715,
+          "sequence_delta": 1
+        }
+      ],
+      "helper_calls": {
+        "2": {
+          "direct": 0,
+          "system": 9,
+          "rpc": 9
+        },
+        "3": {
+          "direct": 0,
+          "system": 9,
+          "rpc": 9
+        },
+        "9": {
+          "direct": 0,
+          "system": 8,
+          "rpc": 8
+        },
+        "16": {
+          "direct": 0,
+          "system": 7,
+          "rpc": 7
+        },
+        "32767": {
+          "direct": 0,
+          "system": 0,
+          "rpc": 1
+        }
+      },
+      "timing_scope": "Exact external C call brackets; inclusive Task/preemption time. Pixel completion sampled at PAL frame boundaries. Functional UPDATE-held cases include the explicit hold; phases 31-34 are unheld setter-to-feedback observations. No percentile/hosted latency qualification.",
+      "held_pixel_checks": 30
+    },
+    {
+      "name": "frame",
+      "stage": "complete",
+      "result": {
+        "path": "build/gem-first-gui/gf5/complete/frame/results.json",
+        "sha256": "1dcc557689bad4f89627c4327e34baa28b86cca4b67c86848ea9263b5f21abac"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf5/complete/frame/program/build.json",
+        "sha256": "48343cde6e153164cf4a125cdc01490cc14f5e68ceac6a780cf93e241eade658"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf5/complete/frame/program/program.a816.json",
+        "sha256": "4d75239a25b5ad1c63973260dfa83b00f740911c347c9e9633e3a86f73f696ef"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf5/complete/frame/c-image.json",
+        "sha256": "aa5b579cf3014dd8a17adc89213d27d56bae9adae477cd31bb17b3d81faa30b8"
+      },
+      "xex": {
+        "path": "build/gem-first-gui/gf5/complete/frame/program/program.xex",
+        "sha256": "02b313f6dfd8b0d1337a918c4cf5057ff6c3de310587fefeba562199480fecb2"
+      },
+      "AESChecks": 185,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "native_checks": 5,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 579,
+          "remaining_above_floor": 701
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 459,
+          "remaining_above_floor": 597
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 1357,
+        "native_irq_count": 31850
+      },
+      "checkpoints": 34,
+      "unheld_feedback": [
+        {
+          "phase": 31,
+          "field": 2,
+          "call_ms": 16.22461335900837,
+          "feedback_ms_upper": 99.73406317356448,
+          "sequence_delta": 0
+        },
+        {
+          "phase": 32,
+          "field": 3,
+          "call_ms": 16.897102959067013,
+          "feedback_ms_upper": 59.982534019191434,
+          "sequence_delta": 0
+        },
+        {
+          "phase": 33,
+          "field": 9,
+          "call_ms": 16.74633728937564,
+          "feedback_ms_upper": 99.93621181343119,
+          "sequence_delta": 0
+        },
+        {
+          "phase": 34,
+          "field": 16,
+          "call_ms": 16.754654423094003,
+          "feedback_ms_upper": 99.89561292341611,
+          "sequence_delta": 0
+        }
+      ],
+      "helper_calls": {
+        "2": {
+          "direct": 9,
+          "system": 0,
+          "rpc": 0
+        },
+        "3": {
+          "direct": 9,
+          "system": 0,
+          "rpc": 0
+        },
+        "9": {
+          "direct": 8,
+          "system": 0,
+          "rpc": 0
+        },
+        "16": {
+          "direct": 7,
+          "system": 0,
+          "rpc": 0
+        },
+        "32767": {
+          "direct": 0,
+          "system": 0,
+          "rpc": 1
+        }
+      },
+      "timing_scope": "Exact external C call brackets; inclusive Task/preemption time. Pixel completion sampled at PAL frame boundaries. Functional UPDATE-held cases include the explicit hold; phases 31-34 are unheld setter-to-feedback observations. No percentile/hosted latency qualification.",
+      "held_pixel_checks": 30
+    },
+    {
+      "name": "cache",
+      "stage": "complete",
+      "result": {
+        "path": "build/gem-first-gui/gf5/complete/cache/results.json",
+        "sha256": "652cbe359505297ab49eaac8bcb264ceffe45dbb5f824a2a238d0ab051e8fbae"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf5/complete/cache/program/build.json",
+        "sha256": "d0564a5dfe592d61801ffebfdf0edfcd5e15bf9eefcde4e8ad1115b075650bdf"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf5/complete/cache/program/program.a816.json",
+        "sha256": "5b11957fac72f2e6c231a5772173734c7daabd3a1f189cffd26237beffc33a89"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf5/complete/cache/c-image.json",
+        "sha256": "9f7e4ab28bb98f9c345b9d1633788c86717ffcee699fd040a1c08bd5b77aba60"
+      },
+      "xex": {
+        "path": "build/gem-first-gui/gf5/complete/cache/program/program.xex",
+        "sha256": "deb36763faa82ee1971a846bf93e18dcf47f55cd8e35fe691ca3b82b26029d5c"
+      },
+      "AESChecks": 224,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 675,
+          "remaining_above_floor": 605
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 133,
+          "remaining_above_floor": 923
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 885,
+          "remaining_above_floor": 1419
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 3940,
+        "native_irq_count": 39363
+      }
+    },
+    {
+      "name": "locks",
+      "stage": "title/info and shared helper",
+      "result": {
+        "path": "build/gem-first-gui/gf5/text/locks/results.json",
+        "sha256": "3fcfc1ebdc4b30aadd3f969bb44019047321fc51176a0e8a7a5e9ab6cadc620b"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf5/text/locks/program/build.json",
+        "sha256": "06f75b2c8a9a647e51aa0d08b24dfe3df73296201f505d1045a1dbba342480bf"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf5/text/locks/program/program.a816.json",
+        "sha256": "813d5baf50faf3f7d075d58e0246bf09d9aa8f0fcd84a591f8200cff27c56206"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf5/text/locks/c-image.json",
+        "sha256": "77679dcca9fca680080aa54c0e4eceb53f3bcbcc50dff8ef837a15ee8f4424da"
+      },
+      "xex": {
+        "path": "build/gem-first-gui/gf5/text/locks/program/program.xex",
+        "sha256": "9fa19a50dbdb408d1d3f22cdc960ea40fa3edf056d6e243786c7a487feadbdbf"
+      },
+      "AESChecks": 181,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 879,
+          "remaining_above_floor": 401
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 334,
+          "remaining_above_floor": 722
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 348,
+          "remaining_above_floor": 708
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 344,
+          "remaining_above_floor": 712
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 718,
+          "remaining_above_floor": 1586
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 418,
+        "native_irq_count": 23153
+      }
+    },
+    {
+      "name": "lifecycle",
+      "stage": "title/info and shared helper",
+      "result": {
+        "path": "build/gem-first-gui/gf5/text/lifecycle-current/results.json",
+        "sha256": "54bd84ea0b54e988485d08797c3cc88c6aee565138b9c13843e847f7a019f60a"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf5/text/lifecycle-current/program/build.json",
+        "sha256": "bf7284835f88f5d27c8d260187b34c4865e340e1c86b8a3ea224de3c8ea5b504"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf5/text/lifecycle-current/program/program.a816.json",
+        "sha256": "c00edbeb8cfadeb6770f540dbc872589843b98902fbeb3004da3712aa9e43d91"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf5/text/lifecycle-current/c-image.json",
+        "sha256": "acc05aec0a6d7c6cf6d9fc60d350cbbf7d7a5de2d22cff5d47476806450c269f"
+      },
+      "xex": {
+        "path": "build/gem-first-gui/gf5/text/lifecycle-current/program/program.xex",
+        "sha256": "443355c32c2c5c27bb70a5a2cd3a0fc1392c27e36a8f88dad339aea246fbdb21"
+      },
+      "AESChecks": 265,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 563,
+          "remaining_above_floor": 717
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 501,
+          "remaining_above_floor": 555
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 718,
+          "remaining_above_floor": 1586
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "lifecycle_stats": [
+        15,
+        3,
+        14,
+        2,
+        34,
+        0,
+        136,
+        1982
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 278,
+        "native_irq_count": 12110
+      }
+    },
+    {
+      "name": "windows",
+      "stage": "complete",
+      "result": {
+        "path": "build/gem-first-gui/gf5/complete/windows/results.json",
+        "sha256": "e5e99d853db1cafb2339b05560de9bd7c8868a6b2f8639fdbd3b1f1f393c11ff"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf5/complete/windows/program/build.json",
+        "sha256": "9ebb40593ee403b70f736ad10ee0668b7d5d04875ceb563d3d3239d2ac4d87b4"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf5/complete/windows/program/program.a816.json",
+        "sha256": "2d45a1b200c4ebbb65bfc62fd2cbfe27d172cfd63b21114103df101c083d1fa7"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf5/complete/windows/c-image.json",
+        "sha256": "8e92e5725afc4fca3a96a6a69cfd00c9e69c426259248629e340092aa5e3d207"
+      },
+      "xex": {
+        "path": "build/gem-first-gui/gf5/complete/windows/program/program.xex",
+        "sha256": "9041246e298540060e7b38657e5b883926b28e7bb192f0f29790946f95f67f40"
+      },
+      "AESChecks": 284,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 614,
+          "remaining_above_floor": 666
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 383,
+          "remaining_above_floor": 673
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 387,
+          "remaining_above_floor": 669
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 214,
+          "remaining_above_floor": 842
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 893,
+          "remaining_above_floor": 1411
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 2950,
+        "native_irq_count": 26814
+      }
+    },
+    {
+      "name": "loaded-counters",
+      "stage": "complete",
+      "result": {
+        "path": "build/gem-first-gui/gf5/complete/loaded-counters/results.json",
+        "sha256": "816139ce23b8d8e31dc6345b6439d2496c08926c8a32a0a7e808695964328eeb"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf5/complete/loaded-counters/program/build.json",
+        "sha256": "d2eb7672c94d24577fc3ac571655c86ba282363fc1a6e5e98fd5c92be3f725d3"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf5/complete/loaded-counters/program/program.a816.json",
+        "sha256": "5f25f617e7b998e256e6e72e1031e3f59c5ca82ca3f926c8f181b5fdc92ca546"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf5/complete/loaded-counters/c-image.json",
+        "sha256": "d6feb3f2841476802aba15f6859bf543541e3e30ec5ff18c10709f225aa7da66"
+      },
+      "xex": {
+        "path": "build/gem-first-gui/gf5/complete/loaded-counters/program/program.xex",
+        "sha256": "3fa3af2965bdfff3e7261ee3a9fb4859054f6218c1e49c23a966047714237ce9"
+      },
+      "cases": [
+        {
+          "name": "idle",
+          "status": "pass",
+          "checks": 6,
+          "progress": [
+            {
+              "identity": 1,
+              "increments": 6,
+              "paints": 6
+            },
+            {
+              "identity": 2,
+              "increments": 5,
+              "paints": 6
+            }
+          ],
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 636,
+              "remaining_above_floor": 644
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 311,
+              "remaining_above_floor": 745
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 148,
+              "remaining_above_floor": 908
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 806,
+              "remaining_above_floor": 250
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 806,
+              "remaining_above_floor": 250
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 131,
+              "remaining_above_floor": 925
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 888,
+              "remaining_above_floor": 1416
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 37904,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "9": {
+              "base": 39248,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "10": {
+              "base": 40592,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "11": {
+              "base": 41936,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "12": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 60,
+              "remaining_above_floor": 196
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        }
+      ]
+    }
+  ],
+  "frame_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf5/parent/frame-final/results.json",
+      "sha256": "bf04584cb75c286ab5921b3e51478e6cbda4dccda954e59aeec98d1b85143496"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf5/complete/frame/results.json",
+      "sha256": "1dcc557689bad4f89627c4327e34baa28b86cca4b67c86848ea9263b5f21abac"
+    },
+    "checkpoints": 34,
+    "state_publication_identical": true,
+    "frame_pixels_identical": true,
+    "menu_pixels_identical": true,
+    "eligible_fields": [
+      "WF_NAME",
+      "WF_INFO",
+      "WF_VSLIDE",
+      "WF_VSLSIZE"
+    ],
+    "unaffected_field": "32767 remains RPC and reports UNSUPPORTED",
+    "scope": "Both ordinary/PB forms, two owners, hidden/covered windows, copied 64-character strings, malformed strings/pointers and slider bounds, unchanged values and unsupported gadget; final readiness fault is an unapplied one-RPC retry, with normal heap/Task/OS retirement."
+  },
+  "resource_comparison": {
+    "parent_build": {
+      "path": "build/gem-first-gui/gf4/delete/cache/program/build.json",
+      "sha256": "325bbb9410dea8c4bf238f339708d6a222a1aef779eaa08973119f826d24b16f"
+    },
+    "candidate_build": {
+      "path": "build/gem-first-gui/gf5/complete/cache/program/build.json",
+      "sha256": "d0564a5dfe592d61801ffebfdf0edfcd5e15bf9eefcde4e8ad1115b075650bdf"
+    },
+    "parent_native_image": {
+      "path": "build/gem-first-gui/gf4/delete/cache/program/program.a816.json",
+      "sha256": "136504528073aa653a39bd17d200616079f903517b7d1bbf26f36698171a30f3"
+    },
+    "candidate_native_image": {
+      "path": "build/gem-first-gui/gf5/complete/cache/program/program.a816.json",
+      "sha256": "5b11957fac72f2e6c231a5772173734c7daabd3a1f189cffd26237beffc33a89"
+    },
+    "parent_c_image": {
+      "path": "build/gem-first-gui/gf4/delete/cache/c-image.json",
+      "sha256": "0f50530ed33884e82308c5d1aeb25fcc53716ff7ae86a39392c697ca2d8f17c4"
+    },
+    "candidate_c_image": {
+      "path": "build/gem-first-gui/gf5/complete/cache/c-image.json",
+      "sha256": "9f7e4ab28bb98f9c345b9d1633788c86717ffcee699fd040a1c08bd5b77aba60"
+    },
+    "parent": {
+      "native": {
+        "code": 1063523,
+        "data": 11966,
+        "zero_fill": 25096,
+        "code_banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          63
+        ]
+      },
+      "c": {
+        "code": 130281,
+        "data": 44017,
+        "zero_fill": 20841,
+        "code_banks": [
+          12,
+          14
+        ],
+        "dp_workspace": 23
+      }
+    },
+    "current": {
+      "native": {
+        "code": 1064841,
+        "data": 11966,
+        "zero_fill": 25096,
+        "code_banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          63
+        ]
+      },
+      "c": {
+        "code": 130286,
+        "data": 44017,
+        "zero_fill": 20841,
+        "code_banks": [
+          12,
+          14
+        ],
+        "dp_workspace": 23
+      }
+    },
+    "delta": {
+      "native": {
+        "code": 1318,
+        "data": 0,
+        "zero_fill": 0
+      },
+      "c": {
+        "code": 5,
+        "data": 0,
+        "zero_fill": 0
+      }
+    },
+    "unchanged_reservations": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations"
+    ],
+    "image_data": {
+      "address": 137472,
+      "size": 8192
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes": "guards, alignment and all unused reserved capacity"
+  },
+  "resources": {
+    "tasks_added": 0,
+    "production_signals_added": 0,
+    "heap_reservation_delta": 0,
+    "upper_static_arena_delta": 0,
+    "private_client_bytes": 136,
+    "private_service_bytes": 1982,
+    "c_dp_bytes": 23,
+    "fixture_signals": "The controller temporarily allocates one signal for gate-protected final background retirement; no production signal or reserved capacity is added."
+  },
+  "cache_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf4/delete/cache/results.json",
+      "sha256": "422dcc7666ccb4dae1c07c257098dd341d70f7d6408efd89672f608d91f2259b"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf5/complete/cache/results.json",
+      "sha256": "652cbe359505297ab49eaac8bcb264ceffe45dbb5f824a2a238d0ab051e8fbae"
+    },
+    "checkpoints": 32,
+    "checkpoints_identical": true,
+    "scanouts": 14,
+    "scanouts_identical": true,
+    "scanout_sha256": {
+      "aes-cache-frame-29.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806",
+      "aes-cache-1.bgra": "a1e99f69851a01d78a43aca808e8842bc65be0c298a7ff140d381910eec11b36",
+      "aes-cache-12.bgra": "1802ec7c8d0ae718a7591a5e127cfc6a5316324b4fffce50c36988fce1745968",
+      "aes-cache-6.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+      "aes-cache-14.bgra": "9f607df4d92614b184c33049e828702a296a1a89d8fa0c7143834475cbdb7074",
+      "aes-cache-4.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+      "aes-cache-9.bgra": "a29a54675ac7314436fccaaae4e7ca522d7f508265685e65445972a9d15e62e1",
+      "aes-cache-11.bgra": "6cf17b7f98a992ca4c74fc54cf2ab9a4975ff164d5c3e5ef00e4999a9d0f13d6",
+      "aes-cache-2.bgra": "7fa6df8f8d50903c3f5f120ea835b43a91a42741a08bd554d6daf0269dc4dfb6",
+      "aes-cache-26.bgra": "fc01abc65b6dba3b6eadf0c37cc3dc9d914182fef8076758af86d90d4ec50760",
+      "aes-cache-frame-27.bgra": "9e34c76b23bc0ec1465483cdd30c9ca019d93e91f68c4470c3a27f6779f742d6",
+      "aes-cache-frame-31.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806",
+      "aes-cache-10.bgra": "a0a69b197c2b27186e41a1cf6091efe8f01a435cfef99711a0c5dc62bcb2169f",
+      "aes-cache-3.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775"
+    }
+  },
+  "host": {
+    "run": 687,
+    "passed": 683,
+    "skipped": 4,
+    "log": {
+      "path": "build/gem-first-gui/gf5/complete/host.log",
+      "sha256": "42c437fe7120e51417866a5840d8e4634e2408a31db8f2058198099046ef5a95"
+    }
+  },
+  "fixture_corrections": [
+    {
+      "path": "build/gem-first-gui/gf5/text/lifecycle/results.json",
+      "reason": "GF4 lifecycle fixture still expected title text to use RPC. Updated it to require zero RPC and retain a separate unmigrated preservation-field exchange."
+    },
+    {
+      "path": "build/gem-first-gui/gf5/superseded-native-builds.json",
+      "reason": "Older generated native images were losslessly gzip-compressed after a disk-space failure; the manifest preserves their original hashes. Failed compiler/replay logs remain beside the outputs."
+    },
+    {
+      "path": "build/gem-first-gui/gf5/parent/frame-checked/results-initial.json",
+      "reason": "All 34 application/pixel checkpoints passed but final controller Stop ran before application-close background repair; retain the unsafe reset-park outcome without a cleanup claim."
+    },
+    {
+      "path": "build/gem-first-gui/gf5/text/frame/results-initial.json",
+      "reason": "Same initial controller-retirement assumption in the candidate; no production workaround."
+    },
+    {
+      "reason": "Initial synthetic unsupported field used an unavailable WF_HSLIDE macro; replaced by an explicitly unsupported test field. The final unheld position observation uses a partial-sized thumb so its pixels actually change."
+    }
+  ],
+  "limits": [
+    "Development checks only; no hosted-system, hardware, release-matrix or percentile latency qualification.",
+    "Exact external C marker brackets include caller work and preemption. Observed pixel-completion bounds include deferred presentation and debugger/frame sampling overhead. Functional UPDATE-held observations include their deliberate hold; phases 31-34 are unheld.",
+    "Raw/optimized coverage is the unchanged generic bridge from GF4, not a duplicated full raw-system matrix.",
+    "Geometry/top/open/close and extension setters retain their established transport. No new public ABI or compiler override."
+  ],
+  "text_record": {
+    "path": "docs/development/gem-first-gf5-text.json",
+    "sha256": "24be096639d733f3f9756b3dc3735a62d4fbb39158d56d3713d5b364006a02c0"
+  },
+  "text_commit": "95ac3509",
+  "native_rebuild_scope": "Frame and cache reuse the unchanged matching C executables from the title/info step, with fresh native policy/startup. Window and loaded Counter fixtures build their current C inputs afresh.",
+  "production_reservations": {
+    "parent": {
+      "path": "build/gem-first-gui/gf4/delete/loaded-counters/program/build.json",
+      "sha256": "3bee3089bf95a7250f78b5f9e85d4ea193d4fd7d94470a7db1004d942d423ac5"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf5/complete/loaded-counters/program/build.json",
+      "sha256": "d2eb7672c94d24577fc3ac571655c86ba282363fc1a6e5e98fd5c92be3f725d3"
+    },
+    "unchanged": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations"
+    ],
+    "task_capacity": 12
+  }
+}

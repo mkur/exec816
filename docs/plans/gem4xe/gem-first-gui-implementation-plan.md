@@ -4,7 +4,7 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-GF0–GF4 pass at the development tier. GF5–GF15 remain open. The
+GF0–GF5 pass at the development tier. GF6–GF15 remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
 coexistence, the current resource inventory, the shared window policy audit
 and the window effect/commit checks. GF3 separates scene ownership from physical
@@ -249,10 +249,11 @@ Commit: `feat(aes): execute hidden window lifecycle in callers`.
 
 ### GF5 — Execute bounded frame attributes in the caller
 
-Status: in progress. The title/info step passes its selected development checks;
-supported sliders remain on RPC. See the
-[step record](../../development/gem-first-gf5-text.json), starting from GF4
-commit `75d5256c`.
+Status: complete at the development tier. Title/info was committed as
+`95ac3509`; supported slider setters now use the same caller helper. See the
+[execution history](../../history/gem-first-gui.md#gf5--caller-frame-attributes),
+[title/info step record](../../development/gem-first-gf5-text.json) and
+[complete GF5 record](../../development/gem-first-gf5.json).
 
 Move supported title, info and slider setters into the common direct path.
 Commit values and damage under scene ownership, then wake frame work after
