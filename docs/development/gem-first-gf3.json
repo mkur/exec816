@@ -1,0 +1,1184 @@
+{
+  "slice": "GF3",
+  "plan_slice_complete": true,
+  "tier": "development",
+  "status": "pass",
+  "qualification": false,
+  "parent_revision": "d74a92863cbf07c5393a365978d3581827f90d1e",
+  "scope": "Complete scene serialization, deferred input/fence phase and release before physical/resource calls and callbacks. Selected emitted development regressions, not a release qualification matrix.",
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ]
+  },
+  "toolchain": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "actionc_override": false,
+    "compiler_profile": "release",
+    "native_mode": "optimized system fixtures; focused raw/optimized deferred native callback probe",
+    "calypsi": {
+      "cc65816": {
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "sources_sha256": {
+    "c/calypsi/aes-windows.c": "119208cf85be97c31859a2202f8a8fc4b4979cf7e07e8af845023ef91a44035e",
+    "c/calypsi/aes.c": "e8b3ba63ede0a051665b6271d5b418929c54e7794f90e9504e8f6ca86469b33e",
+    "lib/aes/aescore.act": "51c303ab709cea85438b7fba58b9545f6e7796754a694b19a466cfe4baac4746",
+    "lib/aes/aesdefer.act": "cf063f3699907eec02598ff46ce491c0a891597ac049d70a1d77aca515320640",
+    "lib/aes/aesgate.act": "29a026a8d25004de8741dd9bd2d29d49aec40158960c41ba7d970ec25eec953a",
+    "lib/aes/aesgui.act": "b1c2c292a1d959701b46f7f0fd9234d2acaa4f88f3c236ba95ae7d2c2e65af66",
+    "lib/aes/aesinbox.act": "255fc63b36e2d707cf35c070b481757093db558f6d3004467efe50ac0452f5cd",
+    "lib/aes/aeskeys.act": "d654ba2d2ad45fae19a2a4db6d1a29c3d8585938c9401d980df45b76c26f88d0",
+    "lib/aes/aeslocal.act": "461a46fe984148c70958306ee9e974fd399c95f1e65be5dc97ba12ea27bf8ab5",
+    "lib/aes/aeslocks.act": "892bbca2aa826d12b16797eb3d1f9b0ca12dd3f2c1084910e7dfea2e403e25e7",
+    "lib/aes/aesmouse.act": "d83158ced31bb328a68a1d8bccd079725fbd4be753b6711c5f7998157f886f37",
+    "lib/aes/aessnapshot.act": "2ed10d9fe807579058ca772060db0add6415e9702c7b8a12ea86a61b94223512",
+    "lib/aes/aesstate.act": "43288626b5c03f33fd51108cfd9e2413cdb6cbde678e5b750deafc9dc4773ef5",
+    "lib/aes/aeswindow.act": "d141f69817b2acee1cc3194b242831b59093bd318d2ce5215e5d665b07cb1b68",
+    "lib/aes/aeswindowstate.act": "be71bb46bfa05bba52f3cd7b37668b984ddaaa537e3435df4b57fdccd2646ec2",
+    "lib/console/console-bitmap-display.inc": "a5bdcb7e8529d432d5c6044baf6c6c256fe55fe95cada11857d5d61ca7cd1aa1",
+    "lib/console/console.act": "8ed13b42dc2a145623331452e94b521a2171c241e1b766b0a8185505a62db7da",
+    "lib/console/consolebitmap.act": "bcab54507c8b33063046ae57a63e2ce06b02097758af67f24a9c9d2fbc30f759",
+    "lib/console/consoledriver.act": "50813d6d3ac9e65e8885fedf3e238e89032b8c4b0e0e65073e17c1f74ea9b126",
+    "lib/console/consoleinput.act": "df512855e8707b264f9285e7370337e331a125a4b4736051249e489780352aa9",
+    "lib/desktop/deskcore.act": "8eb10c19174a500d5965356e48c44df0c6f34d84870347370f3b9c2bb6df342c",
+    "lib/desktop/deskgeometry.act": "a575cfac63f627074610e19bdaa8558a6762945de76e56f069088eed050720c4",
+    "lib/desktop/deskinput.act": "a8fc1a1be0a5f25fb8aed5bd180bb9397d2d28294e87369ec710774fce09fda9",
+    "lib/desktop/deskroutes.act": "09d3c8481427af27bf33e522447358f37e79da9c31bdb27b676afb16b060c990",
+    "lib/desktop/deskwidgets.act": "8c0c7faded0d645507722e08329d749c30fcfa7c629171096fb0fcc609b350c4",
+    "tests/programs/aes_gate.act": "afe1cb8b93a47ec0e2846d50261e123deb1fc7f9a63934884f471d8146c349d1",
+    "tests/programs/aes_locks.c": "ff1230dcfa5add59bbd6a68c4c5b48bd8b58d87a469f4cadf342eff809c37f1f",
+    "tests/programs/aes_scene.c": "8e42648f5f17cde672763000f0a3b26df50df10f184c931e24abedeef0c96963",
+    "tests/programs/presenter-input-boundaries.inc": "905e1e13e9cf94ebea6a1a3e2dd49ab7b11946abb049479c75155f1838cb2114",
+    "tests/test_desktop_contract.py": "130e60a23077143acb0fb19ac8725ee96123c50d3d55df52cb3722b47afec543",
+    "tools/build_demo.py": "0128abbf94205b79dec61982ef40fa6944f3946030d78cb331d67ad143892aca",
+    "tools/generate_tasks.py": "b24d255b535a6288ade76520628bd8f69cc5a02e5f5267f2c6376ec537b3cc72",
+    "tools/test_aes_cache.py": "2df503adc7c33f986aeb8081c8357e6c9f8740d91c95e4142b4a61a8a03fa9ce",
+    "tools/test_aes_gate.py": "3d6a0f8ec29d0f29f31b800d8187757e6f10416a43541b3f661a6bd5991d7489",
+    "tools/test_aes_pointer.py": "acbe5126920d6bbb039c9e08872c1ed6dccaf700a4dd1e57a137857a9b59d75a",
+    "tools/test_aes_scene.py": "fb0a8929ceb7a8d2f7dd93b46a5fc18d25104d40dc1d238cbf450910ae5a64bb",
+    "tools/test_aes_server.py": "6abcfe919cc493a9c65699286e4a08eae0298e470b74adb5fe249238f3d9001f",
+    "tools/test_colour_desktop_session.py": "51cd64aa59339ecaf78f1f6158dd68ff0869f244d14b017020507cf0cdd9447a",
+    "tools/test_desktop.py": "5686a88cce53670f006fa38ef118a3ac9f542c9b9e8d8e37f0ed50860bb10921",
+    "tools/test_gem_first.py": "560b94232bd912c4f1431e6e30bdb05fd576c35d4265ba9fb576ed0c5d08d151"
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": 0,
+    "idle": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "resources": {
+    "tasks_added": 0,
+    "fixed_signals_added": 0,
+    "per_client_signals_added": 0,
+    "temporary_signals": "One caller-owned bit while CONSOLE.Destroy enters scene metadata; the pre-existing presentation lock serializes Destroy. Existing reply signals serve AES caller waiters.",
+    "service_payload": {
+      "parent": 1976,
+      "current": 1982,
+      "delta": 6,
+      "heap_chunk_alignment": 8,
+      "rounded_allocation_delta": 8
+    },
+    "waiter": {
+      "stack_record_bytes": 12,
+      "enter_task_fixed_frame": 26,
+      "enter_task_local_stack_peak": 38
+    },
+    "routing": {
+      "publication_bytes": 610,
+      "publication_copies": 2,
+      "endpoint_lifetime": "One persistent hold per accepting client, plus temporary reader holds; no retained scene or C view pointer."
+    },
+    "deferred_native_keys": {
+      "slots": 64,
+      "event_bytes": 24,
+      "storage_bytes": 1536
+    },
+    "upper_arena_capacity_delta": {
+      "text_demo": 3072,
+      "bitmap_demo": 3072,
+      "desktop_demo": 3072,
+      "sdx_demo": 3072,
+      "bank_zero": 0,
+      "scope": "Upper static capacity within the already owned kernel bank; no additional upper bank is reserved for the arena. Native desktop/GF0 composed fixture arenas increase from 8192 to 11264. Smaller AES fixtures keep 8192."
+    }
+  },
+  "host": {
+    "passed": 683,
+    "skipped": 4,
+    "path": "build/gem-first-gui/gf3/verified/host.log",
+    "sha256": "e22dd2035d3a33d8ef86903397951c948b7a1f2487cf5fe437fc81e61627a117"
+  },
+  "checks": [
+    {
+      "name": "gate-raw",
+      "stage": "focused final probe",
+      "result": {
+        "path": "build/gem-first-gui/gf3/verified/gate-raw/results.json",
+        "sha256": "1ddfea498d4e43ab27ace084ed65068c8c238c3ec6bcb7f1ae9ffbe98b6c2748"
+      },
+      "checks": 49,
+      "service_bytes": 1982,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 6,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/verified/gate-raw/program/build.json",
+        "sha256": "a33024d75cf1efe909adcbe58419ba73aca8e66ebe2183111b2759fa1e7fd404"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/verified/gate-raw/program/program.a816.json",
+        "sha256": "16c7248fc135993645c173a275883b7b9bee9aead25e55974c56afb8a84b3eb9"
+      }
+    },
+    {
+      "name": "gate-opt",
+      "stage": "focused final probe",
+      "result": {
+        "path": "build/gem-first-gui/gf3/verified/gate-opt/results.json",
+        "sha256": "200575b5ab04c9f75ed9d573b940c9f456dd36c2b87acda96884f6a816cc87e7"
+      },
+      "checks": 49,
+      "service_bytes": 1982,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 5,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/verified/gate-opt/program/build.json",
+        "sha256": "b872ee1ae0573457175a5989180d45b9ed9a6f0e446a3dbafeda3d5b6cd44ac3"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/verified/gate-opt/program/program.a816.json",
+        "sha256": "c48a05c920f73063dc2d1b889290bd67d7b47c9e8104dbb866d9a52c9e188d82"
+      }
+    },
+    {
+      "name": "scene-current",
+      "stage": "final forced preemption/input/fence checks",
+      "result": {
+        "path": "build/gem-first-gui/gf3/completion/scene/results.json",
+        "sha256": "3a9b66619eeebaefbefb9a0aaa61b8b048a3c2d305ff25c37e38dc4cf156d6cf"
+      },
+      "cases": [
+        {
+          "variant": 0,
+          "caller_waiting": true,
+          "delivered_event_bits": 51,
+          "presenter_waiting": true,
+          "peer_progress": 23032,
+          "checks": 37,
+          "failures": 0,
+          "first_failure": 0,
+          "scene_checks": 1060,
+          "physical_checks": 188,
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 454,
+            "native_irq_count": 26084,
+            "os_busy": 0,
+            "return_s": 11278,
+            "return_d": 3328,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "return_dbr": 0,
+            "return_e": 0
+          },
+          "stacks": {
+            "minimum_remaining_above_floor": 232
+          }
+        },
+        {
+          "variant": 1,
+          "caller_waiting": true,
+          "retained_token": 7,
+          "fence_retired_without_scene": true,
+          "presenter_waiting": true,
+          "peer_progress": 32772,
+          "checks": 33,
+          "failures": 0,
+          "first_failure": 0,
+          "scene_checks": 1053,
+          "physical_checks": 189,
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 463,
+            "native_irq_count": 26825,
+            "os_busy": 0,
+            "return_s": 11278,
+            "return_d": 3328,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "return_dbr": 0,
+            "return_e": 0
+          },
+          "stacks": {
+            "minimum_remaining_above_floor": 232
+          }
+        },
+        {
+          "variant": 2,
+          "caller_waiting": true,
+          "captured_pointer": [
+            141,
+            100
+          ],
+          "presenter_waiting": true,
+          "peer_progress": 150307,
+          "cursor_redrawn_without_new_input": true,
+          "checks": 30,
+          "failures": 0,
+          "first_failure": 0,
+          "scene_checks": 1061,
+          "physical_checks": 189,
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 508,
+            "native_irq_count": 30368,
+            "os_busy": 0,
+            "return_s": 11278,
+            "return_d": 3328,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "return_dbr": 0,
+            "return_e": 0
+          },
+          "stacks": {
+            "minimum_remaining_above_floor": 232
+          }
+        }
+      ],
+      "build": {
+        "path": "build/gem-first-gui/gf3/completion/scene/program/build.json",
+        "sha256": "3447d9e0d0ec72e92fe76341479908ad3435858b176ade0e5123af16b87819ce"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/completion/scene/program/program.a816.json",
+        "sha256": "51eabc4bbde514bad95f80455ae507ccd1e7b7cb67a236081a8dd88b62401ef2"
+      }
+    },
+    {
+      "name": "cache-current",
+      "stage": "final cache/journal/pixel checks",
+      "result": {
+        "path": "build/gem-first-gui/gf3/completion/cache/results.json",
+        "sha256": "46f9ced6b6c73d76f78c9ba3bcc7edb6063bcd00508721b5c6c3bd4aa8a37627"
+      },
+      "AESChecks": 224,
+      "AESFailures": 0,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 3933,
+        "native_irq_count": 38887,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_usage": {
+        "minimum_remaining_above_floor": 232
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/completion/cache/program/build.json",
+        "sha256": "6a4591f081ff01400c75ff24a6728743cfa76e3cfc5f80b186b3c2fb9ffbf195"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/completion/cache/program/program.a816.json",
+        "sha256": "1977380ffcef3cabddcdb9a5e932bdea23ed03d3dceaa66d0f42615510d7f13e"
+      }
+    },
+    {
+      "name": "pointer-windowless",
+      "stage": "final windowless-MCTRL/pointer regression",
+      "result": {
+        "path": "build/gem-first-gui/gf3/accepted/pointer/results.json",
+        "sha256": "87a97abed0220b0e112cd5e08fd4569f48bb005de3c8758be4e69bcfd94a62a7"
+      },
+      "AESChecks": 168,
+      "AESFailures": 0,
+      "boundary_checks": 25,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 445,
+        "native_irq_count": 25313,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_usage": {
+        "minimum_remaining_above_floor": 139
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/accepted/pointer/program/build.json",
+        "sha256": "b3740ed84ed8d13fde81cded6f18e4c29eed96d686d3892e4f455458d960eb55"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/accepted/pointer/program/program.a816.json",
+        "sha256": "0cf0da3932826f6a03d97c309d34b4ac2f990de8fb72224f92f119122cb7660b"
+      }
+    },
+    {
+      "name": "coexistence-current",
+      "stage": "final twelve-Task disk/GUI cohort",
+      "result": {
+        "path": "build/gem-first-gui/gf3/verified/coexistence-current/results.json",
+        "sha256": "e73ebc9400b2012b7f5f5ad596484daaf6770a221a71ae239da8e4dcb207b4b8"
+      },
+      "cases": [
+        {
+          "name": "disk",
+          "status": "pass",
+          "checks": 31,
+          "disk_progress": [
+            {
+              "identity": 1,
+              "increments": 6,
+              "paints": 6
+            },
+            {
+              "identity": 2,
+              "increments": 6,
+              "paints": 6
+            }
+          ],
+          "filesystem": {
+            "sectors": 2880,
+            "sector_bytes": 256,
+            "allocated": 202,
+            "free": 2678,
+            "files": 3,
+            "directories": 2
+          },
+          "media_sha256": "b981f32876edbc657b46168aeaff80480f82c49920e9c00d4188cfd4877bb0a0",
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 6354,
+            "native_irq_count": 35359,
+            "os_busy": 0,
+            "return_s": 14190,
+            "return_d": 3584,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "return_dbr": 0,
+            "return_e": 0
+          },
+          "stacks": {
+            "minimum_remaining_above_floor": 192
+          }
+        }
+      ],
+      "build": {
+        "path": "build/gem-first-gui/gf3/verified/coexistence-current/program/build.json",
+        "sha256": "4017f5f0cd73b6dbbf9da57c15b650a66097ca41144eea7d62c3200b364ffe7e"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/verified/coexistence-current/program/program.a816.json",
+        "sha256": "8e075cc3c487960f5cc865bafff3d1ebf73a2a4f69ae49b0b6aaa30720a6df90"
+      }
+    },
+    {
+      "name": "native-desktop-current",
+      "stage": "broader partition regression before final pointer/deferred-key-only fixes",
+      "result": {
+        "path": "build/gem-first-gui/gf3/verified/native-desktop-current/results.json",
+        "sha256": "db6ee41a6cec4c04f7f82f461480dfdc7b8f3d6df59c0bf4328d2d517272f92b"
+      },
+      "checks": 376,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 60,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stacks": {
+        "minimum_remaining_above_floor": 232
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/verified/native-desktop-current/program/build.json",
+        "sha256": "e513aafe1e31c02d7f0cbadc7bab7e3baaf9e9ae451b2cdb2ed973301f43f64d"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/verified/native-desktop-current/program/program.a816.json",
+        "sha256": "681e672764540e576ec3bbcee22fb1e348ecfec1bcd561b92f09d08f95041d22"
+      }
+    },
+    {
+      "name": "keyboard",
+      "stage": "broader partition regression before final pointer/deferred-key-only fixes",
+      "result": {
+        "path": "build/gem-first-gui/gf3/verified/keyboard/results.json",
+        "sha256": "b31f8d7941179cdecaf4f0a967c47549463e936a86d8261b6cc65111a907dc9f"
+      },
+      "AESChecks": 111,
+      "AESFailures": 0,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 341,
+        "native_irq_count": 17102,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_usage": {
+        "minimum_remaining_above_floor": 232
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/verified/keyboard/program/build.json",
+        "sha256": "e888aa7053992dc4b8d0df7884ca14c306f06f4a17da968c2df601201d5df08d"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/verified/keyboard/program/program.a816.json",
+        "sha256": "49819e9c365a01a42f68c2f37cb6e670fbcf26e675221f7679cd62413e728182"
+      }
+    },
+    {
+      "name": "input-events",
+      "stage": "broader partition regression before final pointer/deferred-key-only fixes",
+      "result": {
+        "path": "build/gem-first-gui/gf3/verified/input-events/results.json",
+        "sha256": "96ceabf354c76aed538bce77e856e631a0ee0c540a74849429f39c468f63fded"
+      },
+      "AESChecks": 713,
+      "AESFailures": 0,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 374,
+        "native_irq_count": 19682,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_usage": {
+        "minimum_remaining_above_floor": 139
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/verified/input-events/program/build.json",
+        "sha256": "2f0b0146c5d94fba0549174577046e4c6224e4b2b573d54f25405288abac8789"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/verified/input-events/program/program.a816.json",
+        "sha256": "504c25c88bbead4c6d77bbf9c60c6559bb212190d9d4b5aa2a74ef339ad1834c"
+      }
+    },
+    {
+      "name": "multiwindow",
+      "stage": "broader partition regression before final pointer/deferred-key-only fixes",
+      "result": {
+        "path": "build/gem-first-gui/gf3/verified/multiwindow/results.json",
+        "sha256": "9baad1514ff11c3f88508998e070e1abda5066135c1ee89a45870e63680e5f31"
+      },
+      "AESChecks": 67,
+      "AESFailures": 0,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 299,
+        "native_irq_count": 13768,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_usage": {
+        "minimum_remaining_above_floor": 232
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/verified/multiwindow/program/build.json",
+        "sha256": "bf65ceacc88a1e4e518db6152d8c98ba10c3f2cc646cc9258a8d768058d8807a"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/verified/multiwindow/program/program.a816.json",
+        "sha256": "891ef61cdf427c4c792f04b49623f67f627da21c11138fa660ee177216f2afa8"
+      }
+    },
+    {
+      "name": "menus",
+      "stage": "broader partition regression before final pointer/deferred-key-only fixes",
+      "result": {
+        "path": "build/gem-first-gui/gf3/verified/menus/results.json",
+        "sha256": "0e22585ec1436f282d8ad486a4752d62bff45ed45fa30a51abb8c196a8f2000f"
+      },
+      "AESChecks": 321,
+      "AESFailures": 0,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 17970,
+        "native_irq_count": 36993,
+        "os_busy": 0,
+        "return_s": 14190,
+        "return_d": 3584,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_usage": {
+        "minimum_remaining_above_floor": 127
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/verified/menus/program/build.json",
+        "sha256": "19e08f6da29558819e98604e1ef4453757bac8b7d7506273ae65d753c273935c"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/verified/menus/program/program.a816.json",
+        "sha256": "ae544fe45fee6c31b66652e295a5539faabeb89501c89f7deef91bd161cad9bd"
+      }
+    },
+    {
+      "name": "owned-console",
+      "stage": "broader partition regression before final pointer/deferred-key-only fixes",
+      "result": {
+        "path": "build/gem-first-gui/gf3/verified/owned-console/results.json",
+        "sha256": "e8a00bda6f0e16e95e1426a06b96612ff9481f5adfdd347054b2201d8c947020"
+      },
+      "checks": [
+        19
+      ],
+      "abi_checks": 20,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 8333,
+        "native_irq_count": 43115,
+        "os_busy": 0,
+        "return_s": 15534,
+        "return_d": 3840,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_usage": {
+        "minimum_remaining_above_floor": 232
+      },
+      "cases": [
+        {
+          "name": "cycle-0-initial",
+          "status": "pass",
+          "sha256": "1a21d8901f3cf125358b0ac1d355315b216e1aa5cba871f4dd0d9f64c2291d9f"
+        },
+        {
+          "name": "cycle-0-exposed",
+          "status": "pass",
+          "sha256": "1a21d8901f3cf125358b0ac1d355315b216e1aa5cba871f4dd0d9f64c2291d9f"
+        },
+        {
+          "name": "cycle-0-moved",
+          "status": "pass",
+          "sha256": "1a21d8901f3cf125358b0ac1d355315b216e1aa5cba871f4dd0d9f64c2291d9f"
+        },
+        {
+          "name": "cycle-0-completed",
+          "status": "pass",
+          "sha256": "1a21d8901f3cf125358b0ac1d355315b216e1aa5cba871f4dd0d9f64c2291d9f"
+        },
+        {
+          "name": "cycle-1-initial",
+          "status": "pass",
+          "sha256": "1a21d8901f3cf125358b0ac1d355315b216e1aa5cba871f4dd0d9f64c2291d9f"
+        },
+        {
+          "name": "cycle-1-exposed",
+          "status": "pass",
+          "sha256": "1a21d8901f3cf125358b0ac1d355315b216e1aa5cba871f4dd0d9f64c2291d9f"
+        },
+        {
+          "name": "cycle-1-moved",
+          "status": "pass",
+          "sha256": "1a21d8901f3cf125358b0ac1d355315b216e1aa5cba871f4dd0d9f64c2291d9f"
+        },
+        {
+          "name": "cycle-1-completed",
+          "status": "pass",
+          "sha256": "1a21d8901f3cf125358b0ac1d355315b216e1aa5cba871f4dd0d9f64c2291d9f"
+        }
+      ],
+      "build": {
+        "path": "build/gem-first-gui/gf3/verified/owned-console/program/build.json",
+        "sha256": "9a9af6ee58966b3c0eae05773a3358dd18c8fe39697d9a9582d8ba0f4fffbdf0"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/verified/owned-console/program/program.a816.json",
+        "sha256": "834fbfe0a03c68c466694ef4c5ee3cc8bb755cf0da0413461d65ae2461b11128"
+      }
+    },
+    {
+      "name": "console-bind",
+      "stage": "broader partition regression before final pointer/deferred-key-only fixes",
+      "result": {
+        "path": "build/gem-first-gui/gf3/verified/console-bind/results.json",
+        "sha256": "84f28ceca9751c1d6c4523e6515c71bb1c44014d9e61566691649daba88df4d4"
+      },
+      "checks": 109,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 531,
+        "native_irq_count": 32121,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/verified/console-bind/program/build.json",
+        "sha256": "1edf4ca6a830bdbd1b1aef5bd00f05faedf0ee31b315863bf1c2b25d3696356c"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/verified/console-bind/program/program.a816.json",
+        "sha256": "1731aa84dca0d11ccde8d6b1176689bd5ca0828c9882b13452124fda8f695ae3"
+      }
+    },
+    {
+      "name": "effects",
+      "stage": "broader partition regression before final pointer/deferred-key-only fixes",
+      "result": {
+        "path": "build/gem-first-gui/gf3/verified/effects/results.json",
+        "sha256": "021874b852414988941a7caf448776a971b5c44187dd8b4bcd80456c68fe83db"
+      },
+      "cases": [
+        {
+          "variant": 0,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 329544,
+              "peer_after": 348070,
+              "scene_token": 8,
+              "copy_chunks": 0
+            },
+            {
+              "stage": 2,
+              "frames": 4,
+              "peer_before": 352196,
+              "peer_after": 369411,
+              "scene_token": 8,
+              "copy_chunks": 1
+            }
+          ],
+          "close_before_drain": {
+            "shown": 0,
+            "epoch": 0,
+            "retained_route": true
+          },
+          "checks": 29,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 3,
+          "stop_count": 0,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 342,
+            "native_irq_count": 17206,
+            "os_busy": 0,
+            "return_s": 11278,
+            "return_d": 3328,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "return_dbr": 0,
+            "return_e": 0
+          }
+        },
+        {
+          "variant": 3,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 329543,
+              "peer_after": 348069,
+              "scene_token": 8,
+              "copy_chunks": 0
+            },
+            {
+              "stage": 2,
+              "frames": 4,
+              "peer_before": 352195,
+              "peer_after": 368928,
+              "scene_token": 8,
+              "copy_chunks": 1
+            }
+          ],
+          "close_before_drain": {
+            "shown": 0,
+            "epoch": 0,
+            "retained_route": true
+          },
+          "checks": 24,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 1,
+          "stop_count": 1,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 0,
+            "native_nmi_count": 297,
+            "native_irq_count": 13723,
+            "os_busy": 0,
+            "return_s": 11278,
+            "return_d": 3328,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "return_dbr": 0,
+            "return_e": 0
+          }
+        },
+        {
+          "variant": 4,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 329543,
+              "peer_after": 348069,
+              "scene_token": 8,
+              "copy_chunks": 0
+            }
+          ],
+          "checks": 17,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 1,
+          "stop_count": 1,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 65427,
+            "native_nmi_count": 286,
+            "native_irq_count": 12956,
+            "os_busy": 0,
+            "return_s": 0,
+            "return_d": 0,
+            "return_p": 0,
+            "fault_required": 0,
+            "fault_s": 0,
+            "return_dbr": 0,
+            "return_e": 0
+          }
+        }
+      ],
+      "build": {
+        "path": "build/gem-first-gui/gf3/verified/effects/program/build.json",
+        "sha256": "75576a0b61cad39a08f4bdcd075e33604d49ab18efec217449fdd541f554c227"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/verified/effects/program/program.a816.json",
+        "sha256": "43f2b9d25353b7d7084db9f8aa224d035e61ec27e4a3b8b88d5f438aa0243e21"
+      }
+    },
+    {
+      "name": "locks",
+      "stage": "broader partition regression before final pointer/deferred-key-only fixes",
+      "result": {
+        "path": "build/gem-first-gui/gf3/final/locks/results.json",
+        "sha256": "eb261cf2cedc894203fb1c81d8dedc74eafc11ee3f8d176a7e8057b2c1bc7fa8"
+      },
+      "AESChecks": 181,
+      "AESFailures": 0,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 421,
+        "native_irq_count": 23326,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_usage": {
+        "minimum_remaining_above_floor": 139
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/final/locks/program/build.json",
+        "sha256": "ffdb308f7af28b3e056e5a511d24c52b7a95d164d007f4f2975f7e137df69347"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/final/locks/program/program.a816.json",
+        "sha256": "95ac7702fb6784b92fa65bd95cfa2f92b31b017c6fe2e67315bacd963eaa1e9b"
+      }
+    },
+    {
+      "name": "windows",
+      "stage": "broader partition regression before final pointer/deferred-key-only fixes",
+      "result": {
+        "path": "build/gem-first-gui/gf3/final/windows/results.json",
+        "sha256": "cc6721153425e330ecdbb72894219d9eed965fe95a8eca49b1e189063b5529d4"
+      },
+      "AESChecks": 285,
+      "AESFailures": 0,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 2929,
+        "native_irq_count": 25160,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_usage": {
+        "minimum_remaining_above_floor": 139
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf3/final/windows/program/build.json",
+        "sha256": "d4a795d37ee4a1931805ca7df3d85d97cf3a71a10a8db33d07e3737ce48b5c0f"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf3/final/windows/program/program.a816.json",
+        "sha256": "6f3084401a661efd67d98b24f7d899c8b507348802ad96c7c6ba3953cde1e4e8"
+      }
+    }
+  ],
+  "execution_order": "The broader partition regressions preceded the final windowless-MCTRL exclusion, initial deferred-key drain, retained-key scheduling/loss and cursor redraw-hint fixes. Final pointer, forced-preemption, cache/journal and twelve-Task disk/GUI cases cover those fixes. Each retained row identifies its emitted image; no identical-image claim across development stages.",
+  "resource_comparison": {
+    "parent_build": {
+      "path": "build/gem-first-gui/gf3/admission/cache/program/build.json",
+      "sha256": "4bd60ff7a675d0873fac8430132f8bf5c2b78af480278977095dafa751182c1b"
+    },
+    "candidate_build": {
+      "path": "build/gem-first-gui/gf3/completion/cache/program/build.json",
+      "sha256": "6a4591f081ff01400c75ff24a6728743cfa76e3cfc5f80b186b3c2fb9ffbf195"
+    },
+    "parent_native_image": {
+      "path": "build/gem-first-gui/gf3/admission/cache/program/program.a816.json",
+      "sha256": "6e91ef502e7fb7d8f6a4061c1791ee46224ad9bc5334dbdfc57cde00ff3298bf"
+    },
+    "candidate_native_image": {
+      "path": "build/gem-first-gui/gf3/completion/cache/program/program.a816.json",
+      "sha256": "1977380ffcef3cabddcdb9a5e932bdea23ed03d3dceaa66d0f42615510d7f13e"
+    },
+    "parent_bytes": {
+      "code": 1046913,
+      "data": 9252,
+      "zero_fill": 22383,
+      "code_banks": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ]
+    },
+    "candidate_bytes": {
+      "code": 1061904,
+      "data": 11966,
+      "zero_fill": 25096,
+      "code_banks": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ]
+    },
+    "delta": {
+      "code": 14991,
+      "data": 2714,
+      "zero_fill": 2713
+    },
+    "unchanged_reservations": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations"
+    ],
+    "same_code_banks": true
+  },
+  "cache_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf2/checked/cache/results.json",
+      "sha256": "0c017cf50ff2820a668a7b79ddd9352c45950f32d377921f332c238297a9900a"
+    },
+    "checkpoints": 32,
+    "checkpoints_identical": true,
+    "scanouts": 14,
+    "scanouts_identical": true,
+    "scanout_hashes": {
+      "aes-cache-1.bgra": "a1e99f69851a01d78a43aca808e8842bc65be0c298a7ff140d381910eec11b36",
+      "aes-cache-10.bgra": "a0a69b197c2b27186e41a1cf6091efe8f01a435cfef99711a0c5dc62bcb2169f",
+      "aes-cache-11.bgra": "6cf17b7f98a992ca4c74fc54cf2ab9a4975ff164d5c3e5ef00e4999a9d0f13d6",
+      "aes-cache-12.bgra": "1802ec7c8d0ae718a7591a5e127cfc6a5316324b4fffce50c36988fce1745968",
+      "aes-cache-14.bgra": "9f607df4d92614b184c33049e828702a296a1a89d8fa0c7143834475cbdb7074",
+      "aes-cache-2.bgra": "7fa6df8f8d50903c3f5f120ea835b43a91a42741a08bd554d6daf0269dc4dfb6",
+      "aes-cache-26.bgra": "fc01abc65b6dba3b6eadf0c37cc3dc9d914182fef8076758af86d90d4ec50760",
+      "aes-cache-3.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+      "aes-cache-4.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+      "aes-cache-6.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+      "aes-cache-9.bgra": "a29a54675ac7314436fccaaae4e7ca522d7f508265685e65445972a9d15e62e1",
+      "aes-cache-frame-27.bgra": "9e34c76b23bc0ec1465483cdd30c9ca019d93e91f68c4470c3a27f6779f742d6",
+      "aes-cache-frame-29.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806",
+      "aes-cache-frame-31.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806"
+    }
+  },
+  "demo": {
+    "execution_stage": "Final-source OF816 package and native XEX workflow. A separate preceding package supplied the cold ATR/OF816 reader/countdown check.",
+    "build": {
+      "path": "build/gem-first-gui/gf3/completion/demo/build.json",
+      "sha256": "ce602086ce54bf26c87aa7696eac844f833ad01465197c65edda745f6dc0150c"
+    },
+    "manifest": {
+      "path": "build/gem-first-gui/gf3/completion/demo/demo-manifest.json",
+      "sha256": "853690f6618691facb95b891b41a5277c62db4a5420d81a2e57890b499485772"
+    },
+    "distribution": {
+      "path": "build/gem-first-gui/gf3/completion/demo/exec816-demo.zip",
+      "sha256": "c32f854b55083d019594d132dc3b4594b0860616b7041260164cb61a456cfc01"
+    },
+    "smoke": {
+      "path": "build/gem-first-gui/gf3/completion/demo/demo-results.json",
+      "sha256": "892fc63f7f6945f8665e0d9815b04705c3036088ecf7b9fe30cf5b1d3f89d5d9"
+    },
+    "of816": {
+      "path": "build/gem-first-gui/gf3/completion/demo/of816/of816.json",
+      "sha256": "bc6631fb5aea972843fcee4f0d05b069c02759bdae4ed8ffdfbdcea75f4ae6fd"
+    },
+    "image_data": {
+      "address": 138240,
+      "size": 12288,
+      "used": 11385,
+      "spare": 903
+    },
+    "native_code_bytes": 1215260,
+    "native_code_banks": [
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37
+    ],
+    "public_task_capacity": 12,
+    "scope": "Extracted OF816 colour desktop: shared-window ownership, persistent background, on-demand launches and orderly EXIT",
+    "autoboot_frames": 250,
+    "qualification": false
+  },
+  "cold_boot_observation": {
+    "package": {
+      "path": "build/gem-first-gui/gf3/verified/demo/exec816-demo.zip",
+      "sha256": "fd18452a7ea10a1c52a68af54cceeadf89d13bf271c88f180f94459400c620cc"
+    },
+    "log": {
+      "path": "build/gem-first-gui/gf3/verified/demo-smoke.log",
+      "sha256": "fb26aefd4892bb720262277505705b4c01e99c792eff6f0696ab06067c5d938f"
+    },
+    "scope": "Preceding partition package: real ROM ATR boot, 249-frame OF816 countdown, reader guards and firmware context verified before native startup. Initial workflow stopped at a premature fixed-frame Counter launch check; no cleanup claim for that attempt.",
+    "qualification": false
+  },
+  "intermediate_failures": [
+    {
+      "scope": "deferred consumed signal",
+      "resolution": "Reclaim carries the complete consumed Wait mask into the independent callback; raw/optimized high-bit probe and real keyboard delivery pass.",
+      "path": "build/gem-first-gui/gf3/complete/scene"
+    },
+    {
+      "scope": "published waiter before actual Wait",
+      "resolution": "Fixtures rendezvous on TS_WAIT after queue publication; publication alone does not prove the Task has parked.",
+      "path": "build/gem-first-gui/gf3/complete/gate-raw.log"
+    },
+    {
+      "scope": "cache deadline",
+      "resolution": "Cache routing snapshots by scene/focus/lifetime keys and avoid unchanged eligibility refreshes; original 100-frame deadline and pixels retained.",
+      "path": "build/gem-first-gui/gf3/complete/cache-current"
+    },
+    {
+      "scope": "queued logical lock wake",
+      "resolution": "A completed local TRY wakes older queued work when readiness changed without an RPC.",
+      "path": "build/gem-first-gui/gf3/complete/locks-current"
+    },
+    {
+      "scope": "windowless MCTRL handback",
+      "resolution": "Windowless explicit MCTRL consumes exclusion without queuing native work. Per-inbox atomic refresh preserves synchronous eligibility without older samples overwriting new capture.",
+      "path": "build/gem-first-gui/gf3/verified/pointer"
+    },
+    {
+      "scope": "composed upper arena overflow",
+      "resolution": "Reserve 3072 more upper static bytes within the already owned bank; bank-zero and Task pools unchanged.",
+      "path": "build/gem-first-gui/gf3/verified/native-desktop"
+    },
+    {
+      "scope": "Cursor redraw after deferred capture",
+      "resolution": "Consume the old cursor hint before the physical call; preserve and rearm a fresh captured hint after Resume. Final emitted variant 2 proves redraw without another input.",
+      "fixture_failures": [
+        {
+          "path": "build/gem-first-gui/gf3/completion/scene/results-overlapping-motion.json",
+          "sha256": "c63190db8aa91dcf941b62caf32df088581fd7d373d56707392843ddacfdca88"
+        },
+        {
+          "path": "build/gem-first-gui/gf3/completion/scene/results-predicted-acceleration.json",
+          "sha256": "e7ef98c79c427dc550968c42fe813fa6ac7d185b64de2ffcdd744257e1e8246b"
+        }
+      ],
+      "fixture_resolution": "Settle electrical motion and compare rendering with the observed captured position; pausing changes acceleration/coalescing."
+    },
+    {
+      "scope": "Asynchronous application launch fixture",
+      "resolution": "Child publication follows real SIO loading. Replaced the 200-frame check with the existing bounded rendezvous after diagnostic observation proved launch completed without another input.",
+      "diagnostic": {
+        "path": "build/gem-first-gui/gf3/verified/demo/launch-diagnostic.json",
+        "sha256": "836cfb5acb6a66542242a3d024c5c5b56ed32fedb85351b6f884629e600fa5dd"
+      }
+    },
+    {
+      "scope": "Task entry capacity",
+      "resolution": "Exclude scene/input and mouse library helpers from Task admission; preserve the existing sixteen-entry reservation.",
+      "path": "build/gem-first-gui/gf3/verified/coexistence.log"
+    }
+  ],
+  "limits": [
+    "Development tier only: no hosted-system, physical hardware or new latency qualification.",
+    "Eight public slots plus idle in focused fixtures; the final disk/GUI cohort and packaged GEM demo use the production twelve-slot profile.",
+    "No new public wire or native C entry ABI. GF4 caller-side hidden-window creation/deletion remains open.",
+    "Captured pointer/key interpretation for native controls is deferred until scene admission; published GEM endpoint delivery and physical fence completion continue."
+  ]
+}

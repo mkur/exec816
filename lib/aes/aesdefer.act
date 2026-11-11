@@ -1,0 +1,33 @@
+; The presenter's deferred phase uses only captured input, published routes
+; and physical fence state. It never inspects Layers, caches or window records.
+MODULE AESDEFER
+USE EXEC
+USE CONSOLEBITMAP
+USE CONSOLECAPTURE
+USE CONSOLEINPUT
+USE CONSOLETYPES
+USE DESKINPUT
+
+PUBLIC PROC Pump(LONGCARD consumed)
+  CARD pumped
+
+  LET mask=CONSOLECAPTURE.WAKE_MASK OR DESKINPUT.Mask()
+      OR CONSOLEBITMAP.Mask()
+  LET bits=consumed OR EXEC.SetSignal(0,mask)
+  IF (bits & CONSOLEBITMAP.Mask())<>0 THEN
+    CONSOLEBITMAP.PollPhysical()
+  FI
+  DESKINPUT.Service(bits)
+  IF DESKINPUT.FreshPending()<>0 THEN
+    EXEC.Signal(EXEC.FindTask(NULL),DESKINPUT.Mask())
+  FI
+  ; The paused normal turn may already have consumed the capture wake while
+  ; retaining a bounded-drain/menu hint on its stack. Probe once per wake or
+  ; initial failed admission; a full drain explicitly rearms the next quantum.
+  pumped=CONSOLEINPUT.Pump(NULL)
+  IF pumped=CONSOLETYPES.RAW_SLOTS THEN
+    EXEC.Signal(EXEC.FindTask(NULL),CONSOLECAPTURE.WAKE_MASK)
+  FI
+
+RETURN
+ENDMODULE

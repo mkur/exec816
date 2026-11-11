@@ -4,8 +4,9 @@
   blocking and UPDATE-held I/O, explicit cancellation, scoped CPU observations
   and measured Task/stack use before policy migration. GF1 inventories window
   effects and shared scene access; GF2 checks window effects, coherent commits,
-  route retirement and console attachment. GF3 begins with nonblocking presenter
-  admission and release/wait race checks.
+  route retirement and console attachment. GF3 separates scene access from
+  drawing and waits, with captured input delivery and physical fence retirement
+  during caller scene ownership, plus release/wait race checks.
 
 - [Shared-source Atari ST comparison](atari-st-reference.md): Hatari with
   EmuTOS/MagiC, unchanged object routines, bounded execution and drawing-path

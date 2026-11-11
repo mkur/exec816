@@ -56,27 +56,28 @@ PROC BoundaryApply(INPUT.Event POINTER target)
 
 RETURN
 
-PROC BoundaryFresh()
+PROC BoundaryFresh(INPUT.Event POINTER sample)
 
   IF boundaryTesting<>0 THEN
     boundaryFreshCount==+1
   ELSE
-    Fresh()
+    Fresh(sample)
   FI
 
 RETURN
 
-PROC BoundaryConsume()
+PROC BoundaryConsume(INPUT.Event POINTER sample)
 
   IF boundaryTesting<>0 THEN
     boundaryReplay==+1
   ELSE
-    Consume()
+    Consume(sample)
   FI
 
 RETURN
 
 PUBLIC PROC CheckBoundaries()
+  INPUT.Event sample
   BYTE index
   LONGCARD ignored
 
@@ -146,6 +147,23 @@ PUBLIC PROC CheckBoundaries()
   BoundaryRequire(AESINPUT.Pending()=0 AND boundaryReplay=1)
   BoundaryRequire(boundaryApplied=24 AND boundaryFreshCount=24)
   BoundaryRequire((owner.tc_SigRecvd & wakeMask)=0)
+
+  ; Native keys retained during a scene pause stay runnable without another
+  ; hardware edge. Overflow retires the incomplete stream before replay.
+  BoundaryRequire(keyCount=0 AND keyLost=0)
+  sample.kind=INPUT.EVENT_KEY
+  FOR index=0 TO CONSOLETYPES.RAW_SLOTS-1 DO
+    sample.code=CARD(index)
+    DeferKey(@sample)
+  OD
+  BoundaryRequire(keyCount=CONSOLETYPES.RAW_SLOTS AND keyLost=0
+      AND deferredKeys(0).code=0
+      AND deferredKeys(CONSOLETYPES.RAW_SLOTS-1).code=
+        CARD(CONSOLETYPES.RAW_SLOTS-1) AND Runnable()<>0)
+  DeferKey(@sample)
+  BoundaryRequire(keyCount=CONSOLETYPES.RAW_SLOTS AND keyLost<>0)
+  ReplayKeys()
+  BoundaryRequire(keyCount=0 AND keyLost=0)
 
   boundaryTesting=0
   pending=1

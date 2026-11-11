@@ -244,9 +244,10 @@ The [GF0 baseline](history/gem-first-gui.md) passes native Counter/disk,
 blocking/UPDATE-held read and cancellation checks. [GF1](history/gem-first-gui.md#gf1--shared-window-policy)
 extracts the hidden-window and hit-lookup helpers. [GF2](history/gem-first-gui.md#gf2--window-effects-and-scene-commits)
 separates copied moves, focus, routes and console attachment effects from scene
-publication. GF3 begins with nonblocking presenter admission; separating scene
-serialization from physical work, waits and independent input/event work remains.
-Existing latency gates remain open.
+publication. [GF3](history/gem-first-gui.md#gf3--scene-ownership) separates scene
+serialization from physical work and waits while published input and physical
+completion continue during caller ownership. GF4 next moves hidden create/delete
+into the caller. Existing latency gates remain open.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)
 prioritizes ordinary AES/VDI application bodies and fewer platform edits.

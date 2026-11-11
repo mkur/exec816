@@ -28,7 +28,7 @@ class DesktopContractTests(unittest.TestCase):
         self.assertFalse(application_entry({'name': 'M_LAYERCACHE_INIT'}))
         for module in ('DESKTOP', 'DESKCORE', 'DESKCONSOLE', 'DESKTABS', 'DESKMOVE', 'DESKCACHE', 'DESKEVENTS', 'DESKSTATE', 'DESKPAINT', 'DESKINPUT', 'DESKDRAG', 'DESKHOST', 'DESKBOOT', 'DESKWIDGETS', 'DESKWIDGETINPUT'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
-        for module in ('AESCORE', 'AESHOST', 'AESBOOT', 'AESSTATE', 'AESTYPES', 'AESLOCKS', 'AESGUI', 'AESWINDOW', 'AESWINDOWSTATE'):
+        for module in ('AESCORE', 'AESHOST', 'AESBOOT', 'AESSTATE', 'AESTYPES', 'AESLOCKS', 'AESGUI', 'AESWINDOW', 'AESWINDOWSTATE', 'AESSNAPSHOT', 'AESDEFER', 'AESMOUSE'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
 
     def test_aes_protocol_is_generated(self):

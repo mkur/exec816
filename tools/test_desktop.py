@@ -34,7 +34,7 @@ def run(out, mode, existing=None):
                 (foreign['symbols']['WidgetEntry'],foreign['symbols']['WidgetPacket']))
             source.write_text(text)
             from generate_memory import PROFILE
-            profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
+            profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=11264
             memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
             p=build(compiler(ROOT/'build/actionc',release=True),source,out/'program',optimize=mode=='opt',memory_profile=memory,
                 tasks=True,task_capacity=8,console=False,console_deferred=True,foreign_image=foreign)

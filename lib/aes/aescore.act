@@ -2,6 +2,8 @@
 MODULE AESCORE
 USE DISPLAY
 USE EXEC
+USE AESGATE
+USE AESSNAPSHOT
 USE EXECLISTS
 USE AESTYPES
 USE AESSTATE
@@ -39,6 +41,7 @@ PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
   service.nextGuiEpoch=1
   service.nextWindow=1
   service.started=1
+  AESSNAPSHOT.Invalidate()
   ; AESHOST publishes after endpoint initialization has settled.
 
 RETURN(1)
@@ -216,6 +219,7 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   LET endpoint=client.endpoint
   EXEC.Forbid()
   endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  AESSNAPSHOT.Invalidate()
   AESINBOX.Close(client)
   endpoint.guiEpoch=0
   endpoint.guiWaiting=0
@@ -371,7 +375,11 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
       IF grant.task<>request.owner THEN
         status=AESTYPES.IDENTITY
       ELSE
-        status=DISPLAY.Delegate(grant)
+        BEGIN
+          LET held=AESGATE.Suspend()
+          status=DISPLAY.Delegate(grant)
+          AESGATE.Resume(held)
+        END
         status=IF status=DISPLAY.OK THEN AESTYPES.OK
             ELSEIF status=DISPLAY.NO_MEMORY THEN AESTYPES.RESOURCE
             ELSE AESTYPES.DISPLAY_ERROR FI

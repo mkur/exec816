@@ -3,7 +3,7 @@
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
 
-ULONG AESService, AESUpdates, AESMouseHolds, AESLockCount, AESNativeBusy, AESPolicyGate;
+ULONG AESService, AESUpdates, AESMouseHolds, AESLockCount, AESNativeBusy, AESPolicyGate, AESNativeReady;
 volatile UWORD AESChecks, AESFailures, AESFirstFailure, AESReady, AESDone;
 static struct Task *controller, *workers[3];
 static ULONG wake, starts[3];
@@ -21,6 +21,7 @@ static void check(BOOL okay)
 #define QUEUED (*(volatile UBYTE *)AESLockCount)
 #define NATIVE_BUSY (*(volatile UBYTE *)AESNativeBusy)
 #define GATE (*(volatile UBYTE *)AESPolicyGate)
+#define NATIVE_READY (*(volatile UBYTE *)AESNativeReady)
 
 /* Test coordination only: the presenter has published its whole-turn boundary.
  * Keep inherited Forbid until the controlled caller operation has completed. */
@@ -28,7 +29,7 @@ static void await_gate(void)
 {
     for (;;) {
         Forbid();
-        if (GATE==1) return;
+        if (GATE==1 && NATIVE_READY) return;
         Permit(); ExecYield();
     }
 }
@@ -56,22 +57,22 @@ static void local_pairs(void)
     CHECK(c->sequence==sequence && c->updateDepth==0 && UPDATES==0);
     CHECK(self->tc_TDNestCnt==0);
     Permit();
-    /* Local BEGIN followed by a forced unavailable-gate RPC END. */
+    /* A closed scene gate sleeps and resumes the local END without RPC. */
     await_gate(); sequence=c->sequence;
     CHECK(wind_update(BEG_UPDATE));
     CHECK(c->sequence==sequence);
     GATE=0;
     CHECK(wind_update(END_UPDATE));
-    CHECK(c->sequence==sequence+1 && c->updateDepth==0);
+    CHECK(c->sequence==sequence && c->updateDepth==0);
     CHECK(self->tc_TDNestCnt==0);
     Permit();
-    /* RPC BEGIN followed by local END: transport stays consecutive. */
+    /* The same wait preserves local BEGIN/END and the caller's Forbid. */
     await_gate(); sequence=c->sequence; GATE=0;
     CHECK(wind_update(BEG_UPDATE));
-    CHECK(c->sequence==sequence+1);
+    CHECK(c->sequence==sequence);
     Permit(); await_gate();
     CHECK(wind_update(END_UPDATE));
-    CHECK(c->sequence==sequence+1 && c->updateDepth==0);
+    CHECK(c->sequence==sequence && c->updateDepth==0);
     Permit();
     /* An older unadmitted request prevents a fresh TRY from jumping the port.
      * Deliberately malformed so admission replies without taking a lock. */

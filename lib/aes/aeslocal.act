@@ -12,26 +12,30 @@ USE AESLOCKS
 PUBLIC CARD FUNC Update(LONGCARD value)
   BYTE queued,wake
 
-  IF AESGATE.Claim()=0 THEN
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
     RETURN(0)
   FI
-
-  LET service=AESSTATE.Get()
   LET request=AESTYPES.Request POINTER(ADDRESS(value))
+  AESGATE.EnterTask(request.owner,
+      LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit)
   LET client=AESSTATE.Find(service,request.client)
   ; Include older messages that have not reached the native waiter queue yet.
   EXEC.Forbid()
   queued=service.lockCount<>0 OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0
   EXEC.Permit()
   wake=request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1
-  LET status=AESLOCKS.Attempt(service,client,request,1,queued)
+  LET status=AESLOCKS.Attempt(service,client,request,
+      AESLOCKS.OWNER_READY,queued)
   IF status=AESTYPES.PENDING THEN
     AESGATE.Release(0)
     RETURN(0)
   FI
 
   request.status=status
-  AESGATE.Release(wake AND status=AESTYPES.OK)
+  ; A local TRY can observe newly eligible older work without sending a
+  ; message. Preserve that admission opportunity when the presenter sleeps.
+  AESGATE.Release((wake OR queued) AND status=AESTYPES.OK)
 
 RETURN(1)
 

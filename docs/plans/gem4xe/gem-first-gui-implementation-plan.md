@@ -4,11 +4,11 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-GF0–GF2 pass at the development tier. GF3–GF15 remain open. The
+GF0–GF3 pass at the development tier. GF4–GF15 remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
 coexistence, the current resource inventory, the shared window policy audit
-and the window effect/commit checks. GF3 has started with nonblocking presenter
-admission; its scene/physical/input partition remains to be implemented.
+and the window effect/commit checks. GF3 separates scene ownership from physical
+work and waits, with independent input delivery during caller ownership.
 The design is committed
 as `633b45fe` on `gem-first-gui`, following the two-Counter MagiC reference at
 `39e774ef`. Those references establish the direction and reference behavior;
@@ -196,11 +196,11 @@ Commit: `refactor(aes): separate window effects from scene commits`.
 
 ### GF3 — Separate scene access from physical work and waits
 
-First step: presenter admission returns without waiting and publishes its wake
-obligation atomically. The worker owns the retry/wait boundary. See the
-[admission record](../../history/gem-first-gui.md#gf3--scene-ownership).
-The existing handoff and whole presenter turn remain; this step does not
-complete GF3 or admit independent input/event work during caller scene ownership.
+Status: complete at the development tier. The initial nonblocking admission
+step and the complete scene/physical/input partition are recorded in the
+[execution history](../../history/gem-first-gui.md#gf3--scene-ownership).
+The [GF3 record](../../development/gem-first-gf3.json) identifies the selected
+emitted cases, source hashes, resources and qualification limits.
 
 Evolve `AESGATE` into the single library-level scene serialization mechanism;
 update presenter, existing local UPDATE and deferred paths together. Protect

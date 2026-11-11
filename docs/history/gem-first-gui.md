@@ -279,7 +279,12 @@ does not qualify the hosted system or establish new latency results.
 
 ## GF3 — Scene ownership
 
-GF3 is in progress. Its first step makes presenter admission nonblocking.
+GF3 passes at the development tier. Its complete record follows the historical
+admission step below.
+
+### Initial admission step
+
+The first step made presenter admission nonblocking.
 `AESGATE.TryOwner` closes the handoff on success, or publishes the presenter's
 wake obligation and returns failure while the caller retains ownership. Both
 decisions use a short `Forbid` section. The console worker retries and waits at
@@ -311,7 +316,107 @@ fixtures retain their existing eight public slots and private idle pool.
 Reproduce with `tools/test_aes_gate.py --output DIR` and
 `tools/test_aes_server.py --mode opt --suite locks --output DIR`, then the same
 AES runner with `--suite cache` in another directory. This is development
-evidence for the admission boundary. GF3 still needs the scene/input/display
-phase split, ownership across those phases, and release before physical
-admission, external waits and callbacks. The worker still waits for scene
-admission before servicing input/events in this preparatory step.
+evidence for the admission boundary as it existed at that commit. The worker
+still waited for scene admission before servicing input/events in that
+preparatory step. The following completion supersedes that implementation.
+
+
+### Complete scene, input and physical partition
+
+`AESGATE` now serializes library scene metadata independently of rendering
+readiness. Caller admission publishes a stack-local waiter under a short
+`Forbid`, sleeps on an already owned signal, and rechecks the gate after every
+wake. Publication and release use the same guard, so early or coalesced signals
+cannot lose the wake obligation. The system side tries admission and runs only
+independent work before waiting. Metadata lookups and mutation remain
+preemptible; queued logical UPDATE/MCTRL requests retain the existing eligible
+FIFO and owner-upgrade rules. Local TRY also wakes newly eligible older work.
+
+Bitmap calls, widget callbacks, display delegation and route creation/retirement
+release scene ownership. The continuation stays on the presenter's existing
+guarded native stack. A separate effect count excludes conflicting new UPDATE
+acquisitions until that continuation resumes. Layers tokens remain logical
+reservations through physical completion, quiescent failure and reset-required
+parking. Physical polling can retire DMA without reading scene/cache state;
+scene retirement and coherent view publication wait for admission. No callback,
+external wait or physical drawing admission retains the scene gate.
+
+`AESSNAPSHOT` publishes copied routing geometry, window/route epochs, focus,
+menu/MCTRL state and held input endpoints. It retains no scene or C view pointer.
+Geometry/focus/lifetime keys avoid rebuilding unchanged snapshots at every paint
+boundary. Endpoint holds cover readers and publication withdrawal through exit.
+C selected-view stores/withdrawal use short guards before view memory can be
+freed. Caller lock changes refresh eligibility synchronously with a bounded
+per-inbox guard, preventing an older sample from overwriting newer capture.
+
+The deferred presenter drains captured keyboard/pointer events through those
+snapshots and retires physical fences. It retains native keys/gestures for
+interpretation under scene ownership; queue loss cancels the old native stream
+before callbacks can capture a new one. Captured event scratch lives on each
+call's stack because independent input can run while a native callback is
+paused. Message and timer delivery use the existing independent protocols.
+Only actual fresh capture is rearmed; retained native work cannot cause a busy
+retry loop while another Task owns the scene.
+Cursor presentation consumes its old dirty hint before the physical call and
+rearms an arrival captured during that call's deferred continuation. A failed
+admission alone does not generate another wake. This preserves the latest
+position without requiring another mouse edge after scene release.
+
+The [complete GF3 execution record](../development/gem-first-gf3.json) contains
+pinned inputs, selected development checks, failures and resource measurements.
+These checks do not qualify the hosted system, change the open latency gates,
+or implement GF4's caller-side window creation/deletion.
+
+The raw and optimized native gate probes each pass 49 checks, including the
+complete 32-bit deferred callback argument, early/coalesced wakes, actual
+sleeping Tasks and unrelated signal preservation. The final preemption fixture
+passes 37, 33 and 30 checks. Keyboard, button, message and timer bits all arrive
+while a caller owns the scene; a second caller and the presenter both sleep.
+The physical case retires DMA while preserving its Layers token and the old
+published geometry. A third case pauses a completed cursor call, captures
+new movement during caller ownership, and requires a physical cursor redraw
+after release without another input. Instrumented scene/cache/readiness and
+physical-call boundaries enforce ownership through emitted code. The minimum measured margin
+above the interrupt floor is 232 bytes in these cases.
+
+Selected broader checks pass: locks 181, windows 285, cache 224, pointer 168,
+keyboard 111, input events 713, multiwindow 67, menus 321, native desktop 376
+and console attachment 109. The final pointer run includes 25 wake/drain and
+retained-key checks: the original 21 boundaries plus copied deferred keys,
+runnable work without another hardware edge, overflow and loss retirement.
+All 32 cache checkpoints and 14 scanouts match GF2 exactly. The owned-console
+fixture completes eight pixel/lifetime cases and 20 C/native ABI checks. The
+record distinguishes earlier broad regressions from the final focused reruns.
+Host checks pass 683 tests with four historical-source skips.
+
+The production twelve-slot disk/GUI cohort passes 31 checks. Both loaded
+Counters continue painting through four 16 KiB read/write/Close passes, with
+exact saved bytes and an independent filesystem allocation audit. Guards and
+ownership retire normally; its minimum measured interrupt-floor margin is
+192 bytes. This is a selected functional cohort, with no CPU timing or full
+GF0 matrix refresh claim.
+
+The matched optimized cache image adds 14,991 native code bytes, 2,714 data
+bytes and 2,713 zero-fill bytes, within the same native code banks. The two
+routing publications occupy 610 bytes each; the 64-slot native key queue uses
+1,536 bytes. The private AES service grows from 1,976 to 1,982 bytes, an eight-byte
+increase after heap chunk rounding. A contended caller retains a 12-byte waiter
+inside its existing native stack; no separate waiter allocation is required.
+No Task or fixed signal is added. Console destruction temporarily allocates one
+caller-owned signal while its existing presentation lock serializes retirement.
+
+The reserved bank-zero delta is **0 fixed, 0 root, 0 kernel, 0 per public Task
+and 0 idle bytes**, including guards, alignment and unused capacity. Matched
+runtime/phase reservations and Task pools are unchanged. Composed demo upper
+static arenas grow by 3 KiB within the already owned upper kernel bank; no
+additional bank is reserved for those arenas. The GEM demo uses 11,385 of
+12,288 bytes. Its OF816 package retains the ROM, combined writable system disk,
+licenses and checksums; development manifests and intermediates stay outside
+the ZIP. Package/workflow results and their exact source stage are recorded
+separately from the final focused fixtures.
+
+Reproduce the ownership cases with `tools/test_aes_scene.py --output DIR`, and
+use `tools/test_aes_gate.py --mode raw --output DIR` then `--mode opt` in separate
+directories for the native callback probe. The AES runner selects `locks`,
+`cache` and `pointer` for ordering, journals/pixels and input handback/loss.
+GF4 remains the next slice.

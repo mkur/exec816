@@ -3,6 +3,7 @@ MODULE AESGUI
 USE EXEC
 USE AESTYPES
 USE AESSTATE
+USE AESSNAPSHOT
 USE AESINBOX
 
 ; Only the closing window retires. The shared input session and menu live
@@ -14,6 +15,7 @@ PUBLIC PROC Close(AESSTATE.Window POINTER item)
   LET client=AESSTATE.Find(service,item.owner)
   EXEC.Forbid()
   item.view.epoch=0
+  AESSNAPSHOT.Invalidate()
   item.gui.count=0
   shown=0
   FOR slot=0 TO AESTYPES.WINDOWS-1 DO
@@ -39,6 +41,7 @@ PUBLIC PROC Open(AESSTATE.Service POINTER service
   EXEC.Forbid()
   item.gui.count=0
   item.view.epoch=service.nextGuiEpoch
+  AESSNAPSHOT.Invalidate()
   IF client.endpoint.guiEpoch=0 THEN
     client.endpoint.guiEpoch=service.nextGuiEpoch
     AESINBOX.Open(client,service.nextGuiEpoch)

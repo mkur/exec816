@@ -1,6 +1,7 @@
 ; Private binding and packet producer for the shared ordinary-call C library.
 MODULE CONSOLEBITMAP
 USE EXEC
+USE AESGATE
 USE DISPLAY
 USE CONSOLETYPES
 USE HEAPCORE
@@ -12,6 +13,7 @@ USE CALYPSIMETA
 INCLUDE "console-storage-action.inc"
 INCLUDE "console-bitmap-types.inc"
 BYTE drawingPending,drawingChanged
+BYTE physicalCompleted
 ; Private text progress owns a scene token, never a source/view pointer.
 LONGCARD desktopToken
 CARD desktopIndex,desktopGlyph,encoding
@@ -67,6 +69,8 @@ RETURN(Packet POINTER(state.packet))
 ; from completion; COPY_START shares that completion path. Other drawing
 ; operations remain synchronous.
 PUBLIC BYTE FUNC Run(CARD operation)
+  BYTE result
+  CARD status
 
   LET state=GetBinding()
   IF state.enabled=0 THEN
@@ -80,28 +84,39 @@ PUBLIC BYTE FUNC Run(CARD operation)
   LET packet=GetPacket()
   packet.operation=operation
   packet.status=DISPLAY.BAD_ARGUMENT
+  LET held=AESGATE.Suspend()
   Call(state.entry)
+  status=packet.status
   IF operation=OP_FILL OR operation=OP_TEXT OR operation=OP_TEXT_FILL
       OR operation=OP_TEXT_CLIP OR operation=OP_FRAME
       OR operation=OP_MENU_ROW OR operation=OP_DESKTOP
       OR operation=OP_SCROLL OR operation=OP_COPY_START THEN
     drawingChanged=1
   FI
-  IF packet.status=DISPLAY.BUSY AND
+  result=1
+  IF status=DISPLAY.BUSY AND
       (operation=OP_SCROLL OR operation=OP_COPY_START OR operation=OP_POLL) THEN
-    RETURN(1)
-  FI
-
-  IF packet.status=DISPLAY.BUSY THEN
-    RETURN(0)
-  FI
-
-  IF packet.status<>DISPLAY.OK THEN
+    result=1
+  ELSEIF status=DISPLAY.BUSY THEN
+    result=0
+  ELSEIF status<>DISPLAY.OK THEN
     state.failed=1
-    RETURN(0)
+    result=0
   FI
+  IF operation=OP_SCROLL OR operation=OP_COPY_START THEN
+    drawingPending=(status=DISPLAY.OK AND packet.token<>0)
+  ELSEIF operation=OP_POLL THEN
+    drawingPending=(status=DISPLAY.BUSY)
+    IF drawingPending=0 THEN
+      physicalCompleted=1
+    FI
+  FI
+  ; Fence retirement may run while the scene continuation is deferred. Save
+  ; this call's result before that dispatcher uses the shared POLL packet.
+  AESGATE.Resume(held)
+  packet.status=status
 
-RETURN(1)
+RETURN(result)
 
 PUBLIC BYTE FUNC Open()
   BYTE ignored
@@ -399,8 +414,6 @@ PUBLIC BYTE FUNC Scroll(CARD left,top,width,height,rows)
     RETURN(0)
   FI
 
-  drawingPending=1
-
 RETURN(1)
 
 ; The presenter prepares the shared typed descriptor before this call. Its
@@ -424,8 +437,6 @@ PUBLIC BYTE FUNC CopyStart()
     RETURN(0)
   FI
 
-  drawingPending=(packet.token<>0)
-
 RETURN(1)
 
 ; Local owner state is sufficient for scheduling; public Poll admits again.
@@ -433,8 +444,7 @@ PUBLIC BYTE FUNC Pending()
 
 RETURN(drawingPending)
 
-PUBLIC PROC Poll()
-  BYTE status
+PUBLIC PROC PollPhysical()
 
   IF drawingPending=0 THEN
     RETURN
@@ -451,6 +461,13 @@ PUBLIC PROC Poll()
     END
   FI
 
+RETURN
+
+; Retiring a frozen Layers transaction is scene work, after physical polling.
+PUBLIC PROC Poll()
+  BYTE status
+
+  PollPhysical()
   IF drawingPending=0 AND DESKSTATE.PendingToken()<>0 THEN
     BEGIN
       LET desktop=DESKSTATE.Get()
@@ -458,8 +475,13 @@ PUBLIC PROC Poll()
       DESKSTATE.SetScrollToken(0)
     END
   FI
+  physicalCompleted=0
 
 RETURN
+
+PUBLIC BYTE FUNC Completed()
+
+RETURN(physicalCompleted)
 
 ; Another trusted renderer used this same owner and command arena.
 PUBLIC BYTE FUNC Drawn(CARD status)

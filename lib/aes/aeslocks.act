@@ -11,8 +11,7 @@ USE CONSOLEBITMAP
 USE CONSOLEBATCH
 USE CONSOLETYPES
 
-; The RPC owner may evaluate hardware readiness; local callers use the
-; readiness established when the presenter published its handoff.
+; Both transports evaluate logical/physical eligibility while owning the scene.
 PUBLIC CONST OWNER_READY=2
 
 PUBLIC BYTE FUNC PaintBlocked()
@@ -33,8 +32,10 @@ PUBLIC BYTE FUNC NativeReady()
 
   LET desktop=DESKSTATE.Get()
   LET batch=CONSOLEBATCH.Get()
+  LET service=AESSTATE.Get()
 
 RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
+    AND (service=NULL OR service.policyEffects=0)
     AND CONSOLEBITMAP.Pending()=0 AND DESKSTATE.menuReplacing=0
     AND batch.phase=CONSOLETYPES.BATCH_IDLE
     AND DESKSTATE.outlineVisible=0 AND DESKTABS.Active()=0)

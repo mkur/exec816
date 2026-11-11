@@ -87,7 +87,7 @@ def compile_native(out, foreign):
     source = out/'gem-first.act'
     source.write_text(text)
     profile = json.loads(PROFILE.read_text())
-    profile['image_data_bytes'] = 8192
+    profile['image_data_bytes'] = 11264
     memory = out/'fixture-memory.json'
     memory.write_text(json.dumps(profile, indent=2)+'\n')
     launcher = prepare(source, out, foreign, desktop=True, aes=True)

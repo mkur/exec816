@@ -6,6 +6,8 @@ USE CONSOLEINPUT
 USE DESKCONSOLE
 USE A816MEMORY
 USE AESSTATE
+USE AESGATE
+USE AESSNAPSHOT
 USE AESTYPES
 USE AESGUI
 USE AESMENU
@@ -14,6 +16,7 @@ USE AESLOCKS
 USE AESWINDOWSTATE
 USE DESKTYPES
 USE DESKSTATE
+USE DESKROUTES
 USE DESKCORE
 USE DESKGEOMETRY
 USE DESKMENU
@@ -159,6 +162,7 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     AESSTATE.Window POINTER item INT x,y,width,height)
   LAYERTYPES.Rect bounds
   LONGCARD route
+  CARD inputStatus
 
   LET desktop=DESKSTATE.Get()
   LET window=item.window
@@ -174,12 +178,13 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   LET keyboard=INPUT.Lease POINTER(desktop.keyboard)
   route=0
   IF window.console=0 THEN
-    IF INPUT.CreateRoute(keyboard,INPUT.ROUTE_UNFILTERED,@route)<>INPUT.OK THEN
+    inputStatus=DESKROUTES.Create(keyboard,INPUT.ROUTE_UNFILTERED,@route)
+    IF inputStatus<>INPUT.OK THEN
       RETURN(AESTYPES.RESOURCE)
     FI
   FI
   IF service.nextGuiEpoch=0 THEN
-    IF route<>0 AND INPUT.RetireRoute(keyboard,route)<>INPUT.OK THEN
+    IF route<>0 AND DESKROUTES.Retire(keyboard,route)<>INPUT.OK THEN
       HEAPCORE.Abort($fcc2)
     FI
     RETURN(AESTYPES.OVERFLOW)
@@ -239,14 +244,17 @@ BYTE FUNC Close(AESSTATE.Window POINTER item)
       LET focus=DESKCORE.NextFocus(desktop,window.id)
       DESKCORE.PrepareFocus(desktop,focus)
       CommitClose(desktop,item,focus)
+      AESSNAPSHOT.Publish()
     END
   FI
 
   IF window.keyRoute<>0 THEN
     BEGIN
+      LET held=AESGATE.Suspend()
       captured=CONSOLEINPUT.Pump(NULL)
-      LET result=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),
+      LET result=DESKROUTES.Retire(INPUT.Lease POINTER(desktop.keyboard),
           window.keyRoute)
+      AESGATE.Resume(held)
       IF result=INPUT.BUSY THEN
         RETURN(0)
       FI

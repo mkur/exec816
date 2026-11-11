@@ -222,10 +222,24 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             from test_aes_cache import instrument
             instrument(out)
         if locks:
-            (out/'aeslockprobe.act').write_text('MODULE AESLOCKPROBE\nPUBLIC BYTE busy\nENDMODULE\n')
+            (out/'aeslockprobe.act').write_text('MODULE AESLOCKPROBE\nPUBLIC BYTE busy,ready\nENDMODULE\n')
             policy = read_source(ROOT/'lib/aes/aeslocks.act').replace('USE AESTYPES', 'USE AESTYPES\nUSE AESLOCKPROBE')
             policy = policy.replace('PUBLIC BYTE FUNC NativeReady()\n', 'PUBLIC BYTE FUNC NativeReady()\n\n  IF AESLOCKPROBE.busy<>0 THEN\n    RETURN(0)\n  FI\n')
             (out/'aeslocks.act').write_text(policy)
+            gate = read_source(ROOT/'lib/aes/aesgate.act').replace('USE AESSTATE\n',
+                'USE AESSTATE\nUSE AESLOCKPROBE\n', 1)
+            require(gate.count('  service.policyEffects==+1') == 1,
+                    'Scene effect release boundary changed')
+            gate = gate.replace('  service.policyEffects==+1',
+                '  AESLOCKPROBE.ready=0\n  service.policyEffects==+1', 1)
+            (out/'aesgate.act').write_text(gate)
+            worker = read_source(ROOT/'lib/console/consoledriver.act').replace('USE AESGATE\n',
+                'USE AESGATE\nUSE AESLOCKPROBE\n', 1)
+            require(worker.count('    AESGATE.Offer()') == 1,
+                    'Presenter scene offer boundary changed')
+            worker = worker.replace('    AESGATE.Offer()',
+                '    AESLOCKPROBE.ready=policyReady\n    AESGATE.Offer()', 1)
+            (out/'consoledriver.act').write_text(worker)
         if input_events:
             from test_aes_input_events import caller
             caller(out)
@@ -326,6 +340,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
                 setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy[name]:x})\n    item^=LONGCARD(ADDRESS(@service.{field}))\n  END\n'
         if locks:
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESNativeBusy"]:x})\n    item^=LONGCARD(ADDRESS(@AESLOCKPROBE.busy))\n  END\n'
+            setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESNativeReady"]:x})\n    item^=LONGCARD(ADDRESS(@AESLOCKPROBE.ready))\n  END\n'
         source.write_text(f'''MODULE AESPROBE
 USE EXEC
 USE AESBOOT
@@ -376,6 +391,14 @@ ENDMODULE
             return [address for address in task_entries(image) if address not in setup]
         generate_tasks.task_entries=fixture_entries
         policy_modules=generate_tasks.policy_modules
+        if locks:
+            def lock_policy(*args, **kwargs):
+                directory=policy_modules(*args, **kwargs)
+                text=worker.replace('"console-storage-action.inc"',
+                    '"'+str(directory.parent/'console-storage-action.inc')+'"')
+                (directory/'consoledriver.act').write_text(text)
+                return directory
+            generate_tasks.policy_modules=lock_policy
         if suite=='menus':
             from test_aes_menus import worker_probe
             generate_tasks.policy_modules=worker_probe(policy_modules)
@@ -489,7 +512,7 @@ ENDMODULE
             require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
                     'Incomplete application checks')
             if pointer:
-                require(report['boundary_checks']==21, 'Incomplete presenter input boundaries')
+                require(report['boundary_checks']==25, 'Incomplete presenter input boundaries')
             if windows:
                 count = int.from_bytes(bridge.memdump(foreign['symbols']['AESVisibleCount'], 2), 'little')
                 raw = bridge.memdump(foreign['symbols']['AESVisible'], count*8)

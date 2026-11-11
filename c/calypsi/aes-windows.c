@@ -181,14 +181,20 @@ WORD ExecAESWindowCall(struct ExecAESContext *c,UWORD op, WORD a, WORD b, WORD d
         view=ExecAESFindView(c,a);
         if (!view) { c->diagnostic=AES_IDENTITY; return fail; }
     }
+    Forbid();
     c->request.view=view;
+    Permit();
     c->request.intin[0] = a; c->request.intin[1] = b;
     c->request.intin[2] = d; c->request.intin[3] = e;
     c->request.intin[4] = f; c->request.intin[5] = g;
     result=ExecAESSubmit(c,op);
     if (op==AES_OP_CREATE) {
         if (result>0) c->views[slot]=view;
-        else { FreeMem(view,sizeof(*view)); c->request.view=c->view; return result; }
+        else {
+            Forbid(); c->request.view=c->view; Permit();
+            FreeMem(view,sizeof(*view));
+            return result;
+        }
     }
     c->view=view;
     c->visibleIndex=0;
@@ -230,14 +236,17 @@ WORD ExecAESWindowDelete(struct ExecAESContext *c, WORD handle)
     WORD result = ExecAESWindowCall(c,AES_OP_DELETE, handle, 0, 0, 0, 0, 0);
     if (result) {
         UWORD i;
+        struct AESWindowView *retired=c->view;
+        Forbid();
         for (i=0; i<AES_WINDOWS; ++i)
             if (c->views[i]==c->view) c->views[i]=NULL;
-        FreeMem(c->view, sizeof(*c->view));
         c->view = NULL;
         for (i=0; i<AES_WINDOWS; ++i)
             if (c->views[i]) { c->view=c->views[i]; break; }
         c->request.view = c->view;
         c->visibleIndex = 0;
+        Permit();
+        FreeMem(retired,sizeof(*retired));
     }
     return result;
 }

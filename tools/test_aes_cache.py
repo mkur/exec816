@@ -56,6 +56,27 @@ def physical(b,p,foreign,report):
                  restores=get(at('DESKCACHE','restores')),
                  patches=get(at('DESKCACHE','patches')),
                  patched_bytes=get(at('DESKCACHE','patchedBytes')))
+        if phase==1 and not valid:
+            scene=service+records['Service']['fields']['scene']
+            scene_fields=layers_layout()['Scene']['fields']
+            report['cache_failure']=dict(checkpoint=row,
+                scene_busy=get(scene+scene_fields['busy']),
+                visible_damage=get(scene+scene_fields['visibleDamage'],2),
+                active=get(at('DESKCACHE','active'),1),
+                candidates=get(at('DESKCACHE','candidateBits'),1),
+                pending=get(at('CONSOLEBITMAP','drawingPending'),1),
+                visual_revision=get(address+window['fields']['visualRevision']),
+                capture_attempt=get(address+window['fields']['captureAttempt']))
+            report['cache_failure']['paint']={name:get(at('DESKPAINT',name),n)
+                for name,n in (('paintToken',4),('paintLayer',4),('commandIndex',2),
+                    ('glyphOffset',2),('regionIndex',2),('partIndex',1),('started',1))}
+            report['cache_failure']['display']={name:get(at('DISPLAY',name),n)
+                for name,n in (('physical',1),('dmaHeld',1),('ownerDepth',2),('ownerBlocked',1))}
+            binding=p['build']['memory']['console_storage']['BITMAP']
+            report['cache_failure']['bitmap_binding']=b.memdump(binding,8).hex()
+            packet=get(binding+3,3)
+            report['cache_failure']['last_packet']=dict(operation=get(packet,2),
+                status=get(packet+2,2))
         require(not any(s['pinned'] for s in slots),'Settled AES cache is pinned')
         if phase in (5,13,20,23):
             before=get(at('DESKHOST','candidateInspections'))

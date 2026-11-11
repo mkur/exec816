@@ -1,11 +1,46 @@
-; Private policy handoff. No display reservation and no interrupt-side access.
+; Shared scene ownership, independent of display reservations and input capture.
+; IRQ/NMI never inspect the Task-side owner/waiter records.
 MODULE AESGATE
 USE EXEC
 USE AESSTATE
+USE AESTYPES
+USE AESSNAPSHOT
 
 PUBLIC CONST CLOSED=0
 PUBLIC CONST AVAILABLE=1
 PUBLIC CONST CALLER=2
+PROC POINTER independent(LONGCARD bits)
+LONGCARD independentMask
+BYTE configured
+TYPE SceneWaiter=[
+  BYTE POINTER next
+  EXEC.Task POINTER task
+  LONGCARD mask
+  BYTE queued
+]
+
+; Startup installs a scene-independent input/fence dispatcher in the existing
+; presenter Task. No additional Task, signal or bank-zero storage is reserved.
+PUBLIC PROC Configure(ADDRESS entry LONGCARD mask)
+
+  LET address=ADDRESS POINTER(@independent)
+  address^=entry
+  independentMask=mask
+  configured=1
+
+RETURN
+
+PROC WakeCallers(AESSTATE.Service POINTER service)
+  SceneWaiter POINTER waiter
+
+  WHILE service.sceneWaiters<>NULL DO
+    waiter=SceneWaiter POINTER(service.sceneWaiters)
+    service.sceneWaiters=waiter.next
+    waiter.queued=0
+    EXEC.Signal(waiter.task,waiter.mask)
+  OD
+
+RETURN
 
 ; Try before presenter metadata access, including scheduling hints. Publish the
 ; waiter under the same guard as the check; a release before Wait stays pending.
@@ -19,6 +54,7 @@ PUBLIC BYTE FUNC TryOwner()
   EXEC.Forbid()
   IF service.policyGate<>CALLER THEN
     service.policyGate=CLOSED
+    service.sceneOwner=service.owner
     EXEC.Permit()
     RETURN(1)
   FI
@@ -29,15 +65,18 @@ PUBLIC BYTE FUNC TryOwner()
 RETURN(0)
 
 ; Readiness and scheduling decisions were computed while the gate was closed.
-PUBLIC PROC Offer(BYTE ready)
+PUBLIC PROC Offer()
 
   LET service=AESSTATE.Get()
   IF service=NULL THEN
     RETURN
   FI
 
+  AESSNAPSHOT.Publish()
   EXEC.Forbid()
-  service.policyGate=IF ready<>0 AND service.live=1 THEN AVAILABLE ELSE CLOSED FI
+  service.policyGate=IF service.live=1 THEN AVAILABLE ELSE CLOSED FI
+  service.sceneOwner=NULL
+  WakeCallers(service)
   EXEC.Permit()
 
 RETURN
@@ -54,23 +93,118 @@ PUBLIC BYTE FUNC Claim()
   claimed=service.policyGate=AVAILABLE
   IF claimed<>0 THEN
     service.policyGate=CALLER
+    service.sceneOwner=EXEC.FindTask(NULL)
   FI
   EXEC.Permit()
 
 RETURN(claimed)
 
+; The caller supplies its live Task and an owned signal. Registration or the
+; outer resource lease pins this native frame until return. Signals are hints.
+PUBLIC PROC EnterTask(EXEC.Task POINTER task LONGCARD mask)
+  SceneWaiter waiter
+
+  LET service=AESSTATE.Get()
+  waiter.queued=0
+  waiter.task=task
+  waiter.mask=mask
+  DO
+    EXEC.Forbid()
+    IF service.policyGate=AVAILABLE THEN
+      service.policyGate=CALLER
+      service.sceneOwner=task
+      EXEC.Permit()
+      RETURN
+    FI
+    IF waiter.queued=0 THEN
+      waiter.next=service.sceneWaiters
+      service.sceneWaiters=BYTE POINTER(@waiter)
+      waiter.queued=1
+    FI
+    EXEC.Signal(service.owner,service.mask)
+    EXEC.Permit()
+    EXEC.Wait(mask)
+  OD
+
+RETURN
+
 ; A registered caller pins service storage. Publish before the existing wake.
 PUBLIC PROC Release(BYTE wake)
 
   LET service=AESSTATE.Get()
+  AESSNAPSHOT.Publish()
   EXEC.Forbid()
   service.policyGate=AVAILABLE
+  service.sceneOwner=NULL
+  WakeCallers(service)
   wake=wake OR service.policyWaiting
   service.policyWaiting=0
   IF wake<>0 THEN
     EXEC.Signal(service.owner,service.mask)
   FI
   EXEC.Permit()
+
+RETURN
+
+PUBLIC BYTE FUNC SystemOwned()
+
+  LET service=AESSTATE.Get()
+
+RETURN(service=NULL OR service.live<>1 OR service.policyGate=CLOSED)
+
+; Physical work retains its existing operation identity/token, not the scene
+; gate. Logical readiness excludes conflicting new UPDATE acquisitions.
+PUBLIC BYTE FUNC Suspend()
+
+  LET service=AESSTATE.Get()
+  IF service=NULL OR service.live<>1 OR SystemOwned()=0 THEN
+    RETURN(0)
+  FI
+  EXEC.Forbid()
+  service.policyEffects==+1
+  service.policyGate=AVAILABLE
+  service.sceneOwner=NULL
+  WakeCallers(service)
+  EXEC.Permit()
+
+RETURN(1)
+
+; The continuation is retained on the presenter's guarded native stack. A
+; failed try dispatches only published input and fence completion, then sleeps.
+; Native controls/cache queries and all scene continuation work stay deferred.
+PUBLIC PROC Reclaim()
+  LONGCARD bits
+
+  LET service=AESSTATE.Get()
+  IF TryOwner()<>0 THEN
+    RETURN
+  FI
+  bits=0
+  DO
+    IF configured<>0 THEN
+      independent(bits)
+    FI
+    IF TryOwner()<>0 THEN
+      RETURN
+    FI
+    ; Wait consumes these bits. Carry them into the next independent phase,
+    ; including a wake that also makes scene admission immediately possible.
+    bits=EXEC.Wait(service.mask OR independentMask)
+  OD
+
+RETURN
+
+PUBLIC PROC Resume(BYTE held)
+
+  IF held<>0 THEN
+    BEGIN
+      LET service=AESSTATE.Get()
+      Reclaim()
+      EXEC.Forbid()
+      service.policyEffects==-1
+      EXEC.Permit()
+    END
+  FI
 
 RETURN
 

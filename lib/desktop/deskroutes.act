@@ -1,0 +1,23 @@
+; Route resource effects run without scene ownership. The caller retains the
+; unpublished tag or closing window until the surrounding operation commits.
+MODULE DESKROUTES
+USE INPUT
+USE AESGATE
+
+PUBLIC CARD FUNC Create(INPUT.Lease POINTER lease CARD flags
+    LONGCARD POINTER tag)
+
+  LET held=AESGATE.Suspend()
+  LET status=INPUT.CreateRoute(lease,flags,tag)
+  AESGATE.Resume(held)
+
+RETURN(status)
+
+PUBLIC CARD FUNC Retire(INPUT.Lease POINTER lease LONGCARD tag)
+
+  LET held=AESGATE.Suspend()
+  LET status=INPUT.RetireRoute(lease,tag)
+  AESGATE.Resume(held)
+
+RETURN(status)
+ENDMODULE

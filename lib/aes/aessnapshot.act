@@ -1,0 +1,282 @@
+; Published input routing contains values and held endpoints, never scene
+; pointers. Construction owns the scene; readers copy under a short guard.
+MODULE AESSNAPSHOT
+USE EXEC
+USE A816MEMORY
+USE AESSTATE
+USE AESTYPES
+USE DESKSTATE
+USE DESKTYPES
+USE DESKGEOMETRY
+USE LAYERTYPES
+USE REGIONS
+
+PUBLIC CONST WINDOW_ID=0,KEY_ROUTE=1,POINTER_HIT=2
+CONST OCCLUDER=$ff
+
+PUBLIC TYPE WindowRoute=[
+  LONGCARD window,client,keyRoute,epoch
+  AESTYPES.Endpoint POINTER endpoint
+  INT handle
+  CARD frameKind
+  INT sliderTop,sliderHeight
+  BYTE kind,iconified
+  LAYERTYPES.Rect bounds,work
+]
+TYPE Publication=[
+  WindowRoute ARRAY routes(LAYERTYPES.SLOT_COUNT)
+  WindowRoute ARRAY defaults(AESTYPES.CLIENTS)
+  LONGCARD focus,mouseOwner
+  CARD mouseHolds
+  BYTE count,menuActive
+]
+Publication published,prepared
+LONGCARD layoutEpoch
+BYTE clientCount,dirty=1
+INT selection
+
+PUBLIC PROC Invalidate()
+
+  dirty=1
+
+RETURN
+
+; Endpoint holds pin caller-owned inbox storage across scene withdrawal.
+PUBLIC PROC Drop(AESTYPES.Endpoint POINTER endpoint)
+
+  IF endpoint=NULL THEN
+    RETURN
+  FI
+  EXEC.Forbid()
+  endpoint.holds==-1
+  IF endpoint.state=AESTYPES.ENDPOINT_CLOSING AND endpoint.holds=0 THEN
+    BEGIN
+      LET service=AESSTATE.Get()
+      service.directory.changed=1
+      EXEC.Signal(service.owner,service.mask)
+    END
+  FI
+  EXEC.Permit()
+
+RETURN
+
+; Only a scene owner calls Publish. All costly lookup/geometry work precedes
+; the guarded value copy and endpoint-lifetime exchange.
+PUBLIC BYTE FUNC Publish()
+  BYTE rank,slot,index
+  INT selected
+
+  LET service=AESSTATE.Get()
+  LET desktop=DESKSTATE.Get()
+  selected=0
+  IF service<>NULL AND service.live<>0 AND desktop<>NULL THEN
+    IF service.mouseHolds<>0 THEN
+      BEGIN
+        LET client=AESSTATE.Find(service,service.mouseOwner)
+        IF client<>NULL THEN
+          EXEC.Forbid()
+          IF client.binding.view<>NULL THEN
+            selected=client.binding.view.handle
+          FI
+          EXEC.Permit()
+        FI
+      END
+    FI
+    IF dirty=0 AND desktop.scene.layoutEpoch<>0
+        AND layoutEpoch=desktop.scene.layoutEpoch AND clientCount=service.count
+        AND published.focus=desktop.focus
+        AND published.mouseOwner=service.mouseOwner
+        AND published.mouseHolds=service.mouseHolds
+        AND published.menuActive=DESKSTATE.menuActive AND selection=selected THEN
+      RETURN(0)
+    FI
+  ELSEIF published.count=0 AND clientCount=0 THEN
+    RETURN(0)
+  FI
+  A816MEMORY.Clear(BYTE POINTER(@prepared),SIZEOF(Publication))
+  IF service<>NULL AND service.live<>0 AND desktop<>NULL THEN
+    prepared.focus=desktop.focus
+    prepared.mouseOwner=service.mouseOwner
+    prepared.mouseHolds=service.mouseHolds
+    prepared.menuActive=DESKSTATE.menuActive
+    rank=0
+    WHILE rank<desktop.scene.count DO
+      BEGIN
+        LET layer=@desktop.scene.items(desktop.scene.order(rank))
+        LET route=@prepared.routes(rank)
+        REGIONS.Copy(@layer.bounds,@route.bounds)
+        IF layer.shown<>0 THEN
+          route.kind=OCCLUDER
+        FI
+        FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+          BEGIN
+            LET window=@desktop.windows(slot)
+            IF window.id<>0 AND window.layer=layer.id THEN
+              route.window=window.id
+              route.keyRoute=window.keyRoute
+              route.frameKind=window.frameKind
+              route.sliderTop=window.sliderTop
+              route.sliderHeight=window.sliderHeight
+              route.iconified=window.iconified
+              IF layer.shown<>0 THEN
+                route.kind=window.kind
+              FI
+              DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@route.work)
+              FOR index=0 TO AESTYPES.WINDOWS-1 DO
+                IF service.windows(index).owner<>0
+                    AND service.windows(index).window=window THEN
+                  BEGIN
+                    LET item=@service.windows(index)
+                    LET client=AESSTATE.Find(service,item.owner)
+                    IF client.endpoint.state=AESTYPES.ENDPOINT_ACCEPTING THEN
+                      route.client=client.id
+                      route.endpoint=client.endpoint
+                      route.handle=item.gui.window
+                      route.epoch=item.view.epoch
+                    FI
+                  END
+                  EXIT
+                FI
+              OD
+              EXIT
+            FI
+          END
+        OD
+      END
+      rank==+1
+    OD
+    prepared.count=desktop.scene.count
+    FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+      BEGIN
+        LET client=@service.clients(slot)
+        IF client.id<>0 AND client.endpoint<>NULL
+            AND client.endpoint.state=AESTYPES.ENDPOINT_ACCEPTING THEN
+          BEGIN
+            LET target=@prepared.defaults(slot)
+            target.client=client.id
+            target.endpoint=client.endpoint
+            rank=0
+            WHILE rank<prepared.count DO
+              BEGIN
+                LET route=@prepared.routes(rank)
+                IF route.client=client.id THEN
+                  IF (service.mouseHolds<>0 AND service.mouseOwner=client.id
+                      AND selected=route.handle)
+                      OR ((service.mouseHolds=0 OR service.mouseOwner<>client.id)
+                        AND route.window=desktop.focus) THEN
+                    A816MEMORY.Move(BYTE POINTER(target),BYTE POINTER(route),
+                        SIZEOF(WindowRoute))
+                    EXIT
+                  FI
+                FI
+              END
+              rank==+1
+            OD
+          END
+        FI
+      END
+    OD
+  FI
+
+  EXEC.Forbid()
+  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+    IF prepared.defaults(slot).endpoint<>NULL THEN
+      prepared.defaults(slot).endpoint.holds==+1
+    FI
+  OD
+  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+    Drop(published.defaults(slot).endpoint)
+  OD
+  A816MEMORY.Move(BYTE POINTER(@published),BYTE POINTER(@prepared),
+      SIZEOF(Publication))
+  EXEC.Permit()
+  IF service<>NULL AND service.live<>0 AND desktop<>NULL THEN
+    layoutEpoch=desktop.scene.layoutEpoch
+    clientCount=service.count
+    selection=selected
+  ELSE
+    layoutEpoch=0
+    clientCount=0
+    selection=0
+  FI
+  dirty=0
+
+RETURN(1)
+
+; The returned copy holds its endpoint until Drop. Selection and copy are one
+; guarded read; a caller publishing twice cannot overwrite a reader's values.
+PUBLIC BYTE FUNC Select(BYTE mode LONGCARD identity INT x,y WindowRoute POINTER target)
+  BYTE rank,found
+  WindowRoute POINTER route
+
+  found=0
+  EXEC.Forbid()
+  IF mode=POINTER_HIT AND published.menuActive<>0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+  IF mode=POINTER_HIT AND published.mouseHolds<>0 THEN
+    FOR rank=0 TO AESTYPES.CLIENTS-1 DO
+      IF published.defaults(rank).client=published.mouseOwner THEN
+        A816MEMORY.Move(BYTE POINTER(target),
+            BYTE POINTER(@published.defaults(rank)),SIZEOF(WindowRoute))
+        REGIONS.Assign(@target.work,0,0,640,240)
+        target.iconified=0
+        IF target.endpoint<>NULL THEN
+          target.endpoint.holds==+1
+        FI
+        EXEC.Permit()
+        RETURN(1)
+      FI
+    OD
+    EXEC.Permit()
+    RETURN(0)
+  FI
+  rank=0
+  WHILE rank<published.count DO
+    route=@published.routes(rank)
+    IF (mode=WINDOW_ID AND route.window=identity AND identity<>0)
+        OR (mode=KEY_ROUTE AND route.keyRoute=identity AND identity<>0)
+        OR (mode=POINTER_HIT AND route.kind<>0 AND x>=route.bounds.left
+          AND x<route.bounds.right AND y>=route.bounds.top
+          AND y<route.bounds.bottom) THEN
+      A816MEMORY.Move(BYTE POINTER(target),BYTE POINTER(route),SIZEOF(WindowRoute))
+      IF mode=POINTER_HIT AND route.window<>published.focus THEN
+        target.client=0
+      FI
+      IF target.endpoint<>NULL THEN
+        target.endpoint.holds==+1
+      FI
+      found=1
+      EXIT
+    FI
+    rank==+1
+  OD
+  EXEC.Permit()
+
+RETURN(found)
+
+PUBLIC BYTE FUNC Default(BYTE slot WindowRoute POINTER target)
+
+  EXEC.Forbid()
+  A816MEMORY.Move(BYTE POINTER(target),BYTE POINTER(@published.defaults(slot)),
+      SIZEOF(WindowRoute))
+  IF target.endpoint<>NULL THEN
+    target.endpoint.holds==+1
+  FI
+  EXEC.Permit()
+
+RETURN(target.endpoint<>NULL)
+
+PUBLIC BYTE FUNC Eligible(LONGCARD client CARD buttons)
+  BYTE result
+
+  EXEC.Forbid()
+  result=(published.menuActive=0 AND
+      ((published.mouseHolds<>0 AND published.mouseOwner=client)
+        OR (published.mouseHolds=0 AND buttons=0)))
+  EXEC.Permit()
+
+RETURN(result)
+
+ENDMODULE

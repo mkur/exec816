@@ -2,6 +2,8 @@
 MODULE CONSOLE
 USE EXEC
 USE DESKSTATE
+USE AESSTATE
+USE AESGATE
 USE EXECLISTS
 USE HEAPCORE
 USE CONSOLETYPES
@@ -179,22 +181,41 @@ PUBLIC BYTE FUNC Destroy(LONGCARD unit)
   CONSOLETYPES.Window POINTER entry
   CONSOLETYPES.Instance POINTER instance
   BYTE POINTER owner
+  BYTE bit,attached
 
   IF unit=0 THEN
     RETURN(0)
   FI
 
   LET registry=CONSOLEWINDOWS.Registry()
-  IF DESKSTATE.FindConsoleWindow(unit)<>NULL THEN
-    RETURN(0)
-  FI
-
   IF registry.pane=unit THEN
     RETURN(0)
   FI
 
   owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0)))
   IF CONSOLETILING.Lock()=0 THEN
+    RETURN(0)
+  FI
+
+  ; The presentation lock prevents attachment while storage retires. Acquire
+  ; scene access only for the attachment lookup, before any external wait.
+  LET aes=AESSTATE.Get()
+  bit=$ff
+  IF aes<>NULL AND aes.live=1 THEN
+    bit=EXEC.AllocSignal(-1)
+    IF bit=$ff THEN
+      CONSOLETILING.Unlock()
+      RETURN(0)
+    FI
+    AESGATE.EnterTask(EXEC.Task POINTER(owner),LONGCARD(1) LSH bit)
+  FI
+  attached=(DESKSTATE.FindConsoleWindow(unit)<>NULL)
+  IF bit<>$ff THEN
+    AESGATE.Release(0)
+    EXEC.FreeSignal(bit)
+  FI
+  IF attached<>0 THEN
+    CONSOLETILING.Unlock()
     RETURN(0)
   FI
 

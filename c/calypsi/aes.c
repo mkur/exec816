@@ -366,7 +366,10 @@ WORD ExecAESBeginUpdate(WORD window)
     struct ExecAESContext *c=ExecAESContext();
     struct AESWindowView *view;
     if (!c || !(view=ExecAESFindView(c,window))) return 0;
+    Forbid();
     c->view=view;
+    c->request.view=view;
+    Permit();
     return ExecAESUpdate(c,BEG_UPDATE|AES_UPDATE_WINDOW,window);
 }
 

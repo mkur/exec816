@@ -15,8 +15,8 @@ def producer(out, symbols):
     service = desktop[start:end]
     for old, new in (
         ('INPUT.Take(@lease,@sample)', 'BoundaryTake(@lease,@sample)'),
-        ('      Consume()', '      BoundaryConsume()'),
-        ('      Fresh()', '      BoundaryFresh()'),
+        ('      Consume(@sample)', '      BoundaryConsume(@sample)'),
+        ('      Fresh(@sample)', '      BoundaryFresh(@sample)'),
         ('DESKMOUSE.Apply(@sample)', 'BoundaryApply(@sample)'),
         ('        pending=0', '        BoundaryHook(3)\n        pending=0'),
         ('      ; Transform fresh', '      BoundaryHook(2)\n      ; Transform fresh'),
@@ -27,9 +27,10 @@ def producer(out, symbols):
     desktop = desktop[:-len('ENDMODULE\n')]+'''
 ; Fixture-only entry at the fresh normalized-capture boundary.
 PUBLIC PROC Inject(INPUT.Event POINTER captured)
+  INPUT.Event sample
 
   A816MEMORY.Move(BYTE POINTER(@sample),BYTE POINTER(captured),INPUT.EVENT_BYTES)
-  Fresh()
+  Fresh(@sample)
   AESMOUSE.Refresh()
 
 RETURN

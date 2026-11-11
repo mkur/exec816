@@ -44,18 +44,25 @@ PUBLIC PROC Work(CARD kind
 RETURN
 
 ; Relative track coordinates are shared by cached thumb geometry and capture.
-PUBLIC PROC ScrollTrack(DESKTYPES.Window POINTER window
+PROC BuildTrack(CARD kind
     LAYERTYPES.Rect POINTER bounds,track)
 
   REGIONS.Assign(track,bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
-      bounds.top+Top(window.frameKind),bounds.right-1,
-      bounds.bottom-Bottom(window.frameKind))
-  IF (window.frameKind & DESKTYPES.FRAME_UPARROW)<>0 THEN
+      bounds.top+Top(kind),bounds.right-1,
+      bounds.bottom-Bottom(kind))
+  IF (kind & DESKTYPES.FRAME_UPARROW)<>0 THEN
     track.top==+DESKTYPES.FRAME_GADGET_HEIGHT
   FI
-  IF (window.frameKind & DESKTYPES.FRAME_DNARROW)<>0 THEN
+  IF (kind & DESKTYPES.FRAME_DNARROW)<>0 THEN
     track.bottom==-DESKTYPES.FRAME_GADGET_HEIGHT
   FI
+
+RETURN
+
+PUBLIC PROC ScrollTrack(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds,track)
+
+  BuildTrack(window.frameKind,bounds,track)
 
 RETURN
 
@@ -87,34 +94,40 @@ PUBLIC PROC Slider(DESKTYPES.Window POINTER window
 RETURN
 
 ; Reserve one text cell between the actual title controls.
-PUBLIC BYTE FUNC HasIcon(DESKTYPES.Window POINTER window
+BYTE FUNC IconSpace(CARD frameKind BYTE content
     LAYERTYPES.Rect POINTER bounds)
   INT available
 
   available=bounds.right-bounds.left
-      -IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+      -IF content=DESKTYPES.CONTENT_CONSOLE THEN
           INT(DESKTYPES.FRAME_EDGE) ELSE INT(DESKTYPES.FRAME_GADGET_WIDTH) FI
-  IF (window.frameKind & DESKTYPES.FRAME_FULLER)<>0 THEN
+  IF (frameKind & DESKTYPES.FRAME_FULLER)<>0 THEN
     available==-DESKTYPES.FRAME_GADGET_WIDTH
   FI
 
-RETURN(window.frameKind<>DESKTYPES.FRAME_BORDERLESS
+RETURN(frameKind<>DESKTYPES.FRAME_BORDERLESS
     AND available>=DESKTYPES.FRAME_GADGET_WIDTH+8+2*DESKTYPES.TITLE_PAD)
 
+PUBLIC BYTE FUNC HasIcon(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds)
+
+RETURN(IconSpace(window.frameKind,window.kind,bounds))
+
 ; Hit codes are private presenter facts: size, up, down, page up/down, thumb.
-PUBLIC BYTE FUNC GadgetHit(DESKTYPES.Window POINTER window
+PUBLIC BYTE FUNC Gadget(CARD frameKind BYTE content,iconified
+    INT sliderTop,sliderHeight
     LAYERTYPES.Rect POINTER bounds INT x,y)
   LAYERTYPES.Rect rail
 
-  IF window.iconified<>0 THEN
+  IF iconified<>0 THEN
     RETURN(IF x>=bounds.left AND x<bounds.right
         AND y>=bounds.top AND y<bounds.bottom THEN 9 ELSE 0 FI)
   FI
 
-  IF HasIcon(window,bounds)<>0
+  IF IconSpace(frameKind,content,bounds)<>0
       AND y>=bounds.top AND y<bounds.top+DESKTYPES.TITLE_HEIGHT THEN
     BEGIN
-      LET right=bounds.right-IF (window.frameKind & DESKTYPES.FRAME_FULLER)<>0
+      LET right=bounds.right-IF (frameKind & DESKTYPES.FRAME_FULLER)<>0
           THEN INT(DESKTYPES.FRAME_GADGET_WIDTH) ELSE INT(0) FI
       IF x>=right-DESKTYPES.FRAME_GADGET_WIDTH AND x<right THEN
         RETURN(8)
@@ -122,42 +135,48 @@ PUBLIC BYTE FUNC GadgetHit(DESKTYPES.Window POINTER window
     END
   FI
 
-  IF (window.frameKind & DESKTYPES.FRAME_FULLER)<>0
+  IF (frameKind & DESKTYPES.FRAME_FULLER)<>0
       AND x>=bounds.right-DESKTYPES.FRAME_GADGET_WIDTH AND x<bounds.right
       AND y>=bounds.top AND y<bounds.top+DESKTYPES.TITLE_HEIGHT THEN
     RETURN(7)
   FI
 
   IF x<bounds.right-DESKTYPES.FRAME_GADGET_WIDTH OR x>=bounds.right
-      OR y<bounds.top+Top(window.frameKind) OR y>=bounds.bottom THEN
+      OR y<bounds.top+Top(frameKind) OR y>=bounds.bottom THEN
     RETURN(0)
   FI
-  IF (window.frameKind & DESKTYPES.FRAME_SIZER)<>0
+  IF (frameKind & DESKTYPES.FRAME_SIZER)<>0
       AND y>=bounds.bottom-DESKTYPES.FRAME_GADGET_HEIGHT THEN
     RETURN(1)
   FI
-  IF (window.frameKind & DESKTYPES.FRAME_VERTICAL)=0
-      OR y>=bounds.bottom-Bottom(window.frameKind) THEN
+  IF (frameKind & DESKTYPES.FRAME_VERTICAL)=0
+      OR y>=bounds.bottom-Bottom(frameKind) THEN
     RETURN(0)
   FI
-  ScrollTrack(window,bounds,@rail)
+  BuildTrack(frameKind,bounds,@rail)
   IF y<rail.top THEN
     RETURN(2)
   FI
   IF y>=rail.bottom THEN
     RETURN(3)
   FI
-  IF (window.frameKind & DESKTYPES.FRAME_VSLIDE)=0 THEN
+  IF (frameKind & DESKTYPES.FRAME_VSLIDE)=0 THEN
     RETURN(0)
   FI
-  IF y<bounds.top+window.sliderTop THEN
+  IF y<bounds.top+sliderTop THEN
     RETURN(4)
   FI
-  IF y>=bounds.top+window.sliderTop+window.sliderHeight THEN
+  IF y>=bounds.top+sliderTop+sliderHeight THEN
     RETURN(5)
   FI
 
 RETURN(6)
+
+PUBLIC BYTE FUNC GadgetHit(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds INT x,y)
+
+RETURN(Gadget(window.frameKind,window.kind,window.iconified,
+    window.sliderTop,window.sliderHeight,bounds,x,y))
 
 PUBLIC BYTE FUNC TitleHit(LAYERTYPES.Rect POINTER bounds INT x,y)
 

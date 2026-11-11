@@ -104,7 +104,8 @@ RETURN(1)
 ; Query only on a notification; retained adoption stays runnable afterward.
 PUBLIC PROC Poll(BYTE notified)
 
-  IF notified<>0 AND CONSOLEBITMAP.Pending()<>0 THEN
+  IF (notified<>0 AND CONSOLEBITMAP.Pending()<>0)
+      OR CONSOLEBITMAP.Completed()<>0 THEN
     CONSOLEBITMAP.Poll()
     IF CONSOLEBITMAP.Pending()=0 THEN
       bitmapReady=1

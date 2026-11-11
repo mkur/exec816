@@ -172,14 +172,17 @@ arena and all stack/DP reservations stay in place. The effective origin is
 recorded in `memory.json` and `layout.json`;
 normal extent and bank-ownership checks still apply to the combined image.
 
-The text demo reserves an 8 KiB upper static arena for its composed application
-state, controller, session registry and resident literals. The SS8 standard and
-shell-only builds each use 8,144 of 8,192 bytes (48 spare). The standalone bitmap
-profile adds one 256-byte page, for 8,448 bytes. Desktop profiles reserve 9 KiB;
-the SS8 GEM desktop uses 8,578 of 9,216 bytes (638 spare). These capacities are
-selected by `tools/build_demo.py`; code placement remains page-aligned.
+The text demo reserves an 11 KiB upper static arena for its composed application
+state, controller, session registry, resident literals and scene/input buffers.
+The standalone bitmap profile adds one 256-byte page, for 11,520 bytes. Desktop
+profiles reserve 12 KiB. GF3 adds 3 KiB of arena capacity within the already owned
+upper kernel bank, with no additional bank or bank-zero reservation. The
+[GF3 record](../development/gem-first-gf3.json) reports actual composed usage.
+These capacities are selected by `tools/build_demo.py`; code placement remains
+page-aligned. The historical SS8 text and desktop images used 8,144/8,192 and
+8,578/9,216 bytes respectively.
 
-The opt-in text and bitmap/desktop SDX demos select a 12 KiB upper static arena
+The opt-in text and bitmap/desktop SDX demos select a 15 KiB upper static arena
 for the composed shell controller and guest service globals. They use the
 existing 544-byte guarded SDX direct-page pool described above, with no
 additional fixed or per-Task bank-zero growth beyond that enabled profile.

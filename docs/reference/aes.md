@@ -233,19 +233,25 @@ pending notices with the window epoch. These report accepted focus changes;
 `WM_TOPPED` remains a request for the application to raise its window.
 
 BEGIN/END UPDATE use the same native policy in either the caller or presenter.
-At a safe presenter boundary, the binding claims a private metadata gate and
-performs bounded acquisition/release synchronously. It releases that gate before
-application drawing; ordinary preemption remains enabled. An unavailable gate
-or blocking contention uses the original request/reply queue. MCTRL stays RPC.
+The binding enters a library scene gate and performs bounded acquisition/release
+synchronously. If another Task owns scene metadata, the caller sleeps on its
+existing reply signal and rechecks ownership after waking. It releases the gate
+before application drawing; ordinary preemption remains enabled. Logical UPDATE
+contention uses the original request/reply queue. MCTRL stays RPC.
 Local calls do not advance the transport sequence. An older unadmitted request
 also prevents a new BEGIN from bypassing pending work, with the same existing
 owner exception. TRY failure remains a completed zero result, not an error.
 
 Final local END consumes the binding's paint journal before returning and
-signals the existing AES wake bit. The presenter owns its whole policy turn;
-if preempting a caller inside policy, it parks on that bit rather than touching
-shared metadata. Gate transitions use short scheduling guards. Neither the
-bounded policy work nor application drawing runs under a new Forbid section.
+signals the existing AES wake bit. While a caller owns scene metadata, the
+presenter continues captured keyboard/pointer delivery through published routing
+snapshots and can retire a physical drawing fence. Window/control interpretation,
+cache work and scene commits resume after admission. Message and timer waits
+remain independent. Physical completion preserves the logical drawing transaction
+until the presenter can commit its result; it does not publish new geometry.
+The scene gate is released before physical drawing calls, route resource calls
+and widget callbacks. Gate transitions and snapshot publication use short
+scheduling guards; scene metadata work remains preemptible.
 
 `ExecAESBeginUpdate(window)` acquires the same UPDATE lock but scopes change
 tracking, repaint obligations and cache holds to one caller-owned window. End

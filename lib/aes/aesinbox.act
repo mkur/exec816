@@ -71,9 +71,8 @@ RETURN
 
 ; Loss is durable outside the FIFO. Never overwrite a caller's frozen sample.
 ; Exhausted source epochs remain stopped until a new window lifetime opens.
-PUBLIC PROC Lost(AESSTATE.Client POINTER client CARD sources)
+PUBLIC PROC LostEndpoint(AESTYPES.Endpoint POINTER endpoint CARD sources)
 
-  LET endpoint=client.endpoint
   LET inbox=endpoint.input
   EXEC.Forbid()
   IF endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING OR inbox.windowEpoch=0 THEN
@@ -109,14 +108,19 @@ PUBLIC PROC Lost(AESSTATE.Client POINTER client CARD sources)
 
 RETURN
 
+PUBLIC PROC Lost(AESSTATE.Client POINTER client CARD sources)
+
+  LostEndpoint(client.endpoint,sources)
+
+RETURN
+
 ; Return zero when closed/lost or when this publication establishes overflow.
-PUBLIC BYTE FUNC Publish(AESSTATE.Client POINTER client CARD source
+PUBLIC BYTE FUNC PublishEndpoint(AESTYPES.Endpoint POINTER endpoint CARD source
     AESTYPES.InputRecord POINTER sample)
   BYTE head,tail
   LONGCARD epoch
   AESTYPES.InputRecord POINTER target
 
-  LET endpoint=client.endpoint
   LET inbox=endpoint.input
   EXEC.Forbid()
   IF endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING OR inbox.windowEpoch=0
@@ -139,7 +143,7 @@ PUBLIC BYTE FUNC Publish(AESSTATE.Client POINTER client CARD source
 
   IF BYTE(tail-head)=AESTYPES.INPUT_SLOTS THEN
     EXEC.Permit()
-    Lost(client,source)
+    LostEndpoint(endpoint,source)
     RETURN(0)
   FI
 
@@ -160,13 +164,17 @@ PUBLIC BYTE FUNC Publish(AESSTATE.Client POINTER client CARD source
 
 RETURN(1)
 
+PUBLIC BYTE FUNC Publish(AESSTATE.Client POINTER client CARD source
+    AESTYPES.InputRecord POINTER sample)
+
+RETURN(PublishEndpoint(client.endpoint,source,sample))
+
 ; Wake motion interests only for a changed eligible snapshot. The caller owns
 ; rectangle matching; button edges keep their separate retained FIFO.
-PUBLIC PROC Snapshot(AESSTATE.Client POINTER client
+PUBLIC PROC SnapshotEndpoint(AESTYPES.Endpoint POINTER endpoint
     AESTYPES.InputRecord POINTER sample CARD eligible)
   BYTE notify
 
-  LET endpoint=client.endpoint
   LET inbox=endpoint.input
   EXEC.Forbid()
   IF endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING THEN
@@ -194,6 +202,13 @@ PUBLIC PROC Snapshot(AESSTATE.Client POINTER client
   FI
 
   EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC Snapshot(AESSTATE.Client POINTER client
+    AESTYPES.InputRecord POINTER sample CARD eligible)
+
+  SnapshotEndpoint(client.endpoint,sample,eligible)
 
 RETURN
 ENDMODULE

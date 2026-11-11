@@ -52,17 +52,17 @@ PUBLIC CARD FUNC Translate(BYTE code)
 
 RETURN((CARD(scans(index)) LSH 8) OR CARD(value))
 
-PUBLIC PROC Key(AESSTATE.Client POINTER client INPUT.Event POINTER captured
+PUBLIC PROC KeyEndpoint(AESTYPES.Endpoint POINTER endpoint INPUT.Event POINTER captured
     AESTYPES.InputRecord POINTER sample)
   CARD key
   BYTE accepted
 
-  IF client.endpoint.input.windowEpoch=0 THEN
+  IF endpoint.input.windowEpoch=0 THEN
     RETURN
   FI
 
   IF captured.kind=INPUT.EVENT_LOSS THEN
-    AESINBOX.Lost(client,AESTYPES.INPUT_KEY)
+    AESINBOX.LostEndpoint(endpoint,AESTYPES.INPUT_KEY)
     RETURN
   FI
 
@@ -77,8 +77,15 @@ PUBLIC PROC Key(AESSTATE.Client POINTER client INPUT.Event POINTER captured
   IF key<>0 THEN
     sample.key=INT(key)
     sample.qualifiers=Qualifiers(captured.qualifiers)
-    accepted=AESINBOX.Publish(client,AESTYPES.INPUT_KEY,sample)
+    accepted=AESINBOX.PublishEndpoint(endpoint,AESTYPES.INPUT_KEY,sample)
   FI
+
+RETURN
+
+PUBLIC PROC Key(AESSTATE.Client POINTER client INPUT.Event POINTER captured
+    AESTYPES.InputRecord POINTER sample)
+
+  KeyEndpoint(client.endpoint,captured,sample)
 
 RETURN
 ENDMODULE

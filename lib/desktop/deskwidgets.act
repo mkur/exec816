@@ -1,6 +1,7 @@
 ; Retained AES contexts and ordinary-call binding, owned by the presenter.
 MODULE DESKWIDGETS
 USE EXEC
+USE AESGATE
 USE A816MEMORY
 USE DESKEVENTS
 USE TASKMEMORY
@@ -39,7 +40,9 @@ PUBLIC PROC Run(CARD operation)
   packet.status=WIDGETTYPES.BAD_ARGUMENT
   packet.changed=0
   packet.damageCount=0
+  LET held=AESGATE.Suspend()
   CONSOLEBITMAP.Call(entry)
+  AESGATE.Resume(held)
 
 RETURN
 

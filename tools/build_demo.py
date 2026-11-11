@@ -14,8 +14,8 @@ from library_paths import read_source
 from launch_demo import write_launcher
 from native_program import ROOT, build, compiler, read_build, require, sha256
 
-DEMO_IMAGE_DATA_BYTES = 8192
-SDX_DEMO_IMAGE_DATA_BYTES = 12288
+DEMO_IMAGE_DATA_BYTES = 11264
+SDX_DEMO_IMAGE_DATA_BYTES = 15360
 WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
 IDE_DEMO_NOTE = ('\nThis development build also requires IDE Plus 2.0 rev E, PBI ID 0,\n'
@@ -208,8 +208,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     # Bound shell/client globals and shared static buffers in upper RAM.
     from generate_memory import PROFILE
     profile=json.loads(PROFILE.read_text())
-    # Prompt completion adds resident literals and native editor code. Keep the
-    # shared data arena page-aligned, with existing variant-specific headroom.
+    # Scene routing snapshots and deferred input add bounded static buffers.
+    # Keep the arena page-aligned, with variant-specific composition headroom.
     # This is upper-bank capacity; Task/DP and bank-zero reservations are unchanged.
     profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES+(1024 if desktop else
         256 if bitmap_shell_only else 0)

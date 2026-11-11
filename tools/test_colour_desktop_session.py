@@ -222,7 +222,13 @@ class ColourDesktop:
         x,y,w,h=work(second);click(x+w+8,y+h-8)
         require(s.number(second+F['first'],2)>0,'Second folder did not scroll')
         shot('desktop-two-folders')
-        desk_menu(4);s.frames(200)
+        launch_start=b.eval_expr('@frame')
+        desk_menu(4)
+        # Program loading performs real SIO before publishing the child. Wait
+        # for that publication within the session's existing bounded rendezvous.
+        child_at=desk+D['children']
+        s.rendezvous('(dw($%x)!=0)|(dw($%x)!=0)'%(child_at,child_at+2))
+        launch_frames=b.eval_expr('@frame')-launch_start
         child=s.number(desk+D['children'],4);require(child,'Counter launch failed')
         counter=symbols(b,s.p,directory,'counter',child)['GEMCounter']
         s.rendezvous('dw($%x)=1'%(counter+12));before=s.number(counter+14,4)
@@ -245,7 +251,8 @@ class ColourDesktop:
             exercise(s,desk,first,click,key,fill,path,desk_menu,shot)
         self.report=s.saved['colour_desktop']=dict(multiple_windows=True,shared_application=True,
             independent_trees=True,independent_paths=True,resize=True,full_restore=True,scroll=True,persistent_background=True,background_selection=True,
-            independent_launch_lifetime=True,windows_menu=True,files=s.saved.get('colour_files'),
+            independent_launch_lifetime=True,counter_launch_frames=launch_frames,
+            windows_menu=True,files=s.saved.get('colour_files'),
             stacks=stack_usage(b,s.p['build']['memory']))
         menus.select('Shell');s.command('HELLO',b'Hello from disk!')
         shot('desktop-shell')

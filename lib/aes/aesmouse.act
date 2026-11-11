@@ -1,16 +1,15 @@
 ; Presenter-only physical gesture ownership, independent of display borrowing.
 MODULE AESMOUSE
+USE EXEC
 USE INPUT
 USE A816MEMORY
 USE AESTYPES
 USE AESSTATE
+USE AESSNAPSHOT
 USE AESINBOX
 USE AESKEYS
-USE AESWINDOWSTATE
-USE DESKSTATE
 USE DESKTYPES
 USE DESKGEOMETRY
-USE LAYERS
 
 CONST NATIVE=1, TITLE=2
 LONGCARD owner,openEpoch,ownerWindow
@@ -20,6 +19,7 @@ LONGCARD clickOwner,clickEpoch
 CARD clickTick
 INT clickX,clickY
 BYTE clickCount
+AESSNAPSHOT.WindowRoute capturedRoute
 
 PUBLIC PROC Reset()
 
@@ -40,14 +40,24 @@ RETURN
 ; A lock cannot transfer a physical sequence. Released deferred native work
 ; is not ownership: an update owner must still be able to upgrade or unlock.
 PUBLIC BYTE FUNC LockReady(LONGCARD client)
+  BYTE ready
 
-RETURN(latest.buttons=0 OR (owner=client AND owner<>0))
+  EXEC.Forbid()
+  ready=(latest.buttons=0 OR (owner=client AND owner<>0))
+  EXEC.Permit()
+
+RETURN(ready)
 
 ; Work capture routes input independently of another client's short painting
 ; scope. Unreleased native gestures and release-rearm still exclude admission.
 PUBLIC BYTE FUNC UpdateReady(LONGCARD client)
+  BYTE ready
 
-RETURN(LockReady(client)<>0 OR (owner<>0 AND needRelease=0 AND manager=0))
+  EXEC.Forbid()
+  ready=(LockReady(client)<>0 OR (owner<>0 AND needRelease=0 AND manager=0))
+  EXEC.Permit()
+
+RETURN(ready)
 
 ; Presenter-only access for a visual attached to the existing physical capture.
 PUBLIC BYTE FUNC DragReady(LONGCARD client,epoch)
@@ -107,93 +117,93 @@ PUBLIC PROC Retained()
 
 RETURN
 
-PUBLIC PROC Refresh()
-  BYTE index
+PUBLIC PROC RefreshSnapshot()
+  BYTE index,selected
   CARD eligible
-  AESSTATE.Window POINTER item
+  AESSNAPSHOT.WindowRoute route
   AESTYPES.InputRecord snapshot
 
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    ; Selection, latest sample and inbox publication form one bounded read.
+    ; A caller can refresh lock eligibility without overwriting newer capture.
+    EXEC.Forbid()
+    IF AESSNAPSHOT.Default(index,@route)<>0 THEN
+      BEGIN
+        IF owner=route.client AND owner<>0 THEN
+          AESSNAPSHOT.Drop(route.endpoint)
+          route.endpoint=NULL
+          selected=AESSNAPSHOT.Select(AESSNAPSHOT.WINDOW_ID,ownerWindow,0,0,@route)
+        FI
+        IF route.endpoint<>NULL THEN
+          A816MEMORY.Move(BYTE POINTER(@snapshot),BYTE POINTER(@latest),
+              AESTYPES.INPUTRECORD_SIZE)
+          snapshot.window=route.handle
+          snapshot.windowEpoch=route.epoch
+          eligible=(route.epoch<>0 AND needRelease=0 AND manager=0
+              AND nativePending=0)
+          IF owner<>0 THEN
+            eligible=eligible AND owner=route.client
+          ELSE
+            eligible=eligible AND AESSNAPSHOT.Eligible(route.client,latest.buttons)
+          FI
+          AESINBOX.SnapshotEndpoint(route.endpoint,@snapshot,eligible)
+          AESSNAPSHOT.Drop(route.endpoint)
+        FI
+      END
+    FI
+    EXEC.Permit()
+  OD
+
+RETURN
+
+; Scene changes publish routing before refreshing caller-owned inboxes. Input
+; capture uses RefreshSnapshot alone and never reads the mutable window table.
+PUBLIC PROC Refresh()
+
   LET service=AESSTATE.Get()
-  LET desktop=DESKSTATE.Get()
-  IF service=NULL OR service.live=0 OR desktop=NULL THEN
+  IF service=NULL OR service.live=0 THEN
     RETURN
   FI
+  EXEC.Forbid()
   IF service.pointerCount=0 AND nativePending<>0 THEN
     nativePending=0
     AESSTATE.mouseDirty=1
   FI
-  IF AESSTATE.mouseDirty=0 THEN
+  EXEC.Permit()
+  LET changed=AESSNAPSHOT.Publish()
+  IF changed=0 AND AESSTATE.mouseDirty=0 THEN
     RETURN
   FI
   AESSTATE.mouseDirty=0
-  FOR index=0 TO AESTYPES.CLIENTS-1 DO
-    BEGIN
-      LET client=@service.clients(index)
-      IF client.id<>0 AND client.endpoint<>NULL THEN
-        eligible=0
-        item=NULL
-        IF owner=client.id THEN
-          item=AESWINDOWSTATE.FindRecord(ownerWindow)
-        ELSEIF service.mouseHolds<>0 AND service.mouseOwner=client.id THEN
-          IF client.binding.view<>NULL THEN
-            item=AESWINDOWSTATE.Handle(client,client.binding.view.handle)
-          FI
-        ELSE
-          item=AESWINDOWSTATE.FindRecord(desktop.focus)
-          IF item<>NULL AND item.owner<>client.id THEN
-            item=NULL
-          FI
-        FI
-        A816MEMORY.Move(BYTE POINTER(@snapshot),BYTE POINTER(@latest),AESTYPES.INPUTRECORD_SIZE)
-        snapshot.window=0
-        snapshot.windowEpoch=0
-        IF item<>NULL THEN
-          snapshot.window=item.gui.window
-          snapshot.windowEpoch=item.view.epoch
-          IF item.view.epoch<>0 AND (client.endpoint.input.loss & AESTYPES.INPUT_BUTTON)=0
-              AND needRelease=0 AND manager=0 AND nativePending=0
-              AND DESKSTATE.menuActive=0 THEN
-            IF owner<>0 THEN
-              eligible=owner=client.id
-            ELSEIF service.mouseHolds<>0 THEN
-              eligible=service.mouseOwner=client.id
-            ELSE
-              eligible=latest.buttons=0
-            FI
-          FI
-        FI
-        AESINBOX.Snapshot(client,@snapshot,eligible)
-      FI
-    END
-  OD
+  RefreshSnapshot()
+
 RETURN
 
 PUBLIC PROC Lost()
   BYTE index
+  AESSNAPSHOT.WindowRoute route
 
-  LET service=AESSTATE.Get()
   AESSTATE.mouseDirty=1
   owner=0
   openEpoch=0
   clickCount=0
   manager=0
   needRelease=1
-  IF service<>NULL AND service.live<>0 THEN
-    FOR index=0 TO AESTYPES.CLIENTS-1 DO
-      IF service.clients(index).id<>0 THEN
-        AESINBOX.Lost(@service.clients(index),AESTYPES.INPUT_BUTTON)
-      FI
-    OD
-  FI
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    IF AESSNAPSHOT.Default(index,@route)<>0 THEN
+      AESINBOX.LostEndpoint(route.endpoint,AESTYPES.INPUT_BUTTON)
+      AESSNAPSHOT.Drop(route.endpoint)
+    FI
+  OD
 
 RETURN
 
-BYTE FUNC Publish(AESSTATE.Client POINTER client INPUT.Event POINTER sample)
+BYTE FUNC Publish(AESTYPES.Endpoint POINTER endpoint INPUT.Event POINTER sample)
 
-  Refresh()
+  RefreshSnapshot()
   IF sample.kind=INPUT.EVENT_BUTTON THEN
-    IF AESINBOX.Publish(client,AESTYPES.INPUT_BUTTON,@latest)=0 THEN
-      Cancel(client.id)
+    IF AESINBOX.PublishEndpoint(endpoint,AESTYPES.INPUT_BUTTON,@latest)=0 THEN
+      Cancel(owner)
       RETURN(0)
     FI
   FI
@@ -202,11 +212,9 @@ RETURN(1)
 
 ; Fresh normalized capture only. Return one for application/excluded sequences,
 ; zero for the native path, which may retain the sample under a GUI lock.
-PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
+BYTE FUNC RouteSample(INPUT.Event POINTER sample)
   CARD previous
   BYTE accepted
-  AESSTATE.Client POINTER client
-  AESSTATE.Window POINTER item
 
   IF sample.kind=INPUT.EVENT_LOSS THEN
     Lost()
@@ -214,6 +222,7 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
   FI
 
   AESSTATE.mouseDirty=1
+  EXEC.Forbid()
   previous=latest.buttons
   latest.x=sample.x
   latest.y=sample.y
@@ -221,6 +230,7 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
   IF sample.kind=INPUT.EVENT_BUTTON THEN
     latest.qualifiers=AESKEYS.Qualifiers(sample.qualifiers)
   FI
+  EXEC.Permit()
 
   IF needRelease<>0 THEN
     IF latest.buttons=0 THEN
@@ -232,29 +242,24 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
     RETURN(1)
   FI
 
-  LET service=AESSTATE.Get()
-  IF service=NULL OR service.live=0 THEN
-    RETURN(0)
-  FI
-
   IF owner<>0 THEN
-    client=AESSTATE.Find(service,owner)
-    item=AESWINDOWSTATE.FindRecord(ownerWindow)
-    IF client=NULL OR item=NULL OR item.view.epoch<>openEpoch THEN
+    IF AESSNAPSHOT.Select(AESSNAPSHOT.WINDOW_ID,ownerWindow,0,0,@capturedRoute)=0
+        OR capturedRoute.client<>owner OR capturedRoute.epoch<>openEpoch THEN
       owner=0
       openEpoch=0
       needRelease=latest.buttons<>0
       RETURN(1)
     FI
 
-    accepted=Publish(client,sample)
+    accepted=Publish(capturedRoute.endpoint,sample)
     IF latest.buttons=0 THEN
+      EXEC.Forbid()
       AESSTATE.mouseDirty=1
       owner=0
       openEpoch=0
       needRelease=0
+      EXEC.Permit()
     FI
-
     RETURN(1)
   FI
 
@@ -276,46 +281,32 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
     RETURN(1)
   FI
 
-  client=NULL
-  item=NULL
-  LET desktop=DESKSTATE.Get()
-  IF nativePending=0 AND DESKSTATE.menuActive=0 THEN
-    IF service.mouseHolds<>0 THEN
-      client=AESSTATE.Find(service,service.mouseOwner)
-      IF client.binding.view<>NULL THEN
-        item=AESWINDOWSTATE.Handle(client,client.binding.view.handle)
-      FI
-      IF item=NULL OR item.view.epoch=0 THEN
-        needRelease=1
-        RETURN(1)
-      FI
-    ELSE
-      BEGIN
-        LET layer=LAYERS.Hit(@desktop.scene,sample.x,sample.y)
-        LET window=AESWINDOWSTATE.FindWindow(layer)
-        IF desktop.focus=window AND window<>0 THEN
-          item=AESWINDOWSTATE.FindRecord(window)
-          client=AESWINDOWSTATE.Find(window)
-          IF client<>NULL THEN
-            BEGIN
-              LET work=@item.view.work
-              IF sample.x<work.left OR sample.x>=work.right
-                  OR sample.y<work.top OR sample.y>=work.bottom THEN
-                client=NULL
-              FI
-            END
-          FI
-        FI
-      END
+  accepted=0
+  IF nativePending=0 THEN
+    accepted=AESSNAPSHOT.Select(AESSNAPSHOT.POINTER_HIT,0,sample.x,sample.y,
+        @capturedRoute)
+    ; Windowless explicit MCTRL excludes input without creating native work.
+    ; Its copied default has a client identity and no open window epoch.
+    IF accepted<>0 AND capturedRoute.client<>0 AND capturedRoute.epoch=0 THEN
+      needRelease=1
+      RETURN(1)
     FI
   FI
 
-  IF client<>NULL AND client.endpoint.input.windowEpoch<>0 THEN
-    owner=client.id
-    openEpoch=item.view.epoch
-    ownerWindow=item.window.id
-    latest.window=item.gui.window
+  IF accepted<>0 AND capturedRoute.endpoint<>NULL
+      AND capturedRoute.client<>0
+      AND capturedRoute.epoch<>0 AND capturedRoute.iconified=0
+      AND sample.x>=capturedRoute.work.left
+      AND sample.x<capturedRoute.work.right
+      AND sample.y>=capturedRoute.work.top
+      AND sample.y<capturedRoute.work.bottom THEN
+    EXEC.Forbid()
+    owner=capturedRoute.client
+    openEpoch=capturedRoute.epoch
+    ownerWindow=capturedRoute.window
+    latest.window=capturedRoute.handle
     latest.windowEpoch=openEpoch
+    EXEC.Permit()
     ; Count at capture time, not after queue or repaint latency. First clicks
     ; remain immediate. The fixed 25-VBI interval is 500ms PAL / 417ms NTSC.
     IF clickCount=1 AND clickOwner=owner AND clickEpoch=openEpoch
@@ -334,24 +325,28 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
     clickTick=sample.tick
     clickX=sample.x
     clickY=sample.y
-    accepted=Publish(client,sample)
+    accepted=Publish(capturedRoute.endpoint,sample)
     RETURN(1)
   FI
 
   clickCount=0
   manager=NATIVE
-  BEGIN
-    LET layer=LAYERS.Find(@desktop.scene,
-        LAYERS.Hit(@desktop.scene,sample.x,sample.y))
-    IF layer<>NULL AND AESWINDOWSTATE.FindWindow(layer.id)<>0 THEN
-      item=AESWINDOWSTATE.FindRecord(AESWINDOWSTATE.FindWindow(layer.id))
-      IF item<>NULL AND item.window.frameKind<>DESKTYPES.FRAME_BORDERLESS
-          AND (DESKGEOMETRY.TitleHit(@layer.bounds,sample.x,sample.y)<>0
-          OR DESKGEOMETRY.GadgetHit(item.window,@layer.bounds,sample.x,sample.y)<>0) THEN
-        manager=TITLE
-      FI
-    FI
-  END
+  IF capturedRoute.kind=DESKTYPES.CONTENT_AES AND capturedRoute.frameKind<>
+      DESKTYPES.FRAME_BORDERLESS AND
+      (DESKGEOMETRY.TitleHit(@capturedRoute.bounds,sample.x,sample.y)<>0
+      OR DESKGEOMETRY.Gadget(capturedRoute.frameKind,capturedRoute.kind,
+        capturedRoute.iconified,capturedRoute.sliderTop,
+        capturedRoute.sliderHeight,@capturedRoute.bounds,sample.x,sample.y)<>0) THEN
+    manager=TITLE
+  FI
 
 RETURN(0)
+
+PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
+
+  A816MEMORY.Clear(BYTE POINTER(@capturedRoute),SIZEOF(AESSNAPSHOT.WindowRoute))
+  LET handled=RouteSample(sample)
+  AESSNAPSHOT.Drop(capturedRoute.endpoint)
+
+RETURN(handled)
 ENDMODULE

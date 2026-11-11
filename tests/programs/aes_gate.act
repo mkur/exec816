@@ -13,9 +13,10 @@ EXEC.Task presenter,peer
 EXEC.Task POINTER parent
 PROC POINTER missing()
 AESSTATE.Service POINTER service
-CARD checks
+CARD checks,serviceBytes
 VOLATILE CARD progress
 VOLATILE BYTE finished
+VOLATILE LONGCARD capturedBits
 VOLATILE CARD ticks=E816_VBI_COUNT
 INCLUDE "tasks_exec_helpers.inc"
 
@@ -37,11 +38,22 @@ PROC PeerEntry()
 
 RETURN
 
+; Exercise the new deferred native callback's complete 32-bit argument.
+PROC Deferred(LONGCARD bits)
+
+  IF bits<>0 THEN
+    capturedBits=capturedBits OR bits
+    EXEC.Signal(parent,$10000)
+  FI
+
+RETURN
+
 PROC PresenterEntry()
 
   EXEC.AllocSignal(16)
   EXEC.AllocSignal(17)
   EXEC.AllocSignal(18)
+  EXEC.AllocSignal(30)
   ; Failed admission returns with the caller's scene untouched and the wake
   ; obligation published. Pending input cannot turn the explicit wait into spin.
   EXEC.SetSignal($40000,$40000)
@@ -50,9 +62,7 @@ PROC PresenterEntry()
   Require(service.policyWaiting=1)
   LET self=EXEC.FindTask(NULL)
   Require(self.tc_TDNestCnt=$ff)
-  WHILE AESGATE.TryOwner()=0 DO
-    EXEC.Wait(service.mask)
-  OD
+  AESGATE.Reclaim()
   Require(service.policyGate=AESGATE.CLOSED)
   Require((EXEC.SetSignal(0,0) & $40000)<>0)
   Require(AESGATE.Claim()=0)
@@ -87,20 +97,22 @@ PROC Main()
   EXEC.AllocSignal(16)
   Require(AESGATE.TryOwner()=1)
   LET available=EXEC.AvailMem(0)
-  service=AESSTATE.Service POINTER(EXEC.AllocMem(LONGCARD(SIZEOF(AESSTATE.Service)),
+  serviceBytes=SIZEOF(AESSTATE.Service)
+  service=AESSTATE.Service POINTER(EXEC.AllocMem(LONGCARD(serviceBytes),
       EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
   Require(service<>NULL)
   AESSTATE.Bind(service)
   service.owner=@presenter
   service.mask=$10000
+  AESGATE.Configure(ADDRESS(@Deferred),$40000000)
   Require(AESGATE.Claim()=0)
-  AESGATE.Offer(1)
+  AESGATE.Offer()
   Require(AESGATE.Claim()=0)
   service.live=1
   ; Retained work and shutdown publish closed even with an otherwise live AES.
-  AESGATE.Offer(0)
+  Require(AESGATE.TryOwner()=1)
   Require(AESGATE.Claim()=0)
-  AESGATE.Offer(1)
+  AESGATE.Offer()
   EXEC.Forbid()
   EXEC.Forbid()
   Require(AESGATE.Claim()=1)
@@ -119,7 +131,17 @@ PROC Main()
   WHILE service.policyWaiting=0 DO
     EXEC.Yield()
   OD
+  WHILE presenter.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
   Require(presenter.tc_State=EXEC.TS_WAIT)
+  EXEC.Signal(@presenter,$40000000)
+  EXEC.Wait($10000)
+  WHILE presenter.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+  Require(capturedBits=$40000000)
+  Require(service.policyGate=AESGATE.CALLER)
   LET before=progress
   LET start=ticks
   ; Natural VBI preemption while the caller owns policy, without Forbid.
@@ -132,7 +154,7 @@ PROC Main()
   EXEC.Wait($10000)
   Require(service.policyWaiting=0)
   EXEC.Forbid()
-  AESGATE.Offer(1)
+  AESGATE.Offer()
   Require(AESGATE.Claim()=1)
   Require(parent.tc_TDNestCnt=0)
   EXEC.Signal(@presenter,$20000)
@@ -150,7 +172,7 @@ PROC Main()
   EXEC.Wait($10000)
   Require(service.policyGate=AESGATE.CLOSED)
   EXEC.Forbid()
-  AESGATE.Offer(1)
+  AESGATE.Offer()
   Require(AESGATE.Claim()=1)
   AESGATE.Release(0)
   Require(service.policyWaiting=0)
@@ -163,10 +185,10 @@ PROC Main()
     EXEC.Yield()
   OD
   service.live=0
-  AESGATE.Offer(1)
+  AESGATE.Offer()
   Require(AESGATE.Claim()=0)
   AESSTATE.Bind(NULL)
-  EXEC.FreeMem(BYTE POINTER(service),LONGCARD(SIZEOF(AESSTATE.Service)))
+  EXEC.FreeMem(BYTE POINTER(service),LONGCARD(serviceBytes))
   Require(EXEC.AvailMem(0)=available)
 
 RETURN

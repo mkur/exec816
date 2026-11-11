@@ -3,6 +3,7 @@ MODULE AESWINDOWSTATE
 USE EXEC
 USE AESTYPES
 USE AESSTATE
+USE AESSNAPSHOT
 USE AESGUI
 USE DESKTYPES
 USE DESKSTATE
@@ -135,6 +136,7 @@ RETURN
 
 PUBLIC PROC Geometry(AESSTATE.Window POINTER client BYTE copied)
 
+  AESSNAPSHOT.Invalidate()
   LET desktop=DESKSTATE.Get()
   LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
   DESKGEOMETRY.Slider(client.window,@layer.bounds,

@@ -3,6 +3,7 @@ MODULE CONSOLEDRIVER
 USE EXEC
 USE AESHOST
 USE AESGATE
+USE AESDEFER
 USE AESLOCKS
 USE TASKSTACKS
 USE A816MEMORY
@@ -630,6 +631,8 @@ PUBLIC PROC Worker()
   displayMask=CONSOLEBITMAP.Mask()
   LET desktopMask=DESKHOST.Mask()
   LET aesMask=AESHOST.Mask()
+  AESGATE.Configure(ADDRESS(@AESDEFER.Pump),
+      CONSOLECAPTURE.WAKE_MASK OR DESKINPUT.Mask() OR displayMask)
   EXEC.Forbid()
   IF service.stop=0 THEN
     service.state=2
@@ -646,11 +649,8 @@ PUBLIC PROC Worker()
   handoff=0
   ; Stop may be requested after the final write reply but before DMA retires.
   DO
-    ; Admission never sleeps or grants scene access on failure. Until the
-    ; independent input/event phase is split out, defer this turn at its edge.
-    WHILE AESGATE.TryOwner()=0 DO
-      EXEC.Wait(aesMask)
-    OD
+    AESGATE.Reclaim()
+    DESKINPUT.ReplayKeys()
     IF service.stop<>0 AND CONSOLEBITMAP.Pending()=0
         AND batch.phase=CONSOLETYPES.BATCH_IDLE THEN
       EXIT
@@ -869,7 +869,7 @@ PUBLIC PROC Worker()
 
       policyReady=stopping=0 AND service.stop=0 AND AESLOCKS.NativeReady()<>0
     FI
-    AESGATE.Offer(policyReady)
+    AESGATE.Offer()
     ; No shared-state hints after publication: schedule or reclaim next turn.
     IF schedule=1 THEN
       EXEC.Yield()

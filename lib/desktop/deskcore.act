@@ -19,6 +19,7 @@ USE DESKCACHE
 USE DESKEVENTS
 USE DESKWIDGETS
 USE DESKSTATE
+USE DESKROUTES
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
@@ -198,8 +199,8 @@ PUBLIC PROC CommitFocus(DESKTYPES.Service POINTER service LONGCARD id)
     FI
   FI
 
-  AESMOUSE.Refresh()
   EXEC.Permit()
+  AESMOUSE.Refresh()
   FOR index=0 TO DESKTYPES.CLIENTS-1 DO
     IF service.clients(index).id<>0 THEN
       DESKEVENTS.Wake(service,@service.clients(index))
@@ -387,7 +388,7 @@ CARD FUNC Open(DESKTYPES.Service POINTER service
         LET window=@service.windows(slot)
         route=0
         IF request.value<>DESKTYPES.CONTENT_CONSOLE AND service.keyboard<>NULL THEN
-          inputStatus=INPUT.CreateRoute(INPUT.Lease POINTER(service.keyboard),0,
+          inputStatus=DESKROUTES.Create(INPUT.Lease POINTER(service.keyboard),0,
               @route)
           IF inputStatus<>INPUT.OK THEN
             RETURN(DESKTYPES.FULL)
@@ -396,7 +397,7 @@ CARD FUNC Open(DESKTYPES.Service POINTER service
 
         status=LAYERS.Create(@service.scene,@request.bounds,@window.layer)
         IF status<>LAYERTYPES.OK THEN
-          IF route<>0 AND INPUT.RetireRoute(
+          IF route<>0 AND DESKROUTES.Retire(
               INPUT.Lease POINTER(service.keyboard),route)<>INPUT.OK THEN
             HEAPCORE.Abort($fae9)
           FI
@@ -658,7 +659,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
 
       IF window.keyRoute<>0 THEN
         inputStatus=INPUT.Discard(INPUT.Lease POINTER(service.keyboard),window.keyRoute)
-        inputStatus=INPUT.RetireRoute(INPUT.Lease POINTER(service.keyboard),window.keyRoute)
+        inputStatus=DESKROUTES.Retire(INPUT.Lease POINTER(service.keyboard),window.keyRoute)
         IF inputStatus<>INPUT.OK THEN
           HEAPCORE.Abort($fae9)
         FI
