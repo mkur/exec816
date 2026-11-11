@@ -227,6 +227,10 @@ void GemVdiPaint(void *context)
     struct ExecVDIUnit *u=context;
     UWORD i,first=0,count=0;
     WORD x=u->x,middle=0;
+    if (u->count && ((UWORD)u->glyphs[0]&0xff00)==EXEC_VDI_ATASCII_BASE) {
+        extern void GemVdiAtasciiPaint(void *);
+        GemVdiAtasciiPaint(u);return;
+    }
     /* The admitted intersection lies inside this bounded text chunk. Skip
      * hidden cells arithmetically, then pack only its complete middle. */
     first=(UWORD)(u->left-x)>>3;

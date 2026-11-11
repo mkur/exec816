@@ -1,0 +1,51 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GF11-terminal-glyph-page",
+  "sources": {
+    "abi/vdi-client.json": "5e7ed873c31bb53b187eba3d9b9619b08e0eef165ee75213b6fc4f3fa05bbd65",
+    "c/calypsi/layout.scm": "52f25aca43720b54829e81ec3456f0735ae3d225974aeda7f5a72b674c8ef6e7",
+    "c/calypsi/vdi.c": "3f9b4db51decfb13bff3f93e1cfc95ae4aec213f2f518a4a8a4fa7c50a2a15c8",
+    "c/include/exec816/vdi-unit.h": "5c4f883f605a9621780a1cccb2e037a42b604ef575e3314219d83c6b502105fe",
+    "ports/gem4xe/adapter/gem-vbxe.c": "65e36ebb8d49bbda02e7ac95bc258c49d290c23b4a1d6c6e7bdbd0337cc3506d",
+    "ports/gem4xe/hosted/hosted-dispatch.inc": "64b1326b6509b0744e0edd4cba842672e2b0963f0ca48ab5d79ea0e0714494e0",
+    "tests/programs/aes_vdi.c": "2f8bfa59f121db40338affa0b5c7dafca61d52b3a96518d85650ab6cbac2b860",
+    "tools/test_vdi_client.py": "d9d4cff6082dfb04612b0dd94802dab404087712929885cf9f0209132adaac34",
+    "tools/calypsi_image.py": "4639254f25564447e003f9ec42551a5d9b66833b4b0894c6389c5374a7bc896b",
+    "tests/test_calypsi_image.py": "87c00945cf23ce1d56ff8dbff9104b101cbd698063a572f28e28dac201e3fe58"
+  },
+  "artifact": {
+    "path": "build/gem-first-gui/gf11/vdi-atascii-stack/results.json",
+    "sha256": "52b621fb7ab959bb6ba53cfe03683aa06e3bec8672cd053b10d6e7f23b8f6b51"
+  },
+  "checks": 717,
+  "scope": "All 256 ROM terminal glyphs at odd X and clipped edges; mixed GEM/terminal word text; existing VDI corpus; full stack/domain guards. Existing read-only/code banks share packing, writable foreign data remains rejected.",
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "upper_shared_scratch_bytes": 80,
+  "added_tasks": 0,
+  "vram_reserved_delta": 0,
+  "host_checks": {
+    "tests": 692,
+    "skipped": 4
+  }
+}

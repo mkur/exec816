@@ -1,7 +1,7 @@
 {
   "abi": "exec816.vdi-client",
-  "version": 3,
-  "constants": {"PHYSICAL": 1, "VIRTUAL": 2, "WIDTH": 640, "HEIGHT": 240, "FONT_WIDTH": 8, "FONT_HEIGHT": 8, "FONT_TOP": 6, "TEXT_CHUNK": 80, "STRIP_ROWS": 16, "REPLACE": 1, "TRANS": 2, "COPY_DONE": 1, "COPY_REDRAW": 0, "COPY_ERROR": -1},
+  "version": 4,
+  "constants": {"PHYSICAL": 1, "VIRTUAL": 2, "WIDTH": 640, "HEIGHT": 240, "FONT_WIDTH": 8, "FONT_HEIGHT": 8, "FONT_TOP": 6, "TEXT_CHUNK": 80, "STRIP_ROWS": 16, "REPLACE": 1, "TRANS": 2, "COPY_DONE": 1, "COPY_REDRAW": 0, "COPY_ERROR": -1, "ATASCII_BASE": 57344},
   "unit": [
     ["operation", "UWORD"],
     ["textColor", "UWORD"],

@@ -755,6 +755,41 @@ static UWORD draw_AtasciiText(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     return fence_owner();
 }
 
+/* DISPLAY already owns this synchronous VDI unit and shared scratch. The
+ * private-use terminal glyph page supports NUL, graphics and inverse cells. */
+#include <exec816/vdi-unit.h>
+static UBYTE vdiAtasciiBytes[EXEC_VDI_TEXT_CHUNK];
+void GemVdiAtasciiPaint(void *context)
+{
+    struct ExecVDIUnit *u=context;
+    LONG x=u->x,y=(LONG)u->y-6,left,right;
+    UWORD first=(UWORD)((LONG)u->left-x)>>3;
+    UWORD count=u->count-first,i,row,pixel,start,pen;
+    x+=(LONG)first*8;
+    for (i=0;i<count;++i) vdiAtasciiBytes[i]=(UBYTE)u->glyphs[first+i];
+    if (x>=0 && y>=0 && y<=232 && x+(LONG)count*8<=640 &&
+        u->writeMode==EXEC_VDI_REPLACE) {
+        latch(draw_AtasciiText((UWORD)x,(UWORD)y,vdiAtasciiBytes,count,
+            u->textColor,u->fillColor,u->left,u->top,u->right,u->bottom,0));
+        return;
+    }
+    /* Only off-screen origins or transparent units need clipped pixel runs. */
+    GemDrawingPrepare(u->left,u->top,u->right,u->bottom);
+    for (row=u->top;row<u->bottom;++row) for (i=0;i<count;++i) {
+        UBYTE bits=terminal_bits(vdiAtasciiBytes[i],(UWORD)((LONG)row-y));
+        pixel=0;
+        while (pixel<8) {
+            start=pixel;pen=bits&(128>>pixel) ? u->textColor:u->fillColor;
+            do { ++pixel; } while (pixel<8 &&
+                ((bits&(128>>pixel)) ? u->textColor:u->fillColor)==pen);
+            left=x+(LONG)i*8+start;right=x+(LONG)i*8+pixel;
+            if (left<u->left) left=u->left;if (right>u->right) right=u->right;
+            if (left<right && (u->writeMode!=EXEC_VDI_TRANS || bits&(128>>start)))
+                GemBitmapFill((UWORD)left,row,(UWORD)right,row+1,pen);
+        }
+    }
+}
+
 static UWORD draw_TextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom)
 {

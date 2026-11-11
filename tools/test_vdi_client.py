@@ -182,4 +182,20 @@ def physical(b,p,foreign,report):
                 for xx in range(w):
                     r.pixels[(t+y+dy+yy)*640+l+x+dx+xx]=before[(t+y+yy)*640+l+x+xx]
         report['copy_pixels'].append(pixels(b,out,overlay(r,position),palette=DESKTOP_PALETTE))
-    b.poke16(sy['VDIGo'],7+len(cases));b.bp_clear_all()
+    b.poke16(sy['VDIGo'],7+len(cases));phase(40);frames(20)
+    # The ROM character set is independent of the VDI donor font.
+    rom=b.memdump(0xe000,1024);l,t=208,76
+    r.clip=(l,t,l+383,t+126);r.fill=5;r.apply(11,(l,t,l+383,t+126))
+    def atascii(ch,x,y,left,right):
+        code=ch&127
+        code=code+64 if code<32 else code-32 if code<96 else code
+        for yy in range(8):
+            bits=rom[code*8+yy] ^ (255 if ch&128 else 0)
+            for xx in range(8):
+                if left<=x+xx<right:r.pixel(x+xx,y+yy,1 if bits&(128>>xx) else 0)
+    for ch in range(256):atascii(ch,l+1+(ch%32)*8,t+(ch//32)*8,l+3,l+256)
+    r.text=1;r.apply(8,(l+1,t+78),b'A')
+    atascii(0,l+9,t+72,l,l+384);atascii(128,l+17,t+72,l,l+384)
+    r.apply(8,(l+25,t+78),b'B')
+    report['atascii_pixels']=pixels(b,out,overlay(r,position),palette=DESKTOP_PALETTE)
+    b.poke16(sy['VDIGo'],40);b.bp_clear_all()

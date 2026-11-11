@@ -38,7 +38,15 @@ setters return the accepted mode; unsupported modes return zero and preserve
 the previous mode. Solid bars replace every covered pixel in either mode.
 Clipping, damage and bounded drawing ownership are identical in both modes. Named strings stream
 until their terminator or screen-right exclusion; parameter-block text uses its
-explicit word count. Glyph indices are 0–255, a caller obligation. Strings are
+explicit word count. Glyph indices 0–255 select the GEM face. Parameter-block
+text words `EXEC_VDI_ATASCII_BASE + byte` (`$E000–$E0FF`) select the pinned
+ROM terminal face, including inverse and graphics bytes. Mixed face runs split
+at the ordinary bounded text ownership boundary. Both faces preserve clipping
+and transparent/replace mode; byte zero is available through the explicit
+word count. The terminal page uses existing font/VRAM storage and 80 bytes of
+shared upper scratch under physical ownership. The
+[GF11 glyph check](../development/gem-first-gf11-glyphs.json) covers all 256
+bytes, odd X, clipping and mixed faces with exact pixels. Strings are
 not truncated at a fixed call-size limit.
 
 The binding releases [physical access](display.md#delegated-renderer-access)

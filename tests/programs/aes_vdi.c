@@ -126,6 +126,33 @@ static void draw_modes(UWORD who,WORD handle,WORD window)
     CHECK(vswr_mode(handle,who?MD_TRANS:MD_REPLACE)==(who?MD_TRANS:MD_REPLACE));
 }
 
+/* All terminal bytes, including NUL and inverse graphics, through public VDI. */
+static void draw_atascii(WORD handle,WORD window)
+{
+    WORD x,y,w,h,row,i,clip[4];
+    static WORD points[2],words[32];
+    static WORD control[12]={8,1,0,32,0,0,0,0,0,0,0,0};
+    static VDIPB pb={control,words,points,NULL,NULL};
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
+    clip[0]=x;clip[1]=y;clip[2]=x+w-1;clip[3]=y+h-1;
+    vs_clip(handle,1,clip);vsf_color(handle,5);v_bar(handle,clip);
+    vst_color(handle,1);vsf_color(handle,0);vswr_mode(handle,MD_REPLACE);
+    control[6]=handle;points[0]=x+1;
+    clip[0]=x+3;clip[2]=x+255;vs_clip(handle,1,clip);
+    for (row=0;row<8;++row) {
+        for (i=0;i<32;++i) words[i]=(WORD)(EXEC_VDI_ATASCII_BASE+row*32+i);
+        points[1]=y+row*8+6;vdi_call(&pb);
+        CHECK(ExecAESDiagnostic()==AES_OK);
+    }
+    clip[0]=x;clip[2]=x+w-1;vs_clip(handle,1,clip);
+    words[0]='A';words[1]=(WORD)EXEC_VDI_ATASCII_BASE;
+    words[2]=(WORD)(EXEC_VDI_ATASCII_BASE+128);words[3]='B';
+    control[3]=4;points[1]=y+78;vdi_call(&pb);
+    CHECK(ExecAESDiagnostic()==AES_OK);
+    CHECK(wind_update(END_UPDATE));
+}
+
 static void draw_private_mode(UWORD who,WORD handle,WORD window)
 {
     WORD x,y,w,h,box[4];
@@ -374,6 +401,7 @@ static void worker(UWORD who)
         else if (command==7) draw_modes(who,handle,window);
         else if (command==8) draw_private_mode(who,handle,window);
         else if (command==9) break;
+        else if (who && command==100) draw_atascii(handle,window);
         else if (who && command>=10) copy_case(handle,window,command-10);
         Forbid(); VDIStage[who]=command; Signal(root,wake); Permit();
     }
@@ -444,6 +472,8 @@ UWORD AESRun(void)
         VDIPhase=8+i;
         while (VDIGo<8+i) ExecYield();
     }
+    issue(1,100);while (VDIStage[1]!=100) Wait(wake);
+    VDIPhase=40;while (VDIGo<40) ExecYield();
     issue(0,9); issue(1,9);
     while (AESDone!=2) Wait(wake);
     FreeMem(textAllocation,65700UL);

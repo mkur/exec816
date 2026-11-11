@@ -99,10 +99,9 @@ def read_image(path, task_entries=(), base_bank=12, entry_name='main'):
                     'Invalid host-only C metadata')
             info = struct.unpack('<IIII', payload)
         else:
-            require((address in (code_base, extra_base, more_code_base) and reserved == 65536 and
-                     (permissions == 5 or (permissions == 4 and not payload))) or
-                    (data_base <= address <= address+reserved <= extra_base and permissions in (4, 6)) or
-                    (address == table_base and reserved == 65536 and permissions == 4),
+            require((address in (code_base, extra_base, more_code_base, table_base) and reserved == 65536 and
+                     permissions in (4,5)) or
+                    (data_base <= address <= address+reserved <= extra_base and permissions in (4, 6)),
                     'C sections must fit the standalone upper-bank layout')
             if payload:
                 segments.append(dict(address=address, bytes=list(payload), writable=bool(permissions & 2), executable=bool(permissions & 1)))

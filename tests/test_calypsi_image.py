@@ -61,6 +61,19 @@ class CalypsiImageTests(unittest.TestCase):
         self.assertEqual(image['task_entries'], [0xc0001])
         self.assertEqual(image['provenance']['dp_workspace_bytes'], 20)
 
+    def test_readonly_code_and_tables_share_existing_banks(self):
+        for address,flags in ((0xf0000,5),(0x100000,4)):
+            blob=elf_image()
+            offset=52+3*32
+            struct.pack_into('<IIIIIIII',blob,offset,1,288,address,address,4,65536,flags,1)
+            image=self.parse(blob)
+            segment=next(s for s in image['segments'] if s['address']==address)
+            self.assertFalse(segment['writable'])
+            self.assertEqual(segment['executable'],flags==5)
+            struct.pack_into('<I',blob,offset+24,6)
+            with self.assertRaisesRegex(RuntimeError,'standalone upper-bank layout'):
+                self.parse(blob)
+
     def test_rejects_wrong_memory_model_and_fixed_bank_zero(self):
         for offset, value, message in [(512+3*16+4, 0x80, 'runtime must use'),
                                         (272+12, 129, 'register allocation'),
@@ -111,7 +124,7 @@ class CalypsiImageTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'not a linked function'):
             self.parse(blob)
 
-    def test_table_bank_is_readonly_and_nonexecutable(self):
+    def test_table_bank_remains_readonly(self):
         blob = elf_image()
         struct.pack_into('<H', blob, 44, 6)
         struct.pack_into('<IIIIIIII', blob, 52+5*32,
@@ -121,7 +134,7 @@ class CalypsiImageTests(unittest.TestCase):
         self.assertEqual(image['provenance']['readonly_table_banks'], [15])
         self.assertFalse(image['segments'][-1]['writable'])
         self.assertFalse(image['segments'][-1]['executable'])
-        for flags in (5, 6, 7):
+        for flags in (6, 7):
             struct.pack_into('<I', blob, 52+5*32+24, flags)
             with self.assertRaisesRegex(RuntimeError, 'upper-bank layout'):
                 self.parse(blob)

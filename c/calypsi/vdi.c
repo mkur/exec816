@@ -225,6 +225,10 @@ static void text(struct ExecAESContext *c,WORD x,WORD y,const void *source,UWORD
                 w->intin[count++]=*chars++;
             } else {
                 if (!words) break;
+                /* A private-use page selects the Atari terminal glyph set.
+                 * Keep each physical unit homogeneous without altering VDI state. */
+                if (count && (((UWORD)*glyphs&0xff00)==EXEC_VDI_ATASCII_BASE)!=
+                    (((UWORD)w->intin[0]&0xff00)==EXEC_VDI_ATASCII_BASE)) break;
                 w->intin[count++]=*glyphs++; --words;
             }
         }
