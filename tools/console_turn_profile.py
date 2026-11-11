@@ -16,7 +16,7 @@ from sio_transaction_trace import BASE_HZ, read_events
 
 
 def markers(program, foreign, output):
-    routines = [('CONSOLEDRIVER_COLLECT', 'collect'),
+    routines = [('AESSYSTEM_COLLECT', 'collect'),
                 ('CONSOLEINPUT_SERVICE', 'input'),
                 ('CONSOLECONTROL_PROCESS', 'control'),
                 ('CONSOLEDRIVER_ARRIVAL', 'arrival'),
@@ -38,7 +38,7 @@ def markers(program, foreign, output):
     drawing = drawing_markers(program, foreign, output)
     spans['idle'] = drawing['idle']
     mapped = {**program, 'labels': {**program['labels'], 'collect': spans['collect']['entry']}}
-    points = dict(turn=call_marker(mapped, 'M_CONSOLEDRIVER_WORKER_', 'collect'))
+    points = dict(turn=call_marker(mapped, 'M_AESSYSTEM_RUN_', 'collect'))
     # Check emitted bytes, not a guessed source offset. PLD has restored the
     # selected Task's D at this marker; the following register/RTI tail is charged
     # to that Task. IRQ entry and interrupt_schedule bracket the native body.

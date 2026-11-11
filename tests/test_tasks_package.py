@@ -100,6 +100,20 @@ class TaskPackageTests(unittest.TestCase):
         with patch.dict(ABI,registered_entries=['CONSOLEDRIVER.Worker']):
             self.assertEqual(task_entries(image),[0x10000,0x10001])
 
+    def test_graphical_system_helpers_share_the_existing_worker(self):
+        from generate_tasks import task_entries
+        from unittest.mock import patch
+        names = ('M_APP_MAIN_A', 'M_CONSOLEDRIVER_WORKER_B',
+                 'M_AESSYSTEM_RUN_C', 'M_AESSYSTEM_START_D',
+                 'M_AESSYSTEM_STOP_E', 'M_AESWAIT_REMOVEWINDOW_F')
+        image = dict(entry=0x10000,
+                     segments=[dict(address=0x10000, bytes=[0]*8, executable=True)],
+                     routines=[dict(name=name, address=0x10000+index, arguments=[],
+                                    result_bytes=0, outgoing_bytes=1)
+                               for index, name in enumerate(names)])
+        with patch.dict(ABI, registered_entries=['CONSOLEDRIVER.Worker']):
+            self.assertEqual(task_entries(image), [0x10000, 0x10001])
+
     def test_policy_module_selection_is_isolated(self):
         from generate_tasks import policy_modules
         with tempfile.TemporaryDirectory() as folder:

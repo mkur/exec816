@@ -150,23 +150,13 @@ ENDMODULE
     at=core.index('\n\n',start)+2
     core=core[:at]+'  IF VISPROBE.focusBusy<>0 THEN\n    RETURN(0)\n  FI\n'+core[at:]
     (out/'deskcore.act').write_text(core)
-    driver=read_source(ROOT/'lib/console/consoledriver.act').replace(
+    driver=read_source(ROOT/'lib/aes/aessystem.act').replace(
         'USE AESGATE\n','USE AESGATE\nUSE VISPROBE\n',1)
     require(driver.count('    AESGATE.Offer()')==1,'Presenter offer boundary changed')
     driver=driver.replace('    AESGATE.Offer()',
         '    VISPROBE.ready=policyReady AND DESKPAINT.Runnable()=0\n'
         '        AND CONSOLEBITMAP.Pending()=0\n    AESGATE.Offer()')
-    (out/'consoledriver.act').write_text(driver)
-
-
-def worker_probe(original,out):
-    def policy(*args,**kwargs):
-        directory=original(*args,**kwargs)
-        text=(out/'consoledriver.act').read_text().replace('"console-storage-action.inc"',
-            '"'+str(directory.parent/'console-storage-action.inc')+'"')
-        (directory/'consoledriver.act').write_text(text)
-        return directory
-    return policy
+    (out/'aessystem.act').write_text(driver)
 
 
 def setup(symbols):

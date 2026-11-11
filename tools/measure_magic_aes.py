@@ -95,14 +95,14 @@ ENDMODULE
 
 def trace_definition(p, foreign, out):
     native = native_markers(p, [(n, n) for n in (
-        'CONSOLEDRIVER_COLLECT', 'DESKMOVE_START', 'LAYERS_BEGINMOVE',
+        'AESSYSTEM_COLLECT', 'DESKMOVE_START', 'LAYERS_BEGINMOVE',
         'AESGUI_POST', 'AESWINDOWSTATE_DAMAGE')])
     address = p['labels']['context_restore']
     hosted = (p['output']/'hosted.bin').read_bytes()
     require(hosted[address-adapter.RESIDENT_BASE:address-adapter.RESIDENT_BASE+8]
         == bytes.fromhex('c230ab2b7afa6840'), 'Unknown context restore')
     points = {n:p['labels'][n] for n in ('native_irq', 'native_nmi', 'interrupt_schedule')}
-    points.update(selected=address+4, turn=native['CONSOLEDRIVER_COLLECT']['entry'],
+    points.update(selected=address+4, turn=native['AESSYSTEM_COLLECT']['entry'],
                   done=p['labels']['done'])
     for name, span in native.items():
         points[name] = span['entry']

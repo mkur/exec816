@@ -16,7 +16,9 @@ caller frame setters with matching publication and deferred pixels. GF6 adds
 caller geometry/top and coherent lookup, retaining system continuations for
 physical effects. GF7 adds caller open/close, out-of-scene route resources and
 shared exit retirement with publisher holds and guarded capture cancellation.
-GF0–GF8 pass at the development tier; GF9–GF15 remain open.
+GF8 completes shared caller waits; GF9 extracts the graphical system loop
+behind a bounded console interface. GF0–GF9 pass at the development tier;
+GF10–GF15 remain open.
 
 The [Atari ST reference](../../guides/atari-st-reference.md) runs the native
 baseline's unchanged object-tree routines under EmuTOS and MagiC in Hatari.

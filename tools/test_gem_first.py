@@ -137,7 +137,7 @@ def run_case(out, p, foreign, name, cpu_prefix=False):
                             if '_GEMFIRST_'+field.upper()+'_' in d['name'])
     sy = foreign['symbols']
     memory = p['build']['memory']
-    turn = native_markers(p, [('CONSOLEDRIVER_COLLECT', 'turn')])['turn']['entry']
+    turn = native_markers(p, [('AESSYSTEM_COLLECT', 'turn')])['turn']['entry']
     restore = p['labels']['context_restore']
     hosted = (p['output']/'hosted.bin').read_bytes()
     require(hosted[restore-adapter.RESIDENT_BASE:restore-adapter.RESIDENT_BASE+8]

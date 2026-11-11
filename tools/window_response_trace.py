@@ -42,9 +42,9 @@ def setup(out, bookkeeping=False):
     returns = listing_returns(foreign, out/'bitmap-console/drawing')
     exits = listing_returns(foreign, out/'bitmap-console/drawing', exits=True)
     collect = next(r['address'] for r in program['image']['routines']
-                   if r['name'].startswith('M_CONSOLEDRIVER_COLLECT_'))
+                   if r['name'].startswith('M_AESSYSTEM_COLLECT_'))
     mapped = {**program, 'labels': {**program['labels'], 'collect':collect}}
-    clock = {'turn':call_marker(mapped,'M_CONSOLEDRIVER_WORKER_','collect')}
+    clock = {'turn':call_marker(mapped,'M_AESSYSTEM_RUN_','collect')}
     address = program['labels']['context_restore']
     hosted = (out/'hosted.bin').read_bytes()
     require(hosted[address-adapter.RESIDENT_BASE:address-adapter.RESIDENT_BASE+8] ==

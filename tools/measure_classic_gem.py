@@ -41,9 +41,9 @@ def main():
     bundle=args.bundle.resolve();p=read_build(bundle)
     foreign=json.loads((bundle/'bitmap-console/c-image.json').read_text())
     from dos_concurrent_trace import call_marker
-    spans=native_markers(p,[('DESKPAINT_PAINTSTRIP','paint_strip'),('DESKINPUT_SERVICE','input_service'),('CONSOLEDRIVER_COLLECT','collect')])
+    spans=native_markers(p,[('DESKPAINT_PAINTSTRIP','paint_strip'),('DESKINPUT_SERVICE','input_service'),('AESSYSTEM_COLLECT','collect')])
     mapped={**p,'labels':{**p['labels'],'collect':spans['collect']['entry']}}
-    points={'turn':call_marker(mapped,'M_CONSOLEDRIVER_WORKER_','collect'),
+    points={'turn':call_marker(mapped,'M_AESSYSTEM_RUN_','collect'),
             'selected':p['labels']['context_restore']+4,
             'worker_retire':next(r['address'] for r in p['image']['routines'] if r['name'].startswith('M_CONSOLEDRIVER_RETIREWORKER_'))}
     for name in ('native_irq','native_nmi','interrupt_schedule'):points[name]=p['labels'][name]

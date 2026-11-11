@@ -72,9 +72,9 @@ def listing_returns(image, directory, exits=False):
 
 def definition(program, foreign, app, directory, app_names=APP_NAMES, app_directory=None):
     collect = next(r['address'] for r in program['image']['routines']
-                   if r['name'].startswith('M_CONSOLEDRIVER_COLLECT_'))
+                   if r['name'].startswith('M_AESSYSTEM_COLLECT_'))
     mapped = {**program, 'labels': {**program['labels'], 'collect': collect}}
-    points = dict(turn=call_marker(mapped, 'M_CONSOLEDRIVER_WORKER_', 'collect'))
+    points = dict(turn=call_marker(mapped, 'M_AESSYSTEM_RUN_', 'collect'))
     address = program['labels']['context_restore']
     hosted = (program['output']/'hosted.bin').read_bytes()
     require(hosted[address-adapter.RESIDENT_BASE:address-adapter.RESIDENT_BASE+8] ==

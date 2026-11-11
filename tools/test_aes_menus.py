@@ -137,8 +137,8 @@ ENDMODULE
 def worker_probe(original):
     def generate(*args, **kwargs):
         directory=original(*args, **kwargs)
-        path=directory/'consoledriver.act'
-        source=path.read_text().replace('USE EXEC\n','USE EXEC\nUSE MENUTRANSITIONMARKS\n',1)
+        path=directory/'aessystem.act'
+        source=read_source(ROOT/'lib/aes/aessystem.act').replace('USE EXEC\n','USE EXEC\nUSE DESKSTATE\nUSE MENUTRANSITIONMARKS\n',1)
         old='      bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)'
         require(source.count(old)==1,'Presenter wait boundary changed')
         source=source.replace(old, '      IF inputPending<>0 AND DESKSTATE.menuReplacing<>0 THEN\n'

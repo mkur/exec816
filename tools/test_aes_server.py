@@ -247,13 +247,13 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             gate = gate.replace('  service.policyEffects==+1',
                 '  AESLOCKPROBE.ready=0\n  service.policyEffects==+1', 1)
             (out/'aesgate.act').write_text(gate)
-            worker = read_source(ROOT/'lib/console/consoledriver.act').replace('USE AESGATE\n',
+            worker = read_source(ROOT/'lib/aes/aessystem.act').replace('USE AESGATE\n',
                 'USE AESGATE\nUSE AESLOCKPROBE\n', 1)
             require(worker.count('    AESGATE.Offer()') == 1,
                     'Presenter scene offer boundary changed')
             worker = worker.replace('    AESGATE.Offer()',
                 '    AESLOCKPROBE.ready=policyReady\n    AESGATE.Offer()', 1)
-            (out/'consoledriver.act').write_text(worker)
+            (out/'aessystem.act').write_text(worker)
         if input_events:
             from test_aes_input_events import caller
             caller(out)
@@ -455,20 +455,9 @@ ENDMODULE
             return [address for address in task_entries(image) if address not in setup]
         generate_tasks.task_entries=fixture_entries
         policy_modules=generate_tasks.policy_modules
-        if locks:
-            def lock_policy(*args, **kwargs):
-                directory=policy_modules(*args, **kwargs)
-                text=worker.replace('"console-storage-action.inc"',
-                    '"'+str(directory.parent/'console-storage-action.inc')+'"')
-                (directory/'consoledriver.act').write_text(text)
-                return directory
-            generate_tasks.policy_modules=lock_policy
         if suite=='menus':
             from test_aes_menus import worker_probe
             generate_tasks.policy_modules=worker_probe(policy_modules)
-        if suite=='visibility':
-            from test_aes_visibility import worker_probe
-            generate_tasks.policy_modules=worker_probe(policy_modules,out)
         try:
             program = build(compiler(ROOT/'build/actionc',release=True), launcher, out/'program',
                 tasks=True, task_capacity=8, foreign_image=foreign,
@@ -781,10 +770,15 @@ def plain_console(out):
   DESKINPUT.Advance()
   port=EXEC.CreateMsgPort()''')
     fixture=out/'plain.act';fixture.write_text(source)
+    # This unbound-hook fixture still links the resident GUI globals. Its old
+    # 2 KiB image-data allowance overlaps code; keep the allowance fixture-local.
+    from generate_memory import PROFILE
+    profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=4608
+    memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
     report=dict(status='running',tier='development',qualification=False)
     try:
-        program=build(compiler(ROOT/'build/actionc'),fixture,out/'program',tasks=True,
-            task_capacity=8,console=True,stack_checks=True)
+        program=build(compiler(ROOT/'build/actionc',release=True),fixture,out/'program',tasks=True,
+            task_capacity=8,console=True,stack_checks=True,memory_profile=memory)
         report['build']=program['build']
         with emulator(BRIDGE,ROM,out,pin=PIN) as bridge:
             report['machine']=verify_machine(bridge,ROM,PIN)

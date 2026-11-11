@@ -17,6 +17,8 @@
   GF8 completes caller window/UPDATE/MCTRL waits with shared ordering, signal
   hints and explicit physical continuations; loaded ordinary, UPDATE-held and
   disk cohorts pass without new Tasks, signals or reserved bank-zero bytes.
+  GF9 extracts the AES system loop, retaining the same Task and bounded console
+  callbacks, with exact cache comparisons and input/menu/drag/disk integration.
 
 - [Shared-source Atari ST comparison](atari-st-reference.md): Hatari with
   EmuTOS/MagiC, unchanged object routines, bounded execution and drawing-path

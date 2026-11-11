@@ -3,7 +3,8 @@
 [Reference](README.md) · [C application guide](../guides/aes-applications.md) ·
 [Development record](../history/aes-server.md)
 
-The optional AES endpoint runs in the existing desktop presenter. Registration,
+The optional AES endpoint and graphical system loop run in the existing desktop
+presenter Task ([system module](../../lib/aes/aessystem.act)). Registration,
 exit, menu association and platform service controls use ordinary Exec RPC.
 Window operations, UPDATE/MCTRL, copied messaging and event/timer waits use
 caller library entries. Eligible window metadata commits in the caller; physical

@@ -30,7 +30,7 @@ def native_markers(program, routines):
 
 def input_markers(program):
     result=native_markers(program,[('CONSOLEINPUT_PENDING','input_pending'),
-        ('CONSOLEINPUT_PUMP','pump'),('CONSOLEDRIVER_COLLECT','input_collect'),('CONSOLEINPUT_SERVICE','input_service'),
+        ('CONSOLEINPUT_PUMP','pump'),('AESSYSTEM_COLLECT','input_collect'),('CONSOLEINPUT_SERVICE','input_service'),
         ('INPUT_PENDING','public_pending'),('INPUT_TAKE','input_take'),
         ('INPUT_EXTENT','input_extent'),('TASKMEMORY_WRITABLE','writable'),
         ('CONSOLEDRIVER_RUNNABLE','runnable')])
@@ -65,7 +65,7 @@ def markers(program,foreign,output):
         if 'bitmap_poll' in result:
             targets['poll']=result['bitmap_poll']['entry']
             mapped['labels']['poll']=targets['poll']
-        calls={name:call_marker(mapped,'M_CONSOLEDRIVER_WORKER_',name) for name in targets}
+        calls={name:call_marker(mapped,'M_AESSYSTEM_RUN_',name) for name in targets}
         result['input_collect_turn']=dict(entry=calls['collect'],returns=[calls.get('poll',calls['control'])])
         result['input_service_turn']=dict(entry=calls['control']+4,returns=[calls['arrival']])
     result['call']=dict(entry=program['labels']['console_bitmap_call'],returns=[program['labels']['console_bitmap_done']])

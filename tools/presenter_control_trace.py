@@ -71,7 +71,7 @@ def summarize(rows):
 
 # Selected bookkeeping boundaries, rather than every native routine. These
 # observations add no target counters, calls, reservations or timing hooks.
-BOOKKEEPING = '''CONSOLEDRIVER_COLLECT CONSOLEDRIVER_RUNNABLE
+BOOKKEEPING = '''AESSYSTEM_COLLECT CONSOLEDRIVER_RUNNABLE
 DESKHOST_RUNNABLE DESKHOST_CACHE DESKINPUT_RUNNABLE DESKINPUT_BOUNDARY
 DESKINPUT_SERVICE DESKINPUT_PRESENT DESKINPUT_ADVANCE DESKMENU_RUNNABLE
 DESKWIDGETINPUT_RUNNABLE DESKDRAG_RUNNABLE DESKPAINT_READY DESKPAINT_RUNNABLE
@@ -104,7 +104,7 @@ def bookkeeping_markers(program):
                         returns=[program['labels'][n+'_end']-1])
     # The first Cache call is the quiet notification branch; the other is the
     # normal turn tail. Pin the actual emitted call sites, not source offsets.
-    base, raw = routine(program, 'CONSOLEDRIVER_WORKER')
+    base, raw = routine(program, 'AESSYSTEM_RUN')
     call = b'\x22'+spans['DESKHOST_CACHE']['entry'].to_bytes(3,'little')
     sites = [base+m.start() for m in re.finditer(re.escape(call),raw)]
     require(len(sites)==2, 'Presenter cache branches changed')

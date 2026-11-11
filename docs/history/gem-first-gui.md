@@ -912,7 +912,7 @@ machine-readable RPC operation list now describes the remaining message calls.
 A failed caller waiter must wake the system after removing its barrier too.
 The broader window fixture caught a missing wake at 59 checks: deferred painting
 remained asleep before the first redraw. The final window image passes all
-285 checks with this fixed, including its unchanged physical/pixel assertions.
+284 checks with this fixed, including its unchanged physical/pixel assertions.
 
 Development checks pass: visibility 204 (22 checkpoints), lifecycle 265, locks
 199, geometry 84, frame 185 and cache 224. The locks fixture injects spurious
@@ -931,3 +931,61 @@ arena or heap reservation grows. Reserved bank-zero delta is **0 fixed, 0 root,
 0 kernel, 0 per public Task and 0 idle bytes**, counting guards, alignment and
 unused capacity. Eight- and twelve-slot reservation checks retain their existing
 maps. No full qualification matrix or demo refresh was performed. GF9 follows.
+
+
+## GF9: extracted AES system loop
+
+`AESSYSTEM` now owns graphical input dispatch, menu/gesture continuation,
+frame/pointer work, pending physical completion, scene handoff and the turn's
+scheduling decision. Its start/stop hooks retain the existing desktop/AES and
+display-drain ordering. The existing resident console worker remains the Task
+entry and driver owner. Its stream/model work is behind six private callbacks:
+input, controls, bounded model/presentation turn, runnable hint, stop request and
+stop state. Each turn releases borrowed console instances before returning to
+system input/event work. Text/bitmap backend selection remains before startup.
+The retained console presentation adapter stays in place for GF10/GF11.
+
+Readiness and menu-wait probes now observe the system loop. Current profiling
+markers follow its collection and scheduling boundaries; the existing worker
+entry and resource lifetime remain unchanged. Task-entry discovery explicitly
+excludes system/waiter helpers, and a host regression checks that extraction
+cannot add another worker.
+
+Development checks pass:
+
+- Windows 284, visibility 204, mixed locks/signals 199, cache 224 and menus 321.
+  All fourteen cache scanouts are byte-identical to GF8 and all 32 logical cache
+  checkpoints match. Menu pointer/keyboard navigation, deferred replacement
+  input, completion waits and exact selection/popup pixels run without stream
+  output driving the loop.
+- Scene contention passes 37/33/30 checks, including independent input, event
+  delivery, fence retirement and pointer redraw while caller metadata is held.
+  Move/route effect cases pass 30/25/18 checks. The reset case intentionally
+  retains live resources rather than claiming normal cleanup.
+- Twelve-slot loaded Counters pass ordinary (six), UPDATE-held (six) and disk
+  (31) checks, including persisted output and orderly final-client/service/
+  display retirement. The standalone text-backend startup/close probe passes
+  with desktop and AES unbound. Host checks run 690 tests, with four existing
+  skips. These are development checks, not full hosted-system qualification.
+
+The matched window image adds 2,622 code bytes and 18 zero-fill bytes versus
+GF8; the loaded fixture adds 2,700 code and 18 zero-fill bytes. Initialized data
+and executable bank sets are unchanged. Six callback pointers occupy those
+18 upper-image bytes inside existing production reservations. Private
+client/service records remain 138/1,990 bytes. No new Tasks or signals are
+allocated. Reserved bank-zero delta is **0 fixed, 0 root, 0 kernel, 0 per public
+Task and 0 idle bytes**, including guards, alignment and unused capacity. The
+eight- and twelve-slot maps match GF8. Window-case margins above checked floors
+are 582 root, 1,367 presenter, 983 kernel and 139 idle bytes.
+
+The standalone text fixture's old 2 KiB image-data allowance already overlapped
+code before extraction: a compile-only substitution of the preceding driver
+measures 296 initialized and 4,044 zero-fill bytes. GF9 changes zero-fill to
+4,062 bytes. The fixture now reserves 4,608 upper-image bytes; production
+profiles and all bank-zero reservations are unchanged. The baseline override
+and diagnostic-only images are recorded separately from executed tests.
+
+The [GF9 record](../development/gem-first-gf9.json) retains source/artifact hashes,
+reservation and footprint comparisons, cache equality and actual execution
+scope. No demo distribution or full qualification matrix was generated.
+Hardware and latency gates remain open. GF10 is next.

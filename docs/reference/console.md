@@ -4,6 +4,9 @@
 
 One console worker serves the default console and additional instances.
 It retains cells, accepts output, routes input and updates one shared display.
+The same Task runs the AES graphical system loop; console stream/model turns
+return to that loop before graphical input, event and frame work continues.
+Graphical progress does not require a console write or repaint.
 The normal text backend admits 40×24 cells. The optional bitmap backend admits
 80×30 on the pinned 640×240 VBXE display. An instance adds upper-RAM state,
 not a Task, stack or DP. The backend is selected before startup; live conversion

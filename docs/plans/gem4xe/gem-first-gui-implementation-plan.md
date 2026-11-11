@@ -4,7 +4,7 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-GF0–GF8 pass at the development tier. GF9–GF15 remain open. The
+GF0–GF9 pass at the development tier. GF10–GF15 remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
 coexistence, the current resource inventory, the shared window policy audit
 and the window effect/commit checks. GF3 separates scene ownership from physical
@@ -28,7 +28,7 @@ paths with their last caller. This plan does not implement a second GUI mode.
 | [Window route resources](../../../lib/aes/aesroutes.act) | GF7 separates unpublished route preparation/rollback and hidden-window retirement from scene publication. Callers use the same open/close policy; the presenter retains input consumption and busy retirement continuations. |
 | [C window binding](../../../c/calypsi/aes-windows.c), [local native entry](../../../lib/aes/aeslocal.act) | Per-Task context and caller-owned views; suitable locations for direct entry without repeated admission checks. |
 | [Desktop core](../../../lib/desktop/deskcore.act), [state](../../../lib/desktop/deskstate.act) | Existing common scene, focus and geometry machinery. Consolidate policy and records into AES rather than creating another scene. |
-| [Console worker](../../../lib/console/consoledriver.act), [AES hooks](../../../lib/aes/aeshost.act), [desktop hooks](../../../lib/desktop/deskhost.act) | Presently combine console/backend, GUI policy, input and presentation. Evolve the existing graphical worker into the AES system Task. |
+| [Console worker](../../../lib/console/consoledriver.act), [AES system loop](../../../lib/aes/aessystem.act), [AES hooks](../../../lib/aes/aeshost.act), [desktop hooks](../../../lib/desktop/deskhost.act) | GF9 gives the existing Task an AES system loop and an explicit bounded console interface; backend/view separation follows in GF10. |
 | [Counter](../../../examples/gem-counter/counter.c), [browser/desktop](../../../examples/gem-browser/browser.c), [application supervisor](../../../examples/gem-desktop/resident.c) | Existing GEM clients and loaded Process lifetime. Counter, Files and Control Panel already use GEM; preserve their application bodies. |
 
 Use pinned Action!/C, ROM, emulator and platform inputs. Preserve normal Task
@@ -419,6 +419,12 @@ two clients plus disk, close the final graphical client and verify orderly
 service/display shutdown. Task count and reserved bank-zero delta stay zero.
 
 Commit: `refactor(aes): extract the graphical system task loop`.
+
+Implemented. The [GF9 record](../../development/gem-first-gf9.json) covers
+optimized input/fence, window/menu/drag and effect boundaries, exact cache
+comparisons, text startup and loaded ordinary/UPDATE-held/disk cohorts. No new
+Task, signal or reserved bank-zero storage; six private callback pointers add
+18 bytes inside the existing upper-image reservation.
 
 ### GF10 — Separate the console backend and publish a view interface
 

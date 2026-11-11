@@ -1,0 +1,676 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GF9",
+  "parent": "dbee7fb5",
+  "sources": {
+    "lib/aes/aesboot.act": "68a40565715dc18eb218eae961c5955805085d72b6a4100797eba4c917d4feb3",
+    "lib/aes/aescore.act": "c48d9f1bd825a71d64ea011eb440e723b3dcc46cf4bf3d90937c1c186c90bf1d",
+    "lib/aes/aesdefer.act": "cf063f3699907eec02598ff46ce491c0a891597ac049d70a1d77aca515320640",
+    "lib/aes/aesgate.act": "2da743ea77da35f696b3f17302856760dec427d80311bf4bb1925364da99c6d3",
+    "lib/aes/aesgui.act": "b1c2c292a1d959701b46f7f0fd9234d2acaa4f88f3c236ba95ae7d2c2e65af66",
+    "lib/aes/aeshost.act": "7bc501fa2b65f12f63b320c7f3e34defe90de35ae23d7f96dd603befb2bc218a",
+    "lib/aes/aesinbox.act": "255fc63b36e2d707cf35c070b481757093db558f6d3004467efe50ac0452f5cd",
+    "lib/aes/aesinput.act": "477c6357fa0d733dcd099e297215c38b06bf19b1d0bb6f5df5bca223c5324ec9",
+    "lib/aes/aeskeys.act": "d654ba2d2ad45fae19a2a4db6d1a29c3d8585938c9401d980df45b76c26f88d0",
+    "lib/aes/aeslocal.act": "112ad117a991da0233f4a6dc8459c9c74cf94ba11102afa2bf32f3256d985031",
+    "lib/aes/aeslocks.act": "f3caa1c4a5e00e3a22d997658243df56daa1095e57795c077f63eec091693554",
+    "lib/aes/aesmenu.act": "5f6f9e36395d77ada8c7a63859940e679b6238ab9978d86c417847939f9097ad",
+    "lib/aes/aesmouse.act": "1bdb12b946712f4a3674b7b0c077ebac992be9d40ba46e36c21714035003aa97",
+    "lib/aes/aesprocess.act": "2f2535e460d1dae005d5c9ac64825951352f490883922c60e3be9d7534570a16",
+    "lib/aes/aesroutes.act": "1590f9f9951900c868471af6b39d9ab6dbc0ca23368c3ed5ab80355ef1b8508b",
+    "lib/aes/aessnapshot.act": "2ed10d9fe807579058ca772060db0add6415e9702c7b8a12ea86a61b94223512",
+    "lib/aes/aesstate.act": "31b915fd17199ebfbe9d67079aeb8350d7c720221acf2f76a1ac9c7979f73ab1",
+    "lib/aes/aessystem.act": "f877496d8744b327b34f0f59e5a3301b42f21a81af107d27cce0066a73c3ee9e",
+    "lib/aes/aestypes.act": "a308c03243cae15025b58fcf25b5cc45ced9562c019d650e22779126b1830314",
+    "lib/aes/aeswait.act": "9ad0a91494e8bbfd3dc1521f16b7d7b1b2fb6ab9b0b0e64fb7afedca2dba474e",
+    "lib/aes/aeswindow.act": "0429a6560c9fb4415f4370a6462d6aa2781b36f34b049d883b712a367e7630dc",
+    "lib/aes/aeswindowstate.act": "be71bb46bfa05bba52f3cd7b37668b984ddaaa537e3435df4b57fdccd2646ec2",
+    "lib/console/consoledriver.act": "de74df4023d3a4ee1d047e5d3e2ff0457dfc435d3336bfaf7b9f3d17fb47669b",
+    "tests/programs/aes_locks.c": "a1c044770e39747030ea88db395d7cbcc2fbf4b70666459d92bc27c2c7bfea24",
+    "tests/programs/aes_menus.c": "47ad92fb6873918c65325db9bcae394abed92c5a54fd0bb3b18b67ce7906a38f",
+    "tests/programs/aes_scene.c": "8e42648f5f17cde672763000f0a3b26df50df10f184c931e24abedeef0c96963",
+    "tests/programs/aes_visibility.c": "180ba6c121fe3096021c196bffd6dfef7b537e3eb1b22ccebeb9e4bf92f3de3a",
+    "tests/programs/aes_window_effects.c": "8973a658353a6ed3bfb772cfd2194626cb50a8e29f9c55c1cdfe976ff828d454",
+    "tests/programs/aes_windows.c": "a2082adc82a9f6eb444e1e4f5ce42bf6408000c6e1dd19f71ede2e4effe780e0",
+    "tests/test_tasks_package.py": "d27add84440ca1de7e4ab6d1d01e44db6f6da51137c543cde6927d07c91d46aa",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "tools/bitmap_console_performance.py": "7c951bd77d20f1541a874d7b579946782165953f285e915932aa850c75fc4c25",
+    "tools/console_turn_profile.py": "9290a94c3fa8b81861919dab5c38a08a13751743239b86643e250959fa834a70",
+    "tools/g4bench_trace.py": "81ac3f4617433023489980bda4f8833202b3b7eeb43bae6f453ef4c026971883",
+    "tools/generate_tasks.py": "86b68987a07242028769d4ed1e14d82f9eb5ce23f815a971109aaaa4b1493806",
+    "tools/measure_classic_gem.py": "0ca8427799f7f1ba75ce1b5b2eefb0c22158103a078ec1b816f5fe092d24933d",
+    "tools/measure_magic_aes.py": "23b1127e5ba64a415d33929ad156d3ae0d2f2664a89537cbaee048935b0c0120",
+    "tools/native_program.py": "63040e0834f7e29ae2d0ae6301dc6a03fc38947e1e527463efc011519f355949",
+    "tools/presenter_control_trace.py": "fd2c117af33a03d15f5fcac5295a634f23d4bc60445169da23b9fa2c33bdea4c",
+    "tools/profile_vbxe_builder.py": "c31ec8e6c7d27f293ccf2a0e6fabbb97d854936c129b0602dbad190a02c6f3d6",
+    "tools/test_aes_menus.py": "7e9990c3d728d5f1c94851c88175416d6e181fc5eb56574ad8e3e77359e069e1",
+    "tools/test_aes_scene.py": "4b5d071d451d7fe2f7547ff745e5e233b47cb03733e8494ec35646d9e2f06ec3",
+    "tools/test_aes_server.py": "13f26309e98c7c98cfe9a1afcfbad1637af9650bccc829a93b3e3bde931e837f",
+    "tools/test_aes_visibility.py": "67121c7a4a02766d0edfc8e30bb6d2b6abb0314425038b92bd4c7b9cac08fa5a",
+    "tools/test_aes_window_effects.py": "3fb0b70e9dda3fd260f78eb910d2629ddf5d412d81e64086a7e0dc2291802dd8",
+    "tools/test_gem_first.py": "ed47da58b714d3dd1331499df0c8ec268747413dc110d4e49849ac3b19501f3d",
+    "tools/window_response_trace.py": "f91048da82a21beafb1123c18842ff97c792679c4e49bcc2a920d3b20848df6f"
+  },
+  "artifacts": {
+    "windows": {
+      "path": "build/gem-first-gui/gf9/windows/results.json",
+      "sha256": "1c1c1813c77595b599a5d55b3d1a90e1d235a2138ac10580141a0aeb931ac20a",
+      "AESChecks": 284,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 698,
+          "remaining_above_floor": 582
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 480,
+          "remaining_above_floor": 576
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 503,
+          "remaining_above_floor": 553
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 273,
+          "remaining_above_floor": 783
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 937,
+          "remaining_above_floor": 1367
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 297,
+          "remaining_above_floor": 983
+        }
+      },
+      "xex_sha256": "8cf9f5f7f49cbd05a0cd72456c98bbef4c6cef162d4e77e941d2a37ad45b4c7b"
+    },
+    "scene": {
+      "path": "build/gem-first-gui/gf9/scene/results.json",
+      "sha256": "f4fc9835a1913c29bbe2466626d74a3fba1bd64ee98250b6fcdb84ddea3d7860",
+      "cases": [
+        {
+          "variant": 0,
+          "caller_waiting": true,
+          "delivered_event_bits": 51,
+          "presenter_waiting": true,
+          "checks": 37,
+          "failures": 0
+        },
+        {
+          "variant": 1,
+          "caller_waiting": true,
+          "presenter_waiting": true,
+          "checks": 33,
+          "failures": 0
+        },
+        {
+          "variant": 2,
+          "caller_waiting": true,
+          "presenter_waiting": true,
+          "checks": 30,
+          "failures": 0
+        }
+      ],
+      "xex_sha256": "37e80038f3ecd2dc022940e9ba0dbdff79ffee268ae27399c1e53f3f7af9a4e2"
+    },
+    "effects": {
+      "path": "build/gem-first-gui/gf9/effects/results.json",
+      "sha256": "1db4c9b28a6575a5a2027d5ecbfe9eb31ad03686c866083f663f9dbc459d4998",
+      "cases": [
+        {
+          "variant": 0,
+          "checks": 30,
+          "failures": 0
+        },
+        {
+          "variant": 3,
+          "checks": 25,
+          "failures": 0
+        },
+        {
+          "variant": 4,
+          "checks": 18,
+          "failures": 0
+        }
+      ],
+      "xex_sha256": "e5310a6ce3ed1eae8e66ed3bc3ef461cc111cc07ba3738a341f4968b04b0a3cb"
+    },
+    "visibility": {
+      "path": "build/gem-first-gui/gf9/visibility/results.json",
+      "sha256": "15268212813c326fdde3bb4ed7ec4883559f5bbec42d1e3b35bb53ac601867b0",
+      "AESChecks": 204,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 684,
+          "remaining_above_floor": 596
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 340,
+          "remaining_above_floor": 716
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 772,
+          "remaining_above_floor": 1532
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "xex_sha256": "10a5ed7808e4a9326c4373b0bfab4d9de0fff1772c4f84713b8b0081606c8abf"
+    },
+    "locks": {
+      "path": "build/gem-first-gui/gf9/locks/results.json",
+      "sha256": "dc2babfe1d57c96342b9b162481fa741a3def65c3603ae256471d409a30adc86",
+      "AESChecks": 199,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 958,
+          "remaining_above_floor": 322
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 352,
+          "remaining_above_floor": 704
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 358,
+          "remaining_above_floor": 698
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 358,
+          "remaining_above_floor": 698
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 771,
+          "remaining_above_floor": 1533
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "xex_sha256": "08a55fe022d04ebef1ed4198d76101f92e2c56a7fee5e2e066cfe2acef9f5793"
+    },
+    "cache": {
+      "path": "build/gem-first-gui/gf9/cache/results.json",
+      "sha256": "3836c47a2f895683d68d1e8101a0ecb2e9b4c6372e7f0da8a7ccf531d1a63cdf",
+      "AESChecks": 224,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 688,
+          "remaining_above_floor": 592
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 320,
+          "remaining_above_floor": 736
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 937,
+          "remaining_above_floor": 1367
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "xex_sha256": "d79455c90af7d8dd41a20d73db3411e4270be676307ff64f6f3cb08f2ffe18e3"
+    },
+    "menus": {
+      "path": "build/gem-first-gui/gf9/menus/results.json",
+      "sha256": "6c4bb05dde5f177f06685d320f435e79fd3c6250451eb9579df795996fcf3437",
+      "AESChecks": 321,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 583,
+          "remaining_above_floor": 697
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 305,
+          "remaining_above_floor": 751
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 133,
+          "remaining_above_floor": 923
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 481,
+          "remaining_above_floor": 575
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 954,
+          "remaining_above_floor": 1350
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 295,
+          "remaining_above_floor": 985
+        }
+      },
+      "xex_sha256": "93c979d2de0e048491fca6744675bf22000557db090f87f4f5a1111196924bab"
+    },
+    "text-console": {
+      "path": "build/gem-first-gui/gf9/text-console/results.json",
+      "sha256": "72050da409c9915c31ea29f1df11855dafafb1aa4e40cd0dd58d4975bd1f75bc",
+      "xex_sha256": "829618c0a81102c0027ec3819b4ad5f1b0d66256eb284551196a35116962fc93"
+    },
+    "loaded": {
+      "path": "build/gem-first-gui/gf9/loaded/results.json",
+      "sha256": "397b0c3293f851c51647eda9392d7f0f28e0d8bdc359bf47a64f120c3496fece",
+      "cases": [
+        {
+          "name": "idle",
+          "checks": 6
+        },
+        {
+          "name": "update-held",
+          "checks": 6
+        },
+        {
+          "name": "disk",
+          "checks": 31
+        }
+      ],
+      "xex_sha256": "aff85f62761046fa1654c7548218aa02cdb7bb058e54dea3ec30c79f6435dc68"
+    }
+  },
+  "cache": {
+    "checkpoints_equal": 32,
+    "byte_identical_scanouts": {
+      "aes-cache-frame-29.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806",
+      "aes-cache-1.bgra": "a1e99f69851a01d78a43aca808e8842bc65be0c298a7ff140d381910eec11b36",
+      "aes-cache-12.bgra": "1802ec7c8d0ae718a7591a5e127cfc6a5316324b4fffce50c36988fce1745968",
+      "aes-cache-6.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+      "aes-cache-14.bgra": "9f607df4d92614b184c33049e828702a296a1a89d8fa0c7143834475cbdb7074",
+      "aes-cache-4.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+      "aes-cache-9.bgra": "a29a54675ac7314436fccaaae4e7ca522d7f508265685e65445972a9d15e62e1",
+      "aes-cache-11.bgra": "6cf17b7f98a992ca4c74fc54cf2ab9a4975ff164d5c3e5ef00e4999a9d0f13d6",
+      "aes-cache-2.bgra": "7fa6df8f8d50903c3f5f120ea835b43a91a42741a08bd554d6daf0269dc4dfb6",
+      "aes-cache-26.bgra": "fc01abc65b6dba3b6eadf0c37cc3dc9d914182fef8076758af86d90d4ec50760",
+      "aes-cache-frame-27.bgra": "9e34c76b23bc0ec1465483cdd30c9ca019d93e91f68c4470c3a27f6779f742d6",
+      "aes-cache-frame-31.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806",
+      "aes-cache-10.bgra": "a0a69b197c2b27186e41a1cf6091efe8f01a435cfef99711a0c5dc62bcb2169f",
+      "aes-cache-3.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775"
+    }
+  },
+  "footprints": {
+    "windows": {
+      "before": {
+        "code": 1281078,
+        "data": 10262,
+        "zero": 25898,
+        "executable_banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          63
+        ]
+      },
+      "after": {
+        "code": 1283700,
+        "data": 10262,
+        "zero": 25916,
+        "executable_banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          63
+        ]
+      },
+      "delta": {
+        "code": 2622,
+        "data": 0,
+        "zero": 18
+      }
+    },
+    "loaded": {
+      "before": {
+        "code": 1284429,
+        "data": 11327,
+        "zero": 25085,
+        "executable_banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          63
+        ]
+      },
+      "after": {
+        "code": 1287129,
+        "data": 11327,
+        "zero": 25103,
+        "executable_banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          63
+        ]
+      },
+      "delta": {
+        "code": 2700,
+        "data": 0,
+        "zero": 18
+      }
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "new_tasks": 0,
+  "new_signals": 0,
+  "private_storage": {
+    "callback_pointers": 6,
+    "added_upper_image_bytes": 18,
+    "client_bytes": 138,
+    "service_bytes": 1990,
+    "new_production_reservations": 0
+  },
+  "text_fixture": {
+    "previous_image_data_allowance": 2048,
+    "current_allowance": 4608,
+    "initialized_bytes": 296,
+    "previous_zero_bytes": 4044,
+    "current_zero_bytes": 4062,
+    "baseline": "Preceding committed console driver substituted only for a compile/layout diagnostic, never executed or retained as a production implementation.",
+    "baseline_source": {
+      "path": "build/gem-first-gui/gf9/text-before/consoledriver.act",
+      "sha256": "cbfc89a0f03954b47cf6e0be61c27790d276f831d3b150def8c28e6925d9485d"
+    },
+    "baseline_image": {
+      "path": "build/gem-first-gui/gf9/text-layout-before.a816.json",
+      "sha256": "91163594b6ab251685f7a42bf645c754d37f5f164dfe50af35ded67c51e45b13"
+    },
+    "current_diagnostic_image": {
+      "path": "build/gem-first-gui/gf9/text-layout.a816.json",
+      "sha256": "3ccd27c86947515a3601a10063bde345a97540e26d196eb85e73105f34ad2d0e"
+    }
+  },
+  "scope": "Optimized emitted integration, normal service/display shutdown, text startup, input/fences through scene contention, physical window/menu/drag work without stream output, loaded idle/UPDATE-held/disk. Effect reset case deliberately retains resources. No full qualification, hardware/latency claim or demo refresh."
+}

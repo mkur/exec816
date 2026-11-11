@@ -1,0 +1,241 @@
+; Graphical input, continuations, physical work and scheduling in the existing
+; presenter Task. The console supplies bounded backend turns through this private
+; interface; no cell/model or request pointer is borrowed across a callback.
+MODULE AESSYSTEM
+USE EXEC
+USE AESHOST
+USE AESGATE
+USE AESDEFER
+USE AESLOCKS
+USE CONSOLECAPTURE
+USE CONSOLEBATCH
+USE CONSOLETYPES
+USE CONSOLEDISPLAY
+USE CONSOLEBITMAP
+USE DESKHOST
+USE DESKMENU
+USE DESKPAINT
+USE DESKINPUT
+CONST STOP_MASK=$20000000
+CONST PAINT_STEPS=4
+BYTE FUNC POINTER consoleInput(LONGCARD bits BYTE pending)
+BYTE FUNC POINTER consoleRunnable(BYTE pending)
+BYTE FUNC POINTER consoleStopping()
+BYTE FUNC POINTER consoleStop()
+BYTE FUNC POINTER consoleTurn(BYTE deferred BYTE POINTER again,writing,handoff)
+PROC POINTER consoleControls()
+
+; The resident worker binds this interface before publishing readiness. It
+; remains installed only while that same Task owns the backend and display.
+PUBLIC PROC BindConsole(ADDRESS input,runnable,stopping,stop,turn,controls)
+
+  LET inputEntry=ADDRESS POINTER(@consoleInput)
+  LET runnableEntry=ADDRESS POINTER(@consoleRunnable)
+  LET stoppingEntry=ADDRESS POINTER(@consoleStopping)
+  LET stopEntry=ADDRESS POINTER(@consoleStop)
+  LET turnEntry=ADDRESS POINTER(@consoleTurn)
+  LET controlsEntry=ADDRESS POINTER(@consoleControls)
+  inputEntry^=input
+  runnableEntry^=runnable
+  stoppingEntry^=stopping
+  stopEntry^=stop
+  turnEntry^=turn
+  controlsEntry^=controls
+
+RETURN
+
+PUBLIC BYTE FUNC Start()
+
+  IF DESKHOST.Start()=0 THEN
+    RETURN(0)
+  FI
+  AESGATE.Configure(ADDRESS(@AESDEFER.Pump),
+      CONSOLECAPTURE.WAKE_MASK OR DESKINPUT.Mask() OR CONSOLEBITMAP.Mask())
+
+RETURN(1)
+
+; The signal field is an arrival hint, never an acknowledgement. A late signal
+; survives for the next collection or Wait; preserve Wait's consumed bits too.
+LONGCARD FUNC Collect(EXEC.Task POINTER self LONGCARD bits,displayMask)
+
+  LET mask=STOP_MASK OR CONSOLECAPTURE.WAKE_MASK OR displayMask
+  IF (self.tc_SigRecvd & mask)=0 THEN
+    RETURN(bits)
+  FI
+
+RETURN(bits OR EXEC.SetSignal(0,mask))
+
+; AES input/menu/gesture and frame work run independently of console output.
+PUBLIC PROC Run()
+  LONGCARD bits
+  BYTE again,writing,stopping,accepted,inputPending
+  BYTE handoff,deferOutput,paintSteps,paintProgress
+  BYTE schedule,policyReady,workChecked,workPending
+
+  LET self=EXEC.FindTask(NULL)
+  LET batch=CONSOLEBATCH.Get()
+  LET displayMask=CONSOLEBITMAP.Mask()
+  LET desktopMask=DESKHOST.Mask()
+  LET aesMask=AESHOST.Mask()
+  bits=0
+  stopping=0
+  inputPending=1
+  handoff=0
+  ; Stop may be requested after the final write reply but before DMA retires.
+  DO
+    AESGATE.Reclaim()
+    DESKINPUT.ReplayKeys()
+    IF consoleStopping()<>0 AND CONSOLEBITMAP.Pending()=0
+        AND batch.phase=CONSOLETYPES.BATCH_IDLE THEN
+      EXIT
+    FI
+    bits=Collect(self,bits,displayMask OR desktopMask)
+    IF (bits & STOP_MASK)<>0 THEN
+      stopping=1
+    FI
+
+    ; A local outer END can be the only reason an otherwise idle presenter
+    ; woke. No input, control, model or retained drawing work needs a full
+    ; turn in that case. Settled excludes waiters, messages and publication
+    ; work. Maintain caches with policy closed; new signals survive to Wait.
+    IF bits=aesMask AND aesMask<>0 AND stopping=0 AND consoleStopping()=0
+        AND AESHOST.Settled()<>0 AND AESLOCKS.NativeReady()<>0
+        AND consoleRunnable(inputPending)=0 AND DESKHOST.Runnable()=0 THEN
+      workPending=DESKHOST.Cache()
+      policyReady=AESLOCKS.NativeReady()
+      ; A started cache continuation needs the normal turn and completion wait.
+      schedule=IF policyReady<>0 THEN 2 ELSE 0 FI
+      bits=0
+    ELSE
+      ; Each renderer operation owns its scratch/list until its fence or DMA
+      ; handoff. CPU-only service work must leave access available to clients.
+      CONSOLEDISPLAY.Poll((bits & displayMask)<>0)
+      DESKHOST.MenuContinuation()
+      IF stopping<>0 AND CONSOLEBITMAP.Pending()=0 THEN
+        accepted=consoleStop()
+        IF consoleStopping()<>0 THEN
+          CONSOLEDISPLAY.DiscardBatch()
+          EXIT
+        FI
+      FI
+
+      IF (bits & DESKINPUT.Mask())<>0 THEN
+        DESKINPUT.Service(bits)
+        DESKINPUT.Present()
+      FI
+
+      DESKHOST.Controls()
+      IF DESKHOST.Ready()<>0 THEN
+        consoleControls()
+      FI
+      ; Collect's pointer bit was consumed above. Continue retained work here
+      ; without turning that same notification into another empty drain.
+      DESKINPUT.Service(0)
+      DESKINPUT.Advance()
+      DESKPAINT.Sync()
+      inputPending=consoleInput(bits,inputPending)
+      ; Present newly consumed motion before spending another quantum on output.
+      ; Intersecting draws erase it safely and the final pass restores it.
+      DESKINPUT.Present()
+      bits=0
+
+      ; Commit visible GUI feedback before starting another console-output
+      ; quantum. Drain at most four steps of a strip or ready menu, with input between
+      ; C calls. This never renews the turn's control or output budgets.
+      deferOutput=0
+      paintSteps=0
+      DO
+        paintProgress=DESKPAINT.Pump()
+        IF paintProgress=0 THEN
+          EXIT
+        FI
+
+        paintSteps==+1
+        DESKHOST.InputBoundary()
+        IF handoff=0 AND DESKHOST.ControlPending()<>0 THEN
+          ; One handoff at most before the next eligible output quantum. This
+          ; lets queued status patches run without starving console writers.
+          handoff=1
+          deferOutput=1
+        FI
+
+        IF paintProgress=1 THEN
+          DESKMENU.Advance()
+        FI
+        IF (paintProgress<>2 AND DESKPAINT.MenuReady()=0)
+            OR paintSteps=PAINT_STEPS OR deferOutput<>0
+            OR DESKINPUT.Runnable()<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
+          EXIT
+        FI
+      OD
+      IF paintSteps=0 THEN
+        DESKINPUT.Present()
+      FI
+
+      DESKHOST.AfterPaint()
+      IF consoleTurn(deferOutput,@again,@writing,@handoff)<>0 THEN
+        DESKHOST.InputBoundary()
+      ELSE
+        DESKINPUT.Present()
+      FI
+
+      DESKHOST.Events()
+      AESHOST.Settle()
+      workChecked=0
+      IF stopping=0 AND writing=0 AND again=0 THEN
+        workPending=IF consoleRunnable(inputPending)<>0 THEN 1
+            ELSE DESKHOST.Runnable() FI
+        workChecked=1
+        IF workPending=0 THEN
+          IF DESKHOST.Cache()<>0 THEN
+            ; Only transfer startup changes the settled scheduling decision.
+            workChecked=0
+          FI
+        FI
+      FI
+
+      schedule=0
+      IF CONSOLEBITMAP.Pending()<>0 THEN
+        IF workChecked=0 THEN
+          workPending=IF consoleRunnable(inputPending)<>0 THEN 1
+              ELSE DESKHOST.Runnable() FI
+        FI
+        schedule=IF workPending<>0 THEN 1 ELSE 2 FI
+      ELSEIF again=0 AND DESKPAINT.Ready()=0 THEN
+        ; Ready paint continues within the existing preemptive Task quantum.
+        ; Do not add a voluntary round-robin pass between its bounded stripes.
+        ; Blocked paint still follows the normal signal wait below.
+        IF writing<>0 THEN
+          schedule=1
+        ELSE
+          IF workChecked=0 THEN
+            workPending=IF consoleRunnable(inputPending)<>0 THEN 1
+                ELSE DESKHOST.Runnable() FI
+          FI
+          ; This is a scheduling hint, never drawing authority. Producers can
+          ; signal after it; leave their bits intact through the final Wait.
+          schedule=IF workPending<>0 THEN 1 ELSE 2 FI
+        FI
+      FI
+
+      policyReady=stopping=0 AND consoleStopping()=0 AND AESLOCKS.NativeReady()<>0
+    FI
+    AESGATE.Offer()
+    ; No shared-state hints after publication: schedule or reclaim next turn.
+    IF schedule=1 THEN
+      EXEC.Yield()
+    ELSEIF schedule=2 THEN
+      bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)
+    FI
+  OD
+
+
+RETURN
+
+PUBLIC PROC Stop()
+
+  DESKHOST.Stop()
+
+RETURN
+
+ENDMODULE
