@@ -22,6 +22,7 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   IF request.operation<>AESTYPES.OP_UPDATE
       AND request.operation<>AESTYPES.OP_CREATE
       AND request.operation<>AESTYPES.OP_DELETE
+      AND request.operation<>AESTYPES.OP_FIND
       AND request.operation<>AESTYPES.OP_SET THEN
     RETURN(0)
   FI
@@ -31,6 +32,11 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   FI
   AESGATE.EnterTask(request.owner,
       LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit)
+  IF request.operation=AESTYPES.OP_FIND THEN
+    request.status=AESWINDOW.Query(request)
+    AESGATE.Release(0)
+    RETURN(1)
+  FI
   LET client=AESSTATE.Find(service,request.client)
   ; Include older messages that have not reached the native waiter queue yet.
   EXEC.Forbid()

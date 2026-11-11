@@ -217,7 +217,12 @@ WORD ExecAESWindowFind(struct ExecAESContext *c, WORD x, WORD y)
 {
     if (!c) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    if (!c->identity) { c->diagnostic = AES_IDENTITY; return 0; }
     c->request.intin[0]=x;c->request.intin[1]=y;
+    if (ExecAESLocal(c,AES_OP_FIND)) {
+        c->diagnostic=c->request.status;
+        return c->diagnostic==AES_OK ? c->request.intout[0] : 0;
+    }
     return ExecAESSubmit(c,AES_OP_FIND);
 }
 

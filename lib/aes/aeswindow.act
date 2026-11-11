@@ -359,6 +359,13 @@ INT FUNC FindAt(INT x,y)
 
 RETURN(0)
 
+; Queries share the committed stack; drawing and logical waiters do not bar it.
+PUBLIC CARD FUNC Query(AESTYPES.Request POINTER request)
+
+  request.intout(0)=FindAt(request.intin(0),request.intin(1))
+
+RETURN(AESTYPES.OK)
+
 CARD FUNC SetBounds(AESSTATE.Service POINTER service
     DESKTYPES.Service POINTER desktop AESSTATE.Window POINTER item
     LAYERTYPES.Layer POINTER layer AESTYPES.Request POINTER request)
@@ -564,8 +571,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   ; A presenter query observes one coherent stack without waiting for drawing
   ; or mouse ownership.
   IF request.operation=AESTYPES.OP_FIND THEN
-    request.intout(0)=FindAt(request.intin(0),request.intin(1))
-    RETURN(AESTYPES.OK)
+    RETURN(Query(request))
   FI
 
   IF request.operation=AESTYPES.OP_CREATE OR request.operation=AESTYPES.OP_DELETE THEN

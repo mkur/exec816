@@ -475,8 +475,11 @@ When painting releases the scene with a native control already pending, one new
 console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
-`wind_find(x,y)` (AES opcode 106, counts 2/1/0/0) queries the presenter's
-current layer stack. It returns the topmost normal AES window's global handle,
+`wind_find(x,y)` (AES opcode 106, counts 2/1/0/0) queries the committed shared
+layer stack in the caller under scene ownership. Repaint readiness, queued
+mutations and another client's UPDATE do not bar this read. Ordinary and PB
+queries preserve the selected view, rectangle iterator and transport sequence.
+It returns the topmost normal AES window's global handle,
 including foreign owners and borders. Background, the desktop window and native
 windows return zero; a native window occludes AES windows below it. The query
 does not focus or raise anything.

@@ -601,3 +601,28 @@ results and unsuccessful fixture attempts. Frame/cache native rebuilds reuse
 the unchanged matching C images from the text step; window and loaded Counter
 fixtures build their C inputs afresh. This is development evidence; hosted,
 hardware and latency qualification remain open. GF6 is next.
+
+## GF6 — Caller geometry and lookup
+
+### Coherent lookup
+
+The first step shares `AESWINDOW.Query` between caller and RPC, using the same
+committed layer-stack lookup. Ordinary/PB `wind_find` acquires only the scene
+gate; it does not wait for physical readiness, older mutations or another
+client's UPDATE. Registration errors, foreign/border hits and hidden/native/
+background/menu occlusion remain unchanged. Selection, visible-rectangle
+iteration and transport sequence are preserved.
+
+The optimized two-owner fixture passes 84 checks and all 20 parent state
+checkpoints. Eleven query calls execute in the caller without RPC, including
+queries while a peer holds UPDATE and mutation readiness is deliberately
+unavailable. The remaining geometry/top calls still use RPC in this step.
+Host checks run 687 tests: 683 pass and four skip. The matched fixture adds
+246 native and 93 C code bytes, with unchanged data and zero-fill. Reserved
+bank-zero growth is **0 fixed, 0 root, 0 kernel, 0 per public Task and 0 idle
+bytes**, including guards, alignment and unused capacity. No Task, signal or
+upper static capacity is added.
+
+The [query record](../development/gem-first-gf6-query.json) preserves exact
+pins, source/artifact hashes, state comparison and stack observations. GF6's
+geometry/top and integration acceptance remain open at this step.

@@ -293,6 +293,10 @@ Commit: `feat(aes): update window frame attributes in callers`.
 
 ### GF6 — Execute geometry and lookup in the caller
 
+Status: in progress. Caller lookup passes its selected development checks in
+the [query record](../../development/gem-first-gf6-query.json), starting from
+GF5 commit `32ef5b1a`. Geometry/top remain on RPC at this step.
+
 Enable supported current-rectangle/top operations and `wind_find` through the
 shared helpers. Queries observe coherent committed state; they do not wait for
 unrelated repaint completion. Preserve peer exclusion, owner mutations within
@@ -303,6 +307,32 @@ Acceptance: two clients, overlapping/hidden windows, stale iterator restart,
 menus and held drag/release/Escape have matching state/events/pixels. Run the
 queued-UPDATE drag regression and the disk-load subset from GF0. Measure direct
 call completion and input-to-pixels rather than merely the number of RPCs.
+
+Implement as two executable steps, committing after each passes:
+
+1. Route ordinary/PB `wind_find` through one shared lookup helper. Acquire the
+   scene gate, then read the committed stack without consulting repaint,
+   logical-owner or older-mutation readiness. Preserve registration checks,
+   foreign/border hits and native/desktop/tile occlusion; queries do not mutate
+   selection or transport sequence. Test while a peer owns UPDATE and while
+   mutation readiness is deliberately unavailable.
+2. Share a thin `WF_CXYWH`/`WF_TOP` decoder between caller and RPC. Enable
+   metadata-only bounds changes (including owner mutations within UPDATE,
+   hidden/iconified geometry, no-ops and resizes) and effect-free focus/top.
+   Check copy eligibility and caret/widget focus effects before mutation.
+   Cases needing those effects retain their existing system continuation and
+   fall back unapplied; no caller enters presenter-owned copy or widget scratch.
+   Preserve copied-move completion/failure behavior and console extensions.
+
+Use optimized `tools/test_aes_server.py --suite geometry --output DIR` for
+ordinary/PB calls, two owners, coherent lookup, exclusion, stale iterators,
+deferred work and call timing. Compare the parent window/cache observations;
+run copied-move effects, lock/lifecycle checks, the queued-UPDATE native drag
+regression and GF0's disk cohort. Build the drag package with `tools/build_demo.py`
+so OF816, its five-second boot, matching disk/ROM and notices remain included.
+Keep the unchanged entry ABI's focused raw/optimized bridge evidence. Target
+zero added reserved bank-zero bytes in every category, including unused
+capacity, alignment and guards; report code/data and observed stack depth.
 
 Commit: `feat(aes): execute window geometry and lookup in callers`.
 

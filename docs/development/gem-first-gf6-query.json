@@ -1,0 +1,1989 @@
+{
+  "slice": "GF6-query",
+  "plan_slice": "GF6",
+  "plan_slice_complete": false,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "base_revision": "32ef5b1a6ee3c2465e28665cad17668cd1b05e1c",
+  "scope": "Caller coherent wind_find only; geometry/top retain RPC in this step.",
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ]
+  },
+  "toolchain": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "actionc_override": false,
+    "compiler_profile": "release",
+    "native_mode": "Optimized development fixtures; unchanged C/Action entry ABI retains the focused raw/optimized GF4 bridge evidence.",
+    "calypsi": {
+      "cc65816": {
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "sources_sha256": {
+    "c/calypsi/aes-windows.c": "2f4d4aae13ed6e8adc0aed4839e8eb69d296c4094ff84eaca91ad380f9d643a5",
+    "lib/aes/aeslocal.act": "b1bf0b09839425021144a42f81195c35bd03df5fc2a6f96beae1e5d538156111",
+    "lib/aes/aeswindow.act": "6e63709f0159b07cb8d402801762dfb6d06db0c311f697c048993ce9c6c6c8af",
+    "tests/programs/aes_geometry.c": "83fd1afb9a76db19967176189077153bbebedfa4fc5a5594cdc4c8e1127bbc51",
+    "tests/programs/aes_geometry_markers.c": "000b74d5e141de5f8e4e004ebac22a2603bd1a3ce33021f0dc88034d997abbd8",
+    "tools/test_aes_geometry.py": "b5aa746881f5a282767141ae54e06b89073c6223f5c1c43ca25ff063ebfd2558",
+    "tools/test_aes_server.py": "91979f7b5b385bcc4814755c1dcf952f131caaf4d9b17cbaf888dbfb68ff9092"
+  },
+  "bridge_abi_evidence": {
+    "path": "docs/development/gem-first-gf4-create.json",
+    "sha256": "8a429f517cea23353e1582cf3fbf55c2ad0fd68d4342e4e34cdbd5aff11d9bb9"
+  },
+  "checks": [
+    {
+      "name": "GF5-parent",
+      "result": {
+        "path": "build/gem-first-gui/gf6/parent/geometry/results.json",
+        "sha256": "3405c6799d02ebc821a6448ae9b4ee9e0a1c6b66efe6a4cf9d96b9d42f4afd66"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf6/parent/geometry/program/build.json",
+        "sha256": "68140a5fedb5ba70626d2e574c9f3906ab7ef57429aec61643ec395f1f1880a3"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf6/parent/geometry/program/program.a816.json",
+        "sha256": "eb30389db95f596fefda40ca61344b02575b48988de73864adb80b81a5296478"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf6/parent/geometry/c-image.json",
+        "sha256": "45cb8c0d2999b2d5683168e2f8c05193b1f3cca6d426c6722deb1d41ef6e8c17"
+      },
+      "AESChecks": 84,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 399,
+          "remaining_above_floor": 881
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 326,
+          "remaining_above_floor": 730
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 718,
+          "remaining_above_floor": 1586
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      },
+      "geometry": [
+        {
+          "phase": 1,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 45.96907999813922
+        },
+        {
+          "phase": 2,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 28.700525389107938
+        },
+        {
+          "phase": 3,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 22.616048684835608
+        },
+        {
+          "phase": 4,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 39.242633345503606
+        },
+        {
+          "phase": 5,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 36.7668058964249
+        },
+        {
+          "phase": 6,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 18.370010953242204
+        },
+        {
+          "phase": 7,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 44.55453290836069
+        },
+        {
+          "phase": 8,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 16.278674728177744
+        },
+        {
+          "phase": 9,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 15.105183547863694
+        },
+        {
+          "phase": 10,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 4,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 2,
+            "bounds": [
+              48,
+              40,
+              288,
+              200
+            ],
+            "work": [
+              56,
+              51,
+              280,
+              189
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                280,
+                64
+              ],
+              [
+                56,
+                64,
+                80,
+                189
+              ]
+            ]
+          },
+          "call_ms": 36.07486266156737
+        },
+        {
+          "phase": 11,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 3,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                64
+              ],
+              [
+                56,
+                192,
+                288,
+                197
+              ],
+              [
+                56,
+                64,
+                80,
+                192
+              ]
+            ]
+          },
+          "call_ms": 38.49416179503481
+        },
+        {
+          "phase": 12,
+          "field": 5,
+          "result": 0,
+          "status": 1,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 3,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                64
+              ],
+              [
+                56,
+                192,
+                288,
+                197
+              ],
+              [
+                56,
+                64,
+                80,
+                192
+              ]
+            ]
+          },
+          "call_ms": 15.119280384674482
+        },
+        {
+          "phase": 13,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 20.93450750586076
+        },
+        {
+          "phase": 14,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 6,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 1,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                197
+              ]
+            ]
+          },
+          "call_ms": 61.013153758428146
+        },
+        {
+          "phase": 15,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 7,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 1,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                197
+              ]
+            ]
+          },
+          "call_ms": 13.086587000742902
+        },
+        {
+          "phase": 16,
+          "field": 10,
+          "result": 0,
+          "status": 1,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 11.235954264222652
+        },
+        {
+          "phase": 17,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 28672,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 78.811678947361
+        },
+        {
+          "phase": 18,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 3,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 22528,
+            "epoch": 2,
+            "visibleCount": 1,
+            "bounds": [
+              96,
+              72,
+              336,
+              200
+            ],
+            "work": [
+              104,
+              83,
+              328,
+              189
+            ],
+            "visible": [
+              [
+                296,
+                83,
+                328,
+                189
+              ]
+            ]
+          },
+          "call_ms": 35.83958645519532
+        },
+        {
+          "phase": 19,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 3,
+            "shown": 1,
+            "revision": 6,
+            "pixelsReady": 22528,
+            "epoch": 2,
+            "visibleCount": 1,
+            "bounds": [
+              96,
+              72,
+              336,
+              200
+            ],
+            "work": [
+              104,
+              83,
+              328,
+              189
+            ],
+            "visible": [
+              [
+                104,
+                83,
+                328,
+                189
+              ]
+            ]
+          },
+          "call_ms": 61.621714203549864
+        },
+        {
+          "phase": 20,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 28672,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 37.295296308461346
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 312,
+        "native_irq_count": 14784
+      }
+    },
+    {
+      "name": "geometry",
+      "result": {
+        "path": "build/gem-first-gui/gf6/query/geometry/results.json",
+        "sha256": "c93829d792db0bcd0da88494d166792142bfe1a793cc2e50494123b264014f46"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf6/query/geometry/program/build.json",
+        "sha256": "33476f08f4a1004afce868fad58392b2fcfeccd52e3161897715edcb4a9495ea"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf6/query/geometry/program/program.a816.json",
+        "sha256": "de62d4ae484c40d8a8391dbca3e251a1402ec57ddd71178e403abe902e8c2512"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf6/query/geometry/c-image.json",
+        "sha256": "8b786df9fcfae3c60f303586ed06fbadc0880579264855da4f1ef389a69cd760"
+      },
+      "AESChecks": 84,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 366,
+          "remaining_above_floor": 914
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 332,
+          "remaining_above_floor": 724
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "geometry": [
+        {
+          "phase": 1,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 7.548433207072665
+        },
+        {
+          "phase": 2,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 3.90637444863747
+        },
+        {
+          "phase": 3,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 7.101704448538793
+        },
+        {
+          "phase": 4,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 12.93123985908802
+        },
+        {
+          "phase": 5,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 8.343283350648948
+        },
+        {
+          "phase": 6,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 4.096681745583108
+        },
+        {
+          "phase": 7,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 8.760549720248274
+        },
+        {
+          "phase": 8,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 4.054884624439122
+        },
+        {
+          "phase": 9,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 3.0070667442932484
+        },
+        {
+          "phase": 10,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 4,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 2,
+            "bounds": [
+              48,
+              40,
+              288,
+              200
+            ],
+            "work": [
+              56,
+              51,
+              280,
+              189
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                280,
+                64
+              ],
+              [
+                56,
+                64,
+                80,
+                189
+              ]
+            ]
+          },
+          "call_ms": 35.273387004690015
+        },
+        {
+          "phase": 11,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 3,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                64
+              ],
+              [
+                56,
+                192,
+                288,
+                197
+              ],
+              [
+                56,
+                64,
+                80,
+                192
+              ]
+            ]
+          },
+          "call_ms": 38.50247892875318
+        },
+        {
+          "phase": 12,
+          "field": 5,
+          "result": 0,
+          "status": 1,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 3,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                64
+              ],
+              [
+                56,
+                192,
+                288,
+                197
+              ],
+              [
+                56,
+                64,
+                80,
+                192
+              ]
+            ]
+          },
+          "call_ms": 15.684774993339246
+        },
+        {
+          "phase": 13,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 22.31550412402961
+        },
+        {
+          "phase": 14,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 6,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 1,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                197
+              ]
+            ]
+          },
+          "call_ms": 61.0820872904329
+        },
+        {
+          "phase": 15,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 7,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 1,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                197
+              ]
+            ]
+          },
+          "call_ms": 14.723159270291339
+        },
+        {
+          "phase": 16,
+          "field": 10,
+          "result": 0,
+          "status": 1,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 13.485245545751988
+        },
+        {
+          "phase": 17,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 28672,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 10.36187989776974
+        },
+        {
+          "phase": 18,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 3,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 22528,
+            "epoch": 2,
+            "visibleCount": 1,
+            "bounds": [
+              96,
+              72,
+              336,
+              200
+            ],
+            "work": [
+              104,
+              83,
+              328,
+              189
+            ],
+            "visible": [
+              [
+                296,
+                83,
+                328,
+                189
+              ]
+            ]
+          },
+          "call_ms": 36.13646583843051
+        },
+        {
+          "phase": 19,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 3,
+            "shown": 1,
+            "revision": 6,
+            "pixelsReady": 22528,
+            "epoch": 2,
+            "visibleCount": 1,
+            "bounds": [
+              96,
+              72,
+              336,
+              200
+            ],
+            "work": [
+              104,
+              83,
+              328,
+              189
+            ],
+            "visible": [
+              [
+                104,
+                83,
+                328,
+                189
+              ]
+            ]
+          },
+          "call_ms": 61.444094059733935
+        },
+        {
+          "phase": 20,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 28672,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 7.486830030209521
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 311,
+        "native_irq_count": 14822
+      }
+    }
+  ],
+  "resource_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf6/parent/geometry/program/build.json",
+      "sha256": "68140a5fedb5ba70626d2e574c9f3906ab7ef57429aec61643ec395f1f1880a3"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf6/query/geometry/program/build.json",
+      "sha256": "33476f08f4a1004afce868fad58392b2fcfeccd52e3161897715edcb4a9495ea"
+    },
+    "parent_bytes": {
+      "native": {
+        "code": 1065694,
+        "data": 11971,
+        "zero_fill": 25143,
+        "banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          63
+        ]
+      },
+      "c": {
+        "code": 184309,
+        "data": 45052,
+        "zero_fill": 20883,
+        "banks": [
+          12,
+          14,
+          16
+        ],
+        "dp_bytes": 23
+      }
+    },
+    "candidate_bytes": {
+      "native": {
+        "code": 1065940,
+        "data": 11971,
+        "zero_fill": 25143,
+        "banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          63
+        ]
+      },
+      "c": {
+        "code": 184402,
+        "data": 45052,
+        "zero_fill": 20883,
+        "banks": [
+          12,
+          14,
+          16
+        ],
+        "dp_bytes": 23
+      }
+    },
+    "delta": {
+      "native": {
+        "code": 246,
+        "data": 0,
+        "zero_fill": 0
+      },
+      "c": {
+        "code": 93,
+        "data": 0,
+        "zero_fill": 0
+      }
+    },
+    "unchanged_reservations": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations"
+    ]
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "resources": {
+    "tasks_added": 0,
+    "signals_added": 0,
+    "upper_static_arena_delta": 0,
+    "heap_reservation_delta": 0,
+    "c_dp_bytes": 23,
+    "client_payload_bytes": 136,
+    "service_payload_bytes": 1982
+  },
+  "coverage": [
+    "Ordinary/PB lookup with global foreign/border handles, hidden/native/background/menu occlusion and negative coordinates.",
+    "Lookup while another client owns UPDATE and window mutation readiness is unavailable.",
+    "Unchanged selected view, iterator index, Task and Forbid nesting; normal registration checks and unchanged transport sequence.",
+    "Shared current-rectangle/top behavior, stale iterator restart, two-owner mutations and unapplied readiness fallback."
+  ],
+  "host": {
+    "run": 687,
+    "passed": 683,
+    "skipped": 4,
+    "log": {
+      "path": "build/gem-first-gui/gf6/query-host.log",
+      "sha256": "700e9b2aad2aa41d0fa36928c68b55f03eb86020ef3a007751960576d3ef5a1f"
+    }
+  },
+  "limits": [
+    "Development tier only; no hosted-system, hardware or latency qualification.",
+    "The generic C/Action entry signature and public wire ABI remain unchanged; retain the existing focused raw/optimized bridge evidence.",
+    "This step completes lookup only; GF6 geometry/top and integration acceptance remain open."
+  ]
+}

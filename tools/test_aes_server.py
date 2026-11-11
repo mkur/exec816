@@ -201,7 +201,7 @@ def caller_probes(out, timer=False):
     (out/'aes-events.c').write_text(binding)
 
 
-def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None, filesystem='sdfs', frame_local='all'):
+def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None, filesystem='sdfs', frame_local='all', geometry_local='query'):
     gui = suite == 'gui'
     inbox = suite == 'inbox'
     keyboard = suite == 'keyboard'
@@ -228,6 +228,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             instrument(out)
         if suite=='frame':
             from test_aes_frame import instrument
+            instrument(out)
+        if suite=='geometry':
+            from test_aes_geometry import instrument
             instrument(out)
         if locks:
             (out/'aeslockprobe.act').write_text('MODULE AESLOCKPROBE\nPUBLIC BYTE busy,ready\nENDMODULE\n')
@@ -293,6 +296,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if suite=='frame':
             from test_aes_frame import ROOTS
             extra_roots=ROOTS
+        if suite=='geometry':
+            from test_aes_geometry import ROOTS
+            extra_roots=ROOTS
         if suite in ('forms','alerts','fsel'):
             from test_aes_forms import instrument
             instrument(out,alerts=suite=='alerts',file_selector=suite=='fsel')
@@ -301,7 +307,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             bitmap_builder.extract=extract_with_preemption
         try:
             foreign = drawing(out, True, widgets=True, fault=borrowed, renderer_source=renderer,
-                client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if events or timers or input_events else ROOT/'c/calypsi/aes-events.c'), ROOT/('tests/programs/display_borrow.c' if borrowed else f'tests/programs/aes_{suite}.c')]+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else [])+([ROOT/'tests/programs/aes_frame_markers.c'] if suite=='frame' else []),
+                client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if events or timers or input_events else ROOT/'c/calypsi/aes-events.c'), ROOT/('tests/programs/display_borrow.c' if borrowed else f'tests/programs/aes_{suite}.c')]+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else [])+([ROOT/'tests/programs/aes_frame_markers.c'] if suite=='frame' else [])+([ROOT/'tests/programs/aes_geometry_markers.c'] if suite=='geometry' else []),
                 client_entries=entries,
                 client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+(['AESPark'] if events or timers or suite == 'messages' else [])+extra_roots,
                 client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())]+extra_probes,
@@ -346,6 +352,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if suite=='frame':
             from test_aes_frame import setup as frame_setup
             setup+=frame_setup(sy)
+        if suite=='geometry':
+            from test_aes_geometry import setup as geometry_setup
+            setup+=geometry_setup(sy)
         if suite == 'cache':
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESLockCount"]:x})\n    item^=LONGCARD(ADDRESS(@service.lockCount))\n  END\n'
         if suite == 'menus':
@@ -370,7 +379,7 @@ USE AESSTATE
 USE AESCORE
 USE HEAPCORE
 {'USE DESKPAINT'+chr(10)+'USE AESGATE' if suite=='frame' else ''}
-{'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else ''}
+{'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else ''}
 CARD checks
 CARD FUNC POINTER run()
 
@@ -469,6 +478,10 @@ ENDMODULE
         report['frame_local']=frame_local
         environment=dict(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(
             format(foreign['symbols'][n],'x') for n in ('FrameCallBegin','FrameCallEnd','FrameRelease')))
+    if suite=='geometry':
+        report['geometry_local']=geometry_local
+        environment=dict(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(
+            format(foreign['symbols'][n],'x') for n in ('GeoCallBegin','GeoCallEnd')))
     try:
         with patch.dict(os.environ,environment), emulator(BRIDGE, ROM, out, pin=pin) as bridge:
             report['machine'] = verify_machine(bridge, ROM, pin)
@@ -516,6 +529,9 @@ ENDMODULE
                 if borrowed:
                     from test_display_borrow import physical
                     before = lambda b: physical(b, program, foreign, report)
+                if suite=='geometry':
+                    from test_aes_geometry import physical
+                    before = lambda b: physical(b, program, foreign, report)
                 if suite=='frame':
                     from test_aes_frame import physical
                     before = lambda b: physical(b, program, foreign, report)
@@ -540,7 +556,7 @@ ENDMODULE
                 report['runtime'], _ = execute(bridge, program, before_run=before,
                                               timeout=120, frame_limit=6000)
             finally:
-                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle','frame') else
+                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle','frame','geometry') else
                              ('AESChecks', 'AESFailures', 'AESReady', 'AESDone')):
                     report[name] = int.from_bytes(bridge.memdump(foreign['symbols'][name], 2), 'little')
                 if 'AESFirstFailure' in foreign['symbols']:
@@ -566,7 +582,7 @@ ENDMODULE
             if borrowed: bridge.profile_stop()
             from stack_budget import stack_usage
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle','frame') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle','frame','geometry') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
                     'Incomplete application checks')
             if pointer:
                 require(report['boundary_checks']==25, 'Incomplete presenter input boundaries')
@@ -582,6 +598,10 @@ ENDMODULE
                         'Incomplete frame setter checkpoints')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller frame setter exceeded its interrupt floor')
+            if suite=='geometry':
+                require(len(report['geometry'])==20,'Incomplete geometry checkpoints')
+                require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
+                        'Caller geometry exceeded its interrupt floor')
             if windows:
                 count = int.from_bytes(bridge.memdump(foreign['symbols']['AESVisibleCount'], 2), 'little')
                 raw = bridge.memdump(foreign['symbols']['AESVisible'], count*8)
@@ -600,6 +620,9 @@ ENDMODULE
             if events or timers:
                 report['cpu_peer_iterations'] = int.from_bytes(bridge.memdump(foreign['symbols']['AESBurns'], 4), 'little')
             report['status'] = 'pass'
+        if suite=='geometry':
+            from test_aes_geometry import timings
+            timings(out,foreign,report)
         if suite=='frame':
             from test_aes_frame import timings
             timings(out,foreign,report)
@@ -759,16 +782,17 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs',help='Resources fixture disk format')
     parser.add_argument('--frame-local',choices=('none','text','all'),default='all',help='Expected migrated fields for the frame comparison fixture')
+    parser.add_argument('--geometry-local',choices=('none','query','all'),default='query',help='Expected migrated geometry fields in a frozen comparison image')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
+    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
-                     args.video, args.from_build.resolve() if args.from_build else None,args.filesystem,args.frame_local)
+                     args.video, args.from_build.resolve() if args.from_build else None,args.filesystem,args.frame_local,args.geometry_local)
     elif args.suite == 'console':
         plain_console(args.output.resolve())
     else:
