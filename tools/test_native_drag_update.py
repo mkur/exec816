@@ -15,6 +15,7 @@ from gem_render_oracle import DESKTOP_PALETTE, PENS
 from generate_aes_server import ABI, expected_layout, layout
 from generate_desktop import layout as desktop_layout
 from native_program import ROOT, require
+from sio_transaction_trace import BASE_HZ
 from test_demo import run
 
 
@@ -86,7 +87,8 @@ class NativeDragUpdate:
                 require(actual in expected, name + ': wrong outline pixel at ' + str((x, y)))
                 checked += 1
             require(checked > 300, name + ': insufficient independent border coverage')
-            self.report['pixel_checks'].append(dict(name=name, visible=visible, pixels=checked))
+            self.report['pixel_checks'].append(dict(name=name, visible=visible,
+                pixels=checked, observed_clock=b.eval_expr('@clk')))
 
         def baseline(x, y):
             move(x, y)
@@ -96,7 +98,7 @@ class NativeDragUpdate:
         app = context = 0
 
         def observe(name):
-            row = dict(name=name, phase=read('DESKDRAG', 'phase'),
+            row = dict(name=name, clock=b.eval_expr('@clk'), phase=read('DESKDRAG', 'phase'),
                        dirty=read('DESKDRAG', 'dirty'),
                        outline=read('DESKSTATE', 'outlineVisible'),
                        c_outline=s.number(resident['outlineDrawn'], 2),
@@ -125,20 +127,21 @@ class NativeDragUpdate:
         def wait_update(start, name):
             # Physical travel can itself span the timer deadline. Wait for the
             # pending BEGIN, including one already queued during that travel.
-            code = ABI['constants']['BEG_UPDATE'] | ABI['constants']['UPDATE_WINDOW']
+            code = ABI['constants']['BEG_UPDATE']
             s.rendezvous('(dw($%x)=%d)&(dw($%x)=%d)' %
                          (context+request['status'], ABI['constants']['PENDING'],
                           context+request['intin'], code))
             s.frames(12)
             row = observe(name)
             require(row['status'] == ABI['constants']['PENDING']
-                    and row['update'] == (ABI['constants']['BEG_UPDATE'] | ABI['constants']['UPDATE_WINDOW'])
+                    and row['update'] == code
                     and row['updates'] == 0 and row['paints'] == start['paints'],
                     name + ': UPDATE did not wait without repainting')
             outlined(row)
             return row
 
         def cancel():
+            start=b.eval_expr('@clk')
             b._cmd_ok('KEY ESC down')
             s.frames(3)
             b._cmd_ok('KEY ESC up')
@@ -147,6 +150,50 @@ class NativeDragUpdate:
             require(read('DESKSTATE', 'outlineVisible') == 0
                     and s.number(resident['outlineDrawn'], 2) == 0,
                     'Escape retained outline pixels')
+            return start
+
+        def release_counter(name, expected, previous_paints):
+            # Observe completed digits at the accepted geometry, rather than
+            # treating the fixed settling delay as presentation latency.
+            from gem_render_oracle import Raster, font_bytes
+            from test_desktop_presentation import text
+            font=font_bytes(directory/'selected/src/vdi/font8x8.c')
+            start=b.eval_expr('@clk')
+            b._cmd_ok('MOUSE AT 2000 0 0 0')
+            captured=None
+            for _ in range(300):
+                s.frames(1)
+                if read('DESKINPUT','buttons',2)==0 and captured is None:
+                    captured=b.eval_expr('@clk')
+                if (read('DESKDRAG','phase') or read('DESKSTATE','outlineVisible')
+                        or s.number(resident['outlineDrawn'],2)
+                        or work()!=expected or s.number(app+18,4)<=previous_paints):
+                    continue
+                config=s.number(app,4)
+                ink=s.number(config+12,2)
+                digits=b.memdump(app+53,6)
+                x,y=expected[:2];x+=64;y+=8
+                raster=Raster(font);text(raster,x,y,digits,fg=ink)
+                raw,stride=scan();pointer=[read('DESKINPUT',n,2) for n in ('cursorX','cursorY')]
+                matched=True;checked=0
+                for yy in range(y,y+8):
+                    for xx in range(x,x+48):
+                        if pointer[0]-2<=xx<pointer[0]+18 and pointer[1]-2<=yy<pointer[1]+18:
+                            continue
+                        offset=yy*stride+(xx+16)*4
+                        matched=matched and raw[offset:offset+3]==colors[raster.pixels[yy*640+xx]]
+                        checked+=1
+                if matched and checked>=300:
+                    end=b.eval_expr('@clk')
+                    self.report.setdefault('input_to_pixels',[]).append(dict(name=name,
+                        start=start,captured=captured,presented=end,digit_pixels=checked,
+                        digits=digits.decode('ascii'),work=expected,
+                        ms_upper=((end-start)&0xffffffff)/BASE_HZ*1000,
+                        scope='Physical release to exact Counter digits and retired outline; one-PAL-frame debugger sampling, not percentile qualification.'))
+                    # Preserve the original regression's later observation.
+                    s.frames(150)
+                    return
+            raise RuntimeError(name+': release did not produce completed Counter pixels')
 
         menus = Menus(s, click, move)
         menus.select('SYS:')
@@ -211,7 +258,9 @@ class NativeDragUpdate:
         outlined(motion)
         require(motion['target'] != waiting['target'], 'Queued UPDATE froze Counter motion')
         pixels(saved, motion['target'], True, 'counter-motion')
-        edge(0, 150)
+        release_counter('counter-release',
+            [motion['target'][0]+8,motion['target'][1]+11,original[2],original[3]],
+            started['paints'])
         released = observe('counter-released')
         require(released['phase'] == released['outline'] == released['c_outline'] == 0
                 and released['paints'] > started['paints'], 'Release did not settle repaint')
@@ -225,12 +274,14 @@ class NativeDragUpdate:
         move(x+80, y-6)
         started = observe('escape-start')
         waiting = wait_update(started, 'escape-waiting')
-        cancel()
+        cancelled_at=cancel()
         cancelled = observe('escape-cancelled')
         require(work() == original and cancelled['status'] == ABI['constants']['PENDING']
                 and cancelled['buttons'] == 1, 'Escape changed geometry or granted UPDATE')
         pixels(saved, waiting['target'], False, 'escape-restored')
-        edge(0, 150)
+        self.report['escape_pixels_ms_upper']=((self.report['pixel_checks'][-1]['observed_clock']
+            -cancelled_at)&0xffffffff)/BASE_HZ*1000
+        release_counter('escape-release',original,started['paints'])
         require(s.number(app+18, 4) > started['paints'], 'Escape/release did not resume repaint')
 
         # A different application's queued UPDATE must not suspend Files either.
@@ -266,7 +317,7 @@ class NativeDragUpdate:
         require(not any(a['name'] == 'counter' for a in instances(b, s.p, directory)),
                 'Counter retained its Process after close')
         self.report['closed'] = True
-        click(80, 34)  # Exposed Shell title.
+        menus.select('Shell')
         s.save_screen(out / 'boot-smoke.png')
         s.saved['integration'] = self.report
         for char in 'EXIT':
@@ -278,13 +329,20 @@ class NativeDragUpdate:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bundle', type=Path, required=True)
-    out = parser.parse_args().bundle.resolve()
+    parser.add_argument('--native-snapshot', type=Path,
+                        help='Replay an existing native-entry snapshot; verify all expanded image bytes')
+    args = parser.parse_args()
+    out = args.bundle.resolve()
     for name in ('EXEC816_LATENCY_TRACE', 'EXEC816_MASK_TRACE', 'EXEC816_MOUSE_TRACE'):
         os.environ.pop(name, None)
     with zipfile.ZipFile(out / 'exec816-demo.zip') as archive:
         archive.extractall(out / 'extracted')
     probe = NativeDragUpdate()
+    bootstrap = None
+    if args.native_snapshot:
+        from test_bootable_atr import DiskBoot
+        bootstrap = DiskBoot(out, native_snapshot=args.native_snapshot.resolve())
     result = run(out, boot_smoke=True, distribution_root=out / 'extracted/exec816-demo',
-                 integration=probe, profile_commands=False)
+                 integration=probe, profile_commands=False, bootstrap=bootstrap)
     result.update(tier='development', qualification=False, native_drag_update=probe.report)
     (out / 'native-drag-update-results.json').write_text(json.dumps(result, indent=2) + '\n')

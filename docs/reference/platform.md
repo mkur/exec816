@@ -171,6 +171,10 @@ including additional code banks only when populated. The existing native data
 arena and all stack/DP reservations stay in place. The effective origin is
 recorded in `memory.json` and `layout.json`;
 normal extent and bank-ownership checks still apply to the combined image.
+When SDX is enabled, placement also clears its existing fixed resident bank
+`$28`: native code starts at `$290000` or above. Lower unclaimed banks remain
+available to the heap. This changes placement only, adding **0 reserved bytes**
+in bank zero or upper RAM; data arenas and Task reservations stay unchanged.
 
 The text demo reserves an 11 KiB upper static arena for its composed application
 state, controller, session registry, resident literals and scene/input buffers.

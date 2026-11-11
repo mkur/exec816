@@ -5,8 +5,9 @@
 
 The optional AES endpoint runs in the existing desktop presenter. Registration,
 exit, unmigrated window mutations and contended GUI locks use ordinary Exec RPC.
-Eligible hidden creation/deletion and bounded frame setters, uncontended
-BEGIN/END UPDATE, copied messaging and event/timer waits run in their callers.
+Eligible hidden creation/deletion, frame/geometry/top setters and committed
+window lookup, uncontended BEGIN/END UPDATE, copied messaging and event/timer
+waits run in their callers.
 This adds no Task or kernel gateway.
 The native desktop and retained Control Panel remain independent clients of
 their existing service.
@@ -337,6 +338,21 @@ after release; unchanged values retain their existing publication and do not
 request a frame wake. Physical repaint remains deferred, including while the
 caller owns UPDATE. A readiness or older-work miss falls back before mutation.
 Other fields retain their established transport.
+
+Eligible `WF_CXYWH` and `WF_TOP` calls share a caller/RPC geometry helper.
+Bounds changes inside the owner's UPDATE, ordinary resizes, hidden/iconified
+normal bounds and no-op geometry commit their values and published views before
+return. Effect-free stacking/focus changes use the caller too. Earlier waiters
+and peer ownership retain the same exclusion rule as other window mutations;
+changed geometry invalidates an existing visible-rectangle walk.
+
+An unheld move needing a screen copy falls back before reserving a move or
+changing geometry. Its existing presenter continuation retains the request and
+old committed bounds until copy completion. Caret restoration, widget focus
+cancellation and console-bound geometry also retain system admission before
+mutation. Frame drawing and interactive gesture work remain in the presenter,
+using the same bounds/top policy. No physical effect runs under caller scene
+ownership.
 
 A copied move keeps the old published geometry until display completion. Success
 publishes the new bounds; a quiescent display failure keeps the old bounds and

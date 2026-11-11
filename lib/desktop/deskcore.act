@@ -116,6 +116,21 @@ PUBLIC LAYERTYPES.Layer POINTER FUNC Layer(DESKTYPES.Service POINTER service
 
 RETURN(LAYERS.Find(@service.scene,window.layer))
 
+; Focus can commit in a caller only when preparation and cancellation need
+; no presenter-owned caret or widget operation. The commit helper stays shared.
+PUBLIC BYTE FUNC FocusMetadataReady(DESKTYPES.Service POINTER service
+    LONGCARD id)
+
+  IF service.focus=id THEN
+    RETURN(1)
+  FI
+  IF DESKMOVE.CaretVisible()<>0 THEN
+    RETURN(0)
+  FI
+  LET previous=Find(service,service.focus)
+
+RETURN(previous=NULL OR previous.widgets=NULL)
+
 ; Remove the outgoing caret against the old geometry and presentation.
 PUBLIC PROC PrepareFocus(DESKTYPES.Service POINTER service LONGCARD id)
 

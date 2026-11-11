@@ -249,8 +249,11 @@ serialization from physical work and waits while published input and physical
 completion continue during caller ownership. [GF4](history/gem-first-gui.md#gf4--caller-hidden-window-lifecycle) moves hidden
 create/delete into the caller with ordered, unapplied fallback.
 [GF5](history/gem-first-gui.md#gf5--caller-frame-attributes) moves bounded frame
-attributes into callers with matching state and deferred pixels. GF6 next moves
-geometry, stacking and window lookup. Existing latency gates remain open.
+attributes into callers with matching state and deferred pixels.
+[GF6](history/gem-first-gui.md#gf6--caller-geometry-and-lookup) adds eligible
+caller geometry/top and committed lookup while preserving system effect
+continuations. GF7 next moves open/close with safe route retirement. Existing
+latency gates remain open.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)
 prioritizes ordinary AES/VDI application bodies and fewer platform edits.

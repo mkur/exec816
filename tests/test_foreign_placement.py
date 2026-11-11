@@ -22,3 +22,18 @@ class ForeignPlacement(unittest.TestCase):
         foreign={'segments':[{'address':0xf0000,'bytes':bytes(35082)}], 'zero_fill':[]}
         place_after_foreign(memory,foreign)
         self.assertEqual(memory['profile']['code_origin'],0x100000)
+
+    def test_sdx_resident_bank_stays_clear_as_native_code_grows(self):
+        memory={'profile':{'code_origin':0x13000,'data_origin':0x12000},
+                'usable_banks':list(range(1,64)),
+                'sdx_storage':{'resident_base':0x280000,'resident_reserved_bytes':65536}}
+        foreign={'segments':[{'address':0x120000,'bytes':bytes(256)}], 'zero_fill':[]}
+        place_after_foreign(memory,foreign)
+        self.assertEqual(memory['profile'],{'code_origin':0x290000,'data_origin':0x12000})
+        self.assertEqual(memory['foreign_code_placement']['fixed_image_end'],0x290000)
+
+    def test_sdx_without_a_foreign_image_also_reserves_its_bank(self):
+        memory={'profile':{'code_origin':0x13000},'usable_banks':list(range(1,64)),
+                'sdx_storage':{'resident_base':0x280000,'resident_reserved_bytes':65536}}
+        place_after_foreign(memory,None)
+        self.assertEqual(memory['profile']['code_origin'],0x290000)

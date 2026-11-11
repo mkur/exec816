@@ -1,0 +1,3651 @@
+{
+  "slice": "GF6",
+  "plan_slice": "GF6",
+  "plan_slice_complete": true,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "base_revision": "32ef5b1a6ee3c2465e28665cad17668cd1b05e1c",
+  "scope": "Caller geometry/top metadata and coherent lookup; retained system continuations for copy/caret/widget effects.",
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ]
+  },
+  "toolchain": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "actionc_override": false,
+    "compiler_profile": "release",
+    "native_mode": "Optimized development fixtures; unchanged C/Action entry ABI retains the focused raw/optimized GF4 bridge evidence.",
+    "calypsi": {
+      "cc65816": {
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "sources_sha256": {
+    "c/calypsi/aes-windows.c": "2f4d4aae13ed6e8adc0aed4839e8eb69d296c4094ff84eaca91ad380f9d643a5",
+    "lib/aes/aeslocal.act": "b5e09beff866da9a31f85e4d85b49ae04576af1fdd9c0f3c7bc57f120c7faf77",
+    "lib/aes/aeswindow.act": "5ea76183b17704c23899d9dadebc6f200611fc3ed93296d25fbac7ed6e94a94e",
+    "lib/desktop/deskcore.act": "66fd667e6901ec7691f6167bb705240a56d136e5ebf5d253a45676a9e970e39e",
+    "lib/desktop/deskmove.act": "2c03fdfd4d3676892374f368838eaa529cc25910aa6b2c0b6fa4090dfa3d462f",
+    "tests/programs/aes_geometry.c": "83fd1afb9a76db19967176189077153bbebedfa4fc5a5594cdc4c8e1127bbc51",
+    "tests/programs/aes_geometry_markers.c": "000b74d5e141de5f8e4e004ebac22a2603bd1a3ce33021f0dc88034d997abbd8",
+    "tests/programs/aes_window_effects.c": "8c11e65789a367832a5d99681149ae2ce5640b99c5942abbd311030025aef2b3",
+    "tests/test_foreign_placement.py": "563097f8032a3178ca1eef89d1b0625ba1c786cf31f687bb1feb5937d5a346cb",
+    "tools/native_program.py": "593008da6e55ed4ed0135d3033d48d48e7404ad0ca6954e8bc886ed9859e3e20",
+    "tools/test_aes_geometry.py": "b5aa746881f5a282767141ae54e06b89073c6223f5c1c43ca25ff063ebfd2558",
+    "tools/test_aes_scene.py": "001487ac3a98883e0bdf51f700bfc8f47ce56b3c046ad18a05a93c51c1036a2e",
+    "tools/test_aes_server.py": "23efd7ee696a8c438da33f2b3b79d334b9248784f1232f9c3980ab742977f879",
+    "tools/test_aes_window_effects.py": "70f83fa94707102d78d780887703754c107f07e9ea1d7e08f275c0b110be5aad",
+    "tools/test_native_drag_update.py": "946c303d5c2a22708f57648af70cf46386af73408be6f1ea4a912d08cd7e7267"
+  },
+  "bridge_abi_evidence": {
+    "path": "docs/development/gem-first-gf4-create.json",
+    "sha256": "8a429f517cea23353e1582cf3fbf55c2ad0fd68d4342e4e34cdbd5aff11d9bb9"
+  },
+  "checks": [
+    {
+      "name": "GF5-parent",
+      "result": {
+        "path": "build/gem-first-gui/gf6/parent/geometry/results.json",
+        "sha256": "3405c6799d02ebc821a6448ae9b4ee9e0a1c6b66efe6a4cf9d96b9d42f4afd66"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf6/parent/geometry/program/build.json",
+        "sha256": "68140a5fedb5ba70626d2e574c9f3906ab7ef57429aec61643ec395f1f1880a3"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf6/parent/geometry/program/program.a816.json",
+        "sha256": "eb30389db95f596fefda40ca61344b02575b48988de73864adb80b81a5296478"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf6/parent/geometry/c-image.json",
+        "sha256": "45cb8c0d2999b2d5683168e2f8c05193b1f3cca6d426c6722deb1d41ef6e8c17"
+      },
+      "AESChecks": 84,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 399,
+          "remaining_above_floor": 881
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 326,
+          "remaining_above_floor": 730
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 718,
+          "remaining_above_floor": 1586
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      },
+      "geometry": [
+        {
+          "phase": 1,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 45.96907999813922
+        },
+        {
+          "phase": 2,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 28.700525389107938
+        },
+        {
+          "phase": 3,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 22.616048684835608
+        },
+        {
+          "phase": 4,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 39.242633345503606
+        },
+        {
+          "phase": 5,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 36.7668058964249
+        },
+        {
+          "phase": 6,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 18.370010953242204
+        },
+        {
+          "phase": 7,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 44.55453290836069
+        },
+        {
+          "phase": 8,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 16.278674728177744
+        },
+        {
+          "phase": 9,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 15.105183547863694
+        },
+        {
+          "phase": 10,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 4,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 2,
+            "bounds": [
+              48,
+              40,
+              288,
+              200
+            ],
+            "work": [
+              56,
+              51,
+              280,
+              189
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                280,
+                64
+              ],
+              [
+                56,
+                64,
+                80,
+                189
+              ]
+            ]
+          },
+          "call_ms": 36.07486266156737
+        },
+        {
+          "phase": 11,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 3,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                64
+              ],
+              [
+                56,
+                192,
+                288,
+                197
+              ],
+              [
+                56,
+                64,
+                80,
+                192
+              ]
+            ]
+          },
+          "call_ms": 38.49416179503481
+        },
+        {
+          "phase": 12,
+          "field": 5,
+          "result": 0,
+          "status": 1,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 3,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                64
+              ],
+              [
+                56,
+                192,
+                288,
+                197
+              ],
+              [
+                56,
+                64,
+                80,
+                192
+              ]
+            ]
+          },
+          "call_ms": 15.119280384674482
+        },
+        {
+          "phase": 13,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 20.93450750586076
+        },
+        {
+          "phase": 14,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 6,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 1,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                197
+              ]
+            ]
+          },
+          "call_ms": 61.013153758428146
+        },
+        {
+          "phase": 15,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 7,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 1,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                197
+              ]
+            ]
+          },
+          "call_ms": 13.086587000742902
+        },
+        {
+          "phase": 16,
+          "field": 10,
+          "result": 0,
+          "status": 1,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 11.235954264222652
+        },
+        {
+          "phase": 17,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 28672,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 78.811678947361
+        },
+        {
+          "phase": 18,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 3,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 22528,
+            "epoch": 2,
+            "visibleCount": 1,
+            "bounds": [
+              96,
+              72,
+              336,
+              200
+            ],
+            "work": [
+              104,
+              83,
+              328,
+              189
+            ],
+            "visible": [
+              [
+                296,
+                83,
+                328,
+                189
+              ]
+            ]
+          },
+          "call_ms": 35.83958645519532
+        },
+        {
+          "phase": 19,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "handle": 3,
+            "shown": 1,
+            "revision": 6,
+            "pixelsReady": 22528,
+            "epoch": 2,
+            "visibleCount": 1,
+            "bounds": [
+              96,
+              72,
+              336,
+              200
+            ],
+            "work": [
+              104,
+              83,
+              328,
+              189
+            ],
+            "visible": [
+              [
+                104,
+                83,
+                328,
+                189
+              ]
+            ]
+          },
+          "call_ms": 61.621714203549864
+        },
+        {
+          "phase": 20,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 28672,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 37.295296308461346
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 312,
+        "native_irq_count": 14784
+      }
+    },
+    {
+      "name": "geometry",
+      "result": {
+        "path": "build/gem-first-gui/gf6/complete/geometry/results.json",
+        "sha256": "ee12c6c074a795192722baea9a3a70e425631fe8f46a87e180e6e45cc8d8ed0a"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf6/complete/geometry/program/build.json",
+        "sha256": "a2ababc0cb825edb415312d95fd20a1553de58183e24c8e5f376dca8a606e47e"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf6/complete/geometry/program/program.a816.json",
+        "sha256": "545b18f1bf6c6ede31ad3bfa25bb8cd2a7d1e842ba1002e17eb8ffb39556e68d"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf6/complete/geometry/c-image.json",
+        "sha256": "8b786df9fcfae3c60f303586ed06fbadc0880579264855da4f1ef389a69cd760"
+      },
+      "AESChecks": 84,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 599,
+          "remaining_above_floor": 681
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 533,
+          "remaining_above_floor": 523
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      },
+      "geometry": [
+        {
+          "phase": 1,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 6.656173921133837
+        },
+        {
+          "phase": 2,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 3.8578108458243054
+        },
+        {
+          "phase": 3,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 3.012987415753779
+        },
+        {
+          "phase": 4,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 11.993024885146022
+        },
+        {
+          "phase": 5,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 7.432345755935825
+        },
+        {
+          "phase": 6,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 17.209841283714347
+        },
+        {
+          "phase": 7,
+          "field": 106,
+          "result": 0,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 3.006996260109194
+        },
+        {
+          "phase": 8,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 4.053827361678312
+        },
+        {
+          "phase": 9,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 1,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              32,
+              480,
+              96
+            ],
+            "work": [
+              368,
+              43,
+              472,
+              94
+            ],
+            "visible": []
+          },
+          "call_ms": 3.644243768140867
+        },
+        {
+          "phase": 10,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 4,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 2,
+            "bounds": [
+              48,
+              40,
+              288,
+              200
+            ],
+            "work": [
+              56,
+              51,
+              280,
+              189
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                280,
+                64
+              ],
+              [
+                56,
+                64,
+                80,
+                189
+              ]
+            ]
+          },
+          "call_ms": 49.4426815566855
+        },
+        {
+          "phase": 11,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 3,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                64
+              ],
+              [
+                56,
+                192,
+                288,
+                197
+              ],
+              [
+                56,
+                64,
+                80,
+                192
+              ]
+            ]
+          },
+          "call_ms": 52.50395063851623
+        },
+        {
+          "phase": 12,
+          "field": 5,
+          "result": 0,
+          "status": 1,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 3,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                64
+              ],
+              [
+                56,
+                192,
+                288,
+                197
+              ],
+              [
+                56,
+                64,
+                80,
+                192
+              ]
+            ]
+          },
+          "call_ms": 3.7109218062558944
+        },
+        {
+          "phase": 13,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 19.642743864704197
+        },
+        {
+          "phase": 14,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 6,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 1,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                197
+              ]
+            ]
+          },
+          "call_ms": 64.1392682895885
+        },
+        {
+          "phase": 15,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "revision": 7,
+            "pixelsReady": 0,
+            "epoch": 1,
+            "visibleCount": 1,
+            "bounds": [
+              48,
+              40,
+              296,
+              208
+            ],
+            "work": [
+              56,
+              51,
+              288,
+              197
+            ],
+            "visible": [
+              [
+                56,
+                51,
+                288,
+                197
+              ]
+            ]
+          },
+          "call_ms": 10.259889283443687
+        },
+        {
+          "phase": 16,
+          "field": 10,
+          "result": 0,
+          "status": 1,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 0,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 3.639521327809253
+        },
+        {
+          "phase": 17,
+          "field": 106,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 28672,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 3.7743575719044404
+        },
+        {
+          "phase": 18,
+          "field": 5,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "view": {
+            "handle": 3,
+            "shown": 1,
+            "revision": 5,
+            "pixelsReady": 22528,
+            "epoch": 2,
+            "visibleCount": 1,
+            "bounds": [
+              96,
+              72,
+              336,
+              200
+            ],
+            "work": [
+              104,
+              83,
+              328,
+              189
+            ],
+            "visible": [
+              [
+                296,
+                83,
+                328,
+                189
+              ]
+            ]
+          },
+          "call_ms": 49.49343016920433
+        },
+        {
+          "phase": 19,
+          "field": 10,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "view": {
+            "handle": 3,
+            "shown": 1,
+            "revision": 6,
+            "pixelsReady": 22528,
+            "epoch": 2,
+            "visibleCount": 1,
+            "bounds": [
+              96,
+              72,
+              336,
+              200
+            ],
+            "work": [
+              104,
+              83,
+              328,
+              189
+            ],
+            "visible": [
+              [
+                104,
+                83,
+                328,
+                189
+              ]
+            ]
+          },
+          "call_ms": 69.52468285641385
+        },
+        {
+          "phase": 20,
+          "field": 106,
+          "result": 3,
+          "status": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 2,
+            "shown": 0,
+            "revision": 3,
+            "pixelsReady": 28672,
+            "epoch": 0,
+            "visibleCount": 0,
+            "bounds": [
+              360,
+              40,
+              480,
+              104
+            ],
+            "work": [
+              368,
+              51,
+              472,
+              102
+            ],
+            "visible": []
+          },
+          "call_ms": 10.832573278881952
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 308,
+        "native_irq_count": 14506
+      }
+    },
+    {
+      "name": "windows",
+      "result": {
+        "path": "build/gem-first-gui/gf6/complete/windows/results.json",
+        "sha256": "a0a54306d6953b9deebd2e9612c013df4d27cdc1646b96ef0a2712bf483cb598"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf6/complete/windows/program/build.json",
+        "sha256": "79565e63247daac021dfc365ce667314e110caf08424a3f4434d719f5d9e0941"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf6/complete/windows/program/program.a816.json",
+        "sha256": "9138f247baea7ef4edd3df1f174fed330fa68594e08e9cfc835ad63687368fe7"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf6/complete/windows/c-image.json",
+        "sha256": "0fb27bf6d929ebc5ae30d118b5b69d8ed483d3d0837e68d8ed96bf73fc2bf246"
+      },
+      "AESChecks": 285,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 621,
+          "remaining_above_floor": 659
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 383,
+          "remaining_above_floor": 673
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 387,
+          "remaining_above_floor": 669
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 214,
+          "remaining_above_floor": 842
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 893,
+          "remaining_above_floor": 1411
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 294,
+          "remaining_above_floor": 986
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 2941,
+        "native_irq_count": 26155
+      }
+    },
+    {
+      "name": "cache",
+      "result": {
+        "path": "build/gem-first-gui/gf6/complete/cache/results.json",
+        "sha256": "1e23b04f49623f39449f15aa047830f621400d4cb8f120b861863fdadc228bdf"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf6/complete/cache/program/build.json",
+        "sha256": "121b7c4d649561d473bc583bff3d878bcd8d156a6a39874e19d022dee321de87"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf6/complete/cache/program/program.a816.json",
+        "sha256": "22c1ecd4824f61bb2cda872baab50f480a643b7c60474c6c602a4891046f3b45"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf6/complete/cache/c-image.json",
+        "sha256": "2d4da354d6d4598053adb868ba754cef242a7157083471ebf34e61a940f9f840"
+      },
+      "AESChecks": 224,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 669,
+          "remaining_above_floor": 611
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 153,
+          "remaining_above_floor": 903
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 898,
+          "remaining_above_floor": 1406
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 3940,
+        "native_irq_count": 39567
+      }
+    },
+    {
+      "name": "effects",
+      "result": {
+        "path": "build/gem-first-gui/gf6/complete/effects/results.json",
+        "sha256": "6fc66c7bc63c70ca2c3b9fa530bc0579e10f1d6ac75db8d56d40a2e7f44da4a5"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf6/complete/effects/program/build.json",
+        "sha256": "1d96ad65dad6865af4e7c7843acc2f1333dc7dace810b225e7e6bf4d540082b5"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf6/complete/effects/program/program.a816.json",
+        "sha256": "ebfa5b49428a2fc1dac2775c53eab35e3326d7ecd22863c1eeb8c9117f8b7178"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf6/complete/effects/c-image.json",
+        "sha256": "6207ecc5036e319c123834e68aae5a8125114f13f9cf06b667ceb1801167df7f"
+      },
+      "cases": [
+        {
+          "variant": 0,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 289481,
+              "peer_after": 302762,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            },
+            {
+              "stage": 2,
+              "frames": 4,
+              "peer_before": 305880,
+              "peer_after": 318108,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 1
+            }
+          ],
+          "close_before_drain": {
+            "shown": 0,
+            "epoch": 0,
+            "retained_route": true
+          },
+          "checks": 30,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 3,
+          "stop_count": 0,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 3,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 289481,
+              "peer_after": 302762,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            },
+            {
+              "stage": 2,
+              "frames": 4,
+              "peer_before": 305917,
+              "peer_after": 317745,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 1
+            }
+          ],
+          "close_before_drain": {
+            "shown": 0,
+            "epoch": 0,
+            "retained_route": true
+          },
+          "checks": 25,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 1,
+          "stop_count": 1,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 4,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 289481,
+              "peer_after": 302762,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            }
+          ],
+          "checks": 18,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 1,
+          "stop_count": 1,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 65427,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "scene",
+      "result": {
+        "path": "build/gem-first-gui/gf6/complete/scene/results.json",
+        "sha256": "2990af26b40811ea6f0e4e2a5f1a4a258b8985b4787800ec09317944bc1be4b2"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf6/complete/scene/program/build.json",
+        "sha256": "ca3183a8d79a88dd0b2dec9d26bf7c5fe3d4ad79a49aed70602af19468ed7581"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf6/complete/scene/program/program.a816.json",
+        "sha256": "de49cc2b0d052ba3e3e0ab5a0368f5820d8cba33766f9bea4e315b957f58c3b7"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf6/complete/scene/c-image.json",
+        "sha256": "47254e8156738cf0f9a637dbd8f99c758fc6706d2d6f166d0693f56e953842be"
+      },
+      "cases": [
+        {
+          "variant": 0,
+          "caller_waiting": true,
+          "delivered_event_bits": 51,
+          "presenter_waiting": true,
+          "peer_progress": 23186,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 665,
+              "remaining_above_floor": 615
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 174,
+              "remaining_above_floor": 882
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 316,
+              "remaining_above_floor": 740
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 751,
+              "remaining_above_floor": 1553
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 316,
+              "remaining_above_floor": 1988
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 285,
+              "remaining_above_floor": 995
+            }
+          },
+          "checks": 37,
+          "failures": 0,
+          "first_failure": 0,
+          "scene_checks": 1096,
+          "physical_checks": 189,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 1,
+          "caller_waiting": true,
+          "retained_token": 7,
+          "fence_retired_without_scene": true,
+          "presenter_waiting": true,
+          "peer_progress": 34758,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 534,
+              "remaining_above_floor": 746
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 166,
+              "remaining_above_floor": 890
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 310,
+              "remaining_above_floor": 746
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 852,
+              "remaining_above_floor": 1452
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 322,
+              "remaining_above_floor": 1982
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 285,
+              "remaining_above_floor": 995
+            }
+          },
+          "checks": 33,
+          "failures": 0,
+          "first_failure": 0,
+          "scene_checks": 1178,
+          "physical_checks": 213,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 2,
+          "caller_waiting": true,
+          "captured_pointer": [
+            141,
+            100
+          ],
+          "presenter_waiting": true,
+          "peer_progress": 162095,
+          "cursor_redrawn_without_new_input": true,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 534,
+              "remaining_above_floor": 746
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 149,
+              "remaining_above_floor": 907
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 322,
+              "remaining_above_floor": 734
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 745,
+              "remaining_above_floor": 1559
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 310,
+              "remaining_above_floor": 1994
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          },
+          "checks": 30,
+          "failures": 0,
+          "first_failure": 0,
+          "scene_checks": 1080,
+          "physical_checks": 189,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "locks",
+      "result": {
+        "path": "build/gem-first-gui/gf6/complete/locks/results.json",
+        "sha256": "f6ae87db5183eed28db8640e86d20f8f3f89128cf99f95b4a4fb10c918f04e82"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf6/complete/locks/program/build.json",
+        "sha256": "72e627d9bc41dd47eae582020f6b0131518cbe4c6d0d4f20a251e767c9d17345"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf6/complete/locks/program/program.a816.json",
+        "sha256": "1981168da5fbb03d99d144cc45210fdf3dd34f3f24f05e87a72c51f453845fbd"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf6/complete/locks/c-image.json",
+        "sha256": "39f13334b0e0154e618523a7fe2f6b3ab0b1e06c8d230c209926aa3839389ebb"
+      },
+      "AESChecks": 181,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 873,
+          "remaining_above_floor": 407
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 343,
+          "remaining_above_floor": 713
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 348,
+          "remaining_above_floor": 708
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 350,
+          "remaining_above_floor": 706
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 714,
+          "remaining_above_floor": 1590
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 425,
+        "native_irq_count": 23722
+      }
+    },
+    {
+      "name": "lifecycle",
+      "result": {
+        "path": "build/gem-first-gui/gf6/complete/lifecycle/results.json",
+        "sha256": "6c48be390c13ad424e04c700a82f042a75a0aaa3ab4a33cd280cdc8fb14e5fc0"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf6/complete/lifecycle/program/build.json",
+        "sha256": "5bbf62cffc26db5786e090578f70b53bc554902425e66919f3a2c31285ba7189"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf6/complete/lifecycle/program/program.a816.json",
+        "sha256": "0f4fd05970f79c82b3f3de5436c26d3660d3c7595330364d5734e2a3506b5e39"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf6/complete/lifecycle/c-image.json",
+        "sha256": "a95f479f00028f976257b708cc75fdbc7cf9f25103075937fa865169b5026c03"
+      },
+      "AESChecks": 265,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 563,
+          "remaining_above_floor": 717
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 501,
+          "remaining_above_floor": 555
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 279,
+        "native_irq_count": 12101
+      }
+    },
+    {
+      "name": "disk",
+      "result": {
+        "path": "build/gem-first-gui/gf6/complete/disk/results.json",
+        "sha256": "72faf2d1b32b1d851b20f43a30a3243c0a9bad3b7de8797ccb370dec0f62a1d0"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf6/complete/disk/program/build.json",
+        "sha256": "5f3f9f99238f9b453f593504b3a65f6b47a6990888e5d3ecdedb45af7930cf4c"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf6/complete/disk/program/program.a816.json",
+        "sha256": "6eb705c654451e7e940ca60829b3c02639b08db9f963e706ca13b71fcb62591a"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf6/complete/disk/c-image.json",
+        "sha256": "c1c96a4c60826ebc99b6128e36a265409cdabda1d71b5e7041550963e718392f"
+      },
+      "cases": [
+        {
+          "name": "disk",
+          "status": "pass",
+          "identities": [
+            1,
+            2
+          ],
+          "pointer": [
+            {
+              "label": "disk",
+              "target": [
+                328,
+                128
+              ],
+              "start": 43011981,
+              "captured": 43577132,
+              "presented": 43585646,
+              "capture_ms": 318.6736568181466,
+              "presentation_ms": 323.47447556242855,
+              "scanout_observed": 43617900
+            }
+          ],
+          "progress": [
+            {
+              "identity": 1,
+              "increments": 101,
+              "paints": 101
+            },
+            {
+              "identity": 2,
+              "increments": 100,
+              "paints": 101
+            }
+          ],
+          "window": [
+            42772834,
+            236040509
+          ],
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 626,
+              "remaining_above_floor": 654
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 676,
+              "remaining_above_floor": 380
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 185,
+              "remaining_above_floor": 871
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 812,
+              "remaining_above_floor": 244
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 810,
+              "remaining_above_floor": 246
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 147,
+              "remaining_above_floor": 909
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 883,
+              "remaining_above_floor": 1421
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 37904,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "9": {
+              "base": 39248,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "10": {
+              "base": 40592,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "11": {
+              "base": 41936,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "12": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 60,
+              "remaining_above_floor": 196
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          },
+          "checks": 31,
+          "disk_progress": [
+            {
+              "identity": 1,
+              "increments": 6,
+              "paints": 6
+            },
+            {
+              "identity": 2,
+              "increments": 6,
+              "paints": 6
+            }
+          ],
+          "filesystem": {
+            "sectors": 2880,
+            "sector_bytes": 256,
+            "allocated": 202,
+            "free": 2678,
+            "files": 3,
+            "directories": 2
+          },
+          "media_sha256": "b981f32876edbc657b46168aeaff80480f82c49920e9c00d4188cfd4877bb0a0",
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        }
+      ]
+    }
+  ],
+  "resource_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf6/parent/geometry/program/build.json",
+      "sha256": "68140a5fedb5ba70626d2e574c9f3906ab7ef57429aec61643ec395f1f1880a3"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf6/complete/geometry/program/build.json",
+      "sha256": "a2ababc0cb825edb415312d95fd20a1553de58183e24c8e5f376dca8a606e47e"
+    },
+    "parent_bytes": {
+      "native": {
+        "code": 1065694,
+        "data": 11971,
+        "zero_fill": 25143,
+        "banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          63
+        ]
+      },
+      "c": {
+        "code": 184309,
+        "data": 45052,
+        "zero_fill": 20883,
+        "banks": [
+          12,
+          14,
+          16
+        ],
+        "dp_bytes": 23
+      }
+    },
+    "candidate_bytes": {
+      "native": {
+        "code": 1068193,
+        "data": 11971,
+        "zero_fill": 25143,
+        "banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          63
+        ]
+      },
+      "c": {
+        "code": 184402,
+        "data": 45052,
+        "zero_fill": 20883,
+        "banks": [
+          12,
+          14,
+          16
+        ],
+        "dp_bytes": 23
+      }
+    },
+    "delta": {
+      "native": {
+        "code": 2499,
+        "data": 0,
+        "zero_fill": 0
+      },
+      "c": {
+        "code": 93,
+        "data": 0,
+        "zero_fill": 0
+      }
+    },
+    "unchanged_reservations": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations"
+    ]
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "resources": {
+    "tasks_added": 0,
+    "signals_added": 0,
+    "upper_static_arena_delta": 0,
+    "heap_reservation_delta": 0,
+    "c_dp_bytes": 23,
+    "client_payload_bytes": 136,
+    "service_payload_bytes": 1982
+  },
+  "coverage": [
+    "Ordinary/PB lookup with global foreign/border handles, hidden/native/background/menu occlusion and negative coordinates.",
+    "Lookup while another client owns UPDATE and window mutation readiness is unavailable.",
+    "Unchanged selected view, iterator index, Task and Forbid nesting; normal registration checks and unchanged transport sequence.",
+    "Shared current-rectangle/top behavior, stale iterator restart, two-owner mutations and unapplied readiness fallback."
+  ],
+  "host": {
+    "run": 689,
+    "passed": 685,
+    "skipped": 4,
+    "log": {
+      "path": "build/gem-first-gui/gf6/complete/host.log",
+      "sha256": "9cc0973fc43a70a725f9ec7c1c462fe92cd857f67141a1c7d1336a8455ed225c"
+    }
+  },
+  "limits": [
+    "Development tier only; no hosted-system, hardware or latency qualification.",
+    "The generic C/Action entry signature and public wire ABI remain unchanged; retain the existing focused raw/optimized bridge evidence."
+  ],
+  "query_record": {
+    "path": "docs/development/gem-first-gf6-query.json",
+    "sha256": "25971fd28da8713c3b6a4abbe3e6c55d0773d5045f0db4ff3db9a224f5595eb0"
+  },
+  "query_commit": "cdb62fed",
+  "system_effect_fallbacks": [
+    "A copy-eligible unheld move retains the existing presenter continuation, with no caller mutation before fallback.",
+    "Caret restoration, retained-widget focus cancellation and attached-console geometry retain system admission."
+  ],
+  "cache_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf5/complete/cache/results.json",
+      "sha256": "652cbe359505297ab49eaac8bcb264ceffe45dbb5f824a2a238d0ab051e8fbae"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf6/complete/cache/results.json",
+      "sha256": "1e23b04f49623f39449f15aa047830f621400d4cb8f120b861863fdadc228bdf"
+    },
+    "checkpoints": 32,
+    "checkpoints_identical": true,
+    "scanouts": 14,
+    "scanouts_identical": true,
+    "scanout_sha256": {
+      "aes-cache-frame-29.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806",
+      "aes-cache-1.bgra": "a1e99f69851a01d78a43aca808e8842bc65be0c298a7ff140d381910eec11b36",
+      "aes-cache-12.bgra": "1802ec7c8d0ae718a7591a5e127cfc6a5316324b4fffce50c36988fce1745968",
+      "aes-cache-6.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+      "aes-cache-14.bgra": "9f607df4d92614b184c33049e828702a296a1a89d8fa0c7143834475cbdb7074",
+      "aes-cache-4.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775",
+      "aes-cache-9.bgra": "a29a54675ac7314436fccaaae4e7ca522d7f508265685e65445972a9d15e62e1",
+      "aes-cache-11.bgra": "6cf17b7f98a992ca4c74fc54cf2ab9a4975ff164d5c3e5ef00e4999a9d0f13d6",
+      "aes-cache-2.bgra": "7fa6df8f8d50903c3f5f120ea835b43a91a42741a08bd554d6daf0269dc4dfb6",
+      "aes-cache-26.bgra": "fc01abc65b6dba3b6eadf0c37cc3dc9d914182fef8076758af86d90d4ec50760",
+      "aes-cache-frame-27.bgra": "9e34c76b23bc0ec1465483cdd30c9ca019d93e91f68c4470c3a27f6779f742d6",
+      "aes-cache-frame-31.bgra": "25eb04fffa21efeacd7a902365ddd66fc0f5ba425908140470c959fe7c863806",
+      "aes-cache-10.bgra": "a0a69b197c2b27186e41a1cf6091efe8f01a435cfef99711a0c5dc62bcb2169f",
+      "aes-cache-3.bgra": "c7e707b4e949d9e2c41257cf7320bc18ecf495791bdea27346ff8521bc1e1775"
+    }
+  },
+  "matched_cache_footprint": {
+    "parent": {
+      "native": {
+        "code": 1064841,
+        "data": 11966,
+        "zero_fill": 25096,
+        "banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          63
+        ]
+      },
+      "c": {
+        "code": 130286,
+        "data": 44017,
+        "zero_fill": 20841,
+        "banks": [
+          12,
+          14
+        ],
+        "dp_bytes": 23
+      }
+    },
+    "candidate": {
+      "native": {
+        "code": 1067430,
+        "data": 11966,
+        "zero_fill": 25096,
+        "banks": [
+          12,
+          14,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          63
+        ]
+      },
+      "c": {
+        "code": 130379,
+        "data": 44017,
+        "zero_fill": 20841,
+        "banks": [
+          12,
+          14
+        ],
+        "dp_bytes": 23
+      }
+    },
+    "delta": {
+      "native": {
+        "code": 2589,
+        "data": 0,
+        "zero_fill": 0
+      },
+      "c": {
+        "code": 93,
+        "data": 0,
+        "zero_fill": 0
+      }
+    }
+  },
+  "production_reservations": {
+    "task_capacity": 12,
+    "unchanged": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations"
+    ],
+    "parent": {
+      "path": "build/gem-first-gui/gf5/complete/loaded-counters/program/build.json",
+      "sha256": "d2eb7672c94d24577fc3ac571655c86ba282363fc1a6e5e98fd5c92be3f725d3"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf6/complete/disk/program/build.json",
+      "sha256": "5f3f9f99238f9b453f593504b3a65f6b47a6990888e5d3ecdedb45af7930cf4c"
+    }
+  },
+  "drag": {
+    "result": {
+      "path": "build/gem-first-gui/gf6/complete/demo/native-drag-update-results.json",
+      "sha256": "f8239f5f7d84d4251a17fe737a9ed6b939ec930eabfc5098fb66001c8a27be8f"
+    },
+    "package": {
+      "path": "build/gem-first-gui/gf6/complete/demo/exec816-demo.zip",
+      "sha256": "9c13c6bb8d0385148a073d8f32ec3140493eff01ca607b7765e74bd43a6a7563"
+    },
+    "manifest": {
+      "path": "build/gem-first-gui/gf6/complete/demo/demo-manifest.json",
+      "sha256": "c80397dcc2757f687db8f9ff4e1890b353e492e9b3f56ba9d8cf65ad217a96ce"
+    },
+    "observations": {
+      "observations": [
+        {
+          "name": "files-start",
+          "clock": 49476832,
+          "phase": 1,
+          "dirty": 0,
+          "outline": 1,
+          "c_outline": 1,
+          "cursor": [
+            264,
+            29
+          ],
+          "target": [
+            136,
+            24,
+            598,
+            220
+          ],
+          "buttons": 1
+        },
+        {
+          "name": "files-held",
+          "clock": 54100638,
+          "phase": 1,
+          "dirty": 0,
+          "outline": 1,
+          "c_outline": 1,
+          "cursor": [
+            264,
+            29
+          ],
+          "target": [
+            136,
+            24,
+            598,
+            220
+          ],
+          "buttons": 1
+        },
+        {
+          "name": "files-motion",
+          "clock": 55203168,
+          "phase": 1,
+          "dirty": 0,
+          "outline": 1,
+          "c_outline": 1,
+          "cursor": [
+            280,
+            29
+          ],
+          "target": [
+            152,
+            24,
+            614,
+            220
+          ],
+          "buttons": 1
+        },
+        {
+          "name": "counter-start",
+          "clock": 93474324,
+          "phase": 1,
+          "dirty": 0,
+          "outline": 1,
+          "c_outline": 1,
+          "cursor": [
+            136,
+            37
+          ],
+          "target": [
+            64,
+            32,
+            208,
+            80
+          ],
+          "buttons": 1,
+          "count": 3,
+          "paints": 3,
+          "status": 8,
+          "update": 1,
+          "updates": 0
+        },
+        {
+          "name": "counter-waiting",
+          "clock": 93901267,
+          "phase": 1,
+          "dirty": 0,
+          "outline": 1,
+          "c_outline": 1,
+          "cursor": [
+            136,
+            37
+          ],
+          "target": [
+            64,
+            32,
+            208,
+            80
+          ],
+          "buttons": 1,
+          "count": 3,
+          "paints": 3,
+          "status": 8,
+          "update": 1,
+          "updates": 0
+        },
+        {
+          "name": "counter-motion",
+          "clock": 95039187,
+          "phase": 1,
+          "dirty": 0,
+          "outline": 1,
+          "c_outline": 1,
+          "cursor": [
+            152,
+            37
+          ],
+          "target": [
+            80,
+            32,
+            224,
+            80
+          ],
+          "buttons": 1,
+          "count": 3,
+          "paints": 3,
+          "status": 8,
+          "update": 1,
+          "updates": 0
+        },
+        {
+          "name": "counter-released",
+          "clock": 101228306,
+          "phase": 0,
+          "dirty": 0,
+          "outline": 0,
+          "c_outline": 0,
+          "cursor": [
+            152,
+            37
+          ],
+          "target": [
+            80,
+            32,
+            224,
+            80
+          ],
+          "buttons": 0,
+          "count": 5,
+          "paints": 7,
+          "status": 0,
+          "update": 0,
+          "updates": 0
+        },
+        {
+          "name": "escape-start",
+          "clock": 102615315,
+          "phase": 1,
+          "dirty": 0,
+          "outline": 1,
+          "c_outline": 1,
+          "cursor": [
+            168,
+            37
+          ],
+          "target": [
+            96,
+            32,
+            240,
+            80
+          ],
+          "buttons": 1,
+          "count": 6,
+          "paints": 7,
+          "status": 8,
+          "update": 1,
+          "updates": 0
+        },
+        {
+          "name": "escape-waiting",
+          "clock": 103042260,
+          "phase": 1,
+          "dirty": 0,
+          "outline": 1,
+          "c_outline": 1,
+          "cursor": [
+            168,
+            37
+          ],
+          "target": [
+            96,
+            32,
+            240,
+            80
+          ],
+          "buttons": 1,
+          "count": 6,
+          "paints": 7,
+          "status": 8,
+          "update": 1,
+          "updates": 0
+        },
+        {
+          "name": "escape-cancelled",
+          "clock": 103433363,
+          "phase": 0,
+          "dirty": 1,
+          "outline": 0,
+          "c_outline": 0,
+          "cursor": [
+            168,
+            37
+          ],
+          "target": [
+            96,
+            32,
+            240,
+            80
+          ],
+          "buttons": 1,
+          "count": 6,
+          "paints": 7,
+          "status": 8,
+          "update": 1,
+          "updates": 0
+        },
+        {
+          "name": "files-counter-start",
+          "clock": 114921874,
+          "phase": 1,
+          "dirty": 0,
+          "outline": 1,
+          "c_outline": 1,
+          "cursor": [
+            264,
+            29
+          ],
+          "target": [
+            136,
+            24,
+            598,
+            220
+          ],
+          "buttons": 1,
+          "count": 11,
+          "paints": 13,
+          "status": 0,
+          "update": 0,
+          "updates": 0
+        },
+        {
+          "name": "files-counter-waiting",
+          "clock": 115633300,
+          "phase": 1,
+          "dirty": 0,
+          "outline": 1,
+          "c_outline": 1,
+          "cursor": [
+            264,
+            29
+          ],
+          "target": [
+            136,
+            24,
+            598,
+            220
+          ],
+          "buttons": 1,
+          "count": 12,
+          "paints": 13,
+          "status": 8,
+          "update": 1,
+          "updates": 0
+        },
+        {
+          "name": "files-counter-motion",
+          "clock": 116771219,
+          "phase": 1,
+          "dirty": 0,
+          "outline": 1,
+          "c_outline": 1,
+          "cursor": [
+            280,
+            29
+          ],
+          "target": [
+            152,
+            24,
+            614,
+            220
+          ],
+          "buttons": 1,
+          "count": 12,
+          "paints": 13,
+          "status": 8,
+          "update": 1,
+          "updates": 0
+        },
+        {
+          "name": "files-counter-released",
+          "clock": 122106452,
+          "phase": 0,
+          "dirty": 0,
+          "outline": 0,
+          "c_outline": 0,
+          "cursor": [
+            280,
+            29
+          ],
+          "target": [
+            152,
+            24,
+            614,
+            220
+          ],
+          "buttons": 0,
+          "count": 14,
+          "paints": 17,
+          "status": 0,
+          "update": 0,
+          "updates": 0
+        }
+      ],
+      "pixel_checks": [
+        {
+          "name": "files-held",
+          "visible": true,
+          "pixels": 1312,
+          "observed_clock": 54100638
+        },
+        {
+          "name": "files-motion",
+          "visible": true,
+          "pixels": 1312,
+          "observed_clock": 55203168
+        },
+        {
+          "name": "files-cancelled",
+          "visible": false,
+          "pixels": 1312,
+          "observed_clock": 55594271
+        },
+        {
+          "name": "counter-waiting",
+          "visible": true,
+          "pixels": 380,
+          "observed_clock": 93901267
+        },
+        {
+          "name": "counter-motion",
+          "visible": true,
+          "pixels": 380,
+          "observed_clock": 95039187
+        },
+        {
+          "name": "escape-restored",
+          "visible": false,
+          "pixels": 380,
+          "observed_clock": 103433363
+        },
+        {
+          "name": "files-counter-waiting",
+          "visible": true,
+          "pixels": 1312,
+          "observed_clock": 115633300
+        },
+        {
+          "name": "files-counter-motion",
+          "visible": true,
+          "pixels": 1312,
+          "observed_clock": 116771219
+        }
+      ],
+      "stationary_presenter_waits": true,
+      "input_to_pixels": [
+        {
+          "name": "counter-release",
+          "start": 95039187,
+          "captured": 95075028,
+          "presented": 95893102,
+          "digit_pixels": 312,
+          "digits": "000003",
+          "work": [
+            88,
+            43,
+            128,
+            35
+          ],
+          "ms_upper": 481.5000162113623,
+          "scope": "Physical release to exact Counter digits and retired outline; one-PAL-frame debugger sampling, not percentile qualification."
+        },
+        {
+          "name": "escape-release",
+          "start": 103433363,
+          "captured": 103469211,
+          "presented": 103575826,
+          "digit_pixels": 304,
+          "digits": "000006",
+          "work": [
+            88,
+            43,
+            128,
+            35
+          ],
+          "ms_upper": 80.33110650301178,
+          "scope": "Physical release to exact Counter digits and retired outline; one-PAL-frame debugger sampling, not percentile qualification."
+        }
+      ],
+      "escape_pixels_ms_upper": 220.53260668838521,
+      "closed": true
+    },
+    "log": {
+      "path": "build/gem-first-gui/gf6/drag-final.log",
+      "sha256": "cd3f4eca3b9559609636c8afe1a7cedd4bc9a6f4e240c117d945799e8168d3b3"
+    },
+    "build": {
+      "path": "build/gem-first-gui/gf6/complete/demo/build.json",
+      "sha256": "ef755e5cc1d291fd98ca75a90a931e52fa3b2615c8b17019e1da9933c9adb3e7"
+    },
+    "native_image": {
+      "path": "build/gem-first-gui/gf6/complete/demo/program.a816.json",
+      "sha256": "ddba650de7bead4b2dcab598be7c693b8ac8a471e30016729e776d25c743720d"
+    },
+    "c_image": {
+      "path": "build/gem-first-gui/gf6/complete/demo/bitmap-console/c-image.json",
+      "sha256": "45ad94d9e5246a9a962c107872919dcb734a25a3870a40b7cf18cdb931e27b58"
+    },
+    "boot_replay": {
+      "path": "build/gem-first-gui/gf6/native-snapshot-verification.json",
+      "sha256": "d66291343950d6d8f9e5a0a4d000b50304d0c0f5580ab4d6b0d0ffe115de3d5b"
+    },
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "fault_required": 0,
+      "os_busy": 0,
+      "live_tasks": 0
+    }
+  },
+  "edx_input_recovery": {
+    "path": "build/gem-first-gui/gf6/edx-input-recovery.json",
+    "sha256": "cb81b9a55689b99aba86daacbe3f0d946b66f3019ca79d857383eb36c3a5894c"
+  },
+  "demo_placement": {
+    "code_origin": 2686976,
+    "placement": {
+      "code_origin": 2686976,
+      "fixed_image_end": 2686976,
+      "foreign_end": 1214849,
+      "policy": "Native code follows complete fixed foreign and resident banks; data remains in its existing arena",
+      "previous_origin": 153600
+    },
+    "resident": {
+      "car_root": "SYS:C/",
+      "dp_base": 25344,
+      "dp_reservation": {
+        "address": 25328,
+        "name": "sdx-direct-pages",
+        "size": 544
+      },
+      "drive_a": "WORK:",
+      "fixed_bank_zero_bytes": 544,
+      "per_task_bank_zero_bytes": 0,
+      "resident_base": 2621440,
+      "resident_reserved_bytes": 65536
+    },
+    "scope": "Native code clears all fixed C and SDX banks. Unclaimed lower banks remain heap eligible. No reservation grows; the enabled SDX profile already includes 544 fixed bank-zero bytes."
+  },
+  "cold_boot": {
+    "log": {
+      "path": "build/gem-first-gui/gf6/drag-stale-observer.log",
+      "sha256": "0736705f02f8b7cfc1f2326b9ff17d399a61bee6d4643f23ce0be55fbdc8f446"
+    },
+    "native_snapshot": {
+      "path": "build/gem-first-gui/gf6/complete/demo/disk-boot/before-native.altstate2",
+      "sha256": "9d0a74d6c6b428c357bd11893ac336d0a5723a87e6cadbcc96db343619ec66a3"
+    },
+    "scope": "The current combined ATR cold-booted through OF816 with 250 PAL countdown frames, intact reader guards and restored firmware context. A stale observer expected window-scoped BEGIN after Counter switched to conventional BEGIN in 64d2719a; the run was interrupted at the pending Counter checkpoint. The corrected physical regression replays that native-entry snapshot and verifies all expanded native bytes."
+  },
+  "build_fix": {
+    "log": {
+      "path": "build/gem-first-gui/gf6/demo-build-fixed.log",
+      "sha256": "bcfcdd32f28faa3871cee450c12273b0e46b23c81bd1ac54667374d0808c19e7"
+    },
+    "host_cases": "Five fixed-image placement checks, including SDX with and without a C image; included in the 689-test host run.",
+    "scope": "Non-SDX emitted suites preceded this host-only placement fix; the current SDX demo and physical drag regression exercise the final placement."
+  },
+  "intermediate_failures": [
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf6/drag-replay.log",
+        "sha256": "8a04c71e5e209d6c5847b2dfdd1411dc72b9d7be22f53c51f8e1bcfe3cfcf379"
+      },
+      "observations": {
+        "path": "build/gem-first-gui/gf6/drag-stale-focus.json",
+        "sha256": "ea5caf3c56da9caad681502eab3b1dc6efa01dd9974ac219fafd3f7e7d82b8e2"
+      },
+      "screenshot": {
+        "path": "build/gem-first-gui/gf6/drag-stale-focus.png",
+        "sha256": "fe55291ac110e2eeab4ffb20d1377fcdc12072dacb485d86aa2f8f0c4434b857"
+      },
+      "reason": "All physical drag/pixel checks passed; the old hard-coded Shell title coordinate hit the desktop, so EXIT timed out. Replaced it with the existing physical Windows-menu selection and focus assertion."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf6/drag-stale-observer.log",
+        "sha256": "0736705f02f8b7cfc1f2326b9ff17d399a61bee6d4643f23ce0be55fbdc8f446"
+      },
+      "observations": {
+        "path": "build/gem-first-gui/gf6/drag-stale-observer.json",
+        "sha256": "c8df7ab02c862349cc269319b63fb613ec44a8be0285436e5ac1ec6fdb607dda"
+      },
+      "reason": "Interrupted stale regression observer: Counter correctly queued conventional BEGIN_UPDATE (1), while the old test waited for retired window-scoped BEGIN (513). Updated the observer to the application source; no production behavior changed."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf6/demo-build-ready.log",
+        "sha256": "73c119921cf7053b2b00fd90c985d95a7a01b0a4957e135e2ae0820c5ce354c1"
+      },
+      "reason": "The composed native code stream reached fixed SDX bank $28. Native placement now clears all fixed C and SDX banks without changing reservations."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf6/complete-geometry-build.log",
+        "sha256": "97b240ccbe61e6e336683472894732d024aed2c1877ded8aea710d78e878508f"
+      },
+      "reason": "Initial new helper used LET directly inside ELSE; corrected to the routine-local declaration required by the style/compiler."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf6/demo-build.log",
+        "sha256": "54e0c3aa2356c13c2f8a98ed7dbb49e4a3de1557776fce5b210b602d0610563d"
+      },
+      "reason": "Missing cached EDX input."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf6/prepare-sdx.log",
+        "sha256": "f737982467b6bc29b00e49affa01f5d5ddd6e4eefcb29fa99cfaca34a9f61470"
+      },
+      "reason": "Current downloaded toolkit did not match its frozen container hash. Recovered the exact original EDX archive, binary and manual from the existing local SHA-pinned archive; no pin relaxed."
+    }
+  ]
+}

@@ -21,14 +21,17 @@ from test_mouse_observe import BRIDGE, ROM, PIN
 def build(out):
     probe = '''MODULE WINDOWEFFECTPROBE
 USE EXEC
+USE AESGATE
 PUBLIC BYTE stage,release
 PUBLIC LONGCARD guiEpochAddress
 PUBLIC PROC Pause(BYTE value)
 
+  LET held=IF value<3 THEN AESGATE.Suspend() ELSE BYTE(0) FI
   stage=value
   WHILE release<value DO
     EXEC.Yield()
   OD
+  AESGATE.Resume(held)
 
 RETURN
 ENDMODULE
@@ -102,7 +105,8 @@ ENDMODULE
             client_entries=['EffectWorker'],
             client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures',
                           'AESFirstFailure', 'EffectPhase', 'EffectGo', 'EffectVariant',
-                          'EffectPeer', 'EffectView'])
+                          'EffectPeer', 'EffectView', 'EffectQueryArm',
+                          'EffectQueryDone', 'EffectQueryResult', 'EffectQueryStatus'])
     finally:
         builder.prepare = original
         generate_tasks.task_entries = task_entries
@@ -182,6 +186,13 @@ def run(out, reuse=False, variants=(0, 3, 4)):
                                 'Effect published speculative layer geometry')
                         require(bridge.memdump(view+af['WindowView']['fields']['bounds'], 8) == old,
                                 'Effect published speculative caller geometry')
+                        bridge.poke16(symbols['EffectQueryDone'], 0)
+                        bridge.poke16(symbols['EffectQueryArm'], 1)
+                        reach(f'dw(${symbols["EffectQueryDone"]:x})=1')
+                        query=get(symbols['EffectQueryResult'], 2)
+                        require(query==get(view+af['WindowView']['fields']['handle'], 2)
+                                and get(symbols['EffectQueryStatus'], 2)==0,
+                                'Lookup waited for copy or observed speculative geometry')
                         start = get(symbols['EffectPeer'])
                         frame = bridge.eval_expr('@frame')
                         reach(f'@frame>={frame+4}')
@@ -189,6 +200,7 @@ def run(out, reuse=False, variants=(0, 3, 4)):
                         row['boundaries'].append(dict(stage=boundary, frames=4,
                             peer_before=start, peer_after=get(symbols['EffectPeer']),
                             scene_token=get(scene+lf['Scene']['fields']['busy']),
+                            committed_lookup=query,
                             copy_chunks=get(symbols['ConsoleCopyChunks'], 2)))
                         bridge.poke(at('WINDOWEFFECTPROBE', 'release'), boundary)
                         if variant == 4:

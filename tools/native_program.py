@@ -250,18 +250,24 @@ def kernel_source(text, source_dir=None):
 
 
 def place_after_foreign(memory, foreign):
-    """Keep the native linker's contiguous code stream above fixed foreign banks."""
+    """Keep contiguous native code above fixed foreign and resident banks."""
+    foreign = foreign or {'segments': [], 'zero_fill': []}
     ends = [s['address']+len(s['bytes']) for s in foreign['segments']]
     ends += [s['address']+s['size'] for s in foreign['zero_fill']]
+    foreign_end = max(ends, default=0)
+    resident = memory.get('sdx_storage')
+    if resident:
+        ends.append(resident['resident_base']+resident['resident_reserved_bytes'])
     if not ends:
         return
     before = memory['profile']['code_origin']
     after = max(before, (max(ends)+65535)//65536*65536)
     require(after < 0x1000000 and after >> 16 in memory['usable_banks'],
-            'No native code bank above foreign image')
+            'No native code bank above fixed images')
     memory['profile']['code_origin'] = after
     memory['foreign_code_placement'] = dict(previous_origin=before, code_origin=after,
-        foreign_end=max(ends), policy='Native code follows complete fixed foreign banks; data remains in its existing arena')
+        foreign_end=foreign_end, fixed_image_end=max(ends),
+        policy='Native code follows complete fixed foreign and resident banks; data remains in its existing arena')
 
 
 def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, cooperative=False,
@@ -423,7 +429,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             task_modules = generate_tasks.policy_modules(output,policy_probe,memory,manual_wake,irq_probe,io_test_device,dos_test,dos_system,console_native,sio_request_probe=sio_request_probe,sio_lifetime_probe=sio_lifetime_probe,input_diagnostics=input_diagnostics)
         memory['config']['stack_checks']=stack_checks_enabled
         generate_memory.reserve_image_data(memory)
-        if foreign_image is not None:
+        if foreign_image is not None or sdx:
             place_after_foreign(memory, foreign_image)
         memory_hash = generate_memory.generate(output, memory)
         if tasks:

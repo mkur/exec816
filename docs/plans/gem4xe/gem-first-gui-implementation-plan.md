@@ -4,7 +4,7 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-GF0–GF5 pass at the development tier. GF6–GF15 remain open. The
+GF0–GF6 pass at the development tier. GF7–GF15 remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
 coexistence, the current resource inventory, the shared window policy audit
 and the window effect/commit checks. GF3 separates scene ownership from physical
@@ -293,9 +293,12 @@ Commit: `feat(aes): update window frame attributes in callers`.
 
 ### GF6 — Execute geometry and lookup in the caller
 
-Status: in progress. Caller lookup passes its selected development checks in
-the [query record](../../development/gem-first-gf6-query.json), starting from
-GF5 commit `32ef5b1a`. Geometry/top remain on RPC at this step.
+Status: complete at the development tier. The
+[query record](../../development/gem-first-gf6-query.json) and
+[complete record](../../development/gem-first-gf6.json) retain both executable
+steps, starting from GF5 commit `32ef5b1a`. Eligible bounds/top and committed
+lookup execute in callers; physical copy/caret/widget effects retain their
+existing system continuations. Hosted-system and latency qualification remain open.
 
 Enable supported current-rectangle/top operations and `wind_find` through the
 shared helpers. Queries observe coherent committed state; they do not wait for

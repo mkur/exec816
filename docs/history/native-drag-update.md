@@ -102,3 +102,21 @@ To rerun the focused checks:
 python3 tools/test_native_drag_update.py --bundle build/native-drag-update/demo
 python3 tools/test_aes_server.py --suite locks --mode opt --output build/native-drag-update/locks
 ```
+
+
+## GF6 development rerun, 2026-11-11
+
+The [GF6 record](gem-first-gui.md#geometrytop-and-integration-completion)
+reruns physical Files/Counter motion, release, Escape, cross-application UPDATE,
+stationary sleep and normal shutdown on the current OF816 package. The observer
+now expects Counter's conventional BEGIN, matching `64d2719a`, and selects
+Shell through the physical Windows menu before EXIT. The current
+combined ATR cold-boot passes its 250-frame countdown and loading guards; the
+corrected drag run replays that native-entry snapshot and verifies the expanded
+image bytes. `--native-snapshot PATH` supports this focused replay.
+
+Counter release-to-digit observations are upper bounds of 481.50/80.33 ms,
+using one-PAL-frame samples and an independent six-digit raster comparison.
+The [machine-readable record](../development/gem-first-gf6.json) retains the
+cold-boot interruption, snapshot, replay and source/artifact hashes. Earlier
+records remain frozen; these development checks do not qualify latency.

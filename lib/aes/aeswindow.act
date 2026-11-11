@@ -393,17 +393,25 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
   FI
 
   IF same<>0 AND service.updateOwner=0 THEN
-    BEGIN
-      LET status=DESKMOVE.Application(desktop,window,
-          bounds.left,bounds.top,request)
-      IF status=DESKTYPES.PENDING THEN
-        RETURN(AESTYPES.PENDING)
-      FI
-      IF status<>DESKTYPES.OK THEN
-        RETURN(AESTYPES.DISPLAY_ERROR)
-      FI
-      RETURN(AESTYPES.OK)
-    END
+    IF AESGATE.SystemOwned()<>0 THEN
+      BEGIN
+        LET status=DESKMOVE.Application(desktop,window,
+            bounds.left,bounds.top,request)
+        IF status=DESKTYPES.PENDING THEN
+          RETURN(AESTYPES.PENDING)
+        FI
+        IF status<>DESKTYPES.OK THEN
+          RETURN(AESTYPES.DISPLAY_ERROR)
+        FI
+        RETURN(AESTYPES.OK)
+      END
+    ELSEIF layer.shown<>0 AND
+        (bounds.left<>current.left OR bounds.top<>current.top)
+        AND DESKMOVE.CopyEligible(window,layer,bounds.left)<>0 THEN
+      ; The presenter retains copy identity, frozen pixels and its continuation.
+      ; Decline before BeginMove or physical preparation can change anything.
+      RETURN(AESTYPES.PENDING)
+    FI
   FI
 
   IF LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,
@@ -414,6 +422,54 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
   AESWINDOWSTATE.Sync()
 
 RETURN(AESTYPES.OK)
+
+; Bounds and focus publication use one policy behind both transports.
+PUBLIC BYTE FUNC GeometryField(INT field)
+
+RETURN(field=AESTYPES.WF_CXYWH OR field=AESTYPES.WF_TOP)
+
+PUBLIC CARD FUNC Geometry(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request BYTE queued)
+  CARD result
+  BYTE status
+
+  IF Eligible(service,client,queued)=0 THEN
+    RETURN(AESTYPES.PENDING)
+  FI
+  LET item=AESWINDOWSTATE.Handle(client,request.intin(0))
+  IF item=NULL THEN
+    RETURN(AESTYPES.IDENTITY)
+  FI
+  IF item.window.console<>0 AND AESGATE.SystemOwned()=0 THEN
+    RETURN(AESTYPES.PENDING)
+  FI
+
+  LET desktop=DESKSTATE.Get()
+  LET window=item.window
+  LET layer=LAYERS.Find(@desktop.scene,window.layer)
+  IF request.intin(1)=AESTYPES.WF_CXYWH THEN
+    result=SetBounds(service,desktop,item,layer,request)
+  ELSE
+    IF layer.shown=0 THEN
+      RETURN(AESTYPES.MALFORMED)
+    FI
+    IF AESGATE.SystemOwned()=0
+        AND DESKCORE.FocusMetadataReady(desktop,window.id)=0 THEN
+      RETURN(AESTYPES.PENDING)
+    FI
+    status=DESKCORE.Top(desktop,window)
+    IF status<>LAYERTYPES.OK THEN
+      RETURN(AESTYPES.MALFORMED)
+    FI
+    AESWINDOWSTATE.Snapshot(item)
+    AESWINDOWSTATE.Sync()
+    result=AESTYPES.OK
+  FI
+  IF result=AESTYPES.OK THEN
+    request.intout(0)=1
+  FI
+
+RETURN(result)
 
 ; Both transports decode hidden lifetime operations here. Caller stacks avoid
 ; the frame/string/effect scratch of the remaining window dispatcher.
@@ -582,6 +638,10 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     RETURN(Frame(service,client,request,queued,@status))
   FI
 
+  IF request.operation=AESTYPES.OP_SET AND GeometryField(request.intin(1))<>0 THEN
+    RETURN(Geometry(service,client,request,queued))
+  FI
+
   ; An existing owner may finish mutations before dependent older waiters.
   IF Eligible(service,client,queued)=0 THEN
     RETURN(AESTYPES.PENDING)
@@ -645,17 +705,6 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     DESKSTATE.desktopWindow=window.id
     DESKSTATE.desktopLayer=window.layer
     status=LAYERS.Order(@desktop.scene,window.layer,0)
-  WHEN AESTYPES.WF_TOP THEN
-    IF layer.shown=0 THEN
-      RETURN(AESTYPES.MALFORMED)
-    FI
-    status=DESKCORE.Top(desktop,window)
-  WHEN AESTYPES.WF_CXYWH THEN
-    result=SetBounds(service,desktop,item,layer,request)
-    IF result=AESTYPES.OK THEN
-      request.intout(0)=1
-    FI
-    RETURN(result)
   ELSE
     RETURN(AESTYPES.UNSUPPORTED)
   ESAC

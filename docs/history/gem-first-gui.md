@@ -626,3 +626,86 @@ upper static capacity is added.
 The [query record](../development/gem-first-gf6-query.json) preserves exact
 pins, source/artifact hashes, state comparison and stack observations. GF6's
 geometry/top and integration acceptance remain open at this step.
+
+### Geometry/top and integration completion
+
+GF6 passes at the development tier. `AESWINDOW.Geometry` now shares bounds/top
+policy between caller and RPC. Owner mutations within UPDATE, resizes,
+hidden/iconified bounds, no-ops and effect-free focus/top can commit in the
+caller. Older queued work and peer exclusion retain their existing ordering.
+Copy-eligible unheld moves decline before mutation; the presenter retains copy
+identity, frozen pixels and its completion/failure continuation. Console
+geometry, outgoing caret restoration and retained-widget cancellation also
+retain system admission. Frame drawing and interactive gestures remain system
+work. The public wire ABI and private entry signature are unchanged.
+
+The optimized development checks pass:
+
+- Geometry: 84 C checks, four native checks and all 20 parent state checkpoints.
+  All eleven marked queries and nine marked bounds/top calls execute directly.
+  Readiness fallback remains unapplied and uses one RPC on the separate tail.
+- Windows: 285 checks; locks: 181; lifecycle: 265. Cache: 224 checks, with all
+  32 cache checkpoints and fourteen scanouts identical to GF5.
+- Copied-move effects: 30/25/18 checks across success, injected stop and reset.
+  A registered peer queries old committed geometry during preparation and
+  precommit while the physical token remains reserved. Reset deliberately
+  retains live resources at `$FF93`; it is not a normal-cleanup claim.
+- Scene/preemption: 37/33/30 checks cover caller/presenter contention, input/event
+  delivery and fence retirement without acquiring the scene.
+- GF0 disk cohort: 31 checks, four complete 16 KiB read/write/Close cycles and
+  persisted-byte/allocation audit. Both Counters advance six counts and six
+  paints during disk work. The other GF0 cohorts were not rerun.
+- Host: 689 tests, 685 pass and four skip, including five fixed-image placement
+  checks. The small raw/optimized bridge evidence remains applicable because
+  neither entry ABI nor record layout changed.
+
+The frozen geometry fixture records inclusive parent/candidate call observations.
+For example, lookup with a peer owning UPDATE changes from 78.81 to 3.77 ms;
+move from 36.08 to 49.44 ms, resize from 38.49 to 52.50 ms and top from 61.01 to
+64.14 ms. These include scheduling and gate waits; they are individual
+observations, not a general geometry speedup or percentile qualification.
+
+The matched cache fixture adds 2,589 native and 93 C code bytes versus GF5,
+with unchanged data and zero-fill. It adds no Task, signal, client/service
+record, static arena or heap reservation. Reserved bank-zero growth is
+**0 fixed, 0 root, 0 kernel, 0 per public Task and 0 idle bytes**, including
+guards, alignment and unused capacity. The eight- and twelve-slot reservation
+maps match their parents. The geometry fixture leaves 523 bytes above the floor
+in its tightest active worker; the loaded disk Counters leave 244/246 bytes.
+All ordinary-return checks preserve guards, retire Tasks and restore the OS.
+
+The demo build exposed native code growing into SDX's fixed bank `$28`.
+Placement now clears both fixed C and SDX banks, starting native code at
+`$290000` in this enabled profile. Lower unclaimed banks remain heap eligible;
+no reservation grows. The enabled SDX profile already reserves 544 fixed
+bank-zero bytes, separately from GF6's zero delta. A missing EDX input was
+recovered from the exact pinned local archive without relaxing any hash.
+Failed build/download logs remain in the development record.
+
+The current `build_demo.py` package includes OF816, the combined writable SYS
+ATR, matching ROM, MD5/ARC/EDX and notices. Cold ATR boot observes exactly
+250 PAL countdown frames, intact reader guards and restored firmware context.
+The original drag observer still expected window-scoped BEGIN, retired by
+Counter's conventional GEM redraw change in `64d2719a`; the pending request
+correctly contains ordinary BEGIN. Its old hard-coded Shell title click also
+misses the current window position; cleanup now selects Shell through the
+physical Windows menu and verifies focus. With those observer corrections, the
+regression replays this boot's native-entry snapshot and independently verifies
+all expanded native image bytes. Failed/interrupted runs and the snapshot are
+retained.
+
+Physical Files/Counter drags preserve motion and XOR outline pixels while
+UPDATE waits. Release commits accepted geometry and exact Counter digits;
+Escape preserves geometry and erases the border while the button remains held.
+Cross-application pending UPDATE, stationary presenter sleep and normal shutdown
+also pass. One-frame sampling gives release-to-digit upper bounds of 481.50 ms
+after movement and 80.33 ms after Escape, with 312/304 independently checked
+digit pixels. Escape's restored border is observed at 220.53 ms after the
+existing eleven-frame key settling sequence. These are sampled upper bounds,
+not percentile latency qualification. Shutdown retires all Tasks, preserves
+stack/domain guards and restores the OS.
+
+The [complete record](../development/gem-first-gf6.json) retains pins,
+source/artifact hashes, comparisons, stack observations, intermediate failures
+and package evidence. This is development evidence only; hosted-system,
+hardware and latency qualification remain open. GF7 is next.

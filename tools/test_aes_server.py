@@ -201,7 +201,7 @@ def caller_probes(out, timer=False):
     (out/'aes-events.c').write_text(binding)
 
 
-def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None, filesystem='sdfs', frame_local='all', geometry_local='query'):
+def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None, filesystem='sdfs', frame_local='all', geometry_local='all'):
     gui = suite == 'gui'
     inbox = suite == 'inbox'
     keyboard = suite == 'keyboard'
@@ -785,7 +785,7 @@ if __name__ == '__main__':
     parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs',help='Resources fixture disk format')
     parser.add_argument('--frame-local',choices=('none','text','all'),default='all',help='Expected migrated fields for the frame comparison fixture')
-    parser.add_argument('--geometry-local',choices=('none','query','all'),default='query',help='Expected migrated geometry fields in a frozen comparison image')
+    parser.add_argument('--geometry-local',choices=('none','query','all'),default='all',help='Expected migrated geometry fields in a frozen comparison image')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':

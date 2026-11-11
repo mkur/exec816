@@ -8,7 +8,9 @@ volatile UWORD AESChecks, AESFailures, AESFirstFailure;
 volatile UWORD EffectPhase, EffectGo, EffectVariant;
 volatile ULONG EffectPeer;
 ULONG EffectView;
-static volatile UWORD peerDone;
+volatile UWORD EffectQueryArm,EffectQueryDone;
+volatile WORD EffectQueryResult,EffectQueryStatus;
+static volatile UWORD peerDone,peerReady;
 static struct Task *caller;
 static ULONG peerMask;
 extern volatile UWORD ConsoleFaultMode, ConsoleCopyChunks;
@@ -17,7 +19,17 @@ extern volatile UWORD ConsoleFaultMode, ConsoleCopyChunks;
 
 void EffectWorker(void)
 {
-    while (!peerDone) ++EffectPeer;
+    WORD attached=ExecAESAttach((struct MsgPort *)AESService) && appl_init()>0;
+    peerReady=attached ? 1 : 2;
+    while (!peerDone) {
+        ++EffectPeer;
+        if (EffectQueryArm && !EffectQueryDone) {
+            EffectQueryResult=wind_find(40,40);
+            EffectQueryStatus=ExecAESDiagnostic();
+            EffectQueryDone=1;
+        }
+    }
+    if (attached) ExecAESDetach();
     Forbid();
     Signal(caller,peerMask);
     RemTask(NULL);
@@ -62,6 +74,8 @@ UWORD AESRun(void)
     bit=AllocSignal(-1); CHECK(bit>=0);
     peerMask=1UL<<bit;
     CHECK(CreateTask("Window effect peer",0,(APTR)EffectWorker,512)!=NULL);
+    while (!peerReady) ExecYield();
+    CHECK(peerReady==1);
     phase(3);
     epoch=view->paintEpoch;
     ConsoleCopyChunks=0;

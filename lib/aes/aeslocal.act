@@ -27,7 +27,8 @@ PUBLIC CARD FUNC Call(LONGCARD value)
     RETURN(0)
   FI
   IF request.operation=AESTYPES.OP_SET
-      AND AESWINDOW.FrameField(request.intin(1))=0 THEN
+      AND AESWINDOW.FrameField(request.intin(1))=0
+      AND AESWINDOW.GeometryField(request.intin(1))=0 THEN
     RETURN(0)
   FI
   AESGATE.EnterTask(request.owner,
@@ -50,7 +51,11 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   IF request.operation=AESTYPES.OP_UPDATE THEN
     status=AESLOCKS.Attempt(service,client,request,AESLOCKS.OWNER_READY,queued)
   ELSEIF request.operation=AESTYPES.OP_SET THEN
-    status=AESWINDOW.Frame(service,client,request,queued,@wake)
+    IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
+      status=AESWINDOW.Frame(service,client,request,queued,@wake)
+    ELSE
+      status=AESWINDOW.Geometry(service,client,request,queued)
+    FI
   ELSE
     status=AESWINDOW.Lifecycle(service,client,request,queued)
   FI

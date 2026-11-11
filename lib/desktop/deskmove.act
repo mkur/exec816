@@ -23,6 +23,29 @@ DESKTYPES.Request POINTER reply
 AESTYPES.Request POINTER aesReply
 CARD aesStatus
 
+; Availability queries run under scene ownership. Physical caret removal
+; remains in the presenter when any console still has pixels to restore.
+PUBLIC BYTE FUNC CaretVisible()
+  BYTE index
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    BEGIN
+      LET entry=@windows.items(index)
+      IF CONSOLEWINDOWS.Live(entry)<>0
+          AND DESKSTATE.FindConsoleWindow(entry.unit)<>NULL THEN
+        BEGIN
+          LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+          IF view.cursorOn<>0 THEN
+            RETURN(1)
+          FI
+        END
+      FI
+    END
+  OD
+
+RETURN(0)
+
 ; Restoring a caret also schedules its next presentation. A command-window
 ; move may expose no console pixels, so damage alone cannot wake that work.
 PUBLIC PROC HideCaret()
@@ -148,6 +171,27 @@ BYTE FUNC SubmitCopy(LAYERTYPES.Scene POINTER scene)
 
 RETURN(CONSOLEBITMAP.CopyStart())
 
+; Both admission and the presenter use the same copy eligibility. A
+; caller declines this effect before BeginMove reserves or changes anything.
+PUBLIC BYTE FUNC CopyEligible(DESKTYPES.Window POINTER window
+    LAYERTYPES.Layer POINTER layer INT left)
+  BYTE eligible
+
+  eligible=(DISPLAY.Blocked()=0
+      AND CONSOLEBITMAP.Enabled()<>0 AND layer.dirty=0 AND layer.shown<>0
+      AND ((layer.bounds.left OR left OR
+          (layer.bounds.right-layer.bounds.left)) & 1)=0)
+  IF eligible<>0 AND DESKSTATE.IsConsole(window)<>0 THEN
+    BEGIN
+      LET entry=CONSOLEWINDOWS.Find(window.console)
+      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      LET batch=CONSOLEBATCH.Get()
+      eligible=(instance.dirtyRows=0 AND batch.phase=CONSOLETYPES.BATCH_IDLE)
+    END
+  FI
+
+RETURN(eligible)
+
 ; Unsupported placement and nonclean sources retain the ordinary redraw path.
 PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window INT left,top
@@ -170,18 +214,7 @@ PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
     RETURN(DESKTYPES.OK)
   FI
 
-  eligible=(DISPLAY.Blocked()=0
-      AND CONSOLEBITMAP.Enabled()<>0 AND layer.dirty=0 AND layer.shown<>0
-      AND ((layer.bounds.left OR left OR
-          (layer.bounds.right-layer.bounds.left)) & 1)=0)
-  IF eligible<>0 AND DESKSTATE.IsConsole(window)<>0 THEN
-    BEGIN
-      LET entry=CONSOLEWINDOWS.Find(window.console)
-      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
-      LET batch=CONSOLEBATCH.Get()
-      eligible=(instance.dirtyRows=0 AND batch.phase=CONSOLETYPES.BATCH_IDLE)
-    END
-  FI
+  eligible=CopyEligible(window,layer,left)
 
   IF eligible<>0 THEN
     ; Remove transient pixels while the old scene can still admit paint.

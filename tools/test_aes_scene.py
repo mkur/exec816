@@ -155,7 +155,7 @@ ENDMODULE
 
     for name, routines in (
         ('aeswindowstate', ('Publish', 'BeginUpdate', 'EndUpdate', 'Sync')),
-        ('aeswindow', ('Request', 'Lifecycle', 'SetBounds')),
+        ('aeswindow', ('Request', 'Query', 'Geometry', 'Lifecycle', 'SetBounds')),
         ('aeslocks', ('Attempt',)),
         ('aeshost', ('Settled', 'Settle')),
         ('deskhost', ('Controls', 'Runnable', 'Cache', 'Ready', 'PaintReady')),
