@@ -68,7 +68,7 @@ PUBLIC DESKTYPES.Service POINTER FUNC Get()
 
 RETURN(service)
 
-; Presenter-only preparation while an opening layer is still hidden.
+; Scene-owned preparation while an opening layer is still hidden.
 PUBLIC BYTE FUNC PrepareOpen(LONGCARD id)
 
   IF id=desktopLayer THEN

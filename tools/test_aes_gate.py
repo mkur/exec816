@@ -21,7 +21,7 @@ def run(out, mode='opt'):
         ownership(bridge, program, program['output'])
         checks = data(bridge, program['image'], 'checks', True)[0]
         service_bytes = data(bridge, program['image'], 'serviceBytes', True)[0]
-        require(checks == 49, 'Incomplete gate fixture: '+str(checks))
+        require(checks == 61, 'Incomplete gate fixture: '+str(checks))
         require(runtime['native_nmi_count'] >= 3, 'Missing natural preemption')
     report = dict(status='pass', tier='development', qualification=False,
                   checks=checks, service_bytes=service_bytes,

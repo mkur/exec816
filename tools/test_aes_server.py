@@ -201,7 +201,7 @@ def caller_probes(out, timer=False):
     (out/'aes-events.c').write_text(binding)
 
 
-def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None, filesystem='sdfs', frame_local='all', geometry_local='all'):
+def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None, filesystem='sdfs', frame_local='all', geometry_local='all', visibility_local='all'):
     gui = suite == 'gui'
     inbox = suite == 'inbox'
     keyboard = suite == 'keyboard'
@@ -231,6 +231,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             instrument(out)
         if suite=='geometry':
             from test_aes_geometry import instrument
+            instrument(out)
+        if suite=='visibility':
+            from test_aes_visibility import instrument
             instrument(out)
         if locks:
             (out/'aeslockprobe.act').write_text('MODULE AESLOCKPROBE\nPUBLIC BYTE busy,ready\nENDMODULE\n')
@@ -299,6 +302,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if suite=='geometry':
             from test_aes_geometry import ROOTS
             extra_roots=ROOTS
+        if suite=='visibility':
+            from test_aes_visibility import ROOTS
+            extra_roots=ROOTS
         if suite in ('forms','alerts','fsel'):
             from test_aes_forms import instrument
             instrument(out,alerts=suite=='alerts',file_selector=suite=='fsel')
@@ -355,6 +361,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if suite=='geometry':
             from test_aes_geometry import setup as geometry_setup
             setup+=geometry_setup(sy)
+        if suite=='visibility':
+            from test_aes_visibility import setup as visibility_setup
+            setup+=visibility_setup(sy)
         if suite == 'cache':
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESLockCount"]:x})\n    item^=LONGCARD(ADDRESS(@service.lockCount))\n  END\n'
         if suite == 'menus':
@@ -378,8 +387,8 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE DESKPAINT'+chr(10)+'USE AESGATE' if suite=='frame' else ''}
-{'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else ''}
+{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','visibility') else ''}
+{'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else 'USE VISPROBE' if suite=='visibility' else ''}
 CARD checks
 CARD FUNC POINTER run()
 
@@ -422,11 +431,15 @@ PROC Main()
     OD
     EXEC.FreeSignal(bit)
   END
-''' if suite=='frame' else ''}
+''' if suite in ('frame','visibility') else ''}
 {exhaustion}
 RETURN
 ENDMODULE
 ''')
+        if suite=='visibility':
+            source.write_text(source.read_text().replace('pending=DESKPAINT.Runnable()',
+                'pending=DESKPAINT.Runnable() OR CONSOLEBITMAP.Pending()<>0\n'
+                '          OR service.policyEffects<>0'))
         from generate_memory import PROFILE
         profile = json.loads(PROFILE.read_text())
         profile['image_data_bytes'] = 8192
@@ -453,6 +466,9 @@ ENDMODULE
         if suite=='menus':
             from test_aes_menus import worker_probe
             generate_tasks.policy_modules=worker_probe(policy_modules)
+        if suite=='visibility':
+            from test_aes_visibility import worker_probe
+            generate_tasks.policy_modules=worker_probe(policy_modules,out)
         try:
             program = build(compiler(ROOT/'build/actionc',release=True), launcher, out/'program',
                 tasks=True, task_capacity=8, foreign_image=foreign,
@@ -474,6 +490,8 @@ ENDMODULE
         from test_display_borrow import trace_setup, trace_result, trace_restore
         tracing=trace_setup(program,foreign,out)
     environment={}
+    if suite=='visibility':
+        report['visibility_local']=visibility_local
     if suite=='frame':
         report['frame_local']=frame_local
         environment=dict(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(
@@ -553,10 +571,13 @@ ENDMODULE
                 if windows:
                     from test_aes_windows import physical
                     before = lambda b: physical(b, program, foreign, report)
+                if suite=='visibility':
+                    from test_aes_visibility import physical
+                    before = lambda b: physical(b, program, foreign, report)
                 report['runtime'], _ = execute(bridge, program, before_run=before,
                                               timeout=120, frame_limit=6000)
             finally:
-                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle','frame','geometry') else
+                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle','frame','geometry','visibility') else
                              ('AESChecks', 'AESFailures', 'AESReady', 'AESDone')):
                     report[name] = int.from_bytes(bridge.memdump(foreign['symbols'][name], 2), 'little')
                 if 'AESFirstFailure' in foreign['symbols']:
@@ -582,8 +603,12 @@ ENDMODULE
             if borrowed: bridge.profile_stop()
             from stack_budget import stack_usage
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle','frame','geometry') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle','frame','geometry','visibility') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
                     'Incomplete application checks')
+            if suite=='visibility':
+                require(len(report['visibility'])==14,'Incomplete visibility checkpoints')
+                require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
+                        'Visibility exceeded its interrupt floor')
             if pointer:
                 require(report['boundary_checks']==25, 'Incomplete presenter input boundaries')
             if suite=='lifecycle':
@@ -782,17 +807,18 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'visibility', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs',help='Resources fixture disk format')
     parser.add_argument('--frame-local',choices=('none','text','all'),default='all',help='Expected migrated fields for the frame comparison fixture')
     parser.add_argument('--geometry-local',choices=('none','query','all'),default='all',help='Expected migrated geometry fields in a frozen comparison image')
+    parser.add_argument('--visibility-local',choices=('open','all'),default='all',help='Expected migrated visibility calls in a frozen comparison image')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
+    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'visibility', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
-                     args.video, args.from_build.resolve() if args.from_build else None,args.filesystem,args.frame_local,args.geometry_local)
+                     args.video, args.from_build.resolve() if args.from_build else None,args.filesystem,args.frame_local,args.geometry_local,args.visibility_local)
     elif args.suite == 'console':
         plain_console(args.output.resolve())
     else:

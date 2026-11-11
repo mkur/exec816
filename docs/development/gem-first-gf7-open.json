@@ -1,0 +1,995 @@
+{
+  "slice": "GF7-open",
+  "plan_slice": "GF7",
+  "plan_slice_complete": false,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "base_revision": "b37785ef7571eb85dd711d2bae63546c12bad099",
+  "scope": "Caller open with out-of-scene route preparation, re-admission and unpublished-route rollback; close remains RPC.",
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ]
+  },
+  "toolchain": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "actionc_override": false,
+    "compiler_profile": "release",
+    "native_mode": "Optimized development fixtures; unchanged C/Action entry ABI retains the focused raw/optimized GF4 bridge evidence.",
+    "calypsi": {
+      "cc65816": {
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "sources_sha256": {
+    "c/calypsi/aes-windows.c": "1f8659383031893445b8ebc6b657c6e95c5bae675ad28670585af18be52fe3c7",
+    "lib/aes/aesgate.act": "2da743ea77da35f696b3f17302856760dec427d80311bf4bb1925364da99c6d3",
+    "lib/aes/aeslocal.act": "eb6c7d8d00ef00a36154585a4aec53860a04fcdafc5eb3e239baea49655562cc",
+    "lib/aes/aesroutes.act": "f898bf883f899cc0612a5870dff5fc5510c5adc04d25ac6b36acdf1548fc839c",
+    "lib/aes/aeswindow.act": "40f8fb15094b34ce24886077f13487361b4fb745fade09d171c3db4be2fab420",
+    "lib/desktop/deskstate.act": "f87c7ec3478c7d4a94a9f3367e108ca8bc75713829557615056f986c72491258",
+    "tests/programs/aes_gate.act": "238f4e9bc337ee22cf761f055d2f40febb3e149863b572c6cfe8267bf8db798a",
+    "tests/programs/aes_visibility.c": "1b1aa23907a80850cbd6d0c9391118dda8bdc0261dd42378bb16a9fb8da0fc71",
+    "tools/test_aes_gate.py": "cae411be09634003a3d6c64d8fe2630850db6fde81a25d6e6d1a3486f52a44c4",
+    "tools/test_aes_server.py": "6665842e77a2b9db2990ba02ca7135ae3114161e4a858d532c041e47e9ac5b4b",
+    "tools/test_aes_visibility.py": "f4a2b4e0b868e59ff8993025e150bc6d41aaf08884ad0f23bc61a656fe7eb4a2"
+  },
+  "checks": [
+    {
+      "name": "visibility",
+      "result": {
+        "path": "build/gem-first-gui/gf7/open/visibility-scoped/results.json",
+        "sha256": "12adb5551cdae691bc40ceeada114236a7c7d0bcecd59410d6ed9993bca69b4c"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/open/visibility-scoped/program/build.json",
+        "sha256": "5557352da9a9e62d5d4449461a2eb6b9553a6e746d6f158e23e15123bad114ec"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/open/visibility-scoped/program/program.a816.json",
+        "sha256": "61da10c1f81bb6e43435a464d5e271b92449a20934b826862a4071d0ae510570"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/open/visibility-scoped/c-image.json",
+        "sha256": "74d997f0602d05ef57ededba3450e3ec592c2ff0e967ed24871d5ca95e644584"
+      },
+      "AESChecks": 168,
+      "AESFailures": 0,
+      "native_checks": 5,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 668,
+          "remaining_above_floor": 612
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 322,
+          "remaining_above_floor": 734
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 718,
+          "remaining_above_floor": 1586
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "visibility": [
+        {
+          "phase": 1,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            136,
+            1982
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 1,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 2,
+          "operation": 101,
+          "result": 0,
+          "status": 5,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 1,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 3,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 4,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 2,
+            "bounds": [
+              40,
+              32,
+              200,
+              112
+            ]
+          }
+        },
+        {
+          "phase": 5,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              40,
+              32,
+              200,
+              112
+            ]
+          }
+        },
+        {
+          "phase": 6,
+          "operation": 101,
+          "result": 0,
+          "status": 1,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              40,
+              32,
+              200,
+              112
+            ]
+          }
+        },
+        {
+          "phase": 7,
+          "operation": 101,
+          "result": 0,
+          "status": 3,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              40,
+              32,
+              200,
+              112
+            ]
+          }
+        },
+        {
+          "phase": 8,
+          "operation": 101,
+          "result": 0,
+          "status": 7,
+          "sequence_delta": 0,
+          "attempts": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              40,
+              32,
+              200,
+              112
+            ]
+          }
+        },
+        {
+          "phase": 9,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            1,
+            3,
+            0,
+            0,
+            2,
+            1,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 3,
+            "bounds": [
+              48,
+              40,
+              208,
+              120
+            ]
+          }
+        },
+        {
+          "phase": 10,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              48,
+              40,
+              208,
+              120
+            ]
+          }
+        },
+        {
+          "phase": 11,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            1,
+            2,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 4,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 12,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 13,
+          "operation": 101,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            1,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 1,
+            "epoch": 5,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        },
+        {
+          "phase": 14,
+          "operation": 102,
+          "result": 1,
+          "status": 0,
+          "sequence_delta": 1,
+          "attempts": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "view": {
+            "handle": 1,
+            "shown": 0,
+            "epoch": 0,
+            "bounds": [
+              32,
+              24,
+              192,
+              104
+            ]
+          }
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 316,
+        "native_irq_count": 15083
+      }
+    },
+    {
+      "name": "windows",
+      "result": {
+        "path": "build/gem-first-gui/gf7/open/windows/results.json",
+        "sha256": "a4d8ad8c365e2c9d85e2db526b5f0c991f9e1c837fcd30713f8702d7a551d2c7"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/open/windows/program/build.json",
+        "sha256": "b2ac4b1f97d20ad9577e788c3e2030d57e3677dec569c5e879928d2be2d8eb3b"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/open/windows/program/program.a816.json",
+        "sha256": "1b351f77ac368eadbec8b83db049c0ccc2da85cd802a89a88097977414cb45fc"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/open/windows/c-image.json",
+        "sha256": "e5892a306f157a60868d914c68b3aa573a15c74d26a22af66658056ba06cac68"
+      },
+      "AESChecks": 285,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 686,
+          "remaining_above_floor": 594
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 470,
+          "remaining_above_floor": 586
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 499,
+          "remaining_above_floor": 557
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 214,
+          "remaining_above_floor": 842
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 953,
+          "remaining_above_floor": 1351
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 2934,
+        "native_irq_count": 25625
+      }
+    },
+    {
+      "name": "effects",
+      "result": {
+        "path": "build/gem-first-gui/gf7/open/effects/results.json",
+        "sha256": "503b1b5036f5b07a91e1aee8dbf7bc627a48e80aab62dc412f679c7a5f1ac7c1"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/open/effects/program/build.json",
+        "sha256": "049aaa20a6ab487c4110a0eceb4cc254c32ade12b1f87b1a9cefd0c6e01d64d6"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/open/effects/program/program.a816.json",
+        "sha256": "9ddef2c17ba62858bb05792e9eec8d00019be2dcc195df9da0ea2d30335019a7"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/open/effects/c-image.json",
+        "sha256": "cd3bebe8e5b4a41f39c0d5ddbf416480389102d18fb9e39d7968ea340860c00e"
+      },
+      "cases": [
+        {
+          "variant": 0,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 369979,
+              "peer_after": 383208,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            },
+            {
+              "stage": 2,
+              "frames": 4,
+              "peer_before": 386379,
+              "peer_after": 398556,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 1
+            }
+          ],
+          "close_before_drain": {
+            "shown": 0,
+            "epoch": 0,
+            "retained_route": true,
+            "committed_lookup": 0,
+            "query_completed": true
+          },
+          "checks": 30,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 3,
+          "stop_count": 0,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 3,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 369979,
+              "peer_after": 383208,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            },
+            {
+              "stage": 2,
+              "frames": 4,
+              "peer_before": 386367,
+              "peer_after": 398191,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 1
+            }
+          ],
+          "close_before_drain": {
+            "shown": 0,
+            "epoch": 0,
+            "retained_route": true,
+            "committed_lookup": 0,
+            "query_completed": true
+          },
+          "checks": 25,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 1,
+          "stop_count": 1,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 4,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 369979,
+              "peer_after": 383208,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            }
+          ],
+          "checks": 18,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 1,
+          "stop_count": 1,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 65427,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "gate-raw",
+      "result": {
+        "path": "build/gem-first-gui/gf7/open/gate-raw/results.json",
+        "sha256": "1fc80f6e30bebcf315fe8a07a850d8b751beb0f731e46eb23a6cf1034da20c09"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/open/gate-raw/program/build.json",
+        "sha256": "5c669059c8d8ccb3fcb5e6e8e894753b0da3e44fb93065815cac87d22a585001"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/open/gate-raw/program/program.a816.json",
+        "sha256": "edbadea88e4e77913b6c3290158012faf16fe48455bdc2b79e14cf626d5037f4"
+      },
+      "checks": 61,
+      "mode": "raw",
+      "service_bytes": 1982,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 7,
+        "native_irq_count": 0
+      }
+    },
+    {
+      "name": "gate-opt",
+      "result": {
+        "path": "build/gem-first-gui/gf7/open/gate-opt/results.json",
+        "sha256": "e6ff72f985326b9e9209b583de2ef07f3513f26a659c800a86cd3c4997ea624d"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/open/gate-opt/program/build.json",
+        "sha256": "a60952c1f477ffa4fc30e28a0b211c330933cc798d163ccb3b3e6ed2bb3d0399"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/open/gate-opt/program/program.a816.json",
+        "sha256": "05b61dcd5bbdf75705f7e7901fec6a7ee29975751b93c373d202cf8298ff80de"
+      },
+      "checks": 61,
+      "mode": "opt",
+      "service_bytes": 1982,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 5,
+        "native_irq_count": 0
+      }
+    }
+  ],
+  "host": {
+    "run": 689,
+    "passed": 685,
+    "skipped": 4,
+    "log": {
+      "path": "build/gem-first-gui/gf7/open/host.log",
+      "sha256": "0867c4d299eb0021a2df98f8d665c12d52f64e2229c24de9e71d235cb1e603f4"
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "resources": {
+    "tasks_added": 0,
+    "signals_added": 0,
+    "upper_static_arena_delta": 0,
+    "heap_reservation_delta": 0,
+    "client_payload_bytes": 136,
+    "service_payload_bytes": 1982
+  },
+  "resource_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf7/routes/windows/program/build.json",
+      "sha256": "937cb7d1e1fc1a29579fff0760bf65cc7b1ce5a23381783ca63dfc4369cb0759"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf7/open/windows/program/build.json",
+      "sha256": "b2ac4b1f97d20ad9577e788c3e2030d57e3677dec569c5e879928d2be2d8eb3b"
+    },
+    "parent_bytes": {
+      "native": {
+        "code": 1067984,
+        "data": 11962,
+        "zero_fill": 25898
+      },
+      "c": {
+        "code": 189627,
+        "data": 45061,
+        "zero_fill": 21647
+      }
+    },
+    "candidate_bytes": {
+      "native": {
+        "code": 1069990,
+        "data": 11962,
+        "zero_fill": 25898
+      },
+      "c": {
+        "code": 189632,
+        "data": 45061,
+        "zero_fill": 21647
+      }
+    },
+    "delta": {
+      "native": {
+        "code": 2006,
+        "data": 0,
+        "zero_fill": 0
+      },
+      "c": {
+        "code": 5,
+        "data": 0,
+        "zero_fill": 0
+      }
+    },
+    "unchanged_reservations": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations",
+      "image_data",
+      "upper_reservations"
+    ]
+  },
+  "window_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf7/routes/windows/results.json",
+      "sha256": "6a5cd2919b27f1b002a745b784baadbb090716ac6e2732da121967d61b25af76"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf7/open/windows/results.json",
+      "sha256": "a4d8ad8c365e2c9d85e2db526b5f0c991f9e1c837fcd30713f8702d7a551d2c7"
+    },
+    "identical": [
+      "iconification",
+      "physical_requests",
+      "gadgets",
+      "visible_rectangles",
+      "visible_pixels"
+    ]
+  },
+  "limits": [
+    "Development tier only; no hosted-system, hardware or latency qualification.",
+    "Native console attachments and physical caret/widget focus effects retain their existing system admission.",
+    "Contended mutations retain RPC pending admission until GF8.",
+    "The wire/private C entry ABI is unchanged. The small raw/optimized gate probe validates the new continuation mode and request-owned signal interpretation.",
+    "GF7 caller close and final integration acceptance remain open at this step."
+  ],
+  "intermediate_failures": [
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf7/open/visibility-initial.log",
+        "sha256": "b815092b8b05d25092e20c0647df0ee1ffcee39e73888f83458dbd7b01fd414c"
+      },
+      "reason": "The first readiness probe shadow did not override the generated worker; corrected the fixture policy-module hook."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf7/open/visibility-cycle.log",
+        "sha256": "bd62ee17f23eb9e69885787cc28390ac35bbc8193a46e5dcfafd1e424edabd65"
+      },
+      "reason": "An attempted probe import introduced a fixture-only module cycle; replaced it with the generated-worker hook."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf7/open/visibility-frame-busy.log",
+        "sha256": "d371dc0d64f1fe41b262690cfcbccfb0b998c42099dee4ba902df8c8f8830b4b"
+      },
+      "reason": "Admission readiness was sampled before all frame work settled; the fixture now waits for a fresh settled turn."
+    },
+    {
+      "log": {
+        "path": "build/gem-first-gui/gf7/open/visibility-controller-stop.log",
+        "sha256": "3b2cd0a6476d552ac4204dda216ed419f006089fc6da5748799aa4ac3191c591"
+      },
+      "reason": "All 14 checkpoints and 168 C checks passed, but the new controller stopped with display DMA active. Added a scene-safe background/fence settlement barrier before teardown."
+    }
+  ]
+}

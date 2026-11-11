@@ -1,7 +1,6 @@
 ; Caller entry to the same native policy used by RPC admission.
 MODULE AESLOCAL
 USE EXEC
-USE EXECLISTS
 USE AESTYPES
 USE AESSTATE
 USE AESGATE
@@ -22,6 +21,7 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   IF request.operation<>AESTYPES.OP_UPDATE
       AND request.operation<>AESTYPES.OP_CREATE
       AND request.operation<>AESTYPES.OP_DELETE
+      AND request.operation<>AESTYPES.OP_OPEN
       AND request.operation<>AESTYPES.OP_FIND
       AND request.operation<>AESTYPES.OP_SET THEN
     RETURN(0)
@@ -40,16 +40,15 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   FI
   LET client=AESSTATE.Find(service,request.client)
   ; Include older messages that have not reached the native waiter queue yet.
-  EXEC.Forbid()
-  queued=service.lockCount<>0 OR service.windowPending<>0
-      OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0
-  EXEC.Permit()
+  queued=AESWINDOW.Queued(service)
   wake=request.operation<>AESTYPES.OP_UPDATE
       OR (request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1)
   request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1)
       ELSE INT(0) FI
   IF request.operation=AESTYPES.OP_UPDATE THEN
     status=AESLOCKS.Attempt(service,client,request,AESLOCKS.OWNER_READY,queued)
+  ELSEIF request.operation=AESTYPES.OP_OPEN THEN
+    status=AESWINDOW.Visibility(service,client,request,queued)
   ELSEIF request.operation=AESTYPES.OP_SET THEN
     IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
       status=AESWINDOW.Frame(service,client,request,queued,@wake)

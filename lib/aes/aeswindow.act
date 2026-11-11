@@ -1,6 +1,7 @@
 ; Shared GEM window policy. No application draws in this code.
 MODULE AESWINDOW
 USE EXEC
+USE EXECLISTS
 USE DESKCONSOLE
 USE A816MEMORY
 USE AESSTATE
@@ -35,6 +36,17 @@ BYTE FUNC Eligible(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client BYTE queued)
 
 RETURN((queued=0 OR service.mouseOwner=client.id) AND Ready(service,client)<>0)
+
+; Include messages which have not yet entered the presenter's waiter queues.
+PUBLIC BYTE FUNC Queued(AESSTATE.Service POINTER service)
+  BYTE queued
+
+  EXEC.Forbid()
+  queued=service.lockCount<>0 OR service.windowPending<>0
+      OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0
+  EXEC.Permit()
+
+RETURN(queued)
 
 BYTE FUNC ValidBounds(CARD kind INT x,y,width,height
     LAYERTYPES.Rect POINTER rect)
@@ -185,8 +197,20 @@ PROC CommitOpen(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
 
 RETURN
 
+PROC DiscardRoute(AESTYPES.Request POINTER request LONGCARD route)
+
+  IF route<>0 THEN
+    BEGIN
+      LET held=AESGATE.Leave()
+      AESROUTES.Discard(route)
+      AESGATE.Reenter(held,request)
+    END
+  FI
+
+RETURN
+
 CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
-    AESSTATE.Window POINTER item INT x,y,width,height)
+    AESSTATE.Window POINTER item AESTYPES.Request POINTER request)
   LAYERTYPES.Rect bounds
   LONGCARD route
 
@@ -197,13 +221,31 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     RETURN(AESTYPES.BUSY)
   FI
 
-  IF FitBounds(window,@layer.bounds,@bounds,x,y,width,height)=0 THEN
+  IF FitBounds(window,@layer.bounds,@bounds,request.intin(1),request.intin(2),
+      request.intin(3),request.intin(4))=0 THEN
     RETURN(AESTYPES.MALFORMED)
   FI
 
-  LET status=AESROUTES.Prepare(service,window,@route)
+  LET caller=AESGATE.SystemOwned()=0
+  IF caller<>0 AND (window.console<>0
+      OR DESKCORE.FocusMetadataReady(desktop,window.id)=0) THEN
+    RETURN(AESTYPES.PENDING)
+  FI
+
+  LET held=AESGATE.Leave()
+  LET status=AESROUTES.Prepare(window,@route)
+  AESGATE.Reenter(held,request)
+  IF caller<>0 AND (Eligible(service,client,Queued(service))=0
+      OR DESKCORE.FocusMetadataReady(desktop,window.id)=0) THEN
+    DiscardRoute(request,route)
+    RETURN(AESTYPES.PENDING)
+  FI
   IF status<>AESTYPES.OK THEN
     RETURN(status)
+  FI
+  IF service.nextGuiEpoch=0 THEN
+    DiscardRoute(request,route)
+    RETURN(AESTYPES.OVERFLOW)
   FI
   CommitOpen(service,client,item,@bounds,route)
 
@@ -249,6 +291,24 @@ BYTE FUNC Close(AESSTATE.Window POINTER item)
   FI
 
 RETURN(AESROUTES.Retire(window))
+
+; Both transports use the same admission and scene publication policy.
+PUBLIC CARD FUNC Visibility(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request BYTE queued)
+
+  IF Eligible(service,client,queued)=0 THEN
+    RETURN(AESTYPES.PENDING)
+  FI
+  LET item=AESWINDOWSTATE.Handle(client,request.intin(0))
+  IF item=NULL THEN
+    RETURN(AESTYPES.IDENTITY)
+  FI
+  LET status=Open(service,client,item,request)
+  IF status=AESTYPES.OK THEN
+    request.intout(0)=1
+  FI
+
+RETURN(status)
 
 ; Called after hiding and route retirement, with the presenter settled.
 PROC Destroy(AESSTATE.Window POINTER item)
@@ -620,6 +680,10 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     RETURN(Geometry(service,client,request,queued))
   FI
 
+  IF request.operation=AESTYPES.OP_OPEN THEN
+    RETURN(Visibility(service,client,request,queued))
+  FI
+
   ; An existing owner may finish mutations before dependent older waiters.
   IF Eligible(service,client,queued)=0 THEN
     RETURN(AESTYPES.PENDING)
@@ -632,9 +696,6 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
 
   IF request.operation<>AESTYPES.OP_SET THEN
     CASE request.operation OF
-    WHEN AESTYPES.OP_OPEN THEN
-      result=Open(service,client,item,request.intin(1),request.intin(2),
-          request.intin(3),request.intin(4))
     WHEN AESTYPES.OP_CLOSE THEN
       IF Close(item)=0 THEN
         RETURN(AESTYPES.PENDING)

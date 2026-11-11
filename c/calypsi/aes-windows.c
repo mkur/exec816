@@ -187,7 +187,8 @@ WORD ExecAESWindowCall(struct ExecAESContext *c,UWORD op, WORD a, WORD b, WORD d
     c->request.intin[0] = a; c->request.intin[1] = b;
     c->request.intin[2] = d; c->request.intin[3] = e;
     c->request.intin[4] = f; c->request.intin[5] = g;
-    if ((op==AES_OP_CREATE || op==AES_OP_DELETE || op==AES_OP_SET) && ExecAESLocal(c,op)) {
+    if ((op==AES_OP_CREATE || op==AES_OP_DELETE || op==AES_OP_OPEN ||
+         op==AES_OP_SET) && ExecAESLocal(c,op)) {
         c->diagnostic=c->request.status;
         result=c->diagnostic==AES_OK ? c->request.intout[0] : fail;
     } else result=ExecAESSubmit(c,op);

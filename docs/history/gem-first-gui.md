@@ -754,3 +754,40 @@ or full qualification matrix was run. The wire/private entry ABIs are unchanged;
 the existing focused raw/optimized bridge evidence remains applicable. Caller
 open and caller close/exit admission remain the next GF7 steps; hosted-system,
 hardware and latency qualification remain open.
+
+
+### Caller open
+
+The caller-open step passes its development checks. `AESGATE.Leave`/`Reenter`
+retain the continuation kind on the native stack and reacquire the scene using
+the admitted request's Task and reply signal. The presenter keeps its existing
+physical-effect protocol. Route preparation and unpublished-route rollback use
+ordinary input APIs outside scene ownership. Caller re-admission checks older
+work, logical ownership and focus readiness before the shared open commit.
+Console-bound windows and physical caret/widget effects fall back before
+mutation. Ordinary and parameter-block opens use the same path.
+
+The optimized visibility fixture passes 168 C checks and fourteen checkpoints:
+fresh/unchanged epochs, shown-window and bounds errors, actual route-slot
+exhaustion, epoch rollback, a peer taking UPDATE during preparation, late
+admission fallback, and full application queues with close/reopen/exit.
+Normal transport observations run within owner UPDATE scopes; the ownership
+and readiness races deliberately run without that scope. The six eligible
+marked opens complete without RPC; the three deferred opens use one RPC each.
+The frame/fence settlement barrier lets the controller stop after all physical
+work retires. Unsuccessful fixture readiness/import and teardown attempts remain
+in the evidence record.
+
+Windows pass 285 checks with matching GF7-route geometry, visibility, gadgets
+and physical-request observations. Effects pass 30/25/18 checks, including
+retained copied moves and withdrawn-window queries before route drain. The
+small gate probe passes 61 checks in both raw and optimized builds; host checks
+pass 685 tests with four skipped. The wire/private C entry ABI is unchanged.
+Reserved bank-zero growth is **0 fixed, 0 root, 0 kernel, 0 per public Task and
+0 idle bytes**, including guards, alignment and unused capacity. No Task,
+signal, static arena or private client/service capacity grows.
+
+The [caller-open record](../development/gem-first-gf7-open.json) retains exact
+pins, code/data deltas, stack observations, source/artifact hashes and failed
+fixture attempts. GF7 close/exit integration remains next. These are development
+checks; hosted-system, hardware and latency qualification remain open.

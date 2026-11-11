@@ -344,7 +344,8 @@ Commit: `feat(aes): execute window geometry and lookup in callers`.
 
 Status: in progress. The route-extraction step passes its selected development
 checks in the [route record](../../development/gem-first-gf7-routes.json).
-Ordinary open/close still use RPC at this step.
+The [caller-open step](../../development/gem-first-gf7-open.json) also passes.
+Eligible ordinary/PB opens now execute in callers; close remains the next step.
 
 Move ordinary open/close into the common direct path. Separate route creation,
 input draining/retirement and scene publication so blocking work never holds

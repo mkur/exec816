@@ -1,5 +1,5 @@
 ; Window route resources stay separate from scene and GUI publication.
-; These effects still run in the presenter until caller open/close admission.
+; Preparation/rollback run outside the scene; only the presenter drains input.
 MODULE AESROUTES
 USE INPUT
 USE CONSOLEINPUT
@@ -11,29 +11,35 @@ USE DESKSTATE
 USE DESKROUTES
 USE HEAPCORE
 
-; The unpublished tag belongs to this operation until CommitOpen installs it.
-; An exhausted GUI epoch rolls the new route back before any scene mutation.
-PUBLIC CARD FUNC Prepare(AESSTATE.Service POINTER service
-    DESKTYPES.Window POINTER window LONGCARD POINTER route)
+; The operation keeps this unpublished tag across scene re-admission.
+PUBLIC CARD FUNC Prepare(DESKTYPES.Window POINTER window LONGCARD POINTER route)
   CARD status
 
   LET desktop=DESKSTATE.Get()
   LET keyboard=INPUT.Lease POINTER(desktop.keyboard)
   route^=0
   IF window.console=0 THEN
-    status=DESKROUTES.Create(keyboard,INPUT.ROUTE_UNFILTERED,route)
+    status=INPUT.CreateRoute(keyboard,INPUT.ROUTE_UNFILTERED,route)
     IF status<>INPUT.OK THEN
       RETURN(AESTYPES.RESOURCE)
     FI
   FI
-  IF service.nextGuiEpoch=0 THEN
-    IF route^<>0 AND DESKROUTES.Retire(keyboard,route^)<>INPUT.OK THEN
-      HEAPCORE.Abort($fcc2)
-    FI
-    RETURN(AESTYPES.OVERFLOW)
-  FI
 
 RETURN(AESTYPES.OK)
+
+; Unpublished tags have no capture references. The caller owns this rollback.
+PUBLIC PROC Discard(LONGCARD route)
+
+  IF route<>0 THEN
+    BEGIN
+      LET desktop=DESKSTATE.Get()
+      IF INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),route)<>INPUT.OK THEN
+        HEAPCORE.Abort($fcc2)
+      FI
+    END
+  FI
+
+RETURN
 
 ; The scene has withdrawn the window and published its replacement focus.
 ; Retain the hidden window and tag across a busy input retirement retry.

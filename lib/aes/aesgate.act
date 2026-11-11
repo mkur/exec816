@@ -208,4 +208,26 @@ PUBLIC PROC Resume(BYTE held)
 
 RETURN
 
+; Enter with scene ownership. Save the continuation kind before dropping it;
+; another Task may own the scene while the resource operation runs.
+PUBLIC BYTE FUNC Leave()
+
+  IF SystemOwned()<>0 THEN
+    RETURN(Suspend())
+  FI
+  Release(0)
+
+RETURN(CALLER)
+
+; Registration pins the caller's request, reply signal and native frame.
+PUBLIC PROC Reenter(BYTE held AESTYPES.Request POINTER request)
+
+  IF held=CALLER THEN
+    EnterTask(request.owner,LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit)
+  ELSE
+    Resume(held)
+  FI
+
+RETURN
+
 ENDMODULE
