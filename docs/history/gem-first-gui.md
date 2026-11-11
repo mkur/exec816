@@ -510,3 +510,39 @@ heap reservation is added. Exact pins, source/artifact hashes, execution stages,
 stack results and failures are in the [GF4 record](../development/gem-first-gf4.json).
 GF5's bounded frame attributes remain next; hosted-system and latency
 qualification remain open.
+
+## GF5 — Caller frame attributes
+
+### Title and info
+
+The first GF5 step extracts `AESWINDOW.Frame` for both RPC and the caller entry,
+with the same eligibility rule as hidden lifecycle operations. Title/info run
+in the caller; the shared helper also retains slider policy behind RPC for the
+next step. Geometry, top, open/close and extension setters retain their existing
+transport. The helper reports actual metadata changes so unchanged strings do
+not request a frame wake. Copy bounds, menu rename, cache invalidation, damage
+and publication stay in one implementation; no physical drawing enters the
+scene gate.
+
+The focused fixture compares 34 ordinary/PB checkpoints with a GF4 parent,
+including hidden/covered windows, two owners, maximum/copied/rejected strings,
+slider values and unsupported fields. Functional calls hold UPDATE to establish
+that pixels remain unchanged until release. Separate unheld setters measure
+complete call brackets and observed deferred pixel feedback. An injected
+readiness miss must leave publication untouched until its single RPC retry.
+The controller drains final background repair under scene ownership before
+stopping its worker; detaching its default native pane at setup otherwise
+skips that normal shutdown drain. Earlier unsuccessful fixtures are retained.
+
+The [title/info record](../development/gem-first-gf5-text.json) records exact
+scope, pins, artifact/source hashes, results and reserved memory. GF5 remains
+open at this step; supported slider setters are next.
+
+This step passes 185 frame checks and all 34 parent state/frame/menu pixel
+checkpoints, plus 265 lifecycle, 181 lock and 224 cache checks. The lifecycle
+fixture now expects a local title setter and separately checks an unmigrated
+preservation setter. All 32 cache records and 14 scanouts still match GF4.
+Host checks run 687 tests: 683 pass and four skip. The matched cache image adds
+1,302 native and five C code bytes; data and zero-fill sizes are unchanged.
+Reserved bank-zero growth is **0 fixed, 0 root, 0 kernel, 0 per public Task and
+0 idle bytes**, including guards, alignment and unused capacity.

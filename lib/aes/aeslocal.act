@@ -12,6 +12,7 @@ USE AESWINDOW
 ; Return zero for the original RPC path; handled TRY failure returns one.
 PUBLIC CARD FUNC Call(LONGCARD value)
   BYTE queued,wake
+  CARD status
 
   LET service=AESSTATE.Get()
   IF service=NULL THEN
@@ -20,7 +21,12 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   LET request=AESTYPES.Request POINTER(ADDRESS(value))
   IF request.operation<>AESTYPES.OP_UPDATE
       AND request.operation<>AESTYPES.OP_CREATE
-      AND request.operation<>AESTYPES.OP_DELETE THEN
+      AND request.operation<>AESTYPES.OP_DELETE
+      AND request.operation<>AESTYPES.OP_SET THEN
+    RETURN(0)
+  FI
+  IF request.operation=AESTYPES.OP_SET AND request.intin(1)<>AESTYPES.WF_NAME
+      AND request.intin(1)<>AESTYPES.WF_INFO THEN
     RETURN(0)
   FI
   AESGATE.EnterTask(request.owner,
@@ -35,9 +41,13 @@ PUBLIC CARD FUNC Call(LONGCARD value)
       OR (request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1)
   request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1)
       ELSE INT(0) FI
-  LET status=IF request.operation=AESTYPES.OP_UPDATE THEN
-      AESLOCKS.Attempt(service,client,request,AESLOCKS.OWNER_READY,queued)
-      ELSE AESWINDOW.Lifecycle(service,client,request,queued) FI
+  IF request.operation=AESTYPES.OP_UPDATE THEN
+    status=AESLOCKS.Attempt(service,client,request,AESLOCKS.OWNER_READY,queued)
+  ELSEIF request.operation=AESTYPES.OP_SET THEN
+    status=AESWINDOW.Frame(service,client,request,queued,@wake)
+  ELSE
+    status=AESWINDOW.Lifecycle(service,client,request,queued)
+  FI
   IF status=AESTYPES.PENDING THEN
     AESGATE.Release(0)
     RETURN(0)

@@ -5,8 +5,9 @@
 
 The optional AES endpoint runs in the existing desktop presenter. Registration,
 exit, unmigrated window mutations and contended GUI locks use ordinary Exec RPC.
-Eligible hidden creation/deletion, uncontended BEGIN/END UPDATE, copied messaging
-and event/timer waits run in their callers. This adds no Task or kernel gateway.
+Eligible hidden creation/deletion and title/info setters, uncontended BEGIN/END
+UPDATE, copied messaging and event/timer waits run in their callers. This adds
+no Task or kernel gateway.
 The native desktop and retained Control Panel remain independent clients of
 their existing service.
 
@@ -327,6 +328,14 @@ falls back to RPC before applying any mutation. View storage is allocated before
 scene entry and freed after release. Console-bound deletion remains a system
 operation because it can retire physical presentation state. Open/close and
 other unmigrated operations retain their established transport.
+
+Eligible `WF_NAME` and `WF_INFO` setters use the same caller entry and ordering
+as hidden lifecycle operations. They copy and commit bounded text, cache/menu
+changes, damage and view publication under scene ownership. Changed attributes
+wake frame work after release; unchanged values retain their existing
+publication and do not request a frame wake. Physical repaint remains deferred,
+including while the caller owns UPDATE. A readiness or older-work miss falls
+back before mutation. Other fields retain their established transport.
 
 A copied move keeps the old published geometry until display completion. Success
 publishes the new bounds; a quiescent display failure keeps the old bounds and

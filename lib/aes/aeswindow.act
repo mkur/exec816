@@ -33,6 +33,11 @@ PUBLIC BYTE FUNC Ready(AESSTATE.Service POINTER service
 RETURN((service.mouseOwner=0 OR service.mouseOwner=client.id)
     AND AESLOCKS.NativeReady()<>0)
 
+BYTE FUNC Eligible(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client BYTE queued)
+
+RETURN((queued=0 OR service.mouseOwner=client.id) AND Ready(service,client)<>0)
+
 BYTE FUNC ValidBounds(CARD kind INT x,y,width,height
     LAYERTYPES.Rect POINTER rect)
 
@@ -409,7 +414,7 @@ PUBLIC CARD FUNC Lifecycle(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request BYTE queued)
   CARD result
 
-  IF (queued<>0 AND service.mouseOwner<>client.id) OR Ready(service,client)=0 THEN
+  IF Eligible(service,client,queued)=0 THEN
     RETURN(AESTYPES.PENDING)
   FI
 
@@ -438,13 +443,123 @@ PUBLIC CARD FUNC Lifecycle(AESSTATE.Service POINTER service
 
 RETURN(result)
 
+; Both transports share metadata-only frame policy. Changed reports whether
+; deferred frame work needs a wake; unchanged values retain their publication.
+PUBLIC BYTE FUNC FrameField(INT field)
+
+RETURN(field=AESTYPES.WF_NAME OR field=AESTYPES.WF_INFO
+    OR field=AESTYPES.WF_VSLIDE OR field=AESTYPES.WF_VSLSIZE)
+
+PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request
+    BYTE queued BYTE POINTER changed)
+  BYTE status
+  BYTE POINTER title,current
+  CARD length,index
+  LONGCARD titleAddress
+  LAYERTYPES.Rect bounds
+
+  changed^=0
+  IF Eligible(service,client,queued)=0 THEN
+    RETURN(AESTYPES.PENDING)
+  FI
+
+  LET item=AESWINDOWSTATE.Handle(client,request.intin(0))
+  IF item=NULL THEN
+    RETURN(AESTYPES.IDENTITY)
+  FI
+
+  LET desktop=DESKSTATE.Get()
+  LET window=item.window
+  LET layer=LAYERS.Find(@desktop.scene,window.layer)
+  CASE request.intin(1) OF
+  WHEN AESTYPES.WF_NAME,AESTYPES.WF_INFO THEN
+    titleAddress=(LONGCARD(CARD(request.intin(2))) LSH 16)
+        OR LONGCARD(CARD(request.intin(3)))
+    IF titleAddress=0 OR titleAddress>$ffffff THEN
+      RETURN(AESTYPES.MALFORMED)
+    FI
+
+    title=BYTE POINTER(ADDRESS(titleAddress))
+    length=0
+    WHILE length<DESKTYPES.TITLE_BYTES AND title(SIZE(length))<>0 DO
+      length==+1
+    OD
+
+    IF length=DESKTYPES.TITLE_BYTES THEN
+      RETURN(AESTYPES.MALFORMED)
+    FI
+
+    current=@window.title(0)
+    IF request.intin(1)=AESTYPES.WF_INFO THEN
+      current=@window.info(0)
+    FI
+    index=0
+    WHILE index<=length AND current(SIZE(index))=title(SIZE(index)) DO
+      index==+1
+    OD
+    IF index>length THEN
+      request.intout(0)=1
+      RETURN(AESTYPES.OK)
+    FI
+    REGIONS.Copy(@layer.bounds,@bounds)
+    IF request.intin(1)=AESTYPES.WF_NAME THEN
+      A816MEMORY.Move(@window.title(0),title,length+1)
+      DESKMENU.Renamed(window.id)
+      bounds.bottom=bounds.top+DESKTYPES.TITLE_HEIGHT
+    ELSE
+      DESKCACHE.Changed(desktop,window)
+      A816MEMORY.Move(@window.info(0),title,length+1)
+      bounds.top==+DESKTYPES.TITLE_HEIGHT
+      bounds.bottom=bounds.top+DESKTYPES.FRAME_INFO_HEIGHT
+    FI
+    status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
+  WHEN AESTYPES.WF_VSLIDE,AESTYPES.WF_VSLSIZE THEN
+    IF (window.frameKind & AESTYPES.VSLIDE)=0 THEN
+      RETURN(AESTYPES.UNSUPPORTED)
+    FI
+    IF request.intin(2)<0 OR request.intin(2)>1000 THEN
+      RETURN(AESTYPES.MALFORMED)
+    FI
+    IF (request.intin(1)=AESTYPES.WF_VSLIDE AND item.view.vslide=request.intin(2))
+        OR (request.intin(1)=AESTYPES.WF_VSLSIZE AND item.view.vsize=request.intin(2)) THEN
+      request.intout(0)=1
+      RETURN(AESTYPES.OK)
+    FI
+    DESKCACHE.Changed(desktop,window)
+    IF request.intin(1)=AESTYPES.WF_VSLIDE THEN
+      item.view.vslide=request.intin(2)
+    ELSE
+      item.view.vsize=request.intin(2)
+    FI
+    REGIONS.Assign(@bounds,layer.bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
+        layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
+        layer.bounds.bottom)
+    status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
+  ELSE
+    RETURN(AESTYPES.UNSUPPORTED)
+  ESAC
+
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  IF window.iconified=0 AND (request.intin(1)=AESTYPES.WF_VSLIDE
+      OR request.intin(1)=AESTYPES.WF_VSLSIZE) THEN
+    AESWINDOWSTATE.Geometry(item,0)
+  ELSE
+    AESWINDOWSTATE.Snapshot(item)
+  FI
+  AESWINDOWSTATE.Sync()
+  request.intout(0)=1
+  changed^=1
+
+RETURN(AESTYPES.OK)
+
 PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request BYTE queued)
   BYTE status
-  BYTE POINTER title,current
-  CARD length,index,result
-  LONGCARD titleAddress
-  LAYERTYPES.Rect bounds
+  CARD result
 
   ; A presenter query observes one coherent stack without waiting for drawing
   ; or mouse ownership.
@@ -457,8 +572,12 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     RETURN(Lifecycle(service,client,request,queued))
   FI
 
+  IF request.operation=AESTYPES.OP_SET AND FrameField(request.intin(1))<>0 THEN
+    RETURN(Frame(service,client,request,queued,@status))
+  FI
+
   ; An existing owner may finish mutations before dependent older waiters.
-  IF (queued<>0 AND service.mouseOwner<>client.id) OR Ready(service,client)=0 THEN
+  IF Eligible(service,client,queued)=0 THEN
     RETURN(AESTYPES.PENDING)
   FI
 
@@ -502,47 +621,6 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
         RETURN(AESTYPES.MALFORMED)
       FI
     END
-  WHEN AESTYPES.WF_NAME,AESTYPES.WF_INFO THEN
-    titleAddress=(LONGCARD(CARD(request.intin(2))) LSH 16)
-        OR LONGCARD(CARD(request.intin(3)))
-    IF titleAddress=0 OR titleAddress>$ffffff THEN
-      RETURN(AESTYPES.MALFORMED)
-    FI
-
-    title=BYTE POINTER(ADDRESS(titleAddress))
-    length=0
-    WHILE length<DESKTYPES.TITLE_BYTES AND title(SIZE(length))<>0 DO
-      length==+1
-    OD
-
-    IF length=DESKTYPES.TITLE_BYTES THEN
-      RETURN(AESTYPES.MALFORMED)
-    FI
-
-    current=@window.title(0)
-    IF request.intin(1)=AESTYPES.WF_INFO THEN
-      current=@window.info(0)
-    FI
-    index=0
-    WHILE index<=length AND current(SIZE(index))=title(SIZE(index)) DO
-      index==+1
-    OD
-    IF index>length THEN
-      request.intout(0)=1
-      RETURN(AESTYPES.OK)
-    FI
-    REGIONS.Copy(@layer.bounds,@bounds)
-    IF request.intin(1)=AESTYPES.WF_NAME THEN
-      A816MEMORY.Move(@window.title(0),title,length+1)
-      DESKMENU.Renamed(window.id)
-      bounds.bottom=bounds.top+DESKTYPES.TITLE_HEIGHT
-    ELSE
-      DESKCACHE.Changed(desktop,window)
-      A816MEMORY.Move(@window.info(0),title,length+1)
-      bounds.top==+DESKTYPES.TITLE_HEIGHT
-      bounds.bottom=bounds.top+DESKTYPES.FRAME_INFO_HEIGHT
-    FI
-    status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
   WHEN AESTYPES.WF_EXEC_FOCUS THEN
     item.focusNotices=(request.intin(2)<>0)
     IF item.focusNotices<>0 THEN
@@ -572,28 +650,6 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       request.intout(0)=1
     FI
     RETURN(result)
-  WHEN AESTYPES.WF_VSLIDE,AESTYPES.WF_VSLSIZE THEN
-    IF (window.frameKind & AESTYPES.VSLIDE)=0 THEN
-      RETURN(AESTYPES.UNSUPPORTED)
-    FI
-    IF request.intin(2)<0 OR request.intin(2)>1000 THEN
-      RETURN(AESTYPES.MALFORMED)
-    FI
-    IF (request.intin(1)=AESTYPES.WF_VSLIDE AND item.view.vslide=request.intin(2))
-        OR (request.intin(1)=AESTYPES.WF_VSLSIZE AND item.view.vsize=request.intin(2)) THEN
-      request.intout(0)=1
-      RETURN(AESTYPES.OK)
-    FI
-    DESKCACHE.Changed(desktop,window)
-    IF request.intin(1)=AESTYPES.WF_VSLIDE THEN
-      item.view.vslide=request.intin(2)
-    ELSE
-      item.view.vsize=request.intin(2)
-    FI
-    REGIONS.Assign(@bounds,layer.bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
-        layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
-        layer.bounds.bottom)
-    status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
   ELSE
     RETURN(AESTYPES.UNSUPPORTED)
   ESAC
@@ -602,12 +658,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     RETURN(AESTYPES.MALFORMED)
   FI
 
-  IF window.iconified=0 AND (request.intin(1)=AESTYPES.WF_VSLIDE
-      OR request.intin(1)=AESTYPES.WF_VSLSIZE) THEN
-    AESWINDOWSTATE.Geometry(item,0)
-  ELSE
-    AESWINDOWSTATE.Snapshot(item)
-  FI
+  AESWINDOWSTATE.Snapshot(item)
   AESWINDOWSTATE.Sync()
   request.intout(0)=1
 

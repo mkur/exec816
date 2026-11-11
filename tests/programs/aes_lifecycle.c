@@ -170,6 +170,8 @@ UWORD AESRun(void)
     saved=c->view;replies=c->replies;
     sequence=c->sequence;
     CHECK(wind_set_str(windows[0],WF_NAME,"Caller window"));
+    CHECK(c->sequence==sequence); /* GF5 migrates bounded text. */
+    CHECK(wind_set(windows[0],AES_WF_EXEC_PRESERVE,0,0,0,0));
     CHECK(c->sequence==sequence+1); /* Nonmigrated operation stays RPC. */
     release();send(1);stable();LifePhase=2;
     CHECK(NATIVE(0)==6 && NATIVE(1)==0);

@@ -249,6 +249,11 @@ Commit: `feat(aes): execute hidden window lifecycle in callers`.
 
 ### GF5 — Execute bounded frame attributes in the caller
 
+Status: in progress. The title/info step passes its selected development checks;
+supported sliders remain on RPC. See the
+[step record](../../development/gem-first-gf5-text.json), starting from GF4
+commit `75d5256c`.
+
 Move supported title, info and slider setters into the common direct path.
 Commit values and damage under scene ownership, then wake frame work after
 release. Keep string lifetime rules, value bounds, unchanged-value behavior,
@@ -258,6 +263,30 @@ Acceptance: changed/unchanged attributes, unsupported fields, covered windows,
 two owners, publication and frame pixels match the parent. Confirm zero RPC on
 eligible migrated fields and measure complete setter/feedback cost, including
 deferred system work. Repeat only the affected GF0 observation window.
+
+Implement in two runnable steps, committing after each passes:
+
+1. Extract one bounded frame-attribute helper in `AESWINDOW`, used by RPC and
+   the existing `AESLOCAL.Call` entry. Enable `WF_NAME` and `WF_INFO` first.
+   Preserve the admission rule, copied strings, unchanged fast return,
+   Windows-menu revision and damage/cache publication. Keep other setters on
+   RPC before applying any mutation. Capture a GF4 parent fixture before
+   enabling the direct path.
+2. Enable supported `WF_VSLIDE` and `WF_VSLSIZE` through that same helper.
+   Preserve range checks, missing-gadget errors, derived slider geometry and
+   view/iterator publication. Compare the complete fixture with the parent,
+   including covered/hidden windows, two owners and mixed ordinary/PB calls.
+
+Use optimized `tools/test_aes_server.py --suite frame --output DIR` for focused
+state, sequence, caller identity, deferred pixels and complete setter/feedback
+observations. Its `--frame-local none/text/all` argument describes the expected
+migration stage for parent/step comparisons; it does not select a production
+implementation. Run affected optimized `windows`, `cache`, `locks` and
+`lifecycle` regressions, plus `tools/test_gem_first.py --case idle --output DIR`
+for the affected GF0 observation. The C/Action entry ABI is unchanged; retain
+GF4's focused raw/optimized bridge evidence. Report code/data and stack changes,
+and reserved bank-zero bytes including unused capacity, guards and alignment;
+the target remains zero in every category.
 
 Commit: `feat(aes): update window frame attributes in callers`.
 
