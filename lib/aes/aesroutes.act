@@ -1,0 +1,63 @@
+; Window route resources stay separate from scene and GUI publication.
+; These effects still run in the presenter until caller open/close admission.
+MODULE AESROUTES
+USE INPUT
+USE CONSOLEINPUT
+USE AESSTATE
+USE AESTYPES
+USE AESGATE
+USE DESKTYPES
+USE DESKSTATE
+USE DESKROUTES
+USE HEAPCORE
+
+; The unpublished tag belongs to this operation until CommitOpen installs it.
+; An exhausted GUI epoch rolls the new route back before any scene mutation.
+PUBLIC CARD FUNC Prepare(AESSTATE.Service POINTER service
+    DESKTYPES.Window POINTER window LONGCARD POINTER route)
+  CARD status
+
+  LET desktop=DESKSTATE.Get()
+  LET keyboard=INPUT.Lease POINTER(desktop.keyboard)
+  route^=0
+  IF window.console=0 THEN
+    status=DESKROUTES.Create(keyboard,INPUT.ROUTE_UNFILTERED,route)
+    IF status<>INPUT.OK THEN
+      RETURN(AESTYPES.RESOURCE)
+    FI
+  FI
+  IF service.nextGuiEpoch=0 THEN
+    IF route^<>0 AND DESKROUTES.Retire(keyboard,route^)<>INPUT.OK THEN
+      HEAPCORE.Abort($fcc2)
+    FI
+    RETURN(AESTYPES.OVERFLOW)
+  FI
+
+RETURN(AESTYPES.OK)
+
+; The scene has withdrawn the window and published its replacement focus.
+; Retain the hidden window and tag across a busy input retirement retry.
+PUBLIC BYTE FUNC Retire(DESKTYPES.Window POINTER window)
+  CARD captured
+
+  IF window.keyRoute=0 THEN
+    RETURN(1)
+  FI
+
+  LET desktop=DESKSTATE.Get()
+  LET held=AESGATE.Suspend()
+  captured=CONSOLEINPUT.Pump(NULL)
+  LET result=DESKROUTES.Retire(INPUT.Lease POINTER(desktop.keyboard),
+      window.keyRoute)
+  AESGATE.Resume(held)
+  IF result=INPUT.BUSY THEN
+    RETURN(0)
+  FI
+  IF result<>INPUT.OK THEN
+    HEAPCORE.Abort($fcc2)
+  FI
+  window.keyRoute=0
+
+RETURN(1)
+
+ENDMODULE

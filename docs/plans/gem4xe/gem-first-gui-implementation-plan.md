@@ -25,6 +25,7 @@ paths with their last caller. This plan does not implement a second GUI mode.
 | --- | --- |
 | [AES window dispatcher](../../../lib/aes/aeswindow.act) | Presenter-side create/open/close/delete/set/find; includes input routes, cache operations and copied moves that must be separated before caller execution. |
 | [Window publication](../../../lib/aes/aeswindowstate.act), [locks](../../../lib/aes/aeslocks.act), [policy gate](../../../lib/aes/aesgate.act) | Existing window views, UPDATE journals and eligible-waiter rules; caller UPDATE currently uses presenter handoffs and RPC fallback. |
+| [Window route resources](../../../lib/aes/aesroutes.act) | GF7 separates unpublished route preparation/rollback and hidden-window draining/retirement from scene publication. Caller open/close admission remains next. |
 | [C window binding](../../../c/calypsi/aes-windows.c), [local native entry](../../../lib/aes/aeslocal.act) | Per-Task context and caller-owned views; suitable locations for direct entry without repeated admission checks. |
 | [Desktop core](../../../lib/desktop/deskcore.act), [state](../../../lib/desktop/deskstate.act) | Existing common scene, focus and geometry machinery. Consolidate policy and records into AES rather than creating another scene. |
 | [Console worker](../../../lib/console/consoledriver.act), [AES hooks](../../../lib/aes/aeshost.act), [desktop hooks](../../../lib/desktop/deskhost.act) | Presently combine console/backend, GUI policy, input and presentation. Evolve the existing graphical worker into the AES system Task. |
@@ -341,6 +342,10 @@ Commit: `feat(aes): execute window geometry and lookup in callers`.
 
 ### GF7 — Execute open/close with safe input-route lifetime
 
+Status: in progress. The route-extraction step passes its selected development
+checks in the [route record](../../development/gem-first-gf7-routes.json).
+Ordinary open/close still use RPC at this step.
+
 Move ordinary open/close into the common direct path. Separate route creation,
 input draining/retirement and scene publication so blocking work never holds
 the scene gate. Preserve open epochs, pending redraw facts, focus restoration,
@@ -352,6 +357,17 @@ Acceptance: repeated open/close/reopen and exit with queued GUI messages, full
 application queue, active capture and a waiting peer. Obsolete notifications
 retire without requiring receipt. No leaked routes, grants, contexts, windows
 or Tasks; selected allocation/route failures leave the live scene coherent.
+
+Implement as three executable steps, committing after each passes:
+
+1. Extract route preparation/rollback and draining/retirement into `AESROUTES`.
+   Keep scene publication in `AESWINDOW.CommitOpen`/`CommitClose` and preserve
+   RPC behavior. Exercise failed open rollback, repeated close/reopen, queued
+   notifications and peer lookup while a hidden window retains its old tag.
+2. Enable caller open with route preparation outside the scene gate, safe
+   re-admission, allocation rollback and fresh open epochs.
+3. Enable caller close and reuse retirement for exit. Preserve capture and
+   notification withdrawal, focus and pinned window/view storage across waits.
 
 Commit: `feat(aes): execute window open and close in callers`.
 

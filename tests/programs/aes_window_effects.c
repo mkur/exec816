@@ -10,6 +10,7 @@ volatile ULONG EffectPeer;
 ULONG EffectView;
 volatile UWORD EffectQueryArm,EffectQueryDone;
 volatile WORD EffectQueryResult,EffectQueryStatus;
+volatile WORD EffectQueryX=40,EffectQueryY=40;
 static volatile UWORD peerDone,peerReady;
 static struct Task *caller;
 static ULONG peerMask;
@@ -24,7 +25,7 @@ void EffectWorker(void)
     while (!peerDone) {
         ++EffectPeer;
         if (EffectQueryArm && !EffectQueryDone) {
-            EffectQueryResult=wind_find(40,40);
+            EffectQueryResult=wind_find(EffectQueryX,EffectQueryY);
             EffectQueryStatus=ExecAESDiagnostic();
             EffectQueryDone=1;
         }

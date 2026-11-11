@@ -46,12 +46,12 @@ ENDMODULE
         require(move.count(signature) == 1, 'Move effect boundary changed')
         move = move.replace(signature, signature+f'\n  WINDOWEFFECTPROBE.Pause({number})\n', 1)
     (out/'deskmove.act').write_text(move)
-    window = read_source(ROOT/'lib/aes/aeswindow.act')
-    window = window.replace('USE AESTYPES\n', 'USE AESTYPES\nUSE WINDOWEFFECTPROBE\n', 1)
-    drain = '      captured=CONSOLEINPUT.Pump(NULL)'
-    require(window.count(drain) == 1, 'Close route drain boundary changed')
-    window = window.replace(drain, '      WINDOWEFFECTPROBE.Pause(3)\n'+drain)
-    (out/'aeswindow.act').write_text(window)
+    routes = read_source(ROOT/'lib/aes/aesroutes.act')
+    routes = routes.replace('USE AESTYPES\n', 'USE AESTYPES\nUSE WINDOWEFFECTPROBE\n', 1)
+    drain = '  captured=CONSOLEINPUT.Pump(NULL)'
+    require(routes.count(drain) == 1, 'Close route drain boundary changed')
+    routes = routes.replace(drain, '  WINDOWEFFECTPROBE.Pause(3)\n'+drain)
+    (out/'aesroutes.act').write_text(routes)
     source = out/'window-effects.act'
     source.write_text('''MODULE WINDOWEFFECTS
 USE EXEC
@@ -106,7 +106,8 @@ ENDMODULE
             client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures',
                           'AESFirstFailure', 'EffectPhase', 'EffectGo', 'EffectVariant',
                           'EffectPeer', 'EffectView', 'EffectQueryArm',
-                          'EffectQueryDone', 'EffectQueryResult', 'EffectQueryStatus'])
+                          'EffectQueryDone', 'EffectQueryResult', 'EffectQueryStatus',
+                          'EffectQueryX', 'EffectQueryY'])
     finally:
         builder.prepare = original
         generate_tasks.task_entries = task_entries
@@ -214,10 +215,20 @@ def run(out, reuse=False, variants=(0, 3, 4)):
                             'Route drain retained a published open window')
                     require(get(window+df['Window']['fields']['keyRoute']) != 0,
                             'Close discarded its pending retirement tag')
+                    bounds = view+af['WindowView']['fields']['bounds']
+                    bridge.poke16(symbols['EffectQueryX'], get(bounds, 2)+8)
+                    bridge.poke16(symbols['EffectQueryY'], get(bounds+2, 2)+8)
+                    bridge.poke16(symbols['EffectQueryDone'], 0)
+                    bridge.poke16(symbols['EffectQueryArm'], 1)
+                    reach(f'dw(${symbols["EffectQueryDone"]:x})=1')
+                    require(get(symbols['EffectQueryResult'], 2)==0
+                            and get(symbols['EffectQueryStatus'], 2)==0,
+                            'Lookup waited for route drain or found the withdrawn window')
                     start = get(symbols['EffectPeer'])
                     reach(f'@frame>={bridge.eval_expr("@frame")+4}')
                     require(get(symbols['EffectPeer']) != start, 'Peer stalled during route drain')
-                    row['close_before_drain'] = dict(shown=0, epoch=0, retained_route=True)
+                    row['close_before_drain'] = dict(shown=0, epoch=0,
+                        retained_route=True, committed_lookup=0, query_completed=True)
                     bridge.poke(at('WINDOWEFFECTPROBE', 'release'), 3)
                     bridge.bp_clear_all()
 

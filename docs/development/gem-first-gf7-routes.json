@@ -1,0 +1,416 @@
+{
+  "slice": "GF7-routes",
+  "plan_slice": "GF7",
+  "plan_slice_complete": false,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "base_revision": "fe26472c806d4d3ab1340e807cf85a313110cd05",
+  "scope": "Extract shared route preparation/epoch rollback and hidden-window draining/retirement; retain RPC open/close and the existing exit path.",
+  "platform": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ]
+  },
+  "toolchain": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "actionc_binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "actionc_abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "actionc_override": false,
+    "compiler_profile": "release",
+    "native_mode": "Optimized development fixtures; unchanged C/Action entry ABI retains the focused raw/optimized GF4 bridge evidence.",
+    "calypsi": {
+      "cc65816": {
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "sources_sha256": {
+    "lib/aes/aesroutes.act": "3f4d912b87eeca987f14c32d5b4234eb882a0ba7b5ac42d2a0be3f5b1cdd3f97",
+    "lib/aes/aeswindow.act": "df5d044021df8ce9b81e4df37e50b7989285c915c25488f36a3f2ef9065b7998",
+    "tests/programs/aes_window_effects.c": "8973a658353a6ed3bfb772cfd2194626cb50a8e29f9c55c1cdfe976ff828d454",
+    "tools/test_aes_window_effects.py": "4d27c53e509060397bced33067418d1d9dc61f0c87970f07e12ab5bd60bb5136"
+  },
+  "host": {
+    "run": 689,
+    "passed": 685,
+    "skipped": 4,
+    "log": {
+      "path": "build/gem-first-gui/gf7-routes-host.log",
+      "sha256": "55c744b8767adbbbd3c49929411d0d0fcc2921c8077ed405c01f724a248a04ab"
+    }
+  },
+  "checks": [
+    {
+      "name": "windows",
+      "result": {
+        "path": "build/gem-first-gui/gf7/routes/windows/results.json",
+        "sha256": "6a5cd2919b27f1b002a745b784baadbb090716ac6e2732da121967d61b25af76"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/routes/windows/program/build.json",
+        "sha256": "937cb7d1e1fc1a29579fff0760bf65cc7b1ce5a23381783ca63dfc4369cb0759"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/routes/windows/program/program.a816.json",
+        "sha256": "75071476d90d0d0b6f3474cc9be73ddda3e060be8ea10c868c7269402359334a"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/routes/windows/c-image.json",
+        "sha256": "7adb10997085a5ef670640ebc5ff414814d253dbe36cd54eed15c87584b9d0a6"
+      },
+      "AESChecks": 285,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 627,
+          "remaining_above_floor": 653
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 377,
+          "remaining_above_floor": 679
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 387,
+          "remaining_above_floor": 669
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 214,
+          "remaining_above_floor": 842
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 930,
+          "remaining_above_floor": 1374
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "os_busy": 0,
+        "live_tasks": 0,
+        "native_nmi_count": 2941,
+        "native_irq_count": 26175
+      }
+    },
+    {
+      "name": "effects",
+      "result": {
+        "path": "build/gem-first-gui/gf7/routes/effects/results.json",
+        "sha256": "85a59cd9e1504155b68759a3eb3bc47203c8cb54d51281d3dcebf61a7d8c865f"
+      },
+      "build": {
+        "path": "build/gem-first-gui/gf7/routes/effects/program/build.json",
+        "sha256": "41d70723e2581fbb6fc006ddf79aed82c4ca8efcc08d978f8851ce3cf1bda5de"
+      },
+      "native_image": {
+        "path": "build/gem-first-gui/gf7/routes/effects/program/program.a816.json",
+        "sha256": "d0176c050f798ab2fe71b928512902bbad3f90f45427984d5d08343810484666"
+      },
+      "c_image": {
+        "path": "build/gem-first-gui/gf7/routes/effects/c-image.json",
+        "sha256": "443b83f041d16f88a23cc8bc26debc574cb056a8a0446cc6f84bdf08cb41e1a3"
+      },
+      "cases": [
+        {
+          "variant": 0,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 298209,
+              "peer_after": 311422,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            },
+            {
+              "stage": 2,
+              "frames": 4,
+              "peer_before": 314594,
+              "peer_after": 326769,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 1
+            }
+          ],
+          "close_before_drain": {
+            "shown": 0,
+            "epoch": 0,
+            "retained_route": true,
+            "committed_lookup": 0,
+            "query_completed": true
+          },
+          "checks": 30,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 3,
+          "stop_count": 0,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 3,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 298209,
+              "peer_after": 311422,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            },
+            {
+              "stage": 2,
+              "frames": 4,
+              "peer_before": 314581,
+              "peer_after": 326406,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 1
+            }
+          ],
+          "close_before_drain": {
+            "shown": 0,
+            "epoch": 0,
+            "retained_route": true,
+            "committed_lookup": 0,
+            "query_completed": true
+          },
+          "checks": 25,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 1,
+          "stop_count": 1,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 0
+          }
+        },
+        {
+          "variant": 4,
+          "boundaries": [
+            {
+              "stage": 1,
+              "frames": 4,
+              "peer_before": 298209,
+              "peer_after": 311422,
+              "scene_token": 8,
+              "committed_lookup": 1,
+              "copy_chunks": 0
+            }
+          ],
+          "checks": 18,
+          "failures": 0,
+          "first_failure": 0,
+          "copy_chunks": 1,
+          "stop_count": 1,
+          "move_copy_chunks": 1,
+          "runtime": {
+            "status": 65427,
+            "guards": "intact",
+            "fault_required": 0,
+            "os_busy": 0,
+            "live_tasks": 3
+          }
+        }
+      ]
+    }
+  ],
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "resources": {
+    "tasks_added": 0,
+    "signals_added": 0,
+    "upper_static_arena_delta": 0,
+    "heap_reservation_delta": 0,
+    "client_payload_bytes": 136,
+    "service_payload_bytes": 1982
+  },
+  "resource_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf6/complete/windows/program/build.json",
+      "sha256": "79565e63247daac021dfc365ce667314e110caf08424a3f4434d719f5d9e0941"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf7/routes/windows/program/build.json",
+      "sha256": "937cb7d1e1fc1a29579fff0760bf65cc7b1ce5a23381783ca63dfc4369cb0759"
+    },
+    "parent_bytes": {
+      "native": {
+        "code": 1067385,
+        "data": 11962,
+        "zero_fill": 25898
+      },
+      "c": {
+        "code": 189627,
+        "data": 45061,
+        "zero_fill": 21647
+      }
+    },
+    "candidate_bytes": {
+      "native": {
+        "code": 1067984,
+        "data": 11962,
+        "zero_fill": 25898
+      },
+      "c": {
+        "code": 189627,
+        "data": 45061,
+        "zero_fill": 21647
+      }
+    },
+    "delta": {
+      "native": {
+        "code": 599,
+        "data": 0,
+        "zero_fill": 0
+      },
+      "c": {
+        "code": 0,
+        "data": 0,
+        "zero_fill": 0
+      }
+    },
+    "unchanged_reservations": [
+      "bank_zero_budget",
+      "runtime_reservations",
+      "task_pools",
+      "phase_reservations",
+      "image_data",
+      "upper_reservations"
+    ]
+  },
+  "window_comparison": {
+    "parent": {
+      "path": "build/gem-first-gui/gf6/complete/windows/results.json",
+      "sha256": "a0a54306d6953b9deebd2e9612c013df4d27cdc1646b96ef0a2712bf483cb598"
+    },
+    "candidate": {
+      "path": "build/gem-first-gui/gf7/routes/windows/results.json",
+      "sha256": "6a5cd2919b27f1b002a745b784baadbb090716ac6e2732da121967d61b25af76"
+    },
+    "identical": [
+      "iconification",
+      "physical_requests",
+      "gadgets",
+      "visible_rectangles",
+      "visible_pixels"
+    ]
+  },
+  "limits": [
+    "Development tier only; no hosted-system, hardware or latency qualification.",
+    "Caller open and close admission remain the next GF7 steps. Console attachment remains a tracked extension.",
+    "Wire/private entry ABIs are unchanged; this policy extraction does not rerun the retained raw/optimized bridge probe.",
+    "No demo refresh, disk cohort or full qualification matrix was run for this resource-helper extraction."
+  ]
+}

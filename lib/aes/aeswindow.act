@@ -1,8 +1,6 @@
 ; Shared GEM window policy. No application draws in this code.
 MODULE AESWINDOW
 USE EXEC
-USE INPUT
-USE CONSOLEINPUT
 USE DESKCONSOLE
 USE A816MEMORY
 USE AESSTATE
@@ -13,10 +11,10 @@ USE AESGUI
 USE AESMENU
 USE AESMOUSE
 USE AESLOCKS
+USE AESROUTES
 USE AESWINDOWSTATE
 USE DESKTYPES
 USE DESKSTATE
-USE DESKROUTES
 USE DESKCORE
 USE DESKGEOMETRY
 USE DESKMENU
@@ -162,39 +160,13 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
 
 RETURN(AESTYPES.RESOURCE)
 
-; Route setup owns a local tag until the window is ready to be shown.
-CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
-    AESSTATE.Window POINTER item INT x,y,width,height)
-  LAYERTYPES.Rect bounds
-  LONGCARD route
-  CARD inputStatus
+; Route preparation has succeeded. Publish the window and its fresh open epoch
+; together under scene ownership; no route creation or draining occurs here.
+PROC CommitOpen(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
+    AESSTATE.Window POINTER item LAYERTYPES.Rect POINTER bounds LONGCARD route)
 
   LET desktop=DESKSTATE.Get()
   LET window=item.window
-  LET layer=LAYERS.Find(@desktop.scene,window.layer)
-  IF layer.shown<>0 THEN
-    RETURN(AESTYPES.BUSY)
-  FI
-
-  IF FitBounds(window,@layer.bounds,@bounds,x,y,width,height)=0 THEN
-    RETURN(AESTYPES.MALFORMED)
-  FI
-
-  LET keyboard=INPUT.Lease POINTER(desktop.keyboard)
-  route=0
-  IF window.console=0 THEN
-    inputStatus=DESKROUTES.Create(keyboard,INPUT.ROUTE_UNFILTERED,@route)
-    IF inputStatus<>INPUT.OK THEN
-      RETURN(AESTYPES.RESOURCE)
-    FI
-  FI
-  IF service.nextGuiEpoch=0 THEN
-    IF route<>0 AND DESKROUTES.Retire(keyboard,route)<>INPUT.OK THEN
-      HEAPCORE.Abort($fcc2)
-    FI
-    RETURN(AESTYPES.OVERFLOW)
-  FI
-
   DESKCORE.PrepareFocus(desktop,window.id)
   window.keyRoute=route
   AESGUI.Open(service,client,item)
@@ -210,6 +182,30 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   FI
   AESWINDOWSTATE.Geometry(item,0)
   AESWINDOWSTATE.Sync()
+
+RETURN
+
+CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
+    AESSTATE.Window POINTER item INT x,y,width,height)
+  LAYERTYPES.Rect bounds
+  LONGCARD route
+
+  LET desktop=DESKSTATE.Get()
+  LET window=item.window
+  LET layer=LAYERS.Find(@desktop.scene,window.layer)
+  IF layer.shown<>0 THEN
+    RETURN(AESTYPES.BUSY)
+  FI
+
+  IF FitBounds(window,@layer.bounds,@bounds,x,y,width,height)=0 THEN
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  LET status=AESROUTES.Prepare(service,window,@route)
+  IF status<>AESTYPES.OK THEN
+    RETURN(status)
+  FI
+  CommitOpen(service,client,item,@bounds,route)
 
 RETURN(AESTYPES.OK)
 
@@ -239,7 +235,6 @@ PROC CommitClose(DESKTYPES.Service POINTER desktop
 RETURN
 
 BYTE FUNC Close(AESSTATE.Window POINTER item)
-  CARD captured
 
   LET desktop=DESKSTATE.Get()
   LET window=item.window
@@ -253,24 +248,7 @@ BYTE FUNC Close(AESSTATE.Window POINTER item)
     END
   FI
 
-  IF window.keyRoute<>0 THEN
-    BEGIN
-      LET held=AESGATE.Suspend()
-      captured=CONSOLEINPUT.Pump(NULL)
-      LET result=DESKROUTES.Retire(INPUT.Lease POINTER(desktop.keyboard),
-          window.keyRoute)
-      AESGATE.Resume(held)
-      IF result=INPUT.BUSY THEN
-        RETURN(0)
-      FI
-      IF result<>INPUT.OK THEN
-        HEAPCORE.Abort($fcc2)
-      FI
-      window.keyRoute=0
-    END
-  FI
-
-RETURN(1)
+RETURN(AESROUTES.Retire(window))
 
 ; Called after hiding and route retirement, with the presenter settled.
 PROC Destroy(AESSTATE.Window POINTER item)

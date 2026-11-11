@@ -709,3 +709,48 @@ The [complete record](../development/gem-first-gf6.json) retains pins,
 source/artifact hashes, comparisons, stack observations, intermediate failures
 and package evidence. This is development evidence only; hosted-system,
 hardware and latency qualification remain open. GF7 is next.
+
+## GF7 — Window open/close and route lifetime
+
+### Shared route resources
+
+The first GF7 step extracts `AESROUTES.Prepare` and `AESROUTES.Retire` from
+`AESWINDOW`. Preparation owns an unpublished keyboard tag and rolls it back
+when no fresh GUI epoch remains. Retirement pumps input with scene ownership
+suspended, retains the hidden window's tag on a busy result and clears it only
+after successful retirement. `AESWINDOW.CommitOpen` and the existing
+`CommitClose` keep geometry, open epochs, focus and GUI publication together.
+Ordinary open/close still use RPC. Exit reaches the same close and retirement
+helpers before destroying a window; no second cleanup policy is introduced.
+
+Optimized emitted-code development checks pass:
+
+- Windows: 285 C checks and four native checks, including repeated close/reopen,
+  full sixteen-record application queues, obsolete GUI notification withdrawal,
+  exit with an open window, physical capture/focus and deferred mutations.
+  Geometry/visibility, iconification, gadgets and physical-request observations
+  match the frozen GF6 fixture.
+- Effects: 30/25/18 C checks across success, injected quiescent stop and reset.
+  Open-epoch failure leaves input tags unchanged and publishes no window route.
+  At close, a peer queries a point inside the old bounds while the withdrawn
+  window retains its tag; lookup completes and returns no GEM window before
+  input draining resumes. Normal cases retire all Tasks with intact guards and
+  restored OS state. Reset deliberately retains live resources at `$FF93`.
+- Host: 689 tests run, 685 pass and four skip. Python syntax, source/artifact
+  hashes and local documentation links are checked before commit.
+
+The matched window fixture adds 599 native code bytes, with unchanged C code,
+data and zero-fill. Client/service payloads remain 136/1,982 bytes. No Task,
+signal, static arena or heap reservation is added. Reserved bank-zero growth is
+**0 fixed, 0 root, 0 kernel, 0 per public Task and 0 idle bytes**, including
+guards, alignment and unused capacity. Reservation maps match GF6. Observed
+remaining stack space above the checked floor is 653 bytes for root, 1,374 for
+the presenter, 993 for kernel and 139 for idle.
+
+The [route record](../development/gem-first-gf7-routes.json) retains exact pins,
+source/artifact hashes, comparisons, stack observations and execution scope.
+This is development evidence for the extraction. No demo refresh, disk cohort
+or full qualification matrix was run. The wire/private entry ABIs are unchanged;
+the existing focused raw/optimized bridge evidence remains applicable. Caller
+open and caller close/exit admission remain the next GF7 steps; hosted-system,
+hardware and latency qualification remain open.
