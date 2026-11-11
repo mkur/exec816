@@ -4,10 +4,11 @@
 [Development record](../history/aes-server.md)
 
 The optional AES endpoint runs in the existing desktop presenter. Registration,
-exit, window mutations and contended GUI locks use ordinary Exec RPC.
-Uncontended BEGIN/END UPDATE, copied messaging and event/timer waits run in their
-callers. This adds no Task or kernel gateway. The native desktop
-and retained Control Panel remain independent clients of their existing service.
+exit, unmigrated window mutations and contended GUI locks use ordinary Exec RPC.
+Eligible hidden creation/deletion, uncontended BEGIN/END UPDATE, copied messaging
+and event/timer waits run in their callers. This adds no Task or kernel gateway.
+The native desktop and retained Control Panel remain independent clients of
+their existing service.
 
 The current source profile in [gem.h](../../c/include/gem.h) implements
 `appl_init`, `appl_exit`, `appl_write`, `evnt_keybd`, `evnt_button`,
@@ -316,6 +317,16 @@ Fixed windows have a 32 by 32 minimum, including FULLER windows, and
 reject dimension changes. SIZER
 permits dimensions of at least 64 by 48; vertical gadgets require height 80.
 Off-screen bounds fail without mutation.
+
+Hidden creation and ordinary closed-window deletion execute in the caller under
+the shared scene gate when eligible. Ordinary and parameter-block entries use
+the same policy. They honor earlier queued work, with the existing logical
+owner exception, and do not advance transport sequence numbers. Scene admission
+can sleep on the caller's owned signal. An operation that needs system admission
+falls back to RPC before applying any mutation. View storage is allocated before
+scene entry and freed after release. Console-bound deletion remains a system
+operation because it can retire physical presentation state. Open/close and
+other unmigrated operations retain their established transport.
 
 A copied move keeps the old published geometry until display completion. Success
 publishes the new bounds; a quiescent display failure keeps the old bounds and

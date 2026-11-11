@@ -423,6 +423,9 @@ GF4 remains the next slice.
 
 ## GF4 — Caller hidden-window lifecycle
 
+GF4 passes at the development tier. The first creation step is retained below;
+the following completion adds ordinary hidden deletion.
+
 ### Caller creation
 
 The first executable step routes hidden `wind_create` through the shared
@@ -467,3 +470,43 @@ outputs. Reserved bank-zero growth is **0 fixed, 0 root, 0 kernel, 0 per public
 Task and 0 idle bytes**, including guards, alignment and unused capacity. No
 Task, signal, heap reservation or upper static arena is added. This is
 incremental development evidence; GF4 is not complete at this step.
+
+### Complete caller hidden-window lifetime
+
+Ordinary hidden `wind_delete` now uses the same caller entry and shared
+lifecycle decoder as creation. It retires the native association and publishes
+siblings under scene ownership, then the binding withdraws its selected view
+and frees retired caller storage after release. Both API forms use this path.
+A shown-window rejection preserves the live view/epoch; foreign handles cannot
+change a sibling client. A readiness miss leaves the existing association and
+view untouched until one RPC commit. Console-bound deletion explicitly stays
+in the presenter because caret retirement can perform physical work.
+
+The final optimized lifecycle fixture passes 263 checks, including all creation
+cases above, direct ordinary/PB deletion, complete catalog retirement, shown and
+foreign rejection, ordered/unapplied fallback, and console attachment deletion
+through RPC. Every eligible call retains its transport sequence. The three
+forced-preemption variants still deliver input/events, retire DMA without scene
+commit and redraw a retained cursor position without new input. Their final
+continuation assertion now runs after controller shutdown retires the worker;
+application exit need not wait for unrelated system cursor work. The earlier
+immediate assertion and the fixture's rejected unnormalized fixed-size open
+remain in development output.
+
+The selected window, lock, cache and multiwindow regressions pass. All 32 cache
+checkpoints and 14 scanouts match GF3 exactly. The copied-move success, quiescent
+failure and reset-required cases retain their token/geometry and shutdown rules.
+The production twelve-slot idle cohort loads both unchanged Counter bodies;
+both keep painting and close normally. Each uses its existing 1,312-byte pool,
+peaking at 806 bytes with 250 bytes above the interrupt floor. No new renderer
+or I/O qualification is claimed.
+
+The matched cache image adds 1,619 native and 184 C code bytes within the same
+code banks. Native/C data and zero-fill sizes, the 23-byte C DP workspace,
+private client/service sizes and upper static arena are unchanged. The reserved
+bank-zero delta is **0 fixed, 0 root, 0 kernel, 0 per public Task and 0 idle
+bytes**, including guards, alignment and unused capacity. No Task, signal or
+heap reservation is added. Exact pins, source/artifact hashes, execution stages,
+stack results and failures are in the [GF4 record](../development/gem-first-gf4.json).
+GF5's bounded frame attributes remain next; hosted-system and latency
+qualification remain open.

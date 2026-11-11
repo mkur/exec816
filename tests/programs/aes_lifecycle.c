@@ -2,6 +2,7 @@
 #include <gem.h>
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
+#include <exec816/console.h>
 #include <clib/alib_protos.h>
 
 ULONG AESService,LifeNative,LifeGate,LifeOwner,LifeWaiting,LifeNext,LifeBusy,LifeLocks;
@@ -63,6 +64,26 @@ static WORD create(WORD index)
     return handle;
 }
 
+static void remove_hidden(WORD handle,WORD parameterBlock)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    struct Task *self=FindTask(NULL);
+    BYTE nesting=self->tc_TDNestCnt;
+    ULONG sequence=c->sequence;
+    UWORD before=NATIVE(2),system=NATIVE(3),i,count=0;
+    WORD control[5]={AES_OP_DELETE,1,1,0,0},global[15],out[1]={0};
+    AESPB pb={control,global,&handle,out,NULL,NULL};
+    for (i=0;i<AES_WINDOWS;++i) if (c->views[i]) ++count;
+    if (parameterBlock) { aes_call(&pb);CHECK(out[0]); }
+    else CHECK(wind_delete(handle));
+    CHECK(c->sequence==sequence && NATIVE(2)==before+1 && NATIVE(3)==system);
+    for (i=0;i<AES_WINDOWS;++i) if (c->views[i]) {
+        CHECK(c->views[i]->handle!=handle);--count;
+    }
+    CHECK(count==1 && !c->busy);
+    CHECK(FindTask(NULL)==self && self->tc_TDNestCnt==nesting);
+}
+
 void AESClientOne(void)
 {
     struct ExecAESContext *c;
@@ -79,7 +100,8 @@ void AESClientOne(void)
             CHECK(wind_update(END_UPDATE));
         } else if (command==2) {
             while (!WAITING) ExecYield();
-            CHECK(rootRequest->view->handle==0); /* Miss did not apply create. */
+            CHECK(rootRequest->operation==AES_OP_CREATE ? rootRequest->view->handle==0 :
+                rootRequest->view->handle==rootRequest->intin[0]);
             (*(volatile UBYTE *)LifeBusy)=0;
             Signal(c->directory->owner,c->directory->mask);
         } else if (command==3 || command==6) {
@@ -90,7 +112,9 @@ void AESClientOne(void)
             }
             CHECK(wind_update(END_UPDATE));
         } else if (command==4) {
-            for (i=0;i<3;++i) CHECK(wind_delete(peerWindows[i]));
+            CHECK(wind_update(BEG_UPDATE));
+            for (i=0;i<3;++i) remove_hidden(peerWindows[i],i&1);
+            CHECK(wind_update(END_UPDATE));
         } else break;
         CHECK(c==ExecAESContext());done=command;Signal(controller,wake);
     }
@@ -106,6 +130,23 @@ static void send(UWORD code)
 }
 static void stable(void) { CHECK(wind_update(BEG_UPDATE)); }
 static void release(void) { CHECK(wind_update(END_UPDATE)); }
+
+static void bound_console(void)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    ULONG available=AvailMem(0),unit=ExecConsoleCreate(64,20),sequence;
+    UWORD system;
+    WORD handle;
+    CHECK(unit!=0);stable();sequence=c->sequence;
+    handle=wind_create(0,0,16,512,160);
+    CHECK(handle>0 && c->sequence==sequence);
+    CHECK(ExecAESConsole(handle,unit));
+    sequence=c->sequence;system=NATIVE(3);
+    CHECK(wind_delete(handle));
+    CHECK(c->sequence==sequence+1 && NATIVE(3)==system+1);
+    release();CHECK(ExecConsoleDestroy(unit));
+    CHECK(AvailMem(0)==available);
+}
 
 UWORD AESRun(void)
 {
@@ -132,6 +173,9 @@ UWORD AESRun(void)
     CHECK(c->sequence==sequence+1); /* Nonmigrated operation stays RPC. */
     release();send(1);stable();LifePhase=2;
     CHECK(NATIVE(0)==6 && NATIVE(1)==0);
+    sequence=c->sequence;creates=NATIVE(2);
+    CHECK(!wind_delete(peerWindows[0]) && ExecAESDiagnostic()==AES_IDENTITY);
+    CHECK(c->sequence==sequence && NATIVE(2)==creates);
     before=AvailMem(0);sequence=c->sequence;c->visibleIndex=2;
     CHECK(wind_create(AES_WINDOW_KIND,32,24,128,64)==-1);
     CHECK(ExecAESDiagnostic()==AES_RESOURCE && c->sequence==sequence);
@@ -148,14 +192,14 @@ UWORD AESRun(void)
     CHECK(wind_create(AES_WINDOW_KIND,-1,24,128,64)==-1);
     CHECK(ExecAESDiagnostic()==AES_MALFORMED && c->sequence==sequence);
     CHECK(AvailMem(0)==before && c->view==saved);
-    CHECK(wind_delete(windows[1]));
-    reused=create(1);CHECK(reused>windows[2]);windows[1]=reused;
+    remove_hidden(windows[1],0);
+    reused=create(1);CHECK(reused>windows[2] && reused>peerWindows[2]);windows[1]=reused;
     /* A queued UPDATE cannot prevent its current owner from completing work. */
     LifePhase=4;done=entered=0;command=3;Signal(peer,peerWake);
     while (!entered || !(*(volatile UBYTE *)LifeLocks)) ExecYield();
     last=create(0);CHECK(last>reused);
     release();while (done!=3) Wait(wake);
-    CHECK(wind_delete(last));
+    stable();remove_hidden(last,1);release();
     /* The old lock must precede this window, without the window's barrier
      * preventing that predecessor from acquiring and releasing UPDATE. */
     LifePhase=5;stable();done=entered=0;command=6;Signal(peer,peerWake);
@@ -166,7 +210,7 @@ UWORD AESRun(void)
     CHECK(last>reused && c->sequence==sequence+1 && NATIVE(1)==system+1);
     CHECK(controller->tc_TDNestCnt==0);Permit();
     while (done!=6) Wait(wake);
-    CHECK(wind_delete(last));
+    stable();remove_hidden(last,0);release();
     /* Forced readiness miss: one later RPC commit, with an unapplied view. */
     LifePhase=6;(*(volatile UBYTE *)LifeBusy)=1;
     done=0;command=2;Signal(peer,peerWake);
@@ -174,7 +218,7 @@ UWORD AESRun(void)
     last=wind_create(AES_WINDOW_KIND,32,24,128,64);
     CHECK(last>reused && c->sequence==sequence+1 && NATIVE(1)==system+1);
     while (done!=2) Wait(wake);
-    CHECK(wind_delete(last));
+    stable();remove_hidden(last,1);release();
     /* An older message forces transport admission before this new operation. */
     LifePhase=7;
     {
@@ -190,15 +234,29 @@ UWORD AESRun(void)
         CHECK(controller->tc_TDNestCnt==0);Permit();DeleteMsgPort(reply);
         FreeMem(older,sizeof(*older));
     }
-    CHECK(wind_delete(last));stable();
-    for (i=0;i<3;++i) CHECK(wind_delete(windows[i]));
+    stable();remove_hidden(last,0);
+    /* Rejection preserves a shown view and its open epoch. */
+    last=create(0);release();CHECK(wind_open(last,32,24,130,64));stable();
+    saved=c->view;sequence=c->sequence;
+    CHECK(!wind_delete(last) && ExecAESDiagnostic()==AES_BUSY);
+    CHECK(c->sequence==sequence && c->view==saved && saved->shown && saved->epoch);
+    CHECK(wind_close(last));remove_hidden(last,1);release();
+    /* Deletion's readiness miss also leaves its live view untouched until RPC. */
+    stable();last=create(0);release();
+    (*(volatile UBYTE *)LifeBusy)=1;done=0;command=2;Signal(peer,peerWake);
+    sequence=c->sequence;system=NATIVE(3);CHECK(wind_delete(last));
+    CHECK(c->sequence==sequence+1 && NATIVE(3)==system+1);
+    while (done!=2) Wait(wake);
+    stable();
+    for (i=0;i<3;++i) remove_hidden(windows[i],i&1);
+    release();bound_console();stable();
     /* Last representable identity is accepted once; exhaustion cannot alias. */
     LifePhase=8;*(volatile UWORD *)LifeNext=0x7fff;
     last=create(0);CHECK(last==0x7fff);
     before=AvailMem(0);sequence=c->sequence;
     CHECK(wind_create(AES_WINDOW_KIND,32,24,128,64)==-1);
     CHECK(ExecAESDiagnostic()==AES_OVERFLOW && c->sequence==sequence);
-    CHECK(AvailMem(0)==before);CHECK(wind_delete(last));release();
+    CHECK(AvailMem(0)==before);remove_hidden(last,0);release();
     LifePhase=9;command=5;Signal(peer,peerWake);while (!AESDone) Wait(wake);
     CHECK(ExecAESDetach());
     for (i=0;i<32;++i) if (wake==(1UL<<i)) FreeSignal(i);

@@ -532,6 +532,8 @@ ENDMODULE
             if pointer:
                 require(report['boundary_checks']==25, 'Incomplete presenter input boundaries')
             if suite=='lifecycle':
+                require(report['lifecycle_phase']==10 and report['AESChecks']>=263,
+                        'Incomplete hidden lifecycle scenarios')
                 require(report['lifecycle_stats'][6:]==[136,1982],
                         'Caller lifecycle enlarged the private service records')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),

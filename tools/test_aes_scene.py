@@ -45,8 +45,7 @@ PROC Main()
   LET entry=ADDRESS POINTER(@run)
   entry^=$AESRun
   LET result=run()
-  IF result<>0 OR service.count<>0 OR AESCORE.Idle(service)=0
-      OR service.sceneWaiters<>NULL OR service.policyEffects<>0 THEN
+  IF result<>0 OR service.count<>0 THEN
     HEAPCORE.Abort($fc80)
   FI
 
@@ -200,7 +199,23 @@ ENDMODULE
                           lambda m: f'${foreign["symbols"][m[1]]:x}', text)
         path.write_text(bind(path.read_text()))
         (out/'sceneprobe.act').write_text(bind(probe))
-        return original(path, directory, foreign, *args)
+        launcher = original(path, directory, foreign, *args)
+        text = launcher.read_text()
+        needle = '  AESBOOT.Disable()\n  DESKBOOT.Disable()\n\nRETURN'
+        require(text.count(needle) == 1, 'Controller retirement boundary changed')
+        # Detach settles application resources; unrelated physical cursor work
+        # can still be active. Require its retirement after the worker stops.
+        text = text.replace(needle, '''  BEGIN
+    LET retired=AESSTATE.Get()
+    IF retired.count<>0 OR AESCORE.Idle(retired)=0
+        OR retired.sceneWaiters<>NULL OR retired.policyEffects<>0
+        OR retired.owner<>NULL THEN
+      HEAPCORE.Abort($fc80)
+    FI
+  END
+'''+needle)
+        launcher.write_text(text)
+        return launcher
 
     def entries(image):
         setup = {r['address'] for r in image['routines']
@@ -376,6 +391,8 @@ def run(out, reuse=False, variants=(0, 1, 2)):
                     offset = next(f[2] for f in TASK_ABI['task']['fields'] if f[0] == 'tc_SigRecvd')
                     row['presenter_signals'] = get(owner+offset)
                     row['waiter_root'] = get(get(at('SCENEPROBE', 'waitersAddress')), 3)
+                    row['scene_gate'] = get(get(at('SCENEPROBE', 'gateAddress')), 1)
+                    row['scene_effects'] = get(get(at('SCENEPROBE', 'effectsAddress')), 1)
                     raise
                 ownership(b, program, program['output'])
                 row['stacks'] = stack_usage(b, program['build']['memory'])

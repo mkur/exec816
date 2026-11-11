@@ -87,8 +87,12 @@ UL1's shared lock refactor adds 282 native code bytes. UL2's gate routines total
 1,243 native code bytes, plus their worker boundary calls.
 
 ```sh
-python3 tools/test_aes_update_bridge.py --output build/caller-local-update/ul3-bridge
+python3 tools/test_aes_local_bridge.py --output build/caller-local-update/ul3-bridge
 ```
+
+GF4 generalized and renamed this private bridge; the current probe above retains
+the same raw/optimized pointer, stack-parity and preemption checks. The frozen
+UL3 record retains its original source names and hashes.
 
 ## UL4: measured safe idle handoff
 

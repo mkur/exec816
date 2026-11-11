@@ -11,7 +11,8 @@ native API retirement, measured rendering changes and OF816 package acceptance.
 The [execution record](../../history/gem-first-gui.md) covers GF0's five native
 baseline cohorts, GF1's shared window policy audit and GF2's window effect/commit
 checks, plus GF3's scene ownership, independent input and physical fence cases.
-GF0–GF3 pass at the development tier; GF4–GF15 remain open.
+GF4 adds caller hidden-window lifetime and ordered fallback.
+GF0–GF4 pass at the development tier; GF5–GF15 remain open.
 
 The [Atari ST reference](../../guides/atari-st-reference.md) runs the native
 baseline's unchanged object-tree routines under EmuTOS and MagiC in Hatari.

@@ -4,7 +4,7 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-GF0–GF3 pass at the development tier. GF4–GF15 remain open. The
+GF0–GF4 pass at the development tier. GF5–GF15 remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
 coexistence, the current resource inventory, the shared window policy audit
 and the window effect/commit checks. GF3 separates scene ownership from physical
@@ -226,8 +226,11 @@ Commit: `refactor(aes): isolate scene ownership from drawing and waits`.
 
 ### GF4 — Execute hidden create/delete in the caller
 
-Status: in progress. Caller creation passes its selected development checks;
-hidden deletion remains on RPC. See the [execution history](../../history/gem-first-gui.md#gf4--caller-hidden-window-lifecycle).
+Status: complete at the development tier. Caller hidden creation/deletion,
+ordered fallback and Task/heap checks are recorded in the
+[execution history](../../history/gem-first-gui.md#gf4--caller-hidden-window-lifecycle)
+and [GF4 record](../../development/gem-first-gf4.json). Console-bound deletion
+retains its explicit system path.
 
 Bind hidden `wind_create`/`wind_delete` to the GF1 helpers through the GF3 gate.
 Allocate caller-owned view storage before entering scene work. Use the common

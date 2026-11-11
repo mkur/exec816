@@ -19,7 +19,8 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   FI
   LET request=AESTYPES.Request POINTER(ADDRESS(value))
   IF request.operation<>AESTYPES.OP_UPDATE
-      AND request.operation<>AESTYPES.OP_CREATE THEN
+      AND request.operation<>AESTYPES.OP_CREATE
+      AND request.operation<>AESTYPES.OP_DELETE THEN
     RETURN(0)
   FI
   AESGATE.EnterTask(request.owner,

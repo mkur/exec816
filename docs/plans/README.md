@@ -615,9 +615,9 @@ assuming work is pending. Current behavior belongs in the
   two-Counter/disk baseline, terminal migration and Task/memory acceptance.
   The [GF0–GF15 plan](gem4xe/gem-first-gui-implementation-plan.md) assigns
   executable slices and a commit per passing slice. The
-  [execution record](../history/gem-first-gui.md) covers GF0–GF3, which pass
+  [execution record](../history/gem-first-gui.md) covers GF0–GF4, which pass
   at the development tier. GF3 separates scene access from drawing and waits;
-  GF4–GF15 remain open.
+  GF4 adds caller hidden-window creation/deletion; GF5–GF15 remain open.
 
 - [END_UPDATE cache-completion addendum](gem4xe/update-snapshot-reuse-design.md#end_update-cache-completion-addendum)
   and [EC0–EC2 plan](gem4xe/update-cache-completion-plan.md): proposed identity-only
