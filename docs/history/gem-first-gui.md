@@ -1222,3 +1222,33 @@ the isolated Calypsi 5.18 direct member-address cast defect. The portable typed
 pointer expression executes correctly in both modes. Resource fixtures now
 own a fixed resource, and form/resource controllers drain final presenter work
 before requesting shutdown. Neither fixture correction changes product policy.
+
+## GF14 drawing boundary decision
+
+The [GF14 record](../development/gem-first-gf14.json) retains the existing
+boundaries: objects at most 32 rows high use one 32-row unit; taller objects use
+16-row strips. The fixture-only alternative uses 32 rows for every object. It
+preserves all eleven matched frames across 67 operations, 1,276 object
+assertions, 253 resource assertions and 26 independent icon frames.
+
+For the nested-object case, the trial lowers drawing CPU from 137.909 to
+101.513 ms and grants from 56 to 30. Across the enclosing corpus window,
+sampled caller CPU falls 6,380.648 to 5,916.342 ms, presenter CPU 3,611.202 to
+3,448.364 ms, and elapsed time 35,404.288 to 34,481.606 ms. The observed maximum
+Enter-entry through Leave-return bracket grows from 4.783 to 6.223 ms; the
+owned-core lower bound grows from 4.321 to 5.760 ms.
+
+Disk/input attempts do not establish a latency benefit. Their inclusive pointer
+samples are 313.732 ms for the retained boundary and 347.084 ms for the trial.
+These are single samples from incomplete walks, not distributions or passes of
+the original latency gates. The trial walk times out while positioning the
+pointer after its sample; the earlier control walk expects the wrong Shell
+cancellation result. Both failures remain in the evidence. The production
+functional load and package walk are recorded separately under GF15.
+
+The plan permits retaining the boundary when the trial does not demonstrate
+net benefit without a material regression. The longer ownership bracket and
+inconclusive loaded-input result support that decision. No renderer optimization,
+new latency pass or changed hardware limit is claimed. Code, data, upper-memory
+allocations, VRAM and reserved bank-zero bytes all change by zero, including
+every Task's stack/direct page, guards, alignment and unused capacity.

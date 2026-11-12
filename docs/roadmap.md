@@ -265,8 +265,10 @@ and BASIC output through an ordinary GEM terminal.
 [GF12](history/gem-first-gui.md#gf12-native-graphical-policy-retirement) retires
 the native graphical protocol, previews, shell-frame extension and duplicate
 window policy. [GF13](history/gem-first-gui.md#gf13-prepared-objects) prepares
-object layout once across drawing fragments. GF14 next measures the ownership
-boundary decision, before GF15's combined acceptance and OF816 package.
+object layout once across drawing fragments.
+[GF14](history/gem-first-gui.md#gf14-drawing-boundary-decision) retains the existing
+ownership boundaries after measurement. GF15's combined acceptance and OF816
+package remain next.
 Existing latency gates remain open.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)

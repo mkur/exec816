@@ -1,5 +1,8 @@
 # Historical records
 
+- [GF14 drawing boundary decision](gem-first-gui.md#gf14-drawing-boundary-decision):
+  measured 32-row trial, longer ownership interval and retained production limits.
+
 - [GF13 object preparation](gem-first-gui.md#gf13-prepared-objects):
   caller-private descriptions, unchanged physical units and matched pixels/CPU.
 - [GF12 graphical policy retirement](gem-first-gui.md#gf12-native-graphical-policy-retirement):

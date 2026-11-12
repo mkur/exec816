@@ -1,0 +1,298 @@
+{
+  "slice": "GF14",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "decision": "retain existing object boundaries: 32 rows for objects at most 32 rows high, otherwise 16-row strips",
+  "trial": "fixture-only 32-row strips for every object",
+  "reason": "Drawing CPU improves, but the longer ownership bracket and inconclusive disk/input attempts do not establish the required net benefit without material regression. No production optimization is adopted.",
+  "parent_revision": "a31a812cd91f5a867a1eb2d9a6434b54c2e70785",
+  "artifacts": {
+    "control_corpus": {
+      "path": "build/gem-first-gui/gf13/prepared-profile/results.json",
+      "sha256": "9bc7a2a2f03221c66074926b17a9bdbd98e4694858cca3c7f940fb4996ac4b2c"
+    },
+    "control_profile": {
+      "path": "build/gem-first-gui/gf13/prepared-profile/drawing-profile.json",
+      "sha256": "9cb3d629ad9bc2eb7c941731c778cff10b9057479cab2662ef06a3bdf93a571f"
+    },
+    "trial_corpus": {
+      "path": "build/gem-first-gui/gf14/rows32/results.json",
+      "sha256": "de310bfbd3decbeb1f870b341c4bc693e9e21306868be9198ec3dd1748d116e6"
+    },
+    "trial_profile": {
+      "path": "build/gem-first-gui/gf14/rows32/drawing-profile.json",
+      "sha256": "1fd91b4b4690e40d533f60483b42ca1790b9ad14f1ec638c9013cdd65f75fea8"
+    },
+    "corpus_totals": {
+      "path": "build/gem-first-gui/gf14/corpus-total.json",
+      "sha256": "ebc1f5c204a5091c1714c4f789f5e82d6947230e73ba0008575431442e330fcf"
+    },
+    "trial_objects": {
+      "path": "build/gem-first-gui/gf14/rows32-objects/results.json",
+      "sha256": "4bc9a505fdd53ec8b8052029390935bdfcc30284c9b367ebc54fc14a2fbd96d4"
+    },
+    "trial_resources": {
+      "path": "build/gem-first-gui/gf14/rows32-resources/results.json",
+      "sha256": "81534372eb910bbf528f24e5f1343c5f1eadc5bc4181c6b379c317077f691fbe"
+    },
+    "control_load_attempt": {
+      "path": "build/gem-first-gui/gf14/load-control-sessions/results.json",
+      "sha256": "d027d2de5f83b4cfa5ce09d4497409b785ba379710b008961de142038f3d1413"
+    },
+    "trial_load_attempt": {
+      "path": "build/gem-first-gui/gf14/load-rows32-sessions/results.json",
+      "sha256": "7107894f56a82e3c24bb06987649aacdf08812379f2cfc2174b7b6aebea45d95"
+    }
+  },
+  "groups": {
+    "objects_5": {
+      "retained": {
+        "draw_cpu_mean_ms": 26.929645506844718,
+        "grants_mean": 12,
+        "submissions_mean": 16,
+        "max_owned_core_ms": 3.5906053040758183,
+        "max_enter_leave_bracket_ms": 4.051219446868317
+      },
+      "trial": {
+        "draw_cpu_mean_ms": 21.169281512421428,
+        "grants_mean": 8,
+        "submissions_mean": 14,
+        "max_owned_core_ms": 3.7201552343669606,
+        "max_enter_leave_bracket_ms": 4.181262766447836
+      }
+    },
+    "objects_33_siblings": {
+      "retained": {
+        "draw_cpu_mean_ms": 90.84850975289655,
+        "grants_mean": 40,
+        "submissions_mean": 46,
+        "max_owned_core_ms": 3.5309756843661853,
+        "max_enter_leave_bracket_ms": 4.1722407908889325
+      },
+      "trial": {
+        "draw_cpu_mean_ms": 85.65294433582048,
+        "grants_mean": 36,
+        "submissions_mean": 44,
+        "max_owned_core_ms": 3.7506748860623165,
+        "max_enter_leave_bracket_ms": 4.2198880993093955
+      }
+    },
+    "objects_9_nested": {
+      "retained": {
+        "draw_cpu_mean_ms": 137.90916068843313,
+        "grants_mean": 56,
+        "submissions_mean": 90,
+        "max_owned_core_ms": 4.3210329034268,
+        "max_enter_leave_bracket_ms": 4.7828452773482155
+      },
+      "trial": {
+        "draw_cpu_mean_ms": 101.51338353686816,
+        "grants_mean": 30,
+        "submissions_mean": 76,
+        "max_owned_core_ms": 5.75982655251988,
+        "max_enter_leave_bracket_ms": 6.222907641754267
+      }
+    }
+  },
+  "corpus_totals": [
+    {
+      "name": "gf13/prepared-profile",
+      "window": [
+        4311237322.75,
+        4374024968.625
+      ],
+      "presenter": {
+        "elapsed_ms": 35404.287905336925,
+        "charged_cpu_ms": 3611.2021923400607,
+        "off_cpu_ms": 31020.616905772513,
+        "interrupt_ms": 772.468807224347
+      },
+      "sample_caller_cpu_ms": 6380.647721457782,
+      "counts": {
+        "solid_record": 594,
+        "GemSolidFill": 313,
+        "GemWidgetFill": 313,
+        "pointer_erase": 233,
+        "blit_mask": 385,
+        "idle": 741,
+        "VbxeOwnerFence": 741,
+        "_VbxeUpload": 204,
+        "start": 254,
+        "VbxeOwnerSubmit": 204,
+        "drain": 304,
+        "flush": 283,
+        "fence_owner": 233,
+        "cursor_render": 189,
+        "GemDrawingPrepare": 150,
+        "blit_fill": 100,
+        "vbxe_fill_rect": 100,
+        "_VbxeTextUpload": 50,
+        "text_run": 50,
+        "vbxe_text_run": 50,
+        "glyph_record": 167,
+        "blit_glyph_run": 23,
+        "vbxe_widget_text_run": 23,
+        "GemWidgetText": 23
+      }
+    },
+    {
+      "name": "gf14/rows32",
+      "window": [
+        4311169832.25,
+        4372321151.0
+      ],
+      "presenter": {
+        "elapsed_ms": 34481.606447329286,
+        "charged_cpu_ms": 3448.3643440248443,
+        "off_cpu_ms": 30293.70132186039,
+        "interrupt_ms": 739.5407814440517
+      },
+      "sample_caller_cpu_ms": 5916.34218097801,
+      "counts": {
+        "pointer_erase": 228,
+        "GemDrawingPrepare": 151,
+        "blit_mask": 363,
+        "blit_fill": 101,
+        "vbxe_fill_rect": 101,
+        "idle": 728,
+        "VbxeOwnerFence": 728,
+        "_VbxeUpload": 200,
+        "start": 250,
+        "VbxeOwnerSubmit": 200,
+        "drain": 300,
+        "flush": 278,
+        "fence_owner": 228,
+        "cursor_render": 184,
+        "solid_record": 528,
+        "GemSolidFill": 284,
+        "GemWidgetFill": 284,
+        "glyph_record": 164,
+        "blit_glyph_run": 20,
+        "vbxe_widget_text_run": 20,
+        "GemWidgetText": 20,
+        "_VbxeTextUpload": 50,
+        "text_run": 50,
+        "vbxe_text_run": 50
+      }
+    }
+  ],
+  "load_attempts": {
+    "control_load_attempt": {
+      "status": "fail",
+      "error": "Cancelled read did not return its explicit warning",
+      "pointer": [
+        {
+          "label": "disk",
+          "target": [
+            328,
+            128
+          ],
+          "start": 310085705,
+          "captured": 310629548,
+          "presented": 310642093,
+          "capture_ms": 306.65864086757574,
+          "presentation_ms": 313.73243357922917
+        }
+      ],
+      "progress": [
+        {
+          "identity": 4,
+          "increments": 114,
+          "paints": 115
+        },
+        {
+          "identity": 6,
+          "increments": 115,
+          "paints": 116
+        }
+      ],
+      "disk_active_progress": [
+        {
+          "identity": 4,
+          "increments": 19,
+          "paints": 20
+        },
+        {
+          "identity": 6,
+          "increments": 20,
+          "paints": 21
+        }
+      ],
+      "offered_work": {
+        "passes": 4,
+        "read_bytes": 65536,
+        "written_bytes": 65536,
+        "buffer_bytes": 16384,
+        "counter_body_sha256": "92780c5aaba74befb37bc7755830e5ec461e56cd8d5cc355000bc517c868ccf3"
+      },
+      "peak_tasks": 12,
+      "fifth_aes_client_rejected": true
+    },
+    "trial_load_attempt": {
+      "status": "fail",
+      "error": "No breakpoint at $1a00 within 30000 frames; {'ok': True, 'PC': '$16b7', 'A': '$00', 'X': '$f8', 'Y': '$0c', 'S': '$ea', 'P': '$03', 'flags': '------ZC', 'cycles': 757192505, 'clock_multiplier': 8, 'shadow_rom': True, 'mode': '65C816'}",
+      "pointer": [
+        {
+          "label": "disk",
+          "target": [
+            328,
+            128
+          ],
+          "start": 311899673,
+          "captured": 312465928,
+          "presented": 312515209,
+          "capture_ms": 319.296173131711,
+          "presentation_ms": 347.08442172660875
+        }
+      ],
+      "fifth_aes_client_rejected": true
+    }
+  },
+  "checks": {
+    "measured_operations": 67,
+    "exact_frames": 11,
+    "trial_guest_assertions": 462,
+    "object_assertions": 1276,
+    "resource_assertions": 253,
+    "icon_frames": 26,
+    "host": 692,
+    "host_skips": 4
+  },
+  "memory": {
+    "production_code_delta": 0,
+    "production_data_bss_delta": 0,
+    "upper_allocation_delta": 0,
+    "vram_delta": 0
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "guards_alignment_unused_capacity_included": true
+  },
+  "limits": [
+    "This passes the measured no-change decision, not acceptance of the trial boundary.",
+    "Trial load attempts are incomplete; their errors are retained and no load pass or latency improvement is inferred from them.",
+    "Production load, cancellation, persisted bytes and package acceptance are recorded separately in GF15.",
+    "The earlier failed latency gates remain open; these inclusive physical packet-train samples are not the original gate protocols.",
+    "64-command and 8192-access list budgets, scratch, FIFO, fences, overlay ordering and preemption remain unchanged.",
+    "Owned-core interval is a lower bound; Enter-entry through Leave-return is a conservative observed bracket including possible acquisition wait.",
+    "Per-case presenter costs are phase-sensitive; enclosing corpus presenter CPU is also reported."
+  ]
+}
