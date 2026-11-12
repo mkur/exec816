@@ -19,7 +19,7 @@ from gem_applications import MODELS,instances,symbols
 from gem_render_oracle import Raster,font_bytes,PALETTE,PENS
 from test_gem_cursor import ARROW
 from loadable_gem_feedback import measure
-from measure_desktop import distribution
+from latency_statistics import distribution
 from sio_transaction_trace import BASE_HZ
 from g4bench_trace import definition,marker_pcs,read_trace,loaded_markers,calls
 from console_turn_profile import Timeline,analyze_events

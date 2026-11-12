@@ -67,7 +67,7 @@ def build_fixture(out):
     (media/'LOAD.BIN').write_bytes(PAYLOAD)
     make(out/'seed.atr', media, binary_names={'C/COUNTER.APP', 'LOAD.BIN'},
          sector_bytes=256, sectors=2880, filesystem='sdfs')
-    foreign = drawing(out, True, widgets=True, client_sources=[
+    foreign = drawing(out, True, desktop_style=True, client_sources=[
         ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c',
         ROOT/'c/calypsi/aes-events.c', ROOT/'c/calypsi/program.c',
         ROOT/'tests/programs/gem_first_provider.c'],

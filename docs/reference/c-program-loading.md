@@ -34,7 +34,8 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-APP ABI 34 exports ordinary `Forbid`, `Permit`, `FindPort` and `WaitPort` calls
+APP ABI 35 removes the retired `ExecAESConsole` import; rebuild all APPs. It
+exports ordinary `Forbid`, `Permit`, `FindPort` and `WaitPort` calls
 for atomic named-port submission and caller-owned reply waits. ABI 33 added `ExecConsoleView` for copied console snapshots and input.
 ABI 32 added the reusable `SetFileDate` binding to the phased [C runtime](c-runtime.md) entry introduced in ABI 31. Its current import table combines the current `SetIoErr`, `NameFromLock` and
 `graf_mkstate` bindings with public `Wait`, `PutMsg` and `GetMsg` imports for persistent
@@ -75,7 +76,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | APP ABI version, 34 |
+| 6 | 2 | APP ABI version, 35 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |

@@ -2,6 +2,7 @@ MODULE WAITERTEST
 USE EXEC
 USE AESSTATE
 USE AESWAIT
+USE DESKTYPES
 USE AESTYPES
 USE HEAPCORE
 CARD checks
@@ -32,8 +33,7 @@ PROC Main()
   offsets(6)=LONGCARD(ADDRESS(@client.pending)-ADDRESS(client))
   offsets(7)=LONGCARD(ADDRESS(@client.windowWaiting)-ADDRESS(client))
   offsets(8)=LONGCARD(ADDRESS(@client.waitMode)-ADDRESS(client))
-  offsets(9)=LONGCARD(ADDRESS(@service.windows(0).window)
-      -ADDRESS(@service.windows(0)))
+  offsets(9)=LONGCARD(SIZEOF(DESKTYPES.Window POINTER))
   offsets(10)=LONGCARD(ADDRESS(@service.windowPending)-ADDRESS(service))
   offsets(11)=LONGCARD(ADDRESS(@service.policyEffects)-ADDRESS(service))
 
@@ -62,7 +62,7 @@ PROC Main()
   Require(service.windowPending=0 AND service.clients(2).windowWaiting=0)
   AESWAIT.RemoveWindow(service,@service.clients(2))
   Require(service.windowPending=0)
-  Require(SIZEOF(AESSTATE.Client)=138 AND SIZEOF(AESSTATE.Service)=1990)
+  Require(SIZEOF(AESSTATE.Client)=138 AND SIZEOF(AESSTATE.Service)=1264 AND offsets(9)=3)
   EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
 
 RETURN

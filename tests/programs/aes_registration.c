@@ -142,10 +142,16 @@ UWORD AESRun(void)
     while (AESReady < 1) Wait(wake);
     {
         struct AESEndpoint *destination = NULL;
-        struct AESDelivery *record = ExecAESReserve(c, ids[1], &destination);
-        UWORD attempts;
+        struct AESDelivery *record;
+        UWORD attempts,held=0;
+        Forbid();
+        for (i=0;i<AES_CLIENTS;++i)
+            if (c->directory->endpoints[i].gemId==ids[1])
+                held=c->directory->endpoints[i].holds;
+        record=ExecAESReserve(c,ids[1],&destination);
         CHECK(record != NULL && destination != NULL);
-        CHECK(destination->holds == 1);
+        CHECK(destination->holds == held+1);
+        Permit();
         Signal(workers[1], commands[1]);
         for (attempts = 0; attempts < 128 &&
              destination->state != AES_ENDPOINT_CLOSING; ++attempts) ExecYield();

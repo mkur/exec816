@@ -1,0 +1,38 @@
+; Retained AES contexts and ordinary-call binding, owned by the presenter.
+MODULE DESKMENURENDER
+USE AESGATE
+USE MENURENDERTYPES
+USE CONSOLEBITMAP
+USE CALYPSIMETA
+
+ADDRESS entry
+MENURENDERTYPES.Packet POINTER packet
+
+PUBLIC BYTE FUNC Bind(LONGCARD code,data)
+
+  IF CALYPSIMETA.Code(code)=0 OR data<$d0000
+      OR data>LONGCARD($e0000)-MENURENDERTYPES.PACKET_SIZE OR (data & 1)<>0 THEN
+    RETURN(0)
+  FI
+
+  entry=ADDRESS(code)
+  packet=MENURENDERTYPES.Packet POINTER(ADDRESS(data))
+
+RETURN(1)
+
+PUBLIC MENURENDERTYPES.Packet POINTER FUNC GetPacket()
+
+RETURN(packet)
+
+PUBLIC PROC Run(CARD operation)
+
+  packet.operation=operation
+  packet.status=MENURENDERTYPES.BAD_ARGUMENT
+  packet.changed=0
+  LET held=AESGATE.Suspend()
+  CONSOLEBITMAP.Call(entry)
+  AESGATE.Resume(held)
+
+RETURN
+
+ENDMODULE

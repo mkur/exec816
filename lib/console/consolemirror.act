@@ -1,4 +1,4 @@
-; Temporary frontend storage, private to rendering after source publication.
+; Standalone frontend cells, private to rendering after source publication.
 ; Creation runs before the source is admitted to the backend's live registry.
 MODULE CONSOLEMIRROR
 USE EXEC
@@ -16,7 +16,7 @@ RETURN(CONSOLETYPES.Instance POINTER(view.instance))
 PUBLIC BYTE FUNC Create(CONSOLETYPES.Presentation POINTER view
     CONSOLETYPES.Instance POINTER source)
 
-  IF DESKSTATE.terminal<>0 THEN
+  IF DESKSTATE.Enabled()<>0 THEN
     view.instance=NULL
     view.visible=0
     RETURN(1)

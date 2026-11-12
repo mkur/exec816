@@ -7,14 +7,15 @@ USE AESGUI
 USE AESWINDOWSTATE
 USE DESKSTATE
 USE DESKTYPES
-USE DESKWIDGETS
-USE WIDGETTYPES
+USE DESKMENURENDER
+USE MENURENDERTYPES
 USE CONSOLEBITMAP
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
 USE HEAPCORE
 
+CONST G_STRING=28
 PUBLIC CONST BAR_LEFT=128, BAR_RIGHT=560
 PUBLIC AESSTATE.Client POINTER owner
 PUBLIC INT heading,selected,paintHeading,paintSelected
@@ -327,7 +328,7 @@ BYTE FUNC PlainRow(INT index LAYERTYPES.Rect POINTER popup,bounds)
   LET menu=owner.menu
   LET object=AESMENU.Object(menu,index)
   LET box=menu.box(heading)
-  IF object.kind<>WIDGETTYPES.G_STRING OR object.state<>0
+  IF object.kind<>G_STRING OR object.state<>0
       OR (object.flags & 128)<>0 OR object.head>=0 OR menu.parent(index)<>box THEN
     RETURN(0)
   FI
@@ -364,7 +365,7 @@ BYTE FUNC InvertSelection()
     FI
   OD
   count=0
-  LET packet=DESKWIDGETS.GetPacket()
+  LET packet=DESKMENURENDER.GetPacket()
   IF paintSelected>=0 THEN
     IF PlainRow(paintSelected,@popup.bounds,@old)=0 THEN
       RETURN(0)
@@ -413,7 +414,7 @@ BYTE FUNC InvertSelection()
   FI
   packet.context=LONGCARD(ADDRESS(menu.tree))
   packet.index=count
-  DESKWIDGETS.Run(WIDGETTYPES.OP_MENU_INVERT)
+  DESKMENURENDER.Run(MENURENDERTYPES.OP_INVERT)
   okay=CONSOLEBITMAP.Drawn(packet.status)
   IF okay<>0 THEN
     status=LAYERS.AdvancePaint(@desktop.scene,token)
@@ -483,7 +484,7 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
     RETURN(1)
   FI
   LET menu=owner.menu
-  LET packet=DESKWIDGETS.GetPacket()
+  LET packet=DESKMENURENDER.GetPacket()
   IF first<>0 THEN paintIndex=0 FI
   packet.context=LONGCARD(ADDRESS(menu.tree))
   packet.payload=LONGCARD(ADDRESS(@menu.parent(0)))
@@ -514,9 +515,9 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
   IF packet.left>=packet.right THEN RETURN(1) FI
   packet.object=scope
   packet.index=paintIndex
-  DESKWIDGETS.Run(WIDGETTYPES.OP_MENU_DRAW)
+  DESKMENURENDER.Run(MENURENDERTYPES.OP_DRAW)
   paintIndex=packet.index
-  IF packet.status<>WIDGETTYPES.OK THEN RETURN(0) FI
+  IF packet.status<>MENURENDERTYPES.OK THEN RETURN(0) FI
   IF packet.changed<>0 THEN RETURN(2) FI
 
 RETURN(CONSOLEBITMAP.Drawn(packet.status))

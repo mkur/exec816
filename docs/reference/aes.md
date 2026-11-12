@@ -10,8 +10,8 @@ Window operations, UPDATE/MCTRL, copied messaging and event/timer waits use
 caller library entries. Eligible window metadata commits in the caller; physical
 window continuations run in the system Task and signal their waiting caller.
 This adds no Task or kernel gateway.
-The native desktop and retained Control Panel remain independent clients of
-their existing service.
+The desktop, Control Panel, Files and terminal are ordinary GEM clients of
+this one service; there is no separate native window protocol.
 
 The current source profile in [gem.h](../../c/include/gem.h) implements
 `appl_init`, `appl_exit`, `appl_write`, `evnt_keybd`, `evnt_button`,
@@ -579,7 +579,7 @@ lock replies and ordered input delivery; button edges retain their FIFO.
 
 ## Resident counter capacity
 
-The optional [counter desktop](../guides/aes-applications.md#optional-of816-counter-desktop)
+The optional [counter desktop](../guides/aes-applications.md#counter-example)
 runs two independent GEM applications beside the native shell. Its resident
 controller also registers to send shutdown messages: three registrations are
 used, and shell plus counters occupy three desktop layers. Prompt services use
@@ -621,7 +621,9 @@ eligible levels without a presenter RPC.
 The [interactive example](../../examples/gem-input/input.c) exercises the input
 profile with local hit testing, pressed/released drawing and a translated-key
 label. Its [guide](../guides/aes-applications.md#interactive-application-example)
-includes the optional `--aes-input` OF816 build. The application object/form and resource subsets below extend this profile.
+describes the focused input fixture. The current OF816 GUI build uses
+`--gem-desktop` with an ordinary GEM terminal. The object/form and resource
+subsets below extend this profile.
 
 ## Application object trees and forms
 

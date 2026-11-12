@@ -28,7 +28,7 @@ def prepare(out):
     compile_program(ROOT/'build/fastbasic/source',ROOT/'tests/fastbasic/launch.bas',out/'guest/GUEST.COM')
     (media/'GUEST.COM').write_bytes((out/'guest/GUEST.COM').read_bytes())
     make(out/'system.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,binary_names={p.name for p in media.iterdir()})
-    f=drawing(out,True,widgets=True,client_sources=[ROOT/'c/calypsi'/n for n in ('aes.c','aes-messages.c','aes-events.c','program.c')],
+    f=drawing(out,True,desktop_style=True,client_sources=[ROOT/'c/calypsi'/n for n in ('aes.c','aes-messages.c','aes-events.c','program.c')],
         client_roots=['ExecProgramRun',*ABI['imports']],client_probes=[(ROOT/'c/calypsi/aes-layout.c',expected_layout())])
     binding(f,out)
     changes=overrides(out)

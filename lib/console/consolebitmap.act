@@ -6,21 +6,15 @@ USE AESGATE
 USE DISPLAY
 USE CONSOLETYPES
 USE HEAPCORE
-USE DESKSTATE
 USE LAYERTYPES
-USE LAYERS
 USE REGIONS
 USE CALYPSIMETA
 INCLUDE "console-storage-action.inc"
 INCLUDE "console-bitmap-types.inc"
 BYTE drawingPending,drawingChanged
 BYTE physicalCompleted
-; Private text progress owns a scene token, never a source/view pointer.
-LONGCARD desktopToken
-CARD desktopIndex,desktopGlyph,encoding
-BYTE desktopWasDirty
+CARD encoding
 LONGCARD completionMask
-CONST TEXT_GLYPHS=32, CLIPPED_GLYPHS=16
 
 PUBLIC EXTERNAL PROC Call(ADDRESS entry)
 
@@ -175,28 +169,7 @@ PUBLIC PROC SetEncoding(BYTE enabled)
 
 RETURN
 
-PUBLIC BYTE FUNC BackingText(CARD x,y BYTE POINTER source CARD count)
 
-  LET packet=GetPacket()
-  packet.x=x
-  packet.y=y
-  packet.text=LONGCARD(ADDRESS(source))
-  packet.width=count
-  packet.foreground=1 OR encoding
-  packet.background=0
-
-RETURN(Run(OP_BACKING_TEXT))
-
-PUBLIC BYTE FUNC BackingFill(CARD x,y,width,height CARD pen)
-
-  LET packet=GetPacket()
-  packet.x=x
-  packet.y=y
-  packet.width=width
-  packet.height=height
-  packet.background=pen
-
-RETURN(Run(OP_BACKING_FILL))
 
 PUBLIC BYTE FUNC Background(LAYERTYPES.Rect POINTER clip)
 
@@ -280,26 +253,13 @@ PUBLIC BYTE FUNC ClippedText(CARD x,y BYTE POINTER text CARD count,foreground,ba
 
 RETURN(Run(OP_TEXT_CLIP))
 
-INCLUDE "console-desktop-drawing.inc"
 
 PUBLIC BYTE FUNC Fill(CARD left,top,width,height,pen)
-  LAYERTYPES.Rect bounds
 
-  IF DESKSTATE.Enabled()=0 THEN
-    RETURN(RawFill(left,top,width,height,pen))
-  FI
-
-  REGIONS.Assign(@bounds,INT(left),INT(top),INT(left+width),INT(top+height))
-
-RETURN(DesktopDraw(@bounds,0,NULL,0,0,pen))
+RETURN(RawFill(left,top,width,height,pen))
 
 PUBLIC BYTE FUNC Text(CARD x,y BYTE POINTER text CARD count)
   LAYERTYPES.Rect bounds
-
-  IF DESKSTATE.Enabled()<>0 THEN
-    REGIONS.Assign(@bounds,INT(x),INT(y),INT(x+(count LSH 3)),INT(y+8))
-    RETURN(DesktopDraw(@bounds,1,text,count,1,0))
-  FI
 
   LET packet=GetPacket()
   packet.x=x
@@ -311,48 +271,8 @@ PUBLIC BYTE FUNC Text(CARD x,y BYTE POINTER text CARD count)
 
 RETURN(Run(OP_TEXT))
 
-; Presenter-private continuation. Return 2 until every visible fragment of
-; this same frozen row segment has retired; Text/TextCaret stay synchronous.
-PUBLIC BYTE FUNC TextStep(CARD x,y BYTE POINTER characters CARD count)
-  LAYERTYPES.Rect bounds
-
-  IF DESKSTATE.Enabled()=0 THEN
-    RETURN(Text(x,y,characters,count))
-  FI
-
-  REGIONS.Assign(@bounds,INT(x),INT(y),INT(x+(count LSH 3)),INT(y+8))
-
-RETURN(DesktopPart(@bounds,1,characters,count,1,0))
-
-PUBLIC BYTE FUNC TextPending()
-
-RETURN(desktopToken<>0)
-
-; A quiesced fault in another primitive (for example the pointer between
-; fragments) must also retire our token, leaving its damage unacknowledged.
-PUBLIC PROC DiscardText()
-  BYTE status
-
-  IF desktopToken<>0 THEN
-    BEGIN
-      LET service=DESKSTATE.Get()
-      status=LAYERS.Finish(@service.scene,desktopToken,0)
-      desktopToken=0
-    END
-  FI
-
-RETURN
-
 ; The final text span and underline share one admitted drawing operation.
 PUBLIC BYTE FUNC TextCaret(CARD x,y BYTE POINTER characters CARD count,caretX,caretY)
-
-  IF DESKSTATE.Enabled()<>0 THEN
-    IF Text(x,y,characters,count)=0 THEN
-      RETURN(0)
-    FI
-
-    RETURN(Fill(caretX,caretY,8,1,1))
-  FI
 
   LET packet=GetPacket()
   packet.x=x
@@ -395,25 +315,7 @@ PUBLIC BYTE FUNC Scroll(CARD left,top,width,height,rows)
   packet.copy.width=width LSH 3
   packet.copy.height=(height-rows) LSH 3
   packet.background=0
-  LET desktop=DESKSTATE.Get()
-  IF desktop<>NULL THEN
-    REGIONS.Assign(@source,INT(left LSH 3),INT(top LSH 3),
-        INT((left+width) LSH 3),INT((top+height) LSH 3))
-    REGIONS.Copy(@source,@target)
-    status=LAYERS.BeginCopy(@desktop.scene,DESKSTATE.Selected(),@source,@target,@token)
-    IF status<>LAYERTYPES.OK THEN
-      RETURN(0)
-    FI
-
-    DESKSTATE.SetScrollToken(token)
-  FI
-
   IF Run(OP_SCROLL)=0 OR packet.status<>DISPLAY.OK THEN
-    IF desktop<>NULL THEN
-      status=LAYERS.Finish(@desktop.scene,token,0)
-      DESKSTATE.SetScrollToken(0)
-    FI
-
     RETURN(0)
   FI
 
@@ -468,16 +370,8 @@ RETURN
 
 ; Retiring a frozen Layers transaction is scene work, after physical polling.
 PUBLIC PROC Poll()
-  BYTE status
 
   PollPhysical()
-  IF drawingPending=0 AND DESKSTATE.PendingToken()<>0 THEN
-    BEGIN
-      LET desktop=DESKSTATE.Get()
-      status=LAYERS.Finish(@desktop.scene,DESKSTATE.PendingToken(),Failed()=0)
-      DESKSTATE.SetScrollToken(0)
-    END
-  FI
   physicalCompleted=0
 
 RETURN

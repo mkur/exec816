@@ -47,9 +47,9 @@ RETURN
 PROC FreshnessChecks()
 
   LET client=@service.clients(0)
-  LET item=@service.windows(0)
+  LET item=service.windows(0)
   LET view=item.view
-  LET window=item.window
+  LET window=item
   Snapshot()
   FOR iteration=0 TO 1 DO
     AESWINDOWSTATE.BeginUpdate(client)

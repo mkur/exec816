@@ -63,7 +63,7 @@ def setup(symbols):
     fields={'LifeNative':'@LIFECYCLEPROBE.stats(0)','LifeBusy':'@LIFECYCLEPROBE.busy',
         'LifeGate':'@service.policyGate','LifeOwner':'@service.sceneOwner',
         'LifeWaiting':'@service.windowPending','LifeNext':'@service.nextWindow','LifeLocks':'@service.lockCount'}
-    text='  DESKBOOT.Detach()\n'
+    text=''
     for name,field in fields.items():
         text+=f'  BEGIN\n    LET target=LONGCARD POINTER(${symbols[name]:x})\n    target^=LONGCARD(ADDRESS({field}))\n  END\n'
     return text

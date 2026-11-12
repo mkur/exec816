@@ -1,0 +1,507 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GF12-native-policy-retirement",
+  "parent_revision": "39e93a282f5359d251855d9a659397a3cba624b7",
+  "artifacts": {
+    "current-record-raw": {
+      "path": "build/gem-first-gui/gf12/current-record-raw/results.json",
+      "sha256": "120724ed659714533440db9364552786ed8f8dff46f2378ac49d4dc74ddd16e9"
+    },
+    "current-record-opt": {
+      "path": "build/gem-first-gui/gf12/current-record-opt/results.json",
+      "sha256": "af7558a7418740ff5eeb8a9b9f421347509b6c8f2509aa38c209b3167cf3dc49"
+    },
+    "waiters-raw": {
+      "path": "build/gem-first-gui/gf12/waiters-raw/results.json",
+      "sha256": "2b06f315e6c1fe2e2a06603543e6e37a43b88ed7056bdadb6754ed676920bbc4"
+    },
+    "waiters-opt": {
+      "path": "build/gem-first-gui/gf12/waiters-opt/results.json",
+      "sha256": "d8c7b77388624891b3b129fa323adedfde92f91ed7c2531e317413ec0c0a3b91"
+    },
+    "snapshot-current": {
+      "path": "build/gem-first-gui/gf12/snapshot-current/results.json",
+      "sha256": "49e0fb68573bcadfeb7d8f717c3a8e2b7cdf3531005879231d89503226b935d6"
+    },
+    "final-terminal": {
+      "path": "build/gem-first-gui/gf12/final-terminal/results.json",
+      "sha256": "115a28e1418b5795c830404c7c955bbb68953ffdf0a5b222093b599b68febb9b"
+    },
+    "missing-terminal": {
+      "path": "build/gem-first-gui/gf12/missing-terminal/results.json",
+      "sha256": "a26134ef81c7c31a374e97c2feb1a0afcf291bced988b3087f23f6f141279932"
+    },
+    "multiwindow-current": {
+      "path": "build/gem-first-gui/gf12/multiwindow-current/results.json",
+      "sha256": "83ff73d21ad2e08986cc8deae9f923c49e65b5fa3c7a90a7aeca0c0172bf8ca5"
+    },
+    "lifecycle-current": {
+      "path": "build/gem-first-gui/gf12/lifecycle-current/results.json",
+      "sha256": "dee18b27f0d40234f75dca8db17a03c66cc598f556215259b9bb73014ea78122"
+    },
+    "registration-final": {
+      "path": "build/gem-first-gui/gf12/registration-final/results.json",
+      "sha256": "ac029c3ef7358bd4693b0b8d82471c392835fd2260bec40e040b399a269b11a9"
+    },
+    "menus-current": {
+      "path": "build/gem-first-gui/gf12/menus-current/results.json",
+      "sha256": "d86093e1017def0e6b5e63bfe2e20f8a6c5a51a5d4bd210b6901950b3a00d18a"
+    },
+    "plain-console": {
+      "path": "build/gem-first-gui/gf12/plain-console/results.json",
+      "sha256": "677aa5fdc84179e7bb4ce4a2f385d02aba64be152efa8f46e8d08f611d8f6405"
+    },
+    "drawing-final-control": {
+      "path": "build/gem-first-gui/gf12/drawing-final-control/results.json",
+      "sha256": "aa98e7bc0f44c41bfc93f425d3b3e47f53e5b3e830602cf88d1c331508d53283"
+    },
+    "policy_audit": {
+      "path": "build/gem-first-gui/gf12/policy-audit.json",
+      "sha256": "190f4ad84fead2e17f60aaa2474983fa4fe2e08f648f2a3b2f4b4259392efb22"
+    },
+    "documentation_links": {
+      "path": "build/gem-first-gui/gf12/documentation-links.json",
+      "sha256": "d0f40a8eac51a0ebc6621af74c9a6d0e400317b1d4d641a92347f6b0ebee473a"
+    },
+    "basic_app": {
+      "path": "build/gem-first-gui/gf12/basic-app/app.json",
+      "sha256": "c051847dc92b838e9457e797be741e251b10e3cb93130453ca61355736c48d27"
+    }
+  },
+  "build": {
+    "xex_sha256": "bb7b89e757875da1d86c8b482e741e2cd6f3171b49e235382acbc4a47fba8f74",
+    "media_sha256": "eb82fe68e668575fea1131f41872fdbb159f7cb95969e1cb8358d7e7d491df7e",
+    "provider_sha256": "06ac3f7eb9d603c08c37faadeae772dc6a2e5a4a38825a6fa61586a9de67d1a1",
+    "compiler": {
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "override": false,
+      "compiler_contract": {
+        "schema_version": 1,
+        "repository": "https://github.com/mkur/actionc.git",
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary": "actionc-65816",
+        "target": "wdc-65816-native",
+        "abi": "action65816.native.v2",
+        "image_format_version": 3,
+        "abi_json": "docs/abi/action65816-native-v2.json",
+        "abi_assembly": "docs/abi/action65816-native-v2.inc",
+        "abi_action": "docs/abi/action65816-native-v2.act"
+      },
+      "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+      "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "layout": {
+    "GuiNotice": 8,
+    "GuiPending": 94,
+    "Window": 294,
+    "Service": 11030
+  },
+  "aes_service_bytes": 1264,
+  "menu_packet_bytes": 50,
+  "app_abi": 35,
+  "applications": {
+    "panel": {
+      "bytes": 17756,
+      "sha256": "53d0dfaa263c71db6275b07c03fc562e3377990a88ca4a96b375a49bf6979b39",
+      "span": 66728,
+      "abi": 35
+    },
+    "terminal": {
+      "bytes": 22445,
+      "sha256": "3c645e14fb45738bc7bb86a8796eebf8ed9de8da608cbaec0785e9049442d5a6",
+      "span": 66473,
+      "abi": 35
+    },
+    "gemarc": {
+      "bytes": 49742,
+      "sha256": "cde5ae537830c61e712172e2fd14455042d813bd0081883cff98eb63fbd2ceef",
+      "span": 69647,
+      "abi": 35
+    },
+    "desktop": {
+      "bytes": 93171,
+      "sha256": "27da803f5082d8201851432ab9bf0ed3f33b1b7633e1e27fb624cbc64b972cad",
+      "span": 149611,
+      "abi": 35
+    },
+    "calc": {
+      "bytes": 17471,
+      "sha256": "c0b7b4d7ecdd7612df0eb152e59288e6e39174b23671436126a50fc9ce782294",
+      "span": 66304,
+      "abi": 35
+    },
+    "dialog": {
+      "bytes": 18219,
+      "sha256": "026fa278e055a53d5359391e3f5ae837d3e9bde0439d20135a9016841eb82211",
+      "span": 68027,
+      "abi": 35
+    },
+    "g4bench": {
+      "bytes": 25514,
+      "sha256": "36a3c02e815d7c0ef2c37e626cf102aecbe2ecc9580ca764e0fcbbc66e1fa939",
+      "span": 68457,
+      "abi": 35
+    },
+    "files": {
+      "bytes": 68579,
+      "sha256": "31a20acc50a7c7f012347c6f30048c924683d39c0e9355d9729af75a3778ea05",
+      "span": 72260,
+      "abi": 35
+    },
+    "text": {
+      "bytes": 27234,
+      "sha256": "08253e2110b5b6aeadfd2b1bba959528d3a701cbef2cdc536992e7a1870e1498",
+      "span": 68305,
+      "abi": 35
+    },
+    "counter": {
+      "bytes": 14530,
+      "sha256": "4dd07ffa4ba192e045792e562fbcd3d621a87c131e141923451fef1bfd506c77",
+      "span": 66290,
+      "abi": 35
+    }
+  },
+  "checks": {
+    "host_tests": 688,
+    "host_skips": 4,
+    "record_raw": 13,
+    "record_opt": 13,
+    "waiter_raw": 19,
+    "waiter_opt": 19,
+    "metadata": 738,
+    "multiwindow_c": 68,
+    "lifecycle_c": 267,
+    "registration_c": 233,
+    "menus_c": 321,
+    "drawing_assertions": 486,
+    "drawing_pixel_frames": 11,
+    "drawing_measured_operations": 67
+  },
+  "resources": {
+    "boot_tasks": 8,
+    "peak_terminal_walk_tasks": 9,
+    "aes_clients": 2,
+    "windows": 3,
+    "terminal_slot": 5,
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 607,
+        "untouched_above_floor": 673
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 190,
+        "untouched_above_floor": 866
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 318,
+        "untouched_above_floor": 738
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 149,
+        "untouched_above_floor": 907
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 454,
+        "untouched_above_floor": 602
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 870,
+        "untouched_above_floor": 186
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 766,
+        "untouched_above_floor": 1538
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 873,
+        "untouched_above_floor": 1431
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 1312,
+        "touched_bytes": 444,
+        "untouched_above_floor": 612
+      },
+      {
+        "slot": 9,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 10,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 11,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 12,
+        "reserved_bytes": 512,
+        "touched_bytes": 129,
+        "untouched_above_floor": 127
+      }
+    ],
+    "kernel_stack": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 301,
+      "untouched_from_base": 1235,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "memory": {
+    "before": {
+      "native_routine_bytes": 1249055,
+      "native_declared_data_bytes": 19490
+    },
+    "after": {
+      "native_routine_bytes": 1150182,
+      "native_declared_data_bytes": 19006
+    },
+    "c_code_bytes_before": 230261,
+    "c_code_bytes_after": 211286,
+    "c_initialized_bytes_before": 5106,
+    "c_initialized_bytes_after": 5102,
+    "c_zero_fill_before": 20911,
+    "c_zero_fill_after": 18625,
+    "scene_rounded_upper_delta": -8512,
+    "vram_reservation_delta": 0,
+    "retained_offscreen_reservation_bytes": 40960,
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848,
+        1600,
+        1600,
+        1600,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 34496,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 54464,
+      "loading_including_os": 40336
+    }
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "guards_alignment_and_unused_capacity_included": true
+  },
+  "scope": [
+    "Development checks only; no hosted/hardware qualification or latency gate pass.",
+    "Native packet/command/widget clients and obsolete profiles retire together; no compatibility shim.",
+    "Existing offscreen primitives/reservation remain; source/window attachment policy is removed.",
+    "Registration uses the existing twelve-Task inventory and checks publication holds relative to independent snapshot retention.",
+    "BASIC emission/ABI probes pass; a full BASIC walkthrough is outside this selected scope.",
+    "Demo packaging and final combined disk/input/QED acceptance remain for GF15."
+  ],
+  "sources": {
+    "abi/aes-server.json": "b2a9b53723e83216f78cc7b26779580357e9a8fadef6162ff363bd0c97cc606d",
+    "abi/c-program.json": "6b9cb90282955b33fa3db1d73183199ff5bc1a96b5ee465e8c6502675a27bd48",
+    "abi/desktop.json": "adea7e2f81cb32c3219ce3cb651a5dadd6176096c45108bd6a77d0cd3f7e69a9",
+    "abi/menu-render.json": "8ffca4136b6c1f2112b51cb43b8346faece75cea7bbee11d857fe2fda0fb6fe0",
+    "c/calypsi/aes-windows.c": "2ff548afe84350358aba25a6d5ffbeb2b3db62d69e1e3f038fb07367e8cb2cd7",
+    "c/include/exec816/aes-wire.h": "a4773662be0932e6b2f709f5ade434612531e719d1905e98a6129cf1df7a83d9",
+    "c/include/exec816/console.h": "7e9358c6ed30d3e39ddaee165364546227af785e11889ca59b5c16e37f1308ca",
+    "c/include/exec816/desktop-geometry.h": "49b26aba287b7b6402382a27f0958c14a586114c14ce65c8dbb1351bf006ff36",
+    "c/include/exec816/menu-render.h": "fcfea749d83b1f9248344076df2d166eee4b4aafa8e04d8296c9ebb9e90346b6",
+    "examples/gem-basic/build-job.h": "f61813c1b65868d8f9dc4e32bda4457ded0cd15eb31130afd4eef34f0ddd8170",
+    "examples/gem-basic/build.c": "de36599a2b80fbd27ff5f2e38cd7e554e968141733df3c3179d3e01928006400",
+    "examples/gem-desktop.act": "a89a2bb27792f747dff41f7560caeec57b8b051e3730778c79725effa566e94f",
+    "examples/shell/shell-controller.inc": "d2fa3d1027e98f19dfeb3ed22843bc2e022fcef76f0b53464d4105b43595592c",
+    "examples/shell/shell-session.inc": "c5fa063416fff5182072c3e41a411e0e8f03e2c411b8c5b993d407a97740f06f",
+    "lib/aes/aeslocks.act": "b51e1073629defba03ee27b5923e135be9065b3232b368605d188a19044e1208",
+    "lib/aes/aesmouse.act": "25e9dd7fc87e7c837c507bc97f87651bb46e662ce28250f9cbebef48412d8a60",
+    "lib/aes/aesroutes.act": "0eeeead0ad9cfe768ba9057af2a74b5376926a99677f85e735987a19621520fd",
+    "lib/aes/aessnapshot.act": "6cb69caa8a40ccd3fdca847be7a8b910fff67a27e0d46ec17f55d4119a515ab8",
+    "lib/aes/aessystem.act": "7c43600faeb4913450b3f2b6369b03c16a38b6379781a80a842df72567b6d74e",
+    "lib/aes/aestypes.act": "34e05d141b54bcdb925e7b9db689beb0c49502edcc7418511c14ee96f28fc20a",
+    "lib/aes/aeswindow.act": "18aae3a33223e89d0150194ff1c3be3c2dd51194b8d0e19a51f73be11a1cc0b7",
+    "lib/aes/aeswindowstate.act": "d60e5e58284b0965b57e280aaa31ce96d5b1ee47b8c8eb0954577d7fce4143e5",
+    "lib/console/console-batch-display.inc": "eeb53951458498556d72824d0f1397080b14adc2be2810b82198978e18b628c8",
+    "lib/console/console-bitmap-display.inc": "4399bfa6fac0b9a3aa99e2042af9981c8a2cff7d6af32466f66185e36511bc6e",
+    "lib/console/console.act": "7e8d93ffde43cf5f9703023bb3376f113c4fbcb45dba325b5b31758ffc8d0ba9",
+    "lib/console/consolebitmap.act": "f70a70de40e6cd06bfb74e95445f5c8d5b3740e689e33ae01e7d24f646b047c2",
+    "lib/console/consoledisplay.act": "dbe3d907e73e0d4bb58ca5984e98b106a6db1292fd2619f10600b5123de66ef9",
+    "lib/console/consolefront.act": "158f8486585c55fda553a360838116ad68916425de65ea43f9be5067722c4ba3",
+    "lib/console/consolemirror.act": "358c1656312cda5c1cffc3ea400a88549094ac412a31873120fadedc81cdcc9d",
+    "lib/console/consoleview.act": "c7d6c2cee14196c6024f191f7c3b78c28e44c14a7cadffc55be4e4ebae0daac1",
+    "lib/desktop/deskappmenu.act": "3a6715bfffd44fb1cff5265a9b5fd0b838f421db7481ea512e877a86c797a399",
+    "lib/desktop/deskboot.act": "52797cf051f860de92355cb28994e07c9baef11743038a6017b154f7610d114b",
+    "lib/desktop/deskcache.act": "9ec1f3e24f42496e7d543cad2973890bf4dc83a97c1a3616f5b8ea8165f0597f",
+    "lib/desktop/deskcore.act": "90da2ce2acd91c59ad94be567710ae2e5a06e4e2a9a34730770ed18580d599a9",
+    "lib/desktop/deskdrag.act": "9dea7332f99a50ffb1a4ed16afb0bed00fcbb165de9ff48f9c50943dbd85f0ae",
+    "lib/desktop/deskgeometry.act": "1e50c0c3cdbef8e34dedd2e3fce9ac1ec8d11aaaca25c92cc97026c03eccdfb1",
+    "lib/desktop/deskhost.act": "d81052ca0a2f8f9fa270af078af8288abc891206cec143fecdb86ed611414e1a",
+    "lib/desktop/deskinput.act": "9a79a9be8248553b56a68758a6a0ba781b40ba5d5713c73bed8747575653532e",
+    "lib/desktop/deskmenu.act": "085c31688fd46aab73595acd050f75de5712e7abd7ec317c8fde1818d1380c97",
+    "lib/desktop/deskmenucache.act": "d021834ef75b0798fea8d165e27ce505a5b79f51db1f907d20d4dfcb21617d77",
+    "lib/desktop/deskmenurender.act": "0377545fd2dea52993e6c7e010a6dec48d3798ebbf253645ebef0573f90d882d",
+    "lib/desktop/deskmove.act": "4b8704dddb9b55f186778914259d163eecb7ab734de5bd8a39d3b90fe7053140",
+    "lib/desktop/deskpaint.act": "887d833a8cedc77897f865810c14539cc8c2cbe6e2594bb9a34f8cd3337c8971",
+    "lib/desktop/deskstate.act": "d4e2ce2ec86f800419e215d768dd7c7e68f813d6cedfc099bc7d625cfdcba09e",
+    "lib/desktop/desktypes.act": "471ffe5a9c537048acaf6f342c14fa8c2f81fa117397c0b3841a3cedba22ec6c",
+    "lib/desktop/menurendertypes.act": "f5cff9c96693c090671a0f7fd743195ad702bc0f47d782e64ee4aa06b56d6c8f",
+    "lib/dos/c-program-abi.inc": "24acfc0d60029fc5cd1331aa81e2df822066c6f02ccf13893b680b8fdda6460c",
+    "ports/gem4xe/aes/README.md": "ecc8c7795c99c3ce634bc5348fada4a2656f677cdaef4e6f9fffc3b5a12817a0",
+    "ports/gem4xe/aes/aes-hosted.h": "b535f3e750bac3d0c731df5a812b9f0f8e73d3f26197a9edfbf3741d4bb9d7d1",
+    "ports/gem4xe/aes/menu-layout.c": "9934c8fc6ae81d6d16f36c30019834ae8e3bae0ad05e03879a3fb810ae30f716",
+    "ports/gem4xe/aes/menu-render.c": "3bc57847106dade4db9c8f18aa7dad87908bc62d6fef522e2d3cc2ee8680dd4b",
+    "ports/gem4xe/aes/object-graf.c": "294c53a035df53ead6784e667b9baff3badbc879d4b59e1a316a5daf596d334e",
+    "tests/programs/aes-cache-completion-checks.inc": "3c83aa1e7b4db1c9fda886d52ba4061c1d4fc7144d2015f5a1b8c80ac8cbb93f",
+    "tests/programs/aes-snapshot-checks.inc": "518931267c0b6d12bfc113c6034140271be61c718eff82f0fb66b34b83294fab",
+    "tests/programs/aes_lifecycle.c": "54ceebccd54d67554ee0d9d17030136a0a218c30753d5ad33b2318c0c6adcce5",
+    "tests/programs/aes_multiwindow.c": "38083cd002e825a279b6278ec3e36090afc23ff835ca14e5638ac37c3faa4992",
+    "tests/programs/aes_registration.c": "ae41594c18cb38b659cca4b125fcb2a63891f8cd82c9effc7deac448bed6e488",
+    "tests/programs/aes_snapshot.act": "427fddafa673194bb95fceb832dbbcb3a7b73849e02e85ef94f97ada180be47d",
+    "tests/programs/aes_wait_queue.act": "fa210325dc452c69b3879390ac8e661c9d0c2b73a98f21b2f77a92af07101ffe",
+    "tests/programs/basic_build_layout.c": "f2f4c4d46c8a997fe059db9c5d2bef482e3875371fd5af48686dbafe591d2192",
+    "tests/programs/shell_session_close_measure.act": "2e0eb56be0b1d75ac605a1891d38ea68c9531789e4d65486b2a25bfc0ebbfe11",
+    "tests/test_background_observer.py": "e836d492e28d5a363c295f321e6e32a9110e62f4f497ba1af8453014e080abff",
+    "tests/test_desktop_contract.py": "6577708e9aa03c47613241bbb1e813c06e751a2b025a41702f9d509e48b2f1ab",
+    "tests/test_frame_gadget_assets.py": "b7f12837099260c75866f1ddb715d5033b2b97be46960fe695d14fe888d98584",
+    "tests/test_menu_render_contract.py": "1c0841f903ea31ada6029e259f00b5328375e258c16681f05a61a2b80599e303",
+    "tools/aes_latency_trace.py": "6392a3acb037b60a11e71fb77e29e6d9e265f3a1f0dd5ae8c6bf4bd4a8ec39e5",
+    "tools/audit_gem_policy.py": "4590ceedaae9a4ce7bc615ed362c4807e40d8ccfde94a8f51e382982fed5b405",
+    "tools/background_coverage.py": "63d02e43146ede07b060cb92796147b56af8f52d7a9a77043eadea744e5cfd99",
+    "tools/basic_build_model.py": "0b4c583c3e0503c65626e74279f4a6424a03f3d72eaba35434789333e93e5840",
+    "tools/build_aes_desktop.py": "2b524f9546ff7e778015ead9e4fbdd01c82b66e6e2513da0e6c0a7c835fd86d4",
+    "tools/build_bitmap_console.py": "44b2c71de2f382f1d30e8baabf2756408c050f1beab6b324189ce3c3b02aa688",
+    "tools/build_demo.py": "9f9b5899415aa9d463b591fa79462b121bf17f0b345696aff68338ed39637867",
+    "tools/build_gem_desktop.py": "b2f7d7320afd0c0d5bc9547639ede3a674467dabc83c1d7cd2dd199fb3b8c19a",
+    "tools/build_gem_input.py": "66b6df49f9fb909b1c8ca76276dd595b86ab8057eec07a56ef34078290baf949",
+    "tools/colour_drag_check.py": "0be54b02aeae5ebaa6f75c1c1f7cb3894f4d2136ca2bd90207522de7ade74aaa",
+    "tools/colour_drag_timing.py": "02195e8545c3abb986792297fa42dacc94c084ef87bc114651f28afcc085b634",
+    "tools/colour_selection_feedback.py": "6cf2e8358bc4bb5a47a710dc6eb8cdf3a0ced59c8728f1fde575e4fde5caafc7",
+    "tools/control_panel_oracle.py": "6c7b19bd51db77bd925bfc4c094f29cfcb4befbef6f10d626b0e632cb265fe82",
+    "tools/counter_timing.py": "b7114179142bfd29ef699f6ec3455f02a210fe6a58fc4b2d8d3878461ee4adce",
+    "tools/desktop_oracle.py": "a313009287fb1bf263f65dd7d987280c9116c6176c6a12ffd3365d119cd0321d",
+    "tools/desktop_raster.py": "a643a75610c1df3cff4e0eeb6cdcb4e47ea89a6be3ed0a132e3c6b6d61e37ddf",
+    "tools/gem_desktop_oracle.py": "8224fe4b40385a0b511a6ecffad4985f1c17a08cb53b3281f80bd02951efc2ce",
+    "tools/gem_input_oracle.py": "6bbed58f6315f1a2344b6f302521e5b22633578bf81e19f4ab2b566f00dfce52",
+    "tools/generate_menu_render.py": "fa437a3eb7ba257a9534ecba9d61052997f046bdbeed7c160e32f5cff0b176b3",
+    "tools/generate_tasks.py": "f14b66b6dacb416c83e68e65a03210cf78a8bcd65019a3af0a339930877cee2d",
+    "tools/latency_statistics.py": "5272ab742818ba1d02e0f303fd6414e6e2d891151d5e0b34d827fb32296c729d",
+    "tools/library_paths.py": "48ef934e514a985759142769989aa6d3620df8cd2d540446708ca9a245128de9",
+    "tools/loadable_gem_feedback.py": "08051763a48df1ea38159c832d6bb2fa056e15f9fe9d124a9efb6ac45544d938",
+    "tools/measure_aes_calls.py": "67d15f216d349b0488d126d1ba875e602812ec8c55d6d4f9ed3fa85218565a8a",
+    "tools/measure_cache_load.py": "17bb615a1bc1b36b41e9bb17cb33aa51c1f871d32e08a818456ce2dde7db7bc5",
+    "tools/measure_classic_gem.py": "c32dba84b2e75d6d635d7049b5aa6c522a312fd03fbead3bac05a75ca0f1cc46",
+    "tools/measure_desktop_echo.py": "5c2f0de764a0e6f6f4af57c1f09588113d52e69ab323517c9418d6e7c5306886",
+    "tools/measure_gem_feedback.py": "dff68cd74c9ac199d3595d0843356ff2458c23449466d77b3e273791b7eb0fa7",
+    "tools/measure_magic_aes.py": "deeb99fd589ef96469f5f0a8fe4218421eafda5b1eaeac2b51bda6568dd118a2",
+    "tools/measure_menu_feedback.py": "5c2b0baaaef6f07271d7c8d47b8afd39c9e3eb4702e1a1c5a41c2e42138ae48d",
+    "tools/measure_rendering_load.py": "fcbc9584ec6f4af7b4e2914e0b111043ea841f89d314e26091c88c45793ba33e",
+    "tools/measure_sdx_editor.py": "822c1c3470492b9339cfc1185370fe9bfd6bd72694083c3b99b57aa0da42529b",
+    "tools/measure_window_backing.py": "b35cd95576704c632777061da755dc9d3399261117fa01e90813618928f4d3fd",
+    "tools/presenter_control_trace.py": "d5dcd90948cec6e0788ca435991afd50f6ae04781b01da735fb98cc3e29a5eaf",
+    "tools/record_fastbasic_workbench.py": "8206d8b905d0a58bfc8f617731e26a5e45ebfeede7115750a080a9bcae7528dc",
+    "tools/standard_dialog_oracle.py": "e720102dd72486f0ffbde53ef51cb7e691dc4ffd3bfc3505d46db7ff524c29f4",
+    "tools/test_aes_cache.py": "69e9408e710cc61109466cdb15a478cbfeaba650de48442864e177a59eee5a60",
+    "tools/test_aes_exec_wait.py": "94411ece872f5eb9ace3ae39336b9f8d170b457aaffd59278ffa2a8092383947",
+    "tools/test_aes_forms.py": "afc9fd43cabbc426a64094ca6d8e70cde7d89f861c8d6b1a70e45722b8d7ae7d",
+    "tools/test_aes_frame.py": "69cbc60f49cfb78772133dcf6a125a89b13016544c79882c7c384f9ad207a852",
+    "tools/test_aes_lifecycle.py": "94f5aad17c0a326e72fd05dd79052f15f29e715c40063e71f157d69a1a47131e",
+    "tools/test_aes_menus.py": "c6415d0f36684ec5138f3428eba6f3826b3f5a0fd68fbf9c0b21096fb4a71570",
+    "tools/test_aes_server.py": "ade8c60b2d51ca6bbfce622a62018a87e927a3ad34b084d9fe3c8ea164f73949",
+    "tools/test_aes_snapshot.py": "52b520b8e3e7ea99e4ebbe87fcae3b1f5eeb7759dd11293f583ef69c7e294ee8",
+    "tools/test_aes_visibility.py": "9cb581eefcd4e3f5d0b9ec9493238889d975ae46a5793df38c8e550367081fdf",
+    "tools/test_aes_window_effects.py": "912709a371f8c4b0e99cf9bc7da192533832e84a271b466f0cfad8bb27442d9a",
+    "tools/test_aes_windows.py": "c0fdedb085c23fe8e039319e24ace92b684004baddf95f39f5dad3817a599853",
+    "tools/test_calculator.py": "169494aa53e60051b367f1ac988aef9f481fbb7f9e9c261fbfbbf3ed0083e937",
+    "tools/test_fastbasic_workbench.py": "b24194b4a2a56f45633735bc4805acaf2afe997fca440ab845e1cb6ffbe9a627",
+    "tools/test_frame_gadgets.py": "372e9c39f12347853bfd6e9fa44b1b618f2ad5ff24f91630d5f503c942e18bcf",
+    "tools/test_gem_first.py": "5579f5d473d2ca589f4176d2f990db0e8c737a35935c5f1af3cd06dd3a90e4d0",
+    "tools/test_gem_input.py": "7728db9eded5dbfc89b29659f764b885f92d517996176868c6d6952173cd0851",
+    "tools/test_native_drag_update.py": "a8ef132421dbdfdf57208d7c181f9e49df376fc08eb99689bb21e88ccdf24fc3",
+    "tools/test_program_launch.py": "31064ed4ae9d8a1415fb826baa2cb22819f4113229a52519bb67a87a2abecea2",
+    "tools/test_shell_sessions.py": "79ab89e6190e072470dfc6154cac25501231ad2a55bf6eae8da5322987f747c2",
+    "tools/test_tedinfo.py": "761552d94610468b9bc78f5eac1428d60c5b7f12f0c443cf92fb94c7a0dc4049",
+    "tools/test_vdi_client.py": "54b573251de038b9fb9a2e325c7f33a060c1cb35ec25e314672c9dd041474f2a",
+    "tools/text_viewer_oracle.py": "b7971cc52dfadd917834e7ea930a3dfd1ebbed5de2fabe9f9d7e3065d3a8efb5"
+  }
+}

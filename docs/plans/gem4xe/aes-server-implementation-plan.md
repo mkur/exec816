@@ -112,7 +112,7 @@ client binding, service policy and presenter integration separate.
 | Service policy | New `lib/aes/aescore.act`, `aesmessages.act`, `aestimer.act` and `aeslocks.act`, with generated types and upper-RAM state. Registration, event matching and locks remain service policy. |
 | Service lifecycle | New `lib/aes/aeshost.act` / `aesboot.act` for presenter-owned setup, masks, runnable/idle checks, retained launch handle, shutdown and rollback. Follow the ownership pattern in [deskboot.act](../../../lib/desktop/deskboot.act). |
 | Presenter pump | [consoledriver.act](../../../lib/console/consoledriver.act), [deskhost.act](../../../lib/desktop/deskhost.act) and [deskcore.act](../../../lib/desktop/deskcore.act): share intake budget, service timer replies, include AES work in sleep/stop decisions. |
-| Native GUI gates | [deskpaint.act](../../../lib/desktop/deskpaint.act), [deskinput.act](../../../lib/desktop/deskinput.act), [deskwidgetinput.act](../../../lib/desktop/deskwidgetinput.act), move/cache and console drawing paths: enforce application lock ownership at bounded completion boundaries. |
+| Native GUI gates | [deskpaint.act](../../../lib/desktop/deskpaint.act), [deskinput.act](../../../lib/desktop/deskinput.act), [deskwidgetinput.act](https://github.com/mkur/exec816/blob/39e93a28/lib/desktop/deskwidgetinput.act), move/cache and console drawing paths: enforce application lock ownership at bounded completion boundaries. |
 | Build and provenance | Extend [library_paths.py](../../../tools/library_paths.py), [native_program.py](../../../tools/native_program.py), [calypsi_build.py](../../../tools/calypsi_build.py) and [build_bitmap_console.py](../../../tools/build_bitmap_console.py) for the new modules, C sources and explicitly admitted client entries. Reuse checked foreign-image packaging. |
 | Tests and evidence | New `tools/test_aes_server.py`, C/Action! fixtures under `tests/programs/`, and small host ABI/contract checks. Detailed outputs under `build/aes-server/`; compact records under `docs/development/aes-server-asN.json`. |
 
@@ -449,10 +449,10 @@ Use existing runners where they test the changed boundary:
 | --- | --- |
 | [test_calypsi.py](../../../tools/test_calypsi.py) | Public Exec C context and Task entry conventions. |
 | [test_timer_device.py](../../../tools/test_timer_device.py), [test_interrupt_reply.py](../../../tools/test_interrupt_reply.py) | Only affected device/return-path regressions if those implementations change. |
-| [test_desktop.py](../../../tools/test_desktop.py), [test_desktop_apps.py](../../../tools/test_desktop_apps.py) | Native protocol, independent clients and retirement after shared pump changes. |
-| [test_desktop_startup.py](../../../tools/test_desktop_startup.py), [test_desktop_fault.py](../../../tools/test_desktop_fault.py) | Admission/rollback, completion and shutdown integration. |
-| [test_desktop_presentation.py](../../../tools/test_desktop_presentation.py), [test_widgets.py](../../../tools/test_widgets.py) | Existing pixel and widget behavior across new lock gates. |
-| [measure_desktop.py](../../../tools/measure_desktop.py), [measure_desktop_echo.py](../../../tools/measure_desktop_echo.py) | Matched native latency baselines and input/console regression measurements. |
+| [test_desktop.py](https://github.com/mkur/exec816/blob/39e93a28/tools/test_desktop.py), [test_desktop_apps.py](https://github.com/mkur/exec816/blob/39e93a28/tools/test_desktop_apps.py) | Native protocol, independent clients and retirement after shared pump changes. |
+| [test_desktop_startup.py](https://github.com/mkur/exec816/blob/39e93a28/tools/test_desktop_startup.py), [test_desktop_fault.py](https://github.com/mkur/exec816/blob/39e93a28/tools/test_desktop_fault.py) | Admission/rollback, completion and shutdown integration. |
+| [test_desktop_presentation.py](https://github.com/mkur/exec816/blob/39e93a28/tools/test_desktop_presentation.py), [test_widgets.py](https://github.com/mkur/exec816/blob/39e93a28/tools/test_widgets.py) | Existing pixel and widget behavior across new lock gates. |
+| [measure_desktop.py](https://github.com/mkur/exec816/blob/39e93a28/tools/measure_desktop.py), [measure_desktop_echo.py](../../../tools/measure_desktop_echo.py) | Matched native latency baselines and input/console regression measurements. |
 
 Each AS record includes exact sources, generated ABI, compiler/ROM/emulator pins,
 Task placement, complete memory deltas, actual case scope, measured timings and

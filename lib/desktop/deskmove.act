@@ -1,111 +1,19 @@
 ; One presenter continuation owns copied geometry until the shared DMA retires.
 MODULE DESKMOVE
-USE CONSOLEMIRROR
 USE AESTYPES
 USE AESWINDOWSTATE
 USE DISPLAY
 USE DESKTYPES
-USE DESKEVENTS
 USE DESKSTATE
-USE DESKGEOMETRY
 USE LAYERTYPES
 USE LAYERS
 USE CONSOLEBITMAP
-USE CONSOLEDISPLAY
-USE CONSOLEWINDOWS
-USE CONSOLETYPES
-USE CONSOLEBATCH
-USE CONSOLECORE
 USE HEAPCORE
 
 LONGCARD moveToken
 DESKTYPES.Window POINTER moving
-DESKTYPES.Request POINTER reply
 AESTYPES.Request POINTER aesReply
 CARD aesStatus
-
-; Availability queries run under scene ownership. Physical caret removal
-; remains in the presenter when any console still has pixels to restore.
-PUBLIC BYTE FUNC CaretVisible()
-  BYTE index
-
-  LET windows=CONSOLEWINDOWS.Registry()
-  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
-    BEGIN
-      LET entry=@windows.items(index)
-      IF CONSOLEWINDOWS.Live(entry)<>0
-          AND DESKSTATE.FindConsoleWindow(entry.unit)<>NULL THEN
-        BEGIN
-          LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-          IF view.cursorOn<>0 THEN
-            RETURN(1)
-          FI
-        END
-      FI
-    END
-  OD
-
-RETURN(0)
-
-; Restoring a caret also schedules its next presentation. A command-window
-; move may expose no console pixels, so damage alone cannot wake that work.
-PUBLIC PROC HideCaret()
-  BYTE index
-
-  LET previous=DESKSTATE.ConsoleUnit()
-  LET windows=CONSOLEWINDOWS.Registry()
-  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
-    BEGIN
-      LET entry=@windows.items(index)
-      IF CONSOLEWINDOWS.Live(entry)<>0
-          AND DESKSTATE.FindConsoleWindow(entry.unit)<>NULL THEN
-        BEGIN
-          LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-          IF view.cursorOn<>0 THEN
-            DESKSTATE.SelectConsoleUnit(entry.unit)
-            CONSOLEDISPLAY.RemoveCursor(view)
-            view.index=$ffff
-          FI
-        END
-      FI
-    END
-  OD
-  DESKSTATE.SelectConsoleUnit(previous)
-
-RETURN
-
-; Commit the console origin with geometry, before the next output quantum.
-; Copied pixels preserve the model; redraw moves discard any gathered batch.
-PROC Rebase(DESKTYPES.Window POINTER window
-    LAYERTYPES.Layer POINTER layer BYTE copied)
-
-  LET entry=CONSOLEWINDOWS.Find(window.console)
-  IF entry=NULL THEN
-    RETURN
-  FI
-
-  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-  IF copied=0 THEN
-    BEGIN
-      LET instance=CONSOLEMIRROR.Model(entry)
-      LET batch=CONSOLEBATCH.Get()
-      IF CONSOLEDISPLAY.BackingEnabled(view)=0 OR view.scrollState<>0
-          OR batch.phase<>CONSOLETYPES.BATCH_IDLE THEN
-        view.presentedGeneration=0
-        CONSOLECORE.Dirty(instance,0,instance.count)
-      FI
-      CONSOLEBATCH.Reset()
-      view.scrollState=0
-    END
-  FI
-
-  view.left=CARD(layer.bounds.left+DESKTYPES.WORK_LEFT) RSH 3
-  view.top=CARD(layer.bounds.top+DESKGEOMETRY.Top(window.frameKind)) RSH 3
-  view.cursorOn=0
-  view.index=$ffff
-  view.generation==+1
-
-RETURN
 
 ; Both submission failure and completed DMA retire the same reservation.
 ; A reset-required failure never returns from the display adapter.
@@ -115,15 +23,8 @@ PROC CommitCopy(DESKTYPES.Service POINTER service BYTE completed)
     HEAPCORE.Abort($faed)
   FI
 
-  IF completed<>0 AND DESKSTATE.IsConsole(moving)<>0 THEN
-    Rebase(moving,LAYERS.Find(@service.scene,moving.layer),1)
-  FI
-
-  IF moving.kind=DESKTYPES.CONTENT_AES THEN
-    AESWINDOWSTATE.Geometry(AESWINDOWSTATE.FindRecord(moving.id),completed)
-    AESWINDOWSTATE.Sync()
-  FI
-
+  AESWINDOWSTATE.Geometry(moving,completed)
+  AESWINDOWSTATE.Sync()
   moveToken=0
   moving=NULL
 
@@ -138,13 +39,6 @@ PUBLIC PROC Pump()
   LET completed=(CONSOLEBITMAP.Failed()=0)
   CommitCopy(DESKSTATE.Get(),completed)
   aesStatus=IF completed<>0 THEN DESKTYPES.OK ELSE DESKTYPES.DRAW_FAILED FI
-  IF reply<>NULL THEN
-    BEGIN
-      LET request=reply
-      reply=NULL
-      DESKEVENTS.Reply(request,aesStatus)
-    END
-  FI
 
 RETURN
 
@@ -182,21 +76,12 @@ PUBLIC BYTE FUNC CopyEligible(DESKTYPES.Window POINTER window
       AND CONSOLEBITMAP.Enabled()<>0 AND layer.dirty=0 AND layer.shown<>0
       AND ((layer.bounds.left OR left OR
           (layer.bounds.right-layer.bounds.left)) & 1)=0)
-  IF eligible<>0 AND DESKSTATE.IsConsole(window)<>0 THEN
-    BEGIN
-      LET entry=CONSOLEWINDOWS.Find(window.console)
-      LET instance=CONSOLEMIRROR.Model(entry)
-      LET batch=CONSOLEBATCH.Get()
-      eligible=(instance.dirtyRows=0 AND batch.phase=CONSOLETYPES.BATCH_IDLE)
-    END
-  FI
 
 RETURN(eligible)
 
 ; Unsupported placement and nonclean sources retain the ordinary redraw path.
-PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
-    DESKTYPES.Window POINTER window INT left,top
-    DESKTYPES.Request POINTER request)
+CARD FUNC Start(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window INT left,top)
   BYTE status,drawn,eligible
 
   IF window.iconified<>0 THEN
@@ -219,7 +104,6 @@ PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
 
   IF eligible<>0 THEN
     ; Remove transient pixels while the old scene can still admit paint.
-    HideCaret()
     drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
     IF drawn=0 THEN
       RETURN(DESKTYPES.DRAW_FAILED)
@@ -232,10 +116,8 @@ PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
 
     IF status=LAYERTYPES.OK THEN
       moving=window
-      reply=request
       IF SubmitCopy(@service.scene)=0 THEN
         CommitCopy(service,0)
-        reply=NULL
         RETURN(DESKTYPES.DRAW_FAILED)
       FI
       RETURN(DESKTYPES.PENDING)
@@ -243,9 +125,6 @@ PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
   FI
 
   status=LAYERS.Move(@service.scene,window.layer,left,top)
-  IF status=LAYERTYPES.OK AND DESKSTATE.IsConsole(window)<>0 THEN
-    Rebase(window,layer,0)
-  FI
 
 RETURN(IF status=LAYERTYPES.OK THEN DESKTYPES.OK ELSE DESKTYPES.BAD_ARGUMENT FI)
 
@@ -266,7 +145,7 @@ PUBLIC CARD FUNC Application(DESKTYPES.Service POINTER service
   FI
 
   aesReply=request
-  status=Start(service,window,left,top,NULL)
+  status=Start(service,window,left,top)
   IF status<>DESKTYPES.PENDING THEN
     aesReply=NULL
     IF status=DESKTYPES.OK THEN

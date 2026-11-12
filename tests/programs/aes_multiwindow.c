@@ -17,7 +17,7 @@ static void notice(WORD handle)
 UWORD AESRun(void)
 {
     ULONG available=AvailMem(0),epoch;
-    WORD a,b,back,x,y,w,h,i,reserved[3];
+    WORD a,b,back,x,y,w,h,i,reserved[4];
     struct ExecAESContext *c;
     struct AESWindowView *av,*bv;
     struct MsgPort *port;
@@ -65,10 +65,10 @@ UWORD AESRun(void)
     /* Ordinary WM_REDRAW-shaped messages remain opaque after retirement. */
     message[0]=WM_REDRAW;message[3]=a;CHECK(appl_write(c->gemId,16,message));
     notice(a);
-    /* Shell + background + B leaves three slots; no more Task registrations. */
-    for (i=0;i<3;++i) { reserved[i]=wind_create(AES_WINDOW_KIND,16,32,200,120);CHECK(reserved[i]>0); }
+    /* Background + B leaves four slots; no more Task registrations. */
+    for (i=0;i<4;++i) { reserved[i]=wind_create(AES_WINDOW_KIND,16,32,200,120);CHECK(reserved[i]>0); }
     CHECK(wind_create(AES_WINDOW_KIND,16,32,200,120)==-1 && ExecAESDiagnostic()==AES_RESOURCE);
-    for (i=0;i<3;++i) CHECK(wind_delete(reserved[i]));
+    for (i=0;i<4;++i) CHECK(wind_delete(reserved[i]));
     CHECK(wind_close(b));CHECK(wind_delete(b));
     CHECK(c->endpoint->input->windowEpoch && c->receiving==port);
     CHECK(wind_set(back,WF_TOP,0,0,0,0));

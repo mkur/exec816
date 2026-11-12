@@ -8,7 +8,7 @@ const UWORD BasicBuildLayout[]={
     offsetof(struct BasicBuildJob,cause),offsetof(struct BasicBuildJob,compilerResult),
     offsetof(struct BasicBuildJob,programResult),offsetof(struct BasicBuildJob,diagnostic),
     offsetof(struct BasicBuildJob,interpreterResult),
-    offsetof(struct BasicBuildJob,window),offsetof(struct BasicBuildJob,source),
+    offsetof(struct BasicBuildJob,source),
     offsetof(struct BasicBuildJob,target),
     sizeof(struct BasicInterpreterSession),
     offsetof(struct BasicInterpreterSession,image),

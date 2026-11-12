@@ -132,7 +132,6 @@ PUBLIC PROC Run()
       ; without turning that same notification into another empty drain.
       DESKINPUT.Service(0)
       DESKINPUT.Advance()
-      DESKPAINT.Sync()
       inputPending=consoleInput(bits,inputPending)
       ; Present newly consumed motion before spending another quantum on output.
       ; Intersecting draws erase it safely and the final pass restores it.

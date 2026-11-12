@@ -1,8 +1,6 @@
 MODULE SHELLAPP
 USE AESBOOT
 USE DESKBOOT
-USE DESKTOP
-USE DESKTYPES
 
 INCLUDE "shell/shell-session.inc"
 INCLUDE "shell/shell-boot.inc"
@@ -45,10 +43,6 @@ PROC Main()
 
   IF DesktopStop()=0 THEN
     HEAPCORE.Abort($fcb8)
-  FI
-
-  IF DESKBOOT.StopAdmission()=0 THEN
-    HEAPCORE.Abort($faea)
   FI
 
   ShellControllerStop()

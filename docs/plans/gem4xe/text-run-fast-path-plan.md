@@ -359,7 +359,7 @@ improve. Internal list drains can still occur; fewer rectangle calls do not
 guarantee fewer launches or flicker-free publication.
 
 Extend the existing object pixel fixtures, including
-[`test_widget_pixels.py`](../../../tools/test_widget_pixels.py), and the
+[`test_widget_pixels.py`](https://github.com/mkur/exec816/blob/39e93a28/tools/test_widget_pixels.py), and the
 caller-local application checks. Compare independently expected pixels for
 inward/outward/zero borders, ordinary/EXIT/DEFAULT buttons, odd coordinates
 and widths, hardware-zero/nonzero colours, tiny interiors, selected/disabled

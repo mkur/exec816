@@ -2,7 +2,7 @@
 import struct
 from native_program import require
 from control_panel_oracle import draw
-from test_desktop_presentation import rectangle
+from desktop_raster import rectangle
 
 
 def paint(bridge,symbols,r,title,bounds):

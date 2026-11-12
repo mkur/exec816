@@ -1,7 +1,7 @@
 """Physical motion submission to independently checked outline scanout."""
 import json
 from gem_render_oracle import DESKTOP_PALETTE, PENS
-from measure_desktop import distribution
+from latency_statistics import distribution
 from native_program import require
 from sio_transaction_trace import BASE_HZ
 

@@ -17,12 +17,9 @@ EXEC.MsgPort POINTER shellRequests
 BYTE shellPublished
 ShellSessionMessage POINTER selectionRequest
 LONGCARD nextSession,selectedSession,shortcutMask,shortcutTarget
-LONGCARD desktopTarget
-BYTE desktopPending,desktopFailed
 LONGINT controllerStatus,bootPrimary,bootSecondary
 BYTE shortcutBit,controllerLive,controllerRetry,firstFlags
 
-INCLUDE "shell-tabs.inc"
 
 ; Formatting shared scalar identities never borrows another Task's DOS object.
 PROC ShellHexIdentity(LONGCARD identity BYTE POINTER text)
@@ -379,115 +376,63 @@ PROC ShellControllerRequests()
       EXIT
     FI
 
-    IF ShellTabReply(request)=0 THEN
-      session=ShellSessionFind(request.session)
-      CASE request.operation OF
-      WHEN SESSION_QUERY THEN
-        ShellSessionQueryReply(request)
+    session=ShellSessionFind(request.session)
+    CASE request.operation OF
+    WHEN SESSION_QUERY THEN
+      ShellSessionQueryReply(request)
 
-      WHEN SESSION_READY THEN
-        IF session=NULL OR session.process<>request.value
-            OR session.readyRequest<>NULL OR session.ready<>0 THEN
-          ShellSessionReply(request,PROCESS.RETURN_ERROR,
-              DOS.ERROR_OBJECT_NOT_FOUND)
-        ELSEIF request.primary<>PROCESS.RETURN_OK
-            OR request.flags=SESSION_READY_EXIT
-            OR session.control.closeRequested<>0 THEN
-          IF session.control.closeRequested<>0 THEN
-            request.primary=PROCESS.RETURN_ERROR
-            request.secondary=DOS.ERROR_BREAK
-          FI
-
-          session.result.primary=request.primary
-          session.result.secondary=request.secondary
-          session.state=SESSION_STATE_CLOSING
-          ShellSessionReply(request,request.primary,request.secondary)
-        ELSE
-          session.readyRequest=request
+    WHEN SESSION_READY THEN
+      IF session=NULL OR session.process<>request.value
+          OR session.readyRequest<>NULL OR session.ready<>0 THEN
+        ShellSessionReply(request,PROCESS.RETURN_ERROR,
+            DOS.ERROR_OBJECT_NOT_FOUND)
+      ELSEIF request.primary<>PROCESS.RETURN_OK
+          OR request.flags=SESSION_READY_EXIT
+          OR session.control.closeRequested<>0 THEN
+        IF session.control.closeRequested<>0 THEN
+          request.primary=PROCESS.RETURN_ERROR
+          request.secondary=DOS.ERROR_BREAK
         FI
 
-      WHEN SESSION_CLOSE THEN
-        IF session=NULL THEN
-          ShellSessionReply(request,PROCESS.RETURN_ERROR,
-              DOS.ERROR_OBJECT_NOT_FOUND)
-        ELSE
-          ShellSessionClose(session)
-          ShellSessionReply(request,PROCESS.RETURN_OK,0)
-        FI
-
-      WHEN SESSION_SELECT THEN
-        IF session=NULL THEN
-          ShellSessionReply(request,PROCESS.RETURN_ERROR,
-              DOS.ERROR_OBJECT_NOT_FOUND)
-        ELSEIF session.state<>SESSION_STATE_READY
-            OR selectionRequest<>NULL THEN
-          ShellSessionReply(request,PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_IN_USE)
-        ELSE
-          selectionRequest=request
-        FI
-
-      WHEN SESSION_CREATE THEN
-        ShellSessionCreate(request)
-
+        session.result.primary=request.primary
+        session.result.secondary=request.secondary
+        session.state=SESSION_STATE_CLOSING
+        ShellSessionReply(request,request.primary,request.secondary)
       ELSE
-        ShellSessionReply(request,PROCESS.RETURN_ERROR,DOS.ERROR_ACTION_NOT_KNOWN)
-      ESAC
-    FI
+        session.readyRequest=request
+      FI
+
+    WHEN SESSION_CLOSE THEN
+      IF session=NULL THEN
+        ShellSessionReply(request,PROCESS.RETURN_ERROR,
+            DOS.ERROR_OBJECT_NOT_FOUND)
+      ELSE
+        ShellSessionClose(session)
+        ShellSessionReply(request,PROCESS.RETURN_OK,0)
+      FI
+
+    WHEN SESSION_SELECT THEN
+      IF session=NULL THEN
+        ShellSessionReply(request,PROCESS.RETURN_ERROR,
+            DOS.ERROR_OBJECT_NOT_FOUND)
+      ELSEIF session.state<>SESSION_STATE_READY
+          OR selectionRequest<>NULL THEN
+        ShellSessionReply(request,PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_IN_USE)
+      ELSE
+        selectionRequest=request
+      FI
+
+    WHEN SESSION_CREATE THEN
+      ShellSessionCreate(request)
+
+    ELSE
+      ShellSessionReply(request,PROCESS.RETURN_ERROR,DOS.ERROR_ACTION_NOT_KNOWN)
+    ESAC
   OD
 
 RETURN
 
-; BUSY is retried by the controller loop while other events keep progressing.
-CARD FUNC ShellDesktopSelect(LONGCARD identity,unit)
-
-  IF desktopPending<>0 THEN
-    RETURN(CONSOLETYPES.CONTROL_BUSY)
-  FI
-
-  IF desktopFailed<>0 AND desktopTarget=identity THEN
-    desktopFailed=0
-    RETURN(CONSOLETYPES.CONTROL_FAILED)
-  FI
-
-  LET status=DESKBOOT.BeginConsole(unit)
-  IF status=DESKTYPES.OK THEN
-    desktopTarget=identity
-    desktopPending=1
-    desktopFailed=0
-    RETURN(CONSOLETYPES.CONTROL_BUSY)
-  FI
-
-RETURN(IF status=DESKTYPES.BUSY THEN CONSOLETYPES.CONTROL_BUSY
-    ELSE CONSOLETYPES.CONTROL_FAILED FI)
-
-; Adoption precedes close/collection. A pending target's record is retained
-; even if its child has already completed or close was accepted meanwhile.
-PROC ShellDesktopCollect()
-
-  IF desktopPending=0 THEN
-    RETURN
-  FI
-
-  LET status=DESKBOOT.CollectConsole()
-  IF status=DESKTYPES.PENDING THEN
-    RETURN
-  FI
-
-  desktopPending=0
-  IF status=DESKTYPES.OK THEN
-    selectedSession=desktopTarget
-    desktopTarget=0
-  ELSEIF status<>DESKTYPES.BUSY THEN
-    desktopFailed=1
-  FI
-
-RETURN
-
 CARD FUNC ShellSessionSelect(ShellSession POINTER session)
-
-  IF desktopPending<>0 THEN
-    RETURN(CONSOLETYPES.CONTROL_BUSY)
-  FI
 
   IF selectedSession=session.control.identity THEN
     RETURN(CONSOLETYPES.CONTROL_OK)
@@ -498,13 +443,9 @@ CARD FUNC ShellSessionSelect(ShellSession POINTER session)
     RETURN(CONSOLETYPES.CONTROL_OK)
   FI
 
-  IF DESKSTATE.terminal<>0 THEN
+  IF DESKSTATE.Enabled()<>0 THEN
     selectedSession=session.control.identity
     RETURN(CONSOLETYPES.CONTROL_OK)
-  FI
-
-  IF DESKSTATE.Enabled()<>0 THEN
-    RETURN(ShellDesktopSelect(session.control.identity,session.startup.unit))
   FI
 
   LET previous=ShellSessionFind(selectedSession)
@@ -691,17 +632,6 @@ PROC ShellControllerCollect()
           RETURN
         FI
 
-        ; The permanent console can hold the empty final frame until desktop
-        ; shutdown. Release a created unit's binding before destroying it.
-        IF DESKSTATE.Enabled()<>0 AND DESKSTATE.terminal=0
-            AND selected.startup.unit<>0 THEN
-          status=ShellDesktopSelect(0,0)
-          IF status<>CONSOLETYPES.CONTROL_BUSY THEN
-            HEAPCORE.Abort($ff94)
-          FI
-          controllerRetry=1
-          RETURN
-        FI
       FI
     END
   FI
@@ -710,11 +640,6 @@ PROC ShellControllerCollect()
     BEGIN
       LET session=@sessions(index)
       IF session.state=SESSION_STATE_RETIRING THEN
-        IF desktopPending<>0 AND desktopTarget=session.control.identity THEN
-          controllerRetry=1
-          RETURN
-        FI
-
         IF session.startup.unit<>0 THEN
           IF CONSOLE.Destroy(session.startup.unit)=0 THEN
             controllerRetry=1
@@ -766,18 +691,11 @@ LONGCARD FUNC ShellControllerStep()
   LONGCARD mask
 
   controllerRetry=0
-  ShellDesktopCollect()
   ShellControllerRequests()
   ShellControllerReady()
   ShellControllerSelection()
   ShellControllerCollect()
-  ; Publish after lifecycle transitions. Once the last session retires,
-  ; pending UI events cannot admit another child during desktop shutdown.
-  IF controllerLive<>0 AND DESKSTATE.terminal=0 THEN
-    ShellTabsStep()
-  FI
   mask=(LONGCARD(1) LSH shellRequests.mp_SigBit) OR shortcutMask
-  mask=mask OR DESKBOOT.ConsoleMask()
   FOR index=0 TO SESSION_CAPACITY-1 DO
     IF sessions(index).process<>0 THEN
       mask=mask OR PROCESS.CompletionMask(sessions(index).process)
@@ -924,10 +842,6 @@ PROC ShellControllerStop()
 
   IF controllerLive<>0 THEN
     HEAPCORE.Abort($ff94)
-  FI
-
-  IF DESKSTATE.Enabled()<>0 THEN
-    DESKBOOT.StopTabs()
   FI
 
   IF shellRequests<>NULL THEN

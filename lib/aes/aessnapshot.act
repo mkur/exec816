@@ -119,7 +119,7 @@ PUBLIC BYTE FUNC Publish()
               route.sliderHeight=window.sliderHeight
               route.iconified=window.iconified
               IF layer.shown<>0 THEN
-                route.kind=window.kind
+                route.kind=1
               FI
               DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@route.work)
               FOR index=0 TO AESTYPES.WINDOWS-1 DO

@@ -33,7 +33,7 @@ def prepare(out):
         ('        t->state = AES_ALARM_RETIRING;','        t->state = AES_ALARM_RETIRING;\n        AESWaitBeforeCancel(c);')]:
         require(source.count(old)==1,'Changed combined-wait boundary: '+old);source=source.replace(old,new)
     instrumented=out/'aes-events.c';instrumented.write_text(source)
-    f=drawing(out,True,widgets=True,client_sources=[ROOT/'c/calypsi/aes.c',ROOT/'c/calypsi/aes-messages.c',
+    f=drawing(out,True,desktop_style=True,client_sources=[ROOT/'c/calypsi/aes.c',ROOT/'c/calypsi/aes-messages.c',
         instrumented,ROOT/'c/calypsi/program.c',ROOT/'tests/programs/aes_exec_wait.c'],
         client_entries=['AESWaitPeer'],client_roots=['AESWaitRun','AESService','AESWaitChecks','AESWaitFailures','AESWaitFirstFailure','AESWaitStage',
             'ExecProgramRun',*ABI['imports']],client_probes=[(ROOT/'c/calypsi/aes-layout.c',expected_layout()),

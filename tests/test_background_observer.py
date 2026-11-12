@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
-from test_desktop_background import CLIENT, DAMAGE, check_fills
+from background_coverage import CLIENT, DAMAGE, check_fills
 
 
 class BackgroundCoverageTests(unittest.TestCase):

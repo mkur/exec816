@@ -71,7 +71,7 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
         mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,profile=4,format=2)]
         if files: mounts.append(dict(alias='RAM',format=3))
         options.update(system_mount='D1',dos_mounts=mounts)
-    foreign=drawing(out,True,widgets=True,client_sources=[
+    foreign=drawing(out,True,desktop_style=True,client_sources=[
         ROOT/'c/calypsi/aes.c',ROOT/'c/calypsi/aes-messages.c',ROOT/'c/calypsi/aes-events.c',
         ROOT/'c/calypsi/program.c',ROOT/'examples/gem-desktop/resident.c',
         *options.pop('provider_sources',())],client_definitions=options.pop('provider_definitions',None),
@@ -148,8 +148,6 @@ ENDMODULE
     compiler_dir=options.pop('compiler_dir',ROOT/'build/actionc')
     release_compiler=options.pop('release_compiler',False)
     launcher=prepare(source,out,foreign,desktop=True,aes=True,mouse_profile=mouse_profile)
-    launcher.write_text(launcher.read_text().replace('  IF DESKBOOT.Enable()=0 THEN',
-        '  DESKSTATE.terminal=1\n  IF DESKBOOT.Enable()=0 THEN'))
     program=build(compiler(compiler_dir,release=release_compiler),launcher,program_output or out/'program',
         tasks=True,task_capacity=options.pop('task_capacity',8),foreign_image=foreign,console_deferred=True,
         memory_profile=memory,**options)

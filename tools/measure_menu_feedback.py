@@ -13,7 +13,7 @@ from pathlib import Path
 
 from desktop_menu_check import Menus
 from desktop_mouse import schedule
-from measure_desktop import distribution
+from latency_statistics import distribution
 from native_program import require, sha256
 from sio_transaction_trace import BASE_HZ
 from test_demo import run

@@ -10,7 +10,7 @@ from library_paths import read_source
 from native_program import ROOT, require
 from os_boundary import run_to
 from sio_transaction_trace import BASE_HZ
-from test_desktop_presentation import frame as draw_frame, menu_bar
+from desktop_raster import frame as draw_frame, menu_bar
 
 ROOTS = ['FrameNative','FrameBusy','FrameWaiting','FramePhase','FrameGo',
          'FramePoint','FrameHeld','FramePB','FrameField','FrameHandle',
@@ -60,7 +60,7 @@ ENDMODULE
 
 
 def setup(symbols):
-    result='  DESKBOOT.Detach()\n'
+    result=''
     for name,field in [('FrameNative','@FRAMEPROBE.stats(0)'),
                        ('FrameBusy','@FRAMEPROBE.busy'),
                        ('FrameWaiting','@service.windowPending')]:

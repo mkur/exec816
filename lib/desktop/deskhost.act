@@ -19,10 +19,9 @@ USE CONSOLECAPTURE
 USE CONSOLEWINDOWS
 USE AESHOST
 USE AESLOCKS
-USE DESKWIDGETINPUT
 USE DESKMENU
 
-BYTE firstPort,lateAES
+BYTE lateAES
 
 PUBLIC BYTE FUNC Start()
   BYTE bit,stopped
@@ -48,10 +47,8 @@ PUBLIC BYTE FUNC Start()
     RETURN(0)
   FI
 
-  service.consoleOwner=DESKSTATE.Owner()
   LET windows=CONSOLEWINDOWS.Registry()
   service.keyboard=BYTE POINTER(CONSOLECAPTURE.GetLease())
-  service.consoleRoute=@windows.items(0).route
   service.consoleFocus=@windows.focusSlot
   IF DESKINPUT.Start()=0 THEN
     DESKMENU.Stop()
@@ -93,10 +90,9 @@ PUBLIC BYTE FUNC ControlPending()
   LET service=DESKSTATE.Get()
 
 RETURN(service<>NULL AND service.live<>0 AND service.scene.busy=0
-    AND AESLOCKS.MouseBlocked()=0 AND DESKCORE.Runnable(service)<>0)
+    AND AESLOCKS.MouseBlocked()=0 AND AESHOST.Runnable()<>0)
 
 PUBLIC BYTE FUNC Idle()
-  BYTE index
 
   IF AESHOST.Idle()=0 THEN
     RETURN(0)
@@ -107,35 +103,21 @@ PUBLIC BYTE FUNC Idle()
     RETURN(1)
   FI
 
-  IF service.scene.busy<>0 OR DESKCORE.Runnable(service)<>0 THEN
+  IF service.scene.busy<>0 OR AESHOST.Runnable()<>0 THEN
     RETURN(0)
   FI
 
-  FOR index=0 TO DESKTYPES.CLIENTS-1 DO
-    IF service.clients(index).id<>0 THEN
-      RETURN(0)
-    FI
-  OD
 
 RETURN(1)
 
 ; A bounded active-service boundary, never an idle poll or periodic wake.
-; Capture/cursor may advance now; widget commits stay after native controls.
+; Capture/cursor can advance between bounded AES admissions.
 PUBLIC PROC InputBoundary()
 
   DESKINPUT.Boundary()
   DESKINPUT.Present()
 
 RETURN
-
-BYTE FUNC NativeAdmission(DESKTYPES.Service POINTER service)
-
-  LET admitted=DESKCORE.Pump(service,1)
-  IF admitted<>0 THEN
-    InputBoundary()
-  FI
-
-RETURN(admitted)
 
 BYTE FUNC AESAdmission(BYTE POINTER remaining)
 
@@ -175,7 +157,7 @@ PUBLIC PROC MenuContinuation()
 RETURN
 
 PUBLIC PROC Controls()
-  BYTE count,admitted,selected,aesRemaining,limit
+  BYTE count,admitted,aesRemaining,limit
   LONGCARD priorToken
 
   LET service=DESKSTATE.Get()
@@ -196,8 +178,7 @@ PUBLIC PROC Controls()
     lateAES=0
     limit=4
     aesRemaining=4
-    IF AESHOST.Runnable()<>0 AND (DESKPAINT.Ready()<>0
-        OR DESKWIDGETINPUT.Runnable()<>0) THEN
+    IF AESHOST.Runnable()<>0 AND DESKPAINT.Ready()<>0 THEN
       ; Reserve one of the shared admissions after this paint quantum. Input
       ; and visible feedback get the first opportunity; AES still advances in
       ; every drawing turn, including a long full-window repaint.
@@ -205,33 +186,17 @@ PUBLIC PROC Controls()
       aesRemaining=0
       limit=3
     FI
-    ; Four admissions total. Alternate the first endpoint between turns and
-    ; alternate within a turn; an empty endpoint yields its unused capacity.
-    selected=firstPort
-    firstPort=firstPort XOR 1
+    ; The sole AES queue shares four admissions with the post-paint slot.
     count=0
     WHILE count<limit DO
-      IF selected=0 THEN
-        admitted=NativeAdmission(service)
-        IF admitted=0 THEN
-          admitted=AESAdmission(@aesRemaining)
-        FI
-      ELSE
-        admitted=AESAdmission(@aesRemaining)
-        IF admitted=0 THEN
-          admitted=NativeAdmission(service)
-        FI
-      FI
-
+      admitted=AESAdmission(@aesRemaining)
       IF admitted=0 THEN
         EXIT
       FI
 
       count==+admitted
-      selected=selected XOR 1
     OD
 
-    DESKCORE.Wake(service)
     IF lateAES=0 THEN
       Events()
     FI
@@ -255,7 +220,7 @@ PUBLIC BYTE FUNC Runnable()
 
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
-    IF DESKCORE.Runnable(service)<>0 THEN
+    IF AESHOST.Runnable()<>0 THEN
       RETURN(1)
     FI
   FI
@@ -317,7 +282,7 @@ PUBLIC BYTE FUNC Cache()
     BEGIN
       LET window=@service.windows(index)
       IF DESKCACHE.TakeCandidate(index)<>0
-          AND window.id<>0 AND DESKSTATE.IsConsole(window)=0
+          AND window.id<>0
           AND window.iconified=0
           AND window.visualRevision<>0
           AND window.captureAttempt<>window.visualRevision THEN
@@ -361,10 +326,10 @@ PUBLIC PROC Stop()
       HEAPCORE.Abort($fae2)
     FI
 
-    EXEC.FreeSignal(service.port.mp_SigBit)
+    EXEC.FreeSignal(service.signalBit)
   FI
 
-  ; Native input/scene teardown above may still consult AES gates. Retire AES
+  ; Input/scene teardown above may still consult AES gates. Retire AES
   ; last, before publishing that the controller can reclaim its allocation.
   AESHOST.Stop()
 

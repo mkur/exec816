@@ -1,6 +1,5 @@
 ; Presenter adapter for the Layers-owned menu save and chained popup copies.
 MODULE DESKMENUCACHE
-USE CONSOLEMIRROR
 USE DESKSTATE
 USE DISPLAY
 USE DESKTYPES
@@ -13,9 +12,6 @@ USE REGIONS
 USE AESWINDOWSTATE
 USE AESSTATE
 USE CONSOLEBITMAP
-USE CONSOLEWINDOWS
-USE CONSOLETYPES
-USE CONSOLEBATCH
 USE HEAPCORE
 
 LONGCARD token
@@ -218,47 +214,6 @@ PUBLIC BYTE FUNC PopupRestored()
 
 RETURN(okay)
 
-; Inspect retained model damage before the console renderer can retire it.
-; Cursor updates alone are overlays and do not invalidate the saved scene.
-PUBLIC PROC ConsoleChanged(CONSOLETYPES.Instance POINTER instance
-    CONSOLETYPES.Presentation POINTER view)
-  LAYERTYPES.Rect area
-  CARD row
-
-  LET service=DESKSTATE.Get()
-  IF service=NULL OR service.scene.under.slot.revision=0 THEN
-    RETURN
-  FI
-  LET layer=LAYERS.Find(@service.scene,DESKSTATE.Selected())
-  IF layer=NULL THEN
-    RETURN
-  FI
-  LET batch=CONSOLEBATCH.Get()
-  IF instance.operation<>CONSOLETYPES.OP_IDLE OR batch.phase<>CONSOLETYPES.BATCH_IDLE THEN
-    LAYERCACHE.Changed(@service.scene.under,layer.id,@layer.bounds)
-    RETURN
-  FI
-  FOR row=0 TO instance.height-1 DO
-    IF instance.damageEnd(row)<>0 THEN
-      REGIONS.Assign(@area,INT((view.left+instance.damageFirst(row)) LSH 3),
-          INT((view.top+row) LSH 3),INT((view.left+instance.damageEnd(row)) LSH 3),
-          INT((view.top+row+1) LSH 3))
-      LAYERCACHE.Changed(@service.scene.under,layer.id,@area)
-    FI
-  OD
-
-RETURN
-
-PROC ConsolePending()
-
-  LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ShellUnit())
-  IF entry<>NULL THEN
-    ConsoleChanged(CONSOLEMIRROR.Model(entry),
-        CONSOLETYPES.Presentation POINTER(entry.view))
-  FI
-
-RETURN
-
 BYTE FUNC Transfer(BYTE restore)
   LAYERTYPES.Rect POINTER bounds
 
@@ -304,7 +259,6 @@ PUBLIC BYTE FUNC Reusable(LAYERTYPES.Rect POINTER bounds)
 
   LET service=DESKSTATE.Get()
   LET save=@service.scene.under
-  ConsolePending()
 
 RETURN(save.slot.valid<>0 AND save.slot.pinned=0
     AND save.slot.identity=DESKSTATE.popupLayer
@@ -320,13 +274,11 @@ PUBLIC BYTE FUNC Capture(LAYERTYPES.Rect POINTER bounds)
     misses==+1
     RETURN(0)
   FI
-  DESKMOVE.HideCaret()
   status=LAYERS.BeginSave(@service.scene,DESKSTATE.popupLayer,bounds,@token)
   IF status<>LAYERTYPES.OK THEN
     misses==+1
     RETURN(0)
   FI
-  ConsolePending()
   restoring=0
   IF service.scene.under.slot.revision=0 THEN
     status=LAYERS.FinishSave(@service.scene,token,0,0)
@@ -351,12 +303,10 @@ PUBLIC BYTE FUNC Restore(BYTE keep)
   BYTE status
 
   LET service=DESKSTATE.Get()
-  ConsolePending()
   IF service.scene.under.slot.valid=0 THEN
     misses==+1
     RETURN(0)
   FI
-  DESKMOVE.HideCaret()
   status=LAYERS.BeginRestore(@service.scene,DESKSTATE.popupLayer,@token)
   IF status<>LAYERTYPES.OK THEN
     misses==+1
@@ -408,7 +358,6 @@ PUBLIC BYTE FUNC Replace(LAYERTYPES.Rect POINTER bounds)
       OR CONSOLEBITMAP.Failed()<>0 THEN
     RETURN(0)
   FI
-  ConsolePending()
   status=LAYERS.BeginSavedReplace(@service.scene,DESKSTATE.popupLayer,
       bounds,@token)
   IF status<>LAYERTYPES.OK THEN
@@ -436,7 +385,6 @@ PUBLIC BYTE FUNC Replace(LAYERTYPES.Rect POINTER bounds)
   IF popupSlot=LAYERCACHE.NO_SLOT THEN
     popupMisses==+1
   FI
-  DESKMOVE.HideCaret()
   status=Transfer(1)
   ; Submission failure is retired by the same completion path after quiescence.
   IF status=0 THEN
@@ -458,7 +406,7 @@ PROC Exposed()
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
       LET window=@service.windows(index)
-      IF window.id<>0 AND window.kind=DESKTYPES.CONTENT_AES
+      IF window.id<>0
           AND AESWINDOWSTATE.Preserves(window)=0 THEN
         BEGIN
           LET layer=LAYERS.Find(@service.scene,window.layer)
@@ -610,7 +558,7 @@ PUBLIC PROC Notify()
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
       LET window=@service.windows(index)
-      IF window.id<>0 AND window.kind=DESKTYPES.CONTENT_AES THEN
+      IF window.id<>0 THEN
         AESWINDOWSTATE.Handoff(window)
       FI
     END

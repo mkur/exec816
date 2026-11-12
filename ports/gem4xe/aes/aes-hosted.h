@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
-#include <exec/widget-types.h>
 #ifdef __CALYPSI_CORE_65816__
 #include <exec/types.h>
 #else

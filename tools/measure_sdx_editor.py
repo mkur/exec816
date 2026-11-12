@@ -12,8 +12,6 @@ from console_model import read_cells
 from desktop_menu_check import Menus
 from desktop_mouse import schedule
 from generate_console import constants
-from generate_desktop import layout as desktop_layout, ABI as DESKTOP
-from generate_layers import layout as layers_layout, ABI as LAYERS
 from gem_render_oracle import DESKTOP_PALETTE
 from native_program import read_build, require, sha256
 from sio_transaction_trace import BASE_HZ, read_events
@@ -46,7 +44,7 @@ class Measurement:
         def click(x,y):
             move(x,y);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(8)
             b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(20)
-        s.saved['desktop_menu']={};Menus(s,click,move).select('Shell')
+        s.saved['desktop_menu']={};Menus(s,click,move).select('Terminal')
         move(639,239)
         owners=s.ledger();top=s.saved['top'];layout=constants()
         ready=top+layout['INSTANCE_READREADY'];dirty=top+layout['INSTANCE_DIRTYROWS']
@@ -54,18 +52,15 @@ class Measurement:
         def clock():return b.eval_expr('@clk')&0xffffffff
         def input_ready():
             return s.number(ready,1)==2 and s.number(caps,1)&224==224
-        # Derive the visible client rectangle from retained window/layer geometry.
-        # Expected pixels use the ROM font and logical cells, never target VRAM.
-        service_address=next(d['address'] for d in s.p['image']['data'] if '_DESKSTATE_SERVICE_' in d['name'])
-        service=s.number(service_address,3);dl=desktop_layout();ll=layers_layout()
-        sf=dl['Service']['fields'];wf=dl['Window']['fields'];lf=ll['Scene']['fields']
-        window=next(service+sf['windows']+i*dl['Window']['size'] for i in range(DESKTOP['constants']['WINDOWS'])
-                    if s.number(service+sf['windows']+i*dl['Window']['size']+wf['kind'],1)==1)
-        layer=s.number(window+wf['layer'],4);scene=service+sf['scene']
-        item=next(scene+lf['items']+i*ll['Layer']['size'] for i in range(LAYERS['constants']['MAX_LAYERS'])
-                  if s.number(scene+lf['items']+i*ll['Layer']['size'],4)==layer)
-        bounds=[int.from_bytes(s.far(item+4+i,2),'little',signed=True) for i in (0,2,4,6)]
-        left=(bounds[0]+8)//8*8;upper=(bounds[1]+DESKTOP['constants']['FRAME_SHELL_TOP'])//8*8
+        # The loaded terminal owns its ordinary AES work rectangle. Its
+        # copied controls occupy sixteen rows above the 64x20 source body.
+        from gem_applications import instances,MODELS
+        MODELS['terminal']=('GEMTerminal',0,18)
+        frontend=instances(b,s.p)['terminal']
+        app=s.number(frontend['base']+frontend['offset'],4)
+        require(app!=0,'Missing loaded terminal')
+        work=[int.from_bytes(s.far(app+18+i,2),'little',signed=True) for i in (0,2,4,6)]
+        left,upper=work[0],work[1]+16
         width=s.number(top+layout['INSTANCE_WIDTH'],2);height=s.number(top+layout['INSTANCE_HEIGHT'],2)
         require((width,height)==(64,20),'Measure the pinned 64x20 desktop')
         font=b.memdump(0xe000,1024)

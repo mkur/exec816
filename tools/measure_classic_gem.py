@@ -30,14 +30,14 @@ def main():
     from bitmap_console_performance import native_markers
     from sio_transaction_trace import BASE_HZ,read_events
     from test_demo import run
-    from test_desktop_presentation import frame
+    from desktop_raster import frame
     from gem_render_oracle import Raster,font_bytes,PALETTE,PENS
     from desktop_menu_check import Menus
     from desktop_mouse import schedule
     from generate_desktop import layout
     from generate_layers import layout as layers
     from gem_applications import symbols
-    from measure_desktop import distribution
+    from latency_statistics import distribution
     bundle=args.bundle.resolve();p=read_build(bundle)
     foreign=json.loads((bundle/'bitmap-console/c-image.json').read_text())
     from dos_concurrent_trace import call_marker
@@ -82,7 +82,7 @@ def main():
                 else:raise RuntimeError('Missing focused layer')
                 bounds=[int.from_bytes(b.memdump(loc+4+i*2,2),'little',signed=True) for i in range(4)]
                 title=b.memdump(address+wf['title'],65).split(b'\0')[0]
-                model=Raster(font);frame(model,bounds,title,True,close=s.number(address+wf['kind'],1)!=1)
+                model=Raster(font);frame(model,bounds,title,True,close=True)
                 l,t,r,_=bounds
                 expected=b''.join(colors[model.pixels[y*640+x]] for y in range(t,t+16) for x in range(l,r))
                 return (l,t,r,t+16),expected,title.decode('ascii')

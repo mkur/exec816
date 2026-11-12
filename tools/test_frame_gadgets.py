@@ -11,7 +11,7 @@ from test_dos_stack import execute, ownership
 from test_mouse_observe import PIN, BRIDGE, ROM
 from stack_budget import stack_usage
 from gem_render_oracle import Raster, font_bytes, DESKTOP_PALETTE
-from test_desktop_presentation import frame, tile, rectangle
+from desktop_raster import frame, tile, rectangle
 from test_gem_interactive import pixels
 import adapter_state as adapter_state
 
@@ -91,7 +91,7 @@ UWORD FrameScratchGuard(UWORD initialize)
 }
 '''
     backend=out/'gem-vbxe.c';backend.write_text(source)
-    f=drawing(out,True,widgets=True,client_sources=[ROOT/'tests/programs/frame_gadgets.c'],
+    f=drawing(out,True,desktop_style=True,client_sources=[ROOT/'tests/programs/frame_gadgets.c'],
               client_roots=['FrameRun','stage','finished'],renderer_source=backend)
     sy=f['symbols']
     inc=out/'c-image.inc';inc.write_text(f'CONST C_MAIN=${sy["FrameRun"]:x}\n'+''.join(f'CONST C_{n.upper()}=${sy[n]:x}\n' for n in ('stage','ExecDisplayEntries')))

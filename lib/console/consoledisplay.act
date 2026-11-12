@@ -23,7 +23,7 @@ BYTE savedChact=ASTATE_CONSOLE_CHACT,savedPriority=ASTATE_CONSOLE_GPRIOR
 BYTE oldchr=$5d
 CARD savmsc=$58,sdlst=$230,oldadr=$5e
 DISPLAY.Lease lease
-LONGCARD bitmapUnit,bitmapGeneration,bitmapModel,backingUnit
+LONGCARD bitmapUnit,bitmapGeneration,bitmapModel
 BYTE bitmapReady,batchCopyReady
 
 CONST ROW_BUDGET=4, CELL_BUDGET=160
@@ -322,63 +322,12 @@ CARD FUNC CursorPosition(CONSOLETYPES.Presentation POINTER view
 
 RETURN(Position(view.top+instance.row,view.left+instance.column))
 
-; Only the desktop binding may write the single fixed backing bitmap.
-PUBLIC BYTE FUNC BackingEnabled(CONSOLETYPES.Presentation POINTER view)
-
-  IF DESKSTATE.Enabled()=0 OR view.width<>64 OR view.height<>20 THEN
-    RETURN(0)
-  FI
-
-  LET entry=CONSOLEWINDOWS.Find(DESKSTATE.ShellUnit())
-
-RETURN(entry<>NULL AND entry.view=BYTE POINTER(view))
-
-PUBLIC BYTE FUNC BackingReady(CONSOLETYPES.Presentation POINTER view
-    CONSOLETYPES.Instance POINTER instance)
-
-RETURN(BackingEnabled(view)<>0 AND view.claimed<>0 AND CONSOLEBITMAP.Failed()=0
-    AND backingUnit=DESKSTATE.ShellUnit()
-    AND instance.dirtyRows=0 AND view.scrollState=0
-    AND view.presentedGeneration=instance.generation)
-
-; Bind only at the settled scene/DMA boundary. Retained generations on the
-; former owner cannot acknowledge the destination's cold backing.
-PUBLIC PROC RetireBacking()
-
-  backingUnit=$ffffffff
-
-RETURN
-
-PROC PublishBacking(CONSOLETYPES.Presentation POINTER view)
-
-  IF BackingEnabled(view)<>0 THEN
-    backingUnit=DESKSTATE.ShellUnit()
-  FI
-
-RETURN
-
-; Model-to-backing retirement does not retire the screen's independent damage.
-PROC BackingDamage(CONSOLETYPES.Presentation POINTER view CARD x,y,width,height)
-  LAYERTYPES.Rect area
-  BYTE status
-
-  LET service=DESKSTATE.Get()
-  REGIONS.Assign(@area,INT((view.left LSH 3)+x),INT((view.top LSH 3)+y),
-      INT((view.left LSH 3)+x+width),INT((view.top LSH 3)+y+height))
-  status=LAYERS.Invalidate(@service.scene,DESKSTATE.Selected(),@area)
-  IF status<>LAYERTYPES.OK THEN
-    HEAPCORE.Abort($faee)
-  FI
-
-RETURN
-
 ; Overlay a cursor only for a focused, settled cell inside the visible
 ; rectangle.
 PROC Cursor(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
-  CARD index,rectangle
+  CARD index
   BYTE okay
-  LAYERTYPES.Rect caret,visible
 
   view.index=instance.lineStart+instance.column
   IF view.focused=0 OR (instance.caps & CONSOLETYPES.MODE_NO_CARET)<>0 THEN
@@ -388,25 +337,6 @@ PROC Cursor(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   IF instance.operation<>CONSOLETYPES.OP_IDLE OR instance.row>=view.height
       OR instance.column>=view.width THEN
     RETURN
-  FI
-
-  IF DESKSTATE.Enabled()<>0 THEN
-    BEGIN
-      LET service=DESKSTATE.Get()
-      LET layer=LAYERS.Find(@service.scene,DESKSTATE.Selected())
-      REGIONS.Assign(@caret,INT((view.left+instance.column) LSH 3),
-          INT((view.top+instance.row) LSH 3),
-          INT((view.left+instance.column+1) LSH 3),
-          INT((view.top+instance.row+1) LSH 3))
-      rectangle=0
-      WHILE rectangle<layer.visible.count DO
-        REGIONS.Intersect(@caret,@layer.visible.rects(rectangle),@visible)
-        IF REGIONS.Empty(@visible)=0 AND LAYERS.PixelsReady(layer,@visible)=0 THEN
-          RETURN
-        FI
-        rectangle==+1
-      OD
-    END
   FI
 
   IF CONSOLEBITMAP.Enabled()<>0 THEN
@@ -439,7 +369,7 @@ RETURN
 BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
   CARD row,base,first,last,stop,rows,remaining,rowLimit
-  BYTE okay,caret,backed
+  BYTE okay,caret
   BYTE POINTER source
   LONGCARD generation
 
@@ -449,14 +379,13 @@ BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
 
   CONSOLEBITMAP.SetEncoding(instance.caps & CONSOLETYPES.MODE_ATASCII)
   caret=0
-  backed=BackingEnabled(view)
   row=0
   base=0
   rows=0
   remaining=CELL_BUDGET
   rowLimit=ROW_BUDGET
   IF CONSOLEBITMAP.Enabled()<>0 THEN
-    remaining=IF backed<>0 THEN CARD(64) ELSE CARD(BITMAP_GLYPHS) FI
+    remaining=BITMAP_GLYPHS
     rowLimit=1
   FI
 
@@ -486,24 +415,7 @@ BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
               AND instance.row<view.height AND instance.column<view.width
               AND (view.cursorOn=0 OR (view.previousCursor>=base+first
               AND view.previousCursor<base+stop))
-          IF backed<>0 THEN
-            caret=0
-            okay=CONSOLEBITMAP.BackingText(first LSH 3,row LSH 3,source,stop-first)
-            IF okay<>0 THEN
-              BackingDamage(view,first LSH 3,row LSH 3,(stop-first) LSH 3,8)
-            FI
-          ELSEIF DESKSTATE.Enabled()<>0 THEN
-            okay=CONSOLEBITMAP.TextStep((view.left+first) LSH 3,
-                (view.top+row) LSH 3,source,stop-first)
-            IF okay=2 THEN
-              RETURN(2)
-            FI
-
-            IF okay<>0 AND caret<>0 THEN
-              okay=CONSOLEBITMAP.Fill((view.left+instance.column) LSH 3,
-                  ((view.top+instance.row) LSH 3)+7,8,1,1)
-            FI
-          ELSEIF caret<>0 THEN
+          IF caret<>0 THEN
             okay=CONSOLEBITMAP.TextCaret((view.left+first) LSH 3,
                 (view.top+row) LSH 3,source,stop-first,
                 (view.left+instance.column) LSH 3,
@@ -522,7 +434,7 @@ BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
 
           ; Only the span actually drawn can erase the old bitmap caret.
           ; Budgets and clipping may leave other dirty cells for later turns.
-          IF backed=0 AND view.cursorOn<>0 AND view.previousCursor>=base+first
+          IF view.cursorOn<>0 AND view.previousCursor>=base+first
               AND view.previousCursor<base+stop THEN
             view.cursorOn=0
           FI
@@ -547,7 +459,6 @@ BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   OD
 
   IF instance.dirtyRows=0 THEN
-    PublishBacking(view)
     view.presentedGeneration=instance.generation
   FI
 
@@ -626,23 +537,6 @@ RETURN
 
 INCLUDE "console-batch-display.inc"
 INCLUDE "console-bitmap-display.inc"
-
-; Before acquiring a scene paint token, bring its source up to date. The
-; caller holds the registry borrow; no model pointer survives this quantum.
-PUBLIC PROC BackingStep(CONSOLETYPES.Presentation POINTER view
-    CONSOLETYPES.Instance POINTER instance LONGCARD unit)
-  BYTE ignored
-
-  IF view.scrollState=CONSOLETYPES.SCROLL_GATHER THEN
-    RETURN
-  FI
-  IF view.scrollState<>0 THEN
-    Advance(view,instance,unit)
-  ELSE
-    ignored=Cells(view,instance)
-  FI
-
-RETURN
 
 ; Complete retained and physical editing under the worker's existing borrow.
 ; Only a complete, synchronized view can reuse its translated screen bytes.
@@ -725,8 +619,7 @@ PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
 
   IF CONSOLEBITMAP.Enabled()<>0 THEN
     IF CONSOLEBITMAP.Failed()<>0 THEN
-      CONSOLEBITMAP.DiscardText()
-      CONSOLECORE.Clean(instance)
+        CONSOLECORE.Clean(instance)
       view.presentedGeneration=0
       view.index=instance.lineStart+instance.column
       RETURN

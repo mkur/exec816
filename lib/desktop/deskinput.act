@@ -18,10 +18,7 @@ USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
 USE DESKDRAG
-USE DESKTABS
 USE DESKMENU
-USE DESKWIDGETINPUT
-USE DESKEVENTS
 USE LAYERS
 USE CONSOLEBITMAP
 USE HEAPCORE
@@ -29,15 +26,15 @@ USE CONSOLETYPES
 
 INPUT.Lease lease
 INPUT.Config config
-LONGCARD wakeMask,route,focusPending
+LONGCARD wakeMask,route
 INT cursorX,cursorY
 CARD buttons
-BYTE pending,dirty,acquired,signalBit,released,focusWanted,tabFocus
+BYTE pending,dirty,acquired,signalBit,released
 INPUT.Event ARRAY deferredKeys(CONSOLETYPES.RAW_SLOTS)
 BYTE keyHead,keyCount,keyLost
 
-; Native key interpretation can touch widgets/gestures. Retain captured route
-; identities while a caller owns the scene; GEM inbox delivery remains live.
+; Menu and gesture interpretation may wait for a caller-owned scene. Retain
+; captured route identities while GEM inbox delivery remains live.
 PROC DeferKey(INPUT.Event POINTER captured)
   BYTE slot
 
@@ -118,8 +115,8 @@ PUBLIC BYTE FUNC Start()
       released=0
       pending=1
       dirty=1
-      focusWanted=0
-      tabFocus=0
+
+
       RETURN(1)
     FI
   FI
@@ -134,9 +131,9 @@ PUBLIC PROC Stop()
   BYTE drawn
 
   IF acquired<>0 THEN
-    DESKWIDGETINPUT.Lost()
-    DESKWIDGETINPUT.Advance()
-    DESKTABS.Cancel()
+
+
+
     DESKDRAG.Cancel()
     DESKDRAG.Present()
     drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),0)
@@ -151,25 +148,12 @@ PUBLIC PROC Stop()
     route=0
     pending=0
     dirty=0
-    focusWanted=0
-    tabFocus=0
+
+
   FI
 
 RETURN
 
-PROC Copy(INPUT.Event POINTER captured DESKTYPES.Event POINTER event)
-
-  A816MEMORY.Clear(BYTE POINTER(event),DESKTYPES.EVENT_SIZE)
-  event.route=captured.route
-  event.tick=captured.tick
-  event.flags=CARD(captured.flags)
-  event.x=captured.x
-  event.y=captured.y
-  event.code=captured.code
-  event.buttons=captured.buttons
-  event.qualifiers=captured.qualifiers
-
-RETURN
 
 ; Leave captured keys queued until the menu snapshot has been committed.
 PUBLIC BYTE FUNC KeyReady()
@@ -179,7 +163,6 @@ RETURN(AESGATE.SystemOwned()=0 OR DESKMENU.InputBlocked()=0)
 ; Return handled for graphical routes, including events captured before focus
 ; moved. Console routes continue through the existing CON translation path.
 PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
-  DESKTYPES.Event event
   AESTYPES.InputRecord keySample
   BYTE slot
 
@@ -195,13 +178,6 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
     RETURN(1)
   FI
 
-  IF DESKTABS.Active()<>0 AND ((captured.kind=INPUT.EVENT_KEY
-      AND (captured.code & 63)=28) OR captured.kind=INPUT.EVENT_CANCEL
-      OR captured.kind=INPUT.EVENT_LOSS) THEN
-    DESKTABS.Cancel()
-    RETURN(1)
-  FI
-
   IF DESKDRAG.Escape(captured)<>0 THEN
     RETURN(1)
   FI
@@ -210,32 +186,15 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
     BEGIN
       LET window=@service.windows(slot)
       IF window.id<>0 AND window.keyRoute<>0 AND window.keyRoute=captured.route THEN
-        IF window.kind=DESKTYPES.CONTENT_AES THEN
-          BEGIN
-            LET client=AESWINDOWSTATE.Find(window.id)
-            LET item=AESWINDOWSTATE.FindRecord(window.id)
-            keySample.window=item.gui.window
-            keySample.windowEpoch=item.view.epoch
-            keySample.x=cursorX
-            keySample.y=cursorY
-            keySample.buttons=buttons
-            AESKEYS.Key(client,captured,@keySample)
-          END
-          RETURN(1)
-        FI
-
-        Copy(captured,@event)
-        event.window=window.id
-        event.kind=DESKTYPES.EVENT_KEY
-        IF captured.kind=INPUT.EVENT_LOSS THEN
-          event.kind=DESKTYPES.EVENT_LOSS
-        ELSEIF captured.kind=INPUT.EVENT_CANCEL THEN
-          event.kind=DESKTYPES.EVENT_CANCEL
-        FI
-
-        IF DESKWIDGETINPUT.Key(window,@event)=0 THEN
-          DESKEVENTS.Post(service,window.client,@event)
-        FI
+        BEGIN
+          LET client=AESWINDOWSTATE.Find(window.id)
+          keySample.window=window.gui.window
+          keySample.windowEpoch=window.view.epoch
+          keySample.x=cursorX
+          keySample.y=cursorY
+          keySample.buttons=buttons
+          AESKEYS.Key(client,captured,@keySample)
+        END
         RETURN(1)
       FI
     END
@@ -245,7 +204,6 @@ RETURN(0)
 
 PUBLIC PROC ReplayKeys()
   INPUT.Event captured
-  DESKTYPES.Event loss
   BYTE handled,slot
 
   IF AESGATE.SystemOwned()=0 THEN
@@ -257,19 +215,10 @@ PUBLIC PROC ReplayKeys()
     keyCount=0
     keyLost=0
     DESKMENU.Cancel()
-    DESKTABS.Cancel()
+
     DESKDRAG.Cancel()
-    DESKWIDGETINPUT.Lost()
-    A816MEMORY.Clear(BYTE POINTER(@loss),DESKTYPES.EVENT_SIZE)
-    loss.kind=DESKTYPES.EVENT_LOSS
-    BEGIN
-      LET service=DESKSTATE.Get()
-      FOR slot=0 TO DESKTYPES.CLIENTS-1 DO
-        IF service.clients(slot).id<>0 THEN
-          DESKEVENTS.Post(service,service.clients(slot).id,@loss)
-        FI
-      OD
-    END
+
+
   FI
   WHILE keyCount<>0 AND keyLost=0 AND DESKMENU.InputBlocked()=0 DO
     A816MEMORY.Move(BYTE POINTER(@captured),
@@ -282,108 +231,39 @@ PUBLIC PROC ReplayKeys()
 RETURN
 
 PROC Consume(INPUT.Event POINTER sample)
-  DESKTYPES.Event event
-  BYTE slot,handled
-  LONGCARD layerId
+  BYTE slot
 
   LET service=DESKSTATE.Get()
-  Copy(sample,@event)
   IF sample.kind=INPUT.EVENT_LOSS THEN
     AESMOUSE.Lost()
     DESKMENU.Cancel()
     released=0
-    DESKWIDGETINPUT.Lost()
-    focusWanted=0
-    tabFocus=0
-    DESKTABS.Cancel()
     DESKDRAG.Cancel()
-    event.kind=DESKTYPES.EVENT_LOSS
-    FOR slot=0 TO DESKTYPES.CLIENTS-1 DO
-      IF service.clients(slot).id<>0 THEN
-        DESKEVENTS.Post(service,service.clients(slot).id,@event)
-      FI
-    OD
-
     RETURN
   FI
-
   IF sample.buttons=0 THEN
     released=1
   FI
-
   IF DESKMENU.Active()<>0 AND DESKMENU.Mouse(sample)<>0 THEN
-    focusWanted=0
-    tabFocus=0
     RETURN
   FI
-
-  event.kind=DESKTYPES.EVENT_MOTION
-  IF sample.kind=INPUT.EVENT_BUTTON THEN
-    event.kind=DESKTYPES.EVENT_BUTTON
-  FI
-
-  handled=DESKTABS.Captured(sample)
-  IF handled<>0 THEN
-    IF handled=2 THEN
-      focusPending=service.consoleWindow
-      focusWanted=1
-      tabFocus=1
-    FI
-    RETURN
-  FI
-
-  IF DESKWIDGETINPUT.Captured(@event)<>0 THEN
-    RETURN
-  FI
-
   IF DESKDRAG.Capture(sample,released)<>0 THEN
-    focusWanted=0
-    tabFocus=0
     RETURN
   FI
-
   IF DESKMENU.Mouse(sample)<>0 THEN
-    focusWanted=0
-    tabFocus=0
     RETURN
   FI
 
-  layerId=LAYERS.Hit(@service.scene,sample.x,sample.y)
+  LET layerId=LAYERS.Hit(@service.scene,sample.x,sample.y)
   FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
       LET window=@service.windows(slot)
       IF window.id<>0 AND window.layer=layerId THEN
-        IF window.kind=DESKTYPES.CONTENT_AES THEN
-          IF sample.kind=INPUT.EVENT_BUTTON AND (sample.buttons & INPUT.LEFT)<>0
-              AND released<>0 AND service.focus<>window.id THEN
-            AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
-          FI
-
-          RETURN
+        IF sample.kind=INPUT.EVENT_BUTTON AND (sample.buttons & INPUT.LEFT)<>0
+            AND released<>0 AND service.focus<>window.id THEN
+          AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
         FI
-
-        IF DESKTABS.Mouse(window,sample,released)<>0 THEN
-          RETURN
-        FI
-
-        event.window=window.id
-        event.kind=DESKTYPES.EVENT_MOTION
-        IF sample.kind=INPUT.EVENT_BUTTON THEN
-          event.kind=DESKTYPES.EVENT_BUTTON
-          IF (sample.buttons & INPUT.LEFT)<>0 AND released<>0 THEN
-            focusPending=window.id
-            focusWanted=1
-            tabFocus=0
-          FI
-        FI
-
-        IF DESKWIDGETINPUT.Mouse(window,@event)<>0 THEN
-          focusWanted=0
-          tabFocus=0
-        ELSE
-          DESKEVENTS.Post(service,window.client,@event)
-        FI
-        EXIT
+        RETURN
       FI
     END
   OD
@@ -391,11 +271,10 @@ PROC Consume(INPUT.Event POINTER sample)
 RETURN
 
 ; Only an existing native capture can proceed ahead of queued acquisitions.
-; Fresh gestures, focus changes and widget actions keep their normal gates.
+; Fresh gestures and focus changes keep their normal gates.
 BYTE FUNC MouseReady()
 
-RETURN(AESLOCKS.MouseBlocked()=0 OR DESKDRAG.Continuing()<>0
-    OR DESKTABS.Active()<>0)
+RETURN(AESLOCKS.MouseBlocked()=0 OR DESKDRAG.Continuing()<>0)
 
 ; Classify fresh absolute capture once, before any deferred native replay.
 PROC Fresh(INPUT.Event POINTER sample)
@@ -466,7 +345,7 @@ PUBLIC PROC Service(LONGCARD bits)
   OD
 
   IF AESGATE.SystemOwned()<>0 THEN
-    DESKTABS.Observe()
+
     AESMOUSE.Refresh()
   ELSE
     AESMOUSE.RefreshSnapshot()
@@ -495,40 +374,16 @@ PUBLIC PROC Boundary()
 
 RETURN
 
-; Commit retained gestures after native control admission, preserving the
-; established ordering between application patches and widget state changes.
+; Commit retained gestures after AES admission, preserving input ordering.
 PUBLIC PROC Advance()
 
   IF acquired=0 THEN
     RETURN
   FI
 
-  DESKTABS.Observe()
-  DESKWIDGETINPUT.Advance()
+
   DESKDRAG.Advance()
   DESKMENU.Advance()
-  LET service=DESKSTATE.Get()
-  IF focusWanted<>0 AND service.scene.busy=0 AND AESLOCKS.MouseBlocked()=0 THEN
-    BEGIN
-      LET window=DESKCORE.Find(service,focusPending)
-      IF window<>NULL THEN
-        BEGIN
-          LET layer=DESKCORE.Layer(service,window)
-          IF layer<>NULL AND layer.shown<>0 THEN
-            IF tabFocus<>0 THEN
-              BEGIN
-                LET ignored=DESKCORE.Top(service,window)
-              END
-            ELSE
-              DESKCORE.Focus(service,window.id)
-            FI
-          FI
-        END
-      FI
-    END
-    focusWanted=0
-    tabFocus=0
-  FI
 
 RETURN
 
@@ -568,14 +423,13 @@ PUBLIC BYTE FUNC Runnable()
 
   IF pending<>0 OR keyLost<>0
       OR (keyCount<>0 AND DESKMENU.InputBlocked()=0) OR DESKMENU.Runnable()<>0
-      OR DESKWIDGETINPUT.Runnable()<>0 OR DESKDRAG.Runnable()<>0 THEN
+      OR DESKDRAG.Runnable()<>0 THEN
     RETURN(1)
   FI
 
   LET service=DESKSTATE.Get()
   IF MouseReady()<>0 AND DESKMENU.InputBlocked()=0 THEN
-    IF AESINPUT.Pending()<>0 OR (focusWanted<>0 AND service.scene.busy=0
-        AND AESLOCKS.MouseBlocked()=0) THEN
+    IF AESINPUT.Pending()<>0 THEN
       RETURN(1)
     FI
   FI

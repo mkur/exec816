@@ -19,7 +19,7 @@ from desktop_mouse import schedule
 from gem_applications import instances, symbols
 from generate_desktop import layout, ABI
 from generate_layers import layout as layers_layout, ABI as LAYERS_ABI
-from measure_desktop import distribution
+from latency_statistics import distribution
 from native_program import require, sha256
 from sio_transaction_trace import BASE_HZ
 from test_demo import run

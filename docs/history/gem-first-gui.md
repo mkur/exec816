@@ -127,7 +127,7 @@ use the existing keyboard lease. The close drain calls the presenter's
 `CONSOLEINPUT.Pump`, including its shared capture record and delivery path.
 [Native desktop policy](../../lib/desktop/deskcore.act) ·
 [Move continuation](../../lib/desktop/deskmove.act) ·
-[Console attachment](../../lib/desktop/desk-owned-console.inc) ·
+[Console attachment](https://github.com/mkur/exec816/blob/39e93a28/lib/desktop/desk-owned-console.inc) ·
 [Keyboard routes](../../lib/input/input.act) ·
 [Input drain](../../lib/console/consoleinput.act)
 
@@ -224,7 +224,7 @@ GF2 retains the presenter's existing serialization.
 [Move continuation](../../lib/desktop/deskmove.act) ·
 [Window policy](../../lib/aes/aeswindow.act) ·
 [Focus policy](../../lib/desktop/deskcore.act) ·
-[Console attachment](../../lib/desktop/desk-owned-console.inc)
+[Console attachment](https://github.com/mkur/exec816/blob/39e93a28/lib/desktop/desk-owned-console.inc)
 
 ### Development checks
 
@@ -1130,3 +1130,52 @@ keeps the combined service reservation unchanged. **Reserved bank-zero delta
 is zero** for fixed/root/kernel, every public Task and idle, including guards,
 alignment and unused capacity. Native previews and packet dispatch remain for
 the following GF12 retirement slice; this is not full GF12 acceptance.
+
+
+## GF12 native graphical policy retirement
+
+The [completed GF12 record](../development/gem-first-gf12.json) removes the
+DESKTOP packet API, retained command/widget window kinds, native preview
+clients, shell-frame tabs and console attachments. AES owns the sole window
+policy. Scene records retain frame/geometry/cache helpers; its six window
+records are 294 bytes each, indexed directly by the AES service. Layers and
+caller views remain derived publications, with distinct identities, handles
+and lifetime epochs.
+
+GEM application menus retain their presenter renderer through a private
+50-byte DRAW/INVERT packet. They retain no native widget contexts or client
+policy. Standalone text/bitmap consoles still render copied views; production
+GUI output uses the ordinary GEM terminal. APP ABI 35 removes
+`ExecAESConsole`; all ten standard APPs and the optional BASIC APP were rebuilt.
+The BASIC build job also loses its unused attachment fields.
+
+Development checks cover exact terminal pixels, focus/exposure, session
+switching, modal cancellation/close, missing-terminal startup and EXIT;
+six-window and four-client exhaustion; hidden lifecycle with input-only view
+binding; menu input, replacement and retirement; metadata/cache journals;
+standalone console operation; and raw/optimized record and waiter layouts.
+Menu/snapshot/cache fixtures now follow the pointer index directly. The
+registration fixture checks its publication hold separately from input snapshot
+holds and uses the existing twelve-Task inventory. The source/provider audit
+covers 1,182 production and fixture files. Host checks run 688 tests with four
+existing skips; changed documentation has 923 valid local targets.
+
+The final matched drawing control passes 67 measured operations, eleven exact
+frames and 486 guest assertions. Its frame hashes match the first GF12 control.
+It is the frozen input for GF13; no renderer optimization or latency-gate pass
+is claimed here.
+
+The production terminal walk starts with eight Tasks and observes nine at its
+peak, two AES registrations and three windows. The terminal remains in slot 5,
+using 870 of 1,312 stack bytes, with 186 bytes above its protected 256-byte
+interrupt floor. The kernel watermark is 289 of 1,536 and its interrupt reserve
+is untouched. Guards and ownership restoration pass.
+
+The rounded scene allocation shrinks by 8,512 upper-RAM bytes. C executable
+segments shrink from 230,261 to 211,286 bytes, initialized data from 5,106 to
+5,102, and zero fill from 20,911 to 18,625. Native emitted routine/data sizes
+are recorded separately. The existing offscreen range remains reserved;
+VRAM reservation growth is zero. Reserved bank-zero growth is **0 fixed,
+0 root/kernel, 0 for each of twelve public Tasks and 0 idle**, counting guards,
+alignment and unused capacity. No hosted/hardware qualification, demo refresh
+or final combined disk/input/QED acceptance is claimed; those remain for GF15.

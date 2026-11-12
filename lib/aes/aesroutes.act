@@ -17,11 +17,9 @@ PUBLIC CARD FUNC Prepare(DESKTYPES.Window POINTER window LONGCARD POINTER route)
   LET desktop=DESKSTATE.Get()
   LET keyboard=INPUT.Lease POINTER(desktop.keyboard)
   route^=0
-  IF window.console=0 THEN
-    status=INPUT.CreateRoute(keyboard,INPUT.ROUTE_UNFILTERED,route)
-    IF status<>INPUT.OK THEN
-      RETURN(AESTYPES.RESOURCE)
-    FI
+  status=INPUT.CreateRoute(keyboard,INPUT.ROUTE_UNFILTERED,route)
+  IF status<>INPUT.OK THEN
+    RETURN(AESTYPES.RESOURCE)
   FI
 
 RETURN(AESTYPES.OK)

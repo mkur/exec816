@@ -19,7 +19,7 @@ from make_data_disk import make
 from aes_timing_breakdown import (scheduler_markers, caller_markers, input_breakdown,
                                   caller_breakdown, io_markers, io_breakdown)
 from desktop_mouse import schedule
-from measure_desktop import distribution
+from latency_statistics import distribution
 
 
 def run(out,program,frames=100,load='idle',breakdown=False,offer_period=0,button_period=0,

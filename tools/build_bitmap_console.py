@@ -9,7 +9,7 @@ from library_paths import read_source
 from native_program import ROOT,build,compiler,require,sha256
 
 
-def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=False,
+def drawing(out,optimize,probe=False,fault=False,desktop_style=False,
             client_sources=(),client_entries=(),client_roots=(),client_probes=(),
             client_optimization=None,renderer_source=None,client_definitions=None):
     for path,content in files().items():require(path.read_text()==content,'Stale console packet: '+str(path))
@@ -18,40 +18,15 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
              src/'vdi/vdi.c',src/'vdi/font.c',src/'vdi/font8x8.c',src/'vdi/dev_vbxe.c',
              ad/'gem-vbxe.c',ROOT/'lib/console/console-bitmap.c',ROOT/'lib/desktop/desktop-frame.c']
     extra_roots=[];extra_includes=[];extra_probes=[]
-    if widgets or widget_probe:
-        from extract_gem_aes import extract as aes_extract,PORT as aes
-        from generate_widgets import expected_layout as aes_layout
+    if desktop_style:
+        from extract_gem_aes import extract as aes_extract, PORT as aes
+        from generate_menu_render import expected_layout as menu_layout
         aes_record=aes_extract(out/'aes-selected')
-        sources += [aes/'widgets-model.c',aes/'widgets-graf.c',aes/'widgets-render.c',aes/'menu-render.c',
-                    *(out/'aes-selected'/n for n in ('aes-objects.c','aes-graf.c','aes-form.c'))]
+        sources += [aes/'object-graf.c',aes/'menu-render.c',
+                    *(out/'aes-selected'/n for n in ('aes-objects.c','aes-graf.c'))]
         extra_includes=[aes,out/'aes-selected']
-        extra_probes=[(aes/'widget-layout.c',aes_layout())]
-        if widgets:
-            sources += [aes/'widgets-state.c',aes/'widgets-input.c',aes/'widgets-entry.c']
-            extra_roots=['WidgetEntry']
-        if widget_probe:
-            sources += [ROOT/'tests/programs/widgets_pixels.c',
-                        ROOT/'tests/programs/glyphs_clipped.c']
-            extra_roots=['WidgetPixelProbe']
-            original=ROOT/'lib/console/console-bitmap.c'
-            instrumented=out/'console-widget-probe.c'
-            text=original.read_text().replace('struct ConsoleBitmapPacket ConsoleBitmapPacket',
-                'extern void WidgetPixelProbe(void);\nstruct ConsoleBitmapPacket ConsoleBitmapPacket')
-            text=text.replace('p->status=GemDrawingOpen(workout);',
-                'p->status=GemDrawingOpen(workout);\n        if (!p->status) WidgetPixelProbe();')
-            instrumented.write_text(text)
-            sources[sources.index(original)]=instrumented
-            original=ad/'gem-vbxe.c'
-            instrumented=out/'gem-vbxe.c'
-            text=original.read_text().replace('static void drain(void)',
-                'static UWORD BuilderSubmit(const UBYTE *,UWORD);\nstatic void drain(void)')
-            needle='if (commandCount && !fault) latch(VbxeOwnerSubmit(&display,commands,commandCount));'
-            require(text.count(needle)==1,'Private list publication changed')
-            text=text.replace(needle,'if (commandCount && !fault) latch(BuilderSubmit(commands,commandCount));')
-            probe_source=ROOT/'tests/programs/vbxe-builder-probe.h'
-            text+='\n'+probe_source.read_text()
-            instrumented.write_text(text)
-            sources[sources.index(original)]=instrumented
+        extra_probes=[(aes/'menu-layout.c',menu_layout())]
+        extra_roots=['MenuRenderEntry']
     if fault:
         hardware=(ROOT/'platform/altirraos/vbxe.c').read_text()
         hardware=hardware.replace('#define BUSY ', 'extern UBYTE ConsoleFaultBusy(void);\nextern void ConsoleFaultStop(void);\nextern void ConsoleFaultCopy(void);\nextern void ConsoleFaultText(UWORD count,UWORD fillRows);\n#define BUSY ')
@@ -91,7 +66,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
             path.write_text(path.read_text().replace('"aes-hosted.h"','"application-hosted.h"'))
             sources.append(path)
         graf=out/'app-objects'/'app-graf.c'
-        graf.write_text((object_port/'widgets-graf.c').read_text().replace('"widgets.h"','"application-hosted.h"'))
+        graf.write_text((object_port/'object-graf.c').read_text().replace('"aes-hosted.h"','"application-hosted.h"'))
         sources += [graf,ROOT/'c/calypsi/aes-objects.c',ROOT/'c/calypsi/aes-edit.c',ROOT/'c/calypsi/aes-form.c',ROOT/'c/calypsi/aes-alert.c',ROOT/'c/calypsi/aes-fsel.c',ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/aes-resource.c',ROOT/'c/calypsi/aes-menu.c',ROOT/'c/calypsi/dos.c']
         assembly.append(ROOT/'c/calypsi/dos.s')
         extra_includes.append(object_port)
@@ -104,7 +79,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     foreign=emit(out/'drawing',sources,assembly,client_entries,
         optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe','ConsoleProbeClobber'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
-            'gem-vbxe.c':['-DGEM_DRAWING_ONLY']+(['-DEXEC_DESKTOP_STYLE'] if widgets else []),
+            'gem-vbxe.c':['-DGEM_DRAWING_ONLY']+(['-DEXEC_DESKTOP_STYLE'] if desktop_style else []),
             **(client_definitions or {})},
         probes=[(ROOT/'c/calypsi/console-bitmap-layout.c',expected_layout())]+extra_probes+list(client_probes),
         source_optimization=client_optimization)
@@ -121,15 +96,15 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
         foreign['symbols']['ConsoleProbeBoundary']=boundary
         foreign['provenance']['bridge_boundary_probe']=dict(entry=boundary,target=target,
             scope='Fixture-only JML at a zero low PC; two stack parities and all 24 lower DP bytes')
-    if widgets or widget_probe:foreign['provenance']['aes_extraction']=aes_record
-    if widgets:foreign['provenance']['desktop_palette_sha256']=sha256(ad/'gem-desktop-palette.h')
-    if widget_probe:foreign['provenance']['builder_probe_sha256']=sha256(probe_source)
+    if desktop_style:foreign['provenance']['aes_extraction']=aes_record
+    if desktop_style:foreign['provenance']['desktop_palette_sha256']=sha256(ad/'gem-desktop-palette.h')
     (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     return foreign
 
 
 def prepare(source,out,foreign,desktop=False,aes=False,mouse_profile=None):
     if desktop:
+        require(aes, 'Graphical scenes require the AES window service')
         from generate_mouse_acceleration import configuration
         (out/'deskmouseconfig.act').write_text(configuration(mouse_profile))
     text=read_source(source);sy=foreign['symbols']
@@ -190,11 +165,11 @@ RETURN
             checks+=f'  IF CONSOLEBITMAP.Bind(${entry:x},${packet:x})<>0 THEN\n    HEAPCORE.Abort($f733)\n  FI\n\n'
         binding=binding.replace('  BindDisplay()',checks+'  BindDisplay()',1)
     if desktop:
-        text=text.replace('USE EXEC\n','USE EXEC\nUSE DESKBOOT\nUSE DESKWIDGETS\n',1)
-        binding=binding.replace('  BindDisplay()', '  BindDisplay()\n  IF DESKWIDGETS.Bind($%x,$%x)=0 THEN\n    HEAPCORE.Abort($fab1)\n  FI' % (sy['WidgetEntry'],sy['WidgetPacket']))
+        text=text.replace('USE EXEC\n','USE EXEC\nUSE DESKBOOT\nUSE DESKMENURENDER\n',1)
+        binding=binding.replace('  BindDisplay()', '  BindDisplay()\n  IF DESKMENURENDER.Bind($%x,$%x)=0 THEN\n    HEAPCORE.Abort($fab1)\n  FI' % (sy['MenuRenderEntry'],sy['MenuRenderPacket']))
         binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN', '  IF DESKBOOT.Enable()=0 THEN\n    HEAPCORE.Abort($fae6)\n  FI\n\n  IF CONSOLEDRIVER.Start()=0 THEN')
         binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN\n    HEAPCORE.Abort($f731)', '  IF CONSOLEDRIVER.Start()=0 THEN\n    DESKBOOT.Disable()\n    HEAPCORE.Abort($f731)')
-        binding=binding.replace('  BitmapApplication(0)', '  IF DESKBOOT.Attach()=0 THEN\n    IF CONSOLEDRIVER.Stop()=0 THEN\n      HEAPCORE.Abort($f732)\n    FI\n\n    DESKBOOT.Disable()\n    HEAPCORE.Abort($fae7)\n  FI\n\n  BitmapApplication(0)\n  IF DESKBOOT.StopAdmission()=0 THEN\n    HEAPCORE.Abort($faea)\n  FI\n\n  DESKBOOT.Detach()')
+
         binding=binding.removesuffix('RETURN\n')+'  DESKBOOT.Disable()\n\nRETURN\n'
     if aes:
         require(desktop, 'AES requires the existing desktop presenter')
@@ -202,13 +177,12 @@ RETURN
         binding=binding.replace('  BindDisplay()',
             f'  LET localEntry=ADDRESS POINTER(${sy["ExecAESLocalEntry"]:x})\n'
             '  localEntry^=ADDRESS(@AESLOCAL.Call)\n  BindDisplay()',1)
-        # Optional AES failure leaves the native desktop usable. Applications
-        # test the retained endpoint after the presenter's readiness reply.
+        # Applications inspect the endpoint after presenter readiness.
         binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN',
             '  BEGIN\n    LET enabled=AESBOOT.Enable()\n  END\n\n  IF CONSOLEDRIVER.Start()=0 THEN',1)
         binding=binding.replace('    DESKBOOT.Disable()', '    AESBOOT.Disable()\n    DESKBOOT.Disable()')
-        binding=binding.replace('  IF DESKBOOT.StopAdmission()=0 THEN',
-            '  BEGIN\n    LET stopped=AESBOOT.StopAdmission()\n  END\n\n  IF DESKBOOT.StopAdmission()=0 THEN')
+        binding=binding.replace('  BitmapApplication(0)',
+            '  BitmapApplication(0)\n  BEGIN\n    LET stopped=AESBOOT.StopAdmission()\n  END')
         binding=binding.replace('  DESKBOOT.Disable()\n\nRETURN',
             '  AESBOOT.Disable()\n  DESKBOOT.Disable()\n\nRETURN')
     text=text.replace('ENDMODULE',binding+'\nENDMODULE')
@@ -228,13 +202,14 @@ def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output
         memory=out/'fixture-memory.json'
         memory.write_text(json.dumps(profile,indent=2)+'\n')
         kwargs['memory_profile']=memory
-    foreign=drawing(out,optimize,probe,fault,widgets=desktop,
+    foreign=drawing(out,optimize,probe,fault,desktop_style=desktop,
         client_sources=client_sources,client_entries=client_entries,
         client_roots=client_roots,client_probes=client_probes)
     launcher=prepare(Path(source),out,foreign,desktop,aes,mouse_profile)
     program=build(compiler(compiler_dir or ROOT/'build/actionc',release=release_compiler),launcher,program_output or out/'program',optimize=optimize,tasks=True,
                  task_capacity=task_capacity,console=False,console_deferred=True,foreign_image=foreign,**kwargs)
     if desktop:
+        require(aes, 'Graphical scenes require the AES window service')
         from generate_mouse_acceleration import metadata
         program['build']['desktop_mouse']=metadata(mouse_profile)
         (program['output']/'build.json').write_text(json.dumps(program['build'],indent=2)+'\n')

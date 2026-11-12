@@ -2,7 +2,6 @@
 MODULE AESWINDOW
 USE EXEC
 USE AESWAIT
-USE DESKCONSOLE
 USE A816MEMORY
 USE AESSTATE
 USE AESGATE
@@ -67,17 +66,6 @@ BYTE FUNC ValidBounds(CARD kind INT x,y,width,height
 
 RETURN(1)
 
-BYTE FUNC ConsoleBounds(DESKTYPES.Window POINTER window
-    LAYERTYPES.Rect POINTER bounds)
-  LAYERTYPES.Rect work
-
-  IF window.console=0 THEN
-    RETURN(1)
-  FI
-  DESKGEOMETRY.Work(window.frameKind,bounds,@work)
-
-RETURN(work.right-work.left=512 AND work.bottom-work.top=160
-    AND ((work.left OR work.top) & 7)=0)
 
 BYTE FUNC SameSize(LAYERTYPES.Rect POINTER first,second)
 
@@ -88,7 +76,6 @@ BYTE FUNC FitBounds(DESKTYPES.Window POINTER window
     LAYERTYPES.Rect POINTER current,bounds INT x,y,width,height)
 
 RETURN(ValidBounds(window.frameKind,x,y,width,height,bounds)<>0
-    AND ConsoleBounds(window,bounds)<>0
     AND ((window.frameKind & AESTYPES.SIZER)<>0 OR SameSize(current,bounds)<>0))
 
 ; The caller owns the scene and supplies the registered binding's window view.
@@ -135,7 +122,6 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
         item.focusNotices=0
         window.id=desktop.nextWindow
         desktop.nextWindow==+1
-        window.kind=DESKTYPES.CONTENT_AES
         window.frameKind=IF kind=0 THEN CARD(DESKTYPES.FRAME_BORDERLESS)
             ELSE CARD(kind) FI
         window.visualRevision=1
@@ -169,7 +155,6 @@ PROC CommitOpen(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
 
   LET desktop=DESKSTATE.Get()
   LET window=item
-  DESKCORE.PrepareFocus(desktop,window.id)
   window.keyRoute=route
   AESGUI.Open(service,client,item)
   IF LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,
@@ -218,20 +203,15 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   FI
 
   LET caller=AESGATE.SystemOwned()=0
-  IF caller<>0 AND (window.console<>0
-      OR DESKCORE.FocusMetadataReady(desktop,window.id)=0) THEN
-    RETURN(AESWAIT.SYSTEM_WORK)
-  FI
-
   LET held=AESGATE.Leave()
   LET status=AESROUTES.Prepare(window,@route)
   AESGATE.Reenter(held,request)
   IF caller<>0 THEN
     BEGIN
       LET eligible=Eligible(service,client,AESWAIT.Older(service,client))
-      IF eligible=0 OR DESKCORE.FocusMetadataReady(desktop,window.id)=0 THEN
+      IF eligible=0 THEN
         DiscardRoute(request,route)
-        RETURN(IF eligible=0 THEN CARD(AESTYPES.PENDING) ELSE CARD(AESWAIT.SYSTEM_WORK) FI)
+        RETURN(AESTYPES.PENDING)
       FI
     END
   FI
@@ -275,18 +255,10 @@ CARD FUNC Close(DESKTYPES.Window POINTER item AESTYPES.Request POINTER request)
 
   LET desktop=DESKSTATE.Get()
   LET window=item
-  IF window.console<>0 AND AESGATE.SystemOwned()=0 THEN
-    RETURN(AESWAIT.SYSTEM_WORK)
-  FI
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
   IF layer.shown<>0 OR window.keyRoute=0 THEN
     BEGIN
       LET focus=DESKCORE.NextFocus(desktop,window.id)
-      IF AESGATE.SystemOwned()=0
-          AND DESKCORE.FocusMetadataReady(desktop,focus)=0 THEN
-        RETURN(AESWAIT.SYSTEM_WORK)
-      FI
-      DESKCORE.PrepareFocus(desktop,focus)
       CommitClose(desktop,item,focus)
       AESSNAPSHOT.Publish()
     END
@@ -327,12 +299,6 @@ PROC Destroy(DESKTYPES.Window POINTER item)
   BYTE status
 
   LET desktop=DESKSTATE.Get()
-  IF item.console<>0 THEN
-    BEGIN
-      LET view=DESKCONSOLE.PrepareRelease(item.console)
-      DESKCONSOLE.Release(item,view)
-    END
-  FI
   AESMOUSE.CancelWindow(item.view.epoch)
   AESGUI.Close(item)
   status=LAYERS.Delete(@desktop.scene,item.layer)
@@ -491,9 +457,6 @@ PUBLIC CARD FUNC Geometry(AESSTATE.Service POINTER service
   IF item=NULL THEN
     RETURN(AESTYPES.IDENTITY)
   FI
-  IF item.console<>0 AND AESGATE.SystemOwned()=0 THEN
-    RETURN(AESWAIT.SYSTEM_WORK)
-  FI
 
   LET desktop=DESKSTATE.Get()
   LET window=item
@@ -503,10 +466,6 @@ PUBLIC CARD FUNC Geometry(AESSTATE.Service POINTER service
   ELSE
     IF layer.shown=0 THEN
       RETURN(AESTYPES.MALFORMED)
-    FI
-    IF AESGATE.SystemOwned()=0
-        AND DESKCORE.FocusMetadataReady(desktop,window.id)=0 THEN
-      RETURN(AESWAIT.SYSTEM_WORK)
     FI
     status=DESKCORE.Top(desktop,window)
     IF status<>LAYERTYPES.OK THEN
@@ -544,11 +503,6 @@ PUBLIC CARD FUNC Lifecycle(AESSTATE.Service POINTER service
   LET item=AESWINDOWSTATE.Handle(client,request.intin(0))
   IF item=NULL THEN
     RETURN(AESTYPES.IDENTITY)
-  FI
-  ; Console attachments still retire through the presenter: PrepareRelease
-  ; can erase a physical caret and is outside the caller metadata subset.
-  IF item.console<>0 AND AESGATE.SystemOwned()=0 THEN
-    RETURN(AESWAIT.SYSTEM_WORK)
   FI
   result=DeleteHidden(item)
   IF result=AESTYPES.OK THEN
@@ -716,17 +670,6 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
   status=LAYERTYPES.OK
   CASE request.intin(1) OF
-  WHEN AESTYPES.WF_EXEC_CONSOLE THEN
-    BEGIN
-      LET unit=(LONGCARD(CARD(request.intin(2))) LSH 16)
-          OR LONGCARD(CARD(request.intin(3)))
-      LET bound=DESKCONSOLE.Attach(window,unit,client.binding.owner)
-      IF bound=DESKTYPES.BUSY THEN
-        RETURN(AESTYPES.PENDING)
-      ELSEIF bound<>DESKTYPES.OK THEN
-        RETURN(AESTYPES.MALFORMED)
-      FI
-    END
   WHEN AESTYPES.WF_EXEC_FOCUS THEN
     item.focusNotices=(request.intin(2)<>0)
     IF item.focusNotices<>0 THEN

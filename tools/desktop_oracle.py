@@ -2,7 +2,7 @@
 from generate_desktop import layout,ABI as DESKTOP_ABI
 from generate_layers import layout as layers_layout,ABI as LAYERS_ABI
 from gem_render_oracle import Raster, PENS
-from test_desktop_presentation import desktop, frame, rectangle, text, tile, shell_tabs
+from desktop_raster import desktop, frame, rectangle, text, tile
 from test_gem_cursor import overlay
 from native_program import require
 
@@ -28,7 +28,7 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
         start = service+fields['windows']+slot*types['Window']['size']
         window = bridge.memdump(start, types['Window']['size'])
         if number(window, wf['id'], 4):
-            windows[number(window, wf['layer'], 4)] = (window, start+wf['content'])
+            windows[number(window, wf['layer'], 4)] = (window, start)
     result = Raster(font)
     desktop(result)
     chrome = {}
@@ -44,7 +44,7 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
     active = next((w for w, _ in windows.values() if number(w, wf['id'], 4) == focused), None)
 
     menu_source=0
-    if active is not None and active[wf['kind']]==4:
+    if active is not None:
         from pathlib import Path
         import json
         path=Path(program['output'])/'bitmap-console/c-image.json'
@@ -92,7 +92,7 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
                 entries = []
             ordinary=active is not None and not number(active,wf['frameKind'])&512
             entries += [(b'Next window', True),
-                        (b'Close', ordinary and active[wf['kind']] != 1),
+                        (b'Close', ordinary),
                         (b'Iconify', ordinary)]
             for row, (label, enabled) in enumerate(entries):
                 inverse = enabled and row == chrome['selected']
@@ -120,55 +120,16 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
             continue
         window, content_address = windows[ident]
         left, top, right, bottom = bounds
-        kind = window[wf['kind']]
         title = window[wf['title']:wf['title']+64].split(b'\0')[0]
         if window[wf['iconified']]:
             tile(result,bounds,title)
             continue
-        cf = types['Content']['fields']
-        content = bytearray(types['Content']['size'])
-        if kind == 2:
-            content[:cf['commands']] = bridge.memdump(content_address, cf['commands'])
-            commands, text_bytes = number(content, cf['count']), number(content, cf['textBytes'])
-            require(commands <= 32 and text_bytes <= 256, 'Unbounded retained content')
-            length = commands*types['Command']['size']
-            content[cf['commands']:cf['commands']+length] = bridge.memdump(content_address+cf['commands'], length)
-            content[cf['text']:cf['text']+text_bytes] = bridge.memdump(content_address+cf['text'], text_bytes)
         if not number(window,wf['frameKind']) & DESKTOP_ABI['constants']['FRAME_BORDERLESS']:
             frame(result, bounds, title, number(window, wf['id'], 4) == focused,
-                  number(content, cf['background']) if kind == 2 else 0, close=kind != 1,
+                  0, close=True,
                   kind=number(window,wf['frameKind']),
                   info=window[wf['info']:wf['info']+64].split(b'\0')[0],
                   slider=(number(window,wf['sliderTop']),number(window,wf['sliderHeight'])))
-        if kind == 1:
-            tf=types['TabSnapshot']['fields'];ef=types['TabEntry']['fields']
-            snapshot=bridge.memdump(service+fields['tabs'],types['TabSnapshot']['size'])
-            entries=[]
-            for index in range(2):
-                start=tf['entries']+index*types['TabEntry']['size']
-                entries.append(tuple(number(snapshot,start+ef[name],4 if name=='identity' else 1) for name in ('identity','state','selected','busy')))
-            shell_tabs(result,bounds,entries,snapshot[tf['newEnabled']]!=0)
-            terminal.paint(result, (left+8)//8, (top+DESKTOP_ABI['constants']['FRAME_SHELL_TOP'])//8, number(window, wf['id'], 4) == focused)
-        elif kind == 3:
-            from control_panel_oracle import retained
-            context = number(bridge.memdump(content_address-wf['content']+wf['widgets'], 3), 0, 3)
-            retained(bridge, result, context,
-                     (left+8, top+11, right-8, bottom-2),
-                     number(window, wf['id'], 4) == focused)
-        elif kind == 4:
-            require(external is not None, "External application needs an independent painter")
-            external(result, title, bounds)
-        else:
-            for index in range(number(content, cf['count'])):
-                start = cf['commands']+index*types['Command']['size']
-                command = content[start:start+types['Command']['size']]
-                df = types['Command']['fields']
-                l, t, r, b = rect(command, df['bounds'])
-                pen = command[df['pen']]
-                if command[df['kind']] == 1:
-                    rectangle(result, (left+8+l, top+11+t, left+8+r, top+11+b), pen)
-                else:
-                    offset, length = number(command, df['offset']), number(command, df['count'])
-                    value = content[cf['text']+offset:cf['text']+offset+length]
-                    text(result, left+8+l, top+11+t, value, pen, number(content, cf['background']))
+        require(external is not None, "Application needs an independent painter")
+        external(result, title, bounds)
     return overlay(result, pointer)

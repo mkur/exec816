@@ -3,6 +3,7 @@
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
 #include <exec816/console.h>
+#include <exec816/console-view.h>
 #include <clib/alib_protos.h>
 
 ULONG AESService,LifeNative,LifeGate,LifeOwner,LifeWaiting,LifeNext,LifeBusy,LifeLocks;
@@ -131,19 +132,21 @@ static void send(UWORD code)
 static void stable(void) { CHECK(wind_update(BEG_UPDATE)); }
 static void release(void) { CHECK(wind_update(END_UPDATE)); }
 
-static void bound_console(void)
+static void view_input(void)
 {
     struct ExecAESContext *c=ExecAESContext();
     ULONG available=AvailMem(0),unit=ExecConsoleCreate(64,20),sequence;
-    UWORD system;
+    ULONG view;
     WORD handle;
     CHECK(unit!=0);stable();sequence=c->sequence;
     handle=wind_create(0,0,16,512,160);
     CHECK(handle>0 && c->sequence==sequence);
-    CHECK(ExecAESConsole(handle,unit));
-    sequence=c->sequence;system=NATIVE(3);
+    view=ExecConsoleViewSubscribe(unit,wake);CHECK(view!=0);
+    CHECK(ExecConsoleViewBindWindow(view,handle)==EXEC_CONSOLE_VIEW_OK);
+    sequence=c->sequence;
     CHECK(wind_delete(handle));
-    CHECK(c->sequence==sequence && NATIVE(3)==system+1);
+    CHECK(c->sequence==sequence);
+    CHECK(ExecConsoleViewUnsubscribe(view)==EXEC_CONSOLE_VIEW_OK);
     release();CHECK(ExecConsoleDestroy(unit));
     CHECK(AvailMem(0)==available);
 }
@@ -251,7 +254,7 @@ UWORD AESRun(void)
     while (done!=2) Wait(wake);
     stable();
     for (i=0;i<3;++i) remove_hidden(windows[i],i&1);
-    release();bound_console();stable();
+    release();view_input();stable();
     /* Last representable identity is accepted once; exhaustion cannot alias. */
     LifePhase=8;*(volatile UWORD *)LifeNext=0x7fff;
     last=create(0);CHECK(last==0x7fff);

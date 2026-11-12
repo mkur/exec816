@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from generate_frame_gadgets import NAMES, packed, generate
 from gem_render_oracle import Raster, PENS
-from test_desktop_presentation import frame
+from desktop_raster import frame
 
 
 class FrameGadgets(unittest.TestCase):

@@ -7,10 +7,8 @@ USE LAYERS
 USE REGIONS
 
 DESKTYPES.Service POINTER service
-LONGCARD selectedLayer,selectedUnit,scrollToken,lossGeneration
+LONGCARD lossGeneration
 EXEC.Task POINTER launcher
-; Transitional admission flag; GF12 removes the final native GUI profile.
-PUBLIC BYTE terminal
 PUBLIC BYTE outlineVisible
 PUBLIC LONGCARD barLayer,popupLayer,desktopWindow,desktopLayer
 PUBLIC BYTE menuActive,menuReplacing
@@ -110,73 +108,12 @@ RETURN(status)
 PUBLIC PROC Bind(DESKTYPES.Service POINTER value)
 
   service=value
-  selectedUnit=0
-  selectedLayer=0
 
 RETURN
 
 PUBLIC BYTE FUNC Enabled()
 
 RETURN(service<>NULL)
-
-; The controller retains a target through BIND_CONSOLE's exact reply. The
-; published binding then prevents console destruction until replacement/close.
-PUBLIC LONGCARD FUNC ConsoleUnit()
-
-RETURN(selectedUnit)
-
-PUBLIC LONGCARD FUNC ShellUnit()
-
-  IF service=NULL THEN
-    RETURN(0)
-  FI
-
-RETURN(service.consoleUnit)
-
-PUBLIC BYTE FUNC IsConsole(DESKTYPES.Window POINTER window)
-
-RETURN(window.kind=DESKTYPES.CONTENT_CONSOLE
-    OR (window.kind=DESKTYPES.CONTENT_AES AND window.console<>0))
-
-PUBLIC PROC SelectConsole(LONGCARD unit,layer)
-
-  selectedUnit=unit
-  selectedLayer=layer
-
-RETURN
-
-; Binding lookup belongs to scene policy. Console lifetime and presentation
-; share this identity without importing the driver into the scene state.
-PUBLIC DESKTYPES.Window POINTER FUNC FindConsoleWindow(LONGCARD unit)
-  BYTE index
-
-  IF service<>NULL THEN
-    FOR index=0 TO DESKTYPES.WINDOWS-1 DO
-      BEGIN
-        LET window=@service.windows(index)
-        IF window.id<>0 AND IsConsole(window)<>0 AND window.console=unit THEN
-          RETURN(window)
-        FI
-      END
-    OD
-  FI
-
-RETURN(NULL)
-
-PUBLIC PROC SelectConsoleUnit(LONGCARD unit)
-
-  LET window=FindConsoleWindow(unit)
-  selectedUnit=unit
-  selectedLayer=0
-  IF window<>NULL THEN
-    selectedLayer=window.layer
-  FI
-
-RETURN
-
-PUBLIC LONGCARD FUNC Selected()
-
-RETURN(selectedLayer)
 
 PUBLIC PROC SetLauncher(EXEC.Task POINTER task)
 
@@ -187,35 +124,6 @@ RETURN
 PUBLIC EXEC.Task POINTER FUNC Owner()
 
 RETURN(launcher)
-
-; Only complete, clean visible pixels can be reused for a console scroll.
-PUBLIC BYTE FUNC CopyReady()
-
-  IF service=NULL THEN
-    RETURN(1)
-  FI
-
-  IF service.scene.busy<>0 OR selectedLayer=0 THEN
-    RETURN(0)
-  FI
-
-  LET layer=LAYERS.Find(@service.scene,selectedLayer)
-  IF layer=NULL THEN
-    RETURN(0)
-  FI
-
-RETURN(layer.dirty=0 AND layer.shown<>0 AND layer.visible.count=1
-    AND REGIONS.Equal(@layer.bounds,@layer.visible.rects(0))<>0)
-
-PUBLIC PROC SetScrollToken(LONGCARD token)
-
-  scrollToken=token
-
-RETURN
-
-PUBLIC LONGCARD FUNC PendingToken()
-
-RETURN(scrollToken)
 
 PUBLIC PROC Lost()
 

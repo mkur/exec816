@@ -4,11 +4,6 @@
 #include <exec816/desktop-geometry.h>
 #include <exec816/console.h>
 
-WORD EXEC_CALL ExecAESConsole(WORD window,ULONG unit)
-{
-    return wind_set(window,AES_WF_EXEC_CONSOLE,(WORD)(unit>>16),(WORD)unit,0,0);
-}
-
 struct AESWindowView *ExecAESFindView(struct ExecAESContext *c, WORD handle)
 {
     UWORD i;

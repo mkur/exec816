@@ -3,7 +3,7 @@ import re
 from text_model import FIELDS as F
 from generate_aes_server import expected_layout
 from file_selector_model import FORM_SELECTOR
-from test_desktop_presentation import rectangle
+from desktop_raster import rectangle
 
 def paint(b,sy,r,bounds):
     number=lambda at,size=2:int.from_bytes(b.memdump(at,size),'little')

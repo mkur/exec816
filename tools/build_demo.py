@@ -36,7 +36,7 @@ def record_cartridge_capacity(output):
     return capacity
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=None,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False,bootable_atr=None,system_drive=1,boot_sio='auto',qed=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,system_kib=720,mouse_profile=None,text_shell_only=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=None,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False,bootable_atr=None,system_drive=1,boot_sio='auto',qed=False):
     standalone_sio=not (ide_only or ideplus or gem_vdi or bitmap_console)
     if bootable_atr is None:
         bootable_atr=standalone_sio and filesystem=='sdfs' and sector_bytes==256 and system_drive==1
@@ -49,11 +49,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if fastbasic:
         sdx,sdx_drive_a,sdx_car_root=True,'WORK:','SYS:C/'
     require(not qed or (gem_desktop and filesystem=='sdfs' and sector_bytes==256 and (bootable_atr or system_kib==720) and
-            not (ide_only or ideplus or gem_vdi or bitmap_console or aes_counters or aes_input or text_shell_only) and system_drive==1),
+            not (ide_only or ideplus or gem_vdi or bitmap_console or text_shell_only) and system_drive==1),
             'QED requires a D1 SDFS/256 GEM desktop; its optional application ATR uses D2')
-    require(sum((aes_counters,aes_input,gem_desktop))<=1, 'Select one resident GEM application profile')
-    if aes_counters or aes_input or gem_desktop:
-        desktop=True
+    desktop=gem_desktop
     if desktop:
         bitmap_shell_only=True
     require(not (bitmap_shell_only and (gem_vdi or bitmap_console)),
@@ -130,12 +128,6 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'RUN PRIMES >CON: opens a lower pane. JOBS shows its identity;\n'
             'BREAK identity stops it. PRIMES PASSES 1 runs one foreground pass.\n'
             'EXIT returns to the OS.\n',encoding='ascii')
-    if desktop:
-        (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 2, left button.\nPointer profile: @POINTER_PROFILE@.\nDrag titles; Escape cancels a drag.\nControl Panel: Toggle, Small/Large, Apply and Cancel.\nTab/Shift-Tab: focus; Space: activate; Return: Apply.\nEscape/BREAK: cancel. Locked is disabled.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. SYS: is read-only; WORK: in D8 is writable.\n'.replace('@POINTER_PROFILE@', __import__('generate_mouse_acceleration').metadata(mouse_profile)['profile']),encoding='ascii')
-    if aes_counters:
-        (media/'README.TXT').write_text('Exec816 GEM counters\n\nTwo independent counter windows beside the shell.\nST mouse, port 2; drag titles, click a window to top it.\nCounters update once per second, including while covered.\nX closes one counter. Click the shell to type.\nTry TASKS, CAT STORY.TXT | WC, or CAT LONG.TXT.\nBREAK cancels a command; EXIT closes the desktop.\nSYS: is read-only; mount WORK: in D8 for writes.\n',encoding='ascii')
-    if aes_input:
-        (media/'README.TXT').write_text('Exec816 GEM input apps\n\nTwo independent GEM windows beside the shell.\nClick a window to focus it, then press Activate.\nRelease inside to count; outside to cancel.\nKeys display GEM scan/ASCII in hexadecimal.\nEscape/BREAK cancels a held button; X closes the app.\nTick blinks after one second without another event.\nClick the shell to type; EXIT closes the desktop.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
     if gem_desktop:
         (media/'README.TXT').write_text((ROOT/'docs/gem-desktop-distribution.txt').read_text().replace('@VERSION@',(ROOT/'VERSION').read_text().strip()).replace('@SYSTEM_DISK@','system.atr').replace('@POINTER_DESCRIPTION@',pointer_description(__import__('generate_mouse_acceleration').metadata(mouse_profile)['profile'])),encoding='ascii')
         # Remove generated copies left by a pre-RAM desktop build in this output.
@@ -203,7 +195,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         make(output/'work.atr',workspace,filesystem='sdfs',sector_bytes=512,sectors=1440,label='WORK')
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
-    entry=ROOT/('examples/gem-desktop.act' if gem_desktop else 'examples/aes-input-desktop.act' if aes_input else 'examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
+    entry=ROOT/('examples/gem-desktop.act' if gem_desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
     # Bound shell/client globals and shared static buffers in upper RAM.
     from generate_memory import PROFILE
@@ -224,12 +216,6 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             from build_gem_desktop import build_desktop
             from functools import partial
             builder=partial(build_desktop,files=True,basic_workbench=basic_workbench)
-        elif aes_input:
-            from build_gem_input import build_inputs
-            builder=build_inputs
-        elif aes_counters:
-            from build_aes_desktop import build_counters
-            builder=build_counters
         else:builder=build_bitmap
         program=builder(source=source,out=output/'bitmap-console',program_output=output,
             compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,mouse_profile=mouse_profile,
@@ -340,15 +326,6 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         guide=(ROOT/'docs/bitmap-shell-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
     if text_shell_only:
         guide=(ROOT/'docs/text-shell-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
-    if desktop:
-        guide=(ROOT/'docs/desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
-        guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
-    if aes_counters:
-        guide=(ROOT/'docs/aes-counter-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
-        guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
-    if aes_input:
-        guide=(ROOT/'docs/aes-input-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
-        guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     if gem_desktop:
         guide=(ROOT/'docs/gem-desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
@@ -389,7 +366,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                for name,payload in files.items()},
         source_inputs={str(path.relative_to(ROOT)):sha256(path) for path in
                        [ROOT/'VERSION',ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'examples/shell/shell-session.inc',
-                        ROOT/'examples/shell/shell-controller.inc',ROOT/'examples/shell/shell-tabs.inc',ROOT/'examples/shell/shell-desktop.inc',ROOT/'examples/shell/shell-session-client.inc',ROOT/'examples/shell/shell-sessions.inc',ROOT/'examples/shell/shell-session-types.inc',ROOT/'examples/shell/shell-context-types.inc',ROOT/'abi/shell-sessions.json',ROOT/'tools/generate_shell_sessions.py',ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-mount-diagnostics.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-jobs.inc',ROOT/'examples/shell/shell-execute.inc',ROOT/'examples/shell/shell-boot.inc',
+                        ROOT/'examples/shell/shell-controller.inc',ROOT/'examples/shell/shell-desktop.inc',ROOT/'examples/shell/shell-session-client.inc',ROOT/'examples/shell/shell-sessions.inc',ROOT/'examples/shell/shell-session-types.inc',ROOT/'examples/shell/shell-context-types.inc',ROOT/'abi/shell-sessions.json',ROOT/'tools/generate_shell_sessions.py',ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-mount-diagnostics.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-jobs.inc',ROOT/'examples/shell/shell-execute.inc',ROOT/'examples/shell/shell-boot.inc',
                         *(ROOT/'examples/commands'/name for name in ('command-common.inc','command-files.inc','command-write.inc','command-transfer.inc','command-pattern.inc','fuji-arguments.inc','fuji-images.inc')),
                         ROOT/'docs/guides/demo.md',ROOT/'docs/demo.png',ROOT/'docs/images/demo-boot.png',ROOT/'docs/demo-distribution.txt',
                         ROOT/'tools/package_demo.py',ROOT/'LICENSE',ROOT/'LICENSE-MIT',ROOT/'LICENSING.md',
@@ -432,17 +409,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['drawing']=json.loads((output/'bitmap-console/c-image.json').read_text())['provenance']
     if desktop:
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
-            ROOT/'docs/desktop-distribution.txt',*sorted((ROOT/'lib/desktop').glob('*.act')))})
-    if aes_counters:
-        record.update(aes_counters=True,expected_peak_tasks=8)
-        record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
-            ROOT/'docs/aes-counter-distribution.txt',ROOT/'tools/build_aes_desktop.py',
-            *sorted((ROOT/'examples/gem-counter').glob('*')))})
-    if aes_input:
-        record.update(aes_input=True,expected_peak_tasks=8)
-        record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
-            ROOT/'docs/aes-input-distribution.txt',ROOT/'tools/build_gem_input.py',
-            *sorted((ROOT/'examples/gem-input').glob('*')))})
+            ROOT/'docs/gem-desktop-distribution.txt',*sorted((ROOT/'lib/desktop').glob('*.act')))})
     if gem_desktop:
         record.update(gem_desktop=True,expected_peak_tasks=8)
         if basic_workbench:
@@ -483,7 +450,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     required = record['expected_peak_tasks'] + 1 + int(ideplus and not ide_only)
     record['requested_peak_tasks'] = required
     record['expected_peak_tasks'] = min(record['task_capacity'], required)
-    gui = 2 if aes_counters or aes_input else 1 if desktop else 0
+    gui = 2 if desktop else 0
     base = 4 + int(ideplus and not ide_only)
     prime = int(not shell_only)
     record['task_census'] = dict(shared_services_and_controller=base,
@@ -714,9 +681,7 @@ def refresh_boot_guide(output,program,record):
             ROOT/'LICENSE',ROOT/'LICENSE-MIT',ROOT/'LICENSING.md']
     drive=program['build']['memory']['boot_config']['system_drive']
     if record.get('shell_only'):
-        guide=ROOT/('docs/qed-exec-distribution.txt' if record.get('qed') else 'docs/gem-desktop-distribution.txt' if record.get('gem_desktop') else 'docs/aes-input-distribution.txt' if record.get('aes_input') else
-                    'docs/aes-counter-distribution.txt' if record.get('aes_counters') else
-                    'docs/desktop-distribution.txt' if record.get('desktop') else
+        guide=ROOT/('docs/qed-exec-distribution.txt' if record.get('qed') else 'docs/gem-desktop-distribution.txt' if record.get('gem_desktop') else
                     'docs/bitmap-shell-distribution.txt' if record.get('bitmap') else
                     'docs/text-shell-distribution.txt')
         content=guide.read_text().replace('@SYSTEM_DISK@',record['media']).replace('@SYSTEM_DRIVE@',str(drive))
@@ -924,10 +889,7 @@ if __name__=='__main__':
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
     parser.add_argument('--qed',action='store_true',help='Build a separate production QED application disk outside the demo ZIP')
-    parser.add_argument('--gem-desktop',action='store_true',help='GEM Control Panel and counter beside the shell')
-    parser.add_argument('--aes-input',action='store_true',help='Autoboot two interactive GEM input apps beside the native shell')
-    parser.add_argument('--aes-counters',action='store_true',help='Autoboot the optional two-counter GEM desktop beside the native shell')
-    parser.add_argument('--desktop',action='store_true',help='Autoboot a framed shell and independent graphical application with ST mouse input')
+    parser.add_argument('--gem-desktop',action='store_true',help='Files desktop and shared GEM console terminal')
     parser.add_argument('--mouse-profile',choices=('off','mild'),help='Desktop pointer profile (default from config/mouse.json)')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
     parser.add_argument('--text-shell-only',action='store_true',help='Autoboot OF816 into a full-screen standard shell without primes')
@@ -974,7 +936,7 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic,basic_workbench=args.basic_workbench,bootable_atr=args.bootable_atr,system_drive=args.system_drive,boot_sio=args.boot_sio,qed=args.qed)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,system_kib=args.system_kib,mouse_profile=args.mouse_profile,text_shell_only=args.text_shell_only,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic,basic_workbench=args.basic_workbench,bootable_atr=args.bootable_atr,system_drive=args.system_drive,boot_sio=args.boot_sio,qed=args.qed)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')
     if not args.cartridge_from:
         print(f'Local Altirra launcher: {args.output}/launch-altirra.command')

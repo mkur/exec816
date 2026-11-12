@@ -48,18 +48,18 @@ static void close_output(void)
 {
     if (!b.unit) return;
     if (b.input) Close(b.input);if (b.output) Close(b.output);
-    ExecConsoleDestroy(b.unit);b.unit=b.input=b.output=0;b.opened=0;b.window=-1;
+    ExecConsoleDestroy(b.unit);b.unit=b.input=b.output=0;
 }
 static WORD output(void)
 {
     char path[13];
     if (b.unit) return ExecConsoleViewActivate(b.unit)==EXEC_CONSOLE_VIEW_OK;
-    b.window=-1;b.unit=ExecConsoleCreate(64,20);if (!b.unit) return 0;
+    b.unit=ExecConsoleCreate(64,20);if (!b.unit) return 0;
     output_name(path,"CON:");b.input=Open(path,MODE_OLDFILE);
     output_name(path,"RAW:");b.output=Open(path,MODE_NEWFILE);
     if (!b.input || !b.output || !ExecConsoleMode(b.input,EXEC_CONSOLE_ATASCII) ||
         ExecConsoleViewActivate(b.unit)!=EXEC_CONSOLE_VIEW_OK) goto failed;
-    b.opened=1;return 1;
+    return 1;
 failed:
     cause(IoErr());close_output();return 0;
 }

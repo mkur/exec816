@@ -16,7 +16,7 @@ from native_program import require,sha256
 from test_demo import run
 from gem_render_oracle import DESKTOP_PALETTE,PENS
 from test_gem_cursor import ARROW
-from measure_desktop import distribution
+from latency_statistics import distribution
 from sio_transaction_trace import BASE_HZ
 
 

@@ -36,12 +36,12 @@ def physical(b,p,foreign,report):
         reach('dw($%x)=%d'%(sy['AESCachePhase'],phase))
         reach('@frame>=%d'%(b.eval_expr('@frame')+100))
         service=get(at('DESKSTATE','service'),3)
-        # Find the actual source identity through its native content kind.
+        # Find the actual source identity through its authoritative window identity.
         records=layout()
         windows=records['Service']['fields']['windows'];window=records['Window']
         address=next(service+windows+i*window['size']
                     for i in range(ABI['constants']['WINDOWS'])
-                    if get(service+windows+i*window['size']+window['fields']['kind'],1)==4)
+                    if get(service+windows+i*window['size']+window['fields']['id'],4)!=0)
         source=b.memdump(address,window['size'])
         identity=int.from_bytes(source[window['fields']['id']:window['fields']['id']+4],'little')
         slots=[]
@@ -132,7 +132,7 @@ def physical(b,p,foreign,report):
             row['work_pixels']='exact'
         if phase in (27,29,31):
             from gem_render_oracle import Raster, font_bytes, PENS
-            from test_desktop_presentation import frame as draw_frame
+            from desktop_raster import frame as draw_frame
             raster=Raster(font_bytes(out/'selected/src/vdi/font8x8.c'))
             slider=tuple(int.from_bytes(source[window['fields'][n]:window['fields'][n]+2],'little')
                          for n in ('sliderTop','sliderHeight'))

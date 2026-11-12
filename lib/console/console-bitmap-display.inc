@@ -11,8 +11,7 @@ PROC BitmapEdit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   LET operation=instance.operation
   synchronized=0
   IF view.claimed<>0 AND view.visible<>0 AND view.width=instance.width
-      AND view.height=instance.height AND CONSOLEBITMAP.Failed()=0
-      AND (BackingEnabled(view)<>0 OR DESKSTATE.CopyReady()<>0) THEN
+      AND view.height=instance.height AND CONSOLEBITMAP.Failed()=0 THEN
     RemoveCursor(view)
     IF operation=CONSOLETYPES.OP_CLEAR THEN
       synchronized=1
@@ -68,11 +67,6 @@ BYTE FUNC BitmapComplete()
             AND view.scrollGeneration=bitmapGeneration
             AND view.scrollModel=bitmapModel AND view.visible<>0
             AND view.claimed<>0 AND CONSOLEBITMAP.Failed()=0 THEN
-          IF BackingEnabled(view)<>0 THEN
-            ; Copy completed, but the newly exposed backing rows still need
-            ; filling before final text and generation publication.
-            view.scrollState=2
-          ELSE
             view.scrollRow=view.height LSH 3
             BEGIN
               LET batch=CONSOLEBATCH.Get()
@@ -86,7 +80,6 @@ BYTE FUNC BitmapComplete()
                 view.presentedGeneration=instance.generation
               FI
             END
-          FI
         ELSE
           view.presentedGeneration=0
           CONSOLECORE.Dirty(instance,0,instance.count)
@@ -151,29 +144,7 @@ PUBLIC PROC Advance(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
       rows=batch.rows
     FI
 
-    IF BackingEnabled(view)<>0 THEN
-      BEGIN
-        LET packet=CONSOLEBITMAP.GetPacket()
-        packet.copy.source.offset=DESKTYPES.SHELL_BACKING_BASE
-        packet.copy.source.pitch=256
-        packet.copy.source.width=512
-        packet.copy.source.height=160
-        packet.copy.destination.offset=DESKTYPES.SHELL_BACKING_BASE
-        packet.copy.destination.pitch=256
-        packet.copy.destination.width=512
-        packet.copy.destination.height=160
-        packet.copy.sourceX=0
-        packet.copy.sourceY=rows LSH 3
-        packet.copy.destinationX=0
-        packet.copy.destinationY=0
-        packet.copy.width=512
-        packet.copy.height=(view.height-rows) LSH 3
-        view.scrollRow=packet.copy.height
-        okay=CONSOLEBITMAP.CopyStart()
-      END
-    ELSE
-      okay=CONSOLEBITMAP.Scroll(view.left,view.top,view.width,view.height,rows)
-    FI
+    okay=CONSOLEBITMAP.Scroll(view.left,view.top,view.width,view.height,rows)
     IF okay<>0 THEN
       bitmapUnit=unit
       bitmapGeneration=view.generation
@@ -204,12 +175,8 @@ PUBLIC PROC Advance(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     rows=16
   FI
 
-  IF BackingEnabled(view)<>0 THEN
-    okay=CONSOLEBITMAP.BackingFill(0,view.scrollRow,view.width LSH 3,rows,0)
-  ELSE
-    okay=CONSOLEBITMAP.Fill(view.left LSH 3,(view.top LSH 3)+view.scrollRow,
-        view.width LSH 3,rows,0)
-  FI
+  okay=CONSOLEBITMAP.Fill(view.left LSH 3,(view.top LSH 3)+view.scrollRow,
+      view.width LSH 3,rows,0)
   IF okay=0 THEN
     view.scrollState=0
     view.presentedGeneration=0
@@ -219,14 +186,10 @@ PUBLIC PROC Advance(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   view.scrollRow==+rows
   IF view.scrollState=2 AND view.scrollRow=(view.height LSH 3) THEN
     view.scrollState=0
-    IF BackingEnabled(view)<>0 THEN
-      BackingDamage(view,0,0,view.width LSH 3,view.height LSH 3)
-    FI
     IF batch.phase=CONSOLETYPES.BATCH_DMA AND batch.unit=unit THEN
       batch.phase=CONSOLETYPES.BATCH_PAINT
     ELSE
       CONSOLECORE.Clean(instance)
-      PublishBacking(view)
       view.presentedGeneration=instance.generation
     FI
   FI

@@ -7,7 +7,7 @@ import re
 from collections import defaultdict
 from native_program import require
 from sio_transaction_trace import BASE_HZ
-from measure_desktop import distribution
+from latency_statistics import distribution
 
 
 def routine(program, name):

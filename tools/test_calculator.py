@@ -98,7 +98,7 @@ def run(out,reuse=False):
                                                pending=get(sy['pending']),fresh=get(sy['fresh'])))
                 def display(label):
                     from gem_render_oracle import Raster,font_bytes,PENS,DESKTOP_PALETTE as PALETTE
-                    from test_desktop_presentation import rectangle
+                    from desktop_raster import rectangle
                     move(630,230);frames(60)
                     x,y,w,h=obj(2);r=Raster(font_bytes(out/'selected/src/vdi/font8x8.c'))
                     rectangle(r,(x-1,y-1,x+w+1,y+h+1),1);rectangle(r,(x,y,x+w,y+h),0)

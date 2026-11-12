@@ -4,7 +4,7 @@ from native_program import ROOT
 from generate_aes_server import expected_layout
 from control_panel_oracle import draw
 from file_selector_model import FORM_SELECTOR,FORM_ALERT
-from test_desktop_presentation import rectangle
+from desktop_raster import rectangle
 from gem_render_oracle import PENS
 
 

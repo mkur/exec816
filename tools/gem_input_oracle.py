@@ -1,6 +1,6 @@
 """Independent pixel/model oracle for the ordinary GEM input example."""
 import struct
-from test_desktop_presentation import frame,rectangle
+from desktop_raster import frame,rectangle
 
 APP_SIZE=212
 FIELDS=dict(id=4,window=8,ready=12,activations=14,paints=18,work=38,

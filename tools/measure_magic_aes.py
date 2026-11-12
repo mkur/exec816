@@ -45,7 +45,7 @@ WARMUPS = 2
 
 def build_fixture(out):
     fixture = ROOT/'tests/programs/magic_aes_baseline.c'
-    foreign = drawing(out, True, widgets=True, client_sources=[
+    foreign = drawing(out, True, desktop_style=True, client_sources=[
         ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c',
         ROOT/'c/calypsi/aes-events.c', fixture],
         client_roots=['MagicRun', 'MagicService', 'MagicBaselineProbe'],
@@ -202,7 +202,7 @@ def run(out, from_build=None):
     sys.path.insert(0,str(ROOT/'build/gem-vdi/upstream/tools'))
     import aesref as a
     import vdiref as v
-    from test_desktop_presentation import rectangle
+    from desktop_raster import rectangle
     font = font_bytes(p['output'].parent/'selected/src/vdi/font8x8.c')
     try:
         with patch.dict(os.environ, environment), emulator(BRIDGE,ROM,out,pin=PIN) as b:

@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "constants": {
+    "OK": 0,
+    "BAD_ARGUMENT": 1,
+    "OP_DRAW": 1,
+    "OP_INVERT": 2,
+    "DAMAGE_RECTS": 2
+  },
+  "records": {
+    "DamageRect": [
+      [
+        "left",
+        "INT"
+      ],
+      [
+        "top",
+        "INT"
+      ],
+      [
+        "right",
+        "INT"
+      ],
+      [
+        "bottom",
+        "INT"
+      ]
+    ],
+    "Packet": [
+      [
+        "operation",
+        "CARD"
+      ],
+      [
+        "status",
+        "CARD"
+      ],
+      [
+        "context",
+        "LONGCARD"
+      ],
+      [
+        "payload",
+        "LONGCARD"
+      ],
+      [
+        "originX",
+        "INT"
+      ],
+      [
+        "originY",
+        "INT"
+      ],
+      [
+        "left",
+        "INT"
+      ],
+      [
+        "top",
+        "INT"
+      ],
+      [
+        "right",
+        "INT"
+      ],
+      [
+        "bottom",
+        "INT"
+      ],
+      [
+        "index",
+        "CARD"
+      ],
+      [
+        "qualifiers",
+        "CARD"
+      ],
+      [
+        "object",
+        "INT"
+      ],
+      [
+        "state",
+        "CARD"
+      ],
+      [
+        "changed",
+        "CARD"
+      ],
+      [
+        "damage",
+        "DamageRect",
+        "DAMAGE_RECTS"
+      ]
+    ]
+  }
+}

@@ -2,7 +2,7 @@
 import struct
 import sys
 from native_program import ROOT, require
-from test_desktop_presentation import frame
+from desktop_raster import frame
 
 
 def draw(result, objects, labels, bounds, focus=-1, clip_strings=False):

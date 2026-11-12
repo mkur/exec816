@@ -159,8 +159,7 @@ def run(out, reuse=False, variants=(0, 3, 4)):
                     windows = desktop+df['Service']['fields']['windows']
                     slot = next(i for i in range(DESKTOP_ABI['constants']['WINDOWS'])
                                 if get(windows+i*df['Window']['size']
-                                    +df['Window']['fields']['kind'], 1)
-                                == DESKTOP_ABI['constants']['CONTENT_AES'])
+                                    +df['Window']['fields']['id'], 4) != 0)
                     window = windows+slot*df['Window']['size']
                     require(get(window+df['Window']['fields']['keyRoute']) == 0,
                             'Failed open published its route')

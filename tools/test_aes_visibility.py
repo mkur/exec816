@@ -167,7 +167,7 @@ def setup(symbols):
             'VisRetireBusy':'@VISPROBE.retireBusy',
             'VisEpoch':'@service.nextGuiEpoch','VisWaiting':'@service.windowPending',
             'VisLocks':'@service.lockCount','VisOwner':'@service.sceneOwner'}
-    text='  DESKBOOT.Detach()\n'
+    text=''
     for name,field in fields.items():
         text+=f'  BEGIN\n    LET target=LONGCARD POINTER(${symbols[name]:x})\n    target^=LONGCARD(ADDRESS({field}))\n  END\n'
     return text
@@ -193,7 +193,7 @@ def physical(b,p,foreign,report):
         desktop=get(desktop_at,3)
         for slot in range(DESKTOP_ABI['constants']['WINDOWS']):
             window=desktop+df['Service']['fields']['windows']+slot*df['Window']['size']
-            if get(window+wf['kind'],1)==DESKTOP_ABI['constants']['CONTENT_AES']:
+            if get(window+wf['id'],4):
                 return get(window+wf['keyRoute'],4)
         raise RuntimeError('Missing retiring window')
     report['visibility']=[]

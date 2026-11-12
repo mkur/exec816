@@ -148,7 +148,7 @@ PUBLIC CARD FUNC Activate(LONGCARD unit)
 
   EXEC.Forbid()
   status=VIEW.UNSUPPORTED
-  IF DESKSTATE.terminal<>0 THEN
+  IF DESKSTATE.Enabled()<>0 THEN
     status=VIEW.CLOSED
     IF CONSOLEWINDOWS.Find(unit)<>NULL THEN
       status=VIEW.OVERFLOW

@@ -10,9 +10,7 @@ PUBLIC INT FUNC Top(CARD kind)
     RETURN(0)
   FI
 RETURN(DESKTYPES.WORK_TOP+IF (kind & DESKTYPES.FRAME_INFO)<>0 THEN
-    DESKTYPES.FRAME_INFO_HEIGHT ELSE 0 FI
-    +IF (kind & DESKTYPES.FRAME_SHELL_TABS)<>0 THEN
-        DESKTYPES.FRAME_TAB_HEIGHT ELSE 0 FI)
+    DESKTYPES.FRAME_INFO_HEIGHT ELSE 0 FI)
 
 PUBLIC INT FUNC Right(CARD kind)
 
@@ -94,13 +92,12 @@ PUBLIC PROC Slider(DESKTYPES.Window POINTER window
 RETURN
 
 ; Reserve one text cell between the actual title controls.
-BYTE FUNC IconSpace(CARD frameKind BYTE content
+BYTE FUNC IconSpace(CARD frameKind
     LAYERTYPES.Rect POINTER bounds)
   INT available
 
   available=bounds.right-bounds.left
-      -IF content=DESKTYPES.CONTENT_CONSOLE THEN
-          INT(DESKTYPES.FRAME_EDGE) ELSE INT(DESKTYPES.FRAME_GADGET_WIDTH) FI
+      -DESKTYPES.FRAME_GADGET_WIDTH
   IF (frameKind & DESKTYPES.FRAME_FULLER)<>0 THEN
     available==-DESKTYPES.FRAME_GADGET_WIDTH
   FI
@@ -111,10 +108,10 @@ RETURN(frameKind<>DESKTYPES.FRAME_BORDERLESS
 PUBLIC BYTE FUNC HasIcon(DESKTYPES.Window POINTER window
     LAYERTYPES.Rect POINTER bounds)
 
-RETURN(IconSpace(window.frameKind,window.kind,bounds))
+RETURN(IconSpace(window.frameKind,bounds))
 
 ; Hit codes are private presenter facts: size, up, down, page up/down, thumb.
-PUBLIC BYTE FUNC Gadget(CARD frameKind BYTE content,iconified
+PUBLIC BYTE FUNC Gadget(CARD frameKind BYTE iconified
     INT sliderTop,sliderHeight
     LAYERTYPES.Rect POINTER bounds INT x,y)
   LAYERTYPES.Rect rail
@@ -124,7 +121,7 @@ PUBLIC BYTE FUNC Gadget(CARD frameKind BYTE content,iconified
         AND y>=bounds.top AND y<bounds.bottom THEN 9 ELSE 0 FI)
   FI
 
-  IF IconSpace(frameKind,content,bounds)<>0
+  IF IconSpace(frameKind,bounds)<>0
       AND y>=bounds.top AND y<bounds.top+DESKTYPES.TITLE_HEIGHT THEN
     BEGIN
       LET right=bounds.right-IF (frameKind & DESKTYPES.FRAME_FULLER)<>0
@@ -175,7 +172,7 @@ RETURN(6)
 PUBLIC BYTE FUNC GadgetHit(DESKTYPES.Window POINTER window
     LAYERTYPES.Rect POINTER bounds INT x,y)
 
-RETURN(Gadget(window.frameKind,window.kind,window.iconified,
+RETURN(Gadget(window.frameKind,window.iconified,
     window.sliderTop,window.sliderHeight,bounds,x,y))
 
 PUBLIC BYTE FUNC TitleHit(LAYERTYPES.Rect POINTER bounds INT x,y)

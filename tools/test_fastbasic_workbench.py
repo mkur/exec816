@@ -152,13 +152,14 @@ if __name__=='__main__':
         for mode in ('raw','opt'):
             contexts(out/('bridge-'+mode),mode,a.from_build)
     elif a.slice=='WB7':
-        from test_console_window import prepare,exercise
+        from test_gem_terminal import run as terminal
+        from build_gem_desktop import build_desktop
         from test_console_windows import run as lifetimes
         from test_console_cells import run as cells
         from test_layers import run as layers
         out=a.output.resolve()
-        if not a.from_build:prepare(out/'console')
-        exercise(out/'console')
+        if not a.from_build:build_desktop(out/'console',source=ROOT/'examples/gem-desktop.act',files=True,task_capacity=12,release_compiler=True)
+        terminal(out/'console',out/'terminal')
         if not a.from_build:
             result=lifetimes(out/'lifetimes','opt')
             (out/'lifetimes/results.json').write_text(json.dumps(result,indent=2)+'\n')

@@ -48,14 +48,39 @@ PROC Pump()
   LONGCARD mask
 
   mask=ShellControllerStep()
+  IF EXEC.GetMsg(sessionReplies)<>NULL THEN
+    requestBusy=0
+  FI
   EXEC.Yield()
 
 RETURN
 
 ; Passive PC markers delimit the ordinary request and observed collection.
+ShellSessionMessage request
+EXEC.MsgPort POINTER sessionReplies
+BYTE requestBusy
+
+PROC SessionRequest(BYTE operation LONGCARD identity)
+
+  WHILE requestBusy<>0 DO
+    Pump()
+  OD
+  A816MEMORY.Clear(BYTE POINTER(@request),SHELLSESSIONMESSAGE_SIZE)
+  request.operation=operation
+  request.payload=BYTE POINTER(c"SYS:")
+  request.capacity=SESSION_PATH_BYTES
+  request.message.mn_Node.ln_Type=EXEC.NT_MESSAGE
+  request.message.mn_Length=SHELLSESSIONMESSAGE_SIZE
+  request.session=identity
+  request.message.mn_ReplyPort=sessionReplies
+  requestBusy=1
+  EXEC.PutMsg(shellRequests,@request.message)
+
+RETURN
+
 PROC CloseRequest()
 
-  ShellTabRequest(2,SESSION_CLOSE,1)
+  SessionRequest(SESSION_CLOSE,1)
 
 RETURN
 
@@ -70,18 +95,20 @@ RETURN
 PROC Main()
 
   baseline=EXEC.AvailMem(0)
+  sessionReplies=EXEC.CreateMsgPort()
+  Check(sessionReplies<>NULL)
   Check(ShellControllerStart(0)<>0)
   WHILE sessions(0).ready=0 DO
     Pump()
   OD
 
-  ShellTabRequest(0,SESSION_CREATE,0)
-  WHILE controllerLive<>2 OR sessions(1).ready=0 OR tabBusy<>0 DO
+  SessionRequest(SESSION_CREATE,0)
+  WHILE controllerLive<>2 OR sessions(1).ready=0 OR requestBusy<>0 DO
     Pump()
   OD
 
-  ShellTabRequest(1,SESSION_SELECT,1)
-  WHILE selectedSession<>1 OR tabBusy<>0 DO
+  SessionRequest(SESSION_SELECT,1)
+  WHILE selectedSession<>1 OR requestBusy<>0 DO
     Pump()
   OD
 
@@ -101,7 +128,7 @@ PROC Main()
     Pump()
   OD
 
-  ShellTabRequest(3,SESSION_CLOSE,2)
+  SessionRequest(SESSION_CLOSE,2)
   WHILE controllerLive<>0 DO
     Pump()
   OD
@@ -110,6 +137,10 @@ PROC Main()
   Check(DOS.AssignPath(BYTE POINTER(c"S"),NULL)<>0)
   ShellControllerStop()
   Check(FSBOOT.Stop()<>0)
+  WHILE requestBusy<>0 DO
+    Pump()
+  OD
+  EXEC.DeleteMsgPort(sessionReplies)
   Check(EXEC.AvailMem(0)=baseline)
   finished=1
 

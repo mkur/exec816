@@ -14,7 +14,6 @@ USE AESWINDOWSTATE
 USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
-USE DESKEVENTS
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
@@ -154,17 +153,9 @@ BYTE FUNC Shown(DESKTYPES.Window POINTER window)
     RETURN(0)
   FI
 
-  IF window.kind=DESKTYPES.CONTENT_AES THEN
-    BEGIN
-      LET client=AESWINDOWSTATE.Find(window.id)
-      ; Input interest can be absent while an open window is covered or its
-      ; client waits only for messages/timers. Its registered lifetime and the
-      ; shown layer still permit ordinary window-manager selection.
-      RETURN(client<>NULL)
-    END
-  FI
+  LET client=AESWINDOWSTATE.Find(window.id)
 
-RETURN(1)
+RETURN(client<>NULL)
 
 ; Stable slot order makes repeated cycling visit every window, rather than
 ; bouncing between the two most recently raised windows.
@@ -548,7 +539,7 @@ PROC Open(BYTE kind)
       items(count).action=1
       Label(@items(count).label(0),BYTE POINTER(c"Next window"),LABEL_BYTES-1)
       count==+1
-      items(count).enabled=menuOwner<>0 AND menuOwner<>service.consoleWindow
+      items(count).enabled=menuOwner<>0
           AND menuOwner<>DESKSTATE.desktopWindow
       items(count).action=2
       Label(@items(count).label(0),BYTE POINTER(c"Close"),LABEL_BYTES-1)
@@ -563,7 +554,7 @@ PROC Open(BYTE kind)
     items(0).enabled=1
     Label(@items(0).label(0),BYTE POINTER(c"Next window"),LABEL_BYTES-1)
     items(1).window=menuOwner
-    items(1).enabled=menuOwner<>0 AND menuOwner<>service.consoleWindow
+    items(1).enabled=menuOwner<>0
         AND menuOwner<>DESKSTATE.desktopWindow
     Label(@items(1).label(0),BYTE POINTER(c"Close"),LABEL_BYTES-1)
     items(2).window=menuOwner
@@ -602,25 +593,9 @@ PROC Execute()
     IF service.focus=window.id THEN
       RETURN
     FI
-    IF window.kind=DESKTYPES.CONTENT_AES THEN
-      AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
-    ELSE
-      Check(DESKCORE.Top(service,window))
-    FI
-  ELSEIF action=ACT_CLOSE AND window.id<>service.consoleWindow THEN
-    IF window.kind=DESKTYPES.CONTENT_AES THEN
-      AESWINDOWSTATE.Control(window,AESTYPES.GUI_CLOSED,0,0,0,0)
-    ELSE
-      FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
-        IF @service.windows(slot)=window THEN
-          BEGIN
-            LET client=DESKEVENTS.Find(service,window.client)
-            client.closeBits=client.closeBits OR BYTE(1 LSH slot)
-            DESKEVENTS.Wake(service,client)
-          END
-        FI
-      OD
-    FI
+    AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
+  ELSEIF action=ACT_CLOSE THEN
+    AESWINDOWSTATE.Control(window,AESTYPES.GUI_CLOSED,0,0,0,0)
   FI
 
 RETURN

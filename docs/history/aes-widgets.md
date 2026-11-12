@@ -1,6 +1,6 @@
 # Hosted AES widget application
 
-[History index](README.md) · [Widget contract](../reference/widgets.md) ·
+[History index](README.md) · [Widget contract](https://github.com/mkur/exec816/blob/39e93a28/docs/reference/widgets.md) ·
 [Implementation plan](../plans/gem4xe/aes-widgets-implementation-plan.md)
 
 AW5–AW6 are implemented at the development tier on 2026-10-05. The

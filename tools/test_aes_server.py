@@ -24,7 +24,7 @@ def context_program(out, optimize):
     # whole-desktop C image exceeds its existing code bank; the code under
     # test and native bridge are independently exercised raw and optimized.
     from generate_display import expected_layout as display_layout
-    foreign = drawing(out, True, probe=True, widgets=True,
+    foreign = drawing(out, True, probe=True, desktop_style=True,
         client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', ROOT/'c/calypsi/aes-events.c', ROOT/'tests/programs/aes_context.c'],
         client_entries=['AESClientOne', 'AESClientTwo'],
         client_roots=['AESContextProbe', 'AESWireProbe', 'AESProbePacket',
@@ -312,7 +312,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             from test_vdi_client import extract_with_preemption
             bitmap_builder.extract=extract_with_preemption
         try:
-            foreign = drawing(out, True, widgets=True, fault=borrowed, renderer_source=renderer,
+            foreign = drawing(out, True, desktop_style=True, fault=borrowed, renderer_source=renderer,
                 client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if events or timers or input_events else ROOT/'c/calypsi/aes-events.c'), ROOT/('tests/programs/display_borrow.c' if borrowed else f'tests/programs/aes_{suite}.c')]+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else [])+([ROOT/'tests/programs/aes_frame_markers.c'] if suite=='frame' else [])+([ROOT/'tests/programs/aes_geometry_markers.c'] if suite=='geometry' else []),
                 client_entries=entries,
                 client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+(['AESPark'] if events or timers or suite == 'messages' else [])+extra_roots,
@@ -374,7 +374,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if events or timers or suite == 'messages':
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESPark"]:x})\n    item^=LONGCARD(ADDRESS(@AESHYBRIDPROBE.park))\n  END\n'
         if locks:
-            setup += '  DESKBOOT.Detach()\n'
+            setup += ''
             for name, field in (('AESUpdates', 'updates'), ('AESMouseHolds', 'mouseHolds'),
                     ('AESLockCount', 'lockCount'), ('AESPolicyGate', 'policyGate')):
                 setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy[name]:x})\n    item^=LONGCARD(ADDRESS(@service.{field}))\n  END\n'
@@ -460,7 +460,7 @@ ENDMODULE
             generate_tasks.policy_modules=worker_probe(policy_modules)
         try:
             program = build(compiler(ROOT/'build/actionc',release=True), launcher, out/'program',
-                tasks=True, task_capacity=8, foreign_image=foreign,
+                tasks=True, task_capacity=12 if registration else 8, foreign_image=foreign,
                 console_deferred=True, memory_profile=memory,
                 **(dict(dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2 if filesystem=='sdfs' else 1)]) if suite in ('resources','menus','fsel') else {}),
                 **(dict(system_mount='D1') if suite=='fsel' else {}))
@@ -474,7 +474,7 @@ ENDMODULE
     report = dict(status='running', tier='development', qualification=False,
         slice=('FSEL3' if 'AESFileABI' in foreign['symbols'] else 'FSEL2') if suite=='fsel' else 'FD3' if suite=='alerts' else 'FD2' if suite=='forms' else 'AI5' if input_events else 'AI4' if pointer else 'AI3' if keyboard else 'AI2' if inbox else 'WA4' if vdi else 'WA3' if borrowed else 'WA2' if windows else 'WA1' if gui else 'HY3', suite=suite, c_mode=mode,
         native_mode='opt', video=video, filesystem=filesystem if suite=='resources' else None, build=program['build'],
-        reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
+        reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*(12 if registration else 8)))
     if borrowed:
         from test_display_borrow import trace_setup, trace_result, trace_restore
         tracing=trace_setup(program,foreign,out)
@@ -603,7 +603,7 @@ ENDMODULE
             if suite=='lifecycle':
                 require(report['lifecycle_phase']==10 and report['AESChecks']>=265,
                         'Incomplete hidden lifecycle scenarios')
-                require(report['lifecycle_stats'][6:]==[138,1990],
+                require(report['lifecycle_stats'][6:]==[138,1264],
                         'Unexpected private waiter record layout')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller lifecycle exceeded its interrupt floor')
@@ -652,112 +652,6 @@ ENDMODULE
     return report
 
 
-def intake(out, failure=0, replay=False):
-    out.mkdir(parents=True, exist_ok=True)
-    if replay:
-        program = read_build(out/'program')
-    else:
-        source = out/'intake.act'
-        source.write_text(read_source(ROOT/'tests/programs/aes_intake.act').replace(
-            'CONST FAILURE=0', f'CONST FAILURE={failure}'))
-        (out/'aesintakeprobe.act').write_text(read_source(ROOT/'tests/programs/aesintakeprobe.act'))
-        host = read_source(ROOT/'lib/desktop/deskhost.act').replace('USE AESHOST',
-            'USE AESHOST\nUSE AESINTAKEPROBE')
-        host = host.replace('    count=0\n', '    count=0\n    AESINTAKEPROBE.StartTurn()\n')
-        for port, call in enumerate(('DESKCORE.Pump(service,1)', 'AESHOST.Pump(1)')):
-            require(host.count('admitted='+call)==1, 'Admission wrapper changed')
-            host = host.replace('admitted='+call, 'admitted='+call+
-                f'\n  AESINTAKEPROBE.Admission({port},admitted)')
-        # Finish after the deferred admission too: the budget covers the entire
-        # presenter turn, not just the Controls prefix.
-        host = host.replace('    lateAES=0\n    remaining=1',
-            '    AESINTAKEPROBE.lateCount==+AESINTAKEPROBE.enabled\n    lateAES=0\n    remaining=1')
-        needle = '    Events()\n  FI\n\nRETURN\n\nPUBLIC BYTE FUNC Runnable()'
-        require(host.count(needle) == 1, 'Deferred admission boundary changed')
-        host = host.replace(needle, '    Events()\n  FI\n  AESINTAKEPROBE.FinishTurn()\n\nRETURN\n\nPUBLIC BYTE FUNC Runnable()')
-        (out/'deskhost.act').write_text(host)
-        core=read_source(ROOT/'lib/desktop/deskcore.act').replace(
-            'USE HEAPCORE', 'USE HEAPCORE\nUSE AESINTAKEPROBE',1)
-        needle='      EXECLISTS.AddTail(@service.deferred,@request.message.mn_Node)'
-        require(core.count(needle)==1, 'Native deferral boundary changed')
-        (out/'deskcore.act').write_text(core.replace(needle,
-            needle+'\n      AESINTAKEPROBE.deferred==+1'))
-        pointer=read_source(ROOT/'lib/desktop/deskinput.act').replace(
-            'USE HEAPCORE', 'USE HEAPCORE\nUSE AESINTAKEPROBE',1)
-        needle='    IF AESLOCKS.MouseBlocked()=0 AND AESINPUT.Pop(@sample)<>0 THEN\n'
-        require(pointer.count(needle)==1, 'Retained input boundary changed')
-        (out/'deskinput.act').write_text(pointer.replace(needle,
-            needle+'      AESINTAKEPROBE.ObserveInput()\n'))
-        if failure == 1:
-            boot = read_source(ROOT/'lib/aes/aesboot.act').replace(
-                'EXEC.AllocMem(SIZEOF(AESSTATE.Service),', 'EXEC.AllocMem(0,')
-            (out/'aesboot.act').write_text(boot)
-        elif failure in (2, 3):
-            aes_host = read_source(ROOT/'lib/aes/aeshost.act')
-            aes_host = aes_host.replace('bit=EXEC.AllocSignal(-1)', 'bit=$ff') if failure == 2 else aes_host.replace(
-                'AESCORE.Init(service,bit)', 'AESCORE.Init(service,32)')
-            (out/'aeshost.act').write_text(aes_host)
-        import generate_tasks
-        original = generate_tasks.policy_modules
-
-        def instrument(*args, **kwargs):
-            directory = original(*args, **kwargs)
-            path = directory/'consoledriver.act'
-            driver = path.read_text().replace('USE EXEC\n', 'USE EXEC\nUSE AESINTAKEPROBE\n', 1)
-            wait = 'bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)'
-            require(driver.count(wait) == 2, 'Presenter wait boundaries changed')
-            path.write_text(driver.replace(wait, 'AESINTAKEPROBE.Boundary()\n        '+wait))
-            return directory
-
-        generate_tasks.policy_modules = instrument
-        try:
-            program = build_bitmap(source, out, desktop=True, aes=True)
-        finally:
-            generate_tasks.policy_modules = original
-    report = dict(status='running', tier='development', qualification=False,
-        slice='AS0b', failure=failure, build=program['build'],
-        reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
-    try:
-        with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:
-            bridge._cmd_ok('MOUSE ST')
-            report['machine'] = verify_machine(bridge, ROM, PIN)
-            try:
-                report['runtime'], _ = execute(bridge, program, timeout=120, frame_limit=6000)
-            except Exception:
-                report['checks'] = data(bridge, program['image'], 'checks', True)[0]
-                raise
-            ownership(bridge, program, program['output'])
-            report['checks'] = data(bridge, program['image'], 'checks', True)[0]
-            if not failure:
-                def probe(name, size):
-                    at = next(d['address'] for d in program['image']['data']
-                              if '_AESINTAKEPROBE_'+name.upper()+'_' in d['name'])
-                    return list(bridge.memdump(at, size))
-                report['admission_ports'] = probe('ports', 24)
-                report['admission_turns'] = probe('turns', 24)
-                report['maximum_per_turn'] = probe('maximum', 1)[0]
-                report['deferred_admissions'] = probe('lateCount', 1)[0]
-                report['input_injected'] = probe('injected', 1)[0]
-                report['input_consumed'] = probe('consumed', 1)[0]
-                report['native_deferred'] = probe('deferred', 1)[0]
-                require(report['input_injected'] == report['input_consumed'] >= 61
-                        and report['native_deferred'] > 0,
-                        'Missing admission/late-wake input coverage')
-                require(report['maximum_per_turn'] <= 4 and report['deferred_admissions'] > 0,
-                        'Missing bounded paint-before-AES admissions')
-                require(report['checks'] >= 90, 'Incomplete intake fixture')
-            else:
-                require(report['checks'] == 6, 'Incomplete failure fixture')
-            report['status'] = 'pass'
-    except Exception as error:
-        report.update(status='fail', error=str(error))
-        raise
-    finally:
-        (out/'results.json').write_text(json.dumps(report, indent=2)+'\n')
-    print('AES intake passed; injected failure', failure, flush=True)
-    return report
-
-
 def plain_console(out):
     """Presenter hooks remain harmless when neither desktop nor AES is bound."""
     out.mkdir(parents=True,exist_ok=True)
@@ -801,12 +695,11 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'visibility', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'visibility', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs',help='Resources fixture disk format')
     parser.add_argument('--frame-local',choices=('none','text','all'),default='all',help='Expected migrated fields for the frame comparison fixture')
     parser.add_argument('--geometry-local',choices=('none','query','all'),default='all',help='Expected migrated geometry fields in a frozen comparison image')
     parser.add_argument('--visibility-local',choices=('open','all'),default='all',help='Expected migrated visibility calls in a frozen comparison image')
-    parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
@@ -815,6 +708,3 @@ if __name__ == '__main__':
                      args.video, args.from_build.resolve() if args.from_build else None,args.filesystem,args.frame_local,args.geometry_local,args.visibility_local)
     elif args.suite == 'console':
         plain_console(args.output.resolve())
-    else:
-        require(args.mode == 'opt', 'Routine intake checks use optimized builds')
-        intake(args.output.resolve(), args.failure, args.replay)

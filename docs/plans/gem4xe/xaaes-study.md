@@ -181,7 +181,7 @@ widget metadata are associated with clients, but a GEM object tree is not our
 copied, offset-based `WidgetTree` packet. Applications can modify object states,
 strings and editable fields, then draw or interact with that tree again.
 [Object drawing][xa-object], [resources][xa-resource],
-[current Exec widgets](../../reference/widgets.md)
+[current Exec widgets](https://github.com/mkur/exec816/blob/39e93a28/docs/reference/widgets.md)
 
 **Proposed Exec adaptation:** define borrowing and writeback for each operation.
 A synchronous draw can borrow the tree until completion; a dialog borrows it
@@ -312,7 +312,7 @@ not solve latency in the present scheduler. [Task scheduling](../../reference/ta
    count. More upper RAM does not add native stacks or direct pages.
 
 Sources: [Desktop](../../reference/desktop.md), [Layers](../../reference/layers.md),
-[widgets](../../reference/widgets.md), [C bridge](../../guides/calypsi-c.md),
+[widgets](https://github.com/mkur/exec816/blob/39e93a28/docs/reference/widgets.md), [C bridge](../../guides/calypsi-c.md),
 [program loading](../../reference/program-loading.md), [DOS](../../reference/dos.md),
 [Task capacity](../../architecture/task-capacity.md).
 

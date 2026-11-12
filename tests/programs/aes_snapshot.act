@@ -54,6 +54,9 @@ PROC Main()
   Require(service<>NULL AND desktop<>NULL AND request<>NULL)
   AESSTATE.Bind(service)
   DESKSTATE.Bind(desktop)
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    service.windows(index)=@desktop.windows(index)
+  OD
   Require(LAYERS.Init(@desktop.scene,640,240)=LAYERTYPES.OK)
   service.clients(0).id=1
   service.clients(0).binding=request
@@ -65,10 +68,9 @@ PROC Main()
       IF index<4 THEN
         BEGIN
           Require(LAYERS.SetExternal(@desktop.scene,handles(index))=LAYERTYPES.OK)
-          LET item=@service.windows(index)
+          LET item=service.windows(index)
           LET window=@desktop.windows(index)
           item.owner=1
-          item.window=window
           item.gui.window=INT(index)+1
           item.view=AESTYPES.WindowView POINTER(EXEC.AllocMem(
               LONGCARD(AESTYPES.WINDOWVIEW_SIZE),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))

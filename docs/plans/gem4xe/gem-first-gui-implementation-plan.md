@@ -568,7 +568,7 @@ instead of duplicating their implementation in host assertions:
 | --- | --- |
 | Scene gate, wake and context | [Gate fixture](../../../tools/test_aes_gate.py), [Caller bridge](../../../tools/test_aes_local_bridge.py) |
 | Windows, messages, locks, events, multiple windows | [AES service runner](../../../tools/test_aes_server.py), selecting `windows`, `multiwindow`, `gui`, `locks`, `events`, `timers` or `inbox` as affected |
-| Physical interaction and loaded GUI progress | [Desktop proof](../../../tools/test_aes_desktop.py), [drag checks](../../../tools/test_desktop_drag.py), GF0 combined runner |
+| Physical interaction and loaded GUI progress | [Desktop proof](https://github.com/mkur/exec816/blob/39e93a28/tools/test_aes_desktop.py), [drag checks](https://github.com/mkur/exec816/blob/39e93a28/tools/test_desktop_drag.py), GF0 combined runner |
 | Shared drawing and cache behavior | [Matched AES corpus](../../../tools/measure_magic_aes.py), [drawing observer](../../../tools/measure_aes_drawing.py), [UPDATE observer](../../../tools/measure_aes_update.py) |
 | Console/session and application coexistence | [Console windows](../../../tools/test_console_windows.py), [shell sessions](../../../tools/test_shell_sessions.py), [QED coexistence](../../../tools/test_qed_coexist.py) |
 | Measured stack use | [Passive stack observer](../../../tools/measure_gem_stacks.py), plus the affected native/C entry probe |

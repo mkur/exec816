@@ -114,8 +114,8 @@ remains retained through delivery or drop. Clearing, reopening or closing input
 invalidates copied bytes already withdrawn from capture. Scope handoff retires
 old route tags, so delayed cancellation cannot interrupt a later job.
 
-The transitional renderer assembles bounded copied views into its own private
-cells. It never changes the model being edited by the backend. A multi-chunk
+The loaded GEM terminal assembles bounded copied views into its own private
+cells. Standalone text/bitmap consoles use a resident copied frontend. It never changes the model being edited by the backend. A multi-chunk
 pass can acknowledge only one matching revision after presentation completes;
 stale acknowledgements rearm the consumer hint. Drawing retains the existing
 physical display lease, clipping, bounded submissions and completion fences.

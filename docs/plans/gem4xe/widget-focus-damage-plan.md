@@ -1,6 +1,6 @@
 # Separate widget focus damage
 
-[Plan index](../README.md) · [Widget contract](../../reference/widgets.md) ·
+[Plan index](../README.md) · [Widget contract](https://github.com/mkur/exec816/blob/39e93a28/docs/reference/widgets.md) ·
 [Previous measurements](../../history/aes-widgets.md#button-feedback-follow-up)
 
 Status: implemented at the development tier. See the

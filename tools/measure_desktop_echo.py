@@ -13,7 +13,7 @@ from test_dos_stack import execute, ownership
 from test_mouse_observe import BRIDGE, ROM
 from gem_render_oracle import font_bytes, PENS, PALETTE
 from sio_transaction_trace import BASE_HZ, read_events
-from measure_desktop import distribution
+from latency_statistics import distribution
 from console_model import read_cells
 
 

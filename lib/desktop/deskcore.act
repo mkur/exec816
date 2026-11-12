@@ -1,25 +1,17 @@
-; Single-owner window policy and IPC. Hardware presentation is a separate module.
+; AES scene geometry and focus. Hardware presentation is a separate module.
 MODULE DESKCORE
 USE AESSTATE
-USE AESLOCKS
 USE AESWINDOWSTATE
 USE AESMOUSE
 USE EXEC
 USE INPUT
-USE EXECLISTS
 USE A816MEMORY
 USE HEAPCORE
 USE DESKTYPES
-USE DESKMOVE
-USE DESKCONSOLE
 USE CONSOLEWINDOWS
-USE DESKTABS
 USE DESKGEOMETRY
 USE DESKCACHE
-USE DESKEVENTS
-USE DESKWIDGETS
 USE DESKSTATE
-USE DESKROUTES
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
@@ -33,15 +25,8 @@ PUBLIC BYTE FUNC Init(DESKTYPES.Service POINTER service BYTE bit)
   A816MEMORY.Clear(BYTE POINTER(service),DESKTYPES.SERVICE_SIZE)
   service.owner=EXEC.FindTask(NULL)
   service.mask=LONGCARD(1) LSH bit
-  service.port.mp_Node.ln_Type=EXEC.NT_MSGPORT
-  service.port.mp_Flags=EXEC.PA_SIGNAL
-  service.port.mp_SigBit=bit
-  service.port.mp_SigTask=service.owner
-  EXECLISTS.NewList(@service.port.mp_MsgList)
-  EXECLISTS.NewList(@service.deferred)
-  service.nextClient=1
+  service.signalBit=bit
   service.nextWindow=1
-  service.nextEvent=1
   IF LAYERS.Init(@service.scene,640,240)<>LAYERTYPES.OK THEN
     RETURN(0)
   FI
@@ -67,78 +52,11 @@ PUBLIC DESKTYPES.Window POINTER FUNC Find(DESKTYPES.Service POINTER service
 
 RETURN(NULL)
 
-; Allocate a registration identity only after its original Task is retained.
-CARD FUNC Register(DESKTYPES.Service POINTER service
-    DESKTYPES.Request POINTER request)
-  BYTE index
-
-  LET binding=request.client
-  IF binding=NULL OR binding.id<>0 OR binding.owner=NULL
-      OR binding.replies=NULL
-      OR binding.replies<>request.message.mn_ReplyPort
-      OR binding.replies.mp_SigTask<>binding.owner THEN
-    RETURN(DESKTYPES.BAD_ARGUMENT)
-  FI
-
-  FOR index=0 TO DESKTYPES.CLIENTS-1 DO
-    IF service.clients(index).binding=binding
-        OR service.clients(index).lease.task=binding.owner THEN
-      RETURN(DESKTYPES.BUSY)
-    FI
-  OD
-
-  IF service.nextClient=0 THEN
-    RETURN(DESKTYPES.EXHAUSTED)
-  FI
-
-  FOR index=0 TO DESKTYPES.CLIENTS-1 DO
-    IF service.clients(index).binding=NULL THEN
-      BEGIN
-        LET client=@service.clients(index)
-        IF EXEC.RetainTask(binding.owner,@client.lease)=0 THEN
-          RETURN(DESKTYPES.BAD_ARGUMENT)
-        FI
-
-        client.id=service.nextClient
-        service.nextClient==+1
-        client.binding=binding
-        binding.id=client.id
-        RETURN(DESKTYPES.OK)
-      END
-    FI
-  OD
-
-RETURN(DESKTYPES.FULL)
-
 ; Drawing and frame helpers use the layer as the sole geometry authority.
 PUBLIC LAYERTYPES.Layer POINTER FUNC Layer(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window)
 
 RETURN(LAYERS.Find(@service.scene,window.layer))
-
-; Focus can commit in a caller only when preparation and cancellation need
-; no presenter-owned caret or widget operation. The commit helper stays shared.
-PUBLIC BYTE FUNC FocusMetadataReady(DESKTYPES.Service POINTER service
-    LONGCARD id)
-
-  IF service.focus=id THEN
-    RETURN(1)
-  FI
-  IF DESKMOVE.CaretVisible()<>0 THEN
-    RETURN(0)
-  FI
-  LET previous=Find(service,service.focus)
-
-RETURN(previous=NULL OR previous.widgets=NULL)
-
-; Remove the outgoing caret against the old geometry and presentation.
-PUBLIC PROC PrepareFocus(DESKTYPES.Service POINTER service LONGCARD id)
-
-  IF service.focus<>id THEN
-    DESKMOVE.HideCaret()
-  FI
-
-RETURN
 
 ; Publish only the focused input source. No cell/view attachment or drawing.
 PUBLIC PROC PublishInput(DESKTYPES.Service POINTER service)
@@ -155,26 +73,15 @@ PUBLIC PROC PublishInput(DESKTYPES.Service POINTER service)
     BEGIN
       LET window=Find(service,service.focus)
       IF window<>NULL THEN
-        IF DESKSTATE.IsConsole(window)<>0 THEN
+        route=window.keyRoute
+        IF window.inputBound<>0 THEN
           BEGIN
-            LET entry=CONSOLEWINDOWS.Find(window.console)
-            route=entry.route
-            service.consoleFocus^=BYTE(window.console & 3)
-          END
-        ELSE
-          route=window.keyRoute
-          BEGIN
-            LET item=AESWINDOWSTATE.FindRecord(window.id)
-            IF item<>NULL AND item.inputBound<>0 THEN
-              BEGIN
-                LET entry=CONSOLEWINDOWS.Find(item.inputUnit)
-                IF entry<>NULL THEN
-                  route=entry.route
-                  service.consoleFocus^=BYTE(entry.unit & 3)
-                ELSE
-                  route=0
-                FI
-              END
+            LET entry=CONSOLEWINDOWS.Find(window.inputUnit)
+            IF entry<>NULL THEN
+              route=entry.route
+              service.consoleFocus^=BYTE(entry.unit & 3)
+            ELSE
+              route=0
             FI
           END
         FI
@@ -195,7 +102,6 @@ RETURN
 PUBLIC PROC CommitFocus(DESKTYPES.Service POINTER service LONGCARD id)
   BYTE index,status
   LAYERTYPES.Rect frame
-  DESKTYPES.ClientRecord POINTER client
 
   DESKSTATE.TopChrome()
   IF service.focus=id THEN
@@ -205,14 +111,6 @@ PUBLIC PROC CommitFocus(DESKTYPES.Service POINTER service LONGCARD id)
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     IF service.windows(index).id<>0 THEN
       IF service.windows(index).id=id OR service.windows(index).id=service.focus THEN
-        IF service.windows(index).id=service.focus THEN
-          DESKWIDGETS.Cancel(service,@service.windows(index))
-        FI
-
-        client=DESKEVENTS.Find(service,service.windows(index).client)
-        IF client<>NULL THEN
-          client.focusBits=client.focusBits OR BYTE(1 LSH index)
-        FI
         BEGIN
           LET layer=Layer(service,@service.windows(index))
           IF layer<>NULL THEN
@@ -223,9 +121,6 @@ PUBLIC PROC CommitFocus(DESKTYPES.Service POINTER service LONGCARD id)
               REGIONS.Copy(@layer.bounds,@frame)
               frame.bottom=frame.top+DESKTYPES.TITLE_HEIGHT
               status=LAYERS.Invalidate(@service.scene,layer.id,@frame)
-            FI
-            IF service.windows(index).kind=DESKTYPES.CONTENT_WIDGETS THEN
-              DESKWIDGETS.FocusDamage(service,@service.windows(index))
             FI
           FI
         END
@@ -239,19 +134,12 @@ PUBLIC PROC CommitFocus(DESKTYPES.Service POINTER service LONGCARD id)
   EXEC.Permit()
   PublishInput(service)
   AESMOUSE.Refresh()
-  FOR index=0 TO DESKTYPES.CLIENTS-1 DO
-    IF service.clients(index).id<>0 THEN
-      DESKEVENTS.Wake(service,@service.clients(index))
-    FI
-  OD
-
   AESWINDOWSTATE.Sync()
 
 RETURN
 
 PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
 
-  PrepareFocus(service,id)
   CommitFocus(service,id)
 
 RETURN
@@ -275,13 +163,10 @@ PUBLIC LONGCARD FUNC NextFocus(DESKTYPES.Service POINTER service
             LET window=@service.windows(slot)
             IF window.id<>0 AND window.id<>closing AND window.layer=layer.id
                 AND window.iconified=0 THEN
-              eligible=window.id=service.consoleWindow OR window.keyRoute<>0
-              IF window.kind=DESKTYPES.CONTENT_AES THEN
-                BEGIN
-                  LET client=AESWINDOWSTATE.Find(window.id)
-                  eligible=client<>NULL AND client.endpoint.input.windowEpoch<>0
-                END
-              FI
+              BEGIN
+                LET client=AESWINDOWSTATE.Find(window.id)
+                eligible=client<>NULL AND client.endpoint.input.windowEpoch<>0
+              END
 
               IF eligible<>0 THEN
                 RETURN(window.id)
@@ -316,8 +201,6 @@ PUBLIC PROC Iconify(DESKTYPES.Service POINTER service
     RETURN
   FI
 
-  DESKMOVE.HideCaret()
-  DESKWIDGETS.Cancel(service,window)
   REGIONS.Copy(@layer.bounds,@window.normalBounds)
   window.iconified=1
   slot=0
@@ -330,9 +213,7 @@ PUBLIC PROC Iconify(DESKTYPES.Service POINTER service
       DESKTYPES.TILE_WIDTH,DESKTYPES.TILE_HEIGHT))
   IconCheck(DESKSTATE.Raise(window.layer))
   CommitFocus(service,NextFocus(service,window.id))
-  IF window.kind=DESKTYPES.CONTENT_AES THEN
-    AESWINDOWSTATE.Snapshot(AESWINDOWSTATE.FindRecord(window.id))
-  FI
+  AESWINDOWSTATE.Snapshot(AESWINDOWSTATE.FindRecord(window.id))
   AESWINDOWSTATE.Sync()
 
 RETURN
@@ -349,19 +230,15 @@ PUBLIC PROC ForgetIcon(DESKTYPES.Service POINTER service
   window.iconified=0
   IconCheck(LAYERS.Bounds(@service.scene,window.layer,bounds.left,bounds.top,
       bounds.right-bounds.left,bounds.bottom-bounds.top))
-  IF window.kind=DESKTYPES.CONTENT_AES THEN
+  BEGIN
+    LAYERTYPES.Rect work
+    DESKGEOMETRY.Work(window.frameKind,bounds,@work)
+    LAYERS.ExternalArea(@service.scene,window.layer,@work)
     BEGIN
-      LAYERTYPES.Rect work
-      DESKGEOMETRY.Work(window.frameKind,bounds,@work)
-      IF window.console=0 THEN
-        LAYERS.ExternalArea(@service.scene,window.layer,@work)
-      FI
-      BEGIN
-        LET item=AESWINDOWSTATE.FindRecord(window.id)
-        DESKGEOMETRY.Slider(window,bounds,item.view.vslide,item.view.vsize)
-      END
+      LET item=AESWINDOWSTATE.FindRecord(window.id)
+      DESKGEOMETRY.Slider(window,bounds,item.view.vslide,item.view.vsize)
     END
-  FI
+  END
 
 RETURN
 
@@ -369,7 +246,6 @@ PUBLIC BYTE FUNC Top(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window)
 
   LET restore=window.iconified<>0
-  PrepareFocus(service,window.id)
   ForgetIcon(service,window)
   LET status=DESKSTATE.Raise(window.layer)
   IF status<>LAYERTYPES.OK THEN
@@ -377,415 +253,24 @@ PUBLIC BYTE FUNC Top(DESKTYPES.Service POINTER service
   FI
 
   CommitFocus(service,window.id)
-  IF restore<>0 AND window.kind=DESKTYPES.CONTENT_AES THEN
+  IF restore<>0 THEN
     AESWINDOWSTATE.Snapshot(AESWINDOWSTATE.FindRecord(window.id))
   FI
   AESWINDOWSTATE.Sync()
 
 RETURN(LAYERTYPES.OK)
 
-; Copy titles into owned records; no string pointer survives its reply.
-CARD FUNC Open(DESKTYPES.Service POINTER service
-    DESKTYPES.ClientRecord POINTER client DESKTYPES.Request POINTER request)
-  BYTE slot,status
-  CARD inputStatus
-  LONGCARD route
-
-  IF request.value<>DESKTYPES.CONTENT_COMMANDS
-      AND request.value<>DESKTYPES.CONTENT_CONSOLE
-      AND request.value<>DESKTYPES.CONTENT_WIDGETS THEN
-    RETURN(DESKTYPES.BAD_ARGUMENT)
-  FI
-
-  IF request.value=DESKTYPES.CONTENT_CONSOLE THEN
-    IF service.consoleOwner<>client.binding.owner OR service.consoleWindow<>0
-        OR request.target<>0 OR (request.bounds.left & 7)<>0
-        OR ((request.bounds.top+DESKTYPES.FRAME_SHELL_TOP) & 7)<>0
-        OR request.bounds.right-request.bounds.left<>
-            512+DESKTYPES.WORK_LEFT+DESKTYPES.WORK_RIGHT
-        OR request.bounds.bottom-request.bounds.top<>
-            160+DESKTYPES.FRAME_SHELL_TOP+DESKTYPES.WORK_BOTTOM THEN
-      RETURN(DESKTYPES.BAD_ARGUMENT)
-    FI
-  FI
-
-  IF request.bytes>=DESKTYPES.TITLE_BYTES
-      OR (request.bytes<>0 AND request.payload=NULL)
-      OR request.bounds.right-request.bounds.left<32
-      OR request.bounds.bottom-request.bounds.top<32 THEN
-    RETURN(DESKTYPES.BAD_ARGUMENT)
-  FI
-
-  IF service.nextWindow=0 THEN
-    RETURN(DESKTYPES.EXHAUSTED)
-  FI
-
-  FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
-    IF service.windows(slot).id=0 THEN
-      BEGIN
-        LET window=@service.windows(slot)
-        route=0
-        IF request.value<>DESKTYPES.CONTENT_CONSOLE AND service.keyboard<>NULL THEN
-          inputStatus=DESKROUTES.Create(INPUT.Lease POINTER(service.keyboard),0,
-              @route)
-          IF inputStatus<>INPUT.OK THEN
-            RETURN(DESKTYPES.FULL)
-          FI
-        FI
-
-        status=LAYERS.Create(@service.scene,@request.bounds,@window.layer)
-        IF status<>LAYERTYPES.OK THEN
-          IF route<>0 AND DESKROUTES.Retire(
-              INPUT.Lease POINTER(service.keyboard),route)<>INPUT.OK THEN
-            HEAPCORE.Abort($fae9)
-          FI
-
-          RETURN(DESKTYPES.BAD_ARGUMENT)
-        FI
-
-        window.visualRevision=1
-        window.keyRoute=route
-        window.id=service.nextWindow
-        service.nextWindow==+1
-        window.client=client.id
-        window.kind=BYTE(request.value)
-        window.console=request.target
-        IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
-          window.frameKind=DESKTYPES.FRAME_SHELL_TABS
-          service.consoleWindow=window.id
-        FI
-        A816MEMORY.Move(@window.title(0),request.payload,request.bytes)
-        window.title(request.bytes)=0
-        request.window=window.id
-        RETURN(DESKTYPES.OK)
-      END
-    FI
-  OD
-
-RETURN(DESKTYPES.FULL)
-
-; Validate an entire immutable batch before changing any retained content.
-CARD FUNC Content(DESKTYPES.Service POINTER service
-    DESKTYPES.Window POINTER window DESKTYPES.Request POINTER request)
-  CARD index,width,height
-
-  IF window.kind<>DESKTYPES.CONTENT_COMMANDS
-      OR request.payload=NULL OR request.bytes<>DESKTYPES.CONTENT_SIZE THEN
-    RETURN(DESKTYPES.BAD_ARGUMENT)
-  FI
-
-  LET source=DESKTYPES.Content POINTER(request.payload)
-  LET layer=Layer(service,window)
-  width=CARD(layer.bounds.right-layer.bounds.left)
-      -DESKTYPES.WORK_LEFT-DESKTYPES.WORK_RIGHT
-  height=CARD(layer.bounds.bottom-layer.bounds.top)
-      -DESKTYPES.FRAME_SHELL_TOP-DESKTYPES.WORK_BOTTOM
-  IF window.iconified<>0 THEN
-    width=CARD(window.normalBounds.right-window.normalBounds.left)
-        -DESKTYPES.WORK_LEFT-DESKTYPES.WORK_RIGHT
-    height=CARD(window.normalBounds.bottom-window.normalBounds.top)
-        -DESKTYPES.FRAME_SHELL_TOP-DESKTYPES.WORK_BOTTOM
-  FI
-  IF source.count>DESKTYPES.COMMANDS OR source.textBytes>DESKTYPES.TEXT_BYTES
-      OR source.background>15 THEN
-    RETURN(DESKTYPES.BAD_ARGUMENT)
-  FI
-
-  index=0
-  WHILE index<source.count DO
-    BEGIN
-      LET command=@source.commands(index)
-      IF command.pen>15 OR REGIONS.Valid(@command.bounds)=0
-          OR command.bounds.left<0 OR command.bounds.top<0
-          OR command.bounds.right>INT(width) OR command.bounds.bottom>INT(height) THEN
-        RETURN(DESKTYPES.BAD_ARGUMENT)
-      FI
-
-      CASE command.kind OF
-      WHEN DESKTYPES.DRAW_FILL THEN
-        IF command.offset<>0 OR command.count<>0 THEN
-          RETURN(DESKTYPES.BAD_ARGUMENT)
-        FI
-
-      WHEN DESKTYPES.DRAW_TEXT THEN
-        IF command.offset>source.textBytes
-            OR command.count>source.textBytes-command.offset
-            OR command.count>(width RSH 3)
-            OR command.bounds.right-command.bounds.left<>INT(command.count LSH 3)
-            OR command.bounds.bottom-command.bounds.top<>8 THEN
-          RETURN(DESKTYPES.BAD_ARGUMENT)
-        FI
-
-      ELSE
-        RETURN(DESKTYPES.BAD_ARGUMENT)
-      ESAC
-    END
-    index==+1
-  OD
-
-  A816MEMORY.Move(BYTE POINTER(@service.staging),request.payload,DESKTYPES.CONTENT_SIZE)
-  A816MEMORY.Move(BYTE POINTER(@window.content),BYTE POINTER(@service.staging),
-      DESKTYPES.CONTENT_SIZE)
-  DESKCACHE.Changed(service,window)
-  IF LAYERS.Invalidate(@service.scene,window.layer,@layer.bounds)<>LAYERTYPES.OK THEN
-    HEAPCORE.Abort($fae0)
-  FI
-
-RETURN(DESKTYPES.OK)
-
-; Service records are private; caller pointers are admitted once at REGISTER.
-CARD FUNC Dispatch(DESKTYPES.Service POINTER service
-    DESKTYPES.Request POINTER request)
-  BYTE index,status
-  CARD inputStatus
-  LONGCARD targetFocus
-  DESKTYPES.Request POINTER waiting
-  DESKTYPES.Window POINTER window
-
-  IF request.message.mn_Length<>DESKTYPES.REQUEST_SIZE OR request.client=NULL THEN
-    RETURN(DESKTYPES.BAD_ARGUMENT)
-  FI
-
-  ; Requests already queued before admission closed must also be rejected.
-  IF service.live<>1 AND (request.operation=DESKTYPES.REGISTER
-      OR request.operation=DESKTYPES.OPEN) THEN
-    RETURN(DESKTYPES.CANCELLED)
-  FI
-
-  IF request.operation=DESKTYPES.REGISTER THEN
-    RETURN(Register(service,request))
-  FI
-
-  LET client=DESKEVENTS.Find(service,request.client.id)
-  IF client=NULL THEN
-    RETURN(DESKTYPES.BAD_ID)
-  FI
-
-  IF client.binding<>request.client THEN
-    RETURN(DESKTYPES.BAD_ID)
-  FI
-
-  CASE request.operation OF
-  WHEN DESKTYPES.NEXT_EVENT THEN
-    IF client.waiting<>NULL THEN
-      RETURN(DESKTYPES.BUSY)
-    FI
-
-    client.waiting=request
-    RETURN(DESKTYPES.PENDING)
-
-  WHEN DESKTYPES.CANCEL_EVENT THEN
-    waiting=client.waiting
-    IF waiting=NULL THEN
-      RETURN(DESKTYPES.ALREADY_DONE)
-    FI
-
-    IF waiting.sequence<>request.target THEN
-      RETURN(DESKTYPES.BAD_ID)
-    FI
-
-    client.waiting=NULL
-    DESKEVENTS.Reply(waiting,DESKTYPES.CANCELLED)
-    RETURN(DESKTYPES.OK)
-
-  WHEN DESKTYPES.UNREGISTER THEN
-    IF (request.client.lanes & (DESKTYPES.LANE_CONTROL XOR $ff))<>0 THEN
-      RETURN(DESKTYPES.BUSY)
-    FI
-
-    FOR index=0 TO DESKTYPES.WINDOWS-1 DO
-      IF service.windows(index).client=client.id THEN
-        RETURN(DESKTYPES.BUSY)
-      FI
-    OD
-
-    EXEC.Forbid()
-    request.client.id=0
-    DESKEVENTS.Reply(request,DESKTYPES.OK)
-    IF EXEC.ReleaseTask(@client.lease)=0 THEN
-      HEAPCORE.Abort($fae1)
-    FI
-
-    A816MEMORY.Clear(BYTE POINTER(client),DESKTYPES.CLIENTRECORD_SIZE)
-    EXEC.Permit()
-    RETURN(DESKTYPES.PENDING)
-
-  WHEN DESKTYPES.OPEN THEN
-    RETURN(Open(service,client,request))
-  ESAC
-
-  window=Find(service,request.window)
-  IF window=NULL THEN
-    RETURN(DESKTYPES.BAD_ID)
-  FI
-
-  IF window.client<>client.id THEN
-    RETURN(DESKTYPES.BAD_ID)
-  FI
-
-  status=LAYERTYPES.OK
-  CASE request.operation OF
-  WHEN DESKTYPES.SHOW THEN
-    status=LAYERS.Show(@service.scene,window.layer,1)
-    IF window.iconified<>0 THEN
-      IconCheck(Top(service,window))
-    FI
-    DESKSTATE.TopChrome()
-  WHEN DESKTYPES.HIDE THEN
-    targetFocus=NextFocus(service,window.id)
-    PrepareFocus(service,targetFocus)
-    DESKTABS.Retire(window.id)
-    DESKWIDGETS.Cancel(service,window)
-    status=LAYERS.Show(@service.scene,window.layer,0)
-    ForgetIcon(service,window)
-    CommitFocus(service,targetFocus)
-  WHEN DESKTYPES.MOVE THEN
-    IF window.kind=DESKTYPES.CONTENT_CONSOLE AND
-        ((request.bounds.left & 7)<>0
-        OR ((request.bounds.top+DESKTYPES.FRAME_SHELL_TOP) & 7)<>0) THEN
-      RETURN(DESKTYPES.BAD_ARGUMENT)
-    FI
-
-    DESKWIDGETS.Cancel(service,window)
-    RETURN(DESKMOVE.Start(service,window,
-        request.bounds.left,request.bounds.top,request))
-  WHEN DESKTYPES.RAISE THEN
-    IF window.iconified<>0 THEN
-      status=Top(service,window)
-    ELSE
-      status=DESKSTATE.Raise(window.layer)
-    FI
-  WHEN DESKTYPES.FOCUS THEN
-    BEGIN
-      LET layer=Layer(service,window)
-      IF layer.shown=0 THEN
-        RETURN(DESKTYPES.BAD_ARGUMENT)
-      FI
-    END
-
-    IF window.iconified<>0 THEN
-      status=Top(service,window)
-    ELSE
-      Focus(service,window.id)
-    FI
-  WHEN DESKTYPES.SET_TABS THEN
-    RETURN(DESKTABS.Update(service,window,request))
-  WHEN DESKTYPES.BIND_CONSOLE THEN
-    RETURN(DESKCONSOLE.Bind(service,window,request))
-  WHEN DESKTYPES.REPLACE THEN
-    RETURN(Content(service,window,request))
-  WHEN DESKTYPES.SET_TREE,DESKTYPES.UPDATE_WIDGETS,DESKTYPES.READ_WIDGET_STATE THEN
-    RETURN(DESKWIDGETS.Request(service,window,request))
-  WHEN DESKTYPES.CLOSE THEN
-    targetFocus=NextFocus(service,window.id)
-    IF window.id=service.consoleWindow THEN
-      DESKMOVE.HideCaret()
-    ELSE
-      PrepareFocus(service,targetFocus)
-    FI
-    DESKTABS.Retire(window.id)
-    DESKWIDGETS.Cancel(service,window)
-    status=LAYERS.Delete(@service.scene,window.layer)
-    IF status=LAYERTYPES.OK THEN
-      CommitFocus(service,targetFocus)
-
-      FOR index=0 TO DESKTYPES.WINDOWS-1 DO
-        IF @service.windows(index)=window THEN
-          DESKEVENTS.Retire(client,window.id,index)
-        FI
-      OD
-
-      IF window.keyRoute<>0 THEN
-        inputStatus=INPUT.Discard(INPUT.Lease POINTER(service.keyboard),window.keyRoute)
-        inputStatus=DESKROUTES.Retire(INPUT.Lease POINTER(service.keyboard),window.keyRoute)
-        IF inputStatus<>INPUT.OK THEN
-          HEAPCORE.Abort($fae9)
-        FI
-      FI
-
-      IF service.consoleWindow=window.id THEN
-        DESKCONSOLE.Closed(service)
-      FI
-
-      DESKCACHE.Invalidate(service,window.id)
-      DESKCACHE.ForgetCandidate(service,window)
-      DESKWIDGETS.Retire(window)
-      A816MEMORY.Clear(BYTE POINTER(window),DESKTYPES.WINDOW_SIZE)
-    FI
-  ELSE
-    RETURN(DESKTYPES.BAD_ARGUMENT)
-  ESAC
-
-RETURN(IF status=LAYERTYPES.OK THEN DESKTYPES.OK ELSE DESKTYPES.BAD_ARGUMENT FI)
-
-; Controls blocked by an active paint do not prevent cancellation/event intake.
-PUBLIC BYTE FUNC Pump(DESKTYPES.Service POINTER service BYTE budget)
-  DESKTYPES.Request POINTER request
-  CARD status
-  BYTE count
-
-  count=0
-  WHILE count<budget AND count<4 DO
-    request=NULL
-    IF service.scene.busy=0 AND AESLOCKS.MouseBlocked()=0 THEN
-      request=DESKTYPES.Request POINTER(EXECLISTS.RemHead(@service.deferred))
-    FI
-
-    IF request=NULL AND EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0 THEN
-      request=DESKTYPES.Request POINTER(EXEC.GetMsg(@service.port))
-    FI
-
-    IF request=NULL THEN
-      EXIT
-    FI
-
-    IF (service.scene.busy<>0 OR AESLOCKS.MouseBlocked()<>0)
-        AND request.operation<>DESKTYPES.NEXT_EVENT
-        AND request.operation<>DESKTYPES.CANCEL_EVENT THEN
-      EXECLISTS.AddTail(@service.deferred,@request.message.mn_Node)
-    ELSE
-      status=Dispatch(service,request)
-      IF status<>DESKTYPES.PENDING THEN
-        DESKEVENTS.Reply(request,status)
-      FI
-    FI
-
-    count==+1
-  OD
-
-RETURN(count)
-
-; Pending events are revisited once per host turn, outside intake accounting.
-PUBLIC PROC Wake(DESKTYPES.Service POINTER service)
-  BYTE index
-
-  FOR index=0 TO DESKTYPES.CLIENTS-1 DO
-    IF service.clients(index).id<>0 THEN
-      DESKEVENTS.Wake(service,@service.clients(index))
-    FI
-  OD
-
-RETURN
-
-PUBLIC BYTE FUNC Runnable(DESKTYPES.Service POINTER service)
-
-RETURN(EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0
-    OR (service.scene.busy=0 AND AESLOCKS.MouseBlocked()=0
-        AND EXECLISTS.IsListEmpty(@service.deferred)=0))
-
 PUBLIC BYTE FUNC Stop(DESKTYPES.Service POINTER service)
   BYTE index
 
-  IF service.scene.busy<>0 OR Runnable(service)<>0 THEN
+  IF service.scene.busy<>0 THEN
     RETURN(0)
   FI
-
-  FOR index=0 TO DESKTYPES.CLIENTS-1 DO
-    IF service.clients(index).id<>0 THEN
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    IF service.windows(index).id<>0 THEN
       RETURN(0)
     FI
   OD
-
   service.live=0
 
 RETURN(1)

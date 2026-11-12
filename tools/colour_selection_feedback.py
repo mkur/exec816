@@ -2,7 +2,7 @@
 from browser_model import FIELDS as F, CONTENT_TOP
 from gem_desktop_oracle import paint
 from gem_render_oracle import Raster,font_bytes,PALETTE,PENS
-from measure_desktop import distribution
+from latency_statistics import distribution
 from native_program import require
 from sio_transaction_trace import BASE_HZ
 from test_gem_cursor import overlay

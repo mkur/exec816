@@ -4,7 +4,7 @@ from console_turn_profile import markers,flat_markers,analyze_events,Timeline
 from bitmap_console_performance import native_markers
 from native_program import require
 from sio_transaction_trace import read_events
-from measure_desktop import distribution
+from latency_statistics import distribution
 
 
 def setup(p,foreign,lean=False,notifications=False):

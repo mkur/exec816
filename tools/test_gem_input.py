@@ -9,7 +9,7 @@ from test_dos_stack import execute,ownership
 from test_mouse_observe import BRIDGE,ROM,PIN
 from desktop_mouse import schedule
 from gem_render_oracle import Raster,font_bytes
-from test_desktop_presentation import desktop, rectangle,frame
+from desktop_raster import desktop, rectangle,frame
 from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
 from test_gem_cursor import overlay

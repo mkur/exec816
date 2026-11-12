@@ -40,9 +40,7 @@ PUBLIC PROC Consider(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window)
   BYTE index
 
-  IF DESKSTATE.IsConsole(window)<>0 THEN
-    RETURN
-  FI
+
 
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     IF @service.windows(index)=window THEN
@@ -239,7 +237,7 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
   IF DISPLAY.Blocked()<>0 OR active<>0 OR service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0
       OR CONSOLEBITMAP.Enabled()=0 OR CONSOLEBITMAP.Failed()<>0
       OR window.id=0 OR window.visualRevision=0
-      OR DESKSTATE.IsConsole(window)<>0 OR window.iconified<>0 THEN
+      OR window.iconified<>0 THEN
     RETURN(0)
   FI
 

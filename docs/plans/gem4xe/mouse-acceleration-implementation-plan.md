@@ -172,7 +172,7 @@ Keep the PI3 renderer and budgets unchanged to isolate the feature.
    near a sampling/class boundary can acquire slightly different timing.
    Report that variation and tune the table if it causes obvious speed jumps.
    Do not loosen correctness assertions to conceal changed capture or queue loss.
-4. Use existing [desktop measurement tooling](../../../tools/measure_desktop.py)
+4. Use existing [desktop measurement tooling](https://github.com/mkur/exec816/blob/39e93a28/tools/measure_desktop.py)
    for a focused matched comparison: capture cost, Task transform cost, input
    service gaps and visible response under the selected loads. Record medians
    and tails where available. Acceleration is not expected to close PI4/HY4;
@@ -181,7 +181,7 @@ Keep the PI3 renderer and budgets unchanged to isolate the feature.
    explicit build-time `off` option and document the exact chosen curve. Leave
    runtime preferences and broader latency work for later desktop work.
 
-Validation includes focused [drag](../../../tools/test_desktop_drag.py),
+Validation includes focused [drag](https://github.com/mkur/exec816/blob/39e93a28/tools/test_desktop_drag.py),
 [AES input](../../../tools/test_aes_input.py), capture/failure and mouse/SIO
 boundary cases affected by the integration. Re-run failed or newly affected
 cases after changes; do not automatically run the full qualification matrix.

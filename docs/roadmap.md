@@ -261,8 +261,10 @@ extracts the graphical loop into `AESSYSTEM` on the same Task, behind an explici
 console interface. [GF10](history/gem-first-gui.md#gf10-console-backend-and-copied-views)
 separates the resident stream backend from copied presentation and input.
 [GF11](history/gem-first-gui.md#gf11-gem-terminal) presents production sessions
-and BASIC output through an ordinary GEM terminal. GF12 next retires the native
-preview policy and duplicate window records.
+and BASIC output through an ordinary GEM terminal.
+[GF12](history/gem-first-gui.md#gf12-native-graphical-policy-retirement) retires
+the native graphical protocol, previews, shell-frame extension and duplicate
+window policy. GF13 next prepares object layout once across drawing fragments.
 Existing latency gates remain open.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)

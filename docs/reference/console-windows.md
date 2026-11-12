@@ -19,13 +19,12 @@ and hidden; writes still complete into their retained cells. These functions
 do not use DOS IoErr. The production GEM desktop presents these instances
 through the [copied-view terminal](console-views.md); shell sessions share its
 ordinary AES window. BASIC output requests selection through the same view
-interface. The native binding below remains only in previews awaiting GF12
-retirement. Standalone tiled presentation calls remain unsupported
+interface. Standalone tiled presentation calls remain unsupported
 in desktop mode.
 
 `CONSOLE.Destroy(unit)` returns one on success, zero on rejection. Only the
 creating Task may destroy a created instance. Open device/DOS references and
-foreground scopes, key subscriptions and a published desktop binding prevent
+foreground scopes and key subscriptions prevent
 destruction. The creating Task cannot be removed
 while it owns an instance, including during creation or retirement. Closing a
 handle does not destroy its instance. Default unit zero cannot be destroyed.
@@ -81,34 +80,13 @@ and claims no reader. FastBasic saves these flags before selecting ATASCII and
 restores them after execution, including cancellation. An owner which selected
 ATASCII keeps its completed glyphs; the ordinary Shell returns to its native mode.
 
-`ExecAESConsole(window,unit)` binds a caller-owned 64×20 instance to a closed,
-fixed-size GEM window belonging to that application's AES context. Its work
-area must be 512×160 pixels and aligned to eight pixels in both axes. For
-example, `NAME|CLOSER|MOVER` with outer `(56,21,528,173)` has work area
-`(64,32,512,160)`. Bind before `wind_open`; other geometry is rejected. Moving
-must preserve that alignment and dimensions. The function returns one after
-publication, or zero with the AES diagnostic on failure. Rebuild the provider
-and applications for C import ABI 27 and AES wire ABI 18.
-
-The console worker owns retained cells, caret and drawing. GEM owns the frame,
-focus, visibility and ordinary `WM_TOPPED`, `WM_MOVED` and `WM_CLOSED` delivery.
-The application handles those messages; it does not paint the console client
-on `WM_REDRAW`. Hiding or covering it preserves output and pending input.
-The Shell keeps its own tabs and backing bitmap. Other console windows use the
-same worker's bounded, clipped retained-cell path; no painter Task or bitmap
-reservation is added.
-
-The window retains the unit through `wind_close`; `wind_delete` releases the
-binding after drawing retires. Destruction still refuses live streams or a
-child's scope. Close/delete the window, collect the child and close owned
-CON/RAW handles before destroying the instance. A scope can remain live while
-the window is hidden. Supply its CON handle in `ExecProgramStart.console` to
-route input and BREAK independently of the source window and Shell. Menu Stop
-uses `ExecBreakProgram` regardless of output focus. The selected presentation
-identity uses four upper-RAM bytes; the C bridge table uses fifteen and the
-current import table grows by fifteen. Console and stream buffers use ordinary
-upper heap. Added reserved bank-zero storage is **zero**, including each Task's
-stack/direct page.
+Applications request display with `ExecConsoleViewActivate(unit)` and continue
+using their source streams. The shared terminal owns the ordinary AES window,
+VDI workstation, copied view subscriptions and selected-source controls.
+Applications can also implement their own frontend using the [view API](console-views.md).
+An input association holds only a scalar unit; it does not retain source cells
+or attach a source to frame drawing. Source retirement closes subscriptions;
+consumers unsubscribe before freeing their signals or exiting.
 
 ## Owner-requested foreground cancellation
 

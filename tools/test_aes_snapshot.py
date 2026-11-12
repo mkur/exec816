@@ -29,8 +29,7 @@ def check_observations(raw):
         source=tuple(s[118:122]) if icon else bounds[0]
         l,t,r,b=source
         work=source if kind&c['FRAME_BORDERLESS'] else (
-            l+c['WORK_LEFT'],t+c['WORK_TOP']+(c['FRAME_INFO_HEIGHT'] if kind&c['FRAME_INFO'] else 0)
-            +(c['FRAME_TAB_HEIGHT'] if kind&c['FRAME_SHELL_TABS'] else 0),
+            l+c['WORK_LEFT'],t+c['WORK_TOP']+(c['FRAME_INFO_HEIGHT'] if kind&c['FRAME_INFO'] else 0),
             r-(c['FRAME_GADGET_WIDTH'] if kind&c['FRAME_VERTICAL'] else c['WORK_RIGHT']),
             b-(c['FRAME_GADGET_HEIGHT'] if kind&c['FRAME_SIZER'] else c['WORK_BOTTOM']))
         require(tuple(s[4:8])==source and tuple(s[8:12])==work,'Snapshot work/bounds differs')

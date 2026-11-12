@@ -14,7 +14,7 @@ from desktop_menu_check import Menus
 from gem_applications import symbols
 from browser_model import FIELDS as F,wait_listing
 from loadable_gem_feedback import measure
-from measure_desktop import distribution
+from latency_statistics import distribution
 from gem_render_oracle import Raster,font_bytes,PALETTE,PENS
 from gem_desktop_oracle import paint
 from test_gem_cursor import overlay

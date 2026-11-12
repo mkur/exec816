@@ -106,7 +106,7 @@ PUBLIC PROC Pump()
   ELSEIF command^=2 THEN
     FOR slot=0 TO AESTYPES.WINDOWS-1 DO
       IF service.windows(slot).owner=client.id THEN
-        AESGUI.Post(service,@service.windows(slot),AESTYPES.GUI_CLOSED,0,0,0,0)
+        AESGUI.Post(service,service.windows(slot),AESTYPES.GUI_CLOSED,0,0,0,0)
         EXIT
       FI
     OD
@@ -151,7 +151,7 @@ def worker_probe(original):
 def physical(b,p,foreign,report):
     from os_boundary import run_to
     from gem_render_oracle import Raster,font_bytes,PENS,DESKTOP_PALETTE as PALETTE
-    from test_desktop_presentation import rectangle,text
+    from desktop_raster import rectangle,text
     from application_menu_oracle import draw
     import adapter_state as adapter
     sy=foreign['symbols'];out=p['output'].parent

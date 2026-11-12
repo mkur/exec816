@@ -40,7 +40,7 @@ def physical(b, p, foreign, report):
         image = b.rawscreen(str(path)); raw = path.read_bytes()
         return b''.join(raw[y*image.stride+16*4:y*image.stride+(16+640)*4] for y in range(240))
     from gem_render_oracle import Raster, font_bytes, PENS, DESKTOP_PALETTE as PALETTE
-    from test_desktop_presentation import frame
+    from desktop_raster import frame
     font=font_bytes(Path(p['output']).parent/'selected/src/vdi/font8x8.c')
     rgb=bytes((v&254)+(v>>7) for v in PALETTE)
     hardware={v:rgb[i*3:i*3+3][::-1] for i,v in enumerate(PENS)}
@@ -70,7 +70,7 @@ def physical(b, p, foreign, report):
     busy = scene+layers_layout()['Scene']['fields']['busy']
     wf = desktop_layout()['Window']['fields']; ws = desktop_layout()['Window']['size']
     windows = [service+df['windows']+i*ws for i in range(4)]
-    window = min((w for w in windows if get(w+wf['kind'],1) == 4 and get(w+wf['id'],4)),
+    window = min((w for w in windows if get(w+wf['id'],4)),
                  key=lambda w: get(w+wf['id'],4))
     title = window+wf['title']
     require(b.memdump(title,65) == b'T'*64+b'\0', 'Title was not copied at admission')

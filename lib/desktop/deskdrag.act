@@ -15,7 +15,6 @@ USE DESKCORE
 USE DESKGEOMETRY
 USE DESKMOVE
 USE DESKMENU
-USE DESKEVENTS
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
@@ -28,7 +27,7 @@ BYTE appVisual
 LAYERTYPES.Rect origin,target
 INT pressX,pressY,sliderMin,sliderTravel,sliderValue
 BYTE gadget
-BYTE phase,blocked,dirty,focusWanted,escapePending,pixelMotion
+BYTE phase,blocked,dirty,escapePending
 CONST DRAGGING=1
 CONST MOVE_PENDING=2
 CONST CLOSING=3
@@ -58,7 +57,7 @@ PUBLIC PROC Reset()
   blocked=0
   DESKSTATE.outlineVisible=0
   dirty=0
-  focusWanted=0
+
   lossEpoch=DESKSTATE.LossEpoch()
 
 RETURN
@@ -77,7 +76,7 @@ PUBLIC PROC Cancel()
     END
   FI
   dirty=1
-  focusWanted=0
+
   lossEpoch=DESKSTATE.LossEpoch()
 
 RETURN
@@ -107,18 +106,12 @@ RETURN(0)
 BYTE FUNC CloseHit(DESKTYPES.Window POINTER window
     LAYERTYPES.Layer POINTER layer INT x,y)
 
-RETURN(window.kind<>DESKTYPES.CONTENT_CONSOLE
-    AND window.frameKind<>DESKTYPES.FRAME_BORDERLESS
+RETURN(window.frameKind<>DESKTYPES.FRAME_BORDERLESS
     AND DESKGEOMETRY.CloseHit(@layer.bounds,x,y)<>0)
 
 PROC Position(INT x,y)
-  INT left,top,width,height,limit,offset
+  INT left,top,width,height,limit
 
-  BEGIN
-    LET window=DESKCORE.Find(DESKSTATE.Get(),windowId)
-    offset=IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
-        INT(DESKTYPES.FRAME_SHELL_TOP) ELSE INT(0) FI
-  END
   width=origin.right-origin.left
   height=origin.bottom-origin.top
   left=origin.left+x-pressX
@@ -131,28 +124,14 @@ PROC Position(INT x,y)
     top=DESKMENU.BAR_HEIGHT
   FI
 
-  IF pixelMotion=0 THEN
-    left=(left+4) & $fff8
-    top=((top+offset+4) & $fff8)-offset
-    IF top<DESKMENU.BAR_HEIGHT THEN
-      top=((DESKMENU.BAR_HEIGHT+offset+7) & $fff8)-offset
-    FI
-  ELSE
-    left=left & $fffe
-  FI
+  left=left & $fffe
 
   limit=640-width
-  IF pixelMotion=0 THEN
-    limit=limit & $fff8
-  FI
   IF left>limit THEN
     left=limit
   FI
 
   limit=240-height
-  IF pixelMotion=0 THEN
-    limit=((limit+offset) & $fff8)-offset
-  FI
   IF top>limit THEN
     top=limit
   FI
@@ -208,8 +187,8 @@ PUBLIC CARD FUNC Outline(AESSTATE.Service POINTER service
   lossEpoch=DESKSTATE.LossEpoch()
   phase=APP_DRAG
   blocked=0
-  focusWanted=0
-  pixelMotion=1
+
+
   pressX=-request.intin(1)
   pressY=-request.intin(2)
   REGIONS.Assign(@origin,0,0,request.intin(3),request.intin(4))
@@ -411,7 +390,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
             RETURN(0)
           FI
 
-          IF window.kind=DESKTYPES.CONTENT_AES AND window.iconified=0
+          IF window.iconified=0
               AND service.focus<>window.id THEN
             AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
             blocked=1
@@ -419,8 +398,8 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
           FI
 
           windowId=window.id
-          pixelMotion=window.kind=DESKTYPES.CONTENT_AES
-          focusWanted=window.kind<>DESKTYPES.CONTENT_AES AND window.iconified=0
+
+
           IF hit<>0 THEN
             gadget=hit
             REGIONS.Copy(@layer.bounds,@origin)
@@ -451,8 +430,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
             RETURN(1)
           FI
 
-          IF window.kind<>DESKTYPES.CONTENT_CONSOLE
-              AND sample.x<layer.bounds.left+DESKTYPES.FRAME_GADGET_WIDTH THEN
+          IF sample.x<layer.bounds.left+DESKTYPES.FRAME_GADGET_WIDTH THEN
             phase=0
             windowId=0
             RETURN(1)
@@ -474,7 +452,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
 RETURN(0)
 
 PUBLIC PROC Advance()
-  BYTE status,slot,drawn
+  BYTE drawn
 
   IF DISPLAY.Blocked()<>0 THEN
     RETURN
@@ -528,15 +506,6 @@ PUBLIC PROC Advance()
     RETURN
   FI
 
-  IF focusWanted<>0 THEN
-    status=DESKCORE.Top(service,window)
-    IF status<>LAYERTYPES.OK THEN
-      HEAPCORE.Abort($faec)
-    FI
-
-    focusWanted=0
-  FI
-
   IF phase=SIZE_PENDING OR phase=SLIDE_PENDING OR phase=ARROW_PENDING THEN
     IF phase<>ARROW_PENDING THEN
       drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
@@ -568,39 +537,13 @@ PUBLIC PROC Advance()
   IF phase=MOVE_PENDING THEN
     drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
     DESKSTATE.outlineVisible=0
-    IF window.kind=DESKTYPES.CONTENT_AES THEN
-      AESWINDOWSTATE.Control(window,AESTYPES.GUI_MOVED,target.left,target.top,
-          target.right-target.left,target.bottom-target.top)
-      status=DESKTYPES.OK
-    ELSE
-      status=BYTE(DESKMOVE.Start(service,window,target.left,target.top,NULL))
-    FI
-    IF status<>DESKTYPES.OK AND status<>DESKTYPES.PENDING
-        AND status<>DESKTYPES.DRAW_FAILED THEN
-      HEAPCORE.Abort($faed)
-    FI
-
+    AESWINDOWSTATE.Control(window,AESTYPES.GUI_MOVED,target.left,target.top,
+        target.right-target.left,target.bottom-target.top)
     phase=0
     windowId=0
     dirty=0
   ELSEIF phase=CLOSE_PENDING THEN
-    IF window.kind=DESKTYPES.CONTENT_AES THEN
-      AESWINDOWSTATE.Control(window,AESTYPES.GUI_CLOSED,0,0,0,0)
-      phase=0
-      windowId=0
-      RETURN
-    FI
-
-    FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
-      IF @service.windows(slot)=window THEN
-        BEGIN
-          LET client=DESKEVENTS.Find(service,window.client)
-          client.closeBits=client.closeBits OR BYTE(1 LSH slot)
-          DESKEVENTS.Wake(service,client)
-        END
-      FI
-    OD
-
+    AESWINDOWSTATE.Control(window,AESTYPES.GUI_CLOSED,0,0,0,0)
     phase=0
     windowId=0
   FI

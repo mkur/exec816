@@ -20,5 +20,4 @@ LONG EXEC_CALL ExecConsoleGetMode(BPTR console);
  * area must be 512x160, aligned to 8 pixels. The console worker paints it;
  * the owning application handles WM_TOPPED/MOVED/CLOSED in the usual way.
  * Binding lasts through wind_close and retires with wind_delete. */
-WORD EXEC_CALL ExecAESConsole(WORD window,ULONG unit);
 #endif

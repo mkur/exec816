@@ -241,8 +241,8 @@ cannot retire newer paint. Pending application repaint neither retains a
 transaction nor makes the presenter runnable.
 
 The [resident counter example](../guides/aes-applications.md#counter-example)
-uses this external-paint path. Shell plus two counters consume three layers;
-adding the native panel fills the fourth. Neither delayed redraw delivery nor
+uses this external-paint path. All AES window bodies, including the terminal,
+use external paint. Neither delayed redraw delivery nor
 fully covered timer updates make an external layer cache eligible.
 
 ## Saved scene rectangles

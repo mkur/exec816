@@ -7,7 +7,7 @@ from native_program import ROOT,require
 def physical(b,p,foreign,report):
     from os_boundary import run_to
     from gem_render_oracle import Raster,font_bytes,PENS,DESKTOP_PALETTE as PALETTE
-    from test_desktop_presentation import rectangle
+    from desktop_raster import rectangle
     import adapter_state as adapter
     sy=foreign['symbols'];out=p['output'].parent
     def reach(condition):

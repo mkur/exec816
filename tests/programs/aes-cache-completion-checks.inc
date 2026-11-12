@@ -143,11 +143,11 @@ PROC CompletionChecks()
       2*LAYERTYPES.CACHEREPAIR_SIZE)
 
   ; A hidden/iconified owner still completes the ordinary no-slot END policy.
-  LET item=@service.windows(0)
-  LET layer=LAYERS.Find(@desktop.scene,item.window.layer)
+  LET item=service.windows(0)
+  LET layer=LAYERS.Find(@desktop.scene,item.layer)
   Require(LAYERS.Show(@desktop.scene,layer.id,0)=LAYERTYPES.OK)
-  item.window.iconified=1
-  REGIONS.Copy(@layer.bounds,@item.window.normalBounds)
+  item.iconified=1
+  REGIONS.Copy(@layer.bounds,@item.normalBounds)
   service.updateWindow=item.gui.window
   AESWINDOWSTATE.BeginUpdate(@service.clients(0))
   AESWINDOWSTATE.Updates(@service.clients(0),2)
@@ -160,7 +160,7 @@ PROC CompletionChecks()
   Require(layer.pending.count<>0 AND item.view.pixelsReady=0)
   Require(item.view.paintEpoch=layer.paintEpoch)
   Require(request.paintCount=0 AND request.invalidationCount=0)
-  item.window.iconified=0
+  item.iconified=0
 
   ; Successful reports still publish readiness and schedule capture on a miss.
   ; This metadata-only fixture has no renderer to retire hide's frame damage.
@@ -181,9 +181,9 @@ PROC CompletionChecks()
   service.updateWindow=0
 
   ; Normal retirement invalidates both identities before the layer is deleted.
-  LAYERCACHE.Prepare(@desktop.cache.slots(0),item.window.id,10,212,154)
+  LAYERCACHE.Prepare(@desktop.cache.slots(0),item.id,10,212,154)
   LAYERCACHE.Captured(@desktop.cache.slots(0),1)
-  DESKCACHE.Invalidate(desktop,item.window.id)
+  DESKCACHE.Invalidate(desktop,item.id)
   Require(desktop.cache.slots(0).revision=0 AND desktop.repairs(0).state=0)
   EXEC.FreeMem(completionBefore,LONGCARD(SIZEOF(DESKTYPES.Service)))
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Interactive resident GEM applications; shared body for tests and demo."""
+"""Interactive GEM application fixture with ordinary AES event loops."""
 import argparse
 import json
 from pathlib import Path
@@ -10,7 +10,7 @@ from native_program import ROOT, build, compiler
 
 
 def input_image(out, instrument=False):
-    """The same resident bodies/wrapper are linked by proof and optional demo."""
+    """Link the application bodies and focused fixture observation hooks."""
     body=ROOT/'examples/gem-input/input.c'
     sources=[ROOT/'c/calypsi/aes.c',ROOT/'c/calypsi/aes-messages.c',ROOT/'c/calypsi/aes-events.c',
              ROOT/'examples/gem-input/resident.c']
@@ -34,7 +34,7 @@ def input_image(out, instrument=False):
         altered=out/'aes-events.c';altered.write_text(text)
         sources[sources.index(events)]=altered
     sources.append(body)
-    return drawing(out,True,widgets=True,client_sources=sources,
+    return drawing(out,True,desktop_style=True,client_sources=sources,
         client_entries=['GEMInputOne','GEMInputTwo']+(['InputHold'] if instrument else []),
         client_roots=['GEMInputsStart','GEMInputsStop','GEMInputsService','GEMInputs']+(['InputPost','InputCapacity'] if instrument else []),
         client_probes=[(ROOT/'c/calypsi/aes-layout.c',expected_layout()),
@@ -73,15 +73,14 @@ RETURN(inputCall()<>0)
     return source.replace('PROC Main()',stub+'PROC Main()',1)
 
 
-def build_inputs(out,source=None,program_output=None,load=False,panel=False,**options):
+def build_inputs(out,source=None,program_output=None,**options):
     from library_paths import read_source
     out.mkdir(parents=True,exist_ok=True)
-    instrument=source is None and not load
+    instrument=source is None
     options.pop('desktop',None)
     foreign=input_image(out,instrument)
-    original=source or ROOT/('tests/programs/gem_input_load.act' if load else 'tests/programs/gem_input_session.act')
+    original=source or ROOT/'tests/programs/gem_input_session.act'
     text=read_source(original)
-    if panel:text=text.replace('CONST WITH_PANEL=0','CONST WITH_PANEL=1')
     source=out/'inputs.act';source.write_text(input_bindings(text,foreign))
     memory=options.pop('memory_profile',None)
     if memory is None:
@@ -102,9 +101,7 @@ def build_inputs(out,source=None,program_output=None,load=False,panel=False,**op
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--load',action='store_true')
-    parser.add_argument('--panel',action='store_true',help='Separate four-layer native-panel coexistence fixture; implies --load')
     parser.add_argument('--mouse-profile',choices=('off','mild'))
     args=parser.parse_args()
-    build_inputs(args.output.resolve(),mouse_profile=args.mouse_profile,stack_checks=True,load=args.load or args.panel,panel=args.panel,
+    build_inputs(args.output.resolve(),mouse_profile=args.mouse_profile,stack_checks=True,
         **(dict(dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2)]) if args.load or args.panel else {}))

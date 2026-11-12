@@ -6,7 +6,7 @@ from browser_model import FIELDS as F, CONTENT_TOP, ICON_PITCH, listing, select,
 from colour_desktop_model import FIELDS as D, DRAG_FIELDS as G
 from native_program import require
 from sio_transaction_trace import BASE_HZ
-from measure_desktop import distribution
+from latency_statistics import distribution
 
 
 def exercise(s,desk,source,click,key,fill,path,desk_menu,shot,move,menus):

@@ -16,17 +16,16 @@ class DesktopContractTests(unittest.TestCase):
                          if line.startswith('PUBLIC CONST ')]
             self.assertEqual(len(constants), len(set(constants)))
         sizes = {name: value['size'] for name, value in generate_desktop.layout().items()}
-        self.assertEqual(sizes['Request'], 92)
-        self.assertEqual(sizes['Service'], 19544)
-        self.assertEqual(generate_desktop.layout()['Request']['fields']['message'], 0)
+        self.assertNotIn('Request',sizes)
+        self.assertNotIn('Content',sizes)
+        self.assertNotIn('ClientRecord',sizes)
         constants = generate_desktop.ABI['constants']
-        self.assertEqual(constants['EVENTS'] & (constants['EVENTS'] - 1), 0)
         self.assertLessEqual(constants['WINDOWS'], 8)  # durable notice bits
 
     def test_library_calls_are_not_task_entries(self):
         self.assertFalse(application_entry({'name': 'M_DESKMENUCACHE_PUMP'}))
         self.assertFalse(application_entry({'name': 'M_LAYERCACHE_INIT'}))
-        for module in ('DESKTOP', 'DESKCORE', 'DESKCONSOLE', 'DESKTABS', 'DESKMOVE', 'DESKCACHE', 'DESKEVENTS', 'DESKSTATE', 'DESKPAINT', 'DESKINPUT', 'DESKDRAG', 'DESKHOST', 'DESKBOOT', 'DESKWIDGETS', 'DESKWIDGETINPUT'):
+        for module in ('DESKCORE','DESKMOVE','DESKCACHE','DESKSTATE','DESKPAINT','DESKINPUT','DESKDRAG','DESKHOST','DESKBOOT','DESKMENURENDER'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
         for module in ('AESCORE', 'AESHOST', 'AESBOOT', 'AESSTATE', 'AESTYPES', 'AESLOCKS', 'AESGUI', 'AESWINDOW', 'AESWINDOWSTATE', 'AESSNAPSHOT', 'AESDEFER', 'AESMOUSE'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
@@ -47,8 +46,3 @@ class DesktopContractTests(unittest.TestCase):
         self.assertEqual(aes.ABI['constants']['QUEUE_DEPTH'], 16)
         self.assertEqual(aes.ABI['constants']['RPC_INTIN_WORDS'], 6)
         self.assertEqual(aes.ABI['constants']['INTIN_WORDS'], 16)
-
-    def test_demo_registers_only_its_worker_entry(self):
-        self.assertTrue(application_entry({'name': 'M_DESKAPP_RUN_123ABC'}))
-        for routine in ('STOP', 'RETIRE', 'REPLACE', 'CANCELWAIT'):
-            self.assertFalse(application_entry({'name': 'M_DESKAPP_' + routine + '_123ABC'}))

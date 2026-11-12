@@ -12,12 +12,7 @@ PUBLIC BYTE FUNC BeginBatch(CONSOLETYPES.Presentation POINTER view
     RETURN(0)
   FI
 
-  ; Remember admission: exposure can repaint the gathered model before flush.
-  ; Screen copies require visibility; backing copies require current pixels.
-  batchCopyReady=DESKSTATE.CopyReady()
-  IF BackingEnabled(view)<>0 THEN
-    batchCopyReady=BackingReady(view,instance)
-  FI
+  batchCopyReady=1
   RemoveCursor(view)
   IF CONSOLEBITMAP.Failed()<>0
       OR CONSOLEBATCH.Begin(instance,unit,view.generation)=0 THEN

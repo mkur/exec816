@@ -46,7 +46,7 @@ def measure(s, panel, move, label, count=6, before_sample=None, after_sample=Non
     record=dict(model_address=panel,samples_ms=samples,median_ms=median(samples),max_ms=max(samples),
                 scope=f'{count} press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark.')
     if count>=30:
-        from measure_desktop import distribution
+        from latency_statistics import distribution
         record.update(distribution(samples))
         record['scope']=f'{count} press edges, submission to matching button scanout, frame-granular polling; limited appearance comparison.'
     s.saved.setdefault('loaded_panel_feedback',{})[label]=record

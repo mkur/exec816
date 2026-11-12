@@ -110,7 +110,7 @@ def physical(b,p,foreign,report):
     import struct
     from gem_render_oracle import Raster,font_bytes,PENS,DESKTOP_PALETTE as PALETTE
     from control_panel_oracle import draw
-    from test_desktop_presentation import rectangle
+    from desktop_raster import rectangle
     move(620,220);frames(30)
     t=tree();objects=[list(struct.unpack('<hhhHHHIhhhh',b.memdump(t+i*24,24))) for i in range(7)]
     left,top=objects[0][7:9];width,height=objects[0][9:11]

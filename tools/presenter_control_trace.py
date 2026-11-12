@@ -4,13 +4,12 @@ from bisect import bisect_left, bisect_right
 from collections import defaultdict
 
 from aes_latency_trace import routine
-from generate_desktop import ABI, layout
 from native_program import require
 
 
 def markers(program):
     points = {}
-    offset = layout()['Request']['fields']['operation']
+    offset = 19  # retired desktop ABI18 Request.operation
     # SEP #$20; LDY #operation; LDA [pointer],Y. Observe A8 after the read,
     # including the busy-scene checks which can defer without calling Dispatch.
     needle = b'\xe2\x20\xa0'+offset.to_bytes(2, 'little')+b'\xb7\x80'
@@ -42,7 +41,7 @@ def admissions(events, definition, spans, worker):
                     and int(e[9], 16) == worker and int(e[4], 16) in interesting]
     ticks = [row[0] for row in observations]
     names = 'REGISTER OPEN SHOW HIDE MOVE RAISE FOCUS REPLACE NEXT_EVENT CANCEL_EVENT CLOSE UNREGISTER SET_TREE UPDATE_WIDGETS READ_WIDGET_STATE'.split()
-    names = {ABI['constants'][name]: name for name in names}
+    names = dict(enumerate(names,1))
     result = []
     for span in spans:
         if span['kind'] != 'deskcore_pump' or not span['return_a'] & 255:

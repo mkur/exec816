@@ -113,7 +113,7 @@ handoff, native regression and ABI checks. Reserved bank-zero delta is zero.
    update-lock deferral and already accelerated pointer coordinates.
 
 Validation: extend the [Layers runner](../../../tools/test_layers.py) and
-[AES desktop runner](../../../tools/test_aes_desktop.py). Run a C empty-window
+[AES desktop runner](https://github.com/mkur/exec816/blob/39e93a28/tools/test_aes_desktop.py). Run a C empty-window
 client that accepts move/top/close messages. Check reopen, slot exhaustion,
 owner exit, full message backpressure, partial/complete occlusion and title
 limits. Compare work/border conversions and visible rectangles against an

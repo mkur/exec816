@@ -1,4 +1,4 @@
-; Transitional renderer consumes the same bounded copied views as applications.
+; Standalone renderer consumes the same bounded copied views as applications.
 ; No live backend cell pointer is retained or used by graphical work.
 MODULE CONSOLEFRONT
 USE EXEC
@@ -15,7 +15,6 @@ USE DISPLAY
 USE AESLOCKS
 USE DESKSTATE
 USE DESKHOST
-USE DESKMENUCACHE
 
 TYPE Frame=[LONGCARD handle,unit,revision CARD first BYTE complete]
 Frame ARRAY frames(4)
@@ -45,7 +44,7 @@ RETURN
 ; Acquire permanent-unit storage before the resident publishes readiness.
 PUBLIC BYTE FUNC Start()
 
-  IF DESKSTATE.terminal<>0 THEN
+  IF DESKSTATE.Enabled()<>0 THEN
     RETURN(1)
   FI
 
@@ -85,11 +84,11 @@ RETURN(view.visible<>0 AND (model.dirtyRows<>0
 PUBLIC BYTE FUNC Runnable()
   BYTE slot
 
-  IF DESKSTATE.terminal<>0 THEN
+  IF DESKSTATE.Enabled()<>0 THEN
     RETURN(0)
   FI
 
-  IF DESKSTATE.terminal<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
+  IF DESKSTATE.Enabled()<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
       OR AESLOCKS.PaintBlocked()<>0 THEN
     RETURN(0)
   FI
@@ -168,7 +167,7 @@ PUBLIC BYTE FUNC Turn(BYTE POINTER again)
   CONSOLETYPES.Presentation POINTER view
   CONSOLETYPES.Instance POINTER model
 
-  IF DESKSTATE.terminal<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
+  IF DESKSTATE.Enabled()<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
       OR AESLOCKS.PaintBlocked()<>0 THEN
     RETURN(0)
   FI
@@ -188,27 +187,20 @@ PUBLIC BYTE FUNC Turn(BYTE POINTER again)
         Forget(frame)
       FI
     FI
-    IF entry.state=CONSOLETYPES.WIN_LIVE AND
-        (CONSOLEBITMAP.TextPending()=0 OR entry.unit=DESKSTATE.ConsoleUnit()) THEN
-      IF Ready(entry,frame)<>0 OR CONSOLEBITMAP.TextPending()<>0 THEN
+    IF entry.state=CONSOLETYPES.WIN_LIVE THEN
+      IF Ready(entry,frame)<>0 THEN
         found=1
         view=CONSOLETYPES.Presentation POINTER(entry.view)
         model=CONSOLEMIRROR.Model(entry)
-        IF CONSOLEBITMAP.TextPending()=0 AND view.scrollState=0
+        IF view.scrollState=0
             AND (frame.first<>0 OR frame.complete<>2) THEN
           Copy(entry,frame)
         FI
-        IF DESKSTATE.Enabled()<>0 THEN
-          DESKSTATE.SelectConsoleUnit(entry.unit)
-        FI
-        IF entry.unit=DESKSTATE.ShellUnit() THEN
-          DESKMENUCACHE.ConsoleChanged(model,view)
-        FI
-        IF DESKHOST.PaintReady()<>0 OR CONSOLEBITMAP.TextPending()<>0 THEN
+        IF DESKHOST.PaintReady()<>0 THEN
           CONSOLEDISPLAY.Present(view,model)
         FI
         IF frame.handle<>0 AND frame.first=0 AND frame.complete=2
-            AND CONSOLEBITMAP.TextPending()=0 AND CONSOLEBITMAP.Pending()=0
+            AND CONSOLEBITMAP.Pending()=0
             AND (view.visible=0 OR model.dirtyRows=0) THEN
           VIEWS.Acknowledge(frame.handle,frame.revision)
           frame.complete=0

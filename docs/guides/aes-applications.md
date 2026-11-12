@@ -80,32 +80,6 @@ full cover/exposure, simultaneous readiness and repeated restart. Closing the
 focused window restores the frontmost remaining window. The Windows menu or
 Ctrl+Tab reaches covered windows; the active-window menu provides Close.
 
-## Optional OF816 counter desktop
-
-```sh
-CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_demo.py --aes-counters \
-  --output build/aes-counter-demo
-```
-
-Distribute only `build/aes-counter-demo/exec816-demo.zip`. Extract it and follow
-its short guide: boot `Exec-of816.xex`, mount the matching `system.atr` in D1
-and a disposable `work.atr` in D8, and use the bundled pinned ROM with VBXE.
-The five-second countdown enters a native shell and two counters. This explicit
-selection replaces the native panel; the default build still starts shell/prime.
-The selected pointer acceleration profile applies to both native and GEM windows.
-
-Click a title to focus/top, drag a counter to any on-screen pixel position, or
-click the boxed closer at the left of its title to close it. Click the shell before typing `CAT STORY.TXT | WC` or
-`CAT LONG.TXT`; BREAK cancels the command. `EXIT` first closes/detaches counters,
-then stops desktop admission and releases the shell/services. Cold-boot to
-restart this focused resident profile. The loadable desktop below includes Files.
-
-The counter desktop uses six of eight Task slots at its prompt; a two-command
-pipeline uses all eight. Three of four desktop layers and three of four AES
-registrations are occupied (the controller has no window). A separate native
-panel/coexistence proof uses the fourth layer and seven Tasks while reading
-disk, without pipeline children. See the [resource and timing record](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo).
-
 ## Application body
 
 This event loop accepts a private eight-word quit message and a one-second
@@ -192,38 +166,6 @@ Keep handling `WM_REDRAW` for cache misses. Successful saved-pixel exposure
 needs no application repaint. See the
 [preservation contract](../reference/aes.md#opt-in-window-preservation).
 
-## Build and exercise the optional proof
-
-The checked fixture composes two C entries with the production drawing image,
-the native Control Panel, and a root DOS Process for disk work:
-
-```sh
-CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 \
-  python3 tools/build_aes_desktop.py --load --output build/aes-server/proof
-python3 tools/test_aes_desktop.py --integrated \
-  --program build/aes-server/proof/program --output build/aes-server/proof-run
-python3 tools/test_aes_desktop.py --integrated --unobserved \
-  --program build/aes-server/proof/program --output build/aes-server/proof-replay
-```
-
-The runner creates its own SDFS test disk and uses the pinned emulator/ROM.
-The two C Tasks fit existing 1,024-byte stack pools. They are ordinary Exec
-Tasks; the root performs DOS work because it owns the Process context.
-See [aes_desktop.c](../../tests/programs/aes_desktop.c) for application loops and
-separate startup/termination control, and the
-[builder](../../tools/build_aes_desktop.py) for named-entry/image composition.
-
-The proof is separate from the five-second shell/prime autoboot. Its checks do
-not establish a complete GEM desktop, hardware qualification or support for the
-open 125 kbit/s SIO configuration. Existing widget feedback targets also remain
-open; see the [execution record](../history/aes-server.md).
-The hybrid implementation passes the integrated functional checks, including
-independent messages/timers during native GUI exclusion and repeated retirement.
-Active GEM traffic still exceeds the native GUI response limits in the HY4
-comparison. The profile remains available for development with that performance
-gate open; see the [hybrid record](../history/aes-hybrid.md).
-
-
 ## Interactive application example
 
 [The input application](../../examples/gem-input/input.c) is a small ordinary GEM
@@ -251,38 +193,13 @@ to the builder. See the [input execution record](../history/aes-application-inpu
 for exact scope and the external Calypsi array-indexing limitation encountered.
 
 
-Build the optional two-input-app desktop, with OF816 and matching disks:
-
-```sh
-CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_demo.py --aes-input --output build/gem-input-demo
-unzip build/gem-input-demo/exec816-demo.zip -d build/gem-input-demo/extracted
-python3 tools/test_demo.py --bundle build/gem-input-demo --boot-smoke \
-  --distribution-root build/gem-input-demo/extracted/exec816-demo
-```
-
-Distribute `build/gem-input-demo/exec816-demo.zip`. Follow its short guide for
-machine setup, D1/D8 disks and ST mouse capture. At the prompt there are six
-Tasks; a two-command pipeline uses all eight public slots. The two application
-registrations plus the controller use three of four AES slots. The shell and
-two windows use three of the six shared window slots. The existing `--aes-counters` profile and
-no-option five-second shell/PRIMES autoboot remain available.
-
-For focused cost measurements, the separate development root supplies continuous
-console writes or verified disk reads around the same unmodified C body:
-
-```sh
-CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_gem_input.py --load --output build/gem-input-load
-python3 tools/measure_gem_input.py --program build/gem-input-load/program --output build/gem-input-observed
-python3 tools/measure_gem_input.py --program build/gem-input-load/program --output build/gem-input-replay --unobserved
-```
-
-`--panel` on the builder selects a separate four-layer, seven-Task cohort with
-the native Control Panel; run its measurement with `--count 4 --unobserved` for
-coexistence, rapid keys while drawing, and panel/disk progress. It has one free
-public Task slot, so it is not the two-child pipeline configuration. Timings
-report individual physical edges, caller/presenter CPU and completed scanout.
-They are development observations; broader latency gates remain open.
-
+The former native-panel and two-input-app bundle profiles have retired.
+Use `tools/build_demo.py --gem-desktop` for the current desktop and terminal;
+launch the supplied Counter and Panel APPs from Files or the shell. The
+standalone interactive application fixture remains available through
+`tools/build_gem_input.py`; it supplies AES failure and event-loop checks.
+Historical cohort timings, including failed latency gates, remain in the
+[input record](../history/aes-application-input.md).
 
 ## GEM Control Panel and Files desktop
 

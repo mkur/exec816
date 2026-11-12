@@ -330,36 +330,15 @@ of the Exec heap. Driver and lease state stay in upper CPU RAM. The slice adds
 zero reserved bank-zero bytes, fixed or per Task; the full existing 4 KiB window,
 stack guards, alignment and unused stack capacity remain reserved.
 
-### Shell backing destination
+### Retained offscreen reservation
 
-The private console renderer reserves `$41000–$4AFFF` for one 512×160 packed
-Shell bitmap (pitch 256, 40,960 bytes). Both shared AES snapshots remain intact.
-Production VRAM reservations total 473,600 bytes; 50,688 remain unassigned
-(50,656 after the existing diagnostic exclusion). The terminal font masks
-reserve 20,480 bytes at `$3A000–$3EFFF` (18,432 populated), containing even/odd
-ATASCII glyphs from the pinned OS font. GEM retains its existing font atlas. No CPU aperture, bank-zero
-or per-Task reservation grows.
+The existing `$41000–$4AFFF` offscreen range (40,960 bytes) remains reserved by
+the drawing adapter. GF12 removes its native Shell-window owner and all console
+model-to-backing presentation policy. The copied GEM terminal paints ordinary
+AES work with VDI; it does not consume that reservation. The older Shell
+backing protocol is recorded in the [retired desktop history](../history/native-desktop.md).
 
-Private console protocol version 13 adds backing text/fill operations without
-changing its 78-byte packet. Foreground bit `$0100` selects the terminal
-ATASCII atlas for text, clipped text and backing text; its low nibble remains
-the logical pen. The flag is recorded in `abi/console-bitmap.json`.
-The native text uploader's private record is 28
-bytes, with destination pitch at offset 26; screen text continues to use pitch
-320. Every emitted destination record uses that pitch, including background
-and trailing fills. The uploader uses call-clobbered DP bytes through `$A9`
-within the existing reservation. Targets are explicit on each call.
-
-Desktop Shell dirty spans describe pending model-to-backing work. Layers damage
-separately describes screen repair. Completed backing scrolls use the ordinary
-asynchronous copy engine, clear the newly exposed rows, then render final dirty
-spans before publishing the new generation. This works while partly or fully
-covered. Batch cancellation and view retirement retain the existing DMA lifetime
-rules. Caret and pointer pixels are screen overlays, never backing contents.
-
-The desktop binding names the sole Shell backing owner. Binding another console
-invalidates that ownership and rebuilds all 64×20 cells before copying the new
-image. Ownership, fixed geometry and the view’s presented model generation must
-all match before reuse. Hidden consoles retain their own dirty cells and never
-paint into the selected console’s bitmap. Session switching adds no backing
-VRAM; it uses the same 40,960-byte reservation.
+Production VRAM reservations remain 473,600 bytes, with 50,688 unassigned
+(50,656 after the diagnostic exclusion). ATASCII masks retain their existing
+20,480-byte range at `$3A000–$3EFFF`; the terminal's private VDI face reuses the
+existing font atlas. No CPU aperture or reserved bank-zero storage grows.

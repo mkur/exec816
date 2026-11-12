@@ -1,5 +1,11 @@
 # Historical records
 
+- [GF12 graphical policy retirement](gem-first-gui.md#gf12-native-graphical-policy-retirement):
+  one AES window policy, current APP rebuilds and focused integration evidence.
+- [Retired native desktop packets](native-desktop.md) and
+  [retained widget windows](native-widgets.md): superseded by the single AES
+  window implementation in GF12.
+
 - [GEM-first GUI execution](gem-first-gui.md): native two-Counter/disk baseline,
   blocking and UPDATE-held I/O, explicit cancellation, scoped CPU observations
   and measured Task/stack use before policy migration. GF1 inventories window

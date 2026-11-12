@@ -156,7 +156,7 @@ class NativeDragUpdate:
             # Observe completed digits at the accepted geometry, rather than
             # treating the fixed settling delay as presentation latency.
             from gem_render_oracle import Raster, font_bytes
-            from test_desktop_presentation import text
+            from desktop_raster import text
             font=font_bytes(directory/'selected/src/vdi/font8x8.c')
             start=b.eval_expr('@clk')
             b._cmd_ok('MOUSE AT 2000 0 0 0')

@@ -4,7 +4,7 @@ from native_program import require,sha256
 from os_boundary import run_to
 from desktop_mouse import schedule
 from gem_render_oracle import Raster,font_bytes
-from test_desktop_presentation import rectangle,frame,desktop,text,menu_bar,shell_tabs
+from desktop_raster import rectangle,frame,desktop,text,menu_bar
 from test_gem_cursor import overlay
 from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
@@ -32,8 +32,6 @@ def extract_with_preemption(folder):
 
 def expected(font, covered=False):
     r=Raster(font);desktop(r)
-    frame(r,(32,29,560,218),b'Shell',False)
-    shell_tabs(r,(32,29,560,218))
     long_text=bytes(65+i%26 for i in range(192))
     for who,(x,y) in enumerate(((32,17),(32,17) if covered else (200,65))):
         frame(r,(x,y,x+400,y+140),b'VDI B' if who else b'VDI A',bool(who),close=True)

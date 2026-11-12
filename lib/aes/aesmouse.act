@@ -334,10 +334,10 @@ BYTE FUNC RouteSample(INPUT.Event POINTER sample)
 
   clickCount=0
   manager=NATIVE
-  IF capturedRoute.kind=DESKTYPES.CONTENT_AES AND capturedRoute.frameKind<>
+  IF capturedRoute.endpoint<>NULL AND capturedRoute.frameKind<>
       DESKTYPES.FRAME_BORDERLESS AND
       (DESKGEOMETRY.TitleHit(@capturedRoute.bounds,sample.x,sample.y)<>0
-      OR DESKGEOMETRY.Gadget(capturedRoute.frameKind,capturedRoute.kind,
+      OR DESKGEOMETRY.Gadget(capturedRoute.frameKind,
         capturedRoute.iconified,capturedRoute.sliderTop,
         capturedRoute.sliderHeight,@capturedRoute.bounds,sample.x,sample.y)<>0) THEN
     manager=TITLE

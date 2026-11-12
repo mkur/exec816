@@ -1,8 +1,8 @@
 """Private workbench observation offsets, checked by emitted C layout."""
-SIZE=2543
-FIELDS=dict(phase=0,job=20,child=28,unit=32,caret=44,cause=92,
-    compilerResult=100,programResult=108,diagnostic=116,interpreterResult=340,
-    window=468,source=470,target=610)
+SIZE=2539
+FIELDS=dict(phase=0,job=18,child=26,unit=30,caret=42,cause=90,
+    compilerResult=98,programResult=106,diagnostic=114,interpreterResult=338,
+    source=466,target=606)
 RESIDENT_FIELDS=dict(image=0,child=4,channel=12,request=32)
 LAYOUT=[('Build job size',SIZE)]+[('Build '+n,v) for n,v in FIELDS.items()]+[('Interpreter session size',86)]+[('Interpreter '+n,v) for n,v in RESIDENT_FIELDS.items()]
 STAGES=dict(choose=1,reserve=2,retry_names=3,snapshot=4,write_source=5,close_source=6,
