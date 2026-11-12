@@ -675,6 +675,13 @@ VDI's separate clip does not change the AES object clip. Local geometry and
 state changes do not contact the presenter or copy the tree. `form_center`
 centers within the caller's work area.
 
+Drawing prepares each visible object's decoding, text/edit layout and icon
+selection once per call, in storage private to its AES context. Its prepared
+values are reused across the existing clipped strips. Shared GSX state and
+pixels are accessed only inside DISPLAY ownership. APP ABI 36 requires a
+matching provider and rebuilt applications; the private preparation adds 312
+rounded upper-RAM bytes per registered context and no bank-zero reservation.
+
 The form subset is windowed and event-driven: `form_button` commits an accepted
 release/keyboard action without waiting or drawing. It toggles selectable
 buttons, selects radio peers exclusively, and returns zero for a momentary EXIT

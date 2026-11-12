@@ -264,7 +264,9 @@ separates the resident stream backend from copied presentation and input.
 and BASIC output through an ordinary GEM terminal.
 [GF12](history/gem-first-gui.md#gf12-native-graphical-policy-retirement) retires
 the native graphical protocol, previews, shell-frame extension and duplicate
-window policy. GF13 next prepares object layout once across drawing fragments.
+window policy. [GF13](history/gem-first-gui.md#gf13-prepared-objects) prepares
+object layout once across drawing fragments. GF14 next measures the ownership
+boundary decision, before GF15's combined acceptance and OF816 package.
 Existing latency gates remain open.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)

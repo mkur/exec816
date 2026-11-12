@@ -60,7 +60,7 @@ void AESClientOne(void)
     WORD w,i;
     CHECK(bit>=0); peerWake[who]=1UL<<bit;
     CHECK(ExecAESAttach((struct MsgPort *)AESService)); CHECK(appl_init()>0);
-    for (i=0;i<(who ? 1:3);++i) {
+    for (i=0;i<2;++i) {
         w=wind_create(NAME|CLOSER|MOVER,32+who*96,32+i*32,96,64); CHECK(w>0);
         CHECK(wind_open(w,32+who*96,32+i*32,96,64));
     }
@@ -274,7 +274,7 @@ UWORD AESRun(void)
     CHECK(wind_close(window)); CHECK(wind_open(window,32,32,240,160));
     drain(); CHECK(!c->repairEpoch && !c->messagePending);
     CHECK(wind_close(window)); CHECK(wind_delete(window)); v_clsvwk(handle);
-    /* Five windows across three peers plus the shell fill all six slots. */
+    /* Two windows per peer fill all six ordinary AES slots. */
     for (i=0;i<3;++i) {
         peers[i]=CreateTask("Form capacity",0,(APTR)AESClientOne,1024UL);
         CHECK(peers[i]!=NULL); while (ready<=i) Wait(wake);

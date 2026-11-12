@@ -3,6 +3,7 @@
 #include "vdi-private.h"
 #include "application-hosted.h"
 #include "gem-drawing.h"
+#include "aes-paint-private.h"
 
 extern void GemWidgetFill(UWORD,UWORD,UWORD,UWORD,UWORD,UWORD,UWORD);
 extern void GemWidgetText(WORD,WORD,const WORD *,UWORD,UWORD,UWORD,UWORD,UWORD,UWORD);
@@ -24,60 +25,102 @@ void WidgetText(WORD x,WORD y,const WORD *glyphs,WORD count,WORD mode,WORD colou
                   gl_clip.g_x+gl_clip.g_w,gl_clip.g_y+gl_clip.g_h);
 }
 
-struct ObjectPaint { struct ExecAESContext *context; OBJECT *tree; WORD object,x,y; GRECT clip; };
-/* ICONBLK storage and dimensions belong to the caller. Shared GSX text scratch
- * and the renderer's bitmap page are protected by this callback's grant. */
-static void draw_icon(struct ObjectPaint *p)
+enum { PAINT_OBJECT,PAINT_ICON,PAINT_EDIT };
+struct ObjectPaint {
+    struct ExecAESContext *context;
+    struct ExecObjectPaint *prepared;
+    OBJECT *tree;
+    WORD object,x,y,kind;
+    GRECT clip;
+};
+
+/* Icon metadata, colour selection and text layout are private to this call. */
+static void prepare_icon(struct ObjectPaint *p)
 {
+    struct ExecIconPaint *icon=&p->prepared->extra.icon;
+    struct ObjectPrepared *text=&p->prepared->object;
     const ICONBLK *ib=(const ICONBLK *)(ULONG)p->tree[p->object].ob_spec;
     const char *label=(const char *)(ULONG)ib->ib_ptext;
-    WORD fg=(ib->ib_char>>12)&15,bg=(ib->ib_char>>8)&15,swap;
-    WORD x=p->x+ib->ib_xicon,y=p->y+ib->ib_yicon;
-    WORD l=x,t=y,r=x+ib->ib_wicon,b=y+ib->ib_hicon,n,tx;
-    GRECT paper;
-    const CICON *colour=NULL;
+    WORD swap,n=0;
+    icon->icon=*ib;
+    icon->foreground=(ib->ib_char>>12)&15;icon->background=(ib->ib_char>>8)&15;
+    icon->x=p->x+ib->ib_xicon;icon->y=p->y+ib->ib_yicon;
+    icon->colour=NULL;
     if (p->tree[p->object].ob_type==G_CICON)
-        colour=(const CICON *)(ULONG)((const CICONBLK *)ib)->mainlist;
-    while (colour && colour->num_planes!=4) colour=(const CICON *)(ULONG)colour->next_res;
-    if (p->tree[p->object].ob_state&SELECTED) { swap=fg;fg=bg;bg=swap; }
+        icon->colour=(const CICON *)(ULONG)((const CICONBLK *)ib)->mainlist;
+    while (icon->colour && icon->colour->num_planes!=4)
+        icon->colour=(const CICON *)(ULONG)icon->colour->next_res;
+    if (p->tree[p->object].ob_state&SELECTED) {
+        swap=icon->foreground;icon->foreground=icon->background;icon->background=swap;
+    }
+    text->state=p->tree[p->object].ob_state;
+    text->valid=label && *label;
+    if (label && *label) {
+        if (p->tree[p->object].ob_type==G_CICON) {
+            for (n=0;n<12 && label[n];++n) text->glyphs[n]=(UBYTE)label[n];
+        } else n=expand_string(text->glyphs,label);
+        if (n>ib->ib_wtext/8) n=ib->ib_wtext/8;
+    }
+    text->length=n;
+    r_set(&text->text,p->x+ib->ib_xtext,p->y+ib->ib_ytext,ib->ib_wtext,ib->ib_htext);
+    icon->labelX=text->text.g_x+(text->text.g_w-n*8)/2;
+    icon->labelY=text->text.g_y;
+}
+
+static void draw_icon(struct ObjectPaint *p)
+{
+    const struct ExecIconPaint *icon=&p->prepared->extra.icon;
+    const struct ObjectPrepared *text=&p->prepared->object;
+    const ICONBLK *ib=&icon->icon;
+    const CICON *colour=icon->colour;
+    WORD x=icon->x,y=icon->y,l=x,t=y,r=x+ib->ib_wicon,b=y+ib->ib_hicon,i;
     if (l<gl_clip.g_x) l=gl_clip.g_x;
     if (t<gl_clip.g_y) t=gl_clip.g_y;
     if (r>gl_clip.g_x+gl_clip.g_w) r=gl_clip.g_x+gl_clip.g_w;
     if (b>gl_clip.g_y+gl_clip.g_h) b=gl_clip.g_y+gl_clip.g_h;
     if (l<r && t<b) {
         if (colour) {
-            WORD selected=(p->tree[p->object].ob_state&SELECTED) && colour->sel_data;
+            WORD selected=(text->state&SELECTED) && colour->sel_data;
             GemColourIconBitmap((const UWORD *)(ULONG)(selected ? colour->sel_mask:colour->col_mask),
                 (const UBYTE *)(ULONG)(selected ? colour->sel_data:colour->col_data),
                 ib->ib_wicon,ib->ib_hicon,x,y,l,t,r,b);
         } else GemIconBitmap((const UWORD *)(ULONG)ib->ib_pmask,
-            (const UWORD *)(ULONG)ib->ib_pdata,ib->ib_wicon,x,y,l,t,r,b,fg,bg);
+            (const UWORD *)(ULONG)ib->ib_pdata,ib->ib_wicon,x,y,l,t,r,b,
+            icon->foreground,icon->background);
     }
     if (ib->ib_char&255) {
         intin[0]=ib->ib_char&255;
-        WidgetText(x+ib->ib_xchar,y+ib->ib_ychar,intin,1,MD_TRANS,fg);
+        WidgetText(x+ib->ib_xchar,y+ib->ib_ychar,intin,1,MD_TRANS,icon->foreground);
     }
-    if (label && *label) {
-        if (p->tree[p->object].ob_type==G_CICON) {
-            /* The standard extension stores exactly twelve label bytes. */
-            for (n=0;n<12 && label[n];++n) intin[n]=(UBYTE)label[n];
-        } else n=expand_string(intin,label);
-        if (n>ib->ib_wtext/8) n=ib->ib_wtext/8;
-        r_set(&paper,p->x+ib->ib_xtext,p->y+ib->ib_ytext,ib->ib_wtext,ib->ib_htext);
-        WidgetFill(MD_REPLACE,FIS_SOLID,IP_SOLID,bg,&paper);
-        tx=paper.g_x+(paper.g_w-n*8)/2;
-        WidgetText(tx,paper.g_y,intin,n,MD_TRANS,fg);
+    if (text->valid) {
+        WidgetFill(MD_REPLACE,FIS_SOLID,IP_SOLID,icon->background,&text->text);
+        for (i=0;i<text->length;++i) intin[i]=text->glyphs[i];
+        WidgetText(icon->labelX,icon->labelY,intin,text->length,MD_TRANS,icon->foreground);
     }
 }
+
+static void prepare_object(struct ObjectPaint *p)
+{
+    const OBJECT *object=&p->tree[p->object];
+    if (object->ob_type==G_ICON || object->ob_type==G_CICON) {
+        p->kind=PAINT_ICON;prepare_icon(p);
+    } else if ((object->ob_flags&EDITABLE) || object->ob_type==G_FTEXT ||
+               object->ob_type==G_FBOXTEXT) {
+        p->kind=PAINT_EDIT;
+        ExecAESPrepareEdit(p->context,p->tree,p->object,p->x,p->y,p->prepared);
+    } else {
+        p->kind=PAINT_OBJECT;
+        prepare_draw(&p->prepared->object,p->tree,p->object,p->x,p->y);
+    }
+}
+
 static void draw(void *data)
 {
     struct ObjectPaint *p=data;
     gl_clip=p->clip;
-    if (p->tree[p->object].ob_type==G_ICON || p->tree[p->object].ob_type==G_CICON) draw_icon(p);
-    else if ((p->tree[p->object].ob_flags&EDITABLE) ||
-        p->tree[p->object].ob_type==G_FTEXT || p->tree[p->object].ob_type==G_FBOXTEXT)
-        ExecAESDrawEdit(p->context,p->tree,p->object,p->x,p->y);
-    else just_draw(p->tree,p->object,p->x,p->y);
+    if (p->kind==PAINT_ICON) draw_icon(p);
+    else if (p->kind==PAINT_EDIT) ExecAESPaintEdit(p->prepared);
+    else draw_prepared(&p->prepared->object);
 }
 
 /* The caller owns its tree and UPDATE snapshot. Only the linked draw callback
@@ -88,7 +131,7 @@ WORD ExecAESDraw(struct ExecAESContext *c, OBJECT *tree,WORD start,WORD depth,WO
     struct AESWindowView *v;
     WORD parentX[MAX_DEPTH],parentY[MAX_DEPTH];
     WORD obj=start,level=0,next,border,l,t,r,b,row,rows,vl,vt,vr,vb;
-    WORD changed=0,left=0,top=0,right=0,bottom=0,okay=1;
+    WORD changed=0,left=0,top=0,right=0,bottom=0,okay=1,prepared;
     UWORD i;
     if (!c || !ExecAESEnter(c)) return 0;
     if (!c->workstation || !c->view || !c->view->updates) {
@@ -96,7 +139,7 @@ WORD ExecAESDraw(struct ExecAESContext *c, OBJECT *tree,WORD start,WORD depth,WO
     }
     /* Iconified owners still publish model changes. Their UPDATE snapshot
      * has no visible rectangles, so traversal records damage without drawing. */
-    v=c->view; p.tree=tree; p.context=c;
+    v=c->view; p.tree=tree; p.context=c;p.prepared=c->objectPaint;
     if (depth>MAX_DEPTH) depth=MAX_DEPTH;
     if (w<=0 || h<=0 || (tree[start].ob_flags&HIDETREE)) { c->busy=0; return 1; }
     /* Keep the current absolute origin in the callback record. Saved origins
@@ -105,7 +148,7 @@ WORD ExecAESDraw(struct ExecAESContext *c, OBJECT *tree,WORD start,WORD depth,WO
     else ob_offset(tree,start,&p.x,&p.y);
     for (;;) {
         if (!(tree[obj].ob_flags&HIDETREE)) {
-            p.object=obj;
+            p.object=obj;prepared=0;
             border=tree[obj].ob_type==G_BUTTON ?
                 1+!!(tree[obj].ob_flags&EXIT)+!!(tree[obj].ob_flags&DEFAULT):0;
             if (tree[obj].ob_type==G_BOXTEXT || tree[obj].ob_type==G_TEXT ||
@@ -143,6 +186,7 @@ WORD ExecAESDraw(struct ExecAESContext *c, OBJECT *tree,WORD start,WORD depth,WO
                 vr=r<v->visible[i].right ? r:v->visible[i].right;
                 vb=b<v->visible[i].bottom ? b:v->visible[i].bottom;
                 if (vl>=vr || vt>=vb) continue;
+                if (!prepared) { prepare_object(&p);prepared=1; }
                 for (row=vt;row<vb;row+=rows) {
                     r_set(&p.clip,vl,row,vr-vl,vb-row>rows ? rows:vb-row);
                     if (GemDrawingBorrow(&c->workstation->grant,vl,row,vr,row+p.clip.g_h,draw,&p)!=DISPLAY_OK) {

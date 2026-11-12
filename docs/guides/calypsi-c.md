@@ -294,6 +294,13 @@ has actual results and the diagnostic runner. The interactive example computes
 each endpoint directly from its origin. This remains an external compiler issue;
 the limited C binding checks do not qualify all C expressions.
 
+Calypsi 5.18 also crashes on a direct structure-member address conversion such
+as `field->object.ob_spec=(ULONG)&field->ted`. Keep the address in a typed pointer
+before encoding it into the scalar GEM specification. The
+[standalone reproducer](../../tests/programs/calypsi_member_address.c) and
+[raw/optimized probe](../../tools/probe_calypsi_member.py) record the compiler
+failure and execute the typed-pointer form, checking its address and neighbors.
+This is an external C compiler limitation; actionc and its pinned ABI are unchanged.
 
 ## Desktop file and launcher calls
 

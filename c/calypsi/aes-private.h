@@ -28,7 +28,6 @@ BOOL ExecAESForms(struct ExecAESContext *,AESPB *);
 BOOL ExecAESFormFinish(struct ExecAESContext *);
 WORD ExecAESFormBegin(struct ExecAESContext *,const GRECT *,const char *);
 void ExecAESFormExtent(OBJECT *,GRECT *);
-void ExecAESDrawEdit(struct ExecAESContext *,OBJECT *,WORD,WORD,WORD);
 
 /* A reservation pins the destination until publication.
  * These helpers require an admitted caller; they do not enter GEM recursively. */

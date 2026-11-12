@@ -1179,3 +1179,46 @@ VRAM reservation growth is zero. Reserved bank-zero growth is **0 fixed,
 0 root/kernel, 0 for each of twelve public Tasks and 0 idle**, counting guards,
 alignment and unused capacity. No hosted/hardware qualification, demo refresh
 or final combined disk/input/QED acceptance is claimed; those remain for GF15.
+
+## GF13 prepared objects
+
+The [GF13 record](../development/gem-first-gf13.json) separates pure object
+decoding, text layout, editable-field formatting and icon selection from the
+DISPLAY-owned callback. Each caller prepares an object at its first visible
+intersection and reuses that description across the existing fragments and
+strips. Shared GSX arrays, clip and drawing state remain under DISPLAY.
+The donor adapter has an explicit ordered patch; immediate menu drawing uses
+the same preparation and painting algorithms within its existing ownership.
+
+APP ABI 36 pairs the 600-byte context with the rebuilt provider and ten APPs.
+The context's final pointer occupies existing heap-rounding slack. Its private
+308-byte preparation record reserves 312 rounded upper-RAM bytes per context,
+at most 1,248 bytes for the existing four-context limit. No object, fragment,
+strip, device work/count, FIFO, fence or preemption limit changes. Reserved
+bank-zero growth is **0 fixed, 0 root/kernel, 0 per public Task and 0 idle**,
+including guards, alignment and unused capacity; VRAM growth is also zero.
+
+The matched corpus passes 67 measured operations and eleven exact frames with
+the same hashes as GF12. Nested-object drawing CPU falls from 152.504 to
+137.909 ms; callback setup falls from 38.743 to 20.671 ms. Five-object drawing
+falls from 28.528 to 26.930 ms. Wide siblings remain effectively level at
+90.718/90.849 ms. The measured ownership-unit counts stay 12, 40 and 56 per
+draw, respectively. Preparation is charged to the caller outside DISPLAY.
+
+Pending-move sample medians rise because presenter work falls on different
+sample boundaries. The complete ten-move interval, including checkpoint
+settlement, has identical primitive counts: 88 submissions, 312 fences,
+108 fills and six text runs. Its presenter CPU rises 1,351.841 to 1,365.085 ms
+(0.98%) and elapsed time 3,990.969 to 4,011.265 ms (0.51%). This variation is
+recorded rather than described as a move optimization. Earlier failed latency
+gates remain open.
+
+Development checks cover 1,315 object assertions, 253 resource assertions and
+26 independent icon frames, 208 form assertions with two simultaneous callers,
+233 registration assertions and full terminal/session/EXIT checks. The
+terminal uses 858 of 1,312 stack bytes, leaving 198 above its 256-byte interrupt
+floor. The raw/optimized context and member-address probes cover the ABI and
+the isolated Calypsi 5.18 direct member-address cast defect. The portable typed
+pointer expression executes correctly in both modes. Resource fixtures now
+own a fixed resource, and form/resource controllers drain final presenter work
+before requesting shutdown. Neither fixture correction changes product policy.

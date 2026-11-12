@@ -123,7 +123,7 @@ ENDMODULE
     profile['image_data_bytes'] = 8192
     memory = out/'fixture-memory.json'
     memory.write_text(json.dumps(profile, indent=2)+'\n')
-    launcher = prepare(source, out, foreign, desktop=True)
+    launcher = prepare(source, out, foreign, desktop=True, aes=True)
     program = build(compiler(ROOT/'build/actionc',release=True), launcher, out/'program',
         optimize=optimize, tasks=True, task_capacity=8, foreign_image=foreign,
         console_deferred=True, memory_profile=memory)
@@ -387,7 +387,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','visibility') else ''}
+{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','visibility','forms','resources') else ''}
 {'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else 'USE VISPROBE' if suite=='visibility' else ''}
 CARD checks
 CARD FUNC POINTER run()
@@ -413,8 +413,7 @@ PROC Main()
   Require(run()=0)
   Require(service.count=0)
   Require(AESCORE.Idle(service)<>0)
-{'''  ; Retire the last application background before the controller stops
-  ; the worker. The default native pane was detached before this fixture.
+{'''  ; Retire the last application background before stopping the worker.
   BEGIN
     BYTE pending
 
@@ -422,7 +421,8 @@ PROC Main()
     Require(bit>=0)
     DO
       AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
-      pending=DESKPAINT.Runnable()
+      pending=DESKPAINT.Runnable() OR CONSOLEBITMAP.Pending()<>0
+          OR service.policyEffects<>0
       AESGATE.Release(0)
       IF pending=0 THEN
         EXIT
@@ -431,15 +431,11 @@ PROC Main()
     OD
     EXEC.FreeSignal(bit)
   END
-''' if suite in ('frame','visibility') else ''}
+''' if suite in ('frame','visibility','forms','resources') else ''}
 {exhaustion}
 RETURN
 ENDMODULE
 ''')
-        if suite=='visibility':
-            source.write_text(source.read_text().replace('pending=DESKPAINT.Runnable()',
-                'pending=DESKPAINT.Runnable() OR CONSOLEBITMAP.Pending()<>0\n'
-                '          OR service.policyEffects<>0'))
         from generate_memory import PROFILE
         profile = json.loads(PROFILE.read_text())
         profile['image_data_bytes'] = 8192
@@ -506,7 +502,8 @@ ENDMODULE
                 from build_gem_resource import resource
                 from make_data_disk import make
                 media=out/'media';media.mkdir(exist_ok=True)
-                payload=resource();(media/'DESKTOP.RSC').write_bytes(payload)
+                payload=resource(ROOT/'tests/fixtures/aes-resource.json')
+                (media/'DESKTOP.RSC').write_bytes(payload)
                 bad=bytearray(payload);bad[72:76]=b'\xff'*4
                 (media/'BAD.RSC').write_bytes(bad);(media/'SHORT.RSC').write_bytes(payload[:35])
                 from prepare_calculator import resource_cases

@@ -12,6 +12,9 @@
 #define everyobj App_everyobj
 #define ob_find App_ob_find
 #define just_draw App_just_draw
+#define prepare_draw App_prepare_draw
+#define draw_prepared App_draw_prepared
+#define gr_just_to App_gr_just_to
 #define ob_change App_ob_change
 #define fm_button App_fm_button
 #define r_set App_r_set
@@ -86,4 +89,5 @@ void gsx_tblt(WORD,WORD,WORD,WORD);
 void bb_fill(WORD,WORD,WORD,WORD,WORD,WORD,WORD);
 void WidgetFill(WORD,WORD,WORD,WORD,const GRECT *);
 void WidgetText(WORD,WORD,const WORD *,WORD,WORD,WORD);
+#include "object-prepared.h"
 #endif

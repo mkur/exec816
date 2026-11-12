@@ -70,6 +70,8 @@ def drawing(out,optimize,probe=False,fault=False,desktop_style=False,
         sources += [graf,ROOT/'c/calypsi/aes-objects.c',ROOT/'c/calypsi/aes-edit.c',ROOT/'c/calypsi/aes-form.c',ROOT/'c/calypsi/aes-alert.c',ROOT/'c/calypsi/aes-fsel.c',ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/aes-resource.c',ROOT/'c/calypsi/aes-menu.c',ROOT/'c/calypsi/dos.c']
         assembly.append(ROOT/'c/calypsi/dos.s')
         extra_includes.append(object_port)
+        extra_probes.append((ROOT/'tests/programs/aes_prepared_layout.c',[
+            ('Prepared object bytes',170),('Caller paint bytes',308),('Edit paint bytes',138)]))
         from generate_vdi_client import expected_layout as vdi_layout, files as vdi_files
         for path,content in vdi_files().items():
             require(path.read_text()==content, "Stale VDI file: "+str(path))

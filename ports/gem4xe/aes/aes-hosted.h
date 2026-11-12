@@ -58,4 +58,5 @@ void gsx_fcolor(WORD);
 WORD gsx_chkclip(const GRECT *);
 void gsx_tblt(WORD,WORD,WORD,WORD);
 void bb_fill(WORD,WORD,WORD,WORD,WORD,WORD,WORD);
+#include "object-prepared.h"
 #endif

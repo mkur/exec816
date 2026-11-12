@@ -1,5 +1,7 @@
 # Historical records
 
+- [GF13 object preparation](gem-first-gui.md#gf13-prepared-objects):
+  caller-private descriptions, unchanged physical units and matched pixels/CPU.
 - [GF12 graphical policy retirement](gem-first-gui.md#gf12-native-graphical-policy-retirement):
   one AES window policy, current APP rebuilds and focused integration evidence.
 - [Retired native desktop packets](native-desktop.md) and

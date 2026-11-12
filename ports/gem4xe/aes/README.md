@@ -33,6 +33,10 @@ each bit. The pinned notices remain part of packaged demos.
 
 The [opaque-fill patch](patches/0004-opaque-box-fills.patch) composes uniform
 box/button borders and interiors before clipping, retaining text/state order.
+The [prepared-object patch](patches/0005-prepared-objects.patch) separates pure
+decoding/layout from DISPLAY-owned painting. Application contexts retain one
+private prepared description across the existing object intersections/strips;
+immediate menu calls use the same algorithms under their existing grant.
 Current focused checks use `tools/test_aes_server.py` with `objects`, `menus`
 and `forms`; the matched drawing corpus uses `tools/measure_magic_aes.py`.
 These are development checks, with zero added reserved bank-zero bytes; they

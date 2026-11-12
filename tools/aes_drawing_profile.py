@@ -21,7 +21,10 @@ CATEGORIES = {
         'App_gsx_box', 'App_gsx_tblt', 'GemWidgetFill', 'GemWidgetText',
         'GemWidgetStipple', 'vbxe_fill_rect', 'vbxe_glyph', 'vbxe_text_run',
         'vbxe_widget_text_run', 'vbxe_line_diag', 'draw_line'},
+    'object_preparation': {'prepare_object', 'prepare_icon', 'App_prepare_draw',
+        'ExecAESPrepareEdit', 'App_gr_just_to'},
     'object_callback_setup': {'draw', 'App_just_draw', 'just_draw',
+        'App_draw_prepared', 'ExecAESPaintEdit', 'draw_icon',
         'ExecAESDrawEdit', 'App_ob_relxywh', 'App_gr_inside', 'App_gr_crack',
         'App_gr_just', 'App_expand_string', 'App_gsx_chkclip', 'App_r_set'},
     'cursor_overlay': {'pointer_erase', 'cursor_show', 'cursor_hide',
@@ -30,7 +33,8 @@ CATEGORIES = {
     'aes_draw_other': {'ExecAESDraw', 'objc_draw'},
 }
 COUNTERS = ('DisplayEnter', 'DisplayLeave', 'GemDrawingBorrow', 'draw',
-    'App_just_draw', 'App_gsx_attr', 'App_WidgetFill', 'App_WidgetText',
+    'App_just_draw', 'prepare_object', 'App_prepare_draw', 'App_draw_prepared',
+    'ExecAESPrepareEdit', 'prepare_icon', 'App_gsx_attr', 'App_WidgetFill', 'App_WidgetText',
     'GemSolidFill', 'solid_record', 'blit_mask', 'glyph_record',
     'VbxeOwnerSubmit', 'VbxeOwnerFence', '_VbxeUpload', '_VbxeTextUpload', 'idle')
 

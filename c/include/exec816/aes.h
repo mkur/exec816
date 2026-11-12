@@ -50,6 +50,7 @@ struct ExecAESContext {
     WORD repairWindow;
     struct AESWindowView *views[AES_WINDOWS];
     WORD eventWindow,keyWindow;
+    APTR objectPaint; /* Private caller-owned decoded object/layout storage. */
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);

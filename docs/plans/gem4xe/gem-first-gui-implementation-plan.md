@@ -4,7 +4,7 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-GF0–GF10 pass at the development tier. GF11–GF15 remain open. The
+GF0–GF13 pass at the development tier. GF14–GF15 remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
 coexistence, the current resource inventory, the shared window policy audit
 and the window effect/commit checks. GF3 separates scene ownership from physical

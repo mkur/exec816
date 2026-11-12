@@ -1,10 +1,8 @@
 /* Caller-local single-line editing; shared draw scratch is DISPLAY-owned. */
 #include "aes-private.h"
 #include "application-hosted.h"
+#include "aes-paint-private.h"
 
-static OBJECT fieldObject;
-static TEDINFO fieldTed;
-static char fieldText[128];
 
 static WORD formatted(WORD type) { return type==G_FTEXT || type==G_FBOXTEXT; }
 static WORD length_limit(const OBJECT *object,const TEDINFO *ted)
@@ -76,25 +74,26 @@ WORD objc_edit(OBJECT *tree,WORD object,WORD key,WORD *index,WORD kind)
     return okay;
 }
 
-/* Called inside the ordinary complete clipped object strip. The copied TED
- * and object keep formatting/justification in the extracted GEM renderer. */
-void ExecAESDrawEdit(struct ExecAESContext *c,OBJECT *tree,WORD object,WORD x,WORD y)
+/* Decode text, formatting, scroll and caret once in caller-owned storage. */
+void ExecAESPrepareEdit(struct ExecAESContext *c,OBJECT *tree,WORD object,WORD x,WORD y,
+                        struct ExecObjectPaint *paint)
 {
+    struct ExecEditPaint *field=&paint->extra.edit;
     TEDINFO *ted=(TEDINFO *)(ULONG)tree[object].ob_spec;
     const char *source=(const char *)(ULONG)ted->te_ptext;
     const char *pattern=(const char *)(ULONG)ted->te_ptmplt;
     WORD length=strlen(source),count=0,raw=0,caret=0,start=0,width,height,left,top;
-    WORD active=c->editTree==(ULONG)tree && c->editObject==object;
     WORD inset=ted->te_thickness>0 ? ted->te_thickness:0;
-    GRECT paper;
-    fieldObject=tree[object];fieldTed=*ted;
-    width=fieldObject.ob_width-2*inset;height=fieldObject.ob_height-2*inset;
-    if (formatted(fieldObject.ob_type)) {
+    const TEDINFO *displayTed=&field->ted;
+    field->active=c->editTree==(ULONG)tree && c->editObject==object;
+    field->object=tree[object];field->ted=*ted;
+    width=field->object.ob_width-2*inset;height=field->object.ob_height-2*inset;
+    if (formatted(field->object.ob_type)) {
         while (pattern[count] && count<63) {
             if (pattern[count]=='_') {
                 if (raw==c->editIndex) caret=count;
-                fieldText[count]=raw<length ? source[raw]:'_';++raw;
-            } else fieldText[count]=pattern[count];
+                field->text[count]=raw<length ? source[raw]:'_';++raw;
+            } else field->text[count]=pattern[count];
             ++count;
         }
         if (c->editIndex>=raw) caret=count;
@@ -102,29 +101,40 @@ void ExecAESDrawEdit(struct ExecAESContext *c,OBJECT *tree,WORD object,WORD x,WO
         WORD columns=width/8;
         if (columns>63) columns=63;
         if (columns<1) columns=1;
-        if (active) {
+        if (field->active) {
             start=c->editScroll;
             if (c->editIndex<start) start=c->editIndex;
             if (c->editIndex>=start+columns) start=c->editIndex-columns+1;
             c->editScroll=start;caret=c->editIndex-start;
         }
-        while (start+count<length && count<columns) { fieldText[count]=source[start+count];++count; }
+        while (start+count<length && count<columns) {
+            field->text[count]=source[start+count];++count;
+        }
     }
-    fieldText[count]=0;
-    fieldTed.te_ptext=(ULONG)fieldText;
-    fieldObject.ob_spec=(ULONG)&fieldTed;
-    fieldObject.ob_type=fieldObject.ob_type==G_FBOXTEXT ? G_BOXTEXT:
-        fieldObject.ob_type==G_FTEXT ? G_TEXT:fieldObject.ob_type;
-    r_set(&paper,x+inset,y+inset,width,height);
-    WidgetFill(MD_REPLACE,FIS_SOLID,IP_SOLID,ted->te_color&15,&paper);
-    just_draw(&fieldObject,0,x,y);
-    if (active) {
+    field->text[count]=0;
+    field->ted.te_ptext=(ULONG)field->text;
+    field->object.ob_spec=(ULONG)displayTed;
+    field->object.ob_type=field->object.ob_type==G_FBOXTEXT ? G_BOXTEXT:
+        field->object.ob_type==G_FTEXT ? G_TEXT:field->object.ob_type;
+    r_set(&field->paper,x+inset,y+inset,width,height);
+    field->paperPen=ted->te_color&15;field->inkPen=(ted->te_color>>8)&15;
+    prepare_draw(&paint->object,&field->object,0,x,y);
+    if (field->active) {
         left=x+inset;top=y+inset+(height-8)/2;
         if (ted->te_just==TE_RIGHT) left+=width-count*8;
         else if (ted->te_just==TE_CNTR) left+=(width-count*8)/2;
         left+=caret*8;
-        if (left>=x+fieldObject.ob_width-inset) left=x+fieldObject.ob_width-inset-1;
-        r_set(&paper,left,top,1,8);
-        WidgetFill(MD_REPLACE,FIS_SOLID,IP_SOLID,(ted->te_color>>8)&15,&paper);
+        if (left>=x+field->object.ob_width-inset) left=x+field->object.ob_width-inset-1;
+        r_set(&field->caret,left,top,1,8);
     }
+}
+
+/* Only immutable description reads and GSX writes remain under DISPLAY. */
+void ExecAESPaintEdit(const struct ExecObjectPaint *paint)
+{
+    const struct ExecEditPaint *field=&paint->extra.edit;
+    WidgetFill(MD_REPLACE,FIS_SOLID,IP_SOLID,field->paperPen,&field->paper);
+    draw_prepared(&paint->object);
+    if (field->active)
+        WidgetFill(MD_REPLACE,FIS_SOLID,IP_SOLID,field->inkPen,&field->caret);
 }

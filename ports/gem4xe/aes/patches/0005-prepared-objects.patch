@@ -1,0 +1,232 @@
+--- a/aes-objects.c
++++ b/aes-objects.c
+@@ -166,25 +166,72 @@
+     return ch;
+ }
+ 
+-void just_draw(OBJECT FAR *tree, WORD obj, WORD sx, WORD sy)
+-{
+-    WORD bcol, tcol, ipat, icol, tmode, th, tmpth;
+-    WORD state, type, flags, len;
+-    WORD tmpx, tmpy;
++/* Pure caller-owned decoding/layout. No GSX scratch or display writes. */
++void prepare_draw(struct ObjectPrepared *p, OBJECT FAR *tree, WORD obj, WORD sx, WORD sy)
++{
++    WORD flags, state, type, th, len;
+     uint32_t spec;
+-    char ch;
+-    GRECT t, c;
+     const TEDINFO FAR *ted = NULL;
+-
+-    ch = ob_sst(tree, obj, &spec, &state, &type, &flags, &t, &th);
+-
++    GRECT text;
++
++    ob_sst(tree, obj, &spec, &state, &type, &flags, &p->bounds, &th);
++    p->valid = 0;
+     if ((flags & HIDETREE) || spec == 0xFFFFFFFFUL)
+         return;
+-
+-    t.g_x = sx;
+-    t.g_y = sy;
+-
+-    /* Trivial reject on the full extent: outline, shadow and border. */
++    p->valid = 1;
++    p->bounds.g_x = sx;
++    p->bounds.g_y = sy;
++    p->state = state;
++    p->type = type;
++    p->thickness = th;
++    p->inset = (WORD)((th < 0) ? 0 : th);
++    p->border = BLACK;
++    p->ink = BLACK;
++    p->pattern = IP_HOLLOW;
++    p->paper = WHITE;
++    p->mode = MD_REPLACE;
++    p->ted = 0;
++    p->length = 0;
++    p->font = IBM;
++    if (type == G_TEXT || type == G_BOXTEXT) {
++        ted = (const TEDINFO FAR *)SPEC_PTR(spec);
++        gr_crack((UWORD)ted->te_color, &p->border, &p->ink,
++                 &p->pattern, &p->paper, &p->mode);
++        p->ted = 1;
++        p->font = ted->te_font;
++        text = p->bounds;
++        gr_inside(&text, p->inset);
++        len = gr_just_to(p->glyphs, ted->te_just, ted->te_font,
++                         (const char FAR *)SPEC_PTR(ted->te_ptext),
++                         text.g_w, text.g_h, &text);
++        p->length = len;
++        text.g_w = (WORD)(len * gl_wchar);
++        text.g_h = gl_hchar;
++        p->text = text;
++    } else if (type == G_BOX || type == G_BOXCHAR || type == G_IBOX) {
++        gr_crack((UWORD)spec, &p->border, &p->ink,
++                 &p->pattern, &p->paper, &p->mode);
++    }
++    if (type == G_STRING || type == G_TITLE || type == G_BUTTON) {
++        len = expand_string(p->glyphs, (const char FAR *)SPEC_PTR(spec));
++        p->length = len;
++        p->text = p->bounds;
++        p->text.g_y = (WORD)(sy + (p->bounds.g_h - gl_hchar) / 2);
++        if (type == G_BUTTON)
++            p->text.g_x = (WORD)(sx + (p->bounds.g_w - len * gl_wchar) / 2);
++    }
++}
++
++/* The caller supplies immutable prepared values; GSX remains DISPLAY-owned. */
++void draw_prepared(const struct ObjectPrepared *p)
++{
++    WORD bcol = p->border, tcol = p->ink, ipat = p->pattern;
++    WORD icol = p->paper, tmode = p->mode, th = p->thickness, tmpth = p->inset;
++    WORD state = p->state, type = p->type, len = p->length, i;
++    GRECT t = p->bounds, c;
++
++    if (!p->valid)
++        return;
+     if (gl_clip.g_w && gl_clip.g_h) {
+         c = t;
+         if (state & OUTLINED)
+@@ -194,27 +241,13 @@
+         if (!gsx_chkclip(&c))
+             return;
+     }
+-
+-    bcol = BLACK;
+-    tcol = BLACK;
+-    ipat = IP_HOLLOW;
+-    icol = WHITE;
+-    tmode = MD_REPLACE;
+-
+     if (type != G_STRING) {
+-        tmpth = (WORD)((th < 0) ? 0 : th);
+-        if (type == G_TEXT || type == G_BOXTEXT) {
+-            ted = (const TEDINFO FAR *)SPEC_PTR(spec);
+-            gr_crack((UWORD)ted->te_color, &bcol, &tcol, &ipat, &icol, &tmode);
+-        }
+-
+         /* the box types: crack the colour if not a ted, then draw the
+          * border and the filled box */
+         switch (type) {
+         case G_BOX:
+         case G_BOXCHAR:
+         case G_IBOX:
+-            gr_crack((UWORD)spec, &bcol, &tcol, &ipat, &icol, &tmode);
+             /* fall through */
+         case G_BUTTON:
+             if (type == G_BUTTON) {
+@@ -257,48 +290,35 @@
+         }
+ 
+         gsx_attr(1, tmode, tcol);
+-        if (ted) {
+-            c = t;
+-            gr_inside(&c, tmpth);
+-            len = gr_just(ted->te_just, ted->te_font,
+-                          (const char FAR *)SPEC_PTR(ted->te_ptext), c.g_w, c.g_h, &c);
+-            if (len > 0) {
+-                if (tmode == MD_REPLACE) {
+-                    c.g_w = (WORD)(len * gl_wchar);
+-                    c.g_h = gl_hchar;
+-                    gr_rect(WHITE, IP_SOLID, &c);
+-                }
+-                gsx_tblt(ted->te_font, c.g_x, c.g_y, len);
+-            }
+-        }
+-
+-    }
+-
+-    /* the text of a string, title or button: centred vertically, and
+-     * horizontally too for a button.  A title has no border of its own --
+-     * the menu bar it sits in provides one. */
+-    if (type == G_STRING || type == G_TITLE || type == G_BUTTON) {
+-        len = expand_string(intin, (const char FAR *)SPEC_PTR(spec));
+-        if (len) {
+-            gsx_attr(1, MD_TRANS, BLACK);
+-            tmpx = t.g_x;
+-            tmpy = (WORD)(t.g_y + (t.g_h - gl_hchar) / 2);
+-            if (type == G_BUTTON)
+-                tmpx = (WORD)(tmpx + (t.g_w - len * gl_wchar) / 2);
+-            gsx_tblt(IBM, tmpx, tmpy, len);
+-        }
+-    }
+-
+-    /* Only the admitted selected/disabled states are hosted. */
++        if (p->ted && len > 0) {
++            if (tmode == MD_REPLACE)
++                gr_rect(WHITE, IP_SOLID, &p->text);
++            for (i = 0; i < len; ++i) intin[i] = p->glyphs[i];
++            gsx_tblt(p->font, p->text.g_x, p->text.g_y, len);
++        }
++    }
++    if ((type == G_STRING || type == G_TITLE || type == G_BUTTON) && len > 0) {
++        for (i = 0; i < len; ++i) intin[i] = p->glyphs[i];
++        gsx_attr(1, MD_TRANS, BLACK);
++        gsx_tblt(IBM, p->text.g_x, p->text.g_y, len);
++    }
+     if (th > 0)
+         gr_inside(&t, th);
+     if (state & DISABLED) {
+         gsx_fcolor(WHITE);
+         bb_fill(MD_TRANS, FIS_PATTERN, IP_4PATT, t.g_x, t.g_y, t.g_w, t.g_h);
+     }
+-
+     if (state & SELECTED)
+         bb_fill(MD_XOR, FIS_SOLID, IP_SOLID, t.g_x, t.g_y, t.g_w, t.g_h);
++}
++
++/* Immediate menu/object callers already own DISPLAY. No prepared pointer
++ * survives this synchronous call or escapes its physical ownership. */
++static struct ObjectPrepared immediatePaint;
++void just_draw(OBJECT FAR *tree, WORD obj, WORD sx, WORD sy)
++{
++    prepare_draw(&immediatePaint, tree, obj, sx, sy);
++    draw_prepared(&immediatePaint);
+ }
+ 
+ WORD ob_find(OBJECT FAR *tree, WORD currobj, WORD depth, WORD mx, WORD my)
+--- a/aes-graf.c
++++ b/aes-graf.c
+@@ -77,14 +77,14 @@
+     *pic = (WORD)(color & 0x0F);
+ }
+ 
+-static WORD gsx_tcalc(WORD font, const char FAR *ptext, WORD *pw, WORD *ph)
++static WORD gsx_tcalc(WORD *glyphs, WORD font, const char FAR *ptext, WORD *pw, WORD *ph)
+ {
+     WORD wc, hc, n;
+ 
+     (void)font;
+     wc = gl_wchar;
+     hc = gl_hchar;
+-    n = expand_string(intin, ptext);
++    n = expand_string(glyphs, ptext);
+     if (n * wc < *pw)
+         *pw = (WORD)(n * wc);
+     if (hc < *ph)
+@@ -95,13 +95,13 @@
+     return 0;
+ }
+ 
+-WORD gr_just(WORD just, WORD font, const char FAR *ptext, WORD w, WORD h, GRECT *pt)
++WORD gr_just_to(WORD *glyphs, WORD just, WORD font, const char FAR *ptext, WORD w, WORD h, GRECT *pt)
+ {
+     WORD numchs;
+ 
+     pt->g_w = w;
+     pt->g_h = h;
+-    numchs = gsx_tcalc(font, ptext, &pt->g_w, &pt->g_h);
++    numchs = gsx_tcalc(glyphs, font, ptext, &pt->g_w, &pt->g_h);
+     h = (WORD)(h - pt->g_h);
+     if (h > 0)
+         pt->g_y = (WORD)(pt->g_y + (h + 1) / 2);
+@@ -120,3 +120,8 @@
+     }
+     return numchs;
+ }
++
++WORD gr_just(WORD just, WORD font, const char FAR *ptext, WORD w, WORD h, GRECT *pt)
++{
++    return gr_just_to(intin, just, font, ptext, w, h, pt);
++}

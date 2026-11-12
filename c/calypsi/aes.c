@@ -1,5 +1,6 @@
 #include "aes-private.h"
 #include "vdi-private.h"
+#include "aes-paint-private.h"
 #include <proto/exec.h>
 #include <gem.h>
 
@@ -46,8 +47,14 @@ BOOL ExecAESAttach(struct MsgPort *service)
     context = AllocMem(sizeof(*context), MEMF_PUBLIC | MEMF_CLEAR);
     if (context == NULL)
         return FALSE;
+    context->objectPaint = AllocMem(sizeof(struct ExecObjectPaint), MEMF_PUBLIC | MEMF_CLEAR);
+    if (context->objectPaint == NULL) {
+        FreeMem(context, sizeof(*context));
+        return FALSE;
+    }
     context->replies = CreateMsgPort();
     if (context->replies == NULL) {
+        FreeMem(context->objectPaint, sizeof(struct ExecObjectPaint));
         FreeMem(context, sizeof(*context));
         return FALSE;
     }
@@ -63,6 +70,7 @@ BOOL ExecAESAttach(struct MsgPort *service)
     if (i == AES_CONTEXTS) {
         Permit();
         DeleteMsgPort(context->replies);
+        FreeMem(context->objectPaint, sizeof(struct ExecObjectPaint));
         FreeMem(context, sizeof(*context));
         return FALSE;
     }
@@ -93,6 +101,7 @@ BOOL ExecAESDetach(void)
             contexts[i] = NULL;
     Permit();
     DeleteMsgPort(context->replies);
+    FreeMem(context->objectPaint, sizeof(struct ExecObjectPaint));
     FreeMem(context, sizeof(*context));
     return TRUE;
 }
