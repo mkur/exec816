@@ -8,17 +8,18 @@ from aes_timing_breakdown import scheduler_markers, scheduler_states
 from console_turn_profile import Timeline
 from native_program import read_build, require, sha256
 from sio_transaction_trace import BASE_HZ, read_events
+import adapter_state as adapter
 
 CATEGORIES={
     'format': 'TextRow',
     'load': 'TextStep',
     'dos': 'Read Open Close',
     'event': 'evnt_multi',
-    'update': 'wind_update',
+    'update': 'wind_update ExecAESBeginUpdate',
     'geometry': 'wind_get wind_set vs_clip',
     'vdi': 'v_gtext v_bar text paint',
-    'borrow': 'GemDrawingBorrow DisplayEnter DisplayLeave',
-    'renderer': 'GemVdiPaint vdi_v_gtext dev_glyph dev_fill_rect draw_glyph draw_glyph_clipped',
+    'borrow': 'GemDrawingBorrow GemDrawingSolidBorrow drawing_borrow borrow_leave DisplayEnter DisplayLeave',
+    'renderer': 'GemVdiPaint GemSolidFill vdi_v_gtext vbxe_text_run dev_glyph dev_fill_rect draw_glyph draw_glyph_clipped',
     'builder': 'blit_glyph blit_glyph_run glyph_record blit_mask',
     'upload': 'VbxeOwnerSubmit VbxeOwnerText VbxeOwnerTextFill _VbxeTextUpload launch submit',
     'staging': 'vram_win VbxeOwnerRead VbxeOwnerWrite transfer',
@@ -65,6 +66,65 @@ def sites(folder, image, extra=None):
     return result
 
 
+def busy_markers(folder, image):
+    """Observe existing idle() BUSY reads; never insert a guest instruction."""
+    base=image['symbols']['idle'];result={}
+    for path in folder.glob('*vbxe.lst'):
+        for section in path.read_text().replace('\r\n','\n').split('.section ')[1:]:
+            if not re.search(r'\\ 000000 [0-9a-f]+\s+idle:',section):continue
+            offsets=[int(m[1],16) for m in re.finditer(
+                r'\\ ([0-9a-f]{6}) 890300\s+bit\s+##3',section)]
+            require(len(offsets)==2,'Unknown idle BUSY read shape')
+            for i,offset in enumerate(offsets):
+                payload=next(bytes(s['bytes']) for s in image['segments']
+                    if s['address']<=base and base+offset+3<=s['address']+len(s['bytes']))
+                origin=next(s['address'] for s in image['segments']
+                    if s['address']<=base and base+offset+3<=s['address']+len(s['bytes']))
+                at=base+offset-origin
+                require(payload[at:at+3]==bytes.fromhex('890300') and payload[at-4]==0x22,
+                    'BUSY markers disagree with linked idle instructions')
+                result['busy_read_start_'+str(i)]=base+offset-4
+                result['busy_read_value_'+str(i)]=base+offset
+    require(len(result)==4,'Missing checked BUSY read markers')
+    return result
+
+
+def busy_intervals(events, points, worker):
+    """Conservative occupancy bounds from launch and real BUSY read results.
+
+    The lower bound spans the latest possible first positive read through the
+    earliest possible last positive read. The upper bound includes launch-call
+    overhead and delay until the first observed idle read. Neither is an edge
+    timestamp, and these overlapping hardware intervals are not CPU buckets.
+    """
+    if 'busy_read_start_0' not in points:return []
+    starts={pc for n,pc in points.items() if n.startswith('busy_read_start_')}
+    values={pc for n,pc in points.items() if n.startswith('busy_read_value_')}
+    active=None;reads={};result=[]
+    for tick,e in events:
+        pc,dp,sp,a=(int(e[i],16) for i in (4,9,8,5))
+        if pc==points['dma_launch']:
+            require(active is None,'Overlapping hardware launches')
+            if dp==worker:active=dict(start=tick,positive=[],polls=0)
+        elif pc in starts and dp==worker:
+            reads[sp]=tick
+        elif pc in values and dp==worker:
+            require(sp in reads,'BUSY result without read call')
+            begin=reads.pop(sp)
+            if active is None:continue
+            active['polls']+=1
+            if a&3:active['positive'].append((begin,tick))
+            else:
+                positive=active['positive']
+                lower=max(0,positive[-1][0]-positive[0][1]) if positive else 0
+                result.append(dict(start=active['start'],end=tick,polls=active['polls'],
+                    busy_reads=len(positive),lower_ms=lower*1000/BASE_HZ,
+                    upper_ms=(tick-active['start'])*1000/BASE_HZ))
+                active=None
+    require(active is None,'Unfinished hardware occupancy interval')
+    return result
+
+
 def prepare(out):
     p=read_build(out);directory=out/'bitmap-console'
     foreign=json.loads((directory/'c-image.json').read_text())
@@ -73,15 +133,17 @@ def prepare(out):
     scheduler=scheduler_markers(p)
     address=p['labels']['context_restore']
     hosted=(p['output']/'hosted.bin').read_bytes()
-    require(hosted[address-0x1400:address-0x1400+8]==bytes.fromhex('c230ab2b7afa6840'),
+    offset=address-adapter.RESIDENT_BASE
+    require(hosted[offset:offset+8]==bytes.fromhex('c230ab2b7afa6840'),
             'Unknown restore boundary')
     points={k:p['labels'][k] for k in ('native_irq','native_nmi','interrupt_schedule')}
     points['selected']=address+4
     points.update(scheduler['points'])
-    from bitmap_console_performance import markers as hardware_markers
+    from bitmap_console_performance import hardware_markers
     hardware=hardware_markers(p,foreign,directory/'drawing')
     points['dma_launch']=hardware['launch']['entry']
     points['dma_idle']=hardware['idle']['entry']
+    points.update(busy_markers(directory/'drawing',foreign))
     pcs=set(points.values())
     for pc,site in shared.items():pcs.update((pc,site['end']))
     # APP code is bank aligned. Observe candidate banks, then admit only the
@@ -158,7 +220,11 @@ def timeline(events,points):
             frame=sp-9
             if not (interrupts and interrupts[-1]==frame and last==e[4:]):interrupts.append(frame)
         elif pc==points['interrupt_schedule']:
-            require(interrupts and interrupts.pop()==sp,'Unbalanced performance interrupt')
+            # Profiling can begin inside an outer IRQ. Its entry predates the
+            # capture, although a nested NMI and both exits are observed. Only
+            # the prefix before the first context selection may lack an entry.
+            if not interrupts and owner is None:pass
+            else:require(interrupts and interrupts.pop()==sp,'Unbalanced performance interrupt')
         elif pc==points['selected']:
             require(not interrupts,'Performance selection inside interrupt');owner=dp
         last=e[4:]
@@ -169,10 +235,25 @@ def timeline(events,points):
     return segments
 
 
+def extend_clock(value,anchor):
+    """Match debugger @clk's 32-bit value to the trace's extended clock."""
+    if value>=1<<32:return value
+    return value+round((anchor-value)/(1<<32))*(1<<32)
+
+
 def analyze(out,definition,record):
-    trace=out/'emulator.log'
+    trace=out/'cpu-trace.log'
+    if not trace.exists():trace=out/'emulator.log'
     require(trace.stat().st_size<256*1024*1024,'Performance trace exceeded 256 MiB cap')
     events=read_events(trace,kinds={'cpu'})
+    # The bridge is paused before executing the final IRQ/NMI instruction.
+    # It must not create an unfinished interrupt in the charged timeline.
+    interrupts={definition['points'][n] for n in ('native_irq','native_nmi')}
+    while events and int(events[-1][1][4],16) in interrupts:events.pop()
+    record={**record,'samples':[{**s,**{k:extend_clock(s[k],events[0][0])
+        for k in ('start','model','first_band','complete') if k in s}} for s in record['samples']]}
+    for key in ('trace_end','start_load_observation','load_settled_observation'):
+        if key in record:record[key]=extend_clock(record[key],events[0][0])
     segments=timeline(events,definition['points'])
     states,_=scheduler_states(events,definition['scheduler'],definition['points']['selected'])
     relocated=record['app']['base']-definition['reference']
@@ -197,6 +278,7 @@ def analyze(out,definition,record):
                     and active[0]['start']>=record['samples'][-1]['complete'])
     require(not active or terminal_event,'Incomplete viewer call-site stack: '+str(active[-2:]))
     changes=states[worker];ticks=[t for t,_ in changes]
+    occupancy=busy_intervals(events,definition['points'],worker)
     # Launch through the return of the next synchronous idle poll bounds DMA
     # occupancy. It includes CPU/scheduling delay and is not a BUSY-edge clock.
     hardware=[(tick,'launch',int(e[9],16)) for tick,e in events
@@ -226,22 +308,26 @@ def analyze(out,definition,record):
             buckets[category]+=clock.measure(a,b)['charged_cpu_ms']
         total=clock.measure(begin,end)
         require(abs(sum(buckets.values())-total['charged_cpu_ms'])<1e-7,'Viewer CPU does not reconcile')
-        waiting=runnable=0
+        waiting=runnable=unknown=0
         for a,b,owner,_ in segments:
             lo,hi=max(a,begin),min(b,end)
             if hi<=lo or owner==worker:continue
-            i=bisect_right(ticks,lo)-1;require(i>=0,'No viewer wait state')
-            if changes[i][1]=='blocked':waiting+=hi-lo
+            i=bisect_right(ticks,lo)-1
+            if i<0:unknown+=hi-lo
+            elif changes[i][1]=='blocked':waiting+=hi-lo
             else:runnable+=hi-lo
-        total.update(blocked_off_cpu_ms=waiting*1000/BASE_HZ,runnable_off_cpu_ms=runnable*1000/BASE_HZ)
-        require(abs(total['off_cpu_ms']-total['blocked_off_cpu_ms']-total['runnable_off_cpu_ms'])<1e-7,'Viewer wait totals disagree')
+        total.update(blocked_off_cpu_ms=waiting*1000/BASE_HZ,runnable_off_cpu_ms=runnable*1000/BASE_HZ,
+                     unclassified_off_cpu_ms=unknown*1000/BASE_HZ)
+        require(abs(total['off_cpu_ms']-total['blocked_off_cpu_ms']-total['runnable_off_cpu_ms']-
+                    total['unclassified_off_cpu_ms'])<1e-7,'Viewer wait totals disagree')
         byname=defaultdict(list)
         for s in selected:byname[s['callee']].append(s)
         routines={k:dict(calls=len(v),charged_cpu_ms=sum(clock.measure(s['start'],s['end'])['charged_cpu_ms'] for s in v),
+                        off_cpu_ms=sum(clock.measure(s['start'],s['end'])['off_cpu_ms'] for s in v),
                         elapsed_ms=sum(s['end']-s['start'] for s in v)*1000/BASE_HZ) for k,v in byname.items()}
         updates=[];beg=None
-        for s in byname['wind_update']:
-            if s['argument']==1:beg=s
+        for s in sorted(byname['wind_update']+byname['ExecAESBeginUpdate'],key=lambda s:s['start']):
+            if s['callee']=='ExecAESBeginUpdate' or s['argument']==1:beg=s
             elif s['argument']==0 and beg:
                 updates.append(dict(acquire_ms=(beg['end']-beg['start'])*1000/BASE_HZ,
                                     hold_ms=(s['end']-beg['end'])*1000/BASE_HZ));beg=None
@@ -252,13 +338,22 @@ def analyze(out,definition,record):
         work=dict(dma_launch_to_idle_return_ms=[(b-a)*1000/BASE_HZ for a,b in dma],
                   rows=len(byname['TextRow']),text_calls=len(byname['v_gtext']),
                   bar_calls=len(byname['v_bar']),borrows=len(byname['GemDrawingBorrow']),
+                  solid_borrows=len(byname['GemDrawingSolidBorrow']),
+                  physical_grants=len(byname['DisplayEnter']),
                   submissions=len(counts),records_per_list=counts,
                   fences=len(byname['VbxeOwnerFence']),staging_windows=len(byname['vram_win']),
                   staging_read_bytes=4096*len(byname['VbxeOwnerRead']),
                   staging_write_bytes=4096*len(byname['VbxeOwnerWrite']))
+        measured=[r for r in occupancy if begin<=r['start']<r['end']<=end]
+        work['hardware_busy_bounds']=dict(lists=measured,
+            lower_ms=sum(r['lower_ms'] for r in measured),
+            upper_ms=sum(r['upper_ms'] for r in measured))
+        work['hardware_launches']=len(measured)
         result=dict(operation=sample['operation'],index=sample['index'],work=work,**total,
                     exclusive_cpu_ms=dict(buckets),routines=routines,updates=updates)
         text=byname['v_gtext']
+        result['text_rows']=[dict(start=s['start'],end=s['end'],
+            **clock.measure(s['start'],s['end'])) for s in text]
         if text:result['first_text_return_ms']=(text[0]['end']-begin)*1000/BASE_HZ
         results.append(result)
     result=dict(scope='Checked call/return sites; conservative Task CPU, IRQ/NMI and observed signal-wait attribution. First text return follows the synchronous fence; scanout is separate.',

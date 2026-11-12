@@ -75,6 +75,13 @@ def markers(program,foreign,output):
     # Only idle has a standalone return; other optimized C exits may be shared.
     if 'complete_scroll' in foreign['symbols']:
         result['complete_scroll']=dict(entry=foreign['symbols']['complete_scroll'],returns=[],entry_only=True)
+    result.update(hardware_markers(program,foreign,output))
+    return result
+
+
+def hardware_markers(program,foreign,output):
+    """Resolve driver launch/fence boundaries independently of console policy."""
+    result={}
     current=None;busy_next=False
     for path in sorted(set(output.glob('*vbxe.lst')) | set(output.glob('*vbxe-fault.lst'))):
         for line in path.read_text().splitlines():
@@ -93,6 +100,30 @@ def markers(program,foreign,output):
             busy_next=current in ('submit','launch','start') and bool(re.search(r' a901\s+lda\s+#1$',line))
             ret=re.search(r'\\ ([0-9a-f]{6}) 6b\s+(?:`[^`]+`: *)?rtl',line)
             if current=='idle' and ret:result['idle']['returns'].append(foreign['symbols']['idle']+int(ret[1],16))
+    # Current Calypsi outlines the constant byte store, so the LDA #1 is
+    # inside its helper. Locate that call from its source/listing statement.
+    if 'launch' not in result:
+        candidates=[]
+        for path in output.glob('*vbxe.lst'):
+            for section in path.read_text().replace('\r\n','\n').split('.section ')[1:]:
+                if not re.search(r'\\ 000000\s+start:',section) or 'REG(BUSY)=1;' not in section:continue
+                tail=section.split('REG(BUSY)=1;',1)[1]
+                offsets=re.findall(r'\\ ([0-9a-f]{6}) 22[.]{6}\s+jsl',tail)
+                require(offsets,'Missing outlined BUSY store call')
+                pc=foreign['symbols']['start']+int(offsets[-1],16)
+                require(any(s['address']<=pc<s['address']+len(s['bytes'])
+                    and s['bytes'][pc-s['address']]==0x22 for s in foreign['segments']),
+                    'BUSY store marker disagrees with linked code')
+                segment=next(s for s in foreign['segments'] if s['address']<=pc and pc+4<=s['address']+len(s['bytes']))
+                offset=pc-segment['address']
+                helper=int.from_bytes(bytes(segment['bytes'][offset+1:offset+4]),'little')
+                segment=next(s for s in foreign['segments'] if s['address']<=helper and helper+9<=s['address']+len(s['bytes']))
+                offset=helper-segment['address']
+                require(bytes(segment['bytes'][offset:offset+9])==bytes.fromhex('e220a9018700c2206b'),
+                    'Outlined BUSY helper is not the checked constant-one byte store')
+                candidates.append(pc)
+        require(len(candidates)==1,'Ambiguous outlined hardware launch')
+        result['launch']=dict(entry=candidates[0],returns=[])
     require(result.get('idle',{}).get('returns') and 'launch' in result,'Missing hardware fence markers')
     if 'blitter_launched' in program['labels']:
         result['async_launch']=dict(entry=program['labels']['blitter_launched'],returns=[])

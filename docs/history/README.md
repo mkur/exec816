@@ -1,5 +1,8 @@
 # Historical records
 
+- [Current GUI drawing baseline](gui-drawing-baseline.md): optimized viewer
+  repaint and text-row costs with idle peers and Counter/disk load.
+
 - [GEM drawing simplification](gem-drawing-simplification.md): shared borrowed
   paint/copy completion and removal of a redundant post-overlay fence.
 
