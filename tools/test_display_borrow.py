@@ -1,4 +1,4 @@
-"""Two direct renderer borrowers beside native console/pointer work."""
+"""Two renderer borrowers with native pointer work and console-model I/O."""
 from pathlib import Path
 from library_paths import read_source
 from native_program import ROOT, require
@@ -24,8 +24,10 @@ extern void DisplayCopyStep(void);''')
         source=source.replace(call,call+'\n    if (status==DISPLAY_OK && *id) DisplayDMAStart();')
     start = source.index('static UWORD drawing_borrow(')
     body = source[start:].replace('    if (!fault) {', '    DisplayBorrowBegin(grant);\n    if (!fault) {', 1)
-    body = body.replace('    DisplayLeave(grant);', '    DisplayBorrowEnd(grant);\n    DisplayLeave(grant);')
     source = source[:start]+body
+    needle='    DisplayLeave(grant);'
+    require(source.count(needle)==1,'Shared borrower handoff hook changed')
+    source=source.replace(needle,'    DisplayBorrowEnd(grant);\n'+needle)
     start=source.index('UWORD GemDrawingCopyBorrow(')
     body=source[start:]
     needle='        if (status!=DISPLAY_OK) return status;\n        pointer_erase('
@@ -43,6 +45,12 @@ def producer(out, sy):
     source = '''MODULE DISPLAYBORROWPROBE
 USE EXEC
 USE DISPLAY
+
+PUBLIC BYTE FUNC Pending()
+
+  LET command=CARD POINTER($DisplayCommand)
+
+RETURN(command^<>0)
 
 PUBLIC PROC Pump()
 
@@ -68,6 +76,12 @@ ENDMODULE
         source = source.replace('$'+name, '$%x'%sy[name])
     (out/'displayborrowprobe.act').write_text(source)
     host = read_source(ROOT/'lib/aes/aeshost.act').replace('USE AESCORE', 'USE AESCORE\nUSE DISPLAYBORROWPROBE')
+    # The notification-only fast path must see this fixture's private work.
+    needle='RETURN(service<>NULL AND service.live=1 AND service.lockCount=0'
+    require(host.count(needle)==1,'Settled observation hook changed')
+    host=host.replace(needle,
+        'RETURN(DISPLAYBORROWPROBE.Pending()=0 AND service<>NULL AND '
+        'service.live=1 AND service.lockCount=0')
     needle = '  changed=service.directory.changed<>0'
     require(host.count(needle) == 1, 'Admission hook changed')
     (out/'aeshost.act').write_text(host.replace(needle, '  DISPLAYBORROWPROBE.Pump()\n'+needle))

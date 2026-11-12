@@ -169,7 +169,9 @@ UWORD AESRun(void)
     if (!DisplayFaultVariant) {
         CHECK(WaitIO((struct IORequest *)request) == 0 && request->io_Actual == 512);
         CHECK(DisplayIterations[0] == 24 && DisplayIterations[1] == 24);
-        CHECK(DisplayBorrows == 48 && DisplayNative > 0 && DisplayCopies > 0);
+        /* Console writes update the model until a Terminal displays it.
+         * Native pointer work still interleaves these physical grants. */
+        CHECK(DisplayBorrows == 48 && DisplayNative > 0);
     } else {
         CHECK(DisplayIterations[0] == 1 && DisplayIterations[1] == 1);
         CHECK(grants[0].state == DISPLAY_GRANT_REVOKED && grants[1].state == DISPLAY_GRANT_REVOKED);

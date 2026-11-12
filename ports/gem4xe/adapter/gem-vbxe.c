@@ -1232,6 +1232,22 @@ NATIVE_UNIT(Batch,(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(vo
 NATIVE_UNIT(WidgetBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,
                             UWORD first,UWORD (*draw)(void)),(left,top,right,bottom,first,draw))
 
+/* Flush drawing before restoring overlays. Each overlay submission completes
+ * synchronously, so no additional fence is needed before the physical handoff.
+ * A reset-required fault retains the driver's unsafe ownership state. */
+static UWORD borrow_leave(struct DisplayGrant *grant)
+{
+    UWORD status=fence_owner();
+    if (!fault && outlineVisible && !outlineDrawn) {
+        outline_toggle();
+        if (!fault) outlineDrawn=1;
+    }
+    cursor_show();
+    if (fault) status=DISPLAY_DEVICE_FAULT;
+    DisplayLeave(grant);
+    return status;
+}
+
 /* A linked, bounded callback executes only after a delegated access grant.
  * Ownership survives Task preemption. The callback must return with no
  * external wait, RPC or caller buffer retained. */
@@ -1247,17 +1263,8 @@ static UWORD drawing_borrow(struct DisplayGrant *grant,UWORD left,UWORD top,
             if (draw) draw(context);
             else GemSolidFill(left,top,right,bottom,*(const UWORD *)context);
         }
-        status=fence_owner();
-        if (!fault && outlineVisible && !outlineDrawn) {
-            outline_toggle();
-            if (!fault) outlineDrawn=1;
-        }
-        cursor_show();
-        if (!fault) status=fence_owner();
     }
-    if (fault) status=DISPLAY_DEVICE_FAULT;
-    DisplayLeave(grant);
-    return status;
+    return borrow_leave(grant);
 }
 
 UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
@@ -1273,22 +1280,6 @@ UWORD GemDrawingSolidBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
 {
     /* Private VDI caller already clipped and bounded this fixed operation. */
     return drawing_borrow(grant,left,top,right,bottom,0,&pen);
-}
-
-/* Restore overlays and retire every queued list before handing off physical
- * access. A reset-required fault retains the driver's unsafe ownership state. */
-static UWORD copy_leave(struct DisplayGrant *grant)
-{
-    UWORD status=fence_owner();
-    if (!fault && outlineVisible && !outlineDrawn) {
-        outline_toggle();
-        if (!fault) outlineDrawn=1;
-    }
-    cursor_show();
-    if (!fault) status=fence_owner();
-    if (fault) status=DISPLAY_DEVICE_FAULT;
-    DisplayLeave(grant);
-    return status;
 }
 
 UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
@@ -1316,7 +1307,7 @@ UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
             if (fence_owner()==DISPLAY_OK)
                 latch(VbxeOwnerRead(&display,scratch,edges,height*2));
         }
-        status=copy_leave(grant);
+        status=borrow_leave(grant);
         if (status!=DISPLAY_OK) return status;
     }
 
@@ -1352,7 +1343,7 @@ UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
                 blit_mask(scratch+1,2,destination,320,1,n,0xf0,0,3);
             }
         }
-        status=copy_leave(grant);
+        status=borrow_leave(grant);
         if (status!=DISPLAY_OK) return status;
         remaining-=n;
     }

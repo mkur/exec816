@@ -1,0 +1,323 @@
+{
+  "format": "exec816.gem-drawing-simplification.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "comparison_revision": "1aed5a353a09ada6a4287870d15a463adaa0cbed",
+  "change": "Shared borrowed paint/copy finish; remove only the redundant post-overlay fence.",
+  "excluded_runs": [
+    {
+      "artifact": {
+        "path": "build/gem-drawing-simplification/s1/borrow/results.json",
+        "sha256": "9faa22acbb4a4094d637f459096c923e0aca8df158cbbd20a03e0a7c4e4ea70f"
+      },
+      "reason": "Fixture admission command did not invalidate the notification-only settled fast path; timeout before any borrowed drawing."
+    },
+    {
+      "artifact": {
+        "path": "build/gem-drawing-simplification/s1/borrow-current/results.json",
+        "sha256": "d75b39323376453549e420c3dec96e47cd8fcbfae4075dc7390c7562da962681"
+      },
+      "reason": "48 grants and pixels passed; obsolete native-console-scroll assertion failed. Current model-only console writes need a Terminal for visual output."
+    }
+  ],
+  "control": "Reused GF13 prepared-object capture; maintained source hashes checked against the new capture.",
+  "changed_runtime_sources": [
+    "ports/gem4xe/adapter/gem-vbxe.c"
+  ],
+  "groups": {
+    "objects_5": {
+      "samples": 8,
+      "drawing_cpu_mean_ms": {
+        "before": 26.929645506844718,
+        "after": 26.33225680489555,
+        "reduction_percent": 2.2183311020463647
+      },
+      "calls_per_draw": {
+        "DisplayEnter": {
+          "before": 12,
+          "after": 12
+        },
+        "DisplayLeave": {
+          "before": 12,
+          "after": 12
+        },
+        "VbxeOwnerSubmit": {
+          "before": 16,
+          "after": 16
+        },
+        "VbxeOwnerFence": {
+          "before": 56,
+          "after": 44
+        },
+        "idle": {
+          "before": 56,
+          "after": 44
+        }
+      },
+      "transaction_elapsed_max_ms": {
+        "before": 4.051219446868317,
+        "after": 4.059184159666413
+      }
+    },
+    "objects_33_siblings": {
+      "samples": 8,
+      "drawing_cpu_mean_ms": {
+        "before": 90.84850975289655,
+        "after": 89.29427182084612,
+        "reduction_percent": 1.7108017911112432
+      },
+      "calls_per_draw": {
+        "DisplayEnter": {
+          "before": 40,
+          "after": 40
+        },
+        "DisplayLeave": {
+          "before": 40,
+          "after": 40
+        },
+        "VbxeOwnerSubmit": {
+          "before": 46,
+          "after": 46
+        },
+        "VbxeOwnerFence": {
+          "before": 172,
+          "after": 132
+        },
+        "idle": {
+          "before": 172,
+          "after": 132
+        }
+      },
+      "transaction_elapsed_max_ms": {
+        "before": 4.1722407908889325,
+        "after": 4.05805641272155
+      }
+    },
+    "objects_9_nested": {
+      "samples": 8,
+      "drawing_cpu_mean_ms": {
+        "before": 137.90916068843313,
+        "after": 136.13613984907926,
+        "reduction_percent": 1.2856439923954848
+      },
+      "calls_per_draw": {
+        "DisplayEnter": {
+          "before": 56,
+          "after": 56
+        },
+        "DisplayLeave": {
+          "before": 56,
+          "after": 56
+        },
+        "VbxeOwnerSubmit": {
+          "before": 90,
+          "after": 90
+        },
+        "VbxeOwnerFence": {
+          "before": 292,
+          "after": 236
+        },
+        "idle": {
+          "before": 292,
+          "after": 236
+        }
+      },
+      "transaction_elapsed_max_ms": {
+        "before": 4.7828452773482155,
+        "after": 5.160429051325173
+      }
+    }
+  },
+  "source_inputs": [
+    {
+      "path": "ports/gem4xe/adapter/gem-vbxe.c",
+      "sha256": "3086cf28f7754cc7b424f7dcf417d93198240a8d1daa736be6d79325ae3ad66b"
+    },
+    {
+      "path": "tests/test_vdi_copy.py",
+      "sha256": "97d1b7a7254b342ee12cf4356f630f1dd5e4335f6a683e0983fecd44b363102d"
+    },
+    {
+      "path": "tools/test_display_borrow.py",
+      "sha256": "5f1bdddf2054498add894f519aca6bdedace2361cc3828f0338f78496708311c"
+    },
+    {
+      "path": "tests/programs/display_borrow.c",
+      "sha256": "f8096a14fc82b225f71e4f5fd9e2ccd7c75a11ae5b962c2d8fa198cb888d60df"
+    }
+  ],
+  "pixels": {
+    "matching_full_frames": 11,
+    "pixels_per_frame": 153600,
+    "assertions": {
+      "before": 486,
+      "after": 478
+    },
+    "assertion_scope": "Total includes message/exposure draining, whose iteration count can vary."
+  },
+  "borrowed_renderer": {
+    "DisplayBorrows": 48,
+    "DisplayNative": 118,
+    "DisplayCopies": 0,
+    "DisplayOverlap": 0,
+    "DisplayActive": 0,
+    "exact_pixels": 2788
+  },
+  "access_timing": {
+    "access_wait": {
+      "count": 50,
+      "elapsed_ms": {
+        "p50": 0.19065971786590807,
+        "p95": 15.324882749559825,
+        "maximum": 22.88297228984788
+      },
+      "charged_cpu_ms": {
+        "p50": 0.14653661864814155,
+        "p95": 0.9153780983085205,
+        "maximum": 0.9170697187258151
+      },
+      "off_cpu_ms": {
+        "p50": 0.0,
+        "p95": 14.184378167383022,
+        "maximum": 21.729780554541364
+      },
+      "interrupt_ms": {
+        "p50": 0.044475520138036226,
+        "p95": 0.23457136453151275,
+        "maximum": 0.23802508955015583
+      }
+    },
+    "borrow_unit": {
+      "count": 48,
+      "elapsed_ms": {
+        "p50": 6.0079308803897495,
+        "p95": 27.684354907602284,
+        "maximum": 38.27157274179247
+      },
+      "charged_cpu_ms": {
+        "p50": 4.826686439829767,
+        "p95": 5.917358703880436,
+        "maximum": 6.969969508541978
+      },
+      "off_cpu_ms": {
+        "p50": 0.0,
+        "p95": 20.821944263926618,
+        "maximum": 29.330019636893677
+      },
+      "interrupt_ms": {
+        "p50": 0.9962234574183899,
+        "p95": 1.4099656178150186,
+        "maximum": 1.9715835963568136
+      }
+    },
+    "scope": "Instrumented solid-fill and callback fixture, including assertion and marker costs. Conservative CPU charge excludes native interrupts and off-Task time. An ordinary callback injects Yield with renderer staging live; ownership must survive Task switching without overlapping renderer access. access_wait includes arbitration and bridge costs."
+  },
+  "fault_cases": [
+    {
+      "copy_after_mutation": false,
+      "cases": [
+        {
+          "variant": 1,
+          "status": 0,
+          "checks": 31,
+          "failures": 0
+        },
+        {
+          "variant": 2,
+          "status": 65427,
+          "checks": 15,
+          "failures": 0
+        }
+      ]
+    },
+    {
+      "copy_after_mutation": true,
+      "cases": [
+        {
+          "variant": 1,
+          "status": 0,
+          "checks": 31,
+          "failures": 0
+        },
+        {
+          "variant": 2,
+          "status": 65427,
+          "checks": 15,
+          "failures": 0
+        }
+      ]
+    }
+  ],
+  "host": {
+    "tests": 692,
+    "skips": 4,
+    "status": "pass"
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "each_public_task": 0,
+    "idle": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "fixture_storage": {
+    "before": {
+      "code": 117424,
+      "initialized": 3786,
+      "bss": 19699
+    },
+    "after": {
+      "code": 117446,
+      "initialized": 3786,
+      "bss": 19699
+    },
+    "scope": "Focused corpus image, not the production provider."
+  },
+  "limits": [
+    "Normal Task preemption and existing row/list/work limits retained.",
+    "Eight samples per object cohort after two warmups; no latency-tail or hosted-system qualification.",
+    "Physical transaction timing brackets Enter-entry through Leave-return.",
+    "Borrow fixture covers native pointer interference and console-model I/O; it does not exercise asynchronous visual Terminal scrolling.",
+    "The standard demo was not rebuilt for this development slice."
+  ],
+  "artifacts": [
+    {
+      "path": "build/gem-first-gui/gf13/prepared-profile/results.json",
+      "sha256": "9bc7a2a2f03221c66074926b17a9bdbd98e4694858cca3c7f940fb4996ac4b2c"
+    },
+    {
+      "path": "build/gem-first-gui/gf13/prepared-profile/drawing-profile.json",
+      "sha256": "9cb3d629ad9bc2eb7c941731c778cff10b9057479cab2662ef06a3bdf93a571f"
+    },
+    {
+      "path": "build/gem-drawing-simplification/s1/profile/results.json",
+      "sha256": "dbcdf326bd5740d85fe26f0e29ee3d87957604e0e41973865fa218acf175e122"
+    },
+    {
+      "path": "build/gem-drawing-simplification/s1/profile/drawing-profile.json",
+      "sha256": "99f2eb8dd7f5856d3af84f65be1971fa6a0bb093d7473442e81148ceae3d692d"
+    },
+    {
+      "path": "build/gem-drawing-simplification/s1/borrow-verified/results.json",
+      "sha256": "9ba204e3e99b16791d85e83a06f17e9c1a2c9132621939ee519939f492b979c3"
+    },
+    {
+      "path": "build/gem-drawing-simplification/s1/borrow-verified/borrow-faults.json",
+      "sha256": "5eef78dadadd3ac39c75d5e45e17eaf4a0461a0810fa5363249ac458e6b89ef8"
+    },
+    {
+      "path": "build/gem-drawing-simplification/s1/borrow-verified/copy-faults.json",
+      "sha256": "9a3665d32f0ee3f4f1ae6b48f5c206596099d9bc97f7d3107567b9d5cfdd6475"
+    },
+    {
+      "path": "build/gem-drawing-simplification-s1-host.log",
+      "sha256": "27520687436f322563c28894861324711d33bb0217f4c1e5cc014542238530b7"
+    },
+    {
+      "path": "build/gem-drawing-simplification/s1/record.py",
+      "sha256": "9179f1994c522fc1403b091ccaf53fee6dae2f3f154c3713d7f30d3512ffa370"
+    }
+  ]
+}

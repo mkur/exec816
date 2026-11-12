@@ -10,7 +10,10 @@ ROOT=Path(__file__).resolve().parents[1]
 class CopyPixels(unittest.TestCase):
     def test_overlap_edges_bounded_units_and_failure(self):
         source=(ROOT/'ports/gem4xe/adapter/gem-vbxe.c').read_text()
-        source=source[source.index('static UWORD copy_leave('):source.index('NATIVE_UNIT(FrameBatch,')]
+        source=(source[source.index('static UWORD borrow_leave('):
+                       source.index('static UWORD drawing_borrow(')]+
+                source[source.index('UWORD GemDrawingCopyBorrow('):
+                       source.index('NATIVE_UNIT(FrameBatch,')])
         prelude=r'''
 #include <assert.h>
 #include <stdint.h>

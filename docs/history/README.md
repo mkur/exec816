@@ -1,5 +1,8 @@
 # Historical records
 
+- [GEM drawing simplification](gem-drawing-simplification.md): shared borrowed
+  paint/copy completion and removal of a redundant post-overlay fence.
+
 - [MagiC operation boundaries](magic-operation-boundaries.md): pinned source
   analysis of UPDATE, tree/VDI drawing, cursor lifetime and scheduler handoffs,
   compared with Exec816's display grants and device lists.

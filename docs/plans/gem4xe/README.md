@@ -34,9 +34,11 @@ separates semantic drawing operations, UPDATE ownership, cursor lifetime and
 actual scheduling opportunities. It records the Atari supervisor-mode
 preemption gate and why a VDI return is not automatically a renderer handoff.
 Use this source comparison when choosing subsequent GEM drawing boundaries.
-The next investigation prioritizes reducing or sharing coordination work at
-natural operation boundaries; the earlier smaller-strip recommendation is
-withdrawn. The completed GF14 decision remains unchanged.
+The first [drawing simplification](../../history/gem-drawing-simplification.md)
+shares borrowed paint/copy completion and removes a redundant post-overlay fence.
+Further work prioritizes reducing or sharing coordination at natural operation
+boundaries; the earlier smaller-strip recommendation is withdrawn. The completed
+GF14 decision remains unchanged.
 
 The [object drawing profile](../../history/aes-drawing-profile.md) separates
 callback setup, graphics-state calls, primitive rendering, command construction,
