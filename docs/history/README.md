@@ -56,6 +56,9 @@
 - [Original Text Viewer on MagiC](magic-text-viewer.md): unchanged viewer and
   loader sources, native file selection, a background Counter and resource cleanup.
 
+- [Original MGVIEW scrolling reference](magic-scroll-comparison.md): unmodified
+  MagiC viewer and our port, identical documents and normal-speed pixel checks.
+
 - [AES object drawing profile](aes-drawing-profile.md): passive rendering,
   graphics-state, ownership, command and submission accounting on the EC2 image.
 

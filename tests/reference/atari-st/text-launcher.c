@@ -21,7 +21,13 @@ int main(void)
     FILE *report,*keymap;
     int id,counter,text;
     const char counter_tail[128]={1,'2',0};
+#ifdef REFERENCE_MGVIEW
+    const char text_tail[128]={12,'A',':','\\','S','T','O','R','Y','.','T','X','T',0};
+    const char *program="A:\\MGVIEW.APP";
+#else
     const char text_tail[128]={13,'S','Y','S',':','S','T','O','R','Y','.','T','X','T',0};
+    const char *program="C:\\TEXT.PRG";
+#endif
     id=aes_appl_init(&context);
     if (id<0) return 1;
     xbios_supexec(identify);
@@ -37,10 +43,36 @@ int main(void)
     fclose(keymap);
     xbios_keytbl(keys[0],keys[1],keys[2]);
     dprintf(fileno(report),"keyboard=us\n");
+#ifdef REFERENCE_SCROLL_COMPARE
+    (void)counter_tail;
+    counter=0;
+#else
     counter=aes_shel_write(&context,1,1,100,"C:\\COUNTER.PRG",counter_tail);
-    text=aes_shel_write(&context,1,1,100,"C:\\TEXT.PRG",text_tail);
+#endif
+    text=aes_shel_write(&context,1,1,100,program,text_tail);
     dprintf(fileno(report),"counter=%d text=%d\n",counter,text);
+#ifdef REFERENCE_MGVIEW
+    if (text>0) {
+        int attempt;
+        int16_t window,owner,x,y,w,h;
+        for (attempt=0;attempt<300;++attempt) {
+            aes_evnt_timer(&context,100,0);
+            if (aes_wind_get(&context,0,10,&window,&x,&y,&w) && window>0 &&
+                aes_wind_get(&context,window,20,&owner,&x,&y,&w) && owner==text) {
+                aes_evnt_timer(&context,200,0);
+                aes_wind_get(&context,window,4,&x,&y,&w,&h);
+                dprintf(fileno(report),"ready viewer=%d window=%d work=%d,%d,%d,%d\n",
+                    text,window,x,y,w,h);
+                break;
+            }
+        }
+    }
+#endif
     fclose(report);
+#ifdef REFERENCE_SCROLL_COMPARE
+    if (text<=0) return 4;
+#else
     if (counter<=0 || text<=0 || counter==text) return 4;
+#endif
     for (;;) aes_evnt_timer(&context,500,0);
 }

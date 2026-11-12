@@ -26,7 +26,7 @@
 
 - [Shared Atari ST GEM reference](atari-st-reference.md): Hatari, EmuTOS and
   MagiC running unchanged object-tree routines, plus two independently updating
-  Counter applications and the original Text Viewer under MagiC.
+  Counter applications, our Text Viewer and an original MGVIEW scrolling comparison.
 
 - [GEM4XE/QED reference](gem4xe-qed-reference.md): reproducible two-disk
   Altirra setup, pinned original application and verified editing/save workflow.

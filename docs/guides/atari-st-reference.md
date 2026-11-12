@@ -114,6 +114,53 @@ This is separate from the OF816/Exec boot demo. Exec fixed, root/kernel, idle an
 per-Task reserved bank-zero changes are all **0 bytes**, including guards,
 alignment and unused capacity. The native viewer/loader sources are unchanged.
 
+## Compare scrolling with original MGVIEW
+
+The pinned MagiC release also supplies Andreas Kromke's original `MGVIEW.APP`.
+Build two separate scrolling sessions with the same document and machine:
+
+```sh
+python3 tools/prepare_magic_scroll.py --offline --run
+build/magic-scroll-comparison/launch-mgview.command
+build/magic-scroll-comparison/launch-ported.command
+```
+
+The first launcher runs the unchanged release binary directly from the native
+floppy; the second runs our shared Text Viewer port. Both open identical copies
+of `A:\STORY.TXT` with 901 lines on the pinned 8 MHz 68000, 4 MiB ST monochrome
+configuration. Neither starts Counter. Our port's observer stops logging after
+startup, so scrolling performs no diagnostic file I/O. Loading fast-forwards, then the launcher
+switches Hatari to normal speed before use. Run one session at a time when
+assessing responsiveness.
+
+Use Up/Down or the window's arrow gadgets in either program. MGVIEW pages with
+Shift-Up/Shift-Down; our viewer uses Space/Shift-Space. Ctrl+Q quits MGVIEW;
+`Q` quits our viewer. Hatari's Cmd+Q/AltGr+Q shortcut closes the whole session.
+
+| Session | Text cells | Default work area |
+| --- | --- | --- |
+| Original MGVIEW | 8×16 | 488×336 pixels |
+| Our Text Viewer | 8×8 | 460×172 pixels, including margins/status |
+
+These are the applications' original font and window choices. This setup supports
+visual comparison; it does not establish normalized scrolling timings. The
+focused execution check sends real Down/Up keys at normal speed and verifies
+that the old second text row becomes the first, then returns to the initial row,
+for both applications. It also checks the same document hash and an unchanged
+MGVIEW executable extracted from the generated floppy.
+
+`build/magic-scroll-comparison/mgview/documents.st` contains `MGVIEW.APP` and
+the fixtures on a read-only 720 KiB FAT12 disk. It is a data/application image,
+not a standalone boot disk: use the generated launcher with its accompanying
+private MagiC host drive and pinned EmuTOS ROM. `README.txt` and `build.json` beside
+the launchers retain instructions and provenance; screenshots, framebuffers and
+results remain in the two session directories.
+
+See the [comparison record](../history/magic-scroll-comparison.md) and its pinned
+inputs. This reference does not rebuild the OF816/Exec demo or change Exec's
+fixed, root/kernel, idle, per-Task or VRAM reservations: every delta is **0 bytes**,
+including guards, alignment and unused capacity.
+
 ## Prepare and launch the object-tree sample
 
 On the tested Apple Silicon Mac, install the prerequisites with Homebrew:

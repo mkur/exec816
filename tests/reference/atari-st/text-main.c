@@ -10,6 +10,9 @@ static FILE *report;
 static ULONG paints=~0UL,bytes=~0UL;
 static WORD first=-1,phase=-1;
 static char status[81];
+#ifdef REFERENCE_SCROLL_COMPARE
+static WORD startup_complete;
+#endif
 void reference_arguments(const char *);
 void reference_resources(FILE *);
 extern WORD reference_update_depth;
@@ -27,7 +30,11 @@ void reference_selector(WORD result,WORD button,const char *file)
 WORD __real_evnt_multi(WAIT_PARAMETERS);
 WORD __wrap_evnt_multi(WAIT_PARAMETERS)
 {
-    if (GEMText.ready && (paints!=GEMText.paints || first!=GEMText.first ||
+    if (GEMText.ready &&
+#ifdef REFERENCE_SCROLL_COMPARE
+        !startup_complete &&
+#endif
+        (paints!=GEMText.paints || first!=GEMText.first ||
         phase!=GEMText.load.phase || bytes!=GEMText.load.candidate.bytes ||
         strcmp(status,GEMText.status))) {
         paints=GEMText.paints;first=GEMText.first;phase=GEMText.load.phase;
@@ -39,6 +46,9 @@ WORD __wrap_evnt_multi(WAIT_PARAMETERS)
             (unsigned long)GEMText.document.bytes,phase,(unsigned long)bytes,GEMText.dirty,
             (unsigned long)paints,(unsigned long)GEMText.loads,
             GEMText.work[0],GEMText.work[1],GEMText.work[2],GEMText.work[3],status);
+#ifdef REFERENCE_SCROLL_COMPARE
+        if (GEMText.loads && !GEMText.load.phase && !GEMText.dirty) startup_complete=1;
+#endif
     }
     return __real_evnt_multi(WAIT_ARGUMENTS);
 }

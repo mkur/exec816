@@ -1,0 +1,340 @@
+{
+  "format": "exec816-magic-scroll-comparison-v1",
+  "date": "2026-11-12",
+  "basis_exec_revision": "8323dd936fdb2a5eb8c20714ffba5b7c3cd8fa31",
+  "tier": "development",
+  "qualification": false,
+  "status": "pass",
+  "build_command": "python3 tools/prepare_magic_scroll.py --offline --run",
+  "launchers": [
+    "build/magic-scroll-comparison/launch-mgview.command",
+    "build/magic-scroll-comparison/launch-ported.command"
+  ],
+  "scope": "Unchanged MagiC release MGVIEW and shared original Text Viewer, identical documents, viewer-only sessions and normal-speed keyboard/pixel checks. The port observer stops after startup; no normalized timing claim.",
+  "pins": {
+    "hatari_version": "2.6.1",
+    "rom": {
+      "name": "EmuTOS 1.4, bundled with Hatari 2.6.1",
+      "sha256": "154803e3ff4851f3dc358b91b16d6b6110d187a81d8132ecb665af49878939d5"
+    },
+    "magic": {
+      "repository": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources",
+      "revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "release": "Atari-MagiC-2026-11-04.zip",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FReleases%2FAtari-MagiC-2026-11-04.zip/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "30586de6b1357c15f53298abe0dacd06042bc8baee355def63590a232a5cc75e",
+      "license": {
+        "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/LICENSE/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+        "sha256": "9345c46fe7db23b87ee000c2eda5b2ab7d95602784cef50604f2648aeb0cf0f1"
+      },
+      "object_source": {
+        "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESOBJ.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+        "sha256": "abbda7614a2a9339894c87ca65666cc9581624ea631889dae2e070e2f3e66bd3"
+      }
+    },
+    "toslibc": {
+      "repository": "https://github.com/frno7/toslibc.git",
+      "revision": "162a2fb429879654e55dedd5b3abd14cece32e11"
+    },
+    "machine": {
+      "model": "st",
+      "cpu": "68000",
+      "cpu_mhz": 8,
+      "ram_mib": 4,
+      "monitor": "mono",
+      "screen": [
+        640,
+        400
+      ],
+      "colours": 2
+    }
+  },
+  "toolchain_artifacts": {
+    "/Users/michalkurcewicz/action/exec816-public/build/atari-st-reference/sdk/bin/m68k-atari-tos-gnu-gcc": "b48235efa810bbc56477c02d0a389a9937eff5c52de7caa9ac5d5796fb05e5fd",
+    "/Users/michalkurcewicz/action/exec816-public/build/atari-st-reference/sdk/bin/m68k-atari-tos-gnu-ld": "c237703d7033017ecaaf5d01d6d753a2732563d1953a14f3ab0b441152d6b9d5",
+    "/Users/michalkurcewicz/action/exec816-public/build/atari-st-reference/sdk/lib/libc.a": "f8e45f7cb8e02dd7ae88f647a5fbe82216ad6a693dcc85ee88acf388465e1d8d",
+    "/opt/homebrew/Cellar/m68k-elf-gcc/16.2.0/lib/gcc/m68k-elf/16.2.0/m68000/libgcc.a": "699bda5499d4d374b8746520acb2a8c61243ea53e94a82c7e761501dce05dbde"
+  },
+  "original_binary": {
+    "source": "/Users/michalkurcewicz/action/exec816-public/build/magic-scroll-comparison/ported/inputs/MAGIC.A/GEMSYS/GEMDESK/MGVIEW.APP",
+    "sha256": "f0c65ac9feefb854f05cad7f8014460117ad6bb6cf1365cafac03f472a9aa5e7"
+  },
+  "inputs": {
+    "tools/prepare_magic_counters.py": "5b05e29db2888543b846f4e47b21ee48ffeec53aa7cc0490c1926396d4276615",
+    "toolchain/atari-st-reference.json": "5af58ffffecd0abe6e9c5ee930f2727ddf2b94f71c044ece30e28fef2175e2ff",
+    "examples/gem-counter/counter.c": "92780c5aaba74befb37bc7755830e5ec461e56cd8d5cc355000bc517c868ccf3",
+    "tests/reference/atari-st/bindings.c": "755e5046fe3b199e7f5379edb8972ceb316a1121931497c86415d2b891ee9224",
+    "tests/reference/atari-st/counter-main.c": "d1039eb83b355005af06aece502abae2ac6cf283e9ae7f10e127decaa44a85fe",
+    "tests/reference/atari-st/counter-launcher.c": "fe341689dc110f3d0809ec9c8a68e9e2522438e1e08da867cf45761149b1b2dd",
+    "examples/gem-counter/counter.h": "faaa3c8858e79ed30193846857b83e9767ef532671ddc1ac8e9b87558f2030c8",
+    "tests/reference/atari-st/include/exec/types.h": "84de7f102b2791c1c93311ea433a2bd0d0a5044116cb0dbdbe542a0c3597d426",
+    "tests/reference/atari-st/include/string.h": "b8a6f5e53f62f4aefcb133c3ae5ae84c9cc4819430819080aef29be8e2e01083",
+    "c/include/gem.h": "40d3e33bdd9e61a0546c3eac3825d414639f91e6c085b8eaead200a521ac9a44",
+    "c/include/gem/objects.h": "2ef125f1248db064d89c22b320667e6eb746523ee382a094bc71dba6b278760a",
+    "c/include/exec816/gem-constants.h": "fc51ae4a1c8599cec1748a0d332152bb3e109510207ca14bb0c0b6cc42fe93ed",
+    "build/magic-scroll-comparison/ported/objects/path-helpers.c": "63dc831d8f20b779490733fcd480424a25b006f3f123cce38359b16cbe850285",
+    "c/calypsi/file-list.c": "c70f8d6f4e6789d826fce9a26225ee6e3081da358c184c6e52a510f5a0853492",
+    "c/calypsi/file-list.h": "2889ef1dd9f8defb32f8f46024d694cb316d0fdbfdf9657bd68009824b396f8c",
+    "c/include/devices/timer.h": "2eb4c27e25c6f7eadb471247f708e63d3293d9d8ef6acfed6c460da417293ce5",
+    "c/include/dos/dos.h": "ce025a1cc7c6f7093a639801c9b04d48501a9062b79bd95e11b31e7dcca825f1",
+    "c/include/exec/io.h": "68a4fb304065b1e788fb9df17646fdbcaa0b5a8821821209b02f556fa926395a",
+    "c/include/exec/lists.h": "426c0002c4f98b8b8d2a773e8e90bb05575f47b79fbe5608b6d45c397e7319be",
+    "c/include/exec/memory.h": "896b66a594d688deed165bd76c21a112adfa6c169f0f905fda93b8d8f07c3ce8",
+    "c/include/exec/nodes.h": "0f10fe16ef03949506b186b25e04a5ff32e1c88e4cca1061a61a7d8fe099e735",
+    "c/include/exec/ports.h": "c61b6ae8370de2610a842df8d389c771d609667715a14d49868b15cf9852d715",
+    "c/include/exec/tasklease.h": "c4902b096a6b4737268605d8e5cb7068fd1f4596d07c7b0596db9d6ed3de6ca6",
+    "c/include/exec/tasks.h": "4a6a1016139dd3f3a7ff5f5636da5f3979bf2e9e22819e5be612db3cb4c6d647",
+    "c/include/exec816/abi.h": "8ce0b154f48096aa3770b1ef97259570f3081f39ff36fd61c0ba577b15e4ed07",
+    "c/include/exec816/address.h": "8f5a36c7225a049f3de1a8a9103c4f33eabe075fe7ddcdb7a5dba6375e6d6ea2",
+    "c/include/exec816/aes-wait.h": "8e38e353c4daf6f63b842b852bb4f5d6df7a8f95faa140692d964e329043c203",
+    "c/include/exec816/aes-wire.h": "a4773662be0932e6b2f709f5ade434612531e719d1905e98a6129cf1df7a83d9",
+    "c/include/exec816/aes.h": "bc87bd2e648c4b69b33668647aa94477daa47504c930d8d13d4832b4795ea59b",
+    "c/include/exec816/program-start.h": "d8b0e535df6c7824dd0d81da9eecfa42a09567665fd747cb545bd1390b6dfa49",
+    "c/include/exec816/program.h": "ef1e38a5809c5d13ef5a0696a2064b9569e3828579bd20ee600e9d0e8cb27d10",
+    "c/include/proto/dos.h": "574ebd9dffbbf87ea4d4edd82a41bb3095a679fbd7b81f5f9e5e2147f8be3808",
+    "c/include/proto/exec.h": "57b3a8f3506498b93ca191def06b3c848f597f3c080ca21f2c426d770c24e82f",
+    "examples/gem-text/../../c/calypsi/file-list.h": "2889ef1dd9f8defb32f8f46024d694cb316d0fdbfdf9657bd68009824b396f8c",
+    "examples/gem-text/VIEW.TXT": "cd27f3a07f6a051fc0106861b24028af10ae9886d06deaff0d488c7f8335bb28",
+    "examples/gem-text/document.c": "795c7c8434db6cce1968916db4b6d872c819e188e1ba0cb05c0da2ed5968df86",
+    "examples/gem-text/document.h": "d642f2b18da511639e56690cc07bef77048acc54e9f7fa493a3a7b0880a931ed",
+    "examples/gem-text/text.c": "e76d7297f0ff93c7a3d1f781673767ff2c7ad43a3800950a2722571f5e9d2e2e",
+    "examples/gem-text/text.h": "d0b82dcbf1257d362000fd38a8ed91db5367a9614ca107fc1693f3cc31aedca4",
+    "tests/reference/atari-st/text-launcher.c": "ac54af5d414f083ebd7690738c2dee22f16a80873321c01e94a102db48e82031",
+    "tests/reference/atari-st/text-main.c": "136738e78732fe94379ba1efe227e6c019a105d827c31544617bbb9f0fd542b8",
+    "tests/reference/atari-st/text-platform.c": "264babb48bd281f3f3ca26a380500bde5ced517607b5ed48fac5cf012a9ca412",
+    "tools/prepare_magic_text.py": "84d2f2141edf01cff2f7fadeeb8376c3ce5e5e5d405bd4ce336b6b4b1e9ac87b",
+    "tools/test_magic_text.py": "996e6b71c06de277639909b5eeddf48958748c48746972240830749880fc7a51",
+    "tools/prepare_magic_scroll.py": "335eecf731099ccb0d9c477009c6852d8159bba3557a70172a8086b5ac92917e",
+    "tools/test_magic_scroll.py": "fccb514fec31e4ce1fc4612ac12399f022e02c659f5eebe09f4f92fd2aeab32a"
+  },
+  "profiles": {
+    "ported": {
+      "command": [
+        "/opt/homebrew/Cellar/hatari/2.6.1/bin/hatari",
+        "--tos",
+        "/opt/homebrew/Cellar/hatari/2.6.1/share/hatari/tos.img",
+        "--machine",
+        "st",
+        "--memsize",
+        "4",
+        "--cpulevel",
+        "0",
+        "--cpuclock",
+        "8",
+        "--cpu-exact",
+        "true",
+        "--monitor",
+        "mono",
+        "--sound",
+        "off",
+        "--confirm-quit",
+        "false",
+        "--harddrive",
+        "/Users/michalkurcewicz/action/exec816-public/build/magic-scroll-comparison/ported/drive-c",
+        "--gemdos-case",
+        "upper",
+        "--configfile",
+        "/dev/null",
+        "--statusbar",
+        "false",
+        "--borders",
+        "false",
+        "--log-level",
+        "warn",
+        "--disk-a",
+        "/Users/michalkurcewicz/action/exec816-public/build/magic-scroll-comparison/ported/documents.st",
+        "--drive-b",
+        "false",
+        "--protect-floppy",
+        "on"
+      ],
+      "viewer": "ported",
+      "background_counter": false,
+      "scrolling_observer": "startup-only; disabled during scrolling",
+      "original_mgview_sha256": "f0c65ac9feefb854f05cad7f8014460117ad6bb6cf1365cafac03f472a9aa5e7",
+      "document_sha256": "4e2b4c68e01f9d1fa52811a56536267ab19b90502051a4cba22b4cacddac4ee3",
+      "documents": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/magic-scroll-comparison/ported/documents.st",
+        "sha256": "0180635597d25a1087f6cdeadd6514b16081f9386d2b490d5ea7a0405ece47a3",
+        "filesystem": "FAT12",
+        "drive": "A",
+        "access": "readonly",
+        "mformat": "mformat (GNU mtools) 4.0.50"
+      },
+      "binaries": {
+        "drive-c/TEXT.PRG": "6b61f5dfd65e3f95c87e18e6dd05f087d97bf5884a8f5c27ba148e8b2bacf7f1",
+        "drive-c/COUNTER.PRG": "4494600ac9b49d92a0220e0c51383baae36305bfef353837ecd9ea8171357e57",
+        "drive-c/GEMSYS/GEMDESK/MAGXDESK.APP": "15d810b143337a4bb744ab8ace82fdd196d6fc4b7c5fae2b4476023ef5c85a83",
+        "drive-c/MAGIC.RAM": "11bd6b2ec12dc09851bda3ee0b077e537936278410760c197081e5e5a4653941",
+        "drive-c/AUTO/MAGXBOOT.PRG": "7c1012fdbc733be9521d1b1f9daf514a1ec5281b3daefc19ba4b40d2c8503234"
+      },
+      "floppy_document_sha256": "4e2b4c68e01f9d1fa52811a56536267ab19b90502051a4cba22b4cacddac4ee3"
+    },
+    "mgview": {
+      "command": [
+        "/opt/homebrew/Cellar/hatari/2.6.1/bin/hatari",
+        "--tos",
+        "/opt/homebrew/Cellar/hatari/2.6.1/share/hatari/tos.img",
+        "--machine",
+        "st",
+        "--memsize",
+        "4",
+        "--cpulevel",
+        "0",
+        "--cpuclock",
+        "8",
+        "--cpu-exact",
+        "true",
+        "--monitor",
+        "mono",
+        "--sound",
+        "off",
+        "--confirm-quit",
+        "false",
+        "--harddrive",
+        "/Users/michalkurcewicz/action/exec816-public/build/magic-scroll-comparison/mgview/drive-c",
+        "--gemdos-case",
+        "upper",
+        "--configfile",
+        "/dev/null",
+        "--statusbar",
+        "false",
+        "--borders",
+        "false",
+        "--log-level",
+        "warn",
+        "--disk-a",
+        "/Users/michalkurcewicz/action/exec816-public/build/magic-scroll-comparison/mgview/documents.st",
+        "--drive-b",
+        "false",
+        "--protect-floppy",
+        "on"
+      ],
+      "viewer": "mgview",
+      "background_counter": false,
+      "scrolling_observer": "none",
+      "original_mgview_sha256": "f0c65ac9feefb854f05cad7f8014460117ad6bb6cf1365cafac03f472a9aa5e7",
+      "document_sha256": "4e2b4c68e01f9d1fa52811a56536267ab19b90502051a4cba22b4cacddac4ee3",
+      "documents": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/magic-scroll-comparison/mgview/documents.st",
+        "sha256": "b2da6ba433e66616184a16e895a10517dadc9ea48c803ba4da50b98b42f224ca",
+        "filesystem": "FAT12",
+        "drive": "A",
+        "access": "readonly",
+        "mformat": "mformat (GNU mtools) 4.0.50"
+      },
+      "binaries": {
+        "drive-c/TEXT.PRG": "b7d6afd9f06704876c878fa60eba00912c145d326fcb74a02e32135892bea112",
+        "drive-c/COUNTER.PRG": "4494600ac9b49d92a0220e0c51383baae36305bfef353837ecd9ea8171357e57",
+        "drive-c/GEMSYS/GEMDESK/MAGXDESK.APP": "89ae49b3ea8f6cd74d5eac1cb056fb9afef7d368d3aa996eed18a9a68d459620",
+        "drive-c/MAGIC.RAM": "11bd6b2ec12dc09851bda3ee0b077e537936278410760c197081e5e5a4653941",
+        "drive-c/AUTO/MAGXBOOT.PRG": "7c1012fdbc733be9521d1b1f9daf514a1ec5281b3daefc19ba4b40d2c8503234"
+      },
+      "floppy_document_sha256": "4e2b4c68e01f9d1fa52811a56536267ab19b90502051a4cba22b4cacddac4ee3"
+    }
+  },
+  "run": {
+    "status": "pass",
+    "tier": "development",
+    "qualification": false,
+    "scope": "Real keyboard line-down/up and exact row pixel correspondence at normal speed; no timing benchmark.",
+    "viewers": [
+      {
+        "viewer": "ported",
+        "status": "pass",
+        "work": [
+          33,
+          51,
+          460,
+          172
+        ],
+        "font_cell": [
+          8,
+          8
+        ],
+        "first_row_changed_pixels": 921,
+        "normal_speed": true,
+        "background_counter": false,
+        "document_sha256": "4e2b4c68e01f9d1fa52811a56536267ab19b90502051a4cba22b4cacddac4ee3",
+        "artifacts": {
+          "ported/capture/initial.png": "1c2564bf04b471123014dfc121195793af6363fab5b7be248268232235e5ddbe",
+          "ported/capture/initial.bin": "b329703abc63fdda9c369edb1d503645f74f9d14d515d8b13aac2a56b60dec15",
+          "ported/capture/line-down.png": "91f363354ba1d37cfc6a7c5b1f7cec757863bb70beffa7a00e8011f1599854c2",
+          "ported/capture/line-down.bin": "dd974644e9cdb9c00bc7a91cb2fb05bcaeac6b202c8962b0f19480f008eeae17",
+          "ported/capture/line-up.png": "9ff16bedc3175a5b10ea4664b1ad55283c94684d7eae088764ed4f1dd42ae66b",
+          "ported/capture/line-up.bin": "b329703abc63fdda9c369edb1d503645f74f9d14d515d8b13aac2a56b60dec15",
+          "ported/capture/LAUNCH.LOG": "f82fb346aa7682a27a5ed2e6ae95d73873d164c71e18ba6d82a6ba1ce0f326bc"
+        }
+      },
+      {
+        "viewer": "mgview",
+        "status": "pass",
+        "work": [
+          0,
+          38,
+          488,
+          336
+        ],
+        "font_cell": [
+          8,
+          16
+        ],
+        "first_row_changed_pixels": 1863,
+        "normal_speed": true,
+        "background_counter": false,
+        "document_sha256": "4e2b4c68e01f9d1fa52811a56536267ab19b90502051a4cba22b4cacddac4ee3",
+        "artifacts": {
+          "mgview/capture/initial.png": "d83e190e30d5a68db824168459c23347477028ec60b22e020b893e863f666643",
+          "mgview/capture/initial.bin": "6774cef971e909c3511eea0cb915a94bf67b5aa2e02c11aa8d2b5199809f1829",
+          "mgview/capture/line-down.png": "9bf7c7c97d85030e6a030fa7bae7f8ccba4023bcea1e59c9cc024c4d951b9a5a",
+          "mgview/capture/line-down.bin": "96f9edc811f6ca7c1234f2f85d81f7418bebccff0ec77d233782ac644d13c447",
+          "mgview/capture/line-up.png": "db996366b43c007fd90decedd499f55b78d39d7333d8adc2de4101a8e33d4ce5",
+          "mgview/capture/line-up.bin": "6774cef971e909c3511eea0cb915a94bf67b5aa2e02c11aa8d2b5199809f1829",
+          "mgview/capture/LAUNCH.LOG": "cc803aeb9ce35a11d8ac6d7ea01b264403e707ef7505e1404c2231c8c1bb4c80"
+        }
+      }
+    ]
+  },
+  "default_launcher_regression": {
+    "command": "python3 tools/prepare_magic_text.py --offline --output build/magic-scroll-comparison/default-regression --run",
+    "result_sha256": "866c6c18c056ce051c3e674aaf34f4653c32ddc47d5973125eb2c604ec16a255",
+    "status": "pass",
+    "checkpoints": [
+      "initial",
+      "page",
+      "line",
+      "selector",
+      "cancel",
+      "second-document",
+      "missing-file",
+      "size-limit",
+      "read-cancel",
+      "coexistence",
+      "closed"
+    ],
+    "counter_count": 18,
+    "counter_digit_pixels_changed": 36
+  },
+  "host_checks": {
+    "test_magic_counters.py": {
+      "status": "pass",
+      "tests": 4
+    },
+    "test_st_reference.py": {
+      "status": "pass",
+      "tests": 5
+    }
+  },
+  "limits": [
+    "MGVIEW uses original 8x16 cells/488x336 client; port uses 8x8/460x172 including status and padding.",
+    "Data/application floppy requires accompanying MagiC private host drive and pinned EmuTOS ROM; not standalone boot media.",
+    "No normalized numerical scrolling speedup, arbitrary GUI operation, real ST or Exec hosted qualification."
+  ],
+  "bank_zero_reserved_delta_bytes": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  },
+  "exec_vram_reserved_delta_bytes": 0
+}
