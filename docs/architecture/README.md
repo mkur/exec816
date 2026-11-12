@@ -28,3 +28,5 @@ The [library map](../../lib/README.md) connects these parts to source files.
 - [MagiC: Atari source model](magic.md): implemented components, execution
   contexts, state lifetimes, GEM drawing, events, UI coordination and VDI devices
   at a pinned upstream revision.
+- [MagiC to Exec816 mapping](magic-exec-mapping.md): reusable foundations,
+  execution/state boundaries, required adaptations and current semantic gaps.

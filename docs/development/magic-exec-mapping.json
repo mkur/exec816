@@ -1,0 +1,906 @@
+{
+  "schema_version": 1,
+  "kind": "architecture-mapping",
+  "status": "analyzed",
+  "date": "2026-11-12",
+  "qualification": false,
+  "exec_revision": "4fd564480117c5f32a6db214c7e9238390995c93",
+  "magic_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+  "scope": "Current --tasks Exec profile and supported GEM source subset; existing foundations, adaptation requirements and explicit semantic/feature differences.",
+  "inputs": [
+    {
+      "path": "docs/architecture/magic.md",
+      "sha256": "caab1bfcb30d564ce4fda353852f266f0cdf4289b40a5caaa927c75a1c8578d3"
+    },
+    {
+      "path": "docs/development/magic-architecture.json",
+      "sha256": "595f984edc5f2af52df3ccff7f2a1322b97cd9396a369795ee14ccfe5cb1b524"
+    },
+    {
+      "path": "docs/architecture/task-capacity.md",
+      "sha256": "5d55dfc59fe07a31c7ad395752a7bb9378e022b02f2be0c7071596e579787b14"
+    },
+    {
+      "path": "docs/reference/tasks.md",
+      "sha256": "98b1acfd57ca03be783c45dfe2e7959b9c48008b6dc5583f65bce710db5981cb"
+    },
+    {
+      "path": "docs/reference/signals.md",
+      "sha256": "c50a2dc9513b74f77b5ece2a9a015a6125ca42e36d8b0e39305132bf94a6ccdc"
+    },
+    {
+      "path": "docs/reference/ports.md",
+      "sha256": "01cc78d1e6cd7e6d83d718bec21809582d1007ef61e614a90311427ec9a22348"
+    },
+    {
+      "path": "docs/reference/device-io.md",
+      "sha256": "2179a0853bb65f5142902d9dd5fbdff29d8e0b94200884184d521f463a16cbc8"
+    },
+    {
+      "path": "docs/reference/timer.md",
+      "sha256": "7d40d5171da532a63214737d91213357cbc39901ae36b932bc3ae308cc3b5ea3"
+    },
+    {
+      "path": "docs/reference/memory.md",
+      "sha256": "009c8ea2196f6f93046085b7d0c1a39ae99e8a88636151a8ad44fb9918916bf7"
+    },
+    {
+      "path": "docs/reference/lists.md",
+      "sha256": "a7f72b82a045cc1cf3ceedb9d7b301267449943423793cf2e598f3ee25f0cca7"
+    },
+    {
+      "path": "docs/reference/process.md",
+      "sha256": "e7f92c54424e25e2040f95c6be6baf083fbad024a92a32b68761fe269c24012c"
+    },
+    {
+      "path": "docs/reference/dos.md",
+      "sha256": "dffb89d30b72e02e206468fe273131f4d10eceaaa5fedc3f5ecb4962e8f981ef"
+    },
+    {
+      "path": "docs/reference/c-program-loading.md",
+      "sha256": "602102297ace7b07ef8a35b4abf837895d87b969f89fdd06cadbc24b5083d2d2"
+    },
+    {
+      "path": "docs/reference/input.md",
+      "sha256": "c8cc3e53b456712aa62583687e3bffd74a12a9cce6ac80d49636347a77a2c43f"
+    },
+    {
+      "path": "docs/reference/layers.md",
+      "sha256": "354e4f3d3c6f19e68084a4a4382ec693f15e65aba67cef68032c431ed04142c7"
+    },
+    {
+      "path": "docs/reference/display.md",
+      "sha256": "409e73319a05b5e2ca87ceefb52cae21a91a1f521802e3c00465a8b6b0331aa6"
+    },
+    {
+      "path": "docs/reference/aes.md",
+      "sha256": "a952c489a5d0b0baf6284ae6ffac5e6a2bea58e76ab1cbb3eb5cf0f718544f7b"
+    },
+    {
+      "path": "docs/reference/console-views.md",
+      "sha256": "284aa2bb079c2bee2744026d8f6f723e3a0af439ab71db41d9855167f7b2bac8"
+    },
+    {
+      "path": "docs/reference/platform.md",
+      "sha256": "78a6e0c77e61f6ba8c4cc7313debd5c5d8de584a8ec0ab7e96f4ccc6ff6d1dbd"
+    },
+    {
+      "path": "abi/tasks.json",
+      "sha256": "a4585abc8e64466dc99c59b36e4f08a4f8c6902a4041d79aac68ff865b8d69d7"
+    },
+    {
+      "path": "abi/c-program.json",
+      "sha256": "13448c53ec14f132a0c57a87dbe547c1d57c2fb0d8a0697599638d569e2e1748"
+    },
+    {
+      "path": "abi/aes-server.json",
+      "sha256": "b2a9b53723e83216f78cc7b26779580357e9a8fadef6162ff363bd0c97cc606d"
+    },
+    {
+      "path": "abi/aes-wait.json",
+      "sha256": "ad354ca7e8731bc7dd42a60cbc914b29714c695031d59cb5be98ca8b13fb55cc"
+    },
+    {
+      "path": "abi/layers.json",
+      "sha256": "62d44a36912d718f3a7ca6cf9e7a02504b4388ce08b2f9c0963f55c069c36080"
+    },
+    {
+      "path": "c/include/proto/exec.h",
+      "sha256": "57b3a8f3506498b93ca191def06b3c848f597f3c080ca21f2c426d770c24e82f"
+    },
+    {
+      "path": "c/calypsi/aes.c",
+      "sha256": "643832910e5df1e34f2877f36c82571dfaba94ee0860f4fec6533844db8de3e6"
+    },
+    {
+      "path": "c/calypsi/aes-private.h",
+      "sha256": "3475205a3429c83d78ef0e989c3476e4e1f9b9b08c27c4522c343f9341f70972"
+    },
+    {
+      "path": "c/calypsi/aes-events.c",
+      "sha256": "a0f219441b817575a00796061623b3e8eddb90c403f90109aa5a7260943e15a8"
+    },
+    {
+      "path": "c/calypsi/aes-messages.c",
+      "sha256": "7b4a97dc975b00aa9786f3d9528cd184061ba46db54f2cd2ba19b241a148ca23"
+    },
+    {
+      "path": "c/calypsi/aes-local.c",
+      "sha256": "21591bc31ef54b9d0c13892782e0c8a660b7da0c5e4b97a4ab4f75827ae34d4e"
+    },
+    {
+      "path": "c/calypsi/aes-objects.c",
+      "sha256": "bf67b04d24b3fb7413efb97fb7e3f5a6e532f49101c0382359dd91e072b27a5d"
+    },
+    {
+      "path": "c/calypsi/aes-form.c",
+      "sha256": "19eae0ed8fe54f339645d53673fe4eb463ab92df71664d1fcab9903880ff483f"
+    },
+    {
+      "path": "c/calypsi/aes-resource.c",
+      "sha256": "89c29b04ada221ce70e36dc44ae1ab870abc1ac20d1fbe1329dd0d9a81e7d09b"
+    },
+    {
+      "path": "c/calypsi/vdi.c",
+      "sha256": "3f9b4db51decfb13bff3f93e1cfc95ae4aec213f2f518a4a8a4fa7c50a2a15c8"
+    },
+    {
+      "path": "lib/aes/aesboot.act",
+      "sha256": "91d6d645c850966d1ff157a4391b5a8662babb002b0f1012d3112d1022c8184f"
+    },
+    {
+      "path": "lib/aes/aesstate.act",
+      "sha256": "fa07652707aa6f8f0c2d49d00edb7943ebb0a327d22db556f28770e9d4f4daab"
+    },
+    {
+      "path": "lib/aes/aeslocks.act",
+      "sha256": "b51e1073629defba03ee27b5923e135be9065b3232b368605d188a19044e1208"
+    },
+    {
+      "path": "lib/aes/aeswait.act",
+      "sha256": "9ad0a91494e8bbfd3dc1521f16b7d7b1b2fb6ab9b0b0e64fb7afedca2dba474e"
+    },
+    {
+      "path": "lib/aes/aesgate.act",
+      "sha256": "2da743ea77da35f696b3f17302856760dec427d80311bf4bb1925364da99c6d3"
+    },
+    {
+      "path": "lib/aes/aeslocal.act",
+      "sha256": "112ad117a991da0233f4a6dc8459c9c74cf94ba11102afa2bf32f3256d985031"
+    },
+    {
+      "path": "lib/aes/aessystem.act",
+      "sha256": "7c43600faeb4913450b3f2b6369b03c16a38b6379781a80a842df72567b6d74e"
+    },
+    {
+      "path": "lib/aes/aesdefer.act",
+      "sha256": "cf063f3699907eec02598ff46ce491c0a891597ac049d70a1d77aca515320640"
+    },
+    {
+      "path": "lib/aes/aesprocess.act",
+      "sha256": "25fc42f25e963c62acaf3a540aa52474859577d5a4b765e665b21694830b5272"
+    },
+    {
+      "path": "lib/aes/aeswindowstate.act",
+      "sha256": "d60e5e58284b0965b57e280aaa31ce96d5b1ee47b8c8eb0954577d7fce4143e5"
+    },
+    {
+      "path": "lib/display/display.act",
+      "sha256": "430b313a35f241a400fd0fa079b8e3dae37b923973c3065fdf1d48a7cab825a5"
+    },
+    {
+      "path": "lib/display/display-access.inc",
+      "sha256": "f779475038721027d7840312f075c1797ff9543a8df966efa7942d93126da97e"
+    },
+    {
+      "path": "lib/display/layers.act",
+      "sha256": "77a8f6cd743412edd283b26c05e78a31589554761a12a07ce7f62ff0c976fc4e"
+    },
+    {
+      "path": "lib/display/regions.act",
+      "sha256": "56668324d68ec0fbd821b8fed1c1a04290555d7616371f2c0e6e305afa4d611a"
+    },
+    {
+      "path": "lib/exec/taskpolicy.act",
+      "sha256": "02212d430216f3c636291eb4b244cd732e3a7b1748cb4243714ddcbc003113e8"
+    },
+    {
+      "path": "lib/exec/task-signals.inc",
+      "sha256": "d00b39574292af61a50567008b5869eebbc2bc97d850503df8cc37de8fdd80f1"
+    },
+    {
+      "path": "lib/exec/task-lifetime.inc",
+      "sha256": "ece491cd8e8c9a19c1da5534e41884d2e04c72f4ad6bff0c68a8c84f3ec950a5"
+    },
+    {
+      "path": "lib/dos/process.act",
+      "sha256": "6d51a62706b62a0f7ec4a74e8c64213d23809cbf2ef1ccd8e203e1b4110a121a"
+    },
+    {
+      "path": "lib/dos/doscalls.act",
+      "sha256": "48ec7c50346deb7d52446a63f5b77a04fcea6d45c2ba88903c34755e4157dfcf"
+    },
+    {
+      "path": "platform/altirraos/vbxe.c",
+      "sha256": "599cbc06a8b75c23950407e9ef48598ae48a6b2d6cbfd85846e1b00d4da5e8b5"
+    },
+    {
+      "path": "ports/gem4xe/adapter/gem-vbxe.c",
+      "sha256": "3086cf28f7754cc7b424f7dcf417d93198240a8d1daa736be6d79325ae3ad66b"
+    },
+    {
+      "path": "ports/gem4xe/adapter/gem-drawing.h",
+      "sha256": "16a56b69a6cd9517338a1b9713022c7c7ce676b5803f787838cd246267e89109"
+    },
+    {
+      "path": "tools/build_demo.py",
+      "sha256": "59b9da3b6d9e9ab93d07694b15ed54d6838d72f4f1430c939b67b0aabebbc3e7"
+    }
+  ],
+  "source_checks": [
+    {
+      "id": "c-image-current",
+      "path": "abi/c-program.json",
+      "json_path": [
+        "version"
+      ],
+      "value": 36
+    },
+    {
+      "id": "registered-client-capacity",
+      "path": "abi/aes-server.json",
+      "json_path": [
+        "constants",
+        "CLIENTS"
+      ],
+      "value": 4
+    },
+    {
+      "id": "context-binding-capacity",
+      "path": "abi/aes-server.json",
+      "json_path": [
+        "constants",
+        "CONTEXTS"
+      ],
+      "value": 8
+    },
+    {
+      "id": "window-capacity",
+      "path": "abi/aes-server.json",
+      "json_path": [
+        "constants",
+        "WINDOWS"
+      ],
+      "value": 6
+    },
+    {
+      "id": "layer-capacity",
+      "path": "abi/layers.json",
+      "json_path": [
+        "constants",
+        "MAX_LAYERS"
+      ],
+      "value": 8
+    },
+    {
+      "id": "standard-task-map",
+      "path": "tools/build_demo.py",
+      "contains": [
+        "task_capacity=12"
+      ]
+    },
+    {
+      "id": "public-exec-foundations",
+      "path": "c/include/proto/exec.h",
+      "contains": [
+        "AddTask",
+        "RemTask",
+        "Signal",
+        "Wait",
+        "PutMsg",
+        "GetMsg",
+        "AllocMem",
+        "FreeMem",
+        "SendIO",
+        "WaitIO",
+        "AbortIO"
+      ],
+      "absent": [
+        "ObtainSemaphore",
+        "SignalSemaphore",
+        "ReleaseSemaphore"
+      ]
+    },
+    {
+      "id": "signals-not-payloads",
+      "path": "docs/reference/signals.md",
+      "contains": [
+        "coalesce",
+        "Wait` wakes on any requested bit",
+        "blocking wait"
+      ]
+    },
+    {
+      "id": "message-reference-semantics",
+      "path": "docs/reference/ports.md",
+      "contains": [
+        "does not copy a payload",
+        "without removing it",
+        "collect outstanding replies"
+      ]
+    },
+    {
+      "id": "aes-copied-semantics",
+      "path": "docs/reference/aes.md",
+      "contains": [
+        "copies eight",
+        "sender may reuse its buffer",
+        "destination-owned record"
+      ]
+    },
+    {
+      "id": "aes-native-publication",
+      "path": "c/calypsi/aes-messages.c",
+      "contains": [
+        "PutMsg(endpoint->port",
+        "publication hold",
+        "freeRecords",
+        "Signal("
+      ]
+    },
+    {
+      "id": "event-matcher-ownership",
+      "path": "docs/reference/aes.md",
+      "contains": [
+        "AES neither",
+        "dequeues an external port",
+        "private receive",
+        "Interest is"
+      ]
+    },
+    {
+      "id": "timer-reuse",
+      "path": "c/calypsi/aes-events.c",
+      "contains": [
+        "ExecAESTimerDeadline",
+        "AbortIO",
+        "GetMsg",
+        "Wait(",
+        "CheckIO"
+      ]
+    },
+    {
+      "id": "timer-no-worker",
+      "path": "docs/reference/timer.md",
+      "contains": [
+        "It has no worker Task",
+        "TD_WAITUNTIL",
+        "CloseDevice"
+      ]
+    },
+    {
+      "id": "private-c-occupancy",
+      "path": "c/calypsi/aes-events.c",
+      "contains": [
+        "if (c->busy)",
+        "c->busy = 1",
+        "ExecAESEnter"
+      ]
+    },
+    {
+      "id": "local-calls",
+      "path": "c/calypsi/aes-local.c",
+      "contains": [
+        "_AESLocalCall(&c->request)",
+        "c->busy=1",
+        "c->busy=0"
+      ]
+    },
+    {
+      "id": "logical-lock-state",
+      "path": "lib/aes/aesstate.act",
+      "contains": [
+        "updateOwner,mouseOwner",
+        "updates,mouseHolds",
+        "policyGate",
+        "EXEC.TaskLease lease"
+      ]
+    },
+    {
+      "id": "logical-lock-policy",
+      "path": "lib/aes/aeslocks.act",
+      "contains": [
+        "service.updateOwner=client.id",
+        "service.mouseOwner=client.id",
+        "AESWAIT.RemoveLock",
+        "AESWAIT.Signal"
+      ]
+    },
+    {
+      "id": "scene-wait-and-publish",
+      "path": "lib/aes/aesgate.act",
+      "contains": [
+        "EXEC.Forbid()",
+        "EXEC.Wait(mask)",
+        "WakeCallers",
+        "AESSNAPSHOT.Publish",
+        "independent(bits)"
+      ]
+    },
+    {
+      "id": "shared-window-records",
+      "path": "lib/aes/aesboot.act",
+      "contains": [
+        "service.windows(slot)=@desktop.windows(slot)"
+      ]
+    },
+    {
+      "id": "system-task-reuse",
+      "path": "docs/reference/aes.md",
+      "contains": [
+        "existing desktop",
+        "presenter Task",
+        "This adds no Task or kernel gateway"
+      ]
+    },
+    {
+      "id": "deferred-work-split",
+      "path": "lib/aes/aessystem.act",
+      "contains": [
+        "AESGATE.Configure(ADDRESS(@AESDEFER.Pump)",
+        "CONSOLEDISPLAY.Poll",
+        "DESKINPUT.Service",
+        "AESGATE.Offer"
+      ]
+    },
+    {
+      "id": "independent-phase",
+      "path": "lib/aes/aesdefer.act",
+      "contains": [
+        "never inspects Layers",
+        "PollPhysical",
+        "DESKINPUT.Service",
+        "CONSOLEINPUT.Pump"
+      ]
+    },
+    {
+      "id": "layers-authority",
+      "path": "docs/reference/layers.md",
+      "contains": [
+        "owner serializes every access",
+        "does not draw pixels",
+        "half-open",
+        "Separate scenes"
+      ]
+    },
+    {
+      "id": "device-arbitration",
+      "path": "lib/display/display-access.inc",
+      "contains": [
+        "PUBLIC CARD FUNC Delegate",
+        "PUBLIC CARD FUNC Enter",
+        "PUBLIC CARD FUNC Leave",
+        "PUBLIC CARD FUNC AccessFault"
+      ]
+    },
+    {
+      "id": "borrow-callback-contract",
+      "path": "ports/gem4xe/adapter/gem-drawing.h",
+      "contains": [
+        "No callback Wait or RPC",
+        "Ownership",
+        "GemDrawingBorrow"
+      ]
+    },
+    {
+      "id": "current-shared-finish",
+      "path": "ports/gem4xe/adapter/gem-vbxe.c",
+      "contains": [
+        "static UWORD borrow_leave",
+        "DisplayLeave(grant)",
+        "synchronously",
+        "VbxeOwnerSubmit"
+      ]
+    },
+    {
+      "id": "image-and-aes-retirement",
+      "path": "docs/reference/c-program-loading.md",
+      "contains": [
+        "wrapper attaches and registers",
+        "wrapper detaches AES",
+        "Task and image retained",
+        "no forced"
+      ]
+    },
+    {
+      "id": "heap-retirement-boundary",
+      "path": "docs/reference/memory.md",
+      "contains": [
+        "not reclaim arbitrary heap blocks",
+        "not general heap ownership tracking"
+      ]
+    },
+    {
+      "id": "cooperative-process-stop",
+      "path": "docs/reference/process.md",
+      "contains": [
+        "RequestStop",
+        "No forced removal",
+        "RequestBreak"
+      ]
+    },
+    {
+      "id": "unsupported-user-drawing",
+      "path": "docs/reference/aes.md",
+      "contains": [
+        "indirect specs and user callbacks",
+        "Recursive forms",
+        "desktop-wide modal ownership are unsupported"
+      ]
+    },
+    {
+      "id": "modal-current-behavior",
+      "path": "docs/reference/aes.md",
+      "contains": [
+        "takes UPDATE only for painting",
+        "temporary ordinary",
+        "No scene gate, display grant or Layers token"
+      ]
+    },
+    {
+      "id": "native-resource-representation",
+      "path": "c/calypsi/aes-resource.c",
+      "contains": [
+        "big endian",
+        "static UWORD word",
+        "static ULONG wide",
+        "FreeMem",
+        "native_plane"
+      ]
+    },
+    {
+      "id": "console-model-foundation",
+      "path": "docs/reference/console-views.md",
+      "contains": [
+        "copied, bounded snapshots",
+        "Unsubscribe",
+        "ExecConsoleViewBindWindow"
+      ]
+    },
+    {
+      "id": "current-scheduler-policy",
+      "path": "docs/reference/tasks.md",
+      "contains": [
+        "scheduler ignores priority"
+      ]
+    },
+    {
+      "id": "preemption-boundary",
+      "path": "docs/reference/signals.md",
+      "contains": [
+        "even inside `Forbid`",
+        "restores the caller"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "split-appl",
+      "kind": "existing-foundation",
+      "statement": "Execution, process resources and GUI registration map to distinct existing Task, Process/DOS and AES contexts.",
+      "magic_claims": [
+        "execution-identities",
+        "cpu-versus-focus"
+      ],
+      "exec_inputs": [
+        "docs/reference/tasks.md",
+        "docs/reference/process.md",
+        "docs/reference/aes.md",
+        "lib/aes/aesstate.act"
+      ]
+    },
+    {
+      "id": "replace-scheduler-foundation",
+      "kind": "existing-foundation",
+      "statement": "Reuse the current Exec scheduler/context and wait primitives for GUI execution.",
+      "magic_claims": [
+        "synchronous-entry",
+        "scheduler-gates"
+      ],
+      "exec_inputs": [
+        "docs/reference/tasks.md",
+        "docs/reference/signals.md",
+        "lib/exec/taskpolicy.act",
+        "lib/exec/task-signals.inc"
+      ]
+    },
+    {
+      "id": "retain-private-state",
+      "kind": "must-adapt",
+      "statement": "MagiC supervisor/timer assumptions do not establish safe preemptible shared renderer state.",
+      "magic_claims": [
+        "scheduler-gates",
+        "object-drawing"
+      ],
+      "exec_inputs": [
+        "docs/reference/platform.md",
+        "docs/reference/display.md",
+        "c/calypsi/aes-objects.c",
+        "ports/gem4xe/adapter/gem-vbxe.c"
+      ]
+    },
+    {
+      "id": "copies-above-ports",
+      "kind": "must-adapt",
+      "statement": "Copy GEM message payloads into owned storage before Exec reference publication.",
+      "magic_claims": [
+        "events-and-messages"
+      ],
+      "exec_inputs": [
+        "docs/reference/ports.md",
+        "docs/reference/aes.md",
+        "c/calypsi/aes-messages.c"
+      ]
+    },
+    {
+      "id": "durable-events",
+      "kind": "existing-foundation",
+      "statement": "Reuse signal/queue/input and timer machinery while retaining GUI-specific readiness state.",
+      "magic_claims": [
+        "events-and-messages"
+      ],
+      "exec_inputs": [
+        "docs/reference/input.md",
+        "docs/reference/signals.md",
+        "docs/reference/timer.md",
+        "c/calypsi/aes-events.c"
+      ]
+    },
+    {
+      "id": "combined-waits",
+      "kind": "existing-foundation",
+      "statement": "Existing ExecAESWait combines GUI and caller-owned notification readiness without stealing replies.",
+      "magic_claims": [
+        "events-and-messages"
+      ],
+      "exec_inputs": [
+        "docs/reference/aes.md",
+        "abi/aes-wait.json",
+        "docs/reference/process.md",
+        "docs/reference/device-io.md"
+      ]
+    },
+    {
+      "id": "ui-system-task",
+      "kind": "existing-foundation",
+      "statement": "The current presenter hosts the graphical system role; object creation need not create execution contexts.",
+      "magic_claims": [
+        "screen-manager",
+        "components"
+      ],
+      "exec_inputs": [
+        "docs/reference/aes.md",
+        "lib/aes/aessystem.act",
+        "lib/aes/aesdefer.act",
+        "docs/architecture/task-capacity.md"
+      ]
+    },
+    {
+      "id": "locks-are-different",
+      "kind": "policy-difference",
+      "statement": "Current UPDATE/MCTRL hold and recheck/handoff semantics differ from MagiC BLOCKAGE/mouse-control nesting.",
+      "magic_claims": [
+        "update-and-input-control"
+      ],
+      "exec_inputs": [
+        "docs/reference/aes.md",
+        "lib/aes/aeslocks.act",
+        "lib/aes/aeswait.act",
+        "lib/aes/aesgate.act"
+      ]
+    },
+    {
+      "id": "separate-ownership-domains",
+      "kind": "must-adapt",
+      "statement": "Keep logical UI ownership, scene access, physical drawing and display lifetime distinct.",
+      "magic_claims": [
+        "update-and-input-control",
+        "workstations-and-devices"
+      ],
+      "exec_inputs": [
+        "docs/reference/aes.md",
+        "docs/reference/layers.md",
+        "docs/reference/display.md",
+        "lib/display/display-access.inc"
+      ]
+    },
+    {
+      "id": "single-window-authority",
+      "kind": "existing-foundation",
+      "statement": "Reuse Layers/Regions underneath one AES scene/window policy, with current bounded geometry.",
+      "magic_claims": [
+        "window-state-lifetime"
+      ],
+      "exec_inputs": [
+        "docs/reference/layers.md",
+        "abi/layers.json",
+        "lib/aes/aesboot.act",
+        "lib/display/layers.act",
+        "lib/display/regions.act"
+      ]
+    },
+    {
+      "id": "source-not-binary-abi",
+      "kind": "must-adapt",
+      "statement": "Reuse the native image/provider and RSC converters; Atari pointer/trap/raster layouts are not native ABI layouts.",
+      "magic_claims": [
+        "resource-lifetimes",
+        "workstations-and-devices"
+      ],
+      "exec_inputs": [
+        "abi/c-program.json",
+        "docs/reference/c-program-loading.md",
+        "docs/reference/lists.md",
+        "c/calypsi/aes-resource.c",
+        "platform/altirraos/vbxe.c"
+      ]
+    },
+    {
+      "id": "explicit-cleanup",
+      "kind": "must-adapt",
+      "statement": "GUI and async users must retire before Task/image release; Process cleanup is not arbitrary memory reclamation.",
+      "magic_claims": [
+        "startup-and-cleanup",
+        "execution-identities"
+      ],
+      "exec_inputs": [
+        "docs/reference/memory.md",
+        "docs/reference/process.md",
+        "docs/reference/c-program-loading.md",
+        "lib/exec/task-lifetime.inc"
+      ]
+    },
+    {
+      "id": "termination-and-threads",
+      "kind": "unsupported-feature",
+      "statement": "MagiC forced termination, shared-process APPL threads and asynchronous signal-handler execution have no automatic counterpart in the current Process contract.",
+      "magic_claims": [
+        "execution-identities",
+        "startup-and-cleanup"
+      ],
+      "exec_inputs": [
+        "docs/reference/process.md",
+        "docs/reference/signals.md",
+        "docs/reference/tasks.md",
+        "lib/aes/aesprocess.act"
+      ]
+    },
+    {
+      "id": "callbacks",
+      "kind": "unsupported-feature",
+      "statement": "Current trusted renderer callbacks and single occupied context do not authorize arbitrary USERDEF or recursive public AES calls.",
+      "magic_claims": [
+        "extension-edges"
+      ],
+      "exec_inputs": [
+        "docs/reference/aes.md",
+        "c/calypsi/aes-events.c",
+        "ports/gem4xe/adapter/gem-drawing.h"
+      ]
+    },
+    {
+      "id": "modal-ui",
+      "kind": "policy-difference",
+      "statement": "Current forms use owned/temporary windows and short painting UPDATEs; desktop-wide modal ownership is unsupported.",
+      "magic_claims": [
+        "modal-and-menu-lifetimes"
+      ],
+      "exec_inputs": [
+        "docs/reference/aes.md",
+        "c/calypsi/aes-form.c"
+      ]
+    },
+    {
+      "id": "driver-reuse",
+      "kind": "existing-foundation",
+      "statement": "Reuse the VBXE adapter and display arbiter for hardware dependencies and recovery instead of porting Atari device implementations.",
+      "magic_claims": [
+        "output-boundaries",
+        "workstations-and-devices"
+      ],
+      "exec_inputs": [
+        "docs/reference/display.md",
+        "platform/altirraos/vbxe.c",
+        "ports/gem4xe/adapter/gem-vbxe.c",
+        "lib/display/display-access.inc"
+      ]
+    },
+    {
+      "id": "terminal-reuse",
+      "kind": "existing-foundation",
+      "statement": "Console model/views and normal Terminal AES/VDI painting provide the console responsibility without a second window policy.",
+      "magic_claims": [
+        "components",
+        "window-state-lifetime"
+      ],
+      "exec_inputs": [
+        "docs/reference/console-views.md",
+        "docs/reference/aes.md"
+      ]
+    },
+    {
+      "id": "capacity-cost",
+      "kind": "must-adapt",
+      "statement": "Execution slots and bank-zero storage constrain per-object Task designs independently of GUI object counts.",
+      "magic_claims": [
+        "execution-identities",
+        "components"
+      ],
+      "exec_inputs": [
+        "docs/architecture/task-capacity.md",
+        "abi/aes-server.json",
+        "abi/layers.json",
+        "tools/build_demo.py"
+      ]
+    },
+    {
+      "id": "no-new-kernel-required",
+      "kind": "architectural-judgment",
+      "statement": "For the covered GEM responsibilities, current public primitives plus AES/library policy provide the necessary foundations; this is not a measured optimality claim.",
+      "magic_claims": [
+        "components",
+        "update-and-input-control",
+        "events-and-messages"
+      ],
+      "exec_inputs": [
+        "c/include/proto/exec.h",
+        "docs/reference/aes.md",
+        "lib/aes/aeslocks.act",
+        "lib/aes/aesgate.act"
+      ]
+    },
+    {
+      "id": "structural-next-step",
+      "kind": "architectural-judgment",
+      "statement": "Map and simplify one semantic drawing path using current private contexts, direct calls and the shared backend, preserving explicit ownership/lifetime boundaries.",
+      "magic_claims": [
+        "object-drawing",
+        "output-boundaries",
+        "extension-edges"
+      ],
+      "exec_inputs": [
+        "c/calypsi/aes-objects.c",
+        "c/calypsi/vdi.c",
+        "docs/reference/display.md",
+        "docs/reference/aes.md"
+      ]
+    }
+  ],
+  "documentation_pages": [
+    "docs/architecture/magic-exec-mapping.md",
+    "docs/architecture/README.md",
+    "docs/plans/gem4xe/README.md"
+  ],
+  "validation": {
+    "tier": "documentation",
+    "checker": "tools/check_magic_exec_mapping.py",
+    "report": "build/magic-exec-mapping/checks.json",
+    "method": "Revalidate pinned MagiC model; check current input hashes, selected textual/ABI facts, finding trace links and local documentation links.",
+    "limits": "Marker/fact checks are not a semantic proof; architectural judgments are source-based analysis. No runtime or performance evidence added.",
+    "emitted_code_runs": 0,
+    "emulator_runs": 0
+  },
+  "authority_notes": [
+    "Current machine-readable ABI and standard build/capacity inputs determine counts and versions; older overview/runtime and DOS C-ABI narrative summaries are not numeric authority.",
+    "The source model describes MagiC separately; no changes to its claims, source pin or implementation are made here."
+  ],
+  "resource_impact": {
+    "fixed_bank_zero_delta": 0,
+    "root_kernel_bank_zero_delta": 0,
+    "each_public_task_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "upper_ram_delta": 0,
+    "vram_delta": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  }
+}

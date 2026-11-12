@@ -32,6 +32,9 @@ cross-machine timing comparisons.
 The standalone [MagiC architectural model](../../architecture/magic.md) describes
 the pinned Atari implementation's components, state ownership, execution paths,
 coordination and extension points. It contains no Exec migration proposal.
+The separate [MagiC-to-Exec mapping](../../architecture/magic-exec-mapping.md)
+identifies existing kernel/library services to reuse, the caller/system split,
+and the preemption, messaging, lifetime and UI semantics that require adaptation.
 
 The [MagiC boundary analysis](../../history/magic-operation-boundaries.md)
 separates semantic drawing operations, UPDATE ownership, cursor lifetime and
