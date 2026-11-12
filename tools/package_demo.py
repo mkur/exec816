@@ -43,11 +43,34 @@ def ide_only_guide(bitmap=False):
     ).replace('@CONSOLE_NAME@', '80 by 30 VBXE bitmap shell' if bitmap else 'standard shell')
 
 
-def bootable_guide(bitmap=False,gemarc=False):
+def bootable_guide(bitmap=False,gemarc=False,gem_desktop=False):
     guide=(ROOT/'docs/bootable-atr-distribution.txt').read_text().replace('@DISPLAY_REQUIREMENTS@',
         'Graphical builds require a VBXE FX core at $D600 with private 512K VRAM\n'
         'and an ST mouse on joystick port 2.'
         if bitmap else 'This build uses the standard Atari text display.')
+    if gem_desktop:
+        guide+='''
+GEM desktop and terminal
+------------------------
+
+The desktop and Terminal are ordinary GEM applications. Click Terminal before
+typing shell commands. Windows at the right of the top bar reaches covered
+windows; Ctrl-Tab cycles them. Try DIR, HELLO or RUN C:COUNTER.APP. Each shell
+owns one RUN job; JOBS collects it after the application closes.
+
+Terminal displays 64 by 20 cells. Its tabs select two independent shell sessions;
++ creates a session and NEWSHELL starts one in the current directory. SESSION 1
+or SESSION 2 selects it. Closing Terminal asks Cancel/Close for its selected
+session. EXIT closes that session; the last EXIT stops the desktop and returns
+to the OS. The boot uses eight Task slots, or nine with two shell sessions.
+
+There are four AES clients and six windows. Desktop and Terminal use two client
+slots, leaving two for other GUI applications. Close applications before opening
+more. For the separately supplied QED disk, mount it read-only in D2 and enter:
+  MOUNT QED: DRIVE 2 FORMAT SPARTA
+  RUN QED:QED.APP WORK:SAMPLE.TXT
+Ctrl-Q closes QED. Cancel keeps unsaved edits; Discard closes without saving.
+'''
     if gemarc:guide+='\n'+(ROOT/'docs/gemarc-distribution.txt').read_text()
     return guide
 
@@ -156,7 +179,8 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
         if demo.get('desktop'):
             guide = guide.replace('@POINTER_DESCRIPTION@', pointer_description(demo['kernel']['desktop_mouse']['profile']))
     if demo_manifest.get('bootable_atr'):
-        guide=bootable_guide(demo_manifest.get('bitmap',False),bool(demo_manifest.get('gemarc')))
+        guide=bootable_guide(demo_manifest.get('bitmap',False),bool(demo_manifest.get('gemarc')),
+            gem_desktop=demo_manifest.get('gem_desktop',False))
         if demo_manifest.get('basic_workbench'):
             guide+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
     elif record['boot_config']['system_drive'] not in (0,1):

@@ -2,6 +2,7 @@
 import json
 import re
 import struct
+from pathlib import Path
 
 import adapter_state as adapter
 from gem_render_oracle import font_bytes, Raster, DESKTOP_PALETTE, PENS
@@ -75,6 +76,38 @@ def emitted_offsets(production, fixture):
         if 0 <= index <= len(segment['bytes'])-62:
             return struct.unpack('<31H', bytes(segment['bytes'][index:index+62]))
     raise RuntimeError('Missing target-emitted QED layout table')
+
+
+def current_offsets(production, output):
+    """Emit only observer constants against the production tree's own headers."""
+    import shutil
+    from native_program import command
+    output.mkdir(parents=True,exist_ok=True)
+    text=(ROOT/'tests/programs/qed_editing_faults.c').read_text()
+    prefix=text[:text.index('volatile unsigned short')]
+    table=text[text.index('const unsigned short QedEditingLayout[]='):]
+    table=table[:table.index('};')+2]
+    source=output/'observer-layout.c'
+    source.write_text(prefix+'__attribute__((section("exec_layout")))\n'+table+'\n')
+    compiler=Path(shutil.which('cc65816')).resolve();obj=output/'observer-layout.o'
+    require(command([compiler,'--version']).strip().endswith('version 5.18'),
+            'Unpinned observer-layout compiler')
+    includes=[ROOT/'c/include',ROOT/'ports/gem4xe/apps/qed/native',
+        production/'inputs/source/qed/src',production/'inputs/source/cflib']
+    command([compiler,'--code-model=large','--data-model=huge','--char-is-unsigned',
+        '-D_WORD=short','-D_UWORD=unsigned short','-O2','-c',
+        *[part for p in includes for part in ('-I',p)],'-o',obj,source])
+    raw=obj.read_bytes();header=struct.unpack_from('<HHIIIIIHHHHHH',raw,16)
+    sections=[struct.unpack_from('<10I',raw,header[5]+i*header[10]) for i in range(header[11])]
+    names=sections[header[12]];strings=raw[names[4]:names[4]+names[5]]
+    rows=[s for s in sections if strings[s[0]:].split(b'\0',1)[0]==b'exec_layout']
+    require(len(rows)==1 and rows[0][5]==62,'Missing current observer constants')
+    values=struct.unpack_from('<31H',raw,rows[0][4])
+    record=dict(status='pass',tier='development',values=values,
+        compiler_sha256=sha256(compiler),source_sha256=sha256(source),object_sha256=sha256(obj),
+        headers={str(p):sha256(p) for directory in includes for p in directory.glob('*.h')})
+    (output/'results.json').write_text(json.dumps(record,indent=2)+'\n')
+    return values
 
 
 class ProductionEditor(SavingEditor):

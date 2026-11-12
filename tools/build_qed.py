@@ -49,8 +49,8 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
     provider_data=sum(len(s['bytes']) for s in resident['segments'] if s['writable'])+sum(
         s['size'] for s in resident['zero_fill'])
     caps=selection['resident_provider_allowances']
-    require(provider_code+caps['code_bytes']<=3*65536 and provider_tables+caps['table_bytes']<=65536
-            and provider_data+caps['data_bss_bytes']<=65536,'Provider and explicit allowances exceed its layout')
+    from calypsi_provider_budget import budget
+    provider_budget=budget(resident,caps)
     reference=output/'inputs/gem-reference/gem.h'
     require(TARGET.read_text()==generate(reference),'Stale private QED GEM declarations')
     catalog=json.loads((PORT/'analysis-bindings.json').read_text())['bindings']
@@ -153,7 +153,8 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
             private_allowances=allowance,container_metadata_allowance_bytes=selection['container_metadata_allowance_bytes'],
             resident_provider_allowances=selection['resident_provider_allowances']),
         resident_provider=dict(path=str(provider),sha256=sha256(provider),code_bytes=provider_code,
-            table_bytes=provider_tables,data_bss_bytes=provider_data,allowances=caps),
+            table_bytes=provider_tables,data_bss_bytes=provider_data,allowances=caps,
+            budget=provider_budget),
         elf_sha256=sha256(output/'program.elf'),
         build_inputs={str(p):sha256(p) for p in [*sources,*fixture_inputs,PORT/'native-selection.json',PORT/'analysis-bindings.json',reference]},
         bank_zero_delta=selection['bank_zero_delta'])

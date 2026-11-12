@@ -1,0 +1,101 @@
+MODULE GEMLOAD
+USE COMMAND
+
+CONST BUFFER_BYTES=16384
+CONST PASS_COUNT=4
+
+TYPE LoadStatus=[
+  CARD phase,passes
+  LONGCARD readBytes,writtenBytes
+  LONGINT error
+]
+
+LoadStatus progress
+BYTE ARRAY buffer(BUFFER_BYTES)
+BYTE readOnly
+
+; The loaded command's private upper-RAM buffer offers the same four complete
+; read/verify/write/close passes as GF0, without consuming an AES registration.
+LONGINT FUNC Transfer()
+  CARD index
+  LONGINT amount,error,closed
+  BYTE POINTER file
+
+  IF readOnly<>0 THEN
+    file=COMMAND.Open(BYTE POINTER(c"TEST:CANCEL.BIN"),COMMAND.MODE_OLDFILE)
+  ELSE
+    file=COMMAND.Open(BYTE POINTER(c"TEST:LOAD.BIN"),COMMAND.MODE_OLDFILE)
+  FI
+  IF file=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  progress.phase=2
+  amount=COMMAND.Read(file,buffer,BUFFER_BYTES)
+  error=COMMAND.IoErr()
+  closed=COMMAND.Close(file)
+  IF error=COMMAND.ERROR_BREAK THEN
+    progress.error=error
+    progress.phase=5
+    RETURN(COMMAND.RETURN_WARN)
+  FI
+
+  IF amount<>BUFFER_BYTES OR closed=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  progress.readBytes==+BUFFER_BYTES
+  FOR index=0 TO BUFFER_BYTES-1 DO
+    IF buffer(index)<>(BYTE(index) XOR BYTE(index RSH 8) XOR $5a) THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+  OD
+
+  IF readOnly<>0 THEN
+    RETURN(COMMAND.RETURN_OK)
+  FI
+
+  file=COMMAND.Open(BYTE POINTER(c"TEST:RESULT.BIN"),COMMAND.MODE_NEWFILE)
+  IF file=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  progress.phase=3
+  amount=COMMAND.Write(file,buffer,BUFFER_BYTES)
+  closed=COMMAND.Close(file)
+  IF amount<>BUFFER_BYTES OR closed=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  progress.writtenBytes==+BUFFER_BYTES
+
+RETURN(COMMAND.RETURN_OK)
+
+LONGINT FUNC Main()
+  CARD pass
+  LONGINT status
+
+  LET arguments=BYTE POINTER(COMMAND.GetArgStr())
+  readOnly=0
+  IF arguments^='C THEN
+    readOnly=1
+  FI
+  LET count=IF readOnly<>0 THEN CARD(1) ELSE CARD(PASS_COUNT) FI
+  progress.phase=1
+  FOR pass=0 TO count-1 DO
+    progress.passes=pass
+    status=Transfer()
+    IF status<>COMMAND.RETURN_OK THEN
+      IF progress.phase<>5 THEN
+        progress.error=COMMAND.IoErr()
+        progress.phase=6
+      FI
+      RETURN(status)
+    FI
+  OD
+
+  progress.passes=count
+  progress.phase=4
+
+RETURN(COMMAND.RETURN_OK)
+ENDMODULE

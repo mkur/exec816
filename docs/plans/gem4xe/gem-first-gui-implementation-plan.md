@@ -4,8 +4,10 @@
 [Current AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-GF0–GF14 pass at the development tier. GF14 retains the existing drawing
-boundaries after measurement; GF15 remains open. The
+GF0–GF15 pass at the development tier. GF14 retains the existing drawing
+boundaries after measurement; GF15 records combined production acceptance and
+the extracted OF816 package. Existing failed latency gates and full release
+qualification remain open. The
 [execution record](../../history/gem-first-gui.md) retains native I/O/GUI
 coexistence, the current resource inventory, the shared window policy audit
 and the window effect/commit checks. GF3 separates scene ownership from physical

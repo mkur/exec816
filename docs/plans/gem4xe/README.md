@@ -1,10 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
-The proposed [GEM-first GUI design](gem-first-gui-design.md) makes AES the sole
+The [GEM-first GUI design](gem-first-gui-design.md) makes AES the sole
 graphical window model, with caller-context operations, an AES system Task and
 separate logical/physical ownership over normal Exec preemption and I/O. It
-starts migration with two native Counters beside sustained disk work; current
-contracts and open latency gates remain unchanged until executable slices land.
+starts migration with two native Counters beside sustained disk work. Current
+contracts describe the implemented system; original latency gates remain open.
 The [GF0–GF15 implementation plan](gem-first-gui-implementation-plan.md) orders
 the baseline, shared/caller-side window policy, console/terminal separation,
 native API retirement, measured rendering changes and OF816 package acceptance.
@@ -17,8 +17,11 @@ caller geometry/top and coherent lookup, retaining system continuations for
 physical effects. GF7 adds caller open/close, out-of-scene route resources and
 shared exit retirement with publisher holds and guarded capture cancellation.
 GF8 completes shared caller waits; GF9 extracts the graphical system loop
-behind a bounded console interface. GF0–GF9 pass at the development tier;
-GF10–GF15 remain open.
+behind a bounded console interface. GF10 separates copied console views; GF11
+adds the loaded terminal, and GF12 retires native graphical policy. GF13 reuses
+object preparation, GF14 retains measured drawing boundaries, and GF15 completes
+combined production checks and the audited OF816 package. GF0–GF15 pass at the
+development tier; release and latency qualification remain separate.
 
 The [Atari ST reference](../../guides/atari-st-reference.md) runs the native
 baseline's unchanged object-tree routines under EmuTOS and MagiC in Hatari.

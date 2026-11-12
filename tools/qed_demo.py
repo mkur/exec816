@@ -18,7 +18,7 @@ def guide(version, profile, system_media='system.atr'):
     from package_demo import pointer_description
     if system_media=='exec816.atr':
         from package_demo import bootable_guide
-        return bootable_guide(True).replace('@VERSION@',version)
+        return bootable_guide(True,gem_desktop=True).replace('@VERSION@',version)
     return (ROOT/'docs/qed-exec-distribution.txt').read_text().replace(
         '@VERSION@', version).replace('@SYSTEM_DISK@', 'system.atr').replace(
         '@POINTER_DESCRIPTION@', pointer_description(profile))

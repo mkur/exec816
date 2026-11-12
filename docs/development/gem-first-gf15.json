@@ -1,0 +1,3280 @@
+{
+  "slice": "GF15",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "parent_revision": "7bb82ed14008feddfb5c6508ee2ceb5f78d48c76",
+  "delivery": {
+    "path": "build/gem-first-gui/gf15/demo/exec816-demo.zip",
+    "sha256": "7aae280b70db44f54969fc9f89d21edab19533931fecee5b1233b12d357e5a38",
+    "bytes": 2938656,
+    "qed_separate_path": "build/gem-first-gui/gf15/demo/qed.atr",
+    "qed_sha256": "439a2be812b1ef2e6e7b7e523678f7a5e215ab723208f341897a21486e8b334c"
+  },
+  "compiler": {
+    "actionc": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "actual_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "changes": [],
+    "override": false,
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "optimize": true,
+    "stack_checks": true,
+    "calypsi": {
+      "cc65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    }
+  },
+  "platform": {
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+        "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+        "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+        "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+      },
+      "observer": {
+        "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ],
+      "startup_configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "disk_workload": {
+        "format": "SDFS",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "exec_profile": 4,
+        "nominal_baud": 57600
+      },
+      "mouse_input": {
+        "model": "ST mouse",
+        "port": 2,
+        "internal_port": 1,
+        "map": "Mouse -> ST Mouse (port 2)",
+        "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+        "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+        "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+        "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+        "commands": [
+          "MOUSE ST",
+          "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+          "MOUSE CLEAR"
+        ],
+        "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+        "tooling": {
+          "binary": "build/mouse-bridge/AltirraBridgeServer",
+          "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+          "patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "source_sha256": {
+            "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+            "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+          }
+        },
+        "initial_acceptance": {
+          "transitions_per_second_per_axis": 1000,
+          "minimum_transition_spacing_us": 1000,
+          "minimum_button_level_us": 10000,
+          "required_max_sample_gap_us_exclusive": 1000,
+          "visible_response_pal_ticks": 12
+        },
+        "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+      }
+    },
+    "bridge_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "actual_machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$816b56837baddf9e",
+      "actual_kernel_id": "$816b56837baddf9e",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "artifacts": {
+    "combined": {
+      "path": "build/gem-first-gui/gf15/delivery-verified/results.json",
+      "sha256": "72458d85ed9fc04842c8d86eb5078e58ed5ec4ddef07890f65e1e1eac0ecd66e"
+    },
+    "session_exit": {
+      "path": "build/gem-first-gui/gf15/session-exit/results.json",
+      "sha256": "2dac61f644b00c421b91f51a27466e6ee5f634bab643bf5e8277a54890a98244"
+    },
+    "cold_cancel": {
+      "path": "build/gem-first-gui/gf15/cold-cancel/results.json",
+      "sha256": "145ea8b6c79c9afb53bcb60d1836e03f03bae0b0b73b1d73f23b3a787e4f40c7"
+    },
+    "terminal": {
+      "path": "build/gem-first-gui/gf15/package-terminal/results.json",
+      "sha256": "f3b8356d970d3cb10e11b04c622082c17e6649b7cd98741c93a7354e7926e1b1"
+    },
+    "qed_focused": {
+      "path": "build/gem-first-gui/gf15/package-qed-loading/results.json",
+      "sha256": "899e4304f8a0502427582f4efbe8b7829c86fac640043bd7e814ac6eaac6b7c9"
+    },
+    "standard": {
+      "path": "build/gem-first-gui/gf15/standard/demo-results.json",
+      "sha256": "e9ca4c6ddc4fabdddf3d302d999d469391f0062f0119aebb9e5829292a6dd99c"
+    },
+    "package_audit": {
+      "path": "build/gem-first-gui/gf15/package-audit-final.json",
+      "sha256": "85bfbe7bc4f3e3a50ae758042bc0e5c6d77e942bc5ae23d5cd03e5d54fc2d10c"
+    },
+    "policy_audit": {
+      "path": "build/gem-first-gui/gf15/policy-audit.json",
+      "sha256": "6ae5a7d995c28c03ec2ad2b0c0350a7f08a16696592c0ff1ae8b8bbaef8b59f3"
+    },
+    "load_fixture": {
+      "path": "build/gem-first-gui/gf15/load-final/fixture.json",
+      "sha256": "3b1426dbd2eee01792078bbcf56724f811b1cf6540dc3d120fcadf6d272688b3"
+    }
+  },
+  "production_artifacts": {
+    "build.json": "1cc0520448a7a881663e745f729bbc9f17fcebacebcb60a2657e939b68c40191",
+    "program.a816.json": "54de90a307d5b41b8a3ff31095da2b311e8cc08c2d0d7a60e04d86f6dc3dde71",
+    "program.xex": "7270e14500e19b2c2ce03753d320c54bbcbabe3461ff27fa50f6df2ef8678ce7",
+    "memory.json": "abdc46f15ef99a785698137048fc23369322b4a98ac7d135320d2bcae4122074",
+    "demo-manifest.json": "ba5b4ae13244499da6d726b20c36460196affe52b616c25d5924c2a46a7aa1ed",
+    "bitmap-console/c-image.json": "2e3f40b5c807f30c2658ad9f436faa325d04abe26931f3f51acf3f819bb164d2",
+    "qed-production/layout.json": "ddc1bb24542d52aa55f22ebc1c43d7b44aaf1bf6a706b8769f7d924eff91011e",
+    "qed-production/stack-frames.json": "5a0f51a346ff69a169ef1f665e8edd17d076ac4ee54b67320bf540e39bab586a",
+    "of816/of816.json": "c8d9f12490fb33e24b860e46a57d0887e0c3613a26c91e5b704ba53fe04c6d21"
+  },
+  "source_inputs": {
+    "AGENTS.md": "431a1ee161bb225779e884a24ae1265a005fa9edf69dc499b10911f2fcee4799",
+    "abi/aes-server.json": "b2a9b53723e83216f78cc7b26779580357e9a8fadef6162ff363bd0c97cc606d",
+    "abi/aes-wait.json": "ad354ca7e8731bc7dd42a60cbc914b29714c695031d59cb5be98ca8b13fb55cc",
+    "abi/bitmap.json": "e93c7ab2664a6c8fdf98ce320595234a8c6141b02430e07e74fa30bd97a4bac4",
+    "abi/blitter.json": "1ababf49059c5255200a2c175989cb3ef6b288a515634a8f1c381c20c6279d6f",
+    "abi/block-io.json": "049cf143f5b0fbddc6cfd61c12720bfa8da9909d9c0b9e42877d442435ed03ba",
+    "abi/boot-atr.json": "8d5860b31075ff1afa53789674f4e1fe40939ae5a054113e3e87100111e90182",
+    "abi/boot-diagnostics.json": "d1e4b5b395fd2c94ec0b7ba56cc28949a0cd5a1c77a1284a9959b0be1641f99e",
+    "abi/boot-sio.json": "928ddd1b62654e086f70adff89db77d7a5855ad5d6567bd0cdbf6d58a1191936",
+    "abi/boot-v1.json": "fc8a8b48abb921f076be4a81f06b6e6e2ad13f090d0eddc30780984680a46617",
+    "abi/c-program.json": "13448c53ec14f132a0c57a87dbe547c1d57c2fb0d8a0697599638d569e2e1748",
+    "abi/c-runtime.json": "ad31670fde2ee0089b67d27218f8b10293c2dbe0e2ac3c5f34954b7005dd451f",
+    "abi/console-bitmap.json": "5eea5f389991b1acefb253af0d3d1bcad9fca98b3bce945eec329b1b82d6e5f5",
+    "abi/console-view.json": "f7c4f7854de922241f3d6a121ab73ff7f1f35f1b1d3cf45b37e7f695359fc438",
+    "abi/console.json": "3497d688450954fc6707dab776f03c7d279f3d8603081c00fd24788bc00141e3",
+    "abi/desktop.json": "adea7e2f81cb32c3219ce3cb651a5dadd6176096c45108bd6a77d0cd3f7e69a9",
+    "abi/display.json": "7634bbbbf8f9a31e821b409bbff81b34b30dd0eb8ea0ea9183906b024be0458a",
+    "abi/dos.json": "18c02e8ea6ccac2939418735666b2ddfa2de036cbe8339cecb37a8c4063baaff",
+    "abi/exec816-v1.json": "dbd125e6a757ca350f4ab96aee2e218361847893d83cbec87e8181bd438196db",
+    "abi/fastbasic-diagnostics.json": "8a0c4447d253cc81384972da8cdb0f04ff1b9b9094dee737316a0a3618181274",
+    "abi/fastbasic-interpreter.json": "69c5af66a78c58665e6d6e1442092af8e100889314c15d4db8ad086811d8b7ce",
+    "abi/fastbasic.json": "21c9ffb5756acfb94591e98224cf66fafabca5a2cc34f63d71cc23e8f5d0a80f",
+    "abi/filesystems.json": "3b4f84ba1d81a7fd158fc53a588a4c843b17ec4c5510f54dc7bf1d08a2808143",
+    "abi/fujinet.json": "167eef7ca47c7d206802ee676b88ed1e0a1e01d13d4bda60cb9760791fb55acb",
+    "abi/gem-interactive.json": "ceb0a3695ea04d72911808b608c9cc0e8c48ffbdc48e02e491cc02031c5f391b",
+    "abi/gem-vdi.json": "752df897e22b40cf359f33b3e060ec72833caacd1914d698516f7e73fe0228ce",
+    "abi/heap-v1.json": "109735cf9fa758f6ca060fe84967e03951cb80b0352eb7a286332d9c8fed6f96",
+    "abi/ideplus.json": "7e267bf010282ca7833c1141642f9b5775fd2c4dee53500c51ee11db9b49e367",
+    "abi/input-native.json": "9238d4ab309777371293aa4cdefb2738ff03bb33f591d656be5225fa716a429d",
+    "abi/input.json": "f00dc0ffde616b4b8f9e46fba2155ccc88f02e214b49f3e3ce598f5e1affd614",
+    "abi/io.json": "33461c2d6a41df0d65fc3dad11ae98259bc1273e3fa9167de33a615ec2ce4c01",
+    "abi/layers.json": "62d44a36912d718f3a7ca6cf9e7a02504b4388ce08b2f9c0963f55c069c36080",
+    "abi/memory-v1.json": "d61ab01fe1c7ef48ca3d29f6283f9beadcbc90fe68ba5f840d36911e22936d9f",
+    "abi/menu-render.json": "8ffca4136b6c1f2112b51cb43b8346faece75cea7bbee11d857fe2fda0fb6fe0",
+    "abi/native-dp.json": "a403ba71b1faeba2cbdb0c7d2ed82854d79d3f7ae35ff734bfb3789569f860c4",
+    "abi/native-interrupts.json": "9d9fa1c40bed0cdfdb78d83ff7f2334ff49953cdd42eb5177680aaf4421478f3",
+    "abi/platform-timer.json": "a6c320658624e1af8bd1c8100543e5e2eef7916bb2ab8fa2b7d54211234c94ae",
+    "abi/ports.json": "b0a0b01102629d2b595a5b8195a3fa4e30554f404b34326831118a78e8836c57",
+    "abi/process.json": "f05712444c8d9287f32cd1f397f6393af7ec203f3740ebe98cf63ee066fa415f",
+    "abi/program.json": "ed110ace4893dbfd5e22e877e544d3cacdfa6dba94d85923e6e5ecb7e7bbe568",
+    "abi/sdx.json": "4342ca91a77090c2082e914cd666a5f678732f91cfdac0ece344132259ead8a6",
+    "abi/shell-sessions.json": "d3036f0098a46cd982eb1763f013bdd2f10a28ca3c249e9eb6df0c3ffba57ddd",
+    "abi/sio-adapter.json": "008cf413b3ab0f48b6c1a170bbfed4268a642642e43bbca2dddbff58362f19b0",
+    "abi/sio-client.json": "e3d4579b054d4e4b9840a3f9e6442f90908a9a1b41b74b4885da01e30468ae9b",
+    "abi/sio.json": "c832f2307d25565d4910bba25ff0fa49acc3f69ed00f7851a025352d7db03054",
+    "abi/tasks.json": "a4585abc8e64466dc99c59b36e4f08a4f8c6902a4041d79aac68ff865b8d69d7",
+    "abi/timer-device.json": "17f855e13fc7d9d8bafdc0adc62e1325fbcb094410cd4e8a7760da7b0fac3e0b",
+    "abi/vdi-client.json": "5e7ed873c31bb53b187eba3d9b9619b08e0eef165ee75213b6fc4f3fa05bbd65",
+    "docs/contributing/building.md": "22f0b8990e923f3ba7132b9751173f7c3e185b9327ded507a0a969c6e7e7bc2d",
+    "docs/contributing/testing.md": "2fa82b497668e2aeb667729f2722029d62900a0b350eca00df187d39e33e0b59",
+    "docs/gem-desktop-distribution.txt": "ed50d857f65d6c194ebec42896633d7ee5acae8bdf1e1e0b670a9457d7a4812d",
+    "docs/history/README.md": "fa166613937e2f6d451a074ac00bdb20fb2d53568bd64ea6aa30c26ce80efccc",
+    "docs/history/gem-first-gui.md": "2791eeda3de1985bf0c74d33c82770258c16c4d97a819935e73edf82225db030",
+    "docs/plans/gem4xe/README.md": "963d1c3bbfe027afecb3d73b19916c7a0c776a05aefbd1c837f45ddf9cbd98da",
+    "docs/plans/gem4xe/gem-first-gui-implementation-plan.md": "8e6691e962814ed5ea4c1387ae9b380949b4baf42a54c535d2546eaa68cf7ee1",
+    "docs/reference/aes.md": "a952c489a5d0b0baf6284ae6ffac5e6a2bea58e76ab1cbb3eb5cf0f718544f7b",
+    "docs/reference/desktop.md": "bb80dc61e159bb0345ad953413d70b7fdd2c4ef262ee298749112b26911c39e4",
+    "docs/reference/gem-vdi.md": "2aa70a3e41e96593262eac9857bd68761659f9b01648975d4d5281859c0601aa",
+    "docs/roadmap.md": "ed114a8f2a65158894142fbdbfc2270c3e9315694fcbddb271c423cd36d56c77",
+    "examples/gem-counter/counter.c": "92780c5aaba74befb37bc7755830e5ec461e56cd8d5cc355000bc517c868ccf3",
+    "tests/programs/gem_first_counter.c": "ae3173966e2345917cc829d7f0f5111aed4ffbb448469b033eb8b1d5f6809192",
+    "tests/programs/gem_load.act": "c6b52c5c45d73317b8d5f2b3ef635d8f8367e2a959727be3cb3036bb6f3807e1",
+    "tests/test_calypsi_provider_budget.py": "113113f179876e29ea71b2a84344a5d392feb0c11e3a6f67924565069a224ab4",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-1m.json": "2d672f7af075eb337d9fa954d3b74f1ee0be2589ac555fc042f9828d066fef49",
+    "toolchain/altirra-4m.json": "01e26c768593acddb8023592db8a8d18c22607806c2a02a50949c79cc100be1b",
+    "toolchain/altirra-build.json": "cdaf1e85924077d36da32f63dfd88a90370845b62d8f7a55712927855c330633",
+    "toolchain/altirra-concurrency-observer.json": "5409579b70584b627da068923bc54644d0e23279f9b18984b90bb367b4d23cfa",
+    "toolchain/altirra-console.json": "916dd4274642177285e1e2f8712016485b2f77a7df6779fbf7d8101a7af0fa96",
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "toolchain/altirra-ideplus.json": "36e8d204b0caf7f9e9127caf595a2a47e03334e0e1872ac706d3a5ce36ec2123",
+    "toolchain/altirra-shell-console.json": "fc4a48fcaf7e25ac33a7241296ee46b6c35b07ddf602f93f449c65deae8ae466",
+    "toolchain/altirra-shell-paced.json": "c3c18ce0ea70d7e83c4850c8c33e9bfcb05c85ea316dd5b21ee5853a8aa41c36",
+    "toolchain/altirra-signals-1m.json": "7a0ccf71e0e68a3db1024e3f63f4d13f6dbbca114a4296f30ed0e309d5eecef5",
+    "toolchain/altirra-signals-4m.json": "279d2f3679787e1f3bda003c944d6e732598858c7997df8fdb3f2239e340f778",
+    "toolchain/altirra-signals-observer.json": "576f11724b1feacd8fcf39a70c06de68132e209c170b7cae3730f752f094917e",
+    "toolchain/altirra-sio-device.json": "f0ddf8218bf67ea2f87a0fd9333e5b652ef56e1b8ed3d2cdd64ed64f0d6349ef",
+    "toolchain/altirra-sio-irq.json": "d9490a7015044da7a6a7fe69432fb0ca4865164e36d1836c313dcdb33578a97a",
+    "toolchain/altirra-sio-observer.json": "72ff74ef5022538821ef1a3b21a10713abf1ec8fd761cbf4f437142c2a1e6695",
+    "toolchain/altirra-sio-queued.json": "c38cdebdb79598b76e4a9e76180099780c6b23045056d00875d6e289cff050a2",
+    "toolchain/altirra-sio-sectors.json": "ee3192e5378c110e467fa7b3bca8e7f135fca56e92acfe6494fef4d3983a2300",
+    "toolchain/altirra.json": "5ad56ae12ca012928cd322bc884bc77b1edab59313a16cd1133388d8dbfe4db6",
+    "toolchain/amiga-messages.json": "111b0f154e22d5816bf6d61785a2a2283cc216514bb3d3e89fbfec8c909254fc",
+    "toolchain/atari-st-reference.json": "5af58ffffecd0abe6e9c5ee930f2727ddf2b94f71c044ece30e28fef2175e2ff",
+    "toolchain/calypsi-runtime.json": "221bb3d29714e510c0ba3d3812b7c2ab493a6f817ca2698dc3bbb7c0d3b09f2f",
+    "toolchain/fujinet-control.json": "d8a9619b09691ff16f54f59ab0d8204a53a267dc1b2285542e3d4fb37b28f95f",
+    "toolchain/gem4xe-reference.json": "412fd4d859d14c31d6339cd3a8f7ea15234e08e036e4e7e2355783c5c65a77dd",
+    "toolchain/of816.json": "76255fb917d35c1d986009fc397dec7dbefe56759b766ce3b445f20244677707",
+    "toolchain/qed-saving-sio-faults.json": "8d0a6e9c4bcff8d6d3c42d6134caf14ec0bacea9378b0196b9814da03cff4700",
+    "tools/adapter_state.py": "f4cc4607244d4a4b6d532b500d0a65dccd4073cd1e4103b04612f7a2c24f7119",
+    "tools/aes_drawing_profile.py": "1471cbaeaf354bf601d4fe23610610a3fe3efca014b206fb578f800b222ff51d",
+    "tools/aes_exposure_oracle.py": "bdacc3b87e9a8a0ca9c733e466b2a1d2ca4b7b195f38dc235e6a3e3818486cc0",
+    "tools/aes_latency_trace.py": "6392a3acb037b60a11e71fb77e29e6d9e265f3a1f0dd5ae8c6bf4bd4a8ec39e5",
+    "tools/aes_timing_breakdown.py": "6c5fe8ab2526abb35f3924b631453b84ff1e424cc175bfc2e5041163dfb6ecd3",
+    "tools/analysis_artifact.py": "a7d1800540697758020760c643787bac1cb2e838959101c75546b01824137abc",
+    "tools/analyze_dialog_batches.py": "022f4bf99abbea01287f72abf55416519ef61e47625981699d969f0d2f7bde63",
+    "tools/analyze_vbxe_builder.py": "90a81fff8e8c503e2933913b53e9f963c396cb74efc237d1c1fefa149bfb3e79",
+    "tools/application_menu_oracle.py": "5e6c966c1653c5270548dc94e7383420a0415ec15d160d542eaee4bdfcbb01a6",
+    "tools/arc_archive.py": "ae3de0c78d1ae77c965dce56b62d9bb40fa36fabd40a14d1f7afdd912b8ca907",
+    "tools/audit_fastbasic.py": "dce42443bf95b97bc7fba80204638b5281cd9c72d9c7297e1199e14a0f65511e",
+    "tools/audit_gem_demo.py": "2b80f451b7733dc348e71084fa49a7ecdf91c7ee17315742dd5ca400b0972f17",
+    "tools/audit_gem_policy.py": "4590ceedaae9a4ce7bc615ed362c4807e40d8ccfde94a8f51e382982fed5b405",
+    "tools/audit_high_ram.py": "b175eab8ad61dbb2f75797c473a185da460ef9f84dfeab8d36b62500bf08596e",
+    "tools/audit_qed_delivery.py": "791a446f1a9de6e99ac19314aa18a4356fdfd8d28e8ddc1ccebf3fbdab6ce535",
+    "tools/audit_qed_saving_gate.py": "7a47087e55d3866ab25bf0a9bf9115ffc36a1fc0a8a5d230dbca14999cb7f674",
+    "tools/audit_sdx_rawcon.py": "145bd5d4bc7873eda906cc828eaf6c57e2e1df908e5732f6aaa66feae739f171",
+    "tools/audit_sdx_stack.py": "ed76bd5b0633346ee51116305dd0d0470343e2128f37546358806e4df245d9dd",
+    "tools/audit_xlos_sdx.py": "2b862fbaf6f9ce613e08eb9a803d0bad9025b8ee2749d943e675c535cf2fe55a",
+    "tools/background_coverage.py": "63d02e43146ede07b060cb92796147b56af8f52d7a9a77043eadea744e5cfd99",
+    "tools/banked_image.py": "8d33f291be87571b5a23b44af69df3d3ddcc9114877d64cd6f8ba6a22d227522",
+    "tools/banked_test_memory.py": "1b1c8add2cd2e04b4040026938403a421c470967e522cdcb8569549e1bf84464",
+    "tools/basic_build_model.py": "0b4c583c3e0503c65626e74279f4a6424a03f3d72eaba35434789333e93e5840",
+    "tools/bitmap_console_oracle.py": "449478c06c17bafddb8eea16f83ea952890065528f4a333183a375bc810bc7e4",
+    "tools/bitmap_console_performance.py": "7c951bd77d20f1541a874d7b579946782165953f285e915932aa850c75fc4c25",
+    "tools/bitmap_console_trace.py": "a3abffb60306acec298f3d56fc496f6f57e2e01799ce3fba2614b780132cd746",
+    "tools/bitmap_copy_oracle.py": "eea8dbebad72dfa19b9912f7dba2e49da3c1130de5a287ecc0891d473597a083",
+    "tools/blitter_completion_trace.py": "b2e5c44df944c7afb4170c57bf4a766f8784644e883f6a324d8ebf3039206945",
+    "tools/block_io_record.py": "53624c2563962b753aa5d141f6df1ac2133d5970617202951114664c9992d080",
+    "tools/boot_config.py": "70f222892aa52951bced363d193928679190f8fb09d12c7cf3b7b2f55b5424df",
+    "tools/boot_forth_check.py": "791a6e7cdd827f6b962cea7d0deeb535661e3335cfbb24109308649e4041db37",
+    "tools/bridge_memory.py": "b6aaffe3f63793d333d697e9344144b48818024e6c0080973f8a41fcdc997f59",
+    "tools/browser_model.py": "b9e69d878e8dbc00f084bdf2345374a1d1a155fbf3073db1afb0ab41d7251da6",
+    "tools/build_aes_desktop.py": "2b524f9546ff7e778015ead9e4fbdd01c82b66e6e2513da0e6c0a7c835fd86d4",
+    "tools/build_amiga_messages.py": "d8586a52c8699c3bf01b3c00f660dc0398a55049dad75ef975af726d983afd85",
+    "tools/build_bitmap_artifact.py": "93ab012062795691f3910971cb993e41aafc120ed6f9c9f61d01176ded8d9ec6",
+    "tools/build_bitmap_console.py": "0b5e724e3713a42ef19189a14a7007064dde58b13533a51a062c5445f35e35da",
+    "tools/build_bitmap_demo.py": "bc2846a813283d615a4258bb25b0fc0847eb1e85bd8f01d6497d82ad08ca3d25",
+    "tools/build_boot_fast.py": "d51117c83ecc0f9155a0f8a8a501041eb9717317b32b26b5b44d41c4c91a8c2e",
+    "tools/build_bootable_atr.py": "e04f15da944f2ac5b5bcfbb3bf1a4dbcd9df993fb69911269ed9e8604e366511",
+    "tools/build_c_program.py": "7280ab48cba06cd04dcd6259485aa352f936c4c3469cab667a55e61339559d44",
+    "tools/build_calculator.py": "422e30f5814e8142acd161456152df742016c46bf740396c375af522d23b11f1",
+    "tools/build_calypsi.py": "e03142b2b018b6d1f5d9d1274fcde5ff503b3c4b87d0657302976044e936433f",
+    "tools/build_cartridge.py": "94e00f2943c6af27ce57cc9115405da6004c982a9fb350aa374526f68fad8ef2",
+    "tools/build_command.py": "1c36b38d52925df90fa5c3493ed2f0ad3af45ad2f89fd3bbb48b6b7039387213",
+    "tools/build_demo.py": "59b9da3b6d9e9ab93d07694b15ed54d6838d72f4f1430c939b67b0aabebbc3e7",
+    "tools/build_directory_batch_demo.py": "b6b52629a5e917970d9aad5a0f75b4cac22fd6348dcc5b6b9f4024c3f1fd71b4",
+    "tools/build_fastbasic.py": "a3b0292e8992ee06e0de5fe4169e1597ba4f26ff6cf03bfe7eef1829c01f499c",
+    "tools/build_g4bench.py": "38b31604c815898ef935cee4cf8de0d4bd44d070e82a7d5e30a40b194f9b77c6",
+    "tools/build_gem_artifact.py": "8b99cfdfe684bdbe85207eeeb87ade72483077ba3c5c01bb043e54d1a811f98f",
+    "tools/build_gem_cursor.py": "ca1d842a9de5a7bd75b696e0869db8da47d35710358753215dd98ad1a8f8f70e",
+    "tools/build_gem_desktop.py": "b2f7d7320afd0c0d5bc9547639ede3a674467dabc83c1d7cd2dd199fb3b8c19a",
+    "tools/build_gem_input.py": "66b6df49f9fb909b1c8ca76276dd595b86ab8057eec07a56ef34078290baf949",
+    "tools/build_gem_interactive.py": "c36ba40cfc6ac885ee5ec989aeb559e7a5c67d0236428e3e4e8c8021e97bf20e",
+    "tools/build_gem_load.py": "4de967e61dd987a2b3bf53d46ff0da5799b416532029969fe184ca5ae9a7f6c2",
+    "tools/build_gem_resource.py": "88076b81473b62fea252050845595411f6ed4f7b773fb748e6cfa1c13087cb9a",
+    "tools/build_gem_vdi.py": "f68c3bcddaa4825f99b5e4078647d32d1115fcc209233d844be7cecd51f8cda6",
+    "tools/build_gemarc.py": "2870cb235cc40551f2e097d7e27c2cd93576988a1fdb3b5365aa2c56fcb58eb6",
+    "tools/build_ide_media.py": "26e5a6c5d830f5d7bbdfe14827676777a4f7a712f076b796e713d21fe219201a",
+    "tools/build_of816.py": "6ed6124a7c21c19c7bcc39e182019c2bbb3b551da988e265e1053812f93a011b",
+    "tools/build_qed.py": "00cf01c4a6d8fcc23a2927f13e1d2abc94b2bec27a0b95b633258269767c05d0",
+    "tools/build_qed_resource.py": "5e9eb42a4504c436e767c8ff9f762a36e5527841ff3cef9a41510e80230a2ae9",
+    "tools/build_rom.py": "930d56f896121332c28a78f4fd6bd2e9c07b66c8e9ddd2dbcfbea446ddad4263",
+    "tools/c_program.py": "b5dfb3ea78ab98f2e234d91831bb393ff3b8fcaea238916dfdccba6cd4d730e5",
+    "tools/c_runtime_build.py": "46769e74253deb306820e0a7df1ee4c7c0a84e2338e4bc9cbe7677ad681be8ff",
+    "tools/calypsi_build.py": "3e7041733d91d8a590c28d03e77d382ac36edac1134ced63d906bb252c6ba222",
+    "tools/calypsi_image.py": "4639254f25564447e003f9ec42551a5d9b66833b4b0894c6389c5374a7bc896b",
+    "tools/calypsi_provider_budget.py": "ba02ee919681ae0989140527eb2931edc56fb1b8589ea93631f9cc03ea08f308",
+    "tools/calypsi_runtime.py": "16c96da5961fe666b90d288c01241c104bbeb8eef8d3f3bd6b1c44a16bae8628",
+    "tools/check_qed_baseline.py": "123521462f9ba70a0fa92494b47e92003b0440ac6f8e5edad68fdfd301e199bb",
+    "tools/check_qed_reproduction.py": "ec1f3cecacf38122ff1616a13630e2343be1ffc9e809543dbbcfd96d92a125b5",
+    "tools/colour_batch_check.py": "00c3ed032af2f05fc1ec365d63f8f7aa442c9fc0b847c02feef9d8bcedc34eb0",
+    "tools/colour_delete_check.py": "489f25a37bd36fa63c2bbe24142997cfa39fb3d3b29a213113673450789c4565",
+    "tools/colour_desktop_model.py": "71569e1c94c8541c68d4685132ff26a4ae73327fcda37d8f2309d4b332686273",
+    "tools/colour_drag_check.py": "0be54b02aeae5ebaa6f75c1c1f7cb3894f4d2136ca2bd90207522de7ade74aaa",
+    "tools/colour_drag_timing.py": "02195e8545c3abb986792297fa42dacc94c084ef87bc114651f28afcc085b634",
+    "tools/colour_file_check.py": "ae3704743fda09ee93a4b563351dc5b74df4ef5594677f06579f4c09493ba297",
+    "tools/colour_selection_check.py": "b6db610646798bfa874a7eb593c6319f92e7df601fbb8352d298a12a6a3de1ce",
+    "tools/colour_selection_feedback.py": "6cf2e8358bc4bb5a47a710dc6eb8cdf3a0ced59c8728f1fde575e4fde5caafc7",
+    "tools/compact_files_check.py": "863da1bfda47a648fd2369f7e588e1654f8748da4ce6999deb5ea9ae4cc2a2f6",
+    "tools/compare_aes_diagnostics.py": "7911fd090c015f9cef58e0c351a4a5f967f47e79399d2c6ffaab195428c0c81c",
+    "tools/compare_aes_latency.py": "76d123300f9e874a5862783a89704683e7ab42e3c149fd53f7c77c102827510f",
+    "tools/console_concurrent_trace.py": "bea37dbb16c9f6cc54e161e0b303c0837570252a9d91454cd6a7a1ff2d671cf8",
+    "tools/console_model.py": "ea1ad828b38b192619903bb563d59deaeaf843632f0195dda4dacacc2ffd2157",
+    "tools/console_scroll_trace.py": "3289b5f8b5b4807e60ec99e48685ae5e0a6693b32c7d49f92b6f579f3f91a714",
+    "tools/console_turn_profile.py": "9290a94c3fa8b81861919dab5c38a08a13751743239b86643e250959fa834a70",
+    "tools/control_panel_oracle.py": "6c7b19bd51db77bd925bfc4c094f29cfcb4befbef6f10d626b0e632cb265fe82",
+    "tools/counter_timing.py": "b7114179142bfd29ef699f6ec3455f02a210fe6a58fc4b2d8d3878461ee4adce",
+    "tools/desktop_budget.py": "d75d819a7cd1dd7d308f91acf1e4d282c7b9e29c96d441167c069e749c2b0f5d",
+    "tools/desktop_menu_check.py": "c4022fe77c4a6cc675543bb2f1086574764dcda75716ed9e3db668e4659412c6",
+    "tools/desktop_mouse.py": "861696828a7b83f4075bcbf75fafdc85e7b336f4f9cccb745a969842d3b8e983",
+    "tools/desktop_oracle.py": "a313009287fb1bf263f65dd7d987280c9116c6176c6a12ffd3365d119cd0321d",
+    "tools/desktop_raster.py": "a643a75610c1df3cff4e0eeb6cdcb4e47ea89a6be3ed0a132e3c6b6d61e37ddf",
+    "tools/desktop_usability_check.py": "a968b0040bba4e46c32c6afd53e859158a4a69aa02121d687403934b4ed8ddcf",
+    "tools/dialog_model.py": "47d69cc3bfe77a9588b6f7935eb8c170f1d6b6a1b5ce3cd74cb5ba672174ef38",
+    "tools/directory_batch_gui.py": "818c6ed2d29cc1e429a26d179e8b6b7a1fb76ec1d9e2a17bd3b0c9a64b92767f",
+    "tools/dos_abi_fixture.py": "8c7f054b6b865c0a518198632c7e13a274f987d4f83cfb0c1b0d8615e2cc089e",
+    "tools/dos_client_record.py": "7ca1f3a5aaed6b542128753b7c711bd75b7c26e8296400e18dd39fef4d15e2ea",
+    "tools/dos_client_regressions.py": "5f1b393e7157c03c3b65b4db7092e4518ca1d44dc6b9a405f3e7e1068937758d",
+    "tools/dos_concurrency_record.py": "ede806cb5f56b833a60781c997a54e4c769613e006c6c4c7704042719454f3dd",
+    "tools/dos_concurrent_trace.py": "443ba2e068587ad007368d13e3c9448abdfaf07093e8953da39af520894f1558",
+    "tools/dos_context_probe.py": "df66c6be3f0763639b993c24d21d633f43a456cff09f90898e3c00421d1d0d75",
+    "tools/dos_directories_record.py": "e80f6c9ff684902a1caa12b44e121e67ef7a367b198dd6100bc2ff113ec17b8b",
+    "tools/dos_directory_record.py": "e49d301fea98ce1082f154235a7594faa9ea1a27d29228a14ce1a26cf9c1763c",
+    "tools/dos_files_record.py": "1b4ebad8badec027820a3ad85ab4972530442a4c3e1438b479b28fb920c8dca4",
+    "tools/dos_lifetime_record.py": "fc43d4433f7c9045a56a8158cb07c599e9653a61481acd6b74848f5ef830fb84",
+    "tools/dos_names_record.py": "068a3a98b0b29af31756b3926ad0fe9774638edb1a851d4978f60a1604077702",
+    "tools/dos_regression_record.py": "9c5167b1c0579c0405cd3fd9a9616d7a1b1cdf6ae0b9c929b09d72ad254ab77e",
+    "tools/dos_relative_record.py": "8b41eef1cbc9a3cc88699110bc28fd665e347ecc5aa204110e7111d9a3052c6b",
+    "tools/dos_streams_concurrency_record.py": "75a55043542f09654a6a5d8145235168ba34c4bb4fbd7930e3f7378f1b5fcfdc",
+    "tools/dos_streams_example_record.py": "de32cd042733acb21d1e72d16364ab4672538b54030b8ac4a21e2aff40ea9198",
+    "tools/dos_streams_lifetime_record.py": "2d2235ab8a6d6bd5fc9245b3d5672ccd88a761d50258723a8d2e782556f4ca7e",
+    "tools/dos_streams_record.py": "4a71862c5845677a6dba9e14648b9109e2329753fc563b2dd4db960aba7371fc",
+    "tools/dos_streams_recovery.py": "5a4d7d353f03ec470d22e054ed4a891f2972378b8a74747006ceee04127c7ef4",
+    "tools/dos_streams_timing.py": "916ce30fd8c059cbfcff3f07339395632658977fd715745657708c751924d574",
+    "tools/extract_gem_aes.py": "34b19548a07fa8711c827788edebcdff7c8605cd6f698051fd493a7fa5ee337c",
+    "tools/extract_gem_vdi.py": "9ed99cc3230aaff6ca234a50f1b9ea7aedd12bb21a221876ac2f494e6dde9bdd",
+    "tools/fastbasic_test_support.py": "1cafba753eb0f5e4946fffdfe9303201cbb691e585c45fb79db56ee14a3fc4f6",
+    "tools/file_scan_model.py": "72845090cd58a0c9b0b07db92875abb1cb7cbe465de3b262f95d3c466381d148",
+    "tools/file_selector_model.py": "7fc25a85b1c9a62ce51c9080d600a6a8b8e4937fe261e1136d80d333a5afdf49",
+    "tools/file_selector_oracle.py": "d77660e1faaffbd3acdb39b568118c44b47f8ea32b9c2e42a7a4cfc8982a4fb1",
+    "tools/files_dialog_check.py": "e0fda0c8e29573e95a09f5b107a4e68acfbea510f875fda6bec82231bf5746a0",
+    "tools/filesystem_audit.py": "b1dd280a82e39097b34b7eccfcaf03ef18b29575dda7835c18c587902e5961bc",
+    "tools/filesystem_formats.py": "c93382c74c10cdb85d58d40871459ad9cad057674a81942eafef54383d3fee28",
+    "tools/fsinit_faults.py": "0f67695c0cfd910ad9b71850bca03d6d690de46cdde868b90839a8d9af2ea1b7",
+    "tools/fujinet_pc_peer.py": "e694246921d9265a6515d50e97f244ca43ab36db88f6e90ad6ac647ee4b433d9",
+    "tools/fujinet_peer.py": "120533651032ea3dd63d243233f89ee5947e3611aeffb1baf764c21cc9360603",
+    "tools/g4bench_oracle.py": "e80de95677c9980dbd71c968950368cde3cc808704a425775d79c33fd5ad7e4f",
+    "tools/g4bench_results.py": "d7abd573171d93d8a2d8e862c3e2aad0caf55503ed28d17d28d61ef84be7f2f8",
+    "tools/g4bench_trace.py": "81ac3f4617433023489980bda4f8833202b3b7eeb43bae6f453ef4c026971883",
+    "tools/gem_applications.py": "4d5cd2daf823a5753fc4ccba6f9284f1472514547b8a30fcd8736150435b2923",
+    "tools/gem_desktop_oracle.py": "8224fe4b40385a0b511a6ecffad4985f1c17a08cb53b3281f80bd02951efc2ce",
+    "tools/gem_first_observe.py": "f1ad850eb2504477e8b6d6bf501041ba26100f74f081a7253c38d8fded32c064",
+    "tools/gem_input_oracle.py": "6bbed58f6315f1a2344b6f302521e5b22633578bf81e19f4ab2b566f00dfce52",
+    "tools/gem_interactive_observe.py": "c938aa157571f385c6a7c502e691ca0d16e115b614eeeb56a893e4acc2852233",
+    "tools/gem_mouse_observe.py": "ccdb94bdf109b6bf18ae56ce131125146160a6e027a15bf9342f3ac50a7d58b7",
+    "tools/gem_render_oracle.py": "2950a81f025c3866dea5c76d2de71503747988786d22a8de28a6e63836152be0",
+    "tools/gem_text_trace.py": "5feebb3550b24ccf9a9434724b6a65bcf42d2c627ca523a38f94037a5efc66c6",
+    "tools/gem_vdi_inputs.py": "c4e62f2ad6125672fa895e013577d953aa15905212b8250489672191ef378106",
+    "tools/generate_aes_keyboard.py": "b48493a76b679bc0addaea99cf9780097ca466098386d04bee73a9f8ee1f487e",
+    "tools/generate_aes_server.py": "57f9d69b98fc2604f865ee275fa6b3f6f7962a18f9752e964e07aa8dd8663994",
+    "tools/generate_aes_wait.py": "941718c6203e3667c7dfe2e8c8b2c17c382a9aace4d28185593c6ebc14c0739d",
+    "tools/generate_bitmap.py": "2132083478520ed25d91b5a05b7e4e41aebf2f1278ca865c1b38f01ac6810407",
+    "tools/generate_blitter.py": "37f6640bb7ad43466260d7a6875ffb66efb7f7c9c14958be059d84b9458a02ad",
+    "tools/generate_block_io.py": "ba37b3e5369b72e98b5528f18e891d5a845a4993bb9c1b3e16170ee7bb374e88",
+    "tools/generate_boot_diagnostics.py": "0dc0cf1792cc7b74a5f3dccbb63b3e1c6801f0e5e9df3ba8982875554fd81865",
+    "tools/generate_build_info.py": "3b07c92d86ac917660da39fd389d1b9245ad27af9b85d45fff3e15d4f007bbb2",
+    "tools/generate_c_program.py": "a4ad6b2f594cfd46a0232f4a96bae0b39fffb4c71eac2e96d1f8af9c1bf9e6fa",
+    "tools/generate_c_runtime.py": "01d687e676f5812a6cc571f4a188b4a9d74324f69f7afeef88a4d1456e6c6205",
+    "tools/generate_calypsi.py": "edd5275c02148a72ef0883a4450aa802fa36120d35543374711246851294bdcd",
+    "tools/generate_console.py": "c1c5debb126b7907382d1c038f7ae95cb14cebdfb7d40a190e61b7b2f6a96785",
+    "tools/generate_console_bitmap.py": "f7254fc442ed5ef8d26ce62d12880cc807995d63e91ccbeab6fab1671a8c85a2",
+    "tools/generate_console_view.py": "586cfc86c00fe2cb7eb3cce8194d500a293091ef84aac31cd41049a9fb161668",
+    "tools/generate_desktop.py": "7cf06e1d40b62c1f3e248c62cf4422b8efa7bb912e0c869e6c51e4b4cc14cc70",
+    "tools/generate_display.py": "5f4847f08aa302597cd9f09e181c209da7de1d7944693affefad59e70f68dff1",
+    "tools/generate_dos.py": "1c74124545866fb8e781b1fe9d65eb1f6faf363ef09f3ebef755a9b7834677c1",
+    "tools/generate_dos_mounts.py": "908b4d0c9f39f08ee1a6b70b5a2b9b72de2a0489349105ef875946597a7a9951",
+    "tools/generate_exec_abi.py": "671135c8b0934f0a694ce5161a23125ca7810f962d946ceae46bbfd8ba683394",
+    "tools/generate_fastbasic.py": "ea4ffcabebfc03b4a39e9e0085d503b319b7c1bf95a5cdc174fb924202adb5ee",
+    "tools/generate_fastbasic_diagnostics.py": "5bee8b250a2808eca25c278418a6c5b58697914e03d655bb3ecec753bf80d300",
+    "tools/generate_fastbasic_interpreter.py": "44d8f9a5286a6f44e219ba73ba72a93422389329c94af34d5bb0a67ddfc2069f",
+    "tools/generate_fastbasic_math.py": "d4adb286af0e738b6adab680b3c3c7720c5d79d454afcec93979a4314177ec38",
+    "tools/generate_filesystem_formats.py": "6d9fdbf0efe397fc9055f9703578c14567f084c363c8a17d580d7e54c3775009",
+    "tools/generate_frame_gadgets.py": "3ea519577856d15299765dd2a652b00dcb7e014fab561afbdadaa93cefb12c71",
+    "tools/generate_fujinet.py": "bdb892313c48123f1acab1980615f0af30af4a860754cbdbb3684131da0f7a2d",
+    "tools/generate_gem_cursor.py": "bc4a43f144f65052e2b50939b00003511f0e57e3fb83f9e38aaec7757d99b493",
+    "tools/generate_gem_interactive.py": "ddf80cbebc080dc2df8e7ff55e7d01fe04a5f24f5bb6f671957a26cfeb80f34a",
+    "tools/generate_gem_vdi.py": "a9bc8de250da4f917d71e376881f72c9bc03ea285ee7f4f0a62b103d7698daaf",
+    "tools/generate_heap.py": "c88c707e0c63d3463564e50fb491441d893cae350e3c51f9790c6370060d59e9",
+    "tools/generate_ideplus.py": "c0974cb99e8c1978f99ebd694927254152ce357b3bc85eba5ef3d942a12e9ea5",
+    "tools/generate_input.py": "612b3604258545f679d5e455395202f988ab9fa3f3e8769afcac9f6f26663ed1",
+    "tools/generate_input_native.py": "91593e097bbe4af5773bc02e42364a6e649afbe89247778e76cb9f2494aaec47",
+    "tools/generate_io.py": "674a52f740bd51ba440590bbb0e24c38d4cf8605b5bcb5a326c78b0eab7dac5e",
+    "tools/generate_layers.py": "4cb1c63bb49d4c130778c53bd4e424c46bb9808156423fe0f82e91b1a29e3b81",
+    "tools/generate_memory.py": "597d6a00bea1fc3de86ca86fd7f31ca5d945ca72d7d6d9899dfd52f5a54a4c46",
+    "tools/generate_menu_render.py": "fa437a3eb7ba257a9534ecba9d61052997f046bdbeed7c160e32f5cff0b176b3",
+    "tools/generate_mouse_acceleration.py": "26bb9e36c11eccace936debff315139808d8623df4585caa6989bfcebcdb6002",
+    "tools/generate_native_abi.py": "e1a068317cb515c4e330a70b1e3c87eaa45fdf431fd6a1be1828cc0232ebac5a",
+    "tools/generate_native_interrupts.py": "b91faad33c63844dce35a4451925819548d1969c822fae5ddb1df167a4ab3f40",
+    "tools/generate_platform_timer.py": "efcbb9e3ba93a0c7c1b500aaa76231c7d24ad2a1b95d6f3a21e395f9f1e42cad",
+    "tools/generate_ports.py": "15b411c6e38f9d6ed7bafd272470e5b9895c01e23a0efa7c1bec44fc352ef0ae",
+    "tools/generate_process.py": "73eb987f6b183ee7a959dccb7d2ecdcfd8ee126c1562de3121e1b32888f7512d",
+    "tools/generate_program.py": "ce3e9d864dad0f5f3aeb4c90c4731bab956ac65c76a297927b77c888cf7fd6f0",
+    "tools/generate_qed_compat.py": "3208268cd7992df6884a41a32fe40c55203ecd696d1cc6d1f872aacbe7a3e4dd",
+    "tools/generate_sdx.py": "ef9990104630cad44ba3537c10e02bd2931db9ba28ff1fb80135cfb58d2964d6",
+    "tools/generate_sdx_firmware.py": "f74586b997c085089e54931f3e9b0d17fc3ed7a326dc69efa4be5bc3f999cece",
+    "tools/generate_shell_sessions.py": "231d1925743d8b37dda34a689076ac16ea6996b7b5abfce89a738633f0a36129",
+    "tools/generate_sio_adapter.py": "88ff0b40c9feca3310155d5a658e202fe0ebadada12b705b12516771f4caec6d",
+    "tools/generate_sio_client.py": "c0a6c10c4062058867066ad6d3990e03a9c45d2d94b6490967e261dd4c8626a1",
+    "tools/generate_tasks.py": "f14b66b6dacb416c83e68e65a03210cf78a8bcd65019a3af0a339930877cee2d",
+    "tools/generate_timer_device.py": "e4e2950f3c436beee5012cca4792fcf1c34f7c49f35f014793fb0d52751259ad",
+    "tools/generate_vbxe_tables.py": "b8402317296c5dee36f7c29448defa0f2f5d93cf7cc8acdda4fe5b28b78b23fb",
+    "tools/generate_vdi_client.py": "fcd1794085aeecb9971549f58ad61bc5b79b80e290fc85edebdcdd16bb685487",
+    "tools/heap_model.py": "6c5addb67e2a93eddb4a5d789966eb21fd21d0bb7465ec0785e2ed911090a79b",
+    "tools/ideplus_media.py": "854ce5c52ea8899d6ac404d5aeb55b2f3978830b0e4968e3c68ce17bb0b4581a",
+    "tools/ideplus_stack_bound.py": "236f01f5ea8d0fcdc15cc01d5ce17c7bd717aa4e565f78cb25206cf952b02a7b",
+    "tools/image_data_usage.py": "25859710cbce328068944b44a8d440c4bd1f70cfd5731da5cb0c7ac1c813908f",
+    "tools/input_diagnostics.py": "b73be33eab56c82171366eb70d335c7428b9d8833e4833291d95a92212f4070a",
+    "tools/input_registration_checks.py": "012748bce4e801912250f95fb524f514bc2de42161eb26523112ef5bb4e8c380",
+    "tools/latency_statistics.py": "5272ab742818ba1d02e0f303fd6414e6e2d891151d5e0b34d827fb32296c729d",
+    "tools/launch_demo.py": "10f3d52331bcf51ce5056eee3aa89ac0997a91f712addf62a3964d723d728062",
+    "tools/library_paths.py": "48ef934e514a985759142769989aa6d3620df8cd2d540446708ca9a245128de9",
+    "tools/loadable_gem_feedback.py": "08051763a48df1ea38159c832d6bb2fa056e15f9fe9d124a9efb6ac45544d938",
+    "tools/lz4_block.py": "8e5dee1d46ead94a366a6835e5b83edb4c517274172c91e8bfe319d4158d8ddf",
+    "tools/make_data_disk.py": "20331f1eab60274188f4fab0de30045ad0c0fd9d00c5f8d97ae1a74794f68d42",
+    "tools/make_sdfs_fixtures.py": "8f315123af1d762df43419198e3a892116ba6f3f9707e0c38c75b7240f05ce1b",
+    "tools/make_sdx_utils.py": "873728ab3ccddeff1093713bb049f931b003d6baac8339144cc6125ac5601aac",
+    "tools/make_shell_disk.py": "5e43932f4a709c66f4ca35344125c5ac54556b9639602163661e1bc217f7adcb",
+    "tools/make_write_fixtures.py": "89d215dc0fc97722a30f52d20fe803631c88debb4393473cadbac04ad2d302c7",
+    "tools/measure_aes_calls.py": "67d15f216d349b0488d126d1ba875e602812ec8c55d6d4f9ed3fa85218565a8a",
+    "tools/measure_aes_drawing.py": "d275ab82c0c19707f4983838842c78accad66fe57290d1cc12333e215c454744",
+    "tools/measure_aes_presenter.py": "7ea20e1c9fcbb0a439d268118a74dd71db6ef3f5a218c2cdbec931abb3e03032",
+    "tools/measure_aes_units.py": "0f5e0d4168a29f44ba2ee724fcfaa435d203efb9be4a544de00b9d080635ddae",
+    "tools/measure_aes_update.py": "a70ffe2cd016e86f9bbbc0dd06b2d2a207052543c40bef2ac62aaf0e396a3f0c",
+    "tools/measure_async_scroll.py": "6193e5acfa34f508438ab5bcb5090077cc1d6f75529cf5bb64653a9e839f75f3",
+    "tools/measure_bitmap_cat.py": "b17c2d59ec1f4c4a37c1c3097033c354432806fe705a10526bf5650b78aee971",
+    "tools/measure_boot_compression.py": "97296fb9cb8a293d7c7fab32e0d1d939a0656d14f78a10156f777149c9190e62",
+    "tools/measure_boot_fast.py": "2f4efb2ea245017a43f5276f3d9b812eb7a5d73cde2908b50ed2925bec8d32f9",
+    "tools/measure_cache_commands.py": "ceb8de3e08ffc0426112ed614a07b90adf8664e1630ab7e966d417ceac7e0354",
+    "tools/measure_cache_load.py": "17bb615a1bc1b36b41e9bb17cb33aa51c1f871d32e08a818456ce2dde7db7bc5",
+    "tools/measure_classic_gem.py": "c32dba84b2e75d6d635d7049b5aa6c522a312fd03fbead3bac05a75ca0f1cc46",
+    "tools/measure_command_loading.py": "3b9d9be7fbe1418907c123c4a6ac0f08704bcbb517a6dd44461c1510cf1addc4",
+    "tools/measure_console_batch_load.py": "9676e4db9df7e12e58ffdd7bb625c614a627767e420a8d6ffb82d8e1b9bf33da",
+    "tools/measure_desktop_copy.py": "4d809bfe56eee62262dd4f27dd42f12f4a3515b52413988d530f60f6f910ce27",
+    "tools/measure_desktop_echo.py": "5c2f0de764a0e6f6f4af57c1f09588113d52e69ab323517c9418d6e7c5306886",
+    "tools/measure_dir_performance.py": "40806abf0bb24501b5226f473bde0b12675bcfef92582063e78a993111a57dcd",
+    "tools/measure_display_bridge.py": "82aeb8ae34b44bb24153ec8de147d07eb16cc8943c6e298a28bca877e0e43113",
+    "tools/measure_fastbasic_components.py": "5fcfad6c0a3357e02d20332e5baad8cd3a158883377f673609901c346444da5d",
+    "tools/measure_fastbasic_editor.py": "020873ddcef6acda9671fb037ae5efda894aa6759e333ce6c1e4de9f7eadf305",
+    "tools/measure_fastbasic_responsive.py": "06b9c91349a3af4bb9f906a025664341344d0e169a4ebd513d540b0c7f775f8d",
+    "tools/measure_files_keyboard.py": "6883eacb3399af1db196b69fa905a6a30bb316eaa184dd22a2d7b1f204fc4a01",
+    "tools/measure_frame_exposure.py": "cfaaec3e33e312f71513a17cbf5d3d8aa159d7c914e357624dfc7fcc8e7ad0a9",
+    "tools/measure_g4bench.py": "e4597f846589b312a62ac9e888279f8c859af7dc0faeaaf4b681949511434934",
+    "tools/measure_gem_feedback.py": "dff68cd74c9ac199d3595d0843356ff2458c23449466d77b3e273791b7eb0fa7",
+    "tools/measure_gem_stacks.py": "3bd1d86c1fbc5fb782711110484cb9daf817368f13511a2f1ddbdd67df39dd5b",
+    "tools/measure_ide_write_performance.py": "39e984e39c8cc4a9e73b6358b5e495f5817ea13ba93ab61be22443208696d662",
+    "tools/measure_input_operations.py": "161a74daaf830876c6097163f549c965bdd5f61dbfc36b6669ee465bd17db526",
+    "tools/measure_input_service.py": "e9cf4aa78e468d148128255072252fd4fbab66dcafed242e057987739acd2465",
+    "tools/measure_list_loading.py": "bb3af4a54aa1922c9182fddd91e9ff119ce4d0c9b78605789eac8b8c74a6e9d0",
+    "tools/measure_loader_compression.py": "536f0019adb3e99cd5228168e627d4175c46b353f51feb8ce371fe6dfe64c9cf",
+    "tools/measure_loading_breakdown.py": "4c8e0863709e49d404bb8c37633a67f606b92c70b4908e245ff559c539e20d53",
+    "tools/measure_magic_aes.py": "deeb99fd589ef96469f5f0a8fe4218421eafda5b1eaeac2b51bda6568dd118a2",
+    "tools/measure_menu_feedback.py": "5c2b0baaaef6f07271d7c8d47b8afd39c9e3eb4702e1a1c5a41c2e42138ae48d",
+    "tools/measure_mydos_operations.py": "ca8bf72eb05194c4576d09f32cb6d442d0312bdfa3ba1495a8eb60a03b913c0e",
+    "tools/measure_qed_frames.py": "c50c72a83aa6a305be5c9ce256bda9ca466b9b82f846aa6d551fcf63fc3b71e1",
+    "tools/measure_read_8k.py": "a471e90c383fe2e280d14d02bc6fdf435cfd27ed03c0cd926c6eb261c301b5ed",
+    "tools/measure_read_8k_scaling.py": "3b7b9352401f40f37b60e8bdf2b609f8d425e3d707a20e52833805be6aa707b7",
+    "tools/measure_rectangle_scroll.py": "5bd661d837195630e404ca6d6e9017c7422b66c943f656a9fc6257f385762fc9",
+    "tools/measure_rendering_load.py": "fcbc9584ec6f4af7b4e2914e0b111043ea841f89d314e26091c88c45793ba33e",
+    "tools/measure_sdx_console.py": "8b917e78c8866d8c875cc9dbb1ae5f90f1cec031175c23b57e0e70d5990f027b",
+    "tools/measure_sdx_editor.py": "822c1c3470492b9339cfc1185370fe9bfd6bd72694083c3b99b57aa0da42529b",
+    "tools/measure_sector_cache.py": "1826606109396815978ba2f07048c040d5e6f5f12c5e2c43438a4822434a0232",
+    "tools/measure_sector_copy.py": "78a39b7062dc1d49376e1cafdcde2cf6ef9508d9a6bfc33b64b32b77977b79cb",
+    "tools/measure_shell_close.py": "cf02a800aa3da42537d7e4720e6c98437f5353ded2a7e4a1fe27a61ce00aa49d",
+    "tools/measure_shell_completion.py": "c7efc5ea07572363a90c807fb3de32dde861d4b472d32eaadf86634da721fcd3",
+    "tools/measure_shell_reports.py": "58104545d4f9f276f6a593213bd575dcc6cc478e08fe8089b94c9ab903c5be5b",
+    "tools/measure_shell_sessions.py": "a1e3f7b06878c78b0a8c1023cc0e91b389fbc0f57bf889871f10e89a83067abb",
+    "tools/measure_spartados.py": "19405a8334ffc2fd56bf8e5d8bf14d88fa332b6d1200757f13ca06399e6bf3c8",
+    "tools/measure_spartados_listing.py": "f63311cb713b725971eaa4a91ec45e2fbc4443d4a4c58528577f3156b51673d9",
+    "tools/measure_text_viewer.py": "8833bab7c1b7e821c7c4cf5193352026c3fe130ba9042f3f0404931928b61b01",
+    "tools/measure_window_backing.py": "b35cd95576704c632777061da755dc9d3399261117fa01e90813618928f4d3fd",
+    "tools/measure_window_preservation.py": "56a35b8e3ebbdad26470d3cfae9ba7787ea6ab922c2e9a2fc49b70e30ac59fde",
+    "tools/measure_write_performance.py": "1647f6725c5baab22d99dd8ae97e20f5b69ecb65b0348c3ec8d800459ad63943",
+    "tools/menu_response_observer.py": "218db998d0de8f3319ad0d9507a2f8fb78b50dee5799da1628488e3ee71632d3",
+    "tools/mouse_acceleration_oracle.py": "539c4755205a242dbf3f3ef25bba3f344b74e3fd00ff33350fb724a02ff1168a",
+    "tools/mouse_timer_trace.py": "c1de6f6c9e93b99dc341707f2d9d8d2fb5042926c8ba3889191cd87191f24de3",
+    "tools/mydos_cases.py": "089be1b78fdbd15a3fb2ee2311152a53aa08cdf5f725a9b2e20f2e07cfa72918",
+    "tools/mydos_file_cases.py": "af9f1ad7eb20e87b95acc09c338affa84eeefaefc748013bddea988dd7cb43ae",
+    "tools/mydos_files_record.py": "1907673f2ec9483ba938c35c881bfeabab5644975e409f106205b9990ab3d6b6",
+    "tools/mydos_fixtures.py": "6ffa980078c86f3dd275b3c6e4eb3c70fea9d5f7d104ecb598f257ed6ea43c11",
+    "tools/mydos_metadata_record.py": "405648e687f81f5fe68c06f0710c84b8a5318b7463c3827b67caf8f31184c4bf",
+    "tools/mydos_producer.py": "14e16446708646a33eb86d516917b25da04cfd67138ead052e8671858f254037",
+    "tools/native_abi.py": "aa31cde8d5e4790b69ef8deba2ee24e43beaf921fbacf938482210f83088608d",
+    "tools/native_frame_maps.py": "c470444d51e15c85abec19720fe1516ade35324fe9403f0d1656d46a61ca4696",
+    "tools/native_program.py": "de1bb00b6bd2d9653f482b3331a0ff5a030139d545f09d60e571f503492e6532",
+    "tools/o65_fixtures.py": "78b727a0b9a02c7cb88be725329394515bc7b1828ea00810bf3ba4e7c15a8d75",
+    "tools/o65_large_command.py": "d0f2e4bca7e0b3746c656197ef2b2a5c9d1b6738cc580055c6445607231ea811",
+    "tools/o65_oracle.py": "cd3eb511e7ee6bf25390cfed6c80eb27510d7d0b0c962d3d92d391db5ebb2919",
+    "tools/os_boundary.py": "af91c3be33757c1ece2ee2f587d1c67816e4e7308e619f5b311dbdcb90076c00",
+    "tools/package_demo.py": "01acfd326d0ea1c6836fe4a29adbed2a22910f67cbdad7ad336ccee3ad53edeb",
+    "tools/package_desktop_preview.py": "6c9de12f7264279f29c2749f7dcbae4a3504c0a8d32e131cff8f41c11cfa569a",
+    "tools/package_fastbasic_source.py": "0673cfad6d9b73821cc2ca696c90e1369de9389a27b20da9e600f44a71826b8f",
+    "tools/package_gemarc_source.py": "a233a4c564c8f4cc9dfcdb4c173388159afbc172eb20aa88aed191c819fb5d7e",
+    "tools/package_qed_source.py": "27a1a09c8600a9b3fb811360501370930352db109e21f6f3501fe58102620453",
+    "tools/panel_settings_check.py": "2ab28afb19cc82ca9c0ca41d0910446ff076746382f4ba64ee5173442abd1cc0",
+    "tools/ports_budget.py": "bd8ad3e3ecbcd1b1bea7a1d2cc96e0d8ab762d4570501b1d5e4894442424b7eb",
+    "tools/ports_model.py": "4762ac37ed73d0d9f2a0e4829d87f2a919916b05f1b0b3791ffd071b4feb947b",
+    "tools/prepare_calculator.py": "3e68261a43aa16bf0de5674263c1fe1a9c5acd5d01fb69ae7225ac24373c7c39",
+    "tools/prepare_editor_observer.py": "39d353d0ed1836b547efda51ed03e015ca786c706f3cf0d49e8f69fe3b0e73f8",
+    "tools/prepare_g4bench.py": "94d985453a1c4274bdd23bdd3d0fff21ac760ce57c414740144297f466206e52",
+    "tools/prepare_gemarc.py": "2e813c68e95cd71aa806e77188638896b03de28e96309fad437367ad188b26b3",
+    "tools/prepare_ideplus_firmware.py": "8ceed42b331fd6e9bcc26ca456bdd75a25a0524238360beed70971bbd842f44a",
+    "tools/prepare_magic_counters.py": "973e10f21aa69eedc72fd7767d4d30de31586bedbe0dffbafc7670278d1e0f11",
+    "tools/prepare_qed.py": "e39015130871979116b63e5ca6b7572d89bb1557da925c1b2fc880a971a178f3",
+    "tools/prepare_qed_exec.py": "fa833c355a6c9bff38d097f101eab662d7c94378160bf5693d5fe4956a6ee42b",
+    "tools/prepare_qed_reference.py": "ae1f380cac6104ac83173d7dbd6c6280b3895f26dfa2085e0155f00059b2b218",
+    "tools/prepare_sdx_inputs.py": "64d27ab3f633c99f6dddbcfa8964f33118a4f99306a329b1852e59e843ab2836",
+    "tools/prepare_st_reference.py": "3d978917a5b832f380cb7ab1374aedb97e3d8f5abde549d3deb7baca4dca4f98",
+    "tools/presenter_control_trace.py": "d5dcd90948cec6e0788ca435991afd50f6ae04781b01da735fb98cc3e29a5eaf",
+    "tools/prime_observer.py": "de1d2e8e827b762561a487e087dc85986d9d9b225c2cf1115f4212538562d3f9",
+    "tools/probe_calypsi_array.py": "1c7569f9bb3f65f03eb32fbb0ac74421aa8af28eb7d7e80ff43d1d2d90fc69b9",
+    "tools/probe_calypsi_member.py": "7a78c1a5e7abe081868d82cd3c4547230b3a5dc23e966a029e2d643239fbb63a",
+    "tools/probe_dos_large_read.py": "641fe63492322c5d1ff94c3dcd682f2a893f5dd520b12663788175d2abf51fa7",
+    "tools/profile_vbxe_builder.py": "c31ec8e6c7d27f293ccf2a0e6fabbb97d854936c129b0602dbad190a02c6f3d6",
+    "tools/program_image_layout.py": "2b4a0232b3e26e078f1575b282ed437dce4adaad735aa6a743013f93edf5c22e",
+    "tools/qed_cleanup_stop_observe.py": "551aa27875dd4b9d11c09e3ac053e659781a9b875b9371c10600960f30f7a121",
+    "tools/qed_clipboard_observe.py": "546f83e7a8ed0149e7b3a9940e3bdb435736a0468c02c7865a365ee86618f54a",
+    "tools/qed_coexist_load.py": "cb530451ff3c56113b38ed4b06442e1c6b6105c101380cf35cdb229e6adf0a4c",
+    "tools/qed_coexist_observe.py": "258ec55541d00726f7a7a99005554aaff9ca82596941163942ba44f93a7a115e",
+    "tools/qed_coexist_warm.py": "ea16ea325da223eed79d1a0ecca541ebdeeec9220ea1da2b5ec7751d2885c796",
+    "tools/qed_combined_observe.py": "b0f0a4ff99e6b1ccabd9a6ebf4b1cd5a85d6f11ac4d02f1f5e2e074e5d24f9e9",
+    "tools/qed_continuations_observe.py": "e9b1da7794d56e079d879341704ec8ed5188e06644f9c78357c8022735bbcd2e",
+    "tools/qed_delivery.py": "0b10bcb8db2c7e9f29e404045577967c8df3f8ea66bcd6f1992ca962ee1aca77",
+    "tools/qed_demo.py": "528d315bf40ef65ae22f52d3cfa9969c5daa6e151359af407c19088285242b52",
+    "tools/qed_dialogs_observe.py": "6a383e338130e68382cee3e4dc9e1571ec1a8497e35227fd4ef140de439f411a",
+    "tools/qed_documents_observe.py": "585f05070b4e2b5f22f00c5078abc2c184f31bee2b45b0a810709fff49b38674",
+    "tools/qed_editing_observe.py": "22626e1941334dec64678222756a40786cc7aa7a9161fce4818925c70982751d",
+    "tools/qed_form_oracle.py": "ab8f1686b4f68f40daaf2ba7cb8a322173e18b8a097f2f24cf3f78a9158643da",
+    "tools/qed_probe.py": "52d787b6c06123bd1faa507ba8919be3187ff31b312036d67aaa1c32050ff2ed",
+    "tools/qed_reference/launch.py": "bc8ae2d4b00a55a944dddad53d3c0b6dc8088e202f15f159d5535d24ea8dfda1",
+    "tools/qed_saving_cleanup_observe.py": "ce45e631c6a136208e95da2b621fa82775d1f2c09d4b8e8acc2533d1ab901afd",
+    "tools/qed_saving_observe.py": "5d73fef53edc889284bd3b45767cd236cb0ddffcb295716b71714af9fa282c70",
+    "tools/qed_selection_observe.py": "88802daad72dd002af0badd25a6c0c528e5ec69906a1717e36e2d864a0d26ddb",
+    "tools/qed_selector_observe.py": "40c1621d32b7a44c5306c4eaff5aed4c184967650e90f7c51e6b2689bea198d0",
+    "tools/qed_stack_observer.py": "6f28dbf830784b480b7c7a27b93453027cce7ca1597f3646e0b9fbb695d8709c",
+    "tools/qed_startup_failures.py": "8cb81b7082fdb508b2d8f8769a4f76e37e4345c786f3bca22e9f0ab108632a58",
+    "tools/qed_startup_observe.py": "79509fa9c56ec5306345660d47ef7540d18e02b48ef447a89bc31a9a78c2f1c0",
+    "tools/qed_viewport_observe.py": "c2a42edf37837b383f122bdfff0bf2c61e6d0be6769370340dcad4a93f338b8b",
+    "tools/qualify_compiler.py": "e2995cd9dfea8a4e154204e8cd1e0c064708555c20a6b059d6b93cdb518ab054",
+    "tools/record_bitmap_console.py": "4bff255e2feb520f51c2458630db1a58eaf623c8d9a481def7cabfce2a83a68c",
+    "tools/record_boot_fast.py": "fa4ee6b9f935dc3ef8f7471eb2787509567e731e8c6000c561572e39effa585e",
+    "tools/record_bootable_atr.py": "88bfb481aeade6222f47187d3fd0336015201a5491c122da6266c7a4485e3d40",
+    "tools/record_console_break.py": "e9bc990215ca90daedbe442706fe28bfc054265dd68b6d1dc728a65cc45dd73d",
+    "tools/record_console_circular.py": "fc863ccf88d9c6cbd53ff1d62aaaa309a98efb91c4b9017a10e57438be517ab7",
+    "tools/record_console_idle_input.py": "d92ed9e22697a6060bbf861e12e22a9bacb3333cd4f0b471efb79ac821fe192b",
+    "tools/record_console_responsiveness.py": "ab0d601ea7bbe7db3e327369896238d8fe94997ffe305ca8b98d871769c558b5",
+    "tools/record_desktop_baseline.py": "2226d91ee3043659972efdcfbe40e28c1ac96b490306bf8a8dab4826d2b8b3e7",
+    "tools/record_drawing_validation.py": "4758bcaa0fa06783e039b88bdb8370750c8a629e8dac6dc2cf532203869afa29",
+    "tools/record_fastbasic_fp.py": "32ffa77266a7f6df467d702410d6d2a94de77da97c74b0585669c70abfa6eb29",
+    "tools/record_fastbasic_interpreter.py": "5e33236874df4f83513cb5c767fc49b978352a3968e1ce5043e8a842108ea314",
+    "tools/record_fastbasic_session.py": "65a34bfb81be6fe377022d40372fe4a50bb0808807b45c52b724ad99ce48c667",
+    "tools/record_fastbasic_workbench.py": "8206d8b905d0a58bfc8f617731e26a5e45ebfeede7115750a080a9bcae7528dc",
+    "tools/record_fujinet_xex.py": "3c95781c8178fb9eaa0165645dd1a88a6ae1fb262ca339030f74faa85a26690f",
+    "tools/record_gem_artifact.py": "496a16fed6e84a301d5eaa0b25b51ff50243a1344ed9523e26ea199e13d615b7",
+    "tools/record_gem_concurrent.py": "e588a98b51b6b9dc7a55df23362de3bf6c4d8b9a6492175d330be928f4c70a7c",
+    "tools/record_gem_render.py": "1718dd68775d175eddcb8e40d613820d52fe5c0cd6551d5a4fbba61a6cbf9e77",
+    "tools/record_input_slice.py": "e07bac21c25a1f1e4948ce68b490c0c4725a7e523c0f95e333cf94f4138045d8",
+    "tools/record_o65_qualification.py": "409019e3a587feb55a1aa009164be5685991143513e4237cfb8708c00ccc8542",
+    "tools/record_ports.py": "40f98ff7b6049e960ba2564286f50ea3df0d81104951a517d1f75518342d9a40",
+    "tools/record_qed_coexist.py": "bb79932d8b0e42d9f121684a78e41a3070b58a3b4c3f62386ba28931d531fb6a",
+    "tools/record_qed_delivery.py": "1aa3bad8613635cb270f40eeb1463e7341af22a4a2aacd8d3c66c110ead0aaaa",
+    "tools/record_qed_editing.py": "abb7aa49d0df41d936b75f118004efdeb10ce63ac654d12700f58900df046f12",
+    "tools/record_qed_saving.py": "12c9db416e2a4450d3bdf932a90d5960fbed57bfbd791610b1c24e99234e4fd5",
+    "tools/record_sio_regressions.py": "8d06cb07cf861e142774a6aa25c12a0da045c1a442c74487f9cd789f06cac8ba",
+    "tools/relink_qed.py": "a00aede4b52cba2e303c94155d5bcdea7f00a1fd7f1eac134b5acad254e25512",
+    "tools/replay_sio_timing.py": "7fe67b55b0a3fb19a73f49564c7e5f287c8a96e29180e842c27d98d088715968",
+    "tools/sdfs_batch_fixtures.py": "3db16f3f10304a5f88cb847e737415800b99f14bc29b118476fb05f8d5e4e2d7",
+    "tools/sdfs_namespace_fixtures.py": "4e13e5029a02acf9afbb8146daee232e6a3762c3054b16ffc81897a3d957b9db",
+    "tools/sdfs_reference.py": "514efb3fd8a8d3d507760935588a4c43198de0bba1aef3ef19de6f4e9ff5b066",
+    "tools/sdx_arc_audit.py": "bf865deb70a20c7c37a5258c555b0c66c21853bb7723891c687c1c2aaf9b1e7e",
+    "tools/sdx_attribute_fixture.py": "3bc113f79d62e98e7e7ee217114fecb79be819b115623321e987f736d7bb578a",
+    "tools/sdx_build.py": "99f8bc4b8c8648769f60bec923fe7532387283406a1f3d4058d6f583b84a2f8d",
+    "tools/sdx_edx_audit.py": "d7e1a88742de552db382dc9f8ec51bbe86c3ff48b5bb28b5271cfc4ab442aa17",
+    "tools/sdx_elsax_audit.py": "0247cf0dc238dd9402cbf4eb58e32dbce820101588efc2e6452e6e3207b4fa45",
+    "tools/sdx_file.py": "acd01711b7e2fdd502b4241745ed40fd5c5ed43a4430a7931d724b5e17b95d12",
+    "tools/sdx_firmware_stack.py": "2a0c6ebc3be3b97c7f8b8198add1f98838d497fbb36752987dc286689b1a17ba",
+    "tools/sdx_fixtures.py": "80e12901e2bc19ae4efbc8b2cc804f5d7304cadb44275d0b9448f121aef8f675",
+    "tools/sdx_md5_audit.py": "54404b7b28454bdd829a67e98f12df78a9637bbc84f31ee30f1d43cab5a90fb1",
+    "tools/sdx_md5_control.py": "0ccac57ba09d32e204f33b79eab823df917c32fe763edff647628db98f566fc3",
+    "tools/sdx_patch.py": "c2aa7391e5a48a002af583249e483a66a166e18a43d31b0799d8a44bea835f26",
+    "tools/sdx_test_firmware.py": "15ecf4accc039a9e6942dc934ef2040ac770ada88da7a1f3a7e870fa3658cd40",
+    "tools/sector_images.py": "136d05b70fa03cf0f9e2fb55fe879a9b7d1dfa87cd4b78871840c682972da259",
+    "tools/serial_watch.py": "3862aecf1c30b0268d615d34b8041daea91e48f2b92c4f703683f9a77b5145cd",
+    "tools/shell_break_peer_trace.py": "68a980185bfb81417b57ad6ce0cefb12c67695d8321cc979cbbb86efe1a6d892",
+    "tools/shell_break_timing.py": "76919722ed7767c0679405af5082c8fda00da38cfc49ce8058988ba4bbf6e667",
+    "tools/shell_commands_record.py": "57586861fb6d846f62629662f4202625f685680818b6dd216a7fd6c23702368f",
+    "tools/shell_concurrency_record.py": "4275027edf035a1edf63cccc3ab0e044b56574bc7fd3f32e8ca3aee4d6837b47",
+    "tools/shell_concurrent_trace.py": "8971b753d70f0f5df735f3a0e121fd06e8ec1c9081c500ec600db79e46dd84a4",
+    "tools/shell_core_record.py": "476dd3e5078d9006ed5bb635e5c9f90fa0f13a3dee77edecf408bae1bfe47e6d",
+    "tools/shell_inspect.py": "4a5a77c544f8a101df435f4753e7727f3141fc330aae84ff2f4f4627262dbcec",
+    "tools/shell_lifetime_record.py": "9d2e9d3cccc68266bbe317f2cf4d17dcf848ad25903a787657b56673425712f7",
+    "tools/shell_redirection_record.py": "89bab82fe350c2e07cac666da0a38d5f941f6ef9f5aa124282384447029b7f40",
+    "tools/shell_serial_recovery.py": "c8a2ff316988d88e79f072e229a963d68e40887de95bd44637b2fc3463954240",
+    "tools/shell_session_faults.py": "f673ed2cb45361b7d4e18840c9b46dc033c73b05abdcab83bac19b5bb3e591af",
+    "tools/shell_session_walkthrough.py": "cc03f8d1684f0d9a6c6d2874c256a8bb32aa05ca8e3dbe47981576ad8afed85f",
+    "tools/shell_stream_races.py": "733d630c6a6ead008f52afe4f0a557a5657443ea10e2285b1b45cbc72f49a984",
+    "tools/sio_adapter_trace.py": "12f8b85a64a558e8557c1d8d2f3b4a3d06dbd59ae3a1f22f305e13bdb9e67502",
+    "tools/sio_concurrent_faults.py": "0821a9f4b82c9a2f9813d6331a84e95f4984cce2e895b711d97b91a8b9a487ad",
+    "tools/sio_concurrent_record.py": "f570fac0e054abd70050d5ef7bde01150ee0db4bc541a7db04478d0493c8bf9a",
+    "tools/sio_concurrent_trace.py": "f0aaa75c26f54b0060eeb28b6f87bcb22a1e591ddf5f16cfb99a5bdf701415a4",
+    "tools/sio_latency.py": "c7443621ce2e3c83a8f5cca60bda520b9b5b173cea1110d4cb1eef4eb40555e6",
+    "tools/sio_sector_record.py": "bb63cc63c0a1c3528af345bc2b13aec498e029c062eda8e66d2f1a21b4c612f4",
+    "tools/sio_transaction_trace.py": "311c88a962da6274b81282070aa5e5fd45e06dc789e10f72889f8ed5baeeb8c4",
+    "tools/sio_transactions.py": "fc9c357854999dbb2f261af667f0ee82a8fbadd144a44d0a4f09d9b7560a38cc",
+    "tools/stack_budget.py": "bbd85bbf51357d5b3e0230a5be68f3697969b89980a31d63316e7c5a0837b419",
+    "tools/standard_dialog_oracle.py": "e720102dd72486f0ffbde53ef51cb7e691dc4ffd3bfc3505d46db7ff524c29f4",
+    "tools/storage_profile.py": "befb1edb8020aa6c59ce99b64f491c8201d1e4fbb3380f19ff29ef6e9cb5adf3",
+    "tools/task_capacity.py": "dc37a4004b1e0f2dc2e6962a46d4e0dea80a928d648e894d63463520b72d1796",
+    "tools/task_names_check.py": "e46a1c4bd487f78ba360ddc5c972c4d09aaab95df24b967020530f41a71e2348",
+    "tools/terminal_model.py": "2350d271a21334268a01c7a814104d47697e2269a23da235fc5f990c09410c20",
+    "tools/test_aes_alerts.py": "43ac4db7506f5e5c8e92d65bdebfb9ac0748b2de3e2bf2566e5fbf842669353f",
+    "tools/test_aes_bindings.py": "0889ba4dadb4e561fb0a75cc0c1c607f616bc8e51b481af1f5d1d1d28ea907f9",
+    "tools/test_aes_cache.py": "69e9408e710cc61109466cdb15a478cbfeaba650de48442864e177a59eee5a60",
+    "tools/test_aes_damage.py": "acb6b28f767c9b8788310095fc84bb1b2e522d44864a2665aa84814dac7874cb",
+    "tools/test_aes_exec_wait.py": "94411ece872f5eb9ace3ae39336b9f8d170b457aaffd59278ffa2a8092383947",
+    "tools/test_aes_forms.py": "afc9fd43cabbc426a64094ca6d8e70cde7d89f861c8d6b1a70e45722b8d7ae7d",
+    "tools/test_aes_frame.py": "69cbc60f49cfb78772133dcf6a125a89b13016544c79882c7c384f9ad207a852",
+    "tools/test_aes_fsel.py": "973747dba09f48e2a8b9f869e3ace7a6a5786c29cc9866a68e3dcaae5e999daa",
+    "tools/test_aes_gate.py": "cae411be09634003a3d6c64d8fe2630850db6fde81a25d6e6d1a3486f52a44c4",
+    "tools/test_aes_geometry.py": "b5aa746881f5a282767141ae54e06b89073c6223f5c1c43ca25ff063ebfd2558",
+    "tools/test_aes_gui.py": "98af13375e5e916e34e4adf6ac72a194b29d22372a13a6860f6cd648a3a9fcf5",
+    "tools/test_aes_inbox.py": "99f82c1756d59038666e2ceed18ab4547d26fa556103c5b6e96ff9faf2ba777b",
+    "tools/test_aes_input.py": "735dbfddbc4bb2561f40995e65add4c1672de670747c8a08ce7608f61b0eb4a3",
+    "tools/test_aes_input_events.py": "0aca89995adaabe459b2df6c7e2ed6dde7f97ac3a1a8536f347b4999eae25452",
+    "tools/test_aes_keyboard.py": "9a4bbfcf6c259571d41238e6c8d404594e31aa7af1d38c8b64278dd9f82c83c2",
+    "tools/test_aes_lifecycle.py": "94f5aad17c0a326e72fd05dd79052f15f29e715c40063e71f157d69a1a47131e",
+    "tools/test_aes_local_bridge.py": "3d079d57540343f53513fb4662365c878f535c423a35a3820019570d18af62d5",
+    "tools/test_aes_menus.py": "c6415d0f36684ec5138f3428eba6f3826b3f5a0fd68fbf9c0b21096fb4a71570",
+    "tools/test_aes_pointer.py": "acbe5126920d6bbb039c9e08872c1ed6dccaf700a4dd1e57a137857a9b59d75a",
+    "tools/test_aes_scene.py": "4b5d071d451d7fe2f7547ff745e5e233b47cb03733e8494ec35646d9e2f06ec3",
+    "tools/test_aes_server.py": "aec6dc9fc992c9e44e2962791a3a1ab35695c8cefdc5e300362b0ac303be31e1",
+    "tools/test_aes_snapshot.py": "52b520b8e3e7ea99e4ebbe87fcae3b1f5eeb7759dd11293f583ef69c7e294ee8",
+    "tools/test_aes_visibility.py": "9cb581eefcd4e3f5d0b9ec9493238889d975ae46a5793df38c8e550367081fdf",
+    "tools/test_aes_wait_queue.py": "f42cd8e342ef03e26e80bbc56409a5e97fd0a1c2502e1e6bd35fe8f8b60fdf92",
+    "tools/test_aes_window_effects.py": "912709a371f8c4b0e99cf9bc7da192533832e84a271b466f0cfad8bb27442d9a",
+    "tools/test_aes_window_records.py": "cb040a00abc7710fe7daaecddf5ea4e652151e4a782055edd723b99997dbf367",
+    "tools/test_aes_windows.py": "c0fdedb085c23fe8e039319e24ace92b684004baddf95f39f5dad3817a599853",
+    "tools/test_alias_shell.py": "ec3e91ebb2016bb9f14f765bda3a3bb8880fccefb39561205be3f7676da3e658",
+    "tools/test_amiga_ports.py": "7603b1aaa178ad568af2674c4035b87d67e52a16afbdd8a98b062c92c37ff3f7",
+    "tools/test_assign.py": "4a7c47141323d5f12adce5f40fcfd2334c878bf61ce95aeb6b3ef721d9254b67",
+    "tools/test_assign_shell.py": "85b9940f4290d32d90a85aeec7a2a6eec0ff8ad03baa0685f0d9ff37abe6e309",
+    "tools/test_background_delay.py": "dcd8185bb774440f9970df20b0799e1e5a57b862646f082b6deb276290cfc0c9",
+    "tools/test_banked.py": "f97a3a688de5fc349ce7f306b7df1aa5c8229cda3fa26c7d15203c5f7611074e",
+    "tools/test_basic_workbench_baseline.py": "5fbf38c594ce167a6c810d16867051aa2f21a03b365fb45d116feb58ec86d14d",
+    "tools/test_bitmap_package.py": "1ec99a2096b45d9d092b13093f284e379893a890181daaf3dfeac186baf70a6d",
+    "tools/test_blitter_irq.py": "bb8228f14f4936da520e2bf82328d5a34313b1d6dbcd93f474a9c904a926d8fc",
+    "tools/test_block_io.py": "50a4d43c74a264258da06b5aed1b5def018ad1321ec2c5de4409e4613a744b6f",
+    "tools/test_block_layout.py": "53fe48460199d2151886c04403db5430b318236c6feedbbae2b0f65aafac9dd4",
+    "tools/test_block_store.py": "430d25363ae9e394fdceda86297fea9f37d59aa56288963a867f725ce69f37b5",
+    "tools/test_boot_atr_storage_errors.py": "8a40c669d706109b821902a1ceb29e0ea67c66f8617b55d8bf5548e19826152a",
+    "tools/test_boot_config.py": "175fa10363676d23297a9e6c42aa70767154b77bc9b450479b97ef99ce371606",
+    "tools/test_boot_diagnostics.py": "2bf866e886fbc7e0cd50207a9587b13df6ef9f6ae947aed9c8ab1937c63f7125",
+    "tools/test_boot_fast.py": "1b2ee3b1f1884e13b6265dcd2dd3cfc979519ce2840b75e3aeec7c14229c60e9",
+    "tools/test_boot_fast_direct.py": "7a2d4797f4392d56e448ce8efe380ac70f34aa9ddf373cd750899fd3dac77c88",
+    "tools/test_boot_fast_errors.py": "cbf0433cb43bb1d62fcef32534fd4e51dc9103957699438ae46492ef5c66c555",
+    "tools/test_boot_milestone_bindings.py": "19719fe17d2dabd3f91cb73be9c9070b78330d7c12ac578729676371bc4724a3",
+    "tools/test_boot_milestones.py": "5057c261153c51a915e2f46b8dbe8feac3bea8e38792d923aa2d2719a9445248",
+    "tools/test_boot_platform.py": "b212ca0dede2099a0e8438befd7f2d2791dcb3f708dc51c1db527237f4266ada",
+    "tools/test_boot_sio_handoff.py": "b95e32f1de24c0c2f7afcf1cce8afb7baac67202b5920e89a2fdc698b0e27733",
+    "tools/test_bootable_atr.py": "4f8c133985e94c4cd2358af0f0b8b3c41e60cc633f8822c7732d76dd50945f4b",
+    "tools/test_c_file_date.py": "26243f2adae3402b8d502b74395115015da1b9515e56b6a66ca970c9f8afc313",
+    "tools/test_c_launch_arguments.py": "cfd4ab71b8cdcaf9848083e85dff02ee4fc51f07502e22975f24212984319a1d",
+    "tools/test_c_name_from_lock.py": "4f85633be14215f978ef27b4fbba2606a89921e8b9d474e35349d83584c7f40f",
+    "tools/test_c_process.py": "0a9ba7a404eecf74900bf98d786f7ba292650a28f61f82197e7448ad04ff4610",
+    "tools/test_c_program.py": "5da8089d7787f2f2e56c8dad6f806683a254ed56c80e0548912195b5e747eb9e",
+    "tools/test_c_runtime.py": "f1aac7e244eb48a5f714649e8ca35c467625782e42679f33a248fd5da6443c13",
+    "tools/test_c_runtime_apps.py": "f53c53f34a812dd9b8c8a970c0c7212596b1a63f6a1f63e1448003d08fc73a2f",
+    "tools/test_c_runtime_process.py": "c5d0584b8a225145f13fed37829039dc1c84109d4b8a5d50c1950f2718233dd3",
+    "tools/test_c_runtime_retirement.py": "e78f4db5d795052f3b808be0f39306e7836cfb56e846906a38a3bced093cce49",
+    "tools/test_c_runtime_standalone.py": "a5f6e1c739bc26fef1e1f594cbbc8520d74857b305f3bb932ef3b103e40ebf06",
+    "tools/test_cache_desktop.py": "3ee3afbd7e9fa0f9cfeb337cfdd1e4371b0a92571859f8db0b8f274cdfd075a7",
+    "tools/test_calculator.py": "169494aa53e60051b367f1ac988aef9f481fbb7f9e9c261fbfbbf3ed0083e937",
+    "tools/test_calculator_desktop.py": "424051d95294656e7f5b91b38f0e5b4a065b0a665d88ceb0712b416a36081ca8",
+    "tools/test_calculator_failure.py": "bf42469f7ef14b2f5f4e506617df9ba7b9d9b5ef039fd078de5261a383e6aeb1",
+    "tools/test_calypsi.py": "eb523508e8df3e53ef7232ff53eaaad9a709c066ba24534792ef9ceba95d79c3",
+    "tools/test_cartridge.py": "6fe8dc2461d3bdecb7699d848c09285721eb2a80f4ea011e7089d05bf975aed4",
+    "tools/test_cartridge_context.py": "21b0f4916eef9abdf518ce2c052962de38506cb6c3d054a651597048c4f2b1a8",
+    "tools/test_cat.py": "9e474b31660b7d27a85bb41b4708e9202592bdb68b449e7d5c4df27880fd7819",
+    "tools/test_cat_shell.py": "c1a742e2aae98407dddeba7eb6acab59e265e0c0a9104d46c003c0229377c5c4",
+    "tools/test_colour_desktop.py": "bfb11df1f461413c0c9f924736dafbf340ed6b958ade15e9a3ea3101951367e4",
+    "tools/test_colour_desktop_session.py": "51cd64aa59339ecaf78f1f6158dd68ff0869f244d14b017020507cf0cdd9447a",
+    "tools/test_command_fault_io.py": "11258920b68b92cb797fa789efe25e929bdd6c855a03694b2fe29680b8182fb5",
+    "tools/test_command_faults.py": "53de4b3c9f4e1277f1849b7e8e24560d6b97b7f19a1a69dd94ee91ea5bbe7145",
+    "tools/test_command_loader_core.py": "c7fc30a6b0d00fe604c99aa5a1efea350bf7b6c172ce334a96ce550b2d252352",
+    "tools/test_command_path.py": "6162e1c33cd3924c8dbf3bfb2e29bb7299473f0561c63e9c8bacc513da4f7818",
+    "tools/test_command_pattern.py": "2d1616ae22c2853ce02eb81cdf9545cc7f93ff9a32248d63d40691b6771f8e7a",
+    "tools/test_command_usability_shell.py": "02f6fab81cdbaefe0320bc6a68d6343f78a205b558e1d6dc51b7cf0592233406",
+    "tools/test_compact_window_geometry.py": "714dee973c5df3db40cdd052382785f2dfc2c420572818651ea5b3cda34c9358",
+    "tools/test_compiler_block_fix.py": "7b25cbead2d4f4a3c49f9715dec2a8c37f3e3f99a35f8728ec3b1b27bf1ca78f",
+    "tools/test_completion_bitmap.py": "d4f84efcb8d35fe275c4f2d9b6ecacfcc344b66655e8bca041bfbf4b41026803",
+    "tools/test_completion_shell.py": "812d4d3d941958c048d1e8ec07c2b69d1c3c0bbf46ceed02aabf17c605961648",
+    "tools/test_console_batch_core.py": "b2600e0844c67782aed7598fbca340a79a89e7d7d0980aca9f46fdb5755aaf35",
+    "tools/test_console_batch_lifetime.py": "835d73fdd342e8b45daf35683daf43d4755d943826c8104d6ca68c56c92e3134",
+    "tools/test_console_bitmap.py": "24205804533273eeff56482d7f8a71e3b3d6e6d67d1e7f5d4530443f10e884d6",
+    "tools/test_console_bitmap_control.py": "133e3199782e58d54376f2c0e312329f7442ed9113937af616062ef5e34bfd99",
+    "tools/test_console_bitmap_fault.py": "27f3f48c192f88e6204b0f7d4e34515389a09c45af42e548cc1d071545f9bab1",
+    "tools/test_console_bitmap_scroll.py": "ae7bbb2674673c1b78594f597c59e731a6f6cc4f11f1423c6ee956b4d5cd513d",
+    "tools/test_console_bitmap_startup.py": "6692318db61132766e24a146594f63ada995a70f3514df1091a05fe7a0c7a95e",
+    "tools/test_console_cancel.py": "9b3502d06c8533f9fb5758b6c9f964beaf74ebc9c8ecc5b644b57cfd1d92ee07",
+    "tools/test_console_cells.py": "2ecedef8c4c16b33d05a7dbca2fa10baa94ac58db9d158042388e47c839e68ba",
+    "tools/test_console_coexistence.py": "fc3d8347fa71504fbb21eed9616beb36044616b2d93bfd07c5ca015ff57c9843",
+    "tools/test_console_concurrent.py": "960c058772534d38daaea68cb655a0b786ecd9ac7c5c47e41f6defca226fbf1d",
+    "tools/test_console_control.py": "108dc401b6fdf58cf96e886e7296adc4c39280a2e8a01863c22af5dc38652f09",
+    "tools/test_console_core.py": "577192ab6599b9ac1794e640dba625b971fc4308059510c836d89abca425dd0e",
+    "tools/test_console_device.py": "68fdf5fa9d217060c9c2ba8b8fde3f49966e658408e0414e74f59c25000aa43d",
+    "tools/test_console_display.py": "4d2003726c9da905abd2e67d5d1bce52f45df58ac51c3f20cd6eb49e16eabfe6",
+    "tools/test_console_dos.py": "eb3868b319d4b90e837d3ededce588ef87ca415a842a8b2d10a64f10df20678a",
+    "tools/test_console_edit.py": "29816941f7649eddb7534fbd126f03980cf2a4ef0a061160a6a5d7bc97a281b0",
+    "tools/test_console_fairness.py": "35d8cb641de23251f86899775f488b952611337be39d7b78c5b4d25a0b1966bc",
+    "tools/test_console_focus.py": "d2ed18a0ab5f828b569f5d84980297935ef141b54eea77ddca9c627dac8e8de6",
+    "tools/test_console_input.py": "926278d5bbc5c568d7bc1b6446deb38e5c2e9d43004d66d5260329611d80c8db",
+    "tools/test_console_input_pump.py": "e789f3a3d691ad53bd54d536dd8dc7fdf8084f8fa0d18a46042f68abb85f4c91",
+    "tools/test_console_input_signals.py": "f0c9c5aebfce90f0a548607888bd3fc0292b2811da9cfb135ba3a45fad400350",
+    "tools/test_console_input_wake.py": "94ecbcbe04c892c1a23258c83b2b4494f50d725ea2db2dd6b115237592c9b6b2",
+    "tools/test_console_lifetime.py": "42be7277b9a5cae417fc1a1da18a600ad01d32af8c60d90f33410f212a7ac817",
+    "tools/test_console_pane.py": "eebe17cf127b781b3d48aa767122bfcf303ba5e8ba1b8d8b7a5a86348549acea",
+    "tools/test_console_position.py": "b1d992e3c892eb789cf86c61aa1b33c3edc720770ac6bd20b0382a8b37a5ec5e",
+    "tools/test_console_recovery.py": "45660a0ff533ce3c01b3300d931c256ea9326efbc70af065d4b43f9bb63cb275",
+    "tools/test_console_reply.py": "7f98e3238c27038f648508f9318e21075d0ec4d387f4aad0b63aa1ad5d5ec002",
+    "tools/test_console_request_break.py": "538603c43911822468a6553965b056e437c3a657eb0e816a310fe879acdb9ab2",
+    "tools/test_console_scroll.py": "ee6e96caa2232d0686ff6af60d93a773727649bca93f2fdf95112492c3618e93",
+    "tools/test_console_services.py": "6ecb8c818a8573ceb3e8bb0ee2a92f185ad5df3b10f08d25a11af3b5013e93c2",
+    "tools/test_console_sessions.py": "44a0dd9f5a73b3b6addf258b1bbb69045e6854194d77aa7ca0d8e0556c7be5f6",
+    "tools/test_console_span_fault.py": "311d0719a69c60fa3fdb1177f726773525fa7ae5d5eb5aa402860d6393b5fa96",
+    "tools/test_console_spans.py": "6cd46f0fd8d6e40ce5768b4d301168926b9f21b4a386ee08f2c9bc5056f44155",
+    "tools/test_console_startup.py": "1fb8915661f8e5caf4200e8d1318bafc5bb5046d81582bba7b2273f7df8984eb",
+    "tools/test_console_trace.py": "dd802308afe012b86904bc57d72626867e24fe5cbf4ef550d9374a6771b27c4a",
+    "tools/test_console_tx.py": "53a87ad18177ca5c73ae89e4b6b4c6beac1790956c47f4a5e04831e7cc18fb0d",
+    "tools/test_console_view.py": "b9a214fd6fbc2e340aa8c6cc1db34a3735fabaec842c957d3557ce93e3ead224",
+    "tools/test_console_windows.py": "89749082af903bd78d0d34cb77c729e388a6e3c2486d3c6a8d820e019e224aba",
+    "tools/test_cooked_line.py": "8ccc575f13878d4e23f960985a89d5b2db6056a036af10dcc79f9ee0d66f58c6",
+    "tools/test_cooperative.py": "31d1cdae2b7f4b175b55c0d0a00e24d84844a201d0c8684920b118b3c4032fd9",
+    "tools/test_copy_directories_shell.py": "8c98096102e0055ae89b5b1ad9dba382a278545699e56dfcc23a23bbb52d34af",
+    "tools/test_counter_app.py": "3862443254e1547ad145469df12801fcb009cb7165380efc60f735fad8c74d4b",
+    "tools/test_create_task.py": "ea30c54b960424d1ef26ef04df7af21133d8d882f61334047a663c1f470a3319",
+    "tools/test_cstring.py": "7e8e191d106982f814595c3c59987d1ced8976495ac3d2c5600c9f700496b56b",
+    "tools/test_demo.py": "b7d97d7ceb62fa1866afba3593d7c6f27391f8d73935caa0146c272d016a5a8d",
+    "tools/test_demo_console.py": "fb4d22f06816e6ffa5ead3946d4348919d0e6a335255fc72240747ddb8a1bcbc",
+    "tools/test_desktop_layout.py": "7bf5e0f7eeb6325617a0e9a9a5fc617784068183aa969af18fcaa8c3e31d69d0",
+    "tools/test_desktop_mouse_boundary.py": "c8834dc36dbe840206d168edf6a58822f2d7270f74c88738d6a590decd811773",
+    "tools/test_desktop_pointer_scale.py": "d6075e5ffebbbaad4d6b937b8a5c0985364347dc7788921e4b59fbc29f80298a",
+    "tools/test_desktop_selection.py": "2b5660bf8a32f7301db847cd44d8de73f25b4e73f1bd2b6b7bad908851bd4106",
+    "tools/test_directory_batch.py": "e0d25be72924f7024ffb310b5a641aa879def9eea38b68e288c249a5f0eb4678",
+    "tools/test_directory_metadata_abi.py": "b10b85608c98c96ef429272f91320688e4a75021eff442abdcc9eeb676683c1a",
+    "tools/test_directory_metadata_fault.py": "e5c2279c3b979f3ce90ca7afda9d36a0d61717dd542fdfb6a99be7ad74bebb64",
+    "tools/test_disk_boot_reader.py": "ac7a991fddd169eb439788638dd9a804b7eb67450db05d8935799bab7ef7ee45",
+    "tools/test_display_access.py": "06ff43079d960ab9147789f1341aa71d120a9eaf189b4a2a0a6a48ccc3d7a96a",
+    "tools/test_display_borrow.py": "ca37c3c2d475a946ab73c4ed25edcb2f487e58e7de04409d233f1d4c2c7f022c",
+    "tools/test_dos_abi.py": "9e6f26053cc023229387f8535be7f4b449b2dcf21c7d68258a01ac460eefb624",
+    "tools/test_dos_capacity.py": "b0659dc543f5481ca1a4bb3ad805476210016c2869e9c3786a7152b6fa2817ef",
+    "tools/test_dos_client.py": "aa451c1d7aec31201de99b543c8b391a42d64b4f54dde2db5ab565a3ca25bfbe",
+    "tools/test_dos_concurrent.py": "a06b69e78453da0d97705f359f79559c19df13b272af88fb125978a967cb4b3c",
+    "tools/test_dos_cooked.py": "49a036820785bd61758f35e74e5d153d8a5a9650968d5a05c350e3dda16fc8ab",
+    "tools/test_dos_directories.py": "185ebb8e4ea3c086df30d4eea08d84248bd8df67bc8f143885ed3285e8d47b78",
+    "tools/test_dos_directory.py": "0cf105fe603f9c5c094aed0ccd9b426c15d91914205e9687a79557f2af3a8036",
+    "tools/test_dos_file_date.py": "8173a677a64823ff65db0dd05fdc19b394a45a3315b197deb241d2597480bc91",
+    "tools/test_dos_files.py": "c0e6dff38de250b4edba84db70db128b11d1a2b40edef0133a7aec49606109aa",
+    "tools/test_dos_lifetime.py": "4f0780bddc25c529e0d7f2a9cb7a02115563992485b5f147dfac659e50d4fc66",
+    "tools/test_dos_lock_names.py": "c5b22f04108fc52604e89bdb59bdff25d4c72665efcf83b01df4a98e7d3115c2",
+    "tools/test_dos_offline.py": "4353d81f08e4cb597045f67e4a83031e54dac14e170f409e81bba2f044f74bea",
+    "tools/test_dos_publication.py": "641adc8a70ee2fc9fcdb6163fbf7ded806f3ce9620f462820f8467511e9851c4",
+    "tools/test_dos_regressions.py": "80e9d04450fca0a174b2f3ad2d5e2af724263ffe13631b1f3abfd3e4c1ce3767",
+    "tools/test_dos_relative.py": "111fe354e2dcf7e3089d2f863b7930eb560ffb9b624a3e0ef6b65b2bf6a32bb6",
+    "tools/test_dos_stack.py": "4b996f4dd166ce51f2c2fd807e20aa438ec25534933c1338fb346d6534ff4476",
+    "tools/test_dos_startup.py": "0eab8ad79381de9407e7a6671ef24b01236bf08dc5f9d50ff0cb63615b506ab7",
+    "tools/test_dos_streams.py": "957767a89e9fbbf51cb725d5e78878ea61bcb6cba5a6ae8854a7a670e37898bb",
+    "tools/test_dos_streams_concurrent.py": "affcbbb9a6ccaa1eb13b8586fa1d0e006b492c27521045360d62ed1ab00cc70f",
+    "tools/test_dos_streams_example.py": "52e2543b17c027f7366cd04cc2b5c85f1020f1275ba5455c91475d19c2db223f",
+    "tools/test_dos_streams_lifetime.py": "4e072902f49797df621b121f68e4b7f2edf3e8e6628f8cc47fcf92e8b25c6247",
+    "tools/test_dos_streams_lifetime_suite.py": "085343acc13f77a1ca295331be5e559d0527f205774c7665a1a24cac88873c30",
+    "tools/test_dos_streams_overhead.py": "25d7693ba1724c8ffc9bfa99fa2861931841841e1a8e011eff6a2a50ac50c4a1",
+    "tools/test_dos_streams_raw.py": "1e98bf6afe4b8e23e7291136b68fe0a613117d2e3960e9fc22c1c48a7fcb5218",
+    "tools/test_dos_streams_trace.py": "59375fc21e157a0e180bb73acacb6b2c6a992245667ef644a089a02ebbba391f",
+    "tools/test_dos_system.py": "aadf41b19f22e5cc1e4e63a39d435faa36c692bb93507de07d1b4014b77e2af4",
+    "tools/test_dp_partition.py": "5207a2b20cbaf43c010459bce9094bfb9ffd77a948fe8042bab043b0400355b3",
+    "tools/test_driver_boundary.py": "2ca7df5970ecad86f3361f0e0d3be85ee620f0c27bf94a3b1393b1b75ad3a7b3",
+    "tools/test_editable_resources.py": "9e42d2221358d4927a29140fd21794069a1578a373fc3432cf86f9399c277b4e",
+    "tools/test_emulation_preemption.py": "57d94d24df22c246278c1e0632d1485b0505d3e26917d5f5b9bfd1fd19e8ccdc",
+    "tools/test_fastbasic.py": "2356d12e6d91740f398ec33b948f89812d95e83c47ed7cfa4bd5d95096886d32",
+    "tools/test_fastbasic_assist.py": "875ac274acd0fbfdc146dc4d0e2c34c1400c9b78a3c678ff316479b8e6909583",
+    "tools/test_fastbasic_build.py": "ebc848850f709fc8c156e115ce749df4923b6690da6b2602c9fcca041f389725",
+    "tools/test_fastbasic_build_cancel.py": "d644562440ae5afbd1b8326a231b9862ed640bddfaa1ed809d41cbaba3a2bc44",
+    "tools/test_fastbasic_controls.py": "73b787ede401222aa0aa8555ad001a03552ca2756789fb656610a2660a7592ce",
+    "tools/test_fastbasic_demo.py": "b36fd3b3929b7d9fe17ec40d1727868ba2b81bf23cddec6097779bfdf0b7a209",
+    "tools/test_fastbasic_diagnostic_faults.py": "6b2174244c9c5dada5d4ebedbb7b7802696ca9f2b886041f7f0779c38e038c1f",
+    "tools/test_fastbasic_diagnostic_layout.py": "a5292f0688a461996da0e2783cda56f641b191272f0eddac3db8c23844d3c25b",
+    "tools/test_fastbasic_diagnostics.py": "9dd763dcf4168036701bf71fc7d42ce92c1e9b2b2e6d688264fceddc03bf7d7b",
+    "tools/test_fastbasic_document.py": "076cfa41833e12f836d1b075d5daada76919ae6836bfbda6b18ff59a4830d996",
+    "tools/test_fastbasic_editor.py": "111cf52e03fd8402d6c33035d6cdc5911e2901a7ce416f602a5afe647d7479e8",
+    "tools/test_fastbasic_faults.py": "ccfe1be50c609699b2c9f2bf5ae5279715db43d64db5408e55d49bf713114d12",
+    "tools/test_fastbasic_file_ui.py": "f4f3922b0d6ef6efa701a1fdcd6385db3055e2bdf3b5d088d4246dbc86706486",
+    "tools/test_fastbasic_files.py": "fa4cf773675445c51b271c5201ad6295765f6c8d5185183b1caa5f03cf2a5fa8",
+    "tools/test_fastbasic_interpreter.py": "c9bd2b2e8a3556f72d3c14b8a472cb519a3ebfcad912ae64214b8c25acae272c",
+    "tools/test_fastbasic_interpreter_demo.py": "bd86c71feb462834b53f3a95c053ca0b2b81121102e8d47f3a7c925377959a05",
+    "tools/test_fastbasic_interpreter_layout.py": "34d4cd0a1e49cf3375a026031ac03a0699bdc288b2bcbed2aac254123e191844",
+    "tools/test_fastbasic_interpreter_lifetime.py": "3ef4040038e00328043c522abfdc1f793aa6c734491a8c34a39e4166fcf76f18",
+    "tools/test_fastbasic_lifetime.py": "65790c10846312f56385c3527d5c03040326d2c3b0bd5d5dd9dd910a02cce81a",
+    "tools/test_fastbasic_rom_control.py": "aac180eeb6a333446b1c60f8961b73c0487bf2532fd7d53a245e4ea212da6f09",
+    "tools/test_fastbasic_session_demo.py": "afcb52f1204cd3489b0c40d41030670195798181ab3a5913b5582ca963b685db",
+    "tools/test_fastbasic_workbench.py": "b24194b4a2a56f45633735bc4805acaf2afe997fca440ab845e1cb6ffbe9a627",
+    "tools/test_file_list.py": "264199e3c97a5dcbdf03e95e1eae58b3006f7e7f8e161e65640fb3da20ff315f",
+    "tools/test_file_selector_demo.py": "0af537075d8dadb41cc44463c781bed5fc6722b2238db37af2dab1de9897a0d9",
+    "tools/test_filesystem_active_cancel.py": "06b289ee0182da50e715d36d28e37131b9085a22efd83324dafe23baa616568c",
+    "tools/test_filesystem_cancel.py": "395c798154649e31abbf245629762bbaf883cbad067a0017f04c07ed88f1491d",
+    "tools/test_filesystem_cancel_fault.py": "e6b4a8217830e42a3bb35afdec440daec44aecdf7726c16c5ce35d107ee6340a",
+    "tools/test_filesystem_native_interop.py": "fc72a284aa01b19d77563167af7b425f45ace1c3a6aca9d15efdf12ac82694e9",
+    "tools/test_filesystem_roundtrip.py": "8c66f55dd5ea14e4e40fa9d8193c089a131b2312f22f62306f0d0d3a1fe4aefc",
+    "tools/test_filesystem_write.py": "90121c3b6fcf5af789ddd2db4efb46cf21656b953a4b7de62ddd0d6ee6395db6",
+    "tools/test_filesystem_write_edges.py": "53ce9c410f388b15c39cb5d97fd00720cae16ded5f5d3038bf99bfeba670d738",
+    "tools/test_filesystem_write_lifetime.py": "d3bc1f64cd3a13c23d26d72dbf4af71a78a2d82ed5ddc86eaea90d9805798523",
+    "tools/test_filesystem_write_shell.py": "aa174c9586e883249efb5b2c48609038d0d4080312278c595a3f8dfc26356c83",
+    "tools/test_foreground_break.py": "05f25add61795d9b06d3e9529f6ec5a899a734f33e3f08957e6e632f22a3fb25",
+    "tools/test_form_extent.py": "2160402e481d615625c6b73c49a7265df2c3c04e50c57b43c81d1dff9196e730",
+    "tools/test_frame_gadgets.py": "372e9c39f12347853bfd6e9fa44b1b618f2ad5ff24f91630d5f503c942e18bcf",
+    "tools/test_fuji_command.py": "43c12923a681895a4de77e7a70c758443ab7c36e43dcd02f9be2d6be7dc301bc",
+    "tools/test_fuji_demo.py": "d07cd992fb3880dfe924737ce4a65420d497a97c9d3da784e4592ad01c608d7a",
+    "tools/test_fujinet_protocol.py": "af9ca544fa28d8be601ab0c3e5a5203378c245de8bd9b1b2c94f9fa865994ced",
+    "tools/test_fujinet_sio.py": "a87dfea5e0903767e68e1602e71dce41c19bc0d5f80639d9aeb96e656619b6cc",
+    "tools/test_fujinet_xex.py": "6ad07bd209bbd8a101c1aa271989c95a892d47491e119ff3fa48e73b49d2e012",
+    "tools/test_g4bench.py": "b57d46a41c2732393974c99ebcfe13c1fd94ede44e82a946e9d9d7eca0897f0d",
+    "tools/test_gem_acceptance.py": "67d3e3201a8c067ef201770cc4ec2679b2adf1d68c11de9c9f702fd8523e13c4",
+    "tools/test_gem_concurrent.py": "83d1a29e925b915356d40a282c5d2b9412fabb5a527c6d013015c638a3186913",
+    "tools/test_gem_counter.py": "30ee6e46724a17233c680d80c3c5f55c6b31d4d9db00666ea658b38df057228e",
+    "tools/test_gem_cursor.py": "5d0f26af572e15d5f4011285df9c8e8e3ec8877970b9cd17b332e98afe2a7e59",
+    "tools/test_gem_desktop.py": "57a1dfef8391e2cccff83bb72b7d234fad9e856a7b6e40bcb64086efb70d1c5c",
+    "tools/test_gem_desktop_boot.py": "3cf5618a6247be774ca8610661c588a16c0d97ea5992f4502b02a0b680d02e18",
+    "tools/test_gem_display.py": "111ac95a0451c96ed9449160591b8829398133b640bbe6442fda367d573c70ad",
+    "tools/test_gem_drawing.py": "562da4dc1bcaa6caf980fde29ea071964abe32c0a2d5779a9948844fedbfeb21",
+    "tools/test_gem_files.py": "54f502de0739ae04c064f2b37b02847d516c2249697051473c714550ea1964da",
+    "tools/test_gem_first.py": "5579f5d473d2ca589f4176d2f990db0e8c737a35935c5f1af3cd06dd3a90e4d0",
+    "tools/test_gem_input.py": "7728db9eded5dbfc89b29659f764b885f92d517996176868c6d6952173cd0851",
+    "tools/test_gem_interactive.py": "77ef73bbfcd5c8997d8d020bc6b595710147061f7a7b519d2b6929ae45dbcdf1",
+    "tools/test_gem_menu_instances.py": "2dc94fe79076677922becca873ae479fffddfcb89514e2ce209af975c5cb8bf0",
+    "tools/test_gem_mouse.py": "c068b1563b7476167a65a91f4c4f495b234a9f3ba519d3b0a07f5c868475117a",
+    "tools/test_gem_pointer.py": "1db4f3ceb5662bc6e233a9e2e177a9a27e8fd7b58542f3fb80bfdfac1612dc77",
+    "tools/test_gem_render.py": "25dd069741619e94d61edfbd5e6e40f47917e20465322f9a39cf1c73b76de297",
+    "tools/test_gem_service.py": "b97fb4a09cb7e0f788e0ede48a09e26032469389135447882e82880e743e9ebd",
+    "tools/test_gem_terminal.py": "e5f3ee0c346598ea21427285cb2d6ec24a308ae88f653cbe701d13fa106c0d25",
+    "tools/test_gem_text.py": "fc3561837142b13119cfd8bf50179c47ad0b8a275bffc29e985a33e4c9e06a14",
+    "tools/test_gem_vdi.py": "b6d6392535bf00333ff0c085dbfa67e0ed226ca91ff05f97c217f74e16947656",
+    "tools/test_gem_vdi_context.py": "d19a9b51f7bfaea8f75391211d951dc44f0b059d233fb32d1be4cc1ee6ae1071",
+    "tools/test_gemarc_allocation.py": "1ef5b11ee63e521526d7e00234fb05d47774d87270326aac1d6bef92b7855d56",
+    "tools/test_gemarc_coexist.py": "2fe039305fdccc770d889b33589cc3b1400ec1d7c9502e28f5f2ad3d7817429f",
+    "tools/test_gemarc_demo.py": "da983abbde138b86afe73367916fa8e0332bfd58e49179cf1ceebd940c98bf72",
+    "tools/test_gemarc_disk_full.py": "51ea8298a9f3d7d76c4e119b783526dff209f6360e28c5ae6c8e21060e540c64",
+    "tools/test_gemarc_host.py": "fe938e45be6a0ebd6ac27cdc2bee5dd15cc0784a7d495ee904028f904c822e0d",
+    "tools/test_gemarc_native.py": "4758e54073f11f4eb491bc292d1e606ea674feee292112bbfb28273fd8bfe89f",
+    "tools/test_gemarc_paths.py": "a84dfe1c57c6ad2d585bcaac0c683414bd74db25a4c90d4f8f8e2a4e8c9b027e",
+    "tools/test_gemarc_ui.py": "62a2d4ba44a94ad5581d7862ae935642fe83a1f299b80307e66ab72b0f14bc28",
+    "tools/test_headless_pacing.py": "3084a2445e3eeb5d22a9c8dae255c8c11a6fd5afe43d78546dd9bd64dde8c118",
+    "tools/test_heap.py": "301ea45c72c589e7fdd6590651a99483212878ccedc321f771777ba0e150dc14",
+    "tools/test_heap_api.py": "822d3fc9543ed2760707830f1e342f5964c1d9c6769a74bf4b02ba7b381fc310",
+    "tools/test_heap_concurrent.py": "fc29cb896f3c21e1adbfefeb7c8c2bbc3c12c4990b2aa3d8c66e66e1fb3cff40",
+    "tools/test_heap_core.py": "f6f27d566b92be0eb6ace04701b050a829a345f0264882d65b96eaaad2797012",
+    "tools/test_heap_policy.py": "35dfe7ef7e5bb0233840597286be0d0151811aff0a5c282e698fb31d539cc92d",
+    "tools/test_heap_registration.py": "332ac48151a3a6a3f86abb72ac8f3ad8bd239c4804fca4dd1fb247e4de703e06",
+    "tools/test_hosted.py": "e038c0bbacfc2e1df981bdf3380d2ba5d1d6cdac8fd79f468cb280da760923a6",
+    "tools/test_icon_resources.py": "da3f36950e82bc5b426d7a27f4908245d0e0ce77ba84f1b4d2edb10fa50f2aeb",
+    "tools/test_ide_diagnostics_demo.py": "698971a83f65ec2d74dbd448acb3694b5ff85e1e123da28d085d8ec131fbe706",
+    "tools/test_ide_diagnostics_mount.py": "aa8a1da117f36d364ef0960d25fcd99617e5edb7682775a690f8094e81d45e73",
+    "tools/test_ide_diagnostics_shell.py": "0e93e1ef0c5720cacd245ea8dfe182ba246f54f4d8b857a7ac1e90d23a0acfae",
+    "tools/test_ide_mixed_demo.py": "ae7895158fa1edc7e4b63f8a27136769a98904381d618c663dc9318c04777266",
+    "tools/test_ide_only_demo.py": "04fb07209eb6cf8974d70de8afc25cbe71e4f5c515384db3136931d4c54931e0",
+    "tools/test_ide_only_failure.py": "2ccd0b56468aa71e99b79d707abc435dbef543662e3e61f38822e0bb732edf22",
+    "tools/test_ide_only_firmware.py": "f5aab812ab405d3f21d235a73009c88e8c3ca229d1e73675154a4d2766023e7e",
+    "tools/test_ide_only_media.py": "1e3fbdbc834375fd6d6092a1cec1e56b122f3aa79f005e2a4065fa05c2113d96",
+    "tools/test_ide_only_shell.py": "1c57c55ac077d426c2ee7d159e22fe7c68340ed7db53f09f4a6f29e8190efe0f",
+    "tools/test_ide_system.py": "5c88bc9363f1faf8dd3480abf2b62d6056376576a8c9778dc8bba8c565e246e5",
+    "tools/test_ideplus.py": "4456d277432a52569d333b94dec866f836bd0a9e10654ec337058f78b974e698",
+    "tools/test_ideplus_apt.py": "c809542b8bfe64e2a85a10752f1ce1eacb3efaa668b70063e3d4e9bde9ab5ee3",
+    "tools/test_ideplus_demo.py": "2508fafb3176195f3dbc898268f899fa7f1ed1c7a4ec4e2c45ec3ecbce1f33b2",
+    "tools/test_ideplus_file_reads.py": "18fd7b0e4bd93fa507771ba992c073e524f1861b44cb572c385bef9c05c48630",
+    "tools/test_ideplus_filesystem.py": "109b75ccd552c6755c2ddc7777171fe4bc634ccb2b38de421f92e1cc1523340d",
+    "tools/test_ideplus_filesystem_write.py": "b5126b9ed5968f632119a7e056870dff6180a34909e42b1211fb413a3d8b7641",
+    "tools/test_ideplus_layout.py": "50ef8958e51ef01ff797a5a6a61f44c07ad543eadcbd008741791c28547efb2a",
+    "tools/test_ideplus_lifetime.py": "ec7e7e72ca5028a727cb94db71b194eaac8e7ed3426298123898a2200c5b671b",
+    "tools/test_ideplus_ranges.py": "7a5d51000253f4990504f24ca9362c215cdf9307acf301bf02e70dfe690e2d6c",
+    "tools/test_ideplus_write.py": "380c6f856e8edb6e97650f9895e583eeee7884c701e233ee8c2f0845eb336453",
+    "tools/test_info_command.py": "a9b07625f4e0c01cd61bf655a6c5f6c6dc663c3b6c1f294ebd0675327eb06d7f",
+    "tools/test_info_demo.py": "93f8b2bb69dfbba9f45aa69f01829fe33afa2421c0aec70d33b2b5ddf2e295c6",
+    "tools/test_input.py": "37a20676048645779a4b70e0c579f33c7536125f12d56925724528699592e334",
+    "tools/test_input_capture.py": "8bf5542b889383a0e406602601bb633b903983669ee6760747325019afea48ad",
+    "tools/test_input_registration.py": "c6eb0d1638a79f6c0705350ecaffe2473b10e5e530825b79c5015634ee1ac0b3",
+    "tools/test_interrupt_reply.py": "879466bd9b65d107a0fbd803a315f8d3f0876741ce6ff109aa938dfdcbd51e7d",
+    "tools/test_io.py": "d270f2baf50d61a881e7c7b8bd02bb8312d4167c51e30aff7887d38d4b158b2a",
+    "tools/test_io_services.py": "68a86675f357e98d14e39e900cb29586cd026dd85bbc4e4b07fcd39508f646b7",
+    "tools/test_kernel_fast_paths.py": "f2d96eb10cc1f1324dc3c9b3c46b999dbe349f7f418923e4c543903b2bb1a1bc",
+    "tools/test_large_stacks.py": "05112740110c5a02b9c372a4a3489443b3496ac438f1b5e1b8e6bafc8739067e",
+    "tools/test_layers.py": "ce3a63907ccee4f7f4c464651cc1375c6dfa33f78c9eded82f0959a1506b0ea0",
+    "tools/test_layers_probe.py": "779d6751676f23350c55dba401cc039c156b40ade3eb00440fb6892e766a1fb7",
+    "tools/test_lists.py": "d8b6bc2da50a4915e2a0b67c4af5482ba410c71746429caf5e1086b11bc87800",
+    "tools/test_loadable_counter.py": "761fd6c1a34af41fb5f87b788f1559b6a813ec70da10355fb5c637e6a42c740b",
+    "tools/test_loader_compression.py": "9bae25d649bb95af2dbaf52ca3c183bb640a5b4f4d573f50df72d3098e79043c",
+    "tools/test_memory_relocation.py": "b0f3bbdab5822901da8f91c347d9d715907256f1d756271aa08372e43514c78a",
+    "tools/test_mount_api_bridges.py": "595c0918186d70f96503263f441743d5ce41f7e7fa2a00028ee86a85330b4b5e",
+    "tools/test_mouse_acceleration.py": "dc28041e41154ad13ab36e7b4107c1b20795538cbb470e1b599f7546e149d2e2",
+    "tools/test_mouse_baseline.py": "dae4f53f524b35a26b2ba6cd33ea8ff1585c014cd5f24b261224ed87bbf5781f",
+    "tools/test_mouse_observe.py": "63c819d42c32f1202823b568e8f6723d4004d90ce6bb486b3b8442c29de7cb99",
+    "tools/test_mouse_profile_load.py": "540d2097e4d338cf97239a821dfdbd0403c24842943f848d5f6278e6f0c80f85",
+    "tools/test_mydos.py": "e2d9e0a38d9d00f194d64259076bea12d73659104eaf555472e2b956773514cb",
+    "tools/test_mydos_files.py": "2e5087e1eaebf1bd21f0fbbfd38607d1d26d874d627a138fa179daeb434e32c8",
+    "tools/test_native_drag_update.py": "a8ef132421dbdfdf57208d7c181f9e49df376fc08eb99689bb21e88ccdf24fc3",
+    "tools/test_o65_disk_fault.py": "c37440da4d34fa8dfde4899079310f71d1c832daa0844fd0c729c45e1e73f941",
+    "tools/test_o65_execution.py": "34bb820500e5271f675330536d4e128466cf60dab8c59fabfe2d7c87fca71348",
+    "tools/test_o65_integrated.py": "c5ec82cb7a6463f2ac4e894d64fadc1436d79545d88722f8b22f0bd363c97be8",
+    "tools/test_o65_large.py": "319357f03cef80b16787e0d75d87f01b52ab9a38b28dc8b0da74590d1b472e5d",
+    "tools/test_o65_shell.py": "e8a788458f2773cd447c5eef97eeb927019db40a8b0e521345384edd84d80d5a",
+    "tools/test_o65_validation.py": "db589de99f501784a11a4d70beb7e5f95fb030441621043f81a4a38dc9b046b8",
+    "tools/test_object_tree.py": "ef705ee4382b4848a80bf81edb9d591a3c4054b83db30ae1f2c7c09db2f2e24f",
+    "tools/test_object_units.py": "0b193ca6e864c8ca845bffe93cacd9f75481af31b1d4d6541eb4faafb045d583",
+    "tools/test_of816.py": "e820d222a683a9dbba0435e9660ead58bc3432aabf59ecb936a6e2b1490b9db0",
+    "tools/test_of816_loading.py": "09d6e0944c6b1b02e7d111f905f9b9fd37028b33d36a1869f9e577adaf1ea381",
+    "tools/test_of816_shell.py": "46f2c6a5a50aca830683f8897a2272d01c9298ec40b2f9cdc4c006aa8511e73a",
+    "tools/test_of816_system.py": "8b197a29a86742cc8cf307b6d3b7520eb06479176d6897f4032ece4876b0ec97",
+    "tools/test_pipe.py": "112efbca850b886e7e5c9548ca7fe029fc9884b3f0d7d33dfa2d2b026ebaa5d1",
+    "tools/test_pipeline_group.py": "db7428868e098cff83e7327221c993a847416ed5fe0b8f8e400d660784638290",
+    "tools/test_pipeline_shell.py": "c1e4e54ad6ed6bac58825a968b2e1f19b49a1e485790a0259befad253897aace",
+    "tools/test_pointer_capture.py": "0496f3bc6190b4029b3083b4fcf309655acffeb87fddd844d0d6bab82ed75ad2",
+    "tools/test_pointer_failures.py": "110de1de60149f48e231fe2402ba8a271cd18d8213705623330eb70be6e91d98",
+    "tools/test_pointer_relative.py": "eb0a32b4d00eae5f68ac403d7ce1525f1433687f3cf5daf46660a71e0200a60a",
+    "tools/test_popup_transition.py": "13436dc5239dc3305fc80aa1b125a5c6fe17131ccd7e912114a71c96b0d5bf47",
+    "tools/test_ports.py": "34ece7c62a72378b57e6c11f2d9e33aad3968987d2aa3cf19e9881fab948ed5c",
+    "tools/test_ports_concurrent.py": "12a4115870a08c3990f40c464aa400c3876fbc6338d66b3a0d8208983b387a4a",
+    "tools/test_ports_lifetime.py": "10da92fd11f604d59ca213809efc7bff898747c53a810e9a9f09bba81068d8b1",
+    "tools/test_ports_registry.py": "dbc4c2187a016f312521392c54ae42ef04c1178d365237a212a7c6e6249acc77",
+    "tools/test_ports_services.py": "28c5694d08ff030286eaffd7a12a42574867839ac81e7ac9315c3fab091ca4a8",
+    "tools/test_preemptive.py": "d374517aff3049d3dd81b19307af2aef4ae0520c6e51942c6e1ccd541038b223",
+    "tools/test_primes_demo.py": "284df78634e4819f205027fdc3646f88ae87dafa94ee8f0e3d5b1fbe5e59bcb0",
+    "tools/test_primes_fields.py": "8f177711cb40a2aa32bf61dc866b034078ce8b021c3b6bb3da454dfaf45fcda6",
+    "tools/test_process_inheritance.py": "2efe81160b3e64376993b6472465414ff81cf3dabb626a14d6bbbda8f1726f19",
+    "tools/test_process_lifetime.py": "99e0e32f2fd6f161e73334aa242006d6aba84a72b05d1211a99147d7ba76827f",
+    "tools/test_process_wait.py": "734ae28162df56a0bf9b2441397c6e82dd4d14d13220986fb90508c0f3d2d609",
+    "tools/test_producer_lifetime.py": "fe7eb01b406047b684bb7d040da2b8054a78f877fbe947df55e716b79ae9d2b9",
+    "tools/test_program_launch.py": "31064ed4ae9d8a1415fb826baa2cb22819f4113229a52519bb67a87a2abecea2",
+    "tools/test_qed_cache.py": "f3ed8f35b93a7a4a5dd425fa73b470a4fdf2ed0044b8ae3462b390ba34ef2b32",
+    "tools/test_qed_cleanup_stop.py": "480703044866ca86f151807058b1fc674a00c474bac298ed640caa10277fd9c7",
+    "tools/test_qed_clipboard.py": "e80009cec69d0e716f1ba3a5cce117adc7a80db958ee98a2fc0ee3764622e604",
+    "tools/test_qed_coexist.py": "8d0133cfcc9fe2b31ebcecd09ea14a8592da41ccbb110c08fd8a23a6a02385d4",
+    "tools/test_qed_coexist_lifetime.py": "ac0b405bcfe91ea5320c95a82586495cec8d70672380178b723dcc97512d33b9",
+    "tools/test_qed_coexist_load.py": "d043fce680470b40daf9713d43d3f3699ef1680975b91c352231fe13fcab0398",
+    "tools/test_qed_continuations.py": "67b82c98772aa9f78b7822b0e46c66bbaab47953a6f5c5f38f042a16238d2468",
+    "tools/test_qed_core_disk.py": "a84bda40918d09bddc0e99997ef3aae6708a70d182398ee3df6507d52e8fadb8",
+    "tools/test_qed_cursor.py": "521fc5572b3e03be8cf94ed2c34f9dc37a7ea768a2f354bd9840f9ee9ba1a457",
+    "tools/test_qed_damage.py": "990e4d4158f511f55cfd4784d419f46960bcd50c774cf53c2ac2eac0628da310",
+    "tools/test_qed_delivery_final.py": "e211d108edf6cd6d30e38774e60eab83ccdc9f5d560a460d4492aab95356454b",
+    "tools/test_qed_delivery_startup.py": "61cce7eb873e423e9694b3f85d62d6d312aa42d69a3cb9fc03a66a3c3e0a22f5",
+    "tools/test_qed_delivery_workflows.py": "833899f287d95da8ad48f0c880d36582e27123db71474739e8775b6ad5d6552e",
+    "tools/test_qed_dialogs.py": "7a143bba9d5d239ea7e31500d2d88fda3a736079ea931b0e4354619cd8bfc369",
+    "tools/test_qed_documents.py": "ffaaa7de280074b7b0c45a0a77d205e5b23fe918326b89afe95b0f45b437d764",
+    "tools/test_qed_editing.py": "d8c638285fec84a6b12ae4433d45f719b6bb9ec424fae1953045bcd4d933fbf0",
+    "tools/test_qed_exec_setup.py": "fb43f4d6842ef07401ffd6c24be5d709b426772db83b36f6274af7cfff4473e3",
+    "tools/test_qed_fresh_reopen.py": "ccad62443798372da905c4eab34f3fffd8a1c40342dfb37d262001a1e4f3ff38",
+    "tools/test_qed_native.py": "68af3bd20c4331a55ac86cd58dda61b3e816745d2157bf7f3f65ec907cfdf38c",
+    "tools/test_qed_operational.py": "f34d593aa440334c66cffc5a0d3a23e31799272a753fdf32c535b92d55f727ce",
+    "tools/test_qed_paths.py": "49d290a8724f87e30f5ffad1b1f3c0068a4521af3297718981052731cbd56d76",
+    "tools/test_qed_relink.py": "714805555de0ebb0b8699b2b7da488111643906d3d88caa64663775f2d173f8a",
+    "tools/test_qed_saving.py": "7c7eea8c418d2330c59c21b6beb22e7cfa8bc37b919ccbd9655770449f7c3edd",
+    "tools/test_qed_saving_editor.py": "6528bdf9182a55886a28afbf1123a29d85e2eee79bdf1b3b8e1b13c7cf794871",
+    "tools/test_qed_saving_gate.py": "f304617d4a6c6e2444e642aa394e58fa3a749341ce9a1e56a913d0790a6650f7",
+    "tools/test_qed_selection.py": "b10174626ea260b737f7252bd10052709649b2e4c4516cce18251745d16cc5ea",
+    "tools/test_qed_startup.py": "0201d7b2cf93ab920c0168eae4a33b815d76e886a856bdbc56c593cda7bb144b",
+    "tools/test_qed_viewport.py": "3c8e0a7d06854c318af0fa85fb8a8f6a848464fc7851175bdccaf6a158c8ad75",
+    "tools/test_ram_filesystem.py": "cdde3e3afaf3b40d795c407fea04c82e300cb6d51782232ea1087699a6e8e9fa",
+    "tools/test_ram_shell.py": "650ab78560f5e449c25802339ad4a7496df56189fe145c66a846ee319d466ba4",
+    "tools/test_read_args.py": "53dedfb2f6e627b7e5762846ab9c224cad54df77324ba28024a8dbd124fbc8da",
+    "tools/test_rom_diagnostics.py": "7479b7ab6f9ca55a5aff1d34328f4ec2a9d5b89835ed0508f3f1e11dd610b194",
+    "tools/test_rom_diagnostics_demo.py": "1b5bf94813cb6ddf314208e5c5e48f248ab244fb3f8605c8b1506894c30c360c",
+    "tools/test_sdfs_batchlayout.py": "4efaa33bd4a3266fdc045c57c65cdeb856a8d427c1b75936468a0a8689636148",
+    "tools/test_sdfs_batchreuse.py": "3fb4a73edfef246e7dff9a14d11fb68ebb670be1eb94b1261a40415d1c82329a",
+    "tools/test_sdfs_buffering_demo.py": "dfd73bfbbc5f2411271cf88b8c2b4b588fe94399f4524fa93bc8283bd95b088d",
+    "tools/test_sdfs_dos.py": "c1869e2f53cfcbf84096367f6ae1adc5ecf170316b926ac7156370c15009a09c",
+    "tools/test_sdfs_files.py": "244f14e9ffe9c7c982ff0b254b34676960561df2f042821e439797a43238502f",
+    "tools/test_sdfs_namespace.py": "8889efcac7d3cbd0c7d6b2b88a71d223c580d90a5f72d0bd63943269d13d19c0",
+    "tools/test_sdfs_reset_cuts.py": "454fe3d97aa8e1c97ff8d5687373b663230c158f1cf4062d27ff4617c2c8cfaa",
+    "tools/test_sdfs_write_buffering.py": "25aad433d0eaddb25719d25292879e6c08e5d701ab58c46a4e4d75b5f3946a11",
+    "tools/test_sdx_arc.py": "2c2f9ab380db91d88d392a211b8995b95d3b8d257017bdf6ef17f2fb947d8a4f",
+    "tools/test_sdx_arc_disk.py": "f6e64236d0819e151513aeae3a804667034b31757ebb3e7122bff0c7e0f5129d",
+    "tools/test_sdx_arc_faults.py": "a5a1b23a217fdc9b59aa7b88b5d4e6dedb7913f5314c453ba8a4c778444fd637",
+    "tools/test_sdx_arc_library.py": "73edb4aee98f712138ac53f779acd41dec721d3019cd97078c72825c9d1e066b",
+    "tools/test_sdx_arc_mixed.py": "2fc3399e59ec3e99855a3d271560c5eb5cf41402eccfd51c0467c3e53002eb25",
+    "tools/test_sdx_arc_mutate.py": "a54ef048ab424ae203095ad66464a56108e6e18ed13ded184d6c3be6f0a08878",
+    "tools/test_sdx_arc_mutate_disk.py": "b2dc0da7b9a073083054d10115517da13187d48b7a4a69ecb5e66a80af6fec6d",
+    "tools/test_sdx_arc_stack.py": "20948a3c5bc7d23efe72187c1741436d82879b81994d2db2267e229b0abd6027",
+    "tools/test_sdx_edx.py": "9fc98aff9c206a374447763a7b7b83871131619b6ebe16e3b645a70908a9cc07",
+    "tools/test_sdx_firmware_demo.py": "2a3576f398d47bfdc04cf230a9b1c2ee104d973a723834a427cbda96acf433de",
+    "tools/test_sdx_loader.py": "2ab94b2e7c8cd373f1741c5004507b96b701cdabfecbd6a3bbd8e93a6512a5e0",
+    "tools/test_sdx_md5.py": "caea2cb90c798335ecb7c2a3db5bdabd6da594a126dbc8d86c0acae8a1ac0e23",
+    "tools/test_sdx_md5_acceptance.py": "1085945b071c2068a8dbe4f065872f03621e65a0842cfcf6ec1c160d8db13c5a",
+    "tools/test_sdx_md5_exec.py": "814b01a67aea051d91acc2e52c6a0f140b940395a2ed63acca20b07671c4ed01",
+    "tools/test_sdx_md5_faults.py": "7519a2bc2e2ac345dbd9c504c497a40f1e1f3ee67cd7cfc96c7e57581d15dd8f",
+    "tools/test_sdx_native.py": "8185a5b7930136436bc1faefe66b8682ec97631c51ff989b6f7d81f908e1d14e",
+    "tools/test_sdx_output.py": "11a95735cee4d95f5cb6e31e521b635ce90464a72a4d6243bb77d27fef55890c",
+    "tools/test_sdx_patches.py": "36de0572d398175947ca6fb060bb3664765b89ffb4783081b65ddf4fb5febb1f",
+    "tools/test_sdx_process.py": "b342388dcd09d3108c7e51f1ea2158abb296d2e08799fd740af1e9001d28f5b0",
+    "tools/test_sdx_rawcon.py": "0009523f0b13c16f34983836f7239da5cf33b18ae65a86283b76c94e584c11de",
+    "tools/test_sdx_rawcon_failures.py": "abdd1eb1137943eb27000f0af8fc9c443acfcc184eb32f5e82e2fafc59a0f1bc",
+    "tools/test_sdx_resident_demo.py": "21ada22b117156d5e256ff68bdffa4f1c3afe8bcc192e936c11092dcab182ed6",
+    "tools/test_sdx_resident_stack.py": "349e0ec823dc23bf39ca923b66dd8c244892258a90ac9e4dfbcfcea573b125dc",
+    "tools/test_sdx_runtime.py": "99e62ad5cba90283f09660b22c1108099f4f2918a65d4ef5d80b6391951c68cc",
+    "tools/test_sdx_screen.py": "32591c763d7184dbb39e4045f99ec7a9946d61be6447515cf6a780c7e879dada",
+    "tools/test_sdx_service_shape.py": "8b5828126f80faad370e262f05f1e6a6c0010e2e49cd4ce0c27000d5049d2866",
+    "tools/test_sdx_services.py": "91680211a92088f477f2a52a55e9cceb0304c1d759bdf5676fa8adcf599a00fc",
+    "tools/test_sdx_tasks.py": "bf2cb31f31a615fa0d8685e2e571cd5f0a6026bc32be74aded2fc38d9947962d",
+    "tools/test_serial_irq.py": "69a8b0f5fabd279d2c5b3ce839ce865133ba966dfe868a99a0e47055f9cc7f55",
+    "tools/test_shared_timer.py": "b6c02c03311fd2ffe735b91597fe8da812bbfcc4b291cde98638c1286530f934",
+    "tools/test_shell_alias.py": "41d70058e4fdd819dfac138fc77f075accba6ac46979c5f3ae2404d1ae03d4c4",
+    "tools/test_shell_append.py": "bf9ef2177b4e875b35cab8cd7734fc177ec6189244d75642f3df0d25d0a8f50b",
+    "tools/test_shell_break.py": "09e80101d134914856e2b0071a9160be08f3c4026fca2cb5fb72bfee2382c0dd",
+    "tools/test_shell_commands.py": "b0a686f0f3dc900615751c83a8880fca8e7bd32da58359d3c1fd16cdb29d4560",
+    "tools/test_shell_commands_suite.py": "445b7c2aab058a3da9c6a2abee85fcbea5652c46bd106afbb046e059846ec373",
+    "tools/test_shell_completion.py": "4768796ebe0123092685da3b39b2debfe557d4a8132755e4ce2de373c0cfd3a6",
+    "tools/test_shell_concurrent.py": "1d395ba75477014bb8f54c97cc74d836face3cf4406ce71fd7adb7a2ae3f8626",
+    "tools/test_shell_concurrent_suite.py": "b7e5b6ea73a374899dad8c4780eb61f73ffe5d6c1808e836bde89e9a7ab527b1",
+    "tools/test_shell_contexts.py": "8ef1ef1f8c4df92849570e25f9ee6ef9784066294324f294cbbd5bf8f52b2cf9",
+    "tools/test_shell_core.py": "467bba80e882bce645eb6ae756c632d6edd1c5e8eec036ca8a057702f9be0993",
+    "tools/test_shell_entry.py": "8e25c16c33ff33a5d4a602821ce8c1a596039c312724dc430cf74a7f93336547",
+    "tools/test_shell_execute.py": "5f854c1a502ff3b0e4591043fae71b519db0d091d9d4f64b98efc2af834b636d",
+    "tools/test_shell_heap.py": "4f58b93a64e2632d101273c4fd67858ed95f844c844b6920d6f391bc8fbe97f8",
+    "tools/test_shell_jobs.py": "6b906eb3e86e2d1035281e2cf34dd9072615d917645accd64aa654532c10baf7",
+    "tools/test_shell_lifetime.py": "269102352e64d71239f77e11db29379f5a4027af0f0878024d32cafafbe0d8bd",
+    "tools/test_shell_lifetime_suite.py": "82b333bfc402667eaa3a1f04527fa92321c6a0cec318170766c8fcee6e624aa9",
+    "tools/test_shell_parser.py": "5f433dc4c0df5fff5d2b4dbfe258c01f2dd613639611f360cb550581a0850106",
+    "tools/test_shell_redirection.py": "f5e3eb3187e3372a939b3766e783cda18eeb6d96956077d817d49ffed6e86d69",
+    "tools/test_shell_redirection_entry.py": "bf6e50aec0b696455fab5a674a323331e2b58c13d8cca1409e4f5d43de11bcb6",
+    "tools/test_shell_redirection_suite.py": "a2136fa92ca3bf2aa95c5b45188584dcf245601a1421c42640f3f45d8bc11dae",
+    "tools/test_shell_reports.py": "c7203ff4746915d057a2841b3fafdaf5ed677ed5c7e5c174befa3917ce18d12d",
+    "tools/test_shell_sessions.py": "79ab89e6190e072470dfc6154cac25501231ad2a55bf6eae8da5322987f747c2",
+    "tools/test_shell_start_failure.py": "61bb714b7a0c683d5f5230c439d4a005958ed8cda1dcb5c113f68b442d815764",
+    "tools/test_shell_startup_scripts.py": "3656e7bcca065a4812e42981e4acd541bed56d43cbca865df0060dda63f5b51b",
+    "tools/test_shell_trace.py": "ed2f8ddd76602f57b42843b2c30baef89c31a462a0b1b6faad59ba2a292c67da",
+    "tools/test_signal_concurrency.py": "fa3f2d8778d524e2c074004a89c97c96ccf007400ea4d021cd1e6552d671f3ec",
+    "tools/test_signal_stream.py": "6bcd5b3c9d9589137816a625f303facf3ee7bb9f737e8b67db4a1c50facb02a9",
+    "tools/test_signals.py": "ab504d662bbed62d2a0e61834731c8fcc2ccc4513402d4f3c505ee0e5d37aec6",
+    "tools/test_signals_abi.py": "fdb85ec09ac332a247a0bda531725f35809ad1e521e209a5de87006320567b1d",
+    "tools/test_signals_irq.py": "45b27cc51399c457db1b685ac6218d0c1ff6babb4acd8174f2ace0dbad7a9aeb",
+    "tools/test_sio.py": "d251e971cbfcada50a4879d1e665def37187a562dd837929221320a2773146be",
+    "tools/test_sio_adapter.py": "fc8cd2e46191a8aa8d00abd533968e8008e3bf5e9fa63511405b9d6de3b132ee",
+    "tools/test_sio_client.py": "a8355b41d1bb1b4ceaff8777a33d71b8d23a64a90d79bca1ea018f26528b0d26",
+    "tools/test_sio_concurrent.py": "073affb78a9bb5c6fb98e85458422b8a1de2ae53d7472bb11f4de39a61ffee94",
+    "tools/test_sio_deadline_ticks.py": "f76688792ef9cbfc8a5e304c85cc2becf0b6fd77817e5a3f2cd3458a15c143a6",
+    "tools/test_sio_device.py": "93d40b1ad36ab0f52eb34dbb0936a0f54e898af37b13e7be228cf1e8cc0cd16f",
+    "tools/test_sio_lifetime.py": "a0dbea6a08d81a68086962c4d6ca2e2e8105eac53c29ecccc4cae7e773359f91",
+    "tools/test_sio_profile_limits.py": "d512d1466f86f57123557a96f5eaec3e592bdfa99fa3f2a04d1d7d529ffcd95c",
+    "tools/test_sio_public.py": "38157a2aed2d5d9bb4d5adea96cc4b815bbc94c04994976993e50e93c6a0d324",
+    "tools/test_sio_recovery.py": "0a36c818c914cf7c7deee4c8df7f94cc2bd83baae1627463232a3c714ea136fe",
+    "tools/test_sio_sectors.py": "f015fdb9db52cea77887d26391657e67a5c757cf3eac7de1cf04c201b897f6c4",
+    "tools/test_sio_write_deadline.py": "5d8ce8b48df8a0ec53793b5fbcda6efc952d700c23d4443a46d0240785b27881",
+    "tools/test_sio_write_faults.py": "7f559b25cdcc60445b4a159bf339aa050c09eb217d77f41474f20e055c3a7b95",
+    "tools/test_sio_write_sectors.py": "74edba2c4086025d86c7f26440a897e1f9ddd5f9f68ad3e62d063258a1b0d142",
+    "tools/test_stack_checks.py": "d0b37add3f82ca728a9962a561e1c77b75fde665e6ca220532fadcc54d67fc77",
+    "tools/test_standard_dialog_demo.py": "d0926ec22d5b85bc30115f4124a29cf926e663ae51649107ad9802b6a0dd015a",
+    "tools/test_system_inspect.py": "d67e1c3930701827730273a6ac29f20e7e75bf723189221217dff942b38f7196",
+    "tools/test_tail_find_shell.py": "2449416e860896cc130baaed9aafa036cb33b489742b03a98867912733ff912a",
+    "tools/test_task_capacity.py": "dafd7bbeea24f22767696bb5139306ec33f58fb64444ce8f0b3c077aa77d8f6f",
+    "tools/test_task_examples.py": "b7423163ba59d4e3f14201ce48a95152c22c97f03bbf0714630d6a87ba4539be",
+    "tools/test_task_inspect.py": "6420b1894fab8a41487a0cef72c41aef6cf07db47c43a069b2bbb6d4d5fa0ee9",
+    "tools/test_task_lifetime.py": "17028f006842800efbce5fbc0b3fa4795c2d13b7ded536c974c66ebb02bb6ae4",
+    "tools/test_tasks.py": "8966b440816a144240e839e364625611add93eac5e84f979ab0170b863889486",
+    "tools/test_tasks_abi.py": "bda31a50de509505457424d58fcb6c027fb07c0f1aec084622050cf9b0288b46",
+    "tools/test_tasks_exec.py": "d515736fa336f5f5109c632769e3b1523c3ce182076c562d8ed2a5ec010ad8aa",
+    "tools/test_tasks_regressions.py": "1ad2638e2b021f545a52d1e561bd9c9b86f878135f1af28dc673e6745f98ca89",
+    "tools/test_tedinfo.py": "761552d94610468b9bc78f5eac1428d60c5b7f12f0c443cf92fb94c7a0dc4049",
+    "tools/test_text_document.py": "80b7168fba9b561d01e2c379278bc35f1813909a2a1596017b39a9b459bfb245",
+    "tools/test_text_gadgets.py": "c2231ffba2887e002e1a1609ffc5f6e9390d2d8045ac221a332d887a088549ad",
+    "tools/test_text_viewer_demo.py": "a64960d523ef3a150f0fdfef3f50805ccf49cedcedfa98431a34061c9b8bfe44",
+    "tools/test_timer_device.py": "db9325e27cf8ec681f20917ea8913fce761c073ee9b989ca9bbc370f6ee452ea",
+    "tools/test_toolbox.py": "d3477a8f1d097e7f948e4025f7973441bddecd02a18633c8098d51a36c6fbeb1",
+    "tools/test_toolbox_console.py": "8b66e4420e8e891103d0128ce9849948a27fa7f8704a0d53181873bda99ed07d",
+    "tools/test_toolbox_shell.py": "cbc2129962817f0e6dbf864e9e30cdc78f7054e31eded8b80f270d842a91b705",
+    "tools/test_twelve_task_demo.py": "907172a83320f54e3f9e332b4af10224c0c64a36cb95cf89c7a25c6991416003",
+    "tools/test_twelve_task_pools.py": "3e3251e3e79b399cf5a22af370a01af7b18760b9f837983d1a5ed3c0f7d67cb0",
+    "tools/test_upper_table.py": "433fa39b4f8d5bb23ba2563945afda1865346ba06986ef54008a1db9df8c0675",
+    "tools/test_user_mount_integration.py": "c698860554590a86af6246acbb5de6a5232c5805404dd7a3579a6b080f599798",
+    "tools/test_user_mount_shell.py": "3e58c23e6d659c56ef2533de27b52841f77df07dba79642e8abf5e31c2c3f980",
+    "tools/test_user_sio_mounts.py": "92d8ce7bb069ec30e71833a2146240573d24d755feeb0b4103dc6366ff02347f",
+    "tools/test_vbxe_aperture.py": "6b3cf828aa245eec048a82f39a6e03c0a83e4775402bed16dab8e18ca12c0ef0",
+    "tools/test_vbxe_tables.py": "9bd2935c4c70c32bf683e3c40020dc8d87f5b00034f9418b4b738db61206c424",
+    "tools/test_vdi_client.py": "54b573251de038b9fb9a2e325c7f33a060c1cb35ec25e314672c9dd041474f2a",
+    "tools/test_vdi_copy_abi.py": "e85ce3469505bb9b732ac4803bb8ead00155af53c756818a990c62361f2d0185",
+    "tools/test_vdi_modes_abi.py": "e3e2bffd24314a004205557e487c268b2b169133a4e6f0756997ebfa529fea97",
+    "tools/test_volume_queries.py": "f8a4b8024035975f28a4f4fc3f379f04cec55073450f624139446f14b08690c2",
+    "tools/test_volume_statistics.py": "646f714087198d2437e7d3b3299ceab3e661769f1a5d82fa1ae026347e8cb3af",
+    "tools/test_wc.py": "d1b0be98e686c60b96aabf70ce918af255b17855fe389c95e02e3f9b0635c32a",
+    "tools/test_wc_shell.py": "55f1eaa828babcdbcd1322e1f01d2b71a8f233c6dab128744cdac3b1872e5ce6",
+    "tools/test_wildcard_commands_shell.py": "9003942d1e086192f3698a3b56391c575e61f54a2b098ab1b414cc716fb2f5b3",
+    "tools/test_window_iconification.py": "1154acc388b5243684dd3369d7136b4610eafe38d7fa54fd278ff88fd72a78a1",
+    "tools/test_workbench_demo.py": "900797eb3058cb48c07b2f43a97356cb4efc34baafc614b8d8fe7e0045fede3c",
+    "tools/test_workbench_source.py": "d8b3188c68e342f8dc3669cbbae66418316e4ced99a41b43c03305f6eb7ace6c",
+    "tools/test_write_commands.py": "0a857943df42339365cb326e4cbe38b97309063b9d7a2a4f14533a2cfd241c61",
+    "tools/test_write_commands_shell.py": "36273020b69494ba351ebbd9546702fdccfca149fb38f5ae8e318df639ea0370",
+    "tools/test_xex_loader_errors.py": "a0406cb4ca9a4b4562ff3593b129e04b972cc554265c2ecc762230e6cb8adafc",
+    "tools/text_cancellation.py": "389daad5bd59c065ad5b825602710afa67ea3702ba911926ab73b6459d4d7e4a",
+    "tools/text_files_check.py": "cf903c98f18b53335409c290586fad66cd92efc769564bb71a52d3ad72dfe3a5",
+    "tools/text_model.py": "e53eb79b6675bc141d59dd420df08e0cfe92cc20fafab712d0b0c90c11f3fa7b",
+    "tools/text_performance_trace.py": "c1dcc6a2b0c3506f48893825eed66ae329cacf7a1881fe2353a5f068aafb87c6",
+    "tools/text_viewer_oracle.py": "b7971cc52dfadd917834e7ea930a3dfd1ebbed5de2fabe9f9d7e3065d3a8efb5",
+    "tools/trace_command_io.py": "49ba70dec43f91f411f09a3f3ea40f4f1f78bd40e16000a9bb0f5ddadb2f16bb",
+    "tools/trace_directory_batch_contention.py": "ed2f2372ff7baeebca82db1db501b3648618775964afe8e5c86306edb50e26c4",
+    "tools/trace_directory_batch_ui.py": "1cda17073a040756b067e0541f66b656ecf3c8685628414dbf37a30e3b5320b4",
+    "tools/trace_files_enumeration.py": "2855b8dbdfd1741be43a8f0ea30bb6cef8bff25abe1bb1ccb0453602940ca844",
+    "tools/trace_g4bench.py": "ce8290b84a15889c6e5827eaf098fa6476baef45bbc5b7802cebd61a0ab8444a",
+    "tools/trace_menu_response.py": "0ecad1779c0bca057857fb6196b64eaa167e609d5845d48808c1cc9289f5cdec",
+    "tools/trace_window_open.py": "a57ccea1ae343d845a053d9e303d8f396ee2d95571d81897775b833609756340",
+    "tools/update_admission_trace.py": "d7d3dcc48b4dd3f4a8cab659413bc708cf88e93b268a917a0a088c63b7de8a99",
+    "tools/vbxe_builder_csites.py": "82f2e1b7eb62a025dcf06b9b07f28ec2119fc49bb557c4d678b6c8b1fabda6fd",
+    "tools/window_response_trace.py": "f91048da82a21beafb1123c18842ff97c792679c4e49bcc2a920d3b20848df6f",
+    "tools/workbench_build_interaction.py": "57116e0bd674644a9867c883da200306020282096bc4b775b1d3b7583c9820e1",
+    "tools/workbench_files_interaction.py": "7c6c1aef0c45121ae99cc8d100af76b99d9510ef4cacd55e7f1a0dfa0afab502",
+    "tools/workbench_interaction.py": "a2fd7cd46352c49b74ac0382a3c36509afc1d0a24030e8bcc7d0e68109723dc8",
+    "tools/workbench_pixels.py": "03aadf93471995c3a7aa4fd0b66296db90fa1c90a9d4aaf23dd38fa34385aaef"
+  },
+  "frozen_inputs": "build/gem-first-gui/gf15/frozen-inputs",
+  "checks": {
+    "combined": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "xex_sha256": "7270e14500e19b2c2ce03753d320c54bbcbabe3461ff27fa50f6df2ef8678ce7",
+      "provider_sha256": "2e3f40b5c807f30c2658ad9f436faa325d04abe26931f3f51acf3f819bb164d2",
+      "zip_sha256": "7aae280b70db44f54969fc9f89d21edab19533931fecee5b1233b12d357e5a38",
+      "initial_system_sha256": "68a70e000fa6c814531e4c141007968525be1ed2fef8b479c8f2334331257a05",
+      "autoboot_frames": 250,
+      "boot_tasks": 8,
+      "commands": [
+        {
+          "text": "ECHO gem-first-ready",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "MOUNT TEST: DRIVE 8 FORMAT SPARTA READWRITE",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "RUN TEST:GFCOUNT.APP 1",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "NEWSHELL",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "RUN TEST:GFCOUNT.APP 2",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "SESSION 1",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "SYS:C/PANEL.APP",
+          "result": [
+            20,
+            103
+          ]
+        },
+        {
+          "text": "JOBS",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "SESSION 2",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "JOBS",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "SESSION 1",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "RUN TEST:GFCOUNT.APP 1",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "JOBS",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "MOUNT QED: DRIVE 2 FORMAT SPARTA",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "RUN QED:QED.APP",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "ECHO qed-coexists",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "JOBS",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "SESSION 2",
+          "result": [
+            0,
+            0
+          ]
+        }
+      ],
+      "fifth_aes_client_rejected": true,
+      "samples": [
+        {
+          "label": "load-ready",
+          "frame": 9796,
+          "clock": 347289844,
+          "live_tasks": 11,
+          "clients": [
+            {
+              "identity": 5,
+              "base": 1441792,
+              "id": 3,
+              "window": 4,
+              "count": 72,
+              "paints": 74,
+              "work": [
+                40,
+                59,
+                128,
+                35
+              ],
+              "digits_sha256": "7ea21a3e4745c6c33a8926d7791b0c1d6fc30dd04846320d8905d0b6f7c010ac"
+            },
+            {
+              "identity": 7,
+              "base": 1572864,
+              "id": 4,
+              "window": 5,
+              "count": 49,
+              "paints": 51,
+              "work": [
+                328,
+                155,
+                128,
+                35
+              ],
+              "digits_sha256": "67acaa577d5eb7965d08ce3999e7b11ecb6bda76ea219167614f987793f19358"
+            }
+          ],
+          "exact_digit_pixels": 768
+        },
+        {
+          "label": "load-during",
+          "frame": 11769,
+          "clock": 417465508,
+          "live_tasks": 12,
+          "clients": [
+            {
+              "identity": 5,
+              "base": 1441792,
+              "id": 3,
+              "window": 4,
+              "count": 103,
+              "paints": 106,
+              "work": [
+                40,
+                59,
+                128,
+                35
+              ],
+              "digits_sha256": "7573229b9b14a5288526a9db9d2d650df07dbbccda1ba762823558f46e97a4b5"
+            },
+            {
+              "identity": 7,
+              "base": 1572864,
+              "id": 4,
+              "window": 5,
+              "count": 81,
+              "paints": 84,
+              "work": [
+                328,
+                155,
+                128,
+                35
+              ],
+              "digits_sha256": "12b03e08225dec0f7cba841d6b537260976525be765814ec4f7625b5850f3c3e"
+            }
+          ],
+          "exact_digit_pixels": 768
+        },
+        {
+          "label": "load-complete",
+          "frame": 16625,
+          "clock": 590183716,
+          "live_tasks": 11,
+          "clients": [
+            {
+              "identity": 5,
+              "base": 1441792,
+              "id": 3,
+              "window": 4,
+              "count": 189,
+              "paints": 192,
+              "work": [
+                40,
+                59,
+                128,
+                35
+              ],
+              "digits_sha256": "e847806816cbd4aeb45218c2559b54037466b37f0909a563b1f1234067c29114"
+            },
+            {
+              "identity": 7,
+              "base": 1572864,
+              "id": 4,
+              "window": 5,
+              "count": 167,
+              "paints": 170,
+              "work": [
+                328,
+                155,
+                128,
+                35
+              ],
+              "digits_sha256": "03797acd87a3958a417b78c2d5dffa60754c19c4af38f1c5ce925b7fc70da9bb"
+            }
+          ],
+          "exact_digit_pixels": 768
+        }
+      ],
+      "pointer": [
+        {
+          "label": "disk",
+          "target": [
+            328,
+            128
+          ],
+          "start": 409711684,
+          "captured": 410271245,
+          "presented": 410289897,
+          "capture_ms": 315.5216041072544,
+          "presentation_ms": 326.0389721150471
+        }
+      ],
+      "disk_active_progress": [
+        {
+          "identity": 5,
+          "increments": 31,
+          "paints": 32
+        },
+        {
+          "identity": 7,
+          "increments": 32,
+          "paints": 33
+        }
+      ],
+      "peak_tasks": 12,
+      "progress": [
+        {
+          "identity": 5,
+          "increments": 117,
+          "paints": 118
+        },
+        {
+          "identity": 7,
+          "increments": 118,
+          "paints": 119
+        }
+      ],
+      "offered_work": {
+        "passes": 4,
+        "read_bytes": 65536,
+        "written_bytes": 65536,
+        "buffer_bytes": 16384,
+        "counter_body_sha256": "92780c5aaba74befb37bc7755830e5ec461e56cd8d5cc355000bc517c868ccf3"
+      },
+      "physical_read_cancel": {
+        "primary": 5,
+        "read_error": 304
+      },
+      "closed_counters": true,
+      "counter_relaunched": true,
+      "qed_editing": [
+        {
+          "process": 12,
+          "image_base": 1572864,
+          "cycle": 0,
+          "snapshots": [
+            {
+              "pointer": 389664,
+              "x": 0,
+              "y": 0,
+              "dirty": 0,
+              "ending": 1,
+              "blink": 1,
+              "caret": 1,
+              "block": 0,
+              "range": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "name": "gem-first-qed-empty",
+              "lines": [
+                ""
+              ],
+              "private_heap": [
+                4,
+                53304,
+                53368,
+                53368
+              ],
+              "window": {
+                "pointer": 332472,
+                "columns": 73,
+                "rows": 21,
+                "document": [
+                  0,
+                  0,
+                  1,
+                  1
+                ],
+                "work": [
+                  24,
+                  60,
+                  584,
+                  168
+                ],
+                "title": " Untitled ",
+                "font": [
+                  8,
+                  8
+                ]
+              },
+              "pixels": {
+                "checked": 98048,
+                "caret_checked": 0,
+                "sha256": "07fe36287d05da753ead3ec8642b3b4cbad52f805d4b7a939c5a05452be7fa8b",
+                "observations": 1
+              }
+            },
+            {
+              "pointer": 389664,
+              "x": 2,
+              "y": 0,
+              "dirty": 1,
+              "ending": 1,
+              "blink": 0,
+              "caret": 1,
+              "block": 0,
+              "range": [
+                4294967295,
+                0,
+                4294967295,
+                0
+              ],
+              "name": "gem-first-qed-edit",
+              "lines": [
+                "6162"
+              ],
+              "private_heap": [
+                4,
+                53304,
+                53368,
+                53368
+              ],
+              "window": {
+                "pointer": 332472,
+                "columns": 73,
+                "rows": 21,
+                "document": [
+                  0,
+                  0,
+                  3,
+                  1
+                ],
+                "work": [
+                  24,
+                  60,
+                  584,
+                  168
+                ],
+                "title": " *Untitled ",
+                "font": [
+                  8,
+                  8
+                ]
+              },
+              "pixels": {
+                "checked": 98048,
+                "caret_checked": 0,
+                "sha256": "cf0ecebc6278a870a442562ff9de9d8dad4c592b2cf081829f72d98d3277c817",
+                "observations": 1
+              }
+            },
+            {
+              "pointer": 389664,
+              "x": 2,
+              "y": 0,
+              "dirty": 1,
+              "ending": 1,
+              "blink": 0,
+              "caret": 1,
+              "block": 0,
+              "range": [
+                4294967295,
+                0,
+                4294967295,
+                0
+              ],
+              "name": "gem-first-qed-exposed",
+              "lines": [
+                "6162"
+              ],
+              "private_heap": [
+                4,
+                53304,
+                53368,
+                53368
+              ],
+              "window": {
+                "pointer": 332472,
+                "columns": 73,
+                "rows": 21,
+                "document": [
+                  0,
+                  0,
+                  3,
+                  1
+                ],
+                "work": [
+                  24,
+                  60,
+                  584,
+                  168
+                ],
+                "title": " *Untitled ",
+                "font": [
+                  8,
+                  8
+                ]
+              },
+              "pixels": {
+                "checked": 98048,
+                "caret_checked": 0,
+                "sha256": "cf0ecebc6278a870a442562ff9de9d8dad4c592b2cf081829f72d98d3277c817",
+                "observations": 1
+              }
+            }
+          ],
+          "keys": [],
+          "timings": [],
+          "replacements": [
+            {
+              "name": "gem-first-qed-empty",
+              "path": "Untitled",
+              "text": 389664,
+              "window": 7,
+              "ending": 1
+            }
+          ],
+          "forms": [
+            {
+              "name": "gem-first-qed-close",
+              "pixels": 31488,
+              "sha256": "726e7c0f2ec8f561a01177bcb6a65318c90abbcffbc441ada3ba11edf470586c"
+            }
+          ]
+        }
+      ],
+      "qed_coexistence": true,
+      "extra_session_exited": true,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 34363,
+        "native_irq_count": 39229,
+        "os_busy": 0,
+        "return_s": 15534,
+        "return_d": 3840,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "live_tasks": 0,
+        "created": 16,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 603,
+            "untouched_above_floor": 677
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 204,
+            "untouched_above_floor": 852
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 651,
+            "untouched_above_floor": 405
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 217,
+            "untouched_above_floor": 839
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 745,
+            "untouched_above_floor": 311
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 857,
+            "untouched_above_floor": 199
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 773,
+            "untouched_above_floor": 1531
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 867,
+            "untouched_above_floor": 1437
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 1312,
+            "touched_bytes": 818,
+            "untouched_above_floor": 238
+          },
+          {
+            "slot": 9,
+            "reserved_bytes": 1312,
+            "touched_bytes": 705,
+            "untouched_above_floor": 351
+          },
+          {
+            "slot": 10,
+            "reserved_bytes": 1312,
+            "touched_bytes": 813,
+            "untouched_above_floor": 243
+          },
+          {
+            "slot": 11,
+            "reserved_bytes": 2560,
+            "touched_bytes": 859,
+            "untouched_above_floor": 1445
+          },
+          {
+            "slot": 12,
+            "reserved_bytes": 512,
+            "touched_bytes": 143,
+            "untouched_above_floor": 113
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 303,
+          "untouched_from_base": 1233,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "system_audit": {
+        "status": "pass",
+        "allocation": {
+          "sectors": 8192,
+          "sector_bytes": 256,
+          "allocated": 4419,
+          "free": 3773,
+          "files": 70,
+          "directories": 6
+        },
+        "original_files_preserved": 70,
+        "sha256": "68a70e000fa6c814531e4c141007968525be1ed2fef8b479c8f2334331257a05"
+      },
+      "disk_audit": {
+        "status": "pass",
+        "allocation": {
+          "sectors": 2880,
+          "sector_bytes": 256,
+          "allocated": 274,
+          "free": 2606,
+          "files": 5,
+          "directories": 1
+        },
+        "sha256": "e13ee3c110b396f7ab03f5aa868b3f9a68d83a5eba68737cc4c1683ca46eaa17"
+      },
+      "workload_window": {
+        "clock_start": 347289844,
+        "clock_end": 590183716,
+        "elapsed_ms": 136961.4110369774
+      }
+    },
+    "session_exit": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "xex_sha256": "7270e14500e19b2c2ce03753d320c54bbcbabe3461ff27fa50f6df2ef8678ce7",
+      "provider_sha256": "2e3f40b5c807f30c2658ad9f436faa325d04abe26931f3f51acf3f819bb164d2",
+      "zip_sha256": "7aae280b70db44f54969fc9f89d21edab19533931fecee5b1233b12d357e5a38",
+      "initial_system_sha256": "68a70e000fa6c814531e4c141007968525be1ed2fef8b479c8f2334331257a05",
+      "autoboot_frames": 250,
+      "boot_tasks": 8,
+      "commands": [
+        {
+          "text": "ECHO gem-first-ready",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "NEWSHELL",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "SESSION 1",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "SESSION 2",
+          "result": [
+            0,
+            0
+          ]
+        }
+      ],
+      "extra_session_exited": true,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 5025,
+        "native_irq_count": 15538,
+        "os_busy": 0,
+        "return_s": 15534,
+        "return_d": 3840,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "live_tasks": 0,
+        "created": 9,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 603,
+            "untouched_above_floor": 677
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 187,
+            "untouched_above_floor": 869
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 318,
+            "untouched_above_floor": 738
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 149,
+            "untouched_above_floor": 907
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 621,
+            "untouched_above_floor": 435
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 819,
+            "untouched_above_floor": 237
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 761,
+            "untouched_above_floor": 1543
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 867,
+            "untouched_above_floor": 1437
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 1312,
+            "touched_bytes": 472,
+            "untouched_above_floor": 584
+          },
+          {
+            "slot": 9,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 10,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 11,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 12,
+            "reserved_bytes": 512,
+            "touched_bytes": 129,
+            "untouched_above_floor": 127
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 293,
+          "untouched_from_base": 1243,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "system_audit": {
+        "status": "pass",
+        "allocation": {
+          "sectors": 8192,
+          "sector_bytes": 256,
+          "allocated": 4419,
+          "free": 3773,
+          "files": 70,
+          "directories": 6
+        },
+        "original_files_preserved": 70,
+        "sha256": "68a70e000fa6c814531e4c141007968525be1ed2fef8b479c8f2334331257a05"
+      }
+    },
+    "cold_cancel": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "xex_sha256": "7270e14500e19b2c2ce03753d320c54bbcbabe3461ff27fa50f6df2ef8678ce7",
+      "provider_sha256": "2e3f40b5c807f30c2658ad9f436faa325d04abe26931f3f51acf3f819bb164d2",
+      "zip_sha256": "7aae280b70db44f54969fc9f89d21edab19533931fecee5b1233b12d357e5a38",
+      "initial_system_sha256": "68a70e000fa6c814531e4c141007968525be1ed2fef8b479c8f2334331257a05",
+      "autoboot_frames": 250,
+      "boot_tasks": 8,
+      "commands": [
+        {
+          "text": "ECHO gem-first-ready",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "MOUNT TEST: DRIVE 8 FORMAT SPARTA READWRITE",
+          "result": [
+            0,
+            0
+          ]
+        }
+      ],
+      "physical_read_cancel": {
+        "primary": 5,
+        "read_error": 304
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 4780,
+        "native_irq_count": 63946,
+        "os_busy": 0,
+        "return_s": 15534,
+        "return_d": 3840,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "live_tasks": 0,
+        "created": 9,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 603,
+            "untouched_above_floor": 677
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 193,
+            "untouched_above_floor": 863
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 318,
+            "untouched_above_floor": 738
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 149,
+            "untouched_above_floor": 907
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 621,
+            "untouched_above_floor": 435
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 818,
+            "untouched_above_floor": 238
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 761,
+            "untouched_above_floor": 1543
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 867,
+            "untouched_above_floor": 1437
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 1312,
+            "touched_bytes": 350,
+            "untouched_above_floor": 706
+          },
+          {
+            "slot": 9,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 10,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 11,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 12,
+            "reserved_bytes": 512,
+            "touched_bytes": 135,
+            "untouched_above_floor": 121
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 293,
+          "untouched_from_base": 1243,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "system_audit": {
+        "status": "pass",
+        "allocation": {
+          "sectors": 8192,
+          "sector_bytes": 256,
+          "allocated": 4419,
+          "free": 3773,
+          "files": 70,
+          "directories": 6
+        },
+        "original_files_preserved": 70,
+        "sha256": "68a70e000fa6c814531e4c141007968525be1ed2fef8b479c8f2334331257a05"
+      },
+      "disk_audit": {
+        "status": "pass",
+        "allocation": {
+          "sectors": 2880,
+          "sector_bytes": 256,
+          "allocated": 209,
+          "free": 2671,
+          "files": 4,
+          "directories": 1
+        },
+        "sha256": "31612b5520556c8e344802de13ab7a849b5e8cde4135b056e36d5728226c4c8b"
+      }
+    },
+    "terminal": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "commands": [
+        {
+          "command": "ECHO gem-terminal",
+          "index": 0,
+          "route": 257
+        },
+        {
+          "command": "ECHO editx\b",
+          "index": 0,
+          "route": 289
+        },
+        {
+          "command": "ECHO 012345678901234567890123456789012345678901234567890123456789EDGE",
+          "index": 0,
+          "route": 321
+        },
+        {
+          "command": "NEWSHELL",
+          "index": 0,
+          "route": 391
+        },
+        {
+          "command": "ECHO second-session",
+          "index": 1,
+          "route": 422
+        },
+        {
+          "command": "SESSION 1",
+          "index": 1,
+          "route": 454
+        },
+        {
+          "command": "ECHO first-again",
+          "index": 0,
+          "route": 487
+        },
+        {
+          "command": "SESSION 2",
+          "index": 0,
+          "route": 519
+        },
+        {
+          "command": "confirmed window close",
+          "index": 1
+        }
+      ],
+      "terminal": {
+        "identity": 4,
+        "state": 313512,
+        "window": 3,
+        "slot": 5
+      },
+      "live_tasks": 8,
+      "aes_clients": 2,
+      "aes_windows": 3,
+      "paints": 9,
+      "pixels": {
+        "terminal-front": "2f02b4a155a6f209e8fe215396ca41d29c892a2a614b80af504dea8f0572eb79",
+        "terminal-exposed": "2f02b4a155a6f209e8fe215396ca41d29c892a2a614b80af504dea8f0572eb79",
+        "terminal-edge": "35c2444e2d3ee8bef0d652db1ac8ff50751640577fe3ebfd6ef06a20cd34a48d"
+      },
+      "peak_observed_tasks": 9,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 4151,
+        "native_irq_count": 11993,
+        "os_busy": 0,
+        "return_s": 15534,
+        "return_d": 3840,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "live_tasks": 0,
+        "created": 9,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 607,
+            "untouched_above_floor": 673
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 190,
+            "untouched_above_floor": 866
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 305,
+            "untouched_above_floor": 751
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 149,
+            "untouched_above_floor": 907
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 626,
+            "untouched_above_floor": 430
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 858,
+            "untouched_above_floor": 198
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 759,
+            "untouched_above_floor": 1545
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 861,
+            "untouched_above_floor": 1443
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 1312,
+            "touched_bytes": 456,
+            "untouched_above_floor": 600
+          },
+          {
+            "slot": 9,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 10,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 11,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 12,
+            "reserved_bytes": 512,
+            "touched_bytes": 129,
+            "untouched_above_floor": 127
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 291,
+          "untouched_from_base": 1245,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    "qed_focused": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "xex_sha256": "7270e14500e19b2c2ce03753d320c54bbcbabe3461ff27fa50f6df2ef8678ce7",
+      "provider_sha256": "2e3f40b5c807f30c2658ad9f436faa325d04abe26931f3f51acf3f819bb164d2",
+      "zip_sha256": "d1fadf228024cf612eed0215258df24d062b2c37d4942d8d870000ca54efb66a",
+      "autoboot_frames": 250,
+      "boot_tasks": 8,
+      "commands": [
+        {
+          "text": "ECHO gem-first-ready",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "MOUNT QED: DRIVE 2 FORMAT SPARTA",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "RUN QED:QED.APP",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "ECHO qed-coexists",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "JOBS",
+          "result": [
+            0,
+            0
+          ]
+        }
+      ],
+      "qed_editing": [
+        {
+          "process": 5,
+          "image_base": 1572864,
+          "cycle": 0,
+          "snapshots": [
+            {
+              "pointer": 326760,
+              "x": 0,
+              "y": 0,
+              "dirty": 0,
+              "ending": 1,
+              "blink": 1,
+              "caret": 1,
+              "block": 0,
+              "range": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "name": "gem-first-qed-empty",
+              "lines": [
+                ""
+              ],
+              "private_heap": [
+                4,
+                53304,
+                53368,
+                53368
+              ],
+              "window": {
+                "pointer": 325544,
+                "columns": 73,
+                "rows": 21,
+                "document": [
+                  0,
+                  0,
+                  1,
+                  1
+                ],
+                "work": [
+                  24,
+                  60,
+                  584,
+                  168
+                ],
+                "title": " Untitled ",
+                "font": [
+                  8,
+                  8
+                ]
+              },
+              "pixels": {
+                "checked": 98048,
+                "caret_checked": 0,
+                "sha256": "89ad96d33e33185078b0201dd4d67bca201da4b4f616a1ebcf4f28d5db76b7ef",
+                "observations": 1
+              }
+            },
+            {
+              "pointer": 326760,
+              "x": 2,
+              "y": 0,
+              "dirty": 1,
+              "ending": 1,
+              "blink": 0,
+              "caret": 1,
+              "block": 0,
+              "range": [
+                4294967295,
+                0,
+                4294967295,
+                0
+              ],
+              "name": "gem-first-qed-edit",
+              "lines": [
+                "6162"
+              ],
+              "private_heap": [
+                4,
+                53304,
+                53368,
+                53368
+              ],
+              "window": {
+                "pointer": 325544,
+                "columns": 73,
+                "rows": 21,
+                "document": [
+                  0,
+                  0,
+                  3,
+                  1
+                ],
+                "work": [
+                  24,
+                  60,
+                  584,
+                  168
+                ],
+                "title": " *Untitled ",
+                "font": [
+                  8,
+                  8
+                ]
+              },
+              "pixels": {
+                "checked": 98048,
+                "caret_checked": 0,
+                "sha256": "33c254f1912f4653347998a2c9a7bf9535d4597796a5a18c13aa506f71f633a3",
+                "observations": 1
+              }
+            },
+            {
+              "pointer": 326760,
+              "x": 2,
+              "y": 0,
+              "dirty": 1,
+              "ending": 1,
+              "blink": 0,
+              "caret": 1,
+              "block": 0,
+              "range": [
+                4294967295,
+                0,
+                4294967295,
+                0
+              ],
+              "name": "gem-first-qed-exposed",
+              "lines": [
+                "6162"
+              ],
+              "private_heap": [
+                4,
+                53304,
+                53368,
+                53368
+              ],
+              "window": {
+                "pointer": 325544,
+                "columns": 73,
+                "rows": 21,
+                "document": [
+                  0,
+                  0,
+                  3,
+                  1
+                ],
+                "work": [
+                  24,
+                  60,
+                  584,
+                  168
+                ],
+                "title": " *Untitled ",
+                "font": [
+                  8,
+                  8
+                ]
+              },
+              "pixels": {
+                "checked": 98048,
+                "caret_checked": 0,
+                "sha256": "33c254f1912f4653347998a2c9a7bf9535d4597796a5a18c13aa506f71f633a3",
+                "observations": 1
+              }
+            }
+          ],
+          "keys": [],
+          "timings": [],
+          "replacements": [
+            {
+              "name": "gem-first-qed-empty",
+              "path": "Untitled",
+              "text": 326760,
+              "window": 4,
+              "ending": 1
+            }
+          ],
+          "forms": [
+            {
+              "name": "gem-first-qed-close",
+              "pixels": 31488,
+              "sha256": "af75f48132952b4a0856d9e69eb25b285cc9c613b028907e433c6f14249f8111"
+            }
+          ]
+        }
+      ],
+      "qed_coexistence": true,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 10121,
+        "native_irq_count": 2746,
+        "os_busy": 0,
+        "return_s": 15534,
+        "return_d": 3840,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "live_tasks": 0,
+        "created": 9,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 607,
+            "untouched_above_floor": 673
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 190,
+            "untouched_above_floor": 866
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 381,
+            "untouched_above_floor": 675
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 197,
+            "untouched_above_floor": 859
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 705,
+            "untouched_above_floor": 351
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 848,
+            "untouched_above_floor": 208
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 843,
+            "untouched_above_floor": 1461
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 867,
+            "untouched_above_floor": 1437
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 9,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 10,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 11,
+            "reserved_bytes": 2560,
+            "touched_bytes": 865,
+            "untouched_above_floor": 1439
+          },
+          {
+            "slot": 12,
+            "reserved_bytes": 512,
+            "touched_bytes": 135,
+            "untouched_above_floor": 121
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 299,
+          "untouched_from_base": 1237,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    "standard": {
+      "status": "pass",
+      "tier": "development",
+      "xex_sha256": "514bf45232dac2862d54becf0bf060a929070dd23102c743ca45a6098709c236",
+      "media_sha256": "60ad6dbb9bcc11778b42cee1df4b483dc9ac76287652108fda309dd5b219b64a",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 5230,
+        "native_irq_count": 41700,
+        "os_busy": 0,
+        "return_s": 16878,
+        "return_d": 4096,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "live_tasks": 0,
+        "created": 17,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 416,
+            "untouched_above_floor": 864
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 459,
+            "untouched_above_floor": 597
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 255,
+            "untouched_above_floor": 801
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 335,
+            "untouched_above_floor": 721
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 217,
+            "untouched_above_floor": 839
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 669,
+            "untouched_above_floor": 387
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 1312,
+            "touched_bytes": 388,
+            "untouched_above_floor": 668
+          },
+          {
+            "slot": 9,
+            "reserved_bytes": 1312,
+            "touched_bytes": 394,
+            "untouched_above_floor": 662
+          },
+          {
+            "slot": 10,
+            "reserved_bytes": 1312,
+            "touched_bytes": 347,
+            "untouched_above_floor": 709
+          },
+          {
+            "slot": 11,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 12,
+            "reserved_bytes": 512,
+            "touched_bytes": 131,
+            "untouched_above_floor": 125
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 275,
+          "untouched_from_base": 1261,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "boot_xex_sha256": "28a8ffa1ed3a87aab946d685dc7162720f7949eb715aedc5c2297eda06e0bfc3",
+      "autoboot_frames": 250,
+      "write_commands": false,
+      "filesystem_writes": false,
+      "peak_tasks": 8,
+      "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+      "bank_zero_delta": {
+        "baseline": "bank-zero-compaction",
+        "baseline_sha256": "a223abfb037c96e7760f38b6c2a8b60365f1cd4e032fda5ce756b609ed1adfa7",
+        "fixed": 544,
+        "per_public_task": [
+          0,
+          288,
+          288,
+          288,
+          288,
+          288,
+          1536,
+          1536,
+          1600,
+          1600,
+          1600,
+          2848
+        ],
+        "idle": 0,
+        "runtime": 1952,
+        "loading": -12256
+      }
+    },
+    "policy_audit": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "source_files": 1187,
+      "app_abi": 36,
+      "scene_layout": {
+        "GuiNotice": 8,
+        "GuiPending": 94,
+        "Window": 294,
+        "Service": 11030
+      },
+      "authoritative_windows": 6,
+      "xex_sha256": "7270e14500e19b2c2ce03753d320c54bbcbabe3461ff27fa50f6df2ef8678ce7",
+      "provider_sha256": "2e3f40b5c807f30c2658ad9f436faa325d04abe26931f3f51acf3f819bb164d2"
+    }
+  },
+  "package_audit": {
+    "status": "pass",
+    "tier": "development",
+    "qualification": false,
+    "zip_sha256": "7aae280b70db44f54969fc9f89d21edab19533931fecee5b1233b12d357e5a38",
+    "zip_bytes": 2938656,
+    "members": [
+      "Exec-of816.xex",
+      "README.txt",
+      "SHA256SUMS",
+      "altirraos-816.rom",
+      "cartridge/Exec-of816-atarimax-8mbit-new.car",
+      "cartridge/Exec-of816-atarimax-8mbit-old.car",
+      "cartridge/Exec-of816-atarimax-8mbit.bin",
+      "cartridge/README.txt",
+      "exec816.atr",
+      "licenses/ALTIRRAOS-LICENSE.txt",
+      "licenses/CALCULATOR-COPYING.LIB.txt",
+      "licenses/CALCULATOR-COPYING.txt",
+      "licenses/CALCULATOR-LICENSING.md",
+      "licenses/CALCULATOR-PROVENANCE.txt",
+      "licenses/EXEC816-GPL-3.0.txt",
+      "licenses/EXEC816-LICENSING.md",
+      "licenses/EXEC816-MIT.txt",
+      "licenses/G4BENCH-COPYING.LIB.txt",
+      "licenses/G4BENCH-COPYING.txt",
+      "licenses/G4BENCH-LICENSING.md",
+      "licenses/G4BENCH-PROVENANCE.txt",
+      "licenses/GEM-COPYING.LIB.txt",
+      "licenses/GEM-COPYING.txt",
+      "licenses/GEM-FONT-NOTICE.txt",
+      "licenses/GEM-LICENSING.md",
+      "licenses/GEMARC-COPYING.LIB.txt",
+      "licenses/GEMARC-COPYING.txt",
+      "licenses/GEMARC-LICENSING.md",
+      "licenses/GEMARC-PROVENANCE.txt",
+      "licenses/OF816-LICENSE.txt",
+      "licenses/SDX-UTILITIES-NOTICE.txt"
+    ],
+    "checksums": {
+      "Exec-of816.xex": "300133f4e83303872616c3ebfc9f56f173e4558d7b9663d80878163ce752c2c3",
+      "README.txt": "0ae3d5f053bad43b39fa635ee6da62bb024671ac831e84441ba0907ed8e9ee30",
+      "altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "cartridge/Exec-of816-atarimax-8mbit-new.car": "e71999aade94abaa9029b7cdc5cbfab0b7e103e2977ccc7e6fd3f7e5e9164c0f",
+      "cartridge/Exec-of816-atarimax-8mbit-old.car": "10f5ac108f00b3b0588b3007190942652fa24f1677474249b09af7699a3be0c6",
+      "cartridge/Exec-of816-atarimax-8mbit.bin": "212d25bd962f897485b94254f664821adb831cc502268c1720c5e41301428aa4",
+      "cartridge/README.txt": "376f3c7f227d7b87265b476bafefbb5edeb61d600b93f810b52212bc64c8fe97",
+      "exec816.atr": "68a70e000fa6c814531e4c141007968525be1ed2fef8b479c8f2334331257a05",
+      "licenses/ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "licenses/CALCULATOR-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/CALCULATOR-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "licenses/CALCULATOR-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "licenses/CALCULATOR-PROVENANCE.txt": "3f90b2f47985b07a6908cea27104089d7ffffdd0d1f9c2da4cbcade56ba4415e",
+      "licenses/EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "licenses/EXEC816-LICENSING.md": "ecc93af98f3bd364d03927debe885743df0151f32b153baeb5e023e6fba0b3ec",
+      "licenses/EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "licenses/G4BENCH-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/G4BENCH-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "licenses/G4BENCH-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "licenses/G4BENCH-PROVENANCE.txt": "7dfc2f08d87a16f77653f6f5173fbb185b22b6b269909c26d359e01762b36a9e",
+      "licenses/GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "licenses/GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+      "licenses/GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "licenses/GEMARC-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/GEMARC-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "licenses/GEMARC-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "licenses/GEMARC-PROVENANCE.txt": "38dcc3771bc511bb3c7bb9a003e4d168d507d98a8be54d36517d81bd3a3ccf43",
+      "licenses/OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "licenses/SDX-UTILITIES-NOTICE.txt": "a1e4d9afd2a6ac478c13ba6a85d0a0b0444f9ebeba915d381de90995a14d94a1"
+    },
+    "allocation": {
+      "sectors": 8192,
+      "sector_bytes": 256,
+      "allocated": 4419,
+      "free": 3773,
+      "files": 70,
+      "directories": 6
+    },
+    "matched_system_files": 70,
+    "matched_disk_apps": 9,
+    "qed_separate": true
+  },
+  "load_fixture": {
+    "status": "pass",
+    "tier": "development",
+    "qualification": false,
+    "command": {
+      "source": "/Users/michalkurcewicz/action/exec816-public/tests/programs/gem_load.act",
+      "source_sha256": "c6b52c5c45d73317b8d5f2b3ef635d8f8367e2a959727be3cb3036bb6f3807e1",
+      "file_sha256": "b15a456dd33e7ce57bdb660ec8509afefdb55cf1aef78e9b219bdd7af65a4a60",
+      "compiler": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "compiler_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+      "optimize": true,
+      "api_sha256": "fa3d527cdeb230d0498e8b561ad91ef52ec67cb6531e80b1f7436479d153eb9c",
+      "profile_sha256": "344adaaa323a9726b6c9d6eaa96efb3da7db7f52ab55fe8460fde7a85a988df8"
+    },
+    "app_sha256": "609a95ad07c425a2ac9bdea5e3ba14835fd702dcdf721b17578c109ba98d7bb9",
+    "seed_sha256": "31612b5520556c8e344802de13ab7a849b5e8cde4135b056e36d5728226c4c8b",
+    "payload_sha256": "3677eed73fa707432a6765744145940ec39804984f2ce0c25a248500c6b6ebce",
+    "counter_body_sha256": "92780c5aaba74befb37bc7755830e5ec461e56cd8d5cc355000bc517c868ccf3",
+    "native_buffer_bytes": 16384,
+    "passes": 4,
+    "cancellation": "cold read-only CANCEL.BIN",
+    "bank_zero_reserved_delta": 0
+  },
+  "baseline_comparison": {
+    "gf0_artifact": "build/gem-first-gui/gf0/disk/results.json",
+    "gf0_sha256": "2b8b32ab50c19d7c981b00d30c47f736eb9f8ecc4e72bd8775f9671c2bdad020",
+    "same_counter_body": true,
+    "same_payload_pattern": true,
+    "same_read_write_bytes": true,
+    "same_machine_configuration": true,
+    "same_mouse_default": true,
+    "mouse_default_sha256": "49687232aad92769f13522ccc4b774d91707d646bd07b08dfdeb5ad29456f89e",
+    "gf0": {
+      "pointer": [
+        {
+          "label": "disk",
+          "target": [
+            328,
+            128
+          ],
+          "start": 42797760,
+          "captured": 43371566,
+          "presented": 43379190,
+          "capture_ms": 323.55398172204144,
+          "presentation_ms": 327.8529530758593,
+          "scanout_observed": 43404186
+        }
+      ],
+      "progress": [
+        {
+          "identity": 1,
+          "increments": 103,
+          "paints": 103
+        },
+        {
+          "identity": 2,
+          "increments": 102,
+          "paints": 103
+        }
+      ],
+      "disk_progress": [
+        {
+          "identity": 1,
+          "increments": 6,
+          "paints": 6
+        },
+        {
+          "identity": 2,
+          "increments": 5,
+          "paints": 6
+        }
+      ],
+      "window": [
+        42538844,
+        234795888
+      ],
+      "elapsed_ms": 108408.64699969975
+    },
+    "gf15": {
+      "pointer": [
+        {
+          "label": "disk",
+          "target": [
+            328,
+            128
+          ],
+          "start": 409711684,
+          "captured": 410271245,
+          "presented": 410289897,
+          "capture_ms": 315.5216041072544,
+          "presentation_ms": 326.0389721150471
+        }
+      ],
+      "progress": [
+        {
+          "identity": 5,
+          "increments": 117,
+          "paints": 118
+        },
+        {
+          "identity": 7,
+          "increments": 118,
+          "paints": 119
+        }
+      ],
+      "disk_progress": [
+        {
+          "identity": 5,
+          "increments": 31,
+          "paints": 32
+        },
+        {
+          "identity": 7,
+          "increments": 32,
+          "paints": 33
+        }
+      ],
+      "window": {
+        "clock_start": 347289844,
+        "clock_end": 590183716,
+        "elapsed_ms": 136961.4110369774
+      }
+    },
+    "limits": [
+      "Production adds desktop, terminal, stream backend and two shell sessions, replacing the GF0 controller/heartbeat topology.",
+      "The native command uses D8 rather than GF0 D1 and no AES registration; it offers the same four 16 KiB read/verify/write/Close passes.",
+      "Observer/menu/screenshot settlement contributes to both enclosing windows; these intervals are not command-only throughput comparisons.",
+      "The paced eight-pixel pointer sample includes physical packet scheduling and is not per-transition IL3 latency.",
+      "Whole-production-disk CPU totals were not captured. GF0 retains only a separately scoped disk CPU prefix; no full-run CPU speedup is claimed."
+    ]
+  },
+  "memory": {
+    "provider": {
+      "code": 214738,
+      "initialized": 5102,
+      "zero": 18615,
+      "serialized_desktop": 100785
+    },
+    "provider_delta_from_gf13": {
+      "code": 0,
+      "initialized": 0,
+      "zero": 0,
+      "serialized_desktop": 0
+    },
+    "qed_provider_budget": {
+      "readonly_bytes": 214738,
+      "readonly_capacity": 262144,
+      "readonly_allowance": 12288,
+      "mutable_bytes": 23717,
+      "mutable_capacity": 65536,
+      "shared_code_table_banks": true
+    },
+    "vram": 473600,
+    "vram_delta": 0,
+    "task_capacity": 12,
+    "aes_clients": 4,
+    "aes_windows": 6,
+    "console_units": 4,
+    "shell_sessions": 2,
+    "view_subscriptions": 8,
+    "production_bank_zero_budget": {
+      "fixed_runtime": 11072,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848,
+        1600,
+        1600,
+        1600,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 35040,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 55008,
+      "loading_including_os": 40336
+    },
+    "non_sdx_control_bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848,
+        1600,
+        1600,
+        1600,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 34496,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 54464,
+      "loading_including_os": 40336
+    },
+    "gui_reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "guards_alignment_unused_capacity_included": true
+    },
+    "profile_delta_from_non_sdx_control": {
+      "fixed": 544,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "runtime_including_os": 544,
+      "reason": "Existing SDX support is enabled by default in SIO distributions; this is not new GUI storage."
+    }
+  },
+  "host_checks": {
+    "tests": 692,
+    "skips": 4,
+    "status": "pass",
+    "artifact": "build/gem-first-gui/gf15/host-checks.log",
+    "sha256": "262953387288294733d6be9a516b7aeb67b289c8beb46604274e96e82d91c78d"
+  },
+  "documentation_checks": {
+    "status": "pass",
+    "artifact": "build/gem-first-gui/gf15/documentation-links.log",
+    "sha256": "a9c32f30f4bea74fd5519c1ecc0cc2b8887ecd2f63d0af9c9a8344c7e62380d2",
+    "observer_sha256": "94260f7c72061012b69564abd454e48d33f772b5b6485fe02704d6ac9c2cc3f6"
+  },
+  "corrections": [
+    "SYS staging and refresh include the ABI-matched Terminal APP.",
+    "QED provider budgeting counts the existing shared four code/table banks once, with unchanged explicit allowances.",
+    "Task census includes the dedicated console backend; eight boot Tasks and twelve in the combined case are observed.",
+    "Standalone demo pixels read the presentation copy and saved OS snapshot.",
+    "Session observer waits for Terminal input binding and painted selection before typing.",
+    "Shutdown observer exits both created sessions before expecting final system return.",
+    "Cancellation uses a separate cold read-only input and requires the native warning (5,304), preserving the normal write-result file."
+  ],
+  "retained_failures": [
+    {
+      "path": "build/gem-first-gui/gf15/delivery-complete/results.json",
+      "sha256": "cd02922291ff60914be109d7dacb743c2ebad6ea46bd95793e8ac350f8e0a447",
+      "scope": "Runtime/QED/two-session EXIT/ownership passed, but disk audit rejected empty RESULT.BIN. The cancellation probe reused an output-producing command and did not prove read-only cancellation. Replaced by a cold read-only source with explicit (5,304) warning and full persisted-byte audit."
+    },
+    {
+      "path": "build/gem-first-gui/gf15/delivery-final/results.json",
+      "sha256": "23d1b71df51d6773d7173dd406839610bc9b60ec92b2da993863a2532e66713f",
+      "scope": "All combined functional phases through QED passed; observer sent E before Terminal rebound after SESSION 2 and timed out. Replaced by binding-aware focused and full walks."
+    },
+    {
+      "path": "build/gem-first-gui/gf14/control-final/results.json",
+      "sha256": "40b60b72b3a07e7b65bca7cd3d7ac9ec2f7cb3ab2e022cde071a37c5d7cdcbc2",
+      "scope": "An earlier observer exited only one of two sessions before waiting for final shutdown. No product shutdown failure is inferred."
+    }
+  ],
+  "open_limits": [
+    "Development checks only; full hosted-system/release qualification and physical hardware remain separate.",
+    "Existing failed interaction latency gates remain open; their original protocols were not rerun or relaxed.",
+    "GF14 retains existing drawing boundaries; the 32-row trial is not in the delivered package.",
+    "QED coverage here is the focused changed-window/terminal coexistence walk, not a new full editor qualification.",
+    "Touched-byte stack watermarks are lower bounds on reserved stack depth; C frame reservations are not all written."
+  ]
+}

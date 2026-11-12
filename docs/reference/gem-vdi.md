@@ -71,15 +71,16 @@ retiring the registration. Failure to release ownership prevents disposal.
 
 Private storage is 894 live / 896 heap-reserved upper bytes per workstation,
 including its grant and parameter arrays. The current shared AES context is
-596 live / 600 reserved bytes. Transparent text adds four logical workstation
+600 live / 600 reserved bytes. Transparent text adds four logical workstation
 bytes without increasing its rounded allocation. No Task, DP, stack pool,
 bank-zero reservation, staging page or VRAM extent is added. See
 [QE2 evidence](../history/qed-editing.md#qe2-viewport-and-transparent-text) for
 the current VDI boundary/pixel checks and [WA4 evidence](../development/aes-windows-wa4.json)
 for the original layout, preemption, pixel and stack checks. The
-[two-counter demo](../guides/aes-applications.md#optional-of816-counter-desktop)
-exercises this interface beside native shell/disk work using existing 1 KiB
-caller stacks. The [WA6 record](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
+[Counter applications](../guides/aes-applications.md#counter-example)
+exercise this interface beside the GEM terminal and disk work using existing
+1,312-byte caller pools. The [GEM-first record](../history/gem-first-gui.md)
+contains current integration checks. The [WA6 record](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
 separates logical update waits, physical access and repaint completion; these
 are development results.
 
@@ -314,28 +315,30 @@ The donor's low-level hardware/startup code is excluded. The built-in font is
 unchanged. There are no printer, CIO font-loading, donor keyboard, legacy context or
 full opcode-table dependencies, and no near/TINY/ZWIN reservations.
 
-The mixed eight-Task layout supplies two 2,560-byte large stacks, each including
-its 256-byte interrupt reserve. C uses 20 bytes of each Task's existing lower
-128-byte DP area. Complete C code/data banks `$0C`/`$0D` reserve 131,072 upper-RAM
-bytes. The adapter's 4 KiB staging page is inside that data bank; the CPU aperture
-`$8000–$8FFF` is an existing reservation, mapped only during owner transfers.
-Protocol storage, leases, driver state and globals remain in upper RAM. Steady
-service/client heap allocations total 2,656 rounded bytes, including the
-192-byte STOP reserve. The server's upper-RAM record grows by four bytes for
-the reply-port pointer. Task stacks and external guards are already in the
-platform budget.
+The current desktop uses the platform's twelve public Task pools, including
+three 2,560-byte pools, ordinary 1,312-byte pools and the 1,536-byte Root stack.
+Each includes its 256-byte interrupt floor. C uses 20 bytes of each Task's
+existing lower 128-byte DP area. The shared provider's linker layout has four
+64 KiB read-only banks (`$0C`, `$0E`, `$0F`, `$10`) and one data bank (`$0D`).
+The adapter's 4 KiB staging page is inside that data bank; the CPU aperture
+`$8000–$8FFF` is mapped only during owner transfers. Protocol storage, leases,
+driver state and globals remain in upper RAM. Per-application images and private
+workstations are separate allocations. The [GEM-first record](../history/gem-first-gui.md)
+retains current payload sizes and Task/stack observations; the
+[platform budget](platform.md#bank-zero-memory-budget) defines reservations.
 
-[VBXE extents](../../platform/altirraos/vbxe-vram.json) reserve 243,200 bytes of
+[VBXE extents](../../platform/altirraos/vbxe-vram.json) reserve 473,600 bytes of
 private VRAM, including screen slack, XDL, the 4,096-byte command arena,
 expanded font and strip scratch. Cursor storage at `$37000–$374FF` contains a 256-byte
 save area and four 256-byte mask planes, retaining both pixel parities. It reuses the
-existing CPU staging page and does not borrow glyph scratch. Two 65,536-byte
+existing CPU staging page and does not borrow glyph scratch. Two 76,800-byte
 [desktop snapshot slots](desktop.md#private-window-snapshots) at `$50000` and
-`$60000` include unused capacity. VRAM leaves 281,088 bytes unassigned. CPU and
-VRAM reservations are separate.
-Fixed, per-public-Task and private-idle bank-zero increments are all zero for
-G0–G6 and I0–I7; the existing eight-Task budget includes 57,408 reserved bytes with OS
-memory and leaves 8,128 bytes free after startup.
+`$62C00` include unused capacity. The retired native shell backing still reserves
+40,960 bytes; it is not a terminal framebuffer. Icon and terminal font-mask
+storage retain their existing reservations. VRAM leaves 50,688 bytes unassigned.
+CPU and VRAM reservations are separate. GF12–GF15 add zero fixed, per-public-Task
+or idle bank-zero bytes. The default demo's existing SDX profile adds 544 fixed
+bytes relative to the non-SDX drawing fixture, independently of the GUI changes.
 
 [G4](../development/gem-vdi-g4.json) records the primitive corpus and
 [G5](../development/gem-vdi-g5.json) records concurrent physical I/O and failure

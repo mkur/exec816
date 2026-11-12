@@ -268,8 +268,8 @@ it with `wind_update(END_UPDATE)`. The caller must restrict drawing/model change
 to that window. Nested calls keep the outer scope, including nested ordinary
 `BEG_UPDATE`; an ordinary outer BEGIN still covers every owned window. Empty or
 hidden scoped updates invalidate their target, while untouched siblings remain
-eligible for caching. The helper uses the current wire version 19's UPDATE_WINDOW
-flag and C program import version 30; rebuild programs and their matching host.
+eligible for caching. The helper uses the UPDATE_WINDOW flag in the current
+wire ABI; rebuild programs and their matching host when the APP ABI changes.
 
 `ExecAESInvalidate(window,x,y,width,height)` declares logical damage inside the
 caller's UPDATE scope. Coordinates are screen coordinates clipped to the work
@@ -288,10 +288,9 @@ checks. A completed empty update preserves a valid saved image; it never clears
 older unsatisfied damage. This uses existing local/presenter ownership and adds
 114 payload bytes to the request/context, with no new bank-zero reservation.
 
-Update ownership also excludes native console painting/scrolling, widget
-feedback, background repair and cache capture. Mouse ownership defers native
-widget gestures, focus and geometry changes; an explicit mouse hold alone
-allows console painting. Acquisition waits for already admitted drawing and
+Update ownership also excludes presenter feedback, background repair and cache
+capture. Mouse ownership defers frame gestures, focus and geometry changes;
+an explicit mouse hold alone allows application painting. Acquisition waits for already admitted drawing and
 hardware/scene tokens to retire. Pending acquisitions stop new conflicting work,
 so continuous output cannot starve an application lock. The service holds no
 Layers token while an application owns a lock.
@@ -311,8 +310,8 @@ gestures and damage without another input edge. Blocked paint alone does not
 keep the presenter runnable. Device completions and cancelled console writes
 can retire while drawing is excluded.
 
-Each registration can own several windows; native and GEM windows share six
-desktop slots, with two additional layers reserved for menus. The base kind is `NAME | CLOSER | MOVER`, optionally combined with `SIZER`,
+Each registration can own several windows; all AES windows share six desktop
+slots, with two additional layers reserved for menus. The base kind is `NAME | CLOSER | MOVER`, optionally combined with `SIZER`,
 `UPARROW`, `DNARROW`, `VSLIDE`, `FULLER` and `INFO`. Create reserves a hidden
 window and returns a positive handle, or minus one on failure. Open shows it;
 close hides it and retires the open epoch without deleting the handle. Delete
@@ -401,7 +400,7 @@ provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH` and `WF_TOP` from published state.
 Use those accepted rectangles after open/set; `wind_calc` itself remains an
 unsnapped border/work conversion. Fixed-size comparisons use normalized sizes.
 `WF_CURRXYWH` and `WF_WORKXYWH` are aliases. Handle zero permits desktop work and
-top queries; a native top window is reported as zero.
+top queries.
 
 `WF_VSLIDE` and `WF_VSLSIZE` (`WF_VSLSIZ`) set/query 0..1000 position and
 size, initially 0 and 1000. Frame pixels are cached at mutation; minimum thumb
@@ -446,7 +445,7 @@ See [desktop iconification](desktop.md#iconification).
 Title clicks, completed title drags and closer clicks deliver `WM_TOPPED`,
 `WM_MOVED` and `WM_CLOSED` requests. The presenter commits them only when the
 application calls the corresponding set or close operation. Inactive clicks
-request top first. The existing native-window behavior is unchanged.
+request top first.
 
 Fuller release sends `WM_FULLED`; the application chooses and remembers its
 full/restore bounds, accepting them through `WF_CURRXYWH`. Release outside the
@@ -500,25 +499,22 @@ waiter wake hints and its own pending GUI delivery. Pending publishers retain an
 native input/drawing gates remain active. Application message matching and
 timer waits stay caller-local. There is no presenter application-message FIFO,
 event-wait scan, timer alarm or periodic AES wake.
-Native and AES requests share at most four admissions per turn, alternating the
-first endpoint on ordinary turns. When painting or a widget gesture can advance,
-at most three native requests precede the existing paint quantum, then one AES
-request is admitted after it. Both phases share the four-request limit; AES is
-not deferred across an entire repaint. Caller-owned messages and timer completions do not use that intake budget.
+The AES endpoint admits at most four requests per turn. When painting or a frame
+gesture can advance, at most three requests precede the paint quantum, with one
+reserved admission after it. Both phases share the four-request limit.
+Caller-owned messages and timer completions do not use that intake budget.
 The presenter services captured input before controls when signalled, after
-each native/AES admission (including native deferral), after a cache/move token
+each AES admission, after a cache/move token
 retires, after actual paint work, and after releasing a borrowed console view.
 These boundaries collect input and present the pointer when drawing is
-quiescent; they add no Yield or periodic wake. Widget model changes stay after
-native control admission and respect the existing scene/AES ownership gates.
+quiescent; they add no Yield or periodic wake. Frame changes respect the existing
+scene/AES ownership gates.
 Each turn gives GUI painting its bounded quantum before new console
-output. Widget strips can drain up to four ready steps, with captured input and
-pointer presentation between them; each object step draws at most one object
-part and examines at most eight objects. Frame work is a separate step when
-needed. These steps share
+output. Frame/menu painting can drain up to four ready steps, with captured input
+and pointer presentation between them. These steps share
 the same control/output budgets and scene token. Ready paint may continue without a voluntary Yield; VBI preemption
 provides Task fairness, and blocked work retains the ordinary signal wait path.
-When painting releases the scene with a native control already pending, one new
+When painting releases the scene with an AES control already pending, one new
 console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
@@ -527,8 +523,7 @@ layer stack in the caller under scene ownership. Repaint readiness, queued
 mutations and another client's UPDATE do not bar this read. Ordinary and PB
 queries preserve the selected view, rectangle iterator and transport sequence.
 It returns the topmost normal AES window's global handle,
-including foreign owners and borders. Background, the desktop window and native
-windows return zero; a native window occludes AES windows below it. The query
+including foreign owners and borders. Background and the desktop window return zero. The query
 does not focus or raise anything.
 
 `ExecAESDragOutline(window,dx,dy,width,height)` starts one pointer-followed
@@ -543,12 +538,10 @@ UPDATE requests still wait for MCTRL release, and a queued lock may pause native
 painting. This is a bounded Exec extension, not GEM's synchronous drag-box API.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 19 has a 340-byte request and permits init, exit, update,
+profile: version 20 has a 340-byte request and permits init, exit, update,
 window mutations, cold display delegation, menu publication, session mouse
 preferences, application outline admission on the RPC endpoint. `wind_find` uses the caller
 scene query.
-`ExecAESConsole` uses the current `WF_EXEC_CONSOLE` window selector for
-[application-owned console content](console-windows.md#application-owned-gem-console).
 Other window queries and rectangle conversion remain local. The input inbox is
 754 bytes, including 20 bytes of frozen M1 pointer scratch; each registration
 uses 1,420 bytes before heap rounding. Public GEM arrays remain private to each caller. Rebuild
@@ -556,12 +549,10 @@ bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).
 
-Version 8 reserves a 594-byte upper-memory input inbox per registration alongside
-the existing sixteen ordinary messages and one GUI record. The combined storage
-is 1,142 bytes, rounded to 1,144 by the heap. Each endpoint gains a padded
-four-byte inbox pointer, adding sixteen bytes to the shared directory. The
-registration owns this storage until endpoint withdrawal and publisher holds
-retire. This adds no signal, Task or bank-zero reservation.
+The registration owns its upper-memory inbox, ordinary messages and GUI record
+until endpoint withdrawal and publisher holds retire. It adds no signal, Task or
+bank-zero reservation. The earlier layouts remain in the
+[input implementation history](../history/aes-application-input.md).
 
 The inbox contains separate sixteen-record key/button FIFOs, immutable source
 epochs, selected-input interest and a coherent snapshot. Relevant input uses the
@@ -577,20 +568,19 @@ unchanged passes. Focus, menu/capture state, window lifetimes, outer lock
 transitions and input-loss recovery invalidate it. Publication remains before
 lock replies and ordered input delivery; button edges retain their FIFO.
 
-## Resident counter capacity
+## Desktop application capacity
 
-The optional [counter desktop](../guides/aes-applications.md#counter-example)
-runs two independent GEM applications beside the native shell. Its resident
-controller also registers to send shutdown messages: three registrations are
-used, and shell plus counters occupy three desktop layers. Prompt services use
-six public Tasks, leaving exactly two slots for a disk-command pipeline. The
-native Control Panel is replaced in this bundle; adding it would leave only one
-Task slot after disk services start. The separate four-layer coexistence proof
-uses root-driven disk I/O rather than pipeline children.
+The production GEM desktop and terminal use two of four AES registrations.
+Two loaded [Counter applications](../guides/aes-applications.md#counter-example)
+fill the remaining registrations. A fifth client fails normally. The desktop
+uses eight public Tasks at boot, or nine with two shell sessions; two Counters
+and a foreground disk command reach the existing twelve-Task limit. A GUI
+application may own several of the six window slots. Neither capacity grows
+when an application opens another window.
 
 All clients must detach before service shutdown. Closing a focused window
 restores the frontmost remaining shown, routable owner. Closing a background
-window preserves focus. Fixed-size windows remain the supported geometry.
+window preserves focus.
 Window-scoped menus and resource loading are described below. [WA6](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
 records development coverage and measured stack use, not hardware qualification.
 
@@ -746,11 +736,12 @@ The fixed monochrome donor icons use clipped fill runs; this adds no general
 G_IMAGE or raster API. Alert storage survives a failed retirement until FINISH
 or application teardown can complete. Session storage is 319 live / 320 reserved
 upper bytes; an alert adds 514 live / 520 reserved bytes. Both named calls and
-AESPB dispatch use C component ABI 11; rebuild GEMSYS and applications together.
+AESPB dispatch use the same current APP ABI; rebuild the provider and applications together.
 
 The application binding reuses the extracted GEM4XE routines with its own GSX
-scratch, protected by the existing display grant. The native retained widget
-binding remains presenter-owned. No additional bank-zero reservation is needed.
+scratch, protected by the existing display grant. Presenter-owned menu rendering
+borrows an admitted tree only for its bounded drawing operation. No additional
+bank-zero reservation is needed.
 
 
 ## File selector
@@ -941,9 +932,9 @@ Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching. The window selector
 uses registered, shown window lifetimes independently of keyboard/pointer wait
 interest. Iconified windows remain in the menu and cycling skips them.
 
-The private C context is 368 bytes. Rebuild bindings and applications with
-the current C component ABI (14).
-The server wire record remains 112 bytes; all bank-zero reservations are unchanged.
+The private C context is 600 bytes and the current APP ABI is 36. Rebuild
+bindings and applications together. The server request is 340 bytes; all
+bank-zero reservations are unchanged.
 
 Synchronous form calls can return `AES_PENDING` when another owned window has
 an unhandled message. Dispatch that message before resuming the form. The
@@ -1118,8 +1109,8 @@ separate from standard GEM. A registered application supplies `AES_MOUSE_OFF`
 (fixed 2× motion), `AES_MOUSE_MILD` (the existing accelerated curve) or
 `AES_MOUSE_QUERY` (-1). The result is the chosen profile; -1 indicates failure,
 with `ExecAESDiagnostic()` supplying the cause. Valid enum use belongs to the
-caller. AES wire version 9 adds operation 201 without changing record layouts;
-The current C component ABI exports the binding. Rebuild the runtime and apps.
+caller. The current wire ABI uses operation 201, and the current APP ABI exports
+the binding. Rebuild the provider and applications together.
 
 The presenter serializes this infrequent request with input processing. It
 preserves pointer coordinates and clears fractional motion when the profile

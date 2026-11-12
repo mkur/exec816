@@ -1242,8 +1242,8 @@ Disk/input attempts do not establish a latency benefit. Their inclusive pointer
 samples are 313.732 ms for the retained boundary and 347.084 ms for the trial.
 These are single samples from incomplete walks, not distributions or passes of
 the original latency gates. The trial walk times out while positioning the
-pointer after its sample; the earlier control walk expects the wrong Shell
-cancellation result. Both failures remain in the evidence. The production
+pointer after its sample; the earlier control walk does not isolate a cold read
+and fails its cancellation-warning assertion. Both failures remain in the evidence. The production
 functional load and package walk are recorded separately under GF15.
 
 The plan permits retaining the boundary when the trial does not demonstrate
@@ -1252,3 +1252,80 @@ inconclusive loaded-input result support that decision. No renderer optimization
 new latency pass or changed hardware limit is claimed. Code, data, upper-memory
 allocations, VRAM and reserved bank-zero bytes all change by zero, including
 every Task's stack/direct page, guards, alignment and unused capacity.
+
+## GF15 production integration and demo
+
+The [GF15 record](../development/gem-first-gf15.json) combines the production
+desktop, Terminal, two shell sessions, two loaded copies of the unchanged
+Counter body and a foreground native disk command. It cold-boots the exact
+extracted OF816 ZIP on the pinned AltirraOS/65C816/VBXE machine and preserves
+the 250-frame, five-second autoboot. Boot uses eight public Tasks; two prompts
+use nine, and both Counters plus the disk command reach twelve. Desktop,
+Terminal and the Counters fill four AES registrations; a fifth client returns
+the normal failure. The six-window exhaustion check remains in GF12.
+
+The command performs the same four complete 16 KiB read/verify/write/Close
+passes as GF0, using the same byte pattern and Counter body. The saved disk is
+independently audited for exact bytes and allocation. Both Counters advance
+their models, paint counts and independently checked digit pixels during disk
+work. The record includes enclosing elapsed windows, peer progress and the
+inclusive paced eight-pixel pointer observation beside GF0. Production has
+additional desktop, terminal, backend and shell Tasks, uses D8 for the test disk
+and includes menu/snapshot settlement in that window. This is equal offered
+work, not an isolated throughput or full-run CPU comparison. Whole-disk CPU
+totals were not captured; GF0's separate prefix retains its original scope.
+The enclosing windows are 108.409 seconds for GF0 and 136.961 seconds for this
+walk, including the added GUI controls and longer pointer-position settlement.
+The single paced pointer presentation sample is 327.853 ms in GF0 and 326.039 ms
+here; neither passes or replaces the original latency protocols.
+
+Physical BREAK cancels a cold read from a separate read-only test file; the
+command returns its explicit warning `(5,304)`. It cannot truncate the normal
+four-pass result file. The earlier output-producing cancellation probe returned
+`(10,304)` and left that result empty, which the independent disk audit rejected.
+That failed walk remains in the record.
+Ordinary GUI close messages retire both Counters, each shell collects its own
+job, and one Counter is relaunched and closed again. QED then loads from its
+separate ATR, edits `ab`, reconstructs exact pixels after Terminal exposure,
+coexists with an ECHO command, presents its dirty-close form and retires after
+Discard. Both shell sessions exit before the system returns to the OS. Guards,
+interrupt floor watermarks, display/heap ownership and saved SYS inputs are
+checked. A separate Terminal walk covers backspace, the 64-column input edge,
+session switching and cancelled/confirmed close. The no-option standard demo
+also cold-boots its extracted OF816 package into shell/prime and exits cleanly.
+
+The integration observer now waits for Terminal's asynchronous input binding
+and painted selection after SESSION, before typing into the new source. A
+focused two-session shutdown check covers that transition. Earlier attempts
+which typed before rebinding, or exited only one of two sessions before waiting
+for final shutdown, remain as failed observer runs in the record. No guest state
+is patched to complete the walk, and existing latency protocols are unchanged.
+
+Packaging now stages the ABI-matched Terminal APP on SYS in both normal builds
+and frozen-image refreshes. The Task census includes the dedicated stream
+backend. QED's budget check counts the existing four shared code/table banks
+once; its explicit 12 KiB read-only and 16 KiB data allowances remain enforced.
+The guide and current contracts describe one AES window implementation, APP
+ABI 36, copied terminal views and the writable combined SYS/WORK disk.
+
+The distributable ZIP contains boot files, a short guide, checksums and notices
+under `licenses/`; both Atarimax CAR forms and the raw BIN accompany the XEX.
+Its SYS audit checks 70 files, including Terminal, MD5, ARC and its overlays,
+and EDX. QED stays on its separately supplied ATR with its own notices.
+Development manifests, traces, snapshots and test media remain outside the ZIP.
+
+The final C provider bytes match the frozen GF13 production control: 214,738
+code bytes, 5,102 initialized bytes and 18,615 BSS bytes. GF14 and GF15 add zero
+code/data allocations or VRAM; the map still reserves 473,600 VRAM bytes,
+including 40,960 bytes of unused legacy shell backing. GUI changes add **zero
+fixed/root/kernel, per-public-Task or idle reserved bank-zero bytes**, including
+guards, alignment and unused capacity. The default SIO demo separately enables
+the pre-existing SDX profile: fixed reservation is 11,072 rather than 10,528
+bytes, and total runtime reservation including OS is 55,008 rather than 54,464.
+Every public Task and idle reservation is identical.
+
+These are selected development checks, with 692 host tests and four existing
+historical skips. The record freezes compiler, ROM, bridge, configuration,
+source, media, package and observer hashes and actual stack observations.
+The original failed latency gates, hosted release qualification and physical
+hardware qualification remain open. GF14's trial boundary is not delivered.

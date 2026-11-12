@@ -305,21 +305,24 @@ python3 tools/test_mouse_observe.py --mode opt --replay --output build/gem-mouse
 python3 tools/test_mouse_baseline.py --mode opt --case keyboard --output build/gem-mouse/m0/keyboard
 ```
 
-### Desktop preview
+### GEM desktop demo
 
-Build the optional framed shell and independent graphical client (no primes):
+Build the GEM desktop and loaded Terminal (no primes):
 
 ```sh
-python3 tools/build_demo.py --desktop --output build/desktop/preview
-python3 tools/test_demo.py --bundle build/desktop/preview --boot-smoke
+python3 tools/build_demo.py --gem-desktop --qed --release-compiler --output build/gem-demo
+python3 tools/test_gem_acceptance.py --build build/gem-demo/bitmap-console \
+  --bundle build/gem-demo --output build/gem-demo-check --qed
 ```
 
-The standard command without `--desktop` retains the five-second OF816 boot
+The standard command without `--gem-desktop` retains the five-second OF816 boot
 into the shell/prime demo. Both selections include OF816, the matching system
 ATR, pinned AltirraOS ROM, notices and checksums. Distribute only the generated
 `exec816-demo.zip`; development manifests, images and traces stay outside it.
-The [desktop guide](../desktop-distribution.txt) specifies ST mouse/port 1 and
-records the outstanding interaction timing limits. This builds a local preview;
+The generated guide specifies the ST mouse on joystick port 2. QED remains a
+separate ATR in the build directory. For the combined two-Counter/disk check,
+build `tools/build_gem_load.py --output DIR` and pass `--load DIR` to the runner.
+The [execution record](../history/gem-first-gui.md) retains outstanding interaction timing limits. This builds a local demo;
 it does not publish a GitHub release.
 
 For SIO boot images, `--boot-sio auto` selects the shared boot-only 57,600 baud

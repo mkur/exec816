@@ -235,7 +235,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only,
                       sdx=sdx,sdx_drive_a=sdx_drive_a,sdx_car_root=sdx_car_root)
     if gem_desktop:
-        for name in ('panel','counter','files','calc','dialog','text','g4bench','gemarc')+(('basic',) if basic_workbench else ()):
+        for name in ('panel','counter','files','calc','dialog','text','g4bench','gemarc','terminal')+(('basic',) if basic_workbench else ()):
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
             binary_names.add('C/'+name.upper()+'.APP')
         calculator=output/'bitmap-console/apps/calc'
@@ -334,7 +334,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if ide_only:
         guide=ide_only_guide(bitmap_shell_only)
     if bootable_atr:
-        guide=bootable_guide(bitmap_shell_only,gem_desktop)
+        guide=bootable_guide(bitmap_shell_only,gem_desktop,gem_desktop=gem_desktop)
     if system_drive!=1:
         from package_demo import split_guide
         guide=split_guide(system_drive,bitmap_shell_only)
@@ -374,7 +374,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                         ROOT/'tools/make_data_disk.py',ROOT/'tools/sdfs_reference.py',ROOT/'tools/sdfs_reference.cpp',
                         ROOT/'tools/make_shell_disk.py',Path(__file__),*sources,
                         *sorted((ROOT/'lib/dos').glob('*.act'))]},
-        bank_zero_delta=bank_zero_delta(program['build']['memory']),task_capacity=12,expected_peak_tasks=7,
+        bank_zero_delta=bank_zero_delta(program['build']['memory']),task_capacity=12,
         qualification='Focused development checks only; full release and general compiler qualification remain separate.')
     if bootable_atr:
         record['bootable_atr']=True
@@ -392,7 +392,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if fastbasic:
         record['fastbasic']=fastbasic_metadata(fastbasic_record)
     if text_shell_only:
-        record.update(shell_only=True,expected_peak_tasks=6)
+        record.update(shell_only=True)
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             entry,ROOT/'docs/text-shell-distribution.txt')})
     if ideplus:
@@ -401,7 +401,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['source_inputs'].update({name:sha256(ROOT/name) for name in (
             'tools/ideplus_media.py','docs/guides/ideplus.md','toolchain/altirra-ideplus.json')})
     if bitmap_shell_only:
-        record.update(bitmap=True,shell_only=True,desktop=desktop,expected_peak_tasks=7 if desktop else 6,
+        record.update(bitmap=True,shell_only=True,desktop=desktop,
             font_source='bitmap-console/selected/src/vdi/font8x8.c')
         record['artifacts'].update({name:sha256(output/name) for name in GEM_NOTICES})
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
@@ -411,7 +411,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             ROOT/'docs/gem-desktop-distribution.txt',*sorted((ROOT/'lib/desktop').glob('*.act')))})
     if gem_desktop:
-        record.update(gem_desktop=True,expected_peak_tasks=8)
+        record.update(gem_desktop=True)
         if basic_workbench:
             record['basic_workbench']=True
             record['source_inputs']['docs/basic-workbench-distribution.txt']=sha256(ROOT/'docs/basic-workbench-distribution.txt')
@@ -446,20 +446,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['source_inputs'].update({str(p.relative_to(ROOT)):sha256(p) for p in (
             ROOT/'tools/qed_demo.py',ROOT/'tools/qed_delivery.py',ROOT/'tools/build_qed.py',
             ROOT/'tools/measure_qed_frames.py',ROOT/'docs/qed-exec-distribution.txt')})
-    # The controller adds one Task to every former one-shell peak.
-    required = record['expected_peak_tasks'] + 1 + int(ideplus and not ide_only)
-    record['requested_peak_tasks'] = required
-    record['expected_peak_tasks'] = min(record['task_capacity'], required)
-    gui = 2 if desktop else 0
-    base = 4 + int(ideplus and not ide_only)
-    prime = int(not shell_only)
-    record['task_census'] = dict(shared_services_and_controller=base,
-        shell_processes=1, prime=prime, initial_gui_processes=gui,
-        prompt=base+1+prime+gui,
-        one_shell_pipeline_required=base+1+prime+gui+2,
-        two_shell_pipeline_required=base+2+prime+gui+2,
-        historical_peak_required=required,
-        historical_peak_admitted=required<=record['task_capacity'], capacity=record['task_capacity'])
+    record_task_census(record)
     graphics=None
     if gem_vdi:
         from build_gem_artifact import build as build_graphics
@@ -530,6 +517,25 @@ def finalize_cartridges(output,record):
     (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
 
 
+def record_task_census(record):
+    backend=int(bool(record.get('gem_desktop')))
+    mixed=int(bool(record.get('ideplus')) and record['kernel']['sio_enabled'])
+    base=4+mixed+backend
+    gui=2 if record.get('desktop') else 0
+    prime=int(not record.get('shell_only'))
+    prompt=base+1+prime+gui
+    required=prompt+2
+    record['requested_peak_tasks']=required
+    record['expected_peak_tasks']=min(record['task_capacity'],required)
+    record['task_census']=dict(shared_services_and_controller=base,
+        dedicated_console_backend=backend,shell_processes=1,prime=prime,
+        initial_gui_processes=gui,prompt=prompt,
+        one_shell_pipeline_required=required,two_shell_pipeline_required=required+1,
+        historical_peak_required=required,
+        historical_peak_admitted=required<=record['task_capacity'],
+        capacity=record['task_capacity'])
+
+
 def refresh_boot_disk(output):
     """Refresh disk reader/media/guides without recomposing the frozen OF816 XEX."""
     output=output.resolve()
@@ -537,7 +543,20 @@ def refresh_boot_disk(output):
     require(record.get('bootable_atr'),'Boot-disk refresh requires a bootable ATR build')
     require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
             'Changed native demo artifacts')
-    content=bootable_guide(record.get('bitmap',False),bool(record.get('gemarc')))
+    record_task_census(record)
+    if record.get('gem_desktop'):
+        # The terminal is a required boot application on the shared SYS disk.
+        # Refreshes reconcile disk APPs with the frozen provider's build record.
+        for name,app in record['kernel']['gem_applications'].items():
+            if name=='desktop':
+                continue
+            source=output/'bitmap-console/apps'/name/'program.app'
+            require(sha256(source)==app['sha256'],'Changed staged GEM application: '+name)
+            target='C/'+name.upper()+'.APP'
+            shutil.copyfile(source,output/'media'/target)
+            record['files'][target]=dict(bytes=source.stat().st_size,sha256=app['sha256'])
+    content=bootable_guide(record.get('bitmap',False),bool(record.get('gemarc')),
+        gem_desktop=record.get('gem_desktop',False))
     if record.get('basic_workbench'):
         content+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
     content=content.replace('@VERSION@',record['kernel']['exec_build']['version'])
@@ -686,7 +705,8 @@ def refresh_boot_guide(output,program,record):
                     'docs/text-shell-distribution.txt')
         content=guide.read_text().replace('@SYSTEM_DISK@',record['media']).replace('@SYSTEM_DRIVE@',str(drive))
         if record.get('bootable_atr'):
-            content=bootable_guide(record.get('bitmap',False),bool(record.get('gemarc')))
+            content=bootable_guide(record.get('bitmap',False),bool(record.get('gemarc')),
+                gem_desktop=record.get('gem_desktop',False))
             guide=ROOT/'docs/bootable-atr-distribution.txt'
         elif drive!=1:
             from package_demo import split_guide

@@ -49,7 +49,7 @@ def slow_schedule(bridge, program, current, target):
     return result
 
 
-def schedule(bridge, program, current, target):
+def schedule(bridge, program, current, target, settle_frames=7):
     # Session preferences may differ from the immutable build default. Observe
     # the active transform; never alter target state to position the pointer.
     selected = next((d['address'] for d in program['image']['data']
@@ -74,7 +74,7 @@ def schedule(bridge, program, current, target):
             return slow_schedule(bridge,program,current,target)
         packet = [(1 if d>0 else -1)*min(16,max(1,abs(d)//4)) if d else 0 for d in remaining]
         bridge._cmd_ok(f'MOUSE AT 2000 {packet[0]*16} {packet[1]*16} -1')
-        condition = f'@frame>={bridge.eval_expr("@frame")+7}'
+        condition = f'@frame>={bridge.eval_expr("@frame")+settle_frames}'
         marker = program['labels']['native_irq']
         bridge.bp_clear_all();bridge.bp_set(marker,condition=condition)
         run_to(bridge,marker,condition=condition,timeout=60,frame_limit=500)

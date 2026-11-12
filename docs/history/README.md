@@ -1,5 +1,8 @@
 # Historical records
 
+- [GF15 production integration and demo](gem-first-gui.md#gf15-production-integration-and-demo):
+  combined disk/input and QED checks, current contracts and the audited OF816 ZIP.
+
 - [GF14 drawing boundary decision](gem-first-gui.md#gf14-drawing-boundary-decision):
   measured 32-row trial, longer ownership interval and retained production limits.
 

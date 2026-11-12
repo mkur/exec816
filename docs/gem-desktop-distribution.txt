@@ -1,7 +1,7 @@
 Exec816 @VERSION@ GEM desktop
 ===========================
 
-A 640x240 colour desktop, folder windows and the native shell.
+A 640x240 colour desktop, folder windows and the shell in a GEM Terminal.
 Warm grey surfaces, blue-teal icons and patterned active titles give it an
 Exec816 identity inspired by GEM and Workbench.
 Panel, Calculator, Text and Counter launch on demand. No prime Task is started.
@@ -31,10 +31,10 @@ Boot with no cartridge. This build uses RAM beneath the former cartridge/BASIC
 windows for Task stacks and direct pages.
 
 1. Mount @SYSTEM_DISK@ in D1 with "Generic + 57600 baud" emulation.
-   Mount a disposable copy of work.atr in D8, writable.
+   Keep this combined system disk writable; WORK: names its WORK directory.
 2. Boot Exec-of816.xex; leave the keyboard alone for the five-second countdown.
 3. Wait for SYS: ready and the desktop. Keep the system disk mounted for apps
-   and files, and WORK: mounted for saved settings and writable storage.
+   and files, saved settings and writable storage.
 
 Press a key during the countdown for OF816; EXEC816 resumes desktop startup.
 @POINTER_DESCRIPTION@
@@ -47,9 +47,9 @@ name stays at the left of the menu bar; click it for Next window, Close or Iconi
 Application menus follow it. Windows at the far right of the top bar
 reaches covered windows. Ctrl-Tab cycles; Ctrl-Escape opens Windows.
 Click the small window gadget at the right of a title (left of full/restore)
-to iconify Shell or an application. Click its labeled tile along the bottom to
+to iconify Terminal or an application. Click its labeled tile along the bottom to
 restore, or select its * entry in Windows. Iconified applications keep running;
-Shell output continues and appears when restored. Ctrl-Tab skips these tiles.
+Shell output continues and appears when Terminal is restored. Ctrl-Tab skips these tiles.
 The active application's menu is at the left. Ctrl-Shift-Escape enters it;
 arrow keys/Tab and Return select. Escape dismisses menus or cancels drags.
 
@@ -82,7 +82,7 @@ larger listings report truncation.
 
 Path (P), New Folder (N) and Rename (R) open inline text dialogs. Tab changes
 focus, Return accepts, Escape/Cancel dismisses. Names fold to uppercase.
-Use WORK: for writes; SYS: is read-only. File > Copy copies a regular-file
+Use WORK: for writes. File > Copy copies a regular-file
 selection: one file asks for a full destination path, several ask for a directory.
 Drag a selected file to another folder window to copy the selection. Drop on
 empty content or a directory icon/row. Move four pixels to start; Escape cancels.
@@ -110,14 +110,15 @@ TXT files open in Text. Other files launch as programs, with output in the shell
 Close applications to release scarce Task/window slots. Desk > Quit Desktop
 stops its children. Closing the last shell session stops the desktop and returns to the OS.
 
-Shell retains 64 by 20 cells beneath two tab slots. Click + to create a session
-in SYS:, a tab to select it, or its x to close it. + is disabled with two sessions.
+Terminal displays 64 by 20 cells beneath two tab slots. Click + to create a
+session in SYS: or a tab to select it. + is disabled with two sessions. Terminal's
+close gadget asks Cancel/Close for the selected session; Cancel is the default.
 NEWSHELL starts in the calling shell's directory; SESSIONS lists live numbers.
 SESSION number and Ctrl-Shift-Space also switch; TAB completes commands/paths.
 Each shell keeps its own draft, caret, history, directory, aliases and job.
 EXIT closes only that session while another remains. Close is cooperative:
-its tab stays closing until its work retires. Two shells use two Task slots;
-with the desktop APP running, two prompts use seven of twelve slots. A
+work retires before the session disappears. Two shells use two Task slots;
+with the desktop and Terminal APPs running, two prompts use nine of twelve slots. A
 two-command pipeline can run while both prompts remain open. Each additional running
 GUI APP uses another slot. Mixed SIO+IDE builds need one further worker;
 IDE-only builds replace the SIO worker and keep the same total.
@@ -130,7 +131,7 @@ ARC files open in C:GEMARC.APP unless a saved association overrides ARC.
 Shell examples
 --------------
 
-Click the shell title before typing. Try TASKS, DIR, HELLO or CAT STORY.TXT | WC.
+Click Terminal before typing. Try TASKS, DIR, HELLO or CAT STORY.TXT | WC.
 A pipeline needs two free Task slots. BREAK cancels a command.
 RUN C:FILES.APP opens standalone Files; its Stop/close still collects its child.
 RUN C:TEXT.APP "SYS:VIEW.TXT" opens the read-only viewer: O opens another file,
@@ -150,6 +151,6 @@ Writes use Gxxxxxxx.TMP and replacement backups Gxxxxxxx.OLD in the same
 directory. If an error names recovery files, preserve both before retrying.
 These provide recovery copies; writes are not atomic or power-loss durable.
 
-This package contains the GEM desktop and its windowed Shell.
+This package contains the GEM desktop and its Terminal application.
 Desktop icon rearrangement, recursive file operations, trash, horizontal scrolling
 and additional icon artwork are future work.

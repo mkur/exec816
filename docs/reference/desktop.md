@@ -84,3 +84,21 @@ No native graphical preview build profile remains. The supported GUI demo is
 console profiles remain available. The scene allocation and renderer packet
 use upper memory and add zero reserved bank-zero bytes, including Task stacks,
 direct pages, guards, alignment and unused capacity.
+
+## Private window snapshots
+
+Two 75 KiB compact VRAM slots at `$50000–$62BFF` and `$62C00–$757FF` store
+eligible AES windows. Capture requires a fully visible outer window, clean
+manager damage and completed application repaint obligations. The title is
+drawn live on restoration. Window identity, visual revision and dimensions
+determine validity; position is not part of the saved image. Resize, changed
+INFO/slider values and UPDATE invalidate it; unchanged frame setters do no work.
+
+A pinned slot cannot be evicted before DMA retirement. Invalid slots are used
+first, then the least recently used unpinned slot. Capture holds a Layers read
+token and strips overlays; validity publishes only after matching completion.
+Restore borrows the paint token until completion. Close invalidates the snapshot
+identity before clearing the window. An unquiesced fault retains referenced
+storage. This is private presentation storage, with no public offscreen API.
+Ordinary restoration does not acknowledge application repaint; the explicit
+[preservation contract](aes.md#opt-in-window-preservation) governs that case.

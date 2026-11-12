@@ -282,13 +282,15 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 views.append(pointer(row+console['WINDOW_VIEW']))
             # Positioned writes settle before independent pixel comparison.
             write=console['INSTANCE_WRITE']
+            models=[pointer(v+console['PRESENTATION_INSTANCE']) for v in views]
+            require(all(models) or desktop,'Missing standalone presentation copy')
             condition=f'(db(${windows+console["WINDOWS_PRESENTING"]:x})=0)&'+ '&'.join(f'(dw(${i+write:x})=0)&(db(${i+write+2:x})=0)&'
                 f'(db(${i+console["INSTANCE_OPERATION"]:x})=0)&'
                 f'(db(${v+console["PRESENTATION_SCROLLSTATE"]:x})=0)&'
                 f'((db(${v+console["PRESENTATION_VISIBLE"]:x})=0)|'
-                f'((db(${i+console["INSTANCE_DIRTYROWS"]:x})=0)&'
-                f'(dw(${v+10:x})=dw(${i+54:x})+dw(${i+10:x}))))'
-                for i,v in zip(instances,views))
+                f'((db(${m+console["INSTANCE_DIRTYROWS"]:x})=0)&'
+                f'(dw(${v+10:x})=dw(${m+54:x})+dw(${m+10:x}))))'
+                for i,v,m in zip(instances,views,models))
             if desktop:
                 # Console generations can settle while a widget repaint is
                 # still inside its C call. Snapshot after that transaction.
@@ -298,6 +300,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             generations=[number(i+console['INSTANCE_GENERATION']) for i in instances]
             saved['settled_clock']=b.eval_expr('@clk')
             text=b''.join(read_cells(far,i) for i in instances)
+            if not desktop and text!=b''.join(read_cells(far,m) for m in models):
+                frames(2)
+                return cells(label)
             cursor=number(saved['top']+54,2)+number(saved['top']+10,2)
             if bitmap:
                 from bitmap_console_oracle import Terminal
@@ -645,7 +650,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             # Early identity/inventory output legitimately changes the OS text
             # during native startup. Preserve the backing screen as it stands
             # after console admission, then require it unchanged across EXIT.
-            saved['screenBytes']=b.memdump(saved['screen'],960)
+            if bitmap:
+                saved['screenBytes']=b.memdump(saved['screen'],960)
+            else:
+                snapshot=pointer(saved['topView']+console['PRESENTATION_SNAPSHOT'])
+                saved['screenBytes']=far(snapshot,960)
+                saved['cursor']=far(saved['topView']+console['PRESENTATION_SAVEDCURSOR'],1)
             if 'exec_start_frame' in saved:
                 saved['startup_frames']=b.eval_expr('@frame')-saved['exec_start_frame']
             if not shell_only and not disk_failure:
@@ -769,8 +779,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
             if boot_smoke:
                 startup=cells('system-volume')
+                access='read-write' if manifest.get('bootable_atr') else 'read-only'
                 mapping=('SYS: -> IDE Plus unit 1: ready, read-only' if ide_only else
-                         f'SYS: -> D{system_drive}: ready, read-only')
+                         f'SYS: -> D{system_drive}: ready, {access}')
                 require(mapping.encode() in startup[:shell_cells],
                         'Wrong system-volume startup mapping')
                 for mount in manifest['mounts']:

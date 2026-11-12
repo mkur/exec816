@@ -267,8 +267,10 @@ the native graphical protocol, previews, shell-frame extension and duplicate
 window policy. [GF13](history/gem-first-gui.md#gf13-prepared-objects) prepares
 object layout once across drawing fragments.
 [GF14](history/gem-first-gui.md#gf14-drawing-boundary-decision) retains the existing
-ownership boundaries after measurement. GF15's combined acceptance and OF816
-package remain next.
+ownership boundaries after measurement.
+[GF15](history/gem-first-gui.md#gf15-production-integration-and-demo) completes
+the combined production Counter/disk/input, terminal/QED and exact OF816 package
+checks at the development tier.
 Existing latency gates remain open.
 
 The [GEM source compatibility plan](plans/gem4xe/gem-source-compatibility-plan.md)
