@@ -1,0 +1,445 @@
+{
+  "schema_version": 1,
+  "kind": "source-analysis",
+  "status": "documented",
+  "date": "2026-11-12",
+  "qualification": false,
+  "scope": "Pinned Atari built-in object, common VDI, UPDATE and scheduler source paths; selected monochrome CPU implementation. No new runtime measurement.",
+  "magic_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+  "comparison_revision": "627affc72b71cd3f99d17a56212263ab4907afa8",
+  "source_cache": "build/magic-operation-boundaries/sources",
+  "sources": [
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESOBJ.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/AES/SRC/AESOBJ.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESOBJ.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "abbda7614a2a9339894c87ca65666cc9581624ea631889dae2e070e2f3e66bd3",
+      "bytes": 250320,
+      "physical_lines": 8620,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESMAIN.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/AES/SRC/AESMAIN.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESMAIN.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "180fd7bc8453ecbdddf1bedce4932a299c81c9dfca269e4d3f891e74945927cc",
+      "bytes": 327687,
+      "physical_lines": 11575,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESEVT.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/AES/SRC/AESEVT.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESEVT.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "ca75b9b85de9631caaa838ae8a3215c05ac72cbc1b0595cdeef275292ba89c81",
+      "bytes": 111779,
+      "physical_lines": 3791,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESWIN.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/AES/SRC/AESWIN.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESWIN.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "29d9ac92d87f66c08c2b428e118e4478171a1272c37627ece557b1e64821ae0a",
+      "bytes": 174460,
+      "physical_lines": 5859,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/BIOS/ATARI/MAGIBIOS.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/BIOS/ATARI/MAGIBIOS.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FBIOS%2FATARI%2FMAGIBIOS.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "2b19e4b07495114e10a1ad0353c2a60c7420529cf6b37533d9b3f7eefc07018e",
+      "bytes": 133702,
+      "physical_lines": 4348,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/DISP.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/DISP.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FDISP.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "a57b68bdbda2f615b96ad74ea789171799f9dbc84c68b602b43c244016442293",
+      "bytes": 6139,
+      "physical_lines": 303,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/OUTPUT.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/OUTPUT.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FOUTPUT.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "1036b506abf4cdf37d2a45c19c575361c544ec1e0a9193f83b2e1da7a15a2d32",
+      "bytes": 70446,
+      "physical_lines": 2636,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/RASTER.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/RASTER.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FRASTER.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "d25b6c7527b7276337c348d58af737dfad539a30d95c8ff5b99955d2fe89f3e3",
+      "bytes": 11119,
+      "physical_lines": 361,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/MXVDIKNL.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/MXVDIKNL.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FMXVDIKNL.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "3e4852cb6218db92139d5101745052c96b3ac9589d3996bef84ffc9c79228ebc",
+      "bytes": 102701,
+      "physical_lines": 3510,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/INPUT.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/INPUT.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FINPUT.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "cd304139c8372592ec2bb7b6207cdaea85c42c04f3d502105b4399ed022c16c5",
+      "bytes": 9863,
+      "physical_lines": 309,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/LINEA.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/LINEA.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FLINEA.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "1d9141069fcddc2e246ada9a0b03c0b8fce06aea0d77d4f54f0f82abf5bf250e",
+      "bytes": 28208,
+      "physical_lines": 951,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGIC.DRV/MFA/MFA2.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/VDI/SRC/MAGIC.DRV/MFA/MFA2.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGIC.DRV%2FMFA%2FMFA2.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "90f6911911605df3457c4d731649cadfe291cda409f3dd621f46b44722f6066f",
+      "bytes": 19647,
+      "physical_lines": 666,
+      "form_feeds": 0
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGIC.DRV/OSD/OFF002.S",
+      "local_path": "build/magic-operation-boundaries/sources/MagiC/KERNEL/VDI/SRC/MAGIC.DRV/OSD/OFF002.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGIC.DRV%2FOSD%2FOFF002.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "sha256": "ee31c1bcade6b684db789ffc36b15844572959fd0c66e3a771e77cee55f58590",
+      "bytes": 177829,
+      "physical_lines": 6801,
+      "form_feeds": 0
+    }
+  ],
+  "selected_ranges": {
+    "object_tree": {
+      "source": "AESOBJ.S",
+      "start_label": "_objc_draw",
+      "start_line": 7920,
+      "end_line": 8051,
+      "normalized_span_sha256": "f61e78d0286a189a3dcfda7d3ad2c64b4136d6344b54672a9f58898854733df3"
+    },
+    "object_decode": {
+      "source": "AESOBJ.S",
+      "start_label": "__objc_draw",
+      "start_line": 6116,
+      "end_line": 6197,
+      "normalized_span_sha256": "af5878669bd18640d59741ae59c4981523ef9ca701a399bf2356274cadf5a03f"
+    },
+    "aes_rectangle": {
+      "source": "AESOBJ.S",
+      "start_label": "drawbox",
+      "start_line": 666,
+      "end_line": 802,
+      "normalized_span_sha256": "7f6205cd050fd6ba6bfc245eb71fc710b4d7c48f16f5ee6baa9a14a6f546ef17"
+    },
+    "user_callback": {
+      "source": "AESOBJ.S",
+      "start_label": "do_userdef",
+      "start_line": 5006,
+      "end_line": 5043,
+      "normalized_span_sha256": "0c21a0ff7c646947c273bac46ecdbea1e7e7e5c9c3d88d6360250b7a88ccaa7e"
+    },
+    "cursor_hide": {
+      "source": "AESOBJ.S",
+      "start_label": "mouse_off",
+      "start_line": 368,
+      "end_line": 379,
+      "normalized_span_sha256": "1b4993f349d25fb8e17f912ba466537b206daa63f4d917433275cf41c0b0b163"
+    },
+    "cursor_show": {
+      "source": "AESOBJ.S",
+      "start_label": "mouse_on",
+      "start_line": 362,
+      "end_line": 373,
+      "normalized_span_sha256": "94e9b65d77fd130c3b5e4028d182df48f065e71b6fd8e515e68cdb4b5d3c1b30"
+    },
+    "vdi_wrapper": {
+      "source": "AESOBJ.S",
+      "start_label": "vdi_quick",
+      "start_line": 208,
+      "end_line": 219,
+      "normalized_span_sha256": "94df27ac9a4b2f8cc71b288e45e427492704e92a608f425d6f3b5bee202eeb86"
+    },
+    "visible_rectangle_loop": {
+      "source": "AESWIN.S",
+      "start_label": "objc_wdraw",
+      "start_line": 221,
+      "end_line": 303,
+      "normalized_span_sha256": "2cad5c91e348feb42569cfce66c86fa63f36e08c8039e7363b7ac51d23610da6"
+    },
+    "aes_dispatch": {
+      "source": "AESMAIN.S",
+      "start_label": "aes_dispatcher",
+      "start_line": 4779,
+      "end_line": 4806,
+      "normalized_span_sha256": "aa52f9d12013c11e3ac6891fe8fcc960edb214dd71789c93a01f18c1e126a589"
+    },
+    "objc_opcode": {
+      "source": "AESMAIN.S",
+      "start_label": "dsp_objc_draw",
+      "start_line": 5571,
+      "end_line": 5601,
+      "normalized_span_sha256": "161050435a5b77e454e273731fce887750aa409fd63971bd2f9caad67c63b9c3"
+    },
+    "aes_trap_return": {
+      "source": "AESEVT.S",
+      "start_label": "trap_aesfn",
+      "start_line": 411,
+      "end_line": 437,
+      "normalized_span_sha256": "48e789b43cfc12d601ae1c0a973b66a54dc558dfb8738883a17223ab8ceb05f1"
+    },
+    "trap_routing": {
+      "source": "AESEVT.S",
+      "start_label": "aes_trap2",
+      "start_line": 376,
+      "end_line": 387,
+      "normalized_span_sha256": "98a754bfaaa869972721054fd948ff3e7e0b8a60c759ec9693e07f1bd9a22399"
+    },
+    "scheduler": {
+      "source": "AESEVT.S",
+      "start_label": "appl_yield",
+      "start_line": 204,
+      "end_line": 375,
+      "normalized_span_sha256": "08d2d08a2e0d4a7b9e84352d18cdffeea34d34170cd64940e5f898866f266e1a"
+    },
+    "update_admission": {
+      "source": "AESEVT.S",
+      "start_label": "wind_update",
+      "start_line": 1428,
+      "end_line": 1479,
+      "normalized_span_sha256": "dc492b8dc2e3365be6d4493deea6854855cf193df6596273aa33f35b2030ea77"
+    },
+    "update_nesting": {
+      "source": "AESEVT.S",
+      "start_label": "_beg_update",
+      "start_line": 1480,
+      "end_line": 1507,
+      "normalized_span_sha256": "2b5e13b53edb003a36b252afc7658ef132dc470900fdcb5d49b6c2fe36fdfd80"
+    },
+    "update_release": {
+      "source": "AESEVT.S",
+      "start_label": "end_update",
+      "start_line": 1508,
+      "end_line": 1570,
+      "normalized_span_sha256": "953dccd39dd448e7a2c8e0cd1d5d364172fa20ef38ff0b90298675b0e2c2f896"
+    },
+    "timer_supervisor_gate": {
+      "source": "MAGIBIOS.S",
+      "start_label": "i200_yield",
+      "start_line": 3711,
+      "end_line": 3731,
+      "normalized_span_sha256": "a3f20a8870d5a69377b8e90fc08b5f280845ec668900a07e712ce0597c2616c3"
+    },
+    "vdi_dispatch": {
+      "source": "DISP.S",
+      "start_label": "vdi_entry",
+      "start_line": 40,
+      "end_line": 80,
+      "normalized_span_sha256": "dabedc6c7ea6113694c16d616ce2d7d4d6fe3cc1535a6451b02c5c36f1a7ed97"
+    },
+    "vdi_polyline": {
+      "source": "OUTPUT.S",
+      "start_label": "v_pline",
+      "start_line": 849,
+      "end_line": 907,
+      "normalized_span_sha256": "0c02df1bb0dc6add2701bc47716ad30fc598be48665d1ba11506c783dfb3941d"
+    },
+    "vdi_text": {
+      "source": "OUTPUT.S",
+      "start_label": "v_gtext",
+      "start_line": 1410,
+      "end_line": 1427,
+      "normalized_span_sha256": "e97bfc12d0eea4fd073c9a36ca1e70831e62a597d2f799c7c54a7fe91f703d2c"
+    },
+    "vdi_rectangle": {
+      "source": "OUTPUT.S",
+      "start_label": "vr_recfl",
+      "start_line": 2420,
+      "end_line": 2429,
+      "normalized_span_sha256": "39c6ff71de5eb6bb77d934a86185e71380a95206db44ba98aaeb47d144e8b2ff"
+    },
+    "vdi_bar": {
+      "source": "OUTPUT.S",
+      "start_label": "v_bar",
+      "start_line": 2456,
+      "end_line": 2479,
+      "normalized_span_sha256": "2fa1711265d094c3245890ae975c1f222afce8a1b6143f095d8dc1d2ea79c702"
+    },
+    "vdi_raster": {
+      "source": "RASTER.S",
+      "start_label": "vro_cpyfm",
+      "start_line": 4,
+      "end_line": 172,
+      "normalized_span_sha256": "9eb61ed260d0bef80765c1318971428d916ad5615cdf62fc187bcabfad9b2b11"
+    },
+    "vdi_raster_expansion": {
+      "source": "RASTER.S",
+      "start_label": "vrt_cpyfm",
+      "start_line": 172,
+      "end_line": 324,
+      "normalized_span_sha256": "151cf7f3f2630d72874ff0b959a16061cb3602164900acd6e175383dcfcd35bc"
+    },
+    "vdi_cursor_hide": {
+      "source": "INPUT.S",
+      "start_label": "v_hide_c",
+      "start_line": 264,
+      "end_line": 277,
+      "normalized_span_sha256": "43778390649ecc4c320466baad61f287c6a6b341d99106aba16e3fedf7f6e9ca"
+    },
+    "vdi_cursor_show": {
+      "source": "INPUT.S",
+      "start_label": "v_show_c",
+      "start_line": 234,
+      "end_line": 264,
+      "normalized_span_sha256": "f80cf141a30bbdc55fca80cbc1e65fe033ca2bef7007f4a3bc05a735d90815c5"
+    },
+    "mono_screen_loader": {
+      "source": "MFA2.S",
+      "start_label": "init",
+      "start_line": 60,
+      "end_line": 91,
+      "normalized_span_sha256": "5ebd45ce88fb0288cb83c1a0b25aa25cb1dcb1155495b07ff429119919d1e7b9"
+    },
+    "mono_cpu_fill": {
+      "source": "OFF002.S",
+      "start_label": "fbox",
+      "start_line": 4635,
+      "end_line": 4715,
+      "normalized_span_sha256": "402517306451af3e2e2d7ac15e5400a4c5b5bc49c50043eb326ad4da9d4bdef2"
+    },
+    "mono_cpu_fill_loop": {
+      "source": "OFF002.S",
+      "start_label": "fbox0",
+      "start_line": 4931,
+      "end_line": 4985,
+      "normalized_span_sha256": "c57a5b4e28ec4d253d89c5c12c3114150969df7980330637bb6d4e139ddba8f1"
+    }
+  },
+  "comparison_inputs": {
+    "c/calypsi/aes-objects.c": "bf67b04d24b3fb7413efb97fb7e3f5a6e532f49101c0382359dd91e072b27a5d",
+    "c/calypsi/vdi.c": "3f9b4db51decfb13bff3f93e1cfc95ae4aec213f2f518a4a8a4fa7c50a2a15c8",
+    "c/calypsi/vdi-private.h": "0fb18f388ef6dc16b710bf845597bacc845230980decd85c6ed876393801baf7",
+    "ports/gem4xe/adapter/gem-vbxe.c": "65e36ebb8d49bbda02e7ac95bc258c49d290c23b4a1d6c6e7bdbd0337cc3506d",
+    "ports/gem4xe/adapter/gem-drawing.h": "16a56b69a6cd9517338a1b9713022c7c7ce676b5803f787838cd246267e89109",
+    "lib/display/display-access.inc": "f779475038721027d7840312f075c1797ff9543a8df966efa7942d93126da97e",
+    "c/include/hardware/vbxe.h": "65f4af88738d1ce5801399138f5a8a5ef73fba57c12c4217de09e28dabc2a1b7",
+    "docs/reference/display.md": "409e73319a05b5e2ca87ceefb52cae21a91a1f521802e3c00465a8b6b0331aa6",
+    "docs/history/drawing-preemption.md": "892d47641d94c412eee59de37eeb7a569ffe94a7af85d7582ef9624be1c74e51",
+    "toolchain/atari-st-reference.json": "5af58ffffecd0abe6e9c5ee930f2727ddf2b94f71c044ece30e28fef2175e2ff"
+  },
+  "source_checks": {
+    "aes_return_offers_scheduler": true,
+    "other_trap_operations_forwarded": true,
+    "atari_timer_skips_supervisor_suspension": true,
+    "builtin_tree_has_cursor_bracket_without_direct_yield": true,
+    "user_callback_is_explicit_exception_to_builtin_scope": true,
+    "window_draw_loops_visible_intersections": true,
+    "recursive_update_wait_and_final_oldest_handoff": true,
+    "common_vdi_returns_without_direct_scheduler_call": true,
+    "semantic_operations_can_contain_device_suboperations": true,
+    "exec_callback_owns_paint_fences_overlays_with_normal_preemption": true,
+    "exec_list_drain_keeps_physical_grant": true,
+    "exec_prepared_objects_rows_and_list_limits_match_document": true
+  },
+  "conclusions": [
+    "Semantic operations, geometric clipping, logical UPDATE, cursor hiding and Task handoff are distinct boundaries.",
+    "The Atari timer gate skips supervisor-mode preemption; the AES trap offers scheduling after dispatch returns.",
+    "An ordinary VDI return is not an automatic renderer handoff.",
+    "One Exec physical grant can span multiple bounded device lists and overlay repair.",
+    "GF14 rejected one larger-row candidate; source inspection does not prove an optimal row count."
+  ],
+  "next_experiment": {
+    "status": "proposed-not-implemented",
+    "change": "One fixture-only 8-row cap for all object callbacks, retaining prepared descriptions and existing hardware limits.",
+    "preserve": [
+      "normal Task preemption",
+      "FIFO display admission",
+      "64-record / 8192-access list budgets",
+      "scratch and overlay lifetimes",
+      "hardware completion and fault retention",
+      "IRQ/NMI protocols"
+    ],
+    "observations": [
+      "exact settled pixels and cleanup",
+      "total caller and presenter CPU",
+      "grants and submissions",
+      "ownership publication/handoff and observation brackets",
+      "interrupt and off-Task attribution",
+      "physical input capture, application delivery and visible completion",
+      "disk integrity and peer progress"
+    ]
+  },
+  "validation": {
+    "tier": "documentation",
+    "source_checks": 12,
+    "emitted_code_runs": 0,
+    "emulator_runs": 0,
+    "normalization": "Raw bytes hashed; CRLF/CR normalized to LF for label/range inspection; line numbers refer to downloaded source, not browser extraction.",
+    "analysis_script": "build/magic-operation-boundaries/analyze.py",
+    "analysis_script_sha256": "02ec320c79da2a711339cab133e160d5349a302c81ec05cc8473f9771fad0d7b",
+    "local_links": {
+      "status": "pass",
+      "checked": 473,
+      "files": 4
+    },
+    "documentation_script": "build/magic-operation-boundaries/check_docs.py",
+    "documentation_script_sha256": "e14464b5b77939334867c9099f57c0b50ead8a6704eb10d33d963449aa19305a",
+    "status": "pass"
+  },
+  "resources": {
+    "target_code_delta": 0,
+    "upper_ram_delta": 0,
+    "vram_delta": 0,
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "guards_alignment_unused_capacity_included": true
+    }
+  },
+  "limits": [
+    "Static selected-path analysis, not a complete transitive call-graph proof; the entire downstream forwarded trap chain was not exhaustively traced.",
+    "USERDEF code, external trap/VDI hooks, alternative platforms and unrelated accelerated drivers can have other scheduling/completion behavior.",
+    "The active release function-pointer table and source-to-binary equivalence were not newly verified.",
+    "No performance, latency deadline, release or hardware qualification follows from these source checks.",
+    "The removed drawing Forbid experiment stays removed; no scheduling-policy change is implemented."
+  ],
+  "documentation_inputs": {
+    "docs/history/README.md": "c7db8b8f535bab10d7821b8a28c4b8270a3630dbf2b8c09baad183b0df1284c9",
+    "docs/history/atari-st-reference.md": "a7d3eceeebcc5b15114b91188c6f0f49560a045efcb37cc33f1b9782030a2e90",
+    "docs/history/magic-operation-boundaries.md": "f5b81230da6c394d2f0696b1de8b2746f5c544d8969af358349df858a0efbdd8",
+    "docs/plans/gem4xe/README.md": "d68797bd13f293b32320ae792d8d3985736f93c8d4c86778dfc1a87074ebb560"
+  }
+}

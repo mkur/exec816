@@ -1,5 +1,9 @@
 # Historical records
 
+- [MagiC operation boundaries](magic-operation-boundaries.md): pinned source
+  analysis of UPDATE, tree/VDI drawing, cursor lifetime and scheduler handoffs,
+  compared with Exec816's display grants and device lists.
+
 - [GF15 production integration and demo](gem-first-gui.md#gf15-production-integration-and-demo):
   combined disk/input and QED checks, current contracts and the audited OF816 ZIP.
 

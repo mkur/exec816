@@ -5,6 +5,11 @@
 [Native drawing profile](aes-drawing-profile.md) ·
 [GEM plans](../plans/gem4xe/README.md)
 
+The later [operation-boundary analysis](magic-operation-boundaries.md) follows
+the pinned source through UPDATE, object and VDI drawing, cursor restoration
+and scheduler handoffs. It distinguishes semantic operations from preemption
+and physical ownership; the measurements below retain their original scope.
+
 Hatari 2.6.1 is installed on the development Mac. A pinned ST configuration
 runs one optimized 68000 executable under bundled EmuTOS 1.4 and the author's
 4 November 2026 MagiC release. Both complete all thirty object-drawing calls.
