@@ -178,36 +178,52 @@ request; this analysis does not restore or propose it. Normal Exec preemption,
 FIFO admission, fences, IRQ/NMI coordination and fault retention remain the
 requirements.
 
-## Consequences for the next experiment
+## Prioritize coordination cost
 
 The [GF14 decision](gem-first-gui.md#gf14-drawing-boundary-decision) remains a
 rejection of one 32-row candidate, not proof that current units are optimal.
 Row count alone omits width, object effects, glyph/raster work, overlay repairs,
 multiple submissions and time preempted while ownership remains held.
 
-Start with one fixture-only **8-row cap**, including objects currently eligible
-for a 32-row callback. Preserve prepared descriptions and compare against the
-frozen GF15 implementation. This is an Exec-specific experiment, not a MagiC
-constant. Keep the existing list budgets and all coordination semantics.
+The earlier recommendation to start with an 8-row experiment is withdrawn.
+Smaller strips would add admission/release cycles, fences and cursor repair to
+an already expensive path. Shorter individual ownership intervals alone do not
+justify that cost. MagiC's useful reference here is how coherent drawing work
+shares setup and cursor lifetime through direct calls.
+
+Keep current granularity while auditing the cost of one complete built-in
+object draw. Use the existing captures first; extend observation only where
+they cannot distinguish necessary work from repeated bookkeeping. Attribute
+Enter/Leave, each completion check and cursor/outline work separately, including
+calls that find no pending hardware or overlay work. A second fence call is not
+automatically redundant: establish whether new dependent work was queued and
+what completion state is already known.
+
+Choose one measured coordination reduction for the next implementation slice.
+Candidates are avoiding a proven unnecessary check or sharing setup, admission
+and final completion across compatible parts of a natural drawing operation.
+List drains already occur within one grant. Preserve prepared descriptions, device list budgets
+and all coordination semantics. A strip-height reduction is not the next step.
 
 Compare exact settled pixels and cleanup first, then total caller/presenter CPU,
 grant/submission counts and complete ownership duration, separating CPU,
 interrupts and off-Task time. Include pointer overlap, text/icons, wide and nested
 objects, fragmented exposure and disk/input peer progress. Distinguish input
-capture, event delivery and visible completion. Smaller grants may improve
-access latency while increasing repeated arbitration, cursor and fence work;
-neither direction is assumed to win. A row cap alone cannot guarantee an
-ownership wall-time limit while its owner remains preemptible.
+capture, event delivery and visible completion. The change must reduce total
+coordination cost without an unexplained material responsiveness regression;
+neither fewer nor shorter grants alone establishes that result. A row cap alone
+cannot guarantee an ownership wall-time limit while its owner remains preemptible.
 
 Observe arbitration publication/handoff where possible. Enter-return through
 Leave-entry is a lower bound on ownership; Enter-entry through Leave-return
 also includes possible admission waiting and bookkeeping. Keep those brackets
 distinct from the actual ownership interval.
 
-If the measurements justify a structural change, examine resumable fill, line,
-text and raster groups next. A group must retire dependent hardware work and
-leave shared scratch and overlays in a state safe for another renderer. Such a
-change needs its own implementation slice; the source comparison supplies no
+If the measurements justify a structural change, use MagiC's fill, line, text
+and raster operations to identify compatible groups. A group must retire
+dependent hardware work and leave shared scratch and overlays in a state safe
+for another renderer. Such a change needs its own implementation slice;
+the source comparison supplies no
 permission to yield inside an unfinished mask/copy sequence or change kernel
 scheduling policy.
 

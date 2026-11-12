@@ -33,8 +33,10 @@ The [MagiC boundary analysis](../../history/magic-operation-boundaries.md)
 separates semantic drawing operations, UPDATE ownership, cursor lifetime and
 actual scheduling opportunities. It records the Atari supervisor-mode
 preemption gate and why a VDI return is not automatically a renderer handoff.
-Use this source comparison when choosing subsequent GEM drawing boundaries;
-the proposed 8-row experiment is separate from the completed GF14 decision.
+Use this source comparison when choosing subsequent GEM drawing boundaries.
+The next investigation prioritizes reducing or sharing coordination work at
+natural operation boundaries; the earlier smaller-strip recommendation is
+withdrawn. The completed GF14 decision remains unchanged.
 
 The [object drawing profile](../../history/aes-drawing-profile.md) separates
 callback setup, graphics-state calls, primitive rendering, command construction,

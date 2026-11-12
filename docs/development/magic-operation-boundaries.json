@@ -367,7 +367,10 @@
   ],
   "next_experiment": {
     "status": "proposed-not-implemented",
-    "change": "One fixture-only 8-row cap for all object callbacks, retaining prepared descriptions and existing hardware limits.",
+    "change": "Audit per-operation admission/release, completion and overlay costs; select one measured coordination reduction without adding handoffs.",
+    "priority": "coordination-cost-first",
+    "current_granularity": "retained during the coordination audit",
+    "withdrawn_recommendation": "8-row cap as the first experiment",
     "preserve": [
       "normal Task preemption",
       "FIFO display admission",
@@ -380,6 +383,7 @@
       "exact settled pixels and cleanup",
       "total caller and presenter CPU",
       "grants and submissions",
+      "necessary versus repeated completion checks and no-work overlay calls",
       "ownership publication/handoff and observation brackets",
       "interrupt and off-Task attribution",
       "physical input capture, application delivery and visible completion",
@@ -393,14 +397,14 @@
     "emulator_runs": 0,
     "normalization": "Raw bytes hashed; CRLF/CR normalized to LF for label/range inspection; line numbers refer to downloaded source, not browser extraction.",
     "analysis_script": "build/magic-operation-boundaries/analyze.py",
-    "analysis_script_sha256": "02ec320c79da2a711339cab133e160d5349a302c81ec05cc8473f9771fad0d7b",
+    "analysis_script_sha256": "f56d8b822ffc1cd24a3968db7bb14518a5b58276f6482731b0d4bf5b29789f68",
     "local_links": {
       "status": "pass",
-      "checked": 473,
-      "files": 4
+      "checked": 218,
+      "files": 2
     },
     "documentation_script": "build/magic-operation-boundaries/check_docs.py",
-    "documentation_script_sha256": "e14464b5b77939334867c9099f57c0b50ead8a6704eb10d33d963449aa19305a",
+    "documentation_script_sha256": "3cec70b403879e4b464c3e89e7817243b5ea4b63cc2cb49c6ac6210d2f32f323",
     "status": "pass"
   },
   "resources": {
@@ -437,9 +441,7 @@
     "The removed drawing Forbid experiment stays removed; no scheduling-policy change is implemented."
   ],
   "documentation_inputs": {
-    "docs/history/README.md": "c7db8b8f535bab10d7821b8a28c4b8270a3630dbf2b8c09baad183b0df1284c9",
-    "docs/history/atari-st-reference.md": "a7d3eceeebcc5b15114b91188c6f0f49560a045efcb37cc33f1b9782030a2e90",
-    "docs/history/magic-operation-boundaries.md": "f5b81230da6c394d2f0696b1de8b2746f5c544d8969af358349df858a0efbdd8",
-    "docs/plans/gem4xe/README.md": "d68797bd13f293b32320ae792d8d3985736f93c8d4c86778dfc1a87074ebb560"
+    "docs/history/magic-operation-boundaries.md": "0649a63e6debf20f4a8d5c159e12615cce939c6a3095126aa61f224210d132fc",
+    "docs/plans/gem4xe/README.md": "f9bdc03ddebb3100e75683632bea4e19af4f25aa22087b98413f7c41fa3a611a"
   }
 }
