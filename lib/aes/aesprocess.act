@@ -24,7 +24,7 @@ PUBLIC PROC RequestClose(EXEC.Task POINTER owner)
         IF client.endpoint.guiEpoch<>0 THEN
           FOR slot=0 TO AESTYPES.WINDOWS-1 DO
             IF service.windows(slot).owner=client.id THEN
-              AESGUI.Post(service,@service.windows(slot),AESTYPES.GUI_CLOSED,0,0,0,0)
+              AESGUI.Post(service,service.windows(slot),AESTYPES.GUI_CLOSED,0,0,0,0)
             FI
           OD
         FI

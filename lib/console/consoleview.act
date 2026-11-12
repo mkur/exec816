@@ -1,6 +1,7 @@
 ; Public console service facade; no renderer or mutable cells cross this API.
 MODULE CONSOLEVIEW
 USE EXEC
+USE DESKTYPES
 USE AESSTATE
 USE AESTYPES
 USE AESWINDOWSTATE
@@ -69,7 +70,7 @@ PUBLIC CARD FUNC InputWindow(LONGCARD handle INT window BYTE bound)
   CARD status
   BYTE slot
   AESSTATE.Client POINTER client
-  AESSTATE.Window POINTER item
+  DESKTYPES.Window POINTER item
 
   LET service=AESSTATE.Get()
   IF service=NULL THEN

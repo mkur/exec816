@@ -1,6 +1,7 @@
 ; Presenter-owned pending GUI facts; transport uses the caller's receive port.
 MODULE AESGUI
 USE EXEC
+USE DESKTYPES
 USE AESTYPES
 USE AESSTATE
 USE AESSNAPSHOT
@@ -8,7 +9,7 @@ USE AESINBOX
 
 ; Only the closing window retires. The shared input session and menu live
 ; until the last open sibling closes; immutable queued records use view epochs.
-PUBLIC PROC Close(AESSTATE.Window POINTER item)
+PUBLIC PROC Close(DESKTYPES.Window POINTER item)
   BYTE slot,shown
 
   LET service=AESSTATE.Get()
@@ -36,7 +37,7 @@ RETURN
 
 ; The open operation has already admitted a fresh epoch and a keyboard route.
 PUBLIC PROC Open(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client AESSTATE.Window POINTER item)
+    AESSTATE.Client POINTER client DESKTYPES.Window POINTER item)
 
   EXEC.Forbid()
   item.gui.count=0
@@ -52,7 +53,7 @@ PUBLIC PROC Open(AESSTATE.Service POINTER service
 RETURN
 
 ; A round-robin cursor prevents a busy sibling's redraws starving this one.
-AESSTATE.GuiPending POINTER FUNC NextPending(AESSTATE.Service POINTER service
+DESKTYPES.GuiPending POINTER FUNC NextPending(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client)
   BYTE attempt,slot
 
@@ -177,7 +178,7 @@ RETURN
 ; Geometry is trusted on-screen work from the window manager. Bound unions can
 ; overestimate damage; the application still clips against current visibility.
 PROC Queue(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
-    AESSTATE.GuiPending POINTER pending BYTE kind INT x,y,width,height)
+    DESKTYPES.GuiPending POINTER pending BYTE kind INT x,y,width,height)
   BYTE index
   INT right,bottom
 
@@ -231,7 +232,7 @@ PROC Queue(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
 
 RETURN
 
-PUBLIC PROC Post(AESSTATE.Service POINTER service AESSTATE.Window POINTER item
+PUBLIC PROC Post(AESSTATE.Service POINTER service DESKTYPES.Window POINTER item
     BYTE kind INT x,y,width,height)
 
   IF item.view.epoch<>0 THEN

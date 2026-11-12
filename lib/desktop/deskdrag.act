@@ -204,7 +204,7 @@ PUBLIC CARD FUNC Outline(AESSTATE.Service POINTER service
   appOwner=client.id
   appEpoch=item.view.epoch
   appVisual=1
-  windowId=item.window.id
+  windowId=item.id
   lossEpoch=DESKSTATE.LossEpoch()
   phase=APP_DRAG
   blocked=0

@@ -1108,3 +1108,25 @@ demo setting. Production skips native console attachment and the temporary GUI
 mirror. Legacy preview paths and their native protocol remain for the next GF12
 slice. These are development checks; combined final-load/QED/package acceptance
 and the existing failed latency gates are not claimed by this slice.
+
+## GF12 unified window records
+
+The [first GF12 slice](../development/gem-first-gf12-records.json) places frame,
+AES owner/input association, pending GUI facts and caller-view binding in one
+window record. AES keeps six stable pointers into those records as a derived
+index. Native IDs, GEM handles and open epochs retain their separate purposes.
+Deletion detaches the caller view before clearing the complete record; a sibling
+and its view remain untouched. Public AES/C wire layouts are unchanged.
+
+Raw and optimized emitted probes each pass thirteen alias, stride, clearing and
+heap-restoration checks. The optimized multiwindow fixture passes 66 C and four
+native checks. The production terminal walkthrough preserves its exact viewport
+and exposure pixels, session/focus behavior, modal close and normal EXIT. Guards
+and ownership restore. Host checks pass 692 tests with four existing skips.
+
+The generated window is 1,022 bytes, scene service 19,544 and AES service 1,264.
+Moving metadata adds six live upper bytes overall; eight-byte heap rounding
+keeps the combined service reservation unchanged. **Reserved bank-zero delta
+is zero** for fixed/root/kernel, every public Task and idle, including guards,
+alignment and unused capacity. Native previews and packet dispatch remain for
+the following GF12 retirement slice; this is not full GF12 acceptance.

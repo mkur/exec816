@@ -1,0 +1,83 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GF12-unified-window-records",
+  "sources": {
+    "abi/desktop.json": "06fc0774a39802f24bca4c5c9180a8fdd256b8c59a73c7b90db7b2369b828c2b",
+    "lib/aes/aesboot.act": "91d6d645c850966d1ff157a4391b5a8662babb002b0f1012d3112d1022c8184f",
+    "lib/aes/aesgui.act": "bdd9480c4f1044948f982c1d3a1acbd1ca28ca305f6e44c0feb50620bb1b788a",
+    "lib/aes/aesprocess.act": "25fc42f25e963c62acaf3a540aa52474859577d5a4b765e665b21694830b5272",
+    "lib/aes/aessnapshot.act": "3883be272ffaded567d6bfb70fb10d07dd1ee695e295d54a417c3b92294081de",
+    "lib/aes/aesstate.act": "fa07652707aa6f8f0c2d49d00edb7943ebb0a327d22db556f28770e9d4f4daab",
+    "lib/aes/aeswindow.act": "1f4c7fb8274c88f928c72c72c4f487572c9ca8c10f0ba89ced2603dfd2b97818",
+    "lib/aes/aeswindowstate.act": "0a64b4e1693c9d4eaef47f59d6f6dc77c42c253773ceeec20437a7bd4fc808f4",
+    "lib/console/consoleview.act": "fce9379876c198d9b8d8d700a46ab393e2ef4d95da4d01278ea2a11e15def0a7",
+    "lib/desktop/deskdrag.act": "12d74f6ded2393a431a663200363e416ee5bff152ed5803be85d09bffa635fef",
+    "lib/desktop/desktypes.act": "48fb6602289c382f6339772d942a0ccd3a1e4b5214b55592c8e664f3164178b2",
+    "tests/test_desktop_contract.py": "017e7679460d19de2c73e7724d05d2fc93cc1393a2ddb4853d7cc9bc40856acc",
+    "tools/generate_desktop.py": "7cf06e1d40b62c1f3e248c62cf4422b8efa7bb912e0c869e6c51e4b4cc14cc70",
+    "tests/programs/aes_window_records.act": "b4455b11fc18d31e97d703106fcd3ca52a6a98a8caff419663e61e09b6db1923",
+    "tools/test_aes_window_records.py": "cb040a00abc7710fe7daaecddf5ea4e652151e4a782055edd723b99997dbf367"
+  },
+  "artifacts": {
+    "record-raw": {
+      "path": "build/gem-first-gui/gf12/record-raw/results.json",
+      "sha256": "fb1a9409d011f5f3a0ec1013c6556e7b9974877b2d36923bbfc1c6008de9396c"
+    },
+    "record-opt": {
+      "path": "build/gem-first-gui/gf12/record-opt/results.json",
+      "sha256": "ae1009f4bcc6d1be74a9ab7d2929f65d62e7428f5e41d1358cba4df4103ae0dc"
+    },
+    "merged-terminal": {
+      "path": "build/gem-first-gui/gf12/merged-terminal/results.json",
+      "sha256": "7e6b0c18c7cb23590b67264eab9cde6ec6633e4ca975d2825fa0b6a54cc5530d"
+    },
+    "multiwindow": {
+      "path": "build/gem-first-gui/gf12/multiwindow/results.json",
+      "sha256": "3d4b1cd5b6746bfe445038969e032b3d0fbe6cc73608fadfdeba168f0ec291ef"
+    }
+  },
+  "layout": {
+    "window_bytes": 1022,
+    "scene_service_bytes": 19544,
+    "aes_service_bytes": 1264,
+    "derived_window_index_bytes": 18,
+    "prior_scene_service_bytes": 18776,
+    "prior_aes_service_bytes": 2026,
+    "live_payload_delta": 6,
+    "rounded_upper_reservation_delta": 0,
+    "heap_alignment": 8
+  },
+  "checks": {
+    "record_raw": 13,
+    "record_opt": 13,
+    "multiwindow_c": 66,
+    "multiwindow_native": 4,
+    "terminal": "editing, exact pixels, focus/exposure, session switching, modal cancel/close, EXIT and ownership",
+    "host_tests": 692,
+    "host_skips": 4
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "guards_alignment_and_unused_capacity_included": true
+  },
+  "scope": "One physical window record holds frame data and AES owner, input association, GUI facts and view binding; six stable AES pointers are a derived index. Public AES/C wire layout is unchanged. Native packet/preview retirement remains the next GF12 slice."
+}

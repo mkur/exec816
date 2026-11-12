@@ -124,9 +124,9 @@ PUBLIC BYTE FUNC Publish()
               DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@route.work)
               FOR index=0 TO AESTYPES.WINDOWS-1 DO
                 IF service.windows(index).owner<>0
-                    AND service.windows(index).window=window THEN
+                    AND service.windows(index)=window THEN
                   BEGIN
-                    LET item=@service.windows(index)
+                    LET item=service.windows(index)
                     LET client=AESSTATE.Find(service,item.owner)
                     IF client.endpoint.state=AESTYPES.ENDPOINT_ACCEPTING THEN
                       route.client=client.id

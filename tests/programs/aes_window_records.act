@@ -1,0 +1,60 @@
+MODULE WINDOWRECORDTEST
+USE EXEC
+USE HEAPCORE
+USE A816MEMORY
+USE AESSTATE
+USE DESKTYPES
+
+TYPE WindowPair=[DESKTYPES.Window ARRAY records(2)]
+CARD checks
+CARD windowBytes,serviceBytes
+
+; Exercise target record strides and aliasing, including complete retirement.
+PROC Check(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ee00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+
+  windowBytes=SIZEOF(DESKTYPES.Window)
+  serviceBytes=SIZEOF(AESSTATE.Service)
+  LET baseline=EXEC.AvailMem(0)
+  LET pair=WindowPair POINTER(EXEC.AllocMem(SIZEOF(WindowPair),EXEC.MEMF_UPPER
+      OR EXEC.MEMF_CLEAR))
+  LET service=AESSTATE.Service POINTER(EXEC.AllocMem(SIZEOF(AESSTATE.Service),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Check(pair<>NULL AND service<>NULL)
+  Check(windowBytes=DESKTYPES.WINDOW_SIZE)
+  Check(ADDRESS(@pair.records(1))-ADDRESS(@pair.records(0))
+      =SIZE(DESKTYPES.WINDOW_SIZE))
+  Check(ADDRESS(@service.windows(1))-ADDRESS(@service.windows(0))=SIZE(3))
+  service.windows(0)=@pair.records(0)
+  service.windows(1)=@pair.records(1)
+  LET first=service.windows(0)
+  first.id=$12345678
+  first.owner=$abcdef01
+  first.gui.window=321
+  first.inputBound=1
+  first.inputUnit=$87654321
+  first.frameKind=11
+  service.windows(1).owner=$11223344
+  Check(pair.records(0).id=$12345678)
+  Check(pair.records(0).owner=$abcdef01)
+  Check(pair.records(0).gui.window=321)
+  Check(pair.records(0).inputBound=1 AND pair.records(0).inputUnit=$87654321)
+  Check(pair.records(0).frameKind=11 AND pair.records(1).owner=$11223344)
+  A816MEMORY.Clear(BYTE POINTER(first),SIZE(DESKTYPES.WINDOW_SIZE))
+  Check(service.windows(0)=@pair.records(0))
+  Check(first.owner=0 AND first.id=0 AND first.view=NULL)
+  Check(service.windows(1).owner=$11223344)
+  EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
+  EXEC.FreeMem(BYTE POINTER(pair),SIZEOF(WindowPair))
+  Check(EXEC.AvailMem(0)=baseline)
+
+RETURN
+ENDMODULE

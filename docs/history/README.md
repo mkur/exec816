@@ -23,6 +23,8 @@
   route-scoped input, UPDATE-held stream completion and guarded retirement.
   GF11 adds the loaded GEM terminal, exact viewport/exposure pixels, session
   switching, modal close/retirement and supervised startup failure checks.
+  The first GF12 slice unifies frame/AES records with emitted alias, stride,
+  retirement and multiwindow checks; native policy retirement follows.
 
 - [Console presentation before GF10](console-presentation-before-gf10.md): superseded stream/presentation coupling, batch and short-write behavior.
 

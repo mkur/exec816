@@ -1,5 +1,5 @@
 {
-  "version": 17,
+  "version": 18,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 6,
@@ -379,6 +379,44 @@
         2
       ]
     ],
+    "GuiNotice": [
+      [
+        "x",
+        "INT"
+      ],
+      [
+        "y",
+        "INT"
+      ],
+      [
+        "width",
+        "INT"
+      ],
+      [
+        "height",
+        "INT"
+      ]
+    ],
+    "GuiPending": [
+      [
+        "window",
+        "INT"
+      ],
+      [
+        "count",
+        "BYTE"
+      ],
+      [
+        "order",
+        "BYTE",
+        "AESTYPES.GUI_KINDS"
+      ],
+      [
+        "notices",
+        "GuiNotice",
+        "AESTYPES.GUI_KINDS"
+      ]
+    ],
     "Window": [
       [
         "id",
@@ -452,6 +490,54 @@
       ],
       [
         "iconified",
+        "BYTE"
+      ],
+      [
+        "owner",
+        "LONGCARD"
+      ],
+      [
+        "inputUnit",
+        "LONGCARD"
+      ],
+      [
+        "inputBound",
+        "BYTE"
+      ],
+      [
+        "gui",
+        "GuiPending"
+      ],
+      [
+        "view",
+        "AESTYPES.WindowView POINTER"
+      ],
+      [
+        "paintDamage",
+        "LAYERTYPES.Rect"
+      ],
+      [
+        "paintDirty",
+        "BYTE"
+      ],
+      [
+        "preserve",
+        "BYTE"
+      ],
+      [
+        "focusNotices",
+        "BYTE"
+      ],
+      [
+        "geometryEpoch",
+        "LONGCARD"
+      ],
+      [
+        "geometryKind",
+        "CARD"
+      ],
+      [
+        "geometryIconified",
         "BYTE"
       ]
     ],

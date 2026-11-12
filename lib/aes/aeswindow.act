@@ -116,7 +116,7 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
     IF desktop.windows(slot).id=0 THEN
       BEGIN
         LET window=@desktop.windows(slot)
-        LET item=@service.windows(slot)
+        LET item=service.windows(slot)
         status=LAYERS.Create(@desktop.scene,@bounds,@window.layer)
         IF status<>LAYERTYPES.OK THEN
           RETURN(AESTYPES.RESOURCE)
@@ -139,7 +139,6 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
         window.frameKind=IF kind=0 THEN CARD(DESKTYPES.FRAME_BORDERLESS)
             ELSE CARD(kind) FI
         window.visualRevision=1
-        item.window=window
         item.view=view
         item.gui.window=INT(service.nextWindow)
         IF service.nextWindow=$7fff THEN
@@ -166,10 +165,10 @@ RETURN(AESTYPES.RESOURCE)
 ; Route preparation has succeeded. Publish the window and its fresh open epoch
 ; together under scene ownership; no route creation or draining occurs here.
 PROC CommitOpen(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
-    AESSTATE.Window POINTER item LAYERTYPES.Rect POINTER bounds LONGCARD route)
+    DESKTYPES.Window POINTER item LAYERTYPES.Rect POINTER bounds LONGCARD route)
 
   LET desktop=DESKSTATE.Get()
-  LET window=item.window
+  LET window=item
   DESKCORE.PrepareFocus(desktop,window.id)
   window.keyRoute=route
   AESGUI.Open(service,client,item)
@@ -201,12 +200,12 @@ PROC DiscardRoute(AESTYPES.Request POINTER request LONGCARD route)
 RETURN
 
 CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
-    AESSTATE.Window POINTER item AESTYPES.Request POINTER request)
+    DESKTYPES.Window POINTER item AESTYPES.Request POINTER request)
   LAYERTYPES.Rect bounds
   LONGCARD route
 
   LET desktop=DESKSTATE.Get()
-  LET window=item.window
+  LET window=item
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
   ; A retained close keeps its hidden window until the old input tag retires.
   IF layer.shown<>0 OR window.keyRoute<>0 THEN
@@ -250,9 +249,9 @@ RETURN(AESTYPES.OK)
 ; Close withdraws the window and capture route before draining the old tag.
 ; The hidden record retains that tag until the input service retires it.
 PROC CommitClose(DESKTYPES.Service POINTER desktop
-    AESSTATE.Window POINTER item LONGCARD focus)
+    DESKTYPES.Window POINTER item LONGCARD focus)
 
-  LET window=item.window
+  LET window=item
   AESMOUSE.CancelWindow(item.view.epoch)
   AESGUI.Close(item)
   BEGIN
@@ -272,10 +271,10 @@ PROC CommitClose(DESKTYPES.Service POINTER desktop
 
 RETURN
 
-CARD FUNC Close(AESSTATE.Window POINTER item AESTYPES.Request POINTER request)
+CARD FUNC Close(DESKTYPES.Window POINTER item AESTYPES.Request POINTER request)
 
   LET desktop=DESKSTATE.Get()
-  LET window=item.window
+  LET window=item
   IF window.console<>0 AND AESGATE.SystemOwned()=0 THEN
     RETURN(AESWAIT.SYSTEM_WORK)
   FI
@@ -324,50 +323,42 @@ PUBLIC CARD FUNC Visibility(AESSTATE.Service POINTER service
 RETURN(status)
 
 ; Called after hiding and route retirement, with the presenter settled.
-PROC Destroy(AESSTATE.Window POINTER item)
+PROC Destroy(DESKTYPES.Window POINTER item)
   BYTE status
 
   LET desktop=DESKSTATE.Get()
-  IF item.window.console<>0 THEN
+  IF item.console<>0 THEN
     BEGIN
-      LET view=DESKCONSOLE.PrepareRelease(item.window.console)
-      DESKCONSOLE.Release(item.window,view)
+      LET view=DESKCONSOLE.PrepareRelease(item.console)
+      DESKCONSOLE.Release(item,view)
     END
   FI
   AESMOUSE.CancelWindow(item.view.epoch)
   AESGUI.Close(item)
-  status=LAYERS.Delete(@desktop.scene,item.window.layer)
+  status=LAYERS.Delete(@desktop.scene,item.layer)
   IF status<>LAYERTYPES.OK THEN
     HEAPCORE.Abort($fcb6)
   FI
 
-  IF DESKSTATE.desktopWindow=item.window.id THEN
+  IF DESKSTATE.desktopWindow=item.id THEN
     DESKSTATE.desktopWindow=0
     DESKSTATE.desktopLayer=0
   FI
-  DESKCACHE.ForgetCandidate(desktop,item.window)
-  A816MEMORY.Clear(BYTE POINTER(item.window),DESKTYPES.WINDOW_SIZE)
-  item.view.handle=0
-  item.view.visibleCount=0
-  item.view.shown=0
-  item.owner=0
-  item.inputBound=0
-  item.inputUnit=0
-  item.geometryEpoch=0
-  item.preserve=0
-  item.focusNotices=0
-  item.window=NULL
-  item.view=NULL
-  item.gui.window=0
+  DESKCACHE.ForgetCandidate(desktop,item)
+  LET view=item.view
+  view.handle=0
+  view.visibleCount=0
+  view.shown=0
+  A816MEMORY.Clear(BYTE POINTER(item),DESKTYPES.WINDOW_SIZE)
 
 RETURN
 
-PUBLIC CARD FUNC DeleteHidden(AESSTATE.Window POINTER item)
+PUBLIC CARD FUNC DeleteHidden(DESKTYPES.Window POINTER item)
 
   LET desktop=DESKSTATE.Get()
-  LET layer=LAYERS.Find(@desktop.scene,item.window.layer)
+  LET layer=LAYERS.Find(@desktop.scene,item.layer)
   ; Hidden alone does not authorize freeing a retained close continuation.
-  IF layer.shown<>0 OR item.window.keyRoute<>0 THEN
+  IF layer.shown<>0 OR item.keyRoute<>0 THEN
     RETURN(AESTYPES.BUSY)
   FI
 
@@ -387,7 +378,7 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
   FOR slot=0 TO AESTYPES.WINDOWS-1 DO
     IF service.windows(slot).owner=client.id THEN
       BEGIN
-        LET item=@service.windows(slot)
+        LET item=service.windows(slot)
         IF Close(item,request)<>AESTYPES.OK THEN
           RETURN(0)
         FI
@@ -407,7 +398,7 @@ INT FUNC FindAt(INT x,y)
   LET hit=AESWINDOWSTATE.FindWindow(layer)
   LET found=AESWINDOWSTATE.FindRecord(hit)
   IF found<>NULL AND hit<>DESKSTATE.desktopWindow
-      AND found.window.iconified=0 THEN
+      AND found.iconified=0 THEN
     RETURN(found.gui.window)
   FI
 
@@ -421,12 +412,12 @@ PUBLIC CARD FUNC Query(AESTYPES.Request POINTER request)
 RETURN(AESTYPES.OK)
 
 CARD FUNC SetBounds(AESSTATE.Service POINTER service
-    DESKTYPES.Service POINTER desktop AESSTATE.Window POINTER item
+    DESKTYPES.Service POINTER desktop DESKTYPES.Window POINTER item
     LAYERTYPES.Layer POINTER layer AESTYPES.Request POINTER request)
   LAYERTYPES.Rect bounds
   LAYERTYPES.Rect POINTER current
 
-  LET window=item.window
+  LET window=item
   current=@layer.bounds
   IF window.iconified<>0 THEN
     current=@window.normalBounds
@@ -500,12 +491,12 @@ PUBLIC CARD FUNC Geometry(AESSTATE.Service POINTER service
   IF item=NULL THEN
     RETURN(AESTYPES.IDENTITY)
   FI
-  IF item.window.console<>0 AND AESGATE.SystemOwned()=0 THEN
+  IF item.console<>0 AND AESGATE.SystemOwned()=0 THEN
     RETURN(AESWAIT.SYSTEM_WORK)
   FI
 
   LET desktop=DESKSTATE.Get()
-  LET window=item.window
+  LET window=item
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
   IF request.intin(1)=AESTYPES.WF_CXYWH THEN
     result=SetBounds(service,desktop,item,layer,request)
@@ -556,7 +547,7 @@ PUBLIC CARD FUNC Lifecycle(AESSTATE.Service POINTER service
   FI
   ; Console attachments still retire through the presenter: PrepareRelease
   ; can erase a physical caret and is outside the caller metadata subset.
-  IF item.window.console<>0 AND AESGATE.SystemOwned()=0 THEN
+  IF item.console<>0 AND AESGATE.SystemOwned()=0 THEN
     RETURN(AESWAIT.SYSTEM_WORK)
   FI
   result=DeleteHidden(item)
@@ -593,7 +584,7 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
   FI
 
   LET desktop=DESKSTATE.Get()
-  LET window=item.window
+  LET window=item
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
   CASE request.intin(1) OF
   WHEN AESTYPES.WF_NAME,AESTYPES.WF_INFO THEN
@@ -721,7 +712,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   FI
 
   LET desktop=DESKSTATE.Get()
-  LET window=item.window
+  LET window=item
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
   status=LAYERTYPES.OK
   CASE request.intin(1) OF

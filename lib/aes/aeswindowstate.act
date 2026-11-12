@@ -15,7 +15,7 @@ USE DESKCACHE
 USE A816MEMORY
 USE HEAPCORE
 
-PUBLIC AESSTATE.Window POINTER FUNC FindRecord(LONGCARD id)
+PUBLIC DESKTYPES.Window POINTER FUNC FindRecord(LONGCARD id)
   BYTE index
 
   LET service=AESSTATE.Get()
@@ -24,22 +24,22 @@ PUBLIC AESSTATE.Window POINTER FUNC FindRecord(LONGCARD id)
   FI
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
     IF service.windows(index).owner<>0 THEN
-      IF service.windows(index).window.id=id THEN
-        RETURN(@service.windows(index))
+      IF service.windows(index).id=id THEN
+        RETURN(service.windows(index))
       FI
     FI
   OD
 
 RETURN(NULL)
 
-PUBLIC AESSTATE.Window POINTER FUNC Handle(AESSTATE.Client POINTER client INT handle)
+PUBLIC DESKTYPES.Window POINTER FUNC Handle(AESSTATE.Client POINTER client INT handle)
   BYTE index
 
   LET service=AESSTATE.Get()
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
     IF service.windows(index).owner=client.id
         AND service.windows(index).gui.window=handle THEN
-      RETURN(@service.windows(index))
+      RETURN(service.windows(index))
     FI
   OD
 
@@ -57,41 +57,41 @@ RETURN(AESSTATE.Find(AESSTATE.Get(),item.owner))
 ; Called under exclusive policy ownership at grant or after an owner mutation.
 ; The owning client is in this call or awaiting RPC; region construction needs
 ; no long Forbid section.
-PROC Publish(AESSTATE.Window POINTER client BYTE copied)
+PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
   LAYERTYPES.Rect nextWork
   LAYERTYPES.Rect POINTER bounds,work
   BYTE status,refresh
 
-  IF client.window=NULL THEN
+  IF client.view=NULL THEN
     RETURN
   FI
 
   LET desktop=DESKSTATE.Get()
-  LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
+  LET layer=LAYERS.Find(@desktop.scene,client.layer)
   LET view=client.view
   bounds=@layer.bounds
-  IF client.window.iconified<>0 THEN
-    bounds=@client.window.normalBounds
+  IF client.iconified<>0 THEN
+    bounds=@client.normalBounds
   FI
 
   LET moved=(REGIONS.Equal(bounds,LAYERTYPES.Rect POINTER(@view.bounds))=0)
   refresh=(client.geometryEpoch=0
       OR client.geometryEpoch<>desktop.scene.layoutEpoch
-      OR client.geometryKind<>client.window.frameKind
-      OR client.geometryIconified<>client.window.iconified OR moved<>0)
+      OR client.geometryKind<>client.frameKind
+      OR client.geometryIconified<>client.iconified OR moved<>0)
   work=LAYERTYPES.Rect POINTER(@view.work)
   IF refresh<>0 THEN
     work=@nextWork
-    DESKGEOMETRY.Work(client.window.frameKind,bounds,work)
-    IF client.window.iconified=0 THEN
+    DESKGEOMETRY.Work(client.frameKind,bounds,work)
+    IF client.iconified=0 THEN
       IF moved<>0 THEN
         IF layer.bounds.right-layer.bounds.left<>
             view.bounds.right-view.bounds.left
             OR layer.bounds.bottom-layer.bounds.top<>
             view.bounds.bottom-view.bounds.top THEN
-          DESKCACHE.Changed(desktop,client.window)
+          DESKCACHE.Changed(desktop,client)
         FI
-        IF copied=0 AND client.window.console=0 THEN
+        IF copied=0 AND client.console=0 THEN
           LAYERS.ExternalArea(@desktop.scene,layer.id,work)
         FI
       FI
@@ -105,7 +105,7 @@ PROC Publish(AESSTATE.Window POINTER client BYTE copied)
 
   ; Paint state remains current even when geometry needs no reconstruction.
   status=0
-  IF client.window.iconified=0 THEN
+  IF client.iconified=0 THEN
     status=LAYERS.PixelsReady(layer,work)
   FI
 
@@ -114,32 +114,32 @@ PROC Publish(AESSTATE.Window POINTER client BYTE copied)
     A816MEMORY.Move(BYTE POINTER(@view.bounds),BYTE POINTER(bounds),8)
     A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(work),8)
   FI
-  view.shown=IF client.window.iconified<>0 THEN CARD(0) ELSE CARD(layer.shown) FI
-  IF client.window.iconified<>0 THEN
+  view.shown=IF client.iconified<>0 THEN CARD(0) ELSE CARD(layer.shown) FI
+  IF client.iconified<>0 THEN
     view.visibleCount=0
   FI
   view.pixelsReady=status
   view.paintEpoch=layer.paintEpoch
   view.revision==+1
   EXEC.Permit()
-  client.geometryKind=client.window.frameKind
-  client.geometryIconified=client.window.iconified
+  client.geometryKind=client.frameKind
+  client.geometryIconified=client.iconified
   client.geometryEpoch=desktop.scene.layoutEpoch
 
 RETURN
 
-PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
+PUBLIC PROC Snapshot(DESKTYPES.Window POINTER client)
 
   Publish(client,0)
 
 RETURN
 
-PUBLIC PROC Geometry(AESSTATE.Window POINTER client BYTE copied)
+PUBLIC PROC Geometry(DESKTYPES.Window POINTER client BYTE copied)
 
   AESSNAPSHOT.Invalidate()
   LET desktop=DESKSTATE.Get()
-  LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
-  DESKGEOMETRY.Slider(client.window,@layer.bounds,
+  LET layer=LAYERS.Find(@desktop.scene,client.layer)
+  DESKGEOMETRY.Slider(client,@layer.bounds,
       client.view.vslide,client.view.vsize)
   Publish(client,copied)
 
@@ -151,7 +151,7 @@ PUBLIC PROC SnapshotAll(AESSTATE.Client POINTER client)
   LET service=AESSTATE.Get()
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
     IF service.windows(index).owner=client.id THEN
-      Snapshot(@service.windows(index))
+      Snapshot(service.windows(index))
     FI
   OD
 
@@ -171,7 +171,7 @@ PUBLIC PROC BeginUpdate(AESSTATE.Client POINTER client)
         AND (service.updateWindow=0
           OR service.windows(index).gui.window=service.updateWindow) THEN
       BEGIN
-        LET window=service.windows(index).window
+        LET window=service.windows(index)
         service.windows(index).view.changed=0
         LAYERS.Touch(@desktop.scene,window.layer)
         DESKCACHE.BeginChange(desktop,window)
@@ -195,9 +195,9 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
         AND (service.updateWindow=0
           OR service.windows(index).gui.window=service.updateWindow) THEN
       BEGIN
-        LET item=@service.windows(index)
+        LET item=service.windows(index)
         LET view=item.view
-        LET layer=LAYERS.Find(@desktop.scene,item.window.layer)
+        LET layer=LAYERS.Find(@desktop.scene,item.layer)
         same=(view.paintEpoch=layer.paintEpoch)
         IF (view.changed & AESTYPES.CHANGE_DECLARED)<>0 THEN
           report=0
@@ -248,7 +248,7 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
               view.work.left,view.work.top,view.work.left,view.work.top)
         FI
         complete=(same<>0 AND request.paintFailed=0)
-        DESKCACHE.EndChange(desktop,item.window,
+        DESKCACHE.EndChange(desktop,item,
             LAYERTYPES.Rect POINTER(@view.change),complete)
         IF painted<>0 THEN
           ; Claim uses the same slot in the AES and desktop window tables.
@@ -343,12 +343,12 @@ PUBLIC PROC Sync()
   IF service.windowFocus<>desktop.focus THEN
     FOR slot=0 TO AESTYPES.WINDOWS-1 DO
       BEGIN
-        LET item=@service.windows(slot)
+        LET item=service.windows(slot)
         IF item.owner<>0 AND item.focusNotices<>0
-            AND (item.window.id=service.windowFocus
-              OR item.window.id=desktop.focus) THEN
+            AND (item.id=service.windowFocus
+              OR item.id=desktop.focus) THEN
           AESGUI.Post(service,item,AESTYPES.GUI_FOCUS,
-              INT(item.window.id=desktop.focus),0,0,0)
+              INT(item.id=desktop.focus),0,0,0)
         FI
       END
     OD

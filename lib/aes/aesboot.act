@@ -3,9 +3,11 @@ MODULE AESBOOT
 USE EXEC
 USE AESSTATE
 USE DESKSTATE
+USE AESTYPES
 USE HEAPCORE
 
 PUBLIC BYTE FUNC Enable()
+  BYTE slot
 
   IF AESSTATE.Get()<>NULL OR DESKSTATE.Enabled()=0 THEN
     RETURN(0)
@@ -17,6 +19,10 @@ PUBLIC BYTE FUNC Enable()
     RETURN(0)
   FI
 
+  LET desktop=DESKSTATE.Get()
+  FOR slot=0 TO AESTYPES.WINDOWS-1 DO
+    service.windows(slot)=@desktop.windows(slot)
+  OD
   service.controller=EXEC.FindTask(NULL)
   AESSTATE.Bind(service)
 
