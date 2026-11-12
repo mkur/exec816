@@ -53,6 +53,9 @@
   EmuTOS/MagiC, unchanged object routines, bounded execution and drawing-path
   observations alongside the frozen native Exec capture.
 
+- [Original Text Viewer on MagiC](magic-text-viewer.md): unchanged viewer and
+  loader sources, native file selection, a background Counter and resource cleanup.
+
 - [AES object drawing profile](aes-drawing-profile.md): passive rendering,
   graphics-state, ownership, command and submission accounting on the EC2 image.
 

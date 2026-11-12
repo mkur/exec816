@@ -37,6 +37,27 @@ WORD evnt_multi(WORD f,WORD bc,WORD bm,WORD bs,WORD f1,WORD x1,WORD y1,WORD w1,W
 }
 WORD objc_draw(OBJECT *t,WORD s,WORD d,WORD x,WORD y,WORD w,WORD h)
 {return aes_objc_draw(&context,(struct aes_object *)t,s,d,x,y,w,h);}
+WORD wind_calc(WORD type,WORD kind,WORD x,WORD y,WORD w,WORD h,
+ WORD *ox,WORD *oy,WORD *ow,WORD *oh)
+{return aes_wind_calc(&context,type,kind,x,y,w,h,ox,oy,ow,oh);}
+WORD menu_bar(OBJECT *t,WORD on)
+{return aes_menu_bar(&context,(struct aes_object *)t,on);}
+WORD menu_ienable(OBJECT *t,WORD item,WORD on)
+{return aes_menu_ienable(&context,(struct aes_object *)t,item,on);}
+WORD menu_tnormal(OBJECT *t,WORD item,WORD on)
+{return aes_menu_tnormal(&context,(struct aes_object *)t,item,on);}
+void reference_mouse(WORD mode) {aes_graf_mouse(&context,mode,NULL);}
+WORD fsel_exinput(char *path,char *file,WORD *button,const char *title)
+{
+    struct aes_control control={91,0,2,3,0};
+    const void *addresses[]={path,file,title};
+    struct aes_pb p=context.pb;
+    p.control=&control;
+    p.addr_in=(const struct aes_addr_in *)addresses;
+    xgemdos_aes(&p);
+    *button=context.int_out.n[1];
+    return context.int_out.n[0];
+}
 
 static WORD ctl[12],in[256],pts[16],out[256],pout[16];
 static VDIPB pb={ctl,in,pts,out,pout};

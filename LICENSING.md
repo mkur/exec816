@@ -28,6 +28,7 @@ repository root; directory entries include all files below them.
 | `ports/gem4xe/apps/gemarc/native/` | Exec-authored GemARC file, path and timestamp adapters |
 | `c/`, except `c/include/setjmp.h` | Public C headers, Calypsi bindings, startup support and C examples |
 | `examples/`, except `examples/shell/` | Standalone examples, disk commands and sample data |
+| `tests/reference/atari-st/` | Exec-authored Atari ST startup and GEM/file adapters for shared examples |
 | `lib/exec/exec.act`, `lib/exec/execos.act`, `lib/exec/execproducer.act` | Action! interface declarations |
 | `lib/exec/execlists.act` | Public list types and application-side list helpers |
 | `lib/exec/exec-abi.inc` | Exec gateway constants and layouts |

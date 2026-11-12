@@ -208,6 +208,7 @@ def prepare(args):
         'Automated captures and logs remain under capture/ across launches.\n')
     inputs = [Path(__file__).resolve(), PIN, *sources.values(),
         ROOT/'examples/gem-counter/counter.h', ADAPTER/'include/exec/types.h',
+        ADAPTER/'include/string.h',
         ROOT/'c/include/gem.h', ROOT/'c/include/gem/objects.h',
         ROOT/'c/include/exec816/gem-constants.h']
     record = dict(pins=pins, hatari_version=version, hatari_sha256=sha256(hatari),

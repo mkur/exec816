@@ -57,6 +57,63 @@ the Exec816 boot demo. Native Exec code and fixed/root/kernel/idle/per-Task
 bank-zero reservations change by **0 bytes**, including guards, alignment and
 unused capacity.
 
+## Original Text Viewer on MagiC
+
+The original `examples/gem-text/text.c` and `document.c` run as an ordinary
+MagiC application beside Counter. Both application sources are compiled directly,
+without changes. Use the SDK/Hatari prerequisites below, plus mtools:
+
+```sh
+brew install mtools
+python3 tools/prepare_magic_text.py --offline --run
+build/magic-text-viewer/launch-hatari.command
+```
+
+Omit `--offline` if the shared reference inputs are not cached. The builder
+accepts the same `--cache`, `--output`, `--hatari` and `--rom` overrides as the
+Counter setup. `--run` performs a bounded development check and closes Hatari;
+the generated launcher opens the interactive example. Boot and initial loading
+fast-forward, then normal speed resumes with `STORY.TXT` visible. This setup
+retains the pinned ST monochrome machine. Its resident launcher installs the
+upstream US primary keyboard tables and keeps their storage live.
+
+Space pages down; Shift-Space pages up; Up/Down scroll one line. `O` opens
+MagiC's native file selector on A:. Its **Undo** shortcut cancels; Escape clears
+the filename field. On a Mac without Undo, use the selector's Cancel button.
+Return accepts a filename. Escape in the viewer cancels a pending replacement
+load. `Q` or the closer exits. Counter remains an independent application after
+the viewer closes. Hatari quit/settings shortcuts are the same as above.
+
+`documents.st` is a read-only 720 KiB FAT12 floppy in A:. The adapter maps the
+viewer's `SYS:` paths to A: and selects A: as its current drive. `STORY.TXT` has
+901 lines; `SMALL.TXT` is a two-line replacement; `BIG.TXT` exceeds the viewer's
+64 KiB limit. Programs and observations remain on the private host-folder C:.
+The native filesystem lets MagiC's selector enumerate its own directory;
+Hatari's host-folder interception does not supply all of MagiC's internal file
+services. Refreshing the build recreates the example floppy.
+
+The ST adapter maps the loader's allocation and file calls to TOS/libc/GEMDOS,
+and UPDATE to real `wind_update`. Exec's presentation journal, preserved-window
+request and extended diagnostic channel have no corresponding service here.
+The adapter hides/restores the software cursor around UPDATE, selects the
+viewer's 8×8 VDI font, fits its menu to MagiC's system menu font, and explicitly
+closes its window, menu and workstation before `appl_exit`. These are reference
+bindings, not an Exec kernel or a general Exec compatibility layer.
+
+The viewer retains four-row paint bands, 1 KiB loading steps and its original
+640×240 window-sizing assumptions. Full-height ST resize/drag behavior is
+outside this first port. The automated check covers actual keyboard paging,
+line-scroll pixel correspondence, native selector Open/Cancel, missing and
+oversize replacements, read cancellation, inactive Counter pixels and viewer
+cleanup. It does not measure repaint speed or disk throughput. MagiC's modal
+selector holds UPDATE, so another application's redraw can wait until it closes.
+
+Build identities, screenshots, raw framebuffers and observations stay under
+`build/magic-text-viewer/`; see the [development record](../history/magic-text-viewer.md).
+This is separate from the OF816/Exec boot demo. Exec fixed, root/kernel, idle and
+per-Task reserved bank-zero changes are all **0 bytes**, including guards,
+alignment and unused capacity. The native viewer/loader sources are unchanged.
+
 ## Prepare and launch the object-tree sample
 
 On the tested Apple Silicon Mac, install the prerequisites with Homebrew:

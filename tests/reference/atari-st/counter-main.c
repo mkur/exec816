@@ -4,9 +4,12 @@
 #include "examples/gem-counter/counter.h"
 
 struct Counter GEMCounter;
+#ifndef REFERENCE_COUNTER_SECOND_Y
+#define REFERENCE_COUNTER_SECOND_Y 192
+#endif
 static const struct CounterConfig configs[]={
     {"Counter 1",48,64,232,64,1,0},
-    {"Counter 2",360,192,232,64,1,0}
+    {"Counter 2",360,REFERENCE_COUNTER_SECOND_Y,232,64,1,0}
 };
 static FILE *report;
 static uint32_t reported=0xffffffffUL;
