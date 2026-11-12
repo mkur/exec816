@@ -1,0 +1,1522 @@
+{
+  "schema_version": 1,
+  "kind": "standalone-source-architecture",
+  "status": "documented",
+  "date": "2026-11-12",
+  "magic_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+  "qualification": false,
+  "scope": "Resident Atari AES/GEM architecture with common VDI and BIOS/DOS context; detailed external and alternate implementations excluded.",
+  "sources": [
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESINC.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESINC.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESINC.S",
+      "sha256": "4facdf9f7d2a0e9f3766543c5d5573b080a7fee9473b0dace37e7c35bf9caf6c",
+      "bytes": 39598,
+      "encoding": "utf-8",
+      "lines": 1059,
+      "id": "AESINC",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESINC.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESMAIN.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESMAIN.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESMAIN.S",
+      "sha256": "180fd7bc8453ecbdddf1bedce4932a299c81c9dfca269e4d3f891e74945927cc",
+      "bytes": 327687,
+      "encoding": "utf-8",
+      "lines": 11576,
+      "id": "AESMAIN",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESMAIN.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESEVT.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESEVT.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESEVT.S",
+      "sha256": "ca75b9b85de9631caaa838ae8a3215c05ac72cbc1b0595cdeef275292ba89c81",
+      "bytes": 111779,
+      "encoding": "utf-8",
+      "lines": 3792,
+      "id": "AESEVT",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESEVT.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESWIN.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESWIN.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESWIN.S",
+      "sha256": "29d9ac92d87f66c08c2b428e118e4478171a1272c37627ece557b1e64821ae0a",
+      "bytes": 174460,
+      "encoding": "utf-8",
+      "lines": 5860,
+      "id": "AESWIN",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESWIN.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESOBJ.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESOBJ.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESOBJ.S",
+      "sha256": "abbda7614a2a9339894c87ca65666cc9581624ea631889dae2e070e2f3e66bd3",
+      "bytes": 250320,
+      "encoding": "utf-8",
+      "lines": 8621,
+      "id": "AESOBJ",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESOBJ.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESFRM.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESFRM.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESFRM.S",
+      "sha256": "bde0a4b8a3cdb4a09b40202b8e243265bb1c378b96c400035f036e0eceee7df7",
+      "bytes": 103410,
+      "encoding": "utf-8",
+      "lines": 3381,
+      "id": "AESFRM",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESFRM.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESGRAF.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESGRAF.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESGRAF.S",
+      "sha256": "b1a9b5a1e4083c1cd29c774f1064a476c6d5a6947b699a218ff4dab94243a611",
+      "bytes": 20358,
+      "encoding": "utf-8",
+      "lines": 784,
+      "id": "AESGRAF",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESGRAF.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESMEN.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESMEN.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESMEN.S",
+      "sha256": "7800a8202a6a13b3ebc5cbd6da19bc89999780c42d5158648665f57b9943fa13",
+      "bytes": 51485,
+      "encoding": "utf-8",
+      "lines": 1742,
+      "id": "AESMEN",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESMEN.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESRSC.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESRSC.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESRSC.S",
+      "sha256": "fdae04de27d004cfa381f9e84113633b9429692ddda5ba6a8aa20459bdaa37c4",
+      "bytes": 24206,
+      "encoding": "utf-8",
+      "lines": 830,
+      "id": "AESRSC",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESRSC.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESFSL.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESFSL.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESFSL.S",
+      "sha256": "328604643a846b5705acc051e1f7cd04b0dac7a23d32f0f9bcd8eaaa57670a95",
+      "bytes": 43603,
+      "encoding": "utf-8",
+      "lines": 1614,
+      "id": "AESFSL",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESFSL.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/FARBICON.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FFARBICON.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/FARBICON.S",
+      "sha256": "4a0e030923d7329b78bccf93f57add637ddfb4fbe8e55fb6079ab9e94d482025",
+      "bytes": 35450,
+      "encoding": "utf-8",
+      "lines": 972,
+      "id": "FARBICON",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/FARBICON.S"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/DISP.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FDISP.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/DISP.S",
+      "sha256": "a57b68bdbda2f615b96ad74ea789171799f9dbc84c68b602b43c244016442293",
+      "bytes": 6139,
+      "encoding": "latin-1",
+      "lines": 304,
+      "id": "DISP",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/DISP.S"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/OUTPUT.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FOUTPUT.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/OUTPUT.S",
+      "sha256": "1036b506abf4cdf37d2a45c19c575361c544ec1e0a9193f83b2e1da7a15a2d32",
+      "bytes": 70446,
+      "encoding": "latin-1",
+      "lines": 2637,
+      "id": "OUTPUT",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/OUTPUT.S"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/RASTER.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FRASTER.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/RASTER.S",
+      "sha256": "d25b6c7527b7276337c348d58af737dfad539a30d95c8ff5b99955d2fe89f3e3",
+      "bytes": 11119,
+      "encoding": "latin-1",
+      "lines": 362,
+      "id": "RASTER",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/RASTER.S"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/INPUT.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FINPUT.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/INPUT.S",
+      "sha256": "cd304139c8372592ec2bb7b6207cdaea85c42c04f3d502105b4399ed022c16c5",
+      "bytes": 9863,
+      "encoding": "latin-1",
+      "lines": 310,
+      "id": "INPUT",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/INPUT.S"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/CONTROL.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FCONTROL.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/CONTROL.S",
+      "sha256": "2e12b55147af3bb9c7b092fe06c1d97ed65c6d4e700d7dbf2e79de0c4fc8019b",
+      "bytes": 35825,
+      "encoding": "latin-1",
+      "lines": 1170,
+      "id": "CONTROL",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/CONTROL.S"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/ATTRIBUT.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FATTRIBUT.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/ATTRIBUT.S",
+      "sha256": "97bb4e1308f01f102e62699daf63680d64b8809398d1d1ff8acfdd4d1dfd9239",
+      "bytes": 24741,
+      "encoding": "latin-1",
+      "lines": 720,
+      "id": "ATTRIBUT",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/ATTRIBUT.S"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/MXVDIKNL.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FMXVDIKNL.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/MXVDIKNL.S",
+      "sha256": "3e4852cb6218db92139d5101745052c96b3ac9589d3996bef84ffc9c79228ebc",
+      "bytes": 102701,
+      "encoding": "latin-1",
+      "lines": 3511,
+      "id": "MXVDIKNL",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/MXVDIKNL.S"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/DRIVERS.C",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FDRIVERS.C/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/DRIVERS.C",
+      "sha256": "2ae6ad7be503e9404ba43e03515300115401e94d8d2d7e1cab81fb0e7a7c9427",
+      "bytes": 15034,
+      "encoding": "latin-1",
+      "lines": 511,
+      "id": "DRIVERS",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/DRIVERS.C"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/NVDI_WK.H",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FNVDI_WK.H/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/NVDI_WK.H",
+      "sha256": "2de521768e785b138f1c975e41878a6ed979a7a72ebabd7aa5a9c8e27cf5eb38",
+      "bytes": 8852,
+      "encoding": "latin-1",
+      "lines": 246,
+      "id": "NVDIWK",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/NVDI_WK.H"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/MXVDI.H",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FMXVDI.H/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/MXVDI.H",
+      "sha256": "73156a8728d51e964b060a09fc9d4e286e5c98d658aa185e160d1ce670cea007",
+      "bytes": 3991,
+      "encoding": "latin-1",
+      "lines": 104,
+      "id": "MXVDIH",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/MXVDI.H"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/INIT_RES.C",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FINIT_RES.C/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/INIT_RES.C",
+      "sha256": "aa91e509a5aa188191b249007e94bf3e6a0040ada410c5365d3c655e078b159c",
+      "bytes": 3141,
+      "encoding": "latin-1",
+      "lines": 97,
+      "id": "INITRES",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/INIT_RES.C"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGICVDI.2/SETUP.C",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGICVDI.2%2FSETUP.C/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/SETUP.C",
+      "sha256": "a9e08271387f3026cf6441140d6dfd45a417c5abc6fe56c7716455c65eb79070",
+      "bytes": 6133,
+      "encoding": "latin-1",
+      "lines": 147,
+      "id": "SETUP",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/SETUP.C"
+    },
+    {
+      "path": "MagiC/KERNEL/BIOS/ATARI/MAGIBIOS.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FBIOS%2FATARI%2FMAGIBIOS.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/BIOS/ATARI/MAGIBIOS.S",
+      "sha256": "2b19e4b07495114e10a1ad0353c2a60c7420529cf6b37533d9b3f7eefc07018e",
+      "bytes": 133702,
+      "encoding": "utf-8",
+      "lines": 4349,
+      "id": "MAGIBIOS",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/BIOS/ATARI/MAGIBIOS.S"
+    },
+    {
+      "path": "MagiC/KERNEL/BIOS/COMMON/BIOS.INC",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FBIOS%2FCOMMON%2FBIOS.INC/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/BIOS/COMMON/BIOS.INC",
+      "sha256": "201724404492b5c8b5b63628b5bedbba41825afa5cd1a4afe613e0b05ac83828",
+      "bytes": 986,
+      "encoding": "utf-8",
+      "lines": 49,
+      "id": "BIOSINC",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/BIOS/COMMON/BIOS.INC"
+    },
+    {
+      "path": "MagiC/KERNEL/DOS/MAGIDOS.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FDOS%2FMAGIDOS.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/DOS/MAGIDOS.S",
+      "sha256": "ed875a530d7a354766375446c8e398c01a974b5ca62748912cab0188a6887b05",
+      "bytes": 316892,
+      "encoding": "utf-8",
+      "lines": 11649,
+      "id": "MAGIDOS",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/DOS/MAGIDOS.S"
+    },
+    {
+      "path": "MagiC/KERNEL/DOS/MALLOC.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FDOS%2FMALLOC.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/DOS/MALLOC.S",
+      "sha256": "334c708d1e36b2816eea07be7162196f93a99af62f20fcefce00bbb4ec958359",
+      "bytes": 64289,
+      "encoding": "utf-8",
+      "lines": 2181,
+      "id": "MALLOC",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/DOS/MALLOC.S"
+    },
+    {
+      "path": "MagiC/KERNEL/README.TXT",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FREADME.TXT/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/README.TXT",
+      "sha256": "593bf52fbd6a4ff3be9eba49dbeb204c98b7b954fd790f46db10797f9f15f2f1",
+      "bytes": 900,
+      "encoding": "utf-8",
+      "lines": 43,
+      "id": "KERNELREADME",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/README.TXT"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGIC.DRV/MFA/MFA2.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGIC.DRV%2FMFA%2FMFA2.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGIC.DRV/MFA/MFA2.S",
+      "sha256": "90f6911911605df3457c4d731649cadfe291cda409f3dd621f46b44722f6066f",
+      "bytes": 19647,
+      "encoding": "latin-1",
+      "lines": 667,
+      "id": "MFA2",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGIC.DRV/MFA/MFA2.S"
+    },
+    {
+      "path": "MagiC/KERNEL/VDI/SRC/MAGIC.DRV/OSD/OFF002.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FVDI%2FSRC%2FMAGIC.DRV%2FOSD%2FOFF002.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/VDI/SRC/MAGIC.DRV/OSD/OFF002.S",
+      "sha256": "ee31c1bcade6b684db789ffc36b15844572959fd0c66e3a771e77cee55f58590",
+      "bytes": 177829,
+      "encoding": "latin-1",
+      "lines": 6802,
+      "id": "OFF002",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGIC.DRV/OSD/OFF002.S"
+    },
+    {
+      "path": "MagiC/KERNEL/INC/KERNEL.INC",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FINC%2FKERNEL.INC/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/INC/KERNEL.INC",
+      "sha256": "fda360583a849fb376ae15eff0c2026c42085f4bd8d5fe6e63dc2d41d2eb580f",
+      "bytes": 10843,
+      "encoding": "utf-8",
+      "lines": 234,
+      "id": "KERNEL",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/INC/KERNEL.INC"
+    },
+    {
+      "path": "MagiC/KERNEL/INC/DOS.INC",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FINC%2FDOS.INC/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/INC/DOS.INC",
+      "sha256": "dcd2750aac34e8b74859cab7108eac230ed672e55ce08d2119db944686af9845",
+      "bytes": 4259,
+      "encoding": "utf-8",
+      "lines": 163,
+      "id": "DOSINC",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/INC/DOS.INC"
+    }
+  ],
+  "ranges": [
+    {
+      "id": "boot-apps",
+      "source": "AESMAIN",
+      "locator": "clr.w    appln",
+      "first": 476,
+      "last": 570,
+      "normalized_sha256": "948cdc0d3c0e59d33771f426ddb119bbaffa9791d8305284ac6070618ebcbf26"
+    },
+    {
+      "id": "app-create",
+      "source": "AESMAIN",
+      "locator": "init_APPL:",
+      "first": 876,
+      "last": 990,
+      "normalized_sha256": "a2fddcd62018a35af1f4810befeefda9f6d989630d72734d905a980826c29be9"
+    },
+    {
+      "id": "app-init-api",
+      "source": "AESMAIN",
+      "locator": "appl_init:",
+      "first": 5164,
+      "last": 5196,
+      "normalized_sha256": "3c00accfec5819c827d7a0baced57186e1f777f67719e8dfafb99593de20f79e"
+    },
+    {
+      "id": "ui-routing",
+      "source": "AESMAIN",
+      "locator": "_set_topwind_app:",
+      "first": 4198,
+      "last": 4228,
+      "normalized_sha256": "1e48b7604a61fa1013ce0802bcfeb45aaecb57c31bc2e0ad36fc2bd9644695f8"
+    },
+    {
+      "id": "screen-manager",
+      "source": "AESMAIN",
+      "locator": "screnmgr:",
+      "first": 4235,
+      "last": 4459,
+      "normalized_sha256": "e25c32033a0d9bd90e22adc8a35392edcb6de4a3726e8c715c110a0923c167b8"
+    },
+    {
+      "id": "manager-routing",
+      "source": "AESMAIN",
+      "locator": "screnmgr_button:",
+      "first": 4039,
+      "last": 4183,
+      "normalized_sha256": "c47d8954ea1409e8bca523baf89951cf05e7d25b8d7d9990c5cc0552dd3dd7e3"
+    },
+    {
+      "id": "aes-dispatch",
+      "source": "AESMAIN",
+      "locator": "aes_dispatcher:",
+      "first": 4779,
+      "last": 4808,
+      "normalized_sha256": "032b91702eb89ccb566b0560980c5b5dbd3f8cc0a8f601874b7789c9bb453844"
+    },
+    {
+      "id": "ui-cleanup",
+      "source": "AESMAIN",
+      "locator": "appl_end_mctrl:",
+      "first": 11043,
+      "last": 11152,
+      "normalized_sha256": "b1bfeadd67db45298b817815187384ff8607bec3f7b202e45abe0824e232435f"
+    },
+    {
+      "id": "exit-notification",
+      "source": "AESMAIN",
+      "locator": "exit_APPL:",
+      "first": 993,
+      "last": 1067,
+      "normalized_sha256": "67789e74e03e55153a07c48cf30635543d5816e8a395e1a42d0fd15233b39382"
+    },
+    {
+      "id": "aes-trap",
+      "source": "AESEVT",
+      "locator": "aes_trap2:",
+      "first": 376,
+      "last": 430,
+      "normalized_sha256": "63ce05a449e3511a584e4d4e61d79993140c7ab2124f31a7ead2510013e126f7"
+    },
+    {
+      "id": "scheduler",
+      "source": "AESEVT",
+      "locator": "appl_yield:",
+      "first": 204,
+      "last": 358,
+      "normalized_sha256": "ef55a8d8b92ea3a68456f7d69c0ef85f55db8111b3845dbb3421190d656da29b"
+    },
+    {
+      "id": "event-match",
+      "source": "AESEVT",
+      "locator": "event_happened:",
+      "first": 438,
+      "last": 460,
+      "normalized_sha256": "e1af77eff75c6c2d7b04fe0dbf62cae2cd5b545ee7fd5bf6eb464838af4836e6"
+    },
+    {
+      "id": "event-drain",
+      "source": "AESEVT",
+      "locator": "read_evnts_from_ringbuf:",
+      "first": 775,
+      "last": 842,
+      "normalized_sha256": "27bd2d0bbfeac5c51db1d2111106687bef0235334916daab532400aa488711b3"
+    },
+    {
+      "id": "input-interrupts",
+      "source": "AESEVT",
+      "locator": "but_int:",
+      "first": 2284,
+      "last": 2428,
+      "normalized_sha256": "28320e4b2b9c70d9b001d133281df3f65723c1615333c34a9faf5f13176fc3b7"
+    },
+    {
+      "id": "wait",
+      "source": "AESEVT",
+      "locator": "appl_wait:",
+      "first": 2638,
+      "last": 2648,
+      "normalized_sha256": "53bfe9f4e673983781b3a43f1c5d8299fca1b73582419e43b430c735304bc3dc"
+    },
+    {
+      "id": "multiwait",
+      "source": "AESEVT",
+      "locator": "_evnt_multi:",
+      "first": 3584,
+      "last": 3767,
+      "normalized_sha256": "04c53b4be0cd9190d9ab56811a0df50e2199843423f8cb1e8302e11f7e9548d6"
+    },
+    {
+      "id": "message-write",
+      "source": "AESEVT",
+      "locator": "appl_write:",
+      "first": 3013,
+      "last": 3169,
+      "normalized_sha256": "93522ef8df0fed9e8964a1077a8d1cc0172310e332378474aeb84cd797242ff1"
+    },
+    {
+      "id": "message-build",
+      "source": "AESEVT",
+      "locator": "send_msg:",
+      "first": 3776,
+      "last": 3792,
+      "normalized_sha256": "490ce909eb34f12fe580de85fac0843689faa81df4170f2f0235c8edd4296d57"
+    },
+    {
+      "id": "update",
+      "source": "AESEVT",
+      "locator": "wind_update:",
+      "first": 1428,
+      "last": 1533,
+      "normalized_sha256": "11983921e3e2c5999e80732f3b831c15ddf11b63db707987beff58c14369ec25"
+    },
+    {
+      "id": "update-release",
+      "source": "AESEVT",
+      "locator": "free_semaphore:",
+      "first": 1532,
+      "last": 1571,
+      "normalized_sha256": "2311ed502c9ad03851cc3df194bb472dcb65506bbfb5d9791cfb903b69e45b5b"
+    },
+    {
+      "id": "mouse-control",
+      "source": "AESEVT",
+      "locator": "mctrl_1:",
+      "first": 573,
+      "last": 652,
+      "normalized_sha256": "6682d362677315d7b66cadc383ab3c242f85f19c8692cbf4732c15b52cfc6ad7"
+    },
+    {
+      "id": "app-layout",
+      "source": "KERNEL",
+      "locator": "ap_next:",
+      "first": 133,
+      "last": 213,
+      "normalized_sha256": "67e5c4ba7828d210bf3f123563c0f8eeb78ac8b54e65014fb5594c1e519e704d"
+    },
+    {
+      "id": "blockage-layout",
+      "source": "KERNEL",
+      "locator": "bl_cnt:",
+      "first": 18,
+      "last": 25,
+      "normalized_sha256": "81e1d4ddb273fdfb811240e6fc357e447132a4bb07187cdcde5a9d5319f37323"
+    },
+    {
+      "id": "window-layout",
+      "source": "AESINC",
+      "locator": "w_state:",
+      "first": 226,
+      "last": 250,
+      "normalized_sha256": "26212be6e1b03571cc80f4a6d6dfe1640cf7ad2d5dd9595d7e68899b732835ca"
+    },
+    {
+      "id": "shared-drawing-state",
+      "source": "AESINC",
+      "locator": "vdipb:",
+      "first": 656,
+      "last": 681,
+      "normalized_sha256": "1fd9b0afe3a0419f177abfa4b11ae0cb1a8a7dc810d3b14404870d8f26a69116"
+    },
+    {
+      "id": "shared-ui-state",
+      "source": "AESINC",
+      "locator": "menutree:",
+      "first": 765,
+      "last": 826,
+      "normalized_sha256": "dd0f735c8369b4d23140b2a5669c0a38fb0257d9abe4b816c0ea517ded4698fd"
+    },
+    {
+      "id": "frame-callbacks",
+      "source": "AESINC",
+      "locator": "wbm_create:",
+      "first": 826,
+      "last": 837,
+      "normalized_sha256": "f871389d46d51f0e5ee875b2f0d8ece967e4d2883714f1a646961e5f3202370f"
+    },
+    {
+      "id": "window-draw",
+      "source": "AESWIN",
+      "locator": "objc_wdraw:",
+      "first": 221,
+      "last": 299,
+      "normalized_sha256": "0dd21dd0c6f8f7ea8d03f1e7910bacc6ff5c8ba60f6ca6b36c9105471d4f2772"
+    },
+    {
+      "id": "window-create",
+      "source": "AESWIN",
+      "locator": "__wind_create:",
+      "first": 127,
+      "last": 164,
+      "normalized_sha256": "3f5cdfd348bce74cea0bf52de2ee2377e452640452eb87296012b71550c84782"
+    },
+    {
+      "id": "window-delete",
+      "source": "AESWIN",
+      "locator": "wind_delete:",
+      "first": 1740,
+      "last": 1769,
+      "normalized_sha256": "b4c4097a0d18af8a4e0fd224b652994c2db6810c9f4eb8b37889bbd97442d2fe"
+    },
+    {
+      "id": "window-visibility",
+      "source": "AESWIN",
+      "locator": "build_new_wgs:",
+      "first": 4354,
+      "last": 4448,
+      "normalized_sha256": "2c9b132ae05d446280b9715646a37d0c628288a0a09d4c34c16fa7b158077f63"
+    },
+    {
+      "id": "window-content-message",
+      "source": "AESWIN",
+      "locator": "send_redraw_message:",
+      "first": 1239,
+      "last": 1282,
+      "normalized_sha256": "d0497a17bc6ff258c7c1378c72bea95c4dc6d8017fbdf92bef047a800bbb89d2"
+    },
+    {
+      "id": "window-gesture",
+      "source": "AESWIN",
+      "locator": "wind_was_clicked:",
+      "first": 3235,
+      "last": 3379,
+      "normalized_sha256": "3e313ffa96c053f438f722c4ca8eb04995ebb7f129f507f3a60284a4a99bb300"
+    },
+    {
+      "id": "window-redraw-copy",
+      "source": "AESWIN",
+      "locator": "wind_redraw:",
+      "first": 5385,
+      "last": 5509,
+      "normalized_sha256": "4dce639b3d19b4026f552007a30dee0069c712db03265d549814f7b9ee072a98"
+    },
+    {
+      "id": "form-loop",
+      "source": "AESFRM",
+      "locator": "form_do:",
+      "first": 1960,
+      "last": 2104,
+      "normalized_sha256": "21026108a167494300047a3127bb60b4387d39c019c21c27be40343d1f70953b"
+    },
+    {
+      "id": "form-callback",
+      "source": "AESFRM",
+      "locator": "__fdo_callback:",
+      "first": 1935,
+      "last": 1959,
+      "normalized_sha256": "f909b567563e14973cfd4b54dc39afbf7a8f9d158f88e8932e2b29f04d4ac6aa"
+    },
+    {
+      "id": "menu-track",
+      "source": "AESMEN",
+      "locator": "do_menu:",
+      "first": 257,
+      "last": 406,
+      "normalized_sha256": "c12d52b7d287173ec5690db4fac5b661f7ec54f39be1a3b6347bfaead32ccb1a"
+    },
+    {
+      "id": "menu-register",
+      "source": "AESMEN",
+      "locator": "menu_on:",
+      "first": 668,
+      "last": 843,
+      "normalized_sha256": "37627d8c50ba8d39fffe0ed175cffe89456088e6f6a575533ce41ae3bbdeebba"
+    },
+    {
+      "id": "resource-load",
+      "source": "AESRSC",
+      "locator": "rsrc_load:",
+      "first": 253,
+      "last": 357,
+      "normalized_sha256": "9fe96fcd0ceaeb92316b94c8aaab263b8ba1be51ec9e3a6e2ac9ca329f465640"
+    },
+    {
+      "id": "resource-free",
+      "source": "AESRSC",
+      "locator": "rsrc_free:",
+      "first": 208,
+      "last": 219,
+      "normalized_sha256": "02b7a240f4da235af3d5669f57565d8e853b17f1c131015a4fa216b5ee3d6487"
+    },
+    {
+      "id": "resource-relocate",
+      "source": "AESRSC",
+      "locator": "_rsc_init:",
+      "first": 629,
+      "last": 733,
+      "normalized_sha256": "5359a26b2a3965e0e768c7ece4e982a47f2de7efbe4046c0d7c71339fcb81082"
+    },
+    {
+      "id": "resource-dispatch",
+      "source": "AESMAIN",
+      "locator": "dsp_rsrc_load:",
+      "first": 6116,
+      "last": 6176,
+      "normalized_sha256": "3d163876a8bc995230cbb36914dc63d95b85c6d342feebc41db008757e4fef2d"
+    },
+    {
+      "id": "file-selector",
+      "source": "AESFSL",
+      "locator": "fsel_exinput:",
+      "first": 94,
+      "last": 273,
+      "normalized_sha256": "da856b425f3a99d3c3b7401279823ac20b0794993ed9b71c217dae47311d152f"
+    },
+    {
+      "id": "object-walk",
+      "source": "AESOBJ",
+      "locator": "_objc_draw:",
+      "first": 7920,
+      "last": 8053,
+      "normalized_sha256": "6bb20b4f572df41803065e97b47c18f685bf26737534a6e888a3d9146dfe2a3d"
+    },
+    {
+      "id": "object-render",
+      "source": "AESOBJ",
+      "locator": "__objc_draw:",
+      "first": 6116,
+      "last": 6260,
+      "normalized_sha256": "e48432134bda383bb5e0447462c2305e3dc6aa31c7211832e63bd2f9919e45d9"
+    },
+    {
+      "id": "cursor-nesting",
+      "source": "AESOBJ",
+      "locator": "mouse_on:",
+      "first": 362,
+      "last": 387,
+      "normalized_sha256": "f0fc9d6570ca07505eb6e9e39aaedb1745af2f36fb3b052c914041d68d7a2e2f"
+    },
+    {
+      "id": "user-object",
+      "source": "AESOBJ",
+      "locator": "do_userdef:",
+      "first": 5006,
+      "last": 5031,
+      "normalized_sha256": "43af76a3c517f2164cbe9c573fcedb04e32a8f418c3f677d619c03717847349f"
+    },
+    {
+      "id": "aes-vdi",
+      "source": "AESOBJ",
+      "locator": "vdi_quick:",
+      "first": 208,
+      "last": 241,
+      "normalized_sha256": "c0526c43e747d52433da2a2352f29c9ddec7286b0e15630136cb907692b3b373"
+    },
+    {
+      "id": "vdi-dispatch",
+      "source": "DISP",
+      "locator": "vdi_entry:",
+      "first": 40,
+      "last": 79,
+      "normalized_sha256": "a4e3127b36ef2763c2ca66b6dc46620f7457b5d63da4512b3558223cd6fa7c4e"
+    },
+    {
+      "id": "workstation-allocate",
+      "source": "CONTROL",
+      "locator": "alloc_wk:",
+      "first": 263,
+      "last": 315,
+      "normalized_sha256": "0f131863c76882640f3b450c216de398f26d5946192c09ee8a5f7a4d44874da2"
+    },
+    {
+      "id": "workstation-defaults",
+      "source": "CONTROL",
+      "locator": "wk_defaults:",
+      "first": 625,
+      "last": 737,
+      "normalized_sha256": "53289f3ec7237265e4467e52c5e67b8c76e7a5a2eb5b8b5e016f8f566b36bc26"
+    },
+    {
+      "id": "workstation-open",
+      "source": "CONTROL",
+      "locator": "v_opnvwk:",
+      "first": 785,
+      "last": 814,
+      "normalized_sha256": "8f1a3aa720eaad4c28d7d69117b56f75ce99dabab02a2fe44f759c8d08111a46"
+    },
+    {
+      "id": "workstation-close",
+      "source": "CONTROL",
+      "locator": "v_clsvwk:",
+      "first": 925,
+      "last": 962,
+      "normalized_sha256": "84357633395774215b31f67406afc876db44c00395e6c67f0c77eada4d912783"
+    },
+    {
+      "id": "workstation-layout",
+      "source": "NVDIWK",
+      "locator": "clip_xmin",
+      "first": 1,
+      "last": 246,
+      "normalized_sha256": "6c34ba192b1d0385dfe39b191759576cc9eeb80b917953ab024829e3d82f1718"
+    },
+    {
+      "id": "driver-loader",
+      "source": "DRIVERS",
+      "locator": "DRIVER\t*load_NOD_driver(",
+      "first": 153,
+      "last": 200,
+      "normalized_sha256": "4722737f03400e0c36930272ad3e0e43aaf7a085c878de7ec3183f02a9a29d37"
+    },
+    {
+      "id": "vdi-tables",
+      "source": "MXVDIKNL",
+      "locator": "wk_tab0:",
+      "first": 159,
+      "last": 173,
+      "normalized_sha256": "227646f09124074425fde3c3fbb80669aba62f31f494c7f4ebb22594c099530c"
+    },
+    {
+      "id": "output-line",
+      "source": "OUTPUT",
+      "locator": "v_pline:",
+      "first": 849,
+      "last": 925,
+      "normalized_sha256": "7bff38c1a4a069e5f4e919dbf72dc27e7696e7807348b9cba70e4de1b4d2573b"
+    },
+    {
+      "id": "output-text",
+      "source": "OUTPUT",
+      "locator": "v_gtext:",
+      "first": 1410,
+      "last": 1455,
+      "normalized_sha256": "841cb22055dd4d76ce82e4cca212a5f00dfd3806cdba7eced9517752dd3d867d"
+    },
+    {
+      "id": "output-fill",
+      "source": "OUTPUT",
+      "locator": "vr_recfl:",
+      "first": 2420,
+      "last": 2499,
+      "normalized_sha256": "f528bdd901d800fd153ad736521f9f4ba4ebe67d4c158f57c9998b58f400e055"
+    },
+    {
+      "id": "raster-copy",
+      "source": "RASTER",
+      "locator": "vro_cpyfm:",
+      "first": 4,
+      "last": 163,
+      "normalized_sha256": "806c7f631ae5e52b45abcb53bf5bb655bc78ae24974c2b6d2cd318856b6d91fe"
+    },
+    {
+      "id": "raster-expand",
+      "source": "RASTER",
+      "locator": "vrt_cpyfm:",
+      "first": 172,
+      "last": 346,
+      "normalized_sha256": "5897660b50a0a6b3f6fe8384ae400172ee66ce63aee8f1f31b47956c87261230"
+    },
+    {
+      "id": "device-cursor",
+      "source": "INPUT",
+      "locator": "v_show_c:",
+      "first": 234,
+      "last": 283,
+      "normalized_sha256": "e242391b17a0b5fdb79f8f445e36e42329fa40aafc0169e5e9a34e5fe5f662f2"
+    },
+    {
+      "id": "timer-preemption",
+      "source": "MAGIBIOS",
+      "locator": "i200_yield:",
+      "first": 3711,
+      "last": 3725,
+      "normalized_sha256": "c8fea01c443b3cd9037a7dc26f553f00dd12016eab50685c89c1b6b15cea8628"
+    },
+    {
+      "id": "bios-initialization",
+      "source": "MAGIBIOS",
+      "locator": "dos_init",
+      "first": 940,
+      "last": 1189,
+      "normalized_sha256": "6cd7e97c6a8f44ef05da1482ab0e1378964084eed655e95348930b259b887b79"
+    },
+    {
+      "id": "memory-owner",
+      "source": "MALLOC",
+      "locator": "mcb_owner:",
+      "first": 75,
+      "last": 85,
+      "normalized_sha256": "cb6a3523a77c5bc70ccf8ab5e73665163acb8754e0e24523f700337c77f7a11a"
+    },
+    {
+      "id": "mono-driver",
+      "source": "MFA2",
+      "locator": "init:",
+      "first": 60,
+      "last": 101,
+      "normalized_sha256": "8e942e6987699cf82832d32677773e862e169a5dc524a0e071b943bc21601bf1"
+    },
+    {
+      "id": "cpu-raster",
+      "source": "OFF002",
+      "locator": "fbox0_tt:",
+      "first": 4489,
+      "last": 4523,
+      "normalized_sha256": "9388c185f27b66234700ec212f46fbf4a7919a71b860a1871ae386db9497c55e"
+    }
+  ],
+  "source_checks": [
+    {
+      "id": "resident-contexts",
+      "range": "boot-apps",
+      "contains": [
+        "app0",
+        "screnmgr",
+        "init_APPL",
+        "init_vdi"
+      ]
+    },
+    {
+      "id": "existing-app-api",
+      "range": "app-init-api",
+      "contains": [
+        "act_appl",
+        "ap_id",
+        "global"
+      ],
+      "absent": [
+        "init_APPL"
+      ]
+    },
+    {
+      "id": "appl-versus-process",
+      "range": "app-layout",
+      "contains": [
+        "ap_pd:",
+        "ap_ssp:",
+        "ap_type:",
+        "ap_menutree:",
+        "ap_rbits:",
+        "ap_hbits:"
+      ]
+    },
+    {
+      "id": "context-restore",
+      "range": "scheduler",
+      "contains": [
+        "no_switch",
+        "inaes",
+        "act_pd",
+        "usp",
+        "ap_ssp"
+      ],
+      "ordered": [
+        "tas.b    inaes",
+        "ad_switch:"
+      ]
+    },
+    {
+      "id": "trap-routing",
+      "range": "aes-trap",
+      "contains": [
+        "#$c8",
+        "#$c9",
+        "old_trap2"
+      ],
+      "ordered": [
+        "trap_aesfn:",
+        "aes_dispatcher",
+        "exec_yield:",
+        "appl_yield"
+      ]
+    },
+    {
+      "id": "input-targets",
+      "range": "ui-routing",
+      "contains": [
+        "topwind_app",
+        "keyb_app",
+        "set_mouse_app"
+      ]
+    },
+    {
+      "id": "manager-event-loop",
+      "range": "screen-manager",
+      "ordered": [
+        "_evnt_multi",
+        "update_1",
+        "screnmgr_button",
+        "update_0"
+      ]
+    },
+    {
+      "id": "deferred-input",
+      "range": "input-interrupts",
+      "contains": [
+        "write_evnt_to_ringbuf",
+        "int_but_dirty",
+        "mov_int:",
+        "timer_int:"
+      ]
+    },
+    {
+      "id": "deferred-completion",
+      "range": "event-drain",
+      "contains": [
+        "iocpbuf",
+        "EV_IO",
+        "event_happened"
+      ]
+    },
+    {
+      "id": "event-readiness",
+      "range": "event-match",
+      "contains": [
+        "ap_hbits",
+        "ap_rbits",
+        "notready_list",
+        "ap_to_lastready"
+      ]
+    },
+    {
+      "id": "blocked-call",
+      "range": "wait",
+      "ordered": [
+        "ap_hbits",
+        "APSTAT_WAITING",
+        "appl_yield",
+        "ap_rbits"
+      ]
+    },
+    {
+      "id": "message-copy-and-extension",
+      "range": "message-write",
+      "contains": [
+        "rw_ap_buf",
+        "Mchgown",
+        "ap_pd",
+        "ap_len"
+      ]
+    },
+    {
+      "id": "update-owner-wait",
+      "range": "update",
+      "contains": [
+        "bl_waiting",
+        "ap_nxtsem",
+        "appl_wait",
+        "bl_app",
+        "bl_pd"
+      ]
+    },
+    {
+      "id": "publish-before-wake",
+      "range": "update-release",
+      "ordered": [
+        "bl_app",
+        "bl_pd",
+        "move.w   #1",
+        "event_happened"
+      ]
+    },
+    {
+      "id": "mouse-control-routing",
+      "range": "mouse-control",
+      "contains": [
+        "wind_update",
+        "mctrl_mnrett",
+        "mctrl_karett",
+        "_set_topwind_app"
+      ]
+    },
+    {
+      "id": "window-state",
+      "range": "window-layout",
+      "contains": [
+        "w_owner:",
+        "w_work:",
+        "w_wg:",
+        "w_tree:"
+      ]
+    },
+    {
+      "id": "window-delete-lifetime",
+      "range": "window-delete",
+      "contains": [
+        "act_appl",
+        "w_owner",
+        "WSTAT_OPENED_B",
+        "smfree"
+      ]
+    },
+    {
+      "id": "window-clipped-walk",
+      "range": "window-draw",
+      "ordered": [
+        "w_wg",
+        "grects_intersect",
+        "set_clip_grect",
+        "jsr      (a3)"
+      ]
+    },
+    {
+      "id": "frame-and-client-redraw",
+      "range": "window-redraw-copy",
+      "ordered": [
+        "bsr      wind_draw",
+        "send_redraw_message",
+        "topwind_move:",
+        "blitcopy_rectangle"
+      ]
+    },
+    {
+      "id": "redraw-addressing",
+      "range": "window-content-message",
+      "contains": [
+        "w_work",
+        "w_wg",
+        "w_owner",
+        "WM_REDRAW",
+        "send_msg"
+      ]
+    },
+    {
+      "id": "menu-live-tree",
+      "range": "menu-register",
+      "contains": [
+        "ap_menutree",
+        "menu_app",
+        "menutree",
+        "ob_x",
+        "update_1",
+        "update_0"
+      ]
+    },
+    {
+      "id": "menu-extension-and-wait",
+      "range": "menu-track",
+      "contains": [
+        "xmenu_info",
+        "jmp      (a2)",
+        "_evnt_multi"
+      ]
+    },
+    {
+      "id": "modal-form",
+      "range": "form-loop",
+      "contains": [
+        "mctrl_1",
+        "_evnt_multi",
+        "__fdo_callback",
+        "set_clip_grect"
+      ]
+    },
+    {
+      "id": "resource-bindings",
+      "range": "resource-relocate",
+      "contains": [
+        "ap_pmem",
+        "ap_ptree",
+        "rsh_trindex"
+      ]
+    },
+    {
+      "id": "resource-io-cleanup",
+      "range": "resource-load",
+      "contains": [
+        "malloc",
+        "rsc_init",
+        "rsld_err:",
+        "mfree",
+        "Fclose"
+      ]
+    },
+    {
+      "id": "caller-resource-fix",
+      "range": "resource-dispatch",
+      "contains": [
+        "global",
+        "rsrc_free",
+        "dsp_rsrc_rcfix:",
+        "rsc_init"
+      ]
+    },
+    {
+      "id": "object-state",
+      "range": "object-render",
+      "contains": [
+        "unpack_objc",
+        "ob_state"
+      ]
+    },
+    {
+      "id": "nested-pointer",
+      "range": "cursor-nesting",
+      "contains": [
+        "moff_cnt",
+        "vdi_1",
+        "vdi_quick"
+      ]
+    },
+    {
+      "id": "user-callback",
+      "range": "user-object",
+      "ordered": [
+        "get_clip_grect",
+        "ub_code",
+        "ub_parm",
+        "jsr      (a2)"
+      ]
+    },
+    {
+      "id": "vdi-route",
+      "range": "vdi-dispatch",
+      "contains": [
+        "wk_tab",
+        "handle_found:",
+        "vdi_tab",
+        "jsr"
+      ]
+    },
+    {
+      "id": "workstation-storage",
+      "range": "workstation-allocate",
+      "contains": [
+        "WK_LENGTH",
+        "MallocA",
+        "wk_handle",
+        "free_wk:",
+        "Mfree"
+      ]
+    },
+    {
+      "id": "workstation-driver-defaults",
+      "range": "workstation-defaults",
+      "contains": [
+        "clip_xmin",
+        "wr_mode",
+        "p_gtext",
+        "DRVR_wk_init",
+        "buffer_ptr"
+      ]
+    },
+    {
+      "id": "virtual-target-sharing",
+      "range": "workstation-open",
+      "contains": [
+        "driver_id",
+        "device_drvr",
+        "alloc_wk",
+        "wk_defaults",
+        "driver_use"
+      ]
+    },
+    {
+      "id": "driver-reset-close",
+      "range": "workstation-close",
+      "contains": [
+        "DRVR_wk_reset",
+        "driver_use",
+        "free_wk",
+        "delete_bitmap"
+      ]
+    },
+    {
+      "id": "raster-indirection",
+      "range": "raster-copy",
+      "contains": [
+        "p_bitblt",
+        "clip"
+      ]
+    },
+    {
+      "id": "expand-indirection",
+      "range": "raster-expand",
+      "contains": [
+        "p_expblt",
+        "clip"
+      ]
+    },
+    {
+      "id": "supervisor-timer-gate",
+      "range": "timer-preemption",
+      "ordered": [
+        "pe_timer",
+        "btst     #5,(sp)",
+        "bne      nix_hz",
+        "appl_suspend"
+      ]
+    },
+    {
+      "id": "local-cursor-exclusion",
+      "range": "device-cursor",
+      "contains": [
+        "M_HID_CT",
+        "#$0700,sr",
+        "draw_sprite",
+        "undraw_sprite"
+      ]
+    },
+    {
+      "id": "ui-cleanup-lifetimes",
+      "range": "ui-cleanup",
+      "contains": [
+        "wind_new:",
+        "appl_end_mctrl",
+        "ap_menutree",
+        "w_owner",
+        "wind_close",
+        "wind_delete",
+        "end_update",
+        "evnt_sem",
+        "flush_msgbuf"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "components",
+      "kind": "structural-summary",
+      "statement": "Resident components are connected by ordinary calls, shared layouts, traps and callbacks.",
+      "ranges": [
+        "aes-dispatch",
+        "app-layout",
+        "shared-ui-state",
+        "vdi-dispatch",
+        "frame-callbacks"
+      ]
+    },
+    {
+      "id": "execution-identities",
+      "kind": "source-observation",
+      "statement": "APPL execution records and DOS process identity have separate fields and restoration roles.",
+      "ranges": [
+        "app-layout",
+        "app-create",
+        "app-init-api",
+        "scheduler",
+        "memory-owner"
+      ]
+    },
+    {
+      "id": "cpu-versus-focus",
+      "kind": "source-observation",
+      "statement": "Current execution and UI input/menu targets are separately represented.",
+      "ranges": [
+        "ui-routing",
+        "shared-ui-state",
+        "scheduler"
+      ]
+    },
+    {
+      "id": "synchronous-entry",
+      "kind": "source-observation",
+      "statement": "AES dispatch runs synchronously through the trap and reaches scheduling on ordinary return.",
+      "ranges": [
+        "aes-trap",
+        "aes-dispatch"
+      ]
+    },
+    {
+      "id": "screen-manager",
+      "kind": "source-observation",
+      "statement": "A distinct resident APPL executes the screen-manager event loop.",
+      "ranges": [
+        "boot-apps",
+        "screen-manager",
+        "manager-routing"
+      ]
+    },
+    {
+      "id": "window-state-lifetime",
+      "kind": "source-observation",
+      "statement": "Allocation, open visibility, content/frame responsibility and deletion are separate boundaries.",
+      "ranges": [
+        "window-layout",
+        "window-create",
+        "window-delete",
+        "window-visibility",
+        "window-content-message",
+        "window-redraw-copy"
+      ]
+    },
+    {
+      "id": "object-drawing",
+      "kind": "source-observation",
+      "statement": "Clipped tree traversal expands objects into multiple semantic VDI operations.",
+      "ranges": [
+        "window-draw",
+        "object-walk",
+        "object-render",
+        "aes-vdi",
+        "cursor-nesting"
+      ]
+    },
+    {
+      "id": "events-and-messages",
+      "kind": "source-observation",
+      "statement": "Interrupt deferral, per-context event state, buffered messages and scheduling are separate stages.",
+      "ranges": [
+        "input-interrupts",
+        "event-drain",
+        "event-match",
+        "multiwait",
+        "wait",
+        "message-write",
+        "message-build"
+      ]
+    },
+    {
+      "id": "modal-and-menu-lifetimes",
+      "kind": "source-observation",
+      "statement": "Forms keep blocked call state while menus retain registered live trees and have an indirect tracking path.",
+      "ranges": [
+        "form-loop",
+        "form-callback",
+        "menu-track",
+        "menu-register"
+      ]
+    },
+    {
+      "id": "resource-lifetimes",
+      "kind": "source-observation",
+      "statement": "Loaded and caller-fixed resources bind through the caller global array; free ends storage lifetime.",
+      "ranges": [
+        "resource-load",
+        "resource-free",
+        "resource-relocate",
+        "resource-dispatch",
+        "file-selector"
+      ]
+    },
+    {
+      "id": "update-and-input-control",
+      "kind": "source-observation",
+      "statement": "UPDATE is recursive and waitable; mouse control additionally changes routing.",
+      "ranges": [
+        "update",
+        "update-release",
+        "mouse-control",
+        "blockage-layout"
+      ]
+    },
+    {
+      "id": "scheduler-gates",
+      "kind": "source-observation",
+      "statement": "Scheduler reentry, context-switch gating, timer privilege gating and local interrupt masks are distinct.",
+      "ranges": [
+        "scheduler",
+        "timer-preemption",
+        "device-cursor"
+      ]
+    },
+    {
+      "id": "workstations-and-devices",
+      "kind": "source-observation",
+      "statement": "Workstations retain attributes and dispatch pointers, while target drivers and some buffers are shared.",
+      "ranges": [
+        "workstation-layout",
+        "workstation-allocate",
+        "workstation-defaults",
+        "workstation-open",
+        "workstation-close",
+        "vdi-tables",
+        "driver-loader"
+      ]
+    },
+    {
+      "id": "output-boundaries",
+      "kind": "source-observation",
+      "statement": "Output and raster routines dispatch through device functions; selected CPU implementation is not a general driver completion contract.",
+      "ranges": [
+        "output-line",
+        "output-text",
+        "output-fill",
+        "raster-copy",
+        "raster-expand",
+        "mono-driver",
+        "cpu-raster"
+      ]
+    },
+    {
+      "id": "extension-edges",
+      "kind": "source-observation",
+      "statement": "AES dispatch, frames, menus and application callbacks create indirect edges.",
+      "ranges": [
+        "aes-dispatch",
+        "frame-callbacks",
+        "menu-track",
+        "user-object",
+        "form-callback"
+      ]
+    },
+    {
+      "id": "startup-and-cleanup",
+      "kind": "structural-summary",
+      "statement": "BIOS/DOS support, resident AES initialization, UI cleanup and execution-record departure have distinct roles.",
+      "ranges": [
+        "bios-initialization",
+        "boot-apps",
+        "app-create",
+        "ui-cleanup",
+        "exit-notification"
+      ]
+    }
+  ],
+  "documentation_pages": [
+    "docs/architecture/magic.md",
+    "docs/architecture/README.md",
+    "docs/plans/gem4xe/README.md"
+  ],
+  "validation": {
+    "tier": "documentation",
+    "checker": "tools/check_magic_architecture.py",
+    "report": "build/magic-architecture/checks.json",
+    "method": "Hash-pinned files, normalized selected ranges, structural markers and call-order checks, manual source reading and local links.",
+    "limits": "Structural checks verify locators/markers, not semantic equivalence, exhaustive control flow or runtime behavior.",
+    "emitted_code_runs": 0,
+    "emulator_runs": 0
+  },
+  "resource_impact": {
+    "fixed_bank_zero_delta": 0,
+    "root_kernel_bank_zero_delta": 0,
+    "each_public_task_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "includes": "guards, alignment and unused reserved capacity",
+    "upper_ram_delta": 0,
+    "vram_delta": 0
+  }
+}

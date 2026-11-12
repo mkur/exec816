@@ -22,3 +22,9 @@ The [library map](../../lib/README.md) connects these parts to source files.
 
 - [CreateTask for Action! and C](create-task.md): one public creation operation,
   automatic pool selection and safe resource reuse, shared by Action! and C.
+
+## Reference architectures
+
+- [MagiC: Atari source model](magic.md): implemented components, execution
+  contexts, state lifetimes, GEM drawing, events, UI coordination and VDI devices
+  at a pinned upstream revision.

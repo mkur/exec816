@@ -29,6 +29,10 @@ The [comparison record](../../history/atari-st-reference.md) relates direct
 MagiC drawing to Exec's bounded ownership callbacks and records the limits of
 cross-machine timing comparisons.
 
+The standalone [MagiC architectural model](../../architecture/magic.md) describes
+the pinned Atari implementation's components, state ownership, execution paths,
+coordination and extension points. It contains no Exec migration proposal.
+
 The [MagiC boundary analysis](../../history/magic-operation-boundaries.md)
 separates semantic drawing operations, UPDATE ownership, cursor lifetime and
 actual scheduling opportunities. It records the Atari supervisor-mode
