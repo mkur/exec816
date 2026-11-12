@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 33,
+  "version": 34,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -134,7 +134,11 @@
     "ExecVDICopyRect",
     "ExecAESWindowView",
     "SetFileDate",
-    "ExecConsoleView"
+    "ExecConsoleView",
+    "Forbid",
+    "Permit",
+    "FindPort",
+    "WaitPort"
   ],
   "stack_requirement": {
     "workspace_mask": 255,

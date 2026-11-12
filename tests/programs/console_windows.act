@@ -332,12 +332,18 @@ RETURN
 ; External copied views retain their own lifetime after source retirement.
 PROC ViewChecks()
   VIEW.Snapshot packet
+  VIEW.Directory directory
 
   LET bit=EXEC.AllocSignal(-1)
   Require(bit<>$ff)
   LET mask=LONGCARD(1) LSH bit
   LET unit=CONSOLE.Create(8,3)
   Require(unit<>0)
+  Require(CONSOLEVIEW.Directory(@directory)=VIEW.OK)
+  Require(directory.units(BYTE(unit & 3))=unit
+      AND directory.widths(BYTE(unit & 3))=8
+      AND directory.heights(BYTE(unit & 3))=3)
+  Require(CONSOLEVIEW.Activate(unit)=VIEW.UNSUPPORTED)
   LET handle=CONSOLEVIEW.Subscribe(unit,mask)
   Require(handle<>0)
   packet.first=0

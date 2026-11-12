@@ -16,9 +16,11 @@ Width and height must fit the active display: 1–40 by 1–24 for text, or
 1–80 by 1–30 for standalone bitmap, or 1–64 by 1–20 for desktop.
 New instances start blank, at cursor (0,0),
 and hidden; writes still complete into their retained cells. These functions
-do not use DOS IoErr. The Shell selects its full-size instances through
-[BIND_CONSOLE](desktop.md#operations). Other GEM applications use the owned
-window binding below. Standalone tiled presentation calls remain unsupported
+do not use DOS IoErr. The production GEM desktop presents these instances
+through the [copied-view terminal](console-views.md); shell sessions share its
+ordinary AES window. BASIC output requests selection through the same view
+interface. The native binding below remains only in previews awaiting GF12
+retirement. Standalone tiled presentation calls remain unsupported
 in desktop mode.
 
 `CONSOLE.Destroy(unit)` returns one on success, zero on rejection. Only the

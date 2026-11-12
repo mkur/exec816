@@ -1060,3 +1060,51 @@ These are focused development checks. They do not qualify the hosted system,
 pass the original latency gates or replace the final GF15 package checks. The
 current [console](../reference/console.md) and [view contract](../reference/console-views.md)
 supersede the [coupled presentation record](console-presentation-before-gf10.md).
+
+## GF11 GEM terminal
+
+The [terminal record](../development/gem-first-gf11.json) covers the production
+GEM root, loaded terminal APP and matching development disk. One terminal
+Process presents all four console slots through ordinary AES windows, VDI,
+UPDATE and visible rectangles. The backend retains stream/model authority;
+the application owns copied cells and row damage. The
+[glyph slice](../development/gem-first-gf11-glyphs.json) checks all 256 ROM
+terminal bytes, mixed GEM text, clipping and odd X through private VDI state.
+
+Console-view version 4 adds a copied directory and coalesced activation hint;
+the existing shell protocol now has generated C records. APP ABI 34 exports
+four ordinary Exec calls for named-port submission and reply waits. The root
+waits for the initial shell's READY while continuing controller work before
+starting applications. This avoids simultaneous first RAW/CON endpoint opens.
+A missing or lost mandatory terminal closes supervised sessions. Root withdraws
+its named port before waiting for frontend retirement, avoiding a parent/reply
+wait cycle. Forms temporarily unbind console keyboard routing; cancel and
+confirm retain their normal AES input and session authority.
+
+The emitted walkthrough checks shell output, backspace editing, the final
+column, covered/exposed exact viewport pixels, a second session, switching,
+keyboard cancellation of close, confirmed retirement and final EXIT. Front and
+exposure hashes agree. Missing-terminal startup returns with controller failure,
+withdrawn port, intact guards and restored ownership. Raw/optimized view probes
+each pass 122 assertions; console lifetime/directory cases pass 152, 12 and 52.
+The existing input-binding/held-UPDATE check passes 231 assertions. BASIC's
+output migration and target layout probes compile; its complete program walk
+remains part of later integration.
+
+Normal startup observes eight live Tasks, two AES clients and three windows
+(desktop, SYS folder and terminal). A second shell raises the observed Task
+peak to nine without adding another terminal window. Terminal slot 5 reserves
+1,312 stack bytes; the close/form walkthrough touches 870, preserving the
+256-byte interrupt reserve plus 186 untouched bytes. Its private state payload
+is 5,846 upper bytes. APP emission and exact source/media hashes are retained
+in the record. No VRAM extent is added. **Reserved bank-zero growth is zero**
+for fixed/root/kernel, every public Task and idle, including guards, alignment
+and unused capacity. The frontend consumes an existing 1,600-byte small slot
+(stack, DP and outer guards).
+
+The development builder now supplies the RAM mount needed by its RAM-installed
+desktop. Its default upper image arena is 12 KiB, matching the existing production
+demo setting. Production skips native console attachment and the temporary GUI
+mirror. Legacy preview paths and their native protocol remain for the next GF12
+slice. These are development checks; combined final-load/QED/package acceptance
+and the existing failed latency gates are not claimed by this slice.

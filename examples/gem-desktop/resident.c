@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 #include <exec816/program.h>
 #include <proto/dos.h>
+#include <proto/exec.h>
 
 /* The shell owns the desktop supervisor, or the older two-app test profile.
  * The desktop owns applications it launches; RUN jobs remain shell-owned. */
@@ -69,6 +70,10 @@ LONG EXEC_CALL GEMDesktopStart(ULONG assets)
     active=1;GEMDesktopDone=GEMDesktopFailure=0;
     GEMDesktopChildren[0]=ExecStartProgram(assets ? "RAM:DESKTOP.APP":"SYS:C/PANEL.APP",NULL);
     if (!assets) GEMDesktopChildren[1]=ExecStartProgram("SYS:C/COUNTER.APP",NULL);
+    if (FindPort("Shell.sessions")) {
+        GEMDesktopChildren[2]=ExecStartProgram("SYS:C/TERMINAL.APP",NULL);
+        if (!GEMDesktopChildren[2]) { GEMDesktopStop(0);return 0; }
+    }
     if (!GEMDesktopChildren[0] || (!assets && !GEMDesktopChildren[1])) {
         GEMDesktopStop(0);return 0;
     }

@@ -45,6 +45,10 @@ RETURN
 ; Acquire permanent-unit storage before the resident publishes readiness.
 PUBLIC BYTE FUNC Start()
 
+  IF DESKSTATE.terminal<>0 THEN
+    RETURN(1)
+  FI
+
   frames(0).unit=0
   frames(0).handle=CONSOLEVIEW.Subscribe(0,$80000000)
 
@@ -81,7 +85,11 @@ RETURN(view.visible<>0 AND (model.dirtyRows<>0
 PUBLIC BYTE FUNC Runnable()
   BYTE slot
 
-  IF CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
+  IF DESKSTATE.terminal<>0 THEN
+    RETURN(0)
+  FI
+
+  IF DESKSTATE.terminal<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
       OR AESLOCKS.PaintBlocked()<>0 THEN
     RETURN(0)
   FI
@@ -160,7 +168,7 @@ PUBLIC BYTE FUNC Turn(BYTE POINTER again)
   CONSOLETYPES.Presentation POINTER view
   CONSOLETYPES.Instance POINTER model
 
-  IF CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
+  IF DESKSTATE.terminal<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
       OR AESLOCKS.PaintBlocked()<>0 THEN
     RETURN(0)
   FI

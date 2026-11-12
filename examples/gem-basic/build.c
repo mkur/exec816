@@ -8,6 +8,7 @@
 #include "../../c/calypsi/file-list.h"
 #include <exec816/program.h>
 #include <exec816/console.h>
+#include <exec816/console-view.h>
 #include <exec816/fastbasic-diagnostic.h>
 #include <exec816/aes.h>
 #include <proto/exec.h>
@@ -46,26 +47,18 @@ static void output_name(char *out,const char *device)
 static void close_output(void)
 {
     if (!b.unit) return;
-    if (b.opened) wind_close(b.window);
-    if (b.window>=0) wind_delete(b.window);
     if (b.input) Close(b.input);if (b.output) Close(b.output);
     ExecConsoleDestroy(b.unit);b.unit=b.input=b.output=0;b.opened=0;b.window=-1;
 }
 static WORD output(void)
 {
     char path[13];
-    if (b.unit) {
-        if (!b.opened) { if (!wind_open(b.window,56,21,528,173)) return 0;b.opened=1; }
-        return wind_set(b.window,WF_TOP,0,0,0,0);
-    }
+    if (b.unit) return ExecConsoleViewActivate(b.unit)==EXEC_CONSOLE_VIEW_OK;
     b.window=-1;b.unit=ExecConsoleCreate(64,20);if (!b.unit) return 0;
-    b.window=wind_create(NAME|CLOSER|MOVER,56,21,528,173);
-    if (b.window<0 || !wind_set_str(b.window,WF_NAME,"FastBasic output") ||
-        !ExecAESConsole(b.window,b.unit)) goto failed;
     output_name(path,"CON:");b.input=Open(path,MODE_OLDFILE);
     output_name(path,"RAW:");b.output=Open(path,MODE_NEWFILE);
     if (!b.input || !b.output || !ExecConsoleMode(b.input,EXEC_CONSOLE_ATASCII) ||
-        !wind_open(b.window,56,21,528,173)) goto failed;
+        ExecConsoleViewActivate(b.unit)!=EXEC_CONSOLE_VIEW_OK) goto failed;
     b.opened=1;return 1;
 failed:
     cause(IoErr());close_output();return 0;
@@ -328,7 +321,7 @@ static void transfer_step(struct BasicEditor *e)
     case WAIT_INTERPRETER:
         if (!resident.ready) break;
         resident_submit(FBI_COMMAND_RUN);b.phase=PROGRAM;
-        status(e,"Running - Ctrl+K Stop");wind_set(b.window,WF_TOP,0,0,0,0);break;
+        status(e,"Running - Ctrl+K Stop");ExecConsoleViewActivate(b.unit);break;
     case PREPARE_RUN:
         if (b.serial==0xffffffffUL) { cause(ERROR_BAD_NUMBER);retire();break; }
         b.job=++b.serial;
@@ -474,15 +467,7 @@ static void transfer_step(struct BasicEditor *e)
 WORD BasicBuildMessage(struct BasicEditor *e,WORD *m)
 {
     (void)e;
-    if (!b.unit || m[3]!=b.window) return 0;
-    if (m[0]==WM_TOPPED) wind_set(b.window,WF_TOP,0,0,0,0);
-    else if (m[0]==WM_MOVED) {
-        m[4]=((m[4]+8)&~7)-8;m[5]=((m[5]+11)&~7)-11;
-        wind_set(b.window,WF_CXYWH,m[4],m[5],528,173);
-    } else if (m[0]==WM_CLOSED) {
-        BasicBuildStop();if (b.opened) { wind_close(b.window);b.opened=0; }
-    }
-    return 1;
+    (void)m;return 0;
 }
 WORD BasicBuildRecovery(struct BasicEditor *e)
 {

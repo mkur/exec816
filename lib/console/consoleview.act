@@ -13,6 +13,7 @@ USE CONSOLEVIEWCORE AS VIEWS
 USE CONSOLEVIEWTYPES AS VIEW
 USE CONSOLEINGRESS
 INCLUDE "console-storage-action.inc"
+LONGCARD requestedUnit,activationSerial
 
 PUBLIC LONGCARD FUNC Subscribe(LONGCARD unit,mask)
   LONGCARD handle
@@ -110,6 +111,57 @@ PUBLIC CARD FUNC InputWindow(LONGCARD handle INT window BYTE bound)
 
 RETURN(status)
 
+; Directory snapshots contain scalar identities and geometry only. Activation
+; is a coalesced frontend request; it transfers no source or window ownership.
+PUBLIC CARD FUNC Directory(VIEW.Directory POINTER target)
+  BYTE slot
+
+  EXEC.Forbid()
+  LET windows=CONSOLEWINDOWS.Registry()
+  target.live=0
+  FOR slot=0 TO VIEW.SLOTS-1 DO
+    BEGIN
+      LET entry=@windows.items(slot)
+      target.units(slot)=0
+      target.widths(slot)=0
+      target.heights(slot)=0
+      IF CONSOLEWINDOWS.Live(entry)<>0 THEN
+        BEGIN
+          LET source=CONSOLETYPES.Instance POINTER(entry.instance)
+          target.units(slot)=entry.unit
+          target.widths(slot)=source.width
+          target.heights(slot)=source.height
+          target.live=target.live OR (CARD(1) LSH slot)
+        END
+      FI
+    END
+  OD
+  target.activation=requestedUnit
+  target.serial=activationSerial
+  EXEC.Permit()
+
+RETURN(VIEW.OK)
+
+PUBLIC CARD FUNC Activate(LONGCARD unit)
+  CARD status
+
+  EXEC.Forbid()
+  status=VIEW.UNSUPPORTED
+  IF DESKSTATE.terminal<>0 THEN
+    status=VIEW.CLOSED
+    IF CONSOLEWINDOWS.Find(unit)<>NULL THEN
+      status=VIEW.OVERFLOW
+      IF activationSerial<>$ffffffff THEN
+        requestedUnit=unit
+        activationSerial==+1
+        status=VIEW.OK
+      FI
+    FI
+  FI
+  EXEC.Permit()
+
+RETURN(status)
+
 ; Three full-width arguments use the existing console library C bridge.
 PUBLIC LONGCARD FUNC Call(LONGCARD operation,first,second)
 
@@ -130,6 +182,10 @@ PUBLIC LONGCARD FUNC Call(LONGCARD operation,first,second)
     RETURN(LONGCARD(InputWindow(first,INT(second),1)))
   WHEN VIEW.OP_UNBIND_WINDOW THEN
     RETURN(LONGCARD(InputWindow(0,INT(second),0)))
+  WHEN VIEW.OP_DIRECTORY THEN
+    RETURN(LONGCARD(Directory(VIEW.Directory POINTER(ADDRESS(first)))))
+  WHEN VIEW.OP_ACTIVATE THEN
+    RETURN(LONGCARD(Activate(first)))
   ESAC
 
 RETURN(LONGCARD(VIEW.BAD_LAYOUT))

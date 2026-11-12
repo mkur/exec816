@@ -13,3 +13,4 @@ class ConsoleViewTests(unittest.TestCase):
         self.assertEqual(layout()['Snapshot']['size'], 92)
         self.assertEqual(layout()['Snapshot']['fields']['cells'], 24)
         self.assertEqual(layout()['Input']['size'], 76)
+        self.assertEqual(layout()['Directory']['size'], 42)

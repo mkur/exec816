@@ -76,6 +76,7 @@ PROC Main()
   LET packet=VIEW.Snapshot POINTER(ADDRESS(location))
   packet.first=0
   Require(SIZEOF(VIEW.Snapshot)=92 AND SIZEOF(VIEW.Input)=76)
+  Require(SIZEOF(VIEW.Directory)=42)
   Require(ADDRESS(@packet.cells(0))-ADDRESS(packet)=24)
   Require(VIEWS.Snapshot(handle,packet)=VIEW.OK)
   Require(packet.unit=23 AND packet.count=64 AND packet.width=16)

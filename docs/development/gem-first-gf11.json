@@ -1,0 +1,291 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GF11-production-terminal",
+  "sources": {
+    "abi/c-program.json": "33ea86799f2d7fb84f04a498e2ef2170e4e5182570a3bff369b91f954e5247cd",
+    "abi/console-view.json": "f7c4f7854de922241f3d6a121ab73ff7f1f35f1b1d3cf45b37e7f695359fc438",
+    "tools/generate_shell_sessions.py": "231d1925743d8b37dda34a689076ac16ea6996b7b5abfce89a738633f0a36129",
+    "tools/build_gem_desktop.py": "d29e821e5ae1f45b7d623f5d0216b3b61d30df55c73edaba78a6524b32a750b8",
+    "tools/test_gem_terminal.py": "e5f3ee0c346598ea21427285cb2d6ec24a308ae88f653cbe701d13fa106c0d25",
+    "tools/terminal_model.py": "2350d271a21334268a01c7a814104d47697e2269a23da235fc5f990c09410c20",
+    "examples/gem-desktop.act": "f576a833042076f561c5ed668636ecaa3b3d292a39b839800ce5af7b4d11a17f",
+    "examples/gem-desktop/resident.c": "63594607f3e6b0bf11bc76c7cad86a3f6094a872a63472524f0d2a80ae334fba",
+    "examples/shell/shell-controller.inc": "a1a7f5fab6d61a8937074bf161395319480d81a10e070b89fe84638cebca02a7",
+    "examples/gem-basic/build.c": "366c3c8b0d1e1e22eb98946269bb986d7f4612ed027e6922bf560cf62168cd3b",
+    "lib/console/consoleview.act": "4b8bc8dea3703c7819d4ef3d98a81405d885720af512e5b693b0a3e953dd3a21",
+    "lib/console/consolefront.act": "914d79f9b02b063055202f9218f342b5d32599ab71230657173718a586402632",
+    "lib/console/consolemirror.act": "b6bd509615a8102da79a284328ccf4f0070c8b31aa046a26f255a75654ea9e20",
+    "lib/desktop/deskboot.act": "cb4c2698f6d393a368b4a5207bc9634f4d9d66905b7c0f773575662cd04884f7",
+    "lib/desktop/deskstate.act": "9b3b626ba3e03d2ae5fd907fbf44aaf43f9b9d841c650efe89f6c33dc6646255",
+    "tests/programs/gem_terminal_layout.c": "8b37c79b10c4745fc3a19974d94b2ebc81b0a8796a40c731eb71d7ac749c0c10",
+    "examples/gem-terminal/paint.c": "0ee41431c24d78221cd7c8956df57ec47466e947d5771e72b6ce3cdd882f484c",
+    "examples/gem-terminal/platform.c": "fe125fe6608a4b477df130bfd9129761f325331242f1939e17554ba0bb062c1f",
+    "examples/gem-terminal/main.c": "a47060ddda81ed4dfe062abbe2f34ea7fb1b87e6fed9f7b7431e70b35aa6dd61",
+    "examples/gem-terminal/terminal.h": "05a654d7aa97b23ee1e91420da4138daf70d46eafd8d5d789d6cf2703ca9c7eb"
+  },
+  "artifacts": {
+    "terminal": {
+      "path": "build/gem-first-gui/gf11/terminal-final/results.json",
+      "sha256": "798ee43a6fdb78ad325b92bf62aa07c74c131746e4b5f750ce24e0b2280310a2"
+    },
+    "missing_terminal": {
+      "path": "build/gem-first-gui/gf11/missing-terminal/results.json",
+      "sha256": "de04f667abb35265f0b686dde287cf4fe4c6bdacd43a1cfbf54b6d0f651a9ce1"
+    },
+    "view_raw": {
+      "path": "build/gem-first-gui/gf11/view-directory-raw/results.json",
+      "sha256": "a80ab17b0f65ad2b4f01e53f9be65c019ad3aa7926fcb448681f11a7529251d1"
+    },
+    "view_opt": {
+      "path": "build/gem-first-gui/gf11/view-directory-opt/results.json",
+      "sha256": "31f984943d10354951fa7664be4e3b1f0bf8b06628ca4d373b9b8999b27b17e8"
+    },
+    "console_windows": {
+      "path": "build/gem-first-gui/gf11/console-windows-directory/results.json",
+      "sha256": "a9605dd9f865e6123940db5a0ddd062c8a75dfe88c3e0896413bcafe60ed981f"
+    },
+    "input_binding": {
+      "path": "build/gem-first-gui/gf11/input-binding/results.json",
+      "sha256": "85446f56a0a44d25763afd3877baf17cd691adbd8046cf31a48e31da5f27d7eb"
+    }
+  },
+  "executable": {
+    "path": "build/gem-first-gui/gf11/desktop-supervised/program/program.xex",
+    "sha256": "09a8d91a316864651e9597e5312b7f862ab0ec3a14515cf8aa928cd57c74f82a",
+    "source_revision": {
+      "revision": "0652f21dcedeb1b41ae3ba3b45ff61859b3e09cc",
+      "dirty": true,
+      "tag": null,
+      "display": "0652f21-dirty",
+      "version": "0.2.3",
+      "actionc_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "task_capacity": 12,
+      "stack_checks": true,
+      "mount": {
+        "profile": 4,
+        "boot": 1,
+        "format": 2,
+        "access": "readonly",
+        "alias": "D1",
+        "unit": 49,
+        "sectors": 2880,
+        "sector_bytes": 256,
+        "device": "sio.device"
+      },
+      "strings": {
+        "banner": "Exec816 0.2.3 (0652f21-dirty)\n\n",
+        "slots": "exec: 12 task slots\n",
+        "stackChecks": "exec: stack checks enabled\n",
+        "version": "Exec816 0.2.3 (0652f21-dirty)\nactionc pin: 05c01f3\n",
+        "sioReady": " ready, 57.6k profile\n",
+        "mountStart": "Filesystems: mounting...\n",
+        "otherMountsReady": "\nRAM: ready, read-write (volatile)",
+        "systemReady": "SYS: -> D",
+        "mountFailure": "Filesystem startup failed; check configured disks\nUse CD SYS: to retry; cold-boot after SIO failure"
+      }
+    },
+    "compiler": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "compiler_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "local_override": false
+  },
+  "media": {
+    "path": "build/gem-first-gui/gf11/desktop-supervised/system.atr",
+    "sha256": "590e2b47f59b5361aae7a77e7f1eaa6540cf99e4106c6cdce7ccb03e083d9403",
+    "scope": "Development SDFS disk, SYS D1 read-only and RAM; final combined writable distribution remains GF15"
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "runtime": {
+    "startup_live_tasks": 8,
+    "peak_observed_tasks": 9,
+    "aes_clients": 2,
+    "aes_windows": 3,
+    "terminal": {
+      "identity": 3,
+      "state": 318920,
+      "window": 3,
+      "slot": 5
+    },
+    "stack": {
+      "slot": 5,
+      "reserved_bytes": 1312,
+      "touched_bytes": 870,
+      "untouched_above_floor": 186
+    },
+    "kernel_stack": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 299,
+      "untouched_from_base": 1237,
+      "interrupt_reserve_bytes_touched": 0
+    },
+    "pixels": {
+      "terminal-front": "7bfa706b27ead8d88cf05d38802c8292e66a951201e814a4c1894f4923fdb68d",
+      "terminal-exposed": "7bfa706b27ead8d88cf05d38802c8292e66a951201e814a4c1894f4923fdb68d",
+      "terminal-edge": "47604a29d3351d13ec45bf5ca3789e1b655ff4b12d0eba4be0b6edf2d0c78ec9"
+    },
+    "commands": [
+      {
+        "command": "ECHO gem-terminal",
+        "index": 0,
+        "route": 129
+      },
+      {
+        "command": "ECHO editx\b",
+        "index": 0,
+        "route": 161
+      },
+      {
+        "command": "ECHO 012345678901234567890123456789012345678901234567890123456789EDGE",
+        "index": 0,
+        "route": 193
+      },
+      {
+        "command": "NEWSHELL",
+        "index": 0,
+        "route": 263
+      },
+      {
+        "command": "ECHO second-session",
+        "index": 1,
+        "route": 294
+      },
+      {
+        "command": "SESSION 1",
+        "index": 1,
+        "route": 326
+      },
+      {
+        "command": "ECHO first-again",
+        "index": 0,
+        "route": 359
+      },
+      {
+        "command": "SESSION 2",
+        "index": 0,
+        "route": 391
+      },
+      {
+        "command": "confirmed window close",
+        "index": 1
+      }
+    ],
+    "missing_terminal_controller_status": 20
+  },
+  "frontend": {
+    "state_payload_bytes": 5846,
+    "app_file_bytes": 22457,
+    "app_logical_span": 66473,
+    "segments": [
+      {
+        "offset": 0,
+        "size": 19427,
+        "flags": 1
+      },
+      {
+        "offset": 65536,
+        "size": 182,
+        "flags": 2
+      },
+      {
+        "offset": 65718,
+        "size": 755,
+        "flags": 2
+      }
+    ],
+    "minimum_stack": 1312,
+    "existing_slot_consumption_bytes": {
+      "stack": 1312,
+      "direct_page": 256,
+      "outer_guards": 32,
+      "total": 1600
+    }
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "guards_alignment_and_unused_capacity_included": true
+  },
+  "vram_reserved_delta": 0,
+  "checks": {
+    "view_raw": 122,
+    "view_opt": 122,
+    "console_windows": [
+      152,
+      12,
+      52
+    ],
+    "input_binding": 231,
+    "terminal_layout": "target-emitted C probe",
+    "basic": "APP emission and target ABI/layout probes only",
+    "host": "692 tests; four existing skips"
+  },
+  "open_scope": [
+    "GF12 native preview/protocol retirement and authoritative window records",
+    "GF13/GF14 matched drawing measurements",
+    "GF15 final production two-Counter/disk/input, QED and exact OF816 ZIP walks",
+    "Existing failed latency gates remain open; no full hosted/hardware qualification"
+  ]
+}

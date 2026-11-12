@@ -41,4 +41,14 @@ static inline UWORD ExecConsoleViewUnbindWindow(WORD window)
 {
     return (UWORD)ExecConsoleView(EXEC_CONSOLE_VIEW_OP_UNBIND_WINDOW,0,(ULONG)window);
 }
+static inline UWORD ExecConsoleViewDirectory(struct ExecConsoleViewDirectory *directory)
+{
+    return (UWORD)ExecConsoleView(EXEC_CONSOLE_VIEW_OP_DIRECTORY,(ULONG)directory,0);
+}
+/* Request selection in the shared graphical terminal; source ownership stays
+ * with its creator. Repeated requests coalesce in the copied directory. */
+static inline UWORD ExecConsoleViewActivate(ULONG unit)
+{
+    return (UWORD)ExecConsoleView(EXEC_CONSOLE_VIEW_OP_ACTIVATE,unit,0);
+}
 #endif

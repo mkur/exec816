@@ -10,37 +10,32 @@ INCLUDE "shell/shell-controller.inc"
 INCLUDE "shell/shell-desktop.inc"
 
 LONGINT exitStatus
-DESKTYPES.Request placement
 
-; Keep the desktop's volume column visible. The shell moves its own window
-; through the ordinary desktop API before starting application children.
-PROC PlaceShell()
-  EXEC.Message POINTER message
-  DESKTYPES.Request POINTER reply
+; A lost terminal must end the supervised session rather than strand a reader.
+LONGCARD FUNC DesktopWatch()
 
-  LET binding=DESKBOOT.Binding()
-  DESKTOP.Prepare(@placement,DESKTYPES.MOVE)
-  placement.window=DESKBOOT.WindowId()
-  placement.bounds.left=112
-  ; Keep the console work origin on its eight-pixel grid below the tabs.
-  placement.bounds.top=64-DESKTYPES.FRAME_SHELL_TOP
-  IF DESKTOP.Submit(binding,@placement)<>DESKTYPES.OK THEN
-    RETURN
+  LET mask=DesktopService()
+  IF DesktopAlive()=0 THEN
+    controllerStatus=PROCESS.RETURN_FAIL
+    ShellControllerCloseAll()
   FI
-  reply=DESKTOP.Collect(binding)
-  WHILE reply=NULL DO
-    message=EXEC.WaitPort(binding.replies)
-    reply=DESKTOP.Collect(binding)
-  OD
-RETURN
+
+RETURN(mask)
 
 ; DesktopStart/Stop are linked by the resident C application builder.
 PROC Main()
 
   IF ShellControllerStart(0)<>0 THEN
-    PlaceShell()
-    IF DesktopStart()=0 THEN
-      ShellDesktopNotice(c"GEM desktop unavailable\n")
+    IF ShellControllerFirst()<>0 THEN
+      IF DesktopStart()=0 THEN
+        ShellDesktopNotice(c"GEM desktop unavailable\n")
+        controllerStatus=PROCESS.RETURN_FAIL
+        ShellControllerCloseAll()
+      FI
+      BEGIN
+        LET client=DOSCLIENT.Ensure()
+        client.waitService=@DesktopWatch
+      END
     FI
 
     exitStatus=ShellControllerRun()

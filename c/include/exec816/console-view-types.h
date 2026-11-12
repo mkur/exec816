@@ -2,7 +2,7 @@
 #ifndef EXEC816_CONSOLE_VIEW_TYPES_H
 #define EXEC816_CONSOLE_VIEW_TYPES_H
 #include <exec/types.h>
-#define EXEC_CONSOLE_VIEW_VERSION 3
+#define EXEC_CONSOLE_VIEW_VERSION 4
 #define EXEC_CONSOLE_VIEW_CELLS 64
 #define EXEC_CONSOLE_VIEW_OP_SUBSCRIBE 1
 #define EXEC_CONSOLE_VIEW_OP_UNSUBSCRIBE 2
@@ -25,8 +25,12 @@
 #define EXEC_CONSOLE_VIEW_OP_UNBIND_WINDOW 8
 #define EXEC_CONSOLE_VIEW_NOT_OWNER 7
 #define EXEC_CONSOLE_VIEW_UNSUPPORTED 8
+#define EXEC_CONSOLE_VIEW_SLOTS 4
+#define EXEC_CONSOLE_VIEW_OP_DIRECTORY 9
+#define EXEC_CONSOLE_VIEW_OP_ACTIVATE 10
 #define EXEC_CONSOLE_VIEW_SNAPSHOT_SIZE 92
 #define EXEC_CONSOLE_VIEW_INPUT_SIZE 76
+#define EXEC_CONSOLE_VIEW_DIRECTORY_SIZE 42
 struct ExecConsoleViewSnapshot {
     ULONG unit;
     ULONG revision;
@@ -47,5 +51,13 @@ struct ExecConsoleViewInput {
     ULONG event;
     UBYTE bytes[64];
     ULONG route;
+};
+struct ExecConsoleViewDirectory {
+    ULONG units[4];
+    UWORD widths[4];
+    UWORD heights[4];
+    UWORD live;
+    ULONG activation;
+    ULONG serial;
 };
 #endif

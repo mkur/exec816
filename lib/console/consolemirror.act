@@ -2,6 +2,7 @@
 ; Creation runs before the source is admitted to the backend's live registry.
 MODULE CONSOLEMIRROR
 USE EXEC
+USE DESKSTATE
 USE A816MEMORY
 USE CONSOLETYPES
 USE CONSOLECORE
@@ -14,6 +15,12 @@ RETURN(CONSOLETYPES.Instance POINTER(view.instance))
 
 PUBLIC BYTE FUNC Create(CONSOLETYPES.Presentation POINTER view
     CONSOLETYPES.Instance POINTER source)
+
+  IF DESKSTATE.terminal<>0 THEN
+    view.instance=NULL
+    view.visible=0
+    RETURN(1)
+  FI
 
   LET mirror=CONSOLETYPES.Instance POINTER(EXEC.AllocMem(CONSOLETYPES.INSTANCE_SIZE,
       EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))

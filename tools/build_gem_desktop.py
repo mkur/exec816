@@ -48,6 +48,9 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
     require(build_applications or (not files and 'dos_mounts' in options),
             'Provider-only fixtures must supply their own disk media')
     applications=build_apps(out,basic_workbench) if build_applications else {}
+    if build_applications:
+        applications['terminal']=application(out/'apps/terminal',[ROOT/'examples/gem-terminal'/name for name in ('main.c','platform.c','paint.c')],minimum_stack=1312,
+            probes=[(ROOT/'tests/programs/gem_terminal_layout.c',__import__('terminal_model').LAYOUT)])
     from build_gem_resource import resource
     desktop_resource=resource()
     if 'dos_mounts' not in options:
@@ -65,8 +68,9 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
         make(out/'system.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,
              binary_names={*(f'C/{name.upper()}.APP' for name in disk_apps),'CALC.RSC','GEMARC.RSC'}|
                           (set() if files else {'DESKTOP.RSC'}))
-        options.update(system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,
-                       sector_bytes=256,profile=4,format=2)])
+        mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,profile=4,format=2)]
+        if files: mounts.append(dict(alias='RAM',format=3))
+        options.update(system_mount='D1',dos_mounts=mounts)
     foreign=drawing(out,True,widgets=True,client_sources=[
         ROOT/'c/calypsi/aes.c',ROOT/'c/calypsi/aes-messages.c',ROOT/'c/calypsi/aes-events.c',
         ROOT/'c/calypsi/program.c',ROOT/'examples/gem-desktop/resident.c',
@@ -100,7 +104,7 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
     require(not {'PanelRun','CounterRun','BrowserRun','GEMPanel','GEMCounter','GEMBrowser',
                  'Calculator','calc_start','calc_ws','calc_panel','TextRun','GEMText','TextStep'} & sy.keys(),
             'Application body or model retained in shared GUI image')
-    for module in ('AESBOOT','CALYPSICALL','DOSCLIENT','PROCESS'):
+    for module in ('AESBOOT','CALYPSICALL','DOSCLIENT','PROCESS','DESKSTATE'):
         if not re.search(r'(?m)^USE '+module+r'\s*$',text):
             text=re.sub(r'(?m)^(MODULE \w+\n)',r'\1USE '+module+'\n',text,count=1)
     text=text.replace('ENDMODULE',f'''
@@ -111,6 +115,11 @@ LONGCARD FUNC DesktopService()
 
   mask=LONGCARD(CALYPSICALL.Invoke(ADDRESS(${sy['GEMDesktopCollect']:x}),0))
 RETURN(mask)
+
+BYTE FUNC DesktopAlive()
+
+  LET children=LONGCARD POINTER(ADDRESS(${sy['GEMDesktopChildren']:x}))
+RETURN(children(2)<>0)
 
 BYTE FUNC DesktopStart()
 
@@ -133,12 +142,14 @@ ENDMODULE
     source=out/'gem-session.act';source.write_text(text)
     memory=options.pop('memory_profile',None)
     if memory is None:
-        profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
+        profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=12288
         memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
     mouse_profile=options.pop('mouse_profile',None)
     compiler_dir=options.pop('compiler_dir',ROOT/'build/actionc')
     release_compiler=options.pop('release_compiler',False)
     launcher=prepare(source,out,foreign,desktop=True,aes=True,mouse_profile=mouse_profile)
+    launcher.write_text(launcher.read_text().replace('  IF DESKBOOT.Enable()=0 THEN',
+        '  DESKSTATE.terminal=1\n  IF DESKBOOT.Enable()=0 THEN'))
     program=build(compiler(compiler_dir,release=release_compiler),launcher,program_output or out/'program',
         tasks=True,task_capacity=options.pop('task_capacity',8),foreign_image=foreign,console_deferred=True,
         memory_profile=memory,**options)

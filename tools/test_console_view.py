@@ -17,7 +17,8 @@ def run(out, mode):
     for path, content in files().items():
         require(path.read_text() == content, 'Stale console view ABI')
     checks = ['sizeof(struct ExecConsoleViewSnapshot)==92',
-              'sizeof(struct ExecConsoleViewInput)==76']
+              'sizeof(struct ExecConsoleViewInput)==76',
+              'sizeof(struct ExecConsoleViewDirectory)==42']
     checks += [f'offsetof(struct ExecConsoleView{name},{field})=={offset}'
                for name, record in layout().items()
                for field, offset in record['fields'].items()]

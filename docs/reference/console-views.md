@@ -6,7 +6,7 @@ The console service provides copied, bounded snapshots and input delivery above
 ordinary Exec stream I/O. It adds no kernel selector. Exact records and constants
 come from [console-view.json](../../abi/console-view.json); C declarations are in
 [console-view.h](../../c/include/exec816/console-view.h). Rebuild C applications
-for the current APP ABI and console-view version 3.
+for the current APP ABI and console-view version 4.
 
 Subscribe with a live unit and a signal mask allocated by the calling Task.
 The opaque handle retains that Task until explicit unsubscribe. Up to eight
@@ -47,4 +47,22 @@ next window's normal AES route; captured old tags retain their original scope.
 `ExecConsoleViewUnbindWindow` restores ordinary AES keyboard delivery. Unbind
 before unsubscribing or deleting the window. Unsupported hosting and ownership
 failures are normal admission errors. The [input-binding slice](../development/gem-first-gf11-input.json)
-records its emitted development checks; terminal migration follows separately.
+records its emitted development checks. The [terminal migration](../history/gem-first-gui.md#gf11-gem-terminal)
+uses this association with ordinary AES/VDI drawing.
+
+`ExecConsoleViewDirectory` copies the four unit slots, live bitmap and geometry,
+plus a coalesced activation hint and its monotonic serial. Unit zero is a live
+identity when bit zero is set. No pointer or ownership is transferred.
+`ExecConsoleViewActivate(unit)` requests selection by the graphical terminal;
+it does not wait for painting or promise synchronous focus. Unsupported hosting,
+closed units and serial exhaustion return normal status codes. The current
+GEM terminal presents sources up to 64×20, matching console creation bounds in
+this desktop mode. Its event wait combines ordinary AES events, view signals
+and a bounded directory timer.
+
+The root shell controller publishes `Shell.sessions` while accepting session
+requests. [Generated C records](../../c/include/exec816/shell-sessions.h) share
+[the existing protocol](../../abi/shell-sessions.json). Lookup/enqueue occurs
+under Forbid; shutdown withdraws the port and replies queued requests before
+waiting for terminal retirement. The terminal unsubscribes and withdraws input
+bindings before disposing its reply port and AES resources.

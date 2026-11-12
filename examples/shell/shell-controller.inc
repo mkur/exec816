@@ -14,6 +14,7 @@ ShellSession ARRAY sessions(SESSION_CAPACITY)
 ShellContext ARRAY contexts(SESSION_CAPACITY)
 ShellContext systemContext
 EXEC.MsgPort POINTER shellRequests
+BYTE shellPublished
 ShellSessionMessage POINTER selectionRequest
 LONGCARD nextSession,selectedSession,shortcutMask,shortcutTarget
 LONGCARD desktopTarget
@@ -497,6 +498,11 @@ CARD FUNC ShellSessionSelect(ShellSession POINTER session)
     RETURN(CONSOLETYPES.CONTROL_OK)
   FI
 
+  IF DESKSTATE.terminal<>0 THEN
+    selectedSession=session.control.identity
+    RETURN(CONSOLETYPES.CONTROL_OK)
+  FI
+
   IF DESKSTATE.Enabled()<>0 THEN
     RETURN(ShellDesktopSelect(session.control.identity,session.startup.unit))
   FI
@@ -687,7 +693,8 @@ PROC ShellControllerCollect()
 
         ; The permanent console can hold the empty final frame until desktop
         ; shutdown. Release a created unit's binding before destroying it.
-        IF DESKSTATE.Enabled()<>0 AND selected.startup.unit<>0 THEN
+        IF DESKSTATE.Enabled()<>0 AND DESKSTATE.terminal=0
+            AND selected.startup.unit<>0 THEN
           status=ShellDesktopSelect(0,0)
           IF status<>CONSOLETYPES.CONTROL_BUSY THEN
             HEAPCORE.Abort($ff94)
@@ -766,7 +773,7 @@ LONGCARD FUNC ShellControllerStep()
   ShellControllerCollect()
   ; Publish after lifecycle transitions. Once the last session retires,
   ; pending UI events cannot admit another child during desktop shutdown.
-  IF controllerLive<>0 THEN
+  IF controllerLive<>0 AND DESKSTATE.terminal=0 THEN
     ShellTabsStep()
   FI
   mask=(LONGCARD(1) LSH shellRequests.mp_SigBit) OR shortcutMask
@@ -818,6 +825,9 @@ BYTE FUNC ShellControllerStart(BYTE prime)
     RETURN(0)
   FI
 
+  shellRequests.mp_Node.ln_Name=BYTE POINTER(c"Shell.sessions")
+  EXEC.AddPort(shellRequests)
+  shellPublished=1
   shortcutMask=LONGCARD(1) LSH shortcutBit
   cleaned=ShellFinish(@systemContext)
   IF systemContext.shell<>NULL THEN
@@ -837,6 +847,58 @@ BYTE FUNC ShellControllerStart(BYTE prime)
 
 RETURN(1)
 
+; Finish the initial shell's endpoint/setup before boot launches applications
+; with default console streams. Keep servicing READY and startup-script requests;
+; a concurrent first Open otherwise correctly reports an endpoint still opening.
+BYTE FUNC ShellControllerFirst()
+  LONGCARD mask,bits
+
+  WHILE controllerLive<>0 AND selectedSession=0 DO
+    mask=ShellControllerStep()
+    IF controllerLive<>0 AND selectedSession=0 THEN
+      IF controllerRetry<>0 THEN
+        EXEC.Yield()
+      ELSE
+        bits=EXEC.Wait(mask)
+      FI
+    FI
+  OD
+
+RETURN(selectedSession<>0)
+
+; Stop authority stays with root; each shell retires its own resources.
+PROC ShellControllerCloseAll()
+  BYTE index
+
+  FOR index=0 TO SESSION_CAPACITY-1 DO
+    IF sessions(index).state<>SESSION_STATE_FREE THEN
+      ShellSessionClose(@sessions(index))
+    FI
+  OD
+
+RETURN
+
+; Withdraw and reply before waiting for a terminal child during desktop stop.
+PROC ShellControllerQuiesce()
+  EXEC.Message POINTER message
+
+  EXEC.Forbid()
+  IF shellPublished<>0 THEN
+    EXEC.RemPort(shellRequests)
+    shellPublished=0
+    DO
+      message=EXEC.GetMsg(shellRequests)
+      IF message=NULL THEN
+        EXIT
+      FI
+      ShellSessionReply(ShellSessionMessage POINTER(message),
+          PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_NOT_FOUND)
+    OD
+  FI
+  EXEC.Permit()
+
+RETURN
+
 ; Root remains responsive while the shell reads, runs commands or retires.
 LONGINT FUNC ShellControllerRun()
   LONGCARD mask,bits
@@ -851,6 +913,8 @@ LONGINT FUNC ShellControllerRun()
       FI
     FI
   OD
+
+  ShellControllerQuiesce()
 
 RETURN(controllerStatus)
 
@@ -867,6 +931,7 @@ PROC ShellControllerStop()
   FI
 
   IF shellRequests<>NULL THEN
+    ShellControllerQuiesce()
     ShellControllerRequests()
     EXEC.DeleteMsgPort(shellRequests)
     shellRequests=NULL

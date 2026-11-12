@@ -9,6 +9,8 @@ USE REGIONS
 DESKTYPES.Service POINTER service
 LONGCARD selectedLayer,selectedUnit,scrollToken,lossGeneration
 EXEC.Task POINTER launcher
+; Transitional admission flag; GF12 removes the final native GUI profile.
+PUBLIC BYTE terminal
 PUBLIC BYTE outlineVisible
 PUBLIC LONGCARD barLayer,popupLayer,desktopWindow,desktopLayer
 PUBLIC BYTE menuActive,menuReplacing

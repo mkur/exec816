@@ -13,6 +13,23 @@ See the [workstation profile](../reference/gem-vdi.md#resident-application-works
 for supported attributes and output buffers.
 See the [window contract](../reference/aes.md) for supported kinds and fields.
 
+## Console terminal
+
+The [terminal](../../examples/gem-terminal/main.c) is one independently loaded
+Process using an ordinary AES window and private VDI workstation. Its controls
+select shell sessions and application output, create a session, or confirm
+closing the selected session. `NEWSHELL`, `SESSION` and the existing keyboard
+shortcut retain their shell meaning. Closing the terminal frame asks before
+retiring a session; normal shell `EXIT` and final desktop shutdown clean up the
+frontend automatically. Keyboard input belongs to the focused source. Modal
+forms temporarily restore AES keyboard delivery.
+
+The platform adapter subscribes to [copied console views](../reference/console-views.md),
+keeps only consumer copies and acknowledges coherent visible repaint. Hidden
+sources keep their pending revisions. Row damage limits ordinary editing
+redraws; exposure reconstructs the visible viewport. ATASCII sources use the
+[VDI terminal glyph page](../reference/gem-vdi.md#resident-application-workstations).
+
 ## Counter example
 
 The [counter body](../../examples/gem-counter/counter.c) uses `<gem.h>` and

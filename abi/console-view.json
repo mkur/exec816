@@ -1,6 +1,6 @@
 {
   "abi": "exec816.console-view",
-  "version": 3,
+  "version": 4,
   "constants": {
     "CELLS": 64,
     "OP_SUBSCRIBE": 1,
@@ -23,7 +23,10 @@
     "OP_BIND_WINDOW": 7,
     "OP_UNBIND_WINDOW": 8,
     "NOT_OWNER": 7,
-    "UNSUPPORTED": 8
+    "UNSUPPORTED": 8,
+    "SLOTS": 4,
+    "OP_DIRECTORY": 9,
+    "OP_ACTIVATE": 10
   },
   "records": {
     "Snapshot": [
@@ -97,6 +100,35 @@
       ],
       [
         "route",
+        "LONGCARD"
+      ]
+    ],
+    "Directory": [
+      [
+        "units",
+        "LONGCARD",
+        4
+      ],
+      [
+        "widths",
+        "CARD",
+        4
+      ],
+      [
+        "heights",
+        "CARD",
+        4
+      ],
+      [
+        "live",
+        "CARD"
+      ],
+      [
+        "activation",
+        "LONGCARD"
+      ],
+      [
+        "serial",
         "LONGCARD"
       ]
     ]

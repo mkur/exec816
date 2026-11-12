@@ -21,6 +21,8 @@
   callbacks, with exact cache comparisons and input/menu/drag/disk integration.
   GF10 separates a resident stream backend from the copied-view renderer, with
   route-scoped input, UPDATE-held stream completion and guarded retirement.
+  GF11 adds the loaded GEM terminal, exact viewport/exposure pixels, session
+  switching, modal close/retirement and supervised startup failure checks.
 
 - [Console presentation before GF10](console-presentation-before-gf10.md): superseded stream/presentation coupling, batch and short-write behavior.
 

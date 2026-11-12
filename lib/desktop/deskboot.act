@@ -120,6 +120,10 @@ RETURN(0)
 
 PUBLIC BYTE FUNC Attach()
 
+  IF DESKSTATE.terminal<>0 THEN
+    RETURN(1)
+  FI
+
   IF DESKTOP.Init(@client,DESKSTATE.Get())=0 THEN
     RETURN(0)
   FI
