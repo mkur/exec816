@@ -78,6 +78,8 @@ def drawing(out,optimize,probe=False,fault=False,desktop_style=False,
         extra_probes.append((ROOT/'c/calypsi/vdi-layout.c',vdi_layout()))
     if renderer_source is not None:
         sources[sources.index(ad/'gem-vbxe.c')]=renderer_source
+    if ROOT/'c/calypsi/console.c' in sources and ROOT/'c/calypsi/console.s' not in assembly:
+        assembly.append(ROOT/'c/calypsi/console.s')
     foreign=emit(out/'drawing',sources,assembly,client_entries,
         optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe','ConsoleProbeClobber'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
@@ -125,7 +127,9 @@ def prepare(source,out,foreign,desktop=False,aes=False,mouse_profile=None):
         binding+=read_source(ROOT/'c/calypsi/dos-bridge.inc').replace('@DOS_ENTRIES@',
             read_source(ROOT/'c/calypsi/dos-entries.inc').rstrip())
     if 'ExecConsoleEntries' in sy:
-        text=text.replace('USE EXEC\n','USE EXEC\nUSE CONSOLE\nUSE CONSOLETYPES\nUSE CONSOLEVIEW\n',1)
+        for module in ('CONSOLE','CONSOLETYPES','CONSOLEVIEW','DOS'):
+            if not re.search(r'(?mi)^USE '+module+r'\s*$',text):
+                text=text.replace('USE EXEC\n','USE EXEC\nUSE '+module+'\n',1)
         binding+=f'CONST C_EXECCONSOLEENTRIES=${sy["ExecConsoleEntries"]:x}\n'
         binding+=read_source(ROOT/'c/calypsi/console-bridge.inc')
     binding+=f'''

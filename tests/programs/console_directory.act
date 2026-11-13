@@ -1,0 +1,142 @@
+MODULE DIRECTORYTEST
+USE EXEC
+USE CALYPSICALL
+USE CONSOLEVIEWCORE AS VIEWS
+USE CONSOLEVIEW
+USE CONSOLEDRIVER
+USE CONSOLEVIEWTYPES AS VIEW
+USE DIRECTORYPROBE
+USE HEAPCORE
+EXEC.Task POINTER parent
+LONGCARD wake,changed
+LONGCARD beforeMemory,afterMemory,watchHeap
+LONGINT result
+CARD checks
+BYTE stage
+BYTE peerReady,peerDone
+LONGCARD ARRAY extra(4),cells(8)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+  EXEC.Forbid()
+  checks==+1
+  EXEC.Permit()
+
+RETURN
+
+PROC Probe(LONGCARD stage)
+
+  result=CALYPSICALL.Invoke(ADDRESS($DIRECTORYPROBE),stage)
+  Require(result=0)
+
+RETURN
+
+; The same high bit belongs to a different Task and independent watch.
+PROC Peer()
+
+  Require(EXEC.AllocSignal(31)=31)
+  Probe($100)
+  peerReady=1
+  EXEC.Signal(parent,wake)
+  Require(EXEC.Wait(changed)=changed)
+  Probe($101)
+  Probe($102)
+  Probe($103)
+  EXEC.FreeSignal(31)
+  EXEC.Forbid()
+  peerDone=1
+  EXEC.Signal(parent,wake)
+  EXEC.RemTask(NULL)
+
+RETURN
+
+PROC Main()
+  BYTE index
+
+  beforeMemory=EXEC.AvailMem(0)
+  stage=1
+  parent=EXEC.FindTask(NULL)
+  LET service=CONSOLEDRIVER.GetService()
+  LET bit=EXEC.AllocSignal(-1)
+  Require(bit<>$ff AND EXEC.AllocSignal(31)=31)
+  wake=LONGCARD(1) LSH bit
+  changed=$80000000
+  DIRECTORYPROBE.failure=1
+  Probe(4)
+  Require(EXEC.AvailMem(0)=beforeMemory)
+  DIRECTORYPROBE.failure=2
+  Probe(4)
+  Require(EXEC.AvailMem(0)=beforeMemory)
+  DIRECTORYPROBE.failure=0
+  stage=2
+  Probe(0)
+  Require(VIEWS.Active()<>0)
+  Require(VIEWS.ActiveOutside(NULL)<>0)
+  Require(CONSOLEDRIVER.Stop()=0)
+  Probe(2)
+
+  stage=3
+  LET peer=EXEC.CreateTask(c"directory observer",0,@Peer,1536)
+  Require(peer<>NULL)
+  WHILE peerReady=0 DO
+    EXEC.Wait(wake)
+  OD
+
+  ; A change before Take is retained; repeated publications coalesce.
+  VIEWS.DirectoryChanged()
+  VIEWS.DirectoryChanged()
+  Probe(1)
+  Probe(2)
+  Require(EXEC.Wait(changed)=changed)
+  WHILE peerDone=0 DO
+    EXEC.Wait(wake)
+  OD
+
+  ; A late change after Take/read but before Wait cannot be lost.
+  stage=4
+  Probe(2)
+  VIEWS.DirectoryChanged()
+  Require(EXEC.Wait(changed)=changed)
+  Probe(1)
+  VIEWS.DirectoryChanged()
+  Probe(1)
+  Require(EXEC.Wait(changed)=changed)
+  Probe(2)
+  Probe(3)
+  Require(VIEWS.ActiveOutside(@service.task)=0)
+  afterMemory=EXEC.AvailMem(0)
+  Require(afterMemory=beforeMemory)
+
+  stage=5
+  watchHeap=EXEC.AvailMem(0)
+  FOR index=0 TO 3 DO
+    extra(index)=CONSOLEVIEW.WatchDirectory(changed)
+    Require(extra(index)<>0)
+  OD
+  watchHeap=watchHeap-EXEC.AvailMem(0)
+  Probe(4)
+  ; The standalone renderer already occupies the eighth cell slot.
+  FOR index=0 TO 6 DO
+    cells(index)=CONSOLEVIEW.Subscribe(0,changed)
+    Require(cells(index)<>0)
+  OD
+  Require(CONSOLEVIEW.Subscribe(0,changed)=0)
+  FOR index=0 TO 6 DO
+    Require(VIEWS.Unsubscribe(cells(index))=VIEW.OK)
+  OD
+  FOR index=0 TO 3 DO
+    Require(VIEWS.UnwatchDirectory(extra(index))=VIEW.OK)
+  OD
+  Require(VIEWS.ActiveOutside(@service.task)=0)
+  stage=6
+  EXEC.SetSignal(0,changed OR wake)
+  EXEC.FreeSignal(31)
+  EXEC.FreeSignal(bit)
+  afterMemory=EXEC.AvailMem(0)
+  Require(afterMemory=beforeMemory)
+
+RETURN
+ENDMODULE

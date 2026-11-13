@@ -7,6 +7,20 @@
  * and acknowledge only a fully presented revision. A stale ACK rearms the hint.
  * Retired units return CLOSED until the consumer explicitly unsubscribes. */
 ULONG EXEC_CALL ExecConsoleView(ULONG operation,ULONG first,ULONG second);
+/* Metadata hints are independent of cell handles. Take before querying;
+ * unwatch before releasing the allocated notification mask or Task. */
+static inline ULONG ExecConsoleViewWatchDirectory(ULONG signal)
+{
+    return ExecConsoleView(EXEC_CONSOLE_VIEW_OP_WATCH_DIRECTORY,signal,0);
+}
+static inline UWORD ExecConsoleViewTakeDirectoryChange(ULONG watch)
+{
+    return (UWORD)ExecConsoleView(EXEC_CONSOLE_VIEW_OP_TAKE_DIRECTORY,watch,0);
+}
+static inline UWORD ExecConsoleViewUnwatchDirectory(ULONG watch)
+{
+    return (UWORD)ExecConsoleView(EXEC_CONSOLE_VIEW_OP_UNWATCH_DIRECTORY,watch,0);
+}
 static inline ULONG ExecConsoleViewSubscribe(ULONG unit,ULONG signal)
 {
     return ExecConsoleView(EXEC_CONSOLE_VIEW_OP_SUBSCRIBE,unit,signal);

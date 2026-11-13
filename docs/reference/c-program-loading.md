@@ -39,7 +39,7 @@ follow the [Task signal contract](signals.md). Stop notification producers befor
 freeing a bit. Rebuild the provider and all APPs together for this ABI.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-APP ABI 37 pairs the provider with its 600-byte caller context and private
+APP ABI 38 pairs the provider with its 600-byte caller context and private
 object preparation storage. Rebuild all APPs. It retains the GF12 removal of
 `ExecAESConsole` and exports ordinary `Forbid`, `Permit`, `FindPort` and `WaitPort` calls
 for atomic named-port submission and caller-owned reply waits. ABI 33 added `ExecConsoleView` for copied console snapshots and input.
@@ -82,7 +82,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | APP ABI version, 37 |
+| 6 | 2 | APP ABI version, 38 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |

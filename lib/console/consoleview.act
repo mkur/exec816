@@ -16,6 +16,22 @@ USE CONSOLEINGRESS
 INCLUDE "console-storage-action.inc"
 LONGCARD requestedUnit,activationSerial
 
+; Directory observers do not depend on any particular live source.
+PUBLIC LONGCARD FUNC WatchDirectory(LONGCARD mask)
+  LONGCARD handle
+
+  EXEC.Forbid()
+  LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
+  IF service.state<>2 OR service.stop<>0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  handle=VIEWS.WatchDirectory(mask)
+  EXEC.Permit()
+
+RETURN(handle)
+
 PUBLIC LONGCARD FUNC Subscribe(LONGCARD unit,mask)
   LONGCARD handle
 
@@ -187,6 +203,12 @@ PUBLIC LONGCARD FUNC Call(LONGCARD operation,first,second)
     RETURN(LONGCARD(Directory(VIEW.Directory POINTER(ADDRESS(first)))))
   WHEN VIEW.OP_ACTIVATE THEN
     RETURN(LONGCARD(Activate(first)))
+  WHEN VIEW.OP_WATCH_DIRECTORY THEN
+    RETURN(WatchDirectory(first))
+  WHEN VIEW.OP_TAKE_DIRECTORY THEN
+    RETURN(LONGCARD(VIEWS.TakeDirectoryChange(first)))
+  WHEN VIEW.OP_UNWATCH_DIRECTORY THEN
+    RETURN(LONGCARD(VIEWS.UnwatchDirectory(first)))
   ESAC
 
 RETURN(LONGCARD(VIEW.BAD_LAYOUT))

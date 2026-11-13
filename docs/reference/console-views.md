@@ -6,7 +6,7 @@ The console service provides copied, bounded snapshots and input delivery above
 ordinary Exec stream I/O. It adds no kernel selector. Exact records and constants
 come from [console-view.json](../../abi/console-view.json); C declarations are in
 [console-view.h](../../c/include/exec816/console-view.h). Rebuild C applications
-for the current APP ABI and console-view version 4.
+for APP ABI 38 and console-view version 5.
 
 Subscribe with a live unit and a signal mask allocated by the calling Task.
 The opaque handle retains that Task until explicit unsubscribe. Up to eight
@@ -49,6 +49,26 @@ before unsubscribing or deleting the window. Unsupported hosting and ownership
 failures are normal admission errors. The [input-binding slice](../development/gem-first-gf11-input.json)
 records its emitted development checks. The [terminal migration](../history/gem-first-gui.md#gf11-gem-terminal)
 uses this association with ordinary AES/VDI drawing.
+
+`ExecConsoleViewWatchDirectory(mask)` creates an independent opaque watch before
+the caller has any cell subscription. Up to four directory watches coexist,
+separately from the eight cell slots. The mask must be allocated by the caller;
+admission requires a running, non-stopping console service. Zero reports normal
+allocation, retention or capacity failure. A watch retains its recipient Task
+but no particular console instance. It starts pending and posts one initial hint.
+
+`ExecConsoleViewTakeDirectoryChange(watch)` returns and clears a retained pending
+flag. Consume it **before** querying metadata; a change during/after the read
+then remains pending for another turn. It does not clear signal bits, which may
+be shared with cell subscriptions. Hints coalesce and contain no event count or
+cross-service snapshot. Reads and Take never publish changes.
+
+`ExecConsoleViewUnwatchDirectory(watch)` withdraws all publishers, releases the
+Task lease and frees the watch. Unwatch before freeing the signal or exiting.
+External directory watches block console service Stop, while individual source
+destruction remains independent. Handles are caller-owned and must remain live.
+Automatic registry/session/activation publishers are not yet wired in TP1;
+see the [integration plan](../plans/gem4xe/terminal-idle-polling-plan.md#tp2-wire-real-publishers-and-admit-terminals-watch).
 
 `ExecConsoleViewDirectory` copies the four unit slots, live bitmap and geometry,
 plus a coalesced activation hint and its monotonic serial. Unit zero is a live

@@ -20,6 +20,111 @@ CONST MAX_SUBSCRIPTIONS=8
 SubscriptionRecord POINTER subscribers
 BYTE subscriptionCount
 
+TYPE DirectoryWatchRecord=[
+  DirectoryWatchRecord POINTER next
+  EXEC.TaskLease owner
+  LONGCARD mask
+  BYTE pending
+]
+CONST MAX_DIRECTORY_WATCHES=4
+DirectoryWatchRecord POINTER directoryWatches
+BYTE directoryWatchCount
+
+; An independent initial hint closes the watch-before-first-read race.
+PUBLIC LONGCARD FUNC WatchDirectory(LONGCARD mask)
+
+  LET owner=EXEC.FindTask(NULL)
+  IF mask=0 OR (owner.tc_SigAlloc & mask)<>mask THEN
+    RETURN(0)
+  FI
+
+  LET watch=DirectoryWatchRecord POINTER(EXEC.AllocMem(
+      SIZEOF(DirectoryWatchRecord),EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  IF watch=NULL THEN
+    RETURN(0)
+  FI
+
+  IF EXEC.RetainTask(owner,@watch.owner)=0 THEN
+    EXEC.FreeMem(BYTE POINTER(watch),SIZEOF(DirectoryWatchRecord))
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  IF directoryWatchCount=MAX_DIRECTORY_WATCHES THEN
+    IF EXEC.ReleaseTask(@watch.owner)=0 THEN
+      HEAPCORE.Abort($fcc0)
+    FI
+    EXEC.Permit()
+    EXEC.FreeMem(BYTE POINTER(watch),SIZEOF(DirectoryWatchRecord))
+    RETURN(0)
+  FI
+
+  watch.mask=mask
+  watch.pending=1
+  watch.next=directoryWatches
+  directoryWatches=watch
+  directoryWatchCount==+1
+  EXEC.Signal(owner,mask)
+  EXEC.Permit()
+
+RETURN(LONGCARD(ADDRESS(watch)))
+
+; The publisher commits metadata first. Further changes coalesce until Take.
+PUBLIC PROC DirectoryChanged()
+  DirectoryWatchRecord POINTER watch
+
+  EXEC.Forbid()
+  watch=directoryWatches
+  WHILE watch<>NULL DO
+    IF watch.pending=0 THEN
+      watch.pending=1
+      EXEC.Signal(watch.owner.task,watch.mask)
+    FI
+    watch=watch.next
+  OD
+  EXEC.Permit()
+
+RETURN
+
+; Consume before reading metadata; leave the possibly shared signal alone.
+PUBLIC BYTE FUNC TakeDirectoryChange(LONGCARD handle)
+  BYTE pending
+
+  LET watch=DirectoryWatchRecord POINTER(ADDRESS(handle))
+  EXEC.Forbid()
+  pending=watch.pending
+  watch.pending=0
+  EXEC.Permit()
+
+RETURN(pending)
+
+; Withdraw every publisher before releasing the retained recipient/storage.
+PUBLIC CARD FUNC UnwatchDirectory(LONGCARD handle)
+  DirectoryWatchRecord POINTER previous,current
+
+  LET watch=DirectoryWatchRecord POINTER(ADDRESS(handle))
+  EXEC.Forbid()
+  previous=NULL
+  current=directoryWatches
+  WHILE current<>watch DO
+    previous=current
+    current=current.next
+  OD
+  IF previous=NULL THEN
+    directoryWatches=watch.next
+  ELSE
+    previous.next=watch.next
+  FI
+
+  directoryWatchCount==-1
+  IF EXEC.ReleaseTask(@watch.owner)=0 THEN
+    HEAPCORE.Abort($fcc0)
+  FI
+  EXEC.Permit()
+  EXEC.FreeMem(BYTE POINTER(watch),SIZEOF(DirectoryWatchRecord))
+
+RETURN(VIEW.OK)
+
 PROC Wake(SubscriptionRecord POINTER subscription)
 
   EXEC.Signal(subscription.owner.task,subscription.mask)
@@ -175,10 +280,11 @@ RETURN
 
 PUBLIC BYTE FUNC Active()
 
-RETURN(subscribers<>NULL)
+RETURN(subscribers<>NULL OR directoryWatches<>NULL)
 
 PUBLIC BYTE FUNC ActiveOutside(EXEC.Task POINTER owner)
   SubscriptionRecord POINTER subscription
+  DirectoryWatchRecord POINTER watch
 
   subscription=subscribers
   WHILE subscription<>NULL DO
@@ -186,6 +292,14 @@ PUBLIC BYTE FUNC ActiveOutside(EXEC.Task POINTER owner)
       RETURN(1)
     FI
     subscription=subscription.next
+  OD
+
+  watch=directoryWatches
+  WHILE watch<>NULL DO
+    IF watch.owner.task<>owner THEN
+      RETURN(1)
+    FI
+    watch=watch.next
   OD
 
 RETURN(0)

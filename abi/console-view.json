@@ -1,6 +1,6 @@
 {
   "abi": "exec816.console-view",
-  "version": 4,
+  "version": 5,
   "constants": {
     "CELLS": 64,
     "OP_SUBSCRIBE": 1,
@@ -26,7 +26,10 @@
     "UNSUPPORTED": 8,
     "SLOTS": 4,
     "OP_DIRECTORY": 9,
-    "OP_ACTIVATE": 10
+    "OP_ACTIVATE": 10,
+    "OP_WATCH_DIRECTORY": 11,
+    "OP_TAKE_DIRECTORY": 12,
+    "OP_UNWATCH_DIRECTORY": 13
   },
   "records": {
     "Snapshot": [

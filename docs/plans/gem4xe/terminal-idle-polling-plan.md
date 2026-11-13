@@ -6,8 +6,8 @@
 [Console views](../../reference/console-views.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: planned; no runtime changes in this document slice. Source/tool baseline
-`50522ac3`, runtime `4ff5c3e6`, console-view version 4 and APP ABI 37.
+Status: TP1 complete; TP2–TP4 remain. See the [implementation record](../../history/terminal-idle-polling.md).
+Starting source/tool baseline `50522ac3`, runtime `4ff5c3e6`, console-view version 4 and APP ABI 37.
 Commit this plan and each passing executable slice separately.
 
 Make an unchanged, healthy Terminal sleep until real work arrives. After startup
@@ -267,5 +267,5 @@ documented latency results. Keep controller supervision, normal preemption,
 UPDATE/scene ownership, drawing limits and stream/device policy. These are
 development checks; they do not qualify the full hosted system or hardware.
 
-This documentation-only slice changes all guest reservations by zero and needs
-source/content/local-link checks, not another system build or host test matrix.
+The initial documentation-only slice changed all guest reservations by zero.
+Executable slice validation and memory comparisons are recorded in the implementation record.

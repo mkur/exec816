@@ -1,0 +1,24 @@
+; Fixture-only allocation/lease failures at the new watch's actual boundaries.
+MODULE DIRECTORYPROBE
+USE EXEC
+PUBLIC BYTE failure
+PUBLIC CARD recordBytes
+
+PUBLIC BYTE POINTER FUNC Allocate(LONGCARD bytes,flags)
+
+  recordBytes=CARD(bytes)
+  IF failure=1 THEN
+    RETURN(NULL)
+  FI
+
+RETURN(EXEC.AllocMem(bytes,flags))
+
+PUBLIC BYTE FUNC Retain(EXEC.Task POINTER owner EXEC.TaskLease POINTER lease)
+
+  IF failure=2 THEN
+    RETURN(0)
+  FI
+
+RETURN(EXEC.RetainTask(owner,lease))
+
+ENDMODULE
