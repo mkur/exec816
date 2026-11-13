@@ -8,6 +8,10 @@ an ST with a 68000 at 8 MHz, 4 MiB RAM and a monochrome 640×400 display.
 
 ## Two Counter applications
 
+The [Widget and Counter comparison](gem-widget-comparison.md) adds a small
+interactive object tree with shared application sources on Exec and MagiC,
+including solo, silent-timer and painting-Counter cases.
+
 To run two independent copies of the real Counter event loop under MagiC:
 
 ```sh

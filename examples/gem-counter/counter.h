@@ -7,6 +7,9 @@
 struct CounterConfig {
     const char *title;
     WORD x,y,width,height,ink,paper;
+    /* Zero keeps the ordinary one-second timer. Silent mode still repairs
+     * exposure, but timer events change only the model. */
+    UWORD periodMs,silent;
 };
 /* The startup wrapper supplies upper-memory application storage. Keeping the
  * model and GEM arrays here leaves the small Task stack for call depth. */

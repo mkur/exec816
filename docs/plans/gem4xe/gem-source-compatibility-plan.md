@@ -41,6 +41,11 @@ not establish compatible argument, event, lifetime or redraw semantics.
 
 ## Executable slices
 
+The [shared Widget/Counter sample](../../guides/gem-widget-comparison.md) is a
+small two-target comparison alongside GC1: identical Widget and Counter sources,
+with solo, silent-timer and timer-drawing cases. It does not close GC1's separate
+GEM4XE target or later latency/semantic qualification gates.
+
 | Slice | Work | Acceptance |
 | --- | --- | --- |
 | GC0: conventional Counter | Remove native repaint/preservation calls from the production Counter body, walk every visible rectangle, use common C integer types and retain the native startup wrapper. | Compile against the native and independently pinned GEM4XE declarations. Execute native timers, overlapping windows, exposure, physical move/top/close and repeated lifetime checks. Report any extra repaint cost. |

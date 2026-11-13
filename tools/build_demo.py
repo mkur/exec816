@@ -36,7 +36,7 @@ def record_cartridge_capacity(output):
     return capacity
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,system_kib=720,mouse_profile=None,text_shell_only=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=None,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False,bootable_atr=None,system_drive=1,boot_sio='auto',qed=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,system_kib=720,mouse_profile=None,text_shell_only=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=None,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False,bootable_atr=None,system_drive=1,boot_sio='auto',qed=False,gem_widget=False):
     standalone_sio=not (ide_only or ideplus or gem_vdi or bitmap_console)
     if bootable_atr is None:
         bootable_atr=standalone_sio and filesystem=='sdfs' and sector_bytes==256 and system_drive==1
@@ -46,6 +46,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         sdx_drive_a,sdx_car_root='WORK:','SYS:C/'
     if basic_workbench:
         fastbasic=gem_desktop=True
+    require(not gem_widget or gem_desktop,'--gem-widget requires --gem-desktop')
     if fastbasic:
         sdx,sdx_drive_a,sdx_car_root=True,'WORK:','SYS:C/'
     require(not qed or (gem_desktop and filesystem=='sdfs' and sector_bytes==256 and (bootable_atr or system_kib==720) and
@@ -130,6 +131,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'EXIT returns to the OS.\n',encoding='ascii')
     if gem_desktop:
         (media/'README.TXT').write_text((ROOT/'docs/gem-desktop-distribution.txt').read_text().replace('@VERSION@',(ROOT/'VERSION').read_text().strip()).replace('@SYSTEM_DISK@','system.atr').replace('@POINTER_DESCRIPTION@',pointer_description(__import__('generate_mouse_acceleration').metadata(mouse_profile)['profile'])),encoding='ascii')
+        if gem_widget:
+            with (media/'README.TXT').open('a') as note:
+                note.write((ROOT/'docs/gem-widget-distribution.txt').read_text())
         # Remove generated copies left by a pre-RAM desktop build in this output.
         (media/'DESKTOP.RSC').unlink(missing_ok=True)
         (command_dir/'DESKTOP.APP').unlink(missing_ok=True)
@@ -215,7 +219,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         if gem_desktop:
             from build_gem_desktop import build_desktop
             from functools import partial
-            builder=partial(build_desktop,files=True,basic_workbench=basic_workbench)
+            builder=partial(build_desktop,files=True,basic_workbench=basic_workbench,widget_sample=gem_widget)
         else:builder=build_bitmap
         program=builder(source=source,out=output/'bitmap-console',program_output=output,
             compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,mouse_profile=mouse_profile,
@@ -235,7 +239,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only,
                       sdx=sdx,sdx_drive_a=sdx_drive_a,sdx_car_root=sdx_car_root)
     if gem_desktop:
-        for name in ('panel','counter','files','calc','dialog','text','g4bench','gemarc','terminal')+(('basic',) if basic_workbench else ()):
+        for name in program['build']['gem_applications']:
+            if name=='desktop':continue
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
             binary_names.add('C/'+name.upper()+'.APP')
         calculator=output/'bitmap-console/apps/calc'
@@ -340,6 +345,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         guide=split_guide(system_drive,bitmap_shell_only)
     if basic_workbench:
         guide+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
+    if gem_widget:
+        guide+=(ROOT/'docs/gem-widget-distribution.txt').read_text()
     guide=guide.replace('@VERSION@',program['build']['exec_build']['version'])
     (output/'README.md').write_text(guide)
     if bootable_atr:
@@ -412,6 +419,12 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             ROOT/'docs/gem-desktop-distribution.txt',*sorted((ROOT/'lib/desktop').glob('*.act')))})
     if gem_desktop:
         record.update(gem_desktop=True)
+        if gem_widget:
+            record['gem_widget']=True
+            record['source_inputs'].update({str(p.relative_to(ROOT)):sha256(p) for p in (
+                ROOT/'docs/gem-widget-distribution.txt',ROOT/'tools/widget_model.py',
+                ROOT/'tests/programs/gem_widget_layout.c',
+                *sorted((ROOT/'examples/gem-widget').glob('*')))})
         if basic_workbench:
             record['basic_workbench']=True
             record['source_inputs']['docs/basic-workbench-distribution.txt']=sha256(ROOT/'docs/basic-workbench-distribution.txt')
@@ -559,6 +572,9 @@ def refresh_boot_disk(output):
         gem_desktop=record.get('gem_desktop',False))
     if record.get('basic_workbench'):
         content+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
+    if record.get('gem_widget'):
+        content+=(ROOT/'docs/gem-widget-distribution.txt').read_text()
+        record['source_inputs']['docs/gem-widget-distribution.txt']=sha256(ROOT/'docs/gem-widget-distribution.txt')
     content=content.replace('@VERSION@',record['kernel']['exec_build']['version'])
     (output/'README.md').write_text(content)
     (output/'media/README.TXT').write_text(content,encoding='ascii')
@@ -718,6 +734,8 @@ def refresh_boot_guide(output,program,record):
             content+=IDE_DEMO_NOTE
         if record.get('basic_workbench'):
             extra=ROOT/'docs/basic-workbench-distribution.txt';content+=extra.read_text();guides.append(extra)
+        if record.get('gem_widget'):
+            extra=ROOT/'docs/gem-widget-distribution.txt';content+=extra.read_text();guides.append(extra)
         (output/'README.md').write_text(content.replace('@VERSION@',program['build']['exec_build']['version']))
         record['artifacts']['README.md']=sha256(output/'README.md')
         guides.append(guide)
@@ -910,6 +928,7 @@ if __name__=='__main__':
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
     parser.add_argument('--qed',action='store_true',help='Build a separate production QED application disk outside the demo ZIP')
     parser.add_argument('--gem-desktop',action='store_true',help='Files desktop and shared GEM console terminal')
+    parser.add_argument('--gem-widget',action='store_true',help='Include the shared MagiC/Exec Widget, Pulse and Pair sample applications')
     parser.add_argument('--mouse-profile',choices=('off','mild'),help='Desktop pointer profile (default from config/mouse.json)')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
     parser.add_argument('--text-shell-only',action='store_true',help='Autoboot OF816 into a full-screen standard shell without primes')
@@ -956,7 +975,7 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,system_kib=args.system_kib,mouse_profile=args.mouse_profile,text_shell_only=args.text_shell_only,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic,basic_workbench=args.basic_workbench,bootable_atr=args.bootable_atr,system_drive=args.system_drive,boot_sio=args.boot_sio,qed=args.qed)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,system_kib=args.system_kib,mouse_profile=args.mouse_profile,text_shell_only=args.text_shell_only,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic,basic_workbench=args.basic_workbench,bootable_atr=args.bootable_atr,system_drive=args.system_drive,boot_sio=args.boot_sio,qed=args.qed,gem_widget=args.gem_widget)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')
     if not args.cartridge_from:
         print(f'Local Altirra launcher: {args.output}/launch-altirra.command')

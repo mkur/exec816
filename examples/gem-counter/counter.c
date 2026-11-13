@@ -84,7 +84,8 @@ WORD CounterRun(struct Counter *app)
     result=0;
     while (!quit) {
         events=evnt_multi(MU_MESAG|MU_TIMER,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,app->message,1000,0,&mx,&my,&mb,&ks,&kr,&br);
+            0,0,0,0,0,0,0,0,0,0,app->message,
+            config->periodMs ? config->periodMs:1000,0,&mx,&my,&mb,&ks,&kr,&br);
         if (!events) { result=2; break; }
         if (events & MU_TIMER) {
             if (++app->count==1000000UL) app->count=0;
@@ -105,7 +106,7 @@ WORD CounterRun(struct Counter *app)
                 break;
             }
         }
-        if (!quit && (events & MU_TIMER)) {
+        if (!quit && !config->silent && (events & MU_TIMER)) {
             if (!redraw(app,NULL)) result=2;
         }
         if (result) break;

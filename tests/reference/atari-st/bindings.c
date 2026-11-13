@@ -37,6 +37,8 @@ WORD evnt_multi(WORD f,WORD bc,WORD bm,WORD bs,WORD f1,WORD x1,WORD y1,WORD w1,W
 }
 WORD objc_draw(OBJECT *t,WORD s,WORD d,WORD x,WORD y,WORD w,WORD h)
 {return aes_objc_draw(&context,(struct aes_object *)t,s,d,x,y,w,h);}
+WORD objc_find(OBJECT *t,WORD s,WORD d,WORD x,WORD y)
+{return aes_objc_find(&context,(struct aes_object *)t,s,d,x,y);}
 WORD wind_calc(WORD type,WORD kind,WORD x,WORD y,WORD w,WORD h,
  WORD *ox,WORD *oy,WORD *ow,WORD *oh)
 {return aes_wind_calc(&context,type,kind,x,y,w,h,ox,oy,ow,oh);}

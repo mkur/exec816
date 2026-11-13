@@ -8,7 +8,7 @@ from generate_memory import PROFILE
 from native_program import ROOT,build,compiler,require
 
 
-def build_apps(out,basic_workbench=False):
+def build_apps(out,basic_workbench=False,widget_sample=False):
     from c_program import ABI
     from build_c_program import build as application
     applications={}
@@ -29,6 +29,17 @@ def build_apps(out,basic_workbench=False):
             (ROOT/'tests/programs/gem_text_layout.c',__import__('text_model').LAYOUT)])
     from build_gemarc import build as gemarc
     applications['gemarc']=gemarc(out/'apps/gemarc')
+    if widget_sample:
+        folder=ROOT/'examples/gem-widget'
+        applications['widget']=application(out/'apps/widget',[folder/'main.c',folder/'widget.c'],
+            main_signature='args',minimum_stack=ABI['stack_floor_bytes'],
+            probes=[(ROOT/'tests/programs/gem_widget_layout.c',
+                                         __import__('widget_model').LAYOUT)])
+        applications['pulse']=application(out/'apps/pulse',[
+            folder/'counter-main.c',ROOT/'examples/gem-counter/counter.c'],main_signature='args',
+            minimum_stack=ABI['stack_floor_bytes'])
+        applications['pair']=application(out/'apps/pair',[folder/'exec-launcher.c'],
+            main_signature='args',minimum_stack=ABI['stack_floor_bytes'])
     if basic_workbench:
         applications['basic']=application(out/'apps/basic',[
             ROOT/'examples/gem-basic'/name for name in ('main.c','basic.c','editor.c','editor-paint.c','document.c','files.c','file-ui.c','assist.c','assist-ui.c','build.c')]+[ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/fastbasic-diagnostic.c'],minimum_stack=ABI['stack_floor_bytes'],probes=[
@@ -39,7 +50,7 @@ def build_apps(out,basic_workbench=False):
     return applications
 
 
-def build_desktop(out,source=None,program_output=None,files=False,basic_workbench=False,build_applications=True,**options):
+def build_desktop(out,source=None,program_output=None,files=False,basic_workbench=False,build_applications=True,widget_sample=False,**options):
     from library_paths import read_source
     from c_program import ABI,binding
     from build_c_program import build as application
@@ -47,7 +58,7 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
     options.pop('desktop',None)
     require(build_applications or (not files and 'dos_mounts' in options),
             'Provider-only fixtures must supply their own disk media')
-    applications=build_apps(out,basic_workbench) if build_applications else {}
+    applications=build_apps(out,basic_workbench,widget_sample) if build_applications else {}
     if build_applications:
         applications['terminal']=application(out/'apps/terminal',[ROOT/'examples/gem-terminal'/name for name in ('main.c','platform.c','paint.c')],minimum_stack=1312,
             probes=[(ROOT/'tests/programs/gem_terminal_layout.c',__import__('terminal_model').LAYOUT)])

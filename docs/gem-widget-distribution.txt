@@ -1,0 +1,14 @@
+
+Shared GEM Widget + Counter sample
+
+In the Shell terminal, choose one case:
+  RUN SYS:C/PAIR.APP solo
+  RUN SYS:C/PAIR.APP silent
+  RUN SYS:C/PAIR.APP paint
+
+Click Toggle or press Space to change the button and label. Q or the closer
+exits Widget. Close Counter with its own closer before launching another case.
+Counter ticks every 100 ms. Silent changes its model without timer drawing;
+it still repairs exposure. Paint also updates the visible digits on each tick.
+Drag either window to overlap/expose the other. The count records delivered
+timer events, not wall-clock deadlines. This sample does not measure latency.

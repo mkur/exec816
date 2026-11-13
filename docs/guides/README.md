@@ -6,6 +6,8 @@
 
 ## Running Exec816
 
+- [Shared Widget and Counter](gem-widget-comparison.md): run the same small GEM applications on Exec and MagiC, alone and with background timer/drawing work.
+
 - [FujiNet split-disk boot](fujinet-split-boot.md): XEX on D1, SYS on D2 and
   writable WORK on D8, including CONFIG's OPTION → Boot path.
 - [Bootable system ATR](bootable-system-atr.md): one writable D1 disk containing OF816, Exec and system/workspace files.
