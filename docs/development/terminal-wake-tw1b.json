@@ -1,0 +1,84 @@
+{
+  "format": "exec816.terminal-wake-tw1b.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "reason": "The first packaged link found that Terminal needs existing public signal calls missing from the loaded APP imports.",
+  "abi": {
+    "before": 36,
+    "after": 37,
+    "imports_before": 127,
+    "imports_after": 130,
+    "appended": [
+      "AllocSignal",
+      "FreeSignal",
+      "SetSignal"
+    ],
+    "existing_ordinals_preserved": true,
+    "kernel_api_change": false
+  },
+  "inputs": {
+    "abi/c-program.json": "a45b2b499b16a01c19f35f3bff0f40d0367dd702447b6e293168eaeaaa71a3ed",
+    "lib/dos/c-program-abi.inc": "467b0d8c568c36555448642eb7441984a44f582681f75f66b99851b5010b2bab",
+    "tests/programs/c_program.c": "d655997842022166c3f67a0a18e7bc3c9cbf759c940bc872dbc89d2ae57402d5",
+    "tests/programs/c_program_app.c": "ce2692aa95fe1eea806ea35ccd6155f8a3bebb32d3a8f10a713d5b2a1e3abbd2",
+    "tools/test_c_program.py": "5da8089d7787f2f2e56c8dad6f806683a254ed56c80e0548912195b5e747eb9e",
+    "tools/test_c_runtime.py": "f1aac7e244eb48a5f714649e8ca35c467625782e42679f33a248fd5da6443c13",
+    "tools/test_c_process.py": "0a9ba7a404eecf74900bf98d786f7ba292650a28f61f82197e7448ad04ff4610",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100"
+  },
+  "modes": {
+    "raw": {
+      "artifact": {
+        "path": "build/terminal-wake/app-raw/results.json",
+        "sha256": "da250eb572b55848f549381b50cdd79df7308f66964184c61416488aa0a7e4b5"
+      },
+      "checks": 25,
+      "completed": 4,
+      "app_sha256": "ea30f95244467957f62c1873b147ff139bd351530ac8deda91554d8901c7fec3",
+      "native_xex_sha256": "09dc7d7301b71cca433e874eee9069d3f59902bcda2f74588c810056b09a310f",
+      "guards": "intact",
+      "native_nmi_count": 792,
+      "native_irq_count": 62713
+    },
+    "opt": {
+      "artifact": {
+        "path": "build/terminal-wake/app-opt/results.json",
+        "sha256": "1d6832aa48e2f1cf95f339c21c677ae9e2fc0ce19bab76180dd26b63505fd702"
+      },
+      "checks": 25,
+      "completed": 4,
+      "app_sha256": "f202985749f9faf4808a0adf0d94552c088f09e3e9d7a9762b9a057a32e2138d",
+      "native_xex_sha256": "09dc7d7301b71cca433e874eee9069d3f59902bcda2f74588c810056b09a310f",
+      "guards": "intact",
+      "native_nmi_count": 744,
+      "native_irq_count": 57992
+    }
+  },
+  "coverage": "Loaded raw/optimized APPs on the identical optimized native provider; bit-31 allocation, full-width SetSignal return/snapshot/clear, Wait consumption and exact signal-allocation return; two private loaded instances, repeated execution, relocation, heap return and normal EXIT.",
+  "host": {
+    "tests": 710,
+    "skips": 4,
+    "artifact": {
+      "path": "build/terminal-wake-tw1b-host.log",
+      "sha256": "5a2ecb27a82019e5ef03bff1793761f6a49aadc8f23dcd5775bfb0c86c1b687e"
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "each_public_task": 0,
+    "includes": "Guards, alignment and unused capacity; complete eight-Task maps match IC2"
+  },
+  "upper_binding_table_delta": 9,
+  "guest_upper_reservation_delta": 0,
+  "guest_vram_delta": 0,
+  "limits": [
+    "No new kernel selector or calling convention.",
+    "All production APPs must be rebuilt for version 37; no old-profile compatibility.",
+    "Packaged Terminal integration and performance remain TW2.",
+    "No full system or hardware qualification."
+  ]
+}

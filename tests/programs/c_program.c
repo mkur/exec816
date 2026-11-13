@@ -31,6 +31,16 @@ LONG EXEC_CALL CRelocationProbe(ULONG argument)
 {
     UWORD i;
     ULONG previous=cleared;
+    struct Task *self=FindTask(NULL);
+    ULONG allocated=self->tc_SigAlloc,mask;
+    BYTE bit=AllocSignal(31);
+    if (bit!=31) return 101;
+    mask=1UL<<bit;
+    if (SetSignal(mask,mask)&mask) return 102;
+    if (!(SetSignal(0,0)&mask) || Wait(mask)!=mask) return 103;
+    if (SetSignal(0,mask)&mask) return 104;
+    FreeSignal(bit);
+    if (self->tc_SigAlloc!=allocated) return 105;
     if (initialized!=0x12345678UL+previous || words[5]!='r' ||
         transformPointer(9)!=60 || objects[objects[0].next].label[0]!='s' ||
         objects[1].type!=26) return 100;

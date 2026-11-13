@@ -32,6 +32,11 @@ three-byte targets once. A function pointer to an import points to its local
 thunk; ordinary calls have no dispatcher or repeated ABI validation. Import
 ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
+
+ABI 37 also exposes the existing public `AllocSignal`, `FreeSignal` and
+`SetSignal` APIs to ordinary loaded APPs. Bit numbers and full-width masks
+follow the [Task signal contract](signals.md). Stop notification producers before
+freeing a bit. Rebuild the provider and all APPs together for this ABI.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
 APP ABI 36 pairs the provider with its 600-byte caller context and private
@@ -77,7 +82,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | APP ABI version, 36 |
+| 6 | 2 | APP ABI version, 37 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |

@@ -4,7 +4,7 @@
 [Signals](../../reference/signals.md) · [Ports](../../reference/ports.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: TW1 complete at the development tier; TW2 pending.
+Status: TW1 and TW1b complete at the development tier; TW2 pending.
 Baseline runtime `067b2eff`; audit/tool baseline `f9126683`.
 Commit this plan and each passing executable slice separately.
 
@@ -34,10 +34,17 @@ the notification signal. Then delete the quiescent reply port. Reset ownership
 state so repeated cleanup is harmless. Producers are stopped before bit reuse;
 no direct writes to kernel signal fields are introduced.
 
+Integration discovery: the first package link found that loadable APPs do not
+yet import `AllocSignal`, `FreeSignal` or `SetSignal`. Add these existing public
+APIs to the common C APP import table, update its version to 37 and rebuild all
+APPs. Preserve existing ordinals; add no kernel selector or private Terminal
+service. This necessary binding slice (TW1b) precedes TW2 delivery.
+
 Keep the existing 100 ms timer, refresh/query frequency on legitimate wakes,
 controller supervision, normal Task preemption, message-port semantics, drawing
 limits and source/ABI pins. No new kernel API, Task, cache or polling policy is
-part of this change. In particular, do not clear reply bits to disguise the
+part of this change. The APP binding version changes as described above;
+kernel APIs and calling conventions do not. In particular, do not clear reply bits to disguise the
 alias or change `WaitPort`/`GetMsg` semantics.
 
 ## TW1 Own the notification signal and check its lifetime
@@ -74,6 +81,32 @@ Preserve native stack/domain guards, ownership and normal EXIT. Run the host
 suite and record actual assertion counts, source/artifact hashes and memory
 changes. Commit the production change and focused evidence as
 `fix(terminal): separate view notifications from RPC replies`.
+
+## TW1b Expose existing signal APIs to loaded APPs
+
+Completed: [TW1b evidence](../../development/terminal-wake-tw1b.json). Loaded
+raw and optimized APPs each pass 25 native checks/four completed executions on
+the identical optimized native provider, including bit-31 signal operations.
+Generated definitions and 710 host tests pass (four existing skips). Existing
+127 ordinals are preserved; three common imports are appended. Complete
+bank-zero maps match IC2; the upper binding table grows nine unreserved bytes.
+
+Append `AllocSignal`, `FreeSignal` and `SetSignal` to
+[c-program.json](../../../abi/c-program.json), advance the single supported APP
+ABI from 36 to 37, regenerate native definitions and update the current contract.
+These are existing public Task APIs; the kernel ABI and selectors are unchanged.
+
+Extend the existing loaded relocation probe to allocate bit 31, post/snapshot/
+consume its full-width mask, free it and verify exact signal-allocation return.
+Run this small APP probe with raw and optimized C emission on the optimized
+native runtime. Retain relocation, two private instances, repeated execution,
+heap return, stack/domain guards and normal EXIT. Run generated-definition and
+host checks. Record the binding delta and commit this integration prerequisite
+as `feat(c): expose public signal allocation to loaded apps`.
+
+Rebuild the entire demo in TW2; no old-version APP is retained or compatibility
+profile added. Report other APP import-thunk/relocation changes separately from
+the intentional Terminal behavior change when comparing the old captures.
 
 ## TW2 Integrate, measure and deliver
 
