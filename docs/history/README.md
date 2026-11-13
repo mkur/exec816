@@ -1,5 +1,9 @@
 # Historical records
 
+- [Terminal notification signal separation](terminal-wake.md): dedicated view
+  notification ownership, allocation rollback and emitted signal/port checks;
+  matched packaged viewer measurements follow in TW2.
+
 - [Viewer wait and wake audit](viewer-wait-audit.md): confirmed Terminal
   query-reply/view-wake feedback, peer CPU attribution and scene/UPDATE waits
   on the unchanged package, with exact observation/replay comparisons.

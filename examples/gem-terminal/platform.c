@@ -32,9 +32,17 @@ static WORD exchange(struct Terminal *app,UBYTE operation,ULONG identity)
 
 WORD TerminalPlatformOpen(struct Terminal *app)
 {
+    BYTE bit;
     app->replies=CreateMsgPort();
     if (!app->replies) return 0;
-    app->wake=1UL<<app->replies->mp_SigBit;
+    /* A queued RPC reply can leave its port signal pending. View notifications
+     * need their own bit so that reply cannot trigger another refresh. */
+    bit=AllocSignal(-1);
+    if (bit==-1) {
+        DeleteMsgPort(app->replies);app->replies=NULL;
+        return 0;
+    }
+    app->wakeBit=bit;app->wake=1UL<<bit;
     return 1;
 }
 
@@ -45,9 +53,11 @@ void TerminalPlatformClose(struct Terminal *app)
     for (i=0;i<EXEC_CONSOLE_VIEW_SLOTS;++i) if (app->sessions[i].view) {
         ExecConsoleViewUnsubscribe(app->sessions[i].view);app->sessions[i].view=0;
     }
+    if (app->wake) {
+        SetSignal(0,app->wake);FreeSignal(app->wakeBit);app->wake=0;
+    }
+    app->wakeBit=-1;
     if (app->replies) { DeleteMsgPort(app->replies);app->replies=NULL; }
-    app->wake=0;
-
 }
 
 WORD TerminalPlatformSelect(struct Terminal *app,WORD index)

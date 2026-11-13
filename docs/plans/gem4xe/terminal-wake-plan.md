@@ -4,7 +4,8 @@
 [Signals](../../reference/signals.md) · [Ports](../../reference/ports.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: planned. Baseline runtime `067b2eff`; audit/tool baseline `f9126683`.
+Status: TW1 complete at the development tier; TW2 pending.
+Baseline runtime `067b2eff`; audit/tool baseline `f9126683`.
 Commit this plan and each passing executable slice separately.
 
 Remove Terminal's confirmed query-reply/view-notification feedback loop, then
@@ -40,6 +41,12 @@ part of this change. In particular, do not clear reply bits to disguise the
 alias or change `WaitPort`/`GetMsg` semantics.
 
 ## TW1 Own the notification signal and check its lifetime
+
+Completed: [TW1 evidence](../../development/terminal-wake-tw1.json) and
+[implementation record](../../history/terminal-wake.md). Raw and optimized
+native probes each pass 35 checks, including one-bit rollback and queued-reply
+isolation. The host suite passes 710 tests with four existing skips. The private
+record grows one byte; all shared/per-Task bank-zero reservations match IC2.
 
 Implement allocation, rollback and cleanup. Extend the existing emitted C
 layout probe/model for the new private field and resulting record size.
