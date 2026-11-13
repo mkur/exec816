@@ -15,6 +15,8 @@
 #include "gem-frame-gadgets.h"
 #include <stdint.h>
 #include <string.h>
+#include "../raster/drawing.h"
+#include "../raster/core.h"
 
 extern uint16_t GemVdiOpen(int16_t *workout);
 extern uint16_t GemVdiCommand(uint16_t op, uint16_t sub, uint16_t pairs,
@@ -1280,6 +1282,39 @@ UWORD GemDrawingSolidBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
 {
     /* Private VDI caller already clipped and bounded this fixed operation. */
     return drawing_borrow(grant,left,top,right,bottom,0,&pen);
+}
+
+UWORD GemDrawingRasterBorrow(struct DisplayGrant *grant,const struct GemRasterCopy *copy,
+    UBYTE *scratch)
+{
+    const struct GemRasterRect *r=&copy->rect;
+    UWORD sx=r->sx,sy=r->sy,dx=r->dx,dy=r->dy,width=r->width,height=r->height;
+    UWORD sn=((sx&1)+width+1)>>1,dn=((dx&1)+width+1)>>1;
+    UWORD left=height,first,n,k,y,limit,status;
+    limit=(UWORD)VBXE_LIST_WORK/(sn+dn*2);
+    if (limit>EXEC_VDI_STRIP_ROWS) limit=EXEC_VDI_STRIP_ROWS;
+    while (left) {
+        n=left<limit ? left:limit;
+        first=dy>sy ? left-n:height-left;
+        status=DisplayEnter(grant);
+        if (status!=DISPLAY_OK) return status;
+        pointer_erase(sx,sy+first,sx+width,sy+first+n);
+        pointer_erase(dx,dy+first,dx+width,dy+first+n);
+        status=fence_owner();
+        for (k=0;k<n && !fault;++k) {
+            y=dy>sy ? first+n-1-k:first+k;
+            latch(VbxeOwnerRead(&display,GemScreenRows[sy+y]+(sx>>1),scratch,sn));
+            if (!fault) latch(VbxeOwnerRead(&display,GemScreenRows[dy+y]+(dx>>1),scratch+321,dn));
+            if (!fault) {
+                GemRasterMerge(scratch+321,scratch,sx&1,dx&1,width,copy->mode);
+                latch(VbxeOwnerWrite(&display,GemScreenRows[dy+y]+(dx>>1),scratch+321,dn));
+            }
+        }
+        status=borrow_leave(grant);
+        if (status!=DISPLAY_OK) return status;
+        left-=n;
+    }
+    return DISPLAY_OK;
 }
 
 UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,

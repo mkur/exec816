@@ -57,6 +57,7 @@ def drawing(out,optimize,probe=False,fault=False,desktop_style=False,
         sources.append(ROOT/'c/calypsi/aes-windows.c')
         sources.append(ROOT/'c/calypsi/aes-input.c')
         sources.append(ROOT/'c/calypsi/vdi.c')
+        sources.append(PORT/'raster/client.c')
         # A second binding of the same extracted donor routines isolates the
         # presenter's scratch from callers that can block acquiring DISPLAY.
         from extract_gem_aes import extract as object_extract, PORT as object_port

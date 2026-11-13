@@ -333,6 +333,32 @@ static void copy_case(WORD handle,WORD window,UWORD index)
     vs_clip(handle,0,p);
 }
 
+/* Conventional copy has no settled-pixel or paint-journal prerequisite. */
+static void raster_case(WORD handle,WORD window,UWORD index)
+{
+    WORD x,y,w,h,sx,sy,dx,dy,points[8],mode=S_ONLY;
+    WORD control[12]={109,4,77,1,77,0,0,0,0,0,0,0};
+    static MFDB screen;
+    ULONG address=(ULONG)&screen;
+    VDIPB pb={control,&mode,points,NULL,NULL};
+    const WORD *p=copyCases[index];
+    copy_pattern(handle,window);
+    CHECK(ExecAESBeginUpdate(window));
+    CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
+    ExecAESContext()->view->pixelsReady=0;
+    sx=x+p[0];sy=y+p[1];dx=sx+p[4];dy=sy+p[5];
+    points[0]=sx;points[1]=sy;points[2]=sx+p[2]-1;points[3]=sy+p[3]-1;
+    points[4]=dx;points[5]=dy;points[6]=dx+p[2]-1;points[7]=dy+p[3]-1;
+    if (index&1) {
+        control[6]=handle;control[7]=(WORD)address;control[8]=(WORD)(address>>16);
+        control[9]=(WORD)address;control[10]=(WORD)(address>>16);
+        vdi_call(&pb);CHECK(control[2]==0 && control[4]==0);
+    } else vro_cpyfm(handle,S_ONLY,points,&screen,&screen);
+    CHECK(ExecAESDiagnostic()==AES_OK);
+    CHECK(ExecAESPainted(window,x,y,w,h));
+    CHECK(wind_update(END_UPDATE));
+}
+
 static void worker(UWORD who)
 {
     BYTE bit=AllocSignal(-1),reserved[32],used=0,next;
@@ -402,7 +428,10 @@ static void worker(UWORD who)
         else if (command==8) draw_private_mode(who,handle,window);
         else if (command==9) break;
         else if (who && command==100) draw_atascii(handle,window);
-        else if (who && command>=10) copy_case(handle,window,command-10);
+        else if (who && command>=10) {
+            copy_case(handle,window,command-10);
+            if (command-10<=15) raster_case(handle,window,command-10);
+        }
         Forbid(); VDIStage[who]=command; Signal(root,wake); Permit();
     }
     if (!who) { v_clsvwk(handle); CHECK(ExecAESDiagnostic()==AES_OK); }

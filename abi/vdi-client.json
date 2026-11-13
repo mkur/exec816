@@ -1,6 +1,6 @@
 {
   "abi": "exec816.vdi-client",
-  "version": 4,
+  "version": 5,
   "constants": {"PHYSICAL": 1, "VIRTUAL": 2, "WIDTH": 640, "HEIGHT": 240, "FONT_WIDTH": 8, "FONT_HEIGHT": 8, "FONT_TOP": 6, "TEXT_CHUNK": 80, "STRIP_ROWS": 16, "REPLACE": 1, "TRANS": 2, "COPY_DONE": 1, "COPY_REDRAW": 0, "COPY_ERROR": -1, "ATASCII_BASE": 57344},
   "unit": [
     ["operation", "UWORD"],
@@ -32,9 +32,81 @@
     ["ptsout", "WORD", 12],
     ["unit", "struct ExecVDIUnit"],
     ["copy", "struct VbxeCopy"],
-    ["copyEdges", "UBYTE", 480]
+    ["copyEdges", "UBYTE", 642]
   ],
   "workout_ints": [639, 239, 0, 372, 372, 1, 0, 0, 0, 0, 1, 0, 0, 16, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16, 0, 0, 0, 0, 0],
   "workout_points": [8, 8, 8, 8, 0, 0, 0, 0, 0, 0, 0, 0],
-  "public_calls": ["WORD ExecVDICopyRect(WORD workstation, WORD x, WORD y, WORD width, WORD height, WORD deltaX, WORD deltaY);"]
+  "public_calls": ["WORD ExecVDICopyRect(WORD workstation, WORD x, WORD y, WORD width, WORD height, WORD deltaX, WORD deltaY);"],
+  "mfdb": [
+    [
+      "fd_addr",
+      "void *"
+    ],
+    [
+      "fd_w",
+      "WORD"
+    ],
+    [
+      "fd_h",
+      "WORD"
+    ],
+    [
+      "fd_wdwidth",
+      "WORD"
+    ],
+    [
+      "fd_stand",
+      "WORD"
+    ],
+    [
+      "fd_nplanes",
+      "WORD"
+    ],
+    [
+      "fd_r1",
+      "WORD"
+    ],
+    [
+      "fd_r2",
+      "WORD"
+    ],
+    [
+      "fd_r3",
+      "WORD"
+    ]
+  ],
+  "raster_modes": {
+    "ALL_WHITE": 0,
+    "S_AND_D": 1,
+    "S_AND_NOTD": 2,
+    "S_ONLY": 3,
+    "NOTS_AND_D": 4,
+    "D_ONLY": 5,
+    "S_XOR_D": 6,
+    "S_OR_D": 7,
+    "NOT_SORD": 8,
+    "NOT_SXORD": 9,
+    "D_INVERT": 10,
+    "S_OR_NOTD": 11,
+    "NOT_S": 12,
+    "NOTS_OR_D": 13,
+    "NOT_SANDD": 14,
+    "ALL_BLACK": 15
+  },
+  "raster_pb": {
+    "opcode": 109,
+    "point_pairs": 4,
+    "intin": 1,
+    "intout": 0,
+    "ptsout_pairs": 0,
+    "source_pointer_words": [
+      7,
+      8
+    ],
+    "destination_pointer_words": [
+      9,
+      10
+    ],
+    "pointer_order": "low16,high16; native huge pointer32"
+  }
 }

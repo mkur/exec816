@@ -20,7 +20,9 @@ def records():
 
 
 def expected_layout():
-    result=[]
+    result=[('sizeof(MFDB)',20)]
+    result.extend((f'offsetof(MFDB, {n})',i*2+2) for i,(n,k) in enumerate(ABI['mfdb']) if i)
+    result.append(('offsetof(MFDB, fd_addr)',0))
     for name,r in records().items():
         result.append((f'sizeof(struct {name})',r['size']))
         result.extend((f'offsetof(struct {name}, {f})',v) for f,v in r['fields'].items())
@@ -40,12 +42,15 @@ def files():
     private=prefix+'#ifndef EXEC816_VDI_PRIVATE_H\n#define EXEC816_VDI_PRIVATE_H\n#include <exec816/aes.h>\n#include <exec/display.h>\n#include <hardware/vbxe-copy.h>\n#include <exec816/vdi.h>\nstruct ExecVDIWorkstation {\n'
     private+=''.join(f'    {k} {n}'+(f'[{c[0]}]' if c else '')+';\n' for n,k,*c in ABI['workstation'])
     private+='};\nBOOL ExecVDIClose(struct ExecAESContext *context);\n#endif\n'
-    probe=prefix+'#include "vdi-private.h"\n__attribute__((section("exec_layout")))\nconst UWORD VDILayout[] = {\n'
+    raster=prefix+'#ifndef EXEC816_GEM_RASTER_H\n#define EXEC816_GEM_RASTER_H\n#include <exec/types.h>\n'
+    raster+=''.join(f'#define {n} {v}\n' for n,v in ABI['raster_modes'].items())
+    raster+='typedef struct {\n'+''.join(f'    {k} {n};\n' for n,k in ABI['mfdb'])+'} MFDB;\n#endif\n'
+    probe=prefix+'#include "vdi-private.h"\n#include <gem.h>\n__attribute__((section("exec_layout")))\nconst UWORD VDILayout[] = {\n'
     probe+=''.join('    '+expression+',\n' for expression,_ in expected_layout())+'};\n'
     inquiry=prefix+'static const WORD workoutInts[45] = {'+','.join(map(str,ABI['workout_ints']))+'};\n'
     inquiry+='static const WORD workoutPoints[12] = {'+','.join(map(str,ABI['workout_points']))+'};\n'
     assert len(ABI['workout_ints'])==45 and len(ABI['workout_points'])==12
-    return {ROOT/'c/include/exec816/vdi.h':public,ROOT/'c/include/exec816/vdi-unit.h':unit,ROOT/'c/calypsi/vdi-private.h':private,
+    return {ROOT/'c/include/gem/raster.h':raster,ROOT/'c/include/exec816/vdi.h':public,ROOT/'c/include/exec816/vdi-unit.h':unit,ROOT/'c/calypsi/vdi-private.h':private,
             ROOT/'c/calypsi/vdi-layout.c':probe,ROOT/'c/calypsi/vdi-inquiry.inc':inquiry}
 
 

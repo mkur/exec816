@@ -10,9 +10,10 @@ Status: approved for implementation, 14 November 2026. Commit this plan and
 each passing executable slice separately. The starting Exec source is
 `a0f756f9bc6f6851dee24ec234f261e409e0750c`, APP ABI 38, VDI-client version 4.
 
-RC0 is implemented: deterministic selected core, widened geometry and two
-host checks plus the optimized emitted-code component probe pass. RC1–RC6
-remain pending; no public raster call is delivered by RC0.
+RC0–RC1 are implemented. Selected core/reproduction checks, the raw/optimized
+public ABI probes and optimized physical VDI fixture pass. RC1 checks 22 copy
+frames and ATASCII, with 869 guest assertions, normal shutdown and guards.
+The host suite passes 714 tests with four existing skips. RC2–RC6 remain pending.
 
 Deliver conventional `vro_cpyfm` through the resident application VDI, using
 selected GEM4XE algorithms behind Exec's existing ownership and hardware

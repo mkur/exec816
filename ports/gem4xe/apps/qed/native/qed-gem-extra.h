@@ -251,56 +251,8 @@ typedef struct {
 #ifndef TXT_SHADOWED
 #define TXT_SHADOWED    0x0020
 #endif
-#ifndef ALL_WHITE
-#define ALL_WHITE   0
-#endif
-#ifndef S_AND_D
-#define S_AND_D     1
-#endif
-#ifndef S_AND_NOTD
-#define S_AND_NOTD  2
-#endif
-#ifndef S_ONLY
-#define S_ONLY      3
-#endif
-#ifndef NOTS_AND_D
-#define NOTS_AND_D  4
-#endif
-#ifndef D_ONLY
-#define D_ONLY      5
-#endif
-#ifndef S_XOR_D
-#define S_XOR_D     6
-#endif
-#ifndef S_OR_D
-#define S_OR_D      7
-#endif
-#ifndef NOT_SORD
-#define NOT_SORD    8
-#endif
-#ifndef NOT_SXORD
-#define NOT_SXORD   9
-#endif
-#ifndef D_INVERT
-#define D_INVERT   10
-#endif
 #ifndef NOT_D
 #define NOT_D      10
-#endif
-#ifndef S_OR_NOTD
-#define S_OR_NOTD  11
-#endif
-#ifndef NOT_S
-#define NOT_S      12
-#endif
-#ifndef NOTS_OR_D
-#define NOTS_OR_D  13
-#endif
-#ifndef NOT_SANDD
-#define NOT_SANDD  14
-#endif
-#ifndef ALL_BLACK
-#define ALL_BLACK  15
 #endif
 #ifndef K_RSHIFT
 #define K_RSHIFT    0x0001
@@ -709,7 +661,6 @@ void v_get_pixel(WORD handle, WORD x, WORD y, WORD *pel, WORD *index);
 WORD vst_effects(WORD handle, WORD effects);
 WORD vst_point(WORD handle, WORD point, WORD *char_width, WORD *char_height, WORD *cell_width, WORD *cell_height);
 void vsl_ends(WORD handle, WORD beg_style, WORD end_style);
-void vro_cpyfm(WORD handle, WORD mode, const WORD *pxy, const MFDB *src, const MFDB *dst);
 void vr_trnfm(WORD handle, const MFDB *src, const MFDB *dst);
 void vsc_form(WORD handle, const WORD *form);
 void vsf_udpat(WORD handle, const WORD *pattern, WORD planes);

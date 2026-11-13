@@ -9,10 +9,16 @@ ROOT=Path(__file__).resolve().parents[1]
 
 class CopyPixels(unittest.TestCase):
     def test_overlap_edges_bounded_units_and_failure(self):
+        self.check_backend(False)
+
+    def test_raster_parity_overlap_and_failure(self):
+        self.check_backend(True)
+
+    def check_backend(self,raster):
         source=(ROOT/'ports/gem4xe/adapter/gem-vbxe.c').read_text()
         source=(source[source.index('static UWORD borrow_leave('):
                        source.index('static UWORD drawing_borrow(')]+
-                source[source.index('UWORD GemDrawingCopyBorrow('):
+                source[source.index('UWORD GemDrawingRasterBorrow(' if raster else 'UWORD GemDrawingCopyBorrow('):
                        source.index('NATIVE_UNIT(FrameBatch,')])
         prelude=r'''
 #include <assert.h>
@@ -82,13 +88,18 @@ static void put(UBYTE *p,UWORD x,UWORD y,UBYTE v)
 static void check(UWORD sx,UWORD sy,UWORD w,UWORD h,int dx,int dy,unsigned fail)
 {
     struct DisplayGrant g={0};struct VbxeCopy c={{0,320,640,240},{0,320,640,240},sx,sy,sx+dx,sy+dy,w,h};
-    UBYTE edges[482];UWORD x,y,result;
+    UBYTE edges[644];UWORD x,y,result;
     memcpy(vram,original,76800);memcpy(expected,original,76800);
     transfers=enters=leaves=fault=0;failAt=fail;
-    edges[480]=0xab;edges[481]=0xcd;
+    edges[642]=0xab;edges[643]=0xcd;
     for(y=0;y<h;++y)for(x=0;x<w;++x)put(expected,sx+dx+x,sy+dy+y,pixel(original,sx+x,sy+y));
+#if RASTER
+    {struct GemRasterCopy p={{sx,sy,sx+dx,sy+dy,w,h},3};
+    result=GemDrawingRasterBorrow(&g,&p,edges);}
+#else
     result=GemDrawingCopyBorrow(&g,&c,edges);
-    assert(!g.active && enters==leaves && edges[480]==0xab && edges[481]==0xcd);
+#endif
+    assert(!g.active && enters==leaves && edges[642]==0xab && edges[643]==0xcd);
     if(!fail || transfers<fail) {assert(!result);assert(!memcmp(vram,expected,76800));}
     else assert(result==5);
 }
@@ -98,16 +109,20 @@ int main(void)
     for(i=0;i<240;++i)GemScreenRows[i]=i*320;
     for(i=0;i<76800;++i)original[i]=(i*37+i/320*11+i/997)&255;
     for(parity=0;parity<2;++parity)for(w=1;w<=401;w+=20)
-        for(h=1;h<=177;h+=16)for(dx=-8;dx<=8;dx+=8)for(dy=-8;dy<=8;dy+=8)
+        for(h=1;h<=177;h+=16)for(dx=-8;dx<=8;dx+=RASTER ? 1:8)for(dy=-8;dy<=8;dy+=8)
             check(40+parity,20,w,h,dx,dy,0);
     check(1,0,638,232,0,8,0);check(1,8,638,232,0,-8,0);
-    for(i=1;i<=70;++i)check(41,20,400,177,8,8,i);
+    for(i=1;i<=70;++i)check(41,20,400,177,RASTER ? 1:8,8,i);
     return 0;
 }
 '''
         with tempfile.TemporaryDirectory() as directory:
+            prelude+='#include "'+str(ROOT/'ports/gem4xe/raster/core.h')+'"\n'
+            prelude+='struct GemRasterRect {int32_t sx,sy,dx,dy,width,height;};\n'
+            prelude+='struct GemRasterCopy {struct GemRasterRect rect;UWORD mode;};\n'
             p=Path(directory);(p/'copy.c').write_text(prelude+source+checks)
-            subprocess.run(['cc','-std=c99','-O2','-Wall','-Wextra','-Werror',str(p/'copy.c'),'-o',str(p/'copy')],check=True,capture_output=True)
+            subprocess.run(['cc','-std=c99','-O2','-Wall','-Wextra','-Werror','-Wno-unused-function','-Wno-unused-variable',
+                '-DRASTER='+str(int(raster)),str(p/'copy.c'),'-o',str(p/'copy')],check=True,capture_output=True)
             subprocess.run([str(p/'copy')],check=True,capture_output=True)
 
 

@@ -174,7 +174,7 @@ def physical(b,p,foreign,report):
             r.fill=(row//8)%16;r.apply(11,(l,t+row,l+383,t+row+7))
             r.text=15-(row//8)%16
             r.apply(8,(l+1,t+row+6),b'ABc09xy! QTuvwxyz013579! ABCDEFGHIJKLMNOPQRSTUVWX')
-        if index not in (15,16,17,21) and w and h and (dx or dy):
+        if index not in (16,17,21) and w and h and (dx or dy):
             before=bytes(r.pixels)
             for yy in range(h):
                 for xx in range(w):

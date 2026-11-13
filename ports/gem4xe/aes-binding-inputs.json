@@ -450,6 +450,13 @@
       "intin": 1,
       "intout": 0,
       "ptsout_pairs": 0
+    },
+    "vro_cpyfm": {
+      "opcode": 109,
+      "point_pairs": 4,
+      "intin": 1,
+      "intout": 0,
+      "ptsout_pairs": 0
     }
   },
   "resource_limits": {

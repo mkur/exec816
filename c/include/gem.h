@@ -4,6 +4,7 @@
 #define EXEC816_GEM_H
 #include <exec/types.h>
 #include <gem/objects.h>
+#include <gem/raster.h>
 #include <exec816/gem-constants.h>
 #define FAR
 #define SIMPLE_CALL EXEC_CALL
@@ -32,6 +33,8 @@ void v_opnvwk(WORD *work_in, WORD *handle, WORD *work_out);
 void v_clsvwk(WORD handle);
 void v_bar(WORD handle, const WORD *pxy);
 void v_gtext(WORD handle, WORD x, WORD y, const char *text);
+void vro_cpyfm(WORD handle, WORD mode, const WORD *pxy,
+    const MFDB *source, const MFDB *destination);
 void vs_clip(WORD handle, WORD clip, const WORD *pxy);
 WORD vswr_mode(WORD handle, WORD mode);
 WORD vsf_interior(WORD handle, WORD style);

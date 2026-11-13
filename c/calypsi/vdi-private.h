@@ -21,7 +21,7 @@ struct ExecVDIWorkstation {
     WORD ptsout[12];
     struct ExecVDIUnit unit;
     struct VbxeCopy copy;
-    UBYTE copyEdges[480];
+    UBYTE copyEdges[642];
 };
 BOOL ExecVDIClose(struct ExecAESContext *context);
 #endif

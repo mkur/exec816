@@ -14,11 +14,6 @@
 #ifndef __CDECL
 #define __CDECL
 #endif
-/* Port-local legacy raster descriptor; no public raster operation is exposed. */
-typedef struct {
-    void *fd_addr;
-    WORD fd_w,fd_h,fd_wdwidth,fd_stand,fd_nplanes,fd_r1,fd_r2,fd_r3;
-} MFDB;
 #include "qed-gem-extra.h"
 #include <support.h>
 #define WF_HSLSIZE 15

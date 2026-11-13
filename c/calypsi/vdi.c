@@ -3,6 +3,7 @@
 #include <gem.h>
 #include <proto/exec.h>
 #include "gem-drawing.h"
+#include "../../ports/gem4xe/raster/client.h"
 #include "vdi-inquiry.inc"
 #include <hardware/vbxe.h>
 
@@ -265,6 +266,7 @@ static void dispatch(struct ExecAESContext *c,VDIPB *pb)
         pairs=2; break;
     case 22: case 23: case 25: case 32: words=1; break;
     case 129: pairs=2; words=1; break;
+    case 109: pairs=4; words=1; break;
     default:c->diagnostic=AES_UNSUPPORTED; return;
     }
     if (pb->contrl[1]!=pairs || pb->contrl[3]!=words || pb->contrl[3]<0) {
@@ -272,6 +274,12 @@ static void dispatch(struct ExecAESContext *c,VDIPB *pb)
     }
     if (op==100) { open_virtual(c,pb); return; }
     if (!w || pb->contrl[6]!=w->handle) { c->diagnostic=AES_IDENTITY; return; }
+    if (op==109) {
+        ULONG source=(UWORD)pb->contrl[7]|((ULONG)(UWORD)pb->contrl[8]<<16);
+        ULONG destination=(UWORD)pb->contrl[9]|((ULONG)(UWORD)pb->contrl[10]<<16);
+        ExecGemRasterCopy(c,pb->intin[0],pb->ptsin,(const MFDB *)source,(const MFDB *)destination);
+        return;
+    }
     if (op==11) { bar(c,pb->ptsin); return; }
     if (op==25) {
         value=fill_color(c,pb->intin[0]);
@@ -331,6 +339,14 @@ void v_opnvwk(WORD *input,WORD *handle,WORD *output)
     vdi_call(&pb); *handle=control[6];
 }
 void v_clsvwk(WORD h) { call(101,0,0,0,h,NULL,NULL); }
+void vro_cpyfm(WORD h,WORD mode,const WORD *p,const MFDB *source,const MFDB *destination)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    if (!enter(c)) return;
+    if (!c->workstation || c->workstation->handle!=h) c->diagnostic=AES_IDENTITY;
+    else ExecGemRasterCopy(c,mode,p,source,destination);
+    c->busy=0;
+}
 void v_bar(WORD h,const WORD *p)
 {
     struct ExecAESContext *c=ExecAESContext();
