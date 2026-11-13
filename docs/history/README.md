@@ -1,5 +1,9 @@
 # Historical records
 
+- [Empty input route copies](input-snapshot-copy.md): guarded empty-slot return,
+  balanced endpoint holds and 1.9–3.4% less BEGIN/END CPU; small viewer CPU savings
+  with mixed repaint medians and unchanged input/drawing behavior.
+
 - [Input-route reuse during paint-only UPDATE](gui-route-reuse.md): retained
   routes and endpoint holds, preserved MCTRL/input refresh, and measured viewer
   CPU and repaint improvements with unchanged drawing units.

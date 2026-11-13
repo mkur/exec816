@@ -609,10 +609,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
-- [Input snapshot copying](gem4xe/input-snapshot-copy-plan.md): IC1 passes 838
-  lookup/lifetime checks; IC2 remains pending for an empty-slot return before the
-  full copy, preserved endpoint/input semantics and matched viewer delivery.
-  Follows the [paint-only route-reuse change](../history/gui-route-reuse.md).
+- [Input snapshot copying](gem4xe/input-snapshot-copy-plan.md): IC1–IC2 pass 838
+  lookup/lifetime checks, skip empty-slot copies and preserve input semantics.
+  Complete BEGIN/END CPU falls 1.9–3.4%; matched viewer latency is mixed.
+  [Implementation record](../history/input-snapshot-copy.md).
 
 - [GEM-first GUI design](gem4xe/gem-first-gui-design.md): proposed AES-only
   graphical windows, shared caller-context window operations, an AES system Task,

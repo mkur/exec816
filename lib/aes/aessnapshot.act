@@ -258,17 +258,22 @@ PUBLIC BYTE FUNC Select(BYTE mode LONGCARD identity INT x,y WindowRoute POINTER 
 
 RETURN(found)
 
+; An empty slot defines only the null endpoint; successful copies hold storage.
 PUBLIC BYTE FUNC Default(BYTE slot WindowRoute POINTER target)
 
   EXEC.Forbid()
-  A816MEMORY.Move(BYTE POINTER(target),BYTE POINTER(@published.defaults(slot)),
-      SIZEOF(WindowRoute))
-  IF target.endpoint<>NULL THEN
-    target.endpoint.holds==+1
+  LET route=@published.defaults(slot)
+  IF route.endpoint=NULL THEN
+    target.endpoint=NULL
+    EXEC.Permit()
+    RETURN(0)
   FI
+
+  A816MEMORY.Move(BYTE POINTER(target),BYTE POINTER(route),SIZEOF(WindowRoute))
+  target.endpoint.holds==+1
   EXEC.Permit()
 
-RETURN(target.endpoint<>NULL)
+RETURN(1)
 
 PUBLIC BYTE FUNC Eligible(LONGCARD client CARD buttons)
   BYTE result

@@ -48,10 +48,11 @@ boundaries; the earlier smaller-strip recommendation is withdrawn. The completed
 GF14 decision remains unchanged.
 
 The [input snapshot copying plan](input-snapshot-copy-plan.md) follows the
-[paint-only route-reuse change](../../history/gui-route-reuse.md). IC1 passes
-838 focused lookup/lifetime checks with a frozen baseline; IC2 skips full-route copies
-for empty slots, then measures unchanged input behavior and packaged viewer
-costs. Each passing executable slice gets a separate commit.
+[paint-only route-reuse change](../../history/gui-route-reuse.md). IC1–IC2 pass
+838 focused lookup/lifetime checks. Empty-slot copies are skipped with unchanged
+input refreshes and zero added bank-zero reservations. Complete BEGIN/END CPU
+falls 1.9–3.4%; viewer CPU savings are small and repaint medians are mixed. See
+the [implementation record](../../history/input-snapshot-copy.md).
 
 The [object drawing profile](../../history/aes-drawing-profile.md) separates
 callback setup, graphics-state calls, primitive rendering, command construction,

@@ -5,8 +5,9 @@
 [AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: IC1 complete; IC2 pending. Runtime baseline `41802444`.
+Status: IC1–IC2 complete at the development tier. Runtime baseline `41802444`.
 Commit each passing executable slice below separately.
+See the [implementation record](../../history/input-snapshot-copy.md).
 
 Reduce unnecessary copying in input refresh by returning from an empty default
 route lookup before copying its complete `WindowRoute`. Start with this one
@@ -121,6 +122,16 @@ coverage. Commit: `test(aes): measure default-route lookup copying`.
 
 ## IC2 Skip empty copies and validate the saving
 
+Completed: [IC2 evidence](../../development/input-snapshot-copy-ic2.json).
+The same 838 native assertions pass. Two-client sweep CPU falls 20.5%; complete
+BEGIN/END CPU falls 1.9% and 3.4% for the two owners. Copies per pair fall from
+eight to four while both input refreshes remain. The fully populated control
+improves 7.1%. Lock/pointer and 702 host tests pass (four existing skips).
+Matched viewer CPU falls 0.15–0.66%, but repaint medians are mixed; no consistent
+visible latency gain is claimed. Pixels, replay, guards, heap and cleanup pass.
+The audited OF816 package and matched eight-/twelve-Task memory maps add zero
+reserved bank-zero bytes. Default grows 24 code bytes with unchanged frame/peak.
+
 Implement the guarded empty-slot return described above. Run the same IC1
 fixture and observer with unchanged workload, compiler and machine inputs.
 Inspect emitted code to establish that a miss bypasses the full-record copy.
@@ -184,9 +195,9 @@ Compare `bank_zero_budget`, `task_pools` and `runtime_reservations` in the befor
 and after eight-Task probe and twelve-Task demo. Report code size and transient
 stack changes separately. No upper-RAM or VRAM reservation is planned.
 
-This documentation-only plan itself changes all target reservations by zero.
-Plan validation is content, source-reference and local-link checking; runtime
-tests and demo builds begin with the executable slices. Completion means the
+The initial documentation-only plan changed all target reservations by zero.
+It passed content, source-reference and local-link checks; the executable
+slices passed the selected development checks above. Completion means the
 one selected reduction passes development checks with measured savings. Full
 hosted-system and hardware qualification remain separate. Any later compact
 lookup or changed-only inbox publication needs its own measured decision.
