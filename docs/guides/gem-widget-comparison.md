@@ -111,3 +111,31 @@ All three sample APPs request the existing **1,312-byte stack pools**, including
 interrupt headroom. Using the generic 2,560-byte APP request for both launcher
 and Widget exhausted the available large pools in the standard desktop. The
 smaller requests change APP admission metadata; they do not enlarge any pool.
+
+## Development checks
+
+The [first execution record](../development/gem-widget-comparison.json) passes
+all three cases on both pinned machines. Run the Exec check against the package:
+
+```sh
+python3 tools/test_gem_widget.py --bundle build/gem-widget/demo \
+  --output build/gem-widget/exec
+```
+
+Exec checks mouse press/hold/release, Space and Q, label/button pixels, silent
+versus painting Counter pixels, independent progress after Widget closes, normal
+Counter retirement, guards/ownership and EXIT. It boots the extracted packaged
+OF816 XEX, retains the 250-frame countdown, and reads the matching writable SYS.
+The ZIP audit matches 72 system files and 12 disk APPs, plus the RAM desktop.
+The resident C segments and complete bank-zero reservations match the previous
+Terminal idle-polling demo. The sample's reused small stack pools peak at
+817–848 bytes, leaving at least 208 bytes above the separate 256-byte interrupt
+reserve in those pools. These are observed development high-water marks.
+
+MagiC checks real Space/Q delivery, label/button and Counter pixels, idle behavior
+and Counter continuation after Widget exits. Its diagnostic reports stay
+unchanged during interaction. Automated mouse interaction, dragging, overlap/
+exposure and normal Counter retirement on MagiC remain outside this record.
+The interrupted exploratory ATR load is not counted as a passing transport test.
+Host checks pass 711 tests with four existing historical skips; full platform,
+release and latency qualification remain separate.

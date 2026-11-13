@@ -1,0 +1,773 @@
+{
+  "format": "exec816-shared-widget-development-v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "implementation_commit": "ed9908b5b94238efe45cea4514796ff67e344e2a",
+  "purpose": "Shared-source functional Widget/Counter reference; no measured latency or relative-speed claim",
+  "shared_sources": {
+    "examples/gem-widget/main.c": "50fc4c9f5b0c80a21c94f56163df18a8eaed799668441d10ff82866a0cbb6dd3",
+    "examples/gem-widget/widget.c": "f003796e464c281d555c92242e22801ba7df623e4afb020f49a8ab28e321d8d6",
+    "examples/gem-widget/counter-main.c": "bc1ddd86f139ace16023d923bc371211e8b3c0e48e7d04253f80946fabb1cbb9",
+    "examples/gem-counter/counter.c": "1f6b93eabe973176784ff6f715539e722b496a5b3dd7b1488189e0198bb96f9d"
+  },
+  "inputs": {
+    "docs/gem-widget-distribution.txt": "354145c7b650ec68cbf9b454396171b2aeb24ae6d531d647c84d8b2cd7b917db",
+    "examples/gem-counter/counter.c": "1f6b93eabe973176784ff6f715539e722b496a5b3dd7b1488189e0198bb96f9d",
+    "examples/gem-counter/counter.h": "a5c6a2ef65bde1dfc03f158a2516452230aa106ab6061d42a504735f7e504569",
+    "examples/gem-widget/counter-main.c": "bc1ddd86f139ace16023d923bc371211e8b3c0e48e7d04253f80946fabb1cbb9",
+    "examples/gem-widget/exec-launcher.c": "7de7f99840a4042530276ac617f22c2073b761d1055bc04f3daf2e6c5d3f67ae",
+    "examples/gem-widget/main.c": "50fc4c9f5b0c80a21c94f56163df18a8eaed799668441d10ff82866a0cbb6dd3",
+    "examples/gem-widget/widget.c": "f003796e464c281d555c92242e22801ba7df623e4afb020f49a8ab28e321d8d6",
+    "examples/gem-widget/widget.h": "3a64ed74b82917f9c130d006585009788371132dc557340bcee7eb7db94e9724",
+    "tests/programs/gem_widget_layout.c": "0069b7cff7c0207c5dd9cb4b0370e238f2f6bdc258931eafae715aceef95520a",
+    "tests/reference/atari-st/bindings.c": "a904c6b63eb3a458ff8482fb5a207220333005781b77d8abc0e6902aef70320f",
+    "tests/reference/atari-st/widget-launcher.c": "f05ed584fa91db0a96b250437aaa48e32cd7a332c5c70cf4f7c92aa85f4bced0",
+    "tests/reference/atari-st/widget-observe.c": "e6f173799129491135deb0711c1557bb6c234d5ecac42d9c9bdb20308bca07ec",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "toolchain/atari-st-reference.json": "5af58ffffecd0abe6e9c5ee930f2727ddf2b94f71c044ece30e28fef2175e2ff",
+    "tools/build_demo.py": "80f68e6ca184b96f4c19ea286efbd25d0a8ccff23a9ed24e7bc339f807110a72",
+    "tools/build_gem_desktop.py": "ef6f01d0acb821c194351932c695418ea00250cb6dc112ef3dac4f0bf532e46c",
+    "tools/gem_applications.py": "0ad61b6df344049b035affcf3db9057b1f01a1ac74b5784b61fb042cef8f2121",
+    "tools/prepare_magic_widget.py": "4a3c65e34b8df0b8d77464c00e2b0cfb645758c836d83012eb48cf1be0076439",
+    "tools/test_gem_widget.py": "81ff90a963d534fe1c4fb20d65ca84276061816b871f248f7ab61fce93fde19e",
+    "tools/test_magic_widget.py": "d974c799eb48a9318d73b0a4156649ca4fe81000fa372f004390473bb0e4e51f",
+    "tools/widget_model.py": "9b548f623681083622e2e314c18fb140d47479787fd5886a20ee55983e136537",
+    "tools/widget_observe.py": "7b6e0a4ab33f66b8a4ce6ba1dc74a2a5472ae31f06a5ceeee51267321b4d62c7"
+  },
+  "native": {
+    "results": {
+      "path": "build/gem-widget/exec/results.json",
+      "sha256": "9252bb69b1999877a4ef822ce1b512213c5653fb82b1124f23b1818a92d38c7b"
+    },
+    "bundle": {
+      "path": "build/gem-widget/demo/exec816-demo.zip",
+      "sha256": "8b5985b66aceda98f1db153f0db87fb21f3270cee966fe63469d1131cfe61442"
+    },
+    "build": {
+      "path": "build/gem-widget/demo/build.json",
+      "sha256": "471ecfaef60cddd1279aeaa819b0387886b2027f501bcc6f65e87dd80e920c1c"
+    },
+    "manifest": {
+      "path": "build/gem-widget/demo/demo-manifest.json",
+      "sha256": "e9901328aab4ca1bc4a8fad364932184a7b28f44ed7e29ba9cf600f9744e3689"
+    },
+    "apps": {
+      "widget": {
+        "bytes": 14992,
+        "sha256": "954f5ad8e6870b9785a76a58e52a38ce08ae958479bddfc956d34454ed7e3d8d",
+        "span": 66499,
+        "entry": 11991,
+        "minimum_stack": 1312
+      },
+      "pulse": {
+        "bytes": 14799,
+        "sha256": "5bd794b91b203556491f6fd46fb54214370bd2ba65465fa8639f2df3bbf54344",
+        "span": 66339,
+        "entry": 11941,
+        "minimum_stack": 1312
+      },
+      "pair": {
+        "bytes": 11530,
+        "sha256": "aa39b598756ea7f94a7c606ef713fd08e0a76ffd1cecd3725fc4b629a002b1f9",
+        "span": 66137,
+        "entry": 8677,
+        "minimum_stack": 1312
+      }
+    },
+    "autoboot_frames": 250,
+    "cases": [
+      {
+        "mode": "solo",
+        "initial": {
+          "id": 4,
+          "window": 4,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "idle": {
+          "id": 4,
+          "window": 4,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "activated": {
+          "id": 4,
+          "window": 4,
+          "opened": 1,
+          "ready": 1,
+          "actions": 3,
+          "paints": 5,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000003",
+          "selected": 1
+        },
+        "counter_before": null,
+        "counter_idle": null,
+        "widget_exit": true,
+        "counter_digit_hashes": [],
+        "counter_exit": false,
+        "physical_input": "mouse press/hold/release, Space, Q, close box"
+      },
+      {
+        "mode": "silent",
+        "initial": {
+          "id": 7,
+          "window": 6,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "idle": {
+          "id": 7,
+          "window": 6,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "activated": {
+          "id": 7,
+          "window": 6,
+          "opened": 1,
+          "ready": 1,
+          "actions": 3,
+          "paints": 5,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000003",
+          "selected": 1
+        },
+        "counter_before": {
+          "count": 109,
+          "paints": 2,
+          "work": [
+            384,
+            51,
+            200,
+            59
+          ]
+        },
+        "counter_idle": {
+          "count": 122,
+          "paints": 2,
+          "work": [
+            384,
+            51,
+            200,
+            59
+          ]
+        },
+        "widget_exit": true,
+        "counter_digit_hashes": [
+          "b3e8b9c529012deececf4115b892e90adbafc86cff18293204b2740ff8f0387e",
+          "b3e8b9c529012deececf4115b892e90adbafc86cff18293204b2740ff8f0387e"
+        ],
+        "counter_exit": true,
+        "physical_input": "mouse press/hold/release, Space, Q, close box"
+      },
+      {
+        "mode": "paint",
+        "initial": {
+          "id": 10,
+          "window": 8,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "idle": {
+          "id": 10,
+          "window": 8,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "activated": {
+          "id": 10,
+          "window": 8,
+          "opened": 1,
+          "ready": 1,
+          "actions": 3,
+          "paints": 5,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000003",
+          "selected": 1
+        },
+        "counter_before": {
+          "count": 71,
+          "paints": 73,
+          "work": [
+            384,
+            51,
+            200,
+            59
+          ]
+        },
+        "counter_idle": {
+          "count": 81,
+          "paints": 83,
+          "work": [
+            384,
+            51,
+            200,
+            59
+          ]
+        },
+        "widget_exit": true,
+        "counter_digit_hashes": [
+          "76cde25ec5ef52e51e3ecb29855dba610de52db2d8d51cbcc7ce1065309ad496",
+          "607a0b1be5d942cf26c6ae2e7f003462c8a5d8dace387281306703c858e78030"
+        ],
+        "counter_exit": true,
+        "physical_input": "mouse press/hold/release, Space, Q, close box"
+      }
+    ],
+    "stacks": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 613,
+        "remaining_above_floor": 667
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 190,
+        "remaining_above_floor": 866
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 343,
+        "remaining_above_floor": 713
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 149,
+        "remaining_above_floor": 907
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 659,
+        "remaining_above_floor": 397
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 859,
+        "remaining_above_floor": 197
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 765,
+        "remaining_above_floor": 1539
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 865,
+        "remaining_above_floor": 1439
+      },
+      "8": {
+        "base": 37904,
+        "bytes": 1312,
+        "peak": 817,
+        "remaining_above_floor": 239
+      },
+      "9": {
+        "base": 39248,
+        "bytes": 1312,
+        "peak": 844,
+        "remaining_above_floor": 212
+      },
+      "10": {
+        "base": 40592,
+        "bytes": 1312,
+        "peak": 848,
+        "remaining_above_floor": 208
+      },
+      "11": {
+        "base": 41936,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "12": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 129,
+        "remaining_above_floor": 127
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 297,
+        "remaining_above_floor": 983
+      }
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$f6ed499638f785c0",
+      "actual_kernel_id": "$f6ed499638f785c0",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "compiler_contract": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "executable_scope": "Optimized Calypsi APPs; extracted packaged OF816 XEX, ROM and writable SYS; physical mouse/keyboard, normal child retirement, ownership/guards and EXIT",
+    "resident_c_matches_terminal_idle_baseline": true,
+    "application_bodies_absent_from_resident_c": true
+  },
+  "magic": {
+    "results": {
+      "path": "build/magic-widget/results.json",
+      "sha256": "50f26596de6a4db51166c6bb2ab37caa7f343f664e2b508d5a42adabe5605e5f"
+    },
+    "build": {
+      "path": "build/magic-widget/build.json",
+      "sha256": "bb988b9c08c69995697266e63d80181afdb2e8d7790789c35f28885d48cba6f5"
+    },
+    "cases": [
+      {
+        "mode": "solo",
+        "initial": {
+          "id": 2,
+          "window": 1,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "idle": {
+          "id": 2,
+          "window": 1,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "activated": {
+          "id": 2,
+          "window": 1,
+          "opened": 1,
+          "ready": 1,
+          "actions": 3,
+          "paints": 5,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000003",
+          "selected": 1
+        },
+        "counter_before": null,
+        "counter_idle": null,
+        "widget_exit": true,
+        "periodic_guest_log_writes": 0,
+        "physical_input": "keyboard Space and Q",
+        "counter_continues_after_widget_exit": false
+      },
+      {
+        "mode": "silent",
+        "initial": {
+          "id": 3,
+          "window": 2,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "idle": {
+          "id": 3,
+          "window": 2,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "activated": {
+          "id": 3,
+          "window": 2,
+          "opened": 1,
+          "ready": 1,
+          "actions": 3,
+          "paints": 5,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000003",
+          "selected": 1
+        },
+        "counter_before": {
+          "count": 38,
+          "paints": 1,
+          "work": [
+            377,
+            59,
+            214,
+            52
+          ]
+        },
+        "counter_idle": {
+          "count": 48,
+          "paints": 1,
+          "work": [
+            377,
+            59,
+            214,
+            52
+          ]
+        },
+        "widget_exit": true,
+        "periodic_guest_log_writes": 0,
+        "physical_input": "keyboard Space and Q",
+        "counter_continues_after_widget_exit": true
+      },
+      {
+        "mode": "paint",
+        "initial": {
+          "id": 3,
+          "window": 2,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "idle": {
+          "id": 3,
+          "window": 2,
+          "opened": 1,
+          "ready": 1,
+          "actions": 0,
+          "paints": 2,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000000",
+          "selected": 0
+        },
+        "activated": {
+          "id": 3,
+          "window": 2,
+          "opened": 1,
+          "ready": 1,
+          "actions": 3,
+          "paints": 5,
+          "work": [
+            32,
+            56,
+            304,
+            128
+          ],
+          "label": "Clicks: 000003",
+          "selected": 1
+        },
+        "counter_before": {
+          "count": 34,
+          "paints": 35,
+          "work": [
+            377,
+            59,
+            214,
+            52
+          ]
+        },
+        "counter_idle": {
+          "count": 43,
+          "paints": 44,
+          "work": [
+            377,
+            59,
+            214,
+            52
+          ]
+        },
+        "widget_exit": true,
+        "periodic_guest_log_writes": 0,
+        "physical_input": "keyboard Space and Q",
+        "counter_continues_after_widget_exit": true
+      }
+    ],
+    "pins": {
+      "hatari_version": "2.6.1",
+      "rom": {
+        "name": "EmuTOS 1.4, bundled with Hatari 2.6.1",
+        "sha256": "154803e3ff4851f3dc358b91b16d6b6110d187a81d8132ecb665af49878939d5"
+      },
+      "magic": {
+        "repository": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources",
+        "revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+        "release": "Atari-MagiC-2026-11-04.zip",
+        "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FReleases%2FAtari-MagiC-2026-11-04.zip/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+        "sha256": "30586de6b1357c15f53298abe0dacd06042bc8baee355def63590a232a5cc75e",
+        "license": {
+          "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/LICENSE/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+          "sha256": "9345c46fe7db23b87ee000c2eda5b2ab7d95602784cef50604f2648aeb0cf0f1"
+        },
+        "object_source": {
+          "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESOBJ.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+          "sha256": "abbda7614a2a9339894c87ca65666cc9581624ea631889dae2e070e2f3e66bd3"
+        }
+      },
+      "toslibc": {
+        "repository": "https://github.com/frno7/toslibc.git",
+        "revision": "162a2fb429879654e55dedd5b3abd14cece32e11"
+      },
+      "machine": {
+        "model": "st",
+        "cpu": "68000",
+        "cpu_mhz": 8,
+        "ram_mib": 4,
+        "monitor": "mono",
+        "screen": [
+          640,
+          400
+        ],
+        "colours": 2
+      }
+    },
+    "compiler": "m68k-elf-gcc (GCC) 16.2.0",
+    "binaries": {
+      "drive-c/WIDGET.PRG": "c8008dfd144d2d08e7f07e09e97ea168ee0477c05140207d5165b688b9c6b3bf",
+      "drive-c/PULSE.PRG": "01c636f5562a02c5ff9b25fa481efbb4ff85fa775917763c3bafaa6a4185507d",
+      "drive-c/GEMSYS/GEMDESK/MAGXDESK.APP": "4384df66acbd75733066cdf210fef375b2b7d70fe371c234d622d1dd97413b69",
+      "drive-c/MAGIC.RAM": "11bd6b2ec12dc09851bda3ee0b077e537936278410760c197081e5e5a4653941",
+      "drive-c/AUTO/MAGXBOOT.PRG": "7c1012fdbc733be9521d1b1f9daf514a1ec5281b3daefc19ba4b40d2c8503234"
+    },
+    "toolchain_artifacts": {
+      "/Users/michalkurcewicz/action/exec816-public/build/atari-st-reference/sdk/bin/m68k-atari-tos-gnu-gcc": "b48235efa810bbc56477c02d0a389a9937eff5c52de7caa9ac5d5796fb05e5fd",
+      "/Users/michalkurcewicz/action/exec816-public/build/atari-st-reference/sdk/bin/m68k-atari-tos-gnu-ld": "c237703d7033017ecaaf5d01d6d753a2732563d1953a14f3ab0b441152d6b9d5",
+      "/Users/michalkurcewicz/action/exec816-public/build/atari-st-reference/sdk/lib/libc.a": "f8e45f7cb8e02dd7ae88f647a5fbe82216ad6a693dcc85ee88acf388465e1d8d",
+      "/opt/homebrew/Cellar/m68k-elf-gcc/16.2.0/lib/gcc/m68k-elf/16.2.0/m68000/libgcc.a": "699bda5499d4d374b8746520acb2a8c61243ea53e94a82c7e761501dce05dbde"
+    },
+    "hatari_version": "Hatari v2.6.1 - the Atari ST, STE, TT and Falcon emulator.",
+    "hatari_sha256": "0c26aadeebb19edea9afa9bed9df1718e520debba2981f66511ce9686dd79bb1",
+    "rom_sha256": "154803e3ff4851f3dc358b91b16d6b6110d187a81d8132ecb665af49878939d5",
+    "executable_scope": "Optimized emitted 68000 applications; real Space/Q input, label/button and Counter pixels, idle behavior and Counter continuation after Widget exit",
+    "periodic_guest_observation_writes": 0
+  },
+  "package_audit": {
+    "path": "build/gem-widget/package-audit.json",
+    "sha256": "12eda9a061ecf5f7748b23fa4e60f70fae7a9016f69774a817a5d6d612e06154",
+    "matched_system_files": 72,
+    "matched_disk_apps": 12,
+    "checksum_count": 30
+  },
+  "host_checks": {
+    "tests_run": 711,
+    "skipped": 4,
+    "status": "pass",
+    "log": {
+      "path": "build/gem-widget-host-tests.log",
+      "sha256": "87b1419a1a0017b7b59cec8f6285fc7a70ce4a5120af570e3b14dda3c9c96edf"
+    },
+    "generated_checks": [
+      "tools/generate_c_program.py --check",
+      "tools/generate_c_runtime.py --check"
+    ],
+    "documentation_targets": 50
+  },
+  "bank_zero": {
+    "baseline": {
+      "path": "build/terminal-idle/demo/memory.json",
+      "sha256": "f0ca076b3fba88de4f7a80944bbdface66fbeab498fc5a5c2101e401f4917786"
+    },
+    "current": {
+      "path": "build/gem-widget/demo/memory.json",
+      "sha256": "f0ca076b3fba88de4f7a80944bbdface66fbeab498fc5a5c2101e401f4917786"
+    },
+    "unchanged_fields": [
+      "bank_zero_budget",
+      "task_pools",
+      "runtime_reservations"
+    ],
+    "delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "includes": "Complete guards, alignment and unused reserved capacity; existing twelve-Task pools unchanged"
+  },
+  "limits": [
+    "Functional checks, not a latency or throughput cohort; observation intervals and physical input sequences differ between targets.",
+    "AES object fonts, Counter work rectangles, CPUs, compilers and display formats differ; Widget work area matches at 32,56,304,128.",
+    "MagiC automated input is Space/Q; mouse interaction, dragging, occlusion/exposure and Counter normal retirement are not qualified by this record.",
+    "Exec uses the extracted packaged OF816 XEX. The exploratory ATR loading attempt was interrupted and is not a passing transport result.",
+    "The separately linked GEM4XE target, broader semantic comparison and full platform/release qualification remain open."
+  ]
+}
