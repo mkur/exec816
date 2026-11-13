@@ -232,6 +232,12 @@ extension.
 
 ## Colour GEM desktop roadmap
 
+The [GEM4XE raster-copy plan](plans/gem4xe/vro-cpyfm-plan.md) adds conventional
+`vro_cpyfm` in RC0–RC6 slices: screen S_ONLY for the MGVIEW prerequisite,
+device-format memory forms, all sixteen logical modes and measured packaged
+delivery. It reuses selected donor algorithms under current display ownership;
+bitmap workstations and the complete MGVIEW port remain separate work.
+
 The proposed [GEM-first GUI design](plans/gem4xe/gem-first-gui-design.md) replaces
 the native/GEM graphical interface split with one AES window model. It retains
 Exec Tasks and device I/O, distinguishes UPDATE from physical drawing ownership

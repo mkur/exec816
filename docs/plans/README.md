@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [GEM4XE raster copy](gem4xe/vro-cpyfm-plan.md): RC0–RC6 deliver conventional
+  `vro_cpyfm`, starting with MGVIEW's screen S_ONLY operation, then device-format
+  memory forms, all sixteen modes, bounded acceleration and rebuilt demo checks.
+
 - [Remove Terminal idle session polling](gem4xe/terminal-idle-polling-plan.md):
   proposed TP1–TP4 slices for retained directory watches, complete metadata and
   shutdown notifications, event-driven refresh with bounded retries, and matched

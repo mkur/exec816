@@ -1,5 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
+The [raster-copy plan](vro-cpyfm-plan.md) delivers conventional `vro_cpyfm`
+from selected GEM4XE algorithms: screen S_ONLY first, then device-format memory
+forms and all sixteen logical modes. It retains Exec's Task preemption, display
+grants and drawing limits, with one commit per passing executable slice.
+
 The [GEM-first GUI design](gem-first-gui-design.md) makes AES the sole
 graphical window model, with caller-context operations, an AES system Task and
 separate logical/physical ownership over normal Exec preemption and I/O. It
