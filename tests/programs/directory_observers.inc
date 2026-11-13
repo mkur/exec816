@@ -85,10 +85,15 @@ PROC DirectoryBarrier(LONGCARD previous)
 
 RETURN
 
-; Publication while the publisher owns UPDATE must not need a draw grant.
+; Root also consumes its own watch while it owns UPDATE. Peer consumers
+; remain blocked from drawing and still receive each metadata commit.
 PROC DirectoryPublishers()
   LONGCARD previous
+  VIEW.Directory snapshot
 
+  LET own=CONSOLEVIEW.WatchDirectory(directoryMask)
+  DirectoryCheck(own<>0)
+  DirectoryCheck(CONSOLEVIEWCORE.TakeDirectoryChange(own)=1)
   LET service=AESSTATE.Get()
   DirectoryCheck(CALYPSICALL.Invoke(ADDRESS($DIRECTORYUPDATE),
       LONGCARD(ADDRESS(@service.port)))<>0)
@@ -96,20 +101,36 @@ PROC DirectoryPublishers()
   directoryOldUnit=CONSOLE.Create(CONSOLE.ScreenWidth(),CONSOLE.ScreenHeight())
   DirectoryCheck(directoryOldUnit<>0)
   DirectoryBarrier(previous)
+  DirectoryCheck(CONSOLEVIEWCORE.TakeDirectoryChange(own)=1)
+  DirectoryCheck(CONSOLEVIEW.Directory(@snapshot)=VIEW.OK)
+  DirectoryCheck(CONSOLEVIEWCORE.TakeDirectoryChange(own)=0)
   previous=directoryCounts(0)
   DirectoryCheck(CONSOLE.Destroy(directoryOldUnit)<>0)
   DirectoryBarrier(previous)
+  DirectoryCheck(CONSOLEVIEWCORE.TakeDirectoryChange(own)=1)
+  DirectoryCheck(CONSOLEVIEW.Directory(@snapshot)=VIEW.OK)
+  DirectoryCheck(CONSOLEVIEWCORE.TakeDirectoryChange(own)=0)
   previous=directoryCounts(0)
   directoryNewUnit=CONSOLE.Create(CONSOLE.ScreenWidth(),CONSOLE.ScreenHeight())
   DirectoryCheck(directoryNewUnit<>0 AND directoryNewUnit<>directoryOldUnit)
   DirectoryBarrier(previous)
+  DirectoryCheck(CONSOLEVIEWCORE.TakeDirectoryChange(own)=1)
+  DirectoryCheck(CONSOLEVIEW.Directory(@snapshot)=VIEW.OK)
+  DirectoryCheck(CONSOLEVIEWCORE.TakeDirectoryChange(own)=0)
   previous=directoryCounts(0)
   DirectoryCheck(CONSOLE.Destroy(directoryNewUnit)<>0)
   DirectoryBarrier(previous)
+  DirectoryCheck(CONSOLEVIEWCORE.TakeDirectoryChange(own)=1)
+  DirectoryCheck(CONSOLEVIEW.Directory(@snapshot)=VIEW.OK)
+  DirectoryCheck(CONSOLEVIEWCORE.TakeDirectoryChange(own)=0)
   previous=directoryCounts(0)
   DirectoryCheck(CONSOLEVIEW.Activate(0)=VIEW.OK)
   DirectoryBarrier(previous)
+  DirectoryCheck(CONSOLEVIEWCORE.TakeDirectoryChange(own)=1)
+  DirectoryCheck(CONSOLEVIEW.Directory(@snapshot)=VIEW.OK)
+  DirectoryCheck(CONSOLEVIEWCORE.TakeDirectoryChange(own)=0)
   DirectoryCheck(CALYPSICALL.Invoke(ADDRESS($DIRECTORYUPDATE),0)<>0)
+  DirectoryCheck(CONSOLEVIEWCORE.UnwatchDirectory(own)=VIEW.OK)
 
 RETURN
 

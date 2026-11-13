@@ -8,7 +8,7 @@ from library_paths import read_source
 import build_gem_desktop as desktop
 
 
-def build(out):
+def build(out,probe_only=False):
     out.mkdir(parents=True,exist_ok=True)
     observers=out/'observers.inc'
     source=out/'root.act'
@@ -21,6 +21,7 @@ def build(out):
     text=text.replace('LONGINT exitStatus',f'INCLUDE "{observers}"\n\nLONGINT exitStatus')
     text=text.replace('  IF ShellControllerStart(0)<>0 THEN','  DirectoryStart()\n  IF ShellControllerStart(0)<>0 THEN',1)
     text=text.replace('    exitStatus=ShellControllerRun()','    DirectoryPublishers()\n    exitStatus=ShellControllerRun()',1)
+    if probe_only:text=text.replace('    DirectoryPublishers()','    DirectoryPublishers()\n    ShellControllerCloseAll()',1)
     source.write_text(text)
     original=desktop.drawing
     def drawing(*args,**kwargs):
@@ -35,5 +36,5 @@ def build(out):
 
 
 if __name__=='__main__':
-    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--output',type=Path,required=True)
-    build(a.parse_args().output.resolve())
+    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--output',type=Path,required=True);a.add_argument('--probe-only',action='store_true')
+    args=a.parse_args();build(args.output.resolve(),args.probe_only)

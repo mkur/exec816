@@ -1,0 +1,1263 @@
+{
+  "format": "exec816.terminal-idle-tp4.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "runtime_revision": "5ea4adf6",
+  "baseline_runtime": "4ff5c3e6",
+  "bundle": {
+    "path": "build/terminal-idle/demo/exec816-demo.zip",
+    "sha256": "06975e1221b3740460d29ffac4d96c67f9a0ce7ba02cfd6032b54db42a7317cc"
+  },
+  "baseline_bundle": {
+    "path": "build/terminal-wake/demo/exec816-demo.zip",
+    "sha256": "84ae2ab3e36bf831f0f99bb0ed7263f02af85506746f3721a1ab841bc22e6a01"
+  },
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+      "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+      "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 2,
+      "internal_port": 1,
+      "map": "Mouse -> ST Mouse (port 2)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "common_resident_c_elf_sha256": "d2e9ce68931a67b1f2785b8dd6266154fbe750ebaef2edd837f7b37611776abc",
+  "scenes": {
+    "idle": {
+      "cohorts": {
+        "page": {
+          "before": {
+            "cpu_mean_ms": 433.2772925333284,
+            "complete_median_ms": 808.6447442058477,
+            "complete_mean_ms": 817.0444853879238
+          },
+          "after": {
+            "cpu_mean_ms": 427.6178883220394,
+            "complete_median_ms": 670.6234608016307,
+            "complete_mean_ms": 671.5952967313665
+          }
+        },
+        "line": {
+          "before": {
+            "cpu_mean_ms": 433.53660384646287,
+            "complete_median_ms": 832.6657541314305,
+            "complete_mean_ms": 825.1752589236501
+          },
+          "after": {
+            "cpu_mean_ms": 425.95715759840647,
+            "complete_median_ms": 671.0243748405296,
+            "complete_mean_ms": 670.320660746935
+          }
+        }
+      },
+      "budget_before": {
+        "viewer_cpu_ms": 433.4069481898957,
+        "viewer_irq_ms": 94.51753752225538,
+        "ready_off_cpu_ms": 222.34876384838006,
+        "blocked_off_cpu_ms": 69.1950723802086,
+        "unknown_prefix_ms": 1.6415502150472454,
+        "elapsed_ms": 821.109872155787
+      },
+      "budget_after": {
+        "viewer_cpu_ms": 426.78752296022293,
+        "viewer_irq_ms": 92.63990934324246,
+        "ready_off_cpu_ms": 80.26024346646855,
+        "blocked_off_cpu_ms": 70.05058297468631,
+        "unknown_prefix_ms": 1.2197199945304273,
+        "elapsed_ms": 670.9579787391507
+      },
+      "peer_ready_cost": {
+        "terminal": {
+          "cpu": {
+            "before": 87.14528834374855,
+            "after": 0
+          },
+          "irq": {
+            "before": 18.76885451923443,
+            "after": 0
+          }
+        },
+        "shell controller": {
+          "cpu": {
+            "before": 47.80105204693119,
+            "after": 0
+          },
+          "irq": {
+            "before": 10.18766942635742,
+            "after": 0
+          }
+        },
+        "M_CONSOLEDRIVER_WORKER_589B3ABC": {
+          "cpu": {
+            "before": 48.0289626560696,
+            "after": 65.95184837724263
+          },
+          "irq": {
+            "before": 10.416936856038873,
+            "after": 14.308395089225929
+          }
+        }
+      },
+      "directory_metrics": {
+        "available": true,
+        "operations": {},
+        "session_exchanges": 0,
+        "directory_scans": 0,
+        "watch_calls": 0,
+        "take_calls": 0,
+        "consumed_hints": 0,
+        "publications": 0,
+        "timer_arms": 0,
+        "timer_arm_reasons": {},
+        "healthy_timer_arms": 0,
+        "timer_only_session_queries": 0,
+        "wait_decisions": {}
+      },
+      "feedback": {
+        "reply_mask": 2097152,
+        "notification_mask": 4194304,
+        "distinct_notification_mask": true,
+        "captured_query_reply_posts": 0,
+        "events": {},
+        "completed_event_calls": 0,
+        "successful_exchanges": 0,
+        "exchanges_without_wait": 0,
+        "cleared_reply_bit_in_event_wait": 0,
+        "controller_retry_yields": 0,
+        "fully_contained_feedback_chains": 0,
+        "event_calls_without_contained_prior_exchange": 0
+      },
+      "exact_replay": true,
+      "scheduler_origin_offset_cycles": 0,
+      "completion_counter_lag": [],
+      "drawing_counts": {
+        "dma_launch_to_idle_return_ms": [
+          0.626322459503312,
+          0.640560264682208,
+          0.624066965613586,
+          0.588683905218508,
+          0.556966022394235,
+          0.4223412308512093,
+          0.6394325177373449,
+          0.4578652596143951,
+          0.7082250813739905,
+          0.6411241381546395,
+          0.6748155781324229,
+          0.624066965613586,
+          0.5243318451772607,
+          0.4240328512685039,
+          0.6427452743878801,
+          0.38963656945018105,
+          0.2397167099674504,
+          0.42297558850769473,
+          0.6421814009154486,
+          0.35636803457672134,
+          0.05582347377072059,
+          0.24021009925582798,
+          0.023118812369692366
+        ],
+        "rows": 18,
+        "text_calls": 20,
+        "bar_calls": 1,
+        "borrows": 20,
+        "solid_borrows": 1,
+        "physical_grants": 21,
+        "submissions": 5,
+        "records_per_list": [
+          1,
+          64,
+          6,
+          64,
+          6
+        ],
+        "fences": 31,
+        "staging_windows": 0,
+        "staging_read_bytes": 0,
+        "staging_write_bytes": 0,
+        "hardware_busy_bounds": {
+          "lists": [
+            {
+              "start": 4552541316.875,
+              "end": 4552542425.125,
+              "polls": 16,
+              "busy_reads": 15,
+              "lower_ms": 0.5666928397936787,
+              "upper_ms": 0.6249127758222333
+            },
+            {
+              "start": 4552571051.625,
+              "end": 4552572185.125,
+              "polls": 15,
+              "busy_reads": 14,
+              "lower_ms": 0.5815650026290601,
+              "upper_ms": 0.6391505810011292
+            },
+            {
+              "start": 4552602675.875,
+              "end": 4552603780.125,
+              "polls": 16,
+              "busy_reads": 15,
+              "lower_ms": 0.5646487984561145,
+              "upper_ms": 0.6226572819325071
+            },
+            {
+              "start": 4552620060.625,
+              "end": 4552621102.125,
+              "polls": 15,
+              "busy_reads": 14,
+              "lower_ms": 0.5296181589813062,
+              "upper_ms": 0.5872742215374293
+            },
+            {
+              "start": 4552825864.875,
+              "end": 4552826850.125,
+              "polls": 14,
+              "busy_reads": 13,
+              "lower_ms": 0.4972659185005477,
+              "upper_ms": 0.5555563387131561
+            },
+            {
+              "start": 4552843850.625,
+              "end": 4552844597.125,
+              "polls": 10,
+              "busy_reads": 9,
+              "lower_ms": 0.36271161114157596,
+              "upper_ms": 0.4209315471701305
+            },
+            {
+              "start": 4552861751.625,
+              "end": 4552862883.125,
+              "polls": 15,
+              "busy_reads": 14,
+              "lower_ms": 0.5307459059261692,
+              "upper_ms": 0.6380228340562661
+            },
+            {
+              "start": 4552880512.625,
+              "end": 4552881322.125,
+              "polls": 11,
+              "busy_reads": 10,
+              "lower_ms": 0.3984470924569236,
+              "upper_ms": 0.4564555759333163
+            },
+            {
+              "start": 4552973657.625,
+              "end": 4552974911.125,
+              "polls": 17,
+              "busy_reads": 16,
+              "lower_ms": 0.5987631435382215,
+              "upper_ms": 0.7068153976929117
+            },
+            {
+              "start": 4552991658.625,
+              "end": 4552992793.125,
+              "polls": 15,
+              "busy_reads": 14,
+              "lower_ms": 0.5319441370550863,
+              "upper_ms": 0.6397144544735607
+            },
+            {
+              "start": 4553009529.875,
+              "end": 4553010724.125,
+              "polls": 16,
+              "busy_reads": 15,
+              "lower_ms": 0.5646487984561145,
+              "upper_ms": 0.673405894451344
+            },
+            {
+              "start": 4553029511.0,
+              "end": 4553030615.25,
+              "polls": 16,
+              "busy_reads": 15,
+              "lower_ms": 0.5644373459039526,
+              "upper_ms": 0.6226572819325071
+            },
+            {
+              "start": 4553110746.875,
+              "end": 4553111674.25,
+              "polls": 13,
+              "busy_reads": 12,
+              "lower_ms": 0.465125130571951,
+              "upper_ms": 0.5229221614961819
+            },
+            {
+              "start": 4553129309.625,
+              "end": 4553130059.125,
+              "polls": 10,
+              "busy_reads": 9,
+              "lower_ms": 0.3135841348559797,
+              "upper_ms": 0.4226231675874251
+            },
+            {
+              "start": 4553147124.875,
+              "end": 4553148262.125,
+              "polls": 15,
+              "busy_reads": 14,
+              "lower_ms": 0.5324375263434638,
+              "upper_ms": 0.6412651065227474
+            },
+            {
+              "start": 4553165063.625,
+              "end": 4553165752.125,
+              "polls": 9,
+              "busy_reads": 8,
+              "lower_ms": 0.280245115798466,
+              "upper_ms": 0.38822688576910225
+            },
+            {
+              "start": 4553229911.625,
+              "end": 4553230334.125,
+              "polls": 6,
+              "busy_reads": 5,
+              "lower_ms": 0.18029854280997887,
+              "upper_ms": 0.23823654210231765
+            },
+            {
+              "start": 4553270305.625,
+              "end": 4553271053.25,
+              "polls": 10,
+              "busy_reads": 9,
+              "lower_ms": 0.3628525795096838,
+              "upper_ms": 0.42156590482661593
+            },
+            {
+              "start": 4553288263.875,
+              "end": 4553289400.25,
+              "polls": 15,
+              "busy_reads": 14,
+              "lower_ms": 0.5313097793986008,
+              "upper_ms": 0.6407717172343698
+            },
+            {
+              "start": 4553361310.625,
+              "end": 4553361940.125,
+              "polls": 8,
+              "busy_reads": 7,
+              "lower_ms": 0.24577834979608926,
+              "upper_ms": 0.35495835089564254
+            },
+            {
+              "start": 4553367109.625,
+              "end": 4553367206.125,
+              "polls": 2,
+              "busy_reads": 1,
+              "lower_ms": 0.0,
+              "upper_ms": 0.054413790089641784
+            },
+            {
+              "start": 4553501382.625,
+              "end": 4553501806.125,
+              "polls": 6,
+              "busy_reads": 5,
+              "lower_ms": 0.1794527326013316,
+              "upper_ms": 0.23880041557474918
+            },
+            {
+              "start": 4553506931.625,
+              "end": 4553506970.125,
+              "polls": 1,
+              "busy_reads": 0,
+              "lower_ms": 0.0,
+              "upper_ms": 0.021709128688613563
+            }
+          ],
+          "lower_ms": 9.382572644524295,
+          "upper_ms": 11.133047355503898
+        },
+        "hardware_launches": 23
+      },
+      "terminal_stack_before": {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 830,
+        "untouched_above_floor": 226
+      },
+      "terminal_stack_after": {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 821,
+        "untouched_above_floor": 235
+      },
+      "viewer_wait_budget": {
+        "scene admission": {
+          "episodes": 38,
+          "blocked_off_cpu_ms": 105.45343180443741,
+          "ready_off_cpu_ms": 40.58281962110521
+        },
+        "UPDATE/window admission": {
+          "episodes": 8,
+          "blocked_off_cpu_ms": 385.2984088900292,
+          "ready_off_cpu_ms": 4.1861261751475585
+        },
+        "input/events": {
+          "episodes": 7,
+          "blocked_off_cpu_ms": 69.65282310302392,
+          "ready_off_cpu_ms": 3.661935298338406
+        }
+      },
+      "ready_episode_budget": {
+        "initial/unknown": {
+          "episodes": 1,
+          "off_cpu_ms": 0.5224992563918582
+        },
+        "after wait": {
+          "episodes": 53,
+          "off_cpu_ms": 48.43088109459117
+        },
+        "preemption/reschedule": {
+          "episodes": 120,
+          "off_cpu_ms": 593.1285673807655
+        }
+      }
+    },
+    "loaded": {
+      "cohorts": {
+        "page": {
+          "before": {
+            "cpu_mean_ms": 476.3390585286568,
+            "complete_median_ms": 1426.5333481820016,
+            "complete_mean_ms": 1425.782409685091
+          },
+          "after": {
+            "cpu_mean_ms": 464.96294646444284,
+            "complete_median_ms": 1064.3117430879684,
+            "complete_mean_ms": 1059.273815548529
+          }
+        },
+        "line": {
+          "before": {
+            "cpu_mean_ms": 477.9578335417316,
+            "complete_median_ms": 1566.3683306102944,
+            "complete_mean_ms": 1597.3131429038638
+          },
+          "after": {
+            "cpu_mean_ms": 465.6589777819755,
+            "complete_median_ms": 1086.6027892001314,
+            "complete_mean_ms": 1071.337183649361
+          }
+        }
+      },
+      "budget_before": {
+        "viewer_cpu_ms": 477.1484460351942,
+        "viewer_irq_ms": 151.99086983121856,
+        "ready_off_cpu_ms": 631.8577498770051,
+        "blocked_off_cpu_ms": 247.97310394020687,
+        "unknown_prefix_ms": 2.577606610852591,
+        "elapsed_ms": 1511.5477762944772
+      },
+      "budget_after": {
+        "viewer_cpu_ms": 465.31096212320915,
+        "viewer_irq_ms": 162.2363098569312,
+        "ready_off_cpu_ms": 305.520876358054,
+        "blocked_off_cpu_ms": 130.18654344151716,
+        "unknown_prefix_ms": 2.0508078192334422,
+        "elapsed_ms": 1065.305499598945
+      },
+      "peer_ready_cost": {
+        "terminal": {
+          "cpu": {
+            "before": 120.6790992544183,
+            "after": 0
+          },
+          "irq": {
+            "before": 41.76120945221102,
+            "after": 0
+          }
+        },
+        "shell controller": {
+          "cpu": {
+            "before": 63.44178323575973,
+            "after": 0
+          },
+          "irq": {
+            "before": 21.875171805198633,
+            "after": 0
+          }
+        },
+        "M_CONSOLEDRIVER_WORKER_589B3ABC": {
+          "cpu": {
+            "before": 78.55222666585844,
+            "after": 90.82240417322757
+          },
+          "irq": {
+            "before": 25.606489972215133,
+            "after": 30.345511708127813
+          }
+        }
+      },
+      "directory_metrics": {
+        "available": true,
+        "operations": {},
+        "session_exchanges": 0,
+        "directory_scans": 0,
+        "watch_calls": 0,
+        "take_calls": 0,
+        "consumed_hints": 0,
+        "publications": 0,
+        "timer_arms": 0,
+        "timer_arm_reasons": {},
+        "healthy_timer_arms": 0,
+        "timer_only_session_queries": 0,
+        "wait_decisions": {}
+      },
+      "feedback": {
+        "reply_mask": 2097152,
+        "notification_mask": 4194304,
+        "distinct_notification_mask": true,
+        "captured_query_reply_posts": 0,
+        "events": {},
+        "completed_event_calls": 0,
+        "successful_exchanges": 0,
+        "exchanges_without_wait": 0,
+        "cleared_reply_bit_in_event_wait": 0,
+        "controller_retry_yields": 0,
+        "fully_contained_feedback_chains": 0,
+        "event_calls_without_contained_prior_exchange": 0
+      },
+      "exact_replay": true,
+      "scheduler_origin_offset_cycles": 0,
+      "completion_counter_lag": [
+        {
+          "operation": "line",
+          "index": 2,
+          "before": 5,
+          "after": 6
+        },
+        {
+          "operation": "line",
+          "index": 3,
+          "before": 5,
+          "after": 6
+        }
+      ],
+      "drawing_counts": {
+        "dma_launch_to_idle_return_ms": [
+          0.6229392186687229,
+          0.6913088772010448,
+          0.6609301938737967,
+          0.5587281269955835,
+          0.37941636276235974,
+          0.6208246931471048,
+          0.4331253110114621,
+          0.721758044712347,
+          0.641617527443017,
+          0.6705160429051326,
+          0.533424304920219,
+          0.6568421111986681,
+          0.5875561582736449,
+          0.6563487219102906,
+          0.6258995543989884,
+          17.74960916519942,
+          0.27862397956522533,
+          0.6411241381546395,
+          0.6772825245743108,
+          0.3806145938912767,
+          0.05681025234747575,
+          0.24070348854420556,
+          0.10600821281712597
+        ],
+        "rows": 18,
+        "text_calls": 20,
+        "bar_calls": 1,
+        "borrows": 20,
+        "solid_borrows": 1,
+        "physical_grants": 21,
+        "submissions": 5,
+        "records_per_list": [
+          1,
+          64,
+          6,
+          64,
+          6
+        ],
+        "fences": 31,
+        "staging_windows": 0,
+        "staging_read_bytes": 0,
+        "staging_write_bytes": 0,
+        "hardware_busy_bounds": {
+          "lists": [
+            {
+              "start": 4614503056.875,
+              "end": 4614504159.125,
+              "polls": 14,
+              "busy_reads": 13,
+              "lower_ms": 0.5093891981578254,
+              "upper_ms": 0.6215295349876441
+            },
+            {
+              "start": 4614532526.625,
+              "end": 4614533750.125,
+              "polls": 16,
+              "busy_reads": 15,
+              "lower_ms": 0.5764196571931224,
+              "upper_ms": 0.6898991935199661
+            },
+            {
+              "start": 4614559687.625,
+              "end": 4614560857.25,
+              "polls": 17,
+              "busy_reads": 16,
+              "lower_ms": 0.601652995084433,
+              "upper_ms": 0.6595205101927178
+            },
+            {
+              "start": 4614577263.75,
+              "end": 4614578252.125,
+              "polls": 14,
+              "busy_reads": 13,
+              "lower_ms": 0.4988870547337883,
+              "upper_ms": 0.5573184433145046
+            },
+            {
+              "start": 4614731869.875,
+              "end": 4614732540.125,
+              "polls": 8,
+              "busy_reads": 7,
+              "lower_ms": 0.26403375346605973,
+              "upper_ms": 0.377936194897227
+            },
+            {
+              "start": 4614749729.625,
+              "end": 4614750828.125,
+              "polls": 14,
+              "busy_reads": 13,
+              "lower_ms": 0.5072041884521532,
+              "upper_ms": 0.6194150094660259
+            },
+            {
+              "start": 4614768946.625,
+              "end": 4614769712.125,
+              "polls": 10,
+              "busy_reads": 9,
+              "lower_ms": 0.37427101732642215,
+              "upper_ms": 0.4316451431463294
+            },
+            {
+              "start": 4614787632.625,
+              "end": 4614788910.125,
+              "polls": 17,
+              "busy_reads": 16,
+              "lower_ms": 0.6083489925695573,
+              "upper_ms": 0.7203483610312682
+            },
+            {
+              "start": 4614936613.875,
+              "end": 4614937749.25,
+              "polls": 11,
+              "busy_reads": 10,
+              "lower_ms": 0.5318736528710323,
+              "upper_ms": 0.6402078437619383
+            },
+            {
+              "start": 4614963230.625,
+              "end": 4614964417.25,
+              "polls": 11,
+              "busy_reads": 10,
+              "lower_ms": 0.5336357574723808,
+              "upper_ms": 0.6691063592240537
+            },
+            {
+              "start": 4614984284.625,
+              "end": 4614985228.125,
+              "polls": 13,
+              "busy_reads": 12,
+              "lower_ms": 0.47457001123517895,
+              "upper_ms": 0.5320146212391401
+            },
+            {
+              "start": 4615002631.75,
+              "end": 4615003794.125,
+              "polls": 15,
+              "busy_reads": 14,
+              "lower_ms": 0.542798701399393,
+              "upper_ms": 0.6554324275175893
+            },
+            {
+              "start": 4615111166.625,
+              "end": 4615112206.125,
+              "polls": 13,
+              "busy_reads": 12,
+              "lower_ms": 0.41931041093688987,
+              "upper_ms": 0.5861464745925662
+            },
+            {
+              "start": 4615142399.625,
+              "end": 4615143561.125,
+              "polls": 15,
+              "busy_reads": 14,
+              "lower_ms": 0.5417414386385839,
+              "upper_ms": 0.6549390382292117
+            },
+            {
+              "start": 4615182130.625,
+              "end": 4615183238.125,
+              "polls": 16,
+              "busy_reads": 15,
+              "lower_ms": 0.5657765454009774,
+              "upper_ms": 0.6244898707179096
+            },
+            {
+              "start": 4615224957.625,
+              "end": 4615256433.125,
+              "polls": 5,
+              "busy_reads": 4,
+              "lower_ms": 0.22399873692342176,
+              "upper_ms": 17.74819948151834
+            },
+            {
+              "start": 4615431084.625,
+              "end": 4615431576.125,
+              "polls": 7,
+              "busy_reads": 6,
+              "lower_ms": 0.21843048638316048,
+              "upper_ms": 0.2771438117000926
+            },
+            {
+              "start": 4615495243.625,
+              "end": 4615496378.125,
+              "polls": 15,
+              "busy_reads": 14,
+              "lower_ms": 0.5326489788956256,
+              "upper_ms": 0.6397144544735607
+            },
+            {
+              "start": 4615523874.625,
+              "end": 4615525073.25,
+              "polls": 16,
+              "busy_reads": 15,
+              "lower_ms": 0.5668338081617865,
+              "upper_ms": 0.675872840893232
+            },
+            {
+              "start": 4615642802.625,
+              "end": 4615643475.125,
+              "polls": 7,
+              "busy_reads": 6,
+              "lower_ms": 0.31999819560488824,
+              "upper_ms": 0.3792049102101979
+            },
+            {
+              "start": 4615650127.875,
+              "end": 4615650226.125,
+              "polls": 2,
+              "busy_reads": 1,
+              "lower_ms": 0.0,
+              "upper_ms": 0.05540056866639695
+            },
+            {
+              "start": 4615819747.75,
+              "end": 4615820172.125,
+              "polls": 6,
+              "busy_reads": 5,
+              "lower_ms": 0.1304662246838432,
+              "upper_ms": 0.23929380486312676
+            },
+            {
+              "start": 4615825319.625,
+              "end": 4615825505.125,
+              "polls": 2,
+              "busy_reads": 1,
+              "lower_ms": 0.0,
+              "upper_ms": 0.10459852913604717
+            }
+          ],
+          "lower_ms": 9.542289805590524,
+          "upper_ms": 29.159377427299088
+        },
+        "hardware_launches": 23
+      },
+      "terminal_stack_before": {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 901,
+        "untouched_above_floor": 155
+      },
+      "terminal_stack_after": {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 900,
+        "untouched_above_floor": 156
+      },
+      "viewer_wait_budget": {
+        "scene admission": {
+          "episodes": 31,
+          "blocked_off_cpu_ms": 191.1698119059064,
+          "ready_off_cpu_ms": 217.9841805297309
+        },
+        "UPDATE/window admission": {
+          "episodes": 13,
+          "blocked_off_cpu_ms": 767.5813634178627,
+          "ready_off_cpu_ms": 68.34780843526521
+        },
+        "input/events": {
+          "episodes": 7,
+          "blocked_off_cpu_ms": 82.74117220836817,
+          "ready_off_cpu_ms": 18.792140731541252
+        }
+      },
+      "ready_episode_budget": {
+        "initial/unknown": {
+          "episodes": 1,
+          "off_cpu_ms": 4.696995541170517
+        },
+        "after wait": {
+          "episodes": 51,
+          "off_cpu_ms": 305.12412969653747
+        },
+        "preemption/reschedule": {
+          "episodes": 255,
+          "off_cpu_ms": 2134.3458856267234
+        }
+      }
+    }
+  },
+  "quiet_terminal_behind_viewer": {
+    "status": "pass",
+    "tier": "development",
+    "qualification": false,
+    "milliseconds": 2406.7016362198488,
+    "counts": {
+      "session_queries": 0,
+      "directory_scans": 0,
+      "timer_arms": 0
+    },
+    "watch_live": true,
+    "pixels": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105",
+    "zip_sha256": "06975e1221b3740460d29ffac4d96c67f9a0ce7ba02cfd6032b54db42a7317cc",
+    "trace_sha256": "72b12e41f03bdb3f1696aea8db4f4f4f2dd5e7dfeeefe239fbe8c546e1084876",
+    "observer_sha256": "3db3699ede0b7d6f80efa8edaf12ac38a2752381474f217ee38ffcf7b52b0c52",
+    "scope": "Measure a quiet Terminal behind the viewer; separate from matched cohorts."
+  },
+  "update_owner_consumer": {
+    "status": "pass",
+    "checks": 41,
+    "peer_observers_retired": 2,
+    "scope": "The focused UPDATE owner/peer case ends through normal controller stop.",
+    "artifact": {
+      "path": "build/terminal-idle/update-consumer-final/results.json",
+      "sha256": "49cc66a3e092e22fcd72db7ff24d335d16f1e3aa54daf03683a97caeb030e13c"
+    }
+  },
+  "applications": {
+    "panel": {
+      "executable_identical": true,
+      "before_bytes": 17792,
+      "after_bytes": 17792,
+      "before_executable_bytes": 14867,
+      "after_executable_bytes": 14867,
+      "span_before": 66728,
+      "span_after": 66728
+    },
+    "terminal": {
+      "executable_identical": false,
+      "before_bytes": 22680,
+      "after_bytes": 23930,
+      "before_executable_bytes": 19618,
+      "after_executable_bytes": 20824,
+      "span_before": 66473,
+      "span_after": 66473
+    },
+    "gemarc": {
+      "executable_identical": true,
+      "before_bytes": 49778,
+      "after_bytes": 49778,
+      "before_executable_bytes": 41813,
+      "after_executable_bytes": 41813,
+      "span_before": 69647,
+      "span_after": 69647
+    },
+    "desktop": {
+      "executable_identical": true,
+      "before_bytes": 93207,
+      "after_bytes": 93207,
+      "before_executable_bytes": 84085,
+      "after_executable_bytes": 84085,
+      "span_before": 149623,
+      "span_after": 149623
+    },
+    "calc": {
+      "executable_identical": true,
+      "before_bytes": 17507,
+      "after_bytes": 17507,
+      "before_executable_bytes": 13894,
+      "after_executable_bytes": 13894,
+      "span_before": 66304,
+      "span_after": 66304
+    },
+    "dialog": {
+      "executable_identical": true,
+      "before_bytes": 18255,
+      "after_bytes": 18255,
+      "before_executable_bytes": 14632,
+      "after_executable_bytes": 14632,
+      "span_before": 68027,
+      "span_after": 68027
+    },
+    "g4bench": {
+      "executable_identical": true,
+      "before_bytes": 25550,
+      "after_bytes": 25550,
+      "before_executable_bytes": 19686,
+      "after_executable_bytes": 19686,
+      "span_before": 68457,
+      "span_after": 68457
+    },
+    "files": {
+      "executable_identical": true,
+      "before_bytes": 68615,
+      "after_bytes": 68615,
+      "before_executable_bytes": 61441,
+      "after_executable_bytes": 61441,
+      "span_before": 72260,
+      "span_after": 72260
+    },
+    "text": {
+      "executable_identical": true,
+      "before_bytes": 27270,
+      "after_bytes": 27270,
+      "before_executable_bytes": 23520,
+      "after_executable_bytes": 23520,
+      "span_before": 68305,
+      "span_after": 68305
+    },
+    "counter": {
+      "executable_identical": true,
+      "before_bytes": 14566,
+      "after_bytes": 14566,
+      "before_executable_bytes": 12019,
+      "after_executable_bytes": 12019,
+      "span_before": 66290,
+      "span_after": 66290
+    }
+  },
+  "memory": {
+    "complete_maps_equal": {
+      "bank_zero_budget": true,
+      "task_pools": true,
+      "runtime_reservations": true,
+      "image_data": true,
+      "upper_reservations": true,
+      "console_storage": true
+    },
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "each_public_task": 0
+    },
+    "fixed_upper_arena_delta": 0,
+    "vram_arena_delta": 0,
+    "watch_record_bytes": 22,
+    "watch_heap_bytes": 24,
+    "four_watch_heap_bytes": 96,
+    "list_bookkeeping_bytes": 4,
+    "terminal_record_before": 5847,
+    "terminal_record_after": 5853,
+    "rounded_terminal_growth": 8,
+    "native_routine_payload_before": 1297494,
+    "native_routine_payload_after": 1301125
+  },
+  "host": {
+    "tests": 711,
+    "skips": 4
+  },
+  "inputs": {
+    "tools/trace_viewer_waits.py": "c2ce511b828b18b2920016ff7dd92ea751c0a83397261810fccc341da24129d1",
+    "tools/check_terminal_idle.py": "3db3699ede0b7d6f80efa8edaf12ac38a2752381474f217ee38ffcf7b52b0c52",
+    "tools/reanalyze_viewer_drawing.py": "9d5d7bf0ecdcabd34b3d2ad4783fa108d1c5e5ebafdf01af58af1cad2ab55321",
+    "tools/measure_gui_baseline.py": "c6b0cc62e0b5c883a76c10282ceb665607e9769a3d964e4c42e54a9c83deb6ed",
+    "tools/text_performance_trace.py": "5c726ff4626c56170c2e5d52077904efa00811b79fb3320771f4ea261db78f17",
+    "tools/audit_gem_demo.py": "902414dca2b914e1f85cffe66f3c61f341bf4af706cf41a4dc4d5de24774cadf",
+    "tools/terminal_model.py": "af76041c28e589f374752034bbbccdde8dc133465daddd1a9775659c185c470d",
+    "examples/gem-terminal/main.c": "fa3ad15d2681d6ecba6e4d81b61596d7e88cbbf6cb33860b1b138810426acc76",
+    "examples/gem-terminal/platform.c": "0686af55610e51779fc6ca9b142732b7a393d7d4e6eecc1217078717fe2c9ff3",
+    "examples/gem-terminal/terminal.h": "5ae72643c05ea4debde07df0eff680f241b3c0285c6933f65a6228cf7d983e57",
+    "abi/c-program.json": "275f74ebfc82e12b4627d449a3ba127079360567cd4b03c711a18ec31e283918",
+    "abi/console-view.json": "c0e40014849a521cfdb2f3dcfc7c243188a387f4b27896f7c6456f7a2c3a3d71",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "tools/build_terminal_directory_probe.py": "9714fa087f42d6289b6c6deaf54e20bcf22916dbb533ca163eb9b9c6762dfe65",
+    "tools/test_terminal_directory.py": "d29a57fc2d9eec91e6cb434a0e5d8ba451b2be8dcf0b94ba61fce4e18280997d",
+    "tests/programs/directory_observers.inc": "f7332150385ae655316e422e259b383eb14735278f6dd85a36b87a4dbca7bb1b",
+    "tests/programs/directory_update.c": "835ff7d57fa401daff385468be9cf05db85ce1ca86e2ea728d648b58b659b3fe"
+  },
+  "artifacts": [
+    {
+      "path": "build/terminal-idle/viewer-idle/results.json",
+      "sha256": "351ef0860624adf2ca665bf3f067be69160277c69dac605869cb87b7829a1da0"
+    },
+    {
+      "path": "build/terminal-idle/viewer-idle-replay/results.json",
+      "sha256": "26389f98353cccd142017f85bb57e142c8050518cfcda2cef329d7525e65a5dd"
+    },
+    {
+      "path": "build/terminal-idle/viewer-idle/wait-audit.json",
+      "sha256": "32f2ab9523ef037cc9812b5789a9d4a6f33163bb7c01773e7ccd722f2ef5229c"
+    },
+    {
+      "path": "build/terminal-idle/viewer-idle/cpu-trace.log",
+      "sha256": "65ac490b68bc43134c4bec6c61bd3c1d0155d9a37226a68314f7abfd458ff589"
+    },
+    {
+      "path": "build/terminal-idle/viewer-idle/text-performance-markers.json",
+      "sha256": "2d684c9bfb210020c54fd1009c31008075f99329b72999e2540dabec22f77e73"
+    },
+    {
+      "path": "build/terminal-idle/viewer-idle/wait-observer.py",
+      "sha256": "c2ce511b828b18b2920016ff7dd92ea751c0a83397261810fccc341da24129d1"
+    },
+    {
+      "path": "build/terminal-idle/viewer-idle/drawing-audit/cpu-trace.log",
+      "sha256": "cda232e8ad0324ad3a1ec769beb0588d073ad750b8ce33a48e83ae3a536347d0"
+    },
+    {
+      "path": "build/terminal-idle/viewer-idle/drawing-audit/text-performance-breakdown.json",
+      "sha256": "6a4aeab2878f9094a0d0b772f14ac7f6ba1e77e09385da875b5611727809b2e7"
+    },
+    {
+      "path": "build/terminal-idle/viewer-idle/drawing-audit/reanalysis.json",
+      "sha256": "072e30ae9ec6760a90a477582c5cc071d1f4d4a089a297161b60fac81dd46f0a"
+    },
+    {
+      "path": "build/terminal-idle/viewer-loaded/results.json",
+      "sha256": "1d9451ba6c1289191a855020dd2295623199e2b99621d9a7a779b558938bb40c"
+    },
+    {
+      "path": "build/terminal-idle/viewer-loaded-replay/results.json",
+      "sha256": "e013a894ba2e51dd16ebf8b6d11738623e6e958e750432c8bede906a8de0cd97"
+    },
+    {
+      "path": "build/terminal-idle/viewer-loaded/completed-results.json",
+      "sha256": "b128692a381e96dcb672b9a7c05fa12734a2a09ec46c2a19cfa1ab9dd395542a"
+    },
+    {
+      "path": "build/terminal-idle/viewer-loaded/wait-audit.json",
+      "sha256": "7b30860e6af385c3289d1261c2164a4011aa373d87fa94efce1a5fe9ca64ee0d"
+    },
+    {
+      "path": "build/terminal-idle/viewer-loaded/cpu-trace.log",
+      "sha256": "7eaa96587c65d67e842b6b33d5f1a051feab5fc340abfd7b44cdfbab4169108e"
+    },
+    {
+      "path": "build/terminal-idle/viewer-loaded/text-performance-markers.json",
+      "sha256": "2d684c9bfb210020c54fd1009c31008075f99329b72999e2540dabec22f77e73"
+    },
+    {
+      "path": "build/terminal-idle/viewer-loaded/wait-observer.py",
+      "sha256": "c2ce511b828b18b2920016ff7dd92ea751c0a83397261810fccc341da24129d1"
+    },
+    {
+      "path": "build/terminal-idle/viewer-loaded/drawing-audit/cpu-trace.log",
+      "sha256": "50b21530cf7f23774f9302c6ac6f1bc508429d77b9a20858926adf4ca74ae1fe"
+    },
+    {
+      "path": "build/terminal-idle/viewer-loaded/drawing-audit/text-performance-breakdown.json",
+      "sha256": "057fe420aa6e6ebffe9e8d1914bde921966531767f57399a1a14e59198de05c2"
+    },
+    {
+      "path": "build/terminal-idle/viewer-loaded/drawing-audit/reanalysis.json",
+      "sha256": "83670cee47f599f250da96ef25bda7834dfd1487b2ed280c4c81befa856afa2c"
+    },
+    {
+      "path": "build/terminal-idle/record-tp4.py",
+      "sha256": "6334b4e69f452ccfe5329012e47d07ff04e38722a73a65feaf81f67620ce24c1"
+    },
+    {
+      "path": "build/terminal-idle/package-audit.json",
+      "sha256": "c173918fa083a2a689c0d1c5d873d5d106de7e8e69cee863c9adb9c14948bb2c"
+    },
+    {
+      "path": "build/terminal-idle/quiet-viewer/quiet-terminal.json",
+      "sha256": "78dfaa71e8e892e432096074d2cf9ed841c267095c4eead89b74c8dcb92f72c7"
+    },
+    {
+      "path": "build/terminal-idle/quiet-viewer/results.json",
+      "sha256": "aac4885b0933b97e05f724d37ccc3135063268aa19b06dfe126017b5e820d174"
+    },
+    {
+      "path": "build/terminal-idle-host-tp4.log",
+      "sha256": "6548e953c74e01ee9c04d2957f869d2b0621f30fbb520958fe5860cee7c42b73"
+    },
+    {
+      "path": "build/terminal-idle/demo/demo-manifest.json",
+      "sha256": "ce2349af38a91843cdd9d8be7a9c7e1bda4c64fbd949c8d57cbc2bf701c55e2b"
+    },
+    {
+      "path": "build/terminal-wake/completion-counter-proof.json",
+      "sha256": "125bca28fbfe9b3219e7855182f4223cb1496a2cfb459f7290b6b117c51e6483"
+    }
+  ],
+  "limits": [
+    "Four page/four line actions per matched scene do not establish tails or a worst-case latency guarantee.",
+    "Before is APP ABI37, after ABI38; import ordinals and bridge signature are unchanged. All non-Terminal executable C segments and resident C ELF are byte-identical.",
+    "New directory metrics are measured directly; frozen before captures supply CPU/latency comparisons.",
+    "CPU and IRQ are distinct costs. Inclusive source scopes must not be summed.",
+    "Completion is IRQ-observed dirty clear after physical fences/END_UPDATE; scanout is checked separately.",
+    "Late paints-counter samples retain their existing interpretation and exact replay; actual drawing counts and seven UPDATE pairs remain the oracle.",
+    "The separate quiet-viewer cohort adds a quiet interval and supplies no matched latency comparison.",
+    "The loaded wide capture exceeds the drawing-reader 256 MiB cap. Original capture/result are preserved. Drawing-only derived input retains every used drawing/scheduler site and clock endpoints; budgets reconcile with the full wait audit. Idle derived records equal its original full analysis exactly; loaded completed-results.json records the resolved reader-only failure.",
+    "TP3 records one bounded host observation timeout and its passing untraced/observed reruns; no runtime change or qualification claim is inferred.",
+    "QED, full release and hardware/hosted-system qualification remain outside these development checks."
+  ]
+}

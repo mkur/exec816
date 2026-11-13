@@ -4,6 +4,7 @@ import argparse
 from bisect import bisect_right
 from collections import Counter,defaultdict
 import json
+import re
 import hashlib
 from pathlib import Path
 from unittest.mock import patch
@@ -29,7 +30,9 @@ SHELLAPP_SHELLREADSTEP DOSCLIENT_SERVICEWAIT PROCESS_COLLECT PROCESS_COMPLETIONM
 TASKPOLICY_PROCESSOWNED TASKPOLICY_PROCESSFIND TASKPOLICY_PROCESSCHANGE
 TASKPOLICY_POSTSIGNAL TASKPOLICY_SIGNALTASK AESGATE_ENTERTASK AESGATE_RELEASE
 AESGATE_WAKECALLERS AESLOCAL_CALL AESWAIT_SIGNAL DISPLAY_ENTER DISPLAY_OWNERWAKE
-DISPLAY_RELEASE AESINBOX_WAKE PROCESS_PUBLISHSETUP TASKPOLICY_PROCESSREMOVED'''.split()
+DISPLAY_RELEASE AESINBOX_WAKE PROCESS_PUBLISHSETUP TASKPOLICY_PROCESSREMOVED
+CONSOLEVIEWCORE_WATCHDIRECTORY CONSOLEVIEWCORE_TAKEDIRECTORYCHANGE
+CONSOLEVIEWCORE_DIRECTORYCHANGED CONSOLEVIEW_DIRECTORY'''.split()
 
 
 def image_bytes(p,start,end):
@@ -78,10 +81,22 @@ def prepare(bundle,drawing=False):
     for m in [*spans.values(),*atom['spans'].values()]:pcs.update([m['entry'],*m['returns']])
     folder=bundle/'bitmap-console/apps/terminal';app=json.loads((folder/'app.json').read_text())
     local={pc:s for pc,s in sites(folder,app['image'],{n:'terminal' for n in
-        ('TerminalPlatformRefresh','TerminalPlatformWait','ExecAESWait','exchange')}).items() if s['category']=='terminal'}
+        ('TerminalPlatformRefresh','TerminalPlatformWait','ExecAESWait','exchange','ExecConsoleView')}).items() if s['category']=='terminal'}
     for pc,s in local.items():
         for bank in p['build']['memory']['usable_banks']:pcs.update(((bank<<16)|(pc&65535),(bank<<16)|(s['end']&65535)))
-    d.update(pcs=sorted(pcs),audit_spans=spans,atomic=atom,terminal_sites=local,audit_drawing=drawing,
+    # Observe the existing retry-byte branch, after its byte mask. This reads
+    # the decision from A without adding a guest counter or debugger mutation.
+    wait=app['image']['symbols']['TerminalPlatformWait']
+    raw=image_bytes({'image':app['image']},wait,wait+128)
+    offset=TERMINAL_FIELDS['retry']
+    pattern=b'\xa9'+offset.to_bytes(2,'little')+rb'\x65.\x85.\xa9\x00\x00\x65.\x85.\xa7.\x29\xff\x00'
+    matches=list(re.finditer(pattern,raw,re.S))
+    require(len(matches)==1 and raw[matches[0].end()]==0xf0,'Unknown Terminal retry decision')
+    retry_point=wait+matches[0].end()
+    for bank in p['build']['memory']['usable_banks']:pcs.add((bank<<16)|(retry_point&65535))
+    provider=json.loads((bundle/'bitmap-console/c-image.json').read_text())
+    timer_send=provider['symbols']['ExecAESTimerSend'];pcs.add(timer_send)
+    d.update(terminal_retry_point=retry_point,terminal_timer_send=timer_send,pcs=sorted(pcs),audit_spans=spans,atomic=atom,terminal_sites=local,audit_drawing=drawing,
         terminal_reference=app['abi']['link_bank']<<16,audit_observer_sha256=sha256(Path(__file__)))
     return d
 
@@ -109,6 +124,9 @@ def roster(s,label):
                 bit_offset=next(f[2] for f in port_fields if f[0]=='mp_SigBit')
                 record['reply_mask']=1<<s.number(port+bit_offset,1)
                 record['notification_mask']=s.number(at+TERMINAL_FIELDS['wake'])
+                record['directory_watch']=s.number(at+TERMINAL_FIELDS['directoryWatch'])
+                record['metadata_dirty']=s.number(at+TERMINAL_FIELDS['metadataDirty'],1)
+                record['retry']=s.number(at+TERMINAL_FIELDS['retry'],1)
                 record['terminal_paints']=s.number(at+TERMINAL_FIELDS['paints'])
                 record['terminal_cells_sha256']=hashlib.sha256(b''.join(s.far(
                     at+TERMINAL_FIELDS['sessions']+i*SESSION_SIZE+SESSION_FIELDS['cells'],1280)
@@ -274,11 +292,14 @@ def analyze(out,d,r):
     terminal_calls=[dict(s,callee=terminal_sites[s['kind']]) for s in spans if s['kind'] in terminal_sites
         and s['dp']==term['dp'] and any(a<=s['start']<s['end']<=b for a,b in windows)]
     feedback={}
-    if terminal_calls:
+    if terminal_calls or term.get('reply_mask') is not None:
         reply_masks={p['bits'] for p in posts if p['target']==term['task']
             and 'SHELLAPP_SHELLSESSIONQUERYREPLY' in p['scopes']}
-        require(len(reply_masks)==1,'Missing unique Terminal query-reply signal')
-        reply_mask=reply_masks.pop()
+        reply_mask=term.get('reply_mask')
+        if reply_mask is None:
+            require(len(reply_masks)==1,'Missing unique Terminal query-reply signal')
+            reply_mask=reply_masks.pop()
+        else:require(not reply_masks or reply_masks=={reply_mask},'Unexpected query-reply signal')
         notification_mask=term.get('notification_mask')
         if notification_mask is not None:
             require(term['reply_mask']==reply_mask,'Live port mask differs from query-reply trace')
@@ -308,6 +329,37 @@ def analyze(out,d,r):
             if reply and clear:chains+=1
         feedback['fully_contained_feedback_chains']=chains
         feedback['event_calls_without_contained_prior_exchange']=sum(bool(w['return_a']&0x8000) for w in waits_c)-chains
+    directory_metrics=dict(available=False)
+    if d.get('terminal_retry_point') is not None:
+        retry_pc=d['terminal_retry_point']+term['image_base']-d['terminal_reference']
+        entry_sites={int(pc)+term['image_base']-d['terminal_reference']:site for pc,site in d['terminal_sites'].items()}
+        arguments={(tick,int(e[4],16)):int(e[5],16) for tick,e in events if int(e[9],16)==term['dp'] and int(e[4],16) in entry_sites}
+        operations=Counter(arguments[s['start'],int(s['kind'].rsplit(':',1)[-1])+term['image_base']-d['terminal_reference']]
+            for s in terminal_calls if s['callee']=='ExecConsoleView')
+        decisions=[(tick,int(e[5],16)&255) for tick,e in events if int(e[9],16)==term['dp'] and int(e[4],16)==retry_pc]
+        decision_ticks=[tick for tick,_ in decisions]
+        sends=[tick for tick,e in events if inside(tick) and int(e[9],16)==term['dp'] and int(e[4],16)==d['terminal_timer_send']]
+        reasons=Counter()
+        for tick in sends:
+            i=bisect_right(decision_ticks,tick)-1
+            reasons['unknown' if i<0 else str(decisions[i][1])]+=1
+        takes=[s for s in terminal_calls if s['callee']=='ExecConsoleView' and
+            arguments[s['start'],int(s['kind'].rsplit(':',1)[-1])+term['image_base']-d['terminal_reference']]==12]
+        event_calls=[s for s in terminal_calls if s['callee']=='ExecAESWait']
+        exchanges=[s for s in terminal_calls if s['callee']=='exchange']
+        timer_queries=0
+        for call in exchanges:
+            prior=max((s for s in event_calls if s['end']<=call['start']),key=lambda s:s['end'],default=None)
+            if prior and prior['return_a']==0x20 and not any(s['return_a'] and prior['end']<=s['start']<s['end']<=call['start'] for s in takes):timer_queries+=1
+        directory_metrics=dict(available=True,operations={str(k):v for k,v in sorted(operations.items())},
+            session_exchanges=len(exchanges),directory_scans=operations[9],watch_calls=operations[11],
+            take_calls=operations[12],consumed_hints=sum(bool(s['return_a']) for s in takes),
+            publications=sum(inside(tick) and int(e[4],16)==d['audit_spans']['CONSOLEVIEWCORE_DIRECTORYCHANGED']['entry'] for tick,e in events),
+            timer_arms=len(sends),timer_arm_reasons=dict(reasons),healthy_timer_arms=reasons['0'],
+            timer_only_session_queries=timer_queries,
+            wait_decisions=dict(Counter(str(reason) for tick,reason in decisions if inside(tick))))
+        require(not directory_metrics['healthy_timer_arms'] and not timer_queries and not reasons['unknown'],
+            'Unexpected healthy timer or timer-only metadata query')
     ready_budget=defaultdict(lambda:dict(episodes=0,off_cpu_ms=0))
     for tick,end,cause in ready_episodes(changes,selections[worker],clock.ticks[-1]):
         value=0
@@ -324,7 +376,7 @@ def analyze(out,d,r):
             mean_ms=value/len(samples)*1000/BASE_HZ) for (dp,state,kind),value in sorted(cost.items(),key=lambda x:-x[1])],
         native_scopes=[dict(dp=dp,role=bydp[dp]['name'],scope=name,**value) for (dp,name),value in scope_cost.items()],
         wait_summary=wait_summary,waits=waits,posts=posts,signal_updates=updates,samples=samples,
-        terminal_calls=terminal_calls,feedback=feedback,viewer_wait_budget=dict(budget),ready_episode_budget=dict(ready_budget),
+        terminal_calls=terminal_calls,feedback=feedback,directory_metrics=directory_metrics,viewer_wait_budget=dict(budget),ready_episode_budget=dict(ready_budget),
         capture_observer_sha256=d['audit_observer_sha256'],analyzer_sha256=sha256(Path(__file__)),
         trace_sha256=sha256(out/'cpu-trace.log'))
     (out/'wait-audit.json').write_text(json.dumps(result,indent=2)+'\n')

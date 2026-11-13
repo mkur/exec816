@@ -54,10 +54,11 @@ bindings, with 12–24% lower matched viewer repaint medians and exact OF816 rep
 See the [implementation record](../../history/terminal-wake.md).
 
 The [idle session polling plan](terminal-idle-polling-plan.md) follows that
-baseline. TP1–TP4 add an independent retained directory watch, complete source/
-session/activation/shutdown publication, and remove healthy periodic queries
-while retaining explicit resource retries. The final slice measures the same
-idle and Counter/disk viewer workload with exact observation/replay checks.
+baseline. TP1–TP4 pass: an independent retained directory watch, complete source/
+session/activation/shutdown publication and healthy waits without periodic
+queries. Explicit resource retries remain. Matched idle/Counter-disk repaint
+medians fall 17–31%, with exact replay and unchanged drawing work. See the
+[implementation record](../../history/terminal-idle-polling.md).
 
 The [input snapshot copying plan](input-snapshot-copy-plan.md) follows the
 [paint-only route-reuse change](../../history/gui-route-reuse.md). IC1–IC2 pass

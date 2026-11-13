@@ -1,7 +1,8 @@
 # Historical records
 
 - [Terminal directory notifications and idle polling](terminal-idle-polling.md):
-  retained independent directory watches and executable slice evidence.
+  event-driven metadata refresh, zero healthy polling and 17–31% lower matched
+  repaint medians, with unchanged drawing work and bank-zero reservations.
 - [Terminal notification signal separation](terminal-wake.md): dedicated view
   notification ownership, allocation rollback and public APP signal bindings;
   12–24% lower matched viewer repaint medians with exact OF816 replay and zero

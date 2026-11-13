@@ -75,6 +75,33 @@ def run(directory,out,observe=False):
     return report
 
 
+def probe_only(directory,out):
+    """The focused UPDATE owner/peer case ends through normal controller stop."""
+    from os_boundary import emulator
+    from test_mouse_observe import BRIDGE,ROM,PIN
+    from native_program import verify_machine
+    from test_dos_stack import execute,ownership
+    from test_cooperative import data
+    p=read_build(directory/'program');out.mkdir(parents=True,exist_ok=True)
+    with emulator(BRIDGE,ROM,out,pin=PIN) as b:
+        for k,v in PIN['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
+        machine=verify_machine(b,ROM,PIN);b.mount(0,str(directory/'system.atr'))
+        runtime,_=execute(b,{**p,'output':out},timeout=180,frame_limit=12000)
+        ownership(b,p,p['output'])
+        checks=data(b,p['image'],'directoryChecks',True)[0]
+        done=data(b,p['image'],'directoryDone')[0]
+        require(checks>=40 and done==2,'Incomplete UPDATE consumer cases')
+    record=dict(status='pass',tier='development',qualification=False,checks=checks,peer_observers_retired=done,
+        runtime=runtime,machine=machine,build=p['build'],scope=probe_only.__doc__,observer_sha256=sha256(Path(__file__)))
+    (out/'results.json').write_text(json.dumps(record,indent=2)+'\n')
+    print('UPDATE consumer checks passed',checks,done,flush=True)
+    return record
+
+
 if __name__=='__main__':
-    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--build',type=Path,required=True);a.add_argument('--output',type=Path,required=True);a.add_argument('--observe',action='store_true')
-    args=a.parse_args();run(args.build.resolve(),args.output.resolve(),args.observe)
+    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--build',type=Path,required=True);a.add_argument('--output',type=Path,required=True);a.add_argument('--observe',action='store_true');a.add_argument('--probe-only',action='store_true')
+    args=a.parse_args()
+    if args.probe_only:
+        require(not args.observe,'The focused UPDATE case uses native completion checks')
+        probe_only(args.build.resolve(),args.output.resolve())
+    else:run(args.build.resolve(),args.output.resolve(),args.observe)
