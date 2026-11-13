@@ -6,7 +6,7 @@
 [Console views](../../reference/console-views.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: TP1–TP2 complete; TP3–TP4 remain. See the [implementation record](../../history/terminal-idle-polling.md).
+Status: TP1–TP3 complete; TP4 measurement/delivery remains. See the [implementation record](../../history/terminal-idle-polling.md).
 Starting source/tool baseline `50522ac3`, runtime `4ff5c3e6`, console-view version 4 and APP ABI 37.
 Commit this plan and each passing executable slice separately.
 

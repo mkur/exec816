@@ -43,6 +43,7 @@ WORD TerminalPlatformOpen(struct Terminal *app)
         return 0;
     }
     app->wakeBit=bit;app->wake=1UL<<bit;
+    app->metadataDirty=1;
     app->directoryWatch=ExecConsoleViewWatchDirectory(app->wake);
     if (!app->directoryWatch) {
         TerminalPlatformClose(app);
@@ -72,11 +73,19 @@ WORD TerminalPlatformSelect(struct Terminal *app,WORD index)
 {
     struct TerminalSession *session=&app->sessions[index];
     WORD copied;
-    if (!session->view || ExecConsoleViewBindWindow(session->view,app->window)) return 0;
+    UWORD status;
+    if (!session->view) return 0;
+    status=ExecConsoleViewBindWindow(session->view,app->window);
+    if (status==EXEC_CONSOLE_VIEW_CLOSED) {
+        app->metadataDirty=1;SetSignal(app->wake,app->wake);return 1;
+    }
+    if (status) return 0;
     app->selected=index;app->dirty=1;
     copied=copy(session);
     session->damageRows=(1UL<<session->height)-1;
-    return copied>=0;
+    if (copied<0) { app->metadataDirty=1;SetSignal(app->wake,app->wake); }
+    else if (!copied || !session->coherent) app->retry|=TERM_RETRY_COPY;
+    return 1;
 }
 
 /* Retained cells are copied only here. The GEM application owns these buffers.
@@ -122,7 +131,14 @@ WORD TerminalPlatformRefresh(struct Terminal *app)
     UWORD i,j;
     WORD selected=-1,activated=-1;
     ULONG selection=0;
-    if (!exchange(app,SESSION_QUERY,0) || ExecConsoleViewDirectory(&app->sources)) return 0;
+    /* Consume before either service read. A racing publication stays pending
+     * and posts the next wake, even when it shares a bit with cell output. */
+    if (ExecConsoleViewTakeDirectoryChange(app->directoryWatch)) app->metadataDirty=1;
+    if (app->metadataDirty) {
+        app->metadataDirty=0;
+        if (!exchange(app,SESSION_QUERY,0) || ExecConsoleViewDirectory(&app->sources)) return 0;
+    }
+    app->retry=0;
     for (i=0;i<EXEC_CONSOLE_VIEW_SLOTS;++i) {
         struct TerminalSession *session=&app->sessions[i];
         ULONG unit=app->sources.units[i],identity=0;
@@ -141,11 +157,21 @@ WORD TerminalPlatformRefresh(struct Terminal *app)
         if (!session->view && live) {
             session->view=ExecConsoleViewSubscribe(unit,app->wake);
             if (session->view) { session->unit=unit;app->dirty=1; }
+            else app->retry|=TERM_RETRY_SUBSCRIBE;
         }
         session->identity=identity;
         if (session->view && app->selected==i && ExecConsoleViewPending(session->view)) {
             UWORD width=session->width,height=session->height,mode=session->mode;
-            if (copy(session)>0) {
+            WORD copied=copy(session);
+            if (copied<0) {
+                ExecConsoleViewUnbindWindow(app->window);app->selected=-1;
+                ExecConsoleViewUnsubscribe(session->view);memset(session,0,sizeof(*session));
+                app->dirty=1;app->metadataDirty=1;
+                /* Closure invalidates our cached unit. Drain once without
+                 * depending on a timer or clearing any producer's signal. */
+                SetSignal(app->wake,app->wake);
+            } else if (!copied || !session->coherent) app->retry|=TERM_RETRY_COPY;
+            if (copied>0) {
                 if (width!=session->width || height!=session->height || mode!=session->mode) {
                     app->dirty|=1;session->damageRows=(1UL<<session->height)-1;
                 }
@@ -156,13 +182,17 @@ WORD TerminalPlatformRefresh(struct Terminal *app)
         }
         if (live && unit==app->sources.activation) activated=i;
     }
-    if (selected>=0 && (selection!=app->selection || app->selected<0))
-        if (!TerminalPlatformSelect(app,selected)) return 0;
-    app->selection=selection;
+    if (selected>=0 && (selection!=app->selection || app->selected<0)) {
+        if (app->sessions[selected].view) {
+            if (!TerminalPlatformSelect(app,selected)) return 0;
+            app->selection=selection;
+        }
+    } else app->selection=selection;
     if (app->activation!=app->sources.serial) {
-        app->activation=app->sources.serial;
-        if (activated>=0) {
+        if (activated<0) app->activation=app->sources.serial;
+        else if (app->sessions[activated].view) {
             if (!TerminalPlatformSelect(app,activated)) return 0;
+            app->activation=app->sources.serial;
             wind_set(app->window,WF_TOP,0,0,0,0);
         }
     }
@@ -171,6 +201,7 @@ WORD TerminalPlatformRefresh(struct Terminal *app)
 
 WORD TerminalPlatformAction(struct Terminal *app,UBYTE operation,ULONG identity)
 {
+    app->metadataDirty=1;
     return exchange(app,operation,identity);
 }
 
@@ -178,7 +209,8 @@ WORD TerminalPlatformWait(struct Terminal *app)
 {
     struct ExecAESWaitSpec *s=&app->wait;
     memset(s,0,sizeof(*s));
-    s->flags=MU_MESAG|MU_BUTTON|MU_TIMER;s->milliseconds=100;
+    s->flags=MU_MESAG|MU_BUTTON;
+    if (app->retry) { s->flags|=MU_TIMER;s->milliseconds=100; }
     s->signalMask=app->wake;s->buttonClicks=1;s->buttonMask=1;s->buttonState=1;
     return ExecAESWait(s);
 }

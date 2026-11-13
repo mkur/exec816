@@ -71,6 +71,10 @@ Registry LIVE/removal and geometry commits, accepted frontend activation,
 query-visible shell session changes and controller port withdrawal publish hints.
 Pure reads, unchanged controller turns, cell output and painting do not.
 Terminal shares its existing cell-notification bit with this independent watch.
+It consumes the directory flag before refreshing owned metadata snapshots.
+Healthy waits have no timer; a 100 ms retry is used only for failed cell
+subscription admission or an unsettled selected-view copy. Retry expiry alone
+does not query session or directory metadata.
 See the [integration plan](../plans/gem4xe/terminal-idle-polling-plan.md#tp2-wire-real-publishers-and-admit-terminals-watch).
 
 `ExecConsoleViewDirectory` copies the four unit slots, live bitmap and geometry,

@@ -44,6 +44,7 @@ int main(void)
             case WM_TOPPED: wind_set(app->window,WF_TOP,0,0,0,0);break;
             case WM_MOVED: wind_set(app->window,WF_CURRXYWH,message[4],message[5],message[6],message[7]);break;
             case WM_CLOSED:
+                app->metadataDirty=1;
                 if (!TerminalPlatformRefresh(app)) { done=1;break; }
                 if (app->selected>=0) {
                     struct TerminalSession *s=&app->sessions[app->selected];
@@ -59,6 +60,7 @@ int main(void)
                             ExecConsoleViewInput(s->view,input);
                         }
                     }
+                    app->metadataDirty=1;
                     if (!TerminalPlatformRefresh(app)) { done=1;break; }
                     if (app->selected>=0)
                         ExecConsoleViewBindWindow(app->sessions[app->selected].view,app->window);

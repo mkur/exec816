@@ -1,0 +1,181 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "TP3",
+  "parent": "eecab7b6",
+  "probes": {
+    "refresh-raw": {
+      "path": "build/terminal-idle/tp3-refresh-raw/results.json",
+      "sha256": "b7ff02c6b7e0589ba9c38e61f2a669d3aa9227fbbdf19dfdc16b81a046daeb47",
+      "status": "pass",
+      "checks": {
+        "TerminalRefreshChecks": 40,
+        "TerminalQueries": 8,
+        "TerminalDirectories": 8,
+        "TerminalCopies": 180,
+        "TerminalAdmissions": 7
+      }
+    },
+    "refresh-opt": {
+      "path": "build/terminal-idle/tp3-refresh-opt/results.json",
+      "sha256": "86d68823de8957878ed09983b382ebd817620b78e536e079cb270975a078787c",
+      "status": "pass",
+      "checks": {
+        "TerminalRefreshChecks": 40,
+        "TerminalQueries": 8,
+        "TerminalDirectories": 8,
+        "TerminalCopies": 180,
+        "TerminalAdmissions": 7
+      }
+    },
+    "wake-raw": {
+      "path": "build/terminal-idle/tp3-wake-raw/results.json",
+      "sha256": "8677e283a9141169170ea9b3a204592349f3479f30acf0b9c5606e0030242c42",
+      "status": "pass",
+      "checks": 40
+    },
+    "wake-opt": {
+      "path": "build/terminal-idle/tp3-wake-opt/results.json",
+      "sha256": "c2344155e217fca09c3b38c24ea3148d47bb3c36ea85c7219931024ecb2da476",
+      "status": "pass",
+      "checks": 40
+    }
+  },
+  "probe_scope": "Production Terminal platform source; controlled console/controller/AES endpoints; real Exec port, queued replies, signals and heap. TP1 and TP2 cover actual bridge, capacity and publishers.",
+  "integration": {
+    "observed": {
+      "path": "build/terminal-idle/tp3-integration-observed2/results.json",
+      "sha256": "6c77dd68f765af281b7b9e4e3721133763d2127bcfbcf9f805c2bc88cf8ffa3c",
+      "status": "pass"
+    },
+    "untraced": {
+      "path": "build/terminal-idle/tp3-integration-untraced/results.json",
+      "sha256": "c1ee028b8f8312a8f0c3a0b00659ae0b60c5168b87863c2dadf4e0e289be3783",
+      "status": "pass"
+    },
+    "quiet_interval": {
+      "milliseconds": 2406.7027639667936,
+      "counts": {
+        "SHELLAPP_SHELLSESSIONQUERYREPLY": 0,
+        "CONSOLEVIEW_DIRECTORY": 0,
+        "Terminal_timer_arms": 0
+      },
+      "trace_sha256": "b6f0d1eb1eaf8cf4392db72c4dea31591831bc039e1c86411e5f846bb102a5fd"
+    },
+    "wakes": {
+      "dp": 37120,
+      "delta": -131072,
+      "waits": 99,
+      "view_wakes": 91,
+      "timer_wakes": 0
+    },
+    "directory_observers": {
+      "quiet-start": [
+        8,
+        8
+      ],
+      "quiet-end": [
+        8,
+        8
+      ],
+      "output": [
+        8,
+        8
+      ],
+      "created": [
+        12,
+        12
+      ],
+      "selected-first": [
+        13,
+        13
+      ],
+      "selected-second": [
+        14,
+        14
+      ],
+      "fallback": [
+        20,
+        20
+      ]
+    },
+    "pixels": {
+      "terminal-front": "94c52b2f772df3f76a5fa5c1b079c364bc96aa33bb387c25243ccca2ec1fd664",
+      "terminal-exposed": "94c52b2f772df3f76a5fa5c1b079c364bc96aa33bb387c25243ccca2ec1fd664",
+      "terminal-edge": "750832386b1523bc68585e15835642397e12c7f006eaab2df5f03e81b5372a45"
+    },
+    "guards": "intact",
+    "live_tasks_at_exit": 0,
+    "provider_reuse": {
+      "provider_parent": "eecab7b6",
+      "original": "/Users/michalkurcewicz/action/exec816-public/build/terminal-idle/tp2-integration-build",
+      "xex_sha256": "16ff44d3c2b6fd35f49cbff28321ad253c493be362678f6da65243090039edee",
+      "reason": "TP3 changes only Terminal APP; APP ABI, native provider and producer sources are unchanged."
+    },
+    "initial_observation_timeout": {
+      "artifact": "build/terminal-idle/tp3-integration/results.json",
+      "status": "fail",
+      "scope": "A 30-second host frame-wait timed out after NEWSHELL. Untraced passed; rerun with IRQ/NMI markers and a bounded 60-second host wait passed without runtime changes. No cause or qualification claim is inferred."
+    }
+  },
+  "memory": {
+    "complete_eight_task_maps_equal": {
+      "refresh-raw": {
+        "bank_zero_budget": true,
+        "task_pools": true,
+        "runtime_reservations": true
+      },
+      "refresh-opt": {
+        "bank_zero_budget": true,
+        "task_pools": true,
+        "runtime_reservations": true
+      },
+      "wake-raw": {
+        "bank_zero_budget": true,
+        "task_pools": true,
+        "runtime_reservations": true
+      },
+      "wake-opt": {
+        "bank_zero_budget": true,
+        "task_pools": true,
+        "runtime_reservations": true
+      }
+    },
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": 0
+    },
+    "fixed_upper_arena_delta": 0,
+    "vram_arena_delta": 0,
+    "terminal_bytes": 5853,
+    "fields": {
+      "directoryWatch": 5847,
+      "metadataDirty": 5851,
+      "retry": 5852
+    },
+    "private_record_growth_from_TP2": 2,
+    "rounded_terminal_growth_from_baseline": 8,
+    "watch_heap_bytes": 24
+  },
+  "host": {
+    "tests": 711,
+    "skips": 4,
+    "status": "pass"
+  },
+  "inputs": {
+    "examples/gem-terminal/main.c": "fa3ad15d2681d6ecba6e4d81b61596d7e88cbbf6cb33860b1b138810426acc76",
+    "examples/gem-terminal/platform.c": "0686af55610e51779fc6ca9b142732b7a393d7d4e6eecc1217078717fe2c9ff3",
+    "examples/gem-terminal/terminal.h": "5ae72643c05ea4debde07df0eff680f241b3c0285c6933f65a6228cf7d983e57",
+    "tests/programs/gem_terminal_layout.c": "4a5db3f35b81038f24a2f6e3cd45dfc2dfb3c9513c9b92fa4824b428e8af949e",
+    "tests/programs/gem_terminal_wake.c": "46a19bcb70a621e9dbce84859d9888d435bfcf8a449a236e078bc23ca7045d05",
+    "tests/programs/gem_terminal_refresh.c": "a5056c098ddb26958e498b7475d0f1f24fa785207f1ba2dc87a43927cdcdbbe8",
+    "tools/terminal_model.py": "af76041c28e589f374752034bbbccdde8dc133465daddd1a9775659c185c470d",
+    "tools/test_gem_terminal.py": "bc8db895ad3d1169c9aa8ca696ea1196ac7f3111ce86d62746376230ae97483a",
+    "tools/test_terminal_refresh.py": "7f359d8270d1f12f39fa8a06969be8cdd821b1e5d7c77d8e4f3a711b44d813c5",
+    "tools/test_terminal_directory.py": "25d4cd09474aed42699deefbefe94a74a93df83a7a7bd1644abdac52a1ec2b1b"
+  }
+}

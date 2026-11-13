@@ -10,6 +10,8 @@
 #define TERM_HEIGHT 20
 #define TERM_CELLS (TERM_WIDTH*TERM_HEIGHT)
 #define TERM_CONTROLS 16
+#define TERM_RETRY_SUBSCRIBE 1
+#define TERM_RETRY_COPY 2
 struct TerminalSession {
     ULONG identity,unit,view,revision,route,damageRows;
     UWORD width,height,column,row,mode,coherent;
@@ -30,6 +32,7 @@ struct Terminal {
     struct ExecConsoleViewInput inputPacket;
     BYTE wakeBit;
     ULONG directoryWatch;
+    UBYTE metadataDirty,retry;
 };
 WORD TerminalPlatformOpen(struct Terminal *);
 void TerminalPlatformClose(struct Terminal *);

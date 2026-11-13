@@ -82,3 +82,47 @@ withdrawal before root finishes. Three exact pixel checkpoints, keyboard editing
 cancelled/confirmed close, ownership, guards and EXIT pass. The focus test now
 uses an actual peer layer's bounds, covering both legacy panel/counter and Files
 desktops. The host suite passes 711 tests with four existing skips.
+
+## TP3 Event-driven refresh and explicit retries
+
+Terminal consumes directory hints before querying the two metadata services.
+Initial/forced refreshes and session actions also invalidate those snapshots.
+Cell wakes, redraws and retries use the owned scalar copies. Healthy waits request
+messages, buttons and the existing producer signal, without MU_TIMER. Only failed
+cell admission or an incomplete selected copy arms a 100 ms retry. An inactive
+unacknowledged view does not arm it; successful recovery or closure clears the
+reason. A closed selection drains one forced refresh instead of depending on a
+timer. Modal close retains its explicit before/after refresh boundaries.
+
+[TP3 evidence](../development/terminal-idle-tp3.json) records 40 refresh-decision
+checks and 40 ownership/wait checks in each raw/optimized build. The decision
+probe uses the actual platform code with controlled endpoints and real Exec
+resources/queued replies. It covers coalesced cell/directory hints, stale bits,
+a hint during refresh, bounded capacity retry and release, BUSY and mixed
+revisions, inactive pending, source closure/epoch replacement and port withdrawal.
+Each retry attempts bounded work without another metadata query; recovery turns
+the timer off. Actual bridge capacity and asynchronous publishers are covered by
+TP1/TP2 and the real GEM scenario, rather than claimed from these endpoint stubs.
+
+Both untraced and observed keyboard/session/modal-close runs pass. A 2,406.703 ms
+quiet interval contains **zero session queries, zero directory reads and zero
+Terminal timer arms**. Of 99 completed observed waits, 91 include MU_EXEC from
+real view/directory notifications; none includes MU_TIMER. All three pixel
+checkpoints, two observers, closing/fallback, watcher withdrawal, ownership,
+stack/domain guards and EXIT pass. The first instrumented attempt hit a
+30-second host frame-wait limit after NEWSHELL; the retained failed capture is
+not counted as passing. A rerun with IRQ/NMI progress markers and a bounded
+60-second host wait passes without a runtime change. No cause is inferred.
+
+TP3 changes only the loaded Terminal. The integration fixture reuses an
+identical ABI-38 native provider and rebuilds Terminal plus writable SYS; its
+original build remains intact. The complete demo will be rebuilt in TP4.
+
+The private Terminal record grows two bytes to 5,853, with metadataDirty/retry at
+5,851/5,852. Across TP1–TP3 its rounded allocation grows eight bytes; its watch
+uses 24 heap bytes. Complete eight-Task bank-zero maps, pools and runtime
+reservations match the frozen probe: **0 fixed, 0 root, 0 kernel, 0 idle and
+0 per public Task reserved bytes added**, including guards, alignment and unused
+capacity. Fixed upper/VRAM arenas, Task and signal reservations are unchanged.
+The host suite passes 711 tests with four existing skips. These are development
+checks, not hosted-system qualification.

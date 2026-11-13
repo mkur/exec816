@@ -78,8 +78,12 @@ LONG EXEC_CALL TerminalWakeProbe(ULONG unused)
     FreeMem(message,sizeof(*message));
     REQUIRE((SetSignal(0,0)&(reply|wake))==reply);
     REQUIRE(TerminalPlatformWait(&app)==MU_TIMER);
-    REQUIRE(app.wait.flags==(MU_MESAG|MU_BUTTON|MU_TIMER));
-    REQUIRE(app.wait.milliseconds==100 && app.wait.signalMask==wake);
+    REQUIRE(app.wait.flags==(MU_MESAG|MU_BUTTON));
+    REQUIRE(app.wait.milliseconds==0 && app.wait.signalMask==wake);
+    app.retry=TERM_RETRY_SUBSCRIBE;
+    REQUIRE(TerminalPlatformWait(&app)==MU_TIMER);
+    REQUIRE(app.wait.flags==(MU_MESAG|MU_BUTTON|MU_TIMER) && app.wait.milliseconds==100);
+    app.retry=0;
     REQUIRE(app.wait.buttonClicks==1 && app.wait.buttonMask==1 && app.wait.buttonState==1);
     REQUIRE((SetSignal(0,0)&(reply|wake))==reply);
     Signal(self,wake);
