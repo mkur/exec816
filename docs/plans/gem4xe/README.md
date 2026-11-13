@@ -53,6 +53,12 @@ separate view/reply signals, allocation/retirement checks and common APP signal
 bindings, with 12–24% lower matched viewer repaint medians and exact OF816 replay.
 See the [implementation record](../../history/terminal-wake.md).
 
+The [idle session polling plan](terminal-idle-polling-plan.md) follows that
+baseline. TP1–TP4 add an independent retained directory watch, complete source/
+session/activation/shutdown publication, and remove healthy periodic queries
+while retaining explicit resource retries. The final slice measures the same
+idle and Counter/disk viewer workload with exact observation/replay checks.
+
 The [input snapshot copying plan](input-snapshot-copy-plan.md) follows the
 [paint-only route-reuse change](../../history/gui-route-reuse.md). IC1–IC2 pass
 838 focused lookup/lifetime checks. Empty-slot copies are skipped with unchanged

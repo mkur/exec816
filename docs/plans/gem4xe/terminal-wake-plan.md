@@ -4,6 +4,9 @@
 [Signals](../../reference/signals.md) · [Ports](../../reference/ports.md) ·
 [Testing policy](../../contributing/testing.md)
 
+The separate [idle session polling plan](terminal-idle-polling-plan.md) follows
+this completed signal split; it addresses the retained 100 ms directory timer.
+
 Status: TW1, TW1b and TW2 complete at the development tier.
 Baseline runtime `067b2eff`; audit/tool baseline `f9126683`.
 Commit this plan and each passing executable slice separately.

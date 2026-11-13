@@ -1,5 +1,10 @@
 # Implementation plans
 
+- [Remove Terminal idle session polling](gem4xe/terminal-idle-polling-plan.md):
+  proposed TP1–TP4 slices for retained directory watches, complete metadata and
+  shutdown notifications, event-driven refresh with bounded retries, and matched
+  viewer measurements on an audited OF816 package.
+
 - [Terminal notification signal](gem4xe/terminal-wake-plan.md): separate view
   notifications from RPC replies and expose public APP signal allocation.
   TW1/TW1b/TW2 pass with verified lifetime, exact OF816 replay and 12–24% lower
