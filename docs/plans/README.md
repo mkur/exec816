@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [Terminal notification signal](gem4xe/terminal-wake-plan.md): separate view
+  notifications from RPC replies, verify signal lifetime and measure the
+  resulting viewer latency on matched OF816 packages.
+
 - [Kernel identity and ROM diagnostics](kernel-identity-rom-diagnostics-plan.md):
   KD0–KD3 implemented: early version/source identity, captured ROM CRC-32/profile,
   assumed-XLOS continuation, explicit installation failures and matching demo

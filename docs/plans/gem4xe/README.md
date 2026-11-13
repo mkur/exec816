@@ -47,6 +47,11 @@ Further work prioritizes reducing or sharing coordination at natural operation
 boundaries; the earlier smaller-strip recommendation is withdrawn. The completed
 GF14 decision remains unchanged.
 
+The [Terminal notification signal plan](terminal-wake-plan.md) follows the
+[viewer wait audit](../../history/viewer-wait-audit.md): separate view wakes
+from synchronous replies, check allocation/retirement, then measure the same
+idle and Counter/disk viewer workload with an audited OF816 package.
+
 The [input snapshot copying plan](input-snapshot-copy-plan.md) follows the
 [paint-only route-reuse change](../../history/gui-route-reuse.md). IC1–IC2 pass
 838 focused lookup/lifetime checks. Empty-slot copies are skipped with unchanged
