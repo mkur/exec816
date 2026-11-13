@@ -65,7 +65,7 @@ def atomic_markers(p):
     return dict(points=result,spans=spans)
 
 
-def prepare(bundle):
+def prepare(bundle,drawing=False):
     p=read_build(bundle);d=viewer_prepare(bundle)
     spans=native_markers(p,[(n,n) for n in NATIVE])
     require(set(spans)==set(NATIVE),'Missing audit routine')
@@ -73,7 +73,7 @@ def prepare(bundle):
     spans['controller_retry_yield']=dict(entry=retry,returns=[retry+4])
     atom=atomic_markers(p)
     # Sparse companion: scheduler, waits and native supervisory/admission scopes.
-    pcs=set(d['points'][k] for k in ('native_irq','native_nmi','interrupt_schedule','selected'))
+    pcs=set(d['pcs']) if drawing else set(d['points'][k] for k in ('native_irq','native_nmi','interrupt_schedule','selected'))
     pcs.update(d['scheduler']['points'].values());pcs.update(atom['points'].values())
     for m in [*spans.values(),*atom['spans'].values()]:pcs.update([m['entry'],*m['returns']])
     folder=bundle/'bitmap-console/apps/terminal';app=json.loads((folder/'app.json').read_text())
@@ -81,7 +81,7 @@ def prepare(bundle):
         ('TerminalPlatformRefresh','TerminalPlatformWait','ExecAESWait','exchange')}).items() if s['category']=='terminal'}
     for pc,s in local.items():
         for bank in p['build']['memory']['usable_banks']:pcs.update(((bank<<16)|(pc&65535),(bank<<16)|(s['end']&65535)))
-    d.update(pcs=sorted(pcs),audit_spans=spans,atomic=atom,terminal_sites=local,
+    d.update(pcs=sorted(pcs),audit_spans=spans,atomic=atom,terminal_sites=local,audit_drawing=drawing,
         terminal_reference=app['abi']['link_bank']<<16,audit_observer_sha256=sha256(Path(__file__)))
     return d
 
@@ -104,6 +104,11 @@ def roster(s,label):
             record.update(name=app['name'],identity=app['identity'],image_base=app['base'])
             if app['name']=='terminal':
                 at=s.number(app['symbols']['GEMTerminal'])
+                port=s.number(at+TERMINAL_FIELDS['replies'])
+                port_fields=json.loads((ROOT/'abi/ports.json').read_text())['records']['MsgPort']['fields']
+                bit_offset=next(f[2] for f in port_fields if f[0]=='mp_SigBit')
+                record['reply_mask']=1<<s.number(port+bit_offset,1)
+                record['notification_mask']=s.number(at+TERMINAL_FIELDS['wake'])
                 record['terminal_paints']=s.number(at+TERMINAL_FIELDS['paints'])
                 record['terminal_cells_sha256']=hashlib.sha256(b''.join(s.far(
                     at+TERMINAL_FIELDS['sessions']+i*SESSION_SIZE+SESSION_FIELDS['cells'],1280)
@@ -274,12 +279,19 @@ def analyze(out,d,r):
             and 'SHELLAPP_SHELLSESSIONQUERYREPLY' in p['scopes']}
         require(len(reply_masks)==1,'Missing unique Terminal query-reply signal')
         reply_mask=reply_masks.pop()
+        notification_mask=term.get('notification_mask')
+        if notification_mask is not None:
+            require(term['reply_mask']==reply_mask,'Live port mask differs from query-reply trace')
         waits_c=[s for s in terminal_calls if s['callee']=='ExecAESWait']
         exchanges=[s for s in terminal_calls if s['callee']=='exchange']
         clears=[u for u in updates if u['target']==term['task'] and u['source_dp']==term['dp']
             and u['bits']==0 and u['result']&reply_mask and not(u.get('new_received',reply_mask)&reply_mask)
             and any(s.startswith('terminal:ExecAESWait:') for s in u['scopes'])]
-        feedback=dict(reply_mask=reply_mask,events=dict(Counter(hex(s['return_a']) for s in waits_c)),
+        feedback=dict(reply_mask=reply_mask,notification_mask=notification_mask,
+            distinct_notification_mask=None if notification_mask is None else not bool(notification_mask&reply_mask),
+            captured_query_reply_posts=sum(p['target']==term['task'] and
+                'SHELLAPP_SHELLSESSIONQUERYREPLY' in p['scopes'] for p in posts),
+            events=dict(Counter(hex(s['return_a']) for s in waits_c)),
             completed_event_calls=len(waits_c),successful_exchanges=sum(s['return_a']!=0 for s in exchanges),
             exchanges_without_wait=sum(not any(w['target']==term['task'] and s['start']<=w['start']<w['end']<=s['end']
                 for w in waits) for s in exchanges),cleared_reply_bit_in_event_wait=len(clears),
@@ -317,11 +329,13 @@ def analyze(out,d,r):
         trace_sha256=sha256(out/'cpu-trace.log'))
     (out/'wait-audit.json').write_text(json.dumps(result,indent=2)+'\n')
     print('Audit waits:',json.dumps(wait_summary),flush=True)
-    return dict(audit='wait-audit.json',viewer_dp=worker)
+    drawing=viewer_analyze(out,d,r) if d.get('audit_drawing') else {}
+    return {**drawing,'audit':'wait-audit.json','viewer_dp':worker}
 
 
 viewer_prepare=viewer.prepare
 viewer_pixels=viewer.pixels
+viewer_analyze=viewer.analyze
 
 def pixels(s,app,label):
     result=viewer_pixels(s,app,label);roster(s,label)
@@ -336,8 +350,8 @@ def pixels(s,app,label):
     return result
 
 
-def run(bundle,out,count,load,observe):
-    with patch.object(viewer,'prepare',prepare),patch.object(viewer,'pixels',pixels),patch.object(viewer,'analyze',analyze):
+def run(bundle,out,count,load,observe,drawing=False):
+    with patch.object(viewer,'prepare',lambda b:prepare(b,drawing)),patch.object(viewer,'pixels',pixels),patch.object(viewer,'analyze',analyze):
         return viewer.run(bundle,out,count,load,observe)
 
 
@@ -348,10 +362,11 @@ if __name__=='__main__':
     parser.add_argument('--count',type=int,default=4)
     parser.add_argument('--load',type=Path)
     parser.add_argument('--observe',action='store_true')
+    parser.add_argument('--drawing',action='store_true',help='Also retain the existing full viewer drawing breakdown')
     parser.add_argument('--analyze-only',action='store_true')
     args=parser.parse_args()
     if args.analyze_only:
         out=args.output.resolve();r=json.loads((out/'results.json').read_text());d=json.loads((out/'text-performance-markers.json').read_text())
         analyze(out,d,r)
     else:
-        run(args.bundle.resolve(),args.output.resolve(),args.count,args.load.resolve() if args.load else None,args.observe)
+        run(args.bundle.resolve(),args.output.resolve(),args.count,args.load.resolve() if args.load else None,args.observe,args.drawing)

@@ -1,8 +1,9 @@
 # Implementation plans
 
 - [Terminal notification signal](gem4xe/terminal-wake-plan.md): separate view
-  notifications from RPC replies, verify signal lifetime and measure the
-  resulting viewer latency on matched OF816 packages.
+  notifications from RPC replies and expose public APP signal allocation.
+  TW1/TW1b/TW2 pass with verified lifetime, exact OF816 replay and 12–24% lower
+  viewer repaint medians; [measured results](../history/terminal-wake.md).
 
 - [Kernel identity and ROM diagnostics](kernel-identity-rom-diagnostics-plan.md):
   KD0–KD3 implemented: early version/source identity, captured ROM CRC-32/profile,

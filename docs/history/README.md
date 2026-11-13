@@ -1,8 +1,9 @@
 # Historical records
 
 - [Terminal notification signal separation](terminal-wake.md): dedicated view
-  notification ownership, allocation rollback and emitted signal/port checks;
-  matched packaged viewer measurements follow in TW2.
+  notification ownership, allocation rollback and public APP signal bindings;
+  12–24% lower matched viewer repaint medians with exact OF816 replay and zero
+  added bank-zero reservations.
 
 - [Viewer wait and wake audit](viewer-wait-audit.md): confirmed Terminal
   query-reply/view-wake feedback, peer CPU attribution and scene/UPDATE waits

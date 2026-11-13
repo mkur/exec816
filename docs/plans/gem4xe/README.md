@@ -48,9 +48,10 @@ boundaries; the earlier smaller-strip recommendation is withdrawn. The completed
 GF14 decision remains unchanged.
 
 The [Terminal notification signal plan](terminal-wake-plan.md) follows the
-[viewer wait audit](../../history/viewer-wait-audit.md): separate view wakes
-from synchronous replies, check allocation/retirement, then measure the same
-idle and Counter/disk viewer workload with an audited OF816 package.
+[viewer wait audit](../../history/viewer-wait-audit.md). TW1/TW1b/TW2 pass:
+separate view/reply signals, allocation/retirement checks and common APP signal
+bindings, with 12–24% lower matched viewer repaint medians and exact OF816 replay.
+See the [implementation record](../../history/terminal-wake.md).
 
 The [input snapshot copying plan](input-snapshot-copy-plan.md) follows the
 [paint-only route-reuse change](../../history/gui-route-reuse.md). IC1–IC2 pass

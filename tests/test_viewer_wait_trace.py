@@ -1,9 +1,13 @@
 import sys
+import json
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from trace_viewer_waits import atomic_events,ready_episodes
+from trace_viewer_waits import atomic_events,ready_episodes,roster
+from terminal_model import FIELDS
 
 
 def event(pc,a=0,x=0,sp=0x4500,dp=0x800):
@@ -77,6 +81,32 @@ class AtomicWaitTraceTests(unittest.TestCase):
     def test_initial_ready_episode_is_explicit_and_bounded(self):
         self.assertEqual(list(ready_episodes([(10,'ready')],[],50)),
             [(10,50,'initial/unknown')])
+
+    def test_terminal_roster_keeps_process_identity_and_independent_masks(self):
+        root=Path(__file__).resolve().parents[1]
+        abi=json.loads((root/'abi/process.json').read_text())
+        fields={f[0]:f[2] for f in abi['record']}
+        table=0x21000;task=table+fields['task'];app=0x310100;port=0x330000
+        raw=bytearray(abi['record_bytes']+4)
+        raw[fields['state']]=1
+        raw[fields['identity']:fields['identity']+4]=(4).to_bytes(4,'little')
+        storage=dict(BASE=0x20000,SIZE=256,TCB_ITEM=0,TCB_ENTRY=4,
+            TASK_TC_STATE=0,TASK_TC_SIGRECVD=4,TASK_TC_SIGWAIT=8,TASK_TC_TDNESTCNT=12)
+        p=dict(build=dict(task_storage=storage,memory=dict(task_pools=[{'dp':0xd00},{'dp':0x1200},{'dp':0x1400}])),
+            image=dict(data=[dict(name='M_PROCESSSTATE_TABLE',address=table,size=len(raw))],routines=[]))
+        values={0x20100:task,task:1,0x310000:app,app+FIELDS['replies']:port,
+            port+12:21,app+FIELDS['wake']:1<<22,app+FIELDS['paints']:26}
+        session=SimpleNamespace(p=p,directory=root,report={'inputs':{}},
+            b=SimpleNamespace(eval_expr=lambda expression:100),
+            number=lambda address,size=4:values.get(address,0),at=lambda name:0,
+            far=lambda address,size:bytes(raw) if address==table else b' '*size)
+        instance=dict(task=task,name='terminal',identity=4,base=0x300000,symbols={'GEMTerminal':0x310000})
+        with patch('trace_viewer_waits.instances',return_value=[instance]):
+            row=roster(session,'initial')['tasks'][0]
+        self.assertEqual((row['name'],row['process_identity']),('terminal',4))
+        self.assertEqual(row['reply_mask'],1<<21)
+        self.assertEqual(row['notification_mask'],1<<22)
+        self.assertEqual(row['terminal_paints'],26)
 
 
 if __name__=='__main__':unittest.main()

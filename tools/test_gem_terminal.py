@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Focused real-shell, loaded GEM terminal and physical keyboard checks."""
-import argparse,hashlib,json,shutil
+import argparse,hashlib,json,os,shutil
 from pathlib import Path
+from unittest.mock import patch
 import adapter_state as adapter
 from native_program import ROOT,read_build,require,verify_machine,sha256
 from os_boundary import emulator,run_to
@@ -19,7 +20,7 @@ from terminal_model import FIELDS as TF,SESSION_FIELDS as SF,SESSION_SIZE
 from gem_render_oracle import font_bytes,DESKTOP_PALETTE
 
 
-def run(directory,out):
+def _run(directory,out,observer=None):
     p=read_build(directory/'program');c=constants();out.mkdir(parents=True,exist_ok=True)
     original=p['output'];p={**p,'output':out}
     report=dict(status='running',tier='development',qualification=False,build=p['build'],commands=[])
@@ -146,6 +147,7 @@ def run(directory,out):
             owner=aes_layout()['Request']['fields']['owner']
             contexts=[number(provider['contexts']+i*4) for i in range(4)]
             context=next(c for c in contexts if c and number(c+owner,3)==terminal['task'])
+            if observer:observer(b,p,terminal,report)
             report['live_tasks']=number(p['build']['task_storage']['LIVE'],1)
             report['aes_clients']=sum(bool(c) for c in contexts)
             report['aes_windows']=len(scene_windows())
@@ -199,6 +201,42 @@ def run(directory,out):
         finally:(out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
     return report
 
+
+def run(directory,out,observe_wakes=False):
+    if not observe_wakes:return _run(directory,out)
+    from text_performance_trace import sites
+    from sio_transaction_trace import read_events
+    from g4bench_trace import native_calls
+    from measure_gui_baseline import save_cpu_trace
+    p=read_build(directory/'program');folder=directory/'apps/terminal'
+    app=json.loads((folder/'app.json').read_text())
+    local={pc:s for pc,s in sites(folder,app['image'],{'ExecAESWait':'wake'}).items() if s['category']=='wake'}
+    require(local,'Missing Terminal wait call sites')
+    pcs={bank*65536+(pc&65535) for pc,s in local.items() for pc in (pc,s['end'])
+         for bank in p['build']['memory']['usable_banks']}
+    def begin(b,p,terminal,report):
+        t=p['build']['task_storage']
+        number=lambda at,size=4:int.from_bytes(b.memdump(at,size),'little')
+        slot=next(i for i,pool in enumerate(p['build']['memory']['task_pools'])
+            if number(t['BASE']+i*t['SIZE']+t['TCB_ITEM'],3)==terminal['task'])
+        at=number(terminal['symbols']['GEMTerminal']);port=number(at+TF['replies'])
+        notification=number(at+TF['wake']);reply=1<<number(port+12,1)
+        require(notification and not(notification&reply),'Terminal wake aliases replies')
+        report['wake_observer']=dict(dp=p['build']['memory']['task_pools'][slot]['dp'],
+            delta=terminal['base']-(app['abi']['link_bank']<<16),notification_mask=notification,reply_mask=reply)
+        b.profile_start()
+    with patch.dict(os.environ,EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in sorted(pcs))):
+        report=_run(directory,out,begin)
+    save_cpu_trace(out)
+    observed=report['wake_observer'];delta=observed['delta']
+    marks={str(pc):dict(entry=pc+delta,returns=[s['end']+delta]) for pc,s in local.items()}
+    calls=[s for s in native_calls(read_events(out/'cpu-trace.log',kinds={'cpu'}),marks) if s['dp']==observed['dp']]
+    observed.update(completed_calls=len(calls),view_wakes=sum(bool(s['return_a']&0x8000) for s in calls),
+        timer_wakes=sum(bool(s['return_a']&0x20) for s in calls),trace_sha256=sha256(out/'cpu-trace.log'))
+    require(observed['view_wakes']>0 and observed['timer_wakes']>0,'Missing real view/timer wakes')
+    (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
+    return report
+
 def missing_terminal(directory,out):
     from make_data_disk import make
     out.mkdir(parents=True,exist_ok=True)
@@ -224,6 +262,10 @@ def missing_terminal(directory,out):
 
 if __name__=='__main__':
     a=argparse.ArgumentParser(description=__doc__);a.add_argument('--build',type=Path,required=True);a.add_argument('--output',type=Path,required=True)
-    a.add_argument('--scenario',choices=('normal','missing-terminal'),default='normal');args=a.parse_args()
-    (run if args.scenario=='normal' else missing_terminal)(args.build.resolve(),args.output.resolve())
+    a.add_argument('--scenario',choices=('normal','missing-terminal'),default='normal')
+    a.add_argument('--observe-wakes',action='store_true');args=a.parse_args()
+    if args.scenario=='normal':run(args.build.resolve(),args.output.resolve(),args.observe_wakes)
+    else:
+        require(not args.observe_wakes,'Wake observation requires the normal scenario')
+        missing_terminal(args.build.resolve(),args.output.resolve())
     print('GEM terminal development checks passed',args.scenario,flush=True)

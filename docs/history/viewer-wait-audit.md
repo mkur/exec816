@@ -4,6 +4,10 @@
 [Input-copy measurements](input-snapshot-copy.md) ·
 [Drawing baseline](gui-drawing-baseline.md) · [Exec signals](../reference/signals.md)
 
+The follow-up [Terminal signal separation](terminal-wake.md) removes the loop
+below and records the matched viewer latency improvement. This audit retains
+the unchanged-runtime measurements and original diagnosis.
+
 ## Finding
 
 The packaged Terminal creates a feedback loop between its synchronous session

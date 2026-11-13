@@ -55,8 +55,10 @@ def audit(bundle):
         require(hashlib.sha256(disk.files[name]).hexdigest()==app['sha256'],
                 'SYS APP does not match its provider: '+name)
     for name in ('C/TERMINAL.APP','C/MD5.COM','C/ARC.COM','C/ARCADD.OVL',
-                 'C/ARCEXT.OVL','C/ARCLST.OVL','C/EDX.COM','WORK/SAMPLE.TXT'):
+                 'C/ARCEXT.OVL','C/ARCLST.OVL','C/EDX.COM','WORK/EDIT.TXT'):
         require(name in disk.files,'Missing distribution file '+name)
+    if manifest.get('qed'):
+        require('WORK/SAMPLE.TXT' in disk.files,'Missing QED sample document')
     require(b'GEM desktop and terminal' in members['README.txt'],
             'Missing terminal instructions')
     return dict(status='pass',tier='development',qualification=False,

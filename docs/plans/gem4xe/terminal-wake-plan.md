@@ -4,7 +4,7 @@
 [Signals](../../reference/signals.md) · [Ports](../../reference/ports.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: TW1 and TW1b complete at the development tier; TW2 pending.
+Status: TW1, TW1b and TW2 complete at the development tier.
 Baseline runtime `067b2eff`; audit/tool baseline `f9126683`.
 Commit this plan and each passing executable slice separately.
 
@@ -89,7 +89,8 @@ raw and optimized APPs each pass 25 native checks/four completed executions on
 the identical optimized native provider, including bit-31 signal operations.
 Generated definitions and 710 host tests pass (four existing skips). Existing
 127 ordinals are preserved; three common imports are appended. Complete
-bank-zero maps match IC2; the upper binding table grows nine unreserved bytes.
+bank-zero maps match IC2; the upper binding table grows nine bytes within its
+existing reservation.
 
 Append `AllocSignal`, `FreeSignal` and `SetSignal` to
 [c-program.json](../../../abi/c-program.json), advance the single supported APP
@@ -109,6 +110,20 @@ profile added. Report other APP import-thunk/relocation changes separately from
 the intentional Terminal behavior change when comparing the old captures.
 
 ## TW2 Integrate, measure and deliver
+
+Completed: [TW2 evidence](../../development/terminal-wake-tw2.json) and
+[implementation record](../../history/terminal-wake.md#tw2-packaged-measurements).
+Both scenes contain zero reply-driven external wakes; four extracted OF816
+runs pass exact replay with zero clock offset. Median page/line latency falls
+24.0%/17.4% in idle and 22.7%/11.9% under Counter/disk load, while mean viewer
+CPU is nearly unchanged. Drawing, pixels, heap, guards, Counter/disk bytes and
+EXIT pass. Two IRQ samples precede the final paints-counter increment; linked
+instruction order and full drawing counts establish unchanged physical work.
+Real Terminal integration and the package audit pass. The additional wake
+observation records 83 genuine view wakes and 120 timer wakes in 207 waits.
+Host checks pass 711
+tests with four existing skips. Complete demo reservations match the before
+package, including all bank-zero guards/alignment/unused capacity.
 
 Build a fresh optimized package with `tools/build_demo.py --gem-desktop
 --release-compiler`, including OF816, the pinned matching ROM and five-second
