@@ -48,8 +48,8 @@ boundaries; the earlier smaller-strip recommendation is withdrawn. The completed
 GF14 decision remains unchanged.
 
 The [input snapshot copying plan](input-snapshot-copy-plan.md) follows the
-[paint-only route-reuse change](../../history/gui-route-reuse.md). IC1 adds
-focused lookup measurements and lifetime checks; IC2 skips full-route copies
+[paint-only route-reuse change](../../history/gui-route-reuse.md). IC1 passes
+838 focused lookup/lifetime checks with a frozen baseline; IC2 skips full-route copies
 for empty slots, then measures unchanged input behavior and packaged viewer
 costs. Each passing executable slice gets a separate commit.
 

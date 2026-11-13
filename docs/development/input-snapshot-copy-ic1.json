@@ -1,0 +1,542 @@
+{
+  "format": "exec816.input-snapshot-copy.ic1.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "parent_revision": "126ec2706370c06ba20d250ced07f1652a667776",
+  "runtime_revision": "41802444",
+  "production_changes": false,
+  "checks": 838,
+  "route_bytes": 46,
+  "samples_per_cohort": 8,
+  "warmups_per_cohort": 2,
+  "groups": {
+    "focused_owner": {
+      "elapsed_ms": {
+        "min": 9.148283216728998,
+        "median": 9.292670067763495,
+        "mean": 9.398766385810688,
+        "max": 9.806182590688476
+      },
+      "charged_cpu_ms": {
+        "min": 9.148283216728998,
+        "median": 9.292670067763495,
+        "mean": 9.36844056562148,
+        "max": 9.774253255312042
+      },
+      "off_cpu_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "interrupt_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.030325820189207743,
+        "max": 0.1053738551606405
+      },
+      "default_calls": {
+        "min": 8,
+        "median": 8.0,
+        "mean": 8,
+        "max": 8
+      },
+      "default_hits": {
+        "min": 4,
+        "median": 4.0,
+        "mean": 4,
+        "max": 4
+      },
+      "default_cpu_ms": {
+        "min": 1.7093119474921021,
+        "median": 1.7531178678816262,
+        "mean": 1.7432765136830946,
+        "max": 1.7734525549811877
+      },
+      "default_copies": {
+        "min": 8,
+        "median": 8.0,
+        "mean": 8,
+        "max": 8
+      },
+      "default_copy_bytes": {
+        "min": 368,
+        "median": 368.0,
+        "mean": 368,
+        "max": 368
+      },
+      "default_copy_cpu_ms": {
+        "min": 0.5447722585529033,
+        "median": 0.5590100637317992,
+        "mean": 0.5558206544033584,
+        "max": 0.566269934689355
+      },
+      "publications": {
+        "min": 2,
+        "median": 2.0,
+        "mean": 2,
+        "max": 2
+      },
+      "rebuilds": {
+        "min": 0,
+        "median": 0.0,
+        "mean": 0,
+        "max": 0
+      },
+      "publication_cpu_ms": {
+        "min": 0.1313825190765444,
+        "median": 0.13504769664734928,
+        "mean": 0.1357525384878887,
+        "max": 0.140122557899233
+      },
+      "geometry_calls": {
+        "min": 0,
+        "median": 0.0,
+        "mean": 0,
+        "max": 0
+      },
+      "inbox_refreshes": {
+        "min": 2,
+        "median": 2.0,
+        "mean": 2,
+        "max": 2
+      },
+      "inbox_refresh_cpu_ms": {
+        "min": 5.060623446704794,
+        "median": 5.182173422105814,
+        "mean": 5.150393865620494,
+        "max": 5.24374135687693
+      }
+    },
+    "other_owner": {
+      "elapsed_ms": {
+        "min": 9.536792039234316,
+        "median": 9.79205051178566,
+        "mean": 9.827460003749758,
+        "max": 10.229017210828061
+      },
+      "charged_cpu_ms": {
+        "min": 9.536792039234316,
+        "median": 9.739328342113314,
+        "mean": 9.78396245166547,
+        "max": 10.197087875451627
+      },
+      "off_cpu_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "interrupt_ms": {
+        "min": 0.0,
+        "median": 0.01596466768821744,
+        "mean": 0.04349755208428781,
+        "max": 0.10544433934469445
+      },
+      "default_calls": {
+        "min": 8,
+        "median": 8.0,
+        "mean": 8,
+        "max": 8
+      },
+      "default_hits": {
+        "min": 4,
+        "median": 4.0,
+        "mean": 4,
+        "max": 4
+      },
+      "default_cpu_ms": {
+        "min": 1.7217171638855957,
+        "median": 1.759073781434184,
+        "mean": 1.7936198421436214,
+        "max": 2.1059264511636235
+      },
+      "default_copies": {
+        "min": 8,
+        "median": 8.0,
+        "mean": 8,
+        "max": 8
+      },
+      "default_copy_bytes": {
+        "min": 368,
+        "median": 368.0,
+        "mean": 368,
+        "max": 368
+      },
+      "default_copy_cpu_ms": {
+        "min": 0.5420233753747996,
+        "median": 0.5565431172899113,
+        "mean": 0.5560585385245405,
+        "max": 0.5680320392907036
+      },
+      "publications": {
+        "min": 2,
+        "median": 2.0,
+        "mean": 2,
+        "max": 2
+      },
+      "rebuilds": {
+        "min": 0,
+        "median": 0.0,
+        "mean": 0,
+        "max": 0
+      },
+      "publication_cpu_ms": {
+        "min": 0.1313825190765444,
+        "median": 0.1355058438436999,
+        "mean": 0.1354794122746797,
+        "max": 0.1378670640095069
+      },
+      "geometry_calls": {
+        "min": 0,
+        "median": 0.0,
+        "mean": 0,
+        "max": 0
+      },
+      "inbox_refreshes": {
+        "min": 2,
+        "median": 2.0,
+        "mean": 2,
+        "max": 2
+      },
+      "inbox_refresh_cpu_ms": {
+        "min": 5.062878940594519,
+        "median": 5.196094048456467,
+        "mean": 5.248410934070504,
+        "max": 5.830733641678144
+      }
+    }
+  },
+  "lookups": {
+    "0": {
+      "elapsed_ms": {
+        "min": 0.8981094732153052,
+        "median": 0.8981447153073322,
+        "mean": 0.907149069820223,
+        "max": 0.9451929081633372
+      },
+      "charged_cpu_ms": {
+        "min": 0.8981094732153052,
+        "median": 0.8981447153073322,
+        "mean": 0.907149069820223,
+        "max": 0.9451929081633372
+      },
+      "off_cpu_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "interrupt_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "default_calls": {
+        "min": 4,
+        "median": 4.0,
+        "mean": 4,
+        "max": 4
+      },
+      "default_hits": {
+        "min": 0,
+        "median": 0.0,
+        "mean": 0,
+        "max": 0
+      },
+      "default_cpu_ms": {
+        "min": 0.8334049922537882,
+        "median": 0.8337574131740579,
+        "mean": 0.841898336432288,
+        "max": 0.8773871231034468
+      },
+      "default_copies": {
+        "min": 4,
+        "median": 4.0,
+        "mean": 4,
+        "max": 4
+      },
+      "default_copy_bytes": {
+        "min": 184,
+        "median": 184.0,
+        "mean": 184,
+        "max": 184
+      },
+      "default_copy_cpu_ms": {
+        "min": 0.26924958308605135,
+        "median": 0.26942579354618623,
+        "mean": 0.2717341505739527,
+        "max": 0.2822891571360302
+      }
+    },
+    "1": {
+      "elapsed_ms": {
+        "min": 1.0352716953842727,
+        "median": 1.043165923998314,
+        "mean": 1.166416330339635,
+        "max": 1.9623501682457476
+      },
+      "charged_cpu_ms": {
+        "min": 1.0352716953842727,
+        "median": 1.043165923998314,
+        "mean": 1.1532622194905684,
+        "max": 1.8571172814532146
+      },
+      "off_cpu_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "interrupt_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.013154110849066578,
+        "max": 0.10523288679253262
+      },
+      "default_calls": {
+        "min": 4,
+        "median": 4.0,
+        "mean": 4,
+        "max": 4
+      },
+      "default_hits": {
+        "min": 1,
+        "median": 1.0,
+        "mean": 1,
+        "max": 1
+      },
+      "default_cpu_ms": {
+        "min": 0.8387617902418876,
+        "median": 0.8437309252176903,
+        "mean": 0.9535717155427493,
+        "max": 1.6612417339673153
+      },
+      "default_copies": {
+        "min": 4,
+        "median": 4.0,
+        "mean": 4,
+        "max": 4
+      },
+      "default_copy_bytes": {
+        "min": 184,
+        "median": 184.0,
+        "mean": 184,
+        "max": 184
+      },
+      "default_copy_cpu_ms": {
+        "min": 0.26924958308605135,
+        "median": 0.270800235135238,
+        "mean": 0.32629771955470915,
+        "max": 0.6964542226369825
+      }
+    },
+    "2": {
+      "elapsed_ms": {
+        "min": 1.1723634333691864,
+        "median": 1.1963985401315798,
+        "mean": 1.3098164027973764,
+        "max": 2.099653358782823
+      },
+      "charged_cpu_ms": {
+        "min": 1.1723634333691864,
+        "median": 1.1963985401315798,
+        "mean": 1.2966446709022963,
+        "max": 1.9942795036221825
+      },
+      "off_cpu_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "interrupt_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.013171731895080063,
+        "max": 0.1053738551606405
+      },
+      "default_calls": {
+        "min": 4,
+        "median": 4.0,
+        "mean": 4,
+        "max": 4
+      },
+      "default_hits": {
+        "min": 2,
+        "median": 2.0,
+        "mean": 2,
+        "max": 2
+      },
+      "default_cpu_ms": {
+        "min": 0.8441890724140411,
+        "median": 0.8604709189305011,
+        "mean": 0.9623117543654379,
+        "max": 1.6664575635873067
+      },
+      "default_copies": {
+        "min": 4,
+        "median": 4.0,
+        "mean": 4,
+        "max": 4
+      },
+      "default_copy_bytes": {
+        "min": 184,
+        "median": 184.0,
+        "mean": 184,
+        "max": 184
+      },
+      "default_copy_cpu_ms": {
+        "min": 0.26924958308605135,
+        "median": 0.274324444337935,
+        "mean": 0.32721401394741034,
+        "max": 0.6961722859007667
+      }
+    },
+    "4": {
+      "elapsed_ms": {
+        "min": 1.4468288460752292,
+        "median": 1.510581790552018,
+        "mean": 1.5848104468838238,
+        "max": 2.274947524524972
+      },
+      "charged_cpu_ms": {
+        "min": 1.4468288460752292,
+        "median": 1.510581790552018,
+        "mean": 1.5808192799617693,
+        "max": 2.243018189148537
+      },
+      "off_cpu_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "interrupt_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "mean": 0.00399116692205436,
+        "max": 0.03192933537643488
+      },
+      "default_calls": {
+        "min": 4,
+        "median": 4.0,
+        "mean": 4,
+        "max": 4
+      },
+      "default_hits": {
+        "min": 4,
+        "median": 4.0,
+        "mean": 4,
+        "max": 4
+      },
+      "default_cpu_ms": {
+        "min": 0.8552550893105095,
+        "median": 0.8717483883791316,
+        "mean": 0.8761360288364893,
+        "max": 0.9019861033382719
+      },
+      "default_copies": {
+        "min": 4,
+        "median": 4.0,
+        "mean": 4,
+        "max": 4
+      },
+      "default_copy_bytes": {
+        "min": 184,
+        "median": 184.0,
+        "mean": 184,
+        "max": 184
+      },
+      "default_copy_cpu_ms": {
+        "min": 0.26932006727010527,
+        "median": 0.27376057086550354,
+        "mean": 0.2756548333119531,
+        "max": 0.28426271428954053
+      }
+    }
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "build_profile": "release",
+    "optimize": true,
+    "override": false
+  },
+  "inputs": {
+    "tests/programs/aes_route_reuse.act": "6e36177bf1771b05820542be7f7a1fff3ab9c9abb1131c91a533cce5af646d9d",
+    "tools/test_aes_route_reuse.py": "cb5f34add5b0849ebe4310265c2a1c4dbbece72dfd1a97b0ba4e1f053202a6cb",
+    "lib/aes/aessnapshot.act": "0e4952156133cb218c6700c62ac0ee0a5c7bb3449551bbefc2a4692e6740347c",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9"
+  },
+  "artifacts": [
+    {
+      "path": "build/input-snapshot-copy/before/results.json",
+      "sha256": "4250e87991e5b7097594cba792ab7ab8a6dfd1a08d552bcd8d2129c4bde1a77c"
+    },
+    {
+      "path": "build/input-snapshot-copy/before/program/program.a816.json",
+      "sha256": "391e59f29591aba02c95cd6bba9b15e5800024bddd7b70f5f34595618bb89aab"
+    },
+    {
+      "path": "build/input-snapshot-copy/before/program/build.json",
+      "sha256": "100a61fdbd638cad26bdb62e9ac37fe1a35abc116ed5c28e84fe0ec2ad51af8a"
+    },
+    {
+      "path": "build/input-snapshot-copy/before/program/memory.json",
+      "sha256": "6c5106838dec382c2a1e9bbf3f09f27b79243bf158bfe6ee22d62e3fb78613b2"
+    },
+    {
+      "path": "build/input-snapshot-copy/before/emulator.log",
+      "sha256": "fa8e15766d3426703e4c3f0817f790bdd97b951ca90d5eea9934e50c43748a3c"
+    },
+    {
+      "path": "build/input-snapshot-copy/record_ic1.py",
+      "sha256": "f4adc2ce41e4b37c8b5a0ec7fa01d1984079d261cfb22c8aa19d730e7982df24"
+    }
+  ],
+  "observer": "Default JSL a816_memory_move and its successor bracket the actual copy; native Default/Refresh/Sample/Sweep entries and returns and IRQ/context markers are passive.",
+  "bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "idle": 800,
+    "loading_excluding_os": 20368,
+    "loading_including_os": 40336,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "runtime_excluding_os": 26848,
+    "runtime_including_os": 46816
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "each_public_task": 0,
+    "includes": "Guards, alignment and unused reserved capacity; same eight-Task profile as the route-reuse probe"
+  },
+  "host": {
+    "tests": 702,
+    "skips": 4,
+    "artifact": {
+      "path": "build/input-snapshot-copy-ic1-host.log",
+      "sha256": "321006ab995d6c060918697b7bfb2dc7339818007f878aac2f9e2aafb7d642f8"
+    }
+  },
+  "limits": [
+    "The 46-byte route size is observed from emitted SIZEOF, not a new public layout.",
+    "Sweeps include successful lookup/drop and loop bookkeeping; copy CPU is separately observed.",
+    "Single caller with established physical readiness; no competing Task or renderer in this fixture.",
+    "No runtime change, demo refresh or platform qualification in IC1."
+  ]
+}

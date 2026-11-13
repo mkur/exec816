@@ -5,8 +5,8 @@
 [AES contract](../../reference/aes.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: proposed, starting from `41802444`. This plan adds no runtime changes.
-Commit the plan, then commit each passing executable slice below separately.
+Status: IC1 complete; IC2 pending. Runtime baseline `41802444`.
+Commit each passing executable slice below separately.
 
 Reduce unnecessary copying in input refresh by returning from an empty default
 route lookup before copying its complete `WindowRoute`. Start with this one
@@ -72,6 +72,14 @@ compact route type, field layout, ABI version, gateway or kernel operation.
 It also keeps normal Task preemption and the existing drawing limits.
 
 ## IC1 Establish lookup coverage and freeze the baseline
+
+Completed: [IC1 evidence](../../development/input-snapshot-copy-ic1.json).
+The unchanged runtime passes 838 assertions, including withdrawal/reuse and
+zero/one/two/four populated defaults. Emitted SIZEOF is 46 bytes. Every sweep
+still performs four copies (184 bytes); the two-client sweep takes 1.297 ms
+Task CPU, including 0.327 ms in the actual copy calls. Host checks pass 702
+tests with four existing skips. Complete eight-Task bank-zero reservations
+match the previous probe: zero added bytes in every shared/per-Task category.
 
 Extend [aes_route_reuse.act](../../../tests/programs/aes_route_reuse.act) and
 [test_aes_route_reuse.py](../../../tools/test_aes_route_reuse.py). Reuse their

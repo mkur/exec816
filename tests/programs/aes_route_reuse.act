@@ -14,11 +14,11 @@ USE LAYERS
 USE LAYERTYPES
 USE REGIONS
 
-CARD checks
+CARD checks,routeBytes
 AESSTATE.Service POINTER service
 DESKTYPES.Service POINTER desktop
 EXEC.MsgPort POINTER port
-BYTE cohort,iteration
+BYTE cohort,iteration,population,hits
 
 PROC Require(BYTE okay)
 
@@ -76,13 +76,63 @@ PUBLIC PROC Sample()
 
 RETURN
 
+; Time complete lookups and their matching drops, without assertion overhead.
+PUBLIC PROC Sweep()
+  BYTE slot
+  AESSNAPSHOT.WindowRoute route
+
+  hits=0
+  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+    IF AESSNAPSHOT.Default(slot,@route)<>0 THEN
+      hits==+1
+      AESSNAPSHOT.Drop(route.endpoint)
+    FI
+  OD
+
+RETURN
+
+; Miss output can reuse a former hit's storage; only its endpoint is defined.
+PROC CheckDefaults()
+  BYTE slot,found
+  CARD prior
+  AESSNAPSHOT.WindowRoute route
+
+  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+    route.endpoint=service.clients(0).endpoint
+    route.window=$ffffffff
+    route.epoch=$ffffffff
+    prior=service.clients(slot).endpoint.holds
+    found=AESSNAPSHOT.Default(slot,@route)
+    Require(found=(slot<population))
+    IF found<>0 THEN
+      Require(route.endpoint=service.clients(slot).endpoint)
+      Require(route.client=LONGCARD(slot+1)*11)
+      Require(route.endpoint.holds=prior+1)
+      IF slot=0 THEN
+        Require(route.window=101 AND route.handle=1 AND route.epoch=1001)
+        Require(route.bounds.left=48 AND route.work.top=52)
+        Require(route.keyRoute=5001 AND route.frameKind=DESKTYPES.FRAME_BORDERLESS)
+      ELSE
+        Require(route.window=0 AND route.handle=0 AND route.epoch=0)
+      FI
+      AESSNAPSHOT.Drop(route.endpoint)
+    ELSE
+      Require(route.endpoint=NULL)
+    FI
+    Require(service.clients(slot).endpoint.holds=prior)
+  OD
+
+RETURN
+
 PROC Main()
   BYTE index
   AESSNAPSHOT.WindowRoute held,route
   LAYERTYPES.Rect bounds
   LONGCARD ARRAY handles(4)
+  AESTYPES.Endpoint POINTER retired,replacement
 
   LET available=EXEC.AvailMem(0)
+  routeBytes=SIZEOF(AESSNAPSHOT.WindowRoute)
   service=AESSTATE.Service POINTER(EXEC.AllocMem(
       LONGCARD(SIZEOF(AESSTATE.Service)),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
   desktop=DESKTYPES.Service POINTER(EXEC.AllocMem(
@@ -99,10 +149,10 @@ PROC Main()
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
     service.windows(index)=@desktop.windows(index)
   OD
-  FOR index=0 TO 1 DO
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
     BEGIN
       LET client=@service.clients(index)
-      client.id=LONGCARD(index+1)*11
+      client.id=IF index<2 THEN LONGCARD(index+1)*11 ELSE LONGCARD(0) FI
       client.binding=AESTYPES.Request POINTER(EXEC.AllocMem(
           LONGCARD(AESTYPES.REQUEST_SIZE),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
       client.endpoint=AESTYPES.Endpoint POINTER(EXEC.AllocMem(
@@ -207,17 +257,63 @@ PROC Main()
   AESSNAPSHOT.Invalidate()
   Require(AESSNAPSHOT.Publish()=1)
   Require(service.clients(1).endpoint.holds=1)
+  Require(AESSNAPSHOT.Default(1,@route)=0 AND route.endpoint=NULL)
+  Require(service.clients(1).endpoint.holds=1)
   AESSNAPSHOT.Drop(held.endpoint)
   Require(service.clients(1).endpoint.holds=0 AND service.directory.changed<>0)
+
+  ; Reopening the same slot can publish another endpoint and window lifetime.
+  retired=service.clients(1).endpoint
+  replacement=service.clients(2).endpoint
+  replacement.id=22
+  service.clients(1).endpoint=replacement
+  service.clients(2).endpoint=retired
+  service.windows(2).view.epoch=3003
+  AESSNAPSHOT.Invalidate()
+  Require(AESSNAPSHOT.Publish()=1)
+  Require(AESSNAPSHOT.Default(1,@route)<>0)
+  Require(route.endpoint=replacement AND route.window=103 AND route.epoch=3003)
+  Require(retired.holds=0 AND replacement.holds=2)
+  AESSNAPSHOT.Drop(route.endpoint)
+  service.clients(1).endpoint=retired
+  service.clients(2).endpoint=replacement
+  service.windows(2).view.epoch=2003
   service.clients(1).endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
   AESSNAPSHOT.Invalidate()
   Require(AESSNAPSHOT.Publish()=1)
+  Require(retired.holds=1 AND replacement.holds=0)
+
+  ; Vary occupied defaults independently of the original UPDATE cohorts.
+  desktop.focus=101
+  FOR cohort=0 TO 3 DO
+    population=IF cohort=3 THEN BYTE(4) ELSE cohort FI
+    service.count=population
+    FOR index=0 TO AESTYPES.CLIENTS-1 DO
+      service.clients(index).id=IF index<population THEN
+          LONGCARD(index+1)*11 ELSE LONGCARD(0) FI
+      service.clients(index).endpoint.id=service.clients(index).id
+    OD
+    FOR index=0 TO 3 DO
+      service.windows(index).owner=service.clients(index/2).id
+    OD
+    AESSNAPSHOT.Invalidate()
+    Require(AESSNAPSHOT.Publish()=1)
+    CheckDefaults()
+    FOR iteration=0 TO 9 DO
+      Sweep()
+      Require(hits=population)
+      FOR index=0 TO AESTYPES.CLIENTS-1 DO
+        Require(service.clients(index).endpoint.holds=
+            IF index<population THEN CARD(1) ELSE CARD(0) FI)
+      OD
+    OD
+  OD
   desktop.scene.layoutEpoch=0
   Require(AESSNAPSHOT.Publish()=1)
   Require(AESSNAPSHOT.Publish()=1)
   service.live=0
   Require(AESSNAPSHOT.Publish()=1)
-  FOR index=0 TO 1 DO
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
     BEGIN
       LET client=@service.clients(index)
       Require(client.endpoint.holds=0)

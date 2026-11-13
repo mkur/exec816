@@ -609,8 +609,8 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
-- [Input snapshot copying](gem4xe/input-snapshot-copy-plan.md): proposed IC1–IC2
-  for measured default-route lookup coverage, an empty-slot return before the
+- [Input snapshot copying](gem4xe/input-snapshot-copy-plan.md): IC1 passes 838
+  lookup/lifetime checks; IC2 remains pending for an empty-slot return before the
   full copy, preserved endpoint/input semantics and matched viewer delivery.
   Follows the [paint-only route-reuse change](../history/gui-route-reuse.md).
 
