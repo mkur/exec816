@@ -609,6 +609,11 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
+- [Input snapshot copying](gem4xe/input-snapshot-copy-plan.md): proposed IC1–IC2
+  for measured default-route lookup coverage, an empty-slot return before the
+  full copy, preserved endpoint/input semantics and matched viewer delivery.
+  Follows the [paint-only route-reuse change](../history/gui-route-reuse.md).
+
 - [GEM-first GUI design](gem4xe/gem-first-gui-design.md): proposed AES-only
   graphical windows, shared caller-context window operations, an AES system Task,
   distinct UPDATE/display ownership and existing Exec I/O. Defines the native

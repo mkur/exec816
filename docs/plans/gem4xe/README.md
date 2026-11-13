@@ -47,6 +47,12 @@ Further work prioritizes reducing or sharing coordination at natural operation
 boundaries; the earlier smaller-strip recommendation is withdrawn. The completed
 GF14 decision remains unchanged.
 
+The [input snapshot copying plan](input-snapshot-copy-plan.md) follows the
+[paint-only route-reuse change](../../history/gui-route-reuse.md). IC1 adds
+focused lookup measurements and lifetime checks; IC2 skips full-route copies
+for empty slots, then measures unchanged input behavior and packaged viewer
+costs. Each passing executable slice gets a separate commit.
+
 The [object drawing profile](../../history/aes-drawing-profile.md) separates
 callback setup, graphics-state calls, primitive rendering, command construction,
 upload, submission and ownership using the unchanged EC2 guest. Exclusive
