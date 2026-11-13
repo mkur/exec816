@@ -78,7 +78,7 @@ PUBLIC PROC Pump()
   IF command^=4 THEN
     DESKINPUT.CheckBoundaries()
   ELSEIF command^=3 THEN
-    captured.route=item.window.keyRoute
+    captured.route=item.keyRoute
     captured.kind=INPUT.EVENT_CANCEL
     captured.code=INPUT.CANCEL_BREAK
     handled=DESKINPUT.Key(@captured)

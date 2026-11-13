@@ -122,6 +122,14 @@ def exercise(s, report, count, load, observe):
         s.click(x+48,y-6) # Raise the inactive folder before its close gadget.
         s.click(x-2,y-6);s.rendezvous(f'dw(${desk+D["folders"]:x})=0')
         s.menus.select=lambda title:physical_focus(s,title)
+    else:
+        from colour_desktop_model import FIELDS as D
+        from browser_model import FIELDS as B
+        desktop=next(a for a in instances(s.b,s.p,s.directory) if a['name']=='desktop')
+        desk=desktop['symbols']['GEMDesk'];folder=s.number(desk+D['folders'])
+        x,y=[s.number(folder+B['work']+i*2,2) for i in range(2)]
+        s.click(x+48,y-6);s.click(x-2,y-6)
+        s.rendezvous(f'dw(${desk+D["folders"]:x})=0');s.frames(60)
     # Close the startup folder; the desktop and loaded Terminal stay resident.
     for window in list(s.menus.windows()):
         if window['title'] not in ('Terminal','Counter'):

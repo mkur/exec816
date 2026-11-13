@@ -4,6 +4,9 @@
 [Display ownership](../reference/display.md) ·
 [Earlier viewer measurements](text-viewer-performance.md)
 
+The [input-route reuse follow-up](gui-route-reuse.md) implements the first
+runtime optimization and records a matched before/after comparison.
+
 ## Scope
 
 This development baseline measures the current optimized Text Viewer on a newly

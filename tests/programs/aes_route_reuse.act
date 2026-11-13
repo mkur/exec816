@@ -1,0 +1,243 @@
+; Real UPDATE policy and copied input routes, without a renderer or peer Task.
+MODULE AESROUTEPROBE
+USE EXEC
+USE HEAPCORE
+USE AESSTATE
+USE AESTYPES
+USE AESLOCKS
+USE AESMOUSE
+USE AESSNAPSHOT
+USE AESWINDOWSTATE
+USE DESKSTATE
+USE DESKTYPES
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+
+CARD checks
+AESSTATE.Service POINTER service
+DESKTYPES.Service POINTER desktop
+EXEC.MsgPort POINTER port
+BYTE cohort,iteration
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+(checks & 255))
+  FI
+  checks==+1
+
+RETURN
+
+; Caller owns policy exclusively; ready=1 supplies established physical readiness.
+PROC Lock(BYTE owner CARD code INT handle)
+
+  LET client=@service.clients(owner)
+  client.binding.intin(0)=INT(code)
+  client.binding.intin(1)=handle
+  Require(AESLOCKS.Attempt(service,client,client.binding,1,0)=AESTYPES.OK)
+  Require(client.binding.intout(0)=1)
+
+RETURN
+
+; Publication ownership plus this temporary hold must balance on every lookup.
+PROC CheckRoute(BYTE mode LONGCARD identity INT x,y LONGCARD window,client INT handle)
+  AESSNAPSHOT.WindowRoute route
+
+  Require(AESSNAPSHOT.Select(mode,identity,x,y,@route)<>0)
+  Require(route.window=window AND route.client=client AND route.handle=handle)
+  Require(route.endpoint<>NULL)
+  AESSNAPSHOT.Drop(route.endpoint)
+
+RETURN
+
+PROC NormalRoutes()
+  AESSNAPSHOT.WindowRoute route
+
+  CheckRoute(AESSNAPSHOT.POINTER_HIT,0,45,45,101,11,1)
+  CheckRoute(AESSNAPSHOT.POINTER_HIT,0,325,45,103,0,3)
+  CheckRoute(AESSNAPSHOT.KEY_ROUTE,5003,0,0,103,22,3)
+  Require(AESSNAPSHOT.Default(0,@route)<>0)
+  Require(route.window=101 AND route.client=11)
+  AESSNAPSHOT.Drop(route.endpoint)
+  Require(service.clients(0).endpoint.holds=1)
+  Require(service.clients(1).endpoint.holds=1)
+  Require(AESSNAPSHOT.Eligible(11,0)<>0 AND AESSNAPSHOT.Eligible(22,0)<>0)
+  Require(AESSNAPSHOT.Eligible(11,1)=0)
+
+RETURN
+
+; The same BEGIN/END pair as a paint band, including input snapshot refresh.
+PUBLIC PROC Sample()
+
+  Lock(cohort,AESTYPES.BEG_UPDATE OR AESTYPES.UPDATE_WINDOW,
+      IF cohort=0 THEN INT(1) ELSE INT(3) FI)
+  Lock(cohort,AESTYPES.END_UPDATE,0)
+
+RETURN
+
+PROC Main()
+  BYTE index
+  AESSNAPSHOT.WindowRoute held,route
+  LAYERTYPES.Rect bounds
+  LONGCARD ARRAY handles(4)
+
+  LET available=EXEC.AvailMem(0)
+  service=AESSTATE.Service POINTER(EXEC.AllocMem(
+      LONGCARD(SIZEOF(AESSTATE.Service)),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  desktop=DESKTYPES.Service POINTER(EXEC.AllocMem(
+      LONGCARD(SIZEOF(DESKTYPES.Service)),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  port=EXEC.CreateMsgPort()
+  Require(service<>NULL AND desktop<>NULL AND port<>NULL)
+  AESSTATE.Bind(service)
+  DESKSTATE.Bind(desktop)
+  service.live=1
+  service.count=2
+  service.owner=EXEC.FindTask(NULL)
+  service.mask=LONGCARD(1) LSH port.mp_SigBit
+  Require(LAYERS.Init(@desktop.scene,640,240)=LAYERTYPES.OK)
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    service.windows(index)=@desktop.windows(index)
+  OD
+  FOR index=0 TO 1 DO
+    BEGIN
+      LET client=@service.clients(index)
+      client.id=LONGCARD(index+1)*11
+      client.binding=AESTYPES.Request POINTER(EXEC.AllocMem(
+          LONGCARD(AESTYPES.REQUEST_SIZE),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+      client.endpoint=AESTYPES.Endpoint POINTER(EXEC.AllocMem(
+          LONGCARD(SIZEOF(AESTYPES.Endpoint)),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+      Require(client.binding<>NULL AND client.endpoint<>NULL)
+      client.endpoint.input=AESTYPES.InputInbox POINTER(EXEC.AllocMem(
+          LONGCARD(AESTYPES.INPUTINBOX_SIZE),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+      Require(client.endpoint.input<>NULL)
+      client.endpoint.id=client.id
+      client.endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
+      client.endpoint.owner=service.owner
+      client.endpoint.port=port
+      client.endpoint.input.windowEpoch=LONGCARD(101+index)
+    END
+  OD
+  FOR index=0 TO 3 DO
+    BEGIN
+      LET window=service.windows(index)
+      window.id=LONGCARD(101+index)
+      window.owner=service.clients(index/2).id
+      window.gui.window=INT(index+1)
+      window.keyRoute=LONGCARD(5001+index)
+      window.frameKind=DESKTYPES.FRAME_BORDERLESS
+      window.view=AESTYPES.WindowView POINTER(EXEC.AllocMem(
+          LONGCARD(AESTYPES.WINDOWVIEW_SIZE),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+      Require(window.view<>NULL)
+      window.view.handle=INT(index+1)
+      window.view.epoch=LONGCARD(1001+index)
+      REGIONS.Assign(@bounds,40+INT(index)*140,40,160+INT(index)*140,136)
+      Require(LAYERS.Create(@desktop.scene,@bounds,@handles(index))=LAYERTYPES.OK)
+      window.layer=handles(index)
+      Require(LAYERS.SetExternal(@desktop.scene,window.layer)=LAYERTYPES.OK)
+      Require(LAYERS.Show(@desktop.scene,window.layer,1)=LAYERTYPES.OK)
+    END
+  OD
+  service.clients(0).binding.view=service.windows(0).view
+  service.clients(1).binding.view=service.windows(2).view
+  desktop.focus=101
+  AESSNAPSHOT.Invalidate()
+  Require(AESSNAPSHOT.Publish()=1)
+  NormalRoutes()
+  FOR cohort=0 TO 1 DO
+    FOR iteration=0 TO 9 DO
+      Sample()
+      Require(service.mouseOwner=0 AND service.updates=0)
+      NormalRoutes()
+    OD
+  OD
+
+  ; Drawing ownership alone must not redirect input to the drawing client.
+  Lock(1,AESTYPES.BEG_UPDATE OR AESTYPES.UPDATE_WINDOW,3)
+  Require(service.mouseOwner=22 AND service.mouseHolds=0)
+  NormalRoutes()
+  Lock(1,AESTYPES.BEG_UPDATE,0)
+  Require(service.updates=2)
+  Lock(1,AESTYPES.END_UPDATE,0)
+  Require(service.updates=1)
+  Lock(1,AESTYPES.BEG_MCTRL,0)
+  CheckRoute(AESSNAPSHOT.POINTER_HIT,0,-200,239,103,22,3)
+  Require(AESSNAPSHOT.Eligible(22,1)<>0 AND AESSNAPSHOT.Eligible(11,0)=0)
+  Require(service.clients(1).endpoint.input.eligible<>0)
+  Require(service.clients(0).endpoint.input.eligible=0)
+  Lock(1,AESTYPES.BEG_MCTRL,0)
+  Require(service.mouseHolds=2)
+  Lock(1,AESTYPES.END_MCTRL,0)
+  Require(service.mouseHolds=1)
+  service.clients(1).binding.view=service.windows(3).view
+  Require(AESSNAPSHOT.Publish()=1)
+  CheckRoute(AESSNAPSHOT.POINTER_HIT,0,-200,239,104,22,4)
+  Lock(1,AESTYPES.END_MCTRL,0)
+  Require(service.mouseOwner=22 AND service.mouseHolds=0)
+  NormalRoutes()
+  Lock(1,AESTYPES.END_UPDATE,0)
+  Require(service.mouseOwner=0)
+  NormalRoutes()
+
+  ; Geometry, focus, lifetime epochs, explicit invalidation and menu state stay fresh.
+  Require(LAYERS.Bounds(@desktop.scene,handles(0),48,52,120,96)=LAYERTYPES.OK)
+  Require(AESSNAPSHOT.Publish()=1)
+  Require(AESSNAPSHOT.Select(AESSNAPSHOT.WINDOW_ID,101,0,0,@route)<>0)
+  Require(route.bounds.left=48 AND route.work.top=52)
+  AESSNAPSHOT.Drop(route.endpoint)
+  desktop.focus=103
+  Require(AESSNAPSHOT.Publish()=1)
+  CheckRoute(AESSNAPSHOT.POINTER_HIT,0,325,45,103,22,3)
+  service.windows(2).view.epoch=2003
+  AESSNAPSHOT.Invalidate()
+  Require(AESSNAPSHOT.Publish()=1)
+  Require(AESSNAPSHOT.Select(AESSNAPSHOT.WINDOW_ID,103,0,0,@route)<>0)
+  Require(route.epoch=2003)
+  AESSNAPSHOT.Drop(route.endpoint)
+  DESKSTATE.menuActive=1
+  Require(AESSNAPSHOT.Publish()=1)
+  Require(AESSNAPSHOT.Select(AESSNAPSHOT.POINTER_HIT,0,325,45,@route)=0)
+  Require(AESSNAPSHOT.Eligible(22,0)=0)
+  DESKSTATE.menuActive=0
+  Require(AESSNAPSHOT.Publish()=1)
+
+  ; Withdrawal drops the publication hold, while an outstanding reader pins storage.
+  Require(AESSNAPSHOT.Default(1,@held)<>0)
+  service.clients(1).endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  AESSNAPSHOT.Invalidate()
+  Require(AESSNAPSHOT.Publish()=1)
+  Require(service.clients(1).endpoint.holds=1)
+  AESSNAPSHOT.Drop(held.endpoint)
+  Require(service.clients(1).endpoint.holds=0 AND service.directory.changed<>0)
+  service.clients(1).endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
+  AESSNAPSHOT.Invalidate()
+  Require(AESSNAPSHOT.Publish()=1)
+  desktop.scene.layoutEpoch=0
+  Require(AESSNAPSHOT.Publish()=1)
+  Require(AESSNAPSHOT.Publish()=1)
+  service.live=0
+  Require(AESSNAPSHOT.Publish()=1)
+  FOR index=0 TO 1 DO
+    BEGIN
+      LET client=@service.clients(index)
+      Require(client.endpoint.holds=0)
+      EXEC.FreeMem(BYTE POINTER(client.endpoint.input),
+          LONGCARD(AESTYPES.INPUTINBOX_SIZE))
+      EXEC.FreeMem(BYTE POINTER(client.endpoint),LONGCARD(SIZEOF(AESTYPES.Endpoint)))
+      EXEC.FreeMem(BYTE POINTER(client.binding),LONGCARD(AESTYPES.REQUEST_SIZE))
+    END
+  OD
+  FOR index=0 TO 3 DO
+    Require(LAYERS.Delete(@desktop.scene,handles(index))=LAYERTYPES.OK)
+    EXEC.FreeMem(BYTE POINTER(service.windows(index).view),
+        LONGCARD(AESTYPES.WINDOWVIEW_SIZE))
+  OD
+  AESSTATE.Bind(NULL)
+  DESKSTATE.Bind(NULL)
+  EXEC.DeleteMsgPort(port)
+  EXEC.FreeMem(BYTE POINTER(desktop),LONGCARD(SIZEOF(DESKTYPES.Service)))
+  EXEC.FreeMem(BYTE POINTER(service),LONGCARD(SIZEOF(AESSTATE.Service)))
+  Require(EXEC.AvailMem(0)=available)
+
+RETURN
+ENDMODULE

@@ -1,0 +1,1490 @@
+{
+  "format": "exec816.gui-route-reuse.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "parent_revision": "362027c48d5a9fa5b8b12e86b51f50ccb9ee6376",
+  "production_changes": [
+    "lib/aes/aessnapshot.act"
+  ],
+  "native_compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "build_profile": "release",
+    "optimize": true,
+    "override": false
+  },
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+      "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+      "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 2,
+      "internal_port": 1,
+      "map": "Mouse -> ST Mouse (port 2)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "document": {
+    "bytes": 6663,
+    "sha256": "4b61ae9686a81ebee30c994a492793b8d609de240791ce2450e8e50d36806d7c",
+    "lines": 220,
+    "words": 1071
+  },
+  "focused": {
+    "before": {
+      "checks": 546,
+      "source_sha256": "ea5d56cb7e62967bfe332f50a1f07d7f8b5efe1d13bef722c56d45204f54665f",
+      "routing_sha256": "6cb69caa8a40ccd3fdca847be7a8b910fff67a27e0d46ec17f55d4119a515ab8",
+      "groups": {
+        "focused_owner": {
+          "elapsed_ms": {
+            "min": 17.09523400044264,
+            "median": 17.115075298253824,
+            "mean": 17.11884620210071,
+            "max": 17.152890062998765
+          },
+          "charged_cpu_ms": {
+            "min": 16.989860145282,
+            "median": 17.009701443093185,
+            "mean": 17.013507589032095,
+            "max": 17.047586692022175
+          },
+          "off_cpu_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "mean": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "min": 0.10530337097658655,
+            "median": 0.10530337097658655,
+            "mean": 0.10533861306861353,
+            "max": 0.10544433934469445
+          },
+          "publications": {
+            "min": 2,
+            "median": 2.0,
+            "mean": 2,
+            "max": 2
+          },
+          "rebuilds": {
+            "min": 2,
+            "median": 2.0,
+            "mean": 2,
+            "max": 2
+          },
+          "publication_cpu_ms": {
+            "min": 7.559358255601026,
+            "median": 8.006157498318952,
+            "mean": 7.841797191628171,
+            "max": 8.029840184161076
+          },
+          "geometry_calls": {
+            "min": 8,
+            "median": 8.0,
+            "mean": 8,
+            "max": 8
+          },
+          "inbox_refreshes": {
+            "min": 2,
+            "median": 2.0,
+            "mean": 2,
+            "max": 2
+          }
+        },
+        "other_owner": {
+          "elapsed_ms": {
+            "min": 17.47105566981825,
+            "median": 17.49149608319389,
+            "mean": 17.526465049007655,
+            "max": 17.791335802159356
+          },
+          "charged_cpu_ms": {
+            "min": 17.365822783025717,
+            "median": 17.38626319640136,
+            "mean": 17.43034224300409,
+            "max": 17.75940646678292
+          },
+          "off_cpu_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "mean": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "min": 0.03192933537643488,
+            "median": 0.10523288679253262,
+            "mean": 0.09612280600356087,
+            "max": 0.10544433934469445
+          },
+          "publications": {
+            "min": 2,
+            "median": 2.0,
+            "mean": 2,
+            "max": 2
+          },
+          "rebuilds": {
+            "min": 2,
+            "median": 2.0,
+            "mean": 2,
+            "max": 2
+          },
+          "publication_cpu_ms": {
+            "min": 7.5574551826315695,
+            "median": 8.00548789857044,
+            "mean": 7.936237187737444,
+            "max": 8.341450761863545
+          },
+          "geometry_calls": {
+            "min": 8,
+            "median": 8.0,
+            "mean": 8,
+            "max": 8
+          },
+          "inbox_refreshes": {
+            "min": 2,
+            "median": 2.0,
+            "mean": 2,
+            "max": 2
+          }
+        }
+      }
+    },
+    "after": {
+      "checks": 546,
+      "source_sha256": "ea5d56cb7e62967bfe332f50a1f07d7f8b5efe1d13bef722c56d45204f54665f",
+      "routing_sha256": "0e4952156133cb218c6700c62ac0ee0a5c7bb3449551bbefc2a4692e6740347c",
+      "groups": {
+        "focused_owner": {
+          "elapsed_ms": {
+            "min": 9.231806974832917,
+            "median": 9.60015732069881,
+            "mean": 9.609487664562948,
+            "max": 10.103837299948266
+          },
+          "charged_cpu_ms": {
+            "min": 9.231806974832917,
+            "median": 9.54895056098362,
+            "mean": 9.566034165093694,
+            "max": 9.998533928971678
+          },
+          "off_cpu_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "mean": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "min": 0.0,
+            "median": 0.01585894141213653,
+            "mean": 0.043453499469254094,
+            "max": 0.10530337097658655
+          },
+          "publications": {
+            "min": 2,
+            "median": 2.0,
+            "mean": 2,
+            "max": 2
+          },
+          "rebuilds": {
+            "min": 0,
+            "median": 0.0,
+            "mean": 0,
+            "max": 0
+          },
+          "publication_cpu_ms": {
+            "min": 0.1313825190765444,
+            "median": 0.13589350685599658,
+            "mean": 0.13572610691886847,
+            "max": 0.1382194849297766
+          },
+          "geometry_calls": {
+            "min": 0,
+            "median": 0.0,
+            "mean": 0,
+            "max": 0
+          },
+          "inbox_refreshes": {
+            "min": 2,
+            "median": 2.0,
+            "mean": 2,
+            "max": 2
+          }
+        },
+        "other_owner": {
+          "elapsed_ms": {
+            "min": 9.515928720754351,
+            "median": 9.791486638313229,
+            "mean": 9.877944300578394,
+            "max": 10.436099743578538
+          },
+          "charged_cpu_ms": {
+            "min": 9.515928720754351,
+            "median": 9.738834952824934,
+            "mean": 9.83843791541616,
+            "max": 10.330725888417897
+          },
+          "off_cpu_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "mean": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "mean": 0.03950638516223345,
+            "max": 0.1053738551606405
+          },
+          "publications": {
+            "min": 2,
+            "median": 2.0,
+            "mean": 2,
+            "max": 2
+          },
+          "rebuilds": {
+            "min": 0,
+            "median": 0.0,
+            "mean": 0,
+            "max": 0
+          },
+          "publication_cpu_ms": {
+            "min": 0.13448382317491778,
+            "median": 0.13628116986829325,
+            "mean": 0.19167292801168345,
+            "max": 0.5781112776104169
+          },
+          "geometry_calls": {
+            "min": 0,
+            "median": 0.0,
+            "mean": 0,
+            "max": 0
+          },
+          "inbox_refreshes": {
+            "min": 2,
+            "median": 2.0,
+            "mean": 2,
+            "max": 2
+          }
+        }
+      }
+    },
+    "reduction_percent": {
+      "focused_owner": 43.77388604299022,
+      "other_owner": 43.555681361535214
+    },
+    "scene": "Two clients, four windows; real AESLOCKS.Attempt with established physical readiness, no renderer or peer Task",
+    "samples_per_owner": 8,
+    "warmups_per_owner": 2
+  },
+  "scenes": {
+    "idle": {
+      "before": {
+        "page": {
+          "samples": 4,
+          "input_completion": {
+            "count": 4,
+            "median": 1221.355580021399,
+            "p95": 1388.2841189265541,
+            "maximum": 1388.2841189265541
+          },
+          "mean_ms": {
+            "elapsed_ms": 1227.950362218222,
+            "charged_cpu_ms": 502.4815014258951,
+            "interrupt_ms": 109.5191357511288,
+            "blocked_off_cpu_ms": 91.62700756577232,
+            "runnable_off_cpu_ms": 521.0897665422856,
+            "unclassified_off_cpu_ms": 3.2329509331401125
+          },
+          "update_calls_per_repaint": [
+            14,
+            14,
+            14,
+            14
+          ],
+          "update_cpu_mean_ms": 201.19310340452705,
+          "update_elapsed_mean_ms": 572.904029439834,
+          "drawing_counts": [
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            }
+          ],
+          "hardware_busy_mean_bounds_ms": {
+            "lower": 9.826499656742023,
+            "upper": 17.21193818818995
+          }
+        },
+        "line": {
+          "samples": 4,
+          "input_completion": {
+            "count": 4,
+            "median": 1192.7914415284354,
+            "p95": 1264.6565517163604,
+            "maximum": 1264.6565517163604
+          },
+          "mean_ms": {
+            "elapsed_ms": 1178.3631880842258,
+            "charged_cpu_ms": 500.69888592698686,
+            "interrupt_ms": 109.05727051406934,
+            "blocked_off_cpu_ms": 98.52621095352414,
+            "runnable_off_cpu_ms": 470.0808206896454,
+            "unclassified_off_cpu_ms": 0.0
+          },
+          "update_calls_per_repaint": [
+            14,
+            14,
+            14,
+            14
+          ],
+          "update_cpu_mean_ms": 200.0943607014022,
+          "update_elapsed_mean_ms": 589.3558838082323,
+          "drawing_counts": [
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            }
+          ],
+          "hardware_busy_mean_bounds_ms": {
+            "lower": 9.64840374468373,
+            "upper": 13.748186794365212
+          }
+        },
+        "exact_relative_untraced_replay": true,
+        "absolute_scheduler_clock_offset_cycles": 7296,
+        "work": [
+          40,
+          43,
+          456,
+          170
+        ],
+        "counter_work": null,
+        "pixels": [
+          {
+            "label": "initial",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          },
+          {
+            "label": "page",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          },
+          {
+            "label": "line",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          }
+        ],
+        "heap_before": [
+          1485888,
+          65536,
+          1485888,
+          1244248
+        ],
+        "heap_after": [
+          1485888,
+          65536,
+          1485888,
+          1244248
+        ],
+        "capture_inputs": {
+          "tools/measure_gui_baseline.py": "c6b0cc62e0b5c883a76c10282ceb665607e9769a3d964e4c42e54a9c83deb6ed",
+          "tools/text_performance_trace.py": "5c726ff4626c56170c2e5d52077904efa00811b79fb3320771f4ea261db78f17",
+          "tools/bitmap_console_performance.py": "8f15302fc7c418dd0f2624a665cf8e427730d6909d35be54ea8cc777211af03f",
+          "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+          "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+          "examples/gem-text/text.c": "e76d7297f0ff93c7a3d1f781673767ff2c7ad43a3800950a2722571f5e9d2e2e",
+          "examples/gem-text/document.c": "795c7c8434db6cce1968916db4b6d872c819e188e1ba0cb05c0da2ed5968df86",
+          "ports/gem4xe/adapter/gem-vbxe.c": "3086cf28f7754cc7b424f7dcf417d93198240a8d1daa736be6d79325ae3ad66b"
+        }
+      },
+      "after": {
+        "page": {
+          "samples": 4,
+          "input_completion": {
+            "count": 4,
+            "median": 1025.8513432170955,
+            "p95": 1144.5802596355404,
+            "maximum": 1144.5802596355404
+          },
+          "mean_ms": {
+            "elapsed_ms": 1030.7931303294854,
+            "charged_cpu_ms": 439.0705462101359,
+            "interrupt_ms": 95.72062324934907,
+            "blocked_off_cpu_ms": 81.04105844689511,
+            "runnable_off_cpu_ms": 412.5168280989429,
+            "unclassified_off_cpu_ms": 2.444074324162401
+          },
+          "update_calls_per_repaint": [
+            14,
+            14,
+            14,
+            14
+          ],
+          "update_cpu_mean_ms": 137.5175329407834,
+          "update_elapsed_mean_ms": 436.11533820426035,
+          "drawing_counts": [
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            }
+          ],
+          "hardware_busy_mean_bounds_ms": {
+            "lower": 9.819310269968522,
+            "upper": 23.132891585457138
+          }
+        },
+        "line": {
+          "samples": 4,
+          "input_completion": {
+            "count": 4,
+            "median": 995.1453313391008,
+            "p95": 1269.2825696841885,
+            "maximum": 1269.2825696841885
+          },
+          "mean_ms": {
+            "elapsed_ms": 1056.7201735602548,
+            "charged_cpu_ms": 438.0996441958389,
+            "interrupt_ms": 95.42906542200996,
+            "blocked_off_cpu_ms": 107.33135954123254,
+            "runnable_off_cpu_ms": 415.86010440117343,
+            "unclassified_off_cpu_ms": 0.0
+          },
+          "update_calls_per_repaint": [
+            14,
+            14,
+            14,
+            14
+          ],
+          "update_cpu_mean_ms": 135.9755856883274,
+          "update_elapsed_mean_ms": 429.65585039872906,
+          "drawing_counts": [
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            }
+          ],
+          "hardware_busy_mean_bounds_ms": {
+            "lower": 9.60426302441995,
+            "upper": 27.109538765596387
+          }
+        },
+        "exact_relative_untraced_replay": true,
+        "absolute_scheduler_clock_offset_cycles": 0,
+        "work": [
+          40,
+          43,
+          456,
+          170
+        ],
+        "counter_work": null,
+        "pixels": [
+          {
+            "label": "initial",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          },
+          {
+            "label": "page",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          },
+          {
+            "label": "line",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          }
+        ],
+        "heap_before": [
+          1485888,
+          65536,
+          1485888,
+          1244248
+        ],
+        "heap_after": [
+          1485888,
+          65536,
+          1485888,
+          1244248
+        ],
+        "capture_inputs": {
+          "tools/measure_gui_baseline.py": "c6b0cc62e0b5c883a76c10282ceb665607e9769a3d964e4c42e54a9c83deb6ed",
+          "tools/text_performance_trace.py": "5c726ff4626c56170c2e5d52077904efa00811b79fb3320771f4ea261db78f17",
+          "tools/bitmap_console_performance.py": "8f15302fc7c418dd0f2624a665cf8e427730d6909d35be54ea8cc777211af03f",
+          "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+          "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+          "examples/gem-text/text.c": "e76d7297f0ff93c7a3d1f781673767ff2c7ad43a3800950a2722571f5e9d2e2e",
+          "examples/gem-text/document.c": "795c7c8434db6cce1968916db4b6d872c819e188e1ba0cb05c0da2ed5968df86",
+          "ports/gem4xe/adapter/gem-vbxe.c": "3086cf28f7754cc7b424f7dcf417d93198240a8d1daa736be6d79325ae3ad66b"
+        }
+      },
+      "reduction": {
+        "page": {
+          "completion_median_percent": 16.00715139819299,
+          "viewer_cpu_mean_percent": 12.61956013023714,
+          "update_cpu_mean_percent": 31.648982686904002
+        },
+        "line": {
+          "completion_median_percent": 16.570047646893915,
+          "viewer_cpu_mean_percent": 12.502372881308222,
+          "update_cpu_mean_percent": 32.04426890808695
+        }
+      }
+    },
+    "counter_disk": {
+      "before": {
+        "page": {
+          "samples": 4,
+          "input_completion": {
+            "count": 4,
+            "median": 2175.630798205191,
+            "p95": 2307.6459833178033,
+            "maximum": 2307.6459833178033
+          },
+          "mean_ms": {
+            "elapsed_ms": 2127.196886290685,
+            "charged_cpu_ms": 560.8554453966075,
+            "interrupt_ms": 195.71757480838875,
+            "blocked_off_cpu_ms": 271.89610560786264,
+            "runnable_off_cpu_ms": 1095.6753195400483,
+            "unclassified_off_cpu_ms": 3.052440937777972
+          },
+          "update_calls_per_repaint": [
+            14,
+            14,
+            14,
+            14
+          ],
+          "update_cpu_mean_ms": 240.98794509000126,
+          "update_elapsed_mean_ms": 1142.6503674340515,
+          "drawing_counts": [
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            }
+          ],
+          "hardware_busy_mean_bounds_ms": {
+            "lower": 9.587258715016937,
+            "upper": 26.913205070914138
+          }
+        },
+        "line": {
+          "samples": 4,
+          "input_completion": {
+            "count": 4,
+            "median": 2113.3171407667833,
+            "p95": 2251.0133511141435,
+            "maximum": 2251.0133511141435
+          },
+          "mean_ms": {
+            "elapsed_ms": 2117.9509119948575,
+            "charged_cpu_ms": 548.9281470130917,
+            "interrupt_ms": 157.5614199179846,
+            "blocked_off_cpu_ms": 320.4908271882872,
+            "runnable_off_cpu_ms": 1090.970517875494,
+            "unclassified_off_cpu_ms": 0.0
+          },
+          "update_calls_per_repaint": [
+            14,
+            14,
+            14,
+            14
+          ],
+          "update_cpu_mean_ms": 234.9039617750173,
+          "update_elapsed_mean_ms": 1097.7860917788657,
+          "drawing_counts": [
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            }
+          ],
+          "hardware_busy_mean_bounds_ms": {
+            "lower": 9.463118445851936,
+            "upper": 31.693618643912494
+          }
+        },
+        "exact_relative_untraced_replay": true,
+        "absolute_scheduler_clock_offset_cycles": 0,
+        "work": [
+          40,
+          43,
+          456,
+          170
+        ],
+        "counter_work": [
+          488,
+          43,
+          128,
+          35
+        ],
+        "pixels": [
+          {
+            "label": "initial",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          },
+          {
+            "label": "page",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          },
+          {
+            "label": "line",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          }
+        ],
+        "heap_before": [
+          1349232,
+          65536,
+          1349232,
+          1112416
+        ],
+        "heap_after": [
+          1349232,
+          65536,
+          1349232,
+          1112416
+        ],
+        "capture_inputs": {
+          "tools/measure_gui_baseline.py": "3f62b98e5c4df652190106b46c480d120530902bec9f3ac2e28b30a57614c5eb",
+          "tools/text_performance_trace.py": "f354dcdc84839409869e0cbeccb8b5075dd5ca1034d04cdd08ae7c708574e0de",
+          "tools/bitmap_console_performance.py": "4c00962fb181401bdf74ab7b675b2f8ce5e9f461b80287318b76f6652a719ec1",
+          "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+          "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+          "examples/gem-text/text.c": "e76d7297f0ff93c7a3d1f781673767ff2c7ad43a3800950a2722571f5e9d2e2e",
+          "examples/gem-text/document.c": "795c7c8434db6cce1968916db4b6d872c819e188e1ba0cb05c0da2ed5968df86",
+          "ports/gem4xe/adapter/gem-vbxe.c": "3086cf28f7754cc7b424f7dcf417d93198240a8d1daa736be6d79325ae3ad66b"
+        }
+      },
+      "after": {
+        "page": {
+          "samples": 4,
+          "input_completion": {
+            "count": 4,
+            "median": 1781.1260271307722,
+            "p95": 2203.821088585932,
+            "maximum": 2203.821088585932
+          },
+          "mean_ms": {
+            "elapsed_ms": 1831.9483661061295,
+            "charged_cpu_ms": 481.1346790643647,
+            "interrupt_ms": 166.04124875419205,
+            "blocked_off_cpu_ms": 264.15514485204665,
+            "runnable_off_cpu_ms": 915.7623957010287,
+            "unclassified_off_cpu_ms": 4.8548977344973565
+          },
+          "update_calls_per_repaint": [
+            14,
+            14,
+            14,
+            14
+          ],
+          "update_cpu_mean_ms": 163.11277187511894,
+          "update_elapsed_mean_ms": 903.0331635134393,
+          "drawing_counts": [
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            }
+          ],
+          "hardware_busy_mean_bounds_ms": {
+            "lower": 9.182749982731375,
+            "upper": 34.227754134249814
+          }
+        },
+        "line": {
+          "samples": 4,
+          "input_completion": {
+            "count": 4,
+            "median": 1839.1443783929326,
+            "p95": 2190.233993394222,
+            "maximum": 2190.233993394222
+          },
+          "mean_ms": {
+            "elapsed_ms": 1880.2284815310293,
+            "charged_cpu_ms": 472.6389912867452,
+            "interrupt_ms": 139.51771549482012,
+            "blocked_off_cpu_ms": 192.24418470239462,
+            "runnable_off_cpu_ms": 1075.8275900470694,
+            "unclassified_off_cpu_ms": 0.0
+          },
+          "update_calls_per_repaint": [
+            14,
+            14,
+            14,
+            14
+          ],
+          "update_cpu_mean_ms": 158.51963477915191,
+          "update_elapsed_mean_ms": 894.0983240270716,
+          "drawing_counts": [
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            },
+            {
+              "rows": 18,
+              "text_calls": 20,
+              "bar_calls": 1,
+              "physical_grants": 21,
+              "hardware_launches": 23,
+              "fences": 31,
+              "submissions": 5
+            }
+          ],
+          "hardware_busy_mean_bounds_ms": {
+            "lower": 9.310484945283129,
+            "upper": 33.909711874752425
+          }
+        },
+        "exact_relative_untraced_replay": true,
+        "absolute_scheduler_clock_offset_cycles": 35568,
+        "work": [
+          40,
+          43,
+          456,
+          170
+        ],
+        "counter_work": [
+          488,
+          43,
+          128,
+          35
+        ],
+        "pixels": [
+          {
+            "label": "initial",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          },
+          {
+            "label": "page",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          },
+          {
+            "label": "line",
+            "pixels": 77520,
+            "sha256": "96679650c70ecbd0074860df058dd4bd378aa00f8dede14d0065bb689f8cb105"
+          }
+        ],
+        "heap_before": [
+          1349232,
+          65536,
+          1349232,
+          1112416
+        ],
+        "heap_after": [
+          1349232,
+          65536,
+          1349232,
+          1112416
+        ],
+        "capture_inputs": {
+          "tools/measure_gui_baseline.py": "e742a86d7f421ff4be5b5eb43bc6c2dd66f0ec31173566bc6bb40cf4637bdf9b",
+          "tools/text_performance_trace.py": "5c726ff4626c56170c2e5d52077904efa00811b79fb3320771f4ea261db78f17",
+          "tools/bitmap_console_performance.py": "8f15302fc7c418dd0f2624a665cf8e427730d6909d35be54ea8cc777211af03f",
+          "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+          "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+          "examples/gem-text/text.c": "e76d7297f0ff93c7a3d1f781673767ff2c7ad43a3800950a2722571f5e9d2e2e",
+          "examples/gem-text/document.c": "795c7c8434db6cce1968916db4b6d872c819e188e1ba0cb05c0da2ed5968df86",
+          "ports/gem4xe/adapter/gem-vbxe.c": "3086cf28f7754cc7b424f7dcf417d93198240a8d1daa736be6d79325ae3ad66b"
+        }
+      },
+      "reduction": {
+        "page": {
+          "completion_median_percent": 18.13289145381971,
+          "viewer_cpu_mean_percent": 14.214137882867206,
+          "update_cpu_mean_percent": 32.31496628837532
+        },
+        "line": {
+          "completion_median_percent": 12.973573965068564,
+          "viewer_cpu_mean_percent": 13.897840025413565,
+          "update_cpu_mean_percent": 32.517257869419666
+        }
+      }
+    }
+  },
+  "regressions": {
+    "locks": {
+      "c_checks": 231,
+      "native_checks": 4,
+      "boundary_checks": 0
+    },
+    "pointer-retired": {
+      "c_checks": 168,
+      "native_checks": 5,
+      "boundary_checks": 25
+    }
+  },
+  "matched_inputs": {
+    "c_segments": true,
+    "all_ten_app_hashes": true,
+    "rom_and_machine": true,
+    "document": true,
+    "drawing_counts": true,
+    "bank_zero_and_runtime_reservations": true
+  },
+  "idle_control": "Fresh original-package capture and replay with the same physical startup-folder close used by the candidate; historical Windows-menu idle measurements are preserved but not used in the comparison.",
+  "loaded_control": "Reuses the frozen original package and counter/disk captures; the measurement change affects only the idle startup branch. Loaded input sequence, GFLOAD fixture and all application bytes are unchanged.",
+  "inputs": {
+    "lib/aes/aessnapshot.act": "0e4952156133cb218c6700c62ac0ee0a5c7bb3449551bbefc2a4692e6740347c",
+    "tests/programs/aes_route_reuse.act": "ea5d56cb7e62967bfe332f50a1f07d7f8b5efe1d13bef722c56d45204f54665f",
+    "tools/test_aes_route_reuse.py": "c729d53e031026d7f87a213d62df4bb886c247f1eb155def4c6fed5d5ae990be",
+    "tools/test_aes_pointer.py": "372791a7c3a7cdf997dcda4c55d365a2b65fb4cd353a869dc8daae149ff75618",
+    "tools/test_aes_server.py": "e212f26a1121b8c9ac4ad59e0398447942bc921e556052373578051a0195d328",
+    "tools/measure_gui_baseline.py": "c6b0cc62e0b5c883a76c10282ceb665607e9769a3d964e4c42e54a9c83deb6ed",
+    "tools/text_performance_trace.py": "5c726ff4626c56170c2e5d52077904efa00811b79fb3320771f4ea261db78f17",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9"
+  },
+  "artifacts": [
+    {
+      "path": "build/gui-route-reuse/idle-control/results.json",
+      "sha256": "4ae471b12603155fd4b487116a86e3bb724f15333b507098d393175af9f86aa5"
+    },
+    {
+      "path": "build/gui-route-reuse/idle-control-replay/results.json",
+      "sha256": "c305eeb5dd552ed8bb84265782518597b95d8cd18f09567629ef22c76c7d2027"
+    },
+    {
+      "path": "build/gui-route-reuse/idle-control/cpu-trace.log",
+      "sha256": "7de4a94f83b884aeb7a3a16a43f70a14f45bcaf12044d9c816ed04c7368ecc78"
+    },
+    {
+      "path": "build/gui-route-reuse/idle-control/text-performance-breakdown.json",
+      "sha256": "82079c7d7d5292f2e271616db412b56574b9debda616a422427e2fff4585e104"
+    },
+    {
+      "path": "build/gui-route-reuse/idle-control/text-performance-markers.json",
+      "sha256": "2b62362d5a556895425563bdda542d85008f9b4f1c1e200d07a7edd76f98897f"
+    },
+    {
+      "path": "build/gui-route-reuse/idle-physical/results.json",
+      "sha256": "31bd099c189162c3bf65a958bc060caf2e797bf32671d28a932004db62cf7b88"
+    },
+    {
+      "path": "build/gui-route-reuse/idle-physical-replay/results.json",
+      "sha256": "241bc93334dd39e34ac9323690dd8a043bf7f0d6d81712b31095e2bac7fa088f"
+    },
+    {
+      "path": "build/gui-route-reuse/idle-physical/cpu-trace.log",
+      "sha256": "7d0d2954c2f257c25ebec338ca1ecd643327b5b89a1c711c3da336405438f8c7"
+    },
+    {
+      "path": "build/gui-route-reuse/idle-physical/text-performance-breakdown.json",
+      "sha256": "0b695b66870c0ede09fd394d34cfd7b9237f309cd4f0edb732b9a30c72bdc875"
+    },
+    {
+      "path": "build/gui-route-reuse/idle-physical/text-performance-markers.json",
+      "sha256": "2b62362d5a556895425563bdda542d85008f9b4f1c1e200d07a7edd76f98897f"
+    },
+    {
+      "path": "build/gui-baseline/loaded-final/results.json",
+      "sha256": "173be60e40d718c126c60c2354cbb0c67846b82a15c2d1acd734517d4f95d9e1"
+    },
+    {
+      "path": "build/gui-baseline/loaded-final-replay/results.json",
+      "sha256": "a9e966b437a8a98e299e575f83e4b246d00fed5d8fdfde8caa0415a7fd6a03b4"
+    },
+    {
+      "path": "build/gui-baseline/loaded-final/cpu-trace.log",
+      "sha256": "cd3774f27c853185874a2af644df1bf9b8a01dc69c044f7f3f76b8fbcb9f446e"
+    },
+    {
+      "path": "build/gui-baseline/loaded-final/text-performance-breakdown.json",
+      "sha256": "063b7eb308296b51017c434b9b848ffe5d0d86675f057c6807e048de12846cd4"
+    },
+    {
+      "path": "build/gui-baseline/loaded-final/text-performance-markers.json",
+      "sha256": "2b62362d5a556895425563bdda542d85008f9b4f1c1e200d07a7edd76f98897f"
+    },
+    {
+      "path": "build/gui-route-reuse/viewer-loaded/results.json",
+      "sha256": "fcaed0b9adceb49ed51e8ff43012649a16b81d66bffc9c3e6591303e3099329b"
+    },
+    {
+      "path": "build/gui-route-reuse/viewer-loaded-replay/results.json",
+      "sha256": "5d47291273a73eb29d867755e9c36ad664cfde49401e0416571e4cd49febf818"
+    },
+    {
+      "path": "build/gui-route-reuse/viewer-loaded/cpu-trace.log",
+      "sha256": "bde720f59dfe57e39aab0a86d1e714f8c269771c1e48386dff8f3246c4224c59"
+    },
+    {
+      "path": "build/gui-route-reuse/viewer-loaded/text-performance-breakdown.json",
+      "sha256": "b1ccc75a9eb72516c79c834f6a1fe2b3cef6e38f67855d59404ff7101d49786d"
+    },
+    {
+      "path": "build/gui-route-reuse/viewer-loaded/text-performance-markers.json",
+      "sha256": "2b62362d5a556895425563bdda542d85008f9b4f1c1e200d07a7edd76f98897f"
+    },
+    {
+      "path": "build/gui-route-reuse/before-valid/results.json",
+      "sha256": "554258510f1f850c33520bef5d95fa1a4acc631001b0d98d6940718c4178a66e"
+    },
+    {
+      "path": "build/gui-route-reuse/before-valid/program/program.a816.json",
+      "sha256": "b28cb0cea431965ec4660cf657e48fad6d920ac0dfaa3b4dc0ac1b17c13e6171"
+    },
+    {
+      "path": "build/gui-route-reuse/before-valid/program/memory.json",
+      "sha256": "6c5106838dec382c2a1e9bbf3f09f27b79243bf158bfe6ee22d62e3fb78613b2"
+    },
+    {
+      "path": "build/gui-route-reuse/after/results.json",
+      "sha256": "d8880aaa5dd08ba2ccd2166ef2f457a3662e84b6de58665575293d502972bc03"
+    },
+    {
+      "path": "build/gui-route-reuse/after/program/program.a816.json",
+      "sha256": "9d0699a39616ee759bb8f951a63a4d5dc68e01c237c89f06426231c180527fae"
+    },
+    {
+      "path": "build/gui-route-reuse/after/program/memory.json",
+      "sha256": "6c5106838dec382c2a1e9bbf3f09f27b79243bf158bfe6ee22d62e3fb78613b2"
+    },
+    {
+      "path": "build/gui-route-reuse/locks/results.json",
+      "sha256": "ab10ac35296b5d0113302225f4b775811dcef38448b5e79cd27255e5206099b7"
+    },
+    {
+      "path": "build/gui-route-reuse/pointer-retired/results.json",
+      "sha256": "24d3777f8bd8bb42d9288f3a93f06839876c5c49399bbe76581c371e3f083359"
+    },
+    {
+      "path": "build/gui-route-reuse/demo/exec816-demo.zip",
+      "sha256": "7f62e372fa074b77ca37d25156ae09f2400c600a9e6d41b4383e6be77d8f1667"
+    },
+    {
+      "path": "build/gui-route-reuse/demo/demo-manifest.json",
+      "sha256": "db4c5cf4eecac8f4ca9587fb9059a8d27c632dd7d6854727905214d928889caf"
+    },
+    {
+      "path": "build/gui-route-reuse/demo/build.json",
+      "sha256": "6d4fe92360cf85ca33002010d0781cc92ca5d86cb4515ca71afe8cf1cf2141dc"
+    },
+    {
+      "path": "build/gui-route-reuse/demo/memory.json",
+      "sha256": "abdc46f15ef99a785698137048fc23369322b4a98ac7d135320d2bcae4122074"
+    },
+    {
+      "path": "build/gui-route-reuse/demo/bitmap-console/c-image.json",
+      "sha256": "0ea554a101bb56e9eb428329bfc5a5297da8c6bdeec3ef300443e230271448ea"
+    },
+    {
+      "path": "build/gui-baseline/current/demo/memory.json",
+      "sha256": "abdc46f15ef99a785698137048fc23369322b4a98ac7d135320d2bcae4122074"
+    },
+    {
+      "path": "build/gui-baseline/load/fixture.json",
+      "sha256": "3b1426dbd2eee01792078bbcf56724f811b1cf6540dc3d120fcadf6d272688b3"
+    },
+    {
+      "path": "build/gui-route-reuse/package-audit.json",
+      "sha256": "9258ed0948232b89fb3c0c26db5890ea5d02bac27fa0533b76199d7ba16d7672"
+    },
+    {
+      "path": "build/gui-route-reuse/audit_package.py",
+      "sha256": "6e3130ce6aaaaa2e5bfae8b4dcb3c2f3d4843c956ac513cc9403acc969ad62b1"
+    },
+    {
+      "path": "build/gui-route-reuse/record.py",
+      "sha256": "f3b5f4c8161e455da40ee49ca57fd4deae20c0e7b57e5fa851351c2fe1296e63"
+    }
+  ],
+  "excluded_pilots": [
+    {
+      "path": "build/gui-route-reuse/before-checked/results.json",
+      "sha256": "b4fd8b009f5af8bb5b7afebf38c5fc7d36234e9ba3c053f841d14ce3c161568f",
+      "reason": "RuntimeError: Unexpected termination: {'status': 64291, 'native_nmi_count': 4, 'native_irq_count': 0, 'os_busy': 0, 'return_s': 0, 'return_d': 0, 'return_p': 0, 'fault_required': 0, 'fault_s': 0, 'clock_start': 148, 'clock_end': 152, 'return_dbr': 0, 'return_e': 0}"
+    },
+    {
+      "path": "build/gui-route-reuse/pointer-control/results.json",
+      "sha256": "040a250c58977063a9e7bcd41ba7f217b36341bf78a76711202047b2686f0fe3",
+      "reason": "Unexpected termination: {'status': 65427, 'native_nmi_count': 375, 'native_irq_count': 19915, 'os_busy': 0, 'return_s': 0, 'return_d': 0, 'return_p': 0, 'fault_required': 0, 'fault_s': 0, 'clock_start': 53, 'clock_end': 0, 'return_dbr': 0, 'return_e': 0}"
+    },
+    {
+      "path": "build/gui-route-reuse/pointer-valid/results.json",
+      "sha256": "4d407c102ddd92b93ca9e16089f6e450b7cbb55a05c96c48742cd6c1493ef419",
+      "reason": "Unexpected termination: {'status': 65427, 'native_nmi_count': 374, 'native_irq_count': 19792, 'os_busy': 0, 'return_s': 0, 'return_d': 0, 'return_p': 0, 'fault_required': 0, 'fault_s': 0, 'clock_start': 53, 'clock_end': 0, 'return_dbr': 0, 'return_e': 0}"
+    },
+    {
+      "path": "build/gui-route-reuse/viewer-idle/results.json",
+      "sha256": "4b42799ab3d1efb5e870beb594d31e2e577b26b02fa778808eb2ab124d97b6b9",
+      "reason": "RuntimeError: No breakpoint at $1a00 within 30000 frames; {'ok': True, 'PC': '$1e7d', 'A': '$13', 'X': '$3f', 'Y': '$00', 'S': '$13', 'P': '$00', 'flags': '--------', 'cycles': 574022922, 'clock_multiplier': 8, 'shadow_rom': True, 'mode': '65C816'}"
+    },
+    {
+      "path": "build/gui-route-reuse/viewer-idle-replay/results.json",
+      "sha256": "5aec52837ceb4124a38089e5fc3cbf7225fb5194545faba5bc9b6c42fa830ada",
+      "reason": "RuntimeError: No breakpoint at $1a00 within 30000 frames; {'ok': True, 'PC': '$65de', 'A': '$02', 'X': '$bd', 'Y': '$bd', 'S': '$bd', 'P': '$24', 'flags': '--M--I--', 'cycles': 574088442, 'clock_multiplier': 8, 'shadow_rom': True, 'mode': '65C816'}"
+    }
+  ],
+  "bank_zero_budget": {
+    "fixed_runtime": 11072,
+    "idle": 800,
+    "loading_excluding_os": 20368,
+    "loading_including_os": 40336,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848,
+      1600,
+      1600,
+      1600,
+      2848
+    ],
+    "runtime_excluding_os": 35040,
+    "runtime_including_os": 55008
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "each_public_task": 0,
+    "idle": 0,
+    "includes": "Guards, alignment and unused reserved capacity; 12 public Tasks, plus matched 8-Task focused builds"
+  },
+  "guest_upper_reservation_delta": 0,
+  "guest_vram_delta": 0,
+  "publish_emitted_code": {
+    "before": {
+      "size": 4068,
+      "fixed_frame": 38,
+      "local_stack_peak": 50
+    },
+    "after": {
+      "size": 4088,
+      "fixed_frame": 38,
+      "local_stack_peak": 50
+    }
+  },
+  "host": {
+    "status": "pass",
+    "tests": 702,
+    "skips": 4,
+    "artifact": {
+      "path": "build/gui-route-reuse-host.log",
+      "sha256": "7c8f3c2f02d9295b0bf8e550355fb50686fe7cb0929eed36a7e7391d97fa7977"
+    }
+  },
+  "limits": [
+    "Four deterministic actions per operation per scene, with same-image untraced companions; no latency-tail or release qualification.",
+    "Replay comparisons remove one recorded global scheduler-clock origin offset, then require exact timestamps, gaps, durations and runtime counters; no per-sample alignment.",
+    "Key offer through IRQ-observed completed repaint; scanout timing excluded. All whole-work-area oracle checkpoints match.",
+    "Busy bounds overlap CPU/IRQ/off-CPU categories; UPDATE includes routing/cache work and scheduling, not just lock acquisition.",
+    "First off-CPU prefix remains unclassified until a scheduler publication is available.",
+    "Fixture repairs use the current keyRoute field and retire deferred paint before return; the old snapshot code reproduced the former shutdown fault.",
+    "QED omitted; default OF816 autoboot and combined SYS retained. No new platform qualification."
+  ]
+}

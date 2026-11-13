@@ -387,7 +387,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','visibility','forms','resources') else ''}
+{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','visibility','forms','resources','pointer') else ''}
 {'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else 'USE VISPROBE' if suite=='visibility' else ''}
 CARD checks
 CARD FUNC POINTER run()
@@ -431,7 +431,7 @@ PROC Main()
     OD
     EXEC.FreeSignal(bit)
   END
-''' if suite in ('frame','visibility','forms','resources') else ''}
+''' if suite in ('frame','visibility','forms','resources','pointer') else ''}
 {exhaustion}
 RETURN
 ENDMODULE

@@ -1,5 +1,9 @@
 # Historical records
 
+- [Input-route reuse during paint-only UPDATE](gui-route-reuse.md): retained
+  routes and endpoint holds, preserved MCTRL/input refresh, and measured viewer
+  CPU and repaint improvements with unchanged drawing units.
+
 - [Current GUI drawing baseline](gui-drawing-baseline.md): optimized viewer
   repaint and text-row costs with idle peers and Counter/disk load.
 
