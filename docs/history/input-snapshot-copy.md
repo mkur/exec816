@@ -5,6 +5,9 @@
 [IC2 evidence](../development/input-snapshot-copy-ic2.json) ·
 [Earlier route reuse](gui-route-reuse.md) · [AES contract](../reference/aes.md)
 
+The follow-up [viewer wait audit](viewer-wait-audit.md) traces the unchanged
+package's off-CPU time and confirms a Terminal query-reply/view-wake feedback loop.
+
 ## Implementation
 
 `AESSNAPSHOT.Default` now tests a published slot's endpoint before copying its

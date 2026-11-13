@@ -1,0 +1,1486 @@
+{
+  "format": "exec816.viewer-wait-audit.v1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "runtime_revision": "067b2eff",
+  "runtime_changes": false,
+  "bundle": {
+    "path": "build/input-snapshot-copy/demo/exec816-demo.zip",
+    "sha256": "0ac9643b83545a9f44639505551df5ca033375c0cfb9f8f71353929d428ac884"
+  },
+  "platform": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+      "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+      "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 2,
+      "internal_port": 1,
+      "map": "Mouse -> ST Mouse (port 2)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "scenes": {
+    "idle": {
+      "samples": 8,
+      "elapsed_mean_ms": 1050.248315780422,
+      "exact_replay": true,
+      "scheduler_origin_offset_cycles": 35568,
+      "exact_original_dense_capture_timing": true,
+      "original_scheduler_origin_offset_cycles": 0,
+      "per_action": [
+        {
+          "dp": 37632,
+          "role": "text",
+          "viewer_state": "viewer",
+          "kind": "cpu",
+          "mean_ms": 436.57708890452074
+        },
+        {
+          "dp": 4608,
+          "role": "terminal",
+          "viewer_state": "runnable",
+          "kind": "cpu",
+          "mean_ms": 171.27336022070008
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "viewer_state": "runnable",
+          "kind": "cpu",
+          "mean_ms": 128.43524935189794
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "viewer_state": "viewer",
+          "kind": "irq",
+          "mean_ms": 95.18891699641517
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "runnable",
+          "kind": "cpu",
+          "mean_ms": 60.22177496091652
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 44.739659617778365
+        },
+        {
+          "dp": 4608,
+          "role": "terminal",
+          "viewer_state": "runnable",
+          "kind": "irq",
+          "mean_ms": 36.92011780726523
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "viewer_state": "runnable",
+          "kind": "irq",
+          "mean_ms": 27.65187931979943
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "runnable",
+          "kind": "irq",
+          "mean_ms": 13.042305312111015
+        },
+        {
+          "dp": 4608,
+          "role": "terminal",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 11.021021555473167
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 9.668324337201975
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 7.069916081530465
+        },
+        {
+          "dp": 4608,
+          "role": "terminal",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 2.3974490364107197
+        },
+        {
+          "dp": 5376,
+          "role": "?",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 2.356312704492239
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 1.525982584767804
+        },
+        {
+          "dp": 5376,
+          "role": "?",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 0.6072917298087482
+        },
+        {
+          "dp": 4608,
+          "role": "terminal",
+          "viewer_state": "unknown",
+          "kind": "cpu",
+          "mean_ms": 0.5835209387365569
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "unknown",
+          "kind": "cpu",
+          "mean_ms": 0.42504606141427925
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "viewer_state": "unknown",
+          "kind": "cpu",
+          "mean_ms": 0.25203382113087647
+        },
+        {
+          "dp": 4608,
+          "role": "terminal",
+          "viewer_state": "unknown",
+          "kind": "irq",
+          "mean_ms": 0.1347393283421133
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "unknown",
+          "kind": "irq",
+          "mean_ms": 0.08735633561185206
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "viewer_state": "unknown",
+          "kind": "irq",
+          "mean_ms": 0.06896877409678043
+        }
+      ],
+      "wait_summary": [
+        {
+          "name": "shell controller",
+          "dp": 3328,
+          "calls": 125,
+          "immediate": 19,
+          "blocked": 106,
+          "masks": {
+            "0x3d0000": 106
+          },
+          "immediate_bits": {
+            "0x40000": 19
+          },
+          "returned_bits": {
+            "0x40000": 106
+          },
+          "sources": {
+            "terminal / direct": 102
+          }
+        },
+        {
+          "name": "terminal",
+          "dp": 4608,
+          "calls": 50,
+          "immediate": 0,
+          "blocked": 50,
+          "masks": {
+            "0x200000": 23,
+            "0x680000": 27
+          },
+          "immediate_bits": {},
+          "returned_bits": {
+            "0x200000": 23,
+            "0x400000": 27
+          },
+          "sources": {
+            "shell controller / SHELLAPP_SHELLCONTROLLERREQUESTS": 21
+          }
+        },
+        {
+          "name": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "dp": 4864,
+          "calls": 99,
+          "immediate": 19,
+          "blocked": 80,
+          "masks": {
+            "0x400d0000": 13,
+            "0xe00f0000": 67
+          },
+          "immediate_bits": {
+            "0x80000": 19
+          },
+          "returned_bits": {
+            "0x80000": 67,
+            "0x40000000": 8,
+            "0x10000": 5
+          },
+          "sources": {
+            "text / AESGATE_RELEASE": 67,
+            "text / direct": 5
+          }
+        },
+        {
+          "name": "text",
+          "dp": 37632,
+          "calls": 38,
+          "immediate": 0,
+          "blocked": 38,
+          "masks": {
+            "0x40000": 31,
+            "0x80000": 7
+          },
+          "immediate_bits": {},
+          "returned_bits": {
+            "0x40000": 31,
+            "0x80000": 7
+          },
+          "sources": {
+            "M_CONSOLEDRIVER_WORKER_589B3ABC / AESGATE_WAKECALLERS": 23,
+            "M_CONSOLEDRIVER_WORKER_589B3ABC / AESWAIT_SIGNAL": 8,
+            "M_CONSOLEDRIVER_WORKER_589B3ABC / AESINBOX_WAKE": 7
+          }
+        }
+      ],
+      "viewer_wait_budget": {
+        "scene admission": {
+          "episodes": 23,
+          "blocked_off_cpu_ms": 127.84491787887715,
+          "ready_off_cpu_ms": 160.72924346505883,
+          "blocked_off_cpu_mean_ms": 15.980614734859644,
+          "ready_off_cpu_mean_ms": 20.091155433132354
+        },
+        "UPDATE/window admission": {
+          "episodes": 8,
+          "blocked_off_cpu_ms": 410.39803828418945,
+          "ready_off_cpu_ms": 37.1031564227303,
+          "blocked_off_cpu_mean_ms": 51.29975478552368,
+          "ready_off_cpu_mean_ms": 4.637894552841288
+        },
+        "input/events": {
+          "episodes": 7,
+          "blocked_off_cpu_ms": 96.84470501664131,
+          "ready_off_cpu_ms": 34.09623064680517,
+          "blocked_off_cpu_mean_ms": 12.105588127080164,
+          "ready_off_cpu_mean_ms": 4.262028830850646
+        }
+      },
+      "ready_episode_budget": {
+        "initial/unknown": {
+          "episodes": 1,
+          "off_cpu_ms": 8.610700344949597,
+          "off_cpu_mean_ms": 1.0763375431186997
+        },
+        "after wait": {
+          "episodes": 38,
+          "off_cpu_ms": 231.92863053459433,
+          "off_cpu_mean_ms": 28.99107881682429
+        },
+        "preemption/reschedule": {
+          "episodes": 267,
+          "off_cpu_ms": 3259.818164901977,
+          "off_cpu_mean_ms": 407.47727061274713
+        }
+      },
+      "native_scopes": [
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "scope": "AESINBOX_WAKE",
+          "calls": 8,
+          "cpu_ms": 10.190814783070827
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "scope": "AESGATE_WAKECALLERS",
+          "calls": 125,
+          "cpu_ms": 18.725744630162467
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_SHELLCONTROLLERREQUESTS",
+          "calls": 119,
+          "cpu_ms": 164.60016436911712
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_SHELLCONTROLLERREADY",
+          "calls": 120,
+          "cpu_ms": 8.488057864695746
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_SHELLCONTROLLERSELECTION",
+          "calls": 120,
+          "cpu_ms": 38.95357770669839
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "PROCESS_COLLECT",
+          "calls": 360,
+          "cpu_ms": 295.82994421881654
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_SHELLCONTROLLERCOLLECT",
+          "calls": 120,
+          "cpu_ms": 175.26026284961924
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "scope": "AESGATE_ENTERTASK",
+          "calls": 128,
+          "cpu_ms": 53.59138063010041
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "PROCESS_COMPLETIONMASK",
+          "calls": 359,
+          "cpu_ms": 286.7407267483248
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_DESKTOPSERVICE",
+          "calls": 118,
+          "cpu_ms": 433.7331666147434
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_DESKTOPWATCH",
+          "calls": 118,
+          "cpu_ms": 436.7409382008771
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_SHELLCONTROLLERSTEP",
+          "calls": 117,
+          "cpu_ms": 979.8822632189567
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "scope": "AESGATE_WAKECALLERS",
+          "calls": 128,
+          "cpu_ms": 0.9807874211105765
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "scope": "AESGATE_RELEASE",
+          "calls": 128,
+          "cpu_ms": 172.16163715023984
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "scope": "AESLOCAL_CALL",
+          "calls": 120,
+          "cpu_ms": 1056.0603711133263
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "scope": "AESWAIT_SIGNAL",
+          "calls": 8,
+          "cpu_ms": 8.030122120897293
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "scope": "DISPLAY_ENTER",
+          "calls": 168,
+          "cpu_ms": 25.093567754331584
+        }
+      ],
+      "hardware_busy_mean_bounds_ms": {
+        "lower": 9.762870059587328,
+        "upper": 15.184504686493398
+      }
+    },
+    "loaded": {
+      "samples": 8,
+      "elapsed_mean_ms": 1847.7738980150243,
+      "exact_replay": true,
+      "scheduler_origin_offset_cycles": 0,
+      "exact_original_dense_capture_timing": true,
+      "original_scheduler_origin_offset_cycles": 0,
+      "per_action": [
+        {
+          "dp": 37632,
+          "role": "text",
+          "viewer_state": "viewer",
+          "kind": "cpu",
+          "mean_ms": 475.07584979256507
+        },
+        {
+          "dp": 4608,
+          "role": "terminal",
+          "viewer_state": "runnable",
+          "kind": "cpu",
+          "mean_ms": 231.95974930185415
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "viewer_state": "runnable",
+          "kind": "cpu",
+          "mean_ms": 171.908308182227
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "viewer_state": "viewer",
+          "kind": "irq",
+          "mean_ms": 155.52641817702525
+        },
+        {
+          "dp": 5120,
+          "role": "desktop",
+          "viewer_state": "runnable",
+          "kind": "cpu",
+          "mean_ms": 96.09552862433199
+        },
+        {
+          "dp": 3840,
+          "role": "M_FSWORKER_WORKER_2BB473B0",
+          "viewer_state": "runnable",
+          "kind": "cpu",
+          "mean_ms": 85.04325614375391
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "runnable",
+          "kind": "cpu",
+          "mean_ms": 81.20709275295717
+        },
+        {
+          "dp": 4608,
+          "role": "terminal",
+          "viewer_state": "runnable",
+          "kind": "irq",
+          "mean_ms": 75.03914515371896
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 65.68797321319069
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "viewer_state": "runnable",
+          "kind": "irq",
+          "mean_ms": 54.074355880284024
+        },
+        {
+          "dp": 4608,
+          "role": "terminal",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 40.93831541390428
+        },
+        {
+          "dp": 4096,
+          "role": "M_SIODRIVER_WORKER_374ADF8C",
+          "viewer_state": "runnable",
+          "kind": "cpu",
+          "mean_ms": 32.143272496084606
+        },
+        {
+          "dp": 5120,
+          "role": "desktop",
+          "viewer_state": "runnable",
+          "kind": "irq",
+          "mean_ms": 31.163709737671965
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "runnable",
+          "kind": "irq",
+          "mean_ms": 28.934136406631715
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 27.18953831449761
+        },
+        {
+          "dp": 37120,
+          "role": "M_PROCESS_RUN_4C2ABD87",
+          "viewer_state": "runnable",
+          "kind": "cpu",
+          "mean_ms": 22.35696644529934
+        },
+        {
+          "dp": 36864,
+          "role": "counter",
+          "viewer_state": "runnable",
+          "kind": "cpu",
+          "mean_ms": 21.79214143638309
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 20.40914482949171
+        },
+        {
+          "dp": 3840,
+          "role": "M_FSWORKER_WORKER_2BB473B0",
+          "viewer_state": "runnable",
+          "kind": "irq",
+          "mean_ms": 19.248622739043586
+        },
+        {
+          "dp": 36864,
+          "role": "counter",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 15.813602460743834
+        },
+        {
+          "dp": 5120,
+          "role": "desktop",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 12.872526533771087
+        },
+        {
+          "dp": 4608,
+          "role": "terminal",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 12.180865235649772
+        },
+        {
+          "dp": 4096,
+          "role": "M_SIODRIVER_WORKER_374ADF8C",
+          "viewer_state": "runnable",
+          "kind": "irq",
+          "mean_ms": 12.14411654418865
+        },
+        {
+          "dp": 3840,
+          "role": "M_FSWORKER_WORKER_2BB473B0",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 11.81508756250185
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 8.83791492277048
+        },
+        {
+          "dp": 36864,
+          "role": "counter",
+          "viewer_state": "runnable",
+          "kind": "irq",
+          "mean_ms": 6.993308583986839
+        },
+        {
+          "dp": 36864,
+          "role": "counter",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 6.038785331959362
+        },
+        {
+          "dp": 37120,
+          "role": "M_PROCESS_RUN_4C2ABD87",
+          "viewer_state": "runnable",
+          "kind": "irq",
+          "mean_ms": 4.897020844992592
+        },
+        {
+          "dp": 4096,
+          "role": "M_SIODRIVER_WORKER_374ADF8C",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 4.559674729587428
+        },
+        {
+          "dp": 5120,
+          "role": "desktop",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 3.563063609156741
+        },
+        {
+          "dp": 3840,
+          "role": "M_FSWORKER_WORKER_2BB473B0",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 2.7447862849055302
+        },
+        {
+          "dp": 37120,
+          "role": "M_PROCESS_RUN_4C2ABD87",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 2.448294564682631
+        },
+        {
+          "dp": 4096,
+          "role": "M_SIODRIVER_WORKER_374ADF8C",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 1.5197711660480504
+        },
+        {
+          "dp": 5376,
+          "role": "?",
+          "viewer_state": "blocked",
+          "kind": "cpu",
+          "mean_ms": 1.3544769439185542
+        },
+        {
+          "dp": 3840,
+          "role": "M_FSWORKER_WORKER_2BB473B0",
+          "viewer_state": "unknown",
+          "kind": "cpu",
+          "mean_ms": 1.0533068359790747
+        },
+        {
+          "dp": 4096,
+          "role": "M_SIODRIVER_WORKER_374ADF8C",
+          "viewer_state": "unknown",
+          "kind": "cpu",
+          "mean_ms": 0.5396709657319994
+        },
+        {
+          "dp": 37120,
+          "role": "M_PROCESS_RUN_4C2ABD87",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 0.5280058332710723
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "unknown",
+          "kind": "cpu",
+          "mean_ms": 0.4618564265364495
+        },
+        {
+          "dp": 5376,
+          "role": "?",
+          "viewer_state": "blocked",
+          "kind": "irq",
+          "mean_ms": 0.4454688537439084
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "viewer_state": "unknown",
+          "kind": "irq",
+          "mean_ms": 0.32497614110369777
+        },
+        {
+          "dp": 5376,
+          "role": "?",
+          "viewer_state": "unknown",
+          "kind": "cpu",
+          "mean_ms": 0.3106942833097681
+        },
+        {
+          "dp": 3840,
+          "role": "M_FSWORKER_WORKER_2BB473B0",
+          "viewer_state": "unknown",
+          "kind": "irq",
+          "mean_ms": 0.22867712464000203
+        },
+        {
+          "dp": 4096,
+          "role": "M_SIODRIVER_WORKER_374ADF8C",
+          "viewer_state": "unknown",
+          "kind": "irq",
+          "mean_ms": 0.21278294113583854
+        },
+        {
+          "dp": 5376,
+          "role": "?",
+          "viewer_state": "unknown",
+          "kind": "irq",
+          "mean_ms": 0.09163824979312891
+        }
+      ],
+      "wait_summary": [
+        {
+          "name": "shell controller",
+          "dp": 3328,
+          "calls": 176,
+          "immediate": 43,
+          "blocked": 133,
+          "masks": {
+            "0x3d0000": 133
+          },
+          "immediate_bits": {
+            "0x40000": 43
+          },
+          "returned_bits": {
+            "0x40000": 133
+          },
+          "sources": {
+            "terminal / direct": 129
+          }
+        },
+        {
+          "name": "M_FSWORKER_WORKER_2BB473B0",
+          "dp": 3840,
+          "calls": 77,
+          "immediate": 1,
+          "blocked": 76,
+          "masks": {
+            "0x50000": 75,
+            "0x20060000": 1
+          },
+          "immediate_bits": {
+            "0x20000": 1
+          },
+          "returned_bits": {
+            "0x10000": 75,
+            "0x20000": 1
+          },
+          "sources": {
+            "M_SIODRIVER_WORKER_374ADF8C / direct": 71,
+            "M_PROCESS_RUN_4C2ABD87 / direct": 1
+          }
+        },
+        {
+          "name": "M_SIODRIVER_WORKER_374ADF8C",
+          "dp": 4096,
+          "calls": 146,
+          "immediate": 62,
+          "blocked": 84,
+          "masks": {
+            "0xc0000000": 75,
+            "0xe0000000": 9
+          },
+          "immediate_bits": {
+            "0x80000000": 62
+          },
+          "returned_bits": {
+            "0x40000000": 75,
+            "0x80000000": 9
+          },
+          "sources": {
+            "M_FSWORKER_WORKER_2BB473B0 / direct": 9
+          }
+        },
+        {
+          "name": "terminal",
+          "dp": 4608,
+          "calls": 88,
+          "immediate": 3,
+          "blocked": 85,
+          "masks": {
+            "0x680000": 46,
+            "0x200000": 39
+          },
+          "immediate_bits": {
+            "0x200000": 3
+          },
+          "returned_bits": {
+            "0x400000": 46,
+            "0x200000": 39
+          },
+          "sources": {
+            "shell controller / SHELLAPP_SHELLCONTROLLERREQUESTS": 38
+          }
+        },
+        {
+          "name": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "dp": 4864,
+          "calls": 137,
+          "immediate": 36,
+          "blocked": 101,
+          "masks": {
+            "0xe00f0000": 83,
+            "0x400d0000": 18
+          },
+          "immediate_bits": {
+            "0x80000": 35,
+            "0x10000": 1
+          },
+          "returned_bits": {
+            "0x40000000": 8,
+            "0x80000": 84,
+            "0x10000": 7,
+            "0x90000": 2
+          },
+          "sources": {
+            "text / AESGATE_RELEASE": 68,
+            "text / direct": 9,
+            "counter / AESGATE_RELEASE": 17,
+            "counter / AESGATE_ENTERTASK": 1,
+            "text / AESGATE_ENTERTASK": 1
+          }
+        },
+        {
+          "name": "desktop",
+          "dp": 5120,
+          "calls": 106,
+          "immediate": 0,
+          "blocked": 106,
+          "masks": {
+            "0x480000": 106
+          },
+          "immediate_bits": {},
+          "returned_bits": {
+            "0x400000": 106
+          },
+          "sources": {}
+        },
+        {
+          "name": "counter",
+          "dp": 36864,
+          "calls": 33,
+          "immediate": 1,
+          "blocked": 32,
+          "masks": {
+            "0x280000": 12,
+            "0x40000": 20
+          },
+          "immediate_bits": {
+            "0x40000": 1
+          },
+          "returned_bits": {
+            "0x200000": 12,
+            "0x40000": 20
+          },
+          "sources": {
+            "M_CONSOLEDRIVER_WORKER_589B3ABC / AESWAIT_SIGNAL": 8,
+            "M_CONSOLEDRIVER_WORKER_589B3ABC / AESGATE_WAKECALLERS": 10
+          }
+        },
+        {
+          "name": "text",
+          "dp": 37632,
+          "calls": 60,
+          "immediate": 2,
+          "blocked": 58,
+          "masks": {
+            "0x40000": 51,
+            "0x80000": 7
+          },
+          "immediate_bits": {
+            "0x40000": 2
+          },
+          "returned_bits": {
+            "0x40000": 51,
+            "0x80000": 7
+          },
+          "sources": {
+            "M_CONSOLEDRIVER_WORKER_589B3ABC / AESGATE_WAKECALLERS": 36,
+            "M_CONSOLEDRIVER_WORKER_589B3ABC / AESWAIT_SIGNAL": 14,
+            "M_CONSOLEDRIVER_WORKER_589B3ABC / AESINBOX_WAKE": 7,
+            "counter / AESGATE_WAKECALLERS": 1
+          }
+        },
+        {
+          "name": "M_PROCESS_RUN_4C2ABD87",
+          "dp": 37120,
+          "calls": 5,
+          "immediate": 0,
+          "blocked": 5,
+          "masks": {
+            "0x10000": 2,
+            "0x30000": 3
+          },
+          "immediate_bits": {},
+          "returned_bits": {
+            "0x10000": 5
+          },
+          "sources": {
+            "M_FSWORKER_WORKER_2BB473B0 / direct": 4
+          }
+        }
+      ],
+      "viewer_wait_budget": {
+        "scene admission": {
+          "episodes": 37,
+          "blocked_off_cpu_ms": 352.8064687564757,
+          "ready_off_cpu_ms": 588.4891574179669,
+          "blocked_off_cpu_mean_ms": 44.10080859455946,
+          "ready_off_cpu_mean_ms": 73.56114467724586
+        },
+        "UPDATE/window admission": {
+          "episodes": 14,
+          "blocked_off_cpu_ms": 1387.6870474034329,
+          "ready_off_cpu_ms": 199.51683091831026,
+          "blocked_off_cpu_mean_ms": 173.4608809254291,
+          "ready_off_cpu_mean_ms": 24.939603864788783
+        },
+        "input/events": {
+          "episodes": 7,
+          "blocked_off_cpu_ms": 171.08485027044782,
+          "ready_off_cpu_ms": 91.92927898908763,
+          "blocked_off_cpu_mean_ms": 21.385606283805977,
+          "ready_off_cpu_mean_ms": 11.491159873635954
+        }
+      },
+      "ready_episode_budget": {
+        "initial/unknown": {
+          "episodes": 1,
+          "off_cpu_ms": 0.6285074692089843,
+          "off_cpu_mean_ms": 0.07856343365112303
+        },
+        "after wait": {
+          "episodes": 58,
+          "off_cpu_ms": 879.9352673253646,
+          "off_cpu_mean_ms": 109.99190841567058
+        },
+        "preemption/reschedule": {
+          "episodes": 374,
+          "off_cpu_ms": 6919.442075392705,
+          "off_cpu_mean_ms": 864.9302594240881
+        }
+      },
+      "native_scopes": [
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "scope": "AESINBOX_WAKE",
+          "calls": 8,
+          "cpu_ms": 9.129675392138758
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "scope": "AESGATE_WAKECALLERS",
+          "calls": 155,
+          "cpu_ms": 37.377692319620465
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "scope": "AESGATE_ENTERTASK",
+          "calls": 135,
+          "cpu_ms": 75.21867718102732
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "scope": "AESGATE_WAKECALLERS",
+          "calls": 135,
+          "cpu_ms": 1.674492760569456
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "scope": "AESGATE_RELEASE",
+          "calls": 135,
+          "cpu_ms": 199.33667334386826
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "scope": "AESLOCAL_CALL",
+          "calls": 120,
+          "cpu_ms": 1230.4046215069807
+        },
+        {
+          "dp": 5120,
+          "role": "desktop",
+          "scope": "PROCESS_COLLECT",
+          "calls": 98,
+          "cpu_ms": 91.06352175635311
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_SHELLCONTROLLERREQUESTS",
+          "calls": 171,
+          "cpu_ms": 243.78724208074956
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_SHELLCONTROLLERREADY",
+          "calls": 172,
+          "cpu_ms": 12.10854846281044
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_SHELLCONTROLLERSELECTION",
+          "calls": 172,
+          "cpu_ms": 55.56183647951234
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "PROCESS_COLLECT",
+          "calls": 513,
+          "cpu_ms": 424.9652160551698
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_SHELLCONTROLLERCOLLECT",
+          "calls": 172,
+          "cpu_ms": 257.41148243745596
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "PROCESS_COMPLETIONMASK",
+          "calls": 512,
+          "cpu_ms": 429.26510370338025
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_DESKTOPSERVICE",
+          "calls": 170,
+          "cpu_ms": 640.265781761231
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_DESKTOPWATCH",
+          "calls": 170,
+          "cpu_ms": 644.5010354126632
+        },
+        {
+          "dp": 3328,
+          "role": "shell controller",
+          "scope": "SHELLAPP_SHELLCONTROLLERSTEP",
+          "calls": 169,
+          "cpu_ms": 1453.6780056923021
+        },
+        {
+          "dp": 4864,
+          "role": "M_CONSOLEDRIVER_WORKER_589B3ABC",
+          "scope": "AESWAIT_SIGNAL",
+          "calls": 22,
+          "cpu_ms": 21.265853655098336
+        },
+        {
+          "dp": 37632,
+          "role": "text",
+          "scope": "DISPLAY_ENTER",
+          "calls": 168,
+          "cpu_ms": 25.39791846107649
+        },
+        {
+          "dp": 36864,
+          "role": "counter",
+          "scope": "AESGATE_ENTERTASK",
+          "calls": 26,
+          "cpu_ms": 20.690491260666015
+        },
+        {
+          "dp": 36864,
+          "role": "counter",
+          "scope": "AESGATE_WAKECALLERS",
+          "calls": 26,
+          "cpu_ms": 1.617964444958196
+        },
+        {
+          "dp": 36864,
+          "role": "counter",
+          "scope": "AESGATE_RELEASE",
+          "calls": 26,
+          "cpu_ms": 37.52690733726258
+        },
+        {
+          "dp": 36864,
+          "role": "counter",
+          "scope": "AESLOCAL_CALL",
+          "calls": 16,
+          "cpu_ms": 174.24740512476404
+        },
+        {
+          "dp": 37120,
+          "role": "M_PROCESS_RUN_4C2ABD87",
+          "scope": "DOSCLIENT_SERVICEWAIT",
+          "calls": 5,
+          "cpu_ms": 0.05448427427369572
+        }
+      ],
+      "hardware_busy_mean_bounds_ms": {
+        "lower": 9.692218475596261,
+        "upper": 28.655847226940747
+      }
+    }
+  },
+  "confirmation": {
+    "feedback": {
+      "reply_mask": 2097152,
+      "events": {
+        "0x8000": 97,
+        "0x20": 21
+      },
+      "completed_event_calls": 118,
+      "successful_exchanges": 118,
+      "exchanges_without_wait": 97,
+      "cleared_reply_bit_in_event_wait": 97,
+      "controller_retry_yields": 0,
+      "fully_contained_feedback_chains": 95,
+      "event_calls_without_contained_prior_exchange": 2
+    },
+    "exact_replay": true,
+    "scheduler_origin_offset_cycles": 35568,
+    "terminal_paints": 26,
+    "terminal_cells_sha256": "103933e063d780b074b0f04de5cb1c26b1d70dd5241610189a75c34a790b282c",
+    "root_query_reply_calls": 119
+  },
+  "capture_observers": {
+    "initial": {
+      "path": "build/viewer-wait-audit/observer-initial.py",
+      "sha256": "6ad9e8e86a3e64de3f9396e0c0e9c617dc72e74c3c57b4ad8e4df57903066731"
+    },
+    "confirmation": {
+      "path": "build/viewer-wait-audit/observer-confirmation.py",
+      "sha256": "0e3af98a16731091a48443d7daed22c470bd5d9c0b709d39f4e272b11d5b754f"
+    }
+  },
+  "committed_observer_matches_confirmation_points": true,
+  "inputs": {
+    "tools/trace_viewer_waits.py": "370aaadd640a45ff424807d93de9dec21bf19c2639b0924dbe661737986ac495",
+    "tests/test_viewer_wait_trace.py": "8a0a81dcb4392575f08c1dc8b096c5a9ec6642b08317fd9d4423d4915ad85fbd",
+    "tools/measure_gui_baseline.py": "c6b0cc62e0b5c883a76c10282ceb665607e9769a3d964e4c42e54a9c83deb6ed",
+    "tools/text_performance_trace.py": "5c726ff4626c56170c2e5d52077904efa00811b79fb3320771f4ea261db78f17",
+    "tools/aes_timing_breakdown.py": "6c5fe8ab2526abb35f3924b631453b84ff1e424cc175bfc2e5041163dfb6ecd3",
+    "tools/g4bench_trace.py": "81ac3f4617433023489980bda4f8833202b3b7eeb43bae6f453ef4c026971883",
+    "tools/terminal_model.py": "2350d271a21334268a01c7a814104d47697e2269a23da235fc5f990c09410c20",
+    "examples/gem-terminal/main.c": "a47060ddda81ed4dfe062abbe2f34ea7fb1b87e6fed9f7b7431e70b35aa6dd61",
+    "examples/gem-terminal/platform.c": "fe125fe6608a4b477df130bfd9129761f325331242f1939e17554ba0bb062c1f",
+    "examples/shell/shell-controller.inc": "d2fa3d1027e98f19dfeb3ed22843bc2e022fcef76f0b53464d4105b43595592c",
+    "examples/gem-desktop/resident.c": "63594607f3e6b0bf11bc76c7cad86a3f6094a872a63472524f0d2a80ae334fba",
+    "c/calypsi/exec.c": "ada5b767f7df3bd616291a4a1c57d23622d39fea50067ecfc07997e16602daf4",
+    "c/calypsi/aes-events.c": "a0f219441b817575a00796061623b3e8eddb90c403f90109aa5a7260943e15a8",
+    "lib/aes/aesgate.act": "2da743ea77da35f696b3f17302856760dec427d80311bf4bb1925364da99c6d3",
+    "lib/aes/aeslocal.act": "112ad117a991da0233f4a6dc8459c9c74cf94ba11102afa2bf32f3256d985031",
+    "lib/exec/taskpolicy.act": "02212d430216f3c636291eb4b244cd732e3a7b1748cb4243714ddcbc003113e8",
+    "lib/exec/task-signals.inc": "d00b39574292af61a50567008b5869eebbc2bc97d850503df8cc37de8fdd80f1",
+    "platform/altirraos/signal-atomic.s": "f19c7fb2f493ccf0c4d1730aa168b1706f911569a329dd04797e1fe15d1e7138",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9"
+  },
+  "artifacts": [
+    {
+      "path": "build/viewer-wait-audit/idle/results.json",
+      "sha256": "84c3f7b10dd7606d27608fe2d5803b36e30ca46f14df2726db44aa1805f40d0e"
+    },
+    {
+      "path": "build/viewer-wait-audit/idle-replay/results.json",
+      "sha256": "823c3b0e75e4e0480d6fc294d278224624678508b2f6fd8f32484960307b3758"
+    },
+    {
+      "path": "build/viewer-wait-audit/idle/wait-audit.json",
+      "sha256": "b92ef5ba1e94948ddb802dcf834c52cab198b16e3707d64bec19964b0c299bbd"
+    },
+    {
+      "path": "build/viewer-wait-audit/idle/cpu-trace.log",
+      "sha256": "a042548a688c78d59c08dfcaabb32c25ce6d88e07424250d651868c46f029446"
+    },
+    {
+      "path": "build/viewer-wait-audit/idle/text-performance-markers.json",
+      "sha256": "f943c91e5ef461faf1a4fb1b454e38d8c39404ac3d08582f13c4829163252993"
+    },
+    {
+      "path": "build/viewer-wait-audit/idle/instruction-profile.json",
+      "sha256": "bde448348cdcdb8cc7536dd1807228a60ed12ac3071b9e8c359a155b2934d5fb"
+    },
+    {
+      "path": "build/input-snapshot-copy/viewer-idle/results.json",
+      "sha256": "9a48d07978ce8cf52d051cfae49b6c3b335e6e812db69a51d99103bb0841a3b4"
+    },
+    {
+      "path": "build/viewer-wait-audit/loaded/results.json",
+      "sha256": "d30b3ef799ae1a21bf522c88f12f7bd073dfffbd661585cdd60c4fcdaacb7c9a"
+    },
+    {
+      "path": "build/viewer-wait-audit/loaded-replay/results.json",
+      "sha256": "631cdb2f979707da5e37f812ca4301549b69c0be94c0e31fe0b1581c91647f29"
+    },
+    {
+      "path": "build/viewer-wait-audit/loaded/wait-audit.json",
+      "sha256": "ef4458f7b25e18c435b2ed83f4487a27ec5c1bebd0e358618518a66e517d246e"
+    },
+    {
+      "path": "build/viewer-wait-audit/loaded/cpu-trace.log",
+      "sha256": "8df71b533056f437d65df7966cd54bc9f6897341c0fc7e4dd65eb8ac7aa92495"
+    },
+    {
+      "path": "build/viewer-wait-audit/loaded/text-performance-markers.json",
+      "sha256": "f943c91e5ef461faf1a4fb1b454e38d8c39404ac3d08582f13c4829163252993"
+    },
+    {
+      "path": "build/viewer-wait-audit/loaded/instruction-profile.json",
+      "sha256": "9a3ef46075eb9aade8ee81c273a540ce2ea986013d9ab333670b1ec4cf5fc9b6"
+    },
+    {
+      "path": "build/input-snapshot-copy/viewer-loaded/results.json",
+      "sha256": "4623930f654cff42bbfc14b74888a28faf8edd6b5030f8202c170d1e6db0fee1"
+    },
+    {
+      "path": "build/viewer-wait-audit/confirmation/results.json",
+      "sha256": "f44f85c1ff61098921716a8a51b2d6659e5b3ddfbd983b9031233ddc3dca36d7"
+    },
+    {
+      "path": "build/viewer-wait-audit/confirmation/wait-audit.json",
+      "sha256": "c1d2c700a75a698da23187dfd48fe854bb23cea80b0e75e40f26ba7f5c414812"
+    },
+    {
+      "path": "build/viewer-wait-audit/confirmation/cpu-trace.log",
+      "sha256": "1e0064535834e35628f334f901c32b4a90e17a94fa67234578bef673ce2b38e8"
+    },
+    {
+      "path": "build/viewer-wait-audit/confirmation/text-performance-markers.json",
+      "sha256": "ef6f4e98039f476d08fdb977251b664c7f864051a53bf03aaed1860f2625ed0c"
+    },
+    {
+      "path": "build/viewer-wait-audit/confirmation/instruction-profile.json",
+      "sha256": "bde448348cdcdb8cc7536dd1807228a60ed12ac3071b9e8c359a155b2934d5fb"
+    },
+    {
+      "path": "build/viewer-wait-audit/observer-equivalence.json",
+      "sha256": "27e6ed6e60ac09ba3e1134ac847169402d0626265adc8e14e751d0bd72dc755f"
+    },
+    {
+      "path": "build/viewer-wait-audit/record.py",
+      "sha256": "7260f78ac8d4b4f0deb2c6d5dff4572bd372cf187bf76707618f3eb48bcaff85"
+    },
+    {
+      "path": "build/input-snapshot-copy/demo/demo-manifest.json",
+      "sha256": "f4d75c07b03982979cbbae5e0f590011ca28d11f1d13f0f0493334f970e1f1c3"
+    }
+  ],
+  "host": {
+    "tests": 710,
+    "skips": 4,
+    "artifact": {
+      "path": "build/viewer-wait-audit-host.log",
+      "sha256": "be615c0f11f13da4b0b03103bbb2a9a531d0085c63ffc22f2794d807b81817d2"
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "each_public_task": 0,
+    "includes": "Guards, alignment and unused reserved capacity; audit executes the identical frozen twelve-Task package"
+  },
+  "guest_upper_reservation_delta": 0,
+  "guest_vram_delta": 0,
+  "analysis_corrections": [
+    "READY republication while already READY is one continuous interval. An initial candidate double-counted six such idle publications (99.622 ms across eight actions); the corrected episode totals reconcile exactly. A focused regression covers this case."
+  ],
+  "limits": [
+    "No runtime fix or performance experiment with a modified guest; no eliminated-latency claim.",
+    "Peer time is split into CPU and IRQ; source scopes are inclusive and must not be added together.",
+    "Wait counts include episodes overlapping the action; costs are clipped to action intervals. The first unobserved state prefix stays unclassified.",
+    "95 complete query/reply/no-wait/clear/MU_EXEC chains are wholly captured; two more MU_EXEC decisions have prior exchanges crossing action boundaries.",
+    "The 100 ms Terminal timer remains another source of refresh. All Terminal/controller time is not assumed removable.",
+    "Instruction profiler output is supplementary; timing attribution uses the checked CPU/scheduler trace.",
+    "Five successful OF816 boots: idle/loaded observations and companions, plus idle confirmation; no new platform or release qualification."
+  ]
+}

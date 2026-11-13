@@ -1,5 +1,9 @@
 # Historical records
 
+- [Viewer wait and wake audit](viewer-wait-audit.md): confirmed Terminal
+  query-reply/view-wake feedback, peer CPU attribution and scene/UPDATE waits
+  on the unchanged package, with exact observation/replay comparisons.
+
 - [Empty input route copies](input-snapshot-copy.md): guarded empty-slot return,
   balanced endpoint holds and 1.9–3.4% less BEGIN/END CPU; small viewer CPU savings
   with mixed repaint medians and unchanged input/drawing behavior.
