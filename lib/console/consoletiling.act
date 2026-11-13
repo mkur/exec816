@@ -141,11 +141,16 @@ PUBLIC PROC ResizeLocked(CONSOLETYPES.Window POINTER entry CARD height)
   FI
 
   EXEC.Forbid()
+  LET changed=instance.height<>height
   IF CONSOLECORE.Resize(instance,height,resizeRow)=0 THEN
     HEAPCORE.Abort(4)
   FI
 
   CONSOLEVIEWCORE.Publish(instance)
+  IF changed<>0 THEN
+    CONSOLEVIEWCORE.DirectoryChanged()
+  FI
+
   EXEC.Permit()
   view.height=height
   view.scrollState=0

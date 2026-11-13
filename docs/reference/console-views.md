@@ -67,8 +67,11 @@ cross-service snapshot. Reads and Take never publish changes.
 Task lease and frees the watch. Unwatch before freeing the signal or exiting.
 External directory watches block console service Stop, while individual source
 destruction remains independent. Handles are caller-owned and must remain live.
-Automatic registry/session/activation publishers are not yet wired in TP1;
-see the [integration plan](../plans/gem4xe/terminal-idle-polling-plan.md#tp2-wire-real-publishers-and-admit-terminals-watch).
+Registry LIVE/removal and geometry commits, accepted frontend activation,
+query-visible shell session changes and controller port withdrawal publish hints.
+Pure reads, unchanged controller turns, cell output and painting do not.
+Terminal shares its existing cell-notification bit with this independent watch.
+See the [integration plan](../plans/gem4xe/terminal-idle-polling-plan.md#tp2-wire-real-publishers-and-admit-terminals-watch).
 
 `ExecConsoleViewDirectory` copies the four unit slots, live bitmap and geometry,
 plus a coalesced activation hint and its monotonic serial. Unit zero is a live

@@ -43,6 +43,11 @@ WORD TerminalPlatformOpen(struct Terminal *app)
         return 0;
     }
     app->wakeBit=bit;app->wake=1UL<<bit;
+    app->directoryWatch=ExecConsoleViewWatchDirectory(app->wake);
+    if (!app->directoryWatch) {
+        TerminalPlatformClose(app);
+        return 0;
+    }
     return 1;
 }
 
@@ -52,6 +57,9 @@ void TerminalPlatformClose(struct Terminal *app)
     if (app->window>0) ExecConsoleViewUnbindWindow(app->window);
     for (i=0;i<EXEC_CONSOLE_VIEW_SLOTS;++i) if (app->sessions[i].view) {
         ExecConsoleViewUnsubscribe(app->sessions[i].view);app->sessions[i].view=0;
+    }
+    if (app->directoryWatch) {
+        ExecConsoleViewUnwatchDirectory(app->directoryWatch);app->directoryWatch=0;
     }
     if (app->wake) {
         SetSignal(0,app->wake);FreeSignal(app->wakeBit);app->wake=0;

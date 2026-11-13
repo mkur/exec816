@@ -20,7 +20,7 @@ from terminal_model import FIELDS as TF,SESSION_FIELDS as SF,SESSION_SIZE
 from gem_render_oracle import font_bytes,DESKTOP_PALETTE
 
 
-def _run(directory,out,observer=None):
+def _run(directory,out,observer=None,checkpoint=None):
     p=read_build(directory/'program');c=constants();out.mkdir(parents=True,exist_ok=True)
     original=p['output'];p={**p,'output':out}
     report=dict(status='running',tier='development',qualification=False,build=p['build'],commands=[])
@@ -151,14 +151,35 @@ def _run(directory,out,observer=None):
             report['live_tasks']=number(p['build']['task_storage']['LIVE'],1)
             report['aes_clients']=sum(bool(c) for c in contexts)
             report['aes_windows']=len(scene_windows())
+            frames(80)
+            if checkpoint:checkpoint('quiet-start',b,p,report)
+            frames(120)
+            if checkpoint:checkpoint('quiet-end',b,p,report)
             command(0,'ECHO gem-terminal',b'gem-terminal')
             frames(120)
             require(number(at+14)>0,'Terminal did not paint')
+            if checkpoint:checkpoint('output',b,p,report)
             report['paints']=number(at+14)
             move(620,44)
             b.screenshot(str(out/'terminal.png'))
             pixels(at,0,'terminal-front')
-            click(300,28);reach(f'dw(${at+12:x})=0')
+            from generate_layers import layout as layer_layout
+            ll=layer_layout();sl=scene_layout()['Service']['fields']
+            service=number(address(p['image'],'service','DESKSTATE'),3)
+            layers=service+sl['scene']+ll['Scene']['fields']['items']
+            alternatives=[]
+            for w,title in scene_windows():
+                if title==b'Terminal':continue
+                layer_id=number(w+scene_layout()['Window']['fields']['layer'])
+                for slot in range(9):
+                    layer=layers+slot*ll['Layer']['size']
+                    if number(layer)==layer_id and number(layer+ll['Layer']['fields']['shown'],1):
+                        bounds=layer+ll['Layer']['fields']['bounds']
+                        alternatives.append((number(bounds+2,2),number(bounds,2)))
+            require(alternatives,'Missing focus peer')
+            peer_y,peer_x=min(alternatives)
+            report['focus_peer']=[peer_x+40,peer_y+4]
+            click(peer_x+40,peer_y+4);reach(f'dw(${at+12:x})=0')
             click(620,44);reach(f'dw(${at+12:x})=1');frames(40)
             pixels(at,0,'terminal-exposed')
             command(0,'ECHO editx\b',b'edit')
@@ -168,10 +189,13 @@ def _run(directory,out,observer=None):
             command(0,'NEWSHELL')
             reach(f'dw(${selected:x})=2');ready(1);frames(120)
             report['peak_observed_tasks']=number(p['build']['task_storage']['LIVE'],1)
+            if checkpoint:checkpoint('created',b,p,report)
             command(1,'ECHO second-session',b'second-session')
             command(1,'SESSION 1');reach(f'dw(${selected:x})=1');frames(80)
+            if checkpoint:checkpoint('selected-first',b,p,report)
             command(0,'ECHO first-again',b'first-again')
             command(0,'SESSION 2');reach(f'dw(${selected:x})=2');frames(80)
+            if checkpoint:checkpoint('selected-second',b,p,report)
             click(116,44);alert(context,True)
             press('\n');alert(context,False)
             require(number(live,1)==2,'Cancelled close retired a session')
@@ -180,6 +204,7 @@ def _run(directory,out,observer=None):
             click(area[0]+area[2]//2+36,area[1]+area[3]-24);alert(context,False)
             report['commands'].append(dict(command='confirmed window close',index=1))
             reach(f'dw(${selected:x})=1');ready(0);frames(80)
+            if checkpoint:checkpoint('fallback',b,p,report)
             for char in 'EXIT':press(char)
             press('\n');b.bp_clear_all()
         try:
@@ -187,6 +212,9 @@ def _run(directory,out,observer=None):
             ownership(b,p,original);report['status']='pass'
         except Exception as error:
             report.update(status='fail',error=str(error),native_status=b.peek16(adapter.STATE))
+            report['fault_required']=number(adapter.STATE+24,2)
+            if any(d['name']=='G_DIRECTORYCHECKS' or 'DIRECTORYCHECKS_' in d['name'] for d in p['image']['data']):
+                report['directory_failure']={name:number(address(p['image'],name),size) for name,size in [('directoryChecks',2),('directoryReady',1),('directoryDone',1),('directoryOldUnit',4),('directoryNewUnit',4)]}
             report['controller']={name:number(address(p['image'],name),size) for name,size in [('selectedSession',4),('controllerLive',1),('controllerStatus',4),('bootPrimary',4),('bootSecondary',4),('nextSession',4),('shellPublished',1)]}
             report['applications']=instances(b,p,directory)
             provider=json.loads((directory/'c-image.json').read_text())['symbols']
@@ -196,7 +224,7 @@ def _run(directory,out,observer=None):
                 at=address(p['image'],name)
                 record=next(d for d in p['image']['data'] if d['address']==at)
                 report[name]=b.memdump(at,record['size']).hex()
-            print('Terminal failure',report['native_status'],report['controller'],flush=True)
+            print('Terminal failure',report['native_status'],report['fault_required'],report.get('directory_failure'),report['controller'],flush=True)
             raise
         finally:(out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
     return report

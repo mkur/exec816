@@ -171,6 +171,7 @@ PUBLIC CARD FUNC Activate(LONGCARD unit)
       IF activationSerial<>$ffffffff THEN
         requestedUnit=unit
         activationSerial==+1
+        VIEWS.DirectoryChanged()
         status=VIEW.OK
       FI
     FI

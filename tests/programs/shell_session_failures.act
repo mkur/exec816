@@ -6,7 +6,7 @@ INCLUDE "../../examples/shell/shell-session.inc"
 INCLUDE "../../examples/shell/shell-boot.inc"
 INCLUDE "../../examples/shell/shell-controller.inc"
 
-CARD checks,faultCase,allocations,acceptedFailures
+CARD checks,faultCase,allocations,acceptedFailures,directoryFailures
 BYTE finished,clientTested
 LONGCARD baseline,peer
 PROCESS.Result peerResult
@@ -55,7 +55,8 @@ RETURN
 ; Fail each admitted creation allocation once, retaining real cleanup paths.
 LONGINT FUNC Producer()
   BYTE ignored
-  LONGCARD available,first,created
+  LONGCARD available,first,created,previous
+  BYTE changed
   ShellSessionControl control
 
   control.port=shellRequests
@@ -68,13 +69,29 @@ LONGINT FUNC Producer()
   request.capacity=SESSION_PATH_BYTES
   first=sessions(0).control.identity
   Prompt(first)
+  Check(EXEC.AllocSignal(31)=31)
+  LET watch=CONSOLEVIEWCORE.WatchDirectory($80000000)
+  Check(watch<>0)
+  changed=CONSOLEVIEWCORE.TakeDirectoryChange(watch)
+  EXEC.SetSignal(0,$80000000)
   allocations=1
   faultCase=0
   WHILE faultCase<=allocations DO
+    changed=CONSOLEVIEWCORE.TakeDirectoryChange(watch)
+    EXEC.SetSignal(0,$80000000)
+    previous=nextSession
     available=EXEC.AvailMem(0)
     SESSIONFAULT.wanted=IF faultCase=0 THEN CARD($ffff) ELSE faultCase FI
     request.operation=SESSION_CREATE
     ignored=ShellSessionExchange(@control,request)
+    changed=CONSOLEVIEWCORE.TakeDirectoryChange(watch)
+    IF nextSession<>previous THEN
+      Check(changed<>0)
+      IF request.primary<>0 THEN
+        directoryFailures==+1
+      FI
+    FI
+
     IF faultCase=0 THEN
       allocations=SESSIONFAULT.count
       Check(request.primary=0 AND allocations>10)
@@ -111,6 +128,10 @@ LONGINT FUNC Producer()
   request.operation=SESSION_CLOSE
   request.session=first
   ignored=ShellSessionExchange(@control,request)
+  Check(CONSOLEVIEWCORE.UnwatchDirectory(watch)=0)
+  EXEC.SetSignal(0,$80000000)
+  EXEC.FreeSignal(31)
+  Check(directoryFailures<>0)
   EXEC.FreeMem(payload,SESSION_PATH_BYTES)
   EXEC.FreeMem(BYTE POINTER(request),SHELLSESSIONMESSAGE_SIZE)
 

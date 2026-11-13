@@ -29,6 +29,7 @@ struct Terminal {
     struct ExecAESWaitSpec wait;
     struct ExecConsoleViewInput inputPacket;
     BYTE wakeBit;
+    ULONG directoryWatch;
 };
 WORD TerminalPlatformOpen(struct Terminal *);
 void TerminalPlatformClose(struct Terminal *);

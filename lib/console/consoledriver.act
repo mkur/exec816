@@ -383,6 +383,7 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
     windows.liveCount=1
     windows.focusSlot=0
     CONSOLECAPTURE.Publish(entry.route)
+    CONSOLEVIEWCORE.DirectoryChanged()
   FI
 
   EXEC.Permit()
@@ -407,6 +408,7 @@ PROC FreeStorage(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
   EXEC.Forbid()
   windows.liveCount=0
   entry.state=CONSOLETYPES.WIN_RETIRING
+  CONSOLEVIEWCORE.DirectoryChanged()
   CONSOLEFOREGROUND.Unregister(entry)
   CONSOLEVIEWCORE.Retire(instance)
   EXEC.Permit()

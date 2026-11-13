@@ -241,8 +241,11 @@ BYTE FUNC ShellSessionSpawn(ShellSession POINTER session LONGCARD unit
     session.result.primary=PROCESS.RETURN_FAIL
     session.result.secondary=DOS.IoErr()
     session.state=SESSION_STATE_RETIRING
+    CONSOLEVIEWCORE.DirectoryChanged()
     RETURN(0)
   FI
+
+  CONSOLEVIEWCORE.DirectoryChanged()
 
 RETURN(1)
 
@@ -252,8 +255,10 @@ PROC ShellSessionClose(ShellSession POINTER session)
 
   EXEC.Forbid()
   session.control.closeRequested=1
-  IF session.state<>SESSION_STATE_RETIRING THEN
+  IF session.state<>SESSION_STATE_RETIRING
+      AND session.state<>SESSION_STATE_CLOSING THEN
     session.state=SESSION_STATE_CLOSING
+    CONSOLEVIEWCORE.DirectoryChanged()
   FI
 
   cancelled=CONSOLE.RequestBreak(session.startup.unit)
@@ -397,6 +402,7 @@ PROC ShellControllerRequests()
         session.result.primary=request.primary
         session.result.secondary=request.secondary
         session.state=SESSION_STATE_CLOSING
+        CONSOLEVIEWCORE.DirectoryChanged()
         ShellSessionReply(request,request.primary,request.secondary)
       ELSE
         session.readyRequest=request
@@ -440,11 +446,13 @@ CARD FUNC ShellSessionSelect(ShellSession POINTER session)
 
   IF selectedSession=0 AND session.startup.unit=0 THEN
     selectedSession=session.control.identity
+    CONSOLEVIEWCORE.DirectoryChanged()
     RETURN(CONSOLETYPES.CONTROL_OK)
   FI
 
   IF DESKSTATE.Enabled()<>0 THEN
     selectedSession=session.control.identity
+    CONSOLEVIEWCORE.DirectoryChanged()
     RETURN(CONSOLETYPES.CONTROL_OK)
   FI
 
@@ -453,6 +461,7 @@ CARD FUNC ShellSessionSelect(ShellSession POINTER session)
   LET status=CONSOLE.Activate(oldUnit,session.startup.unit)
   IF status=CONSOLETYPES.CONTROL_OK THEN
     selectedSession=session.control.identity
+    CONSOLEVIEWCORE.DirectoryChanged()
   FI
 
 RETURN(status)
@@ -488,6 +497,7 @@ PROC ShellControllerReady()
             IF status=CONSOLETYPES.CONTROL_OK THEN
               session.state=SESSION_STATE_READY
               session.ready=1
+              CONSOLEVIEWCORE.DirectoryChanged()
               ShellSessionReply(request,PROCESS.RETURN_OK,0)
               IF session.createRequest<>NULL THEN
                 session.createRequest.value=session.control.identity
@@ -594,6 +604,7 @@ PROC ShellControllerCollect()
         IF PROCESS.Collect(session.process,@session.result)<>0 THEN
           session.process=0
           session.state=SESSION_STATE_RETIRING
+          CONSOLEVIEWCORE.DirectoryChanged()
           IF session.watch.bound<>0 THEN
             status=CONSOLE.UnwatchKey(@session.watch)
             IF status<>CONSOLETYPES.CONTROL_OK THEN
@@ -645,6 +656,7 @@ PROC ShellControllerCollect()
             controllerRetry=1
           ELSE
             session.startup.unit=0
+            CONSOLEVIEWCORE.DirectoryChanged()
           FI
         FI
 
@@ -672,6 +684,7 @@ PROC ShellControllerCollect()
             contexts(index).control=NULL
             session.state=SESSION_STATE_FREE
             controllerLive==-1
+            CONSOLEVIEWCORE.DirectoryChanged()
             ; Reply may immediately schedule the creator: publish cleanup first.
             IF request<>NULL THEN
               ShellSessionReply(request,session.result.primary,
@@ -812,6 +825,7 @@ PROC ShellControllerQuiesce()
       ShellSessionReply(ShellSessionMessage POINTER(message),
           PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_NOT_FOUND)
     OD
+    CONSOLEVIEWCORE.DirectoryChanged()
   FI
   EXEC.Permit()
 

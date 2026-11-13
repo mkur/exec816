@@ -166,6 +166,7 @@ PUBLIC LONGCARD FUNC Create(CARD width,height)
         IF okay<>0 THEN
           entry.state=CONSOLETYPES.WIN_LIVE
           windows.liveCount==+1
+          CONSOLEVIEWCORE.DirectoryChanged()
         FI
 
         EXEC.Permit()
@@ -239,6 +240,7 @@ PUBLIC BYTE FUNC Destroy(LONGCARD unit)
   windows=CONSOLEWINDOWS.Registry()
   windows.liveCount==-1
   entry.state=CONSOLETYPES.WIN_RETIRING
+  CONSOLEVIEWCORE.DirectoryChanged()
   EXEC.Permit()
   CONSOLETILING.HideLocked(entry)
   EXEC.Forbid()
@@ -279,6 +281,7 @@ PUBLIC PROC RetirePane(LONGCARD unit)
   EXEC.Forbid()
   windows.liveCount==-1
   entry.state=CONSOLETYPES.WIN_RETIRING
+  CONSOLEVIEWCORE.DirectoryChanged()
   CONSOLEFOREGROUND.Unregister(entry)
   EXEC.Permit()
   CONSOLETILING.Unlock()

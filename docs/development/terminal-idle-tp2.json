@@ -1,0 +1,176 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "TP2",
+  "parent": "ac19f44b",
+  "startup_probes": {
+    "raw": {
+      "path": "build/terminal-idle/tp2-wake-raw/results.json",
+      "sha256": "740f2ef13f82243de452b12899257a409beb7f500342633c82158636d5eda134",
+      "status": "pass"
+    },
+    "opt": {
+      "path": "build/terminal-idle/tp2-wake-opt/results.json",
+      "sha256": "cfd65142907b39181361f0d324489e2fccbb859b4c7d7437f497619ba2092848",
+      "status": "pass"
+    }
+  },
+  "startup_checks_per_mode": 38,
+  "allocation_failures": {
+    "path": "build/terminal-idle/tp2-failures/results.json",
+    "sha256": "c58ff3a0ee9a84e9cf8fa4512b48d53ded42697a8187a74ab12e5879f7c30d75",
+    "status": "pass",
+    "checks": 145,
+    "allocations": 19,
+    "acceptedFailures": 1,
+    "directoryFailures": 12
+  },
+  "integration": {
+    "path": "build/terminal-idle/tp2-integration-layers/results.json",
+    "sha256": "f60ae83d43049cd54959436748f925d0e2a05bdde87d1a0774e81a32e028fda0",
+    "status": "pass",
+    "observers": {
+      "quiet-start": [
+        8,
+        8
+      ],
+      "quiet-end": [
+        8,
+        8
+      ],
+      "output": [
+        8,
+        8
+      ],
+      "created": [
+        12,
+        12
+      ],
+      "selected-first": [
+        13,
+        13
+      ],
+      "selected-second": [
+        14,
+        14
+      ],
+      "fallback": [
+        20,
+        20
+      ]
+    },
+    "pixels": {
+      "terminal-front": "94c52b2f772df3f76a5fa5c1b079c364bc96aa33bb387c25243ccca2ec1fd664",
+      "terminal-exposed": "94c52b2f772df3f76a5fa5c1b079c364bc96aa33bb387c25243ccca2ec1fd664",
+      "terminal-edge": "750832386b1523bc68585e15835642397e12c7f006eaab2df5f03e81b5372a45"
+    },
+    "scope": "Two Task-owned watches, no timer; source creation/retirement/epoch reuse and activation while UPDATE held; stable reads/output; real shell creation/READY/select/fallback and shutdown.",
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "live_tasks": 0,
+      "fault_required": 0
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "memory": {
+    "complete_eight_task_maps_equal": {
+      "raw": {
+        "bank_zero_budget": true,
+        "task_pools": true,
+        "runtime_reservations": true
+      },
+      "opt": {
+        "bank_zero_budget": true,
+        "task_pools": true,
+        "runtime_reservations": true
+      }
+    },
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": 0
+    },
+    "production_upper_reservation_delta": 0,
+    "vram_reservation_delta": 0,
+    "terminal_bytes": 5851,
+    "handle_offset": 5847,
+    "watch_heap_bytes": 24,
+    "list_bookkeeping_bytes": 4,
+    "tp1_estimate_erratum": "Emitted globals are a three-byte pointer and one-byte count; TP1 JSON estimated five. Reservation and watch heap measurements remain valid.",
+    "failure_fixture_upper_data_bytes": 12288,
+    "observer_fixture_extra_live_tasks": 2,
+    "production_extra_tasks": 0,
+    "production_extra_signal_bits": 0
+  },
+  "host": {
+    "tests": 711,
+    "skips": 4,
+    "status": "pass"
+  },
+  "inputs": {
+    "examples/gem-terminal/platform.c": "fa9a245b176d4b00834b0c410a1226bb6aa6587b5acfc7829f5954f0502f533f",
+    "examples/gem-terminal/terminal.h": "ce5332892566d6cfb6be11337d18098060708af15275e74388876ba618cfcd47",
+    "examples/shell/shell-controller.inc": "d98d7b07cf198e2f7d6ab88ecef0cf2bab2006e59ca3f0f3a3bc5c1e921cfb70",
+    "examples/shell/shell-session.inc": "94800277c5e01163c97cc85d9f7de283d811bf0daacf9e34f44ce1c0869ee680",
+    "lib/console/console.act": "805639c1ad09a39f42723129f48aa49b6af3def7dc0df26308267e5211e7b493",
+    "lib/console/consoledriver.act": "3c1c350bf3b271c5608439957be7451bc7ac07c0eddf861caa2ef829741f7539",
+    "lib/console/consoletiling.act": "d3427da7551956f6d6bee87cba034680385b76ea6eb07efe1c2bfeb551311db8",
+    "lib/console/consoleview.act": "936478dc4ef0cd1f9567d9882c4451db989d720e730e311e253c46829b0e84a4",
+    "tests/programs/directory_observers.inc": "4e31a99bfca85408284de0c10cee03f8bb2f376ab54f3ecc02f2b28627655246",
+    "tests/programs/directory_update.c": "835ff7d57fa401daff385468be9cf05db85ce1ca86e2ea728d648b58b659b3fe",
+    "tools/build_terminal_directory_probe.py": "6085398426cddfeda0ca5185937d98696960cad8e6269c95194809edddf9ddc5",
+    "tools/test_terminal_directory.py": "faccaac6c437575247a60fbf1abad26e5ed3dcc8b6f88b524a5d1080db74452d",
+    "tools/test_gem_terminal.py": "2de5b63374dc4413f1866adcd09fb9d7b0b8562a00c4d793e21b86dda6af3c75",
+    "tools/terminal_model.py": "c8b3bc0a192b92e6f701adac0dc48e4dd48c7de6a39c8e8997dcf3b0f8896a58",
+    "tests/programs/gem_terminal_layout.c": "8ef8c86dafb4505e431b9b4a51f5a1bae74fe951ec1061c15186693993f8f396",
+    "tests/programs/gem_terminal_wake.c": "f4006e79f62d5ed3ba96b8e06d9d3197ad9c0ede5cff57ee2f89a1eb11f12ba5",
+    "tests/programs/shell_session_failures.act": "3111bc94a4c86f87f884fbe98753f3291d27f7117ab17a80b78194fd16fc4ec5",
+    "tools/shell_session_faults.py": "45fac67a9c0847d467af77b78345fe5d125b45d90e37fbb4d51c5ef66b498b31",
+    "toolchain/actionc.json": "932bfdcdd48b90e53a58a67134a9b7d321fc4ff2d602c2b68689702dd1458100",
+    "toolchain/altirra-gem-vdi.json": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9"
+  },
+  "compiled_observer_include": {
+    "path": "build/terminal-idle/tp2-integration-build/observers.inc",
+    "sha256": "62759eb8474174971eceaf8a190788c33841a1cf54b286e7f86da223eae17470"
+  },
+  "limits": "Terminal still has the 100 ms polling timer in TP2. Development checks do not qualify the hosted system."
+}

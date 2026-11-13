@@ -6,7 +6,7 @@
 #include <string.h>
 
 static struct Terminal app;
-static WORD unbound,unsubscribed,orderOkay;
+static WORD unbound,unsubscribed,orderOkay,watchFailure,unwatched;
 UWORD TerminalWakeChecks;
 
 #define REQUIRE(c) do { ++TerminalWakeChecks; if (!(c)) return TerminalWakeChecks; } while (0)
@@ -14,7 +14,13 @@ UWORD TerminalWakeChecks;
 ULONG EXEC_CALL ExecConsoleView(ULONG operation,ULONG first,ULONG second)
 {
     struct Task *self=FindTask(NULL);
-    if (operation==EXEC_CONSOLE_VIEW_OP_UNBIND_WINDOW) {
+    if (operation==EXEC_CONSOLE_VIEW_OP_WATCH_DIRECTORY) {
+        if (!first || !(self->tc_SigAlloc&first)) orderOkay=0;
+        return watchFailure ? 0:3;
+    } else if (operation==EXEC_CONSOLE_VIEW_OP_UNWATCH_DIRECTORY) {
+        if (first!=3 || !app.wake || !(self->tc_SigAlloc&app.wake)) orderOkay=0;
+        unwatched=1;
+    } else if (operation==EXEC_CONSOLE_VIEW_OP_UNBIND_WINDOW) {
         unbound=1;
     } else if (operation==EXEC_CONSOLE_VIEW_OP_UNSUBSCRIBE) {
         if (!unbound || !app.wake || !(self->tc_SigAlloc&app.wake)) orderOkay=0;
@@ -54,7 +60,12 @@ LONG EXEC_CALL TerminalWakeProbe(ULONG unused)
     TerminalPlatformClose(&app);
     for (i=0;i<count;++i) FreeSignal(bits[i]);
     REQUIRE(self->tc_SigAlloc==allocated);
-    REQUIRE(TerminalPlatformOpen(&app));
+    watchFailure=1;
+    REQUIRE(!TerminalPlatformOpen(&app));
+    REQUIRE(!app.replies && !app.wake && !app.directoryWatch);
+    REQUIRE(self->tc_SigAlloc==allocated && AvailMem(0)==before);
+    watchFailure=0;
+    REQUIRE(TerminalPlatformOpen(&app) && app.directoryWatch==3);
     reply=1UL<<app.replies->mp_SigBit;wake=app.wake;
     REQUIRE(reply!=wake && wake==(1UL<<app.wakeBit));
     REQUIRE(self->tc_SigAlloc==(allocated|reply|wake));
@@ -77,10 +88,10 @@ LONG EXEC_CALL TerminalWakeProbe(ULONG unused)
     Signal(self,wake);
     REQUIRE(Wait(wake)==wake && (SetSignal(0,0)&reply)==reply);
     app.window=1;app.sessions[0].view=1;app.sessions[3].view=2;
-    unbound=unsubscribed=0;orderOkay=1;
+    unbound=unsubscribed=unwatched=0;orderOkay=1;
     Signal(self,wake);
     TerminalPlatformClose(&app);
-    REQUIRE(orderOkay && unbound && unsubscribed==2);
+    REQUIRE(orderOkay && unbound && unsubscribed==2 && unwatched && !app.directoryWatch);
     REQUIRE(app.replies==NULL && !app.wake && app.wakeBit==-1);
     REQUIRE(!app.sessions[0].view && !app.sessions[3].view);
     REQUIRE(!(SetSignal(0,0)&wake));

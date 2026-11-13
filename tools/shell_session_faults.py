@@ -65,7 +65,7 @@ def run(out, reuse=False):
     source=out/'shell_session_failures.act'
     source.write_text(read_source(ROOT/'tests/programs/shell_session_failures.act',includes=includes))
     profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
-    profile['image_data_bytes']=8192
+    profile['image_data_bytes']=12288
     memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
     original=generate_tasks.generate_kernel
     observed={}
@@ -103,6 +103,6 @@ def run(out, reuse=False):
         require(data(b,program['image'],'finished')==[1],'Incomplete allocation failures')
         ownership(b,program,out)
         details={name:data(b,program['image'],name,True)[0]
-                 for name in ('checks','allocations','acceptedFailures')}
+                 for name in ('checks','allocations','acceptedFailures','directoryFailures')}
     return dict(status='pass',tier='development',group='allocation',mode='opt',
                 observed_sources=observed,build=program['build'],runtime=runtime,machine=machine,**details)
