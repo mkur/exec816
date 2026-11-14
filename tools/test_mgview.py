@@ -22,8 +22,9 @@ LAYOUT=[('WORD',2),('huge pointer',4),('WINDOW',338),('outer',260),('work',268),
 DOCUMENT=b''.join((f'Row {i:03d}\t'+''.join(chr(65+(i+j)%26) for j in range(100))+'\r\n').encode() for i in range(50))
 
 
-def run(out,reuse=False,scroll=False,failures=False,interactions=False):
+def run(out,reuse=False,scroll=False,failures=False,interactions=False,document=None,vertical_only=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
+    content=Path(document).read_bytes() if document else DOCUMENT
     if not reuse:
         viewer(out/'apps/mgview',probes=[(ROOT/'tests/programs/mgview_layout.c',LAYOUT)])
         application(out/'apps/counter',[ROOT/'examples/gem-counter'/name for name in ('main.c','counter.c')],minimum_stack=ABI['stack_floor_bytes'])
@@ -34,7 +35,7 @@ def run(out,reuse=False,scroll=False,failures=False,interactions=False):
     apps={name:json.loads((out/'apps'/name/'app.json').read_text()) for name in ('mgview','counter')}
     media=out/'media';media.mkdir(exist_ok=True)
     for name in apps:(media/(name.upper()+'.APP')).write_bytes((out/'apps'/name/'program.app').read_bytes())
-    (media/'VIEW.TXT').write_bytes(DOCUMENT);(media/'EMPTY.TXT').write_bytes(b'')
+    (media/'VIEW.TXT').write_bytes(content);(media/'EMPTY.TXT').write_bytes(b'')
     if failures:
         (media/'BIG.TXT').write_bytes(b'x'*65520)
         (media/'TALL.TXT').write_bytes(b'\n'*16381)
@@ -139,41 +140,43 @@ def run(out,reuse=False,scroll=False,failures=False,interactions=False):
                         if count==2:pulse('W',True)
                         position=schedule(b,program,position,(632,0));frames(30)
                         initial=number(counter+14,4)
-                        picture(window,f'round-{round}',DOCUMENT if round==0 else b'')
+                        picture(window,f'round-{round}',content if round==0 else b'')
                         if scroll and round==0:
                             # Atari physical cursor keys use Ctrl with -, = and *.
-                            for key,expected_shift in (('EQUALS',(0,1)),('ASTERISK',(1,1)),('MINUS',(1,0))):
+                            actions=(('EQUALS',(0,1)),('MINUS',(0,0))) if vertical_only else (('EQUALS',(0,1)),('ASTERISK',(1,1)),('MINUS',(1,0)))
+                            for key,expected_shift in actions:
                                 b._cmd_ok('KEY CTRL down');b._cmd_ok('KEY '+key+' down');frames(3)
                                 b._cmd_ok('KEY '+key+' up');b._cmd_ok('KEY CTRL up');frames(50)
                                 require((number(window+304,4),number(window+280,4))==expected_shift,'Scroll key did not change the original model: '+key)
-                                picture(window,'scroll-'+key,DOCUMENT)
-                            # This pinned bridge has no raw PLUS key name; use GEM's left-arrow gadget.
-                            ox,oy,ow,oh=[number(window+260+i*2) for i in range(4)]
-                            position=schedule(b,program,position,(ox+8,oy+oh-5));frames(10)
-                            b._cmd_ok('MOUSE AT 2000 0 0 1');frames(3)
-                            b._cmd_ok('MOUSE AT 2000 0 0 0');frames(50)
-                            require(number(window+304,4)==0,'Horizontal left gadget did not restore the model')
-                            picture(window,'scroll-left-gadget',DOCUMENT)
+                                picture(window,'scroll-'+key,content)
+                            if not vertical_only:
+                                # This pinned bridge has no raw PLUS key name; use GEM's left-arrow gadget.
+                                ox,oy,ow,oh=[number(window+260+i*2) for i in range(4)]
+                                position=schedule(b,program,position,(ox+8,oy+oh-5));frames(10)
+                                b._cmd_ok('MOUSE AT 2000 0 0 1');frames(3)
+                                b._cmd_ok('MOUSE AT 2000 0 0 0');frames(50)
+                                require(number(window+304,4)==0,'Horizontal left gadget did not restore the model')
+                                picture(window,'scroll-left-gadget',content)
                         if interactions and round==0:
                             outer=lambda:tuple(number(window+260+i*2) for i in range(4))
                             ox,oy,ow,oh=outer()
                             drag((ox+ow-5,oy+oh-5),(ox+ow-133,oy+oh-53))
                             report['resize']=dict(before=[ox,oy,ow,oh],after=outer())
                             require(outer()[2]<ow and outer()[3]<oh,'Size message did not resize the viewer')
-                            move(632,0);picture(window,'resized',DOCUMENT)
+                            move(632,0);picture(window,'resized',content)
                             ox,oy,ow,oh=outer()
                             drag((ox+80,oy+5),(ox+104,oy+13))
                             require(outer()[:2]==(ox+24,oy+8),'Move message did not move the viewer')
-                            move(632,0);picture(window,'moved',DOCUMENT)
+                            move(632,0);picture(window,'moved',content)
                             restored=outer();ox,oy,ow,oh=restored
                             click(ox+ow-8,oy+5);move(632,0)
                             require(outer()[2]>ow,'Full message did not enlarge the viewer')
-                            picture(window,'full',DOCUMENT)
+                            picture(window,'full',content)
                             ox,oy,ow,oh=outer();click(ox+ow-8,oy+5);move(632,0)
                             require(outer()==restored,'Previous geometry was not restored')
-                            picture(window,'restored',DOCUMENT)
+                            picture(window,'restored',content)
                             pulse('5');require(number(window+336)==5,'Digit did not change original tab width')
-                            picture(window,'tabs-five',DOCUMENT)
+                            picture(window,'tabs-five',content)
                         frames(60);require(number(counter+14,4)>initial,'Counter did not progress beside MGVIEW')
                         report['cases'].append(dict(arguments=argument.decode(),documents=number(sy['nwindows']),counter_progress=number(counter+14,4)-initial))
                         if round==0:
@@ -193,7 +196,7 @@ def run(out,reuse=False,scroll=False,failures=False,interactions=False):
     finally:
         payload=json.dumps(report,indent=2)+'\n'
         (out/'results.json').write_text(payload)
-        (out/('results-'+('failures' if failures else 'interactions' if interactions else 'scroll' if scroll else 'smoke')+'.json')).write_text(payload)
+        (out/('results-'+('reference' if document else 'failures' if failures else 'interactions' if interactions else 'scroll' if scroll else 'smoke')+'.json')).write_text(payload)
     print('MGVIEW development check passed: three lifetimes, exact pixels and Counter progress',flush=True)
     return report
 
@@ -201,4 +204,5 @@ def run(out,reuse=False,scroll=False,failures=False,interactions=False):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--reuse',action='store_true');parser.add_argument('--scroll',action='store_true');parser.add_argument('--failures',action='store_true');parser.add_argument('--interactions',action='store_true')
-    args=parser.parse_args();run(args.output,args.reuse,args.scroll,args.failures,args.interactions)
+    parser.add_argument('--document',type=Path);parser.add_argument('--vertical-only',action='store_true')
+    args=parser.parse_args();run(args.output,args.reuse,args.scroll,args.failures,args.interactions,args.document,args.vertical_only)

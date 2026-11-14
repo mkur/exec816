@@ -73,11 +73,11 @@ def capture(output,profiles):
             artifacts={str(p.relative_to(output)):sha256(p) for p in
                 [*(capture_dir/(label+suffix) for label in ('initial','line-down','line-up')
                     for suffix in ('.png','.bin')),capture_dir/'LAUNCH.LOG']}))
-    if results[0]['document_sha256']!=results[1]['document_sha256']:
+    if len({row['document_sha256'] for row in results})!=1:
         raise ValueError('The comparison uses different documents')
     result=dict(status='pass',tier='development',qualification=False,
         scope='Real keyboard line-down/up and exact row pixel correspondence at normal speed; no timing benchmark.',
         viewers=results)
     (output/'results.json').write_text(json.dumps(result,indent=2)+'\n')
-    print('MGVIEW and ported viewer: same document, normal-speed line down/up pixels passed')
+    print('MagiC scrolling checks passed: '+', '.join(row['viewer'] for row in results))
     return result

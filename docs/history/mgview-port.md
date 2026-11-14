@@ -91,3 +91,24 @@ button tests wait for the pointer to reach its target before pressing.
 This is the small interaction case, not a full capacity, occlusion, every-slider
 endpoint or stop/fault injection matrix. Fixed/root/kernel/idle and each public
 Task reserve zero additional bank-zero bytes.
+
+## MP5: paired original-viewer baseline
+
+`tools/test_mgview_pair.py` verifies the pinned MagiC disk/binaries, checks its
+floppy and host document bytes agree, and makes an isolated reference run.
+The same document is staged byte-for-byte for the current native APP. The
+single-viewer option in the existing MagiC capture avoids running unrelated
+applications. Exec reuses the small provider, loaded APP and Counter.
+
+`build/mgview-dev/paired/results.json` passes original MGVIEW line down/up on
+both machines. The 56,746-byte, 901-line document has SHA-256
+`4e2b4c68e01f9d1fa52811a56536267ab19b90502051a4cba22b4cacddac4ee3`. MagiC passes exact old-row-two/new-row-one and
+reverse correspondence; Exec passes complete model/pixel comparisons before,
+after and back, plus empty/no-argument restart and Counter progress.
+
+This is a functional baseline. MagiC uses its unchanged 8x16 monochrome font and
+8 MHz 68000 without Counter; Exec uses 8x8 on the pinned 65816/VBXE with Counter.
+No latency/CPU/RPC benchmark or speed ratio was run under the user's minimal
+check scope. Quantitative normalization and the larger timing inventory remain
+follow-up work. Source/compiler policy, drawing limits and all fixed/per-Task
+bank-zero reservations are unchanged.
