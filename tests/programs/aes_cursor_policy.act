@@ -1,0 +1,77 @@
+MODULE CURSORPOLICYTEST
+USE EXEC
+USE AESSTATE
+USE AESTYPES
+USE AESCURSOR
+USE HEAPCORE
+CARD checks
+AESTYPES.Request request
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+
+  LET service=AESSTATE.Service POINTER(EXEC.AllocMem(SIZEOF(AESSTATE.Service),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(service<>NULL)
+  AESCURSOR.Init(service)
+  LET first=@service.clients(0)
+  LET second=@service.clients(1)
+  LET mouse=@service.directory.mouse
+  Require(SIZEOF(AESTYPES.MouseState)=24)
+  Require(SIZEOF(AESTYPES.Request)=344)
+  Require(SIZEOF(AESSTATE.Client)=148 AND SIZEOF(AESSTATE.Service)=1332)
+  Require(mouse.x=320 AND mouse.y=120 AND mouse.visible=1)
+  request.intin(0)=AESTYPES.M_OFF
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  Require(first.mouseHides=1 AND service.cursorHides=1 AND mouse.depth=1)
+  Require(mouse.visible=0 AND mouse.revision=1)
+  Require(AESCURSOR.Call(service,second,@request)=AESTYPES.OK)
+  Require(service.cursorHides=2 AND mouse.depth=1 AND mouse.revision=1)
+  request.intin(0)=AESTYPES.M_ON
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  Require(first.mouseHides=0 AND mouse.depth=1 AND mouse.revision=1)
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  Require(service.cursorHides=1 AND mouse.visible=0)
+  mouse.completed=mouse.revision
+  Require(AESCURSOR.Retire(service,second,@request)=0)
+  Require(second.mouseHides=0 AND mouse.visible=1 AND mouse.revision=2)
+  mouse.completed=mouse.revision
+  Require(AESCURSOR.Retire(service,second,@request)<>0)
+  request.intin(0)=AESTYPES.M_OFF
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  request.intin(1)=1
+  request.intin(0)=122
+  request.intin(2)=0
+  Require(AESCURSOR.Call(service,second,@request)=AESTYPES.OK)
+  Require(mouse.depth=0 AND first.mouseHides=1 AND service.cursorHides=1)
+  request.intin(1)=0
+  request.intin(0)=AESTYPES.M_ON
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  Require(mouse.depth=0 AND service.cursorHides=0)
+  first.mouseHides=$ffff
+  service.cursorHides=$ffff
+  request.intin(0)=AESTYPES.M_OFF
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OVERFLOW)
+  Require(first.mouseHides=$ffff AND mouse.depth=0)
+  first.mouseHides=0
+  service.cursorHides=0
+  mouse.revision=$ffffffff
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OVERFLOW)
+  Require(first.mouseHides=0 AND mouse.depth=0 AND mouse.visible=1)
+  request.intin(0)=AESTYPES.TEXT_CRSR
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.UNSUPPORTED)
+  Require(first.mouseHides=0 AND mouse.depth=0)
+  request.intin(0)=INT(AESTYPES.M_FORCE OR AESTYPES.ARROW)
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
+
+RETURN
+ENDMODULE

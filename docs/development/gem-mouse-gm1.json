@@ -1,0 +1,433 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GM1",
+  "abi": {
+    "c_app": 44,
+    "aes": 23,
+    "console_bitmap": 15
+  },
+  "cases": [
+    {
+      "path": "build/gem-mouse/gm1-counter/results.json",
+      "sha256": "8c97e5c0dc71748eaabba3ce731b1124b8e6db973e7e987f75e34bc18f240ba1",
+      "status": "pass",
+      "AESChecks": 79,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "cursor_pixels": [
+        {
+          "phase": 2,
+          "position": [
+            121,
+            89
+          ],
+          "sha256": "578a50c6bce662c49e7774c84c241f455ad5b35d41ec69791f782a697ac797b5"
+        },
+        {
+          "phase": 4,
+          "position": [
+            121,
+            89
+          ],
+          "sha256": "76979730cc8bf4ad0b94cc3f1c3f07a783c748f4f599ceb591bcbc13dd8af2fb"
+        }
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 784,
+          "remaining_above_floor": 496
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 128,
+          "remaining_above_floor": 928
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 49,
+          "remaining_above_floor": 1007
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 214,
+          "remaining_above_floor": 842
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 703,
+          "remaining_above_floor": 1601
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      }
+    },
+    {
+      "path": "build/gem-mouse/gm1-policy-raw/results.json",
+      "sha256": "d3b7bb3cbdc058aeba1a21182202c48ce58efdb109b61298336db2c37c2acfa5",
+      "status": "pass",
+      "checks": 29
+    },
+    {
+      "path": "build/gem-mouse/gm1-policy-opt/results.json",
+      "sha256": "65ac49f0ce1cd12b7769e1eb1222af53b8765f7397c952a19d7ef61f3af3fa88",
+      "status": "pass",
+      "checks": 29
+    },
+    {
+      "path": "build/gem-mouse/gm1-context-raw/results.json",
+      "sha256": "896bfb738e3442c7d979d8b5a5c78b9211a18408485fc19f460403edb974d6e3",
+      "status": "pass",
+      "client_checks": [
+        1081,
+        1081
+      ]
+    },
+    {
+      "path": "build/gem-mouse/gm1-context-opt/results.json",
+      "sha256": "6dd394329f03214ee8892d281a87770a67f8fc8cf2f954034c423eab2a48a2fd",
+      "status": "pass",
+      "client_checks": [
+        1081,
+        1081
+      ]
+    },
+    {
+      "path": "build/gem-mouse/gm1-backend/results.json",
+      "sha256": "519cba6e59ac3383c8b98ff69a084c1cfd6eb7019ca09ad44dae4f50f03e7b31",
+      "status": "pass",
+      "checks": 39,
+      "failures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 161,
+          "remaining_above_floor": 1119
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 332,
+          "remaining_above_floor": 1972
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 258,
+          "remaining_above_floor": 1022
+        }
+      },
+      "cases": 62
+    },
+    {
+      "path": "build/gem-mouse/gm1-input-events-clean/results.json",
+      "sha256": "0592c3bd611705fd55166129051a3ecd32c524af4241103d3b756b66d62a154b",
+      "status": "pass",
+      "AESChecks": 714,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 649,
+          "remaining_above_floor": 631
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 128,
+          "remaining_above_floor": 928
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 539,
+          "remaining_above_floor": 517
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 707,
+          "remaining_above_floor": 1597
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      }
+    },
+    {
+      "path": "build/gem-mouse/gm1-locks/results.json",
+      "sha256": "9291a9bcb71416f6edc9048e0ee49a8d1298f75b465101fe1075da6828534778",
+      "status": "pass",
+      "AESChecks": 231,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 968,
+          "remaining_above_floor": 312
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 182,
+          "remaining_above_floor": 874
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 360,
+          "remaining_above_floor": 696
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 360,
+          "remaining_above_floor": 696
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 356,
+          "remaining_above_floor": 700
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 719,
+          "remaining_above_floor": 1585
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      }
+    },
+    {
+      "path": "build/gem-mouse/gm1-cache/results.json",
+      "sha256": "d4d6b56c1289e93fa7338eccc2bba1233d3003af5723b0a46b68a5aee8d49cee",
+      "status": "pass",
+      "AESChecks": 224,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 682,
+          "remaining_above_floor": 598
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 142,
+          "remaining_above_floor": 914
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 306,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 720,
+          "remaining_above_floor": 1584
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 33,
+          "remaining_above_floor": 223
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      }
+    }
+  ],
+  "host": {
+    "path": "build/gem-mouse-host-gm1.log",
+    "checks": 715,
+    "skipped": 5
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": 0,
+      "includes": "guards, alignment and unused reserved capacity"
+    },
+    "upper_structure_growth": {
+      "request": 4,
+      "c_context": 4,
+      "service": 36
+    },
+    "cursor_vram_growth": 0
+  },
+  "scope": "Pinned AltirraOS/AltirraSDL development checks; Counter and small probes; no QED execution, no release qualification; demo refresh deferred to GM5."
+}

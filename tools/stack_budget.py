@@ -6,12 +6,12 @@ from pathlib import Path
 BASELINE = Path(__file__).resolve().parents[1]/'docs/development/bank-zero-compaction.json'
 
 
-def current_task_memory():
-    """Default twelve-Task platform contract, independent of a fixture build."""
+def current_task_memory(capacity=12):
+    """Current platform reservations for the selected public Task capacity."""
     from generate_memory import layout
     from task_capacity import configure
     memory = layout(upper_table=True)
-    configure(memory, 12)
+    configure(memory, capacity)
     return memory
 
 

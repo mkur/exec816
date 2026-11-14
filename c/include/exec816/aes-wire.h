@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 22
+#define AES_VERSION 23
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -145,6 +145,24 @@
 #define AES_WA_RTPAGE 5
 #define AES_WA_LFLINE 6
 #define AES_WA_RTLINE 7
+#define AES_OP_GRAF_MOUSE 78
+#define AES_ARROW 0
+#define AES_TEXT_CRSR 1
+#define AES_HOURGLASS 2
+#define AES_BUSYBEE 2
+#define AES_BUSY_BEE 2
+#define AES_POINT_HAND 3
+#define AES_FLAT_HAND 4
+#define AES_THIN_CROSS 5
+#define AES_THICK_CROSS 6
+#define AES_OUTLN_CROSS 7
+#define AES_USER_DEF 255
+#define AES_M_OFF 256
+#define AES_M_ON 257
+#define AES_M_SAVE 258
+#define AES_M_RESTORE 259
+#define AES_M_PREVIOUS 260
+#define AES_M_FORCE 32768
 struct AESMenuObject {
     WORD next;
     WORD head;
@@ -308,6 +326,27 @@ struct AESEndpoint {
 #define AES_ENDPOINT_OFFSET_MENUEPOCH 40
 #define AES_ENDPOINT_OFFSET_MENUCONSUMED 44
 #define AES_ENDPOINT_OFFSET_MENUNORMAL 46
+struct AESMouseState {
+    WORD x;
+    WORD y;
+    WORD buttons;
+    WORD qualifiers;
+    ULONG depth;
+    ULONG revision;
+    ULONG completed;
+    UWORD status;
+    UWORD visible;
+};
+#define AES_MOUSESTATE_SIZE 24
+#define AES_MOUSESTATE_OFFSET_X 0
+#define AES_MOUSESTATE_OFFSET_Y 2
+#define AES_MOUSESTATE_OFFSET_BUTTONS 4
+#define AES_MOUSESTATE_OFFSET_QUALIFIERS 6
+#define AES_MOUSESTATE_OFFSET_DEPTH 8
+#define AES_MOUSESTATE_OFFSET_REVISION 12
+#define AES_MOUSESTATE_OFFSET_COMPLETED 16
+#define AES_MOUSESTATE_OFFSET_STATUS 20
+#define AES_MOUSESTATE_OFFSET_VISIBLE 22
 struct AESDirectory {
     struct Task EXEC_PTR * owner;
     UBYTE ownerPad;
@@ -315,14 +354,16 @@ struct AESDirectory {
     UWORD changed;
     WORD topWindow;
     struct AESEndpoint endpoints[AES_CLIENTS];
+    struct AESMouseState mouse;
 };
-#define AES_DIRECTORY_SIZE 204
+#define AES_DIRECTORY_SIZE 228
 #define AES_DIRECTORY_OFFSET_OWNER 0
 #define AES_DIRECTORY_OFFSET_OWNERPAD 3
 #define AES_DIRECTORY_OFFSET_MASK 4
 #define AES_DIRECTORY_OFFSET_CHANGED 8
 #define AES_DIRECTORY_OFFSET_TOPWINDOW 10
 #define AES_DIRECTORY_OFFSET_ENDPOINTS 12
+#define AES_DIRECTORY_OFFSET_MOUSE 204
 struct AESRect {
     WORD left;
     WORD top;
@@ -416,8 +457,9 @@ struct AESRequest {
     struct AESPaintReport paints[AES_PAINT_REPORTS];
     UWORD invalidationCount;
     struct AESPaintReport invalidations[AES_INVALIDATION_REPORTS];
+    ULONG mouseWait;
 };
-#define AES_REQUEST_SIZE 340
+#define AES_REQUEST_SIZE 344
 #define AES_REQUEST_OFFSET_MESSAGE 0
 #define AES_REQUEST_OFFSET_VERSION 16
 #define AES_REQUEST_OFFSET_BYTES 18
@@ -447,5 +489,6 @@ struct AESRequest {
 #define AES_REQUEST_OFFSET_PAINTS 114
 #define AES_REQUEST_OFFSET_INVALIDATIONCOUNT 226
 #define AES_REQUEST_OFFSET_INVALIDATIONS 228
+#define AES_REQUEST_OFFSET_MOUSEWAIT 340
 #define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_DISPLAY || (op)==AES_OP_MOUSE_PROFILE || (op)==AES_OP_MENU || (op)==AES_OP_DRAG_OUTLINE)
 #endif

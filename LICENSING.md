@@ -105,7 +105,8 @@ emulators or patches to upstream projects.
   exception above covers only Exec-authored code.
 - GEM4XE source selected by `ports/gem4xe/selection.json` and
   `ports/gem4xe/aes/selection.json`, text-origin arithmetic pinned by
-  `ports/gem4xe/text/inputs.json`, calculator sources pinned by
+  `ports/gem4xe/text/inputs.json`, mouse artwork pinned by
+  `ports/gem4xe/mouse/inputs.json` (including its EmuTOS provenance), calculator sources pinned by
   `ports/gem4xe/apps/calculator/inputs.json`, benchmark sources pinned by
   `ports/gem4xe/apps/g4bench/inputs.json`, archive sources pinned by
   `ports/gem4xe/apps/gemarc/inputs.json`, and patches to them, retain

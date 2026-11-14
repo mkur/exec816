@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 22,
+  "version": 23,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -143,7 +143,25 @@
     "WA_LFPAGE": 4,
     "WA_RTPAGE": 5,
     "WA_LFLINE": 6,
-    "WA_RTLINE": 7
+    "WA_RTLINE": 7,
+    "OP_GRAF_MOUSE": 78,
+    "ARROW": 0,
+    "TEXT_CRSR": 1,
+    "HOURGLASS": 2,
+    "BUSYBEE": 2,
+    "BUSY_BEE": 2,
+    "POINT_HAND": 3,
+    "FLAT_HAND": 4,
+    "THIN_CROSS": 5,
+    "THICK_CROSS": 6,
+    "OUTLN_CROSS": 7,
+    "USER_DEF": 255,
+    "M_OFF": 256,
+    "M_ON": 257,
+    "M_SAVE": 258,
+    "M_RESTORE": 259,
+    "M_PREVIOUS": 260,
+    "M_FORCE": 32768
   },
   "records": {
     "MenuObject": [
@@ -448,6 +466,44 @@
         "CARD"
       ]
     ],
+    "MouseState": [
+      [
+        "x",
+        "INT"
+      ],
+      [
+        "y",
+        "INT"
+      ],
+      [
+        "buttons",
+        "INT"
+      ],
+      [
+        "qualifiers",
+        "INT"
+      ],
+      [
+        "depth",
+        "LONGCARD"
+      ],
+      [
+        "revision",
+        "LONGCARD"
+      ],
+      [
+        "completed",
+        "LONGCARD"
+      ],
+      [
+        "status",
+        "CARD"
+      ],
+      [
+        "visible",
+        "CARD"
+      ]
+    ],
     "Directory": [
       [
         "owner",
@@ -473,6 +529,10 @@
         "endpoints",
         "Endpoint",
         "CLIENTS"
+      ],
+      [
+        "mouse",
+        "MouseState"
       ]
     ],
     "Rect": [
@@ -711,6 +771,10 @@
         "invalidations",
         "PaintReport",
         "INVALIDATION_REPORTS"
+      ],
+      [
+        "mouseWait",
+        "LONGCARD"
       ]
     ]
   },
@@ -785,6 +849,23 @@
     "WA_LFPAGE",
     "WA_RTPAGE",
     "WA_LFLINE",
-    "WA_RTLINE"
+    "WA_RTLINE",
+    "ARROW",
+    "TEXT_CRSR",
+    "HOURGLASS",
+    "BUSYBEE",
+    "BUSY_BEE",
+    "POINT_HAND",
+    "FLAT_HAND",
+    "THIN_CROSS",
+    "THICK_CROSS",
+    "OUTLN_CROSS",
+    "USER_DEF",
+    "M_OFF",
+    "M_ON",
+    "M_SAVE",
+    "M_RESTORE",
+    "M_PREVIOUS",
+    "M_FORCE"
   ]
 }

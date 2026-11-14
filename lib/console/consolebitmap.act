@@ -348,6 +348,13 @@ PUBLIC BYTE FUNC CopyStart()
 RETURN(1)
 
 ; Local owner state is sufficient for scheduling; public Poll admits again.
+PUBLIC BYTE FUNC Mouse(BYTE POINTER state)
+
+  LET packet=GetPacket()
+  packet.text=LONGCARD(ADDRESS(state))
+
+RETURN(Run(OP_MOUSE))
+
 PUBLIC BYTE FUNC Pending()
 
 RETURN(drawingPending)

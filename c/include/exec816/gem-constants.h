@@ -64,6 +64,23 @@
 #define WA_RTPAGE 5
 #define WA_LFLINE 6
 #define WA_RTLINE 7
+#define ARROW 0
+#define TEXT_CRSR 1
+#define HOURGLASS 2
+#define BUSYBEE 2
+#define BUSY_BEE 2
+#define POINT_HAND 3
+#define FLAT_HAND 4
+#define THIN_CROSS 5
+#define THICK_CROSS 6
+#define OUTLN_CROSS 7
+#define USER_DEF 255
+#define M_OFF 256
+#define M_ON 257
+#define M_SAVE 258
+#define M_RESTORE 259
+#define M_PREVIOUS 260
+#define M_FORCE 32768
 #define WF_WORKXYWH WF_WXYWH
 #define WF_CURRXYWH WF_CXYWH
 #endif

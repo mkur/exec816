@@ -27,7 +27,7 @@ class DesktopContractTests(unittest.TestCase):
         self.assertFalse(application_entry({'name': 'M_LAYERCACHE_INIT'}))
         for module in ('DESKCORE','DESKMOVE','DESKCACHE','DESKSTATE','DESKPAINT','DESKINPUT','DESKDRAG','DESKHOST','DESKBOOT','DESKMENURENDER'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
-        for module in ('AESCORE', 'AESHOST', 'AESBOOT', 'AESSTATE', 'AESTYPES', 'AESLOCKS', 'AESGUI', 'AESWINDOW', 'AESWINDOWSTATE', 'AESSNAPSHOT', 'AESDEFER', 'AESMOUSE'):
+        for module in ('AESCORE', 'AESCURSOR', 'AESHOST', 'AESBOOT', 'AESSTATE', 'AESTYPES', 'AESLOCKS', 'AESGUI', 'AESWINDOW', 'AESWINDOWSTATE', 'AESSNAPSHOT', 'AESDEFER', 'AESMOUSE'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
 
     def test_aes_protocol_is_generated(self):
@@ -39,7 +39,7 @@ class DesktopContractTests(unittest.TestCase):
     def test_hybrid_rpc_profile_excludes_message_and_event_opcodes(self):
         import generate_aes_server as aes
         self.assertEqual(aes.ABI['rpc_operations'], ['OP_INIT', 'OP_EXIT', 'OP_DISPLAY', 'OP_MOUSE_PROFILE', 'OP_MENU', 'OP_DRAG_OUTLINE'])
-        self.assertEqual(aes.layout()['Request']['size'], 340)
+        self.assertEqual(aes.layout()['Request']['size'], 344)
         self.assertNotIn('words', aes.layout()['Request']['fields'])
         self.assertEqual(aes.layout()['Delivery']['size'], 32)
         self.assertEqual(aes.layout()['GuiDelivery']['size'], 40)

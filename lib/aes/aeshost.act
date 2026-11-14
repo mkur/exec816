@@ -9,6 +9,7 @@ USE AESCORE
 USE HEAPCORE
 USE AESLOCKS
 USE AESMOUSE
+USE AESCURSOR
 USE AESWINDOWSTATE
 USE DESKSTATE
 USE DESKDRAG
@@ -75,6 +76,7 @@ PUBLIC BYTE FUNC Settled()
 
 RETURN(service<>NULL AND service.live=1 AND service.lockCount=0
     AND service.windowPending=0 AND AESSTATE.mouseDirty=0
+    AND AESCURSOR.Pending()=0
     AND AESCORE.Runnable(service)=0 AND desktop<>NULL
     AND service.windowRevision=desktop.scene.rebuilds
     AND service.windowFocus=desktop.focus)

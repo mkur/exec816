@@ -38,4 +38,13 @@ typedef struct {
     WORD fd_r2;
     WORD fd_r3;
 } MFDB;
+typedef struct {
+    WORD mf_xhot;
+    WORD mf_yhot;
+    WORD mf_nplanes;
+    WORD mf_bg;
+    WORD mf_fg;
+    WORD mf_mask[16];
+    WORD mf_data[16];
+} MFORM;
 #endif

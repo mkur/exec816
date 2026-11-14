@@ -8,6 +8,8 @@ multitasking adaptation: per-registration AES forms/contributions above shared
 VDI device state, recipient changes independent of CPU scheduling and no forced
 form override. The plan starts with real hide/show for MGVIEW and ends with
 saved forms and small-app package acceptance.
+GM1 hide/show and current-state calls are implemented; see the
+[execution record](../../history/gem-mouse-calls.md). GM2–GM5 remain pending.
 
 The [MGVIEW foundation plan](mgview-foundation-plan.md) adds the shared VDI
 bindings, full/previous geometry and horizontal window gadgets needed before

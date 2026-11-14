@@ -12,10 +12,10 @@ from gem_render_oracle import Raster,font_bytes
 from test_gem_interactive import pixels,PIN
 from test_heap_api import clean_ownership
 from stack_budget import stack_usage
-ARROW=('X...............','XX..............','XOX.............','XOOX............',
-       'XOOOX...........','XOOOOX..........','XOOOOOX.........','XOOOOOOX........',
-       'XOOOOOOOX.......','XOOOOXXXXX......','XOOXOX..........','XOX.OX..........',
-       'XX..XOX.........','X...XOX.........','.....XX.........','................')
+ARROW=('OO..............','OXO.............','OXXO............','OXXXO...........',
+       'OXXXXO..........','OXXXXXO.........','OXXXXXXO........','OXXXXXXXO.......',
+       'OXXXXXXXXO......','OXXXXXOOOOO.....','OXXOXXO.........','OXO.OXXO........',
+       'OO..OXXO........','O....OXXO.......','.....OXXO.......','......OOO.......')
 
 def overlay(model,cursor):
     raw=bytearray(model.pixels)
@@ -59,7 +59,7 @@ def run(output,mode,replay=False,unquiesced=False):
         sy=foreign['symbols'];memory=p['build']['memory']
         report.update(build=p['build'],pin=PIN,harness_sha256=sha256(Path(__file__)),xex_sha256=sha256(p['xex']),
             bank_zero_delta=dict(fixed=0,per_task=[0]*8,private_idle=0),layout=foreign['provenance']['checked_layout'])
-        baseline=current_task_memory()
+        baseline=current_task_memory(8)
         for k in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
             require(memory[k]==baseline[k],'Bank-zero change: '+k)
         model=Raster(font_bytes(output/'selected/src/vdi/font8x8.c'))

@@ -6,8 +6,8 @@
 [MGVIEW foundations](mgview-foundation-plan.md) ·
 [MagiC mouse cross-check](../../history/gem-mouse-magic-review.md)
 
-Status: proposed, 2026-11-14. Deliver GM1–GM5 as executable slices, committing
-each after its development checks pass. This plan adds shared SDK services;
+Status: GM1 implemented; GM2–GM5 pending, 2026-11-14. Deliver the remaining
+slices, committing each after its development checks pass. This plan adds shared SDK services;
 MGVIEW itself remains a separate application port. Current contracts continue
 to describe the implemented system until each slice lands.
 
@@ -15,7 +15,9 @@ Cross-checked against the pinned multitasking MagiC implementation on
 2026-11-14. GEM4XE supplies forms and rendering algorithms; MagiC supplies the
 application-state and shared-device structure. The review replaces the initial
 draft's forced form override and unified AES/VDI bookkeeping with the layered
-model below. It adds no implementation or runtime qualification.
+model below. See the [execution record](../../history/gem-mouse-calls.md) for
+implemented behavior and development evidence. These checks do not establish
+runtime release qualification.
 
 ## Public surface
 

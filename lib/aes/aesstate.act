@@ -35,6 +35,7 @@ PUBLIC TYPE Client=[
   AESTYPES.Endpoint POINTER endpoint
   AESTYPES.Request POINTER pending
   Menu POINTER menu
+  CARD mouseHides
   DESKTYPES.GuiPending gui
   BYTE guiNext,windowWaiting,closeRequested,windowLocks,waitMode
 ]
@@ -60,6 +61,7 @@ PUBLIC TYPE Service=[
   BYTE count
   LONGCARD updateOwner,mouseOwner
   CARD updates,mouseHolds
+  LONGCARD cursorHides
   INT updateWindow
   BYTE ARRAY lockOrder(AESTYPES.CLIENTS)
   BYTE lockCount

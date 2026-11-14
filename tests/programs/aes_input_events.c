@@ -153,15 +153,18 @@ void AESClientOne(void)
         struct AESInputInbox *in=ExecAESContext()->endpoint->input;
         UBYTE kh,kt,bh,bt;
         UWORD interest;
+        WORD sharedX,sharedY,sharedButtons,sharedQualifiers;
+        CHECK(graf_mkstate(&sharedX,&sharedY,&sharedButtons,&sharedQualifiers));
         input(AES_INPUT_KEY,21,31,0,4);
         input(AES_INPUT_BUTTON,22,32,1,2);
         snapshot(123,111,0,1);
         kh=in->keyHead;kt=in->keyTail;bh=in->buttonHead;bt=in->buttonTail;
         interest=in->interest;
         CHECK(graf_mkstate(&x,&y,&buttons,&modifiers));
-        CHECK(x==123 && y==111 && !buttons && !modifiers);
+        CHECK(x==sharedX && y==sharedY && buttons==sharedButtons && modifiers==sharedQualifiers);
         aes_call(&pb);
-        CHECK(out[0]==1 && out[1]==123 && out[2]==111 && !out[3] && !out[4]);
+        CHECK(out[0]==1 && out[1]==sharedX && out[2]==sharedY &&
+              out[3]==sharedButtons && out[4]==sharedQualifiers);
         CHECK(in->keyHead==kh && in->keyTail==kt && in->buttonHead==bh &&
               in->buttonTail==bt && in->interest==interest);
         CHECK(event(MU_KEYBD|MU_BUTTON|MU_TIMER,1,1,1,0)==(MU_KEYBD|MU_BUTTON|MU_TIMER));

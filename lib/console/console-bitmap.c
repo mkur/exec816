@@ -28,6 +28,8 @@ void ConsoleBitmapEntry(void)
         p->status=GemDrawingOutline(p->x,p->y,p->x+p->width,p->y+p->height,p->foreground); break;
     case CON_BITMAP_POINTER:
         p->status=GemDrawingPointer(p->x,p->y,p->width); break;
+    case CON_BITMAP_MOUSE:
+        p->status=GemDrawingMouse((struct AESMouseState *)p->text); break;
     case CON_BITMAP_OPEN:
         p->completionMask=0;
         p->status=GemDrawingOpen(workout);

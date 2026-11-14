@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 43,
+  "version": 44,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -145,7 +145,11 @@
     "ExamineFH",
     "vst_alignment",
     "vqt_attributes",
-    "vr_recfl"
+    "vr_recfl",
+    "graf_mouse",
+    "v_hide_c",
+    "v_show_c",
+    "vq_mouse"
   ],
   "stack_requirement": {
     "workspace_mask": 255,

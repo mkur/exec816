@@ -4,6 +4,7 @@
 #ifndef EXEC_GEM_DRAWING_H
 #define EXEC_GEM_DRAWING_H
 #include <hardware/vbxe.h>
+#include <exec816/aes-wire.h>
 UWORD GemDrawingOpen(WORD *workout);
 UWORD GemDrawingClose(void);
 UWORD GemDrawingCopy(const struct VbxeCopy *copy);
@@ -38,6 +39,10 @@ UWORD GemDrawingTextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
 /* Same owner; caller waits for its asynchronous drawing to retire first. */
 UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible);
 UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible);
+/* Copied device target, independent of AES application history/hide ledgers.
+ * Publish completion only after the physical operation finishes. */
+UWORD GemDrawingMouse(struct AESMouseState *mouse);
+UWORD GemDrawingMouseBorrow(struct DisplayGrant *grant,struct AESMouseState *mouse);
 
 /* Internal renderer closure: callback is linked trusted code, never a client
  * pointer. One owner check and fence cover the complete bounded paint quantum. */

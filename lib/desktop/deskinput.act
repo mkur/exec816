@@ -10,6 +10,8 @@ USE AESWINDOWSTATE
 USE AESINPUT
 USE AESKEYS
 USE AESMOUSE
+USE AESSTATE
+USE AESCURSOR
 USE INPUT
 USE DESKMOUSE
 USE DESKMOUSECONFIG
@@ -52,6 +54,13 @@ RETURN
 BYTE FUNC SnapshotKey(INPUT.Event POINTER captured)
   AESSNAPSHOT.WindowRoute target
   AESTYPES.InputRecord keySample
+
+  LET service=AESSTATE.Get()
+  IF service<>NULL AND captured.kind<>INPUT.EVENT_LOSS THEN
+    EXEC.Forbid()
+    service.directory.mouse.qualifiers=INT(AESKEYS.Qualifiers(captured.qualifiers))
+    EXEC.Permit()
+  FI
 
   target.endpoint=NULL
   IF AESSNAPSHOT.Select(AESSNAPSHOT.KEY_ROUTE,captured.route,0,0,@target)=0 THEN
@@ -284,6 +293,19 @@ PROC Fresh(INPUT.Event POINTER sample)
     buttons=sample.buttons
     cursorX=sample.x
     cursorY=sample.y
+    BEGIN
+      LET service=AESSTATE.Get()
+      IF service<>NULL THEN
+        EXEC.Forbid()
+        service.directory.mouse.x=cursorX
+        service.directory.mouse.y=cursorY
+        service.directory.mouse.buttons=INT(buttons & INPUT.LEFT)
+        IF sample.kind=INPUT.EVENT_BUTTON THEN
+          service.directory.mouse.qualifiers=INT(AESKEYS.Qualifiers(sample.qualifiers))
+        FI
+        EXEC.Permit()
+      FI
+    END
     dirty=1
   FI
 
@@ -399,11 +421,21 @@ PUBLIC PROC Present()
       DESKDRAG.Present()
     FI
 
-    IF dirty<>0 OR CONSOLEBITMAP.Changed()<>0 THEN
+    IF dirty<>0 OR CONSOLEBITMAP.Changed()<>0 OR AESCURSOR.Pending()<>0 THEN
       ; Deferred capture can run inside the physical call's Resume. Consume
       ; only the old hint; retain/rearm an arrival after these coordinates.
       dirty=0
-      drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),1)
+      BEGIN
+        LET service=AESSTATE.Get()
+        IF service<>NULL THEN
+          drawn=CONSOLEBITMAP.Mouse(BYTE POINTER(@service.directory.mouse))
+          IF drawn=0 AND CONSOLEBITMAP.Failed()<>0 THEN
+            service.directory.mouse.status=DISPLAY.DEVICE_FAULT
+          FI
+        ELSE
+          drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),1)
+        FI
+      END
       IF dirty<>0 THEN
         EXEC.Signal(EXEC.FindTask(NULL),wakeMask)
       FI
@@ -412,6 +444,7 @@ PUBLIC PROC Present()
       FI
     FI
   FI
+  AESCURSOR.Wake()
 
 RETURN
 

@@ -1,5 +1,8 @@
 # Historical records
 
+- [GEM mouse calls](gem-mouse-calls.md): per-registration AES hide bookkeeping,
+  raw VDI device operations, coherent state queries and physical completion.
+
 - [GEM mouse MagiC cross-check](gem-mouse-magic-review.md): pinned source review
   of per-application forms, shared hide counts, raw VDI boundaries, ownership
   changes and the corrections to the proposed GEM4XE mouse adaptation.

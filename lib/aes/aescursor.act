@@ -1,0 +1,163 @@
+; Application AES contributions above one screen-device hide counter.
+; Policy callers own AESGATE. Publication/readback also covers presenter entry.
+MODULE AESCURSOR
+USE EXEC
+USE AESTYPES
+USE AESSTATE
+USE AESWAIT
+
+PUBLIC PROC Init(AESSTATE.Service POINTER service)
+
+  service.directory.mouse.x=320
+  service.directory.mouse.y=120
+  service.cursorHides=0
+  service.directory.mouse.depth=0
+  service.directory.mouse.revision=0
+  service.directory.mouse.completed=0
+  service.directory.mouse.status=0
+  service.directory.mouse.visible=1
+
+RETURN
+
+; Return before any mutation if a new physical target cannot be identified.
+CARD FUNC SetDepth(AESSTATE.Service POINTER service LONGCARD depth)
+
+  LET mouse=@service.directory.mouse
+  LET visible=CARD(depth=0)
+  IF visible<>mouse.visible AND mouse.revision=$ffffffff THEN
+    RETURN(AESTYPES.OVERFLOW)
+  FI
+
+  mouse.depth=depth
+  IF visible<>mouse.visible THEN
+    mouse.visible=visible
+    mouse.revision==+1
+  FI
+
+RETURN(AESTYPES.OK)
+
+; Raw VDI calls leave the application's AES contribution unchanged.
+PUBLIC CARD FUNC Call(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
+  CARD status,mode
+  LONGCARD depth
+
+  mode=CARD(request.intin(0)) & $7fff
+  depth=service.directory.mouse.depth
+  status=AESTYPES.OK
+  EXEC.Forbid()
+  IF request.intin(1)=0 THEN
+    IF mode=AESTYPES.M_OFF THEN
+      IF client.mouseHides=$ffff OR service.cursorHides=$ffffffff
+          OR (service.cursorHides=0 AND depth=$ffffffff) THEN
+        status=AESTYPES.OVERFLOW
+      ELSE
+        IF service.cursorHides=0 THEN
+          status=SetDepth(service,depth+1)
+        FI
+        IF status=AESTYPES.OK THEN
+          client.mouseHides==+1
+          service.cursorHides==+1
+        FI
+      FI
+    ELSEIF mode=AESTYPES.M_ON THEN
+      IF client.mouseHides<>0 THEN
+        IF service.cursorHides=1 AND depth<>0 THEN
+          status=SetDepth(service,depth-1)
+        FI
+        IF status=AESTYPES.OK THEN
+          client.mouseHides==-1
+          service.cursorHides==-1
+        FI
+      FI
+    ELSEIF mode<>AESTYPES.ARROW THEN
+      status=AESTYPES.UNSUPPORTED
+    FI
+  ELSEIF mode=123 THEN
+    IF depth=$ffffffff THEN
+      status=AESTYPES.OVERFLOW
+    ELSE
+      status=SetDepth(service,depth+1)
+    FI
+  ELSEIF mode=122 THEN
+    IF request.intin(2)=0 THEN
+      status=SetDepth(service,0)
+    ELSEIF depth<>0 THEN
+      status=SetDepth(service,depth-1)
+    FI
+  ELSE
+    status=AESTYPES.UNSUPPORTED
+  FI
+
+  request.mouseWait=IF status=AESTYPES.OK THEN
+      service.directory.mouse.revision ELSE LONGCARD(0) FI
+  request.intout(0)=INT(status=AESTYPES.OK)
+  EXEC.Permit()
+
+RETURN(status)
+
+PUBLIC BYTE FUNC Pending()
+  BYTE pending
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  pending=service.directory.mouse.revision<>service.directory.mouse.completed
+      AND service.directory.mouse.status=0
+  EXEC.Permit()
+
+RETURN(pending)
+
+; Wake bits are hints. Each caller checks its durable revision before Wait.
+PUBLIC PROC Wake()
+  BYTE index
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN
+  FI
+
+  EXEC.Forbid()
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    BEGIN
+      LET client=@service.clients(index)
+      IF client.binding<>NULL AND client.binding.mouseWait<>0
+          AND (service.directory.mouse.completed>=client.binding.mouseWait
+            OR service.directory.mouse.status<>0) THEN
+        AESWAIT.Signal(client)
+      FI
+    END
+  OD
+  EXEC.Permit()
+
+RETURN
+
+; Keep the registration alive until its last physical visibility change retires.
+PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
+  CARD status
+
+  status=AESTYPES.OK
+  EXEC.Forbid()
+  IF client.mouseHides<>0 THEN
+    IF service.cursorHides=LONGCARD(client.mouseHides)
+        AND service.directory.mouse.depth<>0 THEN
+      status=SetDepth(service,service.directory.mouse.depth-1)
+    FI
+    IF status=AESTYPES.OK THEN
+      service.cursorHides==-LONGCARD(client.mouseHides)
+      client.mouseHides=0
+      request.mouseWait=service.directory.mouse.revision
+    FI
+  FI
+  LET complete=(status=AESTYPES.OK AND
+      (request.mouseWait<=service.directory.mouse.completed
+        OR service.directory.mouse.status<>0))
+  EXEC.Permit()
+
+RETURN(complete)
+
+ENDMODULE

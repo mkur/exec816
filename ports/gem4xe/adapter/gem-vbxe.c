@@ -15,6 +15,7 @@
 #include "gem-frame-gadgets.h"
 #include <stdint.h>
 #include <string.h>
+#include <proto/exec.h>
 #include "../raster/drawing.h"
 #include "../raster/core.h"
 
@@ -630,6 +631,26 @@ static void cursor_hide(void)
 { cursor_render(cursorX,cursorY,0); }
 static void cursor_show(void)
 { if (cursorVisible) cursor_render(cursorX,cursorY,1); }
+
+/* Access owns scratch/hardware, while short guards protect the requested
+ * device target against ordinary Task publication. Input capture may continue. */
+static UWORD draw_Mouse(struct AESMouseState *mouse)
+{
+    UWORD x,y,visible;
+    ULONG revision;
+    if (display.operationPending) return DISPLAY_BUSY;
+    Forbid();
+    x=mouse->x; y=mouse->y; visible=mouse->visible;
+    revision=mouse->revision;
+    Permit();
+    cursor_render(x,y,visible);
+    if (!fault) cursorVisible=visible;
+    Forbid();
+    if (fault) mouse->status=fault;
+    else mouse->completed=revision;
+    Permit();
+    return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
+}
 #ifndef GEM_DRAWING_ONLY
 static UWORD cursor_backend(void *context,const struct GemCursor *cursor)
 {
@@ -1228,6 +1249,7 @@ NATIVE_UNIT(AtasciiText,(UWORD x,UWORD y,const UBYTE *text,UWORD count,
 NATIVE_UNIT(TextClip,(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom),(x,y,text,count,fg,bg,left,top,right,bottom))
 NATIVE_UNIT(Pointer,(UWORD x,UWORD y,UWORD visible),(x,y,visible))
+NATIVE_UNIT(Mouse,(struct AESMouseState *mouse),(mouse))
 NATIVE_UNIT(Outline,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible),(left,top,right,bottom,visible))
 NATIVE_UNIT(InvertRows,(const WORD *rectangles,UWORD count),(rectangles,count))
 NATIVE_UNIT(Batch,(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void)),(left,top,right,bottom,draw))
@@ -1246,6 +1268,15 @@ static UWORD borrow_leave(struct DisplayGrant *grant)
     }
     cursor_show();
     if (fault) status=DISPLAY_DEVICE_FAULT;
+    DisplayLeave(grant);
+    return status;
+}
+
+UWORD GemDrawingMouseBorrow(struct DisplayGrant *grant,struct AESMouseState *mouse)
+{
+    UWORD status=DisplayEnter(grant);
+    if (status!=DISPLAY_OK) return status;
+    status=draw_Mouse(mouse);
     DisplayLeave(grant);
     return status;
 }

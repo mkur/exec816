@@ -7,6 +7,7 @@ USE AESWAIT
 USE AESGATE
 USE AESLOCKS
 USE AESWINDOW
+USE AESCURSOR
 
 ; One busy C context pins its descriptor, registration and native stack until
 ; return. Waiter publication precedes scene release; signals are only hints.
@@ -25,13 +26,20 @@ PUBLIC CARD FUNC Call(LONGCARD value)
       AND request.operation<>AESTYPES.OP_OPEN
       AND request.operation<>AESTYPES.OP_CLOSE
       AND request.operation<>AESTYPES.OP_FIND
-      AND request.operation<>AESTYPES.OP_SET THEN
+      AND request.operation<>AESTYPES.OP_SET
+      AND request.operation<>AESTYPES.OP_GRAF_MOUSE THEN
     RETURN(0)
   FI
   LET mask=LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit
   waiting=0
   DO
     AESGATE.EnterTask(request.owner,mask)
+    IF request.operation=AESTYPES.OP_GRAF_MOUSE THEN
+      request.status=AESCURSOR.Call(service,
+          AESSTATE.Find(service,request.client),request)
+      AESGATE.Release(AESCURSOR.Pending())
+      RETURN(1)
+    FI
     IF request.operation=AESTYPES.OP_FIND THEN
       request.status=AESWINDOW.Query(request)
       AESGATE.Release(0)

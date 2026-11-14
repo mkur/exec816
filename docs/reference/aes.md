@@ -18,7 +18,7 @@ The current source profile in [gem.h](../../c/include/gem.h) implements
 `evnt_mesag`, `evnt_timer`,
 `evnt_multi`, `evnt_multi_moblk`, `wind_update`, `wind_create`, `wind_open`,
 `wind_close`, `wind_delete`, `wind_get`, `wind_set`, `wind_set_str`, `wind_calc`,
-`graf_handle`, `graf_mkstate`
+`graf_handle`, `graf_mkstate`, `graf_mouse`
 and the corresponding `aes_call(AESPB *)` operations.
 Other opcodes return zero with `ExecAESDiagnostic() == AES_UNSUPPORTED`.
 This is a rebuilt Calypsi source interface, not a GEM binary ABI or a complete
@@ -28,12 +28,34 @@ below. Selected
 execute directly in the caller.
 
 `graf_mkstate(&x,&y,&buttons,&qualifiers)` and AESPB opcode 79 (0 input words,
-5 output words, no addresses) return the context's latest published pointer
+5 output words, no addresses) return the shared latest captured pointer
 sample. A short Task guard makes the four values coherent; raw IRQ capture
 does not mutate this AES storage. The query consumes no queued key/button
 record, changes no wait interest and performs no timer wait or RPC. It succeeds
 for a registered context even when its current window is ineligible for input.
+It also works before creating a window or opening a workstation; filtered or
+frozen per-context event samples do not replace this shared observation.
 These are the latest presenter-published values, rather than a hardware read.
+
+`graf_mouse(mode,form)` and AESPB opcode 78 (one input/result word and one
+address input) currently implement ARROW, M_OFF and M_ON. Other selectors fail
+with AES_UNSUPPORTED. M_FORCE is accepted and stripped as in MagiC; it does not
+override the input recipient. The 74-byte MFORM declaration and standard selector
+constants are public, but USER_DEF and saved/previous forms are not yet admitted.
+The form pointer is ignored for the supported selectors.
+
+Each registration owns its nested AES hide contribution. Only the shared
+aggregate's outer transitions add/balance a VDI device hide. M_ON at local zero
+does nothing and cannot consume another registration's contribution. Exit
+removes only its own contribution and waits for any resulting physical change.
+Normal Task scheduling and input delivery continue while hidden.
+
+Mouse calls need neither UPDATE nor a window/workstation. A warm call reuses
+the existing workstation display grant; a call before workstation open uses
+the presenter's pointer path and the registration's reply signal. Physical
+changes finish before success, including under the caller's own UPDATE/MCTRL.
+Inner nesting and unchanged presentation need no render operation or RPC.
+Raw [VDI hide/show](gem-vdi.md#mouse-device-calls) retains separate device state.
 
 Startup retains the endpoint returned by `AESBOOT.Port()` until every C Task
 has detached. Each application wrapper calls `ExecAESAttach(endpoint)` before
@@ -551,13 +573,13 @@ UPDATE requests still wait for MCTRL release, and a queued lock may pause native
 painting. This is a bounded Exec extension, not GEM's synchronous drag-box API.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 20 has a 340-byte request and permits init, exit, update,
-window mutations, cold display delegation, menu publication, session mouse
-preferences, application outline admission on the RPC endpoint. `wind_find` uses the caller
-scene query.
+profile: version 23 has a 344-byte request. Init, exit, cold display delegation,
+menu publication, session mouse preferences and application outline admission
+use the RPC endpoint. Window mutations, UPDATE and cursor policy use caller
+entries; `wind_find` uses the caller scene query.
 Other window queries and rectangle conversion remain local. The input inbox is
 754 bytes, including 20 bytes of frozen M1 pointer scratch; each registration
-uses 1,420 bytes before heap rounding. Public GEM arrays remain private to each caller. Rebuild
+uses 1,306 bytes before heap rounding. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).
@@ -945,8 +967,8 @@ Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching. The window selector
 uses registered, shown window lifetimes independently of keyboard/pointer wait
 interest. Iconified windows remain in the menu and cycling skips them.
 
-The private C context is 600 bytes and the current APP ABI is 36. Rebuild
-bindings and applications together. The server request is 340 bytes; all
+The private C context is 604 bytes and the current APP ABI is 44. Rebuild
+bindings and applications together. The server request is 344 bytes; all
 bank-zero reservations are unchanged.
 
 Synchronous form calls can return `AES_PENDING` when another owned window has

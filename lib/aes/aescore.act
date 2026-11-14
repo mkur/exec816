@@ -13,6 +13,7 @@ USE HEAPCORE
 USE AESLOCKS
 USE AESWAIT
 USE AESMOUSE
+USE AESCURSOR
 USE AESGUI
 USE AESMENU
 USE AESWINDOW
@@ -42,6 +43,7 @@ PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
   service.nextGuiEpoch=1
   service.nextWindow=1
   service.started=1
+  AESCURSOR.Init(service)
   AESSNAPSHOT.Invalidate()
   ; AESHOST publishes after endpoint initialization has settled.
 
@@ -233,7 +235,8 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
 
   EXEC.Permit()
   IF AESMENU.Retire(service,client)=0
-      OR AESWINDOW.Retire(service,client,request)=0 THEN
+      OR AESWINDOW.Retire(service,client,request)=0
+      OR AESCURSOR.Retire(service,client,request)=0 THEN
     AESWAIT.Window(service,client,request)
 
     RETURN

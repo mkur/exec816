@@ -299,51 +299,6 @@ typedef struct {
 #ifndef WF_BOTTOM
 #define WF_BOTTOM   25
 #endif
-#ifndef ARROW
-#define ARROW       0
-#endif
-#ifndef TEXT_CRSR
-#define TEXT_CRSR   1
-#endif
-#ifndef HOURGLASS
-#define HOURGLASS   2
-#endif
-#ifndef BUSYBEE
-#define BUSYBEE     2
-#endif
-#ifndef POINT_HAND
-#define POINT_HAND  3
-#endif
-#ifndef FLAT_HAND
-#define FLAT_HAND   4
-#endif
-#ifndef THIN_CROSS
-#define THIN_CROSS  5
-#endif
-#ifndef THICK_CROSS
-#define THICK_CROSS 6
-#endif
-#ifndef OUTLN_CROSS
-#define OUTLN_CROSS 7
-#endif
-#ifndef USER_DEF
-#define USER_DEF    255
-#endif
-#ifndef M_OFF
-#define M_OFF       256
-#endif
-#ifndef M_ON
-#define M_ON        257
-#endif
-#ifndef M_SAVE
-#define M_SAVE      258
-#endif
-#ifndef M_RESTORE
-#define M_RESTORE   259
-#endif
-#ifndef M_PREVIOUS
-#define M_PREVIOUS  260
-#endif
 #ifndef R_OBJECT
 #define R_OBJECT    1
 #endif
@@ -634,9 +589,6 @@ WORD vq_gdos(void);
 void vqt_fontinfo(WORD handle, WORD *first, WORD *last, WORD *dist, WORD *width, WORD *effects);
 void vst_unload_fonts(WORD handle, WORD select);
 void vrt_cpyfm(WORD handle, WORD mode, const WORD *pxy, const MFDB *src, const MFDB *dst, const WORD *color);
-void v_show_c(WORD handle, WORD reset);
-void v_hide_c(WORD handle);
-void vq_mouse(WORD handle, WORD *pstatus, WORD *x, WORD *y);
 void vq_key_s(WORD handle, WORD *state);
 WORD vqt_name(WORD handle, WORD element, char *name);
 WORD appl_yield(void);
@@ -646,7 +598,6 @@ WORD objc_draw(OBJECT *tree, WORD start, WORD depth, WORD x, WORD y, WORD w, WOR
 WORD objc_sysvar(WORD mode, WORD which, WORD in1, WORD in2, WORD *out1, WORD *out2);
 WORD objc_order(OBJECT *tree, WORD obj, WORD newpos);
 WORD form_error(WORD n);
-WORD graf_mouse(WORD mode, const WORD *form);
 WORD graf_growbox(WORD x1, WORD y1, WORD w1, WORD h1, WORD x2, WORD y2, WORD w2, WORD h2);
 WORD graf_shrinkbox(WORD x1, WORD y1, WORD w1, WORD h1, WORD x2, WORD y2, WORD w2, WORD h2);
 WORD graf_dragbox(WORD w, WORD h, WORD sx, WORD sy, WORD bx, WORD by, WORD bw, WORD bh, WORD *px, WORD *py);

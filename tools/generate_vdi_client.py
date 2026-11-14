@@ -20,7 +20,11 @@ def records():
 
 
 def expected_layout():
-    result=[('sizeof(MFDB)',20)]
+    result=[('sizeof(MFORM)',74)]
+    result.extend((f'offsetof(MFORM, {n})',o) for n,o in
+                  [('mf_xhot',0),('mf_yhot',2),('mf_nplanes',4),('mf_bg',6),
+                   ('mf_fg',8),('mf_mask',10),('mf_data',42)])
+    result.append(('sizeof(MFDB)',20))
     result.extend((f'offsetof(MFDB, {n})',i*2+2) for i,(n,k) in enumerate(ABI['mfdb']) if i)
     result.append(('offsetof(MFDB, fd_addr)',0))
     for name,r in records().items():
@@ -46,6 +50,9 @@ def files():
     raster+=''.join(f'#define {n} {v}\n' for n,v in ABI['text_alignments'].items())
     raster+=''.join(f'#define {n} {v}\n' for n,v in ABI['raster_modes'].items())
     raster+='typedef struct {\n'+''.join(f'    {k} {n};\n' for n,k in ABI['mfdb'])+'} MFDB;\n#endif\n'
+    form='typedef struct {\n'+''.join(f'    {k} {n}'+(f'[{c[0]}]' if c else '')+';\n'
+        for n,k,*c in ABI['mform'])+'} MFORM;\n'
+    raster=raster.replace('#endif\n',form+'#endif\n')
     probe=prefix+'#include "vdi-private.h"\n#include <gem.h>\n__attribute__((section("exec_layout")))\nconst UWORD VDILayout[] = {\n'
     probe+=''.join('    '+expression+',\n' for expression,_ in expected_layout())+'};\n'
     inquiry=prefix+'static const WORD workoutInts[45] = {'+','.join(map(str,ABI['workout_ints']))+'};\n'

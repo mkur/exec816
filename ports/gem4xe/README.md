@@ -25,6 +25,10 @@ The selected notices include COPYING, COPYING.LIB, font provenance and the
 upstream licence note; preserve these with imported source and distributions.
 Exec's MIT interface grant does not relicense donor code.
 
+The separate [mouse selection](mouse/README.md) pins GEM4XE 0.17 cursor artwork.
+Its rendering selection uses the existing display backend; application
+ownership follows the [MagiC cross-check](../../docs/history/gem-mouse-magic-review.md).
+
 [aes-binding-inputs.json](aes-binding-inputs.json) separately inventories the
 donor application signatures, parameter counts and globals for the
 [AES server plan](../../docs/plans/gem4xe/aes-server-implementation-plan.md).

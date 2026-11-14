@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/slaapliedje/gem4xe",
+  "revision": "ac476b8bdeda63b8b53ad22ec25b9d88bd7886af",
+  "files": {
+    "tools/gemdata.py": {
+      "sha256": "408f051d865d07b88cede092d8b4fbf39e0da154c1954085ae3a18d410f0eb87",
+      "local": "upstream/gemdata.py",
+      "selection": "MFORMS; ARROW in GM1, remaining forms in GM3",
+      "git_blob": "bdd817ed2d6105a7ab1a8902158c9bb09732f058"
+    }
+  },
+  "provenance": "MFORM artwork transcribed by GEM4XE from EmuTOS aes/mforms.c (GPLv2); preserve upstream module notices."
+}

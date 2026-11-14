@@ -3,7 +3,6 @@ import json
 from pathlib import Path
 from calypsi_build import emit
 from extract_gem_vdi import extract,PORT
-from gem_vdi_inputs import local_inputs
 from library_paths import read_source
 from generate_gem_vdi import expected_layout
 from native_program import ROOT,build,compiler,sha256
@@ -38,7 +37,12 @@ def build_cursor(output,optimize=True):
         ROOT/'platform/altirraos/vbxe.c',ROOT/'platform/altirraos/vbxe-map.s',
         ROOT/'tests/programs/gem_cursor.c',ROOT/'tests/programs/gem_render_launcher.act',
         Path(__file__),*ROOT.glob('c/calypsi/*'),*ROOT.glob('c/include/**/*.h'),*ROOT.glob('lib/display/*')]
-    foreign['provenance'].update(slice='I5',hardware_execution=True,extraction=extraction,local_inputs=local_inputs(),
+    # Extraction verifies immutable donor files. The current fixture uses the
+    # repository's compiler pin and emit's recorded Calypsi tools/runtime, rather
+    # than asserting the historical hosted-GEM compiler/profile snapshot.
+    foreign['provenance'].update(slice='I5',hardware_execution=True,extraction=extraction,
+        actionc_pin=dict(path='toolchain/actionc.json',sha256=sha256(ROOT/'toolchain/actionc.json'),
+                         revision=json.loads((ROOT/'toolchain/actionc.json').read_text())['revision']),
         source_inputs={p.relative_to(ROOT).as_posix():sha256(p) for p in sorted(set(paths)) if p.is_file()})
     (output/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     include=output/'c-image.inc'

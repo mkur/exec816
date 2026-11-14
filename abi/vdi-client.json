@@ -298,5 +298,60 @@
     "TA_BOTTOM": 3,
     "TA_DESCENT": 4,
     "TA_TOP": 5
+  },
+  "mform": [
+    [
+      "mf_xhot",
+      "WORD"
+    ],
+    [
+      "mf_yhot",
+      "WORD"
+    ],
+    [
+      "mf_nplanes",
+      "WORD"
+    ],
+    [
+      "mf_bg",
+      "WORD"
+    ],
+    [
+      "mf_fg",
+      "WORD"
+    ],
+    [
+      "mf_mask",
+      "WORD",
+      16
+    ],
+    [
+      "mf_data",
+      "WORD",
+      16
+    ]
+  ],
+  "mouse_pb": {
+    "v_hide_c": {
+      "opcode": 123,
+      "intin": 0,
+      "point_pairs": 0,
+      "intout": 0,
+      "point_results": 0
+    },
+    "v_show_c": {
+      "opcode": 122,
+      "intin": 1,
+      "point_pairs": 0,
+      "intout": 0,
+      "point_results": 0
+    },
+    "vq_mouse": {
+      "opcode": 124,
+      "intin": 0,
+      "point_pairs": 0,
+      "intout": 1,
+      "point_results": 1
+    }
   }
 }

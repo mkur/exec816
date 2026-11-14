@@ -1,15 +1,17 @@
 #include "aes-private.h"
 #include <proto/exec.h>
+#include "vdi-private.h"
+#include "../../ports/gem4xe/adapter/gem-drawing.h"
 
 /* One coherent snapshot, without consuming edges or altering wait interest.
- * Pointer capture and key delivery publish this context's latest sample under
- * the same short Task guard. Caller-owned output pointers remain live. */
+ * Shared physical capture is independent of context event delivery/selection.
+ * Caller-owned output pointers remain live. */
 WORD ExecAESMouseState(struct ExecAESContext *c,WORD *x,WORD *y,WORD *buttons,WORD *qualifiers)
 {
     WORD sx,sy,sb,sk;
-    const struct AESInputRecord *sample;
+    const struct AESMouseState *sample;
     if (!c || !ExecAESEnter(c)) return 0;
-    sample=&c->endpoint->input->latest;
+    sample=&c->directory->mouse;
     Forbid();
     sx=sample->x;sy=sample->y;sb=sample->buttons;sk=sample->qualifiers;
     Permit();
@@ -20,6 +22,49 @@ WORD ExecAESMouseState(struct ExecAESContext *c,WORD *x,WORD *y,WORD *buttons,WO
 
 WORD graf_mkstate(WORD *x,WORD *y,WORD *buttons,WORD *qualifiers)
 { return ExecAESMouseState(ExecAESContext(),x,y,buttons,qualifiers); }
+
+/* Admitted caller. The registration and its busy context outlive the copied
+ * target. The existing reply bit is a hint; the revision is the completion. */
+WORD ExecAESMouseControl(struct ExecAESContext *c,WORD mode,WORD raw,WORD reset)
+{
+    struct AESMouseState *mouse=&c->directory->mouse;
+    ULONG target,mask=1UL<<c->replies->mp_SigBit;
+    UWORD status=DISPLAY_OK;
+    c->request.intin[0]=mode;c->request.intin[1]=raw;c->request.intin[2]=reset;
+    ExecAESLocal(c,AES_OP_GRAF_MOUSE);
+    c->busy=1;
+    c->diagnostic=c->request.status;
+    if (c->diagnostic!=AES_OK) return 0;
+    target=c->request.mouseWait;
+    if (c->workstation && mouse->completed<target && !mouse->status)
+        status=GemDrawingMouseBorrow(&c->workstation->grant,mouse);
+    if (status!=DISPLAY_OK) c->diagnostic=AES_DISPLAY_ERROR;
+    for (;;) {
+        Forbid();
+        if (mouse->completed>=target || mouse->status || c->diagnostic!=AES_OK) {
+            if (mouse->status) c->diagnostic=AES_DISPLAY_ERROR;
+            c->request.mouseWait=0;
+            Permit();
+            return c->diagnostic==AES_OK;
+        }
+        Signal(c->directory->owner,c->directory->mask);
+        Permit();
+        Wait(mask);
+    }
+}
+
+WORD ExecAESMouseForm(struct ExecAESContext *c,WORD mode,const MFORM *form)
+{
+    WORD result;
+    (void)form;
+    if (!c || !ExecAESEnter(c)) return 0;
+    result=ExecAESMouseControl(c,mode,0,0);
+    c->busy=0;
+    return result;
+}
+
+WORD graf_mouse(WORD mode,const MFORM *form)
+{ return ExecAESMouseForm(ExecAESContext(),mode,form); }
 
 /* Private caller helpers: context admission belongs to the public event call.
  * Interest precedes its final queue inspection; no helper clears a signal. */

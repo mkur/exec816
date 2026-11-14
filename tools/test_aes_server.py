@@ -396,7 +396,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi') else ''}
+{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor') else ''}
 {'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else 'USE VISPROBE' if suite=='visibility' else ''}
 CARD checks
 CARD FUNC POINTER run()
@@ -419,6 +419,25 @@ PROC Main()
 {setup}
   LET entry=ADDRESS POINTER(@run)
   entry^=${sy['AESRun']:x}
+{'''  ; Start pixel comparisons after the initial desktop paint has retired.
+  BEGIN
+    BYTE pending
+
+    LET bit=EXEC.AllocSignal(-1)
+    Require(bit>=0)
+    DO
+      AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
+      pending=DESKPAINT.Runnable() OR CONSOLEBITMAP.Pending()<>0
+          OR service.policyEffects<>0 OR AESCORE.Runnable(service)<>0
+      AESGATE.Release(0)
+      IF pending=0 THEN
+        EXIT
+      FI
+      EXEC.Yield()
+    OD
+    EXEC.FreeSignal(bit)
+  END
+''' if suite=='cursor' else ''}
   Require(run()=0)
   Require(service.count=0)
 {'''  ; Retire the last application background before stopping the worker.
@@ -439,7 +458,7 @@ PROC Main()
     OD
     EXEC.FreeSignal(bit)
   END
-''' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi') else ''}
+''' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor') else ''}
   Require(AESCORE.Idle(service)<>0)
 {exhaustion}
 RETURN
@@ -560,6 +579,9 @@ ENDMODULE
                 if vdi:
                     from test_vdi_client import physical
                     before = lambda b: physical(b, program, foreign, report)
+                if suite=='cursor':
+                    from test_aes_cursor import physical
+                    before = lambda b: physical(b, program, foreign, report)
                 if keyboard:
                     from test_aes_keyboard import physical
                     before = lambda b: physical(b, program, foreign, report)
@@ -572,7 +594,7 @@ ENDMODULE
                 report['runtime'], _ = execute(bridge, program, before_run=before,
                                               timeout=120, frame_limit=6000)
             finally:
-                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle','frame','geometry','visibility') else
+                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'cursor', 'menus','forms','alerts','fsel','cache','lifecycle','frame','geometry','visibility') else
                              ('AESChecks', 'AESFailures', 'AESReady', 'AESDone')):
                     report[name] = int.from_bytes(bridge.memdump(foreign['symbols'][name], 2), 'little')
                 if 'AESFirstFailure' in foreign['symbols']:
@@ -598,7 +620,7 @@ ENDMODULE
             if borrowed: bridge.profile_stop()
             from stack_budget import stack_usage
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache','lifecycle','frame','geometry','visibility') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'cursor', 'menus','forms','alerts','fsel','cache','lifecycle','frame','geometry','visibility') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
                     'Incomplete application checks')
             if suite=='visibility':
                 require(len(report['visibility'])==22,'Incomplete visibility checkpoints')
@@ -609,7 +631,7 @@ ENDMODULE
             if suite=='lifecycle':
                 require(report['lifecycle_phase']==10 and report['AESChecks']>=265,
                         'Incomplete hidden lifecycle scenarios')
-                require(report['lifecycle_stats'][6:]==[138,1264],
+                require(report['lifecycle_stats'][6:]==[148,1332],
                         'Unexpected private waiter record layout')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller lifecycle exceeded its interrupt floor')
@@ -701,7 +723,7 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'visibility', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'visibility', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'cursor', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs',help='Resources fixture disk format')
     parser.add_argument('--frame-local',choices=('none','text','all'),default='all',help='Expected migrated fields for the frame comparison fixture')
     parser.add_argument('--geometry-local',choices=('none','query','all'),default='all',help='Expected migrated geometry fields in a frozen comparison image')
@@ -709,7 +731,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'visibility', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
+    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'visibility', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'cursor', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None,args.filesystem,args.frame_local,args.geometry_local,args.visibility_local)
     elif args.suite == 'console':

@@ -3,6 +3,14 @@
 #include <gem.h>
 __attribute__((section("exec_layout")))
 const UWORD VDILayout[] = {
+    sizeof(MFORM),
+    offsetof(MFORM, mf_xhot),
+    offsetof(MFORM, mf_yhot),
+    offsetof(MFORM, mf_nplanes),
+    offsetof(MFORM, mf_bg),
+    offsetof(MFORM, mf_fg),
+    offsetof(MFORM, mf_mask),
+    offsetof(MFORM, mf_data),
     sizeof(MFDB),
     offsetof(MFDB, fd_w),
     offsetof(MFDB, fd_h),

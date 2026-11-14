@@ -23,7 +23,8 @@ It describes 640×240, sixteen colours, one fixed 8×8 face and the bar GDP.
 Line, marker, polygon, input-device and external-font capabilities
 are not advertised. Other supported calls are `v_clsvwk`, `v_bar`, `vr_recfl`,
 `v_gtext`, `vst_alignment`, `vqt_attributes`, `vro_cpyfm`,
-`vs_clip`, `vsf_color`, `vst_color`, `vsf_interior(1)` and `vswr_mode(1/2)`.
+`vs_clip`, `vsf_color`, `vst_color`, `vsf_interior(1)`, `vswr_mode(1/2)`,
+`v_hide_c`, `v_show_c` and `vq_mouse`.
 Named calls and `vdi_call(VDIPB *)` share helpers; opcodes/counts are recorded in
 the [binding manifest](../../ports/gem4xe/aes-binding-inputs.json).
 
@@ -93,6 +94,23 @@ exercise this interface beside the GEM terminal and disk work using existing
 contains current integration checks. The [WA6 record](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
 separates logical update waits, physical access and repaint completion; these
 are development results.
+
+## Mouse device calls
+
+`v_hide_c(handle)` (VDI 123, no inputs/outputs), `v_show_c(handle,reset)`
+(122, one integer input, no outputs) and `vq_mouse(handle,buttons,x,y)`
+(124, one integer output and one point output) use a valid private workstation.
+They need no window or UPDATE. Queries copy the current shared captured pointer
+sample coherently and consume no queued events.
+
+The device hide depth is shared by all workstations. Hide adds one; show with
+nonzero reset removes one if present. Zero resets the device depth and requests
+visibility. Raw forced show does not clear any registration's AES hide ledger
+and may defeat an enclosing AES hide sequence. Use graf_mouse for
+application-managed visibility; raw VDI balance/coordination belongs to callers.
+Workstation close does not reset shared visibility. Temporary erasure during
+drawing is independent of API counters and cannot be overridden during DMA or
+a display fault. Calls complete any required physical change before return.
 
 ## Conventional raster copy
 
