@@ -4,6 +4,10 @@
 [Authoritative map](../../platform/altirraos/vbxe-vram.json) ·
 [Audit record](../development/vbxe-vram-audit.json)
 
+The subsequent [mapped raster foundation](gem-raster-mapped.md) reserves the
+16 KiB option identified here. The figures below retain the audit baseline;
+the linked authoritative map records current reservations.
+
 Source audit on 2026-11-14, against `6a1a599e`. The map has no overlapping or
 out-of-range reservations. Of 512 KiB, **462.5 KiB is reserved and 49.5 KiB is
 unassigned**. The largest free interval is 20 KiB. A new 16 KiB workspace fits

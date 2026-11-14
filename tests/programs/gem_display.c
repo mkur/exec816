@@ -23,6 +23,8 @@ extern void CopySnapshots(void);
 extern volatile UWORD copyFailures;
 extern void ScrollCases(void);
 extern volatile UWORD scrollFailures;
+extern void MappedScratchCases(struct VbxeDisplay *display);
+extern volatile UWORD mappedFailures;
 
 static void check(UWORD good)
 {
@@ -157,6 +159,8 @@ static void pattern(void)
     check(VbxeRead(&display,0x3fff0UL,readback,32)==DISPLAY_OK);
     check(!memcmp(readback,crossing,32));
     lists();
+    MappedScratchCases(&display);
+    check(!mappedFailures);
     memset(readback,0xa5,sizeof(readback));
     check(VbxeWrite(&display,VBXE_SCREEN_BYTES,readback,16)==DISPLAY_OK);
     check(VbxeWrite(&display,VBXE_XDL+12,readback,244)==DISPLAY_OK);

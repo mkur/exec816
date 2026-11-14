@@ -22,7 +22,7 @@ CASES = {'depth':0, 'overflow':1, 'coexistence':2, 'process':3, 'compiler':4, 'a
 def observe(bridge, program, progress, slots=(6,7), code_bank=None, pc_range=None):
     """Read the full saved frame at the unchanged bank-zero NMI rendezvous."""
     marker = program['labels']['native_nmi']
-    prologue = bytes.fromhex('c23048da5a0b8bd83baa2900ffc90001f004a9ef011bda')
+    prologue = bytes.fromhex('c23048da5a0b8bd83baa8a2900ffc90001f005a9ef0180018a1bda')
     require(bridge.memdump(marker,len(prologue)) == prologue, 'NMI observer needs updating')
     marker += len(prologue)
     observations = []

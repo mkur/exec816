@@ -198,6 +198,17 @@ UWORD VbxeOwnerWrite(struct VbxeDisplay *d, ULONG address, const void *source, U
 UWORD VbxeOwnerRead(struct VbxeDisplay *d, ULONG address, void *destination, UWORD bytes)
 { return transfer(d,address,destination,bytes,1); }
 
+UWORD VbxeOwnerMapPage(struct VbxeDisplay *d, ULONG address,
+    void (*operation)(UBYTE *,void *), void *context)
+{
+    UWORD status=VbxeOwnerFence(d);
+    if (status!=DISPLAY_OK) return status;
+    map(d,(UBYTE)(0x80|(address>>12)),0x88);
+    operation((UBYTE *)0x8000UL,context);
+    map(d,0,0);
+    return DISPLAY_OK;
+}
+
 static void word(UBYTE *p,UWORD value)
 { p[0]=(UBYTE)value; p[1]=(UBYTE)(value>>8); }
 

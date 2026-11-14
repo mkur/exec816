@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [Mapped VRAM raster workspace](gem4xe/mapped-raster-plan.md): 16 KiB private
+  staging, mapped native nibble shifting and bounded blitter publication through
+  the existing 4 KiB aperture, followed by matched OF816 measurements.
+
 - [GEM4XE raster copy](gem4xe/vro-cpyfm-plan.md): RC0–RC6 deliver conventional
   `vro_cpyfm`, starting with MGVIEW's screen S_ONLY operation, then device-format
   memory forms, all sixteen modes, bounded acceleration and rebuilt demo checks.

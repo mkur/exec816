@@ -13,7 +13,7 @@ INCLUDE "c-image.inc"
 INCLUDE "../../c/calypsi/display-bridge.inc"
 CARD FUNC POINTER cMain()
 CARD checks,result
-BYTE checkpoint
+VOLATILE BYTE checkpoint
 BYTE ARRAY diskData(128)
 DOS.FileHandle POINTER file
 
@@ -78,6 +78,8 @@ PROC Main()
     Require(DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
     Require(DOS.ReleaseContext()<>0)
     checkpoint=1
+    WHILE checkpoint=1 DO
+    OD
     Run(2)
     IF variant^=0 OR variant^>=9 THEN
       DiskWork()
@@ -85,6 +87,9 @@ PROC Main()
 
     Run(5)
     Require(DISPLAY.State()=DISPLAY.FREE)
+    checkpoint=3
+    WHILE checkpoint=3 DO
+    OD
   FI
 
   Require(CONSOLEDRIVER.Start()<>0)

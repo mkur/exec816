@@ -152,7 +152,7 @@ map_done_{index}:
     (output/'display-probe.c').write_text(admission)
     sources=[ROOT/'c/calypsi/exec.c',output/'display-probe.c',output/'vbxe-probe.c',
              ROOT/'tests/programs/gem_display.c',ROOT/'tests/programs/bitmap_copy.c',
-             ROOT/'tests/programs/bitmap_scroll.c']
+             ROOT/'tests/programs/bitmap_scroll.c',ROOT/'tests/programs/vbxe_mapped.c']
     foreign=emit(output,sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',
         ROOT/'c/calypsi/image-info.s',output/'vbxe-map-probe.s'],
         ['Renderer','Peer'],optimize=optimize,includes=[output],
@@ -160,7 +160,8 @@ map_done_{index}:
                 (ROOT/'c/calypsi/bitmap-layout.c',bitmap_layout())])
     paths=[ROOT/'abi/display.json',ROOT/'platform/altirraos/vbxe.c',
            ROOT/'platform/altirraos/vbxe-map.s',ROOT/'platform/altirraos/vbxe-vram.json',
-           ROOT/'tests/programs/gem_display.c',ROOT/'tests/programs/gem_display_launcher.act',
+           ROOT/'tests/programs/gem_display.c',ROOT/'tests/programs/vbxe_mapped.c',
+           ROOT/'tests/programs/gem_display_launcher.act',
            *ROOT.glob('c/calypsi/*'),*ROOT.glob('c/include/**/*.h'),
            *ROOT.glob('lib/display/*'),ROOT/'tools/build_gem_vdi.py',ROOT/'tools/test_gem_display.py',
            ROOT/'tools/generate_display.py',ROOT/'tools/calypsi_build.py',ROOT/'tools/calypsi_image.py',
@@ -185,11 +186,11 @@ map_done_{index}:
     (media/'DATA.BIN').write_bytes(bytes(i^0x5a for i in range(128)))
     make(output/'system.atr',media,binary_names={'DATA.BIN'})
     mounts=validate_mounts([dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=SDFS)])
-    # This diagnostic launcher links DOS fault strings as well as its probes.
-    # Reserve enough upper image data; bank-zero pools remain unchanged.
+    # The current kernel/diagnostic globals exceed the old 4 KiB allowance.
+    # Keep this fixture-local; production and bank-zero pools are unchanged.
     from generate_memory import PROFILE
     profile=json.loads(PROFILE.read_text())
-    profile['image_data_bytes']=4096
+    profile['image_data_bytes']=8192
     profile_path=output/'memory-profile.json'
     profile_path.write_text(json.dumps(profile,indent=2)+'\n')
     program=build(compiler(ROOT/'build/actionc'),source,output/'program',optimize=optimize,

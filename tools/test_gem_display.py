@@ -2,7 +2,8 @@
 """G3 emitted display ownership, VRAM, completion and recovery checks."""
 import argparse
 import json
-from stack_budget import current_task_memory
+from generate_memory import layout as memory_layout
+from task_capacity import configure as task_memory
 from pathlib import Path
 import adapter_state as adapter
 from build_gem_vdi import build_display_probe
@@ -17,7 +18,7 @@ from test_large_stacks import observe
 
 CASES=['pattern','unknown-baseline','absent','compatible','busy-timeout','vcount-timeout',
        'unquiesced','retained-owner','wrap-timeout','map-nmi','bitmap-copy','copy-fault',
-       'async-scroll','async-timeout','async-wrap','async-unquiesced','async-lost-irq','async-copy','copy-boundary','copy-exhaustion','snapshot-copy']
+       'async-scroll','async-timeout','async-wrap','async-unquiesced','async-lost-irq','async-copy','copy-boundary','copy-exhaustion','snapshot-copy','mapped-pages']
 
 
 def run(output,mode,cases=None,replay=False,production=False):
@@ -44,7 +45,8 @@ def run(output,mode,cases=None,replay=False,production=False):
         symbols=foreign['symbols']
         memory=program['build']['memory']
         report['bank_zero_delta']=dict(fixed=0,per_task=[0]*8,private_idle=0)
-        before=current_task_memory()
+        before=memory_layout(upper_table=True)
+        task_memory(before,memory['task_capacity'])
         for key in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
             require(memory[key]==before[key],'G3 changed '+key)
         for name in cases or CASES:
@@ -69,7 +71,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                     saved['screen_at']=b.peek16(0x58)
                     saved['screen']=b.memdump(saved['screen_at'],960)
                     saved['cursor']=b.peek(0x2f0)
-                    if variant in (0,9):
+                    if variant in (0,9,21):
                         for slot in (0,6,7):
                             marker=program['labels']['task_start' if slot==0 else 'general_task_start']
                             condition=f'db(${adapter.CURRENT:x})={slot}'
@@ -80,8 +82,19 @@ def run(output,mode,cases=None,replay=False,production=False):
                             b.memload(dp+8,pattern(slot)[8:16])
                             b.memload(dp+20,pattern(slot)[20:])
                         b.memload(adapter.KERNEL_DP,pattern(4))
+                    if variant==0 or variant>=3:
+                        # Console initialization precedes the display lease.
+                        # Snapshot its CPU screen while acquired, then compare
+                        # after close and before the explicit return-to-CON text.
+                        marker=program['labels']['native_nmi']
+                        at=next(d['address'] for d in program['image']['data'] if '_CHECKPOINT_' in d['name'])
+                        condition=f'db(${at:x})=1';b.bp_clear_all();b.bp_set(marker,condition=condition)
+                        run_to(b,marker,frame_limit=3000,timeout=90,condition=condition)
+                        b.bp_clear_all();saved['screen']=b.memdump(saved['screen_at'],960)
+                        saved['cursor']=b.peek(0x2f0)
+                        b.poke(at,0)
                     if variant==9:
-                        prologue=bytes.fromhex('c23048da5a0b8bd83baa2900ffc90001f004a9ef011bda')
+                        prologue=bytes.fromhex('c23048da5a0b8bd83baa8a2900ffc90001f005a9ef0180018a1bda')
                         marker=program['labels']['native_nmi']
                         require(b.memdump(marker,len(prologue))==prologue,'Changed NMI observer')
                         marker+=len(prologue)
@@ -102,6 +115,15 @@ def run(output,mode,cases=None,replay=False,production=False):
                         case['mapping_nmi']=observations
                     if variant in (0,9):
                         case['c_preemption']=observe(b,program,[symbols['progress'],symbols['progress']+2],code_bank=12)
+                    if variant not in (1,2,6,7,15):
+                        marker=program['labels']['native_nmi']
+                        condition=f'db(${at:x})=3';b.bp_clear_all();b.bp_set(marker,condition=condition)
+                        run_to(b,marker,frame_limit=16000,timeout=240,condition=condition)
+                        b.bp_clear_all()
+                        require(b.memdump(saved['screen_at'],960)==saved['screen'],'Display changed CPU OS screen')
+                        require(b.peek(0x2f0)==saved['cursor'],'Display changed OS cursor')
+                        case['os_screen_preserved_before_console']=True
+                        b.poke(at,4)
                     b.bp_clear_all()
                 try:
                     runtime,_=execute(b,{**program,'output':folder},before_run=before_run,
@@ -113,6 +135,13 @@ def run(output,mode,cases=None,replay=False,production=False):
                     if variant>=10:
                         case.update(copy_checks=read('copyChecks'),copy_failures=read('copyFailures'),copy_first_failure=read('copyFirstFailure'))
                         require(not case['copy_failures'],f'Bitmap copy case {case["copy_first_failure"]} failed')
+                    if variant in (0,9,21):
+                        case['mapped_scratch']={name:read('mapped'+name)
+                            for name in ('Checks','Failures','Callbacks','Ticks')}
+                        require(case['mapped_scratch']['Checks']>0 and
+                                case['mapped_scratch']['Failures']==0 and
+                                case['mapped_scratch']['Callbacks']==4 and
+                                case['mapped_scratch']['Ticks']>=8,'Mapped scratch callback failure')
                     if 12<=variant<=16:
                         case.update(scroll_checks=read('scrollChecks'),scroll_failures=read('scrollFailures'),
                             scroll_first_failure=read('scrollFirstFailure'),scroll_busy_seen=read('scrollBusySeen'),
@@ -129,9 +158,9 @@ def run(output,mode,cases=None,replay=False,production=False):
                             from test_boot_diagnostics import os_text
                             require(('VBXE BASELINE=' if variant==1 else 'NO VBXE; IDs=') in os_text(b),
                                     'Admission failure was not reported')
-                        else:
-                            require(b.memdump(saved['screen_at'],960)==saved['screen'],'OS screen not restored')
-                            require(b.peek(0x2f0)==saved['cursor'],'OS cursor not restored')
+                        # The native fixture checks the subsequent CON write
+                        # and teardown. Preserve the screen before that output;
+                        # console presentation may legitimately change it.
                         require(b.memdump(0xd65e,2)==bytes(2) if variant!=2 else True,'MEMAC still mapped')
                         if variant==5:
                             case['vcount_reads']=read('vcountReads')
@@ -139,7 +168,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                         if variant==8:
                             require(read('waitStart')>=0xfffe and read('waitEnd')<32,'Deadline did not cross tick wrap')
                             case['wait_ticks']=[read('waitStart'),read('waitEnd')]
-                        if variant in (0,9):
+                        if variant in (0,9,21):
                             require(runtime['native_irq_count']>0,'Physical SIO IRQ did not run')
                             for who,slot in enumerate((6,7)):
                                 a,bv=0x12345678+who,0x87654321-who
@@ -162,6 +191,8 @@ def run(output,mode,cases=None,replay=False,production=False):
                         require(case['lease_state']==(4 if variant in (6,15) else 2),f'Lost retained display state: {case["lease_state"]}')
                     case['status']='pass'
                 except Exception:
+                    case['status']='fail'
+                    report['cases'].append(case)
                     if 12<=variant<=16:
                         print('Async checks/failures/first/busy/polls',*[int.from_bytes(b.memdump(symbols[k],2),'little') for k in
                             ('scrollChecks','scrollFailures','scrollFirstFailure','scrollBusySeen','scrollPolls')],flush=True)

@@ -1,5 +1,9 @@
 # Historical records
 
+- [Mapped VRAM raster workspace](gem-raster-mapped.md): 16 KiB private staging
+  through the existing 4 KiB aperture, preemptible driver callbacks and exact
+  mapped-page, context and NMI transition checks.
+
 - [VBXE VRAM audit](vbxe-vram-audit.md): complete reservation and consumer map,
   49.5 KiB unassigned, a separate 16 KiB scratch option and the still-callable
   retired Shell backing path.

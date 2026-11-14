@@ -158,10 +158,18 @@
       "capacity_bytes": 18432,
       "g3_used_bytes": 18432,
       "g4_used_bytes": 18432
+    },
+    {
+      "name": "raster_scratch",
+      "base": 311296,
+      "reserved_bytes": 16384,
+      "capacity_bytes": 16384,
+      "g3_used_bytes": 0,
+      "g4_used_bytes": 0
     }
   ],
-  "reserved_bytes": 473600,
-  "unassigned_bytes": 50688,
+  "reserved_bytes": 489984,
+  "unassigned_bytes": 34304,
   "diagnostics": [
     {
       "name": "cross_page_transfer",
@@ -169,5 +177,5 @@
       "bytes": 32
     }
   ],
-  "note": "Exclusive display ownership. Totals count complete reservations, including unused capacity. The g3/g4/i5/dt3 used-byte fields are historical slice measurements, not current occupancy or available space. The 5120-byte widget strip can retain unfinished painting between physical grants. Glyph/raster/icon/copy-edge staging shares the 4096-byte transient scratch under physical access. GEM font staging writes complete pages within its 20480-byte reservation. The two font atlases are separate GEM and ATASCII assets. Shell backing retains 40960 bytes: its GUI owner is retired, but private text/fill entries and tests still use the fixed destination. Diagnostics borrow unassigned VRAM. The 4096-byte CPU aperture is a separate CPU address-space reservation, not a limit on VRAM workspace. See docs/history/vbxe-vram-audit.md for source consumers, gaps and reuse constraints. No reserved bank-zero growth."
+  "note": "Exclusive display ownership. Totals count complete reservations, including unused capacity. The g3/g4/i5/dt3 used-byte fields are historical slice measurements, not current occupancy or available space. The 5120-byte widget strip can retain unfinished painting between physical grants. Glyph/raster/icon/copy-edge staging shares the 4096-byte transient scratch under physical access. GEM font staging writes complete pages within its 20480-byte reservation. The two font atlases are separate GEM and ATASCII assets. Shell backing retains 40960 bytes: its GUI owner is retired, but private text/fill entries and tests still use the fixed destination. Diagnostics borrow unassigned VRAM. The 4096-byte CPU aperture is a separate CPU address-space reservation, not a limit on VRAM workspace. See docs/history/vbxe-vram-audit.md for source consumers, gaps and reuse constraints. No reserved bank-zero growth. Mapped raster staging reserves 16384 bytes at $4C000; source and output share 1024-byte row slots under synchronous physical access, through the existing 4 KiB aperture."
 }

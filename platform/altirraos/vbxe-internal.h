@@ -11,6 +11,13 @@ UWORD VbxeOwnerFence(struct VbxeDisplay *display);
 UWORD VbxeOwnerClose(struct VbxeDisplay *display);
 UWORD VbxeOwnerWrite(struct VbxeDisplay *display, ULONG address, const void *source, UWORD bytes);
 UWORD VbxeOwnerRead(struct VbxeDisplay *display, ULONG address, void *destination, UWORD bytes);
+/* Prepared, page-aligned private VRAM outside the command arena. Fence, map
+ * one 4 KiB page, run a synchronous CPU operation, then disable the aperture.
+ * The admitted physical owner retains access throughout normal preemption.
+ * The callback may not start graphics, remap, wait or retain the window pointer.
+ * Geometry and callback lifetime belong to the internal producer. */
+UWORD VbxeOwnerMapPage(struct VbxeDisplay *display, ULONG address,
+    void (*operation)(UBYTE *window, void *context), void *context);
 /* Prepared CPU records only: stable through return, outside the aperture,
  * count <= VBXE_LIST_RECORDS and work <= VBXE_LIST_WORK. The internal producer
  * establishes legal fields/extents, excludes the command arena from raster

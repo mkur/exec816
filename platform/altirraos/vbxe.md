@@ -89,7 +89,7 @@ STOP leaves the lease FAULTED and enters reset-required park. The launcher also
 parks on any normal/fault exit with VBXE ownership still live, including a
 rejected attempt to remove its retained Task; it cannot reclaim DMA storage.
 
-The current [VRAM map](vbxe-vram.json) reserves 473,600 bytes, including unused
+The current [VRAM map](vbxe-vram.json) reserves 489,984 bytes, including unused
 reserved capacity. The screen uses 76,800 bytes. Its former
 5,120-byte padding at `$12C00` now holds one 640 × 16 widget strip, with no
 increase in the total reservation. Widget continuations draw there and publish
@@ -110,11 +110,13 @@ Its drawing entries still exist; the current GEM Terminal does not use them.
 The colour-icon cache reserves sixteen 2,048-byte slots (32,768 bytes).
 Fixed window gadgets reserve 4,096 bytes at `$39000` (2,688 used), uploaded once per display
 session; clipped copies share the ordinary frame list and scratch. The remaining
-50,688 bytes are unassigned within the exclusively owned 512 KiB. The
+34,304 bytes are unassigned within the exclusively owned 512 KiB. Raster
+staging reserves 16 KiB at `$4C000–$4FFFF`, reached through the unchanged 4 KiB
+aperture by private synchronous page callbacks under physical access. The
 32-byte cross-page test at `$3FFF0` is diagnostic borrowing, not a production
 reservation. CPU and VRAM address spaces are accounted separately. The
 [VRAM audit](../../docs/history/vbxe-vram-audit.md) records every reservation,
-free interval, consumer and reclamation constraint.
+free interval, consumer and reclamation constraint before this allocation.
 
 Run `tools/test_gem_display.py --mode raw|opt --output DIR`. The probe build
 substitutes status reads only for explicit timeout cases and adds four assembly

@@ -1,5 +1,8 @@
 # GEM as a client of an Exec-like kernel
 
+The [mapped raster follow-up](mapped-raster-plan.md) stages different-parity
+screen copies in 16 KiB VRAM through the existing 4 KiB CPU aperture.
+
 The [raster-copy plan](vro-cpyfm-plan.md) delivers conventional `vro_cpyfm`
 from selected GEM4XE algorithms: screen S_ONLY first, then device-format memory
 forms and all sixteen logical modes. It retains Exec's Task preemption, display

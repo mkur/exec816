@@ -324,6 +324,13 @@ Task accesses MEMAC, VRAM or either shadow. The reserved CPU aperture contains
 no stacks, vectors, kernel state or program bytes. Only the owning Task resumes
 the transition, so preemption needs no new kernel critical section or SEI.
 
+Private `VbxeOwnerMapPage` composition fences and maps one prepared, aligned
+4 KiB page for a synchronous CPU callback, then disables the aperture before
+return. Its already admitted physical owner retains access through ordinary
+Task preemption. The callback cannot start drawing, remap, wait or retain the
+window pointer. Page geometry and callback lifetime are internal producer
+responsibilities; this adds no public API or kernel gateway operation.
+
 `$8000–$8FFF` is a CPU window onto a selected 4 KiB VRAM page. When disabled it
 shows underlying CPU RAM. Mapping neither allocates CPU RAM nor makes VRAM part
 of the Exec heap. Driver and lease state stay in upper CPU RAM. The slice adds
@@ -341,8 +348,10 @@ The private backing text/fill drawing entries and bitmap packet operations
 remain implemented and tested. Retiring the GUI owner did not retire those
 entries or release their VRAM; reuse requires an explicit migration.
 
-Production VRAM reservations remain 473,600 bytes, with 50,688 unassigned
-(50,656 after the diagnostic exclusion). ATASCII masks retain their existing
+Production VRAM reservations are 489,984 bytes, with 34,304 unassigned
+(34,272 after the diagnostic exclusion). A 16,384-byte raster workspace at
+`$4C000–$4FFFF` uses the existing 4 KiB aperture; its contents are private only
+while physical access is retained. ATASCII masks retain their existing
 20,480-byte range at `$3A000–$3EFFF`; the terminal's private VDI face reuses the
 existing font atlas. No CPU aperture or reserved bank-zero storage grows.
 The [VRAM audit](../history/vbxe-vram-audit.md) records free intervals and the
