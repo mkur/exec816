@@ -3,13 +3,17 @@
 [Implementation plan](../../../docs/plans/gem4xe/vro-cpyfm-plan.md)
 
 `inputs.json` pins the independent 0.15 raster source. The existing renderer
-and AES pins remain unchanged. `core.h` extracts the logical row merger and
-blitter recipe table, with explicit operation state and fixed-width types.
+and AES pins remain unchanged. `core.h` extracts the logical row merger,
+dedicated S_ONLY row copy and blitter recipe table, with explicit operation
+state and fixed-width types. `shift.s` reproduces the donor's word-load/XBA/
+four-shift loop using Calypsi's huge-pointer arguments and long-indexed data
+access. It uses the existing caller argument workspace, with no DP reservation.
 `geometry.h` adapts the donor's rectangle normalization and paired clipping
-to widened arithmetic. Neither file accesses hardware or global renderer state.
+to widened arithmetic. These units access no hardware or global renderer state.
 
 Reproduce or verify with `python3 tools/generate_gem_raster.py --fetch` and
-`--check`. Preserve GEM4XE's GPL-2.0-or-later provenance and COPYING notice;
+`--check`; both `core.h` and `shift.s` are generated. Preserve GEM4XE's
+GPL-2.0-or-later provenance and COPYING notice;
 the MIT public interfaces do not relicense these algorithms. The existing
 GEM4XE notices accompany distributions using this implementation.
 

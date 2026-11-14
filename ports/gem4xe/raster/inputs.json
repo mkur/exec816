@@ -6,11 +6,13 @@
   "files": {
     "src/vdi/vdi.c": "d50727ba4d0a7ddfddae529246d5014bb9df17171148c17603bc505c8376fe5d",
     "src/vdi/vdidev.h": "6c6d634f01edb42ad646b5fa9fe849295c80f3f18d0814d4d40d8035cba6c98a",
-    "src/vdi/dev_vbxe.c": "cc892a674e3635229ab52ecf9209fc6b8f642166b47a9e52d14b7035cbe89ea0"
+    "src/vdi/dev_vbxe.c": "cc892a674e3635229ab52ecf9209fc6b8f642166b47a9e52d14b7035cbe89ea0",
+    "src/vdi/nibs.s": "c708bac78745e07074c2f2fb9a351d9809cc8704b53bbc3cb156c0731a8437ec"
   },
   "selection": {
     "src/vdi/vdi.c": "vdi_vro_cpyfm normalization and paired clipping model; widened in geometry.h",
     "src/vdi/vdidev.h": "rop4 truth table",
-    "src/vdi/dev_vbxe.c": "copy_rows logical row merge and rop_code recipes"
+    "src/vdi/dev_vbxe.c": "copy_rows logical row merge and rop_code recipes; plain S_ONLY copy_rows path",
+    "src/vdi/nibs.s": "nib_shift word load, XBA and four shifts; adapt the near-pointer argument ABI to huge-data pointers"
   }
 }

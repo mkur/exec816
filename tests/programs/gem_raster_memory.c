@@ -10,8 +10,9 @@ static ULONG GemScreenRows[240];
 static UWORD fault,unexpected;
 static UWORD packing;
 static UBYTE recorded[21];
-static UBYTE scratch[642],original[160],expected[160];
+static UBYTE scratch[642],original[1408],expected[1408];
 volatile UWORD RasterChecks;
+volatile UWORD ShiftFailure[5];
 UWORD DisplayEnter(struct DisplayGrant *g) { (void)g;++unexpected;return DISPLAY_DEVICE_FAULT; }
 UWORD DisplayLeave(struct DisplayGrant *g) { (void)g;++unexpected;return DISPLAY_DEVICE_FAULT; }
 static void pointer_erase(UWORD l,UWORD t,UWORD r,UWORD b)
@@ -56,13 +57,51 @@ LONG RasterPackingProbe(void)
     return 0;
 }
 
+LONG RasterShiftProbe(void)
+{
+    UBYTE *allocation,*source,*destination;
+    ULONG boundary;
+    UWORD i,n,k,place,wanted;
+    const UWORD counts[]={0,1,2,3,17,257,320};
+    GemRasterShift(NULL,NULL,0);
+    allocation=AllocMem(196608UL,MEMF_PUBLIC|MEMF_LINEAR);
+    CHECK(allocation!=NULL);
+    boundary=((ULONG)allocation+65536UL)&0xffff0000UL;
+    if (boundary-3<(ULONG)allocation) boundary+=65536UL;
+    /* The first 16-bit load crosses at $xx:ffff. Both independent far
+     * addresses must carry banks; count 257 also exercises Y's high byte. */
+    for (place=0;place<2;++place) for (k=0;k<7;++k) {
+        source=(UBYTE *)(boundary-1-place);
+        destination=(UBYTE *)(boundary+65536UL-3+place);
+        n=counts[k];
+        for (i=0;i<321;++i) { source[i]=(UBYTE)(i*37+i/7);destination[i]=0xa7; }
+        GemRasterShift(destination,source,n);
+        for (i=0;i<321;++i) {
+            wanted=0xa7;
+            if (i<n) wanted=(((UWORD)source[i]<<4)|((UWORD)source[i+1]>>4))&255;
+            if (destination[i]!=wanted) {
+                ShiftFailure[0]=place;ShiftFailure[1]=n;ShiftFailure[2]=i;
+                ShiftFailure[3]=destination[i];ShiftFailure[4]=wanted;
+                CHECK(0);
+            }
+            CHECK(destination[i]==wanted);
+            CHECK(source[i]==(UBYTE)(i*37+i/7));
+        }
+    }
+    FreeMem(allocation,196608UL);
+    return 0;
+}
+
 LONG RasterProbe(void)
 {
     UBYTE *allocation,*source,*destination;
     ULONG boundary;
     struct GemRasterCopy p;
-    UWORD i,x,y,same,mode,value;
+    UWORD i,x,y,same,mode,value,s,d,back,width;
+    const UWORD widths[]={1,2,3,47,77};
     LONG result=RasterPackingProbe();
+    if (result) return result;
+    result=RasterShiftProbe();
     if (result) return result;
     allocation=AllocMem(196608UL,MEMF_PUBLIC|MEMF_LINEAR);
     CHECK(allocation!=NULL);
@@ -87,6 +126,43 @@ LONG RasterProbe(void)
         }
         CHECK(GemDrawingRasterBorrow(NULL,&p,scratch)==DISPLAY_OK);
         for (i=0;i<160;++i) CHECK(p.destination.address[i]==expected[i]);
+    }
+    p.mode=S_ONLY;
+    for (same=0;same<2;++same) for (s=0;s<2;++s) for (d=0;d<2;++d)
+        for (back=0;back<2;++back) for (width=0;width<5;++width) {
+            p.destination.address=same ? source:destination;
+            p.rect.sx=s;p.rect.dx=d;p.rect.sy=back;p.rect.dy=1-back;
+            p.rect.width=widths[width];p.rect.height=3;
+            for (i=0;i<160;++i) {
+                original[i]=source[i]=(UBYTE)(i*37+i/7);
+                expected[i]=(UBYTE)(same ? original[i]:255-original[i]);
+                p.destination.address[i]=expected[i];
+            }
+            for (y=0;y<3;++y) for (x=0;x<p.rect.width;++x)
+                put(expected,x+d,y+1-back,pixel(original,x+s,y+back));
+            CHECK(GemDrawingRasterBorrow(NULL,&p,scratch)==DISPLAY_OK);
+            for (i=0;i<160;++i) CHECK(p.destination.address[i]==expected[i]);
+        }
+    /* Wider than the private 640-pixel row chunk: either overlap direction,
+     * opposite parity and real CPU banks, including unchanged row padding. */
+    p.source.pitch=p.destination.pitch=352;p.source.width=p.destination.width=704;
+    p.rect.width=699;
+    for (same=0;same<2;++same) for (back=0;back<2;++back) {
+        p.destination.address=same ? source:destination;
+        p.rect.sx=1+back;p.rect.dx=2-back;p.rect.sy=back;p.rect.dy=1-back;
+        for (i=0;i<1408;++i) {
+            original[i]=source[i]=(UBYTE)(i*37+i/7);
+            expected[i]=(UBYTE)(same ? original[i]:255-original[i]);
+            p.destination.address[i]=expected[i];
+        }
+        for (y=0;y<3;++y) for (x=0;x<699;++x) {
+            i=(y+back)*352+((x+1+back)>>1);value=original[i];
+            value=(x+1+back)&1 ? value&15:value>>4;
+            i=(y+1-back)*352+((x+2-back)>>1);
+            expected[i]=(UBYTE)((x+2-back)&1 ? (expected[i]&240)|value:(expected[i]&15)|(value<<4));
+        }
+        CHECK(GemDrawingRasterBorrow(NULL,&p,scratch)==DISPLAY_OK);
+        for (i=0;i<1408;++i) CHECK(p.destination.address[i]==expected[i]);
     }
     CHECK(!unexpected && !fault);
     FreeMem(allocation,196608UL);

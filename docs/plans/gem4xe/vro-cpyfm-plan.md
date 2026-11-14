@@ -30,6 +30,11 @@ keeps CPU/elapsed/scanout observations separate, including the slow
 different-parity C fallback. All slices pass development checks; release
 qualification and further performance work remain separate.
 
+The subsequent [S_ONLY follow-up](../../history/gem-raster-copy.md#s_only-plain-copy-follow-up)
+adapts the same donor's dedicated byte/nibble-shift path, with small raw/optimized
+huge-pointer ABI probes. Its matched one-pixel sample is about 3.7× faster,
+with no reservation or drawing-limit changes.
+
 Deliver conventional `vro_cpyfm` through the resident application VDI, using
 selected GEM4XE algorithms behind Exec's existing ownership and hardware
 services. RC0–RC2 deliver the screen-copy operation needed by MGVIEW.

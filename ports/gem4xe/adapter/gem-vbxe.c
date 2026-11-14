@@ -1337,7 +1337,16 @@ UWORD GemDrawingRasterBorrow(struct DisplayGrant *grant,const struct GemRasterCo
                 column=backX ? remaining-span:width-remaining;
                 sn=(((sx+column)&1)+span+1)>>1;dn=(((dx+column)&1)+span+1)>>1;
                 status=raster_span(&p->source,sx+column,sy+y,scratch,sn,0);
-                if (status==DISPLAY_OK) status=raster_span(&p->destination,dx+column,dy+y,scratch+321,dn,0);
+                if (status==DISPLAY_OK && p->mode==S_ONLY) {
+                    /* The shift may read one spare byte; its nibble is masked
+                     * by the saved destination edge. No form padding is read. */
+                    if (sn<321) scratch[sn]=0;
+                    if ((dx+column)&1)
+                        status=raster_span(&p->destination,dx+column,dy+y,scratch+321,1,0);
+                    if (status==DISPLAY_OK && ((dx+column+span)&1))
+                        status=raster_span(&p->destination,dx+column+span-1,dy+y,scratch+321+dn-1,1,0);
+                } else if (status==DISPLAY_OK)
+                    status=raster_span(&p->destination,dx+column,dy+y,scratch+321,dn,0);
                 if (status==DISPLAY_OK) {
                     GemRasterMerge(scratch+321,scratch,(sx+column)&1,(dx+column)&1,span,p->mode);
                     status=raster_span(&p->destination,dx+column,dy+y,scratch+321,dn,1);

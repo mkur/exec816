@@ -5,6 +5,7 @@
 #ifndef EXEC_GEM_RASTER_CORE_H
 #define EXEC_GEM_RASTER_CORE_H
 #include <stdint.h>
+#include <string.h>
 static int16_t GemRasterOp(int16_t m, int16_t s, int16_t d)
 {
     int16_t r = 0;
@@ -20,10 +21,58 @@ static int16_t GemRasterOp(int16_t m, int16_t s, int16_t d)
     return r;
 }
 
+#ifdef __CALYPSI_CORE_65816__
+extern void GemRasterShift(uint8_t *,const uint8_t *,uint16_t);
+#else
+static void GemRasterShift(uint8_t *dst,const uint8_t *src,uint16_t n)
+{
+    uint16_t i;
+    for (i=0;i<n;++i) dst[i]=(uint8_t)((src[i]<<4)|(src[i+1]>>4));
+}
+#endif
+
+/* Private row buffers include one spare source byte for the final shift. */
+static void GemRasterCopy(uint8_t *row_dst,const uint8_t *row_src,
+    uint16_t s,uint16_t d,uint16_t n)
+{
+    uint16_t dn=(d+n+1)>>1;
+    if (!n) return;
+    if (s == d) {
+        uint8_t first = d ? row_dst[0] : 0, last = ((d + n) & 1) ? row_dst[dn - 1] : 0;
+
+        memcpy(row_dst, row_src, dn);
+        if (d)
+            row_dst[0] = (uint8_t)((first & 0xF0) | (row_src[0] & 0x0F));
+        if ((d + n) & 1)
+            row_dst[dn - 1] = (uint8_t)((row_src[dn - 1] & 0xF0)
+                                        | (last & 0x0F));
+    } else {
+        /* A nibble out of step: each destination byte is the low
+         * nibble of one source byte and the high nibble of the
+         * next (nib_shift, src/vdi/nibs.s) -- it went a pixel at a
+         * time, and G4BENCH's form copy to and from an odd window
+         * spent most of its time here (phase 105).  A source byte
+         * one past the row is row_src's spare, whose nibble lands
+         * only where the destination's own is put back below. */
+        uint8_t first = d ? row_dst[0] : 0, last = ((d + n) & 1) ? row_dst[dn - 1] : 0;
+
+        if (s) {                   /* source odd, dest even */
+            GemRasterShift(row_dst, row_src, dn);
+        } else {                        /* source even, dest odd */
+            row_dst[0] = (uint8_t)((first & 0xF0) | (row_src[0] >> 4));
+            GemRasterShift(row_dst + 1, row_src, (uint16_t)(dn - 1));
+        }
+        if ((d + n) & 1)
+            row_dst[dn - 1] = (uint8_t)((row_dst[dn - 1] & 0xF0)
+                                        | (last & 0x0F));
+    }
+}
+
 static void GemRasterMerge(uint8_t *row_dst,const uint8_t *row_src,
     uint16_t s,uint16_t d,int16_t n,int16_t m)
 {
     uint16_t k;
+    if (m==3) { GemRasterCopy(row_dst,row_src,s,d,(uint16_t)n);return; }
     if (s == d) {
         /* THE SAME PARITY: byte b of the source over byte b of
          * the destination, both nibbles at once -- a mode is a

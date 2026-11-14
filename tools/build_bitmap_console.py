@@ -42,7 +42,8 @@ def drawing(out,optimize,probe=False,fault=False,desktop_style=False,
         sources.append(ROOT/'tests/programs/console_bitmap_fault.c')
     if probe:sources.append(ROOT/'tests/programs/console_bridge.c')
     assembly=[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',
-        ROOT/'c/calypsi/image-info.s',ROOT/'platform/altirraos/vbxe-map.s']
+        ROOT/'c/calypsi/image-info.s',ROOT/'platform/altirraos/vbxe-map.s',
+        PORT/'raster/shift.s']
     if probe:assembly.append(ROOT/'tests/programs/console_bridge.s')
     if client_sources:
         sources.append(ROOT/'c/calypsi/io.c')

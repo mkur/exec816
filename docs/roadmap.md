@@ -235,9 +235,10 @@ extension.
 The [GEM4XE raster-copy plan](plans/gem4xe/vro-cpyfm-plan.md) is implemented
 through RC6: conventional `vro_cpyfm`, device-format memory forms, all sixteen
 logical modes and bounded acceleration. The [record](history/gem-raster-copy.md)
-contains packaged development acceptance and timing. Different-parity CPU
-copies remain slow; bitmap workstations and the complete MGVIEW port remain
-separate work.
+contains packaged development acceptance and timing. Reusing GEM4XE's dedicated
+S_ONLY byte/nibble-shift path makes the matched different-parity sample about
+3.7× faster, though it still takes about 625 ms. Further copy performance,
+bitmap workstations and the complete MGVIEW port remain separate work.
 
 The proposed [GEM-first GUI design](plans/gem4xe/gem-first-gui-design.md) replaces
 the native/GEM graphical interface split with one AES window model. It retains

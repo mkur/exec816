@@ -88,7 +88,7 @@ The pinned bridge lacks a PLUS raw-key alias, so the automated sample uses two
 rightward shifts. Lower-level snapshot probes cover leftward overlap. This
 does not change the sample's ordinary Left key or the emulator configuration.
 
-## Timing characterization
+## RC6 timing characterization
 
 The same optimized package and patterns provide these four observations.
 Copy dimensions are recorded separately; this is not an equal-area throughput
@@ -117,7 +117,7 @@ passive history active. The result preserves its original result hash/error
 and reanalysis metadata. Future runs use the corrected observer. No guest code,
 test limits or frozen package bytes changed for that correction.
 
-## Reservation and stack audit
+## RC6 reservation and stack audit
 
 Reserved bank-zero growth is **0 fixed, 0 root/kernel, 0 idle and 0 bytes per
 public Task**, including guards, alignment and unused capacity. Complete
@@ -136,3 +136,64 @@ Deferred behavior remains standard-planar conversion, scaling, other depths,
 `vrt_cpyfm`, `vr_trnfm`, application-visible VRAM forms, bitmap workstations and
 MGVIEW's remaining API/file-port work. The donor bitmap addresses collide with
 Exec's menu and snapshot storage and have not been imported.
+
+## S_ONLY plain-copy follow-up
+
+The follow-up reuses the dedicated plain-copy branch already present in the
+same pinned GEM4XE revision. Equal parity copies bytes directly; different
+parity uses its `nib_shift` word-load/XBA/four-shift loop. The generator now
+reproduces both `core.h` and `shift.s`. The additional source is pinned by
+SHA-256 in the raster manifest, preserving the donor licence and provenance.
+
+The assembly adaptation accepts huge pointers through the existing Calypsi
+argument workspace and uses long-indexed data access. It allocates no direct
+page storage, changes neither D nor DBR, restores 16-bit accumulator width and
+returns synchronously. Partial destination bytes are read and preserved at the
+edges; complete bytes need no destination read. One spare byte in the existing
+source buffer supplies the final shift without reading form padding. Row and
+chunk overlap order, physical grants, fences and current drawing bounds remain
+unchanged. Other logical modes retain their existing paths.
+
+The raw helper probe passes 8,989 assertions, including zero count with null
+pointers, 16-bit indexing and word reads crossing CPU banks. The optimized
+production RAM probe passes 32,681 assertions: the same helper ABI, all sixteen
+modes, both overlap directions, all pixel parities, one-pixel edges and
+699-pixel copies spanning multiple private chunks. The optimized core oracle
+passes with 9,477 checks modulo 65,536. The physical fixture still passes all
+905 assertions, exact pixels and pointer restoration, with the same 20-byte
+minimum spare above its separate interrupt reserve. The host suite passes
+715 tests with four existing skips.
+
+[Follow-up evidence](../development/gem-raster-s-only-fast.json) retains the
+new package and the RC6 baseline separately. All fourteen comparison APPs are
+byte-identical and use ABI 39; the benchmark observer is unchanged. Its marker
+profile reuses only the unchanged sample's call addresses and verifies the
+actual loaded relocation and call instruction before measurement.
+
+The exact new ZIP passes the same ten 29,184-pixel checkpoints, application
+collection, Counter progress, guards and EXIT, with the same 250-frame autoboot.
+Seven checkpoints before timed scrolling have byte-identical pixels to RC6;
+later scenes are checked against their own independently reconstructed model.
+
+| Matched copy | Before CPU ms | After CPU ms | Before elapsed ms | After elapsed ms | After checked scanout ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Up eight pixels, 304×88 | 20.092 | 19.579 | 40.791 | 40.275 | 104.724 |
+| Down eight pixels, 304×88 | 17.838 | 17.830 | 36.014 | 35.947 | 82.934 |
+| Left one pixel, 303×96, step 1 | 1,895.705 | 497.927 | 2,336.807 | 624.434 | 773.522 |
+| Left one pixel, 303×96, step 2 | 1,895.470 | 498.259 | 2,332.014 | 624.738 | 757.692 |
+
+The two different-parity observations improve by 3.73–3.74× elapsed and about
+74% caller CPU. Their remaining 625 ms call time includes approximately 498 ms
+of caller CPU, 18 ms off Task and 108 ms in native interrupts. The copy is still
+visibly slow; the result does not establish interactive one-pixel scrolling.
+The aligned blitter observations remain close to their original costs. These
+are four observations with checked pixels, not a percentile or latency promise.
+Checked scanout retains the RC6 frame-resolution upper-bound definition.
+
+The provider adds 567 emitted C-image bytes and no zero-fill bytes. Complete
+bank-zero budgets, Task pools, runtime and upper reservations match RC6.
+Reserved growth is **0 fixed, 0 root/kernel, 0 idle and 0 bytes per public
+Task**, including DP, guards, alignment and unused capacity. Workstation
+storage remains 1,056 bytes with 642 bytes of copy scratch; heap and persistent
+VRAM reservations do not grow. These are development checks, not hosted
+release qualification.

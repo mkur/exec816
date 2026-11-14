@@ -113,7 +113,12 @@ combining units retain the sixteen-row and 8,192 estimated raster-access limits,
 including edge work and each combining/inversion pass. S_ONLY reuses the
 existing whole-source edge capture, at most 480 bytes, before its bounded copy
 strips; that auxiliary read is not a sixteen-row strip. Memory forms and
-different-parity copies use private row buffers. A completed call retains no
+different-parity copies use private row buffers. In that row path, S_ONLY
+copies complete bytes directly at matching parity and uses GEM4XE's adapted
+nibble-shift loop otherwise. It reads destination bytes only at partial edges,
+preserving their outside nibbles. The loop uses native huge pointers, including
+CPU-bank crossings, and the existing 642-byte scratch. Other modes retain
+their logical combiner. A completed call retains no
 DMA or borrowed pointer, and never yields ownership with shared scratch live.
 
 Memory MFDBs require fd_stand=0, fd_nplanes=4, positive dimensions and a
