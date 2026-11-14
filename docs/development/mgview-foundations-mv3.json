@@ -495,7 +495,7 @@
     "tools/generate_frame_gadgets.py": "0e384a1cffddcbf2312e0238b28033d3f5c3b6bcddd581de26cb2e848659a035",
     "tools/test_aes_windows.py": "2b10624080030e85038feeaef79863eaf7b258d5b9cf83587fddbde3a88ac640"
   },
-  "delivery": "Production refresh follows this implementation commit.",
+  "delivery": "Complete; see docs/development/mgview-foundations-delivery.json",
   "limits": [
     "GEM slider values remain 0..1000; -1 default-size requests are unsupported.",
     "Hold repeat, live resizing, mouse calls and animations remain separate work.",

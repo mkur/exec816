@@ -3,6 +3,8 @@
 The [MGVIEW foundation plan](mgview-foundation-plan.md) adds the shared VDI
 bindings, full/previous geometry and horizontal window gadgets needed before
 porting the original viewer.
+MV1–MV3 and the current ABI demo are implemented; see the
+[execution record](../../history/mgview-foundations.md).
 
 The [mapped raster follow-up](mapped-raster-plan.md) stages different-parity
 screen copies in 16 KiB VRAM through the existing 4 KiB CPU aperture.

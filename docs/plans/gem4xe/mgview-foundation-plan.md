@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [VDI contract](../../reference/gem-vdi.md) ·
 [AES contract](../../reference/aes.md)
 
-Status: MV1–MV3 implemented at the development tier; final demo refresh pending, 2026-11-14. Implement MV1–MV3 in order and commit each
+Status: MV1–MV3 and final demo refresh implemented at the development tier, 2026-11-14. Implement MV1–MV3 in order and commit each
 passing executable slice separately. This delivers shared drawing/window
 services needed by MGVIEW; the application port, mouse calls and window
 animations remain separate work.
@@ -84,3 +84,6 @@ For each implementation commit, report fixed/root/kernel/idle and per-Task
 reserved bank-zero deltas, including guards, alignment and unused capacity.
 Expected deltas are zero; additional window/workstation fields live in upper
 RAM. Measure actual structure growth and verify the generated memory maps.
+
+[Execution and delivery record](../../history/mgview-foundations.md) preserves
+the actual development checks, unchanged bank-zero maps and current ABI package.

@@ -74,5 +74,26 @@ additional bank-zero bytes, including guards, alignment and spare capacity.
 
 C APP ABI 43, AES protocol 22, desktop records 20 and private frame packet 14
 replace their predecessors. The generated QED declarations defer to the new
-public bindings. Final production packaging follows this implementation slice;
-release qualification and the original MGVIEW port remain separate.
+public bindings. Release qualification and the original MGVIEW port remain
+separate.
+
+## Production delivery
+
+[Delivery evidence](../development/mgview-foundations-delivery.json) records
+the package built from implementation commit `a9f29be1`. All fourteen C APPs
+and the resident provider use ABI 43. The SYS Counter is byte-identical to the
+one used for the five-execution lifetime check. The ZIP/SYS audit matches all
+74 system files and thirteen disk APPs, preserves the separate QED disk, and
+checks OF816, ROM notices and checksums.
+
+Production bank-zero reservations, twelve Task pools and complete budgets are
+identical to the previous GEMDOS demo, including guards and spare capacity.
+The pinned AltirraOS/AltirraSDL cold ATR boot waits 249 PAL frames in OF816,
+reads 640,534 source bytes, verifies the complete expanded payload, and reaches
+native handoff at frame 22,676. Reader guards and firmware context are intact.
+This transport check stops at native entry; the separate small window, frame
+and loaded Counter fixtures cover graphical behavior and shutdown.
+
+Artifacts are `build/mgview-foundation/demo/exec816-demo.zip` and
+`build/mgview-foundation/demo/launch-altirra.command`. The five-second standard
+autoboot and writable combined SYS/WORK disk remain in place.
