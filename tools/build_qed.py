@@ -87,7 +87,7 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
                 definitions[str(source)]+=['-DAllocMem=QedFixtureAlloc']
         sources.append(Path(fixture).resolve())
         definitions[str(sources[-1])]=['--char-is-unsigned',*selection['compiler_options']]
-    sources,runtime=runtime_sources(output,sources,'args')
+    sources,runtime=runtime_sources(output,sources,'args',gemdos=True)
     if fixture is not None and fixture_calls is not None:
         for source in sources:
             if source.is_relative_to(ROOT/'c/runtime'):
@@ -98,20 +98,26 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
     imports=output/'imports.s';imports.write_text(import_assembly())
     roots=list(fixture_roots)+([] if executable else ['__exec_analysis_only'])
     image=emit(output,sources,[imports,ROOT/'c/calypsi/image-info.s'],(),roots=roots,
-        includes=[native,ROOT/'c/runtime',output/'inputs/source/qed/src',output/'inputs/source/cflib'],
+        includes=[native,ROOT/'c/runtime',ROOT/'c/compat/gemdos',output/'inputs/source/qed/src',output/'inputs/source/cflib'],
         definitions=definitions,runtime_attributes={'printf':'nofloat'},
         compiler_options=COMPILER_OPTIONS,entry_name=ABI['entry'])
     # A complete real link is mandatory. Essential runtime helpers cannot enter the catalog.
     runtime['owners']=audit_runtime(output,image,sources)
     image['provenance']['analysis_only']=not executable
-    require(not any(b['name'] in image['symbols'] for b in catalog if b.get('status')=='adapted'),
-            'An adapted donor GEM dependency is still linked')
     callers={b['name']:[] for b in catalog}
+    retained_units={int(n) for n in re.findall(r'unit (\d+) section index \d+',
+        (output/'link.lst').read_text())}
     for number,source in enumerate(sources):
+        if number not in retained_units:continue
         symbols=object_symbols(output/(str(number)+'-'+source.stem+'.o'))
         for name in callers:
             if name in symbols and symbols[name]['section']==0:callers[name].append(str(source))
     bindings=[dict(b,linked=b['name'] in image['symbols'],callers=callers[b['name']]) for b in catalog]
+    # Shared import thunks retain public names without QED callers; discarded
+    # translation units also retain undefined symbols in their object tables.
+    # Conservatively reject dependencies from any retained source unit.
+    require(not any(b['callers'] for b in bindings if b.get('status')=='adapted'),
+            'An adapted donor GEM dependency still has a caller')
     relocations,banks=verify_relocations(output,image,roots=roots)
     segments=shape(image,ABI['link_bank']);span=max(s['offset']+s['size'] for s in segments)
     code=sum(len(s['bytes']) for s in image['segments'] if s['executable'])

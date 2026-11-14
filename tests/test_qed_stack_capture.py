@@ -15,6 +15,7 @@ class Bridge:
     def __init__(self):
         self.ordinal = 0
         self.profiles = []
+        self.rendezvous = []
         self.fields = {name: offset for name, _, offset in
                        json.loads((ROOT/'abi/process.json').read_text())['record']}
 
@@ -45,8 +46,9 @@ class StackCapture(unittest.TestCase):
         bridge = Bridge(); record = {}; seen = []
         program = dict(image=dict(data=[dict(name='M_PROCESSSTATE_TABLE',
             address=0x10000, size=4+8*128)]),
-            labels=dict(native_cop=10, context_restore=20))
+            labels=dict(startup_complete=5, native_cop=10, context_restore=20))
         def run_to(b, address, **kwargs):
+            b.rendezvous.append(address)
             if address == 10: b.ordinal += 1
         with patch('os_boundary.run_to', run_to):
             capture(bridge, program, record, index,
@@ -55,6 +57,7 @@ class StackCapture(unittest.TestCase):
 
     def test_first_stack_window_keeps_all_interactions(self):
         bridge, record, seen = self.exercise(0, observation_count=4)
+        self.assertEqual(bridge.rendezvous[0], 5)
         self.assertEqual(seen, [1, 2, 3, 4])
         self.assertEqual(bridge.profiles, [1])
         self.assertEqual(record['stack_window']['identity'], 1)

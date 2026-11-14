@@ -61,4 +61,10 @@ root/kernel, idle and each public Task, including guards, alignment and unused
 capacity. Reuse existing descriptor/heap bookkeeping; charge selected APP code
 and transient FIB storage to upper RAM. Record actual build and stack costs.
 
-Status: planned, 2026-11-14. Implementation results will be recorded per slice.
+GC1 implemented, 2026-11-14. [Development evidence](../development/gemdos-compatibility-gc1.json)
+records the raw C ABI probe, four optimized SDFS/RAM loaded executions, two
+Images, repeated execution and heap/guard restoration. The optimized QED APP
+rebuild uses the shared wrappers. Host checks: 715 tests, four historical skips.
+The selected Process observations leave at least 480 bytes above the application
+stack floor; they are samples, not a worst-case bound. No descriptor table,
+allocation prefix or reserved bank-zero pool grows. GC2–GC4 remain in progress.

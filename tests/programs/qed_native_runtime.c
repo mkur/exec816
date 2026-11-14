@@ -71,7 +71,7 @@ static int body(int argc,char **argv)
     LONG largest;
     int result;
     if (argc!=2 || strcmp(argv[0],"PROBE.APP") || strcmp(argv[1],ExecGetArgStr()) || argv[2]) return 111;
-    largest=Malloc(-1L);block=(void *)Malloc(largest);
+    largest=(LONG)Malloc(-1L);block=Malloc(largest);
     if (!block || largest<=52408L || ((ULONG)block&7) ||
         ((ULONG)block>>16)!=(((ULONG)block+largest-1)>>16)) return 120;
     Mfree(block);

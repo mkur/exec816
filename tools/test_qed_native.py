@@ -91,7 +91,7 @@ def runtime(out,optimize,reuse=False,stop=False):
     source=ROOT/'tests/programs/qed_native_runtime.c'
     native=PORT/'native'
     sources=[source,native/'allocation.c',native/'files.c',native/'library.c',qed/'memory.c']
-    options=dict(main_signature='args',minimum_stack=1312,includes=[native,ROOT/'c/runtime',qed,cflib],runtime_attributes={'printf':'nofloat'},definitions={
+    options=dict(gemdos=True,main_signature='args',minimum_stack=1312,includes=[native,ROOT/'c/runtime',ROOT/'c/compat/gemdos',qed,cflib],runtime_attributes={'printf':'nofloat'},definitions={
         path.name:['--char-is-unsigned','-DQED_BANKED_MALLOC=1',
                    '-Werror=implicit-function-declaration','--no-cross-call','--no-interprocedural-cross-jump']+
                   (['-DAllocMem=QedFixtureAlloc'] if path.name=='allocation.c' else [])
@@ -177,7 +177,7 @@ def files(out,optimize,reuse=False,filesystem='sdfs'):
     out.mkdir(parents=True,exist_ok=True)
     native=PORT/'native';source=ROOT/'tests/programs/qed_native_files.c'
     sources=[source,native/'allocation.c',native/'files.c',native/'library.c']
-    options=dict(main_signature='args',includes=[native,ROOT/'c/runtime'],runtime_attributes={'printf':'nofloat'},probes=[(source,[('size_t',2),('fpos_t',4),('time_t',8),('BPTR',4)])],
+    options=dict(gemdos=True,main_signature='args',includes=[native,ROOT/'c/runtime',ROOT/'c/compat/gemdos'],runtime_attributes={'printf':'nofloat'},probes=[(source,[('size_t',2),('fpos_t',4),('time_t',8),('BPTR',4)])],
         definitions={path.name:['--char-is-unsigned','-Werror=implicit-function-declaration','--no-cross-call','--no-interprocedural-cross-jump']+
             (['-DAllocMem=QedFixtureAlloc'] if path.name=='allocation.c' else [])+
             (['-DClose=QedFixtureClose','-DWrite=QedFixtureWrite'] if path.name=='files.c' else [])

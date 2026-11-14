@@ -4,6 +4,5 @@
 #define QED_MINTBIND_H
 #include "qed-native.h"
 #include "qed-files.h"
-LONG Malloc(LONG bytes);
-LONG Mfree(void *memory);
+#include <compat/gemdos.h>
 #endif

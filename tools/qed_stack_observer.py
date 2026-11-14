@@ -157,6 +157,12 @@ def capture(bridge,program,record,index=0,during_run=None,retirement_timeout=600
     import adapter_state as adapter
     from native_program import ROOT
     from os_boundary import run_to
+    # execute invokes this hook at the adapter entry, before STATUS is armed.
+    # Cross initialization before interpreting a zero-filled page as completion.
+    bridge.bp_clear_all()
+    bridge.bp_set(program['labels']['startup_complete'])
+    run_to(bridge,program['labels']['startup_complete'],timeout=180,
+        frame_limit=10000)
     table=next(d['address'] for d in program['image']['data'] if d['name']=='M_PROCESSSTATE_TABLE')
     layout=json.loads((ROOT/'abi/process.json').read_text())
     fields={name:offset for name,kind,offset in layout['record']}

@@ -13,10 +13,10 @@ from c_runtime_build import prepare as runtime_sources,audit as audit_runtime,CO
 
 
 def build(output,sources,optimize=True,probes=(),includes=(),definitions=None,runtime_attributes=None,
-          extra_assembly=(),minimum_stack=None,extra_inputs=(),main_signature='void'):
+          extra_assembly=(),minimum_stack=None,extra_inputs=(),main_signature='void',gemdos=False):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
-    sources,runtime=runtime_sources(output,sources,main_signature)
+    sources,runtime=runtime_sources(output,sources,main_signature,gemdos=gemdos)
     require(not runtime_attributes or runtime_attributes.get('printf','nofloat')=='nofloat','APP printf uses the integer formatter')
     runtime_attributes={'printf':'nofloat',**(runtime_attributes or {})}
     assembly=output/'imports.s'
@@ -68,6 +68,7 @@ if __name__=='__main__':
     parser.add_argument('--source',type=Path,action='append',required=True)
     parser.add_argument('--main-signature',choices=('void','args'),default='void')
     parser.add_argument('--raw',action='store_true')
+    parser.add_argument('--gemdos',action='store_true',help='Link the GEMDOS source subset')
     parser.add_argument('--minimum-stack',type=int,help='Total pool bytes including interrupt reserve')
     args=parser.parse_args()
-    build(args.output,[p.resolve() for p in args.source],not args.raw,minimum_stack=args.minimum_stack,main_signature=args.main_signature)
+    build(args.output,[p.resolve() for p in args.source],not args.raw,minimum_stack=args.minimum_stack,main_signature=args.main_signature,gemdos=args.gemdos)

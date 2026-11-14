@@ -1,47 +1,13 @@
 /* SPDX-License-Identifier: MIT. Thin GEMDOS compatibility over the common CRT. */
 #include "qed-files.h"
-#include "internal.h"
+#include "gemdos-internal.h"
 #include <calypsi/stubs.h>
 #include <stdio.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
-static LONG gem_error(LONG result)
-{
-    if (result>=0) return result;
-    switch (ExecCRuntimeErrorCode(ExecCRuntimeFileError())) {
-    case ENOENT:return -33;
-    case EMFILE:return -35;
-    case EBADF:return -37;
-    case ENOMEM:return -39;
-    case ENOSYS:return -32;
-    case EINVAL:return -64;
-    case EACCES:case EROFS:case EBUSY:case EEXIST:return -36;
-    default:return -1;
-    }
-}
-LONG Fopen(const char *path,WORD mode)
-{
-    if (mode<0 || mode>2) return gem_error(ExecCRuntimeFail(ERROR_ACTION_NOT_KNOWN));
-    return gem_error(_Stub_open(path,mode==0 ? O_RDONLY:mode==1 ? O_WRONLY:O_RDWR));
-}
-LONG Fcreate(const char *path,WORD attributes)
-{
-    return attributes ? gem_error(ExecCRuntimeFail(ERROR_ACTION_NOT_KNOWN)):
-        gem_error(_Stub_open(path,O_WRONLY|O_CREAT|O_TRUNC));
-}
 LONG QedFileExclusive(const char *path)
-{ return gem_error(_Stub_open(path,O_WRONLY|O_CREAT|O_EXCL)); }
+{ return ExecGemdosResult(_Stub_open(path,O_WRONLY|O_CREAT|O_EXCL)); }
 LONG QedFileCloseError(void) { return ExecCRuntimeCloseError(); }
-LONG Fclose(WORD fd) { return gem_error(_Stub_close(fd)); }
-LONG Fread(WORD fd,LONG bytes,void *buffer)
-{ return gem_error(ExecCRuntimeRead(fd,buffer,bytes)); }
-LONG Fwrite(WORD fd,LONG bytes,const void *buffer)
-{ return gem_error(ExecCRuntimeWrite(fd,buffer,bytes)); }
-LONG Fseek(LONG offset,WORD fd,WORD origin) { return gem_error(_Stub_lseek(fd,offset,origin)); }
-LONG Fdelete(const char *path) { return gem_error(_Stub_remove(path)); }
-LONG Frename(WORD zero,const char *before,const char *after)
-{ return zero ? gem_error(ExecCRuntimeFail(ERROR_BAD_ARGUMENTS)):gem_error(_Stub_rename(before,after)); }
 LONG QedFileError(void) { return ExecCRuntimeFileError(); }
 UWORD QedFileCount(void) { return ExecCRuntimeFileCount(); }
 int QedFileInfo(const char *path,struct QedFileInfo *info)

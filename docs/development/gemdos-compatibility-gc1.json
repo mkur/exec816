@@ -1,0 +1,777 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "GC1 shared GEMDOS source wrappers and QED migration; no FSTAT implementation",
+  "host": {
+    "tests": 715,
+    "skipped": 4
+  },
+  "cases": [
+    {
+      "name": "abi-raw",
+      "status": "pass",
+      "completed": [
+        2
+      ],
+      "checks": [
+        13
+      ],
+      "results_sha256": "e0ac3607eb2b2e2a1b7a66fe4f298282141de335dc8edbcb8b8052cd2382bb23",
+      "app": {
+        "abi": 39,
+        "bytes": 14154,
+        "sha256": "d139f8deef53995c3e12f1882bb61b9e97eee92783fb71a2a3aa52e7971ae338",
+        "inputs": {
+          "/Users/michalkurcewicz/action/exec816-public/tests/programs/gemdos_compat.c": "29f96f2258d9b48f730019f2b8488da099ddc1b0efeeba274af27d952bef4c6c",
+          "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/files.c": "d4212b1211b81ac418cd14385fa60c6a0ae57dc96680f301ec4e188976cf8755",
+          "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/allocation.c": "afab48d141dd4ac36769bb2f2f961beca91ef13e6839efbcd1c95a5e0991dfac",
+          "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/termination.c": "e17d73e0de49453fe75399066052917426a71305914517227f0e1808469eaa25",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/allocation.c": "7b609cb6d250c570e33f61ecbcae4d662681649a8550735fe5520cd0911f195c",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/arguments.c": "bb36adeedd1a0e7c1970db3f5ba4c061a77c930d42e9f84dc2f872d961e28743",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/files.c": "8a35117d8e3801110bf276941a9a0e9429b823ebde03fcd6020426a169ab7ad1",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/lifecycle.c": "01598d2f77a544bdd9f63b1b9a960c12890bcb4dde325a0c569af9d24e7164d5",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/scope.c": "13b64baa39904c6278c104f50e345633e4dac2423d310fc0c3cf76a2b4d9fb35",
+          "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc1/abi-raw/app/runtime-main.c": "0dc3d1f1c4d65f405c85a8d87c39df94e37e2a9c60f2a0a7aac2e7026e7cff45"
+        },
+        "runtime": {
+          "version": 1,
+          "entry": "__exec_c_runtime_entry",
+          "main_signature": "void",
+          "gemdos": true,
+          "compiler_options": [
+            "--no-cross-call",
+            "--no-interprocedural-cross-jump"
+          ],
+          "inputs": {
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/allocation.c": "7b609cb6d250c570e33f61ecbcae4d662681649a8550735fe5520cd0911f195c",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/arguments.c": "bb36adeedd1a0e7c1970db3f5ba4c061a77c930d42e9f84dc2f872d961e28743",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/files.c": "8a35117d8e3801110bf276941a9a0e9429b823ebde03fcd6020426a169ab7ad1",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/lifecycle.c": "01598d2f77a544bdd9f63b1b9a960c12890bcb4dde325a0c569af9d24e7164d5",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/scope.c": "13b64baa39904c6278c104f50e345633e4dac2423d310fc0c3cf76a2b4d9fb35",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/internal.h": "9274ab5d9d751168857ce5b066adcb2ff182924d13d680521faf74deb18365cb",
+            "/Users/michalkurcewicz/action/exec816-public/c/include/exec816/c-runtime.h": "7782aee08685c1243816c3061fb8791ced891e33dc2033a364f4fab79530eeb0",
+            "/Users/michalkurcewicz/action/exec816-public/c/include/setjmp.h": "f38ad92cb98cd43a79e9f74a4dcbb5a57796de7cb49e54a2075f0e11d187477d",
+            "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc1/abi-raw/app/runtime-main.c": "0dc3d1f1c4d65f405c85a8d87c39df94e37e2a9c60f2a0a7aac2e7026e7cff45",
+            "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/files.c": "d4212b1211b81ac418cd14385fa60c6a0ae57dc96680f301ec4e188976cf8755",
+            "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/allocation.c": "afab48d141dd4ac36769bb2f2f961beca91ef13e6839efbcd1c95a5e0991dfac",
+            "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/termination.c": "e17d73e0de49453fe75399066052917426a71305914517227f0e1808469eaa25",
+            "/Users/michalkurcewicz/action/exec816-public/c/include/compat/gemdos.h": "aaf31a1dd9054a4593bb2d6bbf0777f7be940cc66eeef8dad4f5425b2044a4ce",
+            "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/gemdos-internal.h": "fc473b37b436a69591b309c0bc534fdfcec035b87099804a009c2e0c91a8096c",
+            "/Users/michalkurcewicz/action/exec816-public/abi/gemdos-compat.json": "793d7c43aa854334f158d5a8acf5b96e2227ec328e210fc36e45647ad9141bca"
+          },
+          "owners": {
+            "__exec_c_runtime_entry": {
+              "source": "c/runtime/scope.c",
+              "address": 797176
+            },
+            "malloc": {
+              "source": "c/runtime/allocation.c",
+              "address": 791513
+            },
+            "free": {
+              "source": "c/runtime/allocation.c",
+              "address": 792606
+            },
+            "_Stub_open": {
+              "source": "c/runtime/files.c",
+              "address": 789029
+            },
+            "_Stub_close": {
+              "source": "c/runtime/files.c",
+              "address": 793240
+            },
+            "exit": {
+              "source": "c/runtime/scope.c",
+              "address": 797602
+            }
+          }
+        }
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "override": false,
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "execution": {
+        "pin": {
+          "schema_version": 1,
+          "rom": {
+            "name": "AltirraOS 3.44 for 65C816",
+            "bytes": 16384,
+            "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+            "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+            "cop0_after_xce": 50931
+          },
+          "emulator": {
+            "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+            "platform": "macOS arm64",
+            "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "source_patch": "toolchain/patches/altirra-console-probe.patch",
+            "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+            "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+            "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+            "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+            "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+          },
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true,
+            "addons": "custom"
+          },
+          "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+          "peripherals": [
+            {
+              "name": "fastest-125k",
+              "diskemu": "fastest",
+              "divisor": 0,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "stock-810",
+              "diskemu": "810",
+              "divisor": 40,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "happy-none",
+              "diskemu": "happy1050",
+              "divisor": 40,
+              "source": "src/Altirra/source/disk.cpp",
+              "firmware": "built-in high-level model; quiet command only"
+            }
+          ],
+          "configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true
+          },
+          "source_sha256": {
+            "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+            "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+            "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+            "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+            "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+          },
+          "observer": {
+            "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+          },
+          "keyboard_input": {
+            "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+            "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+            "initialization": "KEY ALL up enables scan mode before modifier changes",
+            "added_keys": {
+              "ASTERISK": 7,
+              "LESS": 54,
+              "GREATER": 55
+            },
+            "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+            "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+          },
+          "serial_regression_pins": [
+            "toolchain/altirra-sio-queued.json",
+            "toolchain/altirra-sio-sectors.json"
+          ],
+          "devices": [
+            {
+              "tag": "vbxe",
+              "settings": {
+                "version": 126,
+                "alt_page": false,
+                "shared_mem": false
+              },
+              "readback": [
+                {
+                  "address": 54848,
+                  "bytes": [
+                    16,
+                    38
+                  ]
+                }
+              ],
+              "vram_bytes": 524288,
+              "register_base": 54784
+            }
+          ],
+          "startup_configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true,
+            "diskemu": "generic56k"
+          },
+          "disk_workload": {
+            "format": "SDFS",
+            "unit": 49,
+            "sectors": 720,
+            "sector_bytes": 128,
+            "exec_profile": 4,
+            "nominal_baud": 57600
+          },
+          "mouse_input": {
+            "model": "ST mouse",
+            "port": 2,
+            "internal_port": 1,
+            "map": "Mouse -> ST Mouse (port 2)",
+            "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+            "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+            "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+            "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+            "commands": [
+              "MOUSE ST",
+              "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+              "MOUSE CLEAR"
+            ],
+            "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+            "tooling": {
+              "binary": "build/mouse-bridge/AltirraBridgeServer",
+              "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+              "patch": "toolchain/patches/altirra-mouse-observer.patch",
+              "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+              "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+              "source_sha256": {
+                "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+                "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+              }
+            },
+            "initial_acceptance": {
+              "transitions_per_second_per_axis": 1000,
+              "minimum_transition_spacing_us": 1000,
+              "minimum_button_level_us": 10000,
+              "required_max_sample_gap_us_exclusive": 1000,
+              "visible_response_pal_ticks": 12
+            },
+            "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+          }
+        },
+        "drive": 0,
+        "unit": 49,
+        "sectors": 2880,
+        "expected_status": 0
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_irq_count": 61363,
+        "native_nmi_count": 766
+      },
+      "stacks": null
+    },
+    {
+      "name": "opt",
+      "status": "pass",
+      "completed": [
+        4
+      ],
+      "checks": [
+        25
+      ],
+      "results_sha256": "63861c1c725ab7ccbfb3cf284c992f7b30b4d57e421c2e55c7f2d426196a6c4d",
+      "app": {
+        "abi": 39,
+        "bytes": 15244,
+        "sha256": "f13f38f5ab5e5baed926ff8e5717060be7b76cf0b477174f2452dccff18479d0",
+        "inputs": {
+          "/Users/michalkurcewicz/action/exec816-public/tests/programs/gemdos_compat.c": "29f96f2258d9b48f730019f2b8488da099ddc1b0efeeba274af27d952bef4c6c",
+          "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/files.c": "d4212b1211b81ac418cd14385fa60c6a0ae57dc96680f301ec4e188976cf8755",
+          "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/allocation.c": "afab48d141dd4ac36769bb2f2f961beca91ef13e6839efbcd1c95a5e0991dfac",
+          "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/termination.c": "e17d73e0de49453fe75399066052917426a71305914517227f0e1808469eaa25",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/allocation.c": "7b609cb6d250c570e33f61ecbcae4d662681649a8550735fe5520cd0911f195c",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/arguments.c": "bb36adeedd1a0e7c1970db3f5ba4c061a77c930d42e9f84dc2f872d961e28743",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/files.c": "8a35117d8e3801110bf276941a9a0e9429b823ebde03fcd6020426a169ab7ad1",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/lifecycle.c": "01598d2f77a544bdd9f63b1b9a960c12890bcb4dde325a0c569af9d24e7164d5",
+          "/Users/michalkurcewicz/action/exec816-public/c/runtime/scope.c": "13b64baa39904c6278c104f50e345633e4dac2423d310fc0c3cf76a2b4d9fb35",
+          "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc1/opt/app/runtime-main.c": "0dc3d1f1c4d65f405c85a8d87c39df94e37e2a9c60f2a0a7aac2e7026e7cff45"
+        },
+        "runtime": {
+          "version": 1,
+          "entry": "__exec_c_runtime_entry",
+          "main_signature": "void",
+          "gemdos": true,
+          "compiler_options": [
+            "--no-cross-call",
+            "--no-interprocedural-cross-jump"
+          ],
+          "inputs": {
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/allocation.c": "7b609cb6d250c570e33f61ecbcae4d662681649a8550735fe5520cd0911f195c",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/arguments.c": "bb36adeedd1a0e7c1970db3f5ba4c061a77c930d42e9f84dc2f872d961e28743",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/files.c": "8a35117d8e3801110bf276941a9a0e9429b823ebde03fcd6020426a169ab7ad1",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/lifecycle.c": "01598d2f77a544bdd9f63b1b9a960c12890bcb4dde325a0c569af9d24e7164d5",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/scope.c": "13b64baa39904c6278c104f50e345633e4dac2423d310fc0c3cf76a2b4d9fb35",
+            "/Users/michalkurcewicz/action/exec816-public/c/runtime/internal.h": "9274ab5d9d751168857ce5b066adcb2ff182924d13d680521faf74deb18365cb",
+            "/Users/michalkurcewicz/action/exec816-public/c/include/exec816/c-runtime.h": "7782aee08685c1243816c3061fb8791ced891e33dc2033a364f4fab79530eeb0",
+            "/Users/michalkurcewicz/action/exec816-public/c/include/setjmp.h": "f38ad92cb98cd43a79e9f74a4dcbb5a57796de7cb49e54a2075f0e11d187477d",
+            "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc1/opt/app/runtime-main.c": "0dc3d1f1c4d65f405c85a8d87c39df94e37e2a9c60f2a0a7aac2e7026e7cff45",
+            "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/files.c": "d4212b1211b81ac418cd14385fa60c6a0ae57dc96680f301ec4e188976cf8755",
+            "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/allocation.c": "afab48d141dd4ac36769bb2f2f961beca91ef13e6839efbcd1c95a5e0991dfac",
+            "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/termination.c": "e17d73e0de49453fe75399066052917426a71305914517227f0e1808469eaa25",
+            "/Users/michalkurcewicz/action/exec816-public/c/include/compat/gemdos.h": "aaf31a1dd9054a4593bb2d6bbf0777f7be940cc66eeef8dad4f5425b2044a4ce",
+            "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/gemdos-internal.h": "fc473b37b436a69591b309c0bc534fdfcec035b87099804a009c2e0c91a8096c",
+            "/Users/michalkurcewicz/action/exec816-public/abi/gemdos-compat.json": "793d7c43aa854334f158d5a8acf5b96e2227ec328e210fc36e45647ad9141bca"
+          },
+          "owners": {
+            "__exec_c_runtime_entry": {
+              "source": "c/runtime/scope.c",
+              "address": 797972
+            },
+            "malloc": {
+              "source": "c/runtime/allocation.c",
+              "address": 792597
+            },
+            "free": {
+              "source": "c/runtime/allocation.c",
+              "address": 793573
+            },
+            "_Stub_open": {
+              "source": "c/runtime/files.c",
+              "address": 790086
+            },
+            "_Stub_close": {
+              "source": "c/runtime/files.c",
+              "address": 794140
+            },
+            "exit": {
+              "source": "c/runtime/scope.c",
+              "address": 798513
+            }
+          }
+        }
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "override": false,
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "execution": {
+        "pin": {
+          "schema_version": 1,
+          "rom": {
+            "name": "AltirraOS 3.44 for 65C816",
+            "bytes": 16384,
+            "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+            "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+            "cop0_after_xce": 50931
+          },
+          "emulator": {
+            "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+            "platform": "macOS arm64",
+            "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "source_patch": "toolchain/patches/altirra-console-probe.patch",
+            "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+            "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+            "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+            "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+            "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+            "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+            "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+            "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+          },
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true,
+            "addons": "custom"
+          },
+          "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+          "peripherals": [
+            {
+              "name": "fastest-125k",
+              "diskemu": "fastest",
+              "divisor": 0,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "stock-810",
+              "diskemu": "810",
+              "divisor": 40,
+              "source": "src/Altirra/source/diskprofile.cpp",
+              "firmware": "built-in high-level model"
+            },
+            {
+              "name": "happy-none",
+              "diskemu": "happy1050",
+              "divisor": 40,
+              "source": "src/Altirra/source/disk.cpp",
+              "firmware": "built-in high-level model; quiet command only"
+            }
+          ],
+          "configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true
+          },
+          "source_sha256": {
+            "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+            "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+            "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+            "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+            "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+          },
+          "observer": {
+            "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+            "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+          },
+          "keyboard_input": {
+            "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+            "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+            "initialization": "KEY ALL up enables scan mode before modifier changes",
+            "added_keys": {
+              "ASTERISK": 7,
+              "LESS": 54,
+              "GREATER": 55
+            },
+            "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+            "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+          },
+          "serial_regression_pins": [
+            "toolchain/altirra-sio-queued.json",
+            "toolchain/altirra-sio-sectors.json"
+          ],
+          "devices": [
+            {
+              "tag": "vbxe",
+              "settings": {
+                "version": 126,
+                "alt_page": false,
+                "shared_mem": false
+              },
+              "readback": [
+                {
+                  "address": 54848,
+                  "bytes": [
+                    16,
+                    38
+                  ]
+                }
+              ],
+              "vram_bytes": 524288,
+              "register_base": 54784
+            }
+          ],
+          "startup_configuration": {
+            "siopatch": "off",
+            "burstio": false,
+            "randdelay": false,
+            "accuratedisk": true,
+            "diskemu": "generic56k"
+          },
+          "disk_workload": {
+            "format": "SDFS",
+            "unit": 49,
+            "sectors": 720,
+            "sector_bytes": 128,
+            "exec_profile": 4,
+            "nominal_baud": 57600
+          },
+          "mouse_input": {
+            "model": "ST mouse",
+            "port": 2,
+            "internal_port": 1,
+            "map": "Mouse -> ST Mouse (port 2)",
+            "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+            "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+            "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+            "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+            "commands": [
+              "MOUSE ST",
+              "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+              "MOUSE CLEAR"
+            ],
+            "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+            "tooling": {
+              "binary": "build/mouse-bridge/AltirraBridgeServer",
+              "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+              "patch": "toolchain/patches/altirra-mouse-observer.patch",
+              "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+              "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+              "source_sha256": {
+                "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+                "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+                "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+              }
+            },
+            "initial_acceptance": {
+              "transitions_per_second_per_axis": 1000,
+              "minimum_transition_spacing_us": 1000,
+              "minimum_button_level_us": 10000,
+              "required_max_sample_gap_us_exclusive": 1000,
+              "visible_response_pal_ticks": 12
+            },
+            "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+          }
+        },
+        "drive": 0,
+        "unit": 49,
+        "sectors": 2880,
+        "expected_status": 0
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_irq_count": 15975,
+        "native_nmi_count": 17770
+      },
+      "stacks": {
+        "scope": "Actual captured APP image bases and native/provider sites; per-pool Process ordinals, DP and guards remain checked. Broad candidate-only sites are excluded. Selected-PC observations, not a watermark.",
+        "lifetimes": [
+          {
+            "slot": 4,
+            "ordinal": 1,
+            "dp": 4352,
+            "clock": 38034483,
+            "app_entry": 329925,
+            "identity": 1
+          }
+        ],
+        "minima": [
+          {
+            "slot": 4,
+            "lifetime": 1,
+            "kind": "ordinary-sample",
+            "minimum_s": 17676,
+            "dp": 4352,
+            "pool_bytes": 1312,
+            "expected_dp": 4352,
+            "headroom": 509,
+            "pc": 1685520,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 38745145
+          },
+          {
+            "slot": 4,
+            "lifetime": 1,
+            "kind": "frame-reservation",
+            "minimum_s": 17654,
+            "dp": 4352,
+            "pool_bytes": 1312,
+            "expected_dp": 4352,
+            "headroom": 487,
+            "pc": 1685548,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836:after-tcs",
+            "clock": 38745148
+          },
+          {
+            "slot": 4,
+            "lifetime": 1,
+            "kind": "async",
+            "minimum_s": 17647,
+            "dp": 17651,
+            "pool_bytes": 1312,
+            "expected_dp": 4352,
+            "headroom": 480,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 39076672
+          }
+        ]
+      }
+    }
+  ],
+  "qed": {
+    "status": "executable-development",
+    "app": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc1/qed/program.app",
+      "sha256": "f303372d0649b941b5a293cb38b9d58a12e8f6bcadc099eaee1133c5c24523de",
+      "bytes": 137444,
+      "minimum_stack_bytes": 2560
+    },
+    "layout": {
+      "code_bytes": 119184,
+      "initialized_bytes": 2804,
+      "bss_bytes": 24945,
+      "import_thunk_bytes": 524,
+      "span_bytes": 184720,
+      "image_holes_bytes": 37787,
+      "serialized_bytes_if_executable": 137444,
+      "relocation_count": 3578,
+      "heap_alignment_bytes": 8,
+      "heap_alignment_backing_bytes": 250256,
+      "future_full_profile_backing_bytes": 393216,
+      "private_allowances": {
+        "code_bytes": 32768,
+        "data_bss_bytes": 16384
+      },
+      "container_metadata_allowance_bytes": 16384,
+      "resident_provider_allowances": {
+        "code_bytes": 8192,
+        "data_bss_bytes": 16384,
+        "basis": "Merged console/FastBasic bindings consumed 4 KiB of the former 16 KiB code growth allowance; responsive-editor copy/snapshot bindings consume another 4 KiB. Retain 8 KiB code, 4 KiB tables and 16 KiB data/BSS inside the existing provider banks.",
+        "table_bytes": 4096
+      }
+    },
+    "runtime": {
+      "version": 1,
+      "entry": "__exec_c_runtime_entry",
+      "main_signature": "args",
+      "gemdos": true,
+      "compiler_options": [
+        "--no-cross-call",
+        "--no-interprocedural-cross-jump"
+      ],
+      "inputs": {
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/allocation.c": "7b609cb6d250c570e33f61ecbcae4d662681649a8550735fe5520cd0911f195c",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/arguments.c": "bb36adeedd1a0e7c1970db3f5ba4c061a77c930d42e9f84dc2f872d961e28743",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/files.c": "8a35117d8e3801110bf276941a9a0e9429b823ebde03fcd6020426a169ab7ad1",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/lifecycle.c": "01598d2f77a544bdd9f63b1b9a960c12890bcb4dde325a0c569af9d24e7164d5",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/scope.c": "13b64baa39904c6278c104f50e345633e4dac2423d310fc0c3cf76a2b4d9fb35",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/internal.h": "9274ab5d9d751168857ce5b066adcb2ff182924d13d680521faf74deb18365cb",
+        "/Users/michalkurcewicz/action/exec816-public/c/include/exec816/c-runtime.h": "7782aee08685c1243816c3061fb8791ced891e33dc2033a364f4fab79530eeb0",
+        "/Users/michalkurcewicz/action/exec816-public/c/include/setjmp.h": "f38ad92cb98cd43a79e9f74a4dcbb5a57796de7cb49e54a2075f0e11d187477d",
+        "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc1/qed/runtime-main.c": "ce0ec88286e52f4de725cf5cf545b4ba852501505b03cd2cb3859c5daf157309",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/files.c": "d4212b1211b81ac418cd14385fa60c6a0ae57dc96680f301ec4e188976cf8755",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/allocation.c": "afab48d141dd4ac36769bb2f2f961beca91ef13e6839efbcd1c95a5e0991dfac",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/termination.c": "e17d73e0de49453fe75399066052917426a71305914517227f0e1808469eaa25",
+        "/Users/michalkurcewicz/action/exec816-public/c/include/compat/gemdos.h": "aaf31a1dd9054a4593bb2d6bbf0777f7be940cc66eeef8dad4f5425b2044a4ce",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/gemdos-internal.h": "fc473b37b436a69591b309c0bc534fdfcec035b87099804a009c2e0c91a8096c",
+        "/Users/michalkurcewicz/action/exec816-public/abi/gemdos-compat.json": "793d7c43aa854334f158d5a8acf5b96e2227ec328e210fc36e45647ad9141bca"
+      },
+      "owners": {
+        "__exec_c_runtime_entry": {
+          "source": "c/runtime/scope.c",
+          "address": 968982
+        },
+        "malloc": {
+          "source": "c/runtime/allocation.c",
+          "address": 929156
+        },
+        "free": {
+          "source": "c/runtime/allocation.c",
+          "address": 934646
+        },
+        "_Stub_open": {
+          "source": "c/runtime/files.c",
+          "address": 845822
+        },
+        "_Stub_close": {
+          "source": "c/runtime/files.c",
+          "address": 943325
+        }
+      }
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "includes": "guards, alignment and unused capacity"
+  },
+  "limits": {
+    "allocation_payload": 65520,
+    "owned_descriptors": 16
+  }
+}

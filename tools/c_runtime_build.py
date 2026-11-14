@@ -8,7 +8,7 @@ SOURCES=tuple(ROOT/'c/runtime'/name for name in (
 COMPILER_OPTIONS=['--no-cross-call','--no-interprocedural-cross-jump']
 
 
-def prepare(output,sources,main_signature='void'):
+def prepare(output,sources,main_signature='void',gemdos=False):
     import json
     application_abi=json.loads((ROOT/'abi/c-program.json').read_text())
     require(application_abi['entry']==RUNTIME_ABI['entry'] and application_abi['runtime_version']==RUNTIME_ABI['version'],'Mismatched APP/runtime contract')
@@ -20,12 +20,23 @@ def prepare(output,sources,main_signature='void'):
     invocation='(void)argc;(void)argv;return main();' if main_signature=='void' else 'return main(argc,argv);'
     adapter.write_text('/* Generated typed APP main adapter; MIT. */\n'+declaration+'\n'+
         'int __exec_c_runtime_main(int argc,char **argv) { '+invocation+' }\n')
-    sources=[*sources,*SOURCES,adapter]
+    compatibility=[]
+    compatibility_inputs=[]
+    if gemdos:
+        from generate_gemdos_compat import files as gemdos_files
+        for path,content in gemdos_files().items():
+            require(path.read_text()==content,'Stale GEMDOS interface: '+str(path))
+        compatibility=[ROOT/'c/compat/gemdos'/name for name in
+            ('files.c','allocation.c','termination.c')]
+        compatibility_inputs=[*compatibility,ROOT/'c/include/compat/gemdos.h',
+            ROOT/'c/compat/gemdos/gemdos-internal.h',ROOT/'abi/gemdos-compat.json']
+    sources=[*sources,*compatibility,*SOURCES,adapter]
     require(len(sources)==len(set(map(str,sources))),'Duplicate APP/runtime source')
     return sources,dict(version=RUNTIME_ABI['version'],entry=RUNTIME_ABI['entry'],
-        main_signature=main_signature,compiler_options=COMPILER_OPTIONS,
+        main_signature=main_signature,gemdos=gemdos,compiler_options=COMPILER_OPTIONS,
         inputs={str(p):sha256(p) for p in (*SOURCES,ROOT/'c/runtime/internal.h',
-            ROOT/'c/include/exec816/c-runtime.h',ROOT/'c/include/setjmp.h',adapter)})
+            ROOT/'c/include/exec816/c-runtime.h',ROOT/'c/include/setjmp.h',adapter,
+            *compatibility_inputs)})
 
 
 def audit(output,image,sources):

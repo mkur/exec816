@@ -1,0 +1,131 @@
+{
+  "abi": "exec816.gemdos-source",
+  "version": 1,
+  "constants": {
+    "FSTAT": 17920,
+    "S_IFREG": 32768,
+    "XATTR_SIZE_TYPE_ONLY": 1,
+    "EFILNF": -33,
+    "EPTHNF": -34,
+    "ENHNDL": -35,
+    "EBADF": -37,
+    "ENSMEM": -39,
+    "EINVFN": -32,
+    "ERANGE": -64,
+    "EACCDN": -36
+  },
+  "calls": [
+    "LONG Fopen(const char *path,WORD mode);",
+    "LONG Fcreate(const char *path,WORD attributes);",
+    "LONG Fclose(WORD fd);",
+    "LONG Fread(WORD fd,LONG bytes,void *buffer);",
+    "LONG Fwrite(WORD fd,LONG bytes,const void *buffer);",
+    "LONG Fseek(LONG offset,WORD fd,WORD origin);",
+    "LONG Fdelete(const char *path);",
+    "LONG Frename(WORD zero,const char *before,const char *after);",
+    "void *Malloc(LONG bytes);",
+    "LONG Mfree(void *memory);",
+    "void Pterm(WORD status);",
+    "void Pterm0(void);"
+  ],
+  "xattr": {
+    "bytes": 52,
+    "fields": [
+      [
+        "mode",
+        "UWORD",
+        0
+      ],
+      [
+        "index",
+        "LONG",
+        2
+      ],
+      [
+        "dev",
+        "UWORD",
+        6
+      ],
+      [
+        "rdev",
+        "UWORD",
+        8
+      ],
+      [
+        "nlink",
+        "UWORD",
+        10
+      ],
+      [
+        "uid",
+        "UWORD",
+        12
+      ],
+      [
+        "gid",
+        "UWORD",
+        14
+      ],
+      [
+        "size",
+        "LONG",
+        16
+      ],
+      [
+        "blksize",
+        "LONG",
+        20
+      ],
+      [
+        "nblocks",
+        "LONG",
+        24
+      ],
+      [
+        "mtime",
+        "UWORD",
+        28
+      ],
+      [
+        "mdate",
+        "UWORD",
+        30
+      ],
+      [
+        "atime",
+        "UWORD",
+        32
+      ],
+      [
+        "adate",
+        "UWORD",
+        34
+      ],
+      [
+        "ctime",
+        "UWORD",
+        36
+      ],
+      [
+        "cdate",
+        "UWORD",
+        38
+      ],
+      [
+        "attr",
+        "UWORD",
+        40
+      ],
+      [
+        "reserved2",
+        "UWORD",
+        42
+      ],
+      [
+        "reserved3",
+        "LONG[2]",
+        44
+      ]
+    ]
+  }
+}
