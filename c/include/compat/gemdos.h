@@ -48,4 +48,5 @@ void *Malloc(LONG bytes);
 LONG Mfree(void *memory);
 void Pterm(WORD status);
 void Pterm0(void);
+LONG Fcntl(WORD fd,LONG argument,WORD command);
 #endif

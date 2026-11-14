@@ -27,7 +27,7 @@ def prepare(output,sources,main_signature='void',gemdos=False):
         for path,content in gemdos_files().items():
             require(path.read_text()==content,'Stale GEMDOS interface: '+str(path))
         compatibility=[ROOT/'c/compat/gemdos'/name for name in
-            ('files.c','allocation.c','termination.c')]
+            ('files.c','allocation.c','termination.c','control.c')]
         compatibility_inputs=[*compatibility,ROOT/'c/include/compat/gemdos.h',
             ROOT/'c/compat/gemdos/gemdos-internal.h',ROOT/'abi/gemdos-compat.json']
     sources=[*sources,*compatibility,*SOURCES,adapter]

@@ -10,10 +10,13 @@ from test_c_runtime import fixture
 from test_c_process import run as process_run
 
 
-def run(out,mode,abi=False,reuse=False,filesystem='sdfs',metadata=False):
+def run(out,mode,abi=False,reuse=False,filesystem='sdfs',metadata=False,stat=False):
     out.mkdir(parents=True,exist_ok=True)
-    definitions={} if metadata else {name:['-DEXEC_CRT_TEST'] for name in ('allocation.c','files.c')}
-    source='dos_examine_fh.c' if metadata else 'gemdos_compat.c'
+    metadata=metadata or stat
+    definitions={} if metadata and not stat else {name:['-DEXEC_CRT_TEST'] for name in ('allocation.c','files.c')}
+    if stat:
+        definitions[str(ROOT/'c/runtime/files.c')]=['-DEXEC_CRT_TEST','-DExamineFH=ExecCRTTestExamineFH']
+    source='gemdos_stat.c' if stat else 'dos_examine_fh.c' if metadata else 'gemdos_compat.c'
     if abi:definitions[source]=['-DGEMDOS_ABI_ONLY']
     native=fixture(out,'abi' if abi and not metadata else 'files')
     if metadata:
@@ -44,6 +47,7 @@ if __name__=='__main__':
     p.add_argument('--case',choices=('raw','opt'),default='opt')
     p.add_argument('--abi',action='store_true')
     p.add_argument('--metadata',action='store_true')
+    p.add_argument('--stat',action='store_true')
     p.add_argument('--from-build',action='store_true')
     p.add_argument('--variant-from',type=Path,help='Reuse native emission with a rebuilt APP')
     p.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs')
@@ -51,4 +55,4 @@ if __name__=='__main__':
     if a.variant_from:
         from test_c_process import variant
         variant(a.variant_from.resolve(),a.output.resolve(),a.filesystem)
-    run(a.output.resolve(),a.case,a.abi,a.from_build or bool(a.variant_from),a.filesystem,a.metadata)
+    run(a.output.resolve(),a.case,a.abi,a.from_build or bool(a.variant_from),a.filesystem,a.metadata,a.stat)

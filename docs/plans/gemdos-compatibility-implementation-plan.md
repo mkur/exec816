@@ -76,4 +76,13 @@ measurement and before publication (277 assertions each). Output, cursor,
 ownership, guards and OS restoration pass. DOS revision 16 / APP ABI 40 expose
 ExamineFH to resident native Tasks and C APPs. The native COMMAND import and SDX
 FILELENG migration are explicitly deferred; no native provider-table reservation
-is enlarged. GC3–GC4 remain in progress.
+is enlarged.
+
+GC3 implemented. [FSTAT evidence](../development/gemdos-compatibility-gc3.json)
+records four optimized failure/ownership executions and four small raw C call
+executions on the same optimized provider. Exact/empty size, initialized fields,
+unsupported streams/commands, invalid descriptors, scratch failure, rejected
+bounded/unknown/type metadata and pending transfer errors pass. The
+[supported source contract](../reference/gemdos-compatibility.md) records the
+280-byte temporary upper backing and 52-byte local result. Reserved bank-zero
+cost remains zero in every category. GC4 consumer acceptance remains in progress.

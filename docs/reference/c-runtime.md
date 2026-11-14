@@ -3,10 +3,12 @@
 [Reference index](README.md) · [C image contract](c-program-loading.md) ·
 [C guide](../guides/calypsi-c.md) · [Implementation plan](../plans/c-runtime-implementation-plan.md)
 
-Current APP ABI 32 uses runtime contract 1, defined in
+Current APP ABI 40 uses runtime contract 1, defined in
 [c-runtime.json](../../abi/c-runtime.json). Each loaded Image links its own
 runtime state and selected pinned Calypsi 5.18 objects. One calling Task owns
 an execution. Raw Tasks use the public Exec allocation/I/O interfaces.
+The opt-in [GEMDOS source subset](gemdos-compatibility.md) uses these same
+descriptor and allocation owners; select it with the APP builder's `--gemdos`.
 
 ## Entry and lifetime
 
