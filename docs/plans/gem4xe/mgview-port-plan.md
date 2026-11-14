@@ -6,7 +6,7 @@
 [Window foundations](mgview-foundation-plan.md) ·
 [Mouse delivery](../../history/gem-mouse-calls.md)
 
-Status: MP1–MP2 implemented; MP3–MP6 pending, 2026-11-14. Implement in order and commit each passing
+Status: MP1–MP3 implemented; MP4–MP6 pending, 2026-11-14. Implement in order and commit each passing
 executable slice separately. This plan ports the original MGVIEW application;
 the existing Exec Text application and Mouse probe remain separate programs.
 Planning records no new executable qualification.

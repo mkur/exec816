@@ -112,10 +112,18 @@ def run(out,reuse=False,scroll=False,failures=False):
                         picture(window,f'round-{round}',DOCUMENT if round==0 else b'')
                         if scroll and round==0:
                             # Atari physical cursor keys use Ctrl with -, = and *.
-                            for key in ('EQUALS','ASTERISK','MINUS'):
+                            for key,expected_shift in (('EQUALS',(0,1)),('ASTERISK',(1,1)),('MINUS',(1,0))):
                                 b._cmd_ok('KEY CTRL down');b._cmd_ok('KEY '+key+' down');frames(3)
                                 b._cmd_ok('KEY '+key+' up');b._cmd_ok('KEY CTRL up');frames(50)
+                                require((number(window+304,4),number(window+280,4))==expected_shift,'Scroll key did not change the original model: '+key)
                                 picture(window,'scroll-'+key,DOCUMENT)
+                            # This pinned bridge has no raw PLUS key name; use GEM's left-arrow gadget.
+                            ox,oy,ow,oh=[number(window+260+i*2) for i in range(4)]
+                            position=schedule(b,program,position,(ox+8,oy+oh-5));frames(10)
+                            b._cmd_ok('MOUSE AT 2000 0 0 1');frames(3)
+                            b._cmd_ok('MOUSE AT 2000 0 0 0');frames(50)
+                            require(number(window+304,4)==0,'Horizontal left gadget did not restore the model')
+                            picture(window,'scroll-left-gadget',DOCUMENT)
                         frames(60);require(number(counter+14,4)>initial,'Counter did not progress beside MGVIEW')
                         report['cases'].append(dict(arguments=argument.decode(),documents=number(sy['nwindows']),counter_progress=number(counter+14,4)-initial))
                         if round==0:

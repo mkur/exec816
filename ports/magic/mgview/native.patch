@@ -756,138 +756,113 @@
  	long new_shift;
  
  
-@@ -419,125 +411,15 @@
+@@ -419,16 +411,18 @@
  *
  ****************************************************************/
  
 -void set_shift(WINDOW *w, long newshift, int is_horiz)
--{
--	WINDSCROLLINFO *wsi;
--	register long diff;		/* um soviele Spalten scrollen */
--	long absdiff;
++void set_shift(WINDOW *w, long newshift, WORD is_horiz)
+ {
+ 	WINDSCROLLINFO *wsi;
+ 	register long diff;		/* um soviele Spalten scrollen */
+ 	long absdiff;
 -	register int xcopy,ycopy;		/* soviele x-Pixel werden kopiert */
 -	MFDB src_mfdb,dest_mfdb;
 -	int  pxy[8];
--	GRECT g;
++	register WORD xcopy,ycopy;		/* soviele x-Pixel werden kopiert */
++	MFDB src_mfdb={0},dest_mfdb={0};
++    WORD pixels_ready,repair=0;
++    const struct AESWindowView *view;
++	WORD  pxy[8];
+ 	GRECT g;
 -	int clip_rect[4];
--
--
--
--	if	(w->flags & WFLAG_ICONIFIED)
--		return;
--
--	wsi = (is_horiz) ? &(w->hscroll) : &(w->vscroll);
--	if	(newshift < 0)
--		newshift = 0;
--	else if	(newshift > wsi->maxshift)
--			newshift = wsi->maxshift;
--
--	if	(0 == (diff = newshift - wsi->shift))
--		return;		/* nix zu scrollen */
--
--	wsi->shift = newshift;
--	wsi->arrange(w, is_horiz);		/* Slider anzeigen,
--							ggf. Objektpos. umsetzen */
--
--	/* wenn >= 1 Seite gescrollt, wird das Fenster neu aufgebaut */
--
--	absdiff = (diff > 0) ? diff : -diff;
++	WORD clip_rect[4];
+ 
+ 
+ 
+@@ -444,6 +438,9 @@
+ 	if	(0 == (diff = newshift - wsi->shift))
+ 		return;		/* nix zu scrollen */
+ 
++	if(!ExecAESBeginUpdate(w->handle))return;
++    view=ExecAESWindowView(w->handle);
++    pixels_ready=view && view->pixelsReady;
+ 	wsi->shift = newshift;
+ 	wsi->arrange(w, is_horiz);		/* Slider anzeigen,
+ 							ggf. Objektpos. umsetzen */
+@@ -451,8 +448,9 @@
+ 	/* wenn >= 1 Seite gescrollt, wird das Fenster neu aufgebaut */
+ 
+ 	absdiff = (diff > 0) ? diff : -diff;
 -	if	(absdiff > wsi->nvis)
--		{
--		update_window(w);
--		return;
--		}
--
--	/* Von Zeilen/Spalten in Pixel umrechnen */
--	/* diff > 0: Balken nach unten/rechts, Inhalt nach oben/links */
--
--	diff *= wsi->pixelsize;
--	absdiff *= wsi->pixelsize;
--
--	/* Fenster ber Rechteckliste scrollen */
--
--	graf_mouse(M_OFF, NULL);
--	wind_get_grect(w->handle,WF_FIRSTXYWH,&g);
--	do	{
--		if	(rc_intersect(&scrg, &g))
--			{
--			if	(is_horiz)
--				{
++	if	(absdiff > wsi->nvis || !pixels_ready)
+ 		{
++		wind_update(END_UPDATE);
+ 		update_window(w);
+ 		return;
+ 		}
+@@ -470,9 +468,10 @@
+ 	do	{
+ 		if	(rc_intersect(&scrg, &g))
+ 			{
++            GRECT painted=g;
+ 			if	(is_horiz)
+ 				{
 -				xcopy = g.g_w - (int) absdiff;		/* soviele Pixel blitten */
--				if	(xcopy > 0)
--					{
--					pxy[1] = pxy[5] = g.g_y;
--					pxy[3] = pxy[7] = g.g_y + g.g_h - 1;
--					if	(diff > 0)
--						{
--						pxy[4] = g.g_x;
++				xcopy = g.g_w - (WORD) absdiff;		/* soviele Pixel blitten */
+ 				if	(xcopy > 0)
+ 					{
+ 					pxy[1] = pxy[5] = g.g_y;
+@@ -480,11 +479,11 @@
+ 					if	(diff > 0)
+ 						{
+ 						pxy[4] = g.g_x;
 -						pxy[0] = g.g_x + (int) diff;
--						}
--					else {
--						pxy[0] = g.g_x;
++						pxy[0] = g.g_x + (WORD) diff;
+ 						}
+ 					else {
+ 						pxy[0] = g.g_x;
 -						pxy[4] = g.g_x - (int) diff;
--						}
--					pxy[2] = pxy[0] + xcopy - 1;
--					pxy[6] = pxy[4] + xcopy - 1;
--					src_mfdb.fd_addr = dest_mfdb.fd_addr = NULL;
--					clip_rect[0] = scrg.g_x;
--					clip_rect[1] = scrg.g_y;
--					clip_rect[2] = scrg.g_x+scrg.g_w-1;
--					clip_rect[3] = scrg.g_y+scrg.g_h-1;
--					vs_clip	(vdi_handle, TRUE, clip_rect);
--					vro_cpyfm(vdi_handle, S_ONLY, pxy, &src_mfdb, &dest_mfdb);
--					/* alles neu zeichnen, was nicht vom Zielraster berdeckt wurde */
--					g.g_w -= xcopy;
--					if	(diff > 0)
--						g.g_x += xcopy;
--					}
--				}
--			else	{
++						pxy[4] = g.g_x - (WORD) diff;
+ 						}
+ 					pxy[2] = pxy[0] + xcopy - 1;
+ 					pxy[6] = pxy[4] + xcopy - 1;
+@@ -502,7 +501,7 @@
+ 					}
+ 				}
+ 			else	{
 -				ycopy = g.g_h - (int) absdiff;		/* soviele Pixel blitten */
--				if	(ycopy > 0)
--					{
--					pxy[0] = pxy[4] = g.g_x;
--					pxy[2] = pxy[6] = g.g_x + g.g_w - 1;
--					if	(diff > 0)
--						{
--						pxy[5] = g.g_y;
++				ycopy = g.g_h - (WORD) absdiff;		/* soviele Pixel blitten */
+ 				if	(ycopy > 0)
+ 					{
+ 					pxy[0] = pxy[4] = g.g_x;
+@@ -510,11 +509,11 @@
+ 					if	(diff > 0)
+ 						{
+ 						pxy[5] = g.g_y;
 -						pxy[1] = g.g_y + (int) diff;
--						}
--					else {
--						pxy[1] = g.g_y;
++						pxy[1] = g.g_y + (WORD) diff;
+ 						}
+ 					else {
+ 						pxy[1] = g.g_y;
 -						pxy[5] = g.g_y - (int) diff;
--						}
--					pxy[3] = pxy[1] + ycopy - 1;
--					pxy[7] = pxy[5] + ycopy - 1;
--					src_mfdb.fd_addr = dest_mfdb.fd_addr = NULL;
--					clip_rect[0] = scrg.g_x;
--					clip_rect[1] = scrg.g_y;
--					clip_rect[2] = scrg.g_x+scrg.g_w-1;
--					clip_rect[3] = scrg.g_y+scrg.g_h-1;
--					vs_clip	(vdi_handle, TRUE, clip_rect);
--					vro_cpyfm(vdi_handle, S_ONLY, pxy, &src_mfdb, &dest_mfdb);
--					/* alles neu zeichnen, was nicht vom Zielraster berdeckt wurde */
--					g.g_h -= ycopy;
--					if	(diff > 0)
--						g.g_y += ycopy;
--					}
--				}
--			w->draw(w, &g);
--			}
--		wind_get_grect(w->handle,WF_NEXTXYWH,&g);
--		}
--	while(g.g_w > 0);					/* bis Rechteckliste vollstndig */
--
--	graf_mouse(M_ON, NULL);
-+void set_shift(WINDOW *w,long newshift,WORD is_horiz)
-+{
-+    WINDSCROLLINFO *wsi=is_horiz?&w->hscroll:&w->vscroll;
-+    if(newshift<0)newshift=0;
-+    if(newshift>wsi->maxshift)newshift=wsi->maxshift;
-+    if(newshift==wsi->shift)return;
-+    wsi->shift=newshift;
-+    wsi->arrange(w,is_horiz);
-+    update_window(w);
++						pxy[5] = g.g_y - (WORD) diff;
+ 						}
+ 					pxy[3] = pxy[1] + ycopy - 1;
+ 					pxy[7] = pxy[5] + ycopy - 1;
+@@ -532,12 +531,15 @@
+ 					}
+ 				}
+ 			w->draw(w, &g);
++            if(!ExecAESPainted(w->handle,painted.g_x,painted.g_y,painted.g_w,painted.g_h))repair=1;
+ 			}
+ 		wind_get_grect(w->handle,WF_NEXTXYWH,&g);
+ 		}
+ 	while(g.g_w > 0);					/* bis Rechteckliste vollstndig */
+ 
+ 	graf_mouse(M_ON, NULL);
++    wind_update(END_UPDATE);
++    if(repair)update_window(w);
  }
  
  

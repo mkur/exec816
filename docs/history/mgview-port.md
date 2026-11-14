@@ -53,3 +53,21 @@ lifetimes. The optimized original-parser probe passes 30 checks after the end
 bounds change (`build/mgview-dev/model-mp2/results.json`). This small development
 pass does not inject every allocation/short-read failure or exhaust capacity.
 Reserved bank-zero deltas remain zero for fixed/root/kernel/idle and every Task.
+
+## MP3: original copy/strip scrolling
+
+Original `set_shift` now owns UPDATE from scroll/slider publication through
+visible enumeration, mouse hide, S_ONLY screen copy, exposed-strip repaint and
+truthful completion. MFDBs are initialized. Non-current source pixels or large
+jumps use the existing model-redraw path. Each completed fragment is claimed
+only after its copied/repainted content is reconstructed; failed claims retain
+repaint fallback. Normal Task preemption and existing drawing limits remain.
+
+`build/mgview-dev/smoke/results-scroll.json` passes six exact viewport checks:
+initial, down/right/up, horizontal left gadget and empty document. The model
+must reach each expected row/column; unchanged pixels cannot pass a navigation
+step. Counter progress, Ctrl-U, no-argument exit, stop and heap/guard restoration
+also pass. The pinned bridge has no physical PLUS key name, so the real left
+GEM gadget supplies the reverse horizontal action. No timing, RPC or complete
+occlusion/fault matrix is claimed by this minimal check. All reserved bank-zero
+deltas remain zero, including each public Task.
