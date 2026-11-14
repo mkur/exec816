@@ -1,5 +1,8 @@
 # Historical records
 
+- [Original MagiC MGVIEW port](mgview-port.md): original-source application
+  adaptation, small viewer/Counter development checks and delivery scope.
+
 - [GEM mouse calls](gem-mouse-calls.md): per-registration AES hide bookkeeping,
   raw VDI device operations, custom forms, hotspot clipping, recipient routing,
   saved/previous forms, coherent state queries, physical completion and the

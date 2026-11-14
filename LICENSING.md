@@ -103,6 +103,10 @@ emulators or patches to upstream projects.
   charge; CF-Lib retains LGPL-2.1-or-later. The generated
   `native/qed-gem-extra.h` retains its GEM LGPL notice. The native adapter MIT
   exception above covers only Exec-authored code.
+- Original MagiC MGVIEW inputs selected by `ports/magic/mgview/inputs.json`
+  retain the upstream GPLv3 licence and Andreas Kromke's source notices.
+  The immutable originals, adaptation patch and native glue are distributed
+  together; the MIT interface grant does not relicense the viewer.
 - GEM4XE source selected by `ports/gem4xe/selection.json` and
   `ports/gem4xe/aes/selection.json`, text-origin arithmetic pinned by
   `ports/gem4xe/text/inputs.json`, mouse artwork pinned by

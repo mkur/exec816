@@ -1,0 +1,51 @@
+{
+  "repository": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources",
+  "revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+  "files": {
+    "GLOBALS.H": {
+      "path": "MagiC/APPS/MGVIEW/SRC/GLOBALS.H",
+      "sha256": "d5204f0b03bf981984160a6a5e1f89df767ce939be8edff44acb56a3e5332894"
+    },
+    "MEMCHAR2.S": {
+      "path": "MagiC/APPS/MGVIEW/SRC/MEMCHAR2.S",
+      "sha256": "766680fc0f2cfa31cef744aefcbeee8d3651ccf93afdafce6f29a89364640849"
+    },
+    "MGVIEW.C": {
+      "path": "MagiC/APPS/MGVIEW/SRC/MGVIEW.C",
+      "sha256": "dba9f1e48dde01f4d5fe38c687a3869021cc48bb22f23699be3dd1c78950e472"
+    },
+    "MGVIEW.H": {
+      "path": "MagiC/APPS/MGVIEW/SRC/MGVIEW.H",
+      "sha256": "f5cfa7bf1ba5537c8c42d07cf28c1f7f3c7b4f76d435708b0078ef68cf7b1216"
+    },
+    "MGVIEW.PRJ": {
+      "path": "MagiC/APPS/MGVIEW/SRC/MGVIEW.PRJ",
+      "sha256": "d311de2b2727523950a441339f898b2ab09bea86ecc3b60bf7ceca1067776b19"
+    },
+    "MGWIND.C": {
+      "path": "MagiC/APPS/MGVIEW/SRC/MGWIND.C",
+      "sha256": "b2562a01c32c308d2c3cbdb2fa6c6aa1f65e1348d858055f0efc815843cfbab4"
+    },
+    "MGWIND.H": {
+      "path": "MagiC/APPS/MGVIEW/SRC/MGWIND.H",
+      "sha256": "e86e5a0771d9b87605d2458a2c3a86bb92e01ea4f218235a55c24c1d39719c01"
+    },
+    "WINDOWS.C": {
+      "path": "MagiC/APPS/MGVIEW/SRC/WINDOWS.C",
+      "sha256": "db446433c6676b26424b0b1d363bb87b0b10416918c5c76d07a8dd38f5e81851"
+    },
+    "WINDOWS.H": {
+      "path": "MagiC/APPS/MGVIEW/SRC/WINDOWS.H",
+      "sha256": "06fd94f81f7d491be49e937b069ef4e0aaff6605de583b11aada967552328534"
+    },
+    "README.TXT": {
+      "path": "MagiC/APPS/MGVIEW/README.TXT",
+      "sha256": "0255afbd121a4e7e3f3b9a6a291f5402f5dd3b54aac12c3cf690a44ed48e6ee3"
+    },
+    "LICENSE": {
+      "path": "LICENSE",
+      "sha256": "9345c46fe7db23b87ee000c2eda5b2ab7d95602784cef50604f2648aeb0cf0f1"
+    }
+  },
+  "source_conversion": "ISO-8859-1 byte mapping to UTF-8; universal host newlines; lowercase file names"
+}

@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+"""Small original MGVIEW disk/paint/scroll/lifetime check beside one Counter."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import adapter_state as adapter
+from build_mgview import build as viewer
+from build_c_program import build as application
+from build_gem_desktop import build_desktop
+from c_program import ABI
+from desktop_mouse import schedule
+from gem_render_oracle import Raster,DESKTOP_PALETTE,PENS,font_bytes
+from make_data_disk import make
+from native_program import ROOT,read_build,require,verify_machine,sha256
+from os_boundary import emulator,run_to
+from test_dos_stack import execute,ownership
+from test_mouse_observe import PIN,BRIDGE,ROM
+
+LAYOUT=[('WORD',2),('huge pointer',4),('WINDOW',338),('outer',260),('work',268),
+        ('vertical',276),('horizontal',300),('file',328),('index',332),('tabs',336)]
+DOCUMENT=b''.join((f'Row {i:03d}\t'+''.join(chr(65+(i+j)%26) for j in range(100))+'\r\n').encode() for i in range(50))
+
+
+def run(out,reuse=False,scroll=False):
+    out=out.resolve();out.mkdir(parents=True,exist_ok=True)
+    if not reuse:
+        viewer(out/'apps/mgview',probes=[(ROOT/'tests/programs/mgview_layout.c',LAYOUT)])
+        application(out/'apps/counter',[ROOT/'examples/gem-counter'/name for name in ('main.c','counter.c')],minimum_stack=ABI['stack_floor_bytes'])
+        program=build_desktop(out,source=ROOT/'tests/programs/c_mgview.act',build_applications=False,
+            program_output=out/'program',release_compiler=True,system_mount='D1',
+            dos_mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,profile=4,format=2)])
+    else:program=read_build(out/'program')
+    apps={name:json.loads((out/'apps'/name/'app.json').read_text()) for name in ('mgview','counter')}
+    media=out/'media';media.mkdir(exist_ok=True)
+    for name in apps:(media/(name.upper()+'.APP')).write_bytes((out/'apps'/name/'program.app').read_bytes())
+    (media/'VIEW.TXT').write_bytes(DOCUMENT);(media/'EMPTY.TXT').write_bytes(b'')
+    make(out/'system.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,binary_names={p.name for p in media.iterdir()})
+    at=lambda name:next(d['address'] for d in program['image']['data'] if '_CMGVIEWTEST_'+name.upper()+'_' in d['name'])
+    report=dict(status='running',tier='development',qualification=False,cases=[],bank_zero_delta=dict(fixed=0,root=0,kernel=0,private_idle=0,per_public_task=0))
+    try:
+        with emulator(BRIDGE,ROM,out,pin=PIN) as b:
+            for key,value in PIN['configuration'].items():b.config(key,str(value).lower() if isinstance(value,bool) else value)
+            b.mount(0,str(out/'system.atr'));report['machine']=verify_machine(b,ROM,PIN)
+            number=lambda address,size=2:int.from_bytes(b.memdump(address,size),'little')
+            def reach(condition):
+                marker=program['labels']['native_cop'];condition=f'(@xpc=${marker:x})&({condition})'
+                b.bp_clear_all();b.bp_set(marker,condition=condition)
+                faults=[program['labels'][key] for key in ('heap_fault','stack_overflow','arithmetic_fault','done')]
+                for fault in faults:b.bp_set(fault)
+                original=b.regs
+                def regs():
+                    state=original();require(int(state['PC'].lstrip('$'),16) not in faults,'Guest fault/stopped: '+str(state));return state
+                b.regs=regs
+                try:run_to(b,marker,condition=condition,timeout=120,frame_limit=12000)
+                finally:b.regs=original
+            def frames(count):reach('@frame>=%d'%(b.eval_expr('@frame')+count))
+            def symbols(name,base):return {key:base+value-(ABI['link_bank']<<16) for key,value in apps[name]['image']['symbols'].items()}
+            def picture(window,label,payload):
+                x,y,w,h=[number(window+268+i*2) for i in range(4)]
+                vshift=number(window+280,4);hshift=number(window+304,4);tabs=number(window+336)
+                font=font_bytes(out/'selected/src/vdi/font8x8.c');model=Raster(font)
+                model.clip=(x,y,x+w-1,y+h-1);model.fill=0;model.apply(11,[x,y,x+w-1,y+h-1]);model.text=1
+                lines=payload.replace(b'\r\n',b'\n').replace(b'\r',b'\n').splitlines()
+                for row in range(h//8):
+                    if row+vshift>=len(lines):break
+                    line=lines[row+vshift].replace(b'\0',b' ')
+                    if tabs:line=line.expandtabs(tabs)
+                    line=line[:272]
+                    model.apply(8,[x-hshift*8,y+row*8+6],list(line))
+                colours=[None]*16
+                for pen,hardware in enumerate(PENS):colours[hardware]=bytes((v&254)+(v>>7) for v in DESKTOP_PALETTE[pen*3:pen*3+3])[::-1]
+                path=out/(label+'.bgra');frame=b.rawscreen(str(path));raw=path.read_bytes()
+                actual=b''.join(raw[yy*frame.stride+(xx+16)*4:yy*frame.stride+(xx+16)*4+3] for yy in range(y,y+h) for xx in range(x,x+w))
+                expected=b''.join(colours[model.pixels[yy*640+xx]] for yy in range(y,y+h) for xx in range(x,x+w))
+                if actual!=expected:
+                    report['pixel_failure']=dict(label=label,work=[x,y,w,h],shift=[hshift,vshift],window=b.memdump(window,338).hex(),first=next(i for i,(a,c) in enumerate(zip(actual,expected)) if a!=c));b.screenshot(str(out/'failure.png'))
+                require(actual==expected,'MGVIEW exact pixels differ: '+label)
+                report.setdefault('pixels',[]).append(dict(label=label,pixels=w*h,shift=[hshift,vshift],sha256=hashlib.sha256(actual).hexdigest()))
+                print('MGVIEW pixels:',label,flush=True)
+                return actual
+            def before(b):
+                position=[320,120];b._cmd_ok('MOUSE ST')
+                for round,argument in enumerate((b'"SYS:VIEW.TXT"',b'SYS:EMPTY.TXT',b'')):
+                    phase=round*2+1;reach(f'dw(${at("phase"):x})={phase}')
+                    base=number(at('bases'),4);sy=symbols('mgview',base)
+                    counter=symbols('counter',number(at('bases')+4,4))['GEMCounter']
+                    b.memload(at('argument'),argument+b'\0');b.poke16(at('argBytes'),len(argument));b.poke16(at('go'),phase)
+                    reach(f'dw(${at("phase"):x})={phase+1}')
+                    if argument:
+                        reach(f'dw(${sy["nwindows"]:x})=1');frames(80)
+                        window=number(sy['windows'],4);require(window,'Missing original window record')
+                        position=schedule(b,program,position,(632,0));frames(30)
+                        initial=number(counter+14,4)
+                        picture(window,f'round-{round}',DOCUMENT if round==0 else b'')
+                        if scroll and round==0:
+                            # Atari physical cursor keys use Ctrl with -, = and *.
+                            for key in ('EQUALS','ASTERISK','MINUS'):
+                                b._cmd_ok('KEY CTRL down');b._cmd_ok('KEY '+key+' down');frames(3)
+                                b._cmd_ok('KEY '+key+' up');b._cmd_ok('KEY CTRL up');frames(50)
+                                picture(window,'scroll-'+key,DOCUMENT)
+                        frames(60);require(number(counter+14,4)>initial,'Counter did not progress beside MGVIEW')
+                        report['cases'].append(dict(arguments=argument.decode(),documents=number(sy['nwindows']),counter_progress=number(counter+14,4)-initial))
+                        if round==0:
+                            b._cmd_ok('KEY CTRL down');b._cmd_ok('KEY U down');frames(3)
+                            b._cmd_ok('KEY U up');b._cmd_ok('KEY CTRL up')
+                            reach(f'dw(${sy["nwindows"]:x})=0')
+                    else:frames(20);require(number(sy['nwindows'])==0,'No-argument viewer opened a document')
+                    b.poke16(at('go'),phase+1)
+                b.bp_clear_all()
+            report['runtime'],_=execute(b,program,before_run=before,timeout=300,frame_limit=30000)
+            ownership(b,program,program['output'])
+            require(number(at('completed'))==4,'Viewer/Counter lifetimes incomplete')
+            report.update(status='pass',completed=4,checks=number(at('checks')),app_sha256={name:sha256(out/'apps'/name/'program.app') for name in apps})
+    except Exception as error:report.update(status='fail',error=str(error));raise
+    finally:(out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
+    print('MGVIEW development check passed: three lifetimes, exact pixels and Counter progress',flush=True)
+    return report
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output',type=Path,required=True);parser.add_argument('--reuse',action='store_true');parser.add_argument('--scroll',action='store_true')
+    args=parser.parse_args();run(args.output,args.reuse,args.scroll)

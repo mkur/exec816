@@ -4,6 +4,7 @@
 #ifndef QED_NATIVE_H
 #define QED_NATIVE_H
 #include <gem.h>
+#include <compat/gem-rect.h>
 #include <proto/exec.h>
 
 #ifndef _WORD

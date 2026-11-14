@@ -67,6 +67,7 @@ def build(output,provider,executable=False,fixture=None,fixture_calls=None,fixtu
     traps.write_text('#include "qed-native.h"\nconst char __exec_analysis_only[]="'+MARKER.decode()+'";\n'+
         '\n'.join(b['declaration'][:-1]+'{for(;;){}}' for b in pending)+'\n')
     sources=[output/'inputs/source'/u['origin']/u['path'] for u in selection['units']]
+    sources.append(ROOT/'c/compat/gem/rect.c')
     sources += [native/name for name in selection['native_sources']]+([] if executable else [traps])
     definitions={str(p):['-D'+d for d in selection['defines']]+
         ['-Werror=implicit-function-declaration']+selection['compiler_options']+
