@@ -1,5 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
+The [GEM mouse plan](gem-mouse-plan.md) delivers standard AES/VDI cursor and
+state calls using GEM4XE's forms and rendering algorithms, adapted to Exec's
+application ownership, display grants and cleanup. It starts with real hide/show
+for MGVIEW and ends with saved forms and small-app package acceptance.
+
 The [MGVIEW foundation plan](mgview-foundation-plan.md) adds the shared VDI
 bindings, full/previous geometry and horizontal window gadgets needed before
 porting the original viewer.

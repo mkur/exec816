@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [GEM mouse calls](gem4xe/gem-mouse-plan.md): proposed GM1–GM5 slices for
+  conventional AES/VDI cursor calls, GEM4XE forms/rendering, application
+  ownership, nested hide/show and small-app acceptance.
+
 - [MGVIEW drawing and window foundations](gem4xe/mgview-foundation-plan.md):
   three executable slices for VDI alignment/inquiry/fill, full/previous window
   geometry and horizontal scrollbars, using GEM4XE as the source reference.
