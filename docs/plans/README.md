@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [GEMDOS compatibility implementation](gemdos-compatibility-implementation-plan.md):
+  four executable slices for shared wrappers, native ExamineFH, FSTAT and
+  consumer acceptance.
+
 - [Small GEMDOS source compatibility layer](gemdos-compatibility-design.md):
   proposed extraction of QED's thin wrappers over the common C runtime, with
   open-handle metadata and a narrow FSTAT profile for MGVIEW.
