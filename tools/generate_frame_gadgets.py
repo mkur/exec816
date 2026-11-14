@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT/'lib/desktop/frame-gadgets.json'
 VRAM = ROOT/'platform/altirraos/vbxe-vram.json'
-NAMES = ('close', 'full', 'iconify', 'tile', 'up', 'down', 'size')
+NAMES = ('close', 'full', 'iconify', 'tile', 'up', 'down', 'size', 'left', 'right')
 PITCH, ROWS = 16, 12
 # Hardware indices for the existing GEM white, black and title-ink pens.
 INK = {'.': 0, '#': 15, 'b': 12}

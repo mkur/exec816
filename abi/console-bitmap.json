@@ -1,6 +1,6 @@
 {
-  "version": 13,
-  "packet_bytes": 78,
+  "version": 14,
+  "packet_bytes": 82,
   "fields": {
     "operation": 0,
     "status": 2,
@@ -22,7 +22,9 @@
     "clipLeft": 70,
     "clipTop": 72,
     "clipRight": 74,
-    "clipBottom": 76
+    "clipBottom": 76,
+    "frameHorizontalLeft": 78,
+    "frameHorizontalWidth": 80
   },
   "operations": {
     "OPEN": 1,

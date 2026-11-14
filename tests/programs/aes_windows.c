@@ -88,6 +88,61 @@ static void geometry(WORD handle, WORD field, WORD x, WORD y, WORD w, WORD h)
     CHECK(a == x && b == y && c == w && d == h);
 }
 
+
+/* Small native window consumer; the viewer port is not needed to exercise it. */
+static void horizontal(WORD old)
+{
+    WORD handle,other,plain,i;
+    static WORD a,b,c,d,control[5]={105,6,1,0,0},global[15],in[6],out[1];
+    AESPB pb={control,global,in,out,NULL,NULL};
+    ULONG revision,sequence;
+    const WORD kind=AES_WINDOW_KIND|FULLER|SIZER|UPARROW|DNARROW|VSLIDE|LFARROW|RTARROW|HSLIDE;
+    CHECK(wind_close(old));CHECK(wind_delete(old));
+    CHECK(wind_create(kind,32,32,63,80)==-1);
+    handle=wind_create(kind,32,32,280,184);
+    CHECK(handle>0);CHECK(wind_open(handle,32,32,280,184));
+    geometry(handle,WF_WXYWH,40,43,256,162);
+    geometry(handle,WF_HSLIDE,0,0,0,0);geometry(handle,WF_HSLSIZE,1000,0,0,0);
+    CHECK(wind_calc(WC_WORK,kind,32,32,280,184,&a,&b,&c,&d));
+    CHECK(a==40 && b==43 && c==256 && d==162);
+    CHECK(wind_calc(WC_BORDER,kind,a,b,c,d,&a,&b,&c,&d));
+    CHECK(a==32 && b==32 && c==280 && d==184);
+    CHECK(wind_set(handle,WF_HSLSIZE,0,0,0,0));
+    in[0]=handle;in[1]=WF_HSLSIZE;in[2]=250;aes_call(&pb);CHECK(out[0]);
+    CHECK(wind_set(handle,WF_HSLIDE,1000,0,0,0));
+    revision=ExecAESWindowView(handle)->revision;sequence=ExecAESContext()->sequence;
+    CHECK(wind_set(handle,WF_HSLIDE,1000,0,0,0));
+    CHECK(ExecAESWindowView(handle)->revision==revision && ExecAESContext()->sequence==sequence);
+    CHECK(!wind_set(handle,WF_HSLIDE,-1,0,0,0) && ExecAESDiagnostic()==AES_MALFORMED);
+    CHECK(!wind_set(handle,WF_HSLSIZE,1001,0,0,0) && ExecAESDiagnostic()==AES_MALFORMED);
+    geometry(handle,WF_HSLIDE,1000,0,0,0);geometry(handle,WF_HSLSIZE,250,0,0,0);
+    other=wind_create(AES_WINDOW_KIND|HSLIDE,400,32,120,64);CHECK(other>0);
+    CHECK(wind_set(other,WF_HSLIDE,500,0,0,0));
+    geometry(other,WF_HSLIDE,500,0,0,0);geometry(handle,WF_HSLIDE,1000,0,0,0);
+    CHECK(wind_delete(other));
+    plain=wind_create(AES_WINDOW_KIND,400,32,120,64);CHECK(plain>0);
+    CHECK(!wind_set(plain,WF_HSLIDE,500,0,0,0) && ExecAESDiagnostic()==AES_UNSUPPORTED);
+    CHECK(wind_delete(plain));
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(wind_get(handle,WF_FIRSTXYWH,&a,&b,&c,&d));
+    CHECK(wind_set(handle,WF_HSLIDE,500,0,0,0));
+    CHECK(!wind_get(handle,WF_NEXTXYWH,&a,&b,&c,&d) && ExecAESDiagnostic()==AES_BUSY);
+    CHECK(wind_set(handle,WF_HSLIDE,1000,0,0,0));
+    CHECK(wind_update(END_UPDATE));
+    AESView=(ULONG)ExecAESWindowView(handle);AESWindow=handle;
+    for(i=0;i<6;++i) {
+        AESPhysical=50+i*2;
+        do { CHECK(evnt_mesag(AESControl)); } while(AESControl[0]==WM_REDRAW);
+        CHECK(AESControl[3]==handle);
+        CHECK(AESControl[0]==(i==3 || i==5 ? WM_HSLID:WM_ARROWED));
+        CHECK(AESControl[4]==(i==0 ? WA_LFLINE:i==1 ? WA_RTLINE:i==2 ? WA_LFPAGE:i==3 ? 0:i==4 ? WA_RTPAGE:1000));
+        AESPhysical=51+i*2;
+        while(AESPhysicalGo!=AESPhysical) ExecYield();
+        if(i==3 || i==5) CHECK(wind_set(handle,WF_HSLIDE,AESControl[4],0,0,0));
+    }
+    AESPhysical=62;
+}
+
 UWORD AESRun(void)
 {
     WORD id, handle, replacement, reserve[3], a, b, c, d, message[8];
@@ -324,6 +379,7 @@ UWORD AESRun(void)
         else if (i==4 || i==6) CHECK(wind_set(handle,WF_VSLIDE,AESControl[4],0,0,0));
     }
     AESPhysical=24;
+    horizontal(handle);
     CHECK(ExecAESDetach());
     FreeSignal(bit);
     CHECK(AvailMem(0) == available);

@@ -11,7 +11,8 @@ explicit and coordinates are widened. Bindings use the existing per-Task
 workstation and drawing grant. Baseline remains the default; alignment applies
 before streaming. No drawing-unit limits change.
 
-The private workstation grows by four upper-heap bytes. Reserved bank-zero
+The private workstation structure grows by four bytes; eight-byte heap rounding
+increases its allocation by eight bytes. Reserved bank-zero
 growth is zero for fixed storage, root, kernel, idle and every public Task,
 including guards, alignment and unused capacity. Loaded C ABI 41 adds the
 three imports; source clients and resident providers must be rebuilt together.
@@ -46,3 +47,32 @@ asserting idle. The corrected geometry/window fixtures complete with their
 original pixel, deferred-input, guard, heap and OS-restoration checks enabled.
 Creation also retains the original first-publication path: initializing
 previous geometry must not suppress initial external-area publication.
+
+## MV3: horizontal scrollbars
+
+Adds horizontal arrows, page clicks, slider size/position and thumb dragging
+through the native frame and message path. Both axes share cached thumb
+arithmetic. Copied pointer routes retain horizontal geometry, and application
+acknowledgement remains separate from physical gesture capture. Private
+borderless/iconified bits move above the conventional GEM gadget mask.
+
+[MV3 development evidence](../development/mgview-foundations-mv3.json) records
+369 window assertions with exact vertical/horizontal pixels and cancellation,
+185 frame assertions, both-mode C/native and desktop layouts, and two loaded
+Counters ticking independently, physical close, restart and stop-before-main
+(five collected executions, 29 assertions). The 715 host checks pass with five
+historical/environment skips. Guards, heap ownership and OS restoration remain
+enabled. No QED execution is required by these development checks.
+
+The view grows by four structure bytes, the native window by twelve (including
+eight for the extra GUI notice kind), and the private frame packet by four.
+Copied route records grow by four bytes each, using 100 additional upper static
+bytes across both publications and captured state. Four native client GUI
+records add 32 upper-heap bytes. The arrow atlas uses 3,456 of its existing
+4,096 VRAM bytes. Fixed, root, kernel, idle and every public Task reserve zero
+additional bank-zero bytes, including guards, alignment and spare capacity.
+
+C APP ABI 43, AES protocol 22, desktop records 20 and private frame packet 14
+replace their predecessors. The generated QED declarations defer to the new
+public bindings. Final production packaging follows this implementation slice;
+release qualification and the original MGVIEW port remain separate.

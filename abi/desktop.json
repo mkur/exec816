@@ -1,5 +1,5 @@
 {
-  "version": 19,
+  "version": 20,
   "constants": {
     "WINDOWS": 6,
     "TITLE_BYTES": 65,
@@ -47,15 +47,20 @@
     "FRAME_FULLER": 4,
     "FRAME_INFO": 16,
     "FRAME_INFO_HEIGHT": 10,
-    "FRAME_BORDERLESS": 512,
-    "FRAME_ICONIFIED": 1024,
+    "FRAME_BORDERLESS": 4096,
+    "FRAME_ICONIFIED": 8192,
     "MENU_BAR_HEIGHT": 11,
     "MENU_ROW_HEIGHT": 11,
     "MENU_TEXT_Y": 1,
     "TILE_LEFT": 104,
     "TILE_WIDTH": 88,
     "TILE_HEIGHT": 11,
-    "TILE_BOTTOM": 2
+    "TILE_BOTTOM": 2,
+    "FRAME_LFARROW": 512,
+    "FRAME_RTARROW": 1024,
+    "FRAME_HSLIDE": 2048,
+    "FRAME_HORIZONTAL": 3584,
+    "FRAME_MIN_SCROLL_WIDTH": 64
   },
   "records": {
     "GuiNotice": [
@@ -137,6 +142,14 @@
       ],
       [
         "sliderHeight",
+        "INT"
+      ],
+      [
+        "sliderLeft",
+        "INT"
+      ],
+      [
+        "sliderWidth",
         "INT"
       ],
       [

@@ -49,6 +49,21 @@
 #define WF_FXYWH 7
 #define WF_PREVXYWH 6
 #define WF_FULLXYWH 7
+#define LFARROW 512
+#define RTARROW 1024
+#define HSLIDE 2048
+#define WF_HSLIDE 8
+#define WF_HSLSIZE 15
+#define WF_HSLSIZ 15
+#define WM_HSLID 25
+#define WA_UPPAGE 0
+#define WA_DNPAGE 1
+#define WA_UPLINE 2
+#define WA_DNLINE 3
+#define WA_LFPAGE 4
+#define WA_RTPAGE 5
+#define WA_LFLINE 6
+#define WA_RTLINE 7
 #define WF_WORKXYWH WF_WXYWH
 #define WF_CURRXYWH WF_CXYWH
 #endif

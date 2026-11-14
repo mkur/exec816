@@ -169,4 +169,37 @@ def physical(b, p, foreign, report):
     report['gadgets']=dict(resize=[32,32,280,184],escape_cancel=True,
         deferred_geometry=True,arrow_pages=[2,3,0,1],slider_endpoints=[0,1000],
         deferred_slider=True,scene_token=0,title_pixels=4880,frame_pixels=2768,outline_pixels="exact")
+
+    phase(50);frames(100);view=get(sy['AESView'],4)
+    raster=Raster(font)
+    frame(raster,(32,32,312,216),b'',True,close=True,kind=4079,
+          slider=(22,140),hslider=(190,58))
+    move(600,220);frames(20)
+    compare(raster,(32,205,312,216));compare(raster,(296,43,312,216))
+    # Outside release cancels the first arrow press.
+    move(40,210);edge(1);move(100,190);edge(0);frames(10)
+    require(get(sy['AESPhysical'])==50,'Horizontal arrow outside release')
+    for start,x,expected in ((50,40,6),(52,288,7),(54,100,4)):
+        phase(start);move(x,210);edge(1);edge(0);phase(start+1)
+        require(message()[0]==24 and message()[4]==expected,'Horizontal arrow/page request')
+        b.poke16(sy['AESPhysicalGo'],start+1)
+    phase(56);move(240,210);frames(10);before=scan()
+    edge(1);move(160,210);b._cmd_ok('KEY ESC down');frames(3)
+    b._cmd_ok('KEY ESC up');edge(0);move(240,210);frames(10)
+    require(get(sy['AESPhysical'])==56 and scan()==before,'Horizontal thumb cancellation/pixels')
+    edge(1);move(10,210);edge(0);phase(57)
+    require(message()[0]==25 and message()[4]==0,'Horizontal left endpoint')
+    require(get(view+vf['hslide'])==1000,'Horizontal thumb committed before acknowledgement')
+    b.poke16(sy['AESPhysicalGo'],57);phase(58);frames(100)
+    require(get(view+vf['hslide'])==0,'Horizontal left acknowledgement')
+    move(200,210);edge(1);edge(0);phase(59)
+    require(message()[0]==24 and message()[4]==5,'Horizontal page right')
+    b.poke16(sy['AESPhysicalGo'],59);phase(60)
+    move(70,210);edge(1);move(400,210);edge(0);phase(61)
+    require(message()[0]==25 and message()[4]==1000,'Horizontal right endpoint')
+    require(get(view+vf['hslide'])==0,'Horizontal right committed before acknowledgement')
+    b.poke16(sy['AESPhysicalGo'],61);phase(62)
+    report['horizontal']=dict(frame_pixels='exact',arrows_pages=[6,7,4,5],
+        slider_endpoints=[0,1000],deferred_acknowledgement=True,
+        escape_pixels='exact',outside_release=True)
     b.bp_clear_all()

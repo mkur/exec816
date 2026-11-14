@@ -67,7 +67,7 @@
       "base": 233472,
       "reserved_bytes": 4096,
       "capacity_bytes": 4096,
-      "gadget_used_bytes": 2688,
+      "gadget_used_bytes": 3456,
       "g3_used_bytes": 0,
       "g4_used_bytes": 0
     },

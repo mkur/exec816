@@ -23,7 +23,7 @@ def desktop(raster):
             raster.pixels[y*640+x]=PENS[8]
 
 
-def frame(raster, bounds, title, focused, background=0, close=False, kind=0, slider=(0,0), info=b''):
+def frame(raster, bounds, title, focused, background=0, close=False, kind=0, slider=(0,0), info=b'', hslider=(0,0)):
     x, y, right, bottom = bounds
     rectangle(raster, bounds, 0)
     def box(l,t,r,b):
@@ -67,7 +67,7 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
         rectangle(raster,(x,y+20,right,y+21),1)
         text(raster,x+8,y+12,info[:min(64,(right-x-16)//8)])
     wr=16 if kind&448 else 8
-    wb=11 if kind&32 else 2
+    wb=11 if kind&(32|3584) else 2
     rectangle(raster,(x+8,y+wt,right-wr,bottom-wb),background)
     if kind&448:
         l,t,b=right-16,y+wt,bottom-wb
@@ -85,6 +85,28 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
         if kind&256:
             t=y+slider[0];b=t+slider[1]
             rectangle(raster,(l+1,t,right-1,b),0);box(l,t,right,b)
+
+    if kind&3584:
+        l,t,r=x,bottom-11,right-(16 if kind&(448|32) else 0)
+        rectangle(raster,(l+1,t,r-1,bottom-1),8)
+        rectangle(raster,(l,t,r,t+1),1)
+        offsets=(4,3,2,1,0,1,2,3,4)
+        if kind&512:
+            rectangle(raster,(l+1,t+1,l+16,bottom-1),0)
+            for row,offset in enumerate(offsets):
+                rectangle(raster,(l+5+offset,t+row+1,l+10,t+row+2),1)
+            l+=16
+        if kind&1024:
+            rectangle(raster,(r-16,t+1,r-1,bottom-1),0)
+            for row,offset in enumerate(offsets):
+                rectangle(raster,(r-11,t+row+1,r-6-offset,t+row+2),1)
+            r-=16
+        box(l,t,r,bottom)
+        if kind&2048:
+            l=x+hslider[0];r=l+hslider[1]
+            rectangle(raster,(l+1,t+1,r-1,bottom-1),0);box(l,t,r,bottom)
+        if kind&448 and not kind&32:box(right-16,bottom-11,right,bottom)
+
     if kind&32:
         box(right-16,bottom-11,right,bottom)
         for distance in (2,4,6):

@@ -285,6 +285,8 @@ WORD ExecAESWindowGet(struct ExecAESContext *c, WORD handle, WORD field, WORD *o
     else switch (field) {
     case WF_VSLIDE: *o1 = v->vslide; break;
     case WF_VSLSIZE: *o1 = v->vsize; break;
+    case WF_HSLIDE: *o1 = v->hslide; break;
+    case WF_HSLSIZE: *o1 = v->hsize; break;
     case WF_KIND: *o1 = v->kind; break;
     case WF_WXYWH: rect = &v->work; break;
     case WF_CXYWH: rect = &v->bounds; break;
@@ -323,7 +325,7 @@ WORD ExecAESWindowCalc(struct ExecAESContext *c, WORD type, WORD kind, WORD x, W
     WORD leftInset=kind ? DESKTOP_WORK_LEFT:0;
     WORD right = kind & (UPARROW|DNARROW|VSLIDE) ? DESKTOP_FRAME_GADGET_WIDTH:DESKTOP_WORK_RIGHT;
     WORD inset = DESKTOP_WORK_TOP + (kind & INFO ? DESKTOP_FRAME_INFO_HEIGHT:0);
-    WORD bottom = kind & SIZER ? DESKTOP_FRAME_GADGET_HEIGHT:DESKTOP_WORK_BOTTOM;
+    WORD bottom = kind & (SIZER|LFARROW|RTARROW|HSLIDE) ? DESKTOP_FRAME_GADGET_HEIGHT:DESKTOP_WORK_BOTTOM;
     *ox = *oy = *ow = *oh = 0;
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }

@@ -183,7 +183,8 @@ RETURN(Run(OP_DESKTOP))
 
 PUBLIC BYTE FUNC Frame(LAYERTYPES.Rect POINTER bounds,clip
     BYTE POINTER title BYTE focused,closer
-    CARD kind INT sliderTop,sliderHeight CARD POINTER progress)
+    CARD kind INT sliderTop,sliderHeight,sliderLeft,sliderWidth
+    CARD POINTER progress)
 
   LET packet=GetPacket()
   packet.x=CARD(bounds.left)
@@ -201,6 +202,8 @@ PUBLIC BYTE FUNC Frame(LAYERTYPES.Rect POINTER bounds,clip
   packet.fillY=kind
   packet.fillWidth=CARD(sliderTop)
   packet.fillHeight=CARD(sliderHeight)
+  packet.frameHorizontalLeft=CARD(sliderLeft)
+  packet.frameHorizontalWidth=CARD(sliderWidth)
   IF Run(OP_FRAME)=0 THEN
     RETURN(0)
   FI

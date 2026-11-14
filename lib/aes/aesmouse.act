@@ -339,7 +339,8 @@ BYTE FUNC RouteSample(INPUT.Event POINTER sample)
       (DESKGEOMETRY.TitleHit(@capturedRoute.bounds,sample.x,sample.y)<>0
       OR DESKGEOMETRY.Gadget(capturedRoute.frameKind,
         capturedRoute.iconified,capturedRoute.sliderTop,
-        capturedRoute.sliderHeight,@capturedRoute.bounds,sample.x,sample.y)<>0) THEN
+        capturedRoute.sliderHeight,capturedRoute.sliderLeft,
+        capturedRoute.sliderWidth,@capturedRoute.bounds,sample.x,sample.y)<>0) THEN
     manager=TITLE
   FI
 

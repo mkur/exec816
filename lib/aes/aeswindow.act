@@ -58,6 +58,11 @@ BYTE FUNC ValidBounds(CARD kind INT x,y,width,height
     RETURN(0)
   FI
 
+  IF (kind & DESKTYPES.FRAME_HORIZONTAL)<>0
+      AND width<DESKTYPES.FRAME_MIN_SCROLL_WIDTH THEN
+    RETURN(0)
+  FI
+
   ; Packed pixels share bytes. Normalize once at geometry admission; work
   ; rectangles and fixed-size comparisons use the accepted dimensions.
   x=x & $fffe
@@ -137,6 +142,9 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
         view.kind=kind
         view.vslide=0
         view.vsize=1000
+        view.hslide=0
+        view.hsize=1000
+        DESKGEOMETRY.HSlider(window,@bounds,0,1000)
         A816MEMORY.Move(BYTE POINTER(@view.full),BYTE POINTER(@bounds),8)
         A816MEMORY.Move(BYTE POINTER(@view.previous),BYTE POINTER(@bounds),8)
         DESKGEOMETRY.Slider(window,@bounds,0,1000)
@@ -519,7 +527,8 @@ RETURN(result)
 PUBLIC BYTE FUNC FrameField(INT field)
 
 RETURN(field=AESTYPES.WF_NAME OR field=AESTYPES.WF_INFO
-    OR field=AESTYPES.WF_VSLIDE OR field=AESTYPES.WF_VSLSIZE)
+    OR field=AESTYPES.WF_VSLIDE OR field=AESTYPES.WF_VSLSIZE
+    OR field=AESTYPES.WF_HSLIDE OR field=AESTYPES.WF_HSLSIZE)
 
 PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request
@@ -585,28 +594,51 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
       bounds.bottom=bounds.top+DESKTYPES.FRAME_INFO_HEIGHT
     FI
     status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
-  WHEN AESTYPES.WF_VSLIDE,AESTYPES.WF_VSLSIZE THEN
-    IF (window.frameKind & AESTYPES.VSLIDE)=0 THEN
-      RETURN(AESTYPES.UNSUPPORTED)
-    FI
-    IF request.intin(2)<0 OR request.intin(2)>1000 THEN
-      RETURN(AESTYPES.MALFORMED)
-    FI
-    IF (request.intin(1)=AESTYPES.WF_VSLIDE AND item.view.vslide=request.intin(2))
-        OR (request.intin(1)=AESTYPES.WF_VSLSIZE AND item.view.vsize=request.intin(2)) THEN
-      request.intout(0)=1
-      RETURN(AESTYPES.OK)
-    FI
-    DESKCACHE.Changed(desktop,window)
-    IF request.intin(1)=AESTYPES.WF_VSLIDE THEN
-      item.view.vslide=request.intin(2)
-    ELSE
-      item.view.vsize=request.intin(2)
-    FI
-    REGIONS.Assign(@bounds,layer.bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
-        layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
-        layer.bounds.bottom)
-    status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
+  WHEN AESTYPES.WF_VSLIDE,AESTYPES.WF_VSLSIZE,AESTYPES.WF_HSLIDE,AESTYPES.WF_HSLSIZE THEN
+    BEGIN
+      INT POINTER position,size,target
+
+      LET horizontal=(request.intin(1)=AESTYPES.WF_HSLIDE
+          OR request.intin(1)=AESTYPES.WF_HSLSIZE)
+      LET component=IF horizontal<>0 THEN CARD(AESTYPES.HSLIDE)
+          ELSE CARD(AESTYPES.VSLIDE) FI
+      IF (window.frameKind & component)=0 THEN
+        RETURN(AESTYPES.UNSUPPORTED)
+      FI
+      IF request.intin(2)<0 OR request.intin(2)>1000 THEN
+        RETURN(AESTYPES.MALFORMED)
+      FI
+
+      IF horizontal<>0 THEN
+        position=@item.view.hslide
+        size=@item.view.hsize
+      ELSE
+        position=@item.view.vslide
+        size=@item.view.vsize
+      FI
+      IF request.intin(1)=AESTYPES.WF_HSLIDE
+          OR request.intin(1)=AESTYPES.WF_VSLIDE THEN
+        target=position
+      ELSE
+        target=size
+      FI
+      IF target^=request.intin(2) THEN
+        request.intout(0)=1
+        RETURN(AESTYPES.OK)
+      FI
+      DESKCACHE.Changed(desktop,window)
+      target^=request.intin(2)
+      IF horizontal<>0 THEN
+        REGIONS.Assign(@bounds,layer.bounds.left,
+            layer.bounds.bottom-DESKTYPES.FRAME_GADGET_HEIGHT,
+            layer.bounds.right,layer.bounds.bottom)
+      ELSE
+        REGIONS.Assign(@bounds,layer.bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
+            layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
+            layer.bounds.bottom)
+      FI
+      status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
+    END
   ELSE
     RETURN(AESTYPES.UNSUPPORTED)
   ESAC
@@ -616,7 +648,9 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
   FI
 
   IF window.iconified=0 AND (request.intin(1)=AESTYPES.WF_VSLIDE
-      OR request.intin(1)=AESTYPES.WF_VSLSIZE) THEN
+      OR request.intin(1)=AESTYPES.WF_VSLSIZE
+      OR request.intin(1)=AESTYPES.WF_HSLIDE
+      OR request.intin(1)=AESTYPES.WF_HSLSIZE) THEN
     AESWINDOWSTATE.Geometry(item,0)
   ELSE
     AESWINDOWSTATE.Snapshot(item)

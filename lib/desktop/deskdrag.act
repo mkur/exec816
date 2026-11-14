@@ -264,10 +264,10 @@ PROC SizePosition(INT x,y CARD kind)
 
 RETURN
 
-PROC SlidePosition(INT y)
+PROC SlidePosition(INT x,y)
   INT top,height
 
-  top=y-pressY
+  top=IF gadget=14 THEN x-pressX ELSE y-pressY FI
   IF top<sliderMin THEN
     top=sliderMin
   FI
@@ -279,7 +279,14 @@ PROC SlidePosition(INT y)
     sliderValue=INT((LONGCARD(CARD(top-sliderMin))*1000
         +LONGCARD(CARD(sliderTravel) RSH 1))/LONGCARD(CARD(sliderTravel)))
   FI
-  IF top<>target.top THEN
+  IF gadget=14 THEN
+    IF top<>target.left THEN
+      height=target.right-target.left
+      target.left=top
+      target.right=top+height
+      dirty=1
+    FI
+  ELSEIF top<>target.top THEN
     height=target.bottom-target.top
     target.top=top
     target.bottom=top+height
@@ -331,7 +338,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
           phase=SIZE_PENDING
         FI
       ELSEIF phase=SLIDING THEN
-        SlidePosition(sample.y)
+        SlidePosition(sample.x,sample.y)
         IF (sample.buttons & INPUT.LEFT)=0 THEN
           phase=SLIDE_PENDING
         FI
@@ -409,16 +416,25 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
             IF hit=1 THEN
               phase=SIZING
               dirty=1
-            ELSEIF hit=6 THEN
-              DESKGEOMETRY.ScrollTrack(window,@layer.bounds,@rail)
-              sliderMin=rail.top
-              sliderTravel=rail.bottom-rail.top-window.sliderHeight
-              REGIONS.Assign(@target,rail.left,origin.top+window.sliderTop,
-                  rail.right,origin.top+window.sliderTop+window.sliderHeight)
-              pressY=sample.y-target.top
+            ELSEIF hit=6 OR hit=14 THEN
+              IF hit=14 THEN
+                DESKGEOMETRY.HScrollTrack(window,@layer.bounds,@rail)
+                sliderMin=rail.left
+                sliderTravel=rail.right-rail.left-window.sliderWidth
+                REGIONS.Assign(@target,origin.left+window.sliderLeft,rail.top,
+                    origin.left+window.sliderLeft+window.sliderWidth,rail.bottom)
+                pressX=sample.x-target.left
+              ELSE
+                DESKGEOMETRY.ScrollTrack(window,@layer.bounds,@rail)
+                sliderMin=rail.top
+                sliderTravel=rail.bottom-rail.top-window.sliderHeight
+                REGIONS.Assign(@target,rail.left,origin.top+window.sliderTop,
+                    rail.right,origin.top+window.sliderTop+window.sliderHeight)
+                pressY=sample.y-target.top
+              FI
               phase=SLIDING
               dirty=1
-              SlidePosition(sample.y)
+              SlidePosition(sample.x,sample.y)
             ELSE
               phase=ARROWING
             FI
@@ -515,7 +531,9 @@ PUBLIC PROC Advance()
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_SIZED,target.left,target.top,
           target.right-target.left,target.bottom-target.top)
     ELSEIF phase=SLIDE_PENDING THEN
-      AESWINDOWSTATE.Control(window,AESTYPES.GUI_VSLID,sliderValue,0,0,0)
+      AESWINDOWSTATE.Control(window,
+          IF gadget=14 THEN BYTE(AESTYPES.GUI_HSLID)
+          ELSE BYTE(AESTYPES.GUI_VSLID) FI,sliderValue,0,0,0)
     ELSEIF gadget=8 THEN
       DESKCORE.Iconify(service,window)
     ELSEIF gadget=9 THEN
@@ -526,7 +544,9 @@ PUBLIC PROC Advance()
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_FULLED,0,0,0,0)
     ELSE
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_ARROWED,
-          IF gadget<4 THEN INT(gadget) ELSE INT(gadget)-4 FI,0,0,0)
+          IF gadget>=12 THEN INT(gadget)-8
+          ELSEIF gadget>=4 THEN INT(gadget)-4
+          ELSE INT(gadget) FI,0,0,0)
     FI
     phase=0
     windowId=0

@@ -312,7 +312,8 @@ can retire while drawing is excluded.
 
 Each registration can own several windows; all AES windows share six desktop
 slots, with two additional layers reserved for menus. The base kind is `NAME | CLOSER | MOVER`, optionally combined with `SIZER`,
-`UPARROW`, `DNARROW`, `VSLIDE`, `FULLER` and `INFO`. Create reserves a hidden
+`UPARROW`, `DNARROW`, `VSLIDE`, `LFARROW`, `RTARROW`, `HSLIDE`, `FULLER` and
+`INFO`. Create reserves a hidden
 window and returns a positive handle, or minus one on failure. Open shows it;
 close hides it and retires the open epoch without deleting the handle. Delete
 requires a closed window. Exit closes and deletes all remaining windows. Handles
@@ -335,7 +336,7 @@ scene entry and freed after release. Console-bound deletion remains a system
 operation because it can retire physical presentation state. Open/close and
 other unmigrated operations retain their established transport.
 
-Eligible `WF_NAME`, `WF_INFO`, `WF_VSLIDE` and `WF_VSLSIZE` setters use the same
+Eligible `WF_NAME`, `WF_INFO`, vertical and horizontal slider setters use the same
 caller entry and ordering as hidden lifecycle operations. They commit copied
 text or bounded slider values, cache/menu changes, derived geometry, damage and
 view publication under scene ownership. Changed attributes wake frame work
@@ -394,7 +395,7 @@ reply waits for the old input route to retire.
 low-word packed address; `wind_set_str` performs that packing. `WF_CXYWH` moves
 or resizes the window and `WF_TOP` raises it. Work insets are left/right 8,
 top 11 and bottom 2 pixels. Vertical gadgets increase the right inset to 16;
-SIZER increases the bottom inset to 11. INFO adds a 10-pixel information line
+SIZER or horizontal gadgets increase the bottom inset to 11. INFO adds a 10-pixel information line
 below the title, raising the top inset to 21. `wind_calc` converts border/work rectangles locally; `wind_get`
 provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH`, `WF_PXYWH`, `WF_FXYWH` and
 `WF_TOP` from published state. `WF_FXYWH` (`WF_FULLXYWH`) is the accepted
@@ -408,9 +409,14 @@ unsnapped border/work conversion. Fixed-size comparisons use normalized sizes.
 `WF_CURRXYWH` and `WF_WORKXYWH` are aliases. Handle zero permits desktop work and
 top queries.
 
-`WF_VSLIDE` and `WF_VSLSIZE` (`WF_VSLSIZ`) set/query 0..1000 position and
-size, initially 0 and 1000. Frame pixels are cached at mutation; minimum thumb
-height is eight pixels. Horizontal scrollbars are unsupported.
+`WF_VSLIDE`/`WF_VSLSIZE` (`WF_VSLSIZ`) and
+`WF_HSLIDE`/`WF_HSLSIZE` (`WF_HSLSIZ`) set/query independent 0..1000 position
+and size, initially 0 and 1000. Setters require the corresponding slide gadget;
+values outside that range are rejected without changing state. Frame geometry
+is cached at mutation; minimum thumb length is eight pixels. Horizontal
+gadgets require an outer width of at least 64 pixels. Their bar reserves the
+corner when a vertical bar or SIZER uses it. Both axes retain state while
+hidden or iconified, and no-op setters preserve the publication revision.
 
 `WF_FIRSTXYWH`/`WF_NEXTXYWH` enumerate visible work rectangles locally while the
 caller owns `BEG_UPDATE`. Acquisition publishes a current snapshot for every owned window;
@@ -453,17 +459,18 @@ Title clicks, completed title drags and closer clicks deliver `WM_TOPPED`,
 application calls the corresponding set or close operation. Inactive clicks
 request top first.
 
-Fuller release sends `WM_FULLED`; the application chooses and remembers its
-full/restore bounds, accepting them through `WF_CURRXYWH`. Release outside the
+Fuller release sends `WM_FULLED`; the application chooses its target, using
+full/previous queries where appropriate, and accepts it through `WF_CURRXYWH`. Release outside the
 gadget cancels.
 
-Size release sends `WM_SIZED` with proposed outer x/y/w/h. Vertical thumb
-release sends `WM_VSLID` with 0..1000 in word 4; arrows and track clicks send
-`WM_ARROWED` with `WA_UPLINE`, `WA_DNLINE`, `WA_UPPAGE` or `WA_DNPAGE`.
+Size release sends `WM_SIZED` with proposed outer x/y/w/h. Thumb release sends
+`WM_VSLID` or `WM_HSLID` with 0..1000 in word 4. Arrows and track clicks send
+`WM_ARROWED` with `WA_UPLINE`, `WA_DNLINE`, `WA_UPPAGE`, `WA_DNPAGE`,
+`WA_LFLINE`, `WA_RTLINE`, `WA_LFPAGE` or `WA_RTPAGE`.
 Applications accept sizes through `WF_CURRXYWH`, and publish their own slider
 values after scrolling. These gestures never change client content by themselves.
 Size/thumb outlines are nonblocking and cancellable; arrow/track release outside
-cancels. Hold repeat, horizontal gadgets and live resizing remain unsupported.
+cancels. Hold repeat and live resizing remain unsupported.
 
 For application windows the presenter paints the frame and transfers work-area
 damage into durable `WM_REDRAW` delivery. Its explicit Layers handoff retires

@@ -144,6 +144,8 @@ PUBLIC PROC Geometry(DESKTYPES.Window POINTER client BYTE copied)
   LET layer=LAYERS.Find(@desktop.scene,client.layer)
   DESKGEOMETRY.Slider(client,@layer.bounds,
       client.view.vslide,client.view.vsize)
+  DESKGEOMETRY.HSlider(client,@layer.bounds,
+      client.view.hslide,client.view.hsize)
   Publish(client,copied)
 
 RETURN

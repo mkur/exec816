@@ -22,4 +22,6 @@ offsetof(struct ConsoleBitmapPacket,clipLeft),
 offsetof(struct ConsoleBitmapPacket,clipTop),
 offsetof(struct ConsoleBitmapPacket,clipRight),
 offsetof(struct ConsoleBitmapPacket,clipBottom),
+offsetof(struct ConsoleBitmapPacket,frameHorizontalLeft),
+offsetof(struct ConsoleBitmapPacket,frameHorizontalWidth),
 };

@@ -208,7 +208,6 @@
     "generate_gem_text.py --check",
     "generate_c_program.py --check"
   ],
-  "upper_heap_workstation_growth_bytes": 4,
   "reserved_bank_zero_delta": {
     "fixed": 0,
     "root": 0,
@@ -246,5 +245,7 @@
     "Solid fill only; no pattern/perimeter addition.",
     "Original MGVIEW, mouse calls and animations remain separate."
   ],
-  "fixture_note": "The first physical run passed all 913 assertions and exact pixels but exceeded worker interrupt headroom. Calypsi had inlined the new probe buffers into its persistent frame; moving those test-only buffers to upper RAM restores the required reserve without changing production stacks."
+  "fixture_note": "The first physical run passed all 913 assertions and exact pixels but exceeded worker interrupt headroom. Calypsi had inlined the new probe buffers into its persistent frame; moving those test-only buffers to upper RAM restores the required reserve without changing production stacks.",
+  "workstation_structure_growth_bytes": 4,
+  "rounded_workstation_allocation_growth_bytes": 8
 }

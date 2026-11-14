@@ -25,7 +25,8 @@ PUBLIC INT FUNC Bottom(CARD kind)
   IF (kind & DESKTYPES.FRAME_BORDERLESS)<>0 THEN
     RETURN(0)
   FI
-RETURN(IF (kind & DESKTYPES.FRAME_SIZER)<>0 THEN
+RETURN(IF (kind & (DESKTYPES.FRAME_SIZER
+    OR DESKTYPES.FRAME_HORIZONTAL))<>0 THEN
     DESKTYPES.FRAME_GADGET_HEIGHT ELSE DESKTYPES.WORK_BOTTOM FI)
 
 PUBLIC PROC Work(CARD kind
@@ -64,20 +65,52 @@ PUBLIC PROC ScrollTrack(DESKTYPES.Window POINTER window
 
 RETURN
 
-; Slider arithmetic runs only on mutations, never in each frame fragment.
-PUBLIC PROC Slider(DESKTYPES.Window POINTER window
-    LAYERTYPES.Rect POINTER bounds INT position,size)
+; Horizontal bars reserve the corner whenever a vertical bar or sizer uses it.
+PUBLIC PROC HScrollTrack(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds,track)
+
+  REGIONS.Assign(track,bounds.left,
+      bounds.bottom-DESKTYPES.FRAME_GADGET_HEIGHT,
+      bounds.right,bounds.bottom-1)
+  IF (window.frameKind & (DESKTYPES.FRAME_VERTICAL
+      OR DESKTYPES.FRAME_SIZER))<>0 THEN
+    track.right==-DESKTYPES.FRAME_GADGET_WIDTH
+  FI
+  IF (window.frameKind & DESKTYPES.FRAME_LFARROW)<>0 THEN
+    track.left==+DESKTYPES.FRAME_GADGET_WIDTH
+  FI
+  IF (window.frameKind & DESKTYPES.FRAME_RTARROW)<>0 THEN
+    track.right==-DESKTYPES.FRAME_GADGET_WIDTH
+  FI
+
+RETURN
+
+; Both axes cache thumb geometry only on mutations, never per paint fragment.
+PROC CacheSlider(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds BYTE horizontal INT position,size)
   LAYERTYPES.Rect track
   INT height,thumb
 
-  IF (window.frameKind & DESKTYPES.FRAME_VERTICAL)=0 THEN
-    window.sliderTop=0
-    window.sliderHeight=0
+  LET components=IF horizontal<>0 THEN CARD(DESKTYPES.FRAME_HORIZONTAL)
+      ELSE CARD(DESKTYPES.FRAME_VERTICAL) FI
+  IF (window.frameKind & components)=0 THEN
+    IF horizontal<>0 THEN
+      window.sliderLeft=0
+      window.sliderWidth=0
+    ELSE
+      window.sliderTop=0
+      window.sliderHeight=0
+    FI
     RETURN
   FI
 
-  ScrollTrack(window,bounds,@track)
-  height=track.bottom-track.top
+  IF horizontal<>0 THEN
+    HScrollTrack(window,bounds,@track)
+    height=track.right-track.left
+  ELSE
+    ScrollTrack(window,bounds,@track)
+    height=track.bottom-track.top
+  FI
   thumb=INT((LONGCARD(CARD(height))*LONGCARD(CARD(size)))/1000)
   IF thumb<DESKTYPES.FRAME_THUMB_MIN THEN
     thumb=DESKTYPES.FRAME_THUMB_MIN
@@ -85,9 +118,28 @@ PUBLIC PROC Slider(DESKTYPES.Window POINTER window
   IF thumb>height THEN
     thumb=height
   FI
-  window.sliderHeight=thumb
-  window.sliderTop=track.top-bounds.top
-      +INT((LONGCARD(CARD(height-thumb))*LONGCARD(CARD(position)))/1000)
+  LET offset=INT((LONGCARD(CARD(height-thumb))*LONGCARD(CARD(position)))/1000)
+  IF horizontal<>0 THEN
+    window.sliderWidth=thumb
+    window.sliderLeft=track.left-bounds.left+offset
+  ELSE
+    window.sliderHeight=thumb
+    window.sliderTop=track.top-bounds.top+offset
+  FI
+
+RETURN
+
+PUBLIC PROC Slider(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds INT position,size)
+
+  CacheSlider(window,bounds,0,position,size)
+
+RETURN
+
+PUBLIC PROC HSlider(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds INT position,size)
+
+  CacheSlider(window,bounds,1,position,size)
 
 RETURN
 
@@ -112,7 +164,7 @@ RETURN(IconSpace(window.frameKind,bounds))
 
 ; Hit codes are private presenter facts: size, up, down, page up/down, thumb.
 PUBLIC BYTE FUNC Gadget(CARD frameKind BYTE iconified
-    INT sliderTop,sliderHeight
+    INT sliderTop,sliderHeight,sliderLeft,sliderWidth
     LAYERTYPES.Rect POINTER bounds INT x,y)
   LAYERTYPES.Rect rail
 
@@ -136,6 +188,41 @@ PUBLIC BYTE FUNC Gadget(CARD frameKind BYTE iconified
       AND x>=bounds.right-DESKTYPES.FRAME_GADGET_WIDTH AND x<bounds.right
       AND y>=bounds.top AND y<bounds.top+DESKTYPES.TITLE_HEIGHT THEN
     RETURN(7)
+  FI
+
+  IF (frameKind & DESKTYPES.FRAME_HORIZONTAL)<>0
+      AND y>=bounds.bottom-DESKTYPES.FRAME_GADGET_HEIGHT
+      AND y<bounds.bottom AND x>=bounds.left THEN
+    BEGIN
+      INT right
+
+      right=bounds.right-IF (frameKind & (DESKTYPES.FRAME_VERTICAL
+          OR DESKTYPES.FRAME_SIZER))<>0
+          THEN INT(DESKTYPES.FRAME_GADGET_WIDTH) ELSE INT(0) FI
+      LET left=bounds.left+IF (frameKind & DESKTYPES.FRAME_LFARROW)<>0
+          THEN INT(DESKTYPES.FRAME_GADGET_WIDTH) ELSE INT(0) FI
+      IF x<right THEN
+        IF x<left THEN
+          RETURN(10)
+        FI
+        IF (frameKind & DESKTYPES.FRAME_RTARROW)<>0 THEN
+          right==-DESKTYPES.FRAME_GADGET_WIDTH
+          IF x>=right THEN
+            RETURN(11)
+          FI
+        FI
+        IF (frameKind & DESKTYPES.FRAME_HSLIDE)=0 THEN
+          RETURN(0)
+        FI
+        IF x<bounds.left+sliderLeft THEN
+          RETURN(12)
+        FI
+        IF x>=bounds.left+sliderLeft+sliderWidth THEN
+          RETURN(13)
+        FI
+        RETURN(14)
+      FI
+    END
   FI
 
   IF x<bounds.right-DESKTYPES.FRAME_GADGET_WIDTH OR x>=bounds.right
@@ -173,7 +260,8 @@ PUBLIC BYTE FUNC GadgetHit(DESKTYPES.Window POINTER window
     LAYERTYPES.Rect POINTER bounds INT x,y)
 
 RETURN(Gadget(window.frameKind,window.iconified,
-    window.sliderTop,window.sliderHeight,bounds,x,y))
+    window.sliderTop,window.sliderHeight,window.sliderLeft,window.sliderWidth,
+    bounds,x,y))
 
 PUBLIC BYTE FUNC TitleHit(LAYERTYPES.Rect POINTER bounds INT x,y)
 

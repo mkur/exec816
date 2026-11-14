@@ -58,7 +58,7 @@ void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom);
 void GemFramePattern(UWORD left,UWORD top,UWORD right,UWORD bottom,
                      UWORD originX,UWORD originY);
 enum { GEM_GADGET_CLOSE,GEM_GADGET_FULL,GEM_GADGET_ICONIFY,GEM_GADGET_TILE,
-       GEM_GADGET_UP,GEM_GADGET_DOWN,GEM_GADGET_SIZE };
+       GEM_GADGET_UP,GEM_GADGET_DOWN,GEM_GADGET_SIZE,GEM_GADGET_LEFT,GEM_GADGET_RIGHT };
 /* Fixed opaque interior image. Caller owns the current frame batch/clip. */
 void GemFrameGadget(UWORD image,WORD x,WORD y,UWORD left,UWORD top,
                     UWORD right,UWORD bottom);

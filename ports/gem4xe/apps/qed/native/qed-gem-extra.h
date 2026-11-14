@@ -269,9 +269,6 @@ typedef struct {
 #ifndef K_CAPSLOCK
 #define K_CAPSLOCK  0x0010
 #endif
-#ifndef WM_HSLID
-#define WM_HSLID    25
-#endif
 #ifndef WM_NEWTOP
 #define WM_NEWTOP   29
 #endif
@@ -290,29 +287,8 @@ typedef struct {
 #ifndef AP_TSUCCESS
 #define AP_TSUCCESS 52
 #endif
-#ifndef LFARROW
-#define LFARROW 0x0200
-#endif
-#ifndef RTARROW
-#define RTARROW 0x0400
-#endif
-#ifndef HSLIDE
-#define HSLIDE  0x0800
-#endif
-#ifndef WF_PREVXYWH
-#define WF_PREVXYWH 6
-#endif
-#ifndef WF_FULLXYWH
-#define WF_FULLXYWH 7
-#endif
-#ifndef WF_HSLIDE
-#define WF_HSLIDE   8
-#endif
 #ifndef WF_NEWDESK
 #define WF_NEWDESK  14
-#endif
-#ifndef WF_HSLSIZ
-#define WF_HSLSIZ   15
 #endif
 #ifndef WF_SCREEN
 #define WF_SCREEN   17
@@ -322,18 +298,6 @@ typedef struct {
 #endif
 #ifndef WF_BOTTOM
 #define WF_BOTTOM   25
-#endif
-#ifndef WA_LFPAGE
-#define WA_LFPAGE   4
-#endif
-#ifndef WA_RTPAGE
-#define WA_RTPAGE   5
-#endif
-#ifndef WA_LFLINE
-#define WA_LFLINE   6
-#endif
-#ifndef WA_RTLINE
-#define WA_RTLINE   7
 #endif
 #ifndef ARROW
 #define ARROW       0
@@ -614,7 +578,6 @@ typedef struct {
 #ifndef PE_LOADGO
 #define PE_LOADGO    0
 #endif
-void vr_recfl(WORD handle, WORD *pxy);
 void v_pline(WORD handle, WORD count, WORD *pxy);
 WORD vsl_color(WORD handle, WORD color);
 void v_opnwk(WORD *work_in, WORD *handle, WORD *work_out);
@@ -652,8 +615,6 @@ WORD vsin_mode(WORD handle, WORD dev, WORD mode);
 void vql_attributes(WORD handle, WORD *attr);
 void vqm_attributes(WORD handle, WORD *attr);
 void vqf_attributes(WORD handle, WORD *attr);
-void vqt_attributes(WORD handle, WORD *attr);
-void vst_alignment(WORD handle, WORD hin, WORD vin, WORD *hout, WORD *vout);
 void vq_extnd(WORD handle, WORD owflag, WORD *work_out);
 void v_contourfill(WORD handle, WORD x, WORD y, WORD index);
 WORD vsf_perimeter(WORD handle, WORD vis);

@@ -43,10 +43,10 @@ static void gadgets(WORD l,WORD t,WORD r,WORD b)
 {
     struct ConsoleBitmapPacket *p=paint;
     WORD k=p->fillY,gw=DESKTOP_FRAME_GADGET_WIDTH,gh=DESKTOP_FRAME_GADGET_HEIGHT,left=r-gw;
-    WORD top=t+DESKTOP_TITLE_HEIGHT+(k&DESKTOP_FRAME_INFO ? DESKTOP_FRAME_INFO_HEIGHT:0),bottom=b-(k&DESKTOP_FRAME_SIZER ? gh:DESKTOP_WORK_BOTTOM);
+    WORD top=t+DESKTOP_TITLE_HEIGHT+(k&DESKTOP_FRAME_INFO ? DESKTOP_FRAME_INFO_HEIGHT:0),bottom=b-(k&(DESKTOP_FRAME_SIZER|DESKTOP_FRAME_HORIZONTAL) ? gh:DESKTOP_WORK_BOTTOM);
     WORD mid=left+gw/2,center;
-    if (paint->clipRight<=left || paint->clipLeft>=r) return;
-    if ((k&DESKTOP_FRAME_VERTICAL) && paint->clipTop<bottom && paint->clipBottom>top) {
+    if ((k&DESKTOP_FRAME_VERTICAL) && paint->clipTop<bottom && paint->clipBottom>top &&
+        paint->clipRight>left && paint->clipLeft<r) {
         /* The window supplies the outer edge; the track and sizer supply
          * shared horizontal separators for the unboxed arrow cells. */
         fill(left+1,top,r-1,bottom,8);
@@ -68,6 +68,28 @@ static void gadgets(WORD l,WORD t,WORD r,WORD b)
             top=t+p->fillWidth;bottom=top+p->fillHeight;
             fill(left+1,top,r-1,bottom,0);box(left,top,r,bottom);
         }
+    }
+    if ((k&DESKTOP_FRAME_HORIZONTAL) && paint->clipBottom>b-gh) {
+        WORD hl=l,hr=r-(k&(DESKTOP_FRAME_VERTICAL|DESKTOP_FRAME_SIZER) ? gw:0),ht=b-gh;
+        fill(hl+1,ht,hr-1,b-1,8);
+        fill(hl,ht,hr,ht+1,1);
+        if (k&DESKTOP_FRAME_LFARROW) {
+            fill(hl+1,ht+1,hl+gw,b-1,0);
+            gadget(GEM_GADGET_LEFT,hl+(gw-5)/2,ht+(gh-9)/2);
+            hl+=gw;
+        }
+        if (k&DESKTOP_FRAME_RTARROW) {
+            fill(hr-gw,ht+1,hr-1,b-1,0);
+            gadget(GEM_GADGET_RIGHT,hr-gw+(gw-5)/2,ht+(gh-9)/2);
+            hr-=gw;
+        }
+        box(hl,ht,hr,b);
+        if (k&DESKTOP_FRAME_HSLIDE) {
+            hl=l+p->frameHorizontalLeft;hr=hl+p->frameHorizontalWidth;
+            fill(hl+1,ht+1,hr-1,b-1,0);box(hl,ht,hr,b);
+        }
+        if ((k&DESKTOP_FRAME_VERTICAL) && !(k&DESKTOP_FRAME_SIZER))
+            box(r-gw,b-gh,r,b);
     }
     if ((k&DESKTOP_FRAME_SIZER) && paint->clipBottom>b-gh) {
         box(left,b-gh,r,b);
@@ -104,7 +126,7 @@ static UWORD fragment(void)
         if (!p->fillX) {
             fill(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,0);
             box(l,t,r,b);
-            if (p->fillY&(DESKTOP_FRAME_SIZER|DESKTOP_FRAME_VERTICAL)) gadgets(l,t,r,b);
+            if (p->fillY&(DESKTOP_FRAME_SIZER|DESKTOP_FRAME_VERTICAL|DESKTOP_FRAME_HORIZONTAL)) gadgets(l,t,r,b);
             if (p->fillY&DESKTOP_FRAME_INFO)
                 fill(l,t+DESKTOP_TITLE_HEIGHT+DESKTOP_FRAME_INFO_HEIGHT-1,
                      r,t+DESKTOP_TITLE_HEIGHT+DESKTOP_FRAME_INFO_HEIGHT,1);

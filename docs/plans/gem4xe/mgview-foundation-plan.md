@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [VDI contract](../../reference/gem-vdi.md) ·
 [AES contract](../../reference/aes.md)
 
-Status: MV1–MV2 implemented at the development tier; MV3 pending, 2026-11-14. Implement MV1–MV3 in order and commit each
+Status: MV1–MV3 implemented at the development tier; final demo refresh pending, 2026-11-14. Implement MV1–MV3 in order and commit each
 passing executable slice separately. This delivers shared drawing/window
 services needed by MGVIEW; the application port, mouse calls and window
 animations remain separate work.

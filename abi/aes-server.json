@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 21,
+  "version": 22,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -38,7 +38,7 @@
     "ENDPOINT_RETIRED": 3,
     "RPC_INTIN_WORDS": 6,
     "RPC_INTOUT_WORDS": 5,
-    "GUI_KINDS": 10,
+    "GUI_KINDS": 11,
     "GUI_REDRAW": 0,
     "GUI_TOPPED": 1,
     "GUI_MOVED": 2,
@@ -105,7 +105,7 @@
     "GUI_SIZED": 5,
     "GUI_VSLID": 6,
     "GUI_ARROWED": 7,
-    "WINDOW_SUPPORTED": 511,
+    "WINDOW_SUPPORTED": 4095,
     "WF_VSLSIZ": 16,
     "FULLER": 4,
     "INFO": 16,
@@ -131,7 +131,19 @@
     "WF_PXYWH": 6,
     "WF_FXYWH": 7,
     "WF_PREVXYWH": 6,
-    "WF_FULLXYWH": 7
+    "WF_FULLXYWH": 7,
+    "LFARROW": 512,
+    "RTARROW": 1024,
+    "HSLIDE": 2048,
+    "WF_HSLIDE": 8,
+    "WF_HSLSIZE": 15,
+    "WF_HSLSIZ": 15,
+    "WM_HSLID": 25,
+    "GUI_HSLID": 10,
+    "WA_LFPAGE": 4,
+    "WA_RTPAGE": 5,
+    "WA_LFLINE": 6,
+    "WA_RTLINE": 7
   },
   "records": {
     "MenuObject": [
@@ -521,6 +533,14 @@
         "INT"
       ],
       [
+        "hslide",
+        "INT"
+      ],
+      [
+        "hsize",
+        "INT"
+      ],
+      [
         "revision",
         "LONGCARD"
       ],
@@ -750,6 +770,21 @@
     "WF_PXYWH",
     "WF_FXYWH",
     "WF_PREVXYWH",
-    "WF_FULLXYWH"
+    "WF_FULLXYWH",
+    "LFARROW",
+    "RTARROW",
+    "HSLIDE",
+    "WF_HSLIDE",
+    "WF_HSLSIZE",
+    "WF_HSLSIZ",
+    "WM_HSLID",
+    "WA_UPPAGE",
+    "WA_DNPAGE",
+    "WA_UPLINE",
+    "WA_DNLINE",
+    "WA_LFPAGE",
+    "WA_RTPAGE",
+    "WA_LFLINE",
+    "WA_RTLINE"
   ]
 }

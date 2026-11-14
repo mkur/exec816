@@ -20,6 +20,7 @@ PUBLIC TYPE WindowRoute=[
   INT handle
   CARD frameKind
   INT sliderTop,sliderHeight
+  INT sliderLeft,sliderWidth
   BYTE kind,iconified
   LAYERTYPES.Rect bounds,work
 ]
@@ -119,6 +120,8 @@ PUBLIC BYTE FUNC Publish()
               route.frameKind=window.frameKind
               route.sliderTop=window.sliderTop
               route.sliderHeight=window.sliderHeight
+              route.sliderLeft=window.sliderLeft
+              route.sliderWidth=window.sliderWidth
               route.iconified=window.iconified
               IF layer.shown<>0 THEN
                 route.kind=1

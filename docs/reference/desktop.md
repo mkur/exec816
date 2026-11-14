@@ -27,7 +27,8 @@ bar; iconified tile labels use the same offset. The focused title carries
 a dotted pattern, blue text and a blue lower rule; inactive titles are plain.
 The closer uses a short, wide GEM-style X on the left . The full/restore gadget uses a distinct diamond mark. Both
 marks occupy 10×7 pixels within 16×11 control cells. Iconify uses a matching
-10×7 window symbol; scroll arrows occupy 10×5 pixels. Controls share the window
+10×7 window symbol; vertical scroll arrows occupy 10×5 pixels and horizontal
+arrows 5×9. Controls share the window
 outline and single separators instead of drawing inset boxes. Scroll arrows
 are centered on the rail, with the track and resize cell supplying their
 horizontal borders. Close hit bounds retain the existing cell inset.
@@ -35,8 +36,9 @@ Release outside, Escape and input loss cancel a close gesture. An inactive
 AES window still requires a topping gesture before its closer can activate.
 
 Ordinary work insets are left 8, top 11, right 8 and bottom 2 pixels.
-Vertical scrollbars reserve 16 pixels on the right; SIZER reserves 11 at the
-bottom. INFO adds ten rows below the title. Frame fragments
+Vertical scrollbars reserve 16 pixels on the right; horizontal bars or SIZER
+reserve 11 at the bottom. The horizontal bar leaves the corner to the vertical
+bar or SIZER. INFO adds ten rows below the title. Frame fragments
 are reconstructed in the existing offscreen strip and published only when
 complete, without clearing application-owned work pixels. The frame and local
 `wind_calc` geometry use constants generated from `abi/desktop.json`.

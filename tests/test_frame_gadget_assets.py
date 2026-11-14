@@ -18,7 +18,11 @@ class FrameGadgets(unittest.TestCase):
         frame(raster,(20,20,220,200),b'',True,close=True,kind=4|8|32|64|128,slider=(70,30))
         # These rectangles are the tight interiors of the existing marks.
         locations = {'close':(23,22), 'full':(207,22), 'iconify':(191,22),
-                     'up':(207,34), 'down':(207,181), 'size':(206,192)}
+                     'up':(207,34), 'down':(207,181), 'size':(206,192),
+                     'left':(25,190), 'right':(193,190)}
+        horizontal=Raster(bytes(2048))
+        frame(horizontal,(20,20,220,200),b'',True,close=True,
+              kind=4|8|32|512|1024|2048)
         for name,(offset,width,height) in zip(NAMES,descriptors):
             for phase in (0,1):
                 base=offset+phase*192
@@ -30,9 +34,10 @@ class FrameGadgets(unittest.TestCase):
                             expected=15 if x in (0,width-1) or y in (0,height-1) else 12 if y==1 else 0
                         else:
                             left,top=locations[name]
-                            expected=raster.pixels[(top+y)*640+left+x]
+                            picture=horizontal if name in ('left','right') else raster
+                            expected=picture.pixels[(top+y)*640+left+x]
                         self.assertEqual(actual,expected,(name,phase,x,y))
-        self.assertEqual(len(data),2688)
+        self.assertEqual(len(data),3456)
         self.assertEqual(region['reserved_bytes'],4096)
 
     def test_deterministic_header(self):
