@@ -4,6 +4,8 @@ The [raster-copy plan](vro-cpyfm-plan.md) delivers conventional `vro_cpyfm`
 from selected GEM4XE algorithms: screen S_ONLY first, then device-format memory
 forms and all sixteen logical modes. It retains Exec's Task preemption, display
 grants and drawing limits, with one commit per passing executable slice.
+RC0–RC6 are implemented; the [record](../../history/gem-raster-copy.md) preserves
+development acceptance and the different-parity fallback performance limit.
 
 The [GEM-first GUI design](gem-first-gui-design.md) makes AES the sole
 graphical window model, with caller-context operations, an AES system Task and

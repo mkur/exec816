@@ -9,6 +9,10 @@ The XEX includes Desktop and its icons. Startup creates RAM:DESKTOP.APP and
 RAM:DESKTOP.RSC, then launches Desktop through the ordinary program loader.
 The other applications and their resources remain on the system disk.
 
+RUN C:RASTER.APP opens a numbered colour-row sample. Space starts/pauses its
+scrolling, Up/Down step a row, Left/Right shift a pixel, M copies screen to
+memory and back, and Q exits. Drag or cover/expose its window to check repainting.
+
 Boot in AltirraSDL
 -----------------
 

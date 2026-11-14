@@ -1,5 +1,8 @@
 # Historical records
 
+- [GEM4XE raster copy](gem-raster-copy.md): conventional screen/memory forms,
+  sixteen logical modes, owned VBXE acceleration and packaged scrolling checks.
+
 - [Terminal directory notifications and idle polling](terminal-idle-polling.md):
   event-driven metadata refresh, zero healthy polling and 17–31% lower matched
   repaint medians, with unchanged drawing work and bank-zero reservations.

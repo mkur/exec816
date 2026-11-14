@@ -21,7 +21,7 @@ one cold AES delegation exchange and never opens, clears or repalettes hardware.
 The 57-word inquiry is generated from [vdi-client.json](../../abi/vdi-client.json).
 It describes 640×240, sixteen colours, one fixed 8×8 face and the bar GDP.
 Line, marker, polygon, input-device and external-font capabilities
-are not advertised. Other supported calls are `v_clsvwk`, `v_bar`, `v_gtext`,
+are not advertised. Other supported calls are `v_clsvwk`, `v_bar`, `v_gtext`, `vro_cpyfm`,
 `vs_clip`, `vsf_color`, `vst_color`, `vsf_interior(1)` and `vswr_mode(1/2)`.
 Named calls and `vdi_call(VDIPB *)` share helpers; opcodes/counts are recorded in
 the [binding manifest](../../ports/gem4xe/aes-binding-inputs.json).
@@ -108,9 +108,11 @@ Same-parity screen logical modes use the selected GEM4XE one/two-pass blitter
 recipes. Modes 2 and 11 use the row fallback when source and destination
 overlap, because their first pass would otherwise change source pixels.
 Modes 8 and 14 invert after the combining pass. Packed source and destination
-edge bytes are staged before writes; outside nibbles are preserved. Every
-physical unit retains the sixteen-row and 8,192 estimated raster-access limits,
-including edge work and each combining/inversion pass. Memory forms and
+edge bytes are staged before writes; outside nibbles are preserved. Row and
+combining units retain the sixteen-row and 8,192 estimated raster-access limits,
+including edge work and each combining/inversion pass. S_ONLY reuses the
+existing whole-source edge capture, at most 480 bytes, before its bounded copy
+strips; that auxiliary read is not a sixteen-row strip. Memory forms and
 different-parity copies use private row buffers. A completed call retains no
 DMA or borrowed pointer, and never yields ownership with shared scratch live.
 
@@ -136,8 +138,9 @@ The row fallback reuses the workstation copy scratch, enlarged from 480 to
 642 bytes: 162 additional live upper bytes, 160 additional rounded heap bytes.
 Reserved bank-zero and persistent VRAM changes are zero. APP ABI 39 adds the
 named call without moving existing imports; rebuild applications and provider
-together. The [implementation plan](../plans/gem4xe/vro-cpyfm-plan.md) describes
-the remaining memory-form and logical-mode slices.
+together. The [sample](../guides/gem-raster.md) demonstrates scrolling and
+memory forms; the [development record](../history/gem-raster-copy.md) separates
+component, physical display and packaged checks.
 
 ## Settled screen copies
 
@@ -161,11 +164,11 @@ it returns ERROR, retains the repair obligation, and cannot become REDRAW.
 Quiescent recovery retires access normally; reset-required recovery retains
 unsafe ownership and cannot return cleanly to the OS.
 
-The workstation adds 512 upper bytes: a 32-byte descriptor and 480-byte packed
-edge staging area, allocated at open. It reuses the adapter's transient CICON
+The workstation keeps a 32-byte descriptor and the 642-byte private copy
+scratch described above, allocated at open. It reuses the adapter's transient CICON
 scratch within physical access. No pending DMA outlives return, and no new
 persistent VRAM, bank-zero storage, stack pool or Task is reserved. C programs
-must rebuild for import ABI version 30. See the
+must rebuild for the current import ABI 39. See the
 [responsive-editor record](../history/fastbasic-responsive-editor.md).
 
 ## Supervised packet workload

@@ -1,0 +1,3874 @@
+{
+  "format": "exec816-gem-raster-copy-development-v1",
+  "date": "2026-11-14",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "implementation_base": "a0f756f9bc6f6851dee24ec234f261e409e0750c",
+  "raster_implementation_commit": "bf4a7bbb63389a249f320065527677b56e3cc881",
+  "scope": "Selected algorithms, public ABI, physical VDI, fault/ownership and exact packaged scrolling acceptance; not release qualification or a MagiC speed comparison",
+  "upstream": {
+    "repository": "https://github.com/slaapliedje/gem4xe",
+    "revision": "2bf10f6788372dcfa94f6d9416e4b957eb4ce394",
+    "release": "0.15",
+    "license": "GPL-2.0-or-later; retain GEM4XE COPYING and source provenance",
+    "files": {
+      "src/vdi/vdi.c": "d50727ba4d0a7ddfddae529246d5014bb9df17171148c17603bc505c8376fe5d",
+      "src/vdi/vdidev.h": "6c6d634f01edb42ad646b5fa9fe849295c80f3f18d0814d4d40d8035cba6c98a",
+      "src/vdi/dev_vbxe.c": "cc892a674e3635229ab52ecf9209fc6b8f642166b47a9e52d14b7035cbe89ea0"
+    },
+    "selection": {
+      "src/vdi/vdi.c": "vdi_vro_cpyfm normalization and paired clipping model; widened in geometry.h",
+      "src/vdi/vdidev.h": "rop4 truth table",
+      "src/vdi/dev_vbxe.c": "copy_rows logical row merge and rop_code recipes"
+    }
+  },
+  "renderer": {
+    "schema_version": 1,
+    "repository": "https://github.com/slaapliedje/gem4xe.git",
+    "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+    "release": "0.9.4",
+    "exec_baseline": "acef1f301f29737b051ceb0a7848c6e6135668b7",
+    "actionc_pin": "toolchain/actionc.json",
+    "actionc_pin_sha256": "ee7fedac8e5667b09bbc8e9b356f2238555149e5961866fee85525899c091154",
+    "platform_pin": "toolchain/altirra-gem-vdi.json",
+    "platform_pin_sha256": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "calypsi": {
+      "tools": {
+        "cc65816": {
+          "version": "Calypsi ISO C compiler for 65816 version 5.18",
+          "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+        },
+        "as65816": {
+          "version": "Calypsi assembler for 65816 version 5.18",
+          "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+        },
+        "ln65816": {
+          "version": "Calypsi linker for 65816 version 5.18",
+          "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+        }
+      },
+      "runtime": {
+        "name": "clib-lc-hd.a",
+        "sha256": "321e782d2e18972ff29d32acf446a401012bd6da6959bb4b69c359c1412082db"
+      },
+      "flags": [
+        "--code-model=large",
+        "--data-model=huge"
+      ],
+      "optimization": [
+        "-O0",
+        "-O2"
+      ]
+    },
+    "files": {
+      "COPYING": {
+        "sha256": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+        "role": "notice"
+      },
+      "COPYING.LIB": {
+        "sha256": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+        "role": "notice"
+      },
+      "docs/licence.md": {
+        "sha256": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+        "role": "notice"
+      },
+      "src/portab.h": {
+        "sha256": "60d5cc880e02d7a980dd483e1a0b44263cbcfe34bffae9cd19c00d3342fd245a",
+        "role": "adapt"
+      },
+      "src/vdi/vdi.c": {
+        "sha256": "fd2c7a95d3afb65cde3e327347b1abb4ef89d31108bc9e5c6c14e338cb1c6524",
+        "role": "extract"
+      },
+      "src/vdi/vdi.h": {
+        "sha256": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+        "role": "adapt"
+      },
+      "src/vdi/vdidev.h": {
+        "sha256": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f",
+        "role": "adapt"
+      },
+      "src/vdi/dev_vbxe.c": {
+        "sha256": "efc6fb3fbecfb70ba4ae03598dabf707c91ee60038d93cfe15914a6e43e56573",
+        "role": "extract"
+      },
+      "src/vdi/font.c": {
+        "sha256": "745b1ff06f2a4363511c9ac9232ce5521635172780892a8f574d8183ce80ca7d",
+        "role": "extract-default-font-only"
+      },
+      "src/vdi/font.h": {
+        "sha256": "ddcfb21c646a790d3ca96b8c4c6441a4a6df09dbfc94cb985bba6dc1feff8088",
+        "role": "adapt"
+      },
+      "src/vdi/font8x8.c": {
+        "sha256": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+        "role": "unchanged-font"
+      },
+      "src/vbxe/vbxe.c": {
+        "sha256": "1bf9722b712dcc5dc8c235ea168a276af321f60d925c34fb3e90fcc2bd3e3f6b",
+        "role": "adapt"
+      },
+      "src/vbxe/vbxe.h": {
+        "sha256": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608",
+        "role": "adapt"
+      },
+      "src/sys/zwin.h": {
+        "sha256": "9530d12d510af3f10f0c7c18cf06298f5bd6fc292427cb27d711c5f2d83efa1b",
+        "role": "replace"
+      },
+      "src/sys/farmem.h": {
+        "sha256": "c15c2d2dee0281ceadf3ee1d625c999b2156ad6c19aa69f788cefbc58362157c",
+        "role": "replace"
+      },
+      "src/vdi/pointer.c": {
+        "sha256": "88668a6e435010a05676dd636fc47343a6aad870c95e66dd2e5e2d8aaeb2542d",
+        "role": "reference-only"
+      },
+      "src/vdi/pointer.h": {
+        "sha256": "781f7b81138a7d935d2336ab858b08e87a8f5f6a4597349417b9dd81d1977b78",
+        "role": "reference-only"
+      },
+      "src/vdi/print.h": {
+        "sha256": "7fc51b95d34933a3ebe5497c40349919adf4a2eb2756b23e6b8b503902c28ab6",
+        "role": "reference-only"
+      },
+      "src/sys/ctx.h": {
+        "sha256": "7991b9d8f9b7ac3bfcbdaccf698b03c5b72a68d64cd551a90bdc7e9879006aa9",
+        "role": "reference-only"
+      },
+      "src/sys/irq.h": {
+        "sha256": "48c95d1d51d143572206d4592e49c1b286b00eb75e7ce1f0636dce04295dfe71",
+        "role": "reference-only"
+      },
+      "src/vdi/fillpat.c": {
+        "sha256": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+        "role": "reference-only"
+      },
+      "src/vdi/sintbl.c": {
+        "sha256": "4d990d00f911037464b9eac35bcf2cc85bc176807a2b49dc800aaa20001b6244",
+        "role": "reference-only"
+      },
+      "tools/vdiref.py": {
+        "sha256": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+        "role": "host-oracle-only"
+      },
+      "tools/devref.py": {
+        "sha256": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+        "role": "host-oracle-only"
+      },
+      "tools/fontref.py": {
+        "sha256": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+        "role": "host-oracle-only"
+      },
+      "tools/vbxeref.py": {
+        "sha256": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+        "role": "host-oracle-only"
+      },
+      "tools/anticref.py": {
+        "sha256": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+        "role": "host-oracle-only"
+      },
+      "src/vdi/font6x6.c": {
+        "sha256": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+        "role": "host-oracle-only"
+      }
+    },
+    "excluded_runtime": [
+      "src/sys startup, context switching, IRQ/COP handlers and memory probing",
+      "src/vdi/pointer.c",
+      "src/vdi/dev_antic.c",
+      "src/vdi/dev_print.c",
+      "src/vdi/fillpat.c",
+      "src/vdi/sintbl.c",
+      "CIO font loading, virtual workstations, AES and GEMDOS"
+    ]
+  },
+  "cases": {
+    "rc0-opt": {
+      "path": "build/gem-raster/rc0-opt/results.json",
+      "sha256": "cb5499cf58418bdd4873ecba5ab86d986e85e1fec556a6d2314d9139e252a1ac",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1503,
+        "native_irq_count": 14726,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 211,
+            "untouched_above_floor": 1069
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 21,
+            "untouched_above_floor": 235
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 140,
+          "untouched_from_base": 1396,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": true,
+      "checks_modulo_65536": 9477,
+      "source_sha256": "dc930c9d2f459a7d02f121795e03bf90e9a1afbf6b44d62f4d7cfd0205b9d6f5",
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "idle": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "rc1-abi-raw": {
+      "path": "build/gem-raster/rc1-abi-raw/results.json",
+      "sha256": "db306035d48366f93efd13e40cbc40b51600444be14996f70051f9ee9b0a6ed1",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1,
+        "native_irq_count": 4,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 358,
+            "untouched_above_floor": 922
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 142,
+          "untouched_from_base": 1394,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": false,
+      "checks": 13,
+      "source_inputs": {
+        "tests/programs/vdi_raster_abi.c": "0068395a628559b80e590dff76724f3d25b18df4b7144e617e9fc9aaaf15dbe1",
+        "c/calypsi/vdi.c": "e0a6dc4b9eb08d647d8e66eecee725a2bdd13b0f26e7272ff5a4cab657ab7a36",
+        "ports/gem4xe/raster/client.c": "e067fc0607326fd775c8721e39919b85225ecc50f459f4e35d1ce1c062914478"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      }
+    },
+    "rc1-abi-opt": {
+      "path": "build/gem-raster/rc1-abi-opt/results.json",
+      "sha256": "1f82732f6ddc872f58dda5f670f998d4f74e03943f2ac933a7bb0e4c3dd4043f",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 0,
+        "native_irq_count": 4,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 388,
+            "untouched_above_floor": 892
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 140,
+          "untouched_from_base": 1396,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": true,
+      "checks": 13,
+      "source_inputs": {
+        "tests/programs/vdi_raster_abi.c": "0068395a628559b80e590dff76724f3d25b18df4b7144e617e9fc9aaaf15dbe1",
+        "c/calypsi/vdi.c": "e0a6dc4b9eb08d647d8e66eecee725a2bdd13b0f26e7272ff5a4cab657ab7a36",
+        "ports/gem4xe/raster/client.c": "e067fc0607326fd775c8721e39919b85225ecc50f459f4e35d1ce1c062914478"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      }
+    },
+    "rc1-native-copy": {
+      "path": "build/gem-raster/rc1-native-copy/results.json",
+      "sha256": "074f52a6a7f3af77c521efcbf7e3a622fbf06d08b8afa280501c3fbc4fa3773c",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 0,
+        "native_irq_count": 3,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 148,
+            "untouched_above_floor": 1132
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 140,
+          "untouched_from_base": 1396,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": true,
+      "checks": 23,
+      "source_inputs": {
+        "tests/programs/vdi_copy_abi.c": "5d35530e3aded4e9a1f18d8bbe13a91f6cafe537693b6b1227d77219c4fb68b7",
+        "c/calypsi/vdi.c": "e0a6dc4b9eb08d647d8e66eecee725a2bdd13b0f26e7272ff5a4cab657ab7a36"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      }
+    },
+    "rc1-physical": {
+      "path": "build/gem-raster/rc1-physical/results.json",
+      "sha256": "4f7071c3603eb8df7482fa3b96ee2edb1eee0e3c6a1aeab9070d3300047e411c",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 3230,
+        "native_irq_count": 48783,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 143,
+            "untouched_above_floor": 1137
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 138,
+            "untouched_above_floor": 918
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 940,
+            "untouched_above_floor": 116
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 1012,
+            "untouched_above_floor": 44
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 717,
+            "untouched_above_floor": 1587
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 287,
+          "untouched_from_base": 1249,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "AESChecks": 869,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "native_checks": 5,
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 143,
+          "remaining_above_floor": 1137
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 138,
+          "remaining_above_floor": 918
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 940,
+          "remaining_above_floor": 116
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 1012,
+          "remaining_above_floor": 44
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "override": false,
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "optimize": true,
+        "stack_checks": true
+      }
+    },
+    "rc2-visible-opt": {
+      "path": "build/gem-raster/rc2-visible-opt/results.json",
+      "sha256": "c7c582d7a781a2bf201a325202d327f79c809a97a6085c7f1d584539e7e1c387",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 3004,
+        "native_irq_count": 29431,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 277,
+            "untouched_above_floor": 1003
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 41,
+            "untouched_above_floor": 215
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 140,
+          "untouched_from_base": 1396,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": true,
+      "checks_modulo_65536": 40996,
+      "source_sha256": "a886a527a4b4b8d60d41a8067531bfc4f4670dac537c2004c6830acbb919f854",
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "idle": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "rc2-abi-opt": {
+      "path": "build/gem-raster/rc2-abi-opt/results.json",
+      "sha256": "26f38d401dc4314650825dfac77a2a1870a36dced5d7b7059c2d274147a14d06",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 0,
+        "native_irq_count": 6,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 406,
+            "untouched_above_floor": 874
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 140,
+          "untouched_from_base": 1396,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": true,
+      "checks": 14,
+      "source_inputs": {
+        "tests/programs/vdi_raster_abi.c": "a0406c5e666ac4c9f9699778a40f1a767c7c64124b8a051da4588a9bde253c2b",
+        "c/calypsi/vdi.c": "e0a6dc4b9eb08d647d8e66eecee725a2bdd13b0f26e7272ff5a4cab657ab7a36",
+        "ports/gem4xe/raster/client.c": "3bb1d165801c03053482a3a3b20f07d62f8c11f138a5fb251f6e999a5bf9a480"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      }
+    },
+    "rc3-abi-raw": {
+      "path": "build/gem-raster/rc3-abi-raw/results.json",
+      "sha256": "8655f15a8494fa95b3f4efa3d30fc3ab5154d9b23d273633432f4b0ac41da891",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1,
+        "native_irq_count": 7,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 445,
+            "untouched_above_floor": 835
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 134,
+          "untouched_from_base": 1402,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": false,
+      "checks": 16,
+      "source_inputs": {
+        "tests/programs/vdi_raster_abi.c": "82377d0fa6629c1955ce5eb9b67e99a5b13871c6d788d836670728a72a073af5",
+        "c/calypsi/vdi.c": "e0a6dc4b9eb08d647d8e66eecee725a2bdd13b0f26e7272ff5a4cab657ab7a36",
+        "ports/gem4xe/raster/client.c": "669385fc9270c6d01aa5105f115313208592561b89599b130d615fd26f31ee28"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      }
+    },
+    "rc3-abi-opt": {
+      "path": "build/gem-raster/rc3-abi-opt/results.json",
+      "sha256": "a5338c99881d2e01a4287431b3d3e2430bbdd1a083bbdaab016d7f18c9e3351b",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1,
+        "native_irq_count": 7,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 408,
+            "untouched_above_floor": 872
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 21,
+            "untouched_above_floor": 235
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 140,
+          "untouched_from_base": 1396,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": true,
+      "checks": 16,
+      "source_inputs": {
+        "tests/programs/vdi_raster_abi.c": "82377d0fa6629c1955ce5eb9b67e99a5b13871c6d788d836670728a72a073af5",
+        "c/calypsi/vdi.c": "e0a6dc4b9eb08d647d8e66eecee725a2bdd13b0f26e7272ff5a4cab657ab7a36",
+        "ports/gem4xe/raster/client.c": "669385fc9270c6d01aa5105f115313208592561b89599b130d615fd26f31ee28"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      }
+    },
+    "rc3-memory-opt": {
+      "path": "build/gem-raster/rc3-memory-opt/results.json",
+      "sha256": "49021c9290fde12930bc536aabb329e8e1dde4e7183f4b86455a89564fe16ccb",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 4,
+        "native_irq_count": 44,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 266,
+            "untouched_above_floor": 1014
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "checks": 324,
+      "source_inputs": {
+        "tests/programs/gem_raster_memory.c": "69409df75b12470ef8914bacd41bb53dedf146d080fb5b5e9da709b0ba40c1ed",
+        "ports/gem4xe/adapter/gem-vbxe.c": "eae7dfa574c3b2c2b44c70d619832d6781064c5a72ef73cbd3d7bf5e3b2fdec7",
+        "ports/gem4xe/raster/core.h": "1f04a080db0504113ef4deaf8308df789640adf020195e4692c17a58da12eab4"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "idle": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "rc4-abi-opt": {
+      "path": "build/gem-raster/rc4-abi-opt/results.json",
+      "sha256": "099a79abe419707b23ba5386c8331f2c456a7e17f406b1b4a9a74bb788a53590",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1,
+        "native_irq_count": 8,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 411,
+            "untouched_above_floor": 869
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 144,
+          "untouched_from_base": 1392,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": true,
+      "checks": 20,
+      "source_inputs": {
+        "tests/programs/vdi_raster_abi.c": "9782a82e21ef76f3884a6e1210ec85de2ca2900c6cbe71a02a6f3bc8f8839c71",
+        "c/calypsi/vdi.c": "e0a6dc4b9eb08d647d8e66eecee725a2bdd13b0f26e7272ff5a4cab657ab7a36",
+        "ports/gem4xe/raster/client.c": "30e2a85271de59d91dd4a21e4c3162971f457f5a4cdf0e271ef8ad9f0b9ac0f6"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      }
+    },
+    "rc4-memory-opt": {
+      "path": "build/gem-raster/rc4-memory-opt/results.json",
+      "sha256": "00e87662cc76dc485ecd73a8557225aa5958c8db2dd1f519ca0ba04e1d54f8ae",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 74,
+        "native_irq_count": 725,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 268,
+            "untouched_above_floor": 1012
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "checks": 5154,
+      "source_inputs": {
+        "tests/programs/gem_raster_memory.c": "c4ab051749ae4900f49163119a7c548ec7ea355564f73868cb358f6eb5e9c9fc",
+        "ports/gem4xe/adapter/gem-vbxe.c": "eae7dfa574c3b2c2b44c70d619832d6781064c5a72ef73cbd3d7bf5e3b2fdec7",
+        "ports/gem4xe/raster/core.h": "1f04a080db0504113ef4deaf8308df789640adf020195e4692c17a58da12eab4"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "idle": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "rc4-physical": {
+      "path": "build/gem-raster/rc4-physical/results.json",
+      "sha256": "037ef30ea560460b95be663aa16e76a4839f3f68a5a7c30028ac3ce594fef60b",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 3275,
+        "native_irq_count": 52324,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 146,
+            "untouched_above_floor": 1134
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 139,
+            "untouched_above_floor": 917
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 951,
+            "untouched_above_floor": 105
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 1035,
+            "untouched_above_floor": 21
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 717,
+            "untouched_above_floor": 1587
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 285,
+          "untouched_from_base": 1251,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "AESChecks": 905,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "native_checks": 5,
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 146,
+          "remaining_above_floor": 1134
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 139,
+          "remaining_above_floor": 917
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 951,
+          "remaining_above_floor": 105
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 1035,
+          "remaining_above_floor": 21
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 717,
+          "remaining_above_floor": 1587
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "override": false,
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "optimize": true,
+        "stack_checks": true
+      }
+    },
+    "rc5-memory-opt": {
+      "path": "build/gem-raster/rc5-memory-opt/results.json",
+      "sha256": "933f05d6c54b1fa1ae9f5384d126f8004d6b72696b3baaa6af24a954eb514712",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 73,
+        "native_irq_count": 715,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 264,
+            "untouched_above_floor": 1016
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": true,
+      "checks": 5176,
+      "source_inputs": {
+        "tests/programs/gem_raster_memory.c": "c2134567b57433c78a738ba3883153ae338782e6cc29a8bb58378495d886fb20",
+        "ports/gem4xe/adapter/gem-vbxe.c": "089223e8f47bcf5a0040d1e105a0a28f649964bf3705a4f71985154077e89da5",
+        "ports/gem4xe/raster/core.h": "1f04a080db0504113ef4deaf8308df789640adf020195e4692c17a58da12eab4",
+        "ports/gem4xe/raster/screen.h": "01fd16cca72c2c4fd8ef78aa0c8775c19974fbc864963b57b6668848718b3084"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "idle": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "rc5-packing-raw": {
+      "path": "build/gem-raster/rc5-packing-raw/results.json",
+      "sha256": "74d6131a746bbbd16a2283fcb9805ba1e5d03dcd1173fb2bd026884e0072e0ba",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 0,
+        "native_irq_count": 6,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 146,
+            "untouched_above_floor": 1134
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 134,
+          "untouched_from_base": 1402,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": false,
+      "checks": 22,
+      "source_inputs": {
+        "tests/programs/gem_raster_memory.c": "c2134567b57433c78a738ba3883153ae338782e6cc29a8bb58378495d886fb20",
+        "ports/gem4xe/adapter/gem-vbxe.c": "089223e8f47bcf5a0040d1e105a0a28f649964bf3705a4f71985154077e89da5",
+        "ports/gem4xe/raster/core.h": "1f04a080db0504113ef4deaf8308df789640adf020195e4692c17a58da12eab4",
+        "ports/gem4xe/raster/screen.h": "01fd16cca72c2c4fd8ef78aa0c8775c19974fbc864963b57b6668848718b3084"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "idle": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "rc5-packing-opt": {
+      "path": "build/gem-raster/rc5-packing-opt/results.json",
+      "sha256": "f153140beb42e44c463b30339862aee6adbf3c40bb4bc2051b2d6575ac0c6d26",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 73,
+        "native_irq_count": 715,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 290,
+            "untouched_above_floor": 990
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "checks": 5176,
+      "source_inputs": {
+        "tests/programs/gem_raster_memory.c": "f12e8556977012e4e9d581af3bb65d2a2ad715e3a4bcc97736a6fcb79cca213e",
+        "ports/gem4xe/adapter/gem-vbxe.c": "089223e8f47bcf5a0040d1e105a0a28f649964bf3705a4f71985154077e89da5",
+        "ports/gem4xe/raster/core.h": "1f04a080db0504113ef4deaf8308df789640adf020195e4692c17a58da12eab4",
+        "ports/gem4xe/raster/screen.h": "01fd16cca72c2c4fd8ef78aa0c8775c19974fbc864963b57b6668848718b3084"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "idle": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "rc5-physical": {
+      "path": "build/gem-raster/rc5-physical/results.json",
+      "sha256": "3f50f6892bca6b6e2fe72bb4fca76e7918b09123381d89df54ba3790a5aad290",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 3361,
+        "native_irq_count": 58971,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 143,
+            "untouched_above_floor": 1137
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 128,
+            "untouched_above_floor": 928
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 961,
+            "untouched_above_floor": 95
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 1036,
+            "untouched_above_floor": 20
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 734,
+            "untouched_above_floor": 1570
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 285,
+          "untouched_from_base": 1251,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "AESChecks": 905,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "native_checks": 5,
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "raster_submission_yields": 18,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 143,
+          "remaining_above_floor": 1137
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 128,
+          "remaining_above_floor": 928
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 961,
+          "remaining_above_floor": 95
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 1036,
+          "remaining_above_floor": 20
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 734,
+          "remaining_above_floor": 1570
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "override": false,
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "optimize": true,
+        "stack_checks": true
+      }
+    },
+    "rc5-ownership": {
+      "path": "build/gem-raster/rc5-ownership/results.json",
+      "sha256": "437cd145f5a7242104fd1410bc74f65d603565341623a919487d00018a8d8f2a",
+      "status": "pass",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 623,
+        "native_irq_count": 39297,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 350,
+            "untouched_above_floor": 930
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 167,
+            "untouched_above_floor": 889
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 188,
+            "untouched_above_floor": 868
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 229,
+            "untouched_above_floor": 827
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 694,
+            "untouched_above_floor": 1610
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 285,
+          "untouched_from_base": 1251,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "AESChecks": 196,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "native_checks": 4,
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "borrowed_renderer": {
+        "DisplayBorrows": 48,
+        "DisplayNative": 120,
+        "DisplayCopies": 0,
+        "DisplayOverlap": 0,
+        "DisplayActive": 0,
+        "exact_pixels": 2788
+      },
+      "access_timing": {
+        "access_wait": {
+          "count": 50,
+          "elapsed_ms": {
+            "p50": 0.19044826531374626,
+            "p95": 16.036491071768406,
+            "maximum": 24.170647848329313
+          },
+          "charged_cpu_ms": {
+            "p50": 0.14646613446408763,
+            "p95": 0.9163648768852757,
+            "maximum": 0.97726321190788
+          },
+          "off_cpu_ms": {
+            "p50": 0.0,
+            "p95": 14.935951021950185,
+            "maximum": 23.032962633514664
+          },
+          "interrupt_ms": {
+            "p50": 0.043770678297496826,
+            "p95": 0.23767266862988612,
+            "maximum": 0.24070348854420556
+          }
+        },
+        "borrow_unit": {
+          "count": 48,
+          "elapsed_ms": {
+            "p50": 5.910310285475043,
+            "p95": 24.915877126331623,
+            "maximum": 29.800642533821836
+          },
+          "charged_cpu_ms": {
+            "p50": 4.800677775913862,
+            "p95": 6.012089447248932,
+            "maximum": 6.158414613344911
+          },
+          "off_cpu_ms": {
+            "p50": 0.0,
+            "p95": 18.165395366933613,
+            "maximum": 22.818479261438526
+          },
+          "interrupt_ms": {
+            "p50": 0.9994657298848713,
+            "p95": 1.4244853597301301,
+            "maximum": 1.6756909916983729
+          }
+        },
+        "scope": "Instrumented solid-fill and callback fixture, including assertion and marker costs. Conservative CPU charge excludes native interrupts and off-Task time. An ordinary callback injects Yield with renderer staging live; ownership must survive Task switching without overlapping renderer access. access_wait includes arbitration and bridge costs."
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 350,
+          "remaining_above_floor": 930
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 167,
+          "remaining_above_floor": 889
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 188,
+          "remaining_above_floor": 868
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 229,
+          "remaining_above_floor": 827
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 694,
+          "remaining_above_floor": 1610
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "override": false,
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "optimize": true,
+        "stack_checks": true
+      }
+    }
+  },
+  "package": {
+    "path": "build/gem-raster/demo",
+    "audit": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "zip_sha256": "ce2e3d2c050ab7511da193a60679fb909933f928a8076555a4d93bbc2740b0fa",
+      "zip_bytes": 2984758,
+      "members": [
+        "Exec-of816.xex",
+        "README.txt",
+        "SHA256SUMS",
+        "altirraos-816.rom",
+        "cartridge/Exec-of816-atarimax-8mbit-new.car",
+        "cartridge/Exec-of816-atarimax-8mbit-old.car",
+        "cartridge/Exec-of816-atarimax-8mbit.bin",
+        "cartridge/README.txt",
+        "exec816.atr",
+        "licenses/ALTIRRAOS-LICENSE.txt",
+        "licenses/CALCULATOR-COPYING.LIB.txt",
+        "licenses/CALCULATOR-COPYING.txt",
+        "licenses/CALCULATOR-LICENSING.md",
+        "licenses/CALCULATOR-PROVENANCE.txt",
+        "licenses/EXEC816-GPL-3.0.txt",
+        "licenses/EXEC816-LICENSING.md",
+        "licenses/EXEC816-MIT.txt",
+        "licenses/G4BENCH-COPYING.LIB.txt",
+        "licenses/G4BENCH-COPYING.txt",
+        "licenses/G4BENCH-LICENSING.md",
+        "licenses/G4BENCH-PROVENANCE.txt",
+        "licenses/GEM-COPYING.LIB.txt",
+        "licenses/GEM-COPYING.txt",
+        "licenses/GEM-FONT-NOTICE.txt",
+        "licenses/GEM-LICENSING.md",
+        "licenses/GEMARC-COPYING.LIB.txt",
+        "licenses/GEMARC-COPYING.txt",
+        "licenses/GEMARC-LICENSING.md",
+        "licenses/GEMARC-PROVENANCE.txt",
+        "licenses/OF816-LICENSE.txt",
+        "licenses/SDX-UTILITIES-NOTICE.txt"
+      ],
+      "checksums": {
+        "Exec-of816.xex": "aeb17290cf245a2b24b2818e9367189e3db8144972018bd15e930beecd264469",
+        "README.txt": "86f90327985b93ccf42b208bbd0ea8aa7f8c793ae8f5baec61a399169891c858",
+        "altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "cartridge/Exec-of816-atarimax-8mbit-new.car": "2a02f98668d573f122724b8501e0e5fdf74727c55cc2b9917a20c1fe9a3a2ff3",
+        "cartridge/Exec-of816-atarimax-8mbit-old.car": "30468b6034dd49566f00dc05ea1496af1bdc07c2d02255eb1814f2624825b9df",
+        "cartridge/Exec-of816-atarimax-8mbit.bin": "64b02e56650a17e8e77136b55a34605aeee8ce80de30df9b7d8fa73bac6ca4bd",
+        "cartridge/README.txt": "376f3c7f227d7b87265b476bafefbb5edeb61d600b93f810b52212bc64c8fe97",
+        "exec816.atr": "6a3aa2305f0ebb98e12911e1f63469ab37c4c2d149265edf47e0017f60f43030",
+        "licenses/ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+        "licenses/CALCULATOR-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+        "licenses/CALCULATOR-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+        "licenses/CALCULATOR-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+        "licenses/CALCULATOR-PROVENANCE.txt": "3f90b2f47985b07a6908cea27104089d7ffffdd0d1f9c2da4cbcade56ba4415e",
+        "licenses/EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+        "licenses/EXEC816-LICENSING.md": "93b139ca3b1fb5c43b8619dd1592305350a1e4b1b15b74557aebc06ded61595a",
+        "licenses/EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+        "licenses/G4BENCH-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+        "licenses/G4BENCH-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+        "licenses/G4BENCH-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+        "licenses/G4BENCH-PROVENANCE.txt": "7dfc2f08d87a16f77653f6f5173fbb185b22b6b269909c26d359e01762b36a9e",
+        "licenses/GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+        "licenses/GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+        "licenses/GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+        "licenses/GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+        "licenses/GEMARC-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+        "licenses/GEMARC-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+        "licenses/GEMARC-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+        "licenses/GEMARC-PROVENANCE.txt": "38dcc3771bc511bb3c7bb9a003e4d168d507d98a8be54d36517d81bd3a3ccf43",
+        "licenses/OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+        "licenses/SDX-UTILITIES-NOTICE.txt": "a1e4d9afd2a6ac478c13ba6a85d0a0b0444f9ebeba915d381de90995a14d94a1"
+      },
+      "allocation": {
+        "sectors": 8192,
+        "sector_bytes": 256,
+        "allocated": 4684,
+        "free": 3508,
+        "files": 73,
+        "directories": 6
+      },
+      "matched_system_files": 73,
+      "matched_disk_apps": 13,
+      "qed_separate": false
+    },
+    "sample_path": "build/gem-raster/sample-acceptance/results.json",
+    "sample_sha256": "fd43ebe53dbd34ba0c7214cc68dd51e7d8be0ea7e9025e01077996284eb5526d",
+    "sample": {
+      "zip_sha256": "ce2e3d2c050ab7511da193a60679fb909933f928a8076555a4d93bbc2740b0fa",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c82a0920da70f928",
+        "actual_kernel_id": "$c82a0920da70f928",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "pixels": [
+        {
+          "label": "initial",
+          "state": {
+            "ready": 1,
+            "scrolls": 0,
+            "shifts": 0,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 0,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "67541764280e5f13049dbaa22664e601ff75946944275921f9b3f607450fabc8"
+        },
+        {
+          "label": "down-0",
+          "state": {
+            "ready": 1,
+            "scrolls": 1,
+            "shifts": 0,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 0,
+            "first": 1,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "3fc5e57ef66bd63578ca5b1c7948ca887fa7ff159736380426f5416bbb406dc4"
+        },
+        {
+          "label": "up-1",
+          "state": {
+            "ready": 1,
+            "scrolls": 2,
+            "shifts": 0,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 0,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "67541764280e5f13049dbaa22664e601ff75946944275921f9b3f607450fabc8"
+        },
+        {
+          "label": "right-2",
+          "state": {
+            "ready": 1,
+            "scrolls": 2,
+            "shifts": 1,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 1,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "570db6276c2e42a411a8526a8c33ced98f767499955c86eefadb8ceb3074b3fe"
+        },
+        {
+          "label": "right-3",
+          "state": {
+            "ready": 1,
+            "scrolls": 2,
+            "shifts": 2,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 2,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "6f2f1f179b42bb94ce9ac2fa8c84352ad871948ee4ff43bcbde885b134e0df48"
+        },
+        {
+          "label": "before-memory",
+          "state": {
+            "ready": 1,
+            "scrolls": 2,
+            "shifts": 2,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 2,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "6f2f1f179b42bb94ce9ac2fa8c84352ad871948ee4ff43bcbde885b134e0df48"
+        },
+        {
+          "label": "memory-roundtrip",
+          "state": {
+            "ready": 1,
+            "scrolls": 2,
+            "shifts": 2,
+            "roundtrips": 1,
+            "running": 0,
+            "left": 2,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "6f2f1f179b42bb94ce9ac2fa8c84352ad871948ee4ff43bcbde885b134e0df48"
+        },
+        {
+          "label": "timed-scroll",
+          "state": {
+            "ready": 1,
+            "scrolls": 10,
+            "shifts": 2,
+            "roundtrips": 1,
+            "running": 0,
+            "left": 2,
+            "first": 8,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "a7e54dcbc429a21b3a1872a91e2d3a62623422695229f6e215fae4c608c9446a"
+        },
+        {
+          "label": "uncovered",
+          "state": {
+            "ready": 1,
+            "scrolls": 10,
+            "shifts": 2,
+            "roundtrips": 1,
+            "running": 0,
+            "left": 2,
+            "first": 8,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "a7e54dcbc429a21b3a1872a91e2d3a62623422695229f6e215fae4c608c9446a"
+        },
+        {
+          "label": "moved",
+          "state": {
+            "ready": 1,
+            "scrolls": 10,
+            "shifts": 2,
+            "roundtrips": 1,
+            "running": 0,
+            "left": 2,
+            "first": 8,
+            "work": [
+              58,
+              76,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "a7e54dcbc429a21b3a1872a91e2d3a62623422695229f6e215fae4c608c9446a"
+        }
+      ],
+      "timing": [
+        {
+          "operation": "DOWN",
+          "parity": "same",
+          "rectangle": [
+            304,
+            88
+          ],
+          "input_offered": 236140852,
+          "completed_update_observed": 236353252,
+          "scanout_observed": 236388820,
+          "offered_to_update_ms": 119.76672554445508,
+          "offered_to_checked_scanout_ms": 139.82257721189941,
+          "cpu": {
+            "kind": "raster",
+            "start": 4531169304.375,
+            "end": 4531241645.0,
+            "return_a": 0,
+            "return_x": 0,
+            "elapsed_ms": 40.79095941661651,
+            "charged_cpu_ms": 20.09179860131185,
+            "off_cpu_ms": 16.204595850737054,
+            "interrupt_ms": 4.4945649645676005
+          },
+          "call_elapsed_ms": 40.79095941661651,
+          "call_to_checked_scanout_ms": 105.33811967932516
+        },
+        {
+          "operation": "UP",
+          "parity": "same",
+          "rectangle": [
+            304,
+            88
+          ],
+          "input_offered": 236388820,
+          "completed_update_observed": 236602228,
+          "scanout_observed": 236637796,
+          "offered_to_update_ms": 120.33511000466605,
+          "offered_to_checked_scanout_ms": 140.3909616721104,
+          "cpu": {
+            "kind": "raster",
+            "start": 4531422206.125,
+            "end": 4531486075.5,
+            "return_a": 0,
+            "return_x": 0,
+            "elapsed_ms": 36.01424626328098,
+            "charged_cpu_ms": 17.838489721291438,
+            "off_cpu_ms": 14.135039238545264,
+            "interrupt_ms": 4.04071730344428
+          },
+          "call_elapsed_ms": 36.01424626328098,
+          "call_to_checked_scanout_ms": 103.12449339492711
+        },
+        {
+          "operation": "RIGHT",
+          "parity": "different",
+          "rectangle": [
+            303,
+            96
+          ],
+          "input_offered": 236637796,
+          "completed_update_observed": 241048228,
+          "scanout_observed": 241083796,
+          "offered_to_update_ms": 2486.9256067630986,
+          "offered_to_checked_scanout_ms": 2506.9814584305427,
+          "cpu": {
+            "kind": "raster",
+            "start": 4531671182.625,
+            "end": 4535815387.625,
+            "return_a": 0,
+            "return_x": 0,
+            "elapsed_ms": 2336.8072638180715,
+            "charged_cpu_ms": 1895.7053986655933,
+            "off_cpu_ms": 28.745564782718404,
+            "interrupt_ms": 412.35630036976
+          },
+          "call_elapsed_ms": 2336.8072638180715,
+          "call_to_checked_scanout_ms": 2469.7147082166234
+        },
+        {
+          "operation": "RIGHT",
+          "parity": "different",
+          "rectangle": [
+            303,
+            96
+          ],
+          "input_offered": 241083796,
+          "completed_update_observed": 245600932,
+          "scanout_observed": 245636500,
+          "offered_to_update_ms": 2547.0931617654314,
+          "offered_to_checked_scanout_ms": 2567.149013432876,
+          "cpu": {
+            "kind": "raster",
+            "start": 4536205155.5,
+            "end": 4540340860.625,
+            "return_a": 0,
+            "return_x": 0,
+            "elapsed_ms": 2332.0144097865877,
+            "charged_cpu_ms": 1895.4704043959575,
+            "off_cpu_ms": 24.482117457663676,
+            "interrupt_ms": 412.0618879329667
+          },
+          "call_elapsed_ms": 2332.0144097865877,
+          "call_to_checked_scanout_ms": 2480.2766927129223
+        }
+      ],
+      "coexistence": {
+        "distinct_processes": true,
+        "paused_idle": true,
+        "timer_scroll": true,
+        "cover_uncover": true,
+        "physical_move": true,
+        "counter_progress": true,
+        "normal_app_exit": true
+      },
+      "stacks": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 607,
+          "remaining_above_floor": 673
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 208,
+          "remaining_above_floor": 848
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 338,
+          "remaining_above_floor": 718
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 187,
+          "remaining_above_floor": 869
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 659,
+          "remaining_above_floor": 397
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 874,
+          "remaining_above_floor": 182
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 761,
+          "remaining_above_floor": 1543
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 869,
+          "remaining_above_floor": 1435
+        },
+        "8": {
+          "base": 37904,
+          "bytes": 1312,
+          "peak": 743,
+          "remaining_above_floor": 313
+        },
+        "9": {
+          "base": 39248,
+          "bytes": 1312,
+          "peak": 705,
+          "remaining_above_floor": 351
+        },
+        "10": {
+          "base": 40592,
+          "bytes": 1312,
+          "peak": 770,
+          "remaining_above_floor": 286
+        },
+        "11": {
+          "base": 41936,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "12": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 135,
+          "remaining_above_floor": 121
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 297,
+          "remaining_above_floor": 983
+        }
+      },
+      "cpu_trace": {
+        "duplicates": 0,
+        "worker_dp": 37376,
+        "definition": {
+          "points": {
+            "native_irq": 6912,
+            "native_nmi": 6656,
+            "interrupt_schedule": 6762,
+            "selected": 7474,
+            "turn": 1583159
+          },
+          "spans": {
+            "raster": {
+              "entry": 1583159,
+              "returns": [
+                1583163
+              ]
+            }
+          },
+          "task_dps": [
+            3328,
+            3584,
+            3840,
+            4096,
+            4352,
+            4608,
+            4864,
+            5120,
+            36864,
+            37120,
+            37376,
+            37632,
+            5376
+          ]
+        },
+        "host_clock_epoch": 4294967296,
+        "scope": "Conservative caller CPU charge including kernel and bus stalls; native IRQ/NMI and peer Task time separate"
+      },
+      "commands": [
+        {
+          "text": "RUN SYS:C/PULSE.APP paint",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "NEWSHELL",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "RUN SYS:C/RASTER.APP",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "JOBS",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "SESSION 2",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "JOBS",
+          "result": [
+            0,
+            0
+          ]
+        }
+      ],
+      "autoboot_frames": 250,
+      "reanalysis": {
+        "sha256": "692673a392b534a93ab09e0394d49410c8c045e54891ee262e3fd62dba24cfc8",
+        "status": "fail",
+        "error": "Incomplete raster call trace"
+      }
+    },
+    "runtime": {
+      "status": 0,
+      "native_nmi_count": 10979,
+      "native_irq_count": 52196,
+      "os_busy": 0,
+      "return_s": 15534,
+      "return_d": 3840,
+      "return_p": 0,
+      "fault_required": 0,
+      "return_dbr": 0,
+      "return_e": 0,
+      "current": 12,
+      "switching": 0,
+      "os_owner": 255,
+      "live_tasks": 0,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 607,
+          "untouched_above_floor": 673
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 208,
+          "untouched_above_floor": 848
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 338,
+          "untouched_above_floor": 718
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 187,
+          "untouched_above_floor": 869
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 659,
+          "untouched_above_floor": 397
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 874,
+          "untouched_above_floor": 182
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 761,
+          "untouched_above_floor": 1543
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 869,
+          "untouched_above_floor": 1435
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 1312,
+          "touched_bytes": 743,
+          "untouched_above_floor": 313
+        },
+        {
+          "slot": 9,
+          "reserved_bytes": 1312,
+          "touched_bytes": 705,
+          "untouched_above_floor": 351
+        },
+        {
+          "slot": 10,
+          "reserved_bytes": 1312,
+          "touched_bytes": 770,
+          "untouched_above_floor": 286
+        },
+        {
+          "slot": 11,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 12,
+          "reserved_bytes": 512,
+          "touched_bytes": 135,
+          "untouched_above_floor": 121
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 297,
+        "untouched_from_base": 1239,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "applications": {
+      "calc": {
+        "abi": 39,
+        "sha256": "fa3f2c67d2da1415e6cf82ba0fa554d670d8d26c3adbf7d44607ff1f2a2a12c5",
+        "span": 66304,
+        "minimum_stack": 2560
+      },
+      "counter": {
+        "abi": 39,
+        "sha256": "7980cab03f0abcda48f4f191dda21f2624e589bf238406314f9b6793187ca412",
+        "span": 66294,
+        "minimum_stack": 1312
+      },
+      "desktop": {
+        "abi": 39,
+        "sha256": "7c5b32905228e98d8a2b5f90ba269f3615c89cb553c453024d386d18b88d3bf8",
+        "span": 149627,
+        "minimum_stack": 2560
+      },
+      "dialog": {
+        "abi": 39,
+        "sha256": "0b48876c671d22645bc75724c2234f0105ee65b75f55bfd60e433617568cec95",
+        "span": 68027,
+        "minimum_stack": 2560
+      },
+      "files": {
+        "abi": 39,
+        "sha256": "07647d0545b9c5e03cc0ed131d45bef94f518fabd5429e1facbdbb87690fde61",
+        "span": 72260,
+        "minimum_stack": 2560
+      },
+      "g4bench": {
+        "abi": 39,
+        "sha256": "a66b4f14da057bf69eebd09f20a686a02572675ccbd9426087b35d1e9e8363f4",
+        "span": 68457,
+        "minimum_stack": 2560
+      },
+      "gemarc": {
+        "abi": 39,
+        "sha256": "d879fe2cdd7a948dceb3feb3af2eddc23e7de9848ab76e7f1280d3fc34af3ea5",
+        "span": 69647,
+        "minimum_stack": 2560
+      },
+      "pair": {
+        "abi": 39,
+        "sha256": "49d349cc11247b6e155a591612d5f3cf92ff6641243f3a6759fe2343b2c9887e",
+        "span": 66137,
+        "minimum_stack": 1312
+      },
+      "panel": {
+        "abi": 39,
+        "sha256": "e174b8063a4ad5620385746903d08d30c1326a7514d7324e631dd4a0341f5dd8",
+        "span": 66728,
+        "minimum_stack": 1312
+      },
+      "pulse": {
+        "abi": 39,
+        "sha256": "c43382a8f1d9487f9f487f0e9a1ff0838feba8bdd1b71bf59e7041204d678f17",
+        "span": 66339,
+        "minimum_stack": 1312
+      },
+      "raster": {
+        "abi": 39,
+        "sha256": "f942994359080ffda5f320117ee6cf236219c75e5987157749b4c7d9c3347845",
+        "span": 66338,
+        "minimum_stack": 1312
+      },
+      "terminal": {
+        "abi": 39,
+        "sha256": "4baef7f3628d94d3039f0f202b9051cdd3b9ec519b60cc925b631d9eb1ced8e3",
+        "span": 66473,
+        "minimum_stack": 1312
+      },
+      "text": {
+        "abi": 39,
+        "sha256": "aaf3d213160df27242f1c91bf439254402a4b20e25174ee7922ac20075964243",
+        "span": 68305,
+        "minimum_stack": 2560
+      },
+      "widget": {
+        "abi": 39,
+        "sha256": "1dd7b5842cf2a864473ad6d06d6ab5bffd5333eb5d00e7c0ad172ca02f47a4a3",
+        "span": 66499,
+        "minimum_stack": 1312
+      }
+    }
+  },
+  "memory": {
+    "baseline": "build/gem-widget/demo/memory.json",
+    "baseline_sha256": "f0ca076b3fba88de4f7a80944bbdface66fbeab498fc5a5c2101e401f4917786",
+    "current_sha256": "96a746da111b79731c3d07113d6019c01a4a785c7807f1339046c416150afadd",
+    "bank_zero_budget": {
+      "fixed_runtime": 11072,
+      "idle": 800,
+      "loading_excluding_os": 20368,
+      "loading_including_os": 40336,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848,
+        1600,
+        1600,
+        1600,
+        2848
+      ],
+      "runtime_excluding_os": 35040,
+      "runtime_including_os": 55008
+    },
+    "runtime_reservations": [
+      {
+        "address": 0,
+        "name": "os-low",
+        "size": 2560
+      },
+      {
+        "address": 2560,
+        "name": "state",
+        "size": 256
+      },
+      {
+        "address": 2816,
+        "name": "boot-state",
+        "size": 256
+      },
+      {
+        "address": 3072,
+        "name": "kernel-dp",
+        "size": 256
+      },
+      {
+        "address": 3328,
+        "name": "dp0",
+        "size": 256
+      },
+      {
+        "address": 3584,
+        "name": "dp1",
+        "size": 256
+      },
+      {
+        "address": 3840,
+        "name": "dp2",
+        "size": 256
+      },
+      {
+        "address": 4096,
+        "name": "dp3",
+        "size": 256
+      },
+      {
+        "address": 4352,
+        "name": "dp4",
+        "size": 256
+      },
+      {
+        "address": 4608,
+        "name": "dp5",
+        "size": 256
+      },
+      {
+        "address": 4864,
+        "name": "dp6",
+        "size": 256
+      },
+      {
+        "address": 5120,
+        "name": "dp7",
+        "size": 256
+      },
+      {
+        "address": 5376,
+        "name": "dp12",
+        "size": 256
+      },
+      {
+        "address": 5632,
+        "name": "resident",
+        "size": 4096
+      },
+      {
+        "address": 9728,
+        "name": "stack0",
+        "size": 1568
+      },
+      {
+        "address": 11296,
+        "name": "kernel-stack",
+        "size": 1568
+      },
+      {
+        "address": 12864,
+        "name": "stack1",
+        "size": 1344
+      },
+      {
+        "address": 14208,
+        "name": "stack2",
+        "size": 1344
+      },
+      {
+        "address": 15552,
+        "name": "stack3",
+        "size": 1344
+      },
+      {
+        "address": 16896,
+        "name": "stack4",
+        "size": 1344
+      },
+      {
+        "address": 18240,
+        "name": "stack5",
+        "size": 1344
+      },
+      {
+        "address": 19584,
+        "name": "stack6",
+        "size": 2592
+      },
+      {
+        "address": 22176,
+        "name": "stack7",
+        "size": 2592
+      },
+      {
+        "address": 24768,
+        "name": "stack12",
+        "size": 544
+      },
+      {
+        "address": 25328,
+        "name": "sdx-direct-pages",
+        "size": 544
+      },
+      {
+        "address": 32768,
+        "name": "vbxe-aperture",
+        "size": 4096
+      },
+      {
+        "address": 36864,
+        "name": "dp8",
+        "size": 256
+      },
+      {
+        "address": 37120,
+        "name": "dp9",
+        "size": 256
+      },
+      {
+        "address": 37376,
+        "name": "dp10",
+        "size": 256
+      },
+      {
+        "address": 37632,
+        "name": "dp11",
+        "size": 256
+      },
+      {
+        "address": 37888,
+        "name": "stack8",
+        "size": 1344
+      },
+      {
+        "address": 39232,
+        "name": "stack9",
+        "size": 1344
+      },
+      {
+        "address": 40576,
+        "name": "stack10",
+        "size": 1344
+      },
+      {
+        "address": 41920,
+        "name": "stack11",
+        "size": 2592
+      },
+      {
+        "address": 48128,
+        "name": "os-high",
+        "size": 17408
+      }
+    ],
+    "task_pools": [
+      {
+        "dp": 3328,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 9744,
+        "stack_bytes": 1536
+      },
+      {
+        "dp": 3584,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 12880,
+        "stack_bytes": 1312
+      },
+      {
+        "dp": 3840,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 14224,
+        "stack_bytes": 1312
+      },
+      {
+        "dp": 4096,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 15568,
+        "stack_bytes": 1312
+      },
+      {
+        "dp": 4352,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 16912,
+        "stack_bytes": 1312
+      },
+      {
+        "dp": 4608,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 18256,
+        "stack_bytes": 1312
+      },
+      {
+        "dp": 4864,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 19600,
+        "stack_bytes": 2560
+      },
+      {
+        "dp": 5120,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 22192,
+        "stack_bytes": 2560
+      },
+      {
+        "dp": 36864,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 37904,
+        "stack_bytes": 1312
+      },
+      {
+        "dp": 37120,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 39248,
+        "stack_bytes": 1312
+      },
+      {
+        "dp": 37376,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 40592,
+        "stack_bytes": 1312
+      },
+      {
+        "dp": 37632,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 41936,
+        "stack_bytes": 2560
+      },
+      {
+        "dp": 5376,
+        "dp_reserved_bytes": 256,
+        "interrupt_reserve": 256,
+        "stack_base": 24784,
+        "stack_bytes": 512
+      }
+    ],
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "includes": "guards, alignment and unused reserved capacity"
+    },
+    "workstation": {
+      "live_before": 894,
+      "reserved_before": 896,
+      "live_after": 1056,
+      "reserved_after": 1056,
+      "live_delta": 162,
+      "reserved_delta": 160,
+      "copy_scratch_before": 480,
+      "copy_scratch_after": 642
+    },
+    "persistent_vram_delta": 0,
+    "vram_header_sha256": "d30105c2bc2810516c4531a0d52eb421d52f1d4860be53900747c45c3ef5587b",
+    "sample_form_payload": 14592,
+    "sample_minimum_stack": 1312
+  },
+  "compiler": {
+    "cc65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "as65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+      "version": "Calypsi assembler for 65816 version 5.18",
+      "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+    },
+    "ln65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+      "version": "Calypsi linker for 65816 version 5.18",
+      "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+    }
+  },
+  "emulator": {
+    "binary": "build/mouse-bridge/AltirraBridgeServer",
+    "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+        "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+        "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+        "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+      },
+      "observer": {
+        "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ],
+      "startup_configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "disk_workload": {
+        "format": "SDFS",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "exec_profile": 4,
+        "nominal_baud": 57600
+      },
+      "mouse_input": {
+        "model": "ST mouse",
+        "port": 2,
+        "internal_port": 1,
+        "map": "Mouse -> ST Mouse (port 2)",
+        "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+        "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+        "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+        "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+        "commands": [
+          "MOUSE ST",
+          "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+          "MOUSE CLEAR"
+        ],
+        "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+        "tooling": {
+          "binary": "build/mouse-bridge/AltirraBridgeServer",
+          "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+          "patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "source_sha256": {
+            "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+            "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+          }
+        },
+        "initial_acceptance": {
+          "transitions_per_second_per_axis": 1000,
+          "minimum_transition_spacing_us": 1000,
+          "minimum_button_level_us": 10000,
+          "required_max_sample_gap_us_exclusive": 1000,
+          "visible_response_pal_ticks": 12
+        },
+        "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+      }
+    },
+    "actionc": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    }
+  },
+  "inputs": {
+    "abi/c-program.json": "47e2a43d13741c6633e3522818ee1ad3481259fae2233a594fd2bfef35b0872f",
+    "abi/vdi-client.json": "234c28fda94ab0b68f36ff6b54e9c4d940532503f4b7fabf3f3f3423f8431f3b",
+    "c/calypsi/vdi-layout.c": "31d93b00e87e8c7398468444f783d54c2484a954ab7067427380779af64a672b",
+    "c/calypsi/vdi-private.h": "99c68f487c7da8deea17f5082e9ad90c9e927b5e660010019417b57886ed6a21",
+    "c/calypsi/vdi.c": "e0a6dc4b9eb08d647d8e66eecee725a2bdd13b0f26e7272ff5a4cab657ab7a36",
+    "c/include/gem.h": "5c65049009b3e67f624eace34a450d6c2ea2996cd8c4ad31b61e543082ee55fe",
+    "c/include/gem/raster.h": "9088ec6d43208c05b5a11707fc7fee3f657a1847a2aea2ec7088fa258ca7b180",
+    "examples/gem-raster/main.c": "42ebb90baf1b3e052227558a8d82984fcb93f8c62b61623577b4596b3301205f",
+    "examples/gem-raster/raster.h": "f110d82b0d4a305d4b73e49fb5515628815a54c46bea5c955ea7092df8766426",
+    "lib/dos/c-program-abi.inc": "0b013c572600c015f038b80aee90e57c16f7523909bab5f2d1ecc801c855fa6c",
+    "ports/gem4xe/adapter/gem-vbxe.c": "089223e8f47bcf5a0040d1e105a0a28f649964bf3705a4f71985154077e89da5",
+    "ports/gem4xe/aes-binding-inputs.json": "df111eb7143cf4fb79df4c7a8aef54c3f3b8d7ab3eda1a16d3ce5ad9a9f27d60",
+    "ports/gem4xe/apps/qed/native/qed-gem-extra.h": "b407b9ebf08cfa27b6e0da08a4045d2adfaaee638ebdc8db670239bc01b7b6a5",
+    "ports/gem4xe/apps/qed/native/qed-native.h": "63fed49e2d5669ca9a9bf60efabdc1a233bb49677e7eaec9d682b849945b1a52",
+    "ports/gem4xe/raster/README.md": "3f36831db36f4deced425cca1bcf8f6e1e975933cb4f31f964621e3f1aea89c6",
+    "ports/gem4xe/raster/client.c": "30e2a85271de59d91dd4a21e4c3162971f457f5a4cdf0e271ef8ad9f0b9ac0f6",
+    "ports/gem4xe/raster/client.h": "e46bf1257687cf23b756d1198c267606a7070028a43a7de7ee342a6f7a28cf1b",
+    "ports/gem4xe/raster/core.h": "1f04a080db0504113ef4deaf8308df789640adf020195e4692c17a58da12eab4",
+    "ports/gem4xe/raster/drawing.h": "40affa7aba31e3597ced5877f83220c30c7a722c0fbd5baa4a26957d71777835",
+    "ports/gem4xe/raster/geometry.h": "8df73c3081ddd6036f7186b6a21d799700b3f4fc3edea187d164e739d5318a78",
+    "ports/gem4xe/raster/inputs.json": "a12712447a1eb457dad5dfc0d945d021ceaca92e1d3528b75aed2166a248525b",
+    "ports/gem4xe/raster/screen.h": "01fd16cca72c2c4fd8ef78aa0c8775c19974fbc864963b57b6668848718b3084",
+    "ports/gem4xe/raster/visible.h": "25bdfd8652db53acd163a055196c52f125da9a487ea17f6a9170b349f0f1d369",
+    "tests/programs/aes_vdi.c": "c31049db50c0b0fcb64bf056a56e0aa30cc0abe6aea64e7e67bcdf06ee17c935",
+    "tests/programs/gem_raster_core.c": "dc930c9d2f459a7d02f121795e03bf90e9a1afbf6b44d62f4d7cfd0205b9d6f5",
+    "tests/programs/gem_raster_layout.c": "a618ef8be9db5b0d3242af8d0369929ab1331596e4c5222b56a25b7a4675a3c9",
+    "tests/programs/gem_raster_memory.c": "c2134567b57433c78a738ba3883153ae338782e6cc29a8bb58378495d886fb20",
+    "tests/programs/gem_raster_visible.c": "a886a527a4b4b8d60d41a8067531bfc4f4670dac537c2004c6830acbb919f854",
+    "tests/programs/vdi_raster_abi.c": "9782a82e21ef76f3884a6e1210ec85de2ca2900c6cbe71a02a6f3bc8f8839c71",
+    "tests/test_gem_raster.py": "42d8222877f29d97f0b2f2c83a311d219bda8dfb54ddbbcfa8e890c5588c6456",
+    "tests/test_vdi_copy.py": "e82f89ae757080112985edf48ce270962a024e4ce2c2fbf867ececd70e554f01",
+    "tools/build_bitmap_console.py": "5633fe5a880b5d43c9d154997bdcecbe329de7af2bb8650f4b3c279fa7dafab4",
+    "tools/build_demo.py": "dc9ef82ceb1408689d140b5433f252e5bdf9043d5441f649f613a576c283713e",
+    "tools/build_gem_desktop.py": "364922a88f6712705d2bd85feaa9e165e2328b4a4601a9e54b0085175271893c",
+    "tools/gem_applications.py": "e3c0c79ef3af2e94d2e0ff3b69791a35063c0c0784b930bd41e5470885eaffb6",
+    "tools/generate_gem_raster.py": "09736a770dde2e7a71cf3b260fd3a4dc7f49ffff89dd919e1a82aaefd7731915",
+    "tools/generate_vdi_client.py": "f81ec0fcdc5af610d1584cc581c2aec3ea8cff49745e121ed44ab0b0df0c0904",
+    "tools/package_demo.py": "dc2f6ca40ee156234a2f3d6f9f95f679f654f528bf58395173ab27ab1703a3bc",
+    "tools/raster_model.py": "d5b48e5c22ac5756ea080e1a4cf8485031cf1968dc15a5d59278306810a7ca5d",
+    "tools/test_aes_server.py": "20e582f9d9348e2b10e09bd333a630627963890be675636dc0e9cb6ef28ecd57",
+    "tools/test_gem_raster_core.py": "4df79eb4fca22ef37035595e8421ea332d3092c026e05cee1028f33d12b43855",
+    "tools/test_gem_raster_memory.py": "e3383929c09df7aa98db8247322775a1464a4599da03f9ba1843daa9bf90b88d",
+    "tools/test_gem_raster_sample.py": "76faaf9cb4663395a5b3023a33991082878b58dbafb64bdc649d82e9dfc3ce41",
+    "tools/test_vdi_client.py": "fa2d4d1f61ebab781708acc629666648d25406c2a42479a5576feea7b053ec9f",
+    "tools/test_vdi_copy_abi.py": "b29d0b4d9aafdbb6f5de01743db505e4322fa72633c471b96063912b11e50c41"
+  },
+  "host": {
+    "status": "pass",
+    "tests": 715,
+    "skipped": 4,
+    "path": "build/gem-raster/final-host.log",
+    "sha256": "a152a2cca02c4fc3a6f212c4f2da85d9ee6dd9f39f990ab4ed6396947a4e68b5"
+  },
+  "limits": [
+    "Development tier only; complete hosted release qualification remains open",
+    "Four timing samples with operation-specific rectangles; no latency percentile or cross-machine speed claim",
+    "Checked scanout is a frame-resolution observation upper bound, not a hardware completion timestamp",
+    "Smallest stress-fixture stack spare above the 256-byte interrupt reserve is 20 bytes",
+    "S_ONLY auxiliary source-edge capture preserves its existing whole-source boundary (at most 480 bytes)",
+    "Distinct MFDB aliases with different base/pitch descriptions are caller responsibility",
+    "Standard planar forms, scaling, other depths, vrt_cpyfm, vr_trnfm and bitmap workstations remain unsupported"
+  ]
+}

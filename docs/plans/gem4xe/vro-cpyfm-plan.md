@@ -22,7 +22,13 @@ modes pass the emitted bank-crossing probe, admission/no-op checks and a
 32-transfer physical scene at both pixel parities. RC5 is implemented: host
 pixel/work/fault checks and the accelerated physical scene pass, including
 pointer overlays and a forced yield after record packing under the grant.
-The native packing probe checks all 21 bytes explicitly. RC6 remains pending.
+The native packing probe checks all 21 bytes explicitly. RC6 is implemented:
+the rebuilt ABI 39 OF816 package passes boot, ten exact sample pixel checkpoints,
+Counter coexistence, collection, guards and EXIT. Its audit matches 73 SYS files
+and fourteen rebuilt APPs. The [execution record](../../history/gem-raster-copy.md)
+keeps CPU/elapsed/scanout observations separate, including the slow
+different-parity C fallback. All slices pass development checks; release
+qualification and further performance work remain separate.
 
 Deliver conventional `vro_cpyfm` through the resident application VDI, using
 selected GEM4XE algorithms behind Exec's existing ownership and hardware
@@ -138,10 +144,15 @@ scratch or pending DMA survives a release. Preserve the current IRQ/NMI,
 stack-transition, quiescent recovery and reset-required ownership protocols.
 Do not hold Forbid or disable interrupts across a raster copy.
 
-Retain existing drawing limits: at most sixteen rows and 8,192 estimated bus
-accesses per physical unit, charging actual read/write/combine passes and
+Retain existing drawing limits for row/combining units: at most sixteen rows
+and 8,192 estimated bus accesses per physical unit, charging actual read/write/combine passes and
 edge work. Do not introduce a universal smaller row quantum or acquire once
 per pixel/chunk. Keep the common single-visible-rectangle path direct.
+
+Implementation audit: the reused S_ONLY helper has a separate whole-source
+edge capture, at most 480 bytes, before its bounded copy strips. Preserve that
+existing read-only staging boundary; the sixteen-row cap applies to the new
+row/combining units and copy strips, not that auxiliary capture.
 
 For fragmented destinations, partition the clipped region into row bands at
 visibility edges. Within each band, order visible spans in the horizontal

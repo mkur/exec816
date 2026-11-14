@@ -9,6 +9,7 @@ MODELS['gemarc']=('nlist',0,0)
 MODELS['basic']=('Basic',8,166)
 MODELS['widget']=('GEMWidget',6,32)
 MODELS['pulse']=('GEMCounter',12,38)
+MODELS['raster']=('GEMRaster',6,26)
 
 def instances(bridge,program,directory):
     apps={name:json.loads((directory/'apps'/name/'app.json').read_text())

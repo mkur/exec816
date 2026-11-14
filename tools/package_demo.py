@@ -58,6 +58,10 @@ typing shell commands. Windows at the right of the top bar reaches covered
 windows; Ctrl-Tab cycles them. Try DIR, HELLO or RUN C:COUNTER.APP. Each shell
 owns one RUN job; JOBS collects it after the application closes.
 
+RUN C:RASTER.APP opens the raster sample. Space starts/pauses scrolling;
+Up/Down step a row, Left/Right shift a pixel, M copies screen to memory and
+back, and Q exits. Drag or cover/expose the window to check repainting.
+
 Terminal displays 64 by 20 cells. Its tabs select two independent shell sessions;
 + creates a session and NEWSHELL starts one in the current directory. SESSION 1
 or SESSION 2 selects it. Closing Terminal asks Cancel/Close for its selected

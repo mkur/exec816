@@ -20,6 +20,9 @@ def build_apps(out,basic_workbench=False,widget_sample=False):
             probes=[(ROOT/'tests/programs/gem_colour_desktop_layout.c',__import__('colour_desktop_model').LAYOUT)] if name=='desktop' else [],
             minimum_stack=ABI['stack_floor_bytes'] if name in ('panel','counter') else None)
     from build_calculator import build as calculator
+    applications['raster']=application(out/'apps/raster',[ROOT/'examples/gem-raster/main.c'],
+        main_signature='args',minimum_stack=ABI['stack_floor_bytes'],
+        probes=[(ROOT/'tests/programs/gem_raster_layout.c',__import__('raster_model').LAYOUT)])
     applications['calc']=calculator(out/'apps/calc')
     from build_g4bench import build as g4bench
     applications['g4bench']=g4bench(out/'apps/g4bench')

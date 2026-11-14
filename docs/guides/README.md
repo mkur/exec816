@@ -6,6 +6,8 @@
 
 ## Running Exec816
 
+- [GEM raster-copy sample](gem-raster.md): scroll visible pixels, shift one pixel and copy screen/memory forms alongside Counter.
+
 - [Shared Widget and Counter](gem-widget-comparison.md): run the same small GEM applications on Exec and MagiC, alone and with background timer/drawing work.
 
 - [FujiNet split-disk boot](fujinet-split-boot.md): XEX on D1, SYS on D2 and
