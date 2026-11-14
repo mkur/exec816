@@ -1,3 +1,214 @@
+--- a/globals.h
++++ b/globals.h
+@@ -1,9 +1,9 @@
+ #define NWINDOWS	20
+ 
+-extern int text_attrib[10];			 /* Default- Textattribute */
+-extern int work_out[57],work_in [12];	 /* VDI- Felder fr v_opnvwk() */
+-extern int ap_id;
++extern WORD text_attrib[10];			 /* Default- Textattribute */
++extern WORD work_out[57],work_in [12];	 /* VDI- Felder fr v_opnvwk() */
++extern WORD ap_id;
+ extern GRECT scrg;
+ extern WORD global[15];
+-extern int vdi_handle;
+-extern int nwindows;
++extern WORD vdi_handle;
++extern WORD nwindows;
+--- a/mgview.c
++++ b/mgview.c
+@@ -16,13 +16,8 @@
+ *
+ ****************************************************************/
+ 
+-#include <mgx_dos.h>
+-#include <mt_aes.h>
+-#include <vdi.h>
+-#include <string.h>
+-#include <stdlib.h>
+ #include "mgview.h"
+-#include "gemut_mt.h"
++#include "mgview-native.h"
+ #include "globals.h"
+ #include "windows.h"
+ #include "mgwind.h"
+@@ -30,13 +25,13 @@
+ #define DEBUG 0
+ 
+ 
+-/*	int	gl_hhbox, gl_hwbox, gl_hhchar, gl_hwchar;	*/
+-int	ap_id;
+-int text_attrib[10];			 /* Default- Textattribute */
++/*	WORD	gl_hhbox, gl_hwbox, gl_hhchar, gl_hwchar;	*/
++WORD	ap_id;
++WORD text_attrib[10];			 /* Default- Textattribute */
+ GRECT scrg;
+ void close_work     (void);
+ WORD global[15];
+-int nwindows = 0;				/* Anzahl geffneter Fenster */
++WORD nwindows = 0;				/* Anzahl geffneter Fenster */
+ 
+ 
+ /*************************************************/
+@@ -45,36 +40,28 @@
+ 
+ int main( int argc, char *argv[] )
+ {
+-	int i,dummy;
++	WORD i,dummy;
+ 	WINDOW *w;
+ 	EVNT w_ev;
+-	register char *s;
+-	register char *p,*p2;
+-	int	gl_hhbox, gl_hwbox, gl_hhchar, gl_hwchar;
+-	char path[256];
++	WORD	gl_hhbox, gl_hwbox, gl_hhchar, gl_hwchar;
+ 
+ 
+ 
+ 	/* Initialisierung */
+ 	/* --------------- */
+ 
+-	if   ((ap_id = MT_appl_init(global)) < 0)
++	if   ((ap_id = appl_init()) < 0)
+ 		Pterm(-1);
+ 	graf_mouse(ARROW, NULL);
+ 	wind_get_grect(SCREEN, WF_WORKXYWH, &scrg);
+ 	vdi_handle = graf_handle(&gl_hwchar, &gl_hhchar, &gl_hwbox, &gl_hhbox);
+ 	open_work();
++	if (!vdi_handle) { appl_exit(); return 1; }
+ 	vsf_color(vdi_handle,WHITE);           /* Fllfarbe wei */
+ 	/* linksbndig, Zeichenzellenoberkante */
+ 	vst_alignment(vdi_handle, 0, 5, &dummy, &dummy);
+ 	vqt_attributes(vdi_handle, text_attrib);
+-/*
+-	vswr_mode(vdi_handle,MD_REPLACE);      /* Replace- Modus */
+-	vsf_interior(vdi_handle,SOLID);        /* komplett ausfllen */
+-	Cursconf(0,0);
+-	if	(vq_gdos())
+-		vst_load_fonts(vdi_handle, 0);
+-*/
++
+ 
+ /*	Mrsrc_load("mgview.rsc", global);	*/
+ 
+@@ -91,18 +78,11 @@
+ 
+ 	while(nwindows)
+ 		{
+-		w_ev.mwhich = evnt_multi(MU_KEYBD+MU_MESAG,
+-			  2,			/* Doppelklicks erkennen 	*/
+-			  1,			/* nur linke Maustaste		*/
+-			  1,			/* linke Maustaste gedrckt	*/
+-			  0,NULL,		/* kein 1. Rechteck			*/
+-			  0,NULL,		/* kein 2. Rechteck			*/
+-			  w_ev.msg,
+-			  0L,	/* ms */
+-			  (EVNTDATA*) &(w_ev.mx),
+-			  &w_ev.key,
+-			  &w_ev.mclicks
+-			  );
++        w_ev.mwhich = evnt_multi_moblk(MU_KEYBD|MU_MESAG,2,1,1,
++            NULL,NULL,w_ev.msg,0,0,&w_ev.mx,&w_ev.my,&w_ev.mb,
++            &w_ev.kstate,&w_ev.key,&w_ev.mclicks);
++        if (!w_ev.mwhich) break;
++
+ 
+ 
+ 		if	(w_ev.mwhich & MU_KEYBD)
+@@ -115,9 +95,9 @@
+ 			else
+ 			if	((w_ev.key == 0x1117) && (w))
+ 				{
+-				int wnr;
++				WORD wnr;
+ 
+-				wnr = (int) (find_slot_window(w) - windows);
++				wnr = (WORD) (find_slot_window(w) - windows);
+ 				i = wnr;
+ 				do	{
+ 					i++;
+@@ -167,72 +147,6 @@
+ 					case PA_EXIT:
+ 						goto ende;
+ 
+-					/* MultiTOS-Drag&Drop empfangen */
+-					/* ---------------------------- */
+-
+-					case AP_DRAGDROP:
+-						s = "U:\\PIPE\\DRAGDROP.AA";
+-						s[17] = ((char *) (w_ev.msg+7))[0];
+-						s[18] = ((char *) (w_ev.msg+7))[1];
+-						i = (int) Fopen(s, RMODE_WR);
+-						if	(i >= 0)
+-							{
+-							s[17] = DD_NAK;
+-							Fwrite(i, 1L, &s[17]);
+-							Fclose(i);
+-							}
+-						break;
+-
+-					/* Kommandozeile empfangen */
+-					/* ----------------------- */
+-
+-					case VA_START:
+-						s = *((char **)(w_ev.msg+3));
+-						while((s) && (*s))
+-							{
+-							p = path;
+-							p2 = p+255;
+-							while(*s == ' ')
+-								s++;		/* leading blanks */
+-							if	(*s == '\'')
+-								{
+-								s++;
+-								while((*s) && (p < p2))
+-									{
+-									if	(*s == '\'')
+-										{
+-										if	(s[1] != '\'')
+-											break;
+-										s++;		/* Doppelte ' entfernen */
+-										}
+-									*p++ = *s++;
+-									}
+-								if	(*s)
+-									s++;
+-								}
+-							else	{
+-								while(*s && (*s != ' ') && (p < p2))
+-									*p++ = *s++;
+-								}
+-							*p = '\0';
+-							if	(*s)
+-								s++;
+-							if	(path[0])
+-								open_textwind(path);
+-							}
+-		
+-						i = w_ev.msg[1];		/* Absender */
+-		
+-						w_ev.msg[0] = AV_STARTED;
+-						w_ev.msg[1] = ap_id;
+-						w_ev.msg[2] = 0;		/* keine berlnge */
+-						/* Wort 3 und 4 unverndert */
+-						w_ev.msg[5] =
+-						w_ev.msg[6] =
+-						w_ev.msg[7] = 0;
+-		
+-						appl_write(i, 16, w_ev.msg);
+-						break;
+ 					}	/* end switch */
+ 				w_ev.mwhich &= ~MU_MESAG;
+ 				}
+@@ -240,6 +154,7 @@
+ 		}
+ 
+ ende:
++	for (i=0;i<NWINDOWS;++i) if(windows[i]) windows[i]->close(windows[i],0);
+ 
+ 	v_clsvwk(vdi_handle);
+ /*	MT_rsrc_free(global);	*/
 --- a/mgwind.c
 +++ b/mgwind.c
 @@ -5,11 +5,7 @@
@@ -46,6 +257,24 @@
  {
  	unsigned char *ende = text+len;
  	unsigned char *eol,*eol2;
+@@ -117,7 +113,7 @@
+ 		if	(eol)
+ 			{
+ 			eol2 = eol+1;		/* nchstes Zeichen */
+-			if	((*eol == '\r') && (*eol2 == '\n'))
++			if	((*eol == '\r') && (eol2 < ende) && (*eol2 == '\n'))
+ 				eol2++;
+ 			}
+ 
+@@ -162,7 +158,7 @@
+ 			break;
+ 
+ 		text = eol+1;		/* aufs nchste Zeichen */
+-		if	((*eol == '\r') && (*text == '\n'))
++		if	((*eol == '\r') && (text < ende) && (*text == '\n'))
+ 			text++;
+ 		}
+ }
 @@ -211,22 +207,21 @@
  *
  ****************************************************************/
@@ -241,7 +470,7 @@
  		goto err2;
  		}
  
-+	if (xa.size<0 || xa.size>65519L) {err=GEMDOS_ERANGE;goto err3;}
++	if (xa.size<0 || xa.size>MGVIEW_FILE_LIMIT) {err=GEMDOS_ERANGE;goto err3;}
  	w->user_fsize = xa.size;
  	w->user_file = Malloc(xa.size + 1);	/* Platz fr EOS */
  	if	(!w->user_file)
@@ -264,7 +493,7 @@
  					&(w->vscroll.n), &(w->hscroll.n),
  					w->user_tabsize);
 -	w->user_lines = Malloc(w->vscroll.n * sizeof(char *));
-+	if(w->vscroll.n>16380L){err=GEMDOS_ERANGE;goto err4;}
++	if(w->vscroll.n>MGVIEW_LINE_LIMIT){err=GEMDOS_ERANGE;goto err4;}
 +	w->user_lines = Malloc(w->vscroll.n ? w->vscroll.n * sizeof(char *) : 4);
  	if	(!w->user_lines)
  		{
@@ -303,319 +532,6 @@
 -}
 +	if(*new_slot)wind_set_str(w->handle, WF_NAME, w->title);
 +}
---- a/globals.h
-+++ b/globals.h
-@@ -1,9 +1,9 @@
- #define NWINDOWS	20
- 
--extern int text_attrib[10];			 /* Default- Textattribute */
--extern int work_out[57],work_in [12];	 /* VDI- Felder fr v_opnvwk() */
--extern int ap_id;
-+extern WORD text_attrib[10];			 /* Default- Textattribute */
-+extern WORD work_out[57],work_in [12];	 /* VDI- Felder fr v_opnvwk() */
-+extern WORD ap_id;
- extern GRECT scrg;
- extern WORD global[15];
--extern int vdi_handle;
--extern int nwindows;
-+extern WORD vdi_handle;
-+extern WORD nwindows;
---- a/windows.h
-+++ b/windows.h
-@@ -1,4 +1,5 @@
- #include "globals.h"
-+struct _window;
- 
- #define WFLAG_ICONIFIED	1
- 
-@@ -6,36 +7,36 @@
- {
- 	long		n;			/* Anzahl Zeilen/Spalten */
- 	long		shift;		/* Nr der obersten Zeile, linksten Spalte */
--	int		nvis;		/* Anzahl sichtbarer Zeilen/Spalten */
-+	WORD		nvis;		/* Anzahl sichtbarer Zeilen/Spalten */
- 	long		maxshift;		/* Abhngig von n und nvis */
- 	void		(*set_shift)	(struct _window *w, long shift,
--							int is_horiz);
--	int		pixelsize;	/* Pixel pro Objekt */
--	void		(*arrange)	(struct _window *w, int is_horiz);
-+							WORD is_horiz);
-+	WORD		pixelsize;	/* Pixel pro Objekt */
-+	void		(*arrange)	(struct _window *w, WORD is_horiz);
- } WINDSCROLLINFO;
- 
- typedef struct _window
- {
--	int		handle;			/* Handle oder 0 				*/
--	int		flags;			/* Bit 0: Ikonifiziert			*/
--	void		(*key)		(struct _window *w, int kstate, int key);
--	void		(*button)		(struct _window *w, int kstate, int x, int y,
--						int button, int nclicks);
--	void		(*message)	(struct _window *w, int kstate, int message[16]);
-+	WORD		handle;			/* Handle oder 0 				*/
-+	WORD		flags;			/* Bit 0: Ikonifiziert			*/
-+	void		(*key)		(struct _window *w, WORD kstate, WORD key);
-+	void		(*button)		(struct _window *w, WORD kstate, WORD x, WORD y,
-+						WORD button, WORD nclicks);
-+	void		(*message)	(struct _window *w, WORD kstate, WORD message[16]);
- 	void		(*snap)		(struct _window *w);
- 	void		(*open)		(struct _window *w);
--	void		(*close)		(struct _window *w, int kstate);
-+	void		(*close)		(struct _window *w, WORD kstate);
- 	void		(*iconified)	(struct _window *w, GRECT *g);
--	void		(*uniconified)	(struct _window *w, GRECT *g, int unhide);
--	void		(*alliconified)(struct _window *w, GRECT *g, int hide);
-+	void		(*uniconified)	(struct _window *w, GRECT *g, WORD unhide);
-+	void		(*alliconified)(struct _window *w, GRECT *g, WORD hide);
- 	void		(*fulled)		(struct _window *w);
--	void		(*arrowed)	(struct _window *w, int arrow);
--	void		(*hslid)		(struct _window *w, int pos);
--	void		(*vslid)		(struct _window *w, int pos);
-+	void		(*arrowed)	(struct _window *w, WORD arrow);
-+	void		(*hslid)		(struct _window *w, WORD pos);
-+	void		(*vslid)		(struct _window *w, WORD pos);
- 	void		(*sized)		(struct _window *w, GRECT *g);
- 	void		(*moved)		(struct _window *w, GRECT *g);
- 	void		(*draw)		(struct _window *w, GRECT *g);
--	int		(*arrange)	(struct _window *w);
-+	WORD		(*arrange)	(struct _window *w);
- 	char		title[128];		/* Titelzeile 					*/
- 	char		info[60];			/* Infozeile 					*/
- 	GRECT 	out;				/* Fenster- Gesamtmae 			*/
-@@ -46,17 +47,17 @@
- 	long		user_fsize;		/* Dateilnge */
- 	unsigned char *user_file;	/* Datei-Daten */
- 	unsigned char **user_lines;	/* Zeiger auf Zeilenanfnge */
--	int		user_tabsize;		/* Tabulatorlnge */
-+	WORD		user_tabsize;		/* Tabulatorlnge */
- } WINDOW;
- 
- typedef union _wmesag 
- {
--	int		message[8];
-+	WORD		message[8];
- 	struct	{
--		int	code;
--		int	dest_apid;
--		int	is_zero;
--		int	whdl;
-+		WORD	code;
-+		WORD	dest_apid;
-+		WORD	is_zero;
-+		WORD	whdl;
- 		GRECT g;
- 			}
- 			msg;
-@@ -64,11 +65,11 @@
- 
- 
- /* Fr Fenster */
--extern int	top_whdl( void );
-+extern WORD	top_whdl( void );
- extern WINDOW *windows[NWINDOWS];
- extern WINDOW **new_window( void );
- extern WINDOW **find_slot_window( WINDOW *myw );
--extern WINDOW *whdl2window(int whdl);
--extern void window_calc_slider(WINDOW *w, int is_horiz);
-+extern WINDOW *whdl2window(WORD whdl);
-+extern void window_calc_slider(WINDOW *w, WORD is_horiz);
- extern void init_window( WINDOW *w);
--extern int update_window(WINDOW *w);
-+extern WORD update_window(WINDOW *w);
---- a/mgview.c
-+++ b/mgview.c
-@@ -16,13 +16,8 @@
- *
- ****************************************************************/
- 
--#include <mgx_dos.h>
--#include <mt_aes.h>
--#include <vdi.h>
--#include <string.h>
--#include <stdlib.h>
- #include "mgview.h"
--#include "gemut_mt.h"
-+#include "mgview-native.h"
- #include "globals.h"
- #include "windows.h"
- #include "mgwind.h"
-@@ -30,13 +25,13 @@
- #define DEBUG 0
- 
- 
--/*	int	gl_hhbox, gl_hwbox, gl_hhchar, gl_hwchar;	*/
--int	ap_id;
--int text_attrib[10];			 /* Default- Textattribute */
-+/*	WORD	gl_hhbox, gl_hwbox, gl_hhchar, gl_hwchar;	*/
-+WORD	ap_id;
-+WORD text_attrib[10];			 /* Default- Textattribute */
- GRECT scrg;
- void close_work     (void);
- WORD global[15];
--int nwindows = 0;				/* Anzahl geffneter Fenster */
-+WORD nwindows = 0;				/* Anzahl geffneter Fenster */
- 
- 
- /*************************************************/
-@@ -45,36 +40,28 @@
- 
- int main( int argc, char *argv[] )
- {
--	int i,dummy;
-+	WORD i,dummy;
- 	WINDOW *w;
- 	EVNT w_ev;
--	register char *s;
--	register char *p,*p2;
--	int	gl_hhbox, gl_hwbox, gl_hhchar, gl_hwchar;
--	char path[256];
-+	WORD	gl_hhbox, gl_hwbox, gl_hhchar, gl_hwchar;
- 
- 
- 
- 	/* Initialisierung */
- 	/* --------------- */
- 
--	if   ((ap_id = MT_appl_init(global)) < 0)
-+	if   ((ap_id = appl_init()) < 0)
- 		Pterm(-1);
- 	graf_mouse(ARROW, NULL);
- 	wind_get_grect(SCREEN, WF_WORKXYWH, &scrg);
- 	vdi_handle = graf_handle(&gl_hwchar, &gl_hhchar, &gl_hwbox, &gl_hhbox);
- 	open_work();
-+	if (!vdi_handle) { appl_exit(); return 1; }
- 	vsf_color(vdi_handle,WHITE);           /* Fllfarbe wei */
- 	/* linksbndig, Zeichenzellenoberkante */
- 	vst_alignment(vdi_handle, 0, 5, &dummy, &dummy);
- 	vqt_attributes(vdi_handle, text_attrib);
--/*
--	vswr_mode(vdi_handle,MD_REPLACE);      /* Replace- Modus */
--	vsf_interior(vdi_handle,SOLID);        /* komplett ausfllen */
--	Cursconf(0,0);
--	if	(vq_gdos())
--		vst_load_fonts(vdi_handle, 0);
--*/
-+
- 
- /*	Mrsrc_load("mgview.rsc", global);	*/
- 
-@@ -91,18 +78,11 @@
- 
- 	while(nwindows)
- 		{
--		w_ev.mwhich = evnt_multi(MU_KEYBD+MU_MESAG,
--			  2,			/* Doppelklicks erkennen 	*/
--			  1,			/* nur linke Maustaste		*/
--			  1,			/* linke Maustaste gedrckt	*/
--			  0,NULL,		/* kein 1. Rechteck			*/
--			  0,NULL,		/* kein 2. Rechteck			*/
--			  w_ev.msg,
--			  0L,	/* ms */
--			  (EVNTDATA*) &(w_ev.mx),
--			  &w_ev.key,
--			  &w_ev.mclicks
--			  );
-+        w_ev.mwhich = evnt_multi_moblk(MU_KEYBD|MU_MESAG,2,1,1,
-+            NULL,NULL,w_ev.msg,0,0,&w_ev.mx,&w_ev.my,&w_ev.mb,
-+            &w_ev.kstate,&w_ev.key,&w_ev.mclicks);
-+        if (!w_ev.mwhich) break;
-+
- 
- 
- 		if	(w_ev.mwhich & MU_KEYBD)
-@@ -115,9 +95,9 @@
- 			else
- 			if	((w_ev.key == 0x1117) && (w))
- 				{
--				int wnr;
-+				WORD wnr;
- 
--				wnr = (int) (find_slot_window(w) - windows);
-+				wnr = (WORD) (find_slot_window(w) - windows);
- 				i = wnr;
- 				do	{
- 					i++;
-@@ -167,72 +147,6 @@
- 					case PA_EXIT:
- 						goto ende;
- 
--					/* MultiTOS-Drag&Drop empfangen */
--					/* ---------------------------- */
--
--					case AP_DRAGDROP:
--						s = "U:\\PIPE\\DRAGDROP.AA";
--						s[17] = ((char *) (w_ev.msg+7))[0];
--						s[18] = ((char *) (w_ev.msg+7))[1];
--						i = (int) Fopen(s, RMODE_WR);
--						if	(i >= 0)
--							{
--							s[17] = DD_NAK;
--							Fwrite(i, 1L, &s[17]);
--							Fclose(i);
--							}
--						break;
--
--					/* Kommandozeile empfangen */
--					/* ----------------------- */
--
--					case VA_START:
--						s = *((char **)(w_ev.msg+3));
--						while((s) && (*s))
--							{
--							p = path;
--							p2 = p+255;
--							while(*s == ' ')
--								s++;		/* leading blanks */
--							if	(*s == '\'')
--								{
--								s++;
--								while((*s) && (p < p2))
--									{
--									if	(*s == '\'')
--										{
--										if	(s[1] != '\'')
--											break;
--										s++;		/* Doppelte ' entfernen */
--										}
--									*p++ = *s++;
--									}
--								if	(*s)
--									s++;
--								}
--							else	{
--								while(*s && (*s != ' ') && (p < p2))
--									*p++ = *s++;
--								}
--							*p = '\0';
--							if	(*s)
--								s++;
--							if	(path[0])
--								open_textwind(path);
--							}
--		
--						i = w_ev.msg[1];		/* Absender */
--		
--						w_ev.msg[0] = AV_STARTED;
--						w_ev.msg[1] = ap_id;
--						w_ev.msg[2] = 0;		/* keine berlnge */
--						/* Wort 3 und 4 unverndert */
--						w_ev.msg[5] =
--						w_ev.msg[6] =
--						w_ev.msg[7] = 0;
--		
--						appl_write(i, 16, w_ev.msg);
--						break;
- 					}	/* end switch */
- 				w_ev.mwhich &= ~MU_MESAG;
- 				}
-@@ -240,6 +154,7 @@
- 		}
- 
- ende:
-+	for (i=0;i<NWINDOWS;++i) if(windows[i]) windows[i]->close(windows[i],0);
- 
- 	v_clsvwk(vdi_handle);
- /*	MT_rsrc_free(global);	*/
 --- a/windows.c
 +++ b/windows.c
 @@ -5,13 +5,7 @@
@@ -975,3 +891,105 @@
  }
  
  
+--- a/windows.h
++++ b/windows.h
+@@ -1,4 +1,5 @@
+ #include "globals.h"
++struct _window;
+ 
+ #define WFLAG_ICONIFIED	1
+ 
+@@ -6,36 +7,36 @@
+ {
+ 	long		n;			/* Anzahl Zeilen/Spalten */
+ 	long		shift;		/* Nr der obersten Zeile, linksten Spalte */
+-	int		nvis;		/* Anzahl sichtbarer Zeilen/Spalten */
++	WORD		nvis;		/* Anzahl sichtbarer Zeilen/Spalten */
+ 	long		maxshift;		/* Abhngig von n und nvis */
+ 	void		(*set_shift)	(struct _window *w, long shift,
+-							int is_horiz);
+-	int		pixelsize;	/* Pixel pro Objekt */
+-	void		(*arrange)	(struct _window *w, int is_horiz);
++							WORD is_horiz);
++	WORD		pixelsize;	/* Pixel pro Objekt */
++	void		(*arrange)	(struct _window *w, WORD is_horiz);
+ } WINDSCROLLINFO;
+ 
+ typedef struct _window
+ {
+-	int		handle;			/* Handle oder 0 				*/
+-	int		flags;			/* Bit 0: Ikonifiziert			*/
+-	void		(*key)		(struct _window *w, int kstate, int key);
+-	void		(*button)		(struct _window *w, int kstate, int x, int y,
+-						int button, int nclicks);
+-	void		(*message)	(struct _window *w, int kstate, int message[16]);
++	WORD		handle;			/* Handle oder 0 				*/
++	WORD		flags;			/* Bit 0: Ikonifiziert			*/
++	void		(*key)		(struct _window *w, WORD kstate, WORD key);
++	void		(*button)		(struct _window *w, WORD kstate, WORD x, WORD y,
++						WORD button, WORD nclicks);
++	void		(*message)	(struct _window *w, WORD kstate, WORD message[16]);
+ 	void		(*snap)		(struct _window *w);
+ 	void		(*open)		(struct _window *w);
+-	void		(*close)		(struct _window *w, int kstate);
++	void		(*close)		(struct _window *w, WORD kstate);
+ 	void		(*iconified)	(struct _window *w, GRECT *g);
+-	void		(*uniconified)	(struct _window *w, GRECT *g, int unhide);
+-	void		(*alliconified)(struct _window *w, GRECT *g, int hide);
++	void		(*uniconified)	(struct _window *w, GRECT *g, WORD unhide);
++	void		(*alliconified)(struct _window *w, GRECT *g, WORD hide);
+ 	void		(*fulled)		(struct _window *w);
+-	void		(*arrowed)	(struct _window *w, int arrow);
+-	void		(*hslid)		(struct _window *w, int pos);
+-	void		(*vslid)		(struct _window *w, int pos);
++	void		(*arrowed)	(struct _window *w, WORD arrow);
++	void		(*hslid)		(struct _window *w, WORD pos);
++	void		(*vslid)		(struct _window *w, WORD pos);
+ 	void		(*sized)		(struct _window *w, GRECT *g);
+ 	void		(*moved)		(struct _window *w, GRECT *g);
+ 	void		(*draw)		(struct _window *w, GRECT *g);
+-	int		(*arrange)	(struct _window *w);
++	WORD		(*arrange)	(struct _window *w);
+ 	char		title[128];		/* Titelzeile 					*/
+ 	char		info[60];			/* Infozeile 					*/
+ 	GRECT 	out;				/* Fenster- Gesamtmae 			*/
+@@ -46,17 +47,17 @@
+ 	long		user_fsize;		/* Dateilnge */
+ 	unsigned char *user_file;	/* Datei-Daten */
+ 	unsigned char **user_lines;	/* Zeiger auf Zeilenanfnge */
+-	int		user_tabsize;		/* Tabulatorlnge */
++	WORD		user_tabsize;		/* Tabulatorlnge */
+ } WINDOW;
+ 
+ typedef union _wmesag 
+ {
+-	int		message[8];
++	WORD		message[8];
+ 	struct	{
+-		int	code;
+-		int	dest_apid;
+-		int	is_zero;
+-		int	whdl;
++		WORD	code;
++		WORD	dest_apid;
++		WORD	is_zero;
++		WORD	whdl;
+ 		GRECT g;
+ 			}
+ 			msg;
+@@ -64,11 +65,11 @@
+ 
+ 
+ /* Fr Fenster */
+-extern int	top_whdl( void );
++extern WORD	top_whdl( void );
+ extern WINDOW *windows[NWINDOWS];
+ extern WINDOW **new_window( void );
+ extern WINDOW **find_slot_window( WINDOW *myw );
+-extern WINDOW *whdl2window(int whdl);
+-extern void window_calc_slider(WINDOW *w, int is_horiz);
++extern WINDOW *whdl2window(WORD whdl);
++extern void window_calc_slider(WINDOW *w, WORD is_horiz);
+ extern void init_window( WINDOW *w);
+-extern int update_window(WINDOW *w);
++extern WORD update_window(WINDOW *w);

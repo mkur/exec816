@@ -22,7 +22,7 @@ LAYOUT=[('WORD',2),('huge pointer',4),('WINDOW',338),('outer',260),('work',268),
 DOCUMENT=b''.join((f'Row {i:03d}\t'+''.join(chr(65+(i+j)%26) for j in range(100))+'\r\n').encode() for i in range(50))
 
 
-def run(out,reuse=False,scroll=False):
+def run(out,reuse=False,scroll=False,failures=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     if not reuse:
         viewer(out/'apps/mgview',probes=[(ROOT/'tests/programs/mgview_layout.c',LAYOUT)])
@@ -35,6 +35,9 @@ def run(out,reuse=False,scroll=False):
     media=out/'media';media.mkdir(exist_ok=True)
     for name in apps:(media/(name.upper()+'.APP')).write_bytes((out/'apps'/name/'program.app').read_bytes())
     (media/'VIEW.TXT').write_bytes(DOCUMENT);(media/'EMPTY.TXT').write_bytes(b'')
+    if failures:
+        (media/'BIG.TXT').write_bytes(b'x'*65520)
+        (media/'TALL.TXT').write_bytes(b'\n'*16381)
     make(out/'system.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,binary_names={p.name for p in media.iterdir()})
     at=lambda name:next(d['address'] for d in program['image']['data'] if '_CMGVIEWTEST_'+name.upper()+'_' in d['name'])
     report=dict(status='running',tier='development',qualification=False,cases=[],bank_zero_delta=dict(fixed=0,root=0,kernel=0,private_idle=0,per_public_task=0))
@@ -81,13 +84,27 @@ def run(out,reuse=False,scroll=False):
                 return actual
             def before(b):
                 position=[320,120];b._cmd_ok('MOUSE ST')
-                for round,argument in enumerate((b'"SYS:VIEW.TXT"',b'SYS:EMPTY.TXT',b'')):
+                arguments=(b'SYS:BIG.TXT',b'SYS:TALL.TXT',b'') if failures else (b'"SYS:VIEW.TXT"',b'SYS:EMPTY.TXT',b'')
+                for round,argument in enumerate(arguments):
                     phase=round*2+1;reach(f'dw(${at("phase"):x})={phase}')
                     base=number(at('bases'),4);sy=symbols('mgview',base)
                     counter=symbols('counter',number(at('bases')+4,4))['GEMCounter']
                     b.memload(at('argument'),argument+b'\0');b.poke16(at('argBytes'),len(argument));b.poke16(at('go'),phase)
                     reach(f'dw(${at("phase"):x})={phase+1}')
-                    if argument:
+                    if failures and argument:
+                        from generate_aes_server import layout,expected_layout,ABI as AES_ABI
+                        reach(f'dw(${sy["ap_id"]:x})>0')
+                        resident=json.loads((out/'c-image.json').read_text())['symbols']
+                        contexts=b.memdump(resident['contexts'],AES_ABI['constants']['CONTEXTS']*4)
+                        candidates=[int.from_bytes(contexts[i:i+4],'little') for i in range(0,len(contexts),4)]
+                        context=next(c for c in candidates if c and number(c+layout()['Request']['fields']['global']+4)==number(sy['ap_id']))
+                        form=context+dict(expected_layout())['C context form']
+                        reach(f'dw(${form:x})!=0');frames(20)
+                        b._cmd_ok('KEY RETURN down');frames(3);b._cmd_ok('KEY RETURN up')
+                        reach(f'dw(${form:x})=0');frames(10)
+                        require(number(sy['nwindows'])==0 and number(sy['windows'],4)==0,'Rejected loader published a document')
+                        report['cases'].append(dict(arguments=argument.decode(),rejected=True))
+                    elif argument:
                         reach(f'dw(${sy["nwindows"]:x})=1');frames(80)
                         window=number(sy['windows'],4);require(window,'Missing original window record')
                         position=schedule(b,program,position,(632,0));frames(30)
@@ -113,12 +130,15 @@ def run(out,reuse=False,scroll=False):
             require(number(at('completed'))==4,'Viewer/Counter lifetimes incomplete')
             report.update(status='pass',completed=4,checks=number(at('checks')),app_sha256={name:sha256(out/'apps'/name/'program.app') for name in apps})
     except Exception as error:report.update(status='fail',error=str(error));raise
-    finally:(out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
+    finally:
+        payload=json.dumps(report,indent=2)+'\n'
+        (out/'results.json').write_text(payload)
+        (out/('results-'+('failures' if failures else 'scroll' if scroll else 'smoke')+'.json')).write_text(payload)
     print('MGVIEW development check passed: three lifetimes, exact pixels and Counter progress',flush=True)
     return report
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output',type=Path,required=True);parser.add_argument('--reuse',action='store_true');parser.add_argument('--scroll',action='store_true')
-    args=parser.parse_args();run(args.output,args.reuse,args.scroll)
+    parser.add_argument('--output',type=Path,required=True);parser.add_argument('--reuse',action='store_true');parser.add_argument('--scroll',action='store_true');parser.add_argument('--failures',action='store_true')
+    args=parser.parse_args();run(args.output,args.reuse,args.scroll,args.failures)

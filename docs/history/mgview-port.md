@@ -23,8 +23,8 @@ guards, alignment and unused reserved capacity.
 
 Development checks: `build/mgview-dev/model-raw/results.json` and `model-opt/`
 each pass 30 original-parser/callback/rectangle checks, with emitted WINDOW
-layout 338 bytes and four-byte huge pointers. `build/mgview-dev/smoke/results.json`
-passes four loaded Process lifetimes (three MGVIEW, one Counter), 25 native
+layout 338 bytes and four-byte huge pointers. `build/mgview-dev/noinline-run.log` records the passing loaded run:
+four loaded Process lifetimes (three MGVIEW, one Counter), 25 native
 checks and exact 123,200/4,096-pixel populated/empty viewports. Quoted path,
 physical Ctrl-U, no-argument exit, stop, heap restoration and stack/domain guards
 are covered. The largest touched 1,312-byte public pool is 816 bytes in this
@@ -38,3 +38,18 @@ uniformly to its source units, matching QED's existing
 No drawing-policy or actionc change accommodates that compiler issue. The
 uninstrumented APP is 27,853 serialized bytes with a 66,786-byte loaded span
 and 1,020 BSS bytes at this slice; these include ordinary runtime state.
+
+## MP2: bounded loader and model lifetime
+
+The private file/index ceilings are explicit. Original CR/CRLF scanning now
+checks the declared end before looking at the following byte. The loader fixes
+from MP1 retain single descriptor consumption and publication only after both
+buffers exist; later failures cannot leave a dangling slot or count.
+
+`build/mgview-dev/mp2-results.json` passes rejection of a 65,520-byte file and
+16,381-line index through the original loader, dismissal of their real alerts,
+no-argument exit, unchanged Counter and restored heap across all four loaded
+lifetimes. The optimized original-parser probe passes 30 checks after the end
+bounds change (`build/mgview-dev/model-mp2/results.json`). This small development
+pass does not inject every allocation/short-read failure or exhaust capacity.
+Reserved bank-zero deltas remain zero for fixed/root/kernel/idle and every Task.
